@@ -27,19 +27,78 @@ message StreamExperimentsRequest {
   string user_id = 2;
   // Limits the number of experiment IDs returned. This is useful to check if
   // user might have any data by setting limit=1. Also useful to preview the
-  // list of experiments.
+  // list of experiments. TODO(@karthikv2k): Support pagination.
   int64 limit = 3;
-  // TODO(@karthikv2k): Support pagination.
+  // Field mask for what experiment data to return. If not specified, this
+  // should be interpreted the same as an empty message, which specifies that
+  // only the experiment ID should be returned.
+  ExperimentMask experiment_mask = 4;
 }
 
-// Streams experiment IDs returned from TensorBoard.dev.
+// Streams experiment metadata (ID, creation time, etc.) from TensorBoard.dev.
 message StreamExperimentsResponse {
-  // List of experiment IDs for the experiments owned by the user. The entire
-  // list of experiments owned by the user is streamed in batches and each batch
-  // contains a list of experiment IDs. A consumer of this stream needs to
-  // concatenate all these lists to get the full response. The order of
-  // experiment IDs in the stream is not defined.
+  // Deprecated in favor of `experiments`. If a response has `experiments` set,
+  // clients should ignore `experiment_ids` entirely. Otherwise, clients should
+  // treat `experiment_ids` as a list of `experiments` for which only the
+  // `experiment_id` field is set.
+  //
+  // For example, the following responses should be treated the same:
+  //
+  //     # Response 1
+  //     experiment_ids: "123"
+  //     experiment_ids: "456"
+  //
+  //     # Response 2
+  //     experiments { experiment_id: "123" }
+  //     experiments { experiment_id: "456" }
+  //
+  //     # Response 3
+  //     experiment_ids: "789"
+  //     experiments { experiment_id: "123" }
+  //     experiments { experiment_id: "456" }
+  //
+  // See documentation on `experiments` for batching semantics.
   repeated string experiment_ids = 1;
+  // List of experiments owned by the user. The entire list of experiments
+  // owned by the user is streamed in batches and each batch contains a list of
+  // experiments. A consumer of this stream needs to concatenate all these
+  // lists to get the full response. The order of experiments in the stream is
+  // not defined. Every response will contain at least one experiment.
+  //
+  // These messages may be partially populated, in accordance with the field
+  // mask given in the request.
+  repeated Experiment experiments = 2;
+}
+
+// Metadata about an experiment.
+message Experiment {
+  // Permanent ID of this experiment; e.g.: "AdYd1TgeTlaLWXx6I8JUbA".
+  string experiment_id = 1;
+  // The time that the experiment was created.
+  google.protobuf.Timestamp create_time = 2;
+  // The time that the experiment was last modified: i.e., the most recent time
+  // that scalars were added to the experiment.
+  google.protobuf.Timestamp update_time = 3;
+  // The number of scalars in this experiment, across all time series.
+  int64 num_scalars = 4;
+  // The number of distinct run names in this experiment.
+  int64 num_runs = 5;
+  // The number of distinct tag names in this experiment. A tag name that
+  // appears in multiple runs will be counted only once.
+  int64 num_tags = 6;
+}
+
+// Field mask for `Experiment`. The `experiment_id` field is always implicitly
+// considered to be requested. Other fields of `Experiment` will be populated
+// if and only if their corresponding bit in the `ExperimentMask` is set.
+message ExperimentMask {
+  reserved 1;
+  reserved "experiment_id";
+  bool create_time = 2;
+  bool update_time = 3;
+  bool num_scalars = 4;
+  bool num_runs = 5;
+  bool num_tags = 6;
 }
 
 // Request to stream scalars from all the runs and tags in an experiment.
