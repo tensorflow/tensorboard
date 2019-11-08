@@ -1179,10 +1179,20 @@ limitations under the License.
         margin-right: 6px;
       }
       .counterfactual-delta label {
-        padding-top: 10px;
+        padding-top: 12px;
+        margin-left: 8px;
+        margin-right: 4px;
+        font-size: 14px;
+        color: rgb(60, 64, 67);
       }
       .counterfactual-delta paper-slider {
         height: 40px;
+        --paper-slider-active-color: #81c995;
+        --paper-slider-knob-color: #81c995;
+        --paper-slider-input-container-input: {
+          font-size: 14px;
+          color: rgb(60, 64, 67);
+        }
       }
       .datapoint-button {
         color: #202124;
@@ -1445,6 +1455,28 @@ limitations under the License.
                             Show nearest counterfactual datapoint
                           </paper-toggle-button>
                         </div>
+                        <paper-icon-button
+                          icon="info-outline"
+                          class="info-icon no-padding"
+                          on-tap="openDialog"
+                        >
+                        </paper-icon-button>
+                        <paper-dialog
+                          class="dialog-text"
+                          horizontal-align="auto"
+                          vertical-align="auto"
+                        >
+                          <div class="dialog-title">
+                            Nearest counterfactual (neighbor of different
+                            classification)
+                          </div>
+                          <div>
+                            Compares the selected datapoint with its nearest
+                            neighbor from a different classification using L1 or
+                            L2 distance. If a custom distance function is set,
+                            it uses that function instead.
+                          </div>
+                        </paper-dialog>
                         <paper-radio-group
                           selected="{{nearestCounterfactualDist}}"
                         >
@@ -1469,12 +1501,36 @@ limitations under the License.
                             title="Minimum distance in inferred value to consider counterfactual"
                             class="counterfactual-delta"
                           >
+                            <label>Threshold</label>
+                            <paper-icon-button
+                              icon="info-outline"
+                              class="info-icon no-padding"
+                              on-tap="openDialog"
+                            >
+                            </paper-icon-button>
+                            <paper-dialog
+                              class="dialog-text"
+                              horizontal-align="auto"
+                              vertical-align="auto"
+                            >
+                              <div class="dialog-title">
+                                Counterfactual threshold
+                              </div>
+                              <div>
+                                For regression, a neighbor point is considered
+                                as a different classification if the difference
+                                in inferred value is equal or greater than the
+                                selected threshold.<br />
+                                The threshold is initialized to the standard
+                                deviation of the inferred values.
+                              </div>
+                            </paper-dialog>
                             <paper-slider
-                              pin
+                              editable
                               value="{{minCounterfactualValueDist}}"
                               max="[[maxCounterfactualValueDist]]"
+                              disabled$="[[!showNearestCounterfactual]]"
                             ></paper-slider>
-                            <label>Delta</label>
                           </div>
                         </template>
                         <paper-dropdown-menu
@@ -1498,42 +1554,6 @@ limitations under the License.
                             </template>
                           </paper-listbox>
                         </paper-dropdown-menu>
-                        <paper-icon-button
-                          icon="info-outline"
-                          class="info-icon no-padding"
-                          on-tap="openDialog"
-                        >
-                        </paper-icon-button>
-                        <paper-dialog
-                          class="dialog-text"
-                          horizontal-align="auto"
-                          vertical-align="auto"
-                        >
-                          <div class="dialog-title">
-                            Nearest counterfactual (neighbor of different
-                            classification)
-                          </div>
-                          <div>
-                            Compares the selected datapoint with its nearest
-                            neighbor from a different classification using L1 or
-                            L2 distance. If a custom distance function is set,
-                            it uses that function instead.
-                          </div>
-                          <div>
-                            <template
-                              is="dom-if"
-                              if="[[isRegression_(modelType)]]"
-                              restamp
-                            >
-                              For regression, a neighbor point is considered as
-                              a different classification if the difference in
-                              inferred value is equal or greater than the
-                              selected delta.<br />
-                              Delta is initialized to the standard deviation of
-                              the inferred values.
-                            </template>
-                          </div>
-                        </paper-dialog>
                       </div>
                       <div title="Select a datapoint to use this feature">
                         <div class="flex">
@@ -4273,9 +4293,8 @@ limitations under the License.
             inferenceValueStr,
             this.nearestCounterfactualModelIndex
           );
-          this.minCounterfactualValueDist = this.distanceStats_[
-            valueName
-          ].stdDev;
+          const stat = this.distanceStats_[valueName];
+          this.minCounterfactualValueDist = stat ? stat.stdDev : 0;
         },
 
         finalizeClosestCounterfactual: function(exInd, distances) {
