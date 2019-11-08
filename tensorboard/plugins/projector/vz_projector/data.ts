@@ -384,10 +384,11 @@ namespace vz_projector {
     async projectUmap(
       nComponents: number,
       nNeighbors: number,
+      minDist: number,
       stepCallback: (iter: number) => void
     ) {
       this.hasUmapRun = true;
-      this.umap = new UMAP({nComponents, nNeighbors});
+      this.umap = new UMAP({nComponents, nNeighbors, minDist});
 
       let currentEpoch = 0;
       const epochStepSize = 10;
@@ -693,6 +694,7 @@ namespace vz_projector {
     /** UMAP parameters */
     umapIs3d: boolean = true;
     umapNeighbors: number = 15;
+    umapMinDist: number = 0.1;
 
     /** PCA projection component dimensions */
     pcaComponentDimensions: number[] = [];
