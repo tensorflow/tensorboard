@@ -263,7 +263,7 @@ tf_web_library(
         "//tensorboard/components:index.html",
         "//tensorboard/components:trace_viewer_index.html",
     ] + select({
-        "//tensorboard:dev_build": ["//tensorboard/components:ng_index"],
+        "//tensorboard:dev_build": ["//tensorboard/webapp:ng_index"],
         "//conditions:default": [],
     }),
     path = "/",
@@ -280,7 +280,7 @@ tf_web_library(
         "//tensorboard/components:trace_viewer_index.html.scripts_sha256",
     ] + select({
         "//tensorboard:dev_build": [
-            "//tensorboard/components:ng_index.html.scripts_sha256",
+            "//tensorboard/webapp:ng_index.html.scripts_sha256",
         ],
         "//conditions:default": [],
     }),
