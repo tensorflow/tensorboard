@@ -1,5 +1,19 @@
 # What-If Tool witwidget package releases
 
+## Release 1.5.0
+
+This release is the first official release with support for attribution
+value display in the What-If Tool. This includes support for Cloud AI
+Platform models that return attribution values through their explain endpoint.
+
+### Notable Features
+- #2882 - Cloud AI Platform attribution updates.
+- #2909 - Attribution display improvements.
+- #2897 - Update regression demo with attributions.
+
+### Notable Bug Fixes
+- #2901 - Fix JupyterHub widget display error.
+
 ## Release 1.4.5
 
 ### Notable Bug Fixes

@@ -52,6 +52,8 @@ To build the web demos yourself:
   * To build and run the demo from code:
     `bazel run tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard/demo:agedemoserver`
     then navigate to `http://localhost:6006/tf-interactive-inference-dashboard/age_demo.html`
+  * This demo model returns attribution values in addition to predictions (through the use of vanilla gradients)
+    in order to demonstate how the tool can display attribution values from predictions.
 
 ## What do I need to use it in a jupyter or colab notebook?
 
@@ -69,6 +71,10 @@ You can also use What-If Tool with a custom prediction function that takes
 Tensorflow examples and produces predictions. In this mode, you can load any model
 (including non-TensorFlow models that don't use Example protos as inputs) as
 long as your custom function's input and output specifications are correct.
+
+With either AI Platform models or a custom prediction function, the What-If Tool can
+display and make use of attribution values for each input feature in relation to each
+prediction. See the below section on attribution values for more information.
 
 If you want to train an ML model from a dataset and explore the dataset and
 model, check out the [What_If_Tool_Notebook_Usage.ipynb notebook](https://colab.research.google.com/github/tensorflow/tensorboard/blob/master/tensorboard/plugins/interactive_inference/What_If_Tool_Notebook_Usage.ipynb) in colab, which starts from a CSV file,
@@ -184,6 +190,10 @@ Here is a basic rundown of what it can do:
     creation of small multiples of 1D and 2D histograms and scatter plots.
   * For a selected example, detailed inference results (e.x. predicted classes
     and their confidence scores) are shown in the side panel.
+  * If the model returns attribution values in addition to predictions, they
+    are displayed for each selected example, and the attribution values can be
+    used to control custom layouts and as dimensions to slice the dataset on
+    for performance analysis.
 
 * Explore counterfactual examples
   * For classification models, for any selected example, with one click you can
@@ -291,6 +301,8 @@ See the documentation of [WitConfigBuilder](https://github.com/tensorflow/tensor
 for all options you can provide, including how to specify other model types
 (defaults to binary classification) and how to specify an optional second model
 to compare to the first model.
+
+### How can the What-If Tool use attribution values?
 
 ### How do I enable it for use in a Jupyter notebook?
 First, install and enable WIT for Jupyter through the following commands:
