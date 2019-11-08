@@ -16,8 +16,8 @@ import {Component, Input, Output, EventEmitter} from '@angular/core';
 import {MatTabChangeEvent} from '@angular/material/tabs';
 import {MatSelectChange} from '@angular/material/select';
 
-import {PluginId} from '../../types/api';
-import {UiPluginMetadata} from '../containers/header.component';
+import {PluginId} from '../types/api';
+import {UiPluginMetadata} from './types';
 
 @Component({
   selector: 'app-header-component',

@@ -263,7 +263,7 @@ tf_web_library(
         "//tensorboard/components:index.html",
         "//tensorboard/components:trace_viewer_index.html",
     ] + select({
-        "//tensorboard:dev_build": ["//tensorboard/components:ng_index"],
+        "//tensorboard:dev_build": ["//tensorboard/webapp:ng_index"],
         "//conditions:default": [],
     }),
     path = "/",
@@ -280,7 +280,7 @@ tf_web_library(
         "//tensorboard/components:trace_viewer_index.html.scripts_sha256",
     ] + select({
         "//tensorboard:dev_build": [
-            "//tensorboard/components:ng_index.html.scripts_sha256",
+            "//tensorboard/webapp:ng_index.html.scripts_sha256",
         ],
         "//conditions:default": [],
     }),
@@ -396,6 +396,14 @@ py_library(
     # This is a dummy rule used as a pkg-resources dependency in open-source.
     # We expect pkg-resources to already be installed on the system, e.g., via
     # `pip install setuptools`.
+    visibility = ["//visibility:public"],
+)
+
+py_library(
+    name = "expect_requests_installed",
+    # This is a dummy rule used as a requests dependency in open-source.
+    # We expect requests to already be installed on the system, e.g., via
+    # `pip install requests`.
     visibility = ["//visibility:public"],
 )
 

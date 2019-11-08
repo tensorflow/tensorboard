@@ -12,14 +12,22 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {NgModule} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
+import {Store} from '@ngrx/store';
+import {coreLoaded} from './core/actions';
+import {State} from './core/store';
 
-import {PluginsContainer} from './plugins.container';
-import {CoreModule} from '../core/core.module';
+/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
-@NgModule({
-  declarations: [PluginsContainer],
-  exports: [PluginsContainer],
-  imports: [CoreModule],
+@Component({
+  selector: 'tb-webapp',
+  templateUrl: './app.container.html',
+  styleUrls: ['./app.container.css'],
 })
-export class PluginsModule {}
+export class AppContainer implements OnInit {
+  constructor(private readonly store: Store<State>) {}
+
+  ngOnInit() {
+    this.store.dispatch(coreLoaded());
+  }
+}

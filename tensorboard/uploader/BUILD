@@ -201,3 +201,29 @@ py_test(
         "//tensorboard:test",
     ],
 )
+
+py_library(
+    name = "server_info",
+    srcs = ["server_info.py"],
+    deps = [
+        "//tensorboard:expect_requests_installed",
+        "//tensorboard:version",
+        "//tensorboard/uploader/proto:protos_all_py_pb2",
+        "@com_google_protobuf//:protobuf_python",
+    ],
+)
+
+py_test(
+    name = "server_info_test",
+    size = "medium",  # local network requests
+    timeout = "short",
+    srcs = ["server_info_test.py"],
+    deps = [
+        ":server_info",
+        "//tensorboard:expect_futures_installed",
+        "//tensorboard:test",
+        "//tensorboard:version",
+        "//tensorboard/uploader/proto:protos_all_py_pb2",
+        "@org_pocoo_werkzeug",
+    ],
+)

@@ -23,13 +23,13 @@ import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {ReplaySubject, of} from 'rxjs';
 
 import {CoreEffects} from './core.effects';
-import * as coreActions from './core.actions';
-import {CoreService} from './core.service';
-import {State, getPluginsListLoaded, LoadState} from './core.reducers';
+import * as coreActions from '../actions';
+import {State} from '../store';
 
-import {createPluginMetadata, createState, createCoreState} from './testing';
+import {createPluginMetadata, createState, createCoreState} from '../testing';
 
-import {PluginsListing, LoadState as DataLoadState} from '../types/api';
+import {PluginsListing, LoadState as DataLoadState} from '../../types/api';
+import {TBServerDataSource} from '../../webapp_data_source/tb_server.data_source';
 
 describe('core.effects', () => {
   let httpMock: HttpTestingController;
@@ -56,7 +56,7 @@ describe('core.effects', () => {
       providers: [
         provideMockActions(action),
         CoreEffects,
-        CoreService,
+        TBServerDataSource,
         provideMockStore({initialState}),
       ],
     }).compileComponents();
@@ -65,11 +65,11 @@ describe('core.effects', () => {
     store = TestBed.get(Store);
     dispatchSpy = spyOn(store, 'dispatch');
 
-    const coreService = TestBed.get(CoreService);
-    fetchRuns = spyOn(coreService, 'fetchRuns')
+    const dataSource = TestBed.get(TBServerDataSource);
+    fetchRuns = spyOn(dataSource, 'fetchRuns')
       .withArgs()
       .and.returnValue(of(null));
-    fetchEnvironments = spyOn(coreService, 'fetchEnvironments')
+    fetchEnvironments = spyOn(dataSource, 'fetchEnvironments')
       .withArgs()
       .and.returnValue(of(null));
   });
