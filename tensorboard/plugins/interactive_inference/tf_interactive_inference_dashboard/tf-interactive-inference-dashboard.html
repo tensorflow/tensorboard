@@ -1698,7 +1698,7 @@ limitations under the License.
                               label="Model:"
                               no-label-float
                               class="short-dropdown"
-                              hidden$="[[shouldHideModelSelector_(parsedModelNames)]]"
+                              hidden$="[[!hasMultipleModelAttributions_(attributions)]]"
                             >
                               <paper-listbox
                                 class="dropdown-content"
@@ -4699,6 +4699,16 @@ limitations under the License.
           }
         },
 
+        // Add model name to the provided string if multiple models have
+        // attributions provided.
+        attributionStrWithModelName_: function(inStr, modelNumber) {
+          if (this.hasMultipleModelAttributions_(this.attributions)) {
+            return inStr + ' ' + this.getModelName_(modelNumber);
+          } else {
+            return inStr;
+          }
+        },
+
         updateNumberOfModels: function() {
           this._setNumModels(this.modelName.split(',').length);
           // Initialize default overall thresholds
@@ -6295,7 +6305,7 @@ limitations under the License.
           }
           const attrib = {};
           const selectedData = this.visdata[this.selected[0]];
-          const modelNumSuffix = this.strWithModelName_(
+          const modelNumSuffix = this.attributionStrWithModelName_(
             '',
             this.attributionModelIndex
           );
@@ -6616,6 +6626,15 @@ limitations under the License.
           );
         },
 
+        hasMultipleModelAttributions_: function(attributions) {
+          return (
+            attributions != null &&
+            Object.keys(attributions.attributions).length > 1 &&
+            attributions.attributions[0] != null &&
+            attributions.attributions[1] != null
+          );
+        },
+
         newExtraOutputs_: function(extraOutputs) {
           // Set attributions from the extra outputs, if available.
           const attributions = [];
@@ -6716,7 +6735,9 @@ limitations under the License.
                 // the attributions for the sparse keys in the first array.
                 // Otherwise the attribution is a single value or list and can be
                 // used as such.
-                let attribKey = this.strWithModelName_(
+                // TODO(jameswex): Better handle case when only one model of two
+                // provided has attributions.
+                let attribKey = this.attributionStrWithModelName_(
                   attributionPrefix + keys[j],
                   modelNum
                 );
@@ -6728,7 +6749,7 @@ limitations under the License.
                   const attribSparseKeyKey =
                     attributionPrefix + keys[j] + attributionSparseKeySuffix;
                   datapoint[attribSparseKeyKey] = attribs[keys[j]][0];
-                  attribKey = this.strWithModelName_(
+                  attribKey = this.attributionStrWithModelName_(
                     attributionPrefix + keys[j] + attributionSparseValueSuffix,
                     modelNum
                   );

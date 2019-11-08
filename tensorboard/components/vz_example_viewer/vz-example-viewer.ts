@@ -1392,13 +1392,13 @@ namespace vz_example_viewer {
       // If setting the compare example back to empty, and there is saliency
       // information, then set the compare info to the saliency so that it
       // is displayed instead of nothing.
-      if (!json || (!Object.keys(json).length && this.saliencyJson)) {
-        json = this.saliencyJson;
-      }
-
-      if (!json) {
-        this.compareExample = null;
-        return;
+      if (!json || !Object.keys(json).length) {
+        if (this.saliencyJson) {
+          json = this.saliencyJson;
+        } else {
+          this.compareExample = null;
+          return;
+        }
       }
       this.compareExample = this.createExamplesFromJsonHelper(json);
     },
