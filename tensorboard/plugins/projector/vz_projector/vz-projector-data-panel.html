@@ -264,6 +264,14 @@ limitations under the License.
         display: none;
         margin-top: 10px;
       }
+
+      .download-options-container {
+        display: flex;
+        flex-direction: column;
+        height: 100px;
+        justify-content: space-around;
+        padding: 20px;
+      }
     </style>
     <div class="title">DATA</div>
     <div class="container">
@@ -458,12 +466,12 @@ limitations under the License.
             animation-delay="0"
             fit-to-visible-bounds
           >
-            Download the metadata with applied modifications
+            Download projections or metadata with applied modifications
           </paper-tooltip>
-          <paper-button class="ink-button" on-click="downloadMetadataClicked"
+          <paper-button class="ink-button" on-tap="_openDownloadDialog"
             >Download</paper-button
           >
-          <a href="#" id="downloadMetadataLink" hidden></a>
+          <a href="#" id="downloadDataLink" hidden></a>
         </span>
         <span id="label-button" class="button-container">
           <paper-tooltip
@@ -641,6 +649,20 @@ limitations under the License.
                   >Test your shareable URL</paper-button
                 >
               </a>
+            </div>
+          </paper-dialog-scrollable>
+          <div class="dismiss-dialog-note">Click outside to dismiss.</div>
+        </paper-dialog>
+        <paper-dialog id="projectorDownloadDialog" with-backdrop>
+          <h2>Download projections or metadata with applied modifications</h2>
+          <paper-dialog-scrollable class="scrollable-container">
+            <div class="download-options-container">
+              <paper-button on-tap="downloadProjectionClicked">
+                Download currently visible projection (.json)
+              </paper-button>
+              <paper-button on-tap="downloadMetadataDataClicked">
+                Download metadata (.tsv)
+              </paper-button>
             </div>
           </paper-dialog-scrollable>
           <div class="dismiss-dialog-note">Click outside to dismiss.</div>
