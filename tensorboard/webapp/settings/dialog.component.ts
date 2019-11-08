@@ -19,12 +19,8 @@ import {Store, select, createSelector} from '@ngrx/store';
 import {Subject} from 'rxjs';
 import {takeUntil, debounceTime, filter} from 'rxjs/operators';
 
-import {
-  State,
-  getReloadEnabled,
-  getReloadPeriodInMs,
-} from '../core/core.reducers';
-import {toggleReloadEnabled, changeReloadPeriod} from '../core/core.actions';
+import {getReloadEnabled, getReloadPeriodInMs, State} from '../core/store';
+import {toggleReloadEnabled, changeReloadPeriod} from '../core/actions';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
