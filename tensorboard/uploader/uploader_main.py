@@ -510,14 +510,15 @@ def _get_server_info(flags):
 def _handle_server_info(info):
   compat = info.compatibility
   if compat.verdict == server_info_pb2.VERDICT_WARN:
-    sys.stderr.write('Warning: %s\n' % compat.details)
+    sys.stderr.write('Warning [from server]: %s\n' % compat.details)
     sys.stderr.flush()
   elif compat.verdict == server_info_pb2.VERDICT_ERROR:
-    _die('Error: %s' % compat.details)
+    _die('Error [from server]: %s' % compat.details)
   else:
     # OK or unknown; assume OK.
     if compat.details:
       sys.stderr.write('%s\n' % compat.details)
+      sys.stderr.flush()
 
 
 def _die(message):
