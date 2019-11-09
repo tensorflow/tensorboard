@@ -61,6 +61,7 @@ To log out, run `tensorboard dev auth revoke`.
 _SUBCOMMAND_FLAG = '_uploader__subcommand'
 _SUBCOMMAND_KEY_UPLOAD = 'UPLOAD'
 _SUBCOMMAND_KEY_DELETE = 'DELETE'
+_SUBCOMMAND_KEY_LIST = 'LIST'
 _SUBCOMMAND_KEY_EXPORT = 'EXPORT'
 _SUBCOMMAND_KEY_AUTH = 'AUTH'
 _AUTH_SUBCOMMAND_FLAG = '_uploader__subcommand_auth'
@@ -144,6 +145,10 @@ def _define_flags(parser):
       type=str,
       default=None,
       help='ID of an experiment to delete permanently')
+
+  list_parser = subparsers.add_parser(
+      'list', help='list previously uploaded experiments')
+  list_parser.set_defaults(**{_SUBCOMMAND_FLAG: _SUBCOMMAND_KEY_LIST})
 
   export = subparsers.add_parser(
       'export', help='download all your experiment data')
@@ -334,6 +339,36 @@ class _DeleteExperimentIntent(_Intent):
     print('Deleted experiment %s.' % experiment_id)
 
 
+class _ListIntent(_Intent):
+  """The user intends to list all their experiments."""
+
+  _MESSAGE = textwrap.dedent(u"""\
+      This will list all experiments that you've uploaded to
+      https://tensorboard.dev. TensorBoard.dev experiments are visible
+      to everyone. Do not upload sensitive data.
+  """)
+
+  def get_ack_message_body(self):
+    return self._MESSAGE
+
+  def execute(self, channel):
+    api_client = export_service_pb2_grpc.TensorBoardExporterServiceStub(channel)
+    gen = exporter_lib.list_experiments(api_client)
+    count = 0
+    for experiment_id in gen:
+      count += 1
+      # TODO(@wchargin): Once #2879 is in, remove this hard-coded URL pattern.
+      url = 'https://tensorboard.dev/experiment/%s/' % experiment_id
+      print(url)
+    sys.stdout.flush()
+    if not count:
+      sys.stderr.write(
+          'No experiments. Use `tensorboard dev upload` to get started.\n')
+    else:
+      sys.stderr.write('Total: %d experiment(s)\n' % count)
+    sys.stderr.flush()
+
+
 class _UploadIntent(_Intent):
   """The user intends to upload an experiment from the given logdir."""
 
@@ -445,6 +480,8 @@ def _get_intent(flags):
     else:
       raise base_plugin.FlagsError(
           'Must specify experiment to delete via `--experiment_id`.')
+  elif cmd == _SUBCOMMAND_KEY_LIST:
+    return _ListIntent()
   elif cmd == _SUBCOMMAND_KEY_EXPORT:
     if flags.outdir:
       return _ExportIntent(flags.outdir)

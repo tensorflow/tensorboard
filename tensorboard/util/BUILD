@@ -79,9 +79,29 @@ py_test(
 
 tb_proto_library(
     name = "grpc_util_test_proto",
-    has_services = True,
-    srcs = ["grpc_util_test.proto"],
     testonly = True,
+    srcs = ["grpc_util_test.proto"],
+    has_services = True,
+)
+
+py_library(
+    name = "lazy_tensor_creator",
+    srcs = ["lazy_tensor_creator.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        "//tensorboard/compat",
+    ],
+)
+
+py_test(
+    name = "lazy_tensor_creator_test",
+    size = "small",
+    srcs = ["lazy_tensor_creator_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":lazy_tensor_creator",
+        "//tensorboard:expect_tensorflow_installed",
+    ],
 )
 
 py_library(

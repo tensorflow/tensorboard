@@ -78,8 +78,8 @@ tf_web_library(
     path = "/",
     deps = [
         ":ng_polymer_lib_binary",
-        "//tensorboard/components/tf_ng_tensorboard",
-        "//tensorboard/components/tf_ng_tensorboard:material_theme",
+        "//tensorboard/webapp",
+        "//tensorboard/webapp:material_theme",
     ],
 )
 
