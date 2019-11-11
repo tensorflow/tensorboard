@@ -25,6 +25,8 @@ ng_module(
         ":config",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
         "//tensorboard/webapp/core",
+        "//tensorboard/webapp/core/actions",
+        "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/header",
         "//tensorboard/webapp/plugins",
         "//tensorboard/webapp/reloader",

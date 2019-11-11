@@ -11,6 +11,8 @@ ng_module(
     ],
     deps = [
         "//tensorboard/webapp/core",
+        "//tensorboard/webapp/core/store",
+        "//tensorboard/webapp/core/actions",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
         "@npm//rxjs",
