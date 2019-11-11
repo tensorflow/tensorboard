@@ -8278,8 +8278,8 @@ limitations under the License.
           // event object due to how the browser uses the event object.
           const clonedEventInfo = {
             target: event.target,
-            model: event.model
-          }
+            model: event.model,
+          };
           // Debounce a refresh request, for when multiple updates are happening
           // in succession.
           this.debounce(
