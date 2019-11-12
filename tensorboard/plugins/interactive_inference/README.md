@@ -312,7 +312,8 @@ including [SHAP](https://github.com/slundberg/shap),
 [SmoothGrad](https://pair-code.github.io/saliency/), and more.
 
 They can be a powerful way of analyzing how a model reacts to certain input values beyond
-just simply studying the affect that changing feature values on specified examples has on model output.
+just simply studying the effect that changing individual feature values has on model
+predictions as is done with partial dependence plots.
 Some attribution techniques require access to a model internals, such as the gradient-based methods,
 whereas others can be performed on black-box models. Regardless, the What-If Tool can visualize the
 results of attribution methods in addition to the standard model prediction results.
@@ -330,15 +331,15 @@ provided to it, with each list entry representing the prediction-time informatio
 In the case of a standard model with no attribution information, the list entry is just a number
 (in the case of a regression model), or a list of class probabilities (in the case of a classification model).
 
-But, if there is attribution or other prediction-time information that can be provided, then the list entry
+However, if there is attribution or other prediction-time information, then the list entry
 can instead be a dictionary, with the standard model prediction output under the `predictions` key. Attribution
-information can be returned under the `attributions` key and any other supplimental information under its own
-descriptive key. The exact format of the attributions and other supplimental information can be found in the code
+information can be returned under the `attributions` key and any other supplemental information under its own
+descriptive key. The exact format of the attributions and other supplemental information can be found in the code
 documentation linked above.
 
 If attribution values are provided to the What-If Tool, they can be used in a number of ways. First, when selecting
 a datapoint in the Datapoint Editor tab, the attribution values are displayed next to each feature value and the
-features can be ordered by their attribution strength, instead of alphabetically. Additionally, the feature values
+features can be ordered by their attribution strength instead of alphabetically. Additionally, the feature values
 are colored by their attribution values for quick interpretation of attribution strengths.
 
 Beyond displaying the attribution values for the selected datapoint, the attribution values for each feature can be
@@ -350,11 +351,13 @@ They can also be used in the Performance tab as a way to slice a dataset for com
 For example, you can quickly compare the aggregate performance of a model on datapoints with low attribution of a
 specified feature, against the datapoints with high attribution of that feature.
 
-Any other supplimental information returned from a custom prediction function can also be used in the same way, driving
-custom visualizations and as a dimension to slice when analyzing aggregate model performance.
+Any other supplemental information returned from a custom prediction function will appear in the tool as a
+feature named after its key in the dictionary.
+They can also be used in the same way, driving custom visualizations and as a dimension to slice when analyzing
+aggregate model performance.
 
 When a datapoint is edited and the re-inferred through the model with the "Run inference" button, the attributions and
-other supplimental information is recalculated and updated in the tool.
+other supplemental information is recalculated and updated in the tool.
 
 For an example of returning attribution values from a custom prediction function (in this case using the SHAP library to
 get attributions), see the [WIT COMPAS with SHAP notebook](https://colab.research.google.com/github/PAIR-code/what-if-tool/blob/master/WIT_COMPAS_with_SHAP.ipynb).

@@ -13,6 +13,7 @@ Platform models that return attribution values through their explain endpoint.
 
 ### Notable Bug Fixes
 - #2901 - Fix JupyterHub widget display error.
+- #2916 - WitWidget small fixes including PD plot range editing.
 
 ## Release 1.4.5
 
