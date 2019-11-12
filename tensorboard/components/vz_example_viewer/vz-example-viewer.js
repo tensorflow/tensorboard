@@ -988,7 +988,7 @@ var vz_example_viewer;
             if (!sanitized.match(/^[A-Za-z].*$/)) {
                 sanitized = '_' + sanitized;
             }
-            return sanitized.replace(/[\/\.\#]/g, '_');
+            return sanitized.replace(/[\/\.\#\s]/g, '_');
         },
         isSeqExample: function (maxSeqNumber) {
             return maxSeqNumber >= 0;
