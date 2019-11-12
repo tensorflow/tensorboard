@@ -67,7 +67,7 @@ describe('settings dialog test', () => {
     fixture.detectChanges();
 
     const checkbox = fixture.debugElement.query(By.css('mat-checkbox'));
-    expect(checkbox.classes['mat-checkbox-checked']).toBeTruthy();
+    expect(checkbox.classes['mat-checkbox-checked']).toBe(true);
 
     const reloadPeriod = fixture.debugElement.query(By.css('.reload-period'));
     expect(reloadPeriod.nativeElement.value).toBe('30');
@@ -79,7 +79,7 @@ describe('settings dialog test', () => {
 
     // sanity to make sure it really did change.
     const checkbox = fixture.debugElement.query(By.css('mat-checkbox'));
-    expect(checkbox.classes['mat-checkbox-checked']).toBeTruthy();
+    expect(checkbox.classes['mat-checkbox-checked']).toBe(true);
 
     store.setState(
       createState(
@@ -91,7 +91,7 @@ describe('settings dialog test', () => {
     );
     fixture.detectChanges();
 
-    expect(checkbox.classes['mat-checkbox-checked']).toBeFalsy();
+    expect(checkbox.classes['mat-checkbox-checked']).toBe(false);
 
     const reloadPeriod = fixture.debugElement.query(By.css('.reload-period'));
     expect(reloadPeriod.nativeElement.value).toBe('60');
