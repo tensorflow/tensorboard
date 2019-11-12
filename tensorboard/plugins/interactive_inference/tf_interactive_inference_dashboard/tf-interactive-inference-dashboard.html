@@ -4452,7 +4452,9 @@ limitations under the License.
             if (
               this.isComputedKeyStr_(feat) ||
               feat == this.selectedLabelFeature ||
-              this.stats[feat].uniqueCount == this.examplesAndInferences.length
+              this.stats[feat].uniqueCount ==
+                this.examplesAndInferences.length ||
+              this.isAttributionKeyStr_(feat)
             ) {
               continue;
             }
@@ -4748,6 +4750,10 @@ limitations under the License.
             feature == exampleIdKey ||
             this.facetDistFeatureNames.indexOf(feature) != -1
           );
+        },
+
+        isAttributionKeyStr_: function(feature) {
+          return this.strStartsWith_(feature, attributionPrefix);
         },
 
         /**
