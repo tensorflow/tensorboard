@@ -12,14 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {NgModule} from '@angular/core';
 
-import {PluginsContainer} from './plugins.container';
-import {CoreModule} from '../core/core.module';
-
-@NgModule({
-  declarations: [PluginsContainer],
-  exports: [PluginsContainer],
-  imports: [CoreModule],
-})
-export class PluginsModule {}
+export * from './core.reducers';
+export * from './core.selectors';
+export {State} from './core.types';

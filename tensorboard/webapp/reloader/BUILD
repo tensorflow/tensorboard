@@ -11,6 +11,8 @@ ng_module(
     ],
     deps = [
         "//tensorboard/webapp/core",
+        "//tensorboard/webapp/core/store",
+        "//tensorboard/webapp/core/actions",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
         "@npm//rxjs",
@@ -27,7 +29,8 @@ tf_ts_library(
     deps = [
         ":reloader",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
-        "//tensorboard/webapp/core",
+        "//tensorboard/webapp/core/actions",
+        "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/core/testing",
         "@npm//@angular/common",
         "@npm//@angular/compiler",

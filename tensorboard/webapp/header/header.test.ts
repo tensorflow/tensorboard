@@ -22,11 +22,11 @@ import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Store} from '@ngrx/store';
 import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
-import {HeaderComponent} from './components/header.component';
-import {HeaderContainer} from './containers/header.component';
+import {HeaderComponent} from './header.component';
+import {HeaderContainer} from './header.container';
 
-import {changePlugin} from '../core/core.actions';
-import {State} from '../core/core.reducers';
+import {changePlugin} from '../core/actions';
+import {State} from '../core/store';
 import {
   createPluginMetadata,
   createState,

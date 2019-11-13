@@ -3,32 +3,69 @@ package(default_visibility = ["//tensorboard:internal"])
 load("@npm_angular_bazel//:index.bzl", "ng_module")
 load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ng_web_test_suite", "tf_ts_library")
 load("//tensorboard/defs:web.bzl", "tf_web_library")
+load("//tensorboard/defs:vulcanize.bzl", "tensorboard_html_binary")
 
 licenses(["notice"])  # Apache 2.0
 
-tf_web_library(
-    name = "webapp",
+
+# Angular module for the top-level app component together with all of its
+# injectable dependencies.  I.e., the entire Angular app.
+ng_module(
+    name = "app",
     srcs = [
-        ":tf_ng_tensorboard_binary.js",
+        "app.container.ts",
+        "app.module.ts",
+        "reducer_config.ts",
     ],
-    path = "/tf-ng-tensorboard",
+    assets = [
+        "app.container.css",
+        "app.container.html",
+    ],
     deps = [
-        ":tf_ng_tensorboard_binary",
+        ":config",
+        "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
+        "//tensorboard/webapp/core",
+        "//tensorboard/webapp/core/actions",
+        "//tensorboard/webapp/core/store",
+        "//tensorboard/webapp/header",
+        "//tensorboard/webapp/plugins",
+        "//tensorboard/webapp/reloader",
+        "@npm//@angular/core",
+        "@npm//@angular/platform-browser",
+        "@npm//@ngrx/effects",
+        "@npm//@ngrx/store",
     ],
 )
 
-# TODO(stephanwlee): move this to root level
-tf_web_library(
-    name = "material_theme",
+tf_ts_library(
+    name = "config",
     srcs = [
-        "@npm//:node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
+        "config.dev.ts",
+        "config.prod.ts",
     ],
-    path = "/@angular",
-    strip_prefix = "node_modules/@angular/material/prebuilt-themes",
 )
 
+# Wrapper that prepares Angular app for deployment, dealing with browser
+# compatibility, Vulcanization, and configuration (e.g. prod vs. dev).
+ng_module(
+    name = "ng_main",
+    srcs = ["bootstrap.ts"] + select({
+        "//tensorboard:dev_build": ["main.ts"],
+        "//conditions:default": ["main.prod.ts"],
+    }),
+    deps = [
+        ":app",
+        ":config",
+        "@npm//@angular/core",
+        "@npm//@angular/platform-browser",
+        "@npm//@angular/router",
+        "@npm//zone.js",
+    ],
+)
+
+# Compile the prepared Angular app to a JS binary.
 tf_js_binary(
-    name = "tf_ng_tensorboard_binary",
+    name = "tb_webapp_binary",
     compile = 1,
     entry_point = select({
         "//tensorboard:dev_build": ":main.ts",
@@ -48,53 +85,47 @@ tf_js_binary(
     ],
 )
 
-tf_ts_library(
-    name = "config",
+# Wrap the Angular app JS binary as a library.
+tf_web_library(
+    name = "tb_webapp",
     srcs = [
-        "config.dev.ts",
-        "config.prod.ts",
+        ":tb_webapp_binary.js",
+    ],
+    path = "/tb-webapp",
+    deps = [
+        ":tb_webapp_binary",
     ],
 )
 
-ng_module(
-    name = "ng_main",
-    srcs = ["bootstrap.ts"] + select({
-        "//tensorboard:dev_build": ["main.ts"],
-        "//conditions:default": ["main.prod.ts"],
-    }),
+tf_web_library(
+    name = "material_theme",
+    srcs = [
+        "@npm//:node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
+    ],
+    path = "/@angular",
+    strip_prefix = "node_modules/@angular/material/prebuilt-themes",
+)
+
+# Bundle the Angular app with the Polymer components and plugins, as a library.
+tf_web_library(
+    name = "tensorboard-webapp",
+    srcs = [
+        "index.html",
+    ],
+    path = "/",
     deps = [
-        ":app",
-        ":config",
-        "@npm//@angular/core",
-        "@npm//@angular/platform-browser",
-        "@npm//@angular/router",
-        "@npm//zone.js",
+        "//tensorboard/components:ng_polymer_lib_binary",
+        ":tb_webapp",
+        "//tensorboard/webapp:material_theme",
     ],
 )
 
-ng_module(
-    name = "app",
-    srcs = [
-        "app.component.ts",
-        "app.module.ts",
-        "reducers.ts",
-    ],
-    assets = [
-        "app.component.css",
-        "app.component.html",
-    ],
-    deps = [
-        ":config",
-        "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
-        "//tensorboard/webapp/core",
-        "//tensorboard/webapp/header",
-        "//tensorboard/webapp/plugins",
-        "//tensorboard/webapp/reloader",
-        "@npm//@angular/core",
-        "@npm//@angular/platform-browser",
-        "@npm//@ngrx/effects",
-        "@npm//@ngrx/store",
-    ],
+# A Vulcanized html binary for the complete app (both Angular and Polymer parts)
+tensorboard_html_binary(
+    name = "ng_index",
+    input_path = "/index.html",
+    output_path = "/ng_index.html",
+    deps = [":tensorboard-webapp"],
 )
 
 # Karma has overhead of bootstrap/tearDown. Combine as much testcases
@@ -102,9 +133,12 @@ ng_module(
 tf_ng_web_test_suite(
     name = "karma_test",
     deps = [
-        "//tensorboard/webapp/core:core_effects_test_lib",
+        "//tensorboard/webapp/core/effects:core_effects_test_lib",
+        # TODO(soergel): make this test work
+        # This test was not included here previously, and it fails.
+        # "//tensorboard/webapp/core/store:core_store_test_lib",
         "//tensorboard/webapp/header:test_lib",
-        "//tensorboard/webapp/plugins:plugins_component_test_lib",
+        "//tensorboard/webapp/plugins:plugins_container_test_lib",
         "//tensorboard/webapp/reloader:test_lib",
         "//tensorboard/webapp/settings:test_lib",
     ],

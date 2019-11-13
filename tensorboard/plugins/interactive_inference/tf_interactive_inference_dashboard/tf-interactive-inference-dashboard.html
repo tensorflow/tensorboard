@@ -1179,10 +1179,20 @@ limitations under the License.
         margin-right: 6px;
       }
       .counterfactual-delta label {
-        padding-top: 10px;
+        padding-top: 12px;
+        margin-left: 8px;
+        margin-right: 4px;
+        font-size: 14px;
+        color: rgb(60, 64, 67);
       }
       .counterfactual-delta paper-slider {
         height: 40px;
+        --paper-slider-active-color: #81c995;
+        --paper-slider-knob-color: #81c995;
+        --paper-slider-input-container-input: {
+          font-size: 14px;
+          color: rgb(60, 64, 67);
+        }
       }
       .datapoint-button {
         color: #202124;
@@ -1445,6 +1455,28 @@ limitations under the License.
                             Show nearest counterfactual datapoint
                           </paper-toggle-button>
                         </div>
+                        <paper-icon-button
+                          icon="info-outline"
+                          class="info-icon no-padding"
+                          on-tap="openDialog"
+                        >
+                        </paper-icon-button>
+                        <paper-dialog
+                          class="dialog-text"
+                          horizontal-align="auto"
+                          vertical-align="auto"
+                        >
+                          <div class="dialog-title">
+                            Nearest counterfactual (neighbor of different
+                            classification)
+                          </div>
+                          <div>
+                            Compares the selected datapoint with its nearest
+                            neighbor from a different classification using L1 or
+                            L2 distance. If a custom distance function is set,
+                            it uses that function instead.
+                          </div>
+                        </paper-dialog>
                         <paper-radio-group
                           selected="{{nearestCounterfactualDist}}"
                         >
@@ -1469,19 +1501,43 @@ limitations under the License.
                             title="Minimum distance in inferred value to consider counterfactual"
                             class="counterfactual-delta"
                           >
+                            <label>Threshold</label>
+                            <paper-icon-button
+                              icon="info-outline"
+                              class="info-icon no-padding"
+                              on-tap="openDialog"
+                            >
+                            </paper-icon-button>
+                            <paper-dialog
+                              class="dialog-text"
+                              horizontal-align="auto"
+                              vertical-align="auto"
+                            >
+                              <div class="dialog-title">
+                                Counterfactual threshold
+                              </div>
+                              <div>
+                                For regression, a neighbor point is considered
+                                as a different classification if the difference
+                                in inferred value is equal or greater than the
+                                selected threshold.<br />
+                                The threshold is initialized to the standard
+                                deviation of the inferred values.
+                              </div>
+                            </paper-dialog>
                             <paper-slider
-                              pin
+                              editable
                               value="{{minCounterfactualValueDist}}"
                               max="[[maxCounterfactualValueDist]]"
+                              disabled$="[[!showNearestCounterfactual]]"
                             ></paper-slider>
-                            <label>Delta</label>
                           </div>
                         </template>
                         <paper-dropdown-menu
                           label="Model:"
                           no-label-float
-                          class="counterfactual-dropdown"
-                          hidden$="[[shouldHideCounterfactualModelSelector_(parsedModelNames)]]"
+                          class="short-dropdown"
+                          hidden$="[[shouldHideModelSelector_(parsedModelNames)]]"
                         >
                           <paper-listbox
                             class="dropdown-content"
@@ -1493,47 +1549,11 @@ limitations under the License.
                               items="[[parsedModelNames]]"
                             >
                               <paper-item
-                                >[[getCounterfactualModelName_(item)]]</paper-item
+                                >[[getLabeledModelName_(item)]]</paper-item
                               >
                             </template>
                           </paper-listbox>
                         </paper-dropdown-menu>
-                        <paper-icon-button
-                          icon="info-outline"
-                          class="info-icon no-padding"
-                          on-tap="openDialog"
-                        >
-                        </paper-icon-button>
-                        <paper-dialog
-                          class="dialog-text"
-                          horizontal-align="auto"
-                          vertical-align="auto"
-                        >
-                          <div class="dialog-title">
-                            Nearest counterfactual (neighbor of different
-                            classification)
-                          </div>
-                          <div>
-                            Compares the selected datapoint with its nearest
-                            neighbor from a different classification using L1 or
-                            L2 distance. If a custom distance function is set,
-                            it uses that function instead.
-                          </div>
-                          <div>
-                            <template
-                              is="dom-if"
-                              if="[[isRegression_(modelType)]]"
-                              restamp
-                            >
-                              For regression, a neighbor point is considered as
-                              a different classification if the difference in
-                              inferred value is equal or greater than the
-                              selected delta.<br />
-                              Delta is initialized to the standard deviation of
-                              the inferred values.
-                            </template>
-                          </div>
-                        </paper-dialog>
                       </div>
                       <div title="Select a datapoint to use this feature">
                         <div class="flex">
@@ -1674,6 +1694,27 @@ limitations under the License.
                               </paper-listbox>
                             </paper-dropdown-menu>
                             <svg id="attributionLegend"></svg>
+                            <paper-dropdown-menu
+                              label="Model:"
+                              no-label-float
+                              class="short-dropdown"
+                              hidden$="[[!hasMultipleModelAttributions_(attributions)]]"
+                            >
+                              <paper-listbox
+                                class="dropdown-content"
+                                slot="dropdown-content"
+                                selected="{{attributionModelIndex}}"
+                              >
+                                <template
+                                  is="dom-repeat"
+                                  items="[[parsedModelNames]]"
+                                >
+                                  <paper-item
+                                    >[[getLabeledModelName_(item)]]</paper-item
+                                  >
+                                </template>
+                              </paper-listbox>
+                            </paper-dropdown-menu>
                           </div>
                         </div>
                         <div class="datapoint-right-controls-holder"></div>
@@ -1699,6 +1740,7 @@ limitations under the License.
                             min-sal="[[minAttribution]]"
                             max-sal="[[maxAttribution]]"
                             colors="[[attributionColorScale]]"
+                            highlight-differences="[[showNearestCounterfactual]]"
                           >
                           </vz-example-viewer>
                         </div>
@@ -3763,6 +3805,12 @@ limitations under the License.
             type: Number,
             value: 0,
           },
+          // Choose which model is used for attribution value display
+          attributionModelIndex: {
+            type: Number,
+            value: 0,
+            observer: 'setAttributions',
+          },
           // Calculated statistics from the inference results.
           inferenceStats_: {
             type: Array,
@@ -3941,7 +3989,10 @@ limitations under the License.
             value: 'custom',
             observer: 'optimizationSelectedChanged_',
           },
-          compareTitle: String,
+          compareTitle: {
+            type: String,
+            value: 'Attribution value(s)',
+          },
           // Dictionary of features to feature value attributions for display
           // in the example viewer. Filled in if the selected example contains
           // attribution information.
@@ -4242,7 +4293,9 @@ limitations under the License.
         nearestCounterfactualStatusChanged_: function(show) {
           if (show) {
             this.findClosestCounterfactual_();
+            this.compareTitle = 'Counterfactual value(s)';
           } else {
+            this.compareTitle = 'Attribution value(s)';
             this.comparedIndices = [];
             this.counterfactualExampleAndInference = null;
             this.refreshSelectedDatapoint_();
@@ -4273,9 +4326,8 @@ limitations under the License.
             inferenceValueStr,
             this.nearestCounterfactualModelIndex
           );
-          this.minCounterfactualValueDist = this.distanceStats_[
-            valueName
-          ].stdDev;
+          const stat = this.distanceStats_[valueName];
+          this.minCounterfactualValueDist = stat ? stat.stdDev : 0;
         },
 
         finalizeClosestCounterfactual: function(exInd, distances) {
@@ -4315,7 +4367,6 @@ limitations under the License.
             this.counterfactualExampleAndInference = this.examplesAndInferences[
               closest
             ];
-            this.compareTitle = 'Counterfactual value(s)';
           }
         },
 
@@ -4401,7 +4452,9 @@ limitations under the License.
             if (
               this.isComputedKeyStr_(feat) ||
               feat == this.selectedLabelFeature ||
-              this.stats[feat].uniqueCount == this.examplesAndInferences.length
+              this.stats[feat].uniqueCount ==
+                this.examplesAndInferences.length ||
+              this.isAttributionKeyStr_(feat)
             ) {
               continue;
             }
@@ -4567,7 +4620,7 @@ limitations under the License.
           return stats && Object.keys(stats).length > 0;
         },
 
-        shouldHideCounterfactualModelSelector_: function(modelNames) {
+        shouldHideModelSelector_: function(modelNames) {
           return !(modelNames && modelNames.length > 1);
         },
 
@@ -4648,6 +4701,16 @@ limitations under the License.
           }
         },
 
+        // Add model name to the provided string if multiple models have
+        // attributions provided.
+        attributionStrWithModelName_: function(inStr, modelNumber) {
+          if (this.hasMultipleModelAttributions_(this.attributions)) {
+            return inStr + ' ' + this.getModelName_(modelNumber);
+          } else {
+            return inStr;
+          }
+        },
+
         updateNumberOfModels: function() {
           this._setNumModels(this.modelName.split(',').length);
           // Initialize default overall thresholds
@@ -4687,6 +4750,10 @@ limitations under the License.
             feature == exampleIdKey ||
             this.facetDistFeatureNames.indexOf(feature) != -1
           );
+        },
+
+        isAttributionKeyStr_: function(feature) {
+          return this.strStartsWith_(feature, attributionPrefix);
         },
 
         /**
@@ -6195,7 +6262,7 @@ limitations under the License.
           return feature;
         },
 
-        getCounterfactualModelName_: function(modelName) {
+        getLabeledModelName_: function(modelName) {
           return 'Model: ' + modelName;
         },
 
@@ -6239,11 +6306,23 @@ limitations under the License.
          * selected example.
          */
         setAttributions: function() {
+          if (!this.selected || this.selected.length == 0) {
+            return;
+          }
           const attrib = {};
           const selectedData = this.visdata[this.selected[0]];
-          const attributionFinder = new RegExp(attributionPrefix + '(.*)');
+          const modelNumSuffix = this.attributionStrWithModelName_(
+            '',
+            this.attributionModelIndex
+          );
+          const attributionFinder = new RegExp(
+            attributionPrefix + '(.*)' + modelNumSuffix
+          );
           const sparseAttributionFinder = new RegExp(
-            attributionPrefix + '(.*)' + attributionSparseKeySuffix
+            attributionPrefix +
+              '(.*)' +
+              attributionSparseKeySuffix +
+              modelNumSuffix
           );
           for (let key in selectedData) {
             let featureWithAttribution = attributionFinder.exec(key);
@@ -6553,6 +6632,15 @@ limitations under the License.
           );
         },
 
+        hasMultipleModelAttributions_: function(attributions) {
+          return (
+            attributions != null &&
+            Object.keys(attributions.attributions).length > 1 &&
+            attributions.attributions[0] != null &&
+            attributions.attributions[1] != null
+          );
+        },
+
         newExtraOutputs_: function(extraOutputs) {
           // Set attributions from the extra outputs, if available.
           const attributions = [];
@@ -6637,48 +6725,58 @@ limitations under the License.
           for (let i = 0; i < attributions.indices.length; i++) {
             const idx = attributions.indices[i];
             const datapoint = Object.assign({}, this.visdata[idx]);
-            // TODO(jwexler): Support attributions from multiple models.
-            // For now, we only display attribution from the first model, if WIT
-            // is loaded with two models.
-            const attribs =
-              attributions.attributions[0] == null
-                ? {}
-                : attributions.attributions[0][i];
-            const keys = Object.keys(attribs);
-            for (let j = 0; j < keys.length; j++) {
-              // If the attributions for a key is a 2D array then treat the first
-              // entry as sparse keys for attributions and the second entry as
-              // the attributions for the sparse keys in the first array.
-              // Otherwise the attribution is a single value or list and can be
-              // used as such.
-              let attribKey = attributionPrefix + keys[j];
-              if (
-                Array.isArray(attribs[keys[j]]) &&
-                attribs[keys[j]].length == 2 &&
-                Array.isArray(attribs[keys[j]][0])
-              ) {
-                const attribSparseKeyKey =
-                  attributionPrefix + keys[j] + attributionSparseKeySuffix;
-                datapoint[attribSparseKeyKey] = attribs[keys[j]][0];
-                attribKey =
-                  attributionPrefix + keys[j] + attributionSparseValueSuffix;
-                datapoint[attribKey] = attribs[keys[j]][1];
-              } else {
-                datapoint[attribKey] = attribs[keys[j]];
-              }
-              let newAttributions = Array.isArray(datapoint[attribKey])
-                ? datapoint[attribKey]
-                : [datapoint[attribKey]];
-              for (
-                let attribIdx = 0;
-                attribIdx < newAttributions.length;
-                attribIdx++
-              ) {
-                if (newAttributions[attribIdx] > this.maxAttribution) {
-                  this.maxAttribution = newAttributions[attribIdx];
+            for (
+              let modelNum = 0;
+              modelNum < attributions.attributions.length;
+              modelNum++
+            ) {
+              const attribs =
+                attributions.attributions[modelNum] == null
+                  ? {}
+                  : attributions.attributions[modelNum][i];
+              const keys = Object.keys(attribs);
+              for (let j = 0; j < keys.length; j++) {
+                // If the attributions for a key is a 2D array then treat the first
+                // entry as sparse keys for attributions and the second entry as
+                // the attributions for the sparse keys in the first array.
+                // Otherwise the attribution is a single value or list and can be
+                // used as such.
+                // TODO(jameswex): Better handle case when only one model of two
+                // provided has attributions.
+                let attribKey = this.attributionStrWithModelName_(
+                  attributionPrefix + keys[j],
+                  modelNum
+                );
+                if (
+                  Array.isArray(attribs[keys[j]]) &&
+                  attribs[keys[j]].length == 2 &&
+                  Array.isArray(attribs[keys[j]][0])
+                ) {
+                  const attribSparseKeyKey =
+                    attributionPrefix + keys[j] + attributionSparseKeySuffix;
+                  datapoint[attribSparseKeyKey] = attribs[keys[j]][0];
+                  attribKey = this.attributionStrWithModelName_(
+                    attributionPrefix + keys[j] + attributionSparseValueSuffix,
+                    modelNum
+                  );
+                  datapoint[attribKey] = attribs[keys[j]][1];
+                } else {
+                  datapoint[attribKey] = attribs[keys[j]];
                 }
-                if (newAttributions[attribIdx] < this.minAttribution) {
-                  this.minAttribution = newAttributions[attribIdx];
+                let newAttributions = Array.isArray(datapoint[attribKey])
+                  ? datapoint[attribKey]
+                  : [datapoint[attribKey]];
+                for (
+                  let attribIdx = 0;
+                  attribIdx < newAttributions.length;
+                  attribIdx++
+                ) {
+                  if (newAttributions[attribIdx] > this.maxAttribution) {
+                    this.maxAttribution = newAttributions[attribIdx];
+                  }
+                  if (newAttributions[attribIdx] < this.minAttribution) {
+                    this.minAttribution = newAttributions[attribIdx];
+                  }
                 }
               }
             }
@@ -6710,13 +6808,13 @@ limitations under the License.
           if (this.minAttribution < 0) {
             attributionDomain.push(this.minAttribution);
             attributionColorRange.push(negAttributionHighColor);
-            attributionDomain.push(this.minAttribution / 2);
+            attributionDomain.push(this.minAttribution / 5);
             attributionColorRange.push(negAttributionLowColor);
           }
           attributionDomain.push(0);
           attributionColorRange.push(neutralAttributionColor);
           if (this.maxAttribution > 0) {
-            attributionDomain.push(this.maxAttribution / 2);
+            attributionDomain.push(this.maxAttribution / 5);
             attributionColorRange.push(posAttributionLowColor);
             attributionDomain.push(this.maxAttribution);
             attributionColorRange.push(posAttributionHighColor);
@@ -6776,11 +6874,12 @@ limitations under the License.
           }
           // Creates an array of [pct, colour] pairs as stop
           // values for legend
-          const pct = linspace(0, 100, attributionColorRange.length).map(
-            (d) => {
-              return Math.round(d) + '%';
-            }
-          );
+          const low = attributionDomain[0];
+          const range = attributionDomain[attributionDomain.length - 1] - low;
+          const pct = attributionDomain.map((d) => {
+            const perc = Math.round(((d - low) / range) * 100);
+            return perc + '%';
+          });
 
           const colourPct = d3.zip(pct, attributionColorRange);
 
@@ -8178,11 +8277,20 @@ limitations under the License.
         },
 
         pdInputChanged: function(event) {
+          // Create a new object with the members of the event that are used
+          // in PD plot creation so that the eventual handler can use the
+          // correct information. Without creating this event copy, the target
+          // information will be incorrect by the time the PD plot uses the
+          // event object due to how the browser uses the event object.
+          const clonedEventInfo = {
+            target: event.target,
+            model: event.model,
+          };
           // Debounce a refresh request, for when multiple updates are happening
           // in succession.
           this.debounce(
             'pdInputChangedDebounce',
-            () => this.pdInputChangedImpl(event),
+            () => this.pdInputChangedImpl(clonedEventInfo),
             500
           );
         },

@@ -12,25 +12,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {DebugElement} from '@angular/core';
 import {TestBed, fakeAsync, tick} from '@angular/core/testing';
 import {Store} from '@ngrx/store';
 import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
 import {ReloaderComponent} from './reloader.component';
 
-import {reload} from '../core/core.actions';
-import {
-  State,
-  CoreState,
-  getReloadEnabled,
-  getReloadPeriodInMs,
-} from '../core/core.reducers';
-import {
-  createPluginMetadata,
-  createState,
-  createCoreState,
-} from '../core/testing';
+import {reload} from '../core/actions';
+import {State} from '../core/store';
+import {createState, createCoreState} from '../core/testing';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 

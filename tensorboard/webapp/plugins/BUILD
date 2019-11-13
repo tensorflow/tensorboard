@@ -8,15 +8,12 @@ licenses(["notice"])  # Apache 2.0
 ng_module(
     name = "plugins",
     srcs = [
-        "plugins.component.ts",
+        "plugins.container.ts",
         "plugins.module.ts",
-    ],
-    assets = [
-        "plugins.component.css",
-        "plugins.component.html",
     ],
     deps = [
         "//tensorboard/webapp/core",
+        "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/types",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
@@ -25,16 +22,17 @@ ng_module(
 )
 
 tf_ts_library(
-    name = "plugins_component_test_lib",
+    name = "plugins_container_test_lib",
     testonly = True,
     srcs = [
-        "plugins.component.test.ts",
+        "plugins.container.test.ts",
     ],
     tsconfig = "//:tsconfig-test",
     deps = [
         ":plugins",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/core",
+        "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/core/testing",
         "//tensorboard/webapp/types",
         "@npm//@angular/common",
