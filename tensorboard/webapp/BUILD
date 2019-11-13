@@ -123,8 +123,10 @@ tf_web_library(
 # A Vulcanized html binary for the complete app (both Angular and Polymer parts)
 tensorboard_html_binary(
     name = "ng_index",
+    extract_script = True,
     input_path = "/index.html",
     output_path = "/ng_index.html",
+    script_path = "/ng_index.js",
     deps = [":tensorboard-webapp"],
 )
 

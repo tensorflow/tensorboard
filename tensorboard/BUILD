@@ -261,30 +261,20 @@ tf_web_library(
     name = "assets",
     srcs = [
         "//tensorboard/components:index.html",
+        "//tensorboard/components:index.js",
         "//tensorboard/components:trace_viewer_index.html",
+        "//tensorboard/components:trace_viewer_index.js",
     ] + select({
-        "//tensorboard:dev_build": ["//tensorboard/webapp:ng_index"],
+        "//tensorboard:dev_build": [
+            "//tensorboard/webapp:ng_index.html",
+            "//tensorboard/webapp:ng_index.js",
+        ],
         "//conditions:default": [],
     }),
     path = "/",
     deps = [
-        ":html_assets_shasums",
         "@com_google_fonts_roboto",
     ],
-)
-
-tf_web_library(
-    name = "html_assets_shasums",
-    srcs = [
-        "//tensorboard/components:index.html.scripts_sha256",
-        "//tensorboard/components:trace_viewer_index.html.scripts_sha256",
-    ] + select({
-        "//tensorboard:dev_build": [
-            "//tensorboard/webapp:ng_index.html.scripts_sha256",
-        ],
-        "//conditions:default": [],
-    }),
-    path = "/_shasums",
 )
 
 py_library(
