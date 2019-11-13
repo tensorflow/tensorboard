@@ -27,6 +27,7 @@ except ImportError:
 import werkzeug
 from werkzeug import test as werkzeug_test
 from werkzeug.datastructures import Headers
+from werkzeug.wrappers.base_response import BaseResponse
 
 from tensorboard import test as tb_test
 from tensorboard.backend import security_validator
@@ -54,34 +55,37 @@ def create_headers(
 class SecurityValidatorMiddlewareTest(tb_test.TestCase):
   """Tests for `SecurityValidatorMiddleware`."""
 
-  def setUp(self):
-    super(SecurityValidatorMiddlewareTest, self).setUp()
-    self.get_header = lambda req: {}
-    app = werkzeug.Request.application(
-        lambda req: werkzeug.Response("OK", headers=self.get_header(req))
-    )
-    app = security_validator.SecurityValidatorMiddleware(app)
-    self.server = werkzeug_test.Client(app, werkzeug.BaseResponse)
-    self.mock_warn = mock.patch.object(logger, "warn").start()
-
-  def tearDown(self):
-    super(SecurityValidatorMiddlewareTest, self).tearDown()
-    mock.patch.stopall()
-
+  @mock.patch.object(logger, "warn")
   def make_request_and_maybe_assert_warn(
-      self, headers, expected_warn_substr=None
+      self,
+      headers,
+      expected_warn_substr,
+      mock_warn,
   ):
-    self.get_header = lambda req: headers
-    self.server.get("")
+
+    @werkzeug.Request.application
+    def _simple_app(req):
+      return werkzeug.Response("OK", headers=headers)
+
+    app = security_validator.SecurityValidatorMiddleware(_simple_app)
+    server = werkzeug_test.Client(app, BaseResponse)
+
+    server.get("")
 
     if expected_warn_substr is None:
-      self.mock_warn.assert_not_called()
+      mock_warn.assert_not_called()
     else:
-      self.mock_warn.assert_called_with(_WARN_PREFIX + expected_warn_substr)
+      mock_warn.assert_called_with(_WARN_PREFIX + expected_warn_substr)
+
+  def make_request_and_assert_no_warn(
+      self,
+      headers,
+  ):
+    self.make_request_and_maybe_assert_warn(headers, None)
 
   def test_validate_content_type(self):
-    self.make_request_and_maybe_assert_warn(
-        create_headers(content_type="application/json")
+    self.make_request_and_assert_no_warn(
+        create_headers(content_type="application/json"),
     )
 
     self.make_request_and_maybe_assert_warn(
@@ -90,7 +94,7 @@ class SecurityValidatorMiddlewareTest(tb_test.TestCase):
     )
 
   def test_validate_x_content_type_options(self):
-    self.make_request_and_maybe_assert_warn(
+    self.make_request_and_assert_no_warn(
         create_headers(x_content_type_options="nosniff")
     )
 
@@ -100,11 +104,11 @@ class SecurityValidatorMiddlewareTest(tb_test.TestCase):
     )
 
   def test_validate_csp_text_html(self):
-    self.make_request_and_maybe_assert_warn(
+    self.make_request_and_assert_no_warn(
         create_headers(
             content_type="text/html; charset=UTF-8",
             content_security_policy=(
-                "default-src 'self';script-src https://google.com;"
+                "DEFAult-src 'self';script-src https://google.com;"
                 "style-src  'self'   https://example; object-src   "
             ),
         ),
@@ -169,6 +173,7 @@ class SecurityValidatorMiddlewareTest(tb_test.TestCase):
         "Content-Security-Policy",
         "default-src 'self';script-src 'nonce-bar';object-src *",
     )
+
     self.make_request_and_maybe_assert_warn(
         base_headers,
         "\n".join(
@@ -182,7 +187,7 @@ class SecurityValidatorMiddlewareTest(tb_test.TestCase):
     )
 
   def test_validate_csp_non_text_html(self):
-    self.make_request_and_maybe_assert_warn(
+    self.make_request_and_assert_no_warn(
         create_headers(
             content_type="application/xhtml",
             content_security_policy=(
