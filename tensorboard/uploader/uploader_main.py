@@ -67,6 +67,8 @@ _SUBCOMMAND_KEY_AUTH = 'AUTH'
 _AUTH_SUBCOMMAND_FLAG = '_uploader__subcommand_auth'
 _AUTH_SUBCOMMAND_KEY_REVOKE = 'REVOKE'
 
+_DEFAULT_ORIGIN = "https://tensorboard.dev"
+
 
 def _prompt_for_user_ack(intent):
   """Prompts for user consent, exiting the program if they decline."""
@@ -95,16 +97,17 @@ def _define_flags(parser):
   parser.add_argument(
       '--origin',
       type=str,
-      default='https://tensorboard.dev',
+      default='',
       help='Experimental. Origin for TensorBoard.dev service to which '
-      'to connect, like "https://tensorboard.dev".')
+      'to connect. If not set, defaults to %r.' % _DEFAULT_ORIGIN)
 
   parser.add_argument(
       '--api_endpoint',
       type=str,
       default='api.tensorboard.dev:443',
       help='Experimental. Direct URL for the API server accepting '
-      'write requests. If set, will skip initial server handshake.')
+      'write requests. If set, will skip initial server handshake '
+      'unless `--origin` is also set.')
 
   parser.add_argument(
       '--grpc_creds_type',
@@ -351,14 +354,13 @@ class _ListIntent(_Intent):
   def get_ack_message_body(self):
     return self._MESSAGE
 
-  def execute(self, channel):
+  def execute(self, server_info, channel):
     api_client = export_service_pb2_grpc.TensorBoardExporterServiceStub(channel)
     gen = exporter_lib.list_experiments(api_client)
     count = 0
     for experiment_id in gen:
       count += 1
-      # TODO(@wchargin): Once #2879 is in, remove this hard-coded URL pattern.
-      url = 'https://tensorboard.dev/experiment/%s/' % experiment_id
+      url = server_info_lib.experiment_url(server_info, experiment_id)
       print(url)
     sys.stdout.flush()
     if not count:
@@ -392,8 +394,7 @@ class _UploadIntent(_Intent):
     api_client = write_service_pb2_grpc.TensorBoardWriterServiceStub(channel)
     uploader = uploader_lib.TensorBoardUploader(api_client, self.logdir)
     experiment_id = uploader.create_experiment()
-    url_format = server_info.url_format
-    url = url_format.template.replace(url_format.id_placeholder, experiment_id)
+    url = server_info_lib.experiment_url(server_info, experiment_id)
     print("Upload started and will continue reading any new data as it's added")
     print("to the logdir. To stop uploading, press Ctrl-C.")
     print("View your TensorBoard live at: %s" % url)
@@ -501,10 +502,17 @@ def _get_intent(flags):
 
 
 def _get_server_info(flags):
-  if flags.api_endpoint:
-    return server_info_lib.create_server_info(flags.origin, flags.api_endpoint)
-  else:
-    return server_info_lib.fetch_server_info(flags.origin)
+  if flags.api_endpoint and not flags.origin:
+    return server_info_lib.create_server_info(
+        "http://localhost:8080", flags.api_endpoint)
+  origin = flags.origin or _DEFAULT_ORIGIN
+  server_info = server_info_lib.fetch_server_info(
+      flags.origin or _DEFAULT_ORIGIN)
+  # Override with any API server explicitly specified on the command
+  # line, but only if the server accepted our initial handshake.
+  if flags.api_endpoint and server_info.api_server.endpoint:
+    server_info.api_server.endpoint = flags.api_endpoint
+  return server_info
 
 
 def _handle_server_info(info):
