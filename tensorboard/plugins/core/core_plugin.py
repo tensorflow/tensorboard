@@ -529,7 +529,7 @@ reload finishes, and requires --load_interval=0. (default: %(default)s)\
         # Custom str-to-bool converter since regular bool() doesn't work.
         type=lambda v: {'true': True, 'false': False}.get(v.lower(), v),
         choices=[True, False],
-        default=False,
+        default=None,
         help='''\
 [experimental] If true, this enables experimental support for continuously
 polling multiple event files in each run directory for newly appended data
@@ -537,7 +537,7 @@ polling multiple event files in each run directory for newly appended data
 polled as long as their most recently read data is newer than the threshold
 defined by --reload_multifile_inactive_secs, to limit resource usage. Beware
 of running out of memory if the logdir contains many active event files.
-(default: %(default)s)\
+(default: false)\
 ''')
 
     parser.add_argument(
