@@ -40,13 +40,13 @@ _WARN_PREFIX = "In 3.0, this warning will become an error:\n"
 def create_headers(
     content_type="application/json",
     x_content_type_options="nosniff",
-    content_secrurity_policy=""
+    content_security_policy="",
 ):
   return Headers(
       {
           "Content-Type": content_type,
           "X-Content-Type-Options": x_content_type_options,
-          "Content-Security-Policy": content_secrurity_policy,
+          "Content-Security-Policy": content_security_policy,
       }
   )
 
@@ -96,23 +96,24 @@ class SecurityValidatorMiddlewareTest(tb_test.TestCase):
 
     self.make_request_and_maybe_assert_warn(
         create_headers(x_content_type_options=""),
-        'X-Content-Type-Options is required to be "nosniff"'
+        'X-Content-Type-Options is required to be "nosniff"',
     )
 
   def test_validate_csp_text_html(self):
     self.make_request_and_maybe_assert_warn(
         create_headers(
             content_type="text/html; charset=UTF-8",
-            content_secrurity_policy=(
+            content_security_policy=(
                 "default-src 'self';script-src https://google.com;"
-            )
+                "style-src  'self'   https://example; object-src   "
+            ),
         ),
     )
 
     self.make_request_and_maybe_assert_warn(
         create_headers(
             content_type="text/html; charset=UTF-8",
-            content_secrurity_policy="",
+            content_security_policy="",
         ),
         "Requires default-src for Content-Security-Policy",
     )
@@ -120,7 +121,7 @@ class SecurityValidatorMiddlewareTest(tb_test.TestCase):
     self.make_request_and_maybe_assert_warn(
         create_headers(
             content_type="text/html; charset=UTF-8",
-            content_secrurity_policy="default-src *"
+            content_security_policy="default-src *",
         ),
         "Illegal Content-Security-Policy for default-src: *",
     )
@@ -128,7 +129,7 @@ class SecurityValidatorMiddlewareTest(tb_test.TestCase):
     self.make_request_and_maybe_assert_warn(
         create_headers(
             content_type="text/html; charset=UTF-8",
-            content_secrurity_policy="default-src 'self';script-src *"
+            content_security_policy="default-src 'self';script-src *",
         ),
         "Illegal Content-Security-Policy for script-src: *",
     )
@@ -136,13 +137,14 @@ class SecurityValidatorMiddlewareTest(tb_test.TestCase):
     self.make_request_and_maybe_assert_warn(
         create_headers(
             content_type="text/html; charset=UTF-8",
-            content_secrurity_policy=(
+            content_security_policy=(
                 "script-src * 'sha256-foo' 'nonce-bar';"
                 "style-src http://google.com;object-src *;"
                 "img-src 'unsafe-inline';default-src 'self';"
                 "script-src *       'strict-dynamic'"
-            )
-        ), "\n".join(
+            ),
+        ),
+        "\n".join(
             [
                 "Illegal Content-Security-Policy for script-src: *",
                 "Illegal Content-Security-Policy for script-src: 'nonce-bar'",
@@ -152,39 +154,41 @@ class SecurityValidatorMiddlewareTest(tb_test.TestCase):
                 "Illegal Content-Security-Policy for script-src: *",
                 "Illegal Content-Security-Policy for script-src: 'strict-dynamic'",
             ]
-        )
+        ),
     )
 
-    headers = create_headers(
+  def test_validate_csp_multiple_csp_headers(self):
+    base_headers = create_headers(
         content_type="text/html; charset=UTF-8",
-        content_secrurity_policy=(
+        content_security_policy=(
             "script-src * 'sha256-foo';"
             "style-src http://google.com"
-        )
+        ),
     )
-    headers.add(
-        'Content-Security-Policy',
-        "default-src 'self';script-src 'nonce-bar';object-src *"
+    base_headers.add(
+        "Content-Security-Policy",
+        "default-src 'self';script-src 'nonce-bar';object-src *",
     )
     self.make_request_and_maybe_assert_warn(
-        headers, "\n".join(
+        base_headers,
+        "\n".join(
             [
                 "Illegal Content-Security-Policy for script-src: *",
                 "Illegal Content-Security-Policy for style-src: http://google.com",
                 "Illegal Content-Security-Policy for script-src: 'nonce-bar'",
                 "Illegal Content-Security-Policy for object-src: *",
             ]
-        )
+        ),
     )
 
   def test_validate_csp_non_text_html(self):
     self.make_request_and_maybe_assert_warn(
         create_headers(
             content_type="application/xhtml",
-            content_secrurity_policy=(
+            content_security_policy=(
                 "script-src * 'sha256-foo' 'nonce-bar';"
                 "style-src http://google.com;object-src *;"
-            )
+            ),
         ),
     )
 

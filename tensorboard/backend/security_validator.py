@@ -27,20 +27,27 @@ from werkzeug import http
 
 from tensorboard.util import tb_logging
 
-Policy = collections.namedtuple("Poicy", ["name", "rules"])
+# Loosely follow vocabulary from https://www.w3.org/TR/CSP/#framework-directives.
+Directive = collections.namedtuple("Directive", ["name", "value"])
 
 logger = tb_logging.get_logger()
 
 _HTML_MIME_TYPE = "text/html"
-_CSP_PATTERN = re.compile(r"^([a-z]+-[a-z]+)(.*)")
+# Matches CSP rule like "strict-src foobar baz".
+_CSP_PATTERN = re.compile(r"^([a-zA-Z0-9-]+) (.*)")
 _CSP_DEFAULT_SRC = "default-src"
 # Whitelist of allowed CSP rules.
 _CSP_IGNORE = {
-    "frame-ancestors": "*",
+    "frame-ancestors": ["*"],
     "style-src": ["'unsafe-inline'", "data:"],
     "img-src": ["blob:", "data:"],
     "script-src": ["'unsafe-eval'"],
 }
+
+
+def _maybe_raise_value_error(error_msg):
+  logger.warn("In 3.0, this warning will become an error:\n%s" % error_msg)
+  # TODO(3.x): raise a value error.
 
 
 class SecurityValidatorMiddleware(object):
@@ -49,7 +56,10 @@ class SecurityValidatorMiddleware(object):
   It validates:
   - responses have Content-Type
   - responses have X-Content-Type-Options: nosniff
-  - text/html responses have CSP header.
+  - text/html responses have CSP header. It also validates whether the CSP
+    headers pass basic requirement. e.g., default-src should be present, cannot
+    use "*" directive, and others. For more complete list, please refer to
+    _validate_csp_policies.
 
   Instances of this class are WSGI applications (see PEP 3333).
   """
@@ -64,35 +74,34 @@ class SecurityValidatorMiddleware(object):
 
   def __call__(self, environ, start_response):
 
-    def start_resposne_proxy(status, headers, exc_info=None):
+    def start_response_proxy(status, headers, exc_info=None):
       self._validate_headers(headers)
       return start_response(status, headers, exc_info)
 
-    return self._application(environ, start_resposne_proxy)
+    return self._application(environ, start_response_proxy)
 
   def _validate_headers(self, headers_list):
     headers = Headers(headers_list)
     self._validate_content_type(headers)
     self._validate_x_content_type_options(headers)
-    self._validate_csps(headers)
+    self._validate_csp_headers(headers)
 
   def _validate_content_type(self, headers):
     if headers.get("Content-Type"):
       return
 
-    self._maybe_raise_value_error("Content-Type is required on a Response")
+    _maybe_raise_value_error("Content-Type is required on a Response")
 
   def _validate_x_content_type_options(self, headers):
-    # Both none and empty string are
     option = headers.get("X-Content-Type-Options")
     if option == "nosniff":
       return
 
-    self._maybe_raise_value_error(
+    _maybe_raise_value_error(
         'X-Content-Type-Options is required to be "nosniff"'
     )
 
-  def _validate_csps(self, headers):
+  def _validate_csp_headers(self, headers):
     mime_type, _ = http.parse_options_header(headers.get("Content-Type"))
     if mime_type != _HTML_MIME_TYPE:
       return
@@ -101,7 +110,7 @@ class SecurityValidatorMiddleware(object):
     policies = []
 
     for csp_text in csp_texts:
-      policies += self._parse_csp_text(csp_text)
+      policies += self._parse_serialized_csp(csp_text)
 
     self._validate_csp_policies(policies)
 
@@ -109,48 +118,73 @@ class SecurityValidatorMiddleware(object):
     has_default_src = False
     violations = []
 
-    for name, rules in policies:
+    for directive in policies:
+      name = directive.name
+      value = directive.value
       has_default_src = has_default_src or name == _CSP_DEFAULT_SRC
 
-      for rule in rules:
-        if rule in _CSP_IGNORE.get(name, []):
-          # There are cases where certain values are legitimate.
-          continue
+      if value in _CSP_IGNORE.get(name, []):
+        # There are cases where certain values are legitimate.
+        continue
 
-        if (
-            rule == "'self'" or rule == "'none'" or rule.startswith("https:")
-            or rule.startswith("'sha256-")
-        ):
-          continue
+      # TensorBoard follows principle of least privilege. However, to make it
+      # easier to conform to the security policy for plugin authors, TensorBoard
+      # trusts request and resources originating its server. Also, it can
+      # selectively trust domains as long as they use https protocol. Lastly, it
+      # can allow 'none' directive.
+      # TODO(stephanwlee): deprecate the sha-based whitelisting.
+      if (
+          value == "'self'" or value == "'none'" or value.startswith("https:")
+          or value.startswith("'sha256-")
+      ):
+        continue
 
-        msg = "Illegal Content-Security-Policy for {name}: {rule}".format(
-            name=name, rule=rule
-        )
-        violations.append(msg)
+      msg = "Illegal Content-Security-Policy for {name}: {value}".format(
+          name=name, value=value
+      )
+      violations.append(msg)
 
     if not has_default_src:
       violations.append("Requires default-src for Content-Security-Policy")
 
     if violations:
-      self._maybe_raise_value_error("\n".join(violations))
+      _maybe_raise_value_error("\n".join(violations))
 
-  def _parse_csp_text(self, csp_text):
+  def _parse_serialized_csp(self, csp_text):
+    # See https://www.w3.org/TR/CSP/#parse-serialized-policy.
+    # Below Steps are based on the algorithm stated in above spec.
+    # Deviations:
+    # - it does not warn and ignore duplicative directive (Step 2.5)
+
+    # Step 2
     csp_srcs = csp_text.split(";")
+
     policies = []
     for csp_src in csp_srcs:
-      match = _CSP_PATTERN.match(csp_src)
-      if not match or len(match.groups()) < 2:
+      # Step 2.1
+      csp_src = csp_src.strip()
+
+      if not csp_src:
+        # Step 2.2
         continue
-      name, rules = _CSP_PATTERN.match(csp_src).groups()
-      policies.append(
-          Policy(
-              name=name,
-              rules=[rule.strip() for rule in rules.split(" ") if rule]
-          )
-      )
+
+      # Step 2.3
+      match = _CSP_PATTERN.match(csp_src)
+      if not match or len(match.groups()) < 2 or not match.group(1).strip():
+        continue
+
+      name, values = _CSP_PATTERN.match(csp_src).groups()
+      # Step 2.4
+      name = name.lower()
+
+      # Step 2.6
+      for value in values.split(" "):
+        if not value:
+          continue
+
+        # Step 2.7
+        directive = Directive(name=name, value=value)
+        # Step 2.8
+        policies.append(directive)
 
     return policies
-
-  def _maybe_raise_value_error(self, error_msg):
-    logger.warn("In 3.0, this warning will become an error:\n%s" % error_msg)
-    # TODO(3.x): raise a value error.
