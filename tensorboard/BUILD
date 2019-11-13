@@ -252,8 +252,8 @@ py_test(
     srcs_version = "PY2AND3",
     tags = ["support_notf"],
     deps = [
-        ":version",
         ":test",
+        ":version",
         "//tensorboard:expect_pkg_resources_installed",
     ],
 )
