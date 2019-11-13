@@ -36,11 +36,16 @@ _HTML_MIME_TYPE = "text/html"
 # Matches CSP rule like "strict-src foobar baz".
 _CSP_PATTERN = re.compile(r"^([a-zA-Z0-9-]+) (.*)")
 _CSP_DEFAULT_SRC = "default-src"
-# Whitelist of allowed CSP rules.
+# Whitelist of allowed CSP violations.
 _CSP_IGNORE = {
+    # Allow TensorBoard to be iframed.
     "frame-ancestors": ["*"],
+    # Polymer-based code uses unsafe-inline.
     "style-src": ["'unsafe-inline'", "data:"],
+    # Used in canvas
     "img-src": ["blob:", "data:"],
+    # Used by numericjs.
+    # TODO(stephanwlee): remove it eventually.
     "script-src": ["'unsafe-eval'"],
 }
 
