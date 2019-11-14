@@ -28,9 +28,6 @@ def _tensorboard_html_binary(ctx):
   point at). The hashes are delimited by newline.
   """
 
-  if ctx.attr.extract_script and not ctx.attr.script_path:
-    fail("script_path is required when extract_script is True.")
-
   deps = unfurl(ctx.attr.deps, provider="webfiles")
   manifests = depset(order="postorder")
   files = depset()
@@ -63,10 +60,9 @@ def _tensorboard_html_binary(ctx):
       arguments=([ctx.attr.compilation_level,
                   "true" if ctx.attr.compile else "false",
                   "true" if ctx.attr.testonly else "false",
-                  "true" if ctx.attr.extract_script else "false",
                   ctx.attr.input_path,
                   ctx.attr.output_path,
-                  ctx.attr.script_path,
+                  ctx.attr.js_path,
                   ctx.outputs.html.path,
                   ctx.outputs.js.path,
                   ctx.outputs.shasum.path,
@@ -136,10 +132,9 @@ tensorboard_html_binary = rule(
         "compilation_level": attr.string(default="ADVANCED"),
         "input_path": attr.string(mandatory=True),
         "output_path": attr.string(mandatory=True),
-        # Required when extract_script is True.
-        "script_path": attr.string(),
+        # If specified, it extracts scripts into {name}.js and inserts <script src="{js_path}">.
+        "js_path": attr.string(),
         "compile": attr.bool(),
-        "extract_script": attr.bool(),
         "data": attr.label_list(allow_files=True),
         "deps": attr.label_list(aspects=[closure_js_aspect], mandatory=True),
         "external_assets": attr.string_dict(default={"/_/runfiles": "."}),

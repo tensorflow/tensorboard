@@ -20,10 +20,9 @@ tf_web_library(
 tensorboard_html_binary(
     name = "index",
     compile = True,
-    extract_script = True,
     input_path = "/tensorboard.html",
     output_path = "/index.html",
-    script_path = "/index.js",
+    js_path = "/index.js",
     deps = [":tensorboard"],
 )
 
@@ -84,9 +83,8 @@ tf_web_library(
 
 tensorboard_html_binary(
     name = "trace_viewer_index",
-    extract_script = True,
     input_path = "/trace_viewer.html",
     output_path = "/trace_viewer_index.html",
-    script_path = "/trace_viewer_index.js",
+    js_path = "/trace_viewer_index.js",
     deps = [":trace_viewer"],
 )

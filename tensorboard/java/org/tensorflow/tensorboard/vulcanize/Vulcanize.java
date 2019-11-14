@@ -132,19 +132,18 @@ public final class Vulcanize {
     compilationLevel = CompilationLevel.fromString(args[0]);
     wantsCompile = args[1].equals("true");
     testOnly = args[2].equals("true");
-    boolean extractScript = args[3].equals("true");
-    Webpath inputPath = Webpath.get(args[4]);
-    outputPath = Webpath.get(args[5]);
-    Webpath scriptPath = Webpath.get(args[6]);
-    Path output = Paths.get(args[7]);
-    Path jsOutput = Paths.get(args[8]);
-    Path shasumOutput = Paths.get(args[9]);
-    if (!args[10].equals(NO_NOINLINE_FILE_PROVIDED)) {
-      String ignoreFile = new String(Files.readAllBytes(Paths.get(args[10])), UTF_8);
+    Webpath inputPath = Webpath.get(args[3]);
+    outputPath = Webpath.get(args[4]);
+    Webpath jsPath = Webpath.get(args[5]);
+    Path output = Paths.get(args[6]);
+    Path jsOutput = Paths.get(args[7]);
+    Path shasumOutput = Paths.get(args[8]);
+    if (!args[9].equals(NO_NOINLINE_FILE_PROVIDED)) {
+      String ignoreFile = new String(Files.readAllBytes(Paths.get(args[9])), UTF_8);
       Arrays.asList(ignoreFile.split("\n"))
           .forEach((str) -> ignoreRegExs.add(Pattern.compile(str)));
     }
-    for (int i = 11; i < args.length; i++) {
+    for (int i = 10; i < args.length; i++) {
       if (args[i].endsWith(".js")) {
         String code = new String(Files.readAllBytes(Paths.get(args[i])), UTF_8);
         SourceFile sourceFile = SourceFile.fromCode(args[i], code);
@@ -184,9 +183,11 @@ public final class Vulcanize {
       licenseComment.attr("comment", String.format("\n%s\n", Joiner.on("\n\n").join(licenses)));
     }
 
-    createFile(jsOutput, extractScript ? extractAndTransformJavaScript(document, scriptPath) : "");
+    boolean shouldExtractJs = !jsPath.isEmpty();
+    createFile(
+        jsOutput, shouldExtractJs ? extractAndTransformJavaScript(document, jsPath) : "");
     // Write an empty file for shasum when all scripts are extracted out.
-    createFile(shasumOutput, extractScript ? "" : getScriptsShasums(document));
+    createFile(shasumOutput, shouldExtractJs ? "" : getScriptsShasums(document));
     createFile(output, Html5Printer.stringify(document));
   }
 
@@ -268,9 +269,11 @@ public final class Vulcanize {
         }
       }
       if (!ignoreFile) {
-        if (isExternalCssNode(node) && !shouldIgnoreUri(href)) {
+        if (isExternalCssNode(node)
+            && !shouldIgnoreUri(href)) {
           node = visitStylesheet(node);
-        } else if (node.nodeName().equals("link") && node.attr("rel").equals("import")) {
+        } else if (node.nodeName().equals("link")
+            && node.attr("rel").equals("import")) {
           // Inline HTML.
           node = visitHtmlImport(node);
         } else if (node.nodeName().equals("script")
@@ -394,12 +397,11 @@ public final class Vulcanize {
       String code = new String(Files.readAllBytes(getWebfile(href)), UTF_8);
       code = code.replace("</script>", "</JAVA_SCRIIIIPT/>");
       code = INLINE_SOURCE_MAP_PATTERN.matcher(code).replaceAll("");
-      result =
-          replaceNode(
-              node,
-              new Element(Tag.valueOf("script"), node.baseUri(), node.attributes())
-                  .appendChild(new DataNode(code, node.baseUri()))
-                  .removeAttr("src"));
+      result = replaceNode(
+          node,
+          new Element(Tag.valueOf("script"), node.baseUri(), node.attributes())
+              .appendChild(new DataNode(code, node.baseUri()))
+              .removeAttr("src"));
     }
     if (firstScript == null) {
       firstScript = result;
@@ -532,11 +534,9 @@ public final class Vulcanize {
             if (IGNORE_PATHS_PATTERN.matcher(error.getSourceName()).matches()) {
               return CheckLevel.OFF;
             }
-            if ((error.getSourceName().startsWith("/tf-")
-                    || error.getSourceName().startsWith("/vz-"))
+            if ((error.getSourceName().startsWith("/tf-") || error.getSourceName().startsWith("/vz-"))
                 && error.getType().key.equals("JSC_VAR_MULTIPLY_DECLARED_ERROR")) {
-              return CheckLevel
-                  .OFF; // TODO(@jart): Remove when tf/vz components/plugins are ES6 modules.
+              return CheckLevel.OFF; // TODO(@jart): Remove when tf/vz components/plugins are ES6 modules.
             }
             if (error.getType().key.equals("JSC_POLYMER_UNQUALIFIED_BEHAVIOR")
                 || error.getType().key.equals("JSC_POLYMER_UNANNOTATED_BEHAVIOR")) {
@@ -659,7 +659,8 @@ public final class Vulcanize {
     Webpath uri = Webpath.get(value);
     // Form absolute path from uri if uri is not an absolute path.
     // Note that webfiles is a map of absolute webpaths to relative filepaths.
-    Webpath absUri = isAbsolutePath(uri) ? uri : me().getParent().resolve(uri).normalize();
+    Webpath absUri = isAbsolutePath(uri)
+        ? uri : me().getParent().resolve(uri).normalize();
 
     if (webfiles.containsKey(absUri)) {
       node.attr(attribute, outputPath.getParent().relativize(absUri).toString());
@@ -667,8 +668,8 @@ public final class Vulcanize {
   }
 
   /**
-   * Checks whether a path is a absolute path. Webpath.isAbsolute does not take data uri and other
-   * forms of absolute path into account.
+   * Checks whether a path is a absolute path.
+   * Webpath.isAbsolute does not take data uri and other forms of absolute path into account.
    */
   private static Boolean isAbsolutePath(Webpath path) {
     return path.isAbsolute() || ABS_URI_PATTERN.matcher(path.toString()).find();
@@ -733,11 +734,25 @@ public final class Vulcanize {
   /**
    * Combine content of script tags into a group. To guarantee the correctness, it only groups
    * content of `src`-less scripts between `src`-full scripts. The last combination gets inserted at
-   * the end of the document. e.g., <script>A</script> <script>B</script> <script
-   * src="srcful1"></script> <script src="srcful2"></script> <script>C</script> <script>D</script>
-   * <script src="srcful3"></script> <script>E</script> gets compiled as <script>A,B</script>
-   * <script src="srcful1"></script> <script src="srcful2"></script> <script>C,D</script> <script
-   * src="srcful3"></script> <script>E</script>
+   * the end of the document.
+   * e.g., {@code
+   *   <script>A</script>
+   *   <script>B</script>
+   *   <script src="srcful1"></script>
+   *   <script src="srcful2"></script>
+   *   <script>C</script>
+   *   <script>D</script>
+   *   <script src="srcful3"></script>
+   *   <script>E</script>
+   * }
+   * gets compiled as {@code
+   *   <script>A,B</script>
+   *   <script src="srcful1"></script>
+   *   <script src="srcful2"></script>
+   *   <script>C,D</script>
+   *   <script src="srcful3"></script>
+   *   <script>E</script>
+   * }
    *
    * @deprecated Script combination is deprecated in favor of script extraction.
    */
@@ -752,10 +767,10 @@ public final class Vulcanize {
           continue;
         }
 
-        Element scriptTag =
+        Element scriptElement =
             new Element(Tag.valueOf("script"), "")
                 .appendChild(new DataNode(sourcesBuilder.toString(), ""));
-        script.before(scriptTag);
+        script.before(scriptElement);
         sourcesBuilder = new StringBuilder();
       } else {
         sourcesBuilder.append(script.html()).append("\n");
@@ -768,10 +783,10 @@ public final class Vulcanize {
     // manually grab the last one.
     Element lastBody = Iterables.getLast(document.getElementsByTag("body"));
 
-    Element scriptTag =
+    Element scriptElement =
         new Element(Tag.valueOf("script"), "")
             .appendChild(new DataNode(sourcesBuilder.toString(), ""));
-    lastBody.appendChild(scriptTag);
+    lastBody.appendChild(scriptElement);
   }
 
   /** @deprecated Shasum is deprecated in favor of script extraction. */
@@ -859,14 +874,14 @@ public final class Vulcanize {
     return sourcesBuilder.toString();
   }
 
-  private static String extractAndTransformJavaScript(Document document, Webpath scriptPath)
+  private static String extractAndTransformJavaScript(Document document, Webpath jsPath)
       throws FileNotFoundException, IOException, IllegalArgumentException {
     String scriptContent = extractScriptContent(document);
 
     Element lastBody = Iterables.getLast(document.getElementsByTag("body"));
-    Element scriptTag = new Element(Tag.valueOf("script"), "");
-    scriptTag.attr("src", scriptPath.removeBeginningSeparator().toString());
-    lastBody.appendChild(scriptTag);
+    Element scriptElement = new Element(Tag.valueOf("script"), "");
+    scriptElement.attr("src", jsPath.removeBeginningSeparator().toString());
+    lastBody.appendChild(scriptElement);
 
     return scriptContent;
   }
