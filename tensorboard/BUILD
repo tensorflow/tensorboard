@@ -245,6 +245,19 @@ py_library(
     visibility = ["//visibility:public"],
 )
 
+py_test(
+    name = "version_test",
+    size = "small",
+    srcs = ["version_test.py"],
+    srcs_version = "PY2AND3",
+    tags = ["support_notf"],
+    deps = [
+        ":test",
+        ":version",
+        "//tensorboard:expect_pkg_resources_installed",
+    ],
+)
+
 config_setting(
     name = "dev_build",
     # consider changing this to fastbuild
