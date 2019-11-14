@@ -502,12 +502,10 @@ def _get_intent(flags):
 
 
 def _get_server_info(flags):
-  if flags.api_endpoint and not flags.origin:
-    return server_info_lib.create_server_info(
-        "http://localhost:8080", flags.api_endpoint)
   origin = flags.origin or _DEFAULT_ORIGIN
-  server_info = server_info_lib.fetch_server_info(
-      flags.origin or _DEFAULT_ORIGIN)
+  if flags.api_endpoint and not flags.origin:
+    return server_info_lib.create_server_info(origin, flags.api_endpoint)
+  server_info = server_info_lib.fetch_server_info(origin)
   # Override with any API server explicitly specified on the command
   # line, but only if the server accepted our initial handshake.
   if flags.api_endpoint and server_info.api_server.endpoint:
