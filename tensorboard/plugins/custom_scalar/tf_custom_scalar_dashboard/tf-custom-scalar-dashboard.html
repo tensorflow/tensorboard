@@ -122,8 +122,8 @@ from tensorboard import summary
 from tensorboard.plugins.custom_scalar import layout_pb2
 ...
 # This action does not have to be performed at every step, so the action is not
-# taken care of by an op in the graph. We only need to specify the layout once.
-# We only need to specify the layout once (instead of per step).
+# taken care of by an op in the graph. We only need to specify the layout once
+# (instead of per step).
 layout_summary = summary_lib.custom_scalar_pb(layout_pb2.Layout(
   category=[
     layout_pb2.Category(
