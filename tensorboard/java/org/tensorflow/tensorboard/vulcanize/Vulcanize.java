@@ -244,7 +244,8 @@ public final class Vulcanize {
     }
     if (node.nodeName().equals("link")
         && node.attr("rel").equals("import")
-        && (node.attr("type").equals("css") || node.attr("type").equals("text/css"))
+        && (node.attr("type").equals("css")
+            || node.attr("type").equals("text/css"))
         && !node.attr("href").isEmpty()) {
       return true;
     }
@@ -516,9 +517,7 @@ public final class Vulcanize {
               return CheckLevel.OFF;
             }
             if (error.getSourceName().startsWith("javascript/externs")
-                || error
-                    .getSourceName()
-                    .contains("com_google_javascript_closure_compiler_externs")) {
+                || error.getSourceName().contains("com_google_javascript_closure_compiler_externs")) {
               // TODO(@jart): Figure out why these "mismatch of the removeEventListener property on
               //             type" warnings are showing up.
               //             https://github.com/google/closure-compiler/pull/1959
@@ -767,9 +766,8 @@ public final class Vulcanize {
           continue;
         }
 
-        Element scriptElement =
-            new Element(Tag.valueOf("script"), "")
-                .appendChild(new DataNode(sourcesBuilder.toString(), ""));
+        Element scriptElement = new Element(Tag.valueOf("script"), "")
+            .appendChild(new DataNode(sourcesBuilder.toString(), ""));
         script.before(scriptElement);
         sourcesBuilder = new StringBuilder();
       } else {
@@ -783,9 +781,8 @@ public final class Vulcanize {
     // manually grab the last one.
     Element lastBody = Iterables.getLast(document.getElementsByTag("body"));
 
-    Element scriptElement =
-        new Element(Tag.valueOf("script"), "")
-            .appendChild(new DataNode(sourcesBuilder.toString(), ""));
+    Element scriptElement = new Element(Tag.valueOf("script"), "")
+        .appendChild(new DataNode(sourcesBuilder.toString(), ""));
     lastBody.appendChild(scriptElement);
   }
 
@@ -817,8 +814,8 @@ public final class Vulcanize {
         }
         sourceContent = new String(Files.readAllBytes(webfiles.get(webpath)), UTF_8);
       }
-      String hash =
-          BaseEncoding.base64().encode(Hashing.sha256().hashString(sourceContent, UTF_8).asBytes());
+      String hash = BaseEncoding.base64().encode(
+          Hashing.sha256().hashString(sourceContent, UTF_8).asBytes());
       hashes.add(hash);
     }
     return hashes;
