@@ -54,7 +54,10 @@ def fetch_server_info(origin):
   post_body = _server_info_request().SerializeToString()
   try:
     response = requests.post(
-        endpoint, data=post_body, timeout=_REQUEST_TIMEOUT_SECONDS
+        endpoint,
+        data=post_body,
+        timeout=_REQUEST_TIMEOUT_SECONDS,
+        headers={"User-Agent": "tensorboard/%s" % version.VERSION},
     )
   except requests.RequestException as e:
     raise CommunicationError("Failed to connect to backend: %s" % e)

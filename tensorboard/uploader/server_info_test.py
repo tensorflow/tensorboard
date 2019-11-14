@@ -111,6 +111,18 @@ class FetchServerInfoTest(tb_test.TestCase):
     self.assertIn("Corrupt response from backend", msg)
     self.assertIn("an unlikely proto", msg)
 
+  def test_user_agent(self):
+    @wrappers.BaseRequest.application
+    def app(request):
+      result = server_info_pb2.ServerInfoResponse()
+      result.compatibility.details = request.headers["User-Agent"]
+      return wrappers.BaseResponse(result.SerializeToString())
+
+    origin = self._start_server(app)
+    result = server_info.fetch_server_info(origin)
+    expected_user_agent = "tensorboard/%s" % version.VERSION
+    self.assertEqual(result.compatibility.details, expected_user_agent)
+
 
 class CreateServerInfoTest(tb_test.TestCase):
   """Tests for `create_server_info`."""
