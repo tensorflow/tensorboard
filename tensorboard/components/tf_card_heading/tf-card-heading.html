@@ -56,8 +56,8 @@ limitations under the License.
             <span>
               <span
                 itemprop="run"
+                id="heading-run"
                 class="heading-label heading-right run"
-                style="background: [[_runBackground]]; color: [[_runColor]]"
                 >[[run]]</span
               >
             </span>
@@ -114,6 +114,10 @@ limitations under the License.
       paper-dialog-scrollable {
         max-width: 640px;
       }
+      #heading-run {
+        background: var(--tf-card-heading-background-color);
+        color: var(--tf-card-heading-color);
+      }
     </style>
   </template>
   <script>
@@ -131,12 +135,14 @@ limitations under the License.
           type: String,
           computed: '_computeRunBackground(color)',
           readOnly: true,
+          observer: '_updateHeadingStyle',
         },
 
         _runColor: {
           type: String,
           computed: '_computeRunColor(color)',
           readOnly: true,
+          observer: '_updateHeadingStyle',
         },
 
         _nameLabel: {
@@ -148,6 +154,13 @@ limitations under the License.
           type: String,
           computed: '_computeTagLabel(displayName, tag)',
         },
+      },
+
+      _updateHeadingStyle() {
+        this.updateStyles({
+          '--tf-card-heading-background-color': this._runBackground,
+          '--tf-card-heading-color': this._runColor,
+        });
       },
 
       _computeRunBackground(color) {
