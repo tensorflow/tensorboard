@@ -1,5 +1,5 @@
 # Copyright 2019 The TensorFlow Authors. All Rights Reserved.
-#
+
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -55,12 +55,10 @@ def create_headers(
 class SecurityValidatorMiddlewareTest(tb_test.TestCase):
   """Tests for `SecurityValidatorMiddleware`."""
 
-  @mock.patch.object(logger, "warn")
   def make_request_and_maybe_assert_warn(
       self,
       headers,
       expected_warn_substr,
-      mock_warn,
   ):
 
     @werkzeug.Request.application
@@ -70,7 +68,8 @@ class SecurityValidatorMiddlewareTest(tb_test.TestCase):
     app = security_validator.SecurityValidatorMiddleware(_simple_app)
     server = werkzeug_test.Client(app, BaseResponse)
 
-    server.get("")
+    with mock.patch.object(logger, "warn") as mock_warn:
+      server.get("")
 
     if expected_warn_substr is None:
       mock_warn.assert_not_called()

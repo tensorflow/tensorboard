@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import print_function
 
 import collections
-import re
 
 from werkzeug import wrappers
 from werkzeug.datastructures import Headers
@@ -33,8 +32,6 @@ Directive = collections.namedtuple("Directive", ["name", "value"])
 logger = tb_logging.get_logger()
 
 _HTML_MIME_TYPE = "text/html"
-# Matches CSP rule like "strict-src foobar baz".
-_CSP_PATTERN = re.compile(r"^([a-zA-Z0-9-]+) (.*)")
 _CSP_DEFAULT_SRC = "default-src"
 # Whitelist of allowed CSP violations.
 _CSP_IGNORE = {
@@ -125,29 +122,32 @@ class SecurityValidatorMiddleware(object):
 
     for directive in policies:
       name = directive.name
-      value = directive.value
-      has_default_src = has_default_src or name == _CSP_DEFAULT_SRC
+      for directive in directive.value:
+        has_default_src = has_default_src or name == _CSP_DEFAULT_SRC
 
-      if value in _CSP_IGNORE.get(name, []):
-        # There are cases where certain values are legitimate.
-        continue
+        if directive in _CSP_IGNORE.get(name, []):
+          # There are cases where certain directives are legitimate.
+          continue
 
-      # TensorBoard follows principle of least privilege. However, to make it
-      # easier to conform to the security policy for plugin authors, TensorBoard
-      # trusts request and resources originating its server. Also, it can
-      # selectively trust domains as long as they use https protocol. Lastly, it
-      # can allow 'none' directive.
-      # TODO(stephanwlee): deprecate the sha-based whitelisting.
-      if (
-          value == "'self'" or value == "'none'" or value.startswith("https:")
-          or value.startswith("'sha256-")
-      ):
-        continue
+        # TensorBoard follows principle of least privilege. However, to make it
+        # easier to conform to the security policy for plugin authors,
+        # TensorBoard trusts request and resources originating its server. Also,
+        # it can selectively trust domains as long as they use https protocol.
+        # Lastly, it can allow 'none' directive.
+        # TODO(stephanwlee): allow configuration for whitelist of domains for
+        # stricter enforcement.
+        # TODO(stephanwlee): deprecate the sha-based whitelisting.
+        if (
+            directive == "'self'" or directive == "'none'"
+            or directive.startswith("https:")
+            or directive.startswith("'sha256-")
+        ):
+          continue
 
-      msg = "Illegal Content-Security-Policy for {name}: {value}".format(
-          name=name, value=value
-      )
-      violations.append(msg)
+        msg = "Illegal Content-Security-Policy for {name}: {directive}".format(
+            name=name, directive=directive
+        )
+        violations.append(msg)
 
     if not has_default_src:
       violations.append("Requires default-src for Content-Security-Policy")
@@ -164,32 +164,29 @@ class SecurityValidatorMiddleware(object):
     # Step 2
     csp_srcs = csp_text.split(";")
 
-    policies = []
-    for csp_src in csp_srcs:
+    policy = []
+    for token in csp_srcs:
       # Step 2.1
-      csp_src = csp_src.strip()
+      token = token.strip()
 
-      if not csp_src:
+      if not token:
         # Step 2.2
         continue
 
       # Step 2.3
-      match = _CSP_PATTERN.match(csp_src)
-      if not match or len(match.groups()) < 2 or not match.group(1).strip():
-        continue
+      token_frag = token.split(None, 1)
+      name = token_frag[0]
 
-      name, values = _CSP_PATTERN.match(csp_src).groups()
+      values = token_frag[1] if len(token_frag) == 2 else ""
+
       # Step 2.4
       name = name.lower()
 
       # Step 2.6
-      for value in values.split(" "):
-        if not value:
-          continue
+      value = values.split()
+      # Step 2.7
+      directive = Directive(name=name, value=value)
+      # Step 2.8
+      policy.append(directive)
 
-        # Step 2.7
-        directive = Directive(name=name, value=value)
-        # Step 2.8
-        policies.append(directive)
-
-    return policies
+    return policy
