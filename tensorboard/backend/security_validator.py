@@ -122,10 +122,10 @@ class SecurityValidatorMiddleware(object):
 
     for directive in policies:
       name = directive.name
-      for directive in directive.value:
+      for value in directive.value:
         has_default_src = has_default_src or name == _CSP_DEFAULT_SRC
 
-        if directive in _CSP_IGNORE.get(name, []):
+        if value in _CSP_IGNORE.get(name, []):
           # There are cases where certain directives are legitimate.
           continue
 
@@ -138,14 +138,14 @@ class SecurityValidatorMiddleware(object):
         # stricter enforcement.
         # TODO(stephanwlee): deprecate the sha-based whitelisting.
         if (
-            directive == "'self'" or directive == "'none'"
-            or directive.startswith("https:")
-            or directive.startswith("'sha256-")
+            value == "'self'" or value == "'none'"
+            or value.startswith("https:")
+            or value.startswith("'sha256-")
         ):
           continue
 
-        msg = "Illegal Content-Security-Policy for {name}: {directive}".format(
-            name=name, directive=directive
+        msg = "Illegal Content-Security-Policy for {name}: {value}".format(
+            name=name, value=value
         )
         violations.append(msg)
 
