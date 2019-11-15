@@ -54,7 +54,10 @@ def fetch_server_info(origin):
   post_body = _server_info_request().SerializeToString()
   try:
     response = requests.post(
-        endpoint, data=post_body, timeout=_REQUEST_TIMEOUT_SECONDS
+        endpoint,
+        data=post_body,
+        timeout=_REQUEST_TIMEOUT_SECONDS,
+        headers={"User-Agent": "tensorboard/%s" % version.VERSION},
     )
   except requests.RequestException as e:
     raise CommunicationError("Failed to connect to backend: %s" % e)
@@ -92,6 +95,20 @@ def create_server_info(frontend_origin, api_endpoint):
   url_format.template = "%s/experiment/%s/" % (frontend_origin, placeholder)
   url_format.id_placeholder = placeholder
   return result
+
+
+def experiment_url(server_info, experiment_id):
+  """Formats a URL that will resolve to the provided experiment.
+
+  Args:
+    server_info: A `server_info_pb2.ServerInfoResponse` message.
+    experiment_id: A string; the ID of the experiment to link to.
+
+  Returns:
+    A URL resolving to the given experiment, as a string.
+  """
+  url_format = server_info.url_format
+  return url_format.template.replace(url_format.id_placeholder, experiment_id)
 
 
 class CommunicationError(RuntimeError):

@@ -12,13 +12,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {expect} from 'chai';
-import * as sinon from 'sinon';
-
-import * as actions from './core.actions';
+import * as actions from '../actions';
 import {reducers} from './core.reducers';
-import {createPluginMetadata, createCoreState} from './testing';
-import {LoadState} from '../types/api';
+import {createPluginMetadata, createCoreState} from '../testing';
+import {LoadState} from '../../types/api';
 
 function createPluginsListing() {
   return {
@@ -34,7 +31,7 @@ describe('core reducer', () => {
 
       const nextState = reducers(state, actions.changePlugin({plugin: 'bar'}));
 
-      expect(nextState).to.have.property('activePlugin', 'bar');
+      expect(nextState.activePlugin).toBe('bar');
     });
 
     it('does not change plugins when activePlugin changes', () => {
@@ -45,10 +42,7 @@ describe('core reducer', () => {
 
       const nextState = reducers(state, actions.changePlugin({plugin: 'bar'}));
 
-      expect(nextState).to.have.deep.property(
-        'plugins',
-        createPluginsListing()
-      );
+      expect(nextState.plugins).toEqual(createPluginsListing());
     });
   });
 
@@ -74,9 +68,7 @@ describe('core reducer', () => {
         });
         const nextState = reducers(state, action);
 
-        expect(nextState)
-          .to.have.property('pluginsListLoaded')
-          .to.have.property('state', expectedState);
+        expect(nextState.pluginsListLoaded.state).toEqual(expectedState);
       });
 
       it('keeps the lastLoadedTimeInMs the same', () => {
@@ -88,25 +80,15 @@ describe('core reducer', () => {
         });
         const nextState = reducers(state, action);
 
-        expect(nextState)
-          .to.have.property('pluginsListLoaded')
-          .to.have.property('lastLoadedTimeInMs', 1337);
+        expect(nextState.pluginsListLoaded.lastLoadedTimeInMs).toBe(1337);
       });
     });
   });
 
   describe('#pluginsListingLoaded', () => {
-    // type definition of sinon differs in google3 and it cannot be strongly
-    // typed.
-    // TODO(stephanwlee): prefer to use jasmine from now on.
-    let clock: any;
-
     beforeEach(() => {
-      clock = sinon.useFakeTimers(1000);
-    });
-
-    afterEach(() => {
-      clock.restore();
+      // Angular's zonejs installs mock clock by default. No need for another.
+      jasmine.clock().mockDate(new Date(1000));
     });
 
     it('sets plugins with the payload', () => {
@@ -116,10 +98,7 @@ describe('core reducer', () => {
         actions.pluginsListingLoaded({plugins: createPluginsListing()})
       );
 
-      expect(nextState).to.have.deep.property(
-        'plugins',
-        createPluginsListing()
-      );
+      expect(nextState.plugins).toEqual(createPluginsListing());
     });
 
     it('sets the pluginsListLoaded', () => {
@@ -136,7 +115,7 @@ describe('core reducer', () => {
         actions.pluginsListingLoaded({plugins: createPluginsListing()})
       );
 
-      expect(nextState).to.have.deep.property('pluginsListLoaded', {
+      expect(nextState.pluginsListLoaded).toEqual({
         state: LoadState.LOADED,
         lastLoadedTimeInMs: 1000,
       });
@@ -150,7 +129,7 @@ describe('core reducer', () => {
         actions.pluginsListingLoaded({plugins: createPluginsListing()})
       );
 
-      expect(nextState).to.have.property('activePlugin', 'core');
+      expect(nextState.activePlugin).toBe('core');
     });
 
     it('does not change activePlugin when already defined', () => {
@@ -161,7 +140,7 @@ describe('core reducer', () => {
         actions.pluginsListingLoaded({plugins: createPluginsListing()})
       );
 
-      expect(nextState).to.have.property('activePlugin', 'foo');
+      expect(nextState.activePlugin).toBe('foo');
     });
   });
 
@@ -171,11 +150,11 @@ describe('core reducer', () => {
 
       const state2 = reducers(state1, actions.toggleReloadEnabled());
 
-      expect(state2).to.have.property('reloadEnabled', true);
+      expect(state2.reloadEnabled).toBe(true);
 
       const state3 = reducers(state2, actions.toggleReloadEnabled());
 
-      expect(state3).to.have.property('reloadEnabled', false);
+      expect(state3.reloadEnabled).toBe(false);
     });
   });
 
@@ -188,7 +167,7 @@ describe('core reducer', () => {
         actions.changeReloadPeriod({periodInMs: 1000})
       );
 
-      expect(nextState).to.have.property('reloadPeriodInMs', 1000);
+      expect(nextState.reloadPeriodInMs).toBe(1000);
     });
 
     it('ignores the action when periodInMs is non-positive', () => {
@@ -198,13 +177,13 @@ describe('core reducer', () => {
         baseState,
         actions.changeReloadPeriod({periodInMs: 0})
       );
-      expect(state1).to.have.property('reloadPeriodInMs', 1);
+      expect(state1.reloadPeriodInMs).toBe(1);
 
       const state2 = reducers(
         baseState,
         actions.changeReloadPeriod({periodInMs: -1000})
       );
-      expect(state2).to.have.property('reloadPeriodInMs', 1);
+      expect(state2.reloadPeriodInMs).toBe(1);
     });
   });
 });

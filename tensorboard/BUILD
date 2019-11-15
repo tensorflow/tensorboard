@@ -245,6 +245,19 @@ py_library(
     visibility = ["//visibility:public"],
 )
 
+py_test(
+    name = "version_test",
+    size = "small",
+    srcs = ["version_test.py"],
+    srcs_version = "PY2AND3",
+    tags = ["support_notf"],
+    deps = [
+        ":test",
+        ":version",
+        "//tensorboard:expect_pkg_resources_installed",
+    ],
+)
+
 config_setting(
     name = "dev_build",
     # consider changing this to fastbuild
@@ -263,7 +276,7 @@ tf_web_library(
         "//tensorboard/components:index.html",
         "//tensorboard/components:trace_viewer_index.html",
     ] + select({
-        "//tensorboard:dev_build": ["//tensorboard/components:ng_index"],
+        "//tensorboard:dev_build": ["//tensorboard/webapp:ng_index"],
         "//conditions:default": [],
     }),
     path = "/",
@@ -280,7 +293,7 @@ tf_web_library(
         "//tensorboard/components:trace_viewer_index.html.scripts_sha256",
     ] + select({
         "//tensorboard:dev_build": [
-            "//tensorboard/components:ng_index.html.scripts_sha256",
+            "//tensorboard/webapp:ng_index.html.scripts_sha256",
         ],
         "//conditions:default": [],
     }),

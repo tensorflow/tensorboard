@@ -111,6 +111,18 @@ class FetchServerInfoTest(tb_test.TestCase):
     self.assertIn("Corrupt response from backend", msg)
     self.assertIn("an unlikely proto", msg)
 
+  def test_user_agent(self):
+    @wrappers.BaseRequest.application
+    def app(request):
+      result = server_info_pb2.ServerInfoResponse()
+      result.compatibility.details = request.headers["User-Agent"]
+      return wrappers.BaseResponse(result.SerializeToString())
+
+    origin = self._start_server(app)
+    result = server_info.fetch_server_info(origin)
+    expected_user_agent = "tensorboard/%s" % version.VERSION
+    self.assertEqual(result.compatibility.details, expected_user_agent)
+
 
 class CreateServerInfoTest(tb_test.TestCase):
   """Tests for `create_server_info`."""
@@ -133,6 +145,17 @@ class CreateServerInfoTest(tb_test.TestCase):
     actual_url = url_format.template.replace(url_format.id_placeholder, "123")
     expected_url = "http://localhost:8080/experiment/123/"
     self.assertEqual(actual_url, expected_url)
+
+
+class ExperimentUrlTest(tb_test.TestCase):
+  """Tests for `experiment_url`."""
+
+  def test(self):
+    info = server_info_pb2.ServerInfoResponse()
+    info.url_format.template = "https://unittest.tensorboard.dev/x/???"
+    info.url_format.id_placeholder = "???"
+    actual = server_info.experiment_url(info, "123")
+    self.assertEqual(actual, "https://unittest.tensorboard.dev/x/123")
 
 
 def _localhost():
