@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import print_function
 
 import abc
+import datetime
 import json
 import os
 import sys
@@ -31,6 +32,7 @@ import grpc
 import six
 
 from tensorboard.uploader import dev_creds
+from tensorboard.uploader.proto import export_service_pb2
 from tensorboard.uploader.proto import export_service_pb2_grpc
 from tensorboard.uploader.proto import write_service_pb2_grpc
 from tensorboard.uploader import auth
@@ -359,12 +361,34 @@ class _ListIntent(_Intent):
 
   def execute(self, server_info, channel):
     api_client = export_service_pb2_grpc.TensorBoardExporterServiceStub(channel)
-    gen = exporter_lib.list_experiments(api_client)
+    fieldmask = export_service_pb2.ExperimentMask(
+        create_time=True,
+        update_time=True,
+        num_scalars=True,
+        num_runs=True,
+        num_tags=True,
+    )
+    gen = exporter_lib.list_experiments(api_client, fieldmask=fieldmask)
     count = 0
-    for experiment_id in gen:
+    for experiment in gen:
       count += 1
+      if not isinstance(experiment, export_service_pb2.Experiment):
+        url = server_info_lib.experiment_url(server_info, experiment)
+        print(url)
+        continue
+      experiment_id = experiment.experiment_id
       url = server_info_lib.experiment_url(server_info, experiment_id)
       print(url)
+      data = [
+          ('Id', experiment.experiment_id),
+          ('Created', _format_time(experiment.create_time)),
+          ('Updated', _format_time(experiment.update_time)),
+          ('Scalars', str(experiment.num_scalars)),
+          ('Runs', str(experiment.num_runs)),
+          ('Tags', str(experiment.num_tags)),
+      ]
+      for (name, value) in data:
+        print('\t%s %s' % (name.ljust(10), value))
     sys.stdout.flush()
     if not count:
       sys.stderr.write(
@@ -536,6 +560,23 @@ def _die(message):
   sys.stderr.write('%s\n' % (message,))
   sys.stderr.flush()
   sys.exit(1)
+
+
+def _format_time(timestamp_pb):
+  # Add and subtract a day for <https://bugs.python.org/issue29097>,
+  # which breaks early datetime conversions on Windows for small
+  # timestamps.
+  dt = datetime.datetime.fromtimestamp(timestamp_pb.seconds + 86400)
+  dt = dt - datetime.timedelta(seconds=86400)
+
+  ago = datetime.datetime.now().replace(microsecond=0) - dt
+  if ago < datetime.timedelta(seconds=5):
+    return "just now"
+  if ago < datetime.timedelta(minutes=1):
+    return "%d seconds ago" % ago.total_seconds()
+  if ago < datetime.timedelta(days=1):
+    return "%s ago" % ago
+  return str(dt)
 
 
 def main(unused_argv):

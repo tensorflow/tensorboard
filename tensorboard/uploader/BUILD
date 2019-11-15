@@ -20,6 +20,7 @@ py_library(
         "//tensorboard:expect_grpc_installed",
         "//tensorboard/uploader/proto:protos_all_py_pb2",
         "//tensorboard/util:grpc_util",
+        "@org_pythonhosted_six",
     ],
 )
 
