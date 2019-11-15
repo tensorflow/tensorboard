@@ -66,6 +66,7 @@ py_library(
         ":experiment_id",
         ":http_util",
         ":path_prefix",
+        ":security_validator",
         "//tensorboard:errors",
         "//tensorboard:expect_sqlite3_installed",
         "//tensorboard/backend/event_processing:data_provider",
@@ -167,5 +168,30 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/compat:tensorflow",
+    ],
+)
+
+py_library(
+    name = "security_validator",
+    srcs = ["security_validator.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        "//tensorboard/util:tb_logging",
+        "@org_pocoo_werkzeug",
+    ],
+)
+
+py_test(
+    name = "security_validator_test",
+    size = "small",
+    srcs = ["security_validator_test.py"],
+    srcs_version = "PY2AND3",
+    tags = ["support_notf"],
+    deps = [
+        ":security_validator",
+        "//tensorboard:test",
+        "//tensorboard/util:tb_logging",
+        "@org_pocoo_werkzeug",
+        "@org_pythonhosted_mock",
     ],
 )
