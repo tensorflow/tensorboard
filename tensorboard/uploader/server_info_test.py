@@ -147,6 +147,17 @@ class CreateServerInfoTest(tb_test.TestCase):
     self.assertEqual(actual_url, expected_url)
 
 
+class ExperimentUrlTest(tb_test.TestCase):
+  """Tests for `experiment_url`."""
+
+  def test(self):
+    info = server_info_pb2.ServerInfoResponse()
+    info.url_format.template = "https://unittest.tensorboard.dev/x/???"
+    info.url_format.id_placeholder = "???"
+    actual = server_info.experiment_url(info, "123")
+    self.assertEqual(actual, "https://unittest.tensorboard.dev/x/123")
+
+
 def _localhost():
   """Gets family and nodename for a loopback address."""
   s = socket
