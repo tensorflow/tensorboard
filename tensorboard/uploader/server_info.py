@@ -97,6 +97,20 @@ def create_server_info(frontend_origin, api_endpoint):
   return result
 
 
+def experiment_url(server_info, experiment_id):
+  """Formats a URL that will resolve to the provided experiment.
+
+  Args:
+    server_info: A `server_info_pb2.ServerInfoResponse` message.
+    experiment_id: A string; the ID of the experiment to link to.
+
+  Returns:
+    A URL resolving to the given experiment, as a string.
+  """
+  url_format = server_info.url_format
+  return url_format.template.replace(url_format.id_placeholder, experiment_id)
+
+
 class CommunicationError(RuntimeError):
   """Raised upon failure to communicate with the server."""
 

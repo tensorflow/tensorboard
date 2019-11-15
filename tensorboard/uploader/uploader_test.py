@@ -61,7 +61,7 @@ class TensorboardUploaderTest(tf.test.TestCase):
     stub = write_service_pb2_grpc.TensorBoardWriterServiceStub(test_channel)
     mock_client = mock.create_autospec(stub)
     fake_exp_response = write_service_pb2.CreateExperimentResponse(
-        experiment_id="123", url="https://example.com/123")
+        experiment_id="123", url="should not be used!")
     mock_client.CreateExperiment.return_value = fake_exp_response
     return mock_client
 
@@ -69,8 +69,8 @@ class TensorboardUploaderTest(tf.test.TestCase):
     logdir = "/logs/foo"
     mock_client = self._create_mock_client()
     uploader = uploader_lib.TensorBoardUploader(mock_client, logdir)
-    url = uploader.create_experiment()
-    self.assertEqual(url, "https://example.com/123")
+    eid = uploader.create_experiment()
+    self.assertEqual(eid, "123")
 
   def test_start_uploading_without_create_experiment_fails(self):
     mock_client = self._create_mock_client()
