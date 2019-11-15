@@ -40,7 +40,8 @@ message StreamExperimentsResponse {
   // Deprecated in favor of `experiments`. If a response has `experiments` set,
   // clients should ignore `experiment_ids` entirely. Otherwise, clients should
   // treat `experiment_ids` as a list of `experiments` for which only the
-  // `experiment_id` field is set.
+  // `experiment_id` field is set, with the understanding that the other fields
+  // were not populated regardless of the requested field mask.
   //
   // For example, the following responses should be treated the same:
   //
@@ -90,7 +91,8 @@ message Experiment {
 
 // Field mask for `Experiment`. The `experiment_id` field is always implicitly
 // considered to be requested. Other fields of `Experiment` will be populated
-// if and only if their corresponding bit in the `ExperimentMask` is set.
+// if their corresponding bits in the `ExperimentMask` are set. The server may
+// choose to populate fields that are not explicitly requested.
 message ExperimentMask {
   reserved 1;
   reserved "experiment_id";
