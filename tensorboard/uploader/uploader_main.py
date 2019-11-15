@@ -68,6 +68,9 @@ _AUTH_SUBCOMMAND_FLAG = '_uploader__subcommand_auth'
 _AUTH_SUBCOMMAND_KEY_REVOKE = 'REVOKE'
 
 _DEFAULT_ORIGIN = "https://tensorboard.dev"
+# Compatibility measure until server-side /api/uploader support is
+# rolled out and stable.
+_HARDCODED_API_ENDPOINT = "api.tensorboard.dev:443"
 
 
 def _prompt_for_user_ack(intent):
@@ -104,7 +107,7 @@ def _define_flags(parser):
   parser.add_argument(
       '--api_endpoint',
       type=str,
-      default='api.tensorboard.dev:443',
+      default='',
       help='Experimental. Direct URL for the API server accepting '
       'write requests. If set, will skip initial server handshake '
       'unless `--origin` is also set.')
@@ -503,8 +506,10 @@ def _get_intent(flags):
 
 def _get_server_info(flags):
   origin = flags.origin or _DEFAULT_ORIGIN
-  if flags.api_endpoint and not flags.origin:
-    return server_info_lib.create_server_info(origin, flags.api_endpoint)
+  if not flags.origin:
+    # Temporary fallback to hardcoded API endpoint when not specified.
+    api_endpoint = flags.api_endpoint or _HARDCODED_API_ENDPOINT
+    return server_info_lib.create_server_info(origin, api_endpoint)
   server_info = server_info_lib.fetch_server_info(origin)
   # Override with any API server explicitly specified on the command
   # line, but only if the server accepted our initial handshake.
