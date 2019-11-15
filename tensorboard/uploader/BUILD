@@ -56,6 +56,7 @@ py_library(
         ":auth",
         ":dev_creds",
         ":exporter_lib",
+        ":server_info",
         ":uploader_lib",
         "//tensorboard:expect_absl_app_installed",
         "//tensorboard:expect_absl_flags_argparse_flags_installed",
