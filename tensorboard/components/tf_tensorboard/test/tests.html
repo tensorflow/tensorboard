@@ -19,19 +19,18 @@ limitations under the License.
 <html>
   <head>
     <link rel="import" href="../../tf-imports/polymer.html" />
-    <script
-      jscomp-nocompile
-      src="../../webcomponentsjs/webcomponents-lite.js"
-    ></script>
     <script src="../../web-component-tester/browser.js"></script>
+    <link rel="import" href="../../analytics.html" />
     <link rel="import" href="../tf-tensorboard.html" />
-    <link rel="stylesheet" type="text/css" href="../../../lib/css/global.css" />
   </head>
   <body>
     <test-fixture id="tensorboardFixture">
       <template>
         <tf-tensorboard>
-          <span id="inject-me"
+          <span id="custom-overview" slot="injected-overview"
+            >Injected content should be rendered by the element.</span
+          >
+          <span id="custom-header-items" slot="injected-header-items"
             >Injected content should be rendered by the element.</span
           >
         </tf-tensorboard>
