@@ -206,12 +206,26 @@ class RespondTest(tb_test.TestCase):
     expected_csp = (
         "default-src 'self';font-src 'self';frame-ancestors *;"
         "frame-src 'self';img-src 'self' data: blob:;object-src 'none';"
+        "style-src https://www.gstatic.com data: 'unsafe-inline';"
+        "script-src 'unsafe-eval'"
+    )
+    self.assertEqual(r.headers.get('Content-Security-Policy'), expected_csp)
+
+  @mock.patch.object(http_util, '_CSP_SCRIPT_SELF', False)
+  @mock.patch.object(http_util, '_CSP_SCRIPT_UNSAFE_EVAL', False)
+  def testCsp_noHash_noUnsafeEval(self):
+    q = wrappers.Request(wtest.EnvironBuilder().get_environ())
+    r = http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=None)
+    expected_csp = (
+        "default-src 'self';font-src 'self';frame-ancestors *;"
+        "frame-src 'self';img-src 'self' data: blob:;object-src 'none';"
         "style-src 'self' https://www.gstatic.com data: 'unsafe-inline';"
         "script-src 'none'"
     )
     self.assertEqual(r.headers.get('Content-Security-Policy'), expected_csp)
 
   @mock.patch.object(http_util, '_CSP_SCRIPT_SELF', True)
+  @mock.patch.object(http_util, '_CSP_SCRIPT_UNSAFE_EVAL', False)
   def testCsp_onlySelf(self):
     q = wrappers.Request(wtest.EnvironBuilder().get_environ())
     r = http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=None)
