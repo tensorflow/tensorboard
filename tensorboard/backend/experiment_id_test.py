@@ -76,6 +76,10 @@ class ExperimentIdMiddlewareTest(tb_test.TestCase):
     response = self.server.get("/experiment/123/x/y")
     self._assert_ok(response, eid="123", path="/x/y", script="/experiment/123")
 
+  def test_with_empty_experiment_empty_path(self):
+    response = self.server.get("/experiment/")
+    self._assert_ok(response, eid="", path="", script="/experiment/")
+
   def test_with_empty_experiment_root_path(self):
     response = self.server.get("/experiment//")
     self._assert_ok(response, eid="", path="/", script="/experiment/")
