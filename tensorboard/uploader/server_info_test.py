@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import print_function
 
 import errno
+import json
 import os
 import socket
 from wsgiref import simple_server
@@ -122,6 +123,30 @@ class FetchServerInfoTest(tb_test.TestCase):
     result = server_info.fetch_server_info(origin)
     expected_user_agent = "tensorboard/%s" % version.VERSION
     self.assertEqual(result.compatibility.details, expected_user_agent)
+
+  def test_cookie_missing(self):
+    @wrappers.BaseRequest.application
+    def app(request):
+      result = server_info_pb2.ServerInfoResponse()
+      result.compatibility.details = json.dumps(request.cookies)
+      return wrappers.BaseResponse(result.SerializeToString())
+
+    origin = self._start_server(app)
+    result = server_info.fetch_server_info(origin, cookie=None)
+    actual_cookies = json.loads(result.compatibility.details)
+    self.assertEqual(actual_cookies, {})
+
+  def test_cookie_given(self):
+    @wrappers.BaseRequest.application
+    def app(request):
+      result = server_info_pb2.ServerInfoResponse()
+      result.compatibility.details = json.dumps(request.cookies)
+      return wrappers.BaseResponse(result.SerializeToString())
+
+    origin = self._start_server(app)
+    result = server_info.fetch_server_info(origin, cookie="a=b; x=y")
+    actual_cookies = json.loads(result.compatibility.details)
+    self.assertEqual(actual_cookies, {"a": "b", "x": "y"})
 
 
 class CreateServerInfoTest(tb_test.TestCase):

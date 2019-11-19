@@ -105,6 +105,14 @@ def _define_flags(parser):
       'to connect. If not set, defaults to %r.' % _DEFAULT_ORIGIN)
 
   parser.add_argument(
+      '--cookie_file',
+      type=str,
+      default='',
+      help='Path to file containing value of HTTP Cookie header to '
+      'send to frontend given by `--origin` for initial handshake. If '
+      'empty or unset (the default), no cookie will be sent.')
+
+  parser.add_argument(
       '--api_endpoint',
       type=str,
       default='',
@@ -506,11 +514,16 @@ def _get_intent(flags):
 
 def _get_server_info(flags):
   origin = flags.origin or _DEFAULT_ORIGIN
+  if flags.cookie_file:
+    with open(flags.cookie_file, "r") as infile:
+      cookie = infile.read()
+  else:
+    cookie = None
   if not flags.origin:
     # Temporary fallback to hardcoded API endpoint when not specified.
     api_endpoint = flags.api_endpoint or _HARDCODED_API_ENDPOINT
     return server_info_lib.create_server_info(origin, api_endpoint)
-  server_info = server_info_lib.fetch_server_info(origin)
+  server_info = server_info_lib.fetch_server_info(origin, cookie=cookie)
   # Override with any API server explicitly specified on the command
   # line, but only if the server accepted our initial handshake.
   if flags.api_endpoint and server_info.api_server.endpoint:

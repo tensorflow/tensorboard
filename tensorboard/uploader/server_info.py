@@ -35,13 +35,15 @@ def _server_info_request():
   return request
 
 
-def fetch_server_info(origin):
+def fetch_server_info(origin, cookie=None):
   """Fetches server info from a remote server.
 
   Args:
     origin: The server with which to communicate. Should be a string
       like "https://tensorboard.dev", including protocol, host, and (if
       needed) port.
+    cookie: Optional; a string to send as the `Cookie` header. Can be
+      used to connect to frontend servers behind authentication walls.
 
   Returns:
     A `server_info_pb2.ServerInfoResponse` message.
@@ -57,7 +59,10 @@ def fetch_server_info(origin):
         endpoint,
         data=post_body,
         timeout=_REQUEST_TIMEOUT_SECONDS,
-        headers={"User-Agent": "tensorboard/%s" % version.VERSION},
+        headers={
+            "User-Agent": "tensorboard/%s" % version.VERSION,
+            "Cookie": cookie or "",
+        },
     )
   except requests.RequestException as e:
     raise CommunicationError("Failed to connect to backend: %s" % e)
