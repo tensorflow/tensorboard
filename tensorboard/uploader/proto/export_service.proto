@@ -29,10 +29,10 @@ message StreamExperimentsRequest {
   // user might have any data by setting limit=1. Also useful to preview the
   // list of experiments. TODO(@karthikv2k): Support pagination.
   int64 limit = 3;
-  // Field mask for what experiment data to return. If not specified, this
-  // should be interpreted the same as an empty message, which specifies that
-  // only the experiment ID should be returned.
-  ExperimentMask experiment_mask = 4;
+  // Field mask for what experiment data to return via the `experiments` field
+  // on the response. If not specified, this should be interpreted the same as
+  // an empty message: i.e., only the experiment ID should be returned.
+  ExperimentMask experiments_mask = 4;
 }
 
 // Streams experiment metadata (ID, creation time, etc.) from TensorBoard.dev.
