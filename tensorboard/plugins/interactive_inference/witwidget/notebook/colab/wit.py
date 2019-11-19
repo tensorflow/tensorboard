@@ -274,7 +274,6 @@ class WitWidget(base.WitWidgetBase):
       output.eval_js("""inferenceCallback({inferences})""".format(
           inferences=json.dumps(inferences)))
     except Exception as e:
-      print(e)
       output.eval_js("""backendError({error})""".format(
           error=json.dumps({'msg': repr(e)})))
 
