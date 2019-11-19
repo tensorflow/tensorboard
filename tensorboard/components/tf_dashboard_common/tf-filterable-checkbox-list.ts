@@ -82,10 +82,6 @@ namespace tf_dashboard_common {
       },
     },
 
-    listeners: {
-      'dom-change': '_synchronizeColors',
-    },
-
     observers: [
       '_synchronizeColors(useCheckboxColors)',
       '_synchronizeColors(coloring)',
