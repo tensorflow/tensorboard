@@ -184,7 +184,7 @@ def list_experiments(api_client, fieldmask=None, read_time=None):
   request = export_service_pb2.StreamExperimentsRequest(limit=_MAX_INT64)
   util.set_timestamp(request.read_timestamp, read_time)
   if fieldmask:
-    request.experiment_mask.CopyFrom(fieldmask)
+    request.experiments_mask.CopyFrom(fieldmask)
   stream = api_client.StreamExperiments(
       request, metadata=grpc_util.version_metadata())
   for response in stream:
