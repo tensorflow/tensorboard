@@ -829,7 +829,18 @@ def run_inference(examples, serving_bundle):
 
     values = []
     for pred in preds:
-      values.append(pred[preds_key])
+      # If the prediction dictionary contains only one key, use that key.
+      returned_keys = list(pred.keys())
+      if len(returned_keys) == 1:
+        key_to_use = returned_keys[0]
+      else:
+        key_to_use = preds_key
+
+      if key_to_use not in pred:
+        raise KeyError(
+          '"%s" not found in model predictions dictionary' % key_to_use)
+
+      values.append(pred[key_to_use])
     return (common_utils.convert_prediction_values(values, serving_bundle),
             None)
   elif serving_bundle.custom_predict_fn:

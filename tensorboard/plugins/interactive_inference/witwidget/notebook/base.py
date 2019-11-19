@@ -530,7 +530,7 @@ class WitWidgetBase(object):
           # If the dictionary only contains one key, use it.
           results_keys = list(pred.keys())
           if len(results_keys) == 1:
-            result_key = results_keys[0]
+            results_key = results_keys[0]
           else:
             results_key = self.config.get('predict_output_tensor')
             # Use default keys if no specific one is provided.
