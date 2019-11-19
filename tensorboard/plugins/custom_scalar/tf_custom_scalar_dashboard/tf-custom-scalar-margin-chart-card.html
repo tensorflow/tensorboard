@@ -195,10 +195,7 @@ limitations under the License.
         <iron-collapse opened="[[_matchesListOpened]]">
           <div id="matches-list">
             <template is="dom-repeat" items="[[_seriesNames]]" as="seriesName">
-              <div
-                class="match-list-entry"
-                style="color: [[_determineColor(_colorScale, seriesName)]];"
-              >
+              <div class="match-list-entry">
                 <span class="match-entry-symbol">
                   [[_determineSymbol(_nameToDataSeries, seriesName)]]
                 </span>
@@ -453,6 +450,9 @@ limitations under the License.
         // Clear the data series when the tag filter changes.
         '_refreshDataSeries(_tagFilter)',
       ],
+      listeners: {
+        'dom-change': '_matchListEntryColorUpdated',
+      },
       reload() {
         this.$.loader.reload();
       },
@@ -717,6 +717,19 @@ limitations under the License.
           '_missingTagsCollapsibleOpened',
           !this._missingTagsCollapsibleOpened
         );
+      },
+      _matchListEntryColorUpdated(event) {
+        const [maybeDomRepeat] = event.path;
+        if (maybeDomRepeat.nodeName !== 'DOM-REPEAT') return;
+        this.root
+          .querySelectorAll('.match-list-entry')
+          .forEach((entryElement) => {
+            const seriesName = maybeDomRepeat.itemForElement(entryElement);
+            entryElement.style.color = this._determineColor(
+              this._colorScale,
+              seriesName
+            );
+          });
       },
     });
   </script>
