@@ -506,14 +506,6 @@ class WitWidgetBase(object):
       if 'error' in response:
         raise RuntimeError(response['error'])
 
-    # Get the key to extract the prediction results from.
-    results_key = self.config.get('predict_output_tensor')
-    if results_key is None:
-      if self.config.get('model_type') == 'classification':
-        results_key = 'probabilities'
-      else:
-        results_key = 'outputs'
-
     # Parse the results from the responses and return them.
     all_predictions = []
     all_baseline_scores = []
@@ -535,16 +527,46 @@ class WitWidgetBase(object):
       for pred in response['predictions']:
         # If the prediction contains a key to fetch the prediction, use it.
         if isinstance(pred, dict):
+          # If the dictionary only contains one key, use it.
+          results_keys = list(pred.keys())
+          if len(results_keys) == 1:
+            result_key = results_keys[0]
+          else:
+            results_key = self.config.get('predict_output_tensor')
+            # Use default keys if no specific one is provided.
+            if results_key is None:
+              if self.config.get('model_type') == 'classification':
+                results_key = 'probabilities'
+              else:
+                results_key = 'outputs'
+
+          if results_key not in pred:
+            raise KeyError(
+              '"%s" not found in model predictions dictionary' % results_key)
+
           pred = pred[results_key]
+
         # If the model is regression and the response is a list, extract the
         # score by taking the first element.
         if (self.config.get('model_type') == 'regression' and
             isinstance(pred, list)):
           pred = pred[0]
+
         # If an prediction adjustment function was provided, use it to adjust
         # the prediction.
         if adjust_prediction:
           pred = adjust_prediction(pred)
+
+        # If the model is classification and the response is a single number,
+        # treat that as the positive class score for a binary classification
+        # and convert it into a list of those two class scores. WIT only
+        # accepts lists of class scores as results from classification models.
+        if (self.config.get('model_type') == 'classification'):
+          if not isinstance(pred, list):
+            pred = [pred]
+          if len(pred) == 1:
+            pred = [1 - pred[0], pred[0]]
+
         all_predictions.append(pred)
 
     results = {'predictions': all_predictions}
