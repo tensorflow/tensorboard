@@ -124,6 +124,7 @@ tensorboard_html_binary(
     name = "ng_index",
     input_path = "/index.html",
     output_path = "/ng_index.html",
+    js_path = "/ng_index.js",
     deps = [":tensorboard-webapp"],
 )
 
