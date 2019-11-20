@@ -16,6 +16,15 @@ namespace tf_tensorboard {
   const {expect} = chai;
 
   declare function fixture(id: string): void;
+  declare const Polymer: any;
+
+  function checkSlottedUnderAncestor(element: Element, ancestor: Element) {
+    expect(!!element.assignedSlot).to.be.true;
+
+    const slot = element.assignedSlot as Element;
+    const isContained = Polymer.dom(ancestor).deepContains(slot);
+    expect(isContained).to.be.true;
+  }
 
   describe('tf-tensorboard tests', () => {
     window.HTMLImports.whenReady(() => {
@@ -28,26 +37,14 @@ namespace tf_tensorboard {
 
       it('renders injected content', function() {
         const overview = tensorboard.querySelector('#custom-overview');
-        checkSlottedUnderAncestor(overview, '#content-pane');
+        const contentPane = tensorboard.$$('#content-pane');
+        checkSlottedUnderAncestor(overview, contentPane);
 
         const headerItem1 = tensorboard.querySelector('#custom-header-item1');
         const headerItem2 = tensorboard.querySelector('#custom-header-item2');
-        checkSlottedUnderAncestor(headerItem1, '.header');
-        checkSlottedUnderAncestor(headerItem2, '.header');
-
-        function checkSlottedUnderAncestor(
-          element: Element,
-          ancestorSelector: string
-        ) {
-          expect(!!element.assignedSlot).to.be.true;
-
-          const slot = element.assignedSlot as Element;
-          const matchingAncestor = tf_utils.matchingAncestor(
-            slot,
-            ancestorSelector
-          );
-          expect(!!matchingAncestor).to.be.true;
-        }
+        const header = tensorboard.$$('.header');
+        checkSlottedUnderAncestor(headerItem1, header);
+        checkSlottedUnderAncestor(headerItem2, header);
       });
 
       // TODO(psybuzz): Restore or remove these tests. This folder's tests seems
@@ -65,6 +62,8 @@ namespace tf_tensorboard {
         });
       });
 
+      // TODO(psybuzz): Restore or remove these tests. This folder's tests seems
+      // to have not been running since the GitHub repo history was tracked.
       xdescribe('top right global icons', function() {
         it('Clicking the reload button will call reload', function() {
           let called = false;

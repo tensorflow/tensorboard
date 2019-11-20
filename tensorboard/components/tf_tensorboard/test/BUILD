@@ -26,6 +26,5 @@ tf_web_library(
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_imports:web_component_tester",
         "//tensorboard/components/tf_tensorboard",
-        "//tensorboard/components/tf_utils",
     ],
 )

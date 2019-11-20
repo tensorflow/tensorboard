@@ -95,31 +95,6 @@ namespace tf_utils {
     return {displayName, description};
   }
 
-  export function parentNodeOrShadowHost(node: Node): Node | null {
-    if (node.parentNode) return node.parentNode;
-    if (this.nodeType === Node.DOCUMENT_FRAGMENT_NODE && this.host)
-      return this.host;
-    return null;
-  }
-
-  export function matchingAncestor(
-    node: Node,
-    selector: string
-  ): Element | null {
-    const parent = tf_utils.parentNodeOrShadowHost(node);
-    for (
-      let node = parent;
-      node;
-      node = tf_utils.parentNodeOrShadowHost(node as Node)
-    ) {
-      if (node.nodeType === Node.ELEMENT_NODE) {
-        const element = node as Element;
-        if (element.matches(selector)) return element;
-      }
-    }
-    return null;
-  }
-
   function ngettext(k: number, enSingular: string, enPlural: string): string {
     // Potential extension point for proper i18n infrastructure, if we
     // ever implement it.
