@@ -535,7 +535,7 @@ class WitWidgetBase(object):
             returned_keys = list(pred.keys())
             if len(returned_keys) == 1:
               key_to_use = returned_keys[0]
-            # Use default keys if necessary.
+            # Use a default key if necessary.
             elif self.config.get('model_type') == 'classification':
               key_to_use = 'probabilities'
             else:
