@@ -47,8 +47,8 @@ namespace tf_tensorboard {
         checkSlottedUnderAncestor(headerItem2, header);
       });
 
-      // TODO(psybuzz): Restore or remove these tests. This folder's tests seems
-      // to have not been running since the GitHub repo history was tracked.
+      // TODO(psybuzz): Restore/remove these old tests, which fail due to broken
+      // DOM ids that changed. Previously this folder's tests did not run.
       xit('reloads the active dashboard on request', (done) => {
         tensorboard.$.tabs.set('selected', 'scalars');
         setTimeout(() => {
@@ -62,8 +62,8 @@ namespace tf_tensorboard {
         });
       });
 
-      // TODO(psybuzz): Restore or remove these tests. This folder's tests seems
-      // to have not been running since the GitHub repo history was tracked.
+      // TODO(psybuzz): Restore/remove these old tests, which fail due to broken
+      // DOM ids that changed. Previously this folder's tests did not run.
       xdescribe('top right global icons', function() {
         it('Clicking the reload button will call reload', function() {
           let called = false;
