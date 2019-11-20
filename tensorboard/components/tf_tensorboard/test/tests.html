@@ -20,6 +20,7 @@ limitations under the License.
   <head>
     <link rel="import" href="../../tf-imports/polymer.html" />
     <script src="../../web-component-tester/browser.js"></script>
+    <link rel="import" href="../../tf-utils/tf-utils.html" />
     <link rel="import" href="../../analytics.html" />
     <link rel="import" href="../tf-tensorboard.html" />
   </head>
@@ -30,7 +31,10 @@ limitations under the License.
           <span id="custom-overview" slot="injected-overview"
             >Injected content should be rendered by the element.</span
           >
-          <span id="custom-header-items" slot="injected-header-items"
+          <span id="custom-header-item1" slot="injected-header-items"
+            >Injected content should be rendered by the element.</span
+          >
+          <span id="custom-header-item2" slot="injected-header-items"
             >Injected content should be rendered by the element.</span
           >
         </tf-tensorboard>

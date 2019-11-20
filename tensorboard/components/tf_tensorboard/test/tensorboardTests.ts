@@ -27,13 +27,31 @@ namespace tf_tensorboard {
       });
 
       it('renders injected content', function() {
-        let overview = tensorboard.querySelector('#custom-overview');
-        expect(overview.assignedSlot.name).to.equal('injected-overview');
+        const overview = tensorboard.querySelector('#custom-overview');
+        checkSlottedUnderAncestor(overview, '#content-pane');
 
-        let headerItems = tensorboard.querySelector('#custom-header-items');
-        expect(headerItems.assignedSlot.name).to.equal('injected-header-items');
+        const headerItem1 = tensorboard.querySelector('#custom-header-item1');
+        const headerItem2 = tensorboard.querySelector('#custom-header-item2');
+        checkSlottedUnderAncestor(headerItem1, '.header');
+        checkSlottedUnderAncestor(headerItem2, '.header');
+
+        function checkSlottedUnderAncestor(
+          element: Element,
+          ancestorSelector: string
+        ) {
+          expect(!!element.assignedSlot).to.be.true;
+
+          const slot = element.assignedSlot as Element;
+          const matchingAncestor = tf_utils.matchingAncestor(
+            slot,
+            ancestorSelector
+          );
+          expect(!!matchingAncestor).to.be.true;
+        }
       });
 
+      // TODO(psybuzz): Restore or remove these tests. This folder's tests seems
+      // to have not been running since the GitHub repo history was tracked.
       xit('reloads the active dashboard on request', (done) => {
         tensorboard.$.tabs.set('selected', 'scalars');
         setTimeout(() => {
