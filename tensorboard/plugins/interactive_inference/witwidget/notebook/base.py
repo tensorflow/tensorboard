@@ -524,27 +524,28 @@ class WitWidgetBase(object):
       if 'baseline_scores' in response:
         all_baseline_scores.extend(response['baseline_scores'])
 
+      # Use the specified key if one is provided.
+      key_to_use = self.config.get('predict_output_tensor')
+
       for pred in response['predictions']:
         # If the prediction contains a key to fetch the prediction, use it.
         if isinstance(pred, dict):
-          # If the dictionary only contains one key, use it.
-          results_keys = list(pred.keys())
-          if len(results_keys) == 1:
-            results_key = results_keys[0]
-          else:
-            results_key = self.config.get('predict_output_tensor')
-            # Use default keys if no specific one is provided.
-            if results_key is None:
-              if self.config.get('model_type') == 'classification':
-                results_key = 'probabilities'
-              else:
-                results_key = 'outputs'
+          if key_to_use is None:
+            # If the dictionary only contains one key, use it.
+            returned_keys = list(pred.keys())
+            if len(returned_keys) == 1:
+              key_to_use = returned_keys[0]
+            # Use default keys if necessary.
+            elif self.config.get('model_type') == 'classification':
+              key_to_use = 'probabilities'
+            else:
+              key_to_use = 'outputs'
 
-          if results_key not in pred:
+          if key_to_use not in pred:
             raise KeyError(
-              '"%s" not found in model predictions dictionary' % results_key)
+              '"%s" not found in model predictions dictionary' % key_to_use)
 
-          pred = pred[results_key]
+          pred = pred[key_to_use]
 
         # If the model is regression and the response is a list, extract the
         # score by taking the first element.
