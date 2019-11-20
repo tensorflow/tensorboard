@@ -10,8 +10,8 @@
     "postinstall": "ngc -p angular-metadata.tsconfig.json",
     "build": "bazel build //...",
     "test": "ibazel test //...",
-    "lint": "prettier --check 'tensorboard/**/*.'{css,html,js,ts}",
-    "fix-lint": "prettier --write 'tensorboard/**/*.'{css,html,js,ts}"
+    "lint": "prettier --check 'tensorboard/**/*.'{css,html,js,ts} .github/**/*.yml",
+    "fix-lint": "prettier --write 'tensorboard/**/*.'{css,html,js,ts} .github/**/*.yml"
   },
   "repository": {
     "type": "git",

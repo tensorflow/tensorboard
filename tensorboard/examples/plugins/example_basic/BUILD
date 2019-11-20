@@ -16,6 +16,8 @@ sh_test(
     srcs = ["smoke_test.sh"],
     tags = [
         "manual",  # https://github.com/tensorflow/tensorboard/issues/2987
+        # TODO(@wchargin): Debug failure and re-enable test.
+        "nogithub",
     ],
     # Don't just `glob(["**"])` because `setup.py` creates artifacts
     # like wheels and a `tensorboard_plugin_example.egg-info` directory,

@@ -1,0 +1,161 @@
+# GitHub Actions CI definition for TensorBoard.
+#
+# YAML schema for GitHub Actions:
+# https://help.github.com/en/actions/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions
+#
+# Helpful YAML parser to clarify YAML syntax:
+# https://yaml-online-parser.appspot.com/
+
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+      - '[0-9]+.*'
+      - 'ci-*'
+  pull_request: {}
+  schedule:
+    # 13:00 UTC is 05:00 in Pacific standard time (UTC-8), which is well
+    # after nightly TensorFlow wheels are released (around 2--3 AM) and
+    # just after nightly TensorBoard wheels are released (around 04:15).
+    # (cron syntax: minute hour day-of-month month day-of-week)
+    - cron: '0 13 * * *'
+
+env:
+  BAZEL: '0.26.1'
+  BAZEL_SHA256SUM: '6c50e142a0a405d3d8598050d6c1b3920c8cdb82a7ffca6fc067cb474275148f'
+
+jobs:
+  lint-flake8:
+    runs-on: ubuntu-16.04
+    strategy:
+      fail-fast: false
+      matrix:
+        # Run on both Python 2.x and 3.x because the warnings are
+        # different: e.g., "raw_input" is a warning in Python 3.x only.
+        python_version: ['2.7', '3.6']
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python_version }}
+          architecture: 'x64'
+      - name: 'Install flake8'
+        run: |
+          python -m pip install -U pip
+          pip install -r ./tensorboard/pip_package/requirements_dev.txt
+      - run: pip freeze --all
+      - name: 'Lint Python code for errors with flake8'
+        run: flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+
+  lint-black-and-yaml:
+    runs-on: ubuntu-16.04
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-python@v1
+        with:
+          python-version: '3.6'
+          architecture: 'x64'
+      - name: 'Install black and yamllint'
+        run: |
+          python -m pip install -U pip
+          pip install -r ./tensorboard/pip_package/requirements_dev.txt
+      - run: pip freeze --all
+      - name: 'Lint Python code for style with Black'
+        run: black --check .
+      - name: 'Lint YAML for gotchas with yamllint'
+        run: yamllint -c docs/.yamllint docs docs/.yamllint
+
+  lint-frontend:
+    runs-on: ubuntu-16.04
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
+      - run: yarn install --ignore-engines
+      - run: yarn lint
+
+  check-misc:
+    runs-on: ubuntu-16.04
+    steps:
+      - uses: actions/checkout@v1
+      - run: ./tensorboard/tools/do_not_submit_test.sh
+      - run: ./tensorboard/tools/docs_list_format_test.sh
+      - run: ./tensorboard/tools/license_test.sh
+      - run: ./tensorboard/tools/mirror_urls_test.sh
+      - run: ./tensorboard/tools/whitespace_hygiene_test.py
+
+  test:
+    runs-on: ubuntu-16.04
+    needs: lint-flake8 # fail fast in case of "undefined variable" errors
+    strategy:
+      fail-fast: false
+      matrix:
+        python_version: ['2.7', '3.6']
+        tf_version_id: ['tensorflow==1.15.0rc3', 'tf-nightly', '']
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python_version }}
+          architecture: 'x64'
+      - uses: actions/setup-node@v1
+        # Don't cache Bazel for now, pending cache size and unicache support:
+        # <https://github.com/actions/cache/issues/6>
+        # <https://github.com/actions/cache/issues/109>
+      - name: 'Set up Bazel'
+        run: |
+          ci/download_bazel.sh "${BAZEL}" "${BAZEL_SHA256SUM}" ~/bazel
+          sudo mv ~/bazel /usr/local/bin/bazel
+          cp ./ci/bazelrc ~/.bazelrc
+
+        # Don't cache Python deps for now: the `tf-nightly` dep is
+        # intentionally floating.
+      - name: 'Install Python dependencies'
+        run: |
+          python -m pip install -U pip
+          pip uninstall -y numpy
+          pip install \
+            -r ./tensorboard/pip_package/requirements.txt \
+            -r ./tensorboard/pip_package/requirements_dev.txt \
+            ;
+          # Workaround for https://github.com/travis-ci/travis-ci/issues/7940
+          # TODO(@wchargin): Is this still needed with GitHub Actions?
+          sudo rm -f /etc/boto.cfg
+      - name: 'Install TensorFlow'
+        run: pip install "${{ matrix.tf_version_id }}"
+        if: matrix.tf_version_id != ''
+      - name: 'Check Pip state'
+        run: pip freeze --all
+
+        # Don't cache Node modules for now, pending clarity on the recommended
+        # caching strategy:
+        # <https://github.com/actions/cache/issues/67>
+      - name: 'Install Node modules'
+        run: yarn install --ignore-engines
+
+      - name: 'Run diagnose_tensorboard'
+        run: python ./tensorboard/tools/diagnose_tensorboard.py
+
+      - name: 'Bazel: Fetch all dependencies'
+        run: bazel fetch //tensorboard/...
+
+      - name: 'Bazel: Build all targets'
+        run: bazel build //tensorboard/...
+
+      - name: 'Bazel: Run tests'
+        run: bazel test //tensorboard/... --test_tag_filters="-nogithub"
+        if: matrix.tf_version_id != ''
+      - name: '[notf only] Bazel: Run notf tests'
+        run: bazel test //tensorboard/... --test_tag_filters="support_notf,-nogithub"
+        if: matrix.tf_version_id == ''
+
+      - name: 'Bazel: Run Pip package test'
+        run: bazel run //tensorboard/pip_package:test_pip_package -- --default-python-only --tf-version "${{ matrix.tf_version_id }}"
+
+      - name: 'Bazel: Run manual tests'
+        run: |
+          bazel test //tensorboard/compat/tensorflow_stub:gfile_s3_test
+          bazel test //tensorboard/summary/writer:event_file_writer_s3_test
+
+# vim: sw=2 ts=2 sts=2
