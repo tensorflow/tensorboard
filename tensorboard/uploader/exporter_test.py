@@ -317,7 +317,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
 
 class ListExperimentsTest(tb_test.TestCase):
 
-  def test(self):
+  def test_experiment_ids_only(self):
     mock_api_client = _create_mock_api_client()
 
     def stream_experiments(request, **kwargs):
@@ -331,6 +331,36 @@ class ListExperimentsTest(tb_test.TestCase):
     gen = exporter_lib.list_experiments(mock_api_client)
     mock_api_client.StreamExperiments.assert_not_called()
     self.assertEqual(list(gen), ["123", "456", "789"])
+
+  def test_mixed_experiments_and_ids(self):
+    mock_api_client = _create_mock_api_client()
+
+    def stream_experiments(request, **kwargs):
+      del request  # unused
+
+      # Should include `experiment_ids` when no `experiments` given.
+      response = export_service_pb2.StreamExperimentsResponse()
+      response.experiment_ids.append("123")
+      response.experiment_ids.append("456")
+      yield response
+
+      # Should ignore `experiment_ids` in the presence of `experiments`.
+      response = export_service_pb2.StreamExperimentsResponse()
+      response.experiment_ids.append("999")  # will be omitted
+      response.experiments.add(experiment_id="789")
+      response.experiments.add(experiment_id="012")
+      yield response
+
+      # Should include `experiments` even when no `experiment_ids` are given.
+      response = export_service_pb2.StreamExperimentsResponse()
+      response.experiments.add(experiment_id="345")
+      response.experiments.add(experiment_id="678")
+      yield response
+
+    mock_api_client.StreamExperiments = mock.Mock(wraps=stream_experiments)
+    gen = exporter_lib.list_experiments(mock_api_client)
+    mock_api_client.StreamExperiments.assert_not_called()
+    self.assertEqual(list(gen), ["123", "456", "789", "012", "345", "678"])
 
 
 class MkdirPTest(tb_test.TestCase):
