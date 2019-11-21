@@ -151,7 +151,7 @@ class FakePluginLoader(base_plugin.TBLoader):
 class HandlingErrorsTest(tb_test.TestCase):
 
   def test_successful_response_passes_through(self):
-    @application._handling_errors
+    @application.handling_errors
     @wrappers.Request.application
     def app(request):
       return wrappers.Response('All is well', 200, content_type='text/html')
@@ -163,7 +163,7 @@ class HandlingErrorsTest(tb_test.TestCase):
     self.assertEqual(response.headers.get('Content-Type'), 'text/html')
 
   def test_public_errors_serve_response(self):
-    @application._handling_errors
+    @application.handling_errors
     @wrappers.Request.application
     def app(request):
       raise errors.NotFoundError('no scalar data for run=foo, tag=bar')
@@ -178,7 +178,7 @@ class HandlingErrorsTest(tb_test.TestCase):
     self.assertStartsWith(response.headers.get('Content-Type'), 'text/plain')
 
   def test_internal_errors_propagate(self):
-    @application._handling_errors
+    @application.handling_errors
     @wrappers.Request.application
     def app(request):
       raise ValueError('something borked internally')
@@ -190,7 +190,7 @@ class HandlingErrorsTest(tb_test.TestCase):
 
   def test_passes_through_non_wsgi_args(self):
     class C(object):
-      @application._handling_errors
+      @application.handling_errors
       def __call__(self, environ, start_response):
         start_response('200 OK', [('Content-Type', 'text/html')])
         yield b'All is well'
@@ -203,7 +203,7 @@ class HandlingErrorsTest(tb_test.TestCase):
     self.assertEqual(response.headers.get('Content-Type'), 'text/html')
 
 
-class ApplicationTest(tb_test.TestCase):
+class TensorBoardWSGIAppTest(tb_test.TestCase):
   def setUp(self):
     plugins = [
         FakePlugin(plugin_name='foo'),
@@ -292,8 +292,9 @@ class ApplicationTest(tb_test.TestCase):
     )
 
     for name in ['bazz', 'baz ']:
-      response = self.server.get('/data/plugin_entry.html?name=%s' % name)
-      self.assertEqual(404, response.status_code)
+      with self.assertRaisesRegex(
+          errors.NotFoundError, r'Not found: %s' % name):
+        self.server.get('/data/plugin_entry.html?name=%s' % name)
 
     for name in ['foo', 'bar']:
       response = self.server.get('/data/plugin_entry.html?name=%s' % name)
@@ -317,17 +318,17 @@ class ApplicationTest(tb_test.TestCase):
       server.get('/data/plugin_entry.html?name=mallory')
 
 
-class ApplicationBaseUrlTest(tb_test.TestCase):
+class StandardTensorBoardWSGIAppUrlTest(tb_test.TestCase):
   path_prefix = '/test'
   def setUp(self):
     plugins = [
-        FakePlugin(plugin_name='foo'),
-        FakePlugin(
+        FakePluginLoader(plugin_name='foo'),
+        FakePluginLoader(
             plugin_name='bar',
             is_active_value=False,
             element_name_value='tf-bar-dashboard',
         ),
-        FakePlugin(
+        FakePluginLoader(
             plugin_name='baz',
             routes_mapping={
                 '/esmodule': lambda req: None,
@@ -335,7 +336,11 @@ class ApplicationBaseUrlTest(tb_test.TestCase):
             es_module_path_value='/esmodule'
         ),
     ]
-    app = application.TensorBoardWSGI(plugins, path_prefix=self.path_prefix)
+    dummy_assets_zip_provider = lambda: None
+    app = application.standard_tensorboard_wsgi(
+        FakeFlags(logdir=self.get_temp_dir(), path_prefix=self.path_prefix),
+        plugins,
+        dummy_assets_zip_provider)
     self.server = werkzeug_test.Client(app, wrappers.BaseResponse)
 
   def _get_json(self, path):
@@ -646,7 +651,7 @@ class TensorBoardPluginsTest(tb_test.TestCase):
     self.context = None
     dummy_assets_zip_provider = lambda: None
     # The application should have added routes for both plugins.
-    self.app = application.standard_tensorboard_wsgi(
+    app = application.standard_tensorboard_wsgi(
         FakeFlags(logdir=self.get_temp_dir()),
         [
             FakePluginLoader(
@@ -672,7 +677,7 @@ class TensorBoardPluginsTest(tb_test.TestCase):
         ],
         dummy_assets_zip_provider)
 
-    self.server = werkzeug_test.Client(self.app, wrappers.BaseResponse)
+    self.server = werkzeug_test.Client(app, wrappers.BaseResponse)
 
   def _construction_callback(self, context):
     """Called when a plugin is constructed."""
@@ -684,10 +689,11 @@ class TensorBoardPluginsTest(tb_test.TestCase):
 
   @wrappers.Request.application
   def _foo_handler(self, request):
-    return wrappers.Response(response='hello world', status=200)
+    return wrappers.Response(response='Foo response', status=200)
 
-  def _bar_handler(self):
-    pass
+  @wrappers.Request.application
+  def _bar_handler(self, request):
+    return wrappers.Response(response='Bar response', status=200)
 
   @wrappers.Request.application
   def _eid_handler(self, request):
@@ -711,11 +717,13 @@ class TensorBoardPluginsTest(tb_test.TestCase):
 
   def testPluginsAdded(self):
     # The routes are prefixed with /data/plugin/[plugin name].
-    expected_routes = frozenset((
-        '/data/plugin/foo/foo_route',
-        '/data/plugin/bar/bar_route',
-    ))
-    self.assertLessEqual(expected_routes, frozenset(self.app.exact_routes))
+    response = self.server.get('/data/plugin/foo/foo_route')
+    self.assertEqual(response.status_code, 200)
+    self.assertEqual(response.get_data(True), 'Foo response')
+
+    response = self.server.get('/data/plugin/bar/bar_route')
+    self.assertEqual(response.status_code, 200)
+    self.assertEqual(response.get_data(True), 'Bar response')
 
   def testNameToPluginMapping(self):
     # The mapping from plugin name to instance should include all plugins.
@@ -733,18 +741,6 @@ class TensorBoardPluginsTest(tb_test.TestCase):
 
   def testMissingRoute(self):
     self._test_route('/data/plugin/foo/bogus', 404)
-
-  def testExperimentIdIntegration_withNoExperimentId(self):
-    response = self.server.get('/data/plugin/whoami/eid')
-    self.assertEqual(response.status_code, 200)
-    data = json.loads(response.get_data().decode('utf-8'))
-    self.assertEqual(data, {'experiment_id': ''})
-
-  def testExperimentIdIntegration_withExperimentId(self):
-    response = self.server.get('/experiment/123/data/plugin/whoami/eid')
-    self.assertEqual(response.status_code, 200)
-    data = json.loads(response.get_data().decode('utf-8'))
-    self.assertEqual(data, {'experiment_id': '123'})
 
   def testEmptyRoute(self):
     self._test_route('', 301)

@@ -161,11 +161,17 @@ def standard_tensorboard_wsgi(flags, plugin_loaders, assets_zip_provider):
       path_to_run = parse_event_files_spec(flags.logdir_spec)
     start_reloading_multiplexer(
         multiplexer, path_to_run, reload_interval, flags.reload_task)
-  return TensorBoardWSGIApp(
+
+  app = TensorBoardWSGIApp(
       flags, plugin_loaders, data_provider, assets_zip_provider, multiplexer)
+  app = empty_path_redirect.EmptyPathRedirectMiddleware(app)
+  app = path_prefix.PathPrefixMiddleware(app, flags.path_prefix)
+  app = security_validator.SecurityValidatorMiddleware(app)
+  app = handling_errors(app)
+  return app
 
 
-def _handling_errors(wsgi_app):
+def handling_errors(wsgi_app):
   def wrapper(*args):
     (environ, start_response) = (args[-2], args[-1])
     try:
@@ -231,18 +237,17 @@ def TensorBoardWSGIApp(
       continue
     tbplugins.append(plugin)
     plugin_name_to_instance[plugin.plugin_name] = plugin
-  return TensorBoardWSGI(tbplugins, flags.path_prefix)
+  return TensorBoardWSGI(tbplugins)
 
 
 class TensorBoardWSGI(object):
   """The TensorBoard WSGI app that delegates to a set of TBPlugin."""
 
-  def __init__(self, plugins, path_prefix=''):
+  def __init__(self, plugins):
     """Constructs TensorBoardWSGI instance.
 
     Args:
       plugins: A list of base_plugin.TBPlugin subclass instances.
-      flags: An argparse.Namespace containing TensorBoard CLI flags.
 
     Returns:
       A WSGI application for the set of all TBPlugin instances.
@@ -258,10 +263,6 @@ class TensorBoardWSGI(object):
     :type plugins: list[base_plugin.TBPlugin]
     """
     self._plugins = plugins
-    self._path_prefix = path_prefix
-    if self._path_prefix.endswith('/'):
-      # Should have been fixed by `fix_flags`.
-      raise ValueError('Trailing slash in path prefix: %r' % self._path_prefix)
 
     self.exact_routes = {
         # TODO(@chihuahua): Delete this RPC once we have skylark rules that
@@ -332,18 +333,6 @@ class TensorBoardWSGI(object):
             six.iteritems(unordered_prefix_routes),
             key=lambda x: len(x[0]),
             reverse=True))
-
-    self._app = self._create_wsgi_app()
-
-  def _create_wsgi_app(self):
-    """Apply middleware to create the final WSGI app."""
-    app = self._route_request
-    app = empty_path_redirect.EmptyPathRedirectMiddleware(app)
-    app = experiment_id.ExperimentIdMiddleware(app)
-    app = path_prefix.PathPrefixMiddleware(app, self._path_prefix)
-    app = security_validator.SecurityValidatorMiddleware(app)
-    app = _handling_errors(app)
-    return app
 
   @wrappers.Request.application
   def _serve_plugin_entry(self, request):
@@ -477,7 +466,7 @@ class TensorBoardWSGI(object):
       environ: See WSGI spec (PEP 3333).
       start_response: See WSGI spec (PEP 3333).
     """
-    return self._app(environ, start_response)
+    return self._route_request(environ, start_response)
 
   def _route_request(self, environ, start_response):
     """Delegate an incoming request to sub-applications.
