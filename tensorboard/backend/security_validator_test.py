@@ -27,7 +27,7 @@ except ImportError:
 import werkzeug
 from werkzeug import test as werkzeug_test
 from werkzeug.datastructures import Headers
-from werkzeug.wrappers.base_response import BaseResponse
+from werkzeug.wrappers import BaseResponse
 
 from tensorboard import test as tb_test
 from tensorboard.backend import security_validator

@@ -22,6 +22,7 @@ tensorboard_html_binary(
     compile = True,
     input_path = "/tensorboard.html",
     output_path = "/index.html",
+    js_path = "/index.js",
     deps = [":tensorboard"],
 )
 
@@ -84,5 +85,6 @@ tensorboard_html_binary(
     name = "trace_viewer_index",
     input_path = "/trace_viewer.html",
     output_path = "/trace_viewer_index.html",
+    js_path = "/trace_viewer_index.js",
     deps = [":trace_viewer"],
 )

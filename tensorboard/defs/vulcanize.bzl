@@ -27,6 +27,7 @@ def _tensorboard_html_binary(ctx):
   script elements (sources inside element and content of JavaScript src they
   point at). The hashes are delimited by newline.
   """
+
   deps = unfurl(ctx.attr.deps, provider="webfiles")
   manifests = depset(order="postorder")
   files = depset()
@@ -54,14 +55,16 @@ def _tensorboard_html_binary(ctx):
           ignore_regexs_file_set,
       ]).to_list(),
       tools=jslibs,
-      outputs=[ctx.outputs.html, ctx.outputs.shasum],
+      outputs=[ctx.outputs.html, ctx.outputs.js, ctx.outputs.shasum],
       executable=ctx.executable._Vulcanize,
       arguments=([ctx.attr.compilation_level,
                   "true" if ctx.attr.compile else "false",
                   "true" if ctx.attr.testonly else "false",
                   ctx.attr.input_path,
                   ctx.attr.output_path,
+                  ctx.attr.js_path,
                   ctx.outputs.html.path,
+                  ctx.outputs.js.path,
                   ctx.outputs.shasum.path,
                   ignore_regexs_file_path] +
                  [f.path for f in jslibs.to_list()] +
@@ -129,6 +132,8 @@ tensorboard_html_binary = rule(
         "compilation_level": attr.string(default="ADVANCED"),
         "input_path": attr.string(mandatory=True),
         "output_path": attr.string(mandatory=True),
+        # If specified, it extracts scripts into {name}.js and inserts <script src="{js_path}">.
+        "js_path": attr.string(),
         "compile": attr.bool(),
         "data": attr.label_list(allow_files=True),
         "deps": attr.label_list(aspects=[closure_js_aspect], mandatory=True),
@@ -149,5 +154,6 @@ tensorboard_html_binary = rule(
     },
     outputs={
         "html": "%{name}.html",
+        "js": "%{name}.js",
         "shasum": "%{name}.html.scripts_sha256",
     })

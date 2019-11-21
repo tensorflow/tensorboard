@@ -360,6 +360,7 @@ class ListExperimentsTest(tb_test.TestCase):
     mock_api_client.StreamExperiments = mock.Mock(wraps=stream_experiments)
     gen = exporter_lib.list_experiments(mock_api_client)
     mock_api_client.StreamExperiments.assert_not_called()
+<<<<<<< HEAD
     expected = [
         "123",
         "456",
@@ -369,6 +370,9 @@ class ListExperimentsTest(tb_test.TestCase):
         export_service_pb2.Experiment(experiment_id="678"),
     ]
     self.assertEqual(list(gen), expected)
+=======
+    self.assertEqual(list(gen), ["123", "456", "789", "012", "345", "678"])
+>>>>>>> 929ae6ede21befb48a09024190e820d1bc18dcdd
 
 
 class MkdirPTest(tb_test.TestCase):
