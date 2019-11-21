@@ -206,7 +206,7 @@ class RespondTest(tb_test.TestCase):
     expected_csp = (
         "default-src 'self';font-src 'self';frame-ancestors *;"
         "frame-src 'self';img-src 'self' data: blob:;object-src 'none';"
-        "style-src https://www.gstatic.com data: 'unsafe-inline';"
+        "style-src 'self' https://www.gstatic.com data: 'unsafe-inline';"
         "script-src 'unsafe-eval'"
     )
     self.assertEqual(r.headers.get('Content-Security-Policy'), expected_csp)
