@@ -177,8 +177,11 @@ def list_experiments(api_client, read_time=None):
   stream = api_client.StreamExperiments(
       request, metadata=grpc_util.version_metadata())
   for response in stream:
-    for experiment_id in response.experiment_ids:
-      yield experiment_id
+    if not response.experiments:
+      for experiment_id in response.experiment_ids:
+        yield experiment_id
+    for experiment in response.experiments:
+      yield experiment.experiment_id
 
 
 class OutputDirectoryExistsError(ValueError):
