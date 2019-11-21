@@ -214,6 +214,7 @@ def Respond(request,
         ),
         "object-src 'none'",
         'style-src %s' % _create_csp_string(
+            "'self'",
             # used by google-chart
             'https://www.gstatic.com',
             'data:',
