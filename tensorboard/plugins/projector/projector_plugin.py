@@ -271,7 +271,7 @@ class ProjectorPlugin(base_plugin.TBPlugin):
             functools.partial(
                 self._serve_file,
                 os.path.join('tf_projector_plugin', 'projector_binary.html')),
-      '/projector_binary.js':
+        '/projector_binary.js':
             functools.partial(
                 self._serve_file,
                 os.path.join('tf_projector_plugin', 'projector_binary.js')),
