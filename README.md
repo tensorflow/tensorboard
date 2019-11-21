@@ -10,8 +10,8 @@ Learning][].
 For in-depth information on the Graph Visualizer, see this tutorial:
 [TensorBoard: Graph Visualization][].
 
-[TensorBoard: Visualizing Learning]: https://www.tensorflow.org/get_started/summaries_and_tensorboard
-[TensorBoard: Graph Visualization]: https://www.tensorflow.org/get_started/graph_viz
+[TensorBoard: Visualizing Learning]: https://www.tensorflow.org/r1/summaries
+[TensorBoard: Graph Visualization]: https://www.tensorflow.org/tensorboard/graphs
 
 You may also want to watch
 [this video tutorial][] that walks
@@ -21,6 +21,13 @@ through setting up and using TensorBoard. There's an associated
 [this video tutorial]: https://www.youtube.com/watch?v=eBbEDRsCmv4
 
 [tutorial with an end-to-end example of training TensorFlow and using TensorBoard]: https://github.com/martinwicke/tf-dev-summit-tensorboard-tutorial
+
+You may also be interested in the hosted TensorBoard solution at
+[TensorBoard.dev][].  [This experiment][] shows a working example featuring the
+scalar dashboard.
+
+[TensorBoard.dev]: https://tensorboard.dev
+[This experiment]: https://tensorboard.dev/experiment/AdYd1TgeTlaLWXx6I8JUbA/#scalars
 
 # Usage
 
