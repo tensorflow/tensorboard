@@ -72,7 +72,7 @@ class WitWidget(widgets.DOMWidget, base.WitWidgetBase):
 
   def _report_error(self, err):
     self.error = {
-      'msg': str(err),
+      'msg': repr(err),
       'counter': self.error_counter
     }
     self.error_counter += 1
