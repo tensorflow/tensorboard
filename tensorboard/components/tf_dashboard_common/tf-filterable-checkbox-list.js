@@ -65,9 +65,6 @@ var tf_dashboard_common;
                 value: false,
             },
         },
-        listeners: {
-            'dom-change': '_synchronizeColors',
-        },
         observers: [
             '_synchronizeColors(useCheckboxColors)',
             '_synchronizeColors(coloring)',

@@ -58,7 +58,11 @@ Properties out:
           No matches
         </div>
       </template>
-      <template is="dom-repeat" items="[[_itemsMatchingRegex]]">
+      <template
+        is="dom-repeat"
+        items="[[_itemsMatchingRegex]]"
+        on-dom-change="_synchronizeColors"
+      >
         <div class="item">
           <paper-checkbox
             checked$="[[_isChecked(item, selectionState.*)]]"
