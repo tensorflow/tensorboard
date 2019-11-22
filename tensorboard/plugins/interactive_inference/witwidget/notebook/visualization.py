@@ -308,11 +308,15 @@ class WitConfigBuilder(object):
     return self
 
   def set_predict_output_tensor(self, tensor):
-    """Sets the name of the output tensor for models that use the Predict API.
+    """Sets the name of the output tensor for models that need output parsing.
 
     If using WIT with set_uses_predict_api(True), then call this to specify
     the name of the output tensor of the model or models that returns the
     inference results to be explored by WIT.
+
+    If using an AI Platform model which returns multiple prediction
+    results in a dictionary, this method specifies the key corresponding to
+    the inference results to be explored by WIT.
 
     Args:
       tensor: The name of the output tensor.
