@@ -832,7 +832,7 @@ def run_inference(examples, serving_bundle):
         if len(returned_keys) == 1:
           key_to_use = returned_keys[0]
         # Use default keys if necessary.
-        elif serving_bundle.model_type == == 'classification':
+        elif serving_bundle.model_type == 'classification':
           key_to_use = 'probabilities'
         else:
           key_to_use = 'predictions'
