@@ -128,6 +128,7 @@ limitations under the License.
             </template>
           </template>
           <div class="global-actions">
+            <slot name="injected-header-items"></slot>
             <paper-icon-button
               id="reload-button"
               class$="[[_getDataRefreshingClass(_refreshing)]]"
@@ -154,7 +155,7 @@ limitations under the License.
       </paper-toolbar>
 
       <div id="content-pane" class="fit">
-        <slot id="injected-overview"></slot>
+        <slot name="injected-overview"></slot>
         <div id="content">
           <template is="dom-if" if="[[_activeDashboardsFailedToLoad]]">
             <div class="warning-message">
@@ -348,6 +349,7 @@ limitations under the License.
       .global-actions {
         display: inline-flex; /* Ensure that icons stay aligned */
         justify-content: flex-end;
+        align-items: center;
         text-align: right;
         color: white;
       }
