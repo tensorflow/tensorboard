@@ -8,14 +8,14 @@ licenses(["notice"])  # Apache 2.0
 ng_module(
     name = "header",
     srcs = [
-        "header.container.ts",
-        "header.component.ts",
-        "header.module.ts",
+        "header_container.ts",
+        "header_component.ts",
+        "header_module.ts",
         "types.ts",
     ],
     assets = [
-        "header.component.css",
-        "header.component.html",
+        "header_component.css",
+        "header_component.ng.html",
     ],
     deps = [
         "//tensorboard/webapp/angular:expect_angular_material_select",
@@ -37,7 +37,7 @@ tf_ts_library(
     name = "test_lib",
     testonly = True,
     srcs = [
-        "header.test.ts",
+        "header_test.ts",
     ],
     tsconfig = "//:tsconfig-test",
     deps = [

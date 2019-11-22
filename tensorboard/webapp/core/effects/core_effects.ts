@@ -33,8 +33,8 @@ import {
 } from '../actions';
 import {getPluginsListLoaded} from '../store';
 import {LoadState} from '../../types/api';
-import {State} from '../store/core.types';
-import {TBServerDataSource} from '../../webapp_data_source/tb_server.data_source';
+import {State} from '../store/core_types';
+import {TBServerDataSource} from '../../webapp_data_source/tb_server_data_source';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 /** @typehack */ import * as _typeHackNgrx from '@ngrx/store/src/models';

@@ -60,7 +60,7 @@ const getReloadPeriodInSec = createSelector(
       </mat-error>
     </div>
   `,
-  styleUrls: ['./dialog.component.css'],
+  styleUrls: ['./dialog_component.css'],
 })
 export class SettingsDialogComponent implements OnInit, OnDestroy {
   readonly reloadEnabled$ = this.store.pipe(select(getReloadEnabled));

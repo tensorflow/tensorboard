@@ -6,7 +6,7 @@ load("@npm_angular_bazel//:index.bzl", "ng_module")
 ng_module(
     name = "effects",
     srcs = [
-        "core.effects.ts",
+        "core_effects.ts",
         "index.ts",
     ],
     deps = [
@@ -26,7 +26,7 @@ tf_ts_library(
     name = "core_effects_test_lib",
     testonly = True,
     srcs = [
-        "core.effects.test.ts",
+        "core_effects_test.ts",
     ],
     deps = [
         ":effects",

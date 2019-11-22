@@ -18,14 +18,14 @@ import {NgModule} from '@angular/core';
 import {StoreModule} from '@ngrx/store';
 import {EffectsModule} from '@ngrx/effects';
 
-import {AppContainer} from './app.container';
-import {CoreModule} from './core/core.module';
-import {PluginsModule} from './plugins/plugins.module';
+import {AppContainer} from './app_container';
+import {CoreModule} from './core/core_module';
+import {PluginsModule} from './plugins/plugins_module';
 
 import {ROOT_REDUCERS, metaReducers} from './reducer_config';
 
-import {HeaderModule} from './header/header.module';
-import {ReloaderModule} from './reloader/reloader.module';
+import {HeaderModule} from './header/header_module';
+import {ReloaderModule} from './reloader/reloader_module';
 
 @NgModule({
   declarations: [AppContainer],

@@ -28,7 +28,7 @@ import {
   ViewChild,
 } from '@angular/core';
 
-import {UiPluginMetadata} from './plugins.container';
+import {UiPluginMetadata} from './plugins_container';
 import {
   LoadingMechanismType,
   CustomElementLoadingMechanism,
@@ -36,7 +36,7 @@ import {
 
 @Component({
   selector: 'plugins-component',
-  templateUrl: './plugins.component.html',
+  templateUrl: './plugins_component.ng.html',
   styles: [
     '.plugins { height: 100%; }',
     'iframe { border: 0; height: 100%; width: 100%; }',

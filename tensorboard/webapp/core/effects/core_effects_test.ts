@@ -22,16 +22,16 @@ import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {ReplaySubject, of} from 'rxjs';
 
-import {CoreEffects} from './core.effects';
+import {CoreEffects} from './core_effects';
 import * as coreActions from '../actions';
 import {State} from '../store';
 
 import {createPluginMetadata, createState, createCoreState} from '../testing';
 
 import {PluginsListing, LoadState as DataLoadState} from '../../types/api';
-import {TBServerDataSource} from '../../webapp_data_source/tb_server.data_source';
+import {TBServerDataSource} from '../../webapp_data_source/tb_server_data_source';
 
-describe('core.effects', () => {
+describe('core_effects', () => {
   let httpMock: HttpTestingController;
   let coreEffects: CoreEffects;
   let action: ReplaySubject<Action>;

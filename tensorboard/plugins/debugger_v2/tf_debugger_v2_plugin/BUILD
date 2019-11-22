@@ -10,13 +10,13 @@ licenses(["notice"])  # Apache 2.0
 ng_module(
     name = "debugger_v2",
     srcs = [
-        "debugger.container.ts",
-        "debugger.component.ts",
-        "debugger.module.ts",
+        "debugger_container.ts",
+        "debugger_component.ts",
+        "debugger_module.ts",
     ],
     assets = [
-        "debugger.component.css",
-        "debugger.component.html",
+        "debugger_component.css",
+        "debugger_component.ng.html",
     ],
     deps = [
         "@npm//@angular/core",
