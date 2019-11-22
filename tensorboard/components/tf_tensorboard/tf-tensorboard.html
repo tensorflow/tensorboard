@@ -257,6 +257,7 @@ limitations under the License.
             id="dashboards-template"
             items="[[_dashboardData]]"
             as="dashboardDatum"
+            on-dom-change="_onTemplateChanged"
           >
             <div
               class="dashboard-container"
@@ -906,25 +907,6 @@ limitations under the License.
           }
         });
 
-        // We have to wait for our dashboard-containers to be stamped
-        // before we can do anything.
-        const dashboardsTemplate = this.$$('#dashboards-template');
-        const onDomChange = () => {
-          // This will trigger an observer that kicks off everything.
-          const dashboardContainersStamped = {};
-          for (const container of this.root.querySelectorAll(
-            '.dashboard-container'
-          )) {
-            dashboardContainersStamped[container.dataset.dashboard] = true;
-          }
-          this._dashboardContainersStamped = dashboardContainersStamped;
-        };
-        dashboardsTemplate.addEventListener(
-          'dom-change',
-          onDomChange,
-          /*useCapture=*/ false
-        );
-
         this._reloadData();
         this._lastReloadTime = new Date().toString();
       },
@@ -945,6 +927,17 @@ limitations under the License.
             if (typeof maybeMetadata === 'boolean') return maybeMetadata;
             return maybeMetadata && maybeMetadata.enabled;
           });
+      },
+
+      _onTemplateChanged() {
+        // This will trigger an observer that kicks off everything.
+        const dashboardContainersStamped = {};
+        for (const container of this.root.querySelectorAll(
+          '.dashboard-container'
+        )) {
+          dashboardContainersStamped[container.dataset.dashboard] = true;
+        }
+        this._dashboardContainersStamped = dashboardContainersStamped;
       },
 
       /**

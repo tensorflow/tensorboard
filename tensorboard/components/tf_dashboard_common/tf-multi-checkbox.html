@@ -48,7 +48,11 @@ handle these situations gracefully.
       on-bind-value-changed="_debouncedRegexChange"
     ></paper-input>
     <div id="outer-container" class="scrollbar">
-      <template is="dom-repeat" items="[[namesMatchingRegex]]">
+      <template
+        is="dom-repeat"
+        items="[[namesMatchingRegex]]"
+        on-dom-change="synchronizeColors"
+      >
         <div class="name-row">
           <div
             class="icon-container checkbox-container vertical-align-container"
