@@ -129,35 +129,37 @@ public final class Vulcanize {
 
   public static void main(String[] args)
       throws FileNotFoundException, IOException, IllegalArgumentException {
-    compilationLevel = CompilationLevel.fromString(args[0]);
-    wantsCompile = args[1].equals("true");
-    testOnly = args[2].equals("true");
-    Webpath inputPath = Webpath.get(args[3]);
-    outputPath = Webpath.get(args[4]);
-    Webpath jsPath = Webpath.get(args[5]);
-    Path output = Paths.get(args[6]);
-    Path jsOutput = Paths.get(args[7]);
-    Path shasumOutput = Paths.get(args[8]);
-    if (!args[9].equals(NO_NOINLINE_FILE_PROVIDED)) {
-      String ignoreFile = new String(Files.readAllBytes(Paths.get(args[9])), UTF_8);
+    int argIdx = 0;
+    compilationLevel = CompilationLevel.fromString(args[argIdx++]);
+    wantsCompile = args[argIdx++].equals("true");
+    testOnly = args[argIdx++].equals("true");
+    Webpath inputPath = Webpath.get(args[argIdx++]);
+    outputPath = Webpath.get(args[argIdx++]);
+    Webpath jsPath = Webpath.get(args[argIdx++]);
+    Path output = Paths.get(args[argIdx++]);
+    Path jsOutput = Paths.get(args[argIdx++]);
+    Path shasumOutput = Paths.get(args[argIdx++]);
+    if (!args[argIdx++].equals(NO_NOINLINE_FILE_PROVIDED)) {
+      String ignoreFile = new String(Files.readAllBytes(Paths.get(args[argIdx])), UTF_8);
       Arrays.asList(ignoreFile.split("\n"))
           .forEach((str) -> ignoreRegExs.add(Pattern.compile(str)));
     }
-    for (int i = 10; i < args.length; i++) {
-      if (args[i].endsWith(".js")) {
-        String code = new String(Files.readAllBytes(Paths.get(args[i])), UTF_8);
-        SourceFile sourceFile = SourceFile.fromCode(args[i], code);
+    while (argIdx < args.length) {
+      final String arg = args[argIdx++];
+      if (arg.endsWith(".js")) {
+        String code = new String(Files.readAllBytes(Paths.get(arg)), UTF_8);
+        SourceFile sourceFile = SourceFile.fromCode(arg, code);
         if (code.contains("@externs")) {
-          externs.put(args[i], sourceFile);
+          externs.put(arg, sourceFile);
         } else {
           sourcesFromJsLibraries.add(sourceFile);
         }
         continue;
       }
-      if (!args[i].endsWith(".pbtxt")) {
+      if (!arg.endsWith(".pbtxt")) {
         continue;
       }
-      Webfiles manifest = loadWebfilesPbtxt(Paths.get(args[i]));
+      Webfiles manifest = loadWebfilesPbtxt(Paths.get(arg));
       for (WebfilesSource src : manifest.getSrcList()) {
         webfiles.put(Webpath.get(src.getWebpath()), Paths.get(src.getPath()));
       }
