@@ -254,12 +254,14 @@ class RespondTest(tb_test.TestCase):
   @mock.patch.object(http_util, '_CSP_SCRIPT_DOMAINS_WHITELIST',
     ['https://tensorflow.org/tensorboard'])
   @mock.patch.object(http_util, '_CSP_STYLE_DOMAINS_WHITELIST', ['https://googol.com'])
+  @mock.patch.object(http_util, '_CSP_FRAME_DOMAINS_WHITELIST', ['https://myframe.com'])
   def testCsp_globalDomainWhiteList(self):
     q = wrappers.Request(wtest.EnvironBuilder().get_environ())
     r = http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=['abcd'])
     expected_csp = (
         "default-src 'self';font-src 'self';frame-ancestors *;"
-        "frame-src 'self';img-src 'self' data: blob: https://example.com;"
+        "frame-src 'self' https://myframe.com;"
+        "img-src 'self' data: blob: https://example.com;"
         "object-src 'none';style-src 'self' https://www.gstatic.com data: "
         "'unsafe-inline' https://googol.com;script-src "
         "https://tensorflow.org/tensorboard 'self' 'unsafe-eval' 'sha256-abcd'"
@@ -273,6 +275,7 @@ class RespondTest(tb_test.TestCase):
         '_CSP_IMG_DOMAINS_WHITELIST',
         '_CSP_STYLE_DOMAINS_WHITELIST',
         '_CSP_FONT_DOMAINS_WHITELIST',
+        '_CSP_FRAME_DOMAINS_WHITELIST',
     ]
 
     for config in configs:
