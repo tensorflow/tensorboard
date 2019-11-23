@@ -1,8 +1,8 @@
 dist: trusty
 language: python
 python:
-  - "2.7"
   - "3.6"
+  - "2.7"
 
 branches:
   only:
@@ -46,12 +46,14 @@ before_install:
 
 install:
   - elapsed "install"
+  - "PY3=\"$(python -c 'if __import__(\"sys\").version_info[0] > 2: print(1)')\""
   # Older versions of Pip sometimes resolve specifiers like `tf-nightly`
   # to versions other than the most recent(!).
   - pip install -U pip
   # Lint check deps.
   - pip install flake8==3.7.8
   - pip install yamllint==1.17.0
+  - if [ -n "${PY3}" ]; then pip install black==19.10b0; fi
   # TensorBoard deps.
   - pip install futures==3.1.1
   - pip install grpcio==1.24.3
@@ -87,6 +89,8 @@ before_script:
   - flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
   # Lint frontend code
   - yarn lint
+  # Lint backend code
+  - if [ -n "${PY3}" ]; then black --check .; fi
   # Lint .yaml docs files. Use '# yamllint disable-line rule:foo' to suppress.
   - yamllint -c docs/.yamllint docs docs/.yamllint
   # Make sure that IPython notebooks have valid Markdown.
