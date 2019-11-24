@@ -64,3 +64,18 @@ py_test(
         "//tensorboard:test",
     ],
 )
+
+py_test(
+    name = "gfile_gcs_test",
+    size = "small",
+    srcs = ["io/gfile_gcs_test.py"],
+    srcs_version = "PY2AND3",
+    tags = [
+        "manual",
+        "notap",
+    ],
+    deps = [
+        ":tensorflow_stub",
+        "//tensorboard:test",
+    ],
+)

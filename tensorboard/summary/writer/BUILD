@@ -53,6 +53,23 @@ py_test(
 )
 
 py_test(
+    name = "event_file_writer_gcs_test",
+    size = "small",
+    srcs = ["event_file_writer_gcs_test.py"],
+    main = "event_file_writer_gcs_test.py",
+    srcs_version = "PY2AND3",
+    tags = [
+        "manual",
+        "notap",
+        "support_notf",
+    ],
+    deps = [
+        ":writer",
+        "//tensorboard:test",
+    ],
+)
+
+py_test(
     name = "record_writer_test",
     size = "small",
     srcs = ["record_writer_test.py"],
