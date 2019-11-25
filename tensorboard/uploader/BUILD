@@ -20,6 +20,7 @@ py_library(
         "//tensorboard:expect_grpc_installed",
         "//tensorboard/uploader/proto:protos_all_py_pb2",
         "//tensorboard/util:grpc_util",
+        "@org_pythonhosted_six",
     ],
 )
 
@@ -58,6 +59,7 @@ py_library(
         ":exporter_lib",
         ":server_info",
         ":uploader_lib",
+        ":util",
         "//tensorboard:expect_absl_app_installed",
         "//tensorboard:expect_absl_flags_argparse_flags_installed",
         "//tensorboard:expect_absl_flags_installed",

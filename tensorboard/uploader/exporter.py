@@ -26,6 +26,8 @@ import os
 import string
 import time
 
+import six
+
 from tensorboard.uploader.proto import export_service_pb2
 from tensorboard.uploader import util
 from tensorboard.util import grpc_util
@@ -126,7 +128,13 @@ class TensorBoardExporter(object):
 
   def _request_experiment_ids(self, read_time):
     """Yields all of the calling user's experiment IDs, as strings."""
-    return list_experiments(self._api, read_time=read_time)
+    for experiment in list_experiments(self._api, read_time=read_time):
+      if isinstance(experiment, export_service_pb2.Experiment):
+        yield experiment.experiment_id
+      elif isinstance(experiment, six.string_types):
+        yield experiment
+      else:
+        raise AssertionError("Unexpected experiment type: %r" % (experiment,))
 
   def _request_scalar_data(self, experiment_id, read_time):
     """Yields JSON-serializable blocks of scalar data."""
@@ -157,31 +165,36 @@ class TensorBoardExporter(object):
       }
 
 
-def list_experiments(api_client, read_time=None):
-  """Yields all of the calling user's experiment IDs.
+def list_experiments(api_client, fieldmask=None, read_time=None):
+  """Yields all of the calling user's experiments.
 
   Args:
     api_client: A TensorBoardExporterService stub instance.
+    fieldmask: An optional `export_service_pb2.ExperimentMask` value.
     read_time: A fixed timestamp from which to export data, as float seconds
       since epoch (like `time.time()`). Optional; defaults to the current
       time.
 
   Yields:
-    One string for each experiment owned by the calling user, in arbitrary
-    order.
+    For each experiment owned by the user, an `export_service_pb2.Experiment`
+    value, or a simple string experiment ID for older servers.
   """
   if read_time is None:
     read_time = time.time()
   request = export_service_pb2.StreamExperimentsRequest(limit=_MAX_INT64)
   util.set_timestamp(request.read_timestamp, read_time)
+  if fieldmask:
+    request.experiments_mask.CopyFrom(fieldmask)
   stream = api_client.StreamExperiments(
       request, metadata=grpc_util.version_metadata())
   for response in stream:
-    if not response.experiments:
+    if response.experiments:
+      for experiment in response.experiments:
+        yield experiment
+    else:
+      # Old servers.
       for experiment_id in response.experiment_ids:
         yield experiment_id
-    for experiment in response.experiments:
-      yield experiment.experiment_id
 
 
 class OutputDirectoryExistsError(ValueError):
