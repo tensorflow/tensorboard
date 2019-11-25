@@ -18,8 +18,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import datetime
 import os
 import unittest
+import mock
 
 
 try:
@@ -193,6 +195,51 @@ class SetTimestampTest(tb_test.TestCase):
     util.set_timestamp(pb, t)
     self.assertEqual(pb.seconds, 1234567890)
     self.assertEqual(pb.nanos, 7812500)
+
+
+class FormatTimeTest(tb_test.TestCase):
+
+  def _run(self, t=None, now=None):
+    timestamp_pb = timestamp_pb2.Timestamp()
+    util.set_timestamp(timestamp_pb, t)
+    now = datetime.datetime.fromtimestamp(now)
+    with mock.patch.dict(os.environ, {"TZ": "UTC"}):
+      return util.format_time(timestamp_pb, now=now)
+
+  def test_just_now(self):
+    base = 1546398245
+    actual = self._run(t=base, now=base + 1)
+    self.assertEqual(actual, "2019-01-02 03:04:05 (just now)")
+
+  def test_seconds_ago(self):
+    base = 1546398245
+    actual = self._run(t=base, now=base + 10)
+    self.assertEqual(actual, "2019-01-02 03:04:05 (10 seconds ago)")
+
+  def test_minute_ago(self):
+    base = 1546398245
+    actual = self._run(t=base, now=base + 66)
+    self.assertEqual(actual, "2019-01-02 03:04:05 (1 minute ago)")
+
+  def test_minutes_ago(self):
+    base = 1546398245
+    actual = self._run(t=base, now=base + 222)
+    self.assertEqual(actual, "2019-01-02 03:04:05 (3 minutes ago)")
+
+  def test_hour_ago(self):
+    base = 1546398245
+    actual = self._run(t=base, now=base + 3601)
+    self.assertEqual(actual, "2019-01-02 03:04:05 (1 hour ago)")
+
+  def test_hours_ago(self):
+    base = 1546398245
+    actual = self._run(t=base, now=base + 9999)
+    self.assertEqual(actual, "2019-01-02 03:04:05 (2 hours ago)")
+
+  def test_long_ago(self):
+    base = 1546398245
+    actual = self._run(t=base, now=base + 7 * 86400)
+    self.assertEqual(actual, "2019-01-02 03:04:05")
 
 
 if __name__ == "__main__":
