@@ -14,7 +14,7 @@ py_web_test_suite(
     # TODO(@jart): Make this fast and not flaky.
     flaky = True,
     srcs_version = "PY2AND3",
-    tags = ["manual"],
+    tags = ["manual", "webtest"],
     deps = [
         "//tensorboard/plugins/audio:audio_demo",
         "//tensorboard/plugins/scalar:scalars_demo",

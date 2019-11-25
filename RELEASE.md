@@ -1,3 +1,9 @@
+# Release 2.0.1
+
+## Features
+- Preview of TensorBoard.dev uploader! Check out <https://tensorboard.dev/> for
+  information and usage instructions.
+
 # Release 2.0.0
 
 The 2.0 minor series tracks TensorFlow 2.0.

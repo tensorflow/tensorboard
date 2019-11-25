@@ -20,6 +20,8 @@ ng_module(
         "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/angular:expect_angular_material_input",
         "//tensorboard/webapp/core",
+        "//tensorboard/webapp/core/store",
+        "//tensorboard/webapp/core/actions",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@angular/forms",

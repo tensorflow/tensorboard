@@ -22,6 +22,8 @@ ng_module(
         "//tensorboard/webapp/angular:expect_angular_material_tabs",
         "//tensorboard/webapp/angular:expect_angular_material_toolbar",
         "//tensorboard/webapp/core",
+        "//tensorboard/webapp/core/actions",
+        "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/settings",
         "//tensorboard/webapp/types",
         "@npm//@angular/common",

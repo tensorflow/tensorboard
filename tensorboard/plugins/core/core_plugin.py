@@ -42,8 +42,6 @@ logger = tb_logging.get_logger()
 # for more details.
 DEFAULT_PORT = 6006
 
-SHASUM_DIR = '_shasums'
-SHASUM_FILE_SUFFIX = '.scripts_sha256'
 
 class CorePlugin(base_plugin.TBPlugin):
   """Core plugin for TensorBoard.
@@ -102,27 +100,9 @@ class CorePlugin(base_plugin.TBPlugin):
     with self._assets_zip_provider() as fp:
       with zipfile.ZipFile(fp) as zip_:
         for path in zip_.namelist():
-          # Do not serve the shasum data as static files.
-          if path.startswith(SHASUM_DIR):
-            continue
-
           gzipped_asset_bytes = _gzip(zip_.read(path))
-
-          if os.path.splitext(path)[1] == '.html':
-            checksum_path = os.path.join(SHASUM_DIR, path + SHASUM_FILE_SUFFIX)
-            # TODO(stephanwlee): devise a way to omit font-roboto/roboto.html from
-            # the assets zip file.
-            if checksum_path in zip_.namelist():
-              lines = zip_.read(checksum_path).splitlines(False);
-              shasums = [hash.decode('utf8') for hash in lines]
-            else:
-              shasums = None
-
-            wsgi_app = functools.partial(
-                self._serve_html, shasums, gzipped_asset_bytes)
-          else:
-            wsgi_app = functools.partial(
-                self._serve_asset, path, gzipped_asset_bytes)
+          wsgi_app = functools.partial(
+              self._serve_asset, path, gzipped_asset_bytes)
           apps['/' + path] = wsgi_app
     apps['/'] = apps['/index.html']
     return apps
@@ -141,17 +121,6 @@ class CorePlugin(base_plugin.TBPlugin):
     mimetype = mimetypes.guess_type(path)[0] or 'application/octet-stream'
     return http_util.Respond(
         request, gzipped_asset_bytes, mimetype, content_encoding='gzip')
-
-  @wrappers.Request.application
-  def _serve_html(self, shasums, gzipped_asset_bytes, request):
-    """Serves a pre-gzipped static HTML with script shasums."""
-    return http_util.Respond(
-        request,
-        gzipped_asset_bytes,
-        'text/html',
-        content_encoding='gzip',
-        csp_scripts_sha256s=shasums,
-    )
 
   @wrappers.Request.application
   def _serve_environment(self, request):
@@ -529,7 +498,7 @@ reload finishes, and requires --load_interval=0. (default: %(default)s)\
         # Custom str-to-bool converter since regular bool() doesn't work.
         type=lambda v: {'true': True, 'false': False}.get(v.lower(), v),
         choices=[True, False],
-        default=False,
+        default=None,
         help='''\
 [experimental] If true, this enables experimental support for continuously
 polling multiple event files in each run directory for newly appended data
@@ -537,7 +506,7 @@ polling multiple event files in each run directory for newly appended data
 polled as long as their most recently read data is newer than the threshold
 defined by --reload_multifile_inactive_secs, to limit resource usage. Beware
 of running out of memory if the logdir contains many active event files.
-(default: %(default)s)\
+(default: false)\
 ''')
 
     parser.add_argument(

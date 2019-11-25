@@ -1,9 +1,9 @@
 package(default_visibility = ["//tensorboard:internal"])
 
-# load("@npm_bazel_jasmine//:index.bzl", "jasmine_node_test")
 load("//tensorboard/defs:defs.bzl", "tf_ts_library")
+load("@npm_angular_bazel//:index.bzl", "ng_module")
 
-tf_ts_library(
+ng_module(
     name = "effects",
     srcs = [
         "core.effects.ts",
@@ -12,18 +12,15 @@ tf_ts_library(
     deps = [
         "//tensorboard/webapp/core/actions",
         "//tensorboard/webapp/core/store",
-        "//tensorboard/webapp/webapp_data_source",
         "//tensorboard/webapp/types",
+        "//tensorboard/webapp/webapp_data_source",
         "@npm//@angular/common",
-        "@npm//@angular/compiler",
         "@npm//@angular/core",
         "@npm//@ngrx/effects",
         "@npm//@ngrx/store",
-        "@npm//@types/jasmine",
         "@npm//rxjs",
     ],
 )
-
 
 tf_ts_library(
     name = "core_effects_test_lib",
@@ -31,7 +28,6 @@ tf_ts_library(
     srcs = [
         "core.effects.test.ts",
     ],
-    tsconfig = "//:tsconfig-test",
     deps = [
         ":effects",
         "//tensorboard/webapp/angular:expect_angular_common_http_testing",
@@ -39,8 +35,8 @@ tf_ts_library(
         "//tensorboard/webapp/core/actions",
         "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/core/testing",
-        "//tensorboard/webapp/webapp_data_source",
         "//tensorboard/webapp/types",
+        "//tensorboard/webapp/webapp_data_source",
         "@npm//@angular/common",
         "@npm//@angular/compiler",
         "@npm//@angular/core",
@@ -50,16 +46,3 @@ tf_ts_library(
         "@npm//rxjs",
     ],
 )
-
-# TODO(soergel): Make this test work.
-# This did not exist previously, and it fails due to an Angular injection issue.
-# jasmine_node_test(
-#     name = "core_effects_jasmine_test",
-#     srcs = [
-#         ":core_effects_test_lib",
-#     ],
-#     deps = [
-#         "@npm//chai",
-#         "@npm//sinon",
-#     ],
-# )

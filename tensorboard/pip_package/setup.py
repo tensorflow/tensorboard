@@ -32,6 +32,7 @@ REQUIRED_PACKAGES = [
     'markdown >= 2.6.8',
     'numpy >= 1.12.0',
     'protobuf >= 3.6.0',
+    'requests >= 2.21.0, < 3',
     'setuptools >= 41.0.0',
     'six >= 1.10.0',
     'werkzeug >= 0.11.15',
@@ -75,7 +76,7 @@ setup(
         'tensorboard.plugins.projector': [
             'tf_projector_plugin/index.js',
             'tf_projector_plugin/projector_binary.html',
-            'tf_projector_plugin/projector_binary.html.scripts_sha256',
+            'tf_projector_plugin/projector_binary.js',
         ],
     },
     # Disallow python 3.0 and 3.1 which lack a 'futures' module (see above).

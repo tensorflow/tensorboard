@@ -7,7 +7,6 @@ load("//tensorboard/defs:vulcanize.bzl", "tensorboard_html_binary")
 
 licenses(["notice"])  # Apache 2.0
 
-
 # Angular module for the top-level app component together with all of its
 # injectable dependencies.  I.e., the entire Angular app.
 ng_module(
@@ -25,6 +24,8 @@ ng_module(
         ":config",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
         "//tensorboard/webapp/core",
+        "//tensorboard/webapp/core/actions",
+        "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/header",
         "//tensorboard/webapp/plugins",
         "//tensorboard/webapp/reloader",
@@ -112,8 +113,8 @@ tf_web_library(
     ],
     path = "/",
     deps = [
-        "//tensorboard/components:ng_polymer_lib_binary",
         ":tb_webapp",
+        "//tensorboard/components:ng_polymer_lib_binary",
         "//tensorboard/webapp:material_theme",
     ],
 )
@@ -123,6 +124,7 @@ tensorboard_html_binary(
     name = "ng_index",
     input_path = "/index.html",
     output_path = "/ng_index.html",
+    js_path = "/ng_index.js",
     deps = [":tensorboard-webapp"],
 )
 
@@ -132,9 +134,7 @@ tf_ng_web_test_suite(
     name = "karma_test",
     deps = [
         "//tensorboard/webapp/core/effects:core_effects_test_lib",
-        # TODO(soergel): make this test work
-        # This test was not included here previously, and it fails.
-        # "//tensorboard/webapp/core/store:core_store_test_lib",
+        "//tensorboard/webapp/core/store:core_store_test_lib",
         "//tensorboard/webapp/header:test_lib",
         "//tensorboard/webapp/plugins:plugins_container_test_lib",
         "//tensorboard/webapp/reloader:test_lib",

@@ -109,6 +109,7 @@ py_library(
         "//tensorboard:expect_numpy_installed",
         "//tensorboard/compat",
         "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/util:lazy_tensor_creator",
         "//tensorboard/util:tensor_util",
     ],
 )

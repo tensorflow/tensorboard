@@ -126,13 +126,7 @@ class TensorBoardExporter(object):
 
   def _request_experiment_ids(self, read_time):
     """Yields all of the calling user's experiment IDs, as strings."""
-    request = export_service_pb2.StreamExperimentsRequest(limit=_MAX_INT64)
-    util.set_timestamp(request.read_timestamp, read_time)
-    stream = self._api.StreamExperiments(
-        request, metadata=grpc_util.version_metadata())
-    for response in stream:
-      for experiment_id in response.experiment_ids:
-        yield experiment_id
+    return list_experiments(self._api, read_time=read_time)
 
   def _request_scalar_data(self, experiment_id, read_time):
     """Yields JSON-serializable blocks of scalar data."""
@@ -161,6 +155,33 @@ class TensorBoardExporter(object):
               u"values": list(response.points.values),
           },
       }
+
+
+def list_experiments(api_client, read_time=None):
+  """Yields all of the calling user's experiment IDs.
+
+  Args:
+    api_client: A TensorBoardExporterService stub instance.
+    read_time: A fixed timestamp from which to export data, as float seconds
+      since epoch (like `time.time()`). Optional; defaults to the current
+      time.
+
+  Yields:
+    One string for each experiment owned by the calling user, in arbitrary
+    order.
+  """
+  if read_time is None:
+    read_time = time.time()
+  request = export_service_pb2.StreamExperimentsRequest(limit=_MAX_INT64)
+  util.set_timestamp(request.read_timestamp, read_time)
+  stream = api_client.StreamExperiments(
+      request, metadata=grpc_util.version_metadata())
+  for response in stream:
+    if not response.experiments:
+      for experiment_id in response.experiment_ids:
+        yield experiment_id
+    for experiment in response.experiments:
+      yield experiment.experiment_id
 
 
 class OutputDirectoryExistsError(ValueError):
