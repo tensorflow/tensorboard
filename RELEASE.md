@@ -1,3 +1,15 @@
+# Release 2.0.2
+
+## Features
+
+- Improvements to [TensorBoard.dev] support:
+  - New `tensorboard dev list` subcommand lists all experiments uploaded to
+    TensorBoard.dev (#2903)
+  - In the event of a transient backend issue or permanent breaking change, the
+    uploader can now gracefully degrade and print a diagnostic (#2879)
+
+[TensorBoard.dev]: https://tensorboard.dev/
+
 # Release 2.0.1
 
 ## Features
