@@ -275,7 +275,7 @@ class WitWidget(base.WitWidgetBase):
           inferences=json.dumps(inferences)))
     except Exception as e:
       output.eval_js("""backendError({error})""".format(
-          error=json.dumps({'msg': str(e)})))
+          error=json.dumps({'msg': repr(e)})))
 
   def delete_example(self, index):
     self.examples.pop(index)
@@ -307,7 +307,8 @@ class WitWidget(base.WitWidgetBase):
           callback_dict=json.dumps(callback_dict)))
     except Exception as e:
       output.eval_js(
-          """backendError({error})""".format(error=json.dumps({'msg': str(e)})))
+          """backendError({error})""".format(
+            error=json.dumps({'msg': repr(e)})))
 
   def get_eligible_features(self):
     features_list = base.WitWidgetBase.get_eligible_features_impl(self)
@@ -321,7 +322,7 @@ class WitWidget(base.WitWidgetBase):
           json_mapping=json.dumps(json_mapping)))
     except Exception as e:
       output.eval_js("""backendError({error})""".format(
-          error=json.dumps({'msg': str(e)})))
+          error=json.dumps({'msg': repr(e)})))
 
   def sort_eligible_features(self, info):
     try:
@@ -330,7 +331,7 @@ class WitWidget(base.WitWidgetBase):
           features_list=json.dumps(features_list)))
     except Exception as e:
       output.eval_js("""backendError({error})""".format(
-          error=json.dumps({'msg': str(e)})))
+          error=json.dumps({'msg': repr(e)})))
 
   def _generate_sprite(self):
     sprite = base.WitWidgetBase.create_sprite(self)

@@ -67,6 +67,7 @@ def tf_web_test(name, web_library, src, **kwargs):
     )
     kwargs.setdefault("flaky", True)
     kwargs.setdefault("timeout", "short")
+    kwargs.setdefault("tags", []).append("webtest")
     py_web_test_suite(
         name = name,
         srcs = [python_stub_output],

@@ -194,7 +194,7 @@ class RespondTest(tb_test.TestCase):
     expected_csp = (
         "default-src 'self';font-src 'self';frame-ancestors *;"
         "frame-src 'self';img-src 'self' data: blob:;object-src 'none';"
-        "style-src https://www.gstatic.com data: 'unsafe-inline';"
+        "style-src 'self' https://www.gstatic.com data: 'unsafe-inline';"
         "script-src 'self' 'unsafe-eval' 'sha256-abcdefghi'"
     )
     self.assertEqual(r.headers.get('Content-Security-Policy'), expected_csp)
@@ -206,19 +206,33 @@ class RespondTest(tb_test.TestCase):
     expected_csp = (
         "default-src 'self';font-src 'self';frame-ancestors *;"
         "frame-src 'self';img-src 'self' data: blob:;object-src 'none';"
-        "style-src https://www.gstatic.com data: 'unsafe-inline';"
+        "style-src 'self' https://www.gstatic.com data: 'unsafe-inline';"
+        "script-src 'unsafe-eval'"
+    )
+    self.assertEqual(r.headers.get('Content-Security-Policy'), expected_csp)
+
+  @mock.patch.object(http_util, '_CSP_SCRIPT_SELF', False)
+  @mock.patch.object(http_util, '_CSP_SCRIPT_UNSAFE_EVAL', False)
+  def testCsp_noHash_noUnsafeEval(self):
+    q = wrappers.Request(wtest.EnvironBuilder().get_environ())
+    r = http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=None)
+    expected_csp = (
+        "default-src 'self';font-src 'self';frame-ancestors *;"
+        "frame-src 'self';img-src 'self' data: blob:;object-src 'none';"
+        "style-src 'self' https://www.gstatic.com data: 'unsafe-inline';"
         "script-src 'none'"
     )
     self.assertEqual(r.headers.get('Content-Security-Policy'), expected_csp)
 
   @mock.patch.object(http_util, '_CSP_SCRIPT_SELF', True)
+  @mock.patch.object(http_util, '_CSP_SCRIPT_UNSAFE_EVAL', False)
   def testCsp_onlySelf(self):
     q = wrappers.Request(wtest.EnvironBuilder().get_environ())
     r = http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=None)
     expected_csp = (
         "default-src 'self';font-src 'self';frame-ancestors *;"
         "frame-src 'self';img-src 'self' data: blob:;object-src 'none';"
-        "style-src https://www.gstatic.com data: 'unsafe-inline';"
+        "style-src 'self' https://www.gstatic.com data: 'unsafe-inline';"
         "script-src 'self'"
     )
     self.assertEqual(r.headers.get('Content-Security-Policy'), expected_csp)
@@ -231,7 +245,7 @@ class RespondTest(tb_test.TestCase):
     expected_csp = (
         "default-src 'self';font-src 'self';frame-ancestors *;"
         "frame-src 'self';img-src 'self' data: blob:;object-src 'none';"
-        "style-src https://www.gstatic.com data: 'unsafe-inline';"
+        "style-src 'self' https://www.gstatic.com data: 'unsafe-inline';"
         "script-src 'self' 'sha256-abcdefghi'"
     )
     self.assertEqual(r.headers.get('Content-Security-Policy'), expected_csp)
@@ -246,7 +260,7 @@ class RespondTest(tb_test.TestCase):
     expected_csp = (
         "default-src 'self';font-src 'self';frame-ancestors *;"
         "frame-src 'self';img-src 'self' data: blob: https://example.com;"
-        "object-src 'none';style-src https://www.gstatic.com data: "
+        "object-src 'none';style-src 'self' https://www.gstatic.com data: "
         "'unsafe-inline' https://googol.com;script-src "
         "https://tensorflow.org/tensorboard 'self' 'unsafe-eval' 'sha256-abcd'"
     )

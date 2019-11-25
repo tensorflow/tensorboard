@@ -49,7 +49,10 @@ class FetchServerInfoTest(tb_test.TestCase):
       future.result(timeout=3)  # wait for server termination
 
     self.addCleanup(cleanup)
-    return "http://localhost:%d" % server.server_port
+    if ":" in localhost and not localhost.startswith("["):
+      # IPv6 IP address, probably "::1".
+      localhost = "[%s]" % localhost
+    return "http://%s:%d" % (localhost, server.server_port)
 
   def test_fetches_response(self):
     expected_result = server_info_pb2.ServerInfoResponse()

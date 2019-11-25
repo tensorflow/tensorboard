@@ -30,8 +30,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
-import com.google.common.hash.Hashing;
-import com.google.common.io.BaseEncoding;
 import com.google.javascript.jscomp.BasicErrorManager;
 import com.google.javascript.jscomp.CheckLevel;
 import com.google.javascript.jscomp.CompilationLevel;
@@ -129,35 +127,36 @@ public final class Vulcanize {
 
   public static void main(String[] args)
       throws FileNotFoundException, IOException, IllegalArgumentException {
-    compilationLevel = CompilationLevel.fromString(args[0]);
-    wantsCompile = args[1].equals("true");
-    testOnly = args[2].equals("true");
-    Webpath inputPath = Webpath.get(args[3]);
-    outputPath = Webpath.get(args[4]);
-    Webpath jsPath = Webpath.get(args[5]);
-    Path output = Paths.get(args[6]);
-    Path jsOutput = Paths.get(args[7]);
-    Path shasumOutput = Paths.get(args[8]);
-    if (!args[9].equals(NO_NOINLINE_FILE_PROVIDED)) {
-      String ignoreFile = new String(Files.readAllBytes(Paths.get(args[9])), UTF_8);
+    int argIdx = 0;
+    compilationLevel = CompilationLevel.fromString(args[argIdx++]);
+    wantsCompile = args[argIdx++].equals("true");
+    testOnly = args[argIdx++].equals("true");
+    Webpath inputPath = Webpath.get(args[argIdx++]);
+    outputPath = Webpath.get(args[argIdx++]);
+    Webpath jsPath = Webpath.get(args[argIdx++]);
+    Path output = Paths.get(args[argIdx++]);
+    Path jsOutput = Paths.get(args[argIdx++]);
+    if (!args[argIdx++].equals(NO_NOINLINE_FILE_PROVIDED)) {
+      String ignoreFile = new String(Files.readAllBytes(Paths.get(args[argIdx])), UTF_8);
       Arrays.asList(ignoreFile.split("\n"))
           .forEach((str) -> ignoreRegExs.add(Pattern.compile(str)));
     }
-    for (int i = 10; i < args.length; i++) {
-      if (args[i].endsWith(".js")) {
-        String code = new String(Files.readAllBytes(Paths.get(args[i])), UTF_8);
-        SourceFile sourceFile = SourceFile.fromCode(args[i], code);
+    while (argIdx < args.length) {
+      final String arg = args[argIdx++];
+      if (arg.endsWith(".js")) {
+        String code = new String(Files.readAllBytes(Paths.get(arg)), UTF_8);
+        SourceFile sourceFile = SourceFile.fromCode(arg, code);
         if (code.contains("@externs")) {
-          externs.put(args[i], sourceFile);
+          externs.put(arg, sourceFile);
         } else {
           sourcesFromJsLibraries.add(sourceFile);
         }
         continue;
       }
-      if (!args[i].endsWith(".pbtxt")) {
+      if (!arg.endsWith(".pbtxt")) {
         continue;
       }
-      Webfiles manifest = loadWebfilesPbtxt(Paths.get(args[i]));
+      Webfiles manifest = loadWebfilesPbtxt(Paths.get(arg));
       for (WebfilesSource src : manifest.getSrcList()) {
         webfiles.put(Webpath.get(src.getWebpath()), Paths.get(src.getPath()));
       }
@@ -167,7 +166,6 @@ public final class Vulcanize {
     transform(document);
     if (wantsCompile) {
       compile();
-      combineScriptElements(document);
     } else if (firstScript != null) {
       firstScript.before(
           new Element(Tag.valueOf("script"), firstScript.baseUri())
@@ -187,7 +185,6 @@ public final class Vulcanize {
     createFile(
         jsOutput, shouldExtractJs ? extractAndTransformJavaScript(document, jsPath) : "");
     // Write an empty file for shasum when all scripts are extracted out.
-    createFile(shasumOutput, shouldExtractJs ? "" : getScriptsShasums(document));
     createFile(output, Html5Printer.stringify(document));
   }
 
@@ -728,108 +725,6 @@ public final class Vulcanize {
       }
     }
     return ImmutableMultimap.copyOf(builder);
-  }
-
-  /**
-   * Combine content of script tags into a group. To guarantee the correctness, it only groups
-   * content of `src`-less scripts between `src`-full scripts. The last combination gets inserted at
-   * the end of the document.
-   * e.g., {@code
-   *   <script>A</script>
-   *   <script>B</script>
-   *   <script src="srcful1"></script>
-   *   <script src="srcful2"></script>
-   *   <script>C</script>
-   *   <script>D</script>
-   *   <script src="srcful3"></script>
-   *   <script>E</script>
-   * }
-   * gets compiled as {@code
-   *   <script>A,B</script>
-   *   <script src="srcful1"></script>
-   *   <script src="srcful2"></script>
-   *   <script>C,D</script>
-   *   <script src="srcful3"></script>
-   *   <script>E</script>
-   * }
-   *
-   * @deprecated Script combination is deprecated in favor of script extraction.
-   */
-  @Deprecated
-  private static void combineScriptElements(Document document) {
-    Elements scripts = document.getElementsByTag("script");
-    StringBuilder sourcesBuilder = new StringBuilder();
-
-    for (Element script : scripts) {
-      if (!script.attr("src").isEmpty()) {
-        if (sourcesBuilder.length() == 0) {
-          continue;
-        }
-
-        Element scriptElement = new Element(Tag.valueOf("script"), "")
-            .appendChild(new DataNode(sourcesBuilder.toString(), ""));
-        script.before(scriptElement);
-        sourcesBuilder = new StringBuilder();
-      } else {
-        sourcesBuilder.append(script.html()).append("\n");
-        script.remove();
-      }
-    }
-
-    // jsoup parser creates body elements for each HTML files. Since document.body() returns the
-    // first instance and we want to insert the script element at the end of the document, we
-    // manually grab the last one.
-    Element lastBody = Iterables.getLast(document.getElementsByTag("body"));
-
-    Element scriptElement = new Element(Tag.valueOf("script"), "")
-        .appendChild(new DataNode(sourcesBuilder.toString(), ""));
-    lastBody.appendChild(scriptElement);
-  }
-
-  /** @deprecated Shasum is deprecated in favor of script extraction. */
-  @Deprecated
-  private static ArrayList<String> computeScriptShasum(Document document)
-      throws FileNotFoundException, IOException {
-    ArrayList<String> hashes = new ArrayList<>();
-    for (Element script : document.getElementsByTag("script")) {
-      String src = script.attr("src");
-      String sourceContent;
-      if (src.isEmpty()) {
-        sourceContent = script.html();
-      } else {
-        // script element that remains are the ones with src that is absolute or annotated with
-        // `jscomp-ignore`. They must resolve from the root because those srcs are rootified.
-        Webpath webpathSrc = Webpath.get(src);
-        Webpath webpath = Webpath.get("/").resolve(Webpath.get(src)).normalize();
-        if (isAbsolutePath(webpathSrc)) {
-          System.err.println(
-              "WARNING: "
-                  + webpathSrc
-                  + " refers to a remote resource. Please add it to CSP manually. Detail: "
-                  + script.outerHtml());
-          continue;
-        } else if (!webfiles.containsKey(webpath)) {
-          throw new FileNotFoundException(
-              "Expected webfiles for " + webpath + " to exist. Related: " + script.outerHtml());
-        }
-        sourceContent = new String(Files.readAllBytes(webfiles.get(webpath)), UTF_8);
-      }
-      String hash = BaseEncoding.base64().encode(
-          Hashing.sha256().hashString(sourceContent, UTF_8).asBytes());
-      hashes.add(hash);
-    }
-    return hashes;
-  }
-
-  /**
-   * Writes sha256 of script tags in base64 in the document.
-   *
-   * @deprecated Shasum is deprecated in favor of script extraction.
-   */
-  @Deprecated
-  private static String getScriptsShasums(Document document)
-      throws FileNotFoundException, IOException {
-    return Joiner.on("\n").join(computeScriptShasum(document));
   }
 
   private static String extractScriptContent(Document document)

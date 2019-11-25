@@ -22,10 +22,9 @@ def _tensorboard_html_binary(ctx):
 
   The rule outputs a HTML that resolves all HTML import statements into one
   document. When compile option is on, it compiles all script sources with
-  JSCompiler and combines script elements. The rule also outputs
-  [name].html.scripts_sha256 file that contains sha256 hash, in base64, of all
-  script elements (sources inside element and content of JavaScript src they
-  point at). The hashes are delimited by newline.
+  JSCompiler (unless DOM is annotated to opt-out of compilation). When js_path
+  is specified, the rule combines content of all script elements to a JavaScript
+  file.
   """
 
   deps = unfurl(ctx.attr.deps, provider="webfiles")
@@ -55,7 +54,7 @@ def _tensorboard_html_binary(ctx):
           ignore_regexs_file_set,
       ]).to_list(),
       tools=jslibs,
-      outputs=[ctx.outputs.html, ctx.outputs.js, ctx.outputs.shasum],
+      outputs=[ctx.outputs.html, ctx.outputs.js],
       executable=ctx.executable._Vulcanize,
       arguments=([ctx.attr.compilation_level,
                   "true" if ctx.attr.compile else "false",
@@ -65,7 +64,6 @@ def _tensorboard_html_binary(ctx):
                   ctx.attr.js_path,
                   ctx.outputs.html.path,
                   ctx.outputs.js.path,
-                  ctx.outputs.shasum.path,
                   ignore_regexs_file_path] +
                  [f.path for f in jslibs.to_list()] +
                  [f.path for f in manifests.to_list()]),
@@ -155,5 +153,4 @@ tensorboard_html_binary = rule(
     outputs={
         "html": "%{name}.html",
         "js": "%{name}.js",
-        "shasum": "%{name}.html.scripts_sha256",
     })
