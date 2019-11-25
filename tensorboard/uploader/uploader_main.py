@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import print_function
 
 import abc
-import datetime
 import json
 import os
 import sys
@@ -39,6 +38,7 @@ from tensorboard.uploader import auth
 from tensorboard.uploader import exporter as exporter_lib
 from tensorboard.uploader import server_info as server_info_lib
 from tensorboard.uploader import uploader as uploader_lib
+from tensorboard.uploader import util
 from tensorboard.uploader.proto import server_info_pb2
 from tensorboard import program
 from tensorboard.plugins import base_plugin
@@ -378,8 +378,8 @@ class _ListIntent(_Intent):
       print(url)
       data = [
           ('Id', experiment.experiment_id),
-          ('Created', _format_time(experiment.create_time)),
-          ('Updated', _format_time(experiment.update_time)),
+          ('Created', util.format_time(experiment.create_time)),
+          ('Updated', util.format_time(experiment.update_time)),
           ('Scalars', str(experiment.num_scalars)),
           ('Runs', str(experiment.num_runs)),
           ('Tags', str(experiment.num_tags)),
@@ -555,23 +555,6 @@ def _die(message):
   sys.stderr.write('%s\n' % (message,))
   sys.stderr.flush()
   sys.exit(1)
-
-
-def _format_time(timestamp_pb):
-  # Add and subtract a day for <https://bugs.python.org/issue29097>,
-  # which breaks early datetime conversions on Windows for small
-  # timestamps.
-  dt = datetime.datetime.fromtimestamp(timestamp_pb.seconds + 86400)
-  dt = dt - datetime.timedelta(seconds=86400)
-
-  ago = datetime.datetime.now().replace(microsecond=0) - dt
-  if ago < datetime.timedelta(seconds=5):
-    return "just now"
-  if ago < datetime.timedelta(minutes=1):
-    return "%d seconds ago" % ago.total_seconds()
-  if ago < datetime.timedelta(days=1):
-    return "%s ago" % ago
-  return str(dt)
 
 
 def main(unused_argv):
