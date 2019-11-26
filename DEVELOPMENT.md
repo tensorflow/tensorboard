@@ -20,6 +20,10 @@ You can build and run TensorBoard via Bazel (from within the TensorFlow nightly 
 (tf)$ bazel run //tensorboard -- --logdir /path/to/logs
 ```
 
+You may see warnings about “Limited tf.compat.v2.summary API due to missing TensorBoard installation” appear when you run TensorBoard. These are spurious: you can ignore them. (See [an explanation of why these warnings occur][why-warnings] if you’re curious.)
+
+[why-warnings]: https://github.com/tensorflow/tensorboard/issues/2968#issuecomment-558405994
+
 For any changes to the frontend, you’ll need to install [Yarn][yarn] to lint your code (`yarn lint`, `yarn fix-lint`). You’ll also need Yarn to add or remove any NPM dependencies.
 
 To generate fake log data for a plugin, run its demo script. For instance, this command generates fake scalar data in `/tmp/scalars_demo`:
