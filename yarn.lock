@@ -310,6 +310,11 @@
   resolved "https://registry.yarnpkg.com/@ngrx/effects/-/effects-8.2.0.tgz#6aec4920d2b363c2c2b093c482e0bd2bb7ecdba2"
   integrity sha512-eVho/YNHFDL3fo0Pb24GduU2OUHIEaUQjBBP/WlXO66QdqM9gXPJeEviWzA9RaC1tEu4sAZ0OYP1pP++CCn6Uw==
 
+"@ngrx/store-devtools@^8.5.2":
+  version "8.5.2"
+  resolved "https://registry.yarnpkg.com/@ngrx/store-devtools/-/store-devtools-8.5.2.tgz#722b2b9d290f6b64a9bce421d1a0f283970319a3"
+  integrity sha512-3GrAAX3/J39u0AcREgWBiUwuNkZhgei+2K6/bulkAu/BHw+PJaZqq5+c+uQFvi0/aq+/8+9wjNhhCWS4Entk/Q==
+
 "@ngrx/store@^8.2.0":
   version "8.2.0"
   resolved "https://registry.yarnpkg.com/@ngrx/store/-/store-8.2.0.tgz#8374fa803babdbf2a599240a8e546fa726d83edd"

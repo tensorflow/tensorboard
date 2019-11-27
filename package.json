@@ -60,6 +60,7 @@
     "@bazel/karma": "^0.36.1",
     "@ngrx/effects": "^8.2.0",
     "@ngrx/store": "^8.2.0",
+    "@ngrx/store-devtools": "^8.5.2",
     "rxjs": "^6.5.2",
     "zone.js": "^0.9.1"
   }
