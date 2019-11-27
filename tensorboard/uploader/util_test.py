@@ -202,8 +202,8 @@ class FormatTimeTest(tb_test.TestCase):
   def _run(self, t=None, now=None):
     timestamp_pb = timestamp_pb2.Timestamp()
     util.set_timestamp(timestamp_pb, t)
-    now = datetime.datetime.fromtimestamp(now)
     with mock.patch.dict(os.environ, {"TZ": "UTC"}):
+      now = datetime.datetime.fromtimestamp(now)
       return util.format_time(timestamp_pb, now=now)
 
   def test_just_now(self):
