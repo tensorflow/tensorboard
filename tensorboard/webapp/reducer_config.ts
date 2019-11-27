@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {InjectionToken} from '@angular/core';
+import {InjectionToken, isDevMode} from '@angular/core';
 import {
   Action,
   ActionReducer,
@@ -20,24 +20,24 @@ import {
   MetaReducer,
 } from '@ngrx/store';
 
+import {storeLogger} from 'ngrx-store-logger';
+
 export interface State {}
 
-// console.log all actions
-export function logger(reducer: ActionReducer<any>): ActionReducer<any> {
-  return (state, action) => {
-    const result = reducer(state, action);
-    console.groupCollapsed(action.type);
-    console.log('prev state', state);
-    console.log('action', action);
-    console.log('next state', result);
-    console.groupEnd();
+export function logger(reducer: ActionReducer<State>): ActionReducer<State> {
+  // We must call isDevMode() within this function, not at file load time,
+  // because of load ordering issues vs. the config/bootstrap setup.
 
-    return result;
-  };
+  // TODO(stephanwlee, davidsoergel): Why is this called twice?
+  console.log(
+    isDevMode() ? 'DEV mode: Logger enabled' : 'PROD mode: Logger disabled'
+  );
+  return isDevMode() ? storeLogger()(reducer) : reducer;
 }
 
-export const metaReducers: MetaReducer<any>[] =
-  config.env === 'dev' ? [logger] : [];
+// TODO(stephanwlee, davidsoergel): consider injecting metareducers via
+// https://ngrx.io/guide/store/recipes/injecting#injecting-meta-reducers
+export const metaReducers: MetaReducer<any>[] = [logger];
 
 export const ROOT_REDUCERS = new InjectionToken<
   ActionReducerMap<State, Action>

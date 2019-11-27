@@ -21,7 +21,7 @@ import {AppModuleNgFactory} from './app.module.ngfactory';
 if (config.env === 'prod') enableProdMode();
 
 // Bootstrap needs to happen after body is ready but we cannot reliably
-// controls the order in which script gets loaded (Vulcanization inlines
+// control the order in which script gets loaded (Vulcanization inlines
 // the script in <head>).
 window.addEventListener('DOMContentLoaded', () => {
   platformBrowser().bootstrapModuleFactory(AppModuleNgFactory);

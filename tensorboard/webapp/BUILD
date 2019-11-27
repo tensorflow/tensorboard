@@ -33,6 +33,7 @@ ng_module(
         "@npm//@angular/platform-browser",
         "@npm//@ngrx/effects",
         "@npm//@ngrx/store",
+        "@npm//ngrx-store-logger",
     ],
 )
 
