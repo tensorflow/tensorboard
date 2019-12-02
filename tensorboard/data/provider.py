@@ -128,6 +128,7 @@ class DataProvider(object):
     """Not yet specified."""
     pass
 
+  @abc.abstractmethod
   def list_blob_sequences(
       self, experiment_id, plugin_name, run_tag_filter=None
   ):
@@ -151,6 +152,7 @@ class DataProvider(object):
     """
     pass
 
+  @abc.abstractmethod
   def read_blob_sequences(
       self, experiment_id, plugin_name, downsample=None, run_tag_filter=None
   ):
@@ -177,6 +179,7 @@ class DataProvider(object):
     """
     pass
 
+  @abc.abstractmethod
   def read_blob(self, blob_key):
     """Read data for a single blob.
 

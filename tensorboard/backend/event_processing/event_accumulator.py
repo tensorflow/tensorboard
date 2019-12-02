@@ -455,6 +455,10 @@ class EventAccumulator(object):
       return graph
     raise ValueError('There is no graph in this EventAccumulator')
 
+  def SerializedGraph(self):
+    """Return the graph definition in serialized form, if there is one."""
+    return self._graph
+
   def MetaGraph(self):
     """Return the metagraph definition, if there is one.
 

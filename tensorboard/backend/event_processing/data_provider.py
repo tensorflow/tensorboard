@@ -19,11 +19,15 @@ from __future__ import division
 from __future__ import print_function
 
 import six
+import collections
+import json
+import base64
 
 from tensorboard.data import provider
 from tensorboard.util import tb_logging
 from tensorboard.util import tensor_util
 
+from tensorboard.plugins.graph import metadata as graphs_metadata
 
 logger = tb_logging.get_logger()
 
@@ -125,3 +129,153 @@ class MultiplexerDataProvider(provider.DataProvider):
         wall_time=event.wall_time,
         value=tensor_util.make_ndarray(event.tensor_proto).item(),
     )
+
+  def list_blob_sequences(
+      self, experiment_id, plugin_name, run_tag_filter=None
+  ):
+    del experiment_id  # ignored for now
+    if run_tag_filter is None:
+      run_tag_filter = provider.RunTagFilter(runs=None, tags=None)
+
+    # TODO(soergel, wchargin): consider images, etc.
+    # Note this plugin_name can really just be 'graphs' for now; the
+    # v2 cases are not handled yet.
+    if plugin_name != graphs_metadata.PLUGIN_NAME:
+      logger.warn("Directory has no blob data for plugin %r", plugin_name)
+      return {}
+
+    result = collections.defaultdict(lambda: {})
+    for (run, run_info) in six.iteritems(self._multiplexer.Runs()):
+      tag = 'graph'
+      if not run_info['graph']:
+        continue
+      result[run][tag] = provider.BlobSequenceTimeSeries(
+        max_step=0,
+        max_wall_time=0,
+        latest_max_index=0,  # Graphs are always one blob at a time
+        plugin_content=None,
+        description=None,
+        display_name=None,
+      )
+    return result
+
+  def read_blob_sequences(
+      self, experiment_id, plugin_name, downsample=None, run_tag_filter=None
+  ):
+    del run_tag_filter # ignored for now
+
+    # TODO(soergel, wchargin): consider images, etc.
+    # Note this plugin_name can really just be 'graphs' for now; the
+    # v2 cases are not handled yet.
+    if plugin_name != graphs_metadata.PLUGIN_NAME:
+      logger.warn("Directory has no blob data for plugin %r", plugin_name)
+      return {}
+
+    result = collections.defaultdict(
+      lambda: collections.defaultdict(lambda: []))
+    for (run, run_info) in six.iteritems(self._multiplexer.Runs()):
+      tag = None
+      if not run_info['graph']:
+        continue
+
+      # serialized_graph = self._multiplexer.SerializedGraph(run)
+
+      time_series = result[run][tag]
+
+      wall_time = 0  # dummy value for graph
+      step = 0  # dummy value for graph
+      index = 0 # dummy value for graph
+
+      # In some situations these blobs may have directly accessible URLs.
+      # But, for now, we assume they don't.
+      graph_url = None
+      graph_blob_key = _encode_blob_key(
+          experiment_id, plugin_name, run, tag, step, index)
+      blob_ref = provider.BlobReference(graph_blob_key, graph_url)
+
+      datum = provider.BlobSequenceDatum(
+          wall_time=wall_time,
+          step=step,
+          values=(blob_ref,),
+      )
+      time_series.append(datum)
+    return result
+
+  def read_blob(self, blob_key):
+    # note: ignoring nearly all elements of the key: there is only one graph.
+    (unused_experiment_id, plugin_name, run, unused_tag, unused_step,
+        unused_index) = _decode_blob_key(blob_key)
+
+    # TODO(soergel, wchargin): consider images, etc.
+    if plugin_name != graphs_metadata.PLUGIN_NAME:
+      logger.warn("Directory has no blob data for plugin %r", plugin_name)
+      return None
+
+    serialized_graph = self._multiplexer.SerializedGraph(run)
+
+    # TODO(soergel): graph_defs have no step attribute so we don't filter on it.
+    # Other blob types might, though.
+
+    if not serialized_graph:
+      logger.warn("No blob found for key %r", blob_key)
+      return None
+
+    # TODO(soergel): consider internal structure of non-graphdef blobs.
+    # In particular, note we ignore the requested index, since it's always 0.
+    return serialized_graph
+
+# TODO(davidsoergel): deduplicate with other implementations
+def _encode_blob_key(experiment_id, plugin_name, run, tag, step, index):
+  """Generate a blob key: a short, URL-safe string identifying a blob.
+
+  A blob can be located using a set of integer and string fields; here we
+  serialize these to allow passing the data through a URL.  Specifically, we
+  1) construct a tuple of the arguments in order; 2) represent that as an
+  ascii-encoded JSON string (without whitespace); and 3) take the URL-safe
+  base64 encoding of that, with no padding.  For example:
+
+      1)  Tuple: (123, "graphs", "train", "graph_def", 2, 0)
+      2)   JSON: "[123,"graphs","train","graph_def",2,0]"
+      3) base64: WzEyMywiZ3JhcGhzIiwidHJhaW4iLCJncmFwaF9kZWYiLDIsMF0
+
+  Args:
+    experiment_id: integer ID (i.e., the MLDash form) identifying an experiment.
+    plugin_name: string
+    run: string
+    tag: string
+    step: int
+    index: int
+
+  Returns:
+    A URL-safe base64-encoded string representing the provided arguments.
+  """
+  # Encodes the blob key as a URL-safe string, as required by the
+  # `BlobReference` API in `tensorboard/data/provider.py`, because these keys
+  # may be used to construct URLs for retrieving blobs.
+  stringified = json.dumps(
+      (experiment_id, plugin_name, run, tag, step, index),
+      separators=(",", ":"))
+  bytesified = stringified.encode("ascii")
+  encoded = base64.urlsafe_b64encode(bytesified)
+  return six.ensure_str(encoded).rstrip("=")
+
+
+# Any changes to this function need not be backward-compatible, even though
+# the current encoding was used to generate URLs.  The reason is that the
+# generated URLs are not considered permalinks: they need to be valid only
+# within the context of the session that created them (via the matching
+# `_encode_blob_key` function above).
+def _decode_blob_key(key):
+  """Decode a blob key produced by `_encode_blob_key` into component fields.
+
+  Args:
+    key: a blob key, as generated by `_encode_blob_key`.
+
+  Returns:
+    A tuple of `(experiment_id, plugin_name, run, tag, step, index)`, with types
+    matching the arguments of `_encode_blob_key`.
+  """
+  decoded = base64.urlsafe_b64decode(key + "==")  # pad past a multiple of 4.
+  stringified = decoded.decode("ascii")
+  (experiment_id, plugin_name, run, tag, step, index) = json.loads(stringified)
+  return (experiment_id, plugin_name, run, tag, step, index)

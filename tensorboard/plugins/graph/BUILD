@@ -17,6 +17,7 @@ py_library(
         ":keras_util",
         ":graph_util",
         ":metadata",
+        "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
         "//tensorboard/backend:process_graph",
         "//tensorboard/backend/event_processing:event_accumulator",
