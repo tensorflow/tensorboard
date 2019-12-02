@@ -83,7 +83,7 @@ class GraphsPlugin(base_plugin.TBPlugin):
     )
 
   def info_impl(self, experiment=None):
-    """Returns a dict of all runs and tags and their data availabilities."""
+    """Returns a dict of all runs and their data availabilities."""
     result = {}
     def add_row_item(run, tag=None):
       run_item = result.setdefault(run, {
@@ -107,7 +107,6 @@ class GraphsPlugin(base_plugin.TBPlugin):
           experiment_id=experiment,
           plugin_name=metadata.PLUGIN_NAME,
       )
-      # result = {run: {} for run in mapping}
       for (run_name, tag_to_content) in six.iteritems(mapping):
         for (tag, content) in six.iteritems(tag_to_content):
           (_, tag_item) = add_row_item(run_name, tag)
@@ -163,7 +162,6 @@ class GraphsPlugin(base_plugin.TBPlugin):
           (_, tag_item) = add_row_item(run_name, tag)
           tag_item['profile'] = True
 
-    print('WAT', result)
     return result
 
   def graph_impl(self, run, tag, is_conceptual, experiment=None, limit_attr_size=None, large_attrs_key=None):
@@ -179,7 +177,7 @@ class GraphsPlugin(base_plugin.TBPlugin):
       # assume key for now
       graph_raw = self._data_provider.read_blob(blob_ref.blob_key)
       graph = graph_pb2.GraphDef()
-      # TODO(soergel): skip roundtrip?  No, because of prepare_graph_for_ui
+      # TODO(davidsoergel): skip roundtrip?  No, because of prepare_graph_for_ui
       graph.ParseFromString(graph_raw)
       # return text_format.MessageToString(graph)
 

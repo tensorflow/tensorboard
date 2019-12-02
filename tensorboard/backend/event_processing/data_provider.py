@@ -137,7 +137,7 @@ class MultiplexerDataProvider(provider.DataProvider):
     if run_tag_filter is None:
       run_tag_filter = provider.RunTagFilter(runs=None, tags=None)
 
-    # TODO(soergel, wchargin): consider images, etc.
+    # TODO(davidsoergel, wchargin): consider images, etc.
     # Note this plugin_name can really just be 'graphs' for now; the
     # v2 cases are not handled yet.
     if plugin_name != graphs_metadata.PLUGIN_NAME:
@@ -146,7 +146,7 @@ class MultiplexerDataProvider(provider.DataProvider):
 
     result = collections.defaultdict(lambda: {})
     for (run, run_info) in six.iteritems(self._multiplexer.Runs()):
-      tag = 'graph'
+      tag = None
       if not run_info['graph']:
         continue
       result[run][tag] = provider.BlobSequenceTimeSeries(
@@ -164,7 +164,7 @@ class MultiplexerDataProvider(provider.DataProvider):
   ):
     del run_tag_filter # ignored for now
 
-    # TODO(soergel, wchargin): consider images, etc.
+    # TODO(davidsoergel, wchargin): consider images, etc.
     # Note this plugin_name can really just be 'graphs' for now; the
     # v2 cases are not handled yet.
     if plugin_name != graphs_metadata.PLUGIN_NAME:
@@ -177,8 +177,6 @@ class MultiplexerDataProvider(provider.DataProvider):
       tag = None
       if not run_info['graph']:
         continue
-
-      # serialized_graph = self._multiplexer.SerializedGraph(run)
 
       time_series = result[run][tag]
 
@@ -202,25 +200,25 @@ class MultiplexerDataProvider(provider.DataProvider):
     return result
 
   def read_blob(self, blob_key):
-    # note: ignoring nearly all elements of the key: there is only one graph.
+    # note: ignoring nearly all key elements: there is only one graph per run.
     (unused_experiment_id, plugin_name, run, unused_tag, unused_step,
         unused_index) = _decode_blob_key(blob_key)
 
-    # TODO(soergel, wchargin): consider images, etc.
+    # TODO(davidsoergel, wchargin): consider images, etc.
     if plugin_name != graphs_metadata.PLUGIN_NAME:
       logger.warn("Directory has no blob data for plugin %r", plugin_name)
       return None
 
     serialized_graph = self._multiplexer.SerializedGraph(run)
 
-    # TODO(soergel): graph_defs have no step attribute so we don't filter on it.
-    # Other blob types might, though.
+    # TODO(davidsoergel): graph_defs have no step attribute so we don't filter
+    # on it.  Other blob types might, though.
 
     if not serialized_graph:
       logger.warn("No blob found for key %r", blob_key)
       return None
 
-    # TODO(soergel): consider internal structure of non-graphdef blobs.
+    # TODO(davidsoergel): consider internal structure of non-graphdef blobs.
     # In particular, note we ignore the requested index, since it's always 0.
     return serialized_graph
 

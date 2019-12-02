@@ -111,7 +111,6 @@ class GraphsPluginBaseTest(object):
   @with_runs()
   def testRoutesProvided(self, plugin):
     """Tests that the plugin offers the correct routes."""
-    # self.set_up_with_runs()
     routes = plugin.get_plugin_apps()
     self.assertIsInstance(routes['/graph'], collections.Callable)
     self.assertIsInstance(routes['/run_metadata'], collections.Callable)
@@ -242,7 +241,6 @@ class GraphsPluginV1Test(GraphsPluginBaseTest, tf.test.TestCase):
 
   @with_runs()
   def test_run_metadata(self, plugin):
-    # self.set_up_with_runs()
     (metadata_pbtxt, mime_type) = plugin.run_metadata_impl(
         self._RUN_WITH_GRAPH, self._METADATA_TAG)
     self.assertEqual(mime_type, 'text/x-protobuf')
