@@ -22,10 +22,10 @@ from __future__ import print_function
 import collections
 import os.path
 
-import six
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
+from tensorboard import errors
 from tensorboard.backend.event_processing import plugin_event_accumulator as event_accumulator  # pylint: disable=line-too-long
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
 from tensorboard.plugins import base_plugin
@@ -108,7 +108,7 @@ class DistributionsPluginTest(tf.test.TestCase):
                            self._RUN_WITH_LEGACY_DISTRIBUTION,
                            self._RUN_WITH_DISTRIBUTION])
     self.assertEqual({
-        self._RUN_WITH_SCALARS: {},
+        # _RUN_WITH_SCALARS omitted: No distribution data.
         self._RUN_WITH_LEGACY_DISTRIBUTION: {
             self._LEGACY_DISTRIBUTION_TAG: {
                 'displayName': self._LEGACY_DISTRIBUTION_TAG,
@@ -137,7 +137,7 @@ class DistributionsPluginTest(tf.test.TestCase):
         (bps, _unused_icdfs) = zip(*bps_and_icdfs)
         self.assertEqual(bps, compressor.NORMAL_HISTOGRAM_BPS)
     else:
-      with six.assertRaisesRegex(self, ValueError, 'No histogram tag'):
+      with self.assertRaises(errors.NotFoundError):
         self.plugin.distributions_impl(self._DISTRIBUTION_TAG, run_name)
 
   def test_distributions_with_scalars(self):
