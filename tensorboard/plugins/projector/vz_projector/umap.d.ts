@@ -18,7 +18,7 @@ limitations under the License.
 // for what we use.
 
 type DistanceFn = (x: Vector, y: Vector) => number;
-type EpochCallback = (epoch: number) => boolean|void;
+type EpochCallback = (epoch: number) => boolean | void;
 type Vector = number[];
 type Vectors = Vector[];
 interface UMAPParameters {
@@ -28,10 +28,12 @@ interface UMAPParameters {
   random?: () => number;
 }
 interface UMAP {
-  new(params?: UMAPParameters): UMAP;
+  new (params?: UMAPParameters): UMAP;
   fit(X: Vectors): number[][];
-  fitAsync(X: Vectors, callback?: (epochNumber: number) => void|boolean):
-      Promise<number[][]>;
+  fitAsync(
+    X: Vectors,
+    callback?: (epochNumber: number) => void | boolean
+  ): Promise<number[][]>;
   initializeFit(X: Vectors): number;
   setPrecomputedKNN(knnIndices: number[][], knnDistances: number[][]): void;
   step(): number;
