@@ -52,7 +52,6 @@ class DistributionsPlugin(base_plugin.TBPlugin):
       context: A base_plugin.TBContext instance.
     """
     self._histograms_plugin = histograms_plugin.HistogramsPlugin(context)
-    self._multiplexer = context.multiplexer
 
   def get_plugin_apps(self):
     return {

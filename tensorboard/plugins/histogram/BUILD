@@ -43,6 +43,7 @@ py_test(
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/backend/event_processing:event_multiplexer",
+        "//tensorboard/data:provider",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/util:test_util",
         "@org_pocoo_werkzeug",
