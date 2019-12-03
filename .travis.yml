@@ -19,8 +19,8 @@ env:
     - BAZEL=0.26.1
     - BAZEL_SHA256SUM=6c50e142a0a405d3d8598050d6c1b3920c8cdb82a7ffca6fc067cb474275148f
   matrix:
-    - TF_VERSION_ID=tensorflow==1.15.0rc3
-    - TF_VERSION_ID=tf-nightly==2.1.0.dev20191118
+    - TF_VERSION_ID=tensorflow==1.15.0
+    - TF_VERSION_ID=tensorflow==2.1.0rc0
     - TF_VERSION_ID=  # Do not install TensorFlow in this case
 
 cache:
