@@ -63,7 +63,7 @@ class MultiplexerDataProvider(provider.DataProvider):
       return None
 
   def data_location(self, experiment_id):
-    del experiment_id   # ignored
+    del experiment_id  # ignored
     return str(self._logdir)
 
   def list_runs(self, experiment_id):
@@ -78,8 +78,69 @@ class MultiplexerDataProvider(provider.DataProvider):
     ]
 
   def list_scalars(self, experiment_id, plugin_name, run_tag_filter=None):
-    del experiment_id  # ignored for now
     run_tag_content = self._multiplexer.PluginRunToTagToContent(plugin_name)
+    return self._list(
+        provider.ScalarTimeSeries, run_tag_content, run_tag_filter
+    )
+
+  def read_scalars(
+      self, experiment_id, plugin_name, downsample=None, run_tag_filter=None
+  ):
+    # TODO(@wchargin): Downsampling not implemented, as the multiplexer
+    # is already downsampled. We could downsample on top of the existing
+    # sampling, which would be nice for testing.
+    del downsample  # ignored for now
+    index = self.list_scalars(
+        experiment_id, plugin_name, run_tag_filter=run_tag_filter
+    )
+
+    def convert_scalar_event(event):
+      return provider.ScalarDatum(
+          step=event.step,
+          wall_time=event.wall_time,
+          value=tensor_util.make_ndarray(event.tensor_proto).item(),
+      )
+
+    return self._read(convert_scalar_event, index)
+
+  def list_tensors(self, experiment_id, plugin_name, run_tag_filter=None):
+    run_tag_content = self._multiplexer.PluginRunToTagToContent(plugin_name)
+    return self._list(
+        provider.TensorTimeSeries, run_tag_content, run_tag_filter
+    )
+
+  def read_tensors(
+      self, experiment_id, plugin_name, downsample=None, run_tag_filter=None
+  ):
+    # TODO(@wchargin): Downsampling not implemented, as the multiplexer
+    # is already downsampled. We could downsample on top of the existing
+    # sampling, which would be nice for testing.
+    del downsample  # ignored for now
+    index = self.list_tensors(
+        experiment_id, plugin_name, run_tag_filter=run_tag_filter
+    )
+
+    def convert_tensor_event(event):
+      return provider.TensorDatum(
+          step=event.step,
+          wall_time=event.wall_time,
+          numpy=tensor_util.make_ndarray(event.tensor_proto),
+      )
+
+    return self._read(convert_tensor_event, index)
+
+  def _list(self, construct_time_series, run_tag_content, run_tag_filter):
+    """Helper to list scalar or tensor time series.
+
+    Args:
+      construct_time_series: `ScalarTimeSeries` or `TensorTimeSeries`.
+      run_tag_content: Result of `_multiplexer.PluginRunToTagToContent(...)`.
+      run_tag_filter: As given by the client; may be `None`.
+
+    Returns:
+      A list of objects of type given by `construct_time_series`,
+      suitable to be returned from `list_scalars` or `list_tensors`.
+    """
     result = {}
     if run_tag_filter is None:
       run_tag_filter = provider.RunTagFilter(runs=None, tags=None)
@@ -97,7 +158,7 @@ class MultiplexerDataProvider(provider.DataProvider):
           if max_wall_time is None or max_wall_time < event.wall_time:
             max_wall_time = event.wall_time
         summary_metadata = self._multiplexer.SummaryMetadata(run, tag)
-        result_for_run[tag] = provider.ScalarTimeSeries(
+        result_for_run[tag] = construct_time_series(
             max_step=max_step,
             max_wall_time=max_wall_time,
             plugin_content=summary_metadata.plugin_data.content,
@@ -106,31 +167,26 @@ class MultiplexerDataProvider(provider.DataProvider):
         )
     return result
 
-  def read_scalars(
-      self, experiment_id, plugin_name, downsample=None, run_tag_filter=None
-  ):
-    # TODO(@wchargin): Downsampling not implemented, as the multiplexer
-    # is already downsampled. We could downsample on top of the existing
-    # sampling, which would be nice for testing.
-    del downsample  # ignored for now
-    index = self.list_scalars(
-        experiment_id, plugin_name, run_tag_filter=run_tag_filter
-    )
+  def _read(self, convert_event, index):
+    """Helper to read scalar or tensor data from the multiplexer.
+
+    Args:
+      convert_event: Takes `plugin_event_accumulator.TensorEvent` to
+        either `provider.ScalarDatum` or `provider.TensorDatum`.
+      index: The result of `list_scalars` or `list_tensors`.
+
+    Returns:
+      A dict of dicts of values returned by `convert_event` calls,
+      suitable to be returned from `read_scalars` or `read_tensors`.
+    """
     result = {}
     for (run, tags_for_run) in six.iteritems(index):
       result_for_run = {}
       result[run] = result_for_run
       for (tag, metadata) in six.iteritems(tags_for_run):
         events = self._multiplexer.Tensors(run, tag)
-        result_for_run[tag] = [self._convert_scalar_event(e) for e in events]
+        result_for_run[tag] = [convert_event(e) for e in events]
     return result
-
-  def _convert_scalar_event(self, event):
-    return provider.ScalarDatum(
-        step=event.step,
-        wall_time=event.wall_time,
-        value=tensor_util.make_ndarray(event.tensor_proto).item(),
-    )
 
   def list_blob_sequences(
       self, experiment_id, plugin_name, run_tag_filter=None

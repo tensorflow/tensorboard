@@ -12,6 +12,7 @@ py_library(
     srcs = ["provider.py"],
     srcs_version = "PY2AND3",
     deps = [
+        "//tensorboard:expect_numpy_installed",
         "@org_pythonhosted_six",
     ],
 )
@@ -24,6 +25,7 @@ py_test(
     tags = ["support_notf"],
     deps = [
         ":provider",
+        "//tensorboard:expect_numpy_installed",
         "//tensorboard:test",
         "@org_pythonhosted_six",
     ],

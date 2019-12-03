@@ -74,7 +74,11 @@ class DistributionsPlugin(base_plugin.TBPlugin):
     )
 
   def distributions_impl(self, tag, run):
-    """Result of the form `(body, mime_type)`, or `ValueError`."""
+    """Result of the form `(body, mime_type)`.
+
+    Raises:
+      tensorboard.errors.PublicError: On invalid request.
+    """
     (histograms, mime_type) = self._histograms_plugin.histograms_impl(
         tag, run, downsample_to=self.SAMPLE_SIZE)
     return ([self._compress(histogram) for histogram in histograms],
@@ -98,10 +102,5 @@ class DistributionsPlugin(base_plugin.TBPlugin):
     """Given a tag and single run, return an array of compressed histograms."""
     tag = request.args.get('tag')
     run = request.args.get('run')
-    try:
-      (body, mime_type) = self.distributions_impl(tag, run)
-      code = 200
-    except ValueError as e:
-      (body, mime_type) = (str(e), 'text/plain')
-      code = 400
-    return http_util.Respond(request, body, mime_type, code=code)
+    (body, mime_type) = self.distributions_impl(tag, run)
+    return http_util.Respond(request, body, mime_type)

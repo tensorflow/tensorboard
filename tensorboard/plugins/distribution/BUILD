@@ -31,6 +31,7 @@ py_test(
     deps = [
         ":compressor",
         ":distributions_plugin",
+        "//tensorboard:errors",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_accumulator",
