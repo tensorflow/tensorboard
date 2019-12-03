@@ -29,6 +29,7 @@ import numpy as np
 import six
 from werkzeug import wrappers
 
+from tensorboard import errors
 from tensorboard import plugin_util
 from tensorboard.backend import http_util
 from tensorboard.compat import tf
@@ -128,10 +129,13 @@ class HistogramsPlugin(base_plugin.TBPlugin):
     return base_plugin.FrontendMetadata(element_name='tf-histogram-dashboard')
 
   def histograms_impl(self, tag, run, downsample_to=None):
-    """Result of the form `(body, mime_type)`, or `ValueError`.
+    """Result of the form `(body, mime_type)`.
 
     At most `downsample_to` events will be returned. If this value is
     `None`, then no downsampling will be performed.
+
+    Raises:
+      tensorboard.errors.PublicError: On invalid request.
     """
     if self._db_connection_provider:
       # Serve data from the database.
@@ -152,7 +156,9 @@ class HistogramsPlugin(base_plugin.TBPlugin):
           {'run': run, 'tag': tag, 'plugin': metadata.PLUGIN_NAME})
       row = cursor.fetchone()
       if not row:
-        raise ValueError('No histogram tag %r for run %r' % (tag, run))
+        raise errors.NotFoundError(
+            'No histogram tag %r for run %r' % (tag, run)
+        )
       (tag_id,) = row
       # Fetch tensor values, optionally with linear-spaced sampling by step.
       # For steps ranging from s_min to s_max and sample size k, this query
@@ -196,7 +202,9 @@ class HistogramsPlugin(base_plugin.TBPlugin):
       try:
         tensor_events = self._multiplexer.Tensors(run, tag)
       except KeyError:
-        raise ValueError('No histogram tag %r for run %r' % (tag, run))
+        raise errors.NotFoundError(
+            'No histogram tag %r for run %r' % (tag, run)
+        )
       if downsample_to is not None and len(tensor_events) > downsample_to:
         rand_indices = random.Random(0).sample(
             six.moves.xrange(len(tensor_events)), downsample_to)
@@ -228,11 +236,6 @@ class HistogramsPlugin(base_plugin.TBPlugin):
     """Given a tag and single run, return array of histogram values."""
     tag = request.args.get('tag')
     run = request.args.get('run')
-    try:
-      (body, mime_type) = self.histograms_impl(
-          tag, run, downsample_to=self.SAMPLE_SIZE)
-      code = 200
-    except ValueError as e:
-      (body, mime_type) = (str(e), 'text/plain')
-      code = 400
-    return http_util.Respond(request, body, mime_type, code=code)
+    (body, mime_type) = self.histograms_impl(
+        tag, run, downsample_to=self.SAMPLE_SIZE)
+    return http_util.Respond(request, body, mime_type)
