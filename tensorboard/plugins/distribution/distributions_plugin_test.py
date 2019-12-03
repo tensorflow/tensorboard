@@ -121,14 +121,16 @@ class DistributionsPluginTest(tf.test.TestCase):
                 'description': self._HTML_DESCRIPTION,
             },
         },
-    }, self.plugin.index_impl())
+    }, self.plugin.index_impl(experiment='exp'))
 
   def _test_distributions(self, run_name, tag_name, should_work=True):
     self.set_up_with_runs([self._RUN_WITH_SCALARS,
                            self._RUN_WITH_LEGACY_DISTRIBUTION,
                            self._RUN_WITH_DISTRIBUTION])
     if should_work:
-      (data, mime_type) = self.plugin.distributions_impl(tag_name, run_name)
+      (data, mime_type) = self.plugin.distributions_impl(
+          tag_name, run_name, experiment='exp'
+      )
       self.assertEqual('application/json', mime_type)
       self.assertEqual(len(data), self._STEPS)
       for i in xrange(self._STEPS):
@@ -138,7 +140,9 @@ class DistributionsPluginTest(tf.test.TestCase):
         self.assertEqual(bps, compressor.NORMAL_HISTOGRAM_BPS)
     else:
       with self.assertRaises(errors.NotFoundError):
-        self.plugin.distributions_impl(self._DISTRIBUTION_TAG, run_name)
+        self.plugin.distributions_impl(
+            self._DISTRIBUTION_TAG, run_name, experiment='exp'
+        )
 
   def test_distributions_with_scalars(self):
     self._test_distributions(self._RUN_WITH_SCALARS, self._DISTRIBUTION_TAG,

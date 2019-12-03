@@ -24,6 +24,7 @@ from __future__ import print_function
 
 from werkzeug import wrappers
 
+from tensorboard import plugin_util
 from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.distribution import compressor
@@ -52,7 +53,6 @@ class DistributionsPlugin(base_plugin.TBPlugin):
       context: A base_plugin.TBContext instance.
     """
     self._histograms_plugin = histograms_plugin.HistogramsPlugin(context)
-    self._multiplexer = context.multiplexer
 
   def get_plugin_apps(self):
     return {
@@ -73,14 +73,14 @@ class DistributionsPlugin(base_plugin.TBPlugin):
         element_name='tf-distribution-dashboard',
     )
 
-  def distributions_impl(self, tag, run):
+  def distributions_impl(self, tag, run, experiment):
     """Result of the form `(body, mime_type)`.
 
     Raises:
       tensorboard.errors.PublicError: On invalid request.
     """
     (histograms, mime_type) = self._histograms_plugin.histograms_impl(
-        tag, run, downsample_to=self.SAMPLE_SIZE)
+        tag, run, experiment=experiment, downsample_to=self.SAMPLE_SIZE)
     return ([self._compress(histogram) for histogram in histograms],
             mime_type)
 
@@ -89,18 +89,20 @@ class DistributionsPlugin(base_plugin.TBPlugin):
     converted_buckets = compressor.compress_histogram(buckets)
     return [wall_time, step, converted_buckets]
 
-  def index_impl(self):
-    return self._histograms_plugin.index_impl()
+  def index_impl(self, experiment):
+    return self._histograms_plugin.index_impl(experiment=experiment)
 
   @wrappers.Request.application
   def tags_route(self, request):
-    index = self.index_impl()
+    experiment = plugin_util.experiment_id(request.environ)
+    index = self.index_impl(experiment=experiment)
     return http_util.Respond(request, index, 'application/json')
 
   @wrappers.Request.application
   def distributions_route(self, request):
     """Given a tag and single run, return an array of compressed histograms."""
+    experiment = plugin_util.experiment_id(request.environ)
     tag = request.args.get('tag')
     run = request.args.get('run')
-    (body, mime_type) = self.distributions_impl(tag, run)
+    (body, mime_type) = self.distributions_impl(tag, run, experiment=experiment)
     return http_util.Respond(request, body, mime_type)
