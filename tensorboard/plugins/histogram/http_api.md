@@ -30,7 +30,8 @@ Here is an example:
       }
     }
 
-Runs without any histogram tags are omitted from the result.
+Note that runs without any histogram tags are included as keys with
+value the empty dictionary.
 
 ## `/data/plugin/histograms/histograms?run=foo&tag=bar`
 

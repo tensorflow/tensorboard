@@ -112,7 +112,7 @@ class HistogramsPlugin(base_plugin.TBPlugin):
       return result
 
     runs = self._multiplexer.Runs()
-    result = collections.defaultdict(lambda: {})
+    result = {run: {} for run in runs}
 
     mapping = self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
     for (run, tag_to_content) in six.iteritems(mapping):
