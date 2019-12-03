@@ -75,7 +75,7 @@ class _EventGenerator(object):
 
   def AddEvent(self, event):
     if self.zero_out_timestamps:
-      event.wall_time = 0
+      event.wall_time = 0.
     self.items.append(event)
 
   def add_event(self, event):  # pylint: disable=invalid-name

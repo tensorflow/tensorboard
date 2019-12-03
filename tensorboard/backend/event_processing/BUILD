@@ -35,9 +35,12 @@ py_library(
     srcs = ["data_provider.py"],
     srcs_version = "PY2AND3",
     deps = [
+        ":event_accumulator",
+        "//tensorboard:errors",
         "//tensorboard/data:provider",
         "//tensorboard/util:tb_logging",
         "//tensorboard/util:tensor_util",
+        "//tensorboard/plugins/graph:metadata",
         "@org_pythonhosted_six",
     ],
 )

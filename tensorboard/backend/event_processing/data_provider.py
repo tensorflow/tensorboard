@@ -205,6 +205,8 @@ class MultiplexerDataProvider(provider.DataProvider):
     result = collections.defaultdict(lambda: {})
     for (run, run_info) in six.iteritems(self._multiplexer.Runs()):
       tag = None
+      if not self._test_run_tag(run_tag_filter, run, tag):
+        continue
       if not run_info[plugin_event_accumulator.GRAPH]:
         continue
       result[run][tag] = provider.BlobSequenceTimeSeries(
@@ -220,8 +222,6 @@ class MultiplexerDataProvider(provider.DataProvider):
   def read_blob_sequences(
       self, experiment_id, plugin_name, downsample=None, run_tag_filter=None
   ):
-    del run_tag_filter # ignored for now
-
     # TODO(davidsoergel, wchargin): consider images, etc.
     # Note this plugin_name can really just be 'graphs' for now; the
     # v2 cases are not handled yet.
@@ -233,12 +233,14 @@ class MultiplexerDataProvider(provider.DataProvider):
       lambda: collections.defaultdict(lambda: []))
     for (run, run_info) in six.iteritems(self._multiplexer.Runs()):
       tag = None
+      if not self._test_run_tag(run_tag_filter, run, tag):
+        continue
       if not run_info[plugin_event_accumulator.GRAPH]:
         continue
 
       time_series = result[run][tag]
 
-      wall_time = 0  # dummy value for graph
+      wall_time = 0.  # dummy value for graph
       step = 0  # dummy value for graph
       index = 0 # dummy value for graph
 
