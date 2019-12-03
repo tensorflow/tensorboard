@@ -33,7 +33,7 @@ class DataProvider(object):
   downsampling strategies or domain restriction by step or wall time.
 
   Unless otherwise noted, any methods on this class may raise errors
-  defined in `tensorboard.errors`, like `tensorboard.errors.NotFound`.
+  defined in `tensorboard.errors`, like `tensorboard.errors.NotFoundError`.
   """
 
   def data_location(self, experiment_id):
@@ -128,7 +128,6 @@ class DataProvider(object):
     """Not yet specified."""
     pass
 
-  @abc.abstractmethod
   def list_blob_sequences(
       self, experiment_id, plugin_name, run_tag_filter=None
   ):
@@ -152,7 +151,6 @@ class DataProvider(object):
     """
     pass
 
-  @abc.abstractmethod
   def read_blob_sequences(
       self, experiment_id, plugin_name, downsample=None, run_tag_filter=None
   ):
@@ -179,7 +177,6 @@ class DataProvider(object):
     """
     pass
 
-  @abc.abstractmethod
   def read_blob(self, blob_key):
     """Read data for a single blob.
 

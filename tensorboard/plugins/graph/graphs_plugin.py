@@ -72,8 +72,8 @@ class GraphsPlugin(base_plugin.TBPlugin):
     }
 
   def is_active(self):
-    """The graphs plugin is active iff any run has a graph."""
-    return bool(self._multiplexer and self.info_impl())
+    """The graphs plugin is active iff any run has a graph or metadata."""
+    return bool(self.info_impl())
 
   def frontend_metadata(self):
     return base_plugin.FrontendMetadata(
@@ -107,10 +107,12 @@ class GraphsPlugin(base_plugin.TBPlugin):
           experiment_id=experiment,
           plugin_name=metadata.PLUGIN_NAME,
       )
-      for (run_name, tag_to_content) in six.iteritems(mapping):
-        for (tag, content) in six.iteritems(tag_to_content):
-          (_, tag_item) = add_row_item(run_name, tag)
-          tag_item['op_graph'] = True
+      for (run_name, tag_to_time_series) in six.iteritems(mapping):
+        for tag in tag_to_time_series:
+          (run_item, tag_item) = add_row_item(run_name, tag)
+          run_item['op_graph'] = True
+          if tag_item:
+            tag_item['op_graph'] = True
       return result
 
     mapping = self._multiplexer.PluginRunToTagToContent(
@@ -172,14 +174,17 @@ class GraphsPlugin(base_plugin.TBPlugin):
           plugin_name=metadata.PLUGIN_NAME,
           run_tag_filter=provider.RunTagFilter(runs=[run], tags=[tag]),
       )
-      # Trust that there is exactly one
-      blob_ref = graph_blob_sequences[run][tag][0].values[0]
-      # assume key for now
+      blob_datum_list = graph_blob_sequences.get(run, {}).get(tag, ())
+      try:
+        blob_ref = blob_datum_list[0].values[0]
+      except IndexError:
+        return None
+      # Always use the blob_key approach for now, even if there is a direct url.
       graph_raw = self._data_provider.read_blob(blob_ref.blob_key)
-      graph = graph_pb2.GraphDef()
-      # TODO(davidsoergel): skip roundtrip?  No, because of prepare_graph_for_ui
-      graph.ParseFromString(graph_raw)
-      # return text_format.MessageToString(graph)
+      # This method ultimately returns pbtxt, but we have to deserialize and
+      # later reserialize this anyway, because a) this way we accept binary
+      # protobufs too, and b) below we run `prepare_graph_for_ui` on the graph.
+      graph = graph_pb2.GraphDef.FromString(graph_raw)
 
     elif is_conceptual:
       tensor_events = self._multiplexer.Tensors(run, tag)
@@ -270,7 +275,9 @@ class GraphsPlugin(base_plugin.TBPlugin):
   def run_metadata_route(self, request):
     """Given a tag and a run, return the session.run() metadata."""
     if self._data_provider:
-      return None
+      return http_util.Respond(request, '404 Not Found', 'text/plain',
+                               code=404)
+
     tag = request.args.get('tag')
     run = request.args.get('run')
     if tag is None:

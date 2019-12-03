@@ -18,16 +18,18 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import six
+import base64
 import collections
 import json
-import base64
 
+import six
+
+from tensorboard import errors
+from tensorboard.backend.event_processing import plugin_event_accumulator
 from tensorboard.data import provider
+from tensorboard.plugins.graph import metadata as graphs_metadata
 from tensorboard.util import tb_logging
 from tensorboard.util import tensor_util
-
-from tensorboard.plugins.graph import metadata as graphs_metadata
 
 logger = tb_logging.get_logger()
 
@@ -147,7 +149,7 @@ class MultiplexerDataProvider(provider.DataProvider):
     result = collections.defaultdict(lambda: {})
     for (run, run_info) in six.iteritems(self._multiplexer.Runs()):
       tag = None
-      if not run_info['graph']:
+      if not run_info[plugin_event_accumulator.GRAPH]:
         continue
       result[run][tag] = provider.BlobSequenceTimeSeries(
         max_step=0,
@@ -175,7 +177,7 @@ class MultiplexerDataProvider(provider.DataProvider):
       lambda: collections.defaultdict(lambda: []))
     for (run, run_info) in six.iteritems(self._multiplexer.Runs()):
       tag = None
-      if not run_info['graph']:
+      if not run_info[plugin_event_accumulator.GRAPH]:
         continue
 
       time_series = result[run][tag]
@@ -214,9 +216,9 @@ class MultiplexerDataProvider(provider.DataProvider):
     # TODO(davidsoergel): graph_defs have no step attribute so we don't filter
     # on it.  Other blob types might, though.
 
-    if not serialized_graph:
+    if serialized_graph is None:
       logger.warn("No blob found for key %r", blob_key)
-      return None
+      raise errors.NotFoundError()
 
     # TODO(davidsoergel): consider internal structure of non-graphdef blobs.
     # In particular, note we ignore the requested index, since it's always 0.
@@ -232,12 +234,12 @@ def _encode_blob_key(experiment_id, plugin_name, run, tag, step, index):
   ascii-encoded JSON string (without whitespace); and 3) take the URL-safe
   base64 encoding of that, with no padding.  For example:
 
-      1)  Tuple: (123, "graphs", "train", "graph_def", 2, 0)
-      2)   JSON: "[123,"graphs","train","graph_def",2,0]"
+      1)  Tuple: ("some_id", "graphs", "train", "graph_def", 2, 0)
+      2)   JSON: ["some_id","graphs","train","graph_def",2,0]
       3) base64: WzEyMywiZ3JhcGhzIiwidHJhaW4iLCJncmFwaF9kZWYiLDIsMF0
 
   Args:
-    experiment_id: integer ID (i.e., the MLDash form) identifying an experiment.
+    experiment_id: a string ID identifying an experiment.
     plugin_name: string
     run: string
     tag: string
