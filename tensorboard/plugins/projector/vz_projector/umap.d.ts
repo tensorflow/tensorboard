@@ -13,12 +13,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-// TODO(@andycoenen): Figure out a way to properly import the .d.ts file
-// generated in the umap-js build into the tensorboard build system
-// https://raw.githubusercontent.com/PAIR-code/umap-js/1.0.3/lib/umap-js.d.ts
+// TODO(@andycoenen): Figure out a way to properly import the .d.ts file.
+// This version is currently a hand-picked subset of the API that is sufficient
+// for what we use.
 
 type DistanceFn = (x: Vector, y: Vector) => number;
-type EpochCallback = (epoch: number) => boolean | void;
+type EpochCallback = (epoch: number) => boolean|void;
 type Vector = number[];
 type Vectors = Vector[];
 interface UMAPParameters {
@@ -28,12 +28,10 @@ interface UMAPParameters {
   random?: () => number;
 }
 interface UMAP {
-  new (params?: UMAPParameters): UMAP;
+  new(params?: UMAPParameters): UMAP;
   fit(X: Vectors): number[][];
-  fitAsync(
-    X: Vectors,
-    callback?: (epochNumber: number) => void | boolean
-  ): Promise<number[][]>;
+  fitAsync(X: Vectors, callback?: (epochNumber: number) => void|boolean):
+      Promise<number[][]>;
   initializeFit(X: Vectors): number;
   setPrecomputedKNN(knnIndices: number[][], knnDistances: number[][]): void;
   step(): number;
