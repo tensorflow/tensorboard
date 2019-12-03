@@ -181,6 +181,9 @@ class HistogramsPlugin(base_plugin.TBPlugin):
         raise errors.NotFoundError(
             "No histogram tag %r for run %r" % (tag, run)
         )
+      # Downsample again, even though the data provider is supposed to,
+      # because the multiplexer provider currently doesn't. (For
+      # well-behaved data providers, this is a no-op.)
       if downsample_to is not None:
         rng = random.Random(0)
         histograms = _downsample(rng, histograms, downsample_to)
