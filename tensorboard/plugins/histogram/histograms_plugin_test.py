@@ -22,10 +22,10 @@ from __future__ import print_function
 import collections
 import os.path
 
-import six
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
+from tensorboard import errors
 from tensorboard.backend.event_processing import plugin_event_accumulator as event_accumulator  # pylint: disable=line-too-long
 from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
 from tensorboard.plugins import base_plugin
@@ -107,7 +107,7 @@ class HistogramsPluginTest(tf.test.TestCase):
                            self._RUN_WITH_LEGACY_HISTOGRAM,
                            self._RUN_WITH_HISTOGRAM])
     self.assertEqual({
-        self._RUN_WITH_SCALARS: {},
+        # _RUN_WITH_SCALARS omitted: No histogram data.
         self._RUN_WITH_LEGACY_HISTOGRAM: {
             self._LEGACY_HISTOGRAM_TAG: {
                 'displayName': self._LEGACY_HISTOGRAM_TAG,
@@ -130,7 +130,7 @@ class HistogramsPluginTest(tf.test.TestCase):
       self._check_histograms_result(tag_name, run_name, downsample=False)
       self._check_histograms_result(tag_name, run_name, downsample=True)
     else:
-      with six.assertRaisesRegex(self, ValueError, 'No histogram tag'):
+      with self.assertRaises(errors.NotFoundError):
         self.plugin.histograms_impl(self._HISTOGRAM_TAG, run_name)
 
   def _check_histograms_result(self, tag_name, run_name, downsample):

@@ -137,7 +137,7 @@ class HistogramsPlugin(base_plugin.TBPlugin):
       return result
 
     runs = self._multiplexer.Runs()
-    result = {run: {} for run in runs}
+    result = collections.defaultdict(lambda: {})
 
     mapping = self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
     for (run, tag_to_content) in six.iteritems(mapping):
@@ -153,11 +153,19 @@ class HistogramsPlugin(base_plugin.TBPlugin):
   def frontend_metadata(self):
     return base_plugin.FrontendMetadata(element_name='tf-histogram-dashboard')
 
+<<<<<<< HEAD
   def histograms_impl(self, tag, run, downsample_to=None, experiment=None):
     """Result of the form `(body, mime_type)`, or `ValueError`.
+=======
+  def histograms_impl(self, tag, run, downsample_to=None):
+    """Result of the form `(body, mime_type)`.
+>>>>>>> 86f68331ab259a8e52aeacff67e40e1c38f2742e
 
     At most `downsample_to` events will be returned. If this value is
     `None`, then no downsampling will be performed.
+
+    Raises:
+      tensorboard.errors.PublicError: On invalid request.
     """
     if self._data_provider:
       # Downsample reads to 500 histograms per time series, which is
@@ -201,7 +209,9 @@ class HistogramsPlugin(base_plugin.TBPlugin):
           {'run': run, 'tag': tag, 'plugin': metadata.PLUGIN_NAME})
       row = cursor.fetchone()
       if not row:
-        raise ValueError('No histogram tag %r for run %r' % (tag, run))
+        raise errors.NotFoundError(
+            'No histogram tag %r for run %r' % (tag, run)
+        )
       (tag_id,) = row
       # Fetch tensor values, optionally with linear-spaced sampling by step.
       # For steps ranging from s_min to s_max and sample size k, this query
@@ -245,10 +255,21 @@ class HistogramsPlugin(base_plugin.TBPlugin):
       try:
         tensor_events = self._multiplexer.Tensors(run, tag)
       except KeyError:
+<<<<<<< HEAD
         raise ValueError('No histogram tag %r for run %r' % (tag, run))
       if downsample_to is not None:
         rng = random.Random(0)
         tensor_events = _downsample(rng, tensor_events, downsample_to)
+=======
+        raise errors.NotFoundError(
+            'No histogram tag %r for run %r' % (tag, run)
+        )
+      if downsample_to is not None and len(tensor_events) > downsample_to:
+        rand_indices = random.Random(0).sample(
+            six.moves.xrange(len(tensor_events)), downsample_to)
+        indices = sorted(rand_indices)
+        tensor_events = [tensor_events[i] for i in indices]
+>>>>>>> 86f68331ab259a8e52aeacff67e40e1c38f2742e
       events = [[e.wall_time, e.step, tensor_util.make_ndarray(e.tensor_proto).tolist()]
                 for e in tensor_events]
     return (events, 'application/json')
@@ -276,6 +297,7 @@ class HistogramsPlugin(base_plugin.TBPlugin):
     """Given a tag and single run, return array of histogram values."""
     tag = request.args.get('tag')
     run = request.args.get('run')
+<<<<<<< HEAD
     experiment = plugin_util.experiment_id(request.environ)
     try:
       (body, mime_type) = self.histograms_impl(
@@ -311,3 +333,8 @@ def _downsample(rng, xs, k):
   indices = rng.sample(six.moves.xrange(len(xs)), k)
   indices.sort()
   return [xs[i] for i in indices]
+=======
+    (body, mime_type) = self.histograms_impl(
+        tag, run, downsample_to=self.SAMPLE_SIZE)
+    return http_util.Respond(request, body, mime_type)
+>>>>>>> 86f68331ab259a8e52aeacff67e40e1c38f2742e
