@@ -92,9 +92,12 @@ class HistogramsPlugin(base_plugin.TBPlugin):
       ''', (metadata.PLUGIN_NAME,))
       return bool(list(cursor))
 
-    return bool(self._multiplexer) and any(self.index_impl().values())
+    if self._multiplexer:
+      return any(self.index_impl(experiment='').values())
 
-  def index_impl(self, experiment=None):
+    return False
+
+  def index_impl(self, experiment):
     """Return {runName: {tagName: {displayName: ..., description: ...}}}."""
     if self._data_provider:
       mapping = self._data_provider.list_tensors(
@@ -153,7 +156,7 @@ class HistogramsPlugin(base_plugin.TBPlugin):
   def frontend_metadata(self):
     return base_plugin.FrontendMetadata(element_name='tf-histogram-dashboard')
 
-  def histograms_impl(self, tag, run, downsample_to=None, experiment=None):
+  def histograms_impl(self, tag, run, experiment, downsample_to=None):
     """Result of the form `(body, mime_type)`.
 
     At most `downsample_to` events will be returned. If this value is
@@ -281,10 +284,11 @@ class HistogramsPlugin(base_plugin.TBPlugin):
   @wrappers.Request.application
   def histograms_route(self, request):
     """Given a tag and single run, return array of histogram values."""
+    experiment = plugin_util.experiment_id(request.environ)
     tag = request.args.get('tag')
     run = request.args.get('run')
     (body, mime_type) = self.histograms_impl(
-        tag, run, downsample_to=self.SAMPLE_SIZE)
+        tag, run, experiment=experiment, downsample_to=self.SAMPLE_SIZE)
     return http_util.Respond(request, body, mime_type)
 
 

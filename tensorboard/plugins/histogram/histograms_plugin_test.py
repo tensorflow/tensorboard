@@ -149,7 +149,7 @@ class HistogramsPluginTest(tf.test.TestCase):
                 'description': self._HTML_DESCRIPTION,
             },
         },
-    }, plugin.index_impl())
+    }, plugin.index_impl(experiment='exp'))
 
   @with_runs([
       _RUN_WITH_SCALARS,
@@ -162,7 +162,7 @@ class HistogramsPluginTest(tf.test.TestCase):
       self._check_histograms_result(plugin, tag_name, run_name, downsample=True)
     else:
       with self.assertRaises(errors.NotFoundError):
-        plugin.histograms_impl(self._HISTOGRAM_TAG, run_name)
+        plugin.histograms_impl(self._HISTOGRAM_TAG, run_name, experiment='exp')
 
   def _check_histograms_result(self, plugin, tag_name, run_name, downsample):
     if downsample:
@@ -173,7 +173,7 @@ class HistogramsPluginTest(tf.test.TestCase):
       expected_length = self._STEPS
 
     (data, mime_type) = plugin.histograms_impl(
-        tag_name, run_name, downsample_to=downsample_to
+        tag_name, run_name, experiment='exp', downsample_to=downsample_to
     )
     self.assertEqual('application/json', mime_type)
     self.assertEqual(expected_length, len(data),
