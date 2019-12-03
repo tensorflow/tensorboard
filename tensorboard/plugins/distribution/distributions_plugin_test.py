@@ -108,7 +108,7 @@ class DistributionsPluginTest(tf.test.TestCase):
                            self._RUN_WITH_LEGACY_DISTRIBUTION,
                            self._RUN_WITH_DISTRIBUTION])
     self.assertEqual({
-        # _RUN_WITH_SCALARS omitted: No distribution data.
+        self._RUN_WITH_SCALARS: {},
         self._RUN_WITH_LEGACY_DISTRIBUTION: {
             self._LEGACY_DISTRIBUTION_TAG: {
                 'displayName': self._LEGACY_DISTRIBUTION_TAG,

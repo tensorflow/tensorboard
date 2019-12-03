@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import numpy as np
 import six
 
 from tensorboard import test as tb_test
@@ -107,6 +108,72 @@ class ScalarDatumTest(tb_test.TestCase):
     # contract, but _should_ pass; failure on this assertion would at
     # least warrant some scrutiny.
     self.assertNotEqual(hash(x1), hash(x3))
+
+
+class TensorTimeSeriesTest(tb_test.TestCase):
+  def test_repr(self):
+    x = provider.TensorTimeSeries(
+        max_step=77,
+        max_wall_time=1234.5,
+        plugin_content=b"AB\xCD\xEF!\x00",
+        description="test test",
+        display_name="one two",
+    )
+    repr_ = repr(x)
+    self.assertIn(repr(x.max_step), repr_)
+    self.assertIn(repr(x.max_wall_time), repr_)
+    self.assertIn(repr(x.plugin_content), repr_)
+    self.assertIn(repr(x.description), repr_)
+    self.assertIn(repr(x.display_name), repr_)
+
+  def test_eq(self):
+    x1 = provider.TensorTimeSeries(77, 1234.5, b"\x12", "one", "two")
+    x2 = provider.TensorTimeSeries(77, 1234.5, b"\x12", "one", "two")
+    x3 = provider.TensorTimeSeries(66, 4321.0, b"\x7F", "hmm", "hum")
+    self.assertEqual(x1, x2)
+    self.assertNotEqual(x1, x3)
+    self.assertNotEqual(x1, object())
+
+  def test_hash(self):
+    x1 = provider.TensorTimeSeries(77, 1234.5, b"\x12", "one", "two")
+    x2 = provider.TensorTimeSeries(77, 1234.5, b"\x12", "one", "two")
+    x3 = provider.TensorTimeSeries(66, 4321.0, b"\x7F", "hmm", "hum")
+    self.assertEqual(hash(x1), hash(x2))
+    # The next check is technically not required by the `__hash__`
+    # contract, but _should_ pass; failure on this assertion would at
+    # least warrant some scrutiny.
+    self.assertNotEqual(hash(x1), hash(x3))
+
+
+class TensorDatumTest(tb_test.TestCase):
+  def test_repr(self):
+    x = provider.TensorDatum(step=123, wall_time=234.5, numpy=np.array(-0.25))
+    repr_ = repr(x)
+    self.assertIn(repr(x.step), repr_)
+    self.assertIn(repr(x.wall_time), repr_)
+    self.assertIn(repr(x.numpy), repr_)
+
+  def test_eq(self):
+    nd = np.array
+    x1 = provider.TensorDatum(step=12, wall_time=0.25, numpy=nd([1.0, 2.0]))
+    x2 = provider.TensorDatum(step=12, wall_time=0.25, numpy=nd([1.0, 2.0]))
+    x3 = provider.TensorDatum(step=23, wall_time=3.25, numpy=nd([-0.5, -2.5]))
+    self.assertEqual(x1, x2)
+    self.assertNotEqual(x1, x3)
+    self.assertNotEqual(x1, object())
+
+  def test_eq_with_rank0_tensor(self):
+    x1 = provider.TensorDatum(step=12, wall_time=0.25, numpy=np.array([1.25]))
+    x2 = provider.TensorDatum(step=12, wall_time=0.25, numpy=np.array([1.25]))
+    x3 = provider.TensorDatum(step=23, wall_time=3.25, numpy=np.array([1.25]))
+    self.assertEqual(x1, x2)
+    self.assertNotEqual(x1, x3)
+    self.assertNotEqual(x1, object())
+
+  def test_hash(self):
+    x = provider.TensorDatum(step=12, wall_time=0.25, numpy=np.array([1.25]))
+    with six.assertRaisesRegex(self, TypeError, "unhashable type"):
+      hash(x)
 
 
 class BlobSequenceTimeSeriesTest(tb_test.TestCase):

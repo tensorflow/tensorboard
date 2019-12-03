@@ -107,7 +107,7 @@ class HistogramsPluginTest(tf.test.TestCase):
                            self._RUN_WITH_LEGACY_HISTOGRAM,
                            self._RUN_WITH_HISTOGRAM])
     self.assertEqual({
-        # _RUN_WITH_SCALARS omitted: No histogram data.
+        self._RUN_WITH_SCALARS: {},
         self._RUN_WITH_LEGACY_HISTOGRAM: {
             self._LEGACY_HISTOGRAM_TAG: {
                 'displayName': self._LEGACY_HISTOGRAM_TAG,
