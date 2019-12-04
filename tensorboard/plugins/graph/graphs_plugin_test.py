@@ -222,13 +222,13 @@ class GraphsPluginV1Test(GraphsPluginBaseTest, tf.test.TestCase):
 
   @with_runs([_RUN_WITH_GRAPH_WITH_METADATA])
   def test_run_metadata(self, plugin):
-    (metadata_pbtxt, mime_type) = plugin.run_metadata_impl(
+    result = plugin.run_metadata_impl(
         _RUN_WITH_GRAPH_WITH_METADATA[0], self._METADATA_TAG)
     if plugin._data_provider:
       # Hack, for now
-      self.assertEqual(mime_type, None)
-      self.assertEqual(metadata_pbtxt, None)
+      self.assertEqual(result, None)
     else:
+      (metadata_pbtxt, mime_type) = result
       self.assertEqual(mime_type, 'text/x-protobuf')
       text_format.Parse(metadata_pbtxt, config_pb2.RunMetadata())
       # If it parses, we're happy.

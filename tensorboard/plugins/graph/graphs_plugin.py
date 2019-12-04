@@ -221,7 +221,7 @@ class GraphsPlugin(base_plugin.TBPlugin):
     """Result of the form `(body, mime_type)`, or `None` if no data exists."""
     if self._data_provider:
       # TODO(davidsoergel, wchargin): Consider plumbing run metadata through data providers.
-      return (None, None)
+      return None
     try:
       run_metadata = self._multiplexer.RunMetadata(run, tag)
     except ValueError:
