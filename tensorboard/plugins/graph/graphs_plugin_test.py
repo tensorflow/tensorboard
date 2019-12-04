@@ -224,9 +224,14 @@ class GraphsPluginV1Test(GraphsPluginBaseTest, tf.test.TestCase):
   def test_run_metadata(self, plugin):
     (metadata_pbtxt, mime_type) = plugin.run_metadata_impl(
         _RUN_WITH_GRAPH_WITH_METADATA[0], self._METADATA_TAG)
-    self.assertEqual(mime_type, 'text/x-protobuf')
-    text_format.Parse(metadata_pbtxt, config_pb2.RunMetadata())
-    # If it parses, we're happy.
+    if plugin._data_provider:
+      # Hack, for now
+      self.assertEqual(mime_type, None)
+      self.assertEqual(metadata_pbtxt, None)
+    else:
+      self.assertEqual(mime_type, 'text/x-protobuf')
+      text_format.Parse(metadata_pbtxt, config_pb2.RunMetadata())
+      # If it parses, we're happy.
 
   @with_runs([_RUN_WITH_GRAPH_WITHOUT_METADATA])
   def test_is_active_with_graph_without_run_metadata(self, plugin):
@@ -234,11 +239,7 @@ class GraphsPluginV1Test(GraphsPluginBaseTest, tf.test.TestCase):
 
   @with_runs([_RUN_WITHOUT_GRAPH_WITH_METADATA])
   def test_is_active_without_graph_with_run_metadata(self, plugin):
-    if plugin._data_provider:
-      # Hack, for now.
-      self.assertFalse(plugin.is_active())
-    else:
-      self.assertTrue(plugin.is_active())
+    self.assertTrue(plugin.is_active())
 
   @with_runs([_RUN_WITH_GRAPH_WITH_METADATA])
   def test_is_active_with_both(self, plugin):
@@ -246,6 +247,10 @@ class GraphsPluginV1Test(GraphsPluginBaseTest, tf.test.TestCase):
 
   @with_runs([_RUN_WITHOUT_GRAPH_WITHOUT_METADATA])
   def test_is_inactive_without_both(self, plugin):
+    if plugin._data_provider:
+      # Hack, for now.
+      self.assertTrue(plugin.is_active())
+    else:
       self.assertFalse(plugin.is_active())
 
 if __name__ == '__main__':

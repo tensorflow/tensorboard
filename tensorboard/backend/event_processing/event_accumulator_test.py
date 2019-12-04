@@ -129,7 +129,7 @@ class _EventGenerator(object):
 
   def AddEvent(self, event):
     if self.zero_out_timestamps:
-      event.wall_time = 0.
+      event.wall_time = 0
     self.items.append(event)
 
   def add_event(self, event):  # pylint: disable=invalid-name
@@ -833,10 +833,8 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
       self.assertEqual(i * i, sq_events[i].value)
 
     expected_graph_def = graph_pb2.GraphDef.FromString(
-        graph.as_graph_def(add_shapes=True).SerializeToString())
+          graph.as_graph_def(add_shapes=True).SerializeToString())
     self.assertProtoEquals(expected_graph_def, acc.Graph())
-    self.assertProtoEquals(expected_graph_def,
-        graph_pb2.GraphDef.FromString(acc.SerializedGraph()))
 
     expected_meta_graph = meta_graph_pb2.MetaGraphDef.FromString(
           meta_graph_def.SerializeToString())
@@ -872,8 +870,6 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
     expected_graph_def = graph_pb2.GraphDef.FromString(
           graph.as_graph_def(add_shapes=True).SerializeToString())
     self.assertProtoEquals(expected_graph_def, acc.Graph())
-    self.assertProtoEquals(expected_graph_def,
-        graph_pb2.GraphDef.FromString(acc.SerializedGraph()))
 
     expected_meta_graph = meta_graph_pb2.MetaGraphDef.FromString(
           meta_graph_def.SerializeToString())

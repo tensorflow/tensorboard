@@ -74,6 +74,11 @@ class GraphsPlugin(base_plugin.TBPlugin):
 
   def is_active(self):
     """The graphs plugin is active iff any run has a graph or metadata."""
+    if self._data_provider:
+      # We don't have an experiment ID, and modifying the backend core
+      # to provide one would break backward compatibility. Hack for now.
+      return True
+
     return bool(self.info_impl())
 
   def frontend_metadata(self):
@@ -214,6 +219,9 @@ class GraphsPlugin(base_plugin.TBPlugin):
 
   def run_metadata_impl(self, run, tag):
     """Result of the form `(body, mime_type)`, or `None` if no data exists."""
+    if self._data_provider:
+      # TODO(davidsoergel, wchargin): Consider plumbing run metadata through data providers.
+      return (None, None)
     try:
       run_metadata = self._multiplexer.RunMetadata(run, tag)
     except ValueError:
@@ -275,10 +283,6 @@ class GraphsPlugin(base_plugin.TBPlugin):
   @wrappers.Request.application
   def run_metadata_route(self, request):
     """Given a tag and a run, return the session.run() metadata."""
-    if self._data_provider:
-      return http_util.Respond(request, '404 Not Found', 'text/plain',
-                               code=404)
-
     tag = request.args.get('tag')
     run = request.args.get('run')
     if tag is None:

@@ -267,7 +267,7 @@ class MultiplexerDataProvider(provider.DataProvider):
     # TODO(davidsoergel, wchargin): consider images, etc.
     if plugin_name != graphs_metadata.PLUGIN_NAME:
       logger.warn("Directory has no blob data for plugin %r", plugin_name)
-      return None
+      raise errors.NotFoundError()
 
     serialized_graph = self._multiplexer.SerializedGraph(run)
 
@@ -294,7 +294,7 @@ def _encode_blob_key(experiment_id, plugin_name, run, tag, step, index):
 
       1)  Tuple: ("some_id", "graphs", "train", "graph_def", 2, 0)
       2)   JSON: ["some_id","graphs","train","graph_def",2,0]
-      3) base64: WzEyMywiZ3JhcGhzIiwidHJhaW4iLCJncmFwaF9kZWYiLDIsMF0
+      3) base64: WyJzb21lX2lkIiwiZ3JhcGhzIiwidHJhaW4iLCJncmFwaF9kZWYiLDIsMF0K
 
   Args:
     experiment_id: a string ID identifying an experiment.
