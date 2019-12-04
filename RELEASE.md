@@ -1,3 +1,38 @@
+# Release 2.1.0
+
+The 2.1 minor series tracks TensorFlow 2.1.
+
+## Features
+
+- Debugger: added ability to display Tensors as images, with selectable color map and zooming (#2729, #2764)
+- What-If Tool improvements:
+  - Added ability to set custom distance function for counterfactuals (#2607)
+  - Added ability to explore counterfactual examples for regression models (#2647)
+  - Added ability to consume arbitrary prediction-time information (#2660)
+  - Added ability to slice performance statistics by numeric features (in addition to categorical features) (#2678, #2704).
+  - Added PR/ROC curves by class for multi-class classification models (#2755)
+- Improvements for plugin developers:
+  - Added support for communication between TensorBoard and plugins in iframes (#2309, #2703)
+  - (Experimental) Added library for improved plugin integration (#2708)
+  - Enabled dynamic plugins in TensorBoard within Colab (#2798)
+- Security improvements, e.g. Content Security Policy configurations
+- Reduced overhead of image, audio, and histogram summary writing API methods (#2899)  - thanks @hongjunChoi
+
+## Bug fixes
+
+- What-If Tool:
+  - Fixed sometimes-stuck threshold sliders (#2682)
+  - Fixed PD plots in notebook mode with py3 kernels (#2669)
+  - Fixed info dialogs re. Fairness optimization (#2694)
+- Scalars dashboard: fixed unreliable data loading over slow network connections (#2825)
+- Fixed potential corruption when reading files from disk, when TensorFlow is not installed (#2791)
+- Fixed writing of histogram summaries when using TPUs (#2883) - thanks @hongjunChoi
+
+## TensorBoard.dev updates
+
+- The `tensorboard dev list` subcommand now provides detailed metadata about
+  each experiment.
+
 # Release 2.0.2
 
 ## Features
