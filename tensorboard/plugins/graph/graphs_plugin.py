@@ -22,11 +22,13 @@ import json
 import six
 from werkzeug import wrappers
 
+from tensorboard import plugin_util
 from tensorboard.backend import http_util
 from tensorboard.backend import process_graph
 from tensorboard.backend.event_processing import plugin_event_accumulator as event_accumulator  # pylint: disable=line-too-long
 from tensorboard.compat.proto import config_pb2
 from tensorboard.compat.proto import graph_pb2
+from tensorboard.data import provider
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.graph import graph_util
 from tensorboard.plugins.graph import keras_util
@@ -58,6 +60,10 @@ class GraphsPlugin(base_plugin.TBPlugin):
       context: A base_plugin.TBContext instance.
     """
     self._multiplexer = context.multiplexer
+    if context.flags and context.flags.generic_data == 'true':
+      self._data_provider = context.data_provider
+    else:
+      self._data_provider = None
 
   def get_plugin_apps(self):
     return {
@@ -67,8 +73,13 @@ class GraphsPlugin(base_plugin.TBPlugin):
     }
 
   def is_active(self):
-    """The graphs plugin is active iff any run has a graph."""
-    return bool(self._multiplexer and self.info_impl())
+    """The graphs plugin is active iff any run has a graph or metadata."""
+    if self._data_provider:
+      # We don't have an experiment ID, and modifying the backend core
+      # to provide one would break backward compatibility. Hack for now.
+      return True
+
+    return bool(self.info_impl())
 
   def frontend_metadata(self):
     return base_plugin.FrontendMetadata(
@@ -77,8 +88,8 @@ class GraphsPlugin(base_plugin.TBPlugin):
         disable_reload=True,
     )
 
-  def info_impl(self):
-    """Returns a dict of all runs and tags and their data availabilities."""
+  def info_impl(self, experiment=None):
+    """Returns a dict of all runs and their data availabilities."""
     result = {}
     def add_row_item(run, tag=None):
       run_item = result.setdefault(run, {
@@ -96,6 +107,19 @@ class GraphsPlugin(base_plugin.TBPlugin):
             'op_graph': False,
             'profile': False})
       return (run_item, tag_item)
+
+    if self._data_provider:
+      mapping = self._data_provider.list_blob_sequences(
+          experiment_id=experiment,
+          plugin_name=metadata.PLUGIN_NAME,
+      )
+      for (run_name, tag_to_time_series) in six.iteritems(mapping):
+        for tag in tag_to_time_series:
+          (run_item, tag_item) = add_row_item(run_name, tag)
+          run_item['op_graph'] = True
+          if tag_item:
+            tag_item['op_graph'] = True
+      return result
 
     mapping = self._multiplexer.PluginRunToTagToContent(
         _PLUGIN_NAME_RUN_METADATA_WITH_GRAPH)
@@ -148,14 +172,33 @@ class GraphsPlugin(base_plugin.TBPlugin):
 
     return result
 
-  def graph_impl(self, run, tag, is_conceptual, limit_attr_size=None, large_attrs_key=None):
+  def graph_impl(self, run, tag, is_conceptual, experiment=None, limit_attr_size=None, large_attrs_key=None):
     """Result of the form `(body, mime_type)`, or `None` if no graph exists."""
-    if is_conceptual:
+    if self._data_provider:
+      graph_blob_sequences = self._data_provider.read_blob_sequences(
+          experiment_id=experiment,
+          plugin_name=metadata.PLUGIN_NAME,
+          run_tag_filter=provider.RunTagFilter(runs=[run], tags=[tag]),
+      )
+      blob_datum_list = graph_blob_sequences.get(run, {}).get(tag, ())
+      try:
+        blob_ref = blob_datum_list[0].values[0]
+      except IndexError:
+        return None
+      # Always use the blob_key approach for now, even if there is a direct url.
+      graph_raw = self._data_provider.read_blob(blob_ref.blob_key)
+      # This method ultimately returns pbtxt, but we have to deserialize and
+      # later reserialize this anyway, because a) this way we accept binary
+      # protobufs too, and b) below we run `prepare_graph_for_ui` on the graph.
+      graph = graph_pb2.GraphDef.FromString(graph_raw)
+
+    elif is_conceptual:
       tensor_events = self._multiplexer.Tensors(run, tag)
       # Take the first event if there are multiple events written from different
       # steps.
       keras_model_config = json.loads(tensor_events[0].tensor_proto.string_val[0])
       graph = keras_util.keras_model_to_graph_def(keras_model_config)
+
     elif tag:
       tensor_events = self._multiplexer.Tensors(run, tag)
       # Take the first event if there are multiple events written from different
@@ -176,6 +219,9 @@ class GraphsPlugin(base_plugin.TBPlugin):
 
   def run_metadata_impl(self, run, tag):
     """Result of the form `(body, mime_type)`, or `None` if no data exists."""
+    if self._data_provider:
+      # TODO(davidsoergel, wchargin): Consider plumbing run metadata through data providers.
+      return None
     try:
       run_metadata = self._multiplexer.RunMetadata(run, tag)
     except ValueError:
@@ -194,12 +240,14 @@ class GraphsPlugin(base_plugin.TBPlugin):
 
   @wrappers.Request.application
   def info_route(self, request):
-    info = self.info_impl()
+    experiment = plugin_util.experiment_id(request.environ)
+    info = self.info_impl(experiment)
     return http_util.Respond(request, info, 'application/json')
 
   @wrappers.Request.application
   def graph_route(self, request):
     """Given a single run, return the graph definition in protobuf format."""
+    experiment = plugin_util.experiment_id(request.environ)
     run = request.args.get('run')
     tag = request.args.get('tag', '')
     conceptual_arg = request.args.get('conceptual', False)
@@ -221,7 +269,7 @@ class GraphsPlugin(base_plugin.TBPlugin):
     large_attrs_key = request.args.get('large_attrs_key', None)
 
     try:
-      result = self.graph_impl(run, tag, is_conceptual, limit_attr_size, large_attrs_key)
+      result = self.graph_impl(run, tag, is_conceptual, experiment, limit_attr_size, large_attrs_key)
     except ValueError as e:
       return http_util.Respond(request, e.message, 'text/plain', code=400)
     else:

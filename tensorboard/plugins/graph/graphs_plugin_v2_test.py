@@ -30,7 +30,7 @@ from tensorboard.plugins.graph import graphs_plugin_test
 
 class GraphsPluginV2Test(graphs_plugin_test.GraphsPluginBaseTest, tf.test.TestCase):
 
-  def generate_run(self, run_name, include_graph, include_run_metadata):
+  def generate_run(self, logdir, run_name, include_graph, include_run_metadata):
     x, y = np.ones((10, 10)), np.ones((10, 1))
     val_x, val_y = np.ones((4, 10)), np.ones((4, 1))
 
@@ -46,16 +46,19 @@ class GraphsPluginV2Test(graphs_plugin_test.GraphsPluginBaseTest, tf.test.TestCa
         batch_size=2,
         epochs=1,
         callbacks=[tf.compat.v2.keras.callbacks.TensorBoard(
-            log_dir=os.path.join(self.logdir, run_name),
+            log_dir=os.path.join(logdir, run_name),
             write_graph=include_graph)])
 
-  def _get_graph(self, *args, **kwargs):
+  def _get_graph(self, plugin, *args, **kwargs):
     """Fetch and return the graph as a proto."""
-    (graph_pbtxt, mime_type) = self.plugin.graph_impl(*args, **kwargs)
+    (graph_pbtxt, mime_type) = plugin.graph_impl(*args, **kwargs)
     self.assertEqual(mime_type, 'text/x-protobuf')
     return text_format.Parse(graph_pbtxt, graph_pb2.GraphDef())
 
-  def test_info(self):
+  @graphs_plugin_test.with_runs([
+    graphs_plugin_test._RUN_WITH_GRAPH_WITH_METADATA,
+    graphs_plugin_test._RUN_WITHOUT_GRAPH_WITH_METADATA])
+  def test_info(self, plugin):
     raise self.skipTest('TODO: enable this after tf-nightly writes a conceptual graph.')
 
     expected = {
@@ -81,7 +84,7 @@ class GraphsPluginV2Test(graphs_plugin_test.GraphsPluginBaseTest, tf.test.TestCa
                       include_run_metadata=False)
     self.bootstrap_plugin()
 
-    self.assertEqual(expected, self.plugin.info_impl())
+    self.assertEqual(expected, plugin.info_impl())
 
   def test_graph_conceptual_graph(self):
     raise self.skipTest('TODO: enable this after tf-nightly writes a conceptual graph.')

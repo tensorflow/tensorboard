@@ -34,7 +34,7 @@ class DataProvider(object):
   downsampling strategies or domain restriction by step or wall time.
 
   Unless otherwise noted, any methods on this class may raise errors
-  defined in `tensorboard.errors`, like `tensorboard.errors.NotFound`.
+  defined in `tensorboard.errors`, like `tensorboard.errors.NotFoundError`.
   """
 
   def data_location(self, experiment_id):
