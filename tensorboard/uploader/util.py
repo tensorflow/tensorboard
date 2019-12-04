@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import datetime
 import errno
 import os
 import os.path
@@ -112,3 +113,51 @@ def set_timestamp(pb, seconds_since_epoch):
   """
   pb.seconds = int(seconds_since_epoch)
   pb.nanos = int(round((seconds_since_epoch % 1) * 10**9))
+
+
+def format_time(timestamp_pb, now=None):
+  """Converts a `timestamp_pb2.Timestamp` to human-readable string.
+
+  This always includes the absolute date and time, and for recent dates
+  may include a relative time like "(just now)" or "(2 hours ago)".
+
+  Args:
+    timestamp_pb: A `google.protobuf.timestamp_pb2.Timestamp` value to
+      convert to string. The input will not be modified.
+    now: A `datetime.datetime` object representing the current time,
+      used for determining relative times like "just now". Optional;
+      defaults to `datetime.datetime.now()`.
+
+  Returns:
+    A string suitable for human consumption.
+  """
+
+  # Add and subtract a day for <https://bugs.python.org/issue29097>,
+  # which breaks early datetime conversions on Windows for small
+  # timestamps.
+  dt = datetime.datetime.fromtimestamp(timestamp_pb.seconds + 86400)
+  dt = dt - datetime.timedelta(seconds=86400)
+
+  if now is None:
+    now = datetime.datetime.now()
+  ago = now.replace(microsecond=0) - dt
+
+  def ago_text(n, singular, plural):
+    return "%d %s ago" % (n, singular if n == 1 else plural)
+
+  relative = None
+  if ago < datetime.timedelta(seconds=5):
+    relative = "just now"
+  elif ago < datetime.timedelta(minutes=1):
+    relative = ago_text(int(ago.total_seconds()), "second", "seconds")
+  elif ago < datetime.timedelta(hours=1):
+    relative = ago_text(int(ago.total_seconds()) // 60, "minute", "minutes")
+  elif ago < datetime.timedelta(days=1):
+    relative = ago_text(int(ago.total_seconds()) // 3600, "hour", "hours")
+
+  relative_part = " (%s)" % relative if relative is not None else ""
+  return str(dt) + relative_part
+
+
+def _ngettext(n, singular, plural):
+  return "%d %s ago" % (n, singular if n == 1 else plural)

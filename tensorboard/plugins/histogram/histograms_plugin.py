@@ -29,9 +29,11 @@ import numpy as np
 import six
 from werkzeug import wrappers
 
+from tensorboard import errors
 from tensorboard import plugin_util
 from tensorboard.backend import http_util
 from tensorboard.compat import tf
+from tensorboard.data import provider
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.histogram import metadata
 from tensorboard.util import tensor_util
@@ -58,8 +60,12 @@ class HistogramsPlugin(base_plugin.TBPlugin):
     Args:
       context: A base_plugin.TBContext instance.
     """
-    self._db_connection_provider = context.db_connection_provider
     self._multiplexer = context.multiplexer
+    self._db_connection_provider = context.db_connection_provider
+    if context.flags and context.flags.generic_data == 'true':
+      self._data_provider = context.data_provider
+    else:
+      self._data_provider = None
 
   def get_plugin_apps(self):
     return {
@@ -69,6 +75,11 @@ class HistogramsPlugin(base_plugin.TBPlugin):
 
   def is_active(self):
     """This plugin is active iff any run has at least one histograms tag."""
+    if self._data_provider:
+      # We don't have an experiment ID, and modifying the backend core
+      # to provide one would break backward compatibility. Hack for now.
+      return True
+
     if self._db_connection_provider:
       # The plugin is active if one relevant tag can be found in the database.
       db = self._db_connection_provider()
@@ -81,10 +92,28 @@ class HistogramsPlugin(base_plugin.TBPlugin):
       ''', (metadata.PLUGIN_NAME,))
       return bool(list(cursor))
 
-    return bool(self._multiplexer) and any(self.index_impl().values())
+    if self._multiplexer:
+      return any(self.index_impl(experiment='').values())
 
-  def index_impl(self):
+    return False
+
+  def index_impl(self, experiment):
     """Return {runName: {tagName: {displayName: ..., description: ...}}}."""
+    if self._data_provider:
+      mapping = self._data_provider.list_tensors(
+          experiment_id=experiment,
+          plugin_name=metadata.PLUGIN_NAME,
+      )
+      result = {run: {} for run in mapping}
+      for (run, tag_to_content) in six.iteritems(mapping):
+        for (tag, metadatum) in six.iteritems(tag_to_content):
+          description = plugin_util.markdown_to_safe_html(metadatum.description)
+          result[run][tag] = {
+              'displayName': metadatum.display_name,
+              'description': description,
+          }
+      return result
+
     if self._db_connection_provider:
       # Read tags from the database.
       db = self._db_connection_provider()
@@ -111,7 +140,7 @@ class HistogramsPlugin(base_plugin.TBPlugin):
       return result
 
     runs = self._multiplexer.Runs()
-    result = {run: {} for run in runs}
+    result = collections.defaultdict(lambda: {})
 
     mapping = self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
     for (run, tag_to_content) in six.iteritems(mapping):
@@ -127,13 +156,42 @@ class HistogramsPlugin(base_plugin.TBPlugin):
   def frontend_metadata(self):
     return base_plugin.FrontendMetadata(element_name='tf-histogram-dashboard')
 
-  def histograms_impl(self, tag, run, downsample_to=None):
-    """Result of the form `(body, mime_type)`, or `ValueError`.
+  def histograms_impl(self, tag, run, experiment, downsample_to=None):
+    """Result of the form `(body, mime_type)`.
 
     At most `downsample_to` events will be returned. If this value is
     `None`, then no downsampling will be performed.
+
+    Raises:
+      tensorboard.errors.PublicError: On invalid request.
     """
-    if self._db_connection_provider:
+    if self._data_provider:
+      # Downsample reads to 500 histograms per time series, which is
+      # the default size guidance for histograms under the multiplexer
+      # loading logic.
+      SAMPLE_COUNT = downsample_to if downsample_to is not None else 500
+      all_histograms = self._data_provider.read_tensors(
+          experiment_id=experiment,
+          plugin_name=metadata.PLUGIN_NAME,
+          downsample=SAMPLE_COUNT,
+          run_tag_filter=provider.RunTagFilter(runs=[run], tags=[tag]),
+      )
+      histograms = all_histograms.get(run, {}).get(tag, None)
+      if histograms is None:
+        raise errors.NotFoundError(
+            "No histogram tag %r for run %r" % (tag, run)
+        )
+      # Downsample again, even though the data provider is supposed to,
+      # because the multiplexer provider currently doesn't. (For
+      # well-behaved data providers, this is a no-op.)
+      if downsample_to is not None:
+        rng = random.Random(0)
+        histograms = _downsample(rng, histograms, downsample_to)
+      events = [
+          (e.wall_time, e.step, e.numpy.tolist())
+          for e in histograms
+      ]
+    elif self._db_connection_provider:
       # Serve data from the database.
       db = self._db_connection_provider()
       cursor = db.cursor()
@@ -152,7 +210,9 @@ class HistogramsPlugin(base_plugin.TBPlugin):
           {'run': run, 'tag': tag, 'plugin': metadata.PLUGIN_NAME})
       row = cursor.fetchone()
       if not row:
-        raise ValueError('No histogram tag %r for run %r' % (tag, run))
+        raise errors.NotFoundError(
+            'No histogram tag %r for run %r' % (tag, run)
+        )
       (tag_id,) = row
       # Fetch tensor values, optionally with linear-spaced sampling by step.
       # For steps ranging from s_min to s_max and sample size k, this query
@@ -196,12 +256,12 @@ class HistogramsPlugin(base_plugin.TBPlugin):
       try:
         tensor_events = self._multiplexer.Tensors(run, tag)
       except KeyError:
-        raise ValueError('No histogram tag %r for run %r' % (tag, run))
-      if downsample_to is not None and len(tensor_events) > downsample_to:
-        rand_indices = random.Random(0).sample(
-            six.moves.xrange(len(tensor_events)), downsample_to)
-        indices = sorted(rand_indices)
-        tensor_events = [tensor_events[i] for i in indices]
+        raise errors.NotFoundError(
+            'No histogram tag %r for run %r' % (tag, run)
+        )
+      if downsample_to is not None:
+        rng = random.Random(0)
+        tensor_events = _downsample(rng, tensor_events, downsample_to)
       events = [[e.wall_time, e.step, tensor_util.make_ndarray(e.tensor_proto).tolist()]
                 for e in tensor_events]
     return (events, 'application/json')
@@ -220,19 +280,42 @@ class HistogramsPlugin(base_plugin.TBPlugin):
 
   @wrappers.Request.application
   def tags_route(self, request):
-    index = self.index_impl()
+    experiment = plugin_util.experiment_id(request.environ)
+    index = self.index_impl(experiment=experiment)
     return http_util.Respond(request, index, 'application/json')
 
   @wrappers.Request.application
   def histograms_route(self, request):
     """Given a tag and single run, return array of histogram values."""
+    experiment = plugin_util.experiment_id(request.environ)
     tag = request.args.get('tag')
     run = request.args.get('run')
-    try:
-      (body, mime_type) = self.histograms_impl(
-          tag, run, downsample_to=self.SAMPLE_SIZE)
-      code = 200
-    except ValueError as e:
-      (body, mime_type) = (str(e), 'text/plain')
-      code = 400
-    return http_util.Respond(request, body, mime_type, code=code)
+    (body, mime_type) = self.histograms_impl(
+        tag, run, experiment=experiment, downsample_to=self.SAMPLE_SIZE)
+    return http_util.Respond(request, body, mime_type)
+
+
+def _downsample(rng, xs, k):
+  """Uniformly choose a maximal at-most-`k`-subsequence of `xs`.
+
+  If `k` is larger than `xs`, then the contents of `xs` itself will be
+  returned.
+
+  This differs from `random.sample` in that it returns a subsequence
+  (i.e., order is preserved) and that it permits `k > len(xs)`.
+
+  Args:
+    rng: A `random` interface.
+    xs: A sequence (`collections.abc.Sequence`).
+    k: A non-negative integer.
+
+  Returns:
+    A new list whose elements are a subsequence of `xs` of length
+    `min(k, len(xs))`, uniformly selected among such subsequences.
+  """
+
+  if k > len(xs):
+    return list(xs)
+  indices = rng.sample(six.moves.xrange(len(xs)), k)
+  indices.sort()
+  return [xs[i] for i in indices]

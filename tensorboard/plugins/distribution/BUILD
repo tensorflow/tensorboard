@@ -15,6 +15,7 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         ":compressor",
+        "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/plugins/histogram:histograms_plugin",
@@ -31,6 +32,7 @@ py_test(
     deps = [
         ":compressor",
         ":distributions_plugin",
+        "//tensorboard:errors",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_accumulator",

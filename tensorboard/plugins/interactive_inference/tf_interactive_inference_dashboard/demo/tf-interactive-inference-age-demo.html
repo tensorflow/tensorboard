@@ -37,6 +37,7 @@ limitations under the License.
     </tf-interactive-inference-dashboard>
   </template>
   <script>
+    const TENSOR_SIZE = 105;
     Polymer({
       is: 'tf-interactive-inference-age-demo',
       properties: {
@@ -217,13 +218,27 @@ limitations under the License.
             const indices = Object.keys(this.indicesToInfer).sort();
             inferences.indices = indices;
             inferences.results = [{regressionResult: {regressions: []}}];
+            const extraOutputs = {};
+            extraOutputs.indices = indices;
+            const attributions = [];
+            extraOutputs.extra = [{attributions: attributions}];
             const tensorArr = indices.map((idx) =>
               this.convertExToTensor(this.data[idx])
             );
             const tensors = tf.concat(tensorArr);
-            const input = tensors.reshape([indices.length, 105]);
-            const res = this.model.predict(input, {batchSize: 128});
+            const input = tensors.reshape([indices.length, TENSOR_SIZE]);
+
+            // Get the gradient of the prediction with respect to the inputs
+            // for displaying attributions.
+            const func = (x) =>
+              this.model.apply(x, {batchSize: 128, training: true});
+            const gradFunc = tf.grad(func);
+            const grads = gradFunc(input);
+            const res = func(input);
+            const gradValues = await grads.data();
             const predValues = await res.data();
+            grads.dispose();
+            input.dispose();
             tensors.dispose();
             tensorArr.forEach((tensor) => tensor.dispose());
             res.dispose();
@@ -233,8 +248,19 @@ limitations under the License.
               inferences.results[0].regressionResult.regressions[i] = {
                 value: adjustedScore,
               };
+              // Get the attributions from the gradients for each example.
+              attributions.push(
+                this.getAttributions(
+                  gradValues.slice(
+                    i * TENSOR_SIZE,
+                    i * TENSOR_SIZE + TENSOR_SIZE
+                  ),
+                  this.data[indices[i]]
+                )
+              );
             }
             this.$.dash.inferences = inferences;
+            this.$.dash.extraOutputs = extraOutputs;
             this.indicesToInfer = {};
           });
           this.$.dash.addEventListener('get-eligible-features', (e) => {
@@ -459,7 +485,7 @@ limitations under the License.
           }
           const tconcat = tf.concat(tlist);
           tlist.forEach((tensor) => tensor.dispose());
-          const input = tconcat.reshape([tlist.length, 105]);
+          const input = tconcat.reshape([tlist.length, TENSOR_SIZE]);
           const res = this.model.predict(input, {batchSize: BATCH_SIZE});
           const vals = await res.data();
           predValuesList.push(vals);
@@ -538,6 +564,50 @@ limitations under the License.
           ] = 1;
         }
         return onehot;
+      },
+
+      getAttributions(attrValues, ex) {
+        const attributions = {};
+        let curIndex = 0;
+
+        const getValue = (feat) => {
+          if (ex.features.feature[feat].bytesList != null) {
+            return atob(ex.features.feature[feat].bytesList.value[0]);
+          } else {
+            return String(ex.features.feature[feat].floatList.value[0]);
+          }
+        };
+        const extractAttribution = (feat) => {
+          if (this.categories[feat] != null) {
+            // For one-hot encoded features, use the gradient of the
+            // entry that corresponds to the feature value that was set to 1.
+            let featureAttrs = attrValues.slice(
+              curIndex,
+              curIndex + this.categories[feat].length
+            );
+            curIndex += this.categories[feat].length;
+            attributions[feat] =
+              featureAttrs[this.categories[feat].indexOf(getValue(feat))] || 0;
+          } else {
+            attributions[feat] = attrValues[curIndex++];
+          }
+        };
+
+        extractAttribution('workclass');
+        extractAttribution('education');
+        extractAttribution('education-num');
+        extractAttribution('marital-status');
+        extractAttribution('occupation');
+        extractAttribution('relationship');
+        extractAttribution('race');
+        extractAttribution('sex');
+        extractAttribution('capital-gain');
+        extractAttribution('capital-loss');
+        extractAttribution('hours-per-week');
+        extractAttribution('native-country');
+        extractAttribution('over_50k');
+
+        return attributions;
       },
     });
   </script>

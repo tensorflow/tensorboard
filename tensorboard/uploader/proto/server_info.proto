@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package tensorboard.service;
+
+// Request sent by uploader clients at the start of an upload session. Used to
+// determine whether the client is recent enough to communicate with the
+// server, and to receive any metadata needed for the upload session.
+message ServerInfoRequest {
+  // Client-side TensorBoard version, per `tensorboard.version.VERSION`.
+  string version = 1;
+}
+
+message ServerInfoResponse {
+  // Primary bottom-line: is the server compatible with the client, and is
+  // there anything that the end user should be aware of?
+  Compatibility compatibility = 1;
+  // Identifier for a gRPC server providing the `TensorBoardExporterService` and
+  // `TensorBoardWriterService` services (under the `tensorboard.service` proto
+  // package).
+  ApiServer api_server = 2;
+  // How to generate URLs to experiment pages.
+  ExperimentUrlFormat url_format = 3;
+}
+
+enum CompatibilityVerdict {
+  VERDICT_UNKNOWN = 0;
+  // All is well. The client may proceed.
+  VERDICT_OK = 1;
+  // The client may proceed, but should heed the accompanying message. This
+  // may be the case if the user is on a version of TensorBoard that will
+  // soon be unsupported, or if the server is experiencing transient issues.
+  VERDICT_WARN = 2;
+  // The client should cease further communication with the server and abort
+  // operation after printing the accompanying `details` message.
+  VERDICT_ERROR = 3;
+}
+
+message Compatibility {
+  CompatibilityVerdict verdict = 1;
+  // Human-readable message to display. When non-empty, will be displayed in
+  // all cases, even when the client may proceed.
+  string details = 2;
+}
+
+message ApiServer {
+  // gRPC server URI: <https://github.com/grpc/grpc/blob/master/doc/naming.md>.
+  // For example: "api.tensorboard.dev:443".
+  string endpoint = 1;
+}
+
+message ExperimentUrlFormat {
+  // Template string for experiment URLs. All occurrences of the value of the
+  // `id_placeholder` field in this template string should be replaced with an
+  // experiment ID. For example, if `id_placeholder` is "{{EID}}", then
+  // `template` might be "https://tensorboard.dev/experiment/{{EID}}/".
+  // Should be absolute.
+  string template = 1;
+  // Placeholder string that should be replaced with an actual experiment ID.
+  // (See docs for `template` field.)
+  string id_placeholder = 2;
+}

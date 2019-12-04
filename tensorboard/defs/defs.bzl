@@ -53,6 +53,7 @@ def tf_ng_web_test_suite(runtime_deps = [], bootstrap = [], deps = [], **kwargs)
     It has Angular specific configurations that we want as defaults.
     """
 
+    kwargs.setdefault("tags", []).append("webtest")
     karma_web_test_suite(
         srcs = [],
         bootstrap = bootstrap + [

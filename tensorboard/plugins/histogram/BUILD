@@ -17,9 +17,11 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         ":metadata",
+        "//tensorboard:errors",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
+        "//tensorboard/data:provider",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/util:tensor_util",
         "@org_pocoo_werkzeug",
@@ -36,10 +38,12 @@ py_test(
     deps = [
         ":histograms_plugin",
         ":summary",
+        "//tensorboard:errors",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/backend/event_processing:event_multiplexer",
+        "//tensorboard/data:provider",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/util:test_util",
         "@org_pocoo_werkzeug",
@@ -109,6 +113,7 @@ py_library(
         "//tensorboard:expect_numpy_installed",
         "//tensorboard/compat",
         "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/util:lazy_tensor_creator",
         "//tensorboard/util:tensor_util",
     ],
 )

@@ -45,15 +45,7 @@ from tensorboard.compat.proto import summary_pb2
 class TensorBoardExporterTest(tb_test.TestCase):
 
   def _create_mock_api_client(self):
-    # Create a stub instance (using a test channel) in order to derive a mock
-    # from it with autospec enabled. Mocking TensorBoardExporterServiceStub
-    # itself doesn't work with autospec because grpc constructs stubs via
-    # metaclassing.
-    test_channel = grpc_testing.channel(
-        service_descriptors=[], time=grpc_testing.strict_real_time())
-    stub = export_service_pb2_grpc.TensorBoardExporterServiceStub(test_channel)
-    mock_api_client = mock.create_autospec(stub)
-    return mock_api_client
+    return _create_mock_api_client()
 
   def _make_experiments_response(self, eids):
     return export_service_pb2.StreamExperimentsResponse(experiment_ids=eids)
@@ -323,6 +315,62 @@ class TensorBoardExporterTest(tb_test.TestCase):
     mock_api_client.StreamExperimentData.assert_not_called()
 
 
+class ListExperimentsTest(tb_test.TestCase):
+
+  def test_experiment_ids_only(self):
+    mock_api_client = _create_mock_api_client()
+
+    def stream_experiments(request, **kwargs):
+      del request  # unused
+      yield export_service_pb2.StreamExperimentsResponse(
+          experiment_ids=["123", "456"])
+      yield export_service_pb2.StreamExperimentsResponse(
+          experiment_ids=["789"])
+
+    mock_api_client.StreamExperiments = mock.Mock(wraps=stream_experiments)
+    gen = exporter_lib.list_experiments(mock_api_client)
+    mock_api_client.StreamExperiments.assert_not_called()
+    self.assertEqual(list(gen), ["123", "456", "789"])
+
+  def test_mixed_experiments_and_ids(self):
+    mock_api_client = _create_mock_api_client()
+
+    def stream_experiments(request, **kwargs):
+      del request  # unused
+
+      # Should include `experiment_ids` when no `experiments` given.
+      response = export_service_pb2.StreamExperimentsResponse()
+      response.experiment_ids.append("123")
+      response.experiment_ids.append("456")
+      yield response
+
+      # Should ignore `experiment_ids` in the presence of `experiments`.
+      response = export_service_pb2.StreamExperimentsResponse()
+      response.experiment_ids.append("999")  # will be omitted
+      response.experiments.add(experiment_id="789")
+      response.experiments.add(experiment_id="012")
+      yield response
+
+      # Should include `experiments` even when no `experiment_ids` are given.
+      response = export_service_pb2.StreamExperimentsResponse()
+      response.experiments.add(experiment_id="345")
+      response.experiments.add(experiment_id="678")
+      yield response
+
+    mock_api_client.StreamExperiments = mock.Mock(wraps=stream_experiments)
+    gen = exporter_lib.list_experiments(mock_api_client)
+    mock_api_client.StreamExperiments.assert_not_called()
+    expected = [
+        "123",
+        "456",
+        export_service_pb2.Experiment(experiment_id="789"),
+        export_service_pb2.Experiment(experiment_id="012"),
+        export_service_pb2.Experiment(experiment_id="345"),
+        export_service_pb2.Experiment(experiment_id="678"),
+    ]
+    self.assertEqual(list(gen), expected)
+
+
 class MkdirPTest(tb_test.TestCase):
 
   def test_makes_full_chain(self):
@@ -382,6 +430,18 @@ class OpenExclTest(tb_test.TestCase):
     with self.assertRaises(OSError) as cm:
       exporter_lib._open_excl(path)
     self.assertEqual(cm.exception.errno, errno.ENOENT)
+
+
+def _create_mock_api_client():
+  # Create a stub instance (using a test channel) in order to derive a mock
+  # from it with autospec enabled. Mocking TensorBoardExporterServiceStub
+  # itself doesn't work with autospec because grpc constructs stubs via
+  # metaclassing.
+  test_channel = grpc_testing.channel(
+      service_descriptors=[], time=grpc_testing.strict_real_time())
+  stub = export_service_pb2_grpc.TensorBoardExporterServiceStub(test_channel)
+  mock_api_client = mock.create_autospec(stub)
+  return mock_api_client
 
 
 if __name__ == "__main__":

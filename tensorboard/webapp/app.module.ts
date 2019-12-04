@@ -18,17 +18,17 @@ import {NgModule} from '@angular/core';
 import {StoreModule} from '@ngrx/store';
 import {EffectsModule} from '@ngrx/effects';
 
-import {AppComponent} from './app.component';
+import {AppContainer} from './app.container';
 import {CoreModule} from './core/core.module';
 import {PluginsModule} from './plugins/plugins.module';
 
-import {ROOT_REDUCERS, metaReducers} from './reducers';
+import {ROOT_REDUCERS, metaReducers} from './reducer_config';
 
 import {HeaderModule} from './header/header.module';
 import {ReloaderModule} from './reloader/reloader.module';
 
 @NgModule({
-  declarations: [AppComponent],
+  declarations: [AppContainer],
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
@@ -46,6 +46,6 @@ import {ReloaderModule} from './reloader/reloader.module';
     EffectsModule.forRoot([]),
   ],
   providers: [],
-  bootstrap: [AppComponent],
+  bootstrap: [AppContainer],
 })
 export class AppModule {}

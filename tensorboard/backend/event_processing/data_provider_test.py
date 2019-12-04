@@ -22,6 +22,7 @@ import os
 
 import six
 from six.moves import xrange  # pylint: disable=redefined-builtin
+import numpy as np
 
 from tensorboard.backend.event_processing import data_provider
 from tensorboard.backend.event_processing import (
@@ -64,9 +65,15 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
 
     logdir = os.path.join(self.logdir, "pictures")
     with tf.summary.create_file_writer(logdir).as_default():
-      purple = tf.constant([[[255, 0, 255]]], dtype=tf.uint8)
-      for i in xrange(1, 11):
-        image_summary.image("purple", [tf.tile(purple, [i, i, 1])], step=i)
+      colors = [
+          ("`#F0F`", (255, 0, 255), "purple"),
+          ("`#0F0`", (255, 0, 255), "green"),
+      ]
+      for (description, rgb, name) in colors:
+        pixel = tf.constant([[list(rgb)]], dtype=tf.uint8)
+        for i in xrange(1, 11):
+          pixels = [tf.tile(pixel, [i, i, 1])]
+          image_summary.image(name, pixels, step=i, description=description)
 
   def create_multiplexer(self):
     multiplexer = event_multiplexer.EventMultiplexer()
@@ -210,6 +217,64 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
           plugin_name=image_metadata.PLUGIN_NAME,
           run_tag_filter=run_tag_filter,
       )
+
+  def test_list_tensors_all(self):
+    provider = self.create_provider()
+    result = provider.list_tensors(
+        experiment_id="unused",
+        plugin_name=image_metadata.PLUGIN_NAME,
+        run_tag_filter=None,
+    )
+    self.assertItemsEqual(result.keys(), ["pictures"])
+    self.assertItemsEqual(result["pictures"].keys(), ["purple", "green"])
+    sample = result["pictures"]["purple"]
+    self.assertIsInstance(sample, base_provider.TensorTimeSeries)
+    self.assertEqual(sample.max_step, 10)
+    # nothing to test for wall time, as it can't be mocked out
+    self.assertEqual(sample.plugin_content, b"")
+    self.assertEqual(sample.display_name, "")  # not written by V2 summary ops
+    self.assertEqual(sample.description, "`#F0F`")
+
+  def test_list_tensors_filters(self):
+    provider = self.create_provider()
+
+    # Quick check only, as scalars and tensors use the same underlying
+    # filtering implementation.
+    result = provider.list_tensors(
+        experiment_id="unused",
+        plugin_name=image_metadata.PLUGIN_NAME,
+        run_tag_filter=base_provider.RunTagFilter(["pictures"], ["green"]),
+    )
+    self.assertItemsEqual(result.keys(), ["pictures"])
+    self.assertItemsEqual(result["pictures"].keys(), ["green"])
+
+  def test_read_tensors(self):
+    multiplexer = self.create_multiplexer()
+    provider = data_provider.MultiplexerDataProvider(multiplexer, self.logdir)
+
+    run_tag_filter = base_provider.RunTagFilter(
+        runs=["pictures"],
+        tags=["purple", "green"],
+    )
+    result = provider.read_tensors(
+        experiment_id="unused",
+        plugin_name=image_metadata.PLUGIN_NAME,
+        run_tag_filter=run_tag_filter,
+        downsample=None,  # not yet implemented
+    )
+
+    self.assertItemsEqual(result.keys(), ["pictures"])
+    self.assertItemsEqual(result["pictures"].keys(), ["purple", "green"])
+    for run in result:
+      for tag in result[run]:
+        tensor_events = multiplexer.Tensors(run, tag)
+        self.assertLen(result[run][tag], len(tensor_events))
+        for (datum, event) in zip(result[run][tag], tensor_events):
+          self.assertEqual(datum.step, event.step)
+          self.assertEqual(datum.wall_time, event.wall_time)
+          np.testing.assert_equal(
+              datum.numpy, tensor_util.make_ndarray(event.tensor_proto)
+          )
 
 
 if __name__ == "__main__":

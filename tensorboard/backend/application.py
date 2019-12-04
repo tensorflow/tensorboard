@@ -46,6 +46,7 @@ from tensorboard.backend import empty_path_redirect
 from tensorboard.backend import experiment_id
 from tensorboard.backend import http_util
 from tensorboard.backend import path_prefix
+from tensorboard.backend import security_validator
 from tensorboard.backend.event_processing import db_import_multiplexer
 from tensorboard.backend.event_processing import data_provider as event_data_provider  # pylint: disable=line-too-long
 from tensorboard.backend.event_processing import plugin_event_accumulator as event_accumulator  # pylint: disable=line-too-long
@@ -340,6 +341,7 @@ class TensorBoardWSGI(object):
     app = empty_path_redirect.EmptyPathRedirectMiddleware(app)
     app = experiment_id.ExperimentIdMiddleware(app)
     app = path_prefix.PathPrefixMiddleware(app, self._path_prefix)
+    app = security_validator.SecurityValidatorMiddleware(app)
     app = _handling_errors(app)
     return app
 

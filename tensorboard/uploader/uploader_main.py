@@ -31,11 +31,15 @@ import grpc
 import six
 
 from tensorboard.uploader import dev_creds
+from tensorboard.uploader.proto import export_service_pb2
 from tensorboard.uploader.proto import export_service_pb2_grpc
 from tensorboard.uploader.proto import write_service_pb2_grpc
 from tensorboard.uploader import auth
 from tensorboard.uploader import exporter as exporter_lib
+from tensorboard.uploader import server_info as server_info_lib
 from tensorboard.uploader import uploader as uploader_lib
+from tensorboard.uploader import util
+from tensorboard.uploader.proto import server_info_pb2
 from tensorboard import program
 from tensorboard.plugins import base_plugin
 
@@ -59,10 +63,13 @@ To log out, run `tensorboard dev auth revoke`.
 _SUBCOMMAND_FLAG = '_uploader__subcommand'
 _SUBCOMMAND_KEY_UPLOAD = 'UPLOAD'
 _SUBCOMMAND_KEY_DELETE = 'DELETE'
+_SUBCOMMAND_KEY_LIST = 'LIST'
 _SUBCOMMAND_KEY_EXPORT = 'EXPORT'
 _SUBCOMMAND_KEY_AUTH = 'AUTH'
 _AUTH_SUBCOMMAND_FLAG = '_uploader__subcommand_auth'
 _AUTH_SUBCOMMAND_KEY_REVOKE = 'REVOKE'
+
+_DEFAULT_ORIGIN = "https://tensorboard.dev"
 
 
 def _prompt_for_user_ack(intent):
@@ -90,10 +97,19 @@ def _define_flags(parser):
   subparsers = parser.add_subparsers()
 
   parser.add_argument(
-      '--endpoint',
+      '--origin',
       type=str,
-      default='api.tensorboard.dev:443',
-      help='URL for the API server accepting write requests.')
+      default='',
+      help='Experimental. Origin for TensorBoard.dev service to which '
+      'to connect. If not set, defaults to %r.' % _DEFAULT_ORIGIN)
+
+  parser.add_argument(
+      '--api_endpoint',
+      type=str,
+      default='',
+      help='Experimental. Direct URL for the API server accepting '
+      'write requests. If set, will skip initial server handshake '
+      'unless `--origin` is also set.')
 
   parser.add_argument(
       '--grpc_creds_type',
@@ -134,6 +150,10 @@ def _define_flags(parser):
       type=str,
       default=None,
       help='ID of an experiment to delete permanently')
+
+  list_parser = subparsers.add_parser(
+      'list', help='list previously uploaded experiments')
+  list_parser.set_defaults(**{_SUBCOMMAND_FLAG: _SUBCOMMAND_KEY_LIST})
 
   export = subparsers.add_parser(
       'export', help='download all your experiment data')
@@ -217,15 +237,26 @@ def _run(flags):
     msg = 'Invalid --grpc_creds_type %s' % flags.grpc_creds_type
     raise base_plugin.FlagsError(msg)
 
+  try:
+    server_info = _get_server_info(flags)
+  except server_info_lib.CommunicationError as e:
+    _die(str(e))
+  _handle_server_info(server_info)
+
+  if not server_info.api_server.endpoint:
+    logging.error('Server info response: %s', server_info)
+    _die('Internal error: frontend did not specify an API server')
   composite_channel_creds = grpc.composite_channel_credentials(
       channel_creds, auth.id_token_call_credentials(credentials))
 
   # TODO(@nfelt): In the `_UploadIntent` case, consider waiting until
   # logdir exists to open channel.
   channel = grpc.secure_channel(
-      flags.endpoint, composite_channel_creds, options=channel_options)
+      server_info.api_server.endpoint,
+      composite_channel_creds,
+      options=channel_options)
   with channel:
-    intent.execute(channel)
+    intent.execute(server_info, channel)
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -249,10 +280,11 @@ class _Intent(object):
     pass
 
   @abc.abstractmethod
-  def execute(self, channel):
+  def execute(self, server_info, channel):
     """Carries out this intent with the specified gRPC channel.
 
     Args:
+      server_info: A `server_info_pb2.ServerInfoResponse` value.
       channel: A connected gRPC channel whose server provides the TensorBoard
         reader and writer services.
     """
@@ -266,7 +298,7 @@ class _AuthRevokeIntent(_Intent):
     """Must not be called."""
     raise AssertionError('No user ack needed to revoke credentials')
 
-  def execute(self, channel):
+  def execute(self, server_info, channel):
     """Execute handled specially by `main`. Must not be called."""
     raise AssertionError('_AuthRevokeIntent should not be directly executed')
 
@@ -291,7 +323,7 @@ class _DeleteExperimentIntent(_Intent):
   def get_ack_message_body(self):
     return self._MESSAGE_TEMPLATE.format(experiment_id=self.experiment_id)
 
-  def execute(self, channel):
+  def execute(self, server_info, channel):
     api_client = write_service_pb2_grpc.TensorBoardWriterServiceStub(channel)
     experiment_id = self.experiment_id
     if not experiment_id:
@@ -310,6 +342,57 @@ class _DeleteExperimentIntent(_Intent):
     except grpc.RpcError as e:
       _die('Internal error deleting experiment: %s' % e)
     print('Deleted experiment %s.' % experiment_id)
+
+
+class _ListIntent(_Intent):
+  """The user intends to list all their experiments."""
+
+  _MESSAGE = textwrap.dedent(u"""\
+      This will list all experiments that you've uploaded to
+      https://tensorboard.dev. TensorBoard.dev experiments are visible
+      to everyone. Do not upload sensitive data.
+  """)
+
+  def get_ack_message_body(self):
+    return self._MESSAGE
+
+  def execute(self, server_info, channel):
+    api_client = export_service_pb2_grpc.TensorBoardExporterServiceStub(channel)
+    fieldmask = export_service_pb2.ExperimentMask(
+        create_time=True,
+        update_time=True,
+        num_scalars=True,
+        num_runs=True,
+        num_tags=True,
+    )
+    gen = exporter_lib.list_experiments(api_client, fieldmask=fieldmask)
+    count = 0
+    for experiment in gen:
+      count += 1
+      if not isinstance(experiment, export_service_pb2.Experiment):
+        url = server_info_lib.experiment_url(server_info, experiment)
+        print(url)
+        continue
+      experiment_id = experiment.experiment_id
+      url = server_info_lib.experiment_url(server_info, experiment_id)
+      print(url)
+      data = [
+          ('Id', experiment.experiment_id),
+          ('Created', util.format_time(experiment.create_time)),
+          ('Updated', util.format_time(experiment.update_time)),
+          ('Scalars', str(experiment.num_scalars)),
+          ('Runs', str(experiment.num_runs)),
+          ('Tags', str(experiment.num_tags)),
+      ]
+      for (name, value) in data:
+        print('\t%s %s' % (name.ljust(10), value))
+    sys.stdout.flush()
+    if not count:
+      sys.stderr.write(
+          'No experiments. Use `tensorboard dev upload` to get started.\n')
+    else:
+      sys.stderr.write('Total: %d experiment(s)\n' % count)
+    sys.stderr.flush()
 
 
 class _UploadIntent(_Intent):
@@ -331,10 +414,11 @@ class _UploadIntent(_Intent):
   def get_ack_message_body(self):
     return self._MESSAGE_TEMPLATE.format(logdir=self.logdir)
 
-  def execute(self, channel):
+  def execute(self, server_info, channel):
     api_client = write_service_pb2_grpc.TensorBoardWriterServiceStub(channel)
     uploader = uploader_lib.TensorBoardUploader(api_client, self.logdir)
-    url = uploader.create_experiment()
+    experiment_id = uploader.create_experiment()
+    url = server_info_lib.experiment_url(server_info, experiment_id)
     print("Upload started and will continue reading any new data as it's added")
     print("to the logdir. To stop uploading, press Ctrl-C.")
     print("View your TensorBoard live at: %s" % url)
@@ -372,7 +456,7 @@ class _ExportIntent(_Intent):
   def get_ack_message_body(self):
     return self._MESSAGE_TEMPLATE.format(output_dir=self.output_dir)
 
-  def execute(self, channel):
+  def execute(self, server_info, channel):
     api_client = export_service_pb2_grpc.TensorBoardExporterServiceStub(channel)
     outdir = self.output_dir
     try:
@@ -421,6 +505,8 @@ def _get_intent(flags):
     else:
       raise base_plugin.FlagsError(
           'Must specify experiment to delete via `--experiment_id`.')
+  elif cmd == _SUBCOMMAND_KEY_LIST:
+    return _ListIntent()
   elif cmd == _SUBCOMMAND_KEY_EXPORT:
     if flags.outdir:
       return _ExportIntent(flags.outdir)
@@ -437,6 +523,32 @@ def _get_intent(flags):
       raise AssertionError('Unknown auth subcommand %r' % (auth_cmd,))
   else:
     raise AssertionError('Unknown subcommand %r' % (cmd,))
+
+
+def _get_server_info(flags):
+  origin = flags.origin or _DEFAULT_ORIGIN
+  if flags.api_endpoint and not flags.origin:
+    return server_info_lib.create_server_info(origin, flags.api_endpoint)
+  server_info = server_info_lib.fetch_server_info(origin)
+  # Override with any API server explicitly specified on the command
+  # line, but only if the server accepted our initial handshake.
+  if flags.api_endpoint and server_info.api_server.endpoint:
+    server_info.api_server.endpoint = flags.api_endpoint
+  return server_info
+
+
+def _handle_server_info(info):
+  compat = info.compatibility
+  if compat.verdict == server_info_pb2.VERDICT_WARN:
+    sys.stderr.write('Warning [from server]: %s\n' % compat.details)
+    sys.stderr.flush()
+  elif compat.verdict == server_info_pb2.VERDICT_ERROR:
+    _die('Error [from server]: %s' % compat.details)
+  else:
+    # OK or unknown; assume OK.
+    if compat.details:
+      sys.stderr.write('%s\n' % compat.details)
+      sys.stderr.flush()
 
 
 def _die(message):

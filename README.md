@@ -5,22 +5,19 @@ TensorFlow runs and graphs.
 
 This README gives an overview of key concepts in TensorBoard, as well as how to
 interpret the visualizations TensorBoard provides. For an in-depth example of
-using TensorBoard, see the tutorial: [TensorBoard: Visualizing
-Learning][].
-For in-depth information on the Graph Visualizer, see this tutorial:
-[TensorBoard: Graph Visualization][].
+using TensorBoard, see the tutorial: [TensorBoard: Getting Started][].
+Documentation on how to use TensorBoard to work with images, graphs, hyper
+parameters, and more are linked from there, along with tutorial walk-throughs in
+Colab.
 
-[TensorBoard: Visualizing Learning]: https://www.tensorflow.org/get_started/summaries_and_tensorboard
-[TensorBoard: Graph Visualization]: https://www.tensorflow.org/get_started/graph_viz
+You may also be interested in the hosted TensorBoard solution at
+[TensorBoard.dev][]. You can use TensorBoard.dev to easily host, track, and
+share your ML experiments for free. For example, [this experiment][] shows a
+working example featuring the scalar dashboard.
 
-You may also want to watch
-[this video tutorial][] that walks
-through setting up and using TensorBoard. There's an associated
-[tutorial with an end-to-end example of training TensorFlow and using TensorBoard][].
-
-[this video tutorial]: https://www.youtube.com/watch?v=eBbEDRsCmv4
-
-[tutorial with an end-to-end example of training TensorFlow and using TensorBoard]: https://github.com/martinwicke/tf-dev-summit-tensorboard-tutorial
+[TensorBoard: Getting Started]: https://www.tensorflow.org/tensorboard/get_started
+[TensorBoard.dev]: https://tensorboard.dev
+[This experiment]: https://tensorboard.dev/experiment/AdYd1TgeTlaLWXx6I8JUbA/#scalars
 
 # Usage
 

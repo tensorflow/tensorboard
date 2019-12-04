@@ -40,6 +40,7 @@ _DISALLOWED_CHAR_IN_DOMAIN = re.compile(r'\s')
 # instead use a configurable via some kind of assets provider which would
 # hold configurations for the CSP.
 _CSP_FONT_DOMAINS_WHITELIST = []
+_CSP_FRAME_DOMAINS_WHITELIST = []
 _CSP_IMG_DOMAINS_WHITELIST = []
 _CSP_SCRIPT_DOMAINS_WHITELIST = []
 _CSP_SCRIPT_SELF = True
@@ -181,15 +182,12 @@ def Respond(request,
     _validate_global_whitelist(_CSP_IMG_DOMAINS_WHITELIST)
     _validate_global_whitelist(_CSP_STYLE_DOMAINS_WHITELIST)
     _validate_global_whitelist(_CSP_FONT_DOMAINS_WHITELIST)
+    _validate_global_whitelist(_CSP_FRAME_DOMAINS_WHITELIST)
     _validate_global_whitelist(_CSP_SCRIPT_DOMAINS_WHITELIST)
 
-    enable_unsafe_eval = (
-      (_CSP_SCRIPT_DOMAINS_WHITELIST or csp_scripts_sha256s)
-      and _CSP_SCRIPT_UNSAFE_EVAL
-    )
     frags = _CSP_SCRIPT_DOMAINS_WHITELIST + [
         "'self'" if _CSP_SCRIPT_SELF else '',
-        "'unsafe-eval'" if enable_unsafe_eval else '',
+        "'unsafe-eval'" if _CSP_SCRIPT_UNSAFE_EVAL else '',
     ] + [
         "'sha256-{}'".format(sha256) for sha256 in (csp_scripts_sha256s or [])
     ]
@@ -203,7 +201,10 @@ def Respond(request,
         ),
         'frame-ancestors *',
         # Dynamic plugins are rendered inside an iframe.
-        "frame-src 'self'",
+        'frame-src %s' % _create_csp_string(
+            "'self'",
+            *_CSP_FRAME_DOMAINS_WHITELIST
+        ),
         'img-src %s' % _create_csp_string(
             "'self'",
             # used by favicon
@@ -214,6 +215,7 @@ def Respond(request,
         ),
         "object-src 'none'",
         'style-src %s' % _create_csp_string(
+            "'self'",
             # used by google-chart
             'https://www.gstatic.com',
             'data:',
