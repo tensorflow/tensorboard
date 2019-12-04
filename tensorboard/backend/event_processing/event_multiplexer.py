@@ -287,6 +287,22 @@ class EventMultiplexer(object):
     accumulator = self.GetAccumulator(run)
     return accumulator.Graph()
 
+  def SerializedGraph(self, run):
+    """Retrieve the serialized graph associated with the provided run.
+
+    Args:
+      run: A string name of a run to load the graph for.
+
+    Raises:
+      KeyError: If the run is not found.
+      ValueError: If the run does not have an associated graph.
+
+    Returns:
+      The serialized form of the `GraphDef` protobuf data structure.
+    """
+    accumulator = self.GetAccumulator(run)
+    return accumulator.SerializedGraph()
+
   def MetaGraph(self, run):
     """Retrieve the metagraph associated with the provided run.
 
