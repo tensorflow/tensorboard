@@ -27,6 +27,7 @@ tf_web_library(
         "//tensorboard/components/vz_chart_helpers",
         "//tensorboard/components/vz_line_chart:dragZoomInteraction",
     ],
+    visibility = ["//visibility:public"],
 )
 
 tensorboard_webcomponent_library(
