@@ -14,9 +14,6 @@ TensorBoard builds are done with [Bazel](https://bazel.build), so you may need t
 You can build and run TensorBoard via Bazel (from within the TensorFlow nightly virtualenv) as follows:
 
 ```sh
-(tf)$ bazel build tensorboard
-(tf)$ ./bazel-bin/tensorboard/tensorboard --logdir path/to/logs
-# Or combine the above steps as:
 (tf)$ bazel run //tensorboard -- --logdir /path/to/logs
 ```
 
