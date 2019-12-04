@@ -118,8 +118,8 @@ class LocalFileSystem(object):
         mode = "rb" if binary_mode else "r"
         encoding = None if binary_mode else "utf8"
         if not exists(filename):
-          raise errors.NotFoundError(
-              None, None, 'Not Found: ' + compat.as_text(filename))
+            raise errors.NotFoundError(
+                None, None, 'Not Found: ' + compat.as_text(filename))
         offset = None
         if continue_from is not None:
             offset = continue_from.get("opaque_offset", None)

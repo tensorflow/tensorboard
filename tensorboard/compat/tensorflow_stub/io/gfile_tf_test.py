@@ -241,7 +241,6 @@ class FileIoTest(tb_test.TestCase):
       self.assertEqual("t", f.read(1))
       self.assertEqual("esting3\n\ntesting5", f.read())
 
-
   def testReadingIterator(self):
     file_path = os.path.join(self._base_dir, "temp_file")
     data = ["testing1\n", "testing2\n", "testing3\n", "\n", "testing5"]
