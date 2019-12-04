@@ -27,18 +27,18 @@ landing_page:
         classname: button
   - classname: devsite-landing-row-cards
     items:
+    - heading: "TensorBoard.dev: a new way to share your ML experiment results"
+      image_path: /resources/images/tf-logo-card-16x9.png
+      path: https://blog.tensorflow.org/2019/12/introducing-tensorboarddev-new-way-to.html
+      buttons:
+      - label: "Read on TensorFlow blog"
+        path: https://blog.tensorflow.org/2019/12/introducing-tensorboarddev-new-way-to.html
     - heading: "The What-If Tool: Code-Free Probing of Machine Learning Models"
       image_path: /resources/images/tf-logo-card-16x9.png
       path: https://ai.googleblog.com/2018/09/the-what-if-tool-code-free-probing-of.html
       buttons:
       - label: "Read on Google AI blog"
         path: https://ai.googleblog.com/2018/09/the-what-if-tool-code-free-probing-of.html
-    - heading: "Interactive supervision with TensorBoard"
-      image_path: /resources/images/tf-logo-card-16x9.png
-      path: https://medium.com/tensorflow/interactive-supervision-with-tensorboard-9a101c91d3f7
-      buttons:
-      - label: "Read on TensorFlow blog"
-        path: https://medium.com/tensorflow/interactive-supervision-with-tensorboard-9a101c91d3f7
     - heading: "Hands-on TensorBoard"
       youtube_id: eBbEDRsCmv4
       buttons:
