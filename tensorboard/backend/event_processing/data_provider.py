@@ -87,15 +87,7 @@ class MultiplexerDataProvider(provider.DataProvider):
     index = self.list_scalars(
         experiment_id, plugin_name, run_tag_filter=run_tag_filter
     )
-
-    def convert_scalar_event(event):
-      return provider.ScalarDatum(
-          step=event.step,
-          wall_time=event.wall_time,
-          value=tensor_util.make_ndarray(event.tensor_proto).item(),
-      )
-
-    return self._read(convert_scalar_event, index)
+    return self._read(_convert_scalar_event, index)
 
   def list_tensors(self, experiment_id, plugin_name, run_tag_filter=None):
     run_tag_content = self._multiplexer.PluginRunToTagToContent(plugin_name)
@@ -113,15 +105,7 @@ class MultiplexerDataProvider(provider.DataProvider):
     index = self.list_tensors(
         experiment_id, plugin_name, run_tag_filter=run_tag_filter
     )
-
-    def convert_tensor_event(event):
-      return provider.TensorDatum(
-          step=event.step,
-          wall_time=event.wall_time,
-          numpy=tensor_util.make_ndarray(event.tensor_proto),
-      )
-
-    return self._read(convert_tensor_event, index)
+    return self._read(_convert_tensor_event, index)
 
   def _list(self, construct_time_series, run_tag_content, run_tag_filter):
     """Helper to list scalar or tensor time series.
@@ -181,3 +165,21 @@ class MultiplexerDataProvider(provider.DataProvider):
         events = self._multiplexer.Tensors(run, tag)
         result_for_run[tag] = [convert_event(e) for e in events]
     return result
+
+
+def _convert_scalar_event(event):
+  """Helper for `read_scalars`."""
+  return provider.ScalarDatum(
+      step=event.step,
+      wall_time=event.wall_time,
+      value=tensor_util.make_ndarray(event.tensor_proto).item(),
+  )
+
+
+def _convert_tensor_event(event):
+  """Helper for `read_tensors`."""
+  return provider.TensorDatum(
+      step=event.step,
+      wall_time=event.wall_time,
+      numpy=tensor_util.make_ndarray(event.tensor_proto),
+  )
