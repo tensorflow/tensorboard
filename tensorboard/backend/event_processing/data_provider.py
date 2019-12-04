@@ -93,15 +93,7 @@ class MultiplexerDataProvider(provider.DataProvider):
     index = self.list_scalars(
         experiment_id, plugin_name, run_tag_filter=run_tag_filter
     )
-
-    def convert_scalar_event(event):
-      return provider.ScalarDatum(
-          step=event.step,
-          wall_time=event.wall_time,
-          value=tensor_util.make_ndarray(event.tensor_proto).item(),
-      )
-
-    return self._read(convert_scalar_event, index)
+    return self._read(_convert_scalar_event, index)
 
   def list_tensors(self, experiment_id, plugin_name, run_tag_filter=None):
     run_tag_content = self._multiplexer.PluginRunToTagToContent(plugin_name)
@@ -119,15 +111,7 @@ class MultiplexerDataProvider(provider.DataProvider):
     index = self.list_tensors(
         experiment_id, plugin_name, run_tag_filter=run_tag_filter
     )
-
-    def convert_tensor_event(event):
-      return provider.TensorDatum(
-          step=event.step,
-          wall_time=event.wall_time,
-          numpy=tensor_util.make_ndarray(event.tensor_proto),
-      )
-
-    return self._read(convert_tensor_event, index)
+    return self._read(_convert_tensor_event, index)
 
   def _list(self, construct_time_series, run_tag_content, run_tag_filter):
     """Helper to list scalar or tensor time series.
@@ -282,6 +266,7 @@ class MultiplexerDataProvider(provider.DataProvider):
     # In particular, note we ignore the requested index, since it's always 0.
     return serialized_graph
 
+
 # TODO(davidsoergel): deduplicate with other implementations
 def _encode_blob_key(experiment_id, plugin_name, run, tag, step, index):
   """Generate a blob key: a short, URL-safe string identifying a blob.
@@ -337,3 +322,21 @@ def _decode_blob_key(key):
   stringified = decoded.decode("ascii")
   (experiment_id, plugin_name, run, tag, step, index) = json.loads(stringified)
   return (experiment_id, plugin_name, run, tag, step, index)
+
+
+def _convert_scalar_event(event):
+  """Helper for `read_scalars`."""
+  return provider.ScalarDatum(
+      step=event.step,
+      wall_time=event.wall_time,
+      value=tensor_util.make_ndarray(event.tensor_proto).item(),
+  )
+
+
+def _convert_tensor_event(event):
+  """Helper for `read_tensors`."""
+  return provider.TensorDatum(
+      step=event.step,
+      wall_time=event.wall_time,
+      numpy=tensor_util.make_ndarray(event.tensor_proto),
+  )
