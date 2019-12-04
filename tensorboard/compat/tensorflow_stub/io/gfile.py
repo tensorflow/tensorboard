@@ -12,10 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""File IO methods that wrap the C++ FileSystem API.
+"""A limited reimplementation of the TensorFlow FileIO API.
 
-The C++ FileSystem API is SWIG wrapped in file_io.i. These functions call those
-to accomplish basic File IO operations.
+The TensorFlow version wraps the C++ FileSystem API.  Here we provide a pure
+Python implementation, limited to the features required for TensorBoard.  This
+allows running TensorBoard without depending on TensorFlow for file operations.
+
 """
 from __future__ import absolute_import
 from __future__ import division
@@ -115,6 +117,9 @@ class LocalFileSystem(object):
         """
         mode = "rb" if binary_mode else "r"
         encoding = None if binary_mode else "utf8"
+        if not exists(filename):
+            raise errors.NotFoundError(
+                None, None, 'Not Found: ' + compat.as_text(filename))
         offset = None
         if continue_from is not None:
             offset = continue_from.get("opaque_offset", None)
@@ -152,7 +157,8 @@ class LocalFileSystem(object):
     def _write(self, filename, file_content, mode):
         encoding = None if "b" in mode else "utf8"
         with io.open(filename, mode, encoding=encoding) as f:
-            f.write(file_content)
+            compatify = compat.as_bytes if "b" in mode else compat.as_text
+            f.write(compatify(file_content))
 
     def glob(self, filename):
         """Returns a list of files that match the given pattern(s)."""
@@ -190,7 +196,8 @@ class LocalFileSystem(object):
         try:
             os.makedirs(path)
         except FileExistsError:
-            raise errors.AlreadyExistsError(None, None, "Directory already exists")
+            raise errors.AlreadyExistsError(
+                None, None, "Directory already exists")
 
     def stat(self, filename):
         """Returns file statistics for a given path."""
@@ -367,7 +374,8 @@ class S3FileSystem(object):
             path += "/"  # This will now only retrieve subdir content
         keys = []
         for r in p.paginate(Bucket=bucket, Prefix=path, Delimiter="/"):
-            keys.extend(o["Prefix"][len(path):-1] for o in r.get("CommonPrefixes", []))
+            keys.extend(
+                o["Prefix"][len(path):-1] for o in r.get("CommonPrefixes", []))
             for o in r.get("Contents", []):
                 key = o["Key"][len(path):]
                 if key:  # Skip the base dir, which would add an empty string
@@ -377,7 +385,8 @@ class S3FileSystem(object):
     def makedirs(self, dirname):
         """Creates a directory and all parent/intermediate directories."""
         if self.exists(dirname):
-            raise errors.AlreadyExistsError(None, None, "Directory already exists")
+            raise errors.AlreadyExistsError(
+                None, None, "Directory already exists")
         client = boto3.client("s3")
         bucket, path = self.bucket_and_path(dirname)
         if not path.endswith("/"):
@@ -456,6 +465,10 @@ class GFile(object):
         Returns:
             Subset of the contents of the file as a string or bytes.
         """
+        if self.write_mode:
+            raise errors.PermissionDeniedError(
+                None, None, "File not opened in read mode")
+
         result = None
         if self.buff and len(self.buff) > self.buff_offset:
             # read from local buffer
@@ -493,9 +506,11 @@ class GFile(object):
             file_content: string, the contents
         """
         if not self.write_mode:
-            raise errors.OpError(None, None, "File not opened in write mode")
+            raise errors.PermissionDeniedError(
+                None, None, "File not opened in write mode")
         if self.closed:
-            raise errors.OpError(None, None, "File already closed")
+            raise errors.FailedPreconditionError(
+                None, None, "File already closed")
 
         if self.fs_supports_append:
             if not self.write_started:
@@ -510,7 +525,9 @@ class GFile(object):
             if self.write_temp is None:
                 mode = "w+b" if self.binary_mode else "w+"
                 self.write_temp = tempfile.TemporaryFile(mode)
-            self.write_temp.write(file_content)
+
+            compatify = compat.as_bytes if self.binary_mode else compat.as_text
+            self.write_temp.write(compatify(file_content))
 
     def __next__(self):
         line = None
@@ -543,7 +560,8 @@ class GFile(object):
 
     def flush(self):
         if self.closed:
-            raise errors.OpError(None, None, "File already closed")
+            raise errors.FailedPreconditionError(
+                None, None, "File already closed")
 
         if not self.fs_supports_append:
             if self.write_temp is not None:
@@ -653,8 +671,8 @@ def walk(top, topdown=True, onerror=None):
     Errors that happen while listing directories are ignored.
 
     Yields:
-      Each yield is a 3-tuple:  the pathname of a directory, followed by lists of
-      all its subdirectories and leaf files.
+      Each yield is a 3-tuple:  the pathname of a directory, followed by lists
+      of all its subdirectories and leaf files.
       (dirname, [subdirname, subdirname, ...], [filename, filename, ...])
       as strings
     """
@@ -704,3 +722,40 @@ def stat(filename):
       errors.OpError: If the operation fails.
     """
     return get_filesystem(filename).stat(filename)
+
+# Used for tests only
+def _write_string_to_file(filename, file_content):
+  """Writes a string to a given file.
+
+  Args:
+    filename: string, path to a file
+    file_content: string, contents that need to be written to the file
+
+  Raises:
+    errors.OpError: If there are errors during the operation.
+  """
+  with GFile(filename, mode="w") as f:
+    f.write(compat.as_text(file_content))
+
+
+# Used for tests only
+def _read_file_to_string(filename, binary_mode=False):
+  """Reads the entire contents of a file to a string.
+
+  Args:
+    filename: string, path to a file
+    binary_mode: whether to open the file in binary mode or not. This changes
+      the type of the object returned.
+
+  Returns:
+    contents of the file as a string or bytes.
+
+  Raises:
+    errors.OpError: Raises variety of errors that are subtypes e.g.
+    `NotFoundError` etc.
+  """
+  if binary_mode:
+    f = GFile(filename, mode="rb")
+  else:
+    f = GFile(filename, mode="r")
+  return f.read()
