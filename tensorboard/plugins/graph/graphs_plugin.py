@@ -116,7 +116,7 @@ class GraphsPlugin(base_plugin.TBPlugin):
       for (run_name, tag_to_time_series) in six.iteritems(mapping):
         for tag in tag_to_time_series:
           (run_item, tag_item) = add_row_item(run_name, tag)
-          run_item['op_graph'] = True
+          run_item['run_graph'] = True
           if tag_item:
             tag_item['op_graph'] = True
       return result
