@@ -249,7 +249,7 @@ class GraphsPlugin(base_plugin.TBPlugin):
     """Given a single run, return the graph definition in protobuf format."""
     experiment = plugin_util.experiment_id(request.environ)
     run = request.args.get('run')
-    tag = request.args.get('tag', '')
+    tag = request.args.get('tag')
     conceptual_arg = request.args.get('conceptual', False)
     is_conceptual = True if conceptual_arg == 'true' else False
 
