@@ -183,26 +183,26 @@ class ScalarsPluginTest(tf.test.TestCase):
             },
         },
         # _RUN_WITH_HISTOGRAM omitted: No scalar data.
-    }, plugin.index_impl())
+    }, plugin.index_impl('eid'))
 
   @with_runs([_RUN_WITH_LEGACY_SCALARS, _RUN_WITH_SCALARS, _RUN_WITH_HISTOGRAM])
   def _test_scalars_json(self, plugin, run_name, tag_name, should_work=True):
     if should_work:
       (data, mime_type) = plugin.scalars_impl(
-          tag_name, run_name, None, scalars_plugin.OutputFormat.JSON)
+          tag_name, run_name, 'eid', scalars_plugin.OutputFormat.JSON)
       self.assertEqual('application/json', mime_type)
       self.assertEqual(len(data), self._STEPS)
     else:
       with self.assertRaises(errors.NotFoundError):
         plugin.scalars_impl(
-            self._SCALAR_TAG, run_name, None, scalars_plugin.OutputFormat.JSON
+            self._SCALAR_TAG, run_name, 'eid', scalars_plugin.OutputFormat.JSON
         )
 
   @with_runs([_RUN_WITH_LEGACY_SCALARS, _RUN_WITH_SCALARS, _RUN_WITH_HISTOGRAM])
   def _test_scalars_csv(self, plugin, run_name, tag_name, should_work=True):
     if should_work:
       (data, mime_type) = plugin.scalars_impl(
-          tag_name, run_name, None, scalars_plugin.OutputFormat.CSV)
+          tag_name, run_name, 'eid', scalars_plugin.OutputFormat.CSV)
       self.assertEqual('text/csv', mime_type)
       s = StringIO(data)
       reader = csv.reader(s)
@@ -211,7 +211,7 @@ class ScalarsPluginTest(tf.test.TestCase):
     else:
       with self.assertRaises(errors.NotFoundError):
         plugin.scalars_impl(
-            self._SCALAR_TAG, run_name, None, scalars_plugin.OutputFormat.CSV
+            self._SCALAR_TAG, run_name, 'eid', scalars_plugin.OutputFormat.CSV
         )
 
   def test_scalars_json_with_legacy_scalars(self):
@@ -264,7 +264,7 @@ class ScalarsPluginTest(tf.test.TestCase):
     self.generate_run_to_db('exp1', self._RUN_WITH_SCALARS)
 
     (data, mime_type) = self.plugin.scalars_impl(
-        self._SCALAR_TAG, self._RUN_WITH_SCALARS, None,
+        self._SCALAR_TAG, self._RUN_WITH_SCALARS, 'eid',
         scalars_plugin.OutputFormat.JSON)
     self.assertEqual('application/json', mime_type)
     # When querying DB-based backend without an experiment id, it returns all
