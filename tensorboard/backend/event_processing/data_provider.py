@@ -47,6 +47,16 @@ class MultiplexerDataProvider(provider.DataProvider):
     self._multiplexer = multiplexer
     self._logdir = logdir
 
+  def _validate_experiment_id(self, experiment_id):
+    # This data provider doesn't consume the experiment ID at all, but
+    # as a courtesy to callers we require that it be a valid string, to
+    # help catch usage errors.
+    if not isinstance(experiment_id, str):
+      raise TypeError(
+          "experiment_id must be %r, but got %r: %r"
+          % (str, type(experiment_id), experiment_id)
+      )
+
   def _test_run_tag(self, run_tag_filter, run, tag):
     runs = run_tag_filter.runs
     if runs is not None and run not in runs:
@@ -63,11 +73,11 @@ class MultiplexerDataProvider(provider.DataProvider):
       return None
 
   def data_location(self, experiment_id):
-    del experiment_id  # ignored
+    self._validate_experiment_id(experiment_id)
     return str(self._logdir)
 
   def list_runs(self, experiment_id):
-    del experiment_id  # ignored for now
+    self._validate_experiment_id(experiment_id)
     return [
         provider.Run(
             run_id=run,  # use names as IDs
@@ -78,6 +88,7 @@ class MultiplexerDataProvider(provider.DataProvider):
     ]
 
   def list_scalars(self, experiment_id, plugin_name, run_tag_filter=None):
+    self._validate_experiment_id(experiment_id)
     run_tag_content = self._multiplexer.PluginRunToTagToContent(plugin_name)
     return self._list(
         provider.ScalarTimeSeries, run_tag_content, run_tag_filter
@@ -96,6 +107,7 @@ class MultiplexerDataProvider(provider.DataProvider):
     return self._read(_convert_scalar_event, index)
 
   def list_tensors(self, experiment_id, plugin_name, run_tag_filter=None):
+    self._validate_experiment_id(experiment_id)
     run_tag_content = self._multiplexer.PluginRunToTagToContent(plugin_name)
     return self._list(
         provider.TensorTimeSeries, run_tag_content, run_tag_filter
@@ -175,7 +187,7 @@ class MultiplexerDataProvider(provider.DataProvider):
   def list_blob_sequences(
       self, experiment_id, plugin_name, run_tag_filter=None
   ):
-    del experiment_id  # ignored for now
+    self._validate_experiment_id(experiment_id)
     if run_tag_filter is None:
       run_tag_filter = provider.RunTagFilter(runs=None, tags=None)
 
@@ -206,6 +218,7 @@ class MultiplexerDataProvider(provider.DataProvider):
   def read_blob_sequences(
       self, experiment_id, plugin_name, downsample=None, run_tag_filter=None
   ):
+    self._validate_experiment_id(experiment_id)
     # TODO(davidsoergel, wchargin): consider images, etc.
     # Note this plugin_name can really just be 'graphs' for now; the
     # v2 cases are not handled yet.
