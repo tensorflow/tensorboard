@@ -191,11 +191,16 @@ class GraphsPluginV1Test(GraphsPluginBaseTest, tf.test.TestCase):
         },
       }
 
-    self.assertItemsEqual(expected, plugin.info_impl())
+    self.assertItemsEqual(expected, plugin.info_impl('eid'))
 
   @with_runs([_RUN_WITH_GRAPH_WITH_METADATA])
   def test_graph_simple(self, plugin):
-    graph = self._get_graph(plugin, tag=None, is_conceptual=False)
+    graph = self._get_graph(
+        plugin,
+        tag=None,
+        is_conceptual=False,
+        experiment='eid',
+    )
     node_names = set(node.name for node in graph.node)
     self.assertEqual({
         'k1', 'k2', 'pow', 'sub', 'expected', 'sub_1', 'error',
@@ -210,6 +215,7 @@ class GraphsPluginV1Test(GraphsPluginBaseTest, tf.test.TestCase):
         plugin,
         tag=None,
         is_conceptual=False,
+        experiment='eid',
         limit_attr_size=self._MESSAGE_PREFIX_LENGTH_LOWER_BOUND,
         large_attrs_key=key)
     large_attrs = {
