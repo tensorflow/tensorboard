@@ -129,8 +129,8 @@ class CallWithRetriesTest(tb_test.TestCase):
 
   def test_call_with_retries_includes_version_metadata(self):
     def digest(s):
-      """Hashes a string into a 32-bit integer."""
-      return int(hashlib.sha256(s.encode("utf-8")).hexdigest(), 16) & 0xffffffff
+      """Hashes a string into a positive 32-bit signed integer."""
+      return int(hashlib.sha256(s.encode("utf-8")).hexdigest(), 16) & 0x7fffffff
     def handler(request, context):
       metadata = context.invocation_metadata()
       client_version = grpc_util.extract_version(metadata)
