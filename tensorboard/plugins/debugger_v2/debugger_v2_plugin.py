@@ -23,7 +23,7 @@ from tensorboard.plugins import base_plugin
 class DebuggerV2Plugin(base_plugin.TBPlugin):
   """Debugger V2 Plugin for TensorBoard."""
 
-  plugin_name = "helloworld"
+  plugin_name = "debugger_v2"
 
   def __init__(self, context):
     """Instantiates Debugger V2 Plugin via TensorBoard core.
@@ -51,4 +51,5 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
   def frontend_metadata(self):
     return base_plugin.FrontendMetadata(
         es_module_path='/index.js',
-        tab_name="Debugger_V2")
+        tab_name="Debugger V2",
+        disable_reload=True)

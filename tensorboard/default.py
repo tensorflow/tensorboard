@@ -40,6 +40,7 @@ from tensorboard.plugins.beholder import beholder_plugin_loader
 from tensorboard.plugins.core import core_plugin
 from tensorboard.plugins.custom_scalar import custom_scalars_plugin
 from tensorboard.plugins.debugger import debugger_plugin_loader
+from tensorboard.plugins.debugger_v2 import debugger_v2_plugin
 from tensorboard.plugins.distribution import distributions_plugin
 from tensorboard.plugins.graph import graphs_plugin
 from tensorboard.plugins.histogram import histograms_plugin
@@ -63,6 +64,7 @@ _PLUGINS = [
     core_plugin.CorePluginLoader,
     scalars_plugin.ScalarsPlugin,
     custom_scalars_plugin.CustomScalarsPlugin,
+    debugger_v2_plugin.DebuggerV2Plugin,
     images_plugin.ImagesPlugin,
     audio_plugin.AudioPlugin,
     debugger_plugin_loader.DebuggerPluginLoader,
