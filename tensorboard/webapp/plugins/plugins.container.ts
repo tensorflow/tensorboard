@@ -98,6 +98,8 @@ export class PluginsContainer implements OnInit {
       element.style.display = 'none';
     }
 
+    console.log(`plugin:`, plugin);  // DEBUG
+    console.log(`this.pluginInstances:`, this.pluginInstances);  // DEBUG
     if (this.pluginInstances.has(plugin.id)) {
       const instance = this.pluginInstances.get(plugin.id) as HTMLElement;
       instance.style.display = null;
