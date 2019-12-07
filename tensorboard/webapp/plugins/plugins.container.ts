@@ -49,7 +49,7 @@ const lastLoadedTimeInMs = createSelector(
 
 @Component({
   selector: 'plugins',
-  template: '<div #plugins class="plugins"></div>',
+  template: '<div #plugins class="plugins"></div><debugger></debugger>',
   styles: ['.plugins { height: 100%; }', 'iframe { border: 0; }'],
 })
 export class PluginsContainer implements OnInit {

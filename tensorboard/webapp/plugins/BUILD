@@ -12,6 +12,9 @@ ng_module(
         "plugins.module.ts",
     ],
     deps = [
+        # BEGIN builtin Angular plugins.
+        "//tensorboard/plugins/debugger_v2/ng:debugger_v2",
+        # END builtin Angular plugins.
         "//tensorboard/webapp/core",
         "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/types",
