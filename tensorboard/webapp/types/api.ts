@@ -24,15 +24,15 @@ export type PluginId = string;
 export enum LoadingMechanismType {
   CUSTOM_ELEMENT = 'CUSTOM_ELEMENT',
   IFRAME = 'IFRAME',
-  NG_ELEMENT = 'NG_ELEMENT',
+  NG_COMPONENT = 'NG_COMPONENT',
   NONE = 'NONE',
 }
 
 export interface NgElementLoadingMechanism {
   /** @export */
-  type: LoadingMechanismType.NG_ELEMENT;
+  type: LoadingMechanismType.NG_COMPONENT;
   /** @export */
-  ng_element_name: string;
+  ng_selector_name: string;
 }
 
 export interface CustomElementLoadingMechanism {

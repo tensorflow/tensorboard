@@ -52,6 +52,6 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
 
   def frontend_metadata(self):
     return base_plugin.FrontendMetadata(
-        ng_element_name='tf-debugger-v2',
+        ng_selector_name='tf-debugger-v2',
         tab_name='Debugger V2',
         disable_reload=True)

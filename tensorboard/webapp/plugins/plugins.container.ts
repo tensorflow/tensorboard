@@ -58,16 +58,12 @@ const lastLoadedTimeInMs = createSelector(
 
 @Component({
   selector: 'plugins',
-  template: `
-    <div #plugins class="plugins"></div>
-  `,
+  template: '<div #plugins class="plugins"></div>',
   styles: ['.plugins { height: 100%; }', 'iframe { border: 0; }'],
 })
 export class PluginsContainer implements OnInit {
   @ViewChild('plugins', {static: true, read: ElementRef})
   private readonly pluginsContainer!: ElementRef<HTMLDivElement>;
-
-  // @ViewChild(NgPluginDirective, {static: true}) ngPluginHost: NgPluginDirective;
 
   private readonly activePlugin$ = this.store.pipe(select(activePlugin));
   private readonly lastLoadedTimeInMs$ = this.store.pipe(
@@ -135,9 +131,9 @@ export class PluginsContainer implements OnInit {
 
     let pluginElement = null;
     switch (plugin.loading_mechanism.type) {
-      case LoadingMechanismType.NG_ELEMENT: {
+      case LoadingMechanismType.NG_COMPONENT: {
         const ngElementName = (plugin.loading_mechanism as NgElementLoadingMechanism)
-          .ng_element_name;
+          .ng_selector_name;
         const ngPluginElement = this.ngPluginLoaderService.createNgPlugin(
           ngElementName,
           this.viewContainerRef,
