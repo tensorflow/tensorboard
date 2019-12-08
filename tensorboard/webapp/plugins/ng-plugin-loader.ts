@@ -13,19 +13,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-// import {Directive, ViewContainerRef} from '@angular/core';
+/**
+ * A Service that loads plugins written in Angular dynamically.
+ *
+ * This is *only* for built-in plugins of TensorBoard.
+ */
 
-// @Directive({
-//   selector: '[ng-plugin-host]',
-// })
-// export class NgPluginDirective {
-//   constructor(public viewContainerRef: ViewContainerRef) { }
-// }
-
-import {ComponentFactoryResolver, Injectable, Inject, ViewContainerRef, ViewRef} from '@angular/core';
+import {ComponentFactoryResolver, Injectable, Inject, ViewContainerRef} from '@angular/core';
 
 import {DebuggerContainer} from '../../plugins/debugger_v2/tf_debugger_v2_plugin/debugger.container';
 
+// Any built-in Angular plugin should be registered here.
 // TODO(cais): Explore tightening value type.
 const NG_PLUGINS: {[pluginName: string]: any} = {
   'tf-debugger-v2': DebuggerContainer,
@@ -35,6 +33,7 @@ const NG_PLUGINS: {[pluginName: string]: any} = {
 export class NgPluginLoaderService {
 
   private factoryResolver: ComponentFactoryResolver;
+  // The Angular ViewContainer under which the Angular components will be created.
   private rootViewContainer: ViewContainerRef | null = null;
 
   constructor(@Inject(ComponentFactoryResolver) factoryResolver: ComponentFactoryResolver) {
@@ -45,7 +44,16 @@ export class NgPluginLoaderService {
     this.rootViewContainer = viewContainerRef;
   }
 
-  addNgPlugin(ngPluginName: string): HTMLElement {
+  /**
+   * Craete an Angular plugin and attached it as to a container element.
+   *
+   * @param ngPluginName The name of the Angular plugin component to use to look
+   *   up the component.
+   * @param pluginsContainer The HTMLElement to which the HTMLElement from the
+   *   newly-created components will be appended as a child.
+   * @returns The HTMLElement of the newly created plugin component.
+   */
+  createNgPlugin(ngPluginName: string, pluginsContainer: HTMLElement): HTMLElement {
     console.log(`addNgPlugin(): ngPluginName = ${ngPluginName}`);  // DEBUG
     if (NG_PLUGINS[ngPluginName] == null) {
       throw new Error(
@@ -54,15 +62,19 @@ export class NgPluginLoaderService {
     }
     const factory = this.factoryResolver.resolveComponentFactory(
         NG_PLUGINS[ngPluginName]);
-    if (this.rootViewContainer !== null) {
-      // const viewRef = this.rootViewContainer.get(0) as ViewRef;
-      // console.log('viewRef:', viewRef);  // DEBUG
-      const component = factory.create(this.rootViewContainer.injector);
-      this.rootViewContainer.insert(component.hostView);
-      console.log('component =', component);  // DEBUG
-      return ((component.hostView as any).rootNodes as HTMLElement[])[0];
-    } else {
+    if (this.rootViewContainer == null) {
       throw new Error('Missing root view container');
     }
+    if (pluginsContainer == null) {
+      throw new Error('Missing plugins parent element.')
+    }
+    // const viewRef = this.rootViewContainer.get(0) as ViewRef;
+    // console.log('viewRef:', viewRef);  // DEBUG
+    const component = factory.create(this.rootViewContainer.injector);
+    // this.rootViewContainer.insert(component.hostView);
+    console.log('component =', component);  // DEBUG
+    const element = ((component.hostView as any).rootNodes as HTMLElement[])[0];
+    pluginsContainer.appendChild(element);
+    return element;
   }
 }

@@ -123,11 +123,12 @@ export class PluginsContainer implements OnInit {
 
     if (plugin.loading_mechanism.type == LoadingMechanismType.NG_ELEMENT) {
       const ngElementName = (plugin.loading_mechanism as NgElementLoadingMechanism).ng_element_name;
-      const ngPluginElement = this.ngPluginLoaderService.addNgPlugin(ngElementName);
+      const ngPluginElement = this.ngPluginLoaderService.createNgPlugin(
+          ngElementName, this.pluginsContainer.nativeElement);
+      this.pluginInstances.set(ngElementName, ngPluginElement);
       console.log(`ngPluginElement:`, ngPluginElement);  // dEBUG
       return;
     }
-    // console.log(`this.pluginInstances:`, this.pluginInstances);  // DEBUG
     if (this.pluginInstances.has(plugin.id)) {
       const instance = this.pluginInstances.get(plugin.id) as HTMLElement;
       instance.style.display = null;
