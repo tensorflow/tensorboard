@@ -12,15 +12,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {NgModule} from '@angular/core';
 
-import {PluginsContainer} from './plugins.container';
-import {CoreModule} from '../core/core.module';
-import {DebuggerModule} from '../../plugins/debugger_v2/tf_debugger_v2_plugin/debugger.module';
+import {enableProdMode} from '@angular/core';
+import {platformBrowser} from '@angular/platform-browser';
+import 'zone.js/dist/zone.js'; // Angular runtime dep
 
-@NgModule({
-  declarations: [PluginsContainer],
-  exports: [PluginsContainer],
-  imports: [CoreModule, DebuggerModule],
-})
-export class PluginsModule {}
+import {AppModuleNgFactory} from './app.module.ngfactory';
+
+enableProdMode();
+
+// Bootstrap needs to happen after body is ready but we cannot reliably
+// controls the order in which script gets loaded (Vulcanization inlines
+// the script in <head>).
+platformBrowser().bootstrapModuleFactory(AppModuleNgFactory);

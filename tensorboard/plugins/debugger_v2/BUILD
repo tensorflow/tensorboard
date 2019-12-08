@@ -10,10 +10,11 @@ licenses(["notice"])
 py_library(
     name = "debugger_v2_plugin",
     srcs = ["debugger_v2_plugin.py"],
+    data = ["index.js"],
     srcs_version = "PY2AND3",
     deps = [
         "//tensorboard/plugins:base_plugin",
-        # TODO(cais): Add werkzeug dependency when implementing the HTTP routes.
+        "@org_pocoo_werkzeug",
     ],
 )
 

@@ -21,7 +21,7 @@ import {Store} from '@ngrx/store';
 export interface State {}
 
 @Component({
-  selector: 'debugger',
+  selector: 'tf-debugger-v2',
   template: `
     <debugger-component></debugger-component>
   `,

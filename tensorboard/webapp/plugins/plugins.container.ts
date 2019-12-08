@@ -22,6 +22,7 @@ import {
   LoadingMechanismType,
   CustomElementLoadingMechanism,
   IframeLoadingMechanism,
+  NgElementLoadingMechanism,
 } from '../types/api';
 import {LoadState, State} from '../core/store/core.types';
 
@@ -49,7 +50,13 @@ const lastLoadedTimeInMs = createSelector(
 
 @Component({
   selector: 'plugins',
-  template: '<div #plugins class="plugins"></div><debugger></debugger>',
+  template: `
+    <div #plugins class="plugins">
+      <tf-debugger-v2></tf-debugger-v2>
+    </div>
+  `,
+  // TODO(cais): Clean up.
+  // template: '<div #plugins class="plugins"></div><debugger></debugger>',
   styles: ['.plugins { height: 100%; }', 'iframe { border: 0; }'],
 })
 export class PluginsContainer implements OnInit {
@@ -61,11 +68,20 @@ export class PluginsContainer implements OnInit {
     select(lastLoadedTimeInMs)
   );
 
+  private readonly ngPluginInstances = new Map<String, HTMLElement>();
   private readonly pluginInstances = new Map<string, HTMLElement>();
 
   constructor(private readonly store: Store<State>) {}
 
   ngOnInit() {
+    console.log('ngOnInit():', this.pluginsContainer);  // DEBUG
+
+    // Populate the list of ng (NG_ELEMENT) plugins.
+
+
+    // Hide all Angular plugins by default.
+    this.populateAndHideAllPluginsChildren();
+
     // We manually create plugin DOM (with custom tagName and script inside
     // an iframe) when the `activePlugin` changes.
     this.activePlugin$
@@ -94,12 +110,30 @@ export class PluginsContainer implements OnInit {
   }
 
   private renderPlugin(plugin: UiPluginMetadata) {
+    console.log('ng values():', this.ngPluginInstances.values());  // DEBUG
+    for (const element of this.ngPluginInstances.values()) {
+      element.style.display = 'none';
+    }
     for (const element of this.pluginInstances.values()) {
       element.style.display = 'none';
     }
 
     console.log(`plugin:`, plugin);  // DEBUG
-    console.log(`this.pluginInstances:`, this.pluginInstances);  // DEBUG
+    console.log(`plugin.id = ${plugin.id}`);  // DEBUG
+    if (plugin.loading_mechanism.type == LoadingMechanismType.NG_ELEMENT) {
+      const ngElementName = (plugin.loading_mechanism as
+          NgElementLoadingMechanism).ng_element_name.toUpperCase();
+      if (this.ngPluginInstances.has(ngElementName)) {
+        const instance = this.ngPluginInstances.get(ngElementName) as HTMLElement;
+        instance.style.display = null;
+        return;
+      }
+      throw new Error(
+          `Cannot find Angular Plugin (NG_ELEMENT-type) ${ngElementName}; ` +
+          `Available Angular Plugins are: ` +
+          `${Array.from(this.ngPluginInstances.keys())}`);
+    }
+    // console.log(`this.pluginInstances:`, this.pluginInstances);  // DEBUG
     if (this.pluginInstances.has(plugin.id)) {
       const instance = this.pluginInstances.get(plugin.id) as HTMLElement;
       instance.style.display = null;
@@ -156,6 +190,16 @@ export class PluginsContainer implements OnInit {
     if (pluginElement) {
       pluginElement.id = pluginId;
       this.pluginInstances.set(pluginId, pluginElement);
+    }
+  }
+
+  private populateAndHideAllPluginsChildren() {
+    for (let i = 0;
+         i < this.pluginsContainer.nativeElement.childElementCount; ++i) {
+      const child = this.pluginsContainer.nativeElement.children[i] as HTMLElement;
+      this.ngPluginInstances.set(child.tagName, child);
+      console.log('Added', child.tagName, child.nodeName);  // DEBUG
+      child.style.display = 'none';  // TODO(cais): Restore.
     }
   }
 }

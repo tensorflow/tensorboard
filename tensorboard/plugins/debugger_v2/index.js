@@ -13,13 +13,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {NgModule} from '@angular/core';
+/**
+ * @fileoverview This esmodule gets loaded by the dynamic plugin system.
+ */
 
-import {DebuggerContainer} from './debugger.container';
-import {DebuggerComponent} from './debugger.component';
-
-@NgModule({
-  declarations: [DebuggerComponent, DebuggerContainer],
-  exports: [DebuggerComponent, DebuggerContainer],
-})
-export class DebuggerModule {}
+export function render() {
+  console.log('In debugger_v2 index.js render()');  // DEBUG
+  const el = document.createElement('debugger');
+  document.body.appendChild(el);
+  // import('../../../helloworld_bundle.js');
+}

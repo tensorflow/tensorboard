@@ -18,6 +18,11 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import os
+
+from werkzeug import wrappers
+from werkzeug import Response
+
 from tensorboard.plugins import base_plugin
 
 class DebuggerV2Plugin(base_plugin.TBPlugin):
@@ -34,7 +39,9 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
 
   def get_plugin_apps(self):
     # TODO(cais): Add routes as they are implemented.
-    return {}
+    return {
+        '/index.js': self._serve_index,
+    }
 
   def is_active(self):
     """The Debugger V2 Plugin is always active.
@@ -50,6 +57,15 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
 
   def frontend_metadata(self):
     return base_plugin.FrontendMetadata(
-        es_module_path='/index.js',
+        ng_element_name="tf-debugger-v2",  # TODO(cais): Decide.
         tab_name="Debugger V2",
         disable_reload=True)
+
+  @wrappers.Request.application
+  def _serve_index(self, request):
+    del request  # unused
+    print("In DebuggerV2Plugin._serve_index()")  # DEBUG
+    filepath = os.path.join(os.path.dirname(__file__), "index.js")
+    with open(filepath) as infile:
+      contents = infile.read()
+    return Response(contents, content_type="application/javascript")

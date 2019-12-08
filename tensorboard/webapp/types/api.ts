@@ -24,7 +24,15 @@ export type PluginId = string;
 export enum LoadingMechanismType {
   CUSTOM_ELEMENT = 'CUSTOM_ELEMENT',
   IFRAME = 'IFRAME',
+  NG_ELEMENT = 'NG_ELEMENT',
   NONE = 'NONE',
+}
+
+export interface NgElementLoadingMechanism {
+  /** @export */
+  type: LoadingMechanismType.NG_ELEMENT;
+  /** @export */
+  ng_element_name: string;
 }
 
 export interface CustomElementLoadingMechanism {
@@ -53,6 +61,7 @@ export interface PluginMetadata {
   enabled: boolean;
   /** @export */
   loading_mechanism:
+    | NgElementLoadingMechanism
     | CustomElementLoadingMechanism
     | IframeLoadingMechanism
     | NoLoadingMechanism;

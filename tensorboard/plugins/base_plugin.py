@@ -109,6 +109,7 @@ class FrontendMetadata(object):
       self,
       disable_reload=None,
       element_name=None,
+      ng_element_name=None,
       es_module_path=None,
       remove_dom=None,
       tab_name=None,
@@ -126,6 +127,7 @@ class FrontendMetadata(object):
           defining the plugin frontend: e.g., `"tf-scalar-dashboard"`.
           A `str` or `None` (for iframed plugins). Mutually exclusive
           with `es_module_path`.
+      ng_element_name: For builtin Agnular plugins.
       es_module_path: ES module to use as an entry point to this plugin.
           A `str` that is a key in the result of `get_plugin_apps()`, or
           `None` for legacy plugins bundled with TensorBoard as part of
@@ -141,6 +143,7 @@ class FrontendMetadata(object):
     """
     self._disable_reload = False if disable_reload is None else disable_reload
     self._element_name = element_name
+    self._ng_element_name = ng_element_name
     self._es_module_path = es_module_path
     self._remove_dom = False if remove_dom is None else remove_dom
     self._tab_name = tab_name
@@ -152,6 +155,10 @@ class FrontendMetadata(object):
   @property
   def element_name(self):
     return self._element_name
+
+  @property
+  def ng_element_name(self):
+    return self._ng_element_name
 
   @property
   def es_module_path(self):
@@ -186,6 +193,7 @@ class FrontendMetadata(object):
     return hash((
         self._disable_reload,
         self._element_name,
+        self._ng_element_name,
         self._es_module_path,
         self._remove_dom,
         self._tab_name,
@@ -195,6 +203,7 @@ class FrontendMetadata(object):
     return "FrontendMetadata(%s)" % ", ".join((
         "disable_reload=%r" % self._disable_reload,
         "element_name=%r" % self._element_name,
+        "ng_element_name=%r" % self._ng_element_name,
         "es_module_path=%r" % self._es_module_path,
         "remove_dom=%r" % self._remove_dom,
         "tab_name=%r" % self._tab_name,

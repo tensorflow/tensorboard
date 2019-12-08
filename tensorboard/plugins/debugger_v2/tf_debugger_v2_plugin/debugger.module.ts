@@ -12,15 +12,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+
 import {NgModule} from '@angular/core';
 
-import {PluginsContainer} from './plugins.container';
-import {CoreModule} from '../core/core.module';
-import {DebuggerModule} from '../../plugins/debugger_v2/tf_debugger_v2_plugin/debugger.module';
+import {DebuggerComponent} from './debugger.component';
+import {DebuggerContainer} from './debugger.container';
 
 @NgModule({
-  declarations: [PluginsContainer],
-  exports: [PluginsContainer],
-  imports: [CoreModule, DebuggerModule],
+  declarations: [DebuggerComponent, DebuggerContainer],
+  exports: [DebuggerComponent, DebuggerContainer],
 })
-export class PluginsModule {}
+export class DebuggerModule {}
