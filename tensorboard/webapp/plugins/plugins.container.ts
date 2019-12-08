@@ -74,10 +74,7 @@ export class PluginsContainer implements OnInit {
   constructor(private readonly store: Store<State>) {}
 
   ngOnInit() {
-    console.log('ngOnInit():', this.pluginsContainer);  // DEBUG
-
     // Populate the list of ng (NG_ELEMENT) plugins.
-
 
     // Hide all Angular plugins by default.
     this.populateAndHideAllPluginsChildren();
@@ -110,7 +107,6 @@ export class PluginsContainer implements OnInit {
   }
 
   private renderPlugin(plugin: UiPluginMetadata) {
-    console.log('ng values():', this.ngPluginInstances.values());  // DEBUG
     for (const element of this.ngPluginInstances.values()) {
       element.style.display = 'none';
     }
@@ -118,20 +114,20 @@ export class PluginsContainer implements OnInit {
       element.style.display = 'none';
     }
 
-    console.log(`plugin:`, plugin);  // DEBUG
-    console.log(`plugin.id = ${plugin.id}`);  // DEBUG
     if (plugin.loading_mechanism.type == LoadingMechanismType.NG_ELEMENT) {
-      const ngElementName = (plugin.loading_mechanism as
-          NgElementLoadingMechanism).ng_element_name.toUpperCase();
+      const ngElementName = (plugin.loading_mechanism as NgElementLoadingMechanism).ng_element_name.toUpperCase();
       if (this.ngPluginInstances.has(ngElementName)) {
-        const instance = this.ngPluginInstances.get(ngElementName) as HTMLElement;
+        const instance = this.ngPluginInstances.get(
+          ngElementName
+        ) as HTMLElement;
         instance.style.display = null;
         return;
       }
       throw new Error(
-          `Cannot find Angular Plugin (NG_ELEMENT-type) ${ngElementName}; ` +
+        `Cannot find Angular Plugin (NG_ELEMENT-type) ${ngElementName}; ` +
           `Available Angular Plugins are: ` +
-          `${Array.from(this.ngPluginInstances.keys())}`);
+          `${Array.from(this.ngPluginInstances.keys())}`
+      );
     }
     // console.log(`this.pluginInstances:`, this.pluginInstances);  // DEBUG
     if (this.pluginInstances.has(plugin.id)) {
@@ -194,12 +190,17 @@ export class PluginsContainer implements OnInit {
   }
 
   private populateAndHideAllPluginsChildren() {
-    for (let i = 0;
-         i < this.pluginsContainer.nativeElement.childElementCount; ++i) {
-      const child = this.pluginsContainer.nativeElement.children[i] as HTMLElement;
+    for (
+      let i = 0;
+      i < this.pluginsContainer.nativeElement.childElementCount;
+      ++i
+    ) {
+      const child = this.pluginsContainer.nativeElement.children[
+        i
+      ] as HTMLElement;
       this.ngPluginInstances.set(child.tagName, child);
-      console.log('Added', child.tagName, child.nodeName);  // DEBUG
-      child.style.display = 'none';  // TODO(cais): Restore.
+      console.log('Added', child.tagName, child.nodeName); // DEBUG
+      child.style.display = 'none'; // TODO(cais): Restore.
     }
   }
 }
