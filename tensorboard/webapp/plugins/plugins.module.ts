@@ -16,11 +16,15 @@ import {NgModule} from '@angular/core';
 
 import {PluginsContainer} from './plugins.container';
 import {CoreModule} from '../core/core.module';
+import {DebuggerContainer} from '../../plugins/debugger_v2/tf_debugger_v2_plugin/debugger.container';
 import {DebuggerModule} from '../../plugins/debugger_v2/tf_debugger_v2_plugin/debugger.module';
+import {NgPluginLoaderService} from './ng-plugin-loader';
 
 @NgModule({
   declarations: [PluginsContainer],
   exports: [PluginsContainer],
   imports: [CoreModule, DebuggerModule],
+  providers: [NgPluginLoaderService],
+  entryComponents: [DebuggerContainer]
 })
 export class PluginsModule {}

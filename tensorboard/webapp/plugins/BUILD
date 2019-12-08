@@ -8,13 +8,12 @@ licenses(["notice"])  # Apache 2.0
 ng_module(
     name = "plugins",
     srcs = [
+        "ng-plugin-loader.ts",
         "plugins.container.ts",
         "plugins.module.ts",
     ],
     deps = [
-        # BEGIN builtin Angular plugins.
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin:debugger_v2",
-        # END builtin Angular plugins.
         "//tensorboard/webapp/core",
         "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/types",
@@ -33,6 +32,7 @@ tf_ts_library(
     tsconfig = "//:tsconfig-test",
     deps = [
         ":plugins",
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin:debugger_v2",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/core",
         "//tensorboard/webapp/core/store",
