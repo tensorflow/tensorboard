@@ -27,7 +27,5 @@ export interface State {}
   `,
 })
 export class DebuggerContainer {
-  constructor(private readonly store: Store<State>) {
-    console.log('In DebuggerContainer constructor'); // DEBUG
-  }
+  constructor(private readonly store: Store<State>) {}
 }

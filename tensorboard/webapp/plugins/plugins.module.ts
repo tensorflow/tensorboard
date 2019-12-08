@@ -25,6 +25,6 @@ import {NgPluginLoaderService} from './ng-plugin-loader';
   exports: [PluginsContainer],
   imports: [CoreModule, DebuggerModule],
   providers: [NgPluginLoaderService],
-  entryComponents: [DebuggerContainer]
+  entryComponents: [DebuggerContainer],
 })
 export class PluginsModule {}

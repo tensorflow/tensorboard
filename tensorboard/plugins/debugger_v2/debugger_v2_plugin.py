@@ -18,8 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import os
-
 from tensorboard.plugins import base_plugin
 
 
@@ -40,19 +38,20 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
     return {}
 
   def is_active(self):
-    """The Debugger V2 Plugin is always active.
+    """Check whether the Debugger V2 Plugin is always active.
 
     When no data in the tfdbg v2 format is available, a custom information
     screen is displayed to instruct the user on how to generate such data
     to be able to use the plugin.
 
     Returns:
-      `True` indicating that the plugin is active.
+      `True` if and only if data in tfdbg v2's DebugEvent format is available.
     """
-    return True
+    # TODO(cais): Implement logic.
+    return False
 
   def frontend_metadata(self):
     return base_plugin.FrontendMetadata(
-        ng_element_name="tf-debugger-v2",
-        tab_name="Debugger V2",
+        ng_element_name='tf-debugger-v2',
+        tab_name='Debugger V2',
         disable_reload=True)

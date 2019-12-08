@@ -12,7 +12,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, ElementRef, ViewChild, OnInit, Inject, ViewContainerRef} from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  ViewChild,
+  OnInit,
+  Inject,
+  ViewContainerRef,
+} from '@angular/core';
 import {Store, select, createSelector} from '@ngrx/store';
 import {filter, distinctUntilChanged} from 'rxjs/operators';
 
@@ -52,8 +59,7 @@ const lastLoadedTimeInMs = createSelector(
 @Component({
   selector: 'plugins',
   template: `
-    <div #plugins class="plugins">
-    </div>
+    <div #plugins class="plugins"></div>
   `,
   styles: ['.plugins { height: 100%; }', 'iframe { border: 0; }'],
 })
@@ -68,24 +74,21 @@ export class PluginsContainer implements OnInit {
     select(lastLoadedTimeInMs)
   );
 
-  private readonly ngPluginInstances = new Map<String, HTMLElement>();
   private readonly pluginInstances = new Map<string, HTMLElement>();
-  private readonly ngPluginLoaderService: NgPluginLoaderService;
 
-  constructor(private readonly store: Store<State>,
-              @Inject(NgPluginLoaderService) ngPluginLoaderService: NgPluginLoaderService,
-              @Inject(ViewContainerRef) viewContainerRef: ViewContainerRef) {
+  private readonly ngPluginLoaderService: NgPluginLoaderService;
+  private readonly viewContainerRef: ViewContainerRef;
+
+  constructor(
+    private readonly store: Store<State>,
+    @Inject(NgPluginLoaderService) ngPluginLoaderService: NgPluginLoaderService,
+    @Inject(ViewContainerRef) viewContainerRef: ViewContainerRef
+  ) {
     this.ngPluginLoaderService = ngPluginLoaderService;
-    this.ngPluginLoaderService.setRootViewContainerRef(viewContainerRef);
+    this.viewContainerRef = viewContainerRef;
   }
 
   ngOnInit() {
-    console.log('this.ngPluginLoaderService:', this.ngPluginLoaderService);  // DEBUG
-    // Populate the list of ng (NG_ELEMENT) plugins.
-
-    // Hide all Angular plugins by default.
-    this.populateAndHideAllPluginsChildren();
-
     // We manually create plugin DOM (with custom tagName and script inside
     // an iframe) when the `activePlugin` changes.
     this.activePlugin$
@@ -114,21 +117,10 @@ export class PluginsContainer implements OnInit {
   }
 
   private renderPlugin(plugin: UiPluginMetadata) {
-    for (const element of this.ngPluginInstances.values()) {
-      element.style.display = 'none';
-    }
     for (const element of this.pluginInstances.values()) {
       element.style.display = 'none';
     }
 
-    if (plugin.loading_mechanism.type == LoadingMechanismType.NG_ELEMENT) {
-      const ngElementName = (plugin.loading_mechanism as NgElementLoadingMechanism).ng_element_name;
-      const ngPluginElement = this.ngPluginLoaderService.createNgPlugin(
-          ngElementName, this.pluginsContainer.nativeElement);
-      this.pluginInstances.set(ngElementName, ngPluginElement);
-      console.log(`ngPluginElement:`, ngPluginElement);  // dEBUG
-      return;
-    }
     if (this.pluginInstances.has(plugin.id)) {
       const instance = this.pluginInstances.get(plugin.id) as HTMLElement;
       instance.style.display = null;
@@ -143,6 +135,17 @@ export class PluginsContainer implements OnInit {
 
     let pluginElement = null;
     switch (plugin.loading_mechanism.type) {
+      case LoadingMechanismType.NG_ELEMENT: {
+        const ngElementName = (plugin.loading_mechanism as NgElementLoadingMechanism)
+          .ng_element_name;
+        const ngPluginElement = this.ngPluginLoaderService.createNgPlugin(
+          ngElementName,
+          this.viewContainerRef,
+          this.pluginsContainer.nativeElement
+        );
+        this.pluginInstances.set(plugin.id, ngPluginElement);
+        return;
+      }
       case LoadingMechanismType.CUSTOM_ELEMENT: {
         const customElementPlugin = plugin.loading_mechanism as CustomElementLoadingMechanism;
         pluginElement = document.createElement(
@@ -185,21 +188,6 @@ export class PluginsContainer implements OnInit {
     if (pluginElement) {
       pluginElement.id = pluginId;
       this.pluginInstances.set(pluginId, pluginElement);
-    }
-  }
-
-  private populateAndHideAllPluginsChildren() {
-    for (
-      let i = 0;
-      i < this.pluginsContainer.nativeElement.childElementCount;
-      ++i
-    ) {
-      const child = this.pluginsContainer.nativeElement.children[
-        i
-      ] as HTMLElement;
-      this.ngPluginInstances.set(child.tagName, child);
-      console.log('Added', child.tagName, child.nodeName); // DEBUG
-      child.style.display = 'none'; // TODO(cais): Restore.
     }
   }
 }

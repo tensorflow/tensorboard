@@ -30,7 +30,6 @@ import {NgPluginLoaderService} from './ng-plugin-loader';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
-
 describe('plugins.component', () => {
   let store: MockStore<State>;
   const INITIAL_CORE_STATE: Partial<CoreState> = {
@@ -68,7 +67,11 @@ describe('plugins.component', () => {
     );
     await TestBed.configureTestingModule({
       imports: [DebuggerModule],
-      providers: [provideMockStore({initialState}), PluginsContainer, NgPluginLoaderService],
+      providers: [
+        provideMockStore({initialState}),
+        PluginsContainer,
+        NgPluginLoaderService,
+      ],
       declarations: [PluginsContainer],
     }).compileComponents();
     store = TestBed.get(Store);

@@ -34,6 +34,12 @@ class DebuggerV2PluginTest(tf.test.TestCase):
     plugin = debugger_v2_plugin.DebuggerV2Plugin(context)
     self.assertTrue(plugin)
 
+  def testPluginIsNotActiveByDefault(self):
+    dummy_logdir = tempfile.mkdtemp()
+    context = base_plugin.TBContext(logdir=dummy_logdir)
+    plugin = debugger_v2_plugin.DebuggerV2Plugin(context)
+    self.assertFalse(plugin.is_active())
+
 
 if __name__ == "__main__":
   tf.test.main()
