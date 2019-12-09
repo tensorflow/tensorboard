@@ -9,12 +9,17 @@ ng_module(
     name = "plugins",
     srcs = [
         "plugins.container.ts",
+        "plugins.component.ts",
         "plugins.module.ts",
+    ],
+    assets = [
+        "plugins.component.html",
     ],
     deps = [
         "//tensorboard/webapp/core",
         "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/types",
+        "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
         "@npm//rxjs",
