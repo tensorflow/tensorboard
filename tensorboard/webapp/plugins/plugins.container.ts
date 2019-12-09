@@ -134,13 +134,12 @@ export class PluginsContainer implements OnInit {
       case LoadingMechanismType.NG_COMPONENT: {
         const ngElementName = (plugin.loading_mechanism as NgElementLoadingMechanism)
           .ng_selector_name;
-        const ngPluginElement = this.ngPluginLoaderService.createNgPlugin(
+        pluginElement = this.ngPluginLoaderService.createNgPlugin(
           ngElementName,
           this.viewContainerRef,
           this.pluginsContainer.nativeElement
         );
-        this.pluginInstances.set(plugin.id, ngPluginElement);
-        return;
+        break;
       }
       case LoadingMechanismType.CUSTOM_ELEMENT: {
         const customElementPlugin = plugin.loading_mechanism as CustomElementLoadingMechanism;
