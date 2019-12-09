@@ -116,7 +116,7 @@ class GraphsPlugin(base_plugin.TBPlugin):
       for (run_name, tag_to_time_series) in six.iteritems(mapping):
         for tag in tag_to_time_series:
           (run_item, tag_item) = add_row_item(run_name, tag)
-          run_item['op_graph'] = True
+          run_item['run_graph'] = True
           if tag_item:
             tag_item['op_graph'] = True
       return result
@@ -249,7 +249,7 @@ class GraphsPlugin(base_plugin.TBPlugin):
     """Given a single run, return the graph definition in protobuf format."""
     experiment = plugin_util.experiment_id(request.environ)
     run = request.args.get('run')
-    tag = request.args.get('tag', '')
+    tag = request.args.get('tag')
     conceptual_arg = request.args.get('conceptual', False)
     is_conceptual = True if conceptual_arg == 'true' else False
 
