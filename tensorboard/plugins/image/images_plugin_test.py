@@ -126,8 +126,6 @@ class ImagesPluginTest(tf.test.TestCase):
 
     # Verify that the 1st entry is correct.
     entry = entries[0]
-    self.assertEqual(42, entry["width"])
-    self.assertEqual(16, entry["height"])
     self.assertEqual(0, entry["step"])
     parsed_query = urllib.parse.parse_qs(entry["query"])
     self.assertListEqual(["foo"], parsed_query["run"])
@@ -137,8 +135,6 @@ class ImagesPluginTest(tf.test.TestCase):
 
     # Verify that the 2nd entry is correct.
     entry = entries[1]
-    self.assertEqual(42, entry["width"])
-    self.assertEqual(16, entry["height"])
     self.assertEqual(1, entry["step"])
     parsed_query = urllib.parse.parse_qs(entry["query"])
     self.assertListEqual(["foo"], parsed_query["run"])
@@ -158,8 +154,6 @@ class ImagesPluginTest(tf.test.TestCase):
 
     # Verify that the 1st entry is correct.
     entry = entries[0]
-    self.assertEqual(6, entry["width"])
-    self.assertEqual(8, entry["height"])
     self.assertEqual(0, entry["step"])
     parsed_query = urllib.parse.parse_qs(entry["query"])
     self.assertListEqual(["bar"], parsed_query["run"])
@@ -169,8 +163,6 @@ class ImagesPluginTest(tf.test.TestCase):
 
     # Verify that the 2nd entry is correct.
     entry = entries[1]
-    self.assertEqual(6, entry["width"])
-    self.assertEqual(8, entry["height"])
     self.assertEqual(1, entry["step"])
     parsed_query = urllib.parse.parse_qs(entry["query"])
     self.assertListEqual(["bar"], parsed_query["run"])
