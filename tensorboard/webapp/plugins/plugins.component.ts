@@ -12,6 +12,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+/**
+ * Renders an active plugin's dashboard.
+ *
+ * Note that, for Polymer and iframe-based dashboards, it caches the DOM elements.
+ */
+
 import {
   ChangeDetectionStrategy,
   Component,
@@ -71,12 +77,14 @@ export class PluginsComponent implements OnChanges {
       return;
     }
 
-    this.appendPlugin(plugin);
+    const pluginElement = this.createPlugin(plugin);
+    if (pluginElement) {
+      pluginElement.id = plugin.id;
+      this.pluginInstances.set(plugin.id, pluginElement);
+    }
   }
 
-  private appendPlugin(plugin: UiPluginMetadata) {
-    const pluginId = plugin.id;
-
+  private createPlugin(plugin: UiPluginMetadata): HTMLElement | null {
     let pluginElement = null;
     switch (plugin.loading_mechanism.type) {
       case LoadingMechanismType.CUSTOM_ELEMENT: {
@@ -96,14 +104,11 @@ export class PluginsComponent implements OnChanges {
         break;
       }
       case LoadingMechanismType.NONE:
-        return;
+        break;
       default:
         console.error('Unexpected plugin');
     }
-    if (pluginElement) {
-      pluginElement.id = pluginId;
-      this.pluginInstances.set(pluginId, pluginElement);
-    }
+    return pluginElement;
   }
 
   private reload() {
