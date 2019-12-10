@@ -27,7 +27,7 @@ import {State} from '../core/store';
 import {CoreState} from '../core/store/core.types';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
-import { DebuggerModule } from '../../plugins/debugger_v2/tf_debugger_v2_plugin/debugger.module';
+import {DebuggerModule} from '../../plugins/debugger_v2/tf_debugger_v2_plugin/debugger.module';
 
 describe('plugins.component', () => {
   let store: MockStore<State>;

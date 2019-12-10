@@ -31,8 +31,6 @@ export enum LoadingMechanismType {
 export interface NgElementLoadingMechanism {
   /** @export */
   type: LoadingMechanismType.NG_COMPONENT;
-  /** @export */
-  ng_selector_name: string;
 }
 
 export interface CustomElementLoadingMechanism {
