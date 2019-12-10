@@ -8,15 +8,19 @@ licenses(["notice"])  # Apache 2.0
 ng_module(
     name = "plugins",
     srcs = [
-        "ng-plugin-loader.ts",
         "plugins.container.ts",
+        "plugins.component.ts",
         "plugins.module.ts",
+    ],
+    assets = [
+        "plugins.component.html",
     ],
     deps = [
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin:debugger_v2",
         "//tensorboard/webapp/core",
         "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/types",
+        "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
         "@npm//rxjs",

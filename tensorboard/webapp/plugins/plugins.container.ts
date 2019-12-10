@@ -12,31 +12,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {
-  Component,
-  ElementRef,
-  ViewChild,
-  OnInit,
-  Inject,
-  ViewContainerRef,
-} from '@angular/core';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {Store, select, createSelector} from '@ngrx/store';
-import {filter, distinctUntilChanged} from 'rxjs/operators';
 
 import {getPlugins, getActivePlugin, getPluginsListLoaded} from '../core/store';
-import {
-  PluginMetadata,
-  LoadingMechanismType,
-  CustomElementLoadingMechanism,
-  IframeLoadingMechanism,
-  NgElementLoadingMechanism,
-} from '../types/api';
+import {PluginMetadata} from '../types/api';
 import {LoadState, State} from '../core/store/core.types';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
-import {NgPluginLoaderService} from './ng-plugin-loader';
 
-interface UiPluginMetadata extends PluginMetadata {
+export interface UiPluginMetadata extends PluginMetadata {
   id: string;
 }
 
@@ -58,131 +43,18 @@ const lastLoadedTimeInMs = createSelector(
 
 @Component({
   selector: 'plugins',
-  template: '<div #plugins class="plugins"></div>',
-  styles: ['.plugins { height: 100%; }', 'iframe { border: 0; }'],
+  template: `
+    <plugins-component
+      [activePlugin]="activePlugin$ | async"
+      [lastUpdated]="lastLoadedTimeInMs$ | async"
+    ></plugins-component>
+  `,
+  styles: ['plugins-component { height: 100%; }'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PluginsContainer implements OnInit {
-  @ViewChild('plugins', {static: true, read: ElementRef})
-  private readonly pluginsContainer!: ElementRef<HTMLDivElement>;
+export class PluginsContainer {
+  readonly activePlugin$ = this.store.pipe(select(activePlugin));
+  readonly lastLoadedTimeInMs$ = this.store.pipe(select(lastLoadedTimeInMs));
 
-  private readonly activePlugin$ = this.store.pipe(select(activePlugin));
-  private readonly lastLoadedTimeInMs$ = this.store.pipe(
-    select(lastLoadedTimeInMs)
-  );
-
-  private readonly pluginInstances = new Map<string, HTMLElement>();
-
-  private readonly ngPluginLoaderService: NgPluginLoaderService;
-  private readonly viewContainerRef: ViewContainerRef;
-
-  constructor(
-    private readonly store: Store<State>,
-    @Inject(NgPluginLoaderService) ngPluginLoaderService: NgPluginLoaderService,
-    @Inject(ViewContainerRef) viewContainerRef: ViewContainerRef
-  ) {
-    this.ngPluginLoaderService = ngPluginLoaderService;
-    this.viewContainerRef = viewContainerRef;
-  }
-
-  ngOnInit() {
-    // We manually create plugin DOM (with custom tagName and script inside
-    // an iframe) when the `activePlugin` changes.
-    this.activePlugin$
-      .pipe(
-        filter(Boolean),
-        distinctUntilChanged(
-          (prev: UiPluginMetadata, curr: UiPluginMetadata) =>
-            prev.id === curr.id
-        )
-      )
-      .subscribe((plugin: UiPluginMetadata) => this.renderPlugin(plugin));
-
-    this.lastLoadedTimeInMs$
-      .pipe(
-        filter(Boolean),
-        distinctUntilChanged()
-      )
-      .subscribe(() => {
-        for (const instance of this.pluginInstances.values()) {
-          const maybePolymerDashboard = instance as any;
-          if (maybePolymerDashboard.reload) {
-            maybePolymerDashboard.reload();
-          }
-        }
-      });
-  }
-
-  private renderPlugin(plugin: UiPluginMetadata) {
-    for (const element of this.pluginInstances.values()) {
-      element.style.display = 'none';
-    }
-
-    if (this.pluginInstances.has(plugin.id)) {
-      const instance = this.pluginInstances.get(plugin.id) as HTMLElement;
-      instance.style.display = null;
-      return;
-    }
-
-    this.appendPlugin(plugin);
-  }
-
-  private appendPlugin(plugin: UiPluginMetadata) {
-    const pluginId = plugin.id;
-
-    let pluginElement = null;
-    switch (plugin.loading_mechanism.type) {
-      case LoadingMechanismType.NG_COMPONENT: {
-        const ngElementName = (plugin.loading_mechanism as NgElementLoadingMechanism)
-          .ng_selector_name;
-        pluginElement = this.ngPluginLoaderService.createNgPlugin(
-          ngElementName,
-          this.viewContainerRef,
-          this.pluginsContainer.nativeElement
-        );
-        break;
-      }
-      case LoadingMechanismType.CUSTOM_ELEMENT: {
-        const customElementPlugin = plugin.loading_mechanism as CustomElementLoadingMechanism;
-        pluginElement = document.createElement(
-          customElementPlugin.element_name
-        );
-        this.pluginsContainer.nativeElement.appendChild(pluginElement);
-        break;
-      }
-      case LoadingMechanismType.IFRAME: {
-        const iframePlugin = plugin.loading_mechanism as IframeLoadingMechanism;
-        pluginElement = document.createElement('iframe');
-        this.pluginsContainer.nativeElement.appendChild(pluginElement);
-        const subdocument = pluginElement.contentDocument as HTMLDocument;
-        const script = subdocument.createElement('script');
-        const baseHrefString = JSON.stringify(
-          new URL(`data/${pluginId}/`, window.location.href)
-        );
-        const moduleString = JSON.stringify(iframePlugin.module_path);
-        script.textContent = [
-          // `setTimeout(..., 0)` and the late `<base>` configuration
-          // (in the inline script rather than the host) are needed to
-          // work around a Firefox bug:
-          // https://github.com/tensorflow/tensorboard/issues/2536
-          `setTimeout(() => {`,
-          `  const base = document.createElement("base");`,
-          `  base.setAttribute("href", ${baseHrefString});`,
-          `  document.head.appendChild(base);`,
-          `  import(${moduleString}).then((m) => void m.render());`,
-          `}, 0);`,
-        ].join('\n');
-        subdocument.body.appendChild(script);
-        break;
-      }
-      case LoadingMechanismType.NONE: {
-        return;
-      }
-      default:
-        console.error('Unexpected plugin');
-    }
-    if (pluginElement) {
-      pluginElement.id = pluginId;
-      this.pluginInstances.set(pluginId, pluginElement);
-    }
-  }
+  constructor(private readonly store: Store<State>) {}
 }

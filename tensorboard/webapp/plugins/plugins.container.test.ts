@@ -18,15 +18,13 @@ import {Store} from '@ngrx/store';
 import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
 import {PluginsContainer} from './plugins.container';
+import {PluginsComponent} from './plugins.component';
 
 import {PluginId, LoadingMechanismType, LoadState} from '../types/api';
 import {createState, createCoreState} from '../core/testing';
 import {State} from '../core/store';
 // store/index.ts doesn't export this, but it's OK to use for testing
 import {CoreState} from '../core/store/core.types';
-
-import {DebuggerModule} from '../../plugins/debugger_v2/tf_debugger_v2_plugin/debugger.module';
-import {NgPluginLoaderService} from './ng-plugin-loader';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
@@ -66,13 +64,8 @@ describe('plugins.component', () => {
       })
     );
     await TestBed.configureTestingModule({
-      imports: [DebuggerModule],
-      providers: [
-        provideMockStore({initialState}),
-        PluginsContainer,
-        NgPluginLoaderService,
-      ],
-      declarations: [PluginsContainer],
+      providers: [provideMockStore({initialState}), PluginsContainer],
+      declarations: [PluginsContainer, PluginsComponent],
     }).compileComponents();
     store = TestBed.get(Store);
   });
@@ -125,9 +118,7 @@ describe('plugins.component', () => {
       const pluginElement = nativeElement.children[0];
       expect(pluginElement.tagName).toBe('IFRAME');
       expect(pluginElement.id).toBe('foo');
-      expect(pluginElement.contentDocument.body.innerHTML).toContain(
-        'random_esmodule.js'
-      );
+      expect(pluginElement.src).toContain('data/plugin_entry.html?name=foo');
     });
 
     it('keeps instance of plugin after being inactive but hides it', async () => {

@@ -173,12 +173,8 @@ class GraphsPluginV1Test(GraphsPluginBaseTest, tf.test.TestCase):
         'run': '_RUN_WITH_GRAPH_WITHOUT_METADATA',
         'run_graph': True,
         'tags': {},
-      }
-    }
-
-    if not plugin._data_provider:
-      # Hack, for now.
-      expected['_RUN_WITHOUT_GRAPH_WITH_METADATA'] = {
+      },
+      '_RUN_WITHOUT_GRAPH_WITH_METADATA': {
         'run': '_RUN_WITHOUT_GRAPH_WITH_METADATA',
         'run_graph': False,
         'tags': {
@@ -189,9 +185,18 @@ class GraphsPluginV1Test(GraphsPluginBaseTest, tf.test.TestCase):
             'op_graph': False,
           },
         },
-      }
+      },
+    }
 
-    self.assertItemsEqual(expected, plugin.info_impl('eid'))
+    if plugin._data_provider:
+      # Hack, for now.
+      # Data providers don't yet pass RunMetadata, so this entry excludes it.
+      expected['_RUN_WITH_GRAPH_WITH_METADATA']['tags'] = {}
+      # Data providers don't yet pass RunMetadata, so this entry is completely omitted.
+      del expected['_RUN_WITHOUT_GRAPH_WITH_METADATA']
+
+    actual = plugin.info_impl('eid')
+    self.assertEqual(expected, actual)
 
   @with_runs([_RUN_WITH_GRAPH_WITH_METADATA])
   def test_graph_simple(self, plugin):
