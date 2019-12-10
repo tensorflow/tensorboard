@@ -1,4 +1,4 @@
-<!--
+  <!--
 @license
 Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 
@@ -21,5 +21,12 @@ limitations under the License.
 >
   <!-- let Polymer-based components render from JS -->
   <!-- let iframe based component render from JS to prevent flickering from prop changes. -->
-  <!-- render other class of plugins with *ngSwitchCase statement. -->
+
+  <!-- render Angular built-in plugins with *ngSwitchCase statement. -->
+  <ng-container
+    *ngSwitchCase="LoadingMechanismType.NG_COMPONENT"
+    [ngSwitch]="activePlugin?.id"
+  >
+    <tf-debugger-v2 *ngSwitchCase="'debugger-v2'"></tf-debugger-v2>
+  </ng-container>
 </div>

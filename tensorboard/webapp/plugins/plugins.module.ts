@@ -15,6 +15,7 @@ limitations under the License.
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 
+import {DebuggerModule} from '../../plugins/debugger_v2/tf_debugger_v2_plugin/debugger.module';
 import {PluginsContainer} from './plugins.container';
 import {PluginsComponent} from './plugins.component';
 import {CoreModule} from '../core/core.module';
@@ -22,6 +23,6 @@ import {CoreModule} from '../core/core.module';
 @NgModule({
   declarations: [PluginsContainer, PluginsComponent],
   exports: [PluginsContainer],
-  imports: [CoreModule, CommonModule],
+  imports: [CoreModule, CommonModule, DebuggerModule],
 })
 export class PluginsModule {}

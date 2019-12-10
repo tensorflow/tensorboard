@@ -20,6 +20,6 @@ import {DebuggerContainer} from './debugger.container';
 
 @NgModule({
   declarations: [DebuggerComponent, DebuggerContainer],
-  exports: [DebuggerComponent, DebuggerContainer],
+  exports: [DebuggerContainer],
 })
 export class DebuggerModule {}
