@@ -18,6 +18,7 @@ import {Store} from '@ngrx/store';
 import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
 import {PluginsContainer} from './plugins.container';
+import {PluginsComponent} from './plugins.component';
 
 import {PluginId, LoadingMechanismType, LoadState} from '../types/api';
 import {createState, createCoreState} from '../core/testing';
@@ -64,7 +65,7 @@ describe('plugins.component', () => {
     );
     await TestBed.configureTestingModule({
       providers: [provideMockStore({initialState}), PluginsContainer],
-      declarations: [PluginsContainer],
+      declarations: [PluginsContainer, PluginsComponent],
     }).compileComponents();
     store = TestBed.get(Store);
   });
@@ -117,9 +118,7 @@ describe('plugins.component', () => {
       const pluginElement = nativeElement.children[0];
       expect(pluginElement.tagName).toBe('IFRAME');
       expect(pluginElement.id).toBe('foo');
-      expect(pluginElement.contentDocument.body.innerHTML).toContain(
-        'random_esmodule.js'
-      );
+      expect(pluginElement.src).toContain('data/plugin_entry.html?name=foo');
     });
 
     it('keeps instance of plugin after being inactive but hides it', async () => {

@@ -13,13 +13,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {NgModule} from '@angular/core';
+import {CommonModule} from '@angular/common';
 
 import {PluginsContainer} from './plugins.container';
+import {PluginsComponent} from './plugins.component';
 import {CoreModule} from '../core/core.module';
 
 @NgModule({
-  declarations: [PluginsContainer],
+  declarations: [PluginsContainer, PluginsComponent],
   exports: [PluginsContainer],
-  imports: [CoreModule],
+  imports: [CoreModule, CommonModule],
 })
 export class PluginsModule {}
