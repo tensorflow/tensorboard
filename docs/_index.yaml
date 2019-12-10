@@ -38,7 +38,7 @@ landing_page:
       buttons:
       - label: Watch the video
         path: https://www.youtube.com/watch?v=xM8sO33x_OU
-    - heading: "Hands-on TensorBoard"
+    - heading: "Hands-on TensorBoard  (TF Dev Summit '17)"
       youtube_id: eBbEDRsCmv4
       buttons:
       - label: Watch the video
