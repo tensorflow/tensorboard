@@ -20,7 +20,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import cgi
 import datetime
 import errno
 import json
@@ -29,6 +28,15 @@ import shlex
 import sys
 import textwrap
 import time
+
+try:
+  import html
+  html_escape = html.escape
+  del html
+except ImportError:
+  import cgi
+  html_escape = cgi.escape
+  del cgi
 
 from tensorboard import manager
 
@@ -380,7 +388,7 @@ def _display_ipython(port, height, display_handle):
       </script>
   """
   replacements = [
-      ("%HTML_ID%", cgi.escape(frame_id, quote=True)),
+      ("%HTML_ID%", html_escape(frame_id, quote=True)),
       ("%JSON_ID%", json.dumps(frame_id)),
       ("%PORT%", "%d" % port),
       ("%HEIGHT%", "%d" % height),
