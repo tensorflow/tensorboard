@@ -20,7 +20,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import cgi
 import datetime
 import errno
 import json
@@ -29,6 +28,11 @@ import shlex
 import sys
 import textwrap
 import time
+
+if sys.version_info >= (3, 8):
+  import html as cgi
+else:
+  import cgi
 
 from tensorboard import manager
 
