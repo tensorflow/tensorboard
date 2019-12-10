@@ -29,10 +29,14 @@ import sys
 import textwrap
 import time
 
-if sys.version_info >= (3, 8):
-  import html as cgi
-else:
+try:
+  import html
+  html_escape = html.escape
+  del html
+except ImportError:
   import cgi
+  html_escape = cgi.escape
+  del cgi
 
 from tensorboard import manager
 
@@ -384,7 +388,7 @@ def _display_ipython(port, height, display_handle):
       </script>
   """
   replacements = [
-      ("%HTML_ID%", cgi.escape(frame_id, quote=True)),
+      ("%HTML_ID%", html_escape(frame_id, quote=True)),
       ("%JSON_ID%", json.dumps(frame_id)),
       ("%PORT%", "%d" % port),
       ("%HEIGHT%", "%d" % height),
