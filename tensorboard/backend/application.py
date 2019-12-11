@@ -443,7 +443,6 @@ class TensorBoardWSGI(object):
           raise ValueError(
               'Plugin %r declared as both Angular built-in and legacy' %
               plugin.plugin_name)
-
         if es_module_handler is not None:
           raise ValueError(
               'Plugin %r declared as both Angular built-in and iframed' %
