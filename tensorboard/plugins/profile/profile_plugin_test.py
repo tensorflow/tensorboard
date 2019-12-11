@@ -25,7 +25,7 @@ import tensorflow as tf
 from werkzeug import Request
 
 from tensorboard.backend.event_processing import plugin_asset_util
-from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
+from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.profile import profile_plugin
 from tensorboard.plugins.profile import trace_events_pb2

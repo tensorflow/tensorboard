@@ -25,7 +25,7 @@ import six
 from six.moves import queue, xrange  # pylint: disable=redefined-builtin
 
 from tensorboard.backend.event_processing import directory_watcher
-from tensorboard.backend.event_processing import plugin_event_accumulator as event_accumulator  # pylint: disable=line-too-long
+from tensorboard.backend.event_processing import plugin_event_accumulator as event_accumulator
 from tensorboard.backend.event_processing import io_wrapper
 from tensorboard.util import tb_logging
 

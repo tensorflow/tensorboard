@@ -26,7 +26,7 @@ import numpy as np
 import six
 import tensorflow as tf
 
-from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
+from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.pr_curve import pr_curve_demo
 from tensorboard.plugins.pr_curve import pr_curves_plugin
