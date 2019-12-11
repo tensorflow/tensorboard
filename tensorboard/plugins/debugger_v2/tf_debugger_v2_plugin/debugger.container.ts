@@ -12,17 +12,20 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {NgModule} from '@angular/core';
-import {CommonModule} from '@angular/common';
+import {Component} from '@angular/core';
+import {Store} from '@ngrx/store';
 
-import {DebuggerModule} from '../../plugins/debugger_v2/tf_debugger_v2_plugin/debugger.module';
-import {PluginsContainer} from './plugins.container';
-import {PluginsComponent} from './plugins.component';
-import {CoreModule} from '../core/core.module';
+/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
-@NgModule({
-  declarations: [PluginsContainer, PluginsComponent],
-  exports: [PluginsContainer],
-  imports: [CoreModule, CommonModule, DebuggerModule],
+// TODO(cais): Move to a separate file.
+export interface State {}
+
+@Component({
+  selector: 'tf-debugger-v2',
+  template: `
+    <debugger-component></debugger-component>
+  `,
 })
-export class PluginsModule {}
+export class DebuggerContainer {
+  constructor(private readonly store: Store<State>) {}
+}

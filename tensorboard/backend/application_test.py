@@ -91,6 +91,7 @@ class FakePlugin(base_plugin.TBPlugin):
                routes_mapping={},
                element_name_value=None,
                es_module_path_value=None,
+               is_ng_component=False,
                construction_callback=None):
     """Constructs a fake plugin.
 
@@ -103,6 +104,8 @@ class FakePlugin(base_plugin.TBPlugin):
         method called when a user issues a request to that route.
       es_module_path_value: An optional string value that indicates a frontend
         module entry to the plugin. Must be one of the keys of routes_mapping.
+      is_ng_component: Whether this plugin is of the built-in Angular-based
+        type.
       construction_callback: An optional callback called when the plugin is
         constructed. The callback is passed the TBContext.
     """
@@ -111,6 +114,7 @@ class FakePlugin(base_plugin.TBPlugin):
     self._routes_mapping = routes_mapping
     self._element_name_value = element_name_value
     self._es_module_path_value = es_module_path_value
+    self._is_ng_component = is_ng_component
 
     if construction_callback:
       construction_callback(context)
@@ -135,6 +139,7 @@ class FakePlugin(base_plugin.TBPlugin):
     return base_plugin.FrontendMetadata(
         element_name=self._element_name_value,
         es_module_path=self._es_module_path_value,
+        is_ng_component=self._is_ng_component,
     )
 
 
@@ -219,6 +224,11 @@ class ApplicationTest(tb_test.TestCase):
             },
             es_module_path_value='/esmodule'
         ),
+        FakePlugin(
+            plugin_name='qux',
+            is_active_value=False,
+            is_ng_component=True,
+        ),
     ]
     app = application.TensorBoardWSGI(plugins)
     self.server = werkzeug_test.Client(app, wrappers.BaseResponse)
@@ -271,6 +281,16 @@ class ApplicationTest(tb_test.TestCase):
                 'remove_dom': False,
                 'disable_reload': False,
             },
+            'qux': {
+                'enabled': False,
+                'loading_mechanism': {
+                    'type': 'NG_COMPONENT',
+                },
+                'tab_name': 'qux',
+                'remove_dom': False,
+                'disable_reload': False,
+            },
+
         }
     )
 
@@ -315,6 +335,34 @@ class ApplicationTest(tb_test.TestCase):
     with six.assertRaisesRegex(
         self, ValueError, 'Expected es_module_path to be non-absolute path'):
       server.get('/data/plugin_entry.html?name=mallory')
+
+  def testNgComponentPluginWithIncompatibleSetElementName(self):
+    plugins = [
+        FakePlugin(
+            plugin_name='quux',
+            is_ng_component=True,
+            element_name_value='incompatible',
+        ),
+    ]
+    app = application.TensorBoardWSGI(plugins)
+    server = werkzeug_test.Client(app, wrappers.BaseResponse)
+    with six.assertRaisesRegex(
+        self, ValueError, 'quux.*declared.*both Angular.*legacy'):
+      server.get('/data/plugins_listing')
+
+  def testNgComponentPluginWithIncompatiblEsModulePath(self):
+    plugins = [
+        FakePlugin(
+            plugin_name='quux',
+            is_ng_component=True,
+            es_module_path_value='//incompatible',
+        ),
+    ]
+    app = application.TensorBoardWSGI(plugins)
+    server = werkzeug_test.Client(app, wrappers.BaseResponse)
+    with six.assertRaisesRegex(
+        self, ValueError, 'quux.*declared.*both Angular.*iframed'):
+      server.get('/data/plugins_listing')
 
 
 class ApplicationBaseUrlTest(tb_test.TestCase):
