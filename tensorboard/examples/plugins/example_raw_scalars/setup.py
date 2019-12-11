@@ -19,18 +19,21 @@ from __future__ import print_function
 
 import setuptools
 
-
+# Specifying setup.py makes a plugin installable via a Python package manager.
+# `entry_points` is an important field makes plugins discoverable by TensorBoard
+# at runtime.
+# See https://packaging.python.org/specifications/entry-points/
 setuptools.setup(
-    name="tensorboard_plugin_example",
+    name="tensorboard_plugin_example_raw_scalars",
     version="0.1.0",
     description="Sample TensorBoard plugin.",
-    packages=["tensorboard_plugin_example"],
+    packages=["tensorboard_plugin_example_raw_scalars"],
     package_data={
-        "tensorboard_plugin_example": ["static/**"],
+        "tensorboard_plugin_example_raw_scalars": ["static/**"],
     },
     entry_points={
         "tensorboard_plugins": [
-            "raw_summaries = tensorboard_plugin_example.plugin:ExampleRawScalars",
+            "raw_scalars = tensorboard_plugin_example_raw_scalars.plugin:ExampleRawScalars",
         ],
     },
 )

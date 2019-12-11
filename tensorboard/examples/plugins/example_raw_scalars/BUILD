@@ -14,26 +14,18 @@ sh_test(
     size = "large",
     timeout = "moderate",
     srcs = ["smoke_test.sh"],
+    tags = [
+        "manual",  # https://github.com/tensorflow/tensorboard/issues/2987
+    ],
     # Don't just `glob(["**"])` because `setup.py` creates artifacts
-    # like wheels and a `tensorboard_plugin_example.egg-info` directory,
-    # and we want to make sure that those don't interfere with the test.
+    # like wheels and a `tensorboard_plugin_example_raw_scalars.egg-info`
+    # directory, and we want to make sure that those don't interfere with the
+    # test.
     data = [
         "setup.py",
         "//tensorboard/pip_package",
     ] + glob([
-        "tensorboard_plugin_example/*.py",
-        "tensorboard_plugin_example/static/**",
+        "tensorboard_plugin_example_raw_scalars/*.py",
+        "tensorboard_plugin_example_raw_scalars/static/**",
     ]),
 )
-
-# TODO(luoe): this target fails because tf.summary.scalar is not defined.
-# Investigate why.
-# py_binary(
-#     name = "raw_scalars_demo",
-#     srcs = ["tensorboard_plugin_example/demo.py"],
-#     main = "tensorboard_plugin_example/demo.py",
-#     srcs_version = "PY2AND3",
-#     deps = [
-#         "//tensorboard:expect_tensorflow_installed",
-#     ],
-# )

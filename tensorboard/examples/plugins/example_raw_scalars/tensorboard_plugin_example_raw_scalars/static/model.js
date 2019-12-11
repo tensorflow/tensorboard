@@ -14,30 +14,36 @@
 // ==============================================================================
 
 // Generic example of a service that provides data.
-// In a production plugin, consider caching these results, to avoid making
-// unnecessary requests for data..
+
+/** @type {?Object<string, !Array<string>>} */
+let runToTagInfo = null;
+
+async function updateRunInfo() {
+  if (!runToTagInfo)
+    runToTagInfo = await fetchJSON('./tags') || {};
+}
 
 /**
- * @return {!Array<string>}
+ * @return {!Promise<?Array<string>>}
  */
 export async function getRuns() {
-  const runInfo = await fetchJSON('./runInfo');
-  return Object.keys(runInfo);
+  await updateRunInfo();
+  return Object.keys(runToTagInfo);
 }
 
 /**
  * @param {string} run
- * @return {!Array<string>}
+ * @return {!Promise<?Array<string>>}
  */
-export async function runToTags(run) {
-  const runInfo = await fetchJSON('./runInfo');
-  return runInfo[run];
+export async function getTags(run) {
+  await updateRunInfo();
+  return runToTagInfo[run];
 }
 
 /**
  * @param {string} run
  * @param {string} tag
- * @return {!Object}
+ * @return {!Promise<?Object>}
  */
 export async function getScalars(run, tag) {
   return await fetchJSON(`./scalars?run=${run}&tag=${tag}`);
@@ -45,11 +51,11 @@ export async function getScalars(run, tag) {
 
 /**
  * @param {string} url
- * @return {?Object}
+ * @return {!Promise<?Object>}
  */
 async function fetchJSON(url) {
   const response = await fetch(url);
-  if (response.status !== 200) {
+  if (!response.ok) {
     return null;
   }
   return response.json();
