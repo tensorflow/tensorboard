@@ -73,7 +73,8 @@ export class PluginsComponent implements OnChanges {
 
     if (this.pluginInstances.has(plugin.id)) {
       const instance = this.pluginInstances.get(plugin.id) as HTMLElement;
-      instance.style.display = null;
+      // TODO: Type 'null' is not assignable to type 'string'.
+      instance.style.display = null as any;
       return;
     }
 
