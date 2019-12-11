@@ -44,14 +44,14 @@ def tf():
     ImportError: if a TF-like API is not available.
   """
   try:
-    from tensorboard.compat import notf  # pylint: disable=g-import-not-at-top
+    from tensorboard.compat import notf
   except ImportError:
     try:
-      import tensorflow  # pylint: disable=g-import-not-at-top
+      import tensorflow
       return tensorflow
     except ImportError:
       pass
-  from tensorboard.compat import tensorflow_stub  # pylint: disable=g-import-not-at-top
+  from tensorboard.compat import tensorflow_stub
   return tensorflow_stub
 
 
@@ -94,12 +94,12 @@ def _pywrap_tensorflow():
     ImportError: if we couldn't import pywrap_tensorflow.
   """
   try:
-    from tensorboard.compat import notf  # pylint: disable=g-import-not-at-top
+    from tensorboard.compat import notf
   except ImportError:
     try:
-      from tensorflow.python import pywrap_tensorflow  # pylint: disable=g-import-not-at-top
+      from tensorflow.python import pywrap_tensorflow
       return pywrap_tensorflow
     except ImportError:
       pass
-  from tensorboard.compat.tensorflow_stub import pywrap_tensorflow  # pylint: disable=g-import-not-at-top
+  from tensorboard.compat.tensorflow_stub import pywrap_tensorflow
   return pywrap_tensorflow

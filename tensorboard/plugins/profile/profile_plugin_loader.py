@@ -49,13 +49,13 @@ through tpu profiler analysis grpc. The grpc channel is not secured.\
       A ProfilePlugin instance or None if it couldn't be loaded.
     """
     try:
-      # pylint: disable=g-import-not-at-top,unused-import
+      # pylint: disable=unused-import
       import tensorflow
       # Available in TensorFlow 1.14 or later, so do import check
-      # pylint: disable=g-import-not-at-top,unused-import
+      # pylint: disable=unused-import
       from tensorflow.python.eager import profiler_client
     except ImportError:
       return
-    # pylint: disable=g-import-not-at-top
+
     from tensorboard.plugins.profile.profile_plugin import ProfilePlugin
     return ProfilePlugin(context)

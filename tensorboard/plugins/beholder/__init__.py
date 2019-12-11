@@ -14,7 +14,7 @@
 
 # Only import Beholder API when tensorflow is available.
 try:
-  # pylint: disable=g-import-not-at-top,unused-import
+  # pylint: disable=unused-import
   import tensorflow
 except ImportError:
   pass
