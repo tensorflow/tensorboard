@@ -103,6 +103,9 @@ export class PluginsComponent implements OnChanges {
         this.pluginsContainer.nativeElement.appendChild(pluginElement);
         break;
       }
+      case LoadingMechanismType.NG_COMPONENT:
+        // Let the Angular template render the component.
+        break;
       case LoadingMechanismType.NONE:
         break;
       default:

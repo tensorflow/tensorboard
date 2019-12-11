@@ -437,7 +437,20 @@ class TensorBoardWSGI(object):
 
       es_module_handler = plugin_metadata.es_module_path
       element_name = plugin_metadata.element_name
-      if element_name is not None and es_module_handler is not None:
+      is_ng_component = plugin_metadata.is_ng_component
+      if is_ng_component:
+        if element_name is not None:
+          raise ValueError(
+              'Plugin %r declared as both Angular built-in and legacy' %
+              plugin.plugin_name)
+        if es_module_handler is not None:
+          raise ValueError(
+              'Plugin %r declared as both Angular built-in and iframed' %
+              plugin.plugin_name)
+        loading_mechanism = {
+            'type': 'NG_COMPONENT',
+        }
+      elif element_name is not None and es_module_handler is not None:
         logger.error(
             'Plugin %r declared as both legacy and iframed; skipping',
             plugin.plugin_name,
