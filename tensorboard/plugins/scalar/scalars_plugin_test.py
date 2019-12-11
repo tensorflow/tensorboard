@@ -32,8 +32,8 @@ import tensorflow as tf
 from tensorboard import errors
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import data_provider
-from tensorboard.backend.event_processing import plugin_event_accumulator as event_accumulator  # pylint: disable=line-too-long
-from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
+from tensorboard.backend.event_processing import plugin_event_accumulator as event_accumulator
+from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.core import core_plugin
 from tensorboard.plugins.scalar import metadata

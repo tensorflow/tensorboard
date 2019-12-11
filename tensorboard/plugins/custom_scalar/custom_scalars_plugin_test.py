@@ -25,7 +25,7 @@ import numpy as np
 import tensorflow as tf
 
 from google.protobuf import json_format
-from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
+from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.custom_scalar import custom_scalars_plugin
 from tensorboard.plugins.custom_scalar import layout_pb2
