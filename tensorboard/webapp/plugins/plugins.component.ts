@@ -73,7 +73,7 @@ export class PluginsComponent implements OnChanges {
 
     if (this.pluginInstances.has(plugin.id)) {
       const instance = this.pluginInstances.get(plugin.id) as HTMLElement;
-      instance.style.display = null;
+      instance.style.removeProperty('display');
       return;
     }
 
