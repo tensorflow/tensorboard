@@ -58,10 +58,10 @@ export class PluginsComponent implements OnChanges {
   private readonly pluginInstances = new Map<string, HTMLElement>();
 
   ngOnChanges(change: SimpleChanges): void {
-    if (change.activePlugin && this.activePlugin) {
+    if (change['activePlugin'] && this.activePlugin) {
       this.renderPlugin(this.activePlugin!);
     }
-    if (change.lastUpdated) {
+    if (change['lastUpdated']) {
       this.reload();
     }
   }
@@ -99,7 +99,10 @@ export class PluginsComponent implements OnChanges {
         pluginElement = document.createElement('iframe');
         pluginElement.id = plugin.id;
         // Ideally should use the DOMSanitizer but it is not usable in TypeScript.
-        pluginElement.src = `data/plugin_entry.html?name=${plugin.id}`;
+        pluginElement.setAttribute(
+          'src',
+          `data/plugin_entry.html?name=${plugin.id}`
+        );
         this.pluginsContainer.nativeElement.appendChild(pluginElement);
         break;
       }
