@@ -19,12 +19,13 @@
 let runToTagInfo = null;
 
 async function updateRunInfo() {
-  if (!runToTagInfo)
+  if (!runToTagInfo) {
     runToTagInfo = await fetchJSON('./tags') || {};
+  }
 }
 
 /**
- * @return {!Promise<?Array<string>>}
+ * @return {!Promise<!Array<string>>}
  */
 export async function getRuns() {
   await updateRunInfo();
@@ -33,7 +34,7 @@ export async function getRuns() {
 
 /**
  * @param {string} run
- * @return {!Promise<?Array<string>>}
+ * @return {!Promise<!Array<string>>}
  */
 export async function getTags(run) {
   await updateRunInfo();

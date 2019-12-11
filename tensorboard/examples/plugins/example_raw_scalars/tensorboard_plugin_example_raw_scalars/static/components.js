@@ -54,10 +54,9 @@ export async function createPreviews(run) {
 
 /**
  * @param {!Array<string>} runs
- * @param {function()} onchange
  * @return {!HTMLSelectElement}
  */
-export async function createRunSelector(onchange) {
+export function createRunSelector(runs) {
   /**
    * Build a component in this form:
    *   <select class='run-selector>
@@ -66,28 +65,26 @@ export async function createRunSelector(onchange) {
    *   </select>
    */
   const element = createElement('select', 'run-selector');
-  const runs = await Model.getRuns();
-  if (!runs)
+  if (!runs) {
     return element;
+  }
 
-  for (const run of runs)
+  for (const run of runs) {
     element.options.add(new Option(run, run));
-  element.onchange = () => onchange(element.value);
-
-  // Call once for the initial view.
-  onchange(element.value);
+  }
 
   return element;
 }
 
 /**
  * @param {string} tag
- * @param {string} className
+ * @param {string=} className
  * @return {!Element}
  */
 function createElement(tag, className) {
   const result = document.createElement(tag);
-  if (className)
+  if (className) {
     result.className = className;
+  }
   return result;
 }

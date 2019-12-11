@@ -93,13 +93,30 @@ class ExampleRawScalars(base_plugin.TBPlugin):
       return http_util.Respond(request, read_file.read(), content_type=mimetype)
 
   def is_active(self):
+    """Returns whether there is relevant data for the plugin to process.
+
+    When there are no runs with scalar data, TensorBoard will hide the plugin
+    from the main navigation bar.
+    """
     return bool(self._multiplexer.PluginRunToTagToContent(_SCALAR_PLUGIN_NAME))
 
   def frontend_metadata(self):
     return base_plugin.FrontendMetadata(es_module_path="/static/index.js")
 
   def scalars_impl(self, tag, run):
-    """Returns scalar data for the specified tag and run."""
+    """Returns scalar data for the specified tag and run.
+
+    Args:
+      tag: string
+      run: string
+
+    Returns:
+      A list of ScalarEvents - tuples containing 3 numbers describing entries in
+      the data series.
+
+    Raises:
+      errors.NotFoundError if run+tag pair has no scalar data.
+    """
     try:
       tensor_events = self._multiplexer.Tensors(run, tag)
       values = [(tensor_event.wall_time,

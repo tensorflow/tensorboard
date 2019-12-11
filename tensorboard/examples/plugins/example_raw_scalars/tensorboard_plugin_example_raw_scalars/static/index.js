@@ -14,6 +14,7 @@
 // =============================================================================
 
 import * as Components from './components.js';
+import * as Model from './model.js';
 
 /**
  * The main entry point of any TensorBoard iframe plugin.
@@ -33,28 +34,35 @@ export async function render() {
   header.textContent = 'Example plugin - Select a run';
 
   const previewContainer = document.createElement('div');
-  const runSelector = await Components.createRunSelector((selectedRun) => {
-    updatePreview(previewContainer, selectedRun);
-  });
+  const runs = await Model.getRuns();
+  const runSelector = Components.createRunSelector(runs);
+  const updatePreviewBound =
+      updatePreview.bind(null, runSelector, previewContainer);
+  runSelector.onchange = updatePreviewBound;
+
+  // Call once for the initial view.
+  updatePreviewBound();
 
   document.body.appendChild(stylesheet);
   document.body.appendChild(header);
   document.body.appendChild(runSelector);
   document.body.appendChild(previewContainer);
+}
 
-  /**
-   * Update the container with scalar data from `createPreviews`.
-   * @param {!Element} container
-   * @param {string} run
-   */
-  async function updatePreview(container, run) {
-    container.textContent = 'Loading...';
-    const preview = await Components.createPreviews(run);
+/**
+ * Update the container with scalar data from `createPreviews`.
+ * @param {!HTMLSelectElement} runSelector
+ * @param {!Element} container
+ */
+async function updatePreview(runSelector, container) {
+  container.textContent = 'Loading...';
+  const requestedRun = runSelector.value;
+  const preview = await Components.createPreviews(requestedRun);
 
-    // Cancel the update if the UI has a different run selected.
-    if (runSelector.value !== run)
-      return;
-    container.textContent = '';
-    container.appendChild(preview);
+  // Cancel the update if the UI has a different run selected.
+  if (runSelector.value !== requestedRun) {
+    return;
   }
+  container.textContent = '';
+  container.appendChild(preview);
 }
