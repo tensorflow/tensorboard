@@ -19,7 +19,6 @@ ng_module(
         "debugger.component.html",
     ],
     deps = [
-        "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
         "@npm//rxjs",
