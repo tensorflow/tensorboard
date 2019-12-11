@@ -44,7 +44,7 @@ from tensorboard import errors
 from tensorboard import plugin_util
 from tensorboard import test as tb_test
 from tensorboard.backend import application
-from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
+from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer
 from tensorboard.plugins import base_plugin
 
 

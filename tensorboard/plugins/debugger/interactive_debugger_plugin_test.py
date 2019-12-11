@@ -39,7 +39,7 @@ from werkzeug import test as werkzeug_test  # pylint: disable=wrong-import-order
 from werkzeug import wrappers  # pylint: disable=wrong-import-order
 
 from tensorboard.backend import application
-from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
+from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.debugger import interactive_debugger_plugin
 from tensorboard.util import test_util

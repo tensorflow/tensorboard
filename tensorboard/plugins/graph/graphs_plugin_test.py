@@ -29,7 +29,7 @@ import tensorflow as tf
 
 from google.protobuf import text_format
 from tensorboard.backend.event_processing import data_provider
-from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
+from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer
 from tensorboard.compat.proto import config_pb2
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.graph import graphs_plugin

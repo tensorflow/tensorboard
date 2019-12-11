@@ -22,7 +22,7 @@ from __future__ import print_function
 import numpy as np
 import tensorflow as tf
 
-from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
+from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer
 from tensorboard.plugins.custom_scalar import layout_pb2
 from tensorboard.plugins.custom_scalar import metadata
 from tensorboard.plugins.custom_scalar import summary
