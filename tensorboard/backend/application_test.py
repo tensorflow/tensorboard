@@ -591,7 +591,7 @@ class ParseEventFilesSpecTest(tb_test.TestCase):
     self.assertPlatformSpecificLogdirParsing(
         posixpath, '/lol/cat', {'/lol/cat': None})
     self.assertPlatformSpecificLogdirParsing(
-        ntpath, 'C:\\lol\cat', {'C:\\lol\cat': None})
+        ntpath, r'C:\lol\cat', {r'C:\lol\cat': None})
 
   def testRunName(self):
     self.assertPlatformSpecificLogdirParsing(
@@ -609,9 +609,9 @@ class ParseEventFilesSpecTest(tb_test.TestCase):
       os.environ['HOME'] = '/usr/eliza'
       self.assertPlatformSpecificLogdirParsing(
           posixpath, '~/lol/cat~dog', {'/usr/eliza/lol/cat~dog': None})
-      os.environ['HOME'] = 'C:\\Users\eliza'
+      os.environ['HOME'] = r'C:\Users\eliza'
       self.assertPlatformSpecificLogdirParsing(
-          ntpath, '~\lol\cat~dog', {'C:\\Users\eliza\lol\cat~dog': None})
+          ntpath, r'~\lol\cat~dog', {r'C:\Users\eliza\lol\cat~dog': None})
     finally:
       if oldhome is not None:
         os.environ['HOME'] = oldhome
@@ -623,10 +623,10 @@ class ParseEventFilesSpecTest(tb_test.TestCase):
       self.assertPlatformSpecificLogdirParsing(
           posixpath, 'a:~/lol,b:~/cat',
           {'/usr/eliza/lol': 'a', '/usr/eliza/cat': 'b'})
-      os.environ['HOME'] = 'C:\\Users\eliza'
+      os.environ['HOME'] = r'C:\Users\eliza'
       self.assertPlatformSpecificLogdirParsing(
-          ntpath, 'aa:~\lol,bb:~\cat',
-          {'C:\\Users\eliza\lol': 'aa', 'C:\\Users\eliza\cat': 'bb'})
+          ntpath, r'aa:~\lol,bb:~\cat',
+          {r'C:\Users\eliza\lol': 'aa', r'C:\Users\eliza\cat': 'bb'})
     finally:
       if oldhome is not None:
         os.environ['HOME'] = oldhome
