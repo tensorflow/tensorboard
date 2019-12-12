@@ -24,10 +24,11 @@ shift
 PREAMBLE='<svg><defs>'
 POSTAMBLE='</defs></svg>'
 
-echo $PREAMBLE > $OUTPUT_PATH
-for file in "$@"; do
-  svg_id="$(basename $file | sed 's|\.svg$||g')"
-  cat $file | sed "s|<svg|<svg id=\"$svg_id\"|g" >> $OUTPUT_PATH
-done
-
-echo $POSTAMBLE >> $OUTPUT_PATH
+{
+    echo "${PREAMBLE}"
+    for file in "$@"; do
+      svg_id="$(basename $file | sed 's|\.svg$||g')"
+      sed "s|<svg|<svg id=\"$svg_id\"|g" "$file" 2>&0
+    done
+    echo "${POSTAMBLE}"
+} > "${OUTPUT_PATH}"

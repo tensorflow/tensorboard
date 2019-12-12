@@ -148,5 +148,5 @@ tf_svg_bundle(
     srcs = [
         "@com_google_material_design_icon//:ic_settings_24px.svg",
     ],
-    output_name = "icon_bundle.svg",
+    out = "icon_bundle.svg",
 )
