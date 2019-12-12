@@ -76,7 +76,7 @@ class TensorBoardInfoTest(tb_test.TestCase):
     with six.assertRaisesRegex(
         self,
         ValueError,
-        "expected 'start_time' of type.*int.*, but found: datetime\."):
+        r"expected 'start_time' of type.*int.*, but found: datetime\."):
       manager._info_to_string(info)
 
   def test_serialization_rejects_wrong_version(self):
@@ -346,7 +346,7 @@ class TensorBoardInfoIoTest(tb_test.TestCase):
     with six.assertRaisesRegex(
         self,
         ValueError,
-        "expected 'start_time' of type.*int.*, but found: datetime\."):
+        r"expected 'start_time' of type.*int.*, but found: datetime\."):
       manager.write_info_file(info)
     self.assertEqual(self._list_info_dir(), [])
 
