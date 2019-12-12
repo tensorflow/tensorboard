@@ -106,6 +106,9 @@ class ExampleRawScalars(base_plugin.TBPlugin):
   def scalars_impl(self, tag, run):
     """Returns scalar data for the specified tag and run.
 
+    For details on how to use tags and runs, see
+    https://github.com/tensorflow/tensorboard#tags-giving-names-to-data
+
     Args:
       tag: string
       run: string

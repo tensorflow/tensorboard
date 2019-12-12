@@ -13,8 +13,8 @@
 // limitations under the License.
 // =============================================================================
 
-import * as Components from './components.js';
 import * as Model from './model.js';
+import * as Views from './views.js';
 
 /**
  * The main entry point of any TensorBoard iframe plugin.
@@ -35,7 +35,7 @@ export async function render() {
 
   const previewContainer = document.createElement('div');
   const runs = await Model.getRuns();
-  const runSelector = Components.createRunSelector(runs);
+  const runSelector = Views.createRunSelector(runs);
   const updatePreviewBound =
       updatePreview.bind(null, runSelector, previewContainer);
   runSelector.onchange = updatePreviewBound;
@@ -57,7 +57,8 @@ export async function render() {
 async function updatePreview(runSelector, container) {
   container.textContent = 'Loading...';
   const requestedRun = runSelector.value;
-  const preview = await Components.createPreviews(requestedRun);
+  const tagsToScalars = await Model.getTagsToScalars(requestedRun);
+  const preview = await Views.createPreviews(tagsToScalars);
 
   // Cancel the update if the UI has a different run selected.
   if (runSelector.value !== requestedRun) {

@@ -13,17 +13,16 @@
 // limitations under the License.
 // =============================================================================
 
-import * as Model from './model.js';
+// Generic view builders.
 
 /**
- * @param {string} run
+ * @param {!Map<string, !Array<Object>>} tagsToScalars
  * @return {!Promise<!DocumentFragment>}
  */
-export async function createPreviews(run) {
+export async function createPreviews(tagsToScalars) {
   const fragment = document.createDocumentFragment();
 
-  const tags = await Model.getTags(run);
-  if (!tags || !tags.length) {
+  if (!tagsToScalars.size) {
     const messageElement = createElement('h2');
     messageElement.textContent = 'No tags found.';
     fragment.appendChild(messageElement);
@@ -37,8 +36,7 @@ export async function createPreviews(run) {
    *     <textarea class="preview-text">${result}</textarea>
    *   </div>
    */
-  for (let tag of tags) {
-    const scalars = await Model.getScalars(run, tag);
+  for (let [tag, scalars] of tagsToScalars) {
     const previewEl = createElement('div', 'preview');
     const tagNameEl = createElement('div', 'tagname');
     const textPreviewEl = createElement('textarea', 'preview-text');

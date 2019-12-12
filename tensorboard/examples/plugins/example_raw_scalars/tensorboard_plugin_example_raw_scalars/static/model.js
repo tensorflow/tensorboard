@@ -34,11 +34,32 @@ export async function getRuns() {
 
 /**
  * @param {string} run
- * @return {!Promise<!Array<string>>}
+ * @return {!Promise<!Map<string, Array<Object>>>}
  */
-export async function getTags(run) {
+export async function getTagsToScalars(run) {
+  const result = new Map();
+  const tags = await getTags(run);
+  if (!tags) {
+    return result;
+  }
+
+  const scalarPromises = tags.map(async tag => {
+    const scalars = await getScalars(run, tag);
+    if (scalars)
+      result.set(tag, scalars);
+  });
+  await Promise.all(scalarPromises);
+
+  return result;
+}
+
+/**
+ * @param {string} run
+ * @return {!Promise<?Array<string>>}
+ */
+async function getTags(run) {
   await updateRunInfo();
-  return runToTagInfo[run];
+  return runToTagInfo[run] || null;
 }
 
 /**
@@ -46,7 +67,7 @@ export async function getTags(run) {
  * @param {string} tag
  * @return {!Promise<?Object>}
  */
-export async function getScalars(run, tag) {
+async function getScalars(run, tag) {
   return await fetchJSON(`./scalars?run=${run}&tag=${tag}`);
 }
 
