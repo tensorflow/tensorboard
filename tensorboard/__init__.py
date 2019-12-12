@@ -69,19 +69,19 @@ from tensorboard import version
 
 @lazy.lazy_load('tensorboard.notebook')
 def notebook():
-  import importlib  # pylint: disable=g-import-not-at-top
+  import importlib
   return importlib.import_module('tensorboard.notebook')
 
 
 @lazy.lazy_load('tensorboard.program')
 def program():
-  import importlib  # pylint: disable=g-import-not-at-top
+  import importlib
   return importlib.import_module('tensorboard.program')
 
 
 @lazy.lazy_load('tensorboard.summary')
 def summary():
-  import importlib  # pylint: disable=g-import-not-at-top
+  import importlib
   return importlib.import_module('tensorboard.summary')
 
 

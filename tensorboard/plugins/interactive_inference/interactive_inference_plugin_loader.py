@@ -37,10 +37,10 @@ class InteractiveInferencePluginLoader(base_plugin.TBLoader):
       A InteractiveInferencePlugin instance or None if it couldn't be loaded.
     """
     try:
-      # pylint: disable=g-import-not-at-top,unused-import
+      # pylint: disable=unused-import
       import tensorflow
     except ImportError:
       return
-    # pylint: disable=line-too-long,g-import-not-at-top
+    # pylint: disable=line-too-long
     from tensorboard.plugins.interactive_inference.interactive_inference_plugin import InteractiveInferencePlugin
     return InteractiveInferencePlugin(context)

@@ -37,10 +37,10 @@ class BeholderPluginLoader(base_plugin.TBLoader):
       A BeholderPlugin instance or None if it couldn't be loaded.
     """
     try:
-      # pylint: disable=g-import-not-at-top,unused-import
+      # pylint: disable=unused-import
       import tensorflow
     except ImportError:
       return
-    # pylint: disable=g-import-not-at-top
+
     from tensorboard.plugins.beholder.beholder_plugin import BeholderPlugin
     return BeholderPlugin(context)

@@ -25,7 +25,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-# pylint: disable=g-import-not-at-top
+
 import os
 
 # Disable the TF GCS filesystem cache which interacts pathologically with the
@@ -33,7 +33,7 @@ import os
 #   https://github.com/tensorflow/tensorboard/issues/1225
 # This must be set before the first import of tensorflow.
 os.environ['GCS_READ_CACHE_DISABLED'] = '1'
-# pylint: enable=g-import-not-at-top
+
 
 import sys
 

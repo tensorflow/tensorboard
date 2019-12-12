@@ -121,7 +121,7 @@ def reexport_tf_summary():
 
   Lastly, this logic is encapsulated in a function to avoid symbol leakage.
   """
-  import sys  # pylint: disable=g-import-not-at-top
+  import sys
 
   # API packages to check for the original V2 summary API, in preference order
   # to avoid going "under the hood" to the _api packages unless necessary.

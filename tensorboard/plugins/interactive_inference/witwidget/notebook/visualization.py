@@ -22,9 +22,9 @@ def _is_colab():
 
 
 if _is_colab():
-  from witwidget.notebook.colab.wit import *  # pylint: disable=wildcard-import,g-import-not-at-top
+  from witwidget.notebook.colab.wit import *  # pylint: disable=wildcard-import
 else:
-  from witwidget.notebook.jupyter.wit import *  # pylint: disable=wildcard-import,g-import-not-at-top
+  from witwidget.notebook.jupyter.wit import *  # pylint: disable=wildcard-import
 
 
 class WitConfigBuilder(object):
