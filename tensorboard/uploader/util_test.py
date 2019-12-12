@@ -26,9 +26,9 @@ import mock
 
 try:
   # python version >= 3.3
-  from unittest import mock  # pylint: disable=g-import-not-at-top
+  from unittest import mock
 except ImportError:
-  import mock  # pylint: disable=g-import-not-at-top,unused-import
+  import mock  # pylint: disable=unused-import
 
 
 from google.protobuf import timestamp_pb2
