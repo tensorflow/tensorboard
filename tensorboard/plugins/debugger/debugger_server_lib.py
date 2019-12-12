@@ -33,9 +33,7 @@ import tensorflow as tf
 from tensorflow.python.debug.lib import grpc_debug_server
 
 from tensorboard.plugins.debugger import constants
-# pylint: disable=line-too-long
 from tensorboard.plugins.debugger import events_writer_manager as events_writer_manager_lib
-# pylint: enable=line-too-long
 from tensorboard.plugins.debugger import numerics_alert
 from tensorboard.util import tb_logging
 from tensorboard.util import tensor_util

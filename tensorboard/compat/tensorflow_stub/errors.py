@@ -179,7 +179,6 @@ DATA_LOSS = error_codes.DATA_LOSS
 # tf_export("errors.DATA_LOSS").export_constant(__name__, "DATA_LOSS")
 
 
-# pylint: disable=line-too-long
 # @tf_export("errors.CancelledError")
 class CancelledError(OpError):
     """Raised when an operation or step is cancelled.
@@ -200,7 +199,6 @@ class CancelledError(OpError):
         super(CancelledError, self).__init__(node_def, op, message, CANCELLED)
 
 
-# pylint: enable=line-too-long
 
 
 # @tf_export("errors.UnknownError")
