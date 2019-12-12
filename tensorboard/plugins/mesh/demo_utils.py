@@ -26,12 +26,13 @@ def _parse_vertex(vertex_row):
   """Parses a line in a PLY file which encodes a vertex coordinates.
 
   Args:
-    vertex_row: string with vertex coordinates and color.
+    vertex_row: string with vertex coordinates and optional color.
 
   Returns:
     2-tuple containing a length-3 array of vertex coordinates (as
-    floats) and a length-3 array of RGB color values (as ints between 0
-    and 255, inclusive).
+    floats), and a length-3 array of RGB color values (as ints between 0
+    and 255, inclusive) if the vertex line contained color information,
+    otherwise None.
   """
   vertex = vertex_row.strip().split()
   # The row must contain coordinates with RGB/RGBA color in addition to that.
@@ -40,7 +41,9 @@ def _parse_vertex(vertex_row):
     # TODO(b/129298103): add support of RGBA in .ply files.
     return ([float(coord) for coord in vertex[:3]],
             [int(channel) for channel in vertex[3:6]])
-  raise ValueError('PLY file must contain vertices with colors.')
+  elif len(vertex) == 3:
+    return ([float(coord) for coord in vertex], None)
+  raise ValueError('PLY file must have at least 3 vertex properties')
 
 
 def _parse_face(face_row):
@@ -64,7 +67,8 @@ def read_ascii_ply(filename):
     filename: path to a PLY file to read.
 
   Returns:
-    numpy `[dim_1, 3]` array of vertices, `[dim_1, 3]` array of colors and
+    numpy `[dim_1, 3]` array of vertices, `[dim_1, 3]` array of colors
+    (or None if the file did not contain color information), and a
     `[dim_1, 3]` array of faces of the mesh.
   """
   with tf.io.gfile.GFile(filename) as ply_file:
@@ -77,10 +81,14 @@ def read_ascii_ply(filename):
         face_count = int(line.split()[-1])
     # Read vertices and their colors.
     vertex_data = [_parse_vertex(next(ply_file)) for _ in range(vert_count)]
-    vertices = [datum[0] for datum in vertex_data]
-    colors = [datum[1] for datum in vertex_data]
+    vertices = np.array([datum[0] for datum in vertex_data]).astype(np.float32)
+    colors_raw = [datum[1] for datum in vertex_data if datum[1] is not None]
+    if len(colors_raw) == vert_count:
+      colors = np.array(colors_raw).astype(np.uint8)
+    elif len(colors_raw) == 0:
+      colors = None
+    else:
+      raise ValueError('Missing colors for %d vertices' % (vert_count - len(colors)))
     # Read faces.
     faces = [_parse_face(next(ply_file)) for _ in range(face_count)]
-    return (np.array(vertices).astype(np.float32),
-            np.array(colors).astype(np.uint8),
-            np.array(faces).astype(np.int32))
+    return (vertices, colors, np.array(faces).astype(np.int32))

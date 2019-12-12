@@ -35,11 +35,13 @@ class TestPLYReader(tf.test.TestCase):
     self.assertListEqual(coords, vertex_data[:3])
     self.assertListEqual(colors, vertex_data[3:6])
 
-  def test_prase_vertex_expects_colors(self):
-    """Tests that method will throw error if color is not poresent."""
-    with self.assertRaisesRegexp(ValueError,
-        'PLY file must contain vertices with colors'):
-      demo_utils._parse_vertex('1 2 3')
+  def test_parse_vertex_no_colors(self):
+    """Tests vertex parsing without colors."""
+    # Vertex 3D coordinates with RGBA color.
+    vertex_data = [-0.249245, 1.119303, 0.3095566]
+    coords, colors = demo_utils._parse_vertex(' '.join(map(str, vertex_data)))
+    self.assertListEqual(coords, vertex_data)
+    self.assertIsNone(colors)
 
   def test_parse_face(self):
     """Tests face line parsing."""
