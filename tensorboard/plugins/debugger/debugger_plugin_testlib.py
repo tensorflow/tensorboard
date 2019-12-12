@@ -53,10 +53,10 @@ class DebuggerPluginTestBase(tf.test.TestCase):
     super(DebuggerPluginTestBase, self).setUp()
     # Importing the debugger_plugin can sometimes unfortunately produce errors.
     try:
-      # pylint: disable=g-import-not-at-top
+
       from tensorboard.plugins.debugger import debugger_plugin
       from tensorboard.plugins.debugger import debugger_server_lib
-      # pylint: enable=g-import-not-at-top
+
     except Exception as e:  # pylint: disable=broad-except
       raise self.skipTest(
           'Skipping test because importing some modules failed: %r' % e)

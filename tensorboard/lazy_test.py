@@ -35,7 +35,7 @@ class LazyTest(unittest.TestCase):
 
     @lazy.lazy_load("inner")
     def inner():
-      import collections  # pylint: disable=g-import-not-at-top
+      import collections
       return collections
 
     @lazy.lazy_load("outer")
@@ -70,7 +70,7 @@ class LazyTest(unittest.TestCase):
     self.assertEquals(repr(foo), "<module 'foo' via LazyModule (not yet loaded)>")
 
   def test_repr_after_load(self):
-    import collections  # pylint: disable=g-import-not-at-top
+    import collections
     @lazy.lazy_load("foo")
     def foo():
       return collections
