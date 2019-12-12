@@ -41,6 +41,5 @@ class InteractiveInferencePluginLoader(base_plugin.TBLoader):
       import tensorflow
     except ImportError:
       return
-    # pylint: disable=line-too-long
     from tensorboard.plugins.interactive_inference.interactive_inference_plugin import InteractiveInferencePlugin
     return InteractiveInferencePlugin(context)
