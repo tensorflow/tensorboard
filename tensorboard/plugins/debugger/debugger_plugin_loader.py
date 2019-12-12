@@ -136,9 +136,7 @@ the interactive Debugger Dashboard. This flag is mutually exclusive with
             '  pip install tensorflow')
 
     if flags.debugger_data_server_grpc_port > 0:
-      # pylint: disable=line-too-long
       from tensorboard.plugins.debugger import debugger_plugin as debugger_plugin_lib
-      # pylint: enable=line-too-long
 
       # debugger_data_server_grpc opens the non-interactive Debugger Plugin,
       # which appears as health pills in the Graph Plugin.
@@ -148,9 +146,7 @@ the interactive Debugger Dashboard. This flag is mutually exclusive with
       noninteractive_plugin.listen(flags.debugger_data_server_grpc_port)
       return noninteractive_plugin
     elif flags.debugger_port > 0:
-      # pylint: disable=line-too-long
       from tensorboard.plugins.debugger import interactive_debugger_plugin as interactive_debugger_plugin_lib
-      # pylint: enable=line-too-long
       interactive_plugin = (
           interactive_debugger_plugin_lib.InteractiveDebuggerPlugin(context))
       logger.info('Starting Interactive Debugger Plugin at gRPC port %d',
