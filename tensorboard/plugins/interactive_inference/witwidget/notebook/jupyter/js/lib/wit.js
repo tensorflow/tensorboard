@@ -58,6 +58,7 @@ var WITView = widgets.DOMWidgetView.extend({
     }
 
     const src = `<link rel="import" href="${witHtmlLocation}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/1.3.3/webcomponents-lite.js"></script>
     <tf-interactive-inference-dashboard local id="wit"></tf-interactive-inference-dashboard>
     <script>
       const wit = document.getElementById('wit');

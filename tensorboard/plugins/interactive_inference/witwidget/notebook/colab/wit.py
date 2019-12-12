@@ -63,6 +63,10 @@ output.register_callback('notebook.ComputeCustomDistance',
 
 
 # HTML/javascript for the WIT frontend.
+WC_HTML = """
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/1.3.3/webcomponents-lite.js">
+    </script>
+"""
 WIT_HTML = """
   <tf-interactive-inference-dashboard id="wit" local>
   </tf-interactive-inference-dashboard>
@@ -235,7 +239,9 @@ class WitWidget(base.WitWidgetBase):
     WitWidget.widgets.append(self)
 
     # Display WIT Polymer element.
+    
     display.display(display.HTML(self._get_element_html()))
+    display.display(display.HTML(WC_HTML))
     display.display(display.HTML(
         WIT_HTML.format(height=height, id=self.id)))
 
