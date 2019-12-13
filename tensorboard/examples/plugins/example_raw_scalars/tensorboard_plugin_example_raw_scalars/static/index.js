@@ -58,7 +58,7 @@ async function updatePreview(runSelector, container) {
   container.textContent = 'Loading...';
   const requestedRun = runSelector.value;
   const tagsToScalars = await Model.getTagsToScalars(requestedRun);
-  const preview = await Views.createPreviews(tagsToScalars);
+  const preview = Views.createPreviews(tagsToScalars);
 
   // Cancel the update if the UI has a different run selected.
   if (runSelector.value !== requestedRun) {
