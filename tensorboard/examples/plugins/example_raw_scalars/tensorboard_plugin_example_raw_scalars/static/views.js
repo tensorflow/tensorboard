@@ -17,7 +17,7 @@
 
 /**
  * @param {!Map<string, !Array<Object>>} tagsToScalars
- * @return {!Promise<!DocumentFragment>}
+ * @return {!DocumentFragment}
  */
 export function createPreviews(tagsToScalars) {
   const fragment = document.createDocumentFragment();
