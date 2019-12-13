@@ -250,7 +250,9 @@ class WitWidget(base.WitWidgetBase):
     self._ctor_complete = True
 
   def _get_element_html(self):
-    return tf.io.gfile.Open('/usr/local/share/jupyter/nbextensions/wit-widget/wit_jupyter.html').read()
+    return tf.io.gfile.GFile(
+      '/usr/local/share/jupyter/nbextensions/wit-widget/wit_jupyter.html'
+      ).read()
 
   def set_examples(self, examples):
     base.WitWidgetBase.set_examples(self, examples)
