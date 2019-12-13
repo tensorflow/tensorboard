@@ -15,6 +15,5 @@
 """Entry point for the example_raw_scalars plugin package.
 
 Private submodules:
-  metadata: Global constants and the like.
   plugin: TensorBoard backend plugin.
 """
