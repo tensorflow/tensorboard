@@ -64,13 +64,12 @@ output.register_callback('notebook.ComputeCustomDistance',
 
 # HTML/javascript for the WIT frontend.
 WIT_HTML = """
-  <tf-interactive-inference-dashboard id="wit" local>
-  </tf-interactive-inference-dashboard>
   <script>
     (function() {{
       const id = {id};
       const wit = document.querySelector("#wit");
-      wit.parentElement.style.height = '{height}px';
+      wit.style.height = '{height}px';
+
       let mutantFeature = null;
 
       // Listeners from WIT element events which pass requests to python.
@@ -251,8 +250,7 @@ class WitWidget(base.WitWidgetBase):
     self._ctor_complete = True
 
   def _get_element_html(self):
-    return """
-      <link rel="import" href="/nbextensions/wit-widget/wit_jupyter.html">"""
+    return tf.io.gfile.Open('/usr/local/share/jupyter/nbextensions/wit-widget/wit_jupyter.html').read()
 
   def set_examples(self, examples):
     base.WitWidgetBase.set_examples(self, examples)

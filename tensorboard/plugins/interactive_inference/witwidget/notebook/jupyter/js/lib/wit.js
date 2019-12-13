@@ -47,7 +47,7 @@ var WITView = widgets.DOMWidgetView.extend({
    * Loads up the WIT element.
    */
   loadAndCreateWhatIfToolElement: function() {
-    const height =
+    this.height =
       parseInt(this.model.attributes.layout.attributes.height, 10) - 20;
     const iframe = document.createElement('iframe');
 
@@ -57,18 +57,10 @@ var WITView = widgets.DOMWidgetView.extend({
       witHtmlLocation = window.__nbextension_path__ + 'wit_jupyter.html';
     }
 
-    const src = `<link rel="import" href="${witHtmlLocation}">
-    <tf-interactive-inference-dashboard local id="wit"></tf-interactive-inference-dashboard>
-    <script>
-      const wit = document.getElementById('wit');
-      wit.style.height = "${height}px";
-      wit.style.display = "block";
-    </script>
-    `;
     iframe.frameBorder = '0';
     iframe.style.width = '100%';
-    iframe.style.height = '100%';
-    iframe.srcdoc = src;
+    iframe.style.height = `${this.height}px`;
+    iframe.src = witHtmlLocation;
     this.el.appendChild(iframe);
     this.iframe = iframe;
 
@@ -96,6 +88,7 @@ var WITView = widgets.DOMWidgetView.extend({
    */
   setupView: function() {
     this.view_ = this.iframe.contentDocument.getElementById('wit');
+    this.view_.style.height = `${this.height}px`;
     // Add listeners for changes from WIT Polymer element. Passes changes
     // along to python.
     this.view_.addEventListener('infer-examples', (e) => {
