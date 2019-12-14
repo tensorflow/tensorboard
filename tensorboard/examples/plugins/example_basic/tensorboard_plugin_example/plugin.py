@@ -32,59 +32,66 @@ from tensorboard_plugin_example import metadata
 
 
 class ExamplePlugin(base_plugin.TBPlugin):
-  plugin_name = metadata.PLUGIN_NAME
+    plugin_name = metadata.PLUGIN_NAME
 
-  def __init__(self, context):
-    self._multiplexer = context.multiplexer
+    def __init__(self, context):
+        self._multiplexer = context.multiplexer
 
-  def is_active(self):
-    return bool(self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME))
+    def is_active(self):
+        return bool(
+            self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
+        )
 
-  def get_plugin_apps(self):
-    return {
-        "/index.js": self._serve_js,
-        "/tags": self._serve_tags,
-        "/greetings": self._serve_greetings,
-    }
-
-  def frontend_metadata(self):
-    return base_plugin.FrontendMetadata(es_module_path="/index.js")
-
-  @wrappers.Request.application
-  def _serve_js(self, request):
-    del request  # unused
-    filepath = os.path.join(os.path.dirname(__file__), "static", "index.js")
-    with open(filepath) as infile:
-      contents = infile.read()
-    return werkzeug.Response(contents, content_type="application/javascript")
-
-  @wrappers.Request.application
-  def _serve_tags(self, request):
-    del request  # unused
-    mapping = self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
-    result = {run: {} for run in self._multiplexer.Runs()}
-    for (run, tag_to_content) in six.iteritems(mapping):
-      for tag in tag_to_content:
-        summary_metadata = self._multiplexer.SummaryMetadata(run, tag)
-        result[run][tag] = {
-            u"description": summary_metadata.summary_description,
+    def get_plugin_apps(self):
+        return {
+            "/index.js": self._serve_js,
+            "/tags": self._serve_tags,
+            "/greetings": self._serve_greetings,
         }
-    contents = json.dumps(result, sort_keys=True)
-    return werkzeug.Response(contents, content_type="application/json")
 
-  @wrappers.Request.application
-  def _serve_greetings(self, request):
-    run = request.args.get("run")
-    tag = request.args.get("tag")
-    if run is None or tag is None:
-      raise werkzeug.exceptions.BadRequest("Must specify run and tag")
-    try:
-      data = [
-          np.asscalar(tensor_util.make_ndarray(event.tensor_proto))
-              .decode("utf-8")
-          for event in self._multiplexer.Tensors(run, tag)
-      ]
-    except KeyError:
-      raise werkzeug.exceptions.BadRequest("Invalid run or tag")
-    contents = json.dumps(data, sort_keys=True)
-    return werkzeug.Response(contents, content_type="application/json")
+    def frontend_metadata(self):
+        return base_plugin.FrontendMetadata(es_module_path="/index.js")
+
+    @wrappers.Request.application
+    def _serve_js(self, request):
+        del request  # unused
+        filepath = os.path.join(os.path.dirname(__file__), "static", "index.js")
+        with open(filepath) as infile:
+            contents = infile.read()
+        return werkzeug.Response(
+            contents, content_type="application/javascript"
+        )
+
+    @wrappers.Request.application
+    def _serve_tags(self, request):
+        del request  # unused
+        mapping = self._multiplexer.PluginRunToTagToContent(
+            metadata.PLUGIN_NAME
+        )
+        result = {run: {} for run in self._multiplexer.Runs()}
+        for (run, tag_to_content) in six.iteritems(mapping):
+            for tag in tag_to_content:
+                summary_metadata = self._multiplexer.SummaryMetadata(run, tag)
+                result[run][tag] = {
+                    u"description": summary_metadata.summary_description,
+                }
+        contents = json.dumps(result, sort_keys=True)
+        return werkzeug.Response(contents, content_type="application/json")
+
+    @wrappers.Request.application
+    def _serve_greetings(self, request):
+        run = request.args.get("run")
+        tag = request.args.get("tag")
+        if run is None or tag is None:
+            raise werkzeug.exceptions.BadRequest("Must specify run and tag")
+        try:
+            data = [
+                np.asscalar(
+                    tensor_util.make_ndarray(event.tensor_proto)
+                ).decode("utf-8")
+                for event in self._multiplexer.Tensors(run, tag)
+            ]
+        except KeyError:
+            raise werkzeug.exceptions.BadRequest("Invalid run or tag")
+        contents = json.dumps(data, sort_keys=True)
+        return werkzeug.Response(contents, content_type="application/json")
