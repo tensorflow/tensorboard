@@ -28,66 +28,68 @@ from tensorboard.backend import experiment_id
 
 
 class ExperimentIdMiddlewareTest(tb_test.TestCase):
-  """Tests for `ExperimentIdMiddleware`."""
+    """Tests for `ExperimentIdMiddleware`."""
 
-  def setUp(self):
-    super(ExperimentIdMiddlewareTest, self).setUp()
-    self.app = experiment_id.ExperimentIdMiddleware(self._echo_app)
-    self.server = werkzeug_test.Client(self.app, werkzeug.BaseResponse)
+    def setUp(self):
+        super(ExperimentIdMiddlewareTest, self).setUp()
+        self.app = experiment_id.ExperimentIdMiddleware(self._echo_app)
+        self.server = werkzeug_test.Client(self.app, werkzeug.BaseResponse)
 
-  def _echo_app(self, environ, start_response):
-    # https://www.python.org/dev/peps/pep-0333/#environ-variables
-    data = {
-        "eid": environ[experiment_id.WSGI_ENVIRON_KEY],
-        "path": environ.get("PATH_INFO", ""),
-        "script": environ.get("SCRIPT_NAME", ""),
-    }
-    body = json.dumps(data, sort_keys=True)
-    start_response("200 OK", [("Content-Type", "application/json")])
-    return [body]
+    def _echo_app(self, environ, start_response):
+        # https://www.python.org/dev/peps/pep-0333/#environ-variables
+        data = {
+            "eid": environ[experiment_id.WSGI_ENVIRON_KEY],
+            "path": environ.get("PATH_INFO", ""),
+            "script": environ.get("SCRIPT_NAME", ""),
+        }
+        body = json.dumps(data, sort_keys=True)
+        start_response("200 OK", [("Content-Type", "application/json")])
+        return [body]
 
-  def _assert_ok(self, response, eid, path, script):
-    self.assertEqual(response.status_code, 200)
-    actual = json.loads(response.get_data())
-    expected = dict(eid=eid, path=path, script=script)
-    self.assertEqual(actual, expected)
+    def _assert_ok(self, response, eid, path, script):
+        self.assertEqual(response.status_code, 200)
+        actual = json.loads(response.get_data())
+        expected = dict(eid=eid, path=path, script=script)
+        self.assertEqual(actual, expected)
 
-  def test_no_experiment_empty_path(self):
-    response = self.server.get("")
-    self._assert_ok(response, eid="", path="", script="")
+    def test_no_experiment_empty_path(self):
+        response = self.server.get("")
+        self._assert_ok(response, eid="", path="", script="")
 
-  def test_no_experiment_root_path(self):
-    response = self.server.get("/")
-    self._assert_ok(response, eid="", path="/", script="")
+    def test_no_experiment_root_path(self):
+        response = self.server.get("/")
+        self._assert_ok(response, eid="", path="/", script="")
 
-  def test_no_experiment_sub_path(self):
-    response = self.server.get("/x/y")
-    self._assert_ok(response, eid="", path="/x/y", script="")
+    def test_no_experiment_sub_path(self):
+        response = self.server.get("/x/y")
+        self._assert_ok(response, eid="", path="/x/y", script="")
 
-  def test_with_experiment_empty_path(self):
-    response = self.server.get("/experiment/123")
-    self._assert_ok(response, eid="123", path="", script="/experiment/123")
+    def test_with_experiment_empty_path(self):
+        response = self.server.get("/experiment/123")
+        self._assert_ok(response, eid="123", path="", script="/experiment/123")
 
-  def test_with_experiment_root_path(self):
-    response = self.server.get("/experiment/123/")
-    self._assert_ok(response, eid="123", path="/", script="/experiment/123")
+    def test_with_experiment_root_path(self):
+        response = self.server.get("/experiment/123/")
+        self._assert_ok(response, eid="123", path="/", script="/experiment/123")
 
-  def test_with_experiment_sub_path(self):
-    response = self.server.get("/experiment/123/x/y")
-    self._assert_ok(response, eid="123", path="/x/y", script="/experiment/123")
+    def test_with_experiment_sub_path(self):
+        response = self.server.get("/experiment/123/x/y")
+        self._assert_ok(
+            response, eid="123", path="/x/y", script="/experiment/123"
+        )
 
-  def test_with_empty_experiment_empty_path(self):
-    response = self.server.get("/experiment/")
-    self._assert_ok(response, eid="", path="", script="/experiment/")
+    def test_with_empty_experiment_empty_path(self):
+        response = self.server.get("/experiment/")
+        self._assert_ok(response, eid="", path="", script="/experiment/")
 
-  def test_with_empty_experiment_root_path(self):
-    response = self.server.get("/experiment//")
-    self._assert_ok(response, eid="", path="/", script="/experiment/")
+    def test_with_empty_experiment_root_path(self):
+        response = self.server.get("/experiment//")
+        self._assert_ok(response, eid="", path="/", script="/experiment/")
 
-  def test_with_empty_experiment_sub_path(self):
-    response = self.server.get("/experiment//x/y")
-    self._assert_ok(response, eid="", path="/x/y", script="/experiment/")
+    def test_with_empty_experiment_sub_path(self):
+        response = self.server.get("/experiment//x/y")
+        self._assert_ok(response, eid="", path="/x/y", script="/experiment/")
 
 
 if __name__ == "__main__":
-  tb_test.main()
+    tb_test.main()
