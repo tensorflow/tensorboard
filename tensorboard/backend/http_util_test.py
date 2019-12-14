@@ -26,10 +26,10 @@ import struct
 import six
 
 try:
-  # python version >= 3.3
-  from unittest import mock
+    # python version >= 3.3
+    from unittest import mock
 except ImportError:
-  import mock  # pylint: disable=unused-import
+    import mock  # pylint: disable=unused-import
 
 from werkzeug import test as wtest
 from werkzeug import wrappers
@@ -39,286 +39,375 @@ from tensorboard.backend import http_util
 
 
 class RespondTest(tb_test.TestCase):
+    def testHelloWorld(self):
+        q = wrappers.Request(wtest.EnvironBuilder().get_environ())
+        r = http_util.Respond(q, "<b>hello world</b>", "text/html")
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.response, [six.b("<b>hello world</b>")])
+        self.assertEqual(r.headers.get("Content-Length"), "18")
 
-  def testHelloWorld(self):
-    q = wrappers.Request(wtest.EnvironBuilder().get_environ())
-    r = http_util.Respond(q, '<b>hello world</b>', 'text/html')
-    self.assertEqual(r.status_code, 200)
-    self.assertEqual(r.response, [six.b('<b>hello world</b>')])
-    self.assertEqual(r.headers.get('Content-Length'), '18')
+    def testHeadRequest_doesNotWrite(self):
+        builder = wtest.EnvironBuilder(method="HEAD")
+        env = builder.get_environ()
+        request = wrappers.Request(env)
+        r = http_util.Respond(request, "<b>hello world</b>", "text/html")
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.response, [])
+        self.assertEqual(r.headers.get("Content-Length"), "18")
 
-  def testHeadRequest_doesNotWrite(self):
-    builder = wtest.EnvironBuilder(method='HEAD')
-    env = builder.get_environ()
-    request = wrappers.Request(env)
-    r = http_util.Respond(request, '<b>hello world</b>', 'text/html')
-    self.assertEqual(r.status_code, 200)
-    self.assertEqual(r.response, [])
-    self.assertEqual(r.headers.get('Content-Length'), '18')
+    def testPlainText_appendsUtf8ToContentType(self):
+        q = wrappers.Request(wtest.EnvironBuilder().get_environ())
+        r = http_util.Respond(q, "hello", "text/plain")
+        h = r.headers
+        self.assertEqual(h.get("Content-Type"), "text/plain; charset=utf-8")
 
-  def testPlainText_appendsUtf8ToContentType(self):
-    q = wrappers.Request(wtest.EnvironBuilder().get_environ())
-    r = http_util.Respond(q, 'hello', 'text/plain')
-    h = r.headers
-    self.assertEqual(h.get('Content-Type'), 'text/plain; charset=utf-8')
+    def testContentLength_isInBytes(self):
+        q = wrappers.Request(wtest.EnvironBuilder().get_environ())
+        r = http_util.Respond(q, "爱", "text/plain")
+        self.assertEqual(r.headers.get("Content-Length"), "3")
+        q = wrappers.Request(wtest.EnvironBuilder().get_environ())
+        r = http_util.Respond(q, "爱".encode("utf-8"), "text/plain")
+        self.assertEqual(r.headers.get("Content-Length"), "3")
 
-  def testContentLength_isInBytes(self):
-    q = wrappers.Request(wtest.EnvironBuilder().get_environ())
-    r = http_util.Respond(q, '爱', 'text/plain')
-    self.assertEqual(r.headers.get('Content-Length'), '3')
-    q = wrappers.Request(wtest.EnvironBuilder().get_environ())
-    r = http_util.Respond(q, '爱'.encode('utf-8'), 'text/plain')
-    self.assertEqual(r.headers.get('Content-Length'), '3')
+    def testResponseCharsetTranscoding(self):
+        bean = "要依法治国是赞美那些谁是公义的和惩罚恶人。 - 韩非"
 
-  def testResponseCharsetTranscoding(self):
-    bean = '要依法治国是赞美那些谁是公义的和惩罚恶人。 - 韩非'
+        # input is unicode string, output is gbk string
+        q = wrappers.Request(wtest.EnvironBuilder().get_environ())
+        r = http_util.Respond(q, bean, "text/plain; charset=gbk")
+        self.assertEqual(r.response, [bean.encode("gbk")])
 
-    # input is unicode string, output is gbk string
-    q = wrappers.Request(wtest.EnvironBuilder().get_environ())
-    r = http_util.Respond(q, bean, 'text/plain; charset=gbk')
-    self.assertEqual(r.response, [bean.encode('gbk')])
+        # input is utf-8 string, output is gbk string
+        q = wrappers.Request(wtest.EnvironBuilder().get_environ())
+        r = http_util.Respond(
+            q, bean.encode("utf-8"), "text/plain; charset=gbk"
+        )
+        self.assertEqual(r.response, [bean.encode("gbk")])
 
-    # input is utf-8 string, output is gbk string
-    q = wrappers.Request(wtest.EnvironBuilder().get_environ())
-    r = http_util.Respond(q, bean.encode('utf-8'), 'text/plain; charset=gbk')
-    self.assertEqual(r.response, [bean.encode('gbk')])
+        # input is object with unicode strings, output is gbk json
+        q = wrappers.Request(wtest.EnvironBuilder().get_environ())
+        r = http_util.Respond(q, {"red": bean}, "application/json; charset=gbk")
+        self.assertEqual(
+            r.response, [b'{"red": "' + bean.encode("gbk") + b'"}']
+        )
 
-    # input is object with unicode strings, output is gbk json
-    q = wrappers.Request(wtest.EnvironBuilder().get_environ())
-    r = http_util.Respond(q, {'red': bean}, 'application/json; charset=gbk')
-    self.assertEqual(r.response, [b'{"red": "' + bean.encode('gbk') + b'"}'])
+        # input is object with utf-8 strings, output is gbk json
+        q = wrappers.Request(wtest.EnvironBuilder().get_environ())
+        r = http_util.Respond(
+            q, {"red": bean.encode("utf-8")}, "application/json; charset=gbk"
+        )
+        self.assertEqual(
+            r.response, [b'{"red": "' + bean.encode("gbk") + b'"}']
+        )
 
-    # input is object with utf-8 strings, output is gbk json
-    q = wrappers.Request(wtest.EnvironBuilder().get_environ())
-    r = http_util.Respond(
-        q, {'red': bean.encode('utf-8')}, 'application/json; charset=gbk')
-    self.assertEqual(r.response, [b'{"red": "' + bean.encode('gbk') + b'"}'])
+        # input is object with gbk strings, output is gbk json
+        q = wrappers.Request(wtest.EnvironBuilder().get_environ())
+        r = http_util.Respond(
+            q,
+            {"red": bean.encode("gbk")},
+            "application/json; charset=gbk",
+            encoding="gbk",
+        )
+        self.assertEqual(
+            r.response, [b'{"red": "' + bean.encode("gbk") + b'"}']
+        )
 
-    # input is object with gbk strings, output is gbk json
-    q = wrappers.Request(wtest.EnvironBuilder().get_environ())
-    r = http_util.Respond(
-        q, {'red': bean.encode('gbk')},
-        'application/json; charset=gbk',
-        encoding='gbk')
-    self.assertEqual(r.response, [b'{"red": "' + bean.encode('gbk') + b'"}'])
+    def testAcceptGzip_compressesResponse(self):
+        fall_of_hyperion_canto1_stanza1 = "\n".join(
+            [
+                "Fanatics have their dreams, wherewith they weave",
+                "A paradise for a sect; the savage too",
+                "From forth the loftiest fashion of his sleep",
+                "Guesses at Heaven; pity these have not",
+                "Trac'd upon vellum or wild Indian leaf",
+                "The shadows of melodious utterance.",
+                "But bare of laurel they live, dream, and die;",
+                "For Poesy alone can tell her dreams,",
+                "With the fine spell of words alone can save",
+                "Imagination from the sable charm",
+                "And dumb enchantment. Who alive can say,",
+                "'Thou art no Poet may'st not tell thy dreams?'",
+                "Since every man whose soul is not a clod",
+                "Hath visions, and would speak, if he had loved",
+                "And been well nurtured in his mother tongue.",
+                "Whether the dream now purpos'd to rehearse",
+                "Be poet's or fanatic's will be known",
+                "When this warm scribe my hand is in the grave.",
+            ]
+        )
 
-  def testAcceptGzip_compressesResponse(self):
-    fall_of_hyperion_canto1_stanza1 = '\n'.join([
-        'Fanatics have their dreams, wherewith they weave',
-        'A paradise for a sect; the savage too',
-        'From forth the loftiest fashion of his sleep',
-        'Guesses at Heaven; pity these have not',
-        'Trac\'d upon vellum or wild Indian leaf',
-        'The shadows of melodious utterance.',
-        'But bare of laurel they live, dream, and die;',
-        'For Poesy alone can tell her dreams,',
-        'With the fine spell of words alone can save',
-        'Imagination from the sable charm',
-        'And dumb enchantment. Who alive can say,',
-        '\'Thou art no Poet may\'st not tell thy dreams?\'',
-        'Since every man whose soul is not a clod',
-        'Hath visions, and would speak, if he had loved',
-        'And been well nurtured in his mother tongue.',
-        'Whether the dream now purpos\'d to rehearse',
-        'Be poet\'s or fanatic\'s will be known',
-        'When this warm scribe my hand is in the grave.',
-    ])
+        e1 = wtest.EnvironBuilder(
+            headers={"Accept-Encoding": "*"}
+        ).get_environ()
+        any_encoding = wrappers.Request(e1)
 
-    e1 = wtest.EnvironBuilder(headers={'Accept-Encoding': '*'}).get_environ()
-    any_encoding = wrappers.Request(e1)
+        r = http_util.Respond(
+            any_encoding, fall_of_hyperion_canto1_stanza1, "text/plain"
+        )
+        self.assertEqual(r.headers.get("Content-Encoding"), "gzip")
+        self.assertEqual(
+            _gunzip(r.response[0]),  # pylint: disable=unsubscriptable-object
+            fall_of_hyperion_canto1_stanza1.encode("utf-8"),
+        )
 
-    r = http_util.Respond(
-        any_encoding, fall_of_hyperion_canto1_stanza1, 'text/plain')
-    self.assertEqual(r.headers.get('Content-Encoding'), 'gzip')
-    self.assertEqual(_gunzip(r.response[0]),  # pylint: disable=unsubscriptable-object
-                     fall_of_hyperion_canto1_stanza1.encode('utf-8'))
+        e2 = wtest.EnvironBuilder(
+            headers={"Accept-Encoding": "gzip"}
+        ).get_environ()
+        gzip_encoding = wrappers.Request(e2)
 
-    e2 = wtest.EnvironBuilder(headers={'Accept-Encoding': 'gzip'}).get_environ()
-    gzip_encoding = wrappers.Request(e2)
+        r = http_util.Respond(
+            gzip_encoding, fall_of_hyperion_canto1_stanza1, "text/plain"
+        )
+        self.assertEqual(r.headers.get("Content-Encoding"), "gzip")
+        self.assertEqual(
+            _gunzip(r.response[0]),  # pylint: disable=unsubscriptable-object
+            fall_of_hyperion_canto1_stanza1.encode("utf-8"),
+        )
 
-    r = http_util.Respond(
-        gzip_encoding, fall_of_hyperion_canto1_stanza1, 'text/plain')
-    self.assertEqual(r.headers.get('Content-Encoding'), 'gzip')
-    self.assertEqual(_gunzip(r.response[0]),  # pylint: disable=unsubscriptable-object
-                     fall_of_hyperion_canto1_stanza1.encode('utf-8'))
+        r = http_util.Respond(
+            any_encoding, fall_of_hyperion_canto1_stanza1, "image/png"
+        )
+        self.assertEqual(
+            r.response, [fall_of_hyperion_canto1_stanza1.encode("utf-8")]
+        )
 
-    r = http_util.Respond(
-        any_encoding, fall_of_hyperion_canto1_stanza1, 'image/png')
-    self.assertEqual(
-        r.response, [fall_of_hyperion_canto1_stanza1.encode('utf-8')])
+    def testAcceptGzip_alreadyCompressed_sendsPrecompressedResponse(self):
+        gzip_text = _gzip(b"hello hello hello world")
+        e = wtest.EnvironBuilder(
+            headers={"Accept-Encoding": "gzip"}
+        ).get_environ()
+        q = wrappers.Request(e)
+        r = http_util.Respond(
+            q, gzip_text, "text/plain", content_encoding="gzip"
+        )
+        self.assertEqual(r.response, [gzip_text])  # Still singly zipped
 
-  def testAcceptGzip_alreadyCompressed_sendsPrecompressedResponse(self):
-    gzip_text = _gzip(b'hello hello hello world')
-    e = wtest.EnvironBuilder(headers={'Accept-Encoding': 'gzip'}).get_environ()
-    q = wrappers.Request(e)
-    r = http_util.Respond(q, gzip_text, 'text/plain', content_encoding='gzip')
-    self.assertEqual(r.response, [gzip_text])  # Still singly zipped
+    def testPrecompressedResponse_noAcceptGzip_decompressesResponse(self):
+        orig_text = b"hello hello hello world"
+        gzip_text = _gzip(orig_text)
+        q = wrappers.Request(wtest.EnvironBuilder().get_environ())
+        r = http_util.Respond(
+            q, gzip_text, "text/plain", content_encoding="gzip"
+        )
+        # Streaming gunzip produces file-wrapper application iterator as response,
+        # so rejoin it into the full response before comparison.
+        full_response = b"".join(r.response)
+        self.assertEqual(full_response, orig_text)
 
-  def testPrecompressedResponse_noAcceptGzip_decompressesResponse(self):
-    orig_text = b'hello hello hello world'
-    gzip_text = _gzip(orig_text)
-    q = wrappers.Request(wtest.EnvironBuilder().get_environ())
-    r = http_util.Respond(q, gzip_text, 'text/plain', content_encoding='gzip')
-    # Streaming gunzip produces file-wrapper application iterator as response,
-    # so rejoin it into the full response before comparison.
-    full_response = b''.join(r.response)
-    self.assertEqual(full_response, orig_text)
+    def testPrecompressedResponse_streamingDecompression_catchesBadSize(self):
+        orig_text = b"hello hello hello world"
+        gzip_text = _gzip(orig_text)
+        # Corrupt the gzipped data's stored content size (last 4 bytes).
+        bad_text = gzip_text[:-4] + _bitflip(gzip_text[-4:])
+        q = wrappers.Request(wtest.EnvironBuilder().get_environ())
+        r = http_util.Respond(
+            q, bad_text, "text/plain", content_encoding="gzip"
+        )
+        # Streaming gunzip defers actual unzipping until response is used; once
+        # we iterate over the whole file-wrapper application iterator, the
+        # underlying GzipFile should be closed, and throw the size check error.
+        with six.assertRaisesRegex(self, IOError, "Incorrect length"):
+            _ = list(r.response)
 
-  def testPrecompressedResponse_streamingDecompression_catchesBadSize(self):
-    orig_text = b'hello hello hello world'
-    gzip_text = _gzip(orig_text)
-    # Corrupt the gzipped data's stored content size (last 4 bytes).
-    bad_text = gzip_text[:-4] + _bitflip(gzip_text[-4:])
-    q = wrappers.Request(wtest.EnvironBuilder().get_environ())
-    r = http_util.Respond(q, bad_text, 'text/plain', content_encoding='gzip')
-    # Streaming gunzip defers actual unzipping until response is used; once
-    # we iterate over the whole file-wrapper application iterator, the
-    # underlying GzipFile should be closed, and throw the size check error.
-    with six.assertRaisesRegex(self, IOError, 'Incorrect length'):
-      _ = list(r.response)
+    def testJson_getsAutoSerialized(self):
+        q = wrappers.Request(wtest.EnvironBuilder().get_environ())
+        r = http_util.Respond(q, [1, 2, 3], "application/json")
+        self.assertEqual(r.response, [b"[1, 2, 3]"])
 
-  def testJson_getsAutoSerialized(self):
-    q = wrappers.Request(wtest.EnvironBuilder().get_environ())
-    r = http_util.Respond(q, [1, 2, 3], 'application/json')
-    self.assertEqual(r.response, [b'[1, 2, 3]'])
+    def testExpires_setsCruiseControl(self):
+        q = wrappers.Request(wtest.EnvironBuilder().get_environ())
+        r = http_util.Respond(q, "<b>hello world</b>", "text/html", expires=60)
+        self.assertEqual(r.headers.get("Cache-Control"), "private, max-age=60")
 
-  def testExpires_setsCruiseControl(self):
-    q = wrappers.Request(wtest.EnvironBuilder().get_environ())
-    r = http_util.Respond(q, '<b>hello world</b>', 'text/html', expires=60)
-    self.assertEqual(r.headers.get('Cache-Control'), 'private, max-age=60')
+    def testCsp(self):
+        q = wrappers.Request(wtest.EnvironBuilder().get_environ())
+        r = http_util.Respond(
+            q, "<b>hello</b>", "text/html", csp_scripts_sha256s=["abcdefghi"]
+        )
+        expected_csp = (
+            "default-src 'self';font-src 'self';frame-ancestors *;"
+            "frame-src 'self';img-src 'self' data: blob:;object-src 'none';"
+            "style-src 'self' https://www.gstatic.com data: 'unsafe-inline';"
+            "script-src 'self' 'unsafe-eval' 'sha256-abcdefghi'"
+        )
+        self.assertEqual(r.headers.get("Content-Security-Policy"), expected_csp)
 
-  def testCsp(self):
-    q = wrappers.Request(wtest.EnvironBuilder().get_environ())
-    r = http_util.Respond(
-        q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=['abcdefghi'])
-    expected_csp = (
-        "default-src 'self';font-src 'self';frame-ancestors *;"
-        "frame-src 'self';img-src 'self' data: blob:;object-src 'none';"
-        "style-src 'self' https://www.gstatic.com data: 'unsafe-inline';"
-        "script-src 'self' 'unsafe-eval' 'sha256-abcdefghi'"
+    @mock.patch.object(http_util, "_CSP_SCRIPT_SELF", False)
+    def testCsp_noHash(self):
+        q = wrappers.Request(wtest.EnvironBuilder().get_environ())
+        r = http_util.Respond(
+            q, "<b>hello</b>", "text/html", csp_scripts_sha256s=None
+        )
+        expected_csp = (
+            "default-src 'self';font-src 'self';frame-ancestors *;"
+            "frame-src 'self';img-src 'self' data: blob:;object-src 'none';"
+            "style-src 'self' https://www.gstatic.com data: 'unsafe-inline';"
+            "script-src 'unsafe-eval'"
+        )
+        self.assertEqual(r.headers.get("Content-Security-Policy"), expected_csp)
+
+    @mock.patch.object(http_util, "_CSP_SCRIPT_SELF", False)
+    @mock.patch.object(http_util, "_CSP_SCRIPT_UNSAFE_EVAL", False)
+    def testCsp_noHash_noUnsafeEval(self):
+        q = wrappers.Request(wtest.EnvironBuilder().get_environ())
+        r = http_util.Respond(
+            q, "<b>hello</b>", "text/html", csp_scripts_sha256s=None
+        )
+        expected_csp = (
+            "default-src 'self';font-src 'self';frame-ancestors *;"
+            "frame-src 'self';img-src 'self' data: blob:;object-src 'none';"
+            "style-src 'self' https://www.gstatic.com data: 'unsafe-inline';"
+            "script-src 'none'"
+        )
+        self.assertEqual(r.headers.get("Content-Security-Policy"), expected_csp)
+
+    @mock.patch.object(http_util, "_CSP_SCRIPT_SELF", True)
+    @mock.patch.object(http_util, "_CSP_SCRIPT_UNSAFE_EVAL", False)
+    def testCsp_onlySelf(self):
+        q = wrappers.Request(wtest.EnvironBuilder().get_environ())
+        r = http_util.Respond(
+            q, "<b>hello</b>", "text/html", csp_scripts_sha256s=None
+        )
+        expected_csp = (
+            "default-src 'self';font-src 'self';frame-ancestors *;"
+            "frame-src 'self';img-src 'self' data: blob:;object-src 'none';"
+            "style-src 'self' https://www.gstatic.com data: 'unsafe-inline';"
+            "script-src 'self'"
+        )
+        self.assertEqual(r.headers.get("Content-Security-Policy"), expected_csp)
+
+    @mock.patch.object(http_util, "_CSP_SCRIPT_UNSAFE_EVAL", False)
+    def testCsp_disableUnsafeEval(self):
+        q = wrappers.Request(wtest.EnvironBuilder().get_environ())
+        r = http_util.Respond(
+            q, "<b>hello</b>", "text/html", csp_scripts_sha256s=["abcdefghi"]
+        )
+        expected_csp = (
+            "default-src 'self';font-src 'self';frame-ancestors *;"
+            "frame-src 'self';img-src 'self' data: blob:;object-src 'none';"
+            "style-src 'self' https://www.gstatic.com data: 'unsafe-inline';"
+            "script-src 'self' 'sha256-abcdefghi'"
+        )
+        self.assertEqual(r.headers.get("Content-Security-Policy"), expected_csp)
+
+    @mock.patch.object(
+        http_util, "_CSP_IMG_DOMAINS_WHITELIST", ["https://example.com"]
     )
-    self.assertEqual(r.headers.get('Content-Security-Policy'), expected_csp)
-
-  @mock.patch.object(http_util, '_CSP_SCRIPT_SELF', False)
-  def testCsp_noHash(self):
-    q = wrappers.Request(wtest.EnvironBuilder().get_environ())
-    r = http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=None)
-    expected_csp = (
-        "default-src 'self';font-src 'self';frame-ancestors *;"
-        "frame-src 'self';img-src 'self' data: blob:;object-src 'none';"
-        "style-src 'self' https://www.gstatic.com data: 'unsafe-inline';"
-        "script-src 'unsafe-eval'"
+    @mock.patch.object(
+        http_util,
+        "_CSP_SCRIPT_DOMAINS_WHITELIST",
+        ["https://tensorflow.org/tensorboard"],
     )
-    self.assertEqual(r.headers.get('Content-Security-Policy'), expected_csp)
-
-  @mock.patch.object(http_util, '_CSP_SCRIPT_SELF', False)
-  @mock.patch.object(http_util, '_CSP_SCRIPT_UNSAFE_EVAL', False)
-  def testCsp_noHash_noUnsafeEval(self):
-    q = wrappers.Request(wtest.EnvironBuilder().get_environ())
-    r = http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=None)
-    expected_csp = (
-        "default-src 'self';font-src 'self';frame-ancestors *;"
-        "frame-src 'self';img-src 'self' data: blob:;object-src 'none';"
-        "style-src 'self' https://www.gstatic.com data: 'unsafe-inline';"
-        "script-src 'none'"
+    @mock.patch.object(
+        http_util, "_CSP_STYLE_DOMAINS_WHITELIST", ["https://googol.com"]
     )
-    self.assertEqual(r.headers.get('Content-Security-Policy'), expected_csp)
-
-  @mock.patch.object(http_util, '_CSP_SCRIPT_SELF', True)
-  @mock.patch.object(http_util, '_CSP_SCRIPT_UNSAFE_EVAL', False)
-  def testCsp_onlySelf(self):
-    q = wrappers.Request(wtest.EnvironBuilder().get_environ())
-    r = http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=None)
-    expected_csp = (
-        "default-src 'self';font-src 'self';frame-ancestors *;"
-        "frame-src 'self';img-src 'self' data: blob:;object-src 'none';"
-        "style-src 'self' https://www.gstatic.com data: 'unsafe-inline';"
-        "script-src 'self'"
+    @mock.patch.object(
+        http_util, "_CSP_FRAME_DOMAINS_WHITELIST", ["https://myframe.com"]
     )
-    self.assertEqual(r.headers.get('Content-Security-Policy'), expected_csp)
+    def testCsp_globalDomainWhiteList(self):
+        q = wrappers.Request(wtest.EnvironBuilder().get_environ())
+        r = http_util.Respond(
+            q, "<b>hello</b>", "text/html", csp_scripts_sha256s=["abcd"]
+        )
+        expected_csp = (
+            "default-src 'self';font-src 'self';frame-ancestors *;"
+            "frame-src 'self' https://myframe.com;"
+            "img-src 'self' data: blob: https://example.com;"
+            "object-src 'none';style-src 'self' https://www.gstatic.com data: "
+            "'unsafe-inline' https://googol.com;script-src "
+            "https://tensorflow.org/tensorboard 'self' 'unsafe-eval' 'sha256-abcd'"
+        )
+        self.assertEqual(r.headers.get("Content-Security-Policy"), expected_csp)
 
-  @mock.patch.object(http_util, '_CSP_SCRIPT_UNSAFE_EVAL', False)
-  def testCsp_disableUnsafeEval(self):
-    q = wrappers.Request(wtest.EnvironBuilder().get_environ())
-    r = http_util.Respond(
-        q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=['abcdefghi'])
-    expected_csp = (
-        "default-src 'self';font-src 'self';frame-ancestors *;"
-        "frame-src 'self';img-src 'self' data: blob:;object-src 'none';"
-        "style-src 'self' https://www.gstatic.com data: 'unsafe-inline';"
-        "script-src 'self' 'sha256-abcdefghi'"
-    )
-    self.assertEqual(r.headers.get('Content-Security-Policy'), expected_csp)
+    def testCsp_badGlobalDomainWhiteList(self):
+        q = wrappers.Request(wtest.EnvironBuilder().get_environ())
+        configs = [
+            "_CSP_SCRIPT_DOMAINS_WHITELIST",
+            "_CSP_IMG_DOMAINS_WHITELIST",
+            "_CSP_STYLE_DOMAINS_WHITELIST",
+            "_CSP_FONT_DOMAINS_WHITELIST",
+            "_CSP_FRAME_DOMAINS_WHITELIST",
+        ]
 
-  @mock.patch.object(http_util, '_CSP_IMG_DOMAINS_WHITELIST', ['https://example.com'])
-  @mock.patch.object(http_util, '_CSP_SCRIPT_DOMAINS_WHITELIST',
-    ['https://tensorflow.org/tensorboard'])
-  @mock.patch.object(http_util, '_CSP_STYLE_DOMAINS_WHITELIST', ['https://googol.com'])
-  @mock.patch.object(http_util, '_CSP_FRAME_DOMAINS_WHITELIST', ['https://myframe.com'])
-  def testCsp_globalDomainWhiteList(self):
-    q = wrappers.Request(wtest.EnvironBuilder().get_environ())
-    r = http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=['abcd'])
-    expected_csp = (
-        "default-src 'self';font-src 'self';frame-ancestors *;"
-        "frame-src 'self' https://myframe.com;"
-        "img-src 'self' data: blob: https://example.com;"
-        "object-src 'none';style-src 'self' https://www.gstatic.com data: "
-        "'unsafe-inline' https://googol.com;script-src "
-        "https://tensorflow.org/tensorboard 'self' 'unsafe-eval' 'sha256-abcd'"
-    )
-    self.assertEqual(r.headers.get('Content-Security-Policy'), expected_csp)
+        for config in configs:
+            with mock.patch.object(
+                http_util, config, ["http://tensorflow.org"]
+            ):
+                with self.assertRaisesRegex(
+                    ValueError, "^Expected all whitelist to be a https URL"
+                ):
+                    http_util.Respond(
+                        q,
+                        "<b>hello</b>",
+                        "text/html",
+                        csp_scripts_sha256s=["abcd"],
+                    )
 
-  def testCsp_badGlobalDomainWhiteList(self):
-    q = wrappers.Request(wtest.EnvironBuilder().get_environ())
-    configs = [
-        '_CSP_SCRIPT_DOMAINS_WHITELIST',
-        '_CSP_IMG_DOMAINS_WHITELIST',
-        '_CSP_STYLE_DOMAINS_WHITELIST',
-        '_CSP_FONT_DOMAINS_WHITELIST',
-        '_CSP_FRAME_DOMAINS_WHITELIST',
-    ]
+            # Cannot grant more trust to a script from a remote source.
+            with mock.patch.object(
+                http_util,
+                config,
+                ["'strict-dynamic' 'unsafe-eval' https://tensorflow.org/"],
+            ):
+                with self.assertRaisesRegex(
+                    ValueError, "^Expected all whitelist to be a https URL"
+                ):
+                    http_util.Respond(
+                        q,
+                        "<b>hello</b>",
+                        "text/html",
+                        csp_scripts_sha256s=["abcd"],
+                    )
 
-    for config in configs:
-      with mock.patch.object(http_util, config, ['http://tensorflow.org']):
-        with self.assertRaisesRegex(
-            ValueError, '^Expected all whitelist to be a https URL'):
-          http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=['abcd'])
+            # Attempt to terminate the script-src to specify a new one that allows ALL!
+            with mock.patch.object(
+                http_util, config, ["https://tensorflow.org;script-src *"]
+            ):
+                with self.assertRaisesRegex(
+                    ValueError, '^Expected whitelist domain to not contain ";"'
+                ):
+                    http_util.Respond(
+                        q,
+                        "<b>hello</b>",
+                        "text/html",
+                        csp_scripts_sha256s=["abcd"],
+                    )
 
-      # Cannot grant more trust to a script from a remote source.
-      with mock.patch.object(http_util, config,
-          ["'strict-dynamic' 'unsafe-eval' https://tensorflow.org/"]):
-        with self.assertRaisesRegex(
-            ValueError, '^Expected all whitelist to be a https URL'):
-          http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=['abcd'])
-
-      # Attempt to terminate the script-src to specify a new one that allows ALL!
-      with mock.patch.object(http_util, config, ['https://tensorflow.org;script-src *']):
-        with self.assertRaisesRegex(
-            ValueError, '^Expected whitelist domain to not contain ";"'):
-          http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=['abcd'])
-
-      # Attempt to use whitespace, delimit character, to specify a new one.
-      with mock.patch.object(http_util, config, ['https://tensorflow.org *']):
-        with self.assertRaisesRegex(
-            ValueError, '^Expected whitelist domain to not contain a whitespace'):
-          http_util.Respond(q, '<b>hello</b>', 'text/html', csp_scripts_sha256s=['abcd'])
+            # Attempt to use whitespace, delimit character, to specify a new one.
+            with mock.patch.object(
+                http_util, config, ["https://tensorflow.org *"]
+            ):
+                with self.assertRaisesRegex(
+                    ValueError,
+                    "^Expected whitelist domain to not contain a whitespace",
+                ):
+                    http_util.Respond(
+                        q,
+                        "<b>hello</b>",
+                        "text/html",
+                        csp_scripts_sha256s=["abcd"],
+                    )
 
 
 def _gzip(bs):
-  out = six.BytesIO()
-  with gzip.GzipFile(fileobj=out, mode='wb') as f:
-    f.write(bs)
-  return out.getvalue()
+    out = six.BytesIO()
+    with gzip.GzipFile(fileobj=out, mode="wb") as f:
+        f.write(bs)
+    return out.getvalue()
 
 
 def _gunzip(bs):
-  with gzip.GzipFile(fileobj=six.BytesIO(bs), mode='rb') as f:
-    return f.read()
+    with gzip.GzipFile(fileobj=six.BytesIO(bs), mode="rb") as f:
+        return f.read()
+
 
 def _bitflip(bs):
-  # Return bytestring with all its bits flipped.
-  return b''.join(struct.pack('B', 0xFF ^ struct.unpack_from('B', bs, i)[0])
-                  for i in range(len(bs)))
+    # Return bytestring with all its bits flipped.
+    return b"".join(
+        struct.pack("B", 0xFF ^ struct.unpack_from("B", bs, i)[0])
+        for i in range(len(bs))
+    )
 
-if __name__ == '__main__':
-  tb_test.main()
+
+if __name__ == "__main__":
+    tb_test.main()
