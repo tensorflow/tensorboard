@@ -12,21 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Demo data for the profile dashboard"""
+"""Demo data for the profile dashboard."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-RUNS = ['foo', 'bar']
+RUNS = ["foo", "bar"]
 
-TRACE_ONLY = ['foo']
+TRACE_ONLY = ["foo"]
 
 
 TRACES = {}
 
 
-TRACES['foo'] = """
+TRACES[
+    "foo"
+] = """
 devices { key: 2 value {
   name: 'Foo2'
   device_id: 2
@@ -61,7 +63,9 @@ trace_events {
 """
 
 
-TRACES['bar'] = """
+TRACES[
+    "bar"
+] = """
 devices { key: 2 value {
   name: 'Bar2'
   device_id: 2
