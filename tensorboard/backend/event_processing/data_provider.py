@@ -29,8 +29,8 @@ logger = tb_logging.get_logger()
 
 
 class MultiplexerDataProvider(provider.DataProvider):
-  def __init__(self, multiplexer, logdir):
-    """Trivial initializer.
+    def __init__(self, multiplexer, logdir):
+        """Trivial initializer.
 
     Args:
       multiplexer: A `plugin_event_multiplexer.EventMultiplexer` (note:
@@ -38,93 +38,89 @@ class MultiplexerDataProvider(provider.DataProvider):
       logdir: The log directory from which data is being read. Only used
         cosmetically. Should be a `str`.
     """
-    self._multiplexer = multiplexer
-    self._logdir = logdir
+        self._multiplexer = multiplexer
+        self._logdir = logdir
 
-  def _test_run_tag(self, run_tag_filter, run, tag):
-    runs = run_tag_filter.runs
-    if runs is not None and run not in runs:
-      return False
-    tags = run_tag_filter.tags
-    if tags is not None and tag not in tags:
-      return False
-    return True
+    def _test_run_tag(self, run_tag_filter, run, tag):
+        runs = run_tag_filter.runs
+        if runs is not None and run not in runs:
+            return False
+        tags = run_tag_filter.tags
+        if tags is not None and tag not in tags:
+            return False
+        return True
 
-  def _get_first_event_timestamp(self, run_name):
-    try:
-      return self._multiplexer.FirstEventTimestamp(run_name)
-    except ValueError as e:
-      return None
+    def _get_first_event_timestamp(self, run_name):
+        try:
+            return self._multiplexer.FirstEventTimestamp(run_name)
+        except ValueError as e:
+            return None
 
-  def data_location(self, experiment_id):
-    del experiment_id  # ignored
-    return str(self._logdir)
+    def data_location(self, experiment_id):
+        del experiment_id  # ignored
+        return str(self._logdir)
 
-  def list_runs(self, experiment_id):
-    del experiment_id  # ignored for now
-    return [
-        provider.Run(
-            run_id=run,  # use names as IDs
-            run_name=run,
-            start_time=self._get_first_event_timestamp(run),
+    def list_runs(self, experiment_id):
+        del experiment_id  # ignored for now
+        return [
+            provider.Run(
+                run_id=run,  # use names as IDs
+                run_name=run,
+                start_time=self._get_first_event_timestamp(run),
+            )
+            for run in self._multiplexer.Runs()
+        ]
+
+    def list_scalars(self, experiment_id, plugin_name, run_tag_filter=None):
+        run_tag_content = self._multiplexer.PluginRunToTagToContent(plugin_name)
+        return self._list(provider.ScalarTimeSeries, run_tag_content, run_tag_filter)
+
+    def read_scalars(
+        self, experiment_id, plugin_name, downsample=None, run_tag_filter=None
+    ):
+        # TODO(@wchargin): Downsampling not implemented, as the multiplexer
+        # is already downsampled. We could downsample on top of the existing
+        # sampling, which would be nice for testing.
+        del downsample  # ignored for now
+        index = self.list_scalars(
+            experiment_id, plugin_name, run_tag_filter=run_tag_filter
         )
-        for run in self._multiplexer.Runs()
-    ]
 
-  def list_scalars(self, experiment_id, plugin_name, run_tag_filter=None):
-    run_tag_content = self._multiplexer.PluginRunToTagToContent(plugin_name)
-    return self._list(
-        provider.ScalarTimeSeries, run_tag_content, run_tag_filter
-    )
+        def convert_scalar_event(event):
+            return provider.ScalarDatum(
+                step=event.step,
+                wall_time=event.wall_time,
+                value=tensor_util.make_ndarray(event.tensor_proto).item(),
+            )
 
-  def read_scalars(
-      self, experiment_id, plugin_name, downsample=None, run_tag_filter=None
-  ):
-    # TODO(@wchargin): Downsampling not implemented, as the multiplexer
-    # is already downsampled. We could downsample on top of the existing
-    # sampling, which would be nice for testing.
-    del downsample  # ignored for now
-    index = self.list_scalars(
-        experiment_id, plugin_name, run_tag_filter=run_tag_filter
-    )
+        return self._read(convert_scalar_event, index)
 
-    def convert_scalar_event(event):
-      return provider.ScalarDatum(
-          step=event.step,
-          wall_time=event.wall_time,
-          value=tensor_util.make_ndarray(event.tensor_proto).item(),
-      )
+    def list_tensors(self, experiment_id, plugin_name, run_tag_filter=None):
+        run_tag_content = self._multiplexer.PluginRunToTagToContent(plugin_name)
+        return self._list(provider.TensorTimeSeries, run_tag_content, run_tag_filter)
 
-    return self._read(convert_scalar_event, index)
+    def read_tensors(
+        self, experiment_id, plugin_name, downsample=None, run_tag_filter=None
+    ):
+        # TODO(@wchargin): Downsampling not implemented, as the multiplexer
+        # is already downsampled. We could downsample on top of the existing
+        # sampling, which would be nice for testing.
+        del downsample  # ignored for now
+        index = self.list_tensors(
+            experiment_id, plugin_name, run_tag_filter=run_tag_filter
+        )
 
-  def list_tensors(self, experiment_id, plugin_name, run_tag_filter=None):
-    run_tag_content = self._multiplexer.PluginRunToTagToContent(plugin_name)
-    return self._list(
-        provider.TensorTimeSeries, run_tag_content, run_tag_filter
-    )
+        def convert_tensor_event(event):
+            return provider.TensorDatum(
+                step=event.step,
+                wall_time=event.wall_time,
+                numpy=tensor_util.make_ndarray(event.tensor_proto),
+            )
 
-  def read_tensors(
-      self, experiment_id, plugin_name, downsample=None, run_tag_filter=None
-  ):
-    # TODO(@wchargin): Downsampling not implemented, as the multiplexer
-    # is already downsampled. We could downsample on top of the existing
-    # sampling, which would be nice for testing.
-    del downsample  # ignored for now
-    index = self.list_tensors(
-        experiment_id, plugin_name, run_tag_filter=run_tag_filter
-    )
+        return self._read(convert_tensor_event, index)
 
-    def convert_tensor_event(event):
-      return provider.TensorDatum(
-          step=event.step,
-          wall_time=event.wall_time,
-          numpy=tensor_util.make_ndarray(event.tensor_proto),
-      )
-
-    return self._read(convert_tensor_event, index)
-
-  def _list(self, construct_time_series, run_tag_content, run_tag_filter):
-    """Helper to list scalar or tensor time series.
+    def _list(self, construct_time_series, run_tag_content, run_tag_filter):
+        """Helper to list scalar or tensor time series.
 
     Args:
       construct_time_series: `ScalarTimeSeries` or `TensorTimeSeries`.
@@ -135,34 +131,34 @@ class MultiplexerDataProvider(provider.DataProvider):
       A list of objects of type given by `construct_time_series`,
       suitable to be returned from `list_scalars` or `list_tensors`.
     """
-    result = {}
-    if run_tag_filter is None:
-      run_tag_filter = provider.RunTagFilter(runs=None, tags=None)
-    for (run, tag_to_content) in six.iteritems(run_tag_content):
-      result_for_run = {}
-      for tag in tag_to_content:
-        if not self._test_run_tag(run_tag_filter, run, tag):
-          continue
-        result[run] = result_for_run
-        max_step = None
-        max_wall_time = None
-        for event in self._multiplexer.Tensors(run, tag):
-          if max_step is None or max_step < event.step:
-            max_step = event.step
-          if max_wall_time is None or max_wall_time < event.wall_time:
-            max_wall_time = event.wall_time
-        summary_metadata = self._multiplexer.SummaryMetadata(run, tag)
-        result_for_run[tag] = construct_time_series(
-            max_step=max_step,
-            max_wall_time=max_wall_time,
-            plugin_content=summary_metadata.plugin_data.content,
-            description=summary_metadata.summary_description,
-            display_name=summary_metadata.display_name,
-        )
-    return result
+        result = {}
+        if run_tag_filter is None:
+            run_tag_filter = provider.RunTagFilter(runs=None, tags=None)
+        for (run, tag_to_content) in six.iteritems(run_tag_content):
+            result_for_run = {}
+            for tag in tag_to_content:
+                if not self._test_run_tag(run_tag_filter, run, tag):
+                    continue
+                result[run] = result_for_run
+                max_step = None
+                max_wall_time = None
+                for event in self._multiplexer.Tensors(run, tag):
+                    if max_step is None or max_step < event.step:
+                        max_step = event.step
+                    if max_wall_time is None or max_wall_time < event.wall_time:
+                        max_wall_time = event.wall_time
+                summary_metadata = self._multiplexer.SummaryMetadata(run, tag)
+                result_for_run[tag] = construct_time_series(
+                    max_step=max_step,
+                    max_wall_time=max_wall_time,
+                    plugin_content=summary_metadata.plugin_data.content,
+                    description=summary_metadata.summary_description,
+                    display_name=summary_metadata.display_name,
+                )
+        return result
 
-  def _read(self, convert_event, index):
-    """Helper to read scalar or tensor data from the multiplexer.
+    def _read(self, convert_event, index):
+        """Helper to read scalar or tensor data from the multiplexer.
 
     Args:
       convert_event: Takes `plugin_event_accumulator.TensorEvent` to
@@ -173,11 +169,11 @@ class MultiplexerDataProvider(provider.DataProvider):
       A dict of dicts of values returned by `convert_event` calls,
       suitable to be returned from `read_scalars` or `read_tensors`.
     """
-    result = {}
-    for (run, tags_for_run) in six.iteritems(index):
-      result_for_run = {}
-      result[run] = result_for_run
-      for (tag, metadata) in six.iteritems(tags_for_run):
-        events = self._multiplexer.Tensors(run, tag)
-        result_for_run[tag] = [convert_event(e) for e in events]
-    return result
+        result = {}
+        for (run, tags_for_run) in six.iteritems(index):
+            result_for_run = {}
+            result[run] = result_for_run
+            for (tag, metadata) in six.iteritems(tags_for_run):
+                events = self._multiplexer.Tensors(run, tag)
+                result_for_run[tag] = [convert_event(e) for e in events]
+        return result

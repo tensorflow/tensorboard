@@ -31,8 +31,9 @@ from tensorboard.util import tb_logging
 
 logger = tb_logging.get_logger()
 
+
 class EventMultiplexer(object):
-  """An `EventMultiplexer` manages access to multiple `EventAccumulator`s.
+    """An `EventMultiplexer` manages access to multiple `EventAccumulator`s.
 
   Each `EventAccumulator` is associated with a `run`, which is a self-contained
   TensorFlow execution. The `EventMultiplexer` provides methods for extracting
@@ -69,11 +70,8 @@ class EventMultiplexer(object):
   @@Tensors
   """
 
-  def __init__(self,
-               run_path_map=None,
-               size_guidance=None,
-               purge_orphaned_data=True):
-    """Constructor for the `EventMultiplexer`.
+    def __init__(self, run_path_map=None, size_guidance=None, purge_orphaned_data=True):
+        """Constructor for the `EventMultiplexer`.
 
     Args:
       run_path_map: Dict `{run: path}` which specifies the
@@ -85,23 +83,23 @@ class EventMultiplexer(object):
       purge_orphaned_data: Whether to discard any events that were "orphaned" by
         a TensorFlow restart.
     """
-    logger.info('Event Multiplexer initializing.')
-    self._accumulators_mutex = threading.Lock()
-    self._accumulators = {}
-    self._paths = {}
-    self._reload_called = False
-    self._size_guidance = (size_guidance or
-                           event_accumulator.DEFAULT_SIZE_GUIDANCE)
-    self.purge_orphaned_data = purge_orphaned_data
-    if run_path_map is not None:
-      logger.info('Event Multplexer doing initialization load for %s',
-                      run_path_map)
-      for (run, path) in six.iteritems(run_path_map):
-        self.AddRun(path, run)
-    logger.info('Event Multiplexer done initializing')
+        logger.info("Event Multiplexer initializing.")
+        self._accumulators_mutex = threading.Lock()
+        self._accumulators = {}
+        self._paths = {}
+        self._reload_called = False
+        self._size_guidance = size_guidance or event_accumulator.DEFAULT_SIZE_GUIDANCE
+        self.purge_orphaned_data = purge_orphaned_data
+        if run_path_map is not None:
+            logger.info(
+                "Event Multplexer doing initialization load for %s", run_path_map
+            )
+            for (run, path) in six.iteritems(run_path_map):
+                self.AddRun(path, run)
+        logger.info("Event Multiplexer done initializing")
 
-  def AddRun(self, path, name=None):
-    """Add a run to the multiplexer.
+    def AddRun(self, path, name=None):
+        """Add a run to the multiplexer.
 
     If the name is not specified, it is the same as the path.
 
@@ -119,29 +117,34 @@ class EventMultiplexer(object):
     Returns:
       The `EventMultiplexer`.
     """
-    name = name or path
-    accumulator = None
-    with self._accumulators_mutex:
-      if name not in self._accumulators or self._paths[name] != path:
-        if name in self._paths and self._paths[name] != path:
-          # TODO(@decentralion) - Make it impossible to overwrite an old path
-          # with a new path (just give the new path a distinct name)
-          logger.warn('Conflict for name %s: old path %s, new path %s',
-                             name, self._paths[name], path)
-        logger.info('Constructing EventAccumulator for %s', path)
-        accumulator = event_accumulator.EventAccumulator(
-            path,
-            size_guidance=self._size_guidance,
-            purge_orphaned_data=self.purge_orphaned_data)
-        self._accumulators[name] = accumulator
-        self._paths[name] = path
-    if accumulator:
-      if self._reload_called:
-        accumulator.Reload()
-    return self
+        name = name or path
+        accumulator = None
+        with self._accumulators_mutex:
+            if name not in self._accumulators or self._paths[name] != path:
+                if name in self._paths and self._paths[name] != path:
+                    # TODO(@decentralion) - Make it impossible to overwrite an old path
+                    # with a new path (just give the new path a distinct name)
+                    logger.warn(
+                        "Conflict for name %s: old path %s, new path %s",
+                        name,
+                        self._paths[name],
+                        path,
+                    )
+                logger.info("Constructing EventAccumulator for %s", path)
+                accumulator = event_accumulator.EventAccumulator(
+                    path,
+                    size_guidance=self._size_guidance,
+                    purge_orphaned_data=self.purge_orphaned_data,
+                )
+                self._accumulators[name] = accumulator
+                self._paths[name] = path
+        if accumulator:
+            if self._reload_called:
+                accumulator.Reload()
+        return self
 
-  def AddRunsFromDirectory(self, path, name=None):
-    """Load runs from a directory; recursively walks subdirectories.
+    def AddRunsFromDirectory(self, path, name=None):
+        """Load runs from a directory; recursively walks subdirectories.
 
     If path doesn't exist, no-op. This ensures that it is safe to call
       `AddRunsFromDirectory` multiple times, even before the directory is made.
@@ -167,42 +170,42 @@ class EventMultiplexer(object):
     Returns:
       The `EventMultiplexer`.
     """
-    logger.info('Starting AddRunsFromDirectory: %s', path)
-    for subdir in io_wrapper.GetLogdirSubdirectories(path):
-      logger.info('Adding events from directory %s', subdir)
-      rpath = os.path.relpath(subdir, path)
-      subname = os.path.join(name, rpath) if name else rpath
-      self.AddRun(subdir, name=subname)
-    logger.info('Done with AddRunsFromDirectory: %s', path)
-    return self
+        logger.info("Starting AddRunsFromDirectory: %s", path)
+        for subdir in io_wrapper.GetLogdirSubdirectories(path):
+            logger.info("Adding events from directory %s", subdir)
+            rpath = os.path.relpath(subdir, path)
+            subname = os.path.join(name, rpath) if name else rpath
+            self.AddRun(subdir, name=subname)
+        logger.info("Done with AddRunsFromDirectory: %s", path)
+        return self
 
-  def Reload(self):
-    """Call `Reload` on every `EventAccumulator`."""
-    logger.info('Beginning EventMultiplexer.Reload()')
-    self._reload_called = True
-    # Build a list so we're safe even if the list of accumulators is modified
-    # even while we're reloading.
-    with self._accumulators_mutex:
-      items = list(self._accumulators.items())
+    def Reload(self):
+        """Call `Reload` on every `EventAccumulator`."""
+        logger.info("Beginning EventMultiplexer.Reload()")
+        self._reload_called = True
+        # Build a list so we're safe even if the list of accumulators is modified
+        # even while we're reloading.
+        with self._accumulators_mutex:
+            items = list(self._accumulators.items())
 
-    names_to_delete = set()
-    for name, accumulator in items:
-      try:
-        accumulator.Reload()
-      except (OSError, IOError) as e:
-        logger.error("Unable to reload accumulator '%s': %s", name, e)
-      except directory_watcher.DirectoryDeletedError:
-        names_to_delete.add(name)
+        names_to_delete = set()
+        for name, accumulator in items:
+            try:
+                accumulator.Reload()
+            except (OSError, IOError) as e:
+                logger.error("Unable to reload accumulator '%s': %s", name, e)
+            except directory_watcher.DirectoryDeletedError:
+                names_to_delete.add(name)
 
-    with self._accumulators_mutex:
-      for name in names_to_delete:
-        logger.warn("Deleting accumulator '%s'", name)
-        del self._accumulators[name]
-    logger.info('Finished with EventMultiplexer.Reload()')
-    return self
+        with self._accumulators_mutex:
+            for name in names_to_delete:
+                logger.warn("Deleting accumulator '%s'", name)
+                del self._accumulators[name]
+        logger.info("Finished with EventMultiplexer.Reload()")
+        return self
 
-  def PluginAssets(self, plugin_name):
-    """Get index of runs and assets for a given plugin.
+    def PluginAssets(self, plugin_name):
+        """Get index of runs and assets for a given plugin.
 
     Args:
       plugin_name: Name of the plugin we are checking for.
@@ -211,14 +214,14 @@ class EventMultiplexer(object):
       A dictionary that maps from run_name to a list of plugin
         assets for that run.
     """
-    with self._accumulators_mutex:
-      # To avoid nested locks, we construct a copy of the run-accumulator map
-      items = list(six.iteritems(self._accumulators))
+        with self._accumulators_mutex:
+            # To avoid nested locks, we construct a copy of the run-accumulator map
+            items = list(six.iteritems(self._accumulators))
 
-    return {run: accum.PluginAssets(plugin_name) for run, accum in items}
+        return {run: accum.PluginAssets(plugin_name) for run, accum in items}
 
-  def RetrievePluginAsset(self, run, plugin_name, asset_name):
-    """Return the contents for a specific plugin asset from a run.
+    def RetrievePluginAsset(self, run, plugin_name, asset_name):
+        """Return the contents for a specific plugin asset from a run.
 
     Args:
       run: The string name of the run.
@@ -231,11 +234,11 @@ class EventMultiplexer(object):
     Raises:
       KeyError: If the asset is not available.
     """
-    accumulator = self.GetAccumulator(run)
-    return accumulator.RetrievePluginAsset(plugin_name, asset_name)
+        accumulator = self.GetAccumulator(run)
+        return accumulator.RetrievePluginAsset(plugin_name, asset_name)
 
-  def FirstEventTimestamp(self, run):
-    """Return the timestamp of the first event of the given run.
+    def FirstEventTimestamp(self, run):
+        """Return the timestamp of the first event of the given run.
 
     This may perform I/O if no events have been loaded yet for the run.
 
@@ -251,11 +254,11 @@ class EventMultiplexer(object):
       ValueError: If the run has no events loaded and there are no events on
         disk to load.
     """
-    accumulator = self.GetAccumulator(run)
-    return accumulator.FirstEventTimestamp()
+        accumulator = self.GetAccumulator(run)
+        return accumulator.FirstEventTimestamp()
 
-  def Scalars(self, run, tag):
-    """Retrieve the scalar events associated with a run and tag.
+    def Scalars(self, run, tag):
+        """Retrieve the scalar events associated with a run and tag.
 
     Args:
       run: A string name of the run for which values are retrieved.
@@ -268,11 +271,11 @@ class EventMultiplexer(object):
     Returns:
       An array of `event_accumulator.ScalarEvents`.
     """
-    accumulator = self.GetAccumulator(run)
-    return accumulator.Scalars(tag)
+        accumulator = self.GetAccumulator(run)
+        return accumulator.Scalars(tag)
 
-  def Graph(self, run):
-    """Retrieve the graph associated with the provided run.
+    def Graph(self, run):
+        """Retrieve the graph associated with the provided run.
 
     Args:
       run: A string name of a run to load the graph for.
@@ -284,11 +287,11 @@ class EventMultiplexer(object):
     Returns:
       The `GraphDef` protobuf data structure.
     """
-    accumulator = self.GetAccumulator(run)
-    return accumulator.Graph()
+        accumulator = self.GetAccumulator(run)
+        return accumulator.Graph()
 
-  def MetaGraph(self, run):
-    """Retrieve the metagraph associated with the provided run.
+    def MetaGraph(self, run):
+        """Retrieve the metagraph associated with the provided run.
 
     Args:
       run: A string name of a run to load the graph for.
@@ -300,11 +303,11 @@ class EventMultiplexer(object):
     Returns:
       The `MetaGraphDef` protobuf data structure.
     """
-    accumulator = self.GetAccumulator(run)
-    return accumulator.MetaGraph()
+        accumulator = self.GetAccumulator(run)
+        return accumulator.MetaGraph()
 
-  def RunMetadata(self, run, tag):
-    """Get the session.run() metadata associated with a TensorFlow run and tag.
+    def RunMetadata(self, run, tag):
+        """Get the session.run() metadata associated with a TensorFlow run and tag.
 
     Args:
       run: A string name of a TensorFlow run.
@@ -317,11 +320,11 @@ class EventMultiplexer(object):
     Returns:
       The metadata in the form of `RunMetadata` protobuf data structure.
     """
-    accumulator = self.GetAccumulator(run)
-    return accumulator.RunMetadata(tag)
+        accumulator = self.GetAccumulator(run)
+        return accumulator.RunMetadata(tag)
 
-  def Histograms(self, run, tag):
-    """Retrieve the histogram events associated with a run and tag.
+    def Histograms(self, run, tag):
+        """Retrieve the histogram events associated with a run and tag.
 
     Args:
       run: A string name of the run for which values are retrieved.
@@ -334,11 +337,11 @@ class EventMultiplexer(object):
     Returns:
       An array of `event_accumulator.HistogramEvents`.
     """
-    accumulator = self.GetAccumulator(run)
-    return accumulator.Histograms(tag)
+        accumulator = self.GetAccumulator(run)
+        return accumulator.Histograms(tag)
 
-  def CompressedHistograms(self, run, tag):
-    """Retrieve the compressed histogram events associated with a run and tag.
+    def CompressedHistograms(self, run, tag):
+        """Retrieve the compressed histogram events associated with a run and tag.
 
     Args:
       run: A string name of the run for which values are retrieved.
@@ -351,11 +354,11 @@ class EventMultiplexer(object):
     Returns:
       An array of `event_accumulator.CompressedHistogramEvents`.
     """
-    accumulator = self.GetAccumulator(run)
-    return accumulator.CompressedHistograms(tag)
+        accumulator = self.GetAccumulator(run)
+        return accumulator.CompressedHistograms(tag)
 
-  def Images(self, run, tag):
-    """Retrieve the image events associated with a run and tag.
+    def Images(self, run, tag):
+        """Retrieve the image events associated with a run and tag.
 
     Args:
       run: A string name of the run for which values are retrieved.
@@ -368,11 +371,11 @@ class EventMultiplexer(object):
     Returns:
       An array of `event_accumulator.ImageEvents`.
     """
-    accumulator = self.GetAccumulator(run)
-    return accumulator.Images(tag)
+        accumulator = self.GetAccumulator(run)
+        return accumulator.Images(tag)
 
-  def Audio(self, run, tag):
-    """Retrieve the audio events associated with a run and tag.
+    def Audio(self, run, tag):
+        """Retrieve the audio events associated with a run and tag.
 
     Args:
       run: A string name of the run for which values are retrieved.
@@ -385,11 +388,11 @@ class EventMultiplexer(object):
     Returns:
       An array of `event_accumulator.AudioEvents`.
     """
-    accumulator = self.GetAccumulator(run)
-    return accumulator.Audio(tag)
+        accumulator = self.GetAccumulator(run)
+        return accumulator.Audio(tag)
 
-  def Tensors(self, run, tag):
-    """Retrieve the tensor events associated with a run and tag.
+    def Tensors(self, run, tag):
+        """Retrieve the tensor events associated with a run and tag.
 
     Args:
       run: A string name of the run for which values are retrieved.
@@ -402,11 +405,11 @@ class EventMultiplexer(object):
     Returns:
       An array of `event_accumulator.TensorEvent`s.
     """
-    accumulator = self.GetAccumulator(run)
-    return accumulator.Tensors(tag)
+        accumulator = self.GetAccumulator(run)
+        return accumulator.Tensors(tag)
 
-  def PluginRunToTagToContent(self, plugin_name):
-    """Returns a 2-layer dictionary of the form {run: {tag: content}}.
+    def PluginRunToTagToContent(self, plugin_name):
+        """Returns a 2-layer dictionary of the form {run: {tag: content}}.
 
     The `content` referred above is the content field of the PluginData proto
     for the specified plugin within a Summary.Value proto.
@@ -417,19 +420,20 @@ class EventMultiplexer(object):
     Returns:
       A dictionary of the form {run: {tag: content}}.
     """
-    mapping = {}
-    for run in self.Runs():
-      try:
-        tag_to_content = self.GetAccumulator(run).PluginTagToContent(
-            plugin_name)
-      except KeyError:
-        # This run lacks content for the plugin. Try the next run.
-        continue
-      mapping[run] = tag_to_content
-    return mapping
+        mapping = {}
+        for run in self.Runs():
+            try:
+                tag_to_content = self.GetAccumulator(run).PluginTagToContent(
+                    plugin_name
+                )
+            except KeyError:
+                # This run lacks content for the plugin. Try the next run.
+                continue
+            mapping[run] = tag_to_content
+        return mapping
 
-  def SummaryMetadata(self, run, tag):
-    """Return the summary metadata for the given tag on the given run.
+    def SummaryMetadata(self, run, tag):
+        """Return the summary metadata for the given tag on the given run.
 
     Args:
       run: A string name of the run for which summary metadata is to be
@@ -444,11 +448,11 @@ class EventMultiplexer(object):
     Returns:
       A `SummaryMetadata` protobuf.
     """
-    accumulator = self.GetAccumulator(run)
-    return accumulator.SummaryMetadata(tag)
+        accumulator = self.GetAccumulator(run)
+        return accumulator.SummaryMetadata(tag)
 
-  def Runs(self):
-    """Return all the run names in the `EventMultiplexer`.
+    def Runs(self):
+        """Return all the run names in the `EventMultiplexer`.
 
     Returns:
     ```
@@ -459,17 +463,17 @@ class EventMultiplexer(object):
                   graph: true, meta_graph: true}}
     ```
     """
-    with self._accumulators_mutex:
-      # To avoid nested locks, we construct a copy of the run-accumulator map
-      items = list(six.iteritems(self._accumulators))
-    return {run_name: accumulator.Tags() for run_name, accumulator in items}
+        with self._accumulators_mutex:
+            # To avoid nested locks, we construct a copy of the run-accumulator map
+            items = list(six.iteritems(self._accumulators))
+        return {run_name: accumulator.Tags() for run_name, accumulator in items}
 
-  def RunPaths(self):
-    """Returns a dict mapping run names to event file paths."""
-    return self._paths
+    def RunPaths(self):
+        """Returns a dict mapping run names to event file paths."""
+        return self._paths
 
-  def GetAccumulator(self, run):
-    """Returns EventAccumulator for a given run.
+    def GetAccumulator(self, run):
+        """Returns EventAccumulator for a given run.
 
     Args:
       run: String name of run.
@@ -480,5 +484,5 @@ class EventMultiplexer(object):
     Raises:
       KeyError: If run does not exist.
     """
-    with self._accumulators_mutex:
-      return self._accumulators[run]
+        with self._accumulators_mutex:
+            return self._accumulators[run]
