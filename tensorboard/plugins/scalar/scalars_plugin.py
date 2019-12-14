@@ -41,83 +41,93 @@ from tensorboard.util import tensor_util
 
 
 class OutputFormat(object):
-  """An enum used to list the valid output formats for API calls."""
-  JSON = 'json'
-  CSV = 'csv'
+    """An enum used to list the valid output formats for API calls."""
+
+    JSON = "json"
+    CSV = "csv"
 
 
 class ScalarsPlugin(base_plugin.TBPlugin):
-  """Scalars Plugin for TensorBoard."""
+    """Scalars Plugin for TensorBoard."""
 
-  plugin_name = metadata.PLUGIN_NAME
+    plugin_name = metadata.PLUGIN_NAME
 
-  def __init__(self, context):
-    """Instantiates ScalarsPlugin via TensorBoard core.
+    def __init__(self, context):
+        """Instantiates ScalarsPlugin via TensorBoard core.
 
-    Args:
-      context: A base_plugin.TBContext instance.
-    """
-    self._multiplexer = context.multiplexer
-    self._db_connection_provider = context.db_connection_provider
-    if context.flags and context.flags.generic_data == 'true':
-      self._data_provider = context.data_provider
-    else:
-      self._data_provider = None
+        Args:
+          context: A base_plugin.TBContext instance.
+        """
+        self._multiplexer = context.multiplexer
+        self._db_connection_provider = context.db_connection_provider
+        if context.flags and context.flags.generic_data == "true":
+            self._data_provider = context.data_provider
+        else:
+            self._data_provider = None
 
-  def get_plugin_apps(self):
-    return {
-        '/scalars': self.scalars_route,
-        '/tags': self.tags_route,
-    }
+    def get_plugin_apps(self):
+        return {
+            "/scalars": self.scalars_route,
+            "/tags": self.tags_route,
+        }
 
-  def is_active(self):
-    """The scalars plugin is active iff any run has at least one scalar tag."""
-    if self._data_provider:
-      # We don't have an experiment ID, and modifying the backend core
-      # to provide one would break backward compatibility. Hack for now.
-      return True
+    def is_active(self):
+        """The scalars plugin is active iff any run has at least one scalar
+        tag."""
+        if self._data_provider:
+            # We don't have an experiment ID, and modifying the backend core
+            # to provide one would break backward compatibility. Hack for now.
+            return True
 
-    if self._db_connection_provider:
-      # The plugin is active if one relevant tag can be found in the database.
-      db = self._db_connection_provider()
-      cursor = db.execute('''
+        if self._db_connection_provider:
+            # The plugin is active if one relevant tag can be found in the database.
+            db = self._db_connection_provider()
+            cursor = db.execute(
+                """
         SELECT
           1
         FROM Tags
         WHERE Tags.plugin_name = ?
         LIMIT 1
-      ''', (metadata.PLUGIN_NAME,))
-      return bool(list(cursor))
+      """,
+                (metadata.PLUGIN_NAME,),
+            )
+            return bool(list(cursor))
 
-    if not self._multiplexer:
-      return False
+        if not self._multiplexer:
+            return False
 
-    return bool(self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME))
+        return bool(
+            self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
+        )
 
-  def frontend_metadata(self):
-    return base_plugin.FrontendMetadata(element_name='tf-scalar-dashboard')
+    def frontend_metadata(self):
+        return base_plugin.FrontendMetadata(element_name="tf-scalar-dashboard")
 
-  def index_impl(self, experiment=None):
-    """Return {runName: {tagName: {displayName: ..., description: ...}}}."""
-    if self._data_provider:
-      mapping = self._data_provider.list_scalars(
-          experiment_id=experiment,
-          plugin_name=metadata.PLUGIN_NAME,
-      )
-      result = {run: {} for run in mapping}
-      for (run, tag_to_content) in six.iteritems(mapping):
-        for (tag, metadatum) in six.iteritems(tag_to_content):
-          description = plugin_util.markdown_to_safe_html(metadatum.description)
-          result[run][tag] = {
-              'displayName': metadatum.display_name,
-              'description': description,
-          }
-      return result
+    def index_impl(self, experiment=None):
+        """Return {runName: {tagName: {displayName: ..., description:
+        ...}}}."""
+        if self._data_provider:
+            mapping = self._data_provider.list_scalars(
+                experiment_id=experiment, plugin_name=metadata.PLUGIN_NAME,
+            )
+            result = {run: {} for run in mapping}
+            for (run, tag_to_content) in six.iteritems(mapping):
+                for (tag, metadatum) in six.iteritems(tag_to_content):
+                    description = plugin_util.markdown_to_safe_html(
+                        metadatum.description
+                    )
+                    result[run][tag] = {
+                        "displayName": metadatum.display_name,
+                        "description": description,
+                    }
+            return result
 
-    if self._db_connection_provider:
-      # Read tags from the database.
-      db = self._db_connection_provider()
-      cursor = db.execute('''
+        if self._db_connection_provider:
+            # Read tags from the database.
+            db = self._db_connection_provider()
+            cursor = db.execute(
+                """
         SELECT
           Tags.tag_name,
           Tags.display_name,
@@ -127,54 +137,62 @@ class ScalarsPlugin(base_plugin.TBPlugin):
           ON Tags.run_id = Runs.run_id
         WHERE
           Tags.plugin_name = ?
-      ''', (metadata.PLUGIN_NAME,))
-      result = collections.defaultdict(dict)
-      for row in cursor:
-        tag_name, display_name, run_name = row
-        result[run_name][tag_name] = {
-            'displayName': display_name,
-            # TODO(chihuahua): Populate the description. Currently, the tags
-            # table does not link with the description table.
-            'description': '',
-        }
-      return result
+      """,
+                (metadata.PLUGIN_NAME,),
+            )
+            result = collections.defaultdict(dict)
+            for row in cursor:
+                tag_name, display_name, run_name = row
+                result[run_name][tag_name] = {
+                    "displayName": display_name,
+                    # TODO(chihuahua): Populate the description. Currently, the tags
+                    # table does not link with the description table.
+                    "description": "",
+                }
+            return result
 
-    result = collections.defaultdict(lambda: {})
-    mapping = self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
-    for (run, tag_to_content) in six.iteritems(mapping):
-      for (tag, content) in six.iteritems(tag_to_content):
-        content = metadata.parse_plugin_metadata(content)
-        summary_metadata = self._multiplexer.SummaryMetadata(run, tag)
-        result[run][tag] = {'displayName': summary_metadata.display_name,
-                            'description': plugin_util.markdown_to_safe_html(
-                                summary_metadata.summary_description)}
-
-    return result
-
-  def scalars_impl(self, tag, run, experiment, output_format):
-    """Result of the form `(body, mime_type)`."""
-    if self._data_provider:
-      # Downsample reads to 1000 scalars per time series, which is the
-      # default size guidance for scalars under the multiplexer loading
-      # logic.
-      SAMPLE_COUNT = 1000
-      all_scalars = self._data_provider.read_scalars(
-          experiment_id=experiment,
-          plugin_name=metadata.PLUGIN_NAME,
-          downsample=SAMPLE_COUNT,
-          run_tag_filter=provider.RunTagFilter(runs=[run], tags=[tag]),
-      )
-      scalars = all_scalars.get(run, {}).get(tag, None)
-      if scalars is None:
-        raise errors.NotFoundError(
-            'No scalar data for run=%r, tag=%r' % (run, tag)
+        result = collections.defaultdict(lambda: {})
+        mapping = self._multiplexer.PluginRunToTagToContent(
+            metadata.PLUGIN_NAME
         )
-      values = [(x.wall_time, x.step, x.value) for x in scalars]
-    elif self._db_connection_provider:
-      db = self._db_connection_provider()
-      # We select for steps greater than -1 because the writer inserts
-      # placeholder rows en masse. The check for step filters out those rows.
-      cursor = db.execute('''
+        for (run, tag_to_content) in six.iteritems(mapping):
+            for (tag, content) in six.iteritems(tag_to_content):
+                content = metadata.parse_plugin_metadata(content)
+                summary_metadata = self._multiplexer.SummaryMetadata(run, tag)
+                result[run][tag] = {
+                    "displayName": summary_metadata.display_name,
+                    "description": plugin_util.markdown_to_safe_html(
+                        summary_metadata.summary_description
+                    ),
+                }
+
+        return result
+
+    def scalars_impl(self, tag, run, experiment, output_format):
+        """Result of the form `(body, mime_type)`."""
+        if self._data_provider:
+            # Downsample reads to 1000 scalars per time series, which is the
+            # default size guidance for scalars under the multiplexer loading
+            # logic.
+            SAMPLE_COUNT = 1000
+            all_scalars = self._data_provider.read_scalars(
+                experiment_id=experiment,
+                plugin_name=metadata.PLUGIN_NAME,
+                downsample=SAMPLE_COUNT,
+                run_tag_filter=provider.RunTagFilter(runs=[run], tags=[tag]),
+            )
+            scalars = all_scalars.get(run, {}).get(tag, None)
+            if scalars is None:
+                raise errors.NotFoundError(
+                    "No scalar data for run=%r, tag=%r" % (run, tag)
+                )
+            values = [(x.wall_time, x.step, x.value) for x in scalars]
+        elif self._db_connection_provider:
+            db = self._db_connection_provider()
+            # We select for steps greater than -1 because the writer inserts
+            # placeholder rows en masse. The check for step filters out those rows.
+            cursor = db.execute(
+                """
         SELECT
           Tensors.step,
           Tensors.computed_time,
@@ -195,56 +213,73 @@ class ScalarsPlugin(base_plugin.TBPlugin):
           AND Tensors.shape = ''
           AND Tensors.step > -1
         ORDER BY Tensors.step
-      ''', dict(exp=experiment, run=run, tag=tag, plugin=metadata.PLUGIN_NAME))
-      values = [(wall_time, step, self._get_value(data, dtype_enum))
-                for (step, wall_time, data, dtype_enum) in cursor]
-    else:
-      try:
-        tensor_events = self._multiplexer.Tensors(run, tag)
-      except KeyError:
-        raise errors.NotFoundError(
-            'No scalar data for run=%r, tag=%r' % (run, tag)
+      """,
+                dict(
+                    exp=experiment,
+                    run=run,
+                    tag=tag,
+                    plugin=metadata.PLUGIN_NAME,
+                ),
+            )
+            values = [
+                (wall_time, step, self._get_value(data, dtype_enum))
+                for (step, wall_time, data, dtype_enum) in cursor
+            ]
+        else:
+            try:
+                tensor_events = self._multiplexer.Tensors(run, tag)
+            except KeyError:
+                raise errors.NotFoundError(
+                    "No scalar data for run=%r, tag=%r" % (run, tag)
+                )
+            values = [
+                (
+                    tensor_event.wall_time,
+                    tensor_event.step,
+                    tensor_util.make_ndarray(tensor_event.tensor_proto).item(),
+                )
+                for tensor_event in tensor_events
+            ]
+
+        if output_format == OutputFormat.CSV:
+            string_io = StringIO()
+            writer = csv.writer(string_io)
+            writer.writerow(["Wall time", "Step", "Value"])
+            writer.writerows(values)
+            return (string_io.getvalue(), "text/csv")
+        else:
+            return (values, "application/json")
+
+    def _get_value(self, scalar_data_blob, dtype_enum):
+        """Obtains value for scalar event given blob and dtype enum.
+
+        Args:
+          scalar_data_blob: The blob obtained from the database.
+          dtype_enum: The enum representing the dtype.
+
+        Returns:
+          The scalar value.
+        """
+        tensorflow_dtype = tf.DType(dtype_enum)
+        buf = np.frombuffer(
+            scalar_data_blob, dtype=tensorflow_dtype.as_numpy_dtype
         )
-      values = [(tensor_event.wall_time,
-                 tensor_event.step,
-                 tensor_util.make_ndarray(tensor_event.tensor_proto).item())
-                for tensor_event in tensor_events]
+        return np.asscalar(buf)
 
-    if output_format == OutputFormat.CSV:
-      string_io = StringIO()
-      writer = csv.writer(string_io)
-      writer.writerow(['Wall time', 'Step', 'Value'])
-      writer.writerows(values)
-      return (string_io.getvalue(), 'text/csv')
-    else:
-      return (values, 'application/json')
+    @wrappers.Request.application
+    def tags_route(self, request):
+        experiment = plugin_util.experiment_id(request.environ)
+        index = self.index_impl(experiment=experiment)
+        return http_util.Respond(request, index, "application/json")
 
-  def _get_value(self, scalar_data_blob, dtype_enum):
-    """Obtains value for scalar event given blob and dtype enum.
-
-    Args:
-      scalar_data_blob: The blob obtained from the database.
-      dtype_enum: The enum representing the dtype.
-
-    Returns:
-      The scalar value.
-    """
-    tensorflow_dtype = tf.DType(dtype_enum)
-    buf = np.frombuffer(scalar_data_blob, dtype=tensorflow_dtype.as_numpy_dtype)
-    return np.asscalar(buf)
-
-  @wrappers.Request.application
-  def tags_route(self, request):
-    experiment = plugin_util.experiment_id(request.environ)
-    index = self.index_impl(experiment=experiment)
-    return http_util.Respond(request, index, 'application/json')
-
-  @wrappers.Request.application
-  def scalars_route(self, request):
-    """Given a tag and single run, return array of ScalarEvents."""
-    tag = request.args.get('tag')
-    run = request.args.get('run')
-    experiment = plugin_util.experiment_id(request.environ)
-    output_format = request.args.get('format')
-    (body, mime_type) = self.scalars_impl(tag, run, experiment, output_format)
-    return http_util.Respond(request, body, mime_type)
+    @wrappers.Request.application
+    def scalars_route(self, request):
+        """Given a tag and single run, return array of ScalarEvents."""
+        tag = request.args.get("tag")
+        run = request.args.get("run")
+        experiment = plugin_util.experiment_id(request.environ)
+        output_format = request.args.get("format")
+        (body, mime_type) = self.scalars_impl(
+            tag, run, experiment, output_format
+        )
+        return http_util.Respond(request, body, mime_type)
