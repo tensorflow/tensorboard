@@ -74,7 +74,6 @@ class DType(object):
 
         Raises:
           TypeError: If `type_enum` is not a value `types_pb2.DataType`.
-
         """
         # TODO(mrry): Make the necessary changes (using __new__) to ensure
         # that calling this returns one of the interned values.
@@ -136,7 +135,7 @@ class DType(object):
 
     @property
     def is_bool(self):
-        """Returns whether this is a boolean data type"""
+        """Returns whether this is a boolean data type."""
         return self.base_dtype == bool
 
     @property
@@ -150,9 +149,11 @@ class DType(object):
 
     @property
     def is_floating(self):
-        """Returns whether this is a (non-quantized, real) floating point type."""
+        """Returns whether this is a (non-quantized, real) floating point
+        type."""
         return (
-            self.is_numpy_compatible and np.issubdtype(self.as_numpy_dtype, np.floating)
+            self.is_numpy_compatible
+            and np.issubdtype(self.as_numpy_dtype, np.floating)
         ) or self.base_dtype == bfloat16
 
     @property
@@ -186,7 +187,6 @@ class DType(object):
 
         Raises:
           TypeError: if this is a non-numeric, unordered, or quantized type.
-
         """
         if self.is_quantized or self.base_dtype in (
             bool,
@@ -214,7 +214,6 @@ class DType(object):
 
         Raises:
           TypeError: if this is a non-numeric, unordered, or quantized type.
-
         """
         if self.is_quantized or self.base_dtype in (
             bool,
@@ -239,6 +238,7 @@ class DType(object):
     @property
     def limits(self, clip_negative=True):
         """Return intensity limits, i.e. (min, max) tuple, of the dtype.
+
         Args:
           clip_negative : bool, optional
               If True, clip the negative range (i.e. return 0 for min intensity)
@@ -247,7 +247,9 @@ class DType(object):
           min, max : tuple
             Lower and upper intensity limits.
         """
-        min, max = dtype_range[self.as_numpy_dtype]  # pylint: disable=redefined-builtin
+        min, max = dtype_range[
+            self.as_numpy_dtype
+        ]  # pylint: disable=redefined-builtin
         if clip_negative:
             min = 0  # pylint: disable=redefined-builtin
         return min, max
@@ -329,9 +331,9 @@ dtype_range = {
     np.uint16: (0, 65535),
     np.int8: (-128, 127),
     np.int16: (-32768, 32767),
-    np.int64: (-2 ** 63, 2 ** 63 - 1),
+    np.int64: (-(2 ** 63), 2 ** 63 - 1),
     np.uint64: (0, 2 ** 64 - 1),
-    np.int32: (-2 ** 31, 2 ** 31 - 1),
+    np.int32: (-(2 ** 31), 2 ** 31 - 1),
     np.uint32: (0, 2 ** 32 - 1),
     np.float32: (-1, 1),
     np.float64: (-1, 1),
@@ -523,7 +525,9 @@ _TYPE_TO_STRING = {
     types_pb2.DT_RESOURCE_REF: "resource_ref",
     types_pb2.DT_VARIANT_REF: "variant_ref",
 }
-_STRING_TO_TF = {value: _INTERN_TABLE[key] for key, value in _TYPE_TO_STRING.items()}
+_STRING_TO_TF = {
+    value: _INTERN_TABLE[key] for key, value in _TYPE_TO_STRING.items()
+}
 # Add non-canonical aliases.
 _STRING_TO_TF["half"] = float16
 _STRING_TO_TF["half_ref"] = float16_ref
@@ -687,4 +691,6 @@ def as_dtype(type_value):
                     "Cannot convert {} to a dtype. {}".format(type_value, e)
                 )
 
-    raise TypeError("Cannot convert value %r to a TensorFlow DType." % type_value)
+    raise TypeError(
+        "Cannot convert value %r to a TensorFlow DType." % type_value
+    )
