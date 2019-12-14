@@ -27,36 +27,41 @@ from tensorboard.plugins.mesh import demo_utils
 
 
 class TestPLYReader(tf.test.TestCase):
-  def test_parse_vertex(self):
-    """Tests vertex coordinate and color parsing."""
-    # Vertex 3D coordinates with RGBA color.
-    vertex_data = [-0.249245, 1.119303, 0.3095566, 60, 253, 32, 255]
-    coords, colors = demo_utils._parse_vertex(' '.join(map(str, vertex_data)))
-    self.assertListEqual(coords, vertex_data[:3])
-    self.assertListEqual(colors, vertex_data[3:6])
+    def test_parse_vertex(self):
+        """Tests vertex coordinate and color parsing."""
+        # Vertex 3D coordinates with RGBA color.
+        vertex_data = [-0.249245, 1.119303, 0.3095566, 60, 253, 32, 255]
+        coords, colors = demo_utils._parse_vertex(
+            " ".join(map(str, vertex_data))
+        )
+        self.assertListEqual(coords, vertex_data[:3])
+        self.assertListEqual(colors, vertex_data[3:6])
 
-  def test_prase_vertex_expects_colors(self):
-    """Tests that method will throw error if color is not poresent."""
-    with self.assertRaisesRegexp(ValueError,
-        'PLY file must contain vertices with colors'):
-      demo_utils._parse_vertex('1 2 3')
+    def test_prase_vertex_expects_colors(self):
+        """Tests that method will throw error if color is not poresent."""
+        with self.assertRaisesRegexp(
+            ValueError, "PLY file must contain vertices with colors"
+        ):
+            demo_utils._parse_vertex("1 2 3")
 
-  def test_parse_face(self):
-    """Tests face line parsing."""
-    face_data = [3, 10, 20, 30]
-    parsed_face = demo_utils._parse_face(' '.join(map(str, face_data)))
-    self.assertListEqual(parsed_face, face_data[1:])
+    def test_parse_face(self):
+        """Tests face line parsing."""
+        face_data = [3, 10, 20, 30]
+        parsed_face = demo_utils._parse_face(" ".join(map(str, face_data)))
+        self.assertListEqual(parsed_face, face_data[1:])
 
-  def test_read_ascii_ply(self):
-    """Tests end-to-end PLY file reading and parsing."""
-    test_ply = os.path.join(
-        os.path.dirname(os.environ['TEST_BINARY']),
-        'test_data', 'icosphere.ply')
-    vertices, colors, faces = demo_utils.read_ascii_ply(test_ply)
-    self.assertEqual(len(vertices), 82)
-    self.assertEqual(len(vertices), len(colors))
-    self.assertEqual(len(faces), 80)
+    def test_read_ascii_ply(self):
+        """Tests end-to-end PLY file reading and parsing."""
+        test_ply = os.path.join(
+            os.path.dirname(os.environ["TEST_BINARY"]),
+            "test_data",
+            "icosphere.ply",
+        )
+        vertices, colors, faces = demo_utils.read_ascii_ply(test_ply)
+        self.assertEqual(len(vertices), 82)
+        self.assertEqual(len(vertices), len(colors))
+        self.assertEqual(len(faces), 80)
 
 
-if __name__ == '__main__':
-  tf.test.main()
+if __name__ == "__main__":
+    tf.test.main()
