@@ -32,77 +32,83 @@ from tensorboard.plugins.histogram import histograms_plugin
 
 
 class DistributionsPlugin(base_plugin.TBPlugin):
-  """Distributions Plugin for TensorBoard.
+    """Distributions Plugin for TensorBoard.
 
-  This supports both old-style summaries (created with TensorFlow ops
-  that output directly to the `histo` field of the proto) and new-style
-  summaries (as created by the `tensorboard.plugins.histogram.summary`
-  module).
-  """
-
-  plugin_name = 'distributions'
-
-  # Use a round number + 1 since sampling includes both start and end steps,
-  # so N+1 samples corresponds to dividing the step sequence into N intervals.
-  SAMPLE_SIZE = 501
-
-  def __init__(self, context):
-    """Instantiates DistributionsPlugin via TensorBoard core.
-
-    Args:
-      context: A base_plugin.TBContext instance.
+    This supports both old-style summaries (created with TensorFlow ops
+    that output directly to the `histo` field of the proto) and new-
+    style summaries (as created by the
+    `tensorboard.plugins.histogram.summary` module).
     """
-    self._histograms_plugin = histograms_plugin.HistogramsPlugin(context)
 
-  def get_plugin_apps(self):
-    return {
-        '/distributions': self.distributions_route,
-        '/tags': self.tags_route,
-    }
+    plugin_name = "distributions"
 
-  def is_active(self):
-    """This plugin is active iff any run has at least one histogram tag.
+    # Use a round number + 1 since sampling includes both start and end steps,
+    # so N+1 samples corresponds to dividing the step sequence into N intervals.
+    SAMPLE_SIZE = 501
 
-    (The distributions plugin uses the same data source as the histogram
-    plugin.)
-    """
-    return self._histograms_plugin.is_active()
+    def __init__(self, context):
+        """Instantiates DistributionsPlugin via TensorBoard core.
 
-  def frontend_metadata(self):
-    return base_plugin.FrontendMetadata(
-        element_name='tf-distribution-dashboard',
-    )
+        Args:
+          context: A base_plugin.TBContext instance.
+        """
+        self._histograms_plugin = histograms_plugin.HistogramsPlugin(context)
 
-  def distributions_impl(self, tag, run, experiment):
-    """Result of the form `(body, mime_type)`.
+    def get_plugin_apps(self):
+        return {
+            "/distributions": self.distributions_route,
+            "/tags": self.tags_route,
+        }
 
-    Raises:
-      tensorboard.errors.PublicError: On invalid request.
-    """
-    (histograms, mime_type) = self._histograms_plugin.histograms_impl(
-        tag, run, experiment=experiment, downsample_to=self.SAMPLE_SIZE)
-    return ([self._compress(histogram) for histogram in histograms],
-            mime_type)
+    def is_active(self):
+        """This plugin is active iff any run has at least one histogram tag.
 
-  def _compress(self, histogram):
-    (wall_time, step, buckets) = histogram
-    converted_buckets = compressor.compress_histogram(buckets)
-    return [wall_time, step, converted_buckets]
+        (The distributions plugin uses the same data source as the
+        histogram plugin.)
+        """
+        return self._histograms_plugin.is_active()
 
-  def index_impl(self, experiment):
-    return self._histograms_plugin.index_impl(experiment=experiment)
+    def frontend_metadata(self):
+        return base_plugin.FrontendMetadata(
+            element_name="tf-distribution-dashboard",
+        )
 
-  @wrappers.Request.application
-  def tags_route(self, request):
-    experiment = plugin_util.experiment_id(request.environ)
-    index = self.index_impl(experiment=experiment)
-    return http_util.Respond(request, index, 'application/json')
+    def distributions_impl(self, tag, run, experiment):
+        """Result of the form `(body, mime_type)`.
 
-  @wrappers.Request.application
-  def distributions_route(self, request):
-    """Given a tag and single run, return an array of compressed histograms."""
-    experiment = plugin_util.experiment_id(request.environ)
-    tag = request.args.get('tag')
-    run = request.args.get('run')
-    (body, mime_type) = self.distributions_impl(tag, run, experiment=experiment)
-    return http_util.Respond(request, body, mime_type)
+        Raises:
+          tensorboard.errors.PublicError: On invalid request.
+        """
+        (histograms, mime_type) = self._histograms_plugin.histograms_impl(
+            tag, run, experiment=experiment, downsample_to=self.SAMPLE_SIZE
+        )
+        return (
+            [self._compress(histogram) for histogram in histograms],
+            mime_type,
+        )
+
+    def _compress(self, histogram):
+        (wall_time, step, buckets) = histogram
+        converted_buckets = compressor.compress_histogram(buckets)
+        return [wall_time, step, converted_buckets]
+
+    def index_impl(self, experiment):
+        return self._histograms_plugin.index_impl(experiment=experiment)
+
+    @wrappers.Request.application
+    def tags_route(self, request):
+        experiment = plugin_util.experiment_id(request.environ)
+        index = self.index_impl(experiment=experiment)
+        return http_util.Respond(request, index, "application/json")
+
+    @wrappers.Request.application
+    def distributions_route(self, request):
+        """Given a tag and single run, return an array of compressed
+        histograms."""
+        experiment = plugin_util.experiment_id(request.environ)
+        tag = request.args.get("tag")
+        run = request.args.get("run")
+        (body, mime_type) = self.distributions_impl(
+            tag, run, experiment=experiment
+        )
+        return http_util.Respond(request, body, mime_type)
