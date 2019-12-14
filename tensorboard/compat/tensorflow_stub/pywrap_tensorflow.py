@@ -41,11 +41,11 @@ def TF_bfloat16_type():
 
 def masked_crc32c(data):
     x = u32(crc32c(data))
-    return u32(((x >> 15) | u32(x << 17)) + 0xa282ead8)
+    return u32(((x >> 15) | u32(x << 17)) + 0xA282EAD8)
 
 
 def u32(x):
-    return x & 0xffffffff
+    return x & 0xFFFFFFFF
 
 
 # fmt: off
@@ -125,6 +125,7 @@ _MASK = 0xFFFFFFFF
 
 def crc_update(crc, data):
     """Update CRC-32C checksum with data.
+
     Args:
       crc: 32-bit checksum to update as long.
       data: byte array, string or iterable over bytes.
@@ -139,13 +140,14 @@ def crc_update(crc, data):
 
     crc ^= _MASK
     for b in buf:
-        table_index = (crc ^ b) & 0xff
+        table_index = (crc ^ b) & 0xFF
         crc = (CRC_TABLE[table_index] ^ (crc >> 8)) & _MASK
     return crc ^ _MASK
 
 
 def crc_finalize(crc):
     """Finalize CRC-32C checksum.
+
     This function should be called as last step of crc calculation.
     Args:
       crc: 32-bit checksum as long.
@@ -157,6 +159,7 @@ def crc_finalize(crc):
 
 def crc32c(data):
     """Compute CRC-32C checksum of the data.
+
     Args:
       data: byte array, string or iterable over bytes.
     Returns:
@@ -166,28 +169,34 @@ def crc32c(data):
 
 
 class PyRecordReader_New:
-    def __init__(self, filename=None, start_offset=0, compression_type=None,
-                 status=None):
+    def __init__(
+        self, filename=None, start_offset=0, compression_type=None, status=None
+    ):
         if filename is None:
             raise errors.NotFoundError(
-                None, None, 'No filename provided, cannot read Events')
+                None, None, "No filename provided, cannot read Events"
+            )
         if not gfile.exists(filename):
             raise errors.NotFoundError(
-                None, None,
-                '{} does not point to valid Events file'.format(filename))
+                None,
+                None,
+                "{} does not point to valid Events file".format(filename),
+            )
         if start_offset:
             raise errors.UnimplementedError(
-                None, None, 'start offset not supported by compat reader')
+                None, None, "start offset not supported by compat reader"
+            )
         if compression_type:
             # TODO: Handle gzip and zlib compressed files
             raise errors.UnimplementedError(
-                None, None, 'compression not supported by compat reader')
+                None, None, "compression not supported by compat reader"
+            )
         self.filename = filename
         self.start_offset = start_offset
         self.compression_type = compression_type
         self.status = status
         self.curr_event = None
-        self.file_handle = gfile.GFile(self.filename, 'rb')
+        self.file_handle = gfile.GFile(self.filename, "rb")
 
     def GetNext(self):
         # Read the header
@@ -195,18 +204,17 @@ class PyRecordReader_New:
         header_str = self.file_handle.read(8)
         if len(header_str) != 8:
             # Hit EOF so raise and exit
-            raise errors.OutOfRangeError(None, None, 'No more events to read')
-        header = struct.unpack('Q', header_str)
+            raise errors.OutOfRangeError(None, None, "No more events to read")
+        header = struct.unpack("Q", header_str)
 
         # Read the crc32, which is 4 bytes, and check it against
         # the crc32 of the header
         crc_header_str = self.file_handle.read(4)
-        crc_header = struct.unpack('I', crc_header_str)
+        crc_header = struct.unpack("I", crc_header_str)
         header_crc_calc = masked_crc32c(header_str)
         if header_crc_calc != crc_header[0]:
             raise errors.DataLossError(
-                None, None,
-                '{} failed header crc32 check'.format(self.filename)
+                None, None, "{} failed header crc32 check".format(self.filename)
             )
 
         # The length of the header tells us how many bytes the Event
@@ -221,11 +229,12 @@ class PyRecordReader_New:
         # has no crc32, in which case we skip.
         crc_event_str = self.file_handle.read(4)
         if crc_event_str:
-            crc_event = struct.unpack('I', crc_event_str)
+            crc_event = struct.unpack("I", crc_event_str)
             if event_crc_calc != crc_event[0]:
                 raise errors.DataLossError(
-                    None, None,
-                    '{} failed event crc32 check'.format(self.filename)
+                    None,
+                    None,
+                    "{} failed event crc32 check".format(self.filename),
                 )
 
         # Set the current event to be read later by record() call

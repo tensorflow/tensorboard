@@ -39,7 +39,8 @@ from tensorboard.compat.tensorflow_stub.compat.v1 import *  # noqa
 
 
 def as_bytes(bytes_or_text, encoding="utf-8"):
-    """Converts either bytes or unicode to `bytes`, using utf-8 encoding for text.
+    """Converts either bytes or unicode to `bytes`, using utf-8 encoding for
+    text.
 
     Args:
     bytes_or_text: A `bytes`, `str`, or `unicode` object.
@@ -56,7 +57,9 @@ def as_bytes(bytes_or_text, encoding="utf-8"):
     elif isinstance(bytes_or_text, bytes):
         return bytes_or_text
     else:
-        raise TypeError("Expected binary or unicode string, got %r" % (bytes_or_text,))
+        raise TypeError(
+            "Expected binary or unicode string, got %r" % (bytes_or_text,)
+        )
 
 
 def as_text(bytes_or_text, encoding="utf-8"):
@@ -77,7 +80,9 @@ def as_text(bytes_or_text, encoding="utf-8"):
     elif isinstance(bytes_or_text, bytes):
         return bytes_or_text.decode(encoding)
     else:
-        raise TypeError("Expected binary or unicode string, got %r" % bytes_or_text)
+        raise TypeError(
+            "Expected binary or unicode string, got %r" % bytes_or_text
+        )
 
 
 # Convert an object to a `str` in both Python 2 and 3.
@@ -109,7 +114,8 @@ def as_str_any(value):
 
 # @tf_export('compat.path_to_str')
 def path_to_str(path):
-    """Returns the file system path representation of a `PathLike` object, else as it is.
+    """Returns the file system path representation of a `PathLike` object, else
+    as it is.
 
     Args:
     path: An object that can be converted to path representation.
