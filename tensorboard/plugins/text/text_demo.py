@@ -28,108 +28,108 @@ from tensorboard.util import tb_logging
 logger = tb_logging.get_logger()
 
 # Directory into which to write tensorboard data.
-LOGDIR = '/tmp/text_demo'
+LOGDIR = "/tmp/text_demo"
 
 # Number of steps for which to write data.
 STEPS = 16
 
 
 def simple_example(step):
-  # Text summaries log arbitrary text. This can be encoded with ASCII or
-  # UTF-8. Here's a simple example, wherein we greet the user on each
-  # step:
-  step_string = tf.as_string(step)
-  greeting = tf.strings.join(['Hello from step ', step_string, '!'])
-  tf.compat.v1.summary.text('greeting', greeting)
+    # Text summaries log arbitrary text. This can be encoded with ASCII or
+    # UTF-8. Here's a simple example, wherein we greet the user on each
+    # step:
+    step_string = tf.as_string(step)
+    greeting = tf.strings.join(["Hello from step ", step_string, "!"])
+    tf.compat.v1.summary.text("greeting", greeting)
 
 
 def markdown_table(step):
-  # The text summary can also contain Markdown, including Markdown
-  # tables. Markdown tables look like this:
-  #
-  #     | hello | there |
-  #     |-------|-------|
-  #     | this  | is    |
-  #     | a     | table |
-  #
-  # The leading and trailing pipes in each row are optional, and the text
-  # doesn't actually have to be neatly aligned, so we can create these
-  # pretty easily. Let's do so.
-  header_row = 'Pounds of chocolate | Happiness'
-  chocolate = tf.range(step)
-  happiness = tf.square(chocolate + 1)
-  chocolate_column = tf.as_string(chocolate)
-  happiness_column = tf.as_string(happiness)
-  table_rows = tf.strings.join([chocolate_column, " | ", happiness_column])
-  table_body = tf.strings.reduce_join(inputs=table_rows, separator='\n')
-  table = tf.strings.join([header_row, "---|---", table_body], separator='\n')
-  preamble = 'We conducted an experiment and found the following data:\n\n'
-  result = tf.strings.join([preamble, table])
-  tf.compat.v1.summary.text('chocolate_study', result)
+    # The text summary can also contain Markdown, including Markdown
+    # tables. Markdown tables look like this:
+    #
+    #     | hello | there |
+    #     |-------|-------|
+    #     | this  | is    |
+    #     | a     | table |
+    #
+    # The leading and trailing pipes in each row are optional, and the text
+    # doesn't actually have to be neatly aligned, so we can create these
+    # pretty easily. Let's do so.
+    header_row = "Pounds of chocolate | Happiness"
+    chocolate = tf.range(step)
+    happiness = tf.square(chocolate + 1)
+    chocolate_column = tf.as_string(chocolate)
+    happiness_column = tf.as_string(happiness)
+    table_rows = tf.strings.join([chocolate_column, " | ", happiness_column])
+    table_body = tf.strings.reduce_join(inputs=table_rows, separator="\n")
+    table = tf.strings.join([header_row, "---|---", table_body], separator="\n")
+    preamble = "We conducted an experiment and found the following data:\n\n"
+    result = tf.strings.join([preamble, table])
+    tf.compat.v1.summary.text("chocolate_study", result)
 
 
 def higher_order_tensors(step):
-  # We're not limited to passing scalar tensors to the summary
-  # operation. If we pass a rank-1 or rank-2 tensor, it'll be visualized
-  # as a table in TensorBoard. (For higher-ranked tensors, you'll see
-  # just a 2D slice of the data.)
-  #
-  # To demonstrate this, let's create a multiplication table.
+    # We're not limited to passing scalar tensors to the summary
+    # operation. If we pass a rank-1 or rank-2 tensor, it'll be visualized
+    # as a table in TensorBoard. (For higher-ranked tensors, you'll see
+    # just a 2D slice of the data.)
+    #
+    # To demonstrate this, let's create a multiplication table.
 
-  # First, we'll create the table body, a `step`-by-`step` array of
-  # strings.
-  numbers = tf.range(step)
-  numbers_row = tf.expand_dims(numbers, 0)  # shape: [1, step]
-  numbers_column = tf.expand_dims(numbers, 1)  # shape: [step, 1]
-  products = tf.matmul(numbers_column, numbers_row)  # shape: [step, step]
-  table_body = tf.as_string(products)
+    # First, we'll create the table body, a `step`-by-`step` array of
+    # strings.
+    numbers = tf.range(step)
+    numbers_row = tf.expand_dims(numbers, 0)  # shape: [1, step]
+    numbers_column = tf.expand_dims(numbers, 1)  # shape: [step, 1]
+    products = tf.matmul(numbers_column, numbers_row)  # shape: [step, step]
+    table_body = tf.as_string(products)
 
-  # Next, we'll create a header row and column, and a little
-  # multiplication sign to put in the corner.
-  bold_numbers = tf.strings.join(['**', tf.as_string(numbers), '**'])
-  bold_row = tf.expand_dims(bold_numbers, 0)
-  bold_column = tf.expand_dims(bold_numbers, 1)
-  corner_cell = tf.constant(u'\u00d7'.encode('utf-8'))  # MULTIPLICATION SIGN
+    # Next, we'll create a header row and column, and a little
+    # multiplication sign to put in the corner.
+    bold_numbers = tf.strings.join(["**", tf.as_string(numbers), "**"])
+    bold_row = tf.expand_dims(bold_numbers, 0)
+    bold_column = tf.expand_dims(bold_numbers, 1)
+    corner_cell = tf.constant(u"\u00d7".encode("utf-8"))  # MULTIPLICATION SIGN
 
-  # Now, we have to put the pieces together. Using `axis=0` stacks
-  # vertically; using `axis=1` juxtaposes horizontally.
-  table_body_and_top_row = tf.concat([bold_row, table_body], axis=0)
-  table_left_column = tf.concat([[[corner_cell]], bold_column], axis=0)
-  table_full = tf.concat([table_left_column, table_body_and_top_row], axis=1)
+    # Now, we have to put the pieces together. Using `axis=0` stacks
+    # vertically; using `axis=1` juxtaposes horizontally.
+    table_body_and_top_row = tf.concat([bold_row, table_body], axis=0)
+    table_left_column = tf.concat([[[corner_cell]], bold_column], axis=0)
+    table_full = tf.concat([table_left_column, table_body_and_top_row], axis=1)
 
-  # The result, `table_full`, is a rank-2 string tensor of shape
-  # `[step + 1, step + 1]`. We can pass it directly to the summary, and
-  # we'll get a nicely formatted table in TensorBoard.
-  tf.compat.v1.summary.text('multiplication_table', table_full)
+    # The result, `table_full`, is a rank-2 string tensor of shape
+    # `[step + 1, step + 1]`. We can pass it directly to the summary, and
+    # we'll get a nicely formatted table in TensorBoard.
+    tf.compat.v1.summary.text("multiplication_table", table_full)
 
 
 def run_all(logdir):
-  tf.compat.v1.reset_default_graph()
-  step_placeholder = tf.compat.v1.placeholder(tf.int32)
+    tf.compat.v1.reset_default_graph()
+    step_placeholder = tf.compat.v1.placeholder(tf.int32)
 
-  with tf.name_scope('simple_example'):
-    simple_example(step_placeholder)
-  with tf.name_scope('markdown_table'):
-    markdown_table(step_placeholder)
-  with tf.name_scope('higher_order_tensors'):
-    higher_order_tensors(step_placeholder)
-  all_summaries = tf.compat.v1.summary.merge_all()
+    with tf.name_scope("simple_example"):
+        simple_example(step_placeholder)
+    with tf.name_scope("markdown_table"):
+        markdown_table(step_placeholder)
+    with tf.name_scope("higher_order_tensors"):
+        higher_order_tensors(step_placeholder)
+    all_summaries = tf.compat.v1.summary.merge_all()
 
-  with tf.compat.v1.Session() as sess:
-    writer = tf.summary.FileWriter(logdir)
-    writer.add_graph(sess.graph)
-    for step in xrange(STEPS):
-      s = sess.run(all_summaries, feed_dict={step_placeholder: step})
-      writer.add_summary(s, global_step=step)
-    writer.close()
+    with tf.compat.v1.Session() as sess:
+        writer = tf.summary.FileWriter(logdir)
+        writer.add_graph(sess.graph)
+        for step in xrange(STEPS):
+            s = sess.run(all_summaries, feed_dict={step_placeholder: step})
+            writer.add_summary(s, global_step=step)
+        writer.close()
 
 
 def main(unused_argv):
-  logging.set_verbosity(logging.INFO)
-  logger.info('Saving output to %s.' % LOGDIR)
-  run_all(LOGDIR)
-  logger.info('Done. Output saved to %s.' % LOGDIR)
+    logging.set_verbosity(logging.INFO)
+    logger.info("Saving output to %s." % LOGDIR)
+    run_all(LOGDIR)
+    logger.info("Done. Output saved to %s." % LOGDIR)
 
 
-if __name__ == '__main__':
-  app.run(main)
+if __name__ == "__main__":
+    app.run(main)

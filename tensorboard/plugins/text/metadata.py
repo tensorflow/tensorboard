@@ -24,7 +24,7 @@ from tensorboard.util import tb_logging
 
 logger = tb_logging.get_logger()
 
-PLUGIN_NAME = 'text'
+PLUGIN_NAME = "text"
 
 # The most recent value for the `version` field of the
 # `TextPluginData` proto.
@@ -32,36 +32,42 @@ PROTO_VERSION = 0
 
 
 def create_summary_metadata(display_name, description):
-  """Create a `summary_pb2.SummaryMetadata` proto for text plugin data.
-  Returns:
-    A `summary_pb2.SummaryMetadata` protobuf object.
-  """
-  content = plugin_data_pb2.TextPluginData(version=PROTO_VERSION)
-  metadata = summary_pb2.SummaryMetadata(
-      display_name=display_name,
-      summary_description=description,
-      plugin_data=summary_pb2.SummaryMetadata.PluginData(
-          plugin_name=PLUGIN_NAME,
-          content=content.SerializeToString()))
-  return metadata
+    """Create a `summary_pb2.SummaryMetadata` proto for text plugin data.
+
+    Returns:
+      A `summary_pb2.SummaryMetadata` protobuf object.
+    """
+    content = plugin_data_pb2.TextPluginData(version=PROTO_VERSION)
+    metadata = summary_pb2.SummaryMetadata(
+        display_name=display_name,
+        summary_description=description,
+        plugin_data=summary_pb2.SummaryMetadata.PluginData(
+            plugin_name=PLUGIN_NAME, content=content.SerializeToString()
+        ),
+    )
+    return metadata
 
 
 def parse_plugin_metadata(content):
-  """Parse summary metadata to a Python object.
-  Arguments:
-    content: The `content` field of a `SummaryMetadata` proto corresponding to
-      the text plugin.
-  Returns:
-    A `TextPluginData` protobuf object.
-  """
-  if not isinstance(content, bytes):
-    raise TypeError('Content type must be bytes')
-  result = plugin_data_pb2.TextPluginData.FromString(content)
-  if result.version == 0:
-    return result
-  else:
-    logger.warn(
-        'Unknown metadata version: %s. The latest version known to '
-        'this build of TensorBoard is %s; perhaps a newer build is '
-        'available?', result.version, PROTO_VERSION)
-    return result
+    """Parse summary metadata to a Python object.
+
+    Arguments:
+      content: The `content` field of a `SummaryMetadata` proto corresponding to
+        the text plugin.
+    Returns:
+      A `TextPluginData` protobuf object.
+    """
+    if not isinstance(content, bytes):
+        raise TypeError("Content type must be bytes")
+    result = plugin_data_pb2.TextPluginData.FromString(content)
+    if result.version == 0:
+        return result
+    else:
+        logger.warn(
+            "Unknown metadata version: %s. The latest version known to "
+            "this build of TensorBoard is %s; perhaps a newer build is "
+            "available?",
+            result.version,
+            PROTO_VERSION,
+        )
+        return result
