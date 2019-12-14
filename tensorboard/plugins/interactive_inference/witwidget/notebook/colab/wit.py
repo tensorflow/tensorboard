@@ -21,45 +21,65 @@ from witwidget.notebook import base
 
 # Python functions for requests from javascript.
 def infer_examples(wit_id):
-  WitWidget.widgets[wit_id].infer()
-output.register_callback('notebook.InferExamples', infer_examples)
+    WitWidget.widgets[wit_id].infer()
+
+
+output.register_callback("notebook.InferExamples", infer_examples)
 
 
 def delete_example(wit_id, index):
-  WitWidget.widgets[wit_id].delete_example(index)
-output.register_callback('notebook.DeleteExample', delete_example)
+    WitWidget.widgets[wit_id].delete_example(index)
+
+
+output.register_callback("notebook.DeleteExample", delete_example)
 
 
 def duplicate_example(wit_id, index):
-  WitWidget.widgets[wit_id].duplicate_example(index)
-output.register_callback('notebook.DuplicateExample', duplicate_example)
+    WitWidget.widgets[wit_id].duplicate_example(index)
+
+
+output.register_callback("notebook.DuplicateExample", duplicate_example)
 
 
 def update_example(wit_id, index, example):
-  WitWidget.widgets[wit_id].update_example(index, example)
-output.register_callback('notebook.UpdateExample', update_example)
+    WitWidget.widgets[wit_id].update_example(index, example)
+
+
+output.register_callback("notebook.UpdateExample", update_example)
 
 
 def get_eligible_features(wit_id):
-  WitWidget.widgets[wit_id].get_eligible_features()
-output.register_callback('notebook.GetEligibleFeatures', get_eligible_features)
+    WitWidget.widgets[wit_id].get_eligible_features()
+
+
+output.register_callback("notebook.GetEligibleFeatures", get_eligible_features)
 
 
 def sort_eligible_features(wit_id, details):
-  WitWidget.widgets[wit_id].sort_eligible_features(details)
-output.register_callback('notebook.SortEligibleFeatures', sort_eligible_features)
+    WitWidget.widgets[wit_id].sort_eligible_features(details)
+
+
+output.register_callback(
+    "notebook.SortEligibleFeatures", sort_eligible_features
+)
 
 
 def infer_mutants(wit_id, details):
-  WitWidget.widgets[wit_id].infer_mutants(details)
-output.register_callback('notebook.InferMutants', infer_mutants)
+    WitWidget.widgets[wit_id].infer_mutants(details)
+
+
+output.register_callback("notebook.InferMutants", infer_mutants)
 
 
 def compute_custom_distance(wit_id, index, callback_name, params):
-  WitWidget.widgets[wit_id].compute_custom_distance(index, callback_name,
-                                                    params)
-output.register_callback('notebook.ComputeCustomDistance',
-                         compute_custom_distance)
+    WitWidget.widgets[wit_id].compute_custom_distance(
+        index, callback_name, params
+    )
+
+
+output.register_callback(
+    "notebook.ComputeCustomDistance", compute_custom_distance
+)
 
 
 # HTML/javascript for the WIT frontend.
@@ -211,129 +231,172 @@ WIT_HTML = """
 
 
 class WitWidget(base.WitWidgetBase):
-  """WIT widget for colab."""
+    """WIT widget for colab."""
 
-  # Static instance list of constructed WitWidgets so python global functions
-  # can call into instances of this object
-  widgets = []
+    # Static instance list of constructed WitWidgets so python global functions
+    # can call into instances of this object
+    widgets = []
 
-  # Static instance index to keep track of ID number of each constructed
-  # WitWidget.
-  index = 0
+    # Static instance index to keep track of ID number of each constructed
+    # WitWidget.
+    index = 0
 
-  def __init__(self, config_builder, height=1000):
-    """Constructor for colab notebook WitWidget.
+    def __init__(self, config_builder, height=1000):
+        """Constructor for colab notebook WitWidget.
 
-    Args:
-      config_builder: WitConfigBuilder object containing settings for WIT.
-      height: Optional height in pixels for WIT to occupy. Defaults to 1000.
-    """
-    self._ctor_complete = False
-    self.id = WitWidget.index
-    base.WitWidgetBase.__init__(self, config_builder)
-    # Add this instance to the static instance list.
-    WitWidget.widgets.append(self)
+        Args:
+          config_builder: WitConfigBuilder object containing settings for WIT.
+          height: Optional height in pixels for WIT to occupy. Defaults to 1000.
+        """
+        self._ctor_complete = False
+        self.id = WitWidget.index
+        base.WitWidgetBase.__init__(self, config_builder)
+        # Add this instance to the static instance list.
+        WitWidget.widgets.append(self)
 
-    # Display WIT Polymer element.
-    display.display(display.HTML(self._get_element_html()))
-    display.display(display.HTML(
-        WIT_HTML.format(height=height, id=self.id)))
+        # Display WIT Polymer element.
+        display.display(display.HTML(self._get_element_html()))
+        display.display(
+            display.HTML(WIT_HTML.format(height=height, id=self.id))
+        )
 
-    # Increment the static instance WitWidget index counter
-    WitWidget.index += 1
+        # Increment the static instance WitWidget index counter
+        WitWidget.index += 1
 
-    # Send the provided config and examples to JS
-    output.eval_js("""configCallback({config})""".format(
-        config=json.dumps(self.config)))
-    output.eval_js("""updateExamplesCallback({examples})""".format(
-        examples=json.dumps(self.examples)))
-    self._generate_sprite()
-    self._ctor_complete = True
+        # Send the provided config and examples to JS
+        output.eval_js(
+            """configCallback({config})""".format(
+                config=json.dumps(self.config)
+            )
+        )
+        output.eval_js(
+            """updateExamplesCallback({examples})""".format(
+                examples=json.dumps(self.examples)
+            )
+        )
+        self._generate_sprite()
+        self._ctor_complete = True
 
-  def _get_element_html(self):
-    return """
+    def _get_element_html(self):
+        return """
       <link rel="import" href="/nbextensions/wit-widget/wit_jupyter.html">"""
 
-  def set_examples(self, examples):
-    base.WitWidgetBase.set_examples(self, examples)
-    # If this is called outside of the ctor, use a BroadcastChannel to send
-    # the updated examples to the visualization. Inside of the ctor, no action
-    # is necessary as the ctor handles all communication.
-    if self._ctor_complete:
-      # Use BroadcastChannel to allow this call to be made in a separate colab
-      # cell from the cell that displays WIT.
-      channel_name = 'updateExamples{}'.format(self.id)
-      output.eval_js("""(new BroadcastChannel('{channel_name}')).postMessage(
+    def set_examples(self, examples):
+        base.WitWidgetBase.set_examples(self, examples)
+        # If this is called outside of the ctor, use a BroadcastChannel to send
+        # the updated examples to the visualization. Inside of the ctor, no action
+        # is necessary as the ctor handles all communication.
+        if self._ctor_complete:
+            # Use BroadcastChannel to allow this call to be made in a separate colab
+            # cell from the cell that displays WIT.
+            channel_name = "updateExamples{}".format(self.id)
+            output.eval_js(
+                """(new BroadcastChannel('{channel_name}')).postMessage(
           {examples})""".format(
-              examples=json.dumps(self.examples), channel_name=channel_name))
-      self._generate_sprite()
+                    examples=json.dumps(self.examples),
+                    channel_name=channel_name,
+                )
+            )
+            self._generate_sprite()
 
-  def infer(self):
-    try:
-      inferences = base.WitWidgetBase.infer_impl(self)
-      output.eval_js("""inferenceCallback({inferences})""".format(
-          inferences=json.dumps(inferences)))
-    except Exception as e:
-      output.eval_js("""backendError({error})""".format(
-          error=json.dumps({'msg': repr(e)})))
+    def infer(self):
+        try:
+            inferences = base.WitWidgetBase.infer_impl(self)
+            output.eval_js(
+                """inferenceCallback({inferences})""".format(
+                    inferences=json.dumps(inferences)
+                )
+            )
+        except Exception as e:
+            output.eval_js(
+                """backendError({error})""".format(
+                    error=json.dumps({"msg": repr(e)})
+                )
+            )
 
-  def delete_example(self, index):
-    self.examples.pop(index)
-    self.updated_example_indices = set([
-        i if i < index else i - 1 for i in self.updated_example_indices])
-    self._generate_sprite()
+    def delete_example(self, index):
+        self.examples.pop(index)
+        self.updated_example_indices = set(
+            [i if i < index else i - 1 for i in self.updated_example_indices]
+        )
+        self._generate_sprite()
 
-  def update_example(self, index, example):
-    self.updated_example_indices.add(index)
-    self.examples[index] = example
-    self._generate_sprite()
+    def update_example(self, index, example):
+        self.updated_example_indices.add(index)
+        self.examples[index] = example
+        self._generate_sprite()
 
-  def duplicate_example(self, index):
-    self.examples.append(self.examples[index])
-    self.updated_example_indices.add(len(self.examples) - 1)
-    self._generate_sprite()
+    def duplicate_example(self, index):
+        self.examples.append(self.examples[index])
+        self.updated_example_indices.add(len(self.examples) - 1)
+        self._generate_sprite()
 
-  def compute_custom_distance(self, index, callback_fn, params):
-    try:
-      distances = base.WitWidgetBase.compute_custom_distance_impl(
-          self, index, params['distanceParams'])
-      callback_dict = {
-          'distances': distances,
-          'exInd': index,
-          'funId': callback_fn,
-          'params': params['callbackParams']
-      }
-      output.eval_js("""distanceCallback({callback_dict})""".format(
-          callback_dict=json.dumps(callback_dict)))
-    except Exception as e:
-      output.eval_js(
-          """backendError({error})""".format(
-            error=json.dumps({'msg': repr(e)})))
+    def compute_custom_distance(self, index, callback_fn, params):
+        try:
+            distances = base.WitWidgetBase.compute_custom_distance_impl(
+                self, index, params["distanceParams"]
+            )
+            callback_dict = {
+                "distances": distances,
+                "exInd": index,
+                "funId": callback_fn,
+                "params": params["callbackParams"],
+            }
+            output.eval_js(
+                """distanceCallback({callback_dict})""".format(
+                    callback_dict=json.dumps(callback_dict)
+                )
+            )
+        except Exception as e:
+            output.eval_js(
+                """backendError({error})""".format(
+                    error=json.dumps({"msg": repr(e)})
+                )
+            )
 
-  def get_eligible_features(self):
-    features_list = base.WitWidgetBase.get_eligible_features_impl(self)
-    output.eval_js("""eligibleFeaturesCallback({features_list})""".format(
-        features_list=json.dumps(features_list)))
+    def get_eligible_features(self):
+        features_list = base.WitWidgetBase.get_eligible_features_impl(self)
+        output.eval_js(
+            """eligibleFeaturesCallback({features_list})""".format(
+                features_list=json.dumps(features_list)
+            )
+        )
 
-  def infer_mutants(self, info):
-    try:
-      json_mapping = base.WitWidgetBase.infer_mutants_impl(self, info)
-      output.eval_js("""inferMutantsCallback({json_mapping})""".format(
-          json_mapping=json.dumps(json_mapping)))
-    except Exception as e:
-      output.eval_js("""backendError({error})""".format(
-          error=json.dumps({'msg': repr(e)})))
+    def infer_mutants(self, info):
+        try:
+            json_mapping = base.WitWidgetBase.infer_mutants_impl(self, info)
+            output.eval_js(
+                """inferMutantsCallback({json_mapping})""".format(
+                    json_mapping=json.dumps(json_mapping)
+                )
+            )
+        except Exception as e:
+            output.eval_js(
+                """backendError({error})""".format(
+                    error=json.dumps({"msg": repr(e)})
+                )
+            )
 
-  def sort_eligible_features(self, info):
-    try:
-      features_list = base.WitWidgetBase.sort_eligible_features_impl(self, info)
-      output.eval_js("""sortEligibleFeaturesCallback({features_list})""".format(
-          features_list=json.dumps(features_list)))
-    except Exception as e:
-      output.eval_js("""backendError({error})""".format(
-          error=json.dumps({'msg': repr(e)})))
+    def sort_eligible_features(self, info):
+        try:
+            features_list = base.WitWidgetBase.sort_eligible_features_impl(
+                self, info
+            )
+            output.eval_js(
+                """sortEligibleFeaturesCallback({features_list})""".format(
+                    features_list=json.dumps(features_list)
+                )
+            )
+        except Exception as e:
+            output.eval_js(
+                """backendError({error})""".format(
+                    error=json.dumps({"msg": repr(e)})
+                )
+            )
 
-  def _generate_sprite(self):
-    sprite = base.WitWidgetBase.create_sprite(self)
-    if sprite is not None:
-      output.eval_js("""spriteCallback('{sprite}')""".format(sprite=sprite))
+    def _generate_sprite(self):
+        sprite = base.WitWidgetBase.create_sprite(self)
+        if sprite is not None:
+            output.eval_js(
+                """spriteCallback('{sprite}')""".format(sprite=sprite)
+            )
