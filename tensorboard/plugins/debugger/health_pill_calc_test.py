@@ -25,104 +25,103 @@ from tensorboard.plugins.debugger import health_pill_calc
 
 
 class HealthPillCalcTest(tf.test.TestCase):
+    def testInfOnlyArray(self):
+        x = np.array([[np.inf, -np.inf], [np.inf, np.inf]])
+        health_pill = health_pill_calc.calc_health_pill(x)
+        self.assertEqual(16, len(health_pill))
+        self.assertEqual(1.0, health_pill[0])  # Is initialized.
+        self.assertEqual(4.0, health_pill[1])  # numel.
+        self.assertEqual(0, health_pill[2])  # NaN count.
+        self.assertEqual(1, health_pill[3])  # -Infinity count.
+        self.assertEqual(0, health_pill[4])  # Finite negative count.
+        self.assertEqual(0, health_pill[5])  # Zero count.
+        self.assertEqual(0, health_pill[6])  # Finite positive count.
+        self.assertEqual(3, health_pill[7])  # +Infinity count.
+        self.assertEqual(np.inf, health_pill[8])
+        self.assertEqual(-np.inf, health_pill[9])
+        self.assertTrue(np.isnan(health_pill[10]))
+        self.assertTrue(np.isnan(health_pill[11]))
+        self.assertEqual(2, health_pill[13])  # Number of dimensions.
+        self.assertEqual(2, health_pill[14])  # Size is (2, 2).
+        self.assertEqual(2, health_pill[15])
 
-  def testInfOnlyArray(self):
-    x = np.array([[np.inf, -np.inf], [np.inf, np.inf]])
-    health_pill = health_pill_calc.calc_health_pill(x)
-    self.assertEqual(16, len(health_pill))
-    self.assertEqual(1.0, health_pill[0])  # Is initialized.
-    self.assertEqual(4.0, health_pill[1])  # numel.
-    self.assertEqual(0, health_pill[2])  # NaN count.
-    self.assertEqual(1, health_pill[3])  # -Infinity count.
-    self.assertEqual(0, health_pill[4])  # Finite negative count.
-    self.assertEqual(0, health_pill[5])  # Zero count.
-    self.assertEqual(0, health_pill[6])  # Finite positive count.
-    self.assertEqual(3, health_pill[7])  # +Infinity count.
-    self.assertEqual(np.inf, health_pill[8])
-    self.assertEqual(-np.inf, health_pill[9])
-    self.assertTrue(np.isnan(health_pill[10]))
-    self.assertTrue(np.isnan(health_pill[11]))
-    self.assertEqual(2, health_pill[13])  # Number of dimensions.
-    self.assertEqual(2, health_pill[14])  # Size is (2, 2).
-    self.assertEqual(2, health_pill[15])
+    def testNanOnlyArray(self):
+        x = np.array([[np.nan, np.nan, np.nan]])
+        health_pill = health_pill_calc.calc_health_pill(x)
+        self.assertEqual(16, len(health_pill))
+        self.assertEqual(1, health_pill[0])  # Is initialized.
+        self.assertEqual(3, health_pill[1])  # numel.
+        self.assertEqual(3, health_pill[2])  # NaN count.
+        self.assertEqual(0, health_pill[3])  # -Infinity count.
+        self.assertEqual(0, health_pill[4])  # Finite negative count.
+        self.assertEqual(0, health_pill[5])  # Zero count.
+        self.assertEqual(0, health_pill[6])  # Finite positive count.
+        self.assertEqual(0, health_pill[7])  # +Infinity count.
+        self.assertEqual(np.inf, health_pill[8])
+        self.assertEqual(-np.inf, health_pill[9])
+        self.assertTrue(np.isnan(health_pill[10]))
+        self.assertTrue(np.isnan(health_pill[11]))
+        self.assertEqual(2, health_pill[13])  # Number of dimensions.
+        self.assertEqual(1, health_pill[14])  # Size is (1, 3)
+        self.assertEqual(3, health_pill[15])
 
-  def testNanOnlyArray(self):
-    x = np.array([[np.nan, np.nan, np.nan]])
-    health_pill = health_pill_calc.calc_health_pill(x)
-    self.assertEqual(16, len(health_pill))
-    self.assertEqual(1, health_pill[0])  # Is initialized.
-    self.assertEqual(3, health_pill[1])  # numel.
-    self.assertEqual(3, health_pill[2])  # NaN count.
-    self.assertEqual(0, health_pill[3])  # -Infinity count.
-    self.assertEqual(0, health_pill[4])  # Finite negative count.
-    self.assertEqual(0, health_pill[5])  # Zero count.
-    self.assertEqual(0, health_pill[6])  # Finite positive count.
-    self.assertEqual(0, health_pill[7])  # +Infinity count.
-    self.assertEqual(np.inf, health_pill[8])
-    self.assertEqual(-np.inf, health_pill[9])
-    self.assertTrue(np.isnan(health_pill[10]))
-    self.assertTrue(np.isnan(health_pill[11]))
-    self.assertEqual(2, health_pill[13])  # Number of dimensions.
-    self.assertEqual(1, health_pill[14])  # Size is (1, 3)
-    self.assertEqual(3, health_pill[15])
+    def testInfAndNanOnlyArray(self):
+        x = np.array([np.inf, -np.inf, np.nan])
+        health_pill = health_pill_calc.calc_health_pill(x)
+        self.assertEqual(15, len(health_pill))
+        self.assertEqual(1, health_pill[0])  # Is initialized.
+        self.assertEqual(3, health_pill[1])  # numel.
+        self.assertEqual(1, health_pill[2])  # NaN count.
+        self.assertEqual(1, health_pill[3])  # -Infinity count.
+        self.assertEqual(0, health_pill[4])  # Finite negative count.
+        self.assertEqual(0, health_pill[5])  # Zero count.
+        self.assertEqual(0, health_pill[6])  # Finite positive count.
+        self.assertEqual(1, health_pill[7])  # +Infinity count.
+        self.assertEqual(np.inf, health_pill[8])
+        self.assertEqual(-np.inf, health_pill[9])
+        self.assertTrue(np.isnan(health_pill[10]))
+        self.assertTrue(np.isnan(health_pill[11]))
+        self.assertEqual(1, health_pill[13])  # Number of dimensions.
+        self.assertEqual(3, health_pill[14])  # Size is (3,).
 
-  def testInfAndNanOnlyArray(self):
-    x = np.array([np.inf, -np.inf, np.nan])
-    health_pill = health_pill_calc.calc_health_pill(x)
-    self.assertEqual(15, len(health_pill))
-    self.assertEqual(1, health_pill[0])  # Is initialized.
-    self.assertEqual(3, health_pill[1])  # numel.
-    self.assertEqual(1, health_pill[2])  # NaN count.
-    self.assertEqual(1, health_pill[3])  # -Infinity count.
-    self.assertEqual(0, health_pill[4])  # Finite negative count.
-    self.assertEqual(0, health_pill[5])  # Zero count.
-    self.assertEqual(0, health_pill[6])  # Finite positive count.
-    self.assertEqual(1, health_pill[7])  # +Infinity count.
-    self.assertEqual(np.inf, health_pill[8])
-    self.assertEqual(-np.inf, health_pill[9])
-    self.assertTrue(np.isnan(health_pill[10]))
-    self.assertTrue(np.isnan(health_pill[11]))
-    self.assertEqual(1, health_pill[13])  # Number of dimensions.
-    self.assertEqual(3, health_pill[14])  # Size is (3,).
+    def testEmptyArray(self):
+        x = np.array([[], []])
+        health_pill = health_pill_calc.calc_health_pill(x)
+        self.assertEqual(16, len(health_pill))
+        self.assertEqual(1, health_pill[0])  # Is initialized.
+        self.assertEqual(0, health_pill[1])  # numel.
+        self.assertEqual(0, health_pill[2])  # NaN count.
+        self.assertEqual(0, health_pill[3])  # -Infinity count.
+        self.assertEqual(0, health_pill[4])  # Finite negative count.
+        self.assertEqual(0, health_pill[5])  # Zero count.
+        self.assertEqual(0, health_pill[6])  # Finite positive count.
+        self.assertEqual(0, health_pill[7])  # +Infinity count.
+        self.assertEqual(np.inf, health_pill[8])
+        self.assertEqual(-np.inf, health_pill[9])
+        self.assertTrue(np.isnan(health_pill[10]))
+        self.assertTrue(np.isnan(health_pill[11]))
+        self.assertEqual(2, health_pill[13])  # Number of dimensions.
+        self.assertEqual(2, health_pill[14])  # Size is (2, 0).
+        self.assertEqual(0, health_pill[15])
 
-  def testEmptyArray(self):
-    x = np.array([[], []])
-    health_pill = health_pill_calc.calc_health_pill(x)
-    self.assertEqual(16, len(health_pill))
-    self.assertEqual(1, health_pill[0])  # Is initialized.
-    self.assertEqual(0, health_pill[1])  # numel.
-    self.assertEqual(0, health_pill[2])  # NaN count.
-    self.assertEqual(0, health_pill[3])  # -Infinity count.
-    self.assertEqual(0, health_pill[4])  # Finite negative count.
-    self.assertEqual(0, health_pill[5])  # Zero count.
-    self.assertEqual(0, health_pill[6])  # Finite positive count.
-    self.assertEqual(0, health_pill[7])  # +Infinity count.
-    self.assertEqual(np.inf, health_pill[8])
-    self.assertEqual(-np.inf, health_pill[9])
-    self.assertTrue(np.isnan(health_pill[10]))
-    self.assertTrue(np.isnan(health_pill[11]))
-    self.assertEqual(2, health_pill[13])  # Number of dimensions.
-    self.assertEqual(2, health_pill[14])  # Size is (2, 0).
-    self.assertEqual(0, health_pill[15])
-
-  def testScalar(self):
-    x = np.array(-1337.0)
-    health_pill = health_pill_calc.calc_health_pill(x)
-    self.assertEqual(14, len(health_pill))
-    self.assertEqual(1, health_pill[0])  # Is initialized.
-    self.assertEqual(1, health_pill[1])  # numel.
-    self.assertEqual(0, health_pill[2])  # NaN count.
-    self.assertEqual(0, health_pill[3])  # -Infinity count.
-    self.assertEqual(1, health_pill[4])  # Finite negative count.
-    self.assertEqual(0, health_pill[5])  # Zero count.
-    self.assertEqual(0, health_pill[6])  # Finite positive count.
-    self.assertEqual(0, health_pill[7])  # +Infinity count.
-    self.assertEqual(-1337.0, health_pill[8])
-    self.assertEqual(-1337.0, health_pill[9])
-    self.assertEqual(-1337.0, health_pill[10])
-    self.assertEqual(0, health_pill[11])
-    self.assertEqual(0, health_pill[13])  # Number of dimensions.
+    def testScalar(self):
+        x = np.array(-1337.0)
+        health_pill = health_pill_calc.calc_health_pill(x)
+        self.assertEqual(14, len(health_pill))
+        self.assertEqual(1, health_pill[0])  # Is initialized.
+        self.assertEqual(1, health_pill[1])  # numel.
+        self.assertEqual(0, health_pill[2])  # NaN count.
+        self.assertEqual(0, health_pill[3])  # -Infinity count.
+        self.assertEqual(1, health_pill[4])  # Finite negative count.
+        self.assertEqual(0, health_pill[5])  # Zero count.
+        self.assertEqual(0, health_pill[6])  # Finite positive count.
+        self.assertEqual(0, health_pill[7])  # +Infinity count.
+        self.assertEqual(-1337.0, health_pill[8])
+        self.assertEqual(-1337.0, health_pill[9])
+        self.assertEqual(-1337.0, health_pill[10])
+        self.assertEqual(0, health_pill[11])
+        self.assertEqual(0, health_pill[13])  # Number of dimensions.
 
 
 if __name__ == "__main__":
-  tf.test.main()
+    tf.test.main()
