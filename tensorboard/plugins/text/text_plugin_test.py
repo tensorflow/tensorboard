@@ -26,85 +26,90 @@ import numpy as np
 import tensorflow as tf
 
 from tensorboard import plugin_util
-from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer
+from tensorboard.backend.event_processing import (
+    plugin_event_multiplexer as event_multiplexer,
+)
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.text import text_plugin
 from tensorboard.util import test_util
 
 tf.compat.v1.disable_v2_behavior()
 
-GEMS = ['garnet', 'amethyst', 'pearl', 'steven']
+GEMS = ["garnet", "amethyst", "pearl", "steven"]
 
 
 class TextPluginTest(tf.test.TestCase):
+    def setUp(self):
+        self.logdir = self.get_temp_dir()
+        self.generate_testdata()
+        multiplexer = event_multiplexer.EventMultiplexer()
+        multiplexer.AddRunsFromDirectory(self.logdir)
+        multiplexer.Reload()
+        context = base_plugin.TBContext(
+            logdir=self.logdir, multiplexer=multiplexer
+        )
+        self.plugin = text_plugin.TextPlugin(context)
 
-  def setUp(self):
-    self.logdir = self.get_temp_dir()
-    self.generate_testdata()
-    multiplexer = event_multiplexer.EventMultiplexer()
-    multiplexer.AddRunsFromDirectory(self.logdir)
-    multiplexer.Reload()
-    context = base_plugin.TBContext(logdir=self.logdir, multiplexer=multiplexer)
-    self.plugin = text_plugin.TextPlugin(context)
+    def testRoutesProvided(self):
+        routes = self.plugin.get_plugin_apps()
+        self.assertIsInstance(routes["/tags"], collections.Callable)
+        self.assertIsInstance(routes["/text"], collections.Callable)
 
-  def testRoutesProvided(self):
-    routes = self.plugin.get_plugin_apps()
-    self.assertIsInstance(routes['/tags'], collections.Callable)
-    self.assertIsInstance(routes['/text'], collections.Callable)
+    def generate_testdata(self, include_text=True, logdir=None):
+        tf.compat.v1.reset_default_graph()
+        sess = tf.compat.v1.Session()
+        placeholder = tf.compat.v1.placeholder(tf.string)
+        summary_tensor = tf.compat.v1.summary.text("message", placeholder)
+        vector_summary = tf.compat.v1.summary.text("vector", placeholder)
+        scalar_summary = tf.compat.v1.summary.scalar("twelve", tf.constant(12))
 
-  def generate_testdata(self, include_text=True, logdir=None):
-    tf.compat.v1.reset_default_graph()
-    sess = tf.compat.v1.Session()
-    placeholder = tf.compat.v1.placeholder(tf.string)
-    summary_tensor = tf.compat.v1.summary.text('message', placeholder)
-    vector_summary = tf.compat.v1.summary.text('vector', placeholder)
-    scalar_summary = tf.compat.v1.summary.scalar('twelve', tf.constant(12))
+        run_names = ["fry", "leela"]
+        for run_name in run_names:
+            subdir = os.path.join(logdir or self.logdir, run_name)
+            with test_util.FileWriterCache.get(subdir) as writer:
+                writer.add_graph(sess.graph)
 
-    run_names = ['fry', 'leela']
-    for run_name in run_names:
-      subdir = os.path.join(logdir or self.logdir, run_name)
-      with test_util.FileWriterCache.get(subdir) as writer:
-        writer.add_graph(sess.graph)
+                step = 0
+                for gem in GEMS:
+                    message = run_name + " *loves* " + gem
+                    feed_dict = {
+                        placeholder: message,
+                    }
+                    if include_text:
+                        summ = sess.run(summary_tensor, feed_dict=feed_dict)
+                        writer.add_summary(summ, global_step=step)
+                    step += 1
 
-        step = 0
-        for gem in GEMS:
-          message = run_name + ' *loves* ' + gem
-          feed_dict = {
-              placeholder: message,
-          }
-          if include_text:
-            summ = sess.run(summary_tensor, feed_dict=feed_dict)
-            writer.add_summary(summ, global_step=step)
-          step += 1
+                vector_message = ["one", "two", "three", "four"]
+                if include_text:
+                    summ = sess.run(
+                        vector_summary, feed_dict={placeholder: vector_message}
+                    )
+                    writer.add_summary(summ)
 
-        vector_message = ['one', 'two', 'three', 'four']
-        if include_text:
-          summ = sess.run(vector_summary,
-              feed_dict={placeholder: vector_message})
-          writer.add_summary(summ)
+                summ = sess.run(scalar_summary, feed_dict={placeholder: []})
+                writer.add_summary(summ)
 
-        summ = sess.run(scalar_summary, feed_dict={placeholder: []})
-        writer.add_summary(summ)
+    def testIndex(self):
+        index = self.plugin.index_impl()
+        self.assertItemsEqual(["fry", "leela"], index.keys())
+        self.assertItemsEqual(["message", "vector"], index["fry"])
+        self.assertItemsEqual(["message", "vector"], index["leela"])
 
+    def testText(self):
+        fry = self.plugin.text_impl("fry", "message")
+        leela = self.plugin.text_impl("leela", "message")
+        self.assertEqual(len(fry), 4)
+        self.assertEqual(len(leela), 4)
+        for i in range(4):
+            self.assertEqual(fry[i]["step"], i)
+            self.assertEqual(leela[i]["step"], i)
 
-  def testIndex(self):
-    index = self.plugin.index_impl()
-    self.assertItemsEqual(['fry', 'leela'], index.keys())
-    self.assertItemsEqual(['message', 'vector'], index['fry'])
-    self.assertItemsEqual(['message', 'vector'], index['leela'])
-
-  def testText(self):
-    fry = self.plugin.text_impl('fry', 'message')
-    leela = self.plugin.text_impl('leela', 'message')
-    self.assertEqual(len(fry), 4)
-    self.assertEqual(len(leela), 4)
-    for i in range(4):
-      self.assertEqual(fry[i]['step'], i)
-      self.assertEqual(leela[i]['step'], i)
-
-    table = self.plugin.text_impl('fry', 'vector')[0]['text']
-    self.assertEqual(table,
-                     textwrap.dedent("""\
+        table = self.plugin.text_impl("fry", "vector")[0]["text"]
+        self.assertEqual(
+            table,
+            textwrap.dedent(
+                """\
       <table>
       <tbody>
       <tr>
@@ -120,11 +125,14 @@ class TextPluginTest(tf.test.TestCase):
       <td><p>four</p></td>
       </tr>
       </tbody>
-      </table>"""))
+      </table>"""
+            ),
+        )
 
-  def testTableGeneration(self):
-    array2d = np.array([['one', 'two'], ['three', 'four']])
-    expected_table = textwrap.dedent("""\
+    def testTableGeneration(self):
+        array2d = np.array([["one", "two"], ["three", "four"]])
+        expected_table = textwrap.dedent(
+            """\
     <table>
     <tbody>
     <tr>
@@ -136,10 +144,12 @@ class TextPluginTest(tf.test.TestCase):
     <td>four</td>
     </tr>
     </tbody>
-    </table>""")
-    self.assertEqual(text_plugin.make_table(array2d), expected_table)
+    </table>"""
+        )
+        self.assertEqual(text_plugin.make_table(array2d), expected_table)
 
-    expected_table_with_headers = textwrap.dedent("""\
+        expected_table_with_headers = textwrap.dedent(
+            """\
     <table>
     <thead>
     <tr>
@@ -157,13 +167,17 @@ class TextPluginTest(tf.test.TestCase):
     <td>four</td>
     </tr>
     </tbody>
-    </table>""")
+    </table>"""
+        )
 
-    actual_with_headers = text_plugin.make_table(array2d, headers=['c1', 'c2'])
-    self.assertEqual(actual_with_headers, expected_table_with_headers)
+        actual_with_headers = text_plugin.make_table(
+            array2d, headers=["c1", "c2"]
+        )
+        self.assertEqual(actual_with_headers, expected_table_with_headers)
 
-    array_1d = np.array(['one', 'two', 'three', 'four', 'five'])
-    expected_1d = textwrap.dedent("""\
+        array_1d = np.array(["one", "two", "three", "four", "five"])
+        expected_1d = textwrap.dedent(
+            """\
     <table>
     <tbody>
     <tr>
@@ -182,10 +196,12 @@ class TextPluginTest(tf.test.TestCase):
     <td>five</td>
     </tr>
     </tbody>
-    </table>""")
-    self.assertEqual(text_plugin.make_table(array_1d), expected_1d)
+    </table>"""
+        )
+        self.assertEqual(text_plugin.make_table(array_1d), expected_1d)
 
-    expected_1d_with_headers = textwrap.dedent("""\
+        expected_1d_with_headers = textwrap.dedent(
+            """\
     <table>
     <thead>
     <tr>
@@ -209,77 +225,82 @@ class TextPluginTest(tf.test.TestCase):
     <td>five</td>
     </tr>
     </tbody>
-    </table>""")
-    actual_1d_with_headers = text_plugin.make_table(array_1d, headers=['X'])
-    self.assertEqual(actual_1d_with_headers, expected_1d_with_headers)
+    </table>"""
+        )
+        actual_1d_with_headers = text_plugin.make_table(array_1d, headers=["X"])
+        self.assertEqual(actual_1d_with_headers, expected_1d_with_headers)
 
-  def testMakeTableExceptions(self):
-    # Verify that contents is being type-checked and shape-checked.
-    with self.assertRaises(ValueError):
-      text_plugin.make_table([])
+    def testMakeTableExceptions(self):
+        # Verify that contents is being type-checked and shape-checked.
+        with self.assertRaises(ValueError):
+            text_plugin.make_table([])
 
-    with self.assertRaises(ValueError):
-      text_plugin.make_table('foo')
+        with self.assertRaises(ValueError):
+            text_plugin.make_table("foo")
 
-    with self.assertRaises(ValueError):
-      invalid_shape = np.full((3, 3, 3), 'nope', dtype=np.dtype('S3'))
-      text_plugin.make_table(invalid_shape)
+        with self.assertRaises(ValueError):
+            invalid_shape = np.full((3, 3, 3), "nope", dtype=np.dtype("S3"))
+            text_plugin.make_table(invalid_shape)
 
-    # Test headers exceptions in 2d array case.
-    test_array = np.full((3, 3), 'foo', dtype=np.dtype('S3'))
-    with self.assertRaises(ValueError):
-      # Headers is wrong type.
-      text_plugin.make_table(test_array, headers='foo')
-    with self.assertRaises(ValueError):
-      # Too many headers.
-      text_plugin.make_table(test_array, headers=['foo', 'bar', 'zod', 'zoink'])
-    with self.assertRaises(ValueError):
-      # headers is 2d
-      text_plugin.make_table(test_array, headers=test_array)
+        # Test headers exceptions in 2d array case.
+        test_array = np.full((3, 3), "foo", dtype=np.dtype("S3"))
+        with self.assertRaises(ValueError):
+            # Headers is wrong type.
+            text_plugin.make_table(test_array, headers="foo")
+        with self.assertRaises(ValueError):
+            # Too many headers.
+            text_plugin.make_table(
+                test_array, headers=["foo", "bar", "zod", "zoink"]
+            )
+        with self.assertRaises(ValueError):
+            # headers is 2d
+            text_plugin.make_table(test_array, headers=test_array)
 
-    # Also make sure the column counting logic works in the 1d array case.
-    test_array = np.array(['foo', 'bar', 'zod'])
-    with self.assertRaises(ValueError):
-      # Too many headers.
-      text_plugin.make_table(test_array, headers=test_array)
+        # Also make sure the column counting logic works in the 1d array case.
+        test_array = np.array(["foo", "bar", "zod"])
+        with self.assertRaises(ValueError):
+            # Too many headers.
+            text_plugin.make_table(test_array, headers=test_array)
 
-  def test_reduce_to_2d(self):
+    def test_reduce_to_2d(self):
+        def make_range_array(dim):
+            """Produce an incrementally increasing multidimensional array.
 
-    def make_range_array(dim):
-      """Produce an incrementally increasing multidimensional array.
+            Args:
+              dim: the number of dimensions for the array
 
-      Args:
-        dim: the number of dimensions for the array
+            Returns:
+              An array of increasing integer elements, with dim dimensions and size
+              two in each dimension.
 
-      Returns:
-        An array of increasing integer elements, with dim dimensions and size
-        two in each dimension.
+            Example: rangeArray(2) results in [[0,1],[2,3]].
+            """
+            return np.array(range(2 ** dim)).reshape([2] * dim)
 
-      Example: rangeArray(2) results in [[0,1],[2,3]].
-      """
-      return np.array(range(2**dim)).reshape([2] * dim)
+        for i in range(2, 5):
+            actual = text_plugin.reduce_to_2d(make_range_array(i))
+            expected = make_range_array(2)
+            np.testing.assert_array_equal(actual, expected)
 
-    for i in range(2, 5):
-      actual = text_plugin.reduce_to_2d(make_range_array(i))
-      expected = make_range_array(2)
-      np.testing.assert_array_equal(actual, expected)
+    def test_text_array_to_html(self):
+        convert = text_plugin.text_array_to_html
+        scalar = np.array("foo")
+        scalar_expected = "<p>foo</p>"
+        self.assertEqual(convert(scalar), scalar_expected)
 
-  def test_text_array_to_html(self):
-    convert = text_plugin.text_array_to_html
-    scalar = np.array('foo')
-    scalar_expected = '<p>foo</p>'
-    self.assertEqual(convert(scalar), scalar_expected)
+        # Check that underscores are preserved correctly; this detects erroneous
+        # use of UTF-16 or UTF-32 encoding when calling markdown_to_safe_html(),
+        # which would introduce spurious null bytes and cause undesired <em> tags
+        # around the underscores.
+        scalar_underscores = np.array("word_with_underscores")
+        scalar_underscores_expected = "<p>word_with_underscores</p>"
+        self.assertEqual(
+            convert(scalar_underscores), scalar_underscores_expected
+        )
 
-    # Check that underscores are preserved correctly; this detects erroneous
-    # use of UTF-16 or UTF-32 encoding when calling markdown_to_safe_html(),
-    # which would introduce spurious null bytes and cause undesired <em> tags
-    # around the underscores.
-    scalar_underscores = np.array('word_with_underscores')
-    scalar_underscores_expected = '<p>word_with_underscores</p>'
-    self.assertEqual(convert(scalar_underscores), scalar_underscores_expected)
-
-    vector = np.array(['foo', 'bar'])
-    vector_expected = textwrap.dedent("""\
+        vector = np.array(["foo", "bar"])
+        vector_expected = textwrap.dedent(
+            """\
       <table>
       <tbody>
       <tr>
@@ -289,31 +310,13 @@ class TextPluginTest(tf.test.TestCase):
       <td><p>bar</p></td>
       </tr>
       </tbody>
-      </table>""")
-    self.assertEqual(convert(vector), vector_expected)
+      </table>"""
+        )
+        self.assertEqual(convert(vector), vector_expected)
 
-    d2 = np.array([['foo', 'bar'], ['zoink', 'zod']])
-    d2_expected = textwrap.dedent("""\
-      <table>
-      <tbody>
-      <tr>
-      <td><p>foo</p></td>
-      <td><p>bar</p></td>
-      </tr>
-      <tr>
-      <td><p>zoink</p></td>
-      <td><p>zod</p></td>
-      </tr>
-      </tbody>
-      </table>""")
-    self.assertEqual(convert(d2), d2_expected)
-
-    d3 = np.array([[['foo', 'bar'], ['zoink', 'zod']], [['FOO', 'BAR'],
-                                                        ['ZOINK', 'ZOD']]])
-
-    warning = plugin_util.markdown_to_safe_html(
-        text_plugin.WARNING_TEMPLATE % 3)
-    d3_expected = warning + textwrap.dedent("""\
+        d2 = np.array([["foo", "bar"], ["zoink", "zod"]])
+        d2_expected = textwrap.dedent(
+            """\
       <table>
       <tbody>
       <tr>
@@ -325,42 +328,75 @@ class TextPluginTest(tf.test.TestCase):
       <td><p>zod</p></td>
       </tr>
       </tbody>
-      </table>""")
-    self.assertEqual(convert(d3), d3_expected)
+      </table>"""
+        )
+        self.assertEqual(convert(d2), d2_expected)
 
-  def testPluginIsActiveWhenNoRuns(self):
-    """The plugin should be inactive when there are no runs."""
-    multiplexer = event_multiplexer.EventMultiplexer()
-    context = base_plugin.TBContext(logdir=self.logdir, multiplexer=multiplexer)
-    plugin = text_plugin.TextPlugin(context)
-    self.assertFalse(plugin.is_active())
+        d3 = np.array(
+            [
+                [["foo", "bar"], ["zoink", "zod"]],
+                [["FOO", "BAR"], ["ZOINK", "ZOD"]],
+            ]
+        )
 
-  def testPluginIsActiveWhenTextRuns(self):
-    """The plugin should be active when there are runs with text."""
-    multiplexer = event_multiplexer.EventMultiplexer()
-    context = base_plugin.TBContext(logdir=self.logdir, multiplexer=multiplexer)
-    plugin = text_plugin.TextPlugin(context)
-    multiplexer.AddRunsFromDirectory(self.logdir)
-    multiplexer.Reload()
-    self.assertTrue(plugin.is_active())
+        warning = plugin_util.markdown_to_safe_html(
+            text_plugin.WARNING_TEMPLATE % 3
+        )
+        d3_expected = warning + textwrap.dedent(
+            """\
+      <table>
+      <tbody>
+      <tr>
+      <td><p>foo</p></td>
+      <td><p>bar</p></td>
+      </tr>
+      <tr>
+      <td><p>zoink</p></td>
+      <td><p>zod</p></td>
+      </tr>
+      </tbody>
+      </table>"""
+        )
+        self.assertEqual(convert(d3), d3_expected)
 
-  def testPluginIsActiveWhenRunsButNoText(self):
-    """The plugin should be inactive when there are runs but none has text."""
-    logdir = os.path.join(self.get_temp_dir(), 'runs_with_no_text')
-    multiplexer = event_multiplexer.EventMultiplexer()
-    context = base_plugin.TBContext(logdir=logdir, multiplexer=multiplexer)
-    plugin = text_plugin.TextPlugin(context)
-    self.generate_testdata(include_text=False, logdir=logdir)
-    multiplexer.AddRunsFromDirectory(logdir)
-    multiplexer.Reload()
-    self.assertFalse(plugin.is_active())
+    def testPluginIsActiveWhenNoRuns(self):
+        """The plugin should be inactive when there are no runs."""
+        multiplexer = event_multiplexer.EventMultiplexer()
+        context = base_plugin.TBContext(
+            logdir=self.logdir, multiplexer=multiplexer
+        )
+        plugin = text_plugin.TextPlugin(context)
+        self.assertFalse(plugin.is_active())
 
-  def testPluginIndexImpl(self):
-    run_to_tags = self.plugin.index_impl()
-    self.assertItemsEqual(['fry', 'leela'], run_to_tags.keys())
-    self.assertItemsEqual(['message', 'vector'], run_to_tags['fry'])
-    self.assertItemsEqual(['message', 'vector'], run_to_tags['leela'])
+    def testPluginIsActiveWhenTextRuns(self):
+        """The plugin should be active when there are runs with text."""
+        multiplexer = event_multiplexer.EventMultiplexer()
+        context = base_plugin.TBContext(
+            logdir=self.logdir, multiplexer=multiplexer
+        )
+        plugin = text_plugin.TextPlugin(context)
+        multiplexer.AddRunsFromDirectory(self.logdir)
+        multiplexer.Reload()
+        self.assertTrue(plugin.is_active())
+
+    def testPluginIsActiveWhenRunsButNoText(self):
+        """The plugin should be inactive when there are runs but none has
+        text."""
+        logdir = os.path.join(self.get_temp_dir(), "runs_with_no_text")
+        multiplexer = event_multiplexer.EventMultiplexer()
+        context = base_plugin.TBContext(logdir=logdir, multiplexer=multiplexer)
+        plugin = text_plugin.TextPlugin(context)
+        self.generate_testdata(include_text=False, logdir=logdir)
+        multiplexer.AddRunsFromDirectory(logdir)
+        multiplexer.Reload()
+        self.assertFalse(plugin.is_active())
+
+    def testPluginIndexImpl(self):
+        run_to_tags = self.plugin.index_impl()
+        self.assertItemsEqual(["fry", "leela"], run_to_tags.keys())
+        self.assertItemsEqual(["message", "vector"], run_to_tags["fry"])
+        self.assertItemsEqual(["message", "vector"], run_to_tags["leela"])
 
 
-if __name__ == '__main__':
-  tf.test.main()
+if __name__ == "__main__":
+    tf.test.main()
