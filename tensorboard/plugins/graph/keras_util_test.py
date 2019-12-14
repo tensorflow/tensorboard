@@ -28,15 +28,15 @@ from tensorboard.util import test_util
 
 
 class KerasUtilTest(tf.test.TestCase):
+    def assertGraphDefToModel(self, expected_proto, model):
+        model_config = json.loads(model.to_json())
 
-  def assertGraphDefToModel(self, expected_proto, model):
-    model_config = json.loads(model.to_json())
+        self.assertProtoEquals(
+            expected_proto, keras_util.keras_model_to_graph_def(model_config)
+        )
 
-    self.assertProtoEquals(
-        expected_proto, keras_util.keras_model_to_graph_def(model_config))
-
-  def test_keras_model_to_graph_def_sequential_model(self):
-    expected_proto = """
+    def test_keras_model_to_graph_def_sequential_model(self):
+        expected_proto = """
     node {
       name: "sequential/dense"
       attr {
@@ -101,16 +101,18 @@ class KerasUtilTest(tf.test.TestCase):
       }
     }
     """
-    model = tf.keras.models.Sequential([
-        tf.keras.layers.Dense(32, input_shape=(784,)),
-        tf.keras.layers.Activation('relu', name='my_relu'),
-        tf.keras.layers.Dense(10),
-        tf.keras.layers.Activation('softmax'),
-    ])
-    self.assertGraphDefToModel(expected_proto, model)
+        model = tf.keras.models.Sequential(
+            [
+                tf.keras.layers.Dense(32, input_shape=(784,)),
+                tf.keras.layers.Activation("relu", name="my_relu"),
+                tf.keras.layers.Dense(10),
+                tf.keras.layers.Activation("softmax"),
+            ]
+        )
+        self.assertGraphDefToModel(expected_proto, model)
 
-  def test_keras_model_to_graph_def_functional_model(self):
-    expected_proto = """
+    def test_keras_model_to_graph_def_functional_model(self):
+        expected_proto = """
     node {
       name: "model/functional_input"
       attr {
@@ -175,16 +177,16 @@ class KerasUtilTest(tf.test.TestCase):
       }
     }
     """
-    inputs = tf.keras.layers.Input(shape=(784,), name='functional_input')
-    d0 = tf.keras.layers.Dense(64, activation='relu')
-    d1 = tf.keras.layers.Dense(64, activation='relu')
-    d2 = tf.keras.layers.Dense(64, activation='relu')
+        inputs = tf.keras.layers.Input(shape=(784,), name="functional_input")
+        d0 = tf.keras.layers.Dense(64, activation="relu")
+        d1 = tf.keras.layers.Dense(64, activation="relu")
+        d2 = tf.keras.layers.Dense(64, activation="relu")
 
-    model = tf.keras.models.Model(inputs=inputs, outputs=d2(d1(d0(inputs))))
-    self.assertGraphDefToModel(expected_proto, model)
+        model = tf.keras.models.Model(inputs=inputs, outputs=d2(d1(d0(inputs))))
+        self.assertGraphDefToModel(expected_proto, model)
 
-  def test_keras_model_to_graph_def_functional_model_with_cycle(self):
-    expected_proto = """
+    def test_keras_model_to_graph_def_functional_model_with_cycle(self):
+        expected_proto = """
     node {
       name: "model/cycle_input"
       attr {
@@ -250,16 +252,18 @@ class KerasUtilTest(tf.test.TestCase):
       }
     }
     """
-    inputs = tf.keras.layers.Input(shape=(784,), name='cycle_input')
-    d0 = tf.keras.layers.Dense(64, activation='relu')
-    d1 = tf.keras.layers.Dense(64, activation='relu')
-    d2 = tf.keras.layers.Dense(64, activation='relu')
+        inputs = tf.keras.layers.Input(shape=(784,), name="cycle_input")
+        d0 = tf.keras.layers.Dense(64, activation="relu")
+        d1 = tf.keras.layers.Dense(64, activation="relu")
+        d2 = tf.keras.layers.Dense(64, activation="relu")
 
-    model = tf.keras.models.Model(inputs=inputs, outputs=d1(d2(d1(d0(inputs)))))
-    self.assertGraphDefToModel(expected_proto, model)
+        model = tf.keras.models.Model(
+            inputs=inputs, outputs=d1(d2(d1(d0(inputs))))
+        )
+        self.assertGraphDefToModel(expected_proto, model)
 
-  def test_keras_model_to_graph_def_lstm_model(self):
-    expected_proto = """
+    def test_keras_model_to_graph_def_lstm_model(self):
+        expected_proto = """
     node {
       name: "model/lstm_input"
       attr {
@@ -292,14 +296,14 @@ class KerasUtilTest(tf.test.TestCase):
       }
     }
     """
-    inputs = tf.keras.layers.Input(shape=(None, 5), name='lstm_input')
-    encoder = tf.keras.layers.SimpleRNN(256)
+        inputs = tf.keras.layers.Input(shape=(None, 5), name="lstm_input")
+        encoder = tf.keras.layers.SimpleRNN(256)
 
-    model = tf.keras.models.Model(inputs=inputs, outputs=encoder(inputs))
-    self.assertGraphDefToModel(expected_proto, model)
+        model = tf.keras.models.Model(inputs=inputs, outputs=encoder(inputs))
+        self.assertGraphDefToModel(expected_proto, model)
 
-  def test_keras_model_to_graph_def_nested_sequential_model(self):
-    expected_proto = """
+    def test_keras_model_to_graph_def_nested_sequential_model(self):
+        expected_proto = """
     node {
       name: "sequential_2/sequential_1/sequential/dense"
       attr {
@@ -380,26 +384,29 @@ class KerasUtilTest(tf.test.TestCase):
       }
     }
     """
-    sub_sub_model = tf.keras.models.Sequential([
-        tf.keras.layers.Dense(32, input_shape=(784,)),
-        tf.keras.layers.Activation('relu'),
-    ])
+        sub_sub_model = tf.keras.models.Sequential(
+            [
+                tf.keras.layers.Dense(32, input_shape=(784,)),
+                tf.keras.layers.Activation("relu"),
+            ]
+        )
 
-    sub_model = tf.keras.models.Sequential([
-        sub_sub_model,
-        tf.keras.layers.Activation('relu', name='my_relu'),
-    ])
+        sub_model = tf.keras.models.Sequential(
+            [sub_sub_model, tf.keras.layers.Activation("relu", name="my_relu"),]
+        )
 
-    model = tf.keras.models.Sequential([
-        sub_model,
-        tf.keras.layers.Dense(10),
-        tf.keras.layers.Activation('softmax'),
-    ])
+        model = tf.keras.models.Sequential(
+            [
+                sub_model,
+                tf.keras.layers.Dense(10),
+                tf.keras.layers.Activation("softmax"),
+            ]
+        )
 
-    self.assertGraphDefToModel(expected_proto, model)
+        self.assertGraphDefToModel(expected_proto, model)
 
-  def test_keras_model_to_graph_def_functional_multi_inputs(self):
-    expected_proto = """
+    def test_keras_model_to_graph_def_functional_multi_inputs(self):
+        expected_proto = """
     node {
       name: "model/main_input"
       attr {
@@ -528,28 +535,35 @@ class KerasUtilTest(tf.test.TestCase):
       }
     }
     """
-    main_input = tf.keras.layers.Input(shape=(100,), dtype='int32', name='main_input')
-    x = tf.keras.layers.Embedding(
-        output_dim=512, input_dim=10000, input_length=100)(main_input)
-    rnn_out = tf.keras.layers.SimpleRNN(32)(x)
+        main_input = tf.keras.layers.Input(
+            shape=(100,), dtype="int32", name="main_input"
+        )
+        x = tf.keras.layers.Embedding(
+            output_dim=512, input_dim=10000, input_length=100
+        )(main_input)
+        rnn_out = tf.keras.layers.SimpleRNN(32)(x)
 
-    auxiliary_output = tf.keras.layers.Dense(
-        1, activation='sigmoid', name='aux_output')(rnn_out)
-    auxiliary_input = tf.keras.layers.Input(shape=(5,), name='aux_input')
+        auxiliary_output = tf.keras.layers.Dense(
+            1, activation="sigmoid", name="aux_output"
+        )(rnn_out)
+        auxiliary_input = tf.keras.layers.Input(shape=(5,), name="aux_input")
 
-    x = tf.keras.layers.concatenate([rnn_out, auxiliary_input])
-    x = tf.keras.layers.Dense(64, activation='relu')(x)
+        x = tf.keras.layers.concatenate([rnn_out, auxiliary_input])
+        x = tf.keras.layers.Dense(64, activation="relu")(x)
 
-    main_output = tf.keras.layers.Dense(1, activation='sigmoid', name='main_output')(x)
+        main_output = tf.keras.layers.Dense(
+            1, activation="sigmoid", name="main_output"
+        )(x)
 
-    model = tf.keras.models.Model(
-        inputs=[main_input, auxiliary_input],
-        outputs=[main_output, auxiliary_output])
+        model = tf.keras.models.Model(
+            inputs=[main_input, auxiliary_input],
+            outputs=[main_output, auxiliary_output],
+        )
 
-    self.assertGraphDefToModel(expected_proto, model)
+        self.assertGraphDefToModel(expected_proto, model)
 
-  def test_keras_model_to_graph_def_functional_model_as_layer(self):
-    expected_proto = """
+    def test_keras_model_to_graph_def_functional_model_as_layer(self):
+        expected_proto = """
     node {
       name: "model_1/sub_func_input_2"
       attr {
@@ -676,23 +690,27 @@ class KerasUtilTest(tf.test.TestCase):
       }
     }
     """
-    inputs1 = tf.keras.layers.Input(shape=(784,), name='sub_func_input_1')
-    inputs2 = tf.keras.layers.Input(shape=(784,), name='sub_func_input_2')
-    d0 = tf.keras.layers.Dense(64, activation='relu')
-    d1 = tf.keras.layers.Dense(64, activation='relu')
-    d2 = tf.keras.layers.Dense(64, activation='relu')
+        inputs1 = tf.keras.layers.Input(shape=(784,), name="sub_func_input_1")
+        inputs2 = tf.keras.layers.Input(shape=(784,), name="sub_func_input_2")
+        d0 = tf.keras.layers.Dense(64, activation="relu")
+        d1 = tf.keras.layers.Dense(64, activation="relu")
+        d2 = tf.keras.layers.Dense(64, activation="relu")
 
-    sub_model = tf.keras.models.Model(inputs=[inputs2, inputs1],
-                      outputs=[d0(inputs1), d1(inputs2)])
+        sub_model = tf.keras.models.Model(
+            inputs=[inputs2, inputs1], outputs=[d0(inputs1), d1(inputs2)]
+        )
 
-    main_outputs = d2(tf.keras.layers.concatenate(sub_model([inputs2, inputs1])))
-    model = tf.keras.models.Model(
-        inputs=[inputs2, inputs1], outputs=main_outputs)
+        main_outputs = d2(
+            tf.keras.layers.concatenate(sub_model([inputs2, inputs1]))
+        )
+        model = tf.keras.models.Model(
+            inputs=[inputs2, inputs1], outputs=main_outputs
+        )
 
-    self.assertGraphDefToModel(expected_proto, model)
+        self.assertGraphDefToModel(expected_proto, model)
 
-  def test_keras_model_to_graph_def_functional_sequential_model(self):
-    expected_proto = """
+    def test_keras_model_to_graph_def_functional_sequential_model(self):
+        expected_proto = """
     node {
       name: "model/func_seq_input"
       attr {
@@ -757,19 +775,23 @@ class KerasUtilTest(tf.test.TestCase):
       }
     }
     """
-    inputs = tf.keras.layers.Input(shape=(784,), name='func_seq_input')
-    sub_model = tf.keras.models.Sequential([
-        tf.keras.layers.Dense(32, input_shape=(784,)),
-        tf.keras.layers.Activation('relu', name='my_relu'),
-    ])
-    dense = tf.keras.layers.Dense(64, activation='relu')
+        inputs = tf.keras.layers.Input(shape=(784,), name="func_seq_input")
+        sub_model = tf.keras.models.Sequential(
+            [
+                tf.keras.layers.Dense(32, input_shape=(784,)),
+                tf.keras.layers.Activation("relu", name="my_relu"),
+            ]
+        )
+        dense = tf.keras.layers.Dense(64, activation="relu")
 
-    model = tf.keras.models.Model(inputs=inputs, outputs=dense(sub_model(inputs)))
+        model = tf.keras.models.Model(
+            inputs=inputs, outputs=dense(sub_model(inputs))
+        )
 
-    self.assertGraphDefToModel(expected_proto, model)
+        self.assertGraphDefToModel(expected_proto, model)
 
-  def test_keras_model_to_graph_def_sequential_functional_model(self):
-    expected_proto = """
+    def test_keras_model_to_graph_def_sequential_functional_model(self):
+        expected_proto = """
     node {
       name: "sequential/model/func_seq_input"
       attr {
@@ -834,18 +856,20 @@ class KerasUtilTest(tf.test.TestCase):
       }
     }
     """
-    inputs = tf.keras.layers.Input(shape=(784,), name='func_seq_input')
-    dense = tf.keras.layers.Dense(64, activation='relu')
+        inputs = tf.keras.layers.Input(shape=(784,), name="func_seq_input")
+        dense = tf.keras.layers.Dense(64, activation="relu")
 
-    sub_model = tf.keras.models.Model(inputs=inputs, outputs=dense(inputs))
-    model = tf.keras.models.Sequential([
-        sub_model,
-        tf.keras.layers.Dense(32, input_shape=(784,)),
-        tf.keras.layers.Activation('relu', name='my_relu'),
-    ])
+        sub_model = tf.keras.models.Model(inputs=inputs, outputs=dense(inputs))
+        model = tf.keras.models.Sequential(
+            [
+                sub_model,
+                tf.keras.layers.Dense(32, input_shape=(784,)),
+                tf.keras.layers.Activation("relu", name="my_relu"),
+            ]
+        )
 
-    self.assertGraphDefToModel(expected_proto, model)
+        self.assertGraphDefToModel(expected_proto, model)
 
 
-if __name__ == '__main__':
-  tf.test.main()
+if __name__ == "__main__":
+    tf.test.main()
