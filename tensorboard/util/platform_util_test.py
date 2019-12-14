@@ -21,10 +21,11 @@ from tensorboard.util import platform_util
 
 
 class PlatformUtilTest(tb_test.TestCase):
+    def test_readahead_file_path(self):
+        self.assertEqual(
+            "foo/bar", platform_util.readahead_file_path("foo/bar")
+        )
 
-  def test_readahead_file_path(self):
-    self.assertEqual('foo/bar', platform_util.readahead_file_path('foo/bar'))
 
-
-if __name__ == '__main__':
-  tb_test.main()
+if __name__ == "__main__":
+    tb_test.main()
