@@ -36,30 +36,30 @@ from tensorboard.plugins.projector.projector_config_pb2 import ProjectorConfig
 
 
 def visualize_embeddings(logdir, config):
-  """Stores a config file used by the embedding projector.
+    """Stores a config file used by the embedding projector.
 
-  Args:
-    logdir: Directory into which to store the config file, as a `str`.
-      For compatibility, can also be a `tf.compat.v1.summary.FileWriter`
-      object open at the desired logdir.
-    config: `tf.contrib.tensorboard.plugins.projector.ProjectorConfig`
-      proto that holds the configuration for the projector such as paths to
-      checkpoint files and metadata files for the embeddings. If
-      `config.model_checkpoint_path` is none, it defaults to the
-      `logdir` used by the summary_writer.
+    Args:
+      logdir: Directory into which to store the config file, as a `str`.
+        For compatibility, can also be a `tf.compat.v1.summary.FileWriter`
+        object open at the desired logdir.
+      config: `tf.contrib.tensorboard.plugins.projector.ProjectorConfig`
+        proto that holds the configuration for the projector such as paths to
+        checkpoint files and metadata files for the embeddings. If
+        `config.model_checkpoint_path` is none, it defaults to the
+        `logdir` used by the summary_writer.
 
-  Raises:
-    ValueError: If the summary writer does not have a `logdir`.
-  """
-  # Convert from `tf.compat.v1.summary.FileWriter` if necessary.
-  logdir = getattr(logdir, 'get_logdir', lambda: logdir)()
+    Raises:
+      ValueError: If the summary writer does not have a `logdir`.
+    """
+    # Convert from `tf.compat.v1.summary.FileWriter` if necessary.
+    logdir = getattr(logdir, "get_logdir", lambda: logdir)()
 
-  # Sanity checks.
-  if logdir is None:
-    raise ValueError('Expected logdir to be a path, but got None')
+    # Sanity checks.
+    if logdir is None:
+        raise ValueError("Expected logdir to be a path, but got None")
 
-  # Saving the config file in the logdir.
-  config_pbtxt = _text_format.MessageToString(config)
-  path = os.path.join(logdir, _projector_plugin.PROJECTOR_FILENAME)
-  with tf.io.gfile.GFile(path, 'w') as f:
-    f.write(config_pbtxt)
+    # Saving the config file in the logdir.
+    config_pbtxt = _text_format.MessageToString(config)
+    path = os.path.join(logdir, _projector_plugin.PROJECTOR_FILENAME)
+    with tf.io.gfile.GFile(path, "w") as f:
+        f.write(config_pbtxt)
