@@ -18,7 +18,8 @@ from tensorboard.compat.tensorflow_stub.pywrap_tensorflow import masked_crc32c
 
 
 class RecordWriter(object):
-    """Write encoded protobuf to a file with packing defined in tensorflow"""
+    """Write encoded protobuf to a file with packing defined in tensorflow."""
+
     def __init__(self, writer):
         """Open a file to keep the tensorboard records.
 
@@ -33,9 +34,9 @@ class RecordWriter(object):
     # byte      data[length]
     # uint32    masked crc of data
     def write(self, data):
-        header = struct.pack('<Q', len(data))
-        header_crc = struct.pack('<I', masked_crc32c(header))
-        footer_crc = struct.pack('<I', masked_crc32c(data))
+        header = struct.pack("<Q", len(data))
+        header_crc = struct.pack("<I", masked_crc32c(header))
+        footer_crc = struct.pack("<I", masked_crc32c(data))
         self._writer.write(header + header_crc + data + footer_crc)
 
     def flush(self):
