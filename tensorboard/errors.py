@@ -30,67 +30,67 @@ from __future__ import print_function
 
 
 class PublicError(RuntimeError):
-  """An error whose text does not contain sensitive information."""
+    """An error whose text does not contain sensitive information."""
 
-  http_code = 500  # default; subclasses should override
+    http_code = 500  # default; subclasses should override
 
-  def __init__(self, details):
-    super(PublicError, self).__init__(details)
+    def __init__(self, details):
+        super(PublicError, self).__init__(details)
 
 
 class InvalidArgumentError(PublicError):
-  """Client specified an invalid argument.
+    """Client specified an invalid argument.
 
-  The text of this error is assumed not to contain sensitive data,
-  and so may appear in (e.g.) the response body of a failed HTTP
-  request.
+    The text of this error is assumed not to contain sensitive data,
+    and so may appear in (e.g.) the response body of a failed HTTP
+    request.
 
-  Corresponds to HTTP 400 Bad Request or Google error code `INVALID_ARGUMENT`.
-  """
+    Corresponds to HTTP 400 Bad Request or Google error code `INVALID_ARGUMENT`.
+    """
 
-  http_code = 400
+    http_code = 400
 
-  def __init__(self, details=None):
-    msg = _format_message("Invalid argument", details)
-    super(InvalidArgumentError, self).__init__(msg)
+    def __init__(self, details=None):
+        msg = _format_message("Invalid argument", details)
+        super(InvalidArgumentError, self).__init__(msg)
 
 
 class NotFoundError(PublicError):
-  """Some requested entity (e.g., file or directory) was not found.
+    """Some requested entity (e.g., file or directory) was not found.
 
-  The text of this error is assumed not to contain sensitive data,
-  and so may appear in (e.g.) the response body of a failed HTTP
-  request.
+    The text of this error is assumed not to contain sensitive data,
+    and so may appear in (e.g.) the response body of a failed HTTP
+    request.
 
-  Corresponds to HTTP 404 Not Found or Google error code `NOT_FOUND`.
-  """
+    Corresponds to HTTP 404 Not Found or Google error code `NOT_FOUND`.
+    """
 
-  http_code = 404
+    http_code = 404
 
-  def __init__(self, details=None):
-    msg = _format_message("Not found", details)
-    super(NotFoundError, self).__init__(msg)
+    def __init__(self, details=None):
+        msg = _format_message("Not found", details)
+        super(NotFoundError, self).__init__(msg)
 
 
 class PermissionDeniedError(PublicError):
-  """The caller does not have permission to execute the specified operation.
+    """The caller does not have permission to execute the specified operation.
 
-  The text of this error is assumed not to contain sensitive data,
-  and so may appear in (e.g.) the response body of a failed HTTP
-  request.
+    The text of this error is assumed not to contain sensitive data,
+    and so may appear in (e.g.) the response body of a failed HTTP
+    request.
 
-  Corresponds to HTTP 403 Forbidden or Google error code `PERMISSION_DENIED`.
-  """
+    Corresponds to HTTP 403 Forbidden or Google error code `PERMISSION_DENIED`.
+    """
 
-  http_code = 403
+    http_code = 403
 
-  def __init__(self, details=None):
-    msg = _format_message("Permission denied", details)
-    super(PermissionDeniedError, self).__init__(msg)
+    def __init__(self, details=None):
+        msg = _format_message("Permission denied", details)
+        super(PermissionDeniedError, self).__init__(msg)
 
 
 def _format_message(code_name, details):
-  if details is None:
-    return code_name
-  else:
-    return "%s: %s" % (code_name, details)
+    if details is None:
+        return code_name
+    else:
+        return "%s: %s" % (code_name, details)

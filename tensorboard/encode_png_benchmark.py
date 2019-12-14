@@ -64,80 +64,91 @@ logger = tb_logging.get_logger()
 
 
 def bench(image, thread_count):
-  """Encode `image` to PNG on `thread_count` threads in parallel.
+    """Encode `image` to PNG on `thread_count` threads in parallel.
 
-  Returns:
-    A `float` representing number of seconds that it takes all threads
-    to finish encoding `image`.
-  """
-  threads = [threading.Thread(target=lambda: encoder.encode_png(image))
-             for _ in xrange(thread_count)]
-  start_time = datetime.datetime.now()
-  for thread in threads:
-    thread.start()
-  for thread in threads:
-    thread.join()
-  end_time = datetime.datetime.now()
-  delta = (end_time - start_time).total_seconds()
-  return delta
+    Returns:
+      A `float` representing number of seconds that it takes all threads
+      to finish encoding `image`.
+    """
+    threads = [
+        threading.Thread(target=lambda: encoder.encode_png(image))
+        for _ in xrange(thread_count)
+    ]
+    start_time = datetime.datetime.now()
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+    end_time = datetime.datetime.now()
+    delta = (end_time - start_time).total_seconds()
+    return delta
 
 
 def _image_of_size(image_size):
-  """Generate a square RGB test image of the given side length."""
-  return np.random.uniform(0, 256, [image_size, image_size, 3]).astype(np.uint8)
+    """Generate a square RGB test image of the given side length."""
+    return np.random.uniform(0, 256, [image_size, image_size, 3]).astype(
+        np.uint8
+    )
 
 
 def _format_line(headers, fields):
-  """Format a line of a table.
+    """Format a line of a table.
 
-  Arguments:
-    headers: A list of strings that are used as the table headers.
-    fields: A list of the same length as `headers` where `fields[i]` is
-      the entry for `headers[i]` in this row. Elements can be of
-      arbitrary types. Pass `headers` to print the header row.
+    Arguments:
+      headers: A list of strings that are used as the table headers.
+      fields: A list of the same length as `headers` where `fields[i]` is
+        the entry for `headers[i]` in this row. Elements can be of
+        arbitrary types. Pass `headers` to print the header row.
 
-  Returns:
-    A pretty string.
-  """
-  assert len(fields) == len(headers), (fields, headers)
-  fields = ["%2.4f" % field if isinstance(field, float) else str(field)
-            for field in fields]
-  return '  '.join(' ' * max(0, len(header) - len(field)) + field
-                   for (header, field) in zip(headers, fields))
+    Returns:
+      A pretty string.
+    """
+    assert len(fields) == len(headers), (fields, headers)
+    fields = [
+        "%2.4f" % field if isinstance(field, float) else str(field)
+        for field in fields
+    ]
+    return "  ".join(
+        " " * max(0, len(header) - len(field)) + field
+        for (header, field) in zip(headers, fields)
+    )
 
 
 def main(unused_argv):
-  logging.set_verbosity(logging.INFO)
-  np.random.seed(0)
+    logging.set_verbosity(logging.INFO)
+    np.random.seed(0)
 
-  thread_counts = [1, 2, 4, 6, 8, 10, 12, 14, 16, 32]
+    thread_counts = [1, 2, 4, 6, 8, 10, 12, 14, 16, 32]
 
-  logger.info("Warming up...")
-  warmup_image = _image_of_size(256)
-  for thread_count in thread_counts:
-    bench(warmup_image, thread_count)
+    logger.info("Warming up...")
+    warmup_image = _image_of_size(256)
+    for thread_count in thread_counts:
+        bench(warmup_image, thread_count)
 
-  logger.info("Running...")
-  results = {}
-  image = _image_of_size(4096)
-  headers = ('THREADS', 'TOTAL_TIME', 'UNIT_TIME', 'SPEEDUP', 'PARALLELISM')
-  logger.info(_format_line(headers, headers))
-  for thread_count in thread_counts:
-    time.sleep(1.0)
-    total_time = min(bench(image, thread_count)
-                     for _ in xrange(3))  # best-of-three timing
-    unit_time = total_time / thread_count
-    if total_time < 2.0:
-      logger.warn("This benchmark is running too quickly! This "
-                         "may cause misleading timing data. Consider "
-                         "increasing the image size until it takes at "
-                         "least 2.0s to encode one image.")
-    results[thread_count] = unit_time
-    speedup = results[1] / results[thread_count]
-    parallelism = speedup / thread_count
-    fields = (thread_count, total_time, unit_time, speedup, parallelism)
-    logger.info(_format_line(headers, fields))
+    logger.info("Running...")
+    results = {}
+    image = _image_of_size(4096)
+    headers = ("THREADS", "TOTAL_TIME", "UNIT_TIME", "SPEEDUP", "PARALLELISM")
+    logger.info(_format_line(headers, headers))
+    for thread_count in thread_counts:
+        time.sleep(1.0)
+        total_time = min(
+            bench(image, thread_count) for _ in xrange(3)
+        )  # best-of-three timing
+        unit_time = total_time / thread_count
+        if total_time < 2.0:
+            logger.warn(
+                "This benchmark is running too quickly! This "
+                "may cause misleading timing data. Consider "
+                "increasing the image size until it takes at "
+                "least 2.0s to encode one image."
+            )
+        results[thread_count] = unit_time
+        speedup = results[1] / results[thread_count]
+        parallelism = speedup / thread_count
+        fields = (thread_count, total_time, unit_time, speedup, parallelism)
+        logger.info(_format_line(headers, fields))
 
 
-if __name__ == '__main__':
-  app.run(main)
+if __name__ == "__main__":
+    app.run(main)

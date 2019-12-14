@@ -32,7 +32,7 @@ import os
 # pattern of reads used by TensorBoard for logdirs. See for details:
 #   https://github.com/tensorflow/tensorboard/issues/1225
 # This must be set before the first import of tensorflow.
-os.environ['GCS_READ_CACHE_DISABLED'] = '1'
+os.environ["GCS_READ_CACHE_DISABLED"] = "1"
 
 
 import sys
@@ -47,33 +47,39 @@ from tensorboard.util import tb_logging
 
 logger = tb_logging.get_logger()
 
+
 def run_main():
-  """Initializes flags and calls main()."""
-  program.setup_environment()
+    """Initializes flags and calls main()."""
+    program.setup_environment()
 
-  if getattr(tf, '__version__', 'stub') == 'stub':
-    print("TensorFlow installation not found - running with reduced feature set.",
-          file=sys.stderr)
+    if getattr(tf, "__version__", "stub") == "stub":
+        print(
+            "TensorFlow installation not found - running with reduced feature set.",
+            file=sys.stderr,
+        )
 
-  tensorboard = program.TensorBoard(
-      default.get_plugins() + default.get_dynamic_plugins(),
-      program.get_default_assets_zip_provider(),
-      subcommands=[uploader_main.UploaderSubcommand()])
-  try:
-    from absl import app
-    # Import this to check that app.run() will accept the flags_parser argument.
-    from absl.flags import argparse_flags
-    app.run(tensorboard.main, flags_parser=tensorboard.configure)
-    raise AssertionError("absl.app.run() shouldn't return")
-  except ImportError:
-    pass
-  except base_plugin.FlagsError as e:
-    print("Error: %s" % e, file=sys.stderr)
-    sys.exit(1)
+    tensorboard = program.TensorBoard(
+        default.get_plugins() + default.get_dynamic_plugins(),
+        program.get_default_assets_zip_provider(),
+        subcommands=[uploader_main.UploaderSubcommand()],
+    )
+    try:
+        from absl import app
 
-  tensorboard.configure(sys.argv)
-  sys.exit(tensorboard.main())
+        # Import this to check that app.run() will accept the flags_parser argument.
+        from absl.flags import argparse_flags
+
+        app.run(tensorboard.main, flags_parser=tensorboard.configure)
+        raise AssertionError("absl.app.run() shouldn't return")
+    except ImportError:
+        pass
+    except base_plugin.FlagsError as e:
+        print("Error: %s" % e, file=sys.stderr)
+        sys.exit(1)
+
+    tensorboard.configure(sys.argv)
+    sys.exit(tensorboard.main())
 
 
-if __name__ == '__main__':
-  run_main()
+if __name__ == "__main__":
+    run_main()
