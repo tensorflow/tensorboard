@@ -47,145 +47,151 @@ from tensorboard.plugins.hparams import plugin_data_pb2
 
 
 def experiment_pb(
-    hparam_infos,
-    metric_infos,
-    user='',
-    description='',
-    time_created_secs=None):
-  """Creates a summary that defines a hyperparameter-tuning experiment.
+    hparam_infos, metric_infos, user="", description="", time_created_secs=None
+):
+    """Creates a summary that defines a hyperparameter-tuning experiment.
 
-  Args:
-    hparam_infos: Array of api_pb2.HParamInfo messages. Describes the
-        hyperparameters used in the experiment.
-    metric_infos: Array of api_pb2.MetricInfo messages. Describes the metrics
-        used in the experiment. See the documentation at the top of this file
-        for how to populate this.
-    user: String. An id for the user running the experiment
-    description: String. A description for the experiment. May contain markdown.
-    time_created_secs: float. The time the experiment is created in seconds
-    since the UNIX epoch. If None uses the current time.
+    Args:
+      hparam_infos: Array of api_pb2.HParamInfo messages. Describes the
+          hyperparameters used in the experiment.
+      metric_infos: Array of api_pb2.MetricInfo messages. Describes the metrics
+          used in the experiment. See the documentation at the top of this file
+          for how to populate this.
+      user: String. An id for the user running the experiment
+      description: String. A description for the experiment. May contain markdown.
+      time_created_secs: float. The time the experiment is created in seconds
+      since the UNIX epoch. If None uses the current time.
 
-  Returns:
-    A summary protobuffer containing the experiment definition.
-  """
-  if time_created_secs is None:
-    time_created_secs = time.time()
-  experiment = api_pb2.Experiment(
-      description=description,
-      user=user,
-      time_created_secs=time_created_secs,
-      hparam_infos=hparam_infos,
-      metric_infos=metric_infos)
-  return _summary(metadata.EXPERIMENT_TAG,
-                  plugin_data_pb2.HParamsPluginData(experiment=experiment))
+    Returns:
+      A summary protobuffer containing the experiment definition.
+    """
+    if time_created_secs is None:
+        time_created_secs = time.time()
+    experiment = api_pb2.Experiment(
+        description=description,
+        user=user,
+        time_created_secs=time_created_secs,
+        hparam_infos=hparam_infos,
+        metric_infos=metric_infos,
+    )
+    return _summary(
+        metadata.EXPERIMENT_TAG,
+        plugin_data_pb2.HParamsPluginData(experiment=experiment),
+    )
 
 
-def session_start_pb(hparams,
-                     model_uri='',
-                     monitor_url='',
-                     group_name='',
-                     start_time_secs=None):
-  """Constructs a SessionStartInfo protobuffer.
+def session_start_pb(
+    hparams, model_uri="", monitor_url="", group_name="", start_time_secs=None
+):
+    """Constructs a SessionStartInfo protobuffer.
 
-  Creates a summary that contains a training session metadata information.
-  One such summary per training session should be created. Each should have
-  a different run.
+    Creates a summary that contains a training session metadata information.
+    One such summary per training session should be created. Each should have
+    a different run.
 
-  Args:
-    hparams: A dictionary with string keys. Describes the hyperparameter values
-             used in the session, mapping each hyperparameter name to its value.
-             Supported value types are  `bool`, `int`, `float`, `str`, `list`,
-             `tuple`.
-             The type of value must correspond to the type of hyperparameter
-             (defined in the corresponding api_pb2.HParamInfo member of the
-             Experiment protobuf) as follows:
+    Args:
+      hparams: A dictionary with string keys. Describes the hyperparameter values
+               used in the session, mapping each hyperparameter name to its value.
+               Supported value types are  `bool`, `int`, `float`, `str`, `list`,
+               `tuple`.
+               The type of value must correspond to the type of hyperparameter
+               (defined in the corresponding api_pb2.HParamInfo member of the
+               Experiment protobuf) as follows:
 
-              +-----------------+---------------------------------+
-              |Hyperparameter   | Allowed (Python) value types    |
-              |type             |                                 |
-              +-----------------+---------------------------------+
-              |DATA_TYPE_BOOL   | bool                            |
-              |DATA_TYPE_FLOAT64| int, float                      |
-              |DATA_TYPE_STRING | six.string_types, tuple, list   |
-              +-----------------+---------------------------------+
+                +-----------------+---------------------------------+
+                |Hyperparameter   | Allowed (Python) value types    |
+                |type             |                                 |
+                +-----------------+---------------------------------+
+                |DATA_TYPE_BOOL   | bool                            |
+                |DATA_TYPE_FLOAT64| int, float                      |
+                |DATA_TYPE_STRING | six.string_types, tuple, list   |
+                +-----------------+---------------------------------+
 
-             Tuple and list instances will be converted to their string
-             representation.
-    model_uri: See the comment for the field with the same name of
-               plugin_data_pb2.SessionStartInfo.
-    monitor_url: See the comment for the field with the same name of
+               Tuple and list instances will be converted to their string
+               representation.
+      model_uri: See the comment for the field with the same name of
                  plugin_data_pb2.SessionStartInfo.
-    group_name:  See the comment for the field with the same name of
-                 plugin_data_pb2.SessionStartInfo.
-    start_time_secs: float. The time to use as the session start time.
-                     Represented as seconds since the UNIX epoch. If None uses
-                     the current time.
-  Returns:
-    The summary protobuffer mentioned above.
-  """
-  if start_time_secs is None:
-    start_time_secs = time.time()
-  session_start_info = plugin_data_pb2.SessionStartInfo(
-      model_uri=model_uri,
-      monitor_url=monitor_url,
-      group_name=group_name,
-      start_time_secs=start_time_secs)
-  for (hp_name, hp_val) in six.iteritems(hparams):
-    if isinstance(hp_val, (float, int)):
-      session_start_info.hparams[hp_name].number_value = hp_val
-    elif isinstance(hp_val, six.string_types):
-      session_start_info.hparams[hp_name].string_value = hp_val
-    elif isinstance(hp_val, bool):
-      session_start_info.hparams[hp_name].bool_value = hp_val
-    elif isinstance(hp_val, (list, tuple)):
-      session_start_info.hparams[hp_name].string_value = str(hp_val)
-    else:
-      raise TypeError('hparams[%s]=%s has type: %s which is not supported' %
-                      (hp_name, hp_val, type(hp_val)))
-  return _summary(metadata.SESSION_START_INFO_TAG,
-                  plugin_data_pb2.HParamsPluginData(
-                      session_start_info=session_start_info))
+      monitor_url: See the comment for the field with the same name of
+                   plugin_data_pb2.SessionStartInfo.
+      group_name:  See the comment for the field with the same name of
+                   plugin_data_pb2.SessionStartInfo.
+      start_time_secs: float. The time to use as the session start time.
+                       Represented as seconds since the UNIX epoch. If None uses
+                       the current time.
+    Returns:
+      The summary protobuffer mentioned above.
+    """
+    if start_time_secs is None:
+        start_time_secs = time.time()
+    session_start_info = plugin_data_pb2.SessionStartInfo(
+        model_uri=model_uri,
+        monitor_url=monitor_url,
+        group_name=group_name,
+        start_time_secs=start_time_secs,
+    )
+    for (hp_name, hp_val) in six.iteritems(hparams):
+        if isinstance(hp_val, (float, int)):
+            session_start_info.hparams[hp_name].number_value = hp_val
+        elif isinstance(hp_val, six.string_types):
+            session_start_info.hparams[hp_name].string_value = hp_val
+        elif isinstance(hp_val, bool):
+            session_start_info.hparams[hp_name].bool_value = hp_val
+        elif isinstance(hp_val, (list, tuple)):
+            session_start_info.hparams[hp_name].string_value = str(hp_val)
+        else:
+            raise TypeError(
+                "hparams[%s]=%s has type: %s which is not supported"
+                % (hp_name, hp_val, type(hp_val))
+            )
+    return _summary(
+        metadata.SESSION_START_INFO_TAG,
+        plugin_data_pb2.HParamsPluginData(
+            session_start_info=session_start_info
+        ),
+    )
 
 
 def session_end_pb(status, end_time_secs=None):
-  """Constructs a SessionEndInfo protobuffer.
+    """Constructs a SessionEndInfo protobuffer.
 
-  Creates a summary that contains status information for a completed
-  training session. Should be exported after the training session is completed.
-  One such summary per training session should be created. Each should have
-  a different run.
+    Creates a summary that contains status information for a completed
+    training session. Should be exported after the training session is completed.
+    One such summary per training session should be created. Each should have
+    a different run.
 
-  Args:
-    status: A tensorboard.hparams.Status enumeration value denoting the
-        status of the session.
-    end_time_secs: float. The time to use as the session end time. Represented
-        as seconds since the unix epoch. If None uses the current time.
+    Args:
+      status: A tensorboard.hparams.Status enumeration value denoting the
+          status of the session.
+      end_time_secs: float. The time to use as the session end time. Represented
+          as seconds since the unix epoch. If None uses the current time.
 
-  Returns:
-    The summary protobuffer mentioned above.
-  """
-  if end_time_secs is None:
-    end_time_secs = time.time()
+    Returns:
+      The summary protobuffer mentioned above.
+    """
+    if end_time_secs is None:
+        end_time_secs = time.time()
 
-  session_end_info = plugin_data_pb2.SessionEndInfo(status=status,
-                                                    end_time_secs=end_time_secs)
-  return _summary(metadata.SESSION_END_INFO_TAG,
-                  plugin_data_pb2.HParamsPluginData(
-                      session_end_info=session_end_info))
+    session_end_info = plugin_data_pb2.SessionEndInfo(
+        status=status, end_time_secs=end_time_secs
+    )
+    return _summary(
+        metadata.SESSION_END_INFO_TAG,
+        plugin_data_pb2.HParamsPluginData(session_end_info=session_end_info),
+    )
 
 
 def _summary(tag, hparams_plugin_data):
-  """Returns a summary holding the given HParamsPluginData message.
+    """Returns a summary holding the given HParamsPluginData message.
 
-  Helper function.
+    Helper function.
 
-  Args:
-    tag: string. The tag to use.
-    hparams_plugin_data: The HParamsPluginData message to use.
-  """
-  summary = tf.compat.v1.Summary()
-  tb_metadata = metadata.create_summary_metadata(hparams_plugin_data)
-  raw_metadata = tb_metadata.SerializeToString()
-  tf_metadata = tf.compat.v1.SummaryMetadata.FromString(raw_metadata)
-  summary.value.add(tag=tag, metadata=tf_metadata)
-  return summary
+    Args:
+      tag: string. The tag to use.
+      hparams_plugin_data: The HParamsPluginData message to use.
+    """
+    summary = tf.compat.v1.Summary()
+    tb_metadata = metadata.create_summary_metadata(hparams_plugin_data)
+    raw_metadata = tb_metadata.SerializeToString()
+    tf_metadata = tf.compat.v1.SummaryMetadata.FromString(raw_metadata)
+    summary.value.add(tag=tag, metadata=tf_metadata)
+    return summary
