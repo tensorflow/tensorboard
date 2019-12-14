@@ -35,9 +35,19 @@ class ExamplePlugin(base_plugin.TBPlugin):
     plugin_name = metadata.PLUGIN_NAME
 
     def __init__(self, context):
+        """Instantiates ExamplePlugin.
+
+        Args:
+        context: A base_plugin.TBContext instance.
+        """
         self._multiplexer = context.multiplexer
 
     def is_active(self):
+        """Returns whether there is relevant data for the plugin to process.
+
+        When there are no runs with greeting data, TensorBoard will hide the
+        plugin from the main navigation bar.
+        """
         return bool(
             self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
         )
@@ -80,6 +90,11 @@ class ExamplePlugin(base_plugin.TBPlugin):
 
     @wrappers.Request.application
     def _serve_greetings(self, request):
+        """Serves greeting data for the specified tag and run.
+
+        For details on how to use tags and runs, see
+        https://github.com/tensorflow/tensorboard#tags-giving-names-to-data
+        """
         run = request.args.get("run")
         tag = request.args.get("tag")
         if run is None or tag is None:
