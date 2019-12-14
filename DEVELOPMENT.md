@@ -23,6 +23,11 @@ You may see warnings about “Limited tf.compat.v2.summary API due to missing Te
 
 For any changes to the frontend, you’ll need to install [Yarn][yarn] to lint your code (`yarn lint`, `yarn fix-lint`). You’ll also need Yarn to add or remove any NPM dependencies.
 
+For any changes to the backend, you’ll need to install [Black][black] to lint your code (run `black .`). We use `black==19.10b0`. Black only runs on Python 3.6 or higher, so you may want to install it into a separate virtual environment and use a [wrapper script to invoke it from any environment][black-wrapper].
+<!-- TODO(@wchargin): Pull this version out into a standard requirements.txt file. -->
+
+You may wish to configure your editor to automatically run Prettier and Black on save.
+
 To generate fake log data for a plugin, run its demo script. For instance, this command generates fake scalar data in `/tmp/scalars_demo`:
 
 ```sh
@@ -35,5 +40,7 @@ If you have Bazel≥0.16 and want to build any commit of TensorBoard prior to 20
 $ git cherry-pick bc4e7a6e5517daf918433a8f5983fc6bd239358f
 ```
 
+[black]: https://github.com/psf/black
+[black-wrapper]: https://gist.github.com/wchargin/d65820919f363d33545159138c86ce31
 [pr-1334]: https://github.com/tensorflow/tensorboard/pull/1334
 [yarn]: https://yarnpkg.com/
