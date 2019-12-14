@@ -23,4 +23,4 @@ from __future__ import print_function
 # Note however that different 'plugin names' are used in the context of
 # graph Summaries.
 # See `graphs_plugin.py` for details.
-PLUGIN_NAME = 'graphs'
+PLUGIN_NAME = "graphs"
