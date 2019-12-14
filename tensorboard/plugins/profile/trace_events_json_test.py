@@ -28,15 +28,17 @@ from tensorboard.plugins.profile import trace_events_pb2
 
 
 class TraceEventsJsonStreamTest(tf.test.TestCase):
+    def convert(self, proto_text):
+        proto = trace_events_pb2.Trace()
+        text_format.Merge(proto_text, proto)
+        return json.loads(
+            "".join(trace_events_json.TraceEventsJsonStream(proto))
+        )
 
-  def convert(self, proto_text):
-    proto = trace_events_pb2.Trace()
-    text_format.Merge(proto_text, proto)
-    return json.loads(''.join(trace_events_json.TraceEventsJsonStream(proto)))
-
-  def testJsonConversion(self):
-    self.assertEqual(
-        self.convert("""
+    def testJsonConversion(self):
+        self.assertEqual(
+            self.convert(
+                """
             devices { key: 2 value {
               name: 'D2'
               device_id: 2
@@ -69,59 +71,73 @@ class TraceEventsJsonStreamTest(tf.test.TestCase):
               name: "E2.2.1"
               timestamp_ps: 105000
             }
-            """),
-        dict(
-            displayTimeUnit='ns',
-            metadata={'highres-ticks': True},
-            traceEvents=[
-                dict(ph='M', pid=1, name='process_name', args=dict(name='D1')),
-                dict(
-                    ph='M',
-                    pid=1,
-                    name='process_sort_index',
-                    args=dict(sort_index=1)),
-                dict(
-                    ph='M',
-                    pid=1,
-                    tid=2,
-                    name='thread_name',
-                    args=dict(name='R1.2')),
-                dict(
-                    ph='M',
-                    pid=1,
-                    tid=2,
-                    name='thread_sort_index',
-                    args=dict(sort_index=2)),
-                dict(ph='M', pid=2, name='process_name', args=dict(name='D2')),
-                dict(
-                    ph='M',
-                    pid=2,
-                    name='process_sort_index',
-                    args=dict(sort_index=2)),
-                dict(
-                    ph='M',
-                    pid=2,
-                    tid=2,
-                    name='thread_name',
-                    args=dict(name='R2.2')),
-                dict(
-                    ph='M',
-                    pid=2,
-                    tid=2,
-                    name='thread_sort_index',
-                    args=dict(sort_index=2)),
-                dict(
-                    ph='X',
-                    pid=1,
-                    tid=2,
-                    name='E1.2.1',
-                    ts=0.1,
-                    dur=0.01,
-                    args=dict(label='E1.2.1', extra='extra info')),
-                dict(ph='i', pid=2, tid=2, name='E2.2.1', ts=0.105, s='t'),
-                {},
-            ]))
+            """
+            ),
+            dict(
+                displayTimeUnit="ns",
+                metadata={"highres-ticks": True},
+                traceEvents=[
+                    dict(
+                        ph="M", pid=1, name="process_name", args=dict(name="D1")
+                    ),
+                    dict(
+                        ph="M",
+                        pid=1,
+                        name="process_sort_index",
+                        args=dict(sort_index=1),
+                    ),
+                    dict(
+                        ph="M",
+                        pid=1,
+                        tid=2,
+                        name="thread_name",
+                        args=dict(name="R1.2"),
+                    ),
+                    dict(
+                        ph="M",
+                        pid=1,
+                        tid=2,
+                        name="thread_sort_index",
+                        args=dict(sort_index=2),
+                    ),
+                    dict(
+                        ph="M", pid=2, name="process_name", args=dict(name="D2")
+                    ),
+                    dict(
+                        ph="M",
+                        pid=2,
+                        name="process_sort_index",
+                        args=dict(sort_index=2),
+                    ),
+                    dict(
+                        ph="M",
+                        pid=2,
+                        tid=2,
+                        name="thread_name",
+                        args=dict(name="R2.2"),
+                    ),
+                    dict(
+                        ph="M",
+                        pid=2,
+                        tid=2,
+                        name="thread_sort_index",
+                        args=dict(sort_index=2),
+                    ),
+                    dict(
+                        ph="X",
+                        pid=1,
+                        tid=2,
+                        name="E1.2.1",
+                        ts=0.1,
+                        dur=0.01,
+                        args=dict(label="E1.2.1", extra="extra info"),
+                    ),
+                    dict(ph="i", pid=2, tid=2, name="E2.2.1", ts=0.105, s="t"),
+                    {},
+                ],
+            ),
+        )
 
 
-if __name__ == '__main__':
-  tf.test.main()
+if __name__ == "__main__":
+    tf.test.main()

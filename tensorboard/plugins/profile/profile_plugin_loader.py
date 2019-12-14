@@ -22,40 +22,43 @@ from tensorboard.plugins import base_plugin
 
 
 class ProfilePluginLoader(base_plugin.TBLoader):
-  """ProfilePlugin factory.
+    """ProfilePlugin factory.
 
-  This class checks for `tensorflow` install and dependency.
-  """
+    This class checks for `tensorflow` install and dependency.
+    """
 
-  def define_flags(self, parser):
-    group = parser.add_argument_group('profile plugin')
-    group.add_argument(
-        '--master_tpu_unsecure_channel',
-        metavar='ADDR',
-        type=str,
-        default='',
-        help='''\
+    def define_flags(self, parser):
+        group = parser.add_argument_group("profile plugin")
+        group.add_argument(
+            "--master_tpu_unsecure_channel",
+            metavar="ADDR",
+            type=str,
+            default="",
+            help="""\
 IP address of "master tpu", used for getting streaming trace data
 through tpu profiler analysis grpc. The grpc channel is not secured.\
-''')
+""",
+        )
 
-  def load(self, context):
-    """Returns the plugin, if possible.
+    def load(self, context):
+        """Returns the plugin, if possible.
 
-    Args:
-      context: The TBContext flags.
+        Args:
+          context: The TBContext flags.
 
-    Returns:
-      A ProfilePlugin instance or None if it couldn't be loaded.
-    """
-    try:
-      # pylint: disable=unused-import
-      import tensorflow
-      # Available in TensorFlow 1.14 or later, so do import check
-      # pylint: disable=unused-import
-      from tensorflow.python.eager import profiler_client
-    except ImportError:
-      return
+        Returns:
+          A ProfilePlugin instance or None if it couldn't be loaded.
+        """
+        try:
+            # pylint: disable=unused-import
+            import tensorflow
 
-    from tensorboard.plugins.profile.profile_plugin import ProfilePlugin
-    return ProfilePlugin(context)
+            # Available in TensorFlow 1.14 or later, so do import check
+            # pylint: disable=unused-import
+            from tensorflow.python.eager import profiler_client
+        except ImportError:
+            return
+
+        from tensorboard.plugins.profile.profile_plugin import ProfilePlugin
+
+        return ProfilePlugin(context)
