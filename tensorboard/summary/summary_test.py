@@ -33,91 +33,89 @@ import tensorboard.summary.v2 as tb_summary_v2
 
 
 class SummaryExportsBaseTest(object):
-  module = None
-  plugins = None
-  allowed = frozenset()
+    module = None
+    plugins = None
+    allowed = frozenset()
 
-  def test_each_plugin_has_an_export(self):
-    for plugin in self.plugins:
-      self.assertIsInstance(getattr(self.module, plugin), collections.Callable)
+    def test_each_plugin_has_an_export(self):
+        for plugin in self.plugins:
+            self.assertIsInstance(
+                getattr(self.module, plugin), collections.Callable
+            )
 
-  def test_plugins_export_pb_functions(self):
-    for plugin in self.plugins:
-      self.assertIsInstance(
-          getattr(self.module, '%s_pb' % plugin), collections.Callable)
+    def test_plugins_export_pb_functions(self):
+        for plugin in self.plugins:
+            self.assertIsInstance(
+                getattr(self.module, "%s_pb" % plugin), collections.Callable
+            )
 
-  def test_all_exports_correspond_to_plugins(self):
-    exports = [name for name in dir(self.module) if not name.startswith('_')]
-    bad_exports = [
-        name for name in exports
-        if name not in self.allowed and not any(
-            name == plugin or name.startswith('%s_' % plugin)
-            for plugin in self.plugins)
-    ]
-    if bad_exports:
-      self.fail(
-          'The following exports do not correspond to known standard '
-          'plugins: %r. Please mark these as private by prepending an '
-          'underscore to their names, or, if they correspond to a new '
-          'plugin that you are certain should be part of the public API '
-          'forever, add that plugin to the STANDARD_PLUGINS set in this '
-          'module.' % bad_exports)
+    def test_all_exports_correspond_to_plugins(self):
+        exports = [
+            name for name in dir(self.module) if not name.startswith("_")
+        ]
+        bad_exports = [
+            name
+            for name in exports
+            if name not in self.allowed
+            and not any(
+                name == plugin or name.startswith("%s_" % plugin)
+                for plugin in self.plugins
+            )
+        ]
+        if bad_exports:
+            self.fail(
+                "The following exports do not correspond to known standard "
+                "plugins: %r. Please mark these as private by prepending an "
+                "underscore to their names, or, if they correspond to a new "
+                "plugin that you are certain should be part of the public API "
+                "forever, add that plugin to the STANDARD_PLUGINS set in this "
+                "module." % bad_exports
+            )
 
 
 class SummaryExportsTest(SummaryExportsBaseTest, unittest.TestCase):
-  module = tb_summary
-  allowed = frozenset(('v1', 'v2'))
-  plugins = frozenset([
-    'audio',
-    'histogram',
-    'image',
-    'scalar',
-    'text',
-  ])
+    module = tb_summary
+    allowed = frozenset(("v1", "v2"))
+    plugins = frozenset(["audio", "histogram", "image", "scalar", "text",])
 
-  def test_plugins_export_pb_functions(self):
-    self.skipTest('V2 summary API _pb functions are not finalized yet')
+    def test_plugins_export_pb_functions(self):
+        self.skipTest("V2 summary API _pb functions are not finalized yet")
 
 
 class SummaryExportsV1Test(SummaryExportsBaseTest, unittest.TestCase):
-  module = tb_summary_v1
-  plugins = frozenset([
-    'audio',
-    'custom_scalar',
-    'histogram',
-    'image',
-    'pr_curve',
-    'scalar',
-    'text',
-  ])
+    module = tb_summary_v1
+    plugins = frozenset(
+        [
+            "audio",
+            "custom_scalar",
+            "histogram",
+            "image",
+            "pr_curve",
+            "scalar",
+            "text",
+        ]
+    )
 
 
 class SummaryExportsV2Test(SummaryExportsBaseTest, unittest.TestCase):
-  module = tb_summary_v2
-  plugins = frozenset([
-    'audio',
-    'histogram',
-    'image',
-    'scalar',
-    'text',
-  ])
+    module = tb_summary_v2
+    plugins = frozenset(["audio", "histogram", "image", "scalar", "text",])
 
-  def test_plugins_export_pb_functions(self):
-    self.skipTest('V2 summary API _pb functions are not finalized yet')
+    def test_plugins_export_pb_functions(self):
+        self.skipTest("V2 summary API _pb functions are not finalized yet")
 
 
 class SummaryDepTest(unittest.TestCase):
+    def test_no_tf_dep(self):
+        # Check as a precondition that TF wasn't already imported.
+        self.assertEqual("notfound", sys.modules.get("tensorflow", "notfound"))
+        # Check that referencing summary API symbols still avoids a TF import
+        # as long as we don't actually invoke any API functions.
+        for module in (tb_summary, tb_summary_v1, tb_summary_v2):
+            print(dir(module))
+            print(module.scalar)
+        self.assertEqual("notfound", sys.modules.get("tensorflow", "notfound"))
 
-  def test_no_tf_dep(self):
-    # Check as a precondition that TF wasn't already imported.
-    self.assertEqual('notfound', sys.modules.get('tensorflow', 'notfound'))
-    # Check that referencing summary API symbols still avoids a TF import
-    # as long as we don't actually invoke any API functions.
-    for module in (tb_summary, tb_summary_v1, tb_summary_v2):
-      print(dir(module))
-      print(module.scalar)
-    self.assertEqual('notfound', sys.modules.get('tensorflow', 'notfound'))
 
-
-if __name__ == '__main__':
-  unittest.main()
+if __name__ == "__main__":
+    unittest.main()
