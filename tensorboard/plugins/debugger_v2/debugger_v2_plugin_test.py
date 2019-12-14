@@ -27,19 +27,18 @@ from tensorboard.plugins.debugger_v2 import debugger_v2_plugin
 
 
 class DebuggerV2PluginTest(tf.test.TestCase):
+    def testInstantiatePlugin(self):
+        dummy_logdir = tempfile.mkdtemp()
+        context = base_plugin.TBContext(logdir=dummy_logdir)
+        plugin = debugger_v2_plugin.DebuggerV2Plugin(context)
+        self.assertTrue(plugin)
 
-  def testInstantiatePlugin(self):
-    dummy_logdir = tempfile.mkdtemp()
-    context = base_plugin.TBContext(logdir=dummy_logdir)
-    plugin = debugger_v2_plugin.DebuggerV2Plugin(context)
-    self.assertTrue(plugin)
-
-  def testPluginIsNotActiveByDefault(self):
-    dummy_logdir = tempfile.mkdtemp()
-    context = base_plugin.TBContext(logdir=dummy_logdir)
-    plugin = debugger_v2_plugin.DebuggerV2Plugin(context)
-    self.assertFalse(plugin.is_active())
+    def testPluginIsNotActiveByDefault(self):
+        dummy_logdir = tempfile.mkdtemp()
+        context = base_plugin.TBContext(logdir=dummy_logdir)
+        plugin = debugger_v2_plugin.DebuggerV2Plugin(context)
+        self.assertFalse(plugin.is_active())
 
 
 if __name__ == "__main__":
-  tf.test.main()
+    tf.test.main()
