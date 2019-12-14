@@ -23,83 +23,81 @@ import tensorboard.version
 
 
 REQUIRED_PACKAGES = [
-    'absl-py >= 0.4',
+    "absl-py >= 0.4",
     # futures is a backport of the python 3.2+ concurrent.futures module
     'futures >= 3.1.1; python_version < "3"',
-    'grpcio >= 1.24.3',
-    'google-auth >= 1.6.3, < 2',
-    'google-auth-oauthlib >= 0.4.1, < 0.5',
-    'markdown >= 2.6.8',
-    'numpy >= 1.12.0',
-    'protobuf >= 3.6.0',
-    'requests >= 2.21.0, < 3',
-    'setuptools >= 41.0.0',
-    'six >= 1.10.0',
-    'werkzeug >= 0.11.15',
+    "grpcio >= 1.24.3",
+    "google-auth >= 1.6.3, < 2",
+    "google-auth-oauthlib >= 0.4.1, < 0.5",
+    "markdown >= 2.6.8",
+    "numpy >= 1.12.0",
+    "protobuf >= 3.6.0",
+    "requests >= 2.21.0, < 3",
+    "setuptools >= 41.0.0",
+    "six >= 1.10.0",
+    "werkzeug >= 0.11.15",
     # python3 specifically requires wheel 0.26
     'wheel; python_version < "3"',
     'wheel >= 0.26; python_version >= "3"',
 ]
 
 CONSOLE_SCRIPTS = [
-    'tensorboard = tensorboard.main:run_main',
+    "tensorboard = tensorboard.main:run_main",
 ]
 
+
 def get_readme():
-  with open('README.rst') as f:
-    return f.read()
+    with open("README.rst") as f:
+        return f.read()
+
 
 setup(
-    name='tensorboard',
-    version=tensorboard.version.VERSION.replace('-', ''),
-    description='TensorBoard lets you watch Tensors Flow',
+    name="tensorboard",
+    version=tensorboard.version.VERSION.replace("-", ""),
+    description="TensorBoard lets you watch Tensors Flow",
     long_description=get_readme(),
-    url='https://github.com/tensorflow/tensorboard',
-    author='Google Inc.',
-    author_email='packages@tensorflow.org',
+    url="https://github.com/tensorflow/tensorboard",
+    author="Google Inc.",
+    author_email="packages@tensorflow.org",
     # Contained modules and scripts.
     packages=find_packages(),
     entry_points={
-        'console_scripts': CONSOLE_SCRIPTS,
-        'tensorboard_plugins': [
-            'projector = tensorboard.plugins.projector.projector_plugin:ProjectorPlugin',
+        "console_scripts": CONSOLE_SCRIPTS,
+        "tensorboard_plugins": [
+            "projector = tensorboard.plugins.projector.projector_plugin:ProjectorPlugin",
         ],
     },
     package_data={
-        'tensorboard': [
-            'webfiles.zip',
-        ],
-        'tensorboard.plugins.beholder': [
-            'resources/*',
-        ],
+        "tensorboard": ["webfiles.zip",],
+        "tensorboard.plugins.beholder": ["resources/*",],
         # Must keep this in sync with tf_projector_plugin:projector_assets
-        'tensorboard.plugins.projector': [
-            'tf_projector_plugin/index.js',
-            'tf_projector_plugin/projector_binary.html',
-            'tf_projector_plugin/projector_binary.js',
+        "tensorboard.plugins.projector": [
+            "tf_projector_plugin/index.js",
+            "tf_projector_plugin/projector_binary.html",
+            "tf_projector_plugin/projector_binary.js",
         ],
     },
     # Disallow python 3.0 and 3.1 which lack a 'futures' module (see above).
-    python_requires='>= 2.7, != 3.0.*, != 3.1.*',
+    python_requires=">= 2.7, != 3.0.*, != 3.1.*",
     install_requires=REQUIRED_PACKAGES,
     tests_require=REQUIRED_PACKAGES,
     # PyPI package information.
     classifiers=[
-        'Development Status :: 4 - Beta',
-        'Intended Audience :: Developers',
-        'Intended Audience :: Education',
-        'Intended Audience :: Science/Research',
-        'License :: OSI Approved :: Apache Software License',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
-        'Topic :: Scientific/Engineering :: Mathematics',
-        'Topic :: Software Development :: Libraries :: Python Modules',
-        'Topic :: Software Development :: Libraries',
+        "Development Status :: 4 - Beta",
+        "Intended Audience :: Developers",
+        "Intended Audience :: Education",
+        "Intended Audience :: Science/Research",
+        "License :: OSI Approved :: Apache Software License",
+        "Programming Language :: Python :: 2",
+        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.4",
+        "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.6",
+        "Topic :: Scientific/Engineering :: Mathematics",
+        "Topic :: Software Development :: Libraries :: Python Modules",
+        "Topic :: Software Development :: Libraries",
     ],
-    license='Apache 2.0',
-    keywords='tensorflow tensorboard tensor machine learning visualizer',
+    license="Apache 2.0",
+    keywords="tensorflow tensorboard tensor machine learning visualizer",
 )
