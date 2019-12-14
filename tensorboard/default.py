@@ -47,7 +47,7 @@ from tensorboard.plugins.histogram import histograms_plugin
 from tensorboard.plugins.hparams import hparams_plugin
 from tensorboard.plugins.image import images_plugin
 from tensorboard.plugins.interactive_inference import (
-    interactive_inference_plugin_loader
+    interactive_inference_plugin_loader,
 )
 from tensorboard.plugins.pr_curve import pr_curves_plugin
 from tensorboard.plugins.profile import profile_plugin_loader
@@ -80,39 +80,42 @@ _PLUGINS = [
     mesh_plugin.MeshPlugin,
 ]
 
+
 def get_plugins():
-  """Returns a list specifying TensorBoard's default first-party plugins.
+    """Returns a list specifying TensorBoard's default first-party plugins.
 
-  Plugins are specified in this list either via a TBLoader instance to load the
-  plugin, or the TBPlugin class itself which will be loaded using a BasicLoader.
+    Plugins are specified in this list either via a TBLoader instance to load the
+    plugin, or the TBPlugin class itself which will be loaded using a BasicLoader.
 
-  This list can be passed to the `tensorboard.program.TensorBoard` API.
+    This list can be passed to the `tensorboard.program.TensorBoard` API.
 
-  Returns:
-    The list of default plugins.
+    Returns:
+      The list of default plugins.
 
-  :rtype: list[Type[base_plugin.TBLoader] | Type[base_plugin.TBPlugin]]
-  """
+    :rtype: list[Type[base_plugin.TBLoader] | Type[base_plugin.TBPlugin]]
+    """
 
-  return _PLUGINS[:]
+    return _PLUGINS[:]
 
 
 def get_dynamic_plugins():
-  """Returns a list specifying TensorBoard's dynamically loaded plugins.
+    """Returns a list specifying TensorBoard's dynamically loaded plugins.
 
-  A dynamic TensorBoard plugin is specified using entry_points [1] and it is
-  the robust way to integrate plugins into TensorBoard.
+    A dynamic TensorBoard plugin is specified using entry_points [1] and it is
+    the robust way to integrate plugins into TensorBoard.
 
-  This list can be passed to the `tensorboard.program.TensorBoard` API.
+    This list can be passed to the `tensorboard.program.TensorBoard` API.
 
-  Returns:
-    The list of dynamic plugins.
+    Returns:
+      The list of dynamic plugins.
 
-  :rtype: list[Type[base_plugin.TBLoader] | Type[base_plugin.TBPlugin]]
+    :rtype: list[Type[base_plugin.TBLoader] | Type[base_plugin.TBPlugin]]
 
-  [1]: https://packaging.python.org/specifications/entry-points/
-  """
-  return [
-      entry_point.load()
-      for entry_point in pkg_resources.iter_entry_points('tensorboard_plugins')
-  ]
+    [1]: https://packaging.python.org/specifications/entry-points/
+    """
+    return [
+        entry_point.load()
+        for entry_point in pkg_resources.iter_entry_points(
+            "tensorboard_plugins"
+        )
+    ]
