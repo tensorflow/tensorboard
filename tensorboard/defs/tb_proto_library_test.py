@@ -26,19 +26,19 @@ from tensorboard.defs import test_downstream_pb2_grpc
 
 
 class TbProtoLibraryTest(tb_test.TestCase):
-  """Tests for `tb_proto_library`."""
+    """Tests for `tb_proto_library`."""
 
-  def tests_with_deps(self):
-    foo = test_base_pb2.Foo()
-    foo.foo = 1
-    bar = test_downstream_pb2.Bar()
-    bar.foo.foo = 1
-    self.assertEqual(foo, bar.foo)
+    def tests_with_deps(self):
+        foo = test_base_pb2.Foo()
+        foo.foo = 1
+        bar = test_downstream_pb2.Bar()
+        bar.foo.foo = 1
+        self.assertEqual(foo, bar.foo)
 
-  def test_service_deps(self):
-    self.assertIsInstance(test_base_pb2_grpc.FooServiceServicer, type)
-    self.assertIsInstance(test_downstream_pb2_grpc.BarServiceServicer, type)
+    def test_service_deps(self):
+        self.assertIsInstance(test_base_pb2_grpc.FooServiceServicer, type)
+        self.assertIsInstance(test_downstream_pb2_grpc.BarServiceServicer, type)
 
 
 if __name__ == "__main__":
-  tb_test.main()
+    tb_test.main()
