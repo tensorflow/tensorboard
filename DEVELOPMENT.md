@@ -1,3 +1,16 @@
+# How to write your own plugin
+
+You can extend TensorBoard to show custom visualizations and connect to custom
+backends by writing a custom plugin. Clone and tinker with one of the
+[examples][plugin-examples], or learn about the plugin system by following the
+[ADDING_A_PLUGIN](./ADDING_A_PLUGIN.md) guide. Custom plugins can be
+[published][plugin-distribution] on PyPI to be shared with the community.
+
+Developing a custom plugin does not require Bazel or building TensorBoard.
+
+[plugin-examples]: ./tensorboard/examples/plugins
+[plugin-distribution]: ./ADDING_A_PLUGIN.md#distribution
+
 # How to Develop TensorBoard
 
 TensorBoard at HEAD relies on the nightly installation of TensorFlow: this allows plugin authors to use the latest features of TensorFlow, but it means release versions of TensorFlow may not suffice for development. We recommend installing TensorFlow nightly in a [Python virtualenv](https://virtualenv.pypa.io), and then running your modified development copy of TensorBoard within that virtualenv. To install TensorFlow nightly within the virtualenv, you can simply run

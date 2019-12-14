@@ -1,16 +1,12 @@
-# Raw scalars example
+# Raw scalars example TensorBoard plugin
 
 ## Overview
 
-This example plugin is aimed at authors who wish to start by writing frontend
-code. Its backend provides an endpoint that serves scalar summary data (for
-example, written by `tf.summary.scalar()`) found within the `logdir`.
+In this example, we render a run selector dropdown component. When the user selects a run, it shows a preview of all scalar data for tags within it. For a complete guide to plugin development, see [ADDING_A_PLUGIN](../../../../ADDING_A_PLUGIN.md).
 
-The frontend UI has a run selector component and a preview area, showing the
-scalar data for each tag within the selected run. Relevant source files are found in [`tensorboard_plugin_example_raw_scalars/static/*`][static-dir].
-The frontend entry point is [`static/index.js`][static-index-js].
+![Raw scalars example screenshot](../../../../docs/images/example_raw_scalars.png "Raw scalars example")
 
-To learn more about plugin authoring, see the [basic example docs][basic-example-docs].
+All files under [`static/*`][static-dir] are served as static assets, with the frontend entry point being [`static/index.js`][static-index-js]. The plugin backend serves scalar summaries (e.g. values written by [`tf.summary.scalar`][summary_scalar_docs]) from runs within the `--logdir` passed to TensorBoard.
 
 [static-dir]: ./tensorboard_plugin_example_raw_scalars/static
 [static-index-js]: ./tensorboard_plugin_example_raw_scalars/static/index.js
@@ -18,7 +14,12 @@ To learn more about plugin authoring, see the [basic example docs][basic-example
 
 ## Getting started
 
-Copy the directory `tensorboard/examples/plugins/example_raw_scalars` into a desired folder and, in a virtualenv with TensorBoard installed, run:
+To generate some scalar summaries, you can run the [`demo.py`](tensorboard_plugin_example/demo.py). Alternatively, you can write scalars from your own Python program to a log directory, using [Keras callbacks][keras_scalars_tutorial] or [`tf.summary.scalar`][summary_scalar_docs] with a summary file writer.
+
+[summary_scalar_docs]: https://www.tensorflow.org/api_docs/python/tf/summary
+[keras_scalars_tutorial]: https://www.tensorflow.org/tensorboard/scalars_and_keras
+
+Copy the directory `tensorboard/examples/plugins/example_raw_scalars` into a desired folder. In a virtualenv with TensorBoard installed, run:
 
 ```
 python setup.py develop
@@ -27,10 +28,10 @@ python setup.py develop
 This will link the plugin into your virtualenv. Then, just run
 
 ```
-tensorboard --logdir /tmp/whatever
+tensorboard --logdir /tmp/runs_containing_scalars
 ```
 
-and open TensorBoard to see the plugin’s “hello world” screen.
+and open TensorBoard to see the raw scalars example tab.
 
 After making changes to [`static/index.js`](./tensorboard_plugin_example_raw_scalars/static/index.js) or adding assets to `static/`, you can refresh the page in your browser to see your changes. Modifying the backend requires restarting the TensorBoard process.
 
