@@ -26,74 +26,76 @@ from tensorboard.plugins.debugger import comm_channel
 
 
 class CommChannelTest(tf.test.TestCase):
+    def testGetOutgoingWithInvalidPosLeadsToAssertionError(self):
+        channel = comm_channel.CommChannel()
+        with self.assertRaises(ValueError):
+            channel.get(0)
+        with self.assertRaises(ValueError):
+            channel.get(-1)
 
-  def testGetOutgoingWithInvalidPosLeadsToAssertionError(self):
-    channel = comm_channel.CommChannel()
-    with self.assertRaises(ValueError):
-      channel.get(0)
-    with self.assertRaises(ValueError):
-      channel.get(-1)
+    def testOutgoingSerialPutOneAndGetOne(self):
+        channel = comm_channel.CommChannel()
+        channel.put("A")
+        self.assertEqual(("A", 1), channel.get(1))
 
-  def testOutgoingSerialPutOneAndGetOne(self):
-    channel = comm_channel.CommChannel()
-    channel.put('A')
-    self.assertEqual(('A', 1), channel.get(1))
+    def testOutgoingSerialPutTwoGetOne(self):
+        channel = comm_channel.CommChannel()
+        channel.put("A")
+        channel.put("B")
+        channel.put("C")
+        self.assertEqual(("A", 3), channel.get(1))
+        self.assertEqual(("B", 3), channel.get(2))
+        self.assertEqual(("C", 3), channel.get(3))
 
-  def testOutgoingSerialPutTwoGetOne(self):
-    channel = comm_channel.CommChannel()
-    channel.put('A')
-    channel.put('B')
-    channel.put('C')
-    self.assertEqual(('A', 3), channel.get(1))
-    self.assertEqual(('B', 3), channel.get(2))
-    self.assertEqual(('C', 3), channel.get(3))
+    def testOutgoingConcurrentPutAndOneGetter(self):
+        channel = comm_channel.CommChannel()
 
-  def testOutgoingConcurrentPutAndOneGetter(self):
-    channel = comm_channel.CommChannel()
+        result = {"outgoing": []}
 
-    result = {'outgoing': []}
-    def get_two():
-      result['outgoing'].append(channel.get(1))
-      result['outgoing'].append(channel.get(2))
+        def get_two():
+            result["outgoing"].append(channel.get(1))
+            result["outgoing"].append(channel.get(2))
 
-    t = threading.Thread(target=get_two)
-    t.start()
-    channel.put('A')
-    channel.put('B')
-    t.join()
-    self.assertEqual('A', result['outgoing'][0][0])
-    self.assertIn(result['outgoing'][0][1], [1, 2])
-    self.assertEqual(('B', 2), result['outgoing'][1])
+        t = threading.Thread(target=get_two)
+        t.start()
+        channel.put("A")
+        channel.put("B")
+        t.join()
+        self.assertEqual("A", result["outgoing"][0][0])
+        self.assertIn(result["outgoing"][0][1], [1, 2])
+        self.assertEqual(("B", 2), result["outgoing"][1])
 
-  def testOutgoingConcurrentPutAndTwoGetters(self):
-    channel = comm_channel.CommChannel()
+    def testOutgoingConcurrentPutAndTwoGetters(self):
+        channel = comm_channel.CommChannel()
 
-    result1 = {'outgoing': []}
-    result2 = {'outgoing': []}
-    def getter1():
-      result1['outgoing'].append(channel.get(1))
-      result1['outgoing'].append(channel.get(2))
-    def getter2():
-      result2['outgoing'].append(channel.get(1))
-      result2['outgoing'].append(channel.get(2))
+        result1 = {"outgoing": []}
+        result2 = {"outgoing": []}
 
-    t1 = threading.Thread(target=getter1)
-    t1.start()
-    t2 = threading.Thread(target=getter2)
-    t2.start()
+        def getter1():
+            result1["outgoing"].append(channel.get(1))
+            result1["outgoing"].append(channel.get(2))
 
-    channel.put('A')
-    channel.put('B')
-    t1.join()
-    t2.join()
+        def getter2():
+            result2["outgoing"].append(channel.get(1))
+            result2["outgoing"].append(channel.get(2))
 
-    self.assertEqual('A', result1['outgoing'][0][0])
-    self.assertIn(result1['outgoing'][0][1], [1, 2])
-    self.assertEqual(('B', 2), result1['outgoing'][1])
-    self.assertEqual('A', result2['outgoing'][0][0])
-    self.assertIn(result2['outgoing'][0][1], [1, 2])
-    self.assertEqual(('B', 2), result2['outgoing'][1])
+        t1 = threading.Thread(target=getter1)
+        t1.start()
+        t2 = threading.Thread(target=getter2)
+        t2.start()
+
+        channel.put("A")
+        channel.put("B")
+        t1.join()
+        t2.join()
+
+        self.assertEqual("A", result1["outgoing"][0][0])
+        self.assertIn(result1["outgoing"][0][1], [1, 2])
+        self.assertEqual(("B", 2), result1["outgoing"][1])
+        self.assertEqual("A", result2["outgoing"][0][0])
+        self.assertIn(result2["outgoing"][0][1], [1, 2])
+        self.assertEqual(("B", 2), result2["outgoing"][1])
 
 
-if __name__ == '__main__':
-  tf.test.main()
+if __name__ == "__main__":
+    tf.test.main()
