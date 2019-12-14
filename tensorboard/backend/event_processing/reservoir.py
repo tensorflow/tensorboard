@@ -25,7 +25,7 @@ import threading
 
 
 class Reservoir(object):
-  """A map-to-arrays container, with deterministic Reservoir Sampling.
+    """A map-to-arrays container, with deterministic Reservoir Sampling.
 
   Items are added with an associated key. Items may be retrieved by key, and
   a list of keys can also be retrieved. If size is not zero, then it dictates
@@ -59,8 +59,8 @@ class Reservoir(object):
     size: An integer of the maximum number of samples.
   """
 
-  def __init__(self, size, seed=0, always_keep_last=True):
-    """Creates a new reservoir.
+    def __init__(self, size, seed=0, always_keep_last=True):
+        """Creates a new reservoir.
 
     Args:
       size: The number of values to keep in the reservoir for each tag. If 0,
@@ -74,27 +74,28 @@ class Reservoir(object):
     Raises:
       ValueError: If size is negative or not an integer.
     """
-    if size < 0 or size != round(size):
-      raise ValueError('size must be nonnegative integer, was %s' % size)
-    self._buckets = collections.defaultdict(
-        lambda: _ReservoirBucket(size, random.Random(seed), always_keep_last))
-    # _mutex guards the keys - creating new keys, retrieving by key, etc
-    # the internal items are guarded by the ReservoirBuckets' internal mutexes
-    self._mutex = threading.Lock()
-    self.size = size
-    self.always_keep_last = always_keep_last
+        if size < 0 or size != round(size):
+            raise ValueError("size must be nonnegative integer, was %s" % size)
+        self._buckets = collections.defaultdict(
+            lambda: _ReservoirBucket(size, random.Random(seed), always_keep_last)
+        )
+        # _mutex guards the keys - creating new keys, retrieving by key, etc
+        # the internal items are guarded by the ReservoirBuckets' internal mutexes
+        self._mutex = threading.Lock()
+        self.size = size
+        self.always_keep_last = always_keep_last
 
-  def Keys(self):
-    """Return all the keys in the reservoir.
+    def Keys(self):
+        """Return all the keys in the reservoir.
 
     Returns:
       ['list', 'of', 'keys'] in the Reservoir.
     """
-    with self._mutex:
-      return list(self._buckets.keys())
+        with self._mutex:
+            return list(self._buckets.keys())
 
-  def Items(self, key):
-    """Return items associated with given key.
+    def Items(self, key):
+        """Return items associated with given key.
 
     Args:
       key: The key for which we are finding associated items.
@@ -105,14 +106,14 @@ class Reservoir(object):
     Returns:
       [list, of, items] associated with that key.
     """
-    with self._mutex:
-      if key not in self._buckets:
-        raise KeyError('Key %s was not found in Reservoir' % key)
-      bucket = self._buckets[key]
-    return bucket.Items()
+        with self._mutex:
+            if key not in self._buckets:
+                raise KeyError("Key %s was not found in Reservoir" % key)
+            bucket = self._buckets[key]
+        return bucket.Items()
 
-  def AddItem(self, key, item, f=lambda x: x):
-    """Add a new item to the Reservoir with the given tag.
+    def AddItem(self, key, item, f=lambda x: x):
+        """Add a new item to the Reservoir with the given tag.
 
     If the reservoir has not yet reached full size, the new item is guaranteed
     to be added. If the reservoir is full, then behavior depends on the
@@ -133,12 +134,12 @@ class Reservoir(object):
       item: The item to add to the reservoir.
       f: An optional function to transform the item prior to addition.
     """
-    with self._mutex:
-      bucket = self._buckets[key]
-    bucket.AddItem(item, f)
+        with self._mutex:
+            bucket = self._buckets[key]
+        bucket.AddItem(item, f)
 
-  def FilterItems(self, filterFn, key=None):
-    """Filter items within a Reservoir, using a filtering function.
+    def FilterItems(self, filterFn, key=None):
+        """Filter items within a Reservoir, using a filtering function.
 
     Args:
       filterFn: A function that returns True for the items to be kept.
@@ -148,25 +149,26 @@ class Reservoir(object):
     Returns:
       The number of items removed.
     """
-    with self._mutex:
-      if key:
-        if key in self._buckets:
-          return self._buckets[key].FilterItems(filterFn)
-        else:
-          return 0
-      else:
-        return sum(bucket.FilterItems(filterFn)
-                   for bucket in self._buckets.values())
+        with self._mutex:
+            if key:
+                if key in self._buckets:
+                    return self._buckets[key].FilterItems(filterFn)
+                else:
+                    return 0
+            else:
+                return sum(
+                    bucket.FilterItems(filterFn) for bucket in self._buckets.values()
+                )
 
 
 class _ReservoirBucket(object):
-  """A container for items from a stream, that implements reservoir sampling.
+    """A container for items from a stream, that implements reservoir sampling.
 
   It always stores the most recent item as its final item.
   """
 
-  def __init__(self, _max_size, _random=None, always_keep_last=True):
-    """Create the _ReservoirBucket.
+    def __init__(self, _max_size, _random=None, always_keep_last=True):
+        """Create the _ReservoirBucket.
 
     Args:
       _max_size: The maximum size the reservoir bucket may grow to. If size is
@@ -179,22 +181,22 @@ class _ReservoirBucket(object):
     Raises:
       ValueError: if the size is not a nonnegative integer.
     """
-    if _max_size < 0 or _max_size != round(_max_size):
-      raise ValueError('_max_size must be nonnegative int, was %s' % _max_size)
-    self.items = []
-    # This mutex protects the internal items, ensuring that calls to Items and
-    # AddItem are thread-safe
-    self._mutex = threading.Lock()
-    self._max_size = _max_size
-    self._num_items_seen = 0
-    if _random is not None:
-      self._random = _random
-    else:
-      self._random = random.Random(0)
-    self.always_keep_last = always_keep_last
+        if _max_size < 0 or _max_size != round(_max_size):
+            raise ValueError("_max_size must be nonnegative int, was %s" % _max_size)
+        self.items = []
+        # This mutex protects the internal items, ensuring that calls to Items and
+        # AddItem are thread-safe
+        self._mutex = threading.Lock()
+        self._max_size = _max_size
+        self._num_items_seen = 0
+        if _random is not None:
+            self._random = _random
+        else:
+            self._random = random.Random(0)
+        self.always_keep_last = always_keep_last
 
-  def AddItem(self, item, f=lambda x: x):
-    """Add an item to the ReservoirBucket, replacing an old item if necessary.
+    def AddItem(self, item, f=lambda x: x):
+        """Add an item to the ReservoirBucket, replacing an old item if necessary.
 
     The new item is guaranteed to be added to the bucket, and to be the last
     element in the bucket. If the bucket has reached capacity, then an old item
@@ -211,20 +213,20 @@ class _ReservoirBucket(object):
       f: A function to transform item before addition, if it will be kept in
         the reservoir.
     """
-    with self._mutex:
-      if len(self.items) < self._max_size or self._max_size == 0:
-        self.items.append(f(item))
-      else:
-        r = self._random.randint(0, self._num_items_seen)
-        if r < self._max_size:
-          self.items.pop(r)
-          self.items.append(f(item))
-        elif self.always_keep_last:
-          self.items[-1] = f(item)
-      self._num_items_seen += 1
+        with self._mutex:
+            if len(self.items) < self._max_size or self._max_size == 0:
+                self.items.append(f(item))
+            else:
+                r = self._random.randint(0, self._num_items_seen)
+                if r < self._max_size:
+                    self.items.pop(r)
+                    self.items.append(f(item))
+                elif self.always_keep_last:
+                    self.items[-1] = f(item)
+            self._num_items_seen += 1
 
-  def FilterItems(self, filterFn):
-    """Filter items in a ReservoirBucket, using a filtering function.
+    def FilterItems(self, filterFn):
+        """Filter items in a ReservoirBucket, using a filtering function.
 
     Filtering items from the reservoir bucket must update the
     internal state variable self._num_items_seen, which is used for determining
@@ -242,18 +244,19 @@ class _ReservoirBucket(object):
     Returns:
       The number of items removed from the bucket.
     """
-    with self._mutex:
-      size_before = len(self.items)
-      self.items = list(filter(filterFn, self.items))
-      size_diff = size_before - len(self.items)
+        with self._mutex:
+            size_before = len(self.items)
+            self.items = list(filter(filterFn, self.items))
+            size_diff = size_before - len(self.items)
 
-      # Estimate a correction the number of items seen
-      prop_remaining = len(self.items) / float(
-          size_before) if size_before > 0 else 0
-      self._num_items_seen = int(round(self._num_items_seen * prop_remaining))
-      return size_diff
+            # Estimate a correction the number of items seen
+            prop_remaining = (
+                len(self.items) / float(size_before) if size_before > 0 else 0
+            )
+            self._num_items_seen = int(round(self._num_items_seen * prop_remaining))
+            return size_diff
 
-  def Items(self):
-    """Get all the items in the bucket."""
-    with self._mutex:
-      return list(self.items)
+    def Items(self):
+        """Get all the items in the bucket."""
+        with self._mutex:
+            return list(self.items)

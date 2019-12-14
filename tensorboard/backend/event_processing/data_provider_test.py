@@ -43,239 +43,241 @@ tf1.enable_eager_execution()
 
 
 class MultiplexerDataProviderTest(tf.test.TestCase):
-  def setUp(self):
-    super(MultiplexerDataProviderTest, self).setUp()
-    self.logdir = self.get_temp_dir()
+    def setUp(self):
+        super(MultiplexerDataProviderTest, self).setUp()
+        self.logdir = self.get_temp_dir()
 
-    logdir = os.path.join(self.logdir, "polynomials")
-    with tf.summary.create_file_writer(logdir).as_default():
-      for i in xrange(10):
-        scalar_summary.scalar("square", i ** 2, step=2 * i, description="boxen")
-        scalar_summary.scalar("cube", i ** 3, step=3 * i)
+        logdir = os.path.join(self.logdir, "polynomials")
+        with tf.summary.create_file_writer(logdir).as_default():
+            for i in xrange(10):
+                scalar_summary.scalar("square", i ** 2, step=2 * i, description="boxen")
+                scalar_summary.scalar("cube", i ** 3, step=3 * i)
 
-    logdir = os.path.join(self.logdir, "waves")
-    with tf.summary.create_file_writer(logdir).as_default():
-      for i in xrange(10):
-        scalar_summary.scalar("sine", tf.sin(float(i)), step=i)
-        scalar_summary.scalar("square", tf.sign(tf.sin(float(i))), step=i)
-        # Summary with rank-0 data but not owned by the scalars plugin.
-        metadata = summary_pb2.SummaryMetadata()
-        metadata.plugin_data.plugin_name = "marigraphs"
-        tf.summary.write("high_tide", tensor=i, step=i, metadata=metadata)
+        logdir = os.path.join(self.logdir, "waves")
+        with tf.summary.create_file_writer(logdir).as_default():
+            for i in xrange(10):
+                scalar_summary.scalar("sine", tf.sin(float(i)), step=i)
+                scalar_summary.scalar("square", tf.sign(tf.sin(float(i))), step=i)
+                # Summary with rank-0 data but not owned by the scalars plugin.
+                metadata = summary_pb2.SummaryMetadata()
+                metadata.plugin_data.plugin_name = "marigraphs"
+                tf.summary.write("high_tide", tensor=i, step=i, metadata=metadata)
 
-    logdir = os.path.join(self.logdir, "pictures")
-    with tf.summary.create_file_writer(logdir).as_default():
-      colors = [
-          ("`#F0F`", (255, 0, 255), "purple"),
-          ("`#0F0`", (255, 0, 255), "green"),
-      ]
-      for (description, rgb, name) in colors:
-        pixel = tf.constant([[list(rgb)]], dtype=tf.uint8)
-        for i in xrange(1, 11):
-          pixels = [tf.tile(pixel, [i, i, 1])]
-          image_summary.image(name, pixels, step=i, description=description)
+        logdir = os.path.join(self.logdir, "pictures")
+        with tf.summary.create_file_writer(logdir).as_default():
+            colors = [
+                ("`#F0F`", (255, 0, 255), "purple"),
+                ("`#0F0`", (255, 0, 255), "green"),
+            ]
+            for (description, rgb, name) in colors:
+                pixel = tf.constant([[list(rgb)]], dtype=tf.uint8)
+                for i in xrange(1, 11):
+                    pixels = [tf.tile(pixel, [i, i, 1])]
+                    image_summary.image(name, pixels, step=i, description=description)
 
-  def create_multiplexer(self):
-    multiplexer = event_multiplexer.EventMultiplexer()
-    multiplexer.AddRunsFromDirectory(self.logdir)
-    multiplexer.Reload()
-    return multiplexer
+    def create_multiplexer(self):
+        multiplexer = event_multiplexer.EventMultiplexer()
+        multiplexer.AddRunsFromDirectory(self.logdir)
+        multiplexer.Reload()
+        return multiplexer
 
-  def create_provider(self):
-    multiplexer = self.create_multiplexer()
-    return data_provider.MultiplexerDataProvider(multiplexer, self.logdir)
+    def create_provider(self):
+        multiplexer = self.create_multiplexer()
+        return data_provider.MultiplexerDataProvider(multiplexer, self.logdir)
 
-  def test_data_location(self):
-    provider = self.create_provider()
-    result = provider.data_location(experiment_id="unused")
-    self.assertEqual(result, self.logdir)
+    def test_data_location(self):
+        provider = self.create_provider()
+        result = provider.data_location(experiment_id="unused")
+        self.assertEqual(result, self.logdir)
 
-  def test_list_runs(self):
-    # We can't control the timestamps of events written to disk (without
-    # manually reading the tfrecords, modifying the data, and writing
-    # them back out), so we provide a fake multiplexer instead.
-    start_times = {
-        "second_2": 2.0,
-        "first": 1.5,
-        "no_time": None,
-        "second_1": 2.0,
-    }
-    class FakeMultiplexer(object):
-      def Runs(multiplexer):
-        result = ["second_2", "first", "no_time", "second_1"]
-        self.assertItemsEqual(result, start_times)
-        return result
+    def test_list_runs(self):
+        # We can't control the timestamps of events written to disk (without
+        # manually reading the tfrecords, modifying the data, and writing
+        # them back out), so we provide a fake multiplexer instead.
+        start_times = {
+            "second_2": 2.0,
+            "first": 1.5,
+            "no_time": None,
+            "second_1": 2.0,
+        }
 
-      def FirstEventTimestamp(multiplexer, run):
-        self.assertIn(run, start_times)
-        result = start_times[run]
-        if result is None:
-          raise ValueError("No event timestep could be found")
-        else:
-          return result
+        class FakeMultiplexer(object):
+            def Runs(multiplexer):
+                result = ["second_2", "first", "no_time", "second_1"]
+                self.assertItemsEqual(result, start_times)
+                return result
 
-    multiplexer = FakeMultiplexer()
-    provider = data_provider.MultiplexerDataProvider(multiplexer, "fake_logdir")
-    result = provider.list_runs(experiment_id="unused")
-    self.assertItemsEqual(result, [
-        base_provider.Run(run_id=run, run_name=run, start_time=start_time)
-        for (run, start_time) in six.iteritems(start_times)
-    ])
+            def FirstEventTimestamp(multiplexer, run):
+                self.assertIn(run, start_times)
+                result = start_times[run]
+                if result is None:
+                    raise ValueError("No event timestep could be found")
+                else:
+                    return result
 
-  def test_list_scalars_all(self):
-    provider = self.create_provider()
-    result = provider.list_scalars(
-        experiment_id="unused",
-        plugin_name=scalar_metadata.PLUGIN_NAME,
-        run_tag_filter=None,
-    )
-    self.assertItemsEqual(result.keys(), ["polynomials", "waves"])
-    self.assertItemsEqual(result["polynomials"].keys(), ["square", "cube"])
-    self.assertItemsEqual(result["waves"].keys(), ["square", "sine"])
-    sample = result["polynomials"]["square"]
-    self.assertIsInstance(sample, base_provider.ScalarTimeSeries)
-    self.assertEqual(sample.max_step, 18)
-    # nothing to test for wall time, as it can't be mocked out
-    self.assertEqual(sample.plugin_content, b"")
-    self.assertEqual(sample.display_name, "")  # not written by V2 summary ops
-    self.assertEqual(sample.description, "boxen")
+        multiplexer = FakeMultiplexer()
+        provider = data_provider.MultiplexerDataProvider(multiplexer, "fake_logdir")
+        result = provider.list_runs(experiment_id="unused")
+        self.assertItemsEqual(
+            result,
+            [
+                base_provider.Run(run_id=run, run_name=run, start_time=start_time)
+                for (run, start_time) in six.iteritems(start_times)
+            ],
+        )
 
-  def test_list_scalars_filters(self):
-    provider = self.create_provider()
+    def test_list_scalars_all(self):
+        provider = self.create_provider()
+        result = provider.list_scalars(
+            experiment_id="unused",
+            plugin_name=scalar_metadata.PLUGIN_NAME,
+            run_tag_filter=None,
+        )
+        self.assertItemsEqual(result.keys(), ["polynomials", "waves"])
+        self.assertItemsEqual(result["polynomials"].keys(), ["square", "cube"])
+        self.assertItemsEqual(result["waves"].keys(), ["square", "sine"])
+        sample = result["polynomials"]["square"]
+        self.assertIsInstance(sample, base_provider.ScalarTimeSeries)
+        self.assertEqual(sample.max_step, 18)
+        # nothing to test for wall time, as it can't be mocked out
+        self.assertEqual(sample.plugin_content, b"")
+        self.assertEqual(sample.display_name, "")  # not written by V2 summary ops
+        self.assertEqual(sample.description, "boxen")
 
-    result = provider.list_scalars(
-        experiment_id="unused",
-        plugin_name=scalar_metadata.PLUGIN_NAME,
-        run_tag_filter=base_provider.RunTagFilter(["waves"], ["square"]),
-    )
-    self.assertItemsEqual(result.keys(), ["waves"])
-    self.assertItemsEqual(result["waves"].keys(), ["square"])
+    def test_list_scalars_filters(self):
+        provider = self.create_provider()
 
-    result = provider.list_scalars(
-        experiment_id="unused",
-        plugin_name=scalar_metadata.PLUGIN_NAME,
-        run_tag_filter=base_provider.RunTagFilter(tags=["square", "quartic"]),
-    )
-    self.assertItemsEqual(result.keys(), ["polynomials", "waves"])
-    self.assertItemsEqual(result["polynomials"].keys(), ["square"])
-    self.assertItemsEqual(result["waves"].keys(), ["square"])
+        result = provider.list_scalars(
+            experiment_id="unused",
+            plugin_name=scalar_metadata.PLUGIN_NAME,
+            run_tag_filter=base_provider.RunTagFilter(["waves"], ["square"]),
+        )
+        self.assertItemsEqual(result.keys(), ["waves"])
+        self.assertItemsEqual(result["waves"].keys(), ["square"])
 
-    result = provider.list_scalars(
-        experiment_id="unused",
-        plugin_name=scalar_metadata.PLUGIN_NAME,
-        run_tag_filter=base_provider.RunTagFilter(runs=["waves", "hugs"]),
-    )
-    self.assertItemsEqual(result.keys(), ["waves"])
-    self.assertItemsEqual(result["waves"].keys(), ["sine", "square"])
+        result = provider.list_scalars(
+            experiment_id="unused",
+            plugin_name=scalar_metadata.PLUGIN_NAME,
+            run_tag_filter=base_provider.RunTagFilter(tags=["square", "quartic"]),
+        )
+        self.assertItemsEqual(result.keys(), ["polynomials", "waves"])
+        self.assertItemsEqual(result["polynomials"].keys(), ["square"])
+        self.assertItemsEqual(result["waves"].keys(), ["square"])
 
-    result = provider.list_scalars(
-        experiment_id="unused",
-        plugin_name=scalar_metadata.PLUGIN_NAME,
-        run_tag_filter=base_provider.RunTagFilter(["un"], ["likely"]),
-    )
-    self.assertEqual(result, {})
+        result = provider.list_scalars(
+            experiment_id="unused",
+            plugin_name=scalar_metadata.PLUGIN_NAME,
+            run_tag_filter=base_provider.RunTagFilter(runs=["waves", "hugs"]),
+        )
+        self.assertItemsEqual(result.keys(), ["waves"])
+        self.assertItemsEqual(result["waves"].keys(), ["sine", "square"])
 
-  def test_read_scalars(self):
-    multiplexer = self.create_multiplexer()
-    provider = data_provider.MultiplexerDataProvider(multiplexer, self.logdir)
+        result = provider.list_scalars(
+            experiment_id="unused",
+            plugin_name=scalar_metadata.PLUGIN_NAME,
+            run_tag_filter=base_provider.RunTagFilter(["un"], ["likely"]),
+        )
+        self.assertEqual(result, {})
 
-    run_tag_filter = base_provider.RunTagFilter(
-        runs=["waves", "polynomials", "unicorns"],
-        tags=["sine", "square", "cube", "iridescence"],
-    )
-    result = provider.read_scalars(
-        experiment_id="unused",
-        plugin_name=scalar_metadata.PLUGIN_NAME,
-        run_tag_filter=run_tag_filter,
-        downsample=None,  # not yet implemented
-    )
+    def test_read_scalars(self):
+        multiplexer = self.create_multiplexer()
+        provider = data_provider.MultiplexerDataProvider(multiplexer, self.logdir)
 
-    self.assertItemsEqual(result.keys(), ["polynomials", "waves"])
-    self.assertItemsEqual(result["polynomials"].keys(), ["square", "cube"])
-    self.assertItemsEqual(result["waves"].keys(), ["square", "sine"])
-    for run in result:
-      for tag in result[run]:
-        tensor_events = multiplexer.Tensors(run, tag)
-        self.assertLen(result[run][tag], len(tensor_events))
-        for (datum, event) in zip(result[run][tag], tensor_events):
-          self.assertEqual(datum.step, event.step)
-          self.assertEqual(datum.wall_time, event.wall_time)
-          self.assertEqual(
-              datum.value, tensor_util.make_ndarray(event.tensor_proto).item()
-          )
+        run_tag_filter = base_provider.RunTagFilter(
+            runs=["waves", "polynomials", "unicorns"],
+            tags=["sine", "square", "cube", "iridescence"],
+        )
+        result = provider.read_scalars(
+            experiment_id="unused",
+            plugin_name=scalar_metadata.PLUGIN_NAME,
+            run_tag_filter=run_tag_filter,
+            downsample=None,  # not yet implemented
+        )
 
-  def test_read_scalars_but_not_rank_0(self):
-    provider = self.create_provider()
-    run_tag_filter = base_provider.RunTagFilter(["pictures"], ["purple"])
-    # No explicit checks yet.
-    with six.assertRaisesRegex(
-        self,
-        ValueError,
-        "can only convert an array of size 1 to a Python scalar"):
-      provider.read_scalars(
-          experiment_id="unused",
-          plugin_name=image_metadata.PLUGIN_NAME,
-          run_tag_filter=run_tag_filter,
-      )
+        self.assertItemsEqual(result.keys(), ["polynomials", "waves"])
+        self.assertItemsEqual(result["polynomials"].keys(), ["square", "cube"])
+        self.assertItemsEqual(result["waves"].keys(), ["square", "sine"])
+        for run in result:
+            for tag in result[run]:
+                tensor_events = multiplexer.Tensors(run, tag)
+                self.assertLen(result[run][tag], len(tensor_events))
+                for (datum, event) in zip(result[run][tag], tensor_events):
+                    self.assertEqual(datum.step, event.step)
+                    self.assertEqual(datum.wall_time, event.wall_time)
+                    self.assertEqual(
+                        datum.value, tensor_util.make_ndarray(event.tensor_proto).item()
+                    )
 
-  def test_list_tensors_all(self):
-    provider = self.create_provider()
-    result = provider.list_tensors(
-        experiment_id="unused",
-        plugin_name=image_metadata.PLUGIN_NAME,
-        run_tag_filter=None,
-    )
-    self.assertItemsEqual(result.keys(), ["pictures"])
-    self.assertItemsEqual(result["pictures"].keys(), ["purple", "green"])
-    sample = result["pictures"]["purple"]
-    self.assertIsInstance(sample, base_provider.TensorTimeSeries)
-    self.assertEqual(sample.max_step, 10)
-    # nothing to test for wall time, as it can't be mocked out
-    self.assertEqual(sample.plugin_content, b"")
-    self.assertEqual(sample.display_name, "")  # not written by V2 summary ops
-    self.assertEqual(sample.description, "`#F0F`")
+    def test_read_scalars_but_not_rank_0(self):
+        provider = self.create_provider()
+        run_tag_filter = base_provider.RunTagFilter(["pictures"], ["purple"])
+        # No explicit checks yet.
+        with six.assertRaisesRegex(
+            self, ValueError, "can only convert an array of size 1 to a Python scalar"
+        ):
+            provider.read_scalars(
+                experiment_id="unused",
+                plugin_name=image_metadata.PLUGIN_NAME,
+                run_tag_filter=run_tag_filter,
+            )
 
-  def test_list_tensors_filters(self):
-    provider = self.create_provider()
+    def test_list_tensors_all(self):
+        provider = self.create_provider()
+        result = provider.list_tensors(
+            experiment_id="unused",
+            plugin_name=image_metadata.PLUGIN_NAME,
+            run_tag_filter=None,
+        )
+        self.assertItemsEqual(result.keys(), ["pictures"])
+        self.assertItemsEqual(result["pictures"].keys(), ["purple", "green"])
+        sample = result["pictures"]["purple"]
+        self.assertIsInstance(sample, base_provider.TensorTimeSeries)
+        self.assertEqual(sample.max_step, 10)
+        # nothing to test for wall time, as it can't be mocked out
+        self.assertEqual(sample.plugin_content, b"")
+        self.assertEqual(sample.display_name, "")  # not written by V2 summary ops
+        self.assertEqual(sample.description, "`#F0F`")
 
-    # Quick check only, as scalars and tensors use the same underlying
-    # filtering implementation.
-    result = provider.list_tensors(
-        experiment_id="unused",
-        plugin_name=image_metadata.PLUGIN_NAME,
-        run_tag_filter=base_provider.RunTagFilter(["pictures"], ["green"]),
-    )
-    self.assertItemsEqual(result.keys(), ["pictures"])
-    self.assertItemsEqual(result["pictures"].keys(), ["green"])
+    def test_list_tensors_filters(self):
+        provider = self.create_provider()
 
-  def test_read_tensors(self):
-    multiplexer = self.create_multiplexer()
-    provider = data_provider.MultiplexerDataProvider(multiplexer, self.logdir)
+        # Quick check only, as scalars and tensors use the same underlying
+        # filtering implementation.
+        result = provider.list_tensors(
+            experiment_id="unused",
+            plugin_name=image_metadata.PLUGIN_NAME,
+            run_tag_filter=base_provider.RunTagFilter(["pictures"], ["green"]),
+        )
+        self.assertItemsEqual(result.keys(), ["pictures"])
+        self.assertItemsEqual(result["pictures"].keys(), ["green"])
 
-    run_tag_filter = base_provider.RunTagFilter(
-        runs=["pictures"],
-        tags=["purple", "green"],
-    )
-    result = provider.read_tensors(
-        experiment_id="unused",
-        plugin_name=image_metadata.PLUGIN_NAME,
-        run_tag_filter=run_tag_filter,
-        downsample=None,  # not yet implemented
-    )
+    def test_read_tensors(self):
+        multiplexer = self.create_multiplexer()
+        provider = data_provider.MultiplexerDataProvider(multiplexer, self.logdir)
 
-    self.assertItemsEqual(result.keys(), ["pictures"])
-    self.assertItemsEqual(result["pictures"].keys(), ["purple", "green"])
-    for run in result:
-      for tag in result[run]:
-        tensor_events = multiplexer.Tensors(run, tag)
-        self.assertLen(result[run][tag], len(tensor_events))
-        for (datum, event) in zip(result[run][tag], tensor_events):
-          self.assertEqual(datum.step, event.step)
-          self.assertEqual(datum.wall_time, event.wall_time)
-          np.testing.assert_equal(
-              datum.numpy, tensor_util.make_ndarray(event.tensor_proto)
-          )
+        run_tag_filter = base_provider.RunTagFilter(
+            runs=["pictures"], tags=["purple", "green"],
+        )
+        result = provider.read_tensors(
+            experiment_id="unused",
+            plugin_name=image_metadata.PLUGIN_NAME,
+            run_tag_filter=run_tag_filter,
+            downsample=None,  # not yet implemented
+        )
+
+        self.assertItemsEqual(result.keys(), ["pictures"])
+        self.assertItemsEqual(result["pictures"].keys(), ["purple", "green"])
+        for run in result:
+            for tag in result[run]:
+                tensor_events = multiplexer.Tensors(run, tag)
+                self.assertLen(result[run][tag], len(tensor_events))
+                for (datum, event) in zip(result[run][tag], tensor_events):
+                    self.assertEqual(datum.step, event.step)
+                    self.assertEqual(datum.wall_time, event.wall_time)
+                    np.testing.assert_equal(
+                        datum.numpy, tensor_util.make_ndarray(event.tensor_proto)
+                    )
 
 
 if __name__ == "__main__":
-  tf.test.main()
+    tf.test.main()
