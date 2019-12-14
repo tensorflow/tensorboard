@@ -23,90 +23,99 @@ from tensorboard.plugins.hparams import error
 from tensorboard.plugins.hparams import plugin_data_pb2
 
 
-PLUGIN_NAME = 'hparams'
+PLUGIN_NAME = "hparams"
 PLUGIN_DATA_VERSION = 0
 
 
-EXPERIMENT_TAG = '_hparams_/experiment'
-SESSION_START_INFO_TAG = '_hparams_/session_start_info'
-SESSION_END_INFO_TAG = '_hparams_/session_end_info'
+EXPERIMENT_TAG = "_hparams_/experiment"
+SESSION_START_INFO_TAG = "_hparams_/session_start_info"
+SESSION_END_INFO_TAG = "_hparams_/session_end_info"
 
 
 def create_summary_metadata(hparams_plugin_data_pb):
-  """Returns a summary metadata for the HParams plugin.
+    """Returns a summary metadata for the HParams plugin.
 
-  Returns a summary_pb2.SummaryMetadata holding a copy of the given
-  HParamsPluginData message in its plugin_data.content field.
-  Sets the version field of the hparams_plugin_data_pb copy to
-  PLUGIN_DATA_VERSION.
+    Returns a summary_pb2.SummaryMetadata holding a copy of the given
+    HParamsPluginData message in its plugin_data.content field.
+    Sets the version field of the hparams_plugin_data_pb copy to
+    PLUGIN_DATA_VERSION.
 
-  Args:
-    hparams_plugin_data_pb: the HParamsPluginData protobuffer to use.
-  """
-  if not isinstance(hparams_plugin_data_pb, plugin_data_pb2.HParamsPluginData):
-    raise TypeError('Needed an instance of plugin_data_pb2.HParamsPluginData.'
-                    ' Got: %s' % type(hparams_plugin_data_pb))
-  content = plugin_data_pb2.HParamsPluginData()
-  content.CopyFrom(hparams_plugin_data_pb)
-  content.version = PLUGIN_DATA_VERSION
-  return summary_pb2.SummaryMetadata(
-      plugin_data=summary_pb2.SummaryMetadata.PluginData(
-          plugin_name=PLUGIN_NAME, content=content.SerializeToString()))
+    Args:
+      hparams_plugin_data_pb: the HParamsPluginData protobuffer to use.
+    """
+    if not isinstance(
+        hparams_plugin_data_pb, plugin_data_pb2.HParamsPluginData
+    ):
+        raise TypeError(
+            "Needed an instance of plugin_data_pb2.HParamsPluginData."
+            " Got: %s" % type(hparams_plugin_data_pb)
+        )
+    content = plugin_data_pb2.HParamsPluginData()
+    content.CopyFrom(hparams_plugin_data_pb)
+    content.version = PLUGIN_DATA_VERSION
+    return summary_pb2.SummaryMetadata(
+        plugin_data=summary_pb2.SummaryMetadata.PluginData(
+            plugin_name=PLUGIN_NAME, content=content.SerializeToString()
+        )
+    )
 
 
 def parse_experiment_plugin_data(content):
-  """Returns the experiment from HParam's SummaryMetadata.plugin_data.content.
+    """Returns the experiment from HParam's
+    SummaryMetadata.plugin_data.content.
 
-  Raises HParamsError if the content doesn't have 'experiment' set or
-  this file is incompatible with the version of the metadata stored.
+    Raises HParamsError if the content doesn't have 'experiment' set or
+    this file is incompatible with the version of the metadata stored.
 
-  Args:
-    content: The SummaryMetadata.plugin_data.content to use.
-  """
-  return _parse_plugin_data_as(content, 'experiment')
+    Args:
+      content: The SummaryMetadata.plugin_data.content to use.
+    """
+    return _parse_plugin_data_as(content, "experiment")
 
 
 def parse_session_start_info_plugin_data(content):
-  """Returns session_start_info from the plugin_data.content.
+    """Returns session_start_info from the plugin_data.content.
 
-  Raises HParamsError if the content doesn't have 'session_start_info' set or
-  this file is incompatible with the version of the metadata stored.
+    Raises HParamsError if the content doesn't have 'session_start_info' set or
+    this file is incompatible with the version of the metadata stored.
 
-  Args:
-    content: The SummaryMetadata.plugin_data.content to use.
-  """
-  return _parse_plugin_data_as(content, 'session_start_info')
+    Args:
+      content: The SummaryMetadata.plugin_data.content to use.
+    """
+    return _parse_plugin_data_as(content, "session_start_info")
 
 
 def parse_session_end_info_plugin_data(content):
-  """Returns session_end_info from the plugin_data.content.
+    """Returns session_end_info from the plugin_data.content.
 
-  Raises HParamsError if the content doesn't have 'session_end_info' set or
-  this file is incompatible with the version of the metadata stored.
+    Raises HParamsError if the content doesn't have 'session_end_info' set or
+    this file is incompatible with the version of the metadata stored.
 
-  Args:
-    content: The SummaryMetadata.plugin_data.content to use.
-  """
-  return _parse_plugin_data_as(content, 'session_end_info')
+    Args:
+      content: The SummaryMetadata.plugin_data.content to use.
+    """
+    return _parse_plugin_data_as(content, "session_end_info")
 
 
 def _parse_plugin_data_as(content, data_oneof_field):
-  """Returns a data oneof's field from plugin_data.content.
+    """Returns a data oneof's field from plugin_data.content.
 
-  Raises HParamsError if the content doesn't have 'data_oneof_field' set or
-  this file is incompatible with the version of the metadata stored.
+    Raises HParamsError if the content doesn't have 'data_oneof_field' set or
+    this file is incompatible with the version of the metadata stored.
 
-  Args:
-    content: The SummaryMetadata.plugin_data.content to use.
-    data_oneof_field: string. The name of the data oneof field to return.
-  """
-  plugin_data = plugin_data_pb2.HParamsPluginData.FromString(content)
-  if plugin_data.version != PLUGIN_DATA_VERSION:
-    raise error.HParamsError(
-        'Only supports plugin_data version: %s; found: %s in: %s' %
-        (PLUGIN_DATA_VERSION, plugin_data.version, plugin_data))
-  if not plugin_data.HasField(data_oneof_field):
-    raise error.HParamsError(
-        'Expected plugin_data.%s to be set. Got: %s' %
-        (data_oneof_field, plugin_data))
-  return getattr(plugin_data, data_oneof_field)
+    Args:
+      content: The SummaryMetadata.plugin_data.content to use.
+      data_oneof_field: string. The name of the data oneof field to return.
+    """
+    plugin_data = plugin_data_pb2.HParamsPluginData.FromString(content)
+    if plugin_data.version != PLUGIN_DATA_VERSION:
+        raise error.HParamsError(
+            "Only supports plugin_data version: %s; found: %s in: %s"
+            % (PLUGIN_DATA_VERSION, plugin_data.version, plugin_data)
+        )
+    if not plugin_data.HasField(data_oneof_field):
+        raise error.HParamsError(
+            "Expected plugin_data.%s to be set. Got: %s"
+            % (data_oneof_field, plugin_data)
+        )
+    return getattr(plugin_data, data_oneof_field)
