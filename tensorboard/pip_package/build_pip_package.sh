@@ -114,6 +114,10 @@ build() (
   export PYTHONWARNINGS=ignore:DEPRECATION  # suppress Python 2.7 deprecation spam
   pip install -qU wheel 'setuptools>=36.2.0'
 
+  # Arbitrary date; overrides the file timestamps in the zip archive to
+  # make the build reproducible.
+  export SOURCE_DATE_EPOCH=1446856078
+
   python setup.py bdist_wheel --python-tag py2 >/dev/null
   python setup.py bdist_wheel --python-tag py3 >/dev/null
 
