@@ -41,8 +41,9 @@ export function createPreviews(tagsToScalars) {
     const tagNameEl = createElement('div', 'tagname');
     const textPreviewEl = createElement('textarea', 'preview-text');
     tagNameEl.textContent = tag;
-    textPreviewEl.textContent =
-        scalars ? JSON.stringify(scalars) : 'No scalar data found.';
+    textPreviewEl.textContent = scalars
+      ? JSON.stringify(scalars)
+      : 'No scalar data found.';
     previewEl.appendChild(tagNameEl);
     previewEl.appendChild(textPreviewEl);
     fragment.appendChild(previewEl);

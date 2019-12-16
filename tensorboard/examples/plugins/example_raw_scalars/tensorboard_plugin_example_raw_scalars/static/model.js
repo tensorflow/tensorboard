@@ -19,7 +19,7 @@ let runToTagInfo = null;
 
 async function updateRunInfo() {
   if (!runToTagInfo) {
-    runToTagInfo = await fetchJSON('./tags') || {};
+    runToTagInfo = (await fetchJSON('./tags')) || {};
   }
 }
 
@@ -42,10 +42,11 @@ export async function getTagsToScalars(run) {
     return result;
   }
 
-  const scalarPromises = tags.map(async tag => {
+  const scalarPromises = tags.map(async (tag) => {
     const scalars = await getScalars(run, tag);
-    if (scalars)
+    if (scalars) {
       result.set(tag, scalars);
+    }
   });
   await Promise.all(scalarPromises);
 

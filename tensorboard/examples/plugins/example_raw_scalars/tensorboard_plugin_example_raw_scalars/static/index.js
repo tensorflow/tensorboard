@@ -36,8 +36,11 @@ export async function render() {
   const previewContainer = document.createElement('div');
   const runs = await Model.getRuns();
   const runSelector = Views.createRunSelector(runs);
-  const updatePreviewBound =
-      updatePreview.bind(null, runSelector, previewContainer);
+  const updatePreviewBound = updatePreview.bind(
+    null,
+    runSelector,
+    previewContainer
+  );
   runSelector.onchange = updatePreviewBound;
 
   // Call once for the initial view.
