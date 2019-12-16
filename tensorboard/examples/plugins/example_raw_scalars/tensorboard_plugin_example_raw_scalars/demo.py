@@ -34,11 +34,11 @@ tf = tf.compat.v2
 
 
 def main(unused_argv):
-  writer = tf.summary.create_file_writer("demo_logs")
-  with writer.as_default():
-    for i in range(100):
-      tf.summary.scalar("custom_tag", 100 * math.sin(i), step=i)
+    writer = tf.summary.create_file_writer("demo_logs")
+    with writer.as_default():
+        for i in range(100):
+            tf.summary.scalar("custom_tag", 100 * math.sin(i), step=i)
 
 
 if __name__ == "__main__":
-  app.run(main)
+    app.run(main)

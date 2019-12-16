@@ -28,9 +28,7 @@ setuptools.setup(
     version="0.1.0",
     description="Sample TensorBoard plugin.",
     packages=["tensorboard_plugin_example_raw_scalars"],
-    package_data={
-        "tensorboard_plugin_example_raw_scalars": ["static/**"],
-    },
+    package_data={"tensorboard_plugin_example_raw_scalars": ["static/**"],},
     entry_points={
         "tensorboard_plugins": [
             "raw_scalars = tensorboard_plugin_example_raw_scalars.plugin:ExampleRawScalarsPlugin",
