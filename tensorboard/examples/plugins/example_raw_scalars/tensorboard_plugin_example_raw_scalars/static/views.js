@@ -57,16 +57,12 @@ export function createPreviews(tagsToScalars) {
 export function createRunSelector(runs) {
   /**
    * Build a component in this form:
-   *   <select class='run-selector>
-   *     <option value='${run}'>${run}</option>
+   *   <select class="run-selector">
+   *     <option value="${run}">${run}</option>
    *     ...
    *   </select>
    */
   const element = createElement('select', 'run-selector');
-  if (!runs) {
-    return element;
-  }
-
   for (const run of runs) {
     element.options.add(new Option(run, run));
   }

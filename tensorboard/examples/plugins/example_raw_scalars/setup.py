@@ -33,7 +33,7 @@ setuptools.setup(
     },
     entry_points={
         "tensorboard_plugins": [
-            "raw_scalars = tensorboard_plugin_example_raw_scalars.plugin:ExampleRawScalars",
+            "raw_scalars = tensorboard_plugin_example_raw_scalars.plugin:ExampleRawScalarsPlugin",
         ],
     },
 )

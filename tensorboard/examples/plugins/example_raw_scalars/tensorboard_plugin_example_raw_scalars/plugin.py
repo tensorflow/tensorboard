@@ -39,13 +39,13 @@ from tensorboard.plugins.scalar import metadata
 _SCALAR_PLUGIN_NAME = metadata.PLUGIN_NAME
 _PLUGIN_DIRECTORY_PATH_PART = '/data/plugin/example_raw_scalars/'
 
-class ExampleRawScalars(base_plugin.TBPlugin):
+class ExampleRawScalarsPlugin(base_plugin.TBPlugin):
   """Raw summary example plugin for TensorBoard."""
 
   plugin_name = 'example_raw_scalars'
 
   def __init__(self, context):
-    """Instantiates ExampleRawScalars.
+    """Instantiates ExampleRawScalarsPlugin.
 
     Args:
       context: A base_plugin.TBContext instance.
@@ -118,7 +118,7 @@ class ExampleRawScalars(base_plugin.TBPlugin):
       the data series.
 
     Raises:
-      errors.NotFoundError if run+tag pair has no scalar data.
+      errors.NotFoundError: if run+tag pair has no scalar data.
     """
     try:
       tensor_events = self._multiplexer.Tensors(run, tag)

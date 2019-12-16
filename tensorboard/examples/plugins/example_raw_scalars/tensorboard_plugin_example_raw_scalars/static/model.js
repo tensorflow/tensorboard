@@ -14,7 +14,6 @@
 // ==============================================================================
 
 // Generic example of a service that provides data.
-
 /** @type {?Object<string, !Array<string>>} */
 let runToTagInfo = null;
 
@@ -68,7 +67,8 @@ async function getTags(run) {
  * @return {!Promise<?Object>}
  */
 async function getScalars(run, tag) {
-  return await fetchJSON(`./scalars?run=${run}&tag=${tag}`);
+  const params = new URLSearchParams({run, tag});
+  return await fetchJSON(`./scalars?${params}`);
 }
 
 /**
