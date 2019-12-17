@@ -12,6 +12,29 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-// HACK: must load config before application module.
-import './config_dev';
-import './bootstrap';
+
+body {
+  margin: 40px;
+  font-family: Roboto, Helvetica, sans-serif;
+}
+
+h1 {
+  font-size: 24px;
+}
+
+.run-selector {
+  margin-bottom: 30px;
+}
+
+.tagname {
+  margin-bottom: 8px;
+}
+
+.preview {
+  margin-bottom: 24px;
+}
+
+.preview-text {
+  width: 70%;
+  height: 50px;
+}

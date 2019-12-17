@@ -12,6 +12,20 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-// HACK: must load config before application module.
-import './config_dev';
-import './bootstrap';
+import {NgModule} from '@angular/core';
+import {StoreModule} from '@ngrx/store';
+import {EffectsModule} from '@ngrx/effects';
+
+import {reducers} from './store';
+import {CoreEffects} from './effects';
+import {CORE_FEATURE_KEY} from './store/core_types';
+import {TBServerDataSourceModule} from '../webapp_data_source/tb_server_data_source_module';
+
+@NgModule({
+  imports: [
+    TBServerDataSourceModule,
+    StoreModule.forFeature(CORE_FEATURE_KEY, reducers),
+    EffectsModule.forFeature([CoreEffects]),
+  ],
+})
+export class CoreModule {}

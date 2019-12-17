@@ -12,6 +12,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-// HACK: must load config before application module.
-import './config_dev';
-import './bootstrap';
+import {NgModule} from '@angular/core';
+import {CommonModule} from '@angular/common';
+
+import {DebuggerModule} from '../../plugins/debugger_v2/tf_debugger_v2_plugin/debugger_module';
+import {PluginsContainer} from './plugins_container';
+import {PluginsComponent} from './plugins_component';
+import {CoreModule} from '../core/core_module';
+
+@NgModule({
+  declarations: [PluginsContainer, PluginsComponent],
+  exports: [PluginsContainer],
+  imports: [CoreModule, CommonModule, DebuggerModule],
+})
+export class PluginsModule {}

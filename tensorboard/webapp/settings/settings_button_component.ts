@@ -12,6 +12,25 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-// HACK: must load config before application module.
-import './config_dev';
-import './bootstrap';
+import {Component} from '@angular/core';
+import {MatDialog} from '@angular/material/dialog';
+
+import {SettingsDialogComponent} from './dialog_component';
+
+@Component({
+  selector: 'settings-button',
+  template: `
+    <button mat-button (click)="openDialog()">
+      <mat-icon>more_vert</mat-icon>
+    </button>
+  `,
+})
+export class SettingsButtonComponent {
+  constructor(private dialog: MatDialog) {}
+
+  openDialog(): void {
+    this.dialog.open(SettingsDialogComponent, {
+      width: '400px',
+    });
+  }
+}

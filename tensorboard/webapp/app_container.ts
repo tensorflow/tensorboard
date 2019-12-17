@@ -12,6 +12,22 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-// HACK: must load config before application module.
-import './config_dev';
-import './bootstrap';
+import {Component, OnInit} from '@angular/core';
+import {Store} from '@ngrx/store';
+import {coreLoaded} from './core/actions';
+import {State} from './core/store';
+
+/** @typehack */ import * as _typeHackRxjs from 'rxjs';
+
+@Component({
+  selector: 'tb-webapp',
+  templateUrl: './app_container.ng.html',
+  styleUrls: ['./app_container.css'],
+})
+export class AppContainer implements OnInit {
+  constructor(private readonly store: Store<State>) {}
+
+  ngOnInit() {
+    this.store.dispatch(coreLoaded());
+  }
+}
