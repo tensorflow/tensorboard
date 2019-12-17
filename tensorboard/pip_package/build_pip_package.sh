@@ -75,6 +75,7 @@ build() (
   mv -f "tensorboard/pip_package/LICENSE" .
   mv -f "tensorboard/pip_package/MANIFEST.in" .
   mv -f "tensorboard/pip_package/README.rst" .
+  mv -f "tensorboard/pip_package/requirements.txt" .
   mv -f "tensorboard/pip_package/setup.cfg" .
   mv -f "tensorboard/pip_package/setup.py" .
   rm -rf "tensorboard/pip_package"

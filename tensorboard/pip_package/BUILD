@@ -32,6 +32,7 @@ sh_binary(
         "LICENSE",
         "MANIFEST.in",
         "README.rst",
+        "requirements.txt",
         "setup.cfg",
         "setup.py",
         ":deterministic_tar_gz",
