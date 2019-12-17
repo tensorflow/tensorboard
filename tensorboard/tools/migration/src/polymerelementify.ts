@@ -149,6 +149,7 @@ function hasMethodDecorator(
   return declaration.members.some((maybeProp) => {
     return (
       ts.isPropertyDeclaration(maybeProp) &&
+      maybeProp.decorators &&
       maybeProp.decorators.some((decorator) => {
         return (
           ts.isCallExpression(decorator.expression) &&
@@ -160,21 +161,34 @@ function hasMethodDecorator(
   });
 }
 
+function hasImport(statements: ts.Statement[], moduleName: string) {
+  return statements.some((statement) => {
+    return (
+      ts.isImportDeclaration(statement) &&
+      ts.isStringLiteral(statement.moduleSpecifier) &&
+      statement.moduleSpecifier.text === moduleName
+    );
+  });
+}
+
 function maybeAddImportStatements(statements: ts.Statement[]) {
   const polymerClasses = statements.filter((statement) => {
     if (ts.isClassDeclaration(statement)) {
-      return statement.heritageClauses.some((heritage) => {
-        return (
-          heritage.token === ts.SyntaxKind.ExtendsKeyword &&
-          heritage.types.some((type) => {
-            return (
-              ts.isExpressionWithTypeArguments(type) &&
-              ts.isIdentifier(type.expression) &&
-              type.expression.text === 'PolymerElement'
-            );
-          })
-        );
-      });
+      return (
+        statement.heritageClauses &&
+        statement.heritageClauses.some((heritage) => {
+          return (
+            heritage.token === ts.SyntaxKind.ExtendsKeyword &&
+            heritage.types.some((type) => {
+              return (
+                ts.isExpressionWithTypeArguments(type) &&
+                ts.isIdentifier(type.expression) &&
+                type.expression.text === 'PolymerElement'
+              );
+            })
+          );
+        })
+      );
     }
   }) as ts.ClassDeclaration[];
   const hasPropertyDecorator = polymerClasses.some((polymerClass) =>
@@ -186,8 +200,16 @@ function maybeAddImportStatements(statements: ts.Statement[]) {
   const hasListenDecorator = polymerClasses.some((polymerClass) =>
     hasMethodDecorator(polymerClass, 'listen')
   );
+  const shouldImportPolymer =
+    !hasImport(statements, '@polymer/polymer') && polymerClasses.length;
+  const shouldLoadPolymerDecorator =
+    !hasImport(statements, '@polymer/decorators') &&
+    (polymerClasses.length ||
+      hasListenDecorator ||
+      hasPropertyDecorator ||
+      hasObserveDecorator);
 
-  const importPolymer = polymerClasses.length
+  const importPolymer = shouldImportPolymer
     ? ts.createImportDeclaration(
         undefined,
         undefined,
@@ -204,37 +226,44 @@ function maybeAddImportStatements(statements: ts.Statement[]) {
         ts.createLiteral('@polymer/polymer')
       )
     : undefined;
-  const importPolymerDecorators = ts.createImportDeclaration(
-    undefined,
-    undefined,
-    ts.createImportClause(
-      undefined,
-      ts.createNamedImports(
-        [
-          ts.createImportSpecifier(
-            undefined,
-            ts.createIdentifier('customElement')
-          ),
-          hasPropertyDecorator
-            ? ts.createImportSpecifier(
-                undefined,
-                ts.createIdentifier('property')
-              )
-            : undefined,
-          hasObserveDecorator
-            ? ts.createImportSpecifier(
-                undefined,
-                ts.createIdentifier('observe')
-              )
-            : undefined,
-          hasListenDecorator
-            ? ts.createImportSpecifier(undefined, ts.createIdentifier('listen'))
-            : undefined,
-        ].filter(Boolean)
+  const importPolymerDecorators = shouldLoadPolymerDecorator
+    ? ts.createImportDeclaration(
+        undefined,
+        undefined,
+        ts.createImportClause(
+          undefined,
+          ts.createNamedImports(
+            [
+              polymerClasses.length
+                ? ts.createImportSpecifier(
+                    undefined,
+                    ts.createIdentifier('customElement')
+                  )
+                : undefined,
+              hasPropertyDecorator
+                ? ts.createImportSpecifier(
+                    undefined,
+                    ts.createIdentifier('property')
+                  )
+                : undefined,
+              hasObserveDecorator
+                ? ts.createImportSpecifier(
+                    undefined,
+                    ts.createIdentifier('observe')
+                  )
+                : undefined,
+              hasListenDecorator
+                ? ts.createImportSpecifier(
+                    undefined,
+                    ts.createIdentifier('listen')
+                  )
+                : undefined,
+            ].filter(Boolean)
+          )
+        ),
+        ts.createLiteral('@polymer/decorators')
       )
-    ),
-    ts.createLiteral('@polymer/decorators')
-  );
+    : undefined;
 
   return [importPolymer, importPolymerDecorators, ...statements].filter(
     Boolean
@@ -246,8 +275,9 @@ function getPropsAstNodes(props: ts.PropertyAssignment) {
   return (props.initializer as ts.ObjectLiteralExpression).properties.map(
     (prop: ts.PropertyAssignment) => {
       if (!prop) return null;
-      const propInitializer = prop.initializer as ts.ObjectLiteralExpression;
-      const propProperties = propInitializer.properties || ts.createNodeArray();
+      const propProperties = ts.isObjectLiteralExpression(prop.initializer)
+        ? prop.initializer.properties
+        : ts.createNodeArray<ts.ObjectLiteralElementLike>();
       const valueInitializer = propProperties.find(
         (prop: ts.PropertyAssignment) => propName(prop) === 'value'
       ) as ts.PropertyAssignment;
@@ -256,12 +286,17 @@ function getPropsAstNodes(props: ts.PropertyAssignment) {
         (propProperties.find((prop: ts.PropertyAssignment) => {
           return propName(prop) === 'type';
         }) as ts.PropertyAssignment);
+      const typeInitializer = typeProp
+        ? typeProp.initializer
+        : ts.isIdentifier(prop.initializer)
+        ? prop.initializer
+        : null;
 
       let initializer = undefined;
       let type = ts.createKeywordTypeNode(ts.SyntaxKind.UnknownKeyword);
 
-      if (typeProp) {
-        switch (initializerValue(typeProp.initializer)) {
+      if (typeInitializer) {
+        switch (initializerValue(typeInitializer)) {
           case 'Boolean':
             type = ts.createKeywordTypeNode(ts.SyntaxKind.BooleanKeyword);
             break;
@@ -282,27 +317,35 @@ function getPropsAstNodes(props: ts.PropertyAssignment) {
         (propProperties.find((prop: ts.PropertyAssignment) => {
           return propName(prop) === 'computed';
         }) as ts.PropertyAssignment);
+
+      let decoratorBody;
+      if (computed) {
+        decoratorBody = propProperties
+          .filter((prop: ts.PropertyAssignment) => {
+            return propName(prop) === 'computed';
+          })
+          .map((prop: ts.PropertyAssignment) => {
+            return prop.initializer;
+          });
+      } else {
+        const propertyObj = ts.isObjectLiteralExpression(prop.initializer)
+          ? ts.updateObjectLiteral(
+              prop.initializer,
+              propProperties.filter((prop: ts.PropertyAssignment) => {
+                return (
+                  propName(prop) !== 'computed' && propName(prop) !== 'value'
+                );
+              })
+            )
+          : ts.createObjectLiteral([
+              ts.createPropertyAssignment('type', typeInitializer),
+            ]);
+        decoratorBody = [propertyObj];
+      }
       const decoratorExpression = ts.createCall(
         ts.createIdentifier(computed ? 'computed' : 'property'),
         undefined,
-        computed
-          ? propProperties
-              .filter((prop: ts.PropertyAssignment) => {
-                return propName(prop) === 'computed';
-              })
-              .map((prop: ts.PropertyAssignment) => {
-                return prop.initializer;
-              })
-          : [
-              ts.updateObjectLiteral(
-                propInitializer,
-                propProperties.filter((prop: ts.PropertyAssignment) => {
-                  return (
-                    propName(prop) !== 'computed' && propName(prop) !== 'value'
-                  );
-                })
-              ),
-            ]
+        decoratorBody
       );
       const decorator = ts.createDecorator(decoratorExpression);
 
