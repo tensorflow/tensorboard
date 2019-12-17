@@ -116,7 +116,7 @@ build() (
 
   # Arbitrary date; overrides the file timestamps in the zip archive to
   # make the build reproducible.
-  export SOURCE_DATE_EPOCH=1446856078
+  export SOURCE_DATE_EPOCH=1577836800
 
   python setup.py bdist_wheel --python-tag py2 >/dev/null
   python setup.py bdist_wheel --python-tag py3 >/dev/null
