@@ -50,17 +50,11 @@ install:
   # Older versions of Pip sometimes resolve specifiers like `tf-nightly`
   # to versions other than the most recent(!).
   - pip install -U pip
-  # Lint check deps.
-  - pip install flake8==3.7.8
-  - pip install yamllint==1.17.0
-  - if [ -n "${PY3}" ]; then pip install black==19.10b0; fi
-  # TensorBoard deps.
-  - pip install futures==3.1.1
-  - pip install grpcio==1.24.3
-  - pip install grpcio-testing==1.24.3
-  - pip install 'google-auth >= 1.6.3, < 2'
-  - pip install 'google-auth-oauthlib >= 0.4.1, < 0.5'
-  - pip install requests==2.21.0
+  - |
+    pip install \
+      -r tensorboard/pip_package/requirements.txt \
+      -r tensorboard/pip_package/requirements_dev.txt \
+      ;
   - yarn install --ignore-engines
   # Uninstall older Travis numpy to avoid upgrade-in-place issues.
   - pip uninstall -y numpy
@@ -68,10 +62,6 @@ install:
     # Install TensorFlow if requested
     if [ -n "${TF_VERSION_ID}" ]; then
       pip install -I "${TF_VERSION_ID}"
-    else
-      # Requirements typically found through TensorFlow.
-      pip install "absl-py>=0.7.0" \
-      && pip install "numpy<2.0,>=1.14.5"
     fi
   # Deps for gfile S3 test.
   - pip install boto3==1.9.86
