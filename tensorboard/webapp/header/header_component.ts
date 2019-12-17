@@ -21,8 +21,8 @@ import {UiPluginMetadata} from './types';
 
 @Component({
   selector: 'app-header-component',
-  templateUrl: './header.component.html',
-  styleUrls: ['./header.component.css'],
+  templateUrl: './header_component.ng.html',
+  styleUrls: ['./header_component.css'],
 })
 export class HeaderComponent {
   @Input()

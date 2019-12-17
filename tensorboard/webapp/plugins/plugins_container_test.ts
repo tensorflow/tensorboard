@@ -17,20 +17,20 @@ import {By} from '@angular/platform-browser';
 import {Store} from '@ngrx/store';
 import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
-import {PluginsContainer} from './plugins.container';
-import {PluginsComponent} from './plugins.component';
+import {PluginsContainer} from './plugins_container';
+import {PluginsComponent} from './plugins_component';
 
 import {PluginId, LoadingMechanismType, LoadState} from '../types/api';
 import {createState, createCoreState} from '../core/testing';
 import {State} from '../core/store';
 // store/index.ts doesn't export this, but it's OK to use for testing
-import {CoreState} from '../core/store/core.types';
+import {CoreState} from '../core/store/core_types';
 
-import {DebuggerModule} from '../../plugins/debugger_v2/tf_debugger_v2_plugin/debugger.module';
+import {DebuggerModule} from '../../plugins/debugger_v2/tf_debugger_v2_plugin/debugger_module';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
-describe('plugins.component', () => {
+describe('plugins_component', () => {
   let store: MockStore<State>;
   const INITIAL_CORE_STATE: Partial<CoreState> = {
     plugins: {

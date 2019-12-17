@@ -23,7 +23,7 @@ import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Store} from '@ngrx/store';
 import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
-import {SettingsDialogComponent} from './dialog.component';
+import {SettingsDialogComponent} from './dialog_component';
 
 import {toggleReloadEnabled, changeReloadPeriod} from '../core/actions';
 import {State} from '../core/store';

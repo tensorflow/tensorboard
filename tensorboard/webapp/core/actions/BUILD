@@ -5,7 +5,7 @@ load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 tf_ts_library(
     name = "actions",
     srcs = [
-        "core.actions.ts",
+        "core_actions.ts",
         "index.ts"
     ],
     deps = [

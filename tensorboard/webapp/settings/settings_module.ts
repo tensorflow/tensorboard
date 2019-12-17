@@ -21,9 +21,9 @@ import {MatDialogModule} from '@angular/material/dialog';
 import {MatIconModule} from '@angular/material/icon';
 import {MatInputModule} from '@angular/material/input';
 
-import {SettingsButtonComponent} from './settings_button.component';
+import {SettingsButtonComponent} from './settings_button_component';
 
-import {SettingsDialogComponent} from './dialog.component';
+import {SettingsDialogComponent} from './dialog_component';
 
 @NgModule({
   declarations: [SettingsButtonComponent, SettingsDialogComponent],
