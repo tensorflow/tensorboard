@@ -165,7 +165,6 @@ class FileSystem implements ReadonlyFileSystem {
 
   hasFile(filePath: string): boolean {
     filePath = resolve(filePath);
-    console.log(Array.from(this.cache.keys()));
     try {
       return this.cache.has(filePath) || Boolean(statSync(filePath));
     } catch (e) {
