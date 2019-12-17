@@ -12,25 +12,20 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component} from '@angular/core';
-import {MatDialog} from '@angular/material/dialog';
+import {NgModule} from '@angular/core';
+import {StoreModule} from '@ngrx/store';
+import {EffectsModule} from '@ngrx/effects';
 
-import {SettingsDialogComponent} from './dialog.component';
+import {reducers} from './store';
+import {CoreEffects} from './effects';
+import {CORE_FEATURE_KEY} from './store/core_types';
+import {TBServerDataSourceModule} from '../webapp_data_source/tb_server_data_source_module';
 
-@Component({
-  selector: 'settings-button',
-  template: `
-    <button mat-button (click)="openDialog()">
-      <mat-icon>more_vert</mat-icon>
-    </button>
-  `,
+@NgModule({
+  imports: [
+    TBServerDataSourceModule,
+    StoreModule.forFeature(CORE_FEATURE_KEY, reducers),
+    EffectsModule.forFeature([CoreEffects]),
+  ],
 })
-export class SettingsButtonComponent {
-  constructor(private dialog: MatDialog) {}
-
-  openDialog(): void {
-    this.dialog.open(SettingsDialogComponent, {
-      width: '400px',
-    });
-  }
-}
+export class CoreModule {}

@@ -20,10 +20,10 @@ import {MatTabsModule} from '@angular/material/tabs';
 import {MatToolbarModule} from '@angular/material/toolbar';
 import {MatSelectModule} from '@angular/material/select';
 
-import {HeaderComponent} from './header.component';
-import {HeaderContainer} from './header.container';
-import {CoreModule} from '../core/core.module';
-import {SettingsModule} from '../settings/settings.module';
+import {HeaderComponent} from './header_component';
+import {HeaderContainer} from './header_container';
+import {CoreModule} from '../core/core_module';
+import {SettingsModule} from '../settings/settings_module';
 
 @NgModule({
   declarations: [HeaderComponent, HeaderContainer],

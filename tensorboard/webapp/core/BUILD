@@ -5,7 +5,7 @@ load("@npm_angular_bazel//:index.bzl", "ng_module")
 ng_module(
     name = "core",
     srcs = [
-        "core.module.ts",
+        "core_module.ts",
     ],
     deps = [
         "//tensorboard/webapp/webapp_data_source",

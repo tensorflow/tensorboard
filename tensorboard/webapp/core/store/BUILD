@@ -6,9 +6,9 @@ load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 ng_module(
     name = "store",
     srcs = [
-        "core.reducers.ts",
-        "core.selectors.ts",
-        "core.types.ts",
+        "core_reducers.ts",
+        "core_selectors.ts",
+        "core_types.ts",
         "index.ts",
     ],
     deps = [
@@ -23,7 +23,7 @@ tf_ts_library(
     name = "core_store_test_lib",
     testonly = True,
     srcs = [
-        "core.reducers.test.ts",
+        "core_reducers_test.ts",
     ],
     tsconfig = "//:tsconfig-test",
     deps = [

@@ -16,7 +16,7 @@ import {Component} from '@angular/core';
 
 @Component({
   selector: 'debugger-component',
-  templateUrl: './debugger.component.html',
-  styleUrls: ['./debugger.component.css'],
+  templateUrl: './debugger_component.ng.html',
+  styleUrls: ['./debugger_component.css'],
 })
 export class DebuggerComponent {}

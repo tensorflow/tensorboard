@@ -13,11 +13,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {NgModule} from '@angular/core';
-import {HttpClientModule} from '@angular/common/http';
-import {TBServerDataSource} from './tb_server.data_source';
+import {CommonModule} from '@angular/common';
+
+import {DebuggerModule} from '../../plugins/debugger_v2/tf_debugger_v2_plugin/debugger_module';
+import {PluginsContainer} from './plugins_container';
+import {PluginsComponent} from './plugins_component';
+import {CoreModule} from '../core/core_module';
 
 @NgModule({
-  imports: [HttpClientModule],
-  providers: [TBServerDataSource],
+  declarations: [PluginsContainer, PluginsComponent],
+  exports: [PluginsContainer],
+  imports: [CoreModule, CommonModule, DebuggerModule],
 })
-export class TBServerDataSourceModule {}
+export class PluginsModule {}
