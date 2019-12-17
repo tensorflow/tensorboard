@@ -14,99 +14,95 @@ limitations under the License.
 ==============================================================================*/
 // This is a random comment
 namespace tf_dashboard_common {
+  Polymer({
+    is: 'tf-filterable-checkbox-dropdown',
+    properties: {
+      label: {type: String},
 
+      placeholder: {type: String},
 
-Polymer({
-  is: 'tf-filterable-checkbox-dropdown',
-  properties: {
-    label: {type: String},
+      labelFloat: {
+        type: Boolean,
+        value: false,
+      },
 
-    placeholder: {type: String},
+      // ====== Pass through properties ======
 
-    labelFloat: {
-      type: Boolean,
-      value: false,
+      useCheckboxColors: {
+        type: Boolean,
+        value: true,
+      },
+
+      meow: String,
+      coloring: Object,
+
+      // TODO(stephanwlee): Devise a better way for components to react to color
+      // scale change. Recoloring on open may not be good enough.
+      // The property simply clones the `coloring` to force redraw when dropdown
+      // is opened.
+      _coloring: {
+        type: Object,
+        computed: '_computeColoring(_opened, coloring)',
+      },
+
+      items: {
+        type: Array,
+        value: () => [],
+      },
+
+      maxItemsToEnableByDefault: Number,
+
+      selectionState: {
+        type: Object,
+        value: () => ({}),
+      },
+
+      selectedItems: {
+        type: Array,
+        notify: true,
+        value: () => [],
+      },
+
+      // ====== Others ======
+
+      _opened: {
+        type: Boolean,
+        value: false,
+      },
     },
 
-    // ====== Pass through properties ======
+    // ====================== COMPUTED ======================
 
-    useCheckboxColors: {
-      type: Boolean,
-      value: true,
+    _getValueLabel(_) {
+      if (this.selectedItems.length == this.items.length) {
+        return `All ${this.label}s`;
+      } else if (!this.selectedItems.length) {
+        return '';
+      } else if (this.selectedItems.length <= 3) {
+        const titles = this.selectedItems.map(({title}) => title);
+        const uniqueNames = new Set(titles);
+        return Array.from(uniqueNames).join(', ');
+      }
+      return `${this.selectedItems.length} Selected`;
     },
 
-    coloring: Object,
-
-    // TODO(stephanwlee): Devise a better way for components to react to color
-    // scale change. Recoloring on open may not be good enough.
-    // The property simply clones the `coloring` to force redraw when dropdown
-    // is opened.
-    _coloring: {
-      type: Object,
-      computed: '_computeColoring(_opened, coloring)',
+    _computeColoring() {
+      return Object.assign({}, this.coloring);
     },
+  });
 
-    items: {
-      type: Array,
-      value: () => [],
+  Polymer({
+    is: 'tf-dashboard-layout',
+    properties: {
+      label: {type: String},
+
+      placeholder: {type: String},
+
+      labelFloat: {
+        type: Boolean,
+        value: false,
+      },
     },
-
-    maxItemsToEnableByDefault: Number,
-
-    selectionState: {
-      type: Object,
-      value: () => ({}),
-    },
-
-    selectedItems: {
-      type: Array,
-      notify: true,
-      value: () => [],
-    },
-
-    // ====== Others ======
-
-    _opened: {
-      type: Boolean,
-      value: false,
-    },
-  },
-
-  // ====================== COMPUTED ======================
-
-  _getValueLabel(_) {
-    if (this.selectedItems.length == this.items.length) {
-      return `All ${this.label}s`;
-    } else if (!this.selectedItems.length) {
-      return '';
-    } else if (this.selectedItems.length <= 3) {
-      const titles = this.selectedItems.map(({title}) => title);
-      const uniqueNames = new Set(titles);
-      return Array.from(uniqueNames).join(', ');
-    }
-    return `${this.selectedItems.length} Selected`;
-  },
-
-  _computeColoring() {
-    return Object.assign({},  this.coloring);
-  },
-
-});
-
-Polymer({
-  is: 'tf-dashboard-layout',
-  properties: {
-    label: {type: String},
-
-    placeholder: {type: String},
-
-    labelFloat: {
-      type: Boolean,
-      value: false,
-    },
-  },
-  foo() {
-  }
-});
-
-}  // namespace tf_dashboard_common
+    foo() {},
+  });
+} // namespace tf_dashboard_common

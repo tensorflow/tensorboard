@@ -82,7 +82,6 @@ function remapDependencyToNpm(dep: string) {
 }
 
 function addImports(sourceFile: ts.SourceFile, deps: string[]) {
-  console.log('swl', deps);
   const importStatements = deps
     .filter((dep) => {
       return (

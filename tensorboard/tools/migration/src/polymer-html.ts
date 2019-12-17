@@ -50,6 +50,7 @@ function findDomModuleStatement(
   return node.statements.find((statement) => {
     return (
       ts.isClassDeclaration(statement) &&
+      statement.decorators &&
       statement.decorators.find((decorator) => {
         if (!ts.isCallExpression(decorator.expression)) return false;
         if (!ts.isIdentifier(decorator.expression.expression)) return false;
