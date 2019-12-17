@@ -12,13 +12,13 @@ licenses(["notice"])  # Apache 2.0
 ng_module(
     name = "app",
     srcs = [
-        "app.container.ts",
-        "app.module.ts",
+        "app_container.ts",
+        "app_module.ts",
         "reducer_config.ts",
     ],
     assets = [
-        "app.container.css",
-        "app.container.html",
+        "app_container.css",
+        "app_container.ng.html",
     ],
     deps = [
         ":config",
@@ -39,8 +39,8 @@ ng_module(
 tf_ts_library(
     name = "config",
     srcs = [
-        "config.dev.ts",
-        "config.prod.ts",
+        "config_dev.ts",
+        "config_prod.ts",
     ],
 )
 
@@ -50,7 +50,7 @@ ng_module(
     name = "ng_main",
     srcs = ["bootstrap.ts"] + select({
         "//tensorboard:dev_build": ["main.ts"],
-        "//conditions:default": ["main.prod.ts"],
+        "//conditions:default": ["main_prod.ts"],
     }),
     deps = [
         ":app",
@@ -68,7 +68,7 @@ tf_js_binary(
     compile = 1,
     entry_point = select({
         "//tensorboard:dev_build": ":main.ts",
-        "//conditions:default": "main.prod.ts",
+        "//conditions:default": "main_prod.ts",
     }),
     deps = [
         ":ng_main",

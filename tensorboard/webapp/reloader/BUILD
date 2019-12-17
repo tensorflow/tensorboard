@@ -6,8 +6,8 @@ load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 ng_module(
     name = "reloader",
     srcs = [
-        "reloader.component.ts",
-        "reloader.module.ts",
+        "reloader_component.ts",
+        "reloader_module.ts",
     ],
     deps = [
         "//tensorboard/webapp/core",
@@ -23,7 +23,7 @@ tf_ts_library(
     name = "test_lib",
     testonly = True,
     srcs = [
-        "reloader.component.test.ts",
+        "reloader_component_test.ts",
     ],
     tsconfig = "//:tsconfig-test",
     deps = [

@@ -22,8 +22,8 @@ import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Store} from '@ngrx/store';
 import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
-import {HeaderComponent} from './header.component';
-import {HeaderContainer} from './header.container';
+import {HeaderComponent} from './header_component';
+import {HeaderContainer} from './header_container';
 
 import {changePlugin} from '../core/actions';
 import {State} from '../core/store';

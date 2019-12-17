@@ -6,12 +6,12 @@ load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 ng_module(
     name = "settings",
     srcs = [
-        "dialog.component.ts",
-        "settings.module.ts",
-        "settings_button.component.ts",
+        "dialog_component.ts",
+        "settings_module.ts",
+        "settings_button_component.ts",
     ],
     assets = [
-        "dialog.component.css",
+        "dialog_component.css",
     ],
     deps = [
         "//tensorboard/webapp/angular:expect_angular_material_button",
@@ -34,7 +34,7 @@ tf_ts_library(
     name = "test_lib",
     testonly = True,
     srcs = [
-        "dialog.component.test.ts",
+        "dialog_component_test.ts",
     ],
     tsconfig = "//:tsconfig-test",
     deps = [

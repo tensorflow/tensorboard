@@ -13,6 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-export * from './core.reducers';
-export * from './core.selectors';
-export {State} from './core.types';
+export * from './core_reducers';
+export * from './core_selectors';
+export {State} from './core_types';
