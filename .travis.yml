@@ -50,14 +50,14 @@ install:
   # Older versions of Pip sometimes resolve specifiers like `tf-nightly`
   # to versions other than the most recent(!).
   - pip install -U pip
+  # Uninstall older Travis numpy to avoid upgrade-in-place issues.
+  - pip uninstall -y numpy
   - |
     pip install \
       -r tensorboard/pip_package/requirements.txt \
       -r tensorboard/pip_package/requirements_dev.txt \
       ;
   - yarn install --ignore-engines
-  # Uninstall older Travis numpy to avoid upgrade-in-place issues.
-  - pip uninstall -y numpy
   - |
     # Install TensorFlow if requested
     if [ -n "${TF_VERSION_ID}" ]; then
