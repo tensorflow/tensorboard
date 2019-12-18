@@ -279,7 +279,8 @@ class WitWidget(base.WitWidgetBase):
 
     def _get_element_html(self):
         return """
-      <link rel="import" href="/nbextensions/wit-widget/wit_jupyter.html">"""
+            <link rel="import" href="/nbextensions/wit-widget/wit_jupyter.html"r
+        """
 
     def set_examples(self, examples):
         base.WitWidgetBase.set_examples(self, examples)
@@ -291,8 +292,9 @@ class WitWidget(base.WitWidgetBase):
             # cell from the cell that displays WIT.
             channel_name = "updateExamples{}".format(self.id)
             output.eval_js(
-                """(new BroadcastChannel('{channel_name}')).postMessage(
-          {examples})""".format(
+                """
+                (new BroadcastChannel('{channel_name}')).postMessage({examples})
+                """.format(
                     examples=json.dumps(self.examples),
                     channel_name=channel_name,
                 )

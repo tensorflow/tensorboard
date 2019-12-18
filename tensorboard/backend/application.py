@@ -431,10 +431,10 @@ class TensorBoardWSGI(object):
 
         html = textwrap.dedent(
             """
-      <!DOCTYPE html>
-      <head><base href="plugin/{name}/" /></head>
-      <body><script type="module">{script_content}</script></body>
-    """
+            <!DOCTYPE html>
+            <head><base href="plugin/{name}/" /></head>
+            <body><script type="module">{script_content}</script></body>
+            """
         ).format(name=name, script_content=script_content)
         return http_util.Respond(
             request, html, "text/html", csp_scripts_sha256s=[script_sha],

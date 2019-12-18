@@ -35,15 +35,13 @@ import tensorflow as tf
 flags.DEFINE_string(
     "target",
     None,
-    """The directory where serialized data
-will be written""",
+    """The directory where serialized data will be written""",
 )
 
 flags.DEFINE_boolean(
     "overwrite",
     False,
-    """Whether to remove and overwrite
-TARGET if it already exists.""",
+    """Whether to remove and overwrite TARGET if it already exists.""",
 )
 
 FLAGS = flags.FLAGS

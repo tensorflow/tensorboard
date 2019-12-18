@@ -92,9 +92,9 @@ def _get_context():
 def load_ipython_extension(ipython):
     """Deprecated: use `%load_ext tensorboard` instead.
 
-  Raises:
-    RuntimeError: Always.
-  """
+    Raises:
+      RuntimeError: Always.
+    """
     raise RuntimeError(
         "Use '%load_ext tensorboard' instead of '%load_ext tensorboard.notebook'."
     )
@@ -344,16 +344,16 @@ def _display_colab(port, height, display_handle):
     import IPython.display
 
     shell = """
-  (async () => {
-      const url = await google.colab.kernel.proxyPort(%PORT%, {"cache": true});
-      const iframe = document.createElement('iframe');
-      iframe.src = url;
-      iframe.setAttribute('width', '100%');
-      iframe.setAttribute('height', '%HEIGHT%');
-      iframe.setAttribute('frameborder', 0);
-      document.body.appendChild(iframe);
-  })();
-  """
+        (async () => {
+            const url = await google.colab.kernel.proxyPort(%PORT%, {"cache": true});
+            const iframe = document.createElement('iframe');
+            iframe.src = url;
+            iframe.setAttribute('width', '100%');
+            iframe.setAttribute('height', '%HEIGHT%');
+            iframe.setAttribute('frameborder', 0);
+            document.body.appendChild(iframe);
+        })();
+    """
     replacements = [
         ("%PORT%", "%d" % port),
         ("%HEIGHT%", "%d" % height),

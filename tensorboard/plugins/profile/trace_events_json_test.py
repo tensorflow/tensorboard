@@ -39,39 +39,39 @@ class TraceEventsJsonStreamTest(tf.test.TestCase):
         self.assertEqual(
             self.convert(
                 """
-            devices { key: 2 value {
-              name: 'D2'
-              device_id: 2
-              resources { key: 2 value {
-                resource_id: 2
-                name: 'R2.2'
-              } }
-            } }
-            devices { key: 1 value {
-              name: 'D1'
-              device_id: 1
-              resources { key: 2 value {
-                resource_id: 1
-                name: 'R1.2'
-              } }
-            } }
+                devices { key: 2 value {
+                  name: 'D2'
+                  device_id: 2
+                  resources { key: 2 value {
+                    resource_id: 2
+                    name: 'R2.2'
+                  } }
+                } }
+                devices { key: 1 value {
+                  name: 'D1'
+                  device_id: 1
+                  resources { key: 2 value {
+                    resource_id: 1
+                    name: 'R1.2'
+                  } }
+                } }
 
-            trace_events {
-              device_id: 1
-              resource_id: 2
-              name: "E1.2.1"
-              timestamp_ps: 100000
-              duration_ps: 10000
-              args { key: "label" value: "E1.2.1" }
-              args { key: "extra" value: "extra info" }
-            }
-            trace_events {
-              device_id: 2
-              resource_id: 2
-              name: "E2.2.1"
-              timestamp_ps: 105000
-            }
-            """
+                trace_events {
+                  device_id: 1
+                  resource_id: 2
+                  name: "E1.2.1"
+                  timestamp_ps: 100000
+                  duration_ps: 10000
+                  args { key: "label" value: "E1.2.1" }
+                  args { key: "extra" value: "extra info" }
+                }
+                trace_events {
+                  device_id: 2
+                  resource_id: 2
+                  name: "E2.2.1"
+                  timestamp_ps: 105000
+                }
+                """
             ),
             dict(
                 displayTimeUnit="ns",
