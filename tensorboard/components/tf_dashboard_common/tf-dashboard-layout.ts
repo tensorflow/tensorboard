@@ -1,6 +1,4 @@
-<!--
-@license
-Copyright 2016 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,17 +11,15 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
--->
+==============================================================================*/
+import {PolymerElement, html} from '@polymer/polymer';
+import {customElement} from '@polymer/decorators';
+import './scrollbar-style';
+import './tensorboard-color';
 
-<link rel="import" href="../tf-imports/polymer.html" />
-<link rel="import" href="scrollbar-style.html" />
-<link rel="import" href="tensorboard-color.html" />
-
-<!--
-Generic layout for a dashboard.
--->
-<dom-module id="tf-dashboard-layout">
-  <template>
+@customElement('tf-dashboard-layout')
+class TfDashboardLayout extends PolymerElement {
+  static readonly template = html`
     <div id="sidebar">
       <slot name="sidebar"></slot>
     </div>
@@ -67,10 +63,5 @@ Generic layout for a dashboard.
         background: #fff;
       }
     </style>
-  </template>
-  <script>
-    Polymer({
-      is: 'tf-dashboard-layout',
-    });
-  </script>
-</dom-module>
+  `;
+}

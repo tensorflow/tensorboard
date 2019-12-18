@@ -1,6 +1,4 @@
-<!--
-@license
-Copyright 2016 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,15 +11,19 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
--->
+==============================================================================*/
+import {PolymerElement, html} from '@polymer/polymer';
+import {customElement, property} from '@polymer/decorators';
+import {addParams} from '../tf_backend';
+import '@polymer/paper-dropdown-menu';
+import '@polymer/paper-item';
+import '@polymer/paper-listbox';
 
-<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html" />
-<link rel="import" href="../paper-item/paper-item.html" />
-<link rel="import" href="../paper-listbox/paper-listbox.html" />
-<link rel="import" href="../tf-imports/polymer.html" />
+type UrlFn = (tag: string, run: string) => string;
 
-<dom-module id="tf-downloader">
-  <template>
+@customElement('tf-downloader')
+class TfDownloader extends PolymerElement {
+  static readonly template = html`
     <paper-dropdown-menu
       no-label-float="true"
       label="run to download"
@@ -66,40 +68,34 @@ limitations under the License.
         font-size: 22px;
       }
     </style>
-  </template>
-  <script>
-    Polymer({
-      is: 'tf-downloader',
-      properties: {
-        _run: {
-          type: String,
-          value: '',
-        },
-        runs: Array, // Array<string>
-        tag: String,
-        // Clients pass `urlFn: (tag: string, run: string) => string`,
-        // which should generate a URL to download data for a given
-        // run/tag combination. The data at the URL should be in JSON
-        // form, and the URL should be such that adding a query
-        // parameter `format=csv` instead yields CSV data.
-        urlFn: Function,
-      },
-      _csvUrl(tag, run, urlFn) {
-        if (!run) return '';
-        return tf_backend.addParams(urlFn(tag, run), {format: 'csv'});
-      },
-      _jsonUrl(tag, run, urlFn) {
-        if (!run) return '';
-        return urlFn(tag, run);
-      },
-      _csvName(tag, run) {
-        if (!run) return '';
-        return `run-${run}-tag-${tag}.csv`;
-      },
-      _jsonName(tag, run) {
-        if (!run) return '';
-        return `run-${run}-tag-${tag}.json`;
-      },
-    });
-  </script>
-</dom-module>
+  `;
+  @property({type: String})
+  _run = '';
+  @property({type: Array})
+  runs!: string[];
+  @property({type: String})
+  tag!: string;
+  // Clients pass `urlFn: (tag: string, run: string) => string`,
+  // which should generate a URL to download data for a given
+  // run/tag combination. The data at the URL should be in JSON
+  // form, and the URL should be such that adding a query
+  // parameter `format=csv` instead yields CSV data.
+  @property({type: Object})
+  urlFn!: UrlFn;
+  _csvUrl(tag: string, run: string, urlFn: UrlFn) {
+    if (!run) return '';
+    return addParams(urlFn(tag, run), {format: 'csv'});
+  }
+  _jsonUrl(tag: string, run: string, urlFn: UrlFn) {
+    if (!run) return '';
+    return urlFn(tag, run);
+  }
+  _csvName(tag: string, run: string) {
+    if (!run) return '';
+    return `run-${run}-tag-${tag}.csv`;
+  }
+  _jsonName(tag: string, run: string) {
+    if (!run) return '';
+    return `run-${run}-tag-${tag}.json`;
+  }
+}
