@@ -171,6 +171,7 @@ class BackendContextTest(tf.test.TestCase):
         actual_exp = ctxt.experiment()
         _canonicalize_experiment(actual_exp)
         self.assertProtoEquals(expected_exp, actual_exp)
+
     def test_experiment_without_experiment_tag_different_hparam_types(self):
         self.session_1_start_info_ = """
             hparams:[
