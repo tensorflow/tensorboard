@@ -1,6 +1,4 @@
-<!--
-@license
-Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2017 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,28 +11,20 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
--->
+==============================================================================*/
+import {PolymerElement, html} from '@polymer/polymer';
+import {customElement, property} from '@polymer/decorators';
 
-<link rel="import" href="../tf-imports/polymer.html" />
-
-<!--
-  tf-markdown-view renders raw HTML that has been converted from
-  Markdown by some other agent. The HTML must be sanitized, and must be
-  safe to inject directly into the DOM.
-
-  TensorBoard plugins can use the `markdown_to_safe_html` function from
-  the `tensorboard.plugin_util` module on the backend to generate HTML
-  suitable for use with this component.
--->
-<dom-module id="tf-markdown-view">
-  <template>
+@customElement('tf-markdown-view')
+class TfMarkdownView extends PolymerElement {
+  static readonly template = html`
     <div id="markdown" inner-h-t-m-l="[[html]]"></div>
     <style>
       /*
        * Reduce topmost and bottommost margins from 16px to 0.3em (renders
        * at about 4.8px) to keep the layout compact. This improves the
        * appearance when there is only one line of text; standard Markdown
-       * renderers will still include a `<p>` element.
+       * renderers will still include a \`<p>\` element.
        *
        * By targeting only the top-level, extremal elements, we preserve any
        * actual paragraph breaks and only change the padding against the
@@ -64,21 +54,8 @@ limitations under the License.
         border-top: 1px solid #c6cbd1;
       }
     </style>
-  </template>
-  <script>
-    Polymer({
-      is: 'tf-markdown-view',
-      properties: {
-        html: {
-          type: String,
-          value: '',
-        },
-      },
-      attached() {
-        window.requestAnimationFrame(() => {
-          this.scopeSubtree(this.$.markdown, /*shouldObserve=*/ true);
-        });
-      },
-    });
-  </script>
-</dom-module>
+  `;
+
+  @property({type: String})
+  html: string = '';
+}
