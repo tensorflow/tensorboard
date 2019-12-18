@@ -1,15 +1,15 @@
-package(default_visibility = ["//tensorboard:internal"])
+load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 
-load("//tensorboard/defs:web.bzl", "tf_web_library")
+package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
-tf_web_library(
+tf_ts_library(
     name = "tf_option_selector",
-    srcs = ["tf-option-selector.html"],
-    path = "/tf-option-selector",
+    srcs = ["tf-option-selector.ts"],
     deps = [
         "//tensorboard/components/tf_dashboard_common",
-        "//tensorboard/components/tf_imports:polymer",
+        "@npm//@polymer/decorators",
+        "@npm//@polymer/polymer",
     ],
 )
