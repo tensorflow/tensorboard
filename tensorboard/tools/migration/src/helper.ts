@@ -27,7 +27,7 @@ limitations under the License.
 
 function centerText(text: string, character = '=', fillAll = false): string {
   const prettyText = text.length ? ' ' + text + ' ' : '';
-  const padding = process.stdout.columns - prettyText.length;
+  const padding = (process.stdout.columns || 40) - prettyText.length;
   if (padding <= 0) {
     return text;
   }
