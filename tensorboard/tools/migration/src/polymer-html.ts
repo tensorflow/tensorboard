@@ -40,7 +40,7 @@ function getDomModules(
 
     const template = parse5.serialize((templateNode as any).content).trim();
     return {id, template};
-  });
+  }).filter(x => !!x);
 }
 
 function findDomModuleStatement(
