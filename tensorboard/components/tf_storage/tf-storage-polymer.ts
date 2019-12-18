@@ -12,12 +12,21 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-namespace tf_storage {
-  // HACK: this Polymer component allows stores to be accessible from
-  // tf-ng-tensorboard by exposing otherwise mangled smybols.
-  Polymer({
-    is: 'tf-storage',
-    _template: null, // strictTemplatePolicy requires a template (even a null one).
-    tf_storage: tf_storage,
-  });
-} // namespace tf_storage
+import {PolymerElement} from '@polymer/polymer';
+import {customElement} from '@polymer/decorators';
+import * as listeners from './listeners';
+import * as storage from './storage';
+
+const tf_storage = {
+  ...listeners,
+  ...storage,
+};
+
+// HACK: this Polymer component allows stores to be accessible from
+// tf-ng-tensorboard by exposing otherwise mangled smybols.
+@customElement('tf-storage')
+class TfStorage extends PolymerElement {
+  static readonly template: null;
+
+  tf_storage = tf_storage;
+}
