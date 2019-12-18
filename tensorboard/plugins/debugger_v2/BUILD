@@ -12,6 +12,7 @@ py_library(
     srcs = ["debugger_v2_plugin.py"],
     srcs_version = "PY2AND3",
     deps = [
+        "//tensorboard/backend:http_util",
         "//tensorboard/plugins:base_plugin",
         "@org_pocoo_werkzeug",
     ],
@@ -24,6 +25,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":debugger_v2_plugin",
+        "//tensorboard/backend:application",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/plugins:base_plugin",
     ],
