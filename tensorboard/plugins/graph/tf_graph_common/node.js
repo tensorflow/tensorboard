@@ -638,6 +638,7 @@ var tf;
                             cumulativeProportion += d.proportion;
                         });
                     }
+                    return `url(#${escapedId})`;
                 }
                 function removeGradientDefinitions(svgRoot) {
                     d3.select(svgRoot)
