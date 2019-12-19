@@ -56,11 +56,11 @@ class DbImportMultiplexerTest(tf.test.TestCase):
         db = self.db_connection_provider()
         cursor = db.execute(
             """
-      SELECT
-        Runs.run_name
-      FROM Runs
-    	ORDER BY Runs.run_name
-    """
+            SELECT
+              Runs.run_name
+            FROM Runs
+              ORDER BY Runs.run_name
+            """
         )
         return [row[0] for row in cursor]
 
@@ -68,11 +68,11 @@ class DbImportMultiplexerTest(tf.test.TestCase):
         db = self.db_connection_provider()
         cursor = db.execute(
             """
-      SELECT
-        Experiments.experiment_name
-      FROM Experiments
-      ORDER BY Experiments.experiment_name
-    """
+            SELECT
+              Experiments.experiment_name
+            FROM Experiments
+            ORDER BY Experiments.experiment_name
+            """
         )
         return [row[0] for row in cursor]
 

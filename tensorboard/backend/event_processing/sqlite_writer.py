@@ -74,9 +74,9 @@ class SqliteWriter(object):
         user_id = self._create_id()
         cursor.execute(
             """
-        INSERT INTO USERS (user_id, user_name, inserted_time)
-        VALUES (?, ?, ?)
-        """,
+            INSERT INTO USERS (user_id, user_name, inserted_time)
+            VALUES (?, ?, ?)
+            """,
             (user_id, user_name, time.time()),
         )
         return user_id
@@ -91,9 +91,9 @@ class SqliteWriter(object):
         cursor = self._db.cursor()
         cursor.execute(
             """
-        SELECT experiment_id FROM Experiments
-        WHERE user_id = ? AND experiment_name = ?
-        """,
+            SELECT experiment_id FROM Experiments
+            WHERE user_id = ? AND experiment_name = ?
+            """,
             (user_id, experiment_name),
         )
         row = cursor.fetchone()
@@ -104,11 +104,11 @@ class SqliteWriter(object):
         computed_time = 0
         cursor.execute(
             """
-        INSERT INTO Experiments (
-          user_id, experiment_id, experiment_name,
-          inserted_time, started_time, is_watching
-        ) VALUES (?, ?, ?, ?, ?, ?)
-        """,
+            INSERT INTO Experiments (
+              user_id, experiment_id, experiment_name,
+              inserted_time, started_time, is_watching
+            ) VALUES (?, ?, ?, ?, ?, ?)
+            """,
             (
                 user_id,
                 experiment_id,
@@ -131,9 +131,9 @@ class SqliteWriter(object):
         cursor = self._db.cursor()
         cursor.execute(
             """
-        SELECT run_id FROM Runs
-        WHERE experiment_id = ? AND run_name = ?
-        """,
+            SELECT run_id FROM Runs
+            WHERE experiment_id = ? AND run_name = ?
+            """,
             (experiment_id, run_name),
         )
         row = cursor.fetchone()
@@ -144,10 +144,10 @@ class SqliteWriter(object):
         started_time = 0
         cursor.execute(
             """
-        INSERT INTO Runs (
-          experiment_id, run_id, run_name, inserted_time, started_time
-        ) VALUES (?, ?, ?, ?, ?)
-        """,
+            INSERT INTO Runs (
+              experiment_id, run_id, run_name, inserted_time, started_time
+            ) VALUES (?, ?, ?, ?, ?)
+            """,
             (experiment_id, run_id, run_name, time.time(), started_time),
         )
         return run_id
@@ -188,11 +188,11 @@ class SqliteWriter(object):
                 )
         cursor.executemany(
             """
-        INSERT INTO Tags (
-          run_id, tag_id, tag_name, inserted_time, display_name, plugin_name,
-          plugin_data
-        ) VALUES (?, ?, ?, ?, ?, ?, ?)
-        """,
+            INSERT INTO Tags (
+              run_id, tag_id, tag_name, inserted_time, display_name, plugin_name,
+              plugin_data
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
             new_tag_data,
         )
         return tag_to_id
@@ -237,10 +237,10 @@ class SqliteWriter(object):
                     )
             self._db.executemany(
                 """
-          INSERT OR REPLACE INTO Tensors (
-            series, step, computed_time, dtype, shape, data
-          ) VALUES (?, ?, ?, ?, ?, ?)
-          """,
+                INSERT OR REPLACE INTO Tensors (
+                  series, step, computed_time, dtype, shape, data
+                ) VALUES (?, ?, ?, ?, ?, ?)
+                """,
                 tensor_values,
             )
 

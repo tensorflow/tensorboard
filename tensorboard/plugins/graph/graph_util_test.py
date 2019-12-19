@@ -23,84 +23,84 @@ from tensorboard.plugins.graph import graph_util
 class GraphUtilTest(tf.test.TestCase):
     def test_combine_graph_defs(self):
         expected_proto = """
-      node {
-        name: "X"
-        op: "Input"
-      }
-      node {
-        name: "W"
-        op: "Input"
-      }
-      node {
-        name: "Y"
-        op: "MatMul"
-        input: "X"
-        input: "W"
-      }
-      node {
-        name: "A"
-        op: "Input"
-      }
-      node {
-        name: "B"
-        op: "Input"
-      }
-      node {
-        name: "C"
-        op: "MatMul"
-        input: "A"
-        input: "B"
-      }
-      versions {
-        producer: 21
-      }
-    """
+            node {
+              name: "X"
+              op: "Input"
+            }
+            node {
+              name: "W"
+              op: "Input"
+            }
+            node {
+              name: "Y"
+              op: "MatMul"
+              input: "X"
+              input: "W"
+            }
+            node {
+              name: "A"
+              op: "Input"
+            }
+            node {
+              name: "B"
+              op: "Input"
+            }
+            node {
+              name: "C"
+              op: "MatMul"
+              input: "A"
+              input: "B"
+            }
+            versions {
+              producer: 21
+            }
+        """
 
         graph_def_a = GraphDef()
         text_format.Merge(
             """
-      node {
-        name: "X"
-        op: "Input"
-      }
-      node {
-        name: "W"
-        op: "Input"
-      }
-      node {
-        name: "Y"
-        op: "MatMul"
-        input: "X"
-        input: "W"
-      }
-      versions {
-        producer: 21
-      }
-    """,
+                node {
+                  name: "X"
+                  op: "Input"
+                }
+                node {
+                  name: "W"
+                  op: "Input"
+                }
+                node {
+                  name: "Y"
+                  op: "MatMul"
+                  input: "X"
+                  input: "W"
+                }
+                versions {
+                  producer: 21
+                }
+            """,
             graph_def_a,
         )
 
         graph_def_b = GraphDef()
         text_format.Merge(
             """
-      node {
-        name: "A"
-        op: "Input"
-      }
-      node {
-        name: "B"
-        op: "Input"
-      }
-      node {
-        name: "C"
-        op: "MatMul"
-        input: "A"
-        input: "B"
-      }
-      versions {
-        producer: 21
-      }
-    """,
+                node {
+                  name: "A"
+                  op: "Input"
+                }
+                node {
+                  name: "B"
+                  op: "Input"
+                }
+                node {
+                  name: "C"
+                  op: "MatMul"
+                  input: "A"
+                  input: "B"
+                }
+                versions {
+                  producer: 21
+                }
+            """,
             graph_def_b,
         )
 
@@ -111,68 +111,68 @@ class GraphUtilTest(tf.test.TestCase):
 
     def test_combine_graph_defs_name_collided_but_same_content(self):
         expected_proto = """
-      node {
-        name: "X"
-        op: "Input"
-      }
-      node {
-        name: "W"
-        op: "Input"
-      }
-      node {
-        name: "Y"
-        op: "MatMul"
-        input: "X"
-        input: "W"
-      }
-      node {
-        name: "A"
-        op: "Input"
-      }
-      versions {
-        producer: 21
-      }
-    """
+            node {
+              name: "X"
+              op: "Input"
+            }
+            node {
+              name: "W"
+              op: "Input"
+            }
+            node {
+              name: "Y"
+              op: "MatMul"
+              input: "X"
+              input: "W"
+            }
+            node {
+              name: "A"
+              op: "Input"
+            }
+            versions {
+              producer: 21
+            }
+        """
 
         graph_def_a = GraphDef()
         text_format.Merge(
             """
-      node {
-        name: "X"
-        op: "Input"
-      }
-      node {
-        name: "W"
-        op: "Input"
-      }
-      node {
-        name: "Y"
-        op: "MatMul"
-        input: "X"
-        input: "W"
-      }
-      versions {
-        producer: 21
-      }
-    """,
+                node {
+                  name: "X"
+                  op: "Input"
+                }
+                node {
+                  name: "W"
+                  op: "Input"
+                }
+                node {
+                  name: "Y"
+                  op: "MatMul"
+                  input: "X"
+                  input: "W"
+                }
+                versions {
+                  producer: 21
+                }
+            """,
             graph_def_a,
         )
 
         graph_def_b = GraphDef()
         text_format.Merge(
             """
-      node {
-        name: "X"
-        op: "Input"
-      }
-      node {
-        name: "A"
-        op: "Input"
-      }
-      versions {
-        producer: 21
-      }
-    """,
+                node {
+                  name: "X"
+                  op: "Input"
+                }
+                node {
+                  name: "A"
+                  op: "Input"
+                }
+                versions {
+                  producer: 21
+                }
+            """,
             graph_def_b,
         )
 
@@ -185,49 +185,49 @@ class GraphUtilTest(tf.test.TestCase):
         graph_def_a = GraphDef()
         text_format.Merge(
             """
-      node {
-        name: "X"
-        op: "Input"
-      }
-      node {
-        name: "W"
-        op: "Input"
-      }
-      node {
-        name: "Y"
-        op: "MatMul"
-        input: "X"
-        input: "W"
-      }
-      versions {
-        producer: 21
-      }
-    """,
+                node {
+                  name: "X"
+                  op: "Input"
+                }
+                node {
+                  name: "W"
+                  op: "Input"
+                }
+                node {
+                  name: "Y"
+                  op: "MatMul"
+                  input: "X"
+                  input: "W"
+                }
+                versions {
+                  producer: 21
+                }
+            """,
             graph_def_a,
         )
 
         graph_def_b = GraphDef()
         text_format.Merge(
             """
-      node {
-        name: "X"
-        op: "Input"
-        device: "cpu:0"
-      }
-      node {
-        name: "Z"
-        op: "Input"
-      }
-      node {
-        name: "Q"
-        op: "MatMul"
-        input: "X"
-        input: "Z"
-      }
-      versions {
-        producer: 21
-      }
-    """,
+                node {
+                  name: "X"
+                  op: "Input"
+                  device: "cpu:0"
+                }
+                node {
+                  name: "Z"
+                  op: "Input"
+                }
+                node {
+                  name: "Q"
+                  op: "MatMul"
+                  input: "X"
+                  input: "Z"
+                }
+                versions {
+                  producer: 21
+                }
+            """,
             graph_def_b,
         )
 
@@ -245,36 +245,36 @@ class GraphUtilTest(tf.test.TestCase):
         graph_def_a = GraphDef()
         text_format.Merge(
             """
-      node {
-        name: "X"
-        op: "Input"
-      }
-      node {
-        name: "X"
-        op: "Input"
-      }
-      versions {
-        producer: 21
-      }
-    """,
+                node {
+                  name: "X"
+                  op: "Input"
+                }
+                node {
+                  name: "X"
+                  op: "Input"
+                }
+                versions {
+                  producer: 21
+                }
+            """,
             graph_def_a,
         )
 
         graph_def_b = GraphDef()
         text_format.Merge(
             """
-      node {
-        name: "X"
-        op: "Input"
-      }
-      node {
-        name: "Z"
-        op: "Input"
-      }
-      versions {
-        producer: 21
-      }
-    """,
+                node {
+                  name: "X"
+                  op: "Input"
+                }
+                node {
+                  name: "Z"
+                  op: "Input"
+                }
+                versions {
+                  producer: 21
+                }
+            """,
             graph_def_b,
         )
 
@@ -287,37 +287,37 @@ class GraphUtilTest(tf.test.TestCase):
         graph_def_a = GraphDef()
         text_format.Merge(
             """
-      node {
-        name: "X"
-        op: "Input"
-      }
-      node {
-        name: "Y"
-        op: "Input"
-      }
-      versions {
-        producer: 21
-      }
-    """,
+                node {
+                  name: "X"
+                  op: "Input"
+                }
+                node {
+                  name: "Y"
+                  op: "Input"
+                }
+                versions {
+                  producer: 21
+                }
+            """,
             graph_def_a,
         )
 
         graph_def_b = GraphDef()
         text_format.Merge(
             """
-      node {
-        name: "W"
-        op: "Input"
-        device: "cpu:0"
-      }
-      node {
-        name: "W"
-        op: "Input"
-      }
-      versions {
-        producer: 21
-      }
-    """,
+                node {
+                  name: "W"
+                  op: "Input"
+                  device: "cpu:0"
+                }
+                node {
+                  name: "W"
+                  op: "Input"
+                }
+                versions {
+                  producer: 21
+                }
+            """,
             graph_def_b,
         )
 
@@ -328,120 +328,120 @@ class GraphUtilTest(tf.test.TestCase):
 
     def test_combine_graph_defs_function(self):
         expected_proto = """
-      library {
-        function {
-          signature {
-            name: "foo"
-            input_arg {
-              name: "x"
-              type: DT_HALF
+            library {
+              function {
+                signature {
+                  name: "foo"
+                  input_arg {
+                    name: "x"
+                    type: DT_HALF
+                  }
+                  output_arg {
+                    name: "identity"
+                    type: DT_HALF
+                  }
+                }
+                node_def {
+                  name: "add"
+                  op: "Add"
+                  input: "x"
+                  input: "y"
+                }
+              }
+              function {
+                signature {
+                  name: "foo_1"
+                  input_arg {
+                    name: "x"
+                    type: DT_HALF
+                  }
+                  output_arg {
+                    name: "identity"
+                    type: DT_HALF
+                  }
+                }
+                node_def {
+                  name: "add"
+                  op: "Add"
+                  input: "x"
+                  input: "y"
+                }
+              }
             }
-            output_arg {
-              name: "identity"
-              type: DT_HALF
-            }
-          }
-          node_def {
-            name: "add"
-            op: "Add"
-            input: "x"
-            input: "y"
-          }
-        }
-        function {
-          signature {
-            name: "foo_1"
-            input_arg {
-              name: "x"
-              type: DT_HALF
-            }
-            output_arg {
-              name: "identity"
-              type: DT_HALF
-            }
-          }
-          node_def {
-            name: "add"
-            op: "Add"
-            input: "x"
-            input: "y"
-          }
-        }
-      }
-    """
+        """
 
         graph_def_a = GraphDef()
         text_format.Merge(
             """
-      library {
-        function {
-          signature {
-            name: "foo"
-            input_arg {
-              name: "x"
-              type: DT_HALF
-            }
-            output_arg {
-              name: "identity"
-              type: DT_HALF
-            }
-          }
-          node_def {
-            name: "add"
-            op: "Add"
-            input: "x"
-            input: "y"
-          }
-        }
-      }
-    """,
+                library {
+                  function {
+                    signature {
+                      name: "foo"
+                      input_arg {
+                        name: "x"
+                        type: DT_HALF
+                      }
+                      output_arg {
+                        name: "identity"
+                        type: DT_HALF
+                      }
+                    }
+                    node_def {
+                      name: "add"
+                      op: "Add"
+                      input: "x"
+                      input: "y"
+                    }
+                  }
+                }
+            """,
             graph_def_a,
         )
 
         graph_def_b = GraphDef()
         text_format.Merge(
             """
-      library {
-        function {
-          signature {
-            name: "foo"
-            input_arg {
-              name: "x"
-              type: DT_HALF
-            }
-            output_arg {
-              name: "identity"
-              type: DT_HALF
-            }
-          }
-          node_def {
-            name: "add"
-            op: "Add"
-            input: "x"
-            input: "y"
-          }
-        }
-        function {
-          signature {
-            name: "foo_1"
-            input_arg {
-              name: "x"
-              type: DT_HALF
-            }
-            output_arg {
-              name: "identity"
-              type: DT_HALF
-            }
-          }
-          node_def {
-            name: "add"
-            op: "Add"
-            input: "x"
-            input: "y"
-          }
-        }
-      }
-    """,
+                library {
+                  function {
+                    signature {
+                      name: "foo"
+                      input_arg {
+                        name: "x"
+                        type: DT_HALF
+                      }
+                      output_arg {
+                        name: "identity"
+                        type: DT_HALF
+                      }
+                    }
+                    node_def {
+                      name: "add"
+                      op: "Add"
+                      input: "x"
+                      input: "y"
+                    }
+                  }
+                  function {
+                    signature {
+                      name: "foo_1"
+                      input_arg {
+                        name: "x"
+                        type: DT_HALF
+                      }
+                      output_arg {
+                        name: "identity"
+                        type: DT_HALF
+                      }
+                    }
+                    node_def {
+                      name: "add"
+                      op: "Add"
+                      input: "x"
+                      input: "y"
+                    }
+                  }
+                }
+            """,
             graph_def_b,
         )
 
@@ -454,75 +454,75 @@ class GraphUtilTest(tf.test.TestCase):
         graph_def_a = GraphDef()
         text_format.Merge(
             """
-      library {
-        function {
-          signature {
-            name: "foo"
-            input_arg {
-              name: "x"
-              type: DT_HALF
-            }
-            output_arg {
-              name: "identity"
-              type: DT_HALF
-            }
-          }
-          node_def {
-            name: "add"
-            op: "Add"
-            input: "x"
-            input: "y"
-          }
-        }
-      }
-    """,
+                library {
+                  function {
+                    signature {
+                      name: "foo"
+                      input_arg {
+                        name: "x"
+                        type: DT_HALF
+                      }
+                      output_arg {
+                        name: "identity"
+                        type: DT_HALF
+                      }
+                    }
+                    node_def {
+                      name: "add"
+                      op: "Add"
+                      input: "x"
+                      input: "y"
+                    }
+                  }
+                }
+            """,
             graph_def_a,
         )
 
         graph_def_b = GraphDef()
         text_format.Merge(
             """
-      library {
-        function {
-          signature {
-            name: "foo"
-            input_arg {
-              name: "x"
-              type: DT_HALF
-            }
-            output_arg {
-              name: "identity"
-              type: DT_HALF
-            }
-          }
-          node_def {
-            name: "div"
-            op: "Div"
-            input: "x"
-            input: "y"
-          }
-        }
-        function {
-          signature {
-            name: "foo_1"
-            input_arg {
-              name: "x"
-              type: DT_HALF
-            }
-            output_arg {
-              name: "identity"
-              type: DT_HALF
-            }
-          }
-          node_def {
-            name: "add"
-            op: "Add"
-            input: "x"
-            input: "y"
-          }
-        }
-      }
-    """,
+                library {
+                  function {
+                    signature {
+                      name: "foo"
+                      input_arg {
+                        name: "x"
+                        type: DT_HALF
+                      }
+                      output_arg {
+                        name: "identity"
+                        type: DT_HALF
+                      }
+                    }
+                    node_def {
+                      name: "div"
+                      op: "Div"
+                      input: "x"
+                      input: "y"
+                    }
+                  }
+                  function {
+                    signature {
+                      name: "foo_1"
+                      input_arg {
+                        name: "x"
+                        type: DT_HALF
+                      }
+                      output_arg {
+                        name: "identity"
+                        type: DT_HALF
+                      }
+                    }
+                    node_def {
+                      name: "add"
+                      op: "Add"
+                      input: "x"
+                      input: "y"
+                    }
+                  }
+                }
+            """,
             graph_def_b,
         )
 
@@ -540,69 +540,69 @@ class GraphUtilTest(tf.test.TestCase):
         graph_def_a = GraphDef()
         text_format.Merge(
             """
-      library {
-        function {
-          signature {
-            name: "foo"
-            input_arg {
-              name: "x"
-              type: DT_HALF
-            }
-            output_arg {
-              name: "identity"
-              type: DT_HALF
-            }
-          }
-          node_def {
-            name: "add"
-            op: "Add"
-            input: "x"
-            input: "y"
-          }
-        }
-        function {
-          signature {
-            name: "foo"
-            input_arg {
-              name: "y"
-              type: DT_HALF
-            }
-            output_arg {
-              name: "identity"
-              type: DT_HALF
-            }
-          }
-        }
-      }
-    """,
+                library {
+                  function {
+                    signature {
+                      name: "foo"
+                      input_arg {
+                        name: "x"
+                        type: DT_HALF
+                      }
+                      output_arg {
+                        name: "identity"
+                        type: DT_HALF
+                      }
+                    }
+                    node_def {
+                      name: "add"
+                      op: "Add"
+                      input: "x"
+                      input: "y"
+                    }
+                  }
+                  function {
+                    signature {
+                      name: "foo"
+                      input_arg {
+                        name: "y"
+                        type: DT_HALF
+                      }
+                      output_arg {
+                        name: "identity"
+                        type: DT_HALF
+                      }
+                    }
+                  }
+                }
+            """,
             graph_def_a,
         )
 
         graph_def_b = GraphDef()
         text_format.Merge(
             """
-      library {
-        function {
-          signature {
-            name: "bar"
-            input_arg {
-              name: "x"
-              type: DT_HALF
-            }
-            output_arg {
-              name: "identity"
-              type: DT_HALF
-            }
-          }
-          node_def {
-            name: "div"
-            op: "Div"
-            input: "x"
-            input: "y"
-          }
-        }
-      }
-    """,
+                library {
+                  function {
+                    signature {
+                      name: "bar"
+                      input_arg {
+                        name: "x"
+                        type: DT_HALF
+                      }
+                      output_arg {
+                        name: "identity"
+                        type: DT_HALF
+                      }
+                    }
+                    node_def {
+                      name: "div"
+                      op: "Div"
+                      input: "x"
+                      input: "y"
+                    }
+                  }
+                }
+            """,
             graph_def_b,
         )
 
@@ -617,63 +617,63 @@ class GraphUtilTest(tf.test.TestCase):
         graph_def_a = GraphDef()
         text_format.Merge(
             """
-      library {
-        function {
-          signature {
-            name: "foo"
-            input_arg {
-              name: "x"
-              type: DT_HALF
-            }
-            output_arg {
-              name: "identity"
-              type: DT_HALF
-            }
-          }
-          node_def {
-            name: "add"
-            op: "Add"
-            input: "x"
-            input: "y"
-          }
-        }
-      }
-    """,
+                library {
+                  function {
+                    signature {
+                      name: "foo"
+                      input_arg {
+                        name: "x"
+                        type: DT_HALF
+                      }
+                      output_arg {
+                        name: "identity"
+                        type: DT_HALF
+                      }
+                    }
+                    node_def {
+                      name: "add"
+                      op: "Add"
+                      input: "x"
+                      input: "y"
+                    }
+                  }
+                }
+            """,
             graph_def_a,
         )
 
         graph_def_b = GraphDef()
         text_format.Merge(
             """
-      library {
-        function {
-          signature {
-            name: "bar"
-            input_arg {
-              name: "x"
-              type: DT_HALF
-            }
-            output_arg {
-              name: "identity"
-              type: DT_HALF
-            }
-          }
-        }
-        function {
-          signature {
-            name: "bar"
-            input_arg {
-              name: "y"
-              type: DT_HALF
-            }
-            output_arg {
-              name: "identity"
-              type: DT_HALF
-            }
-          }
-        }
-      }
-    """,
+                library {
+                  function {
+                    signature {
+                      name: "bar"
+                      input_arg {
+                        name: "x"
+                        type: DT_HALF
+                      }
+                      output_arg {
+                        name: "identity"
+                        type: DT_HALF
+                      }
+                    }
+                  }
+                  function {
+                    signature {
+                      name: "bar"
+                      input_arg {
+                        name: "y"
+                        type: DT_HALF
+                      }
+                      output_arg {
+                        name: "identity"
+                        type: DT_HALF
+                      }
+                    }
+                  }
+                }
+            """,
             graph_def_b,
         )
 
@@ -686,45 +686,45 @@ class GraphUtilTest(tf.test.TestCase):
 
     def test_combine_graph_defs_gradient(self):
         expected_proto = """
-      library {
-        gradient {
-          function_name: "foo"
-          gradient_func: "foo_grad"
-        }
-        gradient {
-          function_name: "bar"
-          gradient_func: "bar_grad"
-        }
-      }
-    """
+            library {
+              gradient {
+                function_name: "foo"
+                gradient_func: "foo_grad"
+              }
+              gradient {
+                function_name: "bar"
+                gradient_func: "bar_grad"
+              }
+            }
+        """
 
         graph_def_a = GraphDef()
         text_format.Merge(
             """
-      library {
-        gradient {
-          function_name: "foo"
-          gradient_func: "foo_grad"
-        }
-      }
-    """,
+                library {
+                  gradient {
+                    function_name: "foo"
+                    gradient_func: "foo_grad"
+                  }
+                }
+            """,
             graph_def_a,
         )
 
         graph_def_b = GraphDef()
         text_format.Merge(
             """
-      library {
-        gradient {
-          function_name: "foo"
-          gradient_func: "foo_grad"
-        }
-        gradient {
-          function_name: "bar"
-          gradient_func: "bar_grad"
-        }
-      }
-    """,
+                library {
+                  gradient {
+                    function_name: "foo"
+                    gradient_func: "foo_grad"
+                  }
+                  gradient {
+                    function_name: "bar"
+                    gradient_func: "bar_grad"
+                  }
+                }
+            """,
             graph_def_b,
         )
 
@@ -737,30 +737,30 @@ class GraphUtilTest(tf.test.TestCase):
         graph_def_a = GraphDef()
         text_format.Merge(
             """
-      library {
-        gradient {
-          function_name: "foo"
-          gradient_func: "foo_grad"
-        }
-      }
-    """,
+                library {
+                  gradient {
+                    function_name: "foo"
+                    gradient_func: "foo_grad"
+                  }
+                }
+            """,
             graph_def_a,
         )
 
         graph_def_b = GraphDef()
         text_format.Merge(
             """
-      library {
-        gradient {
-          function_name: "bar"
-          gradient_func: "bar_grad"
-        }
-        gradient {
-          function_name: "foo_1"
-          gradient_func: "foo_grad"
-        }
-      }
-    """,
+                library {
+                  gradient {
+                    function_name: "bar"
+                    gradient_func: "bar_grad"
+                  }
+                  gradient {
+                    function_name: "foo_1"
+                    gradient_func: "foo_grad"
+                  }
+                }
+            """,
             graph_def_b,
         )
 
@@ -778,30 +778,30 @@ class GraphUtilTest(tf.test.TestCase):
         graph_def_a = GraphDef()
         text_format.Merge(
             """
-      library {
-        gradient {
-          function_name: "foo"
-          gradient_func: "foo_grad"
-        }
-        gradient {
-          function_name: "foo_bar"
-          gradient_func: "foo_grad"
-        }
-      }
-    """,
+                library {
+                  gradient {
+                    function_name: "foo"
+                    gradient_func: "foo_grad"
+                  }
+                  gradient {
+                    function_name: "foo_bar"
+                    gradient_func: "foo_grad"
+                  }
+                }
+            """,
             graph_def_a,
         )
 
         graph_def_b = GraphDef()
         text_format.Merge(
             """
-      library {
-        gradient {
-          function_name: "bar"
-          gradient_func: "bar_grad"
-        }
-      }
-    """,
+                library {
+                  gradient {
+                    function_name: "bar"
+                    gradient_func: "bar_grad"
+                  }
+                }
+            """,
             graph_def_b,
         )
 
@@ -816,30 +816,30 @@ class GraphUtilTest(tf.test.TestCase):
         graph_def_a = GraphDef()
         text_format.Merge(
             """
-      library {
-        gradient {
-          function_name: "foo"
-          gradient_func: "foo_grad"
-        }
-      }
-    """,
+                library {
+                  gradient {
+                    function_name: "foo"
+                    gradient_func: "foo_grad"
+                  }
+                }
+            """,
             graph_def_a,
         )
 
         graph_def_b = GraphDef()
         text_format.Merge(
             """
-      library {
-        gradient {
-          function_name: "bar"
-          gradient_func: "bar_grad"
-        }
-        gradient {
-          function_name: "bar_baz"
-          gradient_func: "bar_grad"
-        }
-      }
-    """,
+                library {
+                  gradient {
+                    function_name: "bar"
+                    gradient_func: "bar_grad"
+                  }
+                  gradient {
+                    function_name: "bar_baz"
+                    gradient_func: "bar_grad"
+                  }
+                }
+            """,
             graph_def_b,
         )
 

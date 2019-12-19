@@ -191,13 +191,13 @@ class CorePlugin(base_plugin.TBPlugin):
             db = self._db_connection_provider()
             cursor = db.execute(
                 """
-        SELECT
-          run_name,
-          started_time IS NULL as started_time_nulls_last,
-          started_time
-        FROM Runs
-        ORDER BY started_time_nulls_last, started_time, run_name
-      """
+                SELECT
+                  run_name,
+                  started_time IS NULL as started_time_nulls_last,
+                  started_time
+                FROM Runs
+                ORDER BY started_time_nulls_last, started_time, run_name
+                """
             )
             run_names = [row[0] for row in cursor]
         else:
@@ -237,15 +237,15 @@ class CorePlugin(base_plugin.TBPlugin):
             db = self._db_connection_provider()
             cursor = db.execute(
                 """
-        SELECT
-          experiment_id,
-          experiment_name,
-          started_time,
-          started_time IS NULL as started_time_nulls_last
-        FROM Experiments
-        ORDER BY started_time_nulls_last, started_time, experiment_name,
-            experiment_id
-      """
+                SELECT
+                  experiment_id,
+                  experiment_name,
+                  started_time,
+                  started_time IS NULL as started_time_nulls_last
+                FROM Experiments
+                ORDER BY started_time_nulls_last, started_time, experiment_name,
+                    experiment_id
+                """
             )
             results = [
                 {"id": row[0], "name": row[1], "startTime": row[2],}
@@ -272,28 +272,28 @@ class CorePlugin(base_plugin.TBPlugin):
             db = self._db_connection_provider()
             cursor = db.execute(
                 """
-        SELECT
-          Runs.run_id,
-          Runs.run_name,
-          Runs.started_time,
-          Runs.started_time IS NULL as started_time_nulls_last,
-          Tags.tag_id,
-          Tags.tag_name,
-          Tags.display_name,
-          Tags.plugin_name,
-          Tags.inserted_time
-        From Runs
-        LEFT JOIN Tags ON Runs.run_id = Tags.run_id
-        WHERE Runs.experiment_id = ?
-        AND (Tags.tag_id IS NULL OR Tags.plugin_name IS NOT NULL)
-        ORDER BY started_time_nulls_last,
-          Runs.started_time,
-          Runs.run_name,
-          Runs.run_id,
-          Tags.tag_name,
-          Tags.display_name,
-          Tags.inserted_time;
-      """,
+                SELECT
+                  Runs.run_id,
+                  Runs.run_name,
+                  Runs.started_time,
+                  Runs.started_time IS NULL as started_time_nulls_last,
+                  Tags.tag_id,
+                  Tags.tag_name,
+                  Tags.display_name,
+                  Tags.plugin_name,
+                  Tags.inserted_time
+                From Runs
+                LEFT JOIN Tags ON Runs.run_id = Tags.run_id
+                WHERE Runs.experiment_id = ?
+                AND (Tags.tag_id IS NULL OR Tags.plugin_name IS NOT NULL)
+                ORDER BY started_time_nulls_last,
+                  Runs.started_time,
+                  Runs.run_name,
+                  Runs.run_id,
+                  Tags.tag_name,
+                  Tags.display_name,
+                  Tags.inserted_time;
+                """,
                 (exp_id,),
             )
             for row in cursor:

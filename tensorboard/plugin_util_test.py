@@ -45,42 +45,44 @@ class MarkdownToSafeHTMLTest(tb_test.TestCase):
         self._test(
             textwrap.dedent(
                 u"""\
-            Here is some data:
+                Here is some data:
 
-            TensorBoard usage | Happiness
-            ------------------|----------
-                          0.0 |       0.0
-                          0.5 |       0.5
-                          1.0 |       1.0
+                TensorBoard usage | Happiness
+                ------------------|----------
+                              0.0 |       0.0
+                              0.5 |       0.5
+                              1.0 |       1.0
 
-            Wouldn't you agree?"""
+                Wouldn't you agree?
+                """
             ),
             textwrap.dedent(
                 u"""\
-            <p>Here is some data:</p>
-            <table>
-            <thead>
-            <tr>
-            <th>TensorBoard usage</th>
-            <th>Happiness</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-            <td>0.0</td>
-            <td>0.0</td>
-            </tr>
-            <tr>
-            <td>0.5</td>
-            <td>0.5</td>
-            </tr>
-            <tr>
-            <td>1.0</td>
-            <td>1.0</td>
-            </tr>
-            </tbody>
-            </table>
-            <p>Wouldn't you agree?</p>"""
+                <p>Here is some data:</p>
+                <table>
+                <thead>
+                <tr>
+                <th>TensorBoard usage</th>
+                <th>Happiness</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                <td>0.0</td>
+                <td>0.0</td>
+                </tr>
+                <tr>
+                <td>0.5</td>
+                <td>0.5</td>
+                </tr>
+                <tr>
+                <td>1.0</td>
+                <td>1.0</td>
+                </tr>
+                </tbody>
+                </table>
+                <p>Wouldn't you agree?</p>
+                """.rstrip()
             ),
         )
 

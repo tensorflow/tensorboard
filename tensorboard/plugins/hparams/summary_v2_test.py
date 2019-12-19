@@ -87,13 +87,13 @@ class HParamsTest(test.TestCase):
         self.expected_session_start_pb = plugin_data_pb2.SessionStartInfo()
         text_format.Merge(
             """
-        hparams { key: "learning_rate" value { number_value: 0.02 } }
-        hparams { key: "dense_layers" value { number_value: 5 } }
-        hparams { key: "optimizer" value { string_value: "adam" } }
-        hparams { key: "who_knows_what" value { string_value: "???" } }
-        hparams { key: "magic" value { bool_value: true } }
-        hparams { key: "dropout" value { number_value: 0.3 } }
-        """,
+            hparams { key: "learning_rate" value { number_value: 0.02 } }
+            hparams { key: "dense_layers" value { number_value: 5 } }
+            hparams { key: "optimizer" value { string_value: "adam" } }
+            hparams { key: "who_knows_what" value { string_value: "???" } }
+            hparams { key: "magic" value { bool_value: true } }
+            hparams { key: "dropout" value { number_value: 0.3 } }
+            """,
             self.expected_session_start_pb,
         )
         self.expected_session_start_pb.group_name = self.trial_id
@@ -306,74 +306,74 @@ class HParamsConfigTest(test.TestCase):
         self.expected_experiment_pb = api_pb2.Experiment()
         text_format.Merge(
             """
-        time_created_secs: 1555624767.0
-        hparam_infos {
-          name: "learning_rate"
-          type: DATA_TYPE_FLOAT64
-          domain_interval {
-            min_value: 0.01
-            max_value: 0.1
-          }
-        }
-        hparam_infos {
-          name: "dense_layers"
-          type: DATA_TYPE_FLOAT64
-          domain_interval {
-            min_value: 2
-            max_value: 7
-          }
-        }
-        hparam_infos {
-          name: "optimizer"
-          type: DATA_TYPE_STRING
-          domain_discrete {
-            values {
-              string_value: "adam"
+            time_created_secs: 1555624767.0
+            hparam_infos {
+              name: "learning_rate"
+              type: DATA_TYPE_FLOAT64
+              domain_interval {
+                min_value: 0.01
+                max_value: 0.1
+              }
             }
-            values {
-              string_value: "sgd"
+            hparam_infos {
+              name: "dense_layers"
+              type: DATA_TYPE_FLOAT64
+              domain_interval {
+                min_value: 2
+                max_value: 7
+              }
             }
-          }
-        }
-        hparam_infos {
-          name: "who_knows_what"
-        }
-        hparam_infos {
-          name: "magic"
-          type: DATA_TYPE_BOOL
-          display_name: "~*~ Magic ~*~"
-          description: "descriptive"
-          domain_discrete {
-            values {
-              bool_value: false
+            hparam_infos {
+              name: "optimizer"
+              type: DATA_TYPE_STRING
+              domain_discrete {
+                values {
+                  string_value: "adam"
+                }
+                values {
+                  string_value: "sgd"
+                }
+              }
             }
-            values {
-              bool_value: true
+            hparam_infos {
+              name: "who_knows_what"
             }
-          }
-        }
-        metric_infos {
-          name {
-            tag: "samples_per_second"
-          }
-        }
-        metric_infos {
-          name {
-            group: "train"
-            tag: "batch_loss"
-          }
-          display_name: "loss (train)"
-        }
-        metric_infos {
-          name {
-            group: "validation"
-            tag: "epoch_accuracy"
-          }
-          display_name: "accuracy (val.)"
-          description: "Accuracy on the _validation_ dataset."
-          dataset_type: DATASET_VALIDATION
-        }
-        """,
+            hparam_infos {
+              name: "magic"
+              type: DATA_TYPE_BOOL
+              display_name: "~*~ Magic ~*~"
+              description: "descriptive"
+              domain_discrete {
+                values {
+                  bool_value: false
+                }
+                values {
+                  bool_value: true
+                }
+              }
+            }
+            metric_infos {
+              name {
+                tag: "samples_per_second"
+              }
+            }
+            metric_infos {
+              name {
+                group: "train"
+                tag: "batch_loss"
+              }
+              display_name: "loss (train)"
+            }
+            metric_infos {
+              name {
+                group: "validation"
+                tag: "epoch_accuracy"
+              }
+              display_name: "accuracy (val.)"
+              description: "Accuracy on the _validation_ dataset."
+              dataset_type: DATASET_VALIDATION
+            }
+            """,
             self.expected_experiment_pb,
         )
 

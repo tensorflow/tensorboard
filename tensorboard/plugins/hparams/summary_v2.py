@@ -538,21 +538,22 @@ class Metric(object):
         dataset_type=None,
     ):
         """
-    Args:
-      tag: The tag name of the scalar summary that corresponds to this
-        metric (as a `str`).
-      group: An optional string listing the subdirectory under the
-        session's log directory containing summaries for this metric.
-        For instance, if summaries for training runs are written to
-        events files in `ROOT_LOGDIR/SESSION_ID/train`, then `group`
-        should be `"train"`. Defaults to the empty string: i.e.,
-        summaries are expected to be written to the session logdir.
-      display_name: An optional human-readable display name.
-      description: An optional Markdown string with a human-readable
-        description of this metric, to appear in TensorBoard.
-      dataset_type: Either `Metric.TRAINING` or `Metric.VALIDATION`, or
-        `None`.
-    """
+
+        Args:
+          tag: The tag name of the scalar summary that corresponds to this
+            metric (as a `str`).
+          group: An optional string listing the subdirectory under the
+            session's log directory containing summaries for this metric.
+            For instance, if summaries for training runs are written to
+            events files in `ROOT_LOGDIR/SESSION_ID/train`, then `group`
+            should be `"train"`. Defaults to the empty string: i.e.,
+            summaries are expected to be written to the session logdir.
+          display_name: An optional human-readable display name.
+          description: An optional Markdown string with a human-readable
+            description of this metric, to appear in TensorBoard.
+          dataset_type: Either `Metric.TRAINING` or `Metric.VALIDATION`, or
+            `None`.
+        """
         self._tag = tag
         self._group = group
         self._display_name = display_name

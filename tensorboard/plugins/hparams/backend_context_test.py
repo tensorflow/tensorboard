@@ -99,11 +99,11 @@ class BackendContextTest(tf.test.TestCase):
 
     def test_experiment_with_experiment_tag(self):
         experiment = """
-      description: 'Test experiment'
-      metric_infos: [
-        { name: { tag: 'current_temp' } }
-      ]
-    """
+            description: 'Test experiment'
+            metric_infos: [
+              { name: { tag: 'current_temp' } }
+            ]
+        """
         self._mock_multiplexer.PluginRunToTagToContent.side_effect = None
         self._mock_multiplexer.PluginRunToTagToContent.return_value = {
             "exp": {
@@ -117,56 +117,56 @@ class BackendContextTest(tf.test.TestCase):
 
     def test_experiment_without_experiment_tag(self):
         self.session_1_start_info_ = """
-      hparams:[
-        {key: 'batch_size' value: {number_value: 100}},
-        {key: 'lr' value: {number_value: 0.01}},
-        {key: 'model_type' value: {string_value: 'CNN'}}
-      ]
-    """
+        hparams: [
+          {key: 'batch_size' value: {number_value: 100}},
+          {key: 'lr' value: {number_value: 0.01}},
+          {key: 'model_type' value: {string_value: 'CNN'}}
+        ]
+        """
         self.session_2_start_info_ = """
-      hparams:[
-        {key: 'batch_size' value: {number_value: 200}},
-        {key: 'lr' value: {number_value: 0.02}},
-        {key: 'model_type' value: {string_value: 'LATTICE'}}
-      ]
-    """
+            hparams:[
+              {key: 'batch_size' value: {number_value: 200}},
+              {key: 'lr' value: {number_value: 0.02}},
+              {key: 'model_type' value: {string_value: 'LATTICE'}}
+            ]
+        """
         self.session_3_start_info_ = """
-      hparams:[
-        {key: 'batch_size' value: {number_value: 300}},
-        {key: 'lr' value: {number_value: 0.05}},
-        {key: 'model_type' value: {string_value: 'CNN'}}
-      ]
-    """
+            hparams:[
+              {key: 'batch_size' value: {number_value: 300}},
+              {key: 'lr' value: {number_value: 0.05}},
+              {key: 'model_type' value: {string_value: 'CNN'}}
+            ]
+        """
         expected_exp = """
-      hparam_infos: {
-        name: 'batch_size'
-        type: DATA_TYPE_FLOAT64
-      },
-      hparam_infos: {
-        name: 'lr'
-        type: DATA_TYPE_FLOAT64
-      },
-      hparam_infos: {
-        name: 'model_type'
-        type: DATA_TYPE_STRING
-        domain_discrete: {
-          values: [{string_value: 'CNN'},
-                   {string_value: 'LATTICE'}]
-        }
-      }
-      metric_infos: {
-        name: {group: '', tag: 'accuracy'}
-      }
-      metric_infos: {
-        name: {group: '', tag: 'loss'}
-      }
-      metric_infos: {
-        name: {group: 'eval', tag: 'loss'}
-      }
-      metric_infos: {
-        name: {group: 'train', tag: 'loss'}
-      }
-    """
+            hparam_infos: {
+              name: 'batch_size'
+              type: DATA_TYPE_FLOAT64
+            },
+            hparam_infos: {
+              name: 'lr'
+              type: DATA_TYPE_FLOAT64
+            },
+            hparam_infos: {
+              name: 'model_type'
+              type: DATA_TYPE_STRING
+              domain_discrete: {
+                values: [{string_value: 'CNN'},
+                         {string_value: 'LATTICE'}]
+              }
+            }
+            metric_infos: {
+              name: {group: '', tag: 'accuracy'}
+            }
+            metric_infos: {
+              name: {group: '', tag: 'loss'}
+            }
+            metric_infos: {
+              name: {group: 'eval', tag: 'loss'}
+            }
+            metric_infos: {
+              name: {group: 'train', tag: 'loss'}
+            }
+        """
         ctxt = backend_context.Context(self._mock_tb_context)
         actual_exp = ctxt.experiment()
         _canonicalize_experiment(actual_exp)
@@ -174,61 +174,61 @@ class BackendContextTest(tf.test.TestCase):
 
     def test_experiment_without_experiment_tag_different_hparam_types(self):
         self.session_1_start_info_ = """
-      hparams:[
-        {key: 'batch_size' value: {number_value: 100}},
-        {key: 'lr' value: {string_value: '0.01'}}
-      ]
-    """
+            hparams:[
+              {key: 'batch_size' value: {number_value: 100}},
+              {key: 'lr' value: {string_value: '0.01'}}
+            ]
+        """
         self.session_2_start_info_ = """
-      hparams:[
-        {key: 'lr' value: {number_value: 0.02}},
-        {key: 'model_type' value: {string_value: 'LATTICE'}}
-      ]
-    """
+            hparams:[
+              {key: 'lr' value: {number_value: 0.02}},
+              {key: 'model_type' value: {string_value: 'LATTICE'}}
+            ]
+        """
         self.session_3_start_info_ = """
-      hparams:[
-        {key: 'batch_size' value: {bool_value: true}},
-        {key: 'model_type' value: {string_value: 'CNN'}}
-      ]
-    """
+            hparams:[
+              {key: 'batch_size' value: {bool_value: true}},
+              {key: 'model_type' value: {string_value: 'CNN'}}
+            ]
+        """
         expected_exp = """
-      hparam_infos: {
-        name: 'batch_size'
-        type: DATA_TYPE_STRING
-        domain_discrete: {
-          values: [{string_value: '100.0'},
-                   {string_value: 'true'}]
-        }
-      }
-      hparam_infos: {
-        name: 'lr'
-        type: DATA_TYPE_STRING
-        domain_discrete: {
-          values: [{string_value: '0.01'},
-                   {string_value: '0.02'}]
-        }
-      }
-      hparam_infos: {
-        name: 'model_type'
-        type: DATA_TYPE_STRING
-        domain_discrete: {
-          values: [{string_value: 'CNN'},
-                   {string_value: 'LATTICE'}]
-        }
-      }
-      metric_infos: {
-        name: {group: '', tag: 'accuracy'}
-      }
-      metric_infos: {
-        name: {group: '', tag: 'loss'}
-      }
-      metric_infos: {
-        name: {group: 'eval', tag: 'loss'}
-      }
-      metric_infos: {
-        name: {group: 'train', tag: 'loss'}
-      }
-    """
+            hparam_infos: {
+              name: 'batch_size'
+              type: DATA_TYPE_STRING
+              domain_discrete: {
+                values: [{string_value: '100.0'},
+                         {string_value: 'true'}]
+              }
+            }
+            hparam_infos: {
+              name: 'lr'
+              type: DATA_TYPE_STRING
+              domain_discrete: {
+                values: [{string_value: '0.01'},
+                         {string_value: '0.02'}]
+              }
+            }
+            hparam_infos: {
+              name: 'model_type'
+              type: DATA_TYPE_STRING
+              domain_discrete: {
+                values: [{string_value: 'CNN'},
+                         {string_value: 'LATTICE'}]
+              }
+            }
+            metric_infos: {
+              name: {group: '', tag: 'accuracy'}
+            }
+            metric_infos: {
+              name: {group: '', tag: 'loss'}
+            }
+            metric_infos: {
+              name: {group: 'eval', tag: 'loss'}
+            }
+            metric_infos: {
+              name: {group: 'train', tag: 'loss'}
+            }
+        """
         ctxt = backend_context.Context(self._mock_tb_context)
         actual_exp = ctxt.experiment()
         _canonicalize_experiment(actual_exp)
@@ -236,52 +236,52 @@ class BackendContextTest(tf.test.TestCase):
 
     def test_experiment_without_experiment_tag_many_distinct_values(self):
         self.session_1_start_info_ = """
-      hparams:[
-        {key: 'batch_size' value: {number_value: 100}},
-        {key: 'lr' value: {string_value: '0.01'}}
-      ]
-    """
+            hparams:[
+              {key: 'batch_size' value: {number_value: 100}},
+              {key: 'lr' value: {string_value: '0.01'}}
+            ]
+        """
         self.session_2_start_info_ = """
-      hparams:[
-        {key: 'lr' value: {number_value: 0.02}},
-        {key: 'model_type' value: {string_value: 'CNN'}}
-      ]
-    """
+            hparams:[
+              {key: 'lr' value: {number_value: 0.02}},
+              {key: 'model_type' value: {string_value: 'CNN'}}
+            ]
+        """
         self.session_3_start_info_ = """
-      hparams:[
-        {key: 'batch_size' value: {bool_value: true}},
-        {key: 'model_type' value: {string_value: 'CNN'}}
-      ]
-    """
+            hparams:[
+              {key: 'batch_size' value: {bool_value: true}},
+              {key: 'model_type' value: {string_value: 'CNN'}}
+            ]
+        """
         expected_exp = """
-      hparam_infos: {
-        name: 'batch_size'
-        type: DATA_TYPE_STRING
-      }
-      hparam_infos: {
-        name: 'lr'
-        type: DATA_TYPE_STRING
-      }
-      hparam_infos: {
-        name: 'model_type'
-        type: DATA_TYPE_STRING
-        domain_discrete: {
-          values: [{string_value: 'CNN'}]
-        }
-      }
-      metric_infos: {
-        name: {group: '', tag: 'accuracy'}
-      }
-      metric_infos: {
-        name: {group: '', tag: 'loss'}
-      }
-      metric_infos: {
-        name: {group: 'eval', tag: 'loss'}
-      }
-      metric_infos: {
-        name: {group: 'train', tag: 'loss'}
-      }
-    """
+            hparam_infos: {
+              name: 'batch_size'
+              type: DATA_TYPE_STRING
+            }
+            hparam_infos: {
+              name: 'lr'
+              type: DATA_TYPE_STRING
+            }
+            hparam_infos: {
+              name: 'model_type'
+              type: DATA_TYPE_STRING
+              domain_discrete: {
+                values: [{string_value: 'CNN'}]
+              }
+            }
+            metric_infos: {
+              name: {group: '', tag: 'accuracy'}
+            }
+            metric_infos: {
+              name: {group: '', tag: 'loss'}
+            }
+            metric_infos: {
+              name: {group: 'eval', tag: 'loss'}
+            }
+            metric_infos: {
+              name: {group: 'train', tag: 'loss'}
+            }
+        """
         ctxt = backend_context.Context(
             self._mock_tb_context, max_domain_discrete_len=1
         )
