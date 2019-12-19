@@ -84,8 +84,8 @@ before_script:
   - if [ -n "${PY3}" ]; then black --check .; fi
   # Lint .yaml docs files. Use '# yamllint disable-line rule:foo' to suppress.
   - yamllint -c docs/.yamllint docs docs/.yamllint
-  # TODO(#2963): Lint BUILD files
-  - buildifier --version
+  # Lint BUILD files
+  - git ls-files -z '*BUILD' | xargs -0 buildifier --mode=check
   # Make sure that IPython notebooks have valid Markdown.
   - tensorboard/tools/docs_list_format_test.sh
   # Make sure we aren't accidentally including work-in-progress code.
