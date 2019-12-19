@@ -29,14 +29,14 @@ py_library(
 
 py_test(
     name = "beholder_test",
-    srcs = ["beholder_test.py"],
     size = "small",
+    srcs = ["beholder_test.py"],
     srcs_version = "PY2AND3",
     deps = [
         ":beholder",
-        "//tensorboard/util:test_util",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/util:test_util",
     ],
 )
 
