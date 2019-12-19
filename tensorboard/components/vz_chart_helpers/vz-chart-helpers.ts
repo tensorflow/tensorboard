@@ -101,8 +101,14 @@ export interface TooltipColumnState {
 
 export interface TooltipColumn {
   title: string;
-  static: boolean;
+  static?: boolean;
   evaluate: (p: Point, status?: TooltipColumnState) => string;
+}
+
+export interface GenericTooltipColumn<T> {
+  title: string;
+  static?: boolean;
+  evaluate: (p: T, status?: TooltipColumnState) => string;
 }
 
 /* Create a formatter function that will switch between exponential and
