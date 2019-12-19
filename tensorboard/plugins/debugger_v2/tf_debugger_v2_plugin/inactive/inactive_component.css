@@ -20,7 +20,7 @@ limitations under the License.
 }
 
 .code {
-  font-family: Roboto Mono;
+  font-family: 'Roboto Mono', monospace;
   margin: 10px;
 }
 
@@ -36,11 +36,9 @@ limitations under the License.
 }
 
 .details {
-  align-content: left;
   display: inline-block;
-  margin: 30px;
-  max-width: 360px;
-  width: 360px;
+  margin: 10px 60px;
+  width: 440px;
 }
 
 .exhibit-container {
@@ -51,24 +49,20 @@ limitations under the License.
 .exhibit {
   align-content: center;
   display: inline-block;
-  margin-top: 10px;
-  margin-left: 60px;
-  margin-right: 60px;
-  margin-bottom: 10px;
-  max-width: 220px;
+  margin: 10px 60px;
   vertical-align: top;
-  width: 220px;
+  width: 300px;
 }
 
 .exhibit .description {
   font-weight: bold;
   text-align: center;
-  width: 220px;
+  width: 350px;
 }
 
-.exhbit .screenshot canvas {
-  height: 210px;
-  width: 210px;
+.exhibit .screenshot canvas {
+  height: 200px;
+  width: 100%;
 }
 
 .title {
