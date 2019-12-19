@@ -35,8 +35,10 @@ from tensorboard.util import test_util
 
 def _generate_tfdbg_v2_data(logdir):
     writer = tf.debugging.experimental.enable_dump_debug_info(
-        logdir, circular_buffer_size=-1)
+        logdir, circular_buffer_size=-1
+    )
     try:
+
         @tf.function
         def x_plus_y(x, y):
             return x + y
@@ -50,12 +52,11 @@ def _generate_tfdbg_v2_data(logdir):
         tf.debugging.experimental.disable_dump_debug_info()
 
 
-_ROUTE_PREFIX = '/data/plugin/debugger-v2'
+_ROUTE_PREFIX = "/data/plugin/debugger-v2"
 
 
 @test_util.run_v2_only("tfdbg v2 is not available in r1.")
 class DebuggerV2PluginTest(tf.test.TestCase):
-
     def setUp(self):
         super(DebuggerV2PluginTest, self).setUp()
         self.logdir = tempfile.mkdtemp()
@@ -73,18 +74,24 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertFalse(self.plugin.is_active())
 
     def testServeRunsWithoutExistingRuns(self):
-        response = self.server.get(_ROUTE_PREFIX + '/runs')
+        response = self.server.get(_ROUTE_PREFIX + "/runs")
         self.assertEqual(200, response.status_code)
-        self.assertEqual("application/json", response.headers.get("content-type"))
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
         self.assertEqual(json.loads(response.get_data()), [])
 
     def testServeRunsWithExistingRuns(self):
         _generate_tfdbg_v2_data(self.logdir)
-        response = self.server.get(_ROUTE_PREFIX + '/runs')
+        response = self.server.get(_ROUTE_PREFIX + "/runs")
         self.assertEqual(200, response.status_code)
-        self.assertEqual("application/json", response.headers.get("content-type"))
-        self.assertEqual(json.loads(response.get_data()),
-                         [debugger_v2_plugin.DEFAULT_DEBUGGER_RUN_NAME])
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            [debugger_v2_plugin.DEFAULT_DEBUGGER_RUN_NAME],
+        )
 
 
 if __name__ == "__main__":

@@ -69,10 +69,9 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
     @wrappers.Request.application
     def serve_runs(self, request):
         runs = []
+        from tensorflow.python.debug.lib import debug_events_reader
+
         try:
-            # pylint:disable=g-import-not-at-top
-            from tensorflow.python.debug.lib import debug_events_reader
-            # pylint:enable=g-import-not-at-top
             # TODO(cais): Switch DebugDataReader when available.
             self._reader = debug_events_reader.DebugEventsReader(self._logdir)
             # NOTE(cais): Currently each logdir is enforced to have only one
