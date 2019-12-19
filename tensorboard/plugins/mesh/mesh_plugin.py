@@ -77,6 +77,18 @@ class MeshPlugin(base_plugin.TBPlugin):
                 self._tag_to_instance_tags[(run, meta.name)].append(tag)
                 self._instance_tag_to_tag[(run, tag)] = meta.name
 
+    def _instance_tag_metadata(self, run, instance_tag):
+        """Gets the `MeshPluginData` proto for an instance tag."""
+        return self._instance_tag_to_metadata[(run, instance_tag)]
+
+    def _tag(self, run, instance_tag):
+        """Gets the user-facing tag name for an instance tag."""
+        return self._instance_tag_to_tag[(run, instance_tag)]
+
+    def _instance_tags(self, run, tag):
+        """Gets the instance tag names for a user-facing tag."""
+        return self._tag_to_instance_tags[(run, tag)]
+
     @wrappers.Request.application
     def _serve_tags(self, request):
         """A route (HTTP handler) that returns a response with tags.
@@ -107,8 +119,8 @@ class MeshPlugin(base_plugin.TBPlugin):
             response[run] = dict()
             for instance_tag, _ in six.iteritems(tag_to_content):
                 # Make sure we only operate on user-defined tags here.
-                tag = self._instance_tag_to_tag[(run, instance_tag)]
-                meta = self._instance_tag_to_metadata[(run, instance_tag)]
+                tag = self._tag(run, instance_tag)
+                meta = self._instance_tag_metadata(run, instance_tag)
                 # Batch size must be defined, otherwise we don't know how many
                 # samples were there.
                 response[run][tag] = {"samples": meta.shape[0]}
@@ -198,9 +210,9 @@ class MeshPlugin(base_plugin.TBPlugin):
         self.prepare_metadata()
 
         tensor_events = []  # List of tuples (meta, tensor) that contain tag.
-        for instance_tag in self._tag_to_instance_tags[(run, tag)]:
+        for instance_tag in self._instance_tags(run, tag):
             tensors = self._multiplexer.Tensors(run, instance_tag)
-            meta = self._instance_tag_to_metadata[(run, instance_tag)]
+            meta = self._instance_tag_metadata(run, instance_tag)
             tensor_events += [(meta, tensor) for tensor in tensors]
 
         if step is not None:
