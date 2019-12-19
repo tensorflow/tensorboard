@@ -86,12 +86,12 @@ class HistogramsPlugin(base_plugin.TBPlugin):
             db = self._db_connection_provider()
             cursor = db.execute(
                 """
-        SELECT
-          1
-        FROM Tags
-        WHERE Tags.plugin_name = ?
-        LIMIT 1
-      """,
+                SELECT
+                  1
+                FROM Tags
+                WHERE Tags.plugin_name = ?
+                LIMIT 1
+                """,
                 (metadata.PLUGIN_NAME,),
             )
             return bool(list(cursor))
@@ -125,16 +125,16 @@ class HistogramsPlugin(base_plugin.TBPlugin):
             db = self._db_connection_provider()
             cursor = db.execute(
                 """
-        SELECT
-          Tags.tag_name,
-          Tags.display_name,
-          Runs.run_name
-        FROM Tags
-        JOIN Runs
-          ON Tags.run_id = Runs.run_id
-        WHERE
-          Tags.plugin_name = ?
-      """,
+                SELECT
+                  Tags.tag_name,
+                  Tags.display_name,
+                  Runs.run_name
+                FROM Tags
+                JOIN Runs
+                  ON Tags.run_id = Runs.run_id
+                WHERE
+                  Tags.plugin_name = ?
+                """,
                 (metadata.PLUGIN_NAME,),
             )
             result = collections.defaultdict(dict)
@@ -213,15 +213,15 @@ class HistogramsPlugin(base_plugin.TBPlugin):
             # Prefetch the tag ID matching this run and tag.
             cursor.execute(
                 """
-          SELECT
-            tag_id
-          FROM Tags
-          JOIN Runs USING (run_id)
-          WHERE
-            Runs.run_name = :run
-            AND Tags.tag_name = :tag
-            AND Tags.plugin_name = :plugin
-          """,
+                SELECT
+                  tag_id
+                FROM Tags
+                JOIN Runs USING (run_id)
+                WHERE
+                  Runs.run_name = :run
+                  AND Tags.tag_name = :tag
+                  AND Tags.plugin_name = :plugin
+                """,
                 {"run": run, "tag": tag, "plugin": metadata.PLUGIN_NAME},
             )
             row = cursor.fetchone()
@@ -240,30 +240,30 @@ class HistogramsPlugin(base_plugin.TBPlugin):
             #   [s_min + math.ceil(i / k * (s_max - s_min)) for i in range(0, k + 1)]
             cursor.execute(
                 """
-          SELECT
-            MIN(step) AS step,
-            computed_time,
-            data,
-            dtype,
-            shape
-          FROM Tensors
-          INNER JOIN (
-            SELECT
-              MIN(step) AS min_step,
-              MAX(step) AS max_step
-            FROM Tensors
-            /* Filter out NULL so we can use TensorSeriesStepIndex. */
-            WHERE series = :tag_id AND step IS NOT NULL
-          )
-          /* Ensure we omit reserved rows, which have NULL step values. */
-          WHERE series = :tag_id AND step IS NOT NULL
-          /* Bucket rows into sample_size linearly spaced buckets, or do
-             no sampling if sample_size is NULL. */
-          GROUP BY
-            IFNULL(:sample_size - 1, max_step - min_step)
-            * (step - min_step) / (max_step - min_step)
-          ORDER BY step
-          """,
+                SELECT
+                  MIN(step) AS step,
+                  computed_time,
+                  data,
+                  dtype,
+                  shape
+                FROM Tensors
+                INNER JOIN (
+                  SELECT
+                    MIN(step) AS min_step,
+                    MAX(step) AS max_step
+                  FROM Tensors
+                  /* Filter out NULL so we can use TensorSeriesStepIndex. */
+                  WHERE series = :tag_id AND step IS NOT NULL
+                )
+                /* Ensure we omit reserved rows, which have NULL step values. */
+                WHERE series = :tag_id AND step IS NOT NULL
+                /* Bucket rows into sample_size linearly spaced buckets, or do
+                   no sampling if sample_size is NULL. */
+                GROUP BY
+                  IFNULL(:sample_size - 1, max_step - min_step)
+                  * (step - min_step) / (max_step - min_step)
+                ORDER BY step
+                """,
                 {"tag_id": tag_id, "sample_size": downsample_to},
             )
             events = [

@@ -218,14 +218,14 @@ def installed_packages():
     if found_conflict:
         preamble = reflow(
             """
-        Conflicting package installations found. Depending on the order
-        of installations and uninstallations, behavior may be undefined.
-        Please uninstall ALL versions of TensorFlow and TensorBoard,
-        then reinstall ONLY the desired version of TensorFlow, which
-        will transitively pull in the proper version of TensorBoard. (If
-        you use TensorBoard without TensorFlow, just reinstall the
-        appropriate version of TensorBoard directly.)
-        """
+            Conflicting package installations found. Depending on the order
+            of installations and uninstallations, behavior may be undefined.
+            Please uninstall ALL versions of TensorFlow and TensorBoard,
+            then reinstall ONLY the desired version of TensorFlow, which
+            will transitively pull in the proper version of TensorBoard. (If
+            you use TensorBoard without TensorFlow, just reinstall the
+            appropriate version of TensorBoard directly.)
+            """
         )
         packages_to_uninstall = sorted(
             frozenset().union(*expect_unique) & packages_set
@@ -301,24 +301,24 @@ def readable_fqdn():
         if is_non_ascii:
             message = reflow(
                 """
-          Your computer's hostname, %r, contains bytes outside of the
-          printable ASCII range. Some versions of Python have trouble
-          working with such names (https://bugs.python.org/issue26227).
-          Consider changing to a hostname that only contains printable
-          ASCII bytes.
-          """
+                Your computer's hostname, %r, contains bytes outside of the
+                printable ASCII range. Some versions of Python have trouble
+                working with such names (https://bugs.python.org/issue26227).
+                Consider changing to a hostname that only contains printable
+                ASCII bytes.
+                """
                 % (binary_hostname,)
             )
             yield Suggestion("Use an ASCII hostname", message)
         else:
             message = reflow(
                 """
-          Python can't read your computer's hostname, %r. This can occur
-          if the hostname contains non-ASCII bytes
-          (https://bugs.python.org/issue26227). Consider changing your
-          hostname, rebooting your machine, and rerunning this diagnosis
-          script to see if the problem is resolved.
-          """
+                Python can't read your computer's hostname, %r. This can occur
+                if the hostname contains non-ASCII bytes
+                (https://bugs.python.org/issue26227). Consider changing your
+                hostname, rebooting your machine, and rerunning this diagnosis
+                script to see if the problem is resolved.
+                """
                 % (binary_hostname,)
             )
             yield Suggestion("Use a simpler hostname", message)
@@ -345,11 +345,11 @@ def stat_tensorboardinfo():
     if stat_result.st_mode & 0o777 != 0o777:
         preamble = reflow(
             """
-        The ".tensorboard-info" directory was created by an old version
-        of TensorBoard, and its permissions are not set correctly; see
-        issue #2010. Change that directory to be world-accessible (may
-        require superuser privilege):
-        """
+            The ".tensorboard-info" directory was created by an old version
+            of TensorBoard, and its permissions are not set correctly; see
+            issue #2010. Change that directory to be world-accessible (may
+            require superuser privilege):
+            """
         )
         # This error should only appear on Unices, so it's okay to use
         # Unix-specific utilities and shell syntax.
@@ -393,22 +393,22 @@ def source_trees_without_genfiles():
         if bad_roots == [""]:
             message = reflow(
                 """
-          Your current directory contains a `tensorboard` Python package
-          that does not include generated files. This can happen if your
-          current directory includes the TensorBoard source tree (e.g.,
-          you are in the TensorBoard Git repository). Consider changing
-          to a different directory.
-          """
+                Your current directory contains a `tensorboard` Python package
+                that does not include generated files. This can happen if your
+                current directory includes the TensorBoard source tree (e.g.,
+                you are in the TensorBoard Git repository). Consider changing
+                to a different directory.
+                """
             )
         else:
             preamble = reflow(
                 """
-          Your Python path contains a `tensorboard` package that does
-          not include generated files. This can happen if your current
-          directory includes the TensorBoard source tree (e.g., you are
-          in the TensorBoard Git repository). The following directories
-          from your Python path may be problematic:
-          """
+                Your Python path contains a `tensorboard` package that does
+                not include generated files. This can happen if your current
+                directory includes the TensorBoard source tree (e.g., you are
+                in the TensorBoard Git repository). The following directories
+                from your Python path may be problematic:
+                """
             )
             roots = []
             realpaths_seen = set()
@@ -488,22 +488,22 @@ def main():
         print(
             reflow(
                 """
-        Please try each suggestion enumerated above to determine whether
-        it solves your problem. If none of these suggestions works,
-        please copy ALL of the above output, including the lines
-        containing only backticks, into your GitHub issue or comment. Be
-        sure to redact any sensitive information.
-        """
+                Please try each suggestion enumerated above to determine whether
+                it solves your problem. If none of these suggestions works,
+                please copy ALL of the above output, including the lines
+                containing only backticks, into your GitHub issue or comment. Be
+                sure to redact any sensitive information.
+                """
             )
         )
     else:
         print(
             reflow(
                 """
-        No action items identified. Please copy ALL of the above output,
-        including the lines containing only backticks, into your GitHub
-        issue or comment. Be sure to redact any sensitive information.
-        """
+                No action items identified. Please copy ALL of the above output,
+                including the lines containing only backticks, into your GitHub
+                issue or comment. Be sure to redact any sensitive information.
+                """
             )
         )
 

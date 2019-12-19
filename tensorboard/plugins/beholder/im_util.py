@@ -35,9 +35,9 @@ def global_extrema(arrays):
 
 def scale_sections(sections, scaling_scope):
     """
-  input: unscaled sections.
-  returns: sections scaled to [0, 255]
-  """
+    input: unscaled sections.
+    returns: sections scaled to [0, 255]
+    """
     new_sections = []
 
     if scaling_scope == "layer":
