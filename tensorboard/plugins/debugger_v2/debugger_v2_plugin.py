@@ -20,8 +20,6 @@ from __future__ import print_function
 
 from werkzeug import wrappers
 
-from tensorflow.python.debug.lib import debug_events_reader
-
 from tensorboard.plugins import base_plugin
 from tensorboard.backend import http_util
 
@@ -53,7 +51,7 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
     def is_active(self):
         """Check whether the Debugger V2 Plugin is always active.
 
-        When no data in the tfdbg v2 format is available, a custom information
+        When no data in the tfdbg v2 format is available, a custom informationA
         screen is displayed to instruct the user on how to generate such data
         to be able to use the plugin.
 
@@ -72,6 +70,9 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
     def serve_runs(self, request):
         runs = []
         try:
+            # pylint:disable=g-import-not-at-top
+            from tensorflow.python.debug.lib import debug_events_reader
+            # pylint:enable=g-import-not-at-top
             # TODO(cais): Switch DebugDataReader when available.
             self._reader = debug_events_reader.DebugEventsReader(self._logdir)
             # NOTE(cais): Currently each logdir is enforced to have only one
