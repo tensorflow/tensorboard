@@ -201,35 +201,65 @@ TODO(erez): Add aggregation controls for repeated sessions.
               </paper-listbox>
             </paper-dropdown-menu>
           </div>
-          <div class="section paging">
-            <div class="section-title">Paging</div>
-            <div>
-              Number of matching session groups: [[_totalSessionGroupsCountStr]]
+          <vaadin-split-layout vertical id="paging-download">
+            <div class="section paging">
+              <div class="section-title">Paging</div>
+              <div>
+                Number of matching session groups:
+                [[_totalSessionGroupsCountStr]]
+              </div>
+              <div class="inline-element page-number-input">
+                <paper-input
+                  label="Page #"
+                  value="{{_pageNumberInput.value}}"
+                  allowed-pattern="[0-9]"
+                  error-message="Invalid input"
+                  invalid="[[_pageNumberInput.invalid]]"
+                  on-value-changed="_queryServer"
+                >
+                  <div slot="suffix" class="page-suffix">
+                    / [[_pageCountStr]]
+                  </div>
+                </paper-input>
+              </div>
+              <div class="inline-element page-size-input">
+                <paper-input
+                  label="Max # of session groups per page:"
+                  value="{{_pageSizeInput.value}}"
+                  allowed-pattern="[0-9]"
+                  error-message="Invalid input"
+                  invalid="[[_pageSizeInput.invalid]]"
+                  on-value-changed="_queryServer"
+                >
+                </paper-input>
+              </div>
             </div>
-            <div class="inline-element page-number-input">
-              <paper-input
-                label="Page #"
-                value="{{_pageNumberInput.value}}"
-                allowed-pattern="[0-9]"
-                error-message="Invalid input"
-                invalid="[[_pageNumberInput.invalid]]"
-                on-value-changed="_queryServer"
-              >
-                <div slot="suffix" class="page-suffix">/ [[_pageCountStr]]</div>
-              </paper-input>
+            <div class="section download">
+              <template is="dom-if" if="[[_hparams]]">
+                Download data as
+                <span>
+                  <a
+                    id="csvLink"
+                    download="hparams_table.csv"
+                    href="[[_csvUrl()]]"
+                    >CSV</a
+                  >
+                  <a
+                    id="jsonLink"
+                    download="hparams_table.json"
+                    href="[[_jsonUrl()]]"
+                    >JSON</a
+                  >
+                  <a
+                    id="latexLink"
+                    download="hparams_table.tex"
+                    href="[[_latexUrl()]]"
+                    >LATEX</a
+                  >
+                </span>
+              </template>
             </div>
-            <div class="inline-element page-size-input">
-              <paper-input
-                label="Max # of session groups per page:"
-                value="{{_pageSizeInput.value}}"
-                allowed-pattern="[0-9]"
-                error-message="Invalid input"
-                invalid="[[_pageSizeInput.invalid]]"
-                on-value-changed="_queryServer"
-              >
-              </paper-input>
-            </div>
-          </div>
+          </vaadin-split-layout>
         </vaadin-split-layout>
       </vaadin-split-layout>
     </div>
@@ -279,12 +309,22 @@ TODO(erez): Add aggregation controls for repeated sessions.
         flex-shrink: 0;
         flex-grow: 0;
       }
+      #paging-download {
+        flex-basis: 90%;
+        flex-shrink: 1;
+        flex-grow: 1;
+      }
       .sorting {
         flex-basis: auto;
         flex-shrink: 0;
         flex-grow: 0;
       }
       .paging {
+        flex-basis: auto;
+        flex-shrink: 0;
+        flex-grow: 0;
+      }
+      .download {
         flex-basis: auto;
         flex-shrink: 0;
         flex-grow: 0;
@@ -543,6 +583,20 @@ TODO(erez): Add aggregation controls for repeated sessions.
 
       reload() {
         this._queryServer();
+      },
+
+      _csvUrl() {
+        return this._downloadDataUrl('csv');
+      },
+      _jsonUrl() {
+        return this._downloadDataUrl('json');
+      },
+      _latexUrl() {
+        return this._downloadDataUrl('latex');
+      },
+      _downloadDataUrl(format) {
+        const request = this._buildListSessionGroupsRequest();
+        return this.backend.getDowloadURL(format, request);
       },
 
       // Sends a request for experiment to the server, and updates
