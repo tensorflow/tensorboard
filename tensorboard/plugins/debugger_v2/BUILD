@@ -28,5 +28,6 @@ py_test(
         "//tensorboard/backend:application",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/plugins:base_plugin",
+        "//tensorboard/util:test_util",
     ],
 )

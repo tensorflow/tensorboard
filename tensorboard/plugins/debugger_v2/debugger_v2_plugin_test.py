@@ -30,6 +30,7 @@ from werkzeug import wrappers
 from tensorboard.backend import application
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.debugger_v2 import debugger_v2_plugin
+from tensorboard.util import test_util
 
 
 def _generate_tfdbg_v2_data(logdir):
@@ -51,7 +52,7 @@ def _generate_tfdbg_v2_data(logdir):
 
 _ROUTE_PREFIX = '/data/plugin/debugger-v2'
 
-
+@test_util.run_v2_only("tfdbg v2 is available only in r2.1+.")
 class DebuggerV2PluginTest(tf.test.TestCase):
 
     def setUp(self):
