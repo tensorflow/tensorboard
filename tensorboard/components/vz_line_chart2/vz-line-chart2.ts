@@ -72,7 +72,7 @@ export const DEFAULT_TOOLTIP_COLUMNS: Readonly<
 type NumberFormatter = (num: number) => string;
 
 @customElement('vz-line-chart2')
-class VzLineChart2<Metadata> extends LegacyElementMixin(PolymerElement) {
+export class VzLineChart2<Metadata> extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
     <div id="chartdiv"></div>
     <vz-chart-tooltip
