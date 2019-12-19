@@ -85,6 +85,9 @@ namespace tf_dashboard_common {
         },
       },
     },
+    listeners: {
+      'dom-change': 'synchronizeColors',
+    },
     observers: ['_setIsolatorIcon(selectionState, names)'],
     _makeRegex: function(regexString) {
       try {
