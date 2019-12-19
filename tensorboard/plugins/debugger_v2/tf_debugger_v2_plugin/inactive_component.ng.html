@@ -16,5 +16,26 @@ limitations under the License.
 -->
 
 <div>
-  <tf-debugger-v2-inactive></tf-debugger-v2-inactive>
+  <div class="container">
+    <div class="title">
+      Debugger V2 is inactive because no data is available.
+    </div>
+
+    <div>To use the debugger,</div>
+    <div>
+      <ol>
+        <li>
+          Add the following line to the beginning of your program:
+          <div class="code">
+            <span>tf.debugging.experimental.enable_dump_debug_info(</span>
+            <span class="arg">logdir</span>
+            <span>)</span>
+          </div>
+        </li>
+        <li>
+          Re-run the program.
+        </li>
+      </ol>
+    </div>
+  </div>
 </div>

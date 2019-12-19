@@ -19,6 +19,25 @@ ng_module(
         "debugger_component.ng.html",
     ],
     deps = [
+        ":inactive",
+        "@npm//@angular/core",
+        "@npm//@ngrx/store",
+        "@npm//rxjs",
+    ],
+)
+
+ng_module(
+    name = "inactive",
+    srcs = [
+        "inactive_container.ts",
+        "inactive_component.ts",
+        "inactive_module.ts",
+    ],
+    assets = [
+        "inactive_component.css",
+        "inactive_component.ng.html",
+    ],
+    deps = [
         "@npm//@angular/core",
         "@npm//@ngrx/store",
         "@npm//rxjs",
