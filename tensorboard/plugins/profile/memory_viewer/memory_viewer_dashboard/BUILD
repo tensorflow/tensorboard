@@ -7,17 +7,16 @@ licenses(["notice"])  # Apache 2.0
 tf_web_library(
     name = "memory_viewer_dashboard",
     srcs = [
-            "memory-viewer-dashboard.html",
-            "memory-viewer-dashboard.ts",
-           ],
+        "memory-viewer-dashboard.html",
+        "memory-viewer-dashboard.ts",
+    ],
     path = "/memory-viewer",
     deps = [
+        "//tensorboard/components/tf_imports:polymer",
+        "//tensorboard/plugins/profile/memory_viewer/buffer_details",
         "//tensorboard/plugins/profile/memory_viewer/memory_usage",
+        "//tensorboard/plugins/profile/memory_viewer/mv_line_chart",
         "//tensorboard/plugins/profile/memory_viewer/utils",
         "//tensorboard/plugins/profile/memory_viewer/xla",
-        "//tensorboard/plugins/profile/memory_viewer/mv_line_chart",
-        "//tensorboard/plugins/profile/memory_viewer/buffer_details",
-        "//tensorboard/components/tf_imports:polymer",
     ],
 )
-

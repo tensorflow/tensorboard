@@ -10,8 +10,8 @@ licenses(["notice"])  # Apache 2.0
 ng_module(
     name = "debugger_v2",
     srcs = [
-        "debugger_container.ts",
         "debugger_component.ts",
+        "debugger_container.ts",
         "debugger_module.ts",
     ],
     assets = [
