@@ -42,7 +42,7 @@ const DEFAULT_TOOLTIP_STYLE = {
 };
 
 @customElement('vz-chart-tooltip')
-class VzChartTooltip extends PolymerElement {
+export class VzChartTooltip extends PolymerElement {
   static readonly template = null; // strictTemplatePolicy requires a template (even a null one).
   /**
    * Required prop for specifying name of the WebComponent for tooltip
