@@ -13,15 +13,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-.code {
-  font-family: Roboto Mono;
-  margin: 10px;
-}
-
-.code .arg {
+.arg {
   color: lightblue;
   font-style: italic;
   margin: 2px;
+}
+
+.code {
+  font-family: Roboto Mono;
+  margin: 10px;
 }
 
 .container {
@@ -29,6 +29,46 @@ limitations under the License.
   font-family: Roboto;
   font-size: 15px;
   padding: 50px;
+}
+
+.details-container {
+  vertical-align: middle;
+}
+
+.details {
+  align-content: left;
+  display: inline-block;
+  margin: 30px;
+  max-width: 360px;
+  width: 360px;
+}
+
+.exhibit-container {
+  white-space: nowrap;
+  width: 100%;
+}
+
+.exhibit {
+  align-content: center;
+  display: inline-block;
+  margin-top: 10px;
+  margin-left: 60px;
+  margin-right: 60px;
+  margin-bottom: 10px;
+  max-width: 220px;
+  vertical-align: top;
+  width: 220px;
+}
+
+.exhibit .description {
+  font-weight: bold;
+  text-align: center;
+  width: 220px;
+}
+
+.exhbit .screenshot canvas {
+  height: 210px;
+  width: 210px;
 }
 
 .title {
