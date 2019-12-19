@@ -26,6 +26,7 @@ import time
 import unittest
 
 from google.protobuf import text_format
+import numpy as np
 import six
 from six.moves import xrange  # pylint: disable=redefined-builtin
 
@@ -270,6 +271,28 @@ class HParamsTest(test.TestCase):
         self.assertNotEqual(
             get_group_name(hparams_1), get_group_name(hparams_2)
         )
+
+    def test_serialize_numpy_scalars(self):
+        hparams = {
+            "i32": np.array([1, 2], dtype=np.int32)[0],
+            "i64": np.array([1, 2], dtype=np.int64)[0],
+            "f_default": np.linspace(1.0, 2.0, 5)[0],
+            "f32": np.linspace(1.0, 2.0, 5, dtype=np.float32)[0],
+            "f64": np.linspace(1.0, 2.0, 5, dtype=np.float64)[0],
+            "bool": np.array([False, True])[0],
+        }
+        hp.hparams_pb(hparams)
+
+    @requires_tf
+    def test_serialize_tf_linspace_numpy(self):
+        # Should be subsumed by `test_serialize_numpy_scalars`; separate
+        # test because it's a common use case.
+        hparams = {
+            "f_default": tf.linspace(1.0, 2.0, 5).numpy()[0],
+            "f32": tf.cast(tf.linspace(1.0, 2.0, 5), tf.float32).numpy()[0],
+            "f64": tf.cast(tf.linspace(1.0, 2.0, 5), tf.float64).numpy()[0],
+        }
+        hp.hparams_pb(hparams)
 
 
 class HParamsConfigTest(test.TestCase):
