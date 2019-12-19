@@ -65,6 +65,9 @@ export type Metadata = {
   name: string;
   meta: any;
 };
+
+export type XComponentsCreationMethod = () => vz_chart_helpers.XComponents;
+
 /**
  * The maximum number of marker symbols within any line for a data series. Too
  * many markers clutter the chart.
@@ -125,7 +128,7 @@ export class LineChart {
   private targetSVG?: d3.Selection<any, any, any, any>;
 
   constructor(
-    xComponentsCreationMethod: () => vz_chart_helpers.XComponents,
+    xComponentsCreationMethod: XComponentsCreationMethod,
     yValueAccessor: Plottable.IAccessor<number>,
     yScaleType: string,
     colorScale: Plottable.Scales.Color,
