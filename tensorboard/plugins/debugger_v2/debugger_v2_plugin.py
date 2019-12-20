@@ -20,13 +20,9 @@ from __future__ import print_function
 
 from werkzeug import wrappers
 
-from tensorflow.python.debug.lib import debug_events_reader
-
 from tensorboard.plugins import base_plugin
+from tensorboard.plugins.debugger_v2 import local_data_provider
 from tensorboard.backend import http_util
-
-
-DEFAULT_DEBUGGER_RUN_NAME = "__default_debugger_run__"
 
 
 class DebuggerV2Plugin(base_plugin.TBPlugin):
@@ -42,7 +38,9 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
         """
         super(DebuggerV2Plugin, self).__init__(context)
         self._logdir = context.logdir
-        self._reader = None
+        # TODO(cais): Implement factory for DataProvider that takes into account
+        # the settings.
+        self._data_provider = local_data_provider.LocalDebuggerV2DataProvider()
 
     def get_plugin_apps(self):
         # TODO(cais): Add routes as they are implemented.
@@ -70,13 +68,5 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
 
     @wrappers.Request.application
     def serve_runs(self, request):
-        runs = []
-        try:
-            # TODO(cais): Switch DebugDataReader when available.
-            self._reader = debug_events_reader.DebugEventsReader(self._logdir)
-            # NOTE(cais): Currently each logdir is enforced to have only one
-            # DebugEvent file set. So we add hard-coded default run name.
-            runs.append(DEFAULT_DEBUGGER_RUN_NAME)
-        except ValueError as error:
-            pass
+        runs = self._data_provider.list_runs(self._logdir)
         return http_util.Respond(request, runs, "application/json")

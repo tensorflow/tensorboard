@@ -12,9 +12,19 @@ py_library(
     srcs = ["debugger_v2_plugin.py"],
     srcs_version = "PY2AND3",
     deps = [
+        ":local_data_provider",
         "//tensorboard/backend:http_util",
         "//tensorboard/plugins:base_plugin",
         "@org_pocoo_werkzeug",
+    ],
+)
+
+py_library(
+    name = "local_data_provider",
+    srcs = ["local_data_provider.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        "//tensorboard/data:provider",
     ],
 )
 
