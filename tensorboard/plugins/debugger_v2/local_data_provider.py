@@ -85,6 +85,13 @@ class LocalDebuggerV2DataProvider(provider.DataProvider):
         # TODO(cais): Implement this.
         raise NotImplementedError()
 
+    def read_blob_sequences(
+        self, experiment_id, plugin_name, downsample=None, run_tag_filter=None
+    ):
+        del experiment_id, plugin_name, downsample, run_tag_filter  # Unused.
+        # TODO(cais): Implement this.
+        raise NotImplementedError()
+
     def read_blob(self, blob_key):
         del blob_key  # Unused currently.
         # TODO(cais): Implement this.
