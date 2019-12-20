@@ -24,10 +24,10 @@ export enum CategoryType {
   PREFIX_GROUP,
 }
 export interface PrefixGroupMetadata {
-  type: CategoryType;
+  type: CategoryType.PREFIX_GROUP;
 }
 export interface SearchResultsMetadata {
-  type: CategoryType;
+  type: CategoryType.SEARCH_RESULTS;
   compositeSearch?: boolean;
   validRegex: boolean;
   universalRegex: boolean; // is the search query ".*"? ("(?:)" doesn't count)
@@ -100,7 +100,7 @@ export function categorizeByPrefix(
     if (!categoriesByName[name]) {
       const category = {
         name,
-        metadata: {type: CategoryType.PREFIX_GROUP},
+        metadata: {type: CategoryType.PREFIX_GROUP} as PrefixGroupMetadata,
         items: [],
       };
       categoriesByName[name] = category;

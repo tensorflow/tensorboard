@@ -12,59 +12,62 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-namespace tf_paginated_view {
-  const LIMIT_LOCAL_STORAGE_KEY = 'TF.TensorBoard.PaginatedView.limit';
-  const DEFAULT_LIMIT = 12; // reasonably small and has lots of factors
+import {getNumber, setNumber} from '../tf_storage/storage';
 
-  let _limit: number = null; // cached localStorage value
+const LIMIT_LOCAL_STORAGE_KEY = 'TF.TensorBoard.PaginatedView.limit';
+const DEFAULT_LIMIT = 12; // reasonably small and has lots of factors
 
-  export type Listener = () => void;
+let _limit: number | undefined; // cached localStorage value
 
-  const listeners = new Set<Listener>();
+export type Listener = () => void;
 
-  /**
-   * Register a listener (nullary function) to be called when the page
-   * limit changes.
-   */
-  export function addLimitListener(listener: Listener): void {
-    listeners.add(listener);
-  }
+const listeners = new Set<Listener>();
 
-  /**
-   * Remove a listener registered with `addLimitListener`.
-   */
-  export function removeLimitListener(listener: Listener): void {
-    listeners.delete(listener);
-  }
+/**
+ * Register a listener (nullary function) to be called when the page
+ * limit changes.
+ */
+export function addLimitListener(listener: Listener): void {
+  listeners.add(listener);
+}
 
-  export function getLimit() {
-    if (_limit == null) {
-      _limit = tf_storage.getNumber(LIMIT_LOCAL_STORAGE_KEY, {
-        useLocalStorage: true,
-      });
-      if (_limit == null || !isFinite(_limit) || _limit <= 0) {
-        _limit = DEFAULT_LIMIT;
-      }
-    }
-    return _limit;
-  }
+/**
+ * Remove a listener registered with `addLimitListener`.
+ */
+export function removeLimitListener(listener: Listener): void {
+  listeners.delete(listener);
+}
 
-  export function setLimit(limit: number) {
-    if (limit !== Math.floor(limit)) {
-      throw new Error(`limit must be an integer, but got: ${limit}`);
-    }
-    if (limit <= 0) {
-      throw new Error(`limit must be positive, but got: ${limit}`);
-    }
-    if (limit === _limit) {
-      return;
-    }
-    _limit = limit;
-    tf_storage.setNumber(LIMIT_LOCAL_STORAGE_KEY, _limit, {
+export function getLimit() {
+  if (_limit === undefined) {
+    _limit = getNumber(LIMIT_LOCAL_STORAGE_KEY, {
       useLocalStorage: true,
     });
-    listeners.forEach((listener) => {
-      listener();
-    });
+    if (_limit === undefined || !isFinite(_limit) || _limit <= 0) {
+      _limit = DEFAULT_LIMIT;
+    }
   }
-} // namespace tf_paginated_view
+  return _limit;
+}
+
+export function setLimit(limit: number) {
+  if (limit !== Math.floor(limit)) {
+    throw new Error(`limit must be an integer, but got: ${limit}`);
+  }
+  if (limit <= 0) {
+    throw new Error(`limit must be positive, but got: ${limit}`);
+  }
+  if (limit === _limit) {
+    return;
+  }
+
+  _limit = limit;
+
+  setNumber(LIMIT_LOCAL_STORAGE_KEY, _limit, {
+    useLocalStorage: true,
+  });
+
+  listeners.forEach((listener) => {
+    listener();
+  });
+}
