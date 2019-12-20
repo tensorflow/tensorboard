@@ -201,6 +201,9 @@ function maybeAddImportStatements(statements: ts.Statement[]) {
   const hasListenDecorator = polymerClasses.some((polymerClass) =>
     hasMethodDecorator(polymerClass, 'listen')
   );
+  const hasComputedDecorator = polymerClasses.some((polymerClass) =>
+    hasMethodDecorator(polymerClass, 'computed')
+  );
   const shouldImportPolymer =
     !hasImport(statements, '@polymer/polymer') && polymerClasses.length;
   const shouldLoadPolymerDecorator =
@@ -208,7 +211,8 @@ function maybeAddImportStatements(statements: ts.Statement[]) {
     (polymerClasses.length ||
       hasListenDecorator ||
       hasPropertyDecorator ||
-      hasObserveDecorator);
+      hasObserveDecorator ||
+      hasComputedDecorator);
 
   const importPolymer = shouldImportPolymer
     ? ts.createImportDeclaration(
@@ -259,6 +263,12 @@ function maybeAddImportStatements(statements: ts.Statement[]) {
                     ts.createIdentifier('listen')
                   )
                 : undefined,
+              hasComputedDecorator
+                ? ts.createImportSpecifier(
+                    undefined,
+                    ts.createIdentifier('computed')
+                  )
+                : undefined,
             ].filter(Boolean)
           )
         ),
@@ -294,7 +304,11 @@ function getPropsAstNodes(props: ts.PropertyAssignment) {
         : null;
 
       let initializer = undefined;
-      let type = ts.createKeywordTypeNode(ts.SyntaxKind.UnknownKeyword);
+      let type:
+        | ts.ArrayTypeNode
+        | ts.KeywordTypeNode = ts.createKeywordTypeNode(
+        ts.SyntaxKind.UnknownKeyword
+      );
 
       if (typeInitializer) {
         switch (initializerValue(typeInitializer)) {
@@ -307,6 +321,13 @@ function getPropsAstNodes(props: ts.PropertyAssignment) {
           case 'Number':
             type = ts.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword);
             break;
+          case 'Array':
+            type = ts.createArrayTypeNode(
+              ts.createKeywordTypeNode(ts.SyntaxKind.UnknownKeyword)
+            );
+            break;
+          default:
+            type = ts.createKeywordTypeNode(ts.SyntaxKind.ObjectKeyword);
         }
         // Do something useful for other types.
         initializer = valueInitializer
@@ -424,55 +445,149 @@ function polymerFnToElement(
     })
     .join('');
 
-  const members = [
-    ...getPropsAstNodes(getStaticProp(polymerSpecAst, 'properties')),
-    ...flattenProperties('observe', getStaticProp(polymerSpecAst, 'observers')),
-    ...flattenProperties('listen', getStaticProp(polymerSpecAst, 'listeners')),
-    ...polymerSpecAst.properties
-      .filter((prop) => {
-        const isPolymerMethod =
-          ts.isPropertyAssignment(prop) &&
-          ts.isIdentifier(prop.name) &&
-          (prop.name.text === 'is' ||
-            prop.name.text === 'properties' ||
-            prop.name.text === 'observers' ||
-            prop.name.text === 'listeners');
-        return !isPolymerMethod;
-      })
-      .map((prop) => {
-        if (!ts.isPropertyAssignment(prop)) return prop;
-        if (ts.isFunctionExpression(prop.initializer)) {
-          return ts.createMethod(
-            undefined,
-            undefined,
-            undefined,
-            prop.name,
-            undefined,
-            undefined,
-            prop.initializer.parameters,
-            undefined,
-            prop.initializer.body
-          );
-        }
-        if (ts.isArrowFunction(prop.initializer)) {
-          return ts.createMethod(
-            undefined,
-            undefined,
-            undefined,
-            prop.name,
-            undefined,
-            undefined,
-            prop.initializer.parameters,
-            undefined,
-            ts.isBlock(prop.initializer.body)
-              ? prop.initializer.body
-              : ts.createBlock([ts.createReturn(prop.initializer.body)])
-          );
-        }
+  const props = new Set(
+    getPropsAstNodes(getStaticProp(polymerSpecAst, 'properties'))
+  );
+  const observers = new Set(
+    flattenProperties('observe', getStaticProp(polymerSpecAst, 'observers'))
+  );
+  const listeners = new Set(
+    flattenProperties('listen', getStaticProp(polymerSpecAst, 'listeners'))
+  );
 
-        return prop;
-      }),
-  ].filter(Boolean) as ts.ClassElement[];
+  const computedPropNames = new Map<
+    string,
+    {args: string[]; prop: ts.PropertyDeclaration}
+  >();
+  props.forEach((prop) => {
+    if (!ts.isPropertyDeclaration(prop)) return;
+    const [decorator] = prop.decorators;
+    if (!ts.isCallExpression(decorator.expression)) return;
+    if (!ts.isIdentifier(decorator.expression.expression)) return;
+    if (decorator.expression.expression.text !== 'computed') return;
+    const computedStatement = decorator.expression.arguments[0];
+    if (!ts.isStringLiteral(computedStatement)) return;
+    const {methodName, args} = parsePolymerStringDeclaration(
+      computedStatement.text
+    );
+    computedPropNames.set(methodName, {args, prop});
+  });
+  const knownMethodNames = new Map<string, ts.ClassElement>();
+  observers.forEach((observer) => {
+    if (!ts.isMethodDeclaration(observer)) return;
+    if (!ts.isIdentifier(observer.name)) return;
+    knownMethodNames.set(observer.name.text, observer);
+  });
+  listeners.forEach((listener) => {
+    if (!ts.isMethodDeclaration(listener)) return;
+    if (!ts.isIdentifier(listener.name)) return;
+    knownMethodNames.set(listener.name.text, listener);
+  });
+
+  const methods = polymerSpecAst.properties
+    .filter((prop) => {
+      const isPolymerMethod =
+        ts.isPropertyAssignment(prop) &&
+        ts.isIdentifier(prop.name) &&
+        (prop.name.text === 'is' ||
+          prop.name.text === 'properties' ||
+          prop.name.text === 'observers' ||
+          prop.name.text === 'listeners');
+      return !isPolymerMethod;
+    })
+    .map((prop) => {
+      if (!ts.isPropertyAssignment(prop)) return prop;
+      if (ts.isFunctionExpression(prop.initializer)) {
+        return ts.createMethod(
+          undefined,
+          undefined,
+          undefined,
+          prop.name,
+          undefined,
+          undefined,
+          prop.initializer.parameters,
+          undefined,
+          prop.initializer.body
+        );
+      }
+      if (ts.isArrowFunction(prop.initializer)) {
+        return ts.createMethod(
+          undefined,
+          undefined,
+          undefined,
+          prop.name,
+          undefined,
+          undefined,
+          prop.initializer.parameters,
+          undefined,
+          ts.isBlock(prop.initializer.body)
+            ? prop.initializer.body
+            : ts.createBlock([ts.createReturn(prop.initializer.body)])
+        );
+      }
+
+      return prop;
+    })
+    .map((method) => {
+      if (
+        !ts.isMethodDeclaration(method) ||
+        !ts.isIdentifier(method.name) ||
+        !knownMethodNames.has(method.name.text)
+      ) {
+        return method;
+      }
+
+      const decoratedMethod = knownMethodNames.get(method.name.text);
+      if (!ts.isMethodDeclaration(decoratedMethod)) return method;
+
+      observers.delete(decoratedMethod);
+      listeners.delete(decoratedMethod);
+
+      return ts.createMethod(
+        decoratedMethod.decorators,
+        method.modifiers,
+        method.asteriskToken,
+        method.name,
+        method.questionToken,
+        [],
+        [],
+        method.type,
+        method.body
+      );
+    })
+    .map((method) => {
+      if (
+        !ts.isMethodDeclaration(method) ||
+        !ts.isIdentifier(method.name) ||
+        !computedPropNames.has(method.name.text)
+      ) {
+        return method;
+      }
+
+      const {args, prop} = computedPropNames.get(method.name.text);
+      props.delete(prop);
+
+      return ts.createGetAccessor(
+        [
+          ts.createDecorator(
+            ts.createCall(
+              ts.createIdentifier('computed'),
+              undefined,
+              args.map((arg) => ts.createStringLiteral(arg))
+            )
+          ),
+        ],
+        method.modifiers,
+        prop.name,
+        [],
+        prop.type,
+        method.body
+      );
+    });
+
+  const members = [...props, ...observers, ...listeners, ...methods].filter(
+    Boolean
+  ) as ts.ClassElement[];
 
   const baseClass = ts.createIdentifier('PolymerElement');
   const heritageClause = ts.createHeritageClause(Kind.ExtendsKeyword, [
