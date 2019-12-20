@@ -20,7 +20,7 @@ namespace tf_dashboard_common {
       _regex: {type: Object, computed: '_makeRegex(regex)'},
       namesMatchingRegex: {
         type: Array,
-        computed: 'computeNamesMatchingRegex(names.*, _regex)',
+        computed: 'computeNamesMatchingRegex(names, _regex)',
       }, // Runs that match the regex
       selectionState: {
         // If a name is explicitly enabled by user gesture, True, if explicitly
@@ -94,7 +94,7 @@ namespace tf_dashboard_common {
         }
       });
     },
-    computeNamesMatchingRegex: function(__, ___) {
+    computeNamesMatchingRegex: function(names, ___) {
       const regex = this._regex;
       return regex ? this.names.filter((n) => regex.test(n)) : this.names;
     },

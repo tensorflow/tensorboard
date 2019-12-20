@@ -543,6 +543,17 @@ function polymerFnToElement(
       observers.delete(decoratedMethod);
       listeners.delete(decoratedMethod);
 
+      const [decorator] = decoratedMethod.decorators;
+      let decoratorArgs: string[] = [];
+      if (ts.isCallExpression(decorator.expression)) {
+        decoratorArgs = decorator.expression.arguments.map((arg) => {
+          return (arg as ts.StringLiteral).text;
+        });
+      }
+      const methodParams = method.parameters.map(
+        (param) => (param.name as ts.Identifier).text
+      );
+
       return ts.createMethod(
         decoratedMethod.decorators,
         method.modifiers,
@@ -552,7 +563,26 @@ function polymerFnToElement(
         [],
         [],
         method.type,
-        method.body
+        ts.updateBlock(method.body, [
+          ...methodParams.map((param, index) => {
+            const arg = decoratorArgs[index];
+            const isPropertyAccessor = arg.includes('.');
+            return ts.createVariableStatement(
+              [],
+              [
+                ts.createVariableDeclaration(
+                  param,
+                  undefined,
+                  ts.createPropertyAccess(
+                    ts.createThis(),
+                    isPropertyAccessor ? 'do_not_submit' : arg
+                  )
+                ),
+              ]
+            );
+          }),
+          ...method.body.statements,
+        ])
       );
     })
     .map((method) => {
@@ -566,6 +596,10 @@ function polymerFnToElement(
 
       const {args, prop} = computedPropNames.get(method.name.text);
       props.delete(prop);
+
+      const methodParams = method.parameters.map(
+        (param) => (param.name as ts.Identifier).text
+      );
 
       return ts.createGetAccessor(
         [
@@ -581,7 +615,26 @@ function polymerFnToElement(
         prop.name,
         [],
         prop.type,
-        method.body
+        ts.updateBlock(method.body, [
+          ...methodParams.map((param, index) => {
+            const arg = args[index];
+            const isPropertyAccessor = arg.includes('.');
+            return ts.createVariableStatement(
+              [],
+              [
+                ts.createVariableDeclaration(
+                  param,
+                  undefined,
+                  ts.createPropertyAccess(
+                    ts.createThis(),
+                    isPropertyAccessor ? 'do_not_submit' : arg
+                  )
+                ),
+              ]
+            );
+          }),
+          ...method.body.statements,
+        ])
       );
     });
 
