@@ -15,4 +15,3 @@ tf_web_library(
         "@org_polymer_paper_styles",
     ],
 )
-

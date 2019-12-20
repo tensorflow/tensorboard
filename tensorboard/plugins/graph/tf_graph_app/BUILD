@@ -33,4 +33,3 @@ tensorboard_webcomponent_library(
     srcs = [":binary"],
     destdir = "tf-graph-app",
 )
-

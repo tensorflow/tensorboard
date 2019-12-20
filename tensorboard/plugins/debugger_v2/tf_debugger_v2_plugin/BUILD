@@ -19,6 +19,7 @@ ng_module(
         "debugger_component.ng.html",
     ],
     deps = [
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/inactive",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
         "@npm//rxjs",
