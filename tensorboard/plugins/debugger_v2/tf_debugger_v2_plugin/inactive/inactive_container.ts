@@ -12,16 +12,20 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {Component} from '@angular/core';
+import {Store} from '@ngrx/store';
 
-import {NgModule} from '@angular/core';
+/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
-import {DebuggerComponent} from './debugger_component';
-import {DebuggerContainer} from './debugger_container';
-import {InactiveModule} from './inactive/inactive_module';
+// TODO(cais): Move to a separate file.
+export interface InactiveState {}
 
-@NgModule({
-  declarations: [DebuggerComponent, DebuggerContainer],
-  imports: [InactiveModule],
-  exports: [DebuggerContainer],
+@Component({
+  selector: 'tf-debugger-v2-inactive',
+  template: `
+    <inactive-component></inactive-component>
+  `,
 })
-export class DebuggerModule {}
+export class InactiveContainer {
+  constructor(private readonly store: Store<InactiveState>) {}
+}
