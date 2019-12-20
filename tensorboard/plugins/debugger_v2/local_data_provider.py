@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""An implementation of DataProvider that serves tfdbg v2 data. 
+"""An implementation of DataProvider that serves tfdbg v2 data.
 
 This implementation is:
   1. Based on reading data from a DebugEvent file set on the local filesystem.
