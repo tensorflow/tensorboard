@@ -14,7 +14,8 @@
 # limitations under the License.
 # ==============================================================================
 
-# Script to download Bazel binary directly onto a build machine.
+# Script to download a binary directly onto a build machine, with
+# checksum verification.
 
 set -e
 
@@ -23,16 +24,25 @@ die() {
   exit 1
 }
 
-if [ "$#" -ne 3 ]; then
-  die "Usage: $0 <version> <sha256sum> <destination-file>"
+if [ "$#" -lt 3 ]; then
+  die "Usage: $0 <sha256sum> <destination-file> <url> [<url>...]"
 fi
 
-version="$1"
-checksum="$2"
-dest="$3"
+checksum="$1"
+dest="$2"
+shift 2
 
-mirror_url="http://mirror.tensorflow.org/github.com/bazelbuild/bazel/releases/download/${version}/bazel-${version}-linux-x86_64"
-github_url="https://github.com/bazelbuild/bazel/releases/download/${version}/bazel-${version}-linux-x86_64"
+temp_dest="$(mktemp)"
 
-exec "$(dirname "$0")/download_executable.sh" "${checksum}" "${dest}" \
-    "${mirror_url}" "${github_url}"
+for url; do
+  wget -t 3 -O "${temp_dest}" "${url}" \
+    && printf "%s  %s\n" "${checksum}" "${temp_dest}" | shasum -a 256 --check \
+    || { rm -f "${temp_dest}"; continue; }
+  mv "${temp_dest}" "${dest}"
+  break
+done
+
+
+[ -f "${dest}" ]
+chmod +x "${dest}"
+ls -l "${dest}"
