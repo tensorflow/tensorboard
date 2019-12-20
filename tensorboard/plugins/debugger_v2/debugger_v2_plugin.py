@@ -51,7 +51,7 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
     def is_active(self):
         """Check whether the Debugger V2 Plugin is always active.
 
-        When no data in the tfdbg v2 format is available, a custom informationA
+        When no data in the tfdbg v2 format is available, a custom information
         screen is displayed to instruct the user on how to generate such data
         to be able to use the plugin.
 
