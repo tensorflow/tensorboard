@@ -20,4 +20,3 @@ tensorboard_webcomponent_library(
     srcs = [":vz_sorting"],
     destdir = "vz-sorting",
 )
-

@@ -8,8 +8,8 @@ licenses(["notice"])  # Apache 2.0
 ng_module(
     name = "plugins",
     srcs = [
-        "plugins_container.ts",
         "plugins_component.ts",
+        "plugins_container.ts",
         "plugins_module.ts",
     ],
     assets = [

@@ -7,16 +7,15 @@ licenses(["notice"])  # Apache 2.0
 tf_web_library(
     name = "xla",
     srcs = [
-        "xla.html",
-        "shape.js",
-        "logical-buffer.js",
-        "buffer-allocation-assigned.js",
         "buffer-allocation.js",
+        "buffer-allocation-assigned.js",
         "hlo-instruction.js",
+        "logical-buffer.js",
+        "shape.js",
+        "xla.html",
     ],
     path = "/memory-viewer",
     deps = [
-      "//tensorboard/plugins/profile/memory_viewer/utils",
-    ]
+        "//tensorboard/plugins/profile/memory_viewer/utils",
+    ],
 )
-

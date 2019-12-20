@@ -7,8 +7,8 @@ ng_module(
     name = "settings",
     srcs = [
         "dialog_component.ts",
-        "settings_module.ts",
         "settings_button_component.ts",
+        "settings_module.ts",
     ],
     assets = [
         "dialog_component.css",
@@ -20,8 +20,8 @@ ng_module(
         "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/angular:expect_angular_material_input",
         "//tensorboard/webapp/core",
-        "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/core/actions",
+        "//tensorboard/webapp/core/store",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@angular/forms",

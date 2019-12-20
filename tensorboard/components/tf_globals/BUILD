@@ -19,4 +19,3 @@ tensorboard_webcomponent_library(
     srcs = [":tf_globals"],
     destdir = "tf-globals",
 )
-

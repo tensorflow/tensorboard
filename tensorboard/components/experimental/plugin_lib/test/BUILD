@@ -1,5 +1,5 @@
 load("//tensorboard/defs:web.bzl", "tf_web_library", "tf_web_test")
-load("//tensorboard/defs:defs.bzl", "tf_ts_library", "tf_js_binary")
+load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ts_library")
 
 package(
     default_testonly = True,

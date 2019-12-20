@@ -8,8 +8,8 @@ licenses(["notice"])  # Apache 2.0
 ng_module(
     name = "header",
     srcs = [
-        "header_container.ts",
         "header_component.ts",
+        "header_container.ts",
         "header_module.ts",
         "types.ts",
     ],

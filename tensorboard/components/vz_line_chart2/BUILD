@@ -19,6 +19,7 @@ tf_web_library(
         "vz-line-chart2.js",
     ],
     path = "/vz-line-chart2",
+    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_imports:d3",
         "//tensorboard/components/tf_imports:lodash",
@@ -27,7 +28,6 @@ tf_web_library(
         "//tensorboard/components/vz_chart_helpers",
         "//tensorboard/components/vz_line_chart:dragZoomInteraction",
     ],
-    visibility = ["//visibility:public"],
 )
 
 tensorboard_webcomponent_library(
