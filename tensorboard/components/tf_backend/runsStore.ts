@@ -12,29 +12,29 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-namespace tf_backend {
-  export class RunsStore extends BaseStore {
-    private _runs: string[] = [];
+import * as _ from 'lodash';
 
-    load() {
-      const url = tf_backend.getRouter().runs();
-      return this.requestManager.request(url).then((newRuns) => {
-        if (!_.isEqual(this._runs, newRuns)) {
-          this._runs = newRuns;
-          this.emitChange();
-        }
-      });
-    }
+import {getRouter} from './router';
+import {BaseStore} from './baseStore';
 
-    /**
-     * Get the current list of runs. If no data is available, this will be
-     * an empty array (i.e., there is no distinction between "no runs" and
-     * "no runs yet").
-     */
-    getRuns(): string[] {
-      return this._runs.slice();
-    }
+export class RunsStore extends BaseStore {
+  private _runs: string[] = [];
+  load() {
+    const url = getRouter().runs();
+    return this.requestManager.request(url).then((newRuns) => {
+      if (!_.isEqual(this._runs, newRuns)) {
+        this._runs = newRuns;
+        this.emitChange();
+      }
+    });
   }
-
-  export const runsStore = new RunsStore();
-} // namespace tf_backend
+  /**
+   * Get the current list of runs. If no data is available, this will be
+   * an empty array (i.e., there is no distinction between "no runs" and
+   * "no runs yet").
+   */
+  getRuns(): string[] {
+    return this._runs.slice();
+  }
+}
+export const runsStore = new RunsStore();

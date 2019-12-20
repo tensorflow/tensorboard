@@ -12,37 +12,34 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-namespace tf_backend {
-  interface Environment {
-    dataLocation: string;
-    windowTitle: string;
+import * as _ from 'lodash';
+
+import {BaseStore} from './baseStore';
+import {getRouter} from './router';
+
+interface Environment {
+  dataLocation: string;
+  windowTitle: string;
+}
+export class EnvironmentStore extends BaseStore {
+  private environment?: Environment;
+  load() {
+    const url = getRouter().environment();
+    return this.requestManager.request(url).then((result) => {
+      const environment = {
+        dataLocation: result.data_location,
+        windowTitle: result.window_title,
+      };
+      if (_.isEqual(this.environment, environment)) return;
+      this.environment = environment;
+      this.emitChange();
+    });
   }
-
-  export class EnvironmentStore extends BaseStore {
-    private environment: Environment;
-
-    load() {
-      const url = tf_backend.getRouter().environment();
-      return this.requestManager.request(url).then((result) => {
-        const environment = {
-          dataLocation: result.data_location,
-          windowTitle: result.window_title,
-        };
-        if (_.isEqual(this.environment, environment)) return;
-
-        this.environment = environment;
-        this.emitChange();
-      });
-    }
-
-    public getDataLocation(): string {
-      return this.environment ? this.environment.dataLocation : '';
-    }
-
-    public getWindowTitle(): string {
-      return this.environment ? this.environment.windowTitle : '';
-    }
+  public getDataLocation(): string {
+    return this.environment ? this.environment.dataLocation : '';
   }
-
-  export const environmentStore = new EnvironmentStore();
-} // namespace tf_backend
+  public getWindowTitle(): string {
+    return this.environment ? this.environment.windowTitle : '';
+  }
+}
+export const environmentStore = new EnvironmentStore();
