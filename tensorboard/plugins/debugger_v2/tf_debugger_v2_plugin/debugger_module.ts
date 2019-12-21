@@ -17,7 +17,7 @@ import {NgModule} from '@angular/core';
 
 import {DebuggerComponent} from './debugger_component';
 import {DebuggerContainer} from './debugger_container';
-import {InactiveModule} from './inactive/inactive_module';
+import {InactiveModule} from './views/inactive/inactive_module';
 
 @NgModule({
   declarations: [DebuggerComponent, DebuggerContainer],

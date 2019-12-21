@@ -7,8 +7,8 @@ licenses(["notice"])  # Apache 2.0
 ng_module(
     name = "inactive",
     srcs = [
-        "inactive_container.ts",
         "inactive_component.ts",
+        "inactive_container.ts",
         "inactive_module.ts",
     ],
     assets = [
