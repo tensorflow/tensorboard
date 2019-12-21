@@ -84,12 +84,12 @@ class ScalarsPlugin(base_plugin.TBPlugin):
             db = self._db_connection_provider()
             cursor = db.execute(
                 """
-        SELECT
-          1
-        FROM Tags
-        WHERE Tags.plugin_name = ?
-        LIMIT 1
-      """,
+                SELECT
+                  1
+                FROM Tags
+                WHERE Tags.plugin_name = ?
+                LIMIT 1
+                """,
                 (metadata.PLUGIN_NAME,),
             )
             return bool(list(cursor))
@@ -128,16 +128,16 @@ class ScalarsPlugin(base_plugin.TBPlugin):
             db = self._db_connection_provider()
             cursor = db.execute(
                 """
-        SELECT
-          Tags.tag_name,
-          Tags.display_name,
-          Runs.run_name
-        FROM Tags
-        JOIN Runs
-          ON Tags.run_id = Runs.run_id
-        WHERE
-          Tags.plugin_name = ?
-      """,
+                SELECT
+                  Tags.tag_name,
+                  Tags.display_name,
+                  Runs.run_name
+                FROM Tags
+                JOIN Runs
+                  ON Tags.run_id = Runs.run_id
+                WHERE
+                  Tags.plugin_name = ?
+                """,
                 (metadata.PLUGIN_NAME,),
             )
             result = collections.defaultdict(dict)
@@ -193,27 +193,27 @@ class ScalarsPlugin(base_plugin.TBPlugin):
             # placeholder rows en masse. The check for step filters out those rows.
             cursor = db.execute(
                 """
-        SELECT
-          Tensors.step,
-          Tensors.computed_time,
-          Tensors.data,
-          Tensors.dtype
-        FROM Tensors
-        JOIN Tags
-          ON Tensors.series = Tags.tag_id
-        JOIN Runs
-          ON Tags.run_id = Runs.run_id
-        WHERE
-          /* For backwards compatibility, ignore the experiment id
-             for matching purposes if it is empty. */
-          (:exp == '' OR Runs.experiment_id == CAST(:exp AS INT))
-          AND Runs.run_name = :run
-          AND Tags.tag_name = :tag
-          AND Tags.plugin_name = :plugin
-          AND Tensors.shape = ''
-          AND Tensors.step > -1
-        ORDER BY Tensors.step
-      """,
+                SELECT
+                  Tensors.step,
+                  Tensors.computed_time,
+                  Tensors.data,
+                  Tensors.dtype
+                FROM Tensors
+                JOIN Tags
+                  ON Tensors.series = Tags.tag_id
+                JOIN Runs
+                  ON Tags.run_id = Runs.run_id
+                WHERE
+                  /* For backwards compatibility, ignore the experiment id
+                     for matching purposes if it is empty. */
+                  (:exp == '' OR Runs.experiment_id == CAST(:exp AS INT))
+                  AND Runs.run_name = :run
+                  AND Tags.tag_name = :tag
+                  AND Tags.plugin_name = :plugin
+                  AND Tensors.shape = ''
+                  AND Tensors.step > -1
+                ORDER BY Tensors.step
+                """,
                 dict(
                     exp=experiment,
                     run=run,

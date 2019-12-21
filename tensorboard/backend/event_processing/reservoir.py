@@ -27,36 +27,36 @@ import threading
 class Reservoir(object):
     """A map-to-arrays container, with deterministic Reservoir Sampling.
 
-  Items are added with an associated key. Items may be retrieved by key, and
-  a list of keys can also be retrieved. If size is not zero, then it dictates
-  the maximum number of items that will be stored with each key. Once there are
-  more items for a given key, they are replaced via reservoir sampling, such
-  that each item has an equal probability of being included in the sample.
+    Items are added with an associated key. Items may be retrieved by key, and
+    a list of keys can also be retrieved. If size is not zero, then it dictates
+    the maximum number of items that will be stored with each key. Once there are
+    more items for a given key, they are replaced via reservoir sampling, such
+    that each item has an equal probability of being included in the sample.
 
-  Deterministic means that for any given seed and bucket size, the sequence of
-  values that are kept for any given tag will always be the same, and that this
-  is independent of any insertions on other tags. That is:
+    Deterministic means that for any given seed and bucket size, the sequence of
+    values that are kept for any given tag will always be the same, and that this
+    is independent of any insertions on other tags. That is:
 
-  >>> separate_reservoir = reservoir.Reservoir(10)
-  >>> interleaved_reservoir = reservoir.Reservoir(10)
-  >>> for i in xrange(100):
-  >>>   separate_reservoir.AddItem('key1', i)
-  >>> for i in xrange(100):
-  >>>   separate_reservoir.AddItem('key2', i)
-  >>> for i in xrange(100):
-  >>>   interleaved_reservoir.AddItem('key1', i)
-  >>>   interleaved_reservoir.AddItem('key2', i)
+    >>> separate_reservoir = reservoir.Reservoir(10)
+    >>> interleaved_reservoir = reservoir.Reservoir(10)
+    >>> for i in xrange(100):
+    >>>   separate_reservoir.AddItem('key1', i)
+    >>> for i in xrange(100):
+    >>>   separate_reservoir.AddItem('key2', i)
+    >>> for i in xrange(100):
+    >>>   interleaved_reservoir.AddItem('key1', i)
+    >>>   interleaved_reservoir.AddItem('key2', i)
 
-  separate_reservoir and interleaved_reservoir will be in identical states.
+    separate_reservoir and interleaved_reservoir will be in identical states.
 
-  See: https://en.wikipedia.org/wiki/Reservoir_sampling
+    See: https://en.wikipedia.org/wiki/Reservoir_sampling
 
-  Adding items has amortized O(1) runtime.
+    Adding items has amortized O(1) runtime.
 
-  Fields:
-    always_keep_last: Whether the latest seen sample is always at the
-      end of the reservoir. Defaults to True.
-    size: An integer of the maximum number of samples.
+    Fields:
+      always_keep_last: Whether the latest seen sample is always at the
+        end of the reservoir. Defaults to True.
+      size: An integer of the maximum number of samples.
     """
 
     def __init__(self, size, seed=0, always_keep_last=True):

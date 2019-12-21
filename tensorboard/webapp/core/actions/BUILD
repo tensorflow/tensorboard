@@ -6,10 +6,10 @@ tf_ts_library(
     name = "actions",
     srcs = [
         "core_actions.ts",
-        "index.ts"
+        "index.ts",
     ],
     deps = [
         "//tensorboard/webapp/types",
         "@npm//@ngrx/store",
-    ]
+    ],
 )

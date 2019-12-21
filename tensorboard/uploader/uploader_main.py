@@ -329,15 +329,15 @@ class _DeleteExperimentIntent(_Intent):
 
     _MESSAGE_TEMPLATE = textwrap.dedent(
         u"""\
-      This will delete the experiment on https://tensorboard.dev with the
-      following experiment ID:
+        This will delete the experiment on https://tensorboard.dev with the
+        following experiment ID:
 
-      {experiment_id}
+        {experiment_id}
 
-      You have chosen to delete an experiment. All experiments uploaded
-      to TensorBoard.dev are publicly visible. Do not upload sensitive
-      data.
-  """
+        You have chosen to delete an experiment. All experiments uploaded
+        to TensorBoard.dev are publicly visible. Do not upload sensitive
+        data.
+        """
     )
 
     def __init__(self, experiment_id):
@@ -377,10 +377,10 @@ class _ListIntent(_Intent):
 
     _MESSAGE = textwrap.dedent(
         u"""\
-      This will list all experiments that you've uploaded to
-      https://tensorboard.dev. TensorBoard.dev experiments are visible
-      to everyone. Do not upload sensitive data.
-  """
+        This will list all experiments that you've uploaded to
+        https://tensorboard.dev. TensorBoard.dev experiments are visible
+        to everyone. Do not upload sensitive data.
+        """
     )
 
     def get_ack_message_body(self):
@@ -433,14 +433,14 @@ class _UploadIntent(_Intent):
 
     _MESSAGE_TEMPLATE = textwrap.dedent(
         u"""\
-      This will upload your TensorBoard logs to https://tensorboard.dev/ from
-      the following directory:
+        This will upload your TensorBoard logs to https://tensorboard.dev/ from
+        the following directory:
 
-      {logdir}
+        {logdir}
 
-      This TensorBoard will be visible to everyone. Do not upload sensitive
-      data.
-  """
+        This TensorBoard will be visible to everyone. Do not upload sensitive
+        data.
+        """
     )
 
     def __init__(self, logdir):
@@ -480,15 +480,15 @@ class _ExportIntent(_Intent):
 
     _MESSAGE_TEMPLATE = textwrap.dedent(
         u"""\
-      This will download all your experiment data from https://tensorboard.dev
-      and save it to the following directory:
+        This will download all your experiment data from https://tensorboard.dev
+        and save it to the following directory:
 
-      {output_dir}
+        {output_dir}
 
-      Downloading your experiment data does not delete it from the
-      service. All experiments uploaded to TensorBoard.dev are publicly
-      visible. Do not upload sensitive data.
-  """
+        Downloading your experiment data does not delete it from the
+        service. All experiments uploaded to TensorBoard.dev are publicly
+        visible. Do not upload sensitive data.
+        """
     )
 
     def __init__(self, output_dir):

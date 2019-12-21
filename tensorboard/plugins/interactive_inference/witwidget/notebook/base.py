@@ -147,7 +147,8 @@ class WitWidgetBase(object):
 
     def _get_element_html(self):
         return """
-      <link rel="import" href="/nbextensions/wit-widget/wit_jupyter.html">"""
+            <link rel="import" href="/nbextensions/wit-widget/wit_jupyter.html">
+        """
 
     def set_examples(self, examples):
         """Sets the examples shown in WIT.

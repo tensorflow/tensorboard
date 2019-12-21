@@ -222,12 +222,12 @@ class ManagerEndToEndTest(tf.test.TestCase):
             name="fail-with-77",
             program=textwrap.dedent(
                 r"""
-            #!/bin/sh
-            printf >&2 'fatal: something bad happened\n'
-            printf 'also some stdout\n'
-            exit 77
-            """.lstrip(),
-            ),
+                #!/bin/sh
+                printf >&2 'fatal: something bad happened\n'
+                printf 'also some stdout\n'
+                exit 77
+                """
+            ).lstrip(),
         )
         start_result = manager.start(["--logdir=./logs", "--port=0"])
         self.assertIsInstance(start_result, manager.StartFailed)
@@ -251,12 +251,12 @@ class ManagerEndToEndTest(tf.test.TestCase):
             name="fail-with-0",
             program=textwrap.dedent(
                 r"""
-            #!/bin/sh
-            printf >&2 'info: something good happened\n'
-            printf 'also some standard output\n'
-            exit 0
-            """.lstrip(),
-            ),
+                #!/bin/sh
+                printf >&2 'info: something good happened\n'
+                printf 'also some standard output\n'
+                exit 0
+                """
+            ).lstrip(),
         )
         start_result = manager.start(["--logdir=./logs", "--port=0"])
         self.assertIsInstance(start_result, manager.StartFailed)
@@ -278,12 +278,12 @@ class ManagerEndToEndTest(tf.test.TestCase):
             name="fail-and-nuke-tmp",
             program=textwrap.dedent(
                 r"""
-            #!/bin/sh
-            rm -r %s
-            exit 22
-            """.lstrip()
+                #!/bin/sh
+                rm -r %s
+                exit 22
+                """
                 % pipes.quote(self.tmproot),
-            ),
+            ).lstrip(),
         )
         start_result = manager.start(["--logdir=./logs", "--port=0"])
         self.assertIsInstance(start_result, manager.StartFailed)
@@ -303,13 +303,13 @@ class ManagerEndToEndTest(tf.test.TestCase):
             name="wait-a-minute",
             program=textwrap.dedent(
                 r"""
-            #!/bin/sh
-            printf >%s '%%s' "$$"
-            printf >&2 'warn: I am tired\n'
-            sleep 60
-            """.lstrip()
+                #!/bin/sh
+                printf >%s '%%s' "$$"
+                printf >&2 'warn: I am tired\n'
+                sleep 60
+                """
                 % pipes.quote(os.path.realpath(pid_file)),
-            ),
+            ).lstrip(),
         )
         start_result = manager.start(
             ["--logdir=./logs", "--port=0"],
@@ -329,12 +329,12 @@ class ManagerEndToEndTest(tf.test.TestCase):
         filepath = os.path.join(tempdir, "tensorbad")
         program = textwrap.dedent(
             r"""
-        #!/bin/sh
-        printf >&2 'tensorbad: fatal: something bad happened\n'
-        printf 'tensorbad: also some stdout\n'
-        exit 77
-        """.lstrip()
-        )
+            #!/bin/sh
+            printf >&2 'tensorbad: fatal: something bad happened\n'
+            printf 'tensorbad: also some stdout\n'
+            exit 77
+            """
+        ).lstrip()
         with open(filepath, "w") as outfile:
             outfile.write(program)
         os.chmod(filepath, 0o777)

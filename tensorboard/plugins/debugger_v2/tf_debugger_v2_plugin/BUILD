@@ -10,8 +10,8 @@ licenses(["notice"])  # Apache 2.0
 ng_module(
     name = "debugger_v2",
     srcs = [
-        "debugger_container.ts",
         "debugger_component.ts",
+        "debugger_container.ts",
         "debugger_module.ts",
     ],
     assets = [
@@ -19,6 +19,7 @@ ng_module(
         "debugger_component.ng.html",
     ],
     deps = [
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/inactive",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
         "@npm//rxjs",

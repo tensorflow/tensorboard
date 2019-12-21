@@ -183,10 +183,10 @@ class Visualizer(object):
 
     def _arrays_to_sections(self, arrays):
         """
-    input: unprocessed numpy arrays.
-    returns: columns of the size that they will appear in the image, not scaled
-             for display. That needs to wait until after variance is computed.
-    """
+        input: unprocessed numpy arrays.
+        returns: columns of the size that they will appear in the image, not scaled
+            for display. That needs to wait until after variance is computed.
+        """
         sections = []
         sections_to_resize_later = {}
         show_all = self.config["show_all"]

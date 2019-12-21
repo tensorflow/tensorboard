@@ -70,6 +70,18 @@ class MeshPlugin(base_plugin.TBPlugin):
             if tag == metadata.parse_plugin_metadata(content).name
         ]
 
+    def _instance_tag_metadata(self, run, instance_tag):
+        """Gets the `MeshPluginData` proto for an instance tag."""
+        return self._instance_tag_to_metadata[(run, instance_tag)]
+
+    def _tag(self, run, instance_tag):
+        """Gets the user-facing tag name for an instance tag."""
+        return self._instance_tag_to_tag[(run, instance_tag)]
+
+    def _instance_tags(self, run, tag):
+        """Gets the instance tag names for a user-facing tag."""
+        return self._tag_to_instance_tags[(run, tag)]
+
     @wrappers.Request.application
     def _serve_tags(self, request):
         """A route (HTTP handler) that returns a response with tags.

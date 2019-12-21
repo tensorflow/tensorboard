@@ -27,6 +27,7 @@ import json
 import random
 import time
 
+import numpy as np
 import six
 
 from tensorboard.compat import tf2 as tf
@@ -45,7 +46,8 @@ def hparams(hparams, trial_id=None, start_time_secs=None):
         trial. Keys should be the names of `HParam` objects used in an
         experiment, or the `HParam` objects themselves. Values should be
         Python `bool`, `int`, `float`, or `string` values, depending on
-        the type of the hyperparameter.
+        the type of the hyperparameter. The corresponding numpy types,
+        like `np.float32`, are also permitted.
       trial_id: An optional `str` ID for the set of hyperparameter values
         used in this trial. Defaults to a hash of the hyperparameters.
       start_time_secs: The time that this trial started training, as
@@ -185,7 +187,8 @@ def _normalize_hparams(hparams):
 
     Returns:
       A `dict` whose keys are hyperparameter names (as strings) and whose
-      values are the corresponding hyperparameter values.
+      values are the corresponding hyperparameter values, after numpy
+      normalization (see `_normalize_numpy_value`).
 
     Raises:
       ValueError: If two entries in `hparams` share the same
@@ -197,8 +200,27 @@ def _normalize_hparams(hparams):
             k = k.name
         if k in result:
             raise ValueError("multiple values specified for hparam %r" % (k,))
-        result[k] = v
+        result[k] = _normalize_numpy_value(v)
     return result
+
+
+def _normalize_numpy_value(value):
+    """Convert a Python or Numpy scalar to a Python scalar.
+
+    For instance, `3.0`, `np.float32(3.0)`, and `np.float64(3.0)` all
+    map to `3.0`.
+
+    Args:
+      value: A Python scalar (`int`, `float`, `str`, or `bool`) or
+        rank-0 `numpy` equivalent (e.g., `np.int64`, `np.float32`).
+
+    Returns:
+      A Python scalar equivalent to `value`.
+    """
+    if isinstance(value, np.generic):
+        return value.item()
+    else:
+        return value
 
 
 def _derive_session_group_name(trial_id, hparams):
@@ -538,21 +560,22 @@ class Metric(object):
         dataset_type=None,
     ):
         """
-    Args:
-      tag: The tag name of the scalar summary that corresponds to this
-        metric (as a `str`).
-      group: An optional string listing the subdirectory under the
-        session's log directory containing summaries for this metric.
-        For instance, if summaries for training runs are written to
-        events files in `ROOT_LOGDIR/SESSION_ID/train`, then `group`
-        should be `"train"`. Defaults to the empty string: i.e.,
-        summaries are expected to be written to the session logdir.
-      display_name: An optional human-readable display name.
-      description: An optional Markdown string with a human-readable
-        description of this metric, to appear in TensorBoard.
-      dataset_type: Either `Metric.TRAINING` or `Metric.VALIDATION`, or
-        `None`.
-    """
+
+        Args:
+          tag: The tag name of the scalar summary that corresponds to this
+            metric (as a `str`).
+          group: An optional string listing the subdirectory under the
+            session's log directory containing summaries for this metric.
+            For instance, if summaries for training runs are written to
+            events files in `ROOT_LOGDIR/SESSION_ID/train`, then `group`
+            should be `"train"`. Defaults to the empty string: i.e.,
+            summaries are expected to be written to the session logdir.
+          display_name: An optional human-readable display name.
+          description: An optional Markdown string with a human-readable
+            description of this metric, to appear in TensorBoard.
+          dataset_type: Either `Metric.TRAINING` or `Metric.VALIDATION`, or
+            `None`.
+        """
         self._tag = tag
         self._group = group
         self._display_name = display_name

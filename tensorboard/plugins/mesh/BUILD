@@ -1,6 +1,7 @@
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
+
 exports_files(["LICENSE"])
 
 load("//tensorboard/defs:protos.bzl", "tb_proto_library")
@@ -53,8 +54,8 @@ py_library(
         "//tensorboard/backend:http_util",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/util:tensor_util",
-        "@org_pythonhosted_six",
         "@org_pocoo_werkzeug",
+        "@org_pythonhosted_six",
     ],
 )
 
@@ -88,8 +89,8 @@ py_test(
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/util:test_util",
         "@org_pocoo_werkzeug",
-        "@org_pythonhosted_six",
         "@org_pythonhosted_mock",
+        "@org_pythonhosted_six",
     ],
 )
 
@@ -102,8 +103,8 @@ py_library(
     ],
     deps = [
         ":metadata",
-        ":summary_v2",
         ":protos_all_py_pb2",
+        ":summary_v2",
         "//tensorboard:expect_tensorflow_installed",
     ],
 )
@@ -117,9 +118,9 @@ py_library(
     ],
     deps = [
         ":metadata",
-        "//tensorboard/util:tensor_util",
-        "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/compat:tensorflow",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/util:tensor_util",
     ],
 )
 
@@ -142,10 +143,10 @@ py_test(
     srcs = ["summary_v2_test.py"],
     srcs_version = "PY2AND3",
     deps = [
-        ":summary",
-        ":test_utils",
         ":metadata",
         ":protos_all_py_pb2",
+        ":summary",
+        ":test_utils",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/util:test_util",
     ],
@@ -196,8 +197,8 @@ py_binary(
         ":summary",
         "//tensorboard:expect_absl_app_installed",
         "//tensorboard:expect_absl_flags_installed",
-        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard:expect_numpy_installed",
+        "//tensorboard:expect_tensorflow_installed",
     ],
 )
 
@@ -213,8 +214,8 @@ py_binary(
         ":summary_v2",
         "//tensorboard:expect_absl_app_installed",
         "//tensorboard:expect_absl_flags_installed",
-        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard:expect_numpy_installed",
+        "//tensorboard:expect_tensorflow_installed",
     ],
 )
 

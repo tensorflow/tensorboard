@@ -83,11 +83,11 @@ class ImagesPlugin(base_plugin.TBPlugin):
             db = self._db_connection_provider()
             cursor = db.execute(
                 """
-          SELECT 1
-          FROM Tags
-          WHERE Tags.plugin_name = ?
-          LIMIT 1
-          """,
+                SELECT 1
+                FROM Tags
+                WHERE Tags.plugin_name = ?
+                LIMIT 1
+                """,
                 (metadata.PLUGIN_NAME,),
             )
             return bool(list(cursor))
@@ -105,25 +105,25 @@ class ImagesPlugin(base_plugin.TBPlugin):
             db = self._db_connection_provider()
             cursor = db.execute(
                 """
-          SELECT
-            Runs.run_name,
-            Tags.tag_name,
-            Tags.display_name,
-            Descriptions.description,
-            /* Subtract 2 for leading width and height elements. */
-            MAX(CAST (Tensors.shape AS INT)) - 2 AS samples
-          FROM Tags
-          JOIN Runs USING (run_id)
-          JOIN Tensors ON Tags.tag_id = Tensors.series
-          LEFT JOIN Descriptions ON Tags.tag_id = Descriptions.id
-          WHERE Tags.plugin_name = :plugin
-            /* Shape should correspond to a rank-1 tensor. */
-            AND NOT INSTR(Tensors.shape, ',')
-            /* Required to use TensorSeriesStepIndex. */
-            AND Tensors.step IS NOT NULL
-          GROUP BY Tags.tag_id
-          HAVING samples >= 1
-          """,
+                SELECT
+                  Runs.run_name,
+                  Tags.tag_name,
+                  Tags.display_name,
+                  Descriptions.description,
+                  /* Subtract 2 for leading width and height elements. */
+                  MAX(CAST (Tensors.shape AS INT)) - 2 AS samples
+                FROM Tags
+                JOIN Runs USING (run_id)
+                JOIN Tensors ON Tags.tag_id = Tensors.series
+                LEFT JOIN Descriptions ON Tags.tag_id = Descriptions.id
+                WHERE Tags.plugin_name = :plugin
+                  /* Shape should correspond to a rank-1 tensor. */
+                  AND NOT INSTR(Tensors.shape, ',')
+                  /* Required to use TensorSeriesStepIndex. */
+                  AND Tensors.step IS NOT NULL
+                GROUP BY Tags.tag_id
+                HAVING samples >= 1
+                """,
                 {"plugin": metadata.PLUGIN_NAME},
             )
             result = collections.defaultdict(dict)
@@ -209,30 +209,30 @@ class ImagesPlugin(base_plugin.TBPlugin):
             db = self._db_connection_provider()
             cursor = db.execute(
                 """
-          SELECT
-            computed_time,
-            step,
-            CAST (T0.data AS INT) AS width,
-            CAST (T1.data AS INT) AS height
-          FROM Tensors
-          JOIN TensorStrings AS T0
-            ON Tensors.rowid = T0.tensor_rowid
-          JOIN TensorStrings AS T1
-            ON Tensors.rowid = T1.tensor_rowid
-          WHERE
-            series = (
-              SELECT tag_id
-              FROM Runs
-              CROSS JOIN Tags USING (run_id)
-              WHERE Runs.run_name = :run AND Tags.tag_name = :tag)
-            AND step IS NOT NULL
-            AND dtype = :dtype
-            /* Should be n-vector, n >= 3: [width, height, samples...] */
-            AND (NOT INSTR(shape, ',') AND CAST (shape AS INT) >= 3)
-            AND T0.idx = 0
-            AND T1.idx = 1
-          ORDER BY step
-          """,
+                SELECT
+                  computed_time,
+                  step,
+                  CAST (T0.data AS INT) AS width,
+                  CAST (T1.data AS INT) AS height
+                FROM Tensors
+                JOIN TensorStrings AS T0
+                  ON Tensors.rowid = T0.tensor_rowid
+                JOIN TensorStrings AS T1
+                  ON Tensors.rowid = T1.tensor_rowid
+                WHERE
+                  series = (
+                    SELECT tag_id
+                    FROM Runs
+                    CROSS JOIN Tags USING (run_id)
+                    WHERE Runs.run_name = :run AND Tags.tag_name = :tag)
+                  AND step IS NOT NULL
+                  AND dtype = :dtype
+                  /* Should be n-vector, n >= 3: [width, height, samples...] */
+                  AND (NOT INSTR(shape, ',') AND CAST (shape AS INT) >= 3)
+                  AND T0.idx = 0
+                  AND T1.idx = 1
+                ORDER BY step
+                """,
                 {"run": run, "tag": tag, "dtype": tf.string.as_datatype_enum},
             )
             return [
@@ -320,30 +320,30 @@ class ImagesPlugin(base_plugin.TBPlugin):
             db = self._db_connection_provider()
             cursor = db.execute(
                 """
-          SELECT data
-          FROM TensorStrings
-          WHERE
-            /* Skip first 2 elements which are width and height. */
-            idx = 2 + :sample
-            AND tensor_rowid = (
-              SELECT rowid
-              FROM Tensors
-              WHERE
-                series = (
-                   SELECT tag_id
-                   FROM Runs
-                   CROSS JOIN Tags USING (run_id)
-                   WHERE
-                     Runs.run_name = :run
-                     AND Tags.tag_name = :tag)
-                AND step IS NOT NULL
-                AND dtype = :dtype
-                /* Should be n-vector, n >= 3: [width, height, samples...] */
-                AND (NOT INSTR(shape, ',') AND CAST (shape AS INT) >= 3)
-              ORDER BY step
-              LIMIT 1
-              OFFSET :index)
-          """,
+                SELECT data
+                FROM TensorStrings
+                WHERE
+                  /* Skip first 2 elements which are width and height. */
+                  idx = 2 + :sample
+                  AND tensor_rowid = (
+                    SELECT rowid
+                    FROM Tensors
+                    WHERE
+                      series = (
+                         SELECT tag_id
+                         FROM Runs
+                         CROSS JOIN Tags USING (run_id)
+                         WHERE
+                           Runs.run_name = :run
+                           AND Tags.tag_name = :tag)
+                      AND step IS NOT NULL
+                      AND dtype = :dtype
+                      /* Should be n-vector, n >= 3: [width, height, samples...] */
+                      AND (NOT INSTR(shape, ',') AND CAST (shape AS INT) >= 3)
+                    ORDER BY step
+                    LIMIT 1
+                    OFFSET :index)
+                """,
                 {
                     "run": run,
                     "tag": tag,

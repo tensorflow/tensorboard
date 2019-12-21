@@ -110,21 +110,21 @@ class CallbackTest(tf.test.TestCase):
         expected_start_pb = plugin_data_pb2.SessionStartInfo()
         text_format.Merge(
             """
-        start_time_secs: 1234.5
-        group_name: "my_trial"
-        hparams {
-          key: "optimizer"
-          value {
-            string_value: "adam"
-          }
-        }
-        hparams {
-          key: "dense_neurons"
-          value {
-            number_value: 8.0
-          }
-        }
-        """,
+            start_time_secs: 1234.5
+            group_name: "my_trial"
+            hparams {
+              key: "optimizer"
+              value {
+                string_value: "adam"
+              }
+            }
+            hparams {
+              key: "dense_neurons"
+              value {
+                number_value: 8.0
+              }
+            }
+            """,
             expected_start_pb,
         )
         self.assertEqual(start_pb, expected_start_pb)
@@ -132,9 +132,9 @@ class CallbackTest(tf.test.TestCase):
         expected_end_pb = plugin_data_pb2.SessionEndInfo()
         text_format.Merge(
             """
-        end_time_secs: 6789.0
-        status: STATUS_SUCCESS
-        """,
+            end_time_secs: 6789.0
+            status: STATUS_SUCCESS
+            """,
             expected_end_pb,
         )
         self.assertEqual(end_pb, expected_end_pb)
