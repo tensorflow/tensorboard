@@ -55,7 +55,7 @@ const cascadingRedraw = _.throttle(function internalRedraw() {
 }, 100);
 
 @customElement('tf-line-chart-data-loader')
-class TfLineChartDataLoader<ScalarMetadata> extends DataLoader<
+export class TfLineChartDataLoader<ScalarMetadata> extends DataLoader<
   string,
   ScalarDatum[]
 > {

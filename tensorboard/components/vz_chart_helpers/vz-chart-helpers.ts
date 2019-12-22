@@ -23,7 +23,7 @@ export interface Datum {
 
 export interface Scalar {
   scalar: number;
-  smoothed: number;
+  smoothed?: number;
 }
 
 export type ScalarDatum = Datum & Scalar;
