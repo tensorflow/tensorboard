@@ -1,28 +1,25 @@
-package(default_visibility = ["//tensorboard:internal"])
+load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 
-load("//tensorboard/defs:defs.bzl", "tensorboard_webcomponent_library")
-load("//tensorboard/defs:web.bzl", "tf_web_library")
+package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
-tf_web_library(
+tf_ts_library(
     name = "tf_categorization_utils",
     srcs = [
         "categorizationUtils.ts",
-        "tf-categorization-utils.html",
-        "tf-tag-filterer.html",
+        "tf-tag-filterer.ts",
     ],
-    path = "/tf-categorization-utils",
     visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_backend",
-        "//tensorboard/components/tf_dashboard_common",
-        "//tensorboard/components/tf_imports:lodash",
-        "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_storage",
         "//tensorboard/components/vz_sorting",
-        "@org_polymer_iron_collapse",
-        "@org_polymer_iron_icon",
-        "@org_polymer_paper_input",
+        "@npm//@polymer/decorators",
+        "@npm//@polymer/iron-icon",
+        "@npm//@polymer/paper-input",
+        "@npm//@polymer/polymer",
+        "@npm//@types/lodash",
+        "@npm//lodash",
     ],
 )
