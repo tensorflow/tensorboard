@@ -254,7 +254,7 @@ TODO(erez): Add aggregation controls for repeated sessions.
                     id="latexLink"
                     download="hparams_table.tex"
                     href="[[_latexUrl()]]"
-                    >LATEX</a
+                    >LaTeX</a
                   >
                 </span>
               </template>
@@ -596,7 +596,7 @@ TODO(erez): Add aggregation controls for repeated sessions.
       },
       _downloadDataUrl(format) {
         const request = this._buildListSessionGroupsRequest();
-        return this.backend.getDowloadURL(format, request);
+        return this.backend.getDownloadUrl(format, request);
       },
 
       // Sends a request for experiment to the server, and updates

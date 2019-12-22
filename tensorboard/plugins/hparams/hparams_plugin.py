@@ -23,8 +23,6 @@ from __future__ import division
 from __future__ import print_function
 
 import json
-import csv
-from six import StringIO
 
 
 import werkzeug
@@ -32,6 +30,7 @@ from werkzeug import wrappers
 
 from tensorboard.plugins.hparams import api_pb2
 from tensorboard.plugins.hparams import backend_context
+from tensorboard.plugins.hparams import download_data
 from tensorboard.plugins.hparams import error
 from tensorboard.plugins.hparams import get_experiment
 from tensorboard.plugins.hparams import list_metric_evals
@@ -45,14 +44,6 @@ from tensorboard.util import tb_logging
 
 
 logger = tb_logging.get_logger()
-
-
-class OutputFormat(object):
-    """An enum used to list the valid output formats for API calls."""
-
-    JSON = "json"
-    CSV = "csv"
-    LATEX = "latex"
 
 
 class HParamsPlugin(base_plugin.TBPlugin):
@@ -105,103 +96,22 @@ class HParamsPlugin(base_plugin.TBPlugin):
     # ---- /download_data- -------------------------------------------------------
     @wrappers.Request.application
     def download_data_route(self, request):
-        response_format = request.args.get("format")
-        request_proto = _parse_request_argument(
-            request, api_pb2.ListSessionGroupsRequest
-        )
-        session_groups = list_session_groups.Handler(
-            self._context, request_proto
-        ).run()
-        experiment = get_experiment.Handler(self._context).run()
         try:
-            body, mime_type = self.download_data_impl(
-                experiment, session_groups, response_format
+            response_format = request.args.get("format")
+            request_proto = _parse_request_argument(
+                request, api_pb2.ListSessionGroupsRequest
             )
-        except ValueError as e:
-            return http_util.Respond(
-                request=request,
-                content=str(e),
-                content_type="text/plain",
-                code=400,
-            )
-        return http_util.Respond(request, body, mime_type)
-
-    def download_data_impl(self, experiment, session_groups, response_format):
-        """Provides a response for downloading data for an HParams table.
-
-        Args:
-          experiment: Experiment proto.
-          session_groups: ListSessionGroupsResponse proto.
-          response_format: A string in the OutputFormat enum.
-
-        Raises:
-          ValueError: If the scalars plugin is not registered.
-
-        Returns:
-          2 entities:
-            - A JSON object response body.
-            - A mime type (string) for the response.
-        """
-        header = []
-        for hparam_info in experiment.hparam_infos:
-            header.append(hparam_info.display_name or hparam_info.name)
-
-        for metric_info in experiment.metric_infos:
-            header.append(metric_info.display_name or metric_info.name.tag)
-
-        rows = []
-
-        def _get_value(value):
-            if value.HasField("number_value"):
-                return value.number_value
-            if value.HasField("string_value"):
-                return value.string_value
-            if value.HasField("bool_value"):
-                return value.bool_value
-            return None
-
-        for group in session_groups.session_groups:
-            row = []
-            for hparam_info in experiment.hparam_infos:
-                row.append(_get_value(group.hparams[hparam_info.name]))
-            for metric_value in group.metric_values:
-                row.append(metric_value.value)
-            rows.append(row)
-
-        if response_format == OutputFormat.JSON:
-            mime_type = "application/json"
-            body = dict(header=header, rows=rows)
-        elif response_format == OutputFormat.LATEX:
-
-            def latex_format(value):
-                if isinstance(value, int):
-                    return str(value)
-                elif isinstance(value, float):
-                    return "%.3g" % value
-                return value.replace("_", "\\_").replace("%", "\\%")
-
-            mime_type = "application/x-latex"
-            top_part = "\\begin{table}[]\n\\begin{tabular}{%s}\n" % (
-                "l" * len(header)
-            )
-            header_part = (
-                " & ".join(map(latex_format, header)) + " \\\\ \\hline\n"
-            )
-            middle_part = "".join(
-                [" & ".join(map(latex_format, row)) + " \\\\\n" for row in rows]
-            )
-            bottom_part = "\\hline\n\\end{tabular}\n\\end{table}\n"
-            body = top_part + header_part + middle_part + bottom_part
-        elif response_format == OutputFormat.CSV:
-            string_io = StringIO()
-            writer = csv.writer(string_io)
-            writer.writerow(header)
-            writer.writerows(rows)
-            body = string_io.getvalue()
-            mime_type = "text/csv"
-        else:
-            raise ValueError("Invalid reponses format: %s" % response_format)
-        return body, mime_type
+            session_groups = list_session_groups.Handler(
+                self._context, request_proto
+            ).run()
+            experiment = get_experiment.Handler(self._context).run()
+            body, mime_type = download_data.Handler(
+                self._context, experiment, session_groups, response_format
+            ).run()
+            return http_util.Respond(request, body, mime_type)
+        except error.HParamsError as e:
+            logger.error("HParams error: %s" % e)
+            raise werkzeug.exceptions.BadRequest(description=str(e))
 
     # ---- /experiment -----------------------------------------------------------
     @wrappers.Request.application

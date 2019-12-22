@@ -27,6 +27,7 @@ py_library(
     name = "hparams_plugin",
     srcs = [
         "backend_context.py",
+        "download_data.py",
         "get_experiment.py",
         "hparams_plugin.py",
         "list_metric_evals.py",
@@ -49,6 +50,21 @@ py_library(
         "@com_google_protobuf//:protobuf_python",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
+    ],
+)
+
+py_test(
+    name = "download_data_test",
+    size = "small",
+    srcs = [
+        "download_data_test.py",
+    ],
+    deps = [
+        ":hparams_plugin",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/backend/event_processing:event_accumulator",
+        "//tensorboard/backend/event_processing:event_multiplexer",
+        "@org_pythonhosted_mock",
     ],
 )
 

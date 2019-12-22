@@ -48,14 +48,14 @@ limitations under the License.
           return this._sendRequest('experiment', experimentRequest);
         }
 
-        getDowloadURL(format, listSessionGroupsRequest) {
+        getDownloadUrl(format, listSessionGroupsRequest) {
           return (
             this._apiUrl +
-            '/download_data' +
-            '?format=' +
-            format +
-            '&request=' +
-            JSON.stringify(listSessionGroupsRequest)
+            '/download_data?' +
+            new URLSearchParams({
+              format: format,
+              request: JSON.stringify(listSessionGroupsRequest),
+            })
           );
         }
 
