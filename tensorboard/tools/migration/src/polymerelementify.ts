@@ -334,14 +334,22 @@ function getPropsAstNodes(props: ts.PropertyAssignment) {
           ? valueInitializer.initializer
           : undefined;
       }
-      const computed =
+      const canExtractComputed =
         propProperties &&
         (propProperties.find((prop: ts.PropertyAssignment) => {
-          return propName(prop) === 'computed';
+          return (
+            propName(prop) === 'computed' &&
+            ts.isStringLiteral(prop.initializer) &&
+            // "computed" decorator is incompatible with the preperty accessor
+            // or "*" for fancy diff-binding.
+            parsePolymerStringDeclaration(prop.initializer.text).args.every(
+              (arg) => !arg.includes('.')
+            )
+          );
         }) as ts.PropertyAssignment);
 
       let decoratorBody;
-      if (computed) {
+      if (canExtractComputed) {
         decoratorBody = propProperties
           .filter((prop: ts.PropertyAssignment) => {
             return propName(prop) === 'computed';
@@ -354,9 +362,7 @@ function getPropsAstNodes(props: ts.PropertyAssignment) {
           ? ts.updateObjectLiteral(
               prop.initializer,
               propProperties.filter((prop: ts.PropertyAssignment) => {
-                return (
-                  propName(prop) !== 'computed' && propName(prop) !== 'value'
-                );
+                return propName(prop) !== 'value';
               })
             )
           : ts.createObjectLiteral([
@@ -365,7 +371,7 @@ function getPropsAstNodes(props: ts.PropertyAssignment) {
         decoratorBody = [propertyObj];
       }
       const decoratorExpression = ts.createCall(
-        ts.createIdentifier(computed ? 'computed' : 'property'),
+        ts.createIdentifier(canExtractComputed ? 'computed' : 'property'),
         undefined,
         decoratorBody
       );
@@ -526,6 +532,20 @@ function polymerFnToElement(
         );
       }
 
+      if (
+        ts.isCallExpression(prop.initializer) ||
+        ts.isLiteralExpression(prop.initializer)
+      ) {
+        return ts.createProperty(
+          undefined,
+          undefined,
+          prop.name,
+          undefined,
+          undefined,
+          prop.initializer
+        );
+      }
+
       return prop;
     })
     .map((method) => {
@@ -595,6 +615,7 @@ function polymerFnToElement(
       }
 
       const {args, prop} = computedPropNames.get(method.name.text);
+
       props.delete(prop);
 
       const methodParams = method.parameters.map(
@@ -618,17 +639,13 @@ function polymerFnToElement(
         ts.updateBlock(method.body, [
           ...methodParams.map((param, index) => {
             const arg = args[index];
-            const isPropertyAccessor = arg.includes('.');
             return ts.createVariableStatement(
               [],
               [
                 ts.createVariableDeclaration(
                   param,
                   undefined,
-                  ts.createPropertyAccess(
-                    ts.createThis(),
-                    isPropertyAccessor ? 'do_not_submit' : arg
-                  )
+                  ts.createPropertyAccess(ts.createThis(), arg)
                 ),
               ]
             );

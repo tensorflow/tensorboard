@@ -27,20 +27,22 @@ function getDomModules(
     );
   });
 
-  return domModules.map((node: Node) => {
-    const id = node.attrs.find((attr) => attr.name === 'id').value;
-    const templateNode = node.childNodes.find(
-      (node: Node) => node.tagName === 'template'
-    );
+  return domModules
+    .map((node: Node) => {
+      const id = node.attrs.find((attr) => attr.name === 'id').value;
+      const templateNode = node.childNodes.find(
+        (node: Node) => node.tagName === 'template'
+      );
 
-    if (!templateNode) {
-      console.warn('<dom-module> does not contain any <template>');
-      return;
-    }
+      if (!templateNode) {
+        console.warn('<dom-module> does not contain any <template>');
+        return;
+      }
 
-    const template = parse5.serialize((templateNode as any).content).trim();
-    return {id, template};
-  }).filter(x => !!x);
+      const template = parse5.serialize((templateNode as any).content).trim();
+      return {id, template};
+    })
+    .filter(Boolean);
 }
 
 function findDomModuleStatement(
