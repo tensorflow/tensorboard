@@ -1,4 +1,4 @@
-module foo {
+module foo.bar.baz {
   function fooMethod() {}
 }
 namespace bar {

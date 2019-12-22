@@ -24,14 +24,17 @@ function removeIIFE(statement: ts.Statement): ts.Statement[] {
 
 function removeModuleWrapper(maybeModule: ts.Statement): ts.Statement[] {
   if (!ts.isModuleDeclaration(maybeModule)) return [maybeModule];
-  if (!ts.isModuleBlock(maybeModule.body)) {
-    throw new RangeError(
-      'Did not expect a ModuleDeclaration that does not have a ModuleBlock...'
-    );
+  if (ts.isModuleBlock(maybeModule.body)) {
+    return maybeModule.body.statements.reduce((allStatements, statement) => {
+      return [...allStatements, ...removeModuleWrapper(statement)];
+    }, []);
   }
-  return maybeModule.body.statements.reduce((allStatements, statement) => {
-    return [...allStatements, ...removeModuleWrapper(statement)];
-  }, []);
+  if (ts.isModuleDeclaration(maybeModule.body)) {
+    return removeModuleWrapper(maybeModule.body);
+  }
+  throw new RangeError(
+    'Did not expect a ModuleDeclaration that does not have a ModuleBlock...'
+  );
 }
 
 function removeModuleWrappers(source: ts.SourceFile): ts.SourceFile {
