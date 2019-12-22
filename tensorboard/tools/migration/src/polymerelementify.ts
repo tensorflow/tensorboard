@@ -1,74 +1,59 @@
 import * as ts from 'typescript';
 import {Exporter, TS_LICENSE} from './helper';
 import {updateSource} from './ts-helper';
-import {PropertiesChanged} from '@polymer/polymer/lib/mixins/properties-changed';
 
 const Kind = ts.SyntaxKind;
 const Id = ts.createIdentifier;
 
-function removeIIFE(
-  source: ts.SourceFile,
-  node: ts.Block | ts.SourceFile = source
-): ts.SourceFile {
-  let newSource = source;
-  const statements = node.statements.reduce((statements, node) => {
-    if (node.kind !== Kind.ExpressionStatement) {
-      statements.push(node);
-      return statements;
-    }
-    const expression = (node as ts.ExpressionStatement).expression;
-    if (expression.kind !== Kind.CallExpression) {
-      statements.push(node);
-      return statements;
-    }
-    const callExpression = expression as ts.CallExpression;
-    if (callExpression.expression.kind !== Kind.ParenthesizedExpression) {
-      statements.push(node);
-      return statements;
-    }
-    const parenExpression = callExpression.expression as ts.ParenthesizedExpression;
-    if (parenExpression.expression.kind !== Kind.FunctionExpression) {
-      statements.push(node);
-      return statements;
-    }
-    const functionExpression = parenExpression.expression as ts.FunctionExpression;
-    statements.push(...functionExpression.body.statements);
+function removeIIFE(statement: ts.Statement): ts.Statement[] {
+  if (
+    ts.isExpressionStatement(statement) &&
+    ts.isCallExpression(statement.expression) &&
+    ts.isParenthesizedExpression(statement.expression.expression) &&
+    ts.isFunctionExpression(statement.expression.expression.expression)
+  ) {
+    const iifeBody = statement.expression.expression.expression.body;
+    const statements = iifeBody.statements.reduce((allValue, statement) => {
+      return [...allValue, ...removeIIFE(statement)];
+    }, []);
     return statements;
+  }
+
+  return [statement];
+}
+
+function removeModuleWrapper(maybeModule: ts.Statement): ts.Statement[] {
+  if (!ts.isModuleDeclaration(maybeModule)) return [maybeModule];
+  if (!ts.isModuleBlock(maybeModule.body)) {
+    throw new RangeError(
+      'Did not expect a ModuleDeclaration that does not have a ModuleBlock...'
+    );
+  }
+  return maybeModule.body.statements.reduce((allStatements, statement) => {
+    return [...allStatements, ...removeModuleWrapper(statement)];
   }, []);
+}
+
+function removeModuleWrappers(source: ts.SourceFile): ts.SourceFile {
+  const statements: ts.Statement[] = source.statements
+    .reduce((all, maybeModule) => {
+      return [...all, ...removeModuleWrapper(maybeModule)];
+    }, [])
+    .reduce((allValue, statement) => {
+      return [...allValue, ...removeIIFE(statement)];
+    }, []);
 
   const hasChanged = statements.some((statement, index) => {
-    return statement !== node.statements[index];
+    return statement !== source.statements[index];
   });
 
+  let newSource = source;
   if (hasChanged) {
     const update = ts.setTextRange(
       ts.createNodeArray(statements),
-      node.statements
-    );
-    newSource = updateSource(newSource, update);
-  }
-  return newSource;
-}
-
-function removeWrapper(source: ts.SourceFile): ts.SourceFile {
-  const tsModule = source.statements.find((maybeModule) => {
-    return maybeModule.kind === Kind.ModuleDeclaration;
-  }) as ts.ModuleDeclaration;
-  let newSource = source;
-
-  if (tsModule) {
-    const update = ts.setTextRange(
-      ts.createNodeArray((tsModule.body as ts.ModuleBlock).statements),
       source.statements
     );
     newSource = updateSource(newSource, update);
-  }
-
-  let oldSource = newSource;
-  newSource = removeIIFE(oldSource);
-  while (oldSource !== newSource) {
-    oldSource = newSource;
-    newSource = removeIIFE(oldSource);
   }
   return newSource;
 }
@@ -698,7 +683,7 @@ export function transform(
     ts.ScriptTarget.ES2015,
     /*setParentNodes */ true
   );
-  sourceFile = removeWrapper(sourceFile);
+  sourceFile = removeModuleWrappers(sourceFile);
   sourceFile = transformPolymer(sourceFile);
   const result = `${preamble}
 ${sourceFile.getText()}`;
