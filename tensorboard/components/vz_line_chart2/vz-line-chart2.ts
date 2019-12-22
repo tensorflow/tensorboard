@@ -42,7 +42,7 @@ export const DEFAULT_TOOLTIP_COLUMNS: Readonly<
     evaluate(d, statusObject) {
       const smoothingEnabled = statusObject && statusObject.smoothingEnabled;
       return formatValueOrNaN(
-        smoothingEnabled ? d.datum.smoothed : d.datum.scalar
+        smoothingEnabled ? d.datum.smoothed! : d.datum.scalar
       );
     },
   },

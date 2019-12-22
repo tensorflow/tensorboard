@@ -101,7 +101,7 @@ export class LineChart {
   private yValueAccessor: Plottable.IAccessor<number>;
   private smoothedAccessor: Plottable.IAccessor<number> = (
     d: vz_chart_helpers.ScalarDatum
-  ) => d.smoothed;
+  ) => d.smoothed!;
   private lastPointsDataset: Plottable.Dataset = new Plottable.Dataset();
   private fillArea?: FillArea;
   private datasets: Plottable.Dataset[] = [];
@@ -615,7 +615,7 @@ export class LineChart {
         );
         let lastX = this.xScale.scale(this.xAccessor(lastPoint, 0, d.dataset));
         let s = this.smoothingEnabled
-          ? d.datum.smoothed
+          ? d.datum.smoothed!
           : this.yValueAccessor(d.datum, 0, d.dataset);
         return target.x < firstX || target.x > lastX || isNaN(s);
       })

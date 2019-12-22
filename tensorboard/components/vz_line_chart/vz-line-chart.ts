@@ -190,7 +190,7 @@ class VzLineChart extends LegacyElementMixin(PolymerElement) {
       evaluate: (d, statusObject) => {
         const smoothingEnabled = statusObject && statusObject.smoothingEnabled;
         return formatValueOrNaN(
-          smoothingEnabled ? d.datum.smoothed : d.datum.scalar
+          smoothingEnabled ? d.datum.smoothed! : d.datum.scalar
         );
       },
     },
@@ -459,7 +459,7 @@ class LineChart {
   private yValueAccessor: Plottable.IAccessor<number>;
   private smoothedAccessor: Plottable.IAccessor<number> = (
     d: vz_chart_helpers.ScalarDatum
-  ) => d.smoothed;
+  ) => d.smoothed!;
   private lastPointsDataset: Plottable.Dataset = new Plottable.Dataset();
   private fillArea?: FillArea;
   private datasets: Plottable.Dataset[] = [];
@@ -900,7 +900,7 @@ class LineChart {
       let firstX = this.xScale.scale(this.xAccessor(firstPoint, 0, d.dataset));
       let lastX = this.xScale.scale(this.xAccessor(lastPoint, 0, d.dataset));
       let s = this.smoothingEnabled
-        ? d.datum.smoothed
+        ? d.datum.smoothed!
         : this.yValueAccessor(d.datum, 0, d.dataset);
       return target.x < firstX || target.x > lastX || isNaN(s);
     });
