@@ -12,7 +12,7 @@ py_library(
     srcs = ["debugger_v2_plugin.py"],
     srcs_version = "PY2AND3",
     deps = [
-        ":local_data_provider",
+        ":debug_data_provider",
         "//tensorboard/backend:http_util",
         "//tensorboard/plugins:base_plugin",
         "@org_pocoo_werkzeug",
@@ -20,10 +20,20 @@ py_library(
 )
 
 py_library(
-    name = "local_data_provider",
-    srcs = ["local_data_provider.py"],
+    name = "debug_data_multiplexer",
+    srcs = ["debug_data_multiplexer.py"],
     srcs_version = "PY2AND3",
     deps = [
+        "//tensorboard:expect_tensorflow_installed",
+    ],
+)
+
+py_library(
+    name = "debug_data_provider",
+    srcs = ["debug_data_provider.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":debug_data_multiplexer",
         "//tensorboard/data:provider",
     ],
 )

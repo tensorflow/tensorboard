@@ -21,7 +21,7 @@ from __future__ import print_function
 from werkzeug import wrappers
 
 from tensorboard.plugins import base_plugin
-from tensorboard.plugins.debugger_v2 import local_data_provider
+from tensorboard.plugins.debugger_v2 import debug_data_provider
 from tensorboard.backend import http_util
 
 
@@ -40,7 +40,9 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
         self._logdir = context.logdir
         # TODO(cais): Implement factory for DataProvider that takes into account
         # the settings.
-        self._data_provider = local_data_provider.LocalDebuggerV2DataProvider()
+        self._data_provider = debug_data_provider.LocalDebuggerV2DataProvider(
+            self._logdir
+        )
 
     def get_plugin_apps(self):
         # TODO(cais): Add routes as they are implemented.
@@ -68,5 +70,9 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
 
     @wrappers.Request.application
     def serve_runs(self, request):
-        runs = self._data_provider.list_runs(self._logdir)
-        return http_util.Respond(request, runs, "application/json")
+        runs = self._data_provider.list_runs(
+            debug_data_provider.DUMMY_DEBUGGER_EXPERIMENT_ID
+        )
+        return http_util.Respond(
+            request, [run.run_id for run in runs], "application/json"
+        )

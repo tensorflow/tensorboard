@@ -24,8 +24,12 @@ This implementation is:
 
 from tensorboard.data import provider
 
+from tensorboard.plugins.debugger_v2 import debug_data_multiplexer
 
-DEFAULT_DEBUGGER_RUN_NAME = "__default_debugger_run__"
+
+# Dummy experiment ID for the debugger.
+# TODO(cais): Implement support for multiple experiment IDs.
+DUMMY_DEBUGGER_EXPERIMENT_ID = "__dummy_debugger_experiment_id__"
 
 
 class LocalDebuggerV2DataProvider(provider.DataProvider):
@@ -35,48 +39,61 @@ class LocalDebuggerV2DataProvider(provider.DataProvider):
     logdir that contains the DebugEvent file set.
     """
 
-    def __init__(self):
-        super(LocalDebuggerV2DataProvider, self).__init__()
+    def __init__(self, logdir):
+        """Constructor of LocalDebuggerV2DataProvider.
 
-        # Mapping experiment_id (logdir) to a reader for the debugger data.
-        self._readers = dict()
+        Args:
+          logdir: Path to the directory from which the tfdbg v2 data will be
+            loaded.
+        """
+        super(LocalDebuggerV2DataProvider, self).__init__()
+        self._multiplexer = debug_data_multiplexer.DebuggerV2EventMultiplexer(
+            logdir
+        )
 
     def list_runs(self, experiment_id):
         """List runs available.
 
         Args:
-          experiment_id: currently used to pass the logdir path.
+          experiment_id: currently unused, because the backing
+            LocalDebuggerV2DataProvideer does not accommodate multiple experiments.
 
         Returns:
           Run names as a list of str.
         """
-        logdir = experiment_id
-        runs = []
-        try:
-            from tensorflow.python.debug.lib import debug_events_reader
-
-            # TODO(cais): Switch DebugDataReader when available.
-            self._readers[logdir] = debug_events_reader.DebugEventsReader(
-                logdir
+        self._validate_experiment_id(experiment_id)
+        return [
+            provider.Run(
+                run_id=run,  # use names as IDs
+                run_name=run,
+                start_time=self._get_first_event_timestamp(run),
             )
-            # NOTE(cais): Currently each logdir is enforced to have only one
-            # DebugEvent file set. So we add hard-coded default run name.
-            runs.append(DEFAULT_DEBUGGER_RUN_NAME)
-        except ValueError as error:
-            # When no DebugEvent file set is found in the logdir, a `ValueError`
-            # is thrown.
-            pass
-        return runs
+            for run in self._multiplexer.Runs()
+        ]
+
+    def _validate_experiment_id(self, experiment_id):
+        if experiment_id != DUMMY_DEBUGGER_EXPERIMENT_ID:
+            raise ValueError(
+                "LocalDebuggerV2DataProvider currently expects experiment_id "
+                + "to be of the dummyar value '%s', but received '%s'"
+                % (DUMMY_DEBUGGER_EXPERIMENT_ID, experiment_id)
+            )
+
+    def _get_first_event_timestamp(self, run_name):
+        try:
+            return self._multiplexer.FirstEventTimestamp(run_name)
+        except ValueError as e:
+            return None
 
     def list_scalars(self, experiment_id, plugin_name, run_tag_filter=None):
         del experiment_id, plugin_name, run_tag_filter  # Unused.
-        raise ValueError("Debugger V2 DataProvider doesn't support scalars.")
+        raise TypeError("Debugger V2 DataProvider doesn't support scalars.")
 
     def read_scalars(
         self, experiment_id, plugin_name, downsample=None, run_tag_filter=None
     ):
         del experiment_id, plugin_name, downsample, run_tag_filter
-        raise ValueError("Debugger V2 DataProvider doesn't support scalars.")
+        raise TypeError("Debugger V2 DataProvider doesn't support scalars.")
 
     def list_blob_sequences(
         self, experiment_id, plugin_name, run_tag_filter=None
