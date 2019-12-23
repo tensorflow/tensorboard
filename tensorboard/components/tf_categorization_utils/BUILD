@@ -14,6 +14,7 @@ tf_ts_library(
     deps = [
         "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_storage",
+        "//tensorboard/components/tf_utils",
         "//tensorboard/components/vz_sorting",
         "@npm//@polymer/decorators",
         "@npm//@polymer/iron-icon",

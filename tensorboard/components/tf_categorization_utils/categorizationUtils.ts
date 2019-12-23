@@ -15,10 +15,18 @@ limitations under the License.
 import * as _ from 'lodash';
 import {Experiment, getTags, Run} from '../tf_backend';
 import {compareTagNames} from '../vz_sorting/sorting';
+import {TagInfo} from '../../components/tf_utils/utils';
 
 export type RunToTag = {
   [run: string]: string[];
 };
+
+export type RunTagInfo = {
+  [run: string]: {
+    [tag: string]: TagInfo;
+  };
+};
+
 export enum CategoryType {
   SEARCH_RESULTS,
   PREFIX_GROUP,
