@@ -99,7 +99,7 @@ class Handler(object):
                 elif isinstance(value, float):
                     if math.isnan(value):
                         return r"$\mathrm{NaN}$"
-                    if not math.isfinite(value):
+                    if value in (float('inf'), float('-inf')):
                         return r"$%s\infty$" % ("-" if value < 0 else "+")
                     scientific = "%.3g" % value
                     if "e" in scientific:
