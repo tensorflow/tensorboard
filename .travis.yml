@@ -22,7 +22,7 @@ env:
     - BUILDIFIER_SHA256SUM=4c985c883eafdde9c0e8cf3c8595b8bfdf32e77571c369bf8ddae83b042028d6
   matrix:
     - TF_VERSION_ID=tensorflow==1.15.0rc3
-    - TF_VERSION_ID=tf-nightly==2.1.0.dev20191222
+    - TF_VERSION_ID=tf-nightly
     - TF_VERSION_ID=  # Do not install TensorFlow in this case
 
 cache:
