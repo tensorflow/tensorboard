@@ -20,6 +20,10 @@ This implementation is:
      - list_runs()
      - read_blob_sequences()
      - read_blob()
+
+This class is a short-term hack. To be used in production, it awaits integration
+with a more complete implementation of DataProvider such as
+MultiplexerDataProvider.
 """
 
 from tensorboard.data import provider
