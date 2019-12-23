@@ -108,9 +108,9 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertEqual(
             "application/json", response.headers.get("content-type")
         )
-        # self.assertEqual(
-        #     json.loads(response.get_data()), ["__default_debugger_run__"]
-        # )
+        self.assertEqual(
+            json.loads(response.get_data()), ["__default_debugger_run__"]
+        )
 
 
 if __name__ == "__main__":
