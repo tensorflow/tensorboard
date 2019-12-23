@@ -264,18 +264,18 @@ class CustomScalarsPlugin(base_plugin.TBPlugin):
 
     @wrappers.Request.application
     def layout_route(self, request):
-        r"""Fetches the custom layout specified by the config file in the logdir.
+        """Fetches the custom layout specified by the config file in the logdir.
 
-    If more than 1 run contains a layout, this method merges the layouts by
-    merging charts within individual categories. If 2 categories with the same
-    name are found, the charts within are merged. The merging is based on the
-    order of the runs to which the layouts are written.
+        If more than 1 run contains a layout, this method merges the layouts by
+        merging charts within individual categories. If 2 categories with the same
+        name are found, the charts within are merged. The merging is based on the
+        order of the runs to which the layouts are written.
 
-    The response is a JSON object mirroring properties of the Layout proto if a
-    layout for any run is found.
+        The response is a JSON object mirroring properties of the Layout proto if a
+        layout for any run is found.
 
-    The response is an empty object if no layout could be found.
-    """
+        The response is an empty object if no layout could be found.
+        """
         body = self.layout_impl()
         return http_util.Respond(request, body, "application/json")
 

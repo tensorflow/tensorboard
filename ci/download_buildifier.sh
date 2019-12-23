@@ -14,7 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 
-# Script to download Bazel binary directly onto a build machine.
+# Script to download Buildifier binary directly onto a build machine.
 
 set -e
 
@@ -31,8 +31,8 @@ version="$1"
 checksum="$2"
 dest="$3"
 
-mirror_url="http://mirror.tensorflow.org/github.com/bazelbuild/bazel/releases/download/${version}/bazel-${version}-linux-x86_64"
-github_url="https://github.com/bazelbuild/bazel/releases/download/${version}/bazel-${version}-linux-x86_64"
+mirror_url="http://mirror.tensorflow.org/github.com/bazelbuild/buildtools/releases/download/${version}/buildifier"
+github_url="https://github.com/bazelbuild/buildtools/releases/download/${version}/buildifier"
 
 exec "$(dirname "$0")/download_executable.sh" "${checksum}" "${dest}" \
     "${mirror_url}" "${github_url}"

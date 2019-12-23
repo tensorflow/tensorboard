@@ -48,9 +48,9 @@ class ExampleRawScalarsPlugin(base_plugin.TBPlugin):
     def __init__(self, context):
         """Instantiates ExampleRawScalarsPlugin.
 
-    Args:
-      context: A base_plugin.TBContext instance.
-    """
+        Args:
+          context: A base_plugin.TBContext instance.
+        """
         self._multiplexer = context.multiplexer
 
     def get_plugin_apps(self):
@@ -64,10 +64,10 @@ class ExampleRawScalarsPlugin(base_plugin.TBPlugin):
     def _serve_tags(self, request):
         """Serves run to tag info.
 
-    Frontend clients can use the Multiplexer's run+tag structure to request data
-    for a specific run+tag. Responds with a map of the form:
-    {runName: [tagName, tagName, ...]}
-    """
+        Frontend clients can use the Multiplexer's run+tag structure to request data
+        for a specific run+tag. Responds with a map of the form:
+        {runName: [tagName, tagName, ...]}
+        """
         run_tag_mapping = self._multiplexer.PluginRunToTagToContent(
             _SCALAR_PLUGIN_NAME
         )
@@ -81,10 +81,10 @@ class ExampleRawScalarsPlugin(base_plugin.TBPlugin):
     def _serve_static_file(self, request):
         """Returns a resource file from the static asset directory.
 
-    Requests from the frontend have a path in this form:
-    /data/plugin/example_raw_scalars/static/foo
-    This serves the appropriate asset: ./static/foo.
-    """
+        Requests from the frontend have a path in this form:
+        /data/plugin/example_raw_scalars/static/foo
+        This serves the appropriate asset: ./static/foo.
+        """
         static_path_part = request.path[len(_PLUGIN_DIRECTORY_PATH_PART) :]
         res_path = os.path.join(os.path.dirname(__file__), static_path_part)
 
@@ -97,9 +97,9 @@ class ExampleRawScalarsPlugin(base_plugin.TBPlugin):
     def is_active(self):
         """Returns whether there is relevant data for the plugin to process.
 
-    When there are no runs with scalar data, TensorBoard will hide the plugin
-    from the main navigation bar.
-    """
+        When there are no runs with scalar data, TensorBoard will hide the plugin
+        from the main navigation bar.
+        """
         return bool(
             self._multiplexer.PluginRunToTagToContent(_SCALAR_PLUGIN_NAME)
         )
@@ -110,20 +110,20 @@ class ExampleRawScalarsPlugin(base_plugin.TBPlugin):
     def scalars_impl(self, tag, run):
         """Returns scalar data for the specified tag and run.
 
-    For details on how to use tags and runs, see
-    https://github.com/tensorflow/tensorboard#tags-giving-names-to-data
+        For details on how to use tags and runs, see
+        https://github.com/tensorflow/tensorboard#tags-giving-names-to-data
 
-    Args:
-      tag: string
-      run: string
+        Args:
+          tag: string
+          run: string
 
-    Returns:
-      A list of ScalarEvents - tuples containing 3 numbers describing entries in
-      the data series.
+        Returns:
+          A list of ScalarEvents - tuples containing 3 numbers describing entries in
+          the data series.
 
-    Raises:
-      errors.NotFoundError: if run+tag pair has no scalar data.
-    """
+        Raises:
+          errors.NotFoundError: if run+tag pair has no scalar data.
+        """
         try:
             tensor_events = self._multiplexer.Tensors(run, tag)
             values = [

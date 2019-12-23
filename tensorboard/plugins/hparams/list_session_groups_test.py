@@ -63,140 +63,140 @@ class ListSessionGroupsTest(tf.test.TestCase):
                 metadata.EXPERIMENT_TAG: self._serialized_plugin_data(
                     DATA_TYPE_EXPERIMENT,
                     """
-                  description: 'Test experiment'
-                  user: 'Test user'
-                  hparam_infos: [
-                    {
-                      name: 'initial_temp'
-                      type: DATA_TYPE_FLOAT64
-                    },
-                    {
-                      name: 'final_temp'
-                      type: DATA_TYPE_FLOAT64
-                    },
-                    { name: 'string_hparam' },
-                    { name: 'bool_hparam' },
-                    { name: 'optional_string_hparam' }
-                  ]
-                  metric_infos: [
-                    { name: { tag: 'current_temp' } },
-                    { name: { tag: 'delta_temp' } },
-                    { name: { tag: 'optional_metric' } }
-                  ]
-                  """,
+                    description: 'Test experiment'
+                    user: 'Test user'
+                    hparam_infos: [
+                      {
+                        name: 'initial_temp'
+                        type: DATA_TYPE_FLOAT64
+                      },
+                      {
+                        name: 'final_temp'
+                        type: DATA_TYPE_FLOAT64
+                      },
+                      { name: 'string_hparam' },
+                      { name: 'bool_hparam' },
+                      { name: 'optional_string_hparam' }
+                    ]
+                    metric_infos: [
+                      { name: { tag: 'current_temp' } },
+                      { name: { tag: 'delta_temp' } },
+                      { name: { tag: 'optional_metric' } }
+                    ]
+                    """,
                 )
             },
             "session_1": {
                 metadata.SESSION_START_INFO_TAG: self._serialized_plugin_data(
                     DATA_TYPE_SESSION_START_INFO,
                     """
-                  hparams:{ key: 'initial_temp' value: { number_value: 270 } },
-                  hparams:{ key: 'final_temp' value: { number_value: 150 } },
-                  hparams:{
-                    key: 'string_hparam' value: { string_value: 'a string' }
-                  },
-                  hparams:{ key: 'bool_hparam' value: { bool_value: true } }
-                  group_name: 'group_1'
-                  start_time_secs: 314159
-                """,
+                    hparams:{ key: 'initial_temp' value: { number_value: 270 } },
+                    hparams:{ key: 'final_temp' value: { number_value: 150 } },
+                    hparams:{
+                      key: 'string_hparam' value: { string_value: 'a string' }
+                    },
+                    hparams:{ key: 'bool_hparam' value: { bool_value: true } }
+                    group_name: 'group_1'
+                    start_time_secs: 314159
+                    """,
                 ),
                 metadata.SESSION_END_INFO_TAG: self._serialized_plugin_data(
                     DATA_TYPE_SESSION_END_INFO,
                     """
-                  status: STATUS_SUCCESS
-                  end_time_secs: 314164
-                """,
+                    status: STATUS_SUCCESS
+                    end_time_secs: 314164
+                    """,
                 ),
             },
             "session_2": {
                 metadata.SESSION_START_INFO_TAG: self._serialized_plugin_data(
                     DATA_TYPE_SESSION_START_INFO,
                     """
-                  hparams:{ key: 'initial_temp' value: { number_value: 280 } },
-                  hparams:{ key: 'final_temp' value: { number_value: 100 } },
-                  hparams:{
-                    key: 'string_hparam' value: { string_value: 'AAAAA' }
-                  },
-                  hparams:{ key: 'bool_hparam' value: { bool_value: false } }
-                  group_name: 'group_2'
-                  start_time_secs: 314159
-                """,
+                    hparams:{ key: 'initial_temp' value: { number_value: 280 } },
+                    hparams:{ key: 'final_temp' value: { number_value: 100 } },
+                    hparams:{
+                      key: 'string_hparam' value: { string_value: 'AAAAA' }
+                    },
+                    hparams:{ key: 'bool_hparam' value: { bool_value: false } }
+                    group_name: 'group_2'
+                    start_time_secs: 314159
+                    """,
                 ),
                 metadata.SESSION_END_INFO_TAG: self._serialized_plugin_data(
                     DATA_TYPE_SESSION_END_INFO,
                     """
-                   status: STATUS_SUCCESS
-                   end_time_secs: 314164
-                """,
+                    status: STATUS_SUCCESS
+                    end_time_secs: 314164
+                    """,
                 ),
             },
             "session_3": {
                 metadata.SESSION_START_INFO_TAG: self._serialized_plugin_data(
                     DATA_TYPE_SESSION_START_INFO,
                     """
-                  hparams:{ key: 'initial_temp' value: { number_value: 280 } },
-                  hparams:{ key: 'final_temp' value: { number_value: 100 } },
-                  hparams:{
-                    key: 'string_hparam' value: { string_value: 'AAAAA' }
-                  },
-                  hparams:{ key: 'bool_hparam' value: { bool_value: false } }
-                  group_name: 'group_2'
-                  start_time_secs: 314159
-                """,
+                    hparams:{ key: 'initial_temp' value: { number_value: 280 } },
+                    hparams:{ key: 'final_temp' value: { number_value: 100 } },
+                    hparams:{
+                      key: 'string_hparam' value: { string_value: 'AAAAA' }
+                    },
+                    hparams:{ key: 'bool_hparam' value: { bool_value: false } }
+                    group_name: 'group_2'
+                    start_time_secs: 314159
+                    """,
                 ),
                 metadata.SESSION_END_INFO_TAG: self._serialized_plugin_data(
                     DATA_TYPE_SESSION_END_INFO,
                     """
-                  status: STATUS_FAILURE
-                  end_time_secs: 314164
-                """,
+                    status: STATUS_FAILURE
+                    end_time_secs: 314164
+                    """,
                 ),
             },
             "session_4": {
                 metadata.SESSION_START_INFO_TAG: self._serialized_plugin_data(
                     DATA_TYPE_SESSION_START_INFO,
                     """
-                  hparams:{ key: 'initial_temp' value: { number_value: 300 } },
-                  hparams:{ key: 'final_temp' value: { number_value: 120 } },
-                  hparams:{
-                    key: 'string_hparam' value: { string_value: 'a string_3' }
-                  },
-                  hparams:{ key: 'bool_hparam' value: { bool_value: true } }
-                  hparams:{
-                    key: 'optional_string_hparam' value { string_value: 'BB' }
-                  },
-                  group_name: 'group_3'
-                  start_time_secs: 314159
-                """,
+                    hparams:{ key: 'initial_temp' value: { number_value: 300 } },
+                    hparams:{ key: 'final_temp' value: { number_value: 120 } },
+                    hparams:{
+                      key: 'string_hparam' value: { string_value: 'a string_3' }
+                    },
+                    hparams:{ key: 'bool_hparam' value: { bool_value: true } }
+                    hparams:{
+                      key: 'optional_string_hparam' value { string_value: 'BB' }
+                    },
+                    group_name: 'group_3'
+                    start_time_secs: 314159
+                    """,
                 ),
                 metadata.SESSION_END_INFO_TAG: self._serialized_plugin_data(
                     DATA_TYPE_SESSION_END_INFO,
                     """
-                  status: STATUS_UNKNOWN
-                  end_time_secs: 314164
-                """,
+                    status: STATUS_UNKNOWN
+                    end_time_secs: 314164
+                    """,
                 ),
             },
             "session_5": {
                 metadata.SESSION_START_INFO_TAG: self._serialized_plugin_data(
                     DATA_TYPE_SESSION_START_INFO,
                     """
-                  hparams:{ key: 'initial_temp' value: { number_value: 280 } },
-                  hparams:{ key: 'final_temp' value: { number_value: 100 } },
-                  hparams:{
-                    key: 'string_hparam' value: { string_value: 'AAAAA' }
-                  },
-                  hparams:{ key: 'bool_hparam' value: { bool_value: false } }
-                  group_name: 'group_2'
-                  start_time_secs: 314159
-                """,
+                    hparams:{ key: 'initial_temp' value: { number_value: 280 } },
+                    hparams:{ key: 'final_temp' value: { number_value: 100 } },
+                    hparams:{
+                      key: 'string_hparam' value: { string_value: 'AAAAA' }
+                    },
+                    hparams:{ key: 'bool_hparam' value: { bool_value: false } }
+                    group_name: 'group_2'
+                    start_time_secs: 314159
+                    """,
                 ),
                 metadata.SESSION_END_INFO_TAG: self._serialized_plugin_data(
                     DATA_TYPE_SESSION_END_INFO,
                     """
-                  status: STATUS_SUCCESS
-                  end_time_secs: 314164
-                """,
+                    status: STATUS_SUCCESS
+                    end_time_secs: 314164
+                    """,
                 ),
             },
         }
@@ -331,191 +331,193 @@ class ListSessionGroupsTest(tf.test.TestCase):
 
     def test_no_filter_no_sort(self):
         request = """
-      start_index: 0
-      slice_size: 3
-      allowed_statuses: [STATUS_UNKNOWN,
-                         STATUS_SUCCESS,
-                         STATUS_FAILURE,
-                         STATUS_RUNNING]
-      aggregation_type: AGGREGATION_AVG
-    """
+            start_index: 0
+            slice_size: 3
+            allowed_statuses: [
+              STATUS_UNKNOWN,
+              STATUS_SUCCESS,
+              STATUS_FAILURE,
+              STATUS_RUNNING
+            ]
+            aggregation_type: AGGREGATION_AVG
+        """
         response = self._run_handler(request)
         self.assertProtoEquals(
             """
-        session_groups {
-          name: "group_1"
-          hparams { key: "bool_hparam" value { bool_value: true } }
-          hparams { key: "final_temp" value { number_value: 150.0 } }
-          hparams { key: "initial_temp" value { number_value: 270.0 } }
-          hparams { key: "string_hparam" value { string_value: "a string" } }
-          metric_values {
-            name { tag: "current_temp" }
-            value: 10
-            training_step: 1
-            wall_time_secs: 1.0
-          }
-          metric_values { name { tag: "delta_temp" } value: 15
-            training_step: 2
-            wall_time_secs: 10.0
-          }
-          metric_values { name { tag: "optional_metric" } value: 33
-            training_step: 20
-            wall_time_secs: 2.0
-          }
-          sessions {
-            name: "session_1"
-            start_time_secs: 314159
-            end_time_secs: 314164
-            status: STATUS_SUCCESS
-            metric_values {
-              name { tag: "current_temp" }
-              value: 10
-              training_step: 1
-              wall_time_secs: 1.0
-            }
-            metric_values {
-              name { tag: "delta_temp" }
-              value: 15
-              training_step: 2
-              wall_time_secs: 10.0
-            }
+            session_groups {
+              name: "group_1"
+              hparams { key: "bool_hparam" value { bool_value: true } }
+              hparams { key: "final_temp" value { number_value: 150.0 } }
+              hparams { key: "initial_temp" value { number_value: 270.0 } }
+              hparams { key: "string_hparam" value { string_value: "a string" } }
+              metric_values {
+                name { tag: "current_temp" }
+                value: 10
+                training_step: 1
+                wall_time_secs: 1.0
+              }
+              metric_values { name { tag: "delta_temp" } value: 15
+                training_step: 2
+                wall_time_secs: 10.0
+              }
+              metric_values { name { tag: "optional_metric" } value: 33
+                training_step: 20
+                wall_time_secs: 2.0
+              }
+              sessions {
+                name: "session_1"
+                start_time_secs: 314159
+                end_time_secs: 314164
+                status: STATUS_SUCCESS
+                metric_values {
+                  name { tag: "current_temp" }
+                  value: 10
+                  training_step: 1
+                  wall_time_secs: 1.0
+                }
+                metric_values {
+                  name { tag: "delta_temp" }
+                  value: 15
+                  training_step: 2
+                  wall_time_secs: 10.0
+                }
 
-            metric_values {
-              name { tag: "optional_metric" }
-              value: 33
-              training_step: 20
-              wall_time_secs: 2.0
+                metric_values {
+                  name { tag: "optional_metric" }
+                  value: 33
+                  training_step: 20
+                  wall_time_secs: 2.0
+                }
+              }
             }
-          }
-        }
-        session_groups {
-          name: "group_2"
-          hparams { key: "bool_hparam" value { bool_value: false } }
-          hparams { key: "final_temp" value { number_value: 100.0 } }
-          hparams { key: "initial_temp" value { number_value: 280.0 } }
-          hparams { key: "string_hparam" value { string_value: "AAAAA"}}
-          metric_values {
-            name { tag: "current_temp" }
-            value: 51.0
-            training_step: 1
-            wall_time_secs: 1.0
-          }
-          metric_values {
-            name { tag: "delta_temp" }
-            value: 44.5
-            training_step: 2
-            wall_time_secs: 10.3333333
-          }
-          sessions {
-            name: "session_2"
-            start_time_secs: 314159
-            end_time_secs: 314164
-            status: STATUS_SUCCESS
-            metric_values {
-              name { tag: "current_temp" }
-              value: 100
-              training_step: 1
-              wall_time_secs: 1.0
+            session_groups {
+              name: "group_2"
+              hparams { key: "bool_hparam" value { bool_value: false } }
+              hparams { key: "final_temp" value { number_value: 100.0 } }
+              hparams { key: "initial_temp" value { number_value: 280.0 } }
+              hparams { key: "string_hparam" value { string_value: "AAAAA"}}
+              metric_values {
+                name { tag: "current_temp" }
+                value: 51.0
+                training_step: 1
+                wall_time_secs: 1.0
+              }
+              metric_values {
+                name { tag: "delta_temp" }
+                value: 44.5
+                training_step: 2
+                wall_time_secs: 10.3333333
+              }
+              sessions {
+                name: "session_2"
+                start_time_secs: 314159
+                end_time_secs: 314164
+                status: STATUS_SUCCESS
+                metric_values {
+                  name { tag: "current_temp" }
+                  value: 100
+                  training_step: 1
+                  wall_time_secs: 1.0
+                }
+                metric_values { name { tag: "delta_temp" }
+                  value: 150
+                  training_step: 3
+                  wall_time_secs: 11.0
+                }
+              }
+              sessions {
+                name: "session_3"
+                start_time_secs: 314159
+                end_time_secs: 314164
+                status: STATUS_FAILURE
+                metric_values {
+                  name { tag: "current_temp" }
+                  value: 1.0
+                  training_step: 1
+                  wall_time_secs: 1.0
+                }
+                metric_values { name { tag: "delta_temp" }
+                  value: 1.5
+                  training_step: 2
+                  wall_time_secs: 10.0
+                }
+              }
+              sessions {
+                name: "session_5"
+                start_time_secs: 314159
+                end_time_secs: 314164
+                status: STATUS_SUCCESS
+                metric_values {
+                  name { tag: "current_temp" }
+                  value: 52.0
+                  training_step: 1
+                  wall_time_secs: 1.0
+                }
+                metric_values { name { tag: "delta_temp" }
+                  value: -18
+                  training_step: 2
+                  wall_time_secs: 10.0
+                }
+              }
             }
-            metric_values { name { tag: "delta_temp" }
-              value: 150
-              training_step: 3
-              wall_time_secs: 11.0
+            session_groups {
+              name: "group_3"
+              hparams { key: "bool_hparam" value { bool_value: true } }
+              hparams { key: "final_temp" value { number_value: 120.0 } }
+              hparams { key: "initial_temp" value { number_value: 300.0 } }
+              hparams { key: "string_hparam" value { string_value: "a string_3"}}
+              hparams {
+                key: 'optional_string_hparam' value { string_value: 'BB' }
+              }
+              metric_values {
+                name { tag: "current_temp" }
+                value: 101.0
+                training_step: 1
+                wall_time_secs: 1.0
+              }
+              metric_values { name { tag: "delta_temp" } value: -151.0
+                training_step: 2
+                wall_time_secs: 10.0
+              }
+              sessions {
+                name: "session_4"
+                start_time_secs: 314159
+                end_time_secs: 314164
+                status: STATUS_UNKNOWN
+                metric_values {
+                  name { tag: "current_temp" }
+                  value: 101.0
+                  training_step: 1
+                  wall_time_secs: 1.0
+                }
+                metric_values { name { tag: "delta_temp" } value: -151.0
+                  training_step: 2
+                  wall_time_secs: 10.0
+                }
+              }
             }
-          }
-          sessions {
-            name: "session_3"
-            start_time_secs: 314159
-            end_time_secs: 314164
-            status: STATUS_FAILURE
-            metric_values {
-              name { tag: "current_temp" }
-              value: 1.0
-              training_step: 1
-              wall_time_secs: 1.0
-            }
-            metric_values { name { tag: "delta_temp" }
-              value: 1.5
-              training_step: 2
-              wall_time_secs: 10.0
-            }
-          }
-          sessions {
-            name: "session_5"
-            start_time_secs: 314159
-            end_time_secs: 314164
-            status: STATUS_SUCCESS
-            metric_values {
-              name { tag: "current_temp" }
-              value: 52.0
-              training_step: 1
-              wall_time_secs: 1.0
-            }
-            metric_values { name { tag: "delta_temp" }
-              value: -18
-              training_step: 2
-              wall_time_secs: 10.0
-            }
-          }
-        }
-        session_groups {
-          name: "group_3"
-          hparams { key: "bool_hparam" value { bool_value: true } }
-          hparams { key: "final_temp" value { number_value: 120.0 } }
-          hparams { key: "initial_temp" value { number_value: 300.0 } }
-          hparams { key: "string_hparam" value { string_value: "a string_3"}}
-          hparams {
-            key: 'optional_string_hparam' value { string_value: 'BB' }
-          }
-          metric_values {
-            name { tag: "current_temp" }
-            value: 101.0
-            training_step: 1
-            wall_time_secs: 1.0
-          }
-          metric_values { name { tag: "delta_temp" } value: -151.0
-            training_step: 2
-            wall_time_secs: 10.0
-          }
-          sessions {
-            name: "session_4"
-            start_time_secs: 314159
-            end_time_secs: 314164
-            status: STATUS_UNKNOWN
-            metric_values {
-              name { tag: "current_temp" }
-              value: 101.0
-              training_step: 1
-              wall_time_secs: 1.0
-            }
-            metric_values { name { tag: "delta_temp" } value: -151.0
-              training_step: 2
-              wall_time_secs: 10.0
-            }
-          }
-        }
-        total_size: 3
-        """,
+            total_size: 3
+            """,
             response,
         )
 
     def test_no_allowed_statuses(self):
         request = """
-      start_index: 0
-      slice_size: 3
-      allowed_statuses: []
-      aggregation_type: AGGREGATION_AVG
-    """
+            start_index: 0
+            slice_size: 3
+            allowed_statuses: []
+            aggregation_type: AGGREGATION_AVG
+        """
         response = self._run_handler(request)
         self.assertEquals(len(response.session_groups), 0)
 
     def test_some_allowed_statuses(self):
         request = """
-      start_index: 0
-      slice_size: 3
-      allowed_statuses: [STATUS_UNKNOWN, STATUS_SUCCESS]
-      aggregation_type: AGGREGATION_AVG
-    """
+            start_index: 0
+            slice_size: 3
+            allowed_statuses: [STATUS_UNKNOWN, STATUS_SUCCESS]
+            aggregation_type: AGGREGATION_AVG
+        """
         response = self._run_handler(request)
         self.assertEquals(
             _reduce_to_names(response.session_groups),
@@ -528,11 +530,11 @@ class ListSessionGroupsTest(tf.test.TestCase):
 
     def test_some_allowed_statuses_empty_groups(self):
         request = """
-      start_index: 0
-      slice_size: 3
-      allowed_statuses: [STATUS_FAILURE]
-      aggregation_type: AGGREGATION_AVG
-    """
+            start_index: 0
+            slice_size: 3
+            allowed_statuses: [STATUS_FAILURE]
+            aggregation_type: AGGREGATION_AVG
+        """
         response = self._run_handler(request)
         self.assertEquals(
             _reduce_to_names(response.session_groups),
@@ -541,182 +543,220 @@ class ListSessionGroupsTest(tf.test.TestCase):
 
     def test_aggregation_median_current_temp(self):
         request = """
-      start_index: 0
-      slice_size: 3
-      allowed_statuses: [STATUS_UNKNOWN,
-                         STATUS_SUCCESS,
-                         STATUS_FAILURE,
-                         STATUS_RUNNING]
-      aggregation_type: AGGREGATION_MEDIAN
-      aggregation_metric: { tag: "current_temp" }
-    """
+            start_index: 0
+            slice_size: 3
+            allowed_statuses: [
+              STATUS_UNKNOWN,
+              STATUS_SUCCESS,
+              STATUS_FAILURE,
+              STATUS_RUNNING
+            ]
+            aggregation_type: AGGREGATION_MEDIAN
+            aggregation_metric: { tag: "current_temp" }
+        """
         response = self._run_handler(request)
         self.assertEquals(len(response.session_groups[1].metric_values), 2)
         self.assertProtoEquals(
-            """name { tag: "current_temp" }
-           value: 52.0
-           training_step: 1
-           wall_time_secs: 1.0""",
+            """
+            name { tag: "current_temp" }
+            value: 52.0
+            training_step: 1
+            wall_time_secs: 1.0
+            """,
             response.session_groups[1].metric_values[0],
         )
         self.assertProtoEquals(
-            """name { tag: "delta_temp" }
-           value: -18.0
-           training_step: 2
-           wall_time_secs: 10.0""",
+            """
+            name { tag: "delta_temp" }
+            value: -18.0
+            training_step: 2
+            wall_time_secs: 10.0
+            """,
             response.session_groups[1].metric_values[1],
         )
 
     def test_aggregation_median_delta_temp(self):
         request = """
-      start_index: 0
-      slice_size: 3
-      allowed_statuses: [STATUS_UNKNOWN,
-                         STATUS_SUCCESS,
-                         STATUS_FAILURE,
-                         STATUS_RUNNING]
-      aggregation_type: AGGREGATION_MEDIAN
-      aggregation_metric: { tag: "delta_temp" }
-    """
+            start_index: 0
+            slice_size: 3
+            allowed_statuses: [
+              STATUS_UNKNOWN,
+              STATUS_SUCCESS,
+              STATUS_FAILURE,
+              STATUS_RUNNING
+            ]
+            aggregation_type: AGGREGATION_MEDIAN
+            aggregation_metric: { tag: "delta_temp" }
+        """
         response = self._run_handler(request)
         self.assertEquals(len(response.session_groups[1].metric_values), 2)
         self.assertProtoEquals(
-            """name { tag: "current_temp" }
-           value: 1.0
-           training_step: 1
-           wall_time_secs: 1.0""",
+            """
+            name { tag: "current_temp" }
+            value: 1.0
+            training_step: 1
+            wall_time_secs: 1.0
+            """,
             response.session_groups[1].metric_values[0],
         )
         self.assertProtoEquals(
-            """name { tag: "delta_temp" }
-           value: 1.5
-           training_step: 2
-           wall_time_secs: 10.0""",
+            """
+            name { tag: "delta_temp" }
+            value: 1.5
+            training_step: 2
+            wall_time_secs: 10.0
+            """,
             response.session_groups[1].metric_values[1],
         )
 
     def test_aggregation_max_current_temp(self):
         request = """
-      start_index: 0
-      slice_size: 3
-      allowed_statuses: [STATUS_UNKNOWN,
-                         STATUS_SUCCESS,
-                         STATUS_FAILURE,
-                         STATUS_RUNNING]
-      aggregation_type: AGGREGATION_MAX
-      aggregation_metric: { tag: "current_temp" }
-    """
+            start_index: 0
+            slice_size: 3
+            allowed_statuses: [
+              STATUS_UNKNOWN,
+              STATUS_SUCCESS,
+              STATUS_FAILURE,
+              STATUS_RUNNING
+            ]
+            aggregation_type: AGGREGATION_MAX
+            aggregation_metric: { tag: "current_temp" }
+        """
         response = self._run_handler(request)
         self.assertEquals(len(response.session_groups[1].metric_values), 2)
         self.assertProtoEquals(
-            """name { tag: "current_temp" }
-           value: 100
-           training_step: 1
-           wall_time_secs: 1.0""",
+            """
+            name { tag: "current_temp" }
+            value: 100
+            training_step: 1
+            wall_time_secs: 1.0
+            """,
             response.session_groups[1].metric_values[0],
         )
         self.assertProtoEquals(
-            """name { tag: "delta_temp" }
-           value: 150.0
-           training_step: 3
-           wall_time_secs: 11.0""",
+            """
+            name { tag: "delta_temp" }
+            value: 150.0
+            training_step: 3
+            wall_time_secs: 11.0
+            """,
             response.session_groups[1].metric_values[1],
         )
 
     def test_aggregation_max_delta_temp(self):
         request = """
-      start_index: 0
-      slice_size: 3
-      allowed_statuses: [STATUS_UNKNOWN,
-                         STATUS_SUCCESS,
-                         STATUS_FAILURE,
-                         STATUS_RUNNING]
-      aggregation_type: AGGREGATION_MAX
-      aggregation_metric: { tag: "delta_temp" }
-    """
+            start_index: 0
+            slice_size: 3
+            allowed_statuses: [
+              STATUS_UNKNOWN,
+              STATUS_SUCCESS,
+              STATUS_FAILURE,
+              STATUS_RUNNING
+            ]
+            aggregation_type: AGGREGATION_MAX
+            aggregation_metric: { tag: "delta_temp" }
+            """
         response = self._run_handler(request)
         self.assertEquals(len(response.session_groups[1].metric_values), 2)
         self.assertProtoEquals(
-            """name { tag: "current_temp" }
-           value: 100.0
-           training_step: 1
-           wall_time_secs: 1.0""",
+            """
+            name { tag: "current_temp" }
+            value: 100.0
+            training_step: 1
+            wall_time_secs: 1.0
+            """,
             response.session_groups[1].metric_values[0],
         )
         self.assertProtoEquals(
-            """name { tag: "delta_temp" }
-           value: 150.0
-           training_step: 3
-           wall_time_secs: 11.0""",
+            """
+            name { tag: "delta_temp" }
+            value: 150.0
+            training_step: 3
+            wall_time_secs: 11.0
+            """,
             response.session_groups[1].metric_values[1],
         )
 
     def test_aggregation_min_current_temp(self):
         request = """
-      start_index: 0
-      slice_size: 3
-      allowed_statuses: [STATUS_UNKNOWN,
-                         STATUS_SUCCESS,
-                         STATUS_FAILURE,
-                         STATUS_RUNNING]
-      aggregation_type: AGGREGATION_MIN
-      aggregation_metric: { tag: "current_temp" }
-    """
+            start_index: 0
+            slice_size: 3
+            allowed_statuses: [
+              STATUS_UNKNOWN,
+              STATUS_SUCCESS,
+              STATUS_FAILURE,
+              STATUS_RUNNING
+            ]
+            aggregation_type: AGGREGATION_MIN
+            aggregation_metric: { tag: "current_temp" }
+            """
         response = self._run_handler(request)
         self.assertEquals(len(response.session_groups[1].metric_values), 2)
         self.assertProtoEquals(
-            """name { tag: "current_temp" }
-           value: 1.0
-           training_step: 1
-           wall_time_secs: 1.0""",
+            """
+            name { tag: "current_temp" }
+            value: 1.0
+            training_step: 1
+            wall_time_secs: 1.0
+            """,
             response.session_groups[1].metric_values[0],
         )
         self.assertProtoEquals(
-            """name { tag: "delta_temp" }
-           value: 1.5
-           training_step: 2
-           wall_time_secs: 10.0""",
+            """
+            name { tag: "delta_temp" }
+            value: 1.5
+            training_step: 2
+            wall_time_secs: 10.0
+            """,
             response.session_groups[1].metric_values[1],
         )
 
     def test_aggregation_min_delta_temp(self):
         request = """
-      start_index: 0
-      slice_size: 3
-      allowed_statuses: [STATUS_UNKNOWN,
-                         STATUS_SUCCESS,
-                         STATUS_FAILURE,
-                         STATUS_RUNNING]
-      aggregation_type: AGGREGATION_MIN
-      aggregation_metric: { tag: "delta_temp" }
-    """
+            start_index: 0
+            slice_size: 3
+            allowed_statuses: [
+              STATUS_UNKNOWN,
+              STATUS_SUCCESS,
+              STATUS_FAILURE,
+              STATUS_RUNNING
+            ]
+            aggregation_type: AGGREGATION_MIN
+            aggregation_metric: { tag: "delta_temp" }
+        """
         response = self._run_handler(request)
         self.assertEquals(len(response.session_groups[1].metric_values), 2)
         self.assertProtoEquals(
-            """name { tag: "current_temp" }
-           value: 52.0
-           training_step: 1
-           wall_time_secs: 1.0""",
+            """
+            name { tag: "current_temp" }
+            value: 52.0
+            training_step: 1
+            wall_time_secs: 1.0
+            """,
             response.session_groups[1].metric_values[0],
         )
         self.assertProtoEquals(
-            """name { tag: "delta_temp" }
-           value: -18.0
-           training_step: 2
-           wall_time_secs: 10.0""",
+            """
+            name { tag: "delta_temp" }
+            value: -18.0
+            training_step: 2
+            wall_time_secs: 10.0
+            """,
             response.session_groups[1].metric_values[1],
         )
 
     def test_no_filter_no_sort_partial_slice(self):
         self._verify_handler(
             request="""
-          start_index: 1
-          slice_size: 1
-          allowed_statuses: [STATUS_UNKNOWN,
-                             STATUS_SUCCESS,
-                             STATUS_FAILURE,
-                             STATUS_RUNNING]
-        """,
+                start_index: 1
+                slice_size: 1
+                allowed_statuses: [
+                  STATUS_UNKNOWN,
+                  STATUS_SUCCESS,
+                  STATUS_FAILURE,
+                  STATUS_RUNNING
+                ]
+            """,
             expected_session_group_names=["group_2"],
             expected_total_size=3,
         )
@@ -724,17 +764,19 @@ class ListSessionGroupsTest(tf.test.TestCase):
     def test_no_filter_exclude_missing_values(self):
         self._verify_handler(
             request="""
-          col_params: {
-            metric: { tag: 'optional_metric' }
-            exclude_missing_values: true
-          }
-          allowed_statuses: [STATUS_UNKNOWN,
-                             STATUS_SUCCESS,
-                             STATUS_FAILURE,
-                             STATUS_RUNNING]
-          start_index: 0
-          slice_size: 3
-        """,
+                col_params: {
+                  metric: { tag: 'optional_metric' }
+                  exclude_missing_values: true
+                }
+                allowed_statuses: [
+                  STATUS_UNKNOWN,
+                  STATUS_SUCCESS,
+                  STATUS_FAILURE,
+                  STATUS_RUNNING
+                ]
+                start_index: 0
+                slice_size: 3
+            """,
             expected_session_group_names=["group_1"],
             expected_total_size=1,
         )
@@ -742,34 +784,38 @@ class ListSessionGroupsTest(tf.test.TestCase):
     def test_filter_regexp(self):
         self._verify_handler(
             request="""
-          col_params: {
-            hparam: 'string_hparam'
-            filter_regexp: 'AA'
-          }
-          allowed_statuses: [STATUS_UNKNOWN,
-                             STATUS_SUCCESS,
-                             STATUS_FAILURE,
-                             STATUS_RUNNING]
-          start_index: 0
-          slice_size: 3
-        """,
+                col_params: {
+                  hparam: 'string_hparam'
+                  filter_regexp: 'AA'
+                }
+                allowed_statuses: [
+                  STATUS_UNKNOWN,
+                  STATUS_SUCCESS,
+                  STATUS_FAILURE,
+                  STATUS_RUNNING
+                ]
+                start_index: 0
+                slice_size: 3
+            """,
             expected_session_group_names=["group_2"],
             expected_total_size=1,
         )
         # Test filtering out all session groups.
         self._verify_handler(
             request="""
-          col_params: {
-            hparam: 'string_hparam'
-            filter_regexp: 'a string_100'
-          }
-          allowed_statuses: [STATUS_UNKNOWN,
-                             STATUS_SUCCESS,
-                             STATUS_FAILURE,
-                             STATUS_RUNNING]
-          start_index: 0
-          slice_size: 3
-        """,
+                col_params: {
+                  hparam: 'string_hparam'
+                  filter_regexp: 'a string_100'
+                }
+                allowed_statuses: [
+                  STATUS_UNKNOWN,
+                  STATUS_SUCCESS,
+                  STATUS_FAILURE,
+                  STATUS_RUNNING
+                ]
+                start_index: 0
+                slice_size: 3
+            """,
             expected_session_group_names=[],
             expected_total_size=0,
         )
@@ -777,17 +823,19 @@ class ListSessionGroupsTest(tf.test.TestCase):
     def test_filter_interval(self):
         self._verify_handler(
             request="""
-          col_params: {
-            hparam: 'initial_temp'
-            filter_interval: { min_value: 270 max_value: 282 }
-          }
-          allowed_statuses: [STATUS_UNKNOWN,
-                             STATUS_SUCCESS,
-                             STATUS_FAILURE,
-                             STATUS_RUNNING]
-          start_index: 0
-          slice_size: 3
-        """,
+                col_params: {
+                  hparam: 'initial_temp'
+                  filter_interval: { min_value: 270 max_value: 282 }
+                }
+                allowed_statuses: [
+                  STATUS_UNKNOWN,
+                  STATUS_SUCCESS,
+                  STATUS_FAILURE,
+                  STATUS_RUNNING
+                ]
+                start_index: 0
+                slice_size: 3
+            """,
             expected_session_group_names=["group_1", "group_2"],
             expected_total_size=2,
         )
@@ -795,18 +843,20 @@ class ListSessionGroupsTest(tf.test.TestCase):
     def test_filter_discrete_set(self):
         self._verify_handler(
             request="""
-          col_params: {
-            metric: { tag: 'current_temp' }
-            filter_discrete: { values: [{ number_value: 101.0 },
-                                        { number_value: 10.0 }] }
-          }
-          allowed_statuses: [STATUS_UNKNOWN,
-                             STATUS_SUCCESS,
-                             STATUS_FAILURE,
-                             STATUS_RUNNING]
-          start_index: 0
-          slice_size: 3
-        """,
+                col_params: {
+                  metric: { tag: 'current_temp' }
+                  filter_discrete: { values: [{ number_value: 101.0 },
+                                              { number_value: 10.0 }] }
+                }
+                allowed_statuses: [
+                  STATUS_UNKNOWN,
+                  STATUS_SUCCESS,
+                  STATUS_FAILURE,
+                  STATUS_RUNNING
+                ]
+                start_index: 0
+                slice_size: 3
+            """,
             expected_session_group_names=["group_1", "group_3"],
             expected_total_size=2,
         )
@@ -814,22 +864,24 @@ class ListSessionGroupsTest(tf.test.TestCase):
     def test_filter_multiple_columns(self):
         self._verify_handler(
             request="""
-          col_params: {
-            metric: { tag: 'current_temp' }
-            filter_discrete: { values: [{ number_value: 101.0 },
-                                        { number_value: 10.0 }] }
-          }
-          col_params: {
-            hparam: 'initial_temp'
-            filter_interval: { min_value: 270 max_value: 282 }
-          }
-          allowed_statuses: [STATUS_UNKNOWN,
-                             STATUS_SUCCESS,
-                             STATUS_FAILURE,
-                             STATUS_RUNNING]
-          start_index: 0
-          slice_size: 3
-        """,
+                col_params: {
+                  metric: { tag: 'current_temp' }
+                  filter_discrete: { values: [{ number_value: 101.0 },
+                                              { number_value: 10.0 }] }
+                }
+                col_params: {
+                  hparam: 'initial_temp'
+                  filter_interval: { min_value: 270 max_value: 282 }
+                }
+                allowed_statuses: [
+                  STATUS_UNKNOWN,
+                  STATUS_SUCCESS,
+                  STATUS_FAILURE,
+                  STATUS_RUNNING
+                ]
+                start_index: 0
+                slice_size: 3
+            """,
             expected_session_group_names=["group_1"],
             expected_total_size=1,
         )
@@ -837,53 +889,59 @@ class ListSessionGroupsTest(tf.test.TestCase):
     def test_filter_single_column_with_missing_values(self):
         self._verify_handler(
             request="""
-          col_params: {
-            hparam: 'optional_string_hparam'
-            filter_regexp: 'B'
-            exclude_missing_values: true
-          }
-          allowed_statuses: [STATUS_UNKNOWN,
-                             STATUS_SUCCESS,
-                             STATUS_FAILURE,
-                             STATUS_RUNNING]
-          start_index: 0
-          slice_size: 3
-        """,
+                col_params: {
+                  hparam: 'optional_string_hparam'
+                  filter_regexp: 'B'
+                  exclude_missing_values: true
+                }
+                allowed_statuses: [
+                  STATUS_UNKNOWN,
+                  STATUS_SUCCESS,
+                  STATUS_FAILURE,
+                  STATUS_RUNNING
+                ]
+                start_index: 0
+                slice_size: 3
+            """,
             expected_session_group_names=["group_3"],
             expected_total_size=1,
         )
         self._verify_handler(
             request="""
-          col_params: {
-            hparam: 'optional_string_hparam'
-            filter_regexp: 'B'
-            exclude_missing_values: false
-          }
-          allowed_statuses: [STATUS_UNKNOWN,
-                             STATUS_SUCCESS,
-                             STATUS_FAILURE,
-                             STATUS_RUNNING]
-          start_index: 0
-          slice_size: 3
-        """,
+                col_params: {
+                  hparam: 'optional_string_hparam'
+                  filter_regexp: 'B'
+                  exclude_missing_values: false
+                }
+                allowed_statuses: [
+                  STATUS_UNKNOWN,
+                  STATUS_SUCCESS,
+                  STATUS_FAILURE,
+                  STATUS_RUNNING
+                ]
+                start_index: 0
+                slice_size: 3
+            """,
             expected_session_group_names=["group_1", "group_2", "group_3"],
             expected_total_size=3,
         )
 
         self._verify_handler(
             request="""
-          col_params: {
-            metric: { tag: 'optional_metric' }
-            filter_discrete: { values: { number_value: 33.0 } }
-            exclude_missing_values: true
-          }
-          allowed_statuses: [STATUS_UNKNOWN,
-                             STATUS_SUCCESS,
-                             STATUS_FAILURE,
-                             STATUS_RUNNING]
-          start_index: 0
-          slice_size: 3
-        """,
+                col_params: {
+                  metric: { tag: 'optional_metric' }
+                  filter_discrete: { values: { number_value: 33.0 } }
+                  exclude_missing_values: true
+                }
+                allowed_statuses: [
+                  STATUS_UNKNOWN,
+                  STATUS_SUCCESS,
+                  STATUS_FAILURE,
+                  STATUS_RUNNING
+                ]
+                start_index: 0
+                slice_size: 3
+            """,
             expected_session_group_names=["group_1"],
             expected_total_size=1,
         )
@@ -891,50 +949,56 @@ class ListSessionGroupsTest(tf.test.TestCase):
     def test_sort_one_column(self):
         self._verify_handler(
             request="""
-          col_params: {
-            metric: { tag: 'delta_temp' }
-            order: ORDER_ASC
-          }
-          allowed_statuses: [STATUS_UNKNOWN,
-                             STATUS_SUCCESS,
-                             STATUS_FAILURE,
-                             STATUS_RUNNING]
-          start_index: 0
-          slice_size: 3
-        """,
+                col_params: {
+                  metric: { tag: 'delta_temp' }
+                  order: ORDER_ASC
+                }
+                allowed_statuses: [
+                  STATUS_UNKNOWN,
+                  STATUS_SUCCESS,
+                  STATUS_FAILURE,
+                  STATUS_RUNNING
+                ]
+                start_index: 0
+                slice_size: 3
+            """,
             expected_session_group_names=["group_3", "group_1", "group_2"],
             expected_total_size=3,
         )
         self._verify_handler(
             request="""
-          col_params: {
-            hparam: 'string_hparam'
-            order: ORDER_ASC
-          }
-          allowed_statuses: [STATUS_UNKNOWN,
-                             STATUS_SUCCESS,
-                             STATUS_FAILURE,
-                             STATUS_RUNNING]
-          start_index: 0
-          slice_size: 3
-        """,
+                col_params: {
+                  hparam: 'string_hparam'
+                  order: ORDER_ASC
+                }
+                allowed_statuses: [
+                  STATUS_UNKNOWN,
+                  STATUS_SUCCESS,
+                  STATUS_FAILURE,
+                  STATUS_RUNNING
+                ]
+                start_index: 0
+                slice_size: 3
+            """,
             expected_session_group_names=["group_2", "group_1", "group_3"],
             expected_total_size=3,
         )
         # Test descending order.
         self._verify_handler(
             request="""
-          col_params: {
-            hparam: 'string_hparam'
-            order: ORDER_DESC
-          }
-          allowed_statuses: [STATUS_UNKNOWN,
-                             STATUS_SUCCESS,
-                             STATUS_FAILURE,
-                             STATUS_RUNNING]
-          start_index: 0
-          slice_size: 3
-        """,
+                col_params: {
+                  hparam: 'string_hparam'
+                  order: ORDER_DESC
+                }
+                allowed_statuses: [
+                  STATUS_UNKNOWN,
+                  STATUS_SUCCESS,
+                  STATUS_FAILURE,
+                  STATUS_RUNNING
+                ]
+                start_index: 0
+                slice_size: 3
+            """,
             expected_session_group_names=["group_3", "group_1", "group_2"],
             expected_total_size=3,
         )
@@ -942,42 +1006,46 @@ class ListSessionGroupsTest(tf.test.TestCase):
     def test_sort_multiple_columns(self):
         self._verify_handler(
             request="""
-          col_params: {
-            hparam: 'bool_hparam'
-            order: ORDER_ASC
-          }
-          col_params: {
-            metric: { tag: 'delta_temp' }
-            order: ORDER_ASC
-          }
-          allowed_statuses: [STATUS_UNKNOWN,
-                             STATUS_SUCCESS,
-                             STATUS_FAILURE,
-                             STATUS_RUNNING]
-          start_index: 0
-          slice_size: 3
-        """,
+                col_params: {
+                  hparam: 'bool_hparam'
+                  order: ORDER_ASC
+                }
+                col_params: {
+                  metric: { tag: 'delta_temp' }
+                  order: ORDER_ASC
+                }
+                allowed_statuses: [
+                  STATUS_UNKNOWN,
+                  STATUS_SUCCESS,
+                  STATUS_FAILURE,
+                  STATUS_RUNNING
+                ]
+                start_index: 0
+                slice_size: 3
+            """,
             expected_session_group_names=["group_2", "group_3", "group_1"],
             expected_total_size=3,
         )
         # Primary key in descending order. Secondary key in ascending order.
         self._verify_handler(
             request="""
-          col_params: {
-            hparam: 'bool_hparam'
-            order: ORDER_DESC
-          }
-          col_params: {
-            metric: { tag: 'delta_temp' }
-            order: ORDER_ASC
-          }
-          allowed_statuses: [STATUS_UNKNOWN,
-                             STATUS_SUCCESS,
-                             STATUS_FAILURE,
-                             STATUS_RUNNING]
-          start_index: 0
-          slice_size: 3
-        """,
+                col_params: {
+                  hparam: 'bool_hparam'
+                  order: ORDER_DESC
+                }
+                col_params: {
+                  metric: { tag: 'delta_temp' }
+                  order: ORDER_ASC
+                }
+                allowed_statuses: [
+                  STATUS_UNKNOWN,
+                  STATUS_SUCCESS,
+                  STATUS_FAILURE,
+                  STATUS_RUNNING
+                ]
+                start_index: 0
+                slice_size: 3
+            """,
             expected_session_group_names=["group_3", "group_1", "group_2"],
             expected_total_size=3,
         )
@@ -985,69 +1053,77 @@ class ListSessionGroupsTest(tf.test.TestCase):
     def test_sort_one_column_with_missing_values(self):
         self._verify_handler(
             request="""
-          col_params: {
-            metric: { tag: 'optional_metric' }
-            order: ORDER_ASC
-            missing_values_first: false
-          }
-          allowed_statuses: [STATUS_UNKNOWN,
-                             STATUS_SUCCESS,
-                             STATUS_FAILURE,
-                             STATUS_RUNNING]
-          start_index: 0
-          slice_size: 3
-        """,
+                col_params: {
+                  metric: { tag: 'optional_metric' }
+                  order: ORDER_ASC
+                  missing_values_first: false
+                }
+                allowed_statuses: [
+                  STATUS_UNKNOWN,
+                  STATUS_SUCCESS,
+                  STATUS_FAILURE,
+                  STATUS_RUNNING
+                ]
+                start_index: 0
+                slice_size: 3
+            """,
             expected_session_group_names=["group_1", "group_2", "group_3"],
             expected_total_size=3,
         )
         self._verify_handler(
             request="""
-          col_params: {
-            metric: { tag: 'optional_metric' }
-            order: ORDER_ASC
-            missing_values_first: true
-          }
-          allowed_statuses: [STATUS_UNKNOWN,
-                             STATUS_SUCCESS,
-                             STATUS_FAILURE,
-                             STATUS_RUNNING]
-          start_index: 0
-          slice_size: 3
-        """,
+                col_params: {
+                  metric: { tag: 'optional_metric' }
+                  order: ORDER_ASC
+                  missing_values_first: true
+                }
+                allowed_statuses: [
+                  STATUS_UNKNOWN,
+                  STATUS_SUCCESS,
+                  STATUS_FAILURE,
+                  STATUS_RUNNING
+                ]
+                start_index: 0
+                slice_size: 3
+            """,
             expected_session_group_names=["group_2", "group_3", "group_1"],
             expected_total_size=3,
         )
         self._verify_handler(
             request="""
-          col_params: {
-            hparam: 'optional_string_hparam'
-            order: ORDER_ASC
-            missing_values_first: false
-          }
-          allowed_statuses: [STATUS_UNKNOWN,
-                             STATUS_SUCCESS,
-                             STATUS_FAILURE,
-                             STATUS_RUNNING]
-          start_index: 0
-          slice_size: 3
-        """,
+                col_params: {
+                  hparam: 'optional_string_hparam'
+                  order: ORDER_ASC
+                  missing_values_first: false
+                }
+                allowed_statuses: [
+                  STATUS_UNKNOWN,
+                  STATUS_SUCCESS,
+                  STATUS_FAILURE,
+                  STATUS_RUNNING
+                ]
+                start_index: 0
+                slice_size: 3
+            """,
             expected_session_group_names=["group_3", "group_1", "group_2"],
             expected_total_size=3,
         )
         self._verify_handler(
             request="""
-          col_params: {
-            hparam: 'optional_string_hparam'
-            order: ORDER_ASC
-            missing_values_first: true
-          }
-          allowed_statuses: [STATUS_UNKNOWN,
-                             STATUS_SUCCESS,
-                             STATUS_FAILURE,
-                             STATUS_RUNNING]
-          start_index: 0
-          slice_size: 3
-        """,
+                col_params: {
+                  hparam: 'optional_string_hparam'
+                  order: ORDER_ASC
+                  missing_values_first: true
+                }
+                allowed_statuses: [
+                  STATUS_UNKNOWN,
+                  STATUS_SUCCESS,
+                  STATUS_FAILURE,
+                  STATUS_RUNNING
+                ]
+                start_index: 0
+                slice_size: 3
+            """,
             expected_session_group_names=["group_1", "group_2", "group_3"],
             expected_total_size=3,
         )

@@ -14,9 +14,6 @@ sh_test(
     size = "large",
     timeout = "moderate",
     srcs = ["smoke_test.sh"],
-    tags = [
-        "manual",  # https://github.com/tensorflow/tensorboard/issues/2987
-    ],
     # Don't just `glob(["**"])` because `setup.py` creates artifacts
     # like wheels and a `tensorboard_plugin_example_raw_scalars.egg-info`
     # directory, and we want to make sure that those don't interfere with the
@@ -28,4 +25,7 @@ sh_test(
         "tensorboard_plugin_example_raw_scalars/*.py",
         "tensorboard_plugin_example_raw_scalars/static/**",
     ]),
+    tags = [
+        "manual",  # https://github.com/tensorflow/tensorboard/issues/2987
+    ],
 )
