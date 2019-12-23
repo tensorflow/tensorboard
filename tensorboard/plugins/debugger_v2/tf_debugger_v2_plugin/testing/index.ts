@@ -12,18 +12,26 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, Input} from '@angular/core';
-import {DebuggerRunListing} from './store/debugger_types';
+import {
+  DEBUGGER_FEATURE_KEY,
+  DataLoadState,
+  DebuggerState,
+  State,
+} from '../store/debugger_types';
 
-@Component({
-  selector: 'debugger-component',
-  templateUrl: './debugger_component.ng.html',
-  styleUrls: ['./debugger_component.css'],
-})
-export class DebuggerComponent {
-  @Input()
-  runs: DebuggerRunListing = {};
+export function createDebuggerState(
+  override?: Partial<DebuggerState>
+): DebuggerState {
+  return {
+    runs: {},
+    runsLoaded: {
+      state: DataLoadState.NOT_LOADED,
+      lastLoadedTimeInMs: null,
+    },
+    ...override,
+  };
+}
 
-  @Input()
-  runIds: string[] = [];
+export function createState(debuggerState: DebuggerState): State {
+  return {[DEBUGGER_FEATURE_KEY]: debuggerState};
 }

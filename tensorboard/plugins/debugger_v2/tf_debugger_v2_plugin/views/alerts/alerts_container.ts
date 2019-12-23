@@ -12,18 +12,26 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, Input} from '@angular/core';
-import {DebuggerRunListing} from './store/debugger_types';
+import {Component, OnInit} from '@angular/core';
+import {Store} from '@ngrx/store';
+
+import {alertsViewLoaded} from '../../actions';
+
+/** @typehack */ import * as _typeHackRxjs from 'rxjs';
+
+// TODO(cais): Move to a separate file.
+export interface AlertsState {}
 
 @Component({
-  selector: 'debugger-component',
-  templateUrl: './debugger_component.ng.html',
-  styleUrls: ['./debugger_component.css'],
+  selector: 'tf-debugger-v2-alerts',
+  template: `
+    <alerts-component></alerts-component>
+  `,
 })
-export class DebuggerComponent {
-  @Input()
-  runs: DebuggerRunListing = {};
+export class AlertsContainer implements OnInit {
+  constructor(private readonly store: Store<AlertsState>) {}
 
-  @Input()
-  runIds: string[] = [];
+  ngOnInit(): void {
+    this.store.dispatch(alertsViewLoaded());
+  }
 }

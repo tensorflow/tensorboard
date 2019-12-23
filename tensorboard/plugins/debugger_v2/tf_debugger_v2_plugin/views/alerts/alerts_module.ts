@@ -12,18 +12,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, Input} from '@angular/core';
-import {DebuggerRunListing} from './store/debugger_types';
 
-@Component({
-  selector: 'debugger-component',
-  templateUrl: './debugger_component.ng.html',
-  styleUrls: ['./debugger_component.css'],
+import {NgModule} from '@angular/core';
+
+import {AlertsComponent} from './alerts_component';
+import {AlertsContainer} from './alerts_container';
+
+@NgModule({
+  declarations: [AlertsComponent, AlertsContainer],
+  exports: [AlertsContainer],
 })
-export class DebuggerComponent {
-  @Input()
-  runs: DebuggerRunListing = {};
-
-  @Input()
-  runIds: string[] = [];
-}
+export class AlertsModule {}

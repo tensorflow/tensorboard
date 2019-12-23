@@ -12,20 +12,47 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component} from '@angular/core';
-import {Store} from '@ngrx/store';
+import {Component, OnInit} from '@angular/core';
+import {createSelector, select, Store} from '@ngrx/store';
+import {DebuggerRunListing, State} from './store/debugger_types';
+
+import {debuggerLoaded} from './actions';
+import {getDebuggerRuns} from './store';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
-
-// TODO(cais): Move to a separate file.
-export interface State {}
 
 @Component({
   selector: 'tf-debugger-v2',
   template: `
-    <debugger-component></debugger-component>
+    <debugger-component
+      [runs]="runs$ | async"
+      [runIds]="runsIds$ | async"
+    ></debugger-component>
   `,
 })
-export class DebuggerContainer {
+export class DebuggerContainer implements OnInit {
+  readonly runs$ = this.store.pipe(
+    select(
+      createSelector(
+        getDebuggerRuns,
+        (runs): DebuggerRunListing => runs
+      )
+    )
+  );
+
+  readonly runsIds$ = this.store.pipe(
+    select(
+      createSelector(
+        getDebuggerRuns,
+        (runs): string[] => Object.keys(runs)
+      )
+    )
+  );
+
   constructor(private readonly store: Store<State>) {}
+
+  ngOnInit(): void {
+    console.log('Dispatching debuggerLoaded'); // DEBUG
+    this.store.dispatch(debuggerLoaded());
+  }
 }
