@@ -12,6 +12,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+
+import {Component, NgModule} from '@angular/core';
+import {Store} from '@ngrx/store';
+
 import {
   DEBUGGER_FEATURE_KEY,
   DataLoadState,
@@ -35,3 +39,21 @@ export function createDebuggerState(
 export function createState(debuggerState: DebuggerState): State {
   return {[DEBUGGER_FEATURE_KEY]: debuggerState};
 }
+
+// Below are minimalist Angular contains and modules only for testing. They
+// serve to decouple the details of Debugger from the testing of outside modules
+// that use it.
+
+@Component({
+  selector: 'tf-debugger-v2',
+  template: ``,
+})
+export class TestingDebuggerContainer {
+  constructor(private readonly store: Store<{}>) {}
+}
+
+@NgModule({
+  declarations: [TestingDebuggerContainer],
+  exports: [TestingDebuggerContainer],
+})
+export class TestingDebuggerModule {}

@@ -8,5 +8,7 @@ tf_ts_library(
     srcs = ["index.ts"],
     deps = [
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/store:types",
+        "@npm//@angular/core",
+        "@npm//@ngrx/store",
     ],
 )

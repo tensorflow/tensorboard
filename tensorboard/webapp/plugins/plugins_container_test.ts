@@ -26,7 +26,7 @@ import {State} from '../core/store';
 // store/index.ts doesn't export this, but it's OK to use for testing
 import {CoreState} from '../core/store/core_types';
 
-import {DebuggerModule} from '../../plugins/debugger_v2/tf_debugger_v2_plugin/debugger_module';
+import {TestingDebuggerModule} from '../../plugins/debugger_v2/tf_debugger_v2_plugin/testing';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
@@ -68,7 +68,7 @@ describe('plugins_component', () => {
     await TestBed.configureTestingModule({
       providers: [provideMockStore({initialState}), PluginsContainer],
       declarations: [PluginsContainer, PluginsComponent],
-      imports: [DebuggerModule],
+      imports: [TestingDebuggerModule],
     }).compileComponents();
     store = TestBed.get(Store);
   });

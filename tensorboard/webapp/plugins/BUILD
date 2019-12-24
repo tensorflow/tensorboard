@@ -36,7 +36,7 @@ tf_ts_library(
     tsconfig = "//:tsconfig-test",
     deps = [
         ":plugins",
-        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin:debugger_v2",
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/testing",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/core",
         "//tensorboard/webapp/core/store",
