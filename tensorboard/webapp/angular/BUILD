@@ -115,7 +115,6 @@ tf_ts_library(
     deps = ["@npm//@angular/platform-browser-dynamic"],
 )
 
-
 # This is a dummy rule used as a @angular/cdk/overlay dependency.
 tf_ts_library(
     name = "expect_angular_cdk_overlay",
