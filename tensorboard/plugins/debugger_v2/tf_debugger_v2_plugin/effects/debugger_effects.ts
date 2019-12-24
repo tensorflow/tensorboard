@@ -15,11 +15,10 @@ limitations under the License.
 import {Injectable} from '@angular/core';
 import {Action, Store} from '@ngrx/store';
 import {Actions, ofType, createEffect} from '@ngrx/effects';
-import {Observable, of, zip} from 'rxjs';
+import {Observable} from 'rxjs';
 import {
   map,
   mergeMap,
-  catchError,
   withLatestFrom,
   filter,
   tap,
@@ -27,7 +26,6 @@ import {
 import {
   debuggerLoaded,
   debuggerRunsRequested,
-  debuggerRunsRequestFailed,
   debuggerRunsLoaded,
 } from '../actions';
 import {getDebuggerRunsLoaded} from '../store/debugger_selectors';
