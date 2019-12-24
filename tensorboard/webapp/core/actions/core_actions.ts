@@ -24,6 +24,11 @@ export const changePlugin = createAction(
   props<{plugin: PluginId}>()
 );
 
+export const pluginHashChanged = createAction(
+  '[Core] Plugin Url Hash Changed',
+  props<{plugin: PluginId}>()
+);
+
 export const coreLoaded = createAction('[Core] Loaded');
 
 export const reload = createAction('[Core] Reload');

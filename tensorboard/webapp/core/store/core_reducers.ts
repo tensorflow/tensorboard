@@ -36,6 +36,7 @@ const reducer = createReducer(
   initialState,
   on(
     actions.changePlugin,
+    actions.pluginHashChanged,
     (state: CoreState, {plugin}): CoreState => {
       return {...state, activePlugin: plugin};
     }

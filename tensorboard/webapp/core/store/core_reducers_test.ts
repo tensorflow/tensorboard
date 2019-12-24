@@ -25,24 +25,33 @@ function createPluginsListing() {
 }
 
 describe('core reducer', () => {
-  describe('#changePlugin', () => {
-    it('sets activePlugin to the one in action payload', () => {
-      const state = createCoreState({activePlugin: 'foo', plugins: {}});
+  [
+    {
+      action: actions.changePlugin({plugin: 'bar'}),
+    },
+    {
+      action: actions.pluginHashChanged({plugin: 'bar'}),
+    },
+  ].forEach(({action}) => {
+    describe(action.type, () => {
+      it('sets activePlugin to the one in action payload', () => {
+        const state = createCoreState({activePlugin: 'foo', plugins: {}});
 
-      const nextState = reducers(state, actions.changePlugin({plugin: 'bar'}));
+        const nextState = reducers(state, action);
 
-      expect(nextState.activePlugin).toBe('bar');
-    });
-
-    it('does not change plugins when activePlugin changes', () => {
-      const state = createCoreState({
-        activePlugin: 'foo',
-        plugins: createPluginsListing(),
+        expect(nextState.activePlugin).toBe('bar');
       });
 
-      const nextState = reducers(state, actions.changePlugin({plugin: 'bar'}));
+      it('does not change plugins when activePlugin changes', () => {
+        const state = createCoreState({
+          activePlugin: 'foo',
+          plugins: createPluginsListing(),
+        });
 
-      expect(nextState.plugins).toEqual(createPluginsListing());
+        const nextState = reducers(state, action);
+
+        expect(nextState.plugins).toEqual(createPluginsListing());
+      });
     });
   });
 
