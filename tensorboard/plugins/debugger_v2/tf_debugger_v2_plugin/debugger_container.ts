@@ -52,7 +52,6 @@ export class DebuggerContainer implements OnInit {
   constructor(private readonly store: Store<State>) {}
 
   ngOnInit(): void {
-    console.log('Dispatching debuggerLoaded'); // DEBUG
     this.store.dispatch(debuggerLoaded());
   }
 }

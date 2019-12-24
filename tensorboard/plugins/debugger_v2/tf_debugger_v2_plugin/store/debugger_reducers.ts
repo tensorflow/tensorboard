@@ -34,7 +34,6 @@ const reducer = createReducer(
   on(
     actions.debuggerRunsRequested,
     (state: DebuggerState): DebuggerState => {
-      console.log('on debuggerRunsRequested'); // DEBUG
       return {
         ...state,
         runsLoaded: {
@@ -47,7 +46,6 @@ const reducer = createReducer(
   on(
     actions.debuggerRunsRequestFailed,
     (state: DebuggerState): DebuggerState => {
-      console.log('on debuggerRunsRequestFailed'); // DEBUG
       return {
         ...state,
         runsLoaded: {

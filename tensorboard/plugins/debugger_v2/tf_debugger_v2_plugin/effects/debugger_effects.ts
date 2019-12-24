@@ -55,11 +55,9 @@ export class DebuggerEffects {
       filter(([, {state}]) => state !== DataLoadState.LOADING),
       tap(() => this.store.dispatch(debuggerRunsRequested())),
       mergeMap(() => {
-        console.log('Calling fetchRuns()'); // DEBUG
         return this.dataSource.fetchRuns().pipe(
           map(
             (runs) => {
-              console.log('debuggerRunsLoaded: runs =', runs); // DEBUG
               return debuggerRunsLoaded({runs: runs as DebuggerRunListing});
             }
             // TODO(cais): Add catchError() to pipe.
