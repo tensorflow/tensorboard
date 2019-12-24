@@ -31,14 +31,7 @@ import {getDebuggerRuns} from './store';
   `,
 })
 export class DebuggerContainer implements OnInit {
-  readonly runs$ = this.store.pipe(
-    select(
-      createSelector(
-        getDebuggerRuns,
-        (runs): DebuggerRunListing => runs
-      )
-    )
-  );
+  readonly runs$ = this.store.pipe(select(getDebuggerRuns));
 
   readonly runsIds$ = this.store.pipe(
     select(
