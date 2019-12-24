@@ -1,6 +1,4 @@
-<!--
-@license
-Copyright 2016 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,8 +11,13 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
--->
-<link rel="import" href="../tf-imports/polymer.html" />
-
-<script src="globals.js"></script>
-<script src="globals-polymer.js"></script>
+==============================================================================*/
+namespace tf_globals {
+  // HACK: this Polymer component allows stores to be accessible from
+  // tf-ng-tensorboard by exposing otherwise mangled smybols.
+  Polymer({
+    is: 'tf-globals',
+    _template: null, // strictTemplatePolicy requires a template (even a null one).
+    tf_globals: tf_globals,
+  });
+} // namespace tf_globals
