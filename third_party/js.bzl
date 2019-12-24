@@ -539,4 +539,7 @@ def tensorboard_js_workspace():
               "https://raw.githubusercontent.com/google/material-design-icons/3.0.1/action/svg/production/ic_settings_24px.svg"
           ],
       },
+      rename = {
+        "ic_settings_24px.svg": "settings_24px.svg"
+      }
   )

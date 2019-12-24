@@ -146,13 +146,9 @@ tf_ng_web_test_suite(
 tf_svg_bundle(
     name = "svg_bundle",
     srcs = [
-<<<<<<< HEAD
-        "@com_google_material_design_icon//:ic_settings_24px.svg",
-=======
         # When modifying below, please make sure to update
         # //tensorboard/webapp/testing/mat_icon.module.ts.
-        "@com_google_material_design_icon//:ic_settings_24px.svg"
->>>>>>> refactor tests so bad mat-icon can be found at least at the test time
+        "@com_google_material_design_icon//:settings_24px.svg",
     ],
     out = "icon_bundle.svg",
 )

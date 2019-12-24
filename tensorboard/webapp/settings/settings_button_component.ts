@@ -20,8 +20,8 @@ import {SettingsDialogComponent} from './dialog_component';
 @Component({
   selector: 'settings-button',
   template: `
-    <button mat-iconbutton (click)="openDialog()">
-      <mat-icon svgIcon="ic_settings_24px"></mat-icon>
+    <button mat-icon-button (click)="openDialog()">
+      <mat-icon svgIcon="settings_24px"></mat-icon>
     </button>
   `,
 })

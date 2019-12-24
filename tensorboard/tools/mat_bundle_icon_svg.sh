@@ -28,7 +28,7 @@ POSTAMBLE='</defs></svg>'
     echo "${PREAMBLE}"
     for file in "$@"; do
       svg_id="$(basename $file | sed 's|\.svg$||g')"
-      sed "s|<svg|<svg id=\"$svg_id\"|g" "$file" 2>&0
+      sed "s|<svg|<svg id=\"$svg_id\"|g" "$file"
     done
     echo "${POSTAMBLE}"
 } > "${OUTPUT_PATH}"

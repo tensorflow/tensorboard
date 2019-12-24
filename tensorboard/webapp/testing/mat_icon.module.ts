@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {Component, Input, NgModule} from '@angular/core';
 
-const KNOWN_SVG_ICON = new Set(['ic_settings_24px']);
+const KNOWN_SVG_ICON = new Set(['settings_24px']);
 
 /**
  * Requires to be exported for AOT. Do not use it otherwise.
