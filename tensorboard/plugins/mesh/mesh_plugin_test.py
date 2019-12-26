@@ -262,17 +262,6 @@ class MeshPluginTest(tf.test.TestCase):
             # belong to the same mesh.
             self.assertLessEqual(metadata[i - 1]["step"], metadata[i]["step"])
 
-    @mock.patch.object(
-        event_multiplexer.EventMultiplexer,
-        "PluginRunToTagToContent",
-        return_value={"bar": {"foo": "".encode("utf-8")}},
-    )
-    def testMetadataComputedOnce(self, run_to_tag_mock):
-        """Tests that metadata mapping computed once."""
-        self.plugin.prepare_metadata()
-        self.plugin.prepare_metadata()
-        self.assertEqual(1, run_to_tag_mock.call_count)
-
     def testIsActive(self):
         self.assertTrue(self.plugin.is_active())
 
