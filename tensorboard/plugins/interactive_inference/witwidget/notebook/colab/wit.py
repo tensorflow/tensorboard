@@ -279,7 +279,7 @@ class WitWidget(base.WitWidgetBase):
 
     def _get_element_html(self):
         return """
-            <link rel="import" href="/nbextensions/wit-widget/wit_jupyter.html"r
+            <link rel="import" href="/nbextensions/wit-widget/wit_jupyter.html">
         """
 
     def set_examples(self, examples):
