@@ -13,15 +13,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {TestBed} from '@angular/core/testing';
-import {
-  HttpClientTestingModule,
-} from '@angular/common/http/testing';
+import {HttpClientTestingModule} from '@angular/common/http/testing';
 import {provideMockActions} from '@ngrx/effects/testing';
 import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {ReplaySubject, of} from 'rxjs';
 
-import {debuggerLoaded, debuggerRunsRequested, debuggerRunsLoaded} from '../actions';
+import {
+  debuggerLoaded,
+  debuggerRunsRequested,
+  debuggerRunsLoaded,
+} from '../actions';
 import {Tfdbg2HttpServerDataSource} from '../data_source/tfdbg2_data_source';
 import {State, DebuggerRunListing} from '../store/debugger_types';
 import {createDebuggerState, createState} from '../testing';
@@ -33,13 +35,6 @@ describe('Debugger effects', () => {
   let store: MockStore<State>;
   let fetchRuns: jasmine.Spy;
   let dispatchSpy: jasmine.Spy;
-
-  const dummyRunListing: DebuggerRunListing = {
-    'foo_run': {
-      tensorFlowVersion: "2.2.0",
-      startTimeMs: 1337
-    },
-  };
 
   beforeEach(async () => {
     action = new ReplaySubject<Action>(1);
@@ -57,11 +52,6 @@ describe('Debugger effects', () => {
     debuggerEffects = TestBed.get(DebuggerEffects);
     store = TestBed.get(Store);
     dispatchSpy = spyOn(store, 'dispatch');
-
-    const dataSource = TestBed.get(Tfdbg2HttpServerDataSource);
-    fetchRuns = spyOn(dataSource, 'fetchRuns')
-      .withArgs()
-      .and.returnValue(of(dummyRunListing));
   });
 
   describe('Runs loading', () => {
@@ -74,15 +64,30 @@ describe('Debugger effects', () => {
       });
     });
 
-    it('debugerLoaded action triggers successful run loading', () => {
+    it('debugerLoaded action triggers run loading that succeeeds', () => {
+      const runListingForTest: DebuggerRunListing = {
+        foo_run: {
+          tensorFlowVersion: '2.2.0',
+          startTimeMs: 1337,
+        },
+      };
+      const fetchRuns = spyOn(
+        TestBed.get(Tfdbg2HttpServerDataSource),
+        'fetchRuns'
+      )
+        .withArgs()
+        .and.returnValue(of(runListingForTest));
+
       action.next(debuggerLoaded());
 
       expect(fetchRuns).toHaveBeenCalled();
       expect(dispatchSpy).toHaveBeenCalledTimes(1);
       expect(dispatchSpy).toHaveBeenCalledWith(debuggerRunsRequested());
-      expect(recordedActions).toEqual([debuggerRunsLoaded({
-         runs: dummyRunListing
-      })]);
+      expect(recordedActions).toEqual([
+        debuggerRunsLoaded({
+          runs: runListingForTest,
+        }),
+      ]);
     });
   });
 });
