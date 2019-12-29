@@ -20,7 +20,7 @@ import {provideMockStore, MockStore} from '@ngrx/store/testing';
 import {PluginsContainer} from './plugins_container';
 import {PluginsComponent} from './plugins_component';
 
-import {PluginId, LoadingMechanismType, LoadState} from '../types/api';
+import {DataLoadState, PluginId, LoadingMechanismType} from '../types/api';
 import {createState, createCoreState} from '../core/testing';
 import {State} from '../core/store';
 // store/index.ts doesn't export this, but it's OK to use for testing
@@ -182,7 +182,7 @@ describe('plugins_component', () => {
   describe('updates', () => {
     function setLastLoadedTime(
       timeInMs: number | null,
-      state = LoadState.LOADED
+      state = DataLoadState.LOADED
     ) {
       store.setState(
         createState(
@@ -201,7 +201,7 @@ describe('plugins_component', () => {
     it('invokes reload method on the dashboard DOM', () => {
       const fixture = TestBed.createComponent(PluginsContainer);
 
-      setLastLoadedTime(null, LoadState.NOT_LOADED);
+      setLastLoadedTime(null, DataLoadState.NOT_LOADED);
       fixture.detectChanges();
 
       const {nativeElement} = fixture.debugElement.query(By.css('.plugins'));

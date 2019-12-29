@@ -23,6 +23,7 @@ ng_module(
         "debugger_types.ts",
     ],
     deps = [
+        "//tensorboard/webapp/types",
         "@npm//@ngrx/store",
         "@npm//rxjs",
     ],

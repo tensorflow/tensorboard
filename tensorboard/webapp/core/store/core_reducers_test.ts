@@ -15,7 +15,7 @@ limitations under the License.
 import * as actions from '../actions';
 import {reducers} from './core_reducers';
 import {createPluginMetadata, createCoreState} from '../testing';
-import {LoadState} from '../../types/api';
+import {DataLoadState} from '../../types/api';
 
 function createPluginsListing() {
   return {
@@ -50,12 +50,12 @@ describe('core reducer', () => {
     {
       specSetName: '#pluginsListingRequested',
       action: actions.pluginsListingRequested(),
-      expectedState: LoadState.LOADING,
+      expectedState: DataLoadState.LOADING,
     },
     {
       specSetName: '#pluginsListingFailed',
       action: actions.pluginsListingFailed(),
-      expectedState: LoadState.FAILED,
+      expectedState: DataLoadState.FAILED,
     },
   ].forEach(({specSetName, action, expectedState}) => {
     describe(specSetName, () => {
@@ -63,7 +63,7 @@ describe('core reducer', () => {
         const state = createCoreState({
           pluginsListLoaded: {
             lastLoadedTimeInMs: null,
-            state: LoadState.NOT_LOADED,
+            state: DataLoadState.NOT_LOADED,
           },
         });
         const nextState = reducers(state, action);
@@ -75,7 +75,7 @@ describe('core reducer', () => {
         const state = createCoreState({
           pluginsListLoaded: {
             lastLoadedTimeInMs: 1337,
-            state: LoadState.NOT_LOADED,
+            state: DataLoadState.NOT_LOADED,
           },
         });
         const nextState = reducers(state, action);
@@ -106,7 +106,7 @@ describe('core reducer', () => {
         activePlugin: 'foo',
         plugins: {},
         pluginsListLoaded: {
-          state: LoadState.NOT_LOADED,
+          state: DataLoadState.NOT_LOADED,
           lastLoadedTimeInMs: null,
         },
       });
@@ -116,7 +116,7 @@ describe('core reducer', () => {
       );
 
       expect(nextState.pluginsListLoaded).toEqual({
-        state: LoadState.LOADED,
+        state: DataLoadState.LOADED,
         lastLoadedTimeInMs: 1000,
       });
     });

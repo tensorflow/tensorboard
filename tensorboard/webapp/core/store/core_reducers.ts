@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Action, createReducer, on} from '@ngrx/store';
-import {LoadState as DataLoadState} from '../../types/api';
+import {DataLoadState} from '../../types/api';
 import * as actions from '../actions';
 import {CoreState} from './core_types';
 

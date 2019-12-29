@@ -17,8 +17,8 @@ import {Component, NgModule} from '@angular/core';
 import {Store} from '@ngrx/store';
 
 import {
-  DEBUGGER_FEATURE_KEY,
   DataLoadState,
+  DEBUGGER_FEATURE_KEY,
   DebuggerState,
   State,
 } from '../store/debugger_types';

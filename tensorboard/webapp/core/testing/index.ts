@@ -12,7 +12,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {PluginMetadata, LoadingMechanismType, LoadState} from '../../types/api';
+import {
+  PluginMetadata,
+  LoadingMechanismType,
+  DataLoadState,
+} from '../../types/api';
 import {CoreState, State, CORE_FEATURE_KEY} from '../store/core_types';
 
 export function createPluginMetadata(displayName: string): PluginMetadata {
@@ -32,7 +36,7 @@ export function createCoreState(override?: Partial<CoreState>): CoreState {
     activePlugin: null,
     plugins: {},
     pluginsListLoaded: {
-      state: LoadState.NOT_LOADED,
+      state: DataLoadState.NOT_LOADED,
       lastLoadedTimeInMs: null,
     },
     reloadPeriodInMs: 30000,

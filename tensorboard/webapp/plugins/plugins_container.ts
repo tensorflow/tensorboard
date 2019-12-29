@@ -16,8 +16,8 @@ import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {Store, select, createSelector} from '@ngrx/store';
 
 import {getPlugins, getActivePlugin, getPluginsListLoaded} from '../core/store';
-import {PluginMetadata} from '../types/api';
-import {LoadState, State} from '../core/store/core_types';
+import {LoadState, PluginMetadata} from '../types/api';
+import {State} from '../core/store/core_types';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 

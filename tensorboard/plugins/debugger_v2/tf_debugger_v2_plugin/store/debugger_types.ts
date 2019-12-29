@@ -13,21 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import {LoadState} from '../../../../webapp/types/api';
+
+export {DataLoadState, LoadState} from '../../../../webapp/types/api';
+
 export const DEBUGGER_FEATURE_KEY = 'debugger';
-
-// TODO(cais): Maybe deduplicate this with tensorboard/webapp.
-export enum DataLoadState {
-  NOT_LOADED,
-  LOADED,
-  LOADING,
-  FAILED,
-}
-
-export interface LoadState {
-  state: DataLoadState;
-  // Time since epoch.
-  lastLoadedTimeInMs: number | null;
-}
 
 export interface DebuggerRunMetadata {
   // Time at which the debugger run started. Milliseconds since the epoch.
