@@ -63,6 +63,7 @@ tf_ng_web_test_suite(
     name = "karma_test",
     deps = [
         ":test_lib",
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/effects:debugger_effects_test_lib",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/store:debugger_store_test_lib",
     ],
 )

@@ -21,5 +21,26 @@ ng_module(
     ],
 )
 
-# TODO(cais): After TestBed.inject() is figured out in OSS, add
-# debugger_effects_test.ts.
+tf_ts_library(
+    name = "debugger_effects_test_lib",
+    testonly = True,
+    srcs = [
+        "debugger_effects_test.ts",
+    ],
+    deps = [
+        ":effects",
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/actions",
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/data_source",
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/store:types",
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/testing",
+        "//tensorboard/webapp/angular:expect_angular_common_http_testing",
+        "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "@npm//@angular/common",
+        "@npm//@angular/compiler",
+        "@npm//@angular/core",
+        "@npm//@ngrx/effects",
+        "@npm//@ngrx/store",
+        "@npm//@types/jasmine",
+        "@npm//rxjs",
+    ],
+)

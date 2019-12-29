@@ -40,7 +40,7 @@ export class DebuggerEffects {
    * think it is unused property and deadcode eliminate away.
    */
   /** @export */
-  readonly loadPluginsListing$ = createEffect(() =>
+  readonly loadRunListing$ = createEffect(() =>
     this.actions$.pipe(
       ofType(debuggerLoaded),
       withLatestFrom(this.store.select(getDebuggerRunsLoaded)),

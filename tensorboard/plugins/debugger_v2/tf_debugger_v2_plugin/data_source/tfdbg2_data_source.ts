@@ -29,7 +29,7 @@ export abstract class Tfdbg2DataSource {
 
 @Injectable()
 export class Tfdbg2HttpServerDataSource implements Tfdbg2DataSource {
-  private readonly httpPathPrefix = '/data/plugin/debugger-v2';
+  private readonly httpPathPrefix = 'data/plugin/debugger-v2';
 
   constructor(private http: HttpClient) {}
 
