@@ -1,5 +1,6 @@
 package(default_visibility = ["//tensorboard:internal"])
 
+load("@npm_angular_bazel//:index.bzl", "ng_module")
 load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 
 licenses(["notice"])
@@ -22,5 +23,16 @@ tf_ts_library(
     deps = [
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_dynamic_testing",
+    ],
+)
+
+ng_module(
+    name = "mat_icon",
+    testonly = 1,
+    srcs = [
+        "mat_icon.module.ts",
+    ],
+    deps = [
+        "@npm//@angular/core",
     ],
 )

@@ -26,6 +26,7 @@ import {ROOT_REDUCERS, metaReducers} from './reducer_config';
 
 import {HeaderModule} from './header/header_module';
 import {ReloaderModule} from './reloader/reloader_module';
+import {MatIconModule} from './mat_icon_module';
 
 @NgModule({
   declarations: [AppContainer],
@@ -34,6 +35,7 @@ import {ReloaderModule} from './reloader/reloader_module';
     BrowserAnimationsModule,
     CoreModule,
     HeaderModule,
+    MatIconModule,
     PluginsModule,
     ReloaderModule,
     StoreModule.forRoot(ROOT_REDUCERS, {
