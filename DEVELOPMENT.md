@@ -50,9 +50,9 @@ You may find the following optional tips useful for development.
 
 ### Ignoring large cleanup commits in `git blame`
 
-> ```shell
-> git config blame.ignoreRevsFile .git-blame-ignore-revs  # requires Git >= 2.23
-> ```
+```shell
+git config blame.ignoreRevsFile .git-blame-ignore-revs  # requires Git >= 2.23
+```
 
 We maintain a list of commits with large diffs that are known to not have any
 semantic effect, like mass code reformattings. As of Git 2.23, you can configure
