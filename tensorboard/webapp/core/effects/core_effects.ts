@@ -38,7 +38,6 @@ import {TBServerDataSource} from '../../webapp_data_source/tb_server_data_source
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 /** @typehack */ import * as _typeHackNgrx from '@ngrx/store/src/models';
-/** @typehack */ import * as _typeHackNgrxEffects from '@ngrx/effects';
 
 @Injectable()
 export class CoreEffects {
