@@ -8,5 +8,6 @@ tf_ts_library(
     name = "types",
     srcs = [
         "api.ts",
+        "data.ts",
     ],
 )

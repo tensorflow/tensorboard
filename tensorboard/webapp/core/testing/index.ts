@@ -12,11 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {
-  PluginMetadata,
-  LoadingMechanismType,
-  DataLoadState,
-} from '../../types/api';
+import {LoadingMechanismType, PluginMetadata} from '../../types/api';
+import {DataLoadState} from '../../types/data';
 import {CoreState, State, CORE_FEATURE_KEY} from '../store/core_types';
 
 export function createPluginMetadata(displayName: string): PluginMetadata {

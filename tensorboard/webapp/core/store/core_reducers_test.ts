@@ -15,7 +15,7 @@ limitations under the License.
 import * as actions from '../actions';
 import {reducers} from './core_reducers';
 import {createPluginMetadata, createCoreState} from '../testing';
-import {DataLoadState} from '../../types/api';
+import {DataLoadState} from '../../types/data';
 
 function createPluginsListing() {
   return {

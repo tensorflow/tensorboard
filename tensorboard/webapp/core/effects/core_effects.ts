@@ -32,7 +32,7 @@ import {
   pluginsListingFailed,
 } from '../actions';
 import {getPluginsListLoaded} from '../store';
-import {DataLoadState} from '../../types/api';
+import {DataLoadState} from '../../types/data';
 import {State} from '../store/core_types';
 import {TBServerDataSource} from '../../webapp_data_source/tb_server_data_source';
 

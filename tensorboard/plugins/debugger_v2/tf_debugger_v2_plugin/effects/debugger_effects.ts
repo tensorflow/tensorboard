@@ -42,6 +42,8 @@ export class DebuggerEffects {
   /** @export */
   readonly loadRunListing$ = createEffect(() =>
     this.actions$.pipe(
+      // TODO(cais): Explore consolidating this effect with the greater
+      // webapp (in tensorboard/webapp), e.g., during PluginChanged actions.
       ofType(debuggerLoaded),
       withLatestFrom(this.store.select(getDebuggerRunsLoaded)),
       filter(([, {state}]) => state !== DataLoadState.LOADING),

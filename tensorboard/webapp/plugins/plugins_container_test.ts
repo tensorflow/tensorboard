@@ -20,7 +20,8 @@ import {provideMockStore, MockStore} from '@ngrx/store/testing';
 import {PluginsContainer} from './plugins_container';
 import {PluginsComponent} from './plugins_component';
 
-import {DataLoadState, PluginId, LoadingMechanismType} from '../types/api';
+import {PluginId, LoadingMechanismType} from '../types/api';
+import {DataLoadState} from '../types/data';
 import {createState, createCoreState} from '../core/testing';
 import {State} from '../core/store';
 // store/index.ts doesn't export this, but it's OK to use for testing

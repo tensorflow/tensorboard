@@ -13,30 +13,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {LoadState} from '../../../../webapp/types/data';
+/** Data-related types */
 
-export {DataLoadState, LoadState} from '../../../../webapp/types/data';
-
-export const DEBUGGER_FEATURE_KEY = 'debugger';
-
-export interface DebuggerRunMetadata {
-  // Time at which the debugger run started. Milliseconds since the epoch.
-  startTimeMs: number;
-
-  // TensorFlow Version string.
-  tensorFlowVersion: string;
+export enum DataLoadState {
+  NOT_LOADED,
+  LOADED,
+  LOADING,
+  FAILED,
 }
 
-export interface DebuggerRunListing {
-  [runId: string]: DebuggerRunMetadata;
-}
-
-export interface DebuggerState {
-  // Names of the runs that are available.
-  runs: DebuggerRunListing;
-  runsLoaded: LoadState;
-}
-
-export interface State {
-  [DEBUGGER_FEATURE_KEY]?: DebuggerState;
+export interface LoadState {
+  state: DataLoadState;
+  // Time since epoch.
+  lastLoadedTimeInMs: number | null;
 }

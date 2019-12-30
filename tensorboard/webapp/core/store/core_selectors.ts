@@ -14,7 +14,8 @@ limitations under the License.
 ==============================================================================*/
 
 import {createSelector, createFeatureSelector} from '@ngrx/store';
-import {LoadState, PluginId, PluginsListing} from '../../types/api';
+import {PluginId, PluginsListing} from '../../types/api';
+import {LoadState} from '../../types/data';
 import {CoreState, State, CORE_FEATURE_KEY} from './core_types';
 
 // HACK: These imports are for type inference.
