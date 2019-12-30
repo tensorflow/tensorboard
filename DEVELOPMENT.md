@@ -43,3 +43,24 @@ $ git cherry-pick bc4e7a6e5517daf918433a8f5983fc6bd239358f
 [black-wrapper]: https://gist.github.com/wchargin/d65820919f363d33545159138c86ce31
 [pr-1334]: https://github.com/tensorflow/tensorboard/pull/1334
 [yarn]: https://yarnpkg.com/
+
+## Pro tips
+
+You may find the following optional tips useful for development.
+
+### Ignoring large cleanup commits in `git blame`
+
+> ```shell
+> git config blame.ignoreRevsFile .git-blame-ignore-revs  # requires Git >= 2.23
+> ```
+
+We maintain a list of commits with large diffs that are known to not have any
+semantic effect, like mass code reformattings. As of Git 2.23, you can configure
+Git to ignore these commits in the output of `git blame`, so that lines are
+blamed to the most recent “real” change. Set the `blame.ignoreRevsFile` Git
+config option to `.git-blame-ignore-revs` to enable this by default, or pass
+`--ignore-revs-file .git-blame-ignore-revs` to enable it for a single command.
+When enabled by default, this also works with editor plugins like
+[vim-fugitive]. See `git help blame` and `git help config` for more details.
+
+[vim-fugitive]: https://github.com/tpope/vim-fugitive
