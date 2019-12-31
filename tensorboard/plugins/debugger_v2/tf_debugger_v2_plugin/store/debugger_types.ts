@@ -38,5 +38,5 @@ export interface DebuggerState {
 }
 
 export interface State {
-  [DEBUGGER_FEATURE_KEY]?: DebuggerState;
+  [DEBUGGER_FEATURE_KEY]: DebuggerState;
 }

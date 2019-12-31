@@ -59,6 +59,7 @@ const reducer = createReducer(
     actions.debuggerRunsLoaded,
     (state: DebuggerState, {runs}): DebuggerState => {
       return {
+        ...state,
         runs,
         runsLoaded: {
           state: DataLoadState.LOADED,

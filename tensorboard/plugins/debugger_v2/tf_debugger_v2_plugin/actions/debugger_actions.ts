@@ -46,4 +46,4 @@ export const debuggerRunsRequestFailed = createAction(
 /**
  * Actions for the Alerts Component.
  */
-export const alertsViewLoaded = createAction('[Alerts] Alerts View Loaded');
+export const alertsViewLoaded = createAction('[Debugger] Alerts View Loaded');

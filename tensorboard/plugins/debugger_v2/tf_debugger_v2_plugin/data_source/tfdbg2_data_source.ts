@@ -13,15 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {HttpClient} from '@angular/common/http';
-import {Injectable, InjectionToken} from '@angular/core';
+import {Injectable} from '@angular/core';
 import {Observable} from 'rxjs';
 import {DebuggerRunListing} from '../store/debugger_types';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
-
-export const TFDBG2_DATA_SOURCE = new InjectionToken<Tfdbg2DataSource>(
-  'tfdbg2 data source'
-);
 
 export abstract class Tfdbg2DataSource {
   abstract fetchRuns(): Observable<DebuggerRunListing>;

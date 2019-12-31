@@ -33,7 +33,6 @@ describe('Debugger effects', () => {
   let debuggerEffects: DebuggerEffects;
   let action: ReplaySubject<Action>;
   let store: MockStore<State>;
-  let fetchRuns: jasmine.Spy;
   let dispatchSpy: jasmine.Spy;
 
   beforeEach(async () => {

@@ -17,7 +17,7 @@ import {createSelector, select, Store} from '@ngrx/store';
 import {DebuggerRunListing, State} from './store/debugger_types';
 
 import {debuggerLoaded} from './actions';
-import {getDebuggerRuns} from './store';
+import {getDebuggerRunListing} from './store';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
@@ -31,12 +31,12 @@ import {getDebuggerRuns} from './store';
   `,
 })
 export class DebuggerContainer implements OnInit {
-  readonly runs$ = this.store.pipe(select(getDebuggerRuns));
+  readonly runs$ = this.store.pipe(select(getDebuggerRunListing));
 
   readonly runsIds$ = this.store.pipe(
     select(
       createSelector(
-        getDebuggerRuns,
+        getDebuggerRunListing,
         (runs): string[] => Object.keys(runs)
       )
     )

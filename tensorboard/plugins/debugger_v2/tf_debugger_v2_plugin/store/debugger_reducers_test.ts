@@ -60,5 +60,42 @@ describe('Debugger reducers', () => {
         },
       });
     });
+
+    it('Overrides existing runs on successful runs loading', () => {
+      const state = createDebuggerState({
+        runs: {
+          foo_debugger_run: {
+            startTimeMs: 111,
+            tensorFlowVersion: '2.2.0',
+          },
+        },
+        runsLoaded: {
+          state: DataLoadState.LOADED,
+          lastLoadedTimeInMs: 0,
+        },
+      });
+      const t0 = Date.now();
+      const nextState = reducers(
+        state,
+        actions.debuggerRunsLoaded({
+          runs: {
+            bar_debugger_run: {
+              startTimeMs: 222,
+              tensorFlowVersion: '2.3.0',
+            },
+          },
+        })
+      );
+      expect(nextState.runsLoaded.state).toEqual(DataLoadState.LOADED);
+      expect(nextState.runsLoaded.lastLoadedTimeInMs).toBeGreaterThanOrEqual(
+        t0
+      );
+      expect(nextState.runs).toEqual({
+        bar_debugger_run: {
+          startTimeMs: 222,
+          tensorFlowVersion: '2.3.0',
+        },
+      });
+    });
   });
 });

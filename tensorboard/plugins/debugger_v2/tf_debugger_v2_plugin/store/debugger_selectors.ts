@@ -31,7 +31,7 @@ const selectDebuggerState = createFeatureSelector<State, DebuggerState>(
   DEBUGGER_FEATURE_KEY
 );
 
-export const getDebuggerRuns = createSelector(
+export const getDebuggerRunListing = createSelector(
   selectDebuggerState,
   (state: DebuggerState): DebuggerRunListing => {
     return state.runs;
