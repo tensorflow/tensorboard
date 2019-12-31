@@ -57,7 +57,7 @@ export class DebuggerEffects {
             }
             // TODO(cais): Add catchError() to pipe.
           )
-        ) as Observable<Action>;
+        );
       })
     )
   );
