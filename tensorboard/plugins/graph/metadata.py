@@ -24,3 +24,10 @@ from __future__ import print_function
 # graph Summaries.
 # See `graphs_plugin.py` for details.
 PLUGIN_NAME = "graphs"
+
+# In the context of the data provider interface, tag name given to a
+# graph that logically applies at the run level. No other types of
+# graphs are currently supported; when added, they'll have type-specific
+# name scopes (like `"__op_graph__/foo"`, `"__conceptual_graph__/bar"`)
+# to preclude collisions with this hard-coded string.
+RUN_GRAPH_NAME = "__run_graph__"
