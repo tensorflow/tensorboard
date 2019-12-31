@@ -31,7 +31,8 @@ import {
 import {Tfdbg2HttpServerDataSource} from '../data_source/tfdbg2_data_source';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
-/** @typehack */ import * as _typeHackNgrx from '@ngrx/store/src/models';
+/** @typehack */ import * as _typeHackNgrxStore from '@ngrx/store/src/models';
+/** @typehack */ import * as _typeHackNgrxEffects from '@ngrx/effects/effects';
 
 @Injectable()
 export class DebuggerEffects {
@@ -56,7 +57,7 @@ export class DebuggerEffects {
             }
             // TODO(cais): Add catchError() to pipe.
           )
-        ) as Observable<Action>;
+        );
       })
     )
   );
