@@ -20,6 +20,7 @@ from __future__ import print_function
 
 from werkzeug import wrappers
 
+from tensorboard import plugin_util
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.debugger_v2 import debug_data_provider
 from tensorboard.backend import http_util
@@ -70,9 +71,8 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
 
     @wrappers.Request.application
     def serve_runs(self, request):
-        runs = self._data_provider.list_runs(
-            debug_data_provider.DUMMY_DEBUGGER_EXPERIMENT_ID
-        )
+        experiment = plugin_util.experiment_id(request.environ)
+        runs = self._data_provider.list_runs(experiment)
         return http_util.Respond(
             request, [run.run_id for run in runs], "application/json"
         )

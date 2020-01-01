@@ -31,11 +31,6 @@ from tensorboard.data import provider
 from tensorboard.plugins.debugger_v2 import debug_data_multiplexer
 
 
-# Dummy experiment ID for the debugger.
-# TODO(cais): Implement support for multiple experiment IDs.
-DUMMY_DEBUGGER_EXPERIMENT_ID = "__dummy_debugger_experiment_id__"
-
-
 class LocalDebuggerV2DataProvider(provider.DataProvider):
     """A DataProvider implementation for tfdbg v2 data on local filesystem.
 
@@ -60,12 +55,11 @@ class LocalDebuggerV2DataProvider(provider.DataProvider):
 
         Args:
           experiment_id: currently unused, because the backing
-            LocalDebuggerV2DataProvideer does not accommodate multiple experiments.
+            DebuggerV2EventMultiplexer does not accommodate multiple experiments.
 
         Returns:
           Run names as a list of str.
         """
-        self._validate_experiment_id(experiment_id)
         return [
             provider.Run(
                 run_id=run,  # use names as IDs
@@ -74,14 +68,6 @@ class LocalDebuggerV2DataProvider(provider.DataProvider):
             )
             for run in self._multiplexer.Runs()
         ]
-
-    def _validate_experiment_id(self, experiment_id):
-        if experiment_id != DUMMY_DEBUGGER_EXPERIMENT_ID:
-            raise ValueError(
-                "LocalDebuggerV2DataProvider currently expects experiment_id "
-                + "to be of the dummyar value '%s', but received '%s'"
-                % (DUMMY_DEBUGGER_EXPERIMENT_ID, experiment_id)
-            )
 
     def _get_first_event_timestamp(self, run_name):
         try:

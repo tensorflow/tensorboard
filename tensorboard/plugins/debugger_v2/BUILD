@@ -32,6 +32,7 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         ":debug_data_provider",
+        "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
         "//tensorboard/plugins:base_plugin",
         "@org_pocoo_werkzeug",

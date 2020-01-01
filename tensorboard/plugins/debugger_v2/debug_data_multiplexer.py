@@ -72,9 +72,9 @@ class DebuggerV2EventMultiplexer(object):
         try:
             from tensorflow.python.debug.lib import debug_events_reader
 
-            # TODO(cais): Switch DebugDataReader when available in tensorflow.
+            # TODO(cais): Switch DebugDataReader when it supports metadata.
             reader = debug_events_reader.DebugEventsReader(self._logdir)
-            metadata_iterator = reader.metadata_iterator()
+            metadata_iterator, _ = reader.metadata_iterator()
             return next(metadata_iterator).wall_time
         finally:
             reader.close()
@@ -83,39 +83,6 @@ class DebuggerV2EventMultiplexer(object):
         raise NotImplementedError(
             "DebugDataMultiplexer.PluginRunToTagToContent() has not been "
             "implemented yet."
-        )
-
-    def Scalars(self, run, tag):
-        raise TypeError("DebugDataMultiplexer does not support Scalars().")
-
-    def SerializedGraph(self, run):
-        raise TypeError(
-            "DebugDataMultiplexer does not support SerializedGraph()."
-        )
-
-    def RunMetadata(self, run, tag):
-        raise TypeError("DebugDataMultiplexer does not support RunMetadata().")
-
-    def Histograms(self, run, tag):
-        raise TypeError("DebugDataMultiplexer does not support Histograms().")
-
-    def CompressedHistograms(self, run, tag):
-        raise TypeError(
-            "DebugDataMultiplexer does not support CompressedHistograms()."
-        )
-
-    def Images(self, run, tag):
-        raise TypeError("DebugDataMultiplexer does not support Images().")
-
-    def Audio(self, run, tag):
-        raise TypeError("DebugDataMultiplexer does not support Images().")
-
-    def Tensors(self, run, tag):
-        raise TypeError("DebugDataMultiplexer does not support Tensors().")
-
-    def SummaryMetadata(self, run, tag):
-        raise TypeError(
-            "DebugDataMultiplexer does not support SummaryMetadata()."
         )
 
     def Runs(self):
@@ -135,13 +102,17 @@ class DebuggerV2EventMultiplexer(object):
         If no tfdbg2-format data exists in the `logdir`, an empty `dict`.
         """
         reader = None
-        try:
-            from tensorflow.python.debug.lib import debug_events_reader
+        from tensorflow.python.debug.lib import debug_events_reader
 
-            # TODO(cais): Switch DebugDataReader when available in tensorflow.
-            reader = debug_events_reader.DebugEventsReader(self._logdir)
+        try:
+            reader = debug_events_reader.DebugDataReader(self._logdir)
             # NOTE(cais): Currently each logdir is enforced to have only one
             # DebugEvent file set. So we add hard-coded default run name.
+        except ValueError as error:
+            # When no DebugEvent file set is found in the logdir, a `ValueError`
+            # is thrown.
+            return {}
+        with reader:
             return {
                 DEFAULT_DEBUGGER_RUN_NAME: {
                     # TODO(cais): Add the semantically meaningful tag names such as
@@ -149,10 +120,3 @@ class DebuggerV2EventMultiplexer(object):
                     "debugger-v2": []
                 }
             }
-        except ValueError as error:
-            # When no DebugEvent file set is found in the logdir, a `ValueError`
-            # is thrown.
-            return {}
-        finally:
-            if reader:
-                reader.close()
