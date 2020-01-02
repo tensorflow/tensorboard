@@ -234,8 +234,6 @@ future for loading older images.
         },
 
         // steps: {
-        //   width: number,
-        //   height: number,
         //   wall_time: Date,
         //   step: number,
         //   url: string,
@@ -363,8 +361,6 @@ future for loading older images.
         url += '&' + imageMetadata.query;
 
         return {
-          width: imageMetadata.width,
-          height: imageMetadata.height,
           // The wall time within the metadata is in seconds. The Date
           // constructor accepts a time in milliseconds, so we multiply by 1000.
           wall_time: new Date(imageMetadata.wall_time * 1000),
