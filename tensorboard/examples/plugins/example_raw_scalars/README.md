@@ -4,7 +4,7 @@
 
 In this example, we render a run selector dropdown component. When the user selects a run, it shows a preview of all scalar data for tags within it. For a complete guide to plugin development, see [ADDING_A_PLUGIN](../../../../ADDING_A_PLUGIN.md).
 
-![Raw scalars example screenshot](../../../../docs/images/example_raw_scalars.png "Raw scalars example")
+![Screenshot](../../../../docs/images/example_raw_scalars.png "Raw scalars example")
 
 All files under [`static/*`][static-dir] are served as static assets, with the frontend entry point being [`static/index.js`][static-index-js]. The plugin backend serves scalar summaries (e.g. values written by [`tf.summary.scalar`][summary_scalar_docs]) from runs within the `--logdir` passed to TensorBoard.
 

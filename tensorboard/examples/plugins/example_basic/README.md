@@ -4,7 +4,7 @@
 
 In this example, we define a custom summary op `greeting(name, guest)`, use it to write values from Python, and surface the data in TensorBoard's frontend. For a complete guide to plugin development, see [`ADDING_A_PLUGIN`](../../../../ADDING_A_PLUGIN.md).
 
-![Basic example screenshot](../../../../docs/images/example_basic.png "Basic example")
+![Screenshot](../../../../docs/images/example_basic.png "Basic example")
 
 ## Running the example
 
