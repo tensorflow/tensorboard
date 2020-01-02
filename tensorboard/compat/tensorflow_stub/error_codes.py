@@ -21,62 +21,62 @@ OK = 0
 # The operation was cancelled (typically by the caller).
 CANCELLED = 1
 
-'''
+"""
 Unknown error.  An example of where this error may be returned is
 if a Status value received from another address space belongs to
 an error-space that is not known in this address space.  Also
 errors raised by APIs that do not return enough error information
 may be converted to this error.
-'''
+"""
 UNKNOWN = 2
 
-'''
+"""
 Client specified an invalid argument.  Note that this differs
 from FAILED_PRECONDITION.  INVALID_ARGUMENT indicates arguments
 that are problematic regardless of the state of the system
 (e.g., a malformed file name).
-'''
+"""
 INVALID_ARGUMENT = 3
 
-'''
+"""
 Deadline expired before operation could complete.  For operations
 that change the state of the system, this error may be returned
 even if the operation has completed successfully.  For example, a
 successful response from a server could have been delayed long
 enough for the deadline to expire.
-'''
+"""
 DEADLINE_EXCEEDED = 4
 
-'''
+"""
 Some requested entity (e.g., file or directory) was not found.
 For privacy reasons, this code *may* be returned when the client
 does not have the access right to the entity.
-'''
+"""
 NOT_FOUND = 5
 
-'''
+"""
 Some entity that we attempted to create (e.g., file or directory)
 already exists.
-'''
+"""
 ALREADY_EXISTS = 6
 
-'''
+"""
 The caller does not have permission to execute the specified
 operation.  PERMISSION_DENIED must not be used for rejections
 caused by exhausting some resource (use RESOURCE_EXHAUSTED
 instead for those errors).  PERMISSION_DENIED must not be
 used if the caller can not be identified (use UNAUTHENTICATED
 instead for those errors).
-'''
+"""
 PERMISSION_DENIED = 7
 
-'''
+"""
 Some resource has been exhausted, perhaps a per-user quota, or
 perhaps the entire file system is out of space.
-'''
+"""
 RESOURCE_EXHAUSTED = 8
 
-'''
+"""
 Operation was rejected because the system is not in a state
 required for the operation's execution.  For example, directory
 to be deleted may be non-empty, an rmdir operation is applied to
@@ -95,19 +95,19 @@ between FAILED_PRECONDITION, ABORTED, and UNAVAILABLE:
     REST Get/Update/Delete on a resource and the resource on the
     server does not match the condition. E.g., conflicting
     read-modify-write on the same resource.
-'''
+"""
 FAILED_PRECONDITION = 9
 
-'''
+"""
 The operation was aborted, typically due to a concurrency issue
 like sequencer check failures, transaction aborts, etc.
 
 See litmus test above for deciding between FAILED_PRECONDITION,
 ABORTED, and UNAVAILABLE.
-'''
+"""
 ABORTED = 10
 
-'''
+"""
 Operation tried to iterate past the valid input range.  E.g., seeking or
 reading past end of file.
 
@@ -123,39 +123,39 @@ OUT_OF_RANGE.  We recommend using OUT_OF_RANGE (the more specific
 error) when it applies so that callers who are iterating through
 a space can easily look for an OUT_OF_RANGE error to detect when
 they are done.
-'''
+"""
 OUT_OF_RANGE = 11
 
 # Operation is not implemented or not supported/enabled in this service.
 UNIMPLEMENTED = 12
 
-'''
+"""
 Internal errors.  Means some invariant expected by the underlying
 system has been broken.  If you see one of these errors,
 something is very broken.
-'''
+"""
 INTERNAL = 13
 
-'''
+"""
 The service is currently unavailable.  This is a most likely a
 transient condition and may be corrected by retrying with
 a backoff.
 
 See litmus test above for deciding between FAILED_PRECONDITION,
 ABORTED, and UNAVAILABLE.
-'''
+"""
 UNAVAILABLE = 14
 
 # Unrecoverable data loss or corruption.
 DATA_LOSS = 15
 
-'''
+"""
 The request does not have valid authentication credentials for the
 operation.
-'''
+"""
 UNAUTHENTICATED = 16
 
-'''
+"""
 An extra enum entry to prevent people from writing code that
 fails to compile when a new code is added.
 
@@ -165,5 +165,5 @@ case instead of a case that mentions this enumeration entry.
 
 Nobody should rely on the value (currently 20) listed here.  It
 may change in the future.
-'''
+"""
 DO_NOT_USE_RESERVED_FOR_FUTURE_EXPANSION_USE_DEFAULT_IN_SWITCH_INSTEAD_ = 20

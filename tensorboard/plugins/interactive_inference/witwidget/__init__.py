@@ -14,10 +14,13 @@
 
 from witwidget.notebook.visualization import *
 
+
 def _jupyter_nbextension_paths():
-  return [{
-    'section': 'notebook',
-    'src': 'static',
-    'dest': 'wit-widget',
-    'require': 'wit-widget/extension'
-  }]
+    return [
+        {
+            "section": "notebook",
+            "src": "static",
+            "dest": "wit-widget",
+            "require": "wit-widget/extension",
+        }
+    ]

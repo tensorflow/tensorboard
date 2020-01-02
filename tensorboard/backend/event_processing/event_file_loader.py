@@ -31,82 +31,87 @@ logger = tb_logging.get_logger()
 
 
 class RawEventFileLoader(object):
-  """An iterator that yields Event protos as serialized bytestrings."""
+    """An iterator that yields Event protos as serialized bytestrings."""
 
-  def __init__(self, file_path):
-    if file_path is None:
-      raise ValueError('A file path is required')
-    file_path = platform_util.readahead_file_path(file_path)
-    logger.debug('Opening a record reader pointing at %s', file_path)
-    with tf.compat.v1.errors.raise_exception_on_not_ok_status() as status:
-      self._reader = _pywrap_tensorflow.PyRecordReader_New(
-          tf.compat.as_bytes(file_path), 0, tf.compat.as_bytes(''), status)
-    # Store it for logging purposes.
-    self._file_path = file_path
-    if not self._reader:
-      raise IOError('Failed to open a record reader pointing to %s' % file_path)
+    def __init__(self, file_path):
+        if file_path is None:
+            raise ValueError("A file path is required")
+        file_path = platform_util.readahead_file_path(file_path)
+        logger.debug("Opening a record reader pointing at %s", file_path)
+        with tf.compat.v1.errors.raise_exception_on_not_ok_status() as status:
+            self._reader = _pywrap_tensorflow.PyRecordReader_New(
+                tf.compat.as_bytes(file_path), 0, tf.compat.as_bytes(""), status
+            )
+        # Store it for logging purposes.
+        self._file_path = file_path
+        if not self._reader:
+            raise IOError(
+                "Failed to open a record reader pointing to %s" % file_path
+            )
 
-  def Load(self):
-    """Loads all new events from disk as raw serialized proto bytestrings.
+    def Load(self):
+        """Loads all new events from disk as raw serialized proto bytestrings.
 
-    Calling Load multiple times in a row will not 'drop' events as long as the
-    return value is not iterated over.
+        Calling Load multiple times in a row will not 'drop' events as long as the
+        return value is not iterated over.
 
-    Yields:
-      All event proto bytestrings in the file that have not been yielded yet.
-    """
-    logger.debug('Loading events from %s', self._file_path)
+        Yields:
+          All event proto bytestrings in the file that have not been yielded yet.
+        """
+        logger.debug("Loading events from %s", self._file_path)
 
-    # GetNext() expects a status argument on TF <= 1.7.
-    get_next_args = inspect.getargspec(self._reader.GetNext).args  # pylint: disable=deprecated-method
-    # First argument is self
-    legacy_get_next = (len(get_next_args) > 1)
+        # GetNext() expects a status argument on TF <= 1.7.
+        get_next_args = inspect.getargspec(
+            self._reader.GetNext
+        ).args  # pylint: disable=deprecated-method
+        # First argument is self
+        legacy_get_next = len(get_next_args) > 1
 
-    while True:
-      try:
-        if legacy_get_next:
-          with tf.compat.v1.errors.raise_exception_on_not_ok_status() as status:
-            self._reader.GetNext(status)
-        else:
-          self._reader.GetNext()
-      except (tf.errors.DataLossError, tf.errors.OutOfRangeError) as e:
-        logger.debug('Cannot read more events: %s', e)
-        # We ignore partial read exceptions, because a record may be truncated.
-        # PyRecordReader holds the offset prior to the failed read, so retrying
-        # will succeed.
-        break
-      yield self._reader.record()
-    logger.debug('No more events in %s', self._file_path)
+        while True:
+            try:
+                if legacy_get_next:
+                    with tf.compat.v1.errors.raise_exception_on_not_ok_status() as status:
+                        self._reader.GetNext(status)
+                else:
+                    self._reader.GetNext()
+            except (tf.errors.DataLossError, tf.errors.OutOfRangeError) as e:
+                logger.debug("Cannot read more events: %s", e)
+                # We ignore partial read exceptions, because a record may be truncated.
+                # PyRecordReader holds the offset prior to the failed read, so retrying
+                # will succeed.
+                break
+            yield self._reader.record()
+        logger.debug("No more events in %s", self._file_path)
 
 
 class EventFileLoader(RawEventFileLoader):
-  """An iterator that yields parsed Event protos."""
+    """An iterator that yields parsed Event protos."""
 
-  def Load(self):
-    """Loads all new events from disk.
+    def Load(self):
+        """Loads all new events from disk.
 
-    Calling Load multiple times in a row will not 'drop' events as long as the
-    return value is not iterated over.
+        Calling Load multiple times in a row will not 'drop' events as long as the
+        return value is not iterated over.
 
-    Yields:
-      All events in the file that have not been yielded yet.
-    """
-    for record in super(EventFileLoader, self).Load():
-      yield event_pb2.Event.FromString(record)
+        Yields:
+          All events in the file that have not been yielded yet.
+        """
+        for record in super(EventFileLoader, self).Load():
+            yield event_pb2.Event.FromString(record)
 
 
 class TimestampedEventFileLoader(EventFileLoader):
-  """An iterator that yields (UNIX timestamp float, Event proto) pairs."""
+    """An iterator that yields (UNIX timestamp float, Event proto) pairs."""
 
-  def Load(self):
-    """Loads all new events and their wall time values from disk.
+    def Load(self):
+        """Loads all new events and their wall time values from disk.
 
-    Calling Load multiple times in a row will not 'drop' events as long as the
-    return value is not iterated over.
+        Calling Load multiple times in a row will not 'drop' events as long as the
+        return value is not iterated over.
 
-    Yields:
-      Pairs of (UNIX timestamp float, Event proto) for all events in the file
-      that have not been yielded yet.
-    """
-    for event in super(TimestampedEventFileLoader, self).Load():
-      yield (event.wall_time, event)
+        Yields:
+          Pairs of (UNIX timestamp float, Event proto) for all events in the file
+          that have not been yielded yet.
+        """
+        for event in super(TimestampedEventFileLoader, self).Load():
+            yield (event.wall_time, event)

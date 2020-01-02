@@ -24,7 +24,7 @@ from tensorboard.util import tb_logging
 
 logger = tb_logging.get_logger()
 
-PLUGIN_NAME = 'histograms'
+PLUGIN_NAME = "histograms"
 
 # The most recent value for the `version` field of the
 # `HistogramPluginData` proto.
@@ -32,42 +32,46 @@ PROTO_VERSION = 0
 
 
 def create_summary_metadata(display_name, description):
-  """Create a `summary_pb2.SummaryMetadata` proto for histogram plugin data.
+    """Create a `summary_pb2.SummaryMetadata` proto for histogram plugin data.
 
-  Returns:
-    A `summary_pb2.SummaryMetadata` protobuf object.
-  """
-  content = plugin_data_pb2.HistogramPluginData(version=PROTO_VERSION)
-  return summary_pb2.SummaryMetadata(
-      display_name=display_name,
-      summary_description=description,
-      plugin_data=summary_pb2.SummaryMetadata.PluginData(
-          plugin_name=PLUGIN_NAME,
-          content=content.SerializeToString()))
+    Returns:
+      A `summary_pb2.SummaryMetadata` protobuf object.
+    """
+    content = plugin_data_pb2.HistogramPluginData(version=PROTO_VERSION)
+    return summary_pb2.SummaryMetadata(
+        display_name=display_name,
+        summary_description=description,
+        plugin_data=summary_pb2.SummaryMetadata.PluginData(
+            plugin_name=PLUGIN_NAME, content=content.SerializeToString()
+        ),
+    )
 
 
 def parse_plugin_metadata(content):
-  """Parse summary metadata to a Python object.
+    """Parse summary metadata to a Python object.
 
-  Arguments:
-    content: The `content` field of a `SummaryMetadata` proto
-      corresponding to the histogram plugin.
+    Arguments:
+      content: The `content` field of a `SummaryMetadata` proto
+        corresponding to the histogram plugin.
 
-  Returns:
-    A `HistogramPluginData` protobuf object.
-  """
-  if not isinstance(content, bytes):
-    raise TypeError('Content type must be bytes')
-  if content == b'{}':
-    # Old-style JSON format. Equivalent to an all-default proto.
-    return plugin_data_pb2.HistogramPluginData()
-  else:
-    result = plugin_data_pb2.HistogramPluginData.FromString(content)
-    if result.version == 0:
-      return result
+    Returns:
+      A `HistogramPluginData` protobuf object.
+    """
+    if not isinstance(content, bytes):
+        raise TypeError("Content type must be bytes")
+    if content == b"{}":
+        # Old-style JSON format. Equivalent to an all-default proto.
+        return plugin_data_pb2.HistogramPluginData()
     else:
-      logger.warn(
-          'Unknown metadata version: %s. The latest version known to '
-          'this build of TensorBoard is %s; perhaps a newer build is '
-          'available?', result.version, PROTO_VERSION)
-      return result
+        result = plugin_data_pb2.HistogramPluginData.FromString(content)
+        if result.version == 0:
+            return result
+        else:
+            logger.warn(
+                "Unknown metadata version: %s. The latest version known to "
+                "this build of TensorBoard is %s; perhaps a newer build is "
+                "available?",
+                result.version,
+                PROTO_VERSION,
+            )
+            return result

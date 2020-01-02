@@ -31,13 +31,13 @@ def _usage(shorthelp):
       shorthelp: bool, if True, prints only flags from the main module,
           rather than all flags.
     """
-    doc = _sys.modules['__main__'].__doc__
+    doc = _sys.modules["__main__"].__doc__
     if not doc:
-        doc = '\nUSAGE: %s [flags]\n' % _sys.argv[0]
-        doc = flags.text_wrap(doc, indent='       ', firstline_indent='')
+        doc = "\nUSAGE: %s [flags]\n" % _sys.argv[0]
+        doc = flags.text_wrap(doc, indent="       ", firstline_indent="")
     else:
         # Replace all '%s' with sys.argv[0], and all '%%' with '%'.
-        num_specifiers = doc.count('%') - 2 * doc.count('%%')
+        num_specifiers = doc.count("%") - 2 * doc.count("%%")
         try:
             doc %= (_sys.argv[0],) * num_specifiers
         except (OverflowError, TypeError, ValueError):
@@ -50,9 +50,9 @@ def _usage(shorthelp):
     try:
         _sys.stdout.write(doc)
         if flag_str:
-            _sys.stdout.write('\nflags:\n')
+            _sys.stdout.write("\nflags:\n")
             _sys.stdout.write(flag_str)
-        _sys.stdout.write('\n')
+        _sys.stdout.write("\n")
     except IOError as e:
         # We avoid printing a huge backtrace if we get EPIPE, because
         # "foo.par --help | less" is a frequent use case.
@@ -62,24 +62,27 @@ def _usage(shorthelp):
 
 class _HelpFlag(flags.BooleanFlag):
     """Special boolean flag that displays usage and raises SystemExit."""
-    NAME = 'help'
-    SHORT_NAME = 'h'
+
+    NAME = "help"
+    SHORT_NAME = "h"
 
     def __init__(self):
         super(_HelpFlag, self).__init__(
-            self.NAME, False, 'show this help', short_name=self.SHORT_NAME)
+            self.NAME, False, "show this help", short_name=self.SHORT_NAME
+        )
 
     def parse(self, arg):
         if arg:
             _usage(shorthelp=True)
             print()
-            print('Try --helpfull to get a list of all flags.')
+            print("Try --helpfull to get a list of all flags.")
             _sys.exit(1)
 
 
 class _HelpshortFlag(_HelpFlag):
     """--helpshort is an alias for --help."""
-    NAME = 'helpshort'
+
+    NAME = "helpshort"
     SHORT_NAME = None
 
 
@@ -87,12 +90,7 @@ class _HelpfullFlag(flags.BooleanFlag):
     """Display help for flags in main module and all dependent modules."""
 
     def __init__(self):
-        super(
-            _HelpfullFlag,
-            self).__init__(
-            'helpfull',
-            False,
-            'show full help')
+        super(_HelpfullFlag, self).__init__("helpfull", False, "show full help")
 
     def parse(self, arg):
         if arg:
@@ -122,7 +120,7 @@ def run(main=None, argv=None):
     # Parse known flags.
     argv = flags.FLAGS(_sys.argv if argv is None else argv, known_only=True)
 
-    main = main or _sys.modules['__main__'].main
+    main = main or _sys.modules["__main__"].main
 
     # Call the main function, passing through any arguments
     # to the final program.

@@ -27,124 +27,128 @@ from witwidget.notebook import base
 
 @widgets.register
 class WitWidget(widgets.DOMWidget, base.WitWidgetBase):
-  """WIT widget for Jupyter."""
-  _view_name = Unicode('WITView').tag(sync=True)
-  _view_module = Unicode('wit-widget').tag(sync=True)
-  _view_module_version = Unicode('^0.1.0').tag(sync=True)
+    """WIT widget for Jupyter."""
 
-  # Traitlets for communicating between python and javascript.
-  config = Dict(dict()).tag(sync=True)
-  examples = List([]).tag(sync=True)
-  inferences = Dict(dict()).tag(sync=True)
-  infer = Int(0).tag(sync=True)
-  update_example = Dict(dict()).tag(sync=True)
-  delete_example = Dict(dict()).tag(sync=True)
-  duplicate_example = Dict(dict()).tag(sync=True)
-  updated_example_indices = Set(set())
-  get_eligible_features = Int(0).tag(sync=True)
-  sort_eligible_features = Dict(dict()).tag(sync=True)
-  eligible_features = List([]).tag(sync=True)
-  infer_mutants = Dict(dict()).tag(sync=True)
-  mutant_charts = Dict([]).tag(sync=True)
-  mutant_charts_counter = Int(0)
-  sprite = Unicode('').tag(sync=True)
-  error = Dict(dict()).tag(sync=True)
-  compute_custom_distance = Dict(dict()).tag(sync=True)
-  custom_distance_dict = Dict(dict()).tag(sync=True)
+    _view_name = Unicode("WITView").tag(sync=True)
+    _view_module = Unicode("wit-widget").tag(sync=True)
+    _view_module_version = Unicode("^0.1.0").tag(sync=True)
 
-  def __init__(self, config_builder, height=1000):
-    """Constructor for Jupyter notebook WitWidget.
+    # Traitlets for communicating between python and javascript.
+    config = Dict(dict()).tag(sync=True)
+    examples = List([]).tag(sync=True)
+    inferences = Dict(dict()).tag(sync=True)
+    infer = Int(0).tag(sync=True)
+    update_example = Dict(dict()).tag(sync=True)
+    delete_example = Dict(dict()).tag(sync=True)
+    duplicate_example = Dict(dict()).tag(sync=True)
+    updated_example_indices = Set(set())
+    get_eligible_features = Int(0).tag(sync=True)
+    sort_eligible_features = Dict(dict()).tag(sync=True)
+    eligible_features = List([]).tag(sync=True)
+    infer_mutants = Dict(dict()).tag(sync=True)
+    mutant_charts = Dict([]).tag(sync=True)
+    mutant_charts_counter = Int(0)
+    sprite = Unicode("").tag(sync=True)
+    error = Dict(dict()).tag(sync=True)
+    compute_custom_distance = Dict(dict()).tag(sync=True)
+    custom_distance_dict = Dict(dict()).tag(sync=True)
 
-    Args:
-      config_builder: WitConfigBuilder object containing settings for WIT.
-      height: Optional height in pixels for WIT to occupy. Defaults to 1000.
-    """
-    widgets.DOMWidget.__init__(self, layout=Layout(height='%ipx' % height))
-    base.WitWidgetBase.__init__(self, config_builder)
-    self.error_counter = 0
+    def __init__(self, config_builder, height=1000):
+        """Constructor for Jupyter notebook WitWidget.
 
-    # Ensure the visualization takes all available width.
-    display(HTML("<style>.container { width:100% !important; }</style>"))
+        Args:
+          config_builder: WitConfigBuilder object containing settings for WIT.
+          height: Optional height in pixels for WIT to occupy. Defaults to 1000.
+        """
+        widgets.DOMWidget.__init__(self, layout=Layout(height="%ipx" % height))
+        base.WitWidgetBase.__init__(self, config_builder)
+        self.error_counter = 0
 
-  def set_examples(self, examples):
-    base.WitWidgetBase.set_examples(self, examples)
-    self._generate_sprite()
+        # Ensure the visualization takes all available width.
+        display(HTML("<style>.container { width:100% !important; }</style>"))
 
-  def _report_error(self, err):
-    self.error = {
-      'msg': repr(err),
-      'counter': self.error_counter
-    }
-    self.error_counter += 1
+    def set_examples(self, examples):
+        base.WitWidgetBase.set_examples(self, examples)
+        self._generate_sprite()
 
-  @observe('infer')
-  def _infer(self, change):
-    try:
-      self.inferences = base.WitWidgetBase.infer_impl(self)
-    except Exception as e:
-      self._report_error(e)
+    def _report_error(self, err):
+        self.error = {"msg": repr(err), "counter": self.error_counter}
+        self.error_counter += 1
 
-  # Observer callbacks for changes from javascript.
-  @observe('get_eligible_features')
-  def _get_eligible_features(self, change):
-    features_list = base.WitWidgetBase.get_eligible_features_impl(self)
-    self.eligible_features = features_list
+    @observe("infer")
+    def _infer(self, change):
+        try:
+            self.inferences = base.WitWidgetBase.infer_impl(self)
+        except Exception as e:
+            self._report_error(e)
 
-  @observe('sort_eligible_features')
-  def _sort_eligible_features(self, change):
-    info = self.sort_eligible_features
-    features_list = base.WitWidgetBase.sort_eligible_features_impl(self, info)
-    self.eligible_features = features_list
+    # Observer callbacks for changes from javascript.
+    @observe("get_eligible_features")
+    def _get_eligible_features(self, change):
+        features_list = base.WitWidgetBase.get_eligible_features_impl(self)
+        self.eligible_features = features_list
 
-  @observe('infer_mutants')
-  def _infer_mutants(self, change):
-    info = self.infer_mutants
-    try:
-      json_mapping = base.WitWidgetBase.infer_mutants_impl(self, info)
-      json_mapping['counter'] = self.mutant_charts_counter
-      self.mutant_charts_counter += 1
-      self.mutant_charts = json_mapping
-    except Exception as e:
-      self._report_error(e)
+    @observe("sort_eligible_features")
+    def _sort_eligible_features(self, change):
+        info = self.sort_eligible_features
+        features_list = base.WitWidgetBase.sort_eligible_features_impl(
+            self, info
+        )
+        self.eligible_features = features_list
 
-  @observe('update_example')
-  def _update_example(self, change):
-    index = self.update_example['index']
-    self.updated_example_indices.add(index)
-    self.examples[index] = self.update_example['example']
-    self._generate_sprite()
+    @observe("infer_mutants")
+    def _infer_mutants(self, change):
+        info = self.infer_mutants
+        try:
+            json_mapping = base.WitWidgetBase.infer_mutants_impl(self, info)
+            json_mapping["counter"] = self.mutant_charts_counter
+            self.mutant_charts_counter += 1
+            self.mutant_charts = json_mapping
+        except Exception as e:
+            self._report_error(e)
 
-  @observe('duplicate_example')
-  def _duplicate_example(self, change):
-    self.examples.append(self.examples[self.duplicate_example['index']])
-    self.updated_example_indices.add(len(self.examples) - 1)
-    self._generate_sprite()
+    @observe("update_example")
+    def _update_example(self, change):
+        index = self.update_example["index"]
+        self.updated_example_indices.add(index)
+        self.examples[index] = self.update_example["example"]
+        self._generate_sprite()
 
-  @observe('delete_example')
-  def _delete_example(self, change):
-    index = self.delete_example['index']
-    self.examples.pop(index)
-    self.updated_example_indices = set([
-        i if i < index else i - 1 for i in self.updated_example_indices])
-    self._generate_sprite()
+    @observe("duplicate_example")
+    def _duplicate_example(self, change):
+        self.examples.append(self.examples[self.duplicate_example["index"]])
+        self.updated_example_indices.add(len(self.examples) - 1)
+        self._generate_sprite()
 
-  @observe('compute_custom_distance')
-  def _compute_custom_distance(self, change):
-    info = self.compute_custom_distance
-    index = info['index']
-    params = info['params']
-    callback_fn = info['callback']
-    try:
-      distances = base.WitWidgetBase.compute_custom_distance_impl(self, index,
-                                                       params['distanceParams'])
-      self.custom_distance_dict = {'distances': distances,
-                                   'exInd': index,
-                                   'funId': callback_fn,
-                                   'params': params['callbackParams']}
-    except Exception as e:
-      self._report_error(e)
+    @observe("delete_example")
+    def _delete_example(self, change):
+        index = self.delete_example["index"]
+        self.examples.pop(index)
+        self.updated_example_indices = set(
+            [i if i < index else i - 1 for i in self.updated_example_indices]
+        )
+        self._generate_sprite()
 
-  def _generate_sprite(self):
-    sprite = base.WitWidgetBase.create_sprite(self)
-    if sprite is not None:
-      self.sprite = sprite
+    @observe("compute_custom_distance")
+    def _compute_custom_distance(self, change):
+        info = self.compute_custom_distance
+        index = info["index"]
+        params = info["params"]
+        callback_fn = info["callback"]
+        try:
+            distances = base.WitWidgetBase.compute_custom_distance_impl(
+                self, index, params["distanceParams"]
+            )
+            self.custom_distance_dict = {
+                "distances": distances,
+                "exInd": index,
+                "funId": callback_fn,
+                "params": params["callbackParams"],
+            }
+        except Exception as e:
+            self._report_error(e)
+
+    def _generate_sprite(self):
+        sprite = base.WitWidgetBase.create_sprite(self)
+        if sprite is not None:
+            self.sprite = sprite

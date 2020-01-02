@@ -22,22 +22,22 @@ import unittest
 
 
 class ReloadTensorBoardTest(unittest.TestCase):
+    def test_functional_after_reload(self):
+        self.assertNotIn("tensorboard", sys.modules)
+        import tensorboard as tensorboard  # it makes the Google sync happy
 
-  def test_functional_after_reload(self):
-    self.assertNotIn("tensorboard", sys.modules)
-    import tensorboard as tensorboard  # it makes the Google sync happy
-    submodules = ["notebook", "program", "summary"]
-    dirs_before = {
-        module_name: dir(getattr(tensorboard, module_name))
-        for module_name in submodules
-    }
-    tensorboard = moves.reload_module(tensorboard)
-    dirs_after = {
-        module_name: dir(getattr(tensorboard, module_name))
-        for module_name in submodules
-    }
-    self.assertEqual(dirs_before, dirs_after)
+        submodules = ["notebook", "program", "summary"]
+        dirs_before = {
+            module_name: dir(getattr(tensorboard, module_name))
+            for module_name in submodules
+        }
+        tensorboard = moves.reload_module(tensorboard)
+        dirs_after = {
+            module_name: dir(getattr(tensorboard, module_name))
+            for module_name in submodules
+        }
+        self.assertEqual(dirs_before, dirs_after)
 
 
-if __name__ == '__main__':
-  unittest.main()
+if __name__ == "__main__":
+    unittest.main()

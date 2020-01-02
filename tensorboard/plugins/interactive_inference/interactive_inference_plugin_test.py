@@ -26,10 +26,10 @@ import numpy as np
 import tensorflow as tf
 
 try:
-  # python version >= 3.3
-  from unittest import mock  # pylint: disable=g-import-not-at-top
+    # python version >= 3.3
+    from unittest import mock
 except ImportError:
-  import mock  # pylint: disable=g-import-not-at-top,unused-import
+    import mock  # pylint: disable=unused-import
 
 from six.moves import urllib_parse
 from google.protobuf import json_format
@@ -38,233 +38,286 @@ from werkzeug import test as werkzeug_test
 from werkzeug import wrappers
 
 from tensorboard.backend import application
-from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer  # pylint: disable=line-too-long
+from tensorboard.backend.event_processing import (
+    plugin_event_multiplexer as event_multiplexer,
+)
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.interactive_inference.utils import inference_utils
 from tensorboard.plugins.interactive_inference.utils import platform_utils
 from tensorboard.plugins.interactive_inference.utils import test_utils
-from tensorboard.plugins.interactive_inference import interactive_inference_plugin
+from tensorboard.plugins.interactive_inference import (
+    interactive_inference_plugin,
+)
 
 
 class InferencePluginTest(tf.test.TestCase):
+    def setUp(self):
+        self.logdir = tf.compat.v1.test.get_temp_dir()
 
-  def setUp(self):
-    self.logdir = tf.compat.v1.test.get_temp_dir()
+        self.context = base_plugin.TBContext(logdir=self.logdir)
+        self.plugin = interactive_inference_plugin.InteractiveInferencePlugin(
+            self.context
+        )
+        wsgi_app = application.TensorBoardWSGI([self.plugin])
+        self.server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)
 
-    self.context = base_plugin.TBContext(logdir=self.logdir)
-    self.plugin = interactive_inference_plugin.InteractiveInferencePlugin(
-        self.context)
-    wsgi_app = application.TensorBoardWSGI([self.plugin])
-    self.server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)
+    def get_fake_example(self, single_int_value=0):
+        example = tf.train.Example()
+        example.features.feature["single_int"].int64_list.value.extend(
+            [single_int_value]
+        )
+        return example
 
-  def get_fake_example(self, single_int_value=0):
-    example = tf.train.Example()
-    example.features.feature['single_int'].int64_list.value.extend(
-        [single_int_value])
-    return example
+    def test_examples_from_path(self):
+        examples = [self.get_fake_example(0), self.get_fake_example(1)]
+        examples_path = os.path.join(self.logdir, "test_examples.rio")
+        test_utils.write_out_examples(examples, examples_path)
 
-  def test_examples_from_path(self):
-    examples = [self.get_fake_example(0), self.get_fake_example(1)]
-    examples_path = os.path.join(self.logdir, 'test_examples.rio')
-    test_utils.write_out_examples(examples, examples_path)
+        response = self.server.get(
+            "/data/plugin/whatif/examples_from_path?"
+            + urllib_parse.urlencode(
+                {
+                    "examples_path": examples_path,
+                    "max_examples": 2,
+                    "sampling_odds": 1,
+                }
+            )
+        )
+        self.assertEqual(200, response.status_code)
+        example_strings = json.loads(response.get_data().decode("utf-8"))[
+            "examples"
+        ]
+        received_examples = [json.loads(x) for x in example_strings]
+        self.assertEqual(2, len(received_examples))
+        self.assertEqual(
+            0,
+            int(
+                received_examples[0]["features"]["feature"]["single_int"][
+                    "int64List"
+                ]["value"][0]
+            ),
+        )
+        self.assertEqual(
+            1,
+            int(
+                received_examples[1]["features"]["feature"]["single_int"][
+                    "int64List"
+                ]["value"][0]
+            ),
+        )
 
-    response = self.server.get(
-        '/data/plugin/whatif/examples_from_path?' +
-        urllib_parse.urlencode({
-            'examples_path': examples_path,
-            'max_examples': 2,
-            'sampling_odds': 1,
-        }))
-    self.assertEqual(200, response.status_code)
-    example_strings = json.loads(response.get_data().decode('utf-8'))['examples']
-    received_examples = [json.loads(x) for x in example_strings]
-    self.assertEqual(2, len(received_examples))
-    self.assertEqual(0,
-                     int(received_examples[0]['features']['feature'][
-                         'single_int']['int64List']['value'][0]))
-    self.assertEqual(1,
-                     int(received_examples[1]['features']['feature'][
-                         'single_int']['int64List']['value'][0]))
+    def test_examples_from_path_if_path_does_not_exist(self):
+        response = self.server.get(
+            "/data/plugin/whatif/examples_from_path?"
+            + urllib_parse.urlencode(
+                {
+                    "examples_path": "does_not_exist",
+                    "max_examples": 2,
+                    "sampling_odds": 1,
+                }
+            )
+        )
+        error = json.loads(response.get_data().decode("utf-8"))["error"]
+        self.assertTrue(error)
 
-  def test_examples_from_path_if_path_does_not_exist(self):
-    response = self.server.get(
-        '/data/plugin/whatif/examples_from_path?' +
-        urllib_parse.urlencode({
-            'examples_path': 'does_not_exist',
-            'max_examples': 2,
-            'sampling_odds': 1,
-        }))
-    error = json.loads(response.get_data().decode('utf-8'))['error']
-    self.assertTrue(error)
+    def test_update_example(self):
+        self.plugin.examples = [tf.train.Example()]
+        example = self.get_fake_example()
+        response = self.server.post(
+            "/data/plugin/whatif/update_example",
+            data=dict(example=json_format.MessageToJson(example), index="0"),
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(example, self.plugin.examples[0])
+        self.assertTrue(0 in self.plugin.updated_example_indices)
 
-  def test_update_example(self):
-    self.plugin.examples = [tf.train.Example()]
-    example = self.get_fake_example()
-    response = self.server.post(
-        '/data/plugin/whatif/update_example',
-        data=dict(example=json_format.MessageToJson(example), index='0'))
-    self.assertEqual(200, response.status_code)
-    self.assertEqual(example, self.plugin.examples[0])
-    self.assertTrue(0 in self.plugin.updated_example_indices)
+    def test_update_example_invalid_index(self):
+        self.plugin.examples = [tf.train.Example()]
+        example = self.get_fake_example()
+        response = self.server.post(
+            "/data/plugin/whatif/update_example",
+            data=dict(example=json_format.MessageToJson(example), index="1"),
+        )
+        error = json.loads(response.get_data().decode("utf-8"))["error"]
+        self.assertTrue(error)
 
-  def test_update_example_invalid_index(self):
-    self.plugin.examples = [tf.train.Example()]
-    example = self.get_fake_example()
-    response = self.server.post(
-        '/data/plugin/whatif/update_example',
-        data=dict(example=json_format.MessageToJson(example), index='1'))
-    error = json.loads(response.get_data().decode('utf-8'))['error']
-    self.assertTrue(error)
+    @mock.patch.object(platform_utils, "call_servo")
+    def test_infer(self, mock_call_servo):
+        self.plugin.examples = [
+            self.get_fake_example(0),
+            self.get_fake_example(1),
+            self.get_fake_example(2),
+        ]
+        self.plugin.updated_example_indices = set([0, 2])
 
-  @mock.patch.object(platform_utils, 'call_servo')
-  def test_infer(self, mock_call_servo):
-    self.plugin.examples = [
-        self.get_fake_example(0),
-        self.get_fake_example(1),
-        self.get_fake_example(2)
-    ]
-    self.plugin.updated_example_indices = set([0, 2])
+        inference_result_proto = regression_pb2.RegressionResponse()
+        regression = inference_result_proto.result.regressions.add()
+        regression.value = 0.45
+        regression = inference_result_proto.result.regressions.add()
+        regression.value = 0.55
+        mock_call_servo.return_value = inference_result_proto
 
-    inference_result_proto = regression_pb2.RegressionResponse()
-    regression = inference_result_proto.result.regressions.add()
-    regression.value = 0.45
-    regression = inference_result_proto.result.regressions.add()
-    regression.value = 0.55
-    mock_call_servo.return_value = inference_result_proto
+        response = self.server.get(
+            "/data/plugin/whatif/infer?"
+            + urllib_parse.urlencode(
+                {
+                    "inference_address": "addr",
+                    "model_name": "name",
+                    "model_type": "regression",
+                    "model_version": ",",
+                    "model_signature": ",",
+                }
+            )
+        )
 
-    response = self.server.get(
-        '/data/plugin/whatif/infer?' + urllib_parse.urlencode({
-            'inference_address': 'addr',
-            'model_name': 'name',
-            'model_type': 'regression',
-            'model_version': ',',
-            'model_signature': ',',
-        }))
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(0, len(self.plugin.updated_example_indices))
+        inferences = json.loads(
+            json.loads(response.get_data().decode("utf-8"))["inferences"]
+        )
+        self.assertTrue(0 in inferences["indices"])
+        self.assertFalse(1 in inferences["indices"])
+        self.assertTrue(2 in inferences["indices"])
 
-    self.assertEqual(200, response.status_code)
-    self.assertEqual(0, len(self.plugin.updated_example_indices))
-    inferences = json.loads(json.loads(response.get_data().decode('utf-8'))[
-        'inferences'])
-    self.assertTrue(0 in inferences['indices'])
-    self.assertFalse(1 in inferences['indices'])
-    self.assertTrue(2 in inferences['indices'])
+    def _DeserializeResponse(self, byte_content):
+        """Deserializes byte content that is a JSON encoding.
 
-  def _DeserializeResponse(self, byte_content):
-    """Deserializes byte content that is a JSON encoding.
+        Args:
+          byte_content: The byte content of a JSON response.
 
-    Args:
-      byte_content: The byte content of a JSON response.
+        Returns:
+          The deserialized python object decoded from JSON.
+        """
+        return json.loads(byte_content.decode("utf-8"))
 
-    Returns:
-      The deserialized python object decoded from JSON.
-    """
-    return json.loads(byte_content.decode('utf-8'))
+    def test_eligible_features_from_example_proto(self):
+        example = test_utils.make_fake_example(single_int_val=2)
+        self.plugin.examples = [example]
 
-  def test_eligible_features_from_example_proto(self):
-    example = test_utils.make_fake_example(single_int_val=2)
-    self.plugin.examples = [example]
+        response = self.server.get("/data/plugin/whatif/eligible_features")
+        self.assertEqual(200, response.status_code)
 
-    response = self.server.get('/data/plugin/whatif/eligible_features')
-    self.assertEqual(200, response.status_code)
+        # Returns a list of dict objects that have been sorted by feature_name.
+        data = self._DeserializeResponse(response.get_data())
 
-    # Returns a list of dict objects that have been sorted by feature_name.
-    data = self._DeserializeResponse(response.get_data())
+        sorted_feature_names = [
+            "non_numeric",
+            "repeated_float",
+            "repeated_int",
+            "single_float",
+            "single_int",
+        ]
+        self.assertEqual(sorted_feature_names, [d["name"] for d in data])
+        np.testing.assert_almost_equal(
+            [-1, 1.0, 10, 24.5, 2.0], [d.get("observedMin", -1) for d in data]
+        )
+        np.testing.assert_almost_equal(
+            [-1, 4.0, 20, 24.5, 2.0], [d.get("observedMax", -1) for d in data]
+        )
 
-    sorted_feature_names = [
-        'non_numeric', 'repeated_float', 'repeated_int', 'single_float',
-        'single_int'
-    ]
-    self.assertEqual(sorted_feature_names, [d['name'] for d in data])
-    np.testing.assert_almost_equal([-1, 1., 10, 24.5, 2.],
-                                   [d.get('observedMin', -1) for d in data])
-    np.testing.assert_almost_equal([-1, 4., 20, 24.5, 2.],
-                                   [d.get('observedMax', -1) for d in data])
+        # Test that only non_numeric feature has samples.
+        self.assertFalse(any(d.get("samples") for d in data[1:]))
+        self.assertEqual(["cat"], data[0]["samples"])
 
-    # Test that only non_numeric feature has samples.
-    self.assertFalse(any(d.get('samples') for d in data[1:]))
-    self.assertEqual(['cat'], data[0]['samples'])
+    @mock.patch.object(inference_utils, "mutant_charts_for_feature")
+    def test_infer_mutants_handler(self, mock_mutant_charts_for_feature):
 
-  @mock.patch.object(inference_utils, 'mutant_charts_for_feature')
-  def test_infer_mutants_handler(self, mock_mutant_charts_for_feature):
+        # A no-op that just passes the example passed to mutant_charts_for_feature
+        # back through. This tests that the URL parameters get processed properly
+        # within infer_mutants_handler.
+        def pass_through(example, feature_name, serving_bundles, viz_params):
+            return {
+                "example": str(example),
+                "feature_name": feature_name,
+                "serving_bundles": [
+                    {
+                        "inference_address": serving_bundles[
+                            0
+                        ].inference_address,
+                        "model_name": serving_bundles[0].model_name,
+                        "model_type": serving_bundles[0].model_type,
+                    }
+                ],
+                "viz_params": {
+                    "x_min": viz_params.x_min,
+                    "x_max": viz_params.x_max,
+                },
+            }
 
-    # A no-op that just passes the example passed to mutant_charts_for_feature
-    # back through. This tests that the URL parameters get processed properly
-    # within infer_mutants_handler.
-    def pass_through(example, feature_name, serving_bundles, viz_params):
-      return {
-          'example': str(example),
-          'feature_name': feature_name,
-          'serving_bundles': [{
-              'inference_address': serving_bundles[0].inference_address,
-              'model_name': serving_bundles[0].model_name,
-              'model_type': serving_bundles[0].model_type,
-          }],
-          'viz_params': {
-              'x_min': viz_params.x_min,
-              'x_max': viz_params.x_max
-          }
-      }
+        mock_mutant_charts_for_feature.side_effect = pass_through
 
-    mock_mutant_charts_for_feature.side_effect = pass_through
+        example = test_utils.make_fake_example()
+        self.plugin.examples = [example]
 
-    example = test_utils.make_fake_example()
-    self.plugin.examples = [example]
+        response = self.server.get(
+            "/data/plugin/whatif/infer_mutants?"
+            + urllib_parse.urlencode(
+                {
+                    "feature_name": "single_int",
+                    "model_name": "/ml/cassandrax/iris_classification",
+                    "inference_address": "ml-serving-temp.prediction",
+                    "model_type": "classification",
+                    "model_version": ",",
+                    "model_signature": ",",
+                    "x_min": "-10",
+                    "x_max": "10",
+                }
+            )
+        )
+        result = self._DeserializeResponse(response.get_data())
+        self.assertEqual(str([example]), result["example"])
+        self.assertEqual("single_int", result["feature_name"])
+        self.assertEqual(
+            "ml-serving-temp.prediction",
+            result["serving_bundles"][0]["inference_address"],
+        )
+        self.assertEqual(
+            "/ml/cassandrax/iris_classification",
+            result["serving_bundles"][0]["model_name"],
+        )
+        self.assertEqual(
+            "classification", result["serving_bundles"][0]["model_type"]
+        )
+        self.assertAlmostEqual(-10, result["viz_params"]["x_min"])
+        self.assertAlmostEqual(10, result["viz_params"]["x_max"])
 
-    response = self.server.get(
-        '/data/plugin/whatif/infer_mutants?' + urllib_parse.urlencode({
-            'feature_name': 'single_int',
-            'model_name': '/ml/cassandrax/iris_classification',
-            'inference_address': 'ml-serving-temp.prediction',
-            'model_type': 'classification',
-            'model_version': ',',
-            'model_signature': ',',
-            'x_min': '-10',
-            'x_max': '10',
-        }))
-    result = self._DeserializeResponse(response.get_data())
-    self.assertEqual(str([example]), result['example'])
-    self.assertEqual('single_int', result['feature_name'])
-    self.assertEqual('ml-serving-temp.prediction',
-                     result['serving_bundles'][0]['inference_address'])
-    self.assertEqual('/ml/cassandrax/iris_classification',
-                     result['serving_bundles'][0]['model_name'])
-    self.assertEqual('classification', result['serving_bundles'][0]['model_type'])
-    self.assertAlmostEqual(-10, result['viz_params']['x_min'])
-    self.assertAlmostEqual(10, result['viz_params']['x_max'])
+    @mock.patch.object(inference_utils, "sort_eligible_features")
+    @mock.patch.object(inference_utils, "mutant_charts_for_feature")
+    def test_infer(
+        self, mock_mutant_charts_for_feature, mock_sort_eligible_features
+    ):
+        self.plugin.examples = [
+            self.get_fake_example(0),
+            self.get_fake_example(1),
+            self.get_fake_example(2),
+        ]
 
-  @mock.patch.object(inference_utils, 'sort_eligible_features')
-  @mock.patch.object(inference_utils, 'mutant_charts_for_feature')
-  def test_infer(
-      self, mock_mutant_charts_for_feature, mock_sort_eligible_features):
-    self.plugin.examples = [
-        self.get_fake_example(0),
-        self.get_fake_example(1),
-        self.get_fake_example(2)
-    ]
+        mock_mutant_charts_for_feature.return_value = []
+        sorted_features_list = [
+            {"name": "feat1", "interestingness": 0.2},
+            {"name": "feat2", "interestingness": 0.1},
+        ]
+        mock_sort_eligible_features.return_value = sorted_features_list
 
-    mock_mutant_charts_for_feature.return_value = []
-    sorted_features_list = [
-      {'name': 'feat1', 'interestingness': .2},
-      {'name': 'feat2', 'interestingness': .1}
-    ]
-    mock_sort_eligible_features.return_value = sorted_features_list
+        url_options = urllib_parse.urlencode(
+            {
+                "inference_address": "addr",
+                "model_name": "name",
+                "model_type": "regression",
+                "model_version": "",
+                "model_signature": "",
+            }
+        )
+        response = self.server.get(
+            "/data/plugin/whatif/sort_eligible_features?" + url_options
+        )
 
-    url_options = urllib_parse.urlencode({
-        'inference_address': 'addr',
-        'model_name': 'name',
-        'model_type': 'regression',
-        'model_version': '',
-        'model_signature': '',
-    })
-    response = self.server.get(
-        '/data/plugin/whatif/sort_eligible_features?' + url_options)
-
-    self.assertEqual(200, response.status_code)
-    self.assertEqual(0, len(self.plugin.updated_example_indices))
-    output_list = json.loads(response.get_data().decode('utf-8'))
-    self.assertEquals('feat1', output_list[0]['name'])
-    self.assertEquals('feat2', output_list[1]['name'])
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(0, len(self.plugin.updated_example_indices))
+        output_list = json.loads(response.get_data().decode("utf-8"))
+        self.assertEquals("feat1", output_list[0]["name"])
+        self.assertEquals("feat2", output_list[1]["name"])
 
 
-if __name__ == '__main__':
-  tf.test.main()
+if __name__ == "__main__":
+    tf.test.main()

@@ -75,6 +75,7 @@ build() (
   mv -f "tensorboard/pip_package/LICENSE" .
   mv -f "tensorboard/pip_package/MANIFEST.in" .
   mv -f "tensorboard/pip_package/README.rst" .
+  mv -f "tensorboard/pip_package/requirements.txt" .
   mv -f "tensorboard/pip_package/setup.cfg" .
   mv -f "tensorboard/pip_package/setup.py" .
   rm -rf "tensorboard/pip_package"
@@ -113,6 +114,11 @@ build() (
   # env markers are handled (https://github.com/pypa/setuptools/pull/1081)
   export PYTHONWARNINGS=ignore:DEPRECATION  # suppress Python 2.7 deprecation spam
   pip install -qU wheel 'setuptools>=36.2.0'
+
+  # Overrides file timestamps in the zip archive to make the build
+  # reproducible. (Date is mostly arbitrary, but must be past 1980 to be
+  # representable in a zip archive.)
+  export SOURCE_DATE_EPOCH=1577836800  # 2020-01-01T00:00:00Z
 
   python setup.py bdist_wheel --python-tag py2 >/dev/null
   python setup.py bdist_wheel --python-tag py3 >/dev/null

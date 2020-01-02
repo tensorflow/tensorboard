@@ -1,9 +1,9 @@
-package(default_visibility = ["//tensorboard:internal"])
-
 load("@npm_angular_bazel//:index.bzl", "ng_module")
-load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ng_web_test_suite", "tf_ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ng_web_test_suite", "tf_svg_bundle", "tf_ts_library")
 load("//tensorboard/defs:web.bzl", "tf_web_library")
 load("//tensorboard/defs:vulcanize.bzl", "tensorboard_html_binary")
+
+package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
@@ -12,16 +12,18 @@ licenses(["notice"])  # Apache 2.0
 ng_module(
     name = "app",
     srcs = [
-        "app.container.ts",
-        "app.module.ts",
+        "app_container.ts",
+        "app_module.ts",
+        "mat_icon_module.ts",
         "reducer_config.ts",
     ],
     assets = [
-        "app.container.css",
-        "app.container.html",
+        "app_container.css",
+        "app_container.ng.html",
     ],
     deps = [
         ":config",
+        "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
         "//tensorboard/webapp/core",
         "//tensorboard/webapp/core/actions",
@@ -39,8 +41,8 @@ ng_module(
 tf_ts_library(
     name = "config",
     srcs = [
-        "config.dev.ts",
-        "config.prod.ts",
+        "config_dev.ts",
+        "config_prod.ts",
     ],
 )
 
@@ -50,7 +52,7 @@ ng_module(
     name = "ng_main",
     srcs = ["bootstrap.ts"] + select({
         "//tensorboard:dev_build": ["main.ts"],
-        "//conditions:default": ["main.prod.ts"],
+        "//conditions:default": ["main_prod.ts"],
     }),
     deps = [
         ":app",
@@ -68,7 +70,7 @@ tf_js_binary(
     compile = 1,
     entry_point = select({
         "//tensorboard:dev_build": ":main.ts",
-        "//conditions:default": "main.prod.ts",
+        "//conditions:default": "main_prod.ts",
     }),
     deps = [
         ":ng_main",
@@ -123,8 +125,8 @@ tf_web_library(
 tensorboard_html_binary(
     name = "ng_index",
     input_path = "/index.html",
-    output_path = "/ng_index.html",
     js_path = "/ng_index.js",
+    output_path = "/ng_index.html",
     deps = [":tensorboard-webapp"],
 )
 
@@ -140,4 +142,14 @@ tf_ng_web_test_suite(
         "//tensorboard/webapp/reloader:test_lib",
         "//tensorboard/webapp/settings:test_lib",
     ],
+)
+
+tf_svg_bundle(
+    name = "svg_bundle",
+    srcs = [
+        # When modifying below, please make sure to update
+        # //tensorboard/webapp/testing/mat_icon.module.ts.
+        "@com_google_material_design_icon//:settings_24px.svg",
+    ],
+    out = "icon_bundle.svg",
 )
