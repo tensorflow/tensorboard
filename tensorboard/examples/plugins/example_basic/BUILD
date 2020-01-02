@@ -14,14 +14,6 @@ sh_test(
     size = "large",
     timeout = "moderate",
     srcs = ["smoke_test.sh"],
-<<<<<<< HEAD
-    tags = [
-        "manual",  # https://github.com/tensorflow/tensorboard/issues/2987
-        # TODO(@wchargin): Debug failure and re-enable test.
-        "nogithub",
-    ],
-=======
->>>>>>> 1d374693fd975c5039d97743d28401ad156946a3
     # Don't just `glob(["**"])` because `setup.py` creates artifacts
     # like wheels and a `tensorboard_plugin_example.egg-info` directory,
     # and we want to make sure that those don't interfere with the test.
@@ -34,5 +26,7 @@ sh_test(
     ]),
     tags = [
         "manual",  # https://github.com/tensorflow/tensorboard/issues/2987
+        # TODO(@wchargin): Debug failure and re-enable test.
+        "nogithub",
     ],
 )
