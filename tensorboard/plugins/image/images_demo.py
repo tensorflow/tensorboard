@@ -53,6 +53,7 @@ IMAGE_CREDIT = textwrap.dedent(
 (IMAGE_WIDTH, IMAGE_HEIGHT) = (640, 480)
 _IMAGE_DATA = None
 
+tf.compat.v1.disable_eager_execution()
 
 def image_data(verbose=False):
     """Get the raw encoded image data, downloading it if necessary."""
@@ -85,13 +86,13 @@ def convolve(image, pixel_filter, channels=3, name=None):
     Returns:
       A 3D `float32` `Tensor` of the same shape as the input.
     """
-    with tf.name_scope(name, "convolve"):
+    with tf.name_scope(name or "convolve"):
         tf.compat.v1.assert_type(image, tf.float32)
         channel_filter = tf.eye(channels)
         filter_ = tf.expand_dims(
             tf.expand_dims(pixel_filter, -1), -1
         ) * tf.expand_dims(tf.expand_dims(channel_filter, 0), 0)
-        result_batch = tf.nn.conv2d(
+        result_batch = tf.compat.v1.nn.conv2d(
             tf.stack([image]),  # batch
             filter=filter_,
             strides=[1, 1, 1, 1],
@@ -192,7 +193,7 @@ def run_box_to_gaussian(logdir, verbose=False):
 
     with tf.compat.v1.Session() as sess:
         sess.run(image.initializer)
-        writer = tf.summary.FileWriter(os.path.join(logdir, "box_to_gaussian"))
+        writer = tf.compat.v1.summary.FileWriter(os.path.join(logdir, "box_to_gaussian"))
         writer.add_graph(sess.graph)
         for step in xrange(8):
             if verbose:
@@ -282,7 +283,7 @@ def run_sobel(logdir, verbose=False):
 
     with tf.compat.v1.Session() as sess:
         sess.run(image.initializer)
-        writer = tf.summary.FileWriter(os.path.join(logdir, "sobel"))
+        writer = tf.compat.v1.summary.FileWriter(os.path.join(logdir, "sobel"))
         writer.add_graph(sess.graph)
         for step in xrange(8):
             if verbose:
