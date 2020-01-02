@@ -19,10 +19,10 @@ from __future__ import division
 from __future__ import print_function
 
 try:
-  # python version >= 3.3
-  from unittest import mock    # pylint: disable=g-import-not-at-top
+    # python version >= 3.3
+    from unittest import mock
 except ImportError:
-  import mock    # pylint: disable=g-import-not-at-top,unused-import
+    import mock  # pylint: disable=unused-import
 
 import werkzeug
 from werkzeug import test as werkzeug_test
@@ -43,159 +43,154 @@ def create_headers(
     x_content_type_options="nosniff",
     content_security_policy="",
 ):
-  return Headers(
-      {
-          "Content-Type": content_type,
-          "X-Content-Type-Options": x_content_type_options,
-          "Content-Security-Policy": content_security_policy,
-      }
-  )
+    return Headers(
+        {
+            "Content-Type": content_type,
+            "X-Content-Type-Options": x_content_type_options,
+            "Content-Security-Policy": content_security_policy,
+        }
+    )
 
 
 class SecurityValidatorMiddlewareTest(tb_test.TestCase):
-  """Tests for `SecurityValidatorMiddleware`."""
+    """Tests for `SecurityValidatorMiddleware`."""
 
-  def make_request_and_maybe_assert_warn(
-      self,
-      headers,
-      expected_warn_substr,
-  ):
+    def make_request_and_maybe_assert_warn(
+        self, headers, expected_warn_substr,
+    ):
+        @werkzeug.Request.application
+        def _simple_app(req):
+            return werkzeug.Response("OK", headers=headers)
 
-    @werkzeug.Request.application
-    def _simple_app(req):
-      return werkzeug.Response("OK", headers=headers)
+        app = security_validator.SecurityValidatorMiddleware(_simple_app)
+        server = werkzeug_test.Client(app, BaseResponse)
 
-    app = security_validator.SecurityValidatorMiddleware(_simple_app)
-    server = werkzeug_test.Client(app, BaseResponse)
+        with mock.patch.object(logger, "warn") as mock_warn:
+            server.get("")
 
-    with mock.patch.object(logger, "warn") as mock_warn:
-      server.get("")
+        if expected_warn_substr is None:
+            mock_warn.assert_not_called()
+        else:
+            mock_warn.assert_called_with(_WARN_PREFIX + expected_warn_substr)
 
-    if expected_warn_substr is None:
-      mock_warn.assert_not_called()
-    else:
-      mock_warn.assert_called_with(_WARN_PREFIX + expected_warn_substr)
+    def make_request_and_assert_no_warn(
+        self, headers,
+    ):
+        self.make_request_and_maybe_assert_warn(headers, None)
 
-  def make_request_and_assert_no_warn(
-      self,
-      headers,
-  ):
-    self.make_request_and_maybe_assert_warn(headers, None)
+    def test_validate_content_type(self):
+        self.make_request_and_assert_no_warn(
+            create_headers(content_type="application/json"),
+        )
 
-  def test_validate_content_type(self):
-    self.make_request_and_assert_no_warn(
-        create_headers(content_type="application/json"),
-    )
+        self.make_request_and_maybe_assert_warn(
+            create_headers(content_type=""),
+            "Content-Type is required on a Response",
+        )
 
-    self.make_request_and_maybe_assert_warn(
-        create_headers(content_type=""),
-        "Content-Type is required on a Response"
-    )
+    def test_validate_x_content_type_options(self):
+        self.make_request_and_assert_no_warn(
+            create_headers(x_content_type_options="nosniff")
+        )
 
-  def test_validate_x_content_type_options(self):
-    self.make_request_and_assert_no_warn(
-        create_headers(x_content_type_options="nosniff")
-    )
+        self.make_request_and_maybe_assert_warn(
+            create_headers(x_content_type_options=""),
+            'X-Content-Type-Options is required to be "nosniff"',
+        )
 
-    self.make_request_and_maybe_assert_warn(
-        create_headers(x_content_type_options=""),
-        'X-Content-Type-Options is required to be "nosniff"',
-    )
+    def test_validate_csp_text_html(self):
+        self.make_request_and_assert_no_warn(
+            create_headers(
+                content_type="text/html; charset=UTF-8",
+                content_security_policy=(
+                    "DEFAult-src 'self';script-src https://google.com;"
+                    "style-src  'self'   https://example; object-src   "
+                ),
+            ),
+        )
 
-  def test_validate_csp_text_html(self):
-    self.make_request_and_assert_no_warn(
-        create_headers(
+        self.make_request_and_maybe_assert_warn(
+            create_headers(
+                content_type="text/html; charset=UTF-8",
+                content_security_policy="",
+            ),
+            "Requires default-src for Content-Security-Policy",
+        )
+
+        self.make_request_and_maybe_assert_warn(
+            create_headers(
+                content_type="text/html; charset=UTF-8",
+                content_security_policy="default-src *",
+            ),
+            "Illegal Content-Security-Policy for default-src: *",
+        )
+
+        self.make_request_and_maybe_assert_warn(
+            create_headers(
+                content_type="text/html; charset=UTF-8",
+                content_security_policy="default-src 'self';script-src *",
+            ),
+            "Illegal Content-Security-Policy for script-src: *",
+        )
+
+        self.make_request_and_maybe_assert_warn(
+            create_headers(
+                content_type="text/html; charset=UTF-8",
+                content_security_policy=(
+                    "script-src * 'sha256-foo' 'nonce-bar';"
+                    "style-src http://google.com;object-src *;"
+                    "img-src 'unsafe-inline';default-src 'self';"
+                    "script-src *       'strict-dynamic'"
+                ),
+            ),
+            "\n".join(
+                [
+                    "Illegal Content-Security-Policy for script-src: *",
+                    "Illegal Content-Security-Policy for script-src: 'nonce-bar'",
+                    "Illegal Content-Security-Policy for style-src: http://google.com",
+                    "Illegal Content-Security-Policy for object-src: *",
+                    "Illegal Content-Security-Policy for img-src: 'unsafe-inline'",
+                    "Illegal Content-Security-Policy for script-src: *",
+                    "Illegal Content-Security-Policy for script-src: 'strict-dynamic'",
+                ]
+            ),
+        )
+
+    def test_validate_csp_multiple_csp_headers(self):
+        base_headers = create_headers(
             content_type="text/html; charset=UTF-8",
             content_security_policy=(
-                "DEFAult-src 'self';script-src https://google.com;"
-                "style-src  'self'   https://example; object-src   "
+                "script-src * 'sha256-foo';" "style-src http://google.com"
             ),
-        ),
-    )
+        )
+        base_headers.add(
+            "Content-Security-Policy",
+            "default-src 'self';script-src 'nonce-bar';object-src *",
+        )
 
-    self.make_request_and_maybe_assert_warn(
-        create_headers(
-            content_type="text/html; charset=UTF-8",
-            content_security_policy="",
-        ),
-        "Requires default-src for Content-Security-Policy",
-    )
-
-    self.make_request_and_maybe_assert_warn(
-        create_headers(
-            content_type="text/html; charset=UTF-8",
-            content_security_policy="default-src *",
-        ),
-        "Illegal Content-Security-Policy for default-src: *",
-    )
-
-    self.make_request_and_maybe_assert_warn(
-        create_headers(
-            content_type="text/html; charset=UTF-8",
-            content_security_policy="default-src 'self';script-src *",
-        ),
-        "Illegal Content-Security-Policy for script-src: *",
-    )
-
-    self.make_request_and_maybe_assert_warn(
-        create_headers(
-            content_type="text/html; charset=UTF-8",
-            content_security_policy=(
-                "script-src * 'sha256-foo' 'nonce-bar';"
-                "style-src http://google.com;object-src *;"
-                "img-src 'unsafe-inline';default-src 'self';"
-                "script-src *       'strict-dynamic'"
+        self.make_request_and_maybe_assert_warn(
+            base_headers,
+            "\n".join(
+                [
+                    "Illegal Content-Security-Policy for script-src: *",
+                    "Illegal Content-Security-Policy for style-src: http://google.com",
+                    "Illegal Content-Security-Policy for script-src: 'nonce-bar'",
+                    "Illegal Content-Security-Policy for object-src: *",
+                ]
             ),
-        ),
-        "\n".join(
-            [
-                "Illegal Content-Security-Policy for script-src: *",
-                "Illegal Content-Security-Policy for script-src: 'nonce-bar'",
-                "Illegal Content-Security-Policy for style-src: http://google.com",
-                "Illegal Content-Security-Policy for object-src: *",
-                "Illegal Content-Security-Policy for img-src: 'unsafe-inline'",
-                "Illegal Content-Security-Policy for script-src: *",
-                "Illegal Content-Security-Policy for script-src: 'strict-dynamic'",
-            ]
-        ),
-    )
+        )
 
-  def test_validate_csp_multiple_csp_headers(self):
-    base_headers = create_headers(
-        content_type="text/html; charset=UTF-8",
-        content_security_policy=(
-            "script-src * 'sha256-foo';"
-            "style-src http://google.com"
-        ),
-    )
-    base_headers.add(
-        "Content-Security-Policy",
-        "default-src 'self';script-src 'nonce-bar';object-src *",
-    )
-
-    self.make_request_and_maybe_assert_warn(
-        base_headers,
-        "\n".join(
-            [
-                "Illegal Content-Security-Policy for script-src: *",
-                "Illegal Content-Security-Policy for style-src: http://google.com",
-                "Illegal Content-Security-Policy for script-src: 'nonce-bar'",
-                "Illegal Content-Security-Policy for object-src: *",
-            ]
-        ),
-    )
-
-  def test_validate_csp_non_text_html(self):
-    self.make_request_and_assert_no_warn(
-        create_headers(
-            content_type="application/xhtml",
-            content_security_policy=(
-                "script-src * 'sha256-foo' 'nonce-bar';"
-                "style-src http://google.com;object-src *;"
+    def test_validate_csp_non_text_html(self):
+        self.make_request_and_assert_no_warn(
+            create_headers(
+                content_type="application/xhtml",
+                content_security_policy=(
+                    "script-src * 'sha256-foo' 'nonce-bar';"
+                    "style-src http://google.com;object-src *;"
+                ),
             ),
-        ),
-    )
+        )
 
 
 if __name__ == "__main__":
-  tb_test.main()
+    tb_test.main()

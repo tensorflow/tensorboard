@@ -14,10 +14,10 @@
 
 # Only import Beholder API when tensorflow is available.
 try:
-  # pylint: disable=g-import-not-at-top,unused-import
-  import tensorflow
+    # pylint: disable=unused-import
+    import tensorflow
 except ImportError:
-  pass
+    pass
 else:
-  from tensorboard.plugins.beholder.beholder import Beholder
-  from tensorboard.plugins.beholder.beholder import BeholderHook
+    from tensorboard.plugins.beholder.beholder import Beholder
+    from tensorboard.plugins.beholder.beholder import BeholderHook

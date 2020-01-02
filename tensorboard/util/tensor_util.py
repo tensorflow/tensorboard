@@ -27,8 +27,12 @@ from tensorboard.compat.tensorflow_stub import dtypes, compat, tensor_shape
 def ExtractBitsFromFloat16(x):
     return np.asscalar(np.asarray(x, dtype=np.float16).view(np.uint16))
 
+
 def SlowAppendFloat16ArrayToTensorProto(tensor_proto, proto_values):
-    tensor_proto.half_val.extend([ExtractBitsFromFloat16(x) for x in proto_values])
+    tensor_proto.half_val.extend(
+        [ExtractBitsFromFloat16(x) for x in proto_values]
+    )
+
 
 def ExtractBitsFromBFloat16(x):
     return np.asscalar(
@@ -37,7 +41,10 @@ def ExtractBitsFromBFloat16(x):
 
 
 def SlowAppendBFloat16ArrayToTensorProto(tensor_proto, proto_values):
-    tensor_proto.half_val.extend([ExtractBitsFromBFloat16(x) for x in proto_values])
+    tensor_proto.half_val.extend(
+        [ExtractBitsFromBFloat16(x) for x in proto_values]
+    )
+
 
 def SlowAppendFloat32ArrayToTensorProto(tensor_proto, proto_values):
     tensor_proto.float_val.extend([np.asscalar(x) for x in proto_values])
@@ -72,16 +79,20 @@ def SlowAppendComplex64ArrayToTensorProto(tensor_proto, proto_values):
         [np.asscalar(v) for x in proto_values for v in [x.real, x.imag]]
     )
 
+
 def SlowAppendComplex128ArrayToTensorProto(tensor_proto, proto_values):
     tensor_proto.dcomplex_val.extend(
         [np.asscalar(v) for x in proto_values for v in [x.real, x.imag]]
     )
 
+
 def SlowAppendObjectArrayToTensorProto(tensor_proto, proto_values):
     tensor_proto.string_val.extend([compat.as_bytes(x) for x in proto_values])
 
+
 def SlowAppendBoolArrayToTensorProto(tensor_proto, proto_values):
     tensor_proto.bool_val.extend([np.asscalar(x) for x in proto_values])
+
 
 _NP_TO_APPEND_FN = {
     np.float16: SlowAppendFloat16ArrayToTensorProto,
@@ -107,7 +118,9 @@ _NP_TO_APPEND_FN = {
     # NOTE(touts): Intentionally no way to feed a DT_BFLOAT16.
 }
 
-BACKUP_DICT = {dtypes.bfloat16.as_numpy_dtype: SlowAppendBFloat16ArrayToTensorProto}
+BACKUP_DICT = {
+    dtypes.bfloat16.as_numpy_dtype: SlowAppendBFloat16ArrayToTensorProto
+}
 
 
 def GetFromNumpyDTypeDict(dtype_dict, dtype):
@@ -139,6 +152,7 @@ def _GetDenseDimensions(list_of_lists):
         return [0]
     else:
         return [len(list_of_lists)] + _GetDenseDimensions(list_of_lists[0])
+
 
 def _FlattenToStrings(nested_strings):
     if isinstance(nested_strings, (list, tuple)):
@@ -280,46 +294,46 @@ def _Assertconvertible(values, dtype):
 def make_tensor_proto(values, dtype=None, shape=None, verify_shape=False):
     """Create a TensorProto.
 
-  Args:
-    values:         Values to put in the TensorProto.
-    dtype:          Optional tensor_pb2 DataType value.
-    shape:          List of integers representing the dimensions of tensor.
-    verify_shape:   Boolean that enables verification of a shape of values.
+    Args:
+      values:         Values to put in the TensorProto.
+      dtype:          Optional tensor_pb2 DataType value.
+      shape:          List of integers representing the dimensions of tensor.
+      verify_shape:   Boolean that enables verification of a shape of values.
 
-  Returns:
-    A `TensorProto`. Depending on the type, it may contain data in the
-    "tensor_content" attribute, which is not directly useful to Python programs.
-    To access the values you should convert the proto back to a numpy ndarray
-    with `tensor_util.MakeNdarray(proto)`.
+    Returns:
+      A `TensorProto`. Depending on the type, it may contain data in the
+      "tensor_content" attribute, which is not directly useful to Python programs.
+      To access the values you should convert the proto back to a numpy ndarray
+      with `tensor_util.MakeNdarray(proto)`.
 
-    If `values` is a `TensorProto`, it is immediately returned; `dtype` and
-    `shape` are ignored.
+      If `values` is a `TensorProto`, it is immediately returned; `dtype` and
+      `shape` are ignored.
 
-  Raises:
-    TypeError:  if unsupported types are provided.
-    ValueError: if arguments have inappropriate values or if verify_shape is
-     True and shape of values is not equals to a shape from the argument.
+    Raises:
+      TypeError:  if unsupported types are provided.
+      ValueError: if arguments have inappropriate values or if verify_shape is
+       True and shape of values is not equals to a shape from the argument.
 
-  make_tensor_proto accepts "values" of a python scalar, a python list, a
-  numpy ndarray, or a numpy scalar.
+    make_tensor_proto accepts "values" of a python scalar, a python list, a
+    numpy ndarray, or a numpy scalar.
 
-  If "values" is a python scalar or a python list, make_tensor_proto
-  first convert it to numpy ndarray. If dtype is None, the
-  conversion tries its best to infer the right numpy data
-  type. Otherwise, the resulting numpy array has a convertible data
-  type with the given dtype.
+    If "values" is a python scalar or a python list, make_tensor_proto
+    first convert it to numpy ndarray. If dtype is None, the
+    conversion tries its best to infer the right numpy data
+    type. Otherwise, the resulting numpy array has a convertible data
+    type with the given dtype.
 
-  In either case above, the numpy ndarray (either the caller provided
-  or the auto converted) must have the convertible type with dtype.
+    In either case above, the numpy ndarray (either the caller provided
+    or the auto converted) must have the convertible type with dtype.
 
-  make_tensor_proto then converts the numpy array to a tensor proto.
+    make_tensor_proto then converts the numpy array to a tensor proto.
 
-  If "shape" is None, the resulting tensor proto represents the numpy
-  array precisely.
+    If "shape" is None, the resulting tensor proto represents the numpy
+    array precisely.
 
-  Otherwise, "shape" specifies the tensor's shape and the numpy array
-  can not have more elements than what "shape" specifies.
-  """
+    Otherwise, "shape" specifies the tensor's shape and the numpy array
+    can not have more elements than what "shape" specifies.
+    """
     if isinstance(values, tensor_pb2.TensorProto):
         return values
 
@@ -368,7 +382,10 @@ def make_tensor_proto(values, dtype=None, shape=None, verify_shape=False):
             nparray = np.array(values, dtype=np_dt)
             # check to them.
             # We need to pass in quantized values as tuples, so don't apply the shape
-            if list(nparray.shape) != _GetDenseDimensions(values) and not is_quantized:
+            if (
+                list(nparray.shape) != _GetDenseDimensions(values)
+                and not is_quantized
+            ):
                 raise ValueError(
                     """Argument must be a dense tensor: %s"""
                     """ - got shape %s, but wanted %s."""
@@ -397,7 +414,8 @@ def make_tensor_proto(values, dtype=None, shape=None, verify_shape=False):
         numpy_dtype = dtype
 
     if dtype is not None and (
-        not hasattr(dtype, "base_dtype") or dtype.base_dtype != numpy_dtype.base_dtype
+        not hasattr(dtype, "base_dtype")
+        or dtype.base_dtype != numpy_dtype.base_dtype
     ):
         raise TypeError(
             "Inconvertible types: %s vs. %s. Value is %s"
@@ -483,25 +501,28 @@ def make_tensor_proto(values, dtype=None, shape=None, verify_shape=False):
 def make_ndarray(tensor):
     """Create a numpy ndarray from a tensor.
 
-  Create a numpy ndarray with the same shape and data as the tensor.
+    Create a numpy ndarray with the same shape and data as the tensor.
 
-  Args:
-    tensor: A TensorProto.
+    Args:
+      tensor: A TensorProto.
 
-  Returns:
-    A numpy array with the tensor contents.
+    Returns:
+      A numpy array with the tensor contents.
 
-  Raises:
-    TypeError: if tensor has unsupported type.
-
-  """
+    Raises:
+      TypeError: if tensor has unsupported type.
+    """
     shape = [d.size for d in tensor.tensor_shape.dim]
     num_elements = np.prod(shape, dtype=np.int64)
     tensor_dtype = dtypes.as_dtype(tensor.dtype)
     dtype = tensor_dtype.as_numpy_dtype
 
     if tensor.tensor_content:
-        return np.frombuffer(tensor.tensor_content, dtype=dtype).copy().reshape(shape)
+        return (
+            np.frombuffer(tensor.tensor_content, dtype=dtype)
+            .copy()
+            .reshape(shape)
+        )
     elif tensor_dtype == dtypes.float16 or tensor_dtype == dtypes.bfloat16:
         # the half_val field of the TensorProto stores the binary representation
         # of the fp16: we need to reinterpret this as a proper float16
@@ -558,13 +579,16 @@ def make_ndarray(tensor):
                 np.array(tensor.string_val[0], dtype=dtype), num_elements
             ).reshape(shape)
         else:
-            return np.array([x for x in tensor.string_val], dtype=dtype).reshape(shape)
+            return np.array(
+                [x for x in tensor.string_val], dtype=dtype
+            ).reshape(shape)
     elif tensor_dtype == dtypes.complex64:
         it = iter(tensor.scomplex_val)
         if len(tensor.scomplex_val) == 2:
             return np.repeat(
                 np.array(
-                    complex(tensor.scomplex_val[0], tensor.scomplex_val[1]), dtype=dtype
+                    complex(tensor.scomplex_val[0], tensor.scomplex_val[1]),
+                    dtype=dtype,
                 ),
                 num_elements,
             ).reshape(shape)
@@ -577,7 +601,8 @@ def make_ndarray(tensor):
         if len(tensor.dcomplex_val) == 2:
             return np.repeat(
                 np.array(
-                    complex(tensor.dcomplex_val[0], tensor.dcomplex_val[1]), dtype=dtype
+                    complex(tensor.dcomplex_val[0], tensor.dcomplex_val[1]),
+                    dtype=dtype,
                 ),
                 num_elements,
             ).reshape(shape)

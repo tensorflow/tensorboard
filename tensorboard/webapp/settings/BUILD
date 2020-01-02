@@ -1,17 +1,17 @@
-package(default_visibility = ["//tensorboard:internal"])
-
 load("@npm_angular_bazel//:index.bzl", "ng_module")
 load("//tensorboard/defs:defs.bzl", "tf_ts_library")
+
+package(default_visibility = ["//tensorboard:internal"])
 
 ng_module(
     name = "settings",
     srcs = [
-        "dialog.component.ts",
-        "settings.module.ts",
-        "settings_button.component.ts",
+        "dialog_component.ts",
+        "settings_button_component.ts",
+        "settings_module.ts",
     ],
     assets = [
-        "dialog.component.css",
+        "dialog_component.css",
     ],
     deps = [
         "//tensorboard/webapp/angular:expect_angular_material_button",
@@ -20,8 +20,8 @@ ng_module(
         "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/angular:expect_angular_material_input",
         "//tensorboard/webapp/core",
-        "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/core/actions",
+        "//tensorboard/webapp/core/store",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@angular/forms",
@@ -34,11 +34,12 @@ tf_ts_library(
     name = "test_lib",
     testonly = True,
     srcs = [
-        "dialog.component.test.ts",
+        "settings_test.ts",
     ],
     tsconfig = "//:tsconfig-test",
     deps = [
         ":settings",
+        "//tensorboard/webapp/angular:expect_angular_cdk_overlay",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_angular_material_button",
         "//tensorboard/webapp/angular:expect_angular_material_checkbox",
@@ -46,9 +47,11 @@ tf_ts_library(
         "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/angular:expect_angular_material_input",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
+        "//tensorboard/webapp/angular:expect_angular_platform_browser_dynamic_testing",
         "//tensorboard/webapp/core/actions",
         "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/core/testing",
+        "//tensorboard/webapp/testing:mat_icon",
         "@npm//@angular/common",
         "@npm//@angular/compiler",
         "@npm//@angular/core",

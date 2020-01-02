@@ -42,71 +42,78 @@ tf.compat.v1.enable_eager_execution()
 
 
 # Directory into which to write tensorboard data.
-LOGDIR = '/tmp/profile_demo'
+LOGDIR = "/tmp/profile_demo"
 
 
 # Suffix for the empty eventfile to write. Should be kept in sync with TF
 # profiler kProfileEmptySuffix constant defined in:
 #   tensorflow/core/profiler/rpc/client/capture_profile.cc.
-EVENT_FILE_SUFFIX = '.profile-empty'
+EVENT_FILE_SUFFIX = ".profile-empty"
 
 
 def _maybe_create_directory(directory):
-  try:
-    os.makedirs(directory)
-  except OSError:
-    print('Directory %s already exists.' %directory)
+    try:
+        os.makedirs(directory)
+    except OSError:
+        print("Directory %s already exists." % directory)
 
 
 def write_empty_event_file(logdir):
-  w = tf.compat.v2.summary.create_file_writer(
-      logdir, filename_suffix=EVENT_FILE_SUFFIX)
-  w.close()
+    w = tf.compat.v2.summary.create_file_writer(
+        logdir, filename_suffix=EVENT_FILE_SUFFIX
+    )
+    w.close()
 
 
 def dump_data(logdir):
-  """Dumps plugin data to the log directory."""
-  # Create a tfevents file in the logdir so it is detected as a run.
-  write_empty_event_file(logdir)
+    """Dumps plugin data to the log directory."""
+    # Create a tfevents file in the logdir so it is detected as a run.
+    write_empty_event_file(logdir)
 
-  plugin_logdir = plugin_asset_util.PluginDirectory(
-      logdir, profile_plugin.ProfilePlugin.plugin_name)
-  _maybe_create_directory(plugin_logdir)
+    plugin_logdir = plugin_asset_util.PluginDirectory(
+        logdir, profile_plugin.ProfilePlugin.plugin_name
+    )
+    _maybe_create_directory(plugin_logdir)
 
-  for run in profile_demo_data.RUNS:
-    run_dir = os.path.join(plugin_logdir, run)
+    for run in profile_demo_data.RUNS:
+        run_dir = os.path.join(plugin_logdir, run)
+        _maybe_create_directory(run_dir)
+        if run in profile_demo_data.TRACES:
+            with open(os.path.join(run_dir, "trace"), "w") as f:
+                proto = trace_events_pb2.Trace()
+                text_format.Merge(profile_demo_data.TRACES[run], proto)
+                f.write(proto.SerializeToString())
+
+        if run not in profile_demo_data.TRACE_ONLY:
+            shutil.copyfile(
+                "tensorboard/plugins/profile/profile_demo.op_profile.json",
+                os.path.join(run_dir, "op_profile.json"),
+            )
+            shutil.copyfile(
+                "tensorboard/plugins/profile/profile_demo.memory_viewer.json",
+                os.path.join(run_dir, "memory_viewer.json"),
+            )
+            shutil.copyfile(
+                "tensorboard/plugins/profile/profile_demo.pod_viewer.json",
+                os.path.join(run_dir, "pod_viewer.json"),
+            )
+            shutil.copyfile(
+                "tensorboard/plugins/profile/profile_demo.google_chart_demo.json",
+                os.path.join(run_dir, "google_chart_demo.json"),
+            )
+
+    # Unsupported tool data should not be displayed.
+    run_dir = os.path.join(plugin_logdir, "empty")
     _maybe_create_directory(run_dir)
-    if run in profile_demo_data.TRACES:
-      with open(os.path.join(run_dir, 'trace'), 'w') as f:
-        proto = trace_events_pb2.Trace()
-        text_format.Merge(profile_demo_data.TRACES[run], proto)
-        f.write(proto.SerializeToString())
-
-    if run not in profile_demo_data.TRACE_ONLY:
-      shutil.copyfile('tensorboard/plugins/profile/profile_demo.op_profile.json',
-                      os.path.join(run_dir, 'op_profile.json'))
-      shutil.copyfile(
-          'tensorboard/plugins/profile/profile_demo.memory_viewer.json',
-          os.path.join(run_dir, 'memory_viewer.json'))
-      shutil.copyfile(
-          'tensorboard/plugins/profile/profile_demo.pod_viewer.json',
-          os.path.join(run_dir, 'pod_viewer.json'))
-      shutil.copyfile(
-          'tensorboard/plugins/profile/profile_demo.google_chart_demo.json',
-          os.path.join(run_dir, 'google_chart_demo.json'))
-
-  # Unsupported tool data should not be displayed.
-  run_dir = os.path.join(plugin_logdir, 'empty')
-  _maybe_create_directory(run_dir)
-  with open(os.path.join(run_dir, 'unsupported'), 'w') as f:
-    f.write('unsupported data')
+    with open(os.path.join(run_dir, "unsupported"), "w") as f:
+        f.write("unsupported data")
 
 
 def main(unused_argv):
-  print('Saving output to %s.' % LOGDIR)
-  dump_data(LOGDIR)
-  print('Done. Output saved to %s.' % LOGDIR)
+    print("Saving output to %s." % LOGDIR)
+    dump_data(LOGDIR)
+    print("Done. Output saved to %s." % LOGDIR)
 
 
-if __name__ == '__main__':
-  app.run(main)
+if __name__ == "__main__":
+    app.run(main)

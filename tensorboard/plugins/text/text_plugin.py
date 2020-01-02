@@ -24,6 +24,7 @@ import textwrap
 # pylint: disable=g-bad-import-order
 # Necessary for an internal test with special behavior for numpy.
 import numpy as np
+
 # pylint: enable=g-bad-import-order
 
 import six
@@ -36,217 +37,230 @@ from tensorboard.plugins.text import metadata
 from tensorboard.util import tensor_util
 
 # HTTP routes
-TAGS_ROUTE = '/tags'
-TEXT_ROUTE = '/text'
+TAGS_ROUTE = "/tags"
+TEXT_ROUTE = "/text"
 
 
-WARNING_TEMPLATE = textwrap.dedent("""\
+WARNING_TEMPLATE = textwrap.dedent(
+    """\
   **Warning:** This text summary contained data of dimensionality %d, but only \
-  2d tables are supported. Showing a 2d slice of the data instead.""")
+  2d tables are supported. Showing a 2d slice of the data instead."""
+)
 
 
-def make_table_row(contents, tag='td'):
-  """Given an iterable of string contents, make a table row.
+def make_table_row(contents, tag="td"):
+    """Given an iterable of string contents, make a table row.
 
-  Args:
-    contents: An iterable yielding strings.
-    tag: The tag to place contents in. Defaults to 'td', you might want 'th'.
+    Args:
+      contents: An iterable yielding strings.
+      tag: The tag to place contents in. Defaults to 'td', you might want 'th'.
 
-  Returns:
-    A string containing the content strings, organized into a table row.
+    Returns:
+      A string containing the content strings, organized into a table row.
 
-  Example: make_table_row(['one', 'two', 'three']) == '''
-  <tr>
-  <td>one</td>
-  <td>two</td>
-  <td>three</td>
-  </tr>'''
-  """
-  columns = ('<%s>%s</%s>\n' % (tag, s, tag) for s in contents)
-  return '<tr>\n' + ''.join(columns) + '</tr>\n'
+    Example: make_table_row(['one', 'two', 'three']) == '''
+    <tr>
+    <td>one</td>
+    <td>two</td>
+    <td>three</td>
+    </tr>'''
+    """
+    columns = ("<%s>%s</%s>\n" % (tag, s, tag) for s in contents)
+    return "<tr>\n" + "".join(columns) + "</tr>\n"
 
 
 def make_table(contents, headers=None):
-  """Given a numpy ndarray of strings, concatenate them into a html table.
+    """Given a numpy ndarray of strings, concatenate them into a html table.
 
-  Args:
-    contents: A np.ndarray of strings. May be 1d or 2d. In the 1d case, the
-      table is laid out vertically (i.e. row-major).
-    headers: A np.ndarray or list of string header names for the table.
+    Args:
+      contents: A np.ndarray of strings. May be 1d or 2d. In the 1d case, the
+        table is laid out vertically (i.e. row-major).
+      headers: A np.ndarray or list of string header names for the table.
 
-  Returns:
-    A string containing all of the content strings, organized into a table.
+    Returns:
+      A string containing all of the content strings, organized into a table.
 
-  Raises:
-    ValueError: If contents is not a np.ndarray.
-    ValueError: If contents is not 1d or 2d.
-    ValueError: If contents is empty.
-    ValueError: If headers is present and not a list, tuple, or ndarray.
-    ValueError: If headers is not 1d.
-    ValueError: If number of elements in headers does not correspond to number
-      of columns in contents.
-  """
-  if not isinstance(contents, np.ndarray):
-    raise ValueError('make_table contents must be a numpy ndarray')
+    Raises:
+      ValueError: If contents is not a np.ndarray.
+      ValueError: If contents is not 1d or 2d.
+      ValueError: If contents is empty.
+      ValueError: If headers is present and not a list, tuple, or ndarray.
+      ValueError: If headers is not 1d.
+      ValueError: If number of elements in headers does not correspond to number
+        of columns in contents.
+    """
+    if not isinstance(contents, np.ndarray):
+        raise ValueError("make_table contents must be a numpy ndarray")
 
-  if contents.ndim not in [1, 2]:
-    raise ValueError('make_table requires a 1d or 2d numpy array, was %dd' %
-                     contents.ndim)
+    if contents.ndim not in [1, 2]:
+        raise ValueError(
+            "make_table requires a 1d or 2d numpy array, was %dd"
+            % contents.ndim
+        )
 
-  if headers:
-    if isinstance(headers, (list, tuple)):
-      headers = np.array(headers)
-    if not isinstance(headers, np.ndarray):
-      raise ValueError('Could not convert headers %s into np.ndarray' % headers)
-    if headers.ndim != 1:
-      raise ValueError('Headers must be 1d, is %dd' % headers.ndim)
-    expected_n_columns = contents.shape[1] if contents.ndim == 2 else 1
-    if headers.shape[0] != expected_n_columns:
-      raise ValueError('Number of headers %d must match number of columns %d' %
-                       (headers.shape[0], expected_n_columns))
-    header = '<thead>\n%s</thead>\n' % make_table_row(headers, tag='th')
-  else:
-    header = ''
+    if headers:
+        if isinstance(headers, (list, tuple)):
+            headers = np.array(headers)
+        if not isinstance(headers, np.ndarray):
+            raise ValueError(
+                "Could not convert headers %s into np.ndarray" % headers
+            )
+        if headers.ndim != 1:
+            raise ValueError("Headers must be 1d, is %dd" % headers.ndim)
+        expected_n_columns = contents.shape[1] if contents.ndim == 2 else 1
+        if headers.shape[0] != expected_n_columns:
+            raise ValueError(
+                "Number of headers %d must match number of columns %d"
+                % (headers.shape[0], expected_n_columns)
+            )
+        header = "<thead>\n%s</thead>\n" % make_table_row(headers, tag="th")
+    else:
+        header = ""
 
-  n_rows = contents.shape[0]
-  if contents.ndim == 1:
-    # If it's a vector, we need to wrap each element in a new list, otherwise
-    # we would turn the string itself into a row (see test code)
-    rows = (make_table_row([contents[i]]) for i in range(n_rows))
-  else:
-    rows = (make_table_row(contents[i, :]) for i in range(n_rows))
+    n_rows = contents.shape[0]
+    if contents.ndim == 1:
+        # If it's a vector, we need to wrap each element in a new list, otherwise
+        # we would turn the string itself into a row (see test code)
+        rows = (make_table_row([contents[i]]) for i in range(n_rows))
+    else:
+        rows = (make_table_row(contents[i, :]) for i in range(n_rows))
 
-  return '<table>\n%s<tbody>\n%s</tbody>\n</table>' % (header, ''.join(rows))
+    return "<table>\n%s<tbody>\n%s</tbody>\n</table>" % (header, "".join(rows))
 
 
 def reduce_to_2d(arr):
-  """Given a np.npdarray with nDims > 2, reduce it to 2d.
+    """Given a np.npdarray with nDims > 2, reduce it to 2d.
 
-  It does this by selecting the zeroth coordinate for every dimension greater
-  than two.
+    It does this by selecting the zeroth coordinate for every dimension greater
+    than two.
 
-  Args:
-    arr: a numpy ndarray of dimension at least 2.
+    Args:
+      arr: a numpy ndarray of dimension at least 2.
 
-  Returns:
-    A two-dimensional subarray from the input array.
+    Returns:
+      A two-dimensional subarray from the input array.
 
-  Raises:
-    ValueError: If the argument is not a numpy ndarray, or the dimensionality
-      is too low.
-  """
-  if not isinstance(arr, np.ndarray):
-    raise ValueError('reduce_to_2d requires a numpy.ndarray')
+    Raises:
+      ValueError: If the argument is not a numpy ndarray, or the dimensionality
+        is too low.
+    """
+    if not isinstance(arr, np.ndarray):
+        raise ValueError("reduce_to_2d requires a numpy.ndarray")
 
-  ndims = len(arr.shape)
-  if ndims < 2:
-    raise ValueError('reduce_to_2d requires an array of dimensionality >=2')
-  # slice(None) is equivalent to `:`, so we take arr[0,0,...0,:,:]
-  slices = ([0] * (ndims - 2)) + [slice(None), slice(None)]
-  return arr[slices]
+    ndims = len(arr.shape)
+    if ndims < 2:
+        raise ValueError("reduce_to_2d requires an array of dimensionality >=2")
+    # slice(None) is equivalent to `:`, so we take arr[0,0,...0,:,:]
+    slices = ([0] * (ndims - 2)) + [slice(None), slice(None)]
+    return arr[slices]
 
 
 def text_array_to_html(text_arr):
-  """Take a numpy.ndarray containing strings, and convert it into html.
+    """Take a numpy.ndarray containing strings, and convert it into html.
 
-  If the ndarray contains a single scalar string, that string is converted to
-  html via our sanitized markdown parser. If it contains an array of strings,
-  the strings are individually converted to html and then composed into a table
-  using make_table. If the array contains dimensionality greater than 2,
-  all but two of the dimensions are removed, and a warning message is prefixed
-  to the table.
+    If the ndarray contains a single scalar string, that string is converted to
+    html via our sanitized markdown parser. If it contains an array of strings,
+    the strings are individually converted to html and then composed into a table
+    using make_table. If the array contains dimensionality greater than 2,
+    all but two of the dimensions are removed, and a warning message is prefixed
+    to the table.
 
-  Args:
-    text_arr: A numpy.ndarray containing strings.
+    Args:
+      text_arr: A numpy.ndarray containing strings.
 
-  Returns:
-    The array converted to html.
-  """
-  if not text_arr.shape:
-    # It is a scalar. No need to put it in a table, just apply markdown
-    return plugin_util.markdown_to_safe_html(np.asscalar(text_arr))
-  warning = ''
-  if len(text_arr.shape) > 2:
-    warning = plugin_util.markdown_to_safe_html(WARNING_TEMPLATE
-                                                % len(text_arr.shape))
-    text_arr = reduce_to_2d(text_arr)
+    Returns:
+      The array converted to html.
+    """
+    if not text_arr.shape:
+        # It is a scalar. No need to put it in a table, just apply markdown
+        return plugin_util.markdown_to_safe_html(np.asscalar(text_arr))
+    warning = ""
+    if len(text_arr.shape) > 2:
+        warning = plugin_util.markdown_to_safe_html(
+            WARNING_TEMPLATE % len(text_arr.shape)
+        )
+        text_arr = reduce_to_2d(text_arr)
 
-  html_arr = [plugin_util.markdown_to_safe_html(x)
-              for x in text_arr.reshape(-1)]
-  html_arr = np.array(html_arr).reshape(text_arr.shape)
+    html_arr = [
+        plugin_util.markdown_to_safe_html(x) for x in text_arr.reshape(-1)
+    ]
+    html_arr = np.array(html_arr).reshape(text_arr.shape)
 
-  return warning + make_table(html_arr)
+    return warning + make_table(html_arr)
 
 
 def process_string_tensor_event(event):
-  """Convert a TensorEvent into a JSON-compatible response."""
-  string_arr = tensor_util.make_ndarray(event.tensor_proto)
-  html = text_array_to_html(string_arr)
-  return {
-      'wall_time': event.wall_time,
-      'step': event.step,
-      'text': html,
-  }
+    """Convert a TensorEvent into a JSON-compatible response."""
+    string_arr = tensor_util.make_ndarray(event.tensor_proto)
+    html = text_array_to_html(string_arr)
+    return {
+        "wall_time": event.wall_time,
+        "step": event.step,
+        "text": html,
+    }
 
 
 class TextPlugin(base_plugin.TBPlugin):
-  """Text Plugin for TensorBoard."""
+    """Text Plugin for TensorBoard."""
 
-  plugin_name = metadata.PLUGIN_NAME
+    plugin_name = metadata.PLUGIN_NAME
 
-  def __init__(self, context):
-    """Instantiates TextPlugin via TensorBoard core.
+    def __init__(self, context):
+        """Instantiates TextPlugin via TensorBoard core.
 
-    Args:
-      context: A base_plugin.TBContext instance.
-    """
-    self._multiplexer = context.multiplexer
+        Args:
+          context: A base_plugin.TBContext instance.
+        """
+        self._multiplexer = context.multiplexer
 
-  def is_active(self):
-    """Determines whether this plugin is active.
+    def is_active(self):
+        """Determines whether this plugin is active.
 
-    This plugin is only active if TensorBoard sampled any text summaries.
+        This plugin is only active if TensorBoard sampled any text summaries.
 
-    Returns:
-      Whether this plugin is active.
-    """
-    if not self._multiplexer:
-      return False
-    return bool(self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME))
+        Returns:
+          Whether this plugin is active.
+        """
+        if not self._multiplexer:
+            return False
+        return bool(
+            self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
+        )
 
-  def frontend_metadata(self):
-    return base_plugin.FrontendMetadata(element_name='tf-text-dashboard')
+    def frontend_metadata(self):
+        return base_plugin.FrontendMetadata(element_name="tf-text-dashboard")
 
-  def index_impl(self):
-    mapping = self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
-    return {
-        run: list(tag_to_content)
-        for (run, tag_to_content)
-        in six.iteritems(mapping)
-    }
+    def index_impl(self):
+        mapping = self._multiplexer.PluginRunToTagToContent(
+            metadata.PLUGIN_NAME
+        )
+        return {
+            run: list(tag_to_content)
+            for (run, tag_to_content) in six.iteritems(mapping)
+        }
 
-  @wrappers.Request.application
-  def tags_route(self, request):
-    index = self.index_impl()
-    return http_util.Respond(request, index, 'application/json')
+    @wrappers.Request.application
+    def tags_route(self, request):
+        index = self.index_impl()
+        return http_util.Respond(request, index, "application/json")
 
-  def text_impl(self, run, tag):
-    try:
-      text_events = self._multiplexer.Tensors(run, tag)
-    except KeyError:
-      text_events = []
-    responses = [process_string_tensor_event(ev) for ev in text_events]
-    return responses
+    def text_impl(self, run, tag):
+        try:
+            text_events = self._multiplexer.Tensors(run, tag)
+        except KeyError:
+            text_events = []
+        responses = [process_string_tensor_event(ev) for ev in text_events]
+        return responses
 
-  @wrappers.Request.application
-  def text_route(self, request):
-    run = request.args.get('run')
-    tag = request.args.get('tag')
-    response = self.text_impl(run, tag)
-    return http_util.Respond(request, response, 'application/json')
+    @wrappers.Request.application
+    def text_route(self, request):
+        run = request.args.get("run")
+        tag = request.args.get("tag")
+        response = self.text_impl(run, tag)
+        return http_util.Respond(request, response, "application/json")
 
-  def get_plugin_apps(self):
-    return {
-        TAGS_ROUTE: self.tags_route,
-        TEXT_ROUTE: self.text_route,
-    }
+    def get_plugin_apps(self):
+        return {
+            TAGS_ROUTE: self.tags_route,
+            TEXT_ROUTE: self.text_route,
+        }

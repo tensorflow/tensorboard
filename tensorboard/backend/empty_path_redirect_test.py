@@ -28,46 +28,48 @@ from tensorboard.backend import empty_path_redirect
 
 
 class EmptyPathRedirectMiddlewareTest(tb_test.TestCase):
-  """Tests for `EmptyPathRedirectMiddleware`."""
+    """Tests for `EmptyPathRedirectMiddleware`."""
 
-  def setUp(self):
-    super(EmptyPathRedirectMiddlewareTest, self).setUp()
-    app = werkzeug.Request.application(lambda req: werkzeug.Response(req.path))
-    app = empty_path_redirect.EmptyPathRedirectMiddleware(app)
-    app = self._lax_strip_foo_middleware(app)
-    self.app = app
-    self.server = werkzeug_test.Client(self.app, werkzeug.BaseResponse)
+    def setUp(self):
+        super(EmptyPathRedirectMiddlewareTest, self).setUp()
+        app = werkzeug.Request.application(
+            lambda req: werkzeug.Response(req.path)
+        )
+        app = empty_path_redirect.EmptyPathRedirectMiddleware(app)
+        app = self._lax_strip_foo_middleware(app)
+        self.app = app
+        self.server = werkzeug_test.Client(self.app, werkzeug.BaseResponse)
 
-  def _lax_strip_foo_middleware(self, app):
-    """Strips a `/foo` prefix if it exists; no-op otherwise."""
+    def _lax_strip_foo_middleware(self, app):
+        """Strips a `/foo` prefix if it exists; no-op otherwise."""
 
-    def wrapper(environ, start_response):
-      path = environ.get("PATH_INFO", "")
-      if path.startswith("/foo"):
-        environ["PATH_INFO"] = path[len("/foo") :]
-        environ["SCRIPT_NAME"] = "/foo"
-      return app(environ, start_response)
+        def wrapper(environ, start_response):
+            path = environ.get("PATH_INFO", "")
+            if path.startswith("/foo"):
+                environ["PATH_INFO"] = path[len("/foo") :]
+                environ["SCRIPT_NAME"] = "/foo"
+            return app(environ, start_response)
 
-    return wrapper
+        return wrapper
 
-  def test_normal_route_not_redirected(self):
-    response = self.server.get("/foo/bar")
-    self.assertEqual(response.status_code, 200)
+    def test_normal_route_not_redirected(self):
+        response = self.server.get("/foo/bar")
+        self.assertEqual(response.status_code, 200)
 
-  def test_slash_not_redirected(self):
-    response = self.server.get("/foo/")
-    self.assertEqual(response.status_code, 200)
+    def test_slash_not_redirected(self):
+        response = self.server.get("/foo/")
+        self.assertEqual(response.status_code, 200)
 
-  def test_empty_redirected_with_script_name(self):
-    response = self.server.get("/foo")
-    self.assertEqual(response.status_code, 301)
-    self.assertEqual(response.headers["Location"], "/foo/")
+    def test_empty_redirected_with_script_name(self):
+        response = self.server.get("/foo")
+        self.assertEqual(response.status_code, 301)
+        self.assertEqual(response.headers["Location"], "/foo/")
 
-  def test_empty_redirected_with_blank_script_name(self):
-    response = self.server.get("")
-    self.assertEqual(response.status_code, 301)
-    self.assertEqual(response.headers["Location"], "/")
+    def test_empty_redirected_with_blank_script_name(self):
+        response = self.server.get("")
+        self.assertEqual(response.status_code, 301)
+        self.assertEqual(response.headers["Location"], "/")
 
 
 if __name__ == "__main__":
-  tb_test.main()
+    tb_test.main()

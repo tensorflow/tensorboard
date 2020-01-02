@@ -24,7 +24,7 @@ from tensorboard.util import tb_logging
 
 logger = tb_logging.get_logger()
 
-PLUGIN_NAME = 'audio'
+PLUGIN_NAME = "audio"
 
 # The most recent value for the `version` field of the `AudioPluginData`
 # proto.
@@ -35,40 +35,45 @@ Encoding = plugin_data_pb2.AudioPluginData.Encoding
 
 
 def create_summary_metadata(display_name, description, encoding):
-  """Create a `SummaryMetadata` proto for audio plugin data.
+    """Create a `SummaryMetadata` proto for audio plugin data.
 
-  Returns:
-    A `SummaryMetadata` protobuf object.
-  """
-  content = plugin_data_pb2.AudioPluginData(
-      version=PROTO_VERSION, encoding=encoding)
-  metadata = summary_pb2.SummaryMetadata(
-      display_name=display_name,
-      summary_description=description,
-      plugin_data=summary_pb2.SummaryMetadata.PluginData(
-          plugin_name=PLUGIN_NAME,
-          content=content.SerializeToString()))
-  return metadata
+    Returns:
+      A `SummaryMetadata` protobuf object.
+    """
+    content = plugin_data_pb2.AudioPluginData(
+        version=PROTO_VERSION, encoding=encoding
+    )
+    metadata = summary_pb2.SummaryMetadata(
+        display_name=display_name,
+        summary_description=description,
+        plugin_data=summary_pb2.SummaryMetadata.PluginData(
+            plugin_name=PLUGIN_NAME, content=content.SerializeToString()
+        ),
+    )
+    return metadata
 
 
 def parse_plugin_metadata(content):
-  """Parse summary metadata to a Python object.
+    """Parse summary metadata to a Python object.
 
-  Arguments:
-    content: The `content` field of a `SummaryMetadata` proto
-      corresponding to the audio plugin.
+    Arguments:
+      content: The `content` field of a `SummaryMetadata` proto
+        corresponding to the audio plugin.
 
-  Returns:
-    An `AudioPluginData` protobuf object.
-  """
-  if not isinstance(content, bytes):
-    raise TypeError('Content type must be bytes')
-  result = plugin_data_pb2.AudioPluginData.FromString(content)
-  if result.version == 0:
-    return result
-  else:
-    logger.warn(
-        'Unknown metadata version: %s. The latest version known to '
-        'this build of TensorBoard is %s; perhaps a newer build is '
-        'available?', result.version, PROTO_VERSION)
-    return result
+    Returns:
+      An `AudioPluginData` protobuf object.
+    """
+    if not isinstance(content, bytes):
+        raise TypeError("Content type must be bytes")
+    result = plugin_data_pb2.AudioPluginData.FromString(content)
+    if result.version == 0:
+        return result
+    else:
+        logger.warn(
+            "Unknown metadata version: %s. The latest version known to "
+            "this build of TensorBoard is %s; perhaps a newer build is "
+            "available?",
+            result.version,
+            PROTO_VERSION,
+        )
+        return result

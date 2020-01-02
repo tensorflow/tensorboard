@@ -125,31 +125,34 @@ from tensorboard.compat.proto import event_pb2
 
 # Map of field names within summary.proto to the user-facing names that this
 # script outputs.
-SUMMARY_TYPE_TO_FIELD = {'simple_value': 'scalars',
-                         'histo': 'histograms',
-                         'image': 'images',
-                         'audio': 'audio'}
+SUMMARY_TYPE_TO_FIELD = {
+    "simple_value": "scalars",
+    "histo": "histograms",
+    "image": "images",
+    "audio": "audio",
+}
 for summary_type in event_accumulator.SUMMARY_TYPES:
-  if summary_type not in SUMMARY_TYPE_TO_FIELD:
-    SUMMARY_TYPE_TO_FIELD[summary_type] = summary_type
+    if summary_type not in SUMMARY_TYPE_TO_FIELD:
+        SUMMARY_TYPE_TO_FIELD[summary_type] = summary_type
 
 # Types of summaries that we may want to query for by tag.
 TAG_FIELDS = list(SUMMARY_TYPE_TO_FIELD.values())
 
 # Summaries that we want to see every instance of.
-LONG_FIELDS = ['sessionlog:start', 'sessionlog:stop']
+LONG_FIELDS = ["sessionlog:start", "sessionlog:stop"]
 
 # Summaries that we only want an abridged digest of, since they would
 # take too much screen real estate otherwise.
-SHORT_FIELDS = ['graph', 'sessionlog:checkpoint'] + TAG_FIELDS
+SHORT_FIELDS = ["graph", "sessionlog:checkpoint"] + TAG_FIELDS
 
 # All summary types that we can inspect.
 TRACKED_FIELDS = SHORT_FIELDS + LONG_FIELDS
 
 # An `Observation` contains the data within each Event file that the inspector
 # cares about. The inspector accumulates Observations as it processes events.
-Observation = collections.namedtuple('Observation', ['step', 'wall_time',
-                                                     'tag'])
+Observation = collections.namedtuple(
+    "Observation", ["step", "wall_time", "tag"]
+)
 
 # An InspectionUnit is created for each organizational structure in the event
 # files visible in the final terminal output. For instance, one InspectionUnit
@@ -159,259 +162,286 @@ Observation = collections.namedtuple('Observation', ['step', 'wall_time',
 # The InspectionUnit contains the `name` of the organizational unit that will be
 # printed to console, a `generator` that yields `Event` protos, and a mapping
 # from string fields to `Observations` that the inspector creates.
-InspectionUnit = collections.namedtuple('InspectionUnit', ['name', 'generator',
-                                                           'field_to_obs'])
+InspectionUnit = collections.namedtuple(
+    "InspectionUnit", ["name", "generator", "field_to_obs"]
+)
 
-PRINT_SEPARATOR = '=' * 70 + '\n'
+PRINT_SEPARATOR = "=" * 70 + "\n"
 
 
-def get_field_to_observations_map(generator, query_for_tag=''):
-  """Return a field to `Observations` dict for the event generator.
+def get_field_to_observations_map(generator, query_for_tag=""):
+    """Return a field to `Observations` dict for the event generator.
 
-  Args:
-    generator: A generator over event protos.
-    query_for_tag: A string that if specified, only create observations for
-      events with this tag name.
+    Args:
+      generator: A generator over event protos.
+      query_for_tag: A string that if specified, only create observations for
+        events with this tag name.
 
-  Returns:
-    A dict mapping keys in `TRACKED_FIELDS` to an `Observation` list.
-  """
+    Returns:
+      A dict mapping keys in `TRACKED_FIELDS` to an `Observation` list.
+    """
 
-  def increment(stat, event, tag=''):
-    assert stat in TRACKED_FIELDS
-    field_to_obs[stat].append(Observation(step=event.step,
-                                          wall_time=event.wall_time,
-                                          tag=tag)._asdict())
+    def increment(stat, event, tag=""):
+        assert stat in TRACKED_FIELDS
+        field_to_obs[stat].append(
+            Observation(
+                step=event.step, wall_time=event.wall_time, tag=tag
+            )._asdict()
+        )
 
-  field_to_obs = dict([(t, []) for t in TRACKED_FIELDS])
+    field_to_obs = dict([(t, []) for t in TRACKED_FIELDS])
 
-  for event in generator:
-    ## Process the event
-    if event.HasField('graph_def') and (not query_for_tag):
-      increment('graph', event)
-    if event.HasField('session_log') and (not query_for_tag):
-      status = event.session_log.status
-      if status == event_pb2.SessionLog.START:
-        increment('sessionlog:start', event)
-      elif status == event_pb2.SessionLog.STOP:
-        increment('sessionlog:stop', event)
-      elif status == event_pb2.SessionLog.CHECKPOINT:
-        increment('sessionlog:checkpoint', event)
-    elif event.HasField('summary'):
-      for value in event.summary.value:
-        if query_for_tag and value.tag != query_for_tag:
-          continue
+    for event in generator:
+        ## Process the event
+        if event.HasField("graph_def") and (not query_for_tag):
+            increment("graph", event)
+        if event.HasField("session_log") and (not query_for_tag):
+            status = event.session_log.status
+            if status == event_pb2.SessionLog.START:
+                increment("sessionlog:start", event)
+            elif status == event_pb2.SessionLog.STOP:
+                increment("sessionlog:stop", event)
+            elif status == event_pb2.SessionLog.CHECKPOINT:
+                increment("sessionlog:checkpoint", event)
+        elif event.HasField("summary"):
+            for value in event.summary.value:
+                if query_for_tag and value.tag != query_for_tag:
+                    continue
 
-        for proto_name, display_name in SUMMARY_TYPE_TO_FIELD.items():
-          if value.HasField(proto_name):
-            increment(display_name, event, value.tag)
-  return field_to_obs
+                for proto_name, display_name in SUMMARY_TYPE_TO_FIELD.items():
+                    if value.HasField(proto_name):
+                        increment(display_name, event, value.tag)
+    return field_to_obs
 
 
 def get_unique_tags(field_to_obs):
-  """Returns a dictionary of tags that a user could query over.
+    """Returns a dictionary of tags that a user could query over.
 
-  Args:
-    field_to_obs: Dict that maps string field to `Observation` list.
+    Args:
+      field_to_obs: Dict that maps string field to `Observation` list.
 
-  Returns:
-    A dict that maps keys in `TAG_FIELDS` to a list of string tags present in
-    the event files. If the dict does not have any observations of the type,
-    maps to an empty list so that we can render this to console.
-  """
-  return {field: sorted(set([x.get('tag', '') for x in observations]))
-          for field, observations in field_to_obs.items()
-          if field in TAG_FIELDS}
+    Returns:
+      A dict that maps keys in `TAG_FIELDS` to a list of string tags present in
+      the event files. If the dict does not have any observations of the type,
+      maps to an empty list so that we can render this to console.
+    """
+    return {
+        field: sorted(set([x.get("tag", "") for x in observations]))
+        for field, observations in field_to_obs.items()
+        if field in TAG_FIELDS
+    }
 
 
 def print_dict(d, show_missing=True):
-  """Prints a shallow dict to console.
+    """Prints a shallow dict to console.
 
-  Args:
-    d: Dict to print.
-    show_missing: Whether to show keys with empty values.
-  """
-  for k, v in sorted(d.items()):
-    if (not v) and show_missing:
-      # No instances of the key, so print missing symbol.
-      print('{} -'.format(k))
-    elif isinstance(v, list):
-      # Value is a list, so print each item of the list.
-      print(k)
-      for item in v:
-        print('   {}'.format(item))
-    elif isinstance(v, dict):
-      # Value is a dict, so print each (key, value) pair of the dict.
-      print(k)
-      for kk, vv in sorted(v.items()):
-        print('   {:<20} {}'.format(kk, vv))
+    Args:
+      d: Dict to print.
+      show_missing: Whether to show keys with empty values.
+    """
+    for k, v in sorted(d.items()):
+        if (not v) and show_missing:
+            # No instances of the key, so print missing symbol.
+            print("{} -".format(k))
+        elif isinstance(v, list):
+            # Value is a list, so print each item of the list.
+            print(k)
+            for item in v:
+                print("   {}".format(item))
+        elif isinstance(v, dict):
+            # Value is a dict, so print each (key, value) pair of the dict.
+            print(k)
+            for kk, vv in sorted(v.items()):
+                print("   {:<20} {}".format(kk, vv))
 
 
 def get_dict_to_print(field_to_obs):
-  """Transform the field-to-obs mapping into a printable dictionary.
+    """Transform the field-to-obs mapping into a printable dictionary.
 
-  Args:
-    field_to_obs: Dict that maps string field to `Observation` list.
+    Args:
+      field_to_obs: Dict that maps string field to `Observation` list.
 
-  Returns:
-    A dict with the keys and values to print to console.
-  """
+    Returns:
+      A dict with the keys and values to print to console.
+    """
 
-  def compressed_steps(steps):
-    return {'num_steps': len(set(steps)),
-            'min_step': min(steps),
-            'max_step': max(steps),
-            'last_step': steps[-1],
-            'first_step': steps[0],
-            'outoforder_steps': get_out_of_order(steps)}
+    def compressed_steps(steps):
+        return {
+            "num_steps": len(set(steps)),
+            "min_step": min(steps),
+            "max_step": max(steps),
+            "last_step": steps[-1],
+            "first_step": steps[0],
+            "outoforder_steps": get_out_of_order(steps),
+        }
 
-  def full_steps(steps):
-    return {'steps': steps, 'outoforder_steps': get_out_of_order(steps)}
+    def full_steps(steps):
+        return {"steps": steps, "outoforder_steps": get_out_of_order(steps)}
 
-  output = {}
-  for field, observations in field_to_obs.items():
-    if not observations:
-      output[field] = None
-      continue
+    output = {}
+    for field, observations in field_to_obs.items():
+        if not observations:
+            output[field] = None
+            continue
 
-    steps = [x['step'] for x in observations]
-    if field in SHORT_FIELDS:
-      output[field] = compressed_steps(steps)
-    if field in LONG_FIELDS:
-      output[field] = full_steps(steps)
+        steps = [x["step"] for x in observations]
+        if field in SHORT_FIELDS:
+            output[field] = compressed_steps(steps)
+        if field in LONG_FIELDS:
+            output[field] = full_steps(steps)
 
-  return output
+    return output
 
 
 def get_out_of_order(list_of_numbers):
-  """Returns elements that break the monotonically non-decreasing trend.
+    """Returns elements that break the monotonically non-decreasing trend.
 
-  This is used to find instances of global step values that are "out-of-order",
-  which may trigger TensorBoard event discarding logic.
+    This is used to find instances of global step values that are "out-of-order",
+    which may trigger TensorBoard event discarding logic.
 
-  Args:
-    list_of_numbers: A list of numbers.
+    Args:
+      list_of_numbers: A list of numbers.
 
-  Returns:
-    A list of tuples in which each tuple are two elements are adjacent, but the
-    second element is lower than the first.
-  """
-  # TODO: Consider changing this to only check for out-of-order
-  # steps within a particular tag.
-  result = []
-  # pylint: disable=consider-using-enumerate
-  for i in range(len(list_of_numbers)):
-    if i == 0:
-      continue
-    if list_of_numbers[i] < list_of_numbers[i - 1]:
-      result.append((list_of_numbers[i - 1], list_of_numbers[i]))
-  return result
+    Returns:
+      A list of tuples in which each tuple are two elements are adjacent, but the
+      second element is lower than the first.
+    """
+    # TODO: Consider changing this to only check for out-of-order
+    # steps within a particular tag.
+    result = []
+    # pylint: disable=consider-using-enumerate
+    for i in range(len(list_of_numbers)):
+        if i == 0:
+            continue
+        if list_of_numbers[i] < list_of_numbers[i - 1]:
+            result.append((list_of_numbers[i - 1], list_of_numbers[i]))
+    return result
 
 
 def generators_from_logdir(logdir):
-  """Returns a list of event generators for subdirectories with event files.
+    """Returns a list of event generators for subdirectories with event files.
 
-  The number of generators returned should equal the number of directories
-  within logdir that contain event files. If only logdir contains event files,
-  returns a list of length one.
+    The number of generators returned should equal the number of directories
+    within logdir that contain event files. If only logdir contains event files,
+    returns a list of length one.
 
-  Args:
-    logdir: A log directory that contains event files.
+    Args:
+      logdir: A log directory that contains event files.
 
-  Returns:
-    List of event generators for each subdirectory with event files.
-  """
-  subdirs = io_wrapper.GetLogdirSubdirectories(logdir)
-  generators = [
-      itertools.chain(*[
-          generator_from_event_file(os.path.join(subdir, f))
-          for f in tf.io.gfile.listdir(subdir)
-          if io_wrapper.IsTensorFlowEventsFile(os.path.join(subdir, f))
-      ]) for subdir in subdirs
-  ]
-  return generators
+    Returns:
+      List of event generators for each subdirectory with event files.
+    """
+    subdirs = io_wrapper.GetLogdirSubdirectories(logdir)
+    generators = [
+        itertools.chain(
+            *[
+                generator_from_event_file(os.path.join(subdir, f))
+                for f in tf.io.gfile.listdir(subdir)
+                if io_wrapper.IsTensorFlowEventsFile(os.path.join(subdir, f))
+            ]
+        )
+        for subdir in subdirs
+    ]
+    return generators
 
 
 def generator_from_event_file(event_file):
-  """Returns a generator that yields events from an event file."""
-  return event_file_loader.EventFileLoader(event_file).Load()
+    """Returns a generator that yields events from an event file."""
+    return event_file_loader.EventFileLoader(event_file).Load()
 
 
-def get_inspection_units(logdir='', event_file='', tag=''):
-  """Returns a list of InspectionUnit objects given either logdir or event_file.
+def get_inspection_units(logdir="", event_file="", tag=""):
+    """Returns a list of InspectionUnit objects given either logdir or
+    event_file.
 
-  If logdir is given, the number of InspectionUnits should equal the
-  number of directories or subdirectories that contain event files.
+    If logdir is given, the number of InspectionUnits should equal the
+    number of directories or subdirectories that contain event files.
 
-  If event_file is given, the number of InspectionUnits should be 1.
+    If event_file is given, the number of InspectionUnits should be 1.
 
-  Args:
-    logdir: A log directory that contains event files.
-    event_file: Or, a particular event file path.
-    tag: An optional tag name to query for.
+    Args:
+      logdir: A log directory that contains event files.
+      event_file: Or, a particular event file path.
+      tag: An optional tag name to query for.
 
-  Returns:
-    A list of InspectionUnit objects.
-  """
-  if logdir:
-    subdirs = io_wrapper.GetLogdirSubdirectories(logdir)
-    inspection_units = []
-    for subdir in subdirs:
-      generator = itertools.chain(*[
-          generator_from_event_file(os.path.join(subdir, f))
-          for f in tf.io.gfile.listdir(subdir)
-          if io_wrapper.IsTensorFlowEventsFile(os.path.join(subdir, f))
-      ])
-      inspection_units.append(InspectionUnit(
-          name=subdir,
-          generator=generator,
-          field_to_obs=get_field_to_observations_map(generator, tag)))
-    if inspection_units:
-      print('Found event files in:\n{}\n'.format('\n'.join(
-          [u.name for u in inspection_units])))
-    elif io_wrapper.IsTensorFlowEventsFile(logdir):
-      print(
-          'It seems that {} may be an event file instead of a logdir. If this '
-          'is the case, use --event_file instead of --logdir to pass '
-          'it in.'.format(logdir))
-    else:
-      print('No event files found within logdir {}'.format(logdir))
-    return inspection_units
-  elif event_file:
-    generator = generator_from_event_file(event_file)
-    return [InspectionUnit(
-        name=event_file,
-        generator=generator,
-        field_to_obs=get_field_to_observations_map(generator, tag))]
-  return []
+    Returns:
+      A list of InspectionUnit objects.
+    """
+    if logdir:
+        subdirs = io_wrapper.GetLogdirSubdirectories(logdir)
+        inspection_units = []
+        for subdir in subdirs:
+            generator = itertools.chain(
+                *[
+                    generator_from_event_file(os.path.join(subdir, f))
+                    for f in tf.io.gfile.listdir(subdir)
+                    if io_wrapper.IsTensorFlowEventsFile(
+                        os.path.join(subdir, f)
+                    )
+                ]
+            )
+            inspection_units.append(
+                InspectionUnit(
+                    name=subdir,
+                    generator=generator,
+                    field_to_obs=get_field_to_observations_map(generator, tag),
+                )
+            )
+        if inspection_units:
+            print(
+                "Found event files in:\n{}\n".format(
+                    "\n".join([u.name for u in inspection_units])
+                )
+            )
+        elif io_wrapper.IsTensorFlowEventsFile(logdir):
+            print(
+                "It seems that {} may be an event file instead of a logdir. If this "
+                "is the case, use --event_file instead of --logdir to pass "
+                "it in.".format(logdir)
+            )
+        else:
+            print("No event files found within logdir {}".format(logdir))
+        return inspection_units
+    elif event_file:
+        generator = generator_from_event_file(event_file)
+        return [
+            InspectionUnit(
+                name=event_file,
+                generator=generator,
+                field_to_obs=get_field_to_observations_map(generator, tag),
+            )
+        ]
+    return []
 
 
-def inspect(logdir='', event_file='', tag=''):
-  """Main function for inspector that prints out a digest of event files.
+def inspect(logdir="", event_file="", tag=""):
+    """Main function for inspector that prints out a digest of event files.
 
-  Args:
-    logdir: A log directory that contains event files.
-    event_file: Or, a particular event file path.
-    tag: An optional tag name to query for.
+    Args:
+      logdir: A log directory that contains event files.
+      event_file: Or, a particular event file path.
+      tag: An optional tag name to query for.
 
-  Raises:
-    ValueError: If neither logdir and event_file are given, or both are given.
-  """
-  print(PRINT_SEPARATOR +
-        'Processing event files... (this can take a few minutes)\n' +
-        PRINT_SEPARATOR)
-  inspection_units = get_inspection_units(logdir, event_file, tag)
+    Raises:
+      ValueError: If neither logdir and event_file are given, or both are given.
+    """
+    print(
+        PRINT_SEPARATOR
+        + "Processing event files... (this can take a few minutes)\n"
+        + PRINT_SEPARATOR
+    )
+    inspection_units = get_inspection_units(logdir, event_file, tag)
 
-  for unit in inspection_units:
-    if tag:
-      print('Event statistics for tag {} in {}:'.format(tag, unit.name))
-    else:
-      # If the user is not inspecting a particular tag, also print the list of
-      # all available tags that they can query.
-      print('These tags are in {}:'.format(unit.name))
-      print_dict(get_unique_tags(unit.field_to_obs))
-      print(PRINT_SEPARATOR)
-      print('Event statistics for {}:'.format(unit.name))
+    for unit in inspection_units:
+        if tag:
+            print("Event statistics for tag {} in {}:".format(tag, unit.name))
+        else:
+            # If the user is not inspecting a particular tag, also print the list of
+            # all available tags that they can query.
+            print("These tags are in {}:".format(unit.name))
+            print_dict(get_unique_tags(unit.field_to_obs))
+            print(PRINT_SEPARATOR)
+            print("Event statistics for {}:".format(unit.name))
 
-    print_dict(get_dict_to_print(unit.field_to_obs), show_missing=(not tag))
-    print(PRINT_SEPARATOR)
+        print_dict(get_dict_to_print(unit.field_to_obs), show_missing=(not tag))
+        print(PRINT_SEPARATOR)

@@ -22,25 +22,27 @@ from tensorboard.plugins import base_plugin
 
 
 class InteractiveInferencePluginLoader(base_plugin.TBLoader):
-  """InteractiveInferencePlugin factory.
+    """InteractiveInferencePlugin factory.
 
-  This class checks for `tensorflow` install and dependency.
-  """
-
-  def load(self, context):
-    """Returns the plugin, if possible.
-
-    Args:
-      context: The TBContext flags.
-
-    Returns:
-      A InteractiveInferencePlugin instance or None if it couldn't be loaded.
+    This class checks for `tensorflow` install and dependency.
     """
-    try:
-      # pylint: disable=g-import-not-at-top,unused-import
-      import tensorflow
-    except ImportError:
-      return
-    # pylint: disable=line-too-long,g-import-not-at-top
-    from tensorboard.plugins.interactive_inference.interactive_inference_plugin import InteractiveInferencePlugin
-    return InteractiveInferencePlugin(context)
+
+    def load(self, context):
+        """Returns the plugin, if possible.
+
+        Args:
+          context: The TBContext flags.
+
+        Returns:
+          A InteractiveInferencePlugin instance or None if it couldn't be loaded.
+        """
+        try:
+            # pylint: disable=unused-import
+            import tensorflow
+        except ImportError:
+            return
+        from tensorboard.plugins.interactive_inference.interactive_inference_plugin import (
+            InteractiveInferencePlugin,
+        )
+
+        return InteractiveInferencePlugin(context)

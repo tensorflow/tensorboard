@@ -23,18 +23,17 @@ from tensorboard import version
 
 
 class VersionTest(tb_test.TestCase):
+    def test_valid_pep440_version(self):
+        """Ensure that our version is PEP 440-compliant."""
+        # `Version` and `LegacyVersion` are vendored and not publicly
+        # exported; get handles to them.
+        compliant_version = pkg_resources.parse_version("1.0.0")
+        legacy_version = pkg_resources.parse_version("some arbitrary string")
+        self.assertNotEqual(type(compliant_version), type(legacy_version))
 
-  def test_valid_pep440_version(self):
-    """Ensure that our version is PEP 440-compliant."""
-    # `Version` and `LegacyVersion` are vendored and not publicly
-    # exported; get handles to them.
-    compliant_version = pkg_resources.parse_version("1.0.0")
-    legacy_version = pkg_resources.parse_version("some arbitrary string")
-    self.assertNotEqual(type(compliant_version), type(legacy_version))
-
-    tensorboard_version = pkg_resources.parse_version(version.VERSION)
-    self.assertIsInstance(tensorboard_version, type(compliant_version))
+        tensorboard_version = pkg_resources.parse_version(version.VERSION)
+        self.assertIsInstance(tensorboard_version, type(compliant_version))
 
 
-if __name__ == '__main__':
-  tb_test.main()
+if __name__ == "__main__":
+    tb_test.main()

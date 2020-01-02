@@ -16,7 +16,7 @@ import {enableProdMode} from '@angular/core';
 import {platformBrowser} from '@angular/platform-browser';
 import 'zone.js/dist/zone.js'; // Angular runtime dep
 
-import {AppModuleNgFactory} from './app.module.ngfactory';
+import {AppModuleNgFactory} from './app_module.ngfactory';
 
 if (config.env === 'prod') enableProdMode();
 

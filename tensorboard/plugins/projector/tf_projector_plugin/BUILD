@@ -20,8 +20,8 @@ tensorboard_html_binary(
     name = "projector_binary",
     compile = True,
     input_path = "/tf-projector/tf-projector-plugin.html",
-    output_path = "/tf-projector/projector_binary.html",
     js_path = "/projector_binary.js",
+    output_path = "/tf-projector/projector_binary.html",
     deps = [
         ":tf_projector_plugin",
     ],

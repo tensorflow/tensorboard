@@ -49,7 +49,8 @@ class Dimension(object):
         return "?" if value is None else str(value)
 
     def __eq__(self, other):
-        """Returns true if `other` has the same known value as this Dimension."""
+        """Returns true if `other` has the same known value as this
+        Dimension."""
         try:
             other = as_dimension(other)
         except (TypeError, ValueError):
@@ -98,10 +99,15 @@ class Dimension(object):
           True if this Dimension and `other` are convertible.
         """
         other = as_dimension(other)
-        return self._value is None or other.value is None or self._value == other.value
+        return (
+            self._value is None
+            or other.value is None
+            or self._value == other.value
+        )
 
     def assert_is_convertible_with(self, other):
-        """Raises an exception if `other` is not convertible with this Dimension.
+        """Raises an exception if `other` is not convertible with this
+        Dimension.
 
         Args:
           other: Another Dimension.
@@ -111,10 +117,13 @@ class Dimension(object):
             is_convertible_with).
         """
         if not self.is_convertible_with(other):
-            raise ValueError("Dimensions %s and %s are not convertible" % (self, other))
+            raise ValueError(
+                "Dimensions %s and %s are not convertible" % (self, other)
+            )
 
     def merge_with(self, other):
-        """Returns a Dimension that combines the information in `self` and `other`.
+        """Returns a Dimension that combines the information in `self` and
+        `other`.
 
         Dimensions are combined as follows:
 
@@ -433,7 +442,8 @@ class Dimension(object):
             return self._value > other.value
 
     def __ge__(self, other):
-        """Returns True if `self` is known to be greater than or equal to `other`.
+        """Returns True if `self` is known to be greater than or equal to
+        `other`.
 
         Dimensions are compared as follows:
 
@@ -554,7 +564,8 @@ class TensorShape(object):
 
     @property
     def dims(self):
-        """Returns a list of Dimensions, or None if the shape is unspecified."""
+        """Returns a list of Dimensions, or None if the shape is
+        unspecified."""
         return self._dims
 
     @dims.setter
@@ -573,9 +584,12 @@ class TensorShape(object):
             return self._ndims
 
     def __len__(self):
-        """Returns the rank of this shape, or raises ValueError if unspecified."""
+        """Returns the rank of this shape, or raises ValueError if
+        unspecified."""
         if self._dims is None:
-            raise ValueError("Cannot take the length of Shape with unknown rank.")
+            raise ValueError(
+                "Cannot take the length of Shape with unknown rank."
+            )
         return self.ndims
 
     def __bool__(self):
@@ -586,7 +600,8 @@ class TensorShape(object):
     __nonzero__ = __bool__
 
     def __iter__(self):
-        """Returns `self.dims` if the rank is known, otherwise raises ValueError."""
+        """Returns `self.dims` if the rank is known, otherwise raises
+        ValueError."""
         if self._dims is None:
             raise ValueError("Cannot iterate over a shape with unknown rank.")
         else:
@@ -637,7 +652,8 @@ class TensorShape(object):
                 return Dimension(None)
 
     def num_elements(self):
-        """Returns the total number of elements, or none for incomplete shapes."""
+        """Returns the total number of elements, or none for incomplete
+        shapes."""
         if self.is_fully_defined():
             size = 1
             for dim in self._dims:
@@ -647,7 +663,8 @@ class TensorShape(object):
             return None
 
     def merge_with(self, other):
-        """Returns a `TensorShape` combining the information in `self` and `other`.
+        """Returns a `TensorShape` combining the information in `self` and
+        `other`.
 
         The dimensions in `self` and `other` are merged elementwise,
         according to the rules defined for `Dimension.merge_with()`.
@@ -673,7 +690,9 @@ class TensorShape(object):
                     new_dims.append(dim.merge_with(other[i]))
                 return TensorShape(new_dims)
             except ValueError:
-                raise ValueError("Shapes %s and %s are not convertible" % (self, other))
+                raise ValueError(
+                    "Shapes %s and %s are not convertible" % (self, other)
+                )
 
     def concatenate(self, other):
         """Returns the concatenation of the dimension in `self` and `other`.
@@ -699,7 +718,8 @@ class TensorShape(object):
             return TensorShape(self._dims + other.dims)
 
     def assert_same_rank(self, other):
-        """Raises an exception if `self` and `other` do not have convertible ranks.
+        """Raises an exception if `self` and `other` do not have convertible
+        ranks.
 
         Args:
           other: Another `TensorShape`.
@@ -716,7 +736,8 @@ class TensorShape(object):
                 )
 
     def assert_has_rank(self, rank):
-        """Raises an exception if `self` is not convertible with the given `rank`.
+        """Raises an exception if `self` is not convertible with the given
+        `rank`.
 
         Args:
           rank: An integer.
@@ -762,7 +783,9 @@ class TensorShape(object):
             `rank`.
         """
         if self.ndims is not None and self.ndims < rank:
-            raise ValueError("Shape %s must have rank at least %d" % (self, rank))
+            raise ValueError(
+                "Shape %s must have rank at least %d" % (self, rank)
+            )
         else:
             return self
 
@@ -781,7 +804,9 @@ class TensorShape(object):
             `rank`.
         """
         if self.ndims is not None and self.ndims > rank:
-            raise ValueError("Shape %s must have rank at most %d" % (self, rank))
+            raise ValueError(
+                "Shape %s must have rank at most %d" % (self, rank)
+            )
         else:
             return self
 
@@ -821,7 +846,6 @@ class TensorShape(object):
 
         Returns:
           True iff `self` is convertible with `other`.
-
         """
         other = as_shape(other)
         if self._dims is not None and other.dims is not None:
@@ -833,7 +857,8 @@ class TensorShape(object):
         return True
 
     def assert_is_convertible_with(self, other):
-        """Raises exception if `self` and `other` do not represent the same shape.
+        """Raises exception if `self` and `other` do not represent the same
+        shape.
 
         This method can be used to assert that there exists a shape that both
         `self` and `other` represent.
@@ -845,10 +870,13 @@ class TensorShape(object):
           ValueError: If `self` and `other` do not represent the same shape.
         """
         if not self.is_convertible_with(other):
-            raise ValueError("Shapes %s and %s are inconvertible" % (self, other))
+            raise ValueError(
+                "Shapes %s and %s are inconvertible" % (self, other)
+            )
 
     def most_specific_convertible_shape(self, other):
-        """Returns the most specific TensorShape convertible with `self` and `other`.
+        """Returns the most specific TensorShape convertible with `self` and
+        `other`.
 
         * TensorShape([None, 1]) is the most specific TensorShape convertible with
           both TensorShape([2, 1]) and TensorShape([5, 1]). Note that
@@ -868,7 +896,11 @@ class TensorShape(object):
         """
 
         other = as_shape(other)
-        if self._dims is None or other.dims is None or self.ndims != other.ndims:
+        if (
+            self._dims is None
+            or other.dims is None
+            or self.ndims != other.ndims
+        ):
             return unknown_shape()
 
         dims = [(Dimension(None))] * self.ndims
@@ -884,7 +916,8 @@ class TensorShape(object):
         )
 
     def assert_is_fully_defined(self):
-        """Raises an exception if `self` is not fully defined in every dimension.
+        """Raises an exception if `self` is not fully defined in every
+        dimension.
 
         Raises:
           ValueError: If `self` does not have a known value for every dimension.
@@ -902,7 +935,9 @@ class TensorShape(object):
           ValueError: If `self` is an unknown shape with an unknown rank.
         """
         if self._dims is None:
-            raise ValueError("as_list() is not defined on an unknown TensorShape.")
+            raise ValueError(
+                "as_list() is not defined on an unknown TensorShape."
+            )
         return [dim.value for dim in self._dims]
 
     def as_proto(self):
@@ -934,7 +969,9 @@ class TensorShape(object):
         except TypeError:
             return NotImplemented
         if self.ndims is None or other.ndims is None:
-            raise ValueError("The inequality of unknown TensorShapes is undefined.")
+            raise ValueError(
+                "The inequality of unknown TensorShapes is undefined."
+            )
         if self.ndims != other.ndims:
             return True
         return self._dims != other.dims

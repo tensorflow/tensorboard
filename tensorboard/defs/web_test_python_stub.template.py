@@ -20,10 +20,8 @@ import unittest
 from tensorboard.functionaltests import wct_test_driver
 
 
-Test = wct_test_driver.create_test_class(
-    "{BINARY_PATH}",
-    "{WEB_PATH}")
+Test = wct_test_driver.create_test_class("{BINARY_PATH}", "{WEB_PATH}")
 
 
 if __name__ == "__main__":
-  unittest.main()
+    unittest.main()

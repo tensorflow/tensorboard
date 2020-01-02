@@ -22,25 +22,26 @@ from tensorboard.plugins import base_plugin
 
 
 class BeholderPluginLoader(base_plugin.TBLoader):
-  """BeholderPlugin factory.
+    """BeholderPlugin factory.
 
-  This class checks for `tensorflow` install and dependency.
-  """
-
-  def load(self, context):
-    """Returns the plugin, if possible.
-
-    Args:
-      context: The TBContext flags.
-
-    Returns:
-      A BeholderPlugin instance or None if it couldn't be loaded.
+    This class checks for `tensorflow` install and dependency.
     """
-    try:
-      # pylint: disable=g-import-not-at-top,unused-import
-      import tensorflow
-    except ImportError:
-      return
-    # pylint: disable=g-import-not-at-top
-    from tensorboard.plugins.beholder.beholder_plugin import BeholderPlugin
-    return BeholderPlugin(context)
+
+    def load(self, context):
+        """Returns the plugin, if possible.
+
+        Args:
+          context: The TBContext flags.
+
+        Returns:
+          A BeholderPlugin instance or None if it couldn't be loaded.
+        """
+        try:
+            # pylint: disable=unused-import
+            import tensorflow
+        except ImportError:
+            return
+
+        from tensorboard.plugins.beholder.beholder_plugin import BeholderPlugin
+
+        return BeholderPlugin(context)
