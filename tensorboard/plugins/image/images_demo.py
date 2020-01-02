@@ -55,6 +55,7 @@ _IMAGE_DATA = None
 
 tf.disable_v2_behavior()
 
+
 def image_data(verbose=False):
     """Get the raw encoded image data, downloading it if necessary."""
     # This is a principled use of the `global` statement; don't lint me.
@@ -199,9 +200,7 @@ def run_box_to_gaussian(logdir, verbose=False):
             if verbose:
                 logger.info("--- box_to_gaussian: step: %s" % step)
                 feed_dict = {blur_radius: step}
-            run_options = tf.RunOptions(
-                trace_level=tf.RunOptions.FULL_TRACE
-            )
+            run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
             run_metadata = config_pb2.RunMetadata()
             s = sess.run(
                 summ,
@@ -289,9 +288,7 @@ def run_sobel(logdir, verbose=False):
             if verbose:
                 logger.info("--- sobel: step: %s" % step)
                 feed_dict = {kernel_radius: step}
-            run_options = tf.RunOptions(
-                trace_level=tf.RunOptions.FULL_TRACE
-            )
+            run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
             run_metadata = config_pb2.RunMetadata()
             s = sess.run(
                 summ,
