@@ -68,16 +68,11 @@ class DebuggerV2EventMultiplexer(object):
                 "Expected run name to be %s, but got %s"
                 % (DEFAULT_DEBUGGER_RUN_NAME, run)
             )
-        reader = None
-        try:
-            from tensorflow.python.debug.lib import debug_events_reader
+        from tensorflow.python.debug.lib import debug_events_reader
 
-            # TODO(cais): Switch DebugDataReader when it supports metadata.
-            reader = debug_events_reader.DebugEventsReader(self._logdir)
+        with debug_events_reader.DebugEventsReader(self._logdir) as reader:
             metadata_iterator, _ = reader.metadata_iterator()
             return next(metadata_iterator).wall_time
-        finally:
-            reader.close()
 
     def PluginRunToTagToContent(self, plugin_name):
         raise NotImplementedError(
