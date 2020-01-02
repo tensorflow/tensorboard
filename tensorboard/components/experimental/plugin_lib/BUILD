@@ -10,8 +10,10 @@ tf_ts_library(
     name = "plugin_lib",
     srcs = [
         "index.ts",
-        "message.ts",
         "plugin-guest.ts",
         "runs.ts",
     ],
+    deps = [
+        "//tensorboard/components/experimental/plugin_util:message",
+    ]
 )
