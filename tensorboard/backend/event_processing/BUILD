@@ -38,9 +38,9 @@ py_library(
         ":event_accumulator",
         "//tensorboard:errors",
         "//tensorboard/data:provider",
+        "//tensorboard/plugins/graph:metadata",
         "//tensorboard/util:tb_logging",
         "//tensorboard/util:tensor_util",
-        "//tensorboard/plugins/graph:metadata",
         "@org_pythonhosted_six",
     ],
 )
@@ -52,13 +52,13 @@ py_test(
     deps = [
         ":data_provider",
         ":event_multiplexer",
+        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/data:provider",
         "//tensorboard/plugins/image:summary_v2",
         "//tensorboard/plugins/scalar:metadata",
         "//tensorboard/plugins/scalar:summary_v2",
         "//tensorboard/util:tensor_util",
-        "//tensorboard:expect_tensorflow_installed",
         "@org_pythonhosted_six",
     ],
 )

@@ -26,6 +26,7 @@ import time
 import unittest
 
 from google.protobuf import text_format
+import numpy as np
 import six
 from six.moves import xrange  # pylint: disable=redefined-builtin
 
@@ -87,13 +88,13 @@ class HParamsTest(test.TestCase):
         self.expected_session_start_pb = plugin_data_pb2.SessionStartInfo()
         text_format.Merge(
             """
-        hparams { key: "learning_rate" value { number_value: 0.02 } }
-        hparams { key: "dense_layers" value { number_value: 5 } }
-        hparams { key: "optimizer" value { string_value: "adam" } }
-        hparams { key: "who_knows_what" value { string_value: "???" } }
-        hparams { key: "magic" value { bool_value: true } }
-        hparams { key: "dropout" value { number_value: 0.3 } }
-        """,
+            hparams { key: "learning_rate" value { number_value: 0.02 } }
+            hparams { key: "dense_layers" value { number_value: 5 } }
+            hparams { key: "optimizer" value { string_value: "adam" } }
+            hparams { key: "who_knows_what" value { string_value: "???" } }
+            hparams { key: "magic" value { bool_value: true } }
+            hparams { key: "dropout" value { number_value: 0.3 } }
+            """,
             self.expected_session_start_pb,
         )
         self.expected_session_start_pb.group_name = self.trial_id
@@ -271,6 +272,28 @@ class HParamsTest(test.TestCase):
             get_group_name(hparams_1), get_group_name(hparams_2)
         )
 
+    def test_serialize_numpy_scalars(self):
+        hparams = {
+            "i32": np.array([1, 2], dtype=np.int32)[0],
+            "i64": np.array([1, 2], dtype=np.int64)[0],
+            "f_default": np.linspace(1.0, 2.0, 5)[0],
+            "f32": np.linspace(1.0, 2.0, 5, dtype=np.float32)[0],
+            "f64": np.linspace(1.0, 2.0, 5, dtype=np.float64)[0],
+            "bool": np.array([False, True])[0],
+        }
+        hp.hparams_pb(hparams)
+
+    @requires_tf
+    def test_serialize_tf_linspace_numpy(self):
+        # Should be subsumed by `test_serialize_numpy_scalars`; separate
+        # test because it's a common use case.
+        hparams = {
+            "f_default": tf.linspace(1.0, 2.0, 5).numpy()[0],
+            "f32": tf.cast(tf.linspace(1.0, 2.0, 5), tf.float32).numpy()[0],
+            "f64": tf.cast(tf.linspace(1.0, 2.0, 5), tf.float64).numpy()[0],
+        }
+        hp.hparams_pb(hparams)
+
 
 class HParamsConfigTest(test.TestCase):
     def setUp(self):
@@ -306,74 +329,74 @@ class HParamsConfigTest(test.TestCase):
         self.expected_experiment_pb = api_pb2.Experiment()
         text_format.Merge(
             """
-        time_created_secs: 1555624767.0
-        hparam_infos {
-          name: "learning_rate"
-          type: DATA_TYPE_FLOAT64
-          domain_interval {
-            min_value: 0.01
-            max_value: 0.1
-          }
-        }
-        hparam_infos {
-          name: "dense_layers"
-          type: DATA_TYPE_FLOAT64
-          domain_interval {
-            min_value: 2
-            max_value: 7
-          }
-        }
-        hparam_infos {
-          name: "optimizer"
-          type: DATA_TYPE_STRING
-          domain_discrete {
-            values {
-              string_value: "adam"
+            time_created_secs: 1555624767.0
+            hparam_infos {
+              name: "learning_rate"
+              type: DATA_TYPE_FLOAT64
+              domain_interval {
+                min_value: 0.01
+                max_value: 0.1
+              }
             }
-            values {
-              string_value: "sgd"
+            hparam_infos {
+              name: "dense_layers"
+              type: DATA_TYPE_FLOAT64
+              domain_interval {
+                min_value: 2
+                max_value: 7
+              }
             }
-          }
-        }
-        hparam_infos {
-          name: "who_knows_what"
-        }
-        hparam_infos {
-          name: "magic"
-          type: DATA_TYPE_BOOL
-          display_name: "~*~ Magic ~*~"
-          description: "descriptive"
-          domain_discrete {
-            values {
-              bool_value: false
+            hparam_infos {
+              name: "optimizer"
+              type: DATA_TYPE_STRING
+              domain_discrete {
+                values {
+                  string_value: "adam"
+                }
+                values {
+                  string_value: "sgd"
+                }
+              }
             }
-            values {
-              bool_value: true
+            hparam_infos {
+              name: "who_knows_what"
             }
-          }
-        }
-        metric_infos {
-          name {
-            tag: "samples_per_second"
-          }
-        }
-        metric_infos {
-          name {
-            group: "train"
-            tag: "batch_loss"
-          }
-          display_name: "loss (train)"
-        }
-        metric_infos {
-          name {
-            group: "validation"
-            tag: "epoch_accuracy"
-          }
-          display_name: "accuracy (val.)"
-          description: "Accuracy on the _validation_ dataset."
-          dataset_type: DATASET_VALIDATION
-        }
-        """,
+            hparam_infos {
+              name: "magic"
+              type: DATA_TYPE_BOOL
+              display_name: "~*~ Magic ~*~"
+              description: "descriptive"
+              domain_discrete {
+                values {
+                  bool_value: false
+                }
+                values {
+                  bool_value: true
+                }
+              }
+            }
+            metric_infos {
+              name {
+                tag: "samples_per_second"
+              }
+            }
+            metric_infos {
+              name {
+                group: "train"
+                tag: "batch_loss"
+              }
+              display_name: "loss (train)"
+            }
+            metric_infos {
+              name {
+                group: "validation"
+                tag: "epoch_accuracy"
+              }
+              display_name: "accuracy (val.)"
+              description: "Accuracy on the _validation_ dataset."
+              dataset_type: DATASET_VALIDATION
+            }
+            """,
             self.expected_experiment_pb,
         )
 

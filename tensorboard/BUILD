@@ -282,6 +282,7 @@ tf_web_library(
         "//tensorboard:dev_build": [
             "//tensorboard/webapp:ng_index.html",
             "//tensorboard/webapp:ng_index.js",
+            "//tensorboard/webapp:svg_bundle",
         ],
         "//conditions:default": [],
     }),

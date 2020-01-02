@@ -110,22 +110,23 @@ class TextPluginTest(tf.test.TestCase):
             table,
             textwrap.dedent(
                 """\
-      <table>
-      <tbody>
-      <tr>
-      <td><p>one</p></td>
-      </tr>
-      <tr>
-      <td><p>two</p></td>
-      </tr>
-      <tr>
-      <td><p>three</p></td>
-      </tr>
-      <tr>
-      <td><p>four</p></td>
-      </tr>
-      </tbody>
-      </table>"""
+                <table>
+                <tbody>
+                <tr>
+                <td><p>one</p></td>
+                </tr>
+                <tr>
+                <td><p>two</p></td>
+                </tr>
+                <tr>
+                <td><p>three</p></td>
+                </tr>
+                <tr>
+                <td><p>four</p></td>
+                </tr>
+                </tbody>
+                </table>
+                """.rstrip()
             ),
         )
 
@@ -133,41 +134,43 @@ class TextPluginTest(tf.test.TestCase):
         array2d = np.array([["one", "two"], ["three", "four"]])
         expected_table = textwrap.dedent(
             """\
-    <table>
-    <tbody>
-    <tr>
-    <td>one</td>
-    <td>two</td>
-    </tr>
-    <tr>
-    <td>three</td>
-    <td>four</td>
-    </tr>
-    </tbody>
-    </table>"""
+            <table>
+            <tbody>
+            <tr>
+            <td>one</td>
+            <td>two</td>
+            </tr>
+            <tr>
+            <td>three</td>
+            <td>four</td>
+            </tr>
+            </tbody>
+            </table>
+            """.rstrip()
         )
         self.assertEqual(text_plugin.make_table(array2d), expected_table)
 
         expected_table_with_headers = textwrap.dedent(
             """\
-    <table>
-    <thead>
-    <tr>
-    <th>c1</th>
-    <th>c2</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr>
-    <td>one</td>
-    <td>two</td>
-    </tr>
-    <tr>
-    <td>three</td>
-    <td>four</td>
-    </tr>
-    </tbody>
-    </table>"""
+            <table>
+            <thead>
+            <tr>
+            <th>c1</th>
+            <th>c2</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+            <td>one</td>
+            <td>two</td>
+            </tr>
+            <tr>
+            <td>three</td>
+            <td>four</td>
+            </tr>
+            </tbody>
+            </table>
+            """.rstrip()
         )
 
         actual_with_headers = text_plugin.make_table(
@@ -178,54 +181,56 @@ class TextPluginTest(tf.test.TestCase):
         array_1d = np.array(["one", "two", "three", "four", "five"])
         expected_1d = textwrap.dedent(
             """\
-    <table>
-    <tbody>
-    <tr>
-    <td>one</td>
-    </tr>
-    <tr>
-    <td>two</td>
-    </tr>
-    <tr>
-    <td>three</td>
-    </tr>
-    <tr>
-    <td>four</td>
-    </tr>
-    <tr>
-    <td>five</td>
-    </tr>
-    </tbody>
-    </table>"""
+            <table>
+            <tbody>
+            <tr>
+            <td>one</td>
+            </tr>
+            <tr>
+            <td>two</td>
+            </tr>
+            <tr>
+            <td>three</td>
+            </tr>
+            <tr>
+            <td>four</td>
+            </tr>
+            <tr>
+            <td>five</td>
+            </tr>
+            </tbody>
+            </table>
+            """.rstrip()
         )
         self.assertEqual(text_plugin.make_table(array_1d), expected_1d)
 
         expected_1d_with_headers = textwrap.dedent(
             """\
-    <table>
-    <thead>
-    <tr>
-    <th>X</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr>
-    <td>one</td>
-    </tr>
-    <tr>
-    <td>two</td>
-    </tr>
-    <tr>
-    <td>three</td>
-    </tr>
-    <tr>
-    <td>four</td>
-    </tr>
-    <tr>
-    <td>five</td>
-    </tr>
-    </tbody>
-    </table>"""
+            <table>
+            <thead>
+            <tr>
+            <th>X</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+            <td>one</td>
+            </tr>
+            <tr>
+            <td>two</td>
+            </tr>
+            <tr>
+            <td>three</td>
+            </tr>
+            <tr>
+            <td>four</td>
+            </tr>
+            <tr>
+            <td>five</td>
+            </tr>
+            </tbody>
+            </table>
+            """.rstrip()
         )
         actual_1d_with_headers = text_plugin.make_table(array_1d, headers=["X"])
         self.assertEqual(actual_1d_with_headers, expected_1d_with_headers)
@@ -301,34 +306,36 @@ class TextPluginTest(tf.test.TestCase):
         vector = np.array(["foo", "bar"])
         vector_expected = textwrap.dedent(
             """\
-      <table>
-      <tbody>
-      <tr>
-      <td><p>foo</p></td>
-      </tr>
-      <tr>
-      <td><p>bar</p></td>
-      </tr>
-      </tbody>
-      </table>"""
+            <table>
+            <tbody>
+            <tr>
+            <td><p>foo</p></td>
+            </tr>
+            <tr>
+            <td><p>bar</p></td>
+            </tr>
+            </tbody>
+            </table>
+            """.rstrip()
         )
         self.assertEqual(convert(vector), vector_expected)
 
         d2 = np.array([["foo", "bar"], ["zoink", "zod"]])
         d2_expected = textwrap.dedent(
             """\
-      <table>
-      <tbody>
-      <tr>
-      <td><p>foo</p></td>
-      <td><p>bar</p></td>
-      </tr>
-      <tr>
-      <td><p>zoink</p></td>
-      <td><p>zod</p></td>
-      </tr>
-      </tbody>
-      </table>"""
+            <table>
+            <tbody>
+            <tr>
+            <td><p>foo</p></td>
+            <td><p>bar</p></td>
+            </tr>
+            <tr>
+            <td><p>zoink</p></td>
+            <td><p>zod</p></td>
+            </tr>
+            </tbody>
+            </table>
+            """.rstrip()
         )
         self.assertEqual(convert(d2), d2_expected)
 
@@ -344,18 +351,19 @@ class TextPluginTest(tf.test.TestCase):
         )
         d3_expected = warning + textwrap.dedent(
             """\
-      <table>
-      <tbody>
-      <tr>
-      <td><p>foo</p></td>
-      <td><p>bar</p></td>
-      </tr>
-      <tr>
-      <td><p>zoink</p></td>
-      <td><p>zod</p></td>
-      </tr>
-      </tbody>
-      </table>"""
+            <table>
+            <tbody>
+            <tr>
+            <td><p>foo</p></td>
+            <td><p>bar</p></td>
+            </tr>
+            <tr>
+            <td><p>zoink</p></td>
+            <td><p>zod</p></td>
+            </tr>
+            </tbody>
+            </table>
+            """.rstrip()
         )
         self.assertEqual(convert(d3), d3_expected)
 

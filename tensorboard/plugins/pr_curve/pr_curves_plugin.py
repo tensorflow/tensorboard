@@ -97,26 +97,26 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
             # placeholder rows en masse. The check for step filters out those rows.
             cursor = db.execute(
                 """
-        SELECT
-          Runs.run_name,
-          Tensors.step,
-          Tensors.computed_time,
-          Tensors.data,
-          Tensors.dtype,
-          Tensors.shape,
-          Tags.plugin_data
-        FROM Tensors
-        JOIN Tags
-          ON Tensors.series = Tags.tag_id
-        JOIN Runs
-          ON Tags.run_id = Runs.run_id
-        WHERE
-          Runs.run_name IN (%s)
-          AND Tags.tag_name = ?
-          AND Tags.plugin_name = ?
-          AND Tensors.step > -1
-        ORDER BY Tensors.step
-      """
+                SELECT
+                  Runs.run_name,
+                  Tensors.step,
+                  Tensors.computed_time,
+                  Tensors.data,
+                  Tensors.dtype,
+                  Tensors.shape,
+                  Tags.plugin_data
+                FROM Tensors
+                JOIN Tags
+                  ON Tensors.series = Tags.tag_id
+                JOIN Runs
+                  ON Tags.run_id = Runs.run_id
+                WHERE
+                  Runs.run_name IN (%s)
+                  AND Tags.tag_name = ?
+                  AND Tags.plugin_name = ?
+                  AND Tensors.step > -1
+                ORDER BY Tensors.step
+                """
                 % ",".join(["?"] * len(runs)),
                 runs + [tag, metadata.PLUGIN_NAME],
             )
@@ -212,16 +212,16 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
             db = self._db_connection_provider()
             cursor = db.execute(
                 """
-        SELECT
-          Tags.tag_name,
-          Tags.display_name,
-          Runs.run_name
-        FROM Tags
-        JOIN Runs
-          ON Tags.run_id = Runs.run_id
-        WHERE
-          Tags.plugin_name = ?
-      """,
+                SELECT
+                  Tags.tag_name,
+                  Tags.display_name,
+                  Runs.run_name
+                FROM Tags
+                JOIN Runs
+                  ON Tags.run_id = Runs.run_id
+                WHERE
+                  Tags.plugin_name = ?
+                """,
                 (metadata.PLUGIN_NAME,),
             )
             result = {}
@@ -282,26 +282,26 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
             # For each run, pick a tag.
             cursor = db.execute(
                 """
-          SELECT
-            TagPickingTable.run_name,
-            Tensors.step,
-            Tensors.computed_time
-          FROM (/* For each run, pick any tag. */
-            SELECT
-              Runs.run_id AS run_id,
-              Runs.run_name AS run_name,
-              Tags.tag_id AS tag_id
-            FROM Runs
-            JOIN Tags
-              ON Tags.run_id = Runs.run_id
-            WHERE
-              Tags.plugin_name = ?
-            GROUP BY Runs.run_id) AS TagPickingTable
-          JOIN Tensors
-            ON Tensors.series = TagPickingTable.tag_id
-          WHERE Tensors.step IS NOT NULL
-          ORDER BY Tensors.step
-          """,
+                SELECT
+                  TagPickingTable.run_name,
+                  Tensors.step,
+                  Tensors.computed_time
+                FROM (/* For each run, pick any tag. */
+                  SELECT
+                    Runs.run_id AS run_id,
+                    Runs.run_name AS run_name,
+                    Tags.tag_id AS tag_id
+                  FROM Runs
+                  JOIN Tags
+                    ON Tags.run_id = Runs.run_id
+                  WHERE
+                    Tags.plugin_name = ?
+                  GROUP BY Runs.run_id) AS TagPickingTable
+                JOIN Tensors
+                  ON Tensors.series = TagPickingTable.tag_id
+                WHERE Tensors.step IS NOT NULL
+                ORDER BY Tensors.step
+                """,
                 (metadata.PLUGIN_NAME,),
             )
             for (run, step, wall_time) in cursor:
@@ -372,11 +372,11 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
             db = self._db_connection_provider()
             cursor = db.execute(
                 """
-          SELECT 1
-          FROM Tags
-          WHERE Tags.plugin_name = ?
-          LIMIT 1
-          """,
+                SELECT 1
+                FROM Tags
+                WHERE Tags.plugin_name = ?
+                LIMIT 1
+                """,
                 (metadata.PLUGIN_NAME,),
             )
             return bool(list(cursor))

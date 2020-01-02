@@ -1,0 +1,86 @@
+# Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+
+# List of commits to ignore by default in `git-blame`. Add to this list
+# ONLY commits that are certain to have been functional no-ops, like
+# automated reformattings.
+#
+# To make use of this, you must set the `blame.ignoreRevsFile` Git config
+# option to point to this file. See `git help blame` and `git help config` for
+# more details.
+
+# Giant JavaScript reformat (<https://github.com/tensorflow/tensorboard/issues/2493>)
+# git log --author='TensorBoard Gardener' --grep 'prettier: reformat' --format='%H  # %s'
+fce0c3fbb63b8a3aaab175f5274cf15adac89273  # prettier: reformat directory tensorboard/components
+bbe629969692b1fd8b5876d57e0a8d756a499c61  # prettier: reformat directory tensorboard/plugins/text
+90eb2073fa8ebc1ecbe5acc0f96d34488434206f  # prettier: reformat directory tensorboard/plugins/mesh
+9ef4eee6ed1d704994e26bdd53d01c4d063f997a  # prettier: reformat directory tensorboard/plugins/image
+749332040e8f92cb0858a99d72f6e98a0a5f2854  # prettier: reformat directory tensorboard/plugins/graph
+010511580c98df3c5e7680b8b1ea81838671ba51  # prettier: reformat directory tensorboard/plugins/audio
+7cbe2bafba4d09a1d9670b849b67d1af2769d58c  # prettier: reformat directory tensorboard/plugins/scalar
+4a7be4447d4d00f92271982ec41a76663778feb1  # prettier: reformat directory tensorboard/plugins/profile
+40266070914ad915fb4f3e57a890ad9ae7db6b3c  # prettier: reformat directory tensorboard/plugins/hparams
+b3a9aa3b732df93580bb359f6640e0520ce5638a  # prettier: reformat directory tensorboard/plugins/pr_curve
+a14f6779b79493dae4ed0649996bd8b15956ec5c  # prettier: reformat directory tensorboard/plugins/debugger
+e6c61797f8cdaa3607fe7bebbee296077ed6a360  # prettier: reformat directory tensorboard/plugins/beholder
+103aa46362269198a0f997fc1fdcd89d87f0e70a  # prettier: reformat directory tensorboard/plugins/projector
+9086d6c9ef8db370ad5d2b3619ba2f077e11cccd  # prettier: reformat directory tensorboard/plugins/histogram
+1420ad645db2fa4eca5bb93292f692603e0c1d4b  # prettier: reformat directory tensorboard/plugins/distribution
+5aaf86506448c05154c8164c924ab633b1eb8c5e  # prettier: reformat directory tensorboard/plugins/custom_scalar
+c88af8dac986e6cfe938167d33899ea9e193d750  # prettier: reformat directory tensorboard/plugins/profile/pod_viewer
+d539b827b8a7e2c12018dde9f4405b611291ef1a  # prettier: reformat directory tensorboard/plugins/profile/memory_viewer
+65c31bde8c20820ece126b0f806e488bcb2497b8  # prettier: reformat directory tensorboard/plugins/interactive_inference
+8bc5430e2911822ffab02a598342cda542c5fa2c  # prettier: reformat directory tensorboard/plugins/example/tensorboard_plugin_example
+b3a5c14645da6980ac329b7850aa70be9914ad80  # prettier: reformat directory tensorboard/plugins/interactive_inference/witwidget/notebook/jupyter/js
+
+# Giant Python reformat (<https://github.com/tensorflow/tensorboard/issues/2967>)
+# git log --author='TensorBoard Gardener' --grep 'black: reformat' --format='%H  # %s'
+a20f53e11f5d48f5eee66d178427eacd7469bb11  # black: reformat directory tensorboard
+c2fbc3e1f75b39d147a551dd8b937afdb9bf42ea  # black: reformat directory tensorboard/util
+3de1082df62ad697eae99cbd2cd63aa240f21e15  # black: reformat directory tensorboard/defs
+91b0c32e8312a75efa944e50d4be0504c8ce5585  # black: reformat directory tensorboard/data
+dfc32ae277c76b64893f96ae35b94b49df68408f  # black: reformat directory tensorboard/tools
+cc77a6320ab5901ad277bac6d98444fe7237098f  # black: reformat directory tensorboard/compat
+6f10a3d2c4a9e286db6b30886171ce0b938c0aeb  # black: reformat directory tensorboard/summary
+388e97cd6e20dd2882e3c9cef44244d63f85bcd1  # black: reformat directory tensorboard/scripts
+ee55f91226a736579b5e2b396190ccc50959f40c  # black: reformat directory tensorboard/plugins
+ba4e12754d4be543d5b6aa16568081a7155f1e5f  # black: reformat directory tensorboard/backend
+5a3ab3c9282b72cd66b63dd40ebf9e5e50118b6d  # black: reformat directory tensorboard/uploader
+9146ae0e87a3403d48ff299041c974bf9d123c39  # black: reformat directory tensorboard/pip_package
+2726634abc010f8a17c21aa6e30877f7bcbe028b  # black: reformat directory tensorboard/plugins/text
+159a9911f3ca2bc9cbf0b1dca1ef54f166cf0fb2  # black: reformat directory tensorboard/plugins/mesh
+89cd022a958b15454e977e28e04900b21e63bdf4  # black: reformat directory tensorboard/plugins/core
+c71e21b695ec58f5585f009dc098d513c97fc6a6  # black: reformat directory tensorboard/plugins/image
+5e8da1bad672050082754624dd9cec50b6bc3238  # black: reformat directory tensorboard/plugins/graph
+c2d220396a66114231e95d8ca55d7386a771c96d  # black: reformat directory tensorboard/plugins/audio
+47f246bfd7786a31c2cf2bb06e1b3cf35993f706  # black: reformat directory tensorboard/plugins/scalar
+666b75e91fe505ab28900230cd43970482fd045f  # black: reformat directory tensorboard/plugins/profile
+3aa9cdf4c979fa4ce1c212debd1504442c93dd82  # black: reformat directory tensorboard/plugins/hparams
+7664c071a00d3b3021d56e04838ceed547fac79c  # black: reformat directory tensorboard/functionaltests
+6248d54089524ccff5fe4aedeb2c5089b62c9a12  # black: reformat directory tensorboard/plugins/pr_curve
+f53e34d839f1deff8bfd9199413733863e42f1e8  # black: reformat directory tensorboard/plugins/debugger
+c92eaa91bacd0fcf8454f56b8ca112073a339828  # black: reformat directory tensorboard/plugins/beholder
+92a6e98ab07255ed642dd074017558be44b16f7e  # black: reformat directory tensorboard/plugins/projector
+73d977ea7eda89102eca03a943580a7fddc6f829  # black: reformat directory tensorboard/plugins/histogram
+c6020666b2d93541a9324547d7a7b6677e0fc6e4  # black: reformat directory tensorboard/plugins/debugger_v2
+242e5cce72971d14dba3505f3d66534a8e8e6c26  # black: reformat directory tensorboard/plugins/distribution
+51b9e27fb096c9df055de4461cbdfb344b344700  # black: reformat directory tensorboard/plugins/custom_scalar
+1332da76f09664d31ed13afbaa9824ffd6e7bc77  # black: reformat directory tensorboard/backend/event_processing
+8a8025e8e99b03bf6b7ee0aafc7e20d37600f0c7  # black: reformat directory tensorboard/plugins/interactive_inference
+ae32a4adcab8c3349c3bff21240078334fef1371  # black: reformat directory tensorboard/examples/plugins/example_basic
+1ccf3fe1c122cd89cde577ffc53b31b9b4e5ee20  # black: reformat directory tensorboard/examples/plugins/example_basic/tensorboard_plugin_example
+
+# Small BUILD reformat (<https://github.com/tensorflow/tensorboard/pull/3054>)
+ea4e9bbc885784a283b8b79974132df7c6cdcc50  # Reformat all `*BUILD` files with `buildifier`

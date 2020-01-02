@@ -37,70 +37,70 @@ class KerasUtilTest(tf.test.TestCase):
 
     def test_keras_model_to_graph_def_sequential_model(self):
         expected_proto = """
-    node {
-      name: "sequential/dense"
-      attr {
-        key: "dtype"
-        value {
-          type: DT_FLOAT
-        }
-      }
-      attr {
-        key: "keras_class"
-        value {
-          s: "Dense"
-        }
-      }
-    }
-    node {
-      name: "sequential/my_relu"
-      input: "sequential/dense"
-      attr {
-        key: "dtype"
-        value {
-          type: DT_FLOAT
-        }
-      }
-      attr {
-        key: "keras_class"
-        value {
-          s: "Activation"
-        }
-      }
-    }
-    node {
-      name: "sequential/dense_1"
-      input: "sequential/my_relu"
-      attr {
-        key: "dtype"
-        value {
-          type: DT_FLOAT
-        }
-      }
-      attr {
-        key: "keras_class"
-        value {
-          s: "Dense"
-        }
-      }
-    }
-    node {
-      name: "sequential/activation"
-      input: "sequential/dense_1"
-      attr {
-        key: "dtype"
-        value {
-          type: DT_FLOAT
-        }
-      }
-      attr {
-        key: "keras_class"
-        value {
-          s: "Activation"
-        }
-      }
-    }
-    """
+            node {
+              name: "sequential/dense"
+              attr {
+                key: "dtype"
+                value {
+                  type: DT_FLOAT
+                }
+              }
+              attr {
+                key: "keras_class"
+                value {
+                  s: "Dense"
+                }
+              }
+            }
+            node {
+              name: "sequential/my_relu"
+              input: "sequential/dense"
+              attr {
+                key: "dtype"
+                value {
+                  type: DT_FLOAT
+                }
+              }
+              attr {
+                key: "keras_class"
+                value {
+                  s: "Activation"
+                }
+              }
+            }
+            node {
+              name: "sequential/dense_1"
+              input: "sequential/my_relu"
+              attr {
+                key: "dtype"
+                value {
+                  type: DT_FLOAT
+                }
+              }
+              attr {
+                key: "keras_class"
+                value {
+                  s: "Dense"
+                }
+              }
+            }
+            node {
+              name: "sequential/activation"
+              input: "sequential/dense_1"
+              attr {
+                key: "dtype"
+                value {
+                  type: DT_FLOAT
+                }
+              }
+              attr {
+                key: "keras_class"
+                value {
+                  s: "Activation"
+                }
+              }
+            }
+        """
         model = tf.keras.models.Sequential(
             [
                 tf.keras.layers.Dense(32, input_shape=(784,)),
@@ -113,70 +113,70 @@ class KerasUtilTest(tf.test.TestCase):
 
     def test_keras_model_to_graph_def_functional_model(self):
         expected_proto = """
-    node {
-      name: "model/functional_input"
-      attr {
-        key: "dtype"
-        value {
-          type: DT_FLOAT
-        }
-      }
-      attr {
-        key: "keras_class"
-        value {
-          s: "InputLayer"
-        }
-      }
-    }
-    node {
-      name: "model/dense"
-      input: "model/functional_input"
-      attr {
-        key: "dtype"
-        value {
-          type: DT_FLOAT
-        }
-      }
-      attr {
-        key: "keras_class"
-        value {
-          s: "Dense"
-        }
-      }
-    }
-    node {
-      name: "model/dense_1"
-      input: "model/dense"
-      attr {
-        key: "dtype"
-        value {
-          type: DT_FLOAT
-        }
-      }
-      attr {
-        key: "keras_class"
-        value {
-          s: "Dense"
-        }
-      }
-    }
-    node {
-      name: "model/dense_2"
-      input: "model/dense_1"
-      attr {
-        key: "dtype"
-        value {
-          type: DT_FLOAT
-        }
-      }
-      attr {
-        key: "keras_class"
-        value {
-          s: "Dense"
-        }
-      }
-    }
-    """
+            node {
+              name: "model/functional_input"
+              attr {
+                key: "dtype"
+                value {
+                  type: DT_FLOAT
+                }
+              }
+              attr {
+                key: "keras_class"
+                value {
+                  s: "InputLayer"
+                }
+              }
+            }
+            node {
+              name: "model/dense"
+              input: "model/functional_input"
+              attr {
+                key: "dtype"
+                value {
+                  type: DT_FLOAT
+                }
+              }
+              attr {
+                key: "keras_class"
+                value {
+                  s: "Dense"
+                }
+              }
+            }
+            node {
+              name: "model/dense_1"
+              input: "model/dense"
+              attr {
+                key: "dtype"
+                value {
+                  type: DT_FLOAT
+                }
+              }
+              attr {
+                key: "keras_class"
+                value {
+                  s: "Dense"
+                }
+              }
+            }
+            node {
+              name: "model/dense_2"
+              input: "model/dense_1"
+              attr {
+                key: "dtype"
+                value {
+                  type: DT_FLOAT
+                }
+              }
+              attr {
+                key: "keras_class"
+                value {
+                  s: "Dense"
+                }
+              }
+            }
+        """
         inputs = tf.keras.layers.Input(shape=(784,), name="functional_input")
         d0 = tf.keras.layers.Dense(64, activation="relu")
         d1 = tf.keras.layers.Dense(64, activation="relu")
@@ -187,71 +187,71 @@ class KerasUtilTest(tf.test.TestCase):
 
     def test_keras_model_to_graph_def_functional_model_with_cycle(self):
         expected_proto = """
-    node {
-      name: "model/cycle_input"
-      attr {
-        key: "dtype"
-        value {
-          type: DT_FLOAT
-        }
-      }
-      attr {
-        key: "keras_class"
-        value {
-          s: "InputLayer"
-        }
-      }
-    }
-    node {
-      name: "model/dense"
-      input: "model/cycle_input"
-      attr {
-        key: "dtype"
-        value {
-          type: DT_FLOAT
-        }
-      }
-      attr {
-        key: "keras_class"
-        value {
-          s: "Dense"
-        }
-      }
-    }
-    node {
-      name: "model/dense_1"
-      input: "model/dense"
-      input: "model/dense_2"
-      attr {
-        key: "dtype"
-        value {
-          type: DT_FLOAT
-        }
-      }
-      attr {
-        key: "keras_class"
-        value {
-          s: "Dense"
-        }
-      }
-    }
-    node {
-      name: "model/dense_2"
-      input: "model/dense_1"
-      attr {
-        key: "dtype"
-        value {
-          type: DT_FLOAT
-        }
-      }
-      attr {
-        key: "keras_class"
-        value {
-          s: "Dense"
-        }
-      }
-    }
-    """
+            node {
+              name: "model/cycle_input"
+              attr {
+                key: "dtype"
+                value {
+                  type: DT_FLOAT
+                }
+              }
+              attr {
+                key: "keras_class"
+                value {
+                  s: "InputLayer"
+                }
+              }
+            }
+            node {
+              name: "model/dense"
+              input: "model/cycle_input"
+              attr {
+                key: "dtype"
+                value {
+                  type: DT_FLOAT
+                }
+              }
+              attr {
+                key: "keras_class"
+                value {
+                  s: "Dense"
+                }
+              }
+            }
+            node {
+              name: "model/dense_1"
+              input: "model/dense"
+              input: "model/dense_2"
+              attr {
+                key: "dtype"
+                value {
+                  type: DT_FLOAT
+                }
+              }
+              attr {
+                key: "keras_class"
+                value {
+                  s: "Dense"
+                }
+              }
+            }
+            node {
+              name: "model/dense_2"
+              input: "model/dense_1"
+              attr {
+                key: "dtype"
+                value {
+                  type: DT_FLOAT
+                }
+              }
+              attr {
+                key: "keras_class"
+                value {
+                  s: "Dense"
+                }
+              }
+            }
+        """
         inputs = tf.keras.layers.Input(shape=(784,), name="cycle_input")
         d0 = tf.keras.layers.Dense(64, activation="relu")
         d1 = tf.keras.layers.Dense(64, activation="relu")
@@ -264,38 +264,38 @@ class KerasUtilTest(tf.test.TestCase):
 
     def test_keras_model_to_graph_def_lstm_model(self):
         expected_proto = """
-    node {
-      name: "model/lstm_input"
-      attr {
-        key: "dtype"
-        value {
-          type: DT_FLOAT
-        }
-      }
-      attr {
-        key: "keras_class"
-        value {
-          s: "InputLayer"
-        }
-      }
-    }
-    node {
-      name: "model/simple_rnn"
-      input: "model/lstm_input"
-      attr {
-        key: "dtype"
-        value {
-          type: DT_FLOAT
-        }
-      }
-      attr {
-        key: "keras_class"
-        value {
-          s: "SimpleRNN"
-        }
-      }
-    }
-    """
+            node {
+              name: "model/lstm_input"
+              attr {
+                key: "dtype"
+                value {
+                  type: DT_FLOAT
+                }
+              }
+              attr {
+                key: "keras_class"
+                value {
+                  s: "InputLayer"
+                }
+              }
+            }
+            node {
+              name: "model/simple_rnn"
+              input: "model/lstm_input"
+              attr {
+                key: "dtype"
+                value {
+                  type: DT_FLOAT
+                }
+              }
+              attr {
+                key: "keras_class"
+                value {
+                  s: "SimpleRNN"
+                }
+              }
+            }
+        """
         inputs = tf.keras.layers.Input(shape=(None, 5), name="lstm_input")
         encoder = tf.keras.layers.SimpleRNN(256)
 
@@ -304,86 +304,86 @@ class KerasUtilTest(tf.test.TestCase):
 
     def test_keras_model_to_graph_def_nested_sequential_model(self):
         expected_proto = """
-    node {
-      name: "sequential_2/sequential_1/sequential/dense"
-      attr {
-        key: "dtype"
-        value {
-          type: DT_FLOAT
-        }
-      }
-      attr {
-        key: "keras_class"
-        value {
-          s: "Dense"
-        }
-      }
-    }
-    node {
-      name: "sequential_2/sequential_1/sequential/activation"
-      input: "sequential_2/sequential_1/sequential/dense"
-      attr {
-        key: "dtype"
-        value {
-          type: DT_FLOAT
-        }
-      }
-      attr {
-        key: "keras_class"
-        value {
-          s: "Activation"
-        }
-      }
-    }
-    node {
-      name: "sequential_2/sequential_1/my_relu"
-      input: "sequential_2/sequential_1/sequential/activation"
-      attr {
-        key: "dtype"
-        value {
-          type: DT_FLOAT
-        }
-      }
-      attr {
-        key: "keras_class"
-        value {
-          s: "Activation"
-        }
-      }
-    }
-    node {
-      name: "sequential_2/dense_1"
-      input: "sequential_2/sequential_1/my_relu"
-      attr {
-        key: "dtype"
-        value {
-          type: DT_FLOAT
-        }
-      }
-      attr {
-        key: "keras_class"
-        value {
-          s: "Dense"
-        }
-      }
-    }
-    node {
-      name: "sequential_2/activation_1"
-      input: "sequential_2/dense_1"
-      attr {
-        key: "dtype"
-        value {
-          type: DT_FLOAT
-        }
-      }
-      attr {
-        key: "keras_class"
-        value {
-          s: "Activation"
-        }
-      }
-    }
-    """
+            node {
+              name: "sequential_2/sequential_1/sequential/dense"
+              attr {
+                key: "dtype"
+                value {
+                  type: DT_FLOAT
+                }
+              }
+              attr {
+                key: "keras_class"
+                value {
+                  s: "Dense"
+                }
+              }
+            }
+            node {
+              name: "sequential_2/sequential_1/sequential/activation"
+              input: "sequential_2/sequential_1/sequential/dense"
+              attr {
+                key: "dtype"
+                value {
+                  type: DT_FLOAT
+                }
+              }
+              attr {
+                key: "keras_class"
+                value {
+                  s: "Activation"
+                }
+              }
+            }
+            node {
+              name: "sequential_2/sequential_1/my_relu"
+              input: "sequential_2/sequential_1/sequential/activation"
+              attr {
+                key: "dtype"
+                value {
+                  type: DT_FLOAT
+                }
+              }
+              attr {
+                key: "keras_class"
+                value {
+                  s: "Activation"
+                }
+              }
+            }
+            node {
+              name: "sequential_2/dense_1"
+              input: "sequential_2/sequential_1/my_relu"
+              attr {
+                key: "dtype"
+                value {
+                  type: DT_FLOAT
+                }
+              }
+              attr {
+                key: "keras_class"
+                value {
+                  s: "Dense"
+                }
+              }
+            }
+            node {
+              name: "sequential_2/activation_1"
+              input: "sequential_2/dense_1"
+              attr {
+                key: "dtype"
+                value {
+                  type: DT_FLOAT
+                }
+              }
+              attr {
+                key: "keras_class"
+                value {
+                  s: "Activation"
+                }
+              }
+            }
+        """
         sub_sub_model = tf.keras.models.Sequential(
             [
                 tf.keras.layers.Dense(32, input_shape=(784,)),
@@ -407,134 +407,134 @@ class KerasUtilTest(tf.test.TestCase):
 
     def test_keras_model_to_graph_def_functional_multi_inputs(self):
         expected_proto = """
-    node {
-      name: "model/main_input"
-      attr {
-        key: "dtype"
-        value {
-          type: DT_INT32
-        }
-      }
-      attr {
-        key: "keras_class"
-        value {
-          s: "InputLayer"
-        }
-      }
-    }
-    node {
-      name: "model/embedding"
-      input: "model/main_input"
-      attr {
-        key: "dtype"
-        value {
-          type: DT_FLOAT
-        }
-      }
-      attr {
-        key: "keras_class"
-        value {
-          s: "Embedding"
-        }
-      }
-    }
-    node {
-      name: "model/simple_rnn"
-      input: "model/embedding"
-      attr {
-        key: "dtype"
-        value {
-          type: DT_FLOAT
-        }
-      }
-      attr {
-        key: "keras_class"
-        value {
-          s: "SimpleRNN"
-        }
-      }
-    }
-    node {
-      name: "model/aux_input"
-      attr {
-        key: "dtype"
-        value {
-          type: DT_FLOAT
-        }
-      }
-      attr {
-        key: "keras_class"
-        value {
-          s: "InputLayer"
-        }
-      }
-    }
-    node {
-      name: "model/concatenate"
-      input: "model/simple_rnn"
-      input: "model/aux_input"
-      attr {
-        key: "dtype"
-        value {
-          type: DT_FLOAT
-        }
-      }
-      attr {
-        key: "keras_class"
-        value {
-          s: "Concatenate"
-        }
-      }
-    }
-    node {
-      name: "model/dense"
-      input: "model/concatenate"
-      attr {
-        key: "dtype"
-        value {
-          type: DT_FLOAT
-        }
-      }
-      attr {
-        key: "keras_class"
-        value {
-          s: "Dense"
-        }
-      }
-    }
-    node {
-      name: "model/main_output"
-      input: "model/dense"
-      attr {
-        key: "dtype"
-        value {
-          type: DT_FLOAT
-        }
-      }
-      attr {
-        key: "keras_class"
-        value {
-          s: "Dense"
-        }
-      }
-    }
-    node {
-      name: "model/aux_output"
-      input: "model/simple_rnn"
-      attr {
-        key: "dtype"
-        value {
-          type: DT_FLOAT
-        }
-      }
-      attr {
-        key: "keras_class"
-        value {
-          s: "Dense"
-        }
-      }
-    }
-    """
+            node {
+              name: "model/main_input"
+              attr {
+                key: "dtype"
+                value {
+                  type: DT_INT32
+                }
+              }
+              attr {
+                key: "keras_class"
+                value {
+                  s: "InputLayer"
+                }
+              }
+            }
+            node {
+              name: "model/embedding"
+              input: "model/main_input"
+              attr {
+                key: "dtype"
+                value {
+                  type: DT_FLOAT
+                }
+              }
+              attr {
+                key: "keras_class"
+                value {
+                  s: "Embedding"
+                }
+              }
+            }
+            node {
+              name: "model/simple_rnn"
+              input: "model/embedding"
+              attr {
+                key: "dtype"
+                value {
+                  type: DT_FLOAT
+                }
+              }
+              attr {
+                key: "keras_class"
+                value {
+                  s: "SimpleRNN"
+                }
+              }
+            }
+            node {
+              name: "model/aux_input"
+              attr {
+                key: "dtype"
+                value {
+                  type: DT_FLOAT
+                }
+              }
+              attr {
+                key: "keras_class"
+                value {
+                  s: "InputLayer"
+                }
+              }
+            }
+            node {
+              name: "model/concatenate"
+              input: "model/simple_rnn"
+              input: "model/aux_input"
+              attr {
+                key: "dtype"
+                value {
+                  type: DT_FLOAT
+                }
+              }
+              attr {
+                key: "keras_class"
+                value {
+                  s: "Concatenate"
+                }
+              }
+            }
+            node {
+              name: "model/dense"
+              input: "model/concatenate"
+              attr {
+                key: "dtype"
+                value {
+                  type: DT_FLOAT
+                }
+              }
+              attr {
+                key: "keras_class"
+                value {
+                  s: "Dense"
+                }
+              }
+            }
+            node {
+              name: "model/main_output"
+              input: "model/dense"
+              attr {
+                key: "dtype"
+                value {
+                  type: DT_FLOAT
+                }
+              }
+              attr {
+                key: "keras_class"
+                value {
+                  s: "Dense"
+                }
+              }
+            }
+            node {
+              name: "model/aux_output"
+              input: "model/simple_rnn"
+              attr {
+                key: "dtype"
+                value {
+                  type: DT_FLOAT
+                }
+              }
+              attr {
+                key: "keras_class"
+                value {
+                  s: "Dense"
+                }
+              }
+            }
+        """
         main_input = tf.keras.layers.Input(
             shape=(100,), dtype="int32", name="main_input"
         )
@@ -564,132 +564,132 @@ class KerasUtilTest(tf.test.TestCase):
 
     def test_keras_model_to_graph_def_functional_model_as_layer(self):
         expected_proto = """
-    node {
-      name: "model_1/sub_func_input_2"
-      attr {
-        key: "dtype"
-        value {
-          type: DT_FLOAT
-        }
-      }
-      attr {
-        key: "keras_class"
-        value {
-          s: "InputLayer"
-        }
-      }
-    }
-    node {
-      name: "model_1/sub_func_input_1"
-      attr {
-        key: "dtype"
-        value {
-          type: DT_FLOAT
-        }
-      }
-      attr {
-        key: "keras_class"
-        value {
-          s: "InputLayer"
-        }
-      }
-    }
-    node {
-    name: "model_1/model/sub_func_input_1"
-      attr {
-        key: "dtype"
-        value {
-          type: DT_FLOAT
-        }
-      }
-      attr {
-        key: "keras_class"
-        value {
-          s: "InputLayer"
-        }
-      }
-    }
-    node {
-      name: "model_1/model/sub_func_input_2"
-      attr {
-        key: "dtype"
-        value {
-          type: DT_FLOAT
-        }
-      }
-      attr {
-        key: "keras_class"
-        value {
-          s: "InputLayer"
-        }
-      }
-    }
-    node {
-      name: "model_1/model/dense"
-      input: "model_1/model/sub_func_input_1"
-      attr {
-        key: "dtype"
-        value {
-          type: DT_FLOAT
-        }
-      }
-      attr {
-        key: "keras_class"
-        value {
-          s: "Dense"
-        }
-      }
-    }
-    node {
-      name: "model_1/model/dense_1"
-      input: "model_1/model/sub_func_input_2"
-      attr {
-        key: "dtype"
-        value {
-          type: DT_FLOAT
-        }
-      }
-      attr {
-        key: "keras_class"
-        value {
-          s: "Dense"
-        }
-      }
-    }
-    node {
-      name: "model_1/concatenate"
-      input: "model_1/model/dense"
-      input: "model_1/model/dense_1"
-      attr {
-        key: "dtype"
-        value {
-          type: DT_FLOAT
-        }
-      }
-      attr {
-        key: "keras_class"
-        value {
-          s: "Concatenate"
-        }
-      }
-    }
-    node {
-      name: "model_1/dense_2"
-      input: "model_1/concatenate"
-      attr {
-        key: "dtype"
-        value {
-          type: DT_FLOAT
-        }
-      }
-      attr {
-        key: "keras_class"
-        value {
-          s: "Dense"
-        }
-      }
-    }
-    """
+            node {
+              name: "model_1/sub_func_input_2"
+              attr {
+                key: "dtype"
+                value {
+                  type: DT_FLOAT
+                }
+              }
+              attr {
+                key: "keras_class"
+                value {
+                  s: "InputLayer"
+                }
+              }
+            }
+            node {
+              name: "model_1/sub_func_input_1"
+              attr {
+                key: "dtype"
+                value {
+                  type: DT_FLOAT
+                }
+              }
+              attr {
+                key: "keras_class"
+                value {
+                  s: "InputLayer"
+                }
+              }
+            }
+            node {
+            name: "model_1/model/sub_func_input_1"
+              attr {
+                key: "dtype"
+                value {
+                  type: DT_FLOAT
+                }
+              }
+              attr {
+                key: "keras_class"
+                value {
+                  s: "InputLayer"
+                }
+              }
+            }
+            node {
+              name: "model_1/model/sub_func_input_2"
+              attr {
+                key: "dtype"
+                value {
+                  type: DT_FLOAT
+                }
+              }
+              attr {
+                key: "keras_class"
+                value {
+                  s: "InputLayer"
+                }
+              }
+            }
+            node {
+              name: "model_1/model/dense"
+              input: "model_1/model/sub_func_input_1"
+              attr {
+                key: "dtype"
+                value {
+                  type: DT_FLOAT
+                }
+              }
+              attr {
+                key: "keras_class"
+                value {
+                  s: "Dense"
+                }
+              }
+            }
+            node {
+              name: "model_1/model/dense_1"
+              input: "model_1/model/sub_func_input_2"
+              attr {
+                key: "dtype"
+                value {
+                  type: DT_FLOAT
+                }
+              }
+              attr {
+                key: "keras_class"
+                value {
+                  s: "Dense"
+                }
+              }
+            }
+            node {
+              name: "model_1/concatenate"
+              input: "model_1/model/dense"
+              input: "model_1/model/dense_1"
+              attr {
+                key: "dtype"
+                value {
+                  type: DT_FLOAT
+                }
+              }
+              attr {
+                key: "keras_class"
+                value {
+                  s: "Concatenate"
+                }
+              }
+            }
+            node {
+              name: "model_1/dense_2"
+              input: "model_1/concatenate"
+              attr {
+                key: "dtype"
+                value {
+                  type: DT_FLOAT
+                }
+              }
+              attr {
+                key: "keras_class"
+                value {
+                  s: "Dense"
+                }
+              }
+            }
+        """
         inputs1 = tf.keras.layers.Input(shape=(784,), name="sub_func_input_1")
         inputs2 = tf.keras.layers.Input(shape=(784,), name="sub_func_input_2")
         d0 = tf.keras.layers.Dense(64, activation="relu")
@@ -711,70 +711,70 @@ class KerasUtilTest(tf.test.TestCase):
 
     def test_keras_model_to_graph_def_functional_sequential_model(self):
         expected_proto = """
-    node {
-      name: "model/func_seq_input"
-      attr {
-        key: "dtype"
-        value {
-          type: DT_FLOAT
-        }
-      }
-      attr {
-        key: "keras_class"
-        value {
-          s: "InputLayer"
-        }
-      }
-    }
-    node {
-      name: "model/sequential/dense"
-      input: "model/func_seq_input"
-      attr {
-        key: "dtype"
-        value {
-          type: DT_FLOAT
-        }
-      }
-      attr {
-        key: "keras_class"
-        value {
-          s: "Dense"
-        }
-      }
-    }
-    node {
-      name: "model/sequential/my_relu"
-      input: "model/sequential/dense"
-      attr {
-        key: "dtype"
-        value {
-          type: DT_FLOAT
-        }
-      }
-      attr {
-        key: "keras_class"
-        value {
-          s: "Activation"
-        }
-      }
-    }
-    node {
-      name: "model/dense_1"
-      input: "model/sequential/my_relu"
-      attr {
-        key: "dtype"
-        value {
-          type: DT_FLOAT
-        }
-      }
-      attr {
-        key: "keras_class"
-        value {
-          s: "Dense"
-        }
-      }
-    }
-    """
+            node {
+              name: "model/func_seq_input"
+              attr {
+                key: "dtype"
+                value {
+                  type: DT_FLOAT
+                }
+              }
+              attr {
+                key: "keras_class"
+                value {
+                  s: "InputLayer"
+                }
+              }
+            }
+            node {
+              name: "model/sequential/dense"
+              input: "model/func_seq_input"
+              attr {
+                key: "dtype"
+                value {
+                  type: DT_FLOAT
+                }
+              }
+              attr {
+                key: "keras_class"
+                value {
+                  s: "Dense"
+                }
+              }
+            }
+            node {
+              name: "model/sequential/my_relu"
+              input: "model/sequential/dense"
+              attr {
+                key: "dtype"
+                value {
+                  type: DT_FLOAT
+                }
+              }
+              attr {
+                key: "keras_class"
+                value {
+                  s: "Activation"
+                }
+              }
+            }
+            node {
+              name: "model/dense_1"
+              input: "model/sequential/my_relu"
+              attr {
+                key: "dtype"
+                value {
+                  type: DT_FLOAT
+                }
+              }
+              attr {
+                key: "keras_class"
+                value {
+                  s: "Dense"
+                }
+              }
+            }
+        """
         inputs = tf.keras.layers.Input(shape=(784,), name="func_seq_input")
         sub_model = tf.keras.models.Sequential(
             [
@@ -792,70 +792,70 @@ class KerasUtilTest(tf.test.TestCase):
 
     def test_keras_model_to_graph_def_sequential_functional_model(self):
         expected_proto = """
-    node {
-      name: "sequential/model/func_seq_input"
-      attr {
-        key: "dtype"
-        value {
-          type: DT_FLOAT
-        }
-      }
-      attr {
-        key: "keras_class"
-        value {
-          s: "InputLayer"
-        }
-      }
-    }
-    node {
-      name: "sequential/model/dense"
-      input: "sequential/model/func_seq_input"
-      attr {
-        key: "dtype"
-        value {
-          type: DT_FLOAT
-        }
-      }
-      attr {
-        key: "keras_class"
-        value {
-          s: "Dense"
-        }
-      }
-    }
-    node {
-      name: "sequential/dense_1"
-      input: "sequential/model/dense"
-      attr {
-        key: "dtype"
-        value {
-          type: DT_FLOAT
-        }
-      }
-      attr {
-        key: "keras_class"
-        value {
-          s: "Dense"
-        }
-      }
-    }
-    node {
-      name: "sequential/my_relu"
-      input: "sequential/dense_1"
-      attr {
-        key: "dtype"
-        value {
-          type: DT_FLOAT
-        }
-      }
-      attr {
-        key: "keras_class"
-        value {
-          s: "Activation"
-        }
-      }
-    }
-    """
+            node {
+              name: "sequential/model/func_seq_input"
+              attr {
+                key: "dtype"
+                value {
+                  type: DT_FLOAT
+                }
+              }
+              attr {
+                key: "keras_class"
+                value {
+                  s: "InputLayer"
+                }
+              }
+            }
+            node {
+              name: "sequential/model/dense"
+              input: "sequential/model/func_seq_input"
+              attr {
+                key: "dtype"
+                value {
+                  type: DT_FLOAT
+                }
+              }
+              attr {
+                key: "keras_class"
+                value {
+                  s: "Dense"
+                }
+              }
+            }
+            node {
+              name: "sequential/dense_1"
+              input: "sequential/model/dense"
+              attr {
+                key: "dtype"
+                value {
+                  type: DT_FLOAT
+                }
+              }
+              attr {
+                key: "keras_class"
+                value {
+                  s: "Dense"
+                }
+              }
+            }
+            node {
+              name: "sequential/my_relu"
+              input: "sequential/dense_1"
+              attr {
+                key: "dtype"
+                value {
+                  type: DT_FLOAT
+                }
+              }
+              attr {
+                key: "keras_class"
+                value {
+                  s: "Activation"
+                }
+              }
+            }
+        """
         inputs = tf.keras.layers.Input(shape=(784,), name="func_seq_input")
         dense = tf.keras.layers.Dense(64, activation="relu")
 

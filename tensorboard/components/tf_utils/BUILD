@@ -7,8 +7,8 @@ licenses(["notice"])  # Apache 2.0
 tf_web_library(
     name = "tf_utils",
     srcs = [
-        "utils.ts",
         "tf-utils.html",
+        "utils.ts",
     ],
     path = "/tf-utils",
     visibility = ["//visibility:public"],

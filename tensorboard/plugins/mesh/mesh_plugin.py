@@ -48,34 +48,27 @@ class MeshPlugin(base_plugin.TBPlugin):
         """
         # Retrieve the multiplexer from the context and store a reference to it.
         self._multiplexer = context.multiplexer
-        self._tag_to_instance_tags = collections.defaultdict(list)
-        self._instance_tag_to_tag = dict()
-        self._instance_tag_to_metadata = dict()
-        self.prepare_metadata()
 
-    def prepare_metadata(self):
-        """Processes all tags and caches metadata for each."""
-        if self._tag_to_instance_tags:
-            return
-        # This is a dictionary mapping from run to (tag to string content).
-        # To be clear, the values of the dictionary are dictionaries.
-        all_runs = self._multiplexer.PluginRunToTagToContent(
-            MeshPlugin.plugin_name
+    def _instance_tag_metadata(self, run, instance_tag):
+        """Gets the `MeshPluginData` proto for an instance tag."""
+        summary_metadata = self._multiplexer.SummaryMetadata(run, instance_tag)
+        content = summary_metadata.plugin_data.content
+        return metadata.parse_plugin_metadata(content)
+
+    def _tag(self, run, instance_tag):
+        """Gets the user-facing tag name for an instance tag."""
+        return self._instance_tag_metadata(run, instance_tag).name
+
+    def _instance_tags(self, run, tag):
+        """Gets the instance tag names for a user-facing tag."""
+        index = self._multiplexer.GetAccumulator(run).PluginTagToContent(
+            metadata.PLUGIN_NAME
         )
-
-        # tagToContent is itself a dictionary mapping tag name to string
-        # SummaryMetadata.plugin_data.content. Retrieve the keys of that dictionary
-        # to obtain a list of tags associated with each run. For each tag, estimate
-        # the number of samples.
-        self._tag_to_instance_tags = collections.defaultdict(list)
-        self._instance_tag_to_metadata = dict()
-        for run, tag_to_content in six.iteritems(all_runs):
-            for tag, content in six.iteritems(tag_to_content):
-                meta = metadata.parse_plugin_metadata(content)
-                self._instance_tag_to_metadata[(run, tag)] = meta
-                # Remember instance_name (instance_tag) for future reference.
-                self._tag_to_instance_tags[(run, meta.name)].append(tag)
-                self._instance_tag_to_tag[(run, tag)] = meta.name
+        return [
+            instance_tag
+            for (instance_tag, content) in six.iteritems(index)
+            if tag == metadata.parse_plugin_metadata(content).name
+        ]
 
     @wrappers.Request.application
     def _serve_tags(self, request):
@@ -95,9 +88,6 @@ class MeshPlugin(base_plugin.TBPlugin):
             MeshPlugin.plugin_name
         )
 
-        # Make sure we populate tags mapping structures.
-        self.prepare_metadata()
-
         # tagToContent is itself a dictionary mapping tag name to string
         # SummaryMetadata.plugin_data.content. Retrieve the keys of that dictionary
         # to obtain a list of tags associated with each run. For each tag estimate
@@ -107,8 +97,8 @@ class MeshPlugin(base_plugin.TBPlugin):
             response[run] = dict()
             for instance_tag, _ in six.iteritems(tag_to_content):
                 # Make sure we only operate on user-defined tags here.
-                tag = self._instance_tag_to_tag[(run, instance_tag)]
-                meta = self._instance_tag_to_metadata[(run, instance_tag)]
+                tag = self._tag(run, instance_tag)
+                meta = self._instance_tag_metadata(run, instance_tag)
                 # Batch size must be defined, otherwise we don't know how many
                 # samples were there.
                 response[run][tag] = {"samples": meta.shape[0]}
@@ -192,15 +182,10 @@ class MeshPlugin(base_plugin.TBPlugin):
         run = request.args.get("run")
         tag = request.args.get("tag")
 
-        # TODO(b/128995556): investigate why this additional metadata mapping is
-        # necessary, it must have something todo with the lifecycle of the request.
-        # Make sure we populate tags mapping structures.
-        self.prepare_metadata()
-
         tensor_events = []  # List of tuples (meta, tensor) that contain tag.
-        for instance_tag in self._tag_to_instance_tags[(run, tag)]:
+        for instance_tag in self._instance_tags(run, tag):
             tensors = self._multiplexer.Tensors(run, instance_tag)
-            meta = self._instance_tag_to_metadata[(run, instance_tag)]
+            meta = self._instance_tag_metadata(run, instance_tag)
             tensor_events += [(meta, tensor) for tensor in tensors]
 
         if step is not None:
