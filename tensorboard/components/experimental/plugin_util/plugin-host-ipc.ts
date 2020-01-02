@@ -12,85 +12,85 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-namespace tb_plugin.host {
-  const portIPCs = new Set<lib.DO_NOT_USE_INTERNAL.IPC>();
-  const VERSION = 'experimental';
-  const listeners = new Map<
-    lib.DO_NOT_USE_INTERNAL.MessageType,
-    lib.DO_NOT_USE_INTERNAL.MessageCallback
-  >();
+import {
+  IPC,
+  MessageType,
+  MessageCallback,
+  PayloadType,
+} from './message';
 
-  // TODO(@psybuzz): replace this and the port cleanup logic in broadcast() with
-  // a MutationObserver to notify us when iframes disconnect.
-  const ipcToFrame = new Map<lib.DO_NOT_USE_INTERNAL.IPC, HTMLIFrameElement>();
+const portIPCs = new Set<IPC>();
+const VERSION = 'experimental';
+const listeners = new Map<MessageType, MessageCallback>();
 
-  // The initial Window-level listener is needed to bootstrap only.
-  // All further communication is done over MessagePorts.
-  window.addEventListener('message', (event) => {
-    if (event.data !== `${VERSION}.bootstrap`) return;
-    const port = event.ports[0];
-    if (!port) return;
-    const frame = event.source ? event.source.frameElement : null;
-    if (!frame) return;
-    onBootstrap(port, frame as HTMLIFrameElement);
-  });
+// TODO(@psybuzz): replace this and the port cleanup logic in broadcast() with
+// a MutationObserver to notify us when iframes disconnect.
+const ipcToFrame = new Map<IPC, HTMLIFrameElement>();
 
-  function onBootstrap(port: MessagePort, frame: HTMLIFrameElement) {
-    const portIPC = new lib.DO_NOT_USE_INTERNAL.IPC(port);
-    portIPCs.add(portIPC);
-    ipcToFrame.set(portIPC, frame);
-    port.start();
+// The initial Window-level listener is needed to bootstrap only.
+// All further communication is done over MessagePorts.
+window.addEventListener('message', (event) => {
+  if (event.data !== `${VERSION}.bootstrap`) return;
+  const port = event.ports[0];
+  if (!port) return;
+  const frame = event.source ? (event.source as Window).frameElement : null;
+  if (!frame) return;
+  onBootstrap(port, frame as HTMLIFrameElement);
+});
 
-    for (const [type, callback] of listeners) {
-      portIPC.listen(type, callback);
+function onBootstrap(port: MessagePort, frame: HTMLIFrameElement) {
+  const portIPC = new IPC(port);
+  portIPCs.add(portIPC);
+  ipcToFrame.set(portIPC, frame);
+  port.start();
+
+  for (const [type, callback] of listeners) {
+    portIPC.listen(type, callback);
+  }
+}
+
+/**
+ * Sends a message to all frames. Individual frames decide whether or not to
+ * listen.
+ * @return Promise that resolves with a list of payloads from each plugin's
+ *         response (or null) to the message.
+ *
+ * @example
+ * const someList = await broadcast('v1.some.type.guest.understands');
+ * // do fun things with someList.
+ */
+export function broadcast(
+  type: MessageType,
+  payload: PayloadType
+): Promise<PayloadType[]> {
+  for (const ipc of portIPCs) {
+    const iframe = ipcToFrame.get(ipc)!;
+    if (!iframe.isConnected) {
+      portIPCs.delete(ipc);
+      ipcToFrame.delete(ipc);
     }
   }
 
-  /**
-   * Sends a message to all frames. Individual frames decide whether or not to
-   * listen.
-   * @return Promise that resolves with a list of payloads from each plugin's
-   *         response (or null) to the message.
-   *
-   * @example
-   * const someList = await broadcast('v1.some.type.guest.understands');
-   * // do fun things with someList.
-   */
-  export function broadcast(
-    type: lib.DO_NOT_USE_INTERNAL.MessageType,
-    payload: lib.DO_NOT_USE_INTERNAL.PayloadType
-  ): Promise<lib.DO_NOT_USE_INTERNAL.PayloadType[]> {
-    for (const ipc of portIPCs) {
-      if (!ipcToFrame.get(ipc).isConnected) {
-        portIPCs.delete(ipc);
-        ipcToFrame.delete(ipc);
-      }
-    }
+  const promises = [...portIPCs].map((ipc) => ipc.sendMessage(type, payload));
+  return Promise.all(promises);
+}
 
-    const promises = [...portIPCs].map((ipc) => ipc.sendMessage(type, payload));
-    return Promise.all(promises);
+/**
+ * Subscribes to messages of a type specified for all frames.
+ */
+export function listen(type: MessageType, callback: MessageCallback) {
+  listeners.set(type, callback);
+  for (const ipc of portIPCs) {
+    ipc.listen(type, callback);
   }
+}
 
-  /**
-   * Subscribes to messages of a type specified for all frames.
-   */
-  export function listen(
-    type: lib.DO_NOT_USE_INTERNAL.MessageType,
-    callback: lib.DO_NOT_USE_INTERNAL.MessageCallback
-  ) {
-    listeners.set(type, callback);
-    for (const ipc of portIPCs) {
-      ipc.listen(type, callback);
-    }
+/**
+ * Unsubscribes to messages of a type specified for all frames.
+ */
+export function unlisten(type: MessageType) {
+  listeners.delete(type);
+  for (const ipc of portIPCs) {
+    ipc.unlisten(type);
   }
-
-  /**
-   * Unsubscribes to messages of a type specified for all frames.
-   */
-  export function unlisten(type: lib.DO_NOT_USE_INTERNAL.MessageType) {
-    listeners.delete(type);
-    for (const ipc of portIPCs) {
-      ipc.unlisten(type);
-    }
-  }
-} // namespace tb_plugin.host
+}

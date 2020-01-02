@@ -12,16 +12,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import * as tf_backend from '../../../components/tf_backend';
+import {broadcast, listen} from './plugin-host-ipc';
+
 /**
  * Implements run related plugin APIs.
  */
-tb_plugin.host.listen('experimental.GetRuns', () => {
+listen('experimental.GetRuns', () => {
   return tf_backend.runsStore.getRuns();
 });
 
 tf_backend.runsStore.addListener(() => {
-  return tb_plugin.host.broadcast(
-    'experimental.RunsChanged',
-    tf_backend.runsStore.getRuns()
-  );
+  return broadcast('experimental.RunsChanged', tf_backend.runsStore.getRuns());
 });
