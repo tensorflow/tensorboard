@@ -200,6 +200,8 @@ def Respond(
             + [
                 "'self'" if _CSP_SCRIPT_SELF else "",
                 "'unsafe-eval'" if _CSP_SCRIPT_UNSAFE_EVAL else "",
+                # used by google-chart
+                "https://www.gstatic.com",
             ]
             + [
                 "'sha256-{}'".format(sha256)
@@ -212,7 +214,12 @@ def Respond(
             [
                 "default-src 'self'",
                 "font-src %s"
-                % _create_csp_string("'self'", *_CSP_FONT_DOMAINS_WHITELIST),
+                % _create_csp_string(
+                    "'self'",
+                    # used by Angular
+                    "https://fonts.gstatic.com",
+                    *_CSP_FONT_DOMAINS_WHITELIST
+                ),
                 "frame-ancestors *",
                 # Dynamic plugins are rendered inside an iframe.
                 "frame-src %s"
@@ -232,6 +239,8 @@ def Respond(
                     "'self'",
                     # used by google-chart
                     "https://www.gstatic.com",
+                    # used by Angular
+                    "https://fonts.googleapis.com",
                     "data:",
                     # inline styles: Polymer templates + d3 uses inline styles.
                     "'unsafe-inline'",
