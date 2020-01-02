@@ -202,8 +202,8 @@ class ImagesPlugin(base_plugin.TBPlugin):
             fewer than three images will be omitted from the results.
 
         Returns:
-          A list of dictionaries containing the wall time, step, URL, width, and
-          height for each image.
+          A list of dictionaries containing the wall time, step, and URL
+          for each image.
         """
         if self._db_connection_provider:
             db = self._db_connection_provider()
@@ -211,9 +211,7 @@ class ImagesPlugin(base_plugin.TBPlugin):
                 """
                 SELECT
                   computed_time,
-                  step,
-                  CAST (T0.data AS INT) AS width,
-                  CAST (T1.data AS INT) AS height
+                  step
                 FROM Tensors
                 JOIN TensorStrings AS T0
                   ON Tensors.rowid = T0.tensor_rowid
@@ -239,233 +237,21 @@ class ImagesPlugin(base_plugin.TBPlugin):
                 {
                     "wall_time": computed_time,
                     "step": step,
-                    "width": width,
-                    "height": height,
                     "query": self._query_for_individual_image(
                         run, tag, sample, index
                     ),
                 }
-                for index, (computed_time, step, width, height) in enumerate(
-                    cursor
-                )
+                for index, (computed_time, step) in enumerate(cursor)
             ]
         response = []
         index = 0
         tensor_events = self._multiplexer.Tensors(run, tag)
-<<<<<<< HEAD
-        samples = max([len(event.tensor_proto.string_val[2:])  # width, height
-                       for event in tensor_events] + [0])
-        result[run][tag] = {'displayName': summary_metadata.display_name,
-                            'description': plugin_util.markdown_to_safe_html(
-                                summary_metadata.summary_description),
-                            'samples': samples}
-    return result
-
-  @wrappers.Request.application
-  def _serve_image_metadata(self, request):
-    """Given a tag and list of runs, serve a list of metadata for images.
-
-    Note that the images themselves are not sent; instead, we respond with URLs
-    to the images. The frontend should treat these URLs as opaque and should not
-    try to parse information about them or generate them itself, as the format
-    may change.
-
-    Args:
-      request: A werkzeug.wrappers.Request object.
-
-    Returns:
-      A werkzeug.Response application.
-    """
-    tag = request.args.get('tag')
-    run = request.args.get('run')
-    sample = int(request.args.get('sample', 0))
-    try:
-      response = self._image_response_for_run(run, tag, sample)
-    except KeyError:
-      return http_util.Respond(
-          request, 'Invalid run or tag', 'text/plain', code=400
-      )
-    return http_util.Respond(request, response, 'application/json')
-
-  def _image_response_for_run(self, run, tag, sample):
-    """Builds a JSON-serializable object with information about images.
-
-    Args:
-      run: The name of the run.
-      tag: The name of the tag the images all belong to.
-      sample: The zero-indexed sample of the image for which to retrieve
-        information. For instance, setting `sample` to `2` will fetch
-        information about only the third image of each batch. Steps with
-        fewer than three images will be omitted from the results.
-
-    Returns:
-      A list of dictionaries containing the wall time, step, and URL for
-      each image.
-    """
-    if self._db_connection_provider:
-      db = self._db_connection_provider()
-      cursor = db.execute(
-          '''
-          SELECT
-            computed_time,
-            step
-          FROM Tensors
-          JOIN TensorStrings AS T0
-            ON Tensors.rowid = T0.tensor_rowid
-          JOIN TensorStrings AS T1
-            ON Tensors.rowid = T1.tensor_rowid
-          WHERE
-            series = (
-              SELECT tag_id
-              FROM Runs
-              CROSS JOIN Tags USING (run_id)
-              WHERE Runs.run_name = :run AND Tags.tag_name = :tag)
-            AND step IS NOT NULL
-            AND dtype = :dtype
-            /* Should be n-vector, n >= 3: [width, height, samples...] */
-            AND (NOT INSTR(shape, ',') AND CAST (shape AS INT) >= 3)
-            AND T0.idx = 0
-            AND T1.idx = 1
-          ORDER BY step
-          ''',
-          {'run': run, 'tag': tag, 'dtype': tf.string.as_datatype_enum})
-      return [{
-          'wall_time': computed_time,
-          'step': step,
-          'query': self._query_for_individual_image(run, tag, sample, index)
-      } for index, (computed_time, step) in enumerate(cursor)]
-    response = []
-    index = 0
-    tensor_events = self._multiplexer.Tensors(run, tag)
-    filtered_events = self._filter_by_sample(tensor_events, sample)
-    for (index, tensor_event) in enumerate(filtered_events):
-      response.append({
-          'wall_time': tensor_event.wall_time,
-          'step': tensor_event.step,
-          # We include the size so that the frontend can add that to the <img>
-          # tag so that the page layout doesn't change when the image loads.
-          'query': self._query_for_individual_image(run, tag, sample, index)
-      })
-    return response
-
-  def _filter_by_sample(self, tensor_events, sample):
-    return [tensor_event for tensor_event in tensor_events
-            if (len(tensor_event.tensor_proto.string_val) - 2  # width, height
-                > sample)]
-
-  def _query_for_individual_image(self, run, tag, sample, index):
-    """Builds a URL for accessing the specified image.
-
-    This should be kept in sync with _serve_image_metadata. Note that the URL is
-    *not* guaranteed to always return the same image, since images may be
-    unloaded from the reservoir as new images come in.
-
-    Args:
-      run: The name of the run.
-      tag: The tag.
-      sample: The relevant sample index, zero-indexed. See documentation
-        on `_image_response_for_run` for more details.
-      index: The index of the image. Negative values are OK.
-
-    Returns:
-      A string representation of a URL that will load the index-th sampled image
-      in the given run with the given tag.
-    """
-    query_string = urllib.parse.urlencode({
-        'run': run,
-        'tag': tag,
-        'sample': sample,
-        'index': index,
-    })
-    return query_string
-
-  def _get_individual_image(self, run, tag, index, sample):
-    """
-    Returns the actual image bytes for a given image.
-
-    Args:
-      run: The name of the run the image belongs to.
-      tag: The name of the tag the images belongs to.
-      index: The index of the image in the current reservoir.
-      sample: The zero-indexed sample of the image to retrieve (for example,
-        setting `sample` to `2` will fetch the third image sample at `step`).
-
-    Returns:
-      A bytestring of the raw image bytes.
-    """
-    if self._db_connection_provider:
-      db = self._db_connection_provider()
-      cursor = db.execute(
-          '''
-          SELECT data
-          FROM TensorStrings
-          WHERE
-            /* Skip first 2 elements which are width and height. */
-            idx = 2 + :sample
-            AND tensor_rowid = (
-              SELECT rowid
-              FROM Tensors
-              WHERE
-                series = (
-                   SELECT tag_id
-                   FROM Runs
-                   CROSS JOIN Tags USING (run_id)
-                   WHERE
-                     Runs.run_name = :run
-                     AND Tags.tag_name = :tag)
-                AND step IS NOT NULL
-                AND dtype = :dtype
-                /* Should be n-vector, n >= 3: [width, height, samples...] */
-                AND (NOT INSTR(shape, ',') AND CAST (shape AS INT) >= 3)
-              ORDER BY step
-              LIMIT 1
-              OFFSET :index)
-          ''',
-          {'run': run,
-           'tag': tag,
-           'sample': sample,
-           'index': index,
-           'dtype': tf.string.as_datatype_enum})
-      (data,) = cursor.fetchone()
-      return six.binary_type(data)
-
-    events = self._filter_by_sample(self._multiplexer.Tensors(run, tag), sample)
-    images = events[index].tensor_proto.string_val[2:]  # skip width, height
-    return images[sample]
-
-  @wrappers.Request.application
-  def _serve_individual_image(self, request):
-    """Serves an individual image."""
-    run = request.args.get('run')
-    tag = request.args.get('tag')
-    index = int(request.args.get('index', '0'))
-    sample = int(request.args.get('sample', '0'))
-    try:
-      data = self._get_individual_image(run, tag, index, sample)
-    except (KeyError, IndexError):
-      return http_util.Respond(
-          request, 'Invalid run, tag, index, or sample', 'text/plain', code=400
-      )
-    image_type = imghdr.what(None, data)
-    content_type = _IMGHDR_TO_MIMETYPE.get(image_type, _DEFAULT_IMAGE_MIMETYPE)
-    return http_util.Respond(request, data, content_type)
-
-  @wrappers.Request.application
-  def _serve_tags(self, request):
-    index = self._index_impl()
-    return http_util.Respond(request, index, 'application/json')
-=======
         filtered_events = self._filter_by_sample(tensor_events, sample)
         for (index, tensor_event) in enumerate(filtered_events):
-            (width, height) = tensor_event.tensor_proto.string_val[:2]
             response.append(
                 {
                     "wall_time": tensor_event.wall_time,
                     "step": tensor_event.step,
-                    # We include the size so that the frontend can add that to the <img>
-                    # tag so that the page layout doesn't change when the image loads.
-                    "width": int(width),
-                    "height": int(height),
                     "query": self._query_for_individual_image(
                         run, tag, sample, index
                     ),
@@ -590,4 +376,3 @@ class ImagesPlugin(base_plugin.TBPlugin):
     def _serve_tags(self, request):
         index = self._index_impl()
         return http_util.Respond(request, index, "application/json")
->>>>>>> 1d374693fd975c5039d97743d28401ad156946a3
