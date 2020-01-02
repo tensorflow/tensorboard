@@ -32,9 +32,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Run on both Python 2.x and 3.x because the warnings are
-        # different: e.g., "raw_input" is a warning in Python 3.x only.
-        python_version: ['2.7', '3.6']
+        python_version: ['3.6']
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-python@v1
@@ -91,7 +89,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python_version: ['2.7', '3.6']
+        python_version: ['3.6']
         tf_version_id: ['tensorflow==1.15.0rc3', 'tf-nightly', '']
     steps:
       - uses: actions/checkout@v1
