@@ -322,8 +322,15 @@ function getPropsAstNodes(props: ts.PropertyAssignment) {
           ? valueInitializer.initializer
           : undefined;
       }
+      const allowedPropertiesForComputedDecorator = new Set([
+        'computed',
+        'type',
+      ]);
       const canExtractComputed =
         propProperties &&
+        propProperties.every((prop: ts.PropertyAssignment) => {
+          return allowedPropertiesForComputedDecorator.has(propName(prop));
+        }) &&
         (propProperties.find((prop: ts.PropertyAssignment) => {
           return (
             propName(prop) === 'computed' &&

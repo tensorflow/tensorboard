@@ -9,7 +9,7 @@ import {resolve, dirname, basename, parse, format} from 'path';
 const chalk = require('chalk');
 const mkdirp = require('mkdirp');
 
-export const TS_LICENSE = `/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+export const TS_LICENSE = `/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
