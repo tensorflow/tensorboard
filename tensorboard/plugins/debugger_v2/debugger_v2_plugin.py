@@ -18,7 +18,12 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from werkzeug import wrappers
+
+from tensorboard import plugin_util
 from tensorboard.plugins import base_plugin
+from tensorboard.plugins.debugger_v2 import debug_data_provider
+from tensorboard.backend import http_util
 
 
 class DebuggerV2Plugin(base_plugin.TBPlugin):
@@ -33,10 +38,18 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
           context: A base_plugin.TBContext instance.
         """
         super(DebuggerV2Plugin, self).__init__(context)
+        self._logdir = context.logdir
+        # TODO(cais): Implement factory for DataProvider that takes into account
+        # the settings.
+        self._data_provider = debug_data_provider.LocalDebuggerV2DataProvider(
+            self._logdir
+        )
 
     def get_plugin_apps(self):
         # TODO(cais): Add routes as they are implemented.
-        return {}
+        return {
+            "/runs": self.serve_runs,
+        }
 
     def is_active(self):
         """Check whether the Debugger V2 Plugin is always active.
@@ -54,4 +67,12 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
     def frontend_metadata(self):
         return base_plugin.FrontendMetadata(
             is_ng_component=True, tab_name="Debugger V2", disable_reload=True
+        )
+
+    @wrappers.Request.application
+    def serve_runs(self, request):
+        experiment = plugin_util.experiment_id(request.environ)
+        runs = self._data_provider.list_runs(experiment)
+        return http_util.Respond(
+            request, [run.run_id for run in runs], "application/json"
         )
