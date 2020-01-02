@@ -136,12 +136,12 @@ class TfCardHeading extends PolymerElement {
   }
 
   @computed('displayName', 'tag')
-  _nameLabel() {
+  get _nameLabel() {
     return this.displayName || this.tag || '';
   }
 
   @computed('displayName', 'tag')
-  _tagLabel() {
+  get _tagLabel() {
     const {tag, displayName} = this;
     return tag && tag !== displayName ? tag : '';
   }

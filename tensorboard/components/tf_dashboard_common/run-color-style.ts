@@ -13,65 +13,67 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {html} from '@polymer/polymer';
-import '@polymer/paper-styles';
+import '@polymer/paper-styles/paper-styles';
 const template = html`
-  <custom-style>
-    <style is="run-color-style">
-      [color-class='light-blue'] paper-checkbox {
-        --paper-checkbox-checked-color: var(--paper-light-blue-500);
-        --paper-checkbox-checked-ink-color: var(--paper-light-blue-500);
-        --paper-checkbox-unchecked-color: var(--paper-light-blue-900);
-        --paper-checkbox-unchecked-ink-color: var(--paper-light-blue-900);
-      }
-      [color-class='red'] paper-checkbox {
-        --paper-checkbox-checked-color: var(--paper-red-500);
-        --paper-checkbox-checked-ink-color: var(--paper-red-500);
-        --paper-checkbox-unchecked-color: var(--paper-red-900);
-        --paper-checkbox-unchecked-ink-color: var(--paper-red-900);
-      }
-      [color-class='green'] paper-checkbox {
-        --paper-checkbox-checked-color: var(--paper-green-500);
-        --paper-checkbox-checked-ink-color: var(--paper-green-500);
-        --paper-checkbox-unchecked-color: var(--paper-green-900);
-        --paper-checkbox-unchecked-ink-color: var(--paper-green-900);
-      }
-      [color-class='purple'] paper-checkbox {
-        --paper-checkbox-checked-color: var(--paper-purple-500);
-        --paper-checkbox-checked-ink-color: var(--paper-purple-500);
-        --paper-checkbox-unchecked-color: var(--paper-purple-900);
-        --paper-checkbox-unchecked-ink-color: var(--paper-purple-900);
-      }
-      [color-class='teal'] paper-checkbox {
-        --paper-checkbox-checked-color: var(--paper-teal-500);
-        --paper-checkbox-checked-ink-color: var(--paper-teal-500);
-        --paper-checkbox-unchecked-color: var(--paper-teal-900);
-        --paper-checkbox-unchecked-ink-color: var(--paper-teal-900);
-      }
-      [color-class='pink'] paper-checkbox {
-        --paper-checkbox-checked-color: var(--paper-pink-500);
-        --paper-checkbox-checked-ink-color: var(--paper-pink-500);
-        --paper-checkbox-unchecked-color: var(--paper-pink-900);
-        --paper-checkbox-unchecked-ink-color: var(--paper-pink-900);
-      }
-      [color-class='orange'] paper-checkbox {
-        --paper-checkbox-checked-color: var(--paper-orange-500);
-        --paper-checkbox-checked-ink-color: var(--paper-orange-500);
-        --paper-checkbox-unchecked-color: var(--paper-orange-900);
-        --paper-checkbox-unchecked-ink-color: var(--paper-orange-900);
-      }
-      [color-class='brown'] paper-checkbox {
-        --paper-checkbox-checked-color: var(--paper-brown-500);
-        --paper-checkbox-checked-ink-color: var(--paper-brown-500);
-        --paper-checkbox-unchecked-color: var(--paper-brown-900);
-        --paper-checkbox-unchecked-ink-color: var(--paper-brown-900);
-      }
-      [color-class='indigo'] paper-checkbox {
-        --paper-checkbox-checked-color: var(--paper-indigo-500);
-        --paper-checkbox-checked-ink-color: var(--paper-indigo-500);
-        --paper-checkbox-unchecked-color: var(--paper-indigo-900);
-        --paper-checkbox-unchecked-ink-color: var(--paper-indigo-900);
-      }
-    </style>
-  </custom-style>
+  <dom-module id="run-color-style">
+    <template>
+      <style>
+        [color-class='light-blue'] paper-checkbox {
+          --paper-checkbox-checked-color: var(--paper-light-blue-500);
+          --paper-checkbox-checked-ink-color: var(--paper-light-blue-500);
+          --paper-checkbox-unchecked-color: var(--paper-light-blue-900);
+          --paper-checkbox-unchecked-ink-color: var(--paper-light-blue-900);
+        }
+        [color-class='red'] paper-checkbox {
+          --paper-checkbox-checked-color: var(--paper-red-500);
+          --paper-checkbox-checked-ink-color: var(--paper-red-500);
+          --paper-checkbox-unchecked-color: var(--paper-red-900);
+          --paper-checkbox-unchecked-ink-color: var(--paper-red-900);
+        }
+        [color-class='green'] paper-checkbox {
+          --paper-checkbox-checked-color: var(--paper-green-500);
+          --paper-checkbox-checked-ink-color: var(--paper-green-500);
+          --paper-checkbox-unchecked-color: var(--paper-green-900);
+          --paper-checkbox-unchecked-ink-color: var(--paper-green-900);
+        }
+        [color-class='purple'] paper-checkbox {
+          --paper-checkbox-checked-color: var(--paper-purple-500);
+          --paper-checkbox-checked-ink-color: var(--paper-purple-500);
+          --paper-checkbox-unchecked-color: var(--paper-purple-900);
+          --paper-checkbox-unchecked-ink-color: var(--paper-purple-900);
+        }
+        [color-class='teal'] paper-checkbox {
+          --paper-checkbox-checked-color: var(--paper-teal-500);
+          --paper-checkbox-checked-ink-color: var(--paper-teal-500);
+          --paper-checkbox-unchecked-color: var(--paper-teal-900);
+          --paper-checkbox-unchecked-ink-color: var(--paper-teal-900);
+        }
+        [color-class='pink'] paper-checkbox {
+          --paper-checkbox-checked-color: var(--paper-pink-500);
+          --paper-checkbox-checked-ink-color: var(--paper-pink-500);
+          --paper-checkbox-unchecked-color: var(--paper-pink-900);
+          --paper-checkbox-unchecked-ink-color: var(--paper-pink-900);
+        }
+        [color-class='orange'] paper-checkbox {
+          --paper-checkbox-checked-color: var(--paper-orange-500);
+          --paper-checkbox-checked-ink-color: var(--paper-orange-500);
+          --paper-checkbox-unchecked-color: var(--paper-orange-900);
+          --paper-checkbox-unchecked-ink-color: var(--paper-orange-900);
+        }
+        [color-class='brown'] paper-checkbox {
+          --paper-checkbox-checked-color: var(--paper-brown-500);
+          --paper-checkbox-checked-ink-color: var(--paper-brown-500);
+          --paper-checkbox-unchecked-color: var(--paper-brown-900);
+          --paper-checkbox-unchecked-ink-color: var(--paper-brown-900);
+        }
+        [color-class='indigo'] paper-checkbox {
+          --paper-checkbox-checked-color: var(--paper-indigo-500);
+          --paper-checkbox-checked-ink-color: var(--paper-indigo-500);
+          --paper-checkbox-unchecked-color: var(--paper-indigo-900);
+          --paper-checkbox-unchecked-ink-color: var(--paper-indigo-900);
+        }
+      </style>
+    </template>
+  </dom-module>
 `;
 document.head.appendChild(template.content);

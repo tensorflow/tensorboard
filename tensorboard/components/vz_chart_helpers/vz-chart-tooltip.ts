@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {TOOLTIP_Y_PIXEL_OFFSET} from './vz-chart-helpers';
 import {PolymerElement} from '@polymer/polymer';
+import {LegacyElementMixin} from '@polymer/polymer/lib/legacy/legacy-element-mixin';
 import {customElement, property} from '@polymer/decorators';
 import {isEqual} from 'lodash';
 
@@ -42,7 +43,7 @@ const DEFAULT_TOOLTIP_STYLE = {
 };
 
 @customElement('vz-chart-tooltip')
-export class VzChartTooltip extends PolymerElement {
+export class VzChartTooltip extends LegacyElementMixin(PolymerElement) {
   static readonly template = null; // strictTemplatePolicy requires a template (even a null one).
   /**
    * Required prop for specifying name of the WebComponent for tooltip
@@ -92,7 +93,9 @@ export class VzChartTooltip extends PolymerElement {
       window.cancelAnimationFrame(this._raf);
     }
     this._styleCache = null;
-    this._tunnel!.style.opacity = '0';
+    if (this._tunnel) {
+      this._tunnel.style.opacity = '0';
+    }
   }
 
   /**

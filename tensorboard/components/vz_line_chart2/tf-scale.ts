@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import * as Plottable from 'plottable';
+import {QuantitativeScale} from 'plottable';
 
 export type ValueProviderForDomain = () => number[];
 /**
@@ -39,13 +39,13 @@ export type ValueProviderForDomain = () => number[];
  * To mitigate the issue, TfScale overrides few methods and receives data from
  * the LineChart instead of a respective plots the chart draws.
  */
-export interface ITfScale extends Plottable.QuantitativeScale<number> {
+export interface ITfScale extends QuantitativeScale<number> {
   setValueProviderForDomain(provider: ValueProviderForDomain): this;
   ignoreOutlier(): boolean;
   ignoreOutlier(ignore: boolean): this;
 }
 
-export abstract class TfScale extends Plottable.QuantitativeScale<number>
+export abstract class TfScale extends QuantitativeScale<number>
   implements ITfScale {
   protected _ignoreOutlier: boolean = false;
   protected _valueProviderForDomain?: ValueProviderForDomain;

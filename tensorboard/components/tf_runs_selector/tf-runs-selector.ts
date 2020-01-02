@@ -17,7 +17,7 @@ import {LegacyElementMixin} from '@polymer/polymer/lib/legacy/legacy-element-mix
 import {customElement, property, computed} from '@polymer/decorators';
 import '@polymer/paper-button';
 import {PaperDialogElement} from '@polymer/paper-dialog';
-import '@polymer/paper-styles';
+import '@polymer/paper-styles/paper-styles';
 import './tf-wbr-string';
 import {
   getObjectInitializer,
@@ -27,6 +27,7 @@ import {
 } from '../tf_storage/storage';
 import {runsColorScale} from '../tf_color_scale/colorScale';
 import {TfMultiCheckbox} from '../tf_dashboard_common/tf-multi-checkbox';
+import '../tf_dashboard_common/tf-multi-checkbox';
 import {ListenKey, runsStore, environmentStore} from '../tf_backend';
 
 @customElement('tf-runs-selector')

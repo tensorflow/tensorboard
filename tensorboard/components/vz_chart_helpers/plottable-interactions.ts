@@ -60,8 +60,8 @@ function getHtmlElementAncestors(elem: Node | null) {
       elem = elem.assignedSlot;
     } else if (!elem.parentElement) {
       const parentNode = elem.parentNode;
-      if (parentNode instanceof DocumentFragment) {
-        elem = null;
+      if (parentNode instanceof ShadowRoot) {
+        elem = parentNode.host;
       } else {
         // <html>.parentNode == <html>
         elem = parentNode !== elem ? parentNode : null;
@@ -148,8 +148,6 @@ class CustomTranslator extends Plottable.Utils.Translator {
 }
 
 class MouseDispatcher extends (Plottable.Dispatchers.Mouse as any) {
-  private static readonly _DISPATCHER_KEY = '__Plottable_TB_Dispatcher_Mouse';
-
   private constructor(component: Plottable.Component) {
     super(component);
 
@@ -168,21 +166,19 @@ class MouseDispatcher extends (Plottable.Dispatchers.Mouse as any) {
   }
 
   static getDispatcher(component: Plottable.Component) {
+    const key = (MouseDispatcher as any)._DISPATCHER_KEY;
     const element = component.root().rootElement() as any;
-    let dispatcher = element[MouseDispatcher._DISPATCHER_KEY];
+    let dispatcher = element[key];
 
-    if (!dispatcher) {
+    if (!dispatcher || !(dispatcher instanceof MouseDispatcher)) {
       dispatcher = new MouseDispatcher(component);
-      dispatcher.fixForPolymer(component);
-      element[MouseDispatcher._DISPATCHER_KEY] = dispatcher;
+      element[key] = dispatcher;
     }
     return dispatcher;
   }
 }
 
 class TouchDispatcher extends (Plottable.Dispatchers.Touch as any) {
-  private static readonly _DISPATCHER_KEY = '__Plottable_TB_Dispatcher_Touch';
-
   constructor(component: Plottable.Component) {
     super(component);
     const hackyThis = this as any;
@@ -207,7 +203,7 @@ class TouchDispatcher extends (Plottable.Dispatchers.Touch as any) {
       TouchDispatcher._DISPATCHER_KEY
     ] as TouchDispatcher;
 
-    if (!dispatcher) {
+    if (!dispatcher || !(dispatcher instanceof TouchDispatcher)) {
       dispatcher = new TouchDispatcher(component);
       (element as any)[TouchDispatcher._DISPATCHER_KEY] = dispatcher;
     }
@@ -216,6 +212,11 @@ class TouchDispatcher extends (Plottable.Dispatchers.Touch as any) {
 }
 
 export class PointerInteraction extends Plottable.Interactions.Pointer {
+  static preallocateTbDispatcher(component: Plottable.Component) {
+    MouseDispatcher.getDispatcher(component);
+    TouchDispatcher.getDispatcher(component);
+  }
+
   _anchor(component: Plottable.Component) {
     const hackyThis = this as any;
     hackyThis._isAnchored = true;

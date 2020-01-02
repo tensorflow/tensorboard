@@ -18,7 +18,7 @@ import {customElement, property, computed, observe} from '@polymer/decorators';
 import '@polymer/iron-icon';
 import '@polymer/iron-collapse';
 import '@polymer/paper-button';
-import '@polymer/paper-input';
+import '@polymer/paper-input/paper-input';
 import {
   Category,
   CategoryType,
@@ -306,9 +306,9 @@ class TfCategoryPaginatedView<CategoryItem> extends TfDomRepeat<CategoryItem> {
   })
   _pageInputFocused: boolean = false;
 
-  @computed('opened')
-  get _contentActive() {
-    return this.opened;
+  @observe('opened')
+  _setContentActive() {
+    this._contentActive = this.opened;
   }
 
   @property({
@@ -317,7 +317,7 @@ class TfCategoryPaginatedView<CategoryItem> extends TfDomRepeat<CategoryItem> {
   })
   _count: number = 0;
 
-  get _computeCount(): number {
+  _computeCount(): number {
     return this.category.items.length;
   }
 
@@ -354,7 +354,7 @@ class TfCategoryPaginatedView<CategoryItem> extends TfDomRepeat<CategoryItem> {
   })
   _isSearchResults?: boolean;
 
-  get _computeIsSearchResults() {
+  _computeIsSearchResults() {
     return this.category.metadata.type === CategoryType.SEARCH_RESULTS;
   }
 
@@ -364,7 +364,7 @@ class TfCategoryPaginatedView<CategoryItem> extends TfDomRepeat<CategoryItem> {
   })
   _isInvalidSearchResults?: boolean;
 
-  get _computeIsInvalidSearchResults() {
+  _computeIsInvalidSearchResults() {
     const {metadata} = this.category;
     return (
       metadata.type === CategoryType.SEARCH_RESULTS && !metadata.validRegex
@@ -377,7 +377,7 @@ class TfCategoryPaginatedView<CategoryItem> extends TfDomRepeat<CategoryItem> {
   })
   _isUniversalSearchQuery?: boolean;
 
-  get _computeIsUniversalSearchQuery(): boolean {
+  _computeIsUniversalSearchQuery(): boolean {
     const {metadata} = this.category;
     return (
       metadata.type === CategoryType.SEARCH_RESULTS && metadata.universalRegex
@@ -396,7 +396,7 @@ class TfCategoryPaginatedView<CategoryItem> extends TfDomRepeat<CategoryItem> {
   })
   _pageCount: number = 0;
 
-  get _computePageCount(): number {
+  _computePageCount(): number {
     return this.category
       ? Math.ceil(this.category.items.length / this._limit)
       : 0;
@@ -452,6 +452,7 @@ class TfCategoryPaginatedView<CategoryItem> extends TfDomRepeat<CategoryItem> {
   private _limitListener: null | (() => void) = null;
 
   ready() {
+    super.ready();
     this.opened = this.initialOpened == null ? true : this.initialOpened;
     this._limitListener = () => {
       this.set('_limit', getLimit());

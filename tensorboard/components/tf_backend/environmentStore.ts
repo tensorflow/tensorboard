@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import * as _ from 'lodash';
+import {isEqual} from 'lodash';
 
 import {BaseStore} from './baseStore';
 import {getRouter} from './router';
@@ -30,7 +30,7 @@ export class EnvironmentStore extends BaseStore {
         dataLocation: result.data_location,
         windowTitle: result.window_title,
       };
-      if (_.isEqual(this.environment, environment)) return;
+      if (isEqual(this.environment, environment)) return;
       this.environment = environment;
       this.emitChange();
     });

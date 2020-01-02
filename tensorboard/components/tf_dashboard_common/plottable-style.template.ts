@@ -1,4 +1,4 @@
-/* Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,33 +15,10 @@ limitations under the License.
 import {html} from '@polymer/polymer';
 
 const template = html`
-  <dom-module id="tf-card-heading-style">
+  <dom-module id="plottable-style">
     <template>
       <style>
-        figcaption {
-          width: 100%;
-        }
-
-        /** Horizontal line of labels. */
-        .heading-row {
-          margin-top: -4px;
-          display: flex;
-          flex-direction: row;
-          flex-wrap: wrap;
-        }
-
-        /** Piece of text in the figure caption. */
-        .heading-label {
-          flex-grow: 1;
-          margin-top: 4px;
-          max-width: 100%;
-          word-wrap: break-word;
-        }
-
-        /** Makes label show on the right. */
-        .heading-right {
-          flex-grow: 0;
-        }
+        {{% TEMPLATE %}}
       </style>
     </template>
   </dom-module>

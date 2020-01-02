@@ -91,7 +91,7 @@ export class LineChart {
   private symbolFunction?: vz_chart_helpers.SymbolFn;
   private tooltipColumns: vz_chart_helpers.TooltipColumn[];
   private tooltip: VzChartTooltip;
-  private tooltipInteraction: Plottable.Interactions.Pointer;
+  private tooltipInteraction: PointerInteraction;
   private tooltipPointsComponent: Plottable.Component;
   private linePlot?: Plottable.Plots.Line<number | Date>;
   private smoothLinePlot?: Plottable.Plots.Line<number | Date>;
@@ -210,6 +210,9 @@ export class LineChart {
       [this.yAxis, this.center],
       [null, this.xAxis],
     ]);
+    this.outer.onAnchor(() => {
+      PointerInteraction.preallocateTbDispatcher(this.outer);
+    });
   }
 
   private buildPlot(
@@ -431,9 +434,7 @@ export class LineChart {
   private getYAxisAccessor() {
     return this.smoothingEnabled ? this.smoothedAccessor : this.yValueAccessor;
   }
-  private createTooltipInteraction(
-    pzdl: PanZoomDragLayer
-  ): Plottable.Interactions.Pointer {
+  private createTooltipInteraction(pzdl: PanZoomDragLayer) {
     const pi = new PointerInteraction();
     // Disable interaction while drag zooming.
     const disableTooltipUpdate = () => {
@@ -904,6 +905,6 @@ export class LineChart {
 
   private cancelAnimationFrame(id: number | null) {
     if (id === null) return;
-    this.cancelAnimationFrame(id);
+    window.cancelAnimationFrame(id);
   }
 }

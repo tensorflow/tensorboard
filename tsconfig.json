@@ -5,13 +5,12 @@
     "experimentalDecorators": true,
     "inlineSourceMap": true,
     "lib": ["dom", "es2018"],
+    "module": "ES6",
     "moduleResolution": "node",
     "noImplicitAny": true,
     "skipLibCheck": true,
     "strictNullChecks": true,
-    "strictPropertyInitialization": true,
+    "strictPropertyInitialization": true
   },
-  "exclude": [
-    "bazel-*"
-  ]
+  "exclude": ["bazel-*"]
 }

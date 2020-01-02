@@ -15,12 +15,11 @@ limitations under the License.
 import {html} from '@polymer/polymer';
 import * as Plottable from 'plottable';
 import {customElement, property, observe} from '@polymer/decorators';
-import '@polymer/paper-spinner';
+import '@polymer/paper-spinner/paper-spinner';
 import * as _ from 'lodash';
 
 import {runsColorScale} from '../tf_color_scale/colorScale';
 import {DataLoader} from '../tf_dashboard_common/data-loader-behavior';
-import '../vz-line-chart2/vz-line-chart2.html';
 import {RequestManager} from '../tf_backend';
 import {
   XComponentsCreationMethod,
@@ -33,6 +32,7 @@ import {
   ScalarDatum,
 } from '../vz_chart_helpers/vz-chart-helpers';
 import {FillArea} from '../vz_line_chart/vz-line-chart';
+import '../vz_line_chart2/vz-line-chart2';
 import {VzLineChart2} from '../vz_line_chart2/vz-line-chart2';
 
 // The chart can sometimes get in a bad state, when it redraws while

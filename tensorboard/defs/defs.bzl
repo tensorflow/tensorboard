@@ -13,8 +13,8 @@
 # limitations under the License.
 """External-only delegates for various BUILD rules."""
 
-load("@build_bazel_rules_nodejs//:defs.bzl", "rollup_bundle")
-load("@npm_bazel_karma//:defs.bzl", "karma_web_test_suite")
+load("@npm_bazel_rollup//:index.bzl", "rollup_bundle")
+load("@npm_bazel_karma//:index.bzl", "karma_web_test_suite")
 load("@npm_bazel_typescript//:index.bzl", "ts_config", "ts_devserver", "ts_library")
 
 def tensorboard_webcomponent_library(**kwargs):
@@ -30,7 +30,10 @@ def tf_js_binary(compile, **kwargs):
 
     # `compile` option is used internally but is not used by rollup_bundle.
     # Discard it.
-    rollup_bundle(**kwargs)
+    rollup_bundle(
+        config_file = "//tensorboard/defs:rollup.config.js",
+        **kwargs
+    )
 
 def tf_ts_config(**kwargs):
     """TensorBoard wrapper for the rule for a TypeScript configuration."""

@@ -23,7 +23,8 @@ py_library(
         "@org_pocoo_werkzeug",
     ],
     data = [
-        "//tensorboard/plugins/projector/tf_projector_plugin:projector_assets",
+        # TODO(stephanwlee): re-enable this when projector can be built.
+        # "//tensorboard/plugins/projector/tf_projector_plugin:projector_assets",
     ],
 )
 

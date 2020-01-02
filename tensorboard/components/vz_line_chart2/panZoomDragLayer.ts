@@ -17,42 +17,44 @@ import * as Plottable from 'plottable';
 import {DragZoomLayer} from '../vz_line_chart/dragZoomInteraction';
 
 const template = html`
-  <custom-style>
-    <style is="vz-pan-zoom-style">
-      .help {
-        align-items: center;
-        animation-delay: 1s;
-        animation-duration: 1s;
-        animation-name: fade-out;
-        background: rgba(30, 30, 30, 0.6);
-        bottom: 0;
-        color: #fff;
-        display: flex;
-        justify-content: center;
-        left: 0;
-        opacity: 1;
-        padding: 20px;
-        pointer-events: none;
-        position: absolute;
-        right: 0;
-        top: 0;
-      }
-
-      .help > span {
-        white-space: normal;
-      }
-
-      @keyframes fade-out {
-        0% {
+  <dom-module id="vz-pan-zoom-style">
+    <template>
+      <style>
+        .help {
+          align-items: center;
+          animation-delay: 1s;
+          animation-duration: 1s;
+          animation-name: fade-out;
+          background: rgba(30, 30, 30, 0.6);
+          bottom: 0;
+          color: #fff;
+          display: flex;
+          justify-content: center;
+          left: 0;
           opacity: 1;
+          padding: 20px;
+          pointer-events: none;
+          position: absolute;
+          right: 0;
+          top: 0;
         }
 
-        100% {
-          opacity: 0;
+        .help > span {
+          white-space: normal;
         }
-      }
-    </style>
-  </custom-style>
+
+        @keyframes fade-out {
+          0% {
+            opacity: 1;
+          }
+
+          100% {
+            opacity: 0;
+          }
+        }
+      </style>
+    </template>
+  </dom-module>
 `;
 document.head.appendChild(template.content);
 

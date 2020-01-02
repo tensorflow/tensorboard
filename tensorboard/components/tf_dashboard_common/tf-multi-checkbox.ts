@@ -18,7 +18,7 @@ import {customElement, property, observe} from '@polymer/decorators';
 import '@polymer/iron-icons';
 import {PaperCheckboxElement} from '@polymer/paper-checkbox';
 import {PaperIconButtonElement} from '@polymer/paper-icon-button';
-import '@polymer/paper-input';
+import '@polymer/paper-input/paper-input';
 import './run-color-style';
 import './scrollbar-style';
 

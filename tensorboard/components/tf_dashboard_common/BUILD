@@ -10,6 +10,7 @@ tf_ts_library(
         "array-update-helper.ts",
         "dashboard-style.ts",
         "data-loader-behavior.ts",
+        "plottable-style.ts",
         "run-color-style.ts",
         "scrollbar-style.ts",
         "tensorboard-color.ts",
@@ -49,4 +50,15 @@ tf_ts_library(
         "@npm//@types/lodash",
         "@npm//lodash",
     ],
+)
+
+genrule(
+    name = "inline_plottable_css",
+    srcs = [
+        "plottable-style.template.ts",
+        "@npm//plottable",
+    ],
+    outs = ["plottable-style.ts"],
+    cmd = "$(location generate_plottable_css.py) $(location plottable-style.template.ts) external/npm/node_modules/plottable/plottable.css $@",
+    tools = ["generate_plottable_css.py"],
 )

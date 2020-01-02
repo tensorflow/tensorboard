@@ -274,21 +274,10 @@ tensorboard_zip_file(
 tf_web_library(
     name = "assets",
     srcs = [
-        "//tensorboard/components:index.html",
-        "//tensorboard/components:index.js",
-        "//tensorboard/components:trace_viewer_index.html",
-        "//tensorboard/components:trace_viewer_index.js",
-    ] + select({
-        "//tensorboard:dev_build": [
-            "//tensorboard/webapp:ng_index.html",
-            "//tensorboard/webapp:ng_index.js",
-        ],
-        "//conditions:default": [],
-    }),
-    path = "/",
-    deps = [
+        "//tensorboard/components:app",
         "@com_google_fonts_roboto",
     ],
+    path = "/",
 )
 
 py_library(

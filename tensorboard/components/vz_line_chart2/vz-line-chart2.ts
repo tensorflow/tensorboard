@@ -14,15 +14,17 @@ limitations under the License.
 ==============================================================================*/
 import {PolymerElement, html} from '@polymer/polymer';
 import {LegacyElementMixin} from '@polymer/polymer/lib/legacy/legacy-element-mixin';
-import {customElement, property, observe, computed} from '@polymer/decorators';
+import {customElement, property, observe} from '@polymer/decorators';
 import * as d3 from 'd3';
 import * as Plottable from 'plottable';
 import * as _ from 'lodash';
 import * as vz_chart_helpers from '../vz_chart_helpers/vz-chart-helpers';
+import '../vz_chart_helpers/vz-chart-tooltip';
 import {TooltipPosition} from '../vz_chart_helpers/vz-chart-tooltip';
 import {LineChart, FillArea, TooltipSortingMethod} from './line-chart';
 import {PanZoomDragLayer} from './panZoomDragLayer';
 import {LineChartExporter} from './line-chart-exporter';
+import '../tf_dashboard_common/plottable-style';
 
 const valueFormatter = vz_chart_helpers.multiscaleFormatter(
   vz_chart_helpers.Y_TOOLTIP_FORMATTER_PRECISION
@@ -218,6 +220,7 @@ export class VzLineChart2<Metadata> extends LegacyElementMixin(PolymerElement) {
   }>();
 
   ready() {
+    super.ready();
     this.scopeSubtree(this.$.chartdiv, true);
   }
 
@@ -402,4 +405,65 @@ export class VzLineChart2<Metadata> extends LegacyElementMixin(PolymerElement) {
   getExporter() {
     return new LineChartExporter(this.$.chartdiv);
   }
+}
+
+@customElement('vz-line-chart-tooltip')
+export class VzLineChartTooltip extends PolymerElement {
+  static readonly template = html`
+    <div class="content">
+      <table>
+        <thead></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <style>
+      :host {
+        pointer-events: none;
+      }
+      .content {
+        background: rgba(0, 0, 0, 0.8);
+        border-radius: 4px;
+        color: #fff;
+        overflow: hidden;
+        pointer-events: none;
+      }
+      table {
+        font-size: 13px;
+        line-height: 1.4em;
+        margin-top: 10px;
+        padding: 8px;
+      }
+      thead {
+        font-size: 14px;
+      }
+      tbody {
+        font-size: 13px;
+        line-height: 21px;
+        white-space: nowrap;
+      }
+      td {
+        padding: 0 5px;
+      }
+      .swatch {
+        border-radius: 50%;
+        display: block;
+        height: 18px;
+        width: 18px;
+      }
+      .closest .swatch {
+        box-shadow: inset 0 0 0 2px #fff;
+      }
+      th {
+        padding: 0 5px;
+        text-align: left;
+      }
+      .distant td:not(.swatch) {
+        opacity: 0.8;
+      }
+      .ghost {
+        opacity: 0.2;
+        stroke-width: 1px;
+      }
+    </style>
+  `;
 }

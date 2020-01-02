@@ -1,37 +1,69 @@
-package(default_visibility = ["//tensorboard:internal"])
-
 load("//tensorboard/defs:web.bzl", "tf_web_library")
-load("//tensorboard/defs:vulcanize.bzl", "tensorboard_html_binary")
+load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ts_library")
+
+package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
 tf_web_library(
-    name = "tensorboard",
-    srcs = ["tensorboard.html"],
+    name = "app",
+    srcs = [
+        "index.html",
+        ":index.js",
+    ],
     path = "/",
+)
+
+tf_ts_library(
+    name = "lib",
+    srcs = [
+        "analytics.ts",
+        "polymer_config.ts",
+        "tensorboard.ts",
+    ],
     deps = [
-        ":analytics",
-        "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_tensorboard",
         "//tensorboard/components/tf_tensorboard:default_plugins",
     ],
 )
 
-tensorboard_html_binary(
+tf_js_binary(
     name = "index",
-    compile = True,
-    input_path = "/tensorboard.html",
-    output_path = "/index.html",
-    js_path = "/index.js",
-    deps = [":tensorboard"],
-)
-
-tf_web_library(
-    name = "analytics",
-    srcs = [
-        "analytics.html",
+    compile = 1,
+    entry_point = ":tensorboard.ts",
+    deps = [
+        ":lib",
+        "@npm//@polymer/decorators",
+        "@npm//@polymer/iron-ajax",
+        "@npm//@polymer/iron-behaviors",
+        "@npm//@polymer/iron-collapse",
+        "@npm//@polymer/iron-flex-layout",
+        "@npm//@polymer/iron-icon",
+        "@npm//@polymer/iron-icons",
+        "@npm//@polymer/paper-button",
+        "@npm//@polymer/paper-checkbox",
+        "@npm//@polymer/paper-dialog",
+        "@npm//@polymer/paper-dialog-scrollable",
+        "@npm//@polymer/paper-dropdown-menu",
+        "@npm//@polymer/paper-header-panel",
+        "@npm//@polymer/paper-icon-button",
+        "@npm//@polymer/paper-input",
+        "@npm//@polymer/paper-item",
+        "@npm//@polymer/paper-listbox",
+        "@npm//@polymer/paper-menu-button",
+        "@npm//@polymer/paper-slider",
+        "@npm//@polymer/paper-spinner",
+        "@npm//@polymer/paper-styles",
+        "@npm//@polymer/paper-tabs",
+        "@npm//@polymer/paper-toggle-button",
+        "@npm//@polymer/paper-toolbar",
+        "@npm//@polymer/polymer",
+        "@npm//d3",
+        "@npm//lodash",
+        "@npm//plottable",
+        "@npm//rollup-plugin-commonjs",
+        "@npm//rollup-plugin-node-resolve",
     ],
-    path = "/",
 )
 
 tf_web_library(
@@ -43,49 +75,40 @@ tf_web_library(
     visibility = ["//visibility:public"],
 )
 
-tf_web_library(
-    name = "ng_polymer_lib",
-    srcs = [
-        "ng_polymer_lib.html",
-    ],
-    path = "/",
-    deps = [
-        ":analytics",
-        ":security",
-        "//tensorboard/components/tf_backend",
-        "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/components/tf_storage",
-        "//tensorboard/components/tf_tensorboard",
-        "//tensorboard/components/tf_tensorboard:default_plugins",
-        "//tensorboard/components/tf_tensorboard:registry",
-    ],
-)
+# tf_web_library(
+#     name = "ng_polymer_lib",
+#     srcs = [
+#         "ng_polymer_lib.html",
+#     ],
+#     path = "/",
+#     deps = [
+#         ":analytics",
+#         ":security",
+#         "//tensorboard/components/tf_backend",
+#         "//tensorboard/components/tf_imports:polymer",
+#         "//tensorboard/components/tf_storage",
+#         "//tensorboard/components/tf_tensorboard",
+#         "//tensorboard/components/tf_tensorboard:default_plugins",
+#         "//tensorboard/components/tf_tensorboard:registry",
+#     ],
+# )
 
-# This Polymer only binary (as opposed to ng_index) allows ng_index to be built without
-# JSCompiler step. In other words, Angular-only changes can be built faster
-# incrementally.
-tensorboard_html_binary(
-    name = "ng_polymer_lib_binary",
-    compile = True,
-    input_path = "/ng_polymer_lib.html",
-    output_path = "/ng_polymer_lib_binary.html",
-    deps = [":ng_polymer_lib"],
-)
+# TODO(stephanwlee): Fix me when trace_viewer can be factored out.
 
-tf_web_library(
-    name = "trace_viewer",
-    srcs = ["trace_viewer.html"],
-    path = "/",
-    deps = [
-        "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/components/tf_trace_viewer",
-    ],
-)
+# tf_web_library(
+#     name = "trace_viewer",
+#     srcs = ["trace_viewer.html"],
+#     path = "/",
+#     deps = [
+#         "//tensorboard/components/tf_imports:polymer",
+#         "//tensorboard/components/tf_trace_viewer",
+#     ],
+# )
 
-tensorboard_html_binary(
-    name = "trace_viewer_index",
-    input_path = "/trace_viewer.html",
-    output_path = "/trace_viewer_index.html",
-    js_path = "/trace_viewer_index.js",
-    deps = [":trace_viewer"],
-)
+# tensorboard_html_binary(
+#     name = "trace_viewer_index",
+#     input_path = "/trace_viewer.html",
+#     js_path = "/trace_viewer_index.js",
+#     output_path = "/trace_viewer_index.html",
+#     deps = [":trace_viewer"],
+# )

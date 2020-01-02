@@ -1,7 +1,7 @@
 import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, property} from '@polymer/decorators';
 import '@polymer/iron-icon';
-import '@polymer/paper-input';
+import '@polymer/paper-input/paper-input';
 import {getStringInitializer, getStringObserver} from '../tf_storage/storage';
 
 @customElement('tf-tag-filterer')
@@ -41,11 +41,11 @@ class TfTagFilterer extends PolymerElement {
     polymerProperty: '_tagFilter',
   })();
 
-  private _tagFilterObserver: string = getStringObserver('tagFilter', {
+  private _tagFilterObserver = getStringObserver('tagFilter', {
     defaultValue: '',
     useLocalStorage: false,
     polymerProperty: '_tagFilter',
-  })();
+  });
 
   _computeTagFilter(): string {
     return this._tagFilter;

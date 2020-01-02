@@ -3,6 +3,7 @@ import {customElement, property, observe} from '@polymer/decorators';
 import * as d3 from 'd3';
 import * as _ from 'lodash';
 import * as Plottable from 'plottable';
+import '../tf_dashboard_common/plottable-style';
 import {PointerInteraction} from '../vz_chart_helpers/plottable-interactions';
 import {
   GenericTooltipColumn,

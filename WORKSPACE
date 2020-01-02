@@ -14,6 +14,7 @@ http_archive(
 )
 
 load("@bazel_skylib//lib:versions.bzl", "versions")
+
 # Keep this version in sync with the BAZEL environment variable defined
 # in our .travis.yml config.
 versions.check(minimum_bazel_version = "0.26.1")
@@ -29,9 +30,11 @@ http_archive(
 )
 
 load("@io_bazel_rules_webtesting//web:repositories.bzl", "web_test_repositories")
+
 web_test_repositories()
 
 load("@io_bazel_rules_webtesting//web:py_repositories.bzl", "py_repositories")
+
 py_repositories()
 
 http_archive(
@@ -45,6 +48,7 @@ http_archive(
 )
 
 load("@io_bazel_rules_closure//closure:repositories.bzl", "rules_closure_dependencies")
+
 rules_closure_dependencies(
     omit_com_google_protobuf = True,
     omit_com_google_protobuf_js = True,
@@ -52,26 +56,27 @@ rules_closure_dependencies(
 
 http_archive(
     name = "build_bazel_rules_nodejs",
-    sha256 = "7c4a690268be97c96f04d505224ec4cb1ae53c2c2b68be495c9bd2634296a5cd",
-    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/0.34.0/rules_nodejs-0.34.0.tar.gz"],
+    sha256 = "3887b948779431ac443e6a64f31b9e1e17b8d386a31eebc50ec1d9b0a6cabd2b",
+    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/1.0.0/rules_nodejs-1.0.0.tar.gz"],
 )
 
-load("@build_bazel_rules_nodejs//:defs.bzl", "node_repositories", "yarn_install")
+load("@build_bazel_rules_nodejs//:index.bzl", "node_repositories", "yarn_install")
+
 node_repositories()
 
 yarn_install(
     name = "npm",
+    data = [
+        # package.json contains postinstall that requires this file.
+        "//:angular-metadata.tsconfig.json",
+    ],
     package_json = "//:package.json",
-    yarn_lock = "//:yarn.lock",
     # Opt out of symlinking local node_modules folder into bazel internal
     # directory.  Symlinking is incompatible with our toolchain which often
     # removes source directory without `bazel clean` which creates broken
     # symlink into node_modules folder.
     symlink_node_modules = False,
-    data = [
-        # package.json contains postinstall that requires this file.
-        "//:angular-metadata.tsconfig.json",
-    ],
+    yarn_lock = "//:yarn.lock",
 )
 
 load("@npm//:install_bazel_dependencies.bzl", "install_bazel_dependencies")
@@ -91,8 +96,10 @@ http_archive(
 )
 
 load("@org_tensorflow//tensorflow:workspace.bzl", "tf_workspace")
+
 tf_workspace()
 
 # Please add all new dependencies in workspace.bzl.
 load("//third_party:workspace.bzl", "tensorboard_workspace")
+
 tensorboard_workspace()

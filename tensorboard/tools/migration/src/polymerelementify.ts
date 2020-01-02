@@ -397,31 +397,33 @@ function flattenProperties(
   props: ts.PropertyAssignment
 ) {
   if (props && ts.isArrayLiteralExpression(props.initializer)) {
-    return props.initializer.elements.map((el) => {
-      if (!ts.isStringLiteral(el)) {
-        return null;
-      }
+    return props.initializer.elements
+      .map((el) => {
+        if (!ts.isStringLiteral(el)) {
+          return null;
+        }
 
-      const {methodName, args} = parsePolymerStringDeclaration(el.text);
-      const decoratorExpression = ts.createCall(
-        ts.createIdentifier(decoratorName),
-        undefined,
-        args.map((arg) => ts.createStringLiteral(arg))
-      );
-      const decorator = ts.createDecorator(decoratorExpression);
+        const {methodName, args} = parsePolymerStringDeclaration(el.text);
+        const decoratorExpression = ts.createCall(
+          ts.createIdentifier(decoratorName),
+          undefined,
+          args.map((arg) => ts.createStringLiteral(arg))
+        );
+        const decorator = ts.createDecorator(decoratorExpression);
 
-      return ts.createMethod(
-        [decorator],
-        undefined,
-        undefined,
-        methodName,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        ts.createBlock([])
-      );
-    });
+        return ts.createMethod(
+          [decorator],
+          undefined,
+          undefined,
+          methodName,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          ts.createBlock([])
+        );
+      })
+      .filter(Boolean);
   }
   return [];
 }
