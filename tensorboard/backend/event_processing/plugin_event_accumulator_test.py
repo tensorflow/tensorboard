@@ -76,6 +76,7 @@ class _EventGenerator(object):
         self.AddEvent(event)
 
     def AddEvent(self, event):
+        event = event_pb2.Event.FromString(event.SerializeToString())
         if self.zero_out_timestamps:
             event.wall_time = 0.0
         self.items.append(event)
