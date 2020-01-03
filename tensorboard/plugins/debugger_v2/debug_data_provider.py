@@ -155,40 +155,17 @@ class LocalDebuggerV2DataProvider(provider.DataProvider):
             raise ValueError(
                 "run_tag_filter.runs is expected to be specified, but is not."
             )
-        if len(run_tag_filter.runs) != 1:
-            raise ValueError(
-                "run_tag_filter.runs is expected to have length 1, "
-                "but instead has length %d" % len(run_tag_filter.tags)
-            )
-        if not run_tag_filter:
-            raise ValueError(
-                "run_tag_filter is expected to be specified, but is not."
-            )
-        if not run_tag_filter.tags:
-            raise ValueError(
-                "run_tag_filter.tags is expected to be specified, but is not."
-            )
-        if len(run_tag_filter.tags) != 1:
-            raise ValueError(
-                "run_tag_filter.tags is expected to have length 1, "
-                "but instead has length %d" % len(run_tag_filter.tags)
-            )
 
-        run = next(iter(run_tag_filter.runs))
-        tag = next(iter(run_tag_filter.tags))
-        # TODO(cais): Can we do a loop here instead and relax the len == 1
-        # requirement?
-
-        if run in self._multiplexer.Runs():
-            if tag.startswith(EXECUTION_DIGESTS_BLOB_TAG_PREFIX):
-                blob_ref = provider.BlobReference(blob_key="%s.%s" % (tag, run))
-                output = {run: {tag: [blob_ref]}}
-                return output
-
-            else:
-                raise ValueError("Unrecognized tag: %s" % tag)
-        else:
-            return {}
+        output = dict()
+        for run in run_tag_filter.runs:
+            if run in self._multiplexer.Runs():
+                output[run] = dict()
+            for tag in run_tag_filter.tags:
+                if tag.startswith(EXECUTION_DIGESTS_BLOB_TAG_PREFIX):
+                    output[run][tag] = [
+                        provider.BlobReference(blob_key="%s.%s" % (tag, run))
+                    ]
+        return output
 
     def read_blob(self, blob_key):
         if blob_key.startswith(EXECUTION_DIGESTS_BLOB_TAG_PREFIX):
