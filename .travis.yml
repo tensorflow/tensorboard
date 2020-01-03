@@ -17,8 +17,6 @@ env:
   global:
     - BAZEL=0.26.1
     - BAZEL_SHA256SUM=6c50e142a0a405d3d8598050d6c1b3920c8cdb82a7ffca6fc067cb474275148f
-    - BUILDIFIER=0.29.0
-    - BUILDIFIER_SHA256SUM=4c985c883eafdde9c0e8cf3c8595b8bfdf32e77571c369bf8ddae83b042028d6
   matrix:
     - TF_VERSION_ID=tensorflow==1.15.0rc3
     - TF_VERSION_ID=tf-nightly
@@ -42,8 +40,6 @@ before_install:
   - elapsed "before_install"
   - ci/download_bazel.sh "${BAZEL}" "${BAZEL_SHA256SUM}" ~/bazel
   - sudo mv ~/bazel /usr/local/bin/bazel
-  - ci/download_buildifier.sh "${BUILDIFIER}" "${BUILDIFIER_SHA256SUM}" ~/buildifier
-  - sudo mv ~/buildifier /usr/local/bin/buildifier
   - cp ci/bazelrc ~/.bazelrc
   - elapsed "before_install (done)"
 
