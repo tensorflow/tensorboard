@@ -26,6 +26,8 @@ from __future__ import print_function
 # the same logdir, replace this magic string with actual run names.
 DEFAULT_DEBUGGER_RUN_NAME = "__default_debugger_run__"
 
+_DEFAULT_PAGE_SIZE = 1000
+
 
 class DebuggerV2EventMultiplexer(object):
     """A class used for accessing tfdbg v2 DebugEvent data on local filesystem.
@@ -46,7 +48,7 @@ class DebuggerV2EventMultiplexer(object):
           logdir: Path to the directory to load the tfdbg v2 data from.
         """
         self._logdir = logdir
-        # TODO(cais): Start off a reading thread here.
+        self._reader = None
 
     def FirstEventTimestamp(self, run):
         """Return the timestamp of the first DebugEvent of the given run.
@@ -96,22 +98,64 @@ class DebuggerV2EventMultiplexer(object):
             at most one DebugEvent file set per directory.
         If no tfdbg2-format data exists in the `logdir`, an empty `dict`.
         """
-        reader = None
-        from tensorflow.python.debug.lib import debug_events_reader
+        if self._reader is None:
+            from tensorflow.python.debug.lib import debug_events_reader
 
-        try:
-            reader = debug_events_reader.DebugDataReader(self._logdir)
-            # NOTE(cais): Currently each logdir is enforced to have only one
-            # DebugEvent file set. So we add hard-coded default run name.
-        except ValueError as error:
-            # When no DebugEvent file set is found in the logdir, a `ValueError`
-            # is thrown.
-            return {}
-        with reader:
-            return {
-                DEFAULT_DEBUGGER_RUN_NAME: {
-                    # TODO(cais): Add the semantically meaningful tag names such as
-                    # 'execution_digests_book', 'alerts_book'
-                    "debugger-v2": []
-                }
+            try:
+                self._reader = debug_events_reader.DebugDataReader(self._logdir)
+                # NOTE(cais): Currently each logdir is enforced to have only one
+                # DebugEvent file set. So we add hard-coded default run name.
+                self._reader.update()
+                # TODO(cais): Start off a reading thread here, instead of being
+                # called only once here.
+            except ValueError as error:
+                # When no DebugEvent file set is found in the logdir, a
+                # `ValueError` is thrown.
+                return {}
+
+        return {
+            DEFAULT_DEBUGGER_RUN_NAME: {
+                # TODO(cais): Add the semantically meaningful tag names such as
+                # 'execution_digests_book', 'alerts_book'
+                "debugger-v2": []
             }
+        }
+
+    def ExecutionDigestsBook(self, run):
+        runs = self.Runs()
+        if run not in runs:
+            return None
+        execution_digests = self._reader.executions(digest=True)
+        num_digests = len(execution_digests)
+        num_pages = math.ceil(num_digests / _DEFAULT_PAGE_SIZE)
+        return {
+            "num_pages": num_pages,
+            "num_digests": num_pages,
+            "page_size": _DEFAULT_PAGE_SIZE,
+        }
+
+    def ExecutionDigestsPage(self, run, page_number):
+        runs = self.Runs()
+        if run not in runs:
+            return None
+        execution_digests = self._reader.executions(digest=True)
+        begin = _DEFAULT_PAGE_SIZE * page_number
+        end = begin_index + _DEFAULT_PAGE_SIZE
+        return {
+            "page_number": page_number,
+            "begin": begin,
+            "end": end,
+            "execution_digests": [
+                _execution_digest_to_json(digest)
+                for digest in execution_digests[begin:end]
+            ],
+        }
+
+
+def _execution_digest_to_json(self, execution_digest):
+    # TODO(cais): Use the .to_json() method when avaiable.
+    return {
+        "wall_time": execution_digest.wall_time,
+        "op_type": execution_digest.op_type,
+        "output_tensor_device_ids": execution_digest.output_tensor_device_ids,
+    }
