@@ -26,8 +26,6 @@ from __future__ import print_function
 # the same logdir, replace this magic string with actual run names.
 DEFAULT_DEBUGGER_RUN_NAME = "__default_debugger_run__"
 
-_DEFAULT_PAGE_SIZE = 1000
-
 
 def _execution_digest_to_json(execution_digest):
     # TODO(cais): Use the .to_json() method when avaiable.
@@ -142,6 +140,8 @@ class DebuggerV2EventMultiplexer(object):
         runs = self.Runs()
         if run not in runs:
             return None
+        # TODO(cais): For scalability, use begin and end kwargs when available in
+        # `DebugDataReader.execution()`.`
         execution_digests = self._reader.executions(digest=True)
         if begin < 0:
             raise IndexError("Invalid begin index (%d)" % begin)
