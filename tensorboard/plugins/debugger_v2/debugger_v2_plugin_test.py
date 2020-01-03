@@ -247,7 +247,8 @@ class DebuggerV2PluginTest(tf.test.TestCase):
             "application/json", response.headers.get("content-type")
         )
         self.assertEqual(
-            response.get_data(), {"error": "Invalid begin index (-1)"}
+            json.loads(response.get_data()),
+            {"error": "Invalid begin index (-1)"}
         )
 
         # begin = 2; end = 1
