@@ -12,18 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, Input} from '@angular/core';
-import {DebuggerRunListing} from './store/debugger_types';
 
-@Component({
-  selector: 'debugger-component',
-  templateUrl: './debugger_component.ng.html',
-  styleUrls: ['./debugger_component.css'],
-})
-export class DebuggerComponent {
-  @Input()
-  runs: DebuggerRunListing = {};
-
-  @Input()
-  runIds: string[] = [];
-}
+export * from './debugger_reducers';
+export * from './debugger_selectors';
+export {DEBUGGER_FEATURE_KEY, DebuggerState, State} from './debugger_types';

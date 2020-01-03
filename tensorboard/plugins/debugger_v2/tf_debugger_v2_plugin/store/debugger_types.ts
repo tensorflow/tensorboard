@@ -12,18 +12,31 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, Input} from '@angular/core';
-import {DebuggerRunListing} from './store/debugger_types';
 
-@Component({
-  selector: 'debugger-component',
-  templateUrl: './debugger_component.ng.html',
-  styleUrls: ['./debugger_component.css'],
-})
-export class DebuggerComponent {
-  @Input()
-  runs: DebuggerRunListing = {};
+import {LoadState} from '../../../../webapp/types/data';
 
-  @Input()
-  runIds: string[] = [];
+export {DataLoadState, LoadState} from '../../../../webapp/types/data';
+
+export const DEBUGGER_FEATURE_KEY = 'debugger';
+
+export interface DebuggerRunMetadata {
+  // Time at which the debugger run started. Milliseconds since the epoch.
+  startTimeMs: number;
+
+  // TensorFlow Version string.
+  tensorFlowVersion: string;
+}
+
+export interface DebuggerRunListing {
+  [runId: string]: DebuggerRunMetadata;
+}
+
+export interface DebuggerState {
+  // Names of the runs that are available.
+  runs: DebuggerRunListing;
+  runsLoaded: LoadState;
+}
+
+export interface State {
+  [DEBUGGER_FEATURE_KEY]: DebuggerState;
 }
