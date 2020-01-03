@@ -6,6 +6,12 @@
 # Helpful YAML parser to clarify YAML syntax:
 # https://yaml-online-parser.appspot.com/
 
+<<<<<<< HEAD
+=======
+# For now, we only use GitHub Actions for lint checks, pending better
+# support for hermetic-style caching. See:
+# https://github.com/actions/cache/issues/109
+>>>>>>> 78c919738f228265b9a06b86e1e5c5daa2135a0d
 name: CI
 
 on:
@@ -15,6 +21,7 @@ on:
       - '[0-9]+.*'
       - 'ci-*'
   pull_request: {}
+<<<<<<< HEAD
   schedule:
     # 13:00 UTC is 05:00 in Pacific standard time (UTC-8), which is well
     # after nightly TensorFlow wheels are released (around 2--3 AM) and
@@ -25,6 +32,10 @@ on:
 env:
   BAZEL: '0.26.1'
   BAZEL_SHA256SUM: '6c50e142a0a405d3d8598050d6c1b3920c8cdb82a7ffca6fc067cb474275148f'
+=======
+
+env:
+>>>>>>> 78c919738f228265b9a06b86e1e5c5daa2135a0d
   BUILDIFIER: '0.29.0'
   BUILDIFIER_SHA256SUM: '4c985c883eafdde9c0e8cf3c8595b8bfdf32e77571c369bf8ddae83b042028d6'
 
@@ -96,6 +107,7 @@ jobs:
       - run: ./tensorboard/tools/do_not_submit_test.sh
       - run: ./tensorboard/tools/license_test.sh
       - run: ./tensorboard/tools/whitespace_hygiene_test.py
+<<<<<<< HEAD
 
   test:
     runs-on: ubuntu-16.04
@@ -169,3 +181,5 @@ jobs:
         run: |
           bazel test //tensorboard/compat/tensorflow_stub:gfile_s3_test
           bazel test //tensorboard/summary/writer:event_file_writer_s3_test
+=======
+>>>>>>> 78c919738f228265b9a06b86e1e5c5daa2135a0d
