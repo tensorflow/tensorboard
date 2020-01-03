@@ -20,13 +20,14 @@ import {provideMockStore, MockStore} from '@ngrx/store/testing';
 import {PluginsContainer} from './plugins_container';
 import {PluginsComponent} from './plugins_component';
 
-import {PluginId, LoadingMechanismType, LoadState} from '../types/api';
+import {PluginId, LoadingMechanismType} from '../types/api';
+import {DataLoadState} from '../types/data';
 import {createState, createCoreState} from '../core/testing';
 import {State} from '../core/store';
 // store/index.ts doesn't export this, but it's OK to use for testing
 import {CoreState} from '../core/store/core_types';
 
-import {DebuggerModule} from '../../plugins/debugger_v2/tf_debugger_v2_plugin/debugger_module';
+import {TestingDebuggerModule} from '../../plugins/debugger_v2/tf_debugger_v2_plugin/testing';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
@@ -68,7 +69,7 @@ describe('plugins_component', () => {
     await TestBed.configureTestingModule({
       providers: [provideMockStore({initialState}), PluginsContainer],
       declarations: [PluginsContainer, PluginsComponent],
-      imports: [DebuggerModule],
+      imports: [TestingDebuggerModule],
     }).compileComponents();
     store = TestBed.get(Store);
   });
@@ -182,7 +183,7 @@ describe('plugins_component', () => {
   describe('updates', () => {
     function setLastLoadedTime(
       timeInMs: number | null,
-      state = LoadState.LOADED
+      state = DataLoadState.LOADED
     ) {
       store.setState(
         createState(
@@ -201,7 +202,7 @@ describe('plugins_component', () => {
     it('invokes reload method on the dashboard DOM', () => {
       const fixture = TestBed.createComponent(PluginsContainer);
 
-      setLastLoadedTime(null, LoadState.NOT_LOADED);
+      setLastLoadedTime(null, DataLoadState.NOT_LOADED);
       fixture.detectChanges();
 
       const {nativeElement} = fixture.debugElement.query(By.css('.plugins'));

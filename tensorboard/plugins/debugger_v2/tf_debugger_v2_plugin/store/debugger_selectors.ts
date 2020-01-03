@@ -14,48 +14,31 @@ limitations under the License.
 ==============================================================================*/
 
 import {createSelector, createFeatureSelector} from '@ngrx/store';
-import {PluginId, PluginsListing} from '../../types/api';
-import {LoadState} from '../../types/data';
-import {CoreState, State, CORE_FEATURE_KEY} from './core_types';
+import {
+  DEBUGGER_FEATURE_KEY,
+  DebuggerRunListing,
+  DebuggerState,
+  State,
+  LoadState,
+} from './debugger_types';
 
 // HACK: These imports are for type inference.
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
 /** @typehack */ import * as _typeHackSelector from '@ngrx/store/src/selector';
 /** @typehack */ import * as _typeHackStore from '@ngrx/store/store';
 
-const selectCoreState = createFeatureSelector<State, CoreState>(
-  CORE_FEATURE_KEY
+const selectDebuggerState = createFeatureSelector<State, DebuggerState>(
+  DEBUGGER_FEATURE_KEY
 );
 
-export const getPluginsListLoaded = createSelector(
-  selectCoreState,
-  (state: CoreState): LoadState => state.pluginsListLoaded
-);
-
-export const getActivePlugin = createSelector(
-  selectCoreState,
-  (state: CoreState): PluginId | null => {
-    return state.activePlugin;
+export const getDebuggerRunListing = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): DebuggerRunListing => {
+    return state.runs;
   }
 );
 
-export const getPlugins = createSelector(
-  selectCoreState,
-  (state: CoreState): PluginsListing => {
-    return state.plugins;
-  }
-);
-
-export const getReloadEnabled = createSelector(
-  selectCoreState,
-  (state: CoreState): boolean => {
-    return state.reloadEnabled;
-  }
-);
-
-export const getReloadPeriodInMs = createSelector(
-  selectCoreState,
-  (state: CoreState): number => {
-    return state.reloadPeriodInMs;
-  }
+export const getDebuggerRunsLoaded = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): LoadState => state.runsLoaded
 );

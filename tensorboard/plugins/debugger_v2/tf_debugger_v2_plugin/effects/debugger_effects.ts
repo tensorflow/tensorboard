@@ -15,54 +15,49 @@ limitations under the License.
 import {Injectable} from '@angular/core';
 import {Action, Store} from '@ngrx/store';
 import {Actions, ofType, createEffect} from '@ngrx/effects';
-import {Observable, of, zip} from 'rxjs';
+import {Observable} from 'rxjs';
+import {map, mergeMap, withLatestFrom, filter, tap} from 'rxjs/operators';
 import {
-  map,
-  mergeMap,
-  catchError,
-  withLatestFrom,
-  filter,
-  tap,
-} from 'rxjs/operators';
-import {
-  coreLoaded,
-  reload,
-  pluginsListingRequested,
-  pluginsListingLoaded,
-  pluginsListingFailed,
+  debuggerLoaded,
+  debuggerRunsRequested,
+  debuggerRunsLoaded,
 } from '../actions';
-import {getPluginsListLoaded} from '../store';
-import {DataLoadState} from '../../types/data';
-import {State} from '../store/core_types';
-import {TBServerDataSource} from '../../webapp_data_source/tb_server_data_source';
+import {getDebuggerRunsLoaded} from '../store/debugger_selectors';
+import {
+  DataLoadState,
+  State,
+  DebuggerRunListing,
+} from '../store/debugger_types';
+import {Tfdbg2HttpServerDataSource} from '../data_source/tfdbg2_data_source';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
-/** @typehack */ import * as _typeHackNgrx from '@ngrx/store/src/models';
-/** @typehack */ import * as _typeHackNgrxEffects from '@ngrx/effects';
+/** @typehack */ import * as _typeHackNgrxStore from '@ngrx/store/src/models';
+/** @typehack */ import * as _typeHackNgrxEffects from '@ngrx/effects/effects';
 
 @Injectable()
-export class CoreEffects {
+export class DebuggerEffects {
   /**
    * Requires to be exported for JSCompiler. JSCompiler, otherwise,
    * think it is unused property and deadcode eliminate away.
    */
   /** @export */
-  readonly loadPluginsListing$ = createEffect(() =>
+  readonly loadRunListing$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(coreLoaded, reload),
-      withLatestFrom(this.store.select(getPluginsListLoaded)),
+      // TODO(cais): Explore consolidating this effect with the greater
+      // webapp (in tensorboard/webapp), e.g., during PluginChanged actions.
+      ofType(debuggerLoaded),
+      withLatestFrom(this.store.select(getDebuggerRunsLoaded)),
       filter(([, {state}]) => state !== DataLoadState.LOADING),
-      tap(() => this.store.dispatch(pluginsListingRequested())),
+      tap(() => this.store.dispatch(debuggerRunsRequested())),
       mergeMap(() => {
-        return zip(
-          this.webappDataSource.fetchPluginsListing(),
-          this.webappDataSource.fetchRuns(),
-          this.webappDataSource.fetchEnvironments()
-        ).pipe(
-          map(([plugins]) => {
-            return pluginsListingLoaded({plugins});
-          }, catchError(() => of(pluginsListingFailed())))
-        ) as Observable<Action>;
+        return this.dataSource.fetchRuns().pipe(
+          map(
+            (runs) => {
+              return debuggerRunsLoaded({runs: runs as DebuggerRunListing});
+            }
+            // TODO(cais): Add catchError() to pipe.
+          )
+        );
       })
     )
   );
@@ -70,6 +65,6 @@ export class CoreEffects {
   constructor(
     private actions$: Actions,
     private store: Store<State>,
-    private webappDataSource: TBServerDataSource
+    private dataSource: Tfdbg2HttpServerDataSource
   ) {}
 }

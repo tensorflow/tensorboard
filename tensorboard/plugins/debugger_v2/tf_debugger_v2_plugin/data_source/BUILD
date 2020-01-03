@@ -1,0 +1,17 @@
+package(default_visibility = ["//tensorboard:internal"])
+
+load("@npm_angular_bazel//:index.bzl", "ng_module")
+
+ng_module(
+    name = "data_source",
+    srcs = [
+        "tfdbg2_data_source.ts",
+        "tfdbg2_data_source_module.ts",
+    ],
+    deps = [
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/store:types",
+        "//tensorboard/webapp/angular:expect_angular_common_http",
+        "@npm//@angular/common",
+        "@npm//@angular/core",
+    ],
+)

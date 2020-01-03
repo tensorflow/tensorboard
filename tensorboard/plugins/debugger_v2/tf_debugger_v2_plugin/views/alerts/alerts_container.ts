@@ -13,38 +13,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Component, OnInit} from '@angular/core';
-import {createSelector, select, Store} from '@ngrx/store';
-import {DebuggerRunListing, State} from './store/debugger_types';
+import {Store} from '@ngrx/store';
 
-import {debuggerLoaded} from './actions';
-import {getDebuggerRunListing} from './store';
+import {alertsViewLoaded} from '../../actions';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
+// TODO(cais): Move to a separate file.
+export interface AlertsState {}
+
 @Component({
-  selector: 'tf-debugger-v2',
+  selector: 'tf-debugger-v2-alerts',
   template: `
-    <debugger-component
-      [runs]="runs$ | async"
-      [runIds]="runsIds$ | async"
-    ></debugger-component>
+    <alerts-component></alerts-component>
   `,
 })
-export class DebuggerContainer implements OnInit {
-  readonly runs$ = this.store.pipe(select(getDebuggerRunListing));
-
-  readonly runsIds$ = this.store.pipe(
-    select(
-      createSelector(
-        getDebuggerRunListing,
-        (runs): string[] => Object.keys(runs)
-      )
-    )
-  );
-
-  constructor(private readonly store: Store<State>) {}
+export class AlertsContainer implements OnInit {
+  constructor(private readonly store: Store<AlertsState>) {}
 
   ngOnInit(): void {
-    this.store.dispatch(debuggerLoaded());
+    this.store.dispatch(alertsViewLoaded());
   }
 }

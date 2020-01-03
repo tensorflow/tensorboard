@@ -12,18 +12,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, Input} from '@angular/core';
-import {DebuggerRunListing} from './store/debugger_types';
+import {NgModule} from '@angular/core';
+import {HttpClientModule} from '@angular/common/http';
+import {Tfdbg2HttpServerDataSource} from './tfdbg2_data_source';
 
-@Component({
-  selector: 'debugger-component',
-  templateUrl: './debugger_component.ng.html',
-  styleUrls: ['./debugger_component.css'],
+@NgModule({
+  imports: [HttpClientModule],
+  providers: [Tfdbg2HttpServerDataSource],
 })
-export class DebuggerComponent {
-  @Input()
-  runs: DebuggerRunListing = {};
-
-  @Input()
-  runIds: string[] = [];
-}
+export class Tfdbg2ServerDataSourceModule {}
