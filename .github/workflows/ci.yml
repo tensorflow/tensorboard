@@ -6,6 +6,12 @@
 # Helpful YAML parser to clarify YAML syntax:
 # https://yaml-online-parser.appspot.com/
 
+<<<<<<< HEAD
+=======
+# For now, we only use GitHub Actions for lint checks, pending better
+# support for hermetic-style caching. See:
+# https://github.com/actions/cache/issues/109
+>>>>>>> f742e197d71ce686c48954c17a57c09d265b26b3
 name: CI
 
 on:
@@ -15,6 +21,7 @@ on:
       - '[0-9]+.*'
       - 'ci-*'
   pull_request: {}
+<<<<<<< HEAD
   schedule:
     # 13:00 UTC is 05:00 in Pacific standard time (UTC-8), which is well
     # after nightly TensorFlow wheels are released (around 2--3 AM) and
@@ -25,6 +32,12 @@ on:
 env:
   BAZEL: '0.26.1'
   BAZEL_SHA256SUM: '6c50e142a0a405d3d8598050d6c1b3920c8cdb82a7ffca6fc067cb474275148f'
+=======
+
+env:
+  BUILDIFIER: '0.29.0'
+  BUILDIFIER_SHA256SUM: '4c985c883eafdde9c0e8cf3c8595b8bfdf32e77571c369bf8ddae83b042028d6'
+>>>>>>> f742e197d71ce686c48954c17a57c09d265b26b3
 
 jobs:
   lint-flake8:
@@ -32,6 +45,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+<<<<<<< HEAD
+=======
+        # flake8 should run on each Python version that we target,
+        # because the errors and warnings can differ due to language
+        # changes, and we want to catch them all.
+>>>>>>> f742e197d71ce686c48954c17a57c09d265b26b3
         python_version: ['3.6']
     steps:
       - uses: actions/checkout@v1
@@ -45,6 +64,11 @@ jobs:
           pip install -r ./tensorboard/pip_package/requirements_dev.txt
       - run: pip freeze --all
       - name: 'Lint Python code for errors with flake8'
+<<<<<<< HEAD
+=======
+        # See: http://flake8.pycqa.org/en/3.7.8/user/error-codes.html
+        # Use the comment '# noqa: <error code>' to suppress.
+>>>>>>> f742e197d71ce686c48954c17a57c09d265b26b3
         run: flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
 
   lint-black-and-yaml:
@@ -61,8 +85,15 @@ jobs:
           pip install -r ./tensorboard/pip_package/requirements_dev.txt
       - run: pip freeze --all
       - name: 'Lint Python code for style with Black'
+<<<<<<< HEAD
         run: black --check .
       - name: 'Lint YAML for gotchas with yamllint'
+=======
+        # You can run `black .` to fix all Black complaints.
+        run: black --check .
+      - name: 'Lint YAML for gotchas with yamllint'
+        # Use '# yamllint disable-line rule:foo' to suppress.
+>>>>>>> f742e197d71ce686c48954c17a57c09d265b26b3
         run: yamllint -c docs/.yamllint docs docs/.yamllint
 
   lint-frontend:
@@ -71,8 +102,25 @@ jobs:
       - uses: actions/checkout@v1
       - uses: actions/setup-node@v1
       - run: yarn install --ignore-engines
+<<<<<<< HEAD
       - run: yarn lint
 
+=======
+        # You can run `yarn fix-lint` to fix all Prettier complaints.
+      - run: yarn lint
+
+  lint-build:
+    runs-on: ubuntu-16.04
+    steps:
+      - uses: actions/checkout@v1
+      - name: 'Set up Buildifier'
+        run: |
+          ci/download_buildifier.sh "${BUILDIFIER}" "${BUILDIFIER_SHA256SUM}" ~/buildifier
+          sudo mv ~/buildifier /usr/local/bin/buildifier
+      - name: 'Lint BUILD files'
+        run: git ls-files -z '*BUILD' | xargs -0 buildifier --mode=check
+
+>>>>>>> f742e197d71ce686c48954c17a57c09d265b26b3
   check-misc:
     runs-on: ubuntu-16.04
     steps:
@@ -82,6 +130,7 @@ jobs:
       - run: ./tensorboard/tools/license_test.sh
       - run: ./tensorboard/tools/mirror_urls_test.sh
       - run: ./tensorboard/tools/whitespace_hygiene_test.py
+<<<<<<< HEAD
 
   test:
     runs-on: ubuntu-16.04
@@ -157,3 +206,5 @@ jobs:
           bazel test //tensorboard/summary/writer:event_file_writer_s3_test
 
 # vim: sw=2 ts=2 sts=2
+=======
+>>>>>>> f742e197d71ce686c48954c17a57c09d265b26b3

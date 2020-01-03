@@ -2,7 +2,6 @@ dist: xenial
 language: python
 python:
   - "3.6"
-  - "2.7"
 
 branches:
   only:
@@ -73,29 +72,8 @@ install:
   - elapsed "install (done)"
 
 before_script:
+  # Note: Lint checks happen on GitHub Actions; see .github/workflows/ci.yml.
   - elapsed "before_script"
-  # Do a fail-fast check for Python syntax errors or undefined names.
-  # See: http://flake8.pycqa.org/en/3.7.8/user/error-codes.html
-  # Use the comment '# noqa: <error code>' to suppress.
-  - flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-  # Lint frontend code
-  - yarn lint
-  # Lint backend code
-  - if [ -n "${PY3}" ]; then black --check .; fi
-  # Lint .yaml docs files. Use '# yamllint disable-line rule:foo' to suppress.
-  - yamllint -c docs/.yamllint docs docs/.yamllint
-  # Lint BUILD files
-  - git ls-files -z '*BUILD' | xargs -0 buildifier --mode=check
-  # Make sure that IPython notebooks have valid Markdown.
-  - tensorboard/tools/docs_list_format_test.sh
-  # Make sure we aren't accidentally including work-in-progress code.
-  - tensorboard/tools/do_not_submit_test.sh
-  # Make sure all necessary files have the license information.
-  - tensorboard/tools/license_test.sh
-  # Make sure that build URLs are valid.
-  - tensorboard/tools/mirror_urls_test.sh
-  # Make sure that files have no trailing whitespace.
-  - tensorboard/tools/whitespace_hygiene_test.py
   - |
     # Specify subset of tests to run depending on TF installation config.
     # We condition the value of --test_tag_filters so that we can run the
