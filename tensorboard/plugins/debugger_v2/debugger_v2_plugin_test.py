@@ -248,7 +248,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         )
         self.assertEqual(
             json.loads(response.get_data()),
-            {"error": "Invalid begin index (-1)"}
+            {"error": "Invalid begin index (-1)"},
         )
 
         # begin = 2; end = 1
