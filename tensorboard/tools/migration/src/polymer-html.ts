@@ -1,6 +1,6 @@
 import * as ts from 'typescript';
 import * as path from 'path';
-import {Exporter, fs} from './helper';
+import {Exporter, fs, getPreamble} from './helper';
 import {Node} from './html-helper';
 import {updateSource} from './ts-helper';
 const parse5 = require('parse5');
@@ -117,5 +117,6 @@ export function transform(
     sourceFile.statements
   );
   sourceFile = updateSource(sourceFile, update);
-  exporter.writeFile(mainTsPath, sourceFile.getText());
+  const result = getPreamble(sourceContent) + sourceFile.getText();
+  exporter.writeFile(mainTsPath, result);
 }

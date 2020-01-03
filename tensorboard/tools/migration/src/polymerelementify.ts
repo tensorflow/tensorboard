@@ -1,5 +1,5 @@
 import * as ts from 'typescript';
-import {Exporter, TS_LICENSE} from './helper';
+import {Exporter, getPreamble} from './helper';
 import {updateSource} from './ts-helper';
 
 const Kind = ts.SyntaxKind;
@@ -683,10 +683,6 @@ export function transform(
   sourceContent: string,
   exporter: Exporter
 ) {
-  const range = ts.getLeadingCommentRanges(sourceContent, 0);
-  const preamble = range
-    ? range.map(({pos, end}) => sourceContent.slice(pos, end)).join('\n')
-    : TS_LICENSE;
   let sourceFile = ts.createSourceFile(
     fileName,
     sourceContent,
@@ -695,7 +691,6 @@ export function transform(
   );
   sourceFile = removeModuleWrappers(sourceFile);
   sourceFile = transformPolymer(sourceFile);
-  const result = `${preamble}
-${sourceFile.getText()}`;
+  const result = getPreamble(sourceContent) + sourceFile.getText();
   exporter.writeFile(fileName, result);
 }
