@@ -174,4 +174,4 @@ class LocalDebuggerV2DataProvider(provider.DataProvider):
                 self._multiplexer.ExecutionDigests(run, begin, end)
             )
         else:
-            raise ValueError("Unrecognized blob_key: %s" % key)
+            raise ValueError("Unrecognized blob_key: %s" % blob_key)

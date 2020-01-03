@@ -234,8 +234,8 @@ class DebuggerV2PluginTest(tf.test.TestCase):
             "application/json", response.headers.get("content-type")
         )
         self.assertEqual(
-            json.loads(response.get_data())["error"],
-            "end index (4) out of bounds (3)",
+            json.loads(response.get_data()),
+            {"error": "end index (4) out of bounds (3)"},
         )
 
         # begin = -1; end = 2
@@ -247,7 +247,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
             "application/json", response.headers.get("content-type")
         )
         self.assertEqual(
-            json.loads(response.get_data())["error"], "Invalid begin index (-1)"
+            response.get_data(), {"error": "Invalid begin index (-1)"}
         )
 
         # begin = 2; end = 1
@@ -259,8 +259,8 @@ class DebuggerV2PluginTest(tf.test.TestCase):
             "application/json", response.headers.get("content-type")
         )
         self.assertEqual(
-            json.loads(response.get_data())["error"],
-            "end index (1) is unexpected less than begin index (2)",
+            json.loads(response.get_data()),
+            {"error": "end index (1) is unexpected less than begin index (2)"},
         )
 
 
