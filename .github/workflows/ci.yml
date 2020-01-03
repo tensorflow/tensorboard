@@ -99,7 +99,7 @@ jobs:
 
   test:
     runs-on: ubuntu-16.04
-    needs: lint-flake8 # fail fast in case of "undefined variable" errors
+    needs: lint-python # fail fast in case of "undefined variable" errors
     strategy:
       fail-fast: false
       matrix:
