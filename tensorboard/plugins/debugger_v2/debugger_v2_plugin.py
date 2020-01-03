@@ -62,7 +62,6 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
         Returns:
           `True` if and only if data in tfdbg v2's DebugEvent format is available.
         """
-        # TODO(cais): Add unit test. DO NOT SUBMIT.
         return bool(self._data_provider.list_runs(""))
 
     def frontend_metadata(self):
