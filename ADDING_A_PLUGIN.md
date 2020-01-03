@@ -8,7 +8,7 @@ To get started right away, you can clone one of these examples:
   - [Basic summary 'Greeter'](./tensorboard/examples/plugins/example_basic)
   - [Raw scalars](./tensorboard/examples/plugins/example_raw_scalars)
 
-![Basic example plugin screenshot](tensorboard/docs/images/example_basic.png "Basic example plugin")
+![Example screenshot](./docs/images/example_basic.png "Basic example plugin")
 
 [example-basic]: https://github.com/tensorflow/tensorboard/blob/master/tensorboard/examples/plugins/example_basic
 
