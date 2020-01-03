@@ -33,13 +33,46 @@ from tensorboard.data import provider
 from tensorboard.plugins.debugger_v2 import debug_data_multiplexer
 
 
-DEBUGGER_V2_PLUGIN_NAME = "debugger-v2"
+PLUGIN_NAME = "debugger-v2"
+
+EXECUTION_DIGESTS_BLOB_TAG_PREFIX = "execution_digests"
 
 
-EXECUTION_DIGESTS_BOOK_BLOB_TAG = "execution_digests_book"
-EXECUTION_DIGESTS_BOOK_PAGE_TAG = "execution_digests_page"
-STACK_FRAMES_BLOB_TAG_PREFIX = "stack_frames_"
-SOURCE_FILES_BLOB_TAG = "source_files"
+def execution_digest_run_tag_filter(run, begin, end):
+    """Create a RunTagFilter for ExecutionDigests.
+
+    Args:
+      run: tfdbg2 run name.
+      begin: Beginning index of ExecutionDigests.
+      end: Ending index of ExecutionDigests.
+
+    Returns:
+      `RunTagFilter` for the run and range of ExecutionDigests.
+    """
+    return provider.RunTagFilter(
+        runs=[run],
+        tags=["%s_%d_%d" % (EXECUTION_DIGESTS_BLOB_TAG_PREFIX, begin, end)],
+    )
+
+
+def _parse_execution_digest_blob_key(blob_key):
+    key_body, run = blob_key.split(".")
+    key_body = key_body[len(EXECUTION_DIGESTS_BLOB_TAG_PREFIX) :]
+    begin = int(key_body.split("_")[1])
+    end = int(key_body.split("_")[2])
+    return run, begin, end
+
+
+class DebuggerV2Run(provider.Run):
+    def __init__(self, run_id, run_name, start_time, tensorflow_version):
+        super(DebuggerV2Run, self).__init__(
+            run_id=run_id, run_name=run_name, start_time=start_time
+        )
+        self._tensorflow_version = tensorflow_version
+
+    @property
+    def tensorflow_version(self):
+        return self._tensorflow_version
 
 
 class LocalDebuggerV2DataProvider(provider.DataProvider):
@@ -71,18 +104,27 @@ class LocalDebuggerV2DataProvider(provider.DataProvider):
         Returns:
           Run names as a list of str.
         """
-        return [
-            provider.Run(
-                run_id=run,  # use names as IDs
-                run_name=run,
-                start_time=self._get_first_event_timestamp(run),
+        runs = []
+        for run in self._multiplexer.Runs():
+            (
+                start_time,
+                tensorflow_version,
+            ) = self._get_first_event_timestamp_and_tensorflow_version(run)
+            runs.append(
+                DebuggerV2Run(
+                    run_id=run,  # use names as IDs
+                    run_name=run,
+                    start_time=start_time,
+                    tensorflow_version=tensorflow_version,
+                )
             )
-            for run in self._multiplexer.Runs()
-        ]
+        return runs
 
-    def _get_first_event_timestamp(self, run_name):
+    def _get_first_event_timestamp_and_tensorflow_version(self, run_name):
         try:
-            return self._multiplexer.FirstEventTimestamp(run_name)
+            return self._multiplexer.FirstEventTimestampAndTensorFlowVersion(
+                run_name
+            )
         except ValueError as e:
             return None
 
@@ -106,26 +148,31 @@ class LocalDebuggerV2DataProvider(provider.DataProvider):
     def read_blob_sequences(
         self, experiment_id, plugin_name, downsample=None, run_tag_filter=None
     ):
-        del experiment_id, downsample, run_tag_filter  # Unused.
-        if plugin_name != DEBUGGER_V2_PLUGIN_NAME:
+        del experiment_id, downsample  # Unused.
+        if plugin_name != PLUGIN_NAME:
             raise ValueError("Unsupported plugin_name: %s" % plugin_name)
         if not run_tag_filter.runs:
             raise ValueError(
-                "run_tag_filter.runs is expected to be specified, but is not.")
+                "run_tag_filter.runs is expected to be specified, but is not."
+            )
         if len(run_tag_filter.runs) != 1:
             raise ValueError(
                 "run_tag_filter.runs is expected to have length 1, "
-                "but instead has length %d" % len(run_tag_filter.tags))
+                "but instead has length %d" % len(run_tag_filter.tags)
+            )
         if not run_tag_filter:
             raise ValueError(
-                "run_tag_filter is expected to be specified, but is not.")
+                "run_tag_filter is expected to be specified, but is not."
+            )
         if not run_tag_filter.tags:
             raise ValueError(
-                "run_tag_filter.tags is expected to be specified, but is not.")
+                "run_tag_filter.tags is expected to be specified, but is not."
+            )
         if len(run_tag_filter.tags) != 1:
             raise ValueError(
                 "run_tag_filter.tags is expected to have length 1, "
-                "but instead has length %d" % len(run_tag_filter.tags))
+                "but instead has length %d" % len(run_tag_filter.tags)
+            )
 
         run = next(iter(run_tag_filter.runs))
         tag = next(iter(run_tag_filter.tags))
@@ -133,14 +180,9 @@ class LocalDebuggerV2DataProvider(provider.DataProvider):
         # requirement?
 
         if run in self._multiplexer.Runs():
-            if tag == EXECUTION_DIGESTS_BOOK_BLOB_TAG:
-                blob_ref = provider.BlobReference(
-                    blob_key="tag.%s" % run)
-                output = {
-                    run: {
-                        EXECUTION_DIGESTS_BOOK_BLOB_TAG: [blob_ref]
-                    }
-                }
+            if tag.startswith(EXECUTION_DIGESTS_BLOB_TAG_PREFIX):
+                blob_ref = provider.BlobReference(blob_key="%s.%s" % (tag, run))
+                output = {run: {tag: [blob_ref]}}
                 return output
 
             else:
@@ -149,9 +191,10 @@ class LocalDebuggerV2DataProvider(provider.DataProvider):
             return {}
 
     def read_blob(self, blob_key):
-        if blob_key.startswith(EXECUTION_DIGESTS_BOOK_BLOB_TAG + "."):
-            run = blob_key[len(EXECUTION_DIGESTS_BOOK_BLOB_TAG) + 1:]
-            return json.dumps(self._multiplexer.ExecutionDigestsBook(run))
+        if blob_key.startswith(EXECUTION_DIGESTS_BLOB_TAG_PREFIX):
+            run, begin, end = _parse_execution_digest_blob_key(blob_key)
+            return json.dumps(
+                self._multiplexer.ExecutionDigests(run, begin, end)
+            )
         else:
             raise ValueError("Unrecognized blob_key: %s" % key)
-

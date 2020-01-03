@@ -29,6 +29,17 @@ DEFAULT_DEBUGGER_RUN_NAME = "__default_debugger_run__"
 _DEFAULT_PAGE_SIZE = 1000
 
 
+def _execution_digest_to_json(execution_digest):
+    # TODO(cais): Use the .to_json() method when avaiable.
+    return {
+        "wall_time": execution_digest.wall_time,
+        "op_type": execution_digest.op_type,
+        "output_tensor_device_ids": list(
+            execution_digest.output_tensor_device_ids
+        ),
+    }
+
+
 class DebuggerV2EventMultiplexer(object):
     """A class used for accessing tfdbg v2 DebugEvent data on local filesystem.
 
@@ -50,7 +61,7 @@ class DebuggerV2EventMultiplexer(object):
         self._logdir = logdir
         self._reader = None
 
-    def FirstEventTimestamp(self, run):
+    def FirstEventTimestampAndTensorFlowVersion(self, run):
         """Return the timestamp of the first DebugEvent of the given run.
 
         This may perform I/O if no events have been loaded yet for the run.
@@ -62,8 +73,10 @@ class DebuggerV2EventMultiplexer(object):
             run of a tfdbg2-instrumented TensorFlow program.)
 
         Returns:
-          The wall_time of the first event of the run, which will be in seconds
-          since the epoch as a `float`.
+          A tuple with two items:
+            - The wall_time of the first event of the run, which will be in seconds
+              since the epoch as a `float`.
+            - TensorFlow version used by the debugged program.
         """
         if run != DEFAULT_DEBUGGER_RUN_NAME:
             raise ValueError(
@@ -73,8 +86,12 @@ class DebuggerV2EventMultiplexer(object):
         from tensorflow.python.debug.lib import debug_events_reader
 
         with debug_events_reader.DebugEventsReader(self._logdir) as reader:
-            metadata_iterator, _ = reader.metadata_iterator()
-            return next(metadata_iterator).wall_time
+            metadata_iterator = reader.metadata_iterator()
+            debug_event, _ = next(metadata_iterator)
+            return (
+                debug_event.wall_time,
+                debug_event.debug_metadata.tensorflow_version,
+            )
 
     def PluginRunToTagToContent(self, plugin_name):
         raise NotImplementedError(
@@ -121,41 +138,31 @@ class DebuggerV2EventMultiplexer(object):
             }
         }
 
-    def ExecutionDigestsBook(self, run):
+    def ExecutionDigests(self, run, begin, end):
         runs = self.Runs()
         if run not in runs:
             return None
         execution_digests = self._reader.executions(digest=True)
-        num_digests = len(execution_digests)
-        num_pages = math.ceil(num_digests / _DEFAULT_PAGE_SIZE)
+        if begin < 0:
+            raise IndexError("Invalid begin index (%d)" % begin)
+        if end > len(execution_digests):
+            raise IndexError(
+                "end index (%d) out of bounds (%d)"
+                % (end, len(execution_digests))
+            )
+        if end >= 0 and end < begin:
+            raise ValueError(
+                "end index (%d) is unexpected less than begin index (%d)"
+                % (end, begin)
+            )
+        if end < 0:  # This means all digests.
+            end = len(execution_digests)
         return {
-            "num_pages": num_pages,
-            "num_digests": num_pages,
-            "page_size": _DEFAULT_PAGE_SIZE,
-        }
-
-    def ExecutionDigestsPage(self, run, page_number):
-        runs = self.Runs()
-        if run not in runs:
-            return None
-        execution_digests = self._reader.executions(digest=True)
-        begin = _DEFAULT_PAGE_SIZE * page_number
-        end = begin_index + _DEFAULT_PAGE_SIZE
-        return {
-            "page_number": page_number,
             "begin": begin,
             "end": end,
+            "num_digests": len(execution_digests),
             "execution_digests": [
                 _execution_digest_to_json(digest)
                 for digest in execution_digests[begin:end]
             ],
         }
-
-
-def _execution_digest_to_json(self, execution_digest):
-    # TODO(cais): Use the .to_json() method when avaiable.
-    return {
-        "wall_time": execution_digest.wall_time,
-        "op_type": execution_digest.op_type,
-        "output_tensor_device_ids": execution_digest.output_tensor_device_ids,
-    }
