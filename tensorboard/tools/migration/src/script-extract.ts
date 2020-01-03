@@ -1,6 +1,6 @@
 import * as ts from 'typescript';
 import * as path from 'path';
-import {Exporter, TS_LICENSE} from './helper';
+import {Exporter, getPreamble} from './helper';
 import {Node, findScripts} from './html-helper';
 const parse5 = require('parse5');
 
@@ -60,6 +60,6 @@ export function transform(
   const newFilePath = path.join(path.dirname(fileName), newFileName);
   exporter.writeFile(
     newFilePath,
-    [TS_LICENSE, '\n', sourceFile.getText()].join('\n')
+    [getPreamble(content), '\n', sourceFile.getText()].join('\n')
   );
 }

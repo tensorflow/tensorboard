@@ -1,3 +1,4 @@
+import * as ts from 'typescript';
 import {
   readFileSync,
   writeFileSync,
@@ -24,6 +25,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 `;
+
+export function getPreamble(content: string) {
+  const range = ts.getLeadingCommentRanges(content, 0);
+  const preamble = range
+    ? range.map(({pos, end}) => content.slice(pos, end)).join('\n')
+    : TS_LICENSE;
+  return preamble + '\n';
+}
 
 function centerText(text: string, character = '=', fillAll = false): string {
   const prettyText = text.length ? ' ' + text + ' ' : '';
