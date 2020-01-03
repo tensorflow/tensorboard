@@ -26,9 +26,20 @@ with a more complete implementation of DataProvider such as
 MultiplexerDataProvider.
 """
 
+import json
+
 from tensorboard.data import provider
 
 from tensorboard.plugins.debugger_v2 import debug_data_multiplexer
+
+
+DEBUGGER_V2_PLUGIN_NAME = "debugger-v2"
+
+
+EXECUTION_DIGESTS_BOOK_BLOB_TAG = "execution_digests_book"
+EXECUTION_DIGESTS_BOOK_PAGE_TAG = "execution_digests_page"
+STACK_FRAMES_BLOB_TAG_PREFIX = "stack_frames_"
+SOURCE_FILES_BLOB_TAG = "source_files"
 
 
 class LocalDebuggerV2DataProvider(provider.DataProvider):
@@ -95,11 +106,52 @@ class LocalDebuggerV2DataProvider(provider.DataProvider):
     def read_blob_sequences(
         self, experiment_id, plugin_name, downsample=None, run_tag_filter=None
     ):
-        del experiment_id, plugin_name, downsample, run_tag_filter  # Unused.
-        # TODO(cais): Implement this.
-        raise NotImplementedError()
+        del experiment_id, downsample, run_tag_filter  # Unused.
+        if plugin_name != DEBUGGER_V2_PLUGIN_NAME:
+            raise ValueError("Unsupported plugin_name: %s" % plugin_name)
+        if not run_tag_filter.runs:
+            raise ValueError(
+                "run_tag_filter.runs is expected to be specified, but is not.")
+        if len(run_tag_filter.runs) != 1:
+            raise ValueError(
+                "run_tag_filter.runs is expected to have length 1, "
+                "but instead has length %d" % len(run_tag_filter.tags))
+        if not run_tag_filter:
+            raise ValueError(
+                "run_tag_filter is expected to be specified, but is not.")
+        if not run_tag_filter.tags:
+            raise ValueError(
+                "run_tag_filter.tags is expected to be specified, but is not.")
+        if len(run_tag_filter.tags) != 1:
+            raise ValueError(
+                "run_tag_filter.tags is expected to have length 1, "
+                "but instead has length %d" % len(run_tag_filter.tags))
+
+        run = next(iter(run_tag_filter.runs))
+        tag = next(iter(run_tag_filter.tags))
+        # TODO(cais): Can we do a loop here instead and relax the len == 1
+        # requirement?
+
+        if run in self._multiplexer.Runs():
+            if tag == EXECUTION_DIGESTS_BOOK_BLOB_TAG:
+                blob_ref = provider.BlobReference(
+                    blob_key="tag.%s" % run)
+                output = {
+                    run: {
+                        EXECUTION_DIGESTS_BOOK_BLOB_TAG: [blob_ref]
+                    }
+                }
+                return output
+
+            else:
+                raise ValueError("Unrecognized tag: %s" % tag)
+        else:
+            return {}
 
     def read_blob(self, blob_key):
-        del blob_key  # Unused currently.
-        # TODO(cais): Implement this.
-        raise NotImplementedError()
+        if blob_key.startswith(EXECUTION_DIGESTS_BOOK_BLOB_TAG + "."):
+            run = blob_key[len(EXECUTION_DIGESTS_BOOK_BLOB_TAG) + 1:]
+            return json.dumps(self._multiplexer.ExecutionDigestsBook(run))
+        else:
+            raise ValueError("Unrecognized blob_key: %s" % key)
+
