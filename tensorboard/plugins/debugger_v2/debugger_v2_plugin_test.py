@@ -123,9 +123,8 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         data = json.loads(response.get_data())
         self.assertEqual(list(data.keys()), ["__default_debugger_run__"])
         run = data["__default_debugger_run__"]
-        self.assertIsInstance(run["startTimeMs"], float)
-        self.assertGreater(run["startTimeMs"], 0)
-        self.assertEqual(run["tensorFlowVersion"], tf.__version__)
+        self.assertIsInstance(run["start_time"], float)
+        self.assertGreater(run["start_time"], 0)
 
     def testServeExecutionDigestsWithEqualBeginAndEnd(self):
         _generate_tfdbg_v2_data(self.logdir)
@@ -262,6 +261,21 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertEqual(
             json.loads(response.get_data()),
             {"error": "end index (1) is unexpected less than begin index (2)"},
+        )
+
+    def testServeExecutionDigests400ResponseIfRunParamIsNotSpecified(self):
+        response = self.server.get(
+            # `run` parameter is not specified here.
+            _ROUTE_PREFIX
+            + "/execution/digests?begin=0&end=0"
+        )
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {"error": "run parameter is not provided"},
         )
 
 

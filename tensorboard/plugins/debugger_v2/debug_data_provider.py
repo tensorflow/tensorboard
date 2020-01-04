@@ -56,23 +56,23 @@ def execution_digest_run_tag_filter(run, begin, end):
 
 
 def _parse_execution_digest_blob_key(blob_key):
-    key_body, run = blob_key.split(".")
+    """Parse the BLOB key for ExecutionDigests.
+
+    Args:
+      blob_key: The BLOB key to parse. By convention, it should have the format:
+       `${EXECUTION_DIGESTS_BLOB_TAG_PREFIX}_${begin}_${end}.${run_id}`
+
+    Returns:
+      - run ID
+      - begin index 
+      - end index
+    """
+
+    key_body, run = blob_key.split(".", 1)
     key_body = key_body[len(EXECUTION_DIGESTS_BLOB_TAG_PREFIX) :]
     begin = int(key_body.split("_")[1])
     end = int(key_body.split("_")[2])
     return run, begin, end
-
-
-class DebuggerV2Run(provider.Run):
-    def __init__(self, run_id, run_name, start_time, tensorflow_version):
-        super(DebuggerV2Run, self).__init__(
-            run_id=run_id, run_name=run_name, start_time=start_time
-        )
-        self._tensorflow_version = tensorflow_version
-
-    @property
-    def tensorflow_version(self):
-        return self._tensorflow_version
 
 
 class LocalDebuggerV2DataProvider(provider.DataProvider):
@@ -104,27 +104,18 @@ class LocalDebuggerV2DataProvider(provider.DataProvider):
         Returns:
           Run names as a list of str.
         """
-        runs = []
-        for run in self._multiplexer.Runs():
-            (
-                start_time,
-                tensorflow_version,
-            ) = self._get_first_event_timestamp_and_tensorflow_version(run)
-            runs.append(
-                DebuggerV2Run(
-                    run_id=run,  # use names as IDs
-                    run_name=run,
-                    start_time=start_time,
-                    tensorflow_version=tensorflow_version,
-                )
+        return [
+            provider.Run(
+                run_id=run,  # use names as IDs
+                run_name=run,
+                start_time=self._get_first_event_timestamp(run),
             )
-        return runs
+            for run in self._multiplexer.Runs()
+        ]
 
-    def _get_first_event_timestamp_and_tensorflow_version(self, run_name):
+    def _get_first_event_timestamp(self, run_name):
         try:
-            return self._multiplexer.FirstEventTimestampAndTensorFlowVersion(
-                run_name
-            )
+            return self._multiplexer.FirstEventTimestamp(run_name)
         except ValueError as e:
             return None
 
@@ -151,15 +142,21 @@ class LocalDebuggerV2DataProvider(provider.DataProvider):
         del experiment_id, downsample  # Unused.
         if plugin_name != PLUGIN_NAME:
             raise ValueError("Unsupported plugin_name: %s" % plugin_name)
-        if not run_tag_filter.runs:
+        if run_tag_filter.runs is None:
             raise ValueError(
                 "run_tag_filter.runs is expected to be specified, but is not."
             )
+        if run_tag_filter.tags is None:
+            raise ValueError(
+                "run_tag_filter.tags is expected to be specified, but is not."
+            )
 
         output = dict()
+        existing_runs = self._multiplexer.Runs()
         for run in run_tag_filter.runs:
-            if run in self._multiplexer.Runs():
-                output[run] = dict()
+            if run not in existing_runs:
+                continue
+            output[run] = dict()
             for tag in run_tag_filter.tags:
                 if tag.startswith(EXECUTION_DIGESTS_BLOB_TAG_PREFIX):
                     output[run][tag] = [

@@ -75,16 +75,20 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
         runs = self._data_provider.list_runs(experiment)
         run_listing = dict()
         for run in runs:
-            run_listing[run.run_id] = {
-                "startTimeMs": run.start_time * 1e3,
-                "tensorFlowVersion": run.tensorflow_version,
-            }
+            run_listing[run.run_id] = {"start_time": run.start_time}
         return http_util.Respond(request, run_listing, "application/json")
 
     @wrappers.Request.application
     def serve_execution_digests(self, request):
         experiment = plugin_util.experiment_id(request.environ)
         run = request.args.get("run")
+        if run is None:
+            return http_util.Respond(
+                request,
+                {"error": "run parameter is not provided"},
+                "application/json",
+                code=400,
+            )
         begin = int(request.args.get("begin", "0"))
         end = int(request.args.get("end", "-1"))
         run_tag_filter = debug_data_provider.execution_digest_run_tag_filter(

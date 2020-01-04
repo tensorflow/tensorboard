@@ -59,7 +59,7 @@ class DebuggerV2EventMultiplexer(object):
         self._logdir = logdir
         self._reader = None
 
-    def FirstEventTimestampAndTensorFlowVersion(self, run):
+    def FirstEventTimestamp(self, run):
         """Return the timestamp of the first DebugEvent of the given run.
 
         This may perform I/O if no events have been loaded yet for the run.
@@ -71,25 +71,17 @@ class DebuggerV2EventMultiplexer(object):
             run of a tfdbg2-instrumented TensorFlow program.)
 
         Returns:
-          A tuple with two items:
-            - The wall_time of the first event of the run, which will be in seconds
-              since the epoch as a `float`.
-            - TensorFlow version used by the debugged program.
+            The wall_time of the first event of the run, which will be in seconds
+            since the epoch as a `float`.
         """
+        if self._reader is None:
+            raise ValueError("No tfdbg2 runs exists.")
         if run != DEFAULT_DEBUGGER_RUN_NAME:
             raise ValueError(
                 "Expected run name to be %s, but got %s"
                 % (DEFAULT_DEBUGGER_RUN_NAME, run)
             )
-        from tensorflow.python.debug.lib import debug_events_reader
-
-        with debug_events_reader.DebugEventsReader(self._logdir) as reader:
-            metadata_iterator = reader.metadata_iterator()
-            debug_event, _ = next(metadata_iterator)
-            return (
-                debug_event.wall_time,
-                debug_event.debug_metadata.tensorflow_version,
-            )
+        return self._reader.starting_wall_time()
 
     def PluginRunToTagToContent(self, plugin_name):
         raise NotImplementedError(
