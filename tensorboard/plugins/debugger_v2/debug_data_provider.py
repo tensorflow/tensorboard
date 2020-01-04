@@ -64,7 +64,7 @@ def _parse_execution_digest_blob_key(blob_key):
 
     Returns:
       - run ID
-      - begin index 
+      - begin index
       - end index
     """
 
