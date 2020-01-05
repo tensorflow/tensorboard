@@ -56,7 +56,7 @@ def IsTensorFlowEventsFile(path):
     Returns:
       If path is formatted like a TensorFlowEventsFile. Dummy files such as
         those created with the '.profile-empty' suffixes and meant to hold
-        on `Summary` protos are treated as true TensorFlowEventsFiles. For
+        no `Summary` protos are treated as true TensorFlowEventsFiles. For
         background, see: https://github.com/tensorflow/tensorboard/issues/2084.
     """
     if not path:
