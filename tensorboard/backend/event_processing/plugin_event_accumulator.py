@@ -624,13 +624,13 @@ def _GeneratorFromPath(path, event_file_active_filter=None):
     """Create an event generator for file or directory at given path string."""
     if not path:
         raise ValueError("path must be a valid string")
-    if io_wrapper.IsTensorFlowEventsFile(path):
+    if io_wrapper.IsSummaryEventsFile(path):
         return event_file_loader.EventFileLoader(path)
     elif event_file_active_filter:
         return directory_loader.DirectoryLoader(
             path,
             event_file_loader.TimestampedEventFileLoader,
-            path_filter=io_wrapper.IsTensorFlowEventsFile,
+            path_filter=io_wrapper.IsSummaryEventsFile,
             active_filter=event_file_active_filter,
         )
     else:

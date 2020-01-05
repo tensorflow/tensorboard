@@ -58,16 +58,28 @@ class IoWrapperTest(tf.test.TestCase):
         self.assertEqual(io_wrapper.PathSeparator("/cns/tmp/foo"), "/")
         self.assertEqual(io_wrapper.PathSeparator("gs://foo"), "/")
 
-    def testIsIsTensorFlowEventsFileTrue(self):
+    def testIsTensorFlowEventsFileTrue(self):
         self.assertTrue(
             io_wrapper.IsTensorFlowEventsFile(
                 "/logdir/events.out.tfevents.1473720042.com"
             )
         )
 
-    def testIsIsTensorFlowEventsFileFalse(self):
+    def testIsSummaryEventsFileTrue(self):
+        self.assertTrue(
+            io_wrapper.IsSummaryEventsFile(
+                "/logdir/events.out.tfevents.1473720042.com"
+            )
+        )
+
+    def testIsTensorFlowEventsFileFalse(self):
         self.assertFalse(
             io_wrapper.IsTensorFlowEventsFile("/logdir/model.ckpt")
+        )
+
+    def testIsSummaryEventsFileFalse(self):
+        self.assertFalse(
+            io_wrapper.IsSummaryEventsFile("/logdir/model.ckpt")
         )
 
     def testIsIsTensorFlowEventsFileWithEmptyInput(self):
@@ -75,6 +87,19 @@ class IoWrapperTest(tf.test.TestCase):
             self, ValueError, r"Path must be a nonempty string"
         ):
             io_wrapper.IsTensorFlowEventsFile("")
+
+    def testIsTensorFlowEventsFilesReturnsTrueForProfileEmptyEventsFiles(self):
+        self.assertTrue(
+            io_wrapper.IsTensorFlowEventsFile(
+                "/logdir/events.out.tfevents.1473720042.alice.profile-empty")
+        )
+
+
+    def testIsSummaryEventsFilesReturnsFalseForProfileEmptyEventsFiles(self):
+        self.assertFalse(
+            io_wrapper.IsSummaryEventsFile(
+                "/logdir/events.out.tfevents.1473720042.alice.profile-empty")
+        )
 
     def testListDirectoryAbsolute(self):
         temp_dir = tempfile.mkdtemp(prefix=self.get_temp_dir())

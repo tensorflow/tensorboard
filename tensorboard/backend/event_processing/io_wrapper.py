@@ -61,6 +61,11 @@ def IsTensorFlowEventsFile(path):
     return "tfevents" in tf.compat.as_str_any(os.path.basename(path))
 
 
+def IsSummaryEventsFile(path):
+    """TODO(cais): Doc string."""
+    return IsTensorFlowEventsFile(path) and not path.endswith(".profile-empty")
+
+
 def ListDirectoryAbsolute(directory):
     """Yields all files in the given directory.
 
