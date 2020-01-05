@@ -78,9 +78,7 @@ class IoWrapperTest(tf.test.TestCase):
         )
 
     def testIsSummaryEventsFileFalse(self):
-        self.assertFalse(
-            io_wrapper.IsSummaryEventsFile("/logdir/model.ckpt")
-        )
+        self.assertFalse(io_wrapper.IsSummaryEventsFile("/logdir/model.ckpt"))
 
     def testIsIsTensorFlowEventsFileWithEmptyInput(self):
         with six.assertRaisesRegex(
@@ -91,14 +89,15 @@ class IoWrapperTest(tf.test.TestCase):
     def testIsTensorFlowEventsFilesReturnsTrueForProfileEmptyEventsFiles(self):
         self.assertTrue(
             io_wrapper.IsTensorFlowEventsFile(
-                "/logdir/events.out.tfevents.1473720042.alice.profile-empty")
+                "/logdir/events.out.tfevents.1473720042.alice.profile-empty"
+            )
         )
-
 
     def testIsSummaryEventsFilesReturnsFalseForProfileEmptyEventsFiles(self):
         self.assertFalse(
             io_wrapper.IsSummaryEventsFile(
-                "/logdir/events.out.tfevents.1473720042.alice.profile-empty")
+                "/logdir/events.out.tfevents.1473720042.alice.profile-empty"
+            )
         )
 
     def testListDirectoryAbsolute(self):

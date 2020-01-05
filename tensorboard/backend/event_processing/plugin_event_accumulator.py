@@ -637,7 +637,7 @@ def _GeneratorFromPath(path, event_file_active_filter=None):
         return directory_watcher.DirectoryWatcher(
             path,
             event_file_loader.EventFileLoader,
-            io_wrapper.IsTensorFlowEventsFile,
+            io_wrapper.IsSummaryEventsFile,
         )
 
 
