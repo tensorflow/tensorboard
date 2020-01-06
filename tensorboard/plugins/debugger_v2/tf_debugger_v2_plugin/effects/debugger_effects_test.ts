@@ -66,8 +66,7 @@ describe('Debugger effects', () => {
     it('debugerLoaded action triggers run loading that succeeeds', () => {
       const runListingForTest: DebuggerRunListing = {
         foo_run: {
-          tensorFlowVersion: '2.2.0',
-          startTimeMs: 1337,
+          start_time: 1337,
         },
       };
       const fetchRuns = spyOn(

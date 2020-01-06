@@ -80,8 +80,7 @@ describe('Debugger Container test', () => {
         createDebuggerState({
           runs: {
             foo_run: {
-              startTimeMs: 111,
-              tensorFlowVersion: '2.1.0',
+              start_time: 111,
             },
           },
           runsLoaded: {

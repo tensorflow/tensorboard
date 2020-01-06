@@ -27,6 +27,17 @@ from __future__ import print_function
 DEFAULT_DEBUGGER_RUN_NAME = "__default_debugger_run__"
 
 
+def _execution_digest_to_json(execution_digest):
+    # TODO(cais): Use the .to_json() method when avaiable.
+    return {
+        "wall_time": execution_digest.wall_time,
+        "op_type": execution_digest.op_type,
+        "output_tensor_device_ids": list(
+            execution_digest.output_tensor_device_ids
+        ),
+    }
+
+
 class DebuggerV2EventMultiplexer(object):
     """A class used for accessing tfdbg v2 DebugEvent data on local filesystem.
 
@@ -46,7 +57,7 @@ class DebuggerV2EventMultiplexer(object):
           logdir: Path to the directory to load the tfdbg v2 data from.
         """
         self._logdir = logdir
-        # TODO(cais): Start off a reading thread here.
+        self._reader = None
 
     def FirstEventTimestamp(self, run):
         """Return the timestamp of the first DebugEvent of the given run.
@@ -60,19 +71,17 @@ class DebuggerV2EventMultiplexer(object):
             run of a tfdbg2-instrumented TensorFlow program.)
 
         Returns:
-          The wall_time of the first event of the run, which will be in seconds
-          since the epoch as a `float`.
+            The wall_time of the first event of the run, which will be in seconds
+            since the epoch as a `float`.
         """
+        if self._reader is None:
+            raise ValueError("No tfdbg2 runs exists.")
         if run != DEFAULT_DEBUGGER_RUN_NAME:
             raise ValueError(
                 "Expected run name to be %s, but got %s"
                 % (DEFAULT_DEBUGGER_RUN_NAME, run)
             )
-        from tensorflow.python.debug.lib import debug_events_reader
-
-        with debug_events_reader.DebugEventsReader(self._logdir) as reader:
-            metadata_iterator, _ = reader.metadata_iterator()
-            return next(metadata_iterator).wall_time
+        return self._reader.starting_wall_time()
 
     def PluginRunToTagToContent(self, plugin_name):
         raise NotImplementedError(
@@ -96,22 +105,56 @@ class DebuggerV2EventMultiplexer(object):
             at most one DebugEvent file set per directory.
         If no tfdbg2-format data exists in the `logdir`, an empty `dict`.
         """
-        reader = None
-        from tensorflow.python.debug.lib import debug_events_reader
+        if self._reader is None:
+            from tensorflow.python.debug.lib import debug_events_reader
 
-        try:
-            reader = debug_events_reader.DebugDataReader(self._logdir)
-            # NOTE(cais): Currently each logdir is enforced to have only one
-            # DebugEvent file set. So we add hard-coded default run name.
-        except ValueError as error:
-            # When no DebugEvent file set is found in the logdir, a `ValueError`
-            # is thrown.
-            return {}
-        with reader:
-            return {
-                DEFAULT_DEBUGGER_RUN_NAME: {
-                    # TODO(cais): Add the semantically meaningful tag names such as
-                    # 'execution_digests_book', 'alerts_book'
-                    "debugger-v2": []
-                }
+            try:
+                self._reader = debug_events_reader.DebugDataReader(self._logdir)
+                # NOTE(cais): Currently each logdir is enforced to have only one
+                # DebugEvent file set. So we add hard-coded default run name.
+                self._reader.update()
+                # TODO(cais): Start off a reading thread here, instead of being
+                # called only once here.
+            except ValueError as error:
+                # When no DebugEvent file set is found in the logdir, a
+                # `ValueError` is thrown.
+                return {}
+
+        return {
+            DEFAULT_DEBUGGER_RUN_NAME: {
+                # TODO(cais): Add the semantically meaningful tag names such as
+                # 'execution_digests_book', 'alerts_book'
+                "debugger-v2": []
             }
+        }
+
+    def ExecutionDigests(self, run, begin, end):
+        runs = self.Runs()
+        if run not in runs:
+            return None
+        # TODO(cais): For scalability, use begin and end kwargs when available in
+        # `DebugDataReader.execution()`.`
+        execution_digests = self._reader.executions(digest=True)
+        if begin < 0:
+            raise IndexError("Invalid begin index (%d)" % begin)
+        if end > len(execution_digests):
+            raise IndexError(
+                "end index (%d) out of bounds (%d)"
+                % (end, len(execution_digests))
+            )
+        if end >= 0 and end < begin:
+            raise ValueError(
+                "end index (%d) is unexpected less than begin index (%d)"
+                % (end, begin)
+            )
+        if end < 0:  # This means all digests.
+            end = len(execution_digests)
+        return {
+            "begin": begin,
+            "end": end,
+            "num_digests": len(execution_digests),
+            "execution_digests": [
+                _execution_digest_to_json(digest)
+                for digest in execution_digests[begin:end]
+            ],
+        }

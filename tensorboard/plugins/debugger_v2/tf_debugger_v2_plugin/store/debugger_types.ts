@@ -20,11 +20,8 @@ export {DataLoadState, LoadState} from '../../../../webapp/types/data';
 export const DEBUGGER_FEATURE_KEY = 'debugger';
 
 export interface DebuggerRunMetadata {
-  // Time at which the debugger run started. Milliseconds since the epoch.
-  startTimeMs: number;
-
-  // TensorFlow Version string.
-  tensorFlowVersion: string;
+  // Time at which the debugger run started. Seconds since the epoch.
+  start_time: number;
 }
 
 export interface DebuggerRunListing {
