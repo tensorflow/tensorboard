@@ -13,5 +13,6 @@ ng_module(
         "//tensorboard/webapp/angular:expect_angular_common_http",
         "@npm//@angular/common",
         "@npm//@angular/core",
+        "@npm//rxjs",
     ],
 )
