@@ -13,6 +13,7 @@ ng_module(
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/actions",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/data_source",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/store",
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/store:types",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@ngrx/effects",
