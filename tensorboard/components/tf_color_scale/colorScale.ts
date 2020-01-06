@@ -89,11 +89,9 @@ namespace tf_color_scale {
     ];
   }
 
-  export const [
-    runsColorScale,
-    runsColorReassign,
-  ] = createAutoUpdateColorScale(tf_backend.runsStore, () =>
-    tf_backend.runsStore.getRuns()
+  export const [runsColorScale, runsColorReassign] = createAutoUpdateColorScale(
+    tf_backend.runsStore,
+    () => tf_backend.runsStore.getRuns()
   );
 
   export const [
