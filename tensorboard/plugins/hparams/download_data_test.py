@@ -217,8 +217,8 @@ EXPECTED_LATEX = r"""\begin{table}[tbp]
 \begin{tabular}{llllllll}
 initial\_temp & final\_temp & string\_hparam & bool\_hparam & optional\_string\_hparam & current\_temp & delta\_temp & optional\_metric \\ \hline
 $270$ & $150$ & a string & $1$ &  & $10$ & $15$ & $33$ \\
-$280$ & $100$ & AAAAA & $0$ &  & $51$ & $44.5$ \\
-$300$ & $1.2\cdot 10^{-5}$ & a string\_3 & $1$ & BB & $101$ & $-1.51\cdot 10^{7}$ \\
+$280$ & $100$ & AAAAA & $0$ &  & $51$ & $44.5$ & - \\
+$300$ & $1.2\cdot 10^{-5}$ & a string\_3 & $1$ & BB & $101$ & $-1.51\cdot 10^{7}$ & - \\
 \hline
 \end{tabular}
 \end{table}
@@ -226,29 +226,34 @@ $300$ & $1.2\cdot 10^{-5}$ & a string\_3 & $1$ & BB & $101$ & $-1.51\cdot 10^{7}
 
 EXPECTED_CSV = """initial_temp,final_temp,string_hparam,bool_hparam,optional_string_hparam,current_temp,delta_temp,optional_metric\r
 270.0,150.0,a string,True,,10.0,15.0,33.0\r
-280.0,100.0,AAAAA,False,,51.0,44.5\r
-300.0,1.2e-05,a string_3,True,BB,101.0,-15100000.0\r
+280.0,100.0,AAAAA,False,,51.0,44.5,\r
+300.0,1.2e-05,a string_3,True,BB,101.0,-15100000.0,\r
 """
 
 
 class DownloadDataTest(tf.test.TestCase):
     def setUp(self):
-        self._mock_tb_context = mock.create_autospec(base_plugin.TBContext)
         self._mock_multiplexer = mock.create_autospec(
             plugin_event_multiplexer.EventMultiplexer
         )
-        self._mock_tb_context.multiplexer = self._mock_multiplexer
+        self._mock_tb_context = base_plugin.TBContext(
+            multiplexer=self._mock_multiplexer
+        )
 
     def _run_handler(self, experiment, session_groups, response_format):
         experiment_proto = text_format.Merge(experiment, api_pb2.Experiment())
         session_groups_proto = text_format.Merge(
             session_groups, api_pb2.ListSessionGroupsResponse()
         )
+        num_columns = len(experiment_proto.hparam_infos) + len(
+            experiment_proto.metric_infos
+        )
         handler = download_data.Handler(
             backend_context.Context(self._mock_tb_context),
             experiment_proto,
             session_groups_proto,
             response_format,
+            [True] * num_columns,
         )
         return handler.run()
 
@@ -284,8 +289,17 @@ class DownloadDataTest(tf.test.TestCase):
             ],
             "rows": [
                 [270.0, 150.0, "a string", True, "", 10.0, 15.0, 33.0],
-                [280.0, 100.0, "AAAAA", False, "", 51.0, 44.5],
-                [300.0, 1.2e-05, "a string_3", True, "BB", 101.0, -15100000.0],
+                [280.0, 100.0, "AAAAA", False, "", 51.0, 44.5, None],
+                [
+                    300.0,
+                    1.2e-05,
+                    "a string_3",
+                    True,
+                    "BB",
+                    101.0,
+                    -15100000.0,
+                    None,
+                ],
             ],
         }
         self.assertEqual(expected_result, body)

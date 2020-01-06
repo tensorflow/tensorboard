@@ -18,11 +18,12 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import csv
+import math
+
+import six
 
 from tensorboard.plugins.hparams import error
-from six import StringIO
-import math
-import csv
 
 
 class OutputFormat(object):
@@ -36,7 +37,14 @@ class OutputFormat(object):
 class Handler(object):
     """Handles a DownloadData request."""
 
-    def __init__(self, context, experiment, session_groups, response_format):
+    def __init__(
+        self,
+        context,
+        experiment,
+        session_groups,
+        response_format,
+        columns_visibility,
+    ):
         """Constructor.
 
         Args:
@@ -44,11 +52,13 @@ class Handler(object):
           experiment: Experiment proto.
           session_groups: ListSessionGroupsResponse proto.
           response_format: A string in the OutputFormat enum.
+          columns_visibility: A list of boolean values to filter columns.
         """
         self._context = context
         self._experiment = experiment
         self._session_groups = session_groups
         self._response_format = response_format
+        self._columns_visibility = columns_visibility
 
     def run(self):
         """Handles the request specified on construction.
@@ -60,6 +70,7 @@ class Handler(object):
         experiment = self._experiment
         session_groups = self._session_groups
         response_format = self._response_format
+        visibility = self._columns_visibility
 
         header = []
         for hparam_info in experiment.hparam_infos:
@@ -67,6 +78,11 @@ class Handler(object):
 
         for metric_info in experiment.metric_infos:
             header.append(metric_info.display_name or metric_info.name.tag)
+
+        def _filter_columns(row):
+            return [value for value, visible in zip(row, visibility) if visible]
+
+        header = _filter_columns(header)
 
         rows = []
 
@@ -80,13 +96,21 @@ class Handler(object):
             # hyperparameter values can be optional in a session group
             return ""
 
+        def _get_metric_id(metric):
+            return metric.group + "." + metric.tag
+
         for group in session_groups.session_groups:
             row = []
             for hparam_info in experiment.hparam_infos:
                 row.append(_get_value(group.hparams[hparam_info.name]))
+            metric_values = {}
             for metric_value in group.metric_values:
-                row.append(metric_value.value)
-            rows.append(row)
+                metric_id = _get_metric_id(metric_value.name)
+                metric_values[metric_id] = metric_value.value
+            for metric_info in experiment.metric_infos:
+                metric_id = _get_metric_id(metric_info.name)
+                row.append(metric_values.get(metric_id))
+            rows.append(_filter_columns(row))
 
         if response_format == OutputFormat.JSON:
             mime_type = "application/json"
@@ -94,7 +118,9 @@ class Handler(object):
         elif response_format == OutputFormat.LATEX:
 
             def latex_format(value):
-                if isinstance(value, int):
+                if value is None:
+                    return "-"
+                elif isinstance(value, int):
                     return "$%d$" % value
                 elif isinstance(value, float):
                     if math.isnan(value):
@@ -124,7 +150,7 @@ class Handler(object):
             bottom_part = "\\hline\n\\end{tabular}\n\\end{table}\n"
             body = top_part + header_part + middle_part + bottom_part
         elif response_format == OutputFormat.CSV:
-            string_io = StringIO()
+            string_io = six.StringIO()
             writer = csv.writer(string_io)
             writer.writerow(header)
             writer.writerows(rows)

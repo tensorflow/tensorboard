@@ -64,6 +64,7 @@ py_test(
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/backend/event_processing:event_multiplexer",
+        "@com_google_protobuf//:protobuf_python",
         "@org_pythonhosted_mock",
     ],
 )

@@ -98,6 +98,9 @@ class HParamsPlugin(base_plugin.TBPlugin):
     def download_data_route(self, request):
         try:
             response_format = request.args.get("format")
+            columns_visibility = json.loads(
+                request.args.get("columnsVisibility")
+            )
             request_proto = _parse_request_argument(
                 request, api_pb2.ListSessionGroupsRequest
             )
@@ -106,7 +109,11 @@ class HParamsPlugin(base_plugin.TBPlugin):
             ).run()
             experiment = get_experiment.Handler(self._context).run()
             body, mime_type = download_data.Handler(
-                self._context, experiment, session_groups, response_format
+                self._context,
+                experiment,
+                session_groups,
+                response_format,
+                columns_visibility,
             ).run()
             return http_util.Respond(request, body, mime_type)
         except error.HParamsError as e:

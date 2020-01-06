@@ -235,25 +235,25 @@ TODO(erez): Add aggregation controls for repeated sessions.
               </div>
             </div>
             <div class="section download">
-              <template is="dom-if" if="[[_hparams]]">
+              <template is="dom-if" if="[[_sessionGroupsRequest]]">
                 Download data as
                 <span>
                   <a
                     id="csvLink"
                     download="hparams_table.csv"
-                    href="[[_csvUrl()]]"
+                    href="[[_csvUrl(_sessionGroupsRequest, _hparams, _metrics)]]"
                     >CSV</a
                   >
                   <a
                     id="jsonLink"
                     download="hparams_table.json"
-                    href="[[_jsonUrl()]]"
+                    href="[[_jsonUrl(_sessionGroupsRequest, _hparams, _metrics)]]"
                     >JSON</a
                   >
                   <a
                     id="latexLink"
                     download="hparams_table.tex"
-                    href="[[_latexUrl()]]"
+                    href="[[_latexUrl(_sessionGroupsRequest, _hparams, _metrics)]]"
                     >LaTeX</a
                   >
                 </span>
@@ -574,6 +574,10 @@ TODO(erez): Add aggregation controls for repeated sessions.
         // by the query, or 'unknown' if the server didn't send that
         // information.
         _totalSessionGroupsCountStr: String,
+
+        // Computed query that is send to the backend when panes are updated to
+        // create ListSessionGroupsRequest and retrieve the response
+        _sessionGroupsRequest: Object,
       } /* properties */,
 
       observers: [
@@ -585,18 +589,18 @@ TODO(erez): Add aggregation controls for repeated sessions.
         this._queryServer();
       },
 
-      _csvUrl() {
-        return this._downloadDataUrl('csv');
+      _csvUrl(request, _, __) {
+        return this._downloadDataUrl(request, 'csv');
       },
-      _jsonUrl() {
-        return this._downloadDataUrl('json');
+      _jsonUrl(request, _, __) {
+        return this._downloadDataUrl(request, 'json');
       },
-      _latexUrl() {
-        return this._downloadDataUrl('latex');
+      _latexUrl(request, _, __) {
+        return this._downloadDataUrl(request, 'latex');
       },
-      _downloadDataUrl(format) {
-        const request = this._buildListSessionGroupsRequest();
-        return this.backend.getDownloadUrl(format, request);
+      _downloadDataUrl(request, format) {
+        const visibility = this._computeColumnsVisibility()
+        return this.backend.getDownloadUrl(format, request, visibility);
       },
 
       // Sends a request for experiment to the server, and updates
@@ -795,6 +799,7 @@ TODO(erez): Add aggregation controls for repeated sessions.
           // If query configuration is not valid don't send a request.
           return;
         }
+        this.set('_sessionGroupsRequest', request);
         // Note that the responses to the RPCs sent
         // to the backend may return in a different order than the order in
         // which they were sent. If we just update sessionGroups in the
