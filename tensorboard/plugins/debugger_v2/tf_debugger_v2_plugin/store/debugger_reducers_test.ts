@@ -43,8 +43,7 @@ describe('Debugger reducers', () => {
         actions.debuggerRunsLoaded({
           runs: {
             foo_debugger_run: {
-              startTimeMs: 111,
-              tensorFlowVersion: '2.1.0',
+              start_time: 111,
             },
           },
         })
@@ -55,8 +54,7 @@ describe('Debugger reducers', () => {
       );
       expect(nextState.runs).toEqual({
         foo_debugger_run: {
-          startTimeMs: 111,
-          tensorFlowVersion: '2.1.0',
+          start_time: 111,
         },
       });
     });
@@ -65,8 +63,7 @@ describe('Debugger reducers', () => {
       const state = createDebuggerState({
         runs: {
           foo_debugger_run: {
-            startTimeMs: 111,
-            tensorFlowVersion: '2.2.0',
+            start_time: 111,
           },
         },
         runsLoaded: {
@@ -80,8 +77,7 @@ describe('Debugger reducers', () => {
         actions.debuggerRunsLoaded({
           runs: {
             bar_debugger_run: {
-              startTimeMs: 222,
-              tensorFlowVersion: '2.3.0',
+              start_time: 222,
             },
           },
         })
@@ -92,8 +88,7 @@ describe('Debugger reducers', () => {
       );
       expect(nextState.runs).toEqual({
         bar_debugger_run: {
-          startTimeMs: 222,
-          tensorFlowVersion: '2.3.0',
+          start_time: 222,
         },
       });
     });
