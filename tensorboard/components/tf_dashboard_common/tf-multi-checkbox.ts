@@ -208,9 +208,13 @@ export class TfMultiCheckbox extends LegacyElementMixin(PolymerElement) {
         this.regex = r;
       }, 30);
     } else {
-      this.debounce(() => {
-        this.regex = r;
-      }, 150);
+      this.debounce(
+        'setRegexString',
+        () => {
+          this.regex = r;
+        },
+        150
+      );
     }
   };
 
