@@ -55,6 +55,15 @@ namespace tf_color_scale {
       }
       return this.identifiers.get(s) as string;
     }
+
+    public reassignColors(): this {
+      const old_identifiers = this.identifiers;
+      this.identifiers = d3.map();
+      old_identifiers.each((s, i) => {
+        this.identifiers.set(i, this.palette[Math.floor(Math.random() * this.palette.length)]);
+      });
+      return this;
+    }
   }
 
   /**
@@ -64,22 +73,22 @@ namespace tf_color_scale {
   function createAutoUpdateColorScale(
     store: tf_backend.BaseStore,
     getDomain: () => string[]
-  ): (runName: string) => string {
+  ): [(runName: string) => string, () => ({})] {
     const colorScale = new ColorScale();
     function updateRunsColorScale(): void {
       colorScale.setDomain(getDomain());
     }
     store.addListener(updateRunsColorScale);
     updateRunsColorScale();
-    return (domain) => colorScale.getColor(domain);
+    return [(domain) => colorScale.getColor(domain), () => colorScale.reassignColors()];
   }
 
-  export const runsColorScale = createAutoUpdateColorScale(
+  export const [runsColorScale, runsColorReassign] = createAutoUpdateColorScale(
     tf_backend.runsStore,
     () => tf_backend.runsStore.getRuns()
   );
 
-  export const experimentsColorScale = createAutoUpdateColorScale(
+  export const [experimentsColorScale, experimentsColorReassign] = createAutoUpdateColorScale(
     tf_backend.experimentsStore,
     () => {
       return tf_backend.experimentsStore.getExperiments().map(({name}) => name);

@@ -24,6 +24,7 @@ namespace tf_dashboard_common {
         type: Object,
         value: {
           getColor: () => '',
+          reassignColors: () => ({}),
         },
       },
       regex: {
@@ -176,6 +177,10 @@ namespace tf_dashboard_common {
         newSelectionState[n] = !anyToggledOn;
       });
       this.selectionState = newSelectionState;
+    },
+    reassignColors: function() {
+      this.coloring.reassignColors();
+      this.synchronizeColors();
     },
   });
 } // namespace tf_dashboard_common

@@ -53,6 +53,9 @@ Properties out:
     <paper-button class="x-button" id="toggle-all" on-tap="_toggleAll">
       Toggle All Runs
     </paper-button>
+    <paper-button class="x-button" id="reassign-colors" on-tap="_reassignColors">
+      Reassign Colors
+    </paper-button>
     <template is="dom-if" if="[[dataLocation]]">
       <div id="data-location">
         <tf-wbr-string value="[[_clippedDataLocation]]" /><!--
@@ -152,6 +155,7 @@ Properties out:
           type: Object,
           value: {
             getColor: tf_color_scale.runsColorScale,
+            reassignColors: tf_color_scale.runsColorReassign,
           },
         },
       },
@@ -175,6 +179,9 @@ Properties out:
       },
       _toggleAll: function() {
         this.$.multiCheckbox.toggleAll();
+      },
+      _reassignColors: function() {
+        this.$.multiCheckbox.reassignColors();
       },
       _getClippedDataLocation: function(dataLocation, dataLocationClipLength) {
         if (dataLocation === undefined) {
