@@ -5,3 +5,9 @@ py_binary(
     srcs = ["import_google_fonts.py"],
     deps = ["//tensorboard:expect_tensorflow_installed"],
 )
+
+py_binary(
+    name = "replace_handlebar_with_filecontent",
+    srcs = ["replace_handlebar_with_filecontent.py"],
+    visibility = ["//tensorboard:internal"],
+)

@@ -52,6 +52,9 @@ tf_ts_library(
     ],
 )
 
+# TODO(tensorboard-team): Consider making a macro out of this.
+# However, Plottable + Bazel makes it extremely gnarly since you cannot refer
+# to file in the @npm//plottable like "@npm//plottable:foo.css".
 genrule(
     name = "inline_plottable_css",
     srcs = [
@@ -59,6 +62,11 @@ genrule(
         "@npm//plottable",
     ],
     outs = ["plottable-style.ts"],
-    cmd = "$(location generate_plottable_css.py) $(location plottable-style.template.ts) external/npm/node_modules/plottable/plottable.css $@",
-    tools = ["generate_plottable_css.py"],
+    cmd = " ".join([
+        "$(location //tensorboard/tools:replace_handlebar_with_filecontent)",
+        "$(location plottable-style.template.ts)",
+        "external/npm/node_modules/plottable/plottable.css",
+        "$@",
+    ]),
+    tools = ["//tensorboard/tools:replace_handlebar_with_filecontent"],
 )

@@ -25,9 +25,10 @@ import '../tf_dashboard_common/tensorboard-color';
 import {setUseHash} from '../tf_globals/globals';
 import {getLimit, setLimit} from '../tf_paginated_view/paginatedViewStore';
 import {getString, setString, TAB} from '../tf_storage/storage';
-// import { DO_NOT_SUBMIT } from "../tf-plugin-util/plugin-host.html";
 import {ActiveDashboardsLoadState, dashboardRegistry} from './registry';
 import {AbstractAutoReloadBehavior} from './autoReloadBehavior';
+/** Bootstrap and listen to messages from plugin iframes. */
+import '../experimental/plugin_util';
 
 enum LoadingMechanismType {
   CUSTOM_ELEMENT = 'CUSTOM_ELEMENT',
@@ -493,28 +494,49 @@ class TfTensorboard extends AbstractAutoReloadBehavior {
     </style>
   `;
 
+  /**
+   * Title name displayed in top left corner of GUI.
+   *
+   * This defaults to TensorBoard-X because we recommend against custom
+   * builds being branded as TensorBoard.
+   */
   @property({
     type: String,
   })
   brand: string = 'TensorBoard-X';
 
+  /**
+   * Deprecated: Equivalent to 'brand' attribute.
+   */
   @property({
     type: String,
     observer: '_updateTitle',
   })
   title: string = '';
 
+  /**
+   * We accept a router property only for backward compatibility:
+   * setting it triggers an observer that simply calls
+   * `tf_backend.setRouter`.
+   */
   @property({
     type: Object,
     observer: '_updateRouter',
   })
   router?: object;
 
+  /**
+   * Set this to true to store state in URI hash. Should be true
+   * for all non-test purposes.
+   */
   @property({
     type: Boolean,
   })
   useHash: boolean = false;
 
+  /**
+   * A comma-separated list of dashboards not to use.
+   */
   @property({
     type: String,
   })
@@ -532,6 +554,11 @@ class TfTensorboard extends AbstractAutoReloadBehavior {
   })
   _activeDashboardsLoadState: string = ActiveDashboardsLoadState.NOT_LOADED;
 
+  /**
+   * The plugin name of the currently selected dashboard, or `null` if no
+   * dashboard is selected, which corresponds to an empty hash. Defaults
+   * to the value stored in the hash.
+   */
   @property({
     type: String,
     observer: '_selectedDashboardChanged',
@@ -582,8 +609,6 @@ class TfTensorboard extends AbstractAutoReloadBehavior {
     type: Boolean,
   })
   _refreshing: boolean = false;
-
-  // behaviors: [AutoReloadBehavior];
 
   /**
    * @param {string?} disabledDashboards comma-separated

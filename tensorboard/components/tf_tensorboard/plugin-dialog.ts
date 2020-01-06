@@ -1,4 +1,4 @@
-/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -58,6 +58,13 @@ class TfPluginDialog extends PolymerElement {
   _title: string | null = null;
 
   @property({
+    type: Boolean,
+    computed: '_computeHidden(_open)',
+    reflectToAttribute: true, // for CSS
+  })
+  _hidden = true;
+
+  @property({
     type: String,
   })
   _customMessage: string | null = null;
@@ -66,6 +73,10 @@ class TfPluginDialog extends PolymerElement {
   })
   _open: boolean = false;
 
+  // Suppress the native paper-dialog backdrop. We use a custom one. We make
+  // the dialog reference this bound property instead of directly setting
+  // the attribute to the string "false" in the HTML because Polymer
+  // unfortunately parses "false" as a true-ey value (a non-empty string).
   @property({
     type: Boolean,
     readOnly: true,
@@ -98,8 +109,7 @@ class TfPluginDialog extends PolymerElement {
     (this.$.dialog as PaperDialogElement).close();
   }
 
-  @computed('_open')
-  get _hidden(): boolean {
+  _computeHidden(): boolean {
     return !this._open;
   }
 }
