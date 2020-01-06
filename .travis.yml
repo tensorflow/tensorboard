@@ -51,6 +51,9 @@ install:
   - pip install -U pip
   # Uninstall older Travis numpy to avoid upgrade-in-place issues.
   - pip uninstall -y numpy
+
+  # required for gcs support
+  - pip install -y google-cloud-storage
   - |
     pip install \
       -r tensorboard/pip_package/requirements.txt \
