@@ -11,8 +11,8 @@ ng_module(
         "index.ts",
     ],
     deps = [
+        ":types",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/actions",
-        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/store:types",
         "@npm//@ngrx/store",
     ],
 )
