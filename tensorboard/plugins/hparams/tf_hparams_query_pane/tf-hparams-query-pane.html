@@ -599,7 +599,7 @@ TODO(erez): Add aggregation controls for repeated sessions.
         return this._downloadDataUrl(request, 'latex');
       },
       _downloadDataUrl(request, format) {
-        const visibility = this._computeColumnsVisibility()
+        const visibility = this._computeColumnsVisibility();
         return this.backend.getDownloadUrl(format, request, visibility);
       },
 
