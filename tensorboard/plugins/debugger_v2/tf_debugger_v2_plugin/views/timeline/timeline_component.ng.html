@@ -1,0 +1,54 @@
+<!--
+@license
+Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<div>
+  <div>Execution Timeline</div>
+  <!-- TODO(cais): Add horizonal scroll bar for executions. -->
+  <div class="top-level-executions">
+    <div *ngIf="loadingNumExecutions" class="loading-num-executions">
+      Loading...
+    </div>
+
+    <div *ngIf="numExecutions" class="navigation-section">
+      <!-- TODO(cais): Apply mat-icon-button. -->
+      <button class="navigation-button-left" (click)="navigateLeft()">
+        &lt;
+      </button>
+      <div class="navigation-position-info">
+        Execution: {{ scrollBeginIndex }} ~ {{ scrollBeginIndex + displayCount -
+        1 }} of {{ numExecutions }}
+      </div>
+      <!-- TODO(cais): Apply mat-icon-button. -->
+      <button class="navigation-button-right" (click)="navigateRight()">
+        &gt;
+      </button>
+    </div>
+
+    <div *ngIf="numExecutions" class="execution-timeline">
+      <div *ngFor="let displayDigest of displayExecutionDigests">
+        <div
+          class="execution-digest"
+          [ngClass]="displayDigest.is_graph ? 'func-graph-execution' : ''"
+          title="{{displayDigest.op_type}}"
+        >
+          <!-- TODO(cais): Replace title attr with matTooltip. -->
+          {{ displayDigest.short_op_type }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

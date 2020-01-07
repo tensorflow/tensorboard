@@ -28,10 +28,77 @@ export interface DebuggerRunListing {
   [runId: string]: DebuggerRunMetadata;
 }
 
+export interface ExecutionDigest {
+  // Op type executed.
+  op_type: string;
+
+  // Output tensor device ids.
+  output_tensor_device_ids: string[];
+}
+
+export interface ExecutionDigestsResponse {
+  begin: number;
+
+  end: number;
+
+  num_digests: number;
+
+  execution_digests: ExecutionDigest[];
+}
+
+export interface ExecutionDigestLoadState extends LoadState {
+  // A map from page number to whether the page has been loaded
+  //   - in full, in which case the value is pageSize.
+  //   - partially, in which case the value is an integer < pageSize.
+  pageLoadedSizes: {[page: number]: number};
+
+  // Number of top-level executions available at the data source (not
+  // necessarilty loaded by frontend yet.)
+  numExecutions: number;
+
+  // TODO(cais): Deduplicate with `executionDigests` below.
+}
+
+export interface Executions {
+  // Load state for the total number of top-level executions.
+  numExecutionsLoaded: LoadState;
+
+  // Load state for loading ExecutionDigests.
+  executionDigestsLoaded: ExecutionDigestLoadState;
+
+  // Page size used for accessing data source. For example,
+  // if `pageSize` is 1000, each request to the data source
+  // will have a beginning index `1000 * N`, where N is a non-negative
+  // integer. It will have an ending index of `1000 * (N + 1)` if it
+  // doesn't exceed `numExecutions`; otherwise, the ending index will
+  // be `numExecutions`.
+  pageSize: number;
+
+  // Number of indices to display on the screen at a time.
+  displayCount: number;
+
+  // Beginning index of the current scrolling position.
+  scrollBeginIndex: number;
+
+  // Execution digests the frontend has loaded so far.
+  executionDigests: {[index: number]: ExecutionDigest};
+}
+
+// The state of a loaded DebuggerV2 run.
+export interface RunState {
+  executions: Executions;
+}
+
 export interface DebuggerState {
-  // Names of the runs that are available.
+  // Runs that are available in the backend.
   runs: DebuggerRunListing;
   runsLoaded: LoadState;
+
+  // ID of the run being currently displayed.
+  activeRunId: string | null;
+
+  // Per-run detailed data.
+  executions: Executions;
 }
 
 export interface State {

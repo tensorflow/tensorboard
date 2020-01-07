@@ -12,10 +12,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Action, createReducer, on} from '@ngrx/store';
+import {Action, createReducer, on, State} from '@ngrx/store';
 
 import * as actions from '../actions';
-import {DataLoadState, DebuggerState} from './debugger_types';
+import {
+  DataLoadState,
+  DebuggerState,
+  ExecutionDigestsResponse,
+} from './debugger_types';
 
 // HACK: These imports are for type inference.
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
@@ -26,6 +30,25 @@ const initialState: DebuggerState = {
   runsLoaded: {
     state: DataLoadState.NOT_LOADED,
     lastLoadedTimeInMs: null,
+  },
+  activeRunId: null,
+  executions: {
+    numExecutionsLoaded: {
+      state: DataLoadState.NOT_LOADED,
+      lastLoadedTimeInMs: null,
+    },
+    executionDigestsLoaded: {
+      numExecutions: 0,
+      pageLoadedSizes: {},
+      state: DataLoadState.NOT_LOADED,
+      lastLoadedTimeInMs: null,
+    },
+    scrollBeginIndex: 0,
+    pageSize: 100, // TODO(cais): Change to 1000 for practical use.
+    // TODO(cais) Remove the hardcoding of this, which is coupled with css width
+    // properties.
+    displayCount: 50,
+    executionDigests: {},
   },
 };
 
@@ -58,12 +81,167 @@ const reducer = createReducer(
   on(
     actions.debuggerRunsLoaded,
     (state: DebuggerState, {runs}): DebuggerState => {
+      const runIds = Object.keys(runs);
       return {
         ...state,
         runs,
         runsLoaded: {
           state: DataLoadState.LOADED,
           lastLoadedTimeInMs: Date.now(),
+        },
+        activeRunId: runIds.length ? runIds[0] : null,
+        // TODO(cais): Handle multiple runs. We currently assumes there is only
+        // one run, which is okay because the backend supports only one run
+        // per experiment.
+      };
+    }
+  ),
+  on(
+    actions.numExecutionsRequested,
+    (state: DebuggerState): DebuggerState => {
+      const runId = state.activeRunId;
+      if (runId !== null) {
+        return {
+          ...state,
+          executions: {
+            ...state.executions,
+            numExecutionsLoaded: {
+              ...state.executions.numExecutionsLoaded,
+              state: DataLoadState.LOADING,
+            },
+          },
+        };
+      } else {
+        return state;
+      }
+    }
+  ),
+  on(
+    actions.numExecutionsLoaded,
+    (state: DebuggerState, {numExecutions}): DebuggerState => {
+      const runId = state.activeRunId;
+      if (runId !== null) {
+        return {
+          ...state,
+          executions: {
+            ...state.executions,
+            numExecutionsLoaded: {
+              ...state.executions.numExecutionsLoaded,
+              state: DataLoadState.LOADED,
+              lastLoadedTimeInMs: Date.now(),
+            },
+            executionDigestsLoaded: {
+              ...state.executions.executionDigestsLoaded,
+              numExecutions,
+            },
+          },
+        };
+      } else {
+        return state;
+      }
+    }
+  ),
+  on(
+    actions.executionDigestsRequested,
+    (state: DebuggerState): DebuggerState => {
+      const runId = state.activeRunId;
+      if (runId !== null) {
+        return {
+          ...state,
+          executions: {
+            ...state.executions,
+            executionDigestsLoaded: {
+              ...state.executions.executionDigestsLoaded,
+              state: DataLoadState.LOADING,
+            },
+          },
+        };
+      } else {
+        return state;
+      }
+    }
+  ),
+  on(
+    actions.executionDigestsLoaded,
+    (
+      state: DebuggerState,
+      digests: ExecutionDigestsResponse
+    ): DebuggerState => {
+      const runId = state.activeRunId;
+      if (runId !== null) {
+        const newState: DebuggerState = {
+          ...state,
+          executions: {
+            ...state.executions,
+            executionDigestsLoaded: {
+              ...state.executions.executionDigestsLoaded,
+              numExecutions: digests.num_digests,
+              state: DataLoadState.LOADED,
+              lastLoadedTimeInMs: Date.now(),
+            },
+          },
+        };
+        for (let i = digests.begin; i < digests.end; ++i) {
+          newState.executions.executionDigests[i] =
+            digests.execution_digests[i - digests.begin];
+        }
+        // Update pagesLoadedInFull.
+        if (digests.end > digests.begin) {
+          const pageIndex = digests.begin / state.executions.pageSize;
+          newState.executions.executionDigestsLoaded.pageLoadedSizes = {
+            ...newState.executions.executionDigestsLoaded.pageLoadedSizes,
+            [pageIndex]: digests.end - digests.begin,
+          };
+        }
+        return newState;
+      } else {
+        return state;
+      }
+    }
+  ),
+  on(
+    actions.executionScrollLeft,
+    (state: DebuggerState): DebuggerState => {
+      // TODO(cais): Left-right navigation should have more context-depedent
+      // behavior, e.g., when alerts are present.
+      const runId = state.activeRunId;
+      if (runId === null) {
+        return state;
+      }
+      let scrollBeginIndex = state.executions.scrollBeginIndex;
+      if (scrollBeginIndex > 0) {
+        scrollBeginIndex--;
+      }
+      return {
+        ...state,
+        executions: {
+          ...state.executions,
+          scrollBeginIndex,
+        },
+      };
+    }
+  ),
+  on(
+    actions.executionScrollRight,
+    (state: DebuggerState): DebuggerState => {
+      // TODO(cais): Left-right navigation should have more context-depedent
+      // behavior, e.g., when alerts are present.
+      const runId = state.activeRunId;
+      if (runId === null) {
+        return state;
+      }
+      let scrollBeginIndex = state.executions.scrollBeginIndex;
+      if (
+        scrollBeginIndex + state.executions.displayCount + 1 <=
+        state.executions.executionDigestsLoaded.numExecutions
+      ) {
+        scrollBeginIndex++;
+      }
+      return {
+        ...state,
+        executions: {
+          ...state.executions,
+          scrollBeginIndex,
         },
       };
     }

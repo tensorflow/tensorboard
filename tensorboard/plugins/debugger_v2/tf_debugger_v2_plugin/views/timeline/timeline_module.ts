@@ -1,6 +1,4 @@
-<!--
-@license
-Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,17 +11,17 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
--->
+==============================================================================*/
 
-<div>
-  <tf-debugger-v2-inactive
-    *ngIf="runIds.length === 0; else dataAvailable"
-  ></tf-debugger-v2-inactive>
-  <ng-template #dataAvailable>
-    <div>
-      <tf-debugger-v2-alerts></tf-debugger-v2-alerts>
-      <tf-debugger-v2-timeline></tf-debugger-v2-timeline>
-    </div>
-    <!-- TODO(cais): Add more elements, such as graph, source code, etc.-->
-  </ng-template>
-</div>
+import {CommonModule} from '@angular/common';
+import {NgModule} from '@angular/core';
+
+import {TimelineComponent} from './timeline_component';
+import {TimelineContainer} from './timeline_container';
+
+@NgModule({
+  declarations: [TimelineComponent, TimelineContainer],
+  imports: [CommonModule],
+  exports: [TimelineContainer],
+})
+export class TimelineModule {}

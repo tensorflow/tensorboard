@@ -14,10 +14,10 @@ limitations under the License.
 ==============================================================================*/
 import {Component, OnInit} from '@angular/core';
 import {createSelector, select, Store} from '@ngrx/store';
-import {DebuggerRunListing, State} from './store/debugger_types';
+import {State} from './store/debugger_types';
 
-import {debuggerLoaded} from './actions';
-import {getDebuggerRunListing} from './store';
+import {debuggerLoaded, activeRunIdChanged} from './actions';
+import {getActiveRunId, getDebuggerRunListing, getNumExecutions} from './store';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
@@ -27,6 +27,8 @@ import {getDebuggerRunListing} from './store';
     <debugger-component
       [runs]="runs$ | async"
       [runIds]="runsIds$ | async"
+      [activeRunId]="activeRunId$ | async"
+      (onActiveRunIdChange)="onActiveRunIdChange($event)"
     ></debugger-component>
   `,
 })
@@ -42,9 +44,15 @@ export class DebuggerContainer implements OnInit {
     )
   );
 
+  readonly activeRunId$ = this.store.pipe(select(getActiveRunId));
+
   constructor(private readonly store: Store<State>) {}
 
   ngOnInit(): void {
     this.store.dispatch(debuggerLoaded());
+  }
+
+  onActiveRunIdChange(activeRunId: string) {
+    this.store.dispatch(activeRunIdChanged({activeRunId}));
   }
 }

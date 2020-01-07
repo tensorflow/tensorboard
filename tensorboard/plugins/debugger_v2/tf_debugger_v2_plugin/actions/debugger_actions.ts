@@ -15,7 +15,10 @@ limitations under the License.
 
 import {createAction, props} from '@ngrx/store';
 
-import {DebuggerRunListing} from '../store/debugger_types';
+import {
+  DebuggerRunListing,
+  ExecutionDigestsResponse,
+} from '../store/debugger_types';
 
 // HACK: Below import is for type inference.
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
@@ -47,3 +50,42 @@ export const debuggerRunsRequestFailed = createAction(
  * Actions for the Alerts Component.
  */
 export const alertsViewLoaded = createAction('[Debugger] Alerts View Loaded');
+
+/**
+ * Actions for the Timeline Component.
+ */
+export const activeRunIdChanged = createAction(
+  '[Debugger] Debugger Active Run Changed',
+  props<{activeRunId: string | null}>()
+);
+
+export const numExecutionsRequested = createAction(
+  '[Debugger] Number of Executions Requested'
+);
+
+export const numExecutionsLoaded = createAction(
+  '[Debugger] Number of Executions Loaded',
+  props<{numExecutions: number}>()
+);
+
+export const requestExecutionDigests = createAction(
+  '[Debugger] Request for ExecutionDigests',
+  props<{runId: string; begin: number; end: number; pageSize: number}>()
+);
+
+export const executionDigestsRequested = createAction(
+  '[Debugger] ExecutionDigests Requested'
+);
+
+export const executionDigestsLoaded = createAction(
+  '[Debugger] ExecutionDigests Loaded',
+  props<ExecutionDigestsResponse>()
+);
+
+export const executionScrollLeft = createAction(
+  '[Debugger] Scroll leftward on the executoin timeline'
+);
+
+export const executionScrollRight = createAction(
+  '[Debugger] Scroll rightward on the executoin timeline'
+);
