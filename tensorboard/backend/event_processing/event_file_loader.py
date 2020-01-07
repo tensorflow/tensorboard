@@ -58,10 +58,14 @@ class RawEventFileLoader(object):
     """
         logger.debug("Loading events from %s", self._file_path)
 
+        # getargspec is deprecated in Python3, use getfullargspec if it exists.
+        try:
+            getargspec = inspect.getfullargspec
+        except AttributeError:
+            getargspec = inspect.getargspec  # pylint: disable=deprecated-method
+
         # GetNext() expects a status argument on TF <= 1.7.
-        get_next_args = inspect.getargspec(
-            self._reader.GetNext
-        ).args  # pylint: disable=deprecated-method
+        get_next_args = getargspec(self._reader.GetNext).args
         # First argument is self
         legacy_get_next = len(get_next_args) > 1
 
