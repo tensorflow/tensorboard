@@ -241,19 +241,19 @@ TODO(erez): Add aggregation controls for repeated sessions.
                   <a
                     id="csvLink"
                     download="hparams_table.csv"
-                    href="[[_csvUrl(_sessionGroupsRequest, _hparams, _metrics)]]"
+                    href="[[_csvUrl(_sessionGroupsRequest, configuration)]]"
                     >CSV</a
                   >
                   <a
                     id="jsonLink"
                     download="hparams_table.json"
-                    href="[[_jsonUrl(_sessionGroupsRequest, _hparams, _metrics)]]"
+                    href="[[_jsonUrl(_sessionGroupsRequest, configuration)]]"
                     >JSON</a
                   >
                   <a
                     id="latexLink"
                     download="hparams_table.tex"
-                    href="[[_latexUrl(_sessionGroupsRequest, _hparams, _metrics)]]"
+                    href="[[_latexUrl(_sessionGroupsRequest, configuration)]]"
                     >LaTeX</a
                   >
                 </span>
@@ -589,17 +589,17 @@ TODO(erez): Add aggregation controls for repeated sessions.
         this._queryServer();
       },
 
-      _csvUrl(request, _, __) {
-        return this._downloadDataUrl(request, 'csv');
+      _csvUrl(request, configuration) {
+        return this._downloadDataUrl(request, configuration, 'csv');
       },
-      _jsonUrl(request, _, __) {
-        return this._downloadDataUrl(request, 'json');
+      _jsonUrl(request, configuration) {
+        return this._downloadDataUrl(request, configuration, 'json');
       },
-      _latexUrl(request, _, __) {
-        return this._downloadDataUrl(request, 'latex');
+      _latexUrl(request, configuration) {
+        return this._downloadDataUrl(request, configuration, 'latex');
       },
-      _downloadDataUrl(request, format) {
-        const visibility = this._computeColumnsVisibility();
+      _downloadDataUrl(request, configuration, format) {
+        const visibility = configuration.columnsVisibility;
         return this.backend.getDownloadUrl(format, request, visibility);
       },
 
