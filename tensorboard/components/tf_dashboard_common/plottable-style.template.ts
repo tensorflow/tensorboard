@@ -20,6 +20,12 @@ const template = html`
       <style>
         {{% REPLACE_ME %}}
       </style>
+      <style>
+        /* Restore behavior of Plottable pre v3.8.1. */
+        .plottable .axis text {
+          font-family: 'Helvetica Neue', Roboto;
+        }
+      </style>
     </template>
   </dom-module>
 `;

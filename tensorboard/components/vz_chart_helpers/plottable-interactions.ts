@@ -213,6 +213,8 @@ class TouchDispatcher extends (Plottable.Dispatchers.Touch as any) {
 
 export class PointerInteraction extends Plottable.Interactions.Pointer {
   static preallocateTbDispatcher(component: Plottable.Component) {
+    // Assign, if not created already, our custom Dispatchers that understands
+    // shadow DOM onto the cache so future interactions can use our patched version.
     MouseDispatcher.getDispatcher(component);
     TouchDispatcher.getDispatcher(component);
   }
