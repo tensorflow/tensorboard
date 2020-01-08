@@ -26,8 +26,20 @@ from __future__ import print_function
 PLUGIN_NAME = "graphs"
 
 # In the context of the data provider interface, tag name given to a
+<<<<<<< HEAD
 # graph that logically applies at the run level. No other types of
 # graphs are currently supported; when added, they'll have type-specific
 # name scopes (like `"__op_graph__/foo"`, `"__conceptual_graph__/bar"`)
 # to preclude collisions with this hard-coded string.
+=======
+# graph read from the `graph_def` field of an `Event` proto, which is
+# not attached to a summary and thus does not have a proper tag name of
+# its own. Run level graphs always represent `GraphDef`s (graphs of
+# TensorFlow ops), never conceptual graphs, profile graphs, etc.
+#
+# No other types of graphs are currently supported in the data provider
+# interface; when added, they'll have type-specific name scopes (like
+# `"__op_graph__/foo"`, `"__conceptual_graph__/bar"`) to preclude
+# collisions with this hard-coded string.
+>>>>>>> 4a8998909f3ca9b6c88d76a02ba7cf111600bfcb
 RUN_GRAPH_NAME = "__run_graph__"

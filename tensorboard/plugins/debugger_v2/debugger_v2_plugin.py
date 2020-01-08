@@ -18,13 +18,18 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from werkzeug import wrappers
+
+from tensorboard import plugin_util
 from tensorboard.plugins import base_plugin
+from tensorboard.plugins.debugger_v2 import debug_data_provider
+from tensorboard.backend import http_util
 
 
 class DebuggerV2Plugin(base_plugin.TBPlugin):
     """Debugger V2 Plugin for TensorBoard."""
 
-    plugin_name = "debugger-v2"
+    plugin_name = debug_data_provider.PLUGIN_NAME
 
     def __init__(self, context):
         """Instantiates Debugger V2 Plugin via TensorBoard core.
@@ -33,10 +38,19 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
           context: A base_plugin.TBContext instance.
         """
         super(DebuggerV2Plugin, self).__init__(context)
+        self._logdir = context.logdir
+        # TODO(cais): Implement factory for DataProvider that takes into account
+        # the settings.
+        self._data_provider = debug_data_provider.LocalDebuggerV2DataProvider(
+            self._logdir
+        )
 
     def get_plugin_apps(self):
         # TODO(cais): Add routes as they are implemented.
-        return {}
+        return {
+            "/runs": self.serve_runs,
+            "/execution/digests": self.serve_execution_digests,
+        }
 
     def is_active(self):
         """Check whether the Debugger V2 Plugin is always active.
@@ -48,10 +62,51 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
         Returns:
           `True` if and only if data in tfdbg v2's DebugEvent format is available.
         """
-        # TODO(cais): Implement logic.
-        return False
+        return bool(self._data_provider.list_runs(""))
 
     def frontend_metadata(self):
         return base_plugin.FrontendMetadata(
             is_ng_component=True, tab_name="Debugger V2", disable_reload=True
         )
+
+    @wrappers.Request.application
+    def serve_runs(self, request):
+        experiment = plugin_util.experiment_id(request.environ)
+        runs = self._data_provider.list_runs(experiment)
+        run_listing = dict()
+        for run in runs:
+            run_listing[run.run_id] = {"start_time": run.start_time}
+        return http_util.Respond(request, run_listing, "application/json")
+
+    @wrappers.Request.application
+    def serve_execution_digests(self, request):
+        experiment = plugin_util.experiment_id(request.environ)
+        run = request.args.get("run")
+        if run is None:
+            return http_util.Respond(
+                request,
+                {"error": "run parameter is not provided"},
+                "application/json",
+                code=400,
+            )
+        begin = int(request.args.get("begin", "0"))
+        end = int(request.args.get("end", "-1"))
+        run_tag_filter = debug_data_provider.execution_digest_run_tag_filter(
+            run, begin, end
+        )
+        blob_sequences = self._data_provider.read_blob_sequences(
+            experiment, self.plugin_name, run_tag_filter=run_tag_filter
+        )
+        tag = next(iter(run_tag_filter.tags))
+        try:
+            return http_util.Respond(
+                request,
+                self._data_provider.read_blob(
+                    blob_sequences[run][tag][0].blob_key
+                ),
+                "application/json",
+            )
+        except (IndexError, ValueError) as e:
+            return http_util.Respond(
+                request, {"error": str(e)}, "application/json", code=400,
+            )

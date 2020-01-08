@@ -8,10 +8,32 @@ package(default_visibility = ["//tensorboard:internal"])
 licenses(["notice"])
 
 py_library(
+    name = "debug_data_multiplexer",
+    srcs = ["debug_data_multiplexer.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        "//tensorboard:expect_tensorflow_installed",
+    ],
+)
+
+py_library(
+    name = "debug_data_provider",
+    srcs = ["debug_data_provider.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":debug_data_multiplexer",
+        "//tensorboard/data:provider",
+    ],
+)
+
+py_library(
     name = "debugger_v2_plugin",
     srcs = ["debugger_v2_plugin.py"],
     srcs_version = "PY2AND3",
     deps = [
+        ":debug_data_provider",
+        "//tensorboard:plugin_util",
+        "//tensorboard/backend:http_util",
         "//tensorboard/plugins:base_plugin",
         "@org_pocoo_werkzeug",
     ],
@@ -25,6 +47,8 @@ py_test(
     deps = [
         ":debugger_v2_plugin",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/backend:application",
         "//tensorboard/plugins:base_plugin",
+        "//tensorboard/util:test_util",
     ],
 )

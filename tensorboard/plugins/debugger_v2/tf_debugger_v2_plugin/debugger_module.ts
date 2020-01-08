@@ -13,15 +13,30 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
+import {StoreModule} from '@ngrx/store';
+import {EffectsModule} from '@ngrx/effects';
 
+import {Tfdbg2ServerDataSourceModule} from './data_source/tfdbg2_data_source_module';
 import {DebuggerComponent} from './debugger_component';
 import {DebuggerContainer} from './debugger_container';
+import {DebuggerEffects} from './effects';
+import {reducers} from './store/debugger_reducers';
+import {DEBUGGER_FEATURE_KEY} from './store/debugger_types';
+import {AlertsModule} from './views/alerts/alerts_module';
 import {InactiveModule} from './views/inactive/inactive_module';
 
 @NgModule({
   declarations: [DebuggerComponent, DebuggerContainer],
-  imports: [InactiveModule],
+  imports: [
+    AlertsModule,
+    CommonModule,
+    InactiveModule,
+    Tfdbg2ServerDataSourceModule,
+    StoreModule.forFeature(DEBUGGER_FEATURE_KEY, reducers),
+    EffectsModule.forFeature([DebuggerEffects]),
+  ],
   exports: [DebuggerContainer],
 })
 export class DebuggerModule {}

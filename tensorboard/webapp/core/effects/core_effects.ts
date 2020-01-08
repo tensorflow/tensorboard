@@ -32,12 +32,13 @@ import {
   pluginsListingFailed,
 } from '../actions';
 import {getPluginsListLoaded} from '../store';
-import {LoadState} from '../../types/api';
+import {DataLoadState} from '../../types/data';
 import {State} from '../store/core_types';
 import {TBServerDataSource} from '../../webapp_data_source/tb_server_data_source';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 /** @typehack */ import * as _typeHackNgrx from '@ngrx/store/src/models';
+/** @typehack */ import * as _typeHackNgrxEffects from '@ngrx/effects';
 
 @Injectable()
 export class CoreEffects {
@@ -50,7 +51,7 @@ export class CoreEffects {
     this.actions$.pipe(
       ofType(coreLoaded, reload),
       withLatestFrom(this.store.select(getPluginsListLoaded)),
-      filter(([, {state}]) => state !== LoadState.LOADING),
+      filter(([, {state}]) => state !== DataLoadState.LOADING),
       tap(() => this.store.dispatch(pluginsListingRequested())),
       mergeMap(() => {
         return zip(
