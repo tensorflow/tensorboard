@@ -327,6 +327,20 @@ TensorBoard consumes by using the [`summary_iterator`](
 https://www.tensorflow.org/api_docs/python/tf/train/summary_iterator)
 method.
 
+### Can I make my own plugin?
+
+Yes! You can clone and tinker with one of the [examples][plugin-examples] and
+make your own, amazing visualizations. More documentation on the plugin system
+is described in the [ADDING_A_PLUGIN](./ADDING_A_PLUGIN.md) guide. Feel free to
+file feature requests or questions about plugin functionality.
+
+Once satisfied with your own groundbreaking new plugin, see the
+[distribution section][plugin-distribution] on how to publish to PyPI and share
+it with the community.
+
+[plugin-examples]: ./tensorboard/examples/plugins
+[plugin-distribution]: ./ADDING_A_PLUGIN.md#distribution
+
 ### Can I customize which lines appear in a plot?
 
 Using the [custom scalars plugin](tensorboard/plugins/custom_scalar), you can

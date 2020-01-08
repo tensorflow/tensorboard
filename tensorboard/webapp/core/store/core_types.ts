@@ -18,19 +18,10 @@ limitations under the License.
 // redundant copies in sync.  If the state shape and the API types need to
 // diverge in the future, that's straightforward: we'll leave types/api in place,
 // remove this import, and write the divergent state types explicitly here.
-import {
-  PluginId,
-  PluginsListing,
-  LoadState as DataLoadState,
-} from '../../types/api';
+import {PluginId, PluginsListing} from '../../types/api';
+import {LoadState} from '../../types/data';
 
 export const CORE_FEATURE_KEY = 'core';
-
-export interface LoadState {
-  state: DataLoadState;
-  // Time since epoch.
-  lastLoadedTimeInMs: number | null;
-}
 
 export interface CoreState {
   activePlugin: PluginId | null;

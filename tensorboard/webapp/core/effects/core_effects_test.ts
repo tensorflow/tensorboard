@@ -28,7 +28,8 @@ import {State} from '../store';
 
 import {createPluginMetadata, createState, createCoreState} from '../testing';
 
-import {PluginsListing, LoadState as DataLoadState} from '../../types/api';
+import {PluginsListing} from '../../types/api';
+import {DataLoadState} from '../../types/data';
 import {TBServerDataSource} from '../../webapp_data_source/tb_server_data_source';
 
 describe('core_effects', () => {

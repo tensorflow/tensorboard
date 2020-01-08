@@ -52,8 +52,6 @@ which is an object with the following items:
 
   - `"wall_time"`: floating-point number of seconds since epoch.
   - `"step"`: integer step counter.
-  - `"width"`: integer width of the image, in pixels.
-  - `"height"`: integer height of the image, in pixels.
   - `"query"`: query string that can be given to the `individualImage`
     route (below) to serve the actual image content. This string must be
     treated as opaque: clients must not inspect or modify its value.
@@ -61,8 +59,6 @@ which is an object with the following items:
 Here is an example response:
 
     [{
-      "width": 28,
-      "height": 28,
       "wall_time": 1440210599.246,
       "step": 63702821,
       "query": "index=0&sample=0&tagname=input%2Fimage%2F2&run=train"

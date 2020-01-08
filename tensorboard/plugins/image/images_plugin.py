@@ -202,8 +202,8 @@ class ImagesPlugin(base_plugin.TBPlugin):
             fewer than three images will be omitted from the results.
 
         Returns:
-          A list of dictionaries containing the wall time, step, URL, width, and
-          height for each image.
+          A list of dictionaries containing the wall time, step, and URL
+          for each image.
         """
         if self._db_connection_provider:
             db = self._db_connection_provider()
@@ -211,9 +211,7 @@ class ImagesPlugin(base_plugin.TBPlugin):
                 """
                 SELECT
                   computed_time,
-                  step,
-                  CAST (T0.data AS INT) AS width,
-                  CAST (T1.data AS INT) AS height
+                  step
                 FROM Tensors
                 JOIN TensorStrings AS T0
                   ON Tensors.rowid = T0.tensor_rowid
@@ -239,30 +237,21 @@ class ImagesPlugin(base_plugin.TBPlugin):
                 {
                     "wall_time": computed_time,
                     "step": step,
-                    "width": width,
-                    "height": height,
                     "query": self._query_for_individual_image(
                         run, tag, sample, index
                     ),
                 }
-                for index, (computed_time, step, width, height) in enumerate(
-                    cursor
-                )
+                for index, (computed_time, step) in enumerate(cursor)
             ]
         response = []
         index = 0
         tensor_events = self._multiplexer.Tensors(run, tag)
         filtered_events = self._filter_by_sample(tensor_events, sample)
         for (index, tensor_event) in enumerate(filtered_events):
-            (width, height) = tensor_event.tensor_proto.string_val[:2]
             response.append(
                 {
                     "wall_time": tensor_event.wall_time,
                     "step": tensor_event.step,
-                    # We include the size so that the frontend can add that to the <img>
-                    # tag so that the page layout doesn't change when the image loads.
-                    "width": int(width),
-                    "height": int(height),
                     "query": self._query_for_individual_image(
                         run, tag, sample, index
                     ),
