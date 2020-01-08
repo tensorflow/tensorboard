@@ -200,7 +200,7 @@ class MultiplexerDataProvider(provider.DataProvider):
 
         result = collections.defaultdict(lambda: {})
         for (run, run_info) in six.iteritems(self._multiplexer.Runs()):
-            tag = None
+            tag = graphs_metadata.RUN_GRAPH_NAME
             if not self._test_run_tag(run_tag_filter, run, tag):
                 continue
             if not run_info[plugin_event_accumulator.GRAPH]:
@@ -230,7 +230,7 @@ class MultiplexerDataProvider(provider.DataProvider):
             lambda: collections.defaultdict(lambda: [])
         )
         for (run, run_info) in six.iteritems(self._multiplexer.Runs()):
-            tag = None
+            tag = graphs_metadata.RUN_GRAPH_NAME
             if not self._test_run_tag(run_tag_filter, run, tag):
                 continue
             if not run_info[plugin_event_accumulator.GRAPH]:
