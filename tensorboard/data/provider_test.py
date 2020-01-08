@@ -314,6 +314,23 @@ class RunTagFilterTest(tb_test.TestCase):
         self.assertEqual(frozenset(f.runs), frozenset(["r1"]))
         self.assertEqual(frozenset(f.tags), frozenset(["t1"]))
 
+    def test_validates_runs_tags(self):
+        # Accidentally passed scalar strings
+        with six.assertRaisesRegex(self, TypeError, "runs:.*got.*str.*myrun"):
+            provider.RunTagFilter(runs="myrun")
+        with six.assertRaisesRegex(self, TypeError, "tags:.*got.*str.*mytag"):
+            provider.RunTagFilter(tags="mytag")
+
+        # Passed collections with non-string elements
+        with six.assertRaisesRegex(
+            self, TypeError, "runs:.*got item of type.*NoneType.*None"
+        ):
+            provider.RunTagFilter(runs=[None])
+        with six.assertRaisesRegex(
+            self, TypeError, "tags:.*got item of type.*int.*3"
+        ):
+            provider.RunTagFilter(tags=["one", "two", 3])
+
     def test_repr(self):
         x = provider.RunTagFilter(runs=["one", "two"], tags=["three", "four"])
         repr_ = repr(x)

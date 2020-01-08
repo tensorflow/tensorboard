@@ -778,8 +778,27 @@ class RunTagFilter(object):
           tags: Collection of tag names, as strings, or `None` to admit all
             tags.
         """
-        self._runs = None if runs is None else frozenset(runs)
-        self._tags = None if tags is None else frozenset(tags)
+        self._runs = self._parse_optional_string_set("runs", runs)
+        self._tags = self._parse_optional_string_set("tags", tags)
+
+    def _parse_optional_string_set(self, name, value):
+        if value is None:
+            return None
+        if isinstance(value, str):
+            # Prevent confusion: strings _are_ iterable, but as
+            # sequences of characters, so this likely signals an error.
+            raise TypeError(
+                "%s: expected `None` or collection of strings; got %r: %r"
+                % (name, type(value), value)
+            )
+        value = frozenset(value)
+        for item in value:
+            if not isinstance(item, str):
+                raise TypeError(
+                    "%s: expected `None` or collection of strings; "
+                    "got item of type %r: %r" % (name, type(item), item)
+                )
+        return value
 
     @property
     def runs(self):
