@@ -60,6 +60,7 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
             "/runs": self.serve_runs,
             "/execution/digests": self.serve_execution_digests,
             "/source_files/list": self.serve_source_files_list,
+            "/source_files/file": self.serve_source_file,
         }
 
     def is_active(self):
@@ -118,6 +119,7 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
 
     @wrappers.Request.application
     def serve_source_files_list(self, request):
+        """Serves a list of all source files involved in the debugged program."""
         experiment = plugin_util.experiment_id(request.environ)
         run = request.args.get("run")
         if run is None:
@@ -134,3 +136,57 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
             self._data_provider.read_blob(blob_sequences[run][tag][0].blob_key),
             "application/json",
         )
+
+    @wrappers.Request.application
+    def serve_source_file(self, request):
+        """Serves the content of a given source file.
+
+        The source file is referred to by the index in the list of all source files
+        invovled in the execution of the debugged program, which is available via the
+        `serve_source_files_list()`  serving route.
+
+        Args:
+          request: HTTP request.
+
+        Returns:
+          Response to the request.
+        """
+        experiment = plugin_util.experiment_id(request.environ)
+        run = request.args.get("run")
+
+        begin = request.args.get("index")
+        if begin is None:
+            return http_util.Respond(
+                request,
+                {"error": "index is not provided for source file content"},
+                "application/json",
+                code=400,
+            )
+        begin = int(begin)
+        if begin < 0:
+            return http_util.Respond(
+                request,
+                {
+                    "error": "negative index for source file content (%d)"
+                    % begin
+                },
+                "application/json",
+                code=400,
+            )
+        run_tag_filter = debug_data_provider.source_file_run_tag_filter(run)
+        blob_sequences = self._data_provider.read_blob_sequences(
+            experiment, self.plugin_name, run_tag_filter=run_tag_filter
+        )
+        tag = next(iter(run_tag_filter.tags))
+        try:
+            return http_util.Respond(
+                request,
+                self._data_provider.read_blob(
+                    blob_sequences[run][tag][0].blob_key
+                ),
+                "application/json",
+            )
+        except IndexError as e:
+            return http_util.Respond(
+                request, {"error": str(e)}, "application/json", code=400,
+            )

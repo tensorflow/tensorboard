@@ -37,6 +37,7 @@ PLUGIN_NAME = "debugger-v2"
 
 EXECUTION_DIGESTS_BLOB_TAG_PREFIX = "execution_digests"
 SOURCE_FILE_LIST_BLOB_TAG = "source_file_list"
+SOURCE_FILE_BLOB_TAG_PREFIX = "source_file"
 
 
 def execution_digest_run_tag_filter(run, begin, end):
@@ -76,6 +77,18 @@ def _parse_execution_digest_blob_key(blob_key):
     return run, begin, end
 
 
+def source_file_list_run_tag_filter(run):
+    """Create a RunTagFilter for listing source files.
+
+    Args:
+      run: tfdbg2 run name.
+
+    Returns:
+      `RunTagFilter` for listing the source files in the tfdbg2 run.
+    """
+    return provider.RunTagFilter(runs=[run], tags=[SOURCE_FILE_LIST_BLOB_TAG])
+
+
 def _parse_source_file_list_blob_key(blob_key):
     """Parse the BLOB key for source file list.
 
@@ -89,16 +102,37 @@ def _parse_source_file_list_blob_key(blob_key):
     return blob_key[blob_key.index(".") + 1 :]
 
 
-def source_file_list_run_tag_filter(run):
+def source_file_run_tag_filter(run, index):
     """Create a RunTagFilter for listing source files.
 
     Args:
       run: tfdbg2 run name.
+      index: The index for the source file of which the content is to be
+        accessed.
 
     Returns:
-      `RunTagFilter` for listing the sourc eilfes in the tfdbg2 run.
+      `RunTagFilter` for accessing the content of the source file.
     """
-    return provider.RunTagFilter(runs=[run], tags=[SOURCE_FILE_LIST_BLOB_TAG])
+    return provider.RunTagFilter(
+        runs=[run], tags=["%s_%d" % (source_file, index)],
+    )
+
+
+def _parse_source_file_blob_key(blob_key):
+    """Parse the BLOB key for accessing the content of a source file.
+
+    Args:
+      blob_key: The BLOB key to parse. By contract, it should have the format:
+       `${SOURCE_FILE_LIST_BLOB_TAG}_${index}.${run_id}`
+
+    Returns:
+      - run ID, as a str.
+      - File index, as an int.
+    """
+    key_body, run = blob_key.split(".", 1)
+    key_body = key_body[len(EXECUTION_DIGESTS_BLOB_TAG_PREFIX) :]
+    index = int(key_body.split("_")[1])
+    return run, index
 
 
 class LocalDebuggerV2DataProvider(provider.DataProvider):
