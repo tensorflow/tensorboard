@@ -15,7 +15,7 @@ limitations under the License.
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 
-import {from} from 'rxjs';
+import {from, Observable} from 'rxjs';
 
 import {PluginsListing} from '../types/api';
 
@@ -39,5 +39,9 @@ export class TBServerDataSource {
 
   fetchEnvironments() {
     return from(this.tfBackend.environmentStore.refresh());
+  }
+
+  getActivePlugin(): string | null {
+    return this.tfStorage.getString(this.tfStorage.TAB);
   }
 }

@@ -10,8 +10,10 @@ ng_module(
         "core_selectors.ts",
         "core_types.ts",
         "index.ts",
+        "legacy_bootstrap.ts",
     ],
     deps = [
+        "//tensorboard/webapp/webapp_data_source",
         "//tensorboard/webapp/core/actions",
         "//tensorboard/webapp/types",
         "@npm//@ngrx/store",
@@ -24,13 +26,19 @@ tf_ts_library(
     testonly = True,
     srcs = [
         "core_reducers_test.ts",
+        "legacy_bootstrap_test.ts",
     ],
     tsconfig = "//:tsconfig-test",
     deps = [
         ":store",
+        "//tensorboard/webapp/angular:expect_angular_common_http_testing",
+        "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "//tensorboard/webapp/webapp_data_source",
         "//tensorboard/webapp/core/actions",
         "//tensorboard/webapp/core/testing",
         "//tensorboard/webapp/types",
+        "@npm//@angular/common",
         "@npm//@types/jasmine",
+        "@npm//rxjs",
     ],
 )

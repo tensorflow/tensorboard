@@ -21,7 +21,7 @@ import {CoreState} from './core_types';
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
 /** @typehack */ import * as _typeHackStore from '@ngrx/store/store';
 
-const initialState: CoreState = {
+export const initialCoreState: CoreState = {
   activePlugin: null,
   plugins: {},
   pluginsListLoaded: {
@@ -33,7 +33,8 @@ const initialState: CoreState = {
 };
 
 const reducer = createReducer(
-  initialState,
+  // The initial state will be overridden via CORE_FEATURE_CONFIG_TOKEN anyway.
+  initialCoreState,
   on(
     actions.changePlugin,
     (state: CoreState, {plugin}): CoreState => {
