@@ -129,6 +129,17 @@ class DebuggerV2EventMultiplexer(object):
         }
 
     def ExecutionDigests(self, run, begin, end):
+        """Get ExecutionDigests.
+
+        Args:
+          run: The tfdbg2 run to get `ExecutionDigest`s from.
+          begin: Beginning execution index.
+          end: Ending execution index.
+
+        Returns:
+          A JSON-serializable object containing the `ExecutionDigest`s and
+          related meta-information
+        """
         runs = self.Runs()
         if run not in runs:
             return None
@@ -158,3 +169,12 @@ class DebuggerV2EventMultiplexer(object):
                 for digest in execution_digests[begin:end]
             ],
         }
+
+    def SourceFileList(self, run):
+        runs = self.Runs()
+        if run not in runs:
+            return None
+        # TODO(cais): Use public method `self._reader.source_files()` when available.
+        return list(
+            self._reader._host_name_file_path_to_offset.keys()
+        )  # pylint: disable=protected-access

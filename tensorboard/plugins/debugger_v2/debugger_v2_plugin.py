@@ -26,6 +26,15 @@ from tensorboard.plugins.debugger_v2 import debug_data_provider
 from tensorboard.backend import http_util
 
 
+def _missing_run_error_response(request):
+    return http_util.Respond(
+        request,
+        {"error": "run parameter is not provided"},
+        "application/json",
+        code=400,
+    )
+
+
 class DebuggerV2Plugin(base_plugin.TBPlugin):
     """Debugger V2 Plugin for TensorBoard."""
 
@@ -50,6 +59,7 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
         return {
             "/runs": self.serve_runs,
             "/execution/digests": self.serve_execution_digests,
+            "/source_files/list": self.serve_source_files_list,
         }
 
     def is_active(self):
@@ -83,12 +93,7 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
         experiment = plugin_util.experiment_id(request.environ)
         run = request.args.get("run")
         if run is None:
-            return http_util.Respond(
-                request,
-                {"error": "run parameter is not provided"},
-                "application/json",
-                code=400,
-            )
+            return _missing_run_error_response(request)
         begin = int(request.args.get("begin", "0"))
         end = int(request.args.get("end", "-1"))
         run_tag_filter = debug_data_provider.execution_digest_run_tag_filter(
@@ -110,3 +115,22 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
             return http_util.Respond(
                 request, {"error": str(e)}, "application/json", code=400,
             )
+
+    @wrappers.Request.application
+    def serve_source_files_list(self, request):
+        experiment = plugin_util.experiment_id(request.environ)
+        run = request.args.get("run")
+        if run is None:
+            return _missing_run_error_response(request)
+        run_tag_filter = debug_data_provider.source_file_list_run_tag_filter(
+            run
+        )
+        blob_sequences = self._data_provider.read_blob_sequences(
+            experiment, self.plugin_name, run_tag_filter=run_tag_filter
+        )
+        tag = next(iter(run_tag_filter.tags))
+        return http_util.Respond(
+            request,
+            self._data_provider.read_blob(blob_sequences[run][tag][0].blob_key),
+            "application/json",
+        )

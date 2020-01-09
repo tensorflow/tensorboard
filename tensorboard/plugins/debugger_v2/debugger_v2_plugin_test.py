@@ -19,6 +19,8 @@ from __future__ import division
 from __future__ import print_function
 
 import json
+import os
+import socket
 
 import tensorflow as tf
 from werkzeug import test as werkzeug_test  # pylint: disable=wrong-import-order
@@ -28,6 +30,10 @@ from tensorboard.backend import application
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.debugger_v2 import debugger_v2_plugin
 from tensorboard.util import test_util
+
+
+_HOST_NAME = socket.gethostname()
+_CURRENT_FILE_FULL_PATH = os.path.abspath(__file__)
 
 
 def _generate_tfdbg_v2_data(logdir):
@@ -277,6 +283,33 @@ class DebuggerV2PluginTest(tf.test.TestCase):
             json.loads(response.get_data()),
             {"error": "run parameter is not provided"},
         )
+
+    def testServeSourceFileListIncludesThisTestFile(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        response = self.server.get(
+            _ROUTE_PREFIX + "/source_files/list?run=%s" % run
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        source_file_list = json.loads(response.get_data())
+        self.assertIsInstance(source_file_list, list)
+        self.assertIn([_HOST_NAME, _CURRENT_FILE_FULL_PATH], source_file_list)
+
+    def testServeSourceFileListWithoutRunParamErrors(self):
+        # Make request without run param.
+        response = self.server.get(_ROUTE_PREFIX + "/source_files/list")
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {"error": "run parameter is not provided"},
+        )
+
 
 
 if __name__ == "__main__":
