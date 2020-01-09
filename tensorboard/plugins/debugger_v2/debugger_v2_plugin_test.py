@@ -29,6 +29,7 @@ from werkzeug import wrappers
 from tensorboard.backend import application
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.debugger_v2 import debugger_v2_plugin
+from tensorboard.plugins.debugger_v2 import debug_data_multiplexer
 from tensorboard.util import test_util
 
 
@@ -95,6 +96,14 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.plugin = debugger_v2_plugin.DebuggerV2Plugin(context)
         wsgi_app = application.TensorBoardWSGI([self.plugin])
         self.server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)
+        # The multiplexer reads data asynchrnously on a separate thread, so
+        # as not to block the main thread of the TensorBoard backend. During
+        # unit test, we disable the asynchronous behavior, so that we can
+        # load the debugger data synchronously on the main thread, which leads
+        # to determinisic behavior.
+        tf.compat.v1.test.mock.patch.object(
+            debug_data_multiplexer, "run_in_background", lambda target: target()
+        ).start()
 
     def _getExactlyOneRun(self):
         """Assert there is exactly one DebuggerV2 run and get its ID."""
@@ -308,6 +317,71 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertEqual(
             json.loads(response.get_data()),
             {"error": "run parameter is not provided"},
+        )
+
+    def testServeSourceFileContentOfThisTestFile(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        # First, access the source file list, so we can get hold of the index
+        # for this file. The index is required for the request to the
+        # "/source_files/file" route below.
+        response = self.server.get(
+            _ROUTE_PREFIX + "/source_files/list?run=%s" % run
+        )
+        source_file_list = json.loads(response.get_data())
+        index = source_file_list.index([_HOST_NAME, _CURRENT_FILE_FULL_PATH])
+
+        response = self.server.get(
+            _ROUTE_PREFIX + "/source_files/file?run=%s&index=%d" % (run, index)
+        )
+        self.assertEqual(200, response.status_code)  # TODO(cais): Restore.
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        data = json.loads(response.get_data())
+        self.assertEqual(data["host_name"], _HOST_NAME)
+        self.assertEqual(data["file_path"], _CURRENT_FILE_FULL_PATH)
+        with open(__file__, "rt") as f:
+            lines = f.read().split("\n")
+        self.assertEqual(data["lines"], lines)
+
+    def testServeSourceFileWithoutRunErrors(self):
+        # Make request without run param.
+        response = self.server.get(_ROUTE_PREFIX + "/source_files/file")
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {"error": "run parameter is not provided"},
+        )
+
+    def testServeSourceFileWithOutOfBoundIndexErrors(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        # First, access the source file list, so we can get hold of the index
+        # for this file. The index is required for the request to the
+        # "/source_files/file" route below.
+        response = self.server.get(
+            _ROUTE_PREFIX + "/source_files/list?run=%s" % run
+        )
+        source_file_list = json.loads(response.get_data())
+        self.assertTrue(source_file_list)
+
+        # Use an out-of-bound index.
+        invalid_index = len(source_file_list)
+        response = self.server.get(
+            _ROUTE_PREFIX
+            + "/source_files/file?run=%s&index=%d" % (run, invalid_index)
+        )
+        self.assertEqual(400, response.status_code)  # TODO(cais): Restore.
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {"error": "list index out of range"},
         )
 
 

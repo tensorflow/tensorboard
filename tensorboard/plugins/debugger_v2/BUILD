@@ -45,6 +45,7 @@ py_test(
     srcs = ["debugger_v2_plugin_test.py"],
     srcs_version = "PY2AND3",
     deps = [
+        ":debug_data_multiplexer",
         ":debugger_v2_plugin",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",

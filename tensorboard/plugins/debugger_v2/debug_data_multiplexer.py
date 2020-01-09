@@ -18,6 +18,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import threading
+
+
 # Dummy run name for the debugger.
 # Currently, the `DebuggerV2ExperimentMultiplexer` class is tied to a single
 # logdir, which holds at most one DebugEvent file set in the tfdbg v2 (tfdbg2
@@ -36,6 +39,23 @@ def _execution_digest_to_json(execution_digest):
             execution_digest.output_tensor_device_ids
         ),
     }
+
+
+def run_in_background(target):
+    """Run a target task in the background.
+
+    In the context of this module, `target` is the `update()` method of the
+    underlying reader for tfdbg2-format data.
+    This method is mocked by unit tests for deterministic behaviors during
+    testing.
+
+    TODO(cais): Implement repetition with sleeping periods in between.
+
+    Args:
+      target: The target task to run in the background, a callable with no args.
+    """
+    thread = threading.Thread(target=target)
+    thread.start()
 
 
 class DebuggerV2EventMultiplexer(object):
@@ -112,7 +132,7 @@ class DebuggerV2EventMultiplexer(object):
                 self._reader = debug_events_reader.DebugDataReader(self._logdir)
                 # NOTE(cais): Currently each logdir is enforced to have only one
                 # DebugEvent file set. So we add hard-coded default run name.
-                self._reader.update()
+                run_in_background(self._reader.update)
                 # TODO(cais): Start off a reading thread here, instead of being
                 # called only once here.
             except ValueError as error:
@@ -175,6 +195,23 @@ class DebuggerV2EventMultiplexer(object):
         if run not in runs:
             return None
         # TODO(cais): Use public method `self._reader.source_files()` when available.
-        return list(
+        # pylint: disable=protected-access
+        return list(self._reader._host_name_file_path_to_offset.keys())
+        # pylint: enable=protected-access
+
+    def SourceLines(self, run, index):
+        runs = self.Runs()
+        if run not in runs:
+            return None
+        # TODO(cais): Use public method `self._reader.source_files()` when available.
+        # pylint: disable=protected-access
+        source_file_list = list(
             self._reader._host_name_file_path_to_offset.keys()
-        )  # pylint: disable=protected-access
+        )
+        # pylint: enable=protected-access
+        host_name, file_path = source_file_list[index]
+        return {
+            "host_name": host_name,
+            "file_path": file_path,
+            "lines": self._reader.source_lines(host_name, file_path),
+        }

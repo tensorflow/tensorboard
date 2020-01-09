@@ -153,27 +153,22 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
         """
         experiment = plugin_util.experiment_id(request.environ)
         run = request.args.get("run")
-
-        begin = request.args.get("index")
-        if begin is None:
+        if run is None:
+            return _missing_run_error_response(request)
+        index = request.args.get("index")
+        # TOOD(cais): When the need arises, support serving a subset of a
+        # source file's lines.
+        if index is None:
             return http_util.Respond(
                 request,
                 {"error": "index is not provided for source file content"},
                 "application/json",
                 code=400,
             )
-        begin = int(begin)
-        if begin < 0:
-            return http_util.Respond(
-                request,
-                {
-                    "error": "negative index for source file content (%d)"
-                    % begin
-                },
-                "application/json",
-                code=400,
-            )
-        run_tag_filter = debug_data_provider.source_file_run_tag_filter(run)
+        index = int(index)
+        run_tag_filter = debug_data_provider.source_file_run_tag_filter(
+            run, index
+        )
         blob_sequences = self._data_provider.read_blob_sequences(
             experiment, self.plugin_name, run_tag_filter=run_tag_filter
         )

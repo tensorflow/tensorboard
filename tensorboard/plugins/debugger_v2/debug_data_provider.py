@@ -114,7 +114,7 @@ def source_file_run_tag_filter(run, index):
       `RunTagFilter` for accessing the content of the source file.
     """
     return provider.RunTagFilter(
-        runs=[run], tags=["%s_%d" % (source_file, index)],
+        runs=[run], tags=["%s_%d" % (SOURCE_FILE_BLOB_TAG_PREFIX, index)],
     )
 
 
@@ -130,8 +130,7 @@ def _parse_source_file_blob_key(blob_key):
       - File index, as an int.
     """
     key_body, run = blob_key.split(".", 1)
-    key_body = key_body[len(EXECUTION_DIGESTS_BLOB_TAG_PREFIX) :]
-    index = int(key_body.split("_")[1])
+    index = int(key_body[len(SOURCE_FILE_BLOB_TAG_PREFIX) + 1 :])
     return run, index
 
 
@@ -218,8 +217,10 @@ class LocalDebuggerV2DataProvider(provider.DataProvider):
                 continue
             output[run] = dict()
             for tag in run_tag_filter.tags:
-                if tag.startswith(EXECUTION_DIGESTS_BLOB_TAG_PREFIX) or tag in (
-                    SOURCE_FILE_LIST_BLOB_TAG,
+                if (
+                    tag.startswith(EXECUTION_DIGESTS_BLOB_TAG_PREFIX)
+                    or tag.startswith(SOURCE_FILE_BLOB_TAG_PREFIX)
+                    or tag in (SOURCE_FILE_LIST_BLOB_TAG,)
                 ):
                     output[run][tag] = [
                         provider.BlobReference(blob_key="%s.%s" % (tag, run))
@@ -235,5 +236,8 @@ class LocalDebuggerV2DataProvider(provider.DataProvider):
         elif blob_key.startswith(SOURCE_FILE_LIST_BLOB_TAG):
             run = _parse_source_file_list_blob_key(blob_key)
             return json.dumps(self._multiplexer.SourceFileList(run))
+        elif blob_key.startswith(SOURCE_FILE_BLOB_TAG_PREFIX):
+            run, index = _parse_source_file_blob_key(blob_key)
+            return json.dumps(self._multiplexer.SourceLines(run, index))
         else:
             raise ValueError("Unrecognized blob_key: %s" % blob_key)
