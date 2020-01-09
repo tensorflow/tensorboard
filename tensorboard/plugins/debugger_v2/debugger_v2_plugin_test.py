@@ -334,7 +334,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         response = self.server.get(
             _ROUTE_PREFIX + "/source_files/file?run=%s&index=%d" % (run, index)
         )
-        self.assertEqual(200, response.status_code)  # TODO(cais): Restore.
+        self.assertEqual(200, response.status_code)
         self.assertEqual(
             "application/json", response.headers.get("content-type")
         )
@@ -375,7 +375,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
             _ROUTE_PREFIX
             + "/source_files/file?run=%s&index=%d" % (run, invalid_index)
         )
-        self.assertEqual(400, response.status_code)  # TODO(cais): Restore.
+        self.assertEqual(400, response.status_code)
         self.assertEqual(
             "application/json", response.headers.get("content-type")
         )
