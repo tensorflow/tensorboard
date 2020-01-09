@@ -86,8 +86,7 @@ def _parse_source_file_list_blob_key(blob_key):
     Returns:
       - run ID
     """
-    return blob_key[blob_key.index(".") + 1:]
-
+    return blob_key[blob_key.index(".") + 1 :]
 
 
 def source_file_list_run_tag_filter(run):
