@@ -68,6 +68,9 @@ class DistributionsPlugin(base_plugin.TBPlugin):
         """
         return self._histograms_plugin.is_active()
 
+    def relevant_summary_plugins(self):
+        return (self._histograms_plugin.plugin_name,)
+
     def frontend_metadata(self):
         return base_plugin.FrontendMetadata(
             element_name="tf-distribution-dashboard",

@@ -47,6 +47,7 @@ from tensorboard.backend import application
 from tensorboard.backend.event_processing import (
     plugin_event_multiplexer as event_multiplexer,
 )
+from tensorboard.data import provider
 from tensorboard.plugins import base_plugin
 
 
@@ -97,6 +98,7 @@ class FakePlugin(base_plugin.TBPlugin):
         es_module_path_value=None,
         is_ng_component=False,
         construction_callback=None,
+        relevant_summary_plugins=None,
     ):
         """Constructs a fake plugin.
 
@@ -120,6 +122,9 @@ class FakePlugin(base_plugin.TBPlugin):
         self._element_name_value = element_name_value
         self._es_module_path_value = es_module_path_value
         self._is_ng_component = is_ng_component
+
+        if relevant_summary_plugins is not None:
+            self.relevant_summary_plugins = lambda: relevant_summary_plugins
 
         if construction_callback:
             construction_callback(context)
@@ -156,6 +161,22 @@ class FakePluginLoader(base_plugin.TBLoader):
 
     def load(self, context):
         return FakePlugin(context, **self._kwargs)
+
+
+class FakeDataProvider(provider.DataProvider):
+    """No-op `DataProvider`; override methods on specific instances."""
+
+    def __init__(self):
+        pass
+
+    def list_runs(self, experiment_id):
+        raise NotImplementedError()
+
+    def list_scalars(self, experiment_id):
+        raise NotImplementedError()
+
+    def read_scalars(self, experiment_id):
+        raise NotImplementedError()
 
 
 class HandlingErrorsTest(tb_test.TestCase):
@@ -235,6 +256,9 @@ class ApplicationTest(tb_test.TestCase):
             ),
         ]
         app = application.TensorBoardWSGI(plugins)
+        self._install_server(app)
+
+    def _install_server(self, app):
         self.server = werkzeug_test.Client(app, wrappers.BaseResponse)
 
     def _get_json(self, path):
@@ -294,6 +318,46 @@ class ApplicationTest(tb_test.TestCase):
                     "remove_dom": False,
                     "disable_reload": False,
                 },
+            },
+        )
+
+    def testPluginsListingWithDataProviderListActivePlugins(self):
+        prov = FakeDataProvider()
+        self.assertIsNotNone(prov.list_active_plugins)
+        prov.list_active_plugins = lambda experiment_id: ("foo", "bar")
+
+        plugins = [
+            FakePlugin(plugin_name="foo", is_active_value=False),
+            FakePlugin(
+                plugin_name="bar",
+                is_active_value=False,
+                relevant_summary_plugins=(),
+            ),
+            FakePlugin(plugin_name="baz", is_active_value=False),
+            FakePlugin(
+                plugin_name="quux",
+                is_active_value=False,
+                relevant_summary_plugins=("bar", "baz"),
+            ),
+            FakePlugin(
+                plugin_name="zod",
+                is_active_value=True,
+                relevant_summary_plugins=("none_but_should_fall_back"),
+            ),
+        ]
+        app = application.TensorBoardWSGI(plugins, data_provider=prov)
+        self._install_server(app)
+
+        parsed_object = self._get_json("/data/plugins_listing")
+        actives = {k: v["enabled"] for (k, v) in parsed_object.items()}
+        self.assertEqual(
+            actives,
+            {
+                "foo": True,  # directly has data
+                "bar": False,  # has data, but does not depend on itself
+                "baz": False,  # no data, and no dependencies
+                "quux": True,  # no data, but depends on "baz"
+                "zod": True,  # no data, but `is_active` return `True`
             },
         )
 

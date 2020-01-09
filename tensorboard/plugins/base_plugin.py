@@ -97,6 +97,16 @@ class TBPlugin(object):
         """
         return FrontendMetadata()
 
+    def relevant_summary_plugins(self):
+        """Experimental. Lists plugins whose summary data this plugin reads.
+
+        Returns:
+          A collection of strings representing plugin names (as read
+          from `SummaryMetadata.plugin_data.plugin_name`) from which
+          this plugin may read data. Defaults to `(self.plugin_name,)`.
+        """
+        return (self.plugin_name,)
+
 
 class FrontendMetadata(object):
     """Metadata required to render a plugin on the frontend.

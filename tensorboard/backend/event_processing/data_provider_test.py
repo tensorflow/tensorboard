@@ -30,6 +30,7 @@ from tensorboard.backend.event_processing import (
 )
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.data import provider as base_provider
+from tensorboard.plugins.graph import metadata as graph_metadata
 from tensorboard.plugins.image import metadata as image_metadata
 from tensorboard.plugins.image import summary_v2 as image_summary
 from tensorboard.plugins.scalar import metadata as scalar_metadata
@@ -97,6 +98,36 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
         provider = self.create_provider()
         result = provider.data_location(experiment_id="unused")
         self.assertEqual(result, self.logdir)
+
+    def test_list_active_plugins_with_no_graph(self):
+        provider = self.create_provider()
+        result = provider.list_active_plugins(experiment_id="unused")
+        self.assertItemsEqual(
+            result,
+            [
+                "marigraphs",
+                image_metadata.PLUGIN_NAME,
+                scalar_metadata.PLUGIN_NAME,
+            ],
+        )
+
+    def test_list_active_plugins_with_graph(self):
+        with tf.compat.v1.Graph().as_default() as graph:
+            writer = tf.compat.v1.summary.FileWriter(self.logdir)
+            writer.add_graph(graph)
+            writer.flush()
+
+        provider = self.create_provider()
+        result = provider.list_active_plugins(experiment_id="unused")
+        self.assertItemsEqual(
+            result,
+            [
+                "marigraphs",
+                graph_metadata.PLUGIN_NAME,
+                image_metadata.PLUGIN_NAME,
+                scalar_metadata.PLUGIN_NAME,
+            ],
+        )
 
     def test_list_runs(self):
         # We can't control the timestamps of events written to disk (without
