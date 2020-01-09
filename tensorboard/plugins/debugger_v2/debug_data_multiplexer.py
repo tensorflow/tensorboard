@@ -115,6 +115,10 @@ class DebuggerV2EventMultiplexer(object):
                 self._reader.update()
                 # TODO(cais): Start off a reading thread here, instead of being
                 # called only once here.
+            except AttributeError as error:
+                # Gracefully fail for users with TensorFlow 2.1.0 and older,
+                # which may have debug_events_reader without DebugDataReader.
+                return {}
             except ValueError as error:
                 # When no DebugEvent file set is found in the logdir, a
                 # `ValueError` is thrown.
