@@ -99,9 +99,9 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
         result = provider.data_location(experiment_id="unused")
         self.assertEqual(result, self.logdir)
 
-    def test_list_active_plugins_with_no_graph(self):
+    def test_list_plugins_with_no_graph(self):
         provider = self.create_provider()
-        result = provider.list_active_plugins(experiment_id="unused")
+        result = provider.list_plugins(experiment_id="unused")
         self.assertItemsEqual(
             result,
             [
@@ -111,14 +111,14 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
             ],
         )
 
-    def test_list_active_plugins_with_graph(self):
+    def test_list_plugins_with_graph(self):
         with tf.compat.v1.Graph().as_default() as graph:
             writer = tf.compat.v1.summary.FileWriter(self.logdir)
             writer.add_graph(graph)
             writer.flush()
 
         provider = self.create_provider()
-        result = provider.list_active_plugins(experiment_id="unused")
+        result = provider.list_plugins(experiment_id="unused")
         self.assertItemsEqual(
             result,
             [

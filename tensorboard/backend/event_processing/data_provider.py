@@ -76,7 +76,7 @@ class MultiplexerDataProvider(provider.DataProvider):
         self._validate_experiment_id(experiment_id)
         return str(self._logdir)
 
-    def list_active_plugins(self, experiment_id):
+    def list_plugins(self, experiment_id):
         self._validate_experiment_id(experiment_id)
         normal_plugins = self._multiplexer.ActivePlugins()
         graph_plugins = (

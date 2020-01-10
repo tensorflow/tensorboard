@@ -457,10 +457,10 @@ class TensorBoardWSGI(object):
         """
         response = collections.OrderedDict()
         eid = plugin_util.experiment_id(request.environ)
-        plugins_with_data = (
-            self._data_provider.list_active_plugins(eid)
+        plugins_with_data = frozenset(
+            self._data_provider.list_plugins(eid) or frozenset()
             if self._data_provider is not None
-            else None
+            else frozenset()
         )
         for plugin in self._plugins:
             if (
@@ -470,18 +470,10 @@ class TensorBoardWSGI(object):
                 continue
             start = time.time()
 
-            if plugins_with_data is not None:
-                is_active = (
-                    any(
-                        p in plugins_with_data
-                        for p in plugin.relevant_summary_plugins()
-                    )
-                    or plugin.is_active()  # note: short-circuits
-                )
-            else:
-                # Either we have no data provider or our data provider
-                # does not support the `list_active_plugins` operation.
-                is_active = plugin.is_active()
+            is_active = (
+                bool(frozenset(plugin.data_plugin_names()) & plugins_with_data)
+                or plugin.is_active()  # note: short-circuits
+            )
 
             elapsed = time.time() - start
             logger.info(

@@ -52,13 +52,13 @@ class DataProvider(object):
         """
         return ""
 
-    def list_active_plugins(self, experiment_id):
+    def list_plugins(self, experiment_id):
         """List all plugins that own data in a given experiment.
 
         This should be the set of all plugin names `p` such that calling
-        `list_scalars`, `list_tensors`, and `list_blob_sequences` for
-        the given `experiment_id` and plugin name `p` gives a non-empty
-        results.
+        `list_scalars`, `list_tensors`, or `list_blob_sequences` for the
+        given `experiment_id` and plugin name `p` gives a non-empty
+        result.
 
         This operation is optional, but may later become required.
 

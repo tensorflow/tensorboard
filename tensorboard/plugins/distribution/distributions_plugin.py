@@ -68,7 +68,7 @@ class DistributionsPlugin(base_plugin.TBPlugin):
         """
         return self._histograms_plugin.is_active()
 
-    def relevant_summary_plugins(self):
+    def data_plugin_names(self):
         return (self._histograms_plugin.plugin_name,)
 
     def frontend_metadata(self):

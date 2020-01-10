@@ -97,7 +97,7 @@ class TBPlugin(object):
         """
         return FrontendMetadata()
 
-    def relevant_summary_plugins(self):
+    def data_plugin_names(self):
         """Experimental. Lists plugins whose summary data this plugin reads.
 
         Returns:
