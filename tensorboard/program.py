@@ -37,6 +37,7 @@ from collections import defaultdict
 import errno
 import inspect
 import logging
+import mimetypes
 import os
 import signal
 import socket
@@ -279,6 +280,7 @@ class TensorBoard(object):
         :rtype: int
         """
         self._install_signal_handler(signal.SIGTERM, "SIGTERM")
+        self._fix_mime_types()
         subcommand_name = getattr(self.flags, _SUBCOMMAND_FLAG)
         if subcommand_name == _SERVE_SUBCOMMAND_NAME:
             runner = self._run_serve_subcommand
@@ -379,6 +381,27 @@ class TensorBoard(object):
             sys.exit(0)
 
         old_signal_handler = signal.signal(signal_number, handler)
+
+    def _fix_mime_types(self):
+        """Fix incorrect entries in the `mimetypes` registry.
+
+        On Windows, the Python standard library's `mimetypes` reads in
+        mappings from file extension to MIME type from the Windows
+        registry. Other applications can and do write incorrect values
+        to this registry, which causes `mimetypes.guess_type` to return
+        incorrect values, which causes TensorBoard to fail to render on
+        the frontend.
+
+        This method hard-codes the correct mappings for certain MIME
+        types that are known to be either used by TensorBoard or
+        problematic in general.
+        """
+        # Known to be problematic when Visual Studio is installed:
+        # <https://github.com/tensorflow/tensorboard/issues/3120>
+        mimetypes.add_type("application/javascript", ".js")
+        # Not known to be problematic, but used by TensorBoard:
+        mimetypes.add_type("font/woff2", ".woff2")
+        mimetypes.add_type("text/html", ".html")
 
     def _make_server(self):
         """Constructs the TensorBoard WSGI app and instantiates the server."""
