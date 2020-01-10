@@ -297,6 +297,20 @@ class ApplicationTest(tb_test.TestCase):
             },
         )
 
+    def testPluginsListingRobustToIsActiveFailures(self):
+        real_is_active = FakePlugin.is_active
+
+        def fake_is_active(self):
+            if self.plugin_name == "foo":
+                raise RuntimeError("this plugin is actually radioactive")
+            else:
+                return real_is_active(self)
+
+        with mock.patch.object(FakePlugin, "is_active", fake_is_active):
+            parsed_object = self._get_json("/data/plugins_listing")
+        self.assertEqual(parsed_object["foo"]["enabled"], False)
+        self.assertEqual(parsed_object["baz"]["enabled"], True)
+
     def testPluginEntry(self):
         """Test the data/plugin_entry.html endpoint."""
         response = self.server.get("/data/plugin_entry.html?name=baz")
