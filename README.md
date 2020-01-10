@@ -15,12 +15,14 @@ You may also be interested in the hosted TensorBoard solution at
 share your ML experiments for free. For example, [this experiment][] shows a
 working example featuring the scalar dashboard.
 
-TensorBoard can run entirely offline on your local machine, in a corporate
-environment, or in a datacenter, without connecting to Google servers. There is
-one exception: the optional profile plugin, when active, connects to a
-Google-hosted CDN to load the Google Charts library. Your data is never shared
-with Google unless you explicitly upload it to [TensorBoard.dev][] for public
-viewing.
+TensorBoard is designed to run entirely offline, without requiring any access
+to the Internet. For instance, this may be on your local machine, behind a
+corporate firewall, or in a datacenter. Currently, there is one exception where
+TensorBoard does require Internet access: the optional profile plugin, when
+active, connects to a Google-hosted CDN to load the Google Charts library.
+
+Your data is only shared with Google if you explicitly upload it to
+TensorBoard.dev for public viewing.
 
 [TensorBoard: Getting Started]: https://www.tensorflow.org/tensorboard/get_started
 [TensorBoard.dev]: https://tensorboard.dev
