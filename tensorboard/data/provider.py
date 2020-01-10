@@ -803,7 +803,7 @@ class RunTagFilter(object):
     def _parse_optional_string_set(self, name, value):
         if value is None:
             return None
-        if isinstance(value, str):
+        if isinstance(value, six.string_types):
             # Prevent confusion: strings _are_ iterable, but as
             # sequences of characters, so this likely signals an error.
             raise TypeError(
@@ -812,7 +812,7 @@ class RunTagFilter(object):
             )
         value = frozenset(value)
         for item in value:
-            if not isinstance(item, str):
+            if not isinstance(item, six.string_types):
                 raise TypeError(
                     "%s: expected `None` or collection of strings; "
                     "got item of type %r: %r" % (name, type(item), item)
