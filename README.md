@@ -21,9 +21,6 @@ corporate firewall, or in a datacenter. Currently, there is one exception where
 TensorBoard does require Internet access: the optional profile plugin, when
 active, connects to a Google-hosted CDN to load the Google Charts library.
 
-Your data is only shared with Google if you explicitly upload it to
-TensorBoard.dev for public viewing.
-
 [TensorBoard: Getting Started]: https://www.tensorflow.org/tensorboard/get_started
 [TensorBoard.dev]: https://tensorboard.dev
 [This experiment]: https://tensorboard.dev/experiment/AdYd1TgeTlaLWXx6I8JUbA/#scalars
