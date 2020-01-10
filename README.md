@@ -15,6 +15,12 @@ You may also be interested in the hosted TensorBoard solution at
 share your ML experiments for free. For example, [this experiment][] shows a
 working example featuring the scalar dashboard.
 
+TensorBoard is designed to run entirely offline, without requiring any access
+to the Internet. For instance, this may be on your local machine, behind a
+corporate firewall, or in a datacenter. Currently, there is one exception where
+TensorBoard does require Internet access: the optional profile plugin, when
+active, connects to a Google-hosted CDN to load the Google Charts library.
+
 [TensorBoard: Getting Started]: https://www.tensorflow.org/tensorboard/get_started
 [TensorBoard.dev]: https://tensorboard.dev
 [This experiment]: https://tensorboard.dev/experiment/AdYd1TgeTlaLWXx6I8JUbA/#scalars
