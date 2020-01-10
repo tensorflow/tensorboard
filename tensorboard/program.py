@@ -382,7 +382,7 @@ class TensorBoard(object):
 
         old_signal_handler = signal.signal(signal_number, handler)
 
-    def _fix_mime_types(self, target=mimetypes):
+    def _fix_mime_types(self):
         """Fix incorrect entries in the `mimetypes` registry.
 
         On Windows, the Python standard library's `mimetypes` reads in
@@ -395,11 +395,6 @@ class TensorBoard(object):
         This method hard-codes the correct mappings for certain MIME
         types that are known to be either used by TensorBoard or
         problematic in general.
-
-        Args:
-          target: The registry to which to add types, either the
-            `mimetypes` module (default) or a `mimetypes.MimeTypes`
-            value.
         """
         # Known to be problematic when Visual Studio is installed:
         # <https://github.com/tensorflow/tensorboard/issues/3120>
