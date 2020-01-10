@@ -258,6 +258,16 @@ class EventAccumulator(object):
             # Return a snapshot to avoid concurrent mutation and iteration issues.
             return dict(self._plugin_to_tag_to_content[plugin_name])
 
+    def ActivePlugins(self):
+        """Return a set of plugins with summary data.
+
+        Returns:
+          The distinct union of `plugin_data.plugin_name` fields from
+          all the `SummaryMetadata` protos stored in this accumulator.
+        """
+        with self._plugin_tag_lock:
+            return frozenset(self._plugin_to_tag_to_content)
+
     def SummaryMetadata(self, tag):
         """Given a summary tag name, return the associated metadata object.
 

@@ -30,8 +30,11 @@ from tensorboard.compat.proto import event_pb2
 from tensorboard.compat.proto import graph_pb2
 from tensorboard.compat.proto import meta_graph_pb2
 from tensorboard.compat.proto import summary_pb2
+from tensorboard.plugins.audio import metadata as audio_metadata
 from tensorboard.plugins.audio import summary as audio_summary
+from tensorboard.plugins.image import metadata as image_metadata
 from tensorboard.plugins.image import summary as image_summary
+from tensorboard.plugins.scalar import metadata as scalar_metadata
 from tensorboard.plugins.scalar import summary as scalar_summary
 from tensorboard.util import tb_logging
 from tensorboard.util import tensor_util
@@ -390,10 +393,13 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
             u"accuracy/scalar_summary",
             u"xent/scalar_summary",
         ]
-
         self.assertTagsEqual(
             accumulator.Tags(),
             {ea.TENSORS: tags, ea.GRAPH: True, ea.META_GRAPH: False,},
+        )
+
+        self.assertItemsEqual(
+            accumulator.ActivePlugins(), [scalar_metadata.PLUGIN_NAME]
         )
 
     def testNewStyleAudioSummary(self):
@@ -430,10 +436,13 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
             u"2/two/audio_summary",
             u"3/three/audio_summary",
         ]
-
         self.assertTagsEqual(
             accumulator.Tags(),
             {ea.TENSORS: tags, ea.GRAPH: True, ea.META_GRAPH: False,},
+        )
+
+        self.assertItemsEqual(
+            accumulator.ActivePlugins(), [audio_metadata.PLUGIN_NAME]
         )
 
     def testNewStyleImageSummary(self):
@@ -468,10 +477,13 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
             u"2/images/image_summary",
             u"3/images/image_summary",
         ]
-
         self.assertTagsEqual(
             accumulator.Tags(),
             {ea.TENSORS: tags, ea.GRAPH: True, ea.META_GRAPH: False,},
+        )
+
+        self.assertItemsEqual(
+            accumulator.ActivePlugins(), [image_metadata.PLUGIN_NAME]
         )
 
     def testTFSummaryTensor(self):
@@ -506,6 +518,8 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
         self.assertTrue(np.array_equal(scalar, 1.0))
         self.assertTrue(np.array_equal(vector, [1.0, 2.0, 3.0]))
         self.assertTrue(np.array_equal(string, six.b("foobar")))
+
+        self.assertItemsEqual(accumulator.ActivePlugins(), [])
 
     def _testTFSummaryTensor_SizeGuidance(
         self, plugin_name, tensor_size_guidance, steps, expected_count
@@ -823,6 +837,7 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
         )
         with six.assertRaisesRegex(self, KeyError, "plug"):
             acc.PluginTagToContent("plug")
+        self.assertItemsEqual(acc.ActivePlugins(), ["outlet"])
 
 
 if __name__ == "__main__":

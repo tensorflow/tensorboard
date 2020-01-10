@@ -52,6 +52,25 @@ class DataProvider(object):
         """
         return ""
 
+    def list_plugins(self, experiment_id):
+        """List all plugins that own data in a given experiment.
+
+        This should be the set of all plugin names `p` such that calling
+        `list_scalars`, `list_tensors`, or `list_blob_sequences` for the
+        given `experiment_id` and plugin name `p` gives a non-empty
+        result.
+
+        This operation is optional, but may later become required.
+
+        Args:
+          experiment_id: ID of enclosing experiment.
+
+        Returns:
+          A collection of strings representing plugin names, or `None`
+          if this operation is not supported by this data provider.
+        """
+        return None
+
     @abc.abstractmethod
     def list_runs(self, experiment_id):
         """List all runs within an experiment.

@@ -44,6 +44,7 @@ from six.moves.urllib import (
 from werkzeug import wrappers
 
 from tensorboard import errors
+from tensorboard import plugin_util
 from tensorboard.backend import empty_path_redirect
 from tensorboard.backend import experiment_id
 from tensorboard.backend import http_util
@@ -247,18 +248,21 @@ def TensorBoardWSGIApp(
             continue
         tbplugins.append(plugin)
         plugin_name_to_instance[plugin.plugin_name] = plugin
-    return TensorBoardWSGI(tbplugins, flags.path_prefix)
+    return TensorBoardWSGI(tbplugins, flags.path_prefix, data_provider)
 
 
 class TensorBoardWSGI(object):
     """The TensorBoard WSGI app that delegates to a set of TBPlugin."""
 
-    def __init__(self, plugins, path_prefix=""):
+    def __init__(self, plugins, path_prefix="", data_provider=None):
         """Constructs TensorBoardWSGI instance.
 
         Args:
           plugins: A list of base_plugin.TBPlugin subclass instances.
           flags: An argparse.Namespace containing TensorBoard CLI flags.
+          data_provider: `tensorboard.data.provider.DataProvider` or
+            `None`; if present, will inform the "active" state of
+            `/plugins_listing`.
 
         Returns:
           A WSGI application for the set of all TBPlugin instances.
@@ -275,6 +279,7 @@ class TensorBoardWSGI(object):
         """
         self._plugins = plugins
         self._path_prefix = path_prefix
+        self._data_provider = data_provider
         if self._path_prefix.endswith("/"):
             # Should have been fixed by `fix_flags`.
             raise ValueError(
@@ -451,28 +456,39 @@ class TensorBoardWSGI(object):
           A werkzeug.Response object.
         """
         response = collections.OrderedDict()
+        eid = plugin_util.experiment_id(request.environ)
+        plugins_with_data = frozenset(
+            self._data_provider.list_plugins(eid) or frozenset()
+            if self._data_provider is not None
+            else frozenset()
+        )
         for plugin in self._plugins:
             if (
                 type(plugin) is core_plugin.CorePlugin
             ):  # pylint: disable=unidiomatic-typecheck
                 # This plugin's existence is a backend implementation detail.
                 continue
-            try:
-                start = time.time()
-                is_active = plugin.is_active()
-                elapsed = time.time() - start
-                logger.info(
-                    "Plugin listing: is_active() for %s took %0.3f seconds",
-                    plugin.plugin_name,
-                    elapsed,
-                )
-            except Exception:
-                is_active = False
-                logger.error(
-                    "Plugin listing: is_active() for %s failed (marking inactive)",
-                    plugin.plugin_name,
-                    exc_info=True,
-                )
+
+            is_active = bool(
+                frozenset(plugin.data_plugin_names()) & plugins_with_data
+            )
+            if not is_active:
+                try:
+                    start = time.time()
+                    is_active = plugin.is_active()
+                    elapsed = time.time() - start
+                    logger.info(
+                        "Plugin listing: is_active() for %s took %0.3f seconds",
+                        plugin.plugin_name,
+                        elapsed,
+                    )
+                except Exception:
+                    is_active = False
+                    logger.error(
+                        "Plugin listing: is_active() for %s failed (marking inactive)",
+                        plugin.plugin_name,
+                        exc_info=True,
+                    )
 
             plugin_metadata = plugin.frontend_metadata()
             output_metadata = {
