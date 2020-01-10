@@ -117,8 +117,9 @@ class DebuggerV2EventMultiplexer(object):
                 # called only once here.
             except AttributeError as error:
                 # Gracefully fail for users without the required API changes to
-                # debug_events_reader introduced in TF 2.1.0.dev20200103.
-                # This should be safe to remove when TF 2.2 is released.
+                # debug_events_reader.DebugDataReader introduced in
+                # TF 2.1.0.dev20200103. This should be safe to remove when
+                # TF 2.2 is released.
                 return {}
             except ValueError as error:
                 # When no DebugEvent file set is found in the logdir, a
