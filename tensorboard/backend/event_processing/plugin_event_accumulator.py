@@ -265,7 +265,7 @@ class EventAccumulator(object):
           The distinct union of `plugin_data.plugin_name` fields from
           all the `SummaryMetadata` protos stored in this accumulator.
         """
-        with self._plugin_tag_metalock:
+        with self._plugin_tag_lock:
             return frozenset(self._plugin_to_tag_to_content)
 
     def SummaryMetadata(self, tag):
