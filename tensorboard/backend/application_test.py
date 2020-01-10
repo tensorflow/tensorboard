@@ -321,7 +321,6 @@ class ApplicationTest(tb_test.TestCase):
             },
         )
 
-<<<<<<< HEAD
     def testPluginsListingWithDataProviderListActivePlugins(self):
         prov = FakeDataProvider()
         self.assertIsNotNone(prov.list_plugins)
@@ -359,7 +358,7 @@ class ApplicationTest(tb_test.TestCase):
                 "zod": True,  # no data, but `is_active` return `True`
             },
         )
-=======
+
     def testPluginsListingRobustToIsActiveFailures(self):
         real_is_active = FakePlugin.is_active
 
@@ -373,7 +372,6 @@ class ApplicationTest(tb_test.TestCase):
             parsed_object = self._get_json("/data/plugins_listing")
         self.assertEqual(parsed_object["foo"]["enabled"], False)
         self.assertEqual(parsed_object["baz"]["enabled"], True)
->>>>>>> 08e49391a9d7e3418ccd3114c451e64e4408135e
 
     def testPluginEntry(self):
         """Test the data/plugin_entry.html endpoint."""

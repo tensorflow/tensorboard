@@ -468,38 +468,27 @@ class TensorBoardWSGI(object):
             ):  # pylint: disable=unidiomatic-typecheck
                 # This plugin's existence is a backend implementation detail.
                 continue
-<<<<<<< HEAD
-            start = time.time()
 
-            is_active = (
-                bool(frozenset(plugin.data_plugin_names()) & plugins_with_data)
-                or plugin.is_active()  # note: short-circuits
+            is_active = bool(
+                frozenset(plugin.data_plugin_names()) & plugins_with_data
             )
-
-            elapsed = time.time() - start
-            logger.info(
-                "Plugin listing: is_active() for %s took %0.3f seconds",
-                plugin.plugin_name,
-                elapsed,
-            )
-=======
-            try:
-                start = time.time()
-                is_active = plugin.is_active()
-                elapsed = time.time() - start
-                logger.info(
-                    "Plugin listing: is_active() for %s took %0.3f seconds",
-                    plugin.plugin_name,
-                    elapsed,
-                )
-            except Exception:
-                is_active = False
-                logger.error(
-                    "Plugin listing: is_active() for %s failed (marking inactive)",
-                    plugin.plugin_name,
-                    exc_info=True,
-                )
->>>>>>> 08e49391a9d7e3418ccd3114c451e64e4408135e
+            if not is_active:
+                try:
+                    start = time.time()
+                    is_active = plugin.is_active()
+                    elapsed = time.time() - start
+                    logger.info(
+                        "Plugin listing: is_active() for %s took %0.3f seconds",
+                        plugin.plugin_name,
+                        elapsed,
+                    )
+                except Exception:
+                    is_active = False
+                    logger.error(
+                        "Plugin listing: is_active() for %s failed (marking inactive)",
+                        plugin.plugin_name,
+                        exc_info=True,
+                    )
 
             plugin_metadata = plugin.frontend_metadata()
             output_metadata = {
