@@ -36,6 +36,8 @@ from tensorboard.plugins.debugger_v2 import debug_data_multiplexer
 PLUGIN_NAME = "debugger-v2"
 
 EXECUTION_DIGESTS_BLOB_TAG_PREFIX = "execution_digests"
+SOURCE_FILE_LIST_BLOB_TAG = "source_file_list"
+SOURCE_FILE_BLOB_TAG_PREFIX = "source_file"
 
 
 def execution_digest_run_tag_filter(run, begin, end):
@@ -59,7 +61,7 @@ def _parse_execution_digest_blob_key(blob_key):
     """Parse the BLOB key for ExecutionDigests.
 
     Args:
-      blob_key: The BLOB key to parse. By convention, it should have the format:
+      blob_key: The BLOB key to parse. By contract, it should have the format:
        `${EXECUTION_DIGESTS_BLOB_TAG_PREFIX}_${begin}_${end}.${run_id}`
 
     Returns:
@@ -73,6 +75,63 @@ def _parse_execution_digest_blob_key(blob_key):
     begin = int(key_body.split("_")[1])
     end = int(key_body.split("_")[2])
     return run, begin, end
+
+
+def source_file_list_run_tag_filter(run):
+    """Create a RunTagFilter for listing source files.
+
+    Args:
+      run: tfdbg2 run name.
+
+    Returns:
+      `RunTagFilter` for listing the source files in the tfdbg2 run.
+    """
+    return provider.RunTagFilter(runs=[run], tags=[SOURCE_FILE_LIST_BLOB_TAG])
+
+
+def _parse_source_file_list_blob_key(blob_key):
+    """Parse the BLOB key for source file list.
+
+    Args:
+      blob_key: The BLOB key to parse. By contract, it should have the format:
+       `${SOURCE_FILE_LIST_BLOB_TAG}.${run_id}`
+
+    Returns:
+      - run ID
+    """
+    return blob_key[blob_key.index(".") + 1 :]
+
+
+def source_file_run_tag_filter(run, index):
+    """Create a RunTagFilter for listing source files.
+
+    Args:
+      run: tfdbg2 run name.
+      index: The index for the source file of which the content is to be
+        accessed.
+
+    Returns:
+      `RunTagFilter` for accessing the content of the source file.
+    """
+    return provider.RunTagFilter(
+        runs=[run], tags=["%s_%d" % (SOURCE_FILE_BLOB_TAG_PREFIX, index)],
+    )
+
+
+def _parse_source_file_blob_key(blob_key):
+    """Parse the BLOB key for accessing the content of a source file.
+
+    Args:
+      blob_key: The BLOB key to parse. By contract, it should have the format:
+       `${SOURCE_FILE_BLOB_TAG_PREFIX}_${index}.${run_id}`
+
+    Returns:
+      - run ID, as a str.
+      - File index, as an int.
+    """
+    key_body, run = blob_key.split(".", 1)
+    index = int(key_body[len(SOURCE_FILE_BLOB_TAG_PREFIX) + 1 :])
+    return run, index
 
 
 class LocalDebuggerV2DataProvider(provider.DataProvider):
@@ -158,7 +217,11 @@ class LocalDebuggerV2DataProvider(provider.DataProvider):
                 continue
             output[run] = dict()
             for tag in run_tag_filter.tags:
-                if tag.startswith(EXECUTION_DIGESTS_BLOB_TAG_PREFIX):
+                if (
+                    tag.startswith(EXECUTION_DIGESTS_BLOB_TAG_PREFIX)
+                    or tag.startswith(SOURCE_FILE_BLOB_TAG_PREFIX)
+                    or tag in (SOURCE_FILE_LIST_BLOB_TAG,)
+                ):
                     output[run][tag] = [
                         provider.BlobReference(blob_key="%s.%s" % (tag, run))
                     ]
@@ -170,5 +233,11 @@ class LocalDebuggerV2DataProvider(provider.DataProvider):
             return json.dumps(
                 self._multiplexer.ExecutionDigests(run, begin, end)
             )
+        elif blob_key.startswith(SOURCE_FILE_LIST_BLOB_TAG):
+            run = _parse_source_file_list_blob_key(blob_key)
+            return json.dumps(self._multiplexer.SourceFileList(run))
+        elif blob_key.startswith(SOURCE_FILE_BLOB_TAG_PREFIX):
+            run, index = _parse_source_file_blob_key(blob_key)
+            return json.dumps(self._multiplexer.SourceLines(run, index))
         else:
             raise ValueError("Unrecognized blob_key: %s" % blob_key)
