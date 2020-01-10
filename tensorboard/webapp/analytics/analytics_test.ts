@@ -25,7 +25,7 @@ import {AnalyticsLogger} from './analytics_logger';
 import {AnalyticsEffects} from './effects';
 import {createState, createCoreState} from '../core/testing';
 
-describe('changing plugins', () => {
+describe('analytics', () => {
   let logger: AnalyticsLogger;
   let action: ReplaySubject<Action>;
   let store: MockStore<State>;
