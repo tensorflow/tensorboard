@@ -136,6 +136,12 @@ class DebuggerV2EventMultiplexer(object):
                 run_in_background(self._reader.update)
                 # TODO(cais): Start off a reading thread here, instead of being
                 # called only once here.
+            except AttributeError as error:
+                # Gracefully fail for users without the required API changes to
+                # debug_events_reader.DebugDataReader introduced in
+                # TF 2.1.0.dev20200103. This should be safe to remove when
+                # TF 2.2 is released.
+                return {}
             except ValueError as error:
                 # When no DebugEvent file set is found in the logdir, a
                 # `ValueError` is thrown.
