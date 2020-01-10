@@ -40,6 +40,18 @@ py_library(
 )
 
 py_test(
+    name = "debug_data_multiplexer_test",
+    size = "small",
+    srcs = ["debug_data_multiplexer_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":debug_data_multiplexer",
+        "//tensorboard:expect_tensorflow_installed",
+    ],
+)
+
+
+py_test(
     name = "debugger_v2_plugin_test",
     size = "medium",
     srcs = ["debugger_v2_plugin_test.py"],

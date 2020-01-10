@@ -123,7 +123,7 @@ def _parse_source_file_blob_key(blob_key):
 
     Args:
       blob_key: The BLOB key to parse. By contract, it should have the format:
-       `${SOURCE_FILE_LIST_BLOB_TAG}_${index}.${run_id}`
+       `${SOURCE_FILE_BLOB_TAG_PREFIX}_${index}.${run_id}`
 
     Returns:
       - run ID, as a str.

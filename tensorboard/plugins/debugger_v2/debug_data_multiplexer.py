@@ -49,11 +49,12 @@ def run_in_background(target):
     This method is mocked by unit tests for deterministic behaviors during
     testing.
 
-    TODO(cais): Implement repetition with sleeping periods in between.
-
     Args:
       target: The target task to run in the background, a callable with no args.
     """
+    # TODO(cais): Implement repetition with sleeping periods in between.
+    # TODO(cais): Add more unit tests in debug_data_multiplexer_test.py when the
+    # the behavior gets more complex.
     thread = threading.Thread(target=target)
     thread.start()
 
@@ -209,7 +210,10 @@ class DebuggerV2EventMultiplexer(object):
             self._reader._host_name_file_path_to_offset.keys()
         )
         # pylint: enable=protected-access
-        host_name, file_path = source_file_list[index]
+        try:
+            host_name, file_path = source_file_list[index]
+        except IndexError:
+            raise IndexError("There is no source-code file at index %d" % index)
         return {
             "host_name": host_name,
             "file_path": file_path,

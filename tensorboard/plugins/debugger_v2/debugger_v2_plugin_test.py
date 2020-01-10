@@ -28,8 +28,8 @@ from werkzeug import wrappers
 
 from tensorboard.backend import application
 from tensorboard.plugins import base_plugin
-from tensorboard.plugins.debugger_v2 import debugger_v2_plugin
 from tensorboard.plugins.debugger_v2 import debug_data_multiplexer
+from tensorboard.plugins.debugger_v2 import debugger_v2_plugin
 from tensorboard.util import test_util
 
 
@@ -96,14 +96,22 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.plugin = debugger_v2_plugin.DebuggerV2Plugin(context)
         wsgi_app = application.TensorBoardWSGI([self.plugin])
         self.server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)
-        # The multiplexer reads data asynchrnously on a separate thread, so
+        # The multiplexer reads data asynchronously on a separate thread, so
         # as not to block the main thread of the TensorBoard backend. During
         # unit test, we disable the asynchronous behavior, so that we can
-        # load the debugger data synchronously on the main thread, which leads
-        # to determinisic behavior.
-        tf.compat.v1.test.mock.patch.object(
-            debug_data_multiplexer, "run_in_background", lambda target: target()
-        ).start()
+        # load the debugger data synchronously on the main thread and get
+        # determinisic behavior in the tests.
+        def run_in_background_mock(target):
+            target()
+
+        self.run_in_background_patch = tf.compat.v1.test.mock.patch.object(
+            debug_data_multiplexer, "run_in_background", run_in_background_mock
+        )
+        self.run_in_background_patch.start()
+
+    def tearDown(self):
+        self.run_in_background_patch.stop()
+        super(DebuggerV2PluginTest, self).tearDown()
 
     def _getExactlyOneRun(self):
         """Assert there is exactly one DebuggerV2 run and get its ID."""
@@ -341,7 +349,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         data = json.loads(response.get_data())
         self.assertEqual(data["host_name"], _HOST_NAME)
         self.assertEqual(data["file_path"], _CURRENT_FILE_FULL_PATH)
-        with open(__file__, "rt") as f:
+        with open(__file__, "r") as f:
             lines = f.read().split("\n")
         self.assertEqual(data["lines"], lines)
 
@@ -381,7 +389,10 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         )
         self.assertEqual(
             json.loads(response.get_data()),
-            {"error": "list index out of range"},
+            {
+                "error": "There is no source-code file at index %d"
+                % invalid_index
+            },
         )
 
 

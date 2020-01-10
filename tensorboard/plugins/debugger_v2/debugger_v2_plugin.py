@@ -141,9 +141,9 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
     def serve_source_file(self, request):
         """Serves the content of a given source file.
 
-        The source file is referred to by the index in the list of all source files
-        invovled in the execution of the debugged program, which is available via the
-        `serve_source_files_list()`  serving route.
+        The source file is referred to by the index in the list of all source
+        files involved in the execution of the debugged program, which is
+        available via the `serve_source_files_list()`  serving route.
 
         Args:
           request: HTTP request.
