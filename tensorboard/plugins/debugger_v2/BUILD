@@ -50,7 +50,6 @@ py_test(
     ],
 )
 
-
 py_test(
     name = "debugger_v2_plugin_test",
     size = "medium",
