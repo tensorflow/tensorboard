@@ -48,7 +48,7 @@ export function getConfig(
   providers: [
     {
       provide: CORE_FEATURE_CONFIG_TOKEN,
-      deps: [TBServerDataSourceModule],
+      deps: [TBServerDataSource],
       useFactory: getConfig,
     },
   ],

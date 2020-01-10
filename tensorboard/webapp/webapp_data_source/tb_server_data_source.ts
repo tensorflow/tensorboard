@@ -24,7 +24,7 @@ import {PluginsListing} from '../types/api';
 @Injectable()
 export class TBServerDataSource {
   // TODO(soergel): implements WebappDataSource
-  private tfStorage = document.createElement('tf-storage') as any;
+  private tfStorage = (document.createElement('tf-storage') as any).tf_storage;
   private tfBackend = (document.createElement('tf-backend') as any).tf_backend;
 
   constructor(private http: HttpClient) {}
