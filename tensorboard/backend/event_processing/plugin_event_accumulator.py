@@ -156,14 +156,9 @@ class EventAccumulator(object):
         # first event encountered per tag, so we must store that first instance of
         # content for each tag.
         self._plugin_to_tag_to_content = collections.defaultdict(dict)
-        # Locks the dict `_plugin_to_tag_to_content` (but not its individual
-        # values), as well as the `_plugin_tag_locks` dict.
-        self._plugin_tag_metalock = threading.Lock()
-        # `_plugin_tag_locks[p]` locks the dict `_plugin_to_tag_to_content[p]`.
-        #
-        # Liveness condition: while `_plugin_tag_locks[p]` is held,
-        # `_plugin_tag_metalock` must not be waited-for.
-        self._plugin_tag_locks = collections.defaultdict(threading.Lock)
+        # Locks the dict `_plugin_to_tag_to_content` as well as the
+        # dicts `_plugin_to_tag_to_content[p]` for each `p`.
+        self._plugin_tag_lock = threading.Lock()
 
         self.path = path
         self._generator = _GeneratorFromPath(path, event_file_active_filter)
@@ -257,26 +252,11 @@ class EventAccumulator(object):
           A dict mapping tag names to bytestrings of plugin-specific content-- by
           convention, in the form of binary serialized protos.
         """
-        released_metalock = False
-        try:
-            # Acquire without context manager so that we can release early.
-            self._plugin_tag_metalock.acquire()
+        with self._plugin_tag_lock:
             if plugin_name not in self._plugin_to_tag_to_content:
                 raise KeyError("Plugin %r could not be found." % plugin_name)
-            with self._plugin_tag_locks[plugin_name]:
-                tag_to_content = self._plugin_to_tag_to_content[plugin_name]
-                self._plugin_tag_metalock.release()
-                released_metalock = True
-                # Return a snapshot to avoid concurrent mutation and iteration issues.
-                return dict(tag_to_content)
-        finally:
-            if not released_metalock:
-                try:
-                    self._plugin_tag_metalock.release()
-                except RuntimeError:
-                    # Already released; we may have been interrupted
-                    # before setting `released_metalock`.
-                    pass
+            # Return a snapshot to avoid concurrent mutation and iteration issues.
+            return dict(self._plugin_to_tag_to_content[plugin_name])
 
     def SummaryMetadata(self, tag):
         """Given a summary tag name, return the associated metadata object.
@@ -380,13 +360,10 @@ class EventAccumulator(object):
                         self.summary_metadata[tag] = value.metadata
                         plugin_data = value.metadata.plugin_data
                         if plugin_data.plugin_name:
-                            with self._plugin_tag_metalock:
-                                with self._plugin_tag_locks[
+                            with self._plugin_tag_lock:
+                                self._plugin_to_tag_to_content[
                                     plugin_data.plugin_name
-                                ]:
-                                    self._plugin_to_tag_to_content[
-                                        plugin_data.plugin_name
-                                    ][tag] = plugin_data.content
+                                ][tag] = plugin_data.content
                         else:
                             logger.warn(
                                 (
