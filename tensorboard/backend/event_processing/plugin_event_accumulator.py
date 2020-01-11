@@ -156,7 +156,9 @@ class EventAccumulator(object):
         # first event encountered per tag, so we must store that first instance of
         # content for each tag.
         self._plugin_to_tag_to_content = collections.defaultdict(dict)
-        self._plugin_tag_locks = collections.defaultdict(threading.Lock)
+        # Locks the dict `_plugin_to_tag_to_content` as well as the
+        # dicts `_plugin_to_tag_to_content[p]` for each `p`.
+        self._plugin_tag_lock = threading.Lock()
 
         self.path = path
         self._generator = _GeneratorFromPath(path, event_file_active_filter)
@@ -250,11 +252,21 @@ class EventAccumulator(object):
           A dict mapping tag names to bytestrings of plugin-specific content-- by
           convention, in the form of binary serialized protos.
         """
-        if plugin_name not in self._plugin_to_tag_to_content:
-            raise KeyError("Plugin %r could not be found." % plugin_name)
-        with self._plugin_tag_locks[plugin_name]:
+        with self._plugin_tag_lock:
+            if plugin_name not in self._plugin_to_tag_to_content:
+                raise KeyError("Plugin %r could not be found." % plugin_name)
             # Return a snapshot to avoid concurrent mutation and iteration issues.
             return dict(self._plugin_to_tag_to_content[plugin_name])
+
+    def ActivePlugins(self):
+        """Return a set of plugins with summary data.
+
+        Returns:
+          The distinct union of `plugin_data.plugin_name` fields from
+          all the `SummaryMetadata` protos stored in this accumulator.
+        """
+        with self._plugin_tag_lock:
+            return frozenset(self._plugin_to_tag_to_content)
 
     def SummaryMetadata(self, tag):
         """Given a summary tag name, return the associated metadata object.
@@ -358,9 +370,7 @@ class EventAccumulator(object):
                         self.summary_metadata[tag] = value.metadata
                         plugin_data = value.metadata.plugin_data
                         if plugin_data.plugin_name:
-                            with self._plugin_tag_locks[
-                                plugin_data.plugin_name
-                            ]:
+                            with self._plugin_tag_lock:
                                 self._plugin_to_tag_to_content[
                                     plugin_data.plugin_name
                                 ][tag] = plugin_data.content

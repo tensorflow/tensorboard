@@ -77,9 +77,7 @@ class GraphsPlugin(base_plugin.TBPlugin):
     def is_active(self):
         """The graphs plugin is active iff any run has a graph or metadata."""
         if self._data_provider:
-            # We don't have an experiment ID, and modifying the backend core
-            # to provide one would break backward compatibility. Hack for now.
-            return True
+            return False  # `list_plugins` as called by TB core suffices
 
         return bool(self.info_impl())
 
@@ -125,9 +123,11 @@ class GraphsPlugin(base_plugin.TBPlugin):
             )
             for (run_name, tag_to_time_series) in six.iteritems(mapping):
                 for tag in tag_to_time_series:
-                    (run_item, tag_item) = add_row_item(run_name, tag)
-                    run_item["run_graph"] = True
-                    if tag_item:
+                    if tag == metadata.RUN_GRAPH_NAME:
+                        (run_item, _) = add_row_item(run_name, None)
+                        run_item["run_graph"] = True
+                    else:
+                        (_, tag_item) = add_row_item(run_name, tag)
                         tag_item["op_graph"] = True
             return result
 
@@ -203,6 +203,8 @@ class GraphsPlugin(base_plugin.TBPlugin):
         """Result of the form `(body, mime_type)`, or `None` if no graph
         exists."""
         if self._data_provider:
+            if tag is None:
+                tag = metadata.RUN_GRAPH_NAME
             graph_blob_sequences = self._data_provider.read_blob_sequences(
                 experiment_id=experiment,
                 plugin_name=metadata.PLUGIN_NAME,

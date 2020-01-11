@@ -425,6 +425,18 @@ class EventMultiplexer(object):
             mapping[run] = tag_to_content
         return mapping
 
+    def ActivePlugins(self):
+        """Return a set of plugins with summary data.
+
+        Returns:
+          The distinct union of `plugin_data.plugin_name` fields from
+          all the `SummaryMetadata` protos stored in any run known to
+          this multiplexer.
+        """
+        with self._accumulators_mutex:
+            accumulators = list(self._accumulators.values())
+        return frozenset().union(*(a.ActivePlugins() for a in accumulators))
+
     def SummaryMetadata(self, run, tag):
         """Return the summary metadata for the given tag on the given run.
 

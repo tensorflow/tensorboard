@@ -76,6 +76,19 @@ class MultiplexerDataProvider(provider.DataProvider):
         self._validate_experiment_id(experiment_id)
         return str(self._logdir)
 
+    def list_plugins(self, experiment_id):
+        self._validate_experiment_id(experiment_id)
+        normal_plugins = self._multiplexer.ActivePlugins()
+        graph_plugins = (
+            (graphs_metadata.PLUGIN_NAME,)
+            if any(
+                run[plugin_event_accumulator.GRAPH]
+                for run in self._multiplexer.Runs().values()
+            )
+            else ()
+        )
+        return frozenset().union(normal_plugins, graph_plugins)
+
     def list_runs(self, experiment_id):
         self._validate_experiment_id(experiment_id)
         return [
@@ -200,7 +213,7 @@ class MultiplexerDataProvider(provider.DataProvider):
 
         result = collections.defaultdict(lambda: {})
         for (run, run_info) in six.iteritems(self._multiplexer.Runs()):
-            tag = None
+            tag = graphs_metadata.RUN_GRAPH_NAME
             if not self._test_run_tag(run_tag_filter, run, tag):
                 continue
             if not run_info[plugin_event_accumulator.GRAPH]:
@@ -230,7 +243,7 @@ class MultiplexerDataProvider(provider.DataProvider):
             lambda: collections.defaultdict(lambda: [])
         )
         for (run, run_info) in six.iteritems(self._multiplexer.Runs()):
-            tag = None
+            tag = graphs_metadata.RUN_GRAPH_NAME
             if not self._test_run_tag(run_tag_filter, run, tag):
                 continue
             if not run_info[plugin_event_accumulator.GRAPH]:

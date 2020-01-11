@@ -77,9 +77,7 @@ class HistogramsPlugin(base_plugin.TBPlugin):
         """This plugin is active iff any run has at least one histograms
         tag."""
         if self._data_provider:
-            # We don't have an experiment ID, and modifying the backend core
-            # to provide one would break backward compatibility. Hack for now.
-            return True
+            return False  # `list_plugins` as called by TB core suffices
 
         if self._db_connection_provider:
             # The plugin is active if one relevant tag can be found in the database.

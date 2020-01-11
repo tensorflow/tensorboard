@@ -47,6 +47,7 @@ from tensorboard.backend import application
 from tensorboard.backend.event_processing import (
     plugin_event_multiplexer as event_multiplexer,
 )
+from tensorboard.data import provider
 from tensorboard.plugins import base_plugin
 
 
@@ -97,6 +98,7 @@ class FakePlugin(base_plugin.TBPlugin):
         es_module_path_value=None,
         is_ng_component=False,
         construction_callback=None,
+        data_plugin_names=None,
     ):
         """Constructs a fake plugin.
 
@@ -120,6 +122,9 @@ class FakePlugin(base_plugin.TBPlugin):
         self._element_name_value = element_name_value
         self._es_module_path_value = es_module_path_value
         self._is_ng_component = is_ng_component
+
+        if data_plugin_names is not None:
+            self.data_plugin_names = lambda: data_plugin_names
 
         if construction_callback:
             construction_callback(context)
@@ -156,6 +161,22 @@ class FakePluginLoader(base_plugin.TBLoader):
 
     def load(self, context):
         return FakePlugin(context, **self._kwargs)
+
+
+class FakeDataProvider(provider.DataProvider):
+    """No-op `DataProvider`; override methods on specific instances."""
+
+    def __init__(self):
+        pass
+
+    def list_runs(self, experiment_id):
+        raise NotImplementedError()
+
+    def list_scalars(self, experiment_id):
+        raise NotImplementedError()
+
+    def read_scalars(self, experiment_id):
+        raise NotImplementedError()
 
 
 class HandlingErrorsTest(tb_test.TestCase):
@@ -235,6 +256,9 @@ class ApplicationTest(tb_test.TestCase):
             ),
         ]
         app = application.TensorBoardWSGI(plugins)
+        self._install_server(app)
+
+    def _install_server(self, app):
         self.server = werkzeug_test.Client(app, wrappers.BaseResponse)
 
     def _get_json(self, path):
@@ -296,6 +320,58 @@ class ApplicationTest(tb_test.TestCase):
                 },
             },
         )
+
+    def testPluginsListingWithDataProviderListActivePlugins(self):
+        prov = FakeDataProvider()
+        self.assertIsNotNone(prov.list_plugins)
+        prov.list_plugins = lambda experiment_id: ("foo", "bar")
+
+        plugins = [
+            FakePlugin(plugin_name="foo", is_active_value=False),
+            FakePlugin(
+                plugin_name="bar", is_active_value=False, data_plugin_names=(),
+            ),
+            FakePlugin(plugin_name="baz", is_active_value=False),
+            FakePlugin(
+                plugin_name="quux",
+                is_active_value=False,
+                data_plugin_names=("bar", "baz"),
+            ),
+            FakePlugin(
+                plugin_name="zod",
+                is_active_value=True,
+                data_plugin_names=("none_but_should_fall_back"),
+            ),
+        ]
+        app = application.TensorBoardWSGI(plugins, data_provider=prov)
+        self._install_server(app)
+
+        parsed_object = self._get_json("/data/plugins_listing")
+        actives = {k: v["enabled"] for (k, v) in parsed_object.items()}
+        self.assertEqual(
+            actives,
+            {
+                "foo": True,  # directly has data
+                "bar": False,  # has data, but does not depend on itself
+                "baz": False,  # no data, and no dependencies
+                "quux": True,  # no data, but depends on "bar"
+                "zod": True,  # no data, but `is_active` return `True`
+            },
+        )
+
+    def testPluginsListingRobustToIsActiveFailures(self):
+        real_is_active = FakePlugin.is_active
+
+        def fake_is_active(self):
+            if self.plugin_name == "foo":
+                raise RuntimeError("this plugin is actually radioactive")
+            else:
+                return real_is_active(self)
+
+        with mock.patch.object(FakePlugin, "is_active", fake_is_active):
+            parsed_object = self._get_json("/data/plugins_listing")
+        self.assertEqual(parsed_object["foo"]["enabled"], False)
+        self.assertEqual(parsed_object["baz"]["enabled"], True)
 
     def testPluginEntry(self):
         """Test the data/plugin_entry.html endpoint."""

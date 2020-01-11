@@ -20,6 +20,7 @@ from __future__ import print_function
 
 import threading
 
+
 # Dummy run name for the debugger.
 # Currently, the `DebuggerV2ExperimentMultiplexer` class is tied to a single
 # logdir, which holds at most one DebugEvent file set in the tfdbg v2 (tfdbg2
@@ -29,26 +30,14 @@ import threading
 DEFAULT_DEBUGGER_RUN_NAME = "__default_debugger_run__"
 
 
-def _execution_digest_to_json(execution_digest):
-    # TODO(cais): Use the .to_json() method when avaiable.
-    return {
-        "wall_time": execution_digest.wall_time,
-        "op_type": execution_digest.op_type,
-        "output_tensor_device_ids": list(
-            execution_digest.output_tensor_device_ids
-        )
-        if execution_digest.output_tensor_device_ids
-        else [],
-        # TODO(cais): Add unit test for None case on tensorflow side.
-    }
-
-
 def run_in_background(target):
     """Run a target task in the background.
+
     In the context of this module, `target` is the `update()` method of the
     underlying reader for tfdbg2-format data.
     This method is mocked by unit tests for deterministic behaviors during
     testing.
+
     Args:
       target: The target task to run in the background, a callable with no args.
     """
@@ -134,6 +123,14 @@ class DebuggerV2EventMultiplexer(object):
                 # NOTE(cais): Currently each logdir is enforced to have only one
                 # DebugEvent file set. So we add hard-coded default run name.
                 run_in_background(self._reader.update)
+                # TODO(cais): Start off a reading thread here, instead of being
+                # called only once here.
+            except AttributeError as error:
+                # Gracefully fail for users without the required API changes to
+                # debug_events_reader.DebugDataReader introduced in
+                # TF 2.1.0.dev20200103. This should be safe to remove when
+                # TF 2.2 is released.
+                return {}
             except ValueError as error:
                 # When no DebugEvent file set is found in the logdir, a
                 # `ValueError` is thrown.
@@ -148,6 +145,17 @@ class DebuggerV2EventMultiplexer(object):
         }
 
     def ExecutionDigests(self, run, begin, end):
+        """Get ExecutionDigests.
+
+        Args:
+          run: The tfdbg2 run to get `ExecutionDigest`s from.
+          begin: Beginning execution index.
+          end: Ending execution index.
+
+        Returns:
+          A JSON-serializable object containing the `ExecutionDigest`s and
+          related meta-information
+        """
         runs = self.Runs()
         if run not in runs:
             return None
@@ -173,7 +181,36 @@ class DebuggerV2EventMultiplexer(object):
             "end": end,
             "num_digests": len(execution_digests),
             "execution_digests": [
-                _execution_digest_to_json(digest)
+                digest.to_json()
                 for digest in execution_digests[begin:end]
             ],
+        }
+
+    def SourceFileList(self, run):
+        runs = self.Runs()
+        if run not in runs:
+            return None
+        # TODO(cais): Use public method `self._reader.source_files()` when available.
+        # pylint: disable=protected-access
+        return list(self._reader._host_name_file_path_to_offset.keys())
+        # pylint: enable=protected-access
+
+    def SourceLines(self, run, index):
+        runs = self.Runs()
+        if run not in runs:
+            return None
+        # TODO(cais): Use public method `self._reader.source_files()` when available.
+        # pylint: disable=protected-access
+        source_file_list = list(
+            self._reader._host_name_file_path_to_offset.keys()
+        )
+        # pylint: enable=protected-access
+        try:
+            host_name, file_path = source_file_list[index]
+        except IndexError:
+            raise IndexError("There is no source-code file at index %d" % index)
+        return {
+            "host_name": host_name,
+            "file_path": file_path,
+            "lines": self._reader.source_lines(host_name, file_path),
         }
