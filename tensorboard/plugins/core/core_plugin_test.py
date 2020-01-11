@@ -69,23 +69,7 @@ class FakeFlags(object):
         self.path_prefix = path_prefix
 
 
-class CorePluginTest(tf.test.TestCase):
-
-    def setUp(self):
-        super(CorePluginTest, self).setUp()
-        self.temp_dir = self.get_temp_dir()
-        self.addCleanup(shutil.rmtree, self.temp_dir)
-        self.db_path = os.path.join(self.temp_dir, "db.db")
-        self.db = sqlite3.connect(self.db_path)
-        self.db_uri = "sqlite:" + self.db_path
-        self._start_logdir_based_server(self.temp_dir)
-        self._start_db_based_server()
-
-    def testRoutesProvided(self):
-        """Tests that the plugin offers the correct routes."""
-        routes = self.logdir_based_plugin.get_plugin_apps()
-        self.assertIsInstance(routes["/data/logdir"], collections.Callable)
-        self.assertIsInstance(routes["/data/runs"], collections.Callable)
+class CorePluginFlagsTest(tf.test.TestCase):
 
     def testFlag(self):
         loader = core_plugin.CorePluginLoader()
@@ -145,6 +129,25 @@ class CorePluginTest(tf.test.TestCase):
         msg = str(cm.exception)
         self.assertIn("must start with slash", msg)
         self.assertIn(repr("noslash"), msg)
+
+
+class CorePluginTest(tf.test.TestCase):
+
+    def setUp(self):
+        super(CorePluginTest, self).setUp()
+        self.temp_dir = self.get_temp_dir()
+        self.addCleanup(shutil.rmtree, self.temp_dir)
+        self.db_path = os.path.join(self.temp_dir, "db.db")
+        self.db = sqlite3.connect(self.db_path)
+        self.db_uri = "sqlite:" + self.db_path
+        self._start_logdir_based_server(self.temp_dir)
+        self._start_db_based_server()
+
+    def testRoutesProvided(self):
+        """Tests that the plugin offers the correct routes."""
+        routes = self.logdir_based_plugin.get_plugin_apps()
+        self.assertIsInstance(routes["/data/logdir"], collections.Callable)
+        self.assertIsInstance(routes["/data/runs"], collections.Callable)
 
     def testIndex_returnsActualHtml(self):
         """Test the format of the /data/runs endpoint."""
