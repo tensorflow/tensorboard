@@ -32,6 +32,7 @@ from tensorboard.compat.proto import meta_graph_pb2
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.audio import metadata as audio_metadata
 from tensorboard.plugins.audio import summary as audio_summary
+from tensorboard.plugins.graph import metadata as graph_metadata
 from tensorboard.plugins.image import metadata as image_metadata
 from tensorboard.plugins.image import summary as image_summary
 from tensorboard.plugins.scalar import metadata as scalar_metadata
@@ -390,6 +391,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
         accumulator.Reload()
 
         tags = [
+            graph_metadata.RUN_GRAPH_NAME,
             u"accuracy/scalar_summary",
             u"xent/scalar_summary",
         ]
@@ -399,7 +401,8 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
         )
 
         self.assertItemsEqual(
-            accumulator.ActivePlugins(), [scalar_metadata.PLUGIN_NAME]
+            accumulator.ActivePlugins(),
+            [scalar_metadata.PLUGIN_NAME, graph_metadata.PLUGIN_NAME],
         )
 
     def testNewStyleAudioSummary(self):
@@ -432,6 +435,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
         accumulator.Reload()
 
         tags = [
+            graph_metadata.RUN_GRAPH_NAME,
             u"1/one/audio_summary",
             u"2/two/audio_summary",
             u"3/three/audio_summary",
@@ -442,7 +446,8 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
         )
 
         self.assertItemsEqual(
-            accumulator.ActivePlugins(), [audio_metadata.PLUGIN_NAME]
+            accumulator.ActivePlugins(),
+            [audio_metadata.PLUGIN_NAME, graph_metadata.PLUGIN_NAME],
         )
 
     def testNewStyleImageSummary(self):
@@ -473,6 +478,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
         accumulator.Reload()
 
         tags = [
+            graph_metadata.RUN_GRAPH_NAME,
             u"1/images/image_summary",
             u"2/images/image_summary",
             u"3/images/image_summary",
@@ -483,7 +489,8 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
         )
 
         self.assertItemsEqual(
-            accumulator.ActivePlugins(), [image_metadata.PLUGIN_NAME]
+            accumulator.ActivePlugins(),
+            [image_metadata.PLUGIN_NAME, graph_metadata.PLUGIN_NAME],
         )
 
     def testTFSummaryTensor(self):
@@ -641,7 +648,7 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
         self.assertTagsEqual(
             acc.Tags(),
             {
-                ea.TENSORS: ["id", "sq"],
+                ea.TENSORS: [graph_metadata.RUN_GRAPH_NAME, "id", "sq"],
                 ea.GRAPH: True,
                 ea.META_GRAPH: True,
                 ea.RUN_METADATA: ["test run"],
