@@ -267,9 +267,7 @@ class MultiplexerDataProvider(provider.DataProvider):
                 events = self._multiplexer.Tensors(run, tag)
                 data = []
                 for event in events:
-                    num_blobs = tensor_util.make_ndarray(
-                        event.tensor_proto
-                    ).size
+                    num_blobs = _tensor_size(event.tensor_proto)
                     values = tuple(
                         provider.BlobReference(
                             _encode_blob_key(
