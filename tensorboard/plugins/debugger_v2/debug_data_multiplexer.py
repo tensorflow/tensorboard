@@ -181,8 +181,7 @@ class DebuggerV2EventMultiplexer(object):
             "end": end,
             "num_digests": len(execution_digests),
             "execution_digests": [
-                digest.to_json()
-                for digest in execution_digests[begin:end]
+                digest.to_json() for digest in execution_digests[begin:end]
             ],
         }
 
