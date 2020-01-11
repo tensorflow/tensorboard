@@ -189,6 +189,37 @@ class CorePluginNoDataTest(tf.test.TestCase):
         self.assertEqual(parsed_object, {"logdir": self.get_temp_dir()})
 
 
+class CorePluginDbModeTest(tf.test.TestCase):
+
+    def setUp(self):
+        super(CorePluginDbModeTest, self).setUp()
+        self.db_path = os.path.join(self.get_temp_dir(), "db.db")
+        self.db_uri = "sqlite:" + self.db_path
+        db_connection_provider = application.create_sqlite_connection_provider(
+            self.db_uri
+        )
+        context = base_plugin.TBContext(
+            assets_zip_provider=get_test_assets_zip_provider(),
+            db_connection_provider=db_connection_provider,
+            db_uri=self.db_uri,
+        )
+        self.plugin = core_plugin.CorePlugin(context)
+        app = application.TensorBoardWSGI([self.plugin])
+        self.server = werkzeug_test.Client(app, wrappers.BaseResponse)
+
+    def _get_json(self, server, path):
+        response = server.get(path)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("application/json", response.headers.get("Content-Type"))
+        return json.loads(response.get_data().decode("utf-8"))
+
+    def testEnvironmentForDbUri(self):
+        """Test that the environment route correctly returns the database
+        URI."""
+        parsed_object = self._get_json(self.server, "/data/environment")
+        self.assertEqual(parsed_object["data_location"], self.db_uri)
+
+
 class CorePluginTest(tf.test.TestCase):
 
     def setUp(self):
@@ -200,14 +231,6 @@ class CorePluginTest(tf.test.TestCase):
         self.db_uri = "sqlite:" + self.db_path
         self._start_logdir_based_server(self.temp_dir)
         self._start_db_based_server()
-
-    def testEnvironmentForDbUri(self):
-        """Test that the environment route correctly returns the database
-        URI."""
-        parsed_object = self._get_json(
-            self.db_based_server, "/data/environment"
-        )
-        self.assertEqual(parsed_object["data_location"], self.db_uri)
 
     @test_util.run_v1_only("Uses tf.contrib when adding runs.")
     def testRuns(self):
