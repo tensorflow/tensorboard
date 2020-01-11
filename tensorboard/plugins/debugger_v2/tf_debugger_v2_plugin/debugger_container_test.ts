@@ -200,7 +200,6 @@ describe('Debugger Container test', () => {
   });
 
   it('Timeline module shows correct display range for executions', () => {
-    console.log('300'); // DEBUG
     const fixture = TestBed.createComponent(TimelineContainer);
     fixture.detectChanges();
 

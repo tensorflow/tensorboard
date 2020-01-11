@@ -48,49 +48,49 @@ export const getDebuggerRunsLoaded = createSelector(
 export const getActiveRunId = createSelector(
   selectDebuggerState,
   (state: DebuggerState): string | null => state.activeRunId
-); // TODO(cais): Add unit test.
+);
 
 export const getNumExecutionsLoaded = createSelector(
   selectDebuggerState,
   (state: DebuggerState): LoadState => {
     return state.executions.numExecutionsLoaded;
   }
-); // TODO(cais): Add unit test.
+);
 
 export const getExecutionDigestsLoaded = createSelector(
   selectDebuggerState,
   (state: DebuggerState): ExecutionDigestLoadState => {
     return state.executions.executionDigestsLoaded;
   }
-); // TODO(cais): Add unit test.
+);
 
 export const getNumExecutions = createSelector(
   selectDebuggerState,
   (state: DebuggerState): number => {
     return state.executions.executionDigestsLoaded.numExecutions;
   }
-); // TODO(cais): Add unit test.
+);
 
 export const getExecutionScrollBeginIndex = createSelector(
   selectDebuggerState,
   (state: DebuggerState): number => {
     return state.executions.scrollBeginIndex;
   }
-); // TODO(cais): Add unit test.
+);
 
 export const getExecutionPageSize = createSelector(
   selectDebuggerState,
   (state: DebuggerState): number => {
     return state.executions.pageSize;
   }
-); // TODO(cais): Add unit test.
+);
 
 export const getDisplayCount = createSelector(
   selectDebuggerState,
   (state: DebuggerState): number => {
     return state.executions.displayCount;
   }
-); // TODO(cais): Add unit test.
+);
 
 export const getVisibleExecutionDigests = createSelector(
   selectDebuggerState,
@@ -109,4 +109,4 @@ export const getVisibleExecutionDigests = createSelector(
     }
     return digests;
   }
-); // TODO(cais): Add unit test.
+);

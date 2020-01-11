@@ -55,8 +55,6 @@ export interface ExecutionDigestLoadState extends LoadState {
   // Number of top-level executions available at the data source (not
   // necessarilty loaded by frontend yet.)
   numExecutions: number;
-
-  // TODO(cais): Deduplicate with `executionDigests` below.
 }
 
 export interface Executions {

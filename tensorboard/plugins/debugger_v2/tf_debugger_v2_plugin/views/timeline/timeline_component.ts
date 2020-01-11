@@ -22,9 +22,6 @@ import {
   SimpleChanges,
 } from '@angular/core';
 
-const DIGEST_PAGE_SIZE = 100;
-// TODO(cais): Confirm size.  This should probably be moved into state.
-
 export interface ExecutionDigestForDisplay {
   // Op type for long-form display.
   op_type: string;
@@ -80,7 +77,6 @@ export class TimelineComponent implements OnChanges {
     if (!this.activeRunId) {
       return;
     }
-    // TODO(cais): Is there a better logic?
     if (
       changes['numExecutions'] &&
       !changes['numExecutions'].previousValue &&

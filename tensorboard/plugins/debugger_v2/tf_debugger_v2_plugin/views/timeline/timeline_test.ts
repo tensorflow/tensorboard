@@ -29,7 +29,7 @@ describe('getExecutionDigestForDisplay', () => {
     ['__backward_attention_1357', 3, 'att'],
     ['__backward_attention_1357', 99, 'attention_1357'],
   ] as Array<[string, number, string]>) {
-    it('outputs correct results for individual TensorFlow op', () => {
+    it(`outputs correct results for op ${opType}, strLen=${strLen}`, () => {
       const display = getExecutionDigestForDisplay(
         {
           op_type: opType,
@@ -38,6 +38,15 @@ describe('getExecutionDigestForDisplay', () => {
         strLen
       );
       expect(display.short_op_type).toEqual(expectedShortOpType);
+      expect(display.op_type).toEqual(opType);
+      expect(display.is_graph).toEqual(opType.startsWith('__'));
     });
   }
+
+  it(`outputs ellipses for unavailable op`, () => {
+    const display = getExecutionDigestForDisplay(null);
+    expect(display.short_op_type).toEqual('..');
+    expect(display.op_type).toEqual('(N/A)');
+    expect(display.is_graph).toEqual(false);
+  });
 });

@@ -44,7 +44,7 @@ const initialState: DebuggerState = {
       lastLoadedTimeInMs: null,
     },
     scrollBeginIndex: 0,
-    pageSize: 100, // TODO(cais): Change to 1000 for practical use.
+    pageSize: 1000,
     // TODO(cais) Remove the hardcoding of this, which is coupled with css width
     // properties.
     displayCount: 50,
