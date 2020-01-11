@@ -77,9 +77,7 @@ class GraphsPlugin(base_plugin.TBPlugin):
     def is_active(self):
         """The graphs plugin is active iff any run has a graph or metadata."""
         if self._data_provider:
-            # We don't have an experiment ID, and modifying the backend core
-            # to provide one would break backward compatibility. Hack for now.
-            return True
+            return False  # `list_plugins` as called by TB core suffices
 
         return bool(self.info_impl())
 
