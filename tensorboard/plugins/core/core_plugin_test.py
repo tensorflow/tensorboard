@@ -131,6 +131,64 @@ class CorePluginFlagsTest(tf.test.TestCase):
         self.assertIn(repr("noslash"), msg)
 
 
+class CorePluginNoDataTest(tf.test.TestCase):
+
+    def setUp(self):
+        super(CorePluginNoDataTest, self).setUp()
+        context = base_plugin.TBContext(
+            assets_zip_provider=get_test_assets_zip_provider(),
+            logdir=self.get_temp_dir(),
+            multiplexer=event_multiplexer.EventMultiplexer(),
+            window_title="title foo",
+        )
+        self.plugin = core_plugin.CorePlugin(context)
+        app = application.TensorBoardWSGI([self.plugin])
+        self.server = werkzeug_test.Client(app, wrappers.BaseResponse)
+
+    def _get_json(self, server, path):
+        response = server.get(path)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("application/json", response.headers.get("Content-Type"))
+        return json.loads(response.get_data().decode("utf-8"))
+
+    def testRoutesProvided(self):
+        """Tests that the plugin offers the correct routes."""
+        routes = self.plugin.get_plugin_apps()
+        self.assertIsInstance(routes["/data/logdir"], collections.Callable)
+        self.assertIsInstance(routes["/data/runs"], collections.Callable)
+
+    def testIndex_returnsActualHtml(self):
+        """Test the format of the root / endpoint."""
+        response = self.server.get("/")
+        self.assertEqual(200, response.status_code)
+        self.assertStartsWith(response.headers.get("Content-Type"), "text/html")
+        html = response.get_data()
+        self.assertEqual(html, FAKE_INDEX_HTML)
+
+    def testDataPaths_disableAllCaching(self):
+        """Test the format of the /data/runs endpoint."""
+        for path in ("/data/runs", "/data/logdir"):
+            response = self.server.get(path)
+            self.assertEqual(200, response.status_code, msg=path)
+            self.assertEqual("0", response.headers.get("Expires"), msg=path)
+
+    def testEnvironmentForWindowTitle(self):
+        """Test that the environment route correctly returns the window
+        title."""
+        parsed_object = self._get_json(self.server, "/data/environment")
+        self.assertEqual(parsed_object["window_title"], "title foo")
+
+    def testEnvironmentForLogdir(self):
+        """Test that the environment route correctly returns the logdir."""
+        parsed_object = self._get_json(self.server, "/data/environment")
+        self.assertEqual(parsed_object["data_location"], self.get_temp_dir())
+
+    def testLogdir(self):
+        """Test the format of the data/logdir endpoint."""
+        parsed_object = self._get_json(self.server, "/data/logdir")
+        self.assertEqual(parsed_object, {"logdir": self.get_temp_dir()})
+
+
 class CorePluginTest(tf.test.TestCase):
 
     def setUp(self):
@@ -143,27 +201,6 @@ class CorePluginTest(tf.test.TestCase):
         self._start_logdir_based_server(self.temp_dir)
         self._start_db_based_server()
 
-    def testRoutesProvided(self):
-        """Tests that the plugin offers the correct routes."""
-        routes = self.logdir_based_plugin.get_plugin_apps()
-        self.assertIsInstance(routes["/data/logdir"], collections.Callable)
-        self.assertIsInstance(routes["/data/runs"], collections.Callable)
-
-    def testIndex_returnsActualHtml(self):
-        """Test the format of the /data/runs endpoint."""
-        response = self.logdir_based_server.get("/")
-        self.assertEqual(200, response.status_code)
-        self.assertStartsWith(response.headers.get("Content-Type"), "text/html")
-        html = response.get_data()
-        self.assertEqual(html, FAKE_INDEX_HTML)
-
-    def testDataPaths_disableAllCaching(self):
-        """Test the format of the /data/runs endpoint."""
-        for path in ("/data/runs", "/data/logdir"):
-            response = self.logdir_based_server.get(path)
-            self.assertEqual(200, response.status_code, msg=path)
-            self.assertEqual("0", response.headers.get("Expires"), msg=path)
-
     def testEnvironmentForDbUri(self):
         """Test that the environment route correctly returns the database
         URI."""
@@ -171,33 +208,6 @@ class CorePluginTest(tf.test.TestCase):
             self.db_based_server, "/data/environment"
         )
         self.assertEqual(parsed_object["data_location"], self.db_uri)
-
-    def testEnvironmentForLogdir(self):
-        """Test that the environment route correctly returns the logdir."""
-        parsed_object = self._get_json(
-            self.logdir_based_server, "/data/environment"
-        )
-        self.assertEqual(parsed_object["data_location"], self.logdir)
-
-    def testEnvironmentForWindowTitle(self):
-        """Test that the environment route correctly returns the window
-        title."""
-        parsed_object_db = self._get_json(
-            self.db_based_server, "/data/environment"
-        )
-        parsed_object_logdir = self._get_json(
-            self.logdir_based_server, "/data/environment"
-        )
-        self.assertEqual(
-            parsed_object_db["window_title"],
-            parsed_object_logdir["window_title"],
-        )
-        self.assertEqual(parsed_object_db["window_title"], "title foo")
-
-    def testLogdir(self):
-        """Test the format of the data/logdir endpoint."""
-        parsed_object = self._get_json(self.logdir_based_server, "/data/logdir")
-        self.assertEqual(parsed_object, {"logdir": self.logdir})
 
     @test_util.run_v1_only("Uses tf.contrib when adding runs.")
     def testRuns(self):
@@ -398,12 +408,7 @@ class CorePluginTest(tf.test.TestCase):
     def _get_json(self, server, path):
         response = server.get(path)
         self.assertEqual(200, response.status_code)
-        return self._get_json_payload(response)
-
-    def _get_json_payload(self, response):
-        self.assertStartsWith(
-            response.headers.get("Content-Type"), "application/json"
-        )
+        self.assertEqual("application/json", response.headers.get("Content-Type"))
         return json.loads(response.get_data().decode("utf-8"))
 
     def _generate_test_data(self, run_name, experiment_name):
