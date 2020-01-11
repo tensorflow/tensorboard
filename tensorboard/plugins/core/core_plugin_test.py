@@ -70,7 +70,6 @@ class FakeFlags(object):
 
 
 class CorePluginTest(tf.test.TestCase):
-    _only_use_meta_graph = False  # Server data contains only a GraphDef
 
     def setUp(self):
         super(CorePluginTest, self).setUp()
@@ -425,12 +424,7 @@ class CorePluginTest(tf.test.TestCase):
             node2.name = "b"
             node2.attr["very_large_attr"].s = b"a" * 2048  # 2 KB attribute
 
-            meta_graph_def = meta_graph_pb2.MetaGraphDef(graph_def=graph_def)
-
-            if self._only_use_meta_graph:
-                writer.add_meta_graph(meta_graph_def)
-            else:
-                writer.add_graph(graph=None, graph_def=graph_def)
+            writer.add_graph(graph=None, graph_def=graph_def)
 
         # Write data for the run to the database.
         # TODO(nickfelt): Figure out why reseting the graph is necessary.
@@ -448,11 +442,6 @@ class CorePluginTest(tf.test.TestCase):
             sess.run(tf.compat.v1.global_variables_initializer())
             sess.run(tf.contrib.summary.summary_writer_initializer_op())
             sess.run(tf.contrib.summary.all_summary_ops())
-
-
-class CorePluginUsingMetagraphOnlyTest(CorePluginTest):
-    # Tests new ability to use only the MetaGraphDef
-    _only_use_meta_graph = True  # Server data contains only a MetaGraphDef
 
 
 def get_test_assets_zip_provider():
