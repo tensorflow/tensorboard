@@ -190,7 +190,7 @@ class DebuggerV2EventMultiplexer(object):
             ],
         }
 
-    def Execution(self, run, begin, end):
+    def ExecutionData(self, run, begin, end):
         """Get Execution data objects (Detailed, non-digest form).
 
         Args:

@@ -287,7 +287,7 @@ class LocalDebuggerV2DataProvider(provider.DataProvider):
             )
         elif blob_key.startswith(EXECUTION_DATA_BLOB_TAG_PREFIX):
             run, begin, end = _parse_execution_data_blob_key(blob_key)
-            return json.dumps(self._multiplexer.Execution(run, begin, end))
+            return json.dumps(self._multiplexer.ExecutionData(run, begin, end))
         elif blob_key.startswith(SOURCE_FILE_LIST_BLOB_TAG):
             run = _parse_source_file_list_blob_key(blob_key)
             return json.dumps(self._multiplexer.SourceFileList(run))

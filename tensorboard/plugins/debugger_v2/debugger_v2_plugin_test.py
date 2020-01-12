@@ -362,7 +362,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
             if i > 0:
                 self.assertEqual(
                     execution["input_tensor_ids"],
-                    data["executions"][i - 1]["input_tensor_ids"]
+                    data["executions"][i - 1]["input_tensor_ids"],
                 )
                 self.assertEqual(
                     execution["graph_id"], data["executions"][i - 1]["graph_id"]
