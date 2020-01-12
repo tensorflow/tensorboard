@@ -35,6 +35,7 @@ from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
 from tensorboard.util import tensor_util
 from tensorboard.plugins.scalar import metadata
+from util import can_serve_from_static
 
 _SCALAR_PLUGIN_NAME = metadata.PLUGIN_NAME
 _PLUGIN_DIRECTORY_PATH_PART = "/data/plugin/example_raw_scalars/"
@@ -87,6 +88,10 @@ class ExampleRawScalarsPlugin(base_plugin.TBPlugin):
         """
         static_path_part = request.path[len(_PLUGIN_DIRECTORY_PATH_PART) :]
         res_path = os.path.join(os.path.dirname(__file__), static_path_part)
+
+        # Check that the resource's absolute path is under the static dir.
+        if (not can_serve_from_static(res_path)):
+            return http_util.Respond(request, "Not found", "text/plain", code=404)
 
         with open(res_path, "rb") as read_file:
             mimetype = mimetypes.guess_type(res_path)[0]

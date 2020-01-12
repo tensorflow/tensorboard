@@ -29,3 +29,12 @@ sh_test(
         "manual",  # https://github.com/tensorflow/tensorboard/issues/2987
     ],
 )
+
+py_test(
+    name = "unit_test",
+    size = "small",
+    srcs = ["test.py"],
+    main = "test.py",
+    srcs_version = "PY2AND3",
+    tags = ["support_notf"],
+)
