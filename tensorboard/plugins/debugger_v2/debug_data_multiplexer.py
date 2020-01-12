@@ -225,27 +225,33 @@ class DebuggerV2EventMultiplexer(object):
         runs = self.Runs()
         if run not in runs:
             return None
-        # TODO(cais): Use public method `self._reader.source_files()` when available.
-        # pylint: disable=protected-access
-        return list(self._reader._host_name_file_path_to_offset.keys())
-        # pylint: enable=protected-access
+        return self._reader.source_file_list()
 
     def SourceLines(self, run, index):
         runs = self.Runs()
         if run not in runs:
             return None
-        # TODO(cais): Use public method `self._reader.source_files()` when available.
-        # pylint: disable=protected-access
-        source_file_list = list(
-            self._reader._host_name_file_path_to_offset.keys()
-        )
-        # pylint: enable=protected-access
         try:
-            host_name, file_path = source_file_list[index]
+            host_name, file_path = self._reader.source_file_list()[index]
         except IndexError:
             raise IndexError("There is no source-code file at index %d" % index)
         return {
             "host_name": host_name,
             "file_path": file_path,
             "lines": self._reader.source_lines(host_name, file_path),
+        }
+
+    def StackFrames(self, run, stack_frame_ids):
+        runs = self.Runs()
+        if run not in runs:
+            return None
+        return {
+            "stack_frames": [
+                # TODO(cais): Use public method (`stack_frame_by_id()`` when
+                # available).
+                # pylint: disable=protected-access
+                self._reader._stack_frame_by_id(stack_frame_id)
+                # pylint: enable=protected-access
+                for stack_frame_id in stack_frame_ids
+            ]
         }

@@ -315,7 +315,6 @@ class DebuggerV2PluginTest(tf.test.TestCase):
             "application/json", response.headers.get("content-type")
         )
         data = json.loads(response.get_data())
-        print(data)  # DEBUG
         self.assertEqual(data["begin"], 0)
         self.assertEqual(data["end"], 1)
         self.assertLen(data["executions"], 1)
@@ -465,6 +464,15 @@ class DebuggerV2PluginTest(tf.test.TestCase):
                 % invalid_index
             },
         )
+
+    def testServeStackFrames(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        response = self.server.get(
+            _ROUTE_PREFIX + "/execution/data?run=%s&begin=0&end=1" % run
+        )
+        data = json.loads(response.get_data())
+        stack_frame_ids = data["executions"][0]["stack_frame_ids"]
 
 
 if __name__ == "__main__":
