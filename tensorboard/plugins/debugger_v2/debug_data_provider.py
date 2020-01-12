@@ -270,6 +270,7 @@ class LocalDebuggerV2DataProvider(provider.DataProvider):
             for tag in run_tag_filter.tags:
                 if (
                     tag.startswith(EXECUTION_DIGESTS_BLOB_TAG_PREFIX)
+                    or tag.startswith(EXECUTION_DATA_BLOB_TAG_PREFIX)
                     or tag.startswith(SOURCE_FILE_BLOB_TAG_PREFIX)
                     or tag in (SOURCE_FILE_LIST_BLOB_TAG,)
                 ):

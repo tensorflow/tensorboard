@@ -133,6 +133,9 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
             experiment, self.plugin_name, run_tag_filter=run_tag_filter
         )
         tag = next(iter(run_tag_filter.tags))
+        print(
+            "begin=%d, end=%d, run=%s, tag=%s" % (begin, end, run, tag)
+        )  # DEBUG
         try:
             return http_util.Respond(
                 request,
