@@ -90,8 +90,10 @@ class ExampleRawScalarsPlugin(base_plugin.TBPlugin):
         res_path = os.path.join(os.path.dirname(__file__), static_path_part)
 
         # Check that the resource's absolute path is under the static dir.
-        if (not can_serve_from_static(res_path)):
-            return http_util.Respond(request, "Not found", "text/plain", code=404)
+        if not can_serve_from_static(res_path):
+            return http_util.Respond(
+                request, "Not found", "text/plain", code=404
+            )
 
         with open(res_path, "rb") as read_file:
             mimetype = mimetypes.guess_type(res_path)[0]
