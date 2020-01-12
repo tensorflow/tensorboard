@@ -30,17 +30,6 @@ import threading
 DEFAULT_DEBUGGER_RUN_NAME = "__default_debugger_run__"
 
 
-def _execution_digest_to_json(execution_digest):
-    # TODO(cais): Use the .to_json() method when avaiable.
-    return {
-        "wall_time": execution_digest.wall_time,
-        "op_type": execution_digest.op_type,
-        "output_tensor_device_ids": list(
-            execution_digest.output_tensor_device_ids
-        ),
-    }
-
-
 def run_in_background(target):
     """Run a target task in the background.
 
@@ -155,6 +144,22 @@ class DebuggerV2EventMultiplexer(object):
             }
         }
 
+    def _checkExecutionBeginEndIndices(self, begin, end, execution_count):
+        if begin < 0:
+            raise IndexError("Invalid begin index (%d)" % begin)
+        if end > execution_count:
+            raise IndexError(
+                "end index (%d) out of bounds (%d)" % (end, execution_count)
+            )
+        if end >= 0 and end < begin:
+            raise ValueError(
+                "end index (%d) is unexpected less than begin index (%d)"
+                % (end, begin)
+            )
+        if end < 0:  # This means all digests.
+            end = execution_count
+        return end
+
     def ExecutionDigests(self, run, begin, end):
         """Get ExecutionDigests.
 
@@ -173,28 +178,47 @@ class DebuggerV2EventMultiplexer(object):
         # TODO(cais): For scalability, use begin and end kwargs when available in
         # `DebugDataReader.execution()`.`
         execution_digests = self._reader.executions(digest=True)
-        if begin < 0:
-            raise IndexError("Invalid begin index (%d)" % begin)
-        if end > len(execution_digests):
-            raise IndexError(
-                "end index (%d) out of bounds (%d)"
-                % (end, len(execution_digests))
-            )
-        if end >= 0 and end < begin:
-            raise ValueError(
-                "end index (%d) is unexpected less than begin index (%d)"
-                % (end, begin)
-            )
-        if end < 0:  # This means all digests.
-            end = len(execution_digests)
+        end = self._checkExecutionBeginEndIndices(
+            begin, end, len(execution_digests)
+        )
         return {
             "begin": begin,
             "end": end,
             "num_digests": len(execution_digests),
             "execution_digests": [
-                _execution_digest_to_json(digest)
-                for digest in execution_digests[begin:end]
+                digest.to_json() for digest in execution_digests[begin:end]
             ],
+        }
+
+    def Execution(self, run, begin, end):
+        """Get Execution data objects (Detailed, non-digest form).
+
+        Args:
+          run: The tfdbg2 run to get `ExecutionDigest`s from.
+          begin: Beginning execution index.
+          end: Ending execution index.
+
+        Returns:
+          A JSON-serializable object containing the `ExecutionDigest`s and
+          related meta-information
+        """
+        runs = self.Runs()
+        if run not in runs:
+            return None
+        # TODO(cais): For scalability, use begin and end kwargs when available in
+        # `DebugDataReader.execution()`.`
+        execution_digests = self._reader.executions(digest=True)
+        end = self._checkExecutionBeginEndIndices(
+            begin, end, len(execution_digests)
+        )
+        execution_digests = execution_digests[begin:end]
+        executions = [
+            self._reader.read_execution(digest) for digest in execution_digests
+        ]
+        return {
+            "begin": begin,
+            "end": end,
+            "executions": [execution.to_json() for execution in executions],
         }
 
     def SourceFileList(self, run):

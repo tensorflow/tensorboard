@@ -59,6 +59,7 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
         return {
             "/runs": self.serve_runs,
             "/execution/digests": self.serve_execution_digests,
+            "/execution/data": self.serve_execution_data,
             "/source_files/list": self.serve_source_files_list,
             "/source_files/file": self.serve_source_file,
         }
@@ -98,6 +99,34 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
         begin = int(request.args.get("begin", "0"))
         end = int(request.args.get("end", "-1"))
         run_tag_filter = debug_data_provider.execution_digest_run_tag_filter(
+            run, begin, end
+        )
+        blob_sequences = self._data_provider.read_blob_sequences(
+            experiment, self.plugin_name, run_tag_filter=run_tag_filter
+        )
+        tag = next(iter(run_tag_filter.tags))
+        try:
+            return http_util.Respond(
+                request,
+                self._data_provider.read_blob(
+                    blob_sequences[run][tag][0].blob_key
+                ),
+                "application/json",
+            )
+        except (IndexError, ValueError) as e:
+            return http_util.Respond(
+                request, {"error": str(e)}, "application/json", code=400,
+            )
+
+    @wrappers.Request.application
+    def serve_execution_data(self, request):
+        experiment = plugin_util.experiment_id(request.environ)
+        run = request.args.get("run")
+        if run is None:
+            return _missing_run_error_response(request)
+        begin = int(request.args.get("begin", "0"))
+        end = int(request.args.get("end", "-1"))
+        run_tag_filter = debug_data_provider.execution_data_run_tag_filter(
             run, begin, end
         )
         blob_sequences = self._data_provider.read_blob_sequences(
