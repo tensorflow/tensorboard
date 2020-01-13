@@ -473,6 +473,98 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         )
         data = json.loads(response.get_data())
         stack_frame_ids = data["executions"][0]["stack_frame_ids"]
+        self.assertIsInstance(stack_frame_ids, list)
+        self.assertTrue(stack_frame_ids)
+
+        response = self.server.get(
+            _ROUTE_PREFIX
+            + "/stack_frames/stack_frames?run=%s&stack_frame_ids=%s"
+            % (run, ",".join(stack_frame_ids))
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        data = json.loads(response.get_data())
+        self.assertIsInstance(data, dict)
+        stack_frames = data["stack_frames"]
+        self.assertIsInstance(stack_frames, list)
+        self.assertLen(stack_frames, len(stack_frame_ids))
+        for item in stack_frames:
+            self.assertIsInstance(item, list)
+            self.assertLen(item, 4)  # [host_name, file_path, lineno, function].
+            self.assertEqual(item[0], _HOST_NAME)
+            self.assertIsInstance(item[1], str)
+            self.assertTrue(item[1])
+            self.assertIsInstance(item[2], int)
+            self.assertGreaterEqual(item[2], 1)
+            self.assertIsInstance(item[3], str)
+            self.assertTrue(item[3])
+        # Assert that the current file and current function should be in the
+        # stack frames.
+        frames_for_this_function = list(
+            filter(
+                lambda frame: frame[0] == _HOST_NAME
+                and frame[1] == _CURRENT_FILE_FULL_PATH
+                and frame[3] == "testServeStackFrames",
+                stack_frames,
+            )
+        )
+        self.assertLen(frames_for_this_function, 1)
+
+    def testServeStackFramesWithMissingStackFrameIdParamErrors(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        response = self.server.get(
+            _ROUTE_PREFIX + "/stack_frames/stack_frames?run=%s" % run
+        )
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {"error": "Missing stack_frame_ids parameter"},
+        )
+
+    def testServeStackFramesWithMissingStackFrameIdParamErrors(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        response = self.server.get(
+            # Use empty value for the stack_frame_ids parameter.
+            _ROUTE_PREFIX
+            + "/stack_frames/stack_frames?run=%s&stack_frame_ids=" % run
+        )
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {"error": "Empty stack_frame_ids parameter"},
+        )
+
+    def testServeStackFramesWithMissingStackFrameIdParamErrors(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        invalid_stack_frme_id = "nonsense-stack-frame-id"
+        response = self.server.get(
+            # Use empty value for the stack_frame_ids parameter.
+            _ROUTE_PREFIX
+            + "/stack_frames/stack_frames?run=%s&stack_frame_ids=%s"
+            % (run, invalid_stack_frme_id)
+        )
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {
+                "error": "Cannot find stack frame with ID: "
+                + "'nonsense-stack-frame-id'"
+            },
+        )
 
 
 if __name__ == "__main__":

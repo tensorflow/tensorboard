@@ -250,7 +250,7 @@ class DebuggerV2EventMultiplexer(object):
                 # TODO(cais): Use public method (`stack_frame_by_id()`` when
                 # available).
                 # pylint: disable=protected-access
-                self._reader._stack_frame_by_id(stack_frame_id)
+                self._reader._stack_frame_by_id[stack_frame_id]
                 # pylint: enable=protected-access
                 for stack_frame_id in stack_frame_ids
             ]

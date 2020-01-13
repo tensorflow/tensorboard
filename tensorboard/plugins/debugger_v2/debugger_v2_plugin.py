@@ -233,8 +233,22 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
         run = request.args.get("run")
         if run is None:
             return _missing_run_error_response(request)
-        stack_frame_ids = request.args.get("stack_frame_ids").split(",")
-        # TODO(cais): Handle empty stack_frame_ids.
+        stack_frame_ids = request.args.get("stack_frame_ids")
+        if stack_frame_ids is None:
+            return http_util.Respond(
+                request,
+                {"error": "Missing stack_frame_ids parameter"},
+                "application/json",
+                code=400,
+            )
+        if not stack_frame_ids:
+            return http_util.Respond(
+                request,
+                {"error": "Empty stack_frame_ids parameter"},
+                "application/json",
+                code=400,
+            )
+        stack_frame_ids = stack_frame_ids.split(",")
         run_tag_filter = debug_data_provider.stack_frames_run_tag_filter(
             run, stack_frame_ids
         )
@@ -253,5 +267,8 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
         except KeyError as e:
             # TOOD(cais): More informative error message text.
             return http_util.Respond(
-                request, {"error": str(e)}, "application/json", code=400,
+                request,
+                {"error": "Cannot find stack frame with ID: %s" % e},
+                "application/json",
+                code=400,
             )
