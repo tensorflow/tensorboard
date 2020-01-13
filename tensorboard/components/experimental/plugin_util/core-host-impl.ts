@@ -1,4 +1,4 @@
-/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -12,8 +12,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import * as _runs from './runs';
-import * as _core from './core';
+/**
+ * Implements core plugin APIs.
+ */
+tb_plugin.host.listen('experimental.GetURLPluginData', (context) => {
+  const prefix = `p.${context.pluginName}.`;
+  const result: {[key: string]: string} = {};
 
-export const core = _core;
-export const runs = _runs;
+  for (let key in tf_storage.urlDict) {
+    if (key.startsWith(prefix)) {
+      const pluginKey = key.substring(prefix.length);
+      result[pluginKey] = tf_storage.urlDict[key];
+    }
+  }
+  return result;
+});

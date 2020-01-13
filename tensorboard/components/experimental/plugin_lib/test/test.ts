@@ -17,7 +17,7 @@ async function createIframe(): Promise<HTMLIFrameElement> {
   return new Promise<HTMLIFrameElement>((resolve) => {
     const iframe = document.createElement('iframe') as HTMLIFrameElement;
     document.body.appendChild(iframe);
-    iframe.src = './testable-iframe.html';
+    iframe.src = './testable-iframe.html?name=sample_plugin';
     iframe.onload = () => resolve(iframe);
   });
 }
@@ -86,6 +86,18 @@ describe('plugin lib integration', () => {
         await this.libInternal.sendMessage('foo');
 
         expect(runsChanged).to.not.have.been.called;
+      });
+    });
+  });
+
+  describe('lib.core', () => {
+    describe('#getURLPluginData', () => {
+      it('returns URL data', async function() {
+        tf_globals.setFakeHash('sample_plugin&p.sample_plugin.foo=bar');
+        window.dispatchEvent(new Event('hashchange'));
+
+        const data = await this.lib.core.getURLPluginData();
+        expect(data).to.deep.equal({foo: 'bar'});
       });
     });
   });

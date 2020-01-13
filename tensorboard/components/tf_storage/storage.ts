@@ -48,6 +48,13 @@ namespace tf_storage {
    */
   export const DISAMBIGUATOR = 'disambiguator';
 
+  export let urlDict: StringDict = componentToDict(readComponent());
+
+  // Keep an up-to-date store of URL params, which iframed plugins can request.
+  tf_storage.addHashListener(() => {
+    tf_storage.urlDict = componentToDict(readComponent());
+  })
+
   export const {
     get: getString,
     set: setString,
@@ -209,6 +216,50 @@ namespace tf_storage {
     }
 
     return {get, set, getInitializer, getObserver, disposeBinding};
+  }
+
+  export function initializeUrlDict() {
+    /**
+     * TODO(psybuzz): move to some compatibility file.
+     * Convert URL hash params from the legacy scheme (list taken on 1/16/2020)
+     * to the new scheme. Luckily, WIT only stored strings, booleans.
+     */
+    const witUrlCompatibilitySet = new Set<string>([
+      'examplesPath',
+      'hideModelPane2',
+      'modelName1',
+      'modelName2',
+      'inferenceAddress1',
+      'inferenceAddress2',
+      'modelType',
+      'modelVersion1',
+      'modelVersion2',
+      'modelSignature1',
+      'modelSignature2',
+      'maxExamples',
+      'labelVocabPath',
+      'multiClass',
+      'sequenceExamples',
+      'maxClassesToDisplay',
+      'samplingOdds',
+      'usePredictApi',
+      'predictInputTensor',
+      'predictOutputTensor',
+    ]);
+
+    const items = componentToDict(readComponent());
+    if (items[TAB] === 'whatif') {
+      for (let oldName of witUrlCompatibilitySet) {
+        if (oldName in items) {
+          const oldValue = items[oldName];
+          delete items[oldName];
+          items[`p.whatif.${oldName}`] = oldValue;
+        }
+      }
+    }
+    writeComponent(dictToComponent(items));
+
+    this.urlDict = items;
   }
 
   /**

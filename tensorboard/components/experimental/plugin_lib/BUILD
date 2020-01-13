@@ -1,4 +1,4 @@
-load("//tensorboard/defs:defs.bzl", "tf_ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_ts_library", "tf_js_binary")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -12,6 +12,16 @@ tf_ts_library(
         "index.ts",
         "message.ts",
         "plugin-guest.ts",
+        "core.ts",
         "runs.ts",
+    ],
+)
+
+tf_js_binary(
+    name = "plugin_lib_rollup",
+    compile = 1,
+    entry_point = "index.ts",
+    deps = [
+        ":plugin_lib",
     ],
 )

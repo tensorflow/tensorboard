@@ -30,10 +30,12 @@ tf_web_library(
     srcs = [
         "plugin-host.html",
         "runs-host-impl.ts",
+        "core-host-impl.ts",
     ],
     path = "/tf-plugin-util",
     deps = [
         ":host_internals",
         "//tensorboard/components/tf_backend",
+        "//tensorboard/components/tf_storage",
     ],
 )
