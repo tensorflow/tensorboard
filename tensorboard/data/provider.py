@@ -79,9 +79,9 @@ class DataProvider(object):
     arbitrary URL-safe non-empty text string, whose interpretation is at
     the discretion of the data provider. As a special case, the empty
     string as an experiment ID denotes that no experiment was given. Data
-    providers may or may not the empty experiment ID. The plugin name
-    should correspond to the `plugin_data.plugin_name` field of the
-    `SummaryMetadata` proto passed to `tf.summary.write`.
+    providers may or may not fully support an empty experiment ID. The
+    plugin name should correspond to the `plugin_data.plugin_name` field
+    of the `SummaryMetadata` proto passed to `tf.summary.write`.
 
     Unless otherwise noted, any methods on this class may raise errors
     defined in `tensorboard.errors`, like `tensorboard.errors.NotFoundError`.
