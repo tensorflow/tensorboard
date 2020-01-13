@@ -371,6 +371,49 @@ class DebuggerV2PluginTest(tf.test.TestCase):
             self.assertEqual(execution["tensor_debug_mode"], 2)
             self.assertAllClose(execution["debug_tensor_values"], [[-1.0, 0.0]])
 
+    def testServeExecutionDataObjectsOutOfBoundsError(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+
+        # begin = 0; end = 4
+        response = self.server.get(
+            _ROUTE_PREFIX + "/execution/data?run=%s&begin=0&end=4" % run
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {"error": "end index (4) out of bounds (3)"},
+        )
+
+        # begin = -1; end = 2
+        response = self.server.get(
+            _ROUTE_PREFIX + "/execution/data?run=%s&begin=-1&end=2" % run
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {"error": "Invalid begin index (-1)"},
+        )
+
+        # begin = 2; end = 1
+        response = self.server.get(
+            _ROUTE_PREFIX + "/execution/data?run=%s&begin=2&end=1" % run
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {"error": "end index (1) is unexpected less than begin index (2)"},
+        )
+
     def testServeSourceFileListIncludesThisTestFile(self):
         _generate_tfdbg_v2_data(self.logdir)
         run = self._getExactlyOneRun()
