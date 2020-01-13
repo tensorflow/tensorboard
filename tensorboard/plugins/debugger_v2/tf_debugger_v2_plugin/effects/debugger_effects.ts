@@ -17,20 +17,26 @@ import {Store} from '@ngrx/store';
 import {Actions, ofType, createEffect} from '@ngrx/effects';
 import {map, mergeMap, withLatestFrom, filter, tap} from 'rxjs/operators';
 import {
-  activeRunIdChanged,
   debuggerLoaded,
   debuggerRunsRequested,
   debuggerRunsLoaded,
   executionDigestsRequested,
   executionDigestsLoaded,
+  executionScrollLeft,
+  executionScrollRight,
   numExecutionsLoaded,
   numExecutionsRequested,
   requestExecutionDigests,
 } from '../actions';
 import {
+  getActiveRunId,
   getDebuggerRunsLoaded,
-  getNumExecutionsLoaded,
+  getDisplayCount,
   getExecutionDigestsLoaded,
+  getExecutionScrollBeginIndex,
+  getNumExecutions,
+  getNumExecutionsLoaded,
+  getExecutionPageSize,
 } from '../store/debugger_selectors';
 import {
   DataLoadState,
@@ -80,23 +86,25 @@ export function getMissingPages(
   // The constraint that `end - begin <= page` ensures that at most only two
   // pages need to be requested.
   const missingPages: number[] = [];
-  const pageIndex0 = Math.floor(begin / pageSize);
-  const anyDigestMissing0 =
-    !(pageIndex0 in pageLoadedSizes) ||
-    (pageLoadedSizes[pageIndex0] < pageSize &&
-      pageIndex0 * pageSize + pageLoadedSizes[pageIndex0] < numItems);
-  if (anyDigestMissing0) {
-    missingPages.push(pageIndex0);
+
+  // Check whether the first of the two possible pages needs to be requested.
+  const firstPageIndex = Math.floor(begin / pageSize);
+  if (
+    !(firstPageIndex in pageLoadedSizes) ||
+    (pageLoadedSizes[firstPageIndex] < pageSize &&
+      firstPageIndex * pageSize + pageLoadedSizes[firstPageIndex] < numItems)
+  ) {
+    missingPages.push(firstPageIndex);
   }
 
-  const pageIndex1 = Math.floor((end - 1) / pageSize);
-  if (pageIndex1 !== pageIndex0) {
+  const secondPageIndex = Math.floor((end - 1) / pageSize);
+  if (secondPageIndex !== firstPageIndex) {
     const anyDigestMissing1 =
-      !(pageIndex1 in pageLoadedSizes) ||
-      (pageIndex1 * pageSize + pageLoadedSizes[pageIndex1] < end &&
+      !(secondPageIndex in pageLoadedSizes) ||
+      (secondPageIndex * pageSize + pageLoadedSizes[secondPageIndex] < end &&
         end < numItems);
     if (anyDigestMissing1) {
-      missingPages.push(pageIndex1);
+      missingPages.push(secondPageIndex);
     }
   }
 
@@ -134,22 +142,58 @@ export class DebuggerEffects {
   /** @export */
   readonly loadNumExecutions$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(activeRunIdChanged),
+      ofType(debuggerRunsLoaded),
       withLatestFrom(this.store.select(getNumExecutionsLoaded)),
-      filter(([, loaded]) => loaded.state !== DataLoadState.LOADING),
+      filter(([props, loaded]) => {
+        return (
+          Object.keys(props.runs).length > 0 &&
+          loaded.state !== DataLoadState.LOADING
+        );
+      }),
       tap(() => this.store.dispatch(numExecutionsRequested())),
-      mergeMap((props) => {
-        const runId = props[0].activeRunId as string; // TODO(cais): Guard against null?
+      mergeMap(([props, loaded]) => {
+        // TODO(cais): Handle multple runs. Currently it is assumed that there
+        // is at most only one debugger run available.
+        const runId = Object.keys(props.runs)[0];
         const begin = 0;
         const end = 0;
         return this.dataSource.fetchExecutionDigests(runId, begin, end).pipe(
-          map(
-            (digests) => {
-              return numExecutionsLoaded({numExecutions: digests.num_digests});
-            }
-            // TODO(cais): Add catchError() to pipe.
-          )
+          map((digests) => {
+            return numExecutionsLoaded({numExecutions: digests.num_digests});
+          })
         );
+        // TODO(cais): Add catchError() to pipe.
+      })
+    )
+  );
+
+  /** @export */
+  readonly initialExecutionDigestsLoading$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(numExecutionsLoaded),
+      withLatestFrom(
+        this.store.select(getActiveRunId),
+        this.store.select(getDisplayCount),
+        this.store.select(getExecutionDigestsLoaded)
+      ),
+      filter(([props, runId, _, loaded]) => {
+        return (
+          props.numExecutions > 0 &&
+          runId !== null &&
+          Object.keys(loaded.pageLoadedSizes).length === 0 &&
+          loaded.state !== DataLoadState.LOADING
+        );
+      }),
+      tap(() => this.store.dispatch(executionDigestsRequested())),
+      mergeMap(([props, runId, displayCount, _]) => {
+        const begin = 0;
+        const end = Math.min(props.numExecutions, displayCount);
+        return this.dataSource.fetchExecutionDigests(runId!, begin, end).pipe(
+          map((digests) => {
+            return executionDigestsLoaded(digests);
+          })
+        );
+        // TODO(cais): Add catchError() to pipe.
       })
     )
   );
@@ -200,6 +244,44 @@ export class DebuggerEffects {
           );
       })
     )
+  );
+
+  /** @export */
+  readonly executionScrollTriggeredLoading$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(executionScrollLeft, executionScrollRight),
+        withLatestFrom(
+          this.store.select(getActiveRunId),
+          this.store.select(getExecutionScrollBeginIndex),
+          this.store.select(getNumExecutions),
+          this.store.select(getDisplayCount),
+          this.store.select(getExecutionPageSize)
+        ),
+        filter((data) => data[1] !== null),
+        tap(
+          ([
+            _,
+            runId,
+            scrollBeginIndex,
+            numExecutions,
+            displayCount,
+            pageSize,
+          ]) => {
+            const begin = scrollBeginIndex;
+            const end = Math.min(numExecutions, begin + displayCount);
+            this.store.dispatch(
+              requestExecutionDigests({
+                runId: runId!,
+                begin,
+                end,
+                pageSize,
+              })
+            );
+          }
+        )
+      ),
+    {dispatch: false}
   );
 
   constructor(

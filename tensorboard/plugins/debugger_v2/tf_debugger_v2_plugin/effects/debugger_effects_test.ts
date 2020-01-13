@@ -20,7 +20,6 @@ import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {ReplaySubject, of} from 'rxjs';
 
 import {
-  activeRunIdChanged,
   debuggerLoaded,
   debuggerRunsLoaded,
   debuggerRunsRequested,
@@ -240,7 +239,7 @@ describe('Debugger effects', () => {
       });
     });
 
-    it('activeRunIdChanged action triggers run loading numExecutions', () => {
+    it('Loading non-empty debugger runs triggers numExecutions loading', () => {
       const executionDigestForTest: ExecutionDigestsResponse = {
         begin: 0,
         end: 0,
@@ -255,7 +254,13 @@ describe('Debugger effects', () => {
         .and.returnValue(of(executionDigestForTest));
 
       action.next(
-        activeRunIdChanged({activeRunId: '__default_debugger_run__'})
+        debuggerRunsLoaded({
+          runs: {
+            __default_debugger_run__: {
+              start_time: 1,
+            },
+          },
+        })
       );
 
       expect(fetchExecutionDigests).toHaveBeenCalled();
@@ -266,6 +271,126 @@ describe('Debugger effects', () => {
           numExecutions: 1234,
         }),
       ]);
+    });
+
+    it('Loading empty debugger runs triggers no numExecutions loading', () => {
+      const executionDigestForTest: ExecutionDigestsResponse = {
+        begin: 0,
+        end: 0,
+        num_digests: 1234,
+        execution_digests: [],
+      };
+      const fetchExecutionDigests = spyOn(
+        TestBed.get(Tfdbg2HttpServerDataSource),
+        'fetchExecutionDigests'
+      );
+
+      action.next(
+        debuggerRunsLoaded({
+          runs: {},
+        })
+      );
+
+      expect(fetchExecutionDigests).not.toHaveBeenCalled();
+      expect(dispatchSpy).toHaveBeenCalledTimes(0);
+    });
+  });
+
+  describe('Initial ExecutionDigests loading', () => {
+    let recordedActions: Action[] = [];
+
+    beforeEach(() => {
+      recordedActions = [];
+      debuggerEffects.initialExecutionDigestsLoading$.subscribe(
+        (action: Action) => {
+          recordedActions.push(action);
+        }
+      );
+    });
+
+    it('Loading non-zero numExecutions triggers numExecutions loading', () => {
+      store.setState(
+        createState(
+          createDebuggerState({
+            activeRunId: '__default_debugger_run__',
+            executions: {
+              numExecutionsLoaded: {
+                state: DataLoadState.NOT_LOADED,
+                lastLoadedTimeInMs: null,
+              },
+              executionDigestsLoaded: {
+                state: DataLoadState.NOT_LOADED,
+                lastLoadedTimeInMs: null,
+                numExecutions: 0,
+                pageLoadedSizes: {},
+              },
+              pageSize: 5,
+              displayCount: 2,
+              scrollBeginIndex: 0,
+              executionDigests: {},
+            },
+          })
+        )
+      );
+
+      const executionDigestForTest: ExecutionDigestsResponse = {
+        begin: 0,
+        end: 0,
+        num_digests: 2,
+        execution_digests: [
+          {
+            op_type: 'Add',
+            output_tensor_device_ids: ['d0'],
+          },
+          {
+            op_type: 'Sub',
+            output_tensor_device_ids: ['d0'],
+          },
+        ],
+      };
+      const fetchExecutionDigests = spyOn(
+        TestBed.get(Tfdbg2HttpServerDataSource),
+        'fetchExecutionDigests'
+      )
+        .withArgs('__default_debugger_run__', 0, 2)
+        .and.returnValue(of(executionDigestForTest));
+
+      action.next(
+        numExecutionsLoaded({
+          numExecutions: 2,
+        })
+      );
+
+      expect(fetchExecutionDigests).toHaveBeenCalled();
+      expect(dispatchSpy).toHaveBeenCalledTimes(1);
+      expect(dispatchSpy).toHaveBeenCalledWith(executionDigestsRequested());
+      expect(recordedActions).toEqual([
+        executionDigestsLoaded(executionDigestForTest),
+      ]);
+    });
+
+    it('Loading zero numExecutions triggers no numExecutions loading', () => {
+      store.setState(
+        createState(
+          createDebuggerState({
+            activeRunId: '__default_debugger_run__',
+          })
+        )
+      );
+
+      const fetchExecutionDigests = spyOn(
+        TestBed.get(Tfdbg2HttpServerDataSource),
+        'fetchExecutionDigests'
+      );
+
+      action.next(
+        numExecutionsLoaded({
+          numExecutions: 0,
+        })
+      );
+
+      expect(fetchExecutionDigests).not.toHaveBeenCalled();
+      expect(dispatchSpy).toHaveBeenCalledTimes(0);
     });
   });
 

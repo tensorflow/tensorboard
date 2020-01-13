@@ -17,9 +17,7 @@ import {
   Component,
   EventEmitter,
   Input,
-  OnChanges,
   Output,
-  SimpleChanges,
 } from '@angular/core';
 
 export interface ExecutionDigestForDisplay {
@@ -37,7 +35,7 @@ export interface ExecutionDigestForDisplay {
   styleUrls: ['./timeline_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TimelineComponent implements OnChanges {
+export class TimelineComponent {
   @Input()
   activeRunId: string | null = null;
 
@@ -60,50 +58,10 @@ export class TimelineComponent implements OnChanges {
   displayExecutionDigests: ExecutionDigestForDisplay[] = [];
 
   @Output()
-  onRequestExecutionDigests = new EventEmitter<{
-    runId: string;
-    begin: number;
-    end: number;
-    pageSize: number;
-  }>();
-
-  @Output()
   onNavigateLeft = new EventEmitter();
 
   @Output()
   onNavigateRight = new EventEmitter();
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (!this.activeRunId) {
-      return;
-    }
-    if (
-      changes['numExecutions'] &&
-      !changes['numExecutions'].previousValue &&
-      changes['numExecutions'].currentValue > 0
-    ) {
-      // The initial request for executionDigests.
-      // TODO(cais): The logic for initial loading should depend on whether any
-      // alert (such as InfNanAlert) exists, when alert route is ready.
-      const begin = 0;
-      const end = Math.min(this.numExecutions, this.pageSize);
-      this.onRequestExecutionDigests.emit({
-        runId: this.activeRunId,
-        begin,
-        end,
-        pageSize: this.pageSize,
-      });
-    } else if (changes['scrollBeginIndex'] && this.numExecutions > 0) {
-      const begin = this.scrollBeginIndex;
-      const end = Math.min(this.numExecutions, begin + this.displayCount);
-      this.onRequestExecutionDigests.emit({
-        runId: this.activeRunId,
-        begin,
-        end,
-        pageSize: this.pageSize,
-      });
-    }
-  }
 
   navigateLeft(): void {
     this.onNavigateLeft.emit();

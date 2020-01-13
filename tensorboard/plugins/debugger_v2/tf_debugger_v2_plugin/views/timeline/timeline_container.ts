@@ -92,7 +92,6 @@ export function getExecutionDigestForDisplay(
       [pageSize]="pageSize$ | async"
       [displayCount]="displayCount$ | async"
       [displayExecutionDigests]="displayExecutionDigests$ | async"
-      (onRequestExecutionDigests)="onRequestExecutionDigests($event)"
       (onNavigateLeft)="onNavigateLeft()"
       (onNavigateRight)="onNavigateRight()"
     ></timeline-component>
@@ -140,15 +139,6 @@ export class TimelineContainer implements OnInit {
 
   ngOnInit(): void {
     this.store.dispatch(alertsViewLoaded());
-  }
-
-  onRequestExecutionDigests(specs: {
-    runId: string;
-    begin: number;
-    end: number;
-    pageSize: number;
-  }) {
-    this.store.dispatch(requestExecutionDigests(specs));
   }
 
   onNavigateLeft() {

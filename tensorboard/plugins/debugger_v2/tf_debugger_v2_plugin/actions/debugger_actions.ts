@@ -51,14 +51,6 @@ export const debuggerRunsRequestFailed = createAction(
  */
 export const alertsViewLoaded = createAction('[Debugger] Alerts View Loaded');
 
-/**
- * Actions for the Timeline Component.
- */
-export const activeRunIdChanged = createAction(
-  '[Debugger] Debugger Active Run Changed',
-  props<{activeRunId: string | null}>()
-);
-
 export const numExecutionsRequested = createAction(
   '[Debugger] Number of Executions Requested'
 );
@@ -83,9 +75,9 @@ export const executionDigestsLoaded = createAction(
 );
 
 export const executionScrollLeft = createAction(
-  '[Debugger] Scroll leftward on the executoin timeline'
+  '[Debugger] Scroll Leftward on the Execution Timeline'
 );
 
 export const executionScrollRight = createAction(
-  '[Debugger] Scroll rightward on the executoin timeline'
+  '[Debugger] Scroll Rightward on the Execution Timeline'
 );

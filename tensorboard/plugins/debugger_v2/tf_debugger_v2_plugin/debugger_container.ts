@@ -16,7 +16,7 @@ import {Component, OnInit} from '@angular/core';
 import {createSelector, select, Store} from '@ngrx/store';
 import {State} from './store/debugger_types';
 
-import {debuggerLoaded, activeRunIdChanged} from './actions';
+import {debuggerLoaded} from './actions';
 import {getActiveRunId, getDebuggerRunListing, getNumExecutions} from './store';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
@@ -28,7 +28,6 @@ import {getActiveRunId, getDebuggerRunListing, getNumExecutions} from './store';
       [runs]="runs$ | async"
       [runIds]="runsIds$ | async"
       [activeRunId]="activeRunId$ | async"
-      (onActiveRunIdChange)="onActiveRunIdChange($event)"
     ></debugger-component>
   `,
 })
@@ -50,9 +49,5 @@ export class DebuggerContainer implements OnInit {
 
   ngOnInit(): void {
     this.store.dispatch(debuggerLoaded());
-  }
-
-  onActiveRunIdChange(activeRunId: string) {
-    this.store.dispatch(activeRunIdChanged({activeRunId}));
   }
 }
