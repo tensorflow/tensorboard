@@ -265,7 +265,6 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
                 "application/json",
             )
         except KeyError as e:
-            # TOOD(cais): More informative error message text.
             return http_util.Respond(
                 request,
                 {"error": "Cannot find stack frame with ID: %s" % e},

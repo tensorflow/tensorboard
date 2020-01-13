@@ -247,8 +247,8 @@ class DebuggerV2EventMultiplexer(object):
             return None
         return {
             "stack_frames": [
-                # TODO(cais): Use public method (`stack_frame_by_id()`` when
-                # available).
+                # TODO(cais): Use public method (`stack_frame_by_id()`) when
+                # available.
                 # pylint: disable=protected-access
                 self._reader._stack_frame_by_id[stack_frame_id]
                 # pylint: enable=protected-access
