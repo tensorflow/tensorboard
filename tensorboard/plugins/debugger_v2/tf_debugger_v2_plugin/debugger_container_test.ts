@@ -43,7 +43,7 @@ import {TimelineModule} from './views/timeline/timeline_module';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
-describe('Debugger Container test', () => {
+describe('Debugger Container', () => {
   let store: MockStore<State>;
   let dispatchSpy: jasmine.Spy;
 
@@ -141,151 +141,151 @@ describe('Debugger Container test', () => {
     expect(alertsElement).toBeNull();
   });
 
-  it('Timeline module shows loading number of executions', () => {
-    const fixture = TestBed.createComponent(TimelineContainer);
-    fixture.detectChanges();
+  describe('Timeline module', () => {
+    it('shows loading number of executions', () => {
+      const fixture = TestBed.createComponent(TimelineContainer);
+      fixture.detectChanges();
 
-    store.setState(
-      createState(
-        createDebuggerState({
-          runs: {},
-          runsLoaded: {
-            state: DataLoadState.LOADED,
-            lastLoadedTimeInMs: Date.now(),
-          },
-          executions: createDebuggerExecutionsState({
-            numExecutionsLoaded: {
-              state: DataLoadState.LOADING,
-              lastLoadedTimeInMs: null,
-            },
-          }),
-        })
-      )
-    );
-    fixture.detectChanges();
-
-    const loadingElements = fixture.debugElement.queryAll(
-      By.css('.loading-num-executions')
-    );
-    expect(loadingElements.length).toEqual(1);
-  });
-
-  it('Timeline module hides loading number of executions', () => {
-    const fixture = TestBed.createComponent(TimelineContainer);
-    fixture.detectChanges();
-
-    store.setState(
-      createState(
-        createDebuggerState({
-          runs: {},
-          runsLoaded: {
-            state: DataLoadState.LOADED,
-            lastLoadedTimeInMs: Date.now(),
-          },
-          executions: createDebuggerExecutionsState({
-            numExecutionsLoaded: {
+      store.setState(
+        createState(
+          createDebuggerState({
+            runs: {},
+            runsLoaded: {
               state: DataLoadState.LOADED,
-              lastLoadedTimeInMs: 111,
+              lastLoadedTimeInMs: Date.now(),
             },
-          }),
-        })
-      )
-    );
-    fixture.detectChanges();
-
-    const loadingElements = fixture.debugElement.queryAll(
-      By.css('.loading-num-executions')
-    );
-    expect(loadingElements.length).toEqual(0);
-  });
-
-  it('Timeline module shows correct display range for executions', () => {
-    const fixture = TestBed.createComponent(TimelineContainer);
-    fixture.detectChanges();
-
-    const scrollBeginIndex = 977;
-    const dislpaySize = 100;
-    store.setState(
-      createState(
-        createDebuggerStateWithLoadedExecutionDigests(
-          scrollBeginIndex,
-          dislpaySize
+            executions: createDebuggerExecutionsState({
+              numExecutionsLoaded: {
+                state: DataLoadState.LOADING,
+                lastLoadedTimeInMs: null,
+              },
+            }),
+          })
         )
-      )
-    );
-    fixture.detectChanges();
-
-    const navigationPositionInfoElement = fixture.debugElement.query(
-      By.css('.navigation-position-info')
-    );
-    expect(navigationPositionInfoElement.nativeElement.innerText).toEqual(
-      'Execution: 977 ~ 1076 of 1500'
-    );
-  });
-
-  it('Clicking left button dispatches executionScrollLeft action', async () => {
-    const fixture = TestBed.createComponent(TimelineContainer);
-    fixture.detectChanges();
-    store.setState(
-      createState(createDebuggerStateWithLoadedExecutionDigests(0, 50))
-    );
-    fixture.detectChanges();
-
-    const leftBUtton = fixture.debugElement.query(
-      By.css('.navigation-button-left')
-    );
-    leftBUtton.nativeElement.click();
-    fixture.detectChanges();
-    await fixture.whenStable();
-    expect(dispatchSpy).toHaveBeenCalledWith(executionScrollLeft());
-  });
-
-  it('Clicking left button dispatches executionScrollRight action', async () => {
-    const fixture = TestBed.createComponent(TimelineContainer);
-    fixture.detectChanges();
-    store.setState(
-      createState(createDebuggerStateWithLoadedExecutionDigests(0, 50))
-    );
-    fixture.detectChanges();
-
-    const rightButton = fixture.debugElement.query(
-      By.css('.navigation-button-right')
-    );
-    rightButton.nativeElement.click();
-    fixture.detectChanges();
-    await fixture.whenStable();
-    expect(dispatchSpy).toHaveBeenCalledWith(executionScrollRight());
-  });
-
-  it('Timeline displays correct op names', () => {
-    const fixture = TestBed.createComponent(TimelineContainer);
-    fixture.detectChanges();
-    const scrollBeginIndex = 100;
-    const displayCount = 40;
-    const opTypes: string[] = [];
-    for (let i = 0; i < 200; ++i) {
-      opTypes.push(`${i}Op`);
-    }
-    store.setState(
-      createState(
-        createDebuggerStateWithLoadedExecutionDigests(
-          scrollBeginIndex,
-          displayCount,
-          opTypes
-        )
-      )
-    );
-    fixture.detectChanges();
-
-    const executionDigests = fixture.debugElement.queryAll(
-      By.css('.execution-digest')
-    );
-    expect(executionDigests.length).toEqual(40);
-    const strLen = 1;
-    for (let i = 0; i < 40; ++i) {
-      expect(executionDigests[i].nativeElement.innerText).toEqual(
-        opTypes[i + 100].slice(0, strLen)
       );
-    }
+      fixture.detectChanges();
+
+      const loadingElements = fixture.debugElement.queryAll(
+        By.css('.loading-num-executions')
+      );
+      expect(loadingElements.length).toEqual(1);
+    });
+
+    it('hides loading number of executions', () => {
+      const fixture = TestBed.createComponent(TimelineContainer);
+      fixture.detectChanges();
+
+      store.setState(
+        createState(
+          createDebuggerState({
+            runs: {},
+            runsLoaded: {
+              state: DataLoadState.LOADED,
+              lastLoadedTimeInMs: Date.now(),
+            },
+            executions: createDebuggerExecutionsState({
+              numExecutionsLoaded: {
+                state: DataLoadState.LOADED,
+                lastLoadedTimeInMs: 111,
+              },
+            }),
+          })
+        )
+      );
+      fixture.detectChanges();
+
+      const loadingElements = fixture.debugElement.queryAll(
+        By.css('.loading-num-executions')
+      );
+      expect(loadingElements.length).toEqual(0);
+    });
+
+    it('shows correct display range for executions', () => {
+      const fixture = TestBed.createComponent(TimelineContainer);
+      fixture.detectChanges();
+
+      const scrollBeginIndex = 977;
+      const dislpaySize = 100;
+      store.setState(
+        createState(
+          createDebuggerStateWithLoadedExecutionDigests(
+            scrollBeginIndex,
+            dislpaySize
+          )
+        )
+      );
+      fixture.detectChanges();
+
+      const navigationPositionInfoElement = fixture.debugElement.query(
+        By.css('.navigation-position-info')
+      );
+      expect(navigationPositionInfoElement.nativeElement.innerText).toBe(
+        'Execution: 977 ~ 1076 of 1500'
+      );
+    });
+
+    it('left-button click dispatches executionScrollLeft action', async () => {
+      const fixture = TestBed.createComponent(TimelineContainer);
+      fixture.detectChanges();
+      store.setState(
+        createState(createDebuggerStateWithLoadedExecutionDigests(0, 50))
+      );
+      fixture.detectChanges();
+
+      const leftBUtton = fixture.debugElement.query(
+        By.css('.navigation-button-left')
+      );
+      leftBUtton.nativeElement.click();
+      fixture.detectChanges();
+      expect(dispatchSpy).toHaveBeenCalledWith(executionScrollLeft());
+    });
+
+    it('right-button click dispatches executionScrollRight action', async () => {
+      const fixture = TestBed.createComponent(TimelineContainer);
+      fixture.detectChanges();
+      store.setState(
+        createState(createDebuggerStateWithLoadedExecutionDigests(0, 50))
+      );
+      fixture.detectChanges();
+
+      const rightButton = fixture.debugElement.query(
+        By.css('.navigation-button-right')
+      );
+      rightButton.nativeElement.click();
+      fixture.detectChanges();
+      expect(dispatchSpy).toHaveBeenCalledWith(executionScrollRight());
+    });
+
+    it('displays correct op names', () => {
+      const fixture = TestBed.createComponent(TimelineContainer);
+      fixture.detectChanges();
+      const scrollBeginIndex = 100;
+      const displayCount = 40;
+      const opTypes: string[] = [];
+      for (let i = 0; i < 200; ++i) {
+        opTypes.push(`${i}Op`);
+      }
+      store.setState(
+        createState(
+          createDebuggerStateWithLoadedExecutionDigests(
+            scrollBeginIndex,
+            displayCount,
+            opTypes
+          )
+        )
+      );
+      fixture.detectChanges();
+
+      const executionDigests = fixture.debugElement.queryAll(
+        By.css('.execution-digest')
+      );
+      expect(executionDigests.length).toEqual(40);
+      const strLen = 1;
+      for (let i = 0; i < 40; ++i) {
+        expect(executionDigests[i].nativeElement.innerText).toEqual(
+          opTypes[i + 100].slice(0, strLen)
+        );
+      }
+    });
   });
 });

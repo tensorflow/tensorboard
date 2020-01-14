@@ -97,12 +97,13 @@ export const getVisibleExecutionDigests = createSelector(
   (state: DebuggerState): Array<ExecutionDigest | null> => {
     const digests: Array<ExecutionDigest | null> = [];
     for (
-      let i = state.executions.scrollBeginIndex;
-      i < state.executions.scrollBeginIndex + state.executions.displayCount;
-      ++i
+      let executionIndex = state.executions.scrollBeginIndex;
+      executionIndex <
+      state.executions.scrollBeginIndex + state.executions.displayCount;
+      ++executionIndex
     ) {
-      if (i in state.executions.executionDigests) {
-        digests.push(state.executions.executionDigests[i]);
+      if (executionIndex in state.executions.executionDigests) {
+        digests.push(state.executions.executionDigests[executionIndex]);
       } else {
         digests.push(null);
       }

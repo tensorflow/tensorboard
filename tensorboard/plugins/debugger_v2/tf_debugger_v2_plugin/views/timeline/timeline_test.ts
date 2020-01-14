@@ -19,16 +19,16 @@ limitations under the License.
 import {getExecutionDigestForDisplay} from './timeline_container';
 
 describe('getExecutionDigestForDisplay', () => {
-  for (const [opType, strLen, expectedShortOpType] of [
-    ['MatMul', 1, 'M'],
-    ['MatMul', 2, 'Ma'],
-    ['MatMul', 3, 'Mat'],
-    ['MatMul', 100, 'MatMul'],
-    ['__inference_batchnorm_1357', 1, 'b'],
-    ['__forward_batchnorm_1357', 2, 'ba'],
-    ['__backward_attention_1357', 3, 'att'],
-    ['__backward_attention_1357', 99, 'attention_1357'],
-  ] as Array<[string, number, string]>) {
+  for (const [opType, strLen, expectedShortOpType, isGraph] of [
+    ['MatMul', 1, 'M', false],
+    ['MatMul', 2, 'Ma', false],
+    ['MatMul', 3, 'Mat', false],
+    ['MatMul', 100, 'MatMul', false],
+    ['__inference_batchnorm_1357', 1, 'b', true],
+    ['__forward_batchnorm_1357', 2, 'ba', true],
+    ['__backward_attention_1357', 3, 'att', true],
+    ['__backward_attention_1357', 99, 'attention_1357', true],
+  ] as Array<[string, number, string, boolean]>) {
     it(`outputs correct results for op ${opType}, strLen=${strLen}`, () => {
       const display = getExecutionDigestForDisplay(
         {
@@ -39,7 +39,7 @@ describe('getExecutionDigestForDisplay', () => {
       );
       expect(display.short_op_type).toEqual(expectedShortOpType);
       expect(display.op_type).toEqual(opType);
-      expect(display.is_graph).toEqual(opType.startsWith('__'));
+      expect(display.is_graph).toBe(isGraph);
     });
   }
 

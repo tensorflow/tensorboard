@@ -39,7 +39,7 @@ import {
   DataLoadState,
 } from '../store/debugger_types';
 import {createDebuggerState, createState} from '../testing';
-import {DebuggerEffects, getMissingPages} from './debugger_effects';
+import {DebuggerEffects, TEST_ONLY} from './debugger_effects';
 
 describe('getMissingPages', () => {
   it('returns correct page indices for missing page', () => {
@@ -51,7 +51,7 @@ describe('getMissingPages', () => {
       1337: 100,
     };
     expect(
-      getMissingPages(begin, end, pageSize, numItems, loadePageSizes)
+      TEST_ONLY.getMissingPages(begin, end, pageSize, numItems, loadePageSizes)
     ).toEqual([0]);
   });
 
@@ -64,7 +64,7 @@ describe('getMissingPages', () => {
       0: 100,
     };
     expect(
-      getMissingPages(begin, end, pageSize, numItems, loadePageSizes)
+      TEST_ONLY.getMissingPages(begin, end, pageSize, numItems, loadePageSizes)
     ).toEqual([]);
   });
 
@@ -78,7 +78,7 @@ describe('getMissingPages', () => {
       1: 30,
     };
     expect(
-      getMissingPages(begin, end, pageSize, numItems, loadePageSizes)
+      TEST_ONLY.getMissingPages(begin, end, pageSize, numItems, loadePageSizes)
     ).toEqual([]);
   });
 
@@ -91,7 +91,7 @@ describe('getMissingPages', () => {
       0: 53,
     };
     expect(
-      getMissingPages(begin, end, pageSize, numItems, loadePageSizes)
+      TEST_ONLY.getMissingPages(begin, end, pageSize, numItems, loadePageSizes)
     ).toEqual([]);
   });
 
@@ -104,7 +104,7 @@ describe('getMissingPages', () => {
       0: 30,
     };
     expect(
-      getMissingPages(begin, end, pageSize, numItems, loadePageSizes)
+      TEST_ONLY.getMissingPages(begin, end, pageSize, numItems, loadePageSizes)
     ).toEqual([0]);
   });
 
@@ -118,7 +118,7 @@ describe('getMissingPages', () => {
       1: 100,
     };
     expect(
-      getMissingPages(begin, end, pageSize, numItems, loadePageSizes)
+      TEST_ONLY.getMissingPages(begin, end, pageSize, numItems, loadePageSizes)
     ).toEqual([2]);
   });
 
@@ -133,7 +133,7 @@ describe('getMissingPages', () => {
       2: 99,
     };
     expect(
-      getMissingPages(begin, end, pageSize, numItems, loadePageSizes)
+      TEST_ONLY.getMissingPages(begin, end, pageSize, numItems, loadePageSizes)
     ).toEqual([2, 3]);
   });
 
@@ -144,7 +144,7 @@ describe('getMissingPages', () => {
     const numItems = 1234;
     const loadePageSizes = {};
     expect(() =>
-      getMissingPages(begin, end, pageSize, numItems, loadePageSizes)
+      TEST_ONLY.getMissingPages(begin, end, pageSize, numItems, loadePageSizes)
     ).toThrowError(/exceeds page size/);
   });
 
@@ -155,7 +155,7 @@ describe('getMissingPages', () => {
     const numItems = 199;
     const loadePageSizes = {};
     expect(() =>
-      getMissingPages(begin, end, pageSize, numItems, loadePageSizes)
+      TEST_ONLY.getMissingPages(begin, end, pageSize, numItems, loadePageSizes)
     ).toThrowError('end index (200) exceeds total number of items (199)');
   });
 
@@ -165,7 +165,7 @@ describe('getMissingPages', () => {
       const end = 50;
       const numItems = 999;
       expect(() =>
-        getMissingPages(begin, end, invalidPageSize, numItems, {})
+        TEST_ONLY.getMissingPages(begin, end, invalidPageSize, numItems, {})
       ).toThrowError(/Invalid pageSize:/);
     });
   }
@@ -471,8 +471,15 @@ describe('Debugger effects', () => {
   });
 
   describe('Execution scrolling effect', () => {
+    let recordedActions: Action[] = [];
+
     beforeEach(() => {
-      debuggerEffects.executionScrollTriggeredLoading$.subscribe();
+      recordedActions = [];
+      debuggerEffects.executionScrollTriggeredLoading$.subscribe(
+        (action: Action) => {
+          recordedActions.push(action);
+        }
+      );
     });
 
     for (const triggeringAction of [
@@ -506,15 +513,14 @@ describe('Debugger effects', () => {
 
         action.next(triggeringAction);
 
-        expect(dispatchSpy).toHaveBeenCalledTimes(1);
-        expect(dispatchSpy).toHaveBeenCalledWith(
+        expect(recordedActions).toEqual([
           requestExecutionDigests({
             runId: '__default_debugger_run__',
             begin: 2,
             end: 4,
             pageSize: 2,
-          })
-        );
+          }),
+        ]);
       });
     }
   });

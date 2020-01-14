@@ -64,7 +64,7 @@ import {Tfdbg2HttpServerDataSource} from '../data_source/tfdbg2_data_source';
  * @returns An array of the page indices that are currently missing and hence
  *   should be requested from the appropriate data source.
  */
-export function getMissingPages(
+function getMissingPages(
   begin: number,
   end: number,
   pageSize: number,
@@ -203,30 +203,25 @@ export class DebuggerEffects {
     this.actions$.pipe(
       ofType(requestExecutionDigests),
       withLatestFrom(this.store.select(getExecutionDigestsLoaded)),
-      filter(([props, loaded]) => {
-        if (loaded.state === DataLoadState.LOADING) {
-          return false;
-        }
-        const missingPages = getMissingPages(
-          props.begin,
-          props.end,
-          props.pageSize,
-          loaded.numExecutions,
-          loaded.pageLoadedSizes
-        );
-        return missingPages.length > 0;
+      filter(([_, loaded]) => loaded.state !== DataLoadState.LOADING),
+      map(([props, loaded]) => {
+        return {
+          props,
+          loaded,
+          missingPages: getMissingPages(
+            props.begin,
+            props.end,
+            props.pageSize,
+            loaded.numExecutions,
+            loaded.pageLoadedSizes
+          ),
+        };
       }),
+      filter(({missingPages}) => missingPages.length > 0),
       tap(() => this.store.dispatch(executionDigestsRequested())),
-      mergeMap(([props, loaded]) => {
-        const {runId, begin, end, pageSize} = props;
-        const {pageLoadedSizes} = loaded;
-        const missingPages = getMissingPages(
-          begin,
-          end,
-          pageSize,
-          loaded.numExecutions,
-          pageLoadedSizes
-        );
+      withLatestFrom(this.store.select(getExecutionDigestsLoaded)),
+      mergeMap(([{props, missingPages}, loaded]) => {
+        const {runId, pageSize} = props;
         const actualBegin = missingPages[0] * pageSize;
         const actualEnd = Math.min(
           loaded.numExecutions,
@@ -247,44 +242,40 @@ export class DebuggerEffects {
   );
 
   /** @export */
-  readonly executionScrollTriggeredLoading$ = createEffect(
-    () =>
-      this.actions$.pipe(
-        ofType(executionScrollLeft, executionScrollRight),
-        withLatestFrom(
-          this.store.select(getActiveRunId),
-          this.store.select(getExecutionScrollBeginIndex),
-          this.store.select(getNumExecutions),
-          this.store.select(getDisplayCount),
-          this.store.select(getExecutionPageSize)
-        ),
-        filter((data) => {
-          const runId = data[1];
-          return runId !== null;
-        }),
-        tap(
-          ([
-            _,
-            runId,
-            scrollBeginIndex,
-            numExecutions,
-            displayCount,
-            pageSize,
-          ]) => {
-            const begin = scrollBeginIndex;
-            const end = Math.min(numExecutions, begin + displayCount);
-            this.store.dispatch(
-              requestExecutionDigests({
-                runId: runId!,
-                begin,
-                end,
-                pageSize,
-              })
-            );
-          }
-        )
+  readonly executionScrollTriggeredLoading$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(executionScrollLeft, executionScrollRight),
+      withLatestFrom(
+        this.store.select(getActiveRunId),
+        this.store.select(getExecutionScrollBeginIndex),
+        this.store.select(getNumExecutions),
+        this.store.select(getDisplayCount),
+        this.store.select(getExecutionPageSize)
       ),
-    {dispatch: false}
+      filter((data) => {
+        const runId = data[1];
+        return runId !== null;
+      }),
+      map(
+        ([
+          _,
+          runId,
+          scrollBeginIndex,
+          numExecutions,
+          displayCount,
+          pageSize,
+        ]) => {
+          const begin = scrollBeginIndex;
+          const end = Math.min(numExecutions, begin + displayCount);
+          return requestExecutionDigests({
+            runId: runId!,
+            begin,
+            end,
+            pageSize,
+          });
+        }
+      )
+    )
   );
 
   constructor(
@@ -293,3 +284,7 @@ export class DebuggerEffects {
     private dataSource: Tfdbg2HttpServerDataSource
   ) {}
 }
+
+export const TEST_ONLY = {
+  getMissingPages,
+};

@@ -24,6 +24,12 @@ import {
 
 export abstract class Tfdbg2DataSource {
   abstract fetchRuns(): Observable<DebuggerRunListing>;
+
+  abstract fetchExecutionDigests(
+    run: string,
+    begin: number,
+    end: number
+  ): Observable<ExecutionDigestsResponse>;
 }
 
 @Injectable()

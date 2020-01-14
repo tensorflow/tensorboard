@@ -62,12 +62,4 @@ export class TimelineComponent {
 
   @Output()
   onNavigateRight = new EventEmitter();
-
-  navigateLeft(): void {
-    this.onNavigateLeft.emit();
-  }
-
-  navigateRight(): void {
-    this.onNavigateRight.emit();
-  }
 }

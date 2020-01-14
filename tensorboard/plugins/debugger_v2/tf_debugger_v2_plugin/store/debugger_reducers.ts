@@ -25,6 +25,8 @@ import {
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
 /** @typehack */ import * as _typeHackStore from '@ngrx/store/store';
 
+const DEFAULT_EXECUTION_PAGE_SIZE = 1000;
+
 const initialState: DebuggerState = {
   runs: {},
   runsLoaded: {
@@ -44,7 +46,7 @@ const initialState: DebuggerState = {
       lastLoadedTimeInMs: null,
     },
     scrollBeginIndex: 0,
-    pageSize: 1000,
+    pageSize: DEFAULT_EXECUTION_PAGE_SIZE,
     // TODO(cais) Remove the hardcoding of this, which is coupled with css width
     // properties.
     displayCount: 50,
@@ -100,65 +102,62 @@ const reducer = createReducer(
     actions.numExecutionsRequested,
     (state: DebuggerState): DebuggerState => {
       const runId = state.activeRunId;
-      if (runId !== null) {
-        return {
-          ...state,
-          executions: {
-            ...state.executions,
-            numExecutionsLoaded: {
-              ...state.executions.numExecutionsLoaded,
-              state: DataLoadState.LOADING,
-            },
-          },
-        };
-      } else {
+      if (runId === null) {
         return state;
       }
+      return {
+        ...state,
+        executions: {
+          ...state.executions,
+          numExecutionsLoaded: {
+            ...state.executions.numExecutionsLoaded,
+            state: DataLoadState.LOADING,
+          },
+        },
+      };
     }
   ),
   on(
     actions.numExecutionsLoaded,
     (state: DebuggerState, {numExecutions}): DebuggerState => {
       const runId = state.activeRunId;
-      if (runId !== null) {
-        return {
-          ...state,
-          executions: {
-            ...state.executions,
-            numExecutionsLoaded: {
-              ...state.executions.numExecutionsLoaded,
-              state: DataLoadState.LOADED,
-              lastLoadedTimeInMs: Date.now(),
-            },
-            executionDigestsLoaded: {
-              ...state.executions.executionDigestsLoaded,
-              numExecutions,
-            },
-          },
-        };
-      } else {
+      if (runId === null) {
         return state;
       }
+      return {
+        ...state,
+        executions: {
+          ...state.executions,
+          numExecutionsLoaded: {
+            ...state.executions.numExecutionsLoaded,
+            state: DataLoadState.LOADED,
+            lastLoadedTimeInMs: Date.now(),
+          },
+          executionDigestsLoaded: {
+            ...state.executions.executionDigestsLoaded,
+            numExecutions,
+          },
+        },
+      };
     }
   ),
   on(
     actions.executionDigestsRequested,
     (state: DebuggerState): DebuggerState => {
       const runId = state.activeRunId;
-      if (runId !== null) {
-        return {
-          ...state,
-          executions: {
-            ...state.executions,
-            executionDigestsLoaded: {
-              ...state.executions.executionDigestsLoaded,
-              state: DataLoadState.LOADING,
-            },
-          },
-        };
-      } else {
+      if (runId === null) {
         return state;
       }
+      return {
+        ...state,
+        executions: {
+          ...state.executions,
+          executionDigestsLoaded: {
+            ...state.executions.executionDigestsLoaded,
+            state: DataLoadState.LOADING,
+          },
+        },
+      };
     }
   ),
   on(
@@ -168,35 +167,38 @@ const reducer = createReducer(
       digests: ExecutionDigestsResponse
     ): DebuggerState => {
       const runId = state.activeRunId;
-      if (runId !== null) {
-        const newState: DebuggerState = {
-          ...state,
-          executions: {
-            ...state.executions,
-            executionDigestsLoaded: {
-              ...state.executions.executionDigestsLoaded,
-              numExecutions: digests.num_digests,
-              state: DataLoadState.LOADED,
-              lastLoadedTimeInMs: Date.now(),
-            },
-          },
-        };
-        for (let i = digests.begin; i < digests.end; ++i) {
-          newState.executions.executionDigests[i] =
-            digests.execution_digests[i - digests.begin];
-        }
-        // Update pagesLoadedInFull.
-        if (digests.end > digests.begin) {
-          const pageIndex = digests.begin / state.executions.pageSize;
-          newState.executions.executionDigestsLoaded.pageLoadedSizes = {
-            ...newState.executions.executionDigestsLoaded.pageLoadedSizes,
-            [pageIndex]: digests.end - digests.begin,
-          };
-        }
-        return newState;
-      } else {
+      if (runId === null) {
         return state;
       }
+      const newState: DebuggerState = {
+        ...state,
+        executions: {
+          ...state.executions,
+          executionDigestsLoaded: {
+            ...state.executions.executionDigestsLoaded,
+            numExecutions: digests.num_digests,
+            state: DataLoadState.LOADED,
+            lastLoadedTimeInMs: Date.now(),
+          },
+          executionDigests: Object.assign(
+            {},
+            state.executions.executionDigests
+          ),
+        },
+      };
+      for (let i = digests.begin; i < digests.end; ++i) {
+        newState.executions.executionDigests[i] =
+          digests.execution_digests[i - digests.begin];
+      }
+      // Update pagesLoadedInFull.
+      if (digests.end > digests.begin) {
+        const pageIndex = digests.begin / state.executions.pageSize;
+        newState.executions.executionDigestsLoaded.pageLoadedSizes = {
+          ...newState.executions.executionDigestsLoaded.pageLoadedSizes,
+          [pageIndex]: digests.end - digests.begin,
+        };
+      }
+      return newState;
     }
   ),
   on(
