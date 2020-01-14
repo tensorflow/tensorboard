@@ -24,30 +24,29 @@ import tensorflow as tf
 
 
 class BeholderTest(tf.test.TestCase):
+    def setUp(self):
+        self._current_time_seconds = 1554232353
 
-  def setUp(self):
-    self._current_time_seconds = 1554232353
+    def advance_time(self, delta_seconds):
+        self._current_time_seconds += delta_seconds
 
-  def advance_time(self, delta_seconds):
-    self._current_time_seconds += delta_seconds
+    def get_time(self):
+        return self._current_time_seconds
 
-  def get_time(self):
-    return self._current_time_seconds
-
-  @test_util.run_v1_only("Requires sessions")
-  def test_update(self):
-    with tf.test.mock.patch("time.time", self.get_time):
-      b = beholder.Beholder(self.get_temp_dir())
-      array = np.array([[0, 1], [1, 0]])
-      with tf.Session() as sess:
-        v = tf.Variable([0, 0], trainable=True)
-        sess.run(tf.global_variables_initializer())
-        # Beholder only updates if at least one frame has passed. The
-        # default FPS value is 10, but in any case 100 seconds ought to
-        # do it.
-        self.advance_time(delta_seconds=100)
-        b.update(session=sess, arrays=[array])
+    @test_util.run_v1_only("Requires sessions")
+    def test_update(self):
+        with tf.test.mock.patch("time.time", self.get_time):
+            b = beholder.Beholder(self.get_temp_dir())
+            array = np.array([[0, 1], [1, 0]])
+            with tf.Session() as sess:
+                v = tf.Variable([0, 0], trainable=True)
+                sess.run(tf.global_variables_initializer())
+                # Beholder only updates if at least one frame has passed. The
+                # default FPS value is 10, but in any case 100 seconds ought to
+                # do it.
+                self.advance_time(delta_seconds=100)
+                b.update(session=sess, arrays=[array])
 
 
 if __name__ == "__main__":
-  tf.test.main()
+    tf.test.main()

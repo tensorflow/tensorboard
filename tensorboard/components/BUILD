@@ -21,6 +21,7 @@ tensorboard_html_binary(
     name = "index",
     compile = True,
     input_path = "/tensorboard.html",
+    js_path = "/index.js",
     output_path = "/index.html",
     deps = [":tensorboard"],
 )
@@ -39,6 +40,7 @@ tf_web_library(
         "security.html",
     ],
     path = "/",
+    visibility = ["//visibility:public"],
 )
 
 tf_web_library(
@@ -71,27 +73,6 @@ tensorboard_html_binary(
 )
 
 tf_web_library(
-    name = "ng_tensorboard",
-    srcs = [
-        "ng_tensorboard.html",
-    ],
-    path = "/",
-    deps = [
-        ":ng_polymer_lib_binary",
-        "//tensorboard/components/tf_ng_tensorboard",
-        "//tensorboard/components/tf_ng_tensorboard:material_theme",
-        "//tensorboard/components/tf_ng_tensorboard:svg_bundle",
-    ],
-)
-
-tensorboard_html_binary(
-    name = "ng_index",
-    input_path = "/ng_tensorboard.html",
-    output_path = "/ng_index.html",
-    deps = [":ng_tensorboard"],
-)
-
-tf_web_library(
     name = "trace_viewer",
     srcs = ["trace_viewer.html"],
     path = "/",
@@ -104,6 +85,7 @@ tf_web_library(
 tensorboard_html_binary(
     name = "trace_viewer_index",
     input_path = "/trace_viewer.html",
+    js_path = "/trace_viewer_index.js",
     output_path = "/trace_viewer_index.html",
     deps = [":trace_viewer"],
 )

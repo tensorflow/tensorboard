@@ -28,73 +28,95 @@ from tensorboard.compat.proto import graph_pb2
 from tensorboard.plugins.graph import graphs_plugin_test
 
 
-class GraphsPluginV2Test(graphs_plugin_test.GraphsPluginBaseTest, tf.test.TestCase):
+class GraphsPluginV2Test(
+    graphs_plugin_test.GraphsPluginBaseTest, tf.test.TestCase
+):
+    def generate_run(
+        self, logdir, run_name, include_graph, include_run_metadata
+    ):
+        x, y = np.ones((10, 10)), np.ones((10, 1))
+        val_x, val_y = np.ones((4, 10)), np.ones((4, 1))
 
-  def generate_run(self, run_name, include_graph, include_run_metadata):
-    x, y = np.ones((10, 10)), np.ones((10, 1))
-    val_x, val_y = np.ones((4, 10)), np.ones((4, 1))
+        model = tf.keras.Sequential(
+            [
+                tf.keras.layers.Dense(10, activation="relu"),
+                tf.keras.layers.Dense(1, activation="sigmoid"),
+            ]
+        )
+        model.compile("rmsprop", "binary_crossentropy")
 
-    model = tf.keras.Sequential([
-        tf.keras.layers.Dense(10, activation='relu'),
-        tf.keras.layers.Dense(1, activation='sigmoid')])
-    model.compile('rmsprop', 'binary_crossentropy')
+        model.fit(
+            x,
+            y,
+            validation_data=(val_x, val_y),
+            batch_size=2,
+            epochs=1,
+            callbacks=[
+                tf.compat.v2.keras.callbacks.TensorBoard(
+                    log_dir=os.path.join(logdir, run_name),
+                    write_graph=include_graph,
+                )
+            ],
+        )
 
-    model.fit(
-        x,
-        y,
-        validation_data=(val_x, val_y),
-        batch_size=2,
-        epochs=1,
-        callbacks=[tf.compat.v2.keras.callbacks.TensorBoard(
-            log_dir=os.path.join(self.logdir, run_name),
-            write_graph=include_graph)])
+    def _get_graph(self, plugin, *args, **kwargs):
+        """Fetch and return the graph as a proto."""
+        (graph_pbtxt, mime_type) = plugin.graph_impl(*args, **kwargs)
+        self.assertEqual(mime_type, "text/x-protobuf")
+        return text_format.Parse(graph_pbtxt, graph_pb2.GraphDef())
 
-  def _get_graph(self, *args, **kwargs):
-    """Fetch and return the graph as a proto."""
-    (graph_pbtxt, mime_type) = self.plugin.graph_impl(*args, **kwargs)
-    self.assertEqual(mime_type, 'text/x-protobuf')
-    return text_format.Parse(graph_pbtxt, graph_pb2.GraphDef())
+    @graphs_plugin_test.with_runs(
+        [
+            graphs_plugin_test._RUN_WITH_GRAPH_WITH_METADATA,
+            graphs_plugin_test._RUN_WITHOUT_GRAPH_WITH_METADATA,
+        ]
+    )
+    def test_info(self, plugin):
+        raise self.skipTest(
+            "TODO: enable this after tf-nightly writes a conceptual graph."
+        )
 
-  def test_info(self):
-    raise self.skipTest('TODO: enable this after tf-nightly writes a conceptual graph.')
+        expected = {
+            "w_graph_wo_meta": {
+                "run": "w_graph_wo_meta",
+                "run_graph": True,
+                "tags": {
+                    "keras": {
+                        "conceptual_graph": True,
+                        "profile": False,
+                        "tag": "keras",
+                        "op_graph": False,
+                    },
+                },
+            },
+        }
 
-    expected = {
-      'w_graph_wo_meta': {
-        'run': 'w_graph_wo_meta',
-        'run_graph': True,
-        'tags': {
-          'keras': {
-            'conceptual_graph': True,
-            'profile': False,
-            'tag': 'keras',
-            'op_graph': False,
-          },
-        },
-      },
-    }
+        self.generate_run(
+            "w_graph_wo_meta", include_graph=True, include_run_metadata=False
+        )
+        self.generate_run(
+            "wo_graph_wo_meta", include_graph=False, include_run_metadata=False
+        )
+        self.bootstrap_plugin()
 
-    self.generate_run('w_graph_wo_meta',
-                      include_graph=True,
-                      include_run_metadata=False)
-    self.generate_run('wo_graph_wo_meta',
-                      include_graph=False,
-                      include_run_metadata=False)
-    self.bootstrap_plugin()
+        self.assertEqual(expected, plugin.info_impl())
 
-    self.assertEqual(expected, self.plugin.info_impl())
+    def test_graph_conceptual_graph(self):
+        raise self.skipTest(
+            "TODO: enable this after tf-nightly writes a conceptual graph."
+        )
 
-  def test_graph_conceptual_graph(self):
-    raise self.skipTest('TODO: enable this after tf-nightly writes a conceptual graph.')
+        self.generate_run(
+            self._RUN_WITH_GRAPH, include_graph=True, include_run_metadata=False
+        )
+        self.bootstrap_plugin()
 
-    self.generate_run(self._RUN_WITH_GRAPH,
-                      include_graph=True,
-                      include_run_metadata=False)
-    self.bootstrap_plugin()
-
-    graph = self._get_graph(self._RUN_WITH_GRAPH, tag='keras', is_conceptual=True)
-    node_names = set(node.name for node in graph.node)
-    self.assertEqual({'sequential/dense', 'sequential/dense_1'}, node_names)
+        graph = self._get_graph(
+            self._RUN_WITH_GRAPH, tag="keras", is_conceptual=True
+        )
+        node_names = set(node.name for node in graph.node)
+        self.assertEqual({"sequential/dense", "sequential/dense_1"}, node_names)
 
 
-if __name__ == '__main__':
-  tf.test.main()
+if __name__ == "__main__":
+    tf.test.main()

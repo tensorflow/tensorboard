@@ -731,7 +731,7 @@ module tf.graph.scene.node {
     id: string,
     colors: Array<{color: string; proportion: number}>,
     svgRoot?: SVGElement
-  ) {
+  ): string {
     let escapedId = tf.graph.util.escapeQuerySelector(id);
     if (!svgRoot) return `url(#${escapedId})`;
     let $svgRoot = d3.select(svgRoot);
@@ -760,6 +760,7 @@ module tf.graph.scene.node {
         cumulativeProportion += d.proportion;
       });
     }
+    return `url(#${escapedId})`;
   }
 
   export function removeGradientDefinitions(svgRoot: SVGElement) {

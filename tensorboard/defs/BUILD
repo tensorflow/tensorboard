@@ -29,19 +29,24 @@ py_test(
 
 tb_proto_library(
     name = "test_base",
+    testonly = True,
     srcs = ["test_base.proto"],
     has_services = True,
-    testonly = True,
 )
 
 tb_proto_library(
     name = "test_downstream",
+    testonly = True,
     srcs = ["test_downstream.proto"],
+    has_services = True,
     deps = [
         ":test_base",
     ],
-    has_services = True,
-    testonly = True,
 )
 
 exports_files(["web_test_python_stub.template.py"])
+
+exports_files(
+    ["clutz.d.ts"],
+    visibility = ["//tensorboard:internal"],
+)

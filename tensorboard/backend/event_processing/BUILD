@@ -35,7 +35,10 @@ py_library(
     srcs = ["data_provider.py"],
     srcs_version = "PY2AND3",
     deps = [
+        ":event_accumulator",
+        "//tensorboard:errors",
         "//tensorboard/data:provider",
+        "//tensorboard/plugins/graph:metadata",
         "//tensorboard/util:tb_logging",
         "//tensorboard/util:tensor_util",
         "@org_pythonhosted_six",
@@ -49,13 +52,14 @@ py_test(
     deps = [
         ":data_provider",
         ":event_multiplexer",
+        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/data:provider",
+        "//tensorboard/plugins/graph:metadata",
         "//tensorboard/plugins/image:summary_v2",
         "//tensorboard/plugins/scalar:metadata",
         "//tensorboard/plugins/scalar:summary_v2",
         "//tensorboard/util:tensor_util",
-        "//tensorboard:expect_tensorflow_installed",
         "@org_pythonhosted_six",
     ],
 )
@@ -181,9 +185,12 @@ py_test(
         ":event_accumulator",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/plugins/audio:metadata",
         "//tensorboard/plugins/audio:summary",
         "//tensorboard/plugins/distribution:compressor",
+        "//tensorboard/plugins/image:metadata",
         "//tensorboard/plugins/image:summary",
+        "//tensorboard/plugins/scalar:metadata",
         "//tensorboard/plugins/scalar:summary",
         "//tensorboard/util:tensor_util",
         "//tensorboard/util:test_util",
@@ -235,6 +242,7 @@ py_test(
     deps = [
         ":event_accumulator",
         ":event_multiplexer",
+        "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
     ],
 )

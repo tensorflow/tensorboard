@@ -1,26 +1,29 @@
-# TensorBoard [![Travis build status](https://www.travis-ci.com/tensorflow/tensorboard.svg?branch=master)](https://travis-ci.com/tensorflow/tensorboard/) [![Compat check PyPI](https://python-compatibility-tools.appspot.com/one_badge_image?package=tensorboard)](https://python-compatibility-tools.appspot.com/one_badge_target?package=tensorboard)
+# TensorBoard [![Travis build status](https://travis-ci.org/tensorflow/tensorboard.svg?branch=master)](https://travis-ci.org/tensorflow/tensorboard/) [![Compat check PyPI](https://python-compatibility-tools.appspot.com/one_badge_image?package=tensorboard)](https://python-compatibility-tools.appspot.com/one_badge_target?package=tensorboard)
 
 TensorBoard is a suite of web applications for inspecting and understanding your
 TensorFlow runs and graphs.
 
 This README gives an overview of key concepts in TensorBoard, as well as how to
 interpret the visualizations TensorBoard provides. For an in-depth example of
-using TensorBoard, see the tutorial: [TensorBoard: Visualizing
-Learning][].
-For in-depth information on the Graph Visualizer, see this tutorial:
-[TensorBoard: Graph Visualization][].
+using TensorBoard, see the tutorial: [TensorBoard: Getting Started][].
+Documentation on how to use TensorBoard to work with images, graphs, hyper
+parameters, and more are linked from there, along with tutorial walk-throughs in
+Colab.
 
-[TensorBoard: Visualizing Learning]: https://www.tensorflow.org/get_started/summaries_and_tensorboard
-[TensorBoard: Graph Visualization]: https://www.tensorflow.org/get_started/graph_viz
+You may also be interested in the hosted TensorBoard solution at
+[TensorBoard.dev][]. You can use TensorBoard.dev to easily host, track, and
+share your ML experiments for free. For example, [this experiment][] shows a
+working example featuring the scalar dashboard.
 
-You may also want to watch
-[this video tutorial][] that walks
-through setting up and using TensorBoard. There's an associated
-[tutorial with an end-to-end example of training TensorFlow and using TensorBoard][].
+TensorBoard is designed to run entirely offline, without requiring any access
+to the Internet. For instance, this may be on your local machine, behind a
+corporate firewall, or in a datacenter. Currently, there is one exception where
+TensorBoard does require Internet access: the optional profile plugin, when
+active, connects to a Google-hosted CDN to load the Google Charts library.
 
-[this video tutorial]: https://www.youtube.com/watch?v=eBbEDRsCmv4
-
-[tutorial with an end-to-end example of training TensorFlow and using TensorBoard]: https://github.com/martinwicke/tf-dev-summit-tensorboard-tutorial
+[TensorBoard: Getting Started]: https://www.tensorflow.org/tensorboard/get_started
+[TensorBoard.dev]: https://tensorboard.dev
+[This experiment]: https://tensorboard.dev/experiment/AdYd1TgeTlaLWXx6I8JUbA/#scalars
 
 # Usage
 
@@ -329,6 +332,20 @@ If you need access to the full dataset, you can read the event files that
 TensorBoard consumes by using the [`summary_iterator`](
 https://www.tensorflow.org/api_docs/python/tf/train/summary_iterator)
 method.
+
+### Can I make my own plugin?
+
+Yes! You can clone and tinker with one of the [examples][plugin-examples] and
+make your own, amazing visualizations. More documentation on the plugin system
+is described in the [ADDING_A_PLUGIN](./ADDING_A_PLUGIN.md) guide. Feel free to
+file feature requests or questions about plugin functionality.
+
+Once satisfied with your own groundbreaking new plugin, see the
+[distribution section][plugin-distribution] on how to publish to PyPI and share
+it with the community.
+
+[plugin-examples]: ./tensorboard/examples/plugins
+[plugin-distribution]: ./ADDING_A_PLUGIN.md#distribution
 
 ### Can I customize which lines appear in a plot?
 

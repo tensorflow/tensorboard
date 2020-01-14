@@ -24,4 +24,7 @@ sh_test(
         "tensorboard_plugin_example/*.py",
         "tensorboard_plugin_example/static/**",
     ]),
+    tags = [
+        "manual",  # https://github.com/tensorflow/tensorboard/issues/2987
+    ],
 )

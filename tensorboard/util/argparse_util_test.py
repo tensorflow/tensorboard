@@ -25,32 +25,31 @@ from tensorboard.util import argparse_util
 
 
 class AllowMissingSubcommandTest(tb_test.TestCase):
+    def test_allows_missing_subcommands(self):
+        parser = argparse.ArgumentParser()
+        subparsers = parser.add_subparsers()
+        subparser = subparsers.add_parser("magic")
+        subparser.set_defaults(chosen="magic")
+        with argparse_util.allow_missing_subcommand():
+            args = parser.parse_args([])
+        self.assertEqual(args, argparse.Namespace())
 
-  def test_allows_missing_subcommands(self):
-    parser = argparse.ArgumentParser()
-    subparsers = parser.add_subparsers()
-    subparser = subparsers.add_parser("magic")
-    subparser.set_defaults(chosen="magic")
-    with argparse_util.allow_missing_subcommand():
-      args = parser.parse_args([])
-    self.assertEqual(args, argparse.Namespace())
+    def test_allows_provided_subcommands(self):
+        parser = argparse.ArgumentParser()
+        subparsers = parser.add_subparsers()
+        subparser = subparsers.add_parser("magic")
+        subparser.set_defaults(chosen="magic")
+        with argparse_util.allow_missing_subcommand():
+            args = parser.parse_args(["magic"])
+        self.assertEqual(args, argparse.Namespace(chosen="magic"))
 
-  def test_allows_provided_subcommands(self):
-    parser = argparse.ArgumentParser()
-    subparsers = parser.add_subparsers()
-    subparser = subparsers.add_parser("magic")
-    subparser.set_defaults(chosen="magic")
-    with argparse_util.allow_missing_subcommand():
-      args = parser.parse_args(["magic"])
-    self.assertEqual(args, argparse.Namespace(chosen="magic"))
-
-  def test_still_complains_on_missing_arguments(self):
-    parser = argparse.ArgumentParser()
-    parser.add_argument("please_provide_me")
-    with argparse_util.allow_missing_subcommand():
-      with self.assertRaises(SystemExit):
-        parser.parse_args([])
+    def test_still_complains_on_missing_arguments(self):
+        parser = argparse.ArgumentParser()
+        parser.add_argument("please_provide_me")
+        with argparse_util.allow_missing_subcommand():
+            with self.assertRaises(SystemExit):
+                parser.parse_args([])
 
 
 if __name__ == "__main__":
-  tb_test.main()
+    tb_test.main()

@@ -128,6 +128,7 @@ limitations under the License.
             </template>
           </template>
           <div class="global-actions">
+            <slot name="injected-header-items"></slot>
             <paper-icon-button
               id="reload-button"
               class$="[[_getDataRefreshingClass(_refreshing)]]"
@@ -154,7 +155,7 @@ limitations under the License.
       </paper-toolbar>
 
       <div id="content-pane" class="fit">
-        <slot id="injected-overview"></slot>
+        <slot name="injected-overview"></slot>
         <div id="content">
           <template is="dom-if" if="[[_activeDashboardsFailedToLoad]]">
             <div class="warning-message">
@@ -256,6 +257,7 @@ limitations under the License.
             id="dashboards-template"
             items="[[_dashboardData]]"
             as="dashboardDatum"
+            on-dom-change="_onTemplateChanged"
           >
             <div
               class="dashboard-container"
@@ -348,6 +350,7 @@ limitations under the License.
       .global-actions {
         display: inline-flex; /* Ensure that icons stay aligned */
         justify-content: flex-end;
+        align-items: center;
         text-align: right;
         color: white;
       }
@@ -744,7 +747,9 @@ limitations under the License.
         const pluginString = selectedDashboard || '';
         tf_storage.setString(tf_storage.TAB, pluginString);
         // Record this dashboard selection as a page view.
-        ga('set', 'page', '/' + pluginString);
+        let pathname = window.location.pathname;
+        pathname += pathname.endsWith('/') ? pluginString : '/' + pluginString;
+        ga('set', 'page', pathname);
         ga('send', 'pageview');
       },
 
@@ -902,25 +907,6 @@ limitations under the License.
           }
         });
 
-        // We have to wait for our dashboard-containers to be stamped
-        // before we can do anything.
-        const dashboardsTemplate = this.$$('#dashboards-template');
-        const onDomChange = () => {
-          // This will trigger an observer that kicks off everything.
-          const dashboardContainersStamped = {};
-          for (const container of this.root.querySelectorAll(
-            '.dashboard-container'
-          )) {
-            dashboardContainersStamped[container.dataset.dashboard] = true;
-          }
-          this._dashboardContainersStamped = dashboardContainersStamped;
-        };
-        dashboardsTemplate.addEventListener(
-          'dom-change',
-          onDomChange,
-          /*useCapture=*/ false
-        );
-
         this._reloadData();
         this._lastReloadTime = new Date().toString();
       },
@@ -941,6 +927,17 @@ limitations under the License.
             if (typeof maybeMetadata === 'boolean') return maybeMetadata;
             return maybeMetadata && maybeMetadata.enabled;
           });
+      },
+
+      _onTemplateChanged() {
+        // This will trigger an observer that kicks off everything.
+        const dashboardContainersStamped = {};
+        for (const container of this.root.querySelectorAll(
+          '.dashboard-container'
+        )) {
+          dashboardContainersStamped[container.dataset.dashboard] = true;
+        }
+        this._dashboardContainersStamped = dashboardContainersStamped;
       },
 
       /**

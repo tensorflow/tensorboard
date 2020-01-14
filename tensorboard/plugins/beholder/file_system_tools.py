@@ -27,42 +27,42 @@ import tensorflow as tf
 logger = tb_logging.get_logger()
 
 
-def write_file(contents, path, mode='wb'):
-  with tf.io.gfile.GFile(path, mode) as new_file:
-    new_file.write(contents)
+def write_file(contents, path, mode="wb"):
+    with tf.io.gfile.GFile(path, mode) as new_file:
+        new_file.write(contents)
 
 
 def read_tensor_summary(path):
-  with tf.io.gfile.GFile(path, 'rb') as summary_file:
-    summary_string = summary_file.read()
+    with tf.io.gfile.GFile(path, "rb") as summary_file:
+        summary_string = summary_file.read()
 
-  if not summary_string:
-    raise message.DecodeError('Empty summary.')
+    if not summary_string:
+        raise message.DecodeError("Empty summary.")
 
-  summary_proto = summary_pb2.Summary()
-  summary_proto.ParseFromString(summary_string)
-  tensor_proto = summary_proto.value[0].tensor
-  array = tensor_util.make_ndarray(tensor_proto)
+    summary_proto = summary_pb2.Summary()
+    summary_proto.ParseFromString(summary_string)
+    tensor_proto = summary_proto.value[0].tensor
+    array = tensor_util.make_ndarray(tensor_proto)
 
-  return array
+    return array
 
 
 def write_pickle(obj, path):
-  with tf.io.gfile.GFile(path, 'wb') as new_file:
-    pickle.dump(obj, new_file)
+    with tf.io.gfile.GFile(path, "wb") as new_file:
+        pickle.dump(obj, new_file)
 
 
 def read_pickle(path, default=None):
-  try:
-    with tf.io.gfile.GFile(path, 'rb') as pickle_file:
-      result = pickle.load(pickle_file)
+    try:
+        with tf.io.gfile.GFile(path, "rb") as pickle_file:
+            result = pickle.load(pickle_file)
 
-  except (IOError, EOFError, ValueError, tf.errors.NotFoundError) as e:
-    if not isinstance(e, tf.errors.NotFoundError):
-      logger.error('Error reading pickle value: %s', e)
-    if default is not None:
-      result = default
-    else:
-      raise
+    except (IOError, EOFError, ValueError, tf.errors.NotFoundError) as e:
+        if not isinstance(e, tf.errors.NotFoundError):
+            logger.error("Error reading pickle value: %s", e)
+        if default is not None:
+            result = default
+        else:
+            raise
 
-  return result
+    return result

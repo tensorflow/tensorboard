@@ -202,6 +202,7 @@ py_library(
         "//tensorboard/plugins/core:core_plugin",
         "//tensorboard/plugins/custom_scalar:custom_scalars_plugin",
         "//tensorboard/plugins/debugger:debugger_plugin_loader",
+        "//tensorboard/plugins/debugger_v2:debugger_v2_plugin",
         "//tensorboard/plugins/distribution:distributions_plugin",
         "//tensorboard/plugins/graph:graphs_plugin",
         "//tensorboard/plugins/histogram:histograms_plugin",
@@ -245,6 +246,19 @@ py_library(
     visibility = ["//visibility:public"],
 )
 
+py_test(
+    name = "version_test",
+    size = "small",
+    srcs = ["version_test.py"],
+    srcs_version = "PY2AND3",
+    tags = ["support_notf"],
+    deps = [
+        ":test",
+        ":version",
+        "//tensorboard:expect_pkg_resources_installed",
+    ],
+)
+
 config_setting(
     name = "dev_build",
     # consider changing this to fastbuild
@@ -261,33 +275,21 @@ tf_web_library(
     name = "assets",
     srcs = [
         "//tensorboard/components:index.html",
+        "//tensorboard/components:index.js",
         "//tensorboard/components:trace_viewer_index.html",
+        "//tensorboard/components:trace_viewer_index.js",
     ] + select({
         "//tensorboard:dev_build": [
-            "//tensorboard/components:ng_index",
-            "//tensorboard/components/tf_ng_tensorboard:svg_bundle",
+            "//tensorboard/webapp:ng_index.html",
+            "//tensorboard/webapp:ng_index.js",
+            "//tensorboard/webapp:svg_bundle",
         ],
         "//conditions:default": [],
     }),
     path = "/",
     deps = [
-        ":html_assets_shasums",
         "@com_google_fonts_roboto",
     ],
-)
-
-tf_web_library(
-    name = "html_assets_shasums",
-    srcs = [
-        "//tensorboard/components:index.html.scripts_sha256",
-        "//tensorboard/components:trace_viewer_index.html.scripts_sha256",
-    ] + select({
-        "//tensorboard:dev_build": [
-            "//tensorboard/components:ng_index.html.scripts_sha256",
-        ],
-        "//conditions:default": [],
-    }),
-    path = "/_shasums",
 )
 
 py_library(
@@ -399,6 +401,14 @@ py_library(
     # This is a dummy rule used as a pkg-resources dependency in open-source.
     # We expect pkg-resources to already be installed on the system, e.g., via
     # `pip install setuptools`.
+    visibility = ["//visibility:public"],
+)
+
+py_library(
+    name = "expect_requests_installed",
+    # This is a dummy rule used as a requests dependency in open-source.
+    # We expect requests to already be installed on the system, e.g., via
+    # `pip install requests`.
     visibility = ["//visibility:public"],
 )
 

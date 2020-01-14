@@ -14,7 +14,10 @@ py_web_test_suite(
     # TODO(@jart): Make this fast and not flaky.
     flaky = True,
     srcs_version = "PY2AND3",
-    tags = ["manual"],
+    tags = [
+        "manual",
+        "webtest",
+    ],
     deps = [
         "//tensorboard/plugins/audio:audio_demo",
         "//tensorboard/plugins/scalar:scalars_demo",
@@ -24,8 +27,8 @@ py_web_test_suite(
 
 py_library(
     name = "wct_test_driver",
+    testonly = True,
     srcs = ["wct_test_driver.py"],
     srcs_version = "PY2AND3",
     deps = ["@io_bazel_rules_webtesting//testing/web"],
-    testonly = True,
 )

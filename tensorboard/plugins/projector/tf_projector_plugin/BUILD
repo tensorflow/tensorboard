@@ -10,7 +10,7 @@ tf_web_library(
     srcs = [
         # Keep this in sync with pip_package/setup.py
         ":projector_binary.html",
-        ":projector_binary.html.scripts_sha256",
+        ":projector_binary.js",
         "index.js",
     ],
     path = "/tf-projector",
@@ -20,6 +20,7 @@ tensorboard_html_binary(
     name = "projector_binary",
     compile = True,
     input_path = "/tf-projector/tf-projector-plugin.html",
+    js_path = "/projector_binary.js",
     output_path = "/tf-projector/projector_binary.html",
     deps = [
         ":tf_projector_plugin",

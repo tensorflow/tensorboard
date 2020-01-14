@@ -1,7 +1,6 @@
-dist: trusty
+dist: xenial
 language: python
 python:
-  - "2.7"
   - "3.6"
 
 branches:
@@ -20,7 +19,7 @@ env:
     - BAZEL_SHA256SUM=6c50e142a0a405d3d8598050d6c1b3920c8cdb82a7ffca6fc067cb474275148f
   matrix:
     - TF_VERSION_ID=tensorflow==1.15.0rc3
-    - TF_VERSION_ID=tf-nightly==2.1.0.dev20191023
+    - TF_VERSION_ID=tf-nightly
     - TF_VERSION_ID=  # Do not install TensorFlow in this case
 
 cache:
@@ -46,58 +45,31 @@ before_install:
 
 install:
   - elapsed "install"
+  - "PY3=\"$(python -c 'if __import__(\"sys\").version_info[0] > 2: print(1)')\""
   # Older versions of Pip sometimes resolve specifiers like `tf-nightly`
   # to versions other than the most recent(!).
   - pip install -U pip
-  # Lint check deps.
-  - pip install flake8==3.7.8
-  - pip install yamllint==1.17.0
-  # TensorBoard deps.
-  - pip install futures==3.1.1
-  - pip install grpcio==1.24.3
-  - pip install grpcio-testing==1.24.3
-  - pip install 'google-auth >= 1.6.3, < 2'
-  - pip install 'google-auth-oauthlib >= 0.4.1, < 0.5'
-  - yarn install --ignore-engines
   # Uninstall older Travis numpy to avoid upgrade-in-place issues.
   - pip uninstall -y numpy
+  - |
+    pip install \
+      -r tensorboard/pip_package/requirements.txt \
+      -r tensorboard/pip_package/requirements_dev.txt \
+      ;
+  - yarn install --ignore-engines
   - |
     # Install TensorFlow if requested
     if [ -n "${TF_VERSION_ID}" ]; then
       pip install -I "${TF_VERSION_ID}"
-    else
-      # Requirements typically found through TensorFlow.
-      pip install "absl-py>=0.7.0" \
-      && pip install "numpy<2.0,>=1.14.5"
     fi
-  # Deps for gfile S3 test.
-  - pip install boto3==1.9.86
-  - pip install moto==1.3.7
   # Workaround for https://github.com/travis-ci/travis-ci/issues/7940
   - sudo rm -f /etc/boto.cfg
   - pip freeze  # print installed distributions, for debugging purposes
   - elapsed "install (done)"
 
 before_script:
+  # Note: Lint checks happen on GitHub Actions; see .github/workflows/ci.yml.
   - elapsed "before_script"
-  # Do a fail-fast check for Python syntax errors or undefined names.
-  # See: http://flake8.pycqa.org/en/3.7.8/user/error-codes.html
-  # Use the comment '# noqa: <error code>' to suppress.
-  - flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-  # Lint frontend code
-  - yarn lint
-  # Lint .yaml docs files. Use '# yamllint disable-line rule:foo' to suppress.
-  - yamllint -c docs/.yamllint docs docs/.yamllint
-  # Make sure that IPython notebooks have valid Markdown.
-  - tensorboard/tools/docs_list_format_test.sh
-  # Make sure we aren't accidentally including work-in-progress code.
-  - tensorboard/tools/do_not_submit_test.sh
-  # Make sure all necessary files have the license information.
-  - tensorboard/tools/license_test.sh
-  # Make sure that build URLs are valid.
-  - tensorboard/tools/mirror_urls_test.sh
-  # Make sure that files have no trailing whitespace.
-  - tensorboard/tools/whitespace_hygiene_test.py
   - |
     # Specify subset of tests to run depending on TF installation config.
     # We condition the value of --test_tag_filters so that we can run the

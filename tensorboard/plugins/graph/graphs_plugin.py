@@ -22,11 +22,15 @@ import json
 import six
 from werkzeug import wrappers
 
+from tensorboard import plugin_util
 from tensorboard.backend import http_util
 from tensorboard.backend import process_graph
-from tensorboard.backend.event_processing import plugin_event_accumulator as event_accumulator  # pylint: disable=line-too-long
+from tensorboard.backend.event_processing import (
+    plugin_event_accumulator as event_accumulator,
+)
 from tensorboard.compat.proto import config_pb2
 from tensorboard.compat.proto import graph_pb2
+from tensorboard.data import provider
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.graph import graph_util
 from tensorboard.plugins.graph import keras_util
@@ -39,214 +43,316 @@ logger = tb_logging.get_logger()
 # As a result, this SummaryMetadata is a bit unconventional and uses non-public
 # hardcoded name as the plugin name. Please refer to link below for the summary ops.
 # https://github.com/tensorflow/tensorflow/blob/11f4ecb54708865ec757ca64e4805957b05d7570/tensorflow/python/ops/summary_ops_v2.py#L757
-_PLUGIN_NAME_RUN_METADATA = 'graph_run_metadata'
+_PLUGIN_NAME_RUN_METADATA = "graph_run_metadata"
 # https://github.com/tensorflow/tensorflow/blob/11f4ecb54708865ec757ca64e4805957b05d7570/tensorflow/python/ops/summary_ops_v2.py#L788
-_PLUGIN_NAME_RUN_METADATA_WITH_GRAPH = 'graph_run_metadata_graph'
+_PLUGIN_NAME_RUN_METADATA_WITH_GRAPH = "graph_run_metadata_graph"
 # https://github.com/tensorflow/tensorflow/blob/565952cc2f17fdfd995e25171cf07be0f6f06180/tensorflow/python/ops/summary_ops_v2.py#L825
-_PLUGIN_NAME_KERAS_MODEL = 'graph_keras_model'
+_PLUGIN_NAME_KERAS_MODEL = "graph_keras_model"
 
 
 class GraphsPlugin(base_plugin.TBPlugin):
-  """Graphs Plugin for TensorBoard."""
+    """Graphs Plugin for TensorBoard."""
 
-  plugin_name = metadata.PLUGIN_NAME
+    plugin_name = metadata.PLUGIN_NAME
 
-  def __init__(self, context):
-    """Instantiates GraphsPlugin via TensorBoard core.
+    def __init__(self, context):
+        """Instantiates GraphsPlugin via TensorBoard core.
 
-    Args:
-      context: A base_plugin.TBContext instance.
-    """
-    self._multiplexer = context.multiplexer
+        Args:
+          context: A base_plugin.TBContext instance.
+        """
+        self._multiplexer = context.multiplexer
+        if context.flags and context.flags.generic_data == "true":
+            self._data_provider = context.data_provider
+        else:
+            self._data_provider = None
 
-  def get_plugin_apps(self):
-    return {
-        '/graph': self.graph_route,
-        '/info': self.info_route,
-        '/run_metadata': self.run_metadata_route,
-    }
+    def get_plugin_apps(self):
+        return {
+            "/graph": self.graph_route,
+            "/info": self.info_route,
+            "/run_metadata": self.run_metadata_route,
+        }
 
-  def is_active(self):
-    """The graphs plugin is active iff any run has a graph."""
-    return bool(self._multiplexer and self.info_impl())
+    def is_active(self):
+        """The graphs plugin is active iff any run has a graph or metadata."""
+        if self._data_provider:
+            return False  # `list_plugins` as called by TB core suffices
 
-  def frontend_metadata(self):
-    return base_plugin.FrontendMetadata(
-        element_name='tf-graph-dashboard',
-        # TODO(@chihuahua): Reconcile this setting with Health Pills.
-        disable_reload=True,
-    )
+        return bool(self.info_impl())
 
-  def info_impl(self):
-    """Returns a dict of all runs and tags and their data availabilities."""
-    result = {}
-    def add_row_item(run, tag=None):
-      run_item = result.setdefault(run, {
-          'run': run,
-          'tags': {},
-          # A run-wide GraphDef of ops.
-          'run_graph': False})
+    def frontend_metadata(self):
+        return base_plugin.FrontendMetadata(
+            element_name="tf-graph-dashboard",
+            # TODO(@chihuahua): Reconcile this setting with Health Pills.
+            disable_reload=True,
+        )
 
-      tag_item = None
-      if tag:
-        tag_item = run_item.get('tags').setdefault(tag, {
-            'tag': tag,
-            'conceptual_graph': False,
-            # A tagged GraphDef of ops.
-            'op_graph': False,
-            'profile': False})
-      return (run_item, tag_item)
+    def info_impl(self, experiment=None):
+        """Returns a dict of all runs and their data availabilities."""
+        result = {}
 
-    mapping = self._multiplexer.PluginRunToTagToContent(
-        _PLUGIN_NAME_RUN_METADATA_WITH_GRAPH)
-    for run_name, tag_to_content in six.iteritems(mapping):
-      for (tag, content) in six.iteritems(tag_to_content):
-        # The Summary op is defined in TensorFlow and does not use a stringified proto
-        # as a content of plugin data. It contains single string that denotes a version.
-        # https://github.com/tensorflow/tensorflow/blob/11f4ecb54708865ec757ca64e4805957b05d7570/tensorflow/python/ops/summary_ops_v2.py#L789-L790
-        if content != b'1':
-          logger.warn('Ignoring unrecognizable version of RunMetadata.')
-          continue
-        (_, tag_item) = add_row_item(run_name, tag)
-        tag_item['op_graph'] = True
+        def add_row_item(run, tag=None):
+            run_item = result.setdefault(
+                run,
+                {
+                    "run": run,
+                    "tags": {},
+                    # A run-wide GraphDef of ops.
+                    "run_graph": False,
+                },
+            )
 
-    # Tensors associated with plugin name _PLUGIN_NAME_RUN_METADATA contain
-    # both op graph and profile information.
-    mapping = self._multiplexer.PluginRunToTagToContent(
-        _PLUGIN_NAME_RUN_METADATA)
-    for run_name, tag_to_content in six.iteritems(mapping):
-      for (tag, content) in six.iteritems(tag_to_content):
-        if content != b'1':
-          logger.warn('Ignoring unrecognizable version of RunMetadata.')
-          continue
-        (_, tag_item) = add_row_item(run_name, tag)
-        tag_item['profile'] = True
-        tag_item['op_graph'] = True
+            tag_item = None
+            if tag:
+                tag_item = run_item.get("tags").setdefault(
+                    tag,
+                    {
+                        "tag": tag,
+                        "conceptual_graph": False,
+                        # A tagged GraphDef of ops.
+                        "op_graph": False,
+                        "profile": False,
+                    },
+                )
+            return (run_item, tag_item)
 
-    # Tensors associated with plugin name _PLUGIN_NAME_KERAS_MODEL contain
-    # serialized Keras model in JSON format.
-    mapping = self._multiplexer.PluginRunToTagToContent(
-        _PLUGIN_NAME_KERAS_MODEL)
-    for run_name, tag_to_content in six.iteritems(mapping):
-      for (tag, content) in six.iteritems(tag_to_content):
-        if content != b'1':
-          logger.warn('Ignoring unrecognizable version of RunMetadata.')
-          continue
-        (_, tag_item) = add_row_item(run_name, tag)
-        tag_item['conceptual_graph'] = True
+        if self._data_provider:
+            mapping = self._data_provider.list_blob_sequences(
+                experiment_id=experiment, plugin_name=metadata.PLUGIN_NAME,
+            )
+            for (run_name, tag_to_time_series) in six.iteritems(mapping):
+                for tag in tag_to_time_series:
+                    if tag == metadata.RUN_GRAPH_NAME:
+                        (run_item, _) = add_row_item(run_name, None)
+                        run_item["run_graph"] = True
+                    else:
+                        (_, tag_item) = add_row_item(run_name, tag)
+                        tag_item["op_graph"] = True
+            return result
 
-    for (run_name, run_data) in six.iteritems(self._multiplexer.Runs()):
-      if run_data.get(event_accumulator.GRAPH):
-        (run_item, _) = add_row_item(run_name, None)
-        run_item['run_graph'] = True
+        mapping = self._multiplexer.PluginRunToTagToContent(
+            _PLUGIN_NAME_RUN_METADATA_WITH_GRAPH
+        )
+        for run_name, tag_to_content in six.iteritems(mapping):
+            for (tag, content) in six.iteritems(tag_to_content):
+                # The Summary op is defined in TensorFlow and does not use a stringified proto
+                # as a content of plugin data. It contains single string that denotes a version.
+                # https://github.com/tensorflow/tensorflow/blob/11f4ecb54708865ec757ca64e4805957b05d7570/tensorflow/python/ops/summary_ops_v2.py#L789-L790
+                if content != b"1":
+                    logger.warn(
+                        "Ignoring unrecognizable version of RunMetadata."
+                    )
+                    continue
+                (_, tag_item) = add_row_item(run_name, tag)
+                tag_item["op_graph"] = True
 
-    for (run_name, run_data) in six.iteritems(self._multiplexer.Runs()):
-      if event_accumulator.RUN_METADATA in run_data:
-        for tag in run_data[event_accumulator.RUN_METADATA]:
-          (_, tag_item) = add_row_item(run_name, tag)
-          tag_item['profile'] = True
+        # Tensors associated with plugin name _PLUGIN_NAME_RUN_METADATA contain
+        # both op graph and profile information.
+        mapping = self._multiplexer.PluginRunToTagToContent(
+            _PLUGIN_NAME_RUN_METADATA
+        )
+        for run_name, tag_to_content in six.iteritems(mapping):
+            for (tag, content) in six.iteritems(tag_to_content):
+                if content != b"1":
+                    logger.warn(
+                        "Ignoring unrecognizable version of RunMetadata."
+                    )
+                    continue
+                (_, tag_item) = add_row_item(run_name, tag)
+                tag_item["profile"] = True
+                tag_item["op_graph"] = True
 
-    return result
+        # Tensors associated with plugin name _PLUGIN_NAME_KERAS_MODEL contain
+        # serialized Keras model in JSON format.
+        mapping = self._multiplexer.PluginRunToTagToContent(
+            _PLUGIN_NAME_KERAS_MODEL
+        )
+        for run_name, tag_to_content in six.iteritems(mapping):
+            for (tag, content) in six.iteritems(tag_to_content):
+                if content != b"1":
+                    logger.warn(
+                        "Ignoring unrecognizable version of RunMetadata."
+                    )
+                    continue
+                (_, tag_item) = add_row_item(run_name, tag)
+                tag_item["conceptual_graph"] = True
 
-  def graph_impl(self, run, tag, is_conceptual, limit_attr_size=None, large_attrs_key=None):
-    """Result of the form `(body, mime_type)`, or `None` if no graph exists."""
-    if is_conceptual:
-      tensor_events = self._multiplexer.Tensors(run, tag)
-      # Take the first event if there are multiple events written from different
-      # steps.
-      keras_model_config = json.loads(tensor_events[0].tensor_proto.string_val[0])
-      graph = keras_util.keras_model_to_graph_def(keras_model_config)
-    elif tag:
-      tensor_events = self._multiplexer.Tensors(run, tag)
-      # Take the first event if there are multiple events written from different
-      # steps.
-      run_metadata = config_pb2.RunMetadata.FromString(
-          tensor_events[0].tensor_proto.string_val[0])
-      graph = graph_pb2.GraphDef()
+        for (run_name, run_data) in six.iteritems(self._multiplexer.Runs()):
+            if run_data.get(event_accumulator.GRAPH):
+                (run_item, _) = add_row_item(run_name, None)
+                run_item["run_graph"] = True
 
-      for func_graph in run_metadata.function_graphs:
-        graph_util.combine_graph_defs(graph, func_graph.pre_optimization_graph)
-    else:
-      graph = self._multiplexer.Graph(run)
+        for (run_name, run_data) in six.iteritems(self._multiplexer.Runs()):
+            if event_accumulator.RUN_METADATA in run_data:
+                for tag in run_data[event_accumulator.RUN_METADATA]:
+                    (_, tag_item) = add_row_item(run_name, tag)
+                    tag_item["profile"] = True
 
-    # This next line might raise a ValueError if the limit parameters
-    # are invalid (size is negative, size present but key absent, etc.).
-    process_graph.prepare_graph_for_ui(graph, limit_attr_size, large_attrs_key)
-    return (str(graph), 'text/x-protobuf')  # pbtxt
+        return result
 
-  def run_metadata_impl(self, run, tag):
-    """Result of the form `(body, mime_type)`, or `None` if no data exists."""
-    try:
-      run_metadata = self._multiplexer.RunMetadata(run, tag)
-    except ValueError:
-      # TODO(stephanwlee): Should include whether FE is fetching for v1 or v2 RunMetadata
-      # so we can remove this try/except.
-      tensor_events = self._multiplexer.Tensors(run, tag)
-      if tensor_events is None:
-        return None
-      # Take the first event if there are multiple events written from different
-      # steps.
-      run_metadata = config_pb2.RunMetadata.FromString(
-          tensor_events[0].tensor_proto.string_val[0])
-    if run_metadata is None:
-      return None
-    return (str(run_metadata), 'text/x-protobuf')  # pbtxt
+    def graph_impl(
+        self,
+        run,
+        tag,
+        is_conceptual,
+        experiment=None,
+        limit_attr_size=None,
+        large_attrs_key=None,
+    ):
+        """Result of the form `(body, mime_type)`, or `None` if no graph
+        exists."""
+        if self._data_provider:
+            if tag is None:
+                tag = metadata.RUN_GRAPH_NAME
+            graph_blob_sequences = self._data_provider.read_blob_sequences(
+                experiment_id=experiment,
+                plugin_name=metadata.PLUGIN_NAME,
+                run_tag_filter=provider.RunTagFilter(runs=[run], tags=[tag]),
+            )
+            blob_datum_list = graph_blob_sequences.get(run, {}).get(tag, ())
+            try:
+                blob_ref = blob_datum_list[0].values[0]
+            except IndexError:
+                return None
+            # Always use the blob_key approach for now, even if there is a direct url.
+            graph_raw = self._data_provider.read_blob(blob_ref.blob_key)
+            # This method ultimately returns pbtxt, but we have to deserialize and
+            # later reserialize this anyway, because a) this way we accept binary
+            # protobufs too, and b) below we run `prepare_graph_for_ui` on the graph.
+            graph = graph_pb2.GraphDef.FromString(graph_raw)
 
-  @wrappers.Request.application
-  def info_route(self, request):
-    info = self.info_impl()
-    return http_util.Respond(request, info, 'application/json')
+        elif is_conceptual:
+            tensor_events = self._multiplexer.Tensors(run, tag)
+            # Take the first event if there are multiple events written from different
+            # steps.
+            keras_model_config = json.loads(
+                tensor_events[0].tensor_proto.string_val[0]
+            )
+            graph = keras_util.keras_model_to_graph_def(keras_model_config)
 
-  @wrappers.Request.application
-  def graph_route(self, request):
-    """Given a single run, return the graph definition in protobuf format."""
-    run = request.args.get('run')
-    tag = request.args.get('tag', '')
-    conceptual_arg = request.args.get('conceptual', False)
-    is_conceptual = True if conceptual_arg == 'true' else False
+        elif tag:
+            tensor_events = self._multiplexer.Tensors(run, tag)
+            # Take the first event if there are multiple events written from different
+            # steps.
+            run_metadata = config_pb2.RunMetadata.FromString(
+                tensor_events[0].tensor_proto.string_val[0]
+            )
+            graph = graph_pb2.GraphDef()
 
-    if run is None:
-      return http_util.Respond(
-          request, 'query parameter "run" is required', 'text/plain', 400)
+            for func_graph in run_metadata.function_graphs:
+                graph_util.combine_graph_defs(
+                    graph, func_graph.pre_optimization_graph
+                )
+        else:
+            graph = self._multiplexer.Graph(run)
 
-    limit_attr_size = request.args.get('limit_attr_size', None)
-    if limit_attr_size is not None:
-      try:
-        limit_attr_size = int(limit_attr_size)
-      except ValueError:
-        return http_util.Respond(
-            request, 'query parameter `limit_attr_size` must be an integer',
-            'text/plain', 400)
+        # This next line might raise a ValueError if the limit parameters
+        # are invalid (size is negative, size present but key absent, etc.).
+        process_graph.prepare_graph_for_ui(
+            graph, limit_attr_size, large_attrs_key
+        )
+        return (str(graph), "text/x-protobuf")  # pbtxt
 
-    large_attrs_key = request.args.get('large_attrs_key', None)
+    def run_metadata_impl(self, run, tag):
+        """Result of the form `(body, mime_type)`, or `None` if no data
+        exists."""
+        if self._data_provider:
+            # TODO(davidsoergel, wchargin): Consider plumbing run metadata through data providers.
+            return None
+        try:
+            run_metadata = self._multiplexer.RunMetadata(run, tag)
+        except ValueError:
+            # TODO(stephanwlee): Should include whether FE is fetching for v1 or v2 RunMetadata
+            # so we can remove this try/except.
+            tensor_events = self._multiplexer.Tensors(run, tag)
+            if tensor_events is None:
+                return None
+            # Take the first event if there are multiple events written from different
+            # steps.
+            run_metadata = config_pb2.RunMetadata.FromString(
+                tensor_events[0].tensor_proto.string_val[0]
+            )
+        if run_metadata is None:
+            return None
+        return (str(run_metadata), "text/x-protobuf")  # pbtxt
 
-    try:
-      result = self.graph_impl(run, tag, is_conceptual, limit_attr_size, large_attrs_key)
-    except ValueError as e:
-      return http_util.Respond(request, e.message, 'text/plain', code=400)
-    else:
-      if result is not None:
-        (body, mime_type) = result  # pylint: disable=unpacking-non-sequence
-        return http_util.Respond(request, body, mime_type)
-      else:
-        return http_util.Respond(request, '404 Not Found', 'text/plain',
-                                 code=404)
+    @wrappers.Request.application
+    def info_route(self, request):
+        experiment = plugin_util.experiment_id(request.environ)
+        info = self.info_impl(experiment)
+        return http_util.Respond(request, info, "application/json")
 
-  @wrappers.Request.application
-  def run_metadata_route(self, request):
-    """Given a tag and a run, return the session.run() metadata."""
-    tag = request.args.get('tag')
-    run = request.args.get('run')
-    if tag is None:
-      return http_util.Respond(
-          request, 'query parameter "tag" is required', 'text/plain', 400)
-    if run is None:
-      return http_util.Respond(
-          request, 'query parameter "run" is required', 'text/plain', 400)
-    result = self.run_metadata_impl(run, tag)
-    if result is not None:
-      (body, mime_type) = result  # pylint: disable=unpacking-non-sequence
-      return http_util.Respond(request, body, mime_type)
-    else:
-      return http_util.Respond(request, '404 Not Found', 'text/plain',
-                               code=404)
+    @wrappers.Request.application
+    def graph_route(self, request):
+        """Given a single run, return the graph definition in protobuf
+        format."""
+        experiment = plugin_util.experiment_id(request.environ)
+        run = request.args.get("run")
+        tag = request.args.get("tag")
+        conceptual_arg = request.args.get("conceptual", False)
+        is_conceptual = True if conceptual_arg == "true" else False
+
+        if run is None:
+            return http_util.Respond(
+                request, 'query parameter "run" is required', "text/plain", 400
+            )
+
+        limit_attr_size = request.args.get("limit_attr_size", None)
+        if limit_attr_size is not None:
+            try:
+                limit_attr_size = int(limit_attr_size)
+            except ValueError:
+                return http_util.Respond(
+                    request,
+                    "query parameter `limit_attr_size` must be an integer",
+                    "text/plain",
+                    400,
+                )
+
+        large_attrs_key = request.args.get("large_attrs_key", None)
+
+        try:
+            result = self.graph_impl(
+                run,
+                tag,
+                is_conceptual,
+                experiment,
+                limit_attr_size,
+                large_attrs_key,
+            )
+        except ValueError as e:
+            return http_util.Respond(request, e.message, "text/plain", code=400)
+        else:
+            if result is not None:
+                (
+                    body,
+                    mime_type,
+                ) = result  # pylint: disable=unpacking-non-sequence
+                return http_util.Respond(request, body, mime_type)
+            else:
+                return http_util.Respond(
+                    request, "404 Not Found", "text/plain", code=404
+                )
+
+    @wrappers.Request.application
+    def run_metadata_route(self, request):
+        """Given a tag and a run, return the session.run() metadata."""
+        tag = request.args.get("tag")
+        run = request.args.get("run")
+        if tag is None:
+            return http_util.Respond(
+                request, 'query parameter "tag" is required', "text/plain", 400
+            )
+        if run is None:
+            return http_util.Respond(
+                request, 'query parameter "run" is required', "text/plain", 400
+            )
+        result = self.run_metadata_impl(run, tag)
+        if result is not None:
+            (body, mime_type) = result  # pylint: disable=unpacking-non-sequence
+            return http_util.Respond(request, body, mime_type)
+        else:
+            return http_util.Respond(
+                request, "404 Not Found", "text/plain", code=404
+            )

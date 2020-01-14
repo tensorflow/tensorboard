@@ -1,0 +1,93 @@
+# GitHub Actions CI definition for TensorBoard.
+#
+# YAML schema for GitHub Actions:
+# https://help.github.com/en/actions/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions
+#
+# Helpful YAML parser to clarify YAML syntax:
+# https://yaml-online-parser.appspot.com/
+
+# For now, we only use GitHub Actions for lint checks, pending better
+# support for hermetic-style caching. See:
+# https://github.com/actions/cache/issues/109
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+      - '[0-9]+.*'
+      - 'ci-*'
+  pull_request: {}
+
+env:
+  BUILDIFIER: '0.29.0'
+  BUILDIFIER_SHA256SUM: '4c985c883eafdde9c0e8cf3c8595b8bfdf32e77571c369bf8ddae83b042028d6'
+
+jobs:
+  lint-python:
+    runs-on: ubuntu-16.04
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-python@v1
+        with:
+          python-version: '3.6'
+          architecture: 'x64'
+      - name: 'Install black and flake8'
+        run: |
+          python -m pip install -U pip
+          pip install -r ./tensorboard/pip_package/requirements_dev.txt
+      - run: pip freeze --all
+      - name: 'Lint Python code for errors with flake8'
+        # See: http://flake8.pycqa.org/en/3.7.8/user/error-codes.html
+        # Use the comment '# noqa: <error code>' to suppress.
+        run: flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+      - name: 'Lint Python code for style with Black'
+        # You can run `black .` to fix all Black complaints.
+        run: black --check .
+
+  lint-docs:
+    runs-on: ubuntu-16.04
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-python@v1
+        with:
+          python-version: '3.6'
+          architecture: 'x64'
+      - name: 'Install yamllint'
+        run: |
+          python -m pip install -U pip
+          pip install -r ./tensorboard/pip_package/requirements_dev.txt
+      - run: pip freeze --all
+      - name: 'Lint YAML for gotchas with yamllint'
+        # Use '# yamllint disable-line rule:foo' to suppress.
+        run: yamllint -c docs/.yamllint docs docs/.yamllint
+      - run: ./tensorboard/tools/docs_list_format_test.sh
+
+  lint-frontend:
+    runs-on: ubuntu-16.04
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
+      - run: yarn install --ignore-engines
+        # You can run `yarn fix-lint` to fix all Prettier complaints.
+      - run: yarn lint
+
+  lint-build:
+    runs-on: ubuntu-16.04
+    steps:
+      - uses: actions/checkout@v1
+      - name: 'Set up Buildifier'
+        run: |
+          ci/download_buildifier.sh "${BUILDIFIER}" "${BUILDIFIER_SHA256SUM}" ~/buildifier
+          sudo mv ~/buildifier /usr/local/bin/buildifier
+      - name: 'Lint BUILD files'
+        run: git ls-files -z '*BUILD' | xargs -0 buildifier --mode=check
+      - run: ./tensorboard/tools/mirror_urls_test.sh
+
+  check-misc:
+    runs-on: ubuntu-16.04
+    steps:
+      - uses: actions/checkout@v1
+      - run: ./tensorboard/tools/do_not_submit_test.sh
+      - run: ./tensorboard/tools/license_test.sh
+      - run: ./tensorboard/tools/whitespace_hygiene_test.py

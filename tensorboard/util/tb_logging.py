@@ -17,8 +17,9 @@
 import logging
 
 
-_logger = logging.getLogger('tensorboard')
+_logger = logging.getLogger("tensorboard")
+
 
 def get_logger():
-  """Returns TensorBoard logger"""
-  return _logger
+    """Returns TensorBoard logger."""
+    return _logger

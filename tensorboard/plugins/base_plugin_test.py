@@ -23,50 +23,49 @@ from tensorboard.plugins import base_plugin
 
 
 class FrontendMetadataTest(tb_test.TestCase):
+    def _create_metadata(self):
+        return base_plugin.FrontendMetadata(
+            disable_reload="my disable_reload",
+            element_name="my element_name",
+            es_module_path="my es_module_path",
+            remove_dom="my remove_dom",
+            tab_name="my tab_name",
+        )
 
-  def _create_metadata(self):
-    return base_plugin.FrontendMetadata(
-        disable_reload="my disable_reload",
-        element_name="my element_name",
-        es_module_path="my es_module_path",
-        remove_dom="my remove_dom",
-        tab_name="my tab_name",
-    )
+    def test_basics(self):
+        md = self._create_metadata()
+        self.assertEqual(md.disable_reload, "my disable_reload")
+        self.assertEqual(md.element_name, "my element_name")
+        self.assertEqual(md.es_module_path, "my es_module_path")
+        self.assertEqual(md.remove_dom, "my remove_dom")
+        self.assertEqual(md.tab_name, "my tab_name")
 
-  def test_basics(self):
-    md = self._create_metadata()
-    self.assertEqual(md.disable_reload, "my disable_reload")
-    self.assertEqual(md.element_name, "my element_name")
-    self.assertEqual(md.es_module_path, "my es_module_path")
-    self.assertEqual(md.remove_dom, "my remove_dom")
-    self.assertEqual(md.tab_name, "my tab_name")
+    def test_repr(self):
+        repr_ = repr(self._create_metadata())
+        self.assertIn(repr("my disable_reload"), repr_)
+        self.assertIn(repr("my element_name"), repr_)
+        self.assertIn(repr("my es_module_path"), repr_)
+        self.assertIn(repr("my remove_dom"), repr_)
+        self.assertIn(repr("my tab_name"), repr_)
 
-  def test_repr(self):
-    repr_ = repr(self._create_metadata())
-    self.assertIn(repr("my disable_reload"), repr_)
-    self.assertIn(repr("my element_name"), repr_)
-    self.assertIn(repr("my es_module_path"), repr_)
-    self.assertIn(repr("my remove_dom"), repr_)
-    self.assertIn(repr("my tab_name"), repr_)
+    def test_eq(self):
+        md1 = base_plugin.FrontendMetadata(element_name="foo")
+        md2 = base_plugin.FrontendMetadata(element_name="foo")
+        md3 = base_plugin.FrontendMetadata(element_name="bar")
+        self.assertEqual(md1, md2)
+        self.assertNotEqual(md1, md3)
+        self.assertNotEqual(md1, "hmm")
 
-  def test_eq(self):
-    md1 = base_plugin.FrontendMetadata(element_name="foo")
-    md2 = base_plugin.FrontendMetadata(element_name="foo")
-    md3 = base_plugin.FrontendMetadata(element_name="bar")
-    self.assertEqual(md1, md2)
-    self.assertNotEqual(md1, md3)
-    self.assertNotEqual(md1, "hmm")
-
-  def test_hash(self):
-    md1 = base_plugin.FrontendMetadata(element_name="foo")
-    md2 = base_plugin.FrontendMetadata(element_name="foo")
-    md3 = base_plugin.FrontendMetadata(element_name="bar")
-    self.assertEqual(hash(md1), hash(md2))
-    # The next check is technically not required by the `__hash__`
-    # contract, but _should_ pass; failure on this assertion would at
-    # least warrant some scrutiny.
-    self.assertNotEqual(hash(md1), hash(md3))
+    def test_hash(self):
+        md1 = base_plugin.FrontendMetadata(element_name="foo")
+        md2 = base_plugin.FrontendMetadata(element_name="foo")
+        md3 = base_plugin.FrontendMetadata(element_name="bar")
+        self.assertEqual(hash(md1), hash(md2))
+        # The next check is technically not required by the `__hash__`
+        # contract, but _should_ pass; failure on this assertion would at
+        # least warrant some scrutiny.
+        self.assertNotEqual(hash(md1), hash(md3))
 
 
-if __name__ == '__main__':
-  tb_test.main()
+if __name__ == "__main__":
+    tb_test.main()

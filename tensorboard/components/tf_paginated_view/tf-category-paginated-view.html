@@ -115,7 +115,6 @@ limitations under the License.
                   min="1"
                   max="[[_pageCount]]"
                   value="[[_pageInputValue]]"
-                  style="display: inline-block; width: [[_inputWidth]];"
                   on-input="_handlePageInputEvent"
                   on-change="_handlePageChangeEvent"
                   on-focus="_handlePageFocusEvent"
@@ -262,6 +261,11 @@ limitations under the License.
         flex-direction: row;
         flex-wrap: wrap;
       }
+
+      #page-input {
+        display: inline-block;
+        width: var(--tf-category-paginated-view-page-input-width, 100%);
+      }
     </style>
   </template>
   <script>
@@ -386,6 +390,7 @@ limitations under the License.
         _inputWidth: {
           type: String,
           computed: '_computeInputWidth(_pageCount)',
+          observer: '_updateInputWidth',
         },
 
         _pageInputValue: {
@@ -587,6 +592,11 @@ limitations under the License.
         if (pageInput) {
           pageInput.value = newValue;
         }
+      },
+      _updateInputWidth() {
+        this.updateStyles({
+          '--tf-category-paginated-view-page-input-width': this._inputWidth,
+        });
       },
     });
   </script>

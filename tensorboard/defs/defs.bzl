@@ -53,6 +53,7 @@ def tf_ng_web_test_suite(runtime_deps = [], bootstrap = [], deps = [], **kwargs)
     It has Angular specific configurations that we want as defaults.
     """
 
+    kwargs.setdefault("tags", []).append("webtest")
     karma_web_test_suite(
         srcs = [],
         bootstrap = bootstrap + [
@@ -60,22 +61,21 @@ def tf_ng_web_test_suite(runtime_deps = [], bootstrap = [], deps = [], **kwargs)
             "@npm//:node_modules/reflect-metadata/Reflect.js",
         ],
         runtime_deps = runtime_deps + [
-            "//tensorboard/components/tf_ng_tensorboard/testing:initialize_testbed",
+            "//tensorboard/webapp/testing:initialize_testbed",
         ],
         deps = deps + [
-            "//tensorboard/components/tf_ng_tensorboard/testing:test_support_lib",
+            "//tensorboard/webapp/testing:test_support_lib",
         ],
         **kwargs
     )
 
-def tf_svg_bundle(name, srcs, output_name):
+def tf_svg_bundle(name, srcs, out):
     native.genrule(
         name = name,
         srcs = srcs,
-        outs = [output_name],
+        outs = [out],
         cmd = "$(execpath //tensorboard/tools:mat_bundle_icon_svg) $@ $(SRCS)",
         tools = [
             "//tensorboard/tools:mat_bundle_icon_svg",
         ],
     )
-

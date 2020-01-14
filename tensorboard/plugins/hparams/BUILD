@@ -27,6 +27,7 @@ py_library(
     name = "hparams_plugin",
     srcs = [
         "backend_context.py",
+        "download_data.py",
         "get_experiment.py",
         "hparams_plugin.py",
         "list_metric_evals.py",
@@ -49,6 +50,22 @@ py_library(
         "@com_google_protobuf//:protobuf_python",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
+    ],
+)
+
+py_test(
+    name = "download_data_test",
+    size = "small",
+    srcs = [
+        "download_data_test.py",
+    ],
+    deps = [
+        ":hparams_plugin",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/backend/event_processing:event_accumulator",
+        "//tensorboard/backend/event_processing:event_multiplexer",
+        "@com_google_protobuf//:protobuf_python",
+        "@org_pythonhosted_mock",
     ],
 )
 
@@ -218,6 +235,7 @@ py_library(
     deps = [
         ":metadata",
         ":protos_all_py_pb2",
+        "//tensorboard:expect_numpy_installed",
         "//tensorboard/compat",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "@org_pythonhosted_six",
@@ -233,6 +251,7 @@ py_test(
         ":metadata",
         ":protos_all_py_pb2",
         ":summary_v2",
+        "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard:test",
         "//tensorboard/compat/proto:protos_all_py_pb2",
@@ -253,6 +272,7 @@ py_test(
         ":metadata",
         ":protos_all_py_pb2",
         ":summary_v2",
+        "//tensorboard:expect_numpy_installed",
         "//tensorboard:test",
         "//tensorboard/compat:no_tensorflow",
         "//tensorboard/compat/proto:protos_all_py_pb2",

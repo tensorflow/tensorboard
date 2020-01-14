@@ -32,34 +32,34 @@ from absl.testing import absltest
 
 
 class TestCase(absltest.TestCase):
-  """TensorBoard base test class.
+    """TensorBoard base test class.
 
-  This class can lazily create a temporary directory for tests to use.
-  """
-
-  def __init__(self, *args, **kwargs):
-    super(TestCase, self).__init__(*args, **kwargs)
-    self._tempdir = None
-
-  def get_temp_dir(self):
-    """Returns a unique temporary directory for the test to use.
-
-    If you call this method multiple times during in a test, it will return the
-    same folder. However, across different runs the directories will be
-    different. This will ensure that across different runs tests will not be
-    able to pollute each others environment.
-    If you need multiple unique directories within a single test, you should
-    use `self.create_tempdir()`, provided by `absltest.TestCase`.
-      tempfile.mkdtemp(dir=self.get_temp_dir()):
-
-    Returns:
-      string, the path to the unique temporary directory created for this test.
+    This class can lazily create a temporary directory for tests to use.
     """
-    if not self._tempdir:
-      self._tempdir = self.create_tempdir().full_path
-    return self._tempdir
+
+    def __init__(self, *args, **kwargs):
+        super(TestCase, self).__init__(*args, **kwargs)
+        self._tempdir = None
+
+    def get_temp_dir(self):
+        """Returns a unique temporary directory for the test to use.
+
+        If you call this method multiple times during in a test, it will return the
+        same folder. However, across different runs the directories will be
+        different. This will ensure that across different runs tests will not be
+        able to pollute each others environment.
+        If you need multiple unique directories within a single test, you should
+        use `self.create_tempdir()`, provided by `absltest.TestCase`.
+          tempfile.mkdtemp(dir=self.get_temp_dir()):
+
+        Returns:
+          string, the path to the unique temporary directory created for this test.
+        """
+        if not self._tempdir:
+            self._tempdir = self.create_tempdir().full_path
+        return self._tempdir
 
 
 def main(*args, **kwargs):
-  """Pass args and kwargs through to absltest main."""
-  return absltest.main(*args, **kwargs)
+    """Pass args and kwargs through to absltest main."""
+    return absltest.main(*args, **kwargs)
