@@ -85,7 +85,7 @@ def _get_context():
     else:
         ipython = IPython.get_ipython()
         if ipython is not None and ipython.has_trait("kernel"):
-            if os.environ.get('JUPYTERHUB_SERVICE_PREFIX') is not None:
+            if os.environ.get("JUPYTERHUB_SERVICE_PREFIX") is not None:
                 return _CONTEXT_JUPYTERHUB
             return _CONTEXT_IPYTHON
 
@@ -94,18 +94,20 @@ def _get_context():
 
 
 def _prefix_jupyterhub(port):
-    prefix = os.path.join(os.environ['JUPYTERHUB_SERVICE_PREFIX'], 'proxy/absolute')
-    return '%s/%d/' % (prefix, port)
+    prefix = os.path.join(
+        os.environ["JUPYTERHUB_SERVICE_PREFIX"], "proxy/absolute"
+    )
+    return "%s/%d/" % (prefix, port)
 
 
 def _patch_args_jupyterhub(parsed_args):
-    if '--port' in parsed_args:
-        arg_idx = parsed_args.index('--port')
-        port = int(parsed_args[arg_idx+1])
+    if "--port" in parsed_args:
+        arg_idx = parsed_args.index("--port")
+        port = int(parsed_args[arg_idx + 1])
     else:
         port = 6006
-        parsed_args += ['--port', str(port)]
-    return parsed_args + ['--path_prefix', _prefix_jupyterhub(port)]
+        parsed_args += ["--port", str(port)]
+    return parsed_args + ["--path_prefix", _prefix_jupyterhub(port)]
 
 
 def load_ipython_extension(ipython):
@@ -179,7 +181,7 @@ def start(args_string):
 
     parsed_args = shlex.split(args_string, comments=True, posix=True)
     if context == _CONTEXT_JUPYTERHUB:
-      parsed_args = _patch_args_jupyterhub(parsed_args)
+        parsed_args = _patch_args_jupyterhub(parsed_args)
 
     start_result = manager.start(parsed_args)
 
