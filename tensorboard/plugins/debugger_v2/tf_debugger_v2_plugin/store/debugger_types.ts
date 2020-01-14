@@ -59,9 +59,14 @@ export interface ExecutionDigestLoadState extends LoadState {
 
 export interface Executions {
   // Load state for the total number of top-level executions.
+  // numExecutionsLoaded load state can go from LOADED to LOADING, as
+  // the backend may keep reading in new data and see an increase in
+  // the number of execution events, which the frontend will in turn see.
   numExecutionsLoaded: LoadState;
 
   // Load state for loading ExecutionDigests.
+  // executionDigestsLoaded load state can go from LOADED to LOADING, as
+  // the execution digests are loaded in pages.
   executionDigestsLoaded: ExecutionDigestLoadState;
 
   // Page size used for accessing data source. For example,

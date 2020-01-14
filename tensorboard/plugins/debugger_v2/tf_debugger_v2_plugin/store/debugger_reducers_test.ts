@@ -148,11 +148,26 @@ describe('Debugger reducers', () => {
         lastLoadedTimeInMs: 222,
       },
       activeRunId: '__default_debugger_run__',
+      executions: {
+        numExecutionsLoaded: {
+          state: DataLoadState.LOADING,
+          lastLoadedTimeInMs: null,
+        },
+        executionDigestsLoaded: {
+          state: DataLoadState.NOT_LOADED,
+          lastLoadedTimeInMs: null,
+          pageLoadedSizes: {},
+          numExecutions: 0,
+        },
+        pageSize: 1000,
+        displayCount: 50,
+        scrollBeginIndex: 0,
+        executionDigests: {},
+      },
     });
-    let nextState = reducers(state, actions.numExecutionsRequested());
     const t0 = Date.now();
-    nextState = reducers(
-      nextState,
+    const nextState = reducers(
+      state,
       actions.numExecutionsLoaded({numExecutions: 1337})
     );
     expect(nextState.executions.numExecutionsLoaded.state).toEqual(
@@ -191,7 +206,7 @@ describe('Debugger reducers', () => {
         },
       }),
     });
-    let nextState = reducers(state, actions.executionDigestsRequested());
+    const nextState = reducers(state, actions.executionDigestsRequested());
     expect(nextState.executions.executionDigestsLoaded.state).toEqual(
       DataLoadState.LOADING
     );
@@ -206,7 +221,7 @@ describe('Debugger reducers', () => {
     );
   });
 
-  it('On executionDigestsLoaded: Empty --> complete 1st page', () => {
+  it('On executionDigestsLoaded: correct digests & page sizes updates', () => {
     const pageSize = 100;
     const numExecutions = 1337;
     const state = createDigestsStateWhileLoadingExecutionDigests(
@@ -226,7 +241,7 @@ describe('Debugger reducers', () => {
       });
     }
     const t0 = Date.now();
-    let nextState = reducers(
+    const nextState = reducers(
       state,
       actions.executionDigestsLoaded(excutionDigestsResponse)
     );
@@ -283,7 +298,7 @@ describe('Debugger reducers', () => {
       ],
     };
     const t0 = Date.now();
-    let nextState = reducers(
+    const nextState = reducers(
       state,
       actions.executionDigestsLoaded(excutionDigestsResponse)
     );
@@ -348,7 +363,7 @@ describe('Debugger reducers', () => {
       ],
     };
     const t0 = Date.now();
-    let nextState = reducers(
+    const nextState = reducers(
       state,
       actions.executionDigestsLoaded(excutionDigestsResponse)
     );
@@ -411,7 +426,7 @@ describe('Debugger reducers', () => {
       ],
     };
     const t0 = Date.now();
-    let nextState = reducers(
+    const nextState = reducers(
       state,
       actions.executionDigestsLoaded(excutionDigestsResponse)
     );

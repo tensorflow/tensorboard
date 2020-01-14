@@ -25,7 +25,6 @@ limitations under the License.
 
     <div *ngIf="numExecutions" class="navigation-section">
       <!-- TODO(cais): Apply mat-icon-button. -->
-      <!-- <button class="navigation-button-left" (click)="navigateLeft()"> -->
       <button class="navigation-button-left" (click)="onNavigateLeft.emit()">
         &lt;
       </button>
@@ -34,8 +33,7 @@ limitations under the License.
         1 }} of {{ numExecutions }}
       </div>
       <!-- TODO(cais): Apply mat-icon-button. -->
-      <!-- <button class="navigation-button-right" (click)="navigateRight()"> -->
-      <button class="navigation-button-left" (click)="onNavigateRight.emit()">
+      <button class="navigation-button-right" (click)="onNavigateRight.emit()">
         &gt;
       </button>
     </div>

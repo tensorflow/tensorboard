@@ -82,6 +82,20 @@ describe('getMissingPages', () => {
     ).toEqual([]);
   });
 
+  it('returns non-empty page indices for existing incomplete page', () => {
+    const begin = 70;
+    const end = 120;
+    const pageSize = 100;
+    const numItems = 1001;
+    const loadePageSizes = {
+      0: 30,
+      1: 100,
+    };
+    expect(
+      TEST_ONLY.getMissingPages(begin, end, pageSize, numItems, loadePageSizes)
+    ).toEqual([0]);
+  });
+
   it('returns empty page indices for end of items', () => {
     const begin = 3;
     const end = 53;
