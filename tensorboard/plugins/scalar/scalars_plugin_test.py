@@ -24,6 +24,7 @@ import collections
 import csv
 import functools
 import os.path
+import unittest
 
 from six import StringIO
 from six.moves import xrange  # pylint: disable=redefined-builtin
@@ -98,6 +99,7 @@ class ScalarsPluginTest(tf.test.TestCase):
     def generate_run_to_db(self, experiment_name, run_name):
         # This method uses `tf.contrib.summary`, and so must only be invoked
         # when TensorFlow 1.x is installed.
+        raise DeprecationWarning("tf.contrib is being removed - b/147155091. This method should be deleted.")
         tf.compat.v1.reset_default_graph()
         with tf.compat.v1.Graph().as_default():
             global_step = tf.compat.v1.placeholder(tf.int64)
@@ -306,6 +308,7 @@ class ScalarsPluginTest(tf.test.TestCase):
         else:
             self.assertTrue(plugin.is_active())
 
+    @unittest.skip("tf.contrib is being removed - b/147155091")
     @test_util.run_v1_only("Requires contrib for db writer")
     def test_scalars_db_without_exp(self):
         self.set_up_db()
@@ -323,6 +326,7 @@ class ScalarsPluginTest(tf.test.TestCase):
         # raw SQL queries though.
         self.assertEqual(len(data), 0)
 
+    @unittest.skip("tf.contrib is being removed - b/147155091")
     @test_util.run_v1_only("Requires contrib for db writer")
     def test_scalars_db_filter_by_experiment(self):
         self.set_up_db()
@@ -339,6 +343,7 @@ class ScalarsPluginTest(tf.test.TestCase):
         self.assertEqual("application/json", mime_type)
         self.assertEqual(len(data), self._STEPS)
 
+    @unittest.skip("tf.contrib is being removed - b/147155091")
     @test_util.run_v1_only("Requires contrib for db writer")
     def test_scalars_db_no_match(self):
         self.set_up_db()
