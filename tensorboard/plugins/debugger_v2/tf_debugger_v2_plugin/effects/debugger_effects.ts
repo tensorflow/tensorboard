@@ -83,7 +83,7 @@ export function getMissingPages(
     throw new Error('begin-end span exceeds page size, which is not allowed');
   }
 
-  // The constraint that `end - begin <= page` ensures that at most only two
+  // The constraint that `end - begin <= page` guarantees that at most only two
   // pages need to be requested.
   const missingPages: number[] = [];
 
@@ -258,7 +258,11 @@ export class DebuggerEffects {
           this.store.select(getDisplayCount),
           this.store.select(getExecutionPageSize)
         ),
-        filter((data) => data[1] !== null),
+        filter((data) => {
+          console.log('In effect filter: data:', data); // DEBUG
+          const runId = data[1];
+          return runId !== null;
+        }),
         tap(
           ([
             _,
@@ -268,6 +272,7 @@ export class DebuggerEffects {
             displayCount,
             pageSize,
           ]) => {
+            console.log(`In effect tap():`); // DEBUG
             const begin = scrollBeginIndex;
             const end = Math.min(numExecutions, begin + displayCount);
             this.store.dispatch(

@@ -25,6 +25,8 @@ import {
   debuggerRunsRequested,
   executionDigestsLoaded,
   executionDigestsRequested,
+  executionScrollLeft,
+  executionScrollRight,
   numExecutionsLoaded,
   numExecutionsRequested,
   requestExecutionDigests,
@@ -466,5 +468,54 @@ describe('Debugger effects', () => {
         executionDigestsLoaded(executionDigests),
       ]);
     });
+  });
+
+  describe('Execution scrolling effect', () => {
+    beforeEach(() => {
+      debuggerEffects.executionScrollTriggeredLoading$.subscribe();
+    });
+
+    for (const triggeringAction of [
+      executionScrollLeft(),
+      executionScrollRight(),
+    ]) {
+      it(`Scrolling ${triggeringAction.type} requestExecutionDigests`, () => {
+        store.setState(
+          createState(
+            createDebuggerState({
+              activeRunId: '__default_debugger_run__',
+              executions: {
+                numExecutionsLoaded: {
+                  state: DataLoadState.LOADED,
+                  lastLoadedTimeInMs: 1234,
+                },
+                executionDigestsLoaded: {
+                  state: DataLoadState.LOADED,
+                  lastLoadedTimeInMs: 5678,
+                  numExecutions: 6,
+                  pageLoadedSizes: {0: 2},
+                },
+                pageSize: 2,
+                displayCount: 2,
+                scrollBeginIndex: 2,
+                executionDigests: {},
+              },
+            })
+          )
+        );
+
+        action.next(triggeringAction);
+
+        expect(dispatchSpy).toHaveBeenCalledTimes(1);
+        expect(dispatchSpy).toHaveBeenCalledWith(
+          requestExecutionDigests({
+            runId: '__default_debugger_run__',
+            begin: 2,
+            end: 4,
+            pageSize: 2,
+          })
+        );
+      });
+    }
   });
 });

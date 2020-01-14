@@ -202,6 +202,7 @@ const reducer = createReducer(
   on(
     actions.executionScrollLeft,
     (state: DebuggerState): DebuggerState => {
+      console.log('executionScrollLeft reducer'); // DEBUG
       // TODO(cais): Left-right navigation should have more context-depedent
       // behavior, e.g., when alerts are present.
       const runId = state.activeRunId;
