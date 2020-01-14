@@ -259,7 +259,6 @@ export class DebuggerEffects {
           this.store.select(getExecutionPageSize)
         ),
         filter((data) => {
-          console.log('In effect filter: data:', data); // DEBUG
           const runId = data[1];
           return runId !== null;
         }),
@@ -272,7 +271,6 @@ export class DebuggerEffects {
             displayCount,
             pageSize,
           ]) => {
-            console.log(`In effect tap():`); // DEBUG
             const begin = scrollBeginIndex;
             const end = Math.min(numExecutions, begin + displayCount);
             this.store.dispatch(
