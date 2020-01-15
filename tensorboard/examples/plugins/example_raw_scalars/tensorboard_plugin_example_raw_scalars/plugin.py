@@ -89,13 +89,14 @@ class ExampleRawScalarsPlugin(base_plugin.TBPlugin):
         Checks the normpath to guard against path traversal attacks.
         """
         static_path_part = request.path[len(_PLUGIN_DIRECTORY_PATH_PART) :]
-        norm_path = posixpath.normpath(static_path_part)
-        if not norm_path.startswith("static/"):
+        posix_norm_path = posixpath.normpath(static_path_part)
+        if not posix_norm_path.startswith("static/"):
             return http_util.Respond(
                 request, "Not found", "text/plain", code=404
             )
 
-        res_path = os.path.join(os.path.dirname(__file__), static_path_part)
+        norm_path = os.path.normpath(static_path_part)
+        res_path = os.path.join(os.path.dirname(__file__), norm_path)
         with open(res_path, "rb") as read_file:
             mimetype = mimetypes.guess_type(res_path)[0]
             return http_util.Respond(
