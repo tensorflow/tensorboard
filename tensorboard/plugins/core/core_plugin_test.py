@@ -47,8 +47,7 @@ from tensorboard.util import test_util
 FAKE_INDEX_HTML = b"<!doctype html><title>fake-index</title>"
 
 # tf.contrib is being removed and db support depends on tf.contrib. See b/147155091.
-HAS_TF_CONTRIB = getattr(tf, "contrib", None)
-ENABLE_DB_TESTS = HAS_TF_CONTRIB
+ENABLE_DB_TESTS = getattr(tf, "contrib", None)
 
 
 class FakeFlags(object):
@@ -171,8 +170,8 @@ class CorePluginTest(tf.test.TestCase):
             self.assertEqual(200, response.status_code, msg=path)
             self.assertEqual("0", response.headers.get("Expires"), msg=path)
 
-    @unittest.skipIf(
-        not ENABLE_DB_TESTS,
+    @unittest.skipUnless(
+        ENABLE_DB_TESTS,
         "tf.contrib is being removed and db support depends on tf.contrib. See b/147155091",
     )
     def testEnvironmentForDbUri(self):
@@ -464,12 +463,6 @@ class CorePluginTest(tf.test.TestCase):
         if ENABLE_DB_TESTS:
             self._generate_test_data_db(run_name, experiment_name)
 
-        with tf.compat.v1.Session() as sess:
-            sess.run(tf.compat.v1.global_variables_initializer())
-            if HAS_TF_CONTRIB:
-                sess.run(tf.contrib.summary.summary_writer_initializer_op())
-                sess.run(tf.contrib.summary.all_summary_ops())
-
     def _generate_test_data_db(self, run_name, experiment_name):
         """Generates test run data for tests which use db mode."""
         if not ENABLE_DB_TESTS:
@@ -485,6 +478,11 @@ class CorePluginTest(tf.test.TestCase):
         )
         with db_writer.as_default(), tf.contrib.summary.always_record_summaries():
             tf.contrib.summary.scalar("mytag", 1)
+
+        with tf.compat.v1.Session() as sess:
+            sess.run(tf.compat.v1.global_variables_initializer())
+            sess.run(tf.contrib.summary.summary_writer_initializer_op())
+            sess.run(tf.contrib.summary.all_summary_ops())
 
 
 class CorePluginUsingMetagraphOnlyTest(CorePluginTest):
