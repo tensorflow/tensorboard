@@ -224,7 +224,7 @@ describe('Debugger Container', () => {
       );
     });
 
-    it('left-button click dispatches executionScrollLeft action', async () => {
+    it('left-button click dispatches executionScrollLeft action', () => {
       const fixture = TestBed.createComponent(TimelineContainer);
       fixture.detectChanges();
       store.setState(
@@ -240,7 +240,7 @@ describe('Debugger Container', () => {
       expect(dispatchSpy).toHaveBeenCalledWith(executionScrollLeft());
     });
 
-    it('right-button click dispatches executionScrollRight action', async () => {
+    it('right-button click dispatches executionScrollRight action', () => {
       const fixture = TestBed.createComponent(TimelineContainer);
       fixture.detectChanges();
       store.setState(

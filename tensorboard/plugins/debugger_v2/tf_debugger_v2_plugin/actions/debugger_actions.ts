@@ -60,11 +60,6 @@ export const numExecutionsLoaded = createAction(
   props<{numExecutions: number}>()
 );
 
-export const requestExecutionDigests = createAction(
-  '[Debugger] Request for ExecutionDigests',
-  props<{runId: string; begin: number; end: number; pageSize: number}>()
-);
-
 export const executionDigestsRequested = createAction(
   '[Debugger] ExecutionDigests Requested'
 );

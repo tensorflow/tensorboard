@@ -25,7 +25,7 @@ import {
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
 /** @typehack */ import * as _typeHackStore from '@ngrx/store/store';
 
-const DEFAULT_EXECUTION_PAGE_SIZE = 1000;
+const DEFAULT_EXECUTION_PAGE_SIZE = 100; // TODO(cais): Restore.
 
 const initialState: DebuggerState = {
   runs: {},
@@ -180,10 +180,7 @@ const reducer = createReducer(
             state: DataLoadState.LOADED,
             lastLoadedTimeInMs: Date.now(),
           },
-          executionDigests: Object.assign(
-            {},
-            state.executions.executionDigests
-          ),
+          executionDigests: {...state.executions.executionDigests},
         },
       };
       for (let i = digests.begin; i < digests.end; ++i) {

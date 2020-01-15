@@ -26,7 +26,6 @@ import {
   executionScrollRight,
   numExecutionsLoaded,
   numExecutionsRequested,
-  requestExecutionDigests,
 } from '../actions';
 import {
   getActiveRunId,
@@ -173,7 +172,7 @@ export class DebuggerEffects {
       ofType(numExecutionsLoaded),
       withLatestFrom(
         this.store.select(getActiveRunId),
-        this.store.select(getDisplayCount),
+        this.store.select(getExecutionPageSize),
         this.store.select(getExecutionDigestsLoaded)
       ),
       filter(([props, runId, _, loaded]) => {
@@ -185,9 +184,9 @@ export class DebuggerEffects {
         );
       }),
       tap(() => this.store.dispatch(executionDigestsRequested())),
-      mergeMap(([props, runId, displayCount, _]) => {
+      mergeMap(([props, runId, pageSize, _]) => {
         const begin = 0;
-        const end = Math.min(props.numExecutions, displayCount);
+        const end = Math.min(props.numExecutions, pageSize);
         return this.dataSource.fetchExecutionDigests(runId!, begin, end).pipe(
           map((digests) => {
             return executionDigestsLoaded(digests);
@@ -198,10 +197,36 @@ export class DebuggerEffects {
     )
   );
 
+  private readonly digestRequired$ = this.actions$.pipe(
+    ofType(executionScrollLeft, executionScrollRight),
+    withLatestFrom(
+      this.store.select(getActiveRunId),
+      this.store.select(getExecutionScrollBeginIndex),
+      this.store.select(getNumExecutions),
+      this.store.select(getDisplayCount),
+      this.store.select(getExecutionPageSize)
+    ),
+    filter((data) => {
+      const runId = data[1];
+      return runId !== null;
+    }),
+    map(
+      ([_, runId, scrollBeginIndex, numExecutions, displayCount, pageSize]) => {
+        const begin = scrollBeginIndex;
+        const end = Math.min(numExecutions, begin + displayCount);
+        return {
+          runId: runId!,
+          begin,
+          end,
+          pageSize,
+        };
+      }
+    )
+  );
+
   /** @export */
   readonly loadExecutionDigests$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(requestExecutionDigests),
+    this.digestRequired$.pipe(
       withLatestFrom(this.store.select(getExecutionDigestsLoaded)),
       filter(([_, loaded]) => loaded.state !== DataLoadState.LOADING),
       map(([props, loaded]) => {
@@ -219,8 +244,7 @@ export class DebuggerEffects {
       }),
       filter(({missingPages}) => missingPages.length > 0),
       tap(() => this.store.dispatch(executionDigestsRequested())),
-      withLatestFrom(this.store.select(getExecutionDigestsLoaded)),
-      mergeMap(([{props, missingPages}, loaded]) => {
+      mergeMap(({props, loaded, missingPages}) => {
         const {runId, pageSize} = props;
         const actualBegin = missingPages[0] * pageSize;
         const actualEnd = Math.min(
@@ -238,43 +262,6 @@ export class DebuggerEffects {
             )
           );
       })
-    )
-  );
-
-  /** @export */
-  readonly executionScrollTriggeredLoading$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(executionScrollLeft, executionScrollRight),
-      withLatestFrom(
-        this.store.select(getActiveRunId),
-        this.store.select(getExecutionScrollBeginIndex),
-        this.store.select(getNumExecutions),
-        this.store.select(getDisplayCount),
-        this.store.select(getExecutionPageSize)
-      ),
-      filter((data) => {
-        const runId = data[1];
-        return runId !== null;
-      }),
-      map(
-        ([
-          _,
-          runId,
-          scrollBeginIndex,
-          numExecutions,
-          displayCount,
-          pageSize,
-        ]) => {
-          const begin = scrollBeginIndex;
-          const end = Math.min(numExecutions, begin + displayCount);
-          return requestExecutionDigests({
-            runId: runId!,
-            begin,
-            end,
-            pageSize,
-          });
-        }
-      )
     )
   );
 

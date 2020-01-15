@@ -18,7 +18,6 @@ import {select, Store, createSelector} from '@ngrx/store';
 import {State} from '../../store/debugger_types';
 import {
   alertsViewLoaded,
-  requestExecutionDigests,
   executionScrollLeft,
   executionScrollRight,
 } from '../../actions';
@@ -47,7 +46,7 @@ const FUNCTION_OP_TYPE_PREFIXES: string[] = [
  * @param executionDigest
  * @param strLen
  */
-export function getExecutionDigestForDisplay(
+function getExecutionDigestForDisplay(
   executionDigest: ExecutionDigest | null,
   strLen = 1
 ): ExecutionDigestForDisplay {
@@ -149,3 +148,7 @@ export class TimelineContainer implements OnInit {
     this.store.dispatch(executionScrollRight());
   }
 }
+
+export const TEST_ONLY = {
+  getExecutionDigestForDisplay,
+};

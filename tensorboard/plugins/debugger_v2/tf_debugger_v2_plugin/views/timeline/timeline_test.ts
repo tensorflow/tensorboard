@@ -16,7 +16,7 @@ limitations under the License.
  * Unit tests for the Timeline Container.
  */
 
-import {getExecutionDigestForDisplay} from './timeline_container';
+import {TEST_ONLY} from './timeline_container';
 
 describe('getExecutionDigestForDisplay', () => {
   for (const [opType, strLen, expectedShortOpType, isGraph] of [
@@ -30,7 +30,7 @@ describe('getExecutionDigestForDisplay', () => {
     ['__backward_attention_1357', 99, 'attention_1357', true],
   ] as Array<[string, number, string, boolean]>) {
     it(`outputs correct results for op ${opType}, strLen=${strLen}`, () => {
-      const display = getExecutionDigestForDisplay(
+      const display = TEST_ONLY.getExecutionDigestForDisplay(
         {
           op_type: opType,
           output_tensor_device_ids: ['d0'],
@@ -44,7 +44,7 @@ describe('getExecutionDigestForDisplay', () => {
   }
 
   it(`outputs ellipses for unavailable op`, () => {
-    const display = getExecutionDigestForDisplay(null);
+    const display = TEST_ONLY.getExecutionDigestForDisplay(null);
     expect(display.short_op_type).toEqual('..');
     expect(display.op_type).toEqual('(N/A)');
     expect(display.is_graph).toEqual(false);

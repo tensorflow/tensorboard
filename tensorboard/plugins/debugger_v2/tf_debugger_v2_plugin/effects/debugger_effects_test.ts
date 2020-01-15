@@ -29,7 +29,6 @@ import {
   executionScrollRight,
   numExecutionsLoaded,
   numExecutionsRequested,
-  requestExecutionDigests,
 } from '../actions';
 import {Tfdbg2HttpServerDataSource} from '../data_source/tfdbg2_data_source';
 import {
@@ -410,132 +409,80 @@ describe('Debugger effects', () => {
     });
   });
 
-  describe('executionDigests loading', () => {
-    let recordedActions: Action[] = [];
-
-    beforeEach(() => {
-      recordedActions = [];
-      debuggerEffects.loadNumExecutions$.subscribe((action: Action) => {
-        recordedActions.push(action);
-      });
-      debuggerEffects.loadExecutionDigests$.subscribe((action: Action) => {
-        recordedActions.push(action);
-      });
-    });
-
-    it('requestExecutionDigests triggers executionDigests loading', () => {
-      const pageSize = 5;
-      store.setState(
-        createState(
-          createDebuggerState({
-            executions: {
-              numExecutionsLoaded: {
-                state: DataLoadState.LOADED,
-                lastLoadedTimeInMs: 1234,
-              },
-              executionDigestsLoaded: {
-                state: DataLoadState.NOT_LOADED,
-                lastLoadedTimeInMs: null,
-                numExecutions: 10000, // Make sure total # of executions is loaded.
-                pageLoadedSizes: {},
-              },
-              pageSize,
-              displayCount: 2,
-              scrollBeginIndex: 0,
-              executionDigests: {},
-            },
-          })
-        )
-      );
-      const executionDigests: ExecutionDigestsResponse = {
-        begin: 0,
-        end: 5,
-        num_digests: 10000,
-        execution_digests: [],
-      };
-      for (let i = 0; i < 5; ++i) {
-        executionDigests.execution_digests.push({
-          op_type: 'FooOp',
-          output_tensor_device_ids: ['a1'],
-        });
-      }
-      const fetchExecutionDigests = spyOn(
-        TestBed.get(Tfdbg2HttpServerDataSource),
-        'fetchExecutionDigests'
-      )
-        .withArgs('__default_debugger_run__', 0, pageSize)
-        .and.returnValue(of(executionDigests));
-
-      action.next(
-        requestExecutionDigests({
-          runId: '__default_debugger_run__',
-          begin: 0,
-          end: 2,
-          pageSize,
-        })
-      );
-
-      expect(fetchExecutionDigests).toHaveBeenCalled();
-      expect(dispatchSpy).toHaveBeenCalledTimes(1);
-      expect(dispatchSpy).toHaveBeenCalledWith(executionDigestsRequested());
-      expect(recordedActions).toEqual([
-        executionDigestsLoaded(executionDigests),
-      ]);
-    });
-  });
-
   describe('Execution scrolling effect', () => {
     let recordedActions: Action[] = [];
 
     beforeEach(() => {
       recordedActions = [];
-      debuggerEffects.executionScrollTriggeredLoading$.subscribe(
-        (action: Action) => {
-          recordedActions.push(action);
-        }
-      );
+      debuggerEffects.loadExecutionDigests$.subscribe((action: Action) => {
+        recordedActions.push(action);
+      });
     });
 
     for (const triggeringAction of [
       executionScrollLeft(),
       executionScrollRight(),
     ]) {
-      it(`Scrolling ${triggeringAction.type} requestExecutionDigests`, () => {
-        store.setState(
-          createState(
-            createDebuggerState({
-              activeRunId: '__default_debugger_run__',
-              executions: {
-                numExecutionsLoaded: {
-                  state: DataLoadState.LOADED,
-                  lastLoadedTimeInMs: 1234,
+      it(
+        `Scrolling ${triggeringAction.type} ` +
+          ` leads to execution-digest request`,
+        () => {
+          store.setState(
+            createState(
+              createDebuggerState({
+                activeRunId: '__default_debugger_run__',
+                executions: {
+                  numExecutionsLoaded: {
+                    state: DataLoadState.LOADED,
+                    lastLoadedTimeInMs: 1234,
+                  },
+                  executionDigestsLoaded: {
+                    state: DataLoadState.LOADED,
+                    lastLoadedTimeInMs: 5678,
+                    numExecutions: 6,
+                    pageLoadedSizes: {0: 2},
+                  },
+                  pageSize: 2,
+                  displayCount: 2,
+                  scrollBeginIndex: 2,
+                  executionDigests: {},
                 },
-                executionDigestsLoaded: {
-                  state: DataLoadState.LOADED,
-                  lastLoadedTimeInMs: 5678,
-                  numExecutions: 6,
-                  pageLoadedSizes: {0: 2},
-                },
-                pageSize: 2,
-                displayCount: 2,
-                scrollBeginIndex: 2,
-                executionDigests: {},
-              },
-            })
-          )
-        );
+              })
+            )
+          );
 
-        action.next(triggeringAction);
-
-        expect(recordedActions).toEqual([
-          requestExecutionDigests({
-            runId: '__default_debugger_run__',
+          const executionDigestForTest: ExecutionDigestsResponse = {
             begin: 2,
             end: 4,
-            pageSize: 2,
-          }),
-        ]);
-      });
+            num_digests: 6,
+            execution_digests: [
+              {
+                op_type: 'FooOp',
+                output_tensor_device_ids: ['d0'],
+              },
+              {
+                op_type: 'FooOp',
+                output_tensor_device_ids: ['d0'],
+              },
+            ],
+          };
+          const fetchExecutionDigests = spyOn(
+            TestBed.get(Tfdbg2HttpServerDataSource),
+            'fetchExecutionDigests'
+          )
+            .withArgs('__default_debugger_run__', 2, 4)
+            .and.returnValue(of(executionDigestForTest));
+
+          action.next(triggeringAction);
+
+          expect(fetchExecutionDigests).toHaveBeenCalled();
+          expect(dispatchSpy).toHaveBeenCalledTimes(1);
+          expect(dispatchSpy).toHaveBeenCalledWith(executionDigestsRequested());
+          expect(recordedActions).toEqual([
+            executionDigestsLoaded(executionDigestForTest),
+          ]);
+        }
+      );
     }
   });
 });
