@@ -30,17 +30,6 @@ import threading
 DEFAULT_DEBUGGER_RUN_NAME = "__default_debugger_run__"
 
 
-def _execution_digest_to_json(execution_digest):
-    # TODO(cais): Use the .to_json() method when avaiable.
-    return {
-        "wall_time": execution_digest.wall_time,
-        "op_type": execution_digest.op_type,
-        "output_tensor_device_ids": list(
-            execution_digest.output_tensor_device_ids
-        ),
-    }
-
-
 def run_in_background(target):
     """Run a target task in the background.
 
@@ -192,8 +181,7 @@ class DebuggerV2EventMultiplexer(object):
             "end": end,
             "num_digests": len(execution_digests),
             "execution_digests": [
-                _execution_digest_to_json(digest)
-                for digest in execution_digests[begin:end]
+                digest.to_json() for digest in execution_digests[begin:end]
             ],
         }
 

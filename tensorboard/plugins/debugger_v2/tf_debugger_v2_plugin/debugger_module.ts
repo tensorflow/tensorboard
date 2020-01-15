@@ -26,6 +26,7 @@ import {reducers} from './store/debugger_reducers';
 import {DEBUGGER_FEATURE_KEY} from './store/debugger_types';
 import {AlertsModule} from './views/alerts/alerts_module';
 import {InactiveModule} from './views/inactive/inactive_module';
+import {TimelineModule} from './views/timeline/timeline_module';
 
 @NgModule({
   declarations: [DebuggerComponent, DebuggerContainer],
@@ -34,6 +35,7 @@ import {InactiveModule} from './views/inactive/inactive_module';
     CommonModule,
     InactiveModule,
     Tfdbg2ServerDataSourceModule,
+    TimelineModule,
     StoreModule.forFeature(DEBUGGER_FEATURE_KEY, reducers),
     EffectsModule.forFeature([DebuggerEffects]),
   ],

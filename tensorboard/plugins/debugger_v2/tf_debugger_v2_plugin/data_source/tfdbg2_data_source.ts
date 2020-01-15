@@ -15,12 +15,21 @@ limitations under the License.
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {Observable} from 'rxjs';
-import {DebuggerRunListing} from '../store/debugger_types';
+import {
+  DebuggerRunListing,
+  ExecutionDigestsResponse,
+} from '../store/debugger_types';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 export abstract class Tfdbg2DataSource {
   abstract fetchRuns(): Observable<DebuggerRunListing>;
+
+  abstract fetchExecutionDigests(
+    run: string,
+    begin: number,
+    end: number
+  ): Observable<ExecutionDigestsResponse>;
 }
 
 @Injectable()
@@ -33,6 +42,19 @@ export class Tfdbg2HttpServerDataSource implements Tfdbg2DataSource {
     // TODO(cais): Once the backend uses an DataProvider that unifies tfdbg and
     // non-tfdbg plugins, switch to using `tf_backend.runStore.refresh()`.
     return this.http.get<DebuggerRunListing>(this.httpPathPrefix + '/runs');
+  }
+
+  fetchExecutionDigests(run: string, begin: number, end: number) {
+    return this.http.get<ExecutionDigestsResponse>(
+      this.httpPathPrefix + '/execution/digests',
+      {
+        params: {
+          run,
+          begin: String(begin),
+          end: String(end),
+        },
+      }
+    );
   }
 
   // TODO(cais): Implement fetchEnvironments().
