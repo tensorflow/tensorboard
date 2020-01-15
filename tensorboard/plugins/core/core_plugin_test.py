@@ -50,6 +50,7 @@ FAKE_INDEX_HTML = b"<!doctype html><title>fake-index</title>"
 HAS_TF_CONTRIB = getattr(tf, "contrib", None)
 ENABLE_DB_TESTS = HAS_TF_CONTRIB
 
+
 class FakeFlags(object):
     def __init__(
         self,
@@ -170,8 +171,10 @@ class CorePluginTest(tf.test.TestCase):
             self.assertEqual(200, response.status_code, msg=path)
             self.assertEqual("0", response.headers.get("Expires"), msg=path)
 
-    @unittest.skipIf(not ENABLE_DB_TESTS,
-                     "tf.contrib is being removed and db support depends on tf.contrib. See b/147155091")
+    @unittest.skipIf(
+        not ENABLE_DB_TESTS,
+        "tf.contrib is being removed and db support depends on tf.contrib. See b/147155091",
+    )
     def testEnvironmentForDbUri(self):
         """Test that the environment route correctly returns the database
         URI."""
@@ -224,7 +227,9 @@ class CorePluginTest(tf.test.TestCase):
         self._add_run("run3", experiment_name="exp2")
 
         if ENABLE_DB_TESTS:
-            [exp1, exp2] = self._get_json(self.db_based_server, "/data/experiments")
+            [exp1, exp2] = self._get_json(
+                self.db_based_server, "/data/experiments"
+            )
             self.assertEqual(exp1.get("name"), "exp1")
             self.assertEqual(exp2.get("name"), "exp2")
 
@@ -239,7 +244,9 @@ class CorePluginTest(tf.test.TestCase):
         self._add_run("run3", experiment_name="exp2")
 
         if ENABLE_DB_TESTS:
-            [exp1, exp2] = self._get_json(self.db_based_server, "/data/experiments")
+            [exp1, exp2] = self._get_json(
+                self.db_based_server, "/data/experiments"
+            )
             exp1_runs = self._get_json(
                 self.db_based_server,
                 "/experiment/%s/data/experiment_runs" % exp1.get("id"),

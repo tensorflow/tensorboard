@@ -99,7 +99,9 @@ class ScalarsPluginTest(tf.test.TestCase):
     def generate_run_to_db(self, experiment_name, run_name):
         # This method uses `tf.contrib.summary`, and so must only be invoked
         # when TensorFlow 1.x is installed.
-        raise DeprecationWarning("tf.contrib is being removed - b/147155091. This method should be deleted.")
+        raise DeprecationWarning(
+            "tf.contrib is being removed - b/147155091. This method should be deleted."
+        )
         tf.compat.v1.reset_default_graph()
         with tf.compat.v1.Graph().as_default():
             global_step = tf.compat.v1.placeholder(tf.int64)
