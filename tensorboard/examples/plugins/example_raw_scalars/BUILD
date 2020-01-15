@@ -33,7 +33,12 @@ sh_test(
 py_test(
     name = "unit_test",
     size = "small",
-    srcs = ["test.py"],
+    srcs = [
+        "test.py",
+    ],
+    deps = [
+        "//tensorboard"
+    ],
     main = "test.py",
     srcs_version = "PY2AND3",
     tags = ["support_notf"],

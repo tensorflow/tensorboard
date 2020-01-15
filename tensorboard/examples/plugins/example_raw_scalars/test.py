@@ -16,25 +16,47 @@
 
 import unittest
 
-from tensorboard_plugin_example_raw_scalars.util import can_serve_from_static
+import werkzeug
+
+from tensorboard_plugin_example_raw_scalars import plugin
+
+serve_static_file = plugin.ExampleRawScalarsPlugin._serve_static_file
+static_dir_prefix = plugin._PLUGIN_DIRECTORY_PATH_PART
+
+
+def is_path_safe(path):
+    """Returns the result depending on the plugin's static file handler."""
+    path = static_dir_prefix + path
+    result = []
+
+    def mock_start_response(status, headers):
+        result.append(status)
+
+    environ = werkzeug.test.create_environ(path)
+    serve_static_file({}, environ, mock_start_response)
+    return len(result) == 1 and result[0] == "200 OK"
 
 
 class URLSafetyTest(unittest.TestCase):
     def test_path_traversal(self):
         """Properly check whether a URL can be served from the static folder."""
+        self.assertTrue(is_path_safe("static/index.js"))
+        self.assertTrue(is_path_safe("./static/index.js"))
+        self.assertTrue(is_path_safe("static/../static/index.js"))
 
-        self.assertTrue(can_serve_from_static("static/index.js"))
-        self.assertTrue(can_serve_from_static("./static/index.js"))
-        self.assertTrue(can_serve_from_static("static/../static/index.js"))
-
-        self.assertFalse(can_serve_from_static("../static/index.js"))
-        self.assertFalse(can_serve_from_static("../index.js"))
-        self.assertFalse(can_serve_from_static("static2/index.js"))
-        self.assertFalse(can_serve_from_static("notstatic/index.js"))
-        self.assertFalse(can_serve_from_static("static/../../index.js"))
-        self.assertFalse(can_serve_from_static("..%2findex.js"))
-        self.assertFalse(can_serve_from_static("%2e%2e/index.js"))
-        self.assertFalse(can_serve_from_static("%2e%2e%2findex.js"))
+        self.assertFalse(is_path_safe("../static/index.js"))
+        self.assertFalse(is_path_safe("../index.js"))
+        self.assertFalse(is_path_safe("static2/index.js"))
+        self.assertFalse(is_path_safe("notstatic/index.js"))
+        self.assertFalse(is_path_safe("static/../../index.js"))
+        self.assertFalse(is_path_safe("..%2findex.js"))
+        self.assertFalse(is_path_safe("%2e%2e/index.js"))
+        self.assertFalse(is_path_safe("%2e%2e%2findex.js"))
+        self.assertFalse(
+            is_path_safe(
+                "static/../../org_tensorflow_tensorboard/static/index.js"
+            )
+        )
 
 
 if __name__ == "__main__":
