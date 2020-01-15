@@ -16,25 +16,21 @@
 
 import unittest
 
-import werkzeug
+from werkzeug import test
+from werkzeug import wrappers
 
+from tensorboard.plugins import base_plugin
 from tensorboard_plugin_example_raw_scalars import plugin
 
-serve_static_file = plugin.ExampleRawScalarsPlugin._serve_static_file
-static_dir_prefix = plugin._PLUGIN_DIRECTORY_PATH_PART
+example_plugin = plugin.ExampleRawScalarsPlugin(base_plugin.TBContext())
+serve_static_file = example_plugin._serve_static_file
 
 
 def is_path_safe(path):
     """Returns the result depending on the plugin's static file handler."""
-    path = static_dir_prefix + path
-    result = []
-
-    def mock_start_response(status, headers):
-        result.append(status)
-
-    environ = werkzeug.test.create_environ(path)
-    serve_static_file({}, environ, mock_start_response)
-    return len(result) == 1 and result[0] == "200 OK"
+    client = test.Client(serve_static_file, wrappers.BaseResponse)
+    response = client.get(plugin._PLUGIN_DIRECTORY_PATH_PART + path)
+    return response.status_code == 200
 
 
 class URLSafetyTest(unittest.TestCase):

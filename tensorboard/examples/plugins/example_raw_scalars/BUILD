@@ -36,10 +36,10 @@ py_test(
     srcs = [
         "test.py",
     ],
-    deps = [
-        "//tensorboard"
-    ],
     main = "test.py",
     srcs_version = "PY2AND3",
     tags = ["support_notf"],
+    deps = [
+        "//tensorboard",
+    ],
 )
