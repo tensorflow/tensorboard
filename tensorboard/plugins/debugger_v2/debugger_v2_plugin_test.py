@@ -286,7 +286,9 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         )
         self.assertEqual(
             json.loads(response.get_data()),
-            {"error": "end index (1) is unexpected less than begin index (2)"},
+            {
+                "error": "end index (1) is unexpectedly less than begin index (2)"
+            },
         )
 
     def testServeExecutionDigests400ResponseIfRunParamIsNotSpecified(self):
@@ -411,7 +413,9 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         )
         self.assertEqual(
             json.loads(response.get_data()),
-            {"error": "end index (1) is unexpected less than begin index (2)"},
+            {
+                "error": "end index (1) is unexpectedly less than begin index (2)"
+            },
         )
 
     def testServeSourceFileListIncludesThisTestFile(self):

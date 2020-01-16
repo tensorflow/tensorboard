@@ -153,7 +153,7 @@ class DebuggerV2EventMultiplexer(object):
             )
         if end >= 0 and end < begin:
             raise ValueError(
-                "end index (%d) is unexpected less than begin index (%d)"
+                "end index (%d) is unexpectedly less than begin index (%d)"
                 % (end, begin)
             )
         if end < 0:  # This means all digests.

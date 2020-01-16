@@ -198,7 +198,7 @@ def stack_frames_run_tag_filter(run, stack_frame_ids):
     """
     return provider.RunTagFilter(
         runs=[run],
-        # The stack farme IDS are UUIDs, which do not container underscores.
+        # The stack-frame IDS are UUIDs, which do not contain underscores.
         # Hence it's safe to concatenate them with underscores.
         tags=[STACK_FRAMES_BLOB_TAG_PREFIX + "_" + "_".join(stack_frame_ids)],
     )
