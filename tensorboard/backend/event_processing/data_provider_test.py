@@ -31,8 +31,8 @@ from tensorboard.backend.event_processing import (
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.data import provider as base_provider
 from tensorboard.plugins.graph import metadata as graph_metadata
-from tensorboard.plugins.image import metadata as image_metadata
-from tensorboard.plugins.image import summary_v2 as image_summary
+from tensorboard.plugins.histogram import metadata as histogram_metadata
+from tensorboard.plugins.histogram import summary_v2 as histogram_summary
 from tensorboard.plugins.scalar import metadata as scalar_metadata
 from tensorboard.plugins.scalar import summary_v2 as scalar_summary
 from tensorboard.util import tensor_util
@@ -70,18 +70,17 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
                     "high_tide", tensor=i, step=i, metadata=metadata
                 )
 
-        logdir = os.path.join(self.logdir, "pictures")
+        logdir = os.path.join(self.logdir, "lebesgue")
         with tf.summary.create_file_writer(logdir).as_default():
-            colors = [
-                ("`#F0F`", (255, 0, 255), "purple"),
-                ("`#0F0`", (255, 0, 255), "green"),
+            data = [
+                ("very smooth", (0.0, 0.25, 0.5, 0.75, 1.0), "uniform"),
+                ("very smoothn't", (0.0, 0.01, 0.99, 1.0), "bimodal"),
             ]
-            for (description, rgb, name) in colors:
-                pixel = tf.constant([[list(rgb)]], dtype=tf.uint8)
+            for (description, distribution, name) in data:
+                tensor = tf.constant([distribution], dtype=tf.float64)
                 for i in xrange(1, 11):
-                    pixels = [tf.tile(pixel, [i, i, 1])]
-                    image_summary.image(
-                        name, pixels, step=i, description=description
+                    histogram_summary.histogram(
+                        name, tensor * i, step=i, description=description
                     )
 
     def create_multiplexer(self):
@@ -106,7 +105,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
             result,
             [
                 "marigraphs",
-                image_metadata.PLUGIN_NAME,
+                histogram_metadata.PLUGIN_NAME,
                 scalar_metadata.PLUGIN_NAME,
             ],
         )
@@ -124,7 +123,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
             [
                 "marigraphs",
                 graph_metadata.PLUGIN_NAME,
-                image_metadata.PLUGIN_NAME,
+                histogram_metadata.PLUGIN_NAME,
                 scalar_metadata.PLUGIN_NAME,
             ],
         )
@@ -260,7 +259,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
 
     def test_read_scalars_but_not_rank_0(self):
         provider = self.create_provider()
-        run_tag_filter = base_provider.RunTagFilter(["pictures"], ["purple"])
+        run_tag_filter = base_provider.RunTagFilter(["lebesgue"], ["uniform"])
         # No explicit checks yet.
         with six.assertRaisesRegex(
             self,
@@ -269,7 +268,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
         ):
             provider.read_scalars(
                 experiment_id="unused",
-                plugin_name=image_metadata.PLUGIN_NAME,
+                plugin_name=histogram_metadata.PLUGIN_NAME,
                 run_tag_filter=run_tag_filter,
             )
 
@@ -277,12 +276,12 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
         provider = self.create_provider()
         result = provider.list_tensors(
             experiment_id="unused",
-            plugin_name=image_metadata.PLUGIN_NAME,
+            plugin_name=histogram_metadata.PLUGIN_NAME,
             run_tag_filter=None,
         )
-        self.assertItemsEqual(result.keys(), ["pictures"])
-        self.assertItemsEqual(result["pictures"].keys(), ["purple", "green"])
-        sample = result["pictures"]["purple"]
+        self.assertItemsEqual(result.keys(), ["lebesgue"])
+        self.assertItemsEqual(result["lebesgue"].keys(), ["uniform", "bimodal"])
+        sample = result["lebesgue"]["uniform"]
         self.assertIsInstance(sample, base_provider.TensorTimeSeries)
         self.assertEqual(sample.max_step, 10)
         # nothing to test for wall time, as it can't be mocked out
@@ -290,7 +289,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
         self.assertEqual(
             sample.display_name, ""
         )  # not written by V2 summary ops
-        self.assertEqual(sample.description, "`#F0F`")
+        self.assertEqual(sample.description, "very smooth")
 
     def test_list_tensors_filters(self):
         provider = self.create_provider()
@@ -299,11 +298,13 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
         # filtering implementation.
         result = provider.list_tensors(
             experiment_id="unused",
-            plugin_name=image_metadata.PLUGIN_NAME,
-            run_tag_filter=base_provider.RunTagFilter(["pictures"], ["green"]),
+            plugin_name=histogram_metadata.PLUGIN_NAME,
+            run_tag_filter=base_provider.RunTagFilter(
+                ["lebesgue"], ["uniform"]
+            ),
         )
-        self.assertItemsEqual(result.keys(), ["pictures"])
-        self.assertItemsEqual(result["pictures"].keys(), ["green"])
+        self.assertItemsEqual(result.keys(), ["lebesgue"])
+        self.assertItemsEqual(result["lebesgue"].keys(), ["uniform"])
 
     def test_read_tensors(self):
         multiplexer = self.create_multiplexer()
@@ -312,17 +313,17 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
         )
 
         run_tag_filter = base_provider.RunTagFilter(
-            runs=["pictures"], tags=["purple", "green"],
+            runs=["lebesgue"], tags=["uniform", "bimodal"],
         )
         result = provider.read_tensors(
             experiment_id="unused",
-            plugin_name=image_metadata.PLUGIN_NAME,
+            plugin_name=histogram_metadata.PLUGIN_NAME,
             run_tag_filter=run_tag_filter,
             downsample=None,  # not yet implemented
         )
 
-        self.assertItemsEqual(result.keys(), ["pictures"])
-        self.assertItemsEqual(result["pictures"].keys(), ["purple", "green"])
+        self.assertItemsEqual(result.keys(), ["lebesgue"])
+        self.assertItemsEqual(result["lebesgue"].keys(), ["uniform", "bimodal"])
         for run in result:
             for tag in result[run]:
                 tensor_events = multiplexer.Tensors(run, tag)
