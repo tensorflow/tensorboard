@@ -39,7 +39,9 @@ from werkzeug import wrappers
 
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import db_import_multiplexer
-from tensorboard.backend.event_processing import plugin_event_multiplexer as event_multiplexer
+from tensorboard.backend.event_processing import (
+    plugin_event_multiplexer as event_multiplexer,
+)
 from tensorboard.compat.proto import graph_pb2
 from tensorboard.compat.proto import meta_graph_pb2
 from tensorboard.plugins import base_plugin
@@ -74,7 +76,6 @@ class FakeFlags(object):
 
 
 class CorePluginFlagsTest(tf.test.TestCase):
-
     def testFlag(self):
         loader = core_plugin.CorePluginLoader()
         loader.fix_flags(FakeFlags(version_tb=True))
@@ -136,7 +137,6 @@ class CorePluginFlagsTest(tf.test.TestCase):
 
 
 class CorePluginNoDataTest(tf.test.TestCase):
-
     def setUp(self):
         super(CorePluginNoDataTest, self).setUp()
         context = base_plugin.TBContext(
@@ -152,7 +152,9 @@ class CorePluginNoDataTest(tf.test.TestCase):
     def _get_json(self, server, path):
         response = server.get(path)
         self.assertEqual(200, response.status_code)
-        self.assertEqual("application/json", response.headers.get("Content-Type"))
+        self.assertEqual(
+            "application/json", response.headers.get("Content-Type")
+        )
         return json.loads(response.get_data().decode("utf-8"))
 
     def testRoutesProvided(self):
@@ -194,7 +196,6 @@ class CorePluginNoDataTest(tf.test.TestCase):
 
 
 class CorePluginDbModeTest(tf.test.TestCase):
-
     def setUp(self):
         super(CorePluginDbModeTest, self).setUp()
         self.db_path = os.path.join(self.get_temp_dir(), "db.db")
@@ -214,7 +215,9 @@ class CorePluginDbModeTest(tf.test.TestCase):
     def _get_json(self, server, path):
         response = server.get(path)
         self.assertEqual(200, response.status_code)
-        self.assertEqual("application/json", response.headers.get("Content-Type"))
+        self.assertEqual(
+            "application/json", response.headers.get("Content-Type")
+        )
         return json.loads(response.get_data().decode("utf-8"))
 
     def testEnvironmentForDbUri(self):
@@ -225,14 +228,15 @@ class CorePluginDbModeTest(tf.test.TestCase):
 
 
 class CorePluginTestBase(object):
-
     def setUp(self):
         super(CorePluginTestBase, self).setUp()
         self.logdir = self.get_temp_dir()
         self.multiplexer = self.create_multiplexer()
         db_uri = None
         db_connection_provider = None
-        if isinstance(self.multiplexer, db_import_multiplexer.DbImportMultiplexer):
+        if isinstance(
+            self.multiplexer, db_import_multiplexer.DbImportMultiplexer
+        ):
             db_uri = self.multiplexer.db_uri
             db_connection_provider = self.multiplexer.db_connection_provider
         context = base_plugin.TBContext(
@@ -247,19 +251,21 @@ class CorePluginTestBase(object):
         self.server = werkzeug_test.Client(app, wrappers.BaseResponse)
 
     def create_multiplexer(self):
-      raise NotImplementedError()
+        raise NotImplementedError()
 
     def _add_run(self, run_name):
         run_path = os.path.join(self.logdir, run_name)
         with test_util.FileWriter(run_path) as writer:
-          writer.add_test_summary("foo")
+            writer.add_test_summary("foo")
         self.multiplexer.AddRunsFromDirectory(self.logdir)
         self.multiplexer.Reload()
 
     def _get_json(self, server, path):
         response = server.get(path)
         self.assertEqual(200, response.status_code)
-        self.assertEqual("application/json", response.headers.get("Content-Type"))
+        self.assertEqual(
+            "application/json", response.headers.get("Content-Type")
+        )
         return json.loads(response.get_data().decode("utf-8"))
 
     def testRuns(self):
@@ -268,8 +274,8 @@ class CorePluginTestBase(object):
         run_json = self._get_json(self.server, "/data/runs")
         self.assertEqual(run_json, ["run1"])
 
-class CorePluginLogdirModeTest(CorePluginTestBase, tf.test.TestCase):
 
+class CorePluginLogdirModeTest(CorePluginTestBase, tf.test.TestCase):
     def create_multiplexer(self):
         return event_multiplexer.EventMultiplexer()
 
@@ -298,7 +304,9 @@ class CorePluginLogdirModeTest(CorePluginTestBase, tf.test.TestCase):
             else:
                 return wall_time
 
-        with mock.patch.object(self.multiplexer, "FirstEventTimestamp") as mock_first_event_timestamp:
+        with mock.patch.object(
+            self.multiplexer, "FirstEventTimestamp"
+        ) as mock_first_event_timestamp:
             mock_first_event_timestamp.side_effect = FirstEventTimestamp_stub
             # Start with a single run.
             self._add_run("run1")
@@ -306,8 +314,7 @@ class CorePluginLogdirModeTest(CorePluginTestBase, tf.test.TestCase):
             # Add one run: it should come last.
             self._add_run("avocado")
             self.assertEqual(
-                self._get_json(self.server, "/data/runs"),
-                ["run1", "avocado"],
+                self._get_json(self.server, "/data/runs"), ["run1", "avocado"],
             )
 
             # Add another run: it should come last, too.
@@ -341,12 +348,13 @@ class CorePluginLogdirModeTest(CorePluginTestBase, tf.test.TestCase):
 
 
 class CorePluginDbImportModeTest(CorePluginTestBase, tf.test.TestCase):
-
     def create_multiplexer(self):
         db_path = os.path.join(self.get_temp_dir(), "db.db")
         print(self.id(), db_path)  # DO NOT SUBMIT
         db_uri = "sqlite:%s" % db_path
-        db_connection_provider = application.create_sqlite_connection_provider(db_uri)
+        db_connection_provider = application.create_sqlite_connection_provider(
+            db_uri
+        )
         return db_import_multiplexer.DbImportMultiplexer(
             db_uri=db_uri,
             db_connection_provider=db_connection_provider,
@@ -357,7 +365,7 @@ class CorePluginDbImportModeTest(CorePluginTestBase, tf.test.TestCase):
     def _add_run(self, run_name, experiment_name="experiment"):
         run_path = os.path.join(self.logdir, experiment_name, run_name)
         with test_util.FileWriter(run_path) as writer:
-          writer.add_test_summary("foo")
+            writer.add_test_summary("foo")
         self.multiplexer.AddRunsFromDirectory(self.logdir)
         self.multiplexer.Reload()
 
@@ -380,8 +388,7 @@ class CorePluginDbImportModeTest(CorePluginTestBase, tf.test.TestCase):
         [exp1, exp2] = self._get_json(self.server, "/data/experiments")
 
         exp1_runs = self._get_json(
-            self.server,
-            "/experiment/%s/data/experiment_runs" % exp1.get("id"),
+            self.server, "/experiment/%s/data/experiment_runs" % exp1.get("id"),
         )
         self.assertEqual(len(exp1_runs), 2)
         self.assertEqual(exp1_runs[0].get("name"), "run1")
@@ -392,8 +399,7 @@ class CorePluginDbImportModeTest(CorePluginTestBase, tf.test.TestCase):
         self.assertEqual(exp1_runs[1].get("tags")[0].get("name"), "foo")
 
         exp2_runs = self._get_json(
-            self.server,
-            "/experiment/%s/data/experiment_runs" % exp2.get("id"),
+            self.server, "/experiment/%s/data/experiment_runs" % exp2.get("id"),
         )
         self.assertEqual(len(exp2_runs), 1)
         self.assertEqual(exp2_runs[0].get("name"), "run3")
