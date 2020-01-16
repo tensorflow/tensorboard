@@ -12,3 +12,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+
+tf-debugger-v2-alerts {
+  display: inline-block;
+  height: 360px;
+  width: 200px;
+}
+
+tf-debugger-v2-timeline {
+  display: inline-block;
+  height: 360px;
+  width: 800px;
+}
