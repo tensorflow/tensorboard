@@ -144,6 +144,22 @@ class DebuggerV2EventMultiplexer(object):
             }
         }
 
+    def _checkExecutionBeginEndIndices(self, begin, end, execution_count):
+        if begin < 0:
+            raise IndexError("Invalid begin index (%d)" % begin)
+        if end > execution_count:
+            raise IndexError(
+                "end index (%d) out of bounds (%d)" % (end, execution_count)
+            )
+        if end >= 0 and end < begin:
+            raise ValueError(
+                "end index (%d) is unexpectedly less than begin index (%d)"
+                % (end, begin)
+            )
+        if end < 0:  # This means all digests.
+            end = execution_count
+        return end
+
     def ExecutionDigests(self, run, begin, end):
         """Get ExecutionDigests.
 
@@ -162,20 +178,9 @@ class DebuggerV2EventMultiplexer(object):
         # TODO(cais): For scalability, use begin and end kwargs when available in
         # `DebugDataReader.execution()`.`
         execution_digests = self._reader.executions(digest=True)
-        if begin < 0:
-            raise IndexError("Invalid begin index (%d)" % begin)
-        if end > len(execution_digests):
-            raise IndexError(
-                "end index (%d) out of bounds (%d)"
-                % (end, len(execution_digests))
-            )
-        if end >= 0 and end < begin:
-            raise ValueError(
-                "end index (%d) is unexpected less than begin index (%d)"
-                % (end, begin)
-            )
-        if end < 0:  # This means all digests.
-            end = len(execution_digests)
+        end = self._checkExecutionBeginEndIndices(
+            begin, end, len(execution_digests)
+        )
         return {
             "begin": begin,
             "end": end,
@@ -185,31 +190,68 @@ class DebuggerV2EventMultiplexer(object):
             ],
         }
 
+    def ExecutionData(self, run, begin, end):
+        """Get Execution data objects (Detailed, non-digest form).
+
+        Args:
+          run: The tfdbg2 run to get `ExecutionDigest`s from.
+          begin: Beginning execution index.
+          end: Ending execution index.
+
+        Returns:
+          A JSON-serializable object containing the `ExecutionDigest`s and
+          related meta-information
+        """
+        runs = self.Runs()
+        if run not in runs:
+            return None
+        # TODO(cais): For scalability, use begin and end kwargs when available in
+        # `DebugDataReader.execution()`.`
+        execution_digests = self._reader.executions(digest=True)
+        end = self._checkExecutionBeginEndIndices(
+            begin, end, len(execution_digests)
+        )
+        execution_digests = execution_digests[begin:end]
+        executions = [
+            self._reader.read_execution(digest) for digest in execution_digests
+        ]
+        return {
+            "begin": begin,
+            "end": end,
+            "executions": [execution.to_json() for execution in executions],
+        }
+
     def SourceFileList(self, run):
         runs = self.Runs()
         if run not in runs:
             return None
-        # TODO(cais): Use public method `self._reader.source_files()` when available.
-        # pylint: disable=protected-access
-        return list(self._reader._host_name_file_path_to_offset.keys())
-        # pylint: enable=protected-access
+        return self._reader.source_file_list()
 
     def SourceLines(self, run, index):
         runs = self.Runs()
         if run not in runs:
             return None
-        # TODO(cais): Use public method `self._reader.source_files()` when available.
-        # pylint: disable=protected-access
-        source_file_list = list(
-            self._reader._host_name_file_path_to_offset.keys()
-        )
-        # pylint: enable=protected-access
         try:
-            host_name, file_path = source_file_list[index]
+            host_name, file_path = self._reader.source_file_list()[index]
         except IndexError:
             raise IndexError("There is no source-code file at index %d" % index)
         return {
             "host_name": host_name,
             "file_path": file_path,
             "lines": self._reader.source_lines(host_name, file_path),
+        }
+
+    def StackFrames(self, run, stack_frame_ids):
+        runs = self.Runs()
+        if run not in runs:
+            return None
+        return {
+            "stack_frames": [
+                # TODO(cais): Use public method (`stack_frame_by_id()`) when
+                # available.
+                # pylint: disable=protected-access
+                self._reader._stack_frame_by_id[stack_frame_id]
+                # pylint: enable=protected-access
+                for stack_frame_id in stack_frame_ids
+            ]
         }
