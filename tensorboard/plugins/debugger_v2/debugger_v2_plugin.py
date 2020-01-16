@@ -59,8 +59,10 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
         return {
             "/runs": self.serve_runs,
             "/execution/digests": self.serve_execution_digests,
+            "/execution/data": self.serve_execution_data,
             "/source_files/list": self.serve_source_files_list,
             "/source_files/file": self.serve_source_file,
+            "/stack_frames/stack_frames": self.serve_stack_frames,
         }
 
     def is_active(self):
@@ -98,6 +100,34 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
         begin = int(request.args.get("begin", "0"))
         end = int(request.args.get("end", "-1"))
         run_tag_filter = debug_data_provider.execution_digest_run_tag_filter(
+            run, begin, end
+        )
+        blob_sequences = self._data_provider.read_blob_sequences(
+            experiment, self.plugin_name, run_tag_filter=run_tag_filter
+        )
+        tag = next(iter(run_tag_filter.tags))
+        try:
+            return http_util.Respond(
+                request,
+                self._data_provider.read_blob(
+                    blob_sequences[run][tag][0].blob_key
+                ),
+                "application/json",
+            )
+        except (IndexError, ValueError) as e:
+            return http_util.Respond(
+                request, {"error": str(e)}, "application/json", code=400,
+            )
+
+    @wrappers.Request.application
+    def serve_execution_data(self, request):
+        experiment = plugin_util.experiment_id(request.environ)
+        run = request.args.get("run")
+        if run is None:
+            return _missing_run_error_response(request)
+        begin = int(request.args.get("begin", "0"))
+        end = int(request.args.get("end", "-1"))
+        run_tag_filter = debug_data_provider.execution_data_run_tag_filter(
             run, begin, end
         )
         blob_sequences = self._data_provider.read_blob_sequences(
@@ -184,4 +214,60 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
         except IndexError as e:
             return http_util.Respond(
                 request, {"error": str(e)}, "application/json", code=400,
+            )
+
+    @wrappers.Request.application
+    def serve_stack_frames(self, request):
+        """Serves the content of stack frames.
+
+        The source frames being requested are referred to be UUIDs for each of
+        them, separated by commas.
+
+        Args:
+          request: HTTP request.
+
+        Returns:
+          Response to the request.
+        """
+        experiment = plugin_util.experiment_id(request.environ)
+        run = request.args.get("run")
+        if run is None:
+            return _missing_run_error_response(request)
+        stack_frame_ids = request.args.get("stack_frame_ids")
+        if stack_frame_ids is None:
+            return http_util.Respond(
+                request,
+                {"error": "Missing stack_frame_ids parameter"},
+                "application/json",
+                code=400,
+            )
+        if not stack_frame_ids:
+            return http_util.Respond(
+                request,
+                {"error": "Empty stack_frame_ids parameter"},
+                "application/json",
+                code=400,
+            )
+        stack_frame_ids = stack_frame_ids.split(",")
+        run_tag_filter = debug_data_provider.stack_frames_run_tag_filter(
+            run, stack_frame_ids
+        )
+        blob_sequences = self._data_provider.read_blob_sequences(
+            experiment, self.plugin_name, run_tag_filter=run_tag_filter
+        )
+        tag = next(iter(run_tag_filter.tags))
+        try:
+            return http_util.Respond(
+                request,
+                self._data_provider.read_blob(
+                    blob_sequences[run][tag][0].blob_key
+                ),
+                "application/json",
+            )
+        except KeyError as e:
+            return http_util.Respond(
+                request,
+                {"error": "Cannot find stack frame with ID: %s" % e},
+                "application/json",
+                code=400,
             )

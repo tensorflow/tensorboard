@@ -18,8 +18,10 @@ import {
   DEBUGGER_FEATURE_KEY,
   DebuggerRunListing,
   DebuggerState,
-  State,
+  ExecutionDigest,
+  ExecutionDigestLoadState,
   LoadState,
+  State,
 } from './debugger_types';
 
 // HACK: These imports are for type inference.
@@ -41,4 +43,71 @@ export const getDebuggerRunListing = createSelector(
 export const getDebuggerRunsLoaded = createSelector(
   selectDebuggerState,
   (state: DebuggerState): LoadState => state.runsLoaded
+);
+
+export const getActiveRunId = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): string | null => state.activeRunId
+);
+
+export const getNumExecutionsLoaded = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): LoadState => {
+    return state.executions.numExecutionsLoaded;
+  }
+);
+
+export const getExecutionDigestsLoaded = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): ExecutionDigestLoadState => {
+    return state.executions.executionDigestsLoaded;
+  }
+);
+
+export const getNumExecutions = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): number => {
+    return state.executions.executionDigestsLoaded.numExecutions;
+  }
+);
+
+export const getExecutionScrollBeginIndex = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): number => {
+    return state.executions.scrollBeginIndex;
+  }
+);
+
+export const getExecutionPageSize = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): number => {
+    return state.executions.pageSize;
+  }
+);
+
+export const getDisplayCount = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): number => {
+    return state.executions.displayCount;
+  }
+);
+
+export const getVisibleExecutionDigests = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): Array<ExecutionDigest | null> => {
+    const digests: Array<ExecutionDigest | null> = [];
+    for (
+      let executionIndex = state.executions.scrollBeginIndex;
+      executionIndex <
+      state.executions.scrollBeginIndex + state.executions.displayCount;
+      ++executionIndex
+    ) {
+      if (executionIndex in state.executions.executionDigests) {
+        digests.push(state.executions.executionDigests[executionIndex]);
+      } else {
+        digests.push(null);
+      }
+    }
+    return digests;
+  }
 );

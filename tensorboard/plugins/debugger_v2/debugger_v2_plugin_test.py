@@ -37,7 +37,7 @@ _HOST_NAME = socket.gethostname()
 _CURRENT_FILE_FULL_PATH = os.path.abspath(__file__)
 
 
-def _generate_tfdbg_v2_data(logdir):
+def _generate_tfdbg_v2_data(logdir, tensor_debug_mode="NO_TENSOR"):
     """Generate a simple dump of tfdbg v2 data by running a TF2 program.
 
     The run is instrumented by the enable_dump_debug_info() API.
@@ -50,9 +50,12 @@ def _generate_tfdbg_v2_data(logdir):
 
     Args:
       logdir: Logdir to write the debugger data to.
+      tensor_debug_mode: Mode for dumping debug tensor values, as an optional
+        string. See the documentation of
+        `tf.debugging.experimental.enable_dump_debug_info()` for details.
     """
     writer = tf.debugging.experimental.enable_dump_debug_info(
-        logdir, circular_buffer_size=-1
+        logdir, circular_buffer_size=-1, tensor_debug_mode=tensor_debug_mode
     )
     try:
 
@@ -283,7 +286,9 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         )
         self.assertEqual(
             json.loads(response.get_data()),
-            {"error": "end index (1) is unexpected less than begin index (2)"},
+            {
+                "error": "end index (1) is unexpectedly less than begin index (2)"
+            },
         )
 
     def testServeExecutionDigests400ResponseIfRunParamIsNotSpecified(self):
@@ -299,6 +304,118 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertEqual(
             json.loads(response.get_data()),
             {"error": "run parameter is not provided"},
+        )
+
+    def testServeASingleExecutionDataObject(self):
+        _generate_tfdbg_v2_data(self.logdir, tensor_debug_mode="CONCISE_HEALTH")
+        run = self._getExactlyOneRun()
+        response = self.server.get(
+            _ROUTE_PREFIX + "/execution/data?run=%s&begin=0&end=1" % run
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        data = json.loads(response.get_data())
+        self.assertEqual(data["begin"], 0)
+        self.assertEqual(data["end"], 1)
+        self.assertLen(data["executions"], 1)
+        execution = data["executions"][0]
+        self.assertStartsWith(execution["op_type"], "__inference_my_function_")
+        self.assertLen(execution["output_tensor_device_ids"], 1)
+        self.assertEqual(execution["host_name"], _HOST_NAME)
+        self.assertTrue(execution["stack_frame_ids"])
+        self.assertLen(execution["input_tensor_ids"], 1)
+        self.assertLen(execution["output_tensor_ids"], 1)
+        self.assertTrue(execution["graph_id"])
+        # CONCISE_HEALTH mode:
+        #   [[Unused tensor ID, #(elements), #(-inf), #(+inf), #(nan)]].
+        self.assertEqual(execution["tensor_debug_mode"], 3)
+        self.assertAllClose(
+            execution["debug_tensor_values"], [[-1.0, 1.0, 0.0, 0.0, 0.0]]
+        )
+
+    def testServeMultipleExecutionDataObject(self):
+        _generate_tfdbg_v2_data(self.logdir, tensor_debug_mode="CURT_HEALTH")
+        run = self._getExactlyOneRun()
+        response = self.server.get(
+            _ROUTE_PREFIX + "/execution/data?run=%s&begin=0&end=-1" % run
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        data = json.loads(response.get_data())
+        self.assertEqual(data["begin"], 0)
+        self.assertEqual(data["end"], 3)
+        self.assertLen(data["executions"], 3)
+        for i in range(3):
+            execution = data["executions"][i]
+            self.assertStartsWith(
+                execution["op_type"], "__inference_my_function_"
+            )
+            self.assertLen(execution["output_tensor_device_ids"], 1)
+            self.assertEqual(execution["host_name"], _HOST_NAME)
+            self.assertTrue(execution["stack_frame_ids"])
+            self.assertLen(execution["input_tensor_ids"], 1)
+            self.assertLen(execution["output_tensor_ids"], 1)
+            self.assertTrue(execution["graph_id"])
+            if i > 0:
+                self.assertEqual(
+                    execution["input_tensor_ids"],
+                    data["executions"][i - 1]["input_tensor_ids"],
+                )
+                self.assertEqual(
+                    execution["graph_id"], data["executions"][i - 1]["graph_id"]
+                )
+            # CURT_HEALTH mode:
+            #   [[Unused tensor ID, #(inf_or_nan)]].
+            self.assertEqual(execution["tensor_debug_mode"], 2)
+            self.assertAllClose(execution["debug_tensor_values"], [[-1.0, 0.0]])
+
+    def testServeExecutionDataObjectsOutOfBoundsError(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+
+        # begin = 0; end = 4
+        response = self.server.get(
+            _ROUTE_PREFIX + "/execution/data?run=%s&begin=0&end=4" % run
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {"error": "end index (4) out of bounds (3)"},
+        )
+
+        # begin = -1; end = 2
+        response = self.server.get(
+            _ROUTE_PREFIX + "/execution/data?run=%s&begin=-1&end=2" % run
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {"error": "Invalid begin index (-1)"},
+        )
+
+        # begin = 2; end = 1
+        response = self.server.get(
+            _ROUTE_PREFIX + "/execution/data?run=%s&begin=2&end=1" % run
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {
+                "error": "end index (1) is unexpectedly less than begin index (2)"
+            },
         )
 
     def testServeSourceFileListIncludesThisTestFile(self):
@@ -392,6 +509,107 @@ class DebuggerV2PluginTest(tf.test.TestCase):
             {
                 "error": "There is no source-code file at index %d"
                 % invalid_index
+            },
+        )
+
+    def testServeStackFrames(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        response = self.server.get(
+            _ROUTE_PREFIX + "/execution/data?run=%s&begin=0&end=1" % run
+        )
+        data = json.loads(response.get_data())
+        stack_frame_ids = data["executions"][0]["stack_frame_ids"]
+        self.assertIsInstance(stack_frame_ids, list)
+        self.assertTrue(stack_frame_ids)
+
+        response = self.server.get(
+            _ROUTE_PREFIX
+            + "/stack_frames/stack_frames?run=%s&stack_frame_ids=%s"
+            % (run, ",".join(stack_frame_ids))
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        data = json.loads(response.get_data())
+        self.assertIsInstance(data, dict)
+        stack_frames = data["stack_frames"]
+        self.assertIsInstance(stack_frames, list)
+        self.assertLen(stack_frames, len(stack_frame_ids))
+        for item in stack_frames:
+            self.assertIsInstance(item, list)
+            self.assertLen(item, 4)  # [host_name, file_path, lineno, function].
+            self.assertEqual(item[0], _HOST_NAME)
+            self.assertIsInstance(item[1], str)
+            self.assertTrue(item[1])
+            self.assertIsInstance(item[2], int)
+            self.assertGreaterEqual(item[2], 1)
+            self.assertIsInstance(item[3], str)
+            self.assertTrue(item[3])
+        # Assert that the current file and current function should be in the
+        # stack frames.
+        frames_for_this_function = list(
+            filter(
+                lambda frame: frame[0] == _HOST_NAME
+                and frame[1] == _CURRENT_FILE_FULL_PATH
+                and frame[3] == "testServeStackFrames",
+                stack_frames,
+            )
+        )
+        self.assertLen(frames_for_this_function, 1)
+
+    def testServeStackFramesWithMissingStackFrameIdParamErrors(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        response = self.server.get(
+            _ROUTE_PREFIX + "/stack_frames/stack_frames?run=%s" % run
+        )
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {"error": "Missing stack_frame_ids parameter"},
+        )
+
+    def testServeStackFramesWithMissingStackFrameIdParamErrors(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        response = self.server.get(
+            # Use empty value for the stack_frame_ids parameter.
+            _ROUTE_PREFIX
+            + "/stack_frames/stack_frames?run=%s&stack_frame_ids=" % run
+        )
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {"error": "Empty stack_frame_ids parameter"},
+        )
+
+    def testServeStackFramesWithMissingStackFrameIdParamErrors(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        invalid_stack_frme_id = "nonsense-stack-frame-id"
+        response = self.server.get(
+            # Use empty value for the stack_frame_ids parameter.
+            _ROUTE_PREFIX
+            + "/stack_frames/stack_frames?run=%s&stack_frame_ids=%s"
+            % (run, invalid_stack_frme_id)
+        )
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {
+                "error": "Cannot find stack frame with ID: "
+                + "'nonsense-stack-frame-id'"
             },
         )
 

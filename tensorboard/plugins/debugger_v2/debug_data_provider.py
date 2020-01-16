@@ -36,12 +36,18 @@ from tensorboard.plugins.debugger_v2 import debug_data_multiplexer
 PLUGIN_NAME = "debugger-v2"
 
 EXECUTION_DIGESTS_BLOB_TAG_PREFIX = "execution_digests"
+EXECUTION_DATA_BLOB_TAG_PREFIX = "execution_data"
 SOURCE_FILE_LIST_BLOB_TAG = "source_file_list"
 SOURCE_FILE_BLOB_TAG_PREFIX = "source_file"
+STACK_FRAMES_BLOB_TAG_PREFIX = "stack_frames"
 
 
 def execution_digest_run_tag_filter(run, begin, end):
     """Create a RunTagFilter for ExecutionDigests.
+
+    This differs from `execution_data_run_tag_filter()` in that it is for
+    the small-size digest objects for execution debug events, instead of the
+    full-size data objects.
 
     Args:
       run: tfdbg2 run name.
@@ -60,6 +66,10 @@ def execution_digest_run_tag_filter(run, begin, end):
 def _parse_execution_digest_blob_key(blob_key):
     """Parse the BLOB key for ExecutionDigests.
 
+    This differs from `_parse_execution_data_blob_key()` in that it is for
+    the small-size digest objects for execution debug events, instead of the
+    full-size data objects.
+
     Args:
       blob_key: The BLOB key to parse. By contract, it should have the format:
        `${EXECUTION_DIGESTS_BLOB_TAG_PREFIX}_${begin}_${end}.${run_id}`
@@ -72,6 +82,48 @@ def _parse_execution_digest_blob_key(blob_key):
 
     key_body, run = blob_key.split(".", 1)
     key_body = key_body[len(EXECUTION_DIGESTS_BLOB_TAG_PREFIX) :]
+    begin = int(key_body.split("_")[1])
+    end = int(key_body.split("_")[2])
+    return run, begin, end
+
+
+def execution_data_run_tag_filter(run, begin, end):
+    """Create a RunTagFilter for Execution data objects.
+
+    This differs from `execution_digest_run_tag_filter()` in that it is
+    for the detailed data objects for execution, instead of the digests.
+
+    Args:
+      run: tfdbg2 run name.
+      begin: Beginning index of Execution.
+      end: Ending index of Execution.
+
+    Returns:
+      `RunTagFilter` for the run and range of ExecutionDigests.
+    """
+    return provider.RunTagFilter(
+        runs=[run],
+        tags=["%s_%d_%d" % (EXECUTION_DATA_BLOB_TAG_PREFIX, begin, end)],
+    )
+
+
+def _parse_execution_data_blob_key(blob_key):
+    """Parse the BLOB key for Execution data objects.
+
+    This differs from `_parse_execution_digest_blob_key()` in that it is
+    for the deatiled data objects for execution, instead of the digests.
+
+    Args:
+      blob_key: The BLOB key to parse. By contract, it should have the format:
+       `${EXECUTION_DATA_BLOB_TAG_PREFIX}_${begin}_${end}.${run_id}`
+
+    Returns:
+      - run ID
+      - begin index
+      - end index
+    """
+    key_body, run = blob_key.split(".", 1)
+    key_body = key_body[len(EXECUTION_DATA_BLOB_TAG_PREFIX) :]
     begin = int(key_body.split("_")[1])
     end = int(key_body.split("_")[2])
     return run, begin, end
@@ -132,6 +184,42 @@ def _parse_source_file_blob_key(blob_key):
     key_body, run = blob_key.split(".", 1)
     index = int(key_body[len(SOURCE_FILE_BLOB_TAG_PREFIX) + 1 :])
     return run, index
+
+
+def stack_frames_run_tag_filter(run, stack_frame_ids):
+    """Create a RunTagFilter for querying stack frames.
+
+    Args:
+      run: tfdbg2 run name.
+      stack_frame_ids: The stack_frame_ids being requested.
+
+    Returns:
+      `RunTagFilter` for accessing the content of the source file.
+    """
+    return provider.RunTagFilter(
+        runs=[run],
+        # The stack-frame IDS are UUIDs, which do not contain underscores.
+        # Hence it's safe to concatenate them with underscores.
+        tags=[STACK_FRAMES_BLOB_TAG_PREFIX + "_" + "_".join(stack_frame_ids)],
+    )
+
+
+def _parse_stack_frames_blob_key(blob_key):
+    """Parse the BLOB key for source file list.
+
+    Args:
+      blob_key: The BLOB key to parse. By contract, it should have the format:
+       `${STACK_FRAMES_BLOB_TAG_PREFIX}_` +
+       `${stack_frame_id_0}_..._${stack_frame_id_N}.${run_id}`
+
+    Returns:
+      - run ID
+      - The stack frame IDs as a tuple of strings.
+    """
+    key_body, run = blob_key.split(".", 1)
+    key_body = key_body[len(STACK_FRAMES_BLOB_TAG_PREFIX) + 1 :]
+    stack_frame_ids = key_body.split("_")
+    return run, stack_frame_ids
 
 
 class LocalDebuggerV2DataProvider(provider.DataProvider):
@@ -217,11 +305,14 @@ class LocalDebuggerV2DataProvider(provider.DataProvider):
                 continue
             output[run] = dict()
             for tag in run_tag_filter.tags:
-                if (
-                    tag.startswith(EXECUTION_DIGESTS_BLOB_TAG_PREFIX)
-                    or tag.startswith(SOURCE_FILE_BLOB_TAG_PREFIX)
-                    or tag in (SOURCE_FILE_LIST_BLOB_TAG,)
-                ):
+                if tag.startswith(
+                    (
+                        EXECUTION_DIGESTS_BLOB_TAG_PREFIX,
+                        EXECUTION_DATA_BLOB_TAG_PREFIX,
+                        SOURCE_FILE_BLOB_TAG_PREFIX,
+                        STACK_FRAMES_BLOB_TAG_PREFIX,
+                    )
+                ) or tag in (SOURCE_FILE_LIST_BLOB_TAG,):
                     output[run][tag] = [
                         provider.BlobReference(blob_key="%s.%s" % (tag, run))
                     ]
@@ -233,11 +324,19 @@ class LocalDebuggerV2DataProvider(provider.DataProvider):
             return json.dumps(
                 self._multiplexer.ExecutionDigests(run, begin, end)
             )
+        elif blob_key.startswith(EXECUTION_DATA_BLOB_TAG_PREFIX):
+            run, begin, end = _parse_execution_data_blob_key(blob_key)
+            return json.dumps(self._multiplexer.ExecutionData(run, begin, end))
         elif blob_key.startswith(SOURCE_FILE_LIST_BLOB_TAG):
             run = _parse_source_file_list_blob_key(blob_key)
             return json.dumps(self._multiplexer.SourceFileList(run))
         elif blob_key.startswith(SOURCE_FILE_BLOB_TAG_PREFIX):
             run, index = _parse_source_file_blob_key(blob_key)
             return json.dumps(self._multiplexer.SourceLines(run, index))
+        elif blob_key.startswith(STACK_FRAMES_BLOB_TAG_PREFIX):
+            run, stack_frame_ids = _parse_stack_frames_blob_key(blob_key)
+            return json.dumps(
+                self._multiplexer.StackFrames(run, stack_frame_ids)
+            )
         else:
             raise ValueError("Unrecognized blob_key: %s" % blob_key)

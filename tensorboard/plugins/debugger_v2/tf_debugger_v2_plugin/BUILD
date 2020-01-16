@@ -27,6 +27,7 @@ ng_module(
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/store:types",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/alerts",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/inactive",
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/timeline",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@ngrx/effects",
@@ -50,6 +51,7 @@ tf_ts_library(
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/testing",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/alerts",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/inactive",
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/timeline",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "@npm//@angular/common",
         "@npm//@angular/compiler",
@@ -66,5 +68,6 @@ tf_ng_web_test_suite(
         ":test_lib",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/effects:debugger_effects_test_lib",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/store:debugger_store_test_lib",
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/timeline:timeline_test",
     ],
 )
