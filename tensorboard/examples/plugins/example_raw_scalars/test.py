@@ -22,18 +22,18 @@ from werkzeug import wrappers
 from tensorboard.plugins import base_plugin
 from tensorboard_plugin_example_raw_scalars import plugin
 
-example_plugin = plugin.ExampleRawScalarsPlugin(base_plugin.TBContext())
-serve_static_file = example_plugin._serve_static_file
-
 
 def is_path_safe(path):
     """Returns the result depending on the plugin's static file handler."""
+    example_plugin = plugin.ExampleRawScalarsPlugin(base_plugin.TBContext())
+    serve_static_file = example_plugin._serve_static_file
+
     client = test.Client(serve_static_file, wrappers.BaseResponse)
     response = client.get(plugin._PLUGIN_DIRECTORY_PATH_PART + path)
     return response.status_code == 200
 
 
-class URLSafetyTest(unittest.TestCase):
+class UrlSafetyTest(unittest.TestCase):
     def test_path_traversal(self):
         """Properly check whether a URL can be served from the static folder."""
         self.assertTrue(is_path_safe("static/index.js"))
@@ -50,7 +50,22 @@ class URLSafetyTest(unittest.TestCase):
         self.assertFalse(is_path_safe("%2e%2e%2findex.js"))
         self.assertFalse(
             is_path_safe(
+                "static/../..\\org_tensorflow_tensorboard\\static\\index.js"
+            )
+        )
+        self.assertFalse(
+            is_path_safe(
                 "static/../../org_tensorflow_tensorboard/static/index.js"
+            )
+        )
+        self.assertFalse(
+            is_path_safe(
+                "static/%2e%2e%2f%2e%2e%5corg_tensorflow_tensorboard%5cstatic%5cindex.js"
+            )
+        )
+        self.assertFalse(
+            is_path_safe(
+                "static/%2e%2e%2f%2e%2e%2forg_tensorflow_tensorboard%2fstatic%2findex.js"
             )
         )
 
