@@ -269,11 +269,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
 
     def test_read_scalars_but_not_rank_0(self):
         provider = self.create_provider()
-<<<<<<< HEAD
         run_tag_filter = base_provider.RunTagFilter(["waves"], ["bad"])
-=======
-        run_tag_filter = base_provider.RunTagFilter(["lebesgue"], ["uniform"])
->>>>>>> 94faac5eee1aeefdba1fdd86dcd0344dca72bf2d
         # No explicit checks yet.
         with six.assertRaisesRegex(
             self,
@@ -282,11 +278,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
         ):
             provider.read_scalars(
                 experiment_id="unused",
-<<<<<<< HEAD
                 plugin_name="greetings",
-=======
-                plugin_name=histogram_metadata.PLUGIN_NAME,
->>>>>>> 94faac5eee1aeefdba1fdd86dcd0344dca72bf2d
                 run_tag_filter=run_tag_filter,
             )
 
