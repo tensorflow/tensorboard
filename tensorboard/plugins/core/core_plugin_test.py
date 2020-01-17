@@ -350,7 +350,6 @@ class CorePluginLogdirModeTest(CorePluginTestBase, tf.test.TestCase):
 class CorePluginDbImportModeTest(CorePluginTestBase, tf.test.TestCase):
     def create_multiplexer(self):
         db_path = os.path.join(self.get_temp_dir(), "db.db")
-        print(self.id(), db_path)  # DO NOT SUBMIT
         db_uri = "sqlite:%s" % db_path
         db_connection_provider = application.create_sqlite_connection_provider(
             db_uri
