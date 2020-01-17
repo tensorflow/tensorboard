@@ -72,7 +72,7 @@ enum DataClass {
   // Tensor time series. Each `Value` for the corresponding tag must have
   // `tensor` set. The tensor value is arbitrary, but should be small to
   // accommodate direct storage in database backends: an upper bound of a few
-  // thousand kilobytes is a reasonable rule of thumb.
+  // kilobytes is a reasonable rule of thumb.
   DATA_CLASS_TENSOR = 2;
   // Blob sequence time series. Each `Value` for the corresponding tag must
   // have `tensor` set to a rank-1 tensor of bytestring dtype.

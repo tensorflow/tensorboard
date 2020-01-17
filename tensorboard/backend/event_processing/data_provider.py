@@ -265,29 +265,14 @@ class MultiplexerDataProvider(provider.DataProvider):
             result[run] = result_for_run
             for (tag, metadata) in six.iteritems(tags_for_run):
                 events = self._multiplexer.Tensors(run, tag)
-                data = []
+                data_by_step = {}
                 for event in events:
-                    num_blobs = _tensor_size(event.tensor_proto)
-                    values = tuple(
-                        provider.BlobReference(
-                            _encode_blob_key(
-                                experiment_id,
-                                plugin_name,
-                                run,
-                                tag,
-                                event.step,
-                                i,
-                            )
-                        )
-                        for i in range(num_blobs)
+                    if event.step in data_by_step:
+                        continue
+                    data_by_step[event.step] = _convert_blob_sequence_event(
+                        experiment_id, plugin_name, run, tag, event
                     )
-                    data.append(
-                        provider.BlobSequenceDatum(
-                            wall_time=event.wall_time,
-                            step=event.step,
-                            values=values,
-                        )
-                    )
+                data = [datum for (step, datum) in sorted(data_by_step.items())]
                 result_for_run[tag] = data
         return result
 
@@ -305,14 +290,11 @@ class MultiplexerDataProvider(provider.DataProvider):
         if summary_metadata.data_class != summary_pb2.DATA_CLASS_BLOB_SEQUENCE:
             raise errors.NotFoundError(blob_key)
         tensor_events = self._multiplexer.Tensors(run, tag)
-        matching_steps = [e for e in tensor_events if e.step == step]
-        if not matching_steps:
+        # In case of multiple events at this step, take first (arbitrary).
+        matching_step = next((e for e in tensor_events if e.step == step), None)
+        if not matching_step:
             raise errors.NotFoundError("%s: no such step %r" % (blob_key, step))
-        if len(matching_steps) > 1:
-            raise errors.NotFoundError(
-                "%s: conflicting values for step %r" % (blob_key, step)
-            )
-        tensor = tensor_util.make_ndarray(matching_steps[0].tensor_proto)
+        tensor = tensor_util.make_ndarray(matching_step.tensor_proto)
         return tensor[index]
 
 
@@ -391,6 +373,22 @@ def _convert_tensor_event(event):
         step=event.step,
         wall_time=event.wall_time,
         numpy=tensor_util.make_ndarray(event.tensor_proto),
+    )
+
+
+def _convert_blob_sequence_event(experiment_id, plugin_name, run, tag, event):
+    """Helper for `read_blob_sequences`."""
+    num_blobs = _tensor_size(event.tensor_proto)
+    values = tuple(
+        provider.BlobReference(
+            _encode_blob_key(
+                experiment_id, plugin_name, run, tag, event.step, idx,
+            )
+        )
+        for idx in range(num_blobs)
+    )
+    return provider.BlobSequenceDatum(
+        wall_time=event.wall_time, step=event.step, values=values,
     )
 
 

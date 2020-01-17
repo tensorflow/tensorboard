@@ -75,11 +75,12 @@ def _migrate_value(value):
     """Convert an old value to a stream of new values."""
     if value.metadata.data_class != summary_pb2.DATA_CLASS_UNKNOWN:
         return (value,)
-    transformer = {
-        histograms_metadata.PLUGIN_NAME: _migrate_histogram_value,
-        scalars_metadata.PLUGIN_NAME: _migrate_scalar_value,
-    }.get(value.metadata.plugin_data.plugin_name, lambda v: (v,))
-    return transformer(value)
+    plugin_name = value.metadata.plugin_data.plugin_name
+    if plugin_name == histograms_metadata.PLUGIN_NAME:
+        return _migrate_histogram_value(value)
+    if plugin_name == scalars_metadata.PLUGIN_NAME:
+        return _migrate_scalar_value(value)
+    return (value,)
 
 
 def _migrate_scalar_value(value):
