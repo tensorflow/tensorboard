@@ -34,6 +34,16 @@ from tensorboard.util import tensor_util
 
 
 def migrate_event(event):
+    """Migrate an event to a sequence of events.
+
+    Args:
+      event: An `event_pb2.Event`. The caller transfers ownership of the
+        event to this method; the event may be mutated, and may or may
+        not appear in the returned sequence.
+
+    Returns:
+      A sequence of `event_pb2.Event`s to use instead of `event`.
+    """
     if event.HasField("graph_def"):
         return _migrate_graph_event(event)
     if event.HasField("summary"):
@@ -56,23 +66,22 @@ def _migrate_graph_event(old_event):
     return (old_event, result)
 
 
-def _migrate_summary_event(old_event):
-    old_values = old_event.summary.value
-    new_values = [new for old in old_values for new in _migrate_value(old)]
-    # Optimization: Don't create a new event if there were no changes.
-    if len(old_values) == len(new_values) and all(
-        x is y for (x, y) in zip(old_values, new_values)
+def _migrate_summary_event(event):
+    values = event.summary.value
+    new_values = [new for old in values for new in _migrate_value(old)]
+    # Optimization: Don't create a new event if there were no shallow
+    # changes (there may still have been in-place changes).
+    if len(values) == len(new_values) and all(
+        x is y for (x, y) in zip(values, new_values)
     ):
-        return (old_event,)
-    result = event_pb2.Event()
-    result.wall_time = old_event.wall_time
-    result.step = old_event.step
-    result.summary.value.extend(new_values)
-    return (result,)
+        return (event,)
+    del event.summary.value[:]
+    event.summary.value.extend(new_values)
+    return (event,)
 
 
 def _migrate_value(value):
-    """Convert an old value to a stream of new values."""
+    """Convert an old value to a stream of new values. May mutate."""
     if value.metadata.data_class != summary_pb2.DATA_CLASS_UNKNOWN:
         return (value,)
     plugin_name = value.metadata.plugin_data.plugin_name
@@ -84,14 +93,10 @@ def _migrate_value(value):
 
 
 def _migrate_scalar_value(value):
-    new_value = summary_pb2.Summary.Value()
-    new_value.CopyFrom(value)
-    new_value.metadata.data_class = summary_pb2.DATA_CLASS_SCALAR
-    return (new_value,)
+    value.metadata.data_class = summary_pb2.DATA_CLASS_SCALAR
+    return (value,)
 
 
 def _migrate_histogram_value(value):
-    new_value = summary_pb2.Summary.Value()
-    new_value.CopyFrom(value)
-    new_value.metadata.data_class = summary_pb2.DATA_CLASS_TENSOR
-    return (new_value,)
+    value.metadata.data_class = summary_pb2.DATA_CLASS_TENSOR
+    return (value,)

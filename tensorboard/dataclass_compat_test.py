@@ -42,10 +42,9 @@ class MigrateEventTest(tf.test.TestCase):
 
     def _migrate_event(self, old_event):
         """Like `migrate_event`, but performs some sanity checks."""
-        old_event_copy = event_pb2.Event()  # ensure that input is not mutated
+        old_event_copy = event_pb2.Event()
         old_event_copy.CopyFrom(old_event)
         new_events = dataclass_compat.migrate_event(old_event)
-        self.assertEqual(old_event, old_event_copy)
         for event in new_events:  # ensure that wall time and step are preserved
             self.assertEqual(event.wall_time, old_event.wall_time)
             self.assertEqual(event.step, old_event.step)
