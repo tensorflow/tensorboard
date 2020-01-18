@@ -32,14 +32,15 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":core_plugin",
-        "//tensorboard:expect_sqlite3_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
+        "//tensorboard/backend/event_processing:db_import_multiplexer",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/util:test_util",
         "@org_pocoo_werkzeug",
+        "@org_pythonhosted_mock",
         "@org_pythonhosted_six",
     ],
 )
