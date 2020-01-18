@@ -26,13 +26,14 @@ from tensorboard.plugins.debugger_v2 import debug_data_provider
 from tensorboard.backend import http_util
 
 
-def _missing_run_error_response(request):
+def _error_response(request, error_message):
     return http_util.Respond(
-        request,
-        {"error": "run parameter is not provided"},
-        "application/json",
-        code=400,
+        request, {"error": error_message}, "application/json", code=400,
     )
+
+
+def _missing_run_error_response(request):
+    return _error_response(request, "run parameter is not provided")
 
 
 class DebuggerV2Plugin(base_plugin.TBPlugin):
@@ -114,10 +115,8 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
                 ),
                 "application/json",
             )
-        except (IndexError, ValueError) as e:
-            return http_util.Respond(
-                request, {"error": str(e)}, "application/json", code=400,
-            )
+        except IndexError as e:
+            return _error_response(request, str(e))
 
     @wrappers.Request.application
     def serve_execution_data(self, request):
@@ -142,10 +141,8 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
                 ),
                 "application/json",
             )
-        except (IndexError, ValueError) as e:
-            return http_util.Respond(
-                request, {"error": str(e)}, "application/json", code=400,
-            )
+        except IndexError as e:
+            return _error_response(request, str(e))
 
     @wrappers.Request.application
     def serve_source_files_list(self, request):
@@ -189,11 +186,8 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
         # TOOD(cais): When the need arises, support serving a subset of a
         # source file's lines.
         if index is None:
-            return http_util.Respond(
-                request,
-                {"error": "index is not provided for source file content"},
-                "application/json",
-                code=400,
+            return _error_response(
+                request, "index is not provided for source file content"
             )
         index = int(index)
         run_tag_filter = debug_data_provider.source_file_run_tag_filter(
@@ -212,9 +206,7 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
                 "application/json",
             )
         except IndexError as e:
-            return http_util.Respond(
-                request, {"error": str(e)}, "application/json", code=400,
-            )
+            return _error_response(request, str(e))
 
     @wrappers.Request.application
     def serve_stack_frames(self, request):
@@ -235,19 +227,9 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
             return _missing_run_error_response(request)
         stack_frame_ids = request.args.get("stack_frame_ids")
         if stack_frame_ids is None:
-            return http_util.Respond(
-                request,
-                {"error": "Missing stack_frame_ids parameter"},
-                "application/json",
-                code=400,
-            )
+            return _error_response(request, "Missing stack_frame_ids parameter")
         if not stack_frame_ids:
-            return http_util.Respond(
-                request,
-                {"error": "Empty stack_frame_ids parameter"},
-                "application/json",
-                code=400,
-            )
+            return _error_response(request, "Empty stack_frame_ids parameter")
         stack_frame_ids = stack_frame_ids.split(",")
         run_tag_filter = debug_data_provider.stack_frames_run_tag_filter(
             run, stack_frame_ids
@@ -265,9 +247,6 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
                 "application/json",
             )
         except KeyError as e:
-            return http_util.Respond(
-                request,
-                {"error": "Cannot find stack frame with ID: %s" % e},
-                "application/json",
-                code=400,
+            return _error_response(
+                request, "Cannot find stack frame with ID: %s" % e
             )

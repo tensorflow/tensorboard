@@ -152,7 +152,7 @@ class DebuggerV2EventMultiplexer(object):
                 "end index (%d) out of bounds (%d)" % (end, execution_count)
             )
         if end >= 0 and end < begin:
-            raise ValueError(
+            raise IndexError(
                 "end index (%d) is unexpectedly less than begin index (%d)"
                 % (end, begin)
             )
