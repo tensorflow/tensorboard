@@ -29,6 +29,11 @@ mat-tab-group {
   flex: 0 0 auto;
 }
 
+.brand a {
+  text-decoration: none;
+  color: white;
+}
+
 .plugins {
   align-items: center;
   display: flex;

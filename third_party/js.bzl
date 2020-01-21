@@ -128,14 +128,14 @@ def tensorboard_js_workspace():
   http_archive(
       name = "io_angular_clutz",
       build_file = str(Label("//third_party:clutz.BUILD")),
-      sha256 = "4962319daec4ed65c79707671fcefbbe666bb9dc37b031093fc1bd16d9c04edb",
+      sha256 = "b3eee38fda6b942eaf99208f9714f033974308eaeebf2300f61c828a3e1a5879",
       # An upgrade to io_bazel_rules_closure updated Closure compiler, which
       # required Clutz upgrades that are not in any release. Thus, this is
       # pinned to HEAD.
-      strip_prefix = "clutz-ddd20ebfcdce6a24ca4c8235033f9e651b00d118",
+      strip_prefix = "clutz-7ef7cdb156cd5f0359eb3b22b259d780e3ad825d",
       urls = [
-          "http://mirror.tensorflow.org/github.com/angular/clutz/archive/ddd20ebfcdce6a24ca4c8235033f9e651b00d118.tar.gz",  # 2019-09-20
-          "https://github.com/angular/clutz/archive/ddd20ebfcdce6a24ca4c8235033f9e651b00d118.tar.gz",
+          "http://mirror.tensorflow.org/github.com/angular/clutz/archive/7ef7cdb156cd5f0359eb3b22b259d780e3ad825d.tar.gz",  # 2019-10-23
+          "https://github.com/angular/clutz/archive/7ef7cdb156cd5f0359eb3b22b259d780e3ad825d.tar.gz",
       ],
   )
 

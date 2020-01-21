@@ -36,11 +36,11 @@ py_repositories()
 
 http_archive(
     name = "io_bazel_rules_closure",
-    sha256 = "9b99615f73aa574a2947226c6034a6f7c319e1e42905abc4dc30ddbbb16f4a31",
-    strip_prefix = "rules_closure-4a79cc6e6eea5e272fe615db7c98beb8cf8e7eb5",
+    sha256 = "6a900831c1eb8dbfc9d6879b5820fd614d4ea1db180eb5ff8aedcb75ee747c1f",
+    strip_prefix = "rules_closure-db4683a2a1836ac8e265804ca5fa31852395185b",
     urls = [
-        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_closure/archive/4a79cc6e6eea5e272fe615db7c98beb8cf8e7eb5.tar.gz",
-        "https://github.com/bazelbuild/rules_closure/archive/4a79cc6e6eea5e272fe615db7c98beb8cf8e7eb5.tar.gz",  # 2019-09-16
+        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_closure/archive/db4683a2a1836ac8e265804ca5fa31852395185b.tar.gz",
+        "https://github.com/bazelbuild/rules_closure/archive/db4683a2a1836ac8e265804ca5fa31852395185b.tar.gz",  # 2020-01-15
     ],
 )
 
@@ -82,11 +82,11 @@ http_archive(
     name = "org_tensorflow",
     # NOTE: when updating this, MAKE SURE to also update the protobuf_js runtime version
     # in third_party/workspace.bzl to >= the protobuf/protoc version provided by TF.
-    sha256 = "48ddba718da76df56fd4c48b4bbf4f97f254ba269ec4be67f783684c75563ef8",
-    strip_prefix = "tensorflow-2.0.0-rc0",
+    sha256 = "638e541a4981f52c69da4a311815f1e7989bf1d67a41d204511966e1daed14f7",
+    strip_prefix = "tensorflow-2.1.0",
     urls = [
-        "http://mirror.tensorflow.org/github.com/tensorflow/tensorflow/archive/v2.0.0-rc0.tar.gz",  # 2019-08-23
-        "https://github.com/tensorflow/tensorflow/archive/v2.0.0-rc0.tar.gz",
+        "http://mirror.tensorflow.org/github.com/tensorflow/tensorflow/archive/v2.1.0.tar.gz",  # 2020-01-06
+        "https://github.com/tensorflow/tensorflow/archive/v2.1.0.tar.gz",
     ],
 )
 
