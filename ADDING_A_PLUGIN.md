@@ -54,7 +54,7 @@ You can start building the backend by subclassing `TBPlugin` in [`base_plugin.py
 
 ```python
 class MyPlugin(base_plugin.TBPlugin):
-  plugin_name = "My Awesome Plugin"
+  plugin_name = "My_Awesome_Plugin"
 
   def __init__(self, context): # ...
 
@@ -72,7 +72,7 @@ class MyPlugin(base_plugin.TBPlugin):
 ```
 
 #### TBPlugin
-  - `plugin_name`: Required field used as a unique ID for the plugin.
+  - `plugin_name`: Required field used as a unique ID for the plugin. This must only contain alphanumeric characters, hyphens, and underscores.
   - `get_plugin_apps()`: This should return a `dict` mapping route paths to WSGI applications: e.g., `"/tags"` might map to `self._serve_tags`.
   - `is_active()`: This should return whether the plugin is active (whether there exists relevant data for the plugin to process). TensorBoard will hide inactive plugins from the main navigation bar. We strongly recommend this to be a cheap operation.
   - `frontend_metadata()`: Defines how the plugin will be displayed on the frontend. See [`base_plugin.FrontendMetadata()`](https://github.com/tensorflow/tensorboard/blob/18dec9279e18a8222c9d83f90219ecddad591c46/tensorboard/plugins/base_plugin.py#L101).

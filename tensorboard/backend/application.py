@@ -92,7 +92,7 @@ PLUGIN_ENTRY_ROUTE = "/plugin_entry.html"
 # Slashes in a plugin name could throw the router for a loop. An empty
 # name would be confusing, too. To be safe, let's restrict the valid
 # names as follows.
-_VALID_PLUGIN_RE = re.compile(r"^[A-Za-z0-9_.-]+$")
+_VALID_PLUGIN_RE = re.compile(r"^[A-Za-z0-9_-]+$")
 
 logger = tb_logging.get_logger()
 
