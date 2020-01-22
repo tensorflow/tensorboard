@@ -14,7 +14,11 @@
 # ==============================================================================
 """Tests for the example plugin."""
 
+import os
+import ntpath
+import posixpath
 import unittest
+from unittest import mock
 
 from werkzeug import test
 from werkzeug import wrappers
@@ -36,38 +40,48 @@ def is_path_safe(path):
 class UrlSafetyTest(unittest.TestCase):
     def test_path_traversal(self):
         """Properly check whether a URL can be served from the static folder."""
-        self.assertTrue(is_path_safe("static/index.js"))
-        self.assertTrue(is_path_safe("./static/index.js"))
-        self.assertTrue(is_path_safe("static/../static/index.js"))
+        with mock.patch(
+            "builtins.open", mock.mock_open(read_data="data")
+        ) as mock_file:
+            self.assertTrue(is_path_safe("static/index.js"))
+            self.assertTrue(is_path_safe("./static/index.js"))
+            self.assertTrue(is_path_safe("static/../static/index.js"))
 
-        self.assertFalse(is_path_safe("../static/index.js"))
-        self.assertFalse(is_path_safe("../index.js"))
-        self.assertFalse(is_path_safe("static2/index.js"))
-        self.assertFalse(is_path_safe("notstatic/index.js"))
-        self.assertFalse(is_path_safe("static/../../index.js"))
-        self.assertFalse(is_path_safe("..%2findex.js"))
-        self.assertFalse(is_path_safe("%2e%2e/index.js"))
-        self.assertFalse(is_path_safe("%2e%2e%2findex.js"))
-        self.assertFalse(
-            is_path_safe(
-                "static/../..\\org_tensorflow_tensorboard\\static\\index.js"
+            self.assertFalse(is_path_safe("../static/index.js"))
+            self.assertFalse(is_path_safe("../index.js"))
+            self.assertFalse(is_path_safe("static2/index.js"))
+            self.assertFalse(is_path_safe("notstatic/index.js"))
+            self.assertFalse(is_path_safe("static/../../index.js"))
+            self.assertFalse(is_path_safe("..%2findex.js"))
+            self.assertFalse(is_path_safe("%2e%2e/index.js"))
+            self.assertFalse(is_path_safe("%2e%2e%2findex.js"))
+            self.assertFalse(
+                is_path_safe(
+                    "static/../..\\org_tensorflow_tensorboard\\static\\index.js"
+                )
             )
-        )
-        self.assertFalse(
-            is_path_safe(
-                "static/../../org_tensorflow_tensorboard/static/index.js"
+            self.assertFalse(
+                is_path_safe(
+                    "static/../../org_tensorflow_tensorboard/static/index.js"
+                )
             )
-        )
-        self.assertFalse(
-            is_path_safe(
-                "static/%2e%2e%2f%2e%2e%5corg_tensorflow_tensorboard%5cstatic%5cindex.js"
+            self.assertFalse(
+                is_path_safe(
+                    "static/%2e%2e%2f%2e%2e%5corg_tensorflow_tensorboard%5cstatic%5cindex.js"
+                )
             )
-        )
-        self.assertFalse(
-            is_path_safe(
-                "static/%2e%2e%2f%2e%2e%2forg_tensorflow_tensorboard%2fstatic%2findex.js"
+            self.assertFalse(
+                is_path_safe(
+                    "static/%2e%2e%2f%2e%2e%2forg_tensorflow_tensorboard%2fstatic%2findex.js"
+                )
             )
-        )
+
+            # Test with OS specific path modules.
+            with mock.patch("os.path", posixpath) as mock_path:
+                self.assertTrue(is_path_safe("static/\\index.js"))
+
+            with mock.patch("os.path", ntpath) as mock_path:
+                self.assertFalse(is_path_safe("static/\\index.js"))
 
 
 if __name__ == "__main__":
