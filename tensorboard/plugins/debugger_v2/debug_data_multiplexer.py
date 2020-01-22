@@ -20,6 +20,7 @@ from __future__ import print_function
 
 import threading
 
+from tensorboard import errors
 
 # Dummy run name for the debugger.
 # Currently, the `DebuggerV2ExperimentMultiplexer` class is tied to a single
@@ -146,13 +147,15 @@ class DebuggerV2EventMultiplexer(object):
 
     def _checkExecutionBeginEndIndices(self, begin, end, execution_count):
         if begin < 0:
-            raise IndexError("Invalid begin index (%d)" % begin)
+            raise errors.InvalidArgumentError(
+                "Invalid begin index (%d)" % begin
+            )
         if end > execution_count:
-            raise IndexError(
+            raise errors.InvalidArgumentError(
                 "end index (%d) out of bounds (%d)" % (end, execution_count)
             )
         if end >= 0 and end < begin:
-            raise IndexError(
+            raise errors.InvalidArgumentError(
                 "end index (%d) is unexpectedly less than begin index (%d)"
                 % (end, begin)
             )
@@ -234,7 +237,9 @@ class DebuggerV2EventMultiplexer(object):
         try:
             host_name, file_path = self._reader.source_file_list()[index]
         except IndexError:
-            raise IndexError("There is no source-code file at index %d" % index)
+            raise errors.NotFoundError(
+                "There is no source-code file at index %d" % index
+            )
         return {
             "host_name": host_name,
             "file_path": file_path,
@@ -245,13 +250,15 @@ class DebuggerV2EventMultiplexer(object):
         runs = self.Runs()
         if run not in runs:
             return None
-        return {
-            "stack_frames": [
-                # TODO(cais): Use public method (`stack_frame_by_id()`) when
-                # available.
-                # pylint: disable=protected-access
-                self._reader._stack_frame_by_id[stack_frame_id]
-                # pylint: enable=protected-access
-                for stack_frame_id in stack_frame_ids
-            ]
-        }
+        stack_frames = []
+        for stack_frame_id in stack_frame_ids:
+            if stack_frame_id not in self._reader._stack_frame_by_id:
+                raise errors.NotFoundError(
+                    "Cannot find stack frame with ID %s" % stack_frame_id
+                )
+            # TODO(cais): Use public method (`stack_frame_by_id()`) when
+            # available.
+            # pylint: disable=protected-access
+            stack_frames.append(self._reader._stack_frame_by_id[stack_frame_id])
+            # pylint: enable=protected-access
+        return {"stack_frames": stack_frames}

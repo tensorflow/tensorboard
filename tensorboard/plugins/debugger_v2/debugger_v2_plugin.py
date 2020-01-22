@@ -20,6 +20,7 @@ from __future__ import print_function
 
 from werkzeug import wrappers
 
+from tensorboard import errors
 from tensorboard import plugin_util
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.debugger_v2 import debug_data_provider
@@ -115,7 +116,7 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
                 ),
                 "application/json",
             )
-        except IndexError as e:
+        except errors.InvalidArgumentError as e:
             return _error_response(request, str(e))
 
     @wrappers.Request.application
@@ -141,7 +142,7 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
                 ),
                 "application/json",
             )
-        except IndexError as e:
+        except errors.InvalidArgumentError as e:
             return _error_response(request, str(e))
 
     @wrappers.Request.application
@@ -205,7 +206,7 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
                 ),
                 "application/json",
             )
-        except IndexError as e:
+        except errors.NotFoundError as e:
             return _error_response(request, str(e))
 
     @wrappers.Request.application
@@ -246,7 +247,5 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
                 ),
                 "application/json",
             )
-        except KeyError as e:
-            return _error_response(
-                request, "Cannot find stack frame with ID: %s" % e
-            )
+        except errors.NotFoundError as e:
+            return _error_response(request, str(e))

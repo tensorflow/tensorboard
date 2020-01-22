@@ -260,7 +260,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         )
         self.assertEqual(
             json.loads(response.get_data()),
-            {"error": "end index (4) out of bounds (3)"},
+            {"error": "Invalid argument: end index (4) out of bounds (3)"},
         )
 
         # begin = -1; end = 2
@@ -273,7 +273,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         )
         self.assertEqual(
             json.loads(response.get_data()),
-            {"error": "Invalid begin index (-1)"},
+            {"error": "Invalid argument: Invalid begin index (-1)"},
         )
 
         # begin = 2; end = 1
@@ -287,7 +287,8 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertEqual(
             json.loads(response.get_data()),
             {
-                "error": "end index (1) is unexpectedly less than begin index (2)"
+                "error": "Invalid argument: "
+                "end index (1) is unexpectedly less than begin index (2)"
             },
         )
 
@@ -387,7 +388,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         )
         self.assertEqual(
             json.loads(response.get_data()),
-            {"error": "end index (4) out of bounds (3)"},
+            {"error": "Invalid argument: end index (4) out of bounds (3)"},
         )
 
         # begin = -1; end = 2
@@ -400,7 +401,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         )
         self.assertEqual(
             json.loads(response.get_data()),
-            {"error": "Invalid begin index (-1)"},
+            {"error": "Invalid argument: Invalid begin index (-1)"},
         )
 
         # begin = 2; end = 1
@@ -414,7 +415,8 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertEqual(
             json.loads(response.get_data()),
             {
-                "error": "end index (1) is unexpectedly less than begin index (2)"
+                "error": "Invalid argument: "
+                "end index (1) is unexpectedly less than begin index (2)"
             },
         )
 
@@ -507,7 +509,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertEqual(
             json.loads(response.get_data()),
             {
-                "error": "There is no source-code file at index %d"
+                "error": "Not found: There is no source-code file at index %d"
                 % invalid_index
             },
         )
@@ -605,12 +607,10 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertEqual(
             "application/json", response.headers.get("content-type")
         )
-        self.assertEqual(
-            json.loads(response.get_data()),
-            {
-                "error": "Cannot find stack frame with ID: "
-                + "'nonsense-stack-frame-id'"
-            },
+        self.assertRegexpMatches(
+            json.loads(response.get_data())["error"],
+            "Not found: Cannot find stack frame with ID"
+            ".*nonsense-stack-frame-id.*",
         )
 
 

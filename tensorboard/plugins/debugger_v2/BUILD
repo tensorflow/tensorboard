@@ -12,6 +12,7 @@ py_library(
     srcs = ["debug_data_multiplexer.py"],
     srcs_version = "PY2AND3",
     deps = [
+        "//tensorboard:errors",
         "//tensorboard:expect_tensorflow_installed",
     ],
 )
