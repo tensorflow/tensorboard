@@ -17,6 +17,8 @@ async function createIframe(): Promise<HTMLIFrameElement> {
   return new Promise<HTMLIFrameElement>((resolve) => {
     const iframe = document.createElement('iframe') as HTMLIFrameElement;
     document.body.appendChild(iframe);
+    tb_plugin.host.registerPluginIframe(iframe, 'sample_plugin');
+
     iframe.src = './testable-iframe.html?name=sample_plugin';
     iframe.onload = () => resolve(iframe);
   });
@@ -92,12 +94,63 @@ describe('plugin lib integration', () => {
 
   describe('lib.core', () => {
     describe('#getURLPluginData', () => {
+      /**
+       * These tests use tf_globals' fake hash to make tf_storage think that the
+       * host's URL has been updated.
+       */
       it('returns URL data', async function() {
-        tf_globals.setFakeHash('sample_plugin&p.sample_plugin.foo=bar');
+        tf_globals.setFakeHash(
+          'sample_plugin' +
+            '&p.sample_plugin.foo=bar' +
+            '&p.sample_plugin.foo2=bar2'
+        );
         window.dispatchEvent(new Event('hashchange'));
 
         const data = await this.lib.core.getURLPluginData();
-        expect(data).to.deep.equal({foo: 'bar'});
+        expect(data).to.deep.equal({
+          'foo': 'bar',
+          'foo2': 'bar2',
+        });
+      });
+
+      it('ignores unrelated URL data', async function() {
+        tf_globals.setFakeHash(
+          'sample_plugin' +
+            '&tagFilter=loss' +
+            '&p.sample_plugin.foo=bar' +
+            '&smoothing=0.5' +
+            '&p.sample_plugin.foo2=bar2' +
+            '&p.sample_plugin2.foo=bar'
+        );
+        window.dispatchEvent(new Event('hashchange'));
+
+        const data = await this.lib.core.getURLPluginData();
+        expect(data).to.deep.equal({
+          'foo': 'bar',
+          'foo2': 'bar2',
+        });
+      });
+
+      it('handles non alphanumeric data', async function() {
+        tf_globals.setFakeHash(
+          'sample_plugin' +
+            '&p.sample_plugin.foo=bar%20baz' +
+            '&p.sample_plugin.foo2=0.123' +
+            '&p.sample_plugin.foo3=false' +
+            '&p.sample_plugin.foo4=' +
+            '&p.sample_plugin.foo5' +
+            '&p.sample_plugin.foo.with.dots=bar.dotted'
+        );
+        window.dispatchEvent(new Event('hashchange'));
+
+        const data = await this.lib.core.getURLPluginData();
+        expect(data).to.deep.equal({
+          'foo': 'bar baz',
+          'foo2': '0.123',
+          'foo3': 'false',
+          'foo4': '',
+          'foo.with.dots': 'bar.dotted',
+        });
       });
     });
   });

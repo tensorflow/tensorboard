@@ -13,12 +13,29 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 namespace tb_plugin.host {
-  export type PluginHostMessageContext = {
-    pluginName: string | null;
+  /**
+   * Registers metadata associated with a plugin iframe upon creation. Plugins
+   * registered with this do not necessarily use IPC.
+   */
+  export function registerPluginIframe(
+    frame: HTMLIFrameElement,
+    pluginName: string
+  ) {
+    pluginMetadata.set(frame, {pluginName});
+  }
+
+  const pluginMetadata = new WeakMap<HTMLIFrameElement, PluginMetadata>();
+
+  export type PluginMetadata = {
+    pluginName: string;
   };
 
+  /**
+   * The `context` is only null in the case of a 'removeDom' plugin that gets
+   * removed after it posts a message, and before the host has responded.
+   */
   export type PluginHostCallback = (
-    context: PluginHostMessageContext,
+    context: PluginMetadata | null,
     data: any
   ) => any;
 
@@ -63,17 +80,9 @@ namespace tb_plugin.host {
     callback: PluginHostCallback,
     ipc: lib.DO_NOT_USE_INTERNAL.IPC
   ): lib.DO_NOT_USE_INTERNAL.MessageCallback {
-    return (payload) => {
-      const context: PluginHostMessageContext = {pluginName: null};
-
-      // 'name' is a keyword set in the iframe URL by tf-tensorboard's
-      // `_renderPluginIframe`.
-      const frame = ipcToFrame.get(ipc);
-      if (frame) {
-        const pluginName = new URL(frame.src).searchParams.get('name');
-        context.pluginName = pluginName;
-      }
-
+    return (payload: tb_plugin.lib.DO_NOT_USE_INTERNAL.PayloadType) => {
+      const frame = ipcToFrame.get(ipc)!;
+      const context = pluginMetadata.get(frame) || null;
       return callback(context, payload);
     };
   }

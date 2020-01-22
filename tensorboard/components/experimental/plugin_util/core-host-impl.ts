@@ -16,6 +16,9 @@ limitations under the License.
  * Implements core plugin APIs.
  */
 tb_plugin.host.listen('experimental.GetURLPluginData', (context) => {
+  if (!context) {
+    return;
+  }
   const prefix = `p.${context.pluginName}.`;
   const result: {[key: string]: string} = {};
 

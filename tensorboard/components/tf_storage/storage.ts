@@ -218,7 +218,7 @@ namespace tf_storage {
     return {get, set, getInitializer, getObserver, disposeBinding};
   }
 
-  export function initializeUrlDict() {
+  export function migrateLegacyURLScheme() {
     /**
      * TODO(psybuzz): move to some compatibility file.
      * Convert URL hash params from the legacy scheme (list taken on 1/16/2020)
