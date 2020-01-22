@@ -1,4 +1,4 @@
-load("//tensorboard/defs:defs.bzl", "tf_ts_library", "tf_js_binary")
+load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -9,10 +9,10 @@ licenses(["notice"])  # Apache 2.0
 tf_ts_library(
     name = "plugin_lib",
     srcs = [
+        "core.ts",
         "index.ts",
         "message.ts",
         "plugin-guest.ts",
-        "core.ts",
         "runs.ts",
     ],
 )

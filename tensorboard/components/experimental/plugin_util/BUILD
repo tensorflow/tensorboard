@@ -28,9 +28,9 @@ tf_web_library(
 tf_web_library(
     name = "plugin_host",
     srcs = [
+        "core-host-impl.ts",
         "plugin-host.html",
         "runs-host-impl.ts",
-        "core-host-impl.ts",
     ],
     path = "/tf-plugin-util",
     deps = [

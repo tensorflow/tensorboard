@@ -48,12 +48,12 @@ namespace tf_storage {
    */
   export const DISAMBIGUATOR = 'disambiguator';
 
+  // Keep an up-to-date store of URL params, which iframed plugins can request.
   export let urlDict: StringDict = componentToDict(readComponent());
 
-  // Keep an up-to-date store of URL params, which iframed plugins can request.
   tf_storage.addHashListener(() => {
     tf_storage.urlDict = componentToDict(readComponent());
-  })
+  });
 
   export const {
     get: getString,

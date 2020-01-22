@@ -19,7 +19,7 @@ namespace tb_plugin.host {
 
   export type PluginHostCallback = (
     context: PluginHostMessageContext,
-    data: any,
+    data: any
   ) => any;
 
   const portIPCs = new Set<lib.DO_NOT_USE_INTERNAL.IPC>();
