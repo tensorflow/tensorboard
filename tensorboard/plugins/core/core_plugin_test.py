@@ -23,11 +23,14 @@ import contextlib
 import json
 import os
 import shutil
-import unittest
-
 import six
-import sqlite3
 import zipfile
+
+try:
+    # python version >= 3.3
+    from unittest import mock
+except ImportError:
+    import mock  # pylint: disable=unused-import
 
 import tensorflow as tf
 
@@ -35,6 +38,7 @@ from werkzeug import test as werkzeug_test
 from werkzeug import wrappers
 
 from tensorboard.backend import application
+from tensorboard.backend.event_processing import db_import_multiplexer
 from tensorboard.backend.event_processing import (
     plugin_event_multiplexer as event_multiplexer,
 )
@@ -45,9 +49,6 @@ from tensorboard.plugins.core import core_plugin
 from tensorboard.util import test_util
 
 FAKE_INDEX_HTML = b"<!doctype html><title>fake-index</title>"
-
-# tf.contrib is being removed and db support depends on tf.contrib. See b/147155091.
-ENABLE_DB_TESTS = getattr(tf, "contrib", None)
 
 
 class FakeFlags(object):
@@ -74,28 +75,7 @@ class FakeFlags(object):
         self.path_prefix = path_prefix
 
 
-class CorePluginTest(tf.test.TestCase):
-    _only_use_meta_graph = False  # Server data contains only a GraphDef
-
-    def setUp(self):
-        super(CorePluginTest, self).setUp()
-        self.temp_dir = self.get_temp_dir()
-        self.addCleanup(shutil.rmtree, self.temp_dir)
-
-        if ENABLE_DB_TESTS:
-            self.db_path = os.path.join(self.temp_dir, "db.db")
-            self.db = sqlite3.connect(self.db_path)
-            self.db_uri = "sqlite:" + self.db_path
-            self._start_db_based_server()
-
-        self._start_logdir_based_server(self.temp_dir)
-
-    def testRoutesProvided(self):
-        """Tests that the plugin offers the correct routes."""
-        routes = self.logdir_based_plugin.get_plugin_apps()
-        self.assertIsInstance(routes["/data/logdir"], collections.Callable)
-        self.assertIsInstance(routes["/data/runs"], collections.Callable)
-
+class CorePluginFlagsTest(tf.test.TestCase):
     def testFlag(self):
         loader = core_plugin.CorePluginLoader()
         loader.fix_flags(FakeFlags(version_tb=True))
@@ -155,9 +135,37 @@ class CorePluginTest(tf.test.TestCase):
         self.assertIn("must start with slash", msg)
         self.assertIn(repr("noslash"), msg)
 
+
+class CorePluginNoDataTest(tf.test.TestCase):
+    def setUp(self):
+        super(CorePluginNoDataTest, self).setUp()
+        context = base_plugin.TBContext(
+            assets_zip_provider=get_test_assets_zip_provider(),
+            logdir=self.get_temp_dir(),
+            multiplexer=event_multiplexer.EventMultiplexer(),
+            window_title="title foo",
+        )
+        self.plugin = core_plugin.CorePlugin(context)
+        app = application.TensorBoardWSGI([self.plugin])
+        self.server = werkzeug_test.Client(app, wrappers.BaseResponse)
+
+    def _get_json(self, server, path):
+        response = server.get(path)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("Content-Type")
+        )
+        return json.loads(response.get_data().decode("utf-8"))
+
+    def testRoutesProvided(self):
+        """Tests that the plugin offers the correct routes."""
+        routes = self.plugin.get_plugin_apps()
+        self.assertIsInstance(routes["/data/logdir"], collections.Callable)
+        self.assertIsInstance(routes["/data/runs"], collections.Callable)
+
     def testIndex_returnsActualHtml(self):
-        """Test the format of the /data/runs endpoint."""
-        response = self.logdir_based_server.get("/")
+        """Test the format of the root / endpoint."""
+        response = self.server.get("/")
         self.assertEqual(200, response.status_code)
         self.assertStartsWith(response.headers.get("Content-Type"), "text/html")
         html = response.get_data()
@@ -166,111 +174,112 @@ class CorePluginTest(tf.test.TestCase):
     def testDataPaths_disableAllCaching(self):
         """Test the format of the /data/runs endpoint."""
         for path in ("/data/runs", "/data/logdir"):
-            response = self.logdir_based_server.get(path)
+            response = self.server.get(path)
             self.assertEqual(200, response.status_code, msg=path)
             self.assertEqual("0", response.headers.get("Expires"), msg=path)
-
-    @unittest.skipUnless(
-        ENABLE_DB_TESTS,
-        "tf.contrib is being removed and db support depends on tf.contrib. See b/147155091",
-    )
-    def testEnvironmentForDbUri(self):
-        """Test that the environment route correctly returns the database
-        URI."""
-        parsed_object = self._get_json(
-            self.db_based_server, "/data/environment"
-        )
-        self.assertEqual(parsed_object["data_location"], self.db_uri)
-
-    def testEnvironmentForLogdir(self):
-        """Test that the environment route correctly returns the logdir."""
-        parsed_object = self._get_json(
-            self.logdir_based_server, "/data/environment"
-        )
-        self.assertEqual(parsed_object["data_location"], self.logdir)
 
     def testEnvironmentForWindowTitle(self):
         """Test that the environment route correctly returns the window
         title."""
-        if ENABLE_DB_TESTS:
-            parsed_object_db = self._get_json(
-                self.db_based_server, "/data/environment"
-            )
-            self.assertEqual(parsed_object_db["window_title"], "title foo")
+        parsed_object = self._get_json(self.server, "/data/environment")
+        self.assertEqual(parsed_object["window_title"], "title foo")
 
-        parsed_object_logdir = self._get_json(
-            self.logdir_based_server, "/data/environment"
-        )
-        self.assertEqual(parsed_object_logdir["window_title"], "title foo")
+    def testEnvironmentForLogdir(self):
+        """Test that the environment route correctly returns the logdir."""
+        parsed_object = self._get_json(self.server, "/data/environment")
+        self.assertEqual(parsed_object["data_location"], self.get_temp_dir())
 
     def testLogdir(self):
         """Test the format of the data/logdir endpoint."""
-        parsed_object = self._get_json(self.logdir_based_server, "/data/logdir")
-        self.assertEqual(parsed_object, {"logdir": self.logdir})
+        parsed_object = self._get_json(self.server, "/data/logdir")
+        self.assertEqual(parsed_object, {"logdir": self.get_temp_dir()})
 
-    @test_util.run_v1_only("Uses tf.contrib when adding runs.")
+
+class CorePluginDbModeTest(tf.test.TestCase):
+    def setUp(self):
+        super(CorePluginDbModeTest, self).setUp()
+        self.db_path = os.path.join(self.get_temp_dir(), "db.db")
+        self.db_uri = "sqlite:" + self.db_path
+        db_connection_provider = application.create_sqlite_connection_provider(
+            self.db_uri
+        )
+        context = base_plugin.TBContext(
+            assets_zip_provider=get_test_assets_zip_provider(),
+            db_connection_provider=db_connection_provider,
+            db_uri=self.db_uri,
+        )
+        self.plugin = core_plugin.CorePlugin(context)
+        app = application.TensorBoardWSGI([self.plugin])
+        self.server = werkzeug_test.Client(app, wrappers.BaseResponse)
+
+    def _get_json(self, server, path):
+        response = server.get(path)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("Content-Type")
+        )
+        return json.loads(response.get_data().decode("utf-8"))
+
+    def testEnvironmentForDbUri(self):
+        """Test that the environment route correctly returns the database
+        URI."""
+        parsed_object = self._get_json(self.server, "/data/environment")
+        self.assertEqual(parsed_object["data_location"], self.db_uri)
+
+
+class CorePluginTestBase(object):
+    def setUp(self):
+        super(CorePluginTestBase, self).setUp()
+        self.logdir = self.get_temp_dir()
+        self.multiplexer = self.create_multiplexer()
+        db_uri = None
+        db_connection_provider = None
+        if isinstance(
+            self.multiplexer, db_import_multiplexer.DbImportMultiplexer
+        ):
+            db_uri = self.multiplexer.db_uri
+            db_connection_provider = self.multiplexer.db_connection_provider
+        context = base_plugin.TBContext(
+            assets_zip_provider=get_test_assets_zip_provider(),
+            logdir=self.logdir,
+            multiplexer=self.multiplexer,
+            db_uri=db_uri,
+            db_connection_provider=db_connection_provider,
+        )
+        self.plugin = core_plugin.CorePlugin(context)
+        app = application.TensorBoardWSGI([self.plugin])
+        self.server = werkzeug_test.Client(app, wrappers.BaseResponse)
+
+    def create_multiplexer(self):
+        raise NotImplementedError()
+
+    def _add_run(self, run_name):
+        run_path = os.path.join(self.logdir, run_name)
+        with test_util.FileWriter(run_path) as writer:
+            writer.add_test_summary("foo")
+        self.multiplexer.AddRunsFromDirectory(self.logdir)
+        self.multiplexer.Reload()
+
+    def _get_json(self, server, path):
+        response = server.get(path)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("Content-Type")
+        )
+        return json.loads(response.get_data().decode("utf-8"))
+
     def testRuns(self):
         """Test the format of the /data/runs endpoint."""
         self._add_run("run1")
-        if ENABLE_DB_TESTS:
-            run_json = self._get_json(self.db_based_server, "/data/runs")
-            self.assertEqual(run_json, ["run1"])
-        run_json = self._get_json(self.logdir_based_server, "/data/runs")
+        run_json = self._get_json(self.server, "/data/runs")
         self.assertEqual(run_json, ["run1"])
 
-    @test_util.run_v1_only("Uses tf.contrib when adding runs.")
-    def testExperiments(self):
-        """Test the format of the /data/experiments endpoint."""
-        self._add_run("run1", experiment_name="exp1")
-        self._add_run("run2", experiment_name="exp1")
-        self._add_run("run3", experiment_name="exp2")
 
-        if ENABLE_DB_TESTS:
-            [exp1, exp2] = self._get_json(
-                self.db_based_server, "/data/experiments"
-            )
-            self.assertEqual(exp1.get("name"), "exp1")
-            self.assertEqual(exp2.get("name"), "exp2")
+class CorePluginLogdirModeTest(CorePluginTestBase, tf.test.TestCase):
+    def create_multiplexer(self):
+        return event_multiplexer.EventMultiplexer()
 
-        exp_json = self._get_json(self.logdir_based_server, "/data/experiments")
-        self.assertEqual(exp_json, [])
-
-    @test_util.run_v1_only("Uses tf.contrib when adding runs.")
-    def testExperimentRuns(self):
-        """Test the format of the /data/experiment_runs endpoint."""
-        self._add_run("run1", experiment_name="exp1")
-        self._add_run("run2", experiment_name="exp1")
-        self._add_run("run3", experiment_name="exp2")
-
-        if ENABLE_DB_TESTS:
-            [exp1, exp2] = self._get_json(
-                self.db_based_server, "/data/experiments"
-            )
-            exp1_runs = self._get_json(
-                self.db_based_server,
-                "/experiment/%s/data/experiment_runs" % exp1.get("id"),
-            )
-            self.assertEqual(len(exp1_runs), 2)
-            self.assertEqual(exp1_runs[0].get("name"), "run1")
-            self.assertEqual(exp1_runs[1].get("name"), "run2")
-            self.assertEqual(len(exp1_runs[0].get("tags")), 1)
-            self.assertEqual(exp1_runs[0].get("tags")[0].get("name"), "mytag")
-            self.assertEqual(len(exp1_runs[1].get("tags")), 1)
-            self.assertEqual(exp1_runs[1].get("tags")[0].get("name"), "mytag")
-
-            exp2_runs = self._get_json(
-                self.db_based_server,
-                "/experiment/%s/data/experiment_runs" % exp2.get("id"),
-            )
-            self.assertEqual(len(exp2_runs), 1)
-            self.assertEqual(exp2_runs[0].get("name"), "run3")
-
-        # TODO(stephanwlee): Write test on runs that do not have any tag.
-
-        exp_json = self._get_json(self.logdir_based_server, "/data/experiments")
-        self.assertEqual(exp_json, [])
-
-    @test_util.run_v1_only("Uses tf.contrib when adding runs.")
+    # Not in base class because DB import mode does not set started_time.
     def testRunsAppendOnly(self):
         """Test that new runs appear after old ones in /data/runs."""
         fake_wall_times = {
@@ -282,10 +291,7 @@ class CorePluginTest(tf.test.TestCase):
             "enigmatic": None,
         }
 
-        stubs = tf.compat.v1.test.StubOutForTesting()
-
-        def FirstEventTimestamp_stub(multiplexer_self, run_name):
-            del multiplexer_self
+        def FirstEventTimestamp_stub(run_name):
             matches = [
                 candidate_name
                 for candidate_name in fake_wall_times
@@ -298,196 +304,104 @@ class CorePluginTest(tf.test.TestCase):
             else:
                 return wall_time
 
-        stubs.SmartSet(
-            self.multiplexer, "FirstEventTimestamp", FirstEventTimestamp_stub
-        )
+        with mock.patch.object(
+            self.multiplexer, "FirstEventTimestamp"
+        ) as mock_first_event_timestamp:
+            mock_first_event_timestamp.side_effect = FirstEventTimestamp_stub
+            # Start with a single run.
+            self._add_run("run1")
 
-        # Start with a single run.
-        self._add_run("run1")
-
-        # Add one run: it should come last.
-        self._add_run("avocado")
-        if ENABLE_DB_TESTS:
+            # Add one run: it should come last.
+            self._add_run("avocado")
             self.assertEqual(
-                self._get_json(self.db_based_server, "/data/runs"),
-                ["run1", "avocado"],
+                self._get_json(self.server, "/data/runs"), ["run1", "avocado"],
             )
-        self.assertEqual(
-            self._get_json(self.logdir_based_server, "/data/runs"),
-            ["run1", "avocado"],
-        )
 
-        # Add another run: it should come last, too.
-        self._add_run("zebra")
-        if ENABLE_DB_TESTS:
+            # Add another run: it should come last, too.
+            self._add_run("zebra")
             self.assertEqual(
-                self._get_json(self.db_based_server, "/data/runs"),
+                self._get_json(self.server, "/data/runs"),
                 ["run1", "avocado", "zebra"],
             )
-        self.assertEqual(
-            self._get_json(self.logdir_based_server, "/data/runs"),
-            ["run1", "avocado", "zebra"],
-        )
 
-        # And maybe there's a run for which we somehow have no timestamp.
-        self._add_run("mysterious")
-
-        if ENABLE_DB_TESTS:
-            with self.db:
-                self.db.execute(
-                    "UPDATE Runs SET started_time=NULL WHERE run_name=?",
-                    ["mysterious"],
-                )
+            # And maybe there's a run for which we somehow have no timestamp.
+            self._add_run("mysterious")
             self.assertEqual(
-                self._get_json(self.db_based_server, "/data/runs"),
+                self._get_json(self.server, "/data/runs"),
                 ["run1", "avocado", "zebra", "mysterious"],
             )
 
-        self.assertEqual(
-            self._get_json(self.logdir_based_server, "/data/runs"),
-            ["run1", "avocado", "zebra", "mysterious"],
-        )
-
-        # Add another timestamped run: it should come before the timestamp-less one.
-        self._add_run("ox")
-
-        if ENABLE_DB_TESTS:
+            # Add another timestamped run: it should come before the timestamp-less one.
+            self._add_run("ox")
             self.assertEqual(
-                self._get_json(self.db_based_server, "/data/runs"),
+                self._get_json(self.server, "/data/runs"),
                 ["run1", "avocado", "zebra", "ox", "mysterious"],
             )
 
-        self.assertEqual(
-            self._get_json(self.logdir_based_server, "/data/runs"),
-            ["run1", "avocado", "zebra", "ox", "mysterious"],
-        )
-
-        # Add another timestamp-less run, lexicographically before the other one:
-        # it should come after all timestamped runs but first among timestamp-less.
-        self._add_run("enigmatic")
-
-        if ENABLE_DB_TESTS:
-            with self.db:
-                self.db.execute(
-                    "UPDATE Runs SET started_time=NULL WHERE run_name=?",
-                    ["enigmatic"],
-                )
+            # Add another timestamp-less run, lexicographically before the other one:
+            # it should come after all timestamped runs but first among timestamp-less.
+            self._add_run("enigmatic")
             self.assertEqual(
-                self._get_json(self.db_based_server, "/data/runs"),
+                self._get_json(self.server, "/data/runs"),
                 ["run1", "avocado", "zebra", "ox", "enigmatic", "mysterious"],
             )
 
-        self.assertEqual(
-            self._get_json(self.logdir_based_server, "/data/runs"),
-            ["run1", "avocado", "zebra", "ox", "enigmatic", "mysterious"],
-        )
 
-        stubs.CleanUp()
-
-    def _start_logdir_based_server(self, temp_dir):
-        self.logdir = temp_dir
-        self.multiplexer = event_multiplexer.EventMultiplexer(
-            size_guidance=application.DEFAULT_SIZE_GUIDANCE,
-            purge_orphaned_data=True,
-        )
-        context = base_plugin.TBContext(
-            assets_zip_provider=get_test_assets_zip_provider(),
-            logdir=self.logdir,
-            multiplexer=self.multiplexer,
-            window_title="title foo",
-        )
-        self.logdir_based_plugin = core_plugin.CorePlugin(context)
-        app = application.TensorBoardWSGI([self.logdir_based_plugin])
-        self.logdir_based_server = werkzeug_test.Client(
-            app, wrappers.BaseResponse
-        )
-
-    def _start_db_based_server(self):
+class CorePluginDbImportModeTest(CorePluginTestBase, tf.test.TestCase):
+    def create_multiplexer(self):
+        db_path = os.path.join(self.get_temp_dir(), "db.db")
+        db_uri = "sqlite:%s" % db_path
         db_connection_provider = application.create_sqlite_connection_provider(
-            self.db_uri
+            db_uri
         )
-        context = base_plugin.TBContext(
-            assets_zip_provider=get_test_assets_zip_provider(),
+        return db_import_multiplexer.DbImportMultiplexer(
+            db_uri=db_uri,
             db_connection_provider=db_connection_provider,
-            db_uri=self.db_uri,
-            window_title="title foo",
+            purge_orphaned_data=True,
+            max_reload_threads=1,
         )
-        self.db_based_plugin = core_plugin.CorePlugin(context)
-        app = application.TensorBoardWSGI([self.db_based_plugin])
-        self.db_based_server = werkzeug_test.Client(app, wrappers.BaseResponse)
 
     def _add_run(self, run_name, experiment_name="experiment"):
-        self._generate_test_data(run_name, experiment_name)
+        run_path = os.path.join(self.logdir, experiment_name, run_name)
+        with test_util.FileWriter(run_path) as writer:
+            writer.add_test_summary("foo")
         self.multiplexer.AddRunsFromDirectory(self.logdir)
         self.multiplexer.Reload()
 
-    def _get_json(self, server, path):
-        response = server.get(path)
-        self.assertEqual(200, response.status_code)
-        return self._get_json_payload(response)
+    def testExperiments(self):
+        """Test the format of the /data/experiments endpoint."""
+        self._add_run("run1", experiment_name="exp1")
+        self._add_run("run2", experiment_name="exp1")
+        self._add_run("run3", experiment_name="exp2")
 
-    def _get_json_payload(self, response):
-        self.assertStartsWith(
-            response.headers.get("Content-Type"), "application/json"
+        [exp1, exp2] = self._get_json(self.server, "/data/experiments")
+        self.assertEqual(exp1.get("name"), "exp1")
+        self.assertEqual(exp2.get("name"), "exp2")
+
+    def testExperimentRuns(self):
+        """Test the format of the /data/experiment_runs endpoint."""
+        self._add_run("run1", experiment_name="exp1")
+        self._add_run("run2", experiment_name="exp1")
+        self._add_run("run3", experiment_name="exp2")
+
+        [exp1, exp2] = self._get_json(self.server, "/data/experiments")
+
+        exp1_runs = self._get_json(
+            self.server, "/experiment/%s/data/experiment_runs" % exp1.get("id"),
         )
-        return json.loads(response.get_data().decode("utf-8"))
+        self.assertEqual(len(exp1_runs), 2)
+        self.assertEqual(exp1_runs[0].get("name"), "run1")
+        self.assertEqual(exp1_runs[1].get("name"), "run2")
+        self.assertEqual(len(exp1_runs[0].get("tags")), 1)
+        self.assertEqual(exp1_runs[0].get("tags")[0].get("name"), "foo")
+        self.assertEqual(len(exp1_runs[1].get("tags")), 1)
+        self.assertEqual(exp1_runs[1].get("tags")[0].get("name"), "foo")
 
-    def _generate_test_data(self, run_name, experiment_name):
-        """Generates the test data directory.
-
-        The test data has a single run of the given name, containing:
-          - a graph definition and metagraph definition
-
-        Arguments:
-          run_name: The directory under self.logdir into which to write
-              events.
-        """
-        run_path = os.path.join(self.logdir, run_name)
-        with test_util.FileWriterCache.get(run_path) as writer:
-
-            # Add a simple graph event.
-            graph_def = graph_pb2.GraphDef()
-            node1 = graph_def.node.add()
-            node1.name = "a"
-            node2 = graph_def.node.add()
-            node2.name = "b"
-            node2.attr["very_large_attr"].s = b"a" * 2048  # 2 KB attribute
-
-            meta_graph_def = meta_graph_pb2.MetaGraphDef(graph_def=graph_def)
-
-            if self._only_use_meta_graph:
-                writer.add_meta_graph(meta_graph_def)
-            else:
-                writer.add_graph(graph=None, graph_def=graph_def)
-
-        if ENABLE_DB_TESTS:
-            self._generate_test_data_db(run_name, experiment_name)
-
-    def _generate_test_data_db(self, run_name, experiment_name):
-        """Generates test run data for tests which use db mode."""
-        if not ENABLE_DB_TESTS:
-            return
-
-        # TODO(nickfelt): Figure out why reseting the graph is necessary.
-        tf.compat.v1.reset_default_graph()
-        db_writer = tf.contrib.summary.create_db_writer(
-            db_uri=self.db_path,
-            experiment_name=experiment_name,
-            run_name=run_name,
-            user_name="user",
+        exp2_runs = self._get_json(
+            self.server, "/experiment/%s/data/experiment_runs" % exp2.get("id"),
         )
-        with db_writer.as_default(), tf.contrib.summary.always_record_summaries():
-            tf.contrib.summary.scalar("mytag", 1)
-
-        with tf.compat.v1.Session() as sess:
-            sess.run(tf.compat.v1.global_variables_initializer())
-            sess.run(tf.contrib.summary.summary_writer_initializer_op())
-            sess.run(tf.contrib.summary.all_summary_ops())
-
-
-class CorePluginUsingMetagraphOnlyTest(CorePluginTest):
-    # Tests new ability to use only the MetaGraphDef
-    _only_use_meta_graph = True  # Server data contains only a MetaGraphDef
+        self.assertEqual(len(exp2_runs), 1)
+        self.assertEqual(exp2_runs[0].get("name"), "run3")
 
 
 def get_test_assets_zip_provider():

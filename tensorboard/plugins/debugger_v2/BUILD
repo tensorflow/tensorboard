@@ -64,5 +64,6 @@ py_test(
         "//tensorboard/backend:application",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/util:test_util",
+        "@org_pythonhosted_six",
     ],
 )
