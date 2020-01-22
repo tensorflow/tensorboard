@@ -108,8 +108,8 @@ describe('plugin lib integration', () => {
 
         const data = await this.lib.core.getURLPluginData();
         expect(data).to.deep.equal({
-          'foo': 'bar',
-          'foo2': 'bar2',
+          foo: 'bar',
+          foo2: 'bar2',
         });
       });
 
@@ -126,8 +126,8 @@ describe('plugin lib integration', () => {
 
         const data = await this.lib.core.getURLPluginData();
         expect(data).to.deep.equal({
-          'foo': 'bar',
-          'foo2': 'bar2',
+          foo: 'bar',
+          foo2: 'bar2',
         });
       });
 
@@ -145,10 +145,10 @@ describe('plugin lib integration', () => {
 
         const data = await this.lib.core.getURLPluginData();
         expect(data).to.deep.equal({
-          'foo': 'bar baz',
-          'foo2': '0.123',
-          'foo3': 'false',
-          'foo4': '',
+          foo: 'bar baz',
+          foo2: '0.123',
+          foo3: 'false',
+          foo4: '',
           'foo.with.dots': 'bar.dotted',
         });
       });
