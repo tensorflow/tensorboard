@@ -6,10 +6,8 @@
     "inlineSourceMap": true,
     "lib": ["dom", "es2018"],
     "moduleResolution": "node",
-    "noImplicitAny": true,
     "skipLibCheck": true,
-    "strictNullChecks": true,
-    "strictPropertyInitialization": true,
+    "strict": true,
   },
   "exclude": [
     "bazel-*"
