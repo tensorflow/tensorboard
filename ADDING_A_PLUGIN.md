@@ -54,7 +54,7 @@ You can start building the backend by subclassing `TBPlugin` in [`base_plugin.py
 
 ```python
 class MyPlugin(base_plugin.TBPlugin):
-  plugin_name = "My_Awesome_Plugin"
+  plugin_name = "my_awesome_plugin"
 
   def __init__(self, context): # ...
 
