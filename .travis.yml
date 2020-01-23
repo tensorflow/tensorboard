@@ -23,6 +23,10 @@ env:
     - TF_VERSION_ID=  # Do not install TensorFlow in this case
 
 cache:
+  # Don't cache the Pip directory. We pull in a new `tf-nightly` wheel
+  # every day, and Pip caches are never evicted, so this quickly bloats
+  # to many gigabytes and adds minutes to the CI time.
+  pip: false
   # Cache directories for Bazel. See ci/bazelrc for details.
   directories:
     - $HOME/.cache/tb-bazel-repo
