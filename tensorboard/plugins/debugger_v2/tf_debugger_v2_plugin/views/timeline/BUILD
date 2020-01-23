@@ -36,6 +36,5 @@ tf_ts_library(
     deps = [
         ":timeline",
         "@npm//@types/jasmine",
-        "@npm//jasmine",
     ],
 )
