@@ -16,12 +16,3 @@ tf_ts_library(
         "runs.ts",
     ],
 )
-
-tf_js_binary(
-    name = "plugin_lib_rollup",
-    compile = 1,
-    entry_point = "index.ts",
-    deps = [
-        ":plugin_lib",
-    ],
-)
