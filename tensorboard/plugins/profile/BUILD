@@ -88,8 +88,10 @@ py_binary(
     ],
     data = [
         "profile_demo.google_chart_demo.json",
+        "profile_demo.input_pipeline.json",
         "profile_demo.memory_viewer.json",
         "profile_demo.op_profile.json",
+        "profile_demo.overview_page.json",
         "profile_demo.pod_viewer.json",
     ],
     srcs_version = "PY2AND3",

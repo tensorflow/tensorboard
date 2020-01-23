@@ -1,0 +1,252 @@
+[
+  {
+    "cols":[
+      {
+        "id":"stepnum",
+        "label":"stepnum",
+        "type":"string"
+      },
+      {
+        "id":"noninfeedTimeMs",
+        "label":"TensorCore compute (in ms)",
+        "type":"number"
+      },
+      {
+        "id":"bcComputeTimeMs",
+        "label":"BarnaCore compute (in ms)",
+        "type":"number"
+      },
+      {
+        "id":"bcInfeedTimeMs",
+        "label":"BarnaCore input (in ms)",
+        "type":"number"
+      },
+      {
+        "id":"tcInfeedTimeMs",
+        "label":"TensorCore input (in ms)",
+        "type":"number"
+      },
+      {
+        "id":"infeedTimeMs",
+        "label":"TensorCore idle (in ms)",
+        "type":"number"
+      },
+      {
+        "id":"tooltip",
+        "label":"tooltip",
+        "type":"string",
+        "p":{"role":"tooltip"}
+      },
+      {
+        "id":"infeedPercentAverage",
+        "label":"% step time waiting for input data",
+        "type":"number"
+      },
+      {
+        "id":"infeedPercentMin",
+        "label":"Infeed percent min",
+        "type":"number",
+        "p":{"role":"interval"}
+      },
+      {
+        "id":"infeedPercentMax",
+        "label":"Infeed percent max",
+        "type":"number",
+        "p":{"role":"interval"}
+      }
+    ],
+    "rows":[
+      {
+        "c":[
+          {"v":"1"},
+          {"v":21.549322857},
+          {"v":0},
+          {"v":0},
+          {"v":145.791268572},
+          {"v":0},
+          {"v":"step 3123:\nTime waiting for input data = 145.791 ms, Step time = 167.341 ms"},
+          {"v":86.80848259856239},
+          {"v":86.45131226451218},
+          {"v":87.12239736209047}
+        ]
+      },
+      {
+        "c":[
+          {"v":"2"},
+          {"v":21.634437143},
+          {"v":0},
+          {"v":0},
+          {"v":99.180685714},
+          {"v":0},
+          {"v":"step 3124:\nTime waiting for input data = 99.181 ms, Step time = 120.815 ms"},
+          {"v":81.87906973844903},
+          {"v":81.47276353470802},
+          {"v":82.09293950012608}
+        ]
+      },
+      {
+        "c":[
+          {"v":"3"},
+          {"v":21.550801428},
+          {"v":0},
+          {"v":0},
+          {"v":115.78036571499999},
+          {"v":0},
+          {"v":"step 3125:\nTime waiting for input data = 115.780 ms, Step time = 137.331 ms"},
+          {"v":83.71632648004115},
+          {"v":82.64340872740296},
+          {"v":84.30714350062789}
+        ]
+      }
+    ],
+    "p":{
+      "bc_compute_ms_average":"0.00",
+      "bc_infeed_ms_average":"0.00",
+      "hardware_type":"TPU",
+      "infeed_percent_average":"84.5",
+      "infeed_percent_maximum":"87.1",
+      "infeed_percent_minimum":"82.1",
+      "infeed_percent_standard_deviation":"2.5",
+      "steptime_ms_average":"141.8",
+      "steptime_ms_maximum":"167.3",
+      "steptime_ms_minimum":"120.8",
+      "steptime_ms_standard_deviation":"23.6",
+      "summary_conclusion":"(1) Your program is HIGHLY input-bound because 84.8% of the total step time sampled is waiting for input. Therefore, you should first focus on reducing the input time.",
+      "summary_nextstep":"Look at Section 3 for the breakdown of input time on the host.",
+      "tc_compute_ms_average":"21.58",
+      "tc_idle_ms_average":"0.00",
+      "tc_infeed_ms_average":"120.25"
+    }
+  },
+  {},
+  {
+    "cols":[
+      {
+        "id":"opName",
+        "label":"Input Op",
+        "type":"string"
+      },
+      {
+        "id":"count",
+        "label":"Count",
+        "type":"number"
+      },
+      {
+        "id":"timeInMs",
+        "label":"Total Time (in ms)",
+        "type":"number"
+      },
+      {
+        "id":"timeInPercent",
+        "label":"Total Time (as % of total input-processing time)",
+        "type":"number"
+      },
+      {
+        "id":"selfTimeInMs",
+        "label":"Total Self Time (in ms)",
+        "type":"number"
+      },
+      {
+        "id":"selfTimeInPercent",
+        "label":"Total Self Time (as % of total input-processing time)",
+        "type":"number"
+      },
+      {
+        "id":"category",
+        "label":"Category",
+        "type":"string"
+      }
+    ],
+    "rows":[
+      {
+        "c":[
+          {"v":"Iterator::Model::Map::Prefetch::BatchV2::ParallelInterleave"},
+          {"v":5},
+          {"v":319.327565},
+          {"v":0.29732274076920445},
+          {"v":319.316553},
+          {"v":0.2973124876048046},
+          {"v":"Preprocessing"}
+        ]
+      },
+      {
+        "c":[
+          {"v":"Iterator::Model::Map::Prefetch"},
+          {"v":2},
+          {"v":225.770655},
+          {"v":0.2102128262239387},
+          {"v":225.770655},
+          {"v":0.2102128262239387},
+          {"v":"Preprocessing"}
+        ]
+      },
+      {
+        "c":[
+          {"v":"Iterator::Model::Map::Prefetch::BatchV2::ParallelInterleave::Filter::Map::Map::SSTable"},
+          {"v":2},
+          {"v":151.970951},
+          {"v":0.1414986509812345},
+          {"v":151.970951},
+          {"v":0.1414986509812345},
+          {"v":"Advanced file read"}
+        ]
+      },
+      {
+        "c":[
+          {"v":"Iterator::Model::Map::Prefetch::BatchV2::ParallelInterleave::Filter::Map::Map"},
+          {"v":2},
+          {"v":201.647099},
+          {"v":0.1877516215765435},
+          {"v":49.676148},
+          {"v":0.046252970595309036},
+          {"v":"Preprocessing"}
+        ]
+      },
+      {
+        "c":[
+          {"v":"input_pipeline_task0/while/enqueue/replica_0/input_0"},
+          {"v":6},
+          {"v":18.82644},
+          {"v":0.01752911227606355},
+          {"v":18.82644},
+          {"v":0.01752911227606355},
+          {"v":"Enqueue"}
+        ]
+      }
+    ],
+    "p":{
+      "advanced_file_read_us":"1887867.867",
+      "demanded_file_read_us":"0.000",
+      "enqueue_us":"275636.599",
+      "preprocessing_us":"6843463.444",
+      "unclassified_nonequeue_us":"0.000"
+    }
+  },
+  {
+    "cols":[
+      {
+        "id":"link",
+        "label":"link",
+        "type":"string"
+      }
+    ],
+    "rows":[
+      {
+        "c":[
+          {"v":"Enqueuing data: you may want to combine small input data chunks into fewer but larger chunks."}
+        ]
+      },
+      {
+        "c":[
+          {"v":"Data preprocessing: you may increase num_parallel_calls in <a href=\"https://www.tensorflow.org/api_docs/python/tf/data/Dataset#map\" target=\"_blank\">Dataset map()</a> or preprocess the data OFFLINE."}
+        ]
+      },
+      {
+        "c":[
+          {"v":"Reading data from files in advance: you may tune parameters in the following Dataset API (<a href=\"https://www.tensorflow.org/api_docs/python/tf/data/Dataset#prefetch\" target=\"_blank\">prefetch size</a>, <a href=\"https://www.tensorflow.org/api_docs/python/tf/data/Dataset#interleave\" target=\"_blank\">interleave cycle_length</a>, <a href=\"https://www.tensorflow.org/api_docs/python/tf/data/TFRecordDataset#class_tfrecorddataset\" target=\"_blank\">reader buffer_size</a>)"}
+        ]
+      }
+    ]
+  },
+  {}
+]
