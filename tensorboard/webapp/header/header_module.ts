@@ -20,14 +20,20 @@ import {MatTabsModule} from '@angular/material/tabs';
 import {MatToolbarModule} from '@angular/material/toolbar';
 import {MatSelectModule} from '@angular/material/select';
 
-import {HeaderComponent} from './header_component';
-import {HeaderContainer} from './header_container';
 import {CoreModule} from '../core/core_module';
 import {SettingsModule} from '../settings/settings_module';
 
+import {HeaderComponent} from './header_component';
+import {PluginControlComponent} from './plugin_control_component';
+import {PluginControlContainer} from './plugin_control_container';
+
 @NgModule({
-  declarations: [HeaderComponent, HeaderContainer],
-  exports: [HeaderComponent, HeaderContainer],
+  declarations: [
+    HeaderComponent,
+    PluginControlComponent,
+    PluginControlContainer,
+  ],
+  exports: [HeaderComponent],
   providers: [],
   imports: [
     MatToolbarModule,

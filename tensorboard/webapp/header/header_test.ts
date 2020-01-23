@@ -23,7 +23,8 @@ import {Store} from '@ngrx/store';
 import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
 import {HeaderComponent} from './header_component';
-import {HeaderContainer} from './header_container';
+import {PluginControlComponent} from './plugin_control_component';
+import {PluginControlContainer} from './plugin_control_container';
 
 import {changePlugin} from '../core/actions';
 import {State} from '../core/store';
@@ -59,9 +60,12 @@ describe('header test', () => {
           ),
         }),
         HeaderComponent,
-        HeaderContainer,
       ],
-      declarations: [HeaderComponent, HeaderContainer],
+      declarations: [
+        HeaderComponent,
+        PluginControlComponent,
+        PluginControlContainer,
+      ],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
     store = TestBed.get(Store);
@@ -86,7 +90,7 @@ describe('header test', () => {
   }
 
   it('renders pluginsList', () => {
-    const fixture = TestBed.createComponent(HeaderContainer);
+    const fixture = TestBed.createComponent(HeaderComponent);
     fixture.detectChanges();
 
     const els = fixture.debugElement.queryAll(By.css('.mat-tab-label'));
@@ -97,7 +101,7 @@ describe('header test', () => {
   });
 
   it('updates list of tabs when pluginsList updates', async () => {
-    const fixture = TestBed.createComponent(HeaderContainer);
+    const fixture = TestBed.createComponent(HeaderComponent);
     fixture.detectChanges();
 
     const nextState = createState(
@@ -121,7 +125,7 @@ describe('header test', () => {
   });
 
   it('selects 0th element by default', () => {
-    const fixture = TestBed.createComponent(HeaderContainer);
+    const fixture = TestBed.createComponent(HeaderComponent);
     fixture.detectChanges();
 
     const group = fixture.debugElement.query(By.css('mat-tab-group'));
@@ -129,7 +133,7 @@ describe('header test', () => {
   });
 
   it('sets tab group selection to match index of activePlugin', async () => {
-    const fixture = TestBed.createComponent(HeaderContainer);
+    const fixture = TestBed.createComponent(HeaderComponent);
     fixture.detectChanges();
 
     setActivePlugin('bar');
@@ -142,7 +146,7 @@ describe('header test', () => {
 
   it('fires an action when a tab is clicked', async () => {
     const dispatch = spyOn(store, 'dispatch');
-    const fixture = TestBed.createComponent(HeaderContainer);
+    const fixture = TestBed.createComponent(HeaderComponent);
     fixture.detectChanges();
 
     const [, barEl] = fixture.debugElement.queryAll(By.css('.mat-tab-label'));
