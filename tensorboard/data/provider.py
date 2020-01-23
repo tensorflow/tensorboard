@@ -641,49 +641,25 @@ class BlobSequenceTimeSeries(_TimeSeries):
         empty if no description was specified.
       display_name: An optional long-form Markdown description, as a `str` that is
         empty if no description was specified. Deprecated; may be removed soon.
-      latest_max_index: Deprecated; use `max_length` instead.
     """
 
     __slots__ = ("_max_length",)
 
     def __init__(
         self,
-<<<<<<< HEAD
         max_step,
         max_wall_time,
         max_length,
         plugin_content,
         description,
         display_name,
-=======
-        max_step=None,
-        max_wall_time=None,
-        max_length=None,
-        plugin_content=None,
-        description=None,
-        display_name=None,
-        latest_max_index=None,
->>>>>>> d9e31f3c517ef136c337601ff5f81593cd8d3ce2
     ):
         super(BlobSequenceTimeSeries, self).__init__(
             max_step, max_wall_time, plugin_content, description, display_name
         )
-<<<<<<< HEAD
         self._max_length = max_length
 
     @property
-=======
-        if max_length is None:
-            max_length = latest_max_index
-        self._max_length = max_length
-
-    @property
-    def latest_max_index(self):
-        # Deprecated. Use `max_length` instead.
-        return self._max_length
-
-    @property
->>>>>>> d9e31f3c517ef136c337601ff5f81593cd8d3ce2
     def max_length(self):
         return self._max_length
 
