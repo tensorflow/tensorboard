@@ -38,6 +38,14 @@ cache:
 before_install:
   - elapsed() { TZ=UTC printf "Time %(%T)T %s\n" "$SECONDS" "$1"; }
   - elapsed "before_install"
+
+  - du -b ~/.cache
+  - du -b ~/.cache/pip
+  - du -b ~/.cache/pip/http
+  - du -b ~/.cache/tb-bazel-disk
+  - du -b ~/.cache/tb-bazel-repo
+  - exit 123
+
   - ci/download_bazel.sh "${BAZEL}" "${BAZEL_SHA256SUM}" ~/bazel
   - sudo mv ~/bazel /usr/local/bin/bazel
   - cp ci/bazelrc ~/.bazelrc
