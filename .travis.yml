@@ -23,8 +23,6 @@ env:
     - TF_VERSION_ID=  # Do not install TensorFlow in this case
 
 cache:
-  # Reuse the pip cache directory across build machines.
-  pip: true
   # Cache directories for Bazel. See ci/bazelrc for details.
   directories:
     - $HOME/.cache/tb-bazel-repo
