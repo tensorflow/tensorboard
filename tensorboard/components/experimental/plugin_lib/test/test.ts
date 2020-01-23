@@ -119,6 +119,7 @@ describe('plugin lib integration', () => {
           'sample_plugin',
           'tagFilter=loss',
           'p.sample_plugin.foo=bar',
+          'p.sample_plugin.foo=bar_from_duplicate',
           'smoothing=0.5',
           'p.sample_plugin.foo2=bar2',
           'p.sample_plugin2.foo=bar',
@@ -128,7 +129,7 @@ describe('plugin lib integration', () => {
 
         const data = await this.lib.core.getURLPluginData();
         expect(data).to.deep.equal({
-          foo: 'bar',
+          foo: 'bar_from_duplicate',
           foo2: 'bar2',
         });
       });
