@@ -19,12 +19,19 @@ import {PluginId, PluginsListing} from '../../types/api';
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
 /** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
 
+/**
+ * User has clicked on a button in the header to change the plugin.
+ */
 export const changePlugin = createAction(
   '[Core] Plugin Changed',
   props<{plugin: PluginId}>()
 );
 
-export const pluginHashChanged = createAction(
+/**
+ * Plugin information in the hash is changed by user action.
+ * e.g., user can use browser navigation button to change the hash.
+ */
+export const pluginUrlHashChanged = createAction(
   '[Core] Plugin Url Hash Changed',
   props<{plugin: PluginId}>()
 );

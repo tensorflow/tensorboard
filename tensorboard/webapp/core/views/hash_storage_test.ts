@@ -20,7 +20,7 @@ import {CommonModule} from '@angular/common';
 
 import {getActivePlugin} from '../store';
 import {State} from '../store/core_types';
-import {pluginHashChanged} from '../actions';
+import {pluginUrlHashChanged} from '../actions';
 
 import {HashStorageContainer} from './hash_storage_container';
 import {HashStorageComponent} from './hash_storage_component';
@@ -97,7 +97,7 @@ describe('hash storage test', () => {
 
     window.dispatchEvent(new Event('hashchange'));
     expect(dispatchSpy).toHaveBeenCalledWith(
-      pluginHashChanged({plugin: 'bar'})
+      pluginUrlHashChanged({plugin: 'bar'})
     );
   });
 });

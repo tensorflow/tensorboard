@@ -17,7 +17,7 @@ import {Store, select} from '@ngrx/store';
 
 import {getActivePlugin} from '../store';
 import {State} from '../store/core_types';
-import {pluginHashChanged} from '../actions';
+import {pluginUrlHashChanged} from '../actions';
 
 import {ChangedProp} from './hash_storage_component';
 
@@ -49,7 +49,7 @@ export class HashStorageContainer {
   onValueChanged(change: {prop: ChangedProp; value: string}) {
     switch (change.prop) {
       case ChangedProp.ACTIVE_PLUGIN:
-        this.store.dispatch(pluginHashChanged({plugin: change.value}));
+        this.store.dispatch(pluginUrlHashChanged({plugin: change.value}));
         break;
     }
   }

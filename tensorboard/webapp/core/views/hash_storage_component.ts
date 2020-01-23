@@ -28,7 +28,8 @@ export enum ChangedProp {
   ACTIVE_PLUGIN,
 }
 
-// TODO(tensorboard-team): remove below when storage.ts is pure TypeSccript module.
+// TODO(tensorboard-team): remove below when storage.ts is pure TypeScript
+// module.
 const TAB = '__tab__';
 
 interface TfGlobalsElement extends HTMLElement {
@@ -84,10 +85,11 @@ export class HashStorageComponent implements OnInit, OnChanges, OnDestroy {
     // As opposed to fake hash that does not modify the URL.
     this.tfGlobals.setUseHash(true);
 
-    // Cannot use the tf_storage hash listener because it does not have the zone.js
-    // treatment. According to [1], zone.js patches various asynchronosity and
-    // event listener for detecting "changes" in the application. Because the tf_storage
-    // version is outside of the zone.js patching, it causes bad renders in Angular.
+    // Cannot use the tf_storage hash listener because it binds to event before the
+    // zone.js patch. According to [1], zone.js patches various asynchronos calls and
+    // event listeners to detect "changes" and mark components as dirty for re-render.
+    // When using tf_storage hash listener, it causes bad renders in Angular due to
+    // missing dirtiness detection.
     // [1]: https://blog.angular-university.io/how-does-angular-2-change-detection-really-work/
     window.addEventListener('hashchange', this.onHashChange);
   }

@@ -30,7 +30,7 @@ describe('core reducer', () => {
       action: actions.changePlugin({plugin: 'bar'}),
     },
     {
-      action: actions.pluginHashChanged({plugin: 'bar'}),
+      action: actions.pluginUrlHashChanged({plugin: 'bar'}),
     },
   ].forEach(({action}) => {
     describe(action.type, () => {
