@@ -28,6 +28,7 @@ tf_web_library(
 tf_web_library(
     name = "plugin_host",
     srcs = [
+        "core-host-impl.ts",
         "plugin-host.html",
         "runs-host-impl.ts",
     ],
@@ -35,5 +36,6 @@ tf_web_library(
     deps = [
         ":host_internals",
         "//tensorboard/components/tf_backend",
+        "//tensorboard/components/tf_storage",
     ],
 )
