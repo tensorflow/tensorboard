@@ -9,6 +9,7 @@ licenses(["notice"])  # Apache 2.0
 tf_ts_library(
     name = "plugin_lib",
     srcs = [
+        "core.ts",
         "index.ts",
         "message.ts",
         "plugin-guest.ts",

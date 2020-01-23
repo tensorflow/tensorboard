@@ -16,6 +16,15 @@ var tb_plugin;
 (function (tb_plugin) {
     var host;
     (function (host) {
+        /**
+         * Registers metadata associated with a plugin iframe upon creation. Plugins
+         * registered with this do not necessarily use IPC.
+         */
+        function registerPluginIframe(frame, pluginName) {
+            pluginMetadata.set(frame, { pluginName });
+        }
+        host.registerPluginIframe = registerPluginIframe;
+        const pluginMetadata = new WeakMap();
         const portIPCs = new Set();
         const VERSION = 'experimental';
         const listeners = new Map();
@@ -41,8 +50,19 @@ var tb_plugin;
             ipcToFrame.set(portIPC, frame);
             port.start();
             for (const [type, callback] of listeners) {
-                portIPC.listen(type, callback);
+                const callbackWithContext = wrapCallbackWithContext(callback, portIPC);
+                portIPC.listen(type, callbackWithContext);
             }
+        }
+        /**
+         * Provides context data from the IPC to the callback.
+         */
+        function wrapCallbackWithContext(callback, ipc) {
+            return (payload) => {
+                const frame = ipcToFrame.get(ipc);
+                const context = pluginMetadata.get(frame) || null;
+                return callback(context, payload);
+            };
         }
         /**
          * Sends a message to all frames. Individual frames decide whether or not to
@@ -71,7 +91,8 @@ var tb_plugin;
         function listen(type, callback) {
             listeners.set(type, callback);
             for (const ipc of portIPCs) {
-                ipc.listen(type, callback);
+                const callbackWithContext = wrapCallbackWithContext(callback, ipc);
+                ipc.listen(type, callbackWithContext);
             }
         }
         host.listen = listen;

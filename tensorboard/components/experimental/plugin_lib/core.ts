@@ -1,4 +1,4 @@
-/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -12,8 +12,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import * as _runs from './runs';
-import * as _core from './core';
+import {sendMessage} from './plugin-guest';
 
-export const core = _core;
-export const runs = _runs;
+/**
+ * When called from a plugin with plugin_name `N`, it returns a promise which
+ * resolves to an object containing values from the URL hash that begin with
+ * `p.N.`
+ * @return {!Promise<{Object<string, string>}>}
+ */
+export async function getURLPluginData() {
+  return sendMessage('experimental.GetURLPluginData');
+}

@@ -73,7 +73,11 @@ var tb_plugin;
                         spec: 'guest (src) to host (dest)',
                         beforeEachFunc: function () {
                             this.destWindow = window;
-                            this.destListen = tb_plugin.host.listen;
+                            this.destListen = (type, callback) => {
+                                tb_plugin.host.listen(type, (context, data) => {
+                                    return callback(data);
+                                });
+                            };
                             this.destUnlisten = tb_plugin.host.unlisten;
                             this.destSendMessage = (type, payload) => {
                                 return tb_plugin.host

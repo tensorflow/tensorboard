@@ -864,6 +864,8 @@ limitations under the License.
       _renderPluginIframe(container, selectedDashboard, loadingMechanism) {
         const iframe = document.createElement('iframe');
         iframe.id = 'dashboard'; // used in `_selectedDashboardComponent`
+        tb_plugin.host.registerPluginIframe(iframe, selectedDashboard);
+
         const srcUrl = new URL('data/plugin_entry.html', window.location.href);
         srcUrl.searchParams.set('name', selectedDashboard);
         iframe.setAttribute('src', srcUrl.toString());
@@ -906,6 +908,8 @@ limitations under the License.
             window.document.title = title;
           }
         });
+
+        tf_storage.migrateLegacyURLScheme();
 
         this._reloadData();
         this._lastReloadTime = new Date().toString();

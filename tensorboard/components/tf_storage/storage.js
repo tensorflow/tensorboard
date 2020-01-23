@@ -37,6 +37,11 @@ var tf_storage;
      * across the codebase.
      */
     tf_storage.DISAMBIGUATOR = 'disambiguator';
+    // Keep an up-to-date store of URL params, which iframed plugins can request.
+    tf_storage.urlDict = componentToDict(readComponent());
+    tf_storage.addHashListener(() => {
+        tf_storage.urlDict = componentToDict(readComponent());
+    });
     _a = makeBindings((x) => x, (x) => x), tf_storage.getString = _a.get, tf_storage.setString = _a.set, tf_storage.getStringInitializer = _a.getInitializer, tf_storage.getStringObserver = _a.getObserver, tf_storage.disposeStringBinding = _a.disposeBinding;
     _b = makeBindings((s) => (s === 'true' ? true : s === 'false' ? false : undefined), (b) => b.toString()), tf_storage.getBoolean = _b.get, tf_storage.setBoolean = _b.set, tf_storage.getBooleanInitializer = _b.getInitializer, tf_storage.getBooleanObserver = _b.getObserver, tf_storage.disposeBooleanBinding = _b.disposeBinding;
     _c = makeBindings((s) => +s, (n) => n.toString()), tf_storage.getNumber = _c.get, tf_storage.setNumber = _c.set, tf_storage.getNumberInitializer = _c.getInitializer, tf_storage.getNumberObserver = _c.getObserver, tf_storage.disposeNumberBinding = _c.disposeBinding;
@@ -125,6 +130,48 @@ var tf_storage;
         return { get, set, getInitializer, getObserver, disposeBinding };
     }
     tf_storage.makeBindings = makeBindings;
+    function migrateLegacyURLScheme() {
+        /**
+         * TODO(psybuzz): move to some compatibility file.
+         * Convert URL hash params from the legacy scheme (list taken on 1/16/2020)
+         * to the new scheme. Luckily, WIT only stored strings, booleans.
+         */
+        const witUrlCompatibilitySet = new Set([
+            'examplesPath',
+            'hideModelPane2',
+            'modelName1',
+            'modelName2',
+            'inferenceAddress1',
+            'inferenceAddress2',
+            'modelType',
+            'modelVersion1',
+            'modelVersion2',
+            'modelSignature1',
+            'modelSignature2',
+            'maxExamples',
+            'labelVocabPath',
+            'multiClass',
+            'sequenceExamples',
+            'maxClassesToDisplay',
+            'samplingOdds',
+            'usePredictApi',
+            'predictInputTensor',
+            'predictOutputTensor',
+        ]);
+        const items = componentToDict(readComponent());
+        if (items[tf_storage.TAB] === 'whatif') {
+            for (let oldName of witUrlCompatibilitySet) {
+                if (oldName in items) {
+                    const oldValue = items[oldName];
+                    delete items[oldName];
+                    items[`p.whatif.${oldName}`] = oldValue;
+                }
+            }
+        }
+        writeComponent(dictToComponent(items));
+        this.urlDict = items;
+    }
+    tf_storage.migrateLegacyURLScheme = migrateLegacyURLScheme;
     /**
      * Get a unique storage name for a (Polymer component, propertyName) tuple.
      *
