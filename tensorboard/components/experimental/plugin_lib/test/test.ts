@@ -99,11 +99,12 @@ describe('plugin lib integration', () => {
        * host's URL has been updated.
        */
       it('returns URL data', async function() {
-        tf_globals.setFakeHash(
-          'sample_plugin' +
-            '&p.sample_plugin.foo=bar' +
-            '&p.sample_plugin.foo2=bar2'
-        );
+        const hash = [
+          'sample_plugin',
+          'p.sample_plugin.foo=bar',
+          'p.sample_plugin.foo2=bar2',
+        ].join('&');
+        tf_globals.setFakeHash(hash);
         window.dispatchEvent(new Event('hashchange'));
 
         const data = await this.lib.core.getURLPluginData();
@@ -114,14 +115,15 @@ describe('plugin lib integration', () => {
       });
 
       it('ignores unrelated URL data', async function() {
-        tf_globals.setFakeHash(
-          'sample_plugin' +
-            '&tagFilter=loss' +
-            '&p.sample_plugin.foo=bar' +
-            '&smoothing=0.5' +
-            '&p.sample_plugin.foo2=bar2' +
-            '&p.sample_plugin2.foo=bar'
-        );
+        const hash = [
+          'sample_plugin',
+          'tagFilter=loss',
+          'p.sample_plugin.foo=bar',
+          'smoothing=0.5',
+          'p.sample_plugin.foo2=bar2',
+          'p.sample_plugin2.foo=bar',
+        ].join('&');
+        tf_globals.setFakeHash(hash);
         window.dispatchEvent(new Event('hashchange'));
 
         const data = await this.lib.core.getURLPluginData();
@@ -131,16 +133,31 @@ describe('plugin lib integration', () => {
         });
       });
 
+      it('handles incomplete URL data', async function() {
+        const hash = [
+          'sample_plugin',
+          'tagFilter=loss',
+          'p.sample_plugin',
+          'p.sample_plugin.',
+        ].join('&');
+        tf_globals.setFakeHash(hash);
+        window.dispatchEvent(new Event('hashchange'));
+
+        const data = await this.lib.core.getURLPluginData();
+        expect(data).to.deep.equal({});
+      });
+
       it('handles non alphanumeric data', async function() {
-        tf_globals.setFakeHash(
-          'sample_plugin' +
-            '&p.sample_plugin.foo=bar%20baz' +
-            '&p.sample_plugin.foo2=0.123' +
-            '&p.sample_plugin.foo3=false' +
-            '&p.sample_plugin.foo4=' +
-            '&p.sample_plugin.foo5' +
-            '&p.sample_plugin.foo.with.dots=bar.dotted'
-        );
+        const hash = [
+          'sample_plugin',
+          'p.sample_plugin.foo=bar%20baz',
+          'p.sample_plugin.foo2=0.123',
+          'p.sample_plugin.foo3=false',
+          'p.sample_plugin.foo4=',
+          'p.sample_plugin.foo5',
+          'p.sample_plugin.foo.with.dots=bar.dotted',
+        ].join('&');
+        tf_globals.setFakeHash(hash);
         window.dispatchEvent(new Event('hashchange'));
 
         const data = await this.lib.core.getURLPluginData();
