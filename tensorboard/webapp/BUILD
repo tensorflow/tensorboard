@@ -28,6 +28,7 @@ ng_module(
         "//tensorboard/webapp/core",
         "//tensorboard/webapp/core/actions",
         "//tensorboard/webapp/core/store",
+        "//tensorboard/webapp/core/views:hash_storage",
         "//tensorboard/webapp/header",
         "//tensorboard/webapp/plugins",
         "//tensorboard/webapp/reloader",
@@ -137,6 +138,7 @@ tf_ng_web_test_suite(
     deps = [
         "//tensorboard/webapp/core/effects:core_effects_test_lib",
         "//tensorboard/webapp/core/store:core_store_test_lib",
+        "//tensorboard/webapp/core/views:test_lib",
         "//tensorboard/webapp/header:test_lib",
         "//tensorboard/webapp/plugins:plugins_container_test_lib",
         "//tensorboard/webapp/reloader:test_lib",
