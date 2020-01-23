@@ -235,17 +235,19 @@ class MultiplexerDataProvider(provider.DataProvider):
                 result[run] = result_for_run
                 max_step = None
                 max_wall_time = None
-                latest_max_index = -1
+                max_length = None
                 for event in self._multiplexer.Tensors(run, tag):
                     if max_step is None or max_step < event.step:
                         max_step = event.step
-                        latest_max_index = _tensor_size(event.tensor_proto)
                     if max_wall_time is None or max_wall_time < event.wall_time:
                         max_wall_time = event.wall_time
+                    length = _tensor_size(event.tensor_proto)
+                    if max_length is None or length > max_length:
+                        max_length = length
                 result_for_run[tag] = provider.BlobSequenceTimeSeries(
                     max_step=max_step,
                     max_wall_time=max_wall_time,
-                    latest_max_index=latest_max_index,
+                    max_length=max_length,
                     plugin_content=summary_metadata.plugin_data.content,
                     description=summary_metadata.summary_description,
                     display_name=summary_metadata.display_name,
