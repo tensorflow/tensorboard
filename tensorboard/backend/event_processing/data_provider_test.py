@@ -66,8 +66,16 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
                 # Summary with rank-0 data but not owned by the scalars plugin.
                 metadata = summary_pb2.SummaryMetadata()
                 metadata.plugin_data.plugin_name = "marigraphs"
+                metadata.data_class = summary_pb2.DATA_CLASS_SCALAR
                 tf.summary.write(
                     "high_tide", tensor=i, step=i, metadata=metadata
+                )
+                # Summary with rank-1 data of scalar data class (bad!).
+                metadata = summary_pb2.SummaryMetadata()
+                metadata.plugin_data.plugin_name = "greetings"
+                metadata.data_class = summary_pb2.DATA_CLASS_SCALAR
+                tf.summary.write(
+                    "bad", tensor=[i, i], step=i, metadata=metadata
                 )
 
         logdir = os.path.join(self.logdir, "lebesgue")
@@ -104,6 +112,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
         self.assertItemsEqual(
             result,
             [
+                "greetings",
                 "marigraphs",
                 histogram_metadata.PLUGIN_NAME,
                 scalar_metadata.PLUGIN_NAME,
@@ -121,6 +130,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
         self.assertItemsEqual(
             result,
             [
+                "greetings",
                 "marigraphs",
                 graph_metadata.PLUGIN_NAME,
                 histogram_metadata.PLUGIN_NAME,
@@ -259,7 +269,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
 
     def test_read_scalars_but_not_rank_0(self):
         provider = self.create_provider()
-        run_tag_filter = base_provider.RunTagFilter(["lebesgue"], ["uniform"])
+        run_tag_filter = base_provider.RunTagFilter(["waves"], ["bad"])
         # No explicit checks yet.
         with six.assertRaisesRegex(
             self,
@@ -268,7 +278,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
         ):
             provider.read_scalars(
                 experiment_id="unused",
-                plugin_name=histogram_metadata.PLUGIN_NAME,
+                plugin_name="greetings",
                 run_tag_filter=run_tag_filter,
             )
 
