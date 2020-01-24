@@ -1,2 +1,0 @@
-recursive-include witwidget/static *.*
-include wit-widget.json
