@@ -23,8 +23,8 @@ import {Store} from '@ngrx/store';
 import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
 import {HeaderComponent} from './header_component';
-import {PluginControlComponent} from './plugin_control_component';
-import {PluginControlContainer} from './plugin_control_container';
+import {PluginSelectorComponent} from './plugin_selector_component';
+import {PluginSelectorContainer} from './plugin_selector_container';
 
 import {changePlugin} from '../core/actions';
 import {State} from '../core/store';
@@ -63,8 +63,8 @@ describe('header test', () => {
       ],
       declarations: [
         HeaderComponent,
-        PluginControlComponent,
-        PluginControlContainer,
+        PluginSelectorComponent,
+        PluginSelectorContainer,
       ],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();

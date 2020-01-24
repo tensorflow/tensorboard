@@ -37,17 +37,17 @@ const getDisabledPlugins = createSelector(
 );
 
 @Component({
-  selector: 'plugin-control',
+  selector: 'plugin-selector',
   template: `
-    <plugin-control-component
+    <plugin-selector-component
       [activePlugins]="plugins$ | async"
       [disabledPlugins]="disabledPlugins$ | async"
       [selectedPlugin]="activePlugin$ | async"
       (onPluginSelectionChanged)="onPluginSelectionChange($event)"
-    ></plugin-control-component>
+    ></plugin-selector-component>
   `,
 })
-export class PluginControlContainer {
+export class PluginSelectorContainer {
   readonly activePlugin$ = this.store.pipe(select(getActivePlugin));
   readonly plugins$ = this.store.pipe(select(getUiPlugins));
   readonly disabledPlugins$ = this.store.pipe(select(getDisabledPlugins));

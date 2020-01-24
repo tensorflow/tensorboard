@@ -20,11 +20,11 @@ import {PluginId} from '../types/api';
 import {UiPluginMetadata} from './types';
 
 @Component({
-  selector: 'plugin-control-component',
-  templateUrl: './plugin_control_component.ng.html',
-  styleUrls: ['./plugin_control_component.css'],
+  selector: 'plugin-selector-component',
+  templateUrl: './plugin_selector_component.ng.html',
+  styleUrls: ['./plugin_selector_component.css'],
 })
-export class PluginControlComponent {
+export class PluginSelectorComponent {
   @Input()
   activePlugins!: UiPluginMetadata[];
 

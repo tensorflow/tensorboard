@@ -24,16 +24,16 @@ import {CoreModule} from '../core/core_module';
 import {SettingsModule} from '../settings/settings_module';
 
 import {HeaderComponent} from './header_component';
-import {PluginControlComponent} from './plugin_control_component';
-import {PluginControlContainer} from './plugin_control_container';
+import {PluginSelectorComponent} from './plugin_selector_component';
+import {PluginSelectorContainer} from './plugin_selector_container';
 
 @NgModule({
   declarations: [
     HeaderComponent,
-    PluginControlComponent,
-    PluginControlContainer,
+    PluginSelectorComponent,
+    PluginSelectorContainer,
   ],
-  exports: [HeaderComponent],
+  exports: [HeaderComponent, PluginSelectorContainer],
   providers: [],
   imports: [
     MatToolbarModule,

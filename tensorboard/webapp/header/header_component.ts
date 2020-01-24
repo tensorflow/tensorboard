@@ -19,7 +19,7 @@ import {Component} from '@angular/core';
   template: `
     <mat-toolbar class="tb-toolbar">
       <span class="brand">TensorBoard</span>
-      <plugin-control class="plugins"></plugin-control>
+      <plugin-selector class="plugins"></plugin-selector>
       <span class="settings">
         <settings-button></settings-button>
       </span>
