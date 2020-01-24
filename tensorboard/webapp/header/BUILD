@@ -1,7 +1,7 @@
-package(default_visibility = ["//tensorboard:internal"])
-
 load("@npm_angular_bazel//:index.bzl", "ng_module")
 load("//tensorboard/defs:defs.bzl", "tf_ts_library")
+
+package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
@@ -47,6 +47,7 @@ tf_ts_library(
         "//tensorboard/webapp/angular:expect_angular_material_tabs",
         "//tensorboard/webapp/angular:expect_angular_material_toolbar",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
+        "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "//tensorboard/webapp/core/actions",
         "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/core/testing",

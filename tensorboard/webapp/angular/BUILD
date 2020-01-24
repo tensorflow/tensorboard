@@ -1,6 +1,6 @@
-package(default_visibility = ["//tensorboard:internal"])
-
 load("//tensorboard/defs:defs.bzl", "tf_ts_library")
+
+package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
@@ -121,5 +121,16 @@ tf_ts_library(
     srcs = [],
     deps = [
         "@npm//@angular/cdk",
+    ],
+)
+
+# This is a dummy rule used as a @ngrx/store/testing dependency.
+# This is not a replacement for @ngrx/store dependency.
+tf_ts_library(
+    name = "expect_ngrx_store_testing",
+    testonly = True,
+    srcs = [],
+    deps = [
+        "@npm//@ngrx/store",
     ],
 )
