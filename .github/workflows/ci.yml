@@ -81,7 +81,7 @@ jobs:
           ci/download_buildifier.sh "${BUILDIFIER}" "${BUILDIFIER_SHA256SUM}" ~/buildifier
           sudo mv ~/buildifier /usr/local/bin/buildifier
       - name: 'Lint BUILD files'
-        run: git ls-files -z '*BUILD' | xargs -0 buildifier --mode=check
+        run: git ls-files -z '*BUILD' | xargs -0 ./tensorboard/tools/build_lint.sh
       - run: ./tensorboard/tools/mirror_urls_test.sh
 
   check-misc:
