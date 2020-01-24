@@ -82,7 +82,9 @@ jobs:
           sudo mv ~/buildifier /usr/local/bin/buildifier
       - name: 'Lint BUILD files'
         # TODO(tensorboard-team): address all lint warnings and remove the exemption.
-        run: git ls-files -z '*BUILD' | xargs -0 buildifier --mode=check --lint=warn --warnings=-load-on-top,-native-py,-native-java,-constant-glob
+        run:
+          git ls-files -z '*BUILD' | xargs -0 buildifier --mode=check --lint=warn
+          --warnings=-load-on-top,-native-py,-native-java,-constant-glob
       - run: ./tensorboard/tools/mirror_urls_test.sh
 
   check-misc:
