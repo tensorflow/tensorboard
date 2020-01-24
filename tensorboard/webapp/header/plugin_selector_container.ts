@@ -1,4 +1,4 @@
-/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -37,17 +37,17 @@ const getDisabledPlugins = createSelector(
 );
 
 @Component({
-  selector: 'app-header',
+  selector: 'plugin-selector',
   template: `
-    <app-header-component
+    <plugin-selector-component
       [activePlugins]="plugins$ | async"
       [disabledPlugins]="disabledPlugins$ | async"
       [selectedPlugin]="activePlugin$ | async"
       (onPluginSelectionChanged)="onPluginSelectionChange($event)"
-    ></app-header-component>
+    ></plugin-selector-component>
   `,
 })
-export class HeaderContainer {
+export class PluginSelectorContainer {
   readonly activePlugin$ = this.store.pipe(select(getActivePlugin));
   readonly plugins$ = this.store.pipe(select(getUiPlugins));
   readonly disabledPlugins$ = this.store.pipe(select(getDisabledPlugins));
