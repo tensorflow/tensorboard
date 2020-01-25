@@ -46,6 +46,7 @@ const initialState: DebuggerState = {
       lastLoadedTimeInMs: null,
     },
     scrollBeginIndex: 0,
+    focusIndex: null,
     pageSize: DEFAULT_EXECUTION_PAGE_SIZE,
     // TODO(cais) Remove the hardcoding of this, which is coupled with css width
     // properties.
@@ -241,6 +242,18 @@ const reducer = createReducer(
         executions: {
           ...state.executions,
           scrollBeginIndex,
+        },
+      };
+    }
+  ),
+  on(
+    actions.executionDigestClicked,
+    (state: DebuggerState, action): DebuggerState => {
+      return {
+        ...state,
+        executions: {
+          ...state.executions,
+          focusIndex: state.executions.scrollBeginIndex + action.displayIndex,
         },
       };
     }

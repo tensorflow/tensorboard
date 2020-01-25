@@ -26,6 +26,7 @@ import {
   executionScrollRight,
   numExecutionsLoaded,
   numExecutionsRequested,
+  executionDigestClicked,
 } from '../actions';
 import {
   getActiveRunId,
@@ -264,6 +265,35 @@ export class DebuggerEffects {
       })
     )
   );
+
+  /** @export */
+  // TODO(cais): Implement.
+  // readonly executionDigestClicked$ = createEffect(() =>
+  //   this.actions$.pipe(
+  //     ofType(executionDigestClicked),
+  //     withLatestFrom(this.store.select(getExecutionDataLoaded)),
+  //     filter(([displayIndex, loaded]) => {
+  //       return (
+  //         Object.keys(props.runs).length > 0 &&
+  //         loaded.state !== DataLoadState.LOADING
+  //       );
+  //     }),
+  //     tap(() => this.store.dispatch(numExecutionsRequested())),
+  //     mergeMap(([props, loaded]) => {
+  //       // TODO(cais): Handle multple runs. Currently it is assumed that there
+  //       // is at most only one debugger run available.
+  //       const runId = Object.keys(props.runs)[0];
+  //       const begin = 0;
+  //       const end = 0;
+  //       return this.dataSource.fetchExecutionDigests(runId, begin, end).pipe(
+  //         map((digests) => {
+  //           return numExecutionsLoaded({numExecutions: digests.num_digests});
+  //         })
+  //       );
+  //       // TODO(cais): Add catchError() to pipe.
+  //     })
+  //   )
+  // );
 
   constructor(
     private actions$: Actions,

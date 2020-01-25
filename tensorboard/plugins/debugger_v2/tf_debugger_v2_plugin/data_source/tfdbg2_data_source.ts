@@ -57,5 +57,18 @@ export class Tfdbg2HttpServerDataSource implements Tfdbg2DataSource {
     );
   }
 
+  fetchExecutionData(run: string, begin: number, end: number) {
+    return this.http.get<ExecutionDigestsResponse>(
+      this.httpPathPrefix + '/execution/data',
+      {
+        params: {
+          run,
+          begin: String(begin),
+          end: String(end),
+        },
+      }
+    );
+  }
+
   // TODO(cais): Implement fetchEnvironments().
 }

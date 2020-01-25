@@ -18,6 +18,7 @@ import {createAction, props} from '@ngrx/store';
 import {
   DebuggerRunListing,
   ExecutionDigestsResponse,
+  ExecutionDataResponse,
 } from '../store/debugger_types';
 
 // HACK: Below import is for type inference.
@@ -47,7 +48,7 @@ export const debuggerRunsRequestFailed = createAction(
 );
 
 /**
- * Actions for the Alerts Component.
+ * Actions for the Timeline Component.
  */
 export const alertsViewLoaded = createAction('[Debugger] Alerts View Loaded');
 
@@ -75,4 +76,14 @@ export const executionScrollLeft = createAction(
 
 export const executionScrollRight = createAction(
   '[Debugger] Scroll Rightward on the Execution Timeline'
+);
+
+export const executionDigestClicked = createAction(
+  '[Debugger] Execution Data Objects Requested',
+  props<{displayIndex: number}>()
+);
+
+export const executionDataLoaded = createAction(
+  '[Debugger] Execution Data Objects Loaded',
+  props<ExecutionDataResponse>()
 );

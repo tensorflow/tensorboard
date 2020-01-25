@@ -57,9 +57,18 @@ export class TimelineComponent {
   @Input()
   displayExecutionDigests: ExecutionDigestForDisplay[] = [];
 
+  @Input()
+  focusedExecutionIndex: number | null = null;
+
+  @Input()
+  focusedExecutionDisplayIndex: number | null = null;
+
   @Output()
   onNavigateLeft = new EventEmitter();
 
   @Output()
   onNavigateRight = new EventEmitter();
+
+  @Output()
+  onExecutionDigestClicked = new EventEmitter<number>();
 }

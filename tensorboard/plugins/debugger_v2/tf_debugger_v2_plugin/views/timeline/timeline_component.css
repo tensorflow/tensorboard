@@ -32,6 +32,12 @@ limitations under the License.
   text-decoration: underline;
 }
 
+.execution-digest.focused {
+  background-color: #ffd4b3;
+  border: 1px solid black;
+  font-weight: bold;
+}
+
 .execution-digest:hover {
   border: 1px solid black;
   font-weight: bold;

@@ -19,6 +19,18 @@ export {DataLoadState, LoadState} from '../../../../webapp/types/data';
 
 export const DEBUGGER_FEATURE_KEY = 'debugger';
 
+export enum TensorDebugMode {
+  UNSPECIFIED = 0,
+  NO_TENSOR = 1,
+  CURT_HEALTH = 2,
+  CONCISE_HEALTH = 3,
+  FULL_HEALTH = 4,
+  SHAPE = 5,
+  FULL_NUMERICS = 6,
+  FULL_TENSOR = 7,
+  REDUCE_INF_NAN_THREE_SLOTS = 8,
+}
+
 export interface DebuggerRunMetadata {
   // Time at which the debugger run started. Seconds since the epoch.
   start_time: number;
@@ -34,6 +46,23 @@ export interface ExecutionDigest {
 
   // Output tensor device ids.
   output_tensor_device_ids: string[];
+}
+
+/** Non-digest, detailed data object for top-level execution events. */
+export interface Execution extends ExecutionDigest {
+  host_name: string;
+
+  stack_frame_ids: string;
+
+  tensor_debug_mode: TensorDebugMode;
+
+  graph_id: string | null;
+
+  input_tensor_ids: number[];
+
+  output_tensor_ids: number[];
+
+  debug_tensor_values: Array<number[] | null>;
 }
 
 export interface ExecutionDigestsResponse {
@@ -55,6 +84,14 @@ export interface ExecutionDigestLoadState extends LoadState {
   // Number of top-level executions available at the data source (not
   // necessarilty loaded by frontend yet.)
   numExecutions: number;
+}
+
+export interface ExecutionDataResponse {
+  begin: number;
+
+  end: number;
+
+  executions: Execution[];
 }
 
 export interface Executions {
@@ -82,6 +119,9 @@ export interface Executions {
 
   // Beginning index of the current scrolling position.
   scrollBeginIndex: number;
+
+  // Index of focusing.
+  focusIndex: number | null;
 
   // Execution digests the frontend has loaded so far.
   executionDigests: {[index: number]: ExecutionDigest};
