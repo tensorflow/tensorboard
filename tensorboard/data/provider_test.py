@@ -236,29 +236,6 @@ class BlobSequenceTimeSeriesTest(tb_test.TestCase):
         # least warrant some scrutiny.
         self.assertNotEqual(hash(x1), hash(x3))
 
-    def test_legacy_forms(self):
-        new_kwargs = [
-            ("max_step", 66),
-            ("max_wall_time", 1234.5),
-            ("max_length", 6),
-            ("plugin_content", b"\x12"),
-            ("description", "one"),
-            ("display_name", "two"),
-        ]
-        old_kwargs = [
-            (k if k != "max_length" else "latest_max_index", v)
-            for (k, v) in new_kwargs
-        ]
-        args = [v for (k, v) in new_kwargs]
-        variants = [
-            provider.BlobSequenceTimeSeries(*args),
-            provider.BlobSequenceTimeSeries(**dict(new_kwargs)),
-            provider.BlobSequenceTimeSeries(**dict(old_kwargs)),
-        ]
-        canonical = variants[0]
-        for variant in variants:
-            self.assertEqual(canonical, variant)
-
 
 class BlobReferenceTest(tb_test.TestCase):
     def test_repr(self):
