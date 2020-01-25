@@ -20,13 +20,14 @@ import {
   debuggerLoaded,
   debuggerRunsRequested,
   debuggerRunsLoaded,
+  executionDataLoaded,
+  executionDigestClicked,
   executionDigestsRequested,
   executionDigestsLoaded,
   executionScrollLeft,
   executionScrollRight,
   numExecutionsLoaded,
   numExecutionsRequested,
-  executionDigestClicked,
 } from '../actions';
 import {
   getActiveRunId,
@@ -37,6 +38,8 @@ import {
   getNumExecutions,
   getNumExecutionsLoaded,
   getExecutionPageSize,
+  getFocusedExecutionIndex,
+  getLoadedExecutionData,
 } from '../store/debugger_selectors';
 import {
   DataLoadState,
@@ -268,32 +271,36 @@ export class DebuggerEffects {
 
   /** @export */
   // TODO(cais): Implement.
-  // readonly executionDigestClicked$ = createEffect(() =>
-  //   this.actions$.pipe(
-  //     ofType(executionDigestClicked),
-  //     withLatestFrom(this.store.select(getExecutionDataLoaded)),
-  //     filter(([displayIndex, loaded]) => {
-  //       return (
-  //         Object.keys(props.runs).length > 0 &&
-  //         loaded.state !== DataLoadState.LOADING
-  //       );
-  //     }),
-  //     tap(() => this.store.dispatch(numExecutionsRequested())),
-  //     mergeMap(([props, loaded]) => {
-  //       // TODO(cais): Handle multple runs. Currently it is assumed that there
-  //       // is at most only one debugger run available.
-  //       const runId = Object.keys(props.runs)[0];
-  //       const begin = 0;
-  //       const end = 0;
-  //       return this.dataSource.fetchExecutionDigests(runId, begin, end).pipe(
-  //         map((digests) => {
-  //           return numExecutionsLoaded({numExecutions: digests.num_digests});
-  //         })
-  //       );
-  //       // TODO(cais): Add catchError() to pipe.
-  //     })
-  //   )
-  // );
+  readonly executionDigestClicked$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(executionDigestClicked),
+      withLatestFrom(
+        this.store.select(getActiveRunId),
+        this.store.select(getFocusedExecutionIndex),
+        this.store.select(getLoadedExecutionData)
+      ),
+      filter(([_, activeRunId, focusIndex, loadedExecutionData]) => {
+        // TODO(cais): Add unit tests.
+        return (
+          activeRunId !== null &&
+          focusIndex !== null &&
+          loadedExecutionData[focusIndex] == null
+        );
+      }),
+      mergeMap(([_, activeRunId, focusIndex]) => {
+        const begin = focusIndex!;
+        const end = begin + 1;
+        return this.dataSource
+          .fetchExecutionData(activeRunId!, begin, end)
+          .pipe(
+            map((executionDataResponse) => {
+              return executionDataLoaded(executionDataResponse);
+            })
+          );
+        // TODO(cais): Add catchError() to pipe.
+      })
+    )
+  );
 
   constructor(
     private actions$: Actions,

@@ -125,6 +125,9 @@ export interface Executions {
 
   // Execution digests the frontend has loaded so far.
   executionDigests: {[index: number]: ExecutionDigest};
+
+  // Detailed data objects.
+  executionData: {[index: number]: Execution};
 }
 
 // The state of a loaded DebuggerV2 run.

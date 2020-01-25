@@ -17,6 +17,7 @@ import {Injectable} from '@angular/core';
 import {Observable} from 'rxjs';
 import {
   DebuggerRunListing,
+  ExecutionDataResponse,
   ExecutionDigestsResponse,
 } from '../store/debugger_types';
 
@@ -58,7 +59,7 @@ export class Tfdbg2HttpServerDataSource implements Tfdbg2DataSource {
   }
 
   fetchExecutionData(run: string, begin: number, end: number) {
-    return this.http.get<ExecutionDigestsResponse>(
+    return this.http.get<ExecutionDataResponse>(
       this.httpPathPrefix + '/execution/data',
       {
         params: {

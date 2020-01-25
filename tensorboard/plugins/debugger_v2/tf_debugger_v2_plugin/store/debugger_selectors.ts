@@ -13,11 +13,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {createSelector, createFeatureSelector} from '@ngrx/store';
+import {createSelector, createFeatureSelector, select} from '@ngrx/store';
 import {
   DEBUGGER_FEATURE_KEY,
   DebuggerRunListing,
   DebuggerState,
+  Execution,
   ExecutionDigest,
   ExecutionDigestLoadState,
   LoadState,
@@ -122,6 +123,7 @@ export const getFocusedExecutionIndex = createSelector(
 /**
  * Get the display index of the execution digest being focused on (if any).
  */
+// TODO(cais): Add unit tests.
 export const getFocusedExecutionDisplayIndex = createSelector(
   selectDebuggerState,
   (state: DebuggerState): number | null => {
@@ -134,6 +136,30 @@ export const getFocusedExecutionDisplayIndex = createSelector(
         focusIndex < scrollBeginIndex + displayCount
       ) {
         return focusIndex - scrollBeginIndex;
+      } else {
+        return null;
+      }
+    }
+  }
+);
+
+export const getLoadedExecutionData = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): {[index: number]: Execution} =>
+    state.executions.executionData
+);
+
+// TODO(cais): Add unit tests.
+// TODO(cais): This should reflect loading... state.
+export const getFocusedExecutionData = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): Execution | null => {
+    const {focusIndex, executionData} = state.executions;
+    if (focusIndex === null) {
+      return null;
+    } else {
+      if (focusIndex in executionData) {
+        return executionData[focusIndex];
       } else {
         return null;
       }

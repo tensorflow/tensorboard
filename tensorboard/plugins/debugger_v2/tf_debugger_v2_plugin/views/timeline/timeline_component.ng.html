@@ -54,14 +54,40 @@ limitations under the License.
       </div>
     </div>
 
-    <div class="focus-execution-container">
-      Execution #
+    <div
+      *ngIf="focusedExecutionData !== null"
+      class="focus-execution-container"
+    >
       <div>
-        {{ focusedExecutionIndex }}
-      </div>
-      <div>
-        <!-- DEBUG -->
-        {{ focusedExecutionDisplayIndex }}
+        <div>
+          Execution #
+          <span>
+            {{ focusedExecutionIndex }}
+          </span>
+        </div>
+
+        <div>
+          Op type:
+          <span>
+            {{ focusedExecutionData.op_type }}
+          </span>
+        </div>
+
+        <div>
+          # of input tensors:
+          <span>
+            {{ focusedExecutionData.input_tensor_ids == null ? 0 :
+            focusedExecutionData.input_tensor_ids.length }}
+          </span>
+        </div>
+
+        <div>
+          # of output tensors:
+          <span>
+            {{ focusedExecutionData.output_tensor_ids == null ? 0 :
+            focusedExecutionData.output_tensor_ids.length }}
+          </span>
+        </div>
       </div>
     </div>
   </div>

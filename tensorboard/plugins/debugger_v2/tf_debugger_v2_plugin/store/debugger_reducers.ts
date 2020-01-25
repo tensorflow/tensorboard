@@ -18,6 +18,7 @@ import * as actions from '../actions';
 import {
   DataLoadState,
   DebuggerState,
+  ExecutionDataResponse,
   ExecutionDigestsResponse,
 } from './debugger_types';
 
@@ -52,6 +53,7 @@ const initialState: DebuggerState = {
     // properties.
     displayCount: 50,
     executionDigests: {},
+    executionData: {},
   },
 };
 
@@ -256,6 +258,27 @@ const reducer = createReducer(
           focusIndex: state.executions.scrollBeginIndex + action.displayIndex,
         },
       };
+    }
+  ),
+  on(
+    actions.executionDataLoaded,
+    (state: DebuggerState, data: ExecutionDataResponse): DebuggerState => {
+      const runId = state.activeRunId;
+      if (runId === null) {
+        return state;
+      }
+      const newState: DebuggerState = {
+        ...state,
+        executions: {
+          ...state.executions,
+          executionData: {...state.executions.executionData},
+        },
+      };
+      for (let i = data.begin; i < data.end; ++i) {
+        newState.executions.executionData[i] = data.executions[i - data.begin];
+      }
+      // TODO(cais): Add unit tests.
+      return newState;
     }
   )
 );
