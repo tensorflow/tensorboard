@@ -52,31 +52,6 @@ limitations under the License.
   margin-bottom: 5px;
 }
 
-.execution-data-field {
-  white-space: nowrap;
-}
-
-.execution-data-key {
-  display: inline-block;
-  max-width: 120px;
-  text-align: right;
-  width: 120px;
-}
-
-.execution-data-value {
-  display: inline-block;
-  margin-left: 10px;
-}
-
-.focus-execution-container {
-  background-color: #ffd4b3;
-  border-radius: 4px;
-  font-size: 12px;
-  height: 75px;
-  padding: 5px;
-  width: 315px;
-}
-
 .navigation-position-info {
   display: inline-block;
   padding-left: 10px;

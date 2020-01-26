@@ -12,17 +12,22 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {Component, Input} from '@angular/core';
 
-import {CommonModule} from '@angular/common';
-import {NgModule} from '@angular/core';
+import {Execution} from '../../store/debugger_types';
 
-import {ExecutionDataModule} from '../execution_data/execution_data_module';
-import {TimelineComponent} from './timeline_component';
-import {TimelineContainer} from './timeline_container';
-
-@NgModule({
-  declarations: [TimelineComponent, TimelineContainer],
-  imports: [CommonModule, ExecutionDataModule],
-  exports: [TimelineContainer],
+@Component({
+  selector: 'execution-data-component',
+  templateUrl: './execution_data_component.ng.html',
+  styleUrls: ['./execution_data_component.css'],
 })
-export class TimelineModule {}
+export class ExecutionDataComponent {
+  @Input()
+  activeRunId: string | null = null;
+
+  @Input()
+  focusedExecutionIndex: number | null = null;
+
+  @Input()
+  focusedExecutionData: Execution | null = null;
+}

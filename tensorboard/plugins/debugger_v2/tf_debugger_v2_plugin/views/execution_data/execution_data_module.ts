@@ -16,13 +16,12 @@ limitations under the License.
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 
-import {ExecutionDataModule} from '../execution_data/execution_data_module';
-import {TimelineComponent} from './timeline_component';
-import {TimelineContainer} from './timeline_container';
+import {ExecutionDataComponent} from './execution_data_component';
+import {ExecutionDataContainer} from './execution_data_container';
 
 @NgModule({
-  declarations: [TimelineComponent, TimelineContainer],
-  imports: [CommonModule, ExecutionDataModule],
-  exports: [TimelineContainer],
+  declarations: [ExecutionDataComponent, ExecutionDataContainer],
+  imports: [CommonModule],
+  exports: [ExecutionDataContainer],
 })
-export class TimelineModule {}
+export class ExecutionDataModule {}

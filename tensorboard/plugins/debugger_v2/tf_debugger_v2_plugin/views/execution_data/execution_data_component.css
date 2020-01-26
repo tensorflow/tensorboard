@@ -13,16 +13,27 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {CommonModule} from '@angular/common';
-import {NgModule} from '@angular/core';
+.execution-data-field {
+  white-space: nowrap;
+}
 
-import {ExecutionDataModule} from '../execution_data/execution_data_module';
-import {TimelineComponent} from './timeline_component';
-import {TimelineContainer} from './timeline_container';
+.execution-data-key {
+  display: inline-block;
+  max-width: 120px;
+  text-align: right;
+  width: 120px;
+}
 
-@NgModule({
-  declarations: [TimelineComponent, TimelineContainer],
-  imports: [CommonModule, ExecutionDataModule],
-  exports: [TimelineContainer],
-})
-export class TimelineModule {}
+.execution-data-value {
+  display: inline-block;
+  margin-left: 10px;
+}
+
+.focus-execution-container {
+  background-color: #ffd4b3;
+  border-radius: 4px;
+  font-size: 12px;
+  height: 75px;
+  padding: 5px;
+  width: 315px;
+}
