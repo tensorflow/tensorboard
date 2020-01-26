@@ -18,9 +18,9 @@ import {select, Store, createSelector} from '@ngrx/store';
 import {State} from '../../store/debugger_types';
 import {
   alertsViewLoaded,
+  executionDigestFocus,
   executionScrollLeft,
   executionScrollRight,
-  executionDigestClicked,
 } from '../../actions';
 import {
   getActiveRunId,
@@ -169,7 +169,7 @@ export class TimelineContainer implements OnInit {
   }
 
   onExecutionDigestClicked(index: number) {
-    this.store.dispatch(executionDigestClicked({displayIndex: index}));
+    this.store.dispatch(executionDigestFocus({displayIndex: index}));
   }
 }
 

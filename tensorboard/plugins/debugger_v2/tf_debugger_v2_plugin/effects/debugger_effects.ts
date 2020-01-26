@@ -21,7 +21,7 @@ import {
   debuggerRunsRequested,
   debuggerRunsLoaded,
   executionDataLoaded,
-  executionDigestClicked,
+  executionDigestFocus,
   executionDigestsRequested,
   executionDigestsLoaded,
   executionScrollLeft,
@@ -194,7 +194,11 @@ export class DebuggerEffects {
         return this.dataSource.fetchExecutionDigests(runId!, begin, end).pipe(
           map((digests) => {
             return executionDigestsLoaded(digests);
-          })
+          }),
+          // TODO(cais): Unit test.
+          tap(() =>
+            this.store.dispatch(executionDigestFocus({displayIndex: 0}))
+          )
         );
         // TODO(cais): Add catchError() to pipe.
       })
@@ -271,9 +275,9 @@ export class DebuggerEffects {
 
   /** @export */
   // TODO(cais): Implement.
-  readonly executionDigestClicked$ = createEffect(() =>
+  readonly executionDigestFocused$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(executionDigestClicked),
+      ofType(executionDigestFocus),
       withLatestFrom(
         this.store.select(getActiveRunId),
         this.store.select(getFocusedExecutionIndex),

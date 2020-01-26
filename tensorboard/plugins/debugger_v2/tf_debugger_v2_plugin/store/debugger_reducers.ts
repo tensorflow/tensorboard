@@ -249,7 +249,7 @@ const reducer = createReducer(
     }
   ),
   on(
-    actions.executionDigestClicked,
+    actions.executionDigestFocus,
     (state: DebuggerState, action): DebuggerState => {
       return {
         ...state,

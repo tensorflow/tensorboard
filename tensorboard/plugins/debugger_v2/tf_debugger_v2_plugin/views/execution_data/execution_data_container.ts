@@ -25,7 +25,6 @@ import {
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
-
 @Component({
   selector: 'tf-debugger-v2-execution-data',
   template: `

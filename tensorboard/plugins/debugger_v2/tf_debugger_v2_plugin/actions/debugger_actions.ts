@@ -78,8 +78,8 @@ export const executionScrollRight = createAction(
   '[Debugger] Scroll Rightward on the Execution Timeline'
 );
 
-export const executionDigestClicked = createAction(
-  '[Debugger] Execution Data Objects Requested',
+export const executionDigestFocus = createAction(
+  '[Debugger] Execution Data Objects Being Focused On',
   props<{displayIndex: number}>()
 );
 
