@@ -58,34 +58,50 @@ limitations under the License.
       *ngIf="focusedExecutionData !== null"
       class="focus-execution-container"
     >
+      <!-- TODO(cais): Refactor into own view. -->
       <div>
         <div>
-          Execution #
           <span>
-            {{ focusedExecutionIndex }}
+            Execution #{{ focusedExecutionIndex }}
           </span>
         </div>
 
-        <div>
-          Op type:
-          <span>
+        <div class="execution-data-field">
+          <span class="execution-data-key">
+            Op:
+          </span>
+          <span class="execution-data-value">
             {{ focusedExecutionData.op_type }}
           </span>
         </div>
 
-        <div>
-          # of input tensors:
-          <span>
+        <div class="execution-data-field">
+          <span class="execution-data-key">
+            # of input tensors:
+          </span>
+          <span class="execution-data-value">
             {{ focusedExecutionData.input_tensor_ids == null ? 0 :
             focusedExecutionData.input_tensor_ids.length }}
           </span>
         </div>
 
-        <div>
-          # of output tensors:
-          <span>
+        <div class="execution-data-field">
+          <span class="execution-data-key">
+            # of output tensors:
+          </span>
+          <span class="execution-data-value">
             {{ focusedExecutionData.output_tensor_ids == null ? 0 :
             focusedExecutionData.output_tensor_ids.length }}
+          </span>
+        </div>
+
+        <div class="execution-data-field">
+          <span class="execution-data-key">
+            Tensor debug mode:
+          </span>
+          <span class="execution-data-value">
+            <!-- TODO(cais): Show debug mode in text format -->
+            {{ focusedExecutionData.tensor_debug_mode }}
           </span>
         </div>
       </div>
