@@ -40,9 +40,7 @@ def is_path_safe(path):
 class UrlSafetyTest(unittest.TestCase):
     def test_path_traversal(self):
         """Properly check whether a URL can be served from the static folder."""
-        with mock.patch(
-            "builtins.open", mock.mock_open(read_data="data")
-        ) as mock_file:
+        with mock.patch("builtins.open", mock.mock_open(read_data="data")):
             self.assertTrue(is_path_safe("static/index.js"))
             self.assertTrue(is_path_safe("./static/index.js"))
             self.assertTrue(is_path_safe("static/../static/index.js"))
@@ -77,10 +75,10 @@ class UrlSafetyTest(unittest.TestCase):
             )
 
             # Test with OS specific path modules.
-            with mock.patch("os.path", posixpath) as mock_path:
+            with mock.patch("os.path", posixpath):
                 self.assertTrue(is_path_safe("static/\\index.js"))
 
-            with mock.patch("os.path", ntpath) as mock_path:
+            with mock.patch("os.path", ntpath):
                 self.assertFalse(is_path_safe("static/\\index.js"))
 
 

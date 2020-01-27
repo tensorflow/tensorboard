@@ -24,8 +24,6 @@ import functools
 import json
 import mimetypes
 import os
-import ntpath
-import posixpath
 
 import six
 from werkzeug import wrappers
