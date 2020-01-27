@@ -37,8 +37,10 @@ import {
   createDebuggerStateWithLoadedExecutionDigests,
 } from './testing';
 import {AlertsModule} from './views/alerts/alerts_module';
+import {ExecutionDataModule} from './views/execution_data/execution_data_module';
 import {InactiveModule} from './views/inactive/inactive_module';
 import {TimelineContainer} from './views/timeline/timeline_container';
+import {StackTraceModule} from './views/stack_trace/stack_trace_module';
 import {TimelineModule} from './views/timeline/timeline_module';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
@@ -50,7 +52,14 @@ describe('Debugger Container', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [DebuggerComponent, DebuggerContainer],
-      imports: [AlertsModule, CommonModule, InactiveModule, TimelineModule],
+      imports: [
+        AlertsModule,
+        CommonModule,
+        ExecutionDataModule,
+        InactiveModule,
+        StackTraceModule,
+        TimelineModule,
+      ],
       providers: [
         provideMockStore({
           initialState: createState(createDebuggerState()),

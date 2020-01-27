@@ -352,7 +352,7 @@ export class DebuggerEffects {
                   stackFramesById[execution.stack_frame_ids[i]] =
                     stackFramesResponse.stack_frames[i];
                 }
-                return stackFramesLoaded(stackFramesById);
+                return stackFramesLoaded({stackFrames: stackFramesById});
               })
             )
         );

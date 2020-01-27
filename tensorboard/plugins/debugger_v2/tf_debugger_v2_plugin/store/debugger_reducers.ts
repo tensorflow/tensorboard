@@ -21,6 +21,7 @@ import {
   ExecutionDataResponse,
   ExecutionDigestsResponse,
   StackFrame,
+  StackFramesById,
 } from './debugger_types';
 
 // HACK: These imports are for type inference.
@@ -279,7 +280,6 @@ const reducer = createReducer(
       for (let i = data.begin; i < data.end; ++i) {
         newState.executions.executionData[i] = data.executions[i - data.begin];
       }
-      // TODO(cais): Add unit tests.
       return newState;
     }
   ),
@@ -287,7 +287,7 @@ const reducer = createReducer(
     actions.stackFramesLoaded,
     (
       state: DebuggerState,
-      stackFramesById: {[id: string]: StackFrame}
+      stackFrames: {stackFrames: StackFramesById}
     ): DebuggerState => {
       const runId = state.activeRunId;
       if (runId === null) {
@@ -297,12 +297,7 @@ const reducer = createReducer(
         ...state,
         stackFrames: {...state.stackFrames},
       };
-      Object.assign(newState.stackFrames, stackFramesById);
-      console.log(
-        `stackFramesLoaded(): newState.stackFrames:`,
-        newState.stackFrames
-      ); // DEBUG
-      // TODO(cais): Add unit tests.
+      Object.assign(newState.stackFrames, stackFrames.stackFrames);
       return newState;
     }
   )

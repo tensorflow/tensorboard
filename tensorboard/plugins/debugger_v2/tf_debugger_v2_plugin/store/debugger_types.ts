@@ -43,6 +43,8 @@ export interface DebuggerRunListing {
 // Each item is [host_name, file_path, lineno, function].
 export type StackFrame = [string, string, number, string];
 
+export type StackFramesById = {[id: string]: StackFrame};
+
 export interface StackFramesResponse {
   stack_frames: Array<StackFrame>;
 }
@@ -155,7 +157,7 @@ export interface DebuggerState {
 
   // Stack frames that have been loaded from data source so far, keyed by
   // stack-frame IDs.
-  stackFrames: {[stack_frame_id: string]: StackFrame};
+  stackFrames: StackFramesById;
 }
 
 export interface State {

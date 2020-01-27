@@ -23,6 +23,7 @@ import {
   ExecutionDigestLoadState,
   LoadState,
   StackFrame,
+  StackFramesById,
   State,
 } from './debugger_types';
 
@@ -152,8 +153,7 @@ export const getLoadedExecutionData = createSelector(
 
 export const getLoadedStackFrames = createSelector(
   selectDebuggerState,
-  (state: DebuggerState): {[stack_frame_id: string]: StackFrame} =>
-    state.stackFrames
+  (state: DebuggerState): StackFramesById => state.stackFrames
 );
 
 // TODO(cais): Add unit tests.

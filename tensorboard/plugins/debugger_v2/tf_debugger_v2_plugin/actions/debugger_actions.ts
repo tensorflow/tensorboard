@@ -22,6 +22,7 @@ import {
   ExecutionDataResponse,
   StackFrame,
   StackFramesResponse,
+  StackFramesById,
 } from '../store/debugger_types';
 
 // HACK: Below import is for type inference.
@@ -99,5 +100,5 @@ export const executionStackFramesRequest = createAction(
 // TODO(cais): Unit test.
 export const stackFramesLoaded = createAction(
   '[Debugger] A Set of Stack Frames Have Been Loaded',
-  props<{[stackFrameId: string]: StackFrame}>()
+  props<{stackFrames: StackFramesById}>()
 );

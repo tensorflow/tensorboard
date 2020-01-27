@@ -14,12 +14,20 @@ limitations under the License.
 ==============================================================================*/
 import * as actions from '../actions';
 import {reducers} from './debugger_reducers';
-import {DataLoadState, ExecutionDigestsResponse} from './debugger_types';
+import {
+  DataLoadState,
+  Execution,
+  ExecutionDigestsResponse,
+  StackFrame,
+  StackFramesById,
+} from './debugger_types';
 import {
   createDebuggerExecutionsState,
   createDebuggerState,
   createDigestsStateWhileLoadingExecutionDigests,
   createDebuggerStateWithLoadedExecutionDigests,
+  createTestExecutionData,
+  createTestStackFrame,
 } from '../testing';
 
 describe('Debugger reducers', () => {
@@ -161,8 +169,10 @@ describe('Debugger reducers', () => {
         },
         pageSize: 1000,
         displayCount: 50,
+        focusIndex: null,
         scrollBeginIndex: 0,
         executionDigests: {},
+        executionData: {},
       },
     });
     const t0 = Date.now();
@@ -506,5 +516,66 @@ describe('Debugger reducers', () => {
     );
     const nextState = reducers(state, actions.executionScrollRight());
     expect(nextState.executions.scrollBeginIndex).toEqual(1450);
+  });
+
+  it(`Updates states on executionDigestFocus`, () => {
+    const state = createDebuggerState({
+      activeRunId: '__default_debugger_run__',
+    });
+    const nextState = reducers(
+      state,
+      actions.executionDigestFocus({
+        displayIndex: 12,
+      })
+    );
+    expect(nextState.executions.focusIndex).toEqual(12);
+  });
+
+  for (const numObjects of [1, 2, 3]) {
+    it(`Updates states on executionDataLoaded: ${numObjects} objects`, () => {
+      const state = createDebuggerState({
+        activeRunId: '__default_debugger_run__',
+      });
+      const executionDataObjects: Execution[] = [];
+      for (let i = 0; i < numObjects; ++i) {
+        executionDataObjects.push(
+          createTestExecutionData({
+            op_type: `OpType${numObjects}`,
+            input_tensor_ids: [i * 10],
+            output_tensor_ids: [i * 10 + 1],
+          })
+        );
+      }
+
+      const nextState = reducers(
+        state,
+        actions.executionDataLoaded({
+          begin: 0,
+          end: numObjects,
+          executions: executionDataObjects,
+        })
+      );
+      expect(Object.keys(nextState.executions.executionData).length).toEqual(
+        numObjects
+      );
+      for (let i = 0; i < numObjects; ++i) {
+        expect(nextState.executions.executionData[i]).toEqual(
+          executionDataObjects[i]
+        );
+      }
+    });
+  }
+
+  it(`Updates states on stackFramesLoaded with all new content`, () => {
+    const state = createDebuggerState({
+      activeRunId: '__default_debugger_run__',
+    });
+    const stackFrames: StackFramesById = {
+      aaa: createTestStackFrame(),
+      bbb: createTestStackFrame(),
+      ccc: createTestStackFrame(),
+    };
+    const nextState = reducers(state, actions.stackFramesLoaded({stackFrames}));
+    expect(nextState.stackFrames).toEqual(stackFrames);
   });
 });

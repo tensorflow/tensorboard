@@ -23,6 +23,7 @@ import {
   debuggerLoaded,
   debuggerRunsLoaded,
   debuggerRunsRequested,
+  executionDigestFocus,
   executionDigestsLoaded,
   executionDigestsRequested,
   executionScrollLeft,
@@ -342,7 +343,9 @@ describe('Debugger effects', () => {
               pageSize: 5,
               displayCount: 2,
               scrollBeginIndex: 0,
+              focusIndex: null,
               executionDigests: {},
+              executionData: {},
             },
           })
         )
@@ -377,8 +380,11 @@ describe('Debugger effects', () => {
       );
 
       expect(fetchExecutionDigests).toHaveBeenCalled();
-      expect(dispatchSpy).toHaveBeenCalledTimes(1);
+      expect(dispatchSpy).toHaveBeenCalledTimes(2);
       expect(dispatchSpy).toHaveBeenCalledWith(executionDigestsRequested());
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        executionDigestFocus({displayIndex: 0})
+      );
       expect(recordedActions).toEqual([
         executionDigestsLoaded(executionDigestForTest),
       ]);
@@ -445,7 +451,9 @@ describe('Debugger effects', () => {
                   pageSize: 2,
                   displayCount: 2,
                   scrollBeginIndex: 2,
+                  focusIndex: null,
                   executionDigests: {},
+                  executionData: {},
                 },
               })
             )

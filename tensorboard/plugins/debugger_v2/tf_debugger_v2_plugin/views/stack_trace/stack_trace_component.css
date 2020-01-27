@@ -45,6 +45,7 @@ limitations under the License.
 .stack-frame-lineno {
   display: inline-block;
   max-width: 80px;
+  text-align: left;
   width: 80px;
 }
 
