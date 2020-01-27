@@ -23,6 +23,7 @@ ng_module(
     ],
     deps = [
         ":config",
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin:debugger_v2",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
         "//tensorboard/webapp/core",

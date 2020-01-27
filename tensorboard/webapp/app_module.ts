@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {BrowserModule} from '@angular/platform-browser';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
-import {NgModule} from '@angular/core';
+import {NgModule, Component, Type} from '@angular/core';
 import {StoreModule} from '@ngrx/store';
 import {EffectsModule} from '@ngrx/effects';
 
@@ -28,6 +28,8 @@ import {ROOT_REDUCERS, metaReducers} from './reducer_config';
 import {HeaderModule} from './header/header_module';
 import {ReloaderModule} from './reloader/reloader_module';
 import {MatIconModule} from './mat_icon_module';
+import {DebuggerModule} from '../plugins/debugger_v2/tf_debugger_v2_plugin/debugger_module';
+import {DebuggerContainer} from '../plugins/debugger_v2/tf_debugger_v2_plugin/debugger_container';
 
 @NgModule({
   declarations: [AppContainer],
@@ -38,6 +40,7 @@ import {MatIconModule} from './mat_icon_module';
     HashStorageModule,
     HeaderModule,
     MatIconModule,
+    DebuggerModule,
     PluginsModule,
     ReloaderModule,
     StoreModule.forRoot(ROOT_REDUCERS, {
@@ -51,5 +54,16 @@ import {MatIconModule} from './mat_icon_module';
   ],
   providers: [],
   bootstrap: [AppContainer],
+  entryComponents: [DebuggerContainer],
 })
-export class AppModule {}
+export class AppModule {
+  constructor(private readonly pluginsModule: PluginsModule) {
+    // Angular dashboards must be registered here and in the `entryComponents`
+    const pluginConfig = new Map([['debugger-v2', DebuggerContainer]]);
+
+    for (let [pluginId, componentClass] of pluginConfig) {
+      const entryComponent = componentClass as Type<Component>;
+      this.pluginsModule.registerPluginUI(pluginId, entryComponent);
+    }
+  }
+}

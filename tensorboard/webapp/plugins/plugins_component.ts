@@ -26,6 +26,8 @@ import {
   OnChanges,
   SimpleChanges,
   ViewChild,
+  ComponentFactoryResolver,
+  ViewContainerRef,
 } from '@angular/core';
 
 import {UiPluginMetadata} from './plugins_container';
@@ -33,6 +35,7 @@ import {
   LoadingMechanismType,
   CustomElementLoadingMechanism,
 } from '../types/api';
+import {PluginsModule} from './plugins_module';
 
 @Component({
   selector: 'plugins-component',
@@ -44,8 +47,17 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PluginsComponent implements OnChanges {
+  constructor(
+    private viewContainerRef: ViewContainerRef,
+    private componentFactoryResolver: ComponentFactoryResolver,
+    private pluginsModule: PluginsModule
+  ) {}
+
   @ViewChild('pluginContainer', {static: true, read: ElementRef})
   private readonly pluginsContainer!: ElementRef<HTMLDivElement>;
+
+  @ViewChild('ngPluginContainer', {static: true, read: ViewContainerRef})
+  private readonly ngPluginContainer!: ViewContainerRef;
 
   @Input()
   activePlugin?: UiPluginMetadata;
@@ -79,7 +91,6 @@ export class PluginsComponent implements OnChanges {
 
     const pluginElement = this.createPlugin(plugin);
     if (pluginElement) {
-      pluginElement.id = plugin.id;
       this.pluginInstances.set(plugin.id, pluginElement);
     }
   }
@@ -107,7 +118,21 @@ export class PluginsComponent implements OnChanges {
         break;
       }
       case LoadingMechanismType.NG_COMPONENT:
-        // Let the Angular template render the component.
+        const ngComponentClass =
+          this.pluginsModule.pluginNameToComponent.get(plugin.id) || null;
+        if (ngComponentClass) {
+          const componentFactory = this.componentFactoryResolver.resolveComponentFactory(
+            ngComponentClass
+          );
+          const pluginComponent = this.ngPluginContainer.createComponent(
+            componentFactory
+          );
+          pluginElement = pluginComponent.location.nativeElement;
+        } else {
+          console.error(
+            `No registered Angular component for plugin: ${plugin.id}`
+          );
+        }
         break;
       case LoadingMechanismType.NONE:
         break;
