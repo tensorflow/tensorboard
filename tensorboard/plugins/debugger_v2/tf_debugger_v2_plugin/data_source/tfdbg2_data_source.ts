@@ -19,6 +19,7 @@ import {
   DebuggerRunListing,
   ExecutionDataResponse,
   ExecutionDigestsResponse,
+  StackFramesResponse,
 } from '../store/debugger_types';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
@@ -66,6 +67,18 @@ export class Tfdbg2HttpServerDataSource implements Tfdbg2DataSource {
           run,
           begin: String(begin),
           end: String(end),
+        },
+      }
+    );
+  }
+
+  fetchStackFrames(run: string, stackFrameIds: string[]) {
+    return this.http.get<StackFramesResponse>(
+      this.httpPathPrefix + '/stack_frames/stack_frames',
+      {
+        params: {
+          run,
+          stack_frame_ids: stackFrameIds.join(','),
         },
       }
     );

@@ -1,4 +1,4 @@
-/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -12,25 +12,22 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {Component, Input} from '@angular/core';
 
-.bottom-section {
-  width: 100%;
+export interface StackFrameForDisplay {
+  host_name: string;
+  file_path: string;
+  concise_file_path: string;
+  lineno: number;
+  function_name: string;
 }
 
-.top-section {
-  width: 100%;
-}
-
-tf-debugger-v2-alerts {
-  display: inline-block;
-  height: 360px;
-  vertical-align: top;
-  width: 200px;
-}
-
-tf-debugger-v2-timeline {
-  display: inline-block;
-  height: 360px;
-  vertical-align: top;
-  width: 800px;
+@Component({
+  selector: 'stack-trace-component',
+  templateUrl: './stack_trace_component.ng.html',
+  styleUrls: ['./stack_trace_component.css'],
+})
+export class StackTraceComponent {
+  @Input()
+  stackFramesForDisplay: StackFrameForDisplay[] | null = null;
 }

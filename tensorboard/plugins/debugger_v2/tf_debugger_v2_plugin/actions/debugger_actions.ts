@@ -17,8 +17,11 @@ import {createAction, props} from '@ngrx/store';
 
 import {
   DebuggerRunListing,
+  Execution,
   ExecutionDigestsResponse,
   ExecutionDataResponse,
+  StackFrame,
+  StackFramesResponse,
 } from '../store/debugger_types';
 
 // HACK: Below import is for type inference.
@@ -86,4 +89,15 @@ export const executionDigestFocus = createAction(
 export const executionDataLoaded = createAction(
   '[Debugger] Execution Data Objects Loaded',
   props<ExecutionDataResponse>()
+);
+
+export const executionStackFramesRequest = createAction(
+  '[Debugger] Request for the Stack Frames of an Execution Event',
+  props<Execution>()
+);
+
+// TODO(cais): Unit test.
+export const stackFramesLoaded = createAction(
+  '[Debugger] A Set of Stack Frames Have Been Loaded',
+  props<{[stackFrameId: string]: StackFrame}>()
 );

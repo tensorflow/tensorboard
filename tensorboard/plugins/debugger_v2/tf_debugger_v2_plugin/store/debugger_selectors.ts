@@ -22,6 +22,7 @@ import {
   ExecutionDigest,
   ExecutionDigestLoadState,
   LoadState,
+  StackFrame,
   State,
 } from './debugger_types';
 
@@ -149,6 +150,12 @@ export const getLoadedExecutionData = createSelector(
     state.executions.executionData
 );
 
+export const getLoadedStackFrames = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): {[stack_frame_id: string]: StackFrame} =>
+    state.stackFrames
+);
+
 // TODO(cais): Add unit tests.
 // TODO(cais): This should reflect loading... state.
 export const getFocusedExecutionData = createSelector(
@@ -160,6 +167,33 @@ export const getFocusedExecutionData = createSelector(
     } else {
       if (focusIndex in executionData) {
         return executionData[focusIndex];
+      } else {
+        return null;
+      }
+    }
+  }
+);
+
+// TODO(cais): Add unit tests.
+// TODO(cais): This should reflect loading... state.
+export const getFocusedExecutionStackFrames = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): StackFrame[] | null => {
+    const {focusIndex, executionData} = state.executions;
+    if (focusIndex === null) {
+      return null;
+    } else {
+      if (focusIndex in executionData) {
+        const stackFrameIds = executionData[focusIndex].stack_frame_ids;
+        const stackFrames: StackFrame[] = [];
+        for (const stackFrameId of stackFrameIds) {
+          if (state.stackFrames[stackFrameId] != null) {
+            stackFrames.push(state.stackFrames[stackFrameId]);
+          } else {
+            return null;
+          }
+        }
+        return stackFrames;
       } else {
         return null;
       }

@@ -27,6 +27,7 @@ ng_module(
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/store:types",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/alerts",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/inactive",
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/stack_trace",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/timeline",
         "@npm//@angular/common",
         "@npm//@angular/core",

@@ -40,6 +40,13 @@ export interface DebuggerRunListing {
   [runId: string]: DebuggerRunMetadata;
 }
 
+// Each item is [host_name, file_path, lineno, function].
+export type StackFrame = [string, string, number, string];
+
+export interface StackFramesResponse {
+  stack_frames: Array<StackFrame>;
+}
+
 export interface ExecutionDigest {
   // Op type executed.
   op_type: string;
@@ -52,7 +59,7 @@ export interface ExecutionDigest {
 export interface Execution extends ExecutionDigest {
   host_name: string;
 
-  stack_frame_ids: string;
+  stack_frame_ids: string[];
 
   tensor_debug_mode: TensorDebugMode;
 
@@ -145,6 +152,10 @@ export interface DebuggerState {
 
   // Per-run detailed data.
   executions: Executions;
+
+  // Stack frames that have been loaded from data source so far, keyed by
+  // stack-frame IDs.
+  stackFrames: {[stack_frame_id: string]: StackFrame};
 }
 
 export interface State {

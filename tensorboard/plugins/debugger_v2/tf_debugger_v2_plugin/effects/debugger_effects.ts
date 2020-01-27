@@ -26,8 +26,10 @@ import {
   executionDigestsLoaded,
   executionScrollLeft,
   executionScrollRight,
+  executionStackFramesRequest,
   numExecutionsLoaded,
   numExecutionsRequested,
+  stackFramesLoaded,
 } from '../actions';
 import {
   getActiveRunId,
@@ -40,11 +42,13 @@ import {
   getExecutionPageSize,
   getFocusedExecutionIndex,
   getLoadedExecutionData,
+  getLoadedStackFrames,
 } from '../store/debugger_selectors';
 import {
   DataLoadState,
-  State,
   DebuggerRunListing,
+  StackFrame,
+  State,
 } from '../store/debugger_types';
 import {Tfdbg2HttpServerDataSource} from '../data_source/tfdbg2_data_source';
 
@@ -274,7 +278,6 @@ export class DebuggerEffects {
   );
 
   /** @export */
-  // TODO(cais): Implement.
   readonly executionDigestFocused$ = createEffect(() =>
     this.actions$.pipe(
       ofType(executionDigestFocus),
@@ -297,10 +300,62 @@ export class DebuggerEffects {
         return this.dataSource
           .fetchExecutionData(activeRunId!, begin, end)
           .pipe(
+            // TODO(cais): Unit test.
+            tap((executionDataResponse) => {
+              const execution = executionDataResponse.executions[0];
+              return this.store.dispatch(
+                executionStackFramesRequest(execution)
+              );
+            }),
             map((executionDataResponse) => {
               return executionDataLoaded(executionDataResponse);
             })
           );
+        // TODO(cais): Add catchError() to pipe.
+      })
+    )
+  );
+
+  /** @export */
+  readonly loadExecutionStackFrames$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(executionStackFramesRequest), // TODO(cais): Prevent repeated loaded.
+      withLatestFrom(
+        this.store.select(getActiveRunId),
+        this.store.select(getLoadedStackFrames)
+      ),
+      filter(([execution, runId, loadedStackFrames]) => {
+        // TODO(cais): Add unit tests.
+        if (runId === null) {
+          return false;
+        }
+        let anyMissing = false;
+        for (const stackFrameId of execution.stack_frame_ids) {
+          if (loadedStackFrames[stackFrameId] === undefined) {
+            anyMissing = true;
+            break;
+          }
+        }
+        return anyMissing;
+      }),
+      mergeMap(([execution, runId, _]) => {
+        return (
+          this.dataSource
+            // TODO(cais): Avoid loading already-loaded stack frames.
+            .fetchStackFrames(runId!, execution.stack_frame_ids)
+            .pipe(
+              map((stackFramesResponse) => {
+                const stackFramesById: {
+                  [stackFrameId: string]: StackFrame;
+                } = {};
+                for (let i = 0; i < execution.stack_frame_ids.length; ++i) {
+                  stackFramesById[execution.stack_frame_ids[i]] =
+                    stackFramesResponse.stack_frames[i];
+                }
+                return stackFramesLoaded(stackFramesById);
+              })
+            )
+        );
         // TODO(cais): Add catchError() to pipe.
       })
     )
