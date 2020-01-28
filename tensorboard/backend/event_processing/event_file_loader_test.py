@@ -19,94 +19,135 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import abc
+import io
 import os
-import tempfile
 
+import six
 import tensorflow as tf
 
 
 from tensorboard.backend.event_processing import event_file_loader
+from tensorboard.compat.proto import event_pb2
+from tensorboard.summary.writer import record_writer
 
 
-class EventFileLoaderTest(tf.test.TestCase):
-    # A record containing a simple event.
-    RECORD = (
-        b'\x18\x00\x00\x00\x00\x00\x00\x00\xa3\x7fK"\t\x00\x00\xc0%\xddu'
-        b"\xd5A\x1a\rbrain.Event:1\xec\xf32\x8d"
-    )
+FILENAME = "test.events"
 
-    def _WriteToFile(self, filename, data):
-        with open(filename, "ab") as f:
-            f.write(data)
 
-    def _LoaderForTestFile(self, filename):
-        return event_file_loader.EventFileLoader(
-            os.path.join(self.get_temp_dir(), filename)
-        )
+@six.add_metaclass(abc.ABCMeta)
+class EventFileLoaderTestBase(object):
+    def _append_record(self, data):
+        with open(os.path.join(self.get_temp_dir(), FILENAME), "ab") as f:
+            record_writer.RecordWriter(f).write(data)
 
-    def testEmptyEventFile(self):
-        filename = tempfile.NamedTemporaryFile(dir=self.get_temp_dir()).name
-        self._WriteToFile(filename, b"")
-        loader = self._LoaderForTestFile(filename)
-        self.assertEqual(len(list(loader.Load())), 0)
+    def _make_loader(self):
+        return self._loader_class(os.path.join(self.get_temp_dir(), FILENAME))
 
-    def testSingleWrite(self):
-        filename = tempfile.NamedTemporaryFile(dir=self.get_temp_dir()).name
-        self._WriteToFile(filename, EventFileLoaderTest.RECORD)
-        loader = self._LoaderForTestFile(filename)
-        events = list(loader.Load())
-        self.assertEqual(len(events), 1)
-        self.assertEqual(events[0].wall_time, 1440183447.0)
-        self.assertEqual(len(list(loader.Load())), 0)
+    @abc.abstractproperty
+    def _loader_class(self):
+        """Returns the Loader class under test."""
+        raise NotImplementedError()
 
-    def testMultipleWrites(self):
-        filename = tempfile.NamedTemporaryFile(dir=self.get_temp_dir()).name
-        self._WriteToFile(filename, EventFileLoaderTest.RECORD)
-        loader = self._LoaderForTestFile(filename)
-        self.assertEqual(len(list(loader.Load())), 1)
-        self._WriteToFile(filename, EventFileLoaderTest.RECORD)
-        self.assertEqual(len(list(loader.Load())), 1)
+    @abc.abstractmethod
+    def assertEventWallTimes(self, load_result, event_wall_times_in_order):
+        """Asserts that loader.Load() result has specified event wall times."""
+        raise NotImplementedError()
 
-    def testMultipleLoads(self):
-        filename = tempfile.NamedTemporaryFile(dir=self.get_temp_dir()).name
-        self._WriteToFile(filename, EventFileLoaderTest.RECORD)
-        loader = self._LoaderForTestFile(filename)
+    def testLoad_emptyEventFile(self):
+        with open(os.path.join(self.get_temp_dir(), FILENAME), "ab") as f:
+            f.write(b"")
+        loader = self._make_loader()
+        self.assertEmpty(list(loader.Load()))
+
+    def testLoad_staticEventFile(self):
+        self._append_record(_make_event(wall_time=1.0))
+        self._append_record(_make_event(wall_time=2.0))
+        self._append_record(_make_event(wall_time=3.0))
+        loader = self._make_loader()
+        self.assertEventWallTimes(loader.Load(), [1.0, 2.0, 3.0])
+
+    def testLoad_dynamicEventFile(self):
+        self._append_record(_make_event(wall_time=1.0))
+        loader = self._make_loader()
+        self.assertEventWallTimes(loader.Load(), [1.0])
+        self._append_record(_make_event(wall_time=2.0))
+        self.assertEventWallTimes(loader.Load(), [2.0])
+        self.assertEmpty(list(loader.Load()))
+
+    def testLoad_dynamicEventFileWithTruncation(self):
+        self._append_record(_make_event(wall_time=1.0))
+        self._append_record(_make_event(wall_time=2.0))
+        loader = self._make_loader()
+        # Use memory file to get at the raw record to emit.
+        with io.BytesIO() as mem_f:
+            record_writer.RecordWriter(mem_f).write(_make_event(wall_time=3.0))
+            record = mem_f.getvalue()
+        filepath = os.path.join(self.get_temp_dir(), FILENAME)
+        with open(filepath, "ab", buffering=0) as f:
+            # Record missing the last byte should result in data loss error
+            # that we log and swallow.
+            f.write(record[:-1])
+            self.assertEventWallTimes(loader.Load(), [1.0, 2.0])
+            # Retrying against the incomplete record has no effect.
+            self.assertEmpty(list(loader.Load()))
+            # Retrying after completing the record should return the new event.
+            f.write(record[-1:])
+            self.assertEventWallTimes(loader.Load(), [3.0])
+
+    def testLoad_noIterationDoesNotConsumeEvents(self):
+        self._append_record(_make_event(wall_time=1.0))
+        loader = self._make_loader()
         loader.Load()
         loader.Load()
-        self.assertEqual(len(list(loader.Load())), 1)
-
-    def testMultipleWritesAtOnce(self):
-        filename = tempfile.NamedTemporaryFile(dir=self.get_temp_dir()).name
-        self._WriteToFile(filename, EventFileLoaderTest.RECORD)
-        self._WriteToFile(filename, EventFileLoaderTest.RECORD)
-        loader = self._LoaderForTestFile(filename)
-        self.assertEqual(len(list(loader.Load())), 2)
-
-    def testMultipleWritesWithBadWrite(self):
-        filename = tempfile.NamedTemporaryFile(dir=self.get_temp_dir()).name
-        self._WriteToFile(filename, EventFileLoaderTest.RECORD)
-        self._WriteToFile(filename, EventFileLoaderTest.RECORD)
-        # Test that we ignore partial record writes at the end of the file.
-        self._WriteToFile(filename, b"123")
-        loader = self._LoaderForTestFile(filename)
-        self.assertEqual(len(list(loader.Load())), 2)
+        self.assertEventWallTimes(loader.Load(), [1.0])
 
 
-class RawEventFileLoaderTest(EventFileLoaderTest):
-    def _LoaderForTestFile(self, filename):
-        return event_file_loader.RawEventFileLoader(
-            os.path.join(self.get_temp_dir(), filename)
+class RawEventFileLoaderTest(EventFileLoaderTestBase, tf.test.TestCase):
+    @property
+    def _loader_class(self):
+        return event_file_loader.RawEventFileLoader
+
+    def assertEventWallTimes(self, load_result, event_wall_times_in_order):
+        self.assertEqual(
+            [
+                event_pb2.Event.FromString(record).wall_time
+                for record in load_result
+            ],
+            event_wall_times_in_order,
         )
 
-    def testSingleWrite(self):
-        filename = tempfile.NamedTemporaryFile(dir=self.get_temp_dir()).name
-        self._WriteToFile(filename, EventFileLoaderTest.RECORD)
-        loader = self._LoaderForTestFile(filename)
-        event_protos = list(loader.Load())
-        self.assertEqual(len(event_protos), 1)
-        # Record format has a 12 byte header and a 4 byte trailer.
-        expected_event_proto = EventFileLoaderTest.RECORD[12:-4]
-        self.assertEqual(event_protos[0], expected_event_proto)
+
+class EventFileLoaderTest(EventFileLoaderTestBase, tf.test.TestCase):
+    @property
+    def _loader_class(self):
+        return event_file_loader.EventFileLoader
+
+    def assertEventWallTimes(self, load_result, event_wall_times_in_order):
+        self.assertEqual(
+            [event.wall_time for event in load_result],
+            event_wall_times_in_order,
+        )
+
+
+class TimestampedEventFileLoaderTest(EventFileLoaderTestBase, tf.test.TestCase):
+    @property
+    def _loader_class(self):
+        return event_file_loader.TimestampedEventFileLoader
+
+    def assertEventWallTimes(self, load_result, event_wall_times_in_order):
+        transposed = list(zip(*load_result))
+        wall_times, events = transposed if transposed else ([], [])
+        self.assertEqual(
+            list(wall_times), event_wall_times_in_order,
+        )
+        self.assertEqual(
+            [event.wall_time for event in events], event_wall_times_in_order,
+        )
+
+
+def _make_event(**kwargs):
+    return event_pb2.Event(**kwargs).SerializeToString()
 
 
 if __name__ == "__main__":
