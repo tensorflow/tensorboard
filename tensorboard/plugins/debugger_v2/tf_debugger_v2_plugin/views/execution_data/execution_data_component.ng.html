@@ -26,10 +26,10 @@ limitations under the License.
     <div>
       <div class="execution-data-field">
         <span class="execution-data-key">
-          <!-- TODO(cais): Show "Function" or "Op" -->
+          <!-- TODO(cais): Show "Function" or "Op" depending on the type. -->
           Op:
         </span>
-        <span class="execution-data-value">
+        <span class="execution-data-value op-type">
           {{ focusedExecutionData.op_type }}
         </span>
       </div>
@@ -38,17 +38,17 @@ limitations under the License.
         <span class="execution-data-key">
           # of input tensors:
         </span>
-        <span class="execution-data-value">
+        <span class="execution-data-value input-tensors">
           {{ focusedExecutionData.input_tensor_ids == null ? 0 :
           focusedExecutionData.input_tensor_ids.length }}
         </span>
       </div>
 
-      <div class="execution-data-field output-tensors">
+      <div class="execution-data-field">
         <span class="execution-data-key">
           # of output tensors:
         </span>
-        <span class="execution-data-value">
+        <span class="execution-data-value output-tensors">
           {{ focusedExecutionData.output_tensor_ids == null ? 0 :
           focusedExecutionData.output_tensor_ids.length }}
         </span>
@@ -72,11 +72,17 @@ limitations under the License.
               <tr
                 *ngFor="let singleDebugTensorValues of debugTensorValues; index as i;"
               >
-                <td *ngIf="singleDebugTensorValues !== null">
+                <td
+                  *ngIf="singleDebugTensorValues !== null"
+                  class="output-slot"
+                >
                   {{ i }}
                 </td>
-                <td *ngIf="singleDebugTensorValues !== null">
-                  {{ singleDebugTensorValues[1] }}
+                <td
+                  *ngIf="singleDebugTensorValues !== null"
+                  class="curt-health-contains-inf-nan"
+                >
+                  {{ singleDebugTensorValues[1] ? "Yes" : "No" }}
                 </td>
               </tr>
             </table>
@@ -97,19 +103,31 @@ limitations under the License.
               <tr
                 *ngFor="let singleDebugTensorValues of debugTensorValues; index as i;"
               >
-                <td>
+                <td class="output-slot">
                   {{ i }}
                 </td>
-                <td *ngIf="singleDebugTensorValues !== null">
+                <td
+                  *ngIf="singleDebugTensorValues !== null"
+                  class="concise-health-size"
+                >
                   {{ singleDebugTensorValues[1] }}
                 </td>
-                <td *ngIf="singleDebugTensorValues !== null">
+                <td
+                  *ngIf="singleDebugTensorValues !== null"
+                  class="concise-health-neg-infs"
+                >
                   {{ singleDebugTensorValues[2] }}
                 </td>
-                <td *ngIf="singleDebugTensorValues !== null">
+                <td
+                  *ngIf="singleDebugTensorValues !== null"
+                  class="concise-health-pos-infs"
+                >
                   {{ singleDebugTensorValues[3] }}
                 </td>
-                <td *ngIf="singleDebugTensorValues !== null">
+                <td
+                  *ngIf="singleDebugTensorValues !== null"
+                  class="concise-health-nans"
+                >
                   {{ singleDebugTensorValues[4] }}
                 </td>
               </tr>
@@ -128,19 +146,26 @@ limitations under the License.
               <tr
                 *ngFor="let singleDebugTensorValues of debugTensorValues; index as i;"
               >
-                <td>
+                <td class="output-slot">
                   {{ i }}
                 </td>
-                <td *ngIf="singleDebugTensorValues !== null">
+                <td
+                  *ngIf="singleDebugTensorValues !== null"
+                  class="shape-dtype"
+                >
+                  <!-- Show human readable dtype string. -->
                   {{ singleDebugTensorValues[1] }}
                 </td>
-                <td *ngIf="singleDebugTensorValues !== null">
+                <td *ngIf="singleDebugTensorValues !== null" class="shape-rank">
                   {{ singleDebugTensorValues[2] }}
                 </td>
-                <td *ngIf="singleDebugTensorValues !== null">
+                <td *ngIf="singleDebugTensorValues !== null" class="shape-size">
                   {{ singleDebugTensorValues[3] }}
                 </td>
-                <td *ngIf="singleDebugTensorValues !== null">
+                <td
+                  *ngIf="singleDebugTensorValues !== null"
+                  class="shape-shape"
+                >
                   ({{ singleDebugTensorValues.slice(4, 4 +
                   singleDebugTensorValues[2]) }})
                 </td>

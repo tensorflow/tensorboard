@@ -95,7 +95,6 @@ export const executionStackFramesRequest = createAction(
   props<Execution>()
 );
 
-// TODO(cais): Unit test.
 export const stackFramesLoaded = createAction(
   '[Debugger] A Set of Stack Frames Have Been Loaded',
   props<{stackFrames: StackFramesById}>()

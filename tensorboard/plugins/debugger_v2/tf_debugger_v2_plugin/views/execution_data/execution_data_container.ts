@@ -49,40 +49,57 @@ export class ExecutionDataContainer {
     select(getFocusedExecutionData)
   );
 
-  readonly tensorDebugModeName$ = this.store.pipe(select(
-    createSelector(getFocusedExecutionData, (execution: Execution) => {
-      if (execution === null) {
-        return '';
-      } else {
-        return TensorDebugMode[execution.tensor_debug_mode];
-      }
-    }))
-  );
-
-  readonly anyDebugTensorValues$ = this.store.pipe(select(
-    createSelector(getFocusedExecutionData, (execution: Execution) => {
-      if (execution === null || execution.debug_tensor_values === null) {
-        return false;
-      } else {
-        for (const singleDebugTensorValues of execution.debug_tensor_values) {
-          if (singleDebugTensorValues !== null && singleDebugTensorValues.length > 0) {
-            return true;
+  readonly tensorDebugModeName$ = this.store.pipe(
+    select(
+      createSelector(
+        getFocusedExecutionData,
+        (execution: Execution) => {
+          if (execution === null) {
+            return '';
+          } else {
+            return TensorDebugMode[execution.tensor_debug_mode];
           }
         }
-        return false;
-      }
-    }))
+      )
+    )
   );
 
-  readonly debugTensorValues$ = this.store.pipe(select(
-    createSelector(getFocusedExecutionData, (execution: Execution) => {
-      if (execution === null) {
-        return null;
-      } else {
-        console.log(`200: execution.op_type:${execution.op_type}:`,
-        return execution.debug_tensor_values;
-      }
-    }))
+  readonly anyDebugTensorValues$ = this.store.pipe(
+    select(
+      createSelector(
+        getFocusedExecutionData,
+        (execution: Execution) => {
+          if (execution === null || execution.debug_tensor_values === null) {
+            return false;
+          } else {
+            for (const singleDebugTensorValues of execution.debug_tensor_values) {
+              if (
+                singleDebugTensorValues !== null &&
+                singleDebugTensorValues.length > 0
+              ) {
+                return true;
+              }
+            }
+            return false;
+          }
+        }
+      )
+    )
+  );
+
+  readonly debugTensorValues$ = this.store.pipe(
+    select(
+      createSelector(
+        getFocusedExecutionData,
+        (execution: Execution) => {
+          if (execution === null) {
+            return null;
+          } else {
+            return execution.debug_tensor_values;
+          }
+        }
+      )
+    )
   );
 
   constructor(private readonly store: Store<State>) {}

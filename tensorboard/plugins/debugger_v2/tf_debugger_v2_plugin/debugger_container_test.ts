@@ -39,6 +39,7 @@ import {
   createTestStackFrame,
 } from './testing';
 import {AlertsModule} from './views/alerts/alerts_module';
+import {ExecutionDataContainer} from './views/execution_data/execution_data_container';
 import {ExecutionDataModule} from './views/execution_data/execution_data_module';
 import {InactiveModule} from './views/inactive/inactive_module';
 import {TimelineContainer} from './views/timeline/timeline_container';
@@ -298,6 +299,303 @@ describe('Debugger Container', () => {
           opTypes[i + 100].slice(0, strLen)
         );
       }
+    });
+  });
+
+  describe('Execution Data module', () => {
+    it('CURT_HEALTH TensorDebugMode, One Output', () => {
+      const fixture = TestBed.createComponent(ExecutionDataContainer);
+      fixture.detectChanges();
+
+      store.setState(
+        createState(
+          createDebuggerState({
+            executions: {
+              numExecutionsLoaded: {
+                state: DataLoadState.LOADED,
+                lastLoadedTimeInMs: 111,
+              },
+              executionDigestsLoaded: {
+                state: DataLoadState.LOADED,
+                lastLoadedTimeInMs: 222,
+                pageLoadedSizes: {0: 100},
+                numExecutions: 1000,
+              },
+              executionDigests: {},
+              pageSize: 100,
+              displayCount: 50,
+              scrollBeginIndex: 90,
+              focusIndex: 98,
+              executionData: {
+                98: createTestExecutionData({
+                  op_type: 'Inverse',
+                  tensor_debug_mode: 2, // CURT_HEALTH.
+                  debug_tensor_values: [[-1, 1]],
+                }),
+              },
+            },
+          })
+        )
+      );
+      fixture.detectChanges();
+
+      const opTypeElement = fixture.debugElement.query(By.css('.op-type'));
+      expect(opTypeElement.nativeElement.innerText).toEqual('Inverse');
+      const inputTensorsElement = fixture.debugElement.query(
+        By.css('.input-tensors')
+      );
+      expect(inputTensorsElement.nativeElement.innerText).toEqual('1');
+      const outputTensorsElement = fixture.debugElement.query(
+        By.css('.output-tensors')
+      );
+      expect(outputTensorsElement.nativeElement.innerText).toEqual('1');
+      const outputSlotElements = fixture.debugElement.queryAll(
+        By.css('.output-slot')
+      );
+      expect(outputSlotElements.length).toEqual(1);
+      expect(outputSlotElements[0].nativeElement.innerText).toEqual('0');
+      const anyInfNanElements = fixture.debugElement.queryAll(
+        By.css('.curt-health-contains-inf-nan')
+      );
+      expect(anyInfNanElements.length).toEqual(1);
+      expect(anyInfNanElements[0].nativeElement.innerText).toEqual('Yes');
+    });
+
+    it('CONCISE_HEALTH TensorDebugMode, Two Outputs', () => {
+      const fixture = TestBed.createComponent(ExecutionDataContainer);
+      fixture.detectChanges();
+
+      store.setState(
+        createState(
+          createDebuggerState({
+            executions: {
+              numExecutionsLoaded: {
+                state: DataLoadState.LOADED,
+                lastLoadedTimeInMs: 111,
+              },
+              executionDigestsLoaded: {
+                state: DataLoadState.LOADED,
+                lastLoadedTimeInMs: 222,
+                pageLoadedSizes: {0: 100},
+                numExecutions: 1000,
+              },
+              executionDigests: {},
+              pageSize: 100,
+              displayCount: 50,
+              scrollBeginIndex: 90,
+              focusIndex: 98,
+              executionData: {
+                98: createTestExecutionData({
+                  op_type: 'FooOp',
+                  output_tensor_device_ids: ['d0', 'd0'],
+                  output_tensor_ids: [123, 124],
+                  tensor_debug_mode: 3, // CONCISE_HEALTH.
+                  debug_tensor_values: [[-1, 100, 0, 0, 0], [-1, 10, 1, 2, 3]],
+                }),
+              },
+            },
+          })
+        )
+      );
+      fixture.detectChanges();
+
+      const opTypeElement = fixture.debugElement.query(By.css('.op-type'));
+      expect(opTypeElement.nativeElement.innerText).toEqual('FooOp');
+      const inputTensorsElement = fixture.debugElement.query(
+        By.css('.input-tensors')
+      );
+      expect(inputTensorsElement.nativeElement.innerText).toEqual('1');
+      const outputTensorsElement = fixture.debugElement.query(
+        By.css('.output-tensors')
+      );
+      expect(outputTensorsElement.nativeElement.innerText).toEqual('2');
+      const outputSlotElements = fixture.debugElement.queryAll(
+        By.css('.output-slot')
+      );
+      expect(outputSlotElements.length).toEqual(2);
+      expect(outputSlotElements[0].nativeElement.innerText).toEqual('0');
+      expect(outputSlotElements[1].nativeElement.innerText).toEqual('1');
+      const sizeElements = fixture.debugElement.queryAll(
+        By.css('.concise-health-size')
+      );
+      expect(sizeElements.length).toEqual(2);
+      expect(sizeElements[0].nativeElement.innerText).toEqual('100');
+      expect(sizeElements[1].nativeElement.innerText).toEqual('10');
+      const negInfsElements = fixture.debugElement.queryAll(
+        By.css('.concise-health-neg-infs')
+      );
+      expect(negInfsElements.length).toEqual(2);
+      expect(negInfsElements[0].nativeElement.innerText).toEqual('0');
+      expect(negInfsElements[1].nativeElement.innerText).toEqual('1');
+      const posInfsElements = fixture.debugElement.queryAll(
+        By.css('.concise-health-pos-infs')
+      );
+      expect(posInfsElements.length).toEqual(2);
+      expect(posInfsElements[0].nativeElement.innerText).toEqual('0');
+      expect(posInfsElements[1].nativeElement.innerText).toEqual('2');
+      const nanElements = fixture.debugElement.queryAll(
+        By.css('.concise-health-nans')
+      );
+      expect(nanElements.length).toEqual(2);
+      expect(nanElements[0].nativeElement.innerText).toEqual('0');
+      expect(nanElements[1].nativeElement.innerText).toEqual('3');
+    });
+
+    it('CONCISE_HEALTH TensorDebugMode, Two Outputs, Only One With Data', () => {
+      const fixture = TestBed.createComponent(ExecutionDataContainer);
+      fixture.detectChanges();
+
+      store.setState(
+        createState(
+          createDebuggerState({
+            executions: {
+              numExecutionsLoaded: {
+                state: DataLoadState.LOADED,
+                lastLoadedTimeInMs: 111,
+              },
+              executionDigestsLoaded: {
+                state: DataLoadState.LOADED,
+                lastLoadedTimeInMs: 222,
+                pageLoadedSizes: {0: 100},
+                numExecutions: 1000,
+              },
+              executionDigests: {},
+              pageSize: 100,
+              displayCount: 50,
+              scrollBeginIndex: 90,
+              focusIndex: 98,
+              executionData: {
+                98: createTestExecutionData({
+                  op_type: 'BarOp',
+                  output_tensor_device_ids: ['d0', 'd0'],
+                  output_tensor_ids: [123, 124],
+                  tensor_debug_mode: 3, // CONCISE_HEALTH.
+                  // First output slot has no data (e.g., non-floating dtype).
+                  debug_tensor_values: [null, [-1, 10, 1, 2, 3]],
+                }),
+              },
+            },
+          })
+        )
+      );
+      fixture.detectChanges();
+
+      const opTypeElement = fixture.debugElement.query(By.css('.op-type'));
+      expect(opTypeElement.nativeElement.innerText).toEqual('BarOp');
+      const inputTensorsElement = fixture.debugElement.query(
+        By.css('.input-tensors')
+      );
+      expect(inputTensorsElement.nativeElement.innerText).toEqual('1');
+      const outputTensorsElement = fixture.debugElement.query(
+        By.css('.output-tensors')
+      );
+      expect(outputTensorsElement.nativeElement.innerText).toEqual('2');
+      const outputSlotElements = fixture.debugElement.queryAll(
+        By.css('.output-slot')
+      );
+      expect(outputSlotElements.length).toEqual(2);
+      expect(outputSlotElements[0].nativeElement.innerText).toEqual('0');
+      expect(outputSlotElements[1].nativeElement.innerText).toEqual('1');
+      const sizeElements = fixture.debugElement.queryAll(
+        By.css('.concise-health-size')
+      );
+      expect(sizeElements.length).toEqual(1);
+      expect(sizeElements[0].nativeElement.innerText).toEqual('10');
+      const negInfsElements = fixture.debugElement.queryAll(
+        By.css('.concise-health-neg-infs')
+      );
+      expect(negInfsElements.length).toEqual(1);
+      expect(negInfsElements[0].nativeElement.innerText).toEqual('1');
+      const posInfsElements = fixture.debugElement.queryAll(
+        By.css('.concise-health-pos-infs')
+      );
+      expect(posInfsElements.length).toEqual(1);
+      expect(posInfsElements[0].nativeElement.innerText).toEqual('2');
+      const nanElements = fixture.debugElement.queryAll(
+        By.css('.concise-health-nans')
+      );
+      expect(nanElements.length).toEqual(1);
+      expect(nanElements[0].nativeElement.innerText).toEqual('3');
+    });
+
+    it('SHAPE TensorDebugMode, Two Outputs', () => {
+      const fixture = TestBed.createComponent(ExecutionDataContainer);
+      fixture.detectChanges();
+
+      store.setState(
+        createState(
+          createDebuggerState({
+            executions: {
+              numExecutionsLoaded: {
+                state: DataLoadState.LOADED,
+                lastLoadedTimeInMs: 111,
+              },
+              executionDigestsLoaded: {
+                state: DataLoadState.LOADED,
+                lastLoadedTimeInMs: 222,
+                pageLoadedSizes: {0: 100},
+                numExecutions: 1000,
+              },
+              executionDigests: {},
+              pageSize: 100,
+              displayCount: 50,
+              scrollBeginIndex: 90,
+              focusIndex: 98,
+              executionData: {
+                98: createTestExecutionData({
+                  op_type: 'FooOp',
+                  output_tensor_device_ids: ['d0', 'd0'],
+                  output_tensor_ids: [123, 124],
+                  tensor_debug_mode: 5, // SHAPE.
+                  debug_tensor_values: [
+                    [-1, 1, 0, 1, 0, 0, 0, 0, 0, 0],
+                    [-1, 6, 2, 20, 4, 5, 0, 0, 0, 0],
+                  ],
+                }),
+              },
+            },
+          })
+        )
+      );
+      fixture.detectChanges();
+
+      const opTypeElement = fixture.debugElement.query(By.css('.op-type'));
+      expect(opTypeElement.nativeElement.innerText).toEqual('FooOp');
+      const inputTensorsElement = fixture.debugElement.query(
+        By.css('.input-tensors')
+      );
+      expect(inputTensorsElement.nativeElement.innerText).toEqual('1');
+      const outputTensorsElement = fixture.debugElement.query(
+        By.css('.output-tensors')
+      );
+      expect(outputTensorsElement.nativeElement.innerText).toEqual('2');
+      const outputSlotElements = fixture.debugElement.queryAll(
+        By.css('.output-slot')
+      );
+      expect(outputSlotElements.length).toEqual(2);
+      expect(outputSlotElements[0].nativeElement.innerText).toEqual('0');
+      expect(outputSlotElements[1].nativeElement.innerText).toEqual('1');
+      const dtypeElements = fixture.debugElement.queryAll(
+        By.css('.shape-dtype')
+      );
+      expect(dtypeElements.length).toEqual(2);
+      // TODO(cais): Modify assertions when human-readable dtypes are shown.
+      expect(dtypeElements[0].nativeElement.innerText).toEqual('1');
+      expect(dtypeElements[1].nativeElement.innerText).toEqual('6');
+      const rankElements = fixture.debugElement.queryAll(By.css('.shape-rank'));
+      expect(rankElements.length).toEqual(2);
+      expect(rankElements[0].nativeElement.innerText).toEqual('0');
+      expect(rankElements[1].nativeElement.innerText).toEqual('2');
+      const sizeElements = fixture.debugElement.queryAll(By.css('.shape-size'));
+      expect(sizeElements.length).toEqual(2);
+      expect(sizeElements[0].nativeElement.innerText).toEqual('1');
+      expect(sizeElements[1].nativeElement.innerText).toEqual('20');
+      const shapeElements = fixture.debugElement.queryAll(
+        By.css('.shape-shape')
+      );
+      expect(shapeElements.length).toEqual(2);
+      expect(shapeElements[0].nativeElement.innerText).toEqual('()');
+      expect(shapeElements[1].nativeElement.innerText).toEqual('(4,5)');
     });
   });
 
