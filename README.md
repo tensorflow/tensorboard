@@ -137,13 +137,17 @@ For example, here is a well-organized TensorBoard log directory, with two runs,
 /tensorboard --logdir /some/path/mnist_experiments
 ```
 
+#### Logdir & Logdir_spec (Legacy Mode)
+
 You may also pass a comma separated list of log directories, and TensorBoard
 will watch each directory. You can also assign names to individual log
 directories by putting a colon between the name and the path, as in
 
 ```
-tensorboard --logdir name1:/path/to/logs/1,name2:/path/to/logs/2
+tensorboard --logdir_spec name1:/path/to/logs/1,name2:/path/to/logs/2
 ```
+
+_This flag (`--logdir_spec`) is discouraged and can usually be avoided_. TensorBoard walks log directories recursively; for finer-grained control, prefer using a symlink tree. _Some features may not work when using `--logdir_spec` instead of `--logdir`._
 
 # The Visualizations
 
