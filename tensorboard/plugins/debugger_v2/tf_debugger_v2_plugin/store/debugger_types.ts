@@ -57,7 +57,7 @@ export interface ExecutionDigest {
   output_tensor_device_ids: string[];
 }
 
-/** Non-digest, detailed data object for top-level execution events. */
+/** Non-digest, detailed data object for a top-level execution. */
 export interface Execution extends ExecutionDigest {
   host_name: string;
 

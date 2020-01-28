@@ -710,12 +710,15 @@ describe('Debugger Container', () => {
       expect(filePathElements[0].nativeElement.innerText).toEqual(
         stackFrame0[1].slice(stackFrame0[1].lastIndexOf('/') + 1)
       );
+      expect(filePathElements[0].nativeElement.title).toEqual(stackFrame0[1]);
       expect(filePathElements[1].nativeElement.innerText).toEqual(
         stackFrame1[1].slice(stackFrame1[1].lastIndexOf('/') + 1)
       );
+      expect(filePathElements[1].nativeElement.title).toEqual(stackFrame1[1]);
       expect(filePathElements[2].nativeElement.innerText).toEqual(
         stackFrame2[1].slice(stackFrame2[1].lastIndexOf('/') + 1)
       );
+      expect(filePathElements[2].nativeElement.title).toEqual(stackFrame2[1]);
 
       const linenoElements = fixture.debugElement.queryAll(
         By.css('.stack-frame-lineno')
