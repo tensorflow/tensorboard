@@ -123,7 +123,7 @@ class ImagesPlugin(base_plugin.TBPlugin):
                     result[run][tag] = {
                         "displayName": metadatum.display_name,
                         "description": description,
-                        "samples": metadatum.max_length - 2,
+                        "samples": metadatum.max_length - 2,  # width, height
                     }
             return result
 
@@ -233,6 +233,10 @@ class ImagesPlugin(base_plugin.TBPlugin):
         Returns:
           A list of dictionaries containing the wall time, step, and URL
           for each image.
+
+        Raises:
+          KeyError, NotFoundError: If no image data exists for the given
+            parameters.
         """
         if self._data_provider:
             # Downsample reads to 10 images per time series, which is the
@@ -351,8 +355,22 @@ class ImagesPlugin(base_plugin.TBPlugin):
     def _data_provider_query(self, blob_reference):
         return urllib.parse.urlencode({"blob_key": blob_reference.blob_key})
 
-    def _get_individual_image(self, run, tag, index, sample):
+    def _get_generic_data_individual_image(self, blob_key):
         """Returns the actual image bytes for a given image.
+
+        Args:
+          blob_key: As returned by a previous `read_blob_sequences` call.
+
+        Returns:
+          A bytestring of the raw image bytes.
+        """
+        return self._data_provider.read_blob(blob_key)
+
+    def _get_legacy_individual_image(self, run, tag, index, sample):
+        """Returns the actual image bytes for a given image.
+
+        Applies to multiplexer and DB-mode loading paths only. With a
+        data provider, use `_get_generic_data_individual_image` instead.
 
         Args:
           run: The name of the run the image belongs to.
@@ -364,6 +382,9 @@ class ImagesPlugin(base_plugin.TBPlugin):
         Returns:
           A bytestring of the raw image bytes.
         """
+        assert (
+            not self._data_provider
+        ), "Use `_get_generic_data_individual_image` when data provider present"
         if self._db_connection_provider:
             db = self._db_connection_provider()
             cursor = db.execute(
@@ -415,13 +436,15 @@ class ImagesPlugin(base_plugin.TBPlugin):
         try:
             if self._data_provider:
                 blob_key = request.args["blob_key"]
-                data = self._data_provider.read_blob(blob_key)
+                data = self._get_generic_data_individual_image(blob_key)
             else:
                 run = request.args.get("run")
                 tag = request.args.get("tag")
                 index = int(request.args.get("index", "0"))
                 sample = int(request.args.get("sample", "0"))
-                data = self._get_individual_image(run, tag, index, sample)
+                data = self._get_legacy_individual_image(
+                    run, tag, index, sample
+                )
         except (KeyError, IndexError):
             return http_util.Respond(
                 request,
