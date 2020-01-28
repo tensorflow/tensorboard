@@ -199,7 +199,6 @@ export class DebuggerEffects {
           map((digests) => {
             return executionDigestsLoaded(digests);
           }),
-          // TODO(cais): Unit test.
           tap(() =>
             this.store.dispatch(executionDigestFocus({displayIndex: 0}))
           )
@@ -283,24 +282,19 @@ export class DebuggerEffects {
       ofType(executionDigestFocus),
       withLatestFrom(
         this.store.select(getActiveRunId),
-        this.store.select(getFocusedExecutionIndex),
+        this.store.select(getExecutionScrollBeginIndex),
         this.store.select(getLoadedExecutionData)
       ),
-      filter(([_, activeRunId, focusIndex, loadedExecutionData]) => {
-        // TODO(cais): Add unit tests.
-        return (
-          activeRunId !== null &&
-          focusIndex !== null &&
-          loadedExecutionData[focusIndex] == null
-        );
+      filter(([focus, activeRunId, scrollBeginIndex, loadedExecutionData]) => {
+        const focusIndex = scrollBeginIndex + focus.displayIndex;
+        return activeRunId !== null && loadedExecutionData[focusIndex] == null;
       }),
-      mergeMap(([_, activeRunId, focusIndex]) => {
-        const begin = focusIndex!;
+      mergeMap(([focus, activeRunId, scrollBeginIndex]) => {
+        const begin = scrollBeginIndex + focus.displayIndex;
         const end = begin + 1;
         return this.dataSource
           .fetchExecutionData(activeRunId!, begin, end)
           .pipe(
-            // TODO(cais): Unit test.
             tap((executionDataResponse) => {
               const execution = executionDataResponse.executions[0];
               return this.store.dispatch(
@@ -319,13 +313,12 @@ export class DebuggerEffects {
   /** @export */
   readonly loadExecutionStackFrames$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(executionStackFramesRequest), // TODO(cais): Prevent repeated loaded.
+      ofType(executionStackFramesRequest),
       withLatestFrom(
         this.store.select(getActiveRunId),
         this.store.select(getLoadedStackFrames)
       ),
       filter(([execution, runId, loadedStackFrames]) => {
-        // TODO(cais): Add unit tests.
         if (runId === null) {
           return false;
         }
@@ -339,6 +332,8 @@ export class DebuggerEffects {
         return anyMissing;
       }),
       mergeMap(([execution, runId, _]) => {
+        // TODO(cais): Maybe omit already-loaded stack frames from request,
+        // instead of loading all frames if any of them is missing.
         return this.dataSource
           .fetchStackFrames(runId!, execution.stack_frame_ids)
           .pipe(

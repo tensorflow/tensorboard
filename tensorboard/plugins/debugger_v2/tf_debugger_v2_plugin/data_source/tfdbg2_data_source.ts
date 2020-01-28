@@ -32,6 +32,17 @@ export abstract class Tfdbg2DataSource {
     begin: number,
     end: number
   ): Observable<ExecutionDigestsResponse>;
+
+  abstract fetchExecutionData(
+    run: string,
+    begin: number,
+    end: number
+  ): Observable<ExecutionDataResponse>;
+
+  abstract fetchStackFrames(
+    run: string,
+    stackFrameIds: string[]
+  ): Observable<StackFramesResponse>;
 }
 
 @Injectable()

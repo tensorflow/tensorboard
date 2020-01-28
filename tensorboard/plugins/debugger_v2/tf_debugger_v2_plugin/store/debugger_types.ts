@@ -71,7 +71,7 @@ export interface Execution extends ExecutionDigest {
 
   output_tensor_ids: number[];
 
-  debug_tensor_values: Array<number[] | null>;
+  debug_tensor_values: Array<number[] | null> | null;
 }
 
 export interface ExecutionDigestsResponse {

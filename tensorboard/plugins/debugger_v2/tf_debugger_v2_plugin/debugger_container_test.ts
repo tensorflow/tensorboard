@@ -329,6 +329,58 @@ describe('Debugger Container', () => {
               executionData: {
                 98: createTestExecutionData({
                   op_type: 'Inverse',
+                  tensor_debug_mode: 1, // NO_TENSOR.
+                  debug_tensor_values: null,
+                }),
+              },
+            },
+          })
+        )
+      );
+      fixture.detectChanges();
+
+      const opTypeElement = fixture.debugElement.query(By.css('.op-type'));
+      expect(opTypeElement.nativeElement.innerText).toEqual('Inverse');
+      const inputTensorsElement = fixture.debugElement.query(
+        By.css('.input-tensors')
+      );
+      expect(inputTensorsElement.nativeElement.innerText).toEqual('1');
+      const outputTensorsElement = fixture.debugElement.query(
+        By.css('.output-tensors')
+      );
+      expect(outputTensorsElement.nativeElement.innerText).toEqual('1');
+      const debugTensorValuesContainers = fixture.debugElement.queryAll(
+        By.css('.debug-tensor-values-container')
+      );
+      expect(debugTensorValuesContainers.length).toEqual(0);
+    });
+
+    it('CURT_HEALTH TensorDebugMode, One Output', () => {
+      const fixture = TestBed.createComponent(ExecutionDataContainer);
+      fixture.detectChanges();
+
+      store.setState(
+        createState(
+          createDebuggerState({
+            executions: {
+              numExecutionsLoaded: {
+                state: DataLoadState.LOADED,
+                lastLoadedTimeInMs: 111,
+              },
+              executionDigestsLoaded: {
+                state: DataLoadState.LOADED,
+                lastLoadedTimeInMs: 222,
+                pageLoadedSizes: {0: 100},
+                numExecutions: 1000,
+              },
+              executionDigests: {},
+              pageSize: 100,
+              displayCount: 50,
+              scrollBeginIndex: 90,
+              focusIndex: 98,
+              executionData: {
+                98: createTestExecutionData({
+                  op_type: 'Inverse',
                   tensor_debug_mode: 2, // CURT_HEALTH.
                   debug_tensor_values: [[-1, 1]],
                 }),

@@ -125,7 +125,6 @@ export const getFocusedExecutionIndex = createSelector(
 /**
  * Get the display index of the execution digest being focused on (if any).
  */
-// TODO(cais): Add unit tests.
 export const getFocusedExecutionDisplayIndex = createSelector(
   selectDebuggerState,
   (state: DebuggerState): number | null => {
@@ -156,8 +155,6 @@ export const getLoadedStackFrames = createSelector(
   (state: DebuggerState): StackFramesById => state.stackFrames
 );
 
-// TODO(cais): Add unit tests.
-// TODO(cais): This should reflect loading... state.
 export const getFocusedExecutionData = createSelector(
   selectDebuggerState,
   (state: DebuggerState): Execution | null => {
@@ -174,8 +171,6 @@ export const getFocusedExecutionData = createSelector(
   }
 );
 
-// TODO(cais): Add unit tests.
-// TODO(cais): This should reflect loading... state.
 export const getFocusedExecutionStackFrames = createSelector(
   selectDebuggerState,
   (state: DebuggerState): StackFrame[] | null => {
