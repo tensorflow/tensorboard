@@ -35,11 +35,14 @@ import {
   createState,
   createDebuggerExecutionsState,
   createDebuggerStateWithLoadedExecutionDigests,
+  createTestExecutionData,
+  createTestStackFrame,
 } from './testing';
 import {AlertsModule} from './views/alerts/alerts_module';
 import {ExecutionDataModule} from './views/execution_data/execution_data_module';
 import {InactiveModule} from './views/inactive/inactive_module';
 import {TimelineContainer} from './views/timeline/timeline_container';
+import {StackTraceContainer} from './views/stack_trace/stack_trace_container';
 import {StackTraceModule} from './views/stack_trace/stack_trace_module';
 import {TimelineModule} from './views/timeline/timeline_module';
 
@@ -295,6 +298,143 @@ describe('Debugger Container', () => {
           opTypes[i + 100].slice(0, strLen)
         );
       }
+    });
+  });
+
+  describe('Stack Trace module', () => {
+    it('Shows non-empty stack frames correctly', () => {
+      const fixture = TestBed.createComponent(StackTraceContainer);
+      fixture.detectChanges();
+
+      const stackFrame0 = createTestStackFrame();
+      const stackFrame1 = createTestStackFrame();
+      const stackFrame2 = createTestStackFrame();
+      store.setState(
+        createState(
+          createDebuggerState({
+            executions: {
+              numExecutionsLoaded: {
+                state: DataLoadState.LOADED,
+                lastLoadedTimeInMs: 111,
+              },
+              executionDigestsLoaded: {
+                state: DataLoadState.LOADED,
+                lastLoadedTimeInMs: 222,
+                pageLoadedSizes: {0: 100},
+                numExecutions: 1000,
+              },
+              executionDigests: {},
+              pageSize: 100,
+              displayCount: 50,
+              scrollBeginIndex: 90,
+              focusIndex: 98,
+              executionData: {
+                98: createTestExecutionData({
+                  stack_frame_ids: ['a0', 'a1', 'a2'],
+                }),
+              },
+            },
+            stackFrames: {
+              a0: stackFrame0,
+              a1: stackFrame1,
+              a2: stackFrame2,
+            },
+          })
+        )
+      );
+      fixture.detectChanges();
+
+      const hostNameElement = fixture.debugElement.query(
+        By.css('.stack-trace-host-name')
+      );
+      expect(hostNameElement.nativeElement.innerText).toEqual('(on localhost)');
+      const stackFrameContainers = fixture.debugElement.queryAll(
+        By.css('.stack-frame-container')
+      );
+      expect(stackFrameContainers.length).toEqual(3);
+
+      const filePathElements = fixture.debugElement.queryAll(
+        By.css('.stack-frame-file-path')
+      );
+      expect(filePathElements.length).toEqual(3);
+      expect(filePathElements[0].nativeElement.innerText).toEqual(
+        stackFrame0[1].slice(stackFrame0[1].lastIndexOf('/') + 1)
+      );
+      expect(filePathElements[1].nativeElement.innerText).toEqual(
+        stackFrame1[1].slice(stackFrame1[1].lastIndexOf('/') + 1)
+      );
+      expect(filePathElements[2].nativeElement.innerText).toEqual(
+        stackFrame2[1].slice(stackFrame2[1].lastIndexOf('/') + 1)
+      );
+
+      const linenoElements = fixture.debugElement.queryAll(
+        By.css('.stack-frame-lineno')
+      );
+      expect(linenoElements.length).toEqual(3);
+      expect(linenoElements[0].nativeElement.innerText).toEqual(
+        `Line ${stackFrame0[2]}:`
+      );
+      expect(linenoElements[1].nativeElement.innerText).toEqual(
+        `Line ${stackFrame1[2]}:`
+      );
+      expect(linenoElements[2].nativeElement.innerText).toEqual(
+        `Line ${stackFrame2[2]}:`
+      );
+
+      const functionElements = fixture.debugElement.queryAll(
+        By.css('.stack-frame-function')
+      );
+      expect(functionElements.length).toEqual(3);
+      expect(functionElements[0].nativeElement.innerText).toEqual(
+        stackFrame0[3]
+      );
+      expect(functionElements[1].nativeElement.innerText).toEqual(
+        stackFrame1[3]
+      );
+      expect(functionElements[2].nativeElement.innerText).toEqual(
+        stackFrame2[3]
+      );
+    });
+
+    it('Shows loading state when stack-trace data is unavailable', () => {
+      const fixture = TestBed.createComponent(StackTraceContainer);
+      fixture.detectChanges();
+
+      store.setState(
+        createState(
+          createDebuggerState({
+            executions: {
+              numExecutionsLoaded: {
+                state: DataLoadState.LOADED,
+                lastLoadedTimeInMs: 111,
+              },
+              executionDigestsLoaded: {
+                state: DataLoadState.LOADED,
+                lastLoadedTimeInMs: 222,
+                pageLoadedSizes: {0: 100},
+                numExecutions: 1000,
+              },
+              executionDigests: {},
+              pageSize: 100,
+              displayCount: 50,
+              scrollBeginIndex: 90,
+              focusIndex: 98,
+              executionData: {
+                98: createTestExecutionData({
+                  stack_frame_ids: ['a0', 'a1', 'a2'],
+                }),
+              },
+            },
+            stackFrames: {}, // Note the empty stackFrames field.
+          })
+        )
+      );
+      fixture.detectChanges();
+
+      const stackFrameContainers = fixture.debugElement.queryAll(
+        By.css('.stack-frame-container')
+      );
+      expect(stackFrameContainers.length).toEqual(0);
     });
   });
 });

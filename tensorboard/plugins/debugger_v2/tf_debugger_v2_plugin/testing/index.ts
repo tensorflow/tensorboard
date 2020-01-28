@@ -39,7 +39,7 @@ export function createTestExecutionData(
     host_name: 'localhost',
     stack_frame_ids: ['aaa', 'bbb', 'ccc'],
     graph_id: null,
-    tensor_debug_mode: TensorDebugMode.CURT_HEALTH,
+    tensor_debug_mode: 2,
     debug_tensor_values: [[-1, 0]],
     ...override,
   };

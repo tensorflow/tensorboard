@@ -13,9 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Component} from '@angular/core';
-import {select, Store} from '@ngrx/store';
+import {select, Store, createSelector} from '@ngrx/store';
 
-import {State} from '../../store/debugger_types';
+import {State, Execution, TensorDebugMode} from '../../store/debugger_types';
 
 import {
   getActiveRunId,
@@ -32,6 +32,9 @@ import {
       [activeRunId]="activeRunId$ | async"
       [focusedExecutionIndex]="focusedExecutionIndex$ | async"
       [focusedExecutionData]="focusedExecutionData$ | async"
+      [tensorDebugModeName]="tensorDebugModeName$ | async"
+      [anyDebugTensorValues]="anyDebugTensorValues$ | async"
+      [debugTensorValues]="debugTensorValues$ | async"
     ></execution-data-component>
   `,
 })
@@ -44,6 +47,42 @@ export class ExecutionDataContainer {
 
   readonly focusedExecutionData$ = this.store.pipe(
     select(getFocusedExecutionData)
+  );
+
+  readonly tensorDebugModeName$ = this.store.pipe(select(
+    createSelector(getFocusedExecutionData, (execution: Execution) => {
+      if (execution === null) {
+        return '';
+      } else {
+        return TensorDebugMode[execution.tensor_debug_mode];
+      }
+    }))
+  );
+
+  readonly anyDebugTensorValues$ = this.store.pipe(select(
+    createSelector(getFocusedExecutionData, (execution: Execution) => {
+      if (execution === null || execution.debug_tensor_values === null) {
+        return false;
+      } else {
+        for (const singleDebugTensorValues of execution.debug_tensor_values) {
+          if (singleDebugTensorValues !== null && singleDebugTensorValues.length > 0) {
+            return true;
+          }
+        }
+        return false;
+      }
+    }))
+  );
+
+  readonly debugTensorValues$ = this.store.pipe(select(
+    createSelector(getFocusedExecutionData, (execution: Execution) => {
+      if (execution === null) {
+        return null;
+      } else {
+        console.log(`200: execution.op_type:${execution.op_type}:`,
+        return execution.debug_tensor_values;
+      }
+    }))
   );
 
   constructor(private readonly store: Store<State>) {}

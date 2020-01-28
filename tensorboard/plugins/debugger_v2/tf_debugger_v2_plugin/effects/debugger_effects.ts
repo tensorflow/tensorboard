@@ -339,23 +339,20 @@ export class DebuggerEffects {
         return anyMissing;
       }),
       mergeMap(([execution, runId, _]) => {
-        return (
-          this.dataSource
-            // TODO(cais): Avoid loading already-loaded stack frames.
-            .fetchStackFrames(runId!, execution.stack_frame_ids)
-            .pipe(
-              map((stackFramesResponse) => {
-                const stackFramesById: {
-                  [stackFrameId: string]: StackFrame;
-                } = {};
-                for (let i = 0; i < execution.stack_frame_ids.length; ++i) {
-                  stackFramesById[execution.stack_frame_ids[i]] =
-                    stackFramesResponse.stack_frames[i];
-                }
-                return stackFramesLoaded({stackFrames: stackFramesById});
-              })
-            )
-        );
+        return this.dataSource
+          .fetchStackFrames(runId!, execution.stack_frame_ids)
+          .pipe(
+            map((stackFramesResponse) => {
+              const stackFramesById: {
+                [stackFrameId: string]: StackFrame;
+              } = {};
+              for (let i = 0; i < execution.stack_frame_ids.length; ++i) {
+                stackFramesById[execution.stack_frame_ids[i]] =
+                  stackFramesResponse.stack_frames[i];
+              }
+              return stackFramesLoaded({stackFrames: stackFramesById});
+            })
+          );
         // TODO(cais): Add catchError() to pipe.
       })
     )

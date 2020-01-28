@@ -44,7 +44,7 @@ limitations under the License.
         </span>
       </div>
 
-      <div class="execution-data-field">
+      <div class="execution-data-field output-tensors">
         <span class="execution-data-key">
           # of output tensors:
         </span>
@@ -52,21 +52,107 @@ limitations under the License.
           {{ focusedExecutionData.output_tensor_ids == null ? 0 :
           focusedExecutionData.output_tensor_ids.length }}
         </span>
-      </div>
-
-      <div class="execution-data-field">
-        <span class="execution-data-key">
-          Tensor debug mode:
-        </span>
         <span class="execution-data-value">
           <!-- TODO(cais): Show debug mode in text format -->
-          {{ focusedExecutionData.tensor_debug_mode }}
+          (debug mode: {{ tensorDebugModeName }})
         </span>
+      </div>
+
+      <div *ngIf="anyDebugTensorValues">
+        <div [ngSwitch]="tensorDebugModeName">
+          <div
+            *ngSwitchCase="'CURT_HEALTH'"
+            class="debug-tensor-values-container"
+          >
+            <table class="debug-tensor-values-table">
+              <tr>
+                <th>Slot</th>
+                <th>Contains inf/nan?</th>
+              </tr>
+              <tr
+                *ngFor="let singleDebugTensorValues of debugTensorValues; index as i;"
+              >
+                <td *ngIf="singleDebugTensorValues !== null">
+                  {{ i }}
+                </td>
+                <td *ngIf="singleDebugTensorValues !== null">
+                  {{ singleDebugTensorValues[1] }}
+                </td>
+              </tr>
+            </table>
+          </div>
+
+          <div
+            *ngSwitchCase="'CONCISE_HEALTH'"
+            class="debug-tensor-values-container"
+          >
+            <table class="debug-tensor-values-table">
+              <tr>
+                <th>Slot</th>
+                <th>Size</th>
+                <th>#(-inf)</th>
+                <th>#(inf)</th>
+                <th>#(nan)</th>
+              </tr>
+              <tr
+                *ngFor="let singleDebugTensorValues of debugTensorValues; index as i;"
+              >
+                <td>
+                  {{ i }}
+                </td>
+                <td *ngIf="singleDebugTensorValues !== null">
+                  {{ singleDebugTensorValues[1] }}
+                </td>
+                <td *ngIf="singleDebugTensorValues !== null">
+                  {{ singleDebugTensorValues[2] }}
+                </td>
+                <td *ngIf="singleDebugTensorValues !== null">
+                  {{ singleDebugTensorValues[3] }}
+                </td>
+                <td *ngIf="singleDebugTensorValues !== null">
+                  {{ singleDebugTensorValues[4] }}
+                </td>
+              </tr>
+            </table>
+          </div>
+
+          <div *ngSwitchCase="'SHAPE'" class="debug-tensor-values-container">
+            <table class="debug-tensor-values-table">
+              <tr>
+                <th>Slot</th>
+                <th>DType</th>
+                <th>Rank</th>
+                <th>Size</th>
+                <th>shape</th>
+              </tr>
+              <tr
+                *ngFor="let singleDebugTensorValues of debugTensorValues; index as i;"
+              >
+                <td>
+                  {{ i }}
+                </td>
+                <td *ngIf="singleDebugTensorValues !== null">
+                  {{ singleDebugTensorValues[1] }}
+                </td>
+                <td *ngIf="singleDebugTensorValues !== null">
+                  {{ singleDebugTensorValues[2] }}
+                </td>
+                <td *ngIf="singleDebugTensorValues !== null">
+                  {{ singleDebugTensorValues[3] }}
+                </td>
+                <td *ngIf="singleDebugTensorValues !== null">
+                  ({{ singleDebugTensorValues.slice(4, 4 +
+                  singleDebugTensorValues[2]) }})
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
   <ng-template #loading_section>
-    Loading...
+    <!-- TODO(cais): Display loading spinner. -->
   </ng-template>
 </div>

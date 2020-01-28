@@ -20,8 +20,6 @@ import {
   Execution,
   ExecutionDigestsResponse,
   ExecutionDataResponse,
-  StackFrame,
-  StackFramesResponse,
   StackFramesById,
 } from '../store/debugger_types';
 

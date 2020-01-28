@@ -30,4 +30,18 @@ export class ExecutionDataComponent {
 
   @Input()
   focusedExecutionData: Execution | null = null;
+
+  @Input()
+  tensorDebugModeName: string = 'UNSPECIFIED';
+
+  /**
+   * Whether any debug tensor values exist, under non-FULL_TENSOR debug
+   * modes.
+   */
+  @Input()
+  anyDebugTensorValues: boolean = false;
+
+  /** Debug tensor values under non-FULL_TENSOR debug modes. */
+  @Input()
+  debugTensorValues: number[][] | null = null;
 }
