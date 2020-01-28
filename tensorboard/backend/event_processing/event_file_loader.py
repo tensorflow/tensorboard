@@ -18,10 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import inspect
-
 from tensorboard.compat import tf
-from tensorboard.compat import _pywrap_tensorflow
 from tensorboard.compat.proto import event_pb2
 from tensorboard.util import platform_util
 from tensorboard.util import tb_logging
@@ -30,22 +27,67 @@ from tensorboard.util import tb_logging
 logger = tb_logging.get_logger()
 
 
+def _make_tf_record_iterator(file_path):
+    """Returns an iterator over TF records for the given tfrecord file."""
+    try:
+        from tensorboard.compat import _pywrap_tensorflow
+
+        py_record_reader_new = _pywrap_tensorflow.PyRecordReader_New
+    except (ImportError, AttributeError):
+        py_record_reader_new = None
+    # If PyRecordReader exists, use it, otherwise use tf_record_iterator().
+    # Check old first, then new, since tf_record_iterator existed previously but
+    # only gained the semantics we need at the time PyRecordReader was removed.
+    #
+    # TODO(#1711): Eventually remove PyRecordReader fallback once we can drop
+    # support for TF 2.1 and prior, and find a non-deprecated replacement for
+    # tf.compat.v1.io.tf_record_iterator.
+    if py_record_reader_new:
+        logger.debug("Opening a record reader pointing at %s", file_path)
+        return _PyRecordReaderIterator(py_record_reader_new, file_path)
+    else:
+        logger.debug("Opening a tf_record_iterator pointing at %s", file_path)
+        return tf.compat.v1.io.tf_record_iterator(file_path)
+
+
+class _PyRecordReaderIterator(object):
+    """Python iterator for TF Records based on PyRecordReader."""
+
+    def __init__(self, py_record_reader_new, file_path):
+        """Constructs a _PyRecordReaderIterator for the given file path.
+
+        Args:
+          py_record_reader_new: pywrap_tensorflow.PyRecordReader_New
+          file_path: file path of the tfrecord file to read
+        """
+        with tf.compat.v1.errors.raise_exception_on_not_ok_status() as status:
+            self._reader = py_record_reader_new(
+                tf.compat.as_bytes(file_path), 0, tf.compat.as_bytes(""), status
+            )
+        if not self._reader:
+            raise IOError("Failed to open a record reader pointing to %s" % file_path)
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        try:
+            self._reader.GetNext()
+        except tf.errors.OutOfRangeError as e:
+            raise StopIteration
+        return self._reader.record()
+
+    next = __next__  # for python2 compatibility
+
+
 class RawEventFileLoader(object):
     """An iterator that yields Event protos as serialized bytestrings."""
 
     def __init__(self, file_path):
         if file_path is None:
             raise ValueError("A file path is required")
-        file_path = platform_util.readahead_file_path(file_path)
-        logger.debug("Opening a record reader pointing at %s", file_path)
-        with tf.compat.v1.errors.raise_exception_on_not_ok_status() as status:
-            self._reader = _pywrap_tensorflow.PyRecordReader_New(
-                tf.compat.as_bytes(file_path), 0, tf.compat.as_bytes(""), status
-            )
-        # Store it for logging purposes.
-        self._file_path = file_path
-        if not self._reader:
-            raise IOError("Failed to open a record reader pointing to %s" % file_path)
+        self._file_path = platform_util.readahead_file_path(file_path)
+        self._iterator = _make_tf_record_iterator(self._file_path)
 
     def Load(self):
         """Loads all new events from disk as raw serialized proto bytestrings.
@@ -57,32 +99,18 @@ class RawEventFileLoader(object):
       All event proto bytestrings in the file that have not been yielded yet.
     """
         logger.debug("Loading events from %s", self._file_path)
-
-        # getargspec is deprecated in Python3, use getfullargspec if it exists.
-        try:
-            getargspec = inspect.getfullargspec
-        except AttributeError:
-            getargspec = inspect.getargspec  # pylint: disable=deprecated-method
-
-        # GetNext() expects a status argument on TF <= 1.7.
-        get_next_args = getargspec(self._reader.GetNext).args
-        # First argument is self
-        legacy_get_next = len(get_next_args) > 1
-
         while True:
             try:
-                if legacy_get_next:
-                    with tf.compat.v1.errors.raise_exception_on_not_ok_status() as status:
-                        self._reader.GetNext(status)
-                else:
-                    self._reader.GetNext()
-            except (tf.errors.DataLossError, tf.errors.OutOfRangeError) as e:
-                logger.debug("Cannot read more events: %s", e)
-                # We ignore partial read exceptions, because a record may be truncated.
-                # PyRecordReader holds the offset prior to the failed read, so retrying
-                # will succeed.
+                yield next(self._iterator)
+            except StopIteration:
+                logger.debug("End of file in %s", self._file_path)
                 break
-            yield self._reader.record()
+            except tf.errors.DataLossError as e:
+                # We swallow partial read exceptions; if the record was truncated
+                # and a later update completes it, retrying can then resume from
+                # the same point in the file since the iterator holds the offset.
+                logger.debug("Truncated record in %s (%s)", self._file_path, e)
+                break
         logger.debug("No more events in %s", self._file_path)
 
 
