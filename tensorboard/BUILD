@@ -470,6 +470,7 @@ py_library(
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/plugins/graph:metadata",
         "//tensorboard/plugins/histogram:metadata",
+        "//tensorboard/plugins/image:metadata",
         "//tensorboard/plugins/scalar:metadata",
         "//tensorboard/util:tensor_util",
     ],
