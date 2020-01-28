@@ -20,6 +20,7 @@ from __future__ import print_function
 
 import datetime
 import os
+import time
 import unittest
 import mock
 
@@ -208,9 +209,13 @@ class FormatTimeTest(tb_test.TestCase):
     def _run(self, t=None, now=None):
         timestamp_pb = timestamp_pb2.Timestamp()
         util.set_timestamp(timestamp_pb, t)
-        with mock.patch.dict(os.environ, {"TZ": "UTC"}):
-            now = datetime.datetime.fromtimestamp(now)
-            return util.format_time(timestamp_pb, now=now)
+        try:
+            with mock.patch.dict(os.environ, {"TZ": "UTC"}):
+                time.tzset()
+                now = datetime.datetime.fromtimestamp(now)
+                return util.format_time(timestamp_pb, now=now)
+        finally:
+            time.tzset()
 
     def test_just_now(self):
         base = 1546398245
