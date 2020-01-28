@@ -53,7 +53,7 @@ export class ExecutionDataContainer {
     select(
       createSelector(
         getFocusedExecutionData,
-        (execution: Execution) => {
+        (execution: Execution | null) => {
           if (execution === null) {
             return '';
           } else {
@@ -68,7 +68,7 @@ export class ExecutionDataContainer {
     select(
       createSelector(
         getFocusedExecutionData,
-        (execution: Execution) => {
+        (execution: Execution | null) => {
           if (execution === null || execution.debug_tensor_values === null) {
             return false;
           } else {
@@ -91,7 +91,7 @@ export class ExecutionDataContainer {
     select(
       createSelector(
         getFocusedExecutionData,
-        (execution: Execution) => {
+        (execution: Execution | null) => {
           if (execution === null) {
             return null;
           } else {
