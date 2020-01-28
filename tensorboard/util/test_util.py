@@ -64,11 +64,12 @@ class FileWriter(tf.compat.v1.summary.FileWriter):
         if isinstance(event, event_pb2.Event):
             tf_event = tf.compat.v1.Event.FromString(event.SerializeToString())
         else:
-            logger.warn(
-                "Added TensorFlow event proto. "
-                "Please prefer TensorBoard copy of the proto"
-            )
             tf_event = event
+            if not isinstance(event, bytes):
+                logger.error(
+                    "Added TensorFlow event proto. "
+                    "Please prefer TensorBoard copy of the proto"
+                )
         super(FileWriter, self).add_event(tf_event)
 
     def add_summary(self, summary, global_step=None):
@@ -77,11 +78,12 @@ class FileWriter(tf.compat.v1.summary.FileWriter):
                 summary.SerializeToString()
             )
         else:
-            logger.warn(
-                "Added TensorFlow summary proto. "
-                "Please prefer TensorBoard copy of the proto"
-            )
             tf_summary = summary
+            if not isinstance(summary, bytes):
+                logger.error(
+                    "Added TensorFlow summary proto. "
+                    "Please prefer TensorBoard copy of the proto"
+                )
         super(FileWriter, self).add_summary(tf_summary, global_step)
 
     def add_session_log(self, session_log, global_step=None):
@@ -90,11 +92,12 @@ class FileWriter(tf.compat.v1.summary.FileWriter):
                 session_log.SerializeToString()
             )
         else:
-            logger.warn(
-                "Added TensorFlow session_log proto. "
-                "Please prefer TensorBoard copy of the proto"
-            )
             tf_session_log = session_log
+            if not isinstance(session_log, bytes):
+                logger.error(
+                    "Added TensorFlow session_log proto. "
+                    "Please prefer TensorBoard copy of the proto"
+                )
         super(FileWriter, self).add_session_log(tf_session_log, global_step)
 
     def add_graph(self, graph, global_step=None, graph_def=None):
