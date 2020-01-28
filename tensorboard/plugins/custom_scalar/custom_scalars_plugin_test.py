@@ -120,10 +120,15 @@ class CustomScalarsPluginTest(tf.test.TestCase):
         with test_util.FileWriterCache.get(
             os.path.join(self.logdir, "foo")
         ) as writer:
-            writer.add_summary(summary.pb(self.foo_layout))
+            writer.add_summary(
+                test_util.ensure_tb_summary_proto(summary.pb(self.foo_layout))
+            )
             for step in range(4):
                 writer.add_summary(
-                    scalar_summary.pb("squares", step * step), step
+                    test_util.ensure_tb_summary_proto(
+                        scalar_summary.pb("squares", step * step)
+                    ),
+                    step,
                 )
 
         with test_util.FileWriterCache.get(
@@ -131,12 +136,19 @@ class CustomScalarsPluginTest(tf.test.TestCase):
         ) as writer:
             for step in range(3):
                 writer.add_summary(
-                    scalar_summary.pb("increments", step + 1), step
+                    test_util.ensure_tb_summary_proto(
+                        scalar_summary.pb("increments", step + 1)
+                    ),
+                    step,
                 )
 
         # The '.' run lacks scalar data but has a layout.
         with test_util.FileWriterCache.get(self.logdir) as writer:
-            writer.add_summary(summary.pb(self.logdir_layout))
+            writer.add_summary(
+                test_util.ensure_tb_summary_proto(
+                    summary.pb(self.logdir_layout)
+                )
+            )
 
         self.plugin = self.createPlugin(self.logdir)
 
@@ -273,7 +285,11 @@ class CustomScalarsPluginTest(tf.test.TestCase):
         # Generate a directory with a layout but no scalars data.
         directory = os.path.join(self.logdir, "no_scalars")
         with test_util.FileWriterCache.get(directory) as writer:
-            writer.add_summary(summary.pb(self.logdir_layout))
+            writer.add_summary(
+                test_util.ensure_tb_summary_proto(
+                    summary.pb(self.logdir_layout)
+                )
+            )
 
         local_plugin = self.createPlugin(directory)
         self.assertFalse(local_plugin.is_active())
