@@ -150,6 +150,9 @@ py_test(
     deps = [
         ":event_file_loader",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/summary/writer",
+        "@org_pythonhosted_six",
     ],
 )
 
