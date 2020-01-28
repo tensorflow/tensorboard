@@ -18,8 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import inspect
-
 from tensorboard.compat import tf
 from tensorboard.compat.proto import event_pb2
 from tensorboard.util import platform_util
@@ -70,24 +68,13 @@ class _PyRecordReaderIterator(object):
             raise IOError(
                 "Failed to open a record reader pointing to %s" % file_path
             )
-        # getargspec is deprecated in Python3, use getfullargspec if it exists.
-        try:
-            getargspec = inspect.getfullargspec
-        except AttributeError:
-            getargspec = inspect.getargspec  # pylint: disable=deprecated-method
-        # GetNext() expects a status argument (after `self`) on TF <= 1.7.
-        self._legacy_get_next = len(getargspec(self._reader.GetNext).args) > 1
 
     def __iter__(self):
         return self
 
     def __next__(self):
         try:
-            if self._legacy_get_next:
-                with tf.compat.v1.errors.raise_exception_on_not_ok_status() as status:
-                    self._reader.GetNext(status)
-            else:
-                self._reader.GetNext()
+            self._reader.GetNext()
         except tf.errors.OutOfRangeError as e:
             raise StopIteration
         return self._reader.record()
