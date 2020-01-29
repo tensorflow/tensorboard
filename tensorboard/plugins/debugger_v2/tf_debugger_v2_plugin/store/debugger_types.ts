@@ -19,17 +19,17 @@ export {DataLoadState, LoadState} from '../../../../webapp/types/data';
 
 export const DEBUGGER_FEATURE_KEY = 'debugger';
 
-export const TensorDebugMode: {[mode: number]: string} = {
-  0: 'UNSPECIFIED',
-  1: 'NO_TENSOR',
-  2: 'CURT_HEALTH',
-  3: 'CONCISE_HEALTH',
-  4: 'FULL_HEALTH',
-  5: 'SHAPE',
-  6: 'FULL_NUMERICS',
-  7: 'FULL_TENSOR',
-  8: 'REDUCE_INF_NAN_THREE_SLOTS',
-};
+export enum TensorDebugMode {
+  UNSPECIFIED = 0,
+  NO_TENSOR = 1,
+  CURT_HEALTH = 2,
+  CONCISE_HEALTH = 3,
+  FULL_HEALTH = 4,
+  SHAPE = 5,
+  FULL_NUMERICS = 6,
+  FULL_TENOSR = 7,
+  REDUCE_INF_NAN_THREE_SLOTS = 8,
+}
 
 export interface DebuggerRunMetadata {
   // Time at which the debugger run started. Seconds since the epoch.

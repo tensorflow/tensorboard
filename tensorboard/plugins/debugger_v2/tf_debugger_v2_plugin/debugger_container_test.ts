@@ -29,7 +29,7 @@ import {
 } from './actions';
 import {DebuggerComponent} from './debugger_component';
 import {DebuggerContainer} from './debugger_container';
-import {DataLoadState, State} from './store/debugger_types';
+import {DataLoadState, State, TensorDebugMode} from './store/debugger_types';
 import {
   createDebuggerState,
   createState,
@@ -329,7 +329,7 @@ describe('Debugger Container', () => {
               executionData: {
                 98: createTestExecutionData({
                   op_type: 'Inverse',
-                  tensor_debug_mode: 1, // NO_TENSOR.
+                  tensor_debug_mode: TensorDebugMode.NO_TENSOR,
                   debug_tensor_values: null,
                 }),
               },
@@ -381,7 +381,7 @@ describe('Debugger Container', () => {
               executionData: {
                 98: createTestExecutionData({
                   op_type: 'Inverse',
-                  tensor_debug_mode: 2, // CURT_HEALTH.
+                  tensor_debug_mode: TensorDebugMode.CURT_HEALTH,
                   debug_tensor_values: [[-1, 1]],
                 }),
               },
@@ -441,7 +441,7 @@ describe('Debugger Container', () => {
                   op_type: 'FooOp',
                   output_tensor_device_ids: ['d0', 'd0'],
                   output_tensor_ids: [123, 124],
-                  tensor_debug_mode: 3, // CONCISE_HEALTH.
+                  tensor_debug_mode: TensorDebugMode.CONCISE_HEALTH,
                   debug_tensor_values: [[-1, 100, 0, 0, 0], [-1, 10, 1, 2, 3]],
                 }),
               },
@@ -521,8 +521,9 @@ describe('Debugger Container', () => {
                   op_type: 'BarOp',
                   output_tensor_device_ids: ['d0', 'd0'],
                   output_tensor_ids: [123, 124],
-                  tensor_debug_mode: 3, // CONCISE_HEALTH.
-                  // First output slot has no data (e.g., non-floating dtype).
+                  tensor_debug_mode: TensorDebugMode.CONCISE_HEALTH,
+                  // First output slot has no data (e.g., due to non-floating
+                  // dtype).
                   debug_tensor_values: [null, [-1, 10, 1, 2, 3]],
                 }),
               },
@@ -598,7 +599,7 @@ describe('Debugger Container', () => {
                   op_type: 'FooOp',
                   output_tensor_device_ids: ['d0', 'd0'],
                   output_tensor_ids: [123, 124],
-                  tensor_debug_mode: 5, // SHAPE.
+                  tensor_debug_mode: TensorDebugMode.SHAPE,
                   debug_tensor_values: [
                     [-1, 1, 0, 1, 0, 0, 0, 0, 0, 0],
                     [-1, 6, 2, 20, 4, 5, 0, 0, 0, 0],

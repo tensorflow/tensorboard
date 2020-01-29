@@ -24,7 +24,6 @@ import {
   Executions,
   ExecutionDigest,
   State,
-  TensorDebugMode,
   StackFrame,
 } from '../store/debugger_types';
 

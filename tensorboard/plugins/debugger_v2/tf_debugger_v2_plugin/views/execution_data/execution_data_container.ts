@@ -15,7 +15,7 @@ limitations under the License.
 import {Component} from '@angular/core';
 import {select, Store, createSelector} from '@ngrx/store';
 
-import {State, Execution, TensorDebugMode} from '../../store/debugger_types';
+import {Execution, State, TensorDebugMode} from '../../store/debugger_types';
 
 import {
   getActiveRunId,
