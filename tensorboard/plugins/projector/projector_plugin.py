@@ -34,7 +34,6 @@ from google.protobuf import text_format
 
 from tensorboard.backend.http_util import Respond
 from tensorboard.compat import tf
-from tensorboard.compat import _pywrap_tensorflow
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.projector.projector_config_pb2 import ProjectorConfig
 from tensorboard.util import tb_logging
