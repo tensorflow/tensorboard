@@ -122,7 +122,7 @@ class FrontendMetadata(object):
         es_module_path=None,
         remove_dom=None,
         tab_name=None,
-        is_ng_component=False,
+        is_ng_component=None,
     ):
         """Creates a `FrontendMetadata` value.
 
@@ -149,7 +149,7 @@ class FrontendMetadata(object):
               instance, the tab name should not use underscores to separate
               words. Should be a `str` or `None` (the default; indicates to
               use the plugin name as the tab name).
-          is_ng_component: Set to `True` only for built-in Agnular plugins.
+          is_ng_component: Set to `True` only for built-in Angular plugins.
               In this case, the `plugin_name` property of the Plugin, which is
               mapped to the `id` property in JavaScript's `UiPluginMetadata` type,
               is used to select the Angular component. A `True` value is mutually
@@ -162,7 +162,9 @@ class FrontendMetadata(object):
         self._es_module_path = es_module_path
         self._remove_dom = False if remove_dom is None else remove_dom
         self._tab_name = tab_name
-        self._is_ng_component = is_ng_component
+        self._is_ng_component = (
+            False if is_ng_component is None else is_ng_component
+        )
 
     @property
     def disable_reload(self):
