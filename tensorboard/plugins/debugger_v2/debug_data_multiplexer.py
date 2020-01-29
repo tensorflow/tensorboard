@@ -207,7 +207,7 @@ class DebuggerV2EventMultiplexer(object):
         """Get alerts from the debugged TensorFlow program.
 
         Args:
-          run: The tfdbg2 run to get `ExecutionDigest`s from.
+          run: The tfdbg2 run to get Alerts from.
           begin: Beginning alert index.
           end: Ending alert index.
         """

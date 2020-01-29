@@ -97,6 +97,7 @@ def _generate_tfdbg_v2_data(
         #   [nan nan nan nan]
         #   [nan nan nan nan]
         #   [nan nan nan nan]
+        #   ...
 
         writer.FlushNonExecutionFiles()
         writer.FlushExecutionFiles()
