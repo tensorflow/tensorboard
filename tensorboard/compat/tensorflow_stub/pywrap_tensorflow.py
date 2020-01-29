@@ -197,19 +197,29 @@ class PyRecordReader_New:
         self.status = status
         self.curr_event = None
         self.file_handle = gfile.GFile(self.filename, "rb")
+        # Maintain a buffer of partially read records, so we can recover from
+        # truncated records upon a retry.
+        self._buffer = b""
+        self._buffer_pos = 0
 
     def GetNext(self):
+        # Each new read should start at the beginning of any partial record.
+        self._buffer_pos = 0
         # Read the header
         self.curr_event = None
-        header_str = self.file_handle.read(8)
-        if len(header_str) != 8:
+        header_str = self._read(8)
+        if not header_str:
             # Hit EOF so raise and exit
             raise errors.OutOfRangeError(None, None, "No more events to read")
+        if len(header_str) < 8:
+            raise self._truncation_error("header")
         header = struct.unpack("Q", header_str)
 
         # Read the crc32, which is 4 bytes, and check it against
         # the crc32 of the header
-        crc_header_str = self.file_handle.read(4)
+        crc_header_str = self._read(4)
+        if len(crc_header_str) < 4:
+            raise self._truncation_error("header crc")
         crc_header = struct.unpack("I", crc_header_str)
         header_crc_calc = masked_crc32c(header_str)
         if header_crc_calc != crc_header[0]:
@@ -220,25 +230,59 @@ class PyRecordReader_New:
         # The length of the header tells us how many bytes the Event
         # string takes
         header_len = int(header[0])
-        event_str = self.file_handle.read(header_len)
+        event_str = self._read(header_len)
+        if len(event_str) < header_len:
+            raise self._truncation_error("data")
 
         event_crc_calc = masked_crc32c(event_str)
 
         # The next 4 bytes contain the crc32 of the Event string,
-        # which we check for integrity. Sometimes, the last Event
-        # has no crc32, in which case we skip.
-        crc_event_str = self.file_handle.read(4)
-        if crc_event_str:
-            crc_event = struct.unpack("I", crc_event_str)
-            if event_crc_calc != crc_event[0]:
-                raise errors.DataLossError(
-                    None,
-                    None,
-                    "{} failed event crc32 check".format(self.filename),
-                )
+        # which we check for integrity.
+        crc_event_str = self._read(4)
+        if len(crc_event_str) < 4:
+            raise self._truncation_error("data crc")
+        crc_event = struct.unpack("I", crc_event_str)
+        if event_crc_calc != crc_event[0]:
+            raise errors.DataLossError(
+                None, None, "{} failed event crc32 check".format(self.filename),
+            )
 
         # Set the current event to be read later by record() call
         self.curr_event = event_str
+        # Clear the buffered partial record since we're done reading it.
+        self._buffer = b""
+
+    def _read(self, n):
+        """Read up to n bytes from the underlying file, with buffering.
+
+        Reads are satisfied from a buffer of previous data read starting at
+        `self._buffer_pos` until the buffer is exhausted, and then from the
+        actual underlying file. Any new data is added to the buffer, and
+        `self._buffer_pos` is advanced to the point in the buffer past all
+        data returned as part of this read.
+
+        Args:
+          n: non-negative number of bytes to read
+
+        Returns:
+          bytestring of data read, up to n bytes
+        """
+        result = self._buffer[self._buffer_pos : self._buffer_pos + n]
+        self._buffer_pos += len(result)
+        n -= len(result)
+        if n > 0:
+            new_data = self.file_handle.read(n)
+            result += new_data
+            self._buffer += new_data
+            self._buffer_pos += len(new_data)
+        return result
+
+    def _truncation_error(self, section):
+        return errors.DataLossError(
+            None,
+            None,
+            "{} has truncated record in {}".format(self.filename, section),
+        )
 
     def record(self):
         return self.curr_event
