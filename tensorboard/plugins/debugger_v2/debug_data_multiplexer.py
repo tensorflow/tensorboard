@@ -30,6 +30,12 @@ from tensorboard import errors
 # the same logdir, replace this magic string with actual run names.
 DEFAULT_DEBUGGER_RUN_NAME = "__default_debugger_run__"
 
+# Default number of alerts per monitor type.
+# Limiting the number of alerts is based on the consideration that usually
+# only the first few alerting events are the most critical and the subsequent
+# ones are either repetitions of the earlier ones or caused by the earlier ones.
+DEFAULT_PER_TYPE_ALERT_LIMIT = 1000
+
 
 def run_in_background(target):
     """Run a target task in the background.
@@ -47,6 +53,28 @@ def run_in_background(target):
     # the behavior gets more complex.
     thread = threading.Thread(target=target)
     thread.start()
+
+
+def _alert_to_json(alert):
+    # TODO(cais): Replace this with Alert.to_json() when supported by the
+    # backend.
+    global debug_events_monitors
+    if isinstance(alert, debug_events_monitors.InfNanAlert):
+        return {
+            "alert_type": "InfNanAlert",
+            "op_type": alert.op_type,
+            "output_slot": alert.output_slot,
+            # TODO(cais): Once supported by backend, add 'op_name' key
+            # for intra-graph execution events.
+            "size": alert.size,
+            "num_neg_inf": alert.num_neg_inf,
+            "num_pos_inf": alert.num_pos_inf,
+            "num_nan": alert.num_nan,
+            "execution_index": alert.execution_index,
+            "graph_execution_trace_index": alert.graph_execution_trace_index,
+        }
+    else:
+        raise TypeError("Unrecognized alert subtype: %s" % type(alert))
 
 
 class DebuggerV2EventMultiplexer(object):
@@ -117,22 +145,34 @@ class DebuggerV2EventMultiplexer(object):
         If no tfdbg2-format data exists in the `logdir`, an empty `dict`.
         """
         if self._reader is None:
-            from tensorflow.python.debug.lib import debug_events_reader
-
             try:
+                from tensorflow.python.debug.lib import debug_events_reader
+                from tensorflow.python.debug.lib import debug_events_monitors
+
+                global debug_events_monitors
+
                 self._reader = debug_events_reader.DebugDataReader(self._logdir)
+                self._monitors = [
+                    debug_events_monitors.InfNanMonitor(
+                        self._reader, limit=DEFAULT_PER_TYPE_ALERT_LIMIT
+                    )
+                ]
                 # NOTE(cais): Currently each logdir is enforced to have only one
                 # DebugEvent file set. So we add hard-coded default run name.
                 run_in_background(self._reader.update)
                 # TODO(cais): Start off a reading thread here, instead of being
                 # called only once here.
-            except AttributeError as error:
+            except ImportError:
+                # This ensures graceful behavior when tensorflow install is
+                # unavailable.
+                return {}
+            except AttributeError:
                 # Gracefully fail for users without the required API changes to
                 # debug_events_reader.DebugDataReader introduced in
                 # TF 2.1.0.dev20200103. This should be safe to remove when
                 # TF 2.2 is released.
                 return {}
-            except ValueError as error:
+            except ValueError:
                 # When no DebugEvent file set is found in the logdir, a
                 # `ValueError` is thrown.
                 return {}
@@ -145,14 +185,14 @@ class DebuggerV2EventMultiplexer(object):
             }
         }
 
-    def _checkExecutionBeginEndIndices(self, begin, end, execution_count):
+    def _checkBeginEndIndices(self, begin, end, total_count):
         if begin < 0:
             raise errors.InvalidArgumentError(
                 "Invalid begin index (%d)" % begin
             )
-        if end > execution_count:
+        if end > total_count:
             raise errors.InvalidArgumentError(
-                "end index (%d) out of bounds (%d)" % (end, execution_count)
+                "end index (%d) out of bounds (%d)" % (end, total_count)
             )
         if end >= 0 and end < begin:
             raise errors.InvalidArgumentError(
@@ -160,8 +200,32 @@ class DebuggerV2EventMultiplexer(object):
                 % (end, begin)
             )
         if end < 0:  # This means all digests.
-            end = execution_count
+            end = total_count
         return end
+
+    def Alerts(self, run, begin, end):
+        """Get alerts from the debugged TensorFlow program.
+
+        Args:
+          run: The tfdbg2 run to get `ExecutionDigest`s from.
+          begin: Beginning alert index.
+          end: Ending alert index.
+        """
+        runs = self.Runs()
+        if run not in runs:
+            return None
+        alerts = []
+        for monitor in self._monitors:
+            alerts.extend(monitor.alerts())
+        end = self._checkBeginEndIndices(begin, end, len(alerts))
+        # TODO(cais): Add support for filtering by alert type.
+        return {
+            "begin": begin,
+            "end": end,
+            "num_alerts": len(alerts),
+            "per_type_alert_limit": DEFAULT_PER_TYPE_ALERT_LIMIT,
+            "alerts": [_alert_to_json(alert) for alert in alerts[begin:end]],
+        }
 
     def ExecutionDigests(self, run, begin, end):
         """Get ExecutionDigests.
@@ -181,9 +245,7 @@ class DebuggerV2EventMultiplexer(object):
         # TODO(cais): For scalability, use begin and end kwargs when available in
         # `DebugDataReader.execution()`.`
         execution_digests = self._reader.executions(digest=True)
-        end = self._checkExecutionBeginEndIndices(
-            begin, end, len(execution_digests)
-        )
+        end = self._checkBeginEndIndices(begin, end, len(execution_digests))
         return {
             "begin": begin,
             "end": end,
@@ -211,9 +273,7 @@ class DebuggerV2EventMultiplexer(object):
         # TODO(cais): For scalability, use begin and end kwargs when available in
         # `DebugDataReader.execution()`.`
         execution_digests = self._reader.executions(digest=True)
-        end = self._checkExecutionBeginEndIndices(
-            begin, end, len(execution_digests)
-        )
+        end = self._checkBeginEndIndices(begin, end, len(execution_digests))
         execution_digests = execution_digests[begin:end]
         executions = [
             self._reader.read_execution(digest) for digest in execution_digests

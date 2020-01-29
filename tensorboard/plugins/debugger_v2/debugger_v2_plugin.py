@@ -60,6 +60,7 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
         # TODO(cais): Add routes as they are implemented.
         return {
             "/runs": self.serve_runs,
+            "/alerts": self.serve_alerts,
             "/execution/digests": self.serve_execution_digests,
             "/execution/data": self.serve_execution_data,
             "/source_files/list": self.serve_source_files_list,
@@ -92,6 +93,32 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
         for run in runs:
             run_listing[run.run_id] = {"start_time": run.start_time}
         return http_util.Respond(request, run_listing, "application/json")
+
+    @wrappers.Request.application
+    def serve_alerts(self, request):
+        experiment = plugin_util.experiment_id(request.environ)
+        run = request.args.get("run")
+        if run is None:
+            return _missing_run_error_response(request)
+        begin = int(request.args.get("begin", "0"))
+        end = int(request.args.get("end", "-1"))
+        run_tag_filter = debug_data_provider.alerts_run_tag_filter(
+            run, begin, end
+        )
+        blob_sequences = self._data_provider.read_blob_sequences(
+            experiment, self.plugin_name, run_tag_filter=run_tag_filter
+        )
+        tag = next(iter(run_tag_filter.tags))
+        try:
+            return http_util.Respond(
+                request,
+                self._data_provider.read_blob(
+                    blob_sequences[run][tag][0].blob_key
+                ),
+                "application/json",
+            )
+        except errors.InvalidArgumentError as e:
+            return _error_response(request, str(e))
 
     @wrappers.Request.application
     def serve_execution_digests(self, request):
