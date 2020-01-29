@@ -156,6 +156,22 @@ py_test(
     ],
 )
 
+py_test(
+    name = "event_file_loader_notf_test",
+    size = "small",
+    srcs = ["event_file_loader_test.py"],
+    main = "event_file_loader_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":event_file_loader",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:no_tensorflow",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/summary/writer",
+        "@org_pythonhosted_six",
+    ],
+)
+
 py_library(
     name = "event_accumulator",
     srcs = [
