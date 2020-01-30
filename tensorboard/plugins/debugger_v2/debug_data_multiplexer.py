@@ -58,7 +58,8 @@ def run_in_background(target):
 def _alert_to_json(alert):
     # TODO(cais): Replace this with Alert.to_json() when supported by the
     # backend.
-    global debug_events_monitors
+    from tensorflow.python.debug.lib import debug_events_monitors
+
     if isinstance(alert, debug_events_monitors.InfNanAlert):
         return {
             "alert_type": "InfNanAlert",
@@ -148,8 +149,6 @@ class DebuggerV2EventMultiplexer(object):
             try:
                 from tensorflow.python.debug.lib import debug_events_reader
                 from tensorflow.python.debug.lib import debug_events_monitors
-
-                global debug_events_monitors
 
                 self._reader = debug_events_reader.DebugDataReader(self._logdir)
                 self._monitors = [
