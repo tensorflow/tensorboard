@@ -213,14 +213,14 @@ class PyRecordReader_New:
             raise errors.OutOfRangeError(None, None, "No more events to read")
         if len(header_str) < 8:
             raise self._truncation_error("header")
-        header = struct.unpack("Q", header_str)
+        header = struct.unpack("<Q", header_str)
 
         # Read the crc32, which is 4 bytes, and check it against
         # the crc32 of the header
         crc_header_str = self._read(4)
         if len(crc_header_str) < 4:
             raise self._truncation_error("header crc")
-        crc_header = struct.unpack("I", crc_header_str)
+        crc_header = struct.unpack("<I", crc_header_str)
         header_crc_calc = masked_crc32c(header_str)
         if header_crc_calc != crc_header[0]:
             raise errors.DataLossError(
@@ -241,7 +241,7 @@ class PyRecordReader_New:
         crc_event_str = self._read(4)
         if len(crc_event_str) < 4:
             raise self._truncation_error("data crc")
-        crc_event = struct.unpack("I", crc_event_str)
+        crc_event = struct.unpack("<I", crc_event_str)
         if event_crc_calc != crc_event[0]:
             raise errors.DataLossError(
                 None, None, "{} failed event crc32 check".format(self.filename),
