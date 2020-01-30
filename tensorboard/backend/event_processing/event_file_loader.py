@@ -29,12 +29,14 @@ logger = tb_logging.get_logger()
 
 def _make_tf_record_iterator(file_path):
     """Returns an iterator over TF records for the given tfrecord file."""
-    try:
-        from tensorboard.compat import _pywrap_tensorflow
-
-        py_record_reader_new = _pywrap_tensorflow.PyRecordReader_New
-    except (ImportError, AttributeError):
-        py_record_reader_new = None
+    # If we don't have TF at all, use the stub implementation.
+    if tf.__version__ == "stub":
+        # TODO(#1711): Reshape stub implementation to fit tf_record_iterator API
+        # rather than needlessly emulating the old PyRecordReader_New API.
+        logger.debug("Opening a stub record reader pointing at %s", file_path)
+        return _PyRecordReaderIterator(
+            tf.pywrap_tensorflow.PyRecordReader_New, file_path
+        )
     # If PyRecordReader exists, use it, otherwise use tf_record_iterator().
     # Check old first, then new, since tf_record_iterator existed previously but
     # only gained the semantics we need at the time PyRecordReader was removed.
@@ -42,8 +44,14 @@ def _make_tf_record_iterator(file_path):
     # TODO(#1711): Eventually remove PyRecordReader fallback once we can drop
     # support for TF 2.1 and prior, and find a non-deprecated replacement for
     # tf.compat.v1.io.tf_record_iterator.
+    try:
+        from tensorflow.python import pywrap_tensorflow
+
+        py_record_reader_new = pywrap_tensorflow.PyRecordReader_New
+    except (ImportError, AttributeError):
+        py_record_reader_new = None
     if py_record_reader_new:
-        logger.debug("Opening a record reader pointing at %s", file_path)
+        logger.debug("Opening a PyRecordReader pointing at %s", file_path)
         return _PyRecordReaderIterator(py_record_reader_new, file_path)
     else:
         logger.debug("Opening a tf_record_iterator pointing at %s", file_path)
