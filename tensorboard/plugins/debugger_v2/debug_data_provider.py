@@ -35,11 +35,49 @@ from tensorboard.plugins.debugger_v2 import debug_data_multiplexer
 
 PLUGIN_NAME = "debugger-v2"
 
+ALERTS_BLOB_TAG_PREFIX = "alerts"
 EXECUTION_DIGESTS_BLOB_TAG_PREFIX = "execution_digests"
 EXECUTION_DATA_BLOB_TAG_PREFIX = "execution_data"
 SOURCE_FILE_LIST_BLOB_TAG = "source_file_list"
 SOURCE_FILE_BLOB_TAG_PREFIX = "source_file"
 STACK_FRAMES_BLOB_TAG_PREFIX = "stack_frames"
+
+
+def alerts_run_tag_filter(run, begin, end):
+    """Create a RunTagFilter for Alerts.
+
+    Args:
+      run: tfdbg2 run name.
+      begin: Beginning index of alerts.
+      end: Ending index of alerts.
+
+    Returns:
+      `RunTagFilter` for the run and range of Alerts.
+    """
+    # TODO(cais): Add filter for alert type.
+    return provider.RunTagFilter(
+        runs=[run], tags=["%s_%d_%d" % (ALERTS_BLOB_TAG_PREFIX, begin, end)],
+    )
+
+
+def _parse_alerts_blob_key(blob_key):
+    """Parse the BLOB key for Alerts.
+
+    Args:
+      blob_key: The BLOB key to parse. By contract, it should have the format:
+       `${ALERTS_BLOB_TAG_PREFIX}_${begin}_${end}.${run_id}`
+
+    Returns:
+      - run ID
+      - begin index
+      - end index
+    """
+    # TODO(cais): Add filter for alert type.
+    key_body, run = blob_key.split(".", 1)
+    key_body = key_body[len(ALERTS_BLOB_TAG_PREFIX) :]
+    begin = int(key_body.split("_")[1])
+    end = int(key_body.split("_")[2])
+    return run, begin, end
 
 
 def execution_digest_run_tag_filter(run, begin, end):
@@ -307,6 +345,7 @@ class LocalDebuggerV2DataProvider(provider.DataProvider):
             for tag in run_tag_filter.tags:
                 if tag.startswith(
                     (
+                        ALERTS_BLOB_TAG_PREFIX,
                         EXECUTION_DIGESTS_BLOB_TAG_PREFIX,
                         EXECUTION_DATA_BLOB_TAG_PREFIX,
                         SOURCE_FILE_BLOB_TAG_PREFIX,
@@ -319,7 +358,10 @@ class LocalDebuggerV2DataProvider(provider.DataProvider):
         return output
 
     def read_blob(self, blob_key):
-        if blob_key.startswith(EXECUTION_DIGESTS_BLOB_TAG_PREFIX):
+        if blob_key.startswith(ALERTS_BLOB_TAG_PREFIX):
+            run, begin, end = _parse_alerts_blob_key(blob_key)
+            return json.dumps(self._multiplexer.Alerts(run, begin, end))
+        elif blob_key.startswith(EXECUTION_DIGESTS_BLOB_TAG_PREFIX):
             run, begin, end = _parse_execution_digest_blob_key(blob_key)
             return json.dumps(
                 self._multiplexer.ExecutionDigests(run, begin, end)
