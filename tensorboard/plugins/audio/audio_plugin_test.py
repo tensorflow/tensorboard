@@ -18,7 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import collections
+import collections.abc
 import json
 import os
 import shutil
@@ -143,9 +143,11 @@ class AudioPluginTest(tf.test.TestCase):
     def testRoutesProvided(self):
         """Tests that the plugin offers the correct routes."""
         routes = self.plugin.get_plugin_apps()
-        self.assertIsInstance(routes["/audio"], collections.Callable)
-        self.assertIsInstance(routes["/individualAudio"], collections.Callable)
-        self.assertIsInstance(routes["/tags"], collections.Callable)
+        self.assertIsInstance(routes["/audio"], collections.abc.Callable)
+        self.assertIsInstance(
+            routes["/individualAudio"], collections.abc.Callable
+        )
+        self.assertIsInstance(routes["/tags"], collections.abc.Callable)
 
     def testOldStyleAudioRoute(self):
         """Tests that the /audio routes returns correct old-style data."""
