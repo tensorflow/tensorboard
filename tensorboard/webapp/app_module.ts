@@ -28,8 +28,6 @@ import {ROOT_REDUCERS, metaReducers} from './reducer_config';
 import {HeaderModule} from './header/header_module';
 import {ReloaderModule} from './reloader/reloader_module';
 import {MatIconModule} from './mat_icon_module';
-import {DebuggerModule} from '../plugins/debugger_v2/tf_debugger_v2_plugin/debugger_module';
-import {DebuggerContainer} from '../plugins/debugger_v2/tf_debugger_v2_plugin/debugger_container';
 
 @NgModule({
   declarations: [AppContainer],
@@ -40,7 +38,6 @@ import {DebuggerContainer} from '../plugins/debugger_v2/tf_debugger_v2_plugin/de
     HashStorageModule,
     HeaderModule,
     MatIconModule,
-    DebuggerModule,
     PluginsModule,
     ReloaderModule,
     StoreModule.forRoot(ROOT_REDUCERS, {
@@ -54,6 +51,5 @@ import {DebuggerContainer} from '../plugins/debugger_v2/tf_debugger_v2_plugin/de
   ],
   providers: [],
   bootstrap: [AppContainer],
-  entryComponents: [DebuggerContainer],
 })
 export class AppModule {}

@@ -42,5 +42,6 @@ import {PluginRegistryModule} from '../../../webapp/plugins/plugin_registry_modu
     PluginRegistryModule.forPlugin('debugger-v2', DebuggerContainer),
   ],
   exports: [DebuggerContainer],
+  entryComponents: [DebuggerContainer],
 })
 export class DebuggerModule {}

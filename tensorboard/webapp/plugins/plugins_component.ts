@@ -90,7 +90,6 @@ export class PluginsComponent implements OnChanges {
 
     const pluginElement = this.createPlugin(plugin);
     if (pluginElement) {
-      pluginElement.id = plugin.id;
       this.pluginInstances.set(plugin.id, pluginElement);
     }
   }
@@ -108,7 +107,6 @@ export class PluginsComponent implements OnChanges {
       }
       case LoadingMechanismType.IFRAME: {
         pluginElement = document.createElement('iframe');
-        pluginElement.id = plugin.id;
         // Ideally should use the DOMSanitizer but it is not usable in TypeScript.
         pluginElement.setAttribute(
           'src',

@@ -45,13 +45,15 @@ export class PluginRegistryModule {
   }
 
   /**
-   * Registers a plugin name to an Angular component. Modules can register a
-   * Component with a plugin like so:
+   * An NgModule that declares a Component can call this method to register the
+   * Component to be rendered when a plugin is requested by name. Modules
+   * register by adding the following configuration:
+   *
    * @NgModule({
    *   imports: [
-   *     PluginRegistryModule.forPlugin('scalars', ScalarsDashboard), ...
+   *     PluginRegistryModule.forPlugin('scalars', ScalarsDashboard)
    *   ],
-   *   ...
+   *   entryComponents: [ScalarsDashboard]
    * })
    */
   static forPlugin(
