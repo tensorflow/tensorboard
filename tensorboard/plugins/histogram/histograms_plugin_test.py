@@ -20,7 +20,7 @@ from __future__ import division
 from __future__ import print_function
 
 import argparse
-import collections
+import collections.abc
 import functools
 import os.path
 
@@ -156,8 +156,8 @@ class HistogramsPluginTest(tf.test.TestCase):
     def test_routes_provided(self, plugin):
         """Tests that the plugin offers the correct routes."""
         routes = plugin.get_plugin_apps()
-        self.assertIsInstance(routes["/histograms"], collections.Callable)
-        self.assertIsInstance(routes["/tags"], collections.Callable)
+        self.assertIsInstance(routes["/histograms"], collections.abc.Callable)
+        self.assertIsInstance(routes["/tags"], collections.abc.Callable)
 
     @with_runs(
         [_RUN_WITH_SCALARS, _RUN_WITH_LEGACY_HISTOGRAM, _RUN_WITH_HISTOGRAM,]

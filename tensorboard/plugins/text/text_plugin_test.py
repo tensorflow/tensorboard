@@ -19,7 +19,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import collections
+import collections.abc
 import os
 import textwrap
 import numpy as np
@@ -52,8 +52,8 @@ class TextPluginTest(tf.test.TestCase):
 
     def testRoutesProvided(self):
         routes = self.plugin.get_plugin_apps()
-        self.assertIsInstance(routes["/tags"], collections.Callable)
-        self.assertIsInstance(routes["/text"], collections.Callable)
+        self.assertIsInstance(routes["/tags"], collections.abc.Callable)
+        self.assertIsInstance(routes["/text"], collections.abc.Callable)
 
     def generate_testdata(self, include_text=True, logdir=None):
         tf.compat.v1.reset_default_graph()
