@@ -20,7 +20,7 @@ from __future__ import division
 from __future__ import print_function
 
 import argparse
-import collections
+import collections.abc
 import math
 import functools
 import os.path
@@ -135,9 +135,9 @@ class GraphsPluginBaseTest(object):
     def testRoutesProvided(self, plugin):
         """Tests that the plugin offers the correct routes."""
         routes = plugin.get_plugin_apps()
-        self.assertIsInstance(routes["/graph"], collections.Callable)
-        self.assertIsInstance(routes["/run_metadata"], collections.Callable)
-        self.assertIsInstance(routes["/info"], collections.Callable)
+        self.assertIsInstance(routes["/graph"], collections.abc.Callable)
+        self.assertIsInstance(routes["/run_metadata"], collections.abc.Callable)
+        self.assertIsInstance(routes["/info"], collections.abc.Callable)
 
 
 class GraphsPluginV1Test(GraphsPluginBaseTest, tf.test.TestCase):

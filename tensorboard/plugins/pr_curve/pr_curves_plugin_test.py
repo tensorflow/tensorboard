@@ -18,7 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import collections
+import collections.abc
 import functools
 import os.path
 
@@ -121,10 +121,10 @@ class PrCurvesPluginTest(tf.test.TestCase):
     def testRoutesProvided(self):
         """Tests that the plugin offers the correct routes."""
         routes = self.plugin.get_plugin_apps()
-        self.assertIsInstance(routes["/tags"], collections.Callable)
-        self.assertIsInstance(routes["/pr_curves"], collections.Callable)
+        self.assertIsInstance(routes["/tags"], collections.abc.Callable)
+        self.assertIsInstance(routes["/pr_curves"], collections.abc.Callable)
         self.assertIsInstance(
-            routes["/available_time_entries"], collections.Callable
+            routes["/available_time_entries"], collections.abc.Callable
         )
 
     def testTagsProvided(self):

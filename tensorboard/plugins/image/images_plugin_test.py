@@ -19,7 +19,7 @@ from __future__ import division
 from __future__ import print_function
 
 import argparse
-import collections
+import collections.abc
 import functools
 import json
 import os
@@ -167,11 +167,11 @@ class ImagesPluginTest(tf.test.TestCase):
     @with_images_plugin
     def testRoutesProvided(self, plugin):
         """Tests that the plugin offers the correct routes."""
-        self.assertIsInstance(self.routes["/images"], collections.Callable)
+        self.assertIsInstance(self.routes["/images"], collections.abc.Callable)
         self.assertIsInstance(
-            self.routes["/individualImage"], collections.Callable
+            self.routes["/individualImage"], collections.abc.Callable
         )
-        self.assertIsInstance(self.routes["/tags"], collections.Callable)
+        self.assertIsInstance(self.routes["/tags"], collections.abc.Callable)
 
     @with_images_plugin
     def testOldStyleImagesRoute(self, plugin):

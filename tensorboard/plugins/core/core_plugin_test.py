@@ -18,7 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import collections
+import collections.abc
 import contextlib
 import json
 import os
@@ -160,8 +160,8 @@ class CorePluginNoDataTest(tf.test.TestCase):
     def testRoutesProvided(self):
         """Tests that the plugin offers the correct routes."""
         routes = self.plugin.get_plugin_apps()
-        self.assertIsInstance(routes["/data/logdir"], collections.Callable)
-        self.assertIsInstance(routes["/data/runs"], collections.Callable)
+        self.assertIsInstance(routes["/data/logdir"], collections.abc.Callable)
+        self.assertIsInstance(routes["/data/runs"], collections.abc.Callable)
 
     def testIndex_returnsActualHtml(self):
         """Test the format of the root / endpoint."""
