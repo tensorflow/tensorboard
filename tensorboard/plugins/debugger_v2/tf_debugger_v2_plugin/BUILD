@@ -28,6 +28,7 @@ ng_module(
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/alerts",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/inactive",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/timeline",
+        "//tensorboard/webapp/plugins:plugin_registry",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@ngrx/effects",

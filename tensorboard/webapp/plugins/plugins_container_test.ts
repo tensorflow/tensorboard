@@ -30,6 +30,7 @@ import {CoreState} from '../core/store/core_types';
 import {TestingDebuggerModule} from '../../plugins/debugger_v2/tf_debugger_v2_plugin/testing';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
+import {PluginRegistryModule} from './plugin_registry_module';
 
 describe('plugins_component', () => {
   let store: MockStore<State>;
@@ -67,7 +68,11 @@ describe('plugins_component', () => {
       })
     );
     await TestBed.configureTestingModule({
-      providers: [provideMockStore({initialState}), PluginsContainer],
+      providers: [
+        provideMockStore({initialState}),
+        PluginsContainer,
+        PluginRegistryModule,
+      ],
       declarations: [PluginsContainer, PluginsComponent],
       imports: [TestingDebuggerModule],
     }).compileComponents();

@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {BrowserModule} from '@angular/platform-browser';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
-import {NgModule, Component, Type} from '@angular/core';
+import {NgModule} from '@angular/core';
 import {StoreModule} from '@ngrx/store';
 import {EffectsModule} from '@ngrx/effects';
 
@@ -56,14 +56,4 @@ import {DebuggerContainer} from '../plugins/debugger_v2/tf_debugger_v2_plugin/de
   bootstrap: [AppContainer],
   entryComponents: [DebuggerContainer],
 })
-export class AppModule {
-  constructor(private readonly pluginsModule: PluginsModule) {
-    // Angular dashboards must be registered here and in the `entryComponents`
-    const pluginConfig = new Map([['debugger-v2', DebuggerContainer]]);
-
-    for (let [pluginId, componentClass] of pluginConfig) {
-      const entryComponent = componentClass as Type<Component>;
-      this.pluginsModule.registerPluginUI(pluginId, entryComponent);
-    }
-  }
-}
+export class AppModule {}

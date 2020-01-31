@@ -1,4 +1,4 @@
-/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -12,17 +12,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {NgModule} from '@angular/core';
-import {CommonModule} from '@angular/common';
+import {InjectionToken} from '@angular/core';
 
-import {PluginsContainer} from './plugins_container';
-import {PluginsComponent} from './plugins_component';
-import {CoreModule} from '../core/core_module';
-import {PluginRegistryModule} from './plugin_registry_module';
+export interface PluginConfig {
+  pluginName: string;
+  componentClass: any;
+}
 
-@NgModule({
-  declarations: [PluginsContainer, PluginsComponent],
-  exports: [PluginsContainer],
-  imports: [CoreModule, CommonModule, PluginRegistryModule],
-})
-export class PluginsModule {}
+// This DI token must not be defined in the same file as PluginRegistryModule
+// or else its constructor injection causes Angular's AOT compiler to think
+// there is a circular dependency.
+export const PLUGIN_CONFIG_TOKEN = new InjectionToken<PluginConfig>(
+  '[plugins] Plugin registry config'
+);

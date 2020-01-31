@@ -35,7 +35,7 @@ import {
   LoadingMechanismType,
   CustomElementLoadingMechanism,
 } from '../types/api';
-import {PluginsModule} from './plugins_module';
+import {PluginRegistryModule} from './plugin_registry_module';
 
 @Component({
   selector: 'plugins-component',
@@ -48,9 +48,8 @@ import {PluginsModule} from './plugins_module';
 })
 export class PluginsComponent implements OnChanges {
   constructor(
-    private viewContainerRef: ViewContainerRef,
     private componentFactoryResolver: ComponentFactoryResolver,
-    private pluginsModule: PluginsModule
+    private pluginRegistry: PluginRegistryModule
   ) {}
 
   @ViewChild('pluginContainer', {static: true, read: ElementRef})
@@ -91,6 +90,7 @@ export class PluginsComponent implements OnChanges {
 
     const pluginElement = this.createPlugin(plugin);
     if (pluginElement) {
+      pluginElement.id = plugin.id;
       this.pluginInstances.set(plugin.id, pluginElement);
     }
   }
@@ -118,8 +118,7 @@ export class PluginsComponent implements OnChanges {
         break;
       }
       case LoadingMechanismType.NG_COMPONENT:
-        const ngComponentClass =
-          this.pluginsModule.pluginNameToComponent.get(plugin.id) || null;
+        const ngComponentClass = this.pluginRegistry.getComponent(plugin.id);
         if (ngComponentClass) {
           const componentFactory = this.componentFactoryResolver.resolveComponentFactory(
             ngComponentClass
