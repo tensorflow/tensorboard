@@ -31,11 +31,13 @@ import {TestingDebuggerModule} from '../../plugins/debugger_v2/tf_debugger_v2_pl
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 import {PluginRegistryModule} from './plugin_registry_module';
-import { ExtraDashboardComponent, ExtraDashboardModule } from './testing';
+import {ExtraDashboardComponent, ExtraDashboardModule} from './testing';
 
 function expectPluginIframe(element: HTMLElement, name: string) {
   expect(element.tagName).toBe('IFRAME');
-  expect((element as HTMLIFrameElement).src).toContain(`data/plugin_entry.html?name=${name}`);
+  expect((element as HTMLIFrameElement).src).toContain(
+    `data/plugin_entry.html?name=${name}`
+  );
 }
 
 describe('plugins_component', () => {
@@ -89,10 +91,7 @@ describe('plugins_component', () => {
         PluginRegistryModule,
       ],
       declarations: [PluginsContainer, PluginsComponent],
-      imports: [
-        TestingDebuggerModule,
-        ExtraDashboardModule,
-      ],
+      imports: [TestingDebuggerModule, ExtraDashboardModule],
     }).compileComponents();
     store = TestBed.get(Store);
   });

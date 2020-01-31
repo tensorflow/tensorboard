@@ -12,24 +12,22 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import { Component, NgModule } from "@angular/core";
-import { PluginRegistryModule } from "../plugin_registry_module";
+import {Component, NgModule} from '@angular/core';
+import {PluginRegistryModule} from '../plugin_registry_module';
 
 @Component({
   selector: 'extra-dashboard',
   template: `
     <div>I'm the extra Angular dashboard!</div>
-  `
+  `,
 })
-export class ExtraDashboardComponent{}
+export class ExtraDashboardComponent {}
 
 @NgModule({
   declarations: [ExtraDashboardComponent],
   imports: [
     PluginRegistryModule.forPlugin('extra-plugin', ExtraDashboardComponent),
   ],
-  entryComponents: [ExtraDashboardComponent]
+  entryComponents: [ExtraDashboardComponent],
 })
-export class ExtraDashboardModule {
-
-}
+export class ExtraDashboardModule {}
