@@ -32,9 +32,9 @@ export class PluginRegistryModule {
     if (!configs) {
       return;
     }
-    const configSet = new Set(configs);
+    const pluginNames = new Set(configs.map(config => config.pluginName));
     console.assert(
-      configSet.size === configs.length,
+      pluginNames.size === configs.length,
       'Cannot register the same plugin multiple times.'
     );
 

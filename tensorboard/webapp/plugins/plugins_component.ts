@@ -48,8 +48,8 @@ import {PluginRegistryModule} from './plugin_registry_module';
 })
 export class PluginsComponent implements OnChanges {
   constructor(
-    private componentFactoryResolver: ComponentFactoryResolver,
-    private pluginRegistry: PluginRegistryModule
+    private readonly componentFactoryResolver: ComponentFactoryResolver,
+    private readonly pluginRegistry: PluginRegistryModule
   ) {}
 
   @ViewChild('pluginContainer', {static: true, read: ElementRef})
