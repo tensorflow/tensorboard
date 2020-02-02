@@ -44,6 +44,16 @@ var vz_mesh;
       },
       /** @type {!Object} Request manager to communicate with the server. */
       requestManager: Object,
+      /** @type {!bool} Determines if bounding box must be rendered or not. */
+      showBoundingBox: {
+        type: Boolean,
+        value: false,
+      },
+      /** @type {!bool} Determines if XYZ axes must be rendered or not. */
+      showAxes: {
+        type: Boolean,
+        value: false,
+      },
       /**
        * @type {!Object} Component to render meshes and point
        * clouds.
@@ -112,6 +122,7 @@ var vz_mesh;
       '_updateScene(_currentStep.*, _meshViewer)',
       '_debouncedFetchMesh(_currentStep)',
       '_updateView(selectedView)',
+      '_updateLayers(showAxes, showBoundingBox, _meshViewer)',
     ],
 
     _computeRunColor: function(run) {
@@ -187,6 +198,19 @@ var vz_mesh;
         this.root.appendChild(this._meshViewer.getRenderer().domElement);
         this._meshViewerAttached = true;
       }
+    },
+
+    /**
+     * Creates layers config from arguments and updates mesh viewer.
+     * @private
+     */
+    _updateLayers: function(showAxes, showBoundingBox) {
+      if (!this._meshViewer) return;
+      this._meshViewer.setLayersConfig({
+        showAxes: showAxes,
+        showBoundingBox: showBoundingBox,
+      });
+      this._updateScene();
     },
 
     _debouncedFetchMesh() {
