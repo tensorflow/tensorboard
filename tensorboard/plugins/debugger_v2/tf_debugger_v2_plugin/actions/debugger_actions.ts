@@ -18,10 +18,12 @@ import {createAction, props} from '@ngrx/store';
 import {
   DebuggerRunListing,
   Execution,
-  ExecutionDigestsResponse,
-  ExecutionDataResponse,
   StackFramesById,
 } from '../store/debugger_types';
+import {
+  ExecutionDigestsResponse,
+  ExecutionDataResponse,
+} from '../data_source/tfdbg2_data_source';
 
 // HACK: Below import is for type inference.
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
@@ -80,7 +82,7 @@ export const executionScrollRight = createAction(
   '[Debugger] Scroll Rightward on the Execution Timeline'
 );
 
-export const executionDigestFocus = createAction(
+export const executionDigestFocused = createAction(
   '[Debugger] Execution Data Objects Being Focused On',
   props<{displayIndex: number}>()
 );
@@ -90,8 +92,8 @@ export const executionDataLoaded = createAction(
   props<ExecutionDataResponse>()
 );
 
-export const executionStackFramesRequest = createAction(
-  '[Debugger] Request for the Stack Frames of an Execution Event',
+export const executionStackFramesRequested = createAction(
+  '[Debugger] Request made for the Stack Frames of an Execution Event',
   props<Execution>()
 );
 

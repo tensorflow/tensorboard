@@ -13,14 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import * as actions from '../actions';
+import {ExecutionDigestsResponse} from '../data_source/tfdbg2_data_source';
 import {reducers} from './debugger_reducers';
-import {
-  DataLoadState,
-  Execution,
-  ExecutionDigestsResponse,
-  StackFrame,
-  StackFramesById,
-} from './debugger_types';
+import {DataLoadState, Execution, StackFramesById} from './debugger_types';
 import {
   createDebuggerExecutionsState,
   createDebuggerState,
@@ -518,13 +513,13 @@ describe('Debugger reducers', () => {
     expect(nextState.executions.scrollBeginIndex).toEqual(1450);
   });
 
-  it(`Updates states on executionDigestFocus`, () => {
+  it(`Updates states on executionDigestFocused`, () => {
     const state = createDebuggerState({
       activeRunId: '__default_debugger_run__',
     });
     const nextState = reducers(
       state,
-      actions.executionDigestFocus({
+      actions.executionDigestFocused({
         displayIndex: 12,
       })
     );

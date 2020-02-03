@@ -12,16 +12,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component} from '@angular/core';
+import {Component, Input} from '@angular/core';
 import {select, Store, createSelector} from '@ngrx/store';
 
 import {Execution, State, TensorDebugMode} from '../../store/debugger_types';
 
-import {
-  getActiveRunId,
-  getFocusedExecutionData,
-  getFocusedExecutionIndex,
-} from '../../store';
+import {getFocusedExecutionData} from '../../store';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
@@ -29,21 +25,17 @@ import {
   selector: 'tf-debugger-v2-execution-data',
   template: `
     <execution-data-component
-      [activeRunId]="activeRunId$ | async"
-      [focusedExecutionIndex]="focusedExecutionIndex$ | async"
+      [focusedExecutionIndex]="focusedExecutionIndex"
       [focusedExecutionData]="focusedExecutionData$ | async"
       [tensorDebugModeName]="tensorDebugModeName$ | async"
-      [anyDebugTensorValues]="anyDebugTensorValues$ | async"
+      [hasDebugTensorValues]="hasDebugTensorValues$ | async"
       [debugTensorValues]="debugTensorValues$ | async"
     ></execution-data-component>
   `,
 })
 export class ExecutionDataContainer {
-  readonly activeRunId$ = this.store.pipe(select(getActiveRunId));
-
-  readonly focusedExecutionIndex$ = this.store.pipe(
-    select(getFocusedExecutionIndex)
-  );
+  @Input()
+  focusedExecutionIndex!: number;
 
   readonly focusedExecutionData$ = this.store.pipe(
     select(getFocusedExecutionData)
@@ -64,7 +56,7 @@ export class ExecutionDataContainer {
     )
   );
 
-  readonly anyDebugTensorValues$ = this.store.pipe(
+  readonly hasDebugTensorValues$ = this.store.pipe(
     select(
       createSelector(
         getFocusedExecutionData,

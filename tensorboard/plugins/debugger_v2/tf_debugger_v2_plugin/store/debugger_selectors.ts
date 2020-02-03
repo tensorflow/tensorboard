@@ -130,17 +130,15 @@ export const getFocusedExecutionDisplayIndex = createSelector(
   (state: DebuggerState): number | null => {
     if (state.executions.focusIndex === null) {
       return null;
-    } else {
-      const {focusIndex, scrollBeginIndex, displayCount} = state.executions;
-      if (
-        focusIndex >= scrollBeginIndex &&
-        focusIndex < scrollBeginIndex + displayCount
-      ) {
-        return focusIndex - scrollBeginIndex;
-      } else {
-        return null;
-      }
     }
+    const {focusIndex, scrollBeginIndex, displayCount} = state.executions;
+    if (
+      focusIndex < scrollBeginIndex ||
+      focusIndex >= scrollBeginIndex + displayCount
+    ) {
+      return null;
+    }
+    return focusIndex - scrollBeginIndex;
   }
 );
 
@@ -159,15 +157,10 @@ export const getFocusedExecutionData = createSelector(
   selectDebuggerState,
   (state: DebuggerState): Execution | null => {
     const {focusIndex, executionData} = state.executions;
-    if (focusIndex === null) {
+    if (focusIndex === null || executionData[focusIndex] === undefined) {
       return null;
-    } else {
-      if (focusIndex in executionData) {
-        return executionData[focusIndex];
-      } else {
-        return null;
-      }
     }
+    return executionData[focusIndex];
   }
 );
 
@@ -175,23 +168,18 @@ export const getFocusedExecutionStackFrames = createSelector(
   selectDebuggerState,
   (state: DebuggerState): StackFrame[] | null => {
     const {focusIndex, executionData} = state.executions;
-    if (focusIndex === null) {
+    if (focusIndex === null || executionData[focusIndex] === undefined) {
       return null;
-    } else {
-      if (focusIndex in executionData) {
-        const stackFrameIds = executionData[focusIndex].stack_frame_ids;
-        const stackFrames: StackFrame[] = [];
-        for (const stackFrameId of stackFrameIds) {
-          if (state.stackFrames[stackFrameId] != null) {
-            stackFrames.push(state.stackFrames[stackFrameId]);
-          } else {
-            return null;
-          }
-        }
-        return stackFrames;
+    }
+    const stackFrameIds = executionData[focusIndex].stack_frame_ids;
+    const stackFrames: StackFrame[] = [];
+    for (const stackFrameId of stackFrameIds) {
+      if (state.stackFrames[stackFrameId] != null) {
+        stackFrames.push(state.stackFrames[stackFrameId]);
       } else {
         return null;
       }
     }
+    return stackFrames;
   }
 );

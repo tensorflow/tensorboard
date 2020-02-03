@@ -17,12 +17,34 @@ import {Injectable} from '@angular/core';
 import {Observable} from 'rxjs';
 import {
   DebuggerRunListing,
-  ExecutionDataResponse,
-  ExecutionDigestsResponse,
-  StackFramesResponse,
+  Execution,
+  ExecutionDigest,
+  StackFrame,
 } from '../store/debugger_types';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
+
+export interface StackFramesResponse {
+  stack_frames: StackFrame[];
+}
+
+export interface ExecutionDigestsResponse {
+  begin: number;
+
+  end: number;
+
+  num_digests: number;
+
+  execution_digests: ExecutionDigest[];
+}
+
+export interface ExecutionDataResponse {
+  begin: number;
+
+  end: number;
+
+  executions: Execution[];
+}
 
 export abstract class Tfdbg2DataSource {
   abstract fetchRuns(): Observable<DebuggerRunListing>;

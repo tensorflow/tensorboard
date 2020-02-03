@@ -20,6 +20,9 @@ export {DataLoadState, LoadState} from '../../../../webapp/types/data';
 export const DEBUGGER_FEATURE_KEY = 'debugger';
 
 export enum TensorDebugMode {
+  // NOTE(cais): The string name and number values of these enums
+  // need to match TensorDebugMode in tensorflow. See
+  // https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/protobuf/debug_event.proto
   UNSPECIFIED = 0,
   NO_TENSOR = 1,
   CURT_HEALTH = 2,
@@ -45,10 +48,12 @@ export type StackFrame = [string, string, number, string];
 
 export type StackFramesById = {[id: string]: StackFrame};
 
-export interface StackFramesResponse {
-  stack_frames: Array<StackFrame>;
-}
-
+/**
+ * Digest for top-level execution.
+ *
+ * Mirrors Python data structure `class ExecutionDigest` in
+ * https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/debug/lib/debug_events_reader.py
+ */
 export interface ExecutionDigest {
   // Op type executed.
   op_type: string;
@@ -57,7 +62,12 @@ export interface ExecutionDigest {
   output_tensor_device_ids: string[];
 }
 
-/** Non-digest, detailed data object for a top-level execution. */
+/**
+ * Non-digest, detailed data object for a top-level execution.
+ *
+ * Mirrors Python data structure `class Execution` in
+ * https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/debug/lib/debug_events_reader.py
+ */
 export interface Execution extends ExecutionDigest {
   host_name: string;
 
@@ -74,16 +84,6 @@ export interface Execution extends ExecutionDigest {
   debug_tensor_values: Array<number[] | null> | null;
 }
 
-export interface ExecutionDigestsResponse {
-  begin: number;
-
-  end: number;
-
-  num_digests: number;
-
-  execution_digests: ExecutionDigest[];
-}
-
 export interface ExecutionDigestLoadState extends LoadState {
   // A map from page number to whether the page has been loaded
   //   - in full, in which case the value is pageSize.
@@ -93,14 +93,6 @@ export interface ExecutionDigestLoadState extends LoadState {
   // Number of top-level executions available at the data source (not
   // necessarilty loaded by frontend yet.)
   numExecutions: number;
-}
-
-export interface ExecutionDataResponse {
-  begin: number;
-
-  end: number;
-
-  executions: Execution[];
 }
 
 export interface Executions {

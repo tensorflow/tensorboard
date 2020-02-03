@@ -54,6 +54,13 @@ limitations under the License.
       </div>
     </div>
 
-    <tf-debugger-v2-execution-data> </tf-debugger-v2-execution-data>
+    <ng-container
+      *ngIf="activeRunId !== null && focusedExecutionIndex !== null"
+    >
+      <tf-debugger-v2-execution-data
+        [focusedExecutionIndex]="focusedExecutionIndex"
+      >
+      </tf-debugger-v2-execution-data>
+    </ng-container>
   </div>
 </div>

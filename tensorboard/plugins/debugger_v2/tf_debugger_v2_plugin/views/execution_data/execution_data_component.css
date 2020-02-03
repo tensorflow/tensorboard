@@ -15,7 +15,6 @@ limitations under the License.
 
 .debug-tensor-values-container {
   height: 60px;
-  max-height: 80px;
   overflow-x: auto;
   overflow-y: auto;
 }
@@ -25,7 +24,7 @@ limitations under the License.
 }
 
 .debug-tensor-values-table td {
-  border-top: 1px solid black;
+  border-top: 1px solid #000;
   text-align: left;
 }
 

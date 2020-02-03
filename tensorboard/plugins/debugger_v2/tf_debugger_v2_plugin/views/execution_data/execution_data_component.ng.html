@@ -58,7 +58,7 @@ limitations under the License.
         </span>
       </div>
 
-      <div *ngIf="anyDebugTensorValues">
+      <div *ngIf="hasDebugTensorValues">
         <div [ngSwitch]="tensorDebugModeName">
           <div
             *ngSwitchCase="'CURT_HEALTH'"

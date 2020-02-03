@@ -23,13 +23,10 @@ import {Execution} from '../../store/debugger_types';
 })
 export class ExecutionDataComponent {
   @Input()
-  activeRunId: string | null = null;
+  focusedExecutionIndex!: number;
 
   @Input()
-  focusedExecutionIndex: number | null = null;
-
-  @Input()
-  focusedExecutionData: Execution | null = null;
+  focusedExecutionData!: Execution;
 
   @Input()
   tensorDebugModeName: string = 'UNSPECIFIED';
@@ -39,7 +36,7 @@ export class ExecutionDataComponent {
    * modes.
    */
   @Input()
-  anyDebugTensorValues: boolean = false;
+  hasDebugTensorValues: boolean = false;
 
   /** Debug tensor values under non-FULL_TENSOR debug modes. */
   @Input()

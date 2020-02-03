@@ -18,7 +18,7 @@ import {select, Store, createSelector} from '@ngrx/store';
 import {State} from '../../store/debugger_types';
 import {
   alertsViewLoaded,
-  executionDigestFocus,
+  executionDigestFocused,
   executionScrollLeft,
   executionScrollRight,
 } from '../../actions';
@@ -29,7 +29,6 @@ import {
   getNumExecutions,
   getExecutionPageSize,
   getExecutionScrollBeginIndex,
-  getFocusedExecutionData,
   getFocusedExecutionDisplayIndex,
   getFocusedExecutionIndex,
   getVisibleExecutionDigests,
@@ -97,7 +96,6 @@ function getExecutionDigestForDisplay(
       [displayExecutionDigests]="displayExecutionDigests$ | async"
       [focusedExecutionIndex]="focusedExecutionIndex$ | async"
       [focusedExecutionDisplayIndex]="focusedExecutionDisplayIndex$ | async"
-      [focusedExecutionData]="focusedExecutionData$ | async"
       (onNavigateLeft)="onNavigateLeft()"
       (onNavigateRight)="onNavigateRight()"
       (onExecutionDigestClicked)="onExecutionDigestClicked($event)"
@@ -148,10 +146,6 @@ export class TimelineContainer implements OnInit {
     select(getFocusedExecutionDisplayIndex)
   );
 
-  readonly focusedExecutionData$ = this.store.pipe(
-    select(getFocusedExecutionData)
-  );
-
   readonly numExecutions$ = this.store.pipe(select(getNumExecutions));
 
   constructor(private readonly store: Store<State>) {}
@@ -169,7 +163,7 @@ export class TimelineContainer implements OnInit {
   }
 
   onExecutionDigestClicked(index: number) {
-    this.store.dispatch(executionDigestFocus({displayIndex: index}));
+    this.store.dispatch(executionDigestFocused({displayIndex: index}));
   }
 }
 

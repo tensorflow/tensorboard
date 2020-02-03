@@ -24,24 +24,26 @@ import {
   debuggerRunsLoaded,
   debuggerRunsRequested,
   executionDataLoaded,
-  executionDigestFocus,
+  executionDigestFocused,
   executionDigestsLoaded,
   executionDigestsRequested,
   executionScrollLeft,
   executionScrollRight,
-  executionStackFramesRequest,
+  executionStackFramesRequested,
   numExecutionsLoaded,
   numExecutionsRequested,
   stackFramesLoaded,
 } from '../actions';
-import {Tfdbg2HttpServerDataSource} from '../data_source/tfdbg2_data_source';
 import {
-  State,
-  DebuggerRunListing,
-  ExecutionDigestsResponse,
-  DataLoadState,
   ExecutionDataResponse,
+  ExecutionDigestsResponse,
   StackFramesResponse,
+  Tfdbg2HttpServerDataSource,
+} from '../data_source/tfdbg2_data_source';
+import {
+  DataLoadState,
+  DebuggerRunListing,
+  State,
 } from '../store/debugger_types';
 import {
   createDebuggerState,
@@ -392,7 +394,7 @@ describe('Debugger effects', () => {
       expect(dispatchSpy).toHaveBeenCalledTimes(2);
       expect(dispatchSpy).toHaveBeenCalledWith(executionDigestsRequested());
       expect(dispatchSpy).toHaveBeenCalledWith(
-        executionDigestFocus({displayIndex: 0})
+        executionDigestFocused({displayIndex: 0})
       );
       expect(recordedActions).toEqual([
         executionDigestsLoaded(executionDigestForTest),
@@ -515,7 +517,7 @@ describe('Debugger effects', () => {
 
     for (const displayIndex of [0, 2]) {
       it(
-        `Loading execution data and stack trace on executionDigestFocus: ` +
+        `Loading execution data and stack trace on executionDigestFocused: ` +
           `displayIndex=${displayIndex}`,
         () => {
           store.setState(
@@ -560,12 +562,12 @@ describe('Debugger effects', () => {
             )
             .and.returnValue(of(executionDataResponseForTest));
 
-          action.next(executionDigestFocus({displayIndex}));
+          action.next(executionDigestFocused({displayIndex}));
 
           expect(fetchExecutionData).toHaveBeenCalled();
           expect(dispatchSpy).toHaveBeenCalledTimes(1);
           expect(dispatchSpy).toHaveBeenCalledWith(
-            executionStackFramesRequest(
+            executionStackFramesRequested(
               executionDataResponseForTest.executions[0]
             )
           );
@@ -576,7 +578,7 @@ describe('Debugger effects', () => {
       );
     }
 
-    it(`Loaded execution data is not reloaded on executionDigestFocus`, () => {
+    it(`Loaded execution data is not reloaded on executionDigestFocused`, () => {
       store.setState(
         createState(
           createDebuggerState({
@@ -610,7 +612,7 @@ describe('Debugger effects', () => {
         'fetchExecutionData'
       );
 
-      action.next(executionDigestFocus({displayIndex: 0}));
+      action.next(executionDigestFocused({displayIndex: 0}));
 
       expect(fetchExecutionData).not.toHaveBeenCalled();
       expect(recordedActions.length).toEqual(0);
@@ -629,7 +631,7 @@ describe('Debugger effects', () => {
 
     for (const numAlreadyLoaded of [0, 1, 2]) {
       it(
-        `Loading stack frame on executionStackFramesRequest:` +
+        `Loading stack frame on executionStackFramesRequested:` +
           `numLoaded = ${numAlreadyLoaded}`,
         () => {
           const execution = createTestExecutionData({
@@ -685,7 +687,7 @@ describe('Debugger effects', () => {
             'fetchStackFrames'
           ).and.returnValue(of(stackFramesResposeForTest));
 
-          action.next(executionStackFramesRequest(execution));
+          action.next(executionStackFramesRequested(execution));
 
           if (numAlreadyLoaded < 2) {
             expect(fetchStackFrames).toHaveBeenCalled();

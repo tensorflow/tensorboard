@@ -16,13 +16,10 @@ import {Action, createReducer, on} from '@ngrx/store';
 
 import * as actions from '../actions';
 import {
-  DataLoadState,
-  DebuggerState,
   ExecutionDataResponse,
   ExecutionDigestsResponse,
-  StackFrame,
-  StackFramesById,
-} from './debugger_types';
+} from '../data_source/tfdbg2_data_source';
+import {DataLoadState, DebuggerState, StackFramesById} from './debugger_types';
 
 // HACK: These imports are for type inference.
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
@@ -252,7 +249,7 @@ const reducer = createReducer(
     }
   ),
   on(
-    actions.executionDigestFocus,
+    actions.executionDigestFocused,
     (state: DebuggerState, action): DebuggerState => {
       return {
         ...state,
@@ -295,9 +292,8 @@ const reducer = createReducer(
       }
       const newState: DebuggerState = {
         ...state,
-        stackFrames: {...state.stackFrames},
+        stackFrames: {...state.stackFrames, ...stackFrames.stackFrames},
       };
-      Object.assign(newState.stackFrames, stackFrames.stackFrames);
       return newState;
     }
   )

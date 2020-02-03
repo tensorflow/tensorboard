@@ -13,6 +13,7 @@ ng_module(
     deps = [
         ":types",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/actions",
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/data_source",
         "@npm//@ngrx/store",
     ],
 )
@@ -40,6 +41,7 @@ tf_ts_library(
         ":store",
         ":types",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/actions",
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/data_source",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/testing",
         "@npm//@types/jasmine",
     ],

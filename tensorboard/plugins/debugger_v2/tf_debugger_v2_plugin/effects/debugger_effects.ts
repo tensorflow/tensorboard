@@ -15,18 +15,25 @@ limitations under the License.
 import {Injectable} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {Actions, ofType, createEffect} from '@ngrx/effects';
-import {map, mergeMap, withLatestFrom, filter, tap} from 'rxjs/operators';
+import {
+  concatMap,
+  map,
+  mergeMap,
+  withLatestFrom,
+  filter,
+  tap,
+} from 'rxjs/operators';
 import {
   debuggerLoaded,
   debuggerRunsRequested,
   debuggerRunsLoaded,
   executionDataLoaded,
-  executionDigestFocus,
+  executionDigestFocused,
   executionDigestsRequested,
   executionDigestsLoaded,
   executionScrollLeft,
   executionScrollRight,
-  executionStackFramesRequest,
+  executionStackFramesRequested,
   numExecutionsLoaded,
   numExecutionsRequested,
   stackFramesLoaded,
@@ -191,17 +198,21 @@ export class DebuggerEffects {
           loaded.state !== DataLoadState.LOADING
         );
       }),
-      tap(() => this.store.dispatch(executionDigestsRequested())),
+      tap(() => {
+        this.store.dispatch(executionDigestsRequested());
+        // Automatically focus on the first execution event when any
+        // execution events exist.
+        // TODO(cais): This should auto-focus on the first alert even
+        // when any alerts exist.
+        this.store.dispatch(executionDigestFocused({displayIndex: 0}));
+      }),
       mergeMap(([props, runId, pageSize, _]) => {
         const begin = 0;
         const end = Math.min(props.numExecutions, pageSize);
         return this.dataSource.fetchExecutionDigests(runId!, begin, end).pipe(
           map((digests) => {
             return executionDigestsLoaded(digests);
-          }),
-          tap(() =>
-            this.store.dispatch(executionDigestFocus({displayIndex: 0}))
-          )
+          })
         );
         // TODO(cais): Add catchError() to pipe.
       })
@@ -279,7 +290,7 @@ export class DebuggerEffects {
   /** @export */
   readonly executionDigestFocused$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(executionDigestFocus),
+      ofType(executionDigestFocused),
       withLatestFrom(
         this.store.select(getActiveRunId),
         this.store.select(getExecutionScrollBeginIndex),
@@ -287,9 +298,11 @@ export class DebuggerEffects {
       ),
       filter(([focus, activeRunId, scrollBeginIndex, loadedExecutionData]) => {
         const focusIndex = scrollBeginIndex + focus.displayIndex;
-        return activeRunId !== null && loadedExecutionData[focusIndex] == null;
+        return (
+          activeRunId !== null && loadedExecutionData[focusIndex] === undefined
+        );
       }),
-      mergeMap(([focus, activeRunId, scrollBeginIndex]) => {
+      concatMap(([focus, activeRunId, scrollBeginIndex]) => {
         const begin = scrollBeginIndex + focus.displayIndex;
         const end = begin + 1;
         return this.dataSource
@@ -298,7 +311,7 @@ export class DebuggerEffects {
             tap((executionDataResponse) => {
               const execution = executionDataResponse.executions[0];
               return this.store.dispatch(
-                executionStackFramesRequest(execution)
+                executionStackFramesRequested(execution)
               );
             }),
             map((executionDataResponse) => {
@@ -313,7 +326,7 @@ export class DebuggerEffects {
   /** @export */
   readonly loadExecutionStackFrames$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(executionStackFramesRequest),
+      ofType(executionStackFramesRequested),
       withLatestFrom(
         this.store.select(getActiveRunId),
         this.store.select(getLoadedStackFrames)
@@ -322,14 +335,12 @@ export class DebuggerEffects {
         if (runId === null) {
           return false;
         }
-        let anyMissing = false;
         for (const stackFrameId of execution.stack_frame_ids) {
           if (loadedStackFrames[stackFrameId] === undefined) {
-            anyMissing = true;
-            break;
+            return true;
           }
         }
-        return anyMissing;
+        return false;
       }),
       mergeMap(([execution, runId, _]) => {
         // TODO(cais): Maybe omit already-loaded stack frames from request,
@@ -341,6 +352,8 @@ export class DebuggerEffects {
               const stackFramesById: {
                 [stackFrameId: string]: StackFrame;
               } = {};
+              // TODO(cais): Do this reshaping in the backend and simplify
+              // the frontend code here.
               for (let i = 0; i < execution.stack_frame_ids.length; ++i) {
                 stackFramesById[execution.stack_frame_ids[i]] =
                   stackFramesResponse.stack_frames[i];

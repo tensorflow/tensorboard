@@ -29,6 +29,8 @@ tf-debugger-v2-alerts {
 }
 
 tf-debugger-v2-stack-trace {
+  /* TODO(cais): Once code-editor component is added to the left,
+     replace the `float` with a linear layout. */
   float: right;
 }
 
