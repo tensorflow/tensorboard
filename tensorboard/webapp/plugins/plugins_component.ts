@@ -26,6 +26,8 @@ import {
   OnChanges,
   SimpleChanges,
   ViewChild,
+  ComponentFactoryResolver,
+  ViewContainerRef,
 } from '@angular/core';
 
 import {UiPluginMetadata} from './plugins_container';
@@ -33,6 +35,7 @@ import {
   LoadingMechanismType,
   CustomElementLoadingMechanism,
 } from '../types/api';
+import {PluginRegistryModule} from './plugin_registry_module';
 
 @Component({
   selector: 'plugins-component',
@@ -44,8 +47,16 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PluginsComponent implements OnChanges {
+  constructor(
+    private readonly componentFactoryResolver: ComponentFactoryResolver,
+    private readonly pluginRegistry: PluginRegistryModule
+  ) {}
+
   @ViewChild('pluginContainer', {static: true, read: ElementRef})
   private readonly pluginsContainer!: ElementRef<HTMLDivElement>;
+
+  @ViewChild('ngPluginContainer', {static: true, read: ViewContainerRef})
+  private readonly ngPluginContainer!: ViewContainerRef;
 
   @Input()
   activePlugin?: UiPluginMetadata;
@@ -79,7 +90,6 @@ export class PluginsComponent implements OnChanges {
 
     const pluginElement = this.createPlugin(plugin);
     if (pluginElement) {
-      pluginElement.id = plugin.id;
       this.pluginInstances.set(plugin.id, pluginElement);
     }
   }
@@ -97,7 +107,6 @@ export class PluginsComponent implements OnChanges {
       }
       case LoadingMechanismType.IFRAME: {
         pluginElement = document.createElement('iframe');
-        pluginElement.id = plugin.id;
         // Ideally should use the DOMSanitizer but it is not usable in TypeScript.
         pluginElement.setAttribute(
           'src',
@@ -107,7 +116,20 @@ export class PluginsComponent implements OnChanges {
         break;
       }
       case LoadingMechanismType.NG_COMPONENT:
-        // Let the Angular template render the component.
+        const ngComponentClass = this.pluginRegistry.getComponent(plugin.id);
+        if (ngComponentClass) {
+          const componentFactory = this.componentFactoryResolver.resolveComponentFactory(
+            ngComponentClass
+          );
+          const pluginComponent = this.ngPluginContainer.createComponent(
+            componentFactory
+          );
+          pluginElement = pluginComponent.location.nativeElement;
+        } else {
+          console.error(
+            `No registered Angular component for plugin: ${plugin.id}`
+          );
+        }
         break;
       case LoadingMechanismType.NONE:
         break;
