@@ -133,8 +133,13 @@ var tf_storage;
     function migrateLegacyURLScheme() {
         /**
          * TODO(psybuzz): move to some compatibility file.
-         * Convert URL hash params from the legacy scheme (list taken on 1/16/2020)
-         * to the new scheme. Luckily, WIT only stored strings, booleans.
+         * For each WIT URL param in the legacy scheme, create another URL param
+         * in the new scheme. Once WIT migrates to using the new plugin API
+         * `getURLPluginData()`, we can update this method to delete the legacy
+         * scheme params.
+         *
+         * This list of params was taken on 1/16/2020. Luckily, WIT only stored
+         * strings, booleans.
          */
         const witUrlCompatibilitySet = new Set([
             'examplesPath',
@@ -163,7 +168,6 @@ var tf_storage;
             for (let oldName of witUrlCompatibilitySet) {
                 if (oldName in items) {
                     const oldValue = items[oldName];
-                    delete items[oldName];
                     items[`p.whatif.${oldName}`] = oldValue;
                 }
             }
