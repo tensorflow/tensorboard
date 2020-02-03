@@ -19,12 +19,19 @@ import {from} from 'rxjs';
 
 import {PluginsListing} from '../types/api';
 
+import {
+  TBServerDataSourceInterface,
+  TfBackendComponent,
+} from './tb_server_data_source_types';
+
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 @Injectable()
-export class TBServerDataSource {
+export class TBServerDataSource implements TBServerDataSourceInterface {
   // TODO(soergel): implements WebappDataSource
-  private tfBackend = (document.createElement('tf-backend') as any).tf_backend;
+  private tfBackend = (document.createElement(
+    'tf-backend'
+  ) as TfBackendComponent).tf_backend;
 
   constructor(private http: HttpClient) {}
 
