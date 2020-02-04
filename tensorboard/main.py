@@ -28,10 +28,13 @@ from __future__ import print_function
 
 import os
 
-# Disable the TF GCS filesystem cache which interacts pathologically with the
-# pattern of reads used by TensorBoard for logdirs. See for details:
-#   https://github.com/tensorflow/tensorboard/issues/1225
-# This must be set before the first import of tensorflow.
+# TF versions prior to 1.15.0 included default GCS filesystem caching logic
+# that interacted pathologically with the pattern of reads used by TensorBoard
+# for logdirs. See: https://github.com/tensorflow/tensorboard/issues/1225
+# The problematic behavior was fixed in 1.15.0 by
+# https://github.com/tensorflow/tensorflow/commit/e43b94649d3e1ac5d538e4eca9166b899511d681
+# but for older versions of TF, we avoid a regression by setting this env var to
+# disable the cache, which must be done before the first import of tensorflow.
 os.environ["GCS_READ_CACHE_DISABLED"] = "1"
 
 

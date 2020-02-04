@@ -569,7 +569,7 @@ limitations under the License.
       },
       _handlePageInputEvent(e) {
         this.set('_pageInputRawValue', e.target.value);
-        const oneIndexedPage = e.target.valueAsNumber;
+        const oneIndexedPage = Number(e.target.value || NaN);
         if (isNaN(oneIndexedPage)) return;
         const page = Math.max(1, Math.min(oneIndexedPage, this._pageCount)) - 1;
         this._setActiveIndex(this._limit * page);

@@ -17,7 +17,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import collections
+import collections.abc
 import os
 import shutil
 import numpy as np
@@ -170,9 +170,9 @@ class MeshPluginTest(tf.test.TestCase):
 
     def testRoutes(self):
         """Tests that the /tags route offers the correct run to tag mapping."""
-        self.assertIsInstance(self.routes["/tags"], collections.Callable)
-        self.assertIsInstance(self.routes["/meshes"], collections.Callable)
-        self.assertIsInstance(self.routes["/data"], collections.Callable)
+        self.assertIsInstance(self.routes["/tags"], collections.abc.Callable)
+        self.assertIsInstance(self.routes["/meshes"], collections.abc.Callable)
+        self.assertIsInstance(self.routes["/data"], collections.abc.Callable)
 
     def testTagsRoute(self):
         """Tests that the /tags route offers the correct run to tag mapping."""

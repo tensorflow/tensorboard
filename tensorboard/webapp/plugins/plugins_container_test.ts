@@ -30,6 +30,15 @@ import {CoreState} from '../core/store/core_types';
 import {TestingDebuggerModule} from '../../plugins/debugger_v2/tf_debugger_v2_plugin/testing';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
+import {PluginRegistryModule} from './plugin_registry_module';
+import {ExtraDashboardComponent, ExtraDashboardModule} from './testing';
+
+function expectPluginIframe(element: HTMLElement, name: string) {
+  expect(element.tagName).toBe('IFRAME');
+  expect((element as HTMLIFrameElement).src).toContain(
+    `data/plugin_entry.html?name=${name}`
+  );
+}
 
 describe('plugins_component', () => {
   let store: MockStore<State>;
@@ -43,6 +52,15 @@ describe('plugins_component', () => {
           element_name: 'tb-bar',
         },
         tab_name: 'Bar',
+        remove_dom: false,
+      },
+      'extra-plugin': {
+        disable_reload: false,
+        enabled: true,
+        loading_mechanism: {
+          type: LoadingMechanismType.NG_COMPONENT,
+        },
+        tab_name: 'Extra',
         remove_dom: false,
       },
       foo: {
@@ -67,9 +85,13 @@ describe('plugins_component', () => {
       })
     );
     await TestBed.configureTestingModule({
-      providers: [provideMockStore({initialState}), PluginsContainer],
+      providers: [
+        provideMockStore({initialState}),
+        PluginsContainer,
+        PluginRegistryModule,
+      ],
       declarations: [PluginsContainer, PluginsComponent],
-      imports: [TestingDebuggerModule],
+      imports: [TestingDebuggerModule, ExtraDashboardModule],
     }).compileComponents();
     store = TestBed.get(Store);
   });
@@ -105,7 +127,6 @@ describe('plugins_component', () => {
       expect(nativeElement.childElementCount).toBe(1);
       const pluginElement = nativeElement.children[0];
       expect(pluginElement.tagName).toBe('TB-BAR');
-      expect(pluginElement.id).toBe('bar');
     });
 
     it('creates an element for IFRAME type of plugin', async () => {
@@ -120,9 +141,7 @@ describe('plugins_component', () => {
       const {nativeElement} = fixture.debugElement.query(By.css('.plugins'));
       expect(nativeElement.childElementCount).toBe(1);
       const pluginElement = nativeElement.children[0];
-      expect(pluginElement.tagName).toBe('IFRAME');
-      expect(pluginElement.id).toBe('foo');
-      expect(pluginElement.src).toContain('data/plugin_entry.html?name=foo');
+      expectPluginIframe(pluginElement, 'foo');
     });
 
     it('keeps instance of plugin after being inactive but hides it', async () => {
@@ -147,9 +166,9 @@ describe('plugins_component', () => {
       const {nativeElement} = fixture.debugElement.query(By.css('.plugins'));
       expect(nativeElement.childElementCount).toBe(2);
       const [fooElement, barElement] = nativeElement.children;
-      expect(fooElement.id).toBe('foo');
+      expectPluginIframe(fooElement, 'foo');
       expect(fooElement.style.display).toBe('none');
-      expect(barElement.id).toBe('bar');
+      expect(barElement.tagName).toBe('TB-BAR');
       expect(barElement.style.display).not.toBe('none');
     });
 
@@ -175,8 +194,23 @@ describe('plugins_component', () => {
       const {nativeElement} = fixture.debugElement.query(By.css('.plugins'));
       expect(nativeElement.childElementCount).toBe(2);
       const [fooElement, barElement] = nativeElement.children;
-      expect(fooElement.id).toBe('foo');
+      expectPluginIframe(fooElement, 'foo');
       expect(fooElement.style.display).not.toBe('none');
+    });
+
+    it('creates components for plugins registered dynamically', async () => {
+      const fixture = TestBed.createComponent(PluginsContainer);
+      fixture.detectChanges();
+
+      setActivePlugin('extra-plugin');
+
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const {nativeElement} = fixture.debugElement.query(By.css('.plugins'));
+      expect(nativeElement.childElementCount).toBe(1);
+      const pluginElement = nativeElement.children[0];
+      expect(pluginElement.tagName).toBe('EXTRA-DASHBOARD');
     });
   });
 
