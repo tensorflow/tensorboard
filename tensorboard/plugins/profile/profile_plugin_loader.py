@@ -50,6 +50,15 @@ through tpu profiler analysis grpc. The grpc channel is not secured.\
           A ProfilePlugin instance or None if it couldn't be loaded.
         """
         try:
+            import tensorboard_plugin_profile
+
+            # If the dynamic plugin is available, don't load this plugin
+            # at all.
+            return None
+        except ImportError:
+            pass
+
+        try:
             # pylint: disable=unused-import
             import tensorflow
 
