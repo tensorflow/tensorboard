@@ -86,7 +86,7 @@ jobs:
           git ls-files -z '*BUILD' | xargs -0 buildifier --mode=check --lint=warn
           --warnings=-load-on-top,-native-py,-native-java,-constant-glob
       - run: ./tensorboard/tools/mirror_urls_test.sh
-      - name: "Lint for no py2 BUILD targets"
+      - name: 'Lint for no py2 BUILD targets'
         # Use | to start a literal so YAML doesn't complain about the '!' character.
         run: |
           ! git grep 'python_version = "PY2"' '*BUILD'
