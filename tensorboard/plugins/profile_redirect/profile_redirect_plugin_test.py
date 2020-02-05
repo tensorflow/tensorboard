@@ -35,6 +35,9 @@ class ProfileRedirectPluginLoaderTest(tb_test.TestCase):
 
     def test_loads_when_no_dynamic_plugin(self):
         with contextlib.ExitStack() as stack:
+            stack.enter_context(mock.patch.dict(sys.modules))
+            sys.modules.pop(_DYNAMIC_PLUGIN_MODULE, None)
+
             real_import = __import__
 
             def fake_import(name, *args, **kwargs):
@@ -43,12 +46,12 @@ class ProfileRedirectPluginLoaderTest(tb_test.TestCase):
                 else:
                     return real_import(name, *args, **kwargs)
 
+            stack.enter_context(mock.patch("builtins.__import__", fake_import))
+
             plugin_class = profile_redirect_plugin._ProfileRedirectPlugin
             plugin_init = stack.enter_context(
                 mock.patch.object(plugin_class, "__init__", return_value=None)
             )
-            stack.enter_context(mock.patch("builtins.__import__", fake_import))
-            stack.enter_context(mock.patch.dict(sys.modules))
 
             loader = profile_redirect_plugin.ProfileRedirectPluginLoader()
             context = base_plugin.TBContext()
@@ -73,12 +76,12 @@ class ProfileRedirectPluginLoaderTest(tb_test.TestCase):
                 else:
                     return real_import(name, *args, **kwargs)
 
+            stack.enter_context(mock.patch("builtins.__import__", fake_import))
+
             plugin_class = profile_redirect_plugin._ProfileRedirectPlugin
             plugin_init = stack.enter_context(
                 mock.patch.object(plugin_class, "__init__", return_value=None)
             )
-            stack.enter_context(mock.patch("builtins.__import__", fake_import))
-            sys.modules.pop(_DYNAMIC_PLUGIN_MODULE, None)
 
             loader = profile_redirect_plugin.ProfileRedirectPluginLoader()
             context = base_plugin.TBContext()
