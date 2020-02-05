@@ -220,7 +220,7 @@ class TensorboardUploaderTest(tf.test.TestCase):
                         tag(
                             name="bar",
                             metadata=test_util.scalar_metadata("bar"),
-                            points=[point(step=3, value=8.0),],
+                            points=[point(step=3, value=8.0)],
                         ),
                     ],
                 ),
@@ -230,8 +230,8 @@ class TensorboardUploaderTest(tf.test.TestCase):
                         tag(
                             name="qux",
                             metadata=test_util.scalar_metadata("qux"),
-                            points=[point(step=2, value=9.0),],
-                        ),
+                            points=[point(step=2, value=9.0)],
+                        )
                     ],
                 ),
             ],
@@ -259,12 +259,12 @@ class TensorboardUploaderTest(tf.test.TestCase):
                         tag(
                             name="foo",
                             metadata=test_util.scalar_metadata("foo"),
-                            points=[point(step=5, value=10.0),],
+                            points=[point(step=5, value=10.0)],
                         ),
                         tag(
                             name="baz",
                             metadata=test_util.scalar_metadata("baz"),
-                            points=[point(step=1, value=11.0),],
+                            points=[point(step=1, value=11.0)],
                         ),
                     ],
                 ),
@@ -274,8 +274,8 @@ class TensorboardUploaderTest(tf.test.TestCase):
                         tag(
                             name="xyz",
                             metadata=test_util.scalar_metadata("xyz"),
-                            points=[point(step=1, value=12.0),],
-                        ),
+                            points=[point(step=1, value=12.0)],
+                        )
                     ],
                 ),
             ],
@@ -502,7 +502,7 @@ class RequestBuilderTest(tf.test.TestCase):
         event_2 = event_pb2.Event(step=2)
         event_2.summary.value.add(tag="bar", simple_value=-2.0)
         run_to_events = collections.OrderedDict(
-            [(long_run_1, [event_1]), (long_run_2, [event_2]),]
+            [(long_run_1, [event_1]), (long_run_2, [event_2])]
         )
 
         builder = uploader_lib._RequestBuilder("123")
@@ -608,7 +608,7 @@ class RequestBuilderTest(tf.test.TestCase):
         event_2 = event_pb2.Event(step=2)
         event_2.summary.value.add(tag="bar", simple_value=-2.0)
         run_to_events = collections.OrderedDict(
-            [("train", [event_1]), ("test", [event_2]),]
+            [("train", [event_1]), ("test", [event_2])]
         )
 
         real_create_point = uploader_lib._ScalarRequestBuilder._create_point
@@ -624,7 +624,9 @@ class RequestBuilderTest(tf.test.TestCase):
             return real_create_point(uploader_self, *args, **kwargs)
 
         with mock.patch.object(
-            uploader_lib._ScalarRequestBuilder, "_create_point", mock_create_point
+            uploader_lib._ScalarRequestBuilder,
+            "_create_point",
+            mock_create_point,
         ):
             builder = uploader_lib._RequestBuilder("123")
             requests = list(builder.build_requests(run_to_events))

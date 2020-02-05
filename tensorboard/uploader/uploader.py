@@ -149,12 +149,12 @@ class TensorBoardUploader(object):
 
     def _upload(self, request):
         if isinstance(request, write_service_pb2.WriteScalarRequest):
-          request_api = self._api.WriteScalar
+            request_api = self._api.WriteScalar
         # TODO(nielsene): add tensor case here
         # TODO(soergel): add blob case here
         else:
-          logger.warning("Unknown request type")
-          return
+            logger.warning("Unknown request type")
+            return
         try:
             # TODO(@nfelt): execute this RPC asynchronously.
             grpc_util.call_with_retries(request_api, request)
@@ -266,19 +266,25 @@ class _RequestBuilder(object):
                 self._tag_metadata[time_series_key] = metadata
 
             requests = []  # we may assign a generator
-            if value.HasField('metadata') and (
-                value.metadata.plugin_data.plugin_name !=
-                metadata.plugin_data.plugin_name):
-                    logger.warning(
-                        "Mismatching plugin names for %s.  "
-                        "Expected %s, found %s.",
-                        time_series_key, metadata.plugin_data.plugin_name,
-                        value.metadata.plugin_data.plugin_name)
+            if value.HasField("metadata") and (
+                value.metadata.plugin_data.plugin_name
+                != metadata.plugin_data.plugin_name
+            ):
+                logger.warning(
+                    "Mismatching plugin names for %s.  Expected %s, found %s.",
+                    time_series_key,
+                    metadata.plugin_data.plugin_name,
+                    value.metadata.plugin_data.plugin_name,
+                )
             elif (
-              metadata.plugin_data.plugin_name == scalar_metadata.PLUGIN_NAME):
-                requests, event_was_consumed = (
-                    self._scalar_request_builder.add_event(
-                        run_name, event, value, metadata))
+                metadata.plugin_data.plugin_name == scalar_metadata.PLUGIN_NAME
+            ):
+                (
+                    requests,
+                    event_was_consumed,
+                ) = self._scalar_request_builder.add_event(
+                    run_name, event, value, metadata
+                )
             # TODO(nielsene): add Tensor plugin cases here
             # TODO(soergel): add Graphs blob case here
 
@@ -398,7 +404,6 @@ class _ScalarRequestBuilder(object):
             requests = []
         self._new_request()
         return requests
-
 
     def _create_run(self, run_name):
         """Adds a run to the live request, if there's space.
