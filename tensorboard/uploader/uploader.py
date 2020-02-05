@@ -148,9 +148,16 @@ class TensorBoardUploader(object):
             )
 
     def _upload(self, request):
+        if isinstance(request, write_service_pb2.WriteScalarRequest):
+          request_api = self._api.WriteScalar
+        # TODO(nielsene): add tensor case here
+        # TODO(soergel): add blob case here
+        else:
+          logger.warning("Unknown request type")
+          return
         try:
             # TODO(@nfelt): execute this RPC asynchronously.
-            grpc_util.call_with_retries(self._api.WriteScalar, request)
+            grpc_util.call_with_retries(request_api, request)
         except grpc.RpcError as e:
             if e.code() == grpc.StatusCode.NOT_FOUND:
                 raise ExperimentNotFoundError()
@@ -195,7 +202,7 @@ class _OutOfSpaceError(Exception):
     """Action could not proceed without overflowing request budget.
 
     This is a signaling exception (like `StopIteration`) used internally
-    by `_RequestBuilder`; it does not mean that anything has gone wrong.
+    by `_*RequestBuilder`; it does not mean that anything has gone wrong.
     """
 
     pass
@@ -204,31 +211,25 @@ class _OutOfSpaceError(Exception):
 class _RequestBuilder(object):
     """Helper class for building requests that fit under a size limit.
 
+    This class maintains stateful request builders for each of the possible
+    request types (scalars, tensors, and blobs).  These accumulate batches
+    independently, each maintaining its own byte budget and emitting a request
+    when the batch becomes full.  As a consequence, events of different types
+    will likely be sent to the backend out of order.  E.g., in the extreme case,
+    a single tensor-flavored request may be sent only when the event stream is
+    exhausted, even though many more recent scalar events were sent earlier.
+
     This class is not threadsafe. Use external synchronization if
     calling its methods concurrently.
     """
 
-    _NON_SCALAR_TIME_SERIES = object()  # sentinel
-
     def __init__(self, experiment_id):
-        self._experiment_id = experiment_id
-        # The request currently being populated.
-        self._request = None  # type: write_service_pb2.WriteScalarRequest
-        # A lower bound on the number of bytes that we may yet add to the
-        # request.
-        self._byte_budget = None  # type: int
         # Map from `(run_name, tag_name)` to `SummaryMetadata` if the time
         # series is a scalar time series, else to `_NON_SCALAR_TIME_SERIES`.
         self._tag_metadata = {}
-
-    def _new_request(self):
-        """Allocates a new request and refreshes the budget."""
-        self._request = write_service_pb2.WriteScalarRequest()
-        self._byte_budget = _MAX_REQUEST_LENGTH_BYTES
-        self._request.experiment_id = self._experiment_id
-        self._byte_budget -= self._request.ByteSize()
-        if self._byte_budget < 0:
-            raise RuntimeError("Byte budget too small for experiment ID")
+        self._scalar_request_builder = _ScalarRequestBuilder(experiment_id)
+        # TODO(nielsene): add tensor case here
+        # TODO(soergel): add blob case here
 
     def build_requests(self, run_to_events):
         """Converts a stream of TF events to a stream of outgoing requests.
@@ -247,12 +248,6 @@ class _RequestBuilder(object):
           RuntimeError: If no progress can be made because even a single
           point is too large (say, due to a gigabyte-long tag name).
         """
-
-        self._new_request()
-        runs = {}  # cache: map from run name to `Run` proto in request
-        tags = (
-            {}
-        )  # cache: map from `(run, tag)` to `Tag` proto in run in request
         work_items = peekable_iterator.PeekableIterator(
             self._run_values(run_to_events)
         )
@@ -262,41 +257,44 @@ class _RequestBuilder(object):
             value = data_compat.migrate_value(orig_value)
             time_series_key = (run_name, value.tag)
 
+            # The metadata for a time series is memorized on the first event.
+            # If later events arrive with a mismatching plugin_name, they are
+            # ignored with a warning.
             metadata = self._tag_metadata.get(time_series_key)
             if metadata is None:
-                plugin_name = value.metadata.plugin_data.plugin_name
-                if plugin_name == scalar_metadata.PLUGIN_NAME:
-                    metadata = value.metadata
-                else:
-                    metadata = _RequestBuilder._NON_SCALAR_TIME_SERIES
+                metadata = value.metadata
                 self._tag_metadata[time_series_key] = metadata
-            if metadata is _RequestBuilder._NON_SCALAR_TIME_SERIES:
-                next(work_items)
-                continue
-            try:
-                run_proto = runs.get(run_name)
-                if run_proto is None:
-                    run_proto = self._create_run(run_name)
-                    runs[run_name] = run_proto
-                tag_proto = tags.get((run_name, value.tag))
-                if tag_proto is None:
-                    tag_proto = self._create_tag(run_proto, value.tag, metadata)
-                    tags[(run_name, value.tag)] = tag_proto
-                self._create_point(tag_proto, event, value)
-                next(work_items)
-            except _OutOfSpaceError:
-                # Flush request and start a new one.
-                request_to_emit = self._prune_request()
-                if request_to_emit is None:
-                    raise RuntimeError("Could not make progress uploading data")
-                self._new_request()
-                runs.clear()
-                tags.clear()
-                yield request_to_emit
 
-        final_request = self._prune_request()
-        if final_request is not None:
-            yield final_request
+            requests = []  # we may assign a generator
+            if value.HasField('metadata') and (
+                value.metadata.plugin_data.plugin_name !=
+                metadata.plugin_data.plugin_name):
+                    logger.warning(
+                        "Mismatching plugin names for %s.  "
+                        "Expected %s, found %s.",
+                        time_series_key, metadata.plugin_data.plugin_name,
+                        value.metadata.plugin_data.plugin_name)
+            elif (
+              metadata.plugin_data.plugin_name == scalar_metadata.PLUGIN_NAME):
+                requests, event_was_consumed = (
+                    self._scalar_request_builder.add_event(
+                        run_name, event, value, metadata))
+            # TODO(nielsene): add Tensor plugin cases here
+            # TODO(soergel): add Graphs blob case here
+
+            for request in requests:
+                yield request
+
+            # If the current event was not consumed, don't advance work_items,
+            # so the event will be retried.
+            if event_was_consumed:
+                next(work_items)
+
+        requests = self._scalar_request_builder.emit_requests()
+        for request in requests:
+            yield request
+        # TODO(nielsene): add tensor case here
+        # TODO(soergel): add blob case here
 
     def _run_values(self, run_to_events):
         """Helper generator to create a single stream of work items."""
@@ -309,26 +307,98 @@ class _RequestBuilder(object):
                 for value in event.summary.value:
                     yield (run_name, event, value)
 
-    def _prune_request(self):
-        """Removes empty runs and tags from the active request.
+
+class _ScalarRequestBuilder(object):
+    """Helper class for building requests that fit under a size limit.
+
+    This class accumulates a current request.  `add_event(...)` may or may not
+    emit the request (and start a new one).  After all `add_event(...)` calls
+    are complete, a final call to `emit_requests()` is needed to flush the
+    final request.
+
+    This class is not threadsafe. Use external synchronization if
+    calling its methods concurrently.
+    """
+
+    def __init__(self, experiment_id):
+        if experiment_id is None:
+            raise ValueError("experiment_id cannot be None")
+        self._experiment_id = experiment_id
+        # A lower bound on the number of bytes that we may yet add to the
+        # request.
+        self._byte_budget = None  # type: int
+
+        self._runs = {}  # cache: map from run name to `Run` proto in request
+        self._tags = (
+            {}
+        )  # cache: map from `(run, tag)` to `Tag` proto in run in request
+        self._new_request()
+
+    def _new_request(self):
+        """Allocates a new request and refreshes the budget."""
+        self._request = write_service_pb2.WriteScalarRequest()
+        self._runs.clear()
+        self._tags.clear()
+        self._byte_budget = _MAX_REQUEST_LENGTH_BYTES
+        self._request.experiment_id = self._experiment_id
+        self._byte_budget -= self._request.ByteSize()
+        if self._byte_budget < 0:
+            raise RuntimeError("Byte budget too small for experiment ID")
+
+    def add_event(self, run_name, event, value, metadata):
+        """Attempts to add the given event to the current request.
+
+        If the event cannot be added because the byte budget is exhausted,
+        the request is flushed, and the event is considered "not consumed" so
+        the caller can retry.
+
+        Returns:
+          A tuple (requests, event_consumed) where requests is an iterable of
+          WriteScalarRequest objects and event_consumed is boolean.
+        """
+        try:
+            run_proto = self._runs.get(run_name)
+            if run_proto is None:
+                run_proto = self._create_run(run_name)
+                self._runs[run_name] = run_proto
+            tag_proto = self._tags.get((run_name, value.tag))
+            if tag_proto is None:
+                tag_proto = self._create_tag(run_proto, value.tag, metadata)
+                self._tags[(run_name, value.tag)] = tag_proto
+            self._create_point(tag_proto, event, value)
+            return [], True  # no requests this time
+        except _OutOfSpaceError:
+            # Flush request and start a new one.
+            requests_to_emit = self.emit_requests()
+            if not requests_to_emit:
+                raise RuntimeError("Could not make progress uploading data")
+            return requests_to_emit, False
+
+    def emit_requests(self):
+        """Returns the active request after removing empty runs and tags.
+
+        Starts a new, empty active request.
 
         This does not refund `self._byte_budget`; it is assumed that the
         request will be emitted immediately, anyway.
 
         Returns:
-          The active request, or `None` if after pruning the request
-          contains no data.
+          A list of requests to be emitted, or [] if there are none.  Requests
+          are omitted if they contain no data after pruning.
         """
         request = self._request
+        requests = [request]
         for (run_idx, run) in reversed(list(enumerate(request.runs))):
             for (tag_idx, tag) in reversed(list(enumerate(run.tags))):
                 if not tag.points:
                     del run.tags[tag_idx]
             if not run.tags:
-                del self._request.runs[run_idx]
+                del request.runs[run_idx]
         if not request.runs:
-            request = None
-        return request
+            requests = []
+        self._new_request()
+        return requests
+
 
     def _create_run(self, run_name):
         """Adds a run to the live request, if there's space.

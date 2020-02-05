@@ -369,6 +369,20 @@ class RequestBuilderTest(tf.test.TestCase):
         tag_counts = {tag.name: len(tag.points) for tag in run_proto.tags}
         self.assertEqual(tag_counts, {"scalar1": 1, "scalar2": 1})
 
+    def test_skips_non_scalar_events_in_scalar_time_series(self):
+        events = [
+            event_pb2.Event(file_version="brain.Event:2"),
+            event_pb2.Event(summary=scalar_v2.scalar_pb("scalar1", 5.0)),
+            event_pb2.Event(summary=scalar_v2.scalar_pb("scalar2", 5.0)),
+            event_pb2.Event(
+                summary=histogram_v2.histogram_pb("scalar2", [5.0])
+            ),
+        ]
+        run_proto = write_service_pb2.WriteScalarRequest.Run()
+        self._populate_run_from_events(run_proto, events)
+        tag_counts = {tag.name: len(tag.points) for tag in run_proto.tags}
+        self.assertEqual(tag_counts, {"scalar1": 1, "scalar2": 1})
+
     def test_remembers_first_metadata_in_scalar_time_series(self):
         scalar_1 = event_pb2.Event(summary=scalar_v2.scalar_pb("loss", 4.0))
         scalar_2 = event_pb2.Event(summary=scalar_v2.scalar_pb("loss", 3.0))
@@ -597,7 +611,7 @@ class RequestBuilderTest(tf.test.TestCase):
             [("train", [event_1]), ("test", [event_2]),]
         )
 
-        real_create_point = uploader_lib._RequestBuilder._create_point
+        real_create_point = uploader_lib._ScalarRequestBuilder._create_point
 
         create_point_call_count_box = [0]
 
@@ -610,7 +624,7 @@ class RequestBuilderTest(tf.test.TestCase):
             return real_create_point(uploader_self, *args, **kwargs)
 
         with mock.patch.object(
-            uploader_lib._RequestBuilder, "_create_point", mock_create_point
+            uploader_lib._ScalarRequestBuilder, "_create_point", mock_create_point
         ):
             builder = uploader_lib._RequestBuilder("123")
             requests = list(builder.build_requests(run_to_events))
