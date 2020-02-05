@@ -54,14 +54,14 @@ limitations under the License.
         </span>
         <span class="execution-data-value">
           <!-- TODO(cais): Show debug mode in text format -->
-          (debug mode: {{ tensorDebugModeName }})
+          (debug mode: {{ TensorDebugMode[tensorDebugMode] }})
         </span>
       </div>
 
       <div *ngIf="hasDebugTensorValues">
-        <div [ngSwitch]="tensorDebugModeName">
+        <div [ngSwitch]="tensorDebugMode">
           <div
-            *ngSwitchCase="'CURT_HEALTH'"
+            *ngSwitchCase="TensorDebugMode.CURT_HEALTH"
             class="debug-tensor-values-container"
           >
             <table class="debug-tensor-values-table">
@@ -89,7 +89,7 @@ limitations under the License.
           </div>
 
           <div
-            *ngSwitchCase="'CONCISE_HEALTH'"
+            *ngSwitchCase="TensorDebugMode.CONCISE_HEALTH"
             class="debug-tensor-values-container"
           >
             <table class="debug-tensor-values-table">
@@ -134,7 +134,10 @@ limitations under the License.
             </table>
           </div>
 
-          <div *ngSwitchCase="'SHAPE'" class="debug-tensor-values-container">
+          <div
+            *ngSwitchCase="TensorDebugMode.SHAPE"
+            class="debug-tensor-values-container"
+          >
             <table class="debug-tensor-values-table">
               <tr>
                 <th>Slot</th>

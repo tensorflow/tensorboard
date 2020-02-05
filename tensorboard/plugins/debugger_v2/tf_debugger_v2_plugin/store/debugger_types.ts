@@ -121,7 +121,7 @@ export interface Executions {
   // Beginning index of the current scrolling position.
   scrollBeginIndex: number;
 
-  // Index of focusing.
+  // Index of focusing. `null` means no focus has been selected.
   focusIndex: number | null;
 
   // Execution digests the frontend has loaded so far.

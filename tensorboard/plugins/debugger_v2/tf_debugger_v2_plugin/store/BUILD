@@ -34,6 +34,7 @@ tf_ts_library(
     name = "debugger_store_test_lib",
     testonly = True,
     srcs = [
+        "debugger_selectors_test.ts",
         "debugger_reducers_test.ts",
     ],
     tsconfig = "//:tsconfig-test",

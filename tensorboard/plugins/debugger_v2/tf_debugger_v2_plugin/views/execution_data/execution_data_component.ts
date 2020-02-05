@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {Component, Input} from '@angular/core';
 
-import {Execution} from '../../store/debugger_types';
+import {Execution, TensorDebugMode} from '../../store/debugger_types';
 
 @Component({
   selector: 'execution-data-component',
@@ -29,7 +29,7 @@ export class ExecutionDataComponent {
   focusedExecutionData!: Execution;
 
   @Input()
-  tensorDebugModeName: string = 'UNSPECIFIED';
+  tensorDebugMode: TensorDebugMode = TensorDebugMode.UNSPECIFIED;
 
   /**
    * Whether any debug tensor values exist, under non-FULL_TENSOR debug
@@ -41,4 +41,7 @@ export class ExecutionDataComponent {
   /** Debug tensor values under non-FULL_TENSOR debug modes. */
   @Input()
   debugTensorValues: number[][] | null = null;
+
+  // So that the enum can be used in the template html.
+  public TensorDebugMode = TensorDebugMode;
 }

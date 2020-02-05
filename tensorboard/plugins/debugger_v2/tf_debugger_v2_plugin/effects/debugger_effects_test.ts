@@ -391,11 +391,8 @@ describe('Debugger effects', () => {
       );
 
       expect(fetchExecutionDigests).toHaveBeenCalled();
-      expect(dispatchSpy).toHaveBeenCalledTimes(2);
+      expect(dispatchSpy).toHaveBeenCalledTimes(1);
       expect(dispatchSpy).toHaveBeenCalledWith(executionDigestsRequested());
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        executionDigestFocused({displayIndex: 0})
-      );
       expect(recordedActions).toEqual([
         executionDigestsLoaded(executionDigestForTest),
       ]);
@@ -423,6 +420,91 @@ describe('Debugger effects', () => {
 
       expect(fetchExecutionDigests).not.toHaveBeenCalled();
       expect(dispatchSpy).toHaveBeenCalledTimes(0);
+    });
+  });
+
+  describe('Initial focusing on first execution event', () => {
+    let recordedActions: Action[] = [];
+
+    beforeEach(() => {
+      recordedActions = [];
+      debuggerEffects.initialExecutionFocusing$.subscribe((action: Action) => {
+        recordedActions.push(action);
+      });
+    });
+
+    it('Loading non-zero numExecutions focuses on first execution digest', () => {
+      store.setState(
+        createState(
+          createDebuggerState({
+            activeRunId: '__default_debugger_run__',
+            executions: {
+              numExecutionsLoaded: {
+                state: DataLoadState.NOT_LOADED,
+                lastLoadedTimeInMs: null,
+              },
+              executionDigestsLoaded: {
+                state: DataLoadState.NOT_LOADED,
+                lastLoadedTimeInMs: null,
+                numExecutions: 0,
+                pageLoadedSizes: {},
+              },
+              pageSize: 5,
+              displayCount: 2,
+              scrollBeginIndex: 0,
+              focusIndex: null,
+              executionDigests: {},
+              executionData: {},
+            },
+          })
+        )
+      );
+
+      action.next(
+        numExecutionsLoaded({
+          numExecutions: 2,
+        })
+      );
+
+      expect(recordedActions).toEqual([
+        executionDigestFocused({displayIndex: 0}),
+      ]);
+    });
+
+    it('Non-initial loading non-zero numExecutions does not focus', () => {
+      store.setState(
+        createState(
+          createDebuggerState({
+            activeRunId: '__default_debugger_run__',
+            executions: {
+              numExecutionsLoaded: {
+                state: DataLoadState.LOADED,
+                lastLoadedTimeInMs: null,
+              },
+              executionDigestsLoaded: {
+                state: DataLoadState.NOT_LOADED,
+                lastLoadedTimeInMs: null,
+                numExecutions: 1,
+                pageLoadedSizes: {},
+              },
+              pageSize: 5,
+              displayCount: 2,
+              scrollBeginIndex: 0,
+              focusIndex: 0,
+              executionDigests: {},
+              executionData: {},
+            },
+          })
+        )
+      );
+
+      action.next(
+        numExecutionsLoaded({
+          numExecutions: 2,
+        })
+      );
+
+      expect(recordedActions).toEqual([]);
     });
   });
 

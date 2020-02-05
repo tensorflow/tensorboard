@@ -200,11 +200,6 @@ export class DebuggerEffects {
       }),
       tap(() => {
         this.store.dispatch(executionDigestsRequested());
-        // Automatically focus on the first execution event when any
-        // execution events exist.
-        // TODO(cais): This should auto-focus on the first alert even
-        // when any alerts exist.
-        this.store.dispatch(executionDigestFocused({displayIndex: 0}));
       }),
       mergeMap(([props, runId, pageSize, _]) => {
         const begin = 0;
@@ -219,6 +214,27 @@ export class DebuggerEffects {
     )
   );
 
+  /** @export */
+  readonly initialExecutionFocusing$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(numExecutionsLoaded),
+      withLatestFrom(
+        this.store.select(getActiveRunId),
+        this.store.select(getFocusedExecutionIndex)
+      ),
+      filter(([props, runId, focusIndex]) => {
+        return props.numExecutions > 0 && runId !== null && focusIndex === null;
+      }),
+      map(() => {
+        // Automatically focus on the first execution event when any
+        // execution events exist.
+        // TODO(cais): This should auto-focus on the first alert even
+        // when any alerts exist.
+        return executionDigestFocused({displayIndex: 0});
+      })
+    )
+  );
+
   private readonly digestRequired$ = this.actions$.pipe(
     ofType(executionScrollLeft, executionScrollRight),
     withLatestFrom(
@@ -228,8 +244,7 @@ export class DebuggerEffects {
       this.store.select(getDisplayCount),
       this.store.select(getExecutionPageSize)
     ),
-    filter((data) => {
-      const runId = data[1];
+    filter(([runId]) => {
       return runId !== null;
     }),
     map(
@@ -246,25 +261,28 @@ export class DebuggerEffects {
     )
   );
 
+  readonly missesPages$ = this.digestRequired$.pipe(
+    withLatestFrom(this.store.select(getExecutionDigestsLoaded)),
+    filter(([_, loaded]) => loaded.state !== DataLoadState.LOADING),
+    map(([props, loaded]) => {
+      return {
+        props,
+        loaded,
+        missingPages: getMissingPages(
+          props.begin,
+          props.end,
+          props.pageSize,
+          loaded.numExecutions,
+          loaded.pageLoadedSizes
+        ),
+      };
+    }),
+    filter(({missingPages}) => missingPages.length > 0)
+  );
+
   /** @export */
   readonly loadExecutionDigests$ = createEffect(() =>
-    this.digestRequired$.pipe(
-      withLatestFrom(this.store.select(getExecutionDigestsLoaded)),
-      filter(([_, loaded]) => loaded.state !== DataLoadState.LOADING),
-      map(([props, loaded]) => {
-        return {
-          props,
-          loaded,
-          missingPages: getMissingPages(
-            props.begin,
-            props.end,
-            props.pageSize,
-            loaded.numExecutions,
-            loaded.pageLoadedSizes
-          ),
-        };
-      }),
-      filter(({missingPages}) => missingPages.length > 0),
+    this.missesPages$.pipe(
       tap(() => this.store.dispatch(executionDigestsRequested())),
       mergeMap(({props, loaded, missingPages}) => {
         const {runId, pageSize} = props;

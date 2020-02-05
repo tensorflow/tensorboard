@@ -164,6 +164,14 @@ export const getFocusedExecutionData = createSelector(
   }
 );
 
+/**
+ * Get the stack trace (frames) of the execution event currently focused on
+ * (if any).
+ *
+ * If no execution is focused on, returns null.
+ * If any of the stack frames is missing (i.e., hasn't been loaded from
+ * the data source yet), returns null.
+ */
 export const getFocusedExecutionStackFrames = createSelector(
   selectDebuggerState,
   (state: DebuggerState): StackFrame[] | null => {

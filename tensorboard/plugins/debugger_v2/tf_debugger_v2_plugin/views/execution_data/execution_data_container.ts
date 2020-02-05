@@ -27,7 +27,7 @@ import {getFocusedExecutionData} from '../../store';
     <execution-data-component
       [focusedExecutionIndex]="focusedExecutionIndex"
       [focusedExecutionData]="focusedExecutionData$ | async"
-      [tensorDebugModeName]="tensorDebugModeName$ | async"
+      [tensorDebugMode]="tensorDebugMode$ | async"
       [hasDebugTensorValues]="hasDebugTensorValues$ | async"
       [debugTensorValues]="debugTensorValues$ | async"
     ></execution-data-component>
@@ -41,15 +41,16 @@ export class ExecutionDataContainer {
     select(getFocusedExecutionData)
   );
 
-  readonly tensorDebugModeName$ = this.store.pipe(
+  readonly tensorDebugMode$ = this.store.pipe(
     select(
       createSelector(
         getFocusedExecutionData,
         (execution: Execution | null) => {
           if (execution === null) {
-            return '';
+            return TensorDebugMode.UNSPECIFIED;
           } else {
-            return TensorDebugMode[execution.tensor_debug_mode];
+            return execution.tensor_debug_mode;
+            // return TensorDebugMode[execution.tensor_debug_mode];
           }
         }
       )

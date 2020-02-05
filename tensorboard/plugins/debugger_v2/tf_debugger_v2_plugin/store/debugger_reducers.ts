@@ -56,6 +56,7 @@ const initialState: DebuggerState = {
   },
   stackFrames: {},
 };
+// TODO(cais): As `executions` is getting large, create a subreducer for it.
 
 const reducer = createReducer(
   initialState,

@@ -38,22 +38,21 @@ export class StackTraceContainer {
         (stackFrames) => {
           if (stackFrames === null) {
             return null;
-          } else {
-            const output: StackFrameForDisplay[] = [];
-            for (const stackFrame of stackFrames) {
-              const [host_name, file_path, lineno, function_name] = stackFrame;
-              const pathItems = file_path.split('/');
-              const concise_file_path = pathItems[pathItems.length - 1];
-              output.push({
-                host_name,
-                file_path,
-                concise_file_path,
-                lineno,
-                function_name,
-              });
-            }
-            return output;
           }
+          const output: StackFrameForDisplay[] = [];
+          for (const stackFrame of stackFrames) {
+            const [host_name, file_path, lineno, function_name] = stackFrame;
+            const pathItems = file_path.split('/');
+            const concise_file_path = pathItems[pathItems.length - 1];
+            output.push({
+              host_name,
+              file_path,
+              concise_file_path,
+              lineno,
+              function_name,
+            });
+          }
+          return output;
         }
       )
     )
