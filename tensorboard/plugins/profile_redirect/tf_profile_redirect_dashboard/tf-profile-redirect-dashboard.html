@@ -80,7 +80,7 @@ limitations under the License.
           },
         },
         async _copyInstallCommand() {
-            const doCopy = async () => {
+          const doCopy = async () => {
             const textarea = this.$.commandTextarea;
             textarea.select();
             try {
@@ -91,12 +91,12 @@ limitations under the License.
                 return Promise.reject();
               }
             }
-          }
+          };
           try {
-              await doCopy();
-              this.$.copiedMessage.innerText = 'Copied.';
+            await doCopy();
+            this.$.copiedMessage.innerText = 'Copied.';
           } catch (e) {
-              this.$.copiedMessage.innerText = 'Failed to copy to clipboard.';
+            this.$.copiedMessage.innerText = 'Failed to copy to clipboard.';
           }
         },
         _removeCopiedMessage() {
