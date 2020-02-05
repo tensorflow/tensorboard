@@ -41,7 +41,6 @@ limitations under the License.
       </div>
     </div>
 
-    <style include="dashboard-style"></style>
     <style>
       .message {
         margin: 80px auto 0 auto;
@@ -80,26 +79,25 @@ limitations under the License.
             ].join('\n'),
           },
         },
-        _copyInstallCommand() {
-          const tryCopy = (async () => {
+        async _copyInstallCommand() {
+            const doCopy = async () => {
             const textarea = this.$.commandTextarea;
             textarea.select();
             try {
-              await navigator.clipboard.writeText(textarea.textContent);
+              await navigator.clipboard.writeText(this._installCommand);
             } catch (error) {
               // Fallback approach.
               if (!document.execCommand('copy')) {
                 return Promise.reject();
               }
             }
-          })();
-          tryCopy
-            .then(() => {
+          }
+          try {
+              await doCopy();
               this.$.copiedMessage.innerText = 'Copied.';
-            })
-            .catch(() => {
+          } catch (e) {
               this.$.copiedMessage.innerText = 'Failed to copy to clipboard.';
-            });
+          }
         },
         _removeCopiedMessage() {
           this.$.copiedMessage.innerText = '';

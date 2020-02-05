@@ -19,7 +19,7 @@ py_library(
 py_test(
     name = "profile_redirect_plugin_test",
     srcs = ["profile_redirect_plugin_test.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":profile_redirect_plugin",
         "//tensorboard:test",
