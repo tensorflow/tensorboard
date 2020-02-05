@@ -182,7 +182,7 @@ A **hosted backend** is our desired steady state for a public service:
 -   Uniformly random downsampling, should we want it, comes for free with
     [Cloud Spanner’s `TABLESAMPLE` operator][tablesample], which allows either
     Bernoulli sampling or reservoir sampling.
-    -   TABLESAMPLE is [part of SQL:2011][tablesample-sql2011], and is also
+    -   `TABLESAMPLE` is [part of SQL:2011][tablesample-sql2011], and is also
         implemented by PostgreSQL and SQL Server, but not by SQLite. (Neither
         “tablesample” nor “downsample” has ever appeared in the sqlite-users
         mailing list.) Cloud Spanner does not implement the `REPEATABLE(seed)`
@@ -258,7 +258,7 @@ result set. For example:
     -   relation `data`: *(run_id, tag_id, step: image_index: i64) → (blob:
         large_file)*
     -   query `data` (*run_id* in `RUNS`, *tag_id* in `TAGS`, *step* downsample
-        `100`, *image_index* ANY) → *blob
+        `100`, *image_index* ANY) → *blob*
 
 As discussed above, we chose not to pursue this option because it exposes a lot
 of flexibility that we would be bound to support, and also has a high conceptual
