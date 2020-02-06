@@ -50,7 +50,6 @@ export class ExecutionDataContainer {
             return TensorDebugMode.UNSPECIFIED;
           } else {
             return execution.tensor_debug_mode;
-            // return TensorDebugMode[execution.tensor_debug_mode];
           }
         }
       )
