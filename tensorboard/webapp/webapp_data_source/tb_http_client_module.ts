@@ -1,4 +1,4 @@
-/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,10 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {NgModule} from '@angular/core';
-import {Tfdbg2HttpServerDataSource} from './tfdbg2_data_source';
-import {TBHttpClientModule} from '../../../../webapp/webapp_data_source/tb_http_client_module';
+import {HttpClientModule} from '@angular/common/http';
+import {TBHttpClient} from './tb_http_client';
+
 @NgModule({
-  imports: [TBHttpClientModule],
-  providers: [Tfdbg2HttpServerDataSource],
+  imports: [HttpClientModule],
+  providers: [TBHttpClient],
 })
-export class Tfdbg2ServerDataSourceModule {}
+export class TBHttpClientModule {}

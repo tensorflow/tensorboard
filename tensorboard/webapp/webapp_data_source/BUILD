@@ -9,10 +9,37 @@ ng_module(
         "tb_server_data_source_module.ts",
     ],
     deps = [
-        "//tensorboard/webapp/angular:expect_angular_common_http",
+        ":http_client",
         "//tensorboard/webapp/types",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//rxjs",
+    ],
+)
+
+ng_module(
+    name = "http_client",
+    srcs = [
+        "tb_http_client.ts",
+        "tb_http_client_module.ts",
+        "tb_http_client_types.ts",
+    ],
+    deps = [
+        "//tensorboard/webapp/angular:expect_angular_common_http",
+        "@npm//@angular/common",
+        "@npm//@angular/core",
+        "@npm//rxjs",
+    ],
+)
+
+ng_module(
+    name = "http_client_testing",
+    testonly = True,
+    srcs = [
+        "tb_http_client_testing.ts",
+    ],
+    deps = [
+        ":http_client",
+        "//tensorboard/webapp/angular:expect_angular_common_http_testing",
     ],
 )

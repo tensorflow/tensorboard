@@ -1,4 +1,4 @@
-/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -12,11 +12,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+export {HttpTestingController} from '@angular/common/http/testing';
+
 import {NgModule} from '@angular/core';
-import {Tfdbg2HttpServerDataSource} from './tfdbg2_data_source';
-import {TBHttpClientModule} from '../../../../webapp/webapp_data_source/tb_http_client_module';
+import {HttpClientTestingModule} from '@angular/common/http/testing';
+
+import {TBHttpClientModule} from './tb_http_client_module';
+
 @NgModule({
-  imports: [TBHttpClientModule],
-  providers: [Tfdbg2HttpServerDataSource],
+  imports: [TBHttpClientModule, HttpClientTestingModule],
 })
-export class Tfdbg2ServerDataSourceModule {}
+export class TBHttpClientTestingModule {}
