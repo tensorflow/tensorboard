@@ -31,8 +31,7 @@ describe('plugin lib integration', () => {
     this.sandbox = sinon.sandbox.create({useFakeServer: true});
     this.sandbox.server.respondImmediately = true;
     this.iframe = await createIframe();
-    this.lib = (this.iframe.contentWindow as any).plugin_lib;
-    this.libInternal = (this.iframe.contentWindow as any).plugin_internal;
+    this.lib = (this.iframe.contentWindow as any).tb_plugin_lib.experimental;
   });
 
   afterEach(function() {
@@ -85,7 +84,7 @@ describe('plugin lib integration', () => {
 
         // Await another message to ensure the iframe processed the next message
         // (if any).
-        await this.libInternal.sendMessage('foo');
+        await this.lib.runs.getRuns();
 
         expect(runsChanged).to.not.have.been.called;
       });
