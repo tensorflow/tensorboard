@@ -14,4 +14,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<script src="testable_plugin_bundle.js"></script>
+
+<!--
+  WARNING: note that polymer-interop.html includes the plugin_lib's internals and
+  the public APIs. Do not import another plugin_lib which can cause wrong
+  registrations.
+-->
+<link rel="import" href="../polymer-interop.html" />
