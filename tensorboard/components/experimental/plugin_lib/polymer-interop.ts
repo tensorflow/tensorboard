@@ -14,9 +14,8 @@ limitations under the License.
 ==============================================================================*/
 import * as publicApi from './index';
 
-namespace tb_plugin_lib.experimental {
-  export const core = publicApi.core;
-  export const runs = publicApi.runs;
+namespace tb_plugin_lib {
+  export const experimental = publicApi;
 }
 
 declare global {
