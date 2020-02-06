@@ -101,6 +101,5 @@ bazel run tensorboard/components/vz_sorting/test:test_web_library
 bazel build third_party/chromium
 ./bazel-bin/third_party/chromium/chromium.out/chrome-linux/chrome
 
-# Lastly, put the address returend by the web server into the Chromium.
+# Lastly, put the address returnd by the web server into the Chromium.
 ```
-
