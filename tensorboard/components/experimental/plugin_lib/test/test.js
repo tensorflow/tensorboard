@@ -38,8 +38,7 @@ describe('plugin lib integration', () => {
             this.sandbox = sinon.sandbox.create({ useFakeServer: true });
             this.sandbox.server.respondImmediately = true;
             this.iframe = yield createIframe();
-            this.lib = this.iframe.contentWindow.plugin_lib;
-            this.libInternal = this.iframe.contentWindow.plugin_internal;
+            this.lib = this.iframe.contentWindow.tb_plugin_lib.experimental;
         });
     });
     afterEach(function () {
@@ -91,7 +90,7 @@ describe('plugin lib integration', () => {
                     yield tf_backend.runsStore.refresh();
                     // Await another message to ensure the iframe processed the next message
                     // (if any).
-                    yield this.libInternal.sendMessage('foo');
+                    yield this.lib.runs.getRuns();
                     expect(runsChanged).to.not.have.been.called;
                 });
             });
