@@ -36,11 +36,10 @@ tf_web_library(
     testonly = True,
     srcs = [
         "testable-iframe.html",
-        "testable_plugin_bundle.js",
     ],
     path = "/tf-plugin-lib/test",
     deps = [
-        ":testable_plugin_bundle",
+        "//tensorboard/components/experimental/plugin_lib:plugin_lib_polymer_interop",
     ],
 )
 

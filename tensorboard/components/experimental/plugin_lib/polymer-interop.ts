@@ -1,6 +1,4 @@
-<!--
-@license
-Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,11 +11,19 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
--->
-<link rel="import" href="../plugin-host.html" />
-<script src="../../web-component-tester/browser.js"></script>
+==============================================================================*/
+import * as publicApi from './index';
 
-<template id="iframe-template">
-  <iframe src="testable-iframe.html"></iframe>
-</template>
-<script src="plugin-test.js"></script>
+namespace tb_plugin_lib.experimental {
+  export const core = publicApi.core;
+  export const runs = publicApi.runs;
+}
+
+declare global {
+  interface Window {
+    // Typing is lost after rollup anyways.
+    tb_plugin_lib: any;
+  }
+}
+
+window.tb_plugin_lib = tb_plugin_lib;
