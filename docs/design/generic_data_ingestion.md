@@ -124,8 +124,8 @@ message SummaryMetadata {  // (extend)
 ```
 
 The value of `data_class` on a tag’s summary metadata, whether explicitly set or
-implicitly zero, establishes constraints on the tensor values for all Values of
-the same time series:
+implicitly zero, establishes constraints on the tensor values for all `Value`s
+of the same time series:
 
 -   A value of `DATA_CLASS_UNKNOWN` is the implicit default, and corresponding
     data will be entirely skipped by data provider APIs, including the
