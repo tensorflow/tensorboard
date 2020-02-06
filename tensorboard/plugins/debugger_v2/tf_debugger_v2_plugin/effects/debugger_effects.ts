@@ -306,7 +306,10 @@ export class DebuggerEffects {
   );
 
   /** @export */
-  readonly executionDigestFocused$ = createEffect(() =>
+  // when a execution digest is focused on, two requests are made
+  // 1. To fetch the detailed execution data for the execution event.
+  // 2. To fetch the stack trace of the execution event.
+  readonly onExecutionDigestFocused$ = createEffect(() =>
     this.actions$.pipe(
       ofType(executionDigestFocused),
       withLatestFrom(
@@ -327,56 +330,40 @@ export class DebuggerEffects {
           .fetchExecutionData(activeRunId!, begin, end)
           .pipe(
             tap((executionDataResponse) => {
-              const execution = executionDataResponse.executions[0];
-              return this.store.dispatch(
-                executionStackFramesRequested(execution)
-              );
+              this.store.dispatch(executionDataLoaded(executionDataResponse));
             }),
-            map((executionDataResponse) => {
-              return executionDataLoaded(executionDataResponse);
-            })
-          );
-        // TODO(cais): Add catchError() to pipe.
-      })
-    )
-  );
-
-  /** @export */
-  readonly loadExecutionStackFrames$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(executionStackFramesRequested),
-      withLatestFrom(
-        this.store.select(getActiveRunId),
-        this.store.select(getLoadedStackFrames)
-      ),
-      filter(([execution, runId, loadedStackFrames]) => {
-        if (runId === null) {
-          return false;
-        }
-        for (const stackFrameId of execution.stack_frame_ids) {
-          if (loadedStackFrames[stackFrameId] === undefined) {
-            return true;
-          }
-        }
-        return false;
-      }),
-      mergeMap(([execution, runId, _]) => {
-        // TODO(cais): Maybe omit already-loaded stack frames from request,
-        // instead of loading all frames if any of them is missing.
-        return this.dataSource
-          .fetchStackFrames(runId!, execution.stack_frame_ids)
-          .pipe(
-            map((stackFramesResponse) => {
-              const stackFramesById: {
-                [stackFrameId: string]: StackFrame;
-              } = {};
-              // TODO(cais): Do this reshaping in the backend and simplify
-              // the frontend code here.
-              for (let i = 0; i < execution.stack_frame_ids.length; ++i) {
-                stackFramesById[execution.stack_frame_ids[i]] =
-                  stackFramesResponse.stack_frames[i];
+            map((executionDataResponse) => executionDataResponse.executions[0]),
+            withLatestFrom(
+              this.store.select(getActiveRunId),
+              this.store.select(getLoadedStackFrames)
+            ),
+            filter(([execution, _, loadedStackFrames]) => {
+              // Determine if any of the stack frames of the stack trace is missing.
+              // If so, make a request for the stack frames.
+              for (const stackFrameId of execution.stack_frame_ids) {
+                if (loadedStackFrames[stackFrameId] === undefined) {
+                  return true;
+                }
               }
-              return stackFramesLoaded({stackFrames: stackFramesById});
+              return false;
+            }),
+            concatMap(([execution, runId]) => {
+              return this.dataSource
+                .fetchStackFrames(runId!, execution.stack_frame_ids)
+                .pipe(
+                  map((stackFramesResponse) => {
+                    const stackFramesById: {
+                      [stackFrameId: string]: StackFrame;
+                    } = {};
+                    // TODO(cais): Do this reshaping in the backend and simplify
+                    // the frontend code here.
+                    for (let i = 0; i < execution.stack_frame_ids.length; ++i) {
+                      stackFramesById[execution.stack_frame_ids[i]] =
+                        stackFramesResponse.stack_frames[i];
+                    }
+                    return stackFramesLoaded({stackFrames: stackFramesById});
+                  })
+                );
             })
           );
         // TODO(cais): Add catchError() to pipe.

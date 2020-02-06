@@ -43,6 +43,7 @@ import {
 import {
   DataLoadState,
   DebuggerRunListing,
+  StackFrame,
   State,
 } from '../store/debugger_types';
 import {
@@ -592,72 +593,122 @@ describe('Debugger effects', () => {
 
     beforeEach(() => {
       recordedActions = [];
-      debuggerEffects.executionDigestFocused$.subscribe((action: Action) => {
+      debuggerEffects.onExecutionDigestFocused$.subscribe((action: Action) => {
         recordedActions.push(action);
       });
     });
 
-    for (const displayIndex of [0, 2]) {
-      it(
-        `Loading execution data and stack trace on executionDigestFocused: ` +
-          `displayIndex=${displayIndex}`,
-        () => {
-          store.setState(
-            createState(
-              createDebuggerState({
-                activeRunId: '__default_debugger_run__',
-                executions: {
-                  numExecutionsLoaded: {
-                    state: DataLoadState.NOT_LOADED,
-                    lastLoadedTimeInMs: null,
+    for (const numAlreadyLoaded of [0, 1, 2]) {
+      for (const displayIndex of [0, 2]) {
+        it(
+          `Loading execution data and stack trace on executionDigestFocused: ` +
+            `numAlreadyLoaded=${numAlreadyLoaded}, displayIndex=${displayIndex}`,
+          () => {
+            const stackFrame1: StackFrame = [
+              'localhost',
+              '/tmp/main.py',
+              10,
+              'main',
+            ];
+            const stackFrame2: StackFrame = [
+              'localhost',
+              '/tmp/model.py',
+              20,
+              'initialize',
+            ];
+
+            store.setState(
+              createState(
+                createDebuggerState({
+                  activeRunId: '__default_debugger_run__',
+                  executions: {
+                    numExecutionsLoaded: {
+                      state: DataLoadState.NOT_LOADED,
+                      lastLoadedTimeInMs: null,
+                    },
+                    executionDigestsLoaded: {
+                      state: DataLoadState.NOT_LOADED,
+                      lastLoadedTimeInMs: null,
+                      numExecutions: 0,
+                      pageLoadedSizes: {},
+                    },
+                    pageSize: 5,
+                    displayCount: 2,
+                    scrollBeginIndex: 0,
+                    focusIndex: 0,
+                    executionDigests: {},
+                    executionData: {},
                   },
-                  executionDigestsLoaded: {
-                    state: DataLoadState.NOT_LOADED,
-                    lastLoadedTimeInMs: null,
-                    numExecutions: 0,
-                    pageLoadedSizes: {},
+                  stackFrames:
+                    numAlreadyLoaded === 0
+                      ? {}
+                      : numAlreadyLoaded === 1
+                      ? {
+                          a1: stackFrame1,
+                        }
+                      : {
+                          a1: stackFrame1,
+                          a2: stackFrame2,
+                        },
+                })
+              )
+            );
+
+            const executionDataResponseForTest: ExecutionDataResponse = {
+              begin: displayIndex,
+              end: displayIndex + 1,
+              executions: [
+                createTestExecutionData({
+                  stack_frame_ids: ['a1', 'a2'],
+                }),
+              ],
+            };
+            const fetchExecutionData = spyOn(
+              TestBed.get(Tfdbg2HttpServerDataSource),
+              'fetchExecutionData'
+            )
+              .withArgs(
+                '__default_debugger_run__',
+                displayIndex,
+                displayIndex + 1
+              )
+              .and.returnValue(of(executionDataResponseForTest));
+
+            const stackFramesResposeForTest: StackFramesResponse = {
+              stack_frames: [stackFrame1, stackFrame2],
+            };
+            const fetchStackFrames = spyOn(
+              TestBed.get(Tfdbg2HttpServerDataSource),
+              'fetchStackFrames'
+            ).and.returnValue(of(stackFramesResposeForTest));
+
+            action.next(executionDigestFocused({displayIndex}));
+
+            expect(fetchExecutionData).toHaveBeenCalled();
+            if (numAlreadyLoaded < 2) {
+              expect(fetchStackFrames).toHaveBeenCalled();
+            } else {
+              expect(fetchStackFrames).not.toHaveBeenCalled();
+            }
+            expect(dispatchSpy).toHaveBeenCalledTimes(1);
+            expect(dispatchSpy).toHaveBeenCalledWith(
+              executionDataLoaded(executionDataResponseForTest)
+            );
+            if (numAlreadyLoaded < 2) {
+              expect(recordedActions).toEqual([
+                stackFramesLoaded({
+                  stackFrames: {
+                    a1: stackFrame1,
+                    a2: stackFrame2,
                   },
-                  pageSize: 5,
-                  displayCount: 2,
-                  scrollBeginIndex: 0,
-                  focusIndex: 0,
-                  executionDigests: {},
-                  executionData: {},
-                },
-              })
-            )
-          );
-
-          const executionDataResponseForTest: ExecutionDataResponse = {
-            begin: displayIndex,
-            end: displayIndex + 1,
-            executions: [createTestExecutionData()],
-          };
-          const fetchExecutionData = spyOn(
-            TestBed.get(Tfdbg2HttpServerDataSource),
-            'fetchExecutionData'
-          )
-            .withArgs(
-              '__default_debugger_run__',
-              displayIndex,
-              displayIndex + 1
-            )
-            .and.returnValue(of(executionDataResponseForTest));
-
-          action.next(executionDigestFocused({displayIndex}));
-
-          expect(fetchExecutionData).toHaveBeenCalled();
-          expect(dispatchSpy).toHaveBeenCalledTimes(1);
-          expect(dispatchSpy).toHaveBeenCalledWith(
-            executionStackFramesRequested(
-              executionDataResponseForTest.executions[0]
-            )
-          );
-          expect(recordedActions).toEqual([
-            executionDataLoaded(executionDataResponseForTest),
-          ]);
-        }
-      );
+                }),
+              ]);
+            } else {
+              expect(recordedActions).toEqual([]);
+            }
+          }
+        );
+      }
     }
 
     it(`Loaded execution data is not reloaded on executionDigestFocused`, () => {
@@ -699,94 +750,5 @@ describe('Debugger effects', () => {
       expect(fetchExecutionData).not.toHaveBeenCalled();
       expect(recordedActions.length).toEqual(0);
     });
-  });
-
-  describe('Execution stack traces loading', () => {
-    let recordedActions: Action[] = [];
-
-    beforeEach(() => {
-      recordedActions = [];
-      debuggerEffects.loadExecutionStackFrames$.subscribe((action: Action) => {
-        recordedActions.push(action);
-      });
-    });
-
-    for (const numAlreadyLoaded of [0, 1, 2]) {
-      it(
-        `Loading stack frame on executionStackFramesRequested:` +
-          `numLoaded = ${numAlreadyLoaded}`,
-        () => {
-          const execution = createTestExecutionData({
-            stack_frame_ids: ['beef', 'dada'],
-          });
-          store.setState(
-            createState(
-              createDebuggerState({
-                activeRunId: '__default_debugger_run__',
-                executions: {
-                  numExecutionsLoaded: {
-                    state: DataLoadState.NOT_LOADED,
-                    lastLoadedTimeInMs: null,
-                  },
-                  executionDigestsLoaded: {
-                    state: DataLoadState.NOT_LOADED,
-                    lastLoadedTimeInMs: null,
-                    numExecutions: 0,
-                    pageLoadedSizes: {},
-                  },
-                  pageSize: 5,
-                  displayCount: 2,
-                  scrollBeginIndex: 0,
-                  focusIndex: 0,
-                  executionDigests: {},
-                  executionData: {
-                    0: execution,
-                  },
-                },
-                stackFrames:
-                  numAlreadyLoaded === 0
-                    ? {}
-                    : numAlreadyLoaded === 1
-                    ? {
-                        beef: ['localhost', '/tmp/main.py', 10, 'main'],
-                      }
-                    : {
-                        beef: ['localhost', '/tmp/main.py', 10, 'main'],
-                        dada: ['localhost', '/tmp/model.py', 20, 'initialize'],
-                      },
-              })
-            )
-          );
-
-          const stackFramesResposeForTest: StackFramesResponse = {
-            stack_frames: [
-              ['localhost', '/tmp/main.py', 10, 'main'],
-              ['localhost', '/tmp/model.py', 20, 'initialize'],
-            ],
-          };
-          const fetchStackFrames = spyOn(
-            TestBed.get(Tfdbg2HttpServerDataSource),
-            'fetchStackFrames'
-          ).and.returnValue(of(stackFramesResposeForTest));
-
-          action.next(executionStackFramesRequested(execution));
-
-          if (numAlreadyLoaded < 2) {
-            expect(fetchStackFrames).toHaveBeenCalled();
-            expect(recordedActions).toEqual([
-              stackFramesLoaded({
-                stackFrames: {
-                  beef: ['localhost', '/tmp/main.py', 10, 'main'],
-                  dada: ['localhost', '/tmp/model.py', 20, 'initialize'],
-                },
-              }),
-            ]);
-          } else {
-            expect(fetchStackFrames).not.toHaveBeenCalled();
-            expect(recordedActions.length).toEqual(0);
-          }
-        }
-      );
-    }
   });
 });
