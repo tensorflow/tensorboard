@@ -80,4 +80,27 @@ When enabled by default, this also works with editor plugins like
 
 ### Debugging UI Tests Locally
 
-Our UI tests (e.g., //tensorboard/components/vz_sorting/test) use HTML import which is now deprecated from all browsers (Chrome 79- had the native support) and is run without any polyfills. In order to debug tests, you may want to run a Chromium, which is used in our CI, that supports HTML import which can be found in `./bazel-bin/third_party/chromium/chromium.out` (exact path to binary will differ by OS you are on; for Linux, the full path is `./bazel-bin/third_party/chromium/chromium.out/chrome-linux/chrome`). If it is missing, please run `bazel build third_party/chromium` beforehand.
+Our UI tests (e.g., //tensorboard/components/vz_sorting/test) use HTML import
+which is now deprecated from all browsers (Chrome 79- had the native support)
+and is run without any polyfills. In order to debug tests, you may want to run a
+a Chromium used by our CI that supports HTML import. It can be found in
+`./bazel-bin/third_party/chromium/chromium.out` (exact path to binary will
+differ by OS you are on; for Linux, the full path is
+`./bazel-bin/third_party/chromium/chromium.out/chrome-linux/chrome`).
+
+For example of the vz_sorting test,
+
+```sh
+# Run the debug instance of the test. It should run a web server at a dynamic
+# port.
+bazel run tensorboard/components/vz_sorting/test:test_web_library
+
+# In another tab:
+
+# Fetch, if missing, the Chromium
+bazel build third_party/chromium
+./bazel-bin/third_party/chromium/chromium.out/chrome-linux/chrome
+
+# Lastly, put the address returend by the web server into the Chromium.
+```
+
