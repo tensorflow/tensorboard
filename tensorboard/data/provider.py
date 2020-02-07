@@ -632,8 +632,8 @@ class BlobSequenceTimeSeries(_TimeSeries):
         nonnegative integer.
       max_wall_time: The largest wall time of any datum in this time series, as
         `float` seconds since epoch.
-      latest_max_index: The largest index in the sequence at max_step (0-based,
-        inclusive).
+      max_length: The largest length (number of blobs) of any datum in
+        this scalar time series, or `None` if this time series is empty.
       plugin_content: A bytestring of arbitrary plugin-specific metadata for this
         time series, as provided to `tf.summary.write` in the
         `plugin_data.content` field of the `metadata` argument.
@@ -643,13 +643,13 @@ class BlobSequenceTimeSeries(_TimeSeries):
         empty if no description was specified. Deprecated; may be removed soon.
     """
 
-    __slots__ = ("_latest_max_index",)
+    __slots__ = ("_max_length",)
 
     def __init__(
         self,
         max_step,
         max_wall_time,
-        latest_max_index,
+        max_length,
         plugin_content,
         description,
         display_name,
@@ -657,11 +657,11 @@ class BlobSequenceTimeSeries(_TimeSeries):
         super(BlobSequenceTimeSeries, self).__init__(
             max_step, max_wall_time, plugin_content, description, display_name
         )
-        self._latest_max_index = latest_max_index
+        self._max_length = max_length
 
     @property
-    def latest_max_index(self):
-        return self._latest_max_index
+    def max_length(self):
+        return self._max_length
 
     def __eq__(self, other):
         if not isinstance(other, BlobSequenceTimeSeries):
@@ -670,7 +670,7 @@ class BlobSequenceTimeSeries(_TimeSeries):
             return False
         if self._max_wall_time != other._max_wall_time:
             return False
-        if self._latest_max_index != other._latest_max_index:
+        if self._max_length != other._max_length:
             return False
         if self._plugin_content != other._plugin_content:
             return False
@@ -685,7 +685,7 @@ class BlobSequenceTimeSeries(_TimeSeries):
             (
                 self._max_step,
                 self._max_wall_time,
-                self._latest_max_index,
+                self._max_length,
                 self._plugin_content,
                 self._description,
                 self._display_name,
@@ -697,7 +697,7 @@ class BlobSequenceTimeSeries(_TimeSeries):
             (
                 "max_step=%r" % (self._max_step,),
                 "max_wall_time=%r" % (self._max_wall_time,),
-                "latest_max_index=%r" % (self._latest_max_index,),
+                "max_length=%r" % (self._max_length,),
                 "plugin_content=%r" % (self._plugin_content,),
                 "description=%r" % (self._description,),
                 "display_name=%r" % (self._display_name,),

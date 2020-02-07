@@ -48,6 +48,13 @@ namespace tf_storage {
    */
   export const DISAMBIGUATOR = 'disambiguator';
 
+  // Keep an up-to-date store of URL params, which iframed plugins can request.
+  export let urlDict: StringDict = componentToDict(readComponent());
+
+  tf_storage.addHashListener(() => {
+    tf_storage.urlDict = componentToDict(readComponent());
+  });
+
   export const {
     get: getString,
     set: setString,
@@ -209,6 +216,54 @@ namespace tf_storage {
     }
 
     return {get, set, getInitializer, getObserver, disposeBinding};
+  }
+
+  export function migrateLegacyURLScheme() {
+    /**
+     * TODO(psybuzz): move to some compatibility file.
+     * For each WIT URL param in the legacy scheme, create another URL param
+     * in the new scheme. Once WIT migrates to using the new plugin API
+     * `getURLPluginData()`, we can update this method to delete the legacy
+     * scheme params.
+     *
+     * This list of params was taken on 1/16/2020. Luckily, WIT only stored
+     * strings, booleans.
+     */
+    const witUrlCompatibilitySet = new Set<string>([
+      'examplesPath',
+      'hideModelPane2',
+      'modelName1',
+      'modelName2',
+      'inferenceAddress1',
+      'inferenceAddress2',
+      'modelType',
+      'modelVersion1',
+      'modelVersion2',
+      'modelSignature1',
+      'modelSignature2',
+      'maxExamples',
+      'labelVocabPath',
+      'multiClass',
+      'sequenceExamples',
+      'maxClassesToDisplay',
+      'samplingOdds',
+      'usePredictApi',
+      'predictInputTensor',
+      'predictOutputTensor',
+    ]);
+
+    const items = componentToDict(readComponent());
+    if (items[TAB] === 'whatif') {
+      for (let oldName of witUrlCompatibilitySet) {
+        if (oldName in items) {
+          const oldValue = items[oldName];
+          items[`p.whatif.${oldName}`] = oldValue;
+        }
+      }
+    }
+    writeComponent(dictToComponent(items));
+
+    this.urlDict = items;
   }
 
   /**

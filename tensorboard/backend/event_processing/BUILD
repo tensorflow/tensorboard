@@ -38,7 +38,6 @@ py_library(
         ":event_accumulator",
         "//tensorboard:errors",
         "//tensorboard/data:provider",
-        "//tensorboard/plugins/graph:metadata",
         "//tensorboard/util:tb_logging",
         "//tensorboard/util:tensor_util",
         "@org_pythonhosted_six",
@@ -151,6 +150,25 @@ py_test(
     deps = [
         ":event_file_loader",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/summary/writer",
+        "@org_pythonhosted_six",
+    ],
+)
+
+py_test(
+    name = "event_file_loader_notf_test",
+    size = "small",
+    srcs = ["event_file_loader_test.py"],
+    main = "event_file_loader_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":event_file_loader",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:no_tensorflow",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/summary/writer",
+        "@org_pythonhosted_six",
     ],
 )
 
@@ -170,6 +188,7 @@ py_library(
         ":plugin_asset_util",
         ":reservoir",
         "//tensorboard:data_compat",
+        "//tensorboard:dataclass_compat",
         "//tensorboard/compat:tensorflow",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/plugins/distribution:compressor",
@@ -209,6 +228,7 @@ py_test(
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/plugins/audio:summary",
         "//tensorboard/plugins/distribution:compressor",
+        "//tensorboard/plugins/graph:metadata",
         "//tensorboard/plugins/image:summary",
         "//tensorboard/plugins/scalar:summary",
         "//tensorboard/util:tb_logging",

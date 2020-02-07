@@ -18,7 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import collections
+import collections.abc
 import json
 
 import tensorflow as tf
@@ -37,7 +37,7 @@ class DebuggerPluginTest(debugger_plugin_testlib.DebuggerPluginTestBase):
         pills."""
         apps = self.plugin.get_plugin_apps()
         self.assertIn("/health_pills", apps)
-        self.assertIsInstance(apps["/health_pills"], collections.Callable)
+        self.assertIsInstance(apps["/health_pills"], collections.abc.Callable)
 
     def testHealthPillsPluginIsActive(self):
         # The multiplexer has sampled health pills.

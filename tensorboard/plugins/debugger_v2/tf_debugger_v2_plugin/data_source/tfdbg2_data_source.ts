@@ -12,7 +12,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {Observable} from 'rxjs';
 import {
@@ -21,6 +20,7 @@ import {
   ExecutionDigest,
   StackFrame,
 } from '../store/debugger_types';
+import {TBHttpClient} from '../../../../webapp/webapp_data_source/tb_http_client';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
@@ -71,7 +71,7 @@ export abstract class Tfdbg2DataSource {
 export class Tfdbg2HttpServerDataSource implements Tfdbg2DataSource {
   private readonly httpPathPrefix = 'data/plugin/debugger-v2';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: TBHttpClient) {}
 
   fetchRuns() {
     // TODO(cais): Once the backend uses an DataProvider that unifies tfdbg and

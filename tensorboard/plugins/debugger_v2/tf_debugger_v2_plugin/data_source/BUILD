@@ -10,7 +10,7 @@ ng_module(
     ],
     deps = [
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/store:types",
-        "//tensorboard/webapp/angular:expect_angular_common_http",
+        "//tensorboard/webapp/webapp_data_source:http_client",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//rxjs",

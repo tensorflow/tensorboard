@@ -20,6 +20,7 @@ from __future__ import print_function
 
 import json
 import os
+import six
 import socket
 
 import tensorflow as tf
@@ -37,7 +38,9 @@ _HOST_NAME = socket.gethostname()
 _CURRENT_FILE_FULL_PATH = os.path.abspath(__file__)
 
 
-def _generate_tfdbg_v2_data(logdir, tensor_debug_mode="NO_TENSOR"):
+def _generate_tfdbg_v2_data(
+    logdir, tensor_debug_mode="NO_TENSOR", logarithm_times=None
+):
     """Generate a simple dump of tfdbg v2 data by running a TF2 program.
 
     The run is instrumented by the enable_dump_debug_info() API.
@@ -53,6 +56,8 @@ def _generate_tfdbg_v2_data(logdir, tensor_debug_mode="NO_TENSOR"):
       tensor_debug_mode: Mode for dumping debug tensor values, as an optional
         string. See the documentation of
         `tf.debugging.experimental.enable_dump_debug_info()` for details.
+      logarithm_times: Optionally take logarithm of the final `x` file _ times
+        iteratively, in order to produce nans.
     """
     writer = tf.debugging.experimental.enable_dump_debug_info(
         logdir, circular_buffer_size=-1, tensor_debug_mode=tensor_debug_mode
@@ -81,6 +86,19 @@ def _generate_tfdbg_v2_data(logdir, tensor_debug_mode="NO_TENSOR"):
         x = tf.constant([1, 3, 3, 7], dtype=tf.float32)
         for i in range(3):
             assert my_function(x).numpy() == 42.0
+
+        logarithm_times = 0 if logarithm_times is None else logarithm_times
+        for i in range(logarithm_times):
+            x = tf.math.log(x)
+        # Expected iteration results:
+        #   [0.        1.0986123 1.0986123 1.9459102]
+        #   [-inf 0.09404784 0.09404784 0.6657298 ]
+        #   [nan -2.3639517  -2.3639517  -0.40687138]
+        #   [nan nan nan nan]
+        #   [nan nan nan nan]
+        #   [nan nan nan nan]
+        #   ...
+
         writer.FlushNonExecutionFiles()
         writer.FlushExecutionFiles()
     finally:
@@ -151,6 +169,162 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         run = data["__default_debugger_run__"]
         self.assertIsInstance(run["start_time"], float)
         self.assertGreater(run["start_time"], 0)
+
+    def testAlertsWhenNoAlertExists(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        response = self.server.get(
+            _ROUTE_PREFIX + "/alerts?run=%s&begin=0&end=0" % run
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        data = json.loads(response.get_data())
+        self.assertEqual(
+            data,
+            {
+                "begin": 0,
+                "end": 0,
+                "num_alerts": 0,
+                "per_type_alert_limit": 1000,
+                "alerts": [],
+            },
+        )
+
+    def testGetAlertNumberOnlyWhenAlertExistsCurtHealthMode(self):
+        _generate_tfdbg_v2_data(
+            self.logdir, tensor_debug_mode="CURT_HEALTH", logarithm_times=4
+        )
+        run = self._getExactlyOneRun()
+        response = self.server.get(
+            _ROUTE_PREFIX + "/alerts?run=%s&begin=0&end=0" % run
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        data = json.loads(response.get_data())
+        self.assertEqual(
+            data,
+            {
+                "begin": 0,
+                "end": 0,
+                "num_alerts": 3,
+                "per_type_alert_limit": 1000,
+                "alerts": [],
+            },
+        )
+
+    def testGetAlertsContentWhenAlertExistsConciseHealthMode(self):
+        _generate_tfdbg_v2_data(
+            self.logdir, tensor_debug_mode="CONCISE_HEALTH", logarithm_times=4
+        )
+        run = self._getExactlyOneRun()
+        response = self.server.get(
+            _ROUTE_PREFIX + "/alerts?run=%s&begin=0&end=3" % run
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        data = json.loads(response.get_data())
+        self.assertEqual(data["begin"], 0)
+        self.assertEqual(data["end"], 3)
+        self.assertEqual(data["num_alerts"], 3)
+        self.assertEqual(data["per_type_alert_limit"], 1000)
+        alerts = data["alerts"]
+        self.assertLen(alerts, 3)
+        self.assertEqual(
+            alerts[0],
+            {
+                "alert_type": "InfNanAlert",
+                "op_type": "Log",
+                "output_slot": 0,
+                "size": 4.0,
+                "num_neg_inf": 1.0,
+                "num_pos_inf": 0.0,
+                "num_nan": 0.0,
+                "execution_index": 4,
+                "graph_execution_trace_index": None,
+            },
+        )
+        self.assertEqual(
+            alerts[1],
+            {
+                "alert_type": "InfNanAlert",
+                "op_type": "Log",
+                "output_slot": 0,
+                "size": 4.0,
+                "num_neg_inf": 0.0,
+                "num_pos_inf": 0.0,
+                "num_nan": 1.0,
+                "execution_index": 5,
+                "graph_execution_trace_index": None,
+            },
+        )
+        self.assertEqual(
+            alerts[2],
+            {
+                "alert_type": "InfNanAlert",
+                "op_type": "Log",
+                "output_slot": 0,
+                "size": 4.0,
+                "num_neg_inf": 0.0,
+                "num_pos_inf": 0.0,
+                "num_nan": 4.0,
+                "execution_index": 6,
+                "graph_execution_trace_index": None,
+            },
+        )
+
+    def testGetAlertsWithInvalidBeginOrEndWhenAlertExistsCurtHealthMode(self):
+        _generate_tfdbg_v2_data(
+            self.logdir, tensor_debug_mode="CURT_HEALTH", logarithm_times=4
+        )
+        run = self._getExactlyOneRun()
+
+        # begin = 0; end = 5
+        response = self.server.get(
+            _ROUTE_PREFIX + "/alerts?run=%s&begin=0&end=5" % run
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {"error": "Invalid argument: end index (5) out of bounds (3)"},
+        )
+
+        # begin = -1; end = 2
+        response = self.server.get(
+            _ROUTE_PREFIX + "/alerts?run=%s&begin=-1&end=2" % run
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {"error": "Invalid argument: Invalid begin index (-1)"},
+        )
+
+        # begin = 2; end = 1
+        response = self.server.get(
+            _ROUTE_PREFIX + "/alerts?run=%s&begin=2&end=1" % run
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {
+                "error": "Invalid argument: "
+                "end index (1) is unexpectedly less than begin index (2)"
+            },
+        )
 
     def testServeExecutionDigestsWithEqualBeginAndEnd(self):
         _generate_tfdbg_v2_data(self.logdir)
@@ -260,7 +434,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         )
         self.assertEqual(
             json.loads(response.get_data()),
-            {"error": "end index (4) out of bounds (3)"},
+            {"error": "Invalid argument: end index (4) out of bounds (3)"},
         )
 
         # begin = -1; end = 2
@@ -273,7 +447,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         )
         self.assertEqual(
             json.loads(response.get_data()),
-            {"error": "Invalid begin index (-1)"},
+            {"error": "Invalid argument: Invalid begin index (-1)"},
         )
 
         # begin = 2; end = 1
@@ -287,7 +461,8 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertEqual(
             json.loads(response.get_data()),
             {
-                "error": "end index (1) is unexpectedly less than begin index (2)"
+                "error": "Invalid argument: "
+                "end index (1) is unexpectedly less than begin index (2)"
             },
         )
 
@@ -387,7 +562,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         )
         self.assertEqual(
             json.loads(response.get_data()),
-            {"error": "end index (4) out of bounds (3)"},
+            {"error": "Invalid argument: end index (4) out of bounds (3)"},
         )
 
         # begin = -1; end = 2
@@ -400,7 +575,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         )
         self.assertEqual(
             json.loads(response.get_data()),
-            {"error": "Invalid begin index (-1)"},
+            {"error": "Invalid argument: Invalid begin index (-1)"},
         )
 
         # begin = 2; end = 1
@@ -414,7 +589,8 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertEqual(
             json.loads(response.get_data()),
             {
-                "error": "end index (1) is unexpectedly less than begin index (2)"
+                "error": "Invalid argument: "
+                "end index (1) is unexpectedly less than begin index (2)"
             },
         )
 
@@ -507,7 +683,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertEqual(
             json.loads(response.get_data()),
             {
-                "error": "There is no source-code file at index %d"
+                "error": "Not found: There is no source-code file at index %d"
                 % invalid_index
             },
         )
@@ -541,11 +717,11 @@ class DebuggerV2PluginTest(tf.test.TestCase):
             self.assertIsInstance(item, list)
             self.assertLen(item, 4)  # [host_name, file_path, lineno, function].
             self.assertEqual(item[0], _HOST_NAME)
-            self.assertIsInstance(item[1], str)
+            self.assertIsInstance(item[1], six.string_types)
             self.assertTrue(item[1])
             self.assertIsInstance(item[2], int)
             self.assertGreaterEqual(item[2], 1)
-            self.assertIsInstance(item[3], str)
+            self.assertIsInstance(item[3], six.string_types)
             self.assertTrue(item[3])
         # Assert that the current file and current function should be in the
         # stack frames.
@@ -605,12 +781,10 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertEqual(
             "application/json", response.headers.get("content-type")
         )
-        self.assertEqual(
-            json.loads(response.get_data()),
-            {
-                "error": "Cannot find stack frame with ID: "
-                + "'nonsense-stack-frame-id'"
-            },
+        self.assertRegexpMatches(
+            json.loads(response.get_data())["error"],
+            "Not found: Cannot find stack frame with ID"
+            ".*nonsense-stack-frame-id.*",
         )
 
 

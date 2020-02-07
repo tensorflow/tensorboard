@@ -536,7 +536,7 @@ class ApplicationPluginNameTest(tb_test.TestCase):
 
     def testComprehensiveName(self):
         application.TensorBoardWSGI(
-            plugins=[FakePlugin(plugin_name="Scalar-Dashboard_3000.1")]
+            plugins=[FakePlugin(plugin_name="Scalar-Dashboard_3000")]
         )
 
     def testNameIsNone(self):
@@ -551,6 +551,12 @@ class ApplicationPluginNameTest(tb_test.TestCase):
         with six.assertRaisesRegex(self, ValueError, r"invalid name"):
             application.TensorBoardWSGI(
                 plugins=[FakePlugin(plugin_name="scalars/data")]
+            )
+
+    def testNameWithPeriods(self):
+        with six.assertRaisesRegex(self, ValueError, r"invalid name"):
+            application.TensorBoardWSGI(
+                plugins=[FakePlugin(plugin_name="scalars.data")]
             )
 
     def testNameWithSpaces(self):

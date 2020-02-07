@@ -193,7 +193,7 @@ class BlobSequenceTimeSeriesTest(tb_test.TestCase):
         x = provider.BlobSequenceTimeSeries(
             max_step=77,
             max_wall_time=1234.5,
-            latest_max_index=6,
+            max_length=6,
             plugin_content=b"AB\xCD\xEF!\x00",
             description="test test",
             display_name="one two",
@@ -201,7 +201,7 @@ class BlobSequenceTimeSeriesTest(tb_test.TestCase):
         repr_ = repr(x)
         self.assertIn(repr(x.max_step), repr_)
         self.assertIn(repr(x.max_wall_time), repr_)
-        self.assertIn(repr(x.latest_max_index), repr_)
+        self.assertIn(repr(x.max_length), repr_)
         self.assertIn(repr(x.plugin_content), repr_)
         self.assertIn(repr(x.description), repr_)
         self.assertIn(repr(x.display_name), repr_)

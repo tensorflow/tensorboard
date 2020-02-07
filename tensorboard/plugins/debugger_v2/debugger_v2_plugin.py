@@ -20,19 +20,21 @@ from __future__ import print_function
 
 from werkzeug import wrappers
 
+from tensorboard import errors
 from tensorboard import plugin_util
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.debugger_v2 import debug_data_provider
 from tensorboard.backend import http_util
 
 
-def _missing_run_error_response(request):
+def _error_response(request, error_message):
     return http_util.Respond(
-        request,
-        {"error": "run parameter is not provided"},
-        "application/json",
-        code=400,
+        request, {"error": error_message}, "application/json", code=400,
     )
+
+
+def _missing_run_error_response(request):
+    return _error_response(request, "run parameter is not provided")
 
 
 class DebuggerV2Plugin(base_plugin.TBPlugin):
@@ -58,6 +60,7 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
         # TODO(cais): Add routes as they are implemented.
         return {
             "/runs": self.serve_runs,
+            "/alerts": self.serve_alerts,
             "/execution/digests": self.serve_execution_digests,
             "/execution/data": self.serve_execution_data,
             "/source_files/list": self.serve_source_files_list,
@@ -92,6 +95,32 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
         return http_util.Respond(request, run_listing, "application/json")
 
     @wrappers.Request.application
+    def serve_alerts(self, request):
+        experiment = plugin_util.experiment_id(request.environ)
+        run = request.args.get("run")
+        if run is None:
+            return _missing_run_error_response(request)
+        begin = int(request.args.get("begin", "0"))
+        end = int(request.args.get("end", "-1"))
+        run_tag_filter = debug_data_provider.alerts_run_tag_filter(
+            run, begin, end
+        )
+        blob_sequences = self._data_provider.read_blob_sequences(
+            experiment, self.plugin_name, run_tag_filter=run_tag_filter
+        )
+        tag = next(iter(run_tag_filter.tags))
+        try:
+            return http_util.Respond(
+                request,
+                self._data_provider.read_blob(
+                    blob_sequences[run][tag][0].blob_key
+                ),
+                "application/json",
+            )
+        except errors.InvalidArgumentError as e:
+            return _error_response(request, str(e))
+
+    @wrappers.Request.application
     def serve_execution_digests(self, request):
         experiment = plugin_util.experiment_id(request.environ)
         run = request.args.get("run")
@@ -114,10 +143,8 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
                 ),
                 "application/json",
             )
-        except (IndexError, ValueError) as e:
-            return http_util.Respond(
-                request, {"error": str(e)}, "application/json", code=400,
-            )
+        except errors.InvalidArgumentError as e:
+            return _error_response(request, str(e))
 
     @wrappers.Request.application
     def serve_execution_data(self, request):
@@ -142,10 +169,8 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
                 ),
                 "application/json",
             )
-        except (IndexError, ValueError) as e:
-            return http_util.Respond(
-                request, {"error": str(e)}, "application/json", code=400,
-            )
+        except errors.InvalidArgumentError as e:
+            return _error_response(request, str(e))
 
     @wrappers.Request.application
     def serve_source_files_list(self, request):
@@ -189,11 +214,8 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
         # TOOD(cais): When the need arises, support serving a subset of a
         # source file's lines.
         if index is None:
-            return http_util.Respond(
-                request,
-                {"error": "index is not provided for source file content"},
-                "application/json",
-                code=400,
+            return _error_response(
+                request, "index is not provided for source file content"
             )
         index = int(index)
         run_tag_filter = debug_data_provider.source_file_run_tag_filter(
@@ -211,10 +233,8 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
                 ),
                 "application/json",
             )
-        except IndexError as e:
-            return http_util.Respond(
-                request, {"error": str(e)}, "application/json", code=400,
-            )
+        except errors.NotFoundError as e:
+            return _error_response(request, str(e))
 
     @wrappers.Request.application
     def serve_stack_frames(self, request):
@@ -235,19 +255,9 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
             return _missing_run_error_response(request)
         stack_frame_ids = request.args.get("stack_frame_ids")
         if stack_frame_ids is None:
-            return http_util.Respond(
-                request,
-                {"error": "Missing stack_frame_ids parameter"},
-                "application/json",
-                code=400,
-            )
+            return _error_response(request, "Missing stack_frame_ids parameter")
         if not stack_frame_ids:
-            return http_util.Respond(
-                request,
-                {"error": "Empty stack_frame_ids parameter"},
-                "application/json",
-                code=400,
-            )
+            return _error_response(request, "Empty stack_frame_ids parameter")
         stack_frame_ids = stack_frame_ids.split(",")
         run_tag_filter = debug_data_provider.stack_frames_run_tag_filter(
             run, stack_frame_ids
@@ -264,10 +274,5 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
                 ),
                 "application/json",
             )
-        except KeyError as e:
-            return http_util.Respond(
-                request,
-                {"error": "Cannot find stack frame with ID: %s" % e},
-                "application/json",
-                code=400,
-            )
+        except errors.NotFoundError as e:
+            return _error_response(request, str(e))

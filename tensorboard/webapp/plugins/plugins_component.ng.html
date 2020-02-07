@@ -14,19 +14,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<div
-  #pluginContainer
-  class="plugins"
-  [ngSwitch]="activePlugin?.loading_mechanism.type"
->
+<div #pluginContainer class="plugins">
   <!-- let Polymer-based components render from JS -->
   <!-- let iframe based component render from JS to prevent flickering from prop changes. -->
 
-  <!-- render Angular built-in plugins with *ngSwitchCase statement. -->
-  <ng-container
-    *ngSwitchCase="LoadingMechanismType.NG_COMPONENT"
-    [ngSwitch]="activePlugin?.id"
-  >
-    <tf-debugger-v2 *ngSwitchCase="'debugger-v2'"></tf-debugger-v2>
-  </ng-container>
+  <!-- render Angular built-in plugins with a dynamic component resolver. -->
+  <ng-container #ngPluginContainer></ng-container>
 </div>

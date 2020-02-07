@@ -1,7 +1,6 @@
 package(default_visibility = ["//tensorboard:internal"])
 
 load("//tensorboard/defs:web.bzl", "tf_web_library")
-load("//tensorboard/defs:vulcanize.bzl", "tensorboard_html_binary")
 
 licenses(["notice"])  # Apache 2.0
 
@@ -79,6 +78,7 @@ tf_web_library(
         "//tensorboard/plugins/mesh/tf_mesh_dashboard",
         "//tensorboard/plugins/pr_curve/tf_pr_curve_dashboard",
         "//tensorboard/plugins/profile/tf_profile_dashboard",
+        "//tensorboard/plugins/profile_redirect/tf_profile_redirect_dashboard",
         "//tensorboard/plugins/scalar/tf_scalar_dashboard",
         "//tensorboard/plugins/text/tf_text_dashboard",
     ],

@@ -19,7 +19,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import collections
+import collections.abc
 import os.path
 
 from six.moves import xrange  # pylint: disable=redefined-builtin
@@ -115,8 +115,10 @@ class DistributionsPluginTest(tf.test.TestCase):
         """Tests that the plugin offers the correct routes."""
         self.set_up_with_runs([self._RUN_WITH_SCALARS])
         routes = self.plugin.get_plugin_apps()
-        self.assertIsInstance(routes["/distributions"], collections.Callable)
-        self.assertIsInstance(routes["/tags"], collections.Callable)
+        self.assertIsInstance(
+            routes["/distributions"], collections.abc.Callable
+        )
+        self.assertIsInstance(routes["/tags"], collections.abc.Callable)
 
     def test_index(self):
         self.set_up_with_runs(

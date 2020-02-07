@@ -20,7 +20,7 @@ from __future__ import division
 from __future__ import print_function
 
 import argparse
-import collections
+import collections.abc
 import csv
 import functools
 import os.path
@@ -185,8 +185,8 @@ class ScalarsPluginTest(tf.test.TestCase):
     def testRoutesProvided(self, plugin):
         """Tests that the plugin offers the correct routes."""
         routes = plugin.get_plugin_apps()
-        self.assertIsInstance(routes["/scalars"], collections.Callable)
-        self.assertIsInstance(routes["/tags"], collections.Callable)
+        self.assertIsInstance(routes["/scalars"], collections.abc.Callable)
+        self.assertIsInstance(routes["/tags"], collections.abc.Callable)
 
     @with_runs(
         [_RUN_WITH_LEGACY_SCALARS, _RUN_WITH_SCALARS, _RUN_WITH_HISTOGRAM]

@@ -13,5 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import * as _runs from './runs';
+import * as _core from './core';
 
+export const core = _core;
 export const runs = _runs;

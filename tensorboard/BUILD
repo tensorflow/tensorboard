@@ -212,6 +212,7 @@ py_library(
         "//tensorboard/plugins/mesh:mesh_plugin",
         "//tensorboard/plugins/pr_curve:pr_curves_plugin",
         "//tensorboard/plugins/profile:profile_plugin_loader",
+        "//tensorboard/plugins/profile_redirect:profile_redirect_plugin",
         "//tensorboard/plugins/scalar:scalars_plugin",
         "//tensorboard/plugins/text:text_plugin",
     ],
@@ -458,6 +459,42 @@ py_test(
         "//tensorboard/plugins/scalar:metadata",
         "//tensorboard/plugins/scalar:summary",
         "//tensorboard/util:tensor_util",
+    ],
+)
+
+py_library(
+    name = "dataclass_compat",
+    srcs = ["dataclass_compat.py"],
+    srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/plugins/graph:metadata",
+        "//tensorboard/plugins/histogram:metadata",
+        "//tensorboard/plugins/image:metadata",
+        "//tensorboard/plugins/scalar:metadata",
+        "//tensorboard/util:tensor_util",
+    ],
+)
+
+py_test(
+    name = "dataclass_compat_test",
+    size = "small",
+    srcs = ["dataclass_compat_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":dataclass_compat",
+        "//tensorboard:expect_numpy_installed",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/backend/event_processing:event_file_loader",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/plugins/graph:metadata",
+        "//tensorboard/plugins/histogram:metadata",
+        "//tensorboard/plugins/histogram:summary",
+        "//tensorboard/plugins/scalar:metadata",
+        "//tensorboard/plugins/scalar:summary",
+        "//tensorboard/util:tensor_util",
+        "//tensorboard/util:test_util",
     ],
 )
 

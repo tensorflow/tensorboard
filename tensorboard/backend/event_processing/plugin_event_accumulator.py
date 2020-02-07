@@ -23,6 +23,7 @@ import threading
 import six
 
 from tensorboard import data_compat
+from tensorboard import dataclass_compat
 from tensorboard.backend.event_processing import directory_loader
 from tensorboard.backend.event_processing import directory_watcher
 from tensorboard.backend.event_processing import event_file_loader
@@ -284,6 +285,13 @@ class EventAccumulator(object):
 
     def _ProcessEvent(self, event):
         """Called whenever an event is loaded."""
+        event = data_compat.migrate_event(event)
+        events = dataclass_compat.migrate_event(event)
+        for event in events:
+            self._ProcessMigratedEvent(event)
+
+    def _ProcessMigratedEvent(self, event):
+        """Helper for `_ProcessEvent`."""
         if self._first_event_timestamp is None:
             self._first_event_timestamp = event.wall_time
 
@@ -356,8 +364,6 @@ class EventAccumulator(object):
             self._tagged_metadata[tag] = event.tagged_run_metadata.run_metadata
         elif event.HasField("summary"):
             for value in event.summary.value:
-                value = data_compat.migrate_value(value)
-
                 if value.HasField("metadata"):
                     tag = value.tag
                     # We only store the first instance of the metadata. This check

@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {TestBed} from '@angular/core/testing';
-import {HttpClientTestingModule} from '@angular/common/http/testing';
 import {provideMockActions} from '@ngrx/effects/testing';
 import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
@@ -50,6 +49,8 @@ import {
   createState,
   createTestExecutionData,
 } from '../testing';
+import {TBHttpClientTestingModule} from '../../../../webapp/webapp_data_source/tb_http_client_testing';
+
 import {DebuggerEffects, TEST_ONLY} from './debugger_effects';
 
 describe('getMissingPages', () => {
@@ -207,7 +208,7 @@ describe('Debugger effects', () => {
 
     const initialState = createState(createDebuggerState());
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
+      imports: [TBHttpClientTestingModule],
       providers: [
         provideMockActions(action),
         DebuggerEffects,

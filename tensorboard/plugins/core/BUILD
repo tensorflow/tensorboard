@@ -3,9 +3,6 @@
 
 package(default_visibility = ["//tensorboard:internal"])
 
-load("//tensorboard/defs:web.bzl", "tf_web_library")
-load("//tensorboard/defs:zipper.bzl", "tensorboard_zip_file")
-
 licenses(["notice"])  # Apache 2.0
 
 exports_files(["LICENSE"])

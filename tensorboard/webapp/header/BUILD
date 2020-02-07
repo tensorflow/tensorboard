@@ -1,7 +1,7 @@
-package(default_visibility = ["//tensorboard:internal"])
-
 load("@npm_angular_bazel//:index.bzl", "ng_module")
 load("//tensorboard/defs:defs.bzl", "tf_ts_library")
+
+package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
@@ -9,13 +9,14 @@ ng_module(
     name = "header",
     srcs = [
         "header_component.ts",
-        "header_container.ts",
         "header_module.ts",
+        "plugin_selector_component.ts",
+        "plugin_selector_container.ts",
         "types.ts",
     ],
     assets = [
-        "header_component.css",
-        "header_component.ng.html",
+        "plugin_selector_component.ng.html",
+        "plugin_selector_component.css",
     ],
     deps = [
         "//tensorboard/webapp/angular:expect_angular_material_select",
@@ -47,6 +48,7 @@ tf_ts_library(
         "//tensorboard/webapp/angular:expect_angular_material_tabs",
         "//tensorboard/webapp/angular:expect_angular_material_toolbar",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
+        "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "//tensorboard/webapp/core/actions",
         "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/core/testing",

@@ -45,7 +45,6 @@ py_binary(
     name = "uploader",
     srcs = ["uploader_main.py"],
     main = "uploader_main.py",
-    python_version = "PY2",
     deps = [":uploader_main_lib"],
 )
 

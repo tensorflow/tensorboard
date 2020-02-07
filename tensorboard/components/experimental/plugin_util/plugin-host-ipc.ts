@@ -13,11 +13,37 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 namespace tb_plugin.host {
+  /**
+   * Registers metadata associated with a plugin iframe upon creation. Plugins
+   * registered with this do not necessarily use IPC.
+   */
+  export function registerPluginIframe(
+    frame: HTMLIFrameElement,
+    pluginName: string
+  ) {
+    pluginMetadata.set(frame, {pluginName});
+  }
+
+  const pluginMetadata = new WeakMap<HTMLIFrameElement, PluginMetadata>();
+
+  export type PluginMetadata = {
+    pluginName: string;
+  };
+
+  /**
+   * The `context` is only null in the case of a 'removeDom' plugin that gets
+   * removed after it posts a message, and before the host has responded.
+   */
+  export type PluginHostCallback = (
+    context: PluginMetadata | null,
+    data: any
+  ) => any;
+
   const portIPCs = new Set<lib.DO_NOT_USE_INTERNAL.IPC>();
   const VERSION = 'experimental';
   const listeners = new Map<
     lib.DO_NOT_USE_INTERNAL.MessageType,
-    lib.DO_NOT_USE_INTERNAL.MessageCallback
+    PluginHostCallback
   >();
 
   // TODO(@psybuzz): replace this and the port cleanup logic in broadcast() with
@@ -42,8 +68,23 @@ namespace tb_plugin.host {
     port.start();
 
     for (const [type, callback] of listeners) {
-      portIPC.listen(type, callback);
+      const callbackWithContext = wrapCallbackWithContext(callback, portIPC);
+      portIPC.listen(type, callbackWithContext);
     }
+  }
+
+  /**
+   * Provides context data from the IPC to the callback.
+   */
+  function wrapCallbackWithContext(
+    callback: PluginHostCallback,
+    ipc: lib.DO_NOT_USE_INTERNAL.IPC
+  ): lib.DO_NOT_USE_INTERNAL.MessageCallback {
+    return (payload: tb_plugin.lib.DO_NOT_USE_INTERNAL.PayloadType) => {
+      const frame = ipcToFrame.get(ipc)!;
+      const context = pluginMetadata.get(frame) || null;
+      return callback(context, payload);
+    };
   }
 
   /**
@@ -61,7 +102,7 @@ namespace tb_plugin.host {
     payload: lib.DO_NOT_USE_INTERNAL.PayloadType
   ): Promise<lib.DO_NOT_USE_INTERNAL.PayloadType[]> {
     for (const ipc of portIPCs) {
-      if (!ipcToFrame.get(ipc).isConnected) {
+      if (!ipcToFrame.get(ipc)!.isConnected) {
         portIPCs.delete(ipc);
         ipcToFrame.delete(ipc);
       }
@@ -76,11 +117,12 @@ namespace tb_plugin.host {
    */
   export function listen(
     type: lib.DO_NOT_USE_INTERNAL.MessageType,
-    callback: lib.DO_NOT_USE_INTERNAL.MessageCallback
+    callback: PluginHostCallback
   ) {
     listeners.set(type, callback);
     for (const ipc of portIPCs) {
-      ipc.listen(type, callback);
+      const callbackWithContext = wrapCallbackWithContext(callback, ipc);
+      ipc.listen(type, callbackWithContext);
     }
   }
 
