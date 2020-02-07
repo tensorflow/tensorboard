@@ -23,13 +23,22 @@ service TensorBoardWriterService {
   // Request that the calling user and all their data be permanently deleted.
   // Used for testing purposes.
   rpc DeleteOwnUser(DeleteOwnUserRequest) returns (DeleteOwnUserResponse) {}
+  // Request to mutate the name of an experiment.
+  rpc SetExperimentName(SetExperimentNameRequest)
+      returns (SetExperimentNameResponse) {}
+  // Request to mutate the description of an experiment.
+  rpc SetExperimentDescription(SetExperimentDescriptionRequest)
+      returns (SetExperimentDescriptionResponse) {}
 }
 
 // This is currently empty on purpose.  No information is necessary
 // to request a URL, except. authorization of course, which doesn't
 // come within the proto.
 message CreateExperimentRequest {
-  // This is empty on purpose.
+  // User provided name of the experiment.
+  string name = 1;
+  // User provided description of the experiment, in markdown source format.
+  string description = 2;
 }
 
 // Carries all information necessary to:
@@ -126,5 +135,31 @@ message DeleteOwnUserRequest {
 
 // Everything the caller needs to know about how the deletion went.
 message DeleteOwnUserResponse {
+  // This is empty on purpose.
+}
+
+// Request to change the name of one experiment.
+message SetExperimentNameRequest{
+  // Permanent ID of this experiment.  Should match the id in the request.
+  string experiment_id = 1;
+  // User provided name of the experiment.
+  string name = 2;
+}
+
+// Response for setting experiment name.
+message SetExperimentNameResponse{
+  // This is empty on purpose.
+}
+
+// Request to change the description of one experiment.
+message SetExperimentDescriptionRequest{
+  // Permanent ID of this experiment.  Should match the id in the request.
+  string experiment_id = 1;
+  // User provided description of the experiment, in markdown source format.
+  string description = 2;
+}
+
+// Response for setting experiment description.
+message SetExperimentDescriptionResponse{
   // This is empty on purpose.
 }

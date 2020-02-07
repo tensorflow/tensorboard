@@ -72,6 +72,8 @@ message StreamExperimentsResponse {
 }
 
 // Metadata about an experiment.
+// TODO: The definition of an experiment should be pulled
+// out into a separate file, similar to scalar.proto.
 message Experiment {
   // Permanent ID of this experiment; e.g.: "AdYd1TgeTlaLWXx6I8JUbA".
   string experiment_id = 1;
@@ -87,6 +89,10 @@ message Experiment {
   // The number of distinct tag names in this experiment. A tag name that
   // appears in multiple runs will be counted only once.
   int64 num_tags = 6;
+  // User provided name of the experiment.
+  string name = 7;
+  // User provided desription of the experiment, in markdown source format.
+  string description = 8;
 }
 
 // Field mask for `Experiment`. The `experiment_id` field is always implicitly
