@@ -13,7 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {loadMonaco, windowWithRequireAndMonaco} from './load_monaco_shim';
+import {
+  loadMonaco,
+  TEST_ONLY,
+  WindowWithRequireAndMonaco,
+} from './load_monaco_shim';
 
 describe('loadMonaco shim', () => {
   function createFakeRequire(): Require {
@@ -36,14 +40,25 @@ describe('loadMonaco shim', () => {
     return {};
   }
 
+  function createFakeWindow(): WindowWithRequireAndMonaco {
+    const require = () => {};
+    require.config = () => {};
+    return ({
+      require,
+    } as unknown) as WindowWithRequireAndMonaco;
+  }
+
+  let windowWithRequireAndMonaco: WindowWithRequireAndMonaco;
   let requireSpy: jasmine.Spy;
   beforeEach(() => {
-    windowWithRequireAndMonaco.require = createFakeRequire();
+    windowWithRequireAndMonaco = createFakeWindow();
+    spyOn(TEST_ONLY.utils, 'getWindow').and.returnValue(
+      windowWithRequireAndMonaco
+    );
     requireSpy = spyOn(windowWithRequireAndMonaco, 'require').and.callThrough();
   });
 
   afterEach(() => {
-    delete windowWithRequireAndMonaco.require;
     delete windowWithRequireAndMonaco.monaco;
   });
 

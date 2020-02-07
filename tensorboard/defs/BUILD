@@ -50,3 +50,5 @@ exports_files(
     ["clutz.d.ts"],
     visibility = ["//tensorboard:internal"],
 )
+
+exports_files(["rollup_config.js"])
