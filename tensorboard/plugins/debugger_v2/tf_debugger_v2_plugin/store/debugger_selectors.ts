@@ -157,9 +157,17 @@ export const getFocusedExecutionData = createSelector(
   selectDebuggerState,
   (state: DebuggerState): Execution | null => {
     const {focusIndex, executionData} = state.executions;
+    console.log(
+      `getFocusedExecutionData(): 100 focusIndex=${focusIndex}, executionData:`,
+      executionData
+    ); // DEBUG
     if (focusIndex === null || executionData[focusIndex] === undefined) {
       return null;
     }
+    console.log(
+      `getFocusedExecutionData(): 200 focusIndex=${focusIndex}, executionData:`,
+      executionData
+    ); // DEBUG
     return executionData[focusIndex];
   }
 );

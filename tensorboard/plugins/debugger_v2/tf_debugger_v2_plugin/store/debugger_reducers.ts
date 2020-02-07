@@ -128,7 +128,7 @@ const reducer = createReducer(
       if (runId === null) {
         return state;
       }
-      return {
+      const newState = {
         ...state,
         executions: {
           ...state.executions,
@@ -143,6 +143,14 @@ const reducer = createReducer(
           },
         },
       };
+      if (numExecutions > 0 && state.executions.focusIndex === null) {
+        newState.executions.focusIndex = 0;
+        console.log(
+          `numExecutionsLoaded reducer: numExecutions=${numExecutions}:`,
+          state.executions.focusIndex
+        ); // DEBUG
+      }
+      return newState;
     }
   ),
   on(
@@ -252,6 +260,7 @@ const reducer = createReducer(
   on(
     actions.executionDigestFocused,
     (state: DebuggerState, action): DebuggerState => {
+      console.log('In executionDigestFocused reducer:', action); // DEBUG
       return {
         ...state,
         executions: {
@@ -264,6 +273,7 @@ const reducer = createReducer(
   on(
     actions.executionDataLoaded,
     (state: DebuggerState, data: ExecutionDataResponse): DebuggerState => {
+      console.log('In executionDataLoaded reducer: 100'); // DEBUG
       const runId = state.activeRunId;
       if (runId === null) {
         return state;
@@ -275,6 +285,7 @@ const reducer = createReducer(
           executionData: {...state.executions.executionData},
         },
       };
+      console.log('In executionDataLoaded reducer: 200'); // DEBUG
       for (let i = data.begin; i < data.end; ++i) {
         newState.executions.executionData[i] = data.executions[i - data.begin];
       }

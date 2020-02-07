@@ -14,7 +14,8 @@ limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
 import {Store} from '@ngrx/store';
-import {Actions, ofType, createEffect} from '@ngrx/effects';
+import {Actions, createEffect, ofType} from '@ngrx/effects';
+import {merge} from 'rxjs';
 import {
   concatMap,
   map,
@@ -165,7 +166,7 @@ export class DebuggerEffects {
         );
       }),
       tap(() => this.store.dispatch(numExecutionsRequested())),
-      mergeMap(([props, loaded]) => {
+      mergeMap(([props]) => {
         // TODO(cais): Handle multple runs. Currently it is assumed that there
         // is at most only one debugger run available.
         const runId = Object.keys(props.runs)[0];
@@ -181,18 +182,30 @@ export class DebuggerEffects {
     )
   );
 
+  private readonly nonZeroNumExecutionsInitiallyLoaded$ = this.actions$.pipe(
+    ofType(numExecutionsLoaded),
+    withLatestFrom(this.store.select(getExecutionDigestsLoaded)),
+    filter(([props, executionDigestsLoaded]) => {
+      return (
+        props.numExecutions > 0 &&
+        Object.keys(executionDigestsLoaded.pageLoadedSizes).length === 0
+      );
+    }),
+    map(([props]) => {
+      return props;
+    })
+  );
+
   /** @export */
   readonly initialExecutionDigestsLoading$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(numExecutionsLoaded),
+    this.nonZeroNumExecutionsInitiallyLoaded$.pipe(
       withLatestFrom(
         this.store.select(getActiveRunId),
         this.store.select(getExecutionPageSize),
         this.store.select(getExecutionDigestsLoaded)
       ),
-      filter(([props, runId, _, loaded]) => {
+      filter(([, runId, , loaded]) => {
         return (
-          props.numExecutions > 0 &&
           runId !== null &&
           Object.keys(loaded.pageLoadedSizes).length === 0 &&
           loaded.state !== DataLoadState.LOADING
@@ -210,27 +223,6 @@ export class DebuggerEffects {
           })
         );
         // TODO(cais): Add catchError() to pipe.
-      })
-    )
-  );
-
-  /** @export */
-  readonly initialExecutionFocusing$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(numExecutionsLoaded),
-      withLatestFrom(
-        this.store.select(getActiveRunId),
-        this.store.select(getFocusedExecutionIndex)
-      ),
-      filter(([props, runId, focusIndex]) => {
-        return props.numExecutions > 0 && runId !== null && focusIndex === null;
-      }),
-      map(() => {
-        // Automatically focus on the first execution event when any
-        // execution events exist.
-        // TODO(cais): This should auto-focus on the first alert even
-        // when any alerts exist.
-        return executionDigestFocused({displayIndex: 0});
       })
     )
   );
@@ -261,7 +253,7 @@ export class DebuggerEffects {
     )
   );
 
-  readonly missesPages$ = this.digestRequired$.pipe(
+  private readonly missesPages$ = this.digestRequired$.pipe(
     withLatestFrom(this.store.select(getExecutionDigestsLoaded)),
     filter(([_, loaded]) => loaded.state !== DataLoadState.LOADING),
     map(([props, loaded]) => {
@@ -305,67 +297,91 @@ export class DebuggerEffects {
     )
   );
 
-  /** @export */
-  // when a execution digest is focused on, two requests are made
-  // 1. To fetch the detailed execution data for the execution event.
-  // 2. To fetch the stack trace of the execution event.
-  readonly onExecutionDigestFocused$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(executionDigestFocused),
+  readonly onExecutionDigestFocused$ = this.actions$.pipe(
+    ofType(executionDigestFocused),
+    withLatestFrom(
+      this.store.select(getActiveRunId),
+      this.store.select(getLoadedExecutionData),
+      this.store.select(getFocusedExecutionIndex)
+    )
+  );
+
+  readonly loadExecutionData$ = merge(
+    this.nonZeroNumExecutionsInitiallyLoaded$.pipe(
       withLatestFrom(
         this.store.select(getActiveRunId),
-        this.store.select(getExecutionScrollBeginIndex),
-        this.store.select(getLoadedExecutionData)
+        this.store.select(getLoadedExecutionData),
+        this.store.select(getFocusedExecutionIndex)
+      )
+    ),
+    this.onExecutionDigestFocused$
+  ).pipe(
+    filter(([, activeRunId, loadedExecutionData, focusIndex]) => {
+      console.log('loadExecutionData$ filter:', activeRunId, focusIndex); // DEBUG
+      return (
+        activeRunId !== null &&
+        focusIndex !== null &&
+        loadedExecutionData[focusIndex!] === undefined
+      );
+    }),
+    concatMap(([, activeRunId, , focusIndex]) => {
+      const begin = focusIndex!;
+      const end = begin + 1;
+      console.log(
+        `loadExecutionData$ concatMap: focusIndex=${focusIndex}, begin=${begin}`
+      ); // DEBUG
+      return this.dataSource.fetchExecutionData(activeRunId!, begin, end).pipe(
+        tap((executionDataResponse) => {
+          console.log('tapping executionDataLoaded:', executionDataResponse); // DEBUG
+          this.store.dispatch(executionDataLoaded(executionDataResponse));
+        }),
+        map((executionDataResponse) => {
+          console.log('Returning:'); // DEBUG
+          return {executionData: executionDataResponse, begin, end};
+        })
+      );
+      // TODO(cais): Add catchError() to pipe.
+    })
+  );
+
+  readonly loadStackFrames$ = createEffect(() =>
+    this.loadExecutionData$.pipe(
+      withLatestFrom(
+        this.store.select(getActiveRunId),
+        this.store.select(getLoadedStackFrames)
       ),
-      filter(([focus, activeRunId, scrollBeginIndex, loadedExecutionData]) => {
-        const focusIndex = scrollBeginIndex + focus.displayIndex;
-        return (
-          activeRunId !== null && loadedExecutionData[focusIndex] === undefined
-        );
+      filter(([{executionData}, runId, loadedStackFrames]) => {
+        if (runId === null) {
+          return false;
+        }
+        const execution = executionData.executions[0];
+        for (const stackFrameId of execution.stack_frame_ids) {
+          if (loadedStackFrames[stackFrameId] === undefined) {
+            return true;
+          }
+        }
+        return false;
       }),
-      concatMap(([focus, activeRunId, scrollBeginIndex]) => {
-        const begin = scrollBeginIndex + focus.displayIndex;
-        const end = begin + 1;
-        return this.dataSource
-          .fetchExecutionData(activeRunId!, begin, end)
-          .pipe(
-            tap((executionDataResponse) => {
-              this.store.dispatch(executionDataLoaded(executionDataResponse));
-            }),
-            map((executionDataResponse) => executionDataResponse.executions[0]),
-            withLatestFrom(
-              this.store.select(getActiveRunId),
-              this.store.select(getLoadedStackFrames)
-            ),
-            filter(([execution, _, loadedStackFrames]) => {
-              // Determine if any of the stack frames of the stack trace is missing.
-              // If so, make a request for the stack frames.
-              for (const stackFrameId of execution.stack_frame_ids) {
-                if (loadedStackFrames[stackFrameId] === undefined) {
-                  return true;
-                }
-              }
-              return false;
-            }),
-            concatMap(([execution, runId]) => {
-              return this.dataSource
-                .fetchStackFrames(runId!, execution.stack_frame_ids)
-                .pipe(
-                  map((stackFramesResponse) => {
-                    const stackFramesById: {
-                      [stackFrameId: string]: StackFrame;
-                    } = {};
-                    // TODO(cais): Do this reshaping in the backend and simplify
-                    // the frontend code here.
-                    for (let i = 0; i < execution.stack_frame_ids.length; ++i) {
-                      stackFramesById[execution.stack_frame_ids[i]] =
-                        stackFramesResponse.stack_frames[i];
-                    }
-                    return stackFramesLoaded({stackFrames: stackFramesById});
-                  })
-                );
-            })
-          );
+      mergeMap(([execution, runId, _]) => {
+        const stackFrameIds =
+          execution.executionData.executions[0].stack_frame_ids;
+        // TODO(cais): Maybe omit already-loaded stack frames from request,
+        // instead of loading all frames if any of them is missing.
+        console.log('Calling fetchStackFrames:'); // DEBUG
+        return this.dataSource.fetchStackFrames(runId!, stackFrameIds).pipe(
+          map((stackFramesResponse) => {
+            const stackFramesById: {
+              [stackFrameId: string]: StackFrame;
+            } = {};
+            // TODO(cais): Do this reshaping in the backend and simplify
+            // the frontend code here.
+            for (let i = 0; i < stackFrameIds.length; ++i) {
+              stackFramesById[stackFrameIds[i]] =
+                stackFramesResponse.stack_frames[i];
+            }
+            return stackFramesLoaded({stackFrames: stackFramesById});
+          })
+        );
         // TODO(cais): Add catchError() to pipe.
       })
     )
