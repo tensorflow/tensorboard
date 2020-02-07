@@ -17,7 +17,6 @@ import {Store} from '@ngrx/store';
 import {Actions, createEffect, ofType} from '@ngrx/effects';
 import {merge} from 'rxjs';
 import {
-  concatMap,
   map,
   mergeMap,
   withLatestFrom,
@@ -34,7 +33,6 @@ import {
   executionDigestsLoaded,
   executionScrollLeft,
   executionScrollRight,
-  executionStackFramesRequested,
   numExecutionsLoaded,
   numExecutionsRequested,
   stackFramesLoaded,
@@ -48,7 +46,6 @@ import {
   getNumExecutions,
   getNumExecutionsLoaded,
   getExecutionPageSize,
-  getFocusedExecutionIndex,
   getLoadedExecutionData,
   getLoadedStackFrames,
 } from '../store/debugger_selectors';
@@ -174,7 +171,6 @@ export class DebuggerEffects {
         const end = 0;
         return this.dataSource.fetchExecutionDigests(runId, begin, end).pipe(
           map((digests) => {
-            console.log('loadNumExecutions$ returning numExecutionsLoaded');  // DEBUG
             return numExecutionsLoaded({numExecutions: digests.num_digests});
           })
         );
@@ -188,14 +184,12 @@ export class DebuggerEffects {
     ofType(numExecutionsLoaded),
     withLatestFrom(this.store.select(getExecutionDigestsLoaded)),
     filter(([props, executionDigestsLoaded]) => {
-      console.log('nonZeroNumExecutionsInitiallyLoaded$ filter()');  // DEBUG
       return (
         props.numExecutions > 0 &&
         Object.keys(executionDigestsLoaded.pageLoadedSizes).length === 0
       );
     }),
     map(([props]) => {
-      console.log('nonZeroNumExecutionsInitiallyLoaded$ map()');  // DEBUG
       return props;
     })
   );
@@ -209,10 +203,7 @@ export class DebuggerEffects {
         this.store.select(getExecutionDigestsLoaded)
       ),
       filter(([, runId, , loaded]) => {
-        return (
-          runId !== null &&
-          loaded.state !== DataLoadState.LOADING
-        );
+        return runId !== null && loaded.state !== DataLoadState.LOADING;
       }),
       tap(() => {
         this.store.dispatch(executionDigestsRequested());
@@ -305,30 +296,27 @@ export class DebuggerEffects {
     withLatestFrom(
       this.store.select(getActiveRunId),
       this.store.select(getLoadedExecutionData),
-      this.store.select(getExecutionScrollBeginIndex),
+      this.store.select(getExecutionScrollBeginIndex)
     ),
     map(([props, activeRunId, loadedExecutionData, scrollBeginIndex]) => {
       const focusIndex = scrollBeginIndex + props.displayIndex;
-      console.log('onExecutionDigestFocused$: map:, focusIndex=', focusIndex); // DEBUG
       return {props, activeRunId, loadedExecutionData, focusIndex};
     })
   );
 
   private readonly loadExecutionData$ = merge(
-    // this.nonZeroNumExecutionsInitiallyLoaded$.pipe(
-    //   withLatestFrom(
-    //     this.store.select(getActiveRunId),
-    //     this.store.select(getLoadedExecutionData),
-    //     this.store.select(getFocusedExecutionIndex)
-    //   ),
-    //   map(([props, activeRunId, loadedExecutionData, focusIndex]) => {
-    //     return {props, activeRunId, loadedExecutionData, focusIndex};
-    //   })
-    // ),
+    this.nonZeroNumExecutionsInitiallyLoaded$.pipe(
+      withLatestFrom(
+        this.store.select(getActiveRunId),
+        this.store.select(getLoadedExecutionData)
+      ),
+      map(([props, activeRunId, loadedExecutionData]) => {
+        return {props, activeRunId, loadedExecutionData, focusIndex: 0};
+      })
+    ),
     this.onExecutionDigestFocused$
   ).pipe(
     filter(({activeRunId, loadedExecutionData, focusIndex}) => {
-      // console.log('loadExecutionData$ filter:', activeRunId, focusIndex); // DEBUG
       return (
         activeRunId !== null &&
         focusIndex !== null &&
@@ -338,12 +326,8 @@ export class DebuggerEffects {
     mergeMap(({activeRunId, focusIndex}) => {
       const begin = focusIndex!;
       const end = begin + 1;
-      console.log(
-        `Calling fetchExecutionData(): focusIndex=${focusIndex}, begin=${begin}`
-      ); // DEBUG why this is called twice?
       return this.dataSource.fetchExecutionData(activeRunId!, begin, end).pipe(
         tap((executionDataResponse) => {
-          // console.log('tapping executionDataLoaded:', executionDataResponse); // DEBUG
           this.store.dispatch(executionDataLoaded(executionDataResponse));
         }),
         map((executionDataResponse) => {
@@ -354,51 +338,48 @@ export class DebuggerEffects {
     })
   );
 
-  private readonly fetchStackFramesIfMissing$ = this.loadExecutionData$.pipe(
-    map(({executionData}) => {
-      return executionData.executions[0];
-    }),
-    withLatestFrom(
-      this.store.select(getActiveRunId),
-      this.store.select(getLoadedStackFrames)
-    ),
-    filter(([execution, runId, loadedStackFrames]) => {
-      if (runId === null) {
-        return false;
-      }
-      for (const stackFrameId of execution.stack_frame_ids) {
-        if (loadedStackFrames[stackFrameId] === undefined) {
-          return true;
-        }
-      }
-      return false;
-    }),
-    mergeMap(([execution, runId]) => {
-      const stackFrameIds = execution.stack_frame_ids;
-      // TODO(cais): Maybe omit already-loaded stack frames from request,
-      // instead of loading all frames if any of them is missing.
-      console.log('Calling fetchStackFrames: stackFrameIds=', stackFrameIds); // DEBUG
-      return this.dataSource.fetchStackFrames(runId!, stackFrameIds).pipe(
-        map((stackFramesResponse) => {
-          const stackFramesById: {
-            [stackFrameId: string]: StackFrame;
-          } = {};
-          // TODO(cais): Do this reshaping in the backend and simplify
-          // the frontend code here.
-          for (let i = 0; i < stackFrameIds.length; ++i) {
-            stackFramesById[stackFrameIds[i]] =
-              stackFramesResponse.stack_frames[i];
-          }
-          return stackFramesLoaded({stackFrames: stackFramesById});
-        })
-      );
-      // TODO(cais): Add catchError() to pipe.
-    })
-  );
-
   /** @export */
-  readonly fetchExecutionDataAndStackFrames$ = createEffect(
-    () => this.fetchStackFramesIfMissing$
+  readonly fetchExecutionDataAndStackFrames$ = createEffect(() =>
+    this.loadExecutionData$.pipe(
+      map(({executionData}) => {
+        return executionData.executions[0];
+      }),
+      withLatestFrom(
+        this.store.select(getActiveRunId),
+        this.store.select(getLoadedStackFrames)
+      ),
+      filter(([execution, runId, loadedStackFrames]) => {
+        if (runId === null) {
+          return false;
+        }
+        for (const stackFrameId of execution.stack_frame_ids) {
+          if (loadedStackFrames[stackFrameId] === undefined) {
+            return true;
+          }
+        }
+        return false;
+      }),
+      mergeMap(([execution, runId]) => {
+        const stackFrameIds = execution.stack_frame_ids;
+        // TODO(cais): Maybe omit already-loaded stack frames from request,
+        // instead of loading all frames if any of them is missing.
+        return this.dataSource.fetchStackFrames(runId!, stackFrameIds).pipe(
+          map((stackFramesResponse) => {
+            const stackFramesById: {
+              [stackFrameId: string]: StackFrame;
+            } = {};
+            // TODO(cais): Do this reshaping in the backend and simplify
+            // the frontend code here.
+            for (let i = 0; i < stackFrameIds.length; ++i) {
+              stackFramesById[stackFrameIds[i]] =
+                stackFramesResponse.stack_frames[i];
+            }
+            return stackFramesLoaded({stackFrames: stackFramesById});
+          })
+        );
+        // TODO(cais): Add catchError() to pipe.
+      })
+    )
   );
 
   constructor(

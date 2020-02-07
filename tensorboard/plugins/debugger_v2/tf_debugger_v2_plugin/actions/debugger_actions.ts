@@ -92,11 +92,6 @@ export const executionDataLoaded = createAction(
   props<ExecutionDataResponse>()
 );
 
-export const executionStackFramesRequested = createAction(
-  '[Debugger] Request made for the Stack Frames of an Execution Event',
-  props<Execution>()
-);
-
 export const stackFramesLoaded = createAction(
   '[Debugger] A Set of Stack Frames Have Been Loaded',
   props<{stackFrames: StackFramesById}>()
