@@ -18,8 +18,10 @@ service TensorBoardWriterService {
   // Request that unreachable data be purged. Used only for testing;
   // disabled in production.
   rpc PurgeData(PurgeDataRequest) returns (PurgeDataResponse) {}
-  // Request additional data be stored in TensorBoard.dev.
+  // Request that scalar data be stored in TensorBoard.dev.
   rpc WriteScalar(WriteScalarRequest) returns (WriteScalarResponse) {}
+  // Request that blob data be stored in TensorBoard.dev.
+  rpc WriteBlob(stream WriteBlobRequest) returns (stream WriteBlobResponse) {}
   // Request that the calling user and all their data be permanently deleted.
   // Used for testing purposes.
   rpc DeleteOwnUser(DeleteOwnUserRequest) returns (DeleteOwnUserResponse) {}
@@ -117,6 +119,78 @@ message WriteScalarRequest {
 // (Currently empty)
 message WriteScalarResponse {
   // This is empty on purpose.
+}
+
+// The blob writing procedure works as follows:
+//  * The caller instantiates a WriteBlob RPC, which is a bidirectional stream.
+//  * The caller sends a number of WriteBlobRequests, providing the blob data
+//    in an ordered sequence of chunks.
+//  * The request size should be less than 4 MiB (2^20 = 4,194,304), because
+//    that is the default request limit for gRPC.  Accounting for the other
+//    fields of the request, then, and leaving some padding for safety, the data
+//    chunk should be somewhat smaller-- perhaps simply 4e6 bytes.
+//  * The first of these requests must provide write_blob_first_request_data,
+//    and the subsequent ones must not.
+//  * The last of these requests must set finalize_object=True, and the prior
+//    ones must not.
+//  * For a blob <= 4MB, a single chunk suffices, so the single request is both
+//    the first and the last.
+//  * The caller receives a sequence of WriteBlobResponses in return.  Each
+//    WriteBlobResponse corresponds to one WriteBlobRequest in order, reporting
+//    the state of the write operation.
+//  * The caller may choose to verify each response before sending the next
+//    request, or it may continue sending requests optimistically.
+//
+// Note that the WriteBlobRequest does not mirror the nested structure of
+// WriteScalarRequest, because we only ever send one blob at a time.
+
+// Metadata included with only the first chunk of the blob write stream.
+message WriteBlobFirstRequestData {
+  string experiment_id = 1;
+  string run = 2;
+  string tag = 3;
+  int64 step = 4;
+  int64 index = 5;
+  // Note that metadata.plugin_data.content does not carry the payload.
+  .tensorboard.SummaryMetadata metadata = 6;
+}
+
+// A single chunk of the blob write stream.
+message WriteBlobRequest {
+  WriteBlobFirstRequestData write_blob_first_request_data = 1;
+  bytes data = 2 [ctype = CORD];
+  // The position in the blob where this chunk begins.
+  // This must equal the sum of the sizes of the chunks sent so far.
+  int64 offset = 3;
+  // CRC32C of current data buffer. While optional it is recommended that
+  // clients include the crc32c for every data buffer, to protect against data
+  // corruption. Note that for multi-shot writes, specifying the crc32c for
+  // every data buffer provides stronger protection than just providing
+  // the final_crc32c at the end of the upload.
+  fixed32 crc32c = 4;
+  // Indicates that this is the last chunk of the stream.
+  bool finalize_object = 5;
+  // CRC32C of the entire blob. Optional but recommended, to protect against
+  // data corruption. This should be set only when finalize_object=True.
+  fixed32 final_crc32 = 6;
+}
+
+message WriteBlobResponse {
+  enum ObjectState {
+    // Note these enum values are not the same as those used for GCS.
+    // Object is being written and not yet finalized.
+    UNFINALIZED = 0;
+
+    // Object is finalized.
+    CURRENT = 1;
+  }
+
+  // State of the object (still appending vs. complete).
+  ObjectState object_state = 1;
+  // Size of the object in bytes.  This is the sum of the chunk sizes
+  // received from the stream so far.  In the response to the final chunk,
+  // this size should equal the total size of the blob.
+  int64 size = 2;
 }
 
 // Requests that the calling user and all their data be permanently deleted.
