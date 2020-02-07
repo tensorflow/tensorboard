@@ -16,13 +16,7 @@ import {Injectable} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {Actions, createEffect, ofType} from '@ngrx/effects';
 import {merge} from 'rxjs';
-import {
-  map,
-  mergeMap,
-  withLatestFrom,
-  filter,
-  tap,
-} from 'rxjs/operators';
+import {map, mergeMap, withLatestFrom, filter, tap} from 'rxjs/operators';
 import {
   debuggerLoaded,
   debuggerRunsRequested,
