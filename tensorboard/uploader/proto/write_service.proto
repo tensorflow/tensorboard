@@ -3,6 +3,7 @@ syntax = "proto3";
 package tensorboard.service;
 
 import "tensorboard/uploader/proto/scalar.proto";
+import "third_party/tensorboard/uploader/proto/experiment.proto";
 import "tensorboard/compat/proto/summary.proto";
 
 // Service for writing data to TensorBoard.dev.
@@ -23,12 +24,12 @@ service TensorBoardWriterService {
   // Request that the calling user and all their data be permanently deleted.
   // Used for testing purposes.
   rpc DeleteOwnUser(DeleteOwnUserRequest) returns (DeleteOwnUserResponse) {}
-  // Request to mutate the name of an experiment.
-  rpc SetExperimentName(SetExperimentNameRequest)
-      returns (SetExperimentNameResponse) {}
-  // Request to mutate the description of an experiment.
-  rpc SetExperimentDescription(SetExperimentDescriptionRequest)
-      returns (SetExperimentDescriptionResponse) {}
+  // Request to mutate metadata associated with an experiment.
+  rpc UpdateExperimentMetadata(UpdateExperimentMetadataRequest)
+      returns (UpdateExperimentMetadataResponse) {}
+  // Request to mutate metadata associated with an experiment.
+  rpc UpdateExperimentMetadata(UpdateExperimentMetadataRequest)
+      returns (UpdateExperimentMetadataResponse) {}
 }
 
 // This is currently empty on purpose.  No information is necessary
@@ -138,28 +139,36 @@ message DeleteOwnUserResponse {
   // This is empty on purpose.
 }
 
+
 // Request to change the name of one experiment.
-message SetExperimentNameRequest{
-  // Permanent ID of this experiment.  Should match the id in the request.
-  string experiment_id = 1;
-  // User provided name of the experiment.
-  string name = 2;
+message UpdateExperimentMetadataRequest {
+  Experiment updates = 1;
+  ExperimentMetadataMask update_mask = 2;
+}
+
+message ExperimentMetadataMask {
+  reserved 1 to 6;
+  reserved "experiment_id", "create_time", "update_time", "num_scalars",
+      "num_runs", "num_tags";
+  bool name = 7;
+  bool description = 8;
+}
+
+// Request to change the metadata of one experiment.
+message UpdateExperimentMetadataRequest{
+  // Description of the data to set.  The experiment_id field must match
+  // an experiment_id in the database.  The remaining fields should be set
+  // to the desired metadata to be written.  Only those fields marked True
+  // in the experiment_mask will be written. The service may deny
+  // modification of some metadata used for internal bookkeeping, such as
+  // num_scalars, etc.
+  Experiment experiment = 1;
+  // Field mask for what experiment data to set.  The service may deny requests
+  // to set some metatadata.
+  ExperimentMask experiment_mask = 2;
 }
 
 // Response for setting experiment name.
-message SetExperimentNameResponse{
-  // This is empty on purpose.
-}
-
-// Request to change the description of one experiment.
-message SetExperimentDescriptionRequest{
-  // Permanent ID of this experiment.  Should match the id in the request.
-  string experiment_id = 1;
-  // User provided description of the experiment, in markdown source format.
-  string description = 2;
-}
-
-// Response for setting experiment description.
-message SetExperimentDescriptionResponse{
+message UpdateExperimentMetadataResponse{
   // This is empty on purpose.
 }
