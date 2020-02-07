@@ -91,6 +91,19 @@ jobs:
         run: |
           ! git grep 'python_version = "PY2"' '*BUILD'
 
+  lint-proto:
+    runs-on: ubuntu-16.04
+    steps:
+      - uses: actions/checkout@v1
+      - name: clang-format lint
+        uses: DoozyX/clang-format-lint-action@v0.5
+        with:
+          source: ./tensorboard
+          # Exclude tensorboard/compat because the source of truth is TensorFlow.
+          exclude: ./tensorboard/compat/proto
+          extensions: 'proto'
+          clangFormatVersion: 9
+
   check-misc:
     runs-on: ubuntu-16.04
     steps:
