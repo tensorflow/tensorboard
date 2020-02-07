@@ -91,6 +91,14 @@ jobs:
         run: |
           ! git grep 'python_version = "PY2"' '*BUILD'
 
+  lint-proto:
+    runs-on: ubuntu-16.04
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install clang-format
+        run: sudo apt-get update && sudo apt-get install clang-format
+      - run: ./tensorboard/tools/clang_format_test.sh
+
   check-misc:
     runs-on: ubuntu-16.04
     steps:
