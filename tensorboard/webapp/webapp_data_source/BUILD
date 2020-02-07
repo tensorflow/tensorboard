@@ -41,5 +41,6 @@ ng_module(
     deps = [
         ":http_client",
         "//tensorboard/webapp/angular:expect_angular_common_http_testing",
+        "@npm//@angular/core",
     ],
 )
