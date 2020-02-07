@@ -96,11 +96,12 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - uses: actions/clang-format-lint@v0.5
-        source: ./tensorboard
-        # Exclude tensorboard/compat because the source of truth is TensorFlow.
-        exclude: ./tensorboard/compat/proto
-        extensions: 'proto'
-        clangFormatVersion: 9
+        with:
+          source: ./tensorboard
+          # Exclude tensorboard/compat because the source of truth is TensorFlow.
+          exclude: ./tensorboard/compat/proto
+          extensions: 'proto'
+          clangFormatVersion: 9
 
   check-misc:
     runs-on: ubuntu-16.04
