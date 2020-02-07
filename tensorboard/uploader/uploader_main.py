@@ -409,6 +409,8 @@ class _ListIntent(_Intent):
             url = server_info_lib.experiment_url(server_info, experiment_id)
             print(url)
             data = [
+                ("Name", experiment.name),
+                ("Description", experiment.description),
                 ("Id", experiment.experiment_id),
                 ("Created", util.format_time(experiment.create_time)),
                 ("Updated", util.format_time(experiment.update_time)),
