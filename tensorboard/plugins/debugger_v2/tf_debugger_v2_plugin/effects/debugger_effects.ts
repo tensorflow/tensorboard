@@ -174,6 +174,7 @@ export class DebuggerEffects {
         const end = 0;
         return this.dataSource.fetchExecutionDigests(runId, begin, end).pipe(
           map((digests) => {
+            console.log('loadNumExecutions$ returning numExecutionsLoaded');  // DEBUG
             return numExecutionsLoaded({numExecutions: digests.num_digests});
           })
         );
@@ -182,16 +183,19 @@ export class DebuggerEffects {
     )
   );
 
+  // Non-zero number of executions loaded for the first time.
   private readonly nonZeroNumExecutionsInitiallyLoaded$ = this.actions$.pipe(
     ofType(numExecutionsLoaded),
     withLatestFrom(this.store.select(getExecutionDigestsLoaded)),
     filter(([props, executionDigestsLoaded]) => {
+      console.log('nonZeroNumExecutionsInitiallyLoaded$ filter()');  // DEBUG
       return (
         props.numExecutions > 0 &&
         Object.keys(executionDigestsLoaded.pageLoadedSizes).length === 0
       );
     }),
     map(([props]) => {
+      console.log('nonZeroNumExecutionsInitiallyLoaded$ map()');  // DEBUG
       return props;
     })
   );
@@ -207,7 +211,6 @@ export class DebuggerEffects {
       filter(([, runId, , loaded]) => {
         return (
           runId !== null &&
-          Object.keys(loaded.pageLoadedSizes).length === 0 &&
           loaded.state !== DataLoadState.LOADING
         );
       }),
@@ -253,7 +256,7 @@ export class DebuggerEffects {
     )
   );
 
-  private readonly missesPages$ = this.digestRequired$.pipe(
+  private readonly missesExecutionDigestPages$ = this.digestRequired$.pipe(
     withLatestFrom(this.store.select(getExecutionDigestsLoaded)),
     filter(([_, loaded]) => loaded.state !== DataLoadState.LOADING),
     map(([props, loaded]) => {
@@ -274,7 +277,7 @@ export class DebuggerEffects {
 
   /** @export */
   readonly loadExecutionDigests$ = createEffect(() =>
-    this.missesPages$.pipe(
+    this.missesExecutionDigestPages$.pipe(
       tap(() => this.store.dispatch(executionDigestsRequested())),
       mergeMap(({props, loaded, missingPages}) => {
         const {runId, pageSize} = props;
@@ -297,46 +300,53 @@ export class DebuggerEffects {
     )
   );
 
-  readonly onExecutionDigestFocused$ = this.actions$.pipe(
+  private readonly onExecutionDigestFocused$ = this.actions$.pipe(
     ofType(executionDigestFocused),
     withLatestFrom(
       this.store.select(getActiveRunId),
       this.store.select(getLoadedExecutionData),
-      this.store.select(getFocusedExecutionIndex)
-    )
+      this.store.select(getExecutionScrollBeginIndex),
+    ),
+    map(([props, activeRunId, loadedExecutionData, scrollBeginIndex]) => {
+      const focusIndex = scrollBeginIndex + props.displayIndex;
+      console.log('onExecutionDigestFocused$: map:, focusIndex=', focusIndex); // DEBUG
+      return {props, activeRunId, loadedExecutionData, focusIndex};
+    })
   );
 
-  readonly loadExecutionData$ = merge(
-    this.nonZeroNumExecutionsInitiallyLoaded$.pipe(
-      withLatestFrom(
-        this.store.select(getActiveRunId),
-        this.store.select(getLoadedExecutionData),
-        this.store.select(getFocusedExecutionIndex)
-      )
-    ),
+  private readonly loadExecutionData$ = merge(
+    // this.nonZeroNumExecutionsInitiallyLoaded$.pipe(
+    //   withLatestFrom(
+    //     this.store.select(getActiveRunId),
+    //     this.store.select(getLoadedExecutionData),
+    //     this.store.select(getFocusedExecutionIndex)
+    //   ),
+    //   map(([props, activeRunId, loadedExecutionData, focusIndex]) => {
+    //     return {props, activeRunId, loadedExecutionData, focusIndex};
+    //   })
+    // ),
     this.onExecutionDigestFocused$
   ).pipe(
-    filter(([, activeRunId, loadedExecutionData, focusIndex]) => {
-      console.log('loadExecutionData$ filter:', activeRunId, focusIndex); // DEBUG
+    filter(({activeRunId, loadedExecutionData, focusIndex}) => {
+      // console.log('loadExecutionData$ filter:', activeRunId, focusIndex); // DEBUG
       return (
         activeRunId !== null &&
         focusIndex !== null &&
         loadedExecutionData[focusIndex!] === undefined
       );
     }),
-    concatMap(([, activeRunId, , focusIndex]) => {
+    mergeMap(({activeRunId, focusIndex}) => {
       const begin = focusIndex!;
       const end = begin + 1;
       console.log(
-        `loadExecutionData$ concatMap: focusIndex=${focusIndex}, begin=${begin}`
-      ); // DEBUG
+        `Calling fetchExecutionData(): focusIndex=${focusIndex}, begin=${begin}`
+      ); // DEBUG why this is called twice?
       return this.dataSource.fetchExecutionData(activeRunId!, begin, end).pipe(
         tap((executionDataResponse) => {
-          console.log('tapping executionDataLoaded:', executionDataResponse); // DEBUG
+          // console.log('tapping executionDataLoaded:', executionDataResponse); // DEBUG
           this.store.dispatch(executionDataLoaded(executionDataResponse));
         }),
         map((executionDataResponse) => {
-          console.log('Returning:'); // DEBUG
           return {executionData: executionDataResponse, begin, end};
         })
       );
@@ -344,47 +354,51 @@ export class DebuggerEffects {
     })
   );
 
-  readonly loadStackFrames$ = createEffect(() =>
-    this.loadExecutionData$.pipe(
-      withLatestFrom(
-        this.store.select(getActiveRunId),
-        this.store.select(getLoadedStackFrames)
-      ),
-      filter(([{executionData}, runId, loadedStackFrames]) => {
-        if (runId === null) {
-          return false;
-        }
-        const execution = executionData.executions[0];
-        for (const stackFrameId of execution.stack_frame_ids) {
-          if (loadedStackFrames[stackFrameId] === undefined) {
-            return true;
-          }
-        }
+  private readonly fetchStackFramesIfMissing$ = this.loadExecutionData$.pipe(
+    map(({executionData}) => {
+      return executionData.executions[0];
+    }),
+    withLatestFrom(
+      this.store.select(getActiveRunId),
+      this.store.select(getLoadedStackFrames)
+    ),
+    filter(([execution, runId, loadedStackFrames]) => {
+      if (runId === null) {
         return false;
-      }),
-      mergeMap(([execution, runId, _]) => {
-        const stackFrameIds =
-          execution.executionData.executions[0].stack_frame_ids;
-        // TODO(cais): Maybe omit already-loaded stack frames from request,
-        // instead of loading all frames if any of them is missing.
-        console.log('Calling fetchStackFrames:'); // DEBUG
-        return this.dataSource.fetchStackFrames(runId!, stackFrameIds).pipe(
-          map((stackFramesResponse) => {
-            const stackFramesById: {
-              [stackFrameId: string]: StackFrame;
-            } = {};
-            // TODO(cais): Do this reshaping in the backend and simplify
-            // the frontend code here.
-            for (let i = 0; i < stackFrameIds.length; ++i) {
-              stackFramesById[stackFrameIds[i]] =
-                stackFramesResponse.stack_frames[i];
-            }
-            return stackFramesLoaded({stackFrames: stackFramesById});
-          })
-        );
-        // TODO(cais): Add catchError() to pipe.
-      })
-    )
+      }
+      for (const stackFrameId of execution.stack_frame_ids) {
+        if (loadedStackFrames[stackFrameId] === undefined) {
+          return true;
+        }
+      }
+      return false;
+    }),
+    mergeMap(([execution, runId]) => {
+      const stackFrameIds = execution.stack_frame_ids;
+      // TODO(cais): Maybe omit already-loaded stack frames from request,
+      // instead of loading all frames if any of them is missing.
+      console.log('Calling fetchStackFrames: stackFrameIds=', stackFrameIds); // DEBUG
+      return this.dataSource.fetchStackFrames(runId!, stackFrameIds).pipe(
+        map((stackFramesResponse) => {
+          const stackFramesById: {
+            [stackFrameId: string]: StackFrame;
+          } = {};
+          // TODO(cais): Do this reshaping in the backend and simplify
+          // the frontend code here.
+          for (let i = 0; i < stackFrameIds.length; ++i) {
+            stackFramesById[stackFrameIds[i]] =
+              stackFramesResponse.stack_frames[i];
+          }
+          return stackFramesLoaded({stackFrames: stackFramesById});
+        })
+      );
+      // TODO(cais): Add catchError() to pipe.
+    })
+  );
+
+  /** @export */
+  readonly fetchExecutionDataAndStackFrames$ = createEffect(
+    () => this.fetchStackFramesIfMissing$
   );
 
   constructor(

@@ -139,7 +139,7 @@ describe('Debugger reducers', () => {
     ).toBeNull();
   });
 
-  it('Updates states correctly on numExecutionsLoaded', () => {
+  it('Updates states correctly on numExecutionsLoaded: non-empty', () => {
     const state = createDebuggerState({
       runs: {
         __default_debugger_run__: {
@@ -184,6 +184,53 @@ describe('Debugger reducers', () => {
     expect(nextState.executions.executionDigestsLoaded.numExecutions).toBe(
       1337
     );
+    expect(nextState.executions.focusIndex).toBe(0);
+  });
+
+  it('Updates states correctly on numExecutionsLoaded: empty', () => {
+    const state = createDebuggerState({
+      runs: {
+        __default_debugger_run__: {
+          start_time: 111,
+        },
+      },
+      runsLoaded: {
+        state: DataLoadState.LOADED,
+        lastLoadedTimeInMs: 222,
+      },
+      activeRunId: '__default_debugger_run__',
+      executions: {
+        numExecutionsLoaded: {
+          state: DataLoadState.LOADING,
+          lastLoadedTimeInMs: null,
+        },
+        executionDigestsLoaded: {
+          state: DataLoadState.NOT_LOADED,
+          lastLoadedTimeInMs: null,
+          pageLoadedSizes: {},
+          numExecutions: 0,
+        },
+        pageSize: 1000,
+        displayCount: 50,
+        focusIndex: null,
+        scrollBeginIndex: 0,
+        executionDigests: {},
+        executionData: {},
+      },
+    });
+    const t0 = Date.now();
+    const nextState = reducers(
+      state,
+      actions.numExecutionsLoaded({numExecutions: 0})
+    );
+    expect(nextState.executions.numExecutionsLoaded.state).toBe(
+      DataLoadState.LOADED
+    );
+    expect(
+      nextState.executions.numExecutionsLoaded.lastLoadedTimeInMs
+    ).toBeGreaterThanOrEqual(t0);
+    expect(nextState.executions.executionDigestsLoaded.numExecutions).toBe(0);
+    expect(nextState.executions.focusIndex).toBeNull();
   });
 
   it('Updates states on executionDigestsRequested', () => {

@@ -230,5 +230,40 @@ describe('debugger selectors', () => {
         stackFrame3,
       ]);
     });
+
+    it('returns correct stack frames when subset of frames is missing', () => {
+      const state = createState(
+        createDebuggerState({
+          activeRunId: '__default_debugger_run__',
+          executions: {
+            numExecutionsLoaded: {
+              state: DataLoadState.LOADING,
+              lastLoadedTimeInMs: null,
+            },
+            executionDigestsLoaded: {
+              state: DataLoadState.NOT_LOADED,
+              lastLoadedTimeInMs: null,
+              pageLoadedSizes: {},
+              numExecutions: 0,
+            },
+            pageSize: 1000,
+            displayCount: 50,
+            focusIndex: 1,
+            scrollBeginIndex: 0,
+            executionDigests: {},
+            executionData: {
+              1: createTestExecutionData({
+                stack_frame_ids: ['a1', 'a3'],
+              }),
+            },
+          },
+          stackFrames: {
+            a1: ['localhost', '/tmp/main.py', 10, 'main'],
+            a2: ['localhost', '/tmp/model.py', 20, 'initialize'],
+          },
+        })
+      );
+      expect(getFocusedExecutionStackFrames(state)).toBeNull();
+    });
   });
 });
