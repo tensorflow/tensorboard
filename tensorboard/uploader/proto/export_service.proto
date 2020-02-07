@@ -4,6 +4,7 @@ package tensorboard.service;
 
 import "google/protobuf/timestamp.proto";
 import "tensorboard/compat/proto/summary.proto";
+import "third_party/tensorboard/uploader/proto/experiment.proto";
 
 // Service for exporting data from TensorBoard.dev.
 service TensorBoardExporterService {
@@ -69,44 +70,6 @@ message StreamExperimentsResponse {
   // These messages may be partially populated, in accordance with the field
   // mask given in the request.
   repeated Experiment experiments = 2;
-}
-
-// Metadata about an experiment.
-// TODO: The definition of an experiment should be pulled
-// out into a separate file, similar to scalar.proto.
-message Experiment {
-  // Permanent ID of this experiment; e.g.: "AdYd1TgeTlaLWXx6I8JUbA".
-  string experiment_id = 1;
-  // The time that the experiment was created.
-  google.protobuf.Timestamp create_time = 2;
-  // The time that the experiment was last modified: i.e., the most recent time
-  // that scalars were added to the experiment.
-  google.protobuf.Timestamp update_time = 3;
-  // The number of scalars in this experiment, across all time series.
-  int64 num_scalars = 4;
-  // The number of distinct run names in this experiment.
-  int64 num_runs = 5;
-  // The number of distinct tag names in this experiment. A tag name that
-  // appears in multiple runs will be counted only once.
-  int64 num_tags = 6;
-  // User provided name of the experiment.
-  string name = 7;
-  // User provided desription of the experiment, in markdown source format.
-  string description = 8;
-}
-
-// Field mask for `Experiment`. The `experiment_id` field is always implicitly
-// considered to be requested. Other fields of `Experiment` will be populated
-// if their corresponding bits in the `ExperimentMask` are set. The server may
-// choose to populate fields that are not explicitly requested.
-message ExperimentMask {
-  reserved 1;
-  reserved "experiment_id";
-  bool create_time = 2;
-  bool update_time = 3;
-  bool num_scalars = 4;
-  bool num_runs = 5;
-  bool num_tags = 6;
 }
 
 // Request to stream scalars from all the runs and tags in an experiment.
