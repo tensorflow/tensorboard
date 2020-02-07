@@ -95,9 +95,12 @@ jobs:
     runs-on: ubuntu-16.04
     steps:
       - uses: actions/checkout@v1
-      - name: Install clang-format
-        run: sudo apt-get update && sudo apt-get install clang-format
-      - run: ./tensorboard/tools/clang_format_test.sh
+      - uses: actions/clang-format-lint@v0.5
+        source: ./tensorboard
+        # Exclude tensorboard/compat because the source of truth is TensorFlow.
+        exclude: ./tensorboard/compat/proto
+        extensions: 'proto'
+        clangFormatVersion: 9
 
   check-misc:
     runs-on: ubuntu-16.04
