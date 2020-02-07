@@ -177,12 +177,16 @@ message WriteBlobRequest {
 
 message WriteBlobResponse {
   enum ObjectState {
-    // Note these enum values are not the same as those used for GCS.
+    // Object state is unknown. This value should never be used; it is present
+    // only as a proto3 best practice.
+    // See https://developers.google.com/protocol-buffers/docs/proto3#enum
+    UNKNOWN = 0;
+
     // Object is being written and not yet finalized.
-    UNFINALIZED = 0;
+    UNFINALIZED = 1;
 
     // Object is finalized.
-    CURRENT = 1;
+    CURRENT = 2;
   }
 
   // State of the object (still appending vs. complete).
