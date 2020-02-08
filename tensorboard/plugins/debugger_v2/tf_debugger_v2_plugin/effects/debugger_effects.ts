@@ -15,15 +15,14 @@ limitations under the License.
 import {Injectable} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {Actions, createEffect, ofType} from '@ngrx/effects';
-import {merge, Observable, Subject} from 'rxjs';
+import {merge, Observable} from 'rxjs';
 import {
+  filter,
   map,
   mergeMap,
-  withLatestFrom,
-  multicast,
-  filter,
-  tap,
   share,
+  tap,
+  withLatestFrom,
 } from 'rxjs/operators';
 import {
   debuggerLoaded,
@@ -45,19 +44,19 @@ import {
   getDebuggerRunsLoaded,
   getDisplayCount,
   getExecutionDigestsLoaded,
+  getExecutionPageSize,
   getExecutionScrollBeginIndex,
   getNumExecutions,
   getNumExecutionsLoaded,
-  getExecutionPageSize,
   getLoadedExecutionData,
   getLoadedStackFrames,
 } from '../store/debugger_selectors';
 import {
   DataLoadState,
   DebuggerRunListing,
+  Execution,
   StackFrame,
   State,
-  Execution,
 } from '../store/debugger_types';
 import {Tfdbg2HttpServerDataSource} from '../data_source/tfdbg2_data_source';
 
@@ -139,6 +138,9 @@ export class DebuggerEffects {
   /** @export */
   readonly loadData$: Observable<{}>;
 
+  /**
+   * When the debugger plugin is first loaded, request list of runs.
+   */
   private onDebuggerLoaded() {
     return this.actions$.pipe(
       // TODO(cais): Explore consolidating this effect with the greater
@@ -161,6 +163,9 @@ export class DebuggerEffects {
     );
   }
 
+  /**
+   * When a debugger run exists, load number of executions.
+   */
   private createNumExecutionLoader(prevStream$: Observable<void>) {
     return prevStream$.pipe(
       withLatestFrom(
@@ -174,7 +179,7 @@ export class DebuggerEffects {
       }),
       tap(() => this.store.dispatch(numExecutionsRequested())),
       mergeMap(([, runs]) => {
-        // TODO(cais): Handle multple runs. Currently it is assumed that there
+        // TODO(cais): Handle multiple runs. Currently it is assumed that there
         // is at most only one debugger run available.
         const runId = Object.keys(runs)[0];
         const begin = 0;
@@ -213,6 +218,9 @@ export class DebuggerEffects {
     );
   }
 
+  /**
+   * Emits when the first page if execution digests are required to be loaded.
+   */
   private createInitialExecutionDigest(
     prevStream$: Observable<void>
   ): Observable<{
@@ -230,9 +238,6 @@ export class DebuggerEffects {
       filter(([, , runId, , loaded]) => {
         return runId !== null && loaded.state !== DataLoadState.LOADING;
       }),
-      tap(() => {
-        this.store.dispatch(executionDigestsRequested());
-      }),
       map(([, numExecutions, runId, pageSize]) => {
         const begin = 0;
         const end = Math.min(numExecutions, pageSize);
@@ -241,6 +246,9 @@ export class DebuggerEffects {
     );
   }
 
+  /**
+   * Emits when scrolling event leads to need to load new execution digests.
+   */
   private onExecutionScroll(): Observable<{
     runId: string;
     begin: number;
@@ -278,6 +286,13 @@ export class DebuggerEffects {
       withLatestFrom(this.store.select(getExecutionDigestsLoaded)),
       filter(([, loaded]) => loaded.state !== DataLoadState.LOADING),
       map(([props, loaded]) => {
+        const missing = getMissingPages(
+          props.begin,
+          props.end,
+          props.pageSize,
+          loaded.numExecutions,
+          loaded.pageLoadedSizes
+        );
         return {
           props,
           loaded,
@@ -303,6 +318,9 @@ export class DebuggerEffects {
     );
   }
 
+  /**
+   * Load execution digests.
+   */
   private createExecutionDigestLoader(
     prevStream$: Observable<{
       runId: string;
@@ -311,6 +329,9 @@ export class DebuggerEffects {
     }>
   ): Observable<void> {
     return prevStream$.pipe(
+      tap(() => {
+        this.store.dispatch(executionDigestsRequested());
+      }),
       mergeMap(({runId, begin, end}) => {
         return this.dataSource.fetchExecutionDigests(runId, begin, end).pipe(
           tap((digests) => {
@@ -324,7 +345,7 @@ export class DebuggerEffects {
   }
 
   /**
-   * Emits when user focses on a digest.
+   * Emits when user focses on an execution digest.
    */
   private onExecutionDigestFocused(): Observable<{
     activeRunId: string;
@@ -349,7 +370,10 @@ export class DebuggerEffects {
     );
   }
 
-  private createExecutionDataLoader(
+  /**
+   * Load detailed data about execution and the associated stack frames.
+   */
+  private createExecutionDataAndStackFramesLoader(
     prevStream$: Observable<{
       activeRunId: string;
       loadedExecutionData: {[index: number]: Execution};
@@ -435,13 +459,13 @@ export class DebuggerEffects {
      *                   +
      *                   +> if init load
      *                       +
-     *                       +>+--------------+
-     *                       | | fetch digest |
-     *     on scroll +-------->+--------------+
+     *                       +>+-------------------+
+     *                       | | fetch exec digest |
+     *     on scroll +-------->+-------------------+
      *                       |
-     *                       +>+--------------+
-     *                         | fetch exec   |
-     *     on focus  +-------->+--------------+
+     *                       +>+----------------------------------+
+     *                         | fetch exec data and stack frames |
+     *     on focus  +-------->+----------------------------------+
      **/
     this.loadData$ = createEffect(
       () => {
@@ -458,7 +482,7 @@ export class DebuggerEffects {
             this.createInitialExecutionDigest(onInitialExecution$)
           )
         );
-        const onExecutionDataLoaded$ = this.createExecutionDataLoader(
+        const onExecutionDataLoaded$ = this.createExecutionDataAndStackFramesLoader(
           merge(
             this.onExecutionDigestFocused(),
             onInitialExecution$.pipe(
