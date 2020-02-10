@@ -36,7 +36,7 @@ class EmptyPathRedirectMiddlewareTest(tb_test.TestCase):
     app = empty_path_redirect.EmptyPathRedirectMiddleware(app)
     app = self._lax_strip_foo_middleware(app)
     self.app = app
-    self.server = werkzeug_test.Client(self.app, werkzeug.BaseResponse)
+    self.server = werkzeug_test.Client(self.app, werkzeug.wrappers.BaseResponse)
 
   def _lax_strip_foo_middleware(self, app):
     """Strips a `/foo` prefix if it exists; no-op otherwise."""
