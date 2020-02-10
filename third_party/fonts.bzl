@@ -13,7 +13,6 @@
 # limitations under the License.
 
 load("@io_bazel_rules_closure//closure:defs.bzl", "filegroup_external")
-load("@io_bazel_rules_closure//closure:defs.bzl", "web_library_external")
 
 def tensorboard_fonts_workspace():
   """Downloads TensorBoard fonts."""
