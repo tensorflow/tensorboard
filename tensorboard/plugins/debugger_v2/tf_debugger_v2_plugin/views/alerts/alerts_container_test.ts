@@ -1,4 +1,4 @@
-/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,9 +26,9 @@ import {DebuggerComponent} from '../../debugger_component';
 import {DebuggerContainer} from '../../debugger_container';
 import {State} from '../../store/debugger_types';
 import {
+  createAlertsState,
   createDebuggerState,
   createState,
-  createAlertsState,
 } from '../../testing';
 import {AlertsContainer} from './alerts_container';
 import {AlertsModule} from './alerts_module';
