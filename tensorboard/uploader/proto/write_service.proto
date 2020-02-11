@@ -2,8 +2,8 @@ syntax = "proto3";
 
 package tensorboard.service;
 
+import "tensorboard/uploader/proto/experiment.proto";
 import "tensorboard/uploader/proto/scalar.proto";
-import "third_party/tensorboard/uploader/proto/experiment.proto";
 import "tensorboard/compat/proto/summary.proto";
 
 // Service for writing data to TensorBoard.dev.
@@ -24,9 +24,6 @@ service TensorBoardWriterService {
   // Request that the calling user and all their data be permanently deleted.
   // Used for testing purposes.
   rpc DeleteOwnUser(DeleteOwnUserRequest) returns (DeleteOwnUserResponse) {}
-  // Request to mutate metadata associated with an experiment.
-  rpc UpdateExperimentMetadata(UpdateExperimentMetadataRequest)
-      returns (UpdateExperimentMetadataResponse) {}
   // Request to mutate metadata associated with an experiment.
   rpc UpdateExperimentMetadata(UpdateExperimentMetadataRequest)
       returns (UpdateExperimentMetadataResponse) {}
@@ -137,21 +134,6 @@ message DeleteOwnUserRequest {
 // Everything the caller needs to know about how the deletion went.
 message DeleteOwnUserResponse {
   // This is empty on purpose.
-}
-
-
-// Request to change the name of one experiment.
-message UpdateExperimentMetadataRequest {
-  Experiment updates = 1;
-  ExperimentMetadataMask update_mask = 2;
-}
-
-message ExperimentMetadataMask {
-  reserved 1 to 6;
-  reserved "experiment_id", "create_time", "update_time", "num_scalars",
-      "num_runs", "num_tags";
-  bool name = 7;
-  bool description = 8;
 }
 
 // Request to change the metadata of one experiment.
