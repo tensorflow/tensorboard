@@ -3,6 +3,7 @@ syntax = "proto3";
 package tensorboard.service;
 
 import "tensorboard/uploader/proto/scalar.proto";
+import "tensorboard/uploader/proto/tensor.proto";
 import "tensorboard/compat/proto/summary.proto";
 
 // Service for writing data to TensorBoard.dev.

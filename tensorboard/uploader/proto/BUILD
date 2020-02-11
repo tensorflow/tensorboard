@@ -13,6 +13,7 @@ tb_proto_library(
         "export_service.proto",
         "scalar.proto",
         "server_info.proto",
+        "tensor.ptoto",
         "write_service.proto",
     ],
     has_services = True,
