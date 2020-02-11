@@ -31,7 +31,10 @@ message StreamExperimentsRequest {
   int64 limit = 3;
   // Field mask for what experiment data to return via the `experiments` field
   // on the response. If not specified, this should be interpreted the same as
-  // an empty message: i.e., only the experiment ID should be returned.
+  // an empty message: i.e., only the experiment ID should be returned. Other
+  // fields of `Experiment` will be populated if their corresponding bits in the
+  // `ExperimentMask` are set. The server may choose to populate fields that are
+  // not explicitly requested.
   ExperimentMask experiments_mask = 4;
 }
 
@@ -71,8 +74,9 @@ message StreamExperimentsResponse {
   repeated Experiment experiments = 2;
 }
 
-// Metadata about an experiment.
-// TODO(bileschi): Centralize on the Experiment in experiment.proto
+// Metadata about an experiment.  This contains both user provided metadata
+// along with internal book-keeping about the experiment.
+// TODO(bileschi): Move this and ExperimentMask into their own file.
 message Experiment {
   // Permanent ID of this experiment; e.g.: "AdYd1TgeTlaLWXx6I8JUbA".
   string experiment_id = 1;
@@ -88,12 +92,14 @@ message Experiment {
   // The number of distinct tag names in this experiment. A tag name that
   // appears in multiple runs will be counted only once.
   int64 num_tags = 6;
+  // User provided name of the experiment.
+  string name = 7;
+  // User provided description of the experiment, in markdown source format.
+  string description = 8;
 }
 
 // Field mask for `Experiment`. The `experiment_id` field is always implicitly
-// considered to be requested. Other fields of `Experiment` will be populated
-// if their corresponding bits in the `ExperimentMask` are set. The server may
-// choose to populate fields that are not explicitly requested.
+// considered to be set.
 message ExperimentMask {
   reserved 1;
   reserved "experiment_id";
@@ -102,6 +108,8 @@ message ExperimentMask {
   bool num_scalars = 4;
   bool num_runs = 5;
   bool num_tags = 6;
+  bool name = 7;
+  bool description = 8;
 }
 
 // Request to stream scalars from all the runs and tags in an experiment.

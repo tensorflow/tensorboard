@@ -10,7 +10,6 @@ exports_files(["LICENSE"])
 tb_proto_library(
     name = "protos_all",
     srcs = [
-        "experiment.proto",
         "export_service.proto",
         "scalar.proto",
         "server_info.proto",
