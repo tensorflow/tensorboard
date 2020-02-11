@@ -21,7 +21,8 @@ service TensorBoardWriterService {
   // Request that scalar data be stored in TensorBoard.dev.
   rpc WriteScalar(WriteScalarRequest) returns (WriteScalarResponse) {}
   // Request to create a BlobSequence, to be subsequently populated with blobs.
-  rpc CreateBlobSequence(CreateBlobSequenceRequest) returns (CreateBlobSequenceResponse) {}
+  rpc CreateBlobSequence(CreateBlobSequenceRequest)
+      returns (CreateBlobSequenceResponse) {}
   // Request that blob data be stored in TensorBoard.dev.
   rpc WriteBlob(stream WriteBlobRequest) returns (stream WriteBlobResponse) {}
   // Request that the calling user and all their data be permanently deleted.
