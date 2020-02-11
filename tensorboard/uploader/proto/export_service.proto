@@ -72,6 +72,7 @@ message StreamExperimentsResponse {
 }
 
 // Metadata about an experiment.
+// TODO(bileschi): Centralize on the Experiment in experiment.proto
 message Experiment {
   // Permanent ID of this experiment; e.g.: "AdYd1TgeTlaLWXx6I8JUbA".
   string experiment_id = 1;
