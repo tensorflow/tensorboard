@@ -201,7 +201,7 @@ message WriteBlobRequest {
   // The bytes in this chunk.  For the first chunk only, this value should be
   // empty.  This allows determining from the response how much of the blob has
   // already been uploaded, if any, without sending redundant data.
-  bytes data = 2 [ctype = CORD];
+  bytes data = 2;
   // The position in the blob where this chunk begins.
   // This must equal the sum of the sizes of the chunks sent so far (except on
   // the first request).
