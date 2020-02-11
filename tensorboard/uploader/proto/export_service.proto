@@ -163,6 +163,6 @@ message StreamExperimentDataResponse {
     // Timestamp of the creation of this point.
     repeated google.protobuf.Timestamp wall_times = 2;
     // Value of the point at this step / timestamp.
-    repeated .tensorboard.Tensor values = 3;
+    repeated .tensorboard.TensorProto values = 3;
   }
 }

@@ -13,7 +13,7 @@ message TensorPoint {
   // Timestamp of the creation of this point.
   google.protobuf.Timestamp wall_time = 2;
   // Value of the point at this step / timestamp.
-  .tensorboard.Tensor value = 3;
+  .tensorboard.TensorProto value = 3;
 }
 
 // Metadata for the TensorPoints stored for one (Experiment, Run, Tag).

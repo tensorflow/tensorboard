@@ -22,7 +22,7 @@ service TensorBoardWriterService {
   // Request additional scalar data be stored in TensorBoard.dev.
   rpc WriteScalar(WriteScalarRequest) returns (WriteScalarResponse) {}
   // Request additional tensor data be stored in TensorBoard.dev.
-  rpc WriteScalar(WriteTensorRequest) returns (WriteScalarResponse) {}
+  rpc WriteTensor(WriteTensorRequest) returns (WriteTensorResponse) {}
   // Request that the calling user and all their data be permanently deleted.
   // Used for testing purposes.
   rpc DeleteOwnUser(DeleteOwnUserRequest) returns (DeleteOwnUserResponse) {}
@@ -157,7 +157,7 @@ message WriteTensorRequest {
 
 // Everything the caller needs to know about how the writing went.
 // (Currently empty)
-message WriteScalarResponse {
+message WriteTensorResponse {
   // This is empty on purpose.
 }
 
