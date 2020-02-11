@@ -53,16 +53,16 @@ export const debuggerRunsRequestFailed = createAction(
 );
 
 /**
- * Actions for the Timeline Component.
+ * Number of alerts and their type breakdown are requested.
  */
-export const numAlertsRequested = createAction(
+export const numAlertsAndBreakdownRequested = createAction(
   '[Debugger] Number and Breakdown of Alerts Requested'
 );
 
 /**
- * Number of alerts and their type breakdown is loaded.
+ * Number of alerts and their type breakdown are loaded.
  */
-export const numAlertsLoaded = createAction(
+export const numAlertsAndBreakdownLoaded = createAction(
   '[Debugger] Number and Breakdown of Alerts Loaded',
   props<{numAlerts: number; alertsBreakdown: AlertsBreakdown}>()
 );

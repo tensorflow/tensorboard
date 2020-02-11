@@ -34,8 +34,8 @@ import {
   executionDigestsLoaded,
   executionScrollLeft,
   executionScrollRight,
-  numAlertsLoaded,
-  numAlertsRequested,
+  numAlertsAndBreakdownLoaded,
+  numAlertsAndBreakdownRequested,
   numExecutionsLoaded,
   numExecutionsRequested,
   stackFramesLoaded,
@@ -201,9 +201,9 @@ export class DebuggerEffects {
   }
 
   /**
-   * When a debugger run exits, load number of alerts.
+   * When a debugger run exists, load number of alerts and their breakdown.
    */
-  private createNumAlertsLoader(prevStream$: Observable<void>) {
+  private createNumAlertsAndBreakdownLoader(prevStream$: Observable<void>) {
     return prevStream$.pipe(
       withLatestFrom(
         this.store.select(getDebuggerRunListing),
@@ -214,7 +214,7 @@ export class DebuggerEffects {
           Object.keys(runs).length > 0 && loaded.state !== DataLoadState.LOADING
         );
       }),
-      tap(() => this.store.dispatch(numAlertsRequested())),
+      tap(() => this.store.dispatch(numAlertsAndBreakdownRequested())),
       mergeMap(([, runs]) => {
         const runId = Object.keys(runs)[0];
         const begin = 0;
@@ -222,7 +222,7 @@ export class DebuggerEffects {
         return this.dataSource.fetchAlerts(runId, begin, end).pipe(
           tap((alerts) => {
             this.store.dispatch(
-              numAlertsLoaded({
+              numAlertsAndBreakdownLoaded({
                 numAlerts: alerts.num_alerts,
                 alertsBreakdown: alerts.alerts_breakdown,
               })
@@ -498,7 +498,7 @@ export class DebuggerEffects {
      *  +> fetch run +> fetch num exec
      *               +> fetch num alerts
      *                   +
-     *                   +> if init load
+     *                   +> if init load and non-empty execs
      *                       +
      *                       +>+-------------------+
      *                       | | fetch exec digest |
@@ -516,7 +516,9 @@ export class DebuggerEffects {
         // Therefore it needs to be a shared observable.
         const onLoad$ = this.onDebuggerLoaded().pipe(share());
         const onNumExecutionLoaded$ = this.createNumExecutionLoader(onLoad$);
-        const onNumAlertsLoaded$ = this.createNumAlertsLoader(onLoad$);
+        const onNumAlertsLoaded$ = this.createNumAlertsAndBreakdownLoader(
+          onLoad$
+        );
 
         // This event can trigger the loading of
         //   - execution-digest

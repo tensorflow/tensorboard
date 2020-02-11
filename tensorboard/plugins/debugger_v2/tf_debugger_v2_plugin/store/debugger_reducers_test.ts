@@ -118,16 +118,16 @@ describe('Debugger reducers', () => {
     expect(nextState.activeRunId).toEqual('__default_debugger_run__');
   });
 
-  it('Updates alert load state on numAlertsRequested', () => {
+  it('Updates alert load state on numAlertsAndBreakdownRequested', () => {
     const state = createDebuggerState({
       activeRunId: '__default_debugger_run__',
     });
-    const nextState = reducers(state, actions.numAlertsRequested());
+    const nextState = reducers(state, actions.numAlertsAndBreakdownRequested());
     expect(nextState.alerts.alertsLoaded.state).toEqual(DataLoadState.LOADING);
     expect(nextState.alerts.alertsLoaded.lastLoadedTimeInMs).toBeNull();
   });
 
-  it('Updates on numAlertsLoaded', () => {
+  it('Updates on numAlertsAndBreakdownLoaded', () => {
     const state = createDebuggerState({
       activeRunId: '__default_debugger_run__',
       alerts: createAlertsState({
@@ -139,7 +139,7 @@ describe('Debugger reducers', () => {
     });
     const nextState = reducers(
       state,
-      actions.numAlertsLoaded({
+      actions.numAlertsAndBreakdownLoaded({
         numAlerts: 30,
         alertsBreakdown: {
           InfNanAlerts: 29,

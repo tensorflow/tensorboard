@@ -112,7 +112,7 @@ const reducer = createReducer(
     }
   ),
   on(
-    actions.numAlertsRequested,
+    actions.numAlertsAndBreakdownRequested,
     (state: DebuggerState): DebuggerState => {
       const runId = state.activeRunId;
       if (runId === null) {
@@ -132,7 +132,7 @@ const reducer = createReducer(
     }
   ),
   on(
-    actions.numAlertsLoaded,
+    actions.numAlertsAndBreakdownLoaded,
     (state: DebuggerState, {numAlerts, alertsBreakdown}): DebuggerState => {
       const runId = state.activeRunId;
       if (runId === null) {

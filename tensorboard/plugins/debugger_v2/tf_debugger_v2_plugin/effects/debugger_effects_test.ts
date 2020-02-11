@@ -27,8 +27,8 @@ import {
   executionDigestsRequested,
   executionScrollLeft,
   executionScrollRight,
-  numAlertsRequested,
-  numAlertsLoaded,
+  numAlertsAndBreakdownRequested,
+  numAlertsAndBreakdownLoaded,
   numExecutionsLoaded,
   numExecutionsRequested,
   stackFramesLoaded,
@@ -434,8 +434,8 @@ describe('Debugger effects', () => {
       expect(dispatchedActions).toEqual([
         debuggerRunsRequested(),
         debuggerRunsLoaded({runs: runListingForTest}),
-        numAlertsRequested(),
-        numAlertsLoaded({
+        numAlertsAndBreakdownRequested(),
+        numAlertsAndBreakdownLoaded({
           numAlerts: numAlertsResponseForTest.num_alerts,
           alertsBreakdown: numAlertsResponseForTest.alerts_breakdown,
         }),
@@ -472,8 +472,8 @@ describe('Debugger effects', () => {
       expect(dispatchedActions).toEqual([
         debuggerRunsRequested(),
         debuggerRunsLoaded({runs: runListingForTest}),
-        numAlertsRequested(),
-        numAlertsLoaded({
+        numAlertsAndBreakdownRequested(),
+        numAlertsAndBreakdownLoaded({
           numAlerts: numAlertsResponseForTest.num_alerts,
           alertsBreakdown: numAlertsResponseForTest.alerts_breakdown,
         }),
