@@ -136,9 +136,8 @@ message DeleteOwnUserResponse {
   // This is empty on purpose.
 }
 
-
 // Request to change the metadata of one experiment.
-message UpdateExperimentMetadataRequest{
+message UpdateExperimentMetadataRequest {
   // Description of the data to set.  The experiment_id field must match
   // an experiment_id in the database.  The remaining fields should be set
   // to the desired metadata to be written.  Only those fields marked True
@@ -152,6 +151,6 @@ message UpdateExperimentMetadataRequest{
 }
 
 // Response for setting experiment name.
-message UpdateExperimentMetadataResponse{
+message UpdateExperimentMetadataResponse {
   // This is empty on purpose.
 }
