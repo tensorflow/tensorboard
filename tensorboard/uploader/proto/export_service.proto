@@ -4,6 +4,7 @@ package tensorboard.service;
 
 import "google/protobuf/timestamp.proto";
 import "tensorboard/compat/proto/summary.proto";
+import "tensorboard/compat/proto/tensor.proto";
 
 // Service for exporting data from TensorBoard.dev.
 service TensorBoardExporterService {
@@ -87,6 +88,9 @@ message Experiment {
   // The number of distinct tag names in this experiment. A tag name that
   // appears in multiple runs will be counted only once.
   int64 num_tags = 6;
+  // The number of bytes used for storage of tensors in this experiment,
+  // across all time series, including estimated overhead.
+  int64 total_tensor_bytes = 7;
 }
 
 // Field mask for `Experiment`. The `experiment_id` field is always implicitly
@@ -101,6 +105,7 @@ message ExperimentMask {
   bool num_scalars = 4;
   bool num_runs = 5;
   bool num_tags = 6;
+  bool total_tensor_bytes = 7;
 }
 
 // Request to stream scalars from all the runs and tags in an experiment.
@@ -114,15 +119,15 @@ message StreamExperimentDataRequest {
   google.protobuf.Timestamp read_timestamp = 2;
 }
 
-// Streams scalars from all the runs and tags in an experiment. Each stream
+// Streams data from all the runs and tags in an experiment. Each stream
 // result only contains data for a single tag from a single run. For example if
 // there are five runs and each run had two tags, the RPC will return a stream
 // of at least ten `StreamExperimentDataResponse`s, each one having the
-// scalars for one tag. The values from a single tag may be split among multiple
-// responses.  Users need to aggregate information from entire stream to get
-// data for the entire experiment. Empty experiments will have zero stream
-// results. Empty runs that doesn't have any tags need not be supported by a
-// hosted service.
+// either scalars or tensors for one tag. The values from a single tag may be
+// split among multiple responses.  Users need to aggregate information from
+// entire stream to get data for the entire experiment. Empty experiments will
+// have zero stream results. Empty runs that doesn't have any tags need not
+// be supported by a hosted service.
 message StreamExperimentDataResponse {
   // Name of the tag whose data is contained in this response.
   string tag_name = 1;
@@ -132,6 +137,8 @@ message StreamExperimentDataResponse {
   .tensorboard.SummaryMetadata tag_metadata = 3;
   // Data to store for the tag `tag_name.
   ScalarPoints points = 4;
+  // Tensor data to store.
+  TensorPoints tensors = 5;
 
   // Data for the scalars are stored in a columnar fashion to optimize it for
   // exporting the data into textual formats like JSON.
@@ -144,5 +151,18 @@ message StreamExperimentDataResponse {
     repeated google.protobuf.Timestamp wall_times = 2;
     // Value of the point at this step / timestamp.
     repeated double values = 3;
+  }
+
+  // Data for the Tensors are stored in a columnar fashion to optimize it for
+  // exporting the data into textual formats like JSON.
+  // The data for the ith scalar is { steps[i], wall_times[i], values[i] }.
+  // The data here is sorted by step values in ascending order.
+  message TensorPoints {
+    // Step index within the run.
+    repeated int64 steps = 1;
+    // Timestamp of the creation of this point.
+    repeated google.protobuf.Timestamp wall_times = 2;
+    // Value of the point at this step / timestamp.
+    repeated .tensorboard.Tensor values = 3;
   }
 }
