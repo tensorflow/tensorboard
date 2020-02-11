@@ -120,7 +120,6 @@ build() (
   # representable in a zip archive.)
   export SOURCE_DATE_EPOCH=1577836800  # 2020-01-01T00:00:00Z
 
-  python setup.py bdist_wheel --python-tag py2 >/dev/null
   python setup.py bdist_wheel --python-tag py3 >/dev/null
 
   cd "${original_wd}"  # Bazel gives "${output}" as a relative path >_>

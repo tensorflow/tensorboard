@@ -20,9 +20,13 @@ limitations under the License.
     *ngIf="runIds.length === 0; else dataAvailable"
   ></tf-debugger-v2-inactive>
   <ng-template #dataAvailable>
-    <div>
+    <div class="top-section">
       <tf-debugger-v2-alerts></tf-debugger-v2-alerts>
       <tf-debugger-v2-timeline></tf-debugger-v2-timeline>
+    </div>
+
+    <div class="bottom-section">
+      <tf-debugger-v2-stack-trace></tf-debugger-v2-stack-trace>
     </div>
     <!-- TODO(cais): Add more elements, such as graph, source code, etc.-->
   </ng-template>

@@ -26,7 +26,9 @@ import {reducers} from './store/debugger_reducers';
 import {DEBUGGER_FEATURE_KEY} from './store/debugger_types';
 import {AlertsModule} from './views/alerts/alerts_module';
 import {InactiveModule} from './views/inactive/inactive_module';
+import {StackTraceModule} from './views/stack_trace/stack_trace_module';
 import {TimelineModule} from './views/timeline/timeline_module';
+import {PluginRegistryModule} from '../../../webapp/plugins/plugin_registry_module';
 
 @NgModule({
   declarations: [DebuggerComponent, DebuggerContainer],
@@ -34,11 +36,14 @@ import {TimelineModule} from './views/timeline/timeline_module';
     AlertsModule,
     CommonModule,
     InactiveModule,
+    StackTraceModule,
     Tfdbg2ServerDataSourceModule,
     TimelineModule,
     StoreModule.forFeature(DEBUGGER_FEATURE_KEY, reducers),
     EffectsModule.forFeature([DebuggerEffects]),
+    PluginRegistryModule.forPlugin('debugger-v2', DebuggerContainer),
   ],
   exports: [DebuggerContainer],
+  entryComponents: [DebuggerContainer],
 })
 export class DebuggerModule {}

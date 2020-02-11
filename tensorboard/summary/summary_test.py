@@ -23,7 +23,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import collections
+import collections.abc
 import sys
 import unittest
 
@@ -40,13 +40,13 @@ class SummaryExportsBaseTest(object):
     def test_each_plugin_has_an_export(self):
         for plugin in self.plugins:
             self.assertIsInstance(
-                getattr(self.module, plugin), collections.Callable
+                getattr(self.module, plugin), collections.abc.Callable
             )
 
     def test_plugins_export_pb_functions(self):
         for plugin in self.plugins:
             self.assertIsInstance(
-                getattr(self.module, "%s_pb" % plugin), collections.Callable
+                getattr(self.module, "%s_pb" % plugin), collections.abc.Callable
             )
 
     def test_all_exports_correspond_to_plugins(self):

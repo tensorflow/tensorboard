@@ -13,10 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {TestBed} from '@angular/core/testing';
-import {
-  HttpClientTestingModule,
-  HttpTestingController,
-} from '@angular/common/http/testing';
+
 import {provideMockActions} from '@ngrx/effects/testing';
 import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
@@ -31,6 +28,10 @@ import {createPluginMetadata, createState, createCoreState} from '../testing';
 import {PluginsListing} from '../../types/api';
 import {DataLoadState} from '../../types/data';
 import {TBServerDataSource} from '../../webapp_data_source/tb_server_data_source';
+import {
+  TBHttpClientTestingModule,
+  HttpTestingController,
+} from '../../webapp_data_source/tb_http_client_testing';
 
 describe('core_effects', () => {
   let httpMock: HttpTestingController;
@@ -53,7 +54,7 @@ describe('core_effects', () => {
       })
     );
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
+      imports: [TBHttpClientTestingModule],
       providers: [
         provideMockActions(action),
         CoreEffects,

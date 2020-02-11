@@ -12,15 +12,39 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {Observable} from 'rxjs';
 import {
   DebuggerRunListing,
-  ExecutionDigestsResponse,
+  Execution,
+  ExecutionDigest,
+  StackFrame,
 } from '../store/debugger_types';
+import {TBHttpClient} from '../../../../webapp/webapp_data_source/tb_http_client';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
+
+export interface StackFramesResponse {
+  stack_frames: StackFrame[];
+}
+
+export interface ExecutionDigestsResponse {
+  begin: number;
+
+  end: number;
+
+  num_digests: number;
+
+  execution_digests: ExecutionDigest[];
+}
+
+export interface ExecutionDataResponse {
+  begin: number;
+
+  end: number;
+
+  executions: Execution[];
+}
 
 export abstract class Tfdbg2DataSource {
   abstract fetchRuns(): Observable<DebuggerRunListing>;
@@ -30,13 +54,24 @@ export abstract class Tfdbg2DataSource {
     begin: number,
     end: number
   ): Observable<ExecutionDigestsResponse>;
+
+  abstract fetchExecutionData(
+    run: string,
+    begin: number,
+    end: number
+  ): Observable<ExecutionDataResponse>;
+
+  abstract fetchStackFrames(
+    run: string,
+    stackFrameIds: string[]
+  ): Observable<StackFramesResponse>;
 }
 
 @Injectable()
 export class Tfdbg2HttpServerDataSource implements Tfdbg2DataSource {
   private readonly httpPathPrefix = 'data/plugin/debugger-v2';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: TBHttpClient) {}
 
   fetchRuns() {
     // TODO(cais): Once the backend uses an DataProvider that unifies tfdbg and
@@ -52,6 +87,31 @@ export class Tfdbg2HttpServerDataSource implements Tfdbg2DataSource {
           run,
           begin: String(begin),
           end: String(end),
+        },
+      }
+    );
+  }
+
+  fetchExecutionData(run: string, begin: number, end: number) {
+    return this.http.get<ExecutionDataResponse>(
+      this.httpPathPrefix + '/execution/data',
+      {
+        params: {
+          run,
+          begin: String(begin),
+          end: String(end),
+        },
+      }
+    );
+  }
+
+  fetchStackFrames(run: string, stackFrameIds: string[]) {
+    return this.http.get<StackFramesResponse>(
+      this.httpPathPrefix + '/stack_frames/stack_frames',
+      {
+        params: {
+          run,
+          stack_frame_ids: stackFrameIds.join(','),
         },
       }
     );

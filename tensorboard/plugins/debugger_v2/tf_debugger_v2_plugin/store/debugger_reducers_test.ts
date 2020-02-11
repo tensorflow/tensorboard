@@ -13,13 +13,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import * as actions from '../actions';
+import {ExecutionDigestsResponse} from '../data_source/tfdbg2_data_source';
 import {reducers} from './debugger_reducers';
-import {DataLoadState, ExecutionDigestsResponse} from './debugger_types';
+import {DataLoadState, Execution, StackFramesById} from './debugger_types';
 import {
   createDebuggerExecutionsState,
   createDebuggerState,
   createDigestsStateWhileLoadingExecutionDigests,
   createDebuggerStateWithLoadedExecutionDigests,
+  createTestExecutionData,
+  createTestStackFrame,
 } from '../testing';
 
 describe('Debugger reducers', () => {
@@ -27,7 +30,7 @@ describe('Debugger reducers', () => {
     it('sets runsLoaded to loading on requesting runs', () => {
       const state = createDebuggerState();
       const nextState = reducers(state, actions.debuggerRunsRequested());
-      expect(nextState.runsLoaded.state).toEqual(DataLoadState.LOADING);
+      expect(nextState.runsLoaded.state).toBe(DataLoadState.LOADING);
       expect(nextState.runsLoaded.lastLoadedTimeInMs).toBeNull();
     });
 
@@ -36,7 +39,7 @@ describe('Debugger reducers', () => {
         runsLoaded: {state: DataLoadState.LOADING, lastLoadedTimeInMs: null},
       });
       const nextState = reducers(state, actions.debuggerRunsRequestFailed());
-      expect(nextState.runsLoaded.state).toEqual(DataLoadState.FAILED);
+      expect(nextState.runsLoaded.state).toBe(DataLoadState.FAILED);
       expect(nextState.runsLoaded.lastLoadedTimeInMs).toBeNull();
     });
 
@@ -53,7 +56,7 @@ describe('Debugger reducers', () => {
           },
         })
       );
-      expect(nextState.runsLoaded.state).toEqual(DataLoadState.LOADED);
+      expect(nextState.runsLoaded.state).toBe(DataLoadState.LOADED);
       expect(nextState.runsLoaded.lastLoadedTimeInMs).toBeGreaterThanOrEqual(
         t0
       );
@@ -87,7 +90,7 @@ describe('Debugger reducers', () => {
           },
         })
       );
-      expect(nextState.runsLoaded.state).toEqual(DataLoadState.LOADED);
+      expect(nextState.runsLoaded.state).toBe(DataLoadState.LOADED);
       expect(nextState.runsLoaded.lastLoadedTimeInMs).toBeGreaterThanOrEqual(
         t0
       );
@@ -128,7 +131,7 @@ describe('Debugger reducers', () => {
       activeRunId: '__default_debugger_run__',
     });
     const nextState = reducers(state, actions.numExecutionsRequested());
-    expect(nextState.executions.numExecutionsLoaded.state).toEqual(
+    expect(nextState.executions.numExecutionsLoaded.state).toBe(
       DataLoadState.LOADING
     );
     expect(
@@ -136,7 +139,7 @@ describe('Debugger reducers', () => {
     ).toBeNull();
   });
 
-  it('Updates states correctly on numExecutionsLoaded', () => {
+  it('Updates states correctly on numExecutionsLoaded: non-empty', () => {
     const state = createDebuggerState({
       runs: {
         __default_debugger_run__: {
@@ -161,8 +164,10 @@ describe('Debugger reducers', () => {
         },
         pageSize: 1000,
         displayCount: 50,
+        focusIndex: null,
         scrollBeginIndex: 0,
         executionDigests: {},
+        executionData: {},
       },
     });
     const t0 = Date.now();
@@ -170,15 +175,62 @@ describe('Debugger reducers', () => {
       state,
       actions.numExecutionsLoaded({numExecutions: 1337})
     );
-    expect(nextState.executions.numExecutionsLoaded.state).toEqual(
+    expect(nextState.executions.numExecutionsLoaded.state).toBe(
       DataLoadState.LOADED
     );
     expect(
       nextState.executions.numExecutionsLoaded.lastLoadedTimeInMs
     ).toBeGreaterThanOrEqual(t0);
-    expect(nextState.executions.executionDigestsLoaded.numExecutions).toEqual(
+    expect(nextState.executions.executionDigestsLoaded.numExecutions).toBe(
       1337
     );
+    expect(nextState.executions.focusIndex).toBe(0);
+  });
+
+  it('Updates states correctly on numExecutionsLoaded: empty', () => {
+    const state = createDebuggerState({
+      runs: {
+        __default_debugger_run__: {
+          start_time: 111,
+        },
+      },
+      runsLoaded: {
+        state: DataLoadState.LOADED,
+        lastLoadedTimeInMs: 222,
+      },
+      activeRunId: '__default_debugger_run__',
+      executions: {
+        numExecutionsLoaded: {
+          state: DataLoadState.LOADING,
+          lastLoadedTimeInMs: null,
+        },
+        executionDigestsLoaded: {
+          state: DataLoadState.NOT_LOADED,
+          lastLoadedTimeInMs: null,
+          pageLoadedSizes: {},
+          numExecutions: 0,
+        },
+        pageSize: 1000,
+        displayCount: 50,
+        focusIndex: null,
+        scrollBeginIndex: 0,
+        executionDigests: {},
+        executionData: {},
+      },
+    });
+    const t0 = Date.now();
+    const nextState = reducers(
+      state,
+      actions.numExecutionsLoaded({numExecutions: 0})
+    );
+    expect(nextState.executions.numExecutionsLoaded.state).toBe(
+      DataLoadState.LOADED
+    );
+    expect(
+      nextState.executions.numExecutionsLoaded.lastLoadedTimeInMs
+    ).toBeGreaterThanOrEqual(t0);
+    expect(nextState.executions.executionDigestsLoaded.numExecutions).toBe(0);
+    expect(nextState.executions.focusIndex).toBeNull();
   });
 
   it('Updates states on executionDigestsRequested', () => {
@@ -207,13 +259,13 @@ describe('Debugger reducers', () => {
       }),
     });
     const nextState = reducers(state, actions.executionDigestsRequested());
-    expect(nextState.executions.executionDigestsLoaded.state).toEqual(
+    expect(nextState.executions.executionDigestsLoaded.state).toBe(
       DataLoadState.LOADING
     );
     expect(
       nextState.executions.executionDigestsLoaded.lastLoadedTimeInMs
     ).toBeNull();
-    expect(nextState.executions.executionDigestsLoaded.numExecutions).toEqual(
+    expect(nextState.executions.executionDigestsLoaded.numExecutions).toBe(
       1337
     );
     expect(nextState.executions.executionDigestsLoaded.pageLoadedSizes).toEqual(
@@ -245,7 +297,7 @@ describe('Debugger reducers', () => {
       state,
       actions.executionDigestsLoaded(excutionDigestsResponse)
     );
-    expect(nextState.executions.executionDigestsLoaded.state).toEqual(
+    expect(nextState.executions.executionDigestsLoaded.state).toBe(
       DataLoadState.LOADED
     );
     expect(
@@ -259,13 +311,9 @@ describe('Debugger reducers', () => {
       {0: 100}
     );
     // The detailed digest data should be recorded.
-    expect(Object.keys(nextState.executions.executionDigests).length).toEqual(
-      100
-    );
+    expect(Object.keys(nextState.executions.executionDigests).length).toBe(100);
     for (let i = 0; i < 100; ++i) {
-      expect(nextState.executions.executionDigests[i].op_type).toEqual(
-        `Op${i}`
-      );
+      expect(nextState.executions.executionDigests[i].op_type).toBe(`Op${i}`);
       expect(
         nextState.executions.executionDigests[i].output_tensor_device_ids
       ).toEqual([`de${i}`]);
@@ -302,13 +350,13 @@ describe('Debugger reducers', () => {
       state,
       actions.executionDigestsLoaded(excutionDigestsResponse)
     );
-    expect(nextState.executions.executionDigestsLoaded.state).toEqual(
+    expect(nextState.executions.executionDigestsLoaded.state).toBe(
       DataLoadState.LOADED
     );
     expect(
       nextState.executions.executionDigestsLoaded.lastLoadedTimeInMs
     ).toBeGreaterThanOrEqual(t0);
-    expect(nextState.executions.executionDigestsLoaded.numExecutions).toEqual(
+    expect(nextState.executions.executionDigestsLoaded.numExecutions).toBe(
       numExecutions
     );
     // The first page is expanded.
@@ -316,9 +364,7 @@ describe('Debugger reducers', () => {
       {0: 4}
     );
     // The detailed digest data should be recorded.
-    expect(Object.keys(nextState.executions.executionDigests).length).toEqual(
-      4
-    );
+    expect(Object.keys(nextState.executions.executionDigests).length).toBe(4);
     expect(nextState.executions.executionDigests[0]).toEqual({
       op_type: 'MatMul',
       output_tensor_device_ids: ['a'],
@@ -367,13 +413,13 @@ describe('Debugger reducers', () => {
       state,
       actions.executionDigestsLoaded(excutionDigestsResponse)
     );
-    expect(nextState.executions.executionDigestsLoaded.state).toEqual(
+    expect(nextState.executions.executionDigestsLoaded.state).toBe(
       DataLoadState.LOADED
     );
     expect(
       nextState.executions.executionDigestsLoaded.lastLoadedTimeInMs
     ).toBeGreaterThanOrEqual(t0);
-    expect(nextState.executions.executionDigestsLoaded.numExecutions).toEqual(
+    expect(nextState.executions.executionDigestsLoaded.numExecutions).toBe(
       numExecutions
     );
     // The first page is expanded.
@@ -430,14 +476,14 @@ describe('Debugger reducers', () => {
       state,
       actions.executionDigestsLoaded(excutionDigestsResponse)
     );
-    expect(nextState.executions.executionDigestsLoaded.state).toEqual(
+    expect(nextState.executions.executionDigestsLoaded.state).toBe(
       DataLoadState.LOADED
     );
     expect(
       nextState.executions.executionDigestsLoaded.lastLoadedTimeInMs
     ).toBeGreaterThanOrEqual(t0);
     // Update in total execution count should be reflected.
-    expect(nextState.executions.executionDigestsLoaded.numExecutions).toEqual(
+    expect(nextState.executions.executionDigestsLoaded.numExecutions).toBe(
       numExecutions + 1
     );
     // The first page is expanded.
@@ -445,9 +491,7 @@ describe('Debugger reducers', () => {
       {0: 2, 1: 2}
     );
     // The detailed digest data should be recorded.
-    expect(Object.keys(nextState.executions.executionDigests).length).toEqual(
-      4
-    );
+    expect(Object.keys(nextState.executions.executionDigests).length).toBe(4);
     expect(nextState.executions.executionDigests[0]).toEqual({
       op_type: 'MatMul',
       output_tensor_device_ids: ['a'],
@@ -472,7 +516,7 @@ describe('Debugger reducers', () => {
       scrollBeginIndex
     );
     const nextState = reducers(state, actions.executionScrollLeft());
-    expect(nextState.executions.scrollBeginIndex).toEqual(0);
+    expect(nextState.executions.scrollBeginIndex).toBe(0);
   });
 
   for (const scrollBeginIndex of [1, 50, 100, 999, 1000, 1001, 1234, 1450]) {
@@ -481,9 +525,7 @@ describe('Debugger reducers', () => {
         scrollBeginIndex
       );
       const nextState = reducers(state, actions.executionScrollLeft());
-      expect(nextState.executions.scrollBeginIndex).toEqual(
-        scrollBeginIndex - 1
-      );
+      expect(nextState.executions.scrollBeginIndex).toBe(scrollBeginIndex - 1);
     });
   }
 
@@ -493,9 +535,7 @@ describe('Debugger reducers', () => {
         scrollBeginIndex
       );
       const nextState = reducers(state, actions.executionScrollRight());
-      expect(nextState.executions.scrollBeginIndex).toEqual(
-        scrollBeginIndex + 1
-      );
+      expect(nextState.executions.scrollBeginIndex).toBe(scrollBeginIndex + 1);
     });
   }
 
@@ -505,6 +545,101 @@ describe('Debugger reducers', () => {
       scrollBeginIndex
     );
     const nextState = reducers(state, actions.executionScrollRight());
-    expect(nextState.executions.scrollBeginIndex).toEqual(1450);
+    expect(nextState.executions.scrollBeginIndex).toBe(1450);
+  });
+
+  it(`Updates states on executionDigestFocused: scrollBeginIndex = 0`, () => {
+    const state = createDebuggerState();
+    const nextState = reducers(
+      state,
+      actions.executionDigestFocused({
+        displayIndex: 12,
+      })
+    );
+    expect(nextState.executions.focusIndex).toBe(12);
+  });
+
+  it(`Updates states on executionDigestFocused: scrollBeginIndex > 0`, () => {
+    const state = createDebuggerState({
+      executions: {
+        numExecutionsLoaded: {
+          state: DataLoadState.LOADING,
+          lastLoadedTimeInMs: null,
+        },
+        executionDigestsLoaded: {
+          state: DataLoadState.NOT_LOADED,
+          lastLoadedTimeInMs: null,
+          pageLoadedSizes: {},
+          numExecutions: 0,
+        },
+        pageSize: 1000,
+        displayCount: 50,
+        focusIndex: null,
+        scrollBeginIndex: 100,
+        executionDigests: {},
+        executionData: {},
+      },
+    });
+    const nextState = reducers(
+      state,
+      actions.executionDigestFocused({
+        displayIndex: 12,
+      })
+    );
+    expect(nextState.executions.focusIndex).toBe(112);
+  });
+
+  for (const beginIndex of [0, 50]) {
+    for (const numObjects of [1, 2, 3]) {
+      it(
+        `Updates states on executionDataLoaded: beginIndex=${beginIndex}; ` +
+          `${numObjects} objects`,
+        () => {
+          const state = createDebuggerState({
+            activeRunId: '__default_debugger_run__',
+          });
+          const executionDataObjects: Execution[] = [];
+          for (let i = 0; i < numObjects; ++i) {
+            executionDataObjects.push(
+              createTestExecutionData({
+                op_type: `OpType${numObjects}`,
+                input_tensor_ids: [i * 10],
+                output_tensor_ids: [i * 10 + 1],
+              })
+            );
+          }
+
+          const nextState = reducers(
+            state,
+            actions.executionDataLoaded({
+              begin: beginIndex,
+              end: beginIndex + numObjects,
+              executions: executionDataObjects,
+            })
+          );
+          expect(Object.keys(nextState.executions.executionData).length).toBe(
+            numObjects
+          );
+          for (let i = beginIndex; i < numObjects; ++i) {
+            expect(nextState.executions.executionData[i]).toEqual(
+              executionDataObjects[i]
+            );
+          }
+        }
+      );
+    }
+  }
+
+  it(`Updates states on stackFramesLoaded with all new content`, () => {
+    const state = createDebuggerState({
+      activeRunId: '__default_debugger_run__',
+    });
+    const stackFrames: StackFramesById = {
+      aaa: createTestStackFrame(),
+      bbb: createTestStackFrame(),
+      ccc: createTestStackFrame(),
+    };
+    const nextState = reducers(state, actions.stackFramesLoaded({stackFrames}));
+    expect(nextState.stackFrames).toEqual(stackFrames);
   });
 });

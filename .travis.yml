@@ -18,7 +18,7 @@ env:
     - BAZEL=0.26.1
     - BAZEL_SHA256SUM=6c50e142a0a405d3d8598050d6c1b3920c8cdb82a7ffca6fc067cb474275148f
   matrix:
-    - TF_VERSION_ID=tensorflow==1.15.0rc3
+    - TF_VERSION_ID=tensorflow==1.15.0
     - TF_VERSION_ID=tf-nightly
     - TF_VERSION_ID=  # Do not install TensorFlow in this case
 
@@ -91,7 +91,7 @@ script:
   - elapsed && bazel fetch //tensorboard/...
   - elapsed && bazel build //tensorboard/...
   - elapsed && bazel test //tensorboard/... --test_tag_filters="${test_tag_filters}"
-  - elapsed && bazel run //tensorboard/pip_package:test_pip_package -- --default-python-only --tf-version "${TF_VERSION_ID}"
+  - elapsed && bazel run //tensorboard/pip_package:test_pip_package -- --tf-version "${TF_VERSION_ID}"
   # Run manual S3 test
   - elapsed && bazel test //tensorboard/compat/tensorflow_stub:gfile_s3_test
   - elapsed && bazel test //tensorboard/summary/writer:event_file_writer_s3_test

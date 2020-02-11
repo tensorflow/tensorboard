@@ -1,0 +1,189 @@
+<!--
+@license
+Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<div class="focus-execution-container">
+  <div>
+    <span>
+      Execution #{{ focusedExecutionIndex }}
+    </span>
+  </div>
+
+  <div *ngIf="focusedExecutionData !== null; else loading_section">
+    <div>
+      <div class="execution-data-field">
+        <span class="execution-data-key">
+          <!-- TODO(cais): Show "Function" or "Op" depending on the type. -->
+          Op:
+        </span>
+        <span class="execution-data-value op-type">
+          {{ focusedExecutionData.op_type }}
+        </span>
+      </div>
+
+      <div class="execution-data-field">
+        <span class="execution-data-key">
+          # of input tensors:
+        </span>
+        <span class="execution-data-value input-tensors">
+          {{ focusedExecutionData.input_tensor_ids == null ? 0 :
+          focusedExecutionData.input_tensor_ids.length }}
+        </span>
+      </div>
+
+      <div class="execution-data-field">
+        <span class="execution-data-key">
+          # of output tensors:
+        </span>
+        <span class="execution-data-value output-tensors">
+          {{ focusedExecutionData.output_tensor_ids == null ? 0 :
+          focusedExecutionData.output_tensor_ids.length }}
+        </span>
+        <span class="execution-data-value">
+          <!-- TODO(cais): Show debug mode in text format -->
+          (debug mode: {{ TensorDebugMode[tensorDebugMode] }})
+        </span>
+      </div>
+
+      <div *ngIf="hasDebugTensorValues">
+        <div [ngSwitch]="tensorDebugMode">
+          <div
+            *ngSwitchCase="TensorDebugMode.CURT_HEALTH"
+            class="debug-tensor-values-container"
+          >
+            <table class="debug-tensor-values-table">
+              <tr>
+                <th>Slot</th>
+                <th>Contains inf/nan?</th>
+              </tr>
+              <tr
+                *ngFor="let singleDebugTensorValues of debugTensorValues; index as i;"
+              >
+                <td
+                  *ngIf="singleDebugTensorValues !== null"
+                  class="output-slot"
+                >
+                  {{ i }}
+                </td>
+                <td
+                  *ngIf="singleDebugTensorValues !== null"
+                  class="curt-health-contains-inf-nan"
+                >
+                  {{ singleDebugTensorValues[1] ? "Yes" : "No" }}
+                </td>
+              </tr>
+            </table>
+          </div>
+
+          <div
+            *ngSwitchCase="TensorDebugMode.CONCISE_HEALTH"
+            class="debug-tensor-values-container"
+          >
+            <table class="debug-tensor-values-table">
+              <tr>
+                <th>Slot</th>
+                <th>Size</th>
+                <th>#(-inf)</th>
+                <th>#(inf)</th>
+                <th>#(nan)</th>
+              </tr>
+              <tr
+                *ngFor="let singleDebugTensorValues of debugTensorValues; index as i;"
+              >
+                <td class="output-slot">
+                  {{ i }}
+                </td>
+                <td
+                  *ngIf="singleDebugTensorValues !== null"
+                  class="concise-health-size"
+                >
+                  {{ singleDebugTensorValues[1] }}
+                </td>
+                <td
+                  *ngIf="singleDebugTensorValues !== null"
+                  class="concise-health-neg-infs"
+                >
+                  {{ singleDebugTensorValues[2] }}
+                </td>
+                <td
+                  *ngIf="singleDebugTensorValues !== null"
+                  class="concise-health-pos-infs"
+                >
+                  {{ singleDebugTensorValues[3] }}
+                </td>
+                <td
+                  *ngIf="singleDebugTensorValues !== null"
+                  class="concise-health-nans"
+                >
+                  {{ singleDebugTensorValues[4] }}
+                </td>
+              </tr>
+            </table>
+          </div>
+
+          <div
+            *ngSwitchCase="TensorDebugMode.SHAPE"
+            class="debug-tensor-values-container"
+          >
+            <table class="debug-tensor-values-table">
+              <tr>
+                <th>Slot</th>
+                <th>DType</th>
+                <th>Rank</th>
+                <th>Size</th>
+                <th>shape</th>
+              </tr>
+              <tr
+                *ngFor="let singleDebugTensorValues of debugTensorValues; index as i;"
+              >
+                <td class="output-slot">
+                  {{ i }}
+                </td>
+                <td
+                  *ngIf="singleDebugTensorValues !== null"
+                  class="shape-dtype"
+                >
+                  <!-- Show human readable dtype string. -->
+                  {{ singleDebugTensorValues[1] }}
+                </td>
+                <td *ngIf="singleDebugTensorValues !== null" class="shape-rank">
+                  {{ singleDebugTensorValues[2] }}
+                </td>
+                <td *ngIf="singleDebugTensorValues !== null" class="shape-size">
+                  {{ singleDebugTensorValues[3] }}
+                </td>
+                <td
+                  *ngIf="singleDebugTensorValues !== null"
+                  class="shape-shape"
+                >
+                  ({{ singleDebugTensorValues.slice(4, 4 +
+                  singleDebugTensorValues[2]) }})
+                </td>
+              </tr>
+            </table>
+          </div>
+
+          <!-- TODO(cais): Add other modes including FULL_HEALTH and FULL_NUMERICS. -->
+          <!-- TODO(cais): Use salient colors to hightlight non-zero counts of inf and nan. -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #loading_section>
+    <!-- TODO(cais): Display loading spinner. -->
+  </ng-template>
+</div>
