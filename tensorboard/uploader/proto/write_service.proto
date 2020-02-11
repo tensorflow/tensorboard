@@ -4,6 +4,7 @@ package tensorboard.service;
 
 import "tensorboard/uploader/proto/experiment.proto";
 import "tensorboard/uploader/proto/scalar.proto";
+import "third_party/tensorboard/uploader/proto/experiment.proto";
 import "tensorboard/compat/proto/summary.proto";
 
 // Service for writing data to TensorBoard.dev.
@@ -27,6 +28,12 @@ service TensorBoardWriterService {
   // Request to mutate metadata associated with an experiment.
   rpc UpdateExperimentMetadata(UpdateExperimentMetadataRequest)
       returns (UpdateExperimentMetadataResponse) {}
+<<<<<<< HEAD
+=======
+  // Request to mutate metadata associated with an experiment.
+  rpc UpdateExperimentMetadata(UpdateExperimentMetadataRequest)
+      returns (UpdateExperimentMetadataResponse) {}
+>>>>>>> 779c5f272b9ac22991b4d5c038c283cff3b483a0
 }
 
 // This is currently empty on purpose.  No information is necessary
@@ -135,6 +142,7 @@ message DeleteOwnUserRequest {
 message DeleteOwnUserResponse {
   // This is empty on purpose.
 }
+
 
 // Request to change the metadata of one experiment.
 message UpdateExperimentMetadataRequest{

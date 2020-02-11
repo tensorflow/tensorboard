@@ -4,6 +4,7 @@ package tensorboard.service;
 
 import "google/protobuf/timestamp.proto";
 import "tensorboard/compat/proto/summary.proto";
+import "third_party/tensorboard/uploader/proto/experiment.proto";
 
 // Service for exporting data from TensorBoard.dev.
 service TensorBoardExporterService {
