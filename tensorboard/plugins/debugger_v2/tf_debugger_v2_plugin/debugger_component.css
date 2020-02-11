@@ -13,14 +13,30 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+.bottom-section {
+  width: 100%;
+}
+
+.top-section {
+  width: 100%;
+}
+
 tf-debugger-v2-alerts {
   display: inline-block;
   height: 360px;
+  vertical-align: top;
   width: 200px;
+}
+
+tf-debugger-v2-stack-trace {
+  /* TODO(cais): Once code-editor component is added to the left,
+     replace the `float` with a linear layout. */
+  float: right;
 }
 
 tf-debugger-v2-timeline {
   display: inline-block;
   height: 360px;
+  vertical-align: top;
   width: 800px;
 }

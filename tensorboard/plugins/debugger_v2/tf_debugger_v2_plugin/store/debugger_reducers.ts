@@ -16,10 +16,10 @@ import {Action, createReducer, on} from '@ngrx/store';
 
 import * as actions from '../actions';
 import {
-  DataLoadState,
-  DebuggerState,
+  ExecutionDataResponse,
   ExecutionDigestsResponse,
-} from './debugger_types';
+} from '../data_source/tfdbg2_data_source';
+import {DataLoadState, DebuggerState, StackFramesById} from './debugger_types';
 
 // HACK: These imports are for type inference.
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
@@ -46,13 +46,17 @@ const initialState: DebuggerState = {
       lastLoadedTimeInMs: null,
     },
     scrollBeginIndex: 0,
+    focusIndex: null,
     pageSize: DEFAULT_EXECUTION_PAGE_SIZE,
     // TODO(cais) Remove the hardcoding of this, which is coupled with css width
     // properties.
     displayCount: 50,
     executionDigests: {},
+    executionData: {},
   },
+  stackFrames: {},
 };
+// TODO(cais): As `executions` is getting large, create a subreducer for it.
 
 const reducer = createReducer(
   initialState,
@@ -124,7 +128,7 @@ const reducer = createReducer(
       if (runId === null) {
         return state;
       }
-      return {
+      const newState = {
         ...state,
         executions: {
           ...state.executions,
@@ -139,6 +143,10 @@ const reducer = createReducer(
           },
         },
       };
+      if (numExecutions > 0 && state.executions.focusIndex === null) {
+        newState.executions.focusIndex = 0;
+      }
+      return newState;
     }
   ),
   on(
@@ -243,6 +251,55 @@ const reducer = createReducer(
           scrollBeginIndex,
         },
       };
+    }
+  ),
+  on(
+    actions.executionDigestFocused,
+    (state: DebuggerState, action): DebuggerState => {
+      return {
+        ...state,
+        executions: {
+          ...state.executions,
+          focusIndex: state.executions.scrollBeginIndex + action.displayIndex,
+        },
+      };
+    }
+  ),
+  on(
+    actions.executionDataLoaded,
+    (state: DebuggerState, data: ExecutionDataResponse): DebuggerState => {
+      const runId = state.activeRunId;
+      if (runId === null) {
+        return state;
+      }
+      const newState: DebuggerState = {
+        ...state,
+        executions: {
+          ...state.executions,
+          executionData: {...state.executions.executionData},
+        },
+      };
+      for (let i = data.begin; i < data.end; ++i) {
+        newState.executions.executionData[i] = data.executions[i - data.begin];
+      }
+      return newState;
+    }
+  ),
+  on(
+    actions.stackFramesLoaded,
+    (
+      state: DebuggerState,
+      stackFrames: {stackFrames: StackFramesById}
+    ): DebuggerState => {
+      const runId = state.activeRunId;
+      if (runId === null) {
+        return state;
+      }
+      const newState: DebuggerState = {
+        ...state,
+        stackFrames: {...state.stackFrames, ...stackFrames.stackFrames},
+      };
+      return newState;
     }
   )
 );

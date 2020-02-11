@@ -13,47 +13,53 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-.execution-digest {
-  background-color: #e3e5e8;
-  border: 1px solid #c0c0c0;
-  color: #425066;
-  display: inline-block;
-  font-size: 10px;
-  height: 15px;
-  padding: 1px;
-  text-align: center;
-  vertical-align: middle;
-  width: 12px;
+.stack-frame-array {
+  height: 340px;
+  overflow-x: auto;
+  overflow-y: auto;
 }
 
-.execution-digest.func-graph-execution {
-  background-color: #c7dbf5;
-  color: #4e5664;
-  text-decoration: underline;
+.stack-frame-container {
+  border-bottom: 1px solid #a0a0a0;
 }
 
-.execution-digest.focused {
-  background-color: #ffd4b3;
-  border: 1px solid #000;
-  font-weight: bold;
+.stack-frame-file-path {
+  max-width: 180px;
+  width: 180px;
 }
 
-.execution-digest:hover {
-  border: 1px solid #000;
-  font-weight: bold;
-}
-
-.execution-timeline {
-  display: flex;
-  overflow-x: hidden;
+.stack-frame-lineno-function {
+  text-align: right;
   white-space: nowrap;
-  width: 100%;
-  margin-top: 5px;
-  margin-bottom: 5px;
 }
 
-.navigation-position-info {
+.stack-frame-function {
   display: inline-block;
+  max-width: 200px;
   padding-left: 10px;
-  padding-right: 10px;
+  text-align: left;
+  width: 200px;
+}
+
+.stack-frame-lineno {
+  display: inline-block;
+  max-width: 80px;
+  text-align: left;
+  width: 80px;
+}
+
+.stack-trace-container {
+  font-size: 10px;
+  font-family: 'Roboto Mono', monospace;
+  height: 360px;
+  max-height: 360px;
+  width: 400px;
+}
+
+.stack-trace-host-name {
+  color: #808080;
+}
+
+.stack-trace-title {
+  font-weight: bold;
 }

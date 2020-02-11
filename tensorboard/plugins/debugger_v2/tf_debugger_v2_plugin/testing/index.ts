@@ -20,10 +20,38 @@ import {
   DataLoadState,
   DEBUGGER_FEATURE_KEY,
   DebuggerState,
+  Execution,
   Executions,
   ExecutionDigest,
   State,
+  StackFrame,
 } from '../store/debugger_types';
+
+export function createTestExecutionData(
+  override?: Partial<Execution>
+): Execution {
+  return {
+    op_type: 'Identity',
+    output_tensor_device_ids: ['d0'],
+    input_tensor_ids: [0],
+    output_tensor_ids: [1],
+    host_name: 'localhost',
+    stack_frame_ids: ['aaa', 'bbb', 'ccc'],
+    graph_id: null,
+    tensor_debug_mode: 2,
+    debug_tensor_values: [[-1, 0]],
+    ...override,
+  };
+}
+
+export function createTestStackFrame(): StackFrame {
+  return [
+    'localhost', // Host name.
+    `/tmp/file_${Math.floor(Math.random() * 1e6)}.py`, // File path.
+    1 + Math.floor(Math.random() * 1e3), // Lineno.
+    `function_${Math.floor(Math.random() * 1e3)}`, // Function name.
+  ];
+}
 
 export function createDebuggerState(
   override?: Partial<DebuggerState>
@@ -36,11 +64,14 @@ export function createDebuggerState(
     },
     activeRunId: null,
     executions: createDebuggerExecutionsState(),
+    stackFrames: {},
     ...override,
   };
 }
 
-export function createDebuggerExecutionsState(override?: Partial<Executions>) {
+export function createDebuggerExecutionsState(
+  override?: Partial<Executions>
+): Executions {
   return {
     numExecutionsLoaded: {
       state: DataLoadState.NOT_LOADED,
@@ -55,7 +86,9 @@ export function createDebuggerExecutionsState(override?: Partial<Executions>) {
     displayCount: 50,
     pageSize: 1000,
     scrollBeginIndex: 0,
+    focusIndex: null,
     executionDigests: {},
+    executionData: {},
     ...override,
   };
 }
@@ -124,6 +157,7 @@ export function createDebuggerStateWithLoadedExecutionDigests(
       },
       pageSize: 1000,
       scrollBeginIndex,
+      focusIndex: null,
       displayCount,
       executionDigestsLoaded: {
         numExecutions: opTypes == null ? 1500 : opTypes.length,
@@ -132,6 +166,7 @@ export function createDebuggerStateWithLoadedExecutionDigests(
         lastLoadedTimeInMs: Date.now(),
       },
       executionDigests: {},
+      executionData: {},
     }),
   });
   const numExecutions = state.executions.executionDigestsLoaded.numExecutions;

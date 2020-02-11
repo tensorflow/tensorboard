@@ -11,6 +11,7 @@ tf_ts_library(
         "index.ts",
     ],
     deps = [
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/data_source",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/store:types",
         "@npm//@ngrx/store",
     ],
