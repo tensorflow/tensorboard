@@ -215,9 +215,11 @@ describe('Debugger effects', () => {
   let action: ReplaySubject<Action>;
   let store: MockStore<State>;
   let dispatchSpy: jasmine.Spy;
+  let dispatchedActions: Action[];
 
   beforeEach(async () => {
     action = new ReplaySubject<Action>(1);
+    dispatchedActions = [];
 
     const initialState = createState(createDebuggerState());
     await TestBed.configureTestingModule({
@@ -232,15 +234,12 @@ describe('Debugger effects', () => {
     debuggerEffects = TestBed.get(DebuggerEffects);
 
     store = TestBed.get(Store);
-    dispatchSpy = spyOn(store, 'dispatch');
-    // store.addReducer();  // TODO(cais): Confirm.
+    dispatchSpy = spyOn(store, 'dispatch').and.callFake((action: Action) => {
+      dispatchedActions.push(action);
+    });
   });
 
   describe('loadData', () => {
-    beforeEach(() => {
-      debuggerEffects.loadData$.subscribe();
-    });
-
     const runListingForTest: DebuggerRunListing = {
       __default_debugger_run__: {
         start_time: 1337,
@@ -287,56 +286,6 @@ describe('Debugger effects', () => {
         'fetchStackFrames'
       ).and.returnValue(of(stackFrames));
     }
-
-    it('run list loading: empty runs', () => {
-      const fetchRuns = createFetchRunsSpy({});
-      store.overrideSelector(getDebuggerRunListing, {});
-
-      action.next(debuggerLoaded());
-
-      expect(fetchRuns).toHaveBeenCalled();
-      expect(dispatchSpy).toHaveBeenCalledTimes(2);
-      expect(dispatchSpy).toHaveBeenCalledWith(debuggerRunsRequested());
-      expect(dispatchSpy).toHaveBeenCalledWith(debuggerRunsLoaded({runs: {}}));
-      expect(dispatchSpy).not.toHaveBeenCalledWith(numExecutionsRequested());
-    });
-
-    it('loads numExecutions when there is a run: empty executions', () => {
-      const fetchRuns = createFetchRunsSpy(runListingForTest);
-      const fetchNumExecutionDigests = createFetchExecutionDigestsSpy(
-        '__default_debugger_run__',
-        0,
-        0,
-        {
-          begin: 0,
-          end: 0,
-          num_digests: 0,
-          execution_digests: [],
-        }
-      );
-      store.overrideSelector(getDebuggerRunListing, runListingForTest);
-      store.overrideSelector(getNumExecutionsLoaded, {
-        state: DataLoadState.NOT_LOADED,
-        lastLoadedTimeInMs: null,
-      });
-      store.refreshState(); // TODO(cais): Move to appropriate place.
-
-      action.next(debuggerLoaded());
-
-      expect(fetchRuns).toHaveBeenCalled();
-      expect(fetchNumExecutionDigests).toHaveBeenCalled();
-      expect(dispatchSpy).toHaveBeenCalledTimes(4);
-      expect(dispatchSpy).toHaveBeenCalledWith(debuggerRunsRequested());
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        debuggerRunsLoaded({runs: runListingForTest})
-      );
-      expect(dispatchSpy).toHaveBeenCalledWith(numExecutionsRequested());
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        numExecutionsLoaded({
-          numExecutions: 0,
-        })
-      );
-    });
 
     const runId = '__default_debugger_run__';
     const numExecutions = 5;
@@ -404,6 +353,55 @@ describe('Debugger effects', () => {
       };
     }
 
+    beforeEach(() => {
+      debuggerEffects.loadData$.subscribe();
+    });
+
+    it('run list loading: empty runs', () => {
+      const fetchRuns = createFetchRunsSpy({});
+      store.overrideSelector(getDebuggerRunListing, {});
+
+      action.next(debuggerLoaded());
+
+      expect(fetchRuns).toHaveBeenCalled();
+      expect(dispatchedActions).toEqual([
+        debuggerRunsRequested(),
+        debuggerRunsLoaded({runs: {}}),
+      ]);
+    });
+
+    it('loads numExecutions when there is a run: empty executions', () => {
+      const fetchRuns = createFetchRunsSpy(runListingForTest);
+      const fetchNumExecutionDigests = createFetchExecutionDigestsSpy(
+        '__default_debugger_run__',
+        0,
+        0,
+        {
+          begin: 0,
+          end: 0,
+          num_digests: 0,
+          execution_digests: [],
+        }
+      );
+      store.overrideSelector(getDebuggerRunListing, runListingForTest);
+      store.overrideSelector(getNumExecutionsLoaded, {
+        state: DataLoadState.NOT_LOADED,
+        lastLoadedTimeInMs: null,
+      });
+      store.refreshState();
+
+      action.next(debuggerLoaded());
+
+      expect(fetchRuns).toHaveBeenCalled();
+      expect(fetchNumExecutionDigests).toHaveBeenCalled();
+      expect(dispatchedActions).toEqual([
+        debuggerRunsRequested(),
+        debuggerRunsLoaded({runs: runListingForTest}),
+        numExecutionsRequested(),
+        numExecutionsLoaded({numExecutions: 0}),
+      ]);
+    });
+
     it('loads execution digests, data & stack trace loading if numExecutions>0', () => {
       const {
         fetchRuns,
@@ -429,21 +427,16 @@ describe('Debugger effects', () => {
       expect(fetchExecutionDigests).toHaveBeenCalledTimes(2);
       expect(fetchExecutionData).toHaveBeenCalledTimes(1);
       expect(fetchStackFrames).toHaveBeenCalledTimes(1);
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        numExecutionsLoaded({
-          numExecutions,
-        })
-      );
-      expect(dispatchSpy).toHaveBeenCalledWith(executionDigestsRequested());
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        executionDigestsLoaded(executionDigestsPageResponse)
-      );
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        executionDataLoaded(executionDataResponse)
-      );
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        stackFramesLoaded({stackFrames: {aa: stackFrame0, bb: stackFrame1}})
-      );
+      expect(dispatchedActions).toEqual([
+        debuggerRunsRequested(),
+        debuggerRunsLoaded({runs: runListingForTest}),
+        numExecutionsRequested(),
+        numExecutionsLoaded({numExecutions}),
+        executionDigestsRequested(),
+        executionDigestsLoaded(executionDigestsPageResponse),
+        executionDataLoaded(executionDataResponse),
+        stackFramesLoaded({stackFrames: {aa: stackFrame0, bb: stackFrame1}}),
+      ]);
     });
 
     for (const dataAlreadyExists of [false, true]) {
@@ -500,14 +493,12 @@ describe('Debugger effects', () => {
           } else {
             expect(fetchExecutionData).toHaveBeenCalledTimes(1);
             expect(fetchStackFrames).toHaveBeenCalledTimes(1);
-            expect(dispatchSpy).toHaveBeenCalledWith(
-              executionDataLoaded(executionDataResponse)
-            );
-            expect(dispatchSpy).toHaveBeenCalledWith(
+            expect(dispatchedActions).toEqual([
+              executionDataLoaded(executionDataResponse),
               stackFramesLoaded({
                 stackFrames: {aa: stackFrame0, bb: stackFrame1},
-              })
-            );
+              }),
+            ]);
           }
         }
       );
@@ -518,7 +509,6 @@ describe('Debugger effects', () => {
         `scrolling right triggers execution digest loading: ` +
           `dataAlreadyExists=${dataAlreadyExists}`,
         () => {
-          const dataAlreadyExists = false;
           const originalScrollBeginIndex = 50;
           const scrollBeginIndex = originalScrollBeginIndex + 1;
           const numExecutions = 100;
@@ -532,8 +522,7 @@ describe('Debugger effects', () => {
           store.overrideSelector(getNumExecutions, numExecutions);
           store.overrideSelector(getDisplayCount, displayCount);
           store.overrideSelector(getExecutionPageSize, pageSize);
-          let pageLoadedSizes: {[pageIndex: number]: number} = {};
-          pageLoadedSizes = {
+          const pageLoadedSizes: {[pageIndex: number]: number} = {
             0: 20,
             1: 20,
             2: 20,
@@ -573,15 +562,13 @@ describe('Debugger effects', () => {
 
           if (dataAlreadyExists) {
             expect(fetchExecutionDigests).not.toHaveBeenCalled();
-            expect(dispatchSpy).not.toHaveBeenCalled();
+            expect(dispatchedActions).toEqual([]);
           } else {
             expect(fetchExecutionDigests).toHaveBeenCalledTimes(1);
-            expect(dispatchSpy).toHaveBeenCalledWith(
-              executionDigestsRequested()
-            );
-            expect(dispatchSpy).toHaveBeenCalledWith(
-              executionDigestsLoaded(executionDigestsResponse)
-            );
+            expect(dispatchedActions).toEqual([
+              executionDigestsRequested(),
+              executionDigestsLoaded(executionDigestsResponse),
+            ]);
           }
         }
       );
@@ -650,12 +637,10 @@ describe('Debugger effects', () => {
             expect(dispatchSpy).not.toHaveBeenCalled();
           } else {
             expect(fetchExecutionDigests).toHaveBeenCalledTimes(1);
-            expect(dispatchSpy).toHaveBeenCalledWith(
-              executionDigestsRequested()
-            );
-            expect(dispatchSpy).toHaveBeenCalledWith(
-              executionDigestsLoaded(executionDigestsResponse)
-            );
+            expect(dispatchedActions).toEqual([
+              executionDigestsRequested(),
+              executionDigestsLoaded(executionDigestsResponse),
+            ]);
           }
         }
       );

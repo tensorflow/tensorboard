@@ -231,7 +231,7 @@ describe('debugger selectors', () => {
       ]);
     });
 
-    it('returns correct stack frames when subset of frames is missing', () => {
+    it('returns null when subset of frames is missing', () => {
       const state = createState(
         createDebuggerState({
           activeRunId: '__default_debugger_run__',
