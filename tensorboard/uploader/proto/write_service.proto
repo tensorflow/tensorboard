@@ -161,7 +161,7 @@ message WriteScalarResponse {
 //  * In general, the caller should not wait to verify that each response
 //    reports the expected status, size, and crc32c before sending the next
 //    request.  Doing so harms throughput, with little benefit since any
-//    mismatch on the server side will cause the RPC to throw error anyway.
+//    mismatch on the server side will cause the RPC to throw an error anyway.
 //  * The request size should be less than 4 MiB (2^20 = 4,194,304), because
 //    that is the default request limit for gRPC. Accounting for the other
 //    fields of the request, then, and leaving some padding for safety, the data
