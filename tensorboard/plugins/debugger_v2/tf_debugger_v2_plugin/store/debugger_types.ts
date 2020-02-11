@@ -84,6 +84,36 @@ export interface Execution extends ExecutionDigest {
   debug_tensor_values: Array<number[] | null> | null;
 }
 
+export type AlertType = 'InfNanAlert';
+
+export interface Alert {
+  // TODO(cais): Add more possibilities to it.
+  alert_type: AlertType;
+}
+
+export interface InfNanAlert extends Alert {
+  alert_type: 'InfNanAlert';
+
+  op_type: string;
+
+  output_slot: number;
+
+  size: number;
+
+  num_neg_inf: number;
+
+  num_pos_inf: number;
+
+  num_nan: number;
+
+  execution_index: number;
+
+  // This value is a `number` (non-negative integer) for InfNanAlerts due to
+  // intra-graph execution. It is `null` for InfNanAlerts due to eager
+  // execution.
+  graph_execution_trace_index: number | null;
+}
+
 export interface ExecutionDigestLoadState extends LoadState {
   // A map from page number to whether the page has been loaded
   //   - in full, in which case the value is pageSize.
@@ -93,6 +123,25 @@ export interface ExecutionDigestLoadState extends LoadState {
   // Number of top-level executions available at the data source (not
   // necessarilty loaded by frontend yet.)
   numExecutions: number;
+}
+
+// A map from the type of alert (e.g., 'InfNanAlert') to count of alerts
+// of that type.
+export type AlertsBreakdown = {[alertType: string]: number};
+
+export interface Alerts {
+  // Load state for alerts.
+  // This state can go from LOADED to LOADING, as the alerts can be loaded
+  // incrementally from the backend.
+  alertsLoaded: LoadState;
+
+  // Total number of alerts.
+  numAlerts: number;
+
+  alertsBreakdown: AlertsBreakdown;
+
+  // The alerts that have been loaded so far, by alertType.
+  alerts: {[alertType: string]: Alert[]};
 }
 
 export interface Executions {
@@ -143,6 +192,8 @@ export interface DebuggerState {
 
   // ID of the run being currently displayed.
   activeRunId: string | null;
+
+  alerts: Alerts;
 
   // Per-run detailed data.
   executions: Executions;

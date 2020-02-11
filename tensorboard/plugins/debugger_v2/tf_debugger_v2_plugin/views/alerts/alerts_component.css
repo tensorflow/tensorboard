@@ -13,4 +13,39 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-/* TODO(cais): Flesh out the styling. */
+.alerts-breakdown-container {
+  font-size: 13px;
+  padding: 10px 0px 10px 50px;
+}
+
+.alerts-container {
+  font-family: sans-serif;
+}
+
+.alert-type-count {
+  display: inline-block;
+  margin-left: 40px;
+}
+
+.alert-type-name {
+  display: inline-block;
+}
+
+.debugging-title {
+  font-size: 18px;
+}
+
+.num-alerts-container {
+  padding: 10px 0px 10px 30px;
+}
+
+.num-alerts-label {
+  display: inline-block;
+  font-size: 13px;
+}
+
+.num-alerts-value {
+  display: inline-block;
+  font-size: 13px;
+  margin-left: 90px;
+}

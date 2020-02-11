@@ -17,10 +17,11 @@ import {ExecutionDigestsResponse} from '../data_source/tfdbg2_data_source';
 import {reducers} from './debugger_reducers';
 import {DataLoadState, Execution, StackFramesById} from './debugger_types';
 import {
+  createAlertsState,
   createDebuggerExecutionsState,
   createDebuggerState,
-  createDigestsStateWhileLoadingExecutionDigests,
   createDebuggerStateWithLoadedExecutionDigests,
+  createDigestsStateWhileLoadingExecutionDigests,
   createTestExecutionData,
   createTestStackFrame,
 } from '../testing';
@@ -115,6 +116,44 @@ describe('Debugger reducers', () => {
       })
     );
     expect(nextState.activeRunId).toEqual('__default_debugger_run__');
+  });
+
+  it('Updates alert load state on numAlertsRequested', () => {
+    const state = createDebuggerState({
+      activeRunId: '__default_debugger_run__',
+    });
+    const nextState = reducers(state, actions.numAlertsRequested());
+    expect(nextState.alerts.alertsLoaded.state).toEqual(DataLoadState.LOADING);
+    expect(nextState.alerts.alertsLoaded.lastLoadedTimeInMs).toBeNull();
+  });
+
+  it('Updates on numAlertsLoaded', () => {
+    const state = createDebuggerState({
+      activeRunId: '__default_debugger_run__',
+      alerts: createAlertsState({
+        alertsLoaded: {
+          state: DataLoadState.LOADING,
+          lastLoadedTimeInMs: null,
+        },
+      }),
+    });
+    const nextState = reducers(
+      state,
+      actions.numAlertsLoaded({
+        numAlerts: 30,
+        alertsBreakdown: {
+          InfNanAlerts: 29,
+          FunctionRecompileAlerts: 1,
+        },
+      })
+    );
+    expect(nextState.alerts.alertsLoaded.state).toEqual(DataLoadState.LOADED);
+    expect(nextState.alerts.alertsLoaded.lastLoadedTimeInMs).toBeGreaterThan(0);
+    expect(nextState.alerts.numAlerts).toBe(30);
+    expect(nextState.alerts.alertsBreakdown).toEqual({
+      InfNanAlerts: 29,
+      FunctionRecompileAlerts: 1,
+    });
   });
 
   it('Updates load state on numExecutionsRequested', () => {

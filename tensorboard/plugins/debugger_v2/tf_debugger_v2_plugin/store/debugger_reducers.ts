@@ -34,6 +34,15 @@ const initialState: DebuggerState = {
     lastLoadedTimeInMs: null,
   },
   activeRunId: null,
+  alerts: {
+    alertsLoaded: {
+      state: DataLoadState.NOT_LOADED,
+      lastLoadedTimeInMs: null,
+    },
+    numAlerts: 0,
+    alerts: {},
+    alertsBreakdown: {},
+  },
   executions: {
     numExecutionsLoaded: {
       state: DataLoadState.NOT_LOADED,
@@ -99,6 +108,48 @@ const reducer = createReducer(
         // TODO(cais): Handle multiple runs. We currently assumes there is only
         // one run, which is okay because the backend supports only one run
         // per experiment.
+      };
+    }
+  ),
+  on(
+    actions.numAlertsRequested,
+    (state: DebuggerState): DebuggerState => {
+      const runId = state.activeRunId;
+      if (runId === null) {
+        return state;
+      }
+      return {
+        // TODO(cais): Unit test.
+        ...state,
+        alerts: {
+          ...state.alerts,
+          alertsLoaded: {
+            ...state.alerts.alertsLoaded,
+            state: DataLoadState.LOADING,
+          },
+        },
+      };
+    }
+  ),
+  on(
+    actions.numAlertsLoaded,
+    (state: DebuggerState, {numAlerts, alertsBreakdown}): DebuggerState => {
+      const runId = state.activeRunId;
+      if (runId === null) {
+        return state;
+      }
+      return {
+        ...state,
+        alerts: {
+          ...state.alerts,
+          alertsLoaded: {
+            ...state.alerts.alertsLoaded,
+            state: DataLoadState.LOADED,
+            lastLoadedTimeInMs: Date.now(),
+          }, // TODO(cais): Unit test.
+          numAlerts,
+          alertsBreakdown,
+        },
       };
     }
   ),

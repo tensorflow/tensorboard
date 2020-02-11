@@ -27,11 +27,14 @@ import {
   executionDigestsRequested,
   executionScrollLeft,
   executionScrollRight,
+  numAlertsRequested,
+  numAlertsLoaded,
   numExecutionsLoaded,
   numExecutionsRequested,
   stackFramesLoaded,
 } from '../actions';
 import {
+  AlertsResponse,
   ExecutionDataResponse,
   ExecutionDigestsResponse,
   StackFramesResponse,
@@ -252,6 +255,26 @@ describe('Debugger effects', () => {
         .and.returnValue(of(runsListing));
     }
 
+    const numAlertsResponseForTest: AlertsResponse = {
+      begin: 0,
+      end: 0,
+      num_alerts: 0,
+      alerts_breakdown: {},
+      alerts: [],
+      per_type_alert_limit: 1000,
+    };
+
+    function createFetchAlertsSpy(
+      runId: string,
+      begin: number,
+      end: number,
+      alertsResponse: AlertsResponse
+    ) {
+      return spyOn(TestBed.get(Tfdbg2HttpServerDataSource), 'fetchAlerts')
+        .withArgs(runId, begin, end)
+        .and.returnValue(of(alertsResponse));
+    }
+
     function createFetchExecutionDigestsSpy(
       runId: string,
       begin: number,
@@ -320,6 +343,12 @@ describe('Debugger effects', () => {
 
     function createFetchSpies() {
       const fetchRuns = createFetchRunsSpy(runListingForTest);
+      const fetchNumAlertsSpy = createFetchAlertsSpy(
+        runId,
+        0,
+        0,
+        numAlertsResponseForTest
+      );
       // Spy for loading number of execution digests.
       const fetchExecutionDigests = createFetchExecutionDigestsSpy(
         runId,
@@ -347,6 +376,7 @@ describe('Debugger effects', () => {
       });
       return {
         fetchRuns,
+        fetchNumAlertsSpy,
         fetchExecutionDigests,
         fetchExecutionData,
         fetchStackFrames,
@@ -373,7 +403,7 @@ describe('Debugger effects', () => {
     it('loads numExecutions when there is a run: empty executions', () => {
       const fetchRuns = createFetchRunsSpy(runListingForTest);
       const fetchNumExecutionDigests = createFetchExecutionDigestsSpy(
-        '__default_debugger_run__',
+        runId,
         0,
         0,
         {
@@ -382,6 +412,12 @@ describe('Debugger effects', () => {
           num_digests: 0,
           execution_digests: [],
         }
+      );
+      const fetchNumAlerts = createFetchAlertsSpy(
+        runId,
+        0,
+        0,
+        numAlertsResponseForTest
       );
       store.overrideSelector(getDebuggerRunListing, runListingForTest);
       store.overrideSelector(getNumExecutionsLoaded, {
@@ -394,9 +430,15 @@ describe('Debugger effects', () => {
 
       expect(fetchRuns).toHaveBeenCalled();
       expect(fetchNumExecutionDigests).toHaveBeenCalled();
+      expect(fetchNumAlerts).toHaveBeenCalled();
       expect(dispatchedActions).toEqual([
         debuggerRunsRequested(),
         debuggerRunsLoaded({runs: runListingForTest}),
+        numAlertsRequested(),
+        numAlertsLoaded({
+          numAlerts: numAlertsResponseForTest.num_alerts,
+          alertsBreakdown: numAlertsResponseForTest.alerts_breakdown,
+        }),
         numExecutionsRequested(),
         numExecutionsLoaded({numExecutions: 0}),
       ]);
@@ -430,6 +472,11 @@ describe('Debugger effects', () => {
       expect(dispatchedActions).toEqual([
         debuggerRunsRequested(),
         debuggerRunsLoaded({runs: runListingForTest}),
+        numAlertsRequested(),
+        numAlertsLoaded({
+          numAlerts: numAlertsResponseForTest.num_alerts,
+          alertsBreakdown: numAlertsResponseForTest.alerts_breakdown,
+        }),
         numExecutionsRequested(),
         numExecutionsLoaded({numExecutions}),
         executionDigestsRequested(),

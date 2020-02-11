@@ -34,12 +34,15 @@ import {
   executionDigestsLoaded,
   executionScrollLeft,
   executionScrollRight,
+  numAlertsLoaded,
+  numAlertsRequested,
   numExecutionsLoaded,
   numExecutionsRequested,
   stackFramesLoaded,
 } from '../actions';
 import {
   getActiveRunId,
+  getAlertsLoaded,
   getDebuggerRunListing,
   getDebuggerRunsLoaded,
   getDisplayCount,
@@ -198,7 +201,44 @@ export class DebuggerEffects {
   }
 
   /**
-   * Emits when initial execution is data is required.
+   * When a debugger run exits, load number of alerts.
+   */
+  private createNumAlertsLoader(prevStream$: Observable<void>) {
+    return prevStream$.pipe(
+      withLatestFrom(
+        this.store.select(getDebuggerRunListing),
+        this.store.select(getAlertsLoaded)
+      ),
+      filter(([, runs, loaded]) => {
+        return (
+          Object.keys(runs).length > 0 && loaded.state !== DataLoadState.LOADING
+        );
+      }),
+      tap(() => this.store.dispatch(numAlertsRequested())),
+      mergeMap(([, runs]) => {
+        const runId = Object.keys(runs)[0];
+        const begin = 0;
+        const end = 0;
+        return this.dataSource.fetchAlerts(runId, begin, end).pipe(
+          tap((alerts) => {
+            this.store.dispatch(
+              numAlertsLoaded({
+                numAlerts: alerts.num_alerts,
+                alertsBreakdown: alerts.alerts_breakdown,
+              })
+            );
+          }),
+          map(() => void null)
+        );
+      })
+    );
+  }
+
+  /**
+   * Emits when initial execution digests and data are required.
+   *
+   * These initial data loading actions are required when the number of
+   * executions is greater than zero.
    */
   private createInitialExecutionDetector(
     prevStream$: Observable<void>
@@ -456,6 +496,7 @@ export class DebuggerEffects {
      * view load
      *  +
      *  +> fetch run +> fetch num exec
+     *               +> fetch num alerts
      *                   +
      *                   +> if init load
      *                       +
@@ -469,10 +510,18 @@ export class DebuggerEffects {
      **/
     this.loadData$ = createEffect(
       () => {
-        const onLoad$ = this.onDebuggerLoaded();
+        // This event can trigger the loading of
+        //   - number of executions
+        //   - number and breakdown of alerts.
+        // Therefore it needs to be a shared observable.
+        const onLoad$ = this.onDebuggerLoaded().pipe(share());
         const onNumExecutionLoaded$ = this.createNumExecutionLoader(onLoad$);
-        // This event can trigger both digest and data loads. Needs to be a
-        // shared observable.
+        const onNumAlertsLoaded$ = this.createNumAlertsLoader(onLoad$);
+
+        // This event can trigger the loading of
+        //   - execution-digest
+        //   - first execution data.
+        // Therefore it needs to be a shared observable.
         const onInitialExecution$ = this.createInitialExecutionDetector(
           onNumExecutionLoaded$
         ).pipe(share());
@@ -502,7 +551,11 @@ export class DebuggerEffects {
         );
 
         // ExecutionDigest and ExecutionData can be loaded in parallel.
-        return merge(onExcutionDigestLoaded$, onExecutionDataLoaded$).pipe(
+        return merge(
+          onNumAlertsLoaded$,
+          onExcutionDigestLoaded$,
+          onExecutionDataLoaded$
+        ).pipe(
           // createEffect expects an Observable that emits {}.
           map(() => ({}))
         );

@@ -12,11 +12,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component} from '@angular/core';
+import {Component, Input} from '@angular/core';
 
 @Component({
   selector: 'alerts-component',
   templateUrl: './alerts_component.ng.html',
   styleUrls: ['./alerts_component.css'],
 })
-export class AlertsComponent {}
+export class AlertsComponent {
+  // Total number of alerts.
+  @Input()
+  numAlerts: number = 0;
+
+  @Input()
+  alertsBreakdown: Array<{alertType: string; count: number}> = [];
+}
