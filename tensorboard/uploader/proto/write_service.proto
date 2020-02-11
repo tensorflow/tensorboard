@@ -20,8 +20,9 @@ service TensorBoardWriterService {
   rpc PurgeData(PurgeDataRequest) returns (PurgeDataResponse) {}
   // Request that scalar data be stored in TensorBoard.dev.
   rpc WriteScalar(WriteScalarRequest) returns (WriteScalarResponse) {}
-  // Request that blob data be stored in TensorBoard.dev.
+  // Request to create a BlobSequence, to be subsequently populated with blobs.
   rpc CreateBlobSequence(CreateBlobSequenceRequest) returns (CreateBlobSequenceResponse) {}
+  // Request that blob data be stored in TensorBoard.dev.
   rpc WriteBlob(stream WriteBlobRequest) returns (stream WriteBlobResponse) {}
   // Request that the calling user and all their data be permanently deleted.
   // Used for testing purposes.
@@ -179,6 +180,8 @@ message CreateBlobSequenceRequest {
   string tag = 3;
   int64 step = 4;
   int64 final_sequence_length = 5;
+  // Note that metadata.plugin_data.content does not carry the payload.
+  .tensorboard.SummaryMetadata metadata = 6;
 }
 
 message CreateBlobSequenceResponse {
@@ -189,8 +192,6 @@ message CreateBlobSequenceResponse {
 message WriteBlobFirstRequestData {
   string sequence_id = 1;
   int64 index = 2;
-  // Note that metadata.plugin_data.content does not carry the payload.
-  .tensorboard.SummaryMetadata metadata = 3;
 }
 
 // A single chunk of the blob write stream.
