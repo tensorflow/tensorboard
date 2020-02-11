@@ -35,7 +35,6 @@ tf_ts_library(
     tsconfig = "//:tsconfig-test",
     deps = [
         ":alerts",
-        # ":debugger_v2",  # TODO(cais): Clean up.
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin:debugger_v2",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/actions",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/store",

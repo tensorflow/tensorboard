@@ -30,7 +30,6 @@ limitations under the License.
   border-radius: 3px;
   color: #fff;
   display: inline-block;
-  font-weight: normal;
   padding: 3px;
   position: absolute;
   right: 20px;
@@ -59,10 +58,12 @@ limitations under the License.
   border-radius: 12px;
   display: inline-block;
   font-size: 13px;
-  height: 24px;
+  font-weight: normal;
+  line-height: 24px;
   position: absolute;
   right: 20px;
   text-align: center;
+  vertical-align: middle;
   width: 24px;
   -moz-border-radius: 12px;
   -webkit-border-radius: 12px;

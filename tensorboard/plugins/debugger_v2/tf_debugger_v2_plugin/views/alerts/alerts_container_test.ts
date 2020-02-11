@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 /**
- * Unit tests for the Debugger Container.
+ * Unit tests for the the Alerts component and container.
  */
 import {CommonModule} from '@angular/common';
 import {TestBed} from '@angular/core/testing';

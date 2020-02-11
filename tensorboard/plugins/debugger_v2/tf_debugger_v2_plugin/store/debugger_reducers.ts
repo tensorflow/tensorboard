@@ -119,7 +119,6 @@ const reducer = createReducer(
         return state;
       }
       return {
-        // TODO(cais): Unit test.
         ...state,
         alerts: {
           ...state.alerts,
@@ -146,7 +145,7 @@ const reducer = createReducer(
             ...state.alerts.alertsLoaded,
             state: DataLoadState.LOADED,
             lastLoadedTimeInMs: Date.now(),
-          }, // TODO(cais): Unit test.
+          },
           numAlerts,
           alertsBreakdown,
         },
