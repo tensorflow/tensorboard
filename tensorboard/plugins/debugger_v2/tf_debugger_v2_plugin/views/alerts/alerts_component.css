@@ -15,16 +15,25 @@ limitations under the License.
 
 .alerts-breakdown-container {
   font-size: 13px;
-  padding: 10px 0px 10px 50px;
+  padding: 10px 10px 10px 50px;
+  position: relative;
 }
 
 .alerts-container {
-  font-family: sans-serif;
+  font-family: 'Roboto', Arial, Helvetica, sans-serif;
+  vertical-align: middle;
 }
 
 .alert-type-count {
+  /* TODO(cais): Use colors specific to alert type. */
+  background-color: #e52592;
+  border-radius: 3px;
+  color: #fff;
   display: inline-block;
-  margin-left: 40px;
+  font-weight: normal;
+  padding: 3px;
+  position: absolute;
+  right: 20px;
 }
 
 .alert-type-name {
@@ -36,7 +45,9 @@ limitations under the License.
 }
 
 .num-alerts-container {
-  padding: 10px 0px 10px 30px;
+  font-weight: bold;
+  padding: 10px 10px 10px 30px;
+  position: relative;
 }
 
 .num-alerts-label {
@@ -45,7 +56,19 @@ limitations under the License.
 }
 
 .num-alerts-value {
+  border-radius: 12px;
   display: inline-block;
   font-size: 13px;
-  margin-left: 90px;
+  height: 24px;
+  position: absolute;
+  right: 20px;
+  text-align: center;
+  width: 24px;
+  -moz-border-radius: 12px;
+  -webkit-border-radius: 12px;
+}
+
+.num-alerts-value.non-zero {
+  background-color: #ffb780;
+  font-weight: bold;
 }

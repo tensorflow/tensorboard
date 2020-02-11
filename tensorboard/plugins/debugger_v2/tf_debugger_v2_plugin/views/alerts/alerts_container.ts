@@ -16,8 +16,18 @@ import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {createSelector, select, Store} from '@ngrx/store';
 
 import {getAlertsBreakdown, getNumAlerts, State} from '../../store';
+import {AlertTypeDisplay} from './alerts_component';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
+
+const ALERT_TYPE_TO_DISPLAY_NAME_AND_SYMBOL: {
+  [alertType: string]: {displayName: string; displaySymbol: string};
+} = {
+  InfNanAlert: {
+    displayName: 'NaN/∞',
+    displaySymbol: '∞',
+  },
+};
 
 @Component({
   selector: 'tf-debugger-v2-alerts',
@@ -39,10 +49,12 @@ export class AlertsContainer {
         getAlertsBreakdown,
         (alertsBreakdown) => {
           const alertTypes = Object.keys(alertsBreakdown);
-          return alertTypes.map((alertType) => ({
-            alertType,
-            count: alertsBreakdown[alertType],
-          }));
+          return alertTypes.map((alertType) => {
+            return {
+              ...ALERT_TYPE_TO_DISPLAY_NAME_AND_SYMBOL[alertType],
+              count: alertsBreakdown[alertType],
+            };
+          });
         }
       )
     )

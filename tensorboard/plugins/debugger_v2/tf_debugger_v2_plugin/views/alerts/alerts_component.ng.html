@@ -19,15 +19,17 @@ limitations under the License.
   <div class="debugging-title">Debugging</div>
   <div class="num-alerts-container">
     <div class="num-alerts-label">Alerts</div>
-    <div class="num-alerts-value">{{ numAlerts }}</div>
+    <div class="num-alerts-value" [ngClass]="[numAlerts > 0 ? 'non-zero' : '']">
+      {{ numAlerts }}
+    </div>
   </div>
   <div class="alerts-breakdown-container">
     <div *ngFor="let breakdown of alertsBreakdown;">
       <div class="alert-type-name">
-        {{ breakdown.alertType }}
+        {{ breakdown.displayName }}
       </div>
       <div class="alert-type-count">
-        {{ breakdown.count }}
+        {{ breakdown.displaySymbol }}: {{ breakdown.count }}
       </div>
       <div></div>
     </div>

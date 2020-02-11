@@ -14,6 +14,12 @@ limitations under the License.
 ==============================================================================*/
 import {Component, Input} from '@angular/core';
 
+export interface AlertTypeDisplay {
+  displayName: string;
+  displaySymbol: string;
+  count: number;
+}
+
 @Component({
   selector: 'alerts-component',
   templateUrl: './alerts_component.ng.html',
@@ -25,5 +31,5 @@ export class AlertsComponent {
   numAlerts: number = 0;
 
   @Input()
-  alertsBreakdown: Array<{alertType: string; count: number}> = [];
+  alertsBreakdown: AlertTypeDisplay[] = [];
 }
