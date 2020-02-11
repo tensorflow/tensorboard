@@ -22,8 +22,10 @@ import os.path
 
 from absl import app
 from six.moves import xrange  # pylint: disable=redefined-builtin
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 from tensorboard.plugins.scalar import summary
+
+tf.disable_v2_behavior()
 
 # Directory into which to write tensorboard data.
 LOGDIR = "/tmp/scalars_demo"
@@ -57,8 +59,8 @@ def run(
       heat_coefficient: float; a measure of the object's thermal
         conductivity
     """
-    tf.compat.v1.reset_default_graph()
-    tf.compat.v1.set_random_seed(0)
+    tf.reset_default_graph()
+    tf.set_random_seed(0)
 
     with tf.name_scope("temperature"):
         # Create a mutable variable to hold the object's temperature, and
@@ -105,7 +107,7 @@ def run(
     )
 
     # Collect all the scalars that we want to keep track of.
-    summ = tf.compat.v1.summary.merge_all()
+    summ = tf.summary.merge_all()
 
     # Now, augment the current temperature by this delta that we computed,
     # blocking the assignment on summary collection to avoid race conditions
@@ -113,10 +115,10 @@ def run(
     with tf.control_dependencies([summ]):
         update_step = temperature.assign_add(delta)
 
-    sess = tf.compat.v1.Session()
+    sess = tf.Session()
     writer = tf.summary.FileWriter(os.path.join(logdir, run_name))
     writer.add_graph(sess.graph)
-    sess.run(tf.compat.v1.global_variables_initializer())
+    sess.run(tf.global_variables_initializer())
     for step in xrange(STEPS):
         # By asking TensorFlow to compute the update step, we force it to
         # change the value of the temperature variable. We don't actually
