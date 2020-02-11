@@ -12,17 +12,22 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {Component, Input} from '@angular/core';
 
-import {CommonModule} from '@angular/common';
-import {NgModule} from '@angular/core';
+export interface StackFrameForDisplay {
+  host_name: string;
+  file_path: string;
+  concise_file_path: string;
+  lineno: number;
+  function_name: string;
+}
 
-import {ExecutionDataModule} from '../execution_data/execution_data_module';
-import {TimelineComponent} from './timeline_component';
-import {TimelineContainer} from './timeline_container';
-
-@NgModule({
-  declarations: [TimelineComponent, TimelineContainer],
-  imports: [CommonModule, ExecutionDataModule],
-  exports: [TimelineContainer],
+@Component({
+  selector: 'stack-trace-component',
+  templateUrl: './stack_trace_component.ng.html',
+  styleUrls: ['./stack_trace_component.css'],
 })
-export class TimelineModule {}
+export class StackTraceComponent {
+  @Input()
+  stackFramesForDisplay: StackFrameForDisplay[] | null = null;
+}

@@ -39,10 +39,13 @@ limitations under the License.
     </div>
 
     <div *ngIf="numExecutions" class="execution-timeline">
-      <div *ngFor="let displayDigest of displayExecutionDigests">
+      <div
+        *ngFor="let displayDigest of displayExecutionDigests; index as i;"
+        (click)="onExecutionDigestClicked.emit(i)"
+      >
         <div
           class="execution-digest"
-          [ngClass]="displayDigest.is_graph ? 'func-graph-execution' : ''"
+          [ngClass]="[displayDigest.is_graph ? 'func-graph-execution' : '', i === focusedExecutionDisplayIndex ? 'focused' : '']"
           title="{{displayDigest.op_type}}"
         >
           <!-- TODO(cais): Replace title attr with matTooltip. -->
@@ -50,5 +53,14 @@ limitations under the License.
         </div>
       </div>
     </div>
+
+    <ng-container
+      *ngIf="activeRunId !== null && focusedExecutionIndex !== null"
+    >
+      <tf-debugger-v2-execution-data
+        [focusedExecutionIndex]="focusedExecutionIndex"
+      >
+      </tf-debugger-v2-execution-data>
+    </ng-container>
   </div>
 </div>

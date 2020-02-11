@@ -13,47 +13,50 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-.execution-digest {
-  background-color: #e3e5e8;
-  border: 1px solid #c0c0c0;
-  color: #425066;
-  display: inline-block;
-  font-size: 10px;
-  height: 15px;
-  padding: 1px;
-  text-align: center;
-  vertical-align: middle;
-  width: 12px;
+.debug-tensor-values-container {
+  height: 60px;
+  overflow-x: auto;
+  overflow-y: auto;
 }
 
-.execution-digest.func-graph-execution {
-  background-color: #c7dbf5;
-  color: #4e5664;
-  text-decoration: underline;
-}
-
-.execution-digest.focused {
-  background-color: #ffd4b3;
-  border: 1px solid #000;
-  font-weight: bold;
-}
-
-.execution-digest:hover {
-  border: 1px solid #000;
-  font-weight: bold;
-}
-
-.execution-timeline {
-  display: flex;
-  overflow-x: hidden;
-  white-space: nowrap;
+.debug-tensor-values-table {
   width: 100%;
-  margin-top: 5px;
-  margin-bottom: 5px;
 }
 
-.navigation-position-info {
+.debug-tensor-values-table td {
+  border-top: 1px solid #000;
+  text-align: left;
+}
+
+.debug-tensor-values-table th {
+  text-align: left;
+}
+
+.execution-data-field {
+  white-space: nowrap;
+}
+
+.execution-data-key {
   display: inline-block;
-  padding-left: 10px;
-  padding-right: 10px;
+  max-width: 120px;
+  text-align: right;
+  width: 120px;
+}
+
+.execution-data-value {
+  display: inline-block;
+  margin-left: 10px;
+}
+
+.focus-execution-container {
+  background-color: #ffd4b3;
+  border-radius: 4px;
+  font-size: 12px;
+  height: 120px;
+  padding: 5px;
+  width: 360px;
+}
+
+.output-tensors {
+  margin-top: 5px;
 }
