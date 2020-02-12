@@ -15,6 +15,7 @@ limitations under the License.
 
 import {createSelector, createFeatureSelector, select} from '@ngrx/store';
 import {
+  AlertsBreakdown,
   DEBUGGER_FEATURE_KEY,
   DebuggerRunListing,
   DebuggerState,
@@ -51,6 +52,27 @@ export const getDebuggerRunsLoaded = createSelector(
 export const getActiveRunId = createSelector(
   selectDebuggerState,
   (state: DebuggerState): string | null => state.activeRunId
+);
+
+export const getAlertsLoaded = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): LoadState => {
+    return state.alerts.alertsLoaded;
+  }
+);
+
+export const getNumAlerts = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): number => {
+    return state.alerts.numAlerts;
+  }
+);
+
+export const getAlertsBreakdown = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): AlertsBreakdown => {
+    return state.alerts.alertsBreakdown;
+  }
 );
 
 export const getNumExecutionsLoaded = createSelector(

@@ -14,9 +14,12 @@ limitations under the License.
 ==============================================================================*/
 
 import {
+  getAlertsBreakdown,
+  getAlertsLoaded,
   getFocusedExecutionData,
   getFocusedExecutionIndex,
   getFocusedExecutionStackFrames,
+  getNumAlerts,
 } from './debugger_selectors';
 import {
   DataLoadState,
@@ -24,12 +27,83 @@ import {
   StackFrame,
 } from './debugger_types';
 import {
-  createState,
+  createAlertsState,
   createDebuggerState,
+  createState,
   createTestExecutionData,
 } from '../testing';
 
 describe('debugger selectors', () => {
+  describe('getAlertsLoaded', () => {
+    it('Returns correct NOT_LOADED state', () => {
+      const state = createState(createDebuggerState());
+      const alertsLoaded = getAlertsLoaded(state);
+      expect(alertsLoaded.state).toBe(DataLoadState.NOT_LOADED);
+      expect(alertsLoaded.lastLoadedTimeInMs).toBe(null);
+    });
+
+    it('Returns correct LOADING state', () => {
+      const state = createState(
+        createDebuggerState({
+          alerts: createAlertsState({
+            alertsLoaded: {
+              state: DataLoadState.LOADING,
+              lastLoadedTimeInMs: null,
+            },
+          }),
+        })
+      );
+      const alertsLoaded = getAlertsLoaded(state);
+      expect(alertsLoaded.state).toBe(DataLoadState.LOADING);
+      expect(alertsLoaded.lastLoadedTimeInMs).toBe(null);
+    });
+  });
+
+  describe('getNumAlerts', () => {
+    it('Returns correct zero numAlerts', () => {
+      const state = createState(createDebuggerState());
+      expect(getNumAlerts(state)).toBe(0);
+    });
+
+    it('Returns correct non-zero numAlerts', () => {
+      const state = createState(
+        createDebuggerState({
+          alerts: createAlertsState({
+            numAlerts: 95,
+          }),
+        })
+      );
+      expect(getNumAlerts(state)).toBe(95);
+    });
+  });
+
+  describe('getAlertsBreakdown', () => {
+    it('Returns correct empty object for initial state', () => {
+      const state = createState(createDebuggerState());
+      expect(getAlertsBreakdown(state)).toEqual({});
+    });
+
+    it('Returns correct non-empty map', () => {
+      const state = createState(
+        createDebuggerState({
+          alerts: createAlertsState({
+            numAlerts: 95,
+            alertsBreakdown: {
+              InfNanAlert: 50,
+              FooAlert: 30,
+              BarAlert: 15,
+            },
+          }),
+        })
+      );
+      expect(getAlertsBreakdown(state)).toEqual({
+        InfNanAlert: 50,
+        FooAlert: 30,
+        BarAlert: 15,
+      });
+    });
+  });
+
   describe('getFocusedExecutionIndex', () => {
     for (const focusIndex of [null, 0, 1]) {
       it(`returns null correctly: focusIndex=${focusIndex}`, () => {

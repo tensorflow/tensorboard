@@ -16,6 +16,7 @@ limitations under the License.
 import {createAction, props} from '@ngrx/store';
 
 import {
+  AlertsBreakdown,
   DebuggerRunListing,
   Execution,
   StackFramesById,
@@ -52,10 +53,23 @@ export const debuggerRunsRequestFailed = createAction(
 );
 
 /**
+ * Number of alerts and their type breakdown are requested.
+ */
+export const numAlertsAndBreakdownRequested = createAction(
+  '[Debugger] Number and Breakdown of Alerts Requested'
+);
+
+/**
+ * Number of alerts and their type breakdown are loaded.
+ */
+export const numAlertsAndBreakdownLoaded = createAction(
+  '[Debugger] Number and Breakdown of Alerts Loaded',
+  props<{numAlerts: number; alertsBreakdown: AlertsBreakdown}>()
+);
+
+/**
  * Actions for the Timeline Component.
  */
-export const alertsViewLoaded = createAction('[Debugger] Alerts View Loaded');
-
 export const numExecutionsRequested = createAction(
   '[Debugger] Number of Executions Requested'
 );

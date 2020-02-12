@@ -15,6 +15,7 @@ limitations under the License.
 import {Injectable} from '@angular/core';
 import {Observable} from 'rxjs';
 import {
+  Alert,
   DebuggerRunListing,
   Execution,
   ExecutionDigest,
@@ -46,6 +47,20 @@ export interface ExecutionDataResponse {
   executions: Execution[];
 }
 
+export interface AlertsResponse {
+  begin: number;
+
+  end: number;
+
+  num_alerts: number;
+
+  alerts_breakdown: {[alert_type: string]: number};
+
+  per_type_alert_limit: number;
+
+  alerts: Alert[];
+}
+
 export abstract class Tfdbg2DataSource {
   abstract fetchRuns(): Observable<DebuggerRunListing>;
 
@@ -65,6 +80,13 @@ export abstract class Tfdbg2DataSource {
     run: string,
     stackFrameIds: string[]
   ): Observable<StackFramesResponse>;
+
+  abstract fetchAlerts(
+    run: string,
+    begin: number,
+    end: number,
+    alert_type?: string
+  ): Observable<AlertsResponse>;
 }
 
 @Injectable()
@@ -115,6 +137,22 @@ export class Tfdbg2HttpServerDataSource implements Tfdbg2DataSource {
         },
       }
     );
+  }
+
+  fetchAlerts(run: string, begin: number, end: number, alert_type?: string) {
+    if (alert_type !== undefined) {
+      throw new Error(
+        `Support for alert_type fileter is not implemented yet ` +
+          `(received alert_type="${alert_type}")`
+      );
+    }
+    return this.http.get<AlertsResponse>(this.httpPathPrefix + '/alerts', {
+      params: {
+        run,
+        begin: String(begin),
+        end: String(end),
+      },
+    });
   }
 
   // TODO(cais): Implement fetchEnvironments().

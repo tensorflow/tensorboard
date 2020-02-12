@@ -17,6 +17,7 @@ import {Component, NgModule} from '@angular/core';
 import {Store} from '@ngrx/store';
 
 import {
+  Alerts,
   DataLoadState,
   DEBUGGER_FEATURE_KEY,
   DebuggerState,
@@ -63,8 +64,22 @@ export function createDebuggerState(
       lastLoadedTimeInMs: null,
     },
     activeRunId: null,
+    alerts: createAlertsState(),
     executions: createDebuggerExecutionsState(),
     stackFrames: {},
+    ...override,
+  };
+}
+
+export function createAlertsState(override?: Partial<Alerts>): Alerts {
+  return {
+    alertsLoaded: {
+      state: DataLoadState.NOT_LOADED,
+      lastLoadedTimeInMs: null,
+    },
+    numAlerts: 0,
+    alertsBreakdown: {},
+    alerts: {},
     ...override,
   };
 }
