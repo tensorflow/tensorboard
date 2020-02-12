@@ -7,6 +7,7 @@ package tensorboard.service;
 // those into one file that both services depend on.
 import "tensorboard/uploader/proto/export_service.proto";
 import "tensorboard/uploader/proto/scalar.proto";
+import "tensorboard/uploader/proto/tensor.proto";
 import "tensorboard/compat/proto/summary.proto";
 
 // Service for writing data to TensorBoard.dev.
@@ -25,8 +26,10 @@ service TensorBoardWriterService {
   // Request that unreachable data be purged. Used only for testing;
   // disabled in production.
   rpc PurgeData(PurgeDataRequest) returns (PurgeDataResponse) {}
-  // Request additional data be stored in TensorBoard.dev.
+  // Request additional scalar data be stored in TensorBoard.dev.
   rpc WriteScalar(WriteScalarRequest) returns (WriteScalarResponse) {}
+  // Request additional tensor data be stored in TensorBoard.dev.
+  rpc WriteTensor(WriteTensorRequest) returns (WriteTensorResponse) {}
   // Request that the calling user and all their data be permanently deleted.
   // Used for testing purposes.
   rpc DeleteOwnUser(DeleteOwnUserRequest) returns (DeleteOwnUserResponse) {}
@@ -145,6 +148,45 @@ message WriteScalarRequest {
 // Everything the caller needs to know about how the writing went.
 // (Currently empty)
 message WriteScalarResponse {
+  // This is empty on purpose.
+}
+
+// Carries all that is needed to add tensor data to the hosted service.
+message WriteTensorRequest {
+  // All the data to store for one Run.  This data will be stored under the
+  // corresponding run in the hosted storage. WriteTensorRequest is merged into
+  // the data store for the keyed run. The tags and included tensors will be
+  // the union of the data sent across all WriteTensorRequests. Metadata by
+  // default uses a 'first write wins' approach.
+  message Run {
+    // The name of this run.  For example "/some/path/mnist_experiments/run1/"
+    string name = 1;
+    // Data to store for this Run/Tag combination.
+    repeated Tag tags = 2;
+  }
+
+  // All the data to store for one Tag of one Run.  This data will be stored
+  // under the corresponding run/tag in the hosted storage. A tag corresponds to
+  // a single time series.
+  message Tag {
+    // The name of this tag.  For example "loss"
+    string name = 1;
+    // Data to store for this Run/Tag combination.
+    repeated TensorPoint points = 2;
+    // The metadata of this tag.
+    .tensorboard.SummaryMetadata metadata = 3;
+  }
+
+  // Which experiment to write to - corresponding to one hosted TensorBoard URL.
+  // The requester must have authorization to write to this location.
+  string experiment_id = 1;
+  // Data to append to the existing storage at the experiment_id.
+  repeated Run runs = 2;
+}
+
+// Everything the caller needs to know about how the writing went.
+// (Currently empty)
+message WriteTensorResponse {
   // This is empty on purpose.
 }
 
