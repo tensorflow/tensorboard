@@ -164,7 +164,7 @@ message StreamExperimentDataResponse {
 
   // Data for the Tensors are stored in a columnar fashion to optimize it for
   // exporting the data into textual formats like JSON.
-  // The data for the ith scalar is { steps[i], wall_times[i], values[i] }.
+  // The data for the ith tensor is { steps[i], wall_times[i], values[i] }.
   // The data here is sorted by step values in ascending order.
   message TensorPoints {
     // Step index within the run.
