@@ -14,6 +14,9 @@ service TensorBoardWriterService {
   // Request for a new location to write TensorBoard readable events.
   rpc CreateExperiment(CreateExperimentRequest)
       returns (CreateExperimentResponse) {}
+  // Request to mutate metadata associated with an experiment.
+  rpc UpdateExperiment(UpdateExperimentRequest)
+      returns (UpdateExperimentResponse) {}
   // Request that an experiment be deleted, along with all tags and scalars
   // that it contains. This call may only be made by the original owner of the
   // experiment.
@@ -27,9 +30,6 @@ service TensorBoardWriterService {
   // Request that the calling user and all their data be permanently deleted.
   // Used for testing purposes.
   rpc DeleteOwnUser(DeleteOwnUserRequest) returns (DeleteOwnUserResponse) {}
-  // Request to mutate metadata associated with an experiment.
-  rpc UpdateExperimentMetadata(UpdateExperimentMetadataRequest)
-      returns (UpdateExperimentMetadataResponse) {}
 }
 
 // This is currently empty on purpose.  No information is necessary
@@ -52,6 +52,25 @@ message CreateExperimentResponse {
   // Url the user should navigate to to see their TensorBoard
   // eg: "https://example.com/public/1r9d0kQkh2laODSZcQXWP"
   string url = 2;
+}
+
+// Request to change the metadata of one experiment.
+message UpdateExperimentRequest {
+  // Description of the data to set.  The experiment_id field must match
+  // an experiment_id in the database.  The remaining fields should be set
+  // to the desired metadata to be written.  Only those fields marked True
+  // in the experiment_mask will be written. The service may deny
+  // modification of some metadata used for internal bookkeeping, such as
+  // num_scalars, etc.
+  Experiment experiment = 1;
+  // Field mask for what experiment data to set.  The service may deny requests
+  // to set some metatadata.
+  ExperimentMask experiment_mask = 2;
+}
+
+// Response for setting experiment name.
+message UpdateExperimentResponse {
+  // This is empty on purpose.
 }
 
 message DeleteExperimentRequest {
@@ -136,24 +155,5 @@ message DeleteOwnUserRequest {
 
 // Everything the caller needs to know about how the deletion went.
 message DeleteOwnUserResponse {
-  // This is empty on purpose.
-}
-
-// Request to change the metadata of one experiment.
-message UpdateExperimentMetadataRequest {
-  // Description of the data to set.  The experiment_id field must match
-  // an experiment_id in the database.  The remaining fields should be set
-  // to the desired metadata to be written.  Only those fields marked True
-  // in the experiment_mask will be written. The service may deny
-  // modification of some metadata used for internal bookkeeping, such as
-  // num_scalars, etc.
-  Experiment experiment = 1;
-  // Field mask for what experiment data to set.  The service may deny requests
-  // to set some metatadata.
-  ExperimentMask experiment_mask = 2;
-}
-
-// Response for setting experiment name.
-message UpdateExperimentMetadataResponse {
   // This is empty on purpose.
 }
