@@ -2,6 +2,10 @@ syntax = "proto3";
 
 package tensorboard.service;
 
+// TODO(bileschi): write_service.proto imports export_service.proto for the
+// definition of Experiment and ExperimentMask.  It would be better to excise
+// those into one file that both services depend on.
+import "tensorboard/uploader/proto/export_service.proto";
 import "tensorboard/uploader/proto/scalar.proto";
 import "tensorboard/uploader/proto/tensor.proto";
 import "tensorboard/compat/proto/summary.proto";
@@ -11,6 +15,9 @@ service TensorBoardWriterService {
   // Request for a new location to write TensorBoard readable events.
   rpc CreateExperiment(CreateExperimentRequest)
       returns (CreateExperimentResponse) {}
+  // Request to mutate metadata associated with an experiment.
+  rpc UpdateExperiment(UpdateExperimentRequest)
+      returns (UpdateExperimentResponse) {}
   // Request that an experiment be deleted, along with all tags and scalars
   // that it contains. This call may only be made by the original owner of the
   // experiment.
@@ -32,7 +39,10 @@ service TensorBoardWriterService {
 // to request a URL, except. authorization of course, which doesn't
 // come within the proto.
 message CreateExperimentRequest {
-  // This is empty on purpose.
+  // User provided name of the experiment.
+  string name = 1;
+  // User provided description of the experiment, in markdown source format.
+  string description = 2;
 }
 
 // Carries all information necessary to:
@@ -45,6 +55,25 @@ message CreateExperimentResponse {
   // Url the user should navigate to to see their TensorBoard
   // eg: "https://example.com/public/1r9d0kQkh2laODSZcQXWP"
   string url = 2;
+}
+
+// Request to change the metadata of one experiment.
+message UpdateExperimentRequest {
+  // Description of the data to set.  The experiment_id field must match
+  // an experiment_id in the database.  The remaining fields should be set
+  // to the desired metadata to be written.  Only those fields marked True
+  // in the experiment_mask will be written. The service may deny
+  // modification of some metadata used for internal bookkeeping, such as
+  // num_scalars, etc.
+  Experiment experiment = 1;
+  // Field mask for what experiment data to set.  The service may deny requests
+  // to set some metatadata.
+  ExperimentMask experiment_mask = 2;
+}
+
+// Response for setting experiment metadata.
+message UpdateExperimentResponse {
+  // This is empty on purpose.
 }
 
 message DeleteExperimentRequest {
