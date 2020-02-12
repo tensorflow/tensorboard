@@ -12,26 +12,62 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, OnInit} from '@angular/core';
-import {Store} from '@ngrx/store';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {createSelector, select, Store} from '@ngrx/store';
 
-import {alertsViewLoaded} from '../../actions';
+import {getAlertsBreakdown, getNumAlerts, State} from '../../store';
+import {AlertType} from '../../store/debugger_types';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
-// TODO(cais): Move to a separate file.
-export interface AlertsState {}
+const ALERT_TYPE_TO_DISPLAY_NAME_AND_SYMBOL: {
+  [alertType: string]: {displayName: string; displaySymbol: string};
+} = {
+  [AlertType.FUNCTION_RECOMPILE_ALERT]: {
+    displayName: 'Function recompiles',
+    displaySymbol: 'C',
+  },
+  [AlertType.INF_NAN_ALERT]: {
+    displayName: 'NaN/∞',
+    displaySymbol: '∞',
+  },
+  [AlertType.TENSOR_SHAPE_ALERT]: {
+    displayName: 'Tensor shape',
+    displaySymbol: '■',
+  },
+};
 
 @Component({
   selector: 'tf-debugger-v2-alerts',
   template: `
-    <alerts-component></alerts-component>
-  `,
+    <alerts-component
+      [numAlerts]="numAlerts$ | async"
+      [alertsBreakdown]="alertsBreakdown$ | async"
+    >
+    </alerts-component>
+  `, // TODO(cais): Add container tests.
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AlertsContainer implements OnInit {
-  constructor(private readonly store: Store<AlertsState>) {}
+export class AlertsContainer {
+  readonly numAlerts$ = this.store.pipe(select(getNumAlerts));
 
-  ngOnInit(): void {
-    this.store.dispatch(alertsViewLoaded());
-  }
+  readonly alertsBreakdown$ = this.store.pipe(
+    select(
+      createSelector(
+        getAlertsBreakdown,
+        (alertsBreakdown) => {
+          const alertTypes = Object.keys(alertsBreakdown);
+          alertTypes.sort();
+          return alertTypes.map((alertType) => {
+            return {
+              ...ALERT_TYPE_TO_DISPLAY_NAME_AND_SYMBOL[alertType],
+              count: alertsBreakdown[alertType],
+            };
+          });
+        }
+      )
+    )
+  );
+
+  constructor(private readonly store: Store<State>) {}
 }

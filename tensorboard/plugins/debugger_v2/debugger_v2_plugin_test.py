@@ -187,6 +187,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
                 "begin": 0,
                 "end": 0,
                 "num_alerts": 0,
+                "alerts_breakdown": {},
                 "per_type_alert_limit": 1000,
                 "alerts": [],
             },
@@ -211,6 +212,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
                 "begin": 0,
                 "end": 0,
                 "num_alerts": 3,
+                "alerts_breakdown": {"InfNanAlert": 3,},
                 "per_type_alert_limit": 1000,
                 "alerts": [],
             },
@@ -232,6 +234,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertEqual(data["begin"], 0)
         self.assertEqual(data["end"], 3)
         self.assertEqual(data["num_alerts"], 3)
+        self.assertEqual(data["alerts_breakdown"], {"InfNanAlert": 3})
         self.assertEqual(data["per_type_alert_limit"], 1000)
         alerts = data["alerts"]
         self.assertLen(alerts, 3)

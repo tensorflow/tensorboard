@@ -12,12 +12,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ChangeDetectionStrategy, Component, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {select, Store, createSelector} from '@ngrx/store';
 
 import {State} from '../../store/debugger_types';
 import {
-  alertsViewLoaded,
   executionDigestFocused,
   executionScrollLeft,
   executionScrollRight,
@@ -103,7 +102,7 @@ function getExecutionDigestForDisplay(
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TimelineContainer implements OnInit {
+export class TimelineContainer {
   readonly activeRunId$ = this.store.pipe(select(getActiveRunId));
 
   readonly loadingNumExecutions$ = this.store.pipe(
@@ -149,10 +148,6 @@ export class TimelineContainer implements OnInit {
   readonly numExecutions$ = this.store.pipe(select(getNumExecutions));
 
   constructor(private readonly store: Store<State>) {}
-
-  ngOnInit(): void {
-    this.store.dispatch(alertsViewLoaded());
-  }
 
   onNavigateLeft() {
     this.store.dispatch(executionScrollLeft());
