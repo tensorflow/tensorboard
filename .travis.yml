@@ -43,6 +43,9 @@ before_install:
   - ci/download_bazel.sh "${BAZEL}" "${BAZEL_SHA256SUM}" ~/bazel
   - sudo mv ~/bazel /usr/local/bin/bazel
   - cp ci/bazelrc ~/.bazelrc
+  - # DO NOT SUBMIT purge the bazel caches to test fresh build
+  - rm -rf "$HOME/.cache/tb-bazel-repo"
+  - rm -rf "$HOME/.cache/tb-bazel-disk"
   - elapsed "before_install (done)"
 
 install:
