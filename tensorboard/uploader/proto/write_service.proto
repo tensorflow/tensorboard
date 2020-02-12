@@ -68,7 +68,7 @@ message UpdateExperimentRequest {
   ExperimentMask experiment_mask = 2;
 }
 
-// Response for setting experiment name.
+// Response for setting experiment metadata.
 message UpdateExperimentResponse {
   // This is empty on purpose.
 }
