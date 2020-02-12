@@ -85,9 +85,9 @@ export interface Execution extends ExecutionDigest {
 }
 
 export enum AlertType {
-  FunctionRecompileAlert = 'FunctionRecompilesAlert',
-  InfNanAlert = 'InfNanAlert',
-  TensorShapeAlert = 'TensorShapeAlert',
+  FUNCTION_RECOMPILE_ALERT = 'FunctionRecompilesAlert',
+  INF_NAN_ALERT = 'InfNanAlert',
+  TENSOR_SHAPE_ALERT = 'TensorShapeAlert',
 }
 
 export interface Alert {
@@ -96,7 +96,7 @@ export interface Alert {
 }
 
 export interface InfNanAlert extends Alert {
-  alert_type: AlertType.InfNanAlert;
+  alert_type: AlertType.INF_NAN_ALERT;
 
   op_type: string;
 

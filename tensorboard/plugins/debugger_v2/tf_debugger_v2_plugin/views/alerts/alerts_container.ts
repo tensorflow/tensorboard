@@ -23,15 +23,15 @@ import {AlertType} from '../../store/debugger_types';
 const ALERT_TYPE_TO_DISPLAY_NAME_AND_SYMBOL: {
   [alertType: string]: {displayName: string; displaySymbol: string};
 } = {
-  [AlertType.FunctionRecompileAlert]: {
+  [AlertType.FUNCTION_RECOMPILE_ALERT]: {
     displayName: 'Function recompiles',
     displaySymbol: 'C',
   },
-  [AlertType.InfNanAlert]: {
+  [AlertType.INF_NAN_ALERT]: {
     displayName: 'NaN/∞',
     displaySymbol: '∞',
   },
-  [AlertType.TensorShapeAlert]: {
+  [AlertType.TENSOR_SHAPE_ALERT]: {
     displayName: 'Tensor shape',
     displaySymbol: '■',
   },
