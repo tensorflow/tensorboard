@@ -498,7 +498,7 @@ export class DebuggerEffects {
      *  +> fetch run +> fetch num exec
      *               +> fetch num alerts
      *                   +
-     *                   +> if init load and non-empty execs
+     *                   +> if init load and non-zero number of execs
      *                       +
      *                       +>+-------------------+
      *                       | | fetch exec digest |

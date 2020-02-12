@@ -84,7 +84,11 @@ export interface Execution extends ExecutionDigest {
   debug_tensor_values: Array<number[] | null> | null;
 }
 
-export type AlertType = 'InfNanAlert';
+export enum AlertType {
+  FunctionRecompileAlert = 'FunctionRecompilesAlert',
+  InfNanAlert = 'InfNanAlert',
+  TensorShapeAlert = 'TensorShapeAlert',
+}
 
 export interface Alert {
   // TODO(cais): Add more possibilities to it.
@@ -92,7 +96,7 @@ export interface Alert {
 }
 
 export interface InfNanAlert extends Alert {
-  alert_type: 'InfNanAlert';
+  alert_type: AlertType.InfNanAlert;
 
   op_type: string;
 
@@ -127,6 +131,8 @@ export interface ExecutionDigestLoadState extends LoadState {
 
 // A map from the type of alert (e.g., 'InfNanAlert') to count of alerts
 // of that type.
+// TODO(cais): Explore tighter typing for `alertType`, ideally by using
+// the enum values from `AlertType`.
 export type AlertsBreakdown = {[alertType: string]: number};
 
 export interface Alerts {

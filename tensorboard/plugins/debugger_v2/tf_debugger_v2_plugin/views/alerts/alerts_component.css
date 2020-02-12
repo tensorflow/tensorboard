@@ -65,8 +65,8 @@ limitations under the License.
   text-align: center;
   vertical-align: middle;
   width: 24px;
-  -moz-border-radius: 12px;
-  -webkit-border-radius: 12px;
+  /* -moz-border-radius: 12px;
+  -webkit-border-radius: 12px; */
 }
 
 .num-alerts-value.non-zero {

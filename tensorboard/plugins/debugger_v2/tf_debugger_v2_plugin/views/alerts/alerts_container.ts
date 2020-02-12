@@ -16,21 +16,22 @@ import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {createSelector, select, Store} from '@ngrx/store';
 
 import {getAlertsBreakdown, getNumAlerts, State} from '../../store';
+import {AlertType} from '../../store/debugger_types';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 const ALERT_TYPE_TO_DISPLAY_NAME_AND_SYMBOL: {
   [alertType: string]: {displayName: string; displaySymbol: string};
 } = {
-  FunctionRecompilesAlert: {
+  [AlertType.FunctionRecompileAlert]: {
     displayName: 'Function recompiles',
     displaySymbol: 'C',
   },
-  InfNanAlert: {
+  [AlertType.InfNanAlert]: {
     displayName: 'NaN/∞',
     displaySymbol: '∞',
   },
-  TensorShapeAlert: {
+  [AlertType.TensorShapeAlert]: {
     displayName: 'Tensor shape',
     displaySymbol: '■',
   },
