@@ -36,7 +36,8 @@ service TensorBoardWriterService {
       returns (GetOrCreateBlobSequenceResponse) {}
   // Request the current status of blob data being stored in TensorBoard.dev,
   // to support resumable uploads.
-  rpc GetBlobMetadata(GetBlobMetadataRequest) returns (GetBlobMetadataResponse) {}
+  rpc GetBlobMetadata(GetBlobMetadataRequest)
+      returns (GetBlobMetadataResponse) {}
   // Request additional blob data be stored in TensorBoard.dev.
   rpc WriteBlob(stream WriteBlobRequest) returns (stream WriteBlobResponse) {}
   // Request that the calling user and all their data be permanently deleted.
@@ -288,7 +289,15 @@ message GetOrCreateBlobSequenceResponse {
   string blob_sequence_id = 1;
 }
 
-enum BlobState {
+message GetBlobMetadataRequest {
+  // The ID of the BlobSequence of which this blob is a member.
+  string blob_sequence_id = 1;
+  // The position of this Blob within the BlobSequence
+  int64 index = 2;
+}
+
+message GetBlobMetadataResponse {
+  enum BlobState {
     // Object state is unknown. This value should never be used; it is present
     // only as a proto3 best practice.
     // See https://developers.google.com/protocol-buffers/docs/proto3#enum
@@ -301,14 +310,6 @@ enum BlobState {
     CURRENT = 2;
   }
 
-message GetBlobMetadataRequest {
-  // The ID of the BlobSequence of which this blob is a member.
-  string blob_sequence_id = 1;
-  // The position of this Blob within the BlobSequence
-  int64 index = 2;
-}
-
-message GetBlobMetadataResponse {
   // State of the object (still appending vs. complete).
   BlobState object_state = 1;
   // Size of the object in bytes.  This is the sum of the chunk sizes
@@ -347,6 +348,19 @@ message WriteBlobRequest {
 }
 
 message WriteBlobResponse {
+  enum BlobState {
+    // Object state is unknown. This value should never be used; it is present
+    // only as a proto3 best practice.
+    // See https://developers.google.com/protocol-buffers/docs/proto3#enum
+    UNKNOWN = 0;
+
+    // Object is being written and not yet finalized.
+    UNFINALIZED = 1;
+
+    // Object is finalized.
+    CURRENT = 2;
+  }
+
   // State of the object (still appending vs. complete).
   BlobState blob_state = 1;
   // Size of the object in bytes.  This is the sum of the chunk sizes
