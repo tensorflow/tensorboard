@@ -102,6 +102,22 @@ class DataProvider(object):
         """
         return ""
 
+    def experiment_metadata(self, experiment_id):
+        """Retrive metadata of a given experiment.
+
+        The metadata may include fields such as name and description
+        of the experiment, as well as a timestamp for the experiment.
+
+        Args:
+          experiment_id:  ID of the experiment in question.
+
+        Returns:
+          If the metadata does not exist, `None`.
+          Otherwise, an `ExperimentMetadata` object containing metadata about
+            the experiment.
+        """
+        return None
+
     def list_plugins(self, experiment_id):
         """List all plugins that own data in a given experiment.
 
@@ -305,6 +321,35 @@ class DataProvider(object):
           tensorboard.errors.PublicError: See `DataProvider` class docstring.
         """
         pass
+
+
+class ExperimentMetadata(object):
+    """Metadata about an experiment.
+
+    Attributes:
+      experiment_name: A user-facing name for the experiment (as a `str`).
+      experiment_description: A user-facing description for the experiment
+        (as a `str`).
+      creation_time: A timestamp for the creation of the experiment, as `float`
+        seconds since the epoch.
+    """
+
+    def __init__(self, experiment_name, experiment_description, creation_time):
+        self._experiment_name = experiment_name
+        self._experiment_description = experiment_description
+        self._creation_time = creation_time
+
+    @property
+    def experiment_name(self):
+        return self._experiment_name
+
+    @property
+    def experiment_description(self):
+        return self._experiment_description
+
+    @property
+    def creation_time(self):
+        return self._creation_time
 
 
 class Run(object):
