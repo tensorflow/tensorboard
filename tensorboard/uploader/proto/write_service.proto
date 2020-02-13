@@ -8,6 +8,7 @@ package tensorboard.service;
 import "tensorboard/uploader/proto/export_service.proto";
 import "tensorboard/uploader/proto/scalar.proto";
 import "tensorboard/uploader/proto/tensor.proto";
+import "tensorboard/uploader/proto/blob.proto";
 import "tensorboard/compat/proto/summary.proto";
 
 // Service for writing data to TensorBoard.dev.
@@ -297,27 +298,13 @@ message GetBlobMetadataRequest {
 }
 
 message GetBlobMetadataResponse {
-  enum BlobState {
-    // Object state is unknown. This value should never be used; it is present
-    // only as a proto3 best practice.
-    // See https://developers.google.com/protocol-buffers/docs/proto3#enum
-    UNKNOWN = 0;
-
-    // Object is being written and not yet finalized.
-    UNFINALIZED = 1;
-
-    // Object is finalized.
-    CURRENT = 2;
-  }
-
   // State of the object (still appending vs. complete).
-  BlobState object_state = 1;
-  // Size of the object in bytes.  This is the sum of the chunk sizes
-  // received from the stream so far.  In the response to the final chunk,
-  // this size should equal the total size of the blob.
+  BlobState blob_state = 1;
+  // Size of the object in bytes.  In the case of a partial upload, this
+  // reflects only the data actually received so far.
   int64 size = 2;
-  // crc32c of the blob data read so far, i.e. over the byte range [0, size).
-  fixed32 cumulative_crc32c = 3;
+  // crc32c of the blob data stored so far, i.e. over the byte range [0, size).
+  fixed32 crc32c = 3;
 }
 
 // A single chunk of the blob write stream.
@@ -348,18 +335,7 @@ message WriteBlobRequest {
 }
 
 message WriteBlobResponse {
-  enum BlobState {
-    // Object state is unknown. This value should never be used; it is present
-    // only as a proto3 best practice.
-    // See https://developers.google.com/protocol-buffers/docs/proto3#enum
-    UNKNOWN = 0;
 
-    // Object is being written and not yet finalized.
-    UNFINALIZED = 1;
-
-    // Object is finalized.
-    CURRENT = 2;
-  }
 
   // State of the object (still appending vs. complete).
   BlobState blob_state = 1;

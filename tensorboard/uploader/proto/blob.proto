@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package tensorboard.service;
+
+enum BlobState {
+  // Object state is unknown. This value should never be used; it is present
+  // only as a proto3 best practice.
+  // See https://developers.google.com/protocol-buffers/docs/proto3#enum
+  UNKNOWN = 0;
+  // Object is being written and not yet finalized.
+  UNFINALIZED = 1;
+  // Object is finalized.
+  CURRENT = 2;
+}
