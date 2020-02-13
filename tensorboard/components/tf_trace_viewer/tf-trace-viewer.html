@@ -15,7 +15,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<!-- Before any Trace Viewer scripts run, show warning if needed. -->
+<!--
+If WebComponents V0 are not available, show a warning before any Polymer or
+Trace Viewer scripts can run.
+-->
 <style>
   .no-webcomponents-container.hidden {
     display: none;
@@ -52,6 +55,11 @@ limitations under the License.
     </p>
     <br />
     <br />
+    <p>
+      If you are running a Chromium-based browser, one workaround is to download
+      your data as JSON and load it in your browser's viewer at
+      "about://tracing". This run's data can be found here:
+    </p>
   </div>
 </div>
 
@@ -70,16 +78,8 @@ limitations under the License.
     const relativeTraceURL = currentURL.searchParams.get('trace_data_url');
     const traceURL = new URL(relativeTraceURL, window.location.href).toString();
 
-    const workaroundEl = document.createElement('p');
-    workaroundEl.textContent =
-      `If you are running a Chromium-based browser, ` +
-      `one workaround is to download your data as JSON and load it in your ` +
-      `browser's viewer at "about://tracing". This run's data can be found ` +
-      `here:`;
     const profileDataLink = document.createElement('i');
     profileDataLink.textContent = `${traceURL}`;
-
-    contentsEl.appendChild(workaroundEl);
     contentsEl.appendChild(profileDataLink);
   }
 </script>
