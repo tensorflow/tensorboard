@@ -103,7 +103,7 @@ class DataProvider(object):
         return ""
 
     def experiment_metadata(self, experiment_id):
-        """Retrive metadata of a given experiment.
+        """Retrieve metadata of a given experiment.
 
         The metadata may include fields such as name and description
         of the experiment, as well as a timestamp for the experiment.
