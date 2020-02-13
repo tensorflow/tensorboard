@@ -34,6 +34,9 @@ service TensorBoardWriterService {
   // to be subsequently populated with blobs.
   rpc GetOrCreateBlobSequence(GetOrCreateBlobSequenceRequest)
       returns (GetOrCreateBlobSequenceResponse) {}
+  // Request the current status of blob data being stored in TensorBoard.dev,
+  // to support resumable uploads.
+  rpc GetBlobMetadata(GetBlobMetadataRequest) returns (GetBlobMetadataResponse) {}
   // Request additional blob data be stored in TensorBoard.dev.
   rpc WriteBlob(stream WriteBlobRequest) returns (stream WriteBlobResponse) {}
   // Request that the calling user and all their data be permanently deleted.
@@ -220,32 +223,40 @@ message WriteTensorResponse {
 //  * The caller instantiates a WriteBlob RPC, which is a bidirectional stream.
 //  * The caller sends one or more WriteBlobRequests, providing the blob data
 //    in an ordered sequence of chunks.
-//  * The caller receives a sequence of WriteBlobResponses in return.  Each
+//  * The caller receives a sequence of WriteBlobResponses in return. Each
 //    WriteBlobResponse corresponds to one WriteBlobRequest in order, reporting
 //    the state of the write operation.
 //  * The streams need not operate in 'ping-pong' style-- i.e. the client may
 //    continue to send requests, regardless of whether responses to prior
 //    requests have arrived yet.
 //
-//  * The first request sent over the stream may optionally contain no actual
+//  * A request sent over the stream may optionally contain no actual
 //    data. In this case it acts only as a request for the current status of
-//    the blob, in case it has already been partially or fully uploaded.
-//  * The first WriteBlobResponse reports the state, size, and crc32c of the
-//    object so far, i.e. taking into account any previously uploaded data.
-//    This response may imply that any provided data was ignored as redundant.
+//    the blob. For instance, the client may send such a query as the first
+//    request, to learn whether the blob has already been partially or fully
+//    uploaded.
+//  * In response to such a query, the WriteBlobResponse reports the state,
+//    size, and crc32c of the object so far, i.e. taking into account any
+//    previously uploaded data.  (Note that the crc32c field must be populated
+//    only in response to these query requests, not in reponse to requests that
+//    contain data.)
 //  * The client proceeds to upload from the specified offset (optionally
 //    validating the crc32c up to that point first).  Of course, if the object
 //    is already finalized, then nothing remains to upload, so the stream
 //    closes.
 //  * If the first request does provide data, that chunk may turn out to be
-//    redundant with a previous partial upload.  It is up to the client to
+//    redundant with a previous partial upload.  This will produce an error,
+//    closing the stream.  At this point the client should start a new stream
+//    with an empty 'query' request, allowing it to resume the upload at the
+//    correct offset. It is up to the client to
 //    weigh the tradeoff between this possibly-wasted transfer and an
 //    additional initial roundtrip to obtain the status.
 //
-//  * In general, the caller should not wait to verify that each response
-//    reports the expected status, size, and crc32c before sending the next
-//    request.  Doing so reduces throughput, with little benefit since any
-//    mismatch on the server side will cause the RPC to throw an error anyway.
+//  * For requests that include data, the response may not populate the crc32c
+//    field. In general, the caller should not wait to verify that each response
+//    reports the expected status and size before sending the next request.
+//    Doing so reduces throughput, with little benefit since any mismatch on the
+//    server side will cause the RPC to throw an error anyway.
 //  * Nonetheless the caller may wish to validate these values, if provided,
 //    whenever the response does arrive.
 //  * The request size should be less than 4 MiB (2^20 = 4,194,304), because
@@ -287,6 +298,35 @@ message GetOrCreateBlobSequenceResponse {
   string blob_sequence_id = 1;
 }
 
+enum BlobState {
+    // Object state is unknown. This value should never be used; it is present
+    // only as a proto3 best practice.
+    // See https://developers.google.com/protocol-buffers/docs/proto3#enum
+    UNKNOWN = 0;
+
+    // Object is being written and not yet finalized.
+    UNFINALIZED = 1;
+
+    // Object is finalized.
+    CURRENT = 2;
+  }
+
+message GetBlobMetadataRequest {
+  // The ID of the BlobSequence of which this blob is a member.
+  string blob_sequence_id = 1;
+  // The position of this Blob within the BlobSequence
+  int64 index = 2;
+}
+
+message GetBlobMetadataResponse {
+  // State of the object (still appending vs. complete).
+  BlobState object_state = 1;
+  // Size of the object in bytes.  This is the sum of the chunk sizes
+  // received from the stream so far.  In the response to the final chunk,
+  // this size should equal the total size of the blob.
+  int64 size = 2;
+}
+
 // A single chunk of the blob write stream.
 message WriteBlobRequest {
   // The ID of the BlobSequence of which this blob is a member.
@@ -314,32 +354,12 @@ message WriteBlobRequest {
 }
 
 message WriteBlobResponse {
-  enum ObjectState {
-    // Object state is unknown. This value should never be used; it is present
-    // only as a proto3 best practice.
-    // See https://developers.google.com/protocol-buffers/docs/proto3#enum
-    UNKNOWN = 0;
-
-    // Object is being written and not yet finalized.
-    UNFINALIZED = 1;
-
-    // Object is finalized.
-    CURRENT = 2;
-  }
-
   // State of the object (still appending vs. complete).
-  ObjectState object_state = 1;
+  BlobState blob_state = 1;
   // Size of the object in bytes.  This is the sum of the chunk sizes
   // received from the stream so far.  In the response to the final chunk,
   // this size should equal the total size of the blob.
   int64 size = 2;
-  // crc32c of the blob data read so far, i.e. over the byte range [0, size).
-  // In the response to the final chunk, this value should equal final_crc32.
-  // This field is optional: it is an implementation decision whether the
-  // expense of computing this value is worthwhile, given that server-side
-  // validation of the required chunk-wise crc32c in the requests, together with
-  // the required final_crc32c, ought to provide sufficient protection.
-  fixed32 cumulative_crc32c = 3;
 }
 
 // Requests that the calling user and all their data be permanently deleted.
