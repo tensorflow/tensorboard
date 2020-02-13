@@ -335,8 +335,6 @@ message WriteBlobRequest {
 }
 
 message WriteBlobResponse {
-
-
   // State of the object (still appending vs. complete).
   BlobState blob_state = 1;
   // Size of the object in bytes.  This is the sum of the chunk sizes
