@@ -199,7 +199,8 @@ message WriteTensorResponse {
   // This is empty on purpose.
 }
 
-// The blob sequence writing procedure works as follows:
+// Writing a blob sequence
+// =======================
 //  * The caller requests creation of a new BlobSequence, via the
 //    GetOrCreateBlobSequence RPC. The response provides a new BlobSequence ID.
 //  * The caller writes each blob in the sequence separately via the WriteBlob
@@ -208,7 +209,8 @@ message WriteTensorResponse {
 //  * Multiple WriteBlob streams may operate in parallel (for different blobs),
 //    with no constraint on their ordering.
 
-// Blob sequence uploads are resumable, as follows:
+// Resuming a partially written blob sequence
+// ==========================================
 //  * The client starts the upload process with a new GetOrCreateBlobSequence
 //    RPC.
 //  * The blob sequences are uniquely keyed by experiment, run, tag, and step.
@@ -219,44 +221,18 @@ message WriteTensorResponse {
 //    resume or may be skipped entirely, as needed, according to the below
 //    procedure.
 
-// The blob writing procedure is as follows.  It is intrinsically resumable.
+// Writing a blob
+// ==============
 //  * The caller instantiates a WriteBlob RPC, which is a bidirectional stream.
 //  * The caller sends one or more WriteBlobRequests, providing the blob data
 //    in an ordered sequence of chunks.
 //  * The caller receives a sequence of WriteBlobResponses in return. Each
 //    WriteBlobResponse corresponds to one WriteBlobRequest in order, reporting
 //    the state of the write operation.
-//  * The streams need not operate in 'ping-pong' style-- i.e. the client may
-//    continue to send requests, regardless of whether responses to prior
-//    requests have arrived yet.
-//
-//  * A request sent over the stream may optionally contain no actual
-//    data. In this case it acts only as a request for the current status of
-//    the blob. For instance, the client may send such a query as the first
-//    request, to learn whether the blob has already been partially or fully
-//    uploaded.
-//  * In response to such a query, the WriteBlobResponse reports the state,
-//    size, and crc32c of the object so far, i.e. taking into account any
-//    previously uploaded data.  (Note that the crc32c field must be populated
-//    only in response to these query requests, not in reponse to requests that
-//    contain data.)
-//  * The client proceeds to upload from the specified offset (optionally
-//    validating the crc32c up to that point first).  Of course, if the object
-//    is already finalized, then nothing remains to upload, so the stream
-//    closes.
-//  * If the first request does provide data, that chunk may turn out to be
-//    redundant with a previous partial upload.  This will produce an error,
-//    closing the stream.  At this point the client should start a new stream
-//    with an empty 'query' request, allowing it to resume the upload at the
-//    correct offset. It is up to the client to
-//    weigh the tradeoff between this possibly-wasted transfer and an
-//    additional initial roundtrip to obtain the status.
-//
-//  * For requests that include data, the response may not populate the crc32c
-//    field. In general, the caller should not wait to verify that each response
-//    reports the expected status and size before sending the next request.
-//    Doing so reduces throughput, with little benefit since any mismatch on the
-//    server side will cause the RPC to throw an error anyway.
+//  * The caller should not wait to verify that each response reports the
+//    expected status and size before sending the next request. Doing so reduces
+//    throughput, with little benefit since any mismatch on the server side will
+//    cause the RPC to throw an error anyway.
 //  * Nonetheless the caller may wish to validate these values, if provided,
 //    whenever the response does arrive.
 //  * The request size should be less than 4 MiB (2^20 = 4,194,304), because
@@ -265,11 +241,25 @@ message WriteTensorResponse {
 //    chunk should be somewhat smaller-- perhaps simply 4e6 bytes.
 //  * The last of these requests must set finalize_object=True, and the prior
 //    ones must not.
-//  * For a blob <= 4MB, a single request suffices (assuming no empty status
-//    request), so it is both the first and the last chunk.
-//
-// Note that the WriteBlobRequest does not mirror the nested structure of
-// WriteScalarRequest, because we only ever send one blob at a time.
+//  * For a blob <= 4MB, a single request suffices, so it is the last chunk.
+
+// Resuming a partial blob upload
+// ==============================
+//  * When the client begins an upload by the usual method above, it may turn
+//    out that the data chunk is redundant with a previous partial upload.
+//    The serve will raise an error in this case, closing the stream.
+//  * At this point the client should issue a GetBlobMetadataRequest.  The
+//    GetBlobMetadataResponse reports the state, size, and crc32c of the object
+//    so far, i.e. taking into account any previously uploaded data.
+//  * The client checks whether any data remains to upload, and optionally
+//    validates the cumulative crc32c against the local file (up to the given
+//    offset).
+//  * If needed, the client starts a new WriteBlob stream, starting from the
+//    specified offset.
+//  * The client may choose to call GetBlobMetadata before starting any
+//    WriteBlob stream, to avoid the potential for wasted transfer of a
+//    redundant chunk, at the cost of the initial roundtrip to obtain the
+//    status.  It is up to the client to weigh this tradeoff.
 
 // Obtain a unique ID for a blob sequence, given the composite key
 // (experiment_id, run, tag, step).  If such a blob sequence already exists,
@@ -325,17 +315,20 @@ message GetBlobMetadataResponse {
   // received from the stream so far.  In the response to the final chunk,
   // this size should equal the total size of the blob.
   int64 size = 2;
+  // crc32c of the blob data read so far, i.e. over the byte range [0, size).
+  fixed32 cumulative_crc32c = 3;
 }
 
 // A single chunk of the blob write stream.
+//
+// Note that the WriteBlobRequest does not mirror the nested structure of
+// WriteScalarRequest, because we only ever send one blob at a time.
 message WriteBlobRequest {
   // The ID of the BlobSequence of which this blob is a member.
   string blob_sequence_id = 1;
   // The position of this Blob within the BlobSequence
   int64 index = 2;
-  // The bytes in this chunk.  For the first chunk only, this field is optional.
-  // Leaving it empty allows determining from the response how much of the blob
-  // has already been uploaded, if any, without sending redundant data.
+  // The bytes in this chunk.
   bytes data = 3;
   // The position in the blob where this chunk begins.
   // This must equal the sum of the sizes of the chunks sent so far.  Ignored
