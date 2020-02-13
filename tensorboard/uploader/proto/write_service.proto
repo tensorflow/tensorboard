@@ -20,9 +20,10 @@ service TensorBoardWriterService {
   rpc PurgeData(PurgeDataRequest) returns (PurgeDataResponse) {}
   // Request that scalar data be stored in TensorBoard.dev.
   rpc WriteScalar(WriteScalarRequest) returns (WriteScalarResponse) {}
-  // Request to create a BlobSequence, to be subsequently populated with blobs.
-  rpc CreateBlobSequence(CreateBlobSequenceRequest)
-      returns (CreateBlobSequenceResponse) {}
+  // Request to obtain a specific BlobSequence entry, creating it if needed,
+  // to be subsequently populated with blobs.
+  rpc GetOrCreateBlobSequence(GetOrCreateBlobSequenceRequest)
+      returns (GetOrCreateBlobSequenceResponse) {}
   // Request that blob data be stored in TensorBoard.dev.
   rpc WriteBlob(stream WriteBlobRequest) returns (stream WriteBlobResponse) {}
   // Request that the calling user and all their data be permanently deleted.
@@ -126,7 +127,7 @@ message WriteScalarResponse {
 
 // The blob sequence writing procedure works as follows:
 //  * The caller requests creation of a new BlobSequence, via the
-//    CreateBlobSequence RPC. The response provides a new BlobSequence ID.
+//    GetOrCreateBlobSequence RPC. The response provides a new BlobSequence ID.
 //  * The caller writes each blob in the sequence separately via the WriteBlob
 //    RPC as described below, providing the blob sequence ID and sequence index
 //    for each blob.
@@ -134,7 +135,8 @@ message WriteScalarResponse {
 //    on their ordering.
 
 // Blob sequence uploads are resumable, as follows:
-//  * The client starts the upload process with a new CreateBlobSequence RPC.
+//  * The client starts the upload process with a new GetOrCreateBlobSequence
+//    RPC.
 //  * The blob sequences are uniquely keyed by experiment, run, tag, and step.
 //    Since this is a second (or later) attempt regarding an existing sequence,
 //    a new sequence is not created.  Instead the existing sequence ID is
@@ -145,77 +147,99 @@ message WriteScalarResponse {
 
 // The blob writing procedure is as follows.  It is intrinsically resumable.
 //  * The caller instantiates a WriteBlob RPC, which is a bidirectional stream.
-//  * The first of these requests must provide write_blob_first_request_data,
-//    and the subsequent ones must not.
-//  * The first request should send no actual data; it acts as a request for the
-//    current status of the blob, in case it has already been partially or fully
-//    uploaded.
-//  * The first WriteBlobResponse reports the state, size, and crc32c of the
-//    object so far, i.e. taking into account any previously uploaded data.
-//  * The client proceeds to upload from the specified offset (optionally
-//    validating the crc32c up to that point first).
-//  * The caller sends a number of additional WriteBlobRequests, providing the
-//    blob data in an ordered sequence of chunks.
+//  * The caller sends one or more WriteBlobRequests, providing the blob data
+//    in an ordered sequence of chunks.
 //  * The caller receives a sequence of WriteBlobResponses in return.  Each
 //    WriteBlobResponse corresponds to one WriteBlobRequest in order, reporting
 //    the state of the write operation.
+//  * The streams need not operate in 'ping-pong' style-- i.e. the client may
+//    continue to send requests, regardless of whether responses to prior
+//    requests have arrived yet.
+//
+//  * The first request sent over the stream may optionally contain no actual
+//    data. In this case it acts only as a request for the current status of
+//    the blob, in case it has already been partially or fully uploaded.
+//  * The first WriteBlobResponse reports the state, size, and crc32c of the
+//    object so far, i.e. taking into account any previously uploaded data.
+//    This response may imply that any provided data was ignored as redundant.
+//  * The client proceeds to upload from the specified offset (optionally
+//    validating the crc32c up to that point first).  Of course, if the object
+//    is already finalized, then nothing remains to upload, so the stream
+//    closes.
+//  * If the first request does provide data, that chunk may turn out to be
+//    redundant with a previous partial upload.  It is up to the client to
+//    weigh the tradeoff between this possibly-wasted transfer and an
+//    additional initial roundtrip to obtain the status.
+//
 //  * In general, the caller should not wait to verify that each response
 //    reports the expected status, size, and crc32c before sending the next
-//    request.  Doing so harms throughput, with little benefit since any
+//    request.  Doing so reduces throughput, with little benefit since any
 //    mismatch on the server side will cause the RPC to throw an error anyway.
+//  * Nonetheless the caller may wish to validate these values, if provided,
+//    whenever the response does arrive.
 //  * The request size should be less than 4 MiB (2^20 = 4,194,304), because
 //    that is the default request limit for gRPC. Accounting for the other
 //    fields of the request, then, and leaving some padding for safety, the data
 //    chunk should be somewhat smaller-- perhaps simply 4e6 bytes.
 //  * The last of these requests must set finalize_object=True, and the prior
 //    ones must not.
-//  * For a blob <= 4MB, a single data chunk suffices, so there are two
-//    requests: one to learn the status, and one to upload the data.
+//  * For a blob <= 4MB, a single request suffices (assuming no empty status
+//    request), so it is both the first and the last chunk.
 //
 // Note that the WriteBlobRequest does not mirror the nested structure of
 // WriteScalarRequest, because we only ever send one blob at a time.
 
-message CreateBlobSequenceRequest {
+// Obtain a unique ID for a blob sequence, given the composite key
+// (experiment_id, run, tag, step).  If such a blob sequence already exists,
+// return its ID.  If not, create it first, and return the new ID.
+message GetOrCreateBlobSequenceRequest {
+  // Service-wide unique identifier of an uploaded log dir.
+  // eg: "1r9d0kQkh2laODSZcQXWP"
   string experiment_id = 1;
+  // The name of the run to which the blob sequence belongs, for example
+  // "/some/path/mnist_experiments/run1/".
   string run = 2;
+  // The name of the tag to which the blob sequence belongs, for example "loss".
   string tag = 3;
+  // Step index within the run.
   int64 step = 4;
+  // The total number of elements expected in the sequence.
+  // This effectively delares a number of initially empty 'upload slots',
+  // to be filled with subsequent WriteBlob RPCs.
   int64 final_sequence_length = 5;
   // Note that metadata.plugin_data.content does not carry the payload.
   .tensorboard.SummaryMetadata metadata = 6;
 }
 
-message CreateBlobSequenceResponse {
+message GetOrCreateBlobSequenceResponse {
+  // A unique ID for the the requested blob sequence.
   string sequence_id = 1;
-}
-
-// Metadata included with only the first chunk of the blob write stream.
-message WriteBlobFirstRequestData {
-  string sequence_id = 1;
-  int64 index = 2;
 }
 
 // A single chunk of the blob write stream.
 message WriteBlobRequest {
-  WriteBlobFirstRequestData write_blob_first_request_data = 1;
-  // The bytes in this chunk.  For the first chunk only, this value should be
-  // empty.  This allows determining from the response how much of the blob has
-  // already been uploaded, if any, without sending redundant data.
-  bytes data = 2;
+  // The ID of the BlobSequence of which this blob is a member.
+  string sequence_id = 1;
+  // The position of this Blob within the BlobSequence
+  int64 index = 2;
+  // The bytes in this chunk.  For the first chunk only, this field is optional.
+  // Leaving it empty allows determining from the response how much of the blob
+  // has already been uploaded, if any, without sending redundant data.
+  bytes data = 3;
   // The position in the blob where this chunk begins.
-  // This must equal the sum of the sizes of the chunks sent so far (except on
-  // the first request).
-  int64 offset = 3;
+  // This must equal the sum of the sizes of the chunks sent so far.  Ignored
+  // if no data is provided.
+  int64 offset = 4;
   // CRC32C of current data buffer. Clients must include the crc32c for every
   // data buffer, to protect against data corruption.  Note that for multi-shot
   // writes, specifying the crc32c for every data buffer provides stronger
   // protection than just providing the final_crc32c at the end of the upload.
-  fixed32 crc32c = 4;
+  fixed32 crc32c = 5;
   // Indicates that this is the last chunk of the stream.
-  bool finalize_object = 5;
+  bool finalize_object = 6;
   // CRC32C of the entire blob.  Required, to protect against data corruption.
   // This should be set only when finalize_object=True.
-  fixed32 final_crc32c = 6;
+  fixed32 final_crc32c = 7;
 }
 
 message WriteBlobResponse {
@@ -240,6 +264,10 @@ message WriteBlobResponse {
   int64 size = 2;
   // crc32c of the blob data read so far, i.e. over the byte range [0, size].
   // In the response to the final chunk, this value should equal final_crc32.
+  // This field is optional: it is an implementation decision whether the
+  // expense of computing this value is worthwhile, given that server-side
+  // validation of the required chunk-wise crc32c in the requests ought to
+  // provide sufficient protection.
   fixed32 cumulative_crc32c = 3;
 }
 
