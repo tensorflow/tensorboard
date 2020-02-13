@@ -49,6 +49,7 @@ tf_web_library(
         "ng_polymer_lib.html",
     ],
     path = "/",
+    tags = ["manual"],
     deps = [
         ":analytics",
         ":security",
@@ -69,6 +70,7 @@ tensorboard_html_binary(
     compile = True,
     input_path = "/ng_polymer_lib.html",
     output_path = "/ng_polymer_lib_binary.html",
+    tags = ["manual"],
     deps = [":ng_polymer_lib"],
 )
 

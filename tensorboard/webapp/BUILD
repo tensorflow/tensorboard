@@ -73,6 +73,7 @@ tf_js_binary(
         "//tensorboard:dev_build": ":main.ts",
         "//conditions:default": "main_prod.ts",
     }),
+    tags = ["manual"],
     deps = [
         ":ng_main",
         "//tensorboard/webapp/angular:expect_angular_material_tabs",
