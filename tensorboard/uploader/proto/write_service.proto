@@ -284,13 +284,13 @@ message GetOrCreateBlobSequenceRequest {
 
 message GetOrCreateBlobSequenceResponse {
   // A unique ID for the the requested blob sequence.
-  string sequence_id = 1;
+  string blob_sequence_id = 1;
 }
 
 // A single chunk of the blob write stream.
 message WriteBlobRequest {
   // The ID of the BlobSequence of which this blob is a member.
-  string sequence_id = 1;
+  string blob_sequence_id = 1;
   // The position of this Blob within the BlobSequence
   int64 index = 2;
   // The bytes in this chunk.  For the first chunk only, this field is optional.
