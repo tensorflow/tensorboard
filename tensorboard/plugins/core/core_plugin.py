@@ -559,7 +559,7 @@ of running out of memory if the logdir contains many active event files.
             "--reload_multifile_inactive_secs",
             metavar="SECONDS",
             type=int,
-            default=4000,
+            default=86400,
             help="""\
 [experimental] Configures the age threshold in seconds at which an event file
 that has no event wall time more recent than that will be considered an
@@ -568,7 +568,7 @@ no maximum age will be enforced, but beware of running out of memory and
 heavier filesystem read traffic. If set to 0, this reverts to the older
 last-file-only polling strategy (akin to --reload_multifile=false).
 (default: %(default)s - intended to ensure an event file remains active if
-it receives new data at least once per hour)\
+it receives new data at least once per 24 hour period)\
 """,
         )
 
