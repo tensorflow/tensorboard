@@ -20,6 +20,8 @@ import {AlertType} from '../../store/debugger_types';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
+// foo
+
 const ALERT_TYPE_TO_DISPLAY_NAME_AND_SYMBOL: {
   [alertType: string]: {displayName: string; displaySymbol: string};
 } = {
