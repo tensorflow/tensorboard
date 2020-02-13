@@ -17,7 +17,7 @@ import {createSelector, select, Store} from '@ngrx/store';
 import {State} from './store/debugger_types';
 
 import {debuggerLoaded} from './actions';
-import {getActiveRunId, getDebuggerRunListing, getNumExecutions} from './store';
+import {getActiveRunId, getDebuggerRunListing} from './store';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 

@@ -9,6 +9,12 @@ licenses(["notice"])  # Apache 2.0
 tf_ts_library(
     name = "expect_angular_common_http",
     srcs = [],
+    visibility = [
+        "//tensorboard/webapp/webapp_data_source:__subpackages__",
+    ],
+    deps = [
+        "@npm//@angular/common",
+    ],
 )
 
 # This is a dummy rule used as a @angular/common/testing dependency.
@@ -16,6 +22,12 @@ tf_ts_library(
 tf_ts_library(
     name = "expect_angular_common_http_testing",
     srcs = [],
+    visibility = [
+        "//tensorboard/webapp/webapp_data_source:__subpackages__",
+    ],
+    deps = [
+        "@npm//@angular/common",
+    ],
 )
 
 # This is a dummy rule used as a @angular/core/testing dependency.

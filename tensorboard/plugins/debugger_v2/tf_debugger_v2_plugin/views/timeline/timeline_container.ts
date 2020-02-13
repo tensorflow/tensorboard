@@ -12,12 +12,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ChangeDetectionStrategy, Component, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {select, Store, createSelector} from '@ngrx/store';
 
 import {State} from '../../store/debugger_types';
 import {
-  alertsViewLoaded,
+  executionDigestFocused,
   executionScrollLeft,
   executionScrollRight,
 } from '../../actions';
@@ -28,6 +28,8 @@ import {
   getNumExecutions,
   getExecutionPageSize,
   getExecutionScrollBeginIndex,
+  getFocusedExecutionDisplayIndex,
+  getFocusedExecutionIndex,
   getVisibleExecutionDigests,
 } from '../../store';
 import {DataLoadState, ExecutionDigest} from '../../store/debugger_types';
@@ -91,13 +93,16 @@ function getExecutionDigestForDisplay(
       [pageSize]="pageSize$ | async"
       [displayCount]="displayCount$ | async"
       [displayExecutionDigests]="displayExecutionDigests$ | async"
+      [focusedExecutionIndex]="focusedExecutionIndex$ | async"
+      [focusedExecutionDisplayIndex]="focusedExecutionDisplayIndex$ | async"
       (onNavigateLeft)="onNavigateLeft()"
       (onNavigateRight)="onNavigateRight()"
+      (onExecutionDigestClicked)="onExecutionDigestClicked($event)"
     ></timeline-component>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TimelineContainer implements OnInit {
+export class TimelineContainer {
   readonly activeRunId$ = this.store.pipe(select(getActiveRunId));
 
   readonly loadingNumExecutions$ = this.store.pipe(
@@ -132,13 +137,17 @@ export class TimelineContainer implements OnInit {
     )
   );
 
+  readonly focusedExecutionIndex$ = this.store.pipe(
+    select(getFocusedExecutionIndex)
+  );
+
+  readonly focusedExecutionDisplayIndex$ = this.store.pipe(
+    select(getFocusedExecutionDisplayIndex)
+  );
+
   readonly numExecutions$ = this.store.pipe(select(getNumExecutions));
 
   constructor(private readonly store: Store<State>) {}
-
-  ngOnInit(): void {
-    this.store.dispatch(alertsViewLoaded());
-  }
 
   onNavigateLeft() {
     this.store.dispatch(executionScrollLeft());
@@ -146,6 +155,10 @@ export class TimelineContainer implements OnInit {
 
   onNavigateRight() {
     this.store.dispatch(executionScrollRight());
+  }
+
+  onExecutionDigestClicked(index: number) {
+    this.store.dispatch(executionDigestFocused({displayIndex: index}));
   }
 }
 

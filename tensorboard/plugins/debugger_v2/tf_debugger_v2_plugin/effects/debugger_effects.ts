@@ -14,33 +14,52 @@ limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
 import {Store} from '@ngrx/store';
-import {Actions, ofType, createEffect} from '@ngrx/effects';
-import {map, mergeMap, withLatestFrom, filter, tap} from 'rxjs/operators';
+import {Actions, createEffect, ofType} from '@ngrx/effects';
+import {merge, Observable} from 'rxjs';
+import {
+  filter,
+  map,
+  mergeMap,
+  share,
+  tap,
+  withLatestFrom,
+} from 'rxjs/operators';
 import {
   debuggerLoaded,
   debuggerRunsRequested,
   debuggerRunsLoaded,
+  executionDataLoaded,
+  executionDigestFocused,
   executionDigestsRequested,
   executionDigestsLoaded,
   executionScrollLeft,
   executionScrollRight,
+  numAlertsAndBreakdownLoaded,
+  numAlertsAndBreakdownRequested,
   numExecutionsLoaded,
   numExecutionsRequested,
+  stackFramesLoaded,
 } from '../actions';
 import {
   getActiveRunId,
+  getAlertsLoaded,
+  getDebuggerRunListing,
   getDebuggerRunsLoaded,
   getDisplayCount,
   getExecutionDigestsLoaded,
+  getExecutionPageSize,
   getExecutionScrollBeginIndex,
   getNumExecutions,
   getNumExecutionsLoaded,
-  getExecutionPageSize,
+  getLoadedExecutionData,
+  getLoadedStackFrames,
 } from '../store/debugger_selectors';
 import {
   DataLoadState,
-  State,
   DebuggerRunListing,
+  Execution,
+  StackFrame,
+  State,
 } from '../store/debugger_types';
 import {Tfdbg2HttpServerDataSource} from '../data_source/tfdbg2_data_source';
 
@@ -113,12 +132,20 @@ function getMissingPages(
 @Injectable()
 export class DebuggerEffects {
   /**
-   * Requires to be exported for JSCompiler. JSCompiler, otherwise,
-   * think it is unused property and deadcode eliminate away.
+   * Observable that loads:
+   * - runs list
+   * - number of executions
+   * - execution digest
+   * - execution details
    */
   /** @export */
-  readonly loadRunListing$ = createEffect(() =>
-    this.actions$.pipe(
+  readonly loadData$: Observable<{}>;
+
+  /**
+   * When the debugger plugin is first loaded, request list of runs.
+   */
+  private onDebuggerLoaded() {
+    return this.actions$.pipe(
       // TODO(cais): Explore consolidating this effect with the greater
       // webapp (in tensorboard/webapp), e.g., during PluginChanged actions.
       ofType(debuggerLoaded),
@@ -127,109 +154,185 @@ export class DebuggerEffects {
       tap(() => this.store.dispatch(debuggerRunsRequested())),
       mergeMap(() => {
         return this.dataSource.fetchRuns().pipe(
-          map(
-            (runs) => {
-              return debuggerRunsLoaded({runs: runs as DebuggerRunListing});
-            }
-            // TODO(cais): Add catchError() to pipe.
-          )
+          tap((runs) => {
+            this.store.dispatch(
+              debuggerRunsLoaded({runs: runs as DebuggerRunListing})
+            );
+          }),
+          map(() => void null)
+          // TODO(cais): Add catchError() to pipe.
         );
       })
-    )
-  );
+    );
+  }
 
-  /** @export */
-  readonly loadNumExecutions$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(debuggerRunsLoaded),
-      withLatestFrom(this.store.select(getNumExecutionsLoaded)),
-      filter(([props, loaded]) => {
+  /**
+   * When a debugger run exists, load number of executions.
+   */
+  private createNumExecutionLoader(prevStream$: Observable<void>) {
+    return prevStream$.pipe(
+      withLatestFrom(
+        this.store.select(getDebuggerRunListing),
+        this.store.select(getNumExecutionsLoaded)
+      ),
+      filter(([, runs, loaded]) => {
         return (
-          Object.keys(props.runs).length > 0 &&
-          loaded.state !== DataLoadState.LOADING
+          Object.keys(runs).length > 0 && loaded.state !== DataLoadState.LOADING
         );
       }),
       tap(() => this.store.dispatch(numExecutionsRequested())),
-      mergeMap(([props, loaded]) => {
-        // TODO(cais): Handle multple runs. Currently it is assumed that there
+      mergeMap(([, runs]) => {
+        // TODO(cais): Handle multiple runs. Currently it is assumed that there
         // is at most only one debugger run available.
-        const runId = Object.keys(props.runs)[0];
+        const runId = Object.keys(runs)[0];
         const begin = 0;
         const end = 0;
         return this.dataSource.fetchExecutionDigests(runId, begin, end).pipe(
-          map((digests) => {
-            return numExecutionsLoaded({numExecutions: digests.num_digests});
-          })
+          tap((digests) => {
+            this.store.dispatch(
+              numExecutionsLoaded({numExecutions: digests.num_digests})
+            );
+          }),
+          map(() => void null)
         );
         // TODO(cais): Add catchError() to pipe.
       })
-    )
-  );
+    );
+  }
 
-  /** @export */
-  readonly initialExecutionDigestsLoading$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(numExecutionsLoaded),
+  /**
+   * When a debugger run exists, load number of alerts and their breakdown.
+   */
+  private createNumAlertsAndBreakdownLoader(prevStream$: Observable<void>) {
+    return prevStream$.pipe(
       withLatestFrom(
+        this.store.select(getDebuggerRunListing),
+        this.store.select(getAlertsLoaded)
+      ),
+      filter(([, runs, loaded]) => {
+        return (
+          Object.keys(runs).length > 0 && loaded.state !== DataLoadState.LOADING
+        );
+      }),
+      tap(() => this.store.dispatch(numAlertsAndBreakdownRequested())),
+      mergeMap(([, runs]) => {
+        const runId = Object.keys(runs)[0];
+        const begin = 0;
+        const end = 0;
+        return this.dataSource.fetchAlerts(runId, begin, end).pipe(
+          tap((alerts) => {
+            this.store.dispatch(
+              numAlertsAndBreakdownLoaded({
+                numAlerts: alerts.num_alerts,
+                alertsBreakdown: alerts.alerts_breakdown,
+              })
+            );
+          }),
+          map(() => void null)
+        );
+      })
+    );
+  }
+
+  /**
+   * Emits when initial execution digests and data are required.
+   *
+   * These initial data loading actions are required when the number of
+   * executions is greater than zero.
+   */
+  private createInitialExecutionDetector(
+    prevStream$: Observable<void>
+  ): Observable<void> {
+    return prevStream$.pipe(
+      withLatestFrom(
+        this.store.select(getNumExecutions),
+        this.store.select(getExecutionDigestsLoaded)
+      ),
+      filter(([, numExecutions, executionDigestsLoaded]) => {
+        return (
+          numExecutions > 0 &&
+          Object.keys(executionDigestsLoaded.pageLoadedSizes).length === 0
+        );
+      }),
+      map(() => void null)
+    );
+  }
+
+  /**
+   * Emits when the first page if execution digests are required to be loaded.
+   */
+  private createInitialExecutionDigest(
+    prevStream$: Observable<void>
+  ): Observable<{
+    runId: string;
+    begin: number;
+    end: number;
+  }> {
+    return prevStream$.pipe(
+      withLatestFrom(
+        this.store.select(getNumExecutions),
         this.store.select(getActiveRunId),
         this.store.select(getExecutionPageSize),
         this.store.select(getExecutionDigestsLoaded)
       ),
-      filter(([props, runId, _, loaded]) => {
-        return (
-          props.numExecutions > 0 &&
-          runId !== null &&
-          Object.keys(loaded.pageLoadedSizes).length === 0 &&
-          loaded.state !== DataLoadState.LOADING
-        );
+      filter(([, , runId, , loaded]) => {
+        return runId !== null && loaded.state !== DataLoadState.LOADING;
       }),
-      tap(() => this.store.dispatch(executionDigestsRequested())),
-      mergeMap(([props, runId, pageSize, _]) => {
+      map(([, numExecutions, runId, pageSize]) => {
         const begin = 0;
-        const end = Math.min(props.numExecutions, pageSize);
-        return this.dataSource.fetchExecutionDigests(runId!, begin, end).pipe(
-          map((digests) => {
-            return executionDigestsLoaded(digests);
-          })
-        );
-        // TODO(cais): Add catchError() to pipe.
+        const end = Math.min(numExecutions, pageSize);
+        return {begin, end, runId: runId!};
       })
-    )
-  );
+    );
+  }
 
-  private readonly digestRequired$ = this.actions$.pipe(
-    ofType(executionScrollLeft, executionScrollRight),
-    withLatestFrom(
-      this.store.select(getActiveRunId),
-      this.store.select(getExecutionScrollBeginIndex),
-      this.store.select(getNumExecutions),
-      this.store.select(getDisplayCount),
-      this.store.select(getExecutionPageSize)
-    ),
-    filter((data) => {
-      const runId = data[1];
-      return runId !== null;
-    }),
-    map(
-      ([_, runId, scrollBeginIndex, numExecutions, displayCount, pageSize]) => {
-        const begin = scrollBeginIndex;
-        const end = Math.min(numExecutions, begin + displayCount);
-        return {
-          runId: runId!,
-          begin,
-          end,
+  /**
+   * Emits when scrolling event leads to need to load new execution digests.
+   */
+  private onExecutionScroll(): Observable<{
+    runId: string;
+    begin: number;
+    end: number;
+  }> {
+    return this.actions$.pipe(
+      ofType(executionScrollLeft, executionScrollRight),
+      withLatestFrom(
+        this.store.select(getActiveRunId),
+        this.store.select(getExecutionScrollBeginIndex),
+        this.store.select(getNumExecutions),
+        this.store.select(getDisplayCount),
+        this.store.select(getExecutionPageSize)
+      ),
+      filter(([runId]) => runId !== null),
+      map(
+        ([
+          ,
+          runId,
+          scrollBeginIndex,
+          numExecutions,
+          displayCount,
           pageSize,
-        };
-      }
-    )
-  );
-
-  /** @export */
-  readonly loadExecutionDigests$ = createEffect(() =>
-    this.digestRequired$.pipe(
+        ]) => {
+          const begin = scrollBeginIndex;
+          const end = Math.min(numExecutions, begin + displayCount);
+          return {
+            runId: runId!,
+            begin,
+            end,
+            pageSize,
+          };
+        }
+      ),
       withLatestFrom(this.store.select(getExecutionDigestsLoaded)),
-      filter(([_, loaded]) => loaded.state !== DataLoadState.LOADING),
+      filter(([, loaded]) => loaded.state !== DataLoadState.LOADING),
       map(([props, loaded]) => {
+        const missing = getMissingPages(
+          props.begin,
+          props.end,
+          props.pageSize,
+          loaded.numExecutions,
+          loaded.pageLoadedSizes
+        );
         return {
           props,
           loaded,
@@ -243,33 +346,225 @@ export class DebuggerEffects {
         };
       }),
       filter(({missingPages}) => missingPages.length > 0),
-      tap(() => this.store.dispatch(executionDigestsRequested())),
-      mergeMap(({props, loaded, missingPages}) => {
+      map(({props, loaded, missingPages}) => {
         const {runId, pageSize} = props;
-        const actualBegin = missingPages[0] * pageSize;
-        const actualEnd = Math.min(
+        const begin = missingPages[0] * pageSize;
+        const end = Math.min(
           loaded.numExecutions,
           (missingPages[missingPages.length - 1] + 1) * pageSize
         );
-        return this.dataSource
-          .fetchExecutionDigests(runId, actualBegin, actualEnd)
-          .pipe(
-            map(
-              (digests) => {
-                return executionDigestsLoaded(digests);
-              }
-              // TODO(cais): Add catchError() to pipe.
-            )
-          );
+        return {begin, end, runId: runId!};
       })
-    )
-  );
+    );
+  }
+
+  /**
+   * Load execution digests.
+   */
+  private createExecutionDigestLoader(
+    prevStream$: Observable<{
+      runId: string;
+      begin: number;
+      end: number;
+    }>
+  ): Observable<void> {
+    return prevStream$.pipe(
+      tap(() => {
+        this.store.dispatch(executionDigestsRequested());
+      }),
+      mergeMap(({runId, begin, end}) => {
+        return this.dataSource.fetchExecutionDigests(runId, begin, end).pipe(
+          tap((digests) => {
+            this.store.dispatch(executionDigestsLoaded(digests));
+          }),
+          map(() => void null)
+        );
+        // TODO(cais): Add catchError() to pipe.
+      })
+    );
+  }
+
+  /**
+   * Emits when user focses on an execution digest.
+   */
+  private onExecutionDigestFocused(): Observable<{
+    activeRunId: string;
+    loadedExecutionData: {[index: number]: Execution};
+    focusIndex: number;
+  }> {
+    return this.actions$.pipe(
+      ofType(executionDigestFocused),
+      withLatestFrom(
+        this.store.select(getActiveRunId),
+        this.store.select(getLoadedExecutionData),
+        this.store.select(getExecutionScrollBeginIndex)
+      ),
+      map(([props, activeRunId, loadedExecutionData, scrollBeginIndex]) => {
+        const focusIndex = scrollBeginIndex + props.displayIndex;
+        return {
+          activeRunId: activeRunId!,
+          loadedExecutionData,
+          focusIndex,
+        };
+      })
+    );
+  }
+
+  /**
+   * Load detailed data about execution and the associated stack frames.
+   */
+  private createExecutionDataAndStackFramesLoader(
+    prevStream$: Observable<{
+      activeRunId: string;
+      loadedExecutionData: {[index: number]: Execution};
+      focusIndex: number;
+    }>
+  ): Observable<void> {
+    return prevStream$.pipe(
+      filter(({activeRunId, loadedExecutionData, focusIndex}) => {
+        return (
+          activeRunId !== null &&
+          focusIndex !== null &&
+          loadedExecutionData[focusIndex!] === undefined
+        );
+      }),
+      mergeMap(({activeRunId, focusIndex}) => {
+        const begin = focusIndex!;
+        const end = begin + 1;
+        return this.dataSource
+          .fetchExecutionData(activeRunId!, begin, end)
+          .pipe(
+            tap((executionDataResponse) => {
+              this.store.dispatch(executionDataLoaded(executionDataResponse));
+            }),
+            map((executionDataResponse) => {
+              return {executionData: executionDataResponse, begin, end};
+            })
+          );
+        // TODO(cais): Add catchError() to pipe.
+      }),
+      map(({executionData}) => {
+        return executionData.executions[0];
+      }),
+      withLatestFrom(
+        this.store.select(getActiveRunId),
+        this.store.select(getLoadedStackFrames)
+      ),
+      filter(([execution, runId, loadedStackFrames]) => {
+        if (runId === null) {
+          return false;
+        }
+        for (const stackFrameId of execution.stack_frame_ids) {
+          if (loadedStackFrames[stackFrameId] === undefined) {
+            return true;
+          }
+        }
+        return false;
+      }),
+      mergeMap(([execution, runId]) => {
+        const stackFrameIds = execution.stack_frame_ids;
+        // TODO(cais): Maybe omit already-loaded stack frames from request,
+        // instead of loading all frames if any of them is missing.
+        return this.dataSource.fetchStackFrames(runId!, stackFrameIds).pipe(
+          tap((stackFramesResponse) => {
+            const stackFramesById: {
+              [stackFrameId: string]: StackFrame;
+            } = {};
+            // TODO(cais): Do this reshaping in the backend and simplify
+            // the frontend code here.
+            for (let i = 0; i < stackFrameIds.length; ++i) {
+              stackFramesById[stackFrameIds[i]] =
+                stackFramesResponse.stack_frames[i];
+            }
+            this.store.dispatch(
+              stackFramesLoaded({stackFrames: stackFramesById})
+            );
+          }),
+          map(() => void null)
+        );
+        // TODO(cais): Add catchError() to pipe.
+      })
+    );
+  }
 
   constructor(
     private actions$: Actions,
     private store: Store<State>,
     private dataSource: Tfdbg2HttpServerDataSource
-  ) {}
+  ) {
+    /**
+     * view load
+     *  +
+     *  +> fetch run +> fetch num exec
+     *               +> fetch num alerts
+     *                   +
+     *                   +> if init load and non-zero number of execs
+     *                       +
+     *                       +>+-------------------+
+     *                       | | fetch exec digest |
+     *     on scroll +-------->+-------------------+
+     *                       |
+     *                       +>+----------------------------------+
+     *                         | fetch exec data and stack frames |
+     *     on focus  +-------->+----------------------------------+
+     **/
+    this.loadData$ = createEffect(
+      () => {
+        // This event can trigger the loading of
+        //   - number of executions
+        //   - number and breakdown of alerts.
+        // Therefore it needs to be a shared observable.
+        const onLoad$ = this.onDebuggerLoaded().pipe(share());
+        const onNumExecutionLoaded$ = this.createNumExecutionLoader(onLoad$);
+        const onNumAlertsLoaded$ = this.createNumAlertsAndBreakdownLoader(
+          onLoad$
+        );
+
+        // This event can trigger the loading of
+        //   - execution-digest
+        //   - first execution data.
+        // Therefore it needs to be a shared observable.
+        const onInitialExecution$ = this.createInitialExecutionDetector(
+          onNumExecutionLoaded$
+        ).pipe(share());
+        const onExcutionDigestLoaded$ = this.createExecutionDigestLoader(
+          merge(
+            this.onExecutionScroll(),
+            this.createInitialExecutionDigest(onInitialExecution$)
+          )
+        );
+        const onExecutionDataLoaded$ = this.createExecutionDataAndStackFramesLoader(
+          merge(
+            this.onExecutionDigestFocused(),
+            onInitialExecution$.pipe(
+              withLatestFrom(
+                this.store.select(getActiveRunId),
+                this.store.select(getLoadedExecutionData)
+              ),
+              map(([, activeRunId, loadedExecutionData]) => {
+                return {
+                  activeRunId: activeRunId!,
+                  loadedExecutionData,
+                  focusIndex: 0,
+                };
+              })
+            )
+          )
+        );
+
+        // ExecutionDigest and ExecutionData can be loaded in parallel.
+        return merge(
+          onNumAlertsLoaded$,
+          onExcutionDigestLoaded$,
+          onExecutionDataLoaded$
+        ).pipe(
+          // createEffect expects an Observable that emits {}.
+          map(() => ({}))
+        );
+      },
+      {dispatch: false}
+    );
+  }
 }
 
 export const TEST_ONLY = {

@@ -210,18 +210,32 @@ class DebuggerV2EventMultiplexer(object):
           begin: Beginning alert index.
           end: Ending alert index.
         """
+        from tensorflow.python.debug.lib import debug_events_monitors
+
         runs = self.Runs()
         if run not in runs:
             return None
         alerts = []
+        alerts_breakdown = dict()
         for monitor in self._monitors:
-            alerts.extend(monitor.alerts())
+            monitor_alerts = monitor.alerts()
+            if not monitor_alerts:
+                continue
+            alerts.extend(monitor_alerts)
+            # TODO(cais): Replace this with Alert.to_json() when
+            # monitor.alert_type() is available.
+            if isinstance(monitor, debug_events_monitors.InfNanMonitor):
+                alert_type = "InfNanAlert"
+            else:
+                alert_type = "__MiscellaneousAlert__"
+            alerts_breakdown[alert_type] = len(monitor_alerts)
         end = self._checkBeginEndIndices(begin, end, len(alerts))
         # TODO(cais): Add support for filtering by alert type.
         return {
             "begin": begin,
             "end": end,
             "num_alerts": len(alerts),
+            "alerts_breakdown": alerts_breakdown,
             "per_type_alert_limit": DEFAULT_PER_TYPE_ALERT_LIMIT,
             "alerts": [_alert_to_json(alert) for alert in alerts[begin:end]],
         }

@@ -16,9 +16,15 @@ limitations under the License.
 import {createAction, props} from '@ngrx/store';
 
 import {
+  AlertsBreakdown,
   DebuggerRunListing,
-  ExecutionDigestsResponse,
+  Execution,
+  StackFramesById,
 } from '../store/debugger_types';
+import {
+  ExecutionDigestsResponse,
+  ExecutionDataResponse,
+} from '../data_source/tfdbg2_data_source';
 
 // HACK: Below import is for type inference.
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
@@ -47,10 +53,23 @@ export const debuggerRunsRequestFailed = createAction(
 );
 
 /**
- * Actions for the Alerts Component.
+ * Number of alerts and their type breakdown are requested.
  */
-export const alertsViewLoaded = createAction('[Debugger] Alerts View Loaded');
+export const numAlertsAndBreakdownRequested = createAction(
+  '[Debugger] Number and Breakdown of Alerts Requested'
+);
 
+/**
+ * Number of alerts and their type breakdown are loaded.
+ */
+export const numAlertsAndBreakdownLoaded = createAction(
+  '[Debugger] Number and Breakdown of Alerts Loaded',
+  props<{numAlerts: number; alertsBreakdown: AlertsBreakdown}>()
+);
+
+/**
+ * Actions for the Timeline Component.
+ */
 export const numExecutionsRequested = createAction(
   '[Debugger] Number of Executions Requested'
 );
@@ -75,4 +94,19 @@ export const executionScrollLeft = createAction(
 
 export const executionScrollRight = createAction(
   '[Debugger] Scroll Rightward on the Execution Timeline'
+);
+
+export const executionDigestFocused = createAction(
+  '[Debugger] Execution Data Objects Being Focused On',
+  props<{displayIndex: number}>()
+);
+
+export const executionDataLoaded = createAction(
+  '[Debugger] Execution Data Objects Loaded',
+  props<ExecutionDataResponse>()
+);
+
+export const stackFramesLoaded = createAction(
+  '[Debugger] A Set of Stack Frames Have Been Loaded',
+  props<{stackFrames: StackFramesById}>()
 );

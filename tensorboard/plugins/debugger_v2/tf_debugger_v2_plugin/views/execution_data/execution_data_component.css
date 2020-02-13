@@ -1,0 +1,62 @@
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+==============================================================================*/
+
+.debug-tensor-values-container {
+  height: 60px;
+  overflow-x: auto;
+  overflow-y: auto;
+}
+
+.debug-tensor-values-table {
+  width: 100%;
+}
+
+.debug-tensor-values-table td {
+  border-top: 1px solid #000;
+  text-align: left;
+}
+
+.debug-tensor-values-table th {
+  text-align: left;
+}
+
+.execution-data-field {
+  white-space: nowrap;
+}
+
+.execution-data-key {
+  display: inline-block;
+  max-width: 120px;
+  text-align: right;
+  width: 120px;
+}
+
+.execution-data-value {
+  display: inline-block;
+  margin-left: 10px;
+}
+
+.focus-execution-container {
+  background-color: #ffd4b3;
+  border-radius: 4px;
+  font-size: 12px;
+  height: 120px;
+  padding: 5px;
+  width: 360px;
+}
+
+.output-tensors {
+  margin-top: 5px;
+}

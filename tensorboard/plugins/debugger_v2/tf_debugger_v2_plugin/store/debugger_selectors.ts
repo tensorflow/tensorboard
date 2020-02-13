@@ -13,14 +13,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {createSelector, createFeatureSelector} from '@ngrx/store';
+import {createSelector, createFeatureSelector, select} from '@ngrx/store';
 import {
+  AlertsBreakdown,
   DEBUGGER_FEATURE_KEY,
   DebuggerRunListing,
   DebuggerState,
+  Execution,
   ExecutionDigest,
   ExecutionDigestLoadState,
   LoadState,
+  StackFrame,
+  StackFramesById,
   State,
 } from './debugger_types';
 
@@ -48,6 +52,27 @@ export const getDebuggerRunsLoaded = createSelector(
 export const getActiveRunId = createSelector(
   selectDebuggerState,
   (state: DebuggerState): string | null => state.activeRunId
+);
+
+export const getAlertsLoaded = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): LoadState => {
+    return state.alerts.alertsLoaded;
+  }
+);
+
+export const getNumAlerts = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): number => {
+    return state.alerts.numAlerts;
+  }
+);
+
+export const getAlertsBreakdown = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): AlertsBreakdown => {
+    return state.alerts.alertsBreakdown;
+  }
 );
 
 export const getNumExecutionsLoaded = createSelector(
@@ -109,5 +134,82 @@ export const getVisibleExecutionDigests = createSelector(
       }
     }
     return digests;
+  }
+);
+
+export const getFocusedExecutionIndex = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): number | null => {
+    return state.executions.focusIndex;
+  }
+);
+
+/**
+ * Get the display index of the execution digest being focused on (if any).
+ */
+export const getFocusedExecutionDisplayIndex = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): number | null => {
+    if (state.executions.focusIndex === null) {
+      return null;
+    }
+    const {focusIndex, scrollBeginIndex, displayCount} = state.executions;
+    if (
+      focusIndex < scrollBeginIndex ||
+      focusIndex >= scrollBeginIndex + displayCount
+    ) {
+      return null;
+    }
+    return focusIndex - scrollBeginIndex;
+  }
+);
+
+export const getLoadedExecutionData = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): {[index: number]: Execution} =>
+    state.executions.executionData
+);
+
+export const getLoadedStackFrames = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): StackFramesById => state.stackFrames
+);
+
+export const getFocusedExecutionData = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): Execution | null => {
+    const {focusIndex, executionData} = state.executions;
+    if (focusIndex === null || executionData[focusIndex] === undefined) {
+      return null;
+    }
+    return executionData[focusIndex];
+  }
+);
+
+/**
+ * Get the stack trace (frames) of the execution event currently focused on
+ * (if any).
+ *
+ * If no execution is focused on, returns null.
+ * If any of the stack frames is missing (i.e., hasn't been loaded from
+ * the data source yet), returns null.
+ */
+export const getFocusedExecutionStackFrames = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): StackFrame[] | null => {
+    const {focusIndex, executionData} = state.executions;
+    if (focusIndex === null || executionData[focusIndex] === undefined) {
+      return null;
+    }
+    const stackFrameIds = executionData[focusIndex].stack_frame_ids;
+    const stackFrames: StackFrame[] = [];
+    for (const stackFrameId of stackFrameIds) {
+      if (state.stackFrames[stackFrameId] != null) {
+        stackFrames.push(state.stackFrames[stackFrameId]);
+      } else {
+        return null;
+      }
+    }
+    return stackFrames;
   }
 );
