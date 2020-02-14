@@ -80,6 +80,7 @@ export function createAlertsState(override?: Partial<Alerts>): Alerts {
     numAlerts: 0,
     alertsBreakdown: {},
     alerts: {},
+    focusType: null,
     ...override,
   };
 }

@@ -15,13 +15,24 @@ limitations under the License.
 
 .alerts-breakdown-container {
   font-size: 13px;
-  padding: 10px 10px 10px 50px;
+  padding: 10px 10px 10px;
   position: relative;
+}
+
+.alerts-breakdown-type {
+  border-radius: 0px 10px 10px 0px;
+  cursor: pointer;
+  line-height: 30px;
+  padding: 6px 0px 6px 50px;
+  vertical-align: middle;
+}
+
+.alerts-breakdown-type.focus {
+  background-color: #ffeee0;
 }
 
 .alerts-container {
   font-family: 'Roboto', Arial, Helvetica, sans-serif;
-  vertical-align: middle;
 }
 
 .alert-type-count {
@@ -30,13 +41,17 @@ limitations under the License.
   border-radius: 3px;
   color: #fff;
   display: inline-block;
+  height: 20px;
+  line-height: 20px;
   padding: 3px;
   position: absolute;
   right: 20px;
+  vertical-align: middle;
 }
 
 .alert-type-name {
   display: inline-block;
+  padding: 3px;
 }
 
 .debugging-title {

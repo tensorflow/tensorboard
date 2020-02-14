@@ -17,8 +17,8 @@ import {createAction, props} from '@ngrx/store';
 
 import {
   AlertsBreakdown,
+  AlertType,
   DebuggerRunListing,
-  Execution,
   StackFramesById,
 } from '../store/debugger_types';
 import {
@@ -65,6 +65,11 @@ export const numAlertsAndBreakdownRequested = createAction(
 export const numAlertsAndBreakdownLoaded = createAction(
   '[Debugger] Number and Breakdown of Alerts Loaded',
   props<{numAlerts: number; alertsBreakdown: AlertsBreakdown}>()
+);
+
+export const alertTypeFocusToggled = createAction(
+  '[Debugger] Alert Type Focus Toggled',
+  props<{alertType: AlertType}>()
 );
 
 /**

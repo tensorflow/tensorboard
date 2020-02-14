@@ -24,7 +24,12 @@ limitations under the License.
     </div>
   </div>
   <div class="alerts-breakdown-container">
-    <div *ngFor="let breakdown of alertsBreakdown;">
+    <div
+      *ngFor="let breakdown of alertsBreakdown;"
+      class="alerts-breakdown-type"
+      [ngClass]="[breakdown.type === focusType ? 'focus' : '']"
+      (click)="onToggleFocusType.emit(breakdown.type)"
+    >
       <div class="alert-type-name">
         {{ breakdown.displayName }}
       </div>

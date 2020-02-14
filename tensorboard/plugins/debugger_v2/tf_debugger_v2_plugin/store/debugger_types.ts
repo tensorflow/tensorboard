@@ -148,6 +148,10 @@ export interface Alerts {
 
   // The alerts that have been loaded so far, by alertType.
   alerts: {[alertType: string]: Alert[]};
+
+  // Which type of existing alerts is focused on (if any).
+  // `null` corresponds to no focus.
+  focusType: AlertType | null;
 }
 
 export interface Executions {

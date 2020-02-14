@@ -15,25 +15,37 @@ limitations under the License.
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {createSelector, select, Store} from '@ngrx/store';
 
-import {getAlertsBreakdown, getNumAlerts, State} from '../../store';
+import {
+  getAlertsBreakdown,
+  getAlertsFocusType,
+  getNumAlerts,
+  State,
+} from '../../store';
 import {AlertType} from '../../store/debugger_types';
+import {AlertTypeDisplay} from './alerts_component';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
-
-// foo
+import {alertTypeFocusToggled} from '../../actions';
 
 const ALERT_TYPE_TO_DISPLAY_NAME_AND_SYMBOL: {
-  [alertType: string]: {displayName: string; displaySymbol: string};
+  [alertType: string]: {
+    type: AlertType;
+    displayName: string;
+    displaySymbol: string;
+  };
 } = {
   [AlertType.FUNCTION_RECOMPILE_ALERT]: {
+    type: AlertType.FUNCTION_RECOMPILE_ALERT,
     displayName: 'Function recompiles',
     displaySymbol: 'C',
   },
   [AlertType.INF_NAN_ALERT]: {
+    type: AlertType.FUNCTION_RECOMPILE_ALERT,
     displayName: 'NaN/∞',
     displaySymbol: '∞',
   },
   [AlertType.TENSOR_SHAPE_ALERT]: {
+    type: AlertType.TENSOR_SHAPE_ALERT,
     displayName: 'Tensor shape',
     displaySymbol: '■',
   },
@@ -45,9 +57,11 @@ const ALERT_TYPE_TO_DISPLAY_NAME_AND_SYMBOL: {
     <alerts-component
       [numAlerts]="numAlerts$ | async"
       [alertsBreakdown]="alertsBreakdown$ | async"
+      [focusType]="focusType$ | async"
+      (onToggleFocusType)="onToggleFocusType($event)"
     >
     </alerts-component>
-  `, // TODO(cais): Add container tests.
+  `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AlertsContainer {
@@ -60,16 +74,25 @@ export class AlertsContainer {
         (alertsBreakdown) => {
           const alertTypes = Object.keys(alertsBreakdown);
           alertTypes.sort();
-          return alertTypes.map((alertType) => {
-            return {
-              ...ALERT_TYPE_TO_DISPLAY_NAME_AND_SYMBOL[alertType],
-              count: alertsBreakdown[alertType],
-            };
-          });
+          return alertTypes.map(
+            (alertType): AlertTypeDisplay => {
+              return {
+                ...ALERT_TYPE_TO_DISPLAY_NAME_AND_SYMBOL[alertType],
+                count: alertsBreakdown[alertType],
+              };
+            }
+          );
         }
       )
     )
   );
 
+  readonly focusType$ = this.store.pipe(select(getAlertsFocusType));
+
   constructor(private readonly store: Store<State>) {}
+
+  onToggleFocusType(alertType: AlertType) {
+    // TODO(cais): Add unit tests.
+    this.store.dispatch(alertTypeFocusToggled({alertType}));
+  }
 }

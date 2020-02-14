@@ -42,6 +42,7 @@ const initialState: DebuggerState = {
     numAlerts: 0,
     alerts: {},
     alertsBreakdown: {},
+    focusType: null,
   },
   executions: {
     numExecutionsLoaded: {
@@ -149,6 +150,19 @@ const reducer = createReducer(
           numAlerts,
           alertsBreakdown,
         },
+      };
+    }
+  ),
+  on(
+    actions.alertTypeFocusToggled,
+    (state: DebuggerState, {alertType}): DebuggerState => {
+      // TODO(cais): Add unit tests.
+      return {
+        ...state,
+        alerts: {
+          ...state.alerts,
+          focusType: state.alerts.focusType === alertType ? null : alertType,
+        }
       };
     }
   ),
