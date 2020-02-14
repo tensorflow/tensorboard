@@ -61,7 +61,12 @@ limitations under the License.
     <paper-header-panel>
       <paper-toolbar id="toolbar" slot="header" class="header">
         <div id="toolbar-content" slot="top">
-          <div class="toolbar-title">[[brand]]</div>
+          <template is="dom-if" if="[[!homeHref]]">
+            <div class="toolbar-title">[[brand]]</div>
+          </template>
+          <template is="dom-if" if="[[homeHref]]">
+            <a href="[[homeHref]]" class="toolbar-title">[[brand]]</a>
+          </template>
           <template is="dom-if" if="[[_activeDashboardsNotLoaded]]">
             <span class="toolbar-message">
               Loading active dashboards&hellip;
@@ -288,11 +293,20 @@ limitations under the License.
 
       .toolbar-title {
         font-size: 20px;
-        margin-left: 10px;
+        margin-left: 6px;
+        /* Increase clickable area for case where title is an anchor. */
+        padding: 4px;
         text-rendering: optimizeLegibility;
         letter-spacing: -0.025em;
         font-weight: 500;
         display: var(--tb-toolbar-title-display, block);
+      }
+
+      a.toolbar-title {
+        /* Override default anchor color. */
+        color: inherit;
+        /* Override default anchor text-decoration. */
+        text-decoration: none;
       }
 
       .toolbar-message {
@@ -487,6 +501,15 @@ limitations under the License.
         brand: {
           type: String,
           value: 'TensorBoard-X',
+        },
+
+        /**
+         * URL for navigation when clicking on the Title in the top left corner.
+         * If unspecified then the Title will not be a clickable target.
+         */
+        homeHref: {
+          type: String,
+          value: null
         },
 
         /**
