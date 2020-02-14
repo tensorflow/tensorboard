@@ -31,6 +31,18 @@ class DataProviderTest(tb_test.TestCase):
             provider.DataProvider()
 
 
+class ExperimentMetadataTest(tb_test.TestCase):
+    def test_attributes(self):
+        e1 = provider.ExperimentMetadata(
+            experiment_name="FooExperiment",
+            experiment_description="Experiment on Foo",
+            creation_time=1.25,
+        )
+        self.assertEqual(e1.experiment_name, "FooExperiment")
+        self.assertEqual(e1.experiment_description, "Experiment on Foo")
+        self.assertEqual(e1.creation_time, 1.25)
+
+
 class RunTest(tb_test.TestCase):
     def test_eq(self):
         a1 = provider.Run(run_id="a", run_name="aa", start_time=1.25)
