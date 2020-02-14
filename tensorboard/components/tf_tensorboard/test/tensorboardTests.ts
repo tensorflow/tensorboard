@@ -52,7 +52,9 @@ namespace tf_tensorboard {
 
         it('uses "TensorBoard-X" for title text by default', (done) => {
           flush(() => {
-            const title = tensorboard.shadowRoot.querySelector('.toolbar-title');
+            const title = tensorboard.shadowRoot.querySelector(
+              '.toolbar-title'
+            );
             chai.assert.equal(title.textContent, 'TensorBoard-X');
             done();
           });
@@ -60,7 +62,9 @@ namespace tf_tensorboard {
 
         it('uses div for title element by default ', (done) => {
           flush(() => {
-            const title = tensorboard.shadowRoot.querySelector('.toolbar-title');
+            const title = tensorboard.shadowRoot.querySelector(
+              '.toolbar-title'
+            );
             chai.assert.equal(title.nodeName, 'DIV');
             chai.assert.isUndefined(title.href);
             done();
@@ -141,7 +145,9 @@ namespace tf_tensorboard {
 
         it('uses customized brand for title', (done) => {
           flush(() => {
-            const title = tensorboard.shadowRoot.querySelector('.toolbar-title');
+            const title = tensorboard.shadowRoot.querySelector(
+              '.toolbar-title'
+            );
             chai.assert.equal(title.textContent, 'Custom Brand');
             done();
           });
@@ -149,7 +155,9 @@ namespace tf_tensorboard {
 
         it('uses customized href for title element ', (done) => {
           flush(() => {
-            const title = tensorboard.shadowRoot.querySelector('.toolbar-title');
+            const title = tensorboard.shadowRoot.querySelector(
+              '.toolbar-title'
+            );
             chai.assert.equal(title.nodeName, 'A');
             chai.assert.equal(title.href, 'http://custom.home/');
             done();
