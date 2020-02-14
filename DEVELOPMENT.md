@@ -78,6 +78,18 @@ When enabled by default, this also works with editor plugins like
 
 [vim-fugitive]: https://github.com/tpope/vim-fugitive
 
+### Incremental Build
+
+Bazel is capable of doing incremental builds where it builds only subset of
+files that are impacted by file changes. To use that, just start TensorBoard
+with `ibazel` instead of `bazel`. If you do not have `ibazel` binary on your
+system, you can do use command below.
+
+```sh
+# After running `yarn` in the repo.
+yarn run ibazel run tensorboard -- --logdir [LOG_DIR]
+```
+
 ### Debugging UI Tests Locally
 
 Our UI tests (e.g., //tensorboard/components/vz_sorting/test) use HTML import
