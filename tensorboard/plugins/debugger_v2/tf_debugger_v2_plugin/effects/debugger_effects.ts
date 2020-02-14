@@ -57,11 +57,13 @@ import {
   getLoadedExecutionData,
   getLoadedStackFrames,
   getAlertsOfFocusedType,
+  getNumAlertsOfFocusedType,
 } from '../store/debugger_selectors';
 import {
   DataLoadState,
   DebuggerRunListing,
   Execution,
+  InfNanAlert,
   StackFrame,
   State,
 } from '../store/debugger_types';
@@ -492,34 +494,54 @@ export class DebuggerEffects {
   }
 
   /**
-   * Emits when user focses on an alert type.
+   * Emits when user focuses on an alert type.
    */
-  private onAlertTypeFocused() {
+  private onAlertTypeFocused(): Observable<void> {
     return this.actions$.pipe(
       ofType(alertTypeFocusToggled),
       withLatestFrom(
         this.store.select(getActiveRunId),
         this.store.select(getAlertsFocusType),
+        this.store.select(getNumAlertsOfFocusedType),
         this.store.select(getAlertsOfFocusedType)
       ),
-      filter(([, runId, focusType, alertsOfFocusedType]) => {
-        // TODO(cais): Unit test for the correct functioning of the filter.
-        return (
-          runId !== null && focusType !== null && alertsOfFocusedType === null
-        );
-      }),
-      mergeMap(([, runId, focusType]) => {
+      // TODO(cais): Filter by not currently loading alerts data.
+      // Need action, selector and reducer support.
+      filter(
+        ([, runId, focusType, numAlertsOfFocusedType, alertsOfFocusedType]) => {
+          // TODO(cais): Unit test for the correct functioning of the filter.
+          return (
+            runId !== null &&
+            focusType !== null &&
+            numAlertsOfFocusedType > 0 &&
+            (alertsOfFocusedType === null ||
+              alertsOfFocusedType.length < numAlertsOfFocusedType)
+          );
+        }
+      ),
+      mergeMap(([, runId]) => {
         const begin = 0;
         const end = -1; // TODO(cais): Use smarter `end` value.
         return this.dataSource.fetchAlerts(runId as string, begin, end).pipe(
-          tap((alerts) => {
+          tap((alertsResponse) => {
             this.store.dispatch(
               alertsLoaded({
-                numAlerts: alerts.num_alerts,
-                alertsBreakdown: alerts.alerts_breakdown,
-                alerts: alerts.alerts,
+                numAlerts: alertsResponse.num_alerts,
+                alertsBreakdown: alertsResponse.alerts_breakdown,
+                alerts: alertsResponse.alerts,
               })
             );
+            // TODO(cais): Separate into another observable factory.
+            if (alertsResponse.alerts.length > 0) {
+              // TODO(cais): This should scroll to that and focus on it.
+              const alert = alertsResponse.alerts[0] as InfNanAlert;
+              console.log('Focusing onto:', alert.execution_index);
+              this.store.dispatch(
+                executionDigestFocused({
+                  displayIndex: alert.execution_index,
+                })
+              );
+            }
           }),
           map(() => void null)
         );

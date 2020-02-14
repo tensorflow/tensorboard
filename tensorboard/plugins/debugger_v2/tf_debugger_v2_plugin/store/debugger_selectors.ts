@@ -96,10 +96,6 @@ export const getAlertsOfFocusedType = createSelector(
     if (state.alerts.alerts[state.alerts.focusType] === undefined) {
       return null;
     }
-    console.log(
-      'getAlertsOfFocusedType(): 200: returning',
-      state.alerts.alerts[state.alerts.focusType]
-    ); // DEBUG
     return state.alerts.alerts[state.alerts.focusType];
   }
 ); // TODO(cais): Unit test.
