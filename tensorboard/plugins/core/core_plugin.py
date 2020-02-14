@@ -65,6 +65,9 @@ class CorePlugin(base_plugin.TBPlugin):
         self._multiplexer = context.multiplexer
         self._db_connection_provider = context.db_connection_provider
         self._assets_zip_provider = context.assets_zip_provider
+        print(
+            "context.flags = %s" % context.flags
+        )  # DEBUG
         if context.flags and context.flags.generic_data == "true":
             self._data_provider = context.data_provider
         else:
@@ -136,16 +139,24 @@ class CorePlugin(base_plugin.TBPlugin):
         if self._data_provider:
             experiment = plugin_util.experiment_id(request.environ)
             data_location = self._data_provider.data_location(experiment)
+            experiment_metadata = self._data_provider.experiment_metadata()
         else:
             data_location = self._logdir or self._db_uri
-        return http_util.Respond(
-            request,
-            {
-                "data_location": data_location,
-                "window_title": self._window_title,
-            },
-            "application/json",
-        )
+            experiment_metadata = None
+
+        environment_data = {
+            "data_location": data_location,
+            "window_title": self._window_title,
+        }
+        if experiment_metadata is not None:
+            environment_data.update(
+                {
+                    "experiment_name": experiment_metadata.experiment_name,
+                    "experiment_description": experiment_metadata.experiment_description,
+                    "creation_time": experiment_metadata.creation_time,
+                }
+            )
+        return http_util.Respond(request, environment_data, "application/json",)
 
     @wrappers.Request.application
     def _serve_logdir(self, request):

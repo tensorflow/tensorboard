@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import argparse
 import collections.abc
 import contextlib
 import json
@@ -193,6 +194,57 @@ class CorePluginNoDataTest(tf.test.TestCase):
         """Test the format of the data/logdir endpoint."""
         parsed_object = self._get_json(self.server, "/data/logdir")
         self.assertEqual(parsed_object, {"logdir": self.get_temp_dir()})
+
+
+
+class CorePluginExperimentMetadataTest(tf.test.TestCase):
+    def setUp(self):
+        super(CorePluginExperimentMetadataTest, self).setUp()
+        self.context = base_plugin.TBContext(
+            assets_zip_provider=get_test_assets_zip_provider(),
+            logdir=self.get_temp_dir(),
+            multiplexer=event_multiplexer.EventMultiplexer(),
+            window_title="title foo",
+        )
+
+        # def fake_flags():
+        #     print("In fake_flags()")  # DEBUG
+        #     return argparse.Namespace(generic_data=True)
+
+        def fake_data_provider():
+            print("In fake_data_provider()")  # DEBUG
+            return None
+
+        # tf.compat.v1.test.mock.patch.object(
+        #     self.context, "flags", fake_flags,
+        # ).start()
+        tf.compat.v1.test.mock.patch.object(
+            self.context, "data_provider", fake_data_provider,
+        ).start()
+
+        self.plugin = core_plugin.CorePlugin(self.context)
+        app = application.TensorBoardWSGI([self.plugin])
+        self.server = werkzeug_test.Client(app, wrappers.BaseResponse)
+
+    def _get_json(self, server, path):
+        # TODO(cais): Deduplicate method.
+        response = server.get(path)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("Content-Type")
+        )
+        return json.loads(response.get_data().decode("utf-8"))
+
+    def tearDown(self):
+        tf.compat.v1.test.mock.patch.stopall()
+
+    def testExperimentMetadata(self):
+        """Test environment route returns correct metadata about experiment."""
+        print("=== TEST BEGINS ===")  # DEBUG
+        parsed_object = self._get_json(self.server, "/data/environment")
+        print(parsed_object)
+        print("=== TEST ENDS ===")  # DEBUG
+
 
 
 class CorePluginDbModeTest(tf.test.TestCase):

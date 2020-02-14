@@ -27,7 +27,11 @@ namespace tf_backend {
         const environment = {
           dataLocation: result.data_location,
           windowTitle: result.window_title,
+          experimentName: result.experiment_name,
+          experimentDescription: result.experiment_description,
+          creation_time: result.creation_time,
         };
+        console.log(`environment = `, environment);  // DEBUG
         if (_.isEqual(this.environment, environment)) return;
 
         this.environment = environment;
