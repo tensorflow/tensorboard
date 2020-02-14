@@ -40,7 +40,7 @@ const ALERT_TYPE_TO_DISPLAY_NAME_AND_SYMBOL: {
     displaySymbol: 'C',
   },
   [AlertType.INF_NAN_ALERT]: {
-    type: AlertType.FUNCTION_RECOMPILE_ALERT,
+    type: AlertType.INF_NAN_ALERT,
     displayName: 'NaN/∞',
     displaySymbol: '∞',
   },

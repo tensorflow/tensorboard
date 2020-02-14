@@ -146,6 +146,7 @@ export class Tfdbg2HttpServerDataSource implements Tfdbg2DataSource {
           `(received alert_type="${alert_type}")`
       );
     }
+    console.log(`fetchAlerts(): run=${run}, begin=${begin}, end=${end}`); // DEBUG
     return this.http.get<AlertsResponse>(this.httpPathPrefix + '/alerts', {
       params: {
         run,

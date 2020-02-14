@@ -25,6 +25,8 @@ import {
   withLatestFrom,
 } from 'rxjs/operators';
 import {
+  alertsLoaded,
+  alertTypeFocusToggled,
   debuggerLoaded,
   debuggerRunsRequested,
   debuggerRunsLoaded,
@@ -42,6 +44,7 @@ import {
 } from '../actions';
 import {
   getActiveRunId,
+  getAlertsFocusType,
   getAlertsLoaded,
   getDebuggerRunListing,
   getDebuggerRunsLoaded,
@@ -53,6 +56,7 @@ import {
   getNumExecutionsLoaded,
   getLoadedExecutionData,
   getLoadedStackFrames,
+  getAlertsOfFocusedType,
 } from '../store/debugger_selectors';
 import {
   DataLoadState,
@@ -487,6 +491,42 @@ export class DebuggerEffects {
     );
   }
 
+  /**
+   * Emits when user focses on an alert type.
+   */
+  private onAlertTypeFocused() {
+    return this.actions$.pipe(
+      ofType(alertTypeFocusToggled),
+      withLatestFrom(
+        this.store.select(getActiveRunId),
+        this.store.select(getAlertsFocusType),
+        this.store.select(getAlertsOfFocusedType)
+      ),
+      filter(([, runId, focusType, alertsOfFocusedType]) => {
+        // TODO(cais): Unit test for the correct functioning of the filter.
+        return (
+          runId !== null && focusType !== null && alertsOfFocusedType === null
+        );
+      }),
+      mergeMap(([, runId, focusType]) => {
+        const begin = 0;
+        const end = -1; // TODO(cais): Use smarter `end` value.
+        return this.dataSource.fetchAlerts(runId as string, begin, end).pipe(
+          tap((alerts) => {
+            this.store.dispatch(
+              alertsLoaded({
+                numAlerts: alerts.num_alerts,
+                alertsBreakdown: alerts.alerts_breakdown,
+                alerts: alerts.alerts,
+              })
+            );
+          }),
+          map(() => void null)
+        );
+      })
+    );
+  }
+
   constructor(
     private actions$: Actions,
     private store: Store<State>,
@@ -507,6 +547,10 @@ export class DebuggerEffects {
      *                       +>+----------------------------------+
      *                         | fetch exec data and stack frames |
      *     on focus  +-------->+----------------------------------+
+     *
+     *                               +--------------+
+     *                               | fetch alerts |
+     *  on alert type focus +------->+--------------+
      **/
     this.loadData$ = createEffect(
       () => {
@@ -552,11 +596,14 @@ export class DebuggerEffects {
           )
         );
 
+        const onAlertTypeFocused$ = this.onAlertTypeFocused();
+
         // ExecutionDigest and ExecutionData can be loaded in parallel.
         return merge(
           onNumAlertsLoaded$,
           onExcutionDigestLoaded$,
-          onExecutionDataLoaded$
+          onExecutionDataLoaded$,
+          onAlertTypeFocused$
         ).pipe(
           // createEffect expects an Observable that emits {}.
           map(() => ({}))

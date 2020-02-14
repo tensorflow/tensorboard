@@ -41,11 +41,11 @@ limitations under the License.
   border-radius: 3px;
   color: #fff;
   display: inline-block;
-  height: 20px;
   line-height: 20px;
   padding: 3px;
   position: absolute;
   right: 20px;
+  top: 20px;
   vertical-align: middle;
 }
 
@@ -80,8 +80,6 @@ limitations under the License.
   text-align: center;
   vertical-align: middle;
   width: 24px;
-  /* -moz-border-radius: 12px;
-  -webkit-border-radius: 12px; */
 }
 
 .num-alerts-value.non-zero {

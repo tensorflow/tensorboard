@@ -30,6 +30,7 @@ limitations under the License.
       [ngClass]="[breakdown.type === focusType ? 'focus' : '']"
       (click)="onToggleFocusType.emit(breakdown.type)"
     >
+      <!-- TODO(cais): Add unit test for focus. -->
       <div class="alert-type-name">
         {{ breakdown.displayName }}
       </div>

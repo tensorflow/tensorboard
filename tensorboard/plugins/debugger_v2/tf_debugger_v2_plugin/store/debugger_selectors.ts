@@ -27,6 +27,7 @@ import {
   StackFrame,
   StackFramesById,
   State,
+  Alert,
 } from './debugger_types';
 
 // HACK: These imports are for type inference.
@@ -74,7 +75,34 @@ export const getAlertsFocusType = createSelector(
   (state: DebuggerState): AlertType | null => {
     return state.alerts.focusType;
   }
-);
+); // TODO(cais): Unit test.
+
+export const getNumAlertsOfFocusedType = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): number => {
+    if (state.alerts.focusType === null) {
+      return 0;
+    }
+    return state.alerts.alertsBreakdown[state.alerts.focusType] || 0;
+  }
+); // TODO(cais): Unit test.
+
+export const getAlertsOfFocusedType = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): Alert[] | null => {
+    if (state.alerts.focusType === null) {
+      return null;
+    }
+    if (state.alerts.alerts[state.alerts.focusType] === undefined) {
+      return null;
+    }
+    console.log(
+      'getAlertsOfFocusedType(): 200: returning',
+      state.alerts.alerts[state.alerts.focusType]
+    ); // DEBUG
+    return state.alerts.alerts[state.alerts.focusType];
+  }
+); // TODO(cais): Unit test.
 
 export const getAlertsBreakdown = createSelector(
   selectDebuggerState,

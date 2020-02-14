@@ -20,6 +20,7 @@ import {
   AlertType,
   DebuggerRunListing,
   StackFramesById,
+  Alert,
 } from '../store/debugger_types';
 import {
   ExecutionDigestsResponse,
@@ -65,6 +66,15 @@ export const numAlertsAndBreakdownRequested = createAction(
 export const numAlertsAndBreakdownLoaded = createAction(
   '[Debugger] Number and Breakdown of Alerts Loaded',
   props<{numAlerts: number; alertsBreakdown: AlertsBreakdown}>()
+);
+
+export const alertsLoaded = createAction(
+  '[Debugger] Alerts Data Loaded',
+  props<{
+    numAlerts: number;
+    alertsBreakdown: AlertsBreakdown;
+    alerts: Alert[];
+  }>()
 );
 
 export const alertTypeFocusToggled = createAction(

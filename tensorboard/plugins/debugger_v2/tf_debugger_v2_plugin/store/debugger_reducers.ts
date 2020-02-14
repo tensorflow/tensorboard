@@ -19,13 +19,18 @@ import {
   ExecutionDataResponse,
   ExecutionDigestsResponse,
 } from '../data_source/tfdbg2_data_source';
-import {DataLoadState, DebuggerState, StackFramesById} from './debugger_types';
+import {
+  DataLoadState,
+  DebuggerState,
+  StackFramesById,
+  Alert,
+} from './debugger_types';
 
 // HACK: These imports are for type inference.
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
 /** @typehack */ import * as _typeHackStore from '@ngrx/store/store';
 
-const DEFAULT_EXECUTION_PAGE_SIZE = 100; // TODO(cais): Restore.
+const DEFAULT_EXECUTION_PAGE_SIZE = 100;
 
 const initialState: DebuggerState = {
   runs: {},
@@ -154,6 +159,46 @@ const reducer = createReducer(
     }
   ),
   on(
+    actions.alertsLoaded,
+    (
+      state: DebuggerState,
+      {numAlerts, alertsBreakdown, alerts}
+    ): DebuggerState => {
+      const runId = state.activeRunId;
+      if (runId === null) {
+        return state;
+      }
+
+      const alertsByType: {[type: string]: Alert[]} = {};
+      for (const alert of alerts) {
+        if (alertsByType[alert.alert_type] === undefined) {
+          alertsByType[alert.alert_type] = [];
+        }
+        alertsByType[alert.alert_type].push(alert);
+      }
+      console.log('alertsByType=', alertsByType); // DEBUG
+      const newState = {
+        ...state,
+        alerts: {
+          ...state.alerts,
+          alertsLoaded: {
+            ...state.alerts.alertsLoaded,
+            state: DataLoadState.LOADED,
+            lastLoadedTimeInMs: Date.now(),
+          },
+          numAlerts,
+          alertsBreakdown,
+          alerts: {
+            ...state.alerts.alerts,
+            ...alertsByType,
+          },
+        },
+      };
+      // TODO(cais): Unit test.
+      return newState;
+    }
+  ),
+  on(
     actions.alertTypeFocusToggled,
     (state: DebuggerState, {alertType}): DebuggerState => {
       // TODO(cais): Add unit tests.
@@ -162,7 +207,7 @@ const reducer = createReducer(
         alerts: {
           ...state.alerts,
           focusType: state.alerts.focusType === alertType ? null : alertType,
-        }
+        },
       };
     }
   ),
