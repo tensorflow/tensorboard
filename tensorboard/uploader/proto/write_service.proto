@@ -277,12 +277,14 @@ message GetOrCreateBlobSequenceRequest {
   string tag = 3;
   // Step index within the run.
   int64 step = 4;
+  // Timestamp of the creation of this blob sequence.
+  google.protobuf.Timestamp wall_time = 5;
   // The total number of elements expected in the sequence.
   // This effectively delares a number of initially empty 'upload slots',
   // to be filled with subsequent WriteBlob RPCs.
-  int64 final_sequence_length = 5;
+  int64 final_sequence_length = 6;
   // Note that metadata.plugin_data.content does not carry the payload.
-  .tensorboard.SummaryMetadata metadata = 6;
+  .tensorboard.SummaryMetadata metadata = 7;
 }
 
 message GetOrCreateBlobSequenceResponse {
