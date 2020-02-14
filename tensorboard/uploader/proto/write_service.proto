@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package tensorboard.service;
 
+import "google/protobuf/timestamp.proto";
 // TODO(bileschi): write_service.proto imports export_service.proto for the
 // definition of Experiment and ExperimentMask.  It would be better to excise
 // those into one file that both services depend on.
