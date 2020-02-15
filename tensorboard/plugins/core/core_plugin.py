@@ -65,9 +65,6 @@ class CorePlugin(base_plugin.TBPlugin):
         self._multiplexer = context.multiplexer
         self._db_connection_provider = context.db_connection_provider
         self._assets_zip_provider = context.assets_zip_provider
-        print(
-            "context.flags = %s" % context.flags
-        )  # DEBUG
         if context.flags and context.flags.generic_data == "true":
             self._data_provider = context.data_provider
         else:
@@ -139,7 +136,10 @@ class CorePlugin(base_plugin.TBPlugin):
         if self._data_provider:
             experiment = plugin_util.experiment_id(request.environ)
             data_location = self._data_provider.data_location(experiment)
-            experiment_metadata = self._data_provider.experiment_metadata()
+            experiment_id = plugin_util.experiment_id(request.environ)
+            experiment_metadata = self._data_provider.experiment_metadata(
+                experiment_id
+            )
         else:
             data_location = self._logdir or self._db_uri
             experiment_metadata = None
