@@ -225,9 +225,6 @@ class CorePluginExperimentMetadataTest(tf.test.TestCase):
 
         self.context = base_plugin.TBContext(
             flags=FakeFlags(generic_data="true"),
-            assets_zip_provider=get_test_assets_zip_provider(),
-            logdir=self.get_temp_dir(),
-            multiplexer=event_multiplexer.EventMultiplexer(),
             data_provider=FakeDataProvider(),
         )
 
@@ -260,9 +257,6 @@ class CorePluginExperimentMetadataTest(tf.test.TestCase):
 
         self.context = base_plugin.TBContext(
             flags=FakeFlags(generic_data="true"),
-            assets_zip_provider=get_test_assets_zip_provider(),
-            logdir=self.get_temp_dir(),
-            multiplexer=event_multiplexer.EventMultiplexer(),
             data_provider=FakeDataProvider(),
         )
 
