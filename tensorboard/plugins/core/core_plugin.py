@@ -144,19 +144,19 @@ class CorePlugin(base_plugin.TBPlugin):
             data_location = self._logdir or self._db_uri
             experiment_metadata = None
 
-        environment_data = {
+        environment = {
             "data_location": data_location,
             "window_title": self._window_title,
         }
         if experiment_metadata is not None:
-            environment_data.update(
+            environment.update(
                 {
                     "experiment_name": experiment_metadata.experiment_name,
                     "experiment_description": experiment_metadata.experiment_description,
                     "creation_time": experiment_metadata.creation_time,
                 }
             )
-        return http_util.Respond(request, environment_data, "application/json",)
+        return http_util.Respond(request, environment, "application/json",)
 
     @wrappers.Request.application
     def _serve_logdir(self, request):
