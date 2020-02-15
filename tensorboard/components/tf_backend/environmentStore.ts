@@ -16,8 +16,14 @@ namespace tf_backend {
   interface Environment {
     dataLocation: string;
     windowTitle: string;
+
+    /** Name of the experiment (if available). */
     experimentName?: string;
+
+    /** A description of the experiment (if available). */
     experimentDescription?: string;
+
+    /** Creation timestamp for the experiment (if available). */
     creationTime?: number;
   }
 
