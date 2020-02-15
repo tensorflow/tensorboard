@@ -33,6 +33,7 @@ except ImportError:
     import mock  # pylint: disable=unused-import
 
 
+from tensorboard.uploader.proto import experiment_pb2
 from tensorboard.uploader.proto import export_service_pb2
 from tensorboard.uploader.proto import export_service_pb2_grpc
 from tensorboard.uploader import exporter as exporter_lib
@@ -393,10 +394,10 @@ class ListExperimentsTest(tb_test.TestCase):
         expected = [
             "123",
             "456",
-            export_service_pb2.Experiment(experiment_id="789"),
-            export_service_pb2.Experiment(experiment_id="012"),
-            export_service_pb2.Experiment(experiment_id="345"),
-            export_service_pb2.Experiment(experiment_id="678"),
+            experiment_pb2.Experiment(experiment_id="789"),
+            experiment_pb2.Experiment(experiment_id="012"),
+            experiment_pb2.Experiment(experiment_id="345"),
+            experiment_pb2.Experiment(experiment_id="678"),
         ]
         self.assertEqual(list(gen), expected)
 

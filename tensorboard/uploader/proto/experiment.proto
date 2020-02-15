@@ -3,107 +3,36 @@ syntax = "proto3";
 package tensorboard.service;
 
 import "google/protobuf/timestamp.proto";
-import "tensorboard/compat/proto/summary.proto";
-import "tensorboard/compat/proto/tensor.proto";
 
-// Service for exporting data from TensorBoard.dev.
-service TensorBoardExporterService {
-  // Stream the experiment_id of all the experiments owned by the caller.
-  rpc StreamExperiments(StreamExperimentsRequest)
-      returns (stream StreamExperimentsResponse) {}
-  // Stream scalars for all the runs and tags in an experiment.
-  rpc StreamExperimentData(StreamExperimentDataRequest)
-      returns (stream StreamExperimentDataResponse) {}
-}
-
-// Request to stream the experiment_id of all the experiments owned by the
-// caller from TensorBoard.dev.
-message StreamExperimentsRequest {
-  // Timestamp to get a consistent snapshot of the data in the database.
-  // This is useful when making multiple read RPCs and needing the data to be
-  // consistent across the read calls.
-  google.protobuf.Timestamp read_timestamp = 1;
-  // User ID defaults to the caller, but may be set to a different user for
-  // internal Takeout processes operating on behalf of a user.
-  string user_id = 2;
-  // Limits the number of experiment IDs returned. This is useful to check if
-  // user might have any data by setting limit=1. Also useful to preview the
-  // list of experiments. TODO(@karthikv2k): Support pagination.
-  int64 limit = 3;
-  // Field mask for what experiment data to return via the `experiments` field
-  // on the response. If not specified, this should be interpreted the same as
-  // an empty message: i.e., only the experiment ID should be returned. Other
-  // fields of `Experiment` will be populated if their corresponding bits in the
-  // `ExperimentMask` are set. The server may choose to populate fields that are
-  // not explicitly requested.
-  ExperimentMask experiments_mask = 4;
-}
-
-// Streams experiment metadata (ID, creation time, etc.) from TensorBoard.dev.
-message StreamExperimentsResponse {
-  // Deprecated in favor of `experiments`. If a response has `experiments` set,
-  // clients should ignore `experiment_ids` entirely. Otherwise, clients should
-  // treat `experiment_ids` as a list of `experiments` for which only the
-  // `experiment_id` field is set, with the understanding that the other fields
-  // were not populated regardless of the requested field mask.
-  //
-  // For example, the following responses should be treated the same:
-  //
-  //     # Response 1
-  //     experiment_ids: "123"
-  //     experiment_ids: "456"
-  //
-  //     # Response 2
-  //     experiments { experiment_id: "123" }
-  //     experiments { experiment_id: "456" }
-  //
-  //     # Response 3
-  //     experiment_ids: "789"
-  //     experiments { experiment_id: "123" }
-  //     experiments { experiment_id: "456" }
-  //
-  // See documentation on `experiments` for batching semantics.
-  repeated string experiment_ids = 1;
-  // List of experiments owned by the user. The entire list of experiments
-  // owned by the user is streamed in batches and each batch contains a list of
-  // experiments. A consumer of this stream needs to concatenate all these
-  // lists to get the full response. The order of experiments in the stream is
-  // not defined. Every response will contain at least one experiment.
-  //
-  // These messages may be partially populated, in accordance with the field
-  // mask given in the request.
-  repeated Experiment experiments = 2;
-}
-
-// Metadata about an experiment.  This contains both user provided metadata
-// along with internal book-keeping about the experiment.
-// TODO(bileschi): Move this and ExperimentMask into their own file.
+// Resource message representing an Experiment.
 message Experiment {
   // Permanent ID of this experiment; e.g.: "AdYd1TgeTlaLWXx6I8JUbA".
+  // Output-only.
   string experiment_id = 1;
-  // The time that the experiment was created.
+  // The time that the experiment was created. Output-only.
   google.protobuf.Timestamp create_time = 2;
   // The time that the experiment was last modified: i.e., the most recent time
-  // that scalars were added to the experiment.
+  // that scalars were added to the experiment. Output-only.
   google.protobuf.Timestamp update_time = 3;
   // The number of scalars in this experiment, across all time series.
+  // Output-only.
   int64 num_scalars = 4;
-  // The number of distinct run names in this experiment.
+  // The number of distinct run names in this experiment. Output-only.
   int64 num_runs = 5;
   // The number of distinct tag names in this experiment. A tag name that
-  // appears in multiple runs will be counted only once.
+  // appears in multiple runs will be counted only once. Output-only.
   int64 num_tags = 6;
   // User provided name of the experiment.
   string name = 7;
   // User provided description of the experiment, in markdown source format.
   string description = 8;
   // The number of bytes used for storage of tensors in this experiment,
-  // across all time series, including estimated overhead.
+  // across all time series, including estimated overhead. Output-only.
   int64 total_tensor_bytes = 9;
 }
 
-// Field mask for `Experiment`. The `experiment_id` field is always implicitly
-// considered to be set.
+// Field mask for `Experiment` used in get and update RPCs. The `experiment_id`
+// field is always implicitly considered to be set.
 message ExperimentMask {
   reserved 1;
   reserved "experiment_id";
@@ -115,63 +44,4 @@ message ExperimentMask {
   bool name = 7;
   bool description = 8;
   bool total_tensor_bytes = 9;
-}
-
-// Request to stream scalars from all the runs and tags in an experiment.
-message StreamExperimentDataRequest {
-  // The permanent ID of the experiment whose data need to be streamed.
-  string experiment_id = 1;
-  // Timestamp to get a consistent snapshot of the data in the database.
-  // This is useful when making multiple read RPCs and needing the data to be
-  // consistent across the read calls. Should be the same as the read timestamp
-  // used for the corresponding `StreamExperimentsRequest` for consistency.
-  google.protobuf.Timestamp read_timestamp = 2;
-}
-
-// Streams data from all the runs and tags in an experiment. Each stream
-// result only contains data for a single tag from a single run. For example if
-// there are five runs and each run had two tags, the RPC will return a stream
-// of at least ten `StreamExperimentDataResponse`s, each one having the
-// either scalars or tensors for one tag. The values from a single tag may be
-// split among multiple responses.  Users need to aggregate information from
-// entire stream to get data for the entire experiment. Empty experiments will
-// have zero stream results. Empty runs that doesn't have any tags need not
-// be supported by a hosted service.
-message StreamExperimentDataResponse {
-  // Name of the tag whose data is contained in this response.
-  string tag_name = 1;
-  // Name of the run that contains the tag `tag_name`.
-  string run_name = 2;
-  // The metadata of the tag `tag_name`.
-  .tensorboard.SummaryMetadata tag_metadata = 3;
-  // Data to store for the tag `tag_name.
-  ScalarPoints points = 4;
-  // Tensor data to store.
-  TensorPoints tensors = 5;
-
-  // Data for the scalars are stored in a columnar fashion to optimize it for
-  // exporting the data into textual formats like JSON.
-  // The data for the ith scalar is { steps[i], wall_times[i], values[i] }.
-  // The data here is sorted by step values in ascending order.
-  message ScalarPoints {
-    // Step index within the run.
-    repeated int64 steps = 1;
-    // Timestamp of the creation of this point.
-    repeated google.protobuf.Timestamp wall_times = 2;
-    // Value of the point at this step / timestamp.
-    repeated double values = 3;
-  }
-
-  // Data for the Tensors are stored in a columnar fashion to optimize it for
-  // exporting the data into textual formats like JSON.
-  // The data for the ith tensor is { steps[i], wall_times[i], values[i] }.
-  // The data here is sorted by step values in ascending order.
-  message TensorPoints {
-    // Step index within the run.
-    repeated int64 steps = 1;
-    // Timestamp of the creation of this point.
-    repeated google.protobuf.Timestamp wall_times = 2;
-    // Value of the point at this step / timestamp.
-    repeated .tensorboard.TensorProto values = 3;
-  }
 }
