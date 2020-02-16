@@ -22,6 +22,15 @@ var tf_backend;
                     dataLocation: result.data_location,
                     windowTitle: result.window_title,
                 };
+                if (result.experiment_name !== undefined) {
+                    environment.experimentName = result.experiment_name;
+                }
+                if (result.experiment_description !== undefined) {
+                    environment.experimentDescription = result.experiment_description;
+                }
+                if (result.creation_time !== undefined) {
+                    environment.creationTime = result.creation_time;
+                }
                 if (_.isEqual(this.environment, environment))
                     return;
                 this.environment = environment;
