@@ -16,6 +16,15 @@ namespace tf_backend {
   interface Environment {
     dataLocation: string;
     windowTitle: string;
+
+    /** Name of the experiment (if available). */
+    experimentName?: string;
+
+    /** A description of the experiment (if available). */
+    experimentDescription?: string;
+
+    /** Creation timestamp for the experiment (if available). */
+    creationTime?: number;
   }
 
   export class EnvironmentStore extends BaseStore {
@@ -24,10 +33,19 @@ namespace tf_backend {
     load() {
       const url = tf_backend.getRouter().environment();
       return this.requestManager.request(url).then((result) => {
-        const environment = {
+        const environment: Environment = {
           dataLocation: result.data_location,
           windowTitle: result.window_title,
         };
+        if (result.experiment_name !== undefined) {
+          environment.experimentName = result.experiment_name;
+        }
+        if (result.experiment_description !== undefined) {
+          environment.experimentDescription = result.experiment_description;
+        }
+        if (result.creation_time !== undefined) {
+          environment.creationTime = result.creation_time;
+        }
         if (_.isEqual(this.environment, environment)) return;
 
         this.environment = environment;
