@@ -224,7 +224,7 @@ class _RequestBuilder(object):
           point is too large (say, due to a gigabyte-long tag name).
         """
 
-        for (run_name, event, orig_value) in  self._run_values(run_to_events):
+        for (run_name, event, orig_value) in self._run_values(run_to_events):
             value = data_compat.migrate_value(orig_value)
             time_series_key = (run_name, value.tag)
 
