@@ -108,7 +108,9 @@ class TensorBoardUploader(object):
         response = grpc_util.call_with_retries(
             self._api.CreateExperiment, request
         )
-        self._request_builder = _RequestBuilder(response.experiment_id, self._api, self._rpc_rate_limiter)
+        self._request_builder = _RequestBuilder(
+            response.experiment_id, self._api, self._rpc_rate_limiter
+        )
         return response.experiment_id
 
     def start_uploading(self):
@@ -137,6 +139,7 @@ class TensorBoardUploader(object):
 
         run_to_events = self._logdir_loader.get_run_events()
         self._request_builder.send_requests(run_to_events)
+
 
 def delete_experiment(writer_client, experiment_id):
     """Permanently deletes an experiment and all of its contents.
@@ -201,7 +204,9 @@ class _RequestBuilder(object):
         # Map from `(run_name, tag_name)` to `SummaryMetadata` if the time
         # series is a scalar time series, else to `_NON_SCALAR_TIME_SERIES`.
         self._tag_metadata = {}
-        self._scalar_request_builder = _ScalarRequestBuilder(experiment_id, api, rpc_rate_limiter)
+        self._scalar_request_builder = _ScalarRequestBuilder(
+            experiment_id, api, rpc_rate_limiter
+        )
 
         # TODO(nielsene): add tensor case here
         # TODO(soergel): add blob case here
@@ -447,7 +452,7 @@ class _ScalarRequestBuilder(object):
         return point
 
 
-class RequestLogger():
+class RequestLogger:
     def __init__(self, request):
         self._request = request
 

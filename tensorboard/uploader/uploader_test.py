@@ -66,10 +66,11 @@ def _create_mock_client():
     mock_client.CreateExperiment.return_value = fake_exp_response
     return mock_client
 
+
 _rpc_rate_limiter = util.RateLimiter(0)
 
-class TensorboardUploaderTest(tf.test.TestCase):
 
+class TensorboardUploaderTest(tf.test.TestCase):
     def test_create_experiment(self):
         logdir = "/logs/foo"
         mock_client = _create_mock_client()
@@ -97,34 +98,54 @@ class TensorboardUploaderTest(tf.test.TestCase):
         mock_logdir_loader.get_run_events.side_effect = [
             {
                 "run 1": [
-                    event_pb2.Event(summary=scalar_v2.scalar_pb("event 1.1", 5.0)),
-                    event_pb2.Event(summary=scalar_v2.scalar_pb("event 1.2", 5.0)),
+                    event_pb2.Event(
+                        summary=scalar_v2.scalar_pb("event 1.1", 5.0)
+                    ),
+                    event_pb2.Event(
+                        summary=scalar_v2.scalar_pb("event 1.2", 5.0)
+                    ),
                 ],
                 "run 2": [
-                    event_pb2.Event(summary=scalar_v2.scalar_pb("event 2.1", 5.0)),
-                    event_pb2.Event(summary=scalar_v2.scalar_pb("event 2.2", 5.0)),
-                ]
+                    event_pb2.Event(
+                        summary=scalar_v2.scalar_pb("event 2.1", 5.0)
+                    ),
+                    event_pb2.Event(
+                        summary=scalar_v2.scalar_pb("event 2.2", 5.0)
+                    ),
+                ],
             },
             {
                 "run 3": [
-                    event_pb2.Event(summary=scalar_v2.scalar_pb("event 3.1", 5.0)),
-                    event_pb2.Event(summary=scalar_v2.scalar_pb("event 3.2", 5.0)),
+                    event_pb2.Event(
+                        summary=scalar_v2.scalar_pb("event 3.1", 5.0)
+                    ),
+                    event_pb2.Event(
+                        summary=scalar_v2.scalar_pb("event 3.2", 5.0)
+                    ),
                 ],
                 "run 4": [
-                    event_pb2.Event(summary=scalar_v2.scalar_pb("event 4.1", 5.0)),
-                    event_pb2.Event(summary=scalar_v2.scalar_pb("event 4.2", 5.0)),
+                    event_pb2.Event(
+                        summary=scalar_v2.scalar_pb("event 4.1", 5.0)
+                    ),
+                    event_pb2.Event(
+                        summary=scalar_v2.scalar_pb("event 4.2", 5.0)
+                    ),
                 ],
                 "run 5": [
-                    event_pb2.Event(summary=scalar_v2.scalar_pb("event 5.1", 5.0)),
-                    event_pb2.Event(summary=scalar_v2.scalar_pb("event 5.2", 5.0)),
+                    event_pb2.Event(
+                        summary=scalar_v2.scalar_pb("event 5.1", 5.0)
+                    ),
+                    event_pb2.Event(
+                        summary=scalar_v2.scalar_pb("event 5.2", 5.0)
+                    ),
                 ],
             },
             AbortUploadError,
         ]
 
-        with mock.patch.object(uploader, "_logdir_loader", mock_logdir_loader), self.assertRaises(
-            AbortUploadError
-        ):
+        with mock.patch.object(
+            uploader, "_logdir_loader", mock_logdir_loader
+        ), self.assertRaises(AbortUploadError):
             uploader.start_uploading()
         self.assertEqual(4 + 6, mock_client.WriteScalar.call_count)
         self.assertEqual(4 + 6, mock_rate_limiter.tick.call_count)
@@ -314,9 +335,15 @@ class TensorboardUploaderTest(tf.test.TestCase):
 class RequestBuilderTest(tf.test.TestCase):
     def _populate_run_from_events(self, run_proto, events):
         mock_client = _create_mock_client()
-        builder = uploader_lib._RequestBuilder(experiment_id="123", api=mock_client, rpc_rate_limiter=_rpc_rate_limiter)
+        builder = uploader_lib._RequestBuilder(
+            experiment_id="123",
+            api=mock_client,
+            rpc_rate_limiter=_rpc_rate_limiter,
+        )
         builder.send_requests({"": events})
-        requests = list(map(lambda c: c[0][0], mock_client.WriteScalar.call_args_list))
+        requests = list(
+            map(lambda c: c[0][0], mock_client.WriteScalar.call_args_list)
+        )
         if requests:
             self.assertLen(requests, 1)
             self.assertLen(requests[0].runs, 1)
@@ -500,7 +527,9 @@ class RequestBuilderTest(tf.test.TestCase):
         long_experiment_id = "A" * uploader_lib._MAX_REQUEST_LENGTH_BYTES
         mock_client = _create_mock_client()
         with self.assertRaises(RuntimeError) as cm:
-            builder = uploader_lib._RequestBuilder(long_experiment_id, mock_client, _rpc_rate_limiter)
+            builder = uploader_lib._RequestBuilder(
+                long_experiment_id, mock_client, _rpc_rate_limiter
+            )
             builder.send_requests(run_to_events)
         self.assertEqual(
             str(cm.exception), "Byte budget too small for experiment ID"
@@ -513,11 +542,11 @@ class RequestBuilderTest(tf.test.TestCase):
         long_run_name = "A" * uploader_lib._MAX_REQUEST_LENGTH_BYTES
         run_to_events = {long_run_name: [event]}
         with self.assertRaises(RuntimeError) as cm:
-            builder = uploader_lib._RequestBuilder("123", mock_client, _rpc_rate_limiter)
+            builder = uploader_lib._RequestBuilder(
+                "123", mock_client, _rpc_rate_limiter
+            )
             builder.send_requests(run_to_events)
-        self.assertEqual(
-            str(cm.exception), "add_event failed despite flush"
-        )
+        self.assertEqual(str(cm.exception), "add_event failed despite flush")
 
     @mock.patch.object(uploader_lib, "_MAX_REQUEST_LENGTH_BYTES", 1024)
     def test_break_at_run_boundary(self):
@@ -533,9 +562,13 @@ class RequestBuilderTest(tf.test.TestCase):
             [(long_run_1, [event_1]), (long_run_2, [event_2])]
         )
 
-        builder = uploader_lib._RequestBuilder("123", mock_client, _rpc_rate_limiter)
+        builder = uploader_lib._RequestBuilder(
+            "123", mock_client, _rpc_rate_limiter
+        )
         builder.send_requests(run_to_events)
-        requests = list(map(lambda c: c[0][0], mock_client.WriteScalar.call_args_list))
+        requests = list(
+            map(lambda c: c[0][0], mock_client.WriteScalar.call_args_list)
+        )
 
         for request in requests:
             _clear_wall_times(request)
@@ -570,9 +603,13 @@ class RequestBuilderTest(tf.test.TestCase):
         event.summary.value.add(tag=long_tag_2, simple_value=2.0)
         run_to_events = {"train": [event]}
 
-        builder = uploader_lib._RequestBuilder("123", mock_client, _rpc_rate_limiter)
+        builder = uploader_lib._RequestBuilder(
+            "123", mock_client, _rpc_rate_limiter
+        )
         builder.send_requests(run_to_events)
-        requests = list(map(lambda c: c[0][0], mock_client.WriteScalar.call_args_list))
+        requests = list(
+            map(lambda c: c[0][0], mock_client.WriteScalar.call_args_list)
+        )
         for request in requests:
             _clear_wall_times(request)
 
@@ -610,9 +647,13 @@ class RequestBuilderTest(tf.test.TestCase):
             events.append(event_pb2.Event(summary=summary, step=step))
         run_to_events = {"train": events}
 
-        builder = uploader_lib._RequestBuilder("123", mock_client, _rpc_rate_limiter)
+        builder = uploader_lib._RequestBuilder(
+            "123", mock_client, _rpc_rate_limiter
+        )
         builder.send_requests(run_to_events)
-        requests = list(map(lambda c: c[0][0], mock_client.WriteScalar.call_args_list))
+        requests = list(
+            map(lambda c: c[0][0], mock_client.WriteScalar.call_args_list)
+        )
         for request in requests:
             _clear_wall_times(request)
 
@@ -663,9 +704,13 @@ class RequestBuilderTest(tf.test.TestCase):
             "_create_point",
             mock_create_point,
         ):
-            builder = uploader_lib._RequestBuilder("123", mock_client, _rpc_rate_limiter)
+            builder = uploader_lib._RequestBuilder(
+                "123", mock_client, _rpc_rate_limiter
+            )
             builder.send_requests(run_to_events)
-        requests = list(map(lambda c: c[0][0], mock_client.WriteScalar.call_args_list))
+        requests = list(
+            map(lambda c: c[0][0], mock_client.WriteScalar.call_args_list)
+        )
         for request in requests:
             _clear_wall_times(request)
 
