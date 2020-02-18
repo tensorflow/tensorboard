@@ -59,6 +59,9 @@ _MAX_REQUEST_LENGTH_BYTES = 1024 * 128
 
 logger = tb_logging.get_logger()
 
+# TODO(soergel): had we decided to leave Tag empty in this case??
+# Graph events exist at the Run level and have no tag.  Add a synthetic one.
+GRAPH_TAG_NAME = "graph_def"
 
 class TensorBoardUploader(object):
     """Uploads a TensorBoard logdir to TensorBoard.dev."""
@@ -205,6 +208,9 @@ class _RequestBuilder(object):
         self._scalar_request_builder = _ScalarRequestBuilder(
             experiment_id, api, rpc_rate_limiter
         )
+        self._blob_request_builder = _BlobRequestBuilder(
+            experiment_id, api, rpc_rate_limiter
+        )
 
         # TODO(nielsene): add tensor case here
         # TODO(soergel): add blob case here
@@ -223,53 +229,77 @@ class _RequestBuilder(object):
           RuntimeError: If no progress can be made because even a single
           point is too large (say, due to a gigabyte-long tag name).
         """
+        # TODO(soergel): Allow enabling/disabling upload per plugin
 
-        for (run_name, event, orig_value) in self._run_values(run_to_events):
-            value = data_compat.migrate_value(orig_value)
-            time_series_key = (run_name, value.tag)
-
-            # The metadata for a time series is memorized on the first event.
-            # If later events arrive with a mismatching plugin_name, they are
-            # ignored with a warning.
-            metadata = self._tag_metadata.get(time_series_key)
-            if metadata is None:
-                metadata = value.metadata
-                self._tag_metadata[time_series_key] = metadata
-
-            requests = []  # we may assign a generator
-            if value.HasField("metadata") and (
-                value.metadata.plugin_data.plugin_name
-                != metadata.plugin_data.plugin_name
-            ):
-                logger.warning(
-                    "Mismatching plugin names for %s.  Expected %s, found %s.",
-                    time_series_key,
-                    metadata.plugin_data.plugin_name,
-                    value.metadata.plugin_data.plugin_name,
-                )
-            elif (
-                metadata.plugin_data.plugin_name == scalar_metadata.PLUGIN_NAME
-            ):
-                self._scalar_request_builder.add_event(
-                    run_name, event, value, metadata
-                )
-            # TODO(nielsene): add Tensor plugin cases here
-            # TODO(soergel): add Graphs blob case here
+        for (run_name, event) in self._run_events(run_to_events):
+            if event.summary:
+                for value in self._summary_values(run_name, event):
+                    self._send_summary_value(run_name, event, value)
+            elif event.graph_def or event.meta_graph_def:
+                self._send_graph(run_name, event)
 
         self._scalar_request_builder.flush()
         # TODO(nielsene): add tensor case here
-        # TODO(soergel): add blob case here
+        self._blob_request_builder.flush()
 
-    def _run_values(self, run_to_events):
+    def _send_summary_value(self, run_name, event, orig_value):
+        value = data_compat.migrate_value(orig_value)
+        time_series_key = (run_name, value.tag)
+
+        # The metadata for a time series is memorized on the first event.
+        # If later events arrive with a mismatching plugin_name, they are
+        # ignored with a warning.
+        metadata = self._tag_metadata.get(time_series_key)
+        if metadata is None:
+            metadata = value.metadata
+            self._tag_metadata[time_series_key] = metadata
+
+        # TODO(soergel): Allow enabling/disabling upload per plugin
+
+        if value.HasField("metadata") and (
+            value.metadata.plugin_data.plugin_name
+            != metadata.plugin_data.plugin_name
+        ):
+            logger.warning(
+                "Mismatching plugin names for %s.  Expected %s, found %s.",
+                time_series_key,
+                metadata.plugin_data.plugin_name,
+                value.metadata.plugin_data.plugin_name,
+            )
+        elif (
+            metadata.plugin_data.plugin_name == scalar_metadata.PLUGIN_NAME
+        ):
+            self._scalar_request_builder.add_event(
+                run_name, event, value, metadata
+            )
+        # TODO(nielsene): add Tensor plugin cases here
+
+    def _send_graph(self, run_name, event):
+        tag_name = GRAPH_TAG_NAME
+        blob = _extract_graph(event)
+        metadata = None # graph events carry no SummaryMetadata
+        self._blob_request_builder.add_event(
+            run_name, tag_name, event, blob, metadata
+        )
+
+    def _run_events(self, run_to_events):
         """Helper generator to create a single stream of work items."""
-        # Note that each of these joins in principle has deletion anomalies:
-        # if the input stream contains runs with no events, or events with
-        # no values, we'll lose that information. This is not a problem: we
-        # would need to prune such data from the request anyway.
+        # Note that this join in principle has deletion anomalies: if the input
+        # stream contains runs with no events, we'll lose that information. This
+        # is not a problem: we would need to prune such data from the request
+        # anyway.
         for (run_name, events) in six.iteritems(run_to_events):
             for event in events:
-                for value in event.summary.value:
-                    yield (run_name, event, value)
+                yield (run_name, event)
+
+    def _summary_values(self, run_name, event):
+        """Helper generator to create a single stream of work items."""
+        # Note that this join in principle has deletion anomalies: if the event
+        # contains no values, we'll lose that information. This is not a
+        # problem: we would need to prune such data from the request anyway.
+        if event.summary:
+            for value in event.summary.value:
+                yield value
 
 
 class _ScalarRequestBuilder(object):
@@ -441,6 +471,81 @@ class _ScalarRequestBuilder(object):
         self._byte_budget -= cost
         return point
 
+class _BlobRequestBuilder(object):
+    """Uploader for blob-type event data.
+
+    Unlike the other types, this class does not accumulate events in batches;
+    every blob is sent individually and immediately.  Nonetheless we retain
+    the `add_event()`/`flush()` structure for symmetry.
+
+    This class is not threadsafe. Use external synchronization if calling its
+    methods concurrently.
+    """
+
+    def __init__(self, experiment_id, api, rpc_rate_limiter):
+        if experiment_id is None:
+            raise ValueError("experiment_id cannot be None")
+        self._experiment_id = experiment_id
+        self._api = api
+        self._rpc_rate_limiter = rpc_rate_limiter
+
+        self._new_request()
+
+    def _new_request(self):
+        """Declares the previous event complete."""
+        self._plugin_name = None
+        self._run_name = None
+        self._tag_name = None
+        self._event = None
+        self._blob = None
+        self._metadata = None
+
+    def add_event(self, run_name, tag_name, event, blob, metadata, is_retry=False):
+        """Attempts to add the given event to the current request.
+
+        If the event cannot be added to the current request because the byte
+        budget is exhausted, the request is flushed, and the event is added
+        to the next request.
+        """
+        if self._blob:
+            raise RuntimeError("Tried to send blob while another is pending")
+        self._run_name = run_name
+        self._tag_name = tag_name
+        self._event = event
+        self._blob = blob
+        self._metadata = metadata
+        self.flush()
+
+    def flush(self):
+        """Sends the current blob fully, and clears it to make way for the next.
+        """
+        if self._blob:
+            self._rpc_rate_limiter.tick()
+
+            # TODO(soergel): Here or elsewhere, account for sending multiple blobs
+            # in the same sequence without refreshing the blob_sequence_id each time
+
+            request = write_service_pb2.GetOrCreateBlobSequenceRequest(
+                experiment_id=self._experiment_id,
+                run=self._run_name,
+                tag=self._tag_name,
+                step=self._event.step,
+                final_sequence_length=1,
+                metadata=metadata
+            )
+            util.set_timestamp(request.wall_time, event.wall_time)
+
+            with RequestLogger(request):
+                try:
+                    # TODO(@nfelt): execute this RPC asynchronously.
+                    response = grpc_util.call_with_retries(self._api.GetOrCreateBlobSequence, request)
+                    blob_sequence_id = response.blob_sequence_id
+                except grpc.RpcError as e:
+                    if e.code() == grpc.StatusCode.NOT_FOUND:
+                        raise ExperimentNotFoundError()
+                    logger.error("Upload call failed with error %s", e)
+
+        self._new_request()
 
 class RequestLogger:
     def __init__(self, request):
@@ -460,6 +565,25 @@ class RequestLogger:
             self._request_bytes,
             upload_duration_secs,
         )
+
+
+def _extract_graph(event):
+    # GraphDef and MetaGraphDef are handled in a special way:
+    # If no graph_def Event is available, but a meta_graph_def is, and it
+    # contains a graph_def, then use the meta_graph_def.graph_def as our graph.
+    # If a graph_def Event is available, always prefer it to the graph_def
+    # inside the meta_graph_def.
+    if event.HasField("graph_def"):
+        return event.graph_def
+    elif event.HasField("meta_graph_def"):
+        _meta_graph = event.meta_graph_def
+        # We may have a graph_def in the metagraph.  If so, and no
+        # graph_def is directly available, use this one instead.
+        meta_graph = meta_graph_pb2.MetaGraphDef()
+        meta_graph.ParseFromString(_meta_graph)
+        if meta_graph.graph_def:
+            return meta_graph.graph_def.SerializeToString()
+    logger.warn("Graph event contained no graph data.")
 
 
 def _varint_cost(n):
