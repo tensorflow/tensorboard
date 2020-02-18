@@ -158,9 +158,23 @@ const reducer = createReducer(
       };
     }
   ),
-  // TODO(cais): Add reducers for alertsRequested.
   on(
-    actions.alertsLoaded,
+    actions.alertsOfTypeRequested,
+    (state: DebuggerState): DebuggerState => {
+      return {
+        ...state,
+        alerts: {
+          ...state.alerts,
+          alertsLoaded: {
+            ...state.alerts.alertsLoaded,
+            state: DataLoadState.LOADING,
+          },
+        },
+      };
+    }
+  ),
+  on(
+    actions.alertsOfTypeLoaded,
     (
       state: DebuggerState,
       {numAlerts, alertsBreakdown, alertType, begin, alerts}

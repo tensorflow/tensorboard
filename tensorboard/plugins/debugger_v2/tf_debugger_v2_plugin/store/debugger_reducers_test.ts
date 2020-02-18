@@ -162,9 +162,23 @@ describe('Debugger reducers', () => {
     });
   });
 
-  it('Updates alerts data on alertsLoaded: empty initial state', () => {
+  it('Updates alertsLoaded state on alertsOfTypeRequested', () => {
     const state = createDebuggerState({
       activeRunId: '__default_debugger_run__',
+    });
+    const nextStae = reducers(state, actions.alertsOfTypeRequested());
+    expect(state.alerts.alertsLoaded.state).toEqual(DataLoadState.LOADING);
+  });
+
+  it('Updates alerts data on alertsOfTypeLoaded: empty initial state', () => {
+    const state = createDebuggerState({
+      activeRunId: '__default_debugger_run__',
+      alerts: createAlertsState({
+        alertsLoaded: {
+          state: DataLoadState.LOADING,
+          lastLoadedTimeInMs: null,
+        },
+      }),
     }); // `alerts` state is in an empty initial state.
     const alert0 = createTestInfNanAlert({
       op_type: 'RealDiv',
@@ -176,7 +190,7 @@ describe('Debugger reducers', () => {
     });
     const nextState = reducers(
       state,
-      actions.alertsLoaded({
+      actions.alertsOfTypeLoaded({
         numAlerts: 2,
         alertsBreakdown: {
           InfNanAlert: 2,
@@ -187,6 +201,8 @@ describe('Debugger reducers', () => {
         alerts: [alert0, alert1],
       })
     );
+    expect(nextState.alerts.alertsLoaded.state).toBe(DataLoadState.LOADED);
+    expect(nextState.alerts.alertsLoaded.lastLoadedTimeInMs).toBeGreaterThan(0);
     expect(nextState.alerts.numAlerts).toBe(2);
     expect(nextState.alerts.alertsBreakdown).toEqual({
       [AlertType.INF_NAN_ALERT]: 2,
@@ -200,7 +216,7 @@ describe('Debugger reducers', () => {
     expect(alertsOfType[1]).toEqual(alert1);
   });
 
-  it('Updates alerts data on alertsLoaded: non-empty initial state', () => {
+  it('Updates alerts data on alertsOfTypeLoaded: non-empty initial state', () => {
     const alert0 = createTestInfNanAlert({
       op_type: 'RealDiv',
       execution_index: 10,
@@ -212,6 +228,10 @@ describe('Debugger reducers', () => {
     const state = createDebuggerState({
       activeRunId: '__default_debugger_run__',
       alerts: createAlertsState({
+        alertsLoaded: {
+          state: DataLoadState.LOADING,
+          lastLoadedTimeInMs: null,
+        },
         numAlerts: 1,
         alertsBreakdown: {[AlertType.INF_NAN_ALERT]: 1},
         alerts: {
@@ -222,7 +242,7 @@ describe('Debugger reducers', () => {
 
     const nextState = reducers(
       state,
-      actions.alertsLoaded({
+      actions.alertsOfTypeLoaded({
         numAlerts: 2,
         alertsBreakdown: {
           InfNanAlert: 2,
@@ -233,6 +253,8 @@ describe('Debugger reducers', () => {
         alerts: [alert1],
       })
     );
+    expect(nextState.alerts.alertsLoaded.state).toBe(DataLoadState.LOADED);
+    expect(nextState.alerts.alertsLoaded.lastLoadedTimeInMs).toBeGreaterThan(0);
     expect(nextState.alerts.numAlerts).toBe(2);
     expect(nextState.alerts.alertsBreakdown).toEqual({
       [AlertType.INF_NAN_ALERT]: 2,

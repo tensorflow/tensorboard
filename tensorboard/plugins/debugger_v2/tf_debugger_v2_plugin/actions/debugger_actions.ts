@@ -68,11 +68,12 @@ export const numAlertsAndBreakdownLoaded = createAction(
   props<{numAlerts: number; alertsBreakdown: AlertsBreakdown}>()
 );
 
-export const alertsRequested = createAction('[Debugger] Alerts Data Requested');
+export const alertsOfTypeRequested = createAction(
+  '[Debugger] Alerts Data of an AlertType Is Requested'
+);
 
-// TODO(cais): Rename this as alertsOfTypeLoaded.
-export const alertsLoaded = createAction(
-  '[Debugger] Alerts Data Loaded',
+export const alertsOfTypeLoaded = createAction(
+  '[Debugger] Alerts Data of an AlertType Is Loaded',
   props<{
     numAlerts: number;
     alertsBreakdown: AlertsBreakdown;

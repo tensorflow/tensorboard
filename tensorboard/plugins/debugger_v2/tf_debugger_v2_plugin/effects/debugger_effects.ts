@@ -25,7 +25,8 @@ import {
   withLatestFrom,
 } from 'rxjs/operators';
 import {
-  alertsLoaded,
+  alertsOfTypeLoaded,
+  alertsOfTypeRequested,
   alertTypeFocusToggled,
   debuggerLoaded,
   debuggerRunsRequested,
@@ -519,15 +520,18 @@ export class DebuggerEffects {
           );
         }
       ),
+      tap(() => this.store.dispatch(alertsOfTypeRequested())),
       mergeMap(([, runId, focusType]) => {
         const begin = 0;
-        const end = -1; // TODO(cais): Use smarter `end` value.
+        // TODO(cais): Use smarter `end` value to reduce the amount of data
+        // fetch each time.
+        const end = -1;
         return this.dataSource
           .fetchAlerts(runId as string, begin, end, focusType! as string)
           .pipe(
             tap((alertsResponse) => {
               this.store.dispatch(
-                alertsLoaded({
+                alertsOfTypeLoaded({
                   numAlerts: alertsResponse.num_alerts,
                   alertsBreakdown: alertsResponse.alerts_breakdown,
                   begin: alertsResponse.begin,
