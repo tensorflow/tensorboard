@@ -48,8 +48,5 @@ class _ProfileRedirectPlugin(base_plugin.TBPlugin):
 
     def frontend_metadata(self):
         return base_plugin.FrontendMetadata(
-            element_name="tf-profile-redirect-dashboard",
-            # TODO(@wchargin): When the static profile plugin is removed
-            # in favor of the dynamic one, remove this parenthetical.
-            tab_name="Profile (moved)",
+            element_name="tf-profile-redirect-dashboard", tab_name="Profile",
         )
