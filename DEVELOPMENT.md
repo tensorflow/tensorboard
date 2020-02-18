@@ -78,12 +78,15 @@ When enabled by default, this also works with editor plugins like
 
 [vim-fugitive]: https://github.com/tpope/vim-fugitive
 
-### Incremental Build
+### iBazel: A file watcher for Bazel.
 
-Bazel is capable of doing incremental builds where it builds only subset of
-files that are impacted by file changes. To use that, just start TensorBoard
-with `ibazel` instead of `bazel`. If you do not have `ibazel` binary on your
-system, you can do use command below.
+Bazel is capable incrementally builds where it builds only subset of files that
+are impacted by file changes, but it does not come with a file watcher. For the
+improved developer experience, start TensorBoard with `ibazel` instead of
+`bazel` which will automatically re-build and start the server when file
+changes.
+
+If you do not have `ibazel` binary on your system, you can do use command below.
 
 ```sh
 # After running `yarn` in the repo.
