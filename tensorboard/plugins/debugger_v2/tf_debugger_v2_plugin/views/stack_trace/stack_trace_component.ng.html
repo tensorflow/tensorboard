@@ -1,0 +1,61 @@
+<!--
+@license
+Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<div class="stack-trace-container">
+  <div>
+    <span class="stack-trace-title">
+      Stack Trace
+    </span>
+    <span
+      *ngIf="stackFramesForDisplay !== null && stackFramesForDisplay.length > 0"
+      class="stack-trace-host-name"
+    >
+      (on {{ stackFramesForDisplay[0].host_name }})
+    </span>
+  </div>
+
+  <div
+    *ngIf="stackFramesForDisplay !== null; else loading_section"
+    class="stack-frame-array"
+  >
+    <div
+      *ngFor="let stackFrameForDisplay of stackFramesForDisplay; index as i;"
+    >
+      <div class="stack-frame-container">
+        <div
+          class="stack-frame-file-path"
+          title="{{stackFrameForDisplay.file_path}}"
+        >
+          {{ stackFrameForDisplay.concise_file_path }}
+        </div>
+        <div class="stack-frame-lineno-function">
+          <!-- TODO(cais): Add click action associated with source-code display. -->
+          <div class="stack-frame-lineno">
+            Line {{ stackFrameForDisplay.lineno }}:
+          </div>
+          <div class="stack-frame-function">
+            {{ stackFrameForDisplay.function_name }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #loading_section>
+    <!-- TODO(cais): Display loading spinner. -->
+  </ng-template>
+</div>

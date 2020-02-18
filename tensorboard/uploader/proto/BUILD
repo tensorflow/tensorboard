@@ -10,9 +10,11 @@ exports_files(["LICENSE"])
 tb_proto_library(
     name = "protos_all",
     srcs = [
+        "blob.proto",
         "export_service.proto",
         "scalar.proto",
         "server_info.proto",
+        "tensor.proto",
         "write_service.proto",
     ],
     has_services = True,

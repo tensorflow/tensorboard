@@ -44,6 +44,7 @@ from tensorboard.backend.event_processing import (
 )
 from tensorboard.compat.proto import graph_pb2
 from tensorboard.compat.proto import meta_graph_pb2
+from tensorboard.data import provider
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.core import core_plugin
 from tensorboard.util import test_util
@@ -63,6 +64,7 @@ class FakeFlags(object):
         event_file="",
         db="",
         path_prefix="",
+        generic_data="false",
     ):
         self.bind_all = bind_all
         self.host = host
@@ -73,6 +75,7 @@ class FakeFlags(object):
         self.event_file = event_file
         self.db = db
         self.path_prefix = path_prefix
+        self.generic_data = generic_data
 
 
 class CorePluginFlagsTest(tf.test.TestCase):
@@ -193,6 +196,80 @@ class CorePluginNoDataTest(tf.test.TestCase):
         """Test the format of the data/logdir endpoint."""
         parsed_object = self._get_json(self.server, "/data/logdir")
         self.assertEqual(parsed_object, {"logdir": self.get_temp_dir()})
+
+
+class CorePluginExperimentMetadataTest(tf.test.TestCase):
+    def _get_json(self, server, path):
+        response = server.get(path)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("Content-Type")
+        )
+        return json.loads(response.get_data().decode("utf-8"))
+
+    def testGetEnvironmentDataWithExperimentMetadata(self):
+        """Test environment route returns correct metadata about experiment."""
+
+        class FakeDataProvider(object):
+            def data_location(self, experiment_id):
+                del experiment_id  # Unused.
+                return ""
+
+            def experiment_metadata(self, experiment_id):
+                del experiment_id  # Unused.
+                return provider.ExperimentMetadata(
+                    experiment_name="Experiment #5 (実験＃5)",
+                    experiment_description="Take five (😊)",
+                    creation_time=1234.5,
+                )
+
+        self.context = base_plugin.TBContext(
+            flags=FakeFlags(generic_data="true"),
+            data_provider=FakeDataProvider(),
+        )
+
+        self.plugin = core_plugin.CorePlugin(self.context)
+        app = application.TensorBoardWSGI([self.plugin])
+        self.server = werkzeug_test.Client(app, wrappers.BaseResponse)
+
+        parsed_object = self._get_json(self.server, "/data/environment")
+        self.assertEqual(parsed_object["data_location"], "")
+        self.assertEqual(parsed_object["window_title"], None)
+        self.assertEqual(
+            parsed_object["experiment_name"], "Experiment #5 (実験＃5)"
+        )
+        self.assertEqual(
+            parsed_object["experiment_description"], "Take five (😊)"
+        )
+        self.assertEqual(parsed_object["creation_time"], 1234.5)
+
+    def testGetEnvironmentDataWithNoExperimentMetadata(self):
+        """Test environment route works when no experiment metadata exists."""
+
+        class FakeDataProvider(object):
+            def data_location(self, experiment_id):
+                del experiment_id  # Unused.
+                return ""
+
+            def experiment_metadata(self, experiment_id):
+                del experiment_id  # Unused.
+                return None
+
+        self.context = base_plugin.TBContext(
+            flags=FakeFlags(generic_data="true"),
+            data_provider=FakeDataProvider(),
+        )
+
+        self.plugin = core_plugin.CorePlugin(self.context)
+        app = application.TensorBoardWSGI([self.plugin])
+        self.server = werkzeug_test.Client(app, wrappers.BaseResponse)
+
+        parsed_object = self._get_json(self.server, "/data/environment")
+        self.assertEqual(parsed_object["data_location"], "")
+        self.assertEqual(parsed_object["window_title"], None)
+        self.assertNotIn("experiment_name", parsed_object)
+        self.assertNotIn("experiment_description", parsed_object)
+        self.assertNotIn("creation_time", parsed_object)
 
 
 class CorePluginDbModeTest(tf.test.TestCase):

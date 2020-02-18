@@ -19,6 +19,7 @@ import {
   Input,
   Output,
 } from '@angular/core';
+import {Execution} from '../../store/debugger_types';
 
 export interface ExecutionDigestForDisplay {
   // Op type for long-form display.
@@ -57,9 +58,21 @@ export class TimelineComponent {
   @Input()
   displayExecutionDigests: ExecutionDigestForDisplay[] = [];
 
+  @Input()
+  focusedExecutionIndex: number | null = null;
+
+  @Input()
+  focusedExecutionDisplayIndex: number | null = null;
+
+  @Input()
+  focusedExecutionData: Execution | null = null;
+
   @Output()
   onNavigateLeft = new EventEmitter();
 
   @Output()
   onNavigateRight = new EventEmitter();
+
+  @Output()
+  onExecutionDigestClicked = new EventEmitter<number>();
 }

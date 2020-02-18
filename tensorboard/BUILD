@@ -212,6 +212,7 @@ py_library(
         "//tensorboard/plugins/mesh:mesh_plugin",
         "//tensorboard/plugins/pr_curve:pr_curves_plugin",
         "//tensorboard/plugins/profile:profile_plugin_loader",
+        "//tensorboard/plugins/profile_redirect:profile_redirect_plugin",
         "//tensorboard/plugins/scalar:scalars_plugin",
         "//tensorboard/plugins/text:text_plugin",
     ],

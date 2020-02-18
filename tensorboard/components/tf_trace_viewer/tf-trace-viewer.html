@@ -15,6 +15,75 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
+<!--
+If WebComponents V0 are not available, show a warning before any Polymer or
+Trace Viewer scripts can run.
+-->
+<style>
+  .no-webcomponents-container.hidden {
+    display: none;
+  }
+
+  .no-webcomponents-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 80px;
+    font-family: Roboto, sans-serif;
+  }
+
+  .no-webcomponents-container .title {
+    font-size: 22px;
+    font-weight: bold;
+  }
+
+  .no-webcomponents-container .contents {
+    max-width: 600px;
+  }
+</style>
+
+<div class="no-webcomponents-container hidden">
+  <div class="contents">
+    <div class="title">The trace viewer is currently unavailable.</div>
+    <p>
+      For more details, see
+      <a
+        href="https://github.com/tensorflow/tensorboard/issues/3209"
+        rel="noopener"
+        target="_blank"
+        >this issue</a
+      >.
+    </p>
+    <br />
+    <br />
+    <p>
+      If you are running a Chromium-based browser, one workaround is to download
+      your data as JSON and load it in your browser's viewer at
+      "about://tracing". This run's data can be found here:
+    </p>
+  </div>
+</div>
+
+<script>
+  const canUseWebComponentsV0 =
+    typeof document.registerElement === 'function' &&
+    typeof Element.prototype.createShadowRoot === 'function';
+  if (!canUseWebComponentsV0) {
+    const containerEl = document.querySelector('.no-webcomponents-container');
+    const contentsEl = document.querySelector(
+      '.no-webcomponents-container .contents'
+    );
+    containerEl.classList.remove('hidden');
+
+    const currentURL = new URL(window.location.href);
+    const relativeTraceURL = currentURL.searchParams.get('trace_data_url');
+    const traceURL = new URL(relativeTraceURL, window.location.href).toString();
+
+    const profileDataLink = document.createElement('i');
+    profileDataLink.textContent = `${traceURL}`;
+    contentsEl.appendChild(profileDataLink);
+  }
+</script>
+
 <link rel="import" href="trace_viewer_full.html" />
 
 <!--
