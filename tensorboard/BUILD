@@ -208,7 +208,6 @@ py_library(
         "//tensorboard/plugins/histogram:histograms_plugin",
         "//tensorboard/plugins/hparams:hparams_plugin",
         "//tensorboard/plugins/image:images_plugin",
-        "//tensorboard/plugins/interactive_inference:interactive_inference_plugin_loader",
         "//tensorboard/plugins/mesh:mesh_plugin",
         "//tensorboard/plugins/pr_curve:pr_curves_plugin",
         "//tensorboard/plugins/profile:profile_plugin_loader",
