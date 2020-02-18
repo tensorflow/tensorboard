@@ -38,8 +38,7 @@ from tensorboard.util import tb_logging
 from tensorboard.util import tensor_util
 
 # Minimum interval between initiating write RPCs.  When writes would otherwise
-# happen more frequently, the process will sleep to use up the rest of the time
-# to avoid sending write RPCs too quickly.
+# happen more frequently, the process will sleep to use up the rest of the time.
 _MIN_WRITE_RPC_INTERVAL_SECS = 5
 
 # Age in seconds of last write after which an event file is considered inactive.
@@ -212,7 +211,7 @@ class _RequestBuilder(object):
         # TODO(soergel): add blob case here
 
     def send_requests(self, run_to_events):
-        """Converts a stream of TF events to a stream of outgoing requests.
+        """Accepts a stream of TF events and sends batched write RPCs.
 
         Each sent request will be at most `_MAX_REQUEST_LENGTH_BYTES`
         bytes long.
@@ -284,12 +283,11 @@ class _ScalarRequestBuilder(object):
     """Helper class for building requests that fit under a size limit.
 
     This class accumulates a current request.  `add_event(...)` may or may not
-    emit the request (and start a new one).  After all `add_event(...)` calls
-    are complete, a final call to `emit_requests()` is needed to flush the
-    final request.
+    send the request (and start a new one).  After all `add_event(...)` calls
+    are complete, a final call to `flush()` is needed to send the final request.
 
-    This class is not threadsafe. Use external synchronization if
-    calling its methods concurrently.
+    This class is not threadsafe. Use external synchronization if calling its
+    methods concurrently.
     """
 
     def __init__(self, experiment_id, api, rpc_rate_limiter):
@@ -336,7 +334,6 @@ class _ScalarRequestBuilder(object):
                 tag_proto = self._create_tag(run_proto, value.tag, metadata)
                 self._tags[(run_name, value.tag)] = tag_proto
             self._create_point(tag_proto, event, value)
-            return [], True  # no requests this time
         except _OutOfSpaceError:
             if is_retry:
                 raise RuntimeError("add_event failed despite flush")
