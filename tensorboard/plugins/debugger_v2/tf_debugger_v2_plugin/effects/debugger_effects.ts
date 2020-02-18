@@ -515,36 +515,41 @@ export class DebuggerEffects {
             focusType !== null &&
             numAlertsOfFocusedType > 0 &&
             (alertsOfFocusedType === null ||
-              alertsOfFocusedType.length < numAlertsOfFocusedType)
+              Object.keys(alertsOfFocusedType).length < numAlertsOfFocusedType)
           );
         }
       ),
-      mergeMap(([, runId]) => {
+      mergeMap(([, runId, focusType]) => {
         const begin = 0;
         const end = -1; // TODO(cais): Use smarter `end` value.
-        return this.dataSource.fetchAlerts(runId as string, begin, end).pipe(
-          tap((alertsResponse) => {
-            this.store.dispatch(
-              alertsLoaded({
-                numAlerts: alertsResponse.num_alerts,
-                alertsBreakdown: alertsResponse.alerts_breakdown,
-                alerts: alertsResponse.alerts,
-              })
-            );
-            // TODO(cais): Separate into another observable factory.
-            if (alertsResponse.alerts.length > 0) {
-              // TODO(cais): This should scroll to that and focus on it.
-              const alert = alertsResponse.alerts[0] as InfNanAlert;
-              console.log('Focusing onto:', alert.execution_index);
+        return this.dataSource
+          .fetchAlerts(runId as string, begin, end, focusType! as string)
+          .pipe(
+            tap((alertsResponse) => {
               this.store.dispatch(
-                executionDigestFocused({
-                  displayIndex: alert.execution_index,
+                alertsLoaded({
+                  numAlerts: alertsResponse.num_alerts,
+                  alertsBreakdown: alertsResponse.alerts_breakdown,
+                  begin: alertsResponse.begin,
+                  end: alertsResponse.end,
+                  alertType: alertsResponse.alert_type!,
+                  alerts: alertsResponse.alerts,
                 })
               );
-            }
-          }),
-          map(() => void null)
-        );
+              // TODO(cais): Separate into another observable factory.
+              if (alertsResponse.alerts.length > 0) {
+                // TODO(cais): This should scroll to that and focus on it.
+                const alert = alertsResponse.alerts[0] as InfNanAlert;
+                console.log('Focusing onto:', alert.execution_index);
+                this.store.dispatch(
+                  executionDigestFocused({
+                    displayIndex: alert.execution_index,
+                  })
+                );
+              }
+            }),
+            map(() => void null)
+          );
       })
     );
   }

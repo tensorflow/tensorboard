@@ -135,6 +135,11 @@ export interface ExecutionDigestLoadState extends LoadState {
 // the enum values from `AlertType`.
 export type AlertsBreakdown = {[alertType: string]: number};
 
+// Alerts indexed by indices.
+// The index can be either within a particular AlertType, all across
+// all AlertTypes, depending on where this type is used.
+export type AlertsByIndex = {[index: number]: Alert};
+
 export interface Alerts {
   // Load state for alerts.
   // This state can go from LOADED to LOADING, as the alerts can be loaded
@@ -147,7 +152,22 @@ export interface Alerts {
   alertsBreakdown: AlertsBreakdown;
 
   // The alerts that have been loaded so far, by alertType.
-  alerts: {[alertType: string]: Alert[]};
+  // The indices in the value `AlertsByIndex` are indices with in the
+  // specific `alertType`.
+  alerts: {[alertType: string]: AlertsByIndex};
+
+  // TODO(cais): Decide whether to keep this or not.
+  // // The execution and graph execution indices for the alerts that have been
+  // // loaded so far, by alertType. The order of the elements in each value
+  // // array is consistent with that in `alerts`. For alert types that do not
+  // // involve execution (e.g., `FunctionRecompileAlert"), they is not
+  // // corresponding key in this map.
+  // alertsExecutionIndex: {
+  //   [alertType: string]: Array<{
+  //     executionIndex: number;
+  //     graphExecutionIndex: number | null;
+  //   }>;
+  // };
 
   // Which type of existing alerts is focused on (if any).
   // `null` corresponds to no focus.

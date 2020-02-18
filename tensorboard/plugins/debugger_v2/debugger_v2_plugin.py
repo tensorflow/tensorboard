@@ -102,10 +102,12 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
             return _missing_run_error_response(request)
         begin = int(request.args.get("begin", "0"))
         end = int(request.args.get("end", "-1"))
-        print("In serve_alerts(): run=%s, begin=%d, end=%d" %
-             (run, begin, end))  # DEBUG
+        alert_type = request.args.get("alert_type", None)
+        print(
+            "In serve_alerts(): run=%s, begin=%d, end=%d" % (run, begin, end)
+        )  # DEBUG
         run_tag_filter = debug_data_provider.alerts_run_tag_filter(
-            run, begin, end
+            run, begin, end, alert_type=alert_type
         )
         blob_sequences = self._data_provider.read_blob_sequences(
             experiment, self.plugin_name, run_tag_filter=run_tag_filter

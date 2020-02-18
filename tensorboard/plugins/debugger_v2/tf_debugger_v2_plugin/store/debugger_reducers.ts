@@ -45,8 +45,8 @@ const initialState: DebuggerState = {
       lastLoadedTimeInMs: null,
     },
     numAlerts: 0,
-    alerts: {},
     alertsBreakdown: {},
+    alerts: {},
     focusType: null,
   },
   executions: {
@@ -158,25 +158,18 @@ const reducer = createReducer(
       };
     }
   ),
+  // TODO(cais): Add reducers for alertsRequested.
   on(
     actions.alertsLoaded,
     (
       state: DebuggerState,
-      {numAlerts, alertsBreakdown, alerts}
+      {numAlerts, alertsBreakdown, alertType, begin, alerts}
     ): DebuggerState => {
       const runId = state.activeRunId;
       if (runId === null) {
         return state;
       }
 
-      const alertsByType: {[type: string]: Alert[]} = {};
-      for (const alert of alerts) {
-        if (alertsByType[alert.alert_type] === undefined) {
-          alertsByType[alert.alert_type] = [];
-        }
-        alertsByType[alert.alert_type].push(alert);
-      }
-      console.log('alertsByType=', alertsByType); // DEBUG
       const newState = {
         ...state,
         alerts: {
@@ -190,11 +183,19 @@ const reducer = createReducer(
           alertsBreakdown,
           alerts: {
             ...state.alerts.alerts,
-            ...alertsByType,
           },
         },
       };
-      // TODO(cais): Unit test.
+      if (alerts.length === 0) {
+        return newState;
+      }
+      if (newState.alerts.alerts[alertType] === undefined) {
+        newState.alerts.alerts[alertType] = {};
+      }
+      for (let i = 0; i < alerts.length; ++i) {
+        const alertIndex = begin + i;
+        newState.alerts.alerts[alertType][alertIndex] = alerts[i];
+      }
       return newState;
     }
   ),

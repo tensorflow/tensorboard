@@ -68,11 +68,17 @@ export const numAlertsAndBreakdownLoaded = createAction(
   props<{numAlerts: number; alertsBreakdown: AlertsBreakdown}>()
 );
 
+export const alertsRequested = createAction('[Debugger] Alerts Data Requested');
+
+// TODO(cais): Rename this as alertsOfTypeLoaded.
 export const alertsLoaded = createAction(
   '[Debugger] Alerts Data Loaded',
   props<{
     numAlerts: number;
     alertsBreakdown: AlertsBreakdown;
+    alertType: string; // TODO(cais): Better typing.
+    begin: number;
+    end: number;
     alerts: Alert[];
   }>()
 );

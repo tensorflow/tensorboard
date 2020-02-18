@@ -15,7 +15,12 @@ limitations under the License.
 import * as actions from '../actions';
 import {ExecutionDigestsResponse} from '../data_source/tfdbg2_data_source';
 import {reducers} from './debugger_reducers';
-import {DataLoadState, Execution, StackFramesById} from './debugger_types';
+import {
+  DataLoadState,
+  Execution,
+  StackFramesById,
+  AlertType,
+} from './debugger_types';
 import {
   createAlertsState,
   createDebuggerExecutionsState,
@@ -24,6 +29,7 @@ import {
   createDigestsStateWhileLoadingExecutionDigests,
   createTestExecutionData,
   createTestStackFrame,
+  createTestInfNanAlert,
 } from '../testing';
 
 describe('Debugger reducers', () => {
@@ -154,6 +160,90 @@ describe('Debugger reducers', () => {
       InfNanAlerts: 29,
       FunctionRecompileAlerts: 1,
     });
+  });
+
+  it('Updates alerts data on alertsLoaded: empty initial state', () => {
+    const state = createDebuggerState({
+      activeRunId: '__default_debugger_run__',
+    }); // `alerts` state is in an empty initial state.
+    const alert0 = createTestInfNanAlert({
+      op_type: 'RealDiv',
+      execution_index: 10,
+    });
+    const alert1 = createTestInfNanAlert({
+      op_type: 'Log',
+      execution_index: 11,
+    });
+    const nextState = reducers(
+      state,
+      actions.alertsLoaded({
+        numAlerts: 2,
+        alertsBreakdown: {
+          InfNanAlert: 2,
+        },
+        begin: 0,
+        end: 2,
+        alertType: 'InfNanAlert',
+        alerts: [alert0, alert1],
+      })
+    );
+    expect(nextState.alerts.numAlerts).toBe(2);
+    expect(nextState.alerts.alertsBreakdown).toEqual({
+      [AlertType.INF_NAN_ALERT]: 2,
+    });
+    expect(Object.keys(nextState.alerts.alerts)).toEqual([
+      AlertType.INF_NAN_ALERT,
+    ]);
+    const alertsOfType = nextState.alerts.alerts[AlertType.INF_NAN_ALERT];
+    expect(Object.keys(alertsOfType).length).toBe(2);
+    expect(alertsOfType[0]).toEqual(alert0);
+    expect(alertsOfType[1]).toEqual(alert1);
+  });
+
+  it('Updates alerts data on alertsLoaded: non-empty initial state', () => {
+    const alert0 = createTestInfNanAlert({
+      op_type: 'RealDiv',
+      execution_index: 10,
+    });
+    const alert1 = createTestInfNanAlert({
+      op_type: 'Log',
+      execution_index: 11,
+    });
+    const state = createDebuggerState({
+      activeRunId: '__default_debugger_run__',
+      alerts: createAlertsState({
+        numAlerts: 1,
+        alertsBreakdown: {[AlertType.INF_NAN_ALERT]: 1},
+        alerts: {
+          [AlertType.INF_NAN_ALERT]: {0: alert0},
+        },
+      }),
+    }); // `alerts` state is in a non-empty initial state.
+
+    const nextState = reducers(
+      state,
+      actions.alertsLoaded({
+        numAlerts: 2,
+        alertsBreakdown: {
+          InfNanAlert: 2,
+        },
+        begin: 1,
+        end: 2,
+        alertType: 'InfNanAlert',
+        alerts: [alert1],
+      })
+    );
+    expect(nextState.alerts.numAlerts).toBe(2);
+    expect(nextState.alerts.alertsBreakdown).toEqual({
+      [AlertType.INF_NAN_ALERT]: 2,
+    });
+    expect(Object.keys(nextState.alerts.alerts)).toEqual([
+      AlertType.INF_NAN_ALERT,
+    ]);
+    const alertsOfType = nextState.alerts.alerts[AlertType.INF_NAN_ALERT];
+    expect(Object.keys(alertsOfType).length).toBe(2);
+    expect(alertsOfType[0]).toEqual(alert0);
+    expect(alertsOfType[1]).toEqual(alert1);
   });
 
   it('Updates load state on numExecutionsRequested', () => {

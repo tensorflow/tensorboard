@@ -16,6 +16,7 @@ limitations under the License.
 import {createSelector, createFeatureSelector, select} from '@ngrx/store';
 import {
   AlertsBreakdown,
+  AlertsByIndex,
   AlertType,
   DEBUGGER_FEATURE_KEY,
   DebuggerRunListing,
@@ -27,7 +28,6 @@ import {
   StackFrame,
   StackFramesById,
   State,
-  Alert,
 } from './debugger_types';
 
 // HACK: These imports are for type inference.
@@ -89,7 +89,7 @@ export const getNumAlertsOfFocusedType = createSelector(
 
 export const getAlertsOfFocusedType = createSelector(
   selectDebuggerState,
-  (state: DebuggerState): Alert[] | null => {
+  (state: DebuggerState): AlertsByIndex | null => {
     if (state.alerts.focusType === null) {
       return null;
     }
