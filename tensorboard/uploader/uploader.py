@@ -26,7 +26,6 @@ import six
 
 from tensorboard.uploader.proto import write_service_pb2
 from tensorboard.uploader import logdir_loader
-from tensorboard.uploader import peekable_iterator
 from tensorboard.uploader import util
 from tensorboard import data_compat
 from tensorboard.backend.event_processing import directory_loader
@@ -224,12 +223,8 @@ class _RequestBuilder(object):
           RuntimeError: If no progress can be made because even a single
           point is too large (say, due to a gigabyte-long tag name).
         """
-        work_items = peekable_iterator.PeekableIterator(
-            self._run_values(run_to_events)
-        )
 
-        while work_items.has_next():
-            (run_name, event, orig_value) = work_items.peek()
+        for (run_name, event, orig_value) in  self._run_values(run_to_events):
             value = data_compat.migrate_value(orig_value)
             time_series_key = (run_name, value.tag)
 
@@ -260,8 +255,6 @@ class _RequestBuilder(object):
                 )
             # TODO(nielsene): add Tensor plugin cases here
             # TODO(soergel): add Graphs blob case here
-
-            next(work_items)
 
         self._scalar_request_builder.flush()
         # TODO(nielsene): add tensor case here
