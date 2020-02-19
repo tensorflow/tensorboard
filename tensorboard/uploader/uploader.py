@@ -310,7 +310,7 @@ class _ScalarBatchedRequestSender(object):
         if self._byte_budget < 0:
             raise RuntimeError("Byte budget too small for experiment ID")
 
-    def add_event(self, run_name, event, value, metadata, is_retry=False):
+    def add_event(self, run_name, event, value, metadata):
         """Attempts to add the given event to the current request.
 
         If the event cannot be added to the current request because the byte
@@ -318,23 +318,26 @@ class _ScalarBatchedRequestSender(object):
         to the next request.
         """
         try:
-            run_proto = self._runs.get(run_name)
-            if run_proto is None:
-                run_proto = self._create_run(run_name)
-                self._runs[run_name] = run_proto
-            tag_proto = self._tags.get((run_name, value.tag))
-            if tag_proto is None:
-                tag_proto = self._create_tag(run_proto, value.tag, metadata)
-                self._tags[(run_name, value.tag)] = tag_proto
-            self._create_point(tag_proto, event, value)
+            self._add_event_internal(run_name, event, value, metadata)
         except _OutOfSpaceError:
-            if is_retry:
-                raise RuntimeError("add_event failed despite flush")
             self.flush()
             # Try again.  This attempt should never produce OutOfSpaceError
-            # because we just flushed.  Nonetheless we use the is_retry
-            # mechanism to enforce that we don't recurse more than once.
-            self.add_event(run_name, event, value, metadata, is_retry=True)
+            # because we just flushed.
+            try:
+                self._add_event_internal(run_name, event, value, metadata)
+            except _OutOfSpaceError:
+                raise RuntimeError("add_event failed despite flush")
+
+    def _add_event_internal(self, run_name, event, value, metadata):
+        run_proto = self._runs.get(run_name)
+        if run_proto is None:
+            run_proto = self._create_run(run_name)
+            self._runs[run_name] = run_proto
+        tag_proto = self._tags.get((run_name, value.tag))
+        if tag_proto is None:
+            tag_proto = self._create_tag(run_proto, value.tag, metadata)
+            self._tags[(run_name, value.tag)] = tag_proto
+        self._create_point(tag_proto, event, value)
 
     def flush(self):
         """Sends the active request after removing empty runs and tags.
