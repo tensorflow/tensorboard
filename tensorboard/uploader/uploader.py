@@ -63,6 +63,9 @@ logger = tb_logging.get_logger()
 # Graph events exist at the Run level and have no tag.  Add a synthetic one.
 GRAPH_TAG_NAME = "graph_def"
 
+ # 4e6 bytes (4 MB) leaves breathing room within 2^22 (4 MiB) gRPC limit
+BLOB_CHUNK_SIZE = 4000000
+
 class TensorBoardUploader(object):
     """Uploads a TensorBoard logdir to TensorBoard.dev."""
 
@@ -276,10 +279,11 @@ class _RequestBuilder(object):
 
     def _send_graph(self, run_name, event):
         tag_name = GRAPH_TAG_NAME
+        seq_index = 0 # there is only one run-level graph
         blob = _extract_graph(event)
         metadata = None # graph events carry no SummaryMetadata
         self._blob_request_builder.add_event(
-            run_name, tag_name, event, blob, metadata
+            run_name, tag_name, event, seq_index, blob, metadata
         )
 
     def _run_events(self, run_to_events):
@@ -500,7 +504,7 @@ class _BlobRequestBuilder(object):
         self._blob = None
         self._metadata = None
 
-    def add_event(self, run_name, tag_name, event, blob, metadata, is_retry=False):
+    def add_event(self, run_name, tag_name, event, seq_index, blob, metadata, is_retry=False):
         """Attempts to add the given event to the current request.
 
         If the event cannot be added to the current request because the byte
@@ -511,7 +515,8 @@ class _BlobRequestBuilder(object):
             raise RuntimeError("Tried to send blob while another is pending")
         self._run_name = run_name
         self._tag_name = tag_name
-        self._event = event
+        self._event = event # provides step and possibly plugin_name
+        self._seq_index = seq_index
         self._blob = blob
         self._metadata = metadata
         self.flush()
@@ -520,32 +525,67 @@ class _BlobRequestBuilder(object):
         """Sends the current blob fully, and clears it to make way for the next.
         """
         if self._blob:
+             # Note the _send_blob() stream is internally rate-limited.
             self._rpc_rate_limiter.tick()
 
             # TODO(soergel): Here or elsewhere, account for sending multiple blobs
             # in the same sequence without refreshing the blob_sequence_id each time
-
-            request = write_service_pb2.GetOrCreateBlobSequenceRequest(
-                experiment_id=self._experiment_id,
-                run=self._run_name,
-                tag=self._tag_name,
-                step=self._event.step,
-                final_sequence_length=1,
-                metadata=metadata
-            )
-            util.set_timestamp(request.wall_time, event.wall_time)
-
-            with RequestLogger(request):
-                try:
-                    # TODO(@nfelt): execute this RPC asynchronously.
-                    response = grpc_util.call_with_retries(self._api.GetOrCreateBlobSequence, request)
-                    blob_sequence_id = response.blob_sequence_id
-                except grpc.RpcError as e:
-                    if e.code() == grpc.StatusCode.NOT_FOUND:
-                        raise ExperimentNotFoundError()
-                    logger.error("Upload call failed with error %s", e)
+            blob_sequence_id = self._get_or_create_blob_sequence()
+            self._send_blob(blob_sequence_id, self._seq_index, self._blob)
 
         self._new_request()
+
+    def _get_or_create_blob_sequence(self):
+        request = write_service_pb2.GetOrCreateBlobSequenceRequest(
+            experiment_id=self._experiment_id,
+            run=self._run_name,
+            tag=self._tag_name,
+            step=self._event.step,
+            final_sequence_length=1,
+            metadata=self._metadata
+        )
+        util.set_timestamp(request.wall_time, self._event.wall_time)
+
+        with RequestLogger(request):
+            try:
+                # TODO(@nfelt): execute this RPC asynchronously.
+                response = grpc_util.call_with_retries(self._api.GetOrCreateBlobSequence, request)
+                blob_sequence_id = response.blob_sequence_id
+            except grpc.RpcError as e:
+                if e.code() == grpc.StatusCode.NOT_FOUND:
+                    raise ExperimentNotFoundError()
+                logger.error("Upload call failed with error %s", e)
+
+        return blob_sequence_id
+
+    def _send_blob(self, blob_sequence_id, seq_index, blob):
+        # TODO(soergel): retry and resume logic
+
+        request_iterator = self._write_blob_request_iterator(blob_sequence_id, seq_index, blob)
+        # TODO(soergel): don't wait for responses for greater throughput
+        # See https://stackoverflow.com/questions/55029342/handling-async-streaming-request-in-grpc-python
+        for _ in self._api.WriteBlob(request_iterator):
+            # TODO(soergel): validate responses?  probably not.
+            pass
+
+    def _write_blob_request_iterator(self, blob_sequence_id, seq_index, blob):
+        # For now all use cases have the blob in memory already.
+        # In the future we may want to stream from disk; that will require
+        # refactoring here.
+        for offset in range(0, len(blob), BLOB_CHUNK_SIZE):
+            chunk = blob[offset:offset+BLOB_CHUNK_SIZE]
+            finalize_object = offset+BLOB_CHUNK_SIZE >= len(blob)
+            request = write_service_pb2.WriteBlobRequest(
+                blob_sequence_id=blob_sequence_id,
+                index=seq_index,
+                data=chunk,
+                offset=offset,
+                crc32c=None,
+                finalize_object=finalize_object,
+                final_crc32c=None
+            )
+            yield request
+
 
 class RequestLogger:
     def __init__(self, request):
