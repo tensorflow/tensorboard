@@ -180,6 +180,7 @@ class _OutOfSpaceError(Exception):
     This is a signaling exception (like `StopIteration`) used internally
     by `_*RequestSender`; it does not mean that anything has gone wrong.
     """
+
     pass
 
 
@@ -454,6 +455,7 @@ def _request_logger(request):
         request_bytes,
         upload_duration_secs,
     )
+
 
 def _varint_cost(n):
     """Computes the size of `n` encoded as an unsigned base-128 varint.

@@ -644,7 +644,9 @@ class BatchedRequestSenderTest(tf.test.TestCase):
             [("train", [event_1]), ("test", [event_2])]
         )
 
-        real_create_point = uploader_lib._ScalarBatchedRequestSender._create_point
+        real_create_point = (
+            uploader_lib._ScalarBatchedRequestSender._create_point
+        )
 
         create_point_call_count_box = [0]
 
