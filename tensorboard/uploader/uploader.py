@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import contextlib
 import functools
 import time
 
@@ -79,7 +80,7 @@ class TensorBoardUploader(object):
         """
         self._api = writer_client
         self._logdir = logdir
-        self._request_builder = None
+        self._request_sender = None
         if rpc_rate_limiter is None:
             self._rpc_rate_limiter = util.RateLimiter(
                 _MIN_WRITE_RPC_INTERVAL_SECS
@@ -106,7 +107,7 @@ class TensorBoardUploader(object):
         response = grpc_util.call_with_retries(
             self._api.CreateExperiment, request
         )
-        self._request_builder = _RequestBuilder(
+        self._request_sender = _BatchedRequestSender(
             response.experiment_id, self._api, self._rpc_rate_limiter
         )
         return response.experiment_id
@@ -119,7 +120,7 @@ class TensorBoardUploader(object):
           ExperimentNotFoundError: If the experiment is deleted during the
             course of the upload.
         """
-        if self._request_builder is None:
+        if self._request_sender is None:
             raise RuntimeError(
                 "Must call create_experiment() before start_uploading()"
             )
@@ -136,7 +137,7 @@ class TensorBoardUploader(object):
         logger.info("Logdir sync took %.3f seconds", sync_duration_secs)
 
         run_to_events = self._logdir_loader.get_run_events()
-        self._request_builder.send_requests(run_to_events)
+        self._request_sender.send_requests(run_to_events)
 
 
 def delete_experiment(writer_client, experiment_id):
@@ -177,13 +178,12 @@ class _OutOfSpaceError(Exception):
     """Action could not proceed without overflowing request budget.
 
     This is a signaling exception (like `StopIteration`) used internally
-    by `_*RequestBuilder`; it does not mean that anything has gone wrong.
+    by `_*RequestSender`; it does not mean that anything has gone wrong.
     """
-
     pass
 
 
-class _RequestBuilder(object):
+class _BatchedRequestSender(object):
     """Helper class for building requests that fit under a size limit.
 
     This class maintains stateful request builders for each of the possible
@@ -202,7 +202,7 @@ class _RequestBuilder(object):
         # Map from `(run_name, tag_name)` to `SummaryMetadata` if the time
         # series is a scalar time series, else to `_NON_SCALAR_TIME_SERIES`.
         self._tag_metadata = {}
-        self._scalar_request_builder = _ScalarRequestBuilder(
+        self._scalar_request_sender = _ScalarBatchedRequestSender(
             experiment_id, api, rpc_rate_limiter
         )
 
@@ -236,7 +236,6 @@ class _RequestBuilder(object):
                 metadata = value.metadata
                 self._tag_metadata[time_series_key] = metadata
 
-            requests = []  # we may assign a generator
             if value.HasField("metadata") and (
                 value.metadata.plugin_data.plugin_name
                 != metadata.plugin_data.plugin_name
@@ -250,13 +249,13 @@ class _RequestBuilder(object):
             elif (
                 metadata.plugin_data.plugin_name == scalar_metadata.PLUGIN_NAME
             ):
-                self._scalar_request_builder.add_event(
+                self._scalar_request_sender.add_event(
                     run_name, event, value, metadata
                 )
             # TODO(nielsene): add Tensor plugin cases here
             # TODO(soergel): add Graphs blob case here
 
-        self._scalar_request_builder.flush()
+        self._scalar_request_sender.flush()
         # TODO(nielsene): add tensor case here
         # TODO(soergel): add blob case here
 
@@ -272,7 +271,7 @@ class _RequestBuilder(object):
                     yield (run_name, event, value)
 
 
-class _ScalarRequestBuilder(object):
+class _ScalarBatchedRequestSender(object):
     """Helper class for building requests that fit under a size limit.
 
     This class accumulates a current request.  `add_event(...)` may or may not
@@ -353,7 +352,7 @@ class _ScalarRequestBuilder(object):
 
         self._rpc_rate_limiter.tick()
 
-        with RequestLogger(request):
+        with _request_logger(request):
             try:
                 # TODO(@nfelt): execute this RPC asynchronously.
                 grpc_util.call_with_retries(self._api.WriteScalar, request)
@@ -442,25 +441,19 @@ class _ScalarRequestBuilder(object):
         return point
 
 
-class RequestLogger:
-    def __init__(self, request):
-        self._request = request
-
-    def __enter__(self):
-        self._upload_start_time = time.time()
-        self._request_bytes = self._request.ByteSize()
-        logger.info("Trying request of %d bytes", self._request_bytes)
-        return self
-
-    def __exit__(self, exc_type, exc_value, exc_traceback):
-        upload_duration_secs = time.time() - self._upload_start_time
-        logger.info(
-            "Upload for %d runs (%d bytes) took %.3f seconds",
-            len(self._request.runs),
-            self._request_bytes,
-            upload_duration_secs,
-        )
-
+@contextlib.contextmanager
+def _request_logger(request):
+    upload_start_time = time.time()
+    request_bytes = request.ByteSize()
+    logger.info("Trying request of %d bytes", request_bytes)
+    yield
+    upload_duration_secs = time.time() - upload_start_time
+    logger.info(
+        "Upload for %d runs (%d bytes) took %.3f seconds",
+        len(request.runs),
+        request_bytes,
+        upload_duration_secs,
+    )
 
 def _varint_cost(n):
     """Computes the size of `n` encoded as an unsigned base-128 varint.
