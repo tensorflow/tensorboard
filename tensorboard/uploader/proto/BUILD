@@ -11,6 +11,7 @@ tb_proto_library(
     name = "protos_all",
     srcs = [
         "blob.proto",
+        "experiment.proto",
         "export_service.proto",
         "scalar.proto",
         "server_info.proto",
@@ -18,7 +19,5 @@ tb_proto_library(
         "write_service.proto",
     ],
     has_services = True,
-    deps = [
-        "//tensorboard/compat/proto:protos_all",
-    ],
+    deps = ["//tensorboard/compat/proto:protos_all"],
 )

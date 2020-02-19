@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package tensorboard.service;
+
+import "google/protobuf/timestamp.proto";
+
+// Resource message representing an Experiment.
+message Experiment {
+  // Permanent ID of this experiment; e.g.: "AdYd1TgeTlaLWXx6I8JUbA".
+  // Output-only.
+  string experiment_id = 1;
+  // The time that the experiment was created. Output-only.
+  google.protobuf.Timestamp create_time = 2;
+  // The time that the experiment was last modified: i.e., the most recent time
+  // that scalars were added to the experiment. Output-only.
+  google.protobuf.Timestamp update_time = 3;
+  // The number of scalars in this experiment, across all time series.
+  // Output-only.
+  int64 num_scalars = 4;
+  // The number of distinct run names in this experiment. Output-only.
+  int64 num_runs = 5;
+  // The number of distinct tag names in this experiment. A tag name that
+  // appears in multiple runs will be counted only once. Output-only.
+  int64 num_tags = 6;
+  // User provided name of the experiment.
+  string name = 7;
+  // User provided description of the experiment, in markdown source format.
+  string description = 8;
+  // The number of bytes used for storage of tensors in this experiment,
+  // across all time series, including estimated overhead. Output-only.
+  int64 total_tensor_bytes = 9;
+}
+
+// Field mask for `Experiment` used in get and update RPCs. The `experiment_id`
+// field is always implicitly considered to be set.
+message ExperimentMask {
+  reserved 1;
+  reserved "experiment_id";
+  bool create_time = 2;
+  bool update_time = 3;
+  bool num_scalars = 4;
+  bool num_runs = 5;
+  bool num_tags = 6;
+  bool name = 7;
+  bool description = 8;
+  bool total_tensor_bytes = 9;
+}
