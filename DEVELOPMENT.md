@@ -80,13 +80,14 @@ When enabled by default, this also works with editor plugins like
 
 ### iBazel: A file watcher for Bazel.
 
-Bazel is capable incrementally builds where it builds only subset of files that
-are impacted by file changes, but it does not come with a file watcher. For an
-improved developer experience, start TensorBoard with `ibazel` instead of
-`bazel` which will automatically re-build and start the server when files
-change.
+Bazel is capable of performing incremental builds where it builds only the
+subset of files that are impacted by file changes. However, it does not come
+with a file watcher. For an improved developer experience, start TensorBoard
+with `ibazel` instead of `bazel` which will automatically re-build and start the
+server when files change.
 
-If you do not have `ibazel` binary on your system, you can do use command below.
+If you do not have the ibazel binary on your system, you can use the command
+below.
 
 ```sh
 # Optionally run `yarn` to keep `node_modules` up-to-date.
