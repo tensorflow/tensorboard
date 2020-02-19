@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import contextlib
 import functools
 import time
 
@@ -85,7 +86,7 @@ class TensorBoardUploader(object):
         """
         self._api = writer_client
         self._logdir = logdir
-        self._request_builder = None
+        self._request_sender = None
         if rpc_rate_limiter is None:
             self._rpc_rate_limiter = util.RateLimiter(
                 _MIN_WRITE_RPC_INTERVAL_SECS
@@ -112,7 +113,7 @@ class TensorBoardUploader(object):
         response = grpc_util.call_with_retries(
             self._api.CreateExperiment, request
         )
-        self._request_builder = _RequestBuilder(
+        self._request_sender = _BatchedRequestSender(
             response.experiment_id, self._api, self._rpc_rate_limiter
         )
         return response.experiment_id
@@ -125,7 +126,7 @@ class TensorBoardUploader(object):
           ExperimentNotFoundError: If the experiment is deleted during the
             course of the upload.
         """
-        if self._request_builder is None:
+        if self._request_sender is None:
             raise RuntimeError(
                 "Must call create_experiment() before start_uploading()"
             )
@@ -142,7 +143,7 @@ class TensorBoardUploader(object):
         logger.info("Logdir sync took %.3f seconds", sync_duration_secs)
 
         run_to_events = self._logdir_loader.get_run_events()
-        self._request_builder.send_requests(run_to_events)
+        self._request_sender.send_requests(run_to_events)
 
 
 def delete_experiment(writer_client, experiment_id):
@@ -183,13 +184,13 @@ class _OutOfSpaceError(Exception):
     """Action could not proceed without overflowing request budget.
 
     This is a signaling exception (like `StopIteration`) used internally
-    by `_*RequestBuilder`; it does not mean that anything has gone wrong.
+    by `_*RequestSender`; it does not mean that anything has gone wrong.
     """
 
     pass
 
 
-class _RequestBuilder(object):
+class _BatchedRequestSender(object):
     """Helper class for building requests that fit under a size limit.
 
     This class maintains stateful request builders for each of the possible
@@ -208,10 +209,10 @@ class _RequestBuilder(object):
         # Map from `(run_name, tag_name)` to `SummaryMetadata` if the time
         # series is a scalar time series, else to `_NON_SCALAR_TIME_SERIES`.
         self._tag_metadata = {}
-        self._scalar_request_builder = _ScalarRequestBuilder(
+        self._scalar_request_sender = _ScalarBatchedRequestSender(
             experiment_id, api, rpc_rate_limiter
         )
-        self._blob_request_builder = _BlobRequestBuilder(
+        self._blob_request_sender = _BlobRequestSender(
             experiment_id, api, rpc_rate_limiter
         )
 
@@ -241,9 +242,9 @@ class _RequestBuilder(object):
             elif event.graph_def or event.meta_graph_def:
                 self._send_graph(run_name, event)
 
-        self._scalar_request_builder.flush()
+        self._scalar_request_sender.flush()
         # TODO(nielsene): add tensor case here
-        self._blob_request_builder.flush()
+        self._blob_request_sender.flush()
 
     def _send_summary_value(self, run_name, event, orig_value):
         value = data_compat.migrate_value(orig_value)
@@ -272,7 +273,7 @@ class _RequestBuilder(object):
         elif (
             metadata.plugin_data.plugin_name == scalar_metadata.PLUGIN_NAME
         ):
-            self._scalar_request_builder.add_event(
+            self._scalar_request_sender.add_event(
                 run_name, event, value, metadata
             )
         # TODO(nielsene): add Tensor plugin cases here
@@ -282,7 +283,7 @@ class _RequestBuilder(object):
         seq_index = 0 # there is only one run-level graph
         blob = _extract_graph(event)
         metadata = None # graph events carry no SummaryMetadata
-        self._blob_request_builder.add_event(
+        self._blob_request_sender.add_event(
             run_name, tag_name, event, seq_index, blob, metadata
         )
 
@@ -306,7 +307,7 @@ class _RequestBuilder(object):
                 yield value
 
 
-class _ScalarRequestBuilder(object):
+class _ScalarBatchedRequestSender(object):
     """Helper class for building requests that fit under a size limit.
 
     This class accumulates a current request.  `add_event(...)` may or may not
@@ -344,7 +345,7 @@ class _ScalarRequestBuilder(object):
         if self._byte_budget < 0:
             raise RuntimeError("Byte budget too small for experiment ID")
 
-    def add_event(self, run_name, event, value, metadata, is_retry=False):
+    def add_event(self, run_name, event, value, metadata):
         """Attempts to add the given event to the current request.
 
         If the event cannot be added to the current request because the byte
@@ -352,23 +353,26 @@ class _ScalarRequestBuilder(object):
         to the next request.
         """
         try:
-            run_proto = self._runs.get(run_name)
-            if run_proto is None:
-                run_proto = self._create_run(run_name)
-                self._runs[run_name] = run_proto
-            tag_proto = self._tags.get((run_name, value.tag))
-            if tag_proto is None:
-                tag_proto = self._create_tag(run_proto, value.tag, metadata)
-                self._tags[(run_name, value.tag)] = tag_proto
-            self._create_point(tag_proto, event, value)
+            self._add_event_internal(run_name, event, value, metadata)
         except _OutOfSpaceError:
-            if is_retry:
-                raise RuntimeError("add_event failed despite flush")
             self.flush()
             # Try again.  This attempt should never produce OutOfSpaceError
-            # because we just flushed.  Nonetheless we use the is_retry
-            # mechanism to enforce that we don't recurse more than once.
-            self.add_event(run_name, event, value, metadata, is_retry=True)
+            # because we just flushed.
+            try:
+                self._add_event_internal(run_name, event, value, metadata)
+            except _OutOfSpaceError:
+                raise RuntimeError("add_event failed despite flush")
+
+    def _add_event_internal(self, run_name, event, value, metadata):
+        run_proto = self._runs.get(run_name)
+        if run_proto is None:
+            run_proto = self._create_run(run_name)
+            self._runs[run_name] = run_proto
+        tag_proto = self._tags.get((run_name, value.tag))
+        if tag_proto is None:
+            tag_proto = self._create_tag(run_proto, value.tag, metadata)
+            self._tags[(run_name, value.tag)] = tag_proto
+        self._create_point(tag_proto, event, value)
 
     def flush(self):
         """Sends the active request after removing empty runs and tags.
@@ -387,7 +391,7 @@ class _ScalarRequestBuilder(object):
 
         self._rpc_rate_limiter.tick()
 
-        with RequestLogger(request):
+        with _request_logger(request):
             try:
                 # TODO(@nfelt): execute this RPC asynchronously.
                 grpc_util.call_with_retries(self._api.WriteScalar, request)
@@ -475,7 +479,7 @@ class _ScalarRequestBuilder(object):
         self._byte_budget -= cost
         return point
 
-class _BlobRequestBuilder(object):
+class _BlobRequestSender(object):
     """Uploader for blob-type event data.
 
     Unlike the other types, this class does not accumulate events in batches;
@@ -587,24 +591,19 @@ class _BlobRequestBuilder(object):
             yield request
 
 
-class RequestLogger:
-    def __init__(self, request):
-        self._request = request
-
-    def __enter__(self):
-        self._upload_start_time = time.time()
-        self._request_bytes = self._request.ByteSize()
-        logger.info("Trying request of %d bytes", self._request_bytes)
-        return self
-
-    def __exit__(self, exc_type, exc_value, exc_traceback):
-        upload_duration_secs = time.time() - self._upload_start_time
-        logger.info(
-            "Upload for %d runs (%d bytes) took %.3f seconds",
-            len(self._request.runs),
-            self._request_bytes,
-            upload_duration_secs,
-        )
+@contextlib.contextmanager
+def _request_logger(request):
+    upload_start_time = time.time()
+    request_bytes = request.ByteSize()
+    logger.info("Trying request of %d bytes", request_bytes)
+    yield
+    upload_duration_secs = time.time() - upload_start_time
+    logger.info(
+        "Upload for %d runs (%d bytes) took %.3f seconds",
+        len(request.runs),
+        request_bytes,
+        upload_duration_secs,
+    )
 
 
 def _extract_graph(event):
