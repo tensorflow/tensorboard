@@ -530,9 +530,15 @@ namespace vz_projector {
         let labels = new Array(sampledIndices.length);
         sampledIndices.forEach(
           (index, i) =>
-            (labels[i] = this.points[index].metadata[
-              superviseColumn
-            ].toString())
+            {
+              let label = this.points[index].metadata[superviseColumn];
+              if(!label || !label.toString()) {
+                // if rows don't match up, backfill unknown values.
+                label = "unknown #" + index.toString();
+                this.points[index].metadata[superviseColumn] = label;
+              }
+              labels[i] = label.toString();
+            }
         );
         this.superviseLabels = labels;
       }
