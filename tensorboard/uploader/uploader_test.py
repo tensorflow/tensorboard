@@ -37,6 +37,7 @@ from tensorboard.uploader.proto import write_service_pb2
 from tensorboard.uploader.proto import write_service_pb2_grpc
 from tensorboard.uploader import test_util
 from tensorboard.uploader import uploader as uploader_lib
+from tensorboard.uploader import logdir_loader
 from tensorboard.uploader import util
 from tensorboard.compat.proto import event_pb2
 from tensorboard.compat.proto import summary_pb2
@@ -50,65 +51,73 @@ class AbortUploadError(Exception):
     """Exception used in testing to abort the upload process."""
 
 
-class TensorboardUploaderTest(tf.test.TestCase):
-    def _create_mock_client(self):
-        # Create a stub instance (using a test channel) in order to derive a mock
-        # from it with autospec enabled. Mocking TensorBoardWriterServiceStub itself
-        # doesn't work with autospec because grpc constructs stubs via metaclassing.
-        test_channel = grpc_testing.channel(
-            service_descriptors=[], time=grpc_testing.strict_real_time()
-        )
-        stub = write_service_pb2_grpc.TensorBoardWriterServiceStub(test_channel)
-        mock_client = mock.create_autospec(stub)
-        fake_exp_response = write_service_pb2.CreateExperimentResponse(
-            experiment_id="123", url="should not be used!"
-        )
-        mock_client.CreateExperiment.return_value = fake_exp_response
-        return mock_client
+def _create_mock_client():
+    # Create a stub instance (using a test channel) in order to derive a mock
+    # from it with autospec enabled. Mocking TensorBoardWriterServiceStub itself
+    # doesn't work with autospec because grpc constructs stubs via metaclassing.
+    test_channel = grpc_testing.channel(
+        service_descriptors=[], time=grpc_testing.strict_real_time()
+    )
+    stub = write_service_pb2_grpc.TensorBoardWriterServiceStub(test_channel)
+    mock_client = mock.create_autospec(stub)
+    fake_exp_response = write_service_pb2.CreateExperimentResponse(
+        experiment_id="123", url="should not be used!"
+    )
+    mock_client.CreateExperiment.return_value = fake_exp_response
+    return mock_client
 
+
+class TensorboardUploaderTest(tf.test.TestCase):
     def test_create_experiment(self):
         logdir = "/logs/foo"
-        mock_client = self._create_mock_client()
+        mock_client = _create_mock_client()
         uploader = uploader_lib.TensorBoardUploader(mock_client, logdir)
         eid = uploader.create_experiment()
         self.assertEqual(eid, "123")
 
     def test_start_uploading_without_create_experiment_fails(self):
-        mock_client = self._create_mock_client()
+        mock_client = _create_mock_client()
         uploader = uploader_lib.TensorBoardUploader(mock_client, "/logs/foo")
         with self.assertRaisesRegex(RuntimeError, "call create_experiment()"):
             uploader.start_uploading()
 
+    # Send each Event below in a separate WriteScalarRequest
+    @mock.patch.object(uploader_lib, "_MAX_REQUEST_LENGTH_BYTES", 100)
     def test_start_uploading(self):
-        mock_client = self._create_mock_client()
+        mock_client = _create_mock_client()
         mock_rate_limiter = mock.create_autospec(util.RateLimiter)
         uploader = uploader_lib.TensorBoardUploader(
             mock_client, "/logs/foo", mock_rate_limiter
         )
         uploader.create_experiment()
-        mock_builder = mock.create_autospec(uploader_lib._RequestBuilder)
-        request = write_service_pb2.WriteScalarRequest()
-        mock_builder.build_requests.side_effect = [
-            iter([request, request]),
-            iter([request, request, request, request, request]),
+
+        def scalar_event(tag, value):
+            return event_pb2.Event(summary=scalar_v2.scalar_pb(tag, value))
+
+        mock_logdir_loader = mock.create_autospec(logdir_loader.LogdirLoader)
+        mock_logdir_loader.get_run_events.side_effect = [
+            {
+                "run 1": [scalar_event("1.1", 5.0), scalar_event("1.2", 5.0)],
+                "run 2": [scalar_event("2.1", 5.0), scalar_event("2.2", 5.0)],
+            },
+            {
+                "run 3": [scalar_event("3.1", 5.0), scalar_event("3.2", 5.0)],
+                "run 4": [scalar_event("4.1", 5.0), scalar_event("4.2", 5.0)],
+                "run 5": [scalar_event("5.1", 5.0), scalar_event("5.2", 5.0)],
+            },
             AbortUploadError,
         ]
-        # pylint: disable=g-backslash-continuation
+
         with mock.patch.object(
-            uploader, "_upload"
-        ) as mock_upload, mock.patch.object(
-            uploader, "_request_builder", mock_builder
-        ), self.assertRaises(
-            AbortUploadError
-        ):
+            uploader, "_logdir_loader", mock_logdir_loader
+        ), self.assertRaises(AbortUploadError):
             uploader.start_uploading()
-        # pylint: enable=g-backslash-continuation
-        self.assertEqual(7, mock_upload.call_count)
-        self.assertEqual(2 + 5 + 1, mock_rate_limiter.tick.call_count)
+        self.assertEqual(4 + 6, mock_client.WriteScalar.call_count)
+        self.assertEqual(4 + 6, mock_rate_limiter.tick.call_count)
 
     def test_upload_empty_logdir(self):
         logdir = self.get_temp_dir()
-        mock_client = self._create_mock_client()
+        mock_client = _create_mock_client()
         mock_rate_limiter = mock.create_autospec(util.RateLimiter)
         uploader = uploader_lib.TensorBoardUploader(
             mock_client, logdir, mock_rate_limiter
@@ -121,7 +130,7 @@ class TensorboardUploaderTest(tf.test.TestCase):
         logdir = self.get_temp_dir()
         with tb_test_util.FileWriter(logdir) as writer:
             writer.add_test_summary("foo")
-        mock_client = self._create_mock_client()
+        mock_client = _create_mock_client()
         mock_rate_limiter = mock.create_autospec(util.RateLimiter)
         uploader = uploader_lib.TensorBoardUploader(
             mock_client, logdir, mock_rate_limiter
@@ -136,7 +145,7 @@ class TensorboardUploaderTest(tf.test.TestCase):
         logdir = self.get_temp_dir()
         with tb_test_util.FileWriter(logdir) as writer:
             writer.add_test_summary("foo")
-        mock_client = self._create_mock_client()
+        mock_client = _create_mock_client()
         mock_rate_limiter = mock.create_autospec(util.RateLimiter)
         uploader = uploader_lib.TensorBoardUploader(
             mock_client, logdir, mock_rate_limiter
@@ -158,7 +167,7 @@ class TensorboardUploaderTest(tf.test.TestCase):
                     summary=scalar_v2.scalar_pb("foo", 5.0),
                 )
             )
-        mock_client = self._create_mock_client()
+        mock_client = _create_mock_client()
         mock_rate_limiter = mock.create_autospec(util.RateLimiter)
         uploader = uploader_lib.TensorBoardUploader(
             mock_client, logdir, mock_rate_limiter
@@ -176,7 +185,7 @@ class TensorboardUploaderTest(tf.test.TestCase):
 
     def test_upload_full_logdir(self):
         logdir = self.get_temp_dir()
-        mock_client = self._create_mock_client()
+        mock_client = _create_mock_client()
         mock_rate_limiter = mock.create_autospec(util.RateLimiter)
         uploader = uploader_lib.TensorBoardUploader(
             mock_client, logdir, mock_rate_limiter
@@ -220,7 +229,7 @@ class TensorboardUploaderTest(tf.test.TestCase):
                         tag(
                             name="bar",
                             metadata=test_util.scalar_metadata("bar"),
-                            points=[point(step=3, value=8.0),],
+                            points=[point(step=3, value=8.0)],
                         ),
                     ],
                 ),
@@ -230,8 +239,8 @@ class TensorboardUploaderTest(tf.test.TestCase):
                         tag(
                             name="qux",
                             metadata=test_util.scalar_metadata("qux"),
-                            points=[point(step=2, value=9.0),],
-                        ),
+                            points=[point(step=2, value=9.0)],
+                        )
                     ],
                 ),
             ],
@@ -259,12 +268,12 @@ class TensorboardUploaderTest(tf.test.TestCase):
                         tag(
                             name="foo",
                             metadata=test_util.scalar_metadata("foo"),
-                            points=[point(step=5, value=10.0),],
+                            points=[point(step=5, value=10.0)],
                         ),
                         tag(
                             name="baz",
                             metadata=test_util.scalar_metadata("baz"),
-                            points=[point(step=1, value=11.0),],
+                            points=[point(step=1, value=11.0)],
                         ),
                     ],
                 ),
@@ -274,8 +283,8 @@ class TensorboardUploaderTest(tf.test.TestCase):
                         tag(
                             name="xyz",
                             metadata=test_util.scalar_metadata("xyz"),
-                            points=[point(step=1, value=12.0),],
-                        ),
+                            points=[point(step=1, value=12.0)],
+                        )
                     ],
                 ),
             ],
@@ -288,15 +297,20 @@ class TensorboardUploaderTest(tf.test.TestCase):
         mock_client.WriteScalar.assert_not_called()
 
 
-class RequestBuilderTest(tf.test.TestCase):
+class BatchedRequestSenderTest(tf.test.TestCase):
     def _populate_run_from_events(self, run_proto, events):
-        builder = uploader_lib._RequestBuilder(experiment_id="123")
-        requests = builder.build_requests({"": events})
-        request = next(requests, None)
-        if request is not None:
-            self.assertLen(request.runs, 1)
-            run_proto.MergeFrom(request.runs[0])
-            self.assertIsNone(next(requests, None))
+        mock_client = _create_mock_client()
+        builder = uploader_lib._BatchedRequestSender(
+            experiment_id="123",
+            api=mock_client,
+            rpc_rate_limiter=util.RateLimiter(0),
+        )
+        builder.send_requests({"": events})
+        requests = [c[0][0] for c in mock_client.WriteScalar.call_args_list]
+        if requests:
+            self.assertLen(requests, 1)
+            self.assertLen(requests[0].runs, 1)
+            run_proto.MergeFrom(requests[0].runs[0])
 
     def test_empty_events(self):
         run_proto = write_service_pb2.WriteScalarRequest.Run()
@@ -363,6 +377,20 @@ class RequestBuilderTest(tf.test.TestCase):
                 summary=histogram_v2.histogram_pb("histogram", [5.0])
             ),
             event_pb2.Event(summary=scalar_v2.scalar_pb("histogram", 5.0)),
+        ]
+        run_proto = write_service_pb2.WriteScalarRequest.Run()
+        self._populate_run_from_events(run_proto, events)
+        tag_counts = {tag.name: len(tag.points) for tag in run_proto.tags}
+        self.assertEqual(tag_counts, {"scalar1": 1, "scalar2": 1})
+
+    def test_skips_non_scalar_events_in_scalar_time_series(self):
+        events = [
+            event_pb2.Event(file_version="brain.Event:2"),
+            event_pb2.Event(summary=scalar_v2.scalar_pb("scalar1", 5.0)),
+            event_pb2.Event(summary=scalar_v2.scalar_pb("scalar2", 5.0)),
+            event_pb2.Event(
+                summary=histogram_v2.histogram_pb("scalar2", [5.0])
+            ),
         ]
         run_proto = write_service_pb2.WriteScalarRequest.Run()
         self._populate_run_from_events(run_proto, events)
@@ -455,31 +483,37 @@ class RequestBuilderTest(tf.test.TestCase):
         self.assertProtoEquals(run_proto, expected_run_proto)
 
     def test_no_budget_for_experiment_id(self):
+        mock_client = _create_mock_client()
         event = event_pb2.Event(step=1, wall_time=123.456)
         event.summary.value.add(tag="foo", simple_value=1.0)
         run_to_events = {"run_name": [event]}
         long_experiment_id = "A" * uploader_lib._MAX_REQUEST_LENGTH_BYTES
+        mock_client = _create_mock_client()
         with self.assertRaises(RuntimeError) as cm:
-            builder = uploader_lib._RequestBuilder(long_experiment_id)
-            list(builder.build_requests(run_to_events))
+            builder = uploader_lib._BatchedRequestSender(
+                long_experiment_id, mock_client, util.RateLimiter(0)
+            )
+            builder.send_requests(run_to_events)
         self.assertEqual(
             str(cm.exception), "Byte budget too small for experiment ID"
         )
 
     def test_no_room_for_single_point(self):
+        mock_client = _create_mock_client()
         event = event_pb2.Event(step=1, wall_time=123.456)
         event.summary.value.add(tag="foo", simple_value=1.0)
         long_run_name = "A" * uploader_lib._MAX_REQUEST_LENGTH_BYTES
         run_to_events = {long_run_name: [event]}
         with self.assertRaises(RuntimeError) as cm:
-            builder = uploader_lib._RequestBuilder("123")
-            list(builder.build_requests(run_to_events))
-        self.assertEqual(
-            str(cm.exception), "Could not make progress uploading data"
-        )
+            builder = uploader_lib._BatchedRequestSender(
+                "123", mock_client, util.RateLimiter(0)
+            )
+            builder.send_requests(run_to_events)
+        self.assertEqual(str(cm.exception), "add_event failed despite flush")
 
     @mock.patch.object(uploader_lib, "_MAX_REQUEST_LENGTH_BYTES", 1024)
     def test_break_at_run_boundary(self):
+        mock_client = _create_mock_client()
         # Choose run name sizes such that one run fits, but not two.
         long_run_1 = "A" * 768
         long_run_2 = "B" * 768
@@ -488,11 +522,15 @@ class RequestBuilderTest(tf.test.TestCase):
         event_2 = event_pb2.Event(step=2)
         event_2.summary.value.add(tag="bar", simple_value=-2.0)
         run_to_events = collections.OrderedDict(
-            [(long_run_1, [event_1]), (long_run_2, [event_2]),]
+            [(long_run_1, [event_1]), (long_run_2, [event_2])]
         )
 
-        builder = uploader_lib._RequestBuilder("123")
-        requests = list(builder.build_requests(run_to_events))
+        builder = uploader_lib._BatchedRequestSender(
+            "123", mock_client, util.RateLimiter(0)
+        )
+        builder.send_requests(run_to_events)
+        requests = [c[0][0] for c in mock_client.WriteScalar.call_args_list]
+
         for request in requests:
             _clear_wall_times(request)
 
@@ -516,6 +554,7 @@ class RequestBuilderTest(tf.test.TestCase):
 
     @mock.patch.object(uploader_lib, "_MAX_REQUEST_LENGTH_BYTES", 1024)
     def test_break_at_tag_boundary(self):
+        mock_client = _create_mock_client()
         # Choose tag name sizes such that one tag fits, but not two. Note
         # that tag names appear in both `Tag.name` and the summary metadata.
         long_tag_1 = "a" * 384
@@ -525,8 +564,11 @@ class RequestBuilderTest(tf.test.TestCase):
         event.summary.value.add(tag=long_tag_2, simple_value=2.0)
         run_to_events = {"train": [event]}
 
-        builder = uploader_lib._RequestBuilder("123")
-        requests = list(builder.build_requests(run_to_events))
+        builder = uploader_lib._BatchedRequestSender(
+            "123", mock_client, util.RateLimiter(0)
+        )
+        builder.send_requests(run_to_events)
+        requests = [c[0][0] for c in mock_client.WriteScalar.call_args_list]
         for request in requests:
             _clear_wall_times(request)
 
@@ -554,6 +596,7 @@ class RequestBuilderTest(tf.test.TestCase):
 
     @mock.patch.object(uploader_lib, "_MAX_REQUEST_LENGTH_BYTES", 1024)
     def test_break_at_scalar_point_boundary(self):
+        mock_client = _create_mock_client()
         point_count = 2000  # comfortably saturates a single 1024-byte request
         events = []
         for step in range(point_count):
@@ -563,8 +606,11 @@ class RequestBuilderTest(tf.test.TestCase):
             events.append(event_pb2.Event(summary=summary, step=step))
         run_to_events = {"train": events}
 
-        builder = uploader_lib._RequestBuilder("123")
-        requests = list(builder.build_requests(run_to_events))
+        builder = uploader_lib._BatchedRequestSender(
+            "123", mock_client, util.RateLimiter(0)
+        )
+        builder.send_requests(run_to_events)
+        requests = [c[0][0] for c in mock_client.WriteScalar.call_args_list]
         for request in requests:
             _clear_wall_times(request)
 
@@ -589,15 +635,18 @@ class RequestBuilderTest(tf.test.TestCase):
         self.assertEqual(total_points_in_result, point_count)
 
     def test_prunes_tags_and_runs(self):
+        mock_client = _create_mock_client()
         event_1 = event_pb2.Event(step=1)
         event_1.summary.value.add(tag="foo", simple_value=1.0)
         event_2 = event_pb2.Event(step=2)
         event_2.summary.value.add(tag="bar", simple_value=-2.0)
         run_to_events = collections.OrderedDict(
-            [("train", [event_1]), ("test", [event_2]),]
+            [("train", [event_1]), ("test", [event_2])]
         )
 
-        real_create_point = uploader_lib._RequestBuilder._create_point
+        real_create_point = (
+            uploader_lib._ScalarBatchedRequestSender._create_point
+        )
 
         create_point_call_count_box = [0]
 
@@ -610,10 +659,15 @@ class RequestBuilderTest(tf.test.TestCase):
             return real_create_point(uploader_self, *args, **kwargs)
 
         with mock.patch.object(
-            uploader_lib._RequestBuilder, "_create_point", mock_create_point
+            uploader_lib._ScalarBatchedRequestSender,
+            "_create_point",
+            mock_create_point,
         ):
-            builder = uploader_lib._RequestBuilder("123")
-            requests = list(builder.build_requests(run_to_events))
+            builder = uploader_lib._BatchedRequestSender(
+                "123", mock_client, util.RateLimiter(0)
+            )
+            builder.send_requests(run_to_events)
+        requests = [c[0][0] for c in mock_client.WriteScalar.call_args_list]
         for request in requests:
             _clear_wall_times(request)
 
@@ -669,7 +723,7 @@ class DeleteExperimentTest(tf.test.TestCase):
         return mock_client
 
     def test_success(self):
-        mock_client = self._create_mock_client()
+        mock_client = _create_mock_client()
         response = write_service_pb2.DeleteExperimentResponse()
         mock_client.DeleteExperiment.return_value = response
 
@@ -682,7 +736,7 @@ class DeleteExperimentTest(tf.test.TestCase):
         self.assertEqual(args[0], expected_request)
 
     def test_not_found(self):
-        mock_client = self._create_mock_client()
+        mock_client = _create_mock_client()
         error = test_util.grpc_error(grpc.StatusCode.NOT_FOUND, "nope")
         mock_client.DeleteExperiment.side_effect = error
 
@@ -690,7 +744,7 @@ class DeleteExperimentTest(tf.test.TestCase):
             uploader_lib.delete_experiment(mock_client, "123")
 
     def test_unauthorized(self):
-        mock_client = self._create_mock_client()
+        mock_client = _create_mock_client()
         error = test_util.grpc_error(grpc.StatusCode.PERMISSION_DENIED, "nope")
         mock_client.DeleteExperiment.side_effect = error
 
@@ -698,7 +752,7 @@ class DeleteExperimentTest(tf.test.TestCase):
             uploader_lib.delete_experiment(mock_client, "123")
 
     def test_internal_error(self):
-        mock_client = self._create_mock_client()
+        mock_client = _create_mock_client()
         error = test_util.grpc_error(grpc.StatusCode.INTERNAL, "travesty")
         mock_client.DeleteExperiment.side_effect = error
 
