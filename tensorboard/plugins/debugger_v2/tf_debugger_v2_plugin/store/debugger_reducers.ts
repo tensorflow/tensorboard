@@ -20,10 +20,12 @@ import {
   ExecutionDigestsResponse,
 } from '../data_source/tfdbg2_data_source';
 import {
+  Alert,
+  AlertType,
   DataLoadState,
   DebuggerState,
   StackFramesById,
-  Alert,
+  InfNanAlert,
 } from './debugger_types';
 
 // HACK: These imports are for type inference.
@@ -47,6 +49,7 @@ const initialState: DebuggerState = {
     numAlerts: 0,
     alertsBreakdown: {},
     alerts: {},
+    executionIndexToAlertIndex: {},
     focusType: null,
   },
   executions: {
@@ -191,9 +194,19 @@ const reducer = createReducer(
       if (newState.alerts.alerts[alertType] === undefined) {
         newState.alerts.alerts[alertType] = {};
       }
+      if (newState.alerts.executionIndexToAlertIndex[alertType] === undefined) {
+        newState.alerts.executionIndexToAlertIndex[alertType] = {};
+      }
       for (let i = 0; i < alerts.length; ++i) {
         const alertIndex = begin + i;
-        newState.alerts.alerts[alertType][alertIndex] = alerts[i];
+        const alert = alerts[i];
+        newState.alerts.alerts[alertType][alertIndex] = alert;
+        if (alert.alert_type === AlertType.INF_NAN_ALERT) {
+          // TOOD(cais): Take care of other alert types with execution index.
+          newState.alerts.executionIndexToAlertIndex[alertType][
+            (alert as InfNanAlert).execution_index
+          ] = alertIndex;
+        }
       }
       return newState;
     }

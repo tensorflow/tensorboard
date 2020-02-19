@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {createSelector, createFeatureSelector, select} from '@ngrx/store';
+import {createSelector, createFeatureSelector} from '@ngrx/store';
 import {
   AlertsBreakdown,
   AlertsByIndex,
@@ -24,6 +24,7 @@ import {
   Execution,
   ExecutionDigest,
   ExecutionDigestLoadState,
+  InfNanAlert,
   LoadState,
   StackFrame,
   StackFramesById,
@@ -181,6 +182,43 @@ export const getVisibleExecutionDigests = createSelector(
     return digests;
   }
 );
+
+/**
+ * Get the focused alert types (if any) of the execution digests current being
+ * displayed. For each displayed execution digest, there are two possibilities:
+ * - `null` represents no alert.
+ * - An instance of the `AlertType`
+ */
+export const getVisibleExecutionDigestFocusAlertTypes = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): Array<AlertType | null> => {
+    const alertTypes: Array<AlertType | null> = [];
+    const beginExecutionIndex = state.executions.scrollBeginIndex;
+    const endExecutionIndex =
+      state.executions.scrollBeginIndex + state.executions.displayCount;
+    if (state.alerts.focusType === null) {
+      for (let i = beginExecutionIndex; i < endExecutionIndex; ++i) {
+        alertTypes.push(null);
+      }
+      return alertTypes;
+    }
+
+    const executionIndexToAlertIndex =
+      state.alerts.executionIndexToAlertIndex[state.alerts.focusType];
+    for (
+      let executionIndex = beginExecutionIndex;
+      executionIndex < endExecutionIndex;
+      ++executionIndex
+    ) {
+      if (executionIndexToAlertIndex[executionIndex] !== undefined) {
+        alertTypes.push(state.alerts.focusType);
+      } else {
+        alertTypes.push(null);
+      }
+    }
+    return alertTypes;
+  }
+); // TODO(cais): Unit test.
 
 export const getFocusedExecutionIndex = createSelector(
   selectDebuggerState,

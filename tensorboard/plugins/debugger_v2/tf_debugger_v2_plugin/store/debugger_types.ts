@@ -140,6 +140,12 @@ export type AlertsBreakdown = {[alertType: string]: number};
 // all AlertTypes, depending on where this type is used.
 export type AlertsByIndex = {[index: number]: Alert};
 
+// A map from execution index to the corresponding alert index, within a
+// type of alerts.
+// This is applicable only to alert types that involve top-level exdcutions,
+// e.g., InfNanAlert.
+export type ExecutionIndexToAlertIndex = {[index: number]: number};
+
 export interface Alerts {
   // Load state for alerts.
   // This state can go from LOADED to LOADING, as the alerts can be loaded
@@ -155,6 +161,10 @@ export interface Alerts {
   // The indices in the value `AlertsByIndex` are indices with in the
   // specific `alertType`.
   alerts: {[alertType: string]: AlertsByIndex};
+
+  // A map from top-level execution index to alert index, arranged by alert
+  // types.
+  executionIndexToAlertIndex: {[alertType: string]: ExecutionIndexToAlertIndex};
 
   // TODO(cais): Decide whether to keep this or not.
   // // The execution and graph execution indices for the alerts that have been

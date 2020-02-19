@@ -255,6 +255,12 @@ describe('Debugger reducers', () => {
     expect(Object.keys(alertsOfType).length).toBe(2);
     expect(alertsOfType[0]).toEqual(alert0);
     expect(alertsOfType[1]).toEqual(alert1);
+    expect(Object.keys(nextState.alerts.executionIndexToAlertIndex)).toEqual([
+      AlertType.INF_NAN_ALERT,
+    ]);
+    const executionIndexToAlertIndex =
+      nextState.alerts.executionIndexToAlertIndex[AlertType.INF_NAN_ALERT];
+    expect(executionIndexToAlertIndex).toEqual({10: 0, 11: 1});
   });
 
   it('Updates alerts data on alertsOfTypeLoaded: non-empty initial state', () => {
@@ -307,6 +313,12 @@ describe('Debugger reducers', () => {
     expect(Object.keys(alertsOfType).length).toBe(2);
     expect(alertsOfType[0]).toEqual(alert0);
     expect(alertsOfType[1]).toEqual(alert1);
+    expect(Object.keys(nextState.alerts.executionIndexToAlertIndex)).toEqual([
+      AlertType.INF_NAN_ALERT,
+    ]);
+    const executionIndexToAlertIndex =
+      nextState.alerts.executionIndexToAlertIndex[AlertType.INF_NAN_ALERT];
+    expect(executionIndexToAlertIndex[11]).toBe(1);
   });
 
   it('Updates load state on numExecutionsRequested', () => {
