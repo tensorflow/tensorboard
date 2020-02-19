@@ -90,7 +90,7 @@ If you do not have `ibazel` binary on your system, you can do use command below.
 
 ```sh
 # Optionally run `yarn` to keep `node_modules` up-to-date.
-yarn run ibazel run tensorboard -- --logdir [LOG_DIR]
+yarn run ibazel run tensorboard -- -- --logdir [LOG_DIR]
 ```
 
 ### Debugging UI Tests Locally
