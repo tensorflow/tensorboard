@@ -31,7 +31,7 @@ import grpc
 import six
 
 from tensorboard.uploader import dev_creds
-from tensorboard.uploader.proto import export_service_pb2
+from tensorboard.uploader.proto import experiment_pb2
 from tensorboard.uploader.proto import export_service_pb2_grpc
 from tensorboard.uploader.proto import write_service_pb2_grpc
 from tensorboard.uploader import auth
@@ -390,7 +390,7 @@ class _ListIntent(_Intent):
         api_client = export_service_pb2_grpc.TensorBoardExporterServiceStub(
             channel
         )
-        fieldmask = export_service_pb2.ExperimentMask(
+        fieldmask = experiment_pb2.ExperimentMask(
             create_time=True,
             update_time=True,
             num_scalars=True,
@@ -401,7 +401,7 @@ class _ListIntent(_Intent):
         count = 0
         for experiment in gen:
             count += 1
-            if not isinstance(experiment, export_service_pb2.Experiment):
+            if not isinstance(experiment, experiment_pb2.Experiment):
                 url = server_info_lib.experiment_url(server_info, experiment)
                 print(url)
                 continue
