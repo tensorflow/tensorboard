@@ -136,16 +136,27 @@ class CorePlugin(base_plugin.TBPlugin):
         if self._data_provider:
             experiment = plugin_util.experiment_id(request.environ)
             data_location = self._data_provider.data_location(experiment)
+            experiment_id = plugin_util.experiment_id(request.environ)
+            experiment_metadata = self._data_provider.experiment_metadata(
+                experiment_id
+            )
         else:
             data_location = self._logdir or self._db_uri
-        return http_util.Respond(
-            request,
-            {
-                "data_location": data_location,
-                "window_title": self._window_title,
-            },
-            "application/json",
-        )
+            experiment_metadata = None
+
+        environment = {
+            "data_location": data_location,
+            "window_title": self._window_title,
+        }
+        if experiment_metadata is not None:
+            environment.update(
+                {
+                    "experiment_name": experiment_metadata.experiment_name,
+                    "experiment_description": experiment_metadata.experiment_description,
+                    "creation_time": experiment_metadata.creation_time,
+                }
+            )
+        return http_util.Respond(request, environment, "application/json",)
 
     @wrappers.Request.application
     def _serve_logdir(self, request):
@@ -559,7 +570,7 @@ of running out of memory if the logdir contains many active event files.
             "--reload_multifile_inactive_secs",
             metavar="SECONDS",
             type=int,
-            default=4000,
+            default=86400,
             help="""\
 [experimental] Configures the age threshold in seconds at which an event file
 that has no event wall time more recent than that will be considered an
@@ -568,7 +579,7 @@ no maximum age will be enforced, but beware of running out of memory and
 heavier filesystem read traffic. If set to 0, this reverts to the older
 last-file-only polling strategy (akin to --reload_multifile=false).
 (default: %(default)s - intended to ensure an event file remains active if
-it receives new data at least once per hour)\
+it receives new data at least once per 24 hour period)\
 """,
         )
 
