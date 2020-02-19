@@ -92,7 +92,6 @@ export class AlertsContainer {
   constructor(private readonly store: Store<State>) {}
 
   onToggleFocusType(alertType: AlertType) {
-    // TODO(cais): Add unit tests.
     this.store.dispatch(alertTypeFocusToggled({alertType}));
   }
 }
