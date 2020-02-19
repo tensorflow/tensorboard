@@ -33,6 +33,55 @@ import {
 } from '../testing';
 
 describe('Debugger reducers', () => {
+  describe('alertTypeFocusToggled', () => {
+    for (const focusType of [
+      AlertType.FUNCTION_RECOMPILE_ALERT,
+      AlertType.INF_NAN_ALERT,
+      AlertType.TENSOR_SHAPE_ALERT,
+    ]) {
+      it(`sets correct focusType (${focusType}) from no-focus initial state`, () => {
+        const state = createDebuggerState();
+        const nextState = reducers(
+          state,
+          actions.alertTypeFocusToggled({
+            alertType: focusType,
+          })
+        );
+        expect(nextState.alerts.focusType).toBe(focusType);
+      });
+    }
+
+    it('sets focusType to new type from non-empty focus state', () => {
+      const state = createDebuggerState({
+        alerts: createAlertsState({
+          focusType: AlertType.FUNCTION_RECOMPILE_ALERT,
+        }),
+      });
+      const nextState = reducers(
+        state,
+        actions.alertTypeFocusToggled({
+          alertType: AlertType.INF_NAN_ALERT,
+        })
+      );
+      expect(nextState.alerts.focusType).toBe(AlertType.INF_NAN_ALERT);
+    });
+
+    it('sets focusType to null from non-empty state', () => {
+      const state = createDebuggerState({
+        alerts: createAlertsState({
+          focusType: AlertType.INF_NAN_ALERT,
+        }),
+      });
+      const nextState = reducers(
+        state,
+        actions.alertTypeFocusToggled({
+          alertType: AlertType.INF_NAN_ALERT,
+        })
+      );
+      expect(nextState.alerts.focusType).toBeNull();
+    });
+  });
+
   describe('Runs loading', () => {
     it('sets runsLoaded to loading on requesting runs', () => {
       const state = createDebuggerState();
@@ -160,14 +209,6 @@ describe('Debugger reducers', () => {
       InfNanAlerts: 29,
       FunctionRecompileAlerts: 1,
     });
-  });
-
-  it('Updates alertsLoaded state on alertsOfTypeRequested', () => {
-    const state = createDebuggerState({
-      activeRunId: '__default_debugger_run__',
-    });
-    const nextStae = reducers(state, actions.alertsOfTypeRequested());
-    expect(state.alerts.alertsLoaded.state).toEqual(DataLoadState.LOADING);
   });
 
   it('Updates alerts data on alertsOfTypeLoaded: empty initial state', () => {

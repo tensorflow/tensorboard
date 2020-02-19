@@ -159,21 +159,6 @@ const reducer = createReducer(
     }
   ),
   on(
-    actions.alertsOfTypeRequested,
-    (state: DebuggerState): DebuggerState => {
-      return {
-        ...state,
-        alerts: {
-          ...state.alerts,
-          alertsLoaded: {
-            ...state.alerts.alertsLoaded,
-            state: DataLoadState.LOADING,
-          },
-        },
-      };
-    }
-  ),
-  on(
     actions.alertsOfTypeLoaded,
     (
       state: DebuggerState,
@@ -216,7 +201,6 @@ const reducer = createReducer(
   on(
     actions.alertTypeFocusToggled,
     (state: DebuggerState, {alertType}): DebuggerState => {
-      // TODO(cais): Add unit tests.
       return {
         ...state,
         alerts: {

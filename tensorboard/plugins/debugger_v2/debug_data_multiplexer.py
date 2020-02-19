@@ -247,7 +247,7 @@ class DebuggerV2EventMultiplexer(object):
                 raise errors.InvalidArgumentError(
                     "Filtering of alerts failed: alert type %s does not exist"
                     % alert_type_filter
-                )  # TODO(cais): Unit test.
+                )
             end = self._checkBeginEndIndices(
                 begin, end, alerts_breakdown[alert_type_filter]
             )

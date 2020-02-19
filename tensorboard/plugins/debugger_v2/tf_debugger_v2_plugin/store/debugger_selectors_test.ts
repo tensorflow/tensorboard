@@ -15,13 +15,17 @@ limitations under the License.
 
 import {
   getAlertsBreakdown,
+  getAlertsFocusType,
   getAlertsLoaded,
   getFocusedExecutionData,
   getFocusedExecutionIndex,
   getFocusedExecutionStackFrames,
+  getLoadedAlertsOfFocusedType,
   getNumAlerts,
+  getNumAlertsOfFocusedType,
 } from './debugger_selectors';
 import {
+  AlertType,
   DataLoadState,
   DEBUGGER_FEATURE_KEY,
   StackFrame,
@@ -31,18 +35,19 @@ import {
   createDebuggerState,
   createState,
   createTestExecutionData,
+  createTestInfNanAlert,
 } from '../testing';
 
 describe('debugger selectors', () => {
   describe('getAlertsLoaded', () => {
-    it('Returns correct NOT_LOADED state', () => {
+    it('returns correct NOT_LOADED state', () => {
       const state = createState(createDebuggerState());
       const alertsLoaded = getAlertsLoaded(state);
       expect(alertsLoaded.state).toBe(DataLoadState.NOT_LOADED);
       expect(alertsLoaded.lastLoadedTimeInMs).toBe(null);
     });
 
-    it('Returns correct LOADING state', () => {
+    it('returns correct LOADING state', () => {
       const state = createState(
         createDebuggerState({
           alerts: createAlertsState({
@@ -56,6 +61,102 @@ describe('debugger selectors', () => {
       const alertsLoaded = getAlertsLoaded(state);
       expect(alertsLoaded.state).toBe(DataLoadState.LOADING);
       expect(alertsLoaded.lastLoadedTimeInMs).toBe(null);
+    });
+  });
+
+  describe('getAlertsFocusType', () => {
+    it('returns correct null state', () => {
+      const state = createState(createDebuggerState());
+      expect(getAlertsFocusType(state)).toBeNull();
+    });
+
+    it('returns correct non-null state', () => {
+      const state = createState(
+        createDebuggerState({
+          alerts: createAlertsState({
+            focusType: AlertType.INF_NAN_ALERT,
+          }),
+        })
+      );
+      expect(getAlertsFocusType(state)).toBe(AlertType.INF_NAN_ALERT);
+    });
+  });
+
+  describe('getNumAlertsOfFocusedType', () => {
+    for (const {focusType, expectedNumAlertsOfFocusedType} of [
+      {
+        focusType: null,
+        expectedNumAlertsOfFocusedType: 0,
+      },
+      {
+        focusType: AlertType.INF_NAN_ALERT,
+        expectedNumAlertsOfFocusedType: 2,
+      },
+    ]) {
+      it(`returns correct number of alerts in focus: focusType=${focusType}`, () => {
+        const state = createState(
+          createDebuggerState({
+            alerts: createAlertsState({
+              numAlerts: 2,
+              focusType,
+              alertsBreakdown: {
+                [AlertType.INF_NAN_ALERT]: 2,
+              },
+              // NOTE: `alerts` is left blank here, to test that the return value of
+              // getNumAlertsOfFocusedType() shouldn't depend on `alerts`, it should
+              // depend on only `alertsBreakdown`.
+            }),
+          })
+        );
+        const numAlertsOfFocusedType = getNumAlertsOfFocusedType(state);
+        expect(numAlertsOfFocusedType).toBe(expectedNumAlertsOfFocusedType);
+      });
+    }
+  });
+
+  describe('getLoadedAlertsOfFocusedType', () => {
+    const alert0 = createTestInfNanAlert();
+    const alert1 = createTestInfNanAlert();
+
+    it('returns correct null when there is no focus', () => {
+      const state = createState(
+        createDebuggerState({
+          alerts: createAlertsState({
+            numAlerts: 2,
+            focusType: null,
+            alerts: {
+              [AlertType.INF_NAN_ALERT]: {
+                0: alert0,
+                1: alert1,
+              },
+            },
+          }),
+        })
+      );
+      const loadedAlertsOfFocus = getLoadedAlertsOfFocusedType(state);
+      expect(loadedAlertsOfFocus).toBeNull();
+    });
+
+    it('returns correct result when focus and data both exist', () => {
+      const state = createState(
+        createDebuggerState({
+          alerts: createAlertsState({
+            numAlerts: 2,
+            focusType: AlertType.INF_NAN_ALERT,
+            alerts: {
+              [AlertType.INF_NAN_ALERT]: {
+                0: alert0,
+                1: alert1,
+              },
+            },
+          }),
+        })
+      );
+      const loadedAlertsOfFocus = getLoadedAlertsOfFocusedType(state);
+      expect(loadedAlertsOfFocus).toEqual({
+        0: alert0,
+        1: alert1,
+      });
     });
   });
 

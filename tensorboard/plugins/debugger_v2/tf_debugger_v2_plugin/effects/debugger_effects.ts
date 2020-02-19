@@ -26,7 +26,6 @@ import {
 } from 'rxjs/operators';
 import {
   alertsOfTypeLoaded,
-  alertsOfTypeRequested,
   alertTypeFocusToggled,
   debuggerLoaded,
   debuggerRunsRequested,
@@ -55,9 +54,9 @@ import {
   getExecutionScrollBeginIndex,
   getNumExecutions,
   getNumExecutionsLoaded,
+  getLoadedAlertsOfFocusedType,
   getLoadedExecutionData,
   getLoadedStackFrames,
-  getAlertsOfFocusedType,
   getNumAlertsOfFocusedType,
 } from '../store/debugger_selectors';
 import {
@@ -504,23 +503,31 @@ export class DebuggerEffects {
         this.store.select(getActiveRunId),
         this.store.select(getAlertsFocusType),
         this.store.select(getNumAlertsOfFocusedType),
-        this.store.select(getAlertsOfFocusedType)
+        this.store.select(getLoadedAlertsOfFocusedType),
+        this.store.select(getAlertsLoaded)
       ),
-      // TODO(cais): Filter by not currently loading alerts data.
-      // Need action, selector and reducer support.
       filter(
-        ([, runId, focusType, numAlertsOfFocusedType, alertsOfFocusedType]) => {
+        ([
+          ,
+          runId,
+          focusType,
+          numAlertsOfFocusedType,
+          loadedAlertsOfFocusedType,
+          alertsLoaded,
+        ]) => {
           // TODO(cais): Unit test for the correct functioning of the filter.
           return (
             runId !== null &&
             focusType !== null &&
             numAlertsOfFocusedType > 0 &&
-            (alertsOfFocusedType === null ||
-              Object.keys(alertsOfFocusedType).length < numAlertsOfFocusedType)
+            (loadedAlertsOfFocusedType === null ||
+              Object.keys(loadedAlertsOfFocusedType).length <
+                numAlertsOfFocusedType) &&
+            alertsLoaded.state !== DataLoadState.LOADING
           );
         }
       ),
-      tap(() => this.store.dispatch(alertsOfTypeRequested())),
+      tap(() => this.store.dispatch(numAlertsAndBreakdownRequested())),
       mergeMap(([, runId, focusType]) => {
         const begin = 0;
         // TODO(cais): Use smarter `end` value to reduce the amount of data

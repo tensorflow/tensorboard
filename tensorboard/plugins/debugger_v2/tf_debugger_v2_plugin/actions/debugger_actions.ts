@@ -54,7 +54,7 @@ export const debuggerRunsRequestFailed = createAction(
 );
 
 /**
- * Number of alerts and their type breakdown are requested.
+ * Number of alerts and their type breakdown or detailed alerts are requested.
  */
 export const numAlertsAndBreakdownRequested = createAction(
   '[Debugger] Number and Breakdown of Alerts Requested'
@@ -66,10 +66,6 @@ export const numAlertsAndBreakdownRequested = createAction(
 export const numAlertsAndBreakdownLoaded = createAction(
   '[Debugger] Number and Breakdown of Alerts Loaded',
   props<{numAlerts: number; alertsBreakdown: AlertsBreakdown}>()
-);
-
-export const alertsOfTypeRequested = createAction(
-  '[Debugger] Alerts Data of an AlertType Is Requested'
 );
 
 export const alertsOfTypeLoaded = createAction(

@@ -75,8 +75,15 @@ export const getAlertsFocusType = createSelector(
   (state: DebuggerState): AlertType | null => {
     return state.alerts.focusType;
   }
-); // TODO(cais): Unit test.
+);
 
+/**
+ * Get number of alerts of the alert type being focused on.
+ *
+ * If no alert type focus exists, returns 0.
+ * The returned number is regardless of whether the detailed Alerts
+ * data have been loaded by the front end.
+ */
 export const getNumAlertsOfFocusedType = createSelector(
   selectDebuggerState,
   (state: DebuggerState): number => {
@@ -85,9 +92,15 @@ export const getNumAlertsOfFocusedType = createSelector(
     }
     return state.alerts.alertsBreakdown[state.alerts.focusType] || 0;
   }
-); // TODO(cais): Unit test.
+);
 
-export const getAlertsOfFocusedType = createSelector(
+/**
+ * Get the Alerts that are 1) of the type being focused on, and
+ * 2) already loaded by the front end.
+ *
+ * If no alert type focus exists, returns null.
+ */
+export const getLoadedAlertsOfFocusedType = createSelector(
   selectDebuggerState,
   (state: DebuggerState): AlertsByIndex | null => {
     if (state.alerts.focusType === null) {
@@ -98,7 +111,7 @@ export const getAlertsOfFocusedType = createSelector(
     }
     return state.alerts.alerts[state.alerts.focusType];
   }
-); // TODO(cais): Unit test.
+);
 
 export const getAlertsBreakdown = createSelector(
   selectDebuggerState,
