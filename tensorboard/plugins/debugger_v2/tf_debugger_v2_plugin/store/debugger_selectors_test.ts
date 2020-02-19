@@ -23,6 +23,7 @@ import {
   getLoadedAlertsOfFocusedType,
   getNumAlerts,
   getNumAlertsOfFocusedType,
+  getFocusAlertTypesOfVisibleExecutionDigests,
 } from './debugger_selectors';
 import {
   AlertType,
@@ -35,6 +36,7 @@ import {
   createDebuggerState,
   createState,
   createTestExecutionData,
+  createTestExecutionDigest,
   createTestInfNanAlert,
 } from '../testing';
 
@@ -202,6 +204,88 @@ describe('debugger selectors', () => {
         FooAlert: 30,
         BarAlert: 15,
       });
+    });
+  });
+
+  describe('getAlertTypesOfVisibleExecutionDigests', () => {
+    it('returns all-null array when there is no focused alert type', () => {
+      const state = createState(
+        createDebuggerState({
+          activeRunId: '__default_debugger_run__',
+          executions: {
+            numExecutionsLoaded: {
+              state: DataLoadState.LOADING,
+              lastLoadedTimeInMs: null,
+            },
+            executionDigestsLoaded: {
+              state: DataLoadState.NOT_LOADED,
+              lastLoadedTimeInMs: null,
+              pageLoadedSizes: {},
+              numExecutions: 0,
+            },
+            pageSize: 1000,
+            displayCount: 3,
+            focusIndex: null,
+            scrollBeginIndex: 0,
+            executionDigests: {
+              0: createTestExecutionDigest(),
+              1: createTestExecutionDigest(),
+              2: createTestExecutionDigest(),
+            },
+            executionData: {},
+          },
+        })
+      );
+
+      const alertTypes = getFocusAlertTypesOfVisibleExecutionDigests(state);
+      expect(alertTypes).toEqual([null, null, null]);
+    });
+
+    it('returns correct non-null array when there is focused alert type', () => {
+      const state = createState(
+        createDebuggerState({
+          activeRunId: '__default_debugger_run__',
+          alerts: createAlertsState({
+            focusType: AlertType.INF_NAN_ALERT,
+            executionIndexToAlertIndex: {
+              [AlertType.INF_NAN_ALERT]: {
+                0: 0,
+                2: 1,
+                3: 2,
+              },
+            },
+          }),
+          executions: {
+            numExecutionsLoaded: {
+              state: DataLoadState.LOADING,
+              lastLoadedTimeInMs: null,
+            },
+            executionDigestsLoaded: {
+              state: DataLoadState.NOT_LOADED,
+              lastLoadedTimeInMs: null,
+              pageLoadedSizes: {},
+              numExecutions: 0,
+            },
+            pageSize: 1000,
+            displayCount: 3,
+            focusIndex: null,
+            scrollBeginIndex: 0,
+            executionDigests: {
+              0: createTestExecutionDigest(),
+              1: createTestExecutionDigest(),
+              2: createTestExecutionDigest(),
+            },
+            executionData: {},
+          },
+        })
+      );
+
+      const alertTypes = getFocusAlertTypesOfVisibleExecutionDigests(state);
+      expect(alertTypes).toEqual([
+        AlertType.INF_NAN_ALERT,
+        null,
+        AlertType.INF_NAN_ALERT,
+      ]);
     });
   });
 

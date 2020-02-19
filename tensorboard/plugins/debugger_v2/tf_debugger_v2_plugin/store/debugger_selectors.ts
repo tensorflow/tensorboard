@@ -24,7 +24,6 @@ import {
   Execution,
   ExecutionDigest,
   ExecutionDigestLoadState,
-  InfNanAlert,
   LoadState,
   StackFrame,
   StackFramesById,
@@ -189,36 +188,33 @@ export const getVisibleExecutionDigests = createSelector(
  * - `null` represents no alert.
  * - An instance of the `AlertType`
  */
-export const getVisibleExecutionDigestFocusAlertTypes = createSelector(
+export const getFocusAlertTypesOfVisibleExecutionDigests = createSelector(
   selectDebuggerState,
   (state: DebuggerState): Array<AlertType | null> => {
-    const alertTypes: Array<AlertType | null> = [];
     const beginExecutionIndex = state.executions.scrollBeginIndex;
     const endExecutionIndex =
       state.executions.scrollBeginIndex + state.executions.displayCount;
-    if (state.alerts.focusType === null) {
-      for (let i = beginExecutionIndex; i < endExecutionIndex; ++i) {
-        alertTypes.push(null);
-      }
+    const alertTypes: Array<AlertType | null> = [];
+    for (let i = beginExecutionIndex; i < endExecutionIndex; ++i) {
+      alertTypes.push(null);
+    }
+    const focusType = state.alerts.focusType;
+    if (focusType === null) {  
       return alertTypes;
     }
-
     const executionIndexToAlertIndex =
-      state.alerts.executionIndexToAlertIndex[state.alerts.focusType];
-    for (
-      let executionIndex = beginExecutionIndex;
-      executionIndex < endExecutionIndex;
-      ++executionIndex
-    ) {
-      if (executionIndexToAlertIndex[executionIndex] !== undefined) {
-        alertTypes.push(state.alerts.focusType);
-      } else {
-        alertTypes.push(null);
+      state.alerts.executionIndexToAlertIndex[focusType];
+    if (executionIndexToAlertIndex === undefined) {
+      return alertTypes;
+    }
+    for (let i = beginExecutionIndex; i < endExecutionIndex; ++i) {
+      if (executionIndexToAlertIndex[i] !== undefined) {
+        alertTypes[i - beginExecutionIndex] = state.alerts.focusType;
       }
     }
     return alertTypes;
   }
-); // TODO(cais): Unit test.
+);
 
 export const getFocusedExecutionIndex = createSelector(
   selectDebuggerState,

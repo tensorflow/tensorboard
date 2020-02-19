@@ -31,6 +31,7 @@ import {
   getFocusedExecutionDisplayIndex,
   getFocusedExecutionIndex,
   getVisibleExecutionDigests,
+  getFocusAlertTypesOfVisibleExecutionDigests,
 } from '../../store';
 import {DataLoadState, ExecutionDigest} from '../../store/debugger_types';
 import {ExecutionDigestForDisplay} from './timeline_component';
@@ -93,6 +94,7 @@ function getExecutionDigestForDisplay(
       [pageSize]="pageSize$ | async"
       [displayCount]="displayCount$ | async"
       [displayExecutionDigests]="displayExecutionDigests$ | async"
+      [displayFocusedAlertTypes]="displayFocusedAlertTypes$ | async"
       [focusedExecutionIndex]="focusedExecutionIndex$ | async"
       [focusedExecutionDisplayIndex]="focusedExecutionDisplayIndex$ | async"
       (onNavigateLeft)="onNavigateLeft()"
@@ -135,6 +137,10 @@ export class TimelineContainer {
         }
       )
     )
+  );
+
+  readonly displayFocusedAlertTypes$ = this.store.pipe(
+    select(getFocusAlertTypesOfVisibleExecutionDigests)
   );
 
   readonly focusedExecutionIndex$ = this.store.pipe(

@@ -73,6 +73,16 @@ export function createTestStackFrame(): StackFrame {
   ];
 }
 
+export function createTestExecutionDigest(
+  override?: Partial<ExecutionDigest>
+): ExecutionDigest {
+  return {
+    op_type: 'TestOp',
+    output_tensor_device_ids: ['d0'],
+    ...override,
+  };
+}
+
 export function createDebuggerState(
   override?: Partial<DebuggerState>
 ): DebuggerState {
