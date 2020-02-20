@@ -60,7 +60,7 @@ class ScalarsPlugin(base_plugin.TBPlugin):
         """
         self._multiplexer = context.multiplexer
         self._db_connection_provider = context.db_connection_provider
-        if context.flags and context.flags.generic_data == "true":
+        if context.flags and context.flags.generic_data != "false":
             self._data_provider = context.data_provider
         else:
             self._data_provider = None
