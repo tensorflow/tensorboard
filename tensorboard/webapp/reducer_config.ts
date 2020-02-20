@@ -36,7 +36,8 @@ export function logger(reducer: ActionReducer<any>): ActionReducer<any> {
   };
 }
 
-export const metaReducers: MetaReducer<any>[] = [logger];
+export const metaReducers: MetaReducer<any>[] =
+  config.env === 'dev' ? [logger] : [];
 
 export const ROOT_REDUCERS = new InjectionToken<
   ActionReducerMap<State, Action>

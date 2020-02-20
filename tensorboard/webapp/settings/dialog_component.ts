@@ -91,13 +91,7 @@ export function createIntegerValidator(): ValidatorFn {
           [formControl]="paginationControl"
         />
       </mat-form-field>
-      <mat-error
-        *ngIf="
-          paginationControl.hasError('min') ||
-          paginationControl.hasError('required') ||
-          paginationControl.hasError('integer')
-        "
-      >
+      <mat-error *ngIf="paginationControl.invalid">
         Page size has to be a positive integer.
       </mat-error>
     </div>
