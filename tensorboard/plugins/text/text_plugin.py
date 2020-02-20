@@ -32,6 +32,7 @@ from werkzeug import wrappers
 
 from tensorboard import plugin_util
 from tensorboard.backend import http_util
+from tensorboard.data import provider
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.text import metadata
 from tensorboard.util import tensor_util
@@ -189,13 +190,12 @@ def text_array_to_html(text_arr):
     return warning + make_table(html_arr)
 
 
-def process_string_tensor_event(event):
-    """Convert a TensorEvent into a JSON-compatible response."""
-    string_arr = tensor_util.make_ndarray(event.tensor_proto)
-    html = text_array_to_html(string_arr)
+def process_event(wall_time, step, string_ndarray):
+    """Convert a text event into a JSON-compatible response."""
+    html = text_array_to_html(string_ndarray)
     return {
-        "wall_time": event.wall_time,
-        "step": event.step,
+        "wall_time": wall_time,
+        "step": step,
         "text": html,
     }
 
@@ -212,6 +212,10 @@ class TextPlugin(base_plugin.TBPlugin):
           context: A base_plugin.TBContext instance.
         """
         self._multiplexer = context.multiplexer
+        if context.flags and context.flags.generic_data == "true":
+            self._data_provider = context.data_provider
+        else:
+            self._data_provider = None
 
     def is_active(self):
         """Determines whether this plugin is active.
@@ -221,6 +225,8 @@ class TextPlugin(base_plugin.TBPlugin):
         Returns:
           Whether this plugin is active.
         """
+        if self._data_provider:
+            return False  # `list_plugins` as called by TB core suffices
         if not self._multiplexer:
             return False
         return bool(
@@ -230,10 +236,15 @@ class TextPlugin(base_plugin.TBPlugin):
     def frontend_metadata(self):
         return base_plugin.FrontendMetadata(element_name="tf-text-dashboard")
 
-    def index_impl(self):
-        mapping = self._multiplexer.PluginRunToTagToContent(
-            metadata.PLUGIN_NAME
-        )
+    def index_impl(self, experiment):
+        if self._data_provider:
+            mapping = self._data_provider.list_tensors(
+                experiment_id=experiment, plugin_name=metadata.PLUGIN_NAME,
+            )
+        else:
+            mapping = self._multiplexer.PluginRunToTagToContent(
+                metadata.PLUGIN_NAME
+            )
         return {
             run: list(tag_to_content)
             for (run, tag_to_content) in six.iteritems(mapping)
@@ -241,22 +252,40 @@ class TextPlugin(base_plugin.TBPlugin):
 
     @wrappers.Request.application
     def tags_route(self, request):
-        index = self.index_impl()
+        experiment = plugin_util.experiment_id(request.environ)
+        index = self.index_impl(experiment)
         return http_util.Respond(request, index, "application/json")
 
-    def text_impl(self, run, tag):
+    def text_impl(self, run, tag, experiment):
+        if self._data_provider:
+            all_text = self._data_provider.read_tensors(
+                experiment_id=experiment,
+                plugin_name=metadata.PLUGIN_NAME,
+                downsample=100,
+                run_tag_filter=provider.RunTagFilter(runs=[run], tags=[tag]),
+            )
+            text = all_text.get(run, {}).get(tag, None)
+            if text is None:
+                return []
+            return [process_event(d.wall_time, d.step, d.numpy) for d in text]
+
         try:
             text_events = self._multiplexer.Tensors(run, tag)
         except KeyError:
             text_events = []
-        responses = [process_string_tensor_event(ev) for ev in text_events]
-        return responses
+        return [
+            process_event(
+                e.wall_time, e.step, tensor_util.make_ndarray(e.tensor_proto)
+            )
+            for e in text_events
+        ]
 
     @wrappers.Request.application
     def text_route(self, request):
+        experiment = plugin_util.experiment_id(request.environ)
         run = request.args.get("run")
         tag = request.args.get("tag")
-        response = self.text_impl(run, tag)
+        response = self.text_impl(run, tag, experiment)
         return http_util.Respond(request, response, "application/json")
 
     def get_plugin_apps(self):

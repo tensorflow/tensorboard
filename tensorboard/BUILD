@@ -472,6 +472,7 @@ py_library(
         "//tensorboard/plugins/histogram:metadata",
         "//tensorboard/plugins/image:metadata",
         "//tensorboard/plugins/scalar:metadata",
+        "//tensorboard/plugins/text:metadata",
         "//tensorboard/util:tensor_util",
     ],
 )
