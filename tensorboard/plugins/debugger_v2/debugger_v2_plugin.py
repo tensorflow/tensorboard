@@ -103,9 +103,6 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
         begin = int(request.args.get("begin", "0"))
         end = int(request.args.get("end", "-1"))
         alert_type = request.args.get("alert_type", None)
-        print(
-            "In serve_alerts(): run=%s, begin=%d, end=%d" % (run, begin, end)
-        )  # DEBUG
         run_tag_filter = debug_data_provider.alerts_run_tag_filter(
             run, begin, end, alert_type=alert_type
         )

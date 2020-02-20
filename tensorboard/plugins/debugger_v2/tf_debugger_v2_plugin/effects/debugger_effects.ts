@@ -551,7 +551,6 @@ export class DebuggerEffects {
               if (alertsResponse.alerts.length > 0) {
                 // TODO(cais): This should scroll to that and focus on it.
                 const alert = alertsResponse.alerts[0] as InfNanAlert;
-                console.log('Focusing onto:', alert.execution_index);
                 this.store.dispatch(
                   executionDigestFocused({
                     displayIndex: alert.execution_index,

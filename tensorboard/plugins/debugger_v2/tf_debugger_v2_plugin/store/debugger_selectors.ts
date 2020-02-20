@@ -199,7 +199,7 @@ export const getFocusAlertTypesOfVisibleExecutionDigests = createSelector(
       alertTypes.push(null);
     }
     const focusType = state.alerts.focusType;
-    if (focusType === null) {  
+    if (focusType === null) {
       return alertTypes;
     }
     const executionIndexToAlertIndex =

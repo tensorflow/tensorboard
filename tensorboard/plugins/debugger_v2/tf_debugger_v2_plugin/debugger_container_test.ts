@@ -29,8 +29,14 @@ import {
 } from './actions';
 import {DebuggerComponent} from './debugger_component';
 import {DebuggerContainer} from './debugger_container';
-import {DataLoadState, State, TensorDebugMode} from './store/debugger_types';
 import {
+  DataLoadState,
+  State,
+  TensorDebugMode,
+  AlertType,
+} from './store/debugger_types';
+import {
+  createAlertsState,
   createDebuggerState,
   createState,
   createDebuggerExecutionsState,
@@ -299,6 +305,41 @@ describe('Debugger Container', () => {
           opTypes[i + 100].slice(0, strLen)
         );
       }
+    });
+
+    it('displays correct InfNanAlert alert type', () => {
+      const fixture = TestBed.createComponent(TimelineContainer);
+      fixture.detectChanges();
+      const scrollBeginIndex = 5;
+      const displayCount = 4;
+      const opTypes: string[] = [];
+      for (let i = 0; i < 200; ++i) {
+        opTypes.push(`${i}Op`);
+      }
+      const debuggerState = createDebuggerStateWithLoadedExecutionDigests(
+        scrollBeginIndex,
+        displayCount,
+        opTypes
+      );
+      debuggerState.alerts = createAlertsState({
+        focusType: AlertType.INF_NAN_ALERT,
+        executionIndexToAlertIndex: {
+          [AlertType.INF_NAN_ALERT]: {
+            4: 0, // Outside the viewing window.
+            6: 1, // Inside the viewing window; same below.
+            8: 2,
+          },
+        },
+      });
+      store.setState(createState(debuggerState));
+      fixture.detectChanges();
+
+      const digestsWithAlert = fixture.debugElement.queryAll(
+        By.css('.execution-digest.InfNanAlert')
+      );
+      expect(digestsWithAlert.length).toBe(2);
+      expect(digestsWithAlert[0].nativeElement.innerText).toEqual('6');
+      expect(digestsWithAlert[1].nativeElement.innerText).toEqual('8');
     });
   });
 

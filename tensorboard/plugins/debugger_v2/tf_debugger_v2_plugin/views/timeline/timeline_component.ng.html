@@ -45,7 +45,10 @@ limitations under the License.
       >
         <div
           class="execution-digest"
-          [ngClass]="[displayDigest.is_graph ? 'func-graph-execution' : '', i === focusedExecutionDisplayIndex ? 'focused' : '']"
+          [ngClass]="[
+            displayDigest.is_graph ? 'func-graph-execution' : '',
+            i === focusedExecutionDisplayIndex ? 'focused' : '',
+            displayFocusedAlertTypes[i] || '']"
           title="{{displayDigest.op_type}}"
         >
           <!-- TODO(cais): Replace title attr with matTooltip. -->

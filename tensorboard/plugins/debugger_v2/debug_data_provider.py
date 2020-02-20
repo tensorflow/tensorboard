@@ -88,8 +88,6 @@ def _parse_alerts_blob_key(blob_key):
     alert_type = None
     if len(key_items) > 3:
         alert_type = key_body.split("_", 3)[-1]
-        print("alert_type = %s" % alert_type)  # DEBUG
-        print("begin = %d, end = %d" % (begin, end))  # DEBUG
     return run, begin, end, alert_type
 
 

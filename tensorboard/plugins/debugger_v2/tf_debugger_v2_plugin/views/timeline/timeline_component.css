@@ -38,6 +38,12 @@ limitations under the License.
   font-weight: bold;
 }
 
+.execution-digest.InfNanAlert {
+  background-color: #e52592;
+  color: #fff;
+}
+/* TODO(cais): Add css classes for other alert types that involve execution. */
+
 .execution-digest:hover {
   border: 1px solid #000;
   font-weight: bold;
