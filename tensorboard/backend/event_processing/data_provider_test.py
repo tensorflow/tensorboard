@@ -249,7 +249,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
             experiment_id="unused",
             plugin_name=scalar_metadata.PLUGIN_NAME,
             run_tag_filter=run_tag_filter,
-            downsample=None,  # not yet implemented
+            downsample=100,
         )
 
         self.assertItemsEqual(result.keys(), ["polynomials", "waves"])
@@ -267,6 +267,18 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
                         tensor_util.make_ndarray(event.tensor_proto).item(),
                     )
 
+    def test_read_scalars_downsamples(self):
+        multiplexer = self.create_multiplexer()
+        provider = data_provider.MultiplexerDataProvider(
+            multiplexer, self.logdir
+        )
+        result = provider.read_scalars(
+            experiment_id="unused",
+            plugin_name=scalar_metadata.PLUGIN_NAME,
+            downsample=3,
+        )
+        self.assertLen(result["waves"]["sine"], 3)
+
     def test_read_scalars_but_not_rank_0(self):
         provider = self.create_provider()
         run_tag_filter = base_provider.RunTagFilter(["waves"], ["bad"])
@@ -280,6 +292,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
                 experiment_id="unused",
                 plugin_name="greetings",
                 run_tag_filter=run_tag_filter,
+                downsample=100,
             )
 
     def test_list_tensors_all(self):
@@ -329,7 +342,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
             experiment_id="unused",
             plugin_name=histogram_metadata.PLUGIN_NAME,
             run_tag_filter=run_tag_filter,
-            downsample=None,  # not yet implemented
+            downsample=100,
         )
 
         self.assertItemsEqual(result.keys(), ["lebesgue"])
@@ -345,6 +358,46 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
                         datum.numpy,
                         tensor_util.make_ndarray(event.tensor_proto),
                     )
+
+    def test_read_tensors_downsamples(self):
+        multiplexer = self.create_multiplexer()
+        provider = data_provider.MultiplexerDataProvider(
+            multiplexer, self.logdir
+        )
+        result = provider.read_tensors(
+            experiment_id="unused",
+            plugin_name=histogram_metadata.PLUGIN_NAME,
+            downsample=3,
+        )
+        self.assertLen(result["lebesgue"]["uniform"], 3)
+
+
+class DownsampleTest(tf.test.TestCase):
+    """Tests for the `_downsample` private helper function."""
+
+    def test_deterministic(self):
+        xs = "abcdefg"
+        expected = data_provider._downsample(xs, k=4)
+        for _ in range(100):
+            actual = data_provider._downsample(xs, k=4)
+            self.assertEqual(actual, expected)
+
+    def test_underlong_ok(self):
+        xs = list("abcdefg")
+        actual = data_provider._downsample(xs, k=10)
+        expected = list("abcdefg")
+        self.assertIsNot(actual, xs)
+        self.assertEqual(actual, expected)
+
+    def test_inorder(self):
+        xs = list(range(10000))
+        actual = data_provider._downsample(xs, k=100)
+        self.assertEqual(actual, sorted(actual))
+
+    def test_zero(self):
+        xs = "abcdefg"
+        actual = data_provider._downsample(xs, k=0)
+        self.assertEqual(actual, [])
 
 
 if __name__ == "__main__":
