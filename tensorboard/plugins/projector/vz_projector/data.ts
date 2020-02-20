@@ -523,21 +523,13 @@ namespace vz_projector {
 
     setSupervision(superviseColumn: string, superviseInput?: string) {
       if (superviseColumn != null) {
-        let sampledIndices = this.shuffledDataIndices.slice(
-          0,
-          TSNE_SAMPLE_SIZE
-        );
-        let labels = new Array(sampledIndices.length);
-        sampledIndices.forEach((index, i) => {
-          let label = this.points[index].metadata[superviseColumn];
-          if (!label || !label.toString()) {
-            // if rows don't match up, backfill unknown values.
-            label = 'unknown #' + index.toString();
-            this.points[index].metadata[superviseColumn] = label;
-          }
-          labels[i] = label.toString();
-        });
-        this.superviseLabels = labels;
+        this.superviseLabels = this.shuffledDataIndices
+          .slice(0, TSNE_SAMPLE_SIZE)
+          .map((index) =>
+            this.points[index].metadata[superviseColumn] !== undefined
+              ? this.points[index].metadata[superviseColumn].toString()
+              : `unknown #${index}`
+          );
       }
       if (superviseInput != null) {
         this.superviseInput = superviseInput;

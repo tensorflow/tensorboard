@@ -707,8 +707,10 @@ namespace vz_projector {
       return labels;
     }
 
-    private getLabelText(ds: DataSet, i: number, accessor: string) {
-      return ds.points[i].metadata[accessor].toString();
+    private getLabelText(ds: DataSet, i: number, accessor: string): string {
+      return ds.points[i].metadata[accessor] !== undefined
+        ? ds.points[i].metadata[accessor].toString()
+        : `Unknown #${i}`;
     }
 
     private updateScatterPlotWithNewProjection(projection: Projection) {
