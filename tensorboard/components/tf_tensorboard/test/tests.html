@@ -51,6 +51,13 @@ limitations under the License.
         <tf-tensorboard brand="Custom Brand" home-href="http://custom.home" />
       </template>
     </test-fixture>
+
+    <test-fixture id="badHomeHrefFixture">
+      <template>
+        <tf-tensorboard brand="Custom Brand" demo-dir=="data"
+        home-href="javascript:alert('gotcha!')" />
+      </template>
+    </test-fixture>
     <script src="tensorboardTests.js"></script>
     <script src="autoReloadTests.js"></script>
   </body>

@@ -61,11 +61,16 @@ limitations under the License.
     <paper-header-panel>
       <paper-toolbar id="toolbar" slot="header" class="header">
         <div id="toolbar-content" slot="top">
-          <template is="dom-if" if="[[!homeHref]]">
+          <template is="dom-if" if="[[!_homeHref]]">
             <div class="toolbar-title">[[brand]]</div>
           </template>
-          <template is="dom-if" if="[[homeHref]]">
-            <a href="[[homeHref]]" class="toolbar-title">[[brand]]</a>
+          <template is="dom-if" if="[[_homeHref]]">
+            <a
+              href="[[_homeHref]]"
+              rel="noopener noreferrer"
+              class="toolbar-title"
+              >[[brand]]</a
+            >
           </template>
           <template is="dom-if" if="[[_activeDashboardsNotLoaded]]">
             <span class="toolbar-message">
@@ -509,7 +514,12 @@ limitations under the License.
          */
         homeHref: {
           type: String,
-          value: null,
+          value: '',
+        },
+
+        _homeHref: {
+          type: String,
+          computed: '_sanitizeHomeHref(homeHref)',
         },
 
         /**
@@ -678,6 +688,20 @@ limitations under the License.
           '_dashboardRegistry, _dashboardContainersStamped, ' +
           '_activeDashboards, _selectedDashboard)',
       ],
+
+      _sanitizeHomeHref(homeHref) {
+        if (!homeHref) {
+          return '';
+        }
+
+        const url = new URL(homeHref);
+
+        // Do not allow javascript:, data:, or unknown protocols to render
+        // with Polymer data binding.
+        const isHttp = url.protocol === 'http:' || url.protocol === 'https:';
+
+        return isHttp ? homeHref : '';
+      },
 
       _activeDashboardsUpdated(activeDashboards, selectedDashboard) {},
 

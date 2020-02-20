@@ -164,6 +164,18 @@ namespace tf_tensorboard {
           });
         });
       });
+
+      describe('bad homeHref', () => {
+        it('does not render the logo as hyperlink', () => {
+          const tensorboard = fixture('customizedTensorboardFixture') as any;
+          // It is impossible to set false as prop in Polymer.
+          tensorboard.autoReloadEnabled = false;
+
+          chai.assert.isNull(
+            tensorboard.shadowRoot.querySelector('.toolbar-content a')
+          );
+        });
+      });
     });
   });
 } // namespace tf_tensorboard
