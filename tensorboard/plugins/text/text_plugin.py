@@ -258,13 +258,10 @@ class TextPlugin(base_plugin.TBPlugin):
 
     def text_impl(self, run, tag, experiment):
         if self._data_provider:
-            # Downsample reads to 10 text samples per time series, which
-            # is the default size guidance for text under the
-            # multiplexer loading logic.
             all_text = self._data_provider.read_tensors(
                 experiment_id=experiment,
                 plugin_name=metadata.PLUGIN_NAME,
-                downsample=10,
+                downsample=100,
                 run_tag_filter=provider.RunTagFilter(runs=[run], tags=[tag]),
             )
             text = all_text.get(run, {}).get(tag, None)
