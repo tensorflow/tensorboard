@@ -493,7 +493,15 @@ limitations under the License.
 
     const DATA_SELECTION_CHANGE_DEBOUNCE_MS = 200;
 
+    /** @type {Object} */
+    const LocationType = {};
+    /** @type {string} */
+    LocationType.href = '';
+    /** @type {string} */
+    LocationType.origin = '';
+
     const lib = {
+      /** @return {LocationType} */
       getLocation() {
         return window.location;
       },
@@ -529,7 +537,7 @@ limitations under the License.
 
         _homePath: {
           type: String,
-          computed: '_sanitizehomePath(homePath)',
+          computed: '_sanitizeHomePath(homePath)',
         },
 
         /**
@@ -699,7 +707,7 @@ limitations under the License.
           '_activeDashboards, _selectedDashboard)',
       ],
 
-      _sanitizehomePath(homePath) {
+      _sanitizeHomePath(homePath) {
         if (!homePath) {
           return '';
         }
@@ -711,6 +719,18 @@ limitations under the License.
         // with Polymer data binding.
         const isHttp = url.protocol === 'http:' || url.protocol === 'https:';
         const sameOrigin = url.origin === location.origin;
+
+        if (!isHttp) {
+          throw new RangeError(
+            `Expect 'homePath' to be of http: or https:. ${homePath}`
+          );
+        }
+
+        if (!sameOrigin) {
+          throw new RangeError(
+            `Expect 'homePath' be a path or have the same origin. ${homePath} vs. ${location.origin}`
+          );
+        }
 
         return isHttp && sameOrigin ? url.toString() : '';
       },

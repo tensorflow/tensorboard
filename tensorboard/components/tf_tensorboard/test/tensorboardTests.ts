@@ -164,24 +164,30 @@ namespace tf_tensorboard {
           chai.assert.equal(title.href, 'https://tensorboard.is/awesome');
         });
 
-        it('does not render the logo as hyperlink for bad protocol', () => {
-          tensorboard.homePath = 'javascript:alert("PWNED!")';
-          chai.assert.isNull(
-            tensorboard.shadowRoot.querySelector('.toolbar-content a')
-          );
+        it('throws when homePath is one of bad wrong protocols', () => {
+          const expectedError1 =
+            "Expect 'homePath' to be of http: or https:. " +
+            'javascript:alert("PWNED!")';
+          chai.assert.throws(() => {
+            tensorboard.homePath = 'javascript:alert("PWNED!")';
+          }, expectedError1);
 
-          tensorboard.homePath =
+          const expectedError2 =
+            "Expect 'homePath' to be of http: or https:. " +
             'data:text/html,<img src="HEHE" onerror="alert(\'PWNED!\')" />';
-          chai.assert.isNull(
-            tensorboard.shadowRoot.querySelector('.toolbar-content a')
-          );
+          chai.assert.throws(() => {
+            tensorboard.homePath =
+              'data:text/html,<img src="HEHE" onerror="alert(\'PWNED!\')" />';
+          }, expectedError2);
         });
 
-        it('does not render the logo as hyperlink for bad wrong protocols', () => {
-          tensorboard.homePath = 'javascript:alert("PWNED!")';
-          chai.assert.isNull(
-            tensorboard.shadowRoot.querySelector('.toolbar-content a')
-          );
+        it('throws when homePath is not a path', () => {
+          const expectedError1 =
+            "Expect 'homePath' be a path or have the same origin. " +
+            'https://tensorboard.was/good vs. https://tensorboard.is';
+          chai.assert.throws(() => {
+            tensorboard.homePath = 'https://tensorboard.was/good';
+          }, expectedError1);
         });
       });
     });
