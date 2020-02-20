@@ -32,10 +32,13 @@ from tensorboard import data_compat
 from tensorboard.backend.event_processing import directory_loader
 from tensorboard.backend.event_processing import event_file_loader
 from tensorboard.backend.event_processing import io_wrapper
+from tensorboard.compat.proto import meta_graph_pb2
 from tensorboard.plugins.scalar import metadata as scalar_metadata
+from tensorboard.plugins.graph import metadata as graph_metadata
 from tensorboard.util import grpc_util
 from tensorboard.util import tb_logging
 from tensorboard.util import tensor_util
+
 
 # Minimum interval between initiating write RPCs.  When writes would otherwise
 # happen more frequently, the process will sleep to use up the rest of the time.
@@ -236,11 +239,11 @@ class _BatchedRequestSender(object):
         # TODO(soergel): Allow enabling/disabling upload per plugin
 
         for (run_name, event) in self._run_events(run_to_events):
-            if event.summary:
+            if event.graph_def or event.meta_graph_def:
+                self._send_graph(run_name, event)
+            elif event.summary:
                 for value in self._summary_values(run_name, event):
                     self._send_summary_value(run_name, event, value)
-            elif event.graph_def or event.meta_graph_def:
-                self._send_graph(run_name, event)
 
         self._scalar_request_sender.flush()
         # TODO(nielsene): add tensor case here
@@ -279,6 +282,7 @@ class _BatchedRequestSender(object):
         # TODO(nielsene): add Tensor plugin cases here
 
     def _send_graph(self, run_name, event):
+        print('SEND GRAPH')
         tag_name = GRAPH_TAG_NAME
         seq_index = 0 # there is only one run-level graph
         blob = _extract_graph(event)
@@ -391,7 +395,7 @@ class _ScalarBatchedRequestSender(object):
 
         self._rpc_rate_limiter.tick()
 
-        with _request_logger(request):
+        with _request_logger(request, request.runs):
             try:
                 # TODO(@nfelt): execute this RPC asynchronously.
                 grpc_util.call_with_retries(self._api.WriteScalar, request)
@@ -535,6 +539,7 @@ class _BlobRequestSender(object):
             # TODO(soergel): Here or elsewhere, account for sending multiple blobs
             # in the same sequence without refreshing the blob_sequence_id each time
             blob_sequence_id = self._get_or_create_blob_sequence()
+            print("Flushing to blob sequence id: ", blob_sequence_id)
             self._send_blob(blob_sequence_id, self._seq_index, self._blob)
 
         self._new_request()
@@ -550,7 +555,7 @@ class _BlobRequestSender(object):
         )
         util.set_timestamp(request.wall_time, self._event.wall_time)
 
-        with RequestLogger(request):
+        with _request_logger(request):
             try:
                 # TODO(@nfelt): execute this RPC asynchronously.
                 response = grpc_util.call_with_retries(self._api.GetOrCreateBlobSequence, request)
@@ -559,6 +564,8 @@ class _BlobRequestSender(object):
                 if e.code() == grpc.StatusCode.NOT_FOUND:
                     raise ExperimentNotFoundError()
                 logger.error("Upload call failed with error %s", e)
+                # TODO(soergel): clean up
+                raise e
 
         return blob_sequence_id
 
@@ -568,7 +575,8 @@ class _BlobRequestSender(object):
         request_iterator = self._write_blob_request_iterator(blob_sequence_id, seq_index, blob)
         # TODO(soergel): don't wait for responses for greater throughput
         # See https://stackoverflow.com/questions/55029342/handling-async-streaming-request-in-grpc-python
-        for _ in self._api.WriteBlob(request_iterator):
+        for response in self._api.WriteBlob(request_iterator):
+            print(repr(response))
             # TODO(soergel): validate responses?  probably not.
             pass
 
@@ -592,18 +600,25 @@ class _BlobRequestSender(object):
 
 
 @contextlib.contextmanager
-def _request_logger(request):
+def _request_logger(request, runs=None):
     upload_start_time = time.time()
     request_bytes = request.ByteSize()
     logger.info("Trying request of %d bytes", request_bytes)
     yield
     upload_duration_secs = time.time() - upload_start_time
-    logger.info(
-        "Upload for %d runs (%d bytes) took %.3f seconds",
-        len(request.runs),
-        request_bytes,
-        upload_duration_secs,
-    )
+    if runs:
+        logger.info(
+            "Upload for %d runs (%d bytes) took %.3f seconds",
+            len(runs),
+            request_bytes,
+            upload_duration_secs,
+        )
+    else:
+        logger.info(
+            "Upload of (%d bytes) took %.3f seconds",
+            request_bytes,
+            upload_duration_secs,
+        )
 
 
 def _extract_graph(event):
