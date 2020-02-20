@@ -30,7 +30,7 @@ export enum TensorDebugMode {
   FULL_HEALTH = 4,
   SHAPE = 5,
   FULL_NUMERICS = 6,
-  FULL_TENOSR = 7,
+  FULL_TENSOR = 7,
   REDUCE_INF_NAN_THREE_SLOTS = 8,
 }
 
