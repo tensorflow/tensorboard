@@ -31,6 +31,7 @@ from tensorboard.plugins.graph import metadata as graphs_metadata
 from tensorboard.plugins.histogram import metadata as histograms_metadata
 from tensorboard.plugins.image import metadata as images_metadata
 from tensorboard.plugins.scalar import metadata as scalars_metadata
+from tensorboard.plugins.text import metadata as text_metadata
 from tensorboard.util import tensor_util
 
 
@@ -92,6 +93,8 @@ def _migrate_value(value):
         return _migrate_image_value(value)
     if plugin_name == scalars_metadata.PLUGIN_NAME:
         return _migrate_scalar_value(value)
+    if plugin_name == text_metadata.PLUGIN_NAME:
+        return _migrate_text_value(value)
     return (value,)
 
 
@@ -107,4 +110,9 @@ def _migrate_histogram_value(value):
 
 def _migrate_image_value(value):
     value.metadata.data_class = summary_pb2.DATA_CLASS_BLOB_SEQUENCE
+    return (value,)
+
+
+def _migrate_text_value(value):
+    value.metadata.data_class = summary_pb2.DATA_CLASS_TENSOR
     return (value,)
