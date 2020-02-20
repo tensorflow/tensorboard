@@ -191,7 +191,7 @@ def text_array_to_html(text_arr):
 
 
 def process_event(wall_time, step, string_ndarray):
-    """Convert a TensorEvent into a JSON-compatible response."""
+    """Convert a text event into a JSON-compatible response."""
     html = text_array_to_html(string_ndarray)
     return {
         "wall_time": wall_time,
