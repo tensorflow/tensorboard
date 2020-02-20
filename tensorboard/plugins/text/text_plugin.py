@@ -48,6 +48,8 @@ WARNING_TEMPLATE = textwrap.dedent(
   2d tables are supported. Showing a 2d slice of the data instead."""
 )
 
+_DEFAULT_DOWNSAMPLING = 100  # text tensors per time series
+
 
 def make_table_row(contents, tag="td"):
     """Given an iterable of string contents, make a table row.
@@ -212,6 +214,9 @@ class TextPlugin(base_plugin.TBPlugin):
           context: A base_plugin.TBContext instance.
         """
         self._multiplexer = context.multiplexer
+        self._downsample_to = (context.sampling_hints or {}).get(
+            self.plugin_name, _DEFAULT_DOWNSAMPLING
+        )
         if context.flags and context.flags.generic_data == "true":
             self._data_provider = context.data_provider
         else:
@@ -261,7 +266,7 @@ class TextPlugin(base_plugin.TBPlugin):
             all_text = self._data_provider.read_tensors(
                 experiment_id=experiment,
                 plugin_name=metadata.PLUGIN_NAME,
-                downsample=100,
+                downsample=self._downsample_to,
                 run_tag_filter=provider.RunTagFilter(runs=[run], tags=[tag]),
             )
             text = all_text.get(run, {}).get(tag, None)
