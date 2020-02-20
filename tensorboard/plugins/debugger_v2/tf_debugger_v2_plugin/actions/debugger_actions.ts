@@ -122,9 +122,8 @@ export const executionScrollToIndex = createAction(
 
 export const executionDigestFocused = createAction(
   '[Debugger] Execution Data Objects Being Focused On',
-  props<{displayIndex: number; scrollIntoView?: boolean}>()
+  props<{displayIndex: number}>()
 );
-// TODO(cais): Unit test for scroll into view.
 
 export const executionDataLoaded = createAction(
   '[Debugger] Execution Data Objects Loaded',

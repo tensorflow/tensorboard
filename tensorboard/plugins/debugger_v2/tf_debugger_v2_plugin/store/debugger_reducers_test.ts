@@ -211,7 +211,13 @@ describe('Debugger reducers', () => {
     });
   });
 
+  for (const {displayCount, expectedScrollBegin} of [{
+    displayCount: 4, expectedScrollBegin: 8
+  }, {
+    displayCount: 30, expectedScrollBegin: 0
+  }]) {
   it('Updates alerts data on alertsOfTypeLoaded: empty initial state', () => {
+    const firstAlertExecutionIndex = 10;
     const state = createDebuggerState({
       activeRunId: '__default_debugger_run__',
       alerts: createAlertsState({
@@ -220,14 +226,18 @@ describe('Debugger reducers', () => {
           lastLoadedTimeInMs: null,
         },
       }),
+      executions: createDebuggerExecutionsState({
+        displayCount,
+        scrollBeginIndex: 0,
+      })
     }); // `alerts` state is in an empty initial state.
     const alert0 = createTestInfNanAlert({
       op_type: 'RealDiv',
-      execution_index: 10,
+      execution_index: firstAlertExecutionIndex,
     });
     const alert1 = createTestInfNanAlert({
       op_type: 'Log',
-      execution_index: 11,
+      execution_index: firstAlertExecutionIndex + 1,
     });
     const nextState = reducers(
       state,
@@ -260,8 +270,11 @@ describe('Debugger reducers', () => {
     ]);
     const executionIndexToAlertIndex =
       nextState.alerts.executionIndexToAlertIndex[AlertType.INF_NAN_ALERT];
-    expect(executionIndexToAlertIndex).toEqual({10: 0, 11: 1});
+    expect(executionIndexToAlertIndex).toEqual({[firstAlertExecutionIndex]: 0, [firstAlertExecutionIndex + 1]: 1});
+    // Verify that the first alert is scrolled into view.
+    expect(nextState.executions.scrollBeginIndex).toEqual(expectedScrollBegin);
   });
+}
 
   it('Updates alerts data on alertsOfTypeLoaded: non-empty initial state', () => {
     const alert0 = createTestInfNanAlert({

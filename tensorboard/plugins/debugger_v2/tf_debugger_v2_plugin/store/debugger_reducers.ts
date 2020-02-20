@@ -208,6 +208,16 @@ const reducer = createReducer(
           ] = alertIndex;
         }
       }
+      if (alertType === AlertType.INF_NAN_ALERT && begin === 0) {
+        // TOOD(cais): Take care of other alert types with execution index.
+        const alert = alerts[0] as InfNanAlert;
+        const executionIndex = alert.execution_index;
+        // Try to scroll the first alert to the center of the view.
+        newState.executions.scrollBeginIndex = Math.max(
+          0,
+          executionIndex - Math.floor(newState.executions.displayCount / 2)
+        );
+      }
       return newState;
     }
   ),
@@ -384,18 +394,6 @@ const reducer = createReducer(
           focusIndex: state.executions.scrollBeginIndex + action.displayIndex,
         },
       };
-      if (action.scrollIntoView) {
-        // Scroll the focused execution digest into view if it is not currently
-        // inside the view.
-        const {focusIndex, scrollBeginIndex, displayCount} = newState.executions;
-        const currentlyInView =
-          focusIndex >= scrollBeginIndex && focusIndex < scrollBeginIndex + displayCount;
-        console.log(`currentlyInView = ${currentlyInView}`);  // DEBUG
-        if (!currentlyInView) {
-          // Attempt to show the focused execution digest at the center of the view.
-          newState.executions.scrollBeginIndex = Math.max(0, focusIndex - displayCount / 2);
-        }
-      }
       return newState;
     }
   ),
