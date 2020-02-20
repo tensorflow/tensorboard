@@ -202,13 +202,12 @@ export const getFocusAlertTypesOfVisibleExecutionDigests = createSelector(
     if (focusType === null) {
       return alertTypes;
     }
-    const executionIndexToAlertIndex =
-      state.alerts.executionIndexToAlertIndex[focusType];
-    if (executionIndexToAlertIndex === undefined) {
+    const executionIndices = state.alerts.executionIndices[focusType];
+    if (executionIndices === undefined) {
       return alertTypes;
     }
     for (let i = beginExecutionIndex; i < endExecutionIndex; ++i) {
-      if (executionIndexToAlertIndex[i] !== undefined) {
+      if (executionIndices.includes(i)) {
         alertTypes[i - beginExecutionIndex] = state.alerts.focusType;
       }
     }

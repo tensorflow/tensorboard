@@ -514,7 +514,6 @@ export class DebuggerEffects {
           loadedAlertsOfFocusedType,
           alertsLoaded,
         ]) => {
-          // TODO(cais): Unit test for the correct functioning of the filter.
           return (
             runId !== null &&
             focusType !== null &&
@@ -553,7 +552,7 @@ export class DebuggerEffects {
                     end,
                     alerts,
                   })
-                );  // TODO(cais): Unit test.
+                );
               }
             ),
             withLatestFrom(

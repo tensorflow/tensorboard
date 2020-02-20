@@ -80,6 +80,33 @@ describe('Debugger reducers', () => {
       );
       expect(nextState.alerts.focusType).toBeNull();
     });
+
+    for (const {displayCount, expectedScrollBegin} of [
+      {displayCount: 5, expectedScrollBegin: 8},
+      {displayCount: 40, expectedScrollBegin: 0},
+    ]) {
+      it('scrolls to execution digest corresponding to first alert', () => {
+        const state = createDebuggerState({
+          alerts: createAlertsState({
+            focusType: null,
+            executionIndices: {
+              [AlertType.INF_NAN_ALERT]: [10, 11],
+            },
+          }),
+          executions: createDebuggerExecutionsState({
+            scrollBeginIndex: 0,
+            displayCount,
+          }),
+        });
+        const nextState = reducers(
+          state,
+          actions.alertTypeFocusToggled({
+            alertType: AlertType.INF_NAN_ALERT,
+          })
+        );
+        expect(nextState.executions.scrollBeginIndex).toBe(expectedScrollBegin);
+      });
+    }
   });
 
   describe('Runs loading', () => {
@@ -211,70 +238,82 @@ describe('Debugger reducers', () => {
     });
   });
 
-  for (const {displayCount, expectedScrollBegin} of [{
-    displayCount: 4, expectedScrollBegin: 8
-  }, {
-    displayCount: 30, expectedScrollBegin: 0
-  }]) {
-  it('Updates alerts data on alertsOfTypeLoaded: empty initial state', () => {
-    const firstAlertExecutionIndex = 10;
-    const state = createDebuggerState({
-      activeRunId: '__default_debugger_run__',
-      alerts: createAlertsState({
-        alertsLoaded: {
-          state: DataLoadState.LOADING,
-          lastLoadedTimeInMs: null,
-        },
-      }),
-      executions: createDebuggerExecutionsState({
-        displayCount,
-        scrollBeginIndex: 0,
-      })
-    }); // `alerts` state is in an empty initial state.
-    const alert0 = createTestInfNanAlert({
-      op_type: 'RealDiv',
-      execution_index: firstAlertExecutionIndex,
+  for (const {displayCount, expectedScrollBegin} of [
+    {
+      displayCount: 4,
+      expectedScrollBegin: 8,
+    },
+    {
+      displayCount: 30,
+      expectedScrollBegin: 0,
+    },
+  ]) {
+    it('Updates alerts data on alertsOfTypeLoaded: empty initial state', () => {
+      const firstAlertExecutionIndex = 10;
+      const state = createDebuggerState({
+        activeRunId: '__default_debugger_run__',
+        alerts: createAlertsState({
+          alertsLoaded: {
+            state: DataLoadState.LOADING,
+            lastLoadedTimeInMs: null,
+          },
+        }),
+        executions: createDebuggerExecutionsState({
+          displayCount,
+          scrollBeginIndex: 0,
+        }),
+      }); // `alerts` state is in an empty initial state.
+      const alert0 = createTestInfNanAlert({
+        op_type: 'RealDiv',
+        execution_index: firstAlertExecutionIndex,
+      });
+      const alert1 = createTestInfNanAlert({
+        op_type: 'Log',
+        execution_index: firstAlertExecutionIndex + 1,
+      });
+      const nextState = reducers(
+        state,
+        actions.alertsOfTypeLoaded({
+          numAlerts: 2,
+          alertsBreakdown: {
+            InfNanAlert: 2,
+          },
+          begin: 0,
+          end: 2,
+          alertType: 'InfNanAlert',
+          alerts: [alert0, alert1],
+        })
+      );
+      expect(nextState.alerts.alertsLoaded.state).toBe(DataLoadState.LOADED);
+      expect(nextState.alerts.alertsLoaded.lastLoadedTimeInMs).toBeGreaterThan(
+        0
+      );
+      expect(nextState.alerts.numAlerts).toBe(2);
+      expect(nextState.alerts.alertsBreakdown).toEqual({
+        [AlertType.INF_NAN_ALERT]: 2,
+      });
+      expect(Object.keys(nextState.alerts.alerts)).toEqual([
+        AlertType.INF_NAN_ALERT,
+      ]);
+      const alertsOfType = nextState.alerts.alerts[AlertType.INF_NAN_ALERT];
+      expect(Object.keys(alertsOfType).length).toBe(2);
+      expect(alertsOfType[0]).toEqual(alert0);
+      expect(alertsOfType[1]).toEqual(alert1);
+      expect(Object.keys(nextState.alerts.executionIndices)).toEqual([
+        AlertType.INF_NAN_ALERT,
+      ]);
+      const executionIndices =
+        nextState.alerts.executionIndices[AlertType.INF_NAN_ALERT];
+      expect(executionIndices).toEqual([
+        firstAlertExecutionIndex,
+        firstAlertExecutionIndex + 1,
+      ]);
+      // Verify that the first alert is scrolled into view.
+      expect(nextState.executions.scrollBeginIndex).toEqual(
+        expectedScrollBegin
+      );
     });
-    const alert1 = createTestInfNanAlert({
-      op_type: 'Log',
-      execution_index: firstAlertExecutionIndex + 1,
-    });
-    const nextState = reducers(
-      state,
-      actions.alertsOfTypeLoaded({
-        numAlerts: 2,
-        alertsBreakdown: {
-          InfNanAlert: 2,
-        },
-        begin: 0,
-        end: 2,
-        alertType: 'InfNanAlert',
-        alerts: [alert0, alert1],
-      })
-    );
-    expect(nextState.alerts.alertsLoaded.state).toBe(DataLoadState.LOADED);
-    expect(nextState.alerts.alertsLoaded.lastLoadedTimeInMs).toBeGreaterThan(0);
-    expect(nextState.alerts.numAlerts).toBe(2);
-    expect(nextState.alerts.alertsBreakdown).toEqual({
-      [AlertType.INF_NAN_ALERT]: 2,
-    });
-    expect(Object.keys(nextState.alerts.alerts)).toEqual([
-      AlertType.INF_NAN_ALERT,
-    ]);
-    const alertsOfType = nextState.alerts.alerts[AlertType.INF_NAN_ALERT];
-    expect(Object.keys(alertsOfType).length).toBe(2);
-    expect(alertsOfType[0]).toEqual(alert0);
-    expect(alertsOfType[1]).toEqual(alert1);
-    expect(Object.keys(nextState.alerts.executionIndexToAlertIndex)).toEqual([
-      AlertType.INF_NAN_ALERT,
-    ]);
-    const executionIndexToAlertIndex =
-      nextState.alerts.executionIndexToAlertIndex[AlertType.INF_NAN_ALERT];
-    expect(executionIndexToAlertIndex).toEqual({[firstAlertExecutionIndex]: 0, [firstAlertExecutionIndex + 1]: 1});
-    // Verify that the first alert is scrolled into view.
-    expect(nextState.executions.scrollBeginIndex).toEqual(expectedScrollBegin);
-  });
-}
+  }
 
   it('Updates alerts data on alertsOfTypeLoaded: non-empty initial state', () => {
     const alert0 = createTestInfNanAlert({
@@ -326,12 +365,12 @@ describe('Debugger reducers', () => {
     expect(Object.keys(alertsOfType).length).toBe(2);
     expect(alertsOfType[0]).toEqual(alert0);
     expect(alertsOfType[1]).toEqual(alert1);
-    expect(Object.keys(nextState.alerts.executionIndexToAlertIndex)).toEqual([
+    expect(Object.keys(nextState.alerts.executionIndices)).toEqual([
       AlertType.INF_NAN_ALERT,
     ]);
-    const executionIndexToAlertIndex =
-      nextState.alerts.executionIndexToAlertIndex[AlertType.INF_NAN_ALERT];
-    expect(executionIndexToAlertIndex[11]).toBe(1);
+    const executionIndices =
+      nextState.alerts.executionIndices[AlertType.INF_NAN_ALERT];
+    expect(executionIndices[1]).toBe(11);
   });
 
   it('Updates load state on numExecutionsRequested', () => {

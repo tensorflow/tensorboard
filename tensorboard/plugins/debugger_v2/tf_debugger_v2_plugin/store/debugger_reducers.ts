@@ -20,12 +20,11 @@ import {
   ExecutionDigestsResponse,
 } from '../data_source/tfdbg2_data_source';
 import {
-  Alert,
   AlertType,
   DataLoadState,
   DebuggerState,
-  StackFramesById,
   InfNanAlert,
+  StackFramesById,
 } from './debugger_types';
 
 // HACK: These imports are for type inference.
@@ -49,7 +48,7 @@ const initialState: DebuggerState = {
     numAlerts: 0,
     alertsBreakdown: {},
     alerts: {},
-    executionIndexToAlertIndex: {},
+    executionIndices: {},
     focusType: null,
   },
   executions: {
@@ -194,22 +193,22 @@ const reducer = createReducer(
       if (newState.alerts.alerts[alertType] === undefined) {
         newState.alerts.alerts[alertType] = {};
       }
-      if (newState.alerts.executionIndexToAlertIndex[alertType] === undefined) {
-        newState.alerts.executionIndexToAlertIndex[alertType] = {};
+      if (newState.alerts.executionIndices[alertType] === undefined) {
+        newState.alerts.executionIndices[alertType] = [];
       }
       for (let i = 0; i < alerts.length; ++i) {
         const alertIndex = begin + i;
         const alert = alerts[i];
         newState.alerts.alerts[alertType][alertIndex] = alert;
         if (alert.alert_type === AlertType.INF_NAN_ALERT) {
-          // TOOD(cais): Take care of other alert types with execution index.
-          newState.alerts.executionIndexToAlertIndex[alertType][
-            (alert as InfNanAlert).execution_index
-          ] = alertIndex;
+          // TOOD(cais): Deal with other alert types with execution index.
+          newState.alerts.executionIndices[alert.alert_type][
+            alertIndex
+          ] = (alert as InfNanAlert).execution_index;
         }
       }
       if (alertType === AlertType.INF_NAN_ALERT && begin === 0) {
-        // TOOD(cais): Take care of other alert types with execution index.
+        // TOOD(cais): Deal with other alert types with execution index.
         const alert = alerts[0] as InfNanAlert;
         const executionIndex = alert.execution_index;
         // Try to scroll the first alert to the center of the view.
@@ -224,13 +223,30 @@ const reducer = createReducer(
   on(
     actions.alertTypeFocusToggled,
     (state: DebuggerState, {alertType}): DebuggerState => {
-      return {
+      const newState = {
         ...state,
         alerts: {
           ...state.alerts,
           focusType: state.alerts.focusType === alertType ? null : alertType,
         },
       };
+      // If alert data is available, focus onto the execution digest that
+      // corresponds to the first alert.
+      const currentFocusType = newState.alerts.focusType;
+      if (currentFocusType !== null) {
+        const executionIndices =
+          newState.alerts.executionIndices[currentFocusType] || [];
+        // Try to put the execution digest that corresponds to the first
+        // alert at the center of the view.
+        if (executionIndices[0] !== undefined) {
+          newState.executions.scrollBeginIndex = Math.max(
+            0,
+            Number(executionIndices[0]) -
+              Math.floor(newState.executions.displayCount / 2)
+          );
+        }
+      }
+      return newState;
     }
   ),
   on(

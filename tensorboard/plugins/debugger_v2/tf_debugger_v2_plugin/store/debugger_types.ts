@@ -140,12 +140,6 @@ export type AlertsBreakdown = {[alertType: string]: number};
 // all AlertTypes, depending on where this type is used.
 export type AlertsByIndex = {[index: number]: Alert};
 
-// A map from execution index to the corresponding alert index, within a
-// type of alerts.
-// This is applicable only to alert types that involve top-level exdcutions,
-// e.g., InfNanAlert.
-export type ExecutionIndexToAlertIndex = {[index: number]: number};
-
 export interface Alerts {
   // Load state for alerts.
   // This state can go from LOADED to LOADING, as the alerts can be loaded
@@ -162,22 +156,9 @@ export interface Alerts {
   // specific `alertType`.
   alerts: {[alertType: string]: AlertsByIndex};
 
-  // A map from top-level execution index to alert index, arranged by alert
-  // types.
-  executionIndexToAlertIndex: {[alertType: string]: ExecutionIndexToAlertIndex};
-
-  // TODO(cais): Decide whether to keep this or not.
-  // // The execution and graph execution indices for the alerts that have been
-  // // loaded so far, by alertType. The order of the elements in each value
-  // // array is consistent with that in `alerts`. For alert types that do not
-  // // involve execution (e.g., `FunctionRecompileAlert"), they is not
-  // // corresponding key in this map.
-  // alertsExecutionIndex: {
-  //   [alertType: string]: Array<{
-  //     executionIndex: number;
-  //     graphExecutionIndex: number | null;
-  //   }>;
-  // };
+  // A map from alert index to top-level execution index, arranged by alert
+  // types. Applicable only to alerts that involve top-level execution.
+  executionIndices: {[alertType: string]: number[]};
 
   // Which type of existing alerts is focused on (if any).
   // `null` corresponds to no focus.

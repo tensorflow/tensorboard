@@ -247,12 +247,8 @@ describe('debugger selectors', () => {
           activeRunId: '__default_debugger_run__',
           alerts: createAlertsState({
             focusType: AlertType.INF_NAN_ALERT,
-            executionIndexToAlertIndex: {
-              [AlertType.INF_NAN_ALERT]: {
-                0: 0,
-                2: 1,
-                3: 2,
-              },
+            executionIndices: {
+              [AlertType.INF_NAN_ALERT]: [0, 2, 3],
             },
           }),
           executions: {

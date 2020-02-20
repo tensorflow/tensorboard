@@ -323,12 +323,12 @@ describe('Debugger Container', () => {
       );
       debuggerState.alerts = createAlertsState({
         focusType: AlertType.INF_NAN_ALERT,
-        executionIndexToAlertIndex: {
-          [AlertType.INF_NAN_ALERT]: {
-            4: 0, // Outside the viewing window.
-            6: 1, // Inside the viewing window; same below.
-            8: 2,
-          },
+        executionIndices: {
+          [AlertType.INF_NAN_ALERT]: [
+            4, // Outside the viewing window.
+            6, // Inside the viewing window; same below.
+            8,
+          ],
         },
       });
       store.setState(createState(debuggerState));
