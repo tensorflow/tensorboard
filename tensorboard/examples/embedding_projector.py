@@ -34,8 +34,8 @@ STEP = 0
 
 # Load imdb reviews dataset
 (train_data, test_data), info = tfds.load(
-    'imdb_reviews/subwords8k', 
-    split = (tfds.Split.TRAIN, tfds.Split.TEST), 
+    'imdb_reviews/subwords8k',
+    split = (tfds.Split.TRAIN, tfds.Split.TEST),
     with_info=True, as_supervised=True)
 encoder = info.features['text'].encoder
 
@@ -76,11 +76,12 @@ weights = tf.Variable(model.layers[0].get_weights()[0][1:])
 def register_embedding(weights, labels, log_dir):
 
     # Save Labels separately on a line-by-line manner.
-    with open(os.path.join(log_dir, filepath), 'w') as f:
+    with open(os.path.join(log_dir, META_DATA_FNAME), 'w') as f:
         for label in labels:
             f.write('{}\n'.format(label))
 
-    # Create a checkpoint from embedding
+    # Create a checkpoint from embedding, the filename and key are
+    # name of the tensor.
     checkpoint = tf.train.Checkpoint(embedding=weights)
     checkpoint.save(os.path.join(LOG_DIR, 'embedding.ckpt'))
 
