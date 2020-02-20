@@ -78,6 +78,22 @@ When enabled by default, this also works with editor plugins like
 
 [vim-fugitive]: https://github.com/tpope/vim-fugitive
 
+### iBazel: A file watcher for Bazel.
+
+Bazel is capable of performing incremental builds where it builds only the
+subset of files that are impacted by file changes. However, it does not come
+with a file watcher. For an improved developer experience, start TensorBoard
+with `ibazel` instead of `bazel` which will automatically re-build and start the
+server when files change.
+
+If you do not have the ibazel binary on your system, you can use the command
+below.
+
+```sh
+# Optionally run `yarn` to keep `node_modules` up-to-date.
+yarn run ibazel run tensorboard -- -- --logdir [LOG_DIR]
+```
+
 ### Debugging UI Tests Locally
 
 Our UI tests (e.g., //tensorboard/components/vz_sorting/test) use HTML import

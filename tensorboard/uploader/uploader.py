@@ -39,7 +39,6 @@ from tensorboard.util import grpc_util
 from tensorboard.util import tb_logging
 from tensorboard.util import tensor_util
 
-
 # Minimum interval between initiating write RPCs.  When writes would otherwise
 # happen more frequently, the process will sleep to use up the rest of the time.
 _MIN_WRITE_RPC_INTERVAL_SECS = 5
@@ -638,6 +637,21 @@ def _extract_graph(event):
         if meta_graph.graph_def:
             return meta_graph.graph_def.SerializeToString()
     logger.warn("Graph event contained no graph data.")
+
+
+@contextlib.contextmanager
+def _request_logger(request):
+    upload_start_time = time.time()
+    request_bytes = request.ByteSize()
+    logger.info("Trying request of %d bytes", request_bytes)
+    yield
+    upload_duration_secs = time.time() - upload_start_time
+    logger.info(
+        "Upload for %d runs (%d bytes) took %.3f seconds",
+        len(request.runs),
+        request_bytes,
+        upload_duration_secs,
+    )
 
 
 def _varint_cost(n):
