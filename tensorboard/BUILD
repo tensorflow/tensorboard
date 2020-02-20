@@ -275,8 +275,6 @@ tf_web_library(
     srcs = [
         "//tensorboard/components:index.html",
         "//tensorboard/components:index.js",
-        "//tensorboard/components:trace_viewer_index.html",
-        "//tensorboard/components:trace_viewer_index.js",
     ] + select({
         "//tensorboard:dev_build": [
             "//tensorboard/webapp:ng_index.html",
