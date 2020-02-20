@@ -137,7 +137,9 @@ class ScalarsPluginTest(tf.test.TestCase):
                 (logdir, multiplexer) = self.load_runs(run_names)
                 with self.subTest("bare multiplexer"):
                     ctx = base_plugin.TBContext(
-                        logdir=logdir, multiplexer=multiplexer
+                        logdir=logdir,
+                        multiplexer=multiplexer,
+                        flags=argparse.Namespace(generic_data="false"),
                     )
                     fn(self, scalars_plugin.ScalarsPlugin(ctx), *args, **kwargs)
                 with self.subTest("generic data provider"):
