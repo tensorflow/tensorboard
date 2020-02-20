@@ -18,6 +18,7 @@ namespace tf_tensorboard {
   declare function fixture(id: string): void;
   declare function flush(callback: Function): void;
   declare const Polymer: any;
+  declare const TEST_ONLY: any;
 
   function checkSlottedUnderAncestor(element: Element, ancestor: Element) {
     expect(!!element.assignedSlot).to.be.true;
@@ -32,10 +33,11 @@ namespace tf_tensorboard {
       let tensorboard: any;
 
       describe('base tests', () => {
-        beforeEach(function() {
+        beforeEach((done) => {
           tensorboard = fixture('tensorboardFixture');
           tensorboard.demoDir = 'data';
           tensorboard.autoReloadEnabled = false;
+          flush(done);
         });
 
         it('renders injected content', function() {
@@ -50,25 +52,15 @@ namespace tf_tensorboard {
           checkSlottedUnderAncestor(headerItem2, header);
         });
 
-        it('uses "TensorBoard-X" for title text by default', (done) => {
-          flush(() => {
-            const title = tensorboard.shadowRoot.querySelector(
-              '.toolbar-title'
-            );
-            chai.assert.equal(title.textContent, 'TensorBoard-X');
-            done();
-          });
+        it('uses "TensorBoard-X" for title text by default', () => {
+          const title = tensorboard.shadowRoot.querySelector('.toolbar-title');
+          chai.assert.equal(title.textContent, 'TensorBoard-X');
         });
 
-        it('uses div for title element by default ', (done) => {
-          flush(() => {
-            const title = tensorboard.shadowRoot.querySelector(
-              '.toolbar-title'
-            );
-            chai.assert.equal(title.nodeName, 'DIV');
-            chai.assert.isUndefined(title.href);
-            done();
-          });
+        it('uses div for title element by default ', () => {
+          const title = tensorboard.shadowRoot.querySelector('.toolbar-title');
+          chai.assert.equal(title.nodeName, 'DIV');
+          chai.assert.isUndefined(title.href);
         });
 
         // TODO(psybuzz): Restore/remove these old tests, which fail due to broken
@@ -136,41 +128,57 @@ namespace tf_tensorboard {
         });
       });
 
-      describe('customization tests', () => {
-        beforeEach(function() {
-          tensorboard = fixture('customizedTensorboardFixture');
+      describe('custom path', () => {
+        let sandbox: any;
+
+        beforeEach((done) => {
+          sandbox = sinon.sandbox.create();
+          sandbox.stub(TEST_ONLY.lib, 'getLocation').returns({
+            href: 'https://tensorboard.is/cool',
+            origin: 'https://tensorboard.is',
+          });
+
+          tensorboard = fixture('tensorboardFixture');
           tensorboard.demoDir = 'data';
+          tensorboard.brand = 'Custom Brand';
           tensorboard.autoReloadEnabled = false;
+          tensorboard.homePath = '/awesome';
+
+          // Branding and other components use `dom-if` which updates the dom in an
+          // animation frame. Flush and remove the asynchronicity.
+          flush(done);
         });
 
-        it('uses customized brand for title', (done) => {
-          flush(() => {
-            const title = tensorboard.shadowRoot.querySelector(
-              '.toolbar-title'
-            );
-            chai.assert.equal(title.textContent, 'Custom Brand');
-            done();
-          });
+        afterEach(() => {
+          sandbox.restore();
         });
 
-        it('uses customized href for title element ', (done) => {
-          flush(() => {
-            const title = tensorboard.shadowRoot.querySelector(
-              '.toolbar-title'
-            );
-            chai.assert.equal(title.nodeName, 'A');
-            chai.assert.equal(title.href, 'http://custom.home/');
-            done();
-          });
+        it('uses customized brand for title', () => {
+          const title = tensorboard.shadowRoot.querySelector('.toolbar-title');
+          chai.assert.equal(title.textContent, 'Custom Brand');
         });
-      });
 
-      describe('bad homeHref', () => {
-        it('does not render the logo as hyperlink', () => {
-          const tensorboard = fixture('customizedTensorboardFixture') as any;
-          // It is impossible to set false as prop in Polymer.
-          tensorboard.autoReloadEnabled = false;
+        it('uses customized path for title element ', () => {
+          const title = tensorboard.shadowRoot.querySelector('.toolbar-title');
+          chai.assert.equal(title.nodeName, 'A');
+          chai.assert.equal(title.href, 'https://tensorboard.is/awesome');
+        });
 
+        it('does not render the logo as hyperlink for bad protocol', () => {
+          tensorboard.homePath = 'javascript:alert("PWNED!")';
+          chai.assert.isNull(
+            tensorboard.shadowRoot.querySelector('.toolbar-content a')
+          );
+
+          tensorboard.homePath =
+            'data:text/html,<img src="HEHE" onerror="alert(\'PWNED!\')" />';
+          chai.assert.isNull(
+            tensorboard.shadowRoot.querySelector('.toolbar-content a')
+          );
+        });
+
+        it('does not render the logo as hyperlink for bad wrong protocols', () => {
+          tensorboard.homePath = 'javascript:alert("PWNED!")';
           chai.assert.isNull(
             tensorboard.shadowRoot.querySelector('.toolbar-content a')
           );

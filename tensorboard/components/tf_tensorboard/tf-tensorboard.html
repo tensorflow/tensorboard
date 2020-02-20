@@ -61,12 +61,12 @@ limitations under the License.
     <paper-header-panel>
       <paper-toolbar id="toolbar" slot="header" class="header">
         <div id="toolbar-content" slot="top">
-          <template is="dom-if" if="[[!_homeHref]]">
+          <template is="dom-if" if="[[!_homePath]]">
             <div class="toolbar-title">[[brand]]</div>
           </template>
-          <template is="dom-if" if="[[_homeHref]]">
+          <template is="dom-if" if="[[_homePath]]">
             <a
-              href="[[_homeHref]]"
+              href="[[_homePath]]"
               rel="noopener noreferrer"
               class="toolbar-title"
               >[[brand]]</a
@@ -493,6 +493,16 @@ limitations under the License.
 
     const DATA_SELECTION_CHANGE_DEBOUNCE_MS = 200;
 
+    const lib = {
+      getLocation() {
+        return window.location;
+      },
+    };
+
+    const TEST_ONLY = {
+      lib,
+    };
+
     Polymer({
       is: 'tf-tensorboard',
       behaviors: [tf_tensorboard.AutoReloadBehavior],
@@ -512,14 +522,14 @@ limitations under the License.
          * URL for navigation when clicking on the Title in the top left corner.
          * If unspecified then the Title will not be a clickable target.
          */
-        homeHref: {
+        homePath: {
           type: String,
           value: '',
         },
 
-        _homeHref: {
+        _homePath: {
           type: String,
-          computed: '_sanitizeHomeHref(homeHref)',
+          computed: '_sanitizehomePath(homePath)',
         },
 
         /**
@@ -689,18 +699,20 @@ limitations under the License.
           '_activeDashboards, _selectedDashboard)',
       ],
 
-      _sanitizeHomeHref(homeHref) {
-        if (!homeHref) {
+      _sanitizehomePath(homePath) {
+        if (!homePath) {
           return '';
         }
 
-        const url = new URL(homeHref);
+        const location = lib.getLocation();
+        const url = new URL(homePath, location.href);
 
         // Do not allow javascript:, data:, or unknown protocols to render
         // with Polymer data binding.
         const isHttp = url.protocol === 'http:' || url.protocol === 'https:';
+        const sameOrigin = url.origin === location.origin;
 
-        return isHttp ? homeHref : '';
+        return isHttp && sameOrigin ? url.toString() : '';
       },
 
       _activeDashboardsUpdated(activeDashboards, selectedDashboard) {},
