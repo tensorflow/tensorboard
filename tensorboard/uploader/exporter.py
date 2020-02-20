@@ -28,6 +28,7 @@ import time
 
 import six
 
+from tensorboard.uploader.proto import experiment_pb2
 from tensorboard.uploader.proto import export_service_pb2
 from tensorboard.uploader import util
 from tensorboard.util import grpc_util
@@ -130,7 +131,7 @@ class TensorBoardExporter(object):
     def _request_experiment_ids(self, read_time):
         """Yields all of the calling user's experiment IDs, as strings."""
         for experiment in list_experiments(self._api, read_time=read_time):
-            if isinstance(experiment, export_service_pb2.Experiment):
+            if isinstance(experiment, experiment_pb2.Experiment):
                 yield experiment.experiment_id
             elif isinstance(experiment, six.string_types):
                 yield experiment
@@ -177,13 +178,13 @@ def list_experiments(api_client, fieldmask=None, read_time=None):
 
     Args:
       api_client: A TensorBoardExporterService stub instance.
-      fieldmask: An optional `export_service_pb2.ExperimentMask` value.
+      fieldmask: An optional `experiment_pb2.ExperimentMask` value.
       read_time: A fixed timestamp from which to export data, as float seconds
         since epoch (like `time.time()`). Optional; defaults to the current
         time.
 
     Yields:
-      For each experiment owned by the user, an `export_service_pb2.Experiment`
+      For each experiment owned by the user, an `experiment_pb2.Experiment`
       value, or a simple string experiment ID for older servers.
     """
     if read_time is None:
