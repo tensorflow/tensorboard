@@ -174,10 +174,10 @@ def update_experiment_metadata(
     """
     logger.info("Modifying experiment %r", experiment_id)
     if name is not None:
-        logger.info("Setting exp %r name to ", experiment_id, name)
+        logger.info("Setting exp %r name to %r", experiment_id, name)
     if description is not None:
         logger.info(
-            "Setting exp %r description to ", experiment_id, description
+            "Setting exp %r description to %r", experiment_id, description
         )
     experiment = experiment_pb2.Experiment(
         experiment_id=experiment_id, name=name, description=description
