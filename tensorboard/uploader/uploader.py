@@ -170,24 +170,22 @@ def update_experiment_metadata(
       ExperimentNotFoundError: If no such experiment exists.
       PermissionDeniedError: If the user is not authorized to modify this
         experiment.
-      RuntimeError: On unexpected failure.
+      InvalidArgumentError: If the server rejected the name or description, if,
+        for instance, the size limits have changed on the server.
     """
     logger.info("Modifying experiment %r", experiment_id)
+    request = write_service_pb2.UpdateExperimentRequest()
+    request.experiment.experiment_id = experiment_id
     if name is not None:
         logger.info("Setting exp %r name to %r", experiment_id, name)
+        request.experiment.name = name
+        request.experiment_mask.name = True
     if description is not None:
         logger.info(
             "Setting exp %r description to %r", experiment_id, description
         )
-    experiment = experiment_pb2.Experiment(
-        experiment_id=experiment_id, name=name, description=description
-    )
-    experiment_mask = experiment_pb2.ExperimentMask(
-        name=name is not None, description=description is not None
-    )
-    request = write_service_pb2.UpdateExperimentRequest(
-        experiment=experiment, experiment_mask=experiment_mask
-    )
+        request.experiment.description = description
+        request.experiment_mask.description = True
     try:
         grpc_util.call_with_retries(writer_client.UpdateExperiment, request)
     except grpc.RpcError as e:
@@ -195,6 +193,11 @@ def update_experiment_metadata(
             raise ExperimentNotFoundError()
         if e.code() == grpc.StatusCode.PERMISSION_DENIED:
             raise PermissionDeniedError()
+        if e.code() == grpc.StatusCode.INVALID_ARGUMENT:
+            details=''
+            if hasattr(e, 'details'):
+                details = e.details
+            raise InvalidArgumentError(details)
         raise
 
 
@@ -222,6 +225,10 @@ def delete_experiment(writer_client, experiment_id):
         if e.code() == grpc.StatusCode.PERMISSION_DENIED:
             raise PermissionDeniedError()
         raise
+
+
+class InvalidArgumentError(RuntimeError):
+    pass
 
 
 class ExperimentNotFoundError(RuntimeError):

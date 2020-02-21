@@ -473,11 +473,11 @@ class _UpdateMetadataIntent(_Intent):
             )
         except grpc.RpcError as e:
             _die("Internal error modifying experiment: %s" % e)
-        print("Modified experiment %s." % experiment_id)
+        logging.info("Modified experiment %s.", experiment_id)
         if self.name is not None:
-            print(f"Set name to {repr(self.name)}")
+            logging.info("Set name to %r", self.name)
         if self.description is not None:
-            print(f"Set description to {repr(self.description)}")
+            logging.info(f"Set description to %r", repr(self.description))
 
 
 class _ListIntent(_Intent):
@@ -527,7 +527,7 @@ class _ListIntent(_Intent):
                 ("Tags", str(experiment.num_tags)),
             ]
             for (name, value) in data:
-                print("\t%s %s" % (name.ljust(11), value))
+                print("\t%s %s" % (name.ljust(12), value))
         sys.stdout.flush()
         if not count:
             sys.stderr.write(
@@ -542,17 +542,17 @@ def _raise_if_bad_experiment_name(name):
     if name and len(name) > _EXPERIMENT_NAME_MAX_CHARS:
         raise ValueError(
             "Experiment name is too long.  Limit is "
-            f"{_EXPERIMENT_NAME_MAX_CHARS} characters.\n"
-            f"{repr(name)} was provided."
+            "%s characters.\n"`
+            "%r was provided." % (_EXPERIMENT_DESCRIPTION_MAX_CHARS, name)
         )
 
 
 def _raise_if_bad_experiment_description(description):
     if description and len(description) > _EXPERIMENT_DESCRIPTION_MAX_CHARS:
         raise ValueError(
-            "Experiment description is too long.  Limit is "
-            f"{_EXPERIMENT_DESCRIPTION_MAX_CHARS} characters.\n"
-            f"{repr(description)} was provided."
+            "Experiment description is too long.  Limit is %s characters.\n"
+            "%r was provided." % (_EXPERIMENT_DESCRIPTION_MAX_CHARS,
+            description)
         )
 
 

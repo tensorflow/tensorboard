@@ -76,24 +76,65 @@ class TensorboardUploaderTest(tf.test.TestCase):
         eid = uploader.create_experiment()
         self.assertEqual(eid, "123")
 
-    def test_create_experiment_with_name_and_description(self):
+    def test_create_experiment_with_name(self):
         logdir = "/logs/foo"
         mock_client = _create_mock_client()
-        uploader_name = uploader_lib.TensorBoardUploader(
-            mock_client, logdir, name="name"
+        new_name = "This is the new name"
+        uploader = uploader_lib.TensorBoardUploader(
+            mock_client, logdir, name=new_name
         )
-        uploader_description = uploader_lib.TensorBoardUploader(
-            mock_client, logdir, description="description"
+        eid = uploader.create_experiment()
+        self.assertEqual(eid, "123")
+        mock_client.CreateExperiment.assert_called_once()
+        (args, _) = mock_client.CreateExperiment.call_args
+
+        expected_request = write_service_pb2.CreateExperimentRequest(
+            name=new_name,
         )
-        uploader_both = uploader_lib.TensorBoardUploader(
-            mock_client, logdir, name="name", description="description"
+        self.assertEqual(args[0], expected_request)
+
+    def test_create_experiment_with_description(self):
+        logdir = "/logs/foo"
+        mock_client = _create_mock_client()
+        new_description = """
+        **description**"
+        may have "strange" unicode chars 🌴 \/<>
+        """
+        uploader = uploader_lib.TensorBoardUploader(
+            mock_client, logdir, description=new_description
         )
-        eid_name = uploader_name.create_experiment()
-        self.assertEqual(eid_name, "123")
-        eid_description = uploader_description.create_experiment()
-        self.assertEqual(eid_description, "123")
-        eid_both = uploader_both.create_experiment()
-        self.assertEqual(eid_both, "123")
+        eid = uploader.create_experiment()
+        self.assertEqual(eid, "123")
+        mock_client.CreateExperiment.assert_called_once()
+        (args, _) = mock_client.CreateExperiment.call_args
+
+        expected_request = write_service_pb2.CreateExperimentRequest(
+            description=new_description,
+        )
+        self.assertEqual(args[0], expected_request)
+
+    def test_create_experiment_with_all_metadata(self):
+        logdir = "/logs/foo"
+        mock_client = _create_mock_client()
+        new_description = """
+        **description**"
+        may have "strange" unicode chars 🌴 \/<>
+        """
+        new_name = "This is a cool name."
+        uploader = uploader_lib.TensorBoardUploader(
+            mock_client, logdir, name=new_name, description=new_description
+        )
+        eid = uploader.create_experiment()
+        self.assertEqual(eid, "123")
+        mock_client.CreateExperiment.assert_called_once()
+        (args, _) = mock_client.CreateExperiment.call_args
+
+        expected_request = write_service_pb2.CreateExperimentRequest(
+            name=new_name,
+            description=new_description,
+        )
+        self.assertEqual(args[0], expected_request)
+
 
     def test_start_uploading_without_create_experiment_fails(self):
         mock_client = _create_mock_client()
