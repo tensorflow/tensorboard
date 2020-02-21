@@ -210,7 +210,6 @@ py_library(
         "//tensorboard/plugins/image:images_plugin",
         "//tensorboard/plugins/mesh:mesh_plugin",
         "//tensorboard/plugins/pr_curve:pr_curves_plugin",
-        "//tensorboard/plugins/profile:profile_plugin_loader",
         "//tensorboard/plugins/profile_redirect:profile_redirect_plugin",
         "//tensorboard/plugins/scalar:scalars_plugin",
         "//tensorboard/plugins/text:text_plugin",
@@ -276,8 +275,6 @@ tf_web_library(
     srcs = [
         "//tensorboard/components:index.html",
         "//tensorboard/components:index.js",
-        "//tensorboard/components:trace_viewer_index.html",
-        "//tensorboard/components:trace_viewer_index.js",
     ] + select({
         "//tensorboard:dev_build": [
             "//tensorboard/webapp:ng_index.html",
@@ -472,6 +469,7 @@ py_library(
         "//tensorboard/plugins/histogram:metadata",
         "//tensorboard/plugins/image:metadata",
         "//tensorboard/plugins/scalar:metadata",
+        "//tensorboard/plugins/text:metadata",
         "//tensorboard/util:tensor_util",
     ],
 )
