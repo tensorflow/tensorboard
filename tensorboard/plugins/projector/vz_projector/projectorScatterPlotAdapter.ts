@@ -709,7 +709,7 @@ namespace vz_projector {
 
     private getLabelText(ds: DataSet, i: number, accessor: string): string {
       return ds.points[i].metadata[accessor] !== undefined
-        ? ds.points[i].metadata[accessor].toString()
+        ? String(ds.points[i].metadata[accessor])
         : `Unknown #${i}`;
     }
 

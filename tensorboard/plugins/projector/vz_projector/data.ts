@@ -527,8 +527,8 @@ namespace vz_projector {
           .slice(0, TSNE_SAMPLE_SIZE)
           .map((index) =>
             this.points[index].metadata[superviseColumn] !== undefined
-              ? this.points[index].metadata[superviseColumn].toString()
-              : `unknown #${index}`
+              ? String(this.points[index].metadata[superviseColumn])
+              : `Unknown #${index}`
           );
       }
       if (superviseInput != null) {

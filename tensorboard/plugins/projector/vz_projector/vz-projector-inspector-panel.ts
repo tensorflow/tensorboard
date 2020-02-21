@@ -315,8 +315,8 @@ namespace vz_projector {
         this.selectedMetadataField
       ];
       return metadata !== undefined
-        ? metadata.toString()
-        : `unknown #${pointIndex}`;
+        ? String(metadata)
+        : `Unknown #${pointIndex}`;
     }
 
     private spriteImageRenderer() {
