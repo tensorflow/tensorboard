@@ -35,17 +35,20 @@ class Handler(object):
         self._request = request
         self._scalars_plugin_instance = scalars_plugin_instance
 
-    def run(self):
+    def run(self, experiment):
         """Executes the request.
 
+        Args:
+            A experiment ID, as a possibly-empty `str`.
+
         Returns:
-           An array of tuples representing the metric evaluations--each of the form
-           (<wall time in secs>, <training step>, <metric value>).
+            An array of tuples representing the metric evaluations--each of the
+            form (<wall time in secs>, <training step>, <metric value>).
         """
         run, tag = metrics.run_tag_from_session_and_metric(
             self._request.session_name, self._request.metric_name
         )
         body, _ = self._scalars_plugin_instance.scalars_impl(
-            tag, run, None, scalars_plugin.OutputFormat.JSON
+            tag, run, experiment, scalars_plugin.OutputFormat.JSON
         )
         return body

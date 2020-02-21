@@ -53,7 +53,7 @@ class ListMetricEvalsTest(tf.test.TestCase):
         handler = list_metric_evals.Handler(
             request_proto, self._mock_scalars_plugin
         )
-        return handler.run()
+        return handler.run("exp_id")
 
     def test_run(self):
         result = self._run_handler(

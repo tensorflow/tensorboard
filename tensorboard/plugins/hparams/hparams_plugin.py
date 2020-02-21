@@ -28,6 +28,7 @@ import json
 import werkzeug
 from werkzeug import wrappers
 
+from tensorboard import plugin_util
 from tensorboard.plugins.hparams import api_pb2
 from tensorboard.plugins.hparams import backend_context
 from tensorboard.plugins.hparams import download_data
@@ -164,6 +165,7 @@ class HParamsPlugin(base_plugin.TBPlugin):
     # ---- /metric_evals ---------------------------------------------------------
     @wrappers.Request.application
     def list_metric_evals_route(self, request):
+        experiment = plugin_util.experiment_id(request.environ)
         try:
             request_proto = _parse_request_argument(
                 request, api_pb2.ListMetricEvalsRequest
@@ -180,7 +182,7 @@ class HParamsPlugin(base_plugin.TBPlugin):
                 json.dumps(
                     list_metric_evals.Handler(
                         request_proto, scalars_plugin
-                    ).run()
+                    ).run(experiment)
                 ),
                 "application/json",
             )
