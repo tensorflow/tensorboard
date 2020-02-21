@@ -181,8 +181,8 @@ class HParamsPlugin(base_plugin.TBPlugin):
                 request,
                 json.dumps(
                     list_metric_evals.Handler(
-                        request_proto, scalars_plugin
-                    ).run(experiment)
+                        request_proto, scalars_plugin, experiment
+                    ).run()
                 ),
                 "application/json",
             )

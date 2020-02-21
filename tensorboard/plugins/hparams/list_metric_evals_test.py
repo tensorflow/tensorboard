@@ -51,9 +51,9 @@ class ListMetricEvalsTest(tf.test.TestCase):
         request_proto = api_pb2.ListMetricEvalsRequest()
         text_format.Merge(request, request_proto)
         handler = list_metric_evals.Handler(
-            request_proto, self._mock_scalars_plugin
+            request_proto, self._mock_scalars_plugin, "exp_id"
         )
-        return handler.run("exp_id")
+        return handler.run()
 
     def test_run(self):
         result = self._run_handler(
