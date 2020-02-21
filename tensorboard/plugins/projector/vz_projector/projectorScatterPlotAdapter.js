@@ -460,7 +460,9 @@ var vz_projector;
             return labels;
         }
         getLabelText(ds, i, accessor) {
-            return ds.points[i].metadata[accessor].toString();
+            return ds.points[i].metadata[accessor] !== undefined
+                ? String(ds.points[i].metadata[accessor])
+                : `Unknown #${i}`;
         }
         updateScatterPlotWithNewProjection(projection) {
             if (projection == null) {

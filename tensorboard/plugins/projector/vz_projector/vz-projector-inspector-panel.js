@@ -216,8 +216,10 @@ var vz_projector;
             }
         }
         getLabelFromIndex(pointIndex) {
-            const point = this.projector.dataSet.points[pointIndex];
-            return point.metadata[this.selectedMetadataField].toString();
+            const metadata = this.projector.dataSet.points[pointIndex].metadata[this.selectedMetadataField];
+            return metadata !== undefined
+                ? String(metadata)
+                : `Unknown #${pointIndex}`;
         }
         spriteImageRenderer() {
             const spriteImagePath = this.spriteMeta.imagePath;

@@ -379,10 +379,11 @@ var vz_projector;
         }
         setSupervision(superviseColumn, superviseInput) {
             if (superviseColumn != null) {
-                let sampledIndices = this.shuffledDataIndices.slice(0, vz_projector.TSNE_SAMPLE_SIZE);
-                let labels = new Array(sampledIndices.length);
-                sampledIndices.forEach((index, i) => (labels[i] = this.points[index].metadata[superviseColumn].toString()));
-                this.superviseLabels = labels;
+                this.superviseLabels = this.shuffledDataIndices
+                    .slice(0, vz_projector.TSNE_SAMPLE_SIZE)
+                    .map((index) => this.points[index].metadata[superviseColumn] !== undefined
+                    ? String(this.points[index].metadata[superviseColumn])
+                    : `Unknown #${index}`);
             }
             if (superviseInput != null) {
                 this.superviseInput = superviseInput;
