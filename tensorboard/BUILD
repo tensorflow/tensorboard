@@ -58,7 +58,7 @@ py_library(
     name = "lib_init_only",
     srcs = ["__init__.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
+    visibility = ["//tensorboard:internal"],
     deps = [
         ":errors",
         ":lazy",
