@@ -43,6 +43,15 @@ var tf_backend;
         getWindowTitle() {
             return this.environment ? this.environment.windowTitle : '';
         }
+        getExperimentName() {
+            return this.environment ? this.environment.experimentName : '';
+        }
+        getExperimentDescription() {
+            return this.environment ? this.environment.experimentDescription : '';
+        }
+        getCreationTime() {
+            return this.environment ? this.environment.creationTime : null;
+        }
     }
     tf_backend.EnvironmentStore = EnvironmentStore;
     tf_backend.environmentStore = new EnvironmentStore();
