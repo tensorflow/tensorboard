@@ -84,7 +84,6 @@ genrule(
         "@org_polymer//:LICENSE.txt",
         "@com_palantir_plottable//:package/LICENSE",
         "@org_d3js//:LICENSE",
-        "@org_chromium_catapult_vulcanized_trace_viewer//:LICENSE",
         "@io_github_cpettitt_dagre//:LICENSE",
         "@io_github_cpettitt_graphlib//:LICENSE",
         "@io_github_waylonflinn_weblas//:LICENSE",
