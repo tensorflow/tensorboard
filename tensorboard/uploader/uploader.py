@@ -64,7 +64,14 @@ logger = tb_logging.get_logger()
 class TensorBoardUploader(object):
     """Uploads a TensorBoard logdir to TensorBoard.dev."""
 
-    def __init__(self, writer_client, logdir, rpc_rate_limiter=None):
+    def __init__(
+        self,
+        writer_client,
+        logdir,
+        rpc_rate_limiter=None,
+        name=None,
+        description=None,
+    ):
         """Constructs a TensorBoardUploader.
 
         Args:
@@ -77,9 +84,13 @@ class TensorBoardUploader(object):
             of chunks.  Note the chunk stream is internally rate-limited by
             backpressure from the server, so it is not a concern that we do not
             explicitly rate-limit within the stream here.
+          name: String name to assign to the experiment.
+          description: String description to assign to the experiment.
         """
         self._api = writer_client
         self._logdir = logdir
+        self._name = name
+        self._description = description
         self._request_sender = None
         if rpc_rate_limiter is None:
             self._rpc_rate_limiter = util.RateLimiter(
@@ -103,7 +114,9 @@ class TensorBoardUploader(object):
     def create_experiment(self):
         """Creates an Experiment for this upload session and returns the ID."""
         logger.info("Creating experiment")
-        request = write_service_pb2.CreateExperimentRequest()
+        request = write_service_pb2.CreateExperimentRequest(
+            name=self._name, description=self._description
+        )
         response = grpc_util.call_with_retries(
             self._api.CreateExperiment, request
         )

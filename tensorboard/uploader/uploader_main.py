@@ -72,6 +72,12 @@ _AUTH_SUBCOMMAND_KEY_REVOKE = "REVOKE"
 _DEFAULT_ORIGIN = "https://tensorboard.dev"
 
 
+# Size limits for input fields not bounded at a wire level. "Chars" in this
+# context refers to Unicode code points as stipulated by https://aip.dev/210.
+_EXPERIMENT_NAME_MAX_CHARS = 100
+_EXPERIMENT_DESCRIPTION_MAX_CHARS = 600
+
+
 def _prompt_for_user_ack(intent):
     """Prompts for user consent, exiting the program if they decline."""
     body = intent.get_ack_message_body()
@@ -138,6 +144,18 @@ def _define_flags(parser):
         type=str,
         default=None,
         help="Directory containing the logs to process",
+    )
+    upload.add_argument(
+        "--name",
+        type=str,
+        default=None,
+        help="Title of the experiment.  Max 100 characters.",
+    )
+    upload.add_argument(
+        "--description",
+        type=str,
+        default=None,
+        help="Experiment description. Markdown format.  Max 600 characters.",
     )
 
     delete = subparsers.add_parser(
@@ -445,8 +463,10 @@ class _UploadIntent(_Intent):
         """
     )
 
-    def __init__(self, logdir):
+    def __init__(self, logdir, name=None, description=None):
         self.logdir = logdir
+        self.name = name
+        self.description = description
 
     def get_ack_message_body(self):
         return self._MESSAGE_TEMPLATE.format(logdir=self.logdir)
@@ -455,7 +475,27 @@ class _UploadIntent(_Intent):
         api_client = write_service_pb2_grpc.TensorBoardWriterServiceStub(
             channel
         )
-        uploader = uploader_lib.TensorBoardUploader(api_client, self.logdir)
+        if self.name and len(self.name) > _EXPERIMENT_NAME_MAX_CHARS:
+            raise ValueError(
+                "Experiment name is too long.  Limit is "
+                f"{_EXPERIMENT_NAME_MAX_CHARS} characters.\n"
+                f"{repr(self.name)} was provided."
+            )
+        if (
+            self.description
+            and len(self.description) > _EXPERIMENT_DESCRIPTION_MAX_CHARS
+        ):
+            raise ValueError(
+                "Experiment description is too long.  Limit is "
+                f"{_EXPERIMENT_DESCRIPTION_MAX_CHARS} characters.\n"
+                f"{repr(self.description)} was provided."
+            )
+        uploader = uploader_lib.TensorBoardUploader(
+            api_client,
+            self.logdir,
+            name=self.name,
+            description=self.description,
+        )
         experiment_id = uploader.create_experiment()
         url = server_info_lib.experiment_url(server_info, experiment_id)
         print(
@@ -543,7 +583,11 @@ def _get_intent(flags):
         raise base_plugin.FlagsError("Must specify subcommand (try --help).")
     if cmd == _SUBCOMMAND_KEY_UPLOAD:
         if flags.logdir:
-            return _UploadIntent(os.path.expanduser(flags.logdir))
+            return _UploadIntent(
+                os.path.expanduser(flags.logdir),
+                name=flags.name,
+                description=flags.description,
+            )
         else:
             raise base_plugin.FlagsError(
                 "Must specify directory to upload via `--logdir`."
