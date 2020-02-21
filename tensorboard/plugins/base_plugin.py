@@ -254,6 +254,7 @@ class TBContext(object):
         logdir=None,
         multiplexer=None,
         plugin_name_to_instance=None,
+        sampling_hints=None,
         window_title=None,
     ):
         """Instantiates magic container.
@@ -291,6 +292,10 @@ class TBContext(object):
               plugin may be absent from this mapping until it is registered. Plugin
               logic should handle cases in which a plugin is absent from this
               mapping, lest a KeyError is raised.
+          sampling_hints: Map from plugin name to `int` or `NoneType`, where
+              the value represents the user-specified downsampling limit as
+              given to the `--samples_per_plugin` flag, or `None` if none was
+              explicitly given for this plugin.
           window_title: A string specifying the window title.
         """
         self.assets_zip_provider = assets_zip_provider
@@ -301,6 +306,7 @@ class TBContext(object):
         self.logdir = logdir
         self.multiplexer = multiplexer
         self.plugin_name_to_instance = plugin_name_to_instance
+        self.sampling_hints = sampling_hints
         self.window_title = window_title
 
 

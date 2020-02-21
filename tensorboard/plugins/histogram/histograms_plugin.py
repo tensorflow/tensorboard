@@ -39,6 +39,9 @@ from tensorboard.plugins.histogram import metadata
 from tensorboard.util import tensor_util
 
 
+_DEFAULT_DOWNSAMPLING = 500  # histograms per time series
+
+
 class HistogramsPlugin(base_plugin.TBPlugin):
     """Histograms Plugin for TensorBoard.
 
@@ -62,6 +65,9 @@ class HistogramsPlugin(base_plugin.TBPlugin):
         """
         self._multiplexer = context.multiplexer
         self._db_connection_provider = context.db_connection_provider
+        self._downsample_to = (context.sampling_hints or {}).get(
+            self.plugin_name, _DEFAULT_DOWNSAMPLING
+        )
         if context.flags and context.flags.generic_data == "true":
             self._data_provider = context.data_provider
         else:
@@ -174,20 +180,21 @@ class HistogramsPlugin(base_plugin.TBPlugin):
         """Result of the form `(body, mime_type)`.
 
         At most `downsample_to` events will be returned. If this value is
-        `None`, then no downsampling will be performed.
+        `None`, then default downsampling will be performed.
 
         Raises:
           tensorboard.errors.PublicError: On invalid request.
         """
         if self._data_provider:
-            # Downsample reads to 500 histograms per time series, which is
-            # the default size guidance for histograms under the multiplexer
-            # loading logic.
-            SAMPLE_COUNT = downsample_to if downsample_to is not None else 500
+            sample_count = (
+                downsample_to
+                if downsample_to is not None
+                else self._downsample_to
+            )
             all_histograms = self._data_provider.read_tensors(
                 experiment_id=experiment,
                 plugin_name=metadata.PLUGIN_NAME,
-                downsample=SAMPLE_COUNT,
+                downsample=sample_count,
                 run_tag_filter=provider.RunTagFilter(runs=[run], tags=[tag]),
             )
             histograms = all_histograms.get(run, {}).get(tag, None)

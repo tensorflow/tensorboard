@@ -40,6 +40,9 @@ from tensorboard.plugins.scalar import metadata
 from tensorboard.util import tensor_util
 
 
+_DEFAULT_DOWNSAMPLING = 1000  # scalars per time series
+
+
 class OutputFormat(object):
     """An enum used to list the valid output formats for API calls."""
 
@@ -60,6 +63,9 @@ class ScalarsPlugin(base_plugin.TBPlugin):
         """
         self._multiplexer = context.multiplexer
         self._db_connection_provider = context.db_connection_provider
+        self._downsample_to = (context.sampling_hints or {}).get(
+            self.plugin_name, _DEFAULT_DOWNSAMPLING
+        )
         if context.flags and context.flags.generic_data != "false":
             self._data_provider = context.data_provider
         else:
@@ -169,14 +175,10 @@ class ScalarsPlugin(base_plugin.TBPlugin):
     def scalars_impl(self, tag, run, experiment, output_format):
         """Result of the form `(body, mime_type)`."""
         if self._data_provider:
-            # Downsample reads to 1000 scalars per time series, which is the
-            # default size guidance for scalars under the multiplexer loading
-            # logic.
-            SAMPLE_COUNT = 1000
             all_scalars = self._data_provider.read_scalars(
                 experiment_id=experiment,
                 plugin_name=metadata.PLUGIN_NAME,
-                downsample=SAMPLE_COUNT,
+                downsample=self._downsample_to,
                 run_tag_filter=provider.RunTagFilter(runs=[run], tags=[tag]),
             )
             scalars = all_scalars.get(run, {}).get(tag, None)
