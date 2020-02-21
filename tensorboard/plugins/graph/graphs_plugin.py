@@ -209,6 +209,7 @@ class GraphsPlugin(base_plugin.TBPlugin):
                 experiment_id=experiment,
                 plugin_name=metadata.PLUGIN_NAME,
                 run_tag_filter=provider.RunTagFilter(runs=[run], tags=[tag]),
+                downsample=1,
             )
             blob_datum_list = graph_blob_sequences.get(run, {}).get(tag, ())
             try:

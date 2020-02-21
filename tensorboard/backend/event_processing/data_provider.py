@@ -21,6 +21,7 @@ from __future__ import print_function
 import base64
 import collections
 import json
+import random
 
 import six
 
@@ -56,6 +57,16 @@ class MultiplexerDataProvider(provider.DataProvider):
                 "experiment_id must be %r, but got %r: %r"
                 % (str, type(experiment_id), experiment_id)
             )
+
+    def _validate_downsample(self, downsample):
+        if downsample is None:
+            raise TypeError("`downsample` required but not given")
+        if isinstance(downsample, int):
+            return  # OK
+        raise TypeError(
+            "`downsample` must be an int, but got %r: %r"
+            % (type(downsample), downsample)
+        )
 
     def _test_run_tag(self, run_tag_filter, run, tag):
         runs = run_tag_filter.runs
@@ -109,14 +120,11 @@ class MultiplexerDataProvider(provider.DataProvider):
     def read_scalars(
         self, experiment_id, plugin_name, downsample=None, run_tag_filter=None
     ):
-        # TODO(@wchargin): Downsampling not implemented, as the multiplexer
-        # is already downsampled. We could downsample on top of the existing
-        # sampling, which would be nice for testing.
-        del downsample  # ignored for now
+        self._validate_downsample(downsample)
         index = self.list_scalars(
             experiment_id, plugin_name, run_tag_filter=run_tag_filter
         )
-        return self._read(_convert_scalar_event, index)
+        return self._read(_convert_scalar_event, index, downsample)
 
     def list_tensors(self, experiment_id, plugin_name, run_tag_filter=None):
         self._validate_experiment_id(experiment_id)
@@ -131,14 +139,11 @@ class MultiplexerDataProvider(provider.DataProvider):
     def read_tensors(
         self, experiment_id, plugin_name, downsample=None, run_tag_filter=None
     ):
-        # TODO(@wchargin): Downsampling not implemented, as the multiplexer
-        # is already downsampled. We could downsample on top of the existing
-        # sampling, which would be nice for testing.
-        del downsample  # ignored for now
+        self._validate_downsample(downsample)
         index = self.list_tensors(
             experiment_id, plugin_name, run_tag_filter=run_tag_filter
         )
-        return self._read(_convert_tensor_event, index)
+        return self._read(_convert_tensor_event, index, downsample)
 
     def _list(
         self,
@@ -191,13 +196,15 @@ class MultiplexerDataProvider(provider.DataProvider):
                 )
         return result
 
-    def _read(self, convert_event, index):
+    def _read(self, convert_event, index, downsample):
         """Helper to read scalar or tensor data from the multiplexer.
 
         Args:
           convert_event: Takes `plugin_event_accumulator.TensorEvent` to
             either `provider.ScalarDatum` or `provider.TensorDatum`.
           index: The result of `list_scalars` or `list_tensors`.
+          downsample: Non-negative `int`; how many samples to return per
+            time series.
 
         Returns:
           A dict of dicts of values returned by `convert_event` calls,
@@ -209,7 +216,8 @@ class MultiplexerDataProvider(provider.DataProvider):
             result[run] = result_for_run
             for (tag, metadata) in six.iteritems(tags_for_run):
                 events = self._multiplexer.Tensors(run, tag)
-                result_for_run[tag] = [convert_event(e) for e in events]
+                data = [convert_event(e) for e in events]
+                result_for_run[tag] = _downsample(data, downsample)
         return result
 
     def list_blob_sequences(
@@ -258,6 +266,7 @@ class MultiplexerDataProvider(provider.DataProvider):
         self, experiment_id, plugin_name, downsample=None, run_tag_filter=None
     ):
         self._validate_experiment_id(experiment_id)
+        self._validate_downsample(downsample)
         index = self.list_blob_sequences(
             experiment_id, plugin_name, run_tag_filter=run_tag_filter
         )
@@ -275,7 +284,7 @@ class MultiplexerDataProvider(provider.DataProvider):
                         experiment_id, plugin_name, run, tag, event
                     )
                 data = [datum for (step, datum) in sorted(data_by_step.items())]
-                result_for_run[tag] = data
+                result_for_run[tag] = _downsample(data, downsample)
         return result
 
     def read_blob(self, blob_key):
@@ -411,3 +420,37 @@ def _tensor_size(tensor_proto):
     for dim in tensor_proto.tensor_shape.dim:
         result *= dim.size
     return result
+
+
+def _downsample(xs, k):
+    """Downsample `xs` to at most `k` elements.
+
+    If `k` is larger than `xs`, then the contents of `xs` itself will be
+    returned. If `k` is smaller than `xs`, the last element of `xs` will
+    always be included (unless `k` is `0`) and the preceding elements
+    will be selected uniformly at random.
+
+    This differs from `random.sample` in that it returns a subsequence
+    (i.e., order is preserved) and that it permits `k > len(xs)`.
+
+    The random number generator will always be `random.Random(0)`, so
+    this function is deterministic (within a Python process).
+
+    Args:
+      xs: A sequence (`collections.abc.Sequence`).
+      k: A non-negative integer.
+
+    Returns:
+      A new list whose elements are a subsequence of `xs` of length
+      `min(k, len(xs))` and that is guaranteed to include the last
+      element of `xs`, uniformly selected among such subsequences.
+    """
+
+    if k > len(xs):
+        return list(xs)
+    if k == 0:
+        return []
+    indices = random.Random(0).sample(six.moves.xrange(len(xs) - 1), k - 1)
+    indices.sort()
+    indices += [len(xs) - 1]
+    return [xs[i] for i in indices]
