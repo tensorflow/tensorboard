@@ -65,6 +65,7 @@ _SUBCOMMAND_KEY_UPLOAD = "UPLOAD"
 _SUBCOMMAND_KEY_DELETE = "DELETE"
 _SUBCOMMAND_KEY_LIST = "LIST"
 _SUBCOMMAND_KEY_EXPORT = "EXPORT"
+_SUBCOMMAND_KEY_UPDATE_METADATA = "UPDATEMETADATA"
 _SUBCOMMAND_KEY_AUTH = "AUTH"
 _AUTH_SUBCOMMAND_FLAG = "_uploader__subcommand_auth"
 _AUTH_SUBCOMMAND_KEY_REVOKE = "REVOKE"
@@ -152,6 +153,34 @@ def _define_flags(parser):
         help="Title of the experiment.  Max 100 characters.",
     )
     upload.add_argument(
+        "--description",
+        type=str,
+        default=None,
+        help="Experiment description. Markdown format.  Max 600 characters.",
+    )
+
+    update_metadata = subparsers.add_parser(
+        "update-metadata",
+        help="change the name, description, or other user "
+        "metadata associated with an experiment.",
+    )
+    update_metadata.set_defaults(
+        **{_SUBCOMMAND_FLAG: _SUBCOMMAND_KEY_UPDATE_METADATA}
+    )
+    update_metadata.add_argument(
+        "--experiment_id",
+        metavar="EXPERIMENT_ID",
+        type=str,
+        default=None,
+        help="ID of the experiment on which to modify the metadata.",
+    )
+    update_metadata.add_argument(
+        "--name",
+        type=str,
+        default=None,
+        help="Title of the experiment.  Max 100 characters.",
+    )
+    update_metadata.add_argument(
         "--description",
         type=str,
         default=None,
@@ -390,6 +419,68 @@ class _DeleteExperimentIntent(_Intent):
         print("Deleted experiment %s." % experiment_id)
 
 
+class _UpdateMetadataIntent(_Intent):
+    """The user intends to update the metadata for an experiment."""
+
+    _MESSAGE_TEMPLATE = textwrap.dedent(
+        u"""\
+        This will modify the metadata associated with the experiment on
+        https://tensorboard.dev with the following experiment ID:
+
+        {experiment_id}
+
+        You have chosen to modify an experiment. All experiments uploaded
+        to TensorBoard.dev are publicly visible. Do not upload sensitive
+        data.
+        """
+    )
+
+    def __init__(self, experiment_id, name=None, description=None):
+        self.experiment_id = experiment_id
+        self.name = name
+        self.description = description
+
+    def get_ack_message_body(self):
+        return self._MESSAGE_TEMPLATE.format(experiment_id=self.experiment_id)
+
+    def execute(self, server_info, channel):
+        api_client = write_service_pb2_grpc.TensorBoardWriterServiceStub(
+            channel
+        )
+        experiment_id = self.experiment_id
+        _raise_if_bad_experiment_name(self.name)
+        _raise_if_bad_experiment_description(self.description)
+        if not experiment_id:
+            raise base_plugin.FlagsError(
+                "Must specify a non-empty experiment ID to modify."
+            )
+        try:
+            uploader_lib.update_experiment_metadata(
+                api_client,
+                experiment_id,
+                name=self.name,
+                description=self.description,
+            )
+        except uploader_lib.ExperimentNotFoundError:
+            _die(
+                "No such experiment %s. Either it never existed or it has "
+                "already been deleted." % experiment_id
+            )
+        except uploader_lib.PermissionDeniedError:
+            _die(
+                "Cannot modify experiment %s because it is owned by a "
+                "different user." % experiment_id
+            )
+        except grpc.RpcError as e:
+            _die("Internal error modifying experiment: %s" % e)
+        print("Modified experiment %s." % experiment_id)
+        if self.name is not None:
+            print(f"Set name to {repr(self.name)}")
+        if self.description is not None:
+            print(f"Set description to {repr(self.description)}")
+
+
+
 class _ListIntent(_Intent):
     """The user intends to list all their experiments."""
 
@@ -448,6 +539,27 @@ class _ListIntent(_Intent):
         sys.stderr.flush()
 
 
+def _raise_if_bad_experiment_name(name):
+    if name and len(name) > _EXPERIMENT_NAME_MAX_CHARS:
+        raise ValueError(
+            "Experiment name is too long.  Limit is "
+            f"{_EXPERIMENT_NAME_MAX_CHARS} characters.\n"
+            f"{repr(name)} was provided."
+        )
+
+
+def _raise_if_bad_experiment_description(description):
+    if (
+        description
+        and len(description) > _EXPERIMENT_DESCRIPTION_MAX_CHARS
+    ):
+        raise ValueError(
+            "Experiment description is too long.  Limit is "
+            f"{_EXPERIMENT_DESCRIPTION_MAX_CHARS} characters.\n"
+            f"{repr(description)} was provided."
+        )
+
+
 class _UploadIntent(_Intent):
     """The user intends to upload an experiment from the given logdir."""
 
@@ -475,21 +587,8 @@ class _UploadIntent(_Intent):
         api_client = write_service_pb2_grpc.TensorBoardWriterServiceStub(
             channel
         )
-        if self.name and len(self.name) > _EXPERIMENT_NAME_MAX_CHARS:
-            raise ValueError(
-                "Experiment name is too long.  Limit is "
-                f"{_EXPERIMENT_NAME_MAX_CHARS} characters.\n"
-                f"{repr(self.name)} was provided."
-            )
-        if (
-            self.description
-            and len(self.description) > _EXPERIMENT_DESCRIPTION_MAX_CHARS
-        ):
-            raise ValueError(
-                "Experiment description is too long.  Limit is "
-                f"{_EXPERIMENT_DESCRIPTION_MAX_CHARS} characters.\n"
-                f"{repr(self.description)} was provided."
-            )
+        _raise_if_bad_experiment_name(self.name)
+        _raise_if_bad_experiment_description(self.description)
         uploader = uploader_lib.TensorBoardUploader(
             api_client,
             self.logdir,
@@ -591,6 +690,22 @@ def _get_intent(flags):
         else:
             raise base_plugin.FlagsError(
                 "Must specify directory to upload via `--logdir`."
+            )
+    if cmd == _SUBCOMMAND_KEY_UPDATE_METADATA:
+        if flags.experiment_id:
+            if flags.name is not None or flags.description is not None:
+                return _UpdateMetadataIntent(
+                    flags.experiment_id,
+                    name=flags.name,
+                    description=flags.description,
+                )
+            else:
+                raise base_plugin.FlagsError(
+                    "Must specify either `--name` or `--description`."
+                )
+        else:
+            raise base_plugin.FlagsError(
+                "Must specify experiment to modify via `--experiment_id`."
             )
     elif cmd == _SUBCOMMAND_KEY_DELETE:
         if flags.experiment_id:

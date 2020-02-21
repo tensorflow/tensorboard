@@ -26,6 +26,7 @@ import grpc
 import six
 
 from tensorboard.uploader.proto import write_service_pb2
+from tensorboard.uploader.proto import experiment_pb2
 from tensorboard.uploader import logdir_loader
 from tensorboard.uploader import util
 from tensorboard import data_compat
@@ -151,6 +152,50 @@ class TensorBoardUploader(object):
 
         run_to_events = self._logdir_loader.get_run_events()
         self._request_sender.send_requests(run_to_events)
+
+
+def update_experiment_metadata(
+    writer_client, experiment_id, name=None, description=None
+):
+    """Modifies user data associated with an experiment.
+
+    Args:
+      writer_client: a TensorBoardWriterService stub instance
+      experiment_id: string ID of the experiment to modify
+      name: If provided, modifies name of experiment to this value.
+      description: If provided, modifies the description of the experiment to
+         this value
+
+    Raises:
+      ExperimentNotFoundError: If no such experiment exists.
+      PermissionDeniedError: If the user is not authorized to modify this
+        experiment.
+      RuntimeError: On unexpected failure.
+    """
+    logger.info("Modifying experiment %r", experiment_id)
+    if name is not None:
+        logger.info("Setting exp %r name to ", experiment_id, name)
+    if description is not None:
+        logger.info(
+            "Setting exp %r description to ", experiment_id, description
+        )
+    experiment = experiment_pb2.Experiment(
+        experiment_id=experiment_id, name=name, description=description
+    )
+    experiment_mask = experiment_pb2.ExperimentMask(
+        name=name is not None, description=description is not None
+    )
+    request = write_service_pb2.UpdateExperimentRequest(
+        experiment=experiment, experiment_mask=experiment_mask
+    )
+    try:
+        grpc_util.call_with_retries(writer_client.UpdateExperiment, request)
+    except grpc.RpcError as e:
+        if e.code() == grpc.StatusCode.NOT_FOUND:
+            raise ExperimentNotFoundError()
+        if e.code() == grpc.StatusCode.PERMISSION_DENIED:
+            raise PermissionDeniedError()
+        raise
 
 
 def delete_experiment(writer_client, experiment_id):
