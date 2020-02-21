@@ -61,11 +61,16 @@ limitations under the License.
     <paper-header-panel>
       <paper-toolbar id="toolbar" slot="header" class="header">
         <div id="toolbar-content" slot="top">
-          <template is="dom-if" if="[[!homeHref]]">
+          <template is="dom-if" if="[[!_homePath]]">
             <div class="toolbar-title">[[brand]]</div>
           </template>
-          <template is="dom-if" if="[[homeHref]]">
-            <a href="[[homeHref]]" class="toolbar-title">[[brand]]</a>
+          <template is="dom-if" if="[[_homePath]]">
+            <a
+              href="[[_homePath]]"
+              rel="noopener noreferrer"
+              class="toolbar-title"
+              >[[brand]]</a
+            >
           </template>
           <template is="dom-if" if="[[_activeDashboardsNotLoaded]]">
             <span class="toolbar-message">
@@ -488,6 +493,24 @@ limitations under the License.
 
     const DATA_SELECTION_CHANGE_DEBOUNCE_MS = 200;
 
+    /** @type {Object} */
+    const LocationType = {};
+    /** @type {string} */
+    LocationType.href = '';
+    /** @type {string} */
+    LocationType.origin = '';
+
+    const lib = {
+      /** @return {LocationType} */
+      getLocation() {
+        return window.location;
+      },
+    };
+
+    const TEST_ONLY = {
+      lib,
+    };
+
     Polymer({
       is: 'tf-tensorboard',
       behaviors: [tf_tensorboard.AutoReloadBehavior],
@@ -507,9 +530,14 @@ limitations under the License.
          * URL for navigation when clicking on the Title in the top left corner.
          * If unspecified then the Title will not be a clickable target.
          */
-        homeHref: {
+        homePath: {
           type: String,
-          value: null,
+          value: '',
+        },
+
+        _homePath: {
+          type: String,
+          computed: '_sanitizeHomePath(homePath)',
         },
 
         /**
@@ -678,6 +706,34 @@ limitations under the License.
           '_dashboardRegistry, _dashboardContainersStamped, ' +
           '_activeDashboards, _selectedDashboard)',
       ],
+
+      _sanitizeHomePath(homePath) {
+        if (!homePath) {
+          return '';
+        }
+
+        const location = lib.getLocation();
+        const url = new URL(homePath, location.href);
+
+        // Do not allow javascript:, data:, or unknown protocols to render
+        // with Polymer data binding.
+        const isHttp = url.protocol === 'http:' || url.protocol === 'https:';
+        const sameOrigin = url.origin === location.origin;
+
+        if (!isHttp) {
+          throw new RangeError(
+            `Expect 'homePath' to be of http: or https:. ${homePath}`
+          );
+        }
+
+        if (!sameOrigin) {
+          throw new RangeError(
+            `Expect 'homePath' be a path or have the same origin. ${homePath} vs. ${location.origin}`
+          );
+        }
+
+        return isHttp && sameOrigin ? url.toString() : '';
+      },
 
       _activeDashboardsUpdated(activeDashboards, selectedDashboard) {},
 
