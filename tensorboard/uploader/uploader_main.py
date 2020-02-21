@@ -409,6 +409,8 @@ class _ListIntent(_Intent):
             url = server_info_lib.experiment_url(server_info, experiment_id)
             print(url)
             data = [
+                ("Name", experiment.name or "[No Name]"),
+                ("Description", experiment.description or "[No Description]"),
                 ("Id", experiment.experiment_id),
                 ("Created", util.format_time(experiment.create_time)),
                 ("Updated", util.format_time(experiment.update_time)),
@@ -417,7 +419,7 @@ class _ListIntent(_Intent):
                 ("Tags", str(experiment.num_tags)),
             ]
             for (name, value) in data:
-                print("\t%s %s" % (name.ljust(10), value))
+                print("\t%s %s" % (name.ljust(11), value))
         sys.stdout.flush()
         if not count:
             sys.stderr.write(
