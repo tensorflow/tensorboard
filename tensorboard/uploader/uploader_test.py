@@ -79,18 +79,20 @@ class TensorboardUploaderTest(tf.test.TestCase):
         logdir = "/logs/foo"
         mock_client = _create_mock_client()
         uploader_name = uploader_lib.TensorBoardUploader(
-            mock_client, logdir, name="name")
+            mock_client, logdir, name="name"
+        )
         uploader_description = uploader_lib.TensorBoardUploader(
-            mock_client, logdir, description="description")
+            mock_client, logdir, description="description"
+        )
         uploader_both = uploader_lib.TensorBoardUploader(
-            mock_client, logdir, name="name", description="description")
+            mock_client, logdir, name="name", description="description"
+        )
         eid_name = uploader_name.create_experiment()
         self.assertEqual(eid_name, "123")
         eid_description = uploader_description.create_experiment()
         self.assertEqual(eid_description, "123")
         eid_both = uploader_both.create_experiment()
         self.assertEqual(eid_both, "123")
-
 
     def test_start_uploading_without_create_experiment_fails(self):
         mock_client = _create_mock_client()

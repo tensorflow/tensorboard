@@ -480,7 +480,6 @@ class _UpdateMetadataIntent(_Intent):
             print(f"Set description to {repr(self.description)}")
 
 
-
 class _ListIntent(_Intent):
     """The user intends to list all their experiments."""
 
@@ -549,10 +548,7 @@ def _raise_if_bad_experiment_name(name):
 
 
 def _raise_if_bad_experiment_description(description):
-    if (
-        description
-        and len(description) > _EXPERIMENT_DESCRIPTION_MAX_CHARS
-    ):
+    if description and len(description) > _EXPERIMENT_DESCRIPTION_MAX_CHARS:
         raise ValueError(
             "Experiment description is too long.  Limit is "
             f"{_EXPERIMENT_DESCRIPTION_MAX_CHARS} characters.\n"
