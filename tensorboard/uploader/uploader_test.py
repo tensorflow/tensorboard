@@ -130,11 +130,9 @@ class TensorboardUploaderTest(tf.test.TestCase):
         (args, _) = mock_client.CreateExperiment.call_args
 
         expected_request = write_service_pb2.CreateExperimentRequest(
-            name=new_name,
-            description=new_description,
+            name=new_name, description=new_description,
         )
         self.assertEqual(args[0], expected_request)
-
 
     def test_start_uploading_without_create_experiment_fails(self):
         mock_client = _create_mock_client()
@@ -842,13 +840,14 @@ class UpdateExperimentMetadataTest(tf.test.TestCase):
         mock_client.UpdateExperiment.return_value = response
 
         uploader_lib.update_experiment_metadata(
-            mock_client, "123", name=new_name)
+            mock_client, "123", name=new_name
+        )
 
         expected_request = write_service_pb2.UpdateExperimentRequest(
             experiment=experiment_pb2.Experiment(
-                experiment_id="123",
-                name=new_name),
-            experiment_mask=experiment_pb2.ExperimentMask(name=True)
+                experiment_id="123", name=new_name
+            ),
+            experiment_mask=experiment_pb2.ExperimentMask(name=True),
         )
         mock_client.UpdateExperiment.assert_called_once()
         (args, _) = mock_client.UpdateExperiment.call_args
