@@ -60,6 +60,18 @@ namespace tf_backend {
     public getWindowTitle(): string {
       return this.environment ? this.environment.windowTitle : '';
     }
+
+    public getExperimentName(): string {
+      return this.environment ? this.environment.experimentName : '';
+    }
+
+    public getExperimentDescription(): string {
+      return this.environment ? this.environment.experimentDescription : '';
+    }
+
+    public getCreationTime(): number | null {
+      return this.environment ? this.environment.creationTime : null;
+    }
   }
 
   export const environmentStore = new EnvironmentStore();
