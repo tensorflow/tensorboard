@@ -551,8 +551,8 @@ def _raise_if_bad_experiment_description(description):
     if description and len(description) > _EXPERIMENT_DESCRIPTION_MAX_CHARS:
         raise ValueError(
             "Experiment description is too long.  Limit is %s characters.\n"
-            "%r was provided." % (_EXPERIMENT_DESCRIPTION_MAX_CHARS,
-            description)
+            "%r was provided."
+            % (_EXPERIMENT_DESCRIPTION_MAX_CHARS, description)
         )
 
 
