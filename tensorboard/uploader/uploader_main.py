@@ -542,7 +542,7 @@ def _raise_if_bad_experiment_name(name):
     if name and len(name) > _EXPERIMENT_NAME_MAX_CHARS:
         raise ValueError(
             "Experiment name is too long.  Limit is "
-            "%s characters.\n"`
+            "%s characters.\n"
             "%r was provided." % (_EXPERIMENT_DESCRIPTION_MAX_CHARS, name)
         )
 
