@@ -58,7 +58,6 @@ install:
       -r tensorboard/pip_package/requirements.txt \
       -r tensorboard/pip_package/requirements_dev.txt \
       ;
-  - yarn install --ignore-engines
   - |
     # Install TensorFlow if requested
     if [ -n "${TF_VERSION_ID}" ]; then
