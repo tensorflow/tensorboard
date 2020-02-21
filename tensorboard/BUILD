@@ -41,12 +41,28 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
-        ":errors",
-        ":lazy",
+        ":lib_init_only",
         ":notebook",
         ":program",
         "//tensorboard/summary",
         "//tensorboard/summary/writer",
+    ],
+)
+
+# The dependencies needed to initialize the `tensorboard` module itself,
+# which are not sufficient to resolve all of its lazy imports. Use only
+# if you're intending to link in a proper subset of TensorBoard's public
+# API, you're linking in that subset explicitly in your downstream
+# target, and you know what you're doing.
+py_library(
+    name = "lib_init_only",
+    srcs = ["__init__.py"],
+    srcs_version = "PY2AND3",
+    visibility = ["//tensorboard:internal"],
+    deps = [
+        ":errors",
+        ":lazy",
+        ":version",
     ],
 )
 
