@@ -1,4 +1,4 @@
-# Copyright 2016 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,16 +18,16 @@ from __future__ import division
 from __future__ import print_function
 
 import os
-import tensorflow as tf
+import tensorflow as tf  # Requires Tensorflow >=2.1
 from tensorboard.plugins import projector
 import tensorflow_datasets as tfds
 
-# This example extends on the word embeddings tutorial found
+# This demo expands upon the word embeddings tutorial found
 # here: https://www.tensorflow.org/tutorials/text/word_embeddings)
 # and is intended to demonstrate the use of the embedding projector.
 
-LOG_DIR = "/tmp/logs/model"  # Tensorboard log dir
-META_DATA_FNAME = "meta.tsv"  # Labels will be stored here
+LOG_DIR = "/tmp/projector_demo"  # Tensorboard log dir
+METADATA_FNAME = "meta.tsv"  # Labels will be stored here
 STEP = 0
 
 # Load imdb reviews dataset
@@ -87,22 +87,22 @@ def register_embedding(weights, labels, log_dir) -> None:
       logdir: Directory into which to store the config file, as a `str`.
     """
 
-    # Save Labels separately on a line-by-line manner.
-    with open(os.path.join(log_dir, META_DATA_FNAME), "w") as f:
-        for label in labels:
-            f.write("{}\n".format(label))
-
     # Create a checkpoint from embedding, the filename and key are
     # name of the tensor.
     checkpoint = tf.train.Checkpoint(embedding=weights)
     checkpoint.save(os.path.join(LOG_DIR, "embedding.ckpt"))
+
+    # Save Labels separately on a line-by-line manner.
+    with open(os.path.join(log_dir, METADATA_FNAME), "w") as f:
+        for label in labels:
+            f.write("{}\n".format(label))
 
     # Set up config
     config = projector.ProjectorConfig()
     embedding = config.embeddings.add()
     # The name of the tensor will be suffixed by `/.ATTRIBUTES/VARIABLE_VALUE`
     embedding.tensor_name = "embedding/.ATTRIBUTES/VARIABLE_VALUE"
-    embedding.metadata_path = META_DATA_FNAME
+    embedding.metadata_path = METADATA_FNAME
     projector.visualize_embeddings(log_dir, config)
 
 

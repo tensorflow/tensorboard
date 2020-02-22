@@ -97,3 +97,14 @@ tb_proto_library(
     srcs = glob(["*.proto"]),
     visibility = ["//visibility:public"],
 )
+
+py_binary(
+    name = "projector_demo",
+    srcs = ["projector_demo.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":projector",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard:expect_tensorflow_datasets_installed",
+    ],
+)
