@@ -236,12 +236,6 @@ class DebuggerV2EventMultiplexer(object):
             alerts_breakdown[alert_type] = len(monitor_alerts)
             alerts_by_type[alert_type] = monitor_alerts
 
-        response_data = {
-            "begin": begin,
-            "num_alerts": len(alerts),
-            "alerts_breakdown": alerts_breakdown,
-            "per_type_alert_limit": DEFAULT_PER_TYPE_ALERT_LIMIT,
-        }
         if alert_type_filter is not None:
             if alert_type_filter not in alerts_breakdown:
                 raise errors.InvalidArgumentError(
@@ -251,18 +245,19 @@ class DebuggerV2EventMultiplexer(object):
             end = self._checkBeginEndIndices(
                 begin, end, alerts_breakdown[alert_type_filter]
             )
-            response_data["alert_type"] = alert_type
-            response_data["alerts"] = [
-                _alert_to_json(alert)
-                for alert in alerts_by_type[alert_type_filter][begin:end]
-            ]
+            alert_list = alerts_by_type[alert_type_filter][begin:end]
         else:
             end = self._checkBeginEndIndices(begin, end, len(alerts))
-            response_data["alerts"] = [
-                _alert_to_json(alert) for alert in alerts[begin:end]
-            ]
-        response_data["end"] = end
-        return response_data
+            alert_list = alerts[begin:end]
+        return {
+            "begin": begin,
+            "end": end,
+            "alert_type": alert_type_filter,
+            "num_alerts": len(alerts),
+            "alerts_breakdown": alerts_breakdown,
+            "per_type_alert_limit": DEFAULT_PER_TYPE_ALERT_LIMIT,
+            "alerts": [_alert_to_json(alert) for alert in alert_list],
+        }
 
     def ExecutionDigests(self, run, begin, end):
         """Get ExecutionDigests.

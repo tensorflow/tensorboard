@@ -79,7 +79,6 @@ def _parse_alerts_blob_key(blob_key):
       - alert_type: alert type string used to filter retrieved alert data.
           `None` if no filtering is used.
     """
-    # TODO(cais): Add filter for alert type.
     key_body, run = blob_key.split(".", 1)
     key_body = key_body[len(ALERTS_BLOB_TAG_PREFIX) :]
     key_items = key_body.split("_")

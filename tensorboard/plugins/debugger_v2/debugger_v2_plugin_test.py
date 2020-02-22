@@ -189,6 +189,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
                 "num_alerts": 0,
                 "alerts_breakdown": {},
                 "per_type_alert_limit": 1000,
+                "alert_type": None,
                 "alerts": [],
             },
         )
@@ -214,6 +215,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
                 "num_alerts": 3,
                 "alerts_breakdown": {"InfNanAlert": 3,},
                 "per_type_alert_limit": 1000,
+                "alert_type": None,
                 "alerts": [],
             },
         )
