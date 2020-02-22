@@ -43,21 +43,23 @@ SOURCE_FILE_BLOB_TAG_PREFIX = "source_file"
 STACK_FRAMES_BLOB_TAG_PREFIX = "stack_frames"
 
 
-def alerts_run_tag_filter(run, begin, end):
+def alerts_run_tag_filter(run, begin, end, alert_type=None):
     """Create a RunTagFilter for Alerts.
 
     Args:
       run: tfdbg2 run name.
       begin: Beginning index of alerts.
       end: Ending index of alerts.
+      alert_type: Optional alert type, used to restrict retrieval of alerts
+        data to a single type of alerts.
 
     Returns:
       `RunTagFilter` for the run and range of Alerts.
     """
-    # TODO(cais): Add filter for alert type.
-    return provider.RunTagFilter(
-        runs=[run], tags=["%s_%d_%d" % (ALERTS_BLOB_TAG_PREFIX, begin, end)],
-    )
+    tag = "%s_%d_%d" % (ALERTS_BLOB_TAG_PREFIX, begin, end)
+    if alert_type is not None:
+        tag += "_%s" % alert_type
+    return provider.RunTagFilter(runs=[run], tags=[tag])
 
 
 def _parse_alerts_blob_key(blob_key):
@@ -65,19 +67,28 @@ def _parse_alerts_blob_key(blob_key):
 
     Args:
       blob_key: The BLOB key to parse. By contract, it should have the format:
-       `${ALERTS_BLOB_TAG_PREFIX}_${begin}_${end}.${run_id}`
+       - `${ALERTS_BLOB_TAG_PREFIX}_${begin}_${end}.${run_id}` when there is no
+         alert type filter.
+      - `${ALERTS_BLOB_TAG_PREFIX}_${begin}_${end}_${alert_filter}.${run_id}`
+        when there is an alert type filter.
 
     Returns:
       - run ID
       - begin index
       - end index
+      - alert_type: alert type string used to filter retrieved alert data.
+          `None` if no filtering is used.
     """
     # TODO(cais): Add filter for alert type.
     key_body, run = blob_key.split(".", 1)
     key_body = key_body[len(ALERTS_BLOB_TAG_PREFIX) :]
-    begin = int(key_body.split("_")[1])
-    end = int(key_body.split("_")[2])
-    return run, begin, end
+    key_items = key_body.split("_")
+    begin = int(key_items[1])
+    end = int(key_items[2])
+    alert_type = None
+    if len(key_items) > 3:
+        alert_type = key_body.split("_", 3)[-1]
+    return run, begin, end, alert_type
 
 
 def execution_digest_run_tag_filter(run, begin, end):
@@ -359,8 +370,12 @@ class LocalDebuggerV2DataProvider(provider.DataProvider):
 
     def read_blob(self, blob_key):
         if blob_key.startswith(ALERTS_BLOB_TAG_PREFIX):
-            run, begin, end = _parse_alerts_blob_key(blob_key)
-            return json.dumps(self._multiplexer.Alerts(run, begin, end))
+            run, begin, end, alert_type = _parse_alerts_blob_key(blob_key)
+            return json.dumps(
+                self._multiplexer.Alerts(
+                    run, begin, end, alert_type_filter=alert_type
+                )
+            )
         elif blob_key.startswith(EXECUTION_DIGESTS_BLOB_TAG_PREFIX):
             run, begin, end = _parse_execution_digest_blob_key(blob_key)
             return json.dumps(
