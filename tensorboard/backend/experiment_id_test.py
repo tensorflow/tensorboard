@@ -27,15 +27,8 @@ from tensorboard import test as tb_test
 from tensorboard.backend import experiment_id
 
 
-class ExperimentIdMiddlewareTest(tb_test.TestCase):
-    """Tests for `ExperimentIdMiddleware`."""
-
-    def setUp(self):
-        super(ExperimentIdMiddlewareTest, self).setUp()
-        self.app = experiment_id.ExperimentIdMiddleware(self._echo_app)
-        self.server = werkzeug_test.Client(
-            self.app, werkzeug.wrappers.BaseResponse
-        )
+class BaseTest(object):
+    """Base tests for `ExperimentIdMiddleware`."""
 
     def _echo_app(self, environ, start_response):
         # https://www.python.org/dev/peps/pep-0333/#environ-variables
@@ -47,6 +40,17 @@ class ExperimentIdMiddlewareTest(tb_test.TestCase):
         body = json.dumps(data, sort_keys=True)
         start_response("200 OK", [("Content-Type", "application/json")])
         return [body]
+
+    def _create_app(self):
+        raise NotImplementedError()
+
+    def setUp(self):
+        super(BaseTest, self).setUp()
+
+        self.app = self._create_app()
+        self.server = werkzeug_test.Client(
+            self.app, werkzeug.wrappers.BaseResponse
+        )
 
     def _assert_ok(self, response, eid, path, script):
         self.assertEqual(response.status_code, 200)
@@ -91,6 +95,23 @@ class ExperimentIdMiddlewareTest(tb_test.TestCase):
     def test_with_empty_experiment_sub_path(self):
         response = self.server.get("/experiment//x/y")
         self._assert_ok(response, eid="", path="/x/y", script="/experiment/")
+
+
+class ExperimentIdMiddlewareTest(BaseTest, tb_test.TestCase):
+    """Tests for `ExperimentIdMiddleware`."""
+
+    def _create_app(self):
+        return experiment_id.ExperimentIdMiddleware(self._echo_app)
+
+
+class ExperimentIdMiddlewareNestedTest(BaseTest, tb_test.TestCase):
+    """Tests for `ExperimentIdMiddleware` when it is nested."""
+
+    def _create_app(self):
+        app = experiment_id.ExperimentIdMiddleware(self._echo_app)
+        app = experiment_id.ExperimentIdMiddleware(app)
+        app = experiment_id.ExperimentIdMiddleware(app)
+        return app
 
 
 if __name__ == "__main__":

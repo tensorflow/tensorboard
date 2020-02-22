@@ -55,6 +55,10 @@ class ExperimentIdMiddleware(object):
         )
 
     def __call__(self, environ, start_response):
+        # Skip ExperimentIdMiddleware was already called.
+        if WSGI_ENVIRON_KEY in environ:
+            return self._application(environ, start_response)
+
         path = environ.get("PATH_INFO", "")
         m = self._pat.match(path)
         if m:
