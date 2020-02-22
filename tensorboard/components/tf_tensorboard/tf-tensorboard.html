@@ -61,7 +61,17 @@ limitations under the License.
     <paper-header-panel>
       <paper-toolbar id="toolbar" slot="header" class="header">
         <div id="toolbar-content" slot="top">
-          <div class="toolbar-title">[[brand]]</div>
+          <template is="dom-if" if="[[!_homePath]]">
+            <div class="toolbar-title">[[brand]]</div>
+          </template>
+          <template is="dom-if" if="[[_homePath]]">
+            <a
+              href="[[_homePath]]"
+              rel="noopener noreferrer"
+              class="toolbar-title"
+              >[[brand]]</a
+            >
+          </template>
           <template is="dom-if" if="[[_activeDashboardsNotLoaded]]">
             <span class="toolbar-message">
               Loading active dashboards&hellip;
@@ -288,11 +298,20 @@ limitations under the License.
 
       .toolbar-title {
         font-size: 20px;
-        margin-left: 10px;
+        margin-left: 6px;
+        /* Increase clickable area for case where title is an anchor. */
+        padding: 4px;
         text-rendering: optimizeLegibility;
         letter-spacing: -0.025em;
         font-weight: 500;
         display: var(--tb-toolbar-title-display, block);
+      }
+
+      a.toolbar-title {
+        /* Override default anchor color. */
+        color: inherit;
+        /* Override default anchor text-decoration. */
+        text-decoration: none;
       }
 
       .toolbar-message {
@@ -474,6 +493,24 @@ limitations under the License.
 
     const DATA_SELECTION_CHANGE_DEBOUNCE_MS = 200;
 
+    /** @type {Object} */
+    const LocationType = {};
+    /** @type {string} */
+    LocationType.href = '';
+    /** @type {string} */
+    LocationType.origin = '';
+
+    const lib = {
+      /** @return {LocationType} */
+      getLocation() {
+        return window.location;
+      },
+    };
+
+    const TEST_ONLY = {
+      lib,
+    };
+
     Polymer({
       is: 'tf-tensorboard',
       behaviors: [tf_tensorboard.AutoReloadBehavior],
@@ -487,6 +524,20 @@ limitations under the License.
         brand: {
           type: String,
           value: 'TensorBoard-X',
+        },
+
+        /**
+         * URL for navigation when clicking on the Title in the top left corner.
+         * If unspecified then the Title will not be a clickable target.
+         */
+        homePath: {
+          type: String,
+          value: '',
+        },
+
+        _homePath: {
+          type: String,
+          computed: '_sanitizeHomePath(homePath)',
         },
 
         /**
@@ -655,6 +706,34 @@ limitations under the License.
           '_dashboardRegistry, _dashboardContainersStamped, ' +
           '_activeDashboards, _selectedDashboard)',
       ],
+
+      _sanitizeHomePath(homePath) {
+        if (!homePath) {
+          return '';
+        }
+
+        const location = lib.getLocation();
+        const url = new URL(homePath, location.href);
+
+        // Do not allow javascript:, data:, or unknown protocols to render
+        // with Polymer data binding.
+        const isHttp = url.protocol === 'http:' || url.protocol === 'https:';
+        const sameOrigin = url.origin === location.origin;
+
+        if (!isHttp) {
+          throw new RangeError(
+            `Expect 'homePath' to be of http: or https:. ${homePath}`
+          );
+        }
+
+        if (!sameOrigin) {
+          throw new RangeError(
+            `Expect 'homePath' be a path or have the same origin. ${homePath} vs. ${location.origin}`
+          );
+        }
+
+        return isHttp && sameOrigin ? url.toString() : '';
+      },
 
       _activeDashboardsUpdated(activeDashboards, selectedDashboard) {},
 

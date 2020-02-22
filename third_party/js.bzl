@@ -300,21 +300,6 @@ def tensorboard_js_workspace():
       ]),
   )
 
-  filegroup_external(
-      name = "org_chromium_catapult_vulcanized_trace_viewer",
-      licenses = ["notice"],  # BSD-3-Clause
-      sha256_urls = {
-          "f0df289ba9d03d857ad1c2f5918861376b1510b71588ffc60eff5c7a7bfedb09": [
-              "http://mirror.tensorflow.org/raw.githubusercontent.com/catapult-project/catapult/2f7ee994984f3ebd3dd3dc3e05777bf180ec2ee8/LICENSE",
-              "https://raw.githubusercontent.com/catapult-project/catapult/2f7ee994984f3ebd3dd3dc3e05777bf180ec2ee8/LICENSE",
-          ],
-          "b1f0195f305ca66fdb7dae264771f162ae03f04aa642848f15cd871c043e04d1": [
-              "http://mirror.tensorflow.org/raw.githubusercontent.com/catapult-project/catapult/237aea8b58a37a2991318b6a0db60d84078e5f7e/trace_viewer_full.html",
-              "https://raw.githubusercontent.com/catapult-project/catapult/237aea8b58a37a2991318b6a0db60d84078e5f7e/trace_viewer_full.html",  # 2017-06-19
-          ],
-      },
-  )
-
   http_archive(
       name = "ai_google_pair_facets",
       sha256 = "e69d44a2b51b0373e6d1e2ec126b92f7927e408080d959010dee501a6fa852c6",

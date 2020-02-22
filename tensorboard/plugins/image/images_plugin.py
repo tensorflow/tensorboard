@@ -43,6 +43,7 @@ _IMGHDR_TO_MIMETYPE = {
 }
 
 _DEFAULT_IMAGE_MIMETYPE = "application/octet-stream"
+_DEFAULT_DOWNSAMPLING = 10  # images per time series
 
 
 # Extend imghdr.tests to include svg.
@@ -69,6 +70,9 @@ class ImagesPlugin(base_plugin.TBPlugin):
         """
         self._multiplexer = context.multiplexer
         self._db_connection_provider = context.db_connection_provider
+        self._downsample_to = (context.sampling_hints or {}).get(
+            self.plugin_name, _DEFAULT_DOWNSAMPLING
+        )
         if context.flags and context.flags.generic_data == "true":
             self._data_provider = context.data_provider
         else:
@@ -239,14 +243,10 @@ class ImagesPlugin(base_plugin.TBPlugin):
             parameters.
         """
         if self._data_provider:
-            # Downsample reads to 10 images per time series, which is the
-            # default size guidance for images under the multiplexer loading
-            # logic.
-            SAMPLE_COUNT = 10
             all_images = self._data_provider.read_blob_sequences(
                 experiment_id=experiment,
                 plugin_name=metadata.PLUGIN_NAME,
-                downsample=SAMPLE_COUNT,
+                downsample=self._downsample_to,
                 run_tag_filter=provider.RunTagFilter(runs=[run], tags=[tag]),
             )
             images = all_images.get(run, {}).get(tag, None)
