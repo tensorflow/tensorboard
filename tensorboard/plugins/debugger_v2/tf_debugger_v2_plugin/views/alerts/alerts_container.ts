@@ -15,6 +15,7 @@ limitations under the License.
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {createSelector, select, Store} from '@ngrx/store';
 
+import {alertTypeFocusToggled} from '../../actions';
 import {
   getAlertsBreakdown,
   getAlertsFocusType,
@@ -25,27 +26,22 @@ import {AlertType} from '../../store/debugger_types';
 import {AlertTypeDisplay} from './alerts_component';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
-import {alertTypeFocusToggled} from '../../actions';
 
 const ALERT_TYPE_TO_DISPLAY_NAME_AND_SYMBOL: {
   [alertType: string]: {
-    type: AlertType;
     displayName: string;
     displaySymbol: string;
   };
 } = {
   [AlertType.FUNCTION_RECOMPILE_ALERT]: {
-    type: AlertType.FUNCTION_RECOMPILE_ALERT,
     displayName: 'Function recompiles',
     displaySymbol: 'C',
   },
   [AlertType.INF_NAN_ALERT]: {
-    type: AlertType.INF_NAN_ALERT,
     displayName: 'NaN/∞',
     displaySymbol: '∞',
   },
   [AlertType.TENSOR_SHAPE_ALERT]: {
-    type: AlertType.TENSOR_SHAPE_ALERT,
     displayName: 'Tensor shape',
     displaySymbol: '■',
   },
@@ -77,6 +73,7 @@ export class AlertsContainer {
           return alertTypes.map(
             (alertType): AlertTypeDisplay => {
               return {
+                type: alertType as AlertType,
                 ...ALERT_TYPE_TO_DISPLAY_NAME_AND_SYMBOL[alertType],
                 count: alertsBreakdown[alertType],
               };

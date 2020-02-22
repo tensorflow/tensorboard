@@ -211,7 +211,6 @@ describe('debugger selectors', () => {
     it('returns all-null array when there is no focused alert type', () => {
       const state = createState(
         createDebuggerState({
-          activeRunId: '__default_debugger_run__',
           executions: {
             numExecutionsLoaded: {
               state: DataLoadState.LOADING,
@@ -270,6 +269,7 @@ describe('debugger selectors', () => {
               0: createTestExecutionDigest(),
               1: createTestExecutionDigest(),
               2: createTestExecutionDigest(),
+              3: createTestExecutionDigest(),
             },
             executionData: {},
           },

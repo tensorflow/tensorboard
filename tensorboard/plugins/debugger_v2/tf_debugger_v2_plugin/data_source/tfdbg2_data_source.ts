@@ -90,7 +90,7 @@ export abstract class Tfdbg2DataSource {
    * @param begin Beginning index, inclusive.
    * @param end Ending index, exclusive. Can use `begin=0` and `end=0`
    *   to retrieve only the number of alerts and their breakdown by type.
-   *   Use `end=-1` to retrieve all alerts (ffor all alert types or only
+   *   Use `end=-1` to retrieve all alerts (for all alert types or only
    *   a specific alert type, depending on whether `alert_type` is specified.)
    * @param alert_type Optional filter for alert type. If specified,
    *   `begin` and `end` refer to the beginning and indices in the

@@ -20,10 +20,10 @@ limitations under the License.
 }
 
 .alerts-breakdown-type {
-  border-radius: 0px 10px 10px 0px;
+  border-radius: 0 10px 10px 0;
   cursor: pointer;
   line-height: 30px;
-  padding: 6px 0px 6px 50px;
+  padding: 6px 0 6px 50px;
   vertical-align: middle;
 }
 

@@ -194,10 +194,9 @@ export const getFocusAlertTypesOfVisibleExecutionDigests = createSelector(
     const beginExecutionIndex = state.executions.scrollBeginIndex;
     const endExecutionIndex =
       state.executions.scrollBeginIndex + state.executions.displayCount;
-    const alertTypes: Array<AlertType | null> = [];
-    for (let i = beginExecutionIndex; i < endExecutionIndex; ++i) {
-      alertTypes.push(null);
-    }
+    const alertTypes: Array<AlertType | null> = new Array(
+      endExecutionIndex - beginExecutionIndex
+    ).fill(null);
     const focusType = state.alerts.focusType;
     if (focusType === null) {
       return alertTypes;
@@ -206,6 +205,8 @@ export const getFocusAlertTypesOfVisibleExecutionDigests = createSelector(
     if (executionIndices === undefined) {
       return alertTypes;
     }
+    // TODO(cais): Explore using a Set for execution indices if this
+    // part becomes a performance bottleneck in the future.
     for (let i = beginExecutionIndex; i < endExecutionIndex; ++i) {
       if (executionIndices.includes(i)) {
         alertTypes[i - beginExecutionIndex] = state.alerts.focusType;

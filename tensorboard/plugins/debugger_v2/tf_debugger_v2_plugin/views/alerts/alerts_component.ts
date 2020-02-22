@@ -20,7 +20,6 @@ export interface AlertTypeDisplay {
   displayName: string;
   displaySymbol: string;
   count: number;
-
   type: AlertType;
 }
 

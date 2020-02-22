@@ -67,7 +67,10 @@ import {
   StackFrame,
   State,
 } from '../store/debugger_types';
-import {Tfdbg2HttpServerDataSource} from '../data_source/tfdbg2_data_source';
+import {
+  AlertsResponse,
+  Tfdbg2HttpServerDataSource,
+} from '../data_source/tfdbg2_data_source';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 /** @typehack */ import * as _typeHackNgrxStore from '@ngrx/store/src/models';
@@ -491,11 +494,7 @@ export class DebuggerEffects {
    *
    * Returns an Observable for what additional execution digests need to be fetched.
    */
-  private onAlertTypeFocused(): Observable<{
-    runId: string;
-    begin: number;
-    end: number;
-  }> {
+  private onAlertTypeFocused(): Observable<AlertsResponse> {
     return this.actions$.pipe(
       ofType(alertTypeFocusToggled),
       withLatestFrom(
@@ -531,66 +530,75 @@ export class DebuggerEffects {
         // TODO(cais): Use smarter `end` value to reduce the amount of data
         // fetch each time.
         const end = -1;
-        return this.dataSource
-          .fetchAlerts(runId as string, begin, end, focusType! as string)
-          .pipe(
-            tap(
-              ({
-                num_alerts,
-                alerts_breakdown,
-                alert_type,
-                begin,
-                end,
-                alerts,
-              }) => {
-                this.store.dispatch(
-                  alertsOfTypeLoaded({
-                    numAlerts: num_alerts,
-                    alertsBreakdown: alerts_breakdown,
-                    alertType: alert_type!,
-                    begin,
-                    end,
-                    alerts,
-                  })
-                );
-              }
-            ),
-            withLatestFrom(
-              this.store.select(getExecutionPageSize),
-              this.store.select(getDisplayCount),
-              this.store.select(getNumExecutions),
-              this.store.select(getExecutionDigestsLoaded)
-            ),
-            map(
-              ([
-                alertsResponse,
-                pageSize,
-                displayCount,
-                numExecutions,
-                executionDigestsLoaded,
-              ]) => {
-                const alert = alertsResponse.alerts[0] as InfNanAlert;
-                const executionIndex = alert.execution_index;
-                const missingPages = getMissingPages(
-                  Math.max(0, executionIndex - Math.floor(displayCount / 2)),
-                  Math.min(
-                    executionIndex + Math.floor(displayCount / 2),
-                    numExecutions
-                  ),
-                  pageSize,
-                  numExecutions,
-                  executionDigestsLoaded.pageLoadedSizes
-                );
-                const begin = missingPages[0] * pageSize;
-                const end = Math.min(
-                  executionDigestsLoaded.numExecutions,
-                  (missingPages[missingPages.length - 1] + 1) * pageSize
-                );
-                return {runId: runId!, begin, end};
-              }
-            )
-          );
+        return this.dataSource.fetchAlerts(
+          runId as string,
+          begin,
+          end,
+          focusType!
+        );
       })
+    );
+  }
+
+  /**
+   * Compute the execution digests to fetch on focusing of an alert type.
+   */
+  private fetchExecutionDigestsForAlertTypeFocus(
+    prevStream$: Observable<AlertsResponse>
+  ): Observable<{
+    runId: string;
+    begin: number;
+    end: number;
+  }> {
+    return prevStream$.pipe(
+      tap(({num_alerts, alerts_breakdown, alert_type, begin, end, alerts}) => {
+        this.store.dispatch(
+          alertsOfTypeLoaded({
+            numAlerts: num_alerts,
+            alertsBreakdown: alerts_breakdown,
+            alertType: alert_type!,
+            begin,
+            end,
+            alerts,
+          })
+        );
+      }),
+      withLatestFrom(
+        this.store.select(getExecutionPageSize),
+        this.store.select(getDisplayCount),
+        this.store.select(getNumExecutions),
+        this.store.select(getExecutionDigestsLoaded),
+        this.store.select(getActiveRunId)
+      ),
+      map(
+        ([
+          alertsResponse,
+          pageSize,
+          displayCount,
+          numExecutions,
+          executionDigestsLoaded,
+          runId,
+        ]) => {
+          const alert = alertsResponse.alerts[0] as InfNanAlert;
+          const executionIndex = alert.execution_index;
+          const missingPages = getMissingPages(
+            Math.max(0, executionIndex - Math.floor(displayCount / 2)),
+            Math.min(
+              executionIndex + Math.floor(displayCount / 2),
+              numExecutions
+            ),
+            pageSize,
+            numExecutions,
+            executionDigestsLoaded.pageLoadedSizes
+          );
+          const begin = missingPages[0] * pageSize;
+          const end = Math.min(
+            executionDigestsLoaded.numExecutions,
+            (missingPages[missingPages.length - 1] + 1) * pageSize
+          );
+          return {runId: runId!, begin, end};
+        }
+      )
     );
   }
 
@@ -635,6 +643,9 @@ export class DebuggerEffects {
         );
 
         const onAlertTypeFocused$ = this.onAlertTypeFocused();
+        const fetchExecutionDigestsForAlertTypeFocus$ = this.fetchExecutionDigestsForAlertTypeFocus(
+          onAlertTypeFocused$
+        );
 
         // This event can trigger the loading of
         //   - execution-digest
@@ -647,7 +658,7 @@ export class DebuggerEffects {
           merge(
             this.onExecutionScroll(),
             this.createInitialExecutionDigest(onInitialExecution$),
-            onAlertTypeFocused$
+            fetchExecutionDigestsForAlertTypeFocus$
           )
         );
         const onExecutionDataLoaded$ = this.createExecutionDataAndStackFramesLoader(
