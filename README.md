@@ -17,9 +17,7 @@ working example featuring the scalar dashboard.
 
 TensorBoard is designed to run entirely offline, without requiring any access
 to the Internet. For instance, this may be on your local machine, behind a
-corporate firewall, or in a datacenter. Currently, there is one exception where
-TensorBoard does require Internet access: the optional profile plugin, when
-active, connects to a Google-hosted CDN to load the Google Charts library.
+corporate firewall, or in a datacenter.
 
 [TensorBoard: Getting Started]: https://www.tensorflow.org/tensorboard/get_started
 [TensorBoard.dev]: https://tensorboard.dev
