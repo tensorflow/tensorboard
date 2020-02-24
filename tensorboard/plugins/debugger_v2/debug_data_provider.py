@@ -69,8 +69,8 @@ def _parse_alerts_blob_key(blob_key):
       blob_key: The BLOB key to parse. By contract, it should have the format:
        - `${ALERTS_BLOB_TAG_PREFIX}_${begin}_${end}.${run_id}` when there is no
          alert type filter.
-      - `${ALERTS_BLOB_TAG_PREFIX}_${begin}_${end}_${alert_filter}.${run_id}`
-        when there is an alert type filter.
+       - `${ALERTS_BLOB_TAG_PREFIX}_${begin}_${end}_${alert_filter}.${run_id}`
+         when there is an alert type filter.
 
     Returns:
       - run ID

@@ -242,13 +242,9 @@ class DebuggerV2EventMultiplexer(object):
                     "Filtering of alerts failed: alert type %s does not exist"
                     % alert_type_filter
                 )
-            end = self._checkBeginEndIndices(
-                begin, end, alerts_breakdown[alert_type_filter]
-            )
-            alert_list = alerts_by_type[alert_type_filter][begin:end]
-        else:
-            end = self._checkBeginEndIndices(begin, end, len(alerts))
-            alert_list = alerts[begin:end]
+            alerts = alerts_by_type[alert_type_filter]
+        end = self._checkBeginEndIndices(begin, end, alerts)
+        alerts = alerts[begin:end]
         return {
             "begin": begin,
             "end": end,
@@ -256,7 +252,7 @@ class DebuggerV2EventMultiplexer(object):
             "num_alerts": len(alerts),
             "alerts_breakdown": alerts_breakdown,
             "per_type_alert_limit": DEFAULT_PER_TYPE_ALERT_LIMIT,
-            "alerts": [_alert_to_json(alert) for alert in alert_list],
+            "alerts": [_alert_to_json(alert) for alert in alerts],
         }
 
     def ExecutionDigests(self, run, begin, end):
