@@ -32,6 +32,7 @@ except ImportError:
 
 import tensorflow as tf
 
+from tensorboard.uploader.proto import experiment_pb2
 from tensorboard.uploader.proto import scalar_pb2
 from tensorboard.uploader.proto import write_service_pb2
 from tensorboard.uploader.proto import write_service_pb2_grpc
@@ -74,6 +75,64 @@ class TensorboardUploaderTest(tf.test.TestCase):
         uploader = uploader_lib.TensorBoardUploader(mock_client, logdir)
         eid = uploader.create_experiment()
         self.assertEqual(eid, "123")
+
+    def test_create_experiment_with_name(self):
+        logdir = "/logs/foo"
+        mock_client = _create_mock_client()
+        new_name = "This is the new name"
+        uploader = uploader_lib.TensorBoardUploader(
+            mock_client, logdir, name=new_name
+        )
+        eid = uploader.create_experiment()
+        self.assertEqual(eid, "123")
+        mock_client.CreateExperiment.assert_called_once()
+        (args, _) = mock_client.CreateExperiment.call_args
+
+        expected_request = write_service_pb2.CreateExperimentRequest(
+            name=new_name,
+        )
+        self.assertEqual(args[0], expected_request)
+
+    def test_create_experiment_with_description(self):
+        logdir = "/logs/foo"
+        mock_client = _create_mock_client()
+        new_description = """
+        **description**"
+        may have "strange" unicode chars 🌴 \\/<>
+        """
+        uploader = uploader_lib.TensorBoardUploader(
+            mock_client, logdir, description=new_description
+        )
+        eid = uploader.create_experiment()
+        self.assertEqual(eid, "123")
+        mock_client.CreateExperiment.assert_called_once()
+        (args, _) = mock_client.CreateExperiment.call_args
+
+        expected_request = write_service_pb2.CreateExperimentRequest(
+            description=new_description,
+        )
+        self.assertEqual(args[0], expected_request)
+
+    def test_create_experiment_with_all_metadata(self):
+        logdir = "/logs/foo"
+        mock_client = _create_mock_client()
+        new_description = """
+        **description**"
+        may have "strange" unicode chars 🌴 \/<>
+        """
+        new_name = "This is a cool name."
+        uploader = uploader_lib.TensorBoardUploader(
+            mock_client, logdir, name=new_name, description=new_description
+        )
+        eid = uploader.create_experiment()
+        self.assertEqual(eid, "123")
+        mock_client.CreateExperiment.assert_called_once()
+        (args, _) = mock_client.CreateExperiment.call_args
+
+        expected_request = write_service_pb2.CreateExperimentRequest(
+            name=new_name, description=new_description,
+        )
+        self.assertEqual(args[0], expected_request)
 
     def test_start_uploading_without_create_experiment_fails(self):
         mock_client = _create_mock_client()
@@ -758,6 +817,77 @@ class DeleteExperimentTest(tf.test.TestCase):
 
         with self.assertRaises(grpc.RpcError) as cm:
             uploader_lib.delete_experiment(mock_client, "123")
+        msg = str(cm.exception)
+        self.assertIn("travesty", msg)
+
+
+class UpdateExperimentMetadataTest(tf.test.TestCase):
+    def _create_mock_client(self):
+        # Create a stub instance (using a test channel) in order to derive a mock
+        # from it with autospec enabled. Mocking TensorBoardWriterServiceStub itself
+        # doesn't work with autospec because grpc constructs stubs via metaclassing.
+        test_channel = grpc_testing.channel(
+            service_descriptors=[], time=grpc_testing.strict_real_time()
+        )
+        stub = write_service_pb2_grpc.TensorBoardWriterServiceStub(test_channel)
+        mock_client = mock.create_autospec(stub)
+        return mock_client
+
+    def test_success(self):
+        mock_client = _create_mock_client()
+        new_name = "a new name"
+        response = write_service_pb2.UpdateExperimentResponse()
+        mock_client.UpdateExperiment.return_value = response
+
+        uploader_lib.update_experiment_metadata(
+            mock_client, "123", name=new_name
+        )
+
+        expected_request = write_service_pb2.UpdateExperimentRequest(
+            experiment=experiment_pb2.Experiment(
+                experiment_id="123", name=new_name
+            ),
+            experiment_mask=experiment_pb2.ExperimentMask(name=True),
+        )
+        mock_client.UpdateExperiment.assert_called_once()
+        (args, _) = mock_client.UpdateExperiment.call_args
+        self.assertEqual(args[0], expected_request)
+
+    def test_not_found(self):
+        mock_client = _create_mock_client()
+        error = test_util.grpc_error(grpc.StatusCode.NOT_FOUND, "nope")
+        mock_client.UpdateExperiment.side_effect = error
+
+        with self.assertRaises(uploader_lib.ExperimentNotFoundError):
+            uploader_lib.update_experiment_metadata(mock_client, "123", name="")
+
+    def test_unauthorized(self):
+        mock_client = _create_mock_client()
+        error = test_util.grpc_error(grpc.StatusCode.PERMISSION_DENIED, "nope")
+        mock_client.UpdateExperiment.side_effect = error
+
+        with self.assertRaises(uploader_lib.PermissionDeniedError):
+            uploader_lib.update_experiment_metadata(mock_client, "123", name="")
+
+    def test_invalid_argument(self):
+        mock_client = _create_mock_client()
+        error = test_util.grpc_error(
+            grpc.StatusCode.INVALID_ARGUMENT, "too many"
+        )
+        mock_client.UpdateExperiment.side_effect = error
+
+        with self.assertRaises(uploader_lib.InvalidArgumentError) as cm:
+            uploader_lib.update_experiment_metadata(mock_client, "123", name="")
+        msg = str(cm.exception)
+        self.assertIn("too many", msg)
+
+    def test_internal_error(self):
+        mock_client = _create_mock_client()
+        error = test_util.grpc_error(grpc.StatusCode.INTERNAL, "travesty")
+        mock_client.UpdateExperiment.side_effect = error
+
+        with self.assertRaises(grpc.RpcError) as cm:
+            uploader_lib.update_experiment_metadata(mock_client, "123", name="")
         msg = str(cm.exception)
         self.assertIn("travesty", msg)
 
