@@ -589,7 +589,7 @@ class _UploadIntent(_Intent):
             channel
         )
         _die_if_bad_experiment_name(self.name)
-        _raise_if_bad_experiment_description(self.description)
+        _die_if_bad_experiment_description(self.description)
         uploader = uploader_lib.TensorBoardUploader(
             api_client,
             self.logdir,
@@ -597,7 +597,7 @@ class _UploadIntent(_Intent):
             description=self.description,
         )
         experiment_id = uploader.create_experiment()
-        udieserver_info_lib.experiment_url(server_info, experiment_id)
+        url = server_info_lib.experiment_url(server_info, experiment_id)
         print(
             "Upload started and will continue reading any new data as it's added"
         )
