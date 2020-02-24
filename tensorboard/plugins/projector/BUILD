@@ -17,6 +17,7 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
+        ":metadata",
         ":protos_all_py_pb2",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard/backend:http_util",
@@ -33,7 +34,7 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
-        ":projector_plugin",
+        ":metadata",
         ":protos_all_py_pb2",
         "//tensorboard/compat:tensorflow",
     ],
@@ -90,6 +91,12 @@ py_test(
         "//tensorboard/util:test_util",
         "@org_pocoo_werkzeug",
     ],
+)
+
+py_library(
+    name = "metadata",
+    srcs = ["metadata.py"],
+    srcs_version = "PY2AND3",
 )
 
 tb_proto_library(
