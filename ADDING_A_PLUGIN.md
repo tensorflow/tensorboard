@@ -162,7 +162,7 @@ Consistency in user interface and experience, we believe, is important for happy
 
 [dynamic-plugin-tracking-bug]: https://github.com/tensorflow/tensorboard/issues/2357
 
-We recommend that you vendor all resources required to use your plugin, including scripts, stylesheets, fonts, and images. All built-in TensorBoard plugins follow this policy (except for the profile plugin, which for legacy reasons depends on a CDN).
+We recommend that you vendor all resources required to use your plugin, including scripts, stylesheets, fonts, and images. All built-in TensorBoard plugins follow this policy.
 
 
 ### Summaries: How the plugin gets data
