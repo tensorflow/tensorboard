@@ -22,7 +22,7 @@ limitations under the License.
 .alerts-breakdown-type {
   border-radius: 0 10px 10px 0;
   cursor: pointer;
-  line-height: 30px;
+  display: flex;
   padding: 6px 0 6px 50px;
   vertical-align: middle;
 }
@@ -41,17 +41,16 @@ limitations under the License.
   border-radius: 3px;
   color: #fff;
   display: inline-block;
-  line-height: 20px;
   padding: 3px;
   position: absolute;
   right: 20px;
-  top: 20px;
   vertical-align: middle;
 }
 
 .alert-type-name {
   display: inline-block;
   padding: 3px;
+  vertical-align: middle;
 }
 
 .debugging-title {

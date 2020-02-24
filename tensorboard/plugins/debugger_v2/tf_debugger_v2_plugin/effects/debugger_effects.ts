@@ -536,6 +536,18 @@ export class DebuggerEffects {
           end,
           focusType!
         );
+      }),
+      tap(({num_alerts, alerts_breakdown, alert_type, begin, end, alerts}) => {
+        this.store.dispatch(
+          alertsOfTypeLoaded({
+            numAlerts: num_alerts,
+            alertsBreakdown: alerts_breakdown,
+            alertType: alert_type!,
+            begin,
+            end,
+            alerts,
+          })
+        );
       })
     );
   }
@@ -551,18 +563,6 @@ export class DebuggerEffects {
     end: number;
   }> {
     return prevStream$.pipe(
-      tap(({num_alerts, alerts_breakdown, alert_type, begin, end, alerts}) => {
-        this.store.dispatch(
-          alertsOfTypeLoaded({
-            numAlerts: num_alerts,
-            alertsBreakdown: alerts_breakdown,
-            alertType: alert_type!,
-            begin,
-            end,
-            alerts,
-          })
-        );
-      }),
       withLatestFrom(
         this.store.select(getExecutionPageSize),
         this.store.select(getDisplayCount),
