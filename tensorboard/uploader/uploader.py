@@ -22,6 +22,7 @@ import contextlib
 import functools
 import time
 
+import numpy as np
 import grpc
 import six
 
@@ -234,8 +235,6 @@ class _BatchedRequestSender(object):
           RuntimeError: If no progress can be made because even a single
           point is too large (say, due to a gigabyte-long tag name).
         """
-        # TODO(soergel): Allow enabling/disabling upload per plugin
-
         for (run_name, event) in self._run_events(run_to_events):
             for value in self._summary_values(run_name, event):
                 self._send_summary_value(run_name, event, value)
@@ -287,10 +286,10 @@ class _BatchedRequestSender(object):
         The events are passed through the `data_compat` and `dataclass_compat`
         layers before being emitted, so downstream consumers may process them
         uniformly.  Note that `dataclass_compat` may emit multiple variants of
-        the same event, for backwards compatability.  Thus this stream should
-        typically filtered to obtain the desired version of each event.  Here,
-        this happens below in `_summary_values(...)`, which ignores any event
-        that does not have a `summary` field.
+        the same event, for backwards compatibility.  Thus this stream should
+        be filtered to obtain the desired version of each event.  Here, this
+        happens below in `_summary_values(...)`, which ignores any event that
+        does not have a `summary` field.
         """
         # Note that this join in principle has deletion anomalies: if the input
         # stream contains runs with no events, we'll lose that information. This
@@ -508,19 +507,13 @@ class _BlobRequestSender(object):
 
     def _new_request(self):
         """Declares the previous event complete."""
-        self._plugin_name = None
         self._run_name = None
-        self._tag_name = None
         self._event = None
         self._value = None
         self._metadata = None
 
     def add_event(
-        self,
-        run_name,
-        event,
-        value,
-        metadata,
+        self, run_name, event, value, metadata,
     ):
         """Attempts to add the given event to the current request.
 
@@ -543,11 +536,13 @@ class _BlobRequestSender(object):
             blob_sequence_id = self._get_or_create_blob_sequence()
             print("Flushing to blob sequence id: ", blob_sequence_id)
 
-            blobs = split_tensor(self._value.tensor)
-            for seq_index, blob in enumerate(blobs):
+            # TODO(soergel): should we really unpack the tensor here, or ship
+            # it wholesale and unpack server side, or something else?
+            blobs = tensor_util.make_ndarray(self._value.tensor)
+            for seq_index, blob in np.ndenumerate(blobs):
                 # Note the _send_blob() stream is internally rate-limited.
                 self._rpc_rate_limiter.tick()
-                self._send_blob(blob_sequence_id, seq_index, blob)
+                self._send_blob(blob_sequence_id, seq_index[0], blob)
 
         self._new_request()
 
@@ -555,7 +550,7 @@ class _BlobRequestSender(object):
         request = write_service_pb2.GetOrCreateBlobSequenceRequest(
             experiment_id=self._experiment_id,
             run=self._run_name,
-            tag=self._tag_name,
+            tag=self._value.tag,
             step=self._event.step,
             final_sequence_length=1,
             metadata=self._metadata,
@@ -630,25 +625,6 @@ def _request_logger(request, runs=None):
             request_bytes,
             upload_duration_secs,
         )
-
-
-def _extract_graph(event):
-    # GraphDef and MetaGraphDef are handled in a special way:
-    # If no graph_def Event is available, but a meta_graph_def is, and it
-    # contains a graph_def, then use the meta_graph_def.graph_def as our graph.
-    # If a graph_def Event is available, always prefer it to the graph_def
-    # inside the meta_graph_def.
-    if event.HasField("graph_def"):
-        return event.graph_def
-    elif event.HasField("meta_graph_def"):
-        _meta_graph = event.meta_graph_def
-        # We may have a graph_def in the metagraph.  If so, and no
-        # graph_def is directly available, use this one instead.
-        meta_graph = meta_graph_pb2.MetaGraphDef()
-        meta_graph.ParseFromString(_meta_graph)
-        if meta_graph.graph_def:
-            return meta_graph.graph_def.SerializeToString()
-    logger.warn("Graph event contained no graph data.")
 
 
 def _varint_cost(n):
