@@ -29,6 +29,7 @@ export interface CoreState {
   pluginsListLoaded: LoadState;
   reloadPeriodInMs: number;
   reloadEnabled: boolean;
+  pageSize: number;
 }
 
 export interface State {
