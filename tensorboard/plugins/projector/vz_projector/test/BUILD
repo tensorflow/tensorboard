@@ -10,8 +10,6 @@ licenses(["notice"])  # Apache 2.0
 tf_web_test(
     name = "test",
     src = "/vz-projector/test/tests.html",
-    # TODO(@wchargin): This test does not work in headless mode.
-    tags = ["manual"],
     web_library = ":test_web_library",
 )
 
