@@ -98,7 +98,7 @@ class TensorboardUploaderTest(tf.test.TestCase):
         mock_client = _create_mock_client()
         new_description = """
         **description**"
-        may have "strange" unicode chars 🌴 \/<>
+        may have "strange" unicode chars 🌴 \\/<>
         """
         uploader = uploader_lib.TensorBoardUploader(
             mock_client, logdir, description=new_description
@@ -868,6 +868,18 @@ class UpdateExperimentMetadataTest(tf.test.TestCase):
 
         with self.assertRaises(uploader_lib.PermissionDeniedError):
             uploader_lib.update_experiment_metadata(mock_client, "123", name="")
+
+    def test_invalid_argument(self):
+        mock_client = _create_mock_client()
+        error = test_util.grpc_error(
+            grpc.StatusCode.INVALID_ARGUMENT,
+            "too many")
+        mock_client.UpdateExperiment.side_effect = error
+
+        with self.assertRaises(uploader_lib.InvalidArgumentError) as cm:
+            uploader_lib.update_experiment_metadata(mock_client, "123", name="")
+        msg = str(cm.exception)
+        self.assertIn("too many", msg)
 
     def test_internal_error(self):
         mock_client = _create_mock_client()

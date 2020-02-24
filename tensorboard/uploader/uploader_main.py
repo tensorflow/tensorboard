@@ -448,8 +448,8 @@ class _UpdateMetadataIntent(_Intent):
             channel
         )
         experiment_id = self.experiment_id
-        _raise_if_bad_experiment_name(self.name)
-        _raise_if_bad_experiment_description(self.description)
+        _die_if_bad_experiment_name(self.name)
+        _die_if_bad_experiment_description(self.description)
         if not experiment_id:
             raise base_plugin.FlagsError(
                 "Must specify a non-empty experiment ID to modify."
@@ -470,6 +470,11 @@ class _UpdateMetadataIntent(_Intent):
             _die(
                 "Cannot modify experiment %s because it is owned by a "
                 "different user." % experiment_id
+            )
+        except uploader_lib.InvalidArgumentError as cm:
+            _die(
+                "Server cannot modify experiment as requested.\n"
+                "Server responded: %s" % cm.description()
             )
         except grpc.RpcError as e:
             _die("Internal error modifying experiment: %s" % e)
@@ -538,18 +543,18 @@ class _ListIntent(_Intent):
         sys.stderr.flush()
 
 
-def _raise_if_bad_experiment_name(name):
+def _die_if_bad_experiment_name(name):
     if name and len(name) > _EXPERIMENT_NAME_MAX_CHARS:
-        raise ValueError(
+        _die(
             "Experiment name is too long.  Limit is "
             "%s characters.\n"
-            "%r was provided." % (_EXPERIMENT_DESCRIPTION_MAX_CHARS, name)
+            "%r was provided." % (_EXPERIMENT_NAME_MAX_CHARS, name)
         )
 
 
-def _raise_if_bad_experiment_description(description):
+def _die_if_bad_experiment_description(description):
     if description and len(description) > _EXPERIMENT_DESCRIPTION_MAX_CHARS:
-        raise ValueError(
+        _die(
             "Experiment description is too long.  Limit is %s characters.\n"
             "%r was provided."
             % (_EXPERIMENT_DESCRIPTION_MAX_CHARS, description)
@@ -583,7 +588,7 @@ class _UploadIntent(_Intent):
         api_client = write_service_pb2_grpc.TensorBoardWriterServiceStub(
             channel
         )
-        _raise_if_bad_experiment_name(self.name)
+        _die_if_bad_experiment_name(self.name)
         _raise_if_bad_experiment_description(self.description)
         uploader = uploader_lib.TensorBoardUploader(
             api_client,
@@ -592,7 +597,7 @@ class _UploadIntent(_Intent):
             description=self.description,
         )
         experiment_id = uploader.create_experiment()
-        url = server_info_lib.experiment_url(server_info, experiment_id)
+        udieserver_info_lib.experiment_url(server_info, experiment_id)
         print(
             "Upload started and will continue reading any new data as it's added"
         )

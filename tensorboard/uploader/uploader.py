@@ -194,10 +194,7 @@ def update_experiment_metadata(
         if e.code() == grpc.StatusCode.PERMISSION_DENIED:
             raise PermissionDeniedError()
         if e.code() == grpc.StatusCode.INVALID_ARGUMENT:
-            details = ""
-            if hasattr(e, "details"):
-                details = e.details
-            raise InvalidArgumentError(details)
+            raise InvalidArgumentError(e.details())
         raise
 
 
