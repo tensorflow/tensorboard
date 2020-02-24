@@ -409,7 +409,8 @@ class Run(object):
 class _TimeSeries(object):
     """Metadata about time series data for a particular run and tag.
 
-    Superclass of `ScalarTimeSeries` and `BlobSequenceTimeSeries`.
+    Superclass of `ScalarTimeSeries`, `TensorTimeSeries`, and
+    `BlobSequenceTimeSeries`.
     """
 
     __slots__ = (
