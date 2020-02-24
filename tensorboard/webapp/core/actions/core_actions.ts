@@ -63,3 +63,11 @@ export const changeReloadPeriod = createAction(
   '[Core] Reload Period Change',
   props<{periodInMs: number}>()
 );
+
+/**
+ * Action for when user wants to an item count in a page of a paginated view.
+ */
+export const changePageSize = createAction(
+  '[Core] Page Size Change',
+  props<{size: number}>()
+);

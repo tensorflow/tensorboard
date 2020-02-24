@@ -32,6 +32,7 @@ ng_module(
         "//tensorboard/webapp/header",
         "//tensorboard/webapp/plugins",
         "//tensorboard/webapp/reloader",
+        "//tensorboard/webapp/settings",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@ngrx/effects",
