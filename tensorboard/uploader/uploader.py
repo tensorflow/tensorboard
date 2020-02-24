@@ -26,6 +26,7 @@ import grpc
 import six
 
 from tensorboard.uploader.proto import write_service_pb2
+from tensorboard.uploader.proto import experiment_pb2
 from tensorboard.uploader import logdir_loader
 from tensorboard.uploader import util
 from tensorboard import data_compat
@@ -64,7 +65,14 @@ logger = tb_logging.get_logger()
 class TensorBoardUploader(object):
     """Uploads a TensorBoard logdir to TensorBoard.dev."""
 
-    def __init__(self, writer_client, logdir, rpc_rate_limiter=None):
+    def __init__(
+        self,
+        writer_client,
+        logdir,
+        rpc_rate_limiter=None,
+        name=None,
+        description=None,
+    ):
         """Constructs a TensorBoardUploader.
 
         Args:
@@ -77,9 +85,13 @@ class TensorBoardUploader(object):
             of chunks.  Note the chunk stream is internally rate-limited by
             backpressure from the server, so it is not a concern that we do not
             explicitly rate-limit within the stream here.
+          name: String name to assign to the experiment.
+          description: String description to assign to the experiment.
         """
         self._api = writer_client
         self._logdir = logdir
+        self._name = name
+        self._description = description
         self._request_sender = None
         if rpc_rate_limiter is None:
             self._rpc_rate_limiter = util.RateLimiter(
@@ -103,7 +115,9 @@ class TensorBoardUploader(object):
     def create_experiment(self):
         """Creates an Experiment for this upload session and returns the ID."""
         logger.info("Creating experiment")
-        request = write_service_pb2.CreateExperimentRequest()
+        request = write_service_pb2.CreateExperimentRequest(
+            name=self._name, description=self._description
+        )
         response = grpc_util.call_with_retries(
             self._api.CreateExperiment, request
         )
@@ -140,6 +154,50 @@ class TensorBoardUploader(object):
         self._request_sender.send_requests(run_to_events)
 
 
+def update_experiment_metadata(
+    writer_client, experiment_id, name=None, description=None
+):
+    """Modifies user data associated with an experiment.
+
+    Args:
+      writer_client: a TensorBoardWriterService stub instance
+      experiment_id: string ID of the experiment to modify
+      name: If provided, modifies name of experiment to this value.
+      description: If provided, modifies the description of the experiment to
+         this value
+
+    Raises:
+      ExperimentNotFoundError: If no such experiment exists.
+      PermissionDeniedError: If the user is not authorized to modify this
+        experiment.
+      InvalidArgumentError: If the server rejected the name or description, if,
+        for instance, the size limits have changed on the server.
+    """
+    logger.info("Modifying experiment %r", experiment_id)
+    request = write_service_pb2.UpdateExperimentRequest()
+    request.experiment.experiment_id = experiment_id
+    if name is not None:
+        logger.info("Setting exp %r name to %r", experiment_id, name)
+        request.experiment.name = name
+        request.experiment_mask.name = True
+    if description is not None:
+        logger.info(
+            "Setting exp %r description to %r", experiment_id, description
+        )
+        request.experiment.description = description
+        request.experiment_mask.description = True
+    try:
+        grpc_util.call_with_retries(writer_client.UpdateExperiment, request)
+    except grpc.RpcError as e:
+        if e.code() == grpc.StatusCode.NOT_FOUND:
+            raise ExperimentNotFoundError()
+        if e.code() == grpc.StatusCode.PERMISSION_DENIED:
+            raise PermissionDeniedError()
+        if e.code() == grpc.StatusCode.INVALID_ARGUMENT:
+            raise InvalidArgumentError(e.details())
+        raise
+
+
 def delete_experiment(writer_client, experiment_id):
     """Permanently deletes an experiment and all of its contents.
 
@@ -164,6 +222,10 @@ def delete_experiment(writer_client, experiment_id):
         if e.code() == grpc.StatusCode.PERMISSION_DENIED:
             raise PermissionDeniedError()
         raise
+
+
+class InvalidArgumentError(RuntimeError):
+    pass
 
 
 class ExperimentNotFoundError(RuntimeError):
