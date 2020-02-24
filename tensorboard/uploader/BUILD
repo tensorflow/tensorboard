@@ -78,6 +78,7 @@ py_library(
         ":logdir_loader",
         ":util",
         "//tensorboard:data_compat",
+        "//tensorboard:dataclass_compat",
         "//tensorboard:expect_grpc_installed",
         "//tensorboard/backend/event_processing:directory_loader",
         "//tensorboard/backend/event_processing:event_file_loader",

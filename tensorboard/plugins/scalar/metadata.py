@@ -41,6 +41,7 @@ def create_summary_metadata(display_name, description):
     metadata = summary_pb2.SummaryMetadata(
         display_name=display_name,
         summary_description=description,
+        data_class=summary_pb2.DATA_CLASS_SCALAR,
         plugin_data=summary_pb2.SummaryMetadata.PluginData(
             plugin_name=PLUGIN_NAME, content=content.SerializeToString()
         ),

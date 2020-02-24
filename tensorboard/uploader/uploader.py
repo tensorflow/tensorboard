@@ -25,10 +25,12 @@ import time
 import grpc
 import six
 
+from tensorboard.compat.proto import summary_pb2
 from tensorboard.uploader.proto import write_service_pb2
 from tensorboard.uploader import logdir_loader
 from tensorboard.uploader import util
 from tensorboard import data_compat
+from tensorboard import dataclass_compat
 from tensorboard.backend.event_processing import directory_loader
 from tensorboard.backend.event_processing import event_file_loader
 from tensorboard.backend.event_processing import io_wrapper
@@ -62,12 +64,8 @@ _MAX_REQUEST_LENGTH_BYTES = 1024 * 128
 
 logger = tb_logging.get_logger()
 
-# TODO(soergel): had we decided to leave Tag empty in this case??
-# Graph events exist at the Run level and have no tag.  Add a synthetic one.
-GRAPH_TAG_NAME = "graph_def"
-
-# 4e6 bytes (4 MB) leaves breathing room within 2^22 (4 MiB) gRPC limit
-BLOB_CHUNK_SIZE = 4000000
+# Leave breathing room within 2^22 (4 MiB) gRPC limit, using 256 KiB chunks
+BLOB_CHUNK_SIZE = 3932160  # 2^18 * 15, a bit less than 2^22.
 
 
 class TensorBoardUploader(object):
@@ -239,18 +237,14 @@ class _BatchedRequestSender(object):
         # TODO(soergel): Allow enabling/disabling upload per plugin
 
         for (run_name, event) in self._run_events(run_to_events):
-            if event.graph_def or event.meta_graph_def:
-                self._send_graph(run_name, event)
-            elif event.summary:
-                for value in self._summary_values(run_name, event):
-                    self._send_summary_value(run_name, event, value)
+            for value in self._summary_values(run_name, event):
+                self._send_summary_value(run_name, event, value)
 
         self._scalar_request_sender.flush()
         # TODO(nielsene): add tensor case here
         self._blob_request_sender.flush()
 
-    def _send_summary_value(self, run_name, event, orig_value):
-        value = data_compat.migrate_value(orig_value)
+    def _send_summary_value(self, run_name, event, value):
         time_series_key = (run_name, value.tag)
 
         # The metadata for a time series is memorized on the first event.
@@ -273,31 +267,41 @@ class _BatchedRequestSender(object):
                 metadata.plugin_data.plugin_name,
                 value.metadata.plugin_data.plugin_name,
             )
-        elif metadata.plugin_data.plugin_name == scalar_metadata.PLUGIN_NAME:
+        elif metadata.data_class == summary_pb2.DATA_CLASS_SCALAR:
             self._scalar_request_sender.add_event(
                 run_name, event, value, metadata
             )
-        # TODO(nielsene): add Tensor plugin cases here
-
-    def _send_graph(self, run_name, event):
-        print("SEND GRAPH")
-        tag_name = GRAPH_TAG_NAME
-        seq_index = 0  # there is only one run-level graph
-        blob = _extract_graph(event)
-        metadata = None  # graph events carry no SummaryMetadata
-        self._blob_request_sender.add_event(
-            run_name, tag_name, event, seq_index, blob, metadata
-        )
+        # TODO(nielsene): add Tensor sender
+        # elif metadata.data_class == summary_pb2.DATA_CLASS_TENSOR:
+        #     self._tensor_request_sender.add_event(
+        #         run_name, event, value, metadata
+        #     )
+        elif metadata.data_class == summary_pb2.DATA_CLASS_BLOB_SEQUENCE:
+            self._blob_request_sender.add_event(
+                run_name, event, value, metadata
+            )
 
     def _run_events(self, run_to_events):
-        """Helper generator to create a single stream of work items."""
+        """Helper generator to create a single stream of work items.
+
+        The events are passed through the `data_compat` and `dataclass_compat`
+        layers before being emitted, so downstream consumers may process them
+        uniformly.  Note that `dataclass_compat` may emit multiple variants of
+        the same event, for backwards compatability.  Thus this stream should
+        typically filtered to obtain the desired version of each event.  Here,
+        this happens below in `_summary_values(...)`, which ignores any event
+        that does not have a `summary` field.
+        """
         # Note that this join in principle has deletion anomalies: if the input
         # stream contains runs with no events, we'll lose that information. This
         # is not a problem: we would need to prune such data from the request
         # anyway.
         for (run_name, events) in six.iteritems(run_to_events):
             for event in events:
-                yield (run_name, event)
+                v2_event = data_compat.migrate_event(event)
+                dataclass_events = dataclass_compat.migrate_event(v2_event)
+                for dataclass_event in dataclass_events:
+                    yield (run_name, dataclass_event)
 
     def _summary_values(self, run_name, event):
         """Helper generator to create a single stream of work items."""
@@ -508,18 +512,15 @@ class _BlobRequestSender(object):
         self._run_name = None
         self._tag_name = None
         self._event = None
-        self._blob = None
+        self._value = None
         self._metadata = None
 
     def add_event(
         self,
         run_name,
-        tag_name,
         event,
-        seq_index,
-        blob,
+        value,
         metadata,
-        is_retry=False,
     ):
         """Attempts to add the given event to the current request.
 
@@ -527,28 +528,26 @@ class _BlobRequestSender(object):
         budget is exhausted, the request is flushed, and the event is added
         to the next request.
         """
-        if self._blob:
+        if self._value:
             raise RuntimeError("Tried to send blob while another is pending")
         self._run_name = run_name
-        self._tag_name = tag_name
         self._event = event  # provides step and possibly plugin_name
-        self._seq_index = seq_index
-        self._blob = blob
+        self._value = value
         self._metadata = metadata
         self.flush()
 
     def flush(self):
-        """Sends the current blob fully, and clears it to make way for the next.
+        """Sends the current blob sequence fully, and clears it to make way for the next.
         """
-        if self._blob:
-            # Note the _send_blob() stream is internally rate-limited.
-            self._rpc_rate_limiter.tick()
-
-            # TODO(soergel): Here or elsewhere, account for sending multiple blobs
-            # in the same sequence without refreshing the blob_sequence_id each time
+        if self._value:
             blob_sequence_id = self._get_or_create_blob_sequence()
             print("Flushing to blob sequence id: ", blob_sequence_id)
-            self._send_blob(blob_sequence_id, self._seq_index, self._blob)
+
+            blobs = split_tensor(self._value.tensor)
+            for seq_index, blob in enumerate(blobs):
+                # Note the _send_blob() stream is internally rate-limited.
+                self._rpc_rate_limiter.tick()
+                self._send_blob(blob_sequence_id, seq_index, blob)
 
         self._new_request()
 

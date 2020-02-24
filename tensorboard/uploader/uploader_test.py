@@ -421,6 +421,7 @@ class BatchedRequestSenderTest(tf.test.TestCase):
         foo_tag.name = "foo"
         foo_tag.metadata.display_name = "foo"
         foo_tag.metadata.plugin_data.plugin_name = "scalars"
+        foo_tag.metadata.data_class=summary_pb2.DATA_CLASS_SCALAR
         foo_tag.points.add(
             step=1, wall_time=test_util.timestamp_pb(123456000000), value=5.0
         )
@@ -438,6 +439,7 @@ class BatchedRequestSenderTest(tf.test.TestCase):
         foo_tag.name = "foo"
         foo_tag.metadata.display_name = "foo"
         foo_tag.metadata.plugin_data.plugin_name = "scalars"
+        foo_tag.metadata.data_class=summary_pb2.DATA_CLASS_SCALAR
         foo_tag.points.add(
             step=1, wall_time=test_util.timestamp_pb(123456000000), value=1.0
         )
@@ -462,6 +464,7 @@ class BatchedRequestSenderTest(tf.test.TestCase):
         foo_tag.name = "foo/scalar_summary"
         foo_tag.metadata.display_name = "foo"
         foo_tag.metadata.plugin_data.plugin_name = "scalars"
+        foo_tag.metadata.data_class=summary_pb2.DATA_CLASS_SCALAR
         foo_tag.points.add(
             step=1, wall_time=test_util.timestamp_pb(123456000000), value=5.0
         )
@@ -477,6 +480,7 @@ class BatchedRequestSenderTest(tf.test.TestCase):
         foo_tag = expected_run_proto.tags.add()
         foo_tag.name = "foo"
         foo_tag.metadata.plugin_data.plugin_name = "scalars"
+        foo_tag.metadata.data_class=summary_pb2.DATA_CLASS_SCALAR
         foo_tag.points.add(
             step=1, wall_time=test_util.timestamp_pb(123456000000), value=5.0
         )
