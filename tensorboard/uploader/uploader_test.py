@@ -872,8 +872,8 @@ class UpdateExperimentMetadataTest(tf.test.TestCase):
     def test_invalid_argument(self):
         mock_client = _create_mock_client()
         error = test_util.grpc_error(
-            grpc.StatusCode.INVALID_ARGUMENT,
-            "too many")
+            grpc.StatusCode.INVALID_ARGUMENT, "too many"
+        )
         mock_client.UpdateExperiment.side_effect = error
 
         with self.assertRaises(uploader_lib.InvalidArgumentError) as cm:
