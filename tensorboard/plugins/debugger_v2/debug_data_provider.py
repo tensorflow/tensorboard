@@ -81,12 +81,12 @@ def _parse_alerts_blob_key(blob_key):
     """
     key_body, run = blob_key.split(".", 1)
     key_body = key_body[len(ALERTS_BLOB_TAG_PREFIX) :]
-    key_items = key_body.split("_")
+    key_items = key_body.split("_", 3)
     begin = int(key_items[1])
     end = int(key_items[2])
     alert_type = None
     if len(key_items) > 3:
-        alert_type = key_body.split("_", 3)[-1]
+        alert_type = key_items[3]
     return run, begin, end, alert_type
 
 
