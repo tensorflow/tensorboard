@@ -66,7 +66,7 @@ tf_web_library(
 # incrementally.
 tensorboard_html_binary(
     name = "ng_polymer_lib_binary",
-    compile = True,
+    compile = False,
     input_path = "/ng_polymer_lib.html",
     output_path = "/ng_polymer_lib_binary.html",
     deps = [":ng_polymer_lib"],
