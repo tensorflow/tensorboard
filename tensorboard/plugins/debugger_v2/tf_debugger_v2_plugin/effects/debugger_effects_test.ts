@@ -77,7 +77,6 @@ import {
 import {TBHttpClientTestingModule} from '../../../../webapp/webapp_data_source/tb_http_client_testing';
 
 import {DebuggerEffects, TEST_ONLY} from './debugger_effects';
-import {dispatch} from 'rxjs/internal/observable/pairs';
 
 describe('getMissingPages', () => {
   it('returns correct page indices for missing page', () => {
