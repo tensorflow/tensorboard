@@ -15,13 +15,23 @@ limitations under the License.
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {createSelector, select, Store} from '@ngrx/store';
 
-import {getAlertsBreakdown, getNumAlerts, State} from '../../store';
+import {alertTypeFocusToggled} from '../../actions';
+import {
+  getAlertsBreakdown,
+  getAlertsFocusType,
+  getNumAlerts,
+  State,
+} from '../../store';
 import {AlertType} from '../../store/debugger_types';
+import {AlertTypeDisplay} from './alerts_component';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 const ALERT_TYPE_TO_DISPLAY_NAME_AND_SYMBOL: {
-  [alertType: string]: {displayName: string; displaySymbol: string};
+  [alertType: string]: {
+    displayName: string;
+    displaySymbol: string;
+  };
 } = {
   [AlertType.FUNCTION_RECOMPILE_ALERT]: {
     displayName: 'Function recompiles',
@@ -43,9 +53,11 @@ const ALERT_TYPE_TO_DISPLAY_NAME_AND_SYMBOL: {
     <alerts-component
       [numAlerts]="numAlerts$ | async"
       [alertsBreakdown]="alertsBreakdown$ | async"
+      [focusType]="focusType$ | async"
+      (onToggleFocusType)="onToggleFocusType($event)"
     >
     </alerts-component>
-  `, // TODO(cais): Add container tests.
+  `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AlertsContainer {
@@ -58,16 +70,25 @@ export class AlertsContainer {
         (alertsBreakdown) => {
           const alertTypes = Object.keys(alertsBreakdown);
           alertTypes.sort();
-          return alertTypes.map((alertType) => {
-            return {
-              ...ALERT_TYPE_TO_DISPLAY_NAME_AND_SYMBOL[alertType],
-              count: alertsBreakdown[alertType],
-            };
-          });
+          return alertTypes.map(
+            (alertType): AlertTypeDisplay => {
+              return {
+                type: alertType as AlertType,
+                ...ALERT_TYPE_TO_DISPLAY_NAME_AND_SYMBOL[alertType],
+                count: alertsBreakdown[alertType],
+              };
+            }
+          );
         }
       )
     )
   );
 
+  readonly focusType$ = this.store.pipe(select(getAlertsFocusType));
+
   constructor(private readonly store: Store<State>) {}
+
+  onToggleFocusType(alertType: AlertType) {
+    this.store.dispatch(alertTypeFocusToggled({alertType}));
+  }
 }

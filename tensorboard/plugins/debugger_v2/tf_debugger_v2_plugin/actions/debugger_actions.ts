@@ -17,9 +17,10 @@ import {createAction, props} from '@ngrx/store';
 
 import {
   AlertsBreakdown,
+  AlertType,
   DebuggerRunListing,
-  Execution,
   StackFramesById,
+  Alert,
 } from '../store/debugger_types';
 import {
   ExecutionDigestsResponse,
@@ -53,7 +54,7 @@ export const debuggerRunsRequestFailed = createAction(
 );
 
 /**
- * Number of alerts and their type breakdown are requested.
+ * Number of alerts and their type breakdown or detailed alerts are requested.
  */
 export const numAlertsAndBreakdownRequested = createAction(
   '[Debugger] Number and Breakdown of Alerts Requested'
@@ -65,6 +66,23 @@ export const numAlertsAndBreakdownRequested = createAction(
 export const numAlertsAndBreakdownLoaded = createAction(
   '[Debugger] Number and Breakdown of Alerts Loaded',
   props<{numAlerts: number; alertsBreakdown: AlertsBreakdown}>()
+);
+
+export const alertsOfTypeLoaded = createAction(
+  '[Debugger] Alerts Data of an AlertType Is Loaded',
+  props<{
+    numAlerts: number;
+    alertsBreakdown: AlertsBreakdown;
+    alertType: string; // TODO(cais): Better typing.
+    begin: number;
+    end: number;
+    alerts: Alert[];
+  }>()
+);
+
+export const alertTypeFocusToggled = createAction(
+  '[Debugger] Alert Type Focus Toggled',
+  props<{alertType: AlertType}>()
 );
 
 /**

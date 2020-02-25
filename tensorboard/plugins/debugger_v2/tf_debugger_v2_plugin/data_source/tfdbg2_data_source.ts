@@ -58,6 +58,8 @@ export interface AlertsResponse {
 
   per_type_alert_limit: number;
 
+  alert_type?: string;
+
   alerts: Alert[];
 }
 
@@ -81,6 +83,19 @@ export abstract class Tfdbg2DataSource {
     stackFrameIds: string[]
   ): Observable<StackFramesResponse>;
 
+  /**
+   * Fetch alerts.
+   *
+   * @param run Run name.
+   * @param begin Beginning index, inclusive.
+   * @param end Ending index, exclusive. Can use `begin=0` and `end=0`
+   *   to retrieve only the number of alerts and their breakdown by type.
+   *   Use `end=-1` to retrieve all alerts (for all alert types or only
+   *   a specific alert type, depending on whether `alert_type` is specified.)
+   * @param alert_type Optional filter for alert type. If specified,
+   *   `begin` and `end` refer to the beginning and indices in the
+   *   specific alert type.
+   */
   abstract fetchAlerts(
     run: string,
     begin: number,
@@ -140,18 +155,16 @@ export class Tfdbg2HttpServerDataSource implements Tfdbg2DataSource {
   }
 
   fetchAlerts(run: string, begin: number, end: number, alert_type?: string) {
+    const params: {[param: string]: string} = {
+      run,
+      begin: String(begin),
+      end: String(end),
+    };
     if (alert_type !== undefined) {
-      throw new Error(
-        `Support for alert_type fileter is not implemented yet ` +
-          `(received alert_type="${alert_type}")`
-      );
+      params['alert_type'] = alert_type;
     }
     return this.http.get<AlertsResponse>(this.httpPathPrefix + '/alerts', {
-      params: {
-        run,
-        begin: String(begin),
-        end: String(end),
-      },
+      params,
     });
   }
 
