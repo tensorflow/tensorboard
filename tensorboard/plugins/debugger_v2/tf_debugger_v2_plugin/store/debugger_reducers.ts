@@ -19,13 +19,20 @@ import {
   ExecutionDataResponse,
   ExecutionDigestsResponse,
 } from '../data_source/tfdbg2_data_source';
-import {DataLoadState, DebuggerState, StackFramesById} from './debugger_types';
+import {
+  AlertsByIndex,
+  AlertType,
+  DataLoadState,
+  DebuggerState,
+  InfNanAlert,
+  StackFramesById,
+} from './debugger_types';
 
 // HACK: These imports are for type inference.
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
 /** @typehack */ import * as _typeHackStore from '@ngrx/store/store';
 
-const DEFAULT_EXECUTION_PAGE_SIZE = 100; // TODO(cais): Restore.
+const DEFAULT_EXECUTION_PAGE_SIZE = 100;
 
 const initialState: DebuggerState = {
   runs: {},
@@ -40,8 +47,10 @@ const initialState: DebuggerState = {
       lastLoadedTimeInMs: null,
     },
     numAlerts: 0,
-    alerts: {},
     alertsBreakdown: {},
+    alerts: {},
+    executionIndices: {},
+    focusType: null,
   },
   executions: {
     numExecutionsLoaded: {
@@ -150,6 +159,104 @@ const reducer = createReducer(
           alertsBreakdown,
         },
       };
+    }
+  ),
+  on(
+    actions.alertsOfTypeLoaded,
+    (
+      state: DebuggerState,
+      {numAlerts, alertsBreakdown, alertType, begin, alerts}
+    ): DebuggerState => {
+      const runId = state.activeRunId;
+      if (runId === null) {
+        return state;
+      }
+
+      const updatedAlerts: AlertsByIndex = {};
+      const executionIndices: number[] = state.alerts.executionIndices[
+        alertType
+      ]
+        ? state.alerts.executionIndices[alertType].slice()
+        : [];
+      for (let i = 0; i < alerts.length; ++i) {
+        const alertIndex = begin + i;
+        const alert = alerts[i];
+        updatedAlerts[alertIndex] = alert;
+        if (alert.alert_type === AlertType.INF_NAN_ALERT) {
+          // TOOD(cais): Deal with other alert types with execution index.
+          executionIndices[alertIndex] = (alert as InfNanAlert).execution_index;
+        }
+      }
+      if (state.alerts.alerts[alertType] !== undefined) {
+        Object.assign(updatedAlerts, state.alerts.alerts[alertType]);
+      }
+
+      let scrollBeginIndex = state.executions.scrollBeginIndex;
+      if (alertType === AlertType.INF_NAN_ALERT && begin === 0) {
+        // TOOD(cais): Deal with other alert types with execution index.
+        const alert = alerts[0] as InfNanAlert;
+        const executionIndex = alert.execution_index;
+        // Try to scroll the first alert to the center of the view.
+        scrollBeginIndex = Math.max(
+          0,
+          executionIndex - Math.floor(state.executions.displayCount / 2)
+        );
+      }
+
+      return {
+        ...state,
+        executions: {
+          ...state.executions,
+          scrollBeginIndex,
+        },
+        alerts: {
+          ...state.alerts,
+          alertsLoaded: {
+            ...state.alerts.alertsLoaded,
+            state: DataLoadState.LOADED,
+            lastLoadedTimeInMs: Date.now(),
+          },
+          numAlerts,
+          alertsBreakdown,
+          alerts: {
+            ...state.alerts.alerts,
+            [alertType]: updatedAlerts,
+          },
+          executionIndices: {
+            ...state.alerts.executionIndices,
+            [alertType]: executionIndices,
+          },
+        },
+      };
+    }
+  ),
+  on(
+    actions.alertTypeFocusToggled,
+    (state: DebuggerState, {alertType}): DebuggerState => {
+      const newState = {
+        ...state,
+        alerts: {
+          ...state.alerts,
+          focusType: state.alerts.focusType === alertType ? null : alertType,
+        },
+      };
+      // If alert data is available, focus onto the execution digest that
+      // corresponds to the first alert.
+      const currentFocusType = newState.alerts.focusType;
+      if (currentFocusType !== null) {
+        const executionIndices =
+          newState.alerts.executionIndices[currentFocusType] || [];
+        // Try to put the execution digest that corresponds to the first
+        // alert at the center of the view.
+        if (executionIndices[0] !== undefined) {
+          newState.executions.scrollBeginIndex = Math.max(
+            0,
+            Number(executionIndices[0]) -
+              Math.floor(newState.executions.displayCount / 2)
+          );
+        }
+      }
+      return newState;
     }
   ),
   on(

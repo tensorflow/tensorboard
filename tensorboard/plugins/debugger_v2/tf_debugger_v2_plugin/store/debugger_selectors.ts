@@ -13,9 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {createSelector, createFeatureSelector, select} from '@ngrx/store';
+import {createSelector, createFeatureSelector} from '@ngrx/store';
 import {
   AlertsBreakdown,
+  AlertsByIndex,
+  AlertType,
   DEBUGGER_FEATURE_KEY,
   DebuggerRunListing,
   DebuggerState,
@@ -65,6 +67,49 @@ export const getNumAlerts = createSelector(
   selectDebuggerState,
   (state: DebuggerState): number => {
     return state.alerts.numAlerts;
+  }
+);
+
+export const getAlertsFocusType = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): AlertType | null => {
+    return state.alerts.focusType;
+  }
+);
+
+/**
+ * Get number of alerts of the alert type being focused on.
+ *
+ * If no alert type focus exists, returns 0.
+ * The returned number is regardless of whether the detailed Alerts
+ * data have been loaded by the front end.
+ */
+export const getNumAlertsOfFocusedType = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): number => {
+    if (state.alerts.focusType === null) {
+      return 0;
+    }
+    return state.alerts.alertsBreakdown[state.alerts.focusType] || 0;
+  }
+);
+
+/**
+ * Get the Alerts that are 1) of the type being focused on, and
+ * 2) already loaded by the front end.
+ *
+ * If no alert type focus exists, returns null.
+ */
+export const getLoadedAlertsOfFocusedType = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): AlertsByIndex | null => {
+    if (state.alerts.focusType === null) {
+      return null;
+    }
+    if (state.alerts.alerts[state.alerts.focusType] === undefined) {
+      return null;
+    }
+    return state.alerts.alerts[state.alerts.focusType];
   }
 );
 
@@ -134,6 +179,40 @@ export const getVisibleExecutionDigests = createSelector(
       }
     }
     return digests;
+  }
+);
+
+/**
+ * Get the focused alert types (if any) of the execution digests current being
+ * displayed. For each displayed execution digest, there are two possibilities:
+ * - `null` represents no alert.
+ * - An instance of the `AlertType`
+ */
+export const getFocusAlertTypesOfVisibleExecutionDigests = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): Array<AlertType | null> => {
+    const beginExecutionIndex = state.executions.scrollBeginIndex;
+    const endExecutionIndex =
+      state.executions.scrollBeginIndex + state.executions.displayCount;
+    const alertTypes: Array<AlertType | null> = new Array(
+      endExecutionIndex - beginExecutionIndex
+    ).fill(null);
+    const focusType = state.alerts.focusType;
+    if (focusType === null) {
+      return alertTypes;
+    }
+    const executionIndices = state.alerts.executionIndices[focusType];
+    if (executionIndices === undefined) {
+      return alertTypes;
+    }
+    // TODO(cais): Explore using a Set for execution indices if this
+    // part becomes a performance bottleneck in the future.
+    for (let i = beginExecutionIndex; i < endExecutionIndex; ++i) {
+      if (executionIndices.includes(i)) {
+        alertTypes[i - beginExecutionIndex] = state.alerts.focusType;
+      }
+    }
+    return alertTypes;
   }
 );
 

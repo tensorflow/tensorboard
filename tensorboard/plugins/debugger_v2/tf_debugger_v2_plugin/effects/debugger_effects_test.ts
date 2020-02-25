@@ -18,6 +18,7 @@ import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {of, ReplaySubject} from 'rxjs';
 import {
+  alertTypeFocusToggled,
   debuggerLoaded,
   debuggerRunsLoaded,
   debuggerRunsRequested,
@@ -32,6 +33,7 @@ import {
   numExecutionsLoaded,
   numExecutionsRequested,
   stackFramesLoaded,
+  alertsOfTypeLoaded,
 } from '../actions';
 import {
   AlertsResponse,
@@ -41,18 +43,23 @@ import {
   Tfdbg2HttpServerDataSource,
 } from '../data_source/tfdbg2_data_source';
 import {
+  getActiveRunId,
+  getAlertsFocusType,
   getDebuggerRunListing,
+  getNumAlertsOfFocusedType,
   getNumExecutionsLoaded,
   getNumExecutions,
-  getActiveRunId,
   getDisplayCount,
   getExecutionDigestsLoaded,
   getExecutionPageSize,
   getExecutionScrollBeginIndex,
+  getLoadedAlertsOfFocusedType,
   getLoadedExecutionData,
   getLoadedStackFrames,
+  getAlertsLoaded,
 } from '../store';
 import {
+  AlertType,
   DataLoadState,
   DebuggerRunListing,
   Execution,
@@ -64,10 +71,13 @@ import {
   createState,
   createTestExecutionData,
   createTestStackFrame,
+  createTestInfNanAlert,
+  createTestExecutionDigest,
 } from '../testing';
 import {TBHttpClientTestingModule} from '../../../../webapp/webapp_data_source/tb_http_client_testing';
 
 import {DebuggerEffects, TEST_ONLY} from './debugger_effects';
+import {dispatch} from 'rxjs/internal/observable/pairs';
 
 describe('getMissingPages', () => {
   it('returns correct page indices for missing page', () => {
@@ -242,6 +252,38 @@ describe('Debugger effects', () => {
     });
   });
 
+  function createFetchAlertsSpy(
+    runId: string,
+    begin: number,
+    end: number,
+    alertsResponse: AlertsResponse,
+    alert_type?: string
+  ) {
+    if (alert_type === undefined) {
+      return spyOn(TestBed.get(Tfdbg2HttpServerDataSource), 'fetchAlerts')
+        .withArgs(runId, begin, end)
+        .and.returnValue(of(alertsResponse));
+    } else {
+      return spyOn(TestBed.get(Tfdbg2HttpServerDataSource), 'fetchAlerts')
+        .withArgs(runId, begin, end, alert_type)
+        .and.returnValue(of(alertsResponse));
+    }
+  }
+
+  function createFetchExecutionDigestsSpy(
+    runId: string,
+    begin: number,
+    end: number,
+    excutionDigestsResponse: ExecutionDigestsResponse
+  ) {
+    return spyOn(
+      TestBed.get(Tfdbg2HttpServerDataSource),
+      'fetchExecutionDigests'
+    )
+      .withArgs(runId, begin, end)
+      .and.returnValue(of(excutionDigestsResponse));
+  }
+
   describe('loadData', () => {
     const runListingForTest: DebuggerRunListing = {
       __default_debugger_run__: {
@@ -263,31 +305,6 @@ describe('Debugger effects', () => {
       alerts: [],
       per_type_alert_limit: 1000,
     };
-
-    function createFetchAlertsSpy(
-      runId: string,
-      begin: number,
-      end: number,
-      alertsResponse: AlertsResponse
-    ) {
-      return spyOn(TestBed.get(Tfdbg2HttpServerDataSource), 'fetchAlerts')
-        .withArgs(runId, begin, end)
-        .and.returnValue(of(alertsResponse));
-    }
-
-    function createFetchExecutionDigestsSpy(
-      runId: string,
-      begin: number,
-      end: number,
-      excutionDigestsResponse: ExecutionDigestsResponse
-    ) {
-      return spyOn(
-        TestBed.get(Tfdbg2HttpServerDataSource),
-        'fetchExecutionDigests'
-      )
-        .withArgs(runId, begin, end)
-        .and.returnValue(of(excutionDigestsResponse));
-    }
 
     function createFetchExecutionDataSpy(
       runId: string,
@@ -692,5 +709,240 @@ describe('Debugger effects', () => {
         }
       );
     }
+  });
+
+  describe('load alerts of given type', () => {
+    const runId = '__default_debugger_run__';
+    const alert0 = createTestInfNanAlert({
+      op_type: 'Op0',
+      execution_index: 10,
+    });
+    const alert1 = createTestInfNanAlert({
+      op_type: 'Op1',
+      execution_index: 11,
+    });
+    const alertsResponseForTest: AlertsResponse = {
+      num_alerts: 2,
+      alerts_breakdown: {
+        [AlertType.INF_NAN_ALERT]: 2,
+      },
+      begin: 0,
+      end: 2,
+      alert_type: AlertType.INF_NAN_ALERT,
+      per_type_alert_limit: 1000,
+      alerts: [alert0, alert1],
+    };
+    const execDigest08 = createTestExecutionDigest();
+    const execDigest09 = createTestExecutionDigest();
+    const execDigest10 = createTestExecutionDigest();
+    const execDigest11 = createTestExecutionDigest();
+
+    beforeEach(() => {
+      debuggerEffects.loadData$.subscribe();
+    });
+
+    it('fetches alerts and execution digest page if data is missing', () => {
+      const fetchInfNanAlerts = createFetchAlertsSpy(
+        runId,
+        0,
+        -1,
+        alertsResponseForTest,
+        AlertType.INF_NAN_ALERT
+      );
+      const numExecutions = 100;
+      const fetchExecutionDigests = createFetchExecutionDigestsSpy(
+        runId,
+        8,
+        12,
+        {
+          begin: 8,
+          end: 12,
+          num_digests: numExecutions,
+          execution_digests: [
+            execDigest08,
+            execDigest09,
+            execDigest10,
+            execDigest11,
+          ],
+        }
+      );
+      store.overrideSelector(getActiveRunId, runId);
+      store.overrideSelector(getAlertsFocusType, AlertType.INF_NAN_ALERT);
+      store.overrideSelector(getNumAlertsOfFocusedType, 2);
+      store.overrideSelector(getLoadedAlertsOfFocusedType, null);
+      store.overrideSelector(getAlertsLoaded, {
+        state: DataLoadState.NOT_LOADED,
+        lastLoadedTimeInMs: null,
+      });
+      store.overrideSelector(getExecutionPageSize, 4);
+      store.overrideSelector(getDisplayCount, 2);
+      store.overrideSelector(getExecutionScrollBeginIndex, 0);
+      store.overrideSelector(getNumExecutions, numExecutions);
+      store.overrideSelector(getExecutionDigestsLoaded, {
+        numExecutions,
+        pageLoadedSizes: {},
+        state: DataLoadState.NOT_LOADED,
+        lastLoadedTimeInMs: null,
+      });
+
+      store.refreshState();
+
+      action.next(
+        alertTypeFocusToggled({
+          alertType: AlertType.INF_NAN_ALERT,
+        })
+      );
+      expect(fetchInfNanAlerts).toHaveBeenCalledTimes(1);
+      expect(fetchExecutionDigests).toHaveBeenCalledTimes(1);
+      expect(dispatchedActions).toEqual([
+        numAlertsAndBreakdownRequested(),
+        alertsOfTypeLoaded({
+          numAlerts: 2,
+          alertsBreakdown: {
+            [AlertType.INF_NAN_ALERT]: 2,
+          },
+          begin: 0,
+          end: 2,
+          alertType: AlertType.INF_NAN_ALERT,
+          alerts: [alert0, alert1],
+        }),
+        executionDigestsRequested(),
+        executionDigestsLoaded({
+          num_digests: numExecutions,
+          begin: 8,
+          end: 12,
+          execution_digests: [
+            execDigest08,
+            execDigest09,
+            execDigest10,
+            execDigest11,
+          ],
+        }),
+      ]);
+    });
+
+    it('does not fetch execution digest page if execution digests are loaded', () => {
+      const fetchInfNanAlerts = createFetchAlertsSpy(
+        runId,
+        0,
+        -1,
+        alertsResponseForTest,
+        AlertType.INF_NAN_ALERT
+      );
+      const numExecutions = 100;
+      const fetchExecutionDigests = createFetchExecutionDigestsSpy(
+        runId,
+        8,
+        12,
+        {
+          begin: 8,
+          end: 12,
+          num_digests: numExecutions,
+          execution_digests: [
+            execDigest08,
+            execDigest09,
+            execDigest10,
+            execDigest11,
+          ],
+        }
+      );
+      store.overrideSelector(getActiveRunId, runId);
+      store.overrideSelector(getAlertsFocusType, AlertType.INF_NAN_ALERT);
+      store.overrideSelector(getNumAlertsOfFocusedType, 2);
+      store.overrideSelector(getLoadedAlertsOfFocusedType, null);
+      store.overrideSelector(getAlertsLoaded, {
+        state: DataLoadState.NOT_LOADED,
+        lastLoadedTimeInMs: null,
+      });
+      store.overrideSelector(getExecutionPageSize, 4);
+      store.overrideSelector(getDisplayCount, 2);
+      store.overrideSelector(getExecutionScrollBeginIndex, 0);
+      store.overrideSelector(getNumExecutions, numExecutions);
+      store.overrideSelector(getExecutionDigestsLoaded, {
+        numExecutions,
+        pageLoadedSizes: {
+          2: 4, // The page of eecution digest has already been loaded.
+        },
+        state: DataLoadState.LOADED,
+        lastLoadedTimeInMs: 1234,
+      });
+
+      store.refreshState();
+
+      action.next(
+        alertTypeFocusToggled({
+          alertType: AlertType.INF_NAN_ALERT,
+        })
+      );
+      expect(fetchInfNanAlerts).toHaveBeenCalledTimes(1);
+      expect(fetchExecutionDigests).not.toHaveBeenCalled();
+      expect(dispatchedActions).toEqual([
+        numAlertsAndBreakdownRequested(),
+        alertsOfTypeLoaded({
+          numAlerts: 2,
+          alertsBreakdown: {
+            [AlertType.INF_NAN_ALERT]: 2,
+          },
+          begin: 0,
+          end: 2,
+          alertType: AlertType.INF_NAN_ALERT,
+          alerts: [alert0, alert1],
+        }),
+      ]);
+    });
+
+    it('does not fetch alerts when alerts are already loaded', () => {
+      const fetchAlerts = spyOn(
+        TestBed.get(Tfdbg2HttpServerDataSource),
+        'fetchAlerts'
+      );
+      store.overrideSelector(getActiveRunId, runId);
+      store.overrideSelector(getAlertsFocusType, AlertType.INF_NAN_ALERT);
+      store.overrideSelector(getNumAlertsOfFocusedType, 2);
+      store.overrideSelector(getLoadedAlertsOfFocusedType, {
+        0: alert0,
+        1: alert1,
+      });
+      store.overrideSelector(getAlertsLoaded, {
+        state: DataLoadState.LOADED,
+        lastLoadedTimeInMs: 1234,
+      });
+      store.refreshState();
+
+      action.next(
+        alertTypeFocusToggled({
+          alertType: AlertType.INF_NAN_ALERT,
+        })
+      );
+      expect(fetchAlerts).not.toHaveBeenCalled();
+      expect(dispatchedActions).toEqual([]);
+    });
+
+    it('does not fetch alerts when alert type focus is set to null', () => {
+      const fetchAlerts = spyOn(
+        TestBed.get(Tfdbg2HttpServerDataSource),
+        'fetchAlerts'
+      );
+      store.overrideSelector(getActiveRunId, runId);
+      store.overrideSelector(getAlertsFocusType, null);
+      store.overrideSelector(getNumAlertsOfFocusedType, 3);
+      store.overrideSelector(getLoadedAlertsOfFocusedType, {
+        0: alert0,
+        1: alert1,
+      });
+      store.overrideSelector(getAlertsLoaded, {
+        state: DataLoadState.LOADED,
+        lastLoadedTimeInMs: 1234,
+      });
+      store.refreshState();
+
+      action.next(
+        alertTypeFocusToggled({
+          alertType: AlertType.INF_NAN_ALERT,
+        })
+      );
+      expect(fetchAlerts).not.toHaveBeenCalled();
+      expect(dispatchedActions).toEqual([]);
+    });
   });
 });
