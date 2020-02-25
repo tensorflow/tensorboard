@@ -734,7 +734,9 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
 
                 # Confirm that the connection is open, otherwise change to `localhost`
                 try:
-                    socket.create_connection((self.display_host, self.server_port), timeout = 1)
+                    socket.create_connection(
+                        (self.display_host, self.server_port), timeout=1
+                    )
                 except socket.error as e:
                     self.display_host = "localhost"
 
