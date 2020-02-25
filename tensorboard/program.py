@@ -162,6 +162,7 @@ class TensorBoard(object):
                 raise ValueError("Duplicate subcommand name: %r" % name)
             self.subcommands[name] = subcommand
         self.flags = None
+        self.display_host = None  # Will be set by get_url() below
 
     def configure(self, argv=("",), **kwargs):
         """Configures TensorBoard behavior via flags.
@@ -727,17 +728,25 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
             logger.error("HTTP serving error", exc_info=exc_info)
 
     def get_url(self):
-        if self._auto_wildcard:
-            display_host = socket.getfqdn()
-        else:
-            host = self._host
-            display_host = (
-                "[%s]" % host
-                if ":" in host and not host.startswith("[")
-                else host
-            )
+        if not self.display_host:
+            if self._auto_wildcard:
+                self.display_host = socket.getfqdn()
+
+                # Confirm that the connection is open, otherwise change to `localhost`
+                try:
+                    socket.create_connection((self.display_host, self.server_port), timeout = 1)
+                except socket.error as e:
+                    self.display_host = "localhost"
+
+            else:
+                host = self._host
+                self.display_host = (
+                    "[%s]" % host
+                    if ":" in host and not host.startswith("[")
+                    else host
+                )
         return "http://%s:%d%s/" % (
-            display_host,
+            self.display_host,
             self.server_port,
             self._flags.path_prefix.rstrip("/"),
         )
