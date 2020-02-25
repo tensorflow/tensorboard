@@ -728,7 +728,7 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
 
     def get_url(self):
         if self._auto_wildcard:
-            display_host = socket.gethostname()
+            display_host = socket.getfqdn()
         else:
             host = self._host
             display_host = (
