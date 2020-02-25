@@ -7,6 +7,7 @@ ng_module(
     name = "settings",
     srcs = [
         "dialog_component.ts",
+        "polymer_interop_container.ts",
         "settings_button_component.ts",
         "settings_module.ts",
     ],
@@ -34,6 +35,7 @@ tf_ts_library(
     name = "test_lib",
     testonly = True,
     srcs = [
+        "polymer_interop_test.ts",
         "settings_test.ts",
     ],
     tsconfig = "//:tsconfig-test",

@@ -18,3 +18,13 @@ limitations under the License.
 <link rel="import" href="../tf-storage/tf-storage.html" />
 
 <script src="paginatedViewStore.js"></script>
+
+<script>
+  // HACK: this Polymer component allows stores to be accessible from
+  // tf-ng-tensorboard by exposing otherwise mangled smybols.
+  Polymer({
+    is: 'tf-paginated-view-store',
+    _template: null, // strictTemplatePolicy requires a template (even a null one).
+    tf_paginated_view: tf_paginated_view,
+  });
+</script>

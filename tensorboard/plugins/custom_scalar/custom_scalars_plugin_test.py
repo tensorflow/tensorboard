@@ -178,7 +178,7 @@ class CustomScalarsPluginTest(tf.test.TestCase):
 
     def testDownloadData(self):
         body, mime_type = self.plugin.download_data_impl(
-            "foo", "squares/scalar_summary", "json"
+            "foo", "squares/scalar_summary", "exp_id", "json"
         )
         self.assertEqual("application/json", mime_type)
         self.assertEqual(4, len(body))
@@ -189,7 +189,7 @@ class CustomScalarsPluginTest(tf.test.TestCase):
             np.testing.assert_allclose(step * step, entry[2])
 
     def testScalars(self):
-        body = self.plugin.scalars_impl("bar", "increments")
+        body = self.plugin.scalars_impl("bar", "increments", "exp_id")
         self.assertTrue(body["regex_valid"])
         self.assertItemsEqual(
             ["increments/scalar_summary"], list(body["tag_to_events"].keys())

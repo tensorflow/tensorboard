@@ -59,3 +59,10 @@ export const getReloadPeriodInMs = createSelector(
     return state.reloadPeriodInMs;
   }
 );
+
+export const getPageSize = createSelector(
+  selectCoreState,
+  (state: CoreState): number => {
+    return state.pageSize;
+  }
+);

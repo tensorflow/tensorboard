@@ -30,6 +30,7 @@ const initialState: CoreState = {
   },
   reloadPeriodInMs: 30000,
   reloadEnabled: true,
+  pageSize: 15,
 };
 
 const reducer = createReducer(
@@ -101,7 +102,14 @@ const reducer = createReducer(
         reloadPeriodInMs: nextReloadPeriod,
       };
     }
-  )
+  ),
+  on(actions.changePageSize, (state: CoreState, {size}) => {
+    const nextPageSize = size > 0 ? size : state.pageSize;
+    return {
+      ...state,
+      pageSize: nextPageSize,
+    };
+  })
 );
 
 export function reducers(state: CoreState, action: Action) {

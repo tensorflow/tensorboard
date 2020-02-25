@@ -76,7 +76,6 @@ py_library(
     srcs = ["uploader.py"],
     deps = [
         ":logdir_loader",
-        ":peekable_iterator",
         ":util",
         "//tensorboard:data_compat",
         "//tensorboard:expect_grpc_installed",
@@ -185,22 +184,6 @@ py_test(
         "//tensorboard:test",
         "@com_google_protobuf//:protobuf_python",
         "@org_pythonhosted_mock",
-    ],
-)
-
-py_library(
-    name = "peekable_iterator",
-    srcs = ["peekable_iterator.py"],
-    srcs_version = "PY2AND3",
-)
-
-py_test(
-    name = "peekable_iterator_test",
-    size = "small",
-    srcs = ["peekable_iterator_test.py"],
-    deps = [
-        ":peekable_iterator",
-        "//tensorboard:test",
     ],
 )
 

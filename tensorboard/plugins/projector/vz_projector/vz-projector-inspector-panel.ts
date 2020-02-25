@@ -311,8 +311,12 @@ namespace vz_projector {
     }
 
     private getLabelFromIndex(pointIndex: number): string {
-      const point = this.projector.dataSet.points[pointIndex];
-      return point.metadata[this.selectedMetadataField].toString();
+      const metadata = this.projector.dataSet.points[pointIndex].metadata[
+        this.selectedMetadataField
+      ];
+      return metadata !== undefined
+        ? String(metadata)
+        : `Unknown #${pointIndex}`;
     }
 
     private spriteImageRenderer() {

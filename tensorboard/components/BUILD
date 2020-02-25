@@ -66,26 +66,8 @@ tf_web_library(
 # incrementally.
 tensorboard_html_binary(
     name = "ng_polymer_lib_binary",
-    compile = True,
+    compile = False,
     input_path = "/ng_polymer_lib.html",
     output_path = "/ng_polymer_lib_binary.html",
     deps = [":ng_polymer_lib"],
-)
-
-tf_web_library(
-    name = "trace_viewer",
-    srcs = ["trace_viewer.html"],
-    path = "/",
-    deps = [
-        "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/components/tf_trace_viewer",
-    ],
-)
-
-tensorboard_html_binary(
-    name = "trace_viewer_index",
-    input_path = "/trace_viewer.html",
-    js_path = "/trace_viewer_index.js",
-    output_path = "/trace_viewer_index.html",
-    deps = [":trace_viewer"],
 )

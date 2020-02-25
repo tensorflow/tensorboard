@@ -97,17 +97,20 @@ _VALID_PLUGIN_RE = re.compile(r"^[A-Za-z0-9_-]+$")
 logger = tb_logging.get_logger()
 
 
-def tensor_size_guidance_from_flags(flags):
-    """Apply user per-summary size guidance overrides."""
-
-    tensor_size_guidance = dict(DEFAULT_TENSOR_SIZE_GUIDANCE)
+def _parse_samples_per_plugin(flags):
+    result = {}
     if not flags or not flags.samples_per_plugin:
-        return tensor_size_guidance
-
+        return result
     for token in flags.samples_per_plugin.split(","):
         k, v = token.strip().split("=")
-        tensor_size_guidance[k] = int(v)
+        result[k] = int(v)
+    return result
 
+
+def _apply_tensor_size_guidance(sampling_hints):
+    """Apply user per-summary size guidance overrides."""
+    tensor_size_guidance = dict(DEFAULT_TENSOR_SIZE_GUIDANCE)
+    tensor_size_guidance.update(sampling_hints)
     return tensor_size_guidance
 
 
@@ -151,9 +154,10 @@ def standard_tensorboard_wsgi(flags, plugin_loaders, assets_zip_provider):
         multiplexer = _DbModeMultiplexer(flags.db, db_connection_provider)
     else:
         # Regular logdir loading mode.
+        sampling_hints = _parse_samples_per_plugin(flags)
         multiplexer = event_multiplexer.EventMultiplexer(
             size_guidance=DEFAULT_SIZE_GUIDANCE,
-            tensor_size_guidance=tensor_size_guidance_from_flags(flags),
+            tensor_size_guidance=_apply_tensor_size_guidance(sampling_hints),
             purge_orphaned_data=flags.purge_orphaned_data,
             max_reload_threads=flags.max_reload_threads,
             event_file_active_filter=_get_event_file_active_filter(flags),
@@ -238,6 +242,7 @@ def TensorBoardWSGIApp(
         multiplexer=deprecated_multiplexer,
         assets_zip_provider=assets_zip_provider,
         plugin_name_to_instance=plugin_name_to_instance,
+        sampling_hints=_parse_samples_per_plugin(flags),
         window_title=flags.window_title,
     )
     tbplugins = []

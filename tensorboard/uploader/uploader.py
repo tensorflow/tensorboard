@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import contextlib
 import functools
 import time
 
@@ -25,8 +26,8 @@ import grpc
 import six
 
 from tensorboard.uploader.proto import write_service_pb2
+from tensorboard.uploader.proto import experiment_pb2
 from tensorboard.uploader import logdir_loader
-from tensorboard.uploader import peekable_iterator
 from tensorboard.uploader import util
 from tensorboard import data_compat
 from tensorboard.backend.event_processing import directory_loader
@@ -37,9 +38,9 @@ from tensorboard.util import grpc_util
 from tensorboard.util import tb_logging
 from tensorboard.util import tensor_util
 
-# Minimum length of an upload cycle in seconds; shorter cycles will sleep to
-# use up the rest of the time to avoid sending write RPCs too quickly.
-_MIN_UPLOAD_CYCLE_DURATION_SECS = 5
+# Minimum interval between initiating write RPCs.  When writes would otherwise
+# happen more frequently, the process will sleep to use up the rest of the time.
+_MIN_WRITE_RPC_INTERVAL_SECS = 5
 
 # Age in seconds of last write after which an event file is considered inactive.
 # TODO(@nfelt): consolidate with TensorBoard --reload_multifile default logic.
@@ -64,23 +65,40 @@ logger = tb_logging.get_logger()
 class TensorBoardUploader(object):
     """Uploads a TensorBoard logdir to TensorBoard.dev."""
 
-    def __init__(self, writer_client, logdir, rate_limiter=None):
+    def __init__(
+        self,
+        writer_client,
+        logdir,
+        rpc_rate_limiter=None,
+        name=None,
+        description=None,
+    ):
         """Constructs a TensorBoardUploader.
 
         Args:
           writer_client: a TensorBoardWriterService stub instance
           logdir: path of the log directory to upload
-          rate_limiter: a `RateLimiter` to use to limit upload cycle frequency
+          rpc_rate_limiter: a `RateLimiter` to use to limit write RPC frequency.
+            Note this limit applies at the level of single RPCs in the Scalar
+            and Tensor case, but at the level of an entire blob upload in the
+            Blob case-- which may require a few preparatory RPCs and a stream
+            of chunks.  Note the chunk stream is internally rate-limited by
+            backpressure from the server, so it is not a concern that we do not
+            explicitly rate-limit within the stream here.
+          name: String name to assign to the experiment.
+          description: String description to assign to the experiment.
         """
         self._api = writer_client
         self._logdir = logdir
-        self._request_builder = None
-        if rate_limiter is None:
-            self._rate_limiter = util.RateLimiter(
-                _MIN_UPLOAD_CYCLE_DURATION_SECS
+        self._name = name
+        self._description = description
+        self._request_sender = None
+        if rpc_rate_limiter is None:
+            self._rpc_rate_limiter = util.RateLimiter(
+                _MIN_WRITE_RPC_INTERVAL_SECS
             )
         else:
-            self._rate_limiter = rate_limiter
+            self._rpc_rate_limiter = rpc_rate_limiter
         active_filter = (
             lambda secs: secs + _EVENT_FILE_INACTIVE_SECS >= time.time()
         )
@@ -97,11 +115,15 @@ class TensorBoardUploader(object):
     def create_experiment(self):
         """Creates an Experiment for this upload session and returns the ID."""
         logger.info("Creating experiment")
-        request = write_service_pb2.CreateExperimentRequest()
+        request = write_service_pb2.CreateExperimentRequest(
+            name=self._name, description=self._description
+        )
         response = grpc_util.call_with_retries(
             self._api.CreateExperiment, request
         )
-        self._request_builder = _RequestBuilder(response.experiment_id)
+        self._request_sender = _BatchedRequestSender(
+            response.experiment_id, self._api, self._rpc_rate_limiter
+        )
         return response.experiment_id
 
     def start_uploading(self):
@@ -112,7 +134,7 @@ class TensorBoardUploader(object):
           ExperimentNotFoundError: If the experiment is deleted during the
             course of the upload.
         """
-        if self._request_builder is None:
+        if self._request_sender is None:
             raise RuntimeError(
                 "Must call create_experiment() before start_uploading()"
             )
@@ -122,7 +144,6 @@ class TensorBoardUploader(object):
     def _upload_once(self):
         """Runs one upload cycle, sending zero or more RPCs."""
         logger.info("Starting an upload cycle")
-        self._rate_limiter.tick()
 
         sync_start_time = time.time()
         self._logdir_loader.synchronize_runs()
@@ -130,31 +151,51 @@ class TensorBoardUploader(object):
         logger.info("Logdir sync took %.3f seconds", sync_duration_secs)
 
         run_to_events = self._logdir_loader.get_run_events()
-        first_request = True
-        for request in self._request_builder.build_requests(run_to_events):
-            if not first_request:
-                self._rate_limiter.tick()
-            first_request = False
-            upload_start_time = time.time()
-            request_bytes = request.ByteSize()
-            logger.info("Trying request of %d bytes", request_bytes)
-            self._upload(request)
-            upload_duration_secs = time.time() - upload_start_time
-            logger.info(
-                "Upload for %d runs (%d bytes) took %.3f seconds",
-                len(request.runs),
-                request_bytes,
-                upload_duration_secs,
-            )
+        self._request_sender.send_requests(run_to_events)
 
-    def _upload(self, request):
-        try:
-            # TODO(@nfelt): execute this RPC asynchronously.
-            grpc_util.call_with_retries(self._api.WriteScalar, request)
-        except grpc.RpcError as e:
-            if e.code() == grpc.StatusCode.NOT_FOUND:
-                raise ExperimentNotFoundError()
-            logger.error("Upload call failed with error %s", e)
+
+def update_experiment_metadata(
+    writer_client, experiment_id, name=None, description=None
+):
+    """Modifies user data associated with an experiment.
+
+    Args:
+      writer_client: a TensorBoardWriterService stub instance
+      experiment_id: string ID of the experiment to modify
+      name: If provided, modifies name of experiment to this value.
+      description: If provided, modifies the description of the experiment to
+         this value
+
+    Raises:
+      ExperimentNotFoundError: If no such experiment exists.
+      PermissionDeniedError: If the user is not authorized to modify this
+        experiment.
+      InvalidArgumentError: If the server rejected the name or description, if,
+        for instance, the size limits have changed on the server.
+    """
+    logger.info("Modifying experiment %r", experiment_id)
+    request = write_service_pb2.UpdateExperimentRequest()
+    request.experiment.experiment_id = experiment_id
+    if name is not None:
+        logger.info("Setting exp %r name to %r", experiment_id, name)
+        request.experiment.name = name
+        request.experiment_mask.name = True
+    if description is not None:
+        logger.info(
+            "Setting exp %r description to %r", experiment_id, description
+        )
+        request.experiment.description = description
+        request.experiment_mask.description = True
+    try:
+        grpc_util.call_with_retries(writer_client.UpdateExperiment, request)
+    except grpc.RpcError as e:
+        if e.code() == grpc.StatusCode.NOT_FOUND:
+            raise ExperimentNotFoundError()
+        if e.code() == grpc.StatusCode.PERMISSION_DENIED:
+            raise PermissionDeniedError()
+        if e.code() == grpc.StatusCode.INVALID_ARGUMENT:
+            raise InvalidArgumentError(e.details())
+        raise
 
 
 def delete_experiment(writer_client, experiment_id):
@@ -183,6 +224,10 @@ def delete_experiment(writer_client, experiment_id):
         raise
 
 
+class InvalidArgumentError(RuntimeError):
+    pass
+
+
 class ExperimentNotFoundError(RuntimeError):
     pass
 
@@ -195,108 +240,87 @@ class _OutOfSpaceError(Exception):
     """Action could not proceed without overflowing request budget.
 
     This is a signaling exception (like `StopIteration`) used internally
-    by `_RequestBuilder`; it does not mean that anything has gone wrong.
+    by `_*RequestSender`; it does not mean that anything has gone wrong.
     """
 
     pass
 
 
-class _RequestBuilder(object):
+class _BatchedRequestSender(object):
     """Helper class for building requests that fit under a size limit.
+
+    This class maintains stateful request builders for each of the possible
+    request types (scalars, tensors, and blobs).  These accumulate batches
+    independently, each maintaining its own byte budget and emitting a request
+    when the batch becomes full.  As a consequence, events of different types
+    will likely be sent to the backend out of order.  E.g., in the extreme case,
+    a single tensor-flavored request may be sent only when the event stream is
+    exhausted, even though many more recent scalar events were sent earlier.
 
     This class is not threadsafe. Use external synchronization if
     calling its methods concurrently.
     """
 
-    _NON_SCALAR_TIME_SERIES = object()  # sentinel
-
-    def __init__(self, experiment_id):
-        self._experiment_id = experiment_id
-        # The request currently being populated.
-        self._request = None  # type: write_service_pb2.WriteScalarRequest
-        # A lower bound on the number of bytes that we may yet add to the
-        # request.
-        self._byte_budget = None  # type: int
+    def __init__(self, experiment_id, api, rpc_rate_limiter):
         # Map from `(run_name, tag_name)` to `SummaryMetadata` if the time
         # series is a scalar time series, else to `_NON_SCALAR_TIME_SERIES`.
         self._tag_metadata = {}
+        self._scalar_request_sender = _ScalarBatchedRequestSender(
+            experiment_id, api, rpc_rate_limiter
+        )
 
-    def _new_request(self):
-        """Allocates a new request and refreshes the budget."""
-        self._request = write_service_pb2.WriteScalarRequest()
-        self._byte_budget = _MAX_REQUEST_LENGTH_BYTES
-        self._request.experiment_id = self._experiment_id
-        self._byte_budget -= self._request.ByteSize()
-        if self._byte_budget < 0:
-            raise RuntimeError("Byte budget too small for experiment ID")
+        # TODO(nielsene): add tensor case here
+        # TODO(soergel): add blob case here
 
-    def build_requests(self, run_to_events):
-        """Converts a stream of TF events to a stream of outgoing requests.
+    def send_requests(self, run_to_events):
+        """Accepts a stream of TF events and sends batched write RPCs.
 
-        Each yielded request will be at most `_MAX_REQUEST_LENGTH_BYTES`
+        Each sent request will be at most `_MAX_REQUEST_LENGTH_BYTES`
         bytes long.
 
         Args:
           run_to_events: Mapping from run name to generator of `tf.Event`
             values, as returned by `LogdirLoader.get_run_events`.
 
-        Yields:
-          A finite stream of `WriteScalarRequest` objects.
-
         Raises:
           RuntimeError: If no progress can be made because even a single
           point is too large (say, due to a gigabyte-long tag name).
         """
 
-        self._new_request()
-        runs = {}  # cache: map from run name to `Run` proto in request
-        tags = (
-            {}
-        )  # cache: map from `(run, tag)` to `Tag` proto in run in request
-        work_items = peekable_iterator.PeekableIterator(
-            self._run_values(run_to_events)
-        )
-
-        while work_items.has_next():
-            (run_name, event, orig_value) = work_items.peek()
+        for (run_name, event, orig_value) in self._run_values(run_to_events):
             value = data_compat.migrate_value(orig_value)
             time_series_key = (run_name, value.tag)
 
+            # The metadata for a time series is memorized on the first event.
+            # If later events arrive with a mismatching plugin_name, they are
+            # ignored with a warning.
             metadata = self._tag_metadata.get(time_series_key)
             if metadata is None:
-                plugin_name = value.metadata.plugin_data.plugin_name
-                if plugin_name == scalar_metadata.PLUGIN_NAME:
-                    metadata = value.metadata
-                else:
-                    metadata = _RequestBuilder._NON_SCALAR_TIME_SERIES
+                metadata = value.metadata
                 self._tag_metadata[time_series_key] = metadata
-            if metadata is _RequestBuilder._NON_SCALAR_TIME_SERIES:
-                next(work_items)
-                continue
-            try:
-                run_proto = runs.get(run_name)
-                if run_proto is None:
-                    run_proto = self._create_run(run_name)
-                    runs[run_name] = run_proto
-                tag_proto = tags.get((run_name, value.tag))
-                if tag_proto is None:
-                    tag_proto = self._create_tag(run_proto, value.tag, metadata)
-                    tags[(run_name, value.tag)] = tag_proto
-                self._create_point(tag_proto, event, value)
-                next(work_items)
-            except _OutOfSpaceError:
-                # Flush request and start a new one.
-                request_to_emit = self._prune_request()
-                if request_to_emit is None:
-                    raise RuntimeError("Could not make progress uploading data")
-                self._new_request()
-                runs.clear()
-                tags.clear()
-                yield request_to_emit
 
-        final_request = self._prune_request()
-        if final_request is not None:
-            yield final_request
+            if value.HasField("metadata") and (
+                value.metadata.plugin_data.plugin_name
+                != metadata.plugin_data.plugin_name
+            ):
+                logger.warning(
+                    "Mismatching plugin names for %s.  Expected %s, found %s.",
+                    time_series_key,
+                    metadata.plugin_data.plugin_name,
+                    value.metadata.plugin_data.plugin_name,
+                )
+            elif (
+                metadata.plugin_data.plugin_name == scalar_metadata.PLUGIN_NAME
+            ):
+                self._scalar_request_sender.add_event(
+                    run_name, event, value, metadata
+                )
+            # TODO(nielsene): add Tensor plugin cases here
+            # TODO(soergel): add Graphs blob case here
+
+        self._scalar_request_sender.flush()
+        # TODO(nielsene): add tensor case here
+        # TODO(soergel): add blob case here
 
     def _run_values(self, run_to_events):
         """Helper generator to create a single stream of work items."""
@@ -309,15 +333,78 @@ class _RequestBuilder(object):
                 for value in event.summary.value:
                     yield (run_name, event, value)
 
-    def _prune_request(self):
-        """Removes empty runs and tags from the active request.
 
-        This does not refund `self._byte_budget`; it is assumed that the
-        request will be emitted immediately, anyway.
+class _ScalarBatchedRequestSender(object):
+    """Helper class for building requests that fit under a size limit.
 
-        Returns:
-          The active request, or `None` if after pruning the request
-          contains no data.
+    This class accumulates a current request.  `add_event(...)` may or may not
+    send the request (and start a new one).  After all `add_event(...)` calls
+    are complete, a final call to `flush()` is needed to send the final request.
+
+    This class is not threadsafe. Use external synchronization if calling its
+    methods concurrently.
+    """
+
+    def __init__(self, experiment_id, api, rpc_rate_limiter):
+        if experiment_id is None:
+            raise ValueError("experiment_id cannot be None")
+        self._experiment_id = experiment_id
+        self._api = api
+        self._rpc_rate_limiter = rpc_rate_limiter
+        # A lower bound on the number of bytes that we may yet add to the
+        # request.
+        self._byte_budget = None  # type: int
+
+        self._runs = {}  # cache: map from run name to `Run` proto in request
+        self._tags = (
+            {}
+        )  # cache: map from `(run, tag)` to `Tag` proto in run in request
+        self._new_request()
+
+    def _new_request(self):
+        """Allocates a new request and refreshes the budget."""
+        self._request = write_service_pb2.WriteScalarRequest()
+        self._runs.clear()
+        self._tags.clear()
+        self._byte_budget = _MAX_REQUEST_LENGTH_BYTES
+        self._request.experiment_id = self._experiment_id
+        self._byte_budget -= self._request.ByteSize()
+        if self._byte_budget < 0:
+            raise RuntimeError("Byte budget too small for experiment ID")
+
+    def add_event(self, run_name, event, value, metadata):
+        """Attempts to add the given event to the current request.
+
+        If the event cannot be added to the current request because the byte
+        budget is exhausted, the request is flushed, and the event is added
+        to the next request.
+        """
+        try:
+            self._add_event_internal(run_name, event, value, metadata)
+        except _OutOfSpaceError:
+            self.flush()
+            # Try again.  This attempt should never produce OutOfSpaceError
+            # because we just flushed.
+            try:
+                self._add_event_internal(run_name, event, value, metadata)
+            except _OutOfSpaceError:
+                raise RuntimeError("add_event failed despite flush")
+
+    def _add_event_internal(self, run_name, event, value, metadata):
+        run_proto = self._runs.get(run_name)
+        if run_proto is None:
+            run_proto = self._create_run(run_name)
+            self._runs[run_name] = run_proto
+        tag_proto = self._tags.get((run_name, value.tag))
+        if tag_proto is None:
+            tag_proto = self._create_tag(run_proto, value.tag, metadata)
+            self._tags[(run_name, value.tag)] = tag_proto
+        self._create_point(tag_proto, event, value)
+
+    def flush(self):
+        """Sends the active request after removing empty runs and tags.
+
+        Starts a new, empty active request.
         """
         request = self._request
         for (run_idx, run) in reversed(list(enumerate(request.runs))):
@@ -325,10 +412,22 @@ class _RequestBuilder(object):
                 if not tag.points:
                     del run.tags[tag_idx]
             if not run.tags:
-                del self._request.runs[run_idx]
+                del request.runs[run_idx]
         if not request.runs:
-            request = None
-        return request
+            return
+
+        self._rpc_rate_limiter.tick()
+
+        with _request_logger(request):
+            try:
+                # TODO(@nfelt): execute this RPC asynchronously.
+                grpc_util.call_with_retries(self._api.WriteScalar, request)
+            except grpc.RpcError as e:
+                if e.code() == grpc.StatusCode.NOT_FOUND:
+                    raise ExperimentNotFoundError()
+                logger.error("Upload call failed with error %s", e)
+
+        self._new_request()
 
     def _create_run(self, run_name):
         """Adds a run to the live request, if there's space.
@@ -406,6 +505,21 @@ class _RequestBuilder(object):
             raise _OutOfSpaceError()
         self._byte_budget -= cost
         return point
+
+
+@contextlib.contextmanager
+def _request_logger(request):
+    upload_start_time = time.time()
+    request_bytes = request.ByteSize()
+    logger.info("Trying request of %d bytes", request_bytes)
+    yield
+    upload_duration_secs = time.time() - upload_start_time
+    logger.info(
+        "Upload for %d runs (%d bytes) took %.3f seconds",
+        len(request.runs),
+        request_bytes,
+        upload_duration_secs,
+    )
 
 
 def _varint_cost(n):

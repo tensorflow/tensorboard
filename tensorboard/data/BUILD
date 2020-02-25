@@ -10,7 +10,7 @@ exports_files(["LICENSE"])
 py_library(
     name = "provider",
     srcs = ["provider.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         "//tensorboard:expect_numpy_installed",
         "@org_pythonhosted_six",

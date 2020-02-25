@@ -32,7 +32,7 @@
     "@angular/cli": "^8.3.21",
     "@angular/compiler": "^8.2.14",
     "@angular/compiler-cli": "^8.2.14",
-    "@bazel/bazel": "^0.23.2",
+    "@bazel/bazel": "0.26.1",
     "@bazel/hide-bazel-files": "^0.34.0",
     "@bazel/ibazel": "^0.10.3",
     "@bazel/jasmine": "^0.32.2",

@@ -30,7 +30,12 @@ limitations under the License.
         Please install the new version of the profile plugin from PyPI by
         running the following command from the machine running TensorBoard:
       </p>
-      <textarea id="commandTextarea" readonly on-blur="_removeCopiedMessage">
+      <textarea
+        id="commandTextarea"
+        readonly
+        rows="1"
+        on-blur="_removeCopiedMessage"
+      >
 [[_installCommand]]</textarea
       >
       <div id="copyContainer">
@@ -48,7 +53,7 @@ limitations under the License.
       }
       #commandTextarea {
         margin-top: 1ex;
-        padding: 1ex 0;
+        padding: 1ex 1em;
         resize: vertical;
         width: 100%;
       }
@@ -73,10 +78,7 @@ limitations under the License.
           _installCommand: {
             type: String,
             readOnly: true,
-            value: [
-              'pip install --extra-index-url https://test.pypi.org/simple/ \\',
-              '    tensorboard_plugin_profile',
-            ].join('\n'),
+            value: 'pip install -U tensorboard_plugin_profile',
           },
         },
         async _copyInstallCommand() {
