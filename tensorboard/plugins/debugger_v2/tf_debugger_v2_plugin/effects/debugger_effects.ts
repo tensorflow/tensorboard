@@ -371,6 +371,7 @@ export class DebuggerEffects {
     }>
   ): Observable<void> {
     return prevStream$.pipe(
+      filter(({begin, end}) => end > begin),
       tap(() => {
         this.store.dispatch(executionDigestsRequested());
       }),
@@ -591,12 +592,16 @@ export class DebuggerEffects {
             numExecutions,
             executionDigestsLoaded.pageLoadedSizes
           );
-          const begin = missingPages[0] * pageSize;
-          const end = Math.min(
-            executionDigestsLoaded.numExecutions,
-            (missingPages[missingPages.length - 1] + 1) * pageSize
-          );
-          return {runId: runId!, begin, end};
+          if (missingPages.length === 0) {
+            return {runId: runId!, begin: 0, end: 0};
+          } else {
+            const begin = missingPages[0] * pageSize;
+            const end = Math.min(
+              executionDigestsLoaded.numExecutions,
+              (missingPages[missingPages.length - 1] + 1) * pageSize
+            );
+            return {runId: runId!, begin, end};
+          }
         }
       )
     );

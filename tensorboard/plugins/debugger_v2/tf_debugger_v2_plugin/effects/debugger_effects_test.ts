@@ -821,6 +821,76 @@ describe('Debugger effects', () => {
       ]);
     });
 
+    it('does not fetch execution digest page if execution digests are loaded', () => {
+      const fetchInfNanAlerts = createFetchAlertsSpy(
+        runId,
+        0,
+        -1,
+        alertsResponseForTest,
+        AlertType.INF_NAN_ALERT
+      );
+      const numExecutions = 100;
+      const fetchExecutionDigests = createFetchExecutionDigestsSpy(
+        runId,
+        8,
+        12,
+        {
+          begin: 8,
+          end: 12,
+          num_digests: numExecutions,
+          execution_digests: [
+            execDigest08,
+            execDigest09,
+            execDigest10,
+            execDigest11,
+          ],
+        }
+      );
+      store.overrideSelector(getActiveRunId, runId);
+      store.overrideSelector(getAlertsFocusType, AlertType.INF_NAN_ALERT);
+      store.overrideSelector(getNumAlertsOfFocusedType, 2);
+      store.overrideSelector(getLoadedAlertsOfFocusedType, null);
+      store.overrideSelector(getAlertsLoaded, {
+        state: DataLoadState.NOT_LOADED,
+        lastLoadedTimeInMs: null,
+      });
+      store.overrideSelector(getExecutionPageSize, 4);
+      store.overrideSelector(getDisplayCount, 2);
+      store.overrideSelector(getExecutionScrollBeginIndex, 0);
+      store.overrideSelector(getNumExecutions, numExecutions);
+      store.overrideSelector(getExecutionDigestsLoaded, {
+        numExecutions,
+        pageLoadedSizes: {
+          2: 4, // The page of eecution digest has already been loaded.
+        },
+        state: DataLoadState.LOADED,
+        lastLoadedTimeInMs: 1234,
+      });
+
+      store.refreshState();
+
+      action.next(
+        alertTypeFocusToggled({
+          alertType: AlertType.INF_NAN_ALERT,
+        })
+      );
+      expect(fetchInfNanAlerts).toHaveBeenCalledTimes(1);
+      expect(fetchExecutionDigests).not.toHaveBeenCalled();
+      expect(dispatchedActions).toEqual([
+        numAlertsAndBreakdownRequested(),
+        alertsOfTypeLoaded({
+          numAlerts: 2,
+          alertsBreakdown: {
+            [AlertType.INF_NAN_ALERT]: 2,
+          },
+          begin: 0,
+          end: 2,
+          alertType: AlertType.INF_NAN_ALERT,
+          alerts: [alert0, alert1],
+        }),
+      ]);
+    });
+
     it('does not fetch alerts when alerts are already loaded', () => {
       const fetchAlerts = spyOn(
         TestBed.get(Tfdbg2HttpServerDataSource),
