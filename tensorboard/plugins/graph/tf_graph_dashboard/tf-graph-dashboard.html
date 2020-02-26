@@ -80,7 +80,7 @@ by default. The user can select a different run from a dropdown menu.
     </template>
     <template
       is="dom-if"
-      if="[[!_datasetsState(datasetsFetched, _datasets, 'PRESENT')]]"
+      if="[[!_datasetsState(datasetsFetched, _datasets, 'EMPTY')]]"
     >
       <tf-dashboard-layout>
         <tf-graph-controls
