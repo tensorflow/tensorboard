@@ -235,9 +235,8 @@ class _BatchedRequestSender(object):
           RuntimeError: If no progress can be made because even a single
           point is too large (say, due to a gigabyte-long tag name).
         """
-        for (run_name, event) in self._run_events(run_to_events):
-            for value in self._summary_values(run_name, event):
-                self._send_summary_value(run_name, event, value)
+        for (run_name, event, value) in self._run_values(run_to_events):
+            self._send_summary_value(run_name, event, value)
 
         self._scalar_request_sender.flush()
         # TODO(nielsene): add tensor case here
@@ -254,7 +253,7 @@ class _BatchedRequestSender(object):
             metadata = value.metadata
             self._tag_metadata[time_series_key] = metadata
 
-        # TODO(soergel): Allow enabling/disabling upload per plugin
+        # DO NOT SUBMIT (soergel): Allow enabling/disabling upload per plugin
 
         if value.HasField("metadata") and (
             value.metadata.plugin_data.plugin_name
@@ -280,36 +279,36 @@ class _BatchedRequestSender(object):
                 run_name, event, value, metadata
             )
 
-    def _run_events(self, run_to_events):
+    def _run_values(self, run_to_events):
         """Helper generator to create a single stream of work items.
 
         The events are passed through the `data_compat` and `dataclass_compat`
         layers before being emitted, so downstream consumers may process them
-        uniformly.  Note that `dataclass_compat` may emit multiple variants of
+        uniformly.
+
+        Note that `dataclass_compat` may emit multiple variants of
         the same event, for backwards compatibility.  Thus this stream should
-        be filtered to obtain the desired version of each event.  Here, this
-        happens below in `_summary_values(...)`, which ignores any event that
-        does not have a `summary` field.
+        be filtered to obtain the desired version of each event.  Here, we
+        ignore any event that does not have a `summary` field.
+
+        Furthermore, the events emitted here could contain values that do not
+        have `metadata.data_class` set; these too should be ignored.  In
+        `_send_summary_value(...)` above, we switch on `metadata.data_class`
+        and drop any values with an unknown (i.e., absent or unrecognized)
+        `data_class`.
         """
         # Note that this join in principle has deletion anomalies: if the input
-        # stream contains runs with no events, we'll lose that information. This
-        # is not a problem: we would need to prune such data from the request
-        # anyway.
+        # stream contains runs with no events, or events with no values, we'll
+        # lose that information. This is not a problem: we would need to prune
+        # such data from the request anyway.
         for (run_name, events) in six.iteritems(run_to_events):
             for event in events:
                 v2_event = data_compat.migrate_event(event)
                 dataclass_events = dataclass_compat.migrate_event(v2_event)
                 for dataclass_event in dataclass_events:
-                    yield (run_name, dataclass_event)
-
-    def _summary_values(self, run_name, event):
-        """Helper generator to create a single stream of work items."""
-        # Note that this join in principle has deletion anomalies: if the event
-        # contains no values, we'll lose that information. This is not a
-        # problem: we would need to prune such data from the request anyway.
-        if event.summary:
-            for value in event.summary.value:
-                yield value
+                    if dataclass_event.summary:
+                        for value in dataclass_event.summary.value:
+                            yield (run_name, event, value)
 
 
 class _ScalarBatchedRequestSender(object):
@@ -526,6 +525,9 @@ class _BlobRequestSender(object):
         self._run_name = run_name
         self._event = event  # provides step and possibly plugin_name
         self._value = value
+        # TODO(soergel): should we really unpack the tensor here, or ship
+        # it wholesale and unpack server side, or something else?
+        self._blobs = tensor_util.make_ndarray(self._value.tensor)
         self._metadata = metadata
         self.flush()
 
@@ -536,13 +538,10 @@ class _BlobRequestSender(object):
             blob_sequence_id = self._get_or_create_blob_sequence()
             print("Flushing to blob sequence id: ", blob_sequence_id)
 
-            # TODO(soergel): should we really unpack the tensor here, or ship
-            # it wholesale and unpack server side, or something else?
-            blobs = tensor_util.make_ndarray(self._value.tensor)
-            for seq_index, blob in np.ndenumerate(blobs):
+            for seq_index, blob in enumerate(self._blobs):
                 # Note the _send_blob() stream is internally rate-limited.
                 self._rpc_rate_limiter.tick()
-                self._send_blob(blob_sequence_id, seq_index[0], blob)
+                self._send_blob(blob_sequence_id, seq_index, blob)
 
         self._new_request()
 
@@ -552,7 +551,7 @@ class _BlobRequestSender(object):
             run=self._run_name,
             tag=self._value.tag,
             step=self._event.step,
-            final_sequence_length=1,
+            final_sequence_length=len(self._blobs),
             metadata=self._metadata,
         )
         util.set_timestamp(request.wall_time, self._event.wall_time)
@@ -569,7 +568,7 @@ class _BlobRequestSender(object):
                     raise ExperimentNotFoundError()
                 logger.error("Upload call failed with error %s", e)
                 # TODO(soergel): clean up
-                raise e
+                raise
 
         return blob_sequence_id
 
