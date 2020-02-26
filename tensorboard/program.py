@@ -162,7 +162,6 @@ class TensorBoard(object):
                 raise ValueError("Duplicate subcommand name: %r" % name)
             self.subcommands[name] = subcommand
         self.flags = None
-        self.display_host = None  # Will be set by get_url() below
 
     def configure(self, argv=("",), **kwargs):
         """Configures TensorBoard behavior via flags.
@@ -598,6 +597,7 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
             host = "localhost"
 
         self._host = host
+        self.display_host = None  # Will be set by get_url() below
 
         self._fix_werkzeug_logging()
         try:
