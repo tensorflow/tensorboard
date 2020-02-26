@@ -103,6 +103,7 @@ py_test(
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/plugins/histogram:summary_v2",
+        "//tensorboard/plugins/scalar:metadata",
         "//tensorboard/plugins/scalar:summary_v2",
         "//tensorboard/summary:summary_v1",
         "//tensorboard/uploader/proto:protos_all_py_pb2",
@@ -193,6 +194,7 @@ py_library(
     deps = [
         "//tensorboard:expect_requests_installed",
         "//tensorboard:version",
+        "//tensorboard/plugins/scalar:metadata",
         "//tensorboard/uploader/proto:protos_all_py_pb2",
         "@com_google_protobuf//:protobuf_python",
     ],
@@ -208,6 +210,7 @@ py_test(
         "//tensorboard:expect_futures_installed",
         "//tensorboard:test",
         "//tensorboard:version",
+        "//tensorboard/plugins/scalar:metadata",
         "//tensorboard/uploader/proto:protos_all_py_pb2",
         "@org_pocoo_werkzeug",
     ],

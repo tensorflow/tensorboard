@@ -593,6 +593,7 @@ class _UploadIntent(_Intent):
         uploader = uploader_lib.TensorBoardUploader(
             api_client,
             self.logdir,
+            allowed_plugins=server_info_lib.allowed_plugins(server_info),
             name=self.name,
             description=self.description,
         )

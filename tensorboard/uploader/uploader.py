@@ -69,6 +69,7 @@ class TensorBoardUploader(object):
         self,
         writer_client,
         logdir,
+        allowed_plugins,
         rpc_rate_limiter=None,
         name=None,
         description=None,
@@ -78,6 +79,9 @@ class TensorBoardUploader(object):
         Args:
           writer_client: a TensorBoardWriterService stub instance
           logdir: path of the log directory to upload
+          allowed_plugins: collection of string plugin names; events will only
+            be uploaded if their time series's metadata specifies one of these
+            plugin names
           rpc_rate_limiter: a `RateLimiter` to use to limit write RPC frequency.
             Note this limit applies at the level of single RPCs in the Scalar
             and Tensor case, but at the level of an entire blob upload in the
@@ -90,6 +94,7 @@ class TensorBoardUploader(object):
         """
         self._api = writer_client
         self._logdir = logdir
+        self._allowed_plugins = frozenset(allowed_plugins)
         self._name = name
         self._description = description
         self._request_sender = None
@@ -122,7 +127,10 @@ class TensorBoardUploader(object):
             self._api.CreateExperiment, request
         )
         self._request_sender = _BatchedRequestSender(
-            response.experiment_id, self._api, self._rpc_rate_limiter
+            response.experiment_id,
+            self._api,
+            allowed_plugins=self._allowed_plugins,
+            rpc_rate_limiter=self._rpc_rate_limiter,
         )
         return response.experiment_id
 
@@ -261,12 +269,13 @@ class _BatchedRequestSender(object):
     calling its methods concurrently.
     """
 
-    def __init__(self, experiment_id, api, rpc_rate_limiter):
+    def __init__(self, experiment_id, api, allowed_plugins, rpc_rate_limiter):
         # Map from `(run_name, tag_name)` to `SummaryMetadata` if the time
         # series is a scalar time series, else to `_NON_SCALAR_TIME_SERIES`.
         self._tag_metadata = {}
+        self._allowed_plugins = frozenset(allowed_plugins)
         self._scalar_request_sender = _ScalarBatchedRequestSender(
-            experiment_id, api, rpc_rate_limiter
+            experiment_id, api, rpc_rate_limiter,
         )
 
         # TODO(nielsene): add tensor case here
@@ -295,13 +304,15 @@ class _BatchedRequestSender(object):
             # If later events arrive with a mismatching plugin_name, they are
             # ignored with a warning.
             metadata = self._tag_metadata.get(time_series_key)
+            first_in_time_series = False
             if metadata is None:
+                first_in_time_series = True
                 metadata = value.metadata
                 self._tag_metadata[time_series_key] = metadata
 
+            plugin_name = metadata.plugin_data.plugin_name
             if value.HasField("metadata") and (
-                value.metadata.plugin_data.plugin_name
-                != metadata.plugin_data.plugin_name
+                plugin_name != value.metadata.plugin_data.plugin_name
             ):
                 logger.warning(
                     "Mismatching plugin names for %s.  Expected %s, found %s.",
@@ -309,9 +320,15 @@ class _BatchedRequestSender(object):
                     metadata.plugin_data.plugin_name,
                     value.metadata.plugin_data.plugin_name,
                 )
-            elif (
-                metadata.plugin_data.plugin_name == scalar_metadata.PLUGIN_NAME
-            ):
+                continue
+            if plugin_name not in self._allowed_plugins:
+                if first_in_time_series:
+                    logger.info(
+                        "Skipping time series %r with unsupported plugin name %r",
+                        plugin_name,
+                    )
+                continue
+            if plugin_name == scalar_metadata.PLUGIN_NAME:
                 self._scalar_request_sender.add_event(
                     run_name, event, value, metadata
                 )

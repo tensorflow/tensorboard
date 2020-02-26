@@ -43,6 +43,7 @@ from tensorboard.uploader import util
 from tensorboard.compat.proto import event_pb2
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.histogram import summary_v2 as histogram_v2
+from tensorboard.plugins.scalar import metadata as scalars_metadata
 from tensorboard.plugins.scalar import summary_v2 as scalar_v2
 from tensorboard.summary import v1 as summary_v1
 from tensorboard.util import test_util as tb_test_util
@@ -68,11 +69,16 @@ def _create_mock_client():
     return mock_client
 
 
+_SCALARS_ONLY = frozenset((scalars_metadata.PLUGIN_NAME,))
+
+
 class TensorboardUploaderTest(tf.test.TestCase):
     def test_create_experiment(self):
         logdir = "/logs/foo"
         mock_client = _create_mock_client()
-        uploader = uploader_lib.TensorBoardUploader(mock_client, logdir)
+        uploader = uploader_lib.TensorBoardUploader(
+            mock_client, logdir, allowed_plugins=_SCALARS_ONLY
+        )
         eid = uploader.create_experiment()
         self.assertEqual(eid, "123")
 
@@ -81,7 +87,7 @@ class TensorboardUploaderTest(tf.test.TestCase):
         mock_client = _create_mock_client()
         new_name = "This is the new name"
         uploader = uploader_lib.TensorBoardUploader(
-            mock_client, logdir, name=new_name
+            mock_client, logdir, allowed_plugins=_SCALARS_ONLY, name=new_name
         )
         eid = uploader.create_experiment()
         self.assertEqual(eid, "123")
@@ -101,7 +107,10 @@ class TensorboardUploaderTest(tf.test.TestCase):
         may have "strange" unicode chars 🌴 \\/<>
         """
         uploader = uploader_lib.TensorBoardUploader(
-            mock_client, logdir, description=new_description
+            mock_client,
+            logdir,
+            allowed_plugins=_SCALARS_ONLY,
+            description=new_description,
         )
         eid = uploader.create_experiment()
         self.assertEqual(eid, "123")
@@ -122,7 +131,11 @@ class TensorboardUploaderTest(tf.test.TestCase):
         """
         new_name = "This is a cool name."
         uploader = uploader_lib.TensorBoardUploader(
-            mock_client, logdir, name=new_name, description=new_description
+            mock_client,
+            logdir,
+            allowed_plugins=_SCALARS_ONLY,
+            name=new_name,
+            description=new_description,
         )
         eid = uploader.create_experiment()
         self.assertEqual(eid, "123")
@@ -136,7 +149,9 @@ class TensorboardUploaderTest(tf.test.TestCase):
 
     def test_start_uploading_without_create_experiment_fails(self):
         mock_client = _create_mock_client()
-        uploader = uploader_lib.TensorBoardUploader(mock_client, "/logs/foo")
+        uploader = uploader_lib.TensorBoardUploader(
+            mock_client, "/logs/foo", allowed_plugins=_SCALARS_ONLY
+        )
         with self.assertRaisesRegex(RuntimeError, "call create_experiment()"):
             uploader.start_uploading()
 
@@ -146,7 +161,10 @@ class TensorboardUploaderTest(tf.test.TestCase):
         mock_client = _create_mock_client()
         mock_rate_limiter = mock.create_autospec(util.RateLimiter)
         uploader = uploader_lib.TensorBoardUploader(
-            mock_client, "/logs/foo", mock_rate_limiter
+            mock_client,
+            "/logs/foo",
+            allowed_plugins=_SCALARS_ONLY,
+            rpc_rate_limiter=mock_rate_limiter,
         )
         uploader.create_experiment()
 
@@ -179,7 +197,10 @@ class TensorboardUploaderTest(tf.test.TestCase):
         mock_client = _create_mock_client()
         mock_rate_limiter = mock.create_autospec(util.RateLimiter)
         uploader = uploader_lib.TensorBoardUploader(
-            mock_client, logdir, mock_rate_limiter
+            mock_client,
+            logdir,
+            allowed_plugins=_SCALARS_ONLY,
+            rpc_rate_limiter=mock_rate_limiter,
         )
         uploader.create_experiment()
         uploader._upload_once()
@@ -192,7 +213,10 @@ class TensorboardUploaderTest(tf.test.TestCase):
         mock_client = _create_mock_client()
         mock_rate_limiter = mock.create_autospec(util.RateLimiter)
         uploader = uploader_lib.TensorBoardUploader(
-            mock_client, logdir, mock_rate_limiter
+            mock_client,
+            logdir,
+            allowed_plugins=_SCALARS_ONLY,
+            rpc_rate_limiter=mock_rate_limiter,
         )
         uploader.create_experiment()
         error = test_util.grpc_error(grpc.StatusCode.INTERNAL, "Failure")
@@ -207,7 +231,10 @@ class TensorboardUploaderTest(tf.test.TestCase):
         mock_client = _create_mock_client()
         mock_rate_limiter = mock.create_autospec(util.RateLimiter)
         uploader = uploader_lib.TensorBoardUploader(
-            mock_client, logdir, mock_rate_limiter
+            mock_client,
+            logdir,
+            allowed_plugins=_SCALARS_ONLY,
+            rpc_rate_limiter=mock_rate_limiter,
         )
         uploader.create_experiment()
         error = test_util.grpc_error(grpc.StatusCode.NOT_FOUND, "nope")
@@ -229,7 +256,10 @@ class TensorboardUploaderTest(tf.test.TestCase):
         mock_client = _create_mock_client()
         mock_rate_limiter = mock.create_autospec(util.RateLimiter)
         uploader = uploader_lib.TensorBoardUploader(
-            mock_client, logdir, mock_rate_limiter
+            mock_client,
+            logdir,
+            allowed_plugins=_SCALARS_ONLY,
+            rpc_rate_limiter=mock_rate_limiter,
         )
         uploader.create_experiment()
         uploader._upload_once()
@@ -247,7 +277,10 @@ class TensorboardUploaderTest(tf.test.TestCase):
         mock_client = _create_mock_client()
         mock_rate_limiter = mock.create_autospec(util.RateLimiter)
         uploader = uploader_lib.TensorBoardUploader(
-            mock_client, logdir, mock_rate_limiter
+            mock_client,
+            logdir,
+            allowed_plugins=_SCALARS_ONLY,
+            rpc_rate_limiter=mock_rate_limiter,
         )
         uploader.create_experiment()
 
@@ -357,11 +390,16 @@ class TensorboardUploaderTest(tf.test.TestCase):
 
 
 class BatchedRequestSenderTest(tf.test.TestCase):
-    def _populate_run_from_events(self, run_proto, events):
+    def _populate_run_from_events(
+        self, run_proto, events, allowed_plugins=None
+    ):
         mock_client = _create_mock_client()
+        if allowed_plugins is None:
+            allowed_plugins = _SCALARS_ONLY
         builder = uploader_lib._BatchedRequestSender(
             experiment_id="123",
             api=mock_client,
+            allowed_plugins=allowed_plugins,
             rpc_rate_limiter=util.RateLimiter(0),
         )
         builder.send_requests({"": events})
@@ -455,6 +493,17 @@ class BatchedRequestSenderTest(tf.test.TestCase):
         self._populate_run_from_events(run_proto, events)
         tag_counts = {tag.name: len(tag.points) for tag in run_proto.tags}
         self.assertEqual(tag_counts, {"scalar1": 1, "scalar2": 1})
+
+    def test_skips_events_from_disallowed_plugins(self):
+        event = event_pb2.Event(
+            step=1, wall_time=123.456, summary=scalar_v2.scalar_pb("foo", 5.0)
+        )
+        run_proto = write_service_pb2.WriteScalarRequest.Run()
+        self._populate_run_from_events(
+            run_proto, [event], allowed_plugins=frozenset("not-scalars")
+        )
+        expected_run_proto = write_service_pb2.WriteScalarRequest.Run()
+        self.assertProtoEquals(run_proto, expected_run_proto)
 
     def test_remembers_first_metadata_in_scalar_time_series(self):
         scalar_1 = event_pb2.Event(summary=scalar_v2.scalar_pb("loss", 4.0))
@@ -550,7 +599,10 @@ class BatchedRequestSenderTest(tf.test.TestCase):
         mock_client = _create_mock_client()
         with self.assertRaises(RuntimeError) as cm:
             builder = uploader_lib._BatchedRequestSender(
-                long_experiment_id, mock_client, util.RateLimiter(0)
+                long_experiment_id,
+                mock_client,
+                allowed_plugins=_SCALARS_ONLY,
+                rpc_rate_limiter=util.RateLimiter(0),
             )
             builder.send_requests(run_to_events)
         self.assertEqual(
@@ -565,7 +617,10 @@ class BatchedRequestSenderTest(tf.test.TestCase):
         run_to_events = {long_run_name: [event]}
         with self.assertRaises(RuntimeError) as cm:
             builder = uploader_lib._BatchedRequestSender(
-                "123", mock_client, util.RateLimiter(0)
+                "123",
+                mock_client,
+                allowed_plugins=_SCALARS_ONLY,
+                rpc_rate_limiter=util.RateLimiter(0),
             )
             builder.send_requests(run_to_events)
         self.assertEqual(str(cm.exception), "add_event failed despite flush")
@@ -585,7 +640,10 @@ class BatchedRequestSenderTest(tf.test.TestCase):
         )
 
         builder = uploader_lib._BatchedRequestSender(
-            "123", mock_client, util.RateLimiter(0)
+            "123",
+            mock_client,
+            allowed_plugins=_SCALARS_ONLY,
+            rpc_rate_limiter=util.RateLimiter(0),
         )
         builder.send_requests(run_to_events)
         requests = [c[0][0] for c in mock_client.WriteScalar.call_args_list]
@@ -624,7 +682,10 @@ class BatchedRequestSenderTest(tf.test.TestCase):
         run_to_events = {"train": [event]}
 
         builder = uploader_lib._BatchedRequestSender(
-            "123", mock_client, util.RateLimiter(0)
+            "123",
+            mock_client,
+            allowed_plugins=_SCALARS_ONLY,
+            rpc_rate_limiter=util.RateLimiter(0),
         )
         builder.send_requests(run_to_events)
         requests = [c[0][0] for c in mock_client.WriteScalar.call_args_list]
@@ -666,7 +727,10 @@ class BatchedRequestSenderTest(tf.test.TestCase):
         run_to_events = {"train": events}
 
         builder = uploader_lib._BatchedRequestSender(
-            "123", mock_client, util.RateLimiter(0)
+            "123",
+            mock_client,
+            allowed_plugins=_SCALARS_ONLY,
+            rpc_rate_limiter=util.RateLimiter(0),
         )
         builder.send_requests(run_to_events)
         requests = [c[0][0] for c in mock_client.WriteScalar.call_args_list]
@@ -723,7 +787,10 @@ class BatchedRequestSenderTest(tf.test.TestCase):
             mock_create_point,
         ):
             builder = uploader_lib._BatchedRequestSender(
-                "123", mock_client, util.RateLimiter(0)
+                "123",
+                mock_client,
+                allowed_plugins=_SCALARS_ONLY,
+                rpc_rate_limiter=util.RateLimiter(0),
             )
             builder.send_requests(run_to_events)
         requests = [c[0][0] for c in mock_client.WriteScalar.call_args_list]
