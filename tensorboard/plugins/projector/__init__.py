@@ -29,7 +29,7 @@ import os
 
 from google.protobuf import text_format as _text_format
 from tensorboard.compat import tf
-from tensorboard.plugins.projector import projector_plugin as _projector_plugin
+from tensorboard.plugins.projector import metadata as _metadata
 from tensorboard.plugins.projector.projector_config_pb2 import EmbeddingInfo
 from tensorboard.plugins.projector.projector_config_pb2 import SpriteMetadata
 from tensorboard.plugins.projector.projector_config_pb2 import ProjectorConfig
@@ -60,6 +60,6 @@ def visualize_embeddings(logdir, config):
 
     # Saving the config file in the logdir.
     config_pbtxt = _text_format.MessageToString(config)
-    path = os.path.join(logdir, _projector_plugin.PROJECTOR_FILENAME)
+    path = os.path.join(logdir, _metadata.PROJECTOR_FILENAME)
     with tf.io.gfile.GFile(path, "w") as f:
         f.write(config_pbtxt)
