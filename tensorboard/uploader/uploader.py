@@ -325,6 +325,7 @@ class _BatchedRequestSender(object):
                 if first_in_time_series:
                     logger.info(
                         "Skipping time series %r with unsupported plugin name %r",
+                        time_series_key,
                         plugin_name,
                     )
                 continue
