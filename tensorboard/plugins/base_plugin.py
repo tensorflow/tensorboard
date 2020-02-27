@@ -117,6 +117,7 @@ class FrontendMetadata(object):
 
     def __init__(
         self,
+        *,
         disable_reload=None,
         element_name=None,
         es_module_path=None,
@@ -246,6 +247,7 @@ class TBContext(object):
 
     def __init__(
         self,
+        *,
         assets_zip_provider=None,
         data_provider=None,
         db_connection_provider=None,
