@@ -20,6 +20,20 @@ message ServerInfoResponse {
   ApiServer api_server = 2;
   // How to generate URLs to experiment pages.
   ExperimentUrlFormat url_format = 3;
+  // For which plugins should we upload data? (Even if the uploader is
+  // structurally capable of uploading data from many plugins, we only actually
+  // upload data that can be currently displayed in TensorBoard.dev. Otherwise,
+  // users may be surprised to see that experiments that they uploaded a while
+  // ago and have since shared or published now have extra information that
+  // they didn't realize had been uploaded.)
+  //
+  // The client may always choose to upload less data than is permitted by this
+  // field: e.g., if the end user specifies not to upload data for a given
+  // plugin, or the client does not yet support uploading some kind of data.
+  //
+  // If this field is omitted, there are no upfront restrictions on what the
+  // client may send.
+  PluginControl plugin_control = 4;
 }
 
 enum CompatibilityVerdict {
@@ -58,4 +72,10 @@ message ExperimentUrlFormat {
   // Placeholder string that should be replaced with an actual experiment ID.
   // (See docs for `template` field.)
   string id_placeholder = 2;
+}
+
+message PluginControl {
+  // Only send data from plugins with these names. These are plugin names as
+  // stored in the the `SummaryMetadata.plugin_data.plugin_name` proto field.
+  repeated string allowed_plugins = 1;
 }
