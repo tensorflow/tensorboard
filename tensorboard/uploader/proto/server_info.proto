@@ -27,8 +27,8 @@ message ServerInfoResponse {
   // ago and have since shared or published now have extra information that
   // they didn't realize had been uploaded.)
   //
-  // If this field is omitted, the behavior of which data to send is at
-  // the discretion of the client.
+  // If this field is omitted, the behavior of which data to send is at the
+  // discretion of the client.
   PluginControl plugin_control = 4;
 }
 
