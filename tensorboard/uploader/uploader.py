@@ -40,7 +40,7 @@ from tensorboard.util import tensor_util
 
 # Minimum length of a logdir polling cycle in seconds. Shorter cycles will
 # sleep to avoid spinning over the logdir, which isn't great for disks and can
-# be expensive for network file sytems.
+# be expensive for network file systems.
 _MIN_LOGDIR_POLL_INTERVAL_SECS = 5
 
 # Minimum interval between initiating write RPCs.  When writes would otherwise
@@ -75,10 +75,7 @@ class TensorBoardUploader(object):
         writer_client,
         logdir,
         allowed_plugins,
-<<<<<<< HEAD
         logdir_poll_rate_limiter=None,
-=======
->>>>>>> f969c0d567be0b7fc163b8dd873fea19892c4576
         rpc_rate_limiter=None,
         name=None,
         description=None,
@@ -91,12 +88,9 @@ class TensorBoardUploader(object):
           allowed_plugins: collection of string plugin names; events will only
             be uploaded if their time series's metadata specifies one of these
             plugin names
-<<<<<<< HEAD
           logdir_poll_rate_limiter: a `RateLimiter` to use to limit logdir
             polling frequency, to avoid thrashing disks, especially on networked
             file systems
-=======
->>>>>>> f969c0d567be0b7fc163b8dd873fea19892c4576
           rpc_rate_limiter: a `RateLimiter` to use to limit write RPC frequency.
             Note this limit applies at the level of single RPCs in the Scalar
             and Tensor case, but at the level of an entire blob upload in the
