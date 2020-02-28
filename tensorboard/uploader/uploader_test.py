@@ -69,12 +69,9 @@ def _create_mock_client():
     return mock_client
 
 
-<<<<<<< HEAD
 _SCALARS_ONLY = frozenset((scalars_metadata.PLUGIN_NAME,))
 
 
-=======
->>>>>>> a91bea68e7e3f82c80a6dc8b4d3c55fea09f523c
 # Sentinel for `_create_*` helpers, for arguments for which we want to
 # supply a default other than the `None` used by the code under test.
 _USE_DEFAULT = object()
@@ -83,30 +80,21 @@ _USE_DEFAULT = object()
 def _create_uploader(
     writer_client=_USE_DEFAULT,
     logdir=None,
-<<<<<<< HEAD
     allowed_plugins=_USE_DEFAULT,
-=======
->>>>>>> a91bea68e7e3f82c80a6dc8b4d3c55fea09f523c
     rpc_rate_limiter=_USE_DEFAULT,
     name=None,
     description=None,
 ):
     if writer_client is _USE_DEFAULT:
         writer_client = _create_mock_client()
-<<<<<<< HEAD
     if allowed_plugins is _USE_DEFAULT:
         allowed_plugins = _SCALARS_ONLY
-=======
->>>>>>> a91bea68e7e3f82c80a6dc8b4d3c55fea09f523c
     if rpc_rate_limiter is _USE_DEFAULT:
         rpc_rate_limiter = util.RateLimiter(0)
     return uploader_lib.TensorBoardUploader(
         writer_client,
         logdir,
-<<<<<<< HEAD
         allowed_plugins=allowed_plugins,
-=======
->>>>>>> a91bea68e7e3f82c80a6dc8b4d3c55fea09f523c
         rpc_rate_limiter=rpc_rate_limiter,
         name=name,
         description=description,
@@ -114,7 +102,6 @@ def _create_uploader(
 
 
 def _create_request_sender(
-<<<<<<< HEAD
     experiment_id=None,
     api=None,
     allowed_plugins=_USE_DEFAULT,
@@ -131,16 +118,6 @@ def _create_request_sender(
         api=api,
         allowed_plugins=allowed_plugins,
         rpc_rate_limiter=rpc_rate_limiter,
-=======
-    experiment_id=None, api=None, rpc_rate_limiter=_USE_DEFAULT
-):
-    if api is _USE_DEFAULT:
-        api = _create_mock_client()
-    if rpc_rate_limiter is _USE_DEFAULT:
-        rpc_rate_limiter = util.RateLimiter(0)
-    return uploader_lib._BatchedRequestSender(
-        experiment_id=experiment_id, api=api, rpc_rate_limiter=rpc_rate_limiter
->>>>>>> a91bea68e7e3f82c80a6dc8b4d3c55fea09f523c
     )
 
 
@@ -419,15 +396,11 @@ class BatchedRequestSenderTest(tf.test.TestCase):
         self, run_proto, events, allowed_plugins=_USE_DEFAULT
     ):
         mock_client = _create_mock_client()
-<<<<<<< HEAD
         builder = _create_request_sender(
             experiment_id="123",
             api=mock_client,
             allowed_plugins=allowed_plugins,
         )
-=======
-        builder = _create_request_sender(experiment_id="123", api=mock_client)
->>>>>>> a91bea68e7e3f82c80a6dc8b4d3c55fea09f523c
         builder.send_requests({"": events})
         requests = [c[0][0] for c in mock_client.WriteScalar.call_args_list]
         if requests:
