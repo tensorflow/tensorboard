@@ -90,7 +90,7 @@ class TensorBoardUploader(object):
             plugin names
           logdir_poll_rate_limiter: a `RateLimiter` to use to limit logdir
             polling frequency, to avoid thrashing disks, especially on networked
-            file systems.
+            file systems
           rpc_rate_limiter: a `RateLimiter` to use to limit write RPC frequency.
             Note this limit applies at the level of single RPCs in the Scalar
             and Tensor case, but at the level of an entire blob upload in the
