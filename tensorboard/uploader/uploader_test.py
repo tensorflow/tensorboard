@@ -43,6 +43,7 @@ from tensorboard.uploader import util
 from tensorboard.compat.proto import event_pb2
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.histogram import summary_v2 as histogram_v2
+from tensorboard.plugins.scalar import metadata as scalars_metadata
 from tensorboard.plugins.scalar import summary_v2 as scalar_v2
 from tensorboard.summary import v1 as summary_v1
 from tensorboard.util import test_util as tb_test_util
@@ -68,6 +69,9 @@ def _create_mock_client():
     return mock_client
 
 
+_SCALARS_ONLY = frozenset((scalars_metadata.PLUGIN_NAME,))
+
+
 # Sentinel for `_create_*` helpers, for arguments for which we want to
 # supply a default other than the `None` used by the code under test.
 _USE_DEFAULT = object()
@@ -76,17 +80,21 @@ _USE_DEFAULT = object()
 def _create_uploader(
     writer_client=_USE_DEFAULT,
     logdir=None,
+    allowed_plugins=_USE_DEFAULT,
     rpc_rate_limiter=_USE_DEFAULT,
     name=None,
     description=None,
 ):
     if writer_client is _USE_DEFAULT:
         writer_client = _create_mock_client()
+    if allowed_plugins is _USE_DEFAULT:
+        allowed_plugins = _SCALARS_ONLY
     if rpc_rate_limiter is _USE_DEFAULT:
         rpc_rate_limiter = util.RateLimiter(0)
     return uploader_lib.TensorBoardUploader(
         writer_client,
         logdir,
+        allowed_plugins=allowed_plugins,
         rpc_rate_limiter=rpc_rate_limiter,
         name=name,
         description=description,
@@ -94,14 +102,22 @@ def _create_uploader(
 
 
 def _create_request_sender(
-    experiment_id=None, api=None, rpc_rate_limiter=_USE_DEFAULT
+    experiment_id=None,
+    api=None,
+    allowed_plugins=_USE_DEFAULT,
+    rpc_rate_limiter=_USE_DEFAULT,
 ):
     if api is _USE_DEFAULT:
         api = _create_mock_client()
+    if allowed_plugins is _USE_DEFAULT:
+        allowed_plugins = _SCALARS_ONLY
     if rpc_rate_limiter is _USE_DEFAULT:
         rpc_rate_limiter = util.RateLimiter(0)
     return uploader_lib._BatchedRequestSender(
-        experiment_id=experiment_id, api=api, rpc_rate_limiter=rpc_rate_limiter
+        experiment_id=experiment_id,
+        api=api,
+        allowed_plugins=allowed_plugins,
+        rpc_rate_limiter=rpc_rate_limiter,
     )
 
 
@@ -376,9 +392,15 @@ class TensorboardUploaderTest(tf.test.TestCase):
 
 
 class BatchedRequestSenderTest(tf.test.TestCase):
-    def _populate_run_from_events(self, run_proto, events):
+    def _populate_run_from_events(
+        self, run_proto, events, allowed_plugins=_USE_DEFAULT
+    ):
         mock_client = _create_mock_client()
-        builder = _create_request_sender(experiment_id="123", api=mock_client)
+        builder = _create_request_sender(
+            experiment_id="123",
+            api=mock_client,
+            allowed_plugins=allowed_plugins,
+        )
         builder.send_requests({"": events})
         requests = [c[0][0] for c in mock_client.WriteScalar.call_args_list]
         if requests:
@@ -470,6 +492,17 @@ class BatchedRequestSenderTest(tf.test.TestCase):
         self._populate_run_from_events(run_proto, events)
         tag_counts = {tag.name: len(tag.points) for tag in run_proto.tags}
         self.assertEqual(tag_counts, {"scalar1": 1, "scalar2": 1})
+
+    def test_skips_events_from_disallowed_plugins(self):
+        event = event_pb2.Event(
+            step=1, wall_time=123.456, summary=scalar_v2.scalar_pb("foo", 5.0)
+        )
+        run_proto = write_service_pb2.WriteScalarRequest.Run()
+        self._populate_run_from_events(
+            run_proto, [event], allowed_plugins=frozenset("not-scalars")
+        )
+        expected_run_proto = write_service_pb2.WriteScalarRequest.Run()
+        self.assertProtoEquals(run_proto, expected_run_proto)
 
     def test_remembers_first_metadata_in_scalar_time_series(self):
         scalar_1 = event_pb2.Event(summary=scalar_v2.scalar_pb("loss", 4.0))
