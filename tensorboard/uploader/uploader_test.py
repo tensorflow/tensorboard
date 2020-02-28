@@ -81,6 +81,7 @@ def _create_uploader(
     writer_client=_USE_DEFAULT,
     logdir=None,
     allowed_plugins=_USE_DEFAULT,
+    logdir_poll_rate_limiter=_USE_DEFAULT,
     rpc_rate_limiter=_USE_DEFAULT,
     name=None,
     description=None,
@@ -89,12 +90,15 @@ def _create_uploader(
         writer_client = _create_mock_client()
     if allowed_plugins is _USE_DEFAULT:
         allowed_plugins = _SCALARS_ONLY
+    if logdir_poll_rate_limiter is _USE_DEFAULT:
+        logdir_poll_rate_limiter = util.RateLimiter(0)
     if rpc_rate_limiter is _USE_DEFAULT:
         rpc_rate_limiter = util.RateLimiter(0)
     return uploader_lib.TensorBoardUploader(
         writer_client,
         logdir,
         allowed_plugins=allowed_plugins,
+        logdir_poll_rate_limiter=logdir_poll_rate_limiter,
         rpc_rate_limiter=rpc_rate_limiter,
         name=name,
         description=description,

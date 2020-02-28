@@ -38,6 +38,11 @@ from tensorboard.util import grpc_util
 from tensorboard.util import tb_logging
 from tensorboard.util import tensor_util
 
+# Minimum length of a logdir polling cycle in seconds. Shorter cycles will
+# sleep to avoid spinning over the logdir, which isn't great for disks and can
+# be expensive for network file sytems.
+_MIN_LOGDIR_POLL_INTERVAL_SECS = 5
+
 # Minimum interval between initiating write RPCs.  When writes would otherwise
 # happen more frequently, the process will sleep to use up the rest of the time.
 _MIN_WRITE_RPC_INTERVAL_SECS = 5
@@ -70,6 +75,7 @@ class TensorBoardUploader(object):
         writer_client,
         logdir,
         allowed_plugins,
+        logdir_poll_rate_limiter=None,
         rpc_rate_limiter=None,
         name=None,
         description=None,
@@ -82,6 +88,9 @@ class TensorBoardUploader(object):
           allowed_plugins: collection of string plugin names; events will only
             be uploaded if their time series's metadata specifies one of these
             plugin names
+          logdir_poll_rate_limiter: a `RateLimiter` to use to limit logdir
+            polling frequency, to avoid thrashing disks, especially on networked
+            file systems.
           rpc_rate_limiter: a `RateLimiter` to use to limit write RPC frequency.
             Note this limit applies at the level of single RPCs in the Scalar
             and Tensor case, but at the level of an entire blob upload in the
@@ -98,6 +107,12 @@ class TensorBoardUploader(object):
         self._name = name
         self._description = description
         self._request_sender = None
+        if logdir_poll_rate_limiter is None:
+            self._logdir_poll_rate_limiter = util.RateLimiter(
+                _MIN_LOGDIR_POLL_INTERVAL_SECS
+            )
+        else:
+            self._logdir_poll_rate_limiter = logdir_poll_rate_limiter
         if rpc_rate_limiter is None:
             self._rpc_rate_limiter = util.RateLimiter(
                 _MIN_WRITE_RPC_INTERVAL_SECS
@@ -147,6 +162,7 @@ class TensorBoardUploader(object):
                 "Must call create_experiment() before start_uploading()"
             )
         while True:
+            self._logdir_poll_rate_limiter.tick()
             self._upload_once()
 
     def _upload_once(self):
