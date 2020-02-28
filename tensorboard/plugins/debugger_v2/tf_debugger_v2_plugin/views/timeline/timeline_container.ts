@@ -20,6 +20,7 @@ import {
   executionDigestFocused,
   executionScrollLeft,
   executionScrollRight,
+  executionScrollToIndex,
 } from '../../actions';
 import {
   getActiveRunId,
@@ -91,6 +92,7 @@ function getExecutionDigestForDisplay(
       [loadingNumExecutions]="loadingNumExecutions$ | async"
       [numExecutions]="numExecutions$ | async"
       [scrollBeginIndex]="scrollBeginIndex$ | async"
+      [scrollBeginIndexUpperLimit]="scrollBeginIndexUpperLimit$ | async"
       [pageSize]="pageSize$ | async"
       [displayCount]="displayCount$ | async"
       [displayExecutionDigests]="displayExecutionDigests$ | async"
@@ -100,6 +102,7 @@ function getExecutionDigestForDisplay(
       (onNavigateLeft)="onNavigateLeft()"
       (onNavigateRight)="onNavigateRight()"
       (onExecutionDigestClicked)="onExecutionDigestClicked($event)"
+      (onSliderChange)="onSliderChange($event)"
     ></timeline-component>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -120,6 +123,23 @@ export class TimelineContainer {
 
   readonly scrollBeginIndex$ = this.store.pipe(
     select(getExecutionScrollBeginIndex)
+  );
+
+  readonly scrollBeginIndexUpperLimit$ = this.store.pipe(
+    select(
+      createSelector(
+        getNumExecutions,
+        getDisplayCount,
+        (numExecutions, displayCount) => {
+          if (displayCount >= numExecutions) {
+            return 0;
+          } else {
+            // TODO(cais): Unit test for the two cases here.
+            return numExecutions - displayCount;
+          }
+        }
+      )
+    )
   );
 
   readonly pageSize$ = this.store.pipe(select(getExecutionPageSize));
@@ -165,6 +185,10 @@ export class TimelineContainer {
 
   onExecutionDigestClicked(index: number) {
     this.store.dispatch(executionDigestFocused({displayIndex: index}));
+  }
+
+  onSliderChange(value: number) {
+    this.store.dispatch(executionScrollToIndex({index: value}));
   }
 }
 

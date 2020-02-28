@@ -36,6 +36,7 @@ import {
   executionDigestsLoaded,
   executionScrollLeft,
   executionScrollRight,
+  executionScrollToIndex,
   numAlertsAndBreakdownLoaded,
   numAlertsAndBreakdownRequested,
   numExecutionsLoaded,
@@ -304,7 +305,8 @@ export class DebuggerEffects {
     end: number;
   }> {
     return this.actions$.pipe(
-      ofType(executionScrollLeft, executionScrollRight),
+      // TODO(cais): Add unit test for executionScrollToIndex.
+      ofType(executionScrollLeft, executionScrollRight, executionScrollToIndex),
       withLatestFrom(
         this.store.select(getActiveRunId),
         this.store.select(getExecutionScrollBeginIndex),

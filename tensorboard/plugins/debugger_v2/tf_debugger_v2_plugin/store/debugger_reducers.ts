@@ -411,6 +411,19 @@ const reducer = createReducer(
     }
   ),
   on(
+    actions.executionScrollToIndex,
+    (state: DebuggerState, event: {index: number}): DebuggerState => {
+      // TODO(cais): Add unit test.
+      return {
+        ...state,
+        executions: {
+          ...state.executions,
+          scrollBeginIndex: event.index,
+        },
+      };
+    }
+  ),
+  on(
     actions.executionDigestFocused,
     (state: DebuggerState, action): DebuggerState => {
       return {

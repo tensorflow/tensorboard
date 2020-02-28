@@ -17,6 +17,8 @@ ng_module(
         "timeline_component.ng.html",
     ],
     deps = [
+        "//tensorboard/webapp/angular:expect_angular_material_button",
+        "//tensorboard/webapp/angular:expect_angular_material_slider",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/actions",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/store",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/store:types",
