@@ -303,6 +303,7 @@ def _run(flags):
     except server_info_lib.CommunicationError as e:
         _die(str(e))
     _handle_server_info(server_info)
+    logging.info("Received server info: <%r>", server_info)
 
     if not server_info.api_server.endpoint:
         logging.error("Server info response: %s", server_info)
@@ -593,6 +594,7 @@ class _UploadIntent(_Intent):
         uploader = uploader_lib.TensorBoardUploader(
             api_client,
             self.logdir,
+            allowed_plugins=server_info_lib.allowed_plugins(server_info),
             name=self.name,
             description=self.description,
         )
