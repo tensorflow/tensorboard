@@ -75,7 +75,10 @@ class TensorBoardUploader(object):
         writer_client,
         logdir,
         allowed_plugins,
+<<<<<<< HEAD
         logdir_poll_rate_limiter=None,
+=======
+>>>>>>> f969c0d567be0b7fc163b8dd873fea19892c4576
         rpc_rate_limiter=None,
         name=None,
         description=None,
@@ -88,9 +91,12 @@ class TensorBoardUploader(object):
           allowed_plugins: collection of string plugin names; events will only
             be uploaded if their time series's metadata specifies one of these
             plugin names
+<<<<<<< HEAD
           logdir_poll_rate_limiter: a `RateLimiter` to use to limit logdir
             polling frequency, to avoid thrashing disks, especially on networked
             file systems
+=======
+>>>>>>> f969c0d567be0b7fc163b8dd873fea19892c4576
           rpc_rate_limiter: a `RateLimiter` to use to limit write RPC frequency.
             Note this limit applies at the level of single RPCs in the Scalar
             and Tensor case, but at the level of an entire blob upload in the
