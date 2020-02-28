@@ -236,6 +236,30 @@ class TensorboardUploaderTest(tf.test.TestCase):
         uploader._upload_once()
         mock_client.WriteScalar.assert_not_called()
 
+    def test_upload_polls_slowly_once_done(self):
+        class Success(Exception):
+            pass
+
+        mock_rate_limiter = mock.create_autospec(util.RateLimiter)
+        upload_call_count_box = [0]
+
+        def mock_upload_once():
+            upload_call_count_box[0] += 1
+            tick_count = mock_rate_limiter.tick.call_count
+            self.assertEqual(tick_count, upload_call_count_box[0])
+            if tick_count >= 3:
+                raise Success()
+
+        uploader = _create_uploader(
+            logdir=self.get_temp_dir(),
+            logdir_poll_rate_limiter=mock_rate_limiter,
+        )
+        uploader._upload_once = mock_upload_once
+
+        uploader.create_experiment()
+        with self.assertRaises(Success):
+            uploader.start_uploading()
+
     def test_upload_swallows_rpc_failure(self):
         logdir = self.get_temp_dir()
         with tb_test_util.FileWriter(logdir) as writer:
