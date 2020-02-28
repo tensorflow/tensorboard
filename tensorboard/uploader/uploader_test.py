@@ -81,6 +81,7 @@ def _create_uploader(
     writer_client=_USE_DEFAULT,
     logdir=None,
     allowed_plugins=_USE_DEFAULT,
+    logdir_poll_rate_limiter=_USE_DEFAULT,
     rpc_rate_limiter=_USE_DEFAULT,
     name=None,
     description=None,
@@ -89,12 +90,15 @@ def _create_uploader(
         writer_client = _create_mock_client()
     if allowed_plugins is _USE_DEFAULT:
         allowed_plugins = _SCALARS_ONLY
+    if logdir_poll_rate_limiter is _USE_DEFAULT:
+        logdir_poll_rate_limiter = util.RateLimiter(0)
     if rpc_rate_limiter is _USE_DEFAULT:
         rpc_rate_limiter = util.RateLimiter(0)
     return uploader_lib.TensorBoardUploader(
         writer_client,
         logdir,
         allowed_plugins=allowed_plugins,
+        logdir_poll_rate_limiter=logdir_poll_rate_limiter,
         rpc_rate_limiter=rpc_rate_limiter,
         name=name,
         description=description,
@@ -231,6 +235,30 @@ class TensorboardUploaderTest(tf.test.TestCase):
         uploader.create_experiment()
         uploader._upload_once()
         mock_client.WriteScalar.assert_not_called()
+
+    def test_upload_polls_slowly_once_done(self):
+        class Success(Exception):
+            pass
+
+        mock_rate_limiter = mock.create_autospec(util.RateLimiter)
+        upload_call_count_box = [0]
+
+        def mock_upload_once():
+            upload_call_count_box[0] += 1
+            tick_count = mock_rate_limiter.tick.call_count
+            self.assertEqual(tick_count, upload_call_count_box[0])
+            if tick_count >= 3:
+                raise Success()
+
+        uploader = _create_uploader(
+            logdir=self.get_temp_dir(),
+            logdir_poll_rate_limiter=mock_rate_limiter,
+        )
+        uploader._upload_once = mock_upload_once
+
+        uploader.create_experiment()
+        with self.assertRaises(Success):
+            uploader.start_uploading()
 
     def test_upload_swallows_rpc_failure(self):
         logdir = self.get_temp_dir()
