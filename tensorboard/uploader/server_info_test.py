@@ -28,6 +28,7 @@ from werkzeug import wrappers
 
 from tensorboard import test as tb_test
 from tensorboard import version
+from tensorboard.plugins.scalar import metadata as scalars_metadata
 from tensorboard.uploader import server_info
 from tensorboard.uploader.proto import server_info_pb2
 
@@ -161,6 +162,35 @@ class ExperimentUrlTest(tb_test.TestCase):
         info.url_format.id_placeholder = "???"
         actual = server_info.experiment_url(info, "123")
         self.assertEqual(actual, "https://unittest.tensorboard.dev/x/123")
+
+
+class AllowedPluginsTest(tb_test.TestCase):
+    """Tests for `allowed_plugins`."""
+
+    def test_old_server_no_plugins(self):
+        info = server_info_pb2.ServerInfoResponse()
+        actual = server_info.allowed_plugins(info)
+        self.assertEqual(actual, frozenset([scalars_metadata.PLUGIN_NAME]))
+
+    def test_provided_but_no_plugins(self):
+        info = server_info_pb2.ServerInfoResponse()
+        info.plugin_control.SetInParent()
+        actual = server_info.allowed_plugins(info)
+        self.assertEqual(actual, frozenset([]))
+
+    def test_scalars_only(self):
+        info = server_info_pb2.ServerInfoResponse()
+        info.plugin_control.allowed_plugins.append(scalars_metadata.PLUGIN_NAME)
+        actual = server_info.allowed_plugins(info)
+        self.assertEqual(actual, frozenset([scalars_metadata.PLUGIN_NAME]))
+
+    def test_more_plugins(self):
+        info = server_info_pb2.ServerInfoResponse()
+        info.plugin_control.allowed_plugins.append("foo")
+        info.plugin_control.allowed_plugins.append("bar")
+        info.plugin_control.allowed_plugins.append("foo")
+        actual = server_info.allowed_plugins(info)
+        self.assertEqual(actual, frozenset(["foo", "bar"]))
 
 
 def _localhost():
