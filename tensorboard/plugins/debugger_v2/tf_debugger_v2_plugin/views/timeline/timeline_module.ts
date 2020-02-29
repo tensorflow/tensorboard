@@ -39,7 +39,7 @@ import {TimelineContainer} from './timeline_container';
     MatButtonModule,
     MatSliderModule,
   ],
-  // TODO(cais): The following two providers are meant for the mat-slider
+  // TODO(cais): The following two providers are meant to make the mat-slider
   // dragging to work. But the dragging is still not working, needs more
   // investigation. May be related to:
   // https://github.com/angular/components/issues/7905

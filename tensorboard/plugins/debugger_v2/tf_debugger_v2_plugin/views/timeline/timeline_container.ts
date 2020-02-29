@@ -131,12 +131,7 @@ export class TimelineContainer {
         getNumExecutions,
         getDisplayCount,
         (numExecutions, displayCount) => {
-          if (displayCount >= numExecutions) {
-            return 0;
-          } else {
-            // TODO(cais): Unit test for the two cases here.
-            return numExecutions - displayCount;
-          }
+          return Math.max(0, numExecutions - displayCount);
         }
       )
     )

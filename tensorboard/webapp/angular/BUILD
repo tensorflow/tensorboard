@@ -76,7 +76,7 @@ tf_ts_library(
     ],
 )
 
-# This is a dummy rule used as a @angular/material/toolbar dependency.
+# This is a dummy rule used as a @angular/material/slider dependency.
 tf_ts_library(
     name = "expect_angular_material_slider",
     srcs = [],
