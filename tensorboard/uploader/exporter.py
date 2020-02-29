@@ -32,6 +32,7 @@ from tensorboard.uploader.proto import experiment_pb2
 from tensorboard.uploader.proto import export_service_pb2
 from tensorboard.uploader import util
 from tensorboard.util import grpc_util
+from tensorboard.util import tb_logging
 
 # Characters that are assumed to be safe in filenames. Note that the
 # server's experiment IDs are base64 encodings of 16-byte blobs, so they
@@ -49,6 +50,8 @@ _MAX_INT64 = 2 ** 63 - 1
 _FILENAME_METADATA = "metadata.json"
 # Output filename for scalar data within an experiment directory.
 _FILENAME_SCALARS = "scalars.json"
+
+logger = tb_logging.get_logger()
 
 
 class TensorBoardExporter(object):
@@ -230,7 +233,7 @@ def list_experiments(api_client, fieldmask=None, read_time=None):
             )
         else:
             # No data: not technically a problem, but not expected.
-            logging.warn(
+            logger.warn(
                 "StreamExperiments RPC returned response with no experiments: <%r>",
                 response,
             )
