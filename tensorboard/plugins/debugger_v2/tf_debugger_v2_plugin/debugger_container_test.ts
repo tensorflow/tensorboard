@@ -341,6 +341,65 @@ describe('Debugger Container', () => {
       expect(digestsWithAlert[0].nativeElement.innerText).toEqual('6');
       expect(digestsWithAlert[1].nativeElement.innerText).toEqual('8');
     });
+
+    for (const numExecutions of [1, 9, 10]) {
+      it(`Hides slider if # of executions ${numExecutions} <= display count`, () => {
+        const fixture = TestBed.createComponent(TimelineContainer);
+        fixture.detectChanges();
+        const scrollBeginIndex = 0;
+        const displayCount = 10;
+        const opTypes: string[] = new Array<string>(numExecutions);
+        opTypes.fill('MatMul');
+        const debuggerState = createDebuggerStateWithLoadedExecutionDigests(
+          scrollBeginIndex,
+          displayCount,
+          opTypes
+        );
+        store.setState(createState(debuggerState));
+        fixture.detectChanges();
+
+        const sliders = fixture.debugElement.queryAll(
+          By.css('.timeline-slider')
+        );
+        expect(sliders.length).toBe(0);
+      });
+    }
+
+    for (const numExecutions of [11, 12, 20]) {
+      const displayCount = 10;
+      for (const scrollBeginIndex of [0, 1, numExecutions - displayCount]) {
+        it(
+          `Shows slider if # of executions ${numExecutions} > display count,` +
+            `scrollBeginIndex = ${scrollBeginIndex}`,
+          () => {
+            const fixture = TestBed.createComponent(TimelineContainer);
+            fixture.detectChanges();
+            const opTypes: string[] = new Array<string>(numExecutions);
+            opTypes.fill('MatMul');
+            const debuggerState = createDebuggerStateWithLoadedExecutionDigests(
+              scrollBeginIndex,
+              displayCount,
+              opTypes
+            );
+            store.setState(createState(debuggerState));
+            fixture.detectChanges();
+
+            const sliders = fixture.debugElement.queryAll(
+              By.css('.timeline-slider')
+            );
+            expect(sliders.length).toBe(1);
+            const [slider] = sliders;
+            expect(slider.attributes['ng-reflect-min']).toBe('0');
+            expect(slider.attributes['ng-reflect-max']).toBe(
+              String(numExecutions - displayCount)
+            );
+            expect(slider.attributes['ng-reflect-value']).toBe(
+              String(scrollBeginIndex)
+            );
+          }
+        );
+      }
+    }
   });
 
   describe('Execution Data module', () => {

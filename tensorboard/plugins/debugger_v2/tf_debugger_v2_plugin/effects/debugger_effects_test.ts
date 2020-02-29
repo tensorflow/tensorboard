@@ -28,6 +28,7 @@ import {
   executionDigestsRequested,
   executionScrollLeft,
   executionScrollRight,
+  executionScrollToIndex,
   numAlertsAndBreakdownRequested,
   numAlertsAndBreakdownLoaded,
   numExecutionsLoaded,
@@ -698,6 +699,76 @@ describe('Debugger effects', () => {
           if (dataAlreadyExists) {
             expect(fetchExecutionDigests).not.toHaveBeenCalled();
             expect(dispatchSpy).not.toHaveBeenCalled();
+          } else {
+            expect(fetchExecutionDigests).toHaveBeenCalledTimes(1);
+            expect(dispatchedActions).toEqual([
+              executionDigestsRequested(),
+              executionDigestsLoaded(executionDigestsResponse),
+            ]);
+          }
+        }
+      );
+    }
+
+    for (const dataAlreadyExists of [false, true]) {
+      it(
+        `scrolling to execution index triggers execution digest loading: ` +
+          `dataAlreadyExists=${dataAlreadyExists}`,
+        () => {
+          const originalScrollBeginIndex = 50;
+          const newScrollBeginIndex = originalScrollBeginIndex + 2;
+          const numExecutions = 100;
+          const displayCount = 10;
+          const pageSize = 20;
+          store.overrideSelector(getActiveRunId, runId);
+          store.overrideSelector(
+            getExecutionScrollBeginIndex,
+            newScrollBeginIndex
+          );
+          store.overrideSelector(getNumExecutions, numExecutions);
+          store.overrideSelector(getDisplayCount, displayCount);
+          store.overrideSelector(getExecutionPageSize, pageSize);
+          const pageLoadedSizes: {[pageIndex: number]: number} = {
+            0: 20,
+            1: 20,
+            2: 20,
+          };
+          if (dataAlreadyExists) {
+            pageLoadedSizes[3] = 10;
+          }
+          store.overrideSelector(getExecutionDigestsLoaded, {
+            numExecutions,
+            pageLoadedSizes,
+            state: DataLoadState.LOADED,
+            lastLoadedTimeInMs: 1234,
+          });
+
+          store.refreshState();
+
+          const executionDigestsResponse: ExecutionDigestsResponse = {
+            begin: 60,
+            end: 60 + pageSize,
+            num_digests: numExecutions,
+            execution_digests: [],
+          };
+          for (let i = 0; i < pageSize; ++i) {
+            executionDigestsResponse.execution_digests.push({
+              op_type: 'FooOp',
+              output_tensor_device_ids: ['d1'],
+            });
+          }
+          const fetchExecutionDigests = createFetchExecutionDigestsSpy(
+            runId,
+            60,
+            60 + pageSize,
+            executionDigestsResponse
+          );
+
+          action.next(executionScrollToIndex({index: newScrollBeginIndex}));
+
+          if (dataAlreadyExists) {
+            expect(fetchExecutionDigests).not.toHaveBeenCalled();
+            expect(dispatchedActions).toEqual([]);
           } else {
             expect(fetchExecutionDigests).toHaveBeenCalledTimes(1);
             expect(dispatchedActions).toEqual([

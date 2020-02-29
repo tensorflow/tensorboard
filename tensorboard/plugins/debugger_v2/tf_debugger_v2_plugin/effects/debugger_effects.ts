@@ -305,7 +305,6 @@ export class DebuggerEffects {
     end: number;
   }> {
     return this.actions$.pipe(
-      // TODO(cais): Add unit test for executionScrollToIndex.
       ofType(executionScrollLeft, executionScrollRight, executionScrollToIndex),
       withLatestFrom(
         this.store.select(getActiveRunId),

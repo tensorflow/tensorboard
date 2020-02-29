@@ -870,6 +870,20 @@ describe('Debugger reducers', () => {
     expect(nextState.executions.scrollBeginIndex).toBe(1450);
   });
 
+  for (const scrollIndex of [0, 1, 20, 50]) {
+    it(`executionScrollToIndex sets correct scrollBeginIndex ${scrollIndex}`, () => {
+      const scrollBeginIndex = 0;
+      const displayCount = 50;
+      const opTypes = new Array<string>(100);
+      opTypes.fill('FooOp');
+      const state = createDebuggerStateWithLoadedExecutionDigests(
+        scrollBeginIndex, displayCount,opTypes,
+      );
+      const nextState = reducers(state, actions.executionScrollToIndex({index: scrollIndex}));
+      expect(nextState.executions.scrollBeginIndex).toBe(scrollIndex);
+    });
+  }
+
   it(`Updates states on executionDigestFocused: scrollBeginIndex = 0`, () => {
     const state = createDebuggerState();
     const nextState = reducers(
