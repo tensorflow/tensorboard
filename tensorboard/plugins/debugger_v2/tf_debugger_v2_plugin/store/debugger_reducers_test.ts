@@ -877,9 +877,14 @@ describe('Debugger reducers', () => {
       const opTypes = new Array<string>(100);
       opTypes.fill('FooOp');
       const state = createDebuggerStateWithLoadedExecutionDigests(
-        scrollBeginIndex, displayCount,opTypes,
+        scrollBeginIndex,
+        displayCount,
+        opTypes
       );
-      const nextState = reducers(state, actions.executionScrollToIndex({index: scrollIndex}));
+      const nextState = reducers(
+        state,
+        actions.executionScrollToIndex({index: scrollIndex})
+      );
       expect(nextState.executions.scrollBeginIndex).toBe(scrollIndex);
     });
   }

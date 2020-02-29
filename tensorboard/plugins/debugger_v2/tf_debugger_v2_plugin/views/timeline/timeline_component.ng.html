@@ -46,6 +46,7 @@ limitations under the License.
       </button>
 
       <mat-slider
+        *ngIf="scrollBeginIndexUpperLimit > 0"
         class="timeline-slider"
         step="1"
         [min]="0"

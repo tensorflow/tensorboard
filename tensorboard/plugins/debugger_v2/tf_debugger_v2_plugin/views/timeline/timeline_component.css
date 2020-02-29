@@ -67,13 +67,12 @@ limitations under the License.
   width: 440px;
 }
 
-/deep/ .timeline-slider .mat-slider-thumb,
-/deep/ .timeline-slider .mat-slider-thumb > .child {
-  /* TODO(cais): Apply color #293241 to the track. */
+/deep/ .timeline-slider .mat-slider-thumb {
   border-radius: 5px;
   right: -40px;
   width: 80px;
 }
+/* TODO(cais): Apply color #293241 to the thumb and the track. */
 
 .navigation-position-info {
   display: inline-block;

@@ -415,14 +415,16 @@ const reducer = createReducer(
     (state: DebuggerState, action: {index: number}): DebuggerState => {
       if (action.index < 0 || !Number.isInteger(action.index)) {
         console.warn(
-            `Attempt to scroll to negative or non-integer execution index ` +
-            `(${action.index})`);
+          `Attempt to scroll to negative or non-integer execution index ` +
+            `(${action.index})`
+        );
       }
       const {numExecutions} = state.executions.executionDigestsLoaded;
       if (action.index > numExecutions) {
         console.warn(
-            `Attempt to scroll to execution index (${action.index}), ` +
-            `which exceeds # of executions (${numExecutions})`);
+          `Attempt to scroll to execution index (${action.index}), ` +
+            `which exceeds # of executions (${numExecutions})`
+        );
         return state;
       }
       return {
