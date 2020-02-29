@@ -414,7 +414,7 @@ const reducer = createReducer(
     actions.executionScrollToIndex,
     (state: DebuggerState, action: {index: number}): DebuggerState => {
       if (action.index < 0 || !Number.isInteger(action.index)) {
-        console.warn(
+        console.error(
           `Attempt to scroll to negative or non-integer execution index ` +
             `(${action.index})`
         );
@@ -423,7 +423,7 @@ const reducer = createReducer(
       const {displayCount} = state.executions;
       const {numExecutions} = state.executions.executionDigestsLoaded;
       if (action.index > Math.max(0, numExecutions - displayCount)) {
-        console.warn(
+        console.error(
           `Attempt to scroll to execution index (${action.index}), ` +
             `which exceeds maximum allowed index ` +
             `(numExecutions=${numExecutions}; displayCount=${displayCount})`
