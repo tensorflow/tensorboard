@@ -515,10 +515,6 @@ class _ListIntent(_Intent):
         count = 0
         for experiment in gen:
             count += 1
-            if not isinstance(experiment, experiment_pb2.Experiment):
-                url = server_info_lib.experiment_url(server_info, experiment)
-                print(url)
-                continue
             experiment_id = experiment.experiment_id
             url = server_info_lib.experiment_url(server_info, experiment_id)
             print(url)

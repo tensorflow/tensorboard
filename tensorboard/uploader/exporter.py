@@ -44,9 +44,12 @@ _FILENAME_SAFE_CHARS = frozenset(string.ascii_letters + string.digits + "-_")
 # Maximum value of a signed 64-bit integer.
 _MAX_INT64 = 2 ** 63 - 1
 
+<<<<<<< HEAD
 # Output filename for experiment metadata (creation time, description,
 # etc.) within an experiment directory.
 _FILENAME_METADATA = "metadata.json"
+=======
+>>>>>>> ba7bd79b3c858760bdfb1254d21f10cd720069a3
 # Output filename for scalar data within an experiment directory.
 _FILENAME_SCALARS = "scalars.json"
 
@@ -118,6 +121,7 @@ class TensorBoardExporter(object):
         """
         if read_time is None:
             read_time = time.time()
+<<<<<<< HEAD
         experiment_metadata_mask = experiment_pb2.ExperimentMask(
             create_time=True, update_time=True, name=True, description=True,
         )
@@ -152,6 +156,13 @@ class TensorBoardExporter(object):
                 json.dump(experiment_metadata, outfile, sort_keys=True)
                 outfile.write("\n")
 
+=======
+        for experiment in list_experiments(self._api, read_time=read_time):
+            experiment_id = experiment.experiment_id
+            experiment_dir = _experiment_directory(self._outdir, experiment_id)
+            os.mkdir(experiment_dir)
+
+>>>>>>> ba7bd79b3c858760bdfb1254d21f10cd720069a3
             scalars_filepath = os.path.join(experiment_dir, _FILENAME_SCALARS)
             try:
                 with _open_excl(scalars_filepath) as outfile:
@@ -212,7 +223,11 @@ def list_experiments(api_client, fieldmask=None, read_time=None):
 
     Yields:
       For each experiment owned by the user, an `experiment_pb2.Experiment`
-      value, or a simple string experiment ID for older servers.
+      value.
+
+    Raises:
+      RuntimeError: If the server returns experiment IDs but no experiments,
+        as in an old, unsupported version of the protocol.
     """
     if read_time is None:
         read_time = time.time()
@@ -227,10 +242,17 @@ def list_experiments(api_client, fieldmask=None, read_time=None):
         if response.experiments:
             for experiment in response.experiments:
                 yield experiment
+        elif response.experiment_ids:
+            raise RuntimeError(
+                "Server sent experiment_ids without experiments: <%r>"
+                % (list(response.experiment_ids),)
+            )
         else:
-            # Old servers.
-            for experiment_id in response.experiment_ids:
-                yield experiment_id
+            # No data: not technically a problem, but not expected.
+            logging.warn(
+                "StreamExperiments RPC returned response with no experiments: <%r>",
+                response,
+            )
 
 
 class OutputDirectoryExistsError(ValueError):
