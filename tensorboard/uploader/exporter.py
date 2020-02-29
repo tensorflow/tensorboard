@@ -47,6 +47,7 @@ _MAX_INT64 = 2 ** 63 - 1
 # Output filename for scalar data within an experiment directory.
 _FILENAME_SCALARS = "scalars.json"
 
+
 class TensorBoardExporter(object):
     """Exports all of the user's experiment data from TensorBoard.dev.
 
