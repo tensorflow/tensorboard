@@ -44,6 +44,9 @@ _FILENAME_SAFE_CHARS = frozenset(string.ascii_letters + string.digits + "-_")
 # Maximum value of a signed 64-bit integer.
 _MAX_INT64 = 2 ** 63 - 1
 
+# Output filename for scalar data within an experiment directory.
+_FILENAME_SCALARS = "scalars.json"
+
 
 class TensorBoardExporter(object):
     """Exports all of the user's experiment data from TensorBoard.dev.
@@ -113,9 +116,12 @@ class TensorBoardExporter(object):
         if read_time is None:
             read_time = time.time()
         for experiment_id in self._request_experiment_ids(read_time):
-            filepath = _scalars_filepath(self._outdir, experiment_id)
+            experiment_dir = _experiment_directory(self._outdir, experiment_id)
+            os.mkdir(experiment_dir)
+
+            scalars_filepath = os.path.join(experiment_dir, _FILENAME_SCALARS)
             try:
-                with _open_excl(filepath) as outfile:
+                with _open_excl(scalars_filepath) as outfile:
                     data = self._request_scalar_data(experiment_id, read_time)
                     for block in data:
                         json.dump(block, outfile, sort_keys=True)
@@ -221,8 +227,7 @@ class GrpcTimeoutException(Exception):
         self.experiment_id = experiment_id
 
 
-def _scalars_filepath(base_dir, experiment_id):
-    """Gets file path in which to store scalars for the given experiment."""
+def _experiment_directory(base_dir, experiment_id):
     # Experiment IDs from the server should be filename-safe; verify
     # this before creating any files.
     bad_chars = frozenset(experiment_id) - _FILENAME_SAFE_CHARS
@@ -232,7 +237,7 @@ def _scalars_filepath(base_dir, experiment_id):
                 bad_chars=sorted(bad_chars), eid=experiment_id
             )
         )
-    return os.path.join(base_dir, "scalars_%s.json" % experiment_id)
+    return os.path.join(base_dir, "experiment_%s" % experiment_id)
 
 
 def _mkdir_p(path):
