@@ -99,18 +99,27 @@ class TensorBoardExporterTest(tb_test.TestCase):
         start_time = 1571084846.25
         start_time_pb = test_util.timestamp_pb(1571084846250000000)
 
+        def outdir_files():
+            # Recursively list `outdir`.
+            result = []
+            for (dirpath, dirnames, filenames) in os.walk(outdir):
+                for filename in filenames:
+                    fullpath = os.path.join(dirpath, filename)
+                    result.append(os.path.relpath(fullpath, outdir))
+            return result
+
         generator = exporter.export(read_time=start_time)
         expected_files = []
         self.assertTrue(os.path.isdir(outdir))
-        self.assertCountEqual(expected_files, os.listdir(outdir))
+        self.assertCountEqual(expected_files, outdir_files())
         mock_api_client.StreamExperiments.assert_not_called()
         mock_api_client.StreamExperimentData.assert_not_called()
 
         # The first iteration should request the list of experiments and
         # data for one of them.
         self.assertEqual(next(generator), "123")
-        expected_files.append("scalars_123.json")
-        self.assertCountEqual(expected_files, os.listdir(outdir))
+        expected_files.append(os.path.join("experiment_123", "scalars.json"))
+        self.assertCountEqual(expected_files, outdir_files())
 
         expected_eids_request = export_service_pb2.StreamExperimentsRequest()
         expected_eids_request.read_timestamp.CopyFrom(start_time_pb)
@@ -131,8 +140,8 @@ class TensorBoardExporterTest(tb_test.TestCase):
         mock_api_client.StreamExperimentData.reset_mock()
         self.assertEqual(next(generator), "456")
 
-        expected_files.append("scalars_456.json")
-        self.assertCountEqual(expected_files, os.listdir(outdir))
+        expected_files.append(os.path.join("experiment_456", "scalars.json"))
+        self.assertCountEqual(expected_files, outdir_files())
         mock_api_client.StreamExperiments.assert_not_called()
         expected_data_request.experiment_id = "456"
         mock_api_client.StreamExperimentData.assert_called_once_with(
@@ -141,12 +150,12 @@ class TensorBoardExporterTest(tb_test.TestCase):
 
         # Again, request data for the next experiment; this experiment ID
         # was in the second response batch in the list of IDs.
-        expected_files.append("scalars_789.json")
+        expected_files.append(os.path.join("experiment_789", "scalars.json"))
         mock_api_client.StreamExperiments.reset_mock()
         mock_api_client.StreamExperimentData.reset_mock()
         self.assertEqual(next(generator), "789")
 
-        self.assertCountEqual(expected_files, os.listdir(outdir))
+        self.assertCountEqual(expected_files, outdir_files())
         mock_api_client.StreamExperiments.assert_not_called()
         expected_data_request.experiment_id = "789"
         mock_api_client.StreamExperimentData.assert_called_once_with(
@@ -158,12 +167,14 @@ class TensorBoardExporterTest(tb_test.TestCase):
         mock_api_client.StreamExperimentData.reset_mock()
         self.assertEqual(list(generator), [])
 
-        self.assertCountEqual(expected_files, os.listdir(outdir))
+        self.assertCountEqual(expected_files, outdir_files())
         mock_api_client.StreamExperiments.assert_not_called()
         mock_api_client.StreamExperimentData.assert_not_called()
 
-        # Spot-check one of the files.
-        with open(os.path.join(outdir, "scalars_456.json")) as infile:
+        # Spot-check one of the scalar data files.
+        with open(
+            os.path.join(outdir, "experiment_456", "scalars.json")
+        ) as infile:
             jsons = [json.loads(line) for line in infile]
         self.assertLen(jsons, 4)
         datum = jsons[2]
@@ -307,29 +318,6 @@ class TensorBoardExporterTest(tb_test.TestCase):
             exporter_lib.TensorBoardExporter(mock_api_client, outdir)
 
         mock_api_client.StreamExperiments.assert_not_called()
-        mock_api_client.StreamExperimentData.assert_not_called()
-
-    def test_rejects_existing_file(self):
-        mock_api_client = self._create_mock_api_client()
-
-        def stream_experiments(request, **kwargs):
-            del request  # unused
-            yield export_service_pb2.StreamExperimentsResponse(
-                experiment_ids=["123"]
-            )
-
-        mock_api_client.StreamExperiments = stream_experiments
-
-        outdir = os.path.join(self.get_temp_dir(), "outdir")
-        exporter = exporter_lib.TensorBoardExporter(mock_api_client, outdir)
-        generator = exporter.export()
-
-        with open(os.path.join(outdir, "scalars_123.json"), "w"):
-            pass
-
-        with self.assertRaises(exporter_lib.OutputFileExistsError):
-            next(generator)
-
         mock_api_client.StreamExperimentData.assert_not_called()
 
     def test_propagates_mkdir_errors(self):
