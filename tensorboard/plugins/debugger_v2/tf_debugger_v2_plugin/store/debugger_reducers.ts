@@ -418,12 +418,15 @@ const reducer = createReducer(
           `Attempt to scroll to negative or non-integer execution index ` +
             `(${action.index})`
         );
+        return state;
       }
+      const {displayCount} = state.executions;
       const {numExecutions} = state.executions.executionDigestsLoaded;
-      if (action.index > numExecutions) {
+      if (action.index > Math.max(0, numExecutions - displayCount)) {
         console.warn(
           `Attempt to scroll to execution index (${action.index}), ` +
-            `which exceeds # of executions (${numExecutions})`
+            `which exceeds maximum allowed index ` +
+            `(numExecutions=${numExecutions}; displayCount=${displayCount})`
         );
         return state;
       }
