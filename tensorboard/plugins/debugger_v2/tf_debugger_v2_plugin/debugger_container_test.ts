@@ -26,6 +26,7 @@ import {
   debuggerLoaded,
   executionScrollLeft,
   executionScrollRight,
+  executionScrollToIndex,
 } from './actions';
 import {DebuggerComponent} from './debugger_component';
 import {DebuggerContainer} from './debugger_container';
@@ -401,6 +402,32 @@ describe('Debugger Container', () => {
       }
     }
   });
+
+  for (const scrollBeginIndex of [0, 1, 5]) {
+    it(`Changes slider dispatches executionToScrollIndex (${scrollBeginIndex})`, () => {
+      const fixture = TestBed.createComponent(TimelineContainer);
+      fixture.detectChanges();
+      const numExecutions = 10;
+      const displayCount = 5;
+      const opTypes: string[] = new Array<string>(numExecutions);
+      opTypes.fill('MatMul');
+      const debuggerState = createDebuggerStateWithLoadedExecutionDigests(
+        scrollBeginIndex,
+        displayCount,
+        opTypes
+      );
+      store.setState(createState(debuggerState));
+      fixture.detectChanges();
+
+      const slider = fixture.debugElement.query(By.css('.timeline-slider'));
+
+      slider.triggerEventHandler('change', {value: scrollBeginIndex});
+      fixture.detectChanges();
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        executionScrollToIndex({index: scrollBeginIndex})
+      );
+    });
+  }
 
   describe('Execution Data module', () => {
     it('CURT_HEALTH TensorDebugMode, One Output', () => {
