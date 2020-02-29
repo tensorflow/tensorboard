@@ -253,5 +253,28 @@ class FormatTimeTest(tb_test.TestCase):
         self.assertEqual(actual, "2019-01-02 03:04:05")
 
 
+class FormatTimeAbsoluteTest(tb_test.TestCase):
+    def _run(self, t=None, tz=None):
+        timestamp_pb = timestamp_pb2.Timestamp()
+        util.set_timestamp(timestamp_pb, t)
+        try:
+            with mock.patch.dict(os.environ, {"TZ": tz}):
+                time.tzset()
+                return util.format_time_absolute(timestamp_pb)
+        finally:
+            time.tzset()
+
+    def test_in_tz_utc(self):
+        t = 981173106
+        actual = self._run(t, tz="UTC")
+        self.assertEqual(actual, "2001-02-03T04:05:06Z")
+
+    def test_in_tz_nonutc(self):
+        # Shouldn't be affected by timezone.
+        t = 981173106
+        actual = self._run(t, tz="America/Los_Angeles")
+        self.assertEqual(actual, "2001-02-03T04:05:06Z")
+
+
 if __name__ == "__main__":
     tb_test.main()

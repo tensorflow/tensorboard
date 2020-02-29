@@ -123,7 +123,9 @@ def format_time(timestamp_pb, now=None):
     """Converts a `timestamp_pb2.Timestamp` to human-readable string.
 
     This always includes the absolute date and time, and for recent dates
-    may include a relative time like "(just now)" or "(2 hours ago)".
+    may include a relative time like "(just now)" or "(2 hours ago)". It
+    should thus be used for ephemeral values. Use `format_time_absolute`
+    if the output will be persisted.
 
     Args:
       timestamp_pb: A `google.protobuf.timestamp_pb2.Timestamp` value to
@@ -161,6 +163,22 @@ def format_time(timestamp_pb, now=None):
 
     relative_part = " (%s)" % relative if relative is not None else ""
     return str(dt) + relative_part
+
+
+def format_time_absolute(timestamp_pb):
+    """Converts a `timestamp_pb2.Timestamp` to UTC time string.
+
+    This will always be of the form "2001-02-03T04:05:06Z".
+
+    Args:
+      timestamp_pb: A `google.protobuf.timestamp_pb2.Timestamp` value to
+        convert to string. The input will not be modified.
+
+    Returns:
+      An RFC 3339 date-time string.
+    """
+    dt = datetime.datetime.utcfromtimestamp(timestamp_pb.seconds)
+    return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def _ngettext(n, singular, plural):

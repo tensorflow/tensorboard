@@ -38,6 +38,7 @@ from tensorboard.uploader.proto import export_service_pb2
 from tensorboard.uploader.proto import export_service_pb2_grpc
 from tensorboard.uploader import exporter as exporter_lib
 from tensorboard.uploader import test_util
+from tensorboard.uploader import util
 from tensorboard.util import grpc_util
 from tensorboard import test as tb_test
 from tensorboard.compat.proto import summary_pb2
@@ -63,12 +64,19 @@ class TensorBoardExporterTest(tb_test.TestCase):
         def stream_experiments(request, **kwargs):
             del request  # unused
             self.assertEqual(kwargs["metadata"], grpc_util.version_metadata())
-            yield export_service_pb2.StreamExperimentsResponse(
-                experiment_ids=["123", "456"]
-            )
-            yield export_service_pb2.StreamExperimentsResponse(
-                experiment_ids=["789"]
-            )
+
+            response = export_service_pb2.StreamExperimentsResponse()
+            response.experiment_ids.extend(["123", "456"])
+            yield response
+
+            response = export_service_pb2.StreamExperimentsResponse()
+            experiment = response.experiments.add()
+            experiment.experiment_id = "789"
+            experiment.name = "bert"
+            experiment.description = "ernie"
+            util.set_timestamp(experiment.create_time, 981173106)
+            util.set_timestamp(experiment.update_time, 1015218367)
+            yield response
 
         def stream_experiment_data(request, **kwargs):
             self.assertEqual(kwargs["metadata"], grpc_util.version_metadata())
@@ -118,12 +126,17 @@ class TensorBoardExporterTest(tb_test.TestCase):
         # The first iteration should request the list of experiments and
         # data for one of them.
         self.assertEqual(next(generator), "123")
+        expected_files.append(os.path.join("experiment_123", "metadata.json"))
         expected_files.append(os.path.join("experiment_123", "scalars.json"))
         self.assertCountEqual(expected_files, outdir_files())
 
         expected_eids_request = export_service_pb2.StreamExperimentsRequest()
         expected_eids_request.read_timestamp.CopyFrom(start_time_pb)
         expected_eids_request.limit = 2 ** 63 - 1
+        expected_eids_request.experiments_mask.create_time = True
+        expected_eids_request.experiments_mask.update_time = True
+        expected_eids_request.experiments_mask.name = True
+        expected_eids_request.experiments_mask.description = True
         mock_api_client.StreamExperiments.assert_called_once_with(
             expected_eids_request, metadata=grpc_util.version_metadata()
         )
@@ -140,6 +153,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
         mock_api_client.StreamExperimentData.reset_mock()
         self.assertEqual(next(generator), "456")
 
+        expected_files.append(os.path.join("experiment_456", "metadata.json"))
         expected_files.append(os.path.join("experiment_456", "scalars.json"))
         self.assertCountEqual(expected_files, outdir_files())
         mock_api_client.StreamExperiments.assert_not_called()
@@ -150,6 +164,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
 
         # Again, request data for the next experiment; this experiment ID
         # was in the second response batch in the list of IDs.
+        expected_files.append(os.path.join("experiment_789", "metadata.json"))
         expected_files.append(os.path.join("experiment_789", "scalars.json"))
         mock_api_client.StreamExperiments.reset_mock()
         mock_api_client.StreamExperimentData.reset_mock()
@@ -194,6 +209,28 @@ class TensorBoardExporterTest(tb_test.TestCase):
         self.assertEqual(points.pop("wall_times"), expected_wall_times)
         self.assertEqual(points, {})
         self.assertEqual(datum, {})
+
+        # Check missing metadata case.
+        with open(
+            os.path.join(outdir, "experiment_456", "metadata.json")
+        ) as infile:
+            metadata = json.load(infile)
+        self.assertEqual(metadata, {})
+
+        # Check present metadata case.
+        with open(
+            os.path.join(outdir, "experiment_789", "metadata.json")
+        ) as infile:
+            metadata = json.load(infile)
+        self.assertEqual(
+            metadata,
+            {
+                "name": "bert",
+                "description": "ernie",
+                "create_time": "2001-02-03T04:05:06Z",
+                "update_time": "2002-03-04T05:06:07Z",
+            },
+        )
 
     def test_rejects_dangerous_experiment_ids(self):
         mock_api_client = self._create_mock_api_client()
