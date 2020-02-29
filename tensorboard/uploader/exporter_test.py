@@ -43,32 +43,29 @@ from tensorboard import test as tb_test
 from tensorboard.compat.proto import summary_pb2
 
 
+def _make_experiments_response(eids):
+    """Make a `StreamExperimentsResponse` with experiments with only IDs."""
+    response = export_service_pb2.StreamExperimentsResponse()
+    for eid in eids:
+        response.experiments.add(experiment_id=eid)
+    return response
+
+
 class TensorBoardExporterTest(tb_test.TestCase):
     def _create_mock_api_client(self):
         return _create_mock_api_client()
 
-    def _make_experiments_response(self, eids):
-        return export_service_pb2.StreamExperimentsResponse(experiment_ids=eids)
-
     def test_e2e_success_case(self):
         mock_api_client = self._create_mock_api_client()
         mock_api_client.StreamExperiments.return_value = iter(
-            [
-                export_service_pb2.StreamExperimentsResponse(
-                    experiment_ids=["789"]
-                ),
-            ]
+            [_make_experiments_response(["789"])]
         )
 
         def stream_experiments(request, **kwargs):
             del request  # unused
             self.assertEqual(kwargs["metadata"], grpc_util.version_metadata())
-            yield export_service_pb2.StreamExperimentsResponse(
-                experiment_ids=["123", "456"]
-            )
-            yield export_service_pb2.StreamExperimentsResponse(
-                experiment_ids=["789"]
-            )
+            yield _make_experiments_response(["123", "456"])
+            yield _make_experiments_response(["789"])
 
         def stream_experiment_data(request, **kwargs):
             self.assertEqual(kwargs["metadata"], grpc_util.version_metadata())
@@ -200,9 +197,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
 
         def stream_experiments(request, **kwargs):
             del request  # unused
-            yield export_service_pb2.StreamExperimentsResponse(
-                experiment_ids=["../authorized_keys"]
-            )
+            yield _make_experiments_response(["../authorized_keys"])
 
         mock_api_client.StreamExperiments = stream_experiments
 
@@ -229,9 +224,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
 
         def stream_experiments(request, **kwargs):
             del request  # unused
-            yield export_service_pb2.StreamExperimentsResponse(
-                experiment_ids=[experiment_id]
-            )
+            yield _make_experiments_response([experiment_id])
 
         def stream_experiment_data(request, **kwargs):
             raise test_util.grpc_error(
@@ -260,9 +253,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
 
         def stream_experiments(request, **kwargs):
             del request  # unused
-            yield export_service_pb2.StreamExperimentsResponse(
-                experiment_ids=[experiment_id]
-            )
+            yield _make_experiments_response([experiment_id])
 
         def stream_experiment_data(request, **kwargs):
             del request  # unused
@@ -288,11 +279,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
             os.chdir(self.get_temp_dir())
             mock_api_client = self._create_mock_api_client()
             mock_api_client.StreamExperiments.return_value = iter(
-                [
-                    export_service_pb2.StreamExperimentsResponse(
-                        experiment_ids=["123"]
-                    ),
-                ]
+                [_make_experiments_response(["123"])]
             )
             mock_api_client.StreamExperimentData.return_value = iter(
                 [export_service_pb2.StreamExperimentDataResponse()]
@@ -335,6 +322,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
 
 class ListExperimentsTest(tb_test.TestCase):
     def test_experiment_ids_only(self):
+        # Legacy server behavior; should raise an error.
         mock_api_client = _create_mock_api_client()
 
         def stream_experiments(request, **kwargs):
@@ -347,21 +335,15 @@ class ListExperimentsTest(tb_test.TestCase):
             )
 
         mock_api_client.StreamExperiments = mock.Mock(wraps=stream_experiments)
-        gen = exporter_lib.list_experiments(mock_api_client)
-        mock_api_client.StreamExperiments.assert_not_called()
-        self.assertEqual(list(gen), ["123", "456", "789"])
+        with self.assertRaises(RuntimeError) as cm:
+            list(exporter_lib.list_experiments(mock_api_client))
+        self.assertIn(repr(["123", "456"]), str(cm.exception))
 
     def test_mixed_experiments_and_ids(self):
         mock_api_client = _create_mock_api_client()
 
         def stream_experiments(request, **kwargs):
             del request  # unused
-
-            # Should include `experiment_ids` when no `experiments` given.
-            response = export_service_pb2.StreamExperimentsResponse()
-            response.experiment_ids.append("123")
-            response.experiment_ids.append("456")
-            yield response
 
             # Should ignore `experiment_ids` in the presence of `experiments`.
             response = export_service_pb2.StreamExperimentsResponse()
@@ -370,22 +352,31 @@ class ListExperimentsTest(tb_test.TestCase):
             response.experiments.add(experiment_id="012")
             yield response
 
-            # Should include `experiments` even when no `experiment_ids` are given.
+        mock_api_client.StreamExperiments = mock.Mock(wraps=stream_experiments)
+        gen = exporter_lib.list_experiments(mock_api_client)
+        mock_api_client.StreamExperiments.assert_not_called()
+        expected = [
+            experiment_pb2.Experiment(experiment_id="789"),
+            experiment_pb2.Experiment(experiment_id="012"),
+        ]
+        self.assertEqual(list(gen), expected)
+
+    def test_experiments_only(self):
+        mock_api_client = _create_mock_api_client()
+
+        def stream_experiments(request, **kwargs):
+            del request  # unused
             response = export_service_pb2.StreamExperimentsResponse()
-            response.experiments.add(experiment_id="345")
-            response.experiments.add(experiment_id="678")
+            response.experiments.add(experiment_id="789", name="one")
+            response.experiments.add(experiment_id="012", description="two")
             yield response
 
         mock_api_client.StreamExperiments = mock.Mock(wraps=stream_experiments)
         gen = exporter_lib.list_experiments(mock_api_client)
         mock_api_client.StreamExperiments.assert_not_called()
         expected = [
-            "123",
-            "456",
-            experiment_pb2.Experiment(experiment_id="789"),
-            experiment_pb2.Experiment(experiment_id="012"),
-            experiment_pb2.Experiment(experiment_id="345"),
-            experiment_pb2.Experiment(experiment_id="678"),
+            experiment_pb2.Experiment(experiment_id="789", name="one"),
+            experiment_pb2.Experiment(experiment_id="012", description="two"),
         ]
         self.assertEqual(list(gen), expected)
 

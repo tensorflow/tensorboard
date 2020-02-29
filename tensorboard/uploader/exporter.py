@@ -115,7 +115,8 @@ class TensorBoardExporter(object):
         """
         if read_time is None:
             read_time = time.time()
-        for experiment_id in self._request_experiment_ids(read_time):
+        for experiment in list_experiments(self._api, read_time=read_time):
+            experiment_id = experiment.experiment_id
             experiment_dir = _experiment_directory(self._outdir, experiment_id)
             os.mkdir(experiment_dir)
 
@@ -133,18 +134,6 @@ class TensorBoardExporter(object):
                     raise GrpcTimeoutException(experiment_id)
                 else:
                     raise
-
-    def _request_experiment_ids(self, read_time):
-        """Yields all of the calling user's experiment IDs, as strings."""
-        for experiment in list_experiments(self._api, read_time=read_time):
-            if isinstance(experiment, experiment_pb2.Experiment):
-                yield experiment.experiment_id
-            elif isinstance(experiment, six.string_types):
-                yield experiment
-            else:
-                raise AssertionError(
-                    "Unexpected experiment type: %r" % (experiment,)
-                )
 
     def _request_scalar_data(self, experiment_id, read_time):
         """Yields JSON-serializable blocks of scalar data."""
@@ -191,7 +180,11 @@ def list_experiments(api_client, fieldmask=None, read_time=None):
 
     Yields:
       For each experiment owned by the user, an `experiment_pb2.Experiment`
-      value, or a simple string experiment ID for older servers.
+      value.
+
+    Raises:
+      RuntimeError: If the server returns experiment IDs but no experiments,
+        as in an old, unsupported version of the protocol.
     """
     if read_time is None:
         read_time = time.time()
@@ -206,10 +199,17 @@ def list_experiments(api_client, fieldmask=None, read_time=None):
         if response.experiments:
             for experiment in response.experiments:
                 yield experiment
+        elif response.experiment_ids:
+            raise RuntimeError(
+                "Server sent experiment_ids without experiments: <%r>"
+                % (list(response.experiment_ids),)
+            )
         else:
-            # Old servers.
-            for experiment_id in response.experiment_ids:
-                yield experiment_id
+            # No data: not technically a problem, but not expected.
+            logging.warn(
+                "StreamExperiments RPC returned response with no experiments: <%r>",
+                response,
+            )
 
 
 class OutputDirectoryExistsError(ValueError):
