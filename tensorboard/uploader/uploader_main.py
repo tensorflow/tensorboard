@@ -483,7 +483,7 @@ class _UpdateMetadataIntent(_Intent):
         if self.name is not None:
             logging.info("Set name to %r", self.name)
         if self.description is not None:
-            logging.info(f"Set description to %r", repr(self.description))
+            logging.info("Set description to %r", repr(self.description))
 
 
 class _ListIntent(_Intent):
