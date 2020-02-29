@@ -22,9 +22,10 @@ import {By} from '@angular/platform-browser';
 import {Store} from '@ngrx/store';
 import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
+import {alertTypeFocusToggled} from '../../actions';
 import {DebuggerComponent} from '../../debugger_component';
 import {DebuggerContainer} from '../../debugger_container';
-import {State} from '../../store/debugger_types';
+import {State, AlertType} from '../../store/debugger_types';
 import {
   createAlertsState,
   createDebuggerState,
@@ -41,6 +42,7 @@ import {TimelineModule} from '../timeline/timeline_module';
 
 describe('Alerts Container', () => {
   let store: MockStore<State>;
+  let dispatchSpy: jasmine.Spy;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -61,6 +63,7 @@ describe('Alerts Container', () => {
       ],
     }).compileComponents();
     store = TestBed.get(Store);
+    dispatchSpy = spyOn(store, 'dispatch');
   });
 
   it('renders number of alerts and breakdown: no alerts', () => {
@@ -159,5 +162,94 @@ describe('Alerts Container', () => {
     expect(alertTypeCountElements[0].nativeElement.innerText).toBe('C: 5');
     expect(alertTypeCountElements[1].nativeElement.innerText).toBe('∞: 4');
     expect(alertTypeCountElements[2].nativeElement.innerText).toBe('■: 2');
+  });
+
+  it('renders alert type focus correctly: one focus type', () => {
+    const fixture = TestBed.createComponent(AlertsContainer);
+    store.setState(
+      createState(
+        createDebuggerState({
+          activeRunId: '__default_debugger_runs__',
+          alerts: createAlertsState({
+            numAlerts: 5,
+            alertsBreakdown: {
+              [AlertType.INF_NAN_ALERT]: 3,
+              [AlertType.TENSOR_SHAPE_ALERT]: 2,
+            },
+            focusType: AlertType.INF_NAN_ALERT,
+          }),
+        })
+      )
+    );
+    fixture.detectChanges();
+
+    const alertBreakdownsInFocus = fixture.debugElement.queryAll(
+      By.css('.alerts-breakdown-type.focus')
+    );
+    expect(alertBreakdownsInFocus.length).toBe(1);
+    const typeNameElement = alertBreakdownsInFocus[0].query(
+      By.css('.alert-type-name')
+    );
+    expect(typeNameElement.nativeElement.innerText).toBe('NaN/∞');
+  });
+
+  it('renders alert type focus correctly: no focus', () => {
+    const fixture = TestBed.createComponent(AlertsContainer);
+    store.setState(
+      createState(
+        createDebuggerState({
+          activeRunId: '__default_debugger_runs__',
+          alerts: createAlertsState({
+            numAlerts: 5,
+            alertsBreakdown: {
+              [AlertType.INF_NAN_ALERT]: 3,
+              [AlertType.TENSOR_SHAPE_ALERT]: 2,
+            },
+            focusType: null,
+          }),
+        })
+      )
+    );
+    fixture.detectChanges();
+
+    const alertBreakdownsInFocus = fixture.debugElement.queryAll(
+      By.css('.alerts-breakdown-type.focus')
+    );
+    expect(alertBreakdownsInFocus.length).toBe(0);
+  });
+
+  it('dispatches alertTypeFocusToggled when breakdown is clicked', () => {
+    const fixture = TestBed.createComponent(AlertsContainer);
+    store.setState(
+      createState(
+        createDebuggerState({
+          activeRunId: '__default_debugger_runs__',
+          alerts: createAlertsState({
+            numAlerts: 5,
+            alertsBreakdown: {
+              [AlertType.INF_NAN_ALERT]: 3,
+              [AlertType.TENSOR_SHAPE_ALERT]: 2,
+            },
+            focusType: null,
+          }),
+        })
+      )
+    );
+    fixture.detectChanges();
+
+    const alertBreakdownTypes = fixture.debugElement.queryAll(
+      By.css('.alerts-breakdown-type')
+    );
+    expect(alertBreakdownTypes.length).toBe(2);
+    alertBreakdownTypes[0].nativeElement.click();
+    expect(dispatchSpy).toHaveBeenCalledTimes(1);
+    expect(dispatchSpy).toHaveBeenCalledWith(
+      alertTypeFocusToggled({alertType: AlertType.INF_NAN_ALERT})
+    );
+    alertBreakdownTypes[1].nativeElement.click();
+    expect(dispatchSpy).toHaveBeenCalledTimes(2);
+    expect(dispatchSpy).toHaveBeenCalledWith(
+      alertTypeFocusToggled({alertType: AlertType.TENSOR_SHAPE_ALERT})
+    );
   });
 });

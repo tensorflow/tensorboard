@@ -38,6 +38,11 @@ from tensorboard.util import grpc_util
 from tensorboard.util import tb_logging
 from tensorboard.util import tensor_util
 
+# Minimum length of a logdir polling cycle in seconds. Shorter cycles will
+# sleep to avoid spinning over the logdir, which isn't great for disks and can
+# be expensive for network file systems.
+_MIN_LOGDIR_POLL_INTERVAL_SECS = 5
+
 # Minimum interval between initiating write RPCs.  When writes would otherwise
 # happen more frequently, the process will sleep to use up the rest of the time.
 _MIN_WRITE_RPC_INTERVAL_SECS = 5
@@ -69,6 +74,8 @@ class TensorBoardUploader(object):
         self,
         writer_client,
         logdir,
+        allowed_plugins,
+        logdir_poll_rate_limiter=None,
         rpc_rate_limiter=None,
         name=None,
         description=None,
@@ -78,6 +85,12 @@ class TensorBoardUploader(object):
         Args:
           writer_client: a TensorBoardWriterService stub instance
           logdir: path of the log directory to upload
+          allowed_plugins: collection of string plugin names; events will only
+            be uploaded if their time series's metadata specifies one of these
+            plugin names
+          logdir_poll_rate_limiter: a `RateLimiter` to use to limit logdir
+            polling frequency, to avoid thrashing disks, especially on networked
+            file systems
           rpc_rate_limiter: a `RateLimiter` to use to limit write RPC frequency.
             Note this limit applies at the level of single RPCs in the Scalar
             and Tensor case, but at the level of an entire blob upload in the
@@ -90,9 +103,16 @@ class TensorBoardUploader(object):
         """
         self._api = writer_client
         self._logdir = logdir
+        self._allowed_plugins = frozenset(allowed_plugins)
         self._name = name
         self._description = description
         self._request_sender = None
+        if logdir_poll_rate_limiter is None:
+            self._logdir_poll_rate_limiter = util.RateLimiter(
+                _MIN_LOGDIR_POLL_INTERVAL_SECS
+            )
+        else:
+            self._logdir_poll_rate_limiter = logdir_poll_rate_limiter
         if rpc_rate_limiter is None:
             self._rpc_rate_limiter = util.RateLimiter(
                 _MIN_WRITE_RPC_INTERVAL_SECS
@@ -122,7 +142,10 @@ class TensorBoardUploader(object):
             self._api.CreateExperiment, request
         )
         self._request_sender = _BatchedRequestSender(
-            response.experiment_id, self._api, self._rpc_rate_limiter
+            response.experiment_id,
+            self._api,
+            allowed_plugins=self._allowed_plugins,
+            rpc_rate_limiter=self._rpc_rate_limiter,
         )
         return response.experiment_id
 
@@ -139,6 +162,7 @@ class TensorBoardUploader(object):
                 "Must call create_experiment() before start_uploading()"
             )
         while True:
+            self._logdir_poll_rate_limiter.tick()
             self._upload_once()
 
     def _upload_once(self):
@@ -261,12 +285,13 @@ class _BatchedRequestSender(object):
     calling its methods concurrently.
     """
 
-    def __init__(self, experiment_id, api, rpc_rate_limiter):
+    def __init__(self, experiment_id, api, allowed_plugins, rpc_rate_limiter):
         # Map from `(run_name, tag_name)` to `SummaryMetadata` if the time
         # series is a scalar time series, else to `_NON_SCALAR_TIME_SERIES`.
         self._tag_metadata = {}
+        self._allowed_plugins = frozenset(allowed_plugins)
         self._scalar_request_sender = _ScalarBatchedRequestSender(
-            experiment_id, api, rpc_rate_limiter
+            experiment_id, api, rpc_rate_limiter,
         )
 
         # TODO(nielsene): add tensor case here
@@ -295,13 +320,15 @@ class _BatchedRequestSender(object):
             # If later events arrive with a mismatching plugin_name, they are
             # ignored with a warning.
             metadata = self._tag_metadata.get(time_series_key)
+            first_in_time_series = False
             if metadata is None:
+                first_in_time_series = True
                 metadata = value.metadata
                 self._tag_metadata[time_series_key] = metadata
 
+            plugin_name = metadata.plugin_data.plugin_name
             if value.HasField("metadata") and (
-                value.metadata.plugin_data.plugin_name
-                != metadata.plugin_data.plugin_name
+                plugin_name != value.metadata.plugin_data.plugin_name
             ):
                 logger.warning(
                     "Mismatching plugin names for %s.  Expected %s, found %s.",
@@ -309,9 +336,16 @@ class _BatchedRequestSender(object):
                     metadata.plugin_data.plugin_name,
                     value.metadata.plugin_data.plugin_name,
                 )
-            elif (
-                metadata.plugin_data.plugin_name == scalar_metadata.PLUGIN_NAME
-            ):
+                continue
+            if plugin_name not in self._allowed_plugins:
+                if first_in_time_series:
+                    logger.info(
+                        "Skipping time series %r with unsupported plugin name %r",
+                        time_series_key,
+                        plugin_name,
+                    )
+                continue
+            if plugin_name == scalar_metadata.PLUGIN_NAME:
                 self._scalar_request_sender.add_event(
                     run_name, event, value, metadata
                 )

@@ -18,15 +18,34 @@ import {Store} from '@ngrx/store';
 
 import {
   Alerts,
+  AlertType,
   DataLoadState,
   DEBUGGER_FEATURE_KEY,
   DebuggerState,
   Execution,
   Executions,
   ExecutionDigest,
+  InfNanAlert,
   State,
   StackFrame,
 } from '../store/debugger_types';
+
+export function createTestInfNanAlert(
+  override?: Partial<InfNanAlert>
+): InfNanAlert {
+  return {
+    alert_type: AlertType.INF_NAN_ALERT,
+    op_type: 'InfNanGeneratingOp',
+    output_slot: 0,
+    size: 8,
+    num_neg_inf: 1,
+    num_pos_inf: 2,
+    num_nan: 3,
+    execution_index: 0,
+    graph_execution_trace_index: null,
+    ...override,
+  };
+}
 
 export function createTestExecutionData(
   override?: Partial<Execution>
@@ -52,6 +71,16 @@ export function createTestStackFrame(): StackFrame {
     1 + Math.floor(Math.random() * 1e3), // Lineno.
     `function_${Math.floor(Math.random() * 1e3)}`, // Function name.
   ];
+}
+
+export function createTestExecutionDigest(
+  override?: Partial<ExecutionDigest>
+): ExecutionDigest {
+  return {
+    op_type: 'TestOp',
+    output_tensor_device_ids: ['d0'],
+    ...override,
+  };
 }
 
 export function createDebuggerState(
@@ -80,6 +109,8 @@ export function createAlertsState(override?: Partial<Alerts>): Alerts {
     numAlerts: 0,
     alertsBreakdown: {},
     alerts: {},
+    executionIndices: {},
+    focusType: null,
     ...override,
   };
 }

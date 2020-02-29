@@ -30,7 +30,7 @@ export enum TensorDebugMode {
   FULL_HEALTH = 4,
   SHAPE = 5,
   FULL_NUMERICS = 6,
-  FULL_TENOSR = 7,
+  FULL_TENSOR = 7,
   REDUCE_INF_NAN_THREE_SLOTS = 8,
 }
 
@@ -135,6 +135,11 @@ export interface ExecutionDigestLoadState extends LoadState {
 // the enum values from `AlertType`.
 export type AlertsBreakdown = {[alertType: string]: number};
 
+// Alerts indexed by indices.
+// The index can be either within a particular AlertType, all across
+// all AlertTypes, depending on where this type is used.
+export type AlertsByIndex = {[index: number]: Alert};
+
 export interface Alerts {
   // Load state for alerts.
   // This state can go from LOADED to LOADING, as the alerts can be loaded
@@ -147,7 +152,17 @@ export interface Alerts {
   alertsBreakdown: AlertsBreakdown;
 
   // The alerts that have been loaded so far, by alertType.
-  alerts: {[alertType: string]: Alert[]};
+  // The indices in the value `AlertsByIndex` are indices with in the
+  // specific `alertType`.
+  alerts: {[alertType: string]: AlertsByIndex};
+
+  // A map from alert index to top-level execution index, arranged by alert
+  // types. Applicable only to alerts that involve top-level execution.
+  executionIndices: {[alertType: string]: number[]};
+
+  // Which type of existing alerts is focused on (if any).
+  // `null` corresponds to no focus.
+  focusType: AlertType | null;
 }
 
 export interface Executions {

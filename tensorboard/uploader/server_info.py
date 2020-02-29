@@ -22,6 +22,7 @@ from google.protobuf import message
 import requests
 
 from tensorboard import version
+from tensorboard.plugins.scalar import metadata as scalars_metadata
 from tensorboard.uploader.proto import server_info_pb2
 
 
@@ -109,6 +110,28 @@ def experiment_url(server_info, experiment_id):
     """
     url_format = server_info.url_format
     return url_format.template.replace(url_format.id_placeholder, experiment_id)
+
+
+def allowed_plugins(server_info):
+    """Determines which plugins may upload data.
+
+    This pulls from the `plugin_control` on the `server_info` when that
+    submessage is set, else falls back to a default.
+
+    Args:
+      server_info: A `server_info_pb2.ServerInfoResponse` message.
+
+    Returns:
+      A `frozenset` of plugin names.
+    """
+    if server_info.HasField("plugin_control"):
+        return frozenset(server_info.plugin_control.allowed_plugins)
+    else:
+        # Old server: gracefully degrade to scalars only, which have
+        # been supported since launch. TODO(@wchargin): Promote this
+        # branch to an error once we're confident that we won't roll
+        # back to old server versions.
+        return frozenset((scalars_metadata.PLUGIN_NAME,))
 
 
 class CommunicationError(RuntimeError):
