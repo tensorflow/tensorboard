@@ -220,6 +220,7 @@ class S3FileSystem(object):
     def __init__(self):
         if not boto3:
             raise ImportError("boto3 must be installed for S3 support.")
+        self.s3_endpoint = os.environ.get("S3_ENDPOINT", None)
 
     def bucket_and_path(self, url):
         """Split an S3-prefixed URL into bucket and path."""
@@ -233,7 +234,7 @@ class S3FileSystem(object):
 
     def exists(self, filename):
         """Determines whether a path exists or not."""
-        client = boto3.client("s3")
+        client = boto3.client("s3", endpoint_url = self.s3_endpoint)
         bucket, path = self.bucket_and_path(filename)
         r = client.list_objects(Bucket=bucket, Prefix=path, Delimiter="/")
         if r.get("Contents") or r.get("CommonPrefixes"):
@@ -264,7 +265,7 @@ class S3FileSystem(object):
             is an opaque value that can be passed to the next invocation of
             `read(...) ' in order to continue from the last read position.
         """
-        s3 = boto3.resource("s3")
+        s3 = boto3.resource("s3", endpoint_url=self.s3_endpoint)
         bucket, path = self.bucket_and_path(filename)
         args = {}
 
@@ -292,7 +293,7 @@ class S3FileSystem(object):
                 if size is not None:
                     # Asked for too much, so request just to the end. Do this
                     # in a second request so we don't check length in all cases.
-                    client = boto3.client("s3")
+                    client = boto3.client("s3", endpoint_url=self.s3_endpoint)
                     obj = client.head_object(Bucket=bucket, Key=path)
                     content_length = obj["ContentLength"]
                     endpoint = min(content_length, offset + size)
@@ -321,7 +322,7 @@ class S3FileSystem(object):
             file_content: string, the contents
             binary_mode: bool, write as binary if True, otherwise text
         """
-        client = boto3.client("s3")
+        client = boto3.client("s3", endpoint_url=self.s3_endpoint)
         bucket, path = self.bucket_and_path(filename)
         # Always convert to bytes for writing
         if binary_mode:
@@ -348,7 +349,7 @@ class S3FileSystem(object):
             # filesystems in some way.
             return []
         filename = filename[:-1]
-        client = boto3.client("s3")
+        client = boto3.client("s3", endpoint_url=self.s3_endpoint)
         bucket, path = self.bucket_and_path(filename)
         p = client.get_paginator("list_objects")
         keys = []
@@ -361,7 +362,7 @@ class S3FileSystem(object):
 
     def isdir(self, dirname):
         """Returns whether the path is a directory or not."""
-        client = boto3.client("s3")
+        client = boto3.client("s3", endpoint_url=self.s3_endpoint)
         bucket, path = self.bucket_and_path(dirname)
         if not path.endswith("/"):
             path += "/"  # This will now only retrieve subdir content
@@ -372,7 +373,7 @@ class S3FileSystem(object):
 
     def listdir(self, dirname):
         """Returns a list of entries contained within a directory."""
-        client = boto3.client("s3")
+        client = boto3.client("s3", endpoint_url=self.s3_endpoint)
         bucket, path = self.bucket_and_path(dirname)
         p = client.get_paginator("list_objects")
         if not path.endswith("/"):
@@ -394,7 +395,7 @@ class S3FileSystem(object):
             raise errors.AlreadyExistsError(
                 None, None, "Directory already exists"
             )
-        client = boto3.client("s3")
+        client = boto3.client("s3", endpoint_url=self.s3_endpoint)
         bucket, path = self.bucket_and_path(dirname)
         if not path.endswith("/"):
             path += "/"  # This will make sure we don't override a file
@@ -404,7 +405,7 @@ class S3FileSystem(object):
         """Returns file statistics for a given path."""
         # NOTE: Size of the file is given by ContentLength from S3,
         # but we convert to .length
-        client = boto3.client("s3")
+        client = boto3.client("s3", endpoint_url=self.s3_endpoint)
         bucket, path = self.bucket_and_path(filename)
         try:
             obj = client.head_object(Bucket=bucket, Key=path)
