@@ -1,3 +1,16 @@
+# Release 2.1.1
+
+## Features
+
+- Uploader: Added ability to upload and modify experiment name and description (#3277)
+
+## Breaking changes
+
+- As per
+  https://groups.google.com/a/tensorflow.org/forum/#!topic/developers/ifEAGK3aPls
+  this patch does not support Python 2.  Only Python 3 is supported
+
+
 # Release 2.1.0
 
 The 2.1 minor series tracks TensorFlow 2.1.
