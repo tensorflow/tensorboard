@@ -45,6 +45,9 @@ _FILENAME_SAFE_CHARS = frozenset(string.ascii_letters + string.digits + "-_")
 # Maximum value of a signed 64-bit integer.
 _MAX_INT64 = 2 ** 63 - 1
 
+# Output filename for experiment metadata (creation time, description,
+# etc.) within an experiment directory.
+_FILENAME_METADATA = "metadata.json"
 # Output filename for scalar data within an experiment directory.
 _FILENAME_SCALARS = "scalars.json"
 
@@ -118,10 +121,31 @@ class TensorBoardExporter(object):
         """
         if read_time is None:
             read_time = time.time()
-        for experiment in list_experiments(self._api, read_time=read_time):
+        experiment_metadata_mask = experiment_pb2.ExperimentMask(
+            create_time=True, update_time=True, name=True, description=True,
+        )
+        experiments = list_experiments(
+            self._api, fieldmask=experiment_metadata_mask, read_time=read_time
+        )
+        for experiment in experiments:
             experiment_id = experiment.experiment_id
+            experiment_metadata = {
+                "name": experiment.name,
+                "description": experiment.description,
+                "create_time": util.format_time_absolute(
+                    experiment.create_time
+                ),
+                "update_time": util.format_time_absolute(
+                    experiment.update_time
+                ),
+            }
             experiment_dir = _experiment_directory(self._outdir, experiment_id)
             os.mkdir(experiment_dir)
+
+            metadata_filepath = os.path.join(experiment_dir, _FILENAME_METADATA)
+            with _open_excl(metadata_filepath) as outfile:
+                json.dump(experiment_metadata, outfile, sort_keys=True)
+                outfile.write("\n")
 
             scalars_filepath = os.path.join(experiment_dir, _FILENAME_SCALARS)
             try:
