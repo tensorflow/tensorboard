@@ -428,7 +428,7 @@ class _TimeSeries(object):
         max_wall_time,
         plugin_content,
         description,
-        display_name,
+        display_name
     ):
         self._max_step = max_step
         self._max_wall_time = max_wall_time
@@ -705,7 +705,7 @@ class BlobSequenceTimeSeries(_TimeSeries):
         max_length,
         plugin_content,
         description,
-        display_name,
+        display_name
     ):
         super(BlobSequenceTimeSeries, self).__init__(
             max_step=max_step,
