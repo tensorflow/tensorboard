@@ -65,7 +65,6 @@ class TensorBoardExporterTest(tb_test.TestCase):
         def stream_experiments(request, **kwargs):
             del request  # unused
             self.assertEqual(kwargs["metadata"], grpc_util.version_metadata())
-<<<<<<< HEAD
 
             response = export_service_pb2.StreamExperimentsResponse()
             response.experiments.add(experiment_id="123")
@@ -80,10 +79,6 @@ class TensorBoardExporterTest(tb_test.TestCase):
             util.set_timestamp(experiment.create_time, 981173106)
             util.set_timestamp(experiment.update_time, 1015218367)
             yield response
-=======
-            yield _make_experiments_response(["123", "456"])
-            yield _make_experiments_response(["789"])
->>>>>>> f139790f9efa2bb131c3e55481cb7a54f6b4b8f2
 
         def stream_experiment_data(request, **kwargs):
             self.assertEqual(kwargs["metadata"], grpc_util.version_metadata())

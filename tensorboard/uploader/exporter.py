@@ -121,7 +121,6 @@ class TensorBoardExporter(object):
         """
         if read_time is None:
             read_time = time.time()
-<<<<<<< HEAD
         experiment_metadata_mask = experiment_pb2.ExperimentMask(
             create_time=True, update_time=True, name=True, description=True,
         )
@@ -140,10 +139,6 @@ class TensorBoardExporter(object):
                     experiment.update_time
                 ),
             }
-=======
-        for experiment in list_experiments(self._api, read_time=read_time):
-            experiment_id = experiment.experiment_id
->>>>>>> f139790f9efa2bb131c3e55481cb7a54f6b4b8f2
             experiment_dir = _experiment_directory(self._outdir, experiment_id)
             os.mkdir(experiment_dir)
 
