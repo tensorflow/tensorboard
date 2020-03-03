@@ -903,18 +903,16 @@ describe('Debugger reducers', () => {
           displayCount,
           opTypes
         );
-        const nextState = reducers(
-          state,
-          actions.executionScrollToIndex({index: scrollIndex})
-        );
-        expect(nextState.executions.scrollBeginIndex).toBe(
-          originalScrollBeginIndex
-        );
+        expect(() =>
+          reducers(state, actions.executionScrollToIndex({index: scrollIndex}))
+        ).toThrow();
       }
     );
   }
 
   for (const scrollIndex of [-1, 0.5, 1, 2, 20]) {
+    // In these tests, `displayCount` is 50 and there are only 20 execution digests
+    // (< 50). Hence, the only valid scrolling begin index is 0.
     it(
       `Invalid executionScrollToIndex (${scrollIndex}) does not change scrollBeginIdnex:` +
         `displayCount >= numExecutions`,
@@ -928,13 +926,9 @@ describe('Debugger reducers', () => {
           displayCount,
           opTypes
         );
-        const nextState = reducers(
-          state,
-          actions.executionScrollToIndex({index: scrollIndex})
-        );
-        expect(nextState.executions.scrollBeginIndex).toBe(
-          originalScrollBeginIndex
-        );
+        expect(() =>
+          reducers(state, actions.executionScrollToIndex({index: scrollIndex}))
+        ).toThrow();
       }
     );
   }

@@ -61,9 +61,9 @@ limitations under the License.
 .timeline-slider {
   display: inline-block;
   height: 48px;
-  padding: 0px;
+  padding: 0;
   position: absolute;
-  right: 0px;
+  right: 0;
   width: 440px;
 }
 

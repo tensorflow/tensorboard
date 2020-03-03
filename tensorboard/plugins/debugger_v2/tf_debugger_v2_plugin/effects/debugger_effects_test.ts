@@ -710,7 +710,16 @@ describe('Debugger effects', () => {
       );
     }
 
-    for (const dataAlreadyExists of [false, true]) {
+    for (const {dataAlreadyExists, lastPageLoadedSize} of [
+      {
+        dataAlreadyExists: false,
+        lastPageLoadedSize: 0,
+      },
+      {
+        dataAlreadyExists: true,
+        lastPageLoadedSize: 10,
+      },
+    ]) {
       it(
         `scrolling to execution index triggers execution digest loading: ` +
           `dataAlreadyExists=${dataAlreadyExists}`,
@@ -733,9 +742,7 @@ describe('Debugger effects', () => {
             1: 20,
             2: 20,
           };
-          if (dataAlreadyExists) {
-            pageLoadedSizes[3] = 10;
-          }
+          pageLoadedSizes[3] = lastPageLoadedSize;
           store.overrideSelector(getExecutionDigestsLoaded, {
             numExecutions,
             pageLoadedSizes,
@@ -749,14 +756,11 @@ describe('Debugger effects', () => {
             begin: 60,
             end: 60 + pageSize,
             num_digests: numExecutions,
-            execution_digests: [],
-          };
-          for (let i = 0; i < pageSize; ++i) {
-            executionDigestsResponse.execution_digests.push({
+            execution_digests: new Array<ExecutionDigest>(pageSize).fill({
               op_type: 'FooOp',
               output_tensor_device_ids: ['d1'],
-            });
-          }
+            }),
+          };
           const fetchExecutionDigests = createFetchExecutionDigestsSpy(
             runId,
             60,

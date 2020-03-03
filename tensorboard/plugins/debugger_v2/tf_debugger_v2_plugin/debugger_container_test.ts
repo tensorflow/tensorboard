@@ -344,7 +344,7 @@ describe('Debugger Container', () => {
     });
 
     for (const numExecutions of [1, 9, 10]) {
-      it(`Hides slider if # of executions ${numExecutions} <= display count`, () => {
+      it(`hides slider if # of executions ${numExecutions} <= display count`, () => {
         const fixture = TestBed.createComponent(TimelineContainer);
         fixture.detectChanges();
         const scrollBeginIndex = 0;
@@ -370,7 +370,7 @@ describe('Debugger Container', () => {
       const displayCount = 10;
       for (const scrollBeginIndex of [0, 1, numExecutions - displayCount]) {
         it(
-          `Shows slider if # of executions ${numExecutions} > display count,` +
+          `shows slider if # of executions ${numExecutions} > display count,` +
             `scrollBeginIndex = ${scrollBeginIndex}`,
           () => {
             const fixture = TestBed.createComponent(TimelineContainer);
@@ -390,11 +390,11 @@ describe('Debugger Container', () => {
             );
             expect(sliders.length).toBe(1);
             const [slider] = sliders;
-            expect(slider.attributes['ng-reflect-min']).toBe('0');
-            expect(slider.attributes['ng-reflect-max']).toBe(
+            expect(slider.attributes['aria-valuemin']).toBe('0');
+            expect(slider.attributes['aria-valuemax']).toBe(
               String(numExecutions - displayCount)
             );
-            expect(slider.attributes['ng-reflect-value']).toBe(
+            expect(slider.attributes['aria-valuenow']).toBe(
               String(scrollBeginIndex)
             );
           }
@@ -404,7 +404,7 @@ describe('Debugger Container', () => {
   });
 
   for (const scrollBeginIndex of [0, 1, 5]) {
-    it(`Changes slider dispatches executionToScrollIndex (${scrollBeginIndex})`, () => {
+    it(`changes slider dispatches executionToScrollIndex (${scrollBeginIndex})`, () => {
       const fixture = TestBed.createComponent(TimelineContainer);
       fixture.detectChanges();
       const numExecutions = 10;

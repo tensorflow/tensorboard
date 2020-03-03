@@ -414,21 +414,19 @@ const reducer = createReducer(
     actions.executionScrollToIndex,
     (state: DebuggerState, action: {index: number}): DebuggerState => {
       if (action.index < 0 || !Number.isInteger(action.index)) {
-        console.error(
+        throw new Error(
           `Attempt to scroll to negative or non-integer execution index ` +
             `(${action.index})`
         );
-        return state;
       }
       const {displayCount} = state.executions;
       const {numExecutions} = state.executions.executionDigestsLoaded;
       if (action.index > Math.max(0, numExecutions - displayCount)) {
-        console.error(
+        throw new Error(
           `Attempt to scroll to execution index (${action.index}), ` +
             `which exceeds maximum allowed index ` +
             `(numExecutions=${numExecutions}; displayCount=${displayCount})`
         );
-        return state;
       }
       return {
         ...state,
