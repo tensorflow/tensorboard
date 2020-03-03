@@ -30,13 +30,13 @@ logger = tb_logging.get_logger()
 
 
 @contextlib.contextmanager
-def _null_context():
-  """Pre-Python-3.7-compatible standin for contextlib.null_context."""
+def _nullcontext():
+  """Pre-Python-3.7-compatible standin for contextlib.nullcontext."""
   yield
 
 
 # Might as well make this a singleton.
-_NULL_CONTEXT = _null_context()
+_NULLCONTEXT = _nullcontext()
 
 
 def _silence_deprecation_warnings():
@@ -46,7 +46,7 @@ def _silence_deprecation_warnings():
     from tensorflow.python.util import deprecation
     return deprecation.silence()
   except (ImportError, AttributeError):
-    return _NULL_CONTEXT
+    return _NULLCONTEXT
 
 
 def _make_tf_record_iterator(file_path):
