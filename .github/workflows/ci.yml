@@ -24,7 +24,7 @@ env:
   BUILDIFIER_SHA256SUM: '4c985c883eafdde9c0e8cf3c8595b8bfdf32e77571c369bf8ddae83b042028d6'
 
 jobs:
-  lint-flake8:
+  lint-python-flake8:
     runs-on: ubuntu-16.04
     strategy:
       fail-fast: false
