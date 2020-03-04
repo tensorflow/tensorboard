@@ -25,7 +25,11 @@ limitations under the License.
 
     <div *ngIf="numExecutions" class="navigation-section">
       <!-- TODO(cais): Apply mat-icon-button. -->
-      <button class="navigation-button-left" (click)="onNavigateLeft.emit()">
+      <button
+        mat-button
+        class="navigation-button-left"
+        (click)="onNavigateLeft.emit()"
+      >
         &lt;
       </button>
       <div class="navigation-position-info">
@@ -33,9 +37,23 @@ limitations under the License.
         1 }} of {{ numExecutions }}
       </div>
       <!-- TODO(cais): Apply mat-icon-button. -->
-      <button class="navigation-button-right" (click)="onNavigateRight.emit()">
+      <button
+        mat-button
+        class="navigation-button-right"
+        (click)="onNavigateRight.emit()"
+      >
         &gt;
       </button>
+
+      <mat-slider
+        *ngIf="scrollBeginIndexUpperLimit > 0"
+        class="timeline-slider"
+        step="1"
+        [min]="0"
+        [max]="scrollBeginIndexUpperLimit"
+        [value]="scrollBeginIndex"
+        (change)="onSliderChange.emit($event.value)"
+      ></mat-slider>
     </div>
 
     <div *ngIf="numExecutions" class="execution-timeline">

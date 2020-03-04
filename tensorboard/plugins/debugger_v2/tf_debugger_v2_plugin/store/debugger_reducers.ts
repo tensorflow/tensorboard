@@ -411,6 +411,33 @@ const reducer = createReducer(
     }
   ),
   on(
+    actions.executionScrollToIndex,
+    (state: DebuggerState, action: {index: number}): DebuggerState => {
+      if (action.index < 0 || !Number.isInteger(action.index)) {
+        throw new Error(
+          `Attempt to scroll to negative or non-integer execution index ` +
+            `(${action.index})`
+        );
+      }
+      const {displayCount} = state.executions;
+      const {numExecutions} = state.executions.executionDigestsLoaded;
+      if (action.index > Math.max(0, numExecutions - displayCount)) {
+        throw new Error(
+          `Attempt to scroll to execution index (${action.index}), ` +
+            `which exceeds maximum allowed index ` +
+            `(numExecutions=${numExecutions}; displayCount=${displayCount})`
+        );
+      }
+      return {
+        ...state,
+        executions: {
+          ...state.executions,
+          scrollBeginIndex: action.index,
+        },
+      };
+    }
+  ),
+  on(
     actions.executionDigestFocused,
     (state: DebuggerState, action): DebuggerState => {
       return {

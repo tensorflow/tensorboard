@@ -114,6 +114,11 @@ export const executionScrollRight = createAction(
   '[Debugger] Scroll Rightward on the Execution Timeline'
 );
 
+export const executionScrollToIndex = createAction(
+  '[Debugger] Scroll the Execution Timeline to Given Index',
+  props<{index: number}>()
+);
+
 export const executionDigestFocused = createAction(
   '[Debugger] Execution Data Objects Being Focused On',
   props<{displayIndex: number}>()
