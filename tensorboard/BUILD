@@ -39,14 +39,30 @@ py_library(
     name = "lib",
     srcs = ["__init__.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
+    visibility = ["//tensorboard:internal"],
     deps = [
-        ":errors",
-        ":lazy",
+        ":lib_init_only",
         ":notebook",
         ":program",
         "//tensorboard/summary",
         "//tensorboard/summary/writer",
+    ],
+)
+
+# The dependencies needed to initialize the `tensorboard` module itself,
+# which are not sufficient to resolve all of its lazy imports. Use only
+# if you're intending to link in a proper subset of TensorBoard's public
+# API, you're linking in that subset explicitly in your downstream
+# target, and you know what you're doing.
+py_library(
+    name = "lib_init_only",
+    srcs = ["__init__.py"],
+    srcs_version = "PY2AND3",
+    visibility = ["//tensorboard:internal"],
+    deps = [
+        ":errors",
+        ":lazy",
+        ":version",
     ],
 )
 
@@ -210,7 +226,6 @@ py_library(
         "//tensorboard/plugins/image:images_plugin",
         "//tensorboard/plugins/mesh:mesh_plugin",
         "//tensorboard/plugins/pr_curve:pr_curves_plugin",
-        "//tensorboard/plugins/profile:profile_plugin_loader",
         "//tensorboard/plugins/profile_redirect:profile_redirect_plugin",
         "//tensorboard/plugins/scalar:scalars_plugin",
         "//tensorboard/plugins/text:text_plugin",
@@ -276,8 +291,6 @@ tf_web_library(
     srcs = [
         "//tensorboard/components:index.html",
         "//tensorboard/components:index.js",
-        "//tensorboard/components:trace_viewer_index.html",
-        "//tensorboard/components:trace_viewer_index.js",
     ] + select({
         "//tensorboard:dev_build": [
             "//tensorboard/webapp:ng_index.html",
@@ -337,6 +350,14 @@ py_library(
     # This is a dummy rule used as a TensorFlow dependency in open-source.
     # We expect TensorFlow to already be installed on the system, e.g. via
     # `pip install tensorflow`
+    visibility = ["//visibility:public"],
+)
+
+py_library(
+    name = "expect_tensorflow_datasets_installed",
+    # This is a dummy rule used as a TensorFlow Datasets dependency in open-source.
+    # We expect TensorFlow Datasets to already be installed on the system, e.g. via
+    # `pip install tensorflow_datasets`
     visibility = ["//visibility:public"],
 )
 
@@ -472,6 +493,7 @@ py_library(
         "//tensorboard/plugins/histogram:metadata",
         "//tensorboard/plugins/image:metadata",
         "//tensorboard/plugins/scalar:metadata",
+        "//tensorboard/plugins/text:metadata",
         "//tensorboard/util:tensor_util",
     ],
 )

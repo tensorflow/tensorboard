@@ -17,9 +17,7 @@ working example featuring the scalar dashboard.
 
 TensorBoard is designed to run entirely offline, without requiring any access
 to the Internet. For instance, this may be on your local machine, behind a
-corporate firewall, or in a datacenter. Currently, there is one exception where
-TensorBoard does require Internet access: the optional profile plugin, when
-active, connects to a Google-hosted CDN to load the Google Charts library.
+corporate firewall, or in a datacenter.
 
 [TensorBoard: Getting Started]: https://www.tensorflow.org/tensorboard/get_started
 [TensorBoard.dev]: https://tensorboard.dev
@@ -228,7 +226,7 @@ example, you may view your input data after it has been embedded in a high-
 dimensional space by your model. The embedding projector reads data from your
 model checkpoint file, and may be configured with additional metadata, like
 a vocabulary file or sprite images. For more details, see [the embedding
-projector tutorial](https://www.tensorflow.org/get_started/embedding_viz).
+projector tutorial](https://www.tensorflow.org/tutorials/text/word_embeddings).
 
 ### Text Dashboard
 

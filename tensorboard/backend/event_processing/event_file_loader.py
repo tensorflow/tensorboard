@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import contextlib
+
 from tensorboard.compat import tf
 from tensorboard.compat.proto import event_pb2
 from tensorboard.util import platform_util
@@ -25,6 +27,27 @@ from tensorboard.util import tb_logging
 
 
 logger = tb_logging.get_logger()
+
+
+@contextlib.contextmanager
+def _nullcontext():
+    """Pre-Python-3.7-compatible standin for contextlib.nullcontext."""
+    yield
+
+
+# Might as well make this a singleton.
+_NULLCONTEXT = _nullcontext()
+
+
+def _silence_deprecation_warnings():
+    """Context manager that best-effort silences TF deprecation warnings."""
+    try:
+        # Learn this one weird trick to make TF deprecation warnings go away.
+        from tensorflow.python.util import deprecation
+
+        return deprecation.silence()
+    except (ImportError, AttributeError):
+        return _NULLCONTEXT
 
 
 def _make_tf_record_iterator(file_path):
@@ -55,7 +78,9 @@ def _make_tf_record_iterator(file_path):
         return _PyRecordReaderIterator(py_record_reader_new, file_path)
     else:
         logger.debug("Opening a tf_record_iterator pointing at %s", file_path)
-        return tf.compat.v1.io.tf_record_iterator(file_path)
+        # TODO(#1711): Find non-deprecated replacement for tf_record_iterator.
+        with _silence_deprecation_warnings():
+            return tf.compat.v1.io.tf_record_iterator(file_path)
 
 
 class _PyRecordReaderIterator(object):

@@ -22,6 +22,7 @@ import {AppContainer} from './app_container';
 import {CoreModule} from './core/core_module';
 import {HashStorageModule} from './core/views/hash_storage_module';
 import {PluginsModule} from './plugins/plugins_module';
+import {SettingsModule} from './settings/settings_module';
 
 import {ROOT_REDUCERS, metaReducers} from './reducer_config';
 
@@ -40,6 +41,7 @@ import {MatIconModule} from './mat_icon_module';
     MatIconModule,
     PluginsModule,
     ReloaderModule,
+    SettingsModule,
     StoreModule.forRoot(ROOT_REDUCERS, {
       metaReducers,
       runtimeChecks: {

@@ -19,7 +19,7 @@ import {
   Input,
   Output,
 } from '@angular/core';
-import {Execution} from '../../store/debugger_types';
+import {Execution, AlertType} from '../../store/debugger_types';
 
 export interface ExecutionDigestForDisplay {
   // Op type for long-form display.
@@ -57,6 +57,9 @@ export class TimelineComponent {
 
   @Input()
   displayExecutionDigests: ExecutionDigestForDisplay[] = [];
+
+  @Input()
+  displayFocusedAlertTypes: Array<AlertType | null> = [];
 
   @Input()
   focusedExecutionIndex: number | null = null;

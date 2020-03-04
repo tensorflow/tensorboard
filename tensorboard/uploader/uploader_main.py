@@ -65,11 +65,18 @@ _SUBCOMMAND_KEY_UPLOAD = "UPLOAD"
 _SUBCOMMAND_KEY_DELETE = "DELETE"
 _SUBCOMMAND_KEY_LIST = "LIST"
 _SUBCOMMAND_KEY_EXPORT = "EXPORT"
+_SUBCOMMAND_KEY_UPDATE_METADATA = "UPDATEMETADATA"
 _SUBCOMMAND_KEY_AUTH = "AUTH"
 _AUTH_SUBCOMMAND_FLAG = "_uploader__subcommand_auth"
 _AUTH_SUBCOMMAND_KEY_REVOKE = "REVOKE"
 
 _DEFAULT_ORIGIN = "https://tensorboard.dev"
+
+
+# Size limits for input fields not bounded at a wire level. "Chars" in this
+# context refers to Unicode code points as stipulated by https://aip.dev/210.
+_EXPERIMENT_NAME_MAX_CHARS = 100
+_EXPERIMENT_DESCRIPTION_MAX_CHARS = 600
 
 
 def _prompt_for_user_ack(intent):
@@ -138,6 +145,46 @@ def _define_flags(parser):
         type=str,
         default=None,
         help="Directory containing the logs to process",
+    )
+    upload.add_argument(
+        "--name",
+        type=str,
+        default=None,
+        help="Title of the experiment.  Max 100 characters.",
+    )
+    upload.add_argument(
+        "--description",
+        type=str,
+        default=None,
+        help="Experiment description. Markdown format.  Max 600 characters.",
+    )
+
+    update_metadata = subparsers.add_parser(
+        "update-metadata",
+        help="change the name, description, or other user "
+        "metadata associated with an experiment.",
+    )
+    update_metadata.set_defaults(
+        **{_SUBCOMMAND_FLAG: _SUBCOMMAND_KEY_UPDATE_METADATA}
+    )
+    update_metadata.add_argument(
+        "--experiment_id",
+        metavar="EXPERIMENT_ID",
+        type=str,
+        default=None,
+        help="ID of the experiment on which to modify the metadata.",
+    )
+    update_metadata.add_argument(
+        "--name",
+        type=str,
+        default=None,
+        help="Title of the experiment.  Max 100 characters.",
+    )
+    update_metadata.add_argument(
+        "--description",
+        type=str,
+        default=None,
+        help="Experiment description. Markdown format.  Max 600 characters.",
     )
 
     delete = subparsers.add_parser(
@@ -256,6 +303,7 @@ def _run(flags):
     except server_info_lib.CommunicationError as e:
         _die(str(e))
     _handle_server_info(server_info)
+    logging.info("Received server info: <%r>", server_info)
 
     if not server_info.api_server.endpoint:
         logging.error("Server info response: %s", server_info)
@@ -372,6 +420,72 @@ class _DeleteExperimentIntent(_Intent):
         print("Deleted experiment %s." % experiment_id)
 
 
+class _UpdateMetadataIntent(_Intent):
+    """The user intends to update the metadata for an experiment."""
+
+    _MESSAGE_TEMPLATE = textwrap.dedent(
+        u"""\
+        This will modify the metadata associated with the experiment on
+        https://tensorboard.dev with the following experiment ID:
+
+        {experiment_id}
+
+        You have chosen to modify an experiment. All experiments uploaded
+        to TensorBoard.dev are publicly visible. Do not upload sensitive
+        data.
+        """
+    )
+
+    def __init__(self, experiment_id, name=None, description=None):
+        self.experiment_id = experiment_id
+        self.name = name
+        self.description = description
+
+    def get_ack_message_body(self):
+        return self._MESSAGE_TEMPLATE.format(experiment_id=self.experiment_id)
+
+    def execute(self, server_info, channel):
+        api_client = write_service_pb2_grpc.TensorBoardWriterServiceStub(
+            channel
+        )
+        experiment_id = self.experiment_id
+        _die_if_bad_experiment_name(self.name)
+        _die_if_bad_experiment_description(self.description)
+        if not experiment_id:
+            raise base_plugin.FlagsError(
+                "Must specify a non-empty experiment ID to modify."
+            )
+        try:
+            uploader_lib.update_experiment_metadata(
+                api_client,
+                experiment_id,
+                name=self.name,
+                description=self.description,
+            )
+        except uploader_lib.ExperimentNotFoundError:
+            _die(
+                "No such experiment %s. Either it never existed or it has "
+                "already been deleted." % experiment_id
+            )
+        except uploader_lib.PermissionDeniedError:
+            _die(
+                "Cannot modify experiment %s because it is owned by a "
+                "different user." % experiment_id
+            )
+        except uploader_lib.InvalidArgumentError as cm:
+            _die(
+                "Server cannot modify experiment as requested.\n"
+                "Server responded: %s" % cm.description()
+            )
+        except grpc.RpcError as e:
+            _die("Internal error modifying experiment: %s" % e)
+        logging.info("Modified experiment %s.", experiment_id)
+        if self.name is not None:
+            logging.info("Set name to %r", self.name)
+        if self.description is not None:
+            logging.info("Set description to %r", repr(self.description))
+
+
 class _ListIntent(_Intent):
     """The user intends to list all their experiments."""
 
@@ -401,14 +515,12 @@ class _ListIntent(_Intent):
         count = 0
         for experiment in gen:
             count += 1
-            if not isinstance(experiment, experiment_pb2.Experiment):
-                url = server_info_lib.experiment_url(server_info, experiment)
-                print(url)
-                continue
             experiment_id = experiment.experiment_id
             url = server_info_lib.experiment_url(server_info, experiment_id)
             print(url)
             data = [
+                ("Name", experiment.name or "[No Name]"),
+                ("Description", experiment.description or "[No Description]"),
                 ("Id", experiment.experiment_id),
                 ("Created", util.format_time(experiment.create_time)),
                 ("Updated", util.format_time(experiment.update_time)),
@@ -417,7 +529,7 @@ class _ListIntent(_Intent):
                 ("Tags", str(experiment.num_tags)),
             ]
             for (name, value) in data:
-                print("\t%s %s" % (name.ljust(10), value))
+                print("\t%s %s" % (name.ljust(12), value))
         sys.stdout.flush()
         if not count:
             sys.stderr.write(
@@ -426,6 +538,24 @@ class _ListIntent(_Intent):
         else:
             sys.stderr.write("Total: %d experiment(s)\n" % count)
         sys.stderr.flush()
+
+
+def _die_if_bad_experiment_name(name):
+    if name and len(name) > _EXPERIMENT_NAME_MAX_CHARS:
+        _die(
+            "Experiment name is too long.  Limit is "
+            "%s characters.\n"
+            "%r was provided." % (_EXPERIMENT_NAME_MAX_CHARS, name)
+        )
+
+
+def _die_if_bad_experiment_description(description):
+    if description and len(description) > _EXPERIMENT_DESCRIPTION_MAX_CHARS:
+        _die(
+            "Experiment description is too long.  Limit is %s characters.\n"
+            "%r was provided."
+            % (_EXPERIMENT_DESCRIPTION_MAX_CHARS, description)
+        )
 
 
 class _UploadIntent(_Intent):
@@ -443,8 +573,10 @@ class _UploadIntent(_Intent):
         """
     )
 
-    def __init__(self, logdir):
+    def __init__(self, logdir, name=None, description=None):
         self.logdir = logdir
+        self.name = name
+        self.description = description
 
     def get_ack_message_body(self):
         return self._MESSAGE_TEMPLATE.format(logdir=self.logdir)
@@ -453,7 +585,15 @@ class _UploadIntent(_Intent):
         api_client = write_service_pb2_grpc.TensorBoardWriterServiceStub(
             channel
         )
-        uploader = uploader_lib.TensorBoardUploader(api_client, self.logdir)
+        _die_if_bad_experiment_name(self.name)
+        _die_if_bad_experiment_description(self.description)
+        uploader = uploader_lib.TensorBoardUploader(
+            api_client,
+            self.logdir,
+            allowed_plugins=server_info_lib.allowed_plugins(server_info),
+            name=self.name,
+            description=self.description,
+        )
         experiment_id = uploader.create_experiment()
         url = server_info_lib.experiment_url(server_info, experiment_id)
         print(
@@ -541,10 +681,30 @@ def _get_intent(flags):
         raise base_plugin.FlagsError("Must specify subcommand (try --help).")
     if cmd == _SUBCOMMAND_KEY_UPLOAD:
         if flags.logdir:
-            return _UploadIntent(os.path.expanduser(flags.logdir))
+            return _UploadIntent(
+                os.path.expanduser(flags.logdir),
+                name=flags.name,
+                description=flags.description,
+            )
         else:
             raise base_plugin.FlagsError(
                 "Must specify directory to upload via `--logdir`."
+            )
+    if cmd == _SUBCOMMAND_KEY_UPDATE_METADATA:
+        if flags.experiment_id:
+            if flags.name is not None or flags.description is not None:
+                return _UpdateMetadataIntent(
+                    flags.experiment_id,
+                    name=flags.name,
+                    description=flags.description,
+                )
+            else:
+                raise base_plugin.FlagsError(
+                    "Must specify either `--name` or `--description`."
+                )
+        else:
+            raise base_plugin.FlagsError(
+                "Must specify experiment to modify via `--experiment_id`."
             )
     elif cmd == _SUBCOMMAND_KEY_DELETE:
         if flags.experiment_id:

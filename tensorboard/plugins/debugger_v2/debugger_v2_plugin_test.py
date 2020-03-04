@@ -189,6 +189,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
                 "num_alerts": 0,
                 "alerts_breakdown": {},
                 "per_type_alert_limit": 1000,
+                "alert_type": None,
                 "alerts": [],
             },
         )
@@ -214,6 +215,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
                 "num_alerts": 3,
                 "alerts_breakdown": {"InfNanAlert": 3,},
                 "per_type_alert_limit": 1000,
+                "alert_type": None,
                 "alerts": [],
             },
         )
@@ -326,6 +328,131 @@ class DebuggerV2PluginTest(tf.test.TestCase):
             {
                 "error": "Invalid argument: "
                 "end index (1) is unexpectedly less than begin index (2)"
+            },
+        )
+
+    def testGetAlertsWithAlertType(self):
+        _generate_tfdbg_v2_data(
+            self.logdir, tensor_debug_mode="CONCISE_HEALTH", logarithm_times=4
+        )
+        run = self._getExactlyOneRun()
+        response = self.server.get(
+            _ROUTE_PREFIX
+            + "/alerts?run=%s&alert_type=InfNanAlert&begin=1&end=-1" % run
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        data = json.loads(response.get_data())
+        self.assertEqual(data["begin"], 1)
+        self.assertEqual(data["end"], 3)
+        self.assertEqual(data["num_alerts"], 3)
+        self.assertEqual(data["alerts_breakdown"], {"InfNanAlert": 3})
+        self.assertEqual(data["alert_type"], "InfNanAlert")
+        alerts = data["alerts"]
+        self.assertLen(alerts, 2)
+        self.assertEqual(
+            alerts[0],
+            {
+                "alert_type": "InfNanAlert",
+                "op_type": "Log",
+                "output_slot": 0,
+                "size": 4.0,
+                "num_neg_inf": 0.0,
+                "num_pos_inf": 0.0,
+                "num_nan": 1.0,
+                "execution_index": 5,
+                "graph_execution_trace_index": None,
+            },
+        )
+        self.assertEqual(
+            alerts[1],
+            {
+                "alert_type": "InfNanAlert",
+                "op_type": "Log",
+                "output_slot": 0,
+                "size": 4.0,
+                "num_neg_inf": 0.0,
+                "num_pos_inf": 0.0,
+                "num_nan": 4.0,
+                "execution_index": 6,
+                "graph_execution_trace_index": None,
+            },
+        )
+
+    def testGetAlertsWithTypeFilterAndInvalidBeginOrEndWhenAlertsExist(self):
+        _generate_tfdbg_v2_data(
+            self.logdir, tensor_debug_mode="CURT_HEALTH", logarithm_times=4
+        )
+        run = self._getExactlyOneRun()
+
+        # begin = 0; end = 5
+        response = self.server.get(
+            _ROUTE_PREFIX
+            + "/alerts?alert_type=InfNanAlert&run=%s&begin=0&end=5" % run
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {"error": "Invalid argument: end index (5) out of bounds (3)"},
+        )
+
+        # begin = -1; end = 2
+        response = self.server.get(
+            _ROUTE_PREFIX
+            + "/alerts?alert_type=InfNanAlert&run=%s&begin=-1&end=2" % run
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {"error": "Invalid argument: Invalid begin index (-1)"},
+        )
+
+        # begin = 2; end = 1
+        response = self.server.get(
+            _ROUTE_PREFIX
+            + "/alerts?alert_type=InfNanAlert&run=%s&begin=2&end=1" % run
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {
+                "error": "Invalid argument: "
+                "end index (1) is unexpectedly less than begin index (2)"
+            },
+        )
+
+    def testGetAlertsWithNonexistentTypeFilterWhenAlertsExist(self):
+        _generate_tfdbg_v2_data(
+            self.logdir, tensor_debug_mode="CURT_HEALTH", logarithm_times=4
+        )
+        run = self._getExactlyOneRun()
+
+        response = self.server.get(
+            _ROUTE_PREFIX
+            + "/alerts?alert_type=NonexistentAlert&run=%s&begin=0&end=-1" % run
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {
+                "error": "Invalid argument: "
+                "Filtering of alerts failed: alert type NonexistentAlert "
+                "does not exist"
             },
         )
 

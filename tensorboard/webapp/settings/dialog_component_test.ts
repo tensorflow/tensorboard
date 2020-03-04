@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {OverlayContainer} from '@angular/cdk/overlay';
-import {TestBed, tick, fakeAsync} from '@angular/core/testing';
+import {TestBed, tick, flush, fakeAsync} from '@angular/core/testing';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {MatButtonModule} from '@angular/material/button';
 import {MatCheckboxModule} from '@angular/material/checkbox';
@@ -29,7 +29,11 @@ import {SettingsDialogComponent} from './dialog_component';
 import {SettingsButtonComponent} from './settings_button_component';
 
 import {MatIconTestingModule} from '../testing/mat_icon.module';
-import {toggleReloadEnabled, changeReloadPeriod} from '../core/actions';
+import {
+  toggleReloadEnabled,
+  changeReloadPeriod,
+  changePageSize,
+} from '../core/actions';
 import {createCoreState, createState} from '../core/testing';
 import {State} from '../core/store';
 
@@ -191,6 +195,37 @@ describe('settings test', () => {
       reloadPeriod.nativeElement.dispatchEvent(new Event('input'));
 
       tick(1e10);
+
+      expect(dispatchSpy).not.toHaveBeenCalled();
+    }));
+  });
+
+  describe('changePageSize', () => {
+    it('dispatches changing the value', fakeAsync(async () => {
+      const fixture = TestBed.createComponent(SettingsDialogComponent);
+      fixture.detectChanges();
+
+      const reloadPeriod = fixture.debugElement.query(By.css('.page-size'));
+      reloadPeriod.nativeElement.value = 20;
+      reloadPeriod.nativeElement.dispatchEvent(new Event('input'));
+
+      expect(dispatchSpy).not.toHaveBeenCalled();
+
+      // We debounce it so it does not spam other components on very keystroke.
+      flush();
+
+      expect(dispatchSpy).toHaveBeenCalledWith(changePageSize({size: 20}));
+    }));
+
+    it('does not dispatch when input is invalid', fakeAsync(async () => {
+      const fixture = TestBed.createComponent(SettingsDialogComponent);
+      fixture.detectChanges();
+
+      const reloadPeriod = fixture.debugElement.query(By.css('.reload-period'));
+      reloadPeriod.nativeElement.value = 0;
+      reloadPeriod.nativeElement.dispatchEvent(new Event('input'));
+
+      flush();
 
       expect(dispatchSpy).not.toHaveBeenCalled();
     }));

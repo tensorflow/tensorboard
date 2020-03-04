@@ -409,7 +409,8 @@ class Run(object):
 class _TimeSeries(object):
     """Metadata about time series data for a particular run and tag.
 
-    Superclass of `ScalarTimeSeries` and `BlobSequenceTimeSeries`.
+    Superclass of `ScalarTimeSeries`, `TensorTimeSeries`, and
+    `BlobSequenceTimeSeries`.
     """
 
     __slots__ = (
@@ -421,7 +422,13 @@ class _TimeSeries(object):
     )
 
     def __init__(
-        self, max_step, max_wall_time, plugin_content, description, display_name
+        self,
+        *,
+        max_step,
+        max_wall_time,
+        plugin_content,
+        description,
+        display_name
     ):
         self._max_step = max_step
         self._max_wall_time = max_wall_time
@@ -692,15 +699,20 @@ class BlobSequenceTimeSeries(_TimeSeries):
 
     def __init__(
         self,
+        *,
         max_step,
         max_wall_time,
         max_length,
         plugin_content,
         description,
-        display_name,
+        display_name
     ):
         super(BlobSequenceTimeSeries, self).__init__(
-            max_step, max_wall_time, plugin_content, description, display_name
+            max_step=max_step,
+            max_wall_time=max_wall_time,
+            plugin_content=plugin_content,
+            description=description,
+            display_name=display_name,
         )
         self._max_length = max_length
 

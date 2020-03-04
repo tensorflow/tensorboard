@@ -32,6 +32,7 @@ from tensorboard.uploader.proto import experiment_pb2
 from tensorboard.uploader.proto import export_service_pb2
 from tensorboard.uploader import util
 from tensorboard.util import grpc_util
+from tensorboard.util import tb_logging
 
 # Characters that are assumed to be safe in filenames. Note that the
 # server's experiment IDs are base64 encodings of 16-byte blobs, so they
@@ -43,6 +44,14 @@ _FILENAME_SAFE_CHARS = frozenset(string.ascii_letters + string.digits + "-_")
 
 # Maximum value of a signed 64-bit integer.
 _MAX_INT64 = 2 ** 63 - 1
+
+# Output filename for experiment metadata (creation time, description,
+# etc.) within an experiment directory.
+_FILENAME_METADATA = "metadata.json"
+# Output filename for scalar data within an experiment directory.
+_FILENAME_SCALARS = "scalars.json"
+
+logger = tb_logging.get_logger()
 
 
 class TensorBoardExporter(object):
@@ -112,10 +121,35 @@ class TensorBoardExporter(object):
         """
         if read_time is None:
             read_time = time.time()
-        for experiment_id in self._request_experiment_ids(read_time):
-            filepath = _scalars_filepath(self._outdir, experiment_id)
+        experiment_metadata_mask = experiment_pb2.ExperimentMask(
+            create_time=True, update_time=True, name=True, description=True,
+        )
+        experiments = list_experiments(
+            self._api, fieldmask=experiment_metadata_mask, read_time=read_time
+        )
+        for experiment in experiments:
+            experiment_id = experiment.experiment_id
+            experiment_metadata = {
+                "name": experiment.name,
+                "description": experiment.description,
+                "create_time": util.format_time_absolute(
+                    experiment.create_time
+                ),
+                "update_time": util.format_time_absolute(
+                    experiment.update_time
+                ),
+            }
+            experiment_dir = _experiment_directory(self._outdir, experiment_id)
+            os.mkdir(experiment_dir)
+
+            metadata_filepath = os.path.join(experiment_dir, _FILENAME_METADATA)
+            with _open_excl(metadata_filepath) as outfile:
+                json.dump(experiment_metadata, outfile, sort_keys=True)
+                outfile.write("\n")
+
+            scalars_filepath = os.path.join(experiment_dir, _FILENAME_SCALARS)
             try:
-                with _open_excl(filepath) as outfile:
+                with _open_excl(scalars_filepath) as outfile:
                     data = self._request_scalar_data(experiment_id, read_time)
                     for block in data:
                         json.dump(block, outfile, sort_keys=True)
@@ -127,18 +161,6 @@ class TensorBoardExporter(object):
                     raise GrpcTimeoutException(experiment_id)
                 else:
                     raise
-
-    def _request_experiment_ids(self, read_time):
-        """Yields all of the calling user's experiment IDs, as strings."""
-        for experiment in list_experiments(self._api, read_time=read_time):
-            if isinstance(experiment, experiment_pb2.Experiment):
-                yield experiment.experiment_id
-            elif isinstance(experiment, six.string_types):
-                yield experiment
-            else:
-                raise AssertionError(
-                    "Unexpected experiment type: %r" % (experiment,)
-                )
 
     def _request_scalar_data(self, experiment_id, read_time):
         """Yields JSON-serializable blocks of scalar data."""
@@ -185,7 +207,11 @@ def list_experiments(api_client, fieldmask=None, read_time=None):
 
     Yields:
       For each experiment owned by the user, an `experiment_pb2.Experiment`
-      value, or a simple string experiment ID for older servers.
+      value.
+
+    Raises:
+      RuntimeError: If the server returns experiment IDs but no experiments,
+        as in an old, unsupported version of the protocol.
     """
     if read_time is None:
         read_time = time.time()
@@ -200,10 +226,17 @@ def list_experiments(api_client, fieldmask=None, read_time=None):
         if response.experiments:
             for experiment in response.experiments:
                 yield experiment
+        elif response.experiment_ids:
+            raise RuntimeError(
+                "Server sent experiment_ids without experiments: <%r>"
+                % (list(response.experiment_ids),)
+            )
         else:
-            # Old servers.
-            for experiment_id in response.experiment_ids:
-                yield experiment_id
+            # No data: not technically a problem, but not expected.
+            logger.warn(
+                "StreamExperiments RPC returned response with no experiments: <%r>",
+                response,
+            )
 
 
 class OutputDirectoryExistsError(ValueError):
@@ -221,8 +254,7 @@ class GrpcTimeoutException(Exception):
         self.experiment_id = experiment_id
 
 
-def _scalars_filepath(base_dir, experiment_id):
-    """Gets file path in which to store scalars for the given experiment."""
+def _experiment_directory(base_dir, experiment_id):
     # Experiment IDs from the server should be filename-safe; verify
     # this before creating any files.
     bad_chars = frozenset(experiment_id) - _FILENAME_SAFE_CHARS
@@ -232,7 +264,7 @@ def _scalars_filepath(base_dir, experiment_id):
                 bad_chars=sorted(bad_chars), eid=experiment_id
             )
         )
-    return os.path.join(base_dir, "scalars_%s.json" % experiment_id)
+    return os.path.join(base_dir, "experiment_%s" % experiment_id)
 
 
 def _mkdir_p(path):

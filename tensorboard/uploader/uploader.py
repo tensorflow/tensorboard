@@ -29,6 +29,7 @@ import six
 
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.uploader.proto import write_service_pb2
+from tensorboard.uploader.proto import experiment_pb2
 from tensorboard.uploader import logdir_loader
 from tensorboard.uploader import util
 from tensorboard import data_compat
@@ -42,6 +43,11 @@ from tensorboard.plugins.graph import metadata as graph_metadata
 from tensorboard.util import grpc_util
 from tensorboard.util import tb_logging
 from tensorboard.util import tensor_util
+
+# Minimum length of a logdir polling cycle in seconds. Shorter cycles will
+# sleep to avoid spinning over the logdir, which isn't great for disks and can
+# be expensive for network file systems.
+_MIN_LOGDIR_POLL_INTERVAL_SECS = 5
 
 # Minimum interval between initiating write RPCs.  When writes would otherwise
 # happen more frequently, the process will sleep to use up the rest of the time.
@@ -84,14 +90,24 @@ class TensorBoardUploader(object):
         self,
         writer_client,
         logdir,
+        allowed_plugins,
+        logdir_poll_rate_limiter=None,
         rpc_rate_limiter=None,
         blob_rpc_rate_limiter=None,
+        name=None,
+        description=None,
     ):
         """Constructs a TensorBoardUploader.
 
         Args:
           writer_client: a TensorBoardWriterService stub instance
           logdir: path of the log directory to upload
+          allowed_plugins: collection of string plugin names; events will only
+            be uploaded if their time series's metadata specifies one of these
+            plugin names
+          logdir_poll_rate_limiter: a `RateLimiter` to use to limit logdir
+            polling frequency, to avoid thrashing disks, especially on networked
+            file systems
           rpc_rate_limiter: a `RateLimiter` to use to limit write RPC frequency.
             Note this limit applies at the level of single RPCs in the Scalar
             and Tensor case, but at the level of an entire blob upload in the
@@ -99,10 +115,21 @@ class TensorBoardUploader(object):
             of chunks.  Note the chunk stream is internally rate-limited by
             backpressure from the server, so it is not a concern that we do not
             explicitly rate-limit within the stream here.
+          name: String name to assign to the experiment.
+          description: String description to assign to the experiment.
         """
         self._api = writer_client
         self._logdir = logdir
+        self._allowed_plugins = frozenset(allowed_plugins)
+        self._name = name
+        self._description = description
         self._request_sender = None
+        if logdir_poll_rate_limiter is None:
+            self._logdir_poll_rate_limiter = util.RateLimiter(
+                _MIN_LOGDIR_POLL_INTERVAL_SECS
+            )
+        else:
+            self._logdir_poll_rate_limiter = logdir_poll_rate_limiter
         if rpc_rate_limiter is None:
             self._rpc_rate_limiter = util.RateLimiter(
                 _MIN_WRITE_RPC_INTERVAL_SECS
@@ -133,15 +160,18 @@ class TensorBoardUploader(object):
     def create_experiment(self):
         """Creates an Experiment for this upload session and returns the ID."""
         logger.info("Creating experiment")
-        request = write_service_pb2.CreateExperimentRequest()
+        request = write_service_pb2.CreateExperimentRequest(
+            name=self._name, description=self._description
+        )
         response = grpc_util.call_with_retries(
             self._api.CreateExperiment, request
         )
         self._request_sender = _BatchedRequestSender(
             response.experiment_id,
             self._api,
-            self._rpc_rate_limiter,
-            self._blob_rpc_rate_limiter,
+            allowed_plugins=self._allowed_plugins,
+            rpc_rate_limiter=self._rpc_rate_limiter,
+            blob_rpc_rate_limiter=self._blob_rpc_rate_limiter,
         )
         return response.experiment_id
 
@@ -158,6 +188,7 @@ class TensorBoardUploader(object):
                 "Must call create_experiment() before start_uploading()"
             )
         while True:
+            self._logdir_poll_rate_limiter.tick()
             self._upload_once()
 
     def _upload_once(self):
@@ -171,6 +202,50 @@ class TensorBoardUploader(object):
 
         run_to_events = self._logdir_loader.get_run_events()
         self._request_sender.send_requests(run_to_events)
+
+
+def update_experiment_metadata(
+    writer_client, experiment_id, name=None, description=None
+):
+    """Modifies user data associated with an experiment.
+
+    Args:
+      writer_client: a TensorBoardWriterService stub instance
+      experiment_id: string ID of the experiment to modify
+      name: If provided, modifies name of experiment to this value.
+      description: If provided, modifies the description of the experiment to
+         this value
+
+    Raises:
+      ExperimentNotFoundError: If no such experiment exists.
+      PermissionDeniedError: If the user is not authorized to modify this
+        experiment.
+      InvalidArgumentError: If the server rejected the name or description, if,
+        for instance, the size limits have changed on the server.
+    """
+    logger.info("Modifying experiment %r", experiment_id)
+    request = write_service_pb2.UpdateExperimentRequest()
+    request.experiment.experiment_id = experiment_id
+    if name is not None:
+        logger.info("Setting exp %r name to %r", experiment_id, name)
+        request.experiment.name = name
+        request.experiment_mask.name = True
+    if description is not None:
+        logger.info(
+            "Setting exp %r description to %r", experiment_id, description
+        )
+        request.experiment.description = description
+        request.experiment_mask.description = True
+    try:
+        grpc_util.call_with_retries(writer_client.UpdateExperiment, request)
+    except grpc.RpcError as e:
+        if e.code() == grpc.StatusCode.NOT_FOUND:
+            raise ExperimentNotFoundError()
+        if e.code() == grpc.StatusCode.PERMISSION_DENIED:
+            raise PermissionDeniedError()
+        if e.code() == grpc.StatusCode.INVALID_ARGUMENT:
+            raise InvalidArgumentError(e.details())
+        raise
 
 
 def delete_experiment(writer_client, experiment_id):
@@ -197,6 +272,10 @@ def delete_experiment(writer_client, experiment_id):
         if e.code() == grpc.StatusCode.PERMISSION_DENIED:
             raise PermissionDeniedError()
         raise
+
+
+class InvalidArgumentError(RuntimeError):
+    pass
 
 
 class ExperimentNotFoundError(RuntimeError):
@@ -232,14 +311,13 @@ class _BatchedRequestSender(object):
     calling its methods concurrently.
     """
 
-    def __init__(
-        self, experiment_id, api, rpc_rate_limiter, blob_rpc_rate_limiter
-    ):
+    def __init__(self, experiment_id, api, allowed_plugins, rpc_rate_limiter, blob_rpc_rate_limiter):
         # Map from `(run_name, tag_name)` to `SummaryMetadata` if the time
         # series is a scalar time series, else to `_NON_SCALAR_TIME_SERIES`.
         self._tag_metadata = {}
+        self._allowed_plugins = frozenset(allowed_plugins)
         self._scalar_request_sender = _ScalarBatchedRequestSender(
-            experiment_id, api, rpc_rate_limiter
+            experiment_id, api, rpc_rate_limiter,
         )
         self._blob_request_sender = _BlobRequestSender(
             experiment_id, api, blob_rpc_rate_limiter
@@ -262,37 +340,42 @@ class _BatchedRequestSender(object):
           RuntimeError: If no progress can be made because even a single
           point is too large (say, due to a gigabyte-long tag name).
         """
-        for (run_name, event, value) in self._run_values(run_to_events):
-            self._send_summary_value(run_name, event, value)
 
-        self._scalar_request_sender.flush()
-        # TODO(nielsene): add tensor case here
-        self._blob_request_sender.flush()
+        for (run_name, event, orig_value) in self._run_values(run_to_events):
+            value = data_compat.migrate_value(orig_value)
+            time_series_key = (run_name, value.tag)
 
-    def _send_summary_value(self, run_name, event, value):
-        time_series_key = (run_name, value.tag)
+            # The metadata for a time series is memorized on the first event.
+            # If later events arrive with a mismatching plugin_name, they are
+            # ignored with a warning.
+            metadata = self._tag_metadata.get(time_series_key)
+            first_in_time_series = False
+            if metadata is None:
+                first_in_time_series = True
+                metadata = value.metadata
+                self._tag_metadata[time_series_key] = metadata
 
-        # The metadata for a time series is memorized on the first event.
-        # If later events arrive with a mismatching plugin_name, they are
-        # ignored with a warning.
-        metadata = self._tag_metadata.get(time_series_key)
-        if metadata is None:
-            metadata = value.metadata
-            self._tag_metadata[time_series_key] = metadata
+            plugin_name = metadata.plugin_data.plugin_name
+            if value.HasField("metadata") and (
+                plugin_name != value.metadata.plugin_data.plugin_name
+            ):
+                logger.warning(
+                    "Mismatching plugin names for %s.  Expected %s, found %s.",
+                    time_series_key,
+                    metadata.plugin_data.plugin_name,
+                    value.metadata.plugin_data.plugin_name,
+                )
+                continue
+            if plugin_name not in self._allowed_plugins:
+                if first_in_time_series:
+                    logger.info(
+                        "Skipping time series %r with unsupported plugin name %r",
+                        time_series_key,
+                        plugin_name,
+                    )
+                continue
 
-        # DO NOT SUBMIT (soergel): Allow enabling/disabling upload per plugin
-
-        if value.HasField("metadata") and (
-            value.metadata.plugin_data.plugin_name
-            != metadata.plugin_data.plugin_name
-        ):
-            logger.warning(
-                "Mismatching plugin names for %s.  Expected %s, found %s.",
-                time_series_key,
-                metadata.plugin_data.plugin_name,
-                value.metadata.plugin_data.plugin_name,
-            )
-        elif metadata.data_class == summary_pb2.DATA_CLASS_SCALAR:
+        if metadata.data_class == summary_pb2.DATA_CLASS_SCALAR:
             self._scalar_request_sender.add_event(
                 run_name, event, value, metadata
             )
@@ -305,6 +388,10 @@ class _BatchedRequestSender(object):
             self._blob_request_sender.add_event(
                 run_name, event, value, metadata
             )
+
+        self._scalar_request_sender.flush()
+        # TODO(nielsene): add tensor case here
+        self._blob_request_sender.flush()
 
     def _run_values(self, run_to_events):
         """Helper generator to create a single stream of work items.

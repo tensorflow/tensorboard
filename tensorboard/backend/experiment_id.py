@@ -36,7 +36,8 @@ class ExperimentIdMiddleware(object):
     its first two path components stripped, and its experiment ID stored
     onto the WSGI environment with key taken from the `WSGI_ENVIRON_KEY`
     constant. All other requests will have paths unchanged and the
-    experiment ID set to the empty string.
+    experiment ID set to the empty string. It noops if the key taken from
+    the `WSGI_ENVIRON_KEY` is already present in the environment.
 
     Instances of this class are WSGI applications (see PEP 3333).
     """
@@ -55,6 +56,10 @@ class ExperimentIdMiddleware(object):
         )
 
     def __call__(self, environ, start_response):
+        # Skip ExperimentIdMiddleware was already called.
+        if WSGI_ENVIRON_KEY in environ:
+            return self._application(environ, start_response)
+
         path = environ.get("PATH_INFO", "")
         m = self._pat.match(path)
         if m:
