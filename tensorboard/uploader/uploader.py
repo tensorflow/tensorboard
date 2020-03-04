@@ -21,6 +21,7 @@ from __future__ import print_function
 import contextlib
 import functools
 import time
+import logging
 
 import numpy as np
 import grpc
@@ -46,6 +47,13 @@ from tensorboard.util import tensor_util
 # happen more frequently, the process will sleep to use up the rest of the time.
 _MIN_WRITE_RPC_INTERVAL_SECS = 5
 
+# Minimum interval between initiating blob write RPC streams.  When writes would
+# otherwise happen more frequently, the process will sleep to use up the rest of
+# the time.  This may differ from the above RPC rate limit, because blob streams
+# are not batched, so sending a sequence of N blobs requires N streams, which
+# could reasonably be sent more frequently.
+_MIN_BLOB_WRITE_RPC_INTERVAL_SECS = 1
+
 # Age in seconds of last write after which an event file is considered inactive.
 # TODO(@nfelt): consolidate with TensorBoard --reload_multifile default logic.
 _EVENT_FILE_INACTIVE_SECS = 4000
@@ -66,13 +74,20 @@ _MAX_REQUEST_LENGTH_BYTES = 1024 * 128
 logger = tb_logging.get_logger()
 
 # Leave breathing room within 2^22 (4 MiB) gRPC limit, using 256 KiB chunks
-BLOB_CHUNK_SIZE = 3932160  # 2^18 * 15, a bit less than 2^22.
+#BLOB_CHUNK_SIZE = 3932160  # 2^18 * 15, a bit less than 2^22.
+BLOB_CHUNK_SIZE = 100000  # 2^18 * 15, a bit less than 2^22.
 
 
 class TensorBoardUploader(object):
     """Uploads a TensorBoard logdir to TensorBoard.dev."""
 
-    def __init__(self, writer_client, logdir, rpc_rate_limiter=None):
+    def __init__(
+        self,
+        writer_client,
+        logdir,
+        rpc_rate_limiter=None,
+        blob_rpc_rate_limiter=None,
+    ):
         """Constructs a TensorBoardUploader.
 
         Args:
@@ -95,6 +110,14 @@ class TensorBoardUploader(object):
             )
         else:
             self._rpc_rate_limiter = rpc_rate_limiter
+
+        if blob_rpc_rate_limiter is None:
+            self._blob_rpc_rate_limiter = util.RateLimiter(
+                _MIN_BLOB_WRITE_RPC_INTERVAL_SECS
+            )
+        else:
+            self._blob_rpc_rate_limiter = blob_rpc_rate_limiter
+
         active_filter = (
             lambda secs: secs + _EVENT_FILE_INACTIVE_SECS >= time.time()
         )
@@ -116,7 +139,10 @@ class TensorBoardUploader(object):
             self._api.CreateExperiment, request
         )
         self._request_sender = _BatchedRequestSender(
-            response.experiment_id, self._api, self._rpc_rate_limiter
+            response.experiment_id,
+            self._api,
+            self._rpc_rate_limiter,
+            self._blob_rpc_rate_limiter,
         )
         return response.experiment_id
 
@@ -137,6 +163,7 @@ class TensorBoardUploader(object):
 
     def _upload_once(self):
         """Runs one upload cycle, sending zero or more RPCs."""
+        logger.setLevel(logging.NOTSET)
         logger.info("Starting an upload cycle")
 
         sync_start_time = time.time()
@@ -207,7 +234,9 @@ class _BatchedRequestSender(object):
     calling its methods concurrently.
     """
 
-    def __init__(self, experiment_id, api, rpc_rate_limiter):
+    def __init__(
+        self, experiment_id, api, rpc_rate_limiter, blob_rpc_rate_limiter
+    ):
         # Map from `(run_name, tag_name)` to `SummaryMetadata` if the time
         # series is a scalar time series, else to `_NON_SCALAR_TIME_SERIES`.
         self._tag_metadata = {}
@@ -215,7 +244,7 @@ class _BatchedRequestSender(object):
             experiment_id, api, rpc_rate_limiter
         )
         self._blob_request_sender = _BlobRequestSender(
-            experiment_id, api, rpc_rate_limiter
+            experiment_id, api, blob_rpc_rate_limiter
         )
 
         # TODO(nielsene): add tensor case here
@@ -527,7 +556,11 @@ class _BlobRequestSender(object):
         self._value = value
         # TODO(soergel): should we really unpack the tensor here, or ship
         # it wholesale and unpack server side, or something else?
+        # TODO(soergel): can we extract the proto fields directly instead?
         self._blobs = tensor_util.make_ndarray(self._value.tensor)
+        if np.rank(self._blobs) != 1:
+            raise ValueError(
+                "A blob sequence must be represented as a rank-1 Tensor")
         self._metadata = metadata
         self.flush()
 
@@ -536,12 +569,23 @@ class _BlobRequestSender(object):
         """
         if self._value:
             blob_sequence_id = self._get_or_create_blob_sequence()
-            print("Flushing to blob sequence id: ", blob_sequence_id)
+            logger.info(
+                "Sending %d blobs for sequence id: %s",
+                len(self._blobs),
+                blob_sequence_id,
+            )
 
             for seq_index, blob in enumerate(self._blobs):
-                # Note the _send_blob() stream is internally rate-limited.
+                # Note the _send_blob() stream is internally flow-controlled.
+                # This rate limit applies to *starting* the stream.
                 self._rpc_rate_limiter.tick()
                 self._send_blob(blob_sequence_id, seq_index, blob)
+
+            logger.info(
+                "Sent %d blobs for sequence id: %s",
+                len(self._blobs),
+                blob_sequence_id,
+            )
 
         self._new_request()
 
@@ -578,17 +622,32 @@ class _BlobRequestSender(object):
         request_iterator = self._write_blob_request_iterator(
             blob_sequence_id, seq_index, blob
         )
+        upload_start_time = time.time()
+        count = 0
+        print('Uploading blob', end='', flush=True)
         # TODO(soergel): don't wait for responses for greater throughput
         # See https://stackoverflow.com/questions/55029342/handling-async-streaming-request-in-grpc-python
         for response in self._api.WriteBlob(request_iterator):
-            print(repr(response))
+            count += 1
+            print('.', end='', flush=True)
             # TODO(soergel): validate responses?  probably not.
             pass
+        print(flush=True)
+
+        upload_duration_secs = time.time() - upload_start_time
+        logger.info(
+            "Upload for %d chunks totaling %d bytes took %.3f seconds (%.3f MB/sec)",
+            count,
+            len(blob),
+            upload_duration_secs,
+            len(blob) / upload_duration_secs / (1024*1024)
+            )
 
     def _write_blob_request_iterator(self, blob_sequence_id, seq_index, blob):
         # For now all use cases have the blob in memory already.
         # In the future we may want to stream from disk; that will require
         # refactoring here.
+        # TODO(soergel): compute crc32c's to allow server-side data validation.
         for offset in range(0, len(blob), BLOB_CHUNK_SIZE):
             chunk = blob[offset : offset + BLOB_CHUNK_SIZE]
             finalize_object = offset + BLOB_CHUNK_SIZE >= len(blob)
@@ -601,6 +660,7 @@ class _BlobRequestSender(object):
                 finalize_object=finalize_object,
                 final_crc32c=None,
             )
+            print(repr(request))
             yield request
 
 
