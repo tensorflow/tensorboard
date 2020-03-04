@@ -74,8 +74,7 @@ _MAX_REQUEST_LENGTH_BYTES = 1024 * 128
 logger = tb_logging.get_logger()
 
 # Leave breathing room within 2^22 (4 MiB) gRPC limit, using 256 KiB chunks
-#BLOB_CHUNK_SIZE = 3932160  # 2^18 * 15, a bit less than 2^22.
-BLOB_CHUNK_SIZE = 100000  # 2^18 * 15, a bit less than 2^22.
+BLOB_CHUNK_SIZE = 3932160  # 2^18 * 15, a bit less than 2^22.
 
 
 class TensorBoardUploader(object):
@@ -163,7 +162,6 @@ class TensorBoardUploader(object):
 
     def _upload_once(self):
         """Runs one upload cycle, sending zero or more RPCs."""
-        logger.setLevel(logging.NOTSET)
         logger.info("Starting an upload cycle")
 
         sync_start_time = time.time()
@@ -660,7 +658,6 @@ class _BlobRequestSender(object):
                 finalize_object=finalize_object,
                 final_crc32c=None,
             )
-            print(repr(request))
             yield request
 
 
