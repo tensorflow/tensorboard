@@ -472,11 +472,8 @@ class _UpdateMetadataIntent(_Intent):
                 "Cannot modify experiment %s because it is owned by a "
                 "different user." % experiment_id
             )
-        except uploader_lib.InvalidArgumentError as cm:
-            _die(
-                "Server cannot modify experiment as requested.\n"
-                "Server responded: %s" % cm.description()
-            )
+        except uploader_lib.InvalidArgumentError as e:
+            _die("Server cannot modify experiment as requested: %s" % e)
         except grpc.RpcError as e:
             _die("Internal error modifying experiment: %s" % e)
         logging.info("Modified experiment %s.", experiment_id)
