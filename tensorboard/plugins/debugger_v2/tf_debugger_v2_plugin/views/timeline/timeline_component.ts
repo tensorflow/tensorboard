@@ -50,6 +50,9 @@ export class TimelineComponent {
   scrollBeginIndex: number = 0;
 
   @Input()
+  scrollBeginIndexUpperLimit: number = 0;
+
+  @Input()
   pageSize: number = 0;
 
   @Input()
@@ -78,4 +81,7 @@ export class TimelineComponent {
 
   @Output()
   onExecutionDigestClicked = new EventEmitter<number>();
+
+  @Output()
+  onSliderChange = new EventEmitter<number>();
 }

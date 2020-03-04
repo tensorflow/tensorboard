@@ -870,6 +870,69 @@ describe('Debugger reducers', () => {
     expect(nextState.executions.scrollBeginIndex).toBe(1450);
   });
 
+  for (const scrollIndex of [0, 1, 20, 50]) {
+    it(`executionScrollToIndex sets correct scrollBeginIndex ${scrollIndex}`, () => {
+      const scrollBeginIndex = 0;
+      const displayCount = 50;
+      const opTypes = new Array<string>(100);
+      opTypes.fill('FooOp');
+      const state = createDebuggerStateWithLoadedExecutionDigests(
+        scrollBeginIndex,
+        displayCount,
+        opTypes
+      );
+      const nextState = reducers(
+        state,
+        actions.executionScrollToIndex({index: scrollIndex})
+      );
+      expect(nextState.executions.scrollBeginIndex).toBe(scrollIndex);
+    });
+  }
+
+  for (const scrollIndex of [-1, 0.5, 51, 100]) {
+    it(
+      `Invalid executionScrollToIndex (${scrollIndex}) does not change scrollBeginIdnex:` +
+        `displayCount < numExecutions`,
+      () => {
+        const originalScrollBeginIndex = 3;
+        const displayCount = 50;
+        const opTypes = new Array<string>(100);
+        opTypes.fill('FooOp');
+        const state = createDebuggerStateWithLoadedExecutionDigests(
+          originalScrollBeginIndex,
+          displayCount,
+          opTypes
+        );
+        expect(() =>
+          reducers(state, actions.executionScrollToIndex({index: scrollIndex}))
+        ).toThrow();
+      }
+    );
+  }
+
+  for (const scrollIndex of [-1, 0.5, 1, 2, 20]) {
+    // In these tests, `displayCount` is 50 and there are only 20 execution digests
+    // (< 50). Hence, the only valid scrolling begin index is 0.
+    it(
+      `Invalid executionScrollToIndex (${scrollIndex}) does not change scrollBeginIdnex:` +
+        `displayCount >= numExecutions`,
+      () => {
+        const originalScrollBeginIndex = 3;
+        const displayCount = 50;
+        const opTypes = new Array<string>(20);
+        opTypes.fill('FooOp');
+        const state = createDebuggerStateWithLoadedExecutionDigests(
+          originalScrollBeginIndex,
+          displayCount,
+          opTypes
+        );
+        expect(() =>
+          reducers(state, actions.executionScrollToIndex({index: scrollIndex}))
+        ).toThrow();
+      }
+    );
+  }
+
   it(`Updates states on executionDigestFocused: scrollBeginIndex = 0`, () => {
     const state = createDebuggerState();
     const nextState = reducers(
