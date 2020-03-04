@@ -370,7 +370,7 @@ describe('Debugger Container', () => {
       const displayCount = 10;
       for (const scrollBeginIndex of [0, 1, numExecutions - displayCount]) {
         it(
-          `shows slider if # of executions ${numExecutions} > display count,` +
+          `shows slider if # of executions ${numExecutions} > display count, ` +
             `scrollBeginIndex = ${scrollBeginIndex}`,
           () => {
             const fixture = TestBed.createComponent(TimelineContainer);

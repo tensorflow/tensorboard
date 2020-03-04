@@ -13,15 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {
-  BrowserModule,
-  HAMMER_GESTURE_CONFIG,
-  HAMMER_LOADER,
-} from '@angular/platform-browser';
-import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-import {GestureConfig} from '@angular/material';
 import {MatButtonModule} from '@angular/material/button';
 import {MatSliderModule} from '@angular/material/slider';
 
@@ -32,8 +25,6 @@ import {TimelineContainer} from './timeline_container';
 @NgModule({
   declarations: [TimelineComponent, TimelineContainer],
   imports: [
-    BrowserAnimationsModule,
-    BrowserModule,
     CommonModule,
     ExecutionDataModule,
     MatButtonModule,
@@ -43,13 +34,6 @@ import {TimelineContainer} from './timeline_container';
   // dragging to work. But the dragging is still not working, needs more
   // investigation. May be related to:
   // https://github.com/angular/components/issues/7905
-  providers: [
-    {
-      provide: HAMMER_LOADER,
-      useValue: () => new Promise(() => {}),
-    },
-    {provide: HAMMER_GESTURE_CONFIG, useClass: GestureConfig},
-  ],
   exports: [TimelineContainer],
 })
 export class TimelineModule {}
