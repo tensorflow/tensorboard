@@ -23,7 +23,7 @@ import {
 export interface State {}
 
 // console.log all actions
-export function logger(reducer: ActionReducer<any>): ActionReducer<any> {
+function logger(reducer: ActionReducer<any>): ActionReducer<any> {
   return (state, action) => {
     const result = reducer(state, action);
     console.groupCollapsed(action.type);
@@ -36,8 +36,13 @@ export function logger(reducer: ActionReducer<any>): ActionReducer<any> {
   };
 }
 
-export const metaReducers: MetaReducer<any>[] =
-  config.env === 'dev' ? [logger] : [];
+export function loggerMetaReducerFactory(): MetaReducer {
+  return config.env !== 'dev'
+    ? (reducer) => (state, action) => {
+        return reducer(state, action);
+      }
+    : logger;
+}
 
 export const ROOT_REDUCERS = new InjectionToken<
   ActionReducerMap<State, Action>
