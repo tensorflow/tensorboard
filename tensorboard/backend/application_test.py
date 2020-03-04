@@ -372,7 +372,56 @@ class ApplicationTest(tb_test.TestCase):
             parsed_object = self._get_json("/data/plugins_listing")
         self.assertEqual(parsed_object["foo"]["enabled"], False)
         self.assertEqual(parsed_object["baz"]["enabled"], True)
+    
+    def testPluginsListingWithExperimentalPlugin(self):
+        plugins = [
+            FakePlugin(plugin_name="bar"),
+            FakePlugin(plugin_name="foo"),
+            FakePlugin(plugin_name="bazz"),
+        ]
+        app = application.TensorBoardWSGI(plugins, experimental_plugins=["foo"])
+        self._install_server(app)
 
+        plugins_without_flag = self._get_json("/data/plugins_listing")
+        self.assertIsNotNone(plugins_without_flag.get("bar"))
+        self.assertIsNone(plugins_without_flag.get("foo"))
+        self.assertIsNotNone(plugins_without_flag.get("bazz"))
+
+        plugins_with_flag = self._get_json("/data/plugins_listing?expplugin=foo")
+        self.assertIsNotNone(plugins_with_flag.get("bar"))
+        self.assertIsNotNone(plugins_with_flag.get("foo"))
+        self.assertIsNotNone(plugins_with_flag.get("bazz"))
+
+        plugins_with_useless_flag = self._get_json("/data/plugins_listing?expplugin=bar")
+        self.assertIsNotNone(plugins_with_useless_flag.get("bar"))
+        self.assertIsNone(plugins_with_useless_flag.get("foo"))
+        self.assertIsNotNone(plugins_with_useless_flag.get("bazz"))
+    
+    def testPluginsListingWithMultipleExperimentalPlugins(self):
+        plugins = [
+            FakePlugin(plugin_name="bar"),
+            FakePlugin(plugin_name="foo"),
+            FakePlugin(plugin_name="bazz"),
+        ]
+        app = application.TensorBoardWSGI(plugins, experimental_plugins=["bar", "bazz"])
+        self._install_server(app)
+
+        plugins_without_flag = self._get_json("/data/plugins_listing")
+        self.assertIsNone(plugins_without_flag.get("bar"))
+        self.assertIsNotNone(plugins_without_flag.get("foo"))
+        self.assertIsNone(plugins_without_flag.get("bazz"))
+
+        plugins_with_one_flag = self._get_json("/data/plugins_listing?expplugin=bar")
+        self.assertIsNotNone(plugins_with_one_flag.get("bar"))
+        self.assertIsNotNone(plugins_with_one_flag.get("foo"))
+        self.assertIsNone(plugins_with_one_flag.get("bazz"))
+
+        plugins_with_multiple_flags = self._get_json("/data/plugins_listing?expplugin=bar&expplugin=bazz")
+        self.assertIsNotNone(plugins_with_multiple_flags.get("bar"))
+        self.assertIsNotNone(plugins_with_multiple_flags.get("foo"))
+        self.assertIsNotNone(plugins_with_multiple_flags.get("bazz"))
+        
+    
     def testPluginEntry(self):
         """Test the data/plugin_entry.html endpoint."""
         response = self.server.get("/data/plugin_entry.html?name=baz")

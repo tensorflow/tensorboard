@@ -89,6 +89,8 @@ PLUGIN_PREFIX = "/plugin"
 PLUGINS_LISTING_ROUTE = "/plugins_listing"
 PLUGIN_ENTRY_ROUTE = "/plugin_entry.html"
 
+EXPERIMENTAL_PLUGINS_QUERY_PARAM = "expplugin"
+
 # Slashes in a plugin name could throw the router for a loop. An empty
 # name would be confusing, too. To be safe, let's restrict the valid
 # names as follows.
@@ -114,13 +116,17 @@ def _apply_tensor_size_guidance(sampling_hints):
     return tensor_size_guidance
 
 
-def standard_tensorboard_wsgi(flags, plugin_loaders, assets_zip_provider):
+def standard_tensorboard_wsgi(flags, plugin_loaders, assets_zip_provider, experimental_plugins=[]):
     """Construct a TensorBoardWSGIApp with standard plugins and multiplexer.
 
     Args:
       flags: An argparse.Namespace containing TensorBoard CLI flags.
       plugin_loaders: A list of TBLoader instances.
       assets_zip_provider: See TBContext documentation for more information.
+      experimental_plugins: A list of plugin names that are only provided
+        experimentally. The corresponding plugins will only be activated for
+        a user if the user has specified the plugin with the expplugin query
+        parameter in the URL.
 
     Returns:
       The new TensorBoard WSGI application.
@@ -177,10 +183,10 @@ def standard_tensorboard_wsgi(flags, plugin_loaders, assets_zip_provider):
         start_reloading_multiplexer(
             multiplexer, path_to_run, reload_interval, flags.reload_task
         )
-    return TensorBoardWSGIApp(
-        flags, plugin_loaders, data_provider, assets_zip_provider, multiplexer
-    )
 
+    return TensorBoardWSGIApp(
+        flags, plugin_loaders, data_provider, assets_zip_provider, multiplexer, experimental_plugins
+    )
 
 def _handling_errors(wsgi_app):
     def wrapper(*args):
@@ -205,6 +211,7 @@ def TensorBoardWSGIApp(
     data_provider=None,
     assets_zip_provider=None,
     deprecated_multiplexer=None,
+    experimental_plugins=[],
 ):
     """Constructs a TensorBoard WSGI app from plugins and data providers.
 
@@ -218,6 +225,10 @@ def TensorBoardWSGIApp(
       deprecated_multiplexer: Optional `plugin_event_multiplexer.EventMultiplexer`
           to use for any plugins not yet enabled for the DataProvider API.
           Required if the data_provider argument is not passed.
+      experimental_plugins: A list of plugin names that are only provided
+          experimentally. The corresponding plugins will only be activated for
+          a user if the user has specified the plugin with the expplugin query
+          parameter in the URL.
 
     Returns:
       A WSGI application that implements the TensorBoard backend.
@@ -253,13 +264,13 @@ def TensorBoardWSGIApp(
             continue
         tbplugins.append(plugin)
         plugin_name_to_instance[plugin.plugin_name] = plugin
-    return TensorBoardWSGI(tbplugins, flags.path_prefix, data_provider)
+    return TensorBoardWSGI(tbplugins, flags.path_prefix, data_provider, experimental_plugins)
 
 
 class TensorBoardWSGI(object):
     """The TensorBoard WSGI app that delegates to a set of TBPlugin."""
 
-    def __init__(self, plugins, path_prefix="", data_provider=None):
+    def __init__(self, plugins, path_prefix="", data_provider=None, experimental_plugins=[]):
         """Constructs TensorBoardWSGI instance.
 
         Args:
@@ -268,6 +279,10 @@ class TensorBoardWSGI(object):
           data_provider: `tensorboard.data.provider.DataProvider` or
             `None`; if present, will inform the "active" state of
             `/plugins_listing`.
+          experimental_plugins: A list of plugin names that are only provided
+              experimentally. The corresponding plugins will only be activated for
+              a user if the user has specified the plugin with the expplugin query
+              parameter in the URL.
 
         Returns:
           A WSGI application for the set of all TBPlugin instances.
@@ -285,6 +300,7 @@ class TensorBoardWSGI(object):
         self._plugins = plugins
         self._path_prefix = path_prefix
         self._data_provider = data_provider
+        self._experimental_plugins = experimental_plugins
         if self._path_prefix.endswith("/"):
             # Should have been fixed by `fix_flags`.
             raise ValueError(
@@ -467,7 +483,12 @@ class TensorBoardWSGI(object):
             if self._data_provider is not None
             else frozenset()
         )
-        for plugin in self._plugins:
+        plugins_to_consider = filter(
+            # Filter out experimental plugins that were not activated using the query param.
+            lambda plugin: (plugin.plugin_name not in self._experimental_plugins) or
+            (plugin.plugin_name in request.args.getlist(EXPERIMENTAL_PLUGINS_QUERY_PARAM)),
+            self._plugins)
+        for plugin in plugins_to_consider:
             if (
                 type(plugin) is core_plugin.CorePlugin
             ):  # pylint: disable=unidiomatic-typecheck

@@ -112,6 +112,7 @@ class TensorBoard(object):
       plugin_loaders: Set from plugins passed to constructor.
       assets_zip_provider: Set by constructor.
       server_class: Set by constructor.
+      experimental_plugins: Set by constructor.
       flags: An argparse.Namespace set by the configure() method.
       cache_key: As `manager.cache_key`; set by the configure() method.
     """
@@ -122,6 +123,7 @@ class TensorBoard(object):
         assets_zip_provider=None,
         server_class=None,
         subcommands=None,
+        experimental_plugins=[],
     ):
         """Creates new instance.
 
@@ -133,6 +135,10 @@ class TensorBoard(object):
           server_class: An optional factory for a `TensorBoardServer` to use
             for serving the TensorBoard WSGI app. If provided, its callable
             signature should match that of `TensorBoardServer.__init__`.
+          experimental_plugins: A list of plugin names that are only provided
+            experimentally. The corresponding plugins will only be activated for
+            a user if the user has specified the plugin with the expplugin query
+            parameter in the URL.
 
         :type plugins:
           list[
@@ -161,6 +167,7 @@ class TensorBoard(object):
             if name in self.subcommands or name == _SERVE_SUBCOMMAND_NAME:
                 raise ValueError("Duplicate subcommand name: %r" % name)
             self.subcommands[name] = subcommand
+        self.experimental_plugins = experimental_plugins
         self.flags = None
 
     def configure(self, argv=("",), **kwargs):
@@ -406,7 +413,7 @@ class TensorBoard(object):
     def _make_server(self):
         """Constructs the TensorBoard WSGI app and instantiates the server."""
         app = application.standard_tensorboard_wsgi(
-            self.flags, self.plugin_loaders, self.assets_zip_provider
+            self.flags, self.plugin_loaders, self.assets_zip_provider, self.experimental_plugins,
         )
         return self.server_class(app, self.flags)
 
