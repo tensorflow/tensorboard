@@ -55,31 +55,33 @@ export function createIntegerValidator(): ValidatorFn {
   selector: 'settings-dialog',
   template: `
     <h3>Settings</h3>
-    <div class="item">
-      <mat-checkbox
-        [checked]="reloadEnabled$ | async"
-        (change)="onReloadToggle()"
-        >Reload data</mat-checkbox
-      >
-    </div>
-    <div class="item">
-      <mat-form-field>
-        <input
-          class="reload-period"
-          matInput
-          type="number"
-          placeholder="Reload Period"
-          [formControl]="reloadPeriodControl"
-        />
-      </mat-form-field>
-      <mat-error
-        *ngIf="
-          reloadPeriodControl.hasError('min') ||
-          reloadPeriodControl.hasError('required')
-        "
-      >
-        Reload period has to be minimum of 15 seconds.
-      </mat-error>
+    <div>
+      <div class="reload-toggle">
+        <mat-checkbox
+          [checked]="reloadEnabled$ | async"
+          (change)="onReloadToggle()"
+          >Reload data</mat-checkbox
+        >
+      </div>
+      <div>
+        <mat-form-field>
+          <input
+            class="reload-period"
+            matInput
+            type="number"
+            placeholder="Reload Period"
+            [formControl]="reloadPeriodControl"
+          />
+        </mat-form-field>
+        <mat-error
+          *ngIf="
+            reloadPeriodControl.hasError('min') ||
+            reloadPeriodControl.hasError('required')
+          "
+        >
+          Reload period has to be minimum of 15 seconds.
+        </mat-error>
+      </div>
     </div>
     <div>
       <mat-form-field>
