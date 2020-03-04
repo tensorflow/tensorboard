@@ -311,7 +311,10 @@ class _BatchedRequestSender(object):
     calling its methods concurrently.
     """
 
-    def __init__(self, experiment_id, api, allowed_plugins, rpc_rate_limiter, blob_rpc_rate_limiter):
+    def __init__(
+        self, experiment_id, api, allowed_plugins,
+        rpc_rate_limiter, blob_rpc_rate_limiter
+        ):
         # Map from `(run_name, tag_name)` to `SummaryMetadata` if the time
         # series is a scalar time series, else to `_NON_SCALAR_TIME_SERIES`.
         self._tag_metadata = {}
@@ -375,19 +378,19 @@ class _BatchedRequestSender(object):
                     )
                 continue
 
-        if metadata.data_class == summary_pb2.DATA_CLASS_SCALAR:
-            self._scalar_request_sender.add_event(
-                run_name, event, value, metadata
-            )
-        # TODO(nielsene): add Tensor sender
-        # elif metadata.data_class == summary_pb2.DATA_CLASS_TENSOR:
-        #     self._tensor_request_sender.add_event(
-        #         run_name, event, value, metadata
-        #     )
-        elif metadata.data_class == summary_pb2.DATA_CLASS_BLOB_SEQUENCE:
-            self._blob_request_sender.add_event(
-                run_name, event, value, metadata
-            )
+            if metadata.data_class == summary_pb2.DATA_CLASS_SCALAR:
+                self._scalar_request_sender.add_event(
+                    run_name, event, value, metadata
+                )
+            # TODO(nielsene): add Tensor sender
+            # elif metadata.data_class == summary_pb2.DATA_CLASS_TENSOR:
+            #     self._tensor_request_sender.add_event(
+            #         run_name, event, value, metadata
+            #     )
+            elif metadata.data_class == summary_pb2.DATA_CLASS_BLOB_SEQUENCE:
+                self._blob_request_sender.add_event(
+                    run_name, event, value, metadata
+                )
 
         self._scalar_request_sender.flush()
         # TODO(nielsene): add tensor case here
@@ -643,7 +646,7 @@ class _BlobRequestSender(object):
         # it wholesale and unpack server side, or something else?
         # TODO(soergel): can we extract the proto fields directly instead?
         self._blobs = tensor_util.make_ndarray(self._value.tensor)
-        if np.rank(self._blobs) != 1:
+        if np.ndim(self._blobs) != 1:
             raise ValueError(
                 "A blob sequence must be represented as a rank-1 Tensor")
         self._metadata = metadata
