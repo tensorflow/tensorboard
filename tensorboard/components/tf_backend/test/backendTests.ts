@@ -172,10 +172,6 @@ namespace tf_backend {
           });
         });
 
-        it('returns correct value for #pluginsListing', () => {
-          assert.equal(router.pluginsListing(), 'data/plugins_listing');
-        });
-
         it('returns correct value for #runs', () => {
           assert.equal(router.runs(), 'data/runs');
         });
@@ -184,6 +180,27 @@ namespace tf_backend {
           assert.equal(
             router.runsForExperiment(1),
             'data/experiment_runs?experiment=1'
+          );
+        });
+      });
+
+      describe('#pluginsListing', () => {
+        it('returns /plugins_listing with no query params', () => {
+          const router = createRouter('data', new URL('http://some.url'));
+          assert.equal(router.pluginsListing(), 'data/plugins_listing');
+        });
+
+        it('returns /plugins_listing with expplugin query params', () => {
+          const router = createRouter(
+            'data',
+            new URL(
+              'http://some.url?' +
+                'expplugin=plugin1&to_ignore=ignoreme&expplugin=plugin2'
+            )
+          );
+          assert.equal(
+            router.pluginsListing(),
+            'data/plugins_listing?expplugin=plugin1&expplugin=plugin2'
           );
         });
       });
