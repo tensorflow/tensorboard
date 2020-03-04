@@ -116,7 +116,9 @@ def _apply_tensor_size_guidance(sampling_hints):
     return tensor_size_guidance
 
 
-def standard_tensorboard_wsgi(flags, plugin_loaders, assets_zip_provider, experimental_plugins=[]):
+def standard_tensorboard_wsgi(
+    flags, plugin_loaders, assets_zip_provider, experimental_plugins=[]
+):
     """Construct a TensorBoardWSGIApp with standard plugins and multiplexer.
 
     Args:
@@ -185,8 +187,14 @@ def standard_tensorboard_wsgi(flags, plugin_loaders, assets_zip_provider, experi
         )
 
     return TensorBoardWSGIApp(
-        flags, plugin_loaders, data_provider, assets_zip_provider, multiplexer, experimental_plugins
+        flags,
+        plugin_loaders,
+        data_provider,
+        assets_zip_provider,
+        multiplexer,
+        experimental_plugins,
     )
+
 
 def _handling_errors(wsgi_app):
     def wrapper(*args):
@@ -264,13 +272,21 @@ def TensorBoardWSGIApp(
             continue
         tbplugins.append(plugin)
         plugin_name_to_instance[plugin.plugin_name] = plugin
-    return TensorBoardWSGI(tbplugins, flags.path_prefix, data_provider, experimental_plugins)
+    return TensorBoardWSGI(
+        tbplugins, flags.path_prefix, data_provider, experimental_plugins
+    )
 
 
 class TensorBoardWSGI(object):
     """The TensorBoard WSGI app that delegates to a set of TBPlugin."""
 
-    def __init__(self, plugins, path_prefix="", data_provider=None, experimental_plugins=[]):
+    def __init__(
+        self,
+        plugins,
+        path_prefix="",
+        data_provider=None,
+        experimental_plugins=[],
+    ):
         """Constructs TensorBoardWSGI instance.
 
         Args:
@@ -485,9 +501,15 @@ class TensorBoardWSGI(object):
         )
         plugins_to_consider = filter(
             # Filter out experimental plugins that were not activated using the query param.
-            lambda plugin: (plugin.plugin_name not in self._experimental_plugins) or
-            (plugin.plugin_name in request.args.getlist(EXPERIMENTAL_PLUGINS_QUERY_PARAM)),
-            self._plugins)
+            lambda plugin: (
+                plugin.plugin_name not in self._experimental_plugins
+            )
+            or (
+                plugin.plugin_name
+                in request.args.getlist(EXPERIMENTAL_PLUGINS_QUERY_PARAM)
+            ),
+            self._plugins,
+        )
         for plugin in plugins_to_consider:
             if (
                 type(plugin) is core_plugin.CorePlugin
