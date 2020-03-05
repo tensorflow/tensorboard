@@ -89,7 +89,7 @@ PLUGIN_PREFIX = "/plugin"
 PLUGINS_LISTING_ROUTE = "/plugins_listing"
 PLUGIN_ENTRY_ROUTE = "/plugin_entry.html"
 
-EXPERIMENTAL_PLUGINS_QUERY_PARAM = "expplugin"
+EXPERIMENTAL_PLUGINS_QUERY_PARAM = "experimentalPlugin"
 
 # Slashes in a plugin name could throw the router for a loop. An empty
 # name would be confusing, too. To be safe, let's restrict the valid
@@ -117,7 +117,7 @@ def _apply_tensor_size_guidance(sampling_hints):
 
 
 def standard_tensorboard_wsgi(
-    flags, plugin_loaders, assets_zip_provider, experimental_plugins=[]
+    flags, plugin_loaders, assets_zip_provider, experimental_plugins=None
 ):
     """Construct a TensorBoardWSGIApp with standard plugins and multiplexer.
 
@@ -219,7 +219,7 @@ def TensorBoardWSGIApp(
     data_provider=None,
     assets_zip_provider=None,
     deprecated_multiplexer=None,
-    experimental_plugins=[],
+    experimental_plugins=None,
 ):
     """Constructs a TensorBoard WSGI app from plugins and data providers.
 
@@ -285,7 +285,7 @@ class TensorBoardWSGI(object):
         plugins,
         path_prefix="",
         data_provider=None,
-        experimental_plugins=[],
+        experimental_plugins=None,
     ):
         """Constructs TensorBoardWSGI instance.
 
@@ -316,7 +316,9 @@ class TensorBoardWSGI(object):
         self._plugins = plugins
         self._path_prefix = path_prefix
         self._data_provider = data_provider
-        self._experimental_plugins = experimental_plugins
+        self._experimental_plugins = frozenset(
+            experimental_plugins if experimental_plugins is not None else []
+        )
         if self._path_prefix.endswith("/"):
             # Should have been fixed by `fix_flags`.
             raise ValueError(
@@ -499,18 +501,13 @@ class TensorBoardWSGI(object):
             if self._data_provider is not None
             else frozenset()
         )
-        plugins_to_consider = filter(
-            # Filter out experimental plugins that were not activated using the query param.
-            lambda plugin: (
-                plugin.plugin_name not in self._experimental_plugins
-            )
-            or (
-                plugin.plugin_name
-                in request.args.getlist(EXPERIMENTAL_PLUGINS_QUERY_PARAM)
-            ),
-            self._plugins,
+        plugins_to_skip = self._experimental_plugins - frozenset(
+            request.args.getlist(EXPERIMENTAL_PLUGINS_QUERY_PARAM)
         )
-        for plugin in plugins_to_consider:
+        for plugin in self._plugins:
+            if plugin.plugin_name in plugins_to_skip:
+                continue
+
             if (
                 type(plugin) is core_plugin.CorePlugin
             ):  # pylint: disable=unidiomatic-typecheck

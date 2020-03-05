@@ -186,21 +186,24 @@ namespace tf_backend {
 
       describe('#pluginsListing', () => {
         it('returns /plugins_listing with no query params', () => {
-          const router = createRouter('data', new URL('http://some.url'));
+          const router = createRouter('data', new URLSearchParams(''));
           assert.equal(router.pluginsListing(), 'data/plugins_listing');
         });
 
-        it('returns /plugins_listing with expplugin query params', () => {
+        it('returns /plugins_listing with experimentalPlugin query params', () => {
           const router = createRouter(
             'data',
-            new URL(
-              'http://some.url?' +
-                'expplugin=plugin1&to_ignore=ignoreme&expplugin=plugin2'
+            new URLSearchParams(
+                'experimentalPlugin=plugin1&' +
+                'to_ignore=ignoreme&' +
+                'experimentalPlugin=plugin2'
             )
           );
           assert.equal(
             router.pluginsListing(),
-            'data/plugins_listing?expplugin=plugin1&expplugin=plugin2'
+            'data/plugins_listing?' +
+              'experimentalPlugin=plugin1&' +
+              'experimentalPlugin=plugin2'
           );
         });
       });

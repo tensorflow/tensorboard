@@ -388,14 +388,14 @@ class ApplicationTest(tb_test.TestCase):
         self.assertIsNotNone(plugins_without_flag.get("bazz"))
 
         plugins_with_flag = self._get_json(
-            "/data/plugins_listing?expplugin=foo"
+            "/data/plugins_listing?experimentalPlugin=foo"
         )
         self.assertIsNotNone(plugins_with_flag.get("bar"))
         self.assertIsNotNone(plugins_with_flag.get("foo"))
         self.assertIsNotNone(plugins_with_flag.get("bazz"))
 
         plugins_with_useless_flag = self._get_json(
-            "/data/plugins_listing?expplugin=bar"
+            "/data/plugins_listing?experimentalPlugin=bar"
         )
         self.assertIsNotNone(plugins_with_useless_flag.get("bar"))
         self.assertIsNone(plugins_with_useless_flag.get("foo"))
@@ -418,14 +418,14 @@ class ApplicationTest(tb_test.TestCase):
         self.assertIsNone(plugins_without_flag.get("bazz"))
 
         plugins_with_one_flag = self._get_json(
-            "/data/plugins_listing?expplugin=bar"
+            "/data/plugins_listing?experimentalPlugin=bar"
         )
         self.assertIsNotNone(plugins_with_one_flag.get("bar"))
         self.assertIsNotNone(plugins_with_one_flag.get("foo"))
         self.assertIsNone(plugins_with_one_flag.get("bazz"))
 
         plugins_with_multiple_flags = self._get_json(
-            "/data/plugins_listing?expplugin=bar&expplugin=bazz"
+            "/data/plugins_listing?experimentalPlugin=bar&experimentalPlugin=bazz"
         )
         self.assertIsNotNone(plugins_with_multiple_flags.get("bar"))
         self.assertIsNotNone(plugins_with_multiple_flags.get("foo"))
