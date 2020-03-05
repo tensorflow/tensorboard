@@ -25,7 +25,6 @@ ng_module(
         "//tensorboard/webapp/angular:expect_angular_material_slider",
         "@npm//@angular/common",
         "@npm//@angular/core",
-        "@npm//@angular/material",
         "@npm//@ngrx/store",
         "@npm//rxjs",
     ],
