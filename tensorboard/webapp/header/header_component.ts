@@ -17,7 +17,7 @@ import {Component} from '@angular/core';
 @Component({
   selector: 'app-header',
   template: `
-    <mat-toolbar class="tb-toolbar">
+    <mat-toolbar color="primary">
       <span class="brand">TensorBoard</span>
       <plugin-selector class="plugins"></plugin-selector>
       <span class="settings">
