@@ -25,6 +25,7 @@ import {
 import {
   createAlertsState,
   createDebuggerExecutionsState,
+  createDebuggerSourceCodeState,
   createDebuggerState,
   createDebuggerStateWithLoadedExecutionDigests,
   createDigestsStateWhileLoadingExecutionDigests,
@@ -1026,5 +1027,60 @@ describe('Debugger reducers', () => {
     };
     const nextState = reducers(state, actions.stackFramesLoaded({stackFrames}));
     expect(nextState.stackFrames).toEqual(stackFrames);
+  });
+
+  it(`updates source-file list load state on sourceFileListRequested`, () => {
+    const state = createDebuggerState();
+    const nextState = reducers(state, actions.sourceFileListRequested());
+    expect(nextState.sourceCode.sourceFileListLoaded.state).toBe(
+      DataLoadState.LOADING
+    );
+    expect(
+      nextState.sourceCode.sourceFileListLoaded.lastLoadedTimeInMs
+    ).toBeNull();
+  });
+
+  it(`updates source-file list and load state sourceFileListLoaded`, () => {
+    const state = createDebuggerState({
+      sourceCode: createDebuggerSourceCodeState({
+        sourceFileList: [
+          {
+            host_name: 'foo_host',
+            file_path: '/tmp/main.py',
+          },
+        ],
+      }),
+    });
+    const nextState = reducers(
+      state,
+      actions.sourceFileListLoaded({
+        sourceFiles: [
+          {
+            host_name: 'foo_host',
+            file_path: '/tmp/main.py',
+          },
+          {
+            host_name: 'bar_host',
+            file_path: '/tmp/train.py',
+          },
+        ],
+      })
+    );
+    expect(nextState.sourceCode.sourceFileListLoaded.state).toBe(
+      DataLoadState.LOADED
+    );
+    expect(
+      nextState.sourceCode.sourceFileListLoaded.lastLoadedTimeInMs
+    ).toBeGreaterThan(0);
+    expect(nextState.sourceCode.sourceFileList).toEqual([
+      {
+        host_name: 'foo_host',
+        file_path: '/tmp/main.py',
+      },
+      {
+        host_name: 'bar_host',
+        file_path: '/tmp/train.py',
+      },
+    ]);
   });
 });
