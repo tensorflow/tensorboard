@@ -194,7 +194,7 @@ namespace tf_backend {
           const router = createRouter(
             'data',
             new URLSearchParams(
-                'experimentalPlugin=plugin1&' +
+              'experimentalPlugin=plugin1&' +
                 'to_ignore=ignoreme&' +
                 'experimentalPlugin=plugin2'
             )
