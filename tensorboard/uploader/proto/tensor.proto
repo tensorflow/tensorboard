@@ -17,7 +17,7 @@ message TensorPoint {
 }
 
 // Metadata for the TensorPoints stored for one (Experiment, Run, Tag).
-message TensorPointMetadata {
+message TensorTag {
   // Maximum step recorded for the tag.
   int64 max_step = 1;
   // Timestamp corresponding to the max step.
