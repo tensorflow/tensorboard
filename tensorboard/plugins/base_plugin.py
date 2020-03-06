@@ -123,7 +123,7 @@ class FrontendMetadata(object):
         es_module_path=None,
         remove_dom=None,
         tab_name=None,
-        is_ng_component=None,
+        is_ng_component=None
     ):
         """Creates a `FrontendMetadata` value.
 
@@ -257,7 +257,7 @@ class TBContext(object):
         multiplexer=None,
         plugin_name_to_instance=None,
         sampling_hints=None,
-        window_title=None,
+        window_title=None
     ):
         """Instantiates magic container.
 
