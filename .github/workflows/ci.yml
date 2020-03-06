@@ -42,7 +42,7 @@ jobs:
       - name: 'Install flake8'
         run: |
           python -m pip install -U pip
-          pip install -r ./tensorboard/pip_package/requirements_dev.txt
+          pip install flake8 -c ./tensorboard/pip_package/requirements_dev.txt
       - run: pip freeze --all
       - name: 'Lint Python code for errors with flake8'
         # See: http://flake8.pycqa.org/en/3.7.8/user/error-codes.html
@@ -60,7 +60,7 @@ jobs:
       - name: 'Install black'
         run: |
           python -m pip install -U pip
-          pip install -r ./tensorboard/pip_package/requirements_dev.txt
+          pip install black -c ./tensorboard/pip_package/requirements_dev.txt
       - run: pip freeze --all
       - name: 'Lint Python code for style with Black'
         # You can run `black .` to fix all Black complaints.
@@ -77,7 +77,7 @@ jobs:
       - name: 'Install yamllint'
         run: |
           python -m pip install -U pip
-          pip install -r ./tensorboard/pip_package/requirements_dev.txt
+          pip install yamllint -c ./tensorboard/pip_package/requirements_dev.txt
       - run: pip freeze --all
       - name: 'Lint YAML for gotchas with yamllint'
         # Use '# yamllint disable-line rule:foo' to suppress.
