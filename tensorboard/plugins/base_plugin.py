@@ -117,12 +117,13 @@ class FrontendMetadata(object):
 
     def __init__(
         self,
+        *,
         disable_reload=None,
         element_name=None,
         es_module_path=None,
         remove_dom=None,
         tab_name=None,
-        is_ng_component=None,
+        is_ng_component=None
     ):
         """Creates a `FrontendMetadata` value.
 
@@ -246,6 +247,7 @@ class TBContext(object):
 
     def __init__(
         self,
+        *,
         assets_zip_provider=None,
         data_provider=None,
         db_connection_provider=None,
@@ -255,7 +257,7 @@ class TBContext(object):
         multiplexer=None,
         plugin_name_to_instance=None,
         sampling_hints=None,
-        window_title=None,
+        window_title=None
     ):
         """Instantiates magic container.
 
