@@ -1,9 +1,14 @@
 load("@npm_angular_bazel//:index.bzl", "ng_module")
-load("//tensorboard/defs:defs.bzl", "tf_ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_sass_binary", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
+
+tf_sass_binary(
+    name = "styles",
+    src = "plugin_selector_component.scss",
+)
 
 ng_module(
     name = "header",
@@ -15,8 +20,8 @@ ng_module(
         "types.ts",
     ],
     assets = [
+        ":styles",
         "plugin_selector_component.ng.html",
-        "plugin_selector_component.css",
     ],
     deps = [
         "//tensorboard/webapp/angular:expect_angular_material_select",

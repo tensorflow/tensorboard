@@ -53,7 +53,10 @@ rules_closure_dependencies(
 http_archive(
     name = "build_bazel_rules_nodejs",
     sha256 = "7c4a690268be97c96f04d505224ec4cb1ae53c2c2b68be495c9bd2634296a5cd",
-    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/0.34.0/rules_nodejs-0.34.0.tar.gz"],
+    urls = [
+        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_nodejs/releases/download/0.34.0/rules_nodejs-0.34.0.tar.gz",
+        "https://github.com/bazelbuild/rules_nodejs/releases/download/0.34.0/rules_nodejs-0.34.0.tar.gz",
+    ],
 )
 
 load("@build_bazel_rules_nodejs//:defs.bzl", "node_repositories", "yarn_install")
@@ -77,6 +80,24 @@ yarn_install(
 load("@npm//:install_bazel_dependencies.bzl", "install_bazel_dependencies")
 
 install_bazel_dependencies()
+
+http_archive(
+    name = "io_bazel_rules_sass",
+    sha256 = "2ad5580e1ab6dabc6bea40699a7d78f8cae3f98b48d112812f43a0e2beec3eef",
+    strip_prefix = "rules_sass-1.23.1",
+    urls = [
+        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_sass/archive/1.23.1.zip",
+        "https://github.com/bazelbuild/rules_sass/archive/1.23.1.zip",
+    ],
+)
+
+load("@io_bazel_rules_sass//:package.bzl", "rules_sass_dependencies")
+
+rules_sass_dependencies()
+
+load("@io_bazel_rules_sass//:defs.bzl", "sass_repositories")
+
+sass_repositories()
 
 http_archive(
     name = "org_tensorflow",

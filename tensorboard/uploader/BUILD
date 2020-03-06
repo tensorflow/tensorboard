@@ -20,6 +20,7 @@ py_library(
         "//tensorboard:expect_grpc_installed",
         "//tensorboard/uploader/proto:protos_all_py_pb2",
         "//tensorboard/util:grpc_util",
+        "//tensorboard/util:tb_logging",
         "@org_pythonhosted_six",
     ],
 )
@@ -30,6 +31,7 @@ py_test(
     deps = [
         ":exporter_lib",
         ":test_util",
+        ":util",
         "//tensorboard:expect_grpc_installed",
         "//tensorboard:expect_grpc_testing_installed",
         "//tensorboard:test",

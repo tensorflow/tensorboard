@@ -12,6 +12,26 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-.label {
+:host {
+  font-size: 15px;
+}
+
+:host > div {
   margin: 10px 0;
+}
+
+:host > :first-child {
+  margin-top: 0;
+}
+
+:host > :last-child {
+  margin-bottom: 0;
+}
+
+h3 {
+  font-size: 20px;
+}
+
+.reload-toggle {
+  margin-bottom: 10px;
 }

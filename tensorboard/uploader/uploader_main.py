@@ -472,18 +472,15 @@ class _UpdateMetadataIntent(_Intent):
                 "Cannot modify experiment %s because it is owned by a "
                 "different user." % experiment_id
             )
-        except uploader_lib.InvalidArgumentError as cm:
-            _die(
-                "Server cannot modify experiment as requested.\n"
-                "Server responded: %s" % cm.description()
-            )
+        except uploader_lib.InvalidArgumentError as e:
+            _die("Server cannot modify experiment as requested: %s" % e)
         except grpc.RpcError as e:
             _die("Internal error modifying experiment: %s" % e)
         logging.info("Modified experiment %s.", experiment_id)
         if self.name is not None:
             logging.info("Set name to %r", self.name)
         if self.description is not None:
-            logging.info(f"Set description to %r", repr(self.description))
+            logging.info("Set description to %r", repr(self.description))
 
 
 class _ListIntent(_Intent):
@@ -515,10 +512,6 @@ class _ListIntent(_Intent):
         count = 0
         for experiment in gen:
             count += 1
-            if not isinstance(experiment, experiment_pb2.Experiment):
-                url = server_info_lib.experiment_url(server_info, experiment)
-                print(url)
-                continue
             experiment_id = experiment.experiment_id
             url = server_info_lib.experiment_url(server_info, experiment_id)
             print(url)
