@@ -284,8 +284,8 @@ class TensorBoardWSGI(object):
             `/plugins_listing`.
           experimental_plugins: A list of plugin names that are only provided
               experimentally. The corresponding plugins will only be activated for
-              a user if the user has specified the plugin with the expplugin query
-              parameter in the URL.
+              a user if the user has specified the plugin with the experimentalPlugin
+              query parameter in the URL.
 
         Returns:
           A WSGI application for the set of all TBPlugin instances.
@@ -879,7 +879,15 @@ def make_plugin_loader(plugin_spec):
 
 
 class ExperimentalPluginLoader(base_plugin.TBLoader):
-    """A wrapper around TBLoader that signifies that the TBLoader is for a plugin in experimental state. ExperimentalPluginLoader is also a TBLoader. All calls are proxied to the base TBLoader passed at init. It effectively acts as an annotation."""
+    """A wrapper around TBLoader to annotate a plugin as experimental.
+
+       Experimental plugins are hidden from users by default. The plugin will only
+       be enabled for a user if the user has specified the plugin with the
+       experimentalPlugin query parameter in the URL.
+
+       ExperimentalPluginLoader is also a TBLoader. All calls are proxied to the
+       base_loader TBLoader passed at init.
+    """
 
     def __init__(self, base_loader):
         """Creates the loader, which proxies all calls to the underlying base_loader.
