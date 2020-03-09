@@ -22,7 +22,7 @@ import {
   DtypesMap,
 } from '../../store/debugger_types';
 
-import {getFocusedExecutionData, getDtypesMap} from '../../store';
+import {getDtypesMap, getFocusedExecutionData} from '../../store';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
