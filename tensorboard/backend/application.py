@@ -116,9 +116,7 @@ def _apply_tensor_size_guidance(sampling_hints):
     return tensor_size_guidance
 
 
-def standard_tensorboard_wsgi(
-    flags, plugin_loaders, assets_zip_provider
-):
+def standard_tensorboard_wsgi(flags, plugin_loaders, assets_zip_provider):
     """Construct a TensorBoardWSGIApp with standard plugins and multiplexer.
 
     Args:
@@ -183,11 +181,7 @@ def standard_tensorboard_wsgi(
         )
 
     return TensorBoardWSGIApp(
-        flags,
-        plugin_loaders,
-        data_provider,
-        assets_zip_provider,
-        multiplexer,
+        flags, plugin_loaders, data_provider, assets_zip_provider, multiplexer,
     )
 
 
