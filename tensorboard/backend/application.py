@@ -117,7 +117,7 @@ def _apply_tensor_size_guidance(sampling_hints):
 
 
 def standard_tensorboard_wsgi(
-    flags, plugin_loaders, assets_zip_provider, experimental_plugins=None
+    flags, plugin_loaders, assets_zip_provider
 ):
     """Construct a TensorBoardWSGIApp with standard plugins and multiplexer.
 
@@ -125,10 +125,6 @@ def standard_tensorboard_wsgi(
       flags: An argparse.Namespace containing TensorBoard CLI flags.
       plugin_loaders: A list of TBLoader instances.
       assets_zip_provider: See TBContext documentation for more information.
-      experimental_plugins: A list of plugin names that are only provided
-        experimentally. The corresponding plugins will only be activated for
-        a user if the user has specified the plugin with the expplugin query
-        parameter in the URL.
 
     Returns:
       The new TensorBoard WSGI application.
@@ -192,7 +188,6 @@ def standard_tensorboard_wsgi(
         data_provider,
         assets_zip_provider,
         multiplexer,
-        experimental_plugins,
     )
 
 
@@ -219,7 +214,6 @@ def TensorBoardWSGIApp(
     data_provider=None,
     assets_zip_provider=None,
     deprecated_multiplexer=None,
-    experimental_plugins=None,
 ):
     """Constructs a TensorBoard WSGI app from plugins and data providers.
 
@@ -233,10 +227,6 @@ def TensorBoardWSGIApp(
       deprecated_multiplexer: Optional `plugin_event_multiplexer.EventMultiplexer`
           to use for any plugins not yet enabled for the DataProvider API.
           Required if the data_provider argument is not passed.
-      experimental_plugins: A list of plugin names that are only provided
-          experimentally. The corresponding plugins will only be activated for
-          a user if the user has specified the plugin with the expplugin query
-          parameter in the URL.
 
     Returns:
       A WSGI application that implements the TensorBoard backend.
@@ -265,12 +255,15 @@ def TensorBoardWSGIApp(
         window_title=flags.window_title,
     )
     tbplugins = []
+    experimental_plugins = []
     for plugin_spec in plugins:
         loader = make_plugin_loader(plugin_spec)
         plugin = loader.load(context)
         if plugin is None:
             continue
         tbplugins.append(plugin)
+        if isinstance(loader, ExperimentalPluginLoader):
+            experimental_plugins.append(plugin.plugin_name)
         plugin_name_to_instance[plugin.plugin_name] = plugin
     return TensorBoardWSGI(
         tbplugins, flags.path_prefix, data_provider, experimental_plugins
@@ -889,3 +882,23 @@ def make_plugin_loader(plugin_spec):
         if issubclass(plugin_spec, base_plugin.TBPlugin):
             return base_plugin.BasicLoader(plugin_spec)
     raise TypeError("Not a TBLoader or TBPlugin subclass: %r" % (plugin_spec,))
+
+
+class ExperimentalPluginLoader(base_plugin.TBLoader):
+    """A wrapper around TBLoader that signifies that the TBLoader is for a plugin in experimental state. ExperimentalPluginLoader is also a TBLoader. All calls are proxied to the base TBLoader passed at init. It effectively acts as an annotation."""
+
+    def __init__(self, base_loader):
+        """Creates the loader, which proxies all calls to the underlying base_loader.
+
+        :param base_loader: :class:`TBLoader`
+        """
+        self.base_loader = base_loader
+
+    def define_flags(self, parser):
+        self.base_loader.define_flags(parser)
+
+    def fix_flags(self, flags):
+        self.base_loader.fix_flags(flags)
+
+    def load(self, context):
+        return self.base_loader.load(context)
