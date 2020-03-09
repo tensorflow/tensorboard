@@ -305,9 +305,7 @@ class TensorBoardWSGI(object):
         self._plugins = plugins
         self._path_prefix = path_prefix
         self._data_provider = data_provider
-        self._experimental_plugins = frozenset(
-            experimental_plugins if experimental_plugins is not None else []
-        )
+        self._experimental_plugins = frozenset(experimental_plugins or ())
         if self._path_prefix.endswith("/"):
             # Should have been fixed by `fix_flags`.
             raise ValueError(
