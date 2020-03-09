@@ -61,6 +61,10 @@ _ALLOWED_TAGS = [
     "th",
 ]
 
+# Cache Markdown converter to avoid expensive initialization at each
+# call to `markdown_to_safe_html`.
+_markdown = markdown.Markdown(extensions=["markdown.extensions.tables"])
+
 
 def markdown_to_safe_html(markdown_string):
     """Convert Markdown to HTML that's safe to splice into the DOM.
@@ -86,9 +90,7 @@ def markdown_to_safe_html(markdown_string):
                 "after UTF-8 decoding -->\n"
             ) % num_null_bytes
 
-    string_html = markdown.markdown(
-        markdown_string, extensions=["markdown.extensions.tables"]
-    )
+    string_html = _markdown.convert(markdown_string)
     string_sanitized = bleach.clean(
         string_html, tags=_ALLOWED_TAGS, attributes=_ALLOWED_ATTRIBUTES
     )
