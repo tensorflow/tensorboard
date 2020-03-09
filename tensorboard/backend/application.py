@@ -256,7 +256,9 @@ def TensorBoardWSGIApp(
         if plugin is None:
             continue
         tbplugins.append(plugin)
-        if isinstance(loader, ExperimentalPluginLoader):
+        if isinstance(loader, ExperimentalPlugin) or isinstance(
+            plugin, ExperimentalPlugin
+        ):
             experimental_plugins.append(plugin.plugin_name)
         plugin_name_to_instance[plugin.plugin_name] = plugin
     return TensorBoardWSGI(
@@ -878,29 +880,32 @@ def make_plugin_loader(plugin_spec):
     raise TypeError("Not a TBLoader or TBPlugin subclass: %r" % (plugin_spec,))
 
 
-class ExperimentalPluginLoader(base_plugin.TBLoader):
-    """A wrapper around TBLoader to annotate a plugin as experimental.
+class ExperimentalPlugin(object):
+    """A marker class used to annotate a plugin as experimental.
 
-       Experimental plugins are hidden from users by default. The plugin will only
-       be enabled for a user if the user has specified the plugin with the
-       experimentalPlugin query parameter in the URL.
+    Experimental plugins are hidden from users by default. The plugin will only
+    be enabled for a user if the user has specified the plugin with the
+    experimentalPlugin query parameter in the URL.
 
-       ExperimentalPluginLoader is also a TBLoader. All calls are proxied to the
-       base_loader TBLoader passed at init.
+    The marker class can annotate either TBPlugin or TBLoader instances, whichever
+    is most convenient.
+
+    Typical usage is to create a new class that inherits from both an existing
+    TBPlugin/TBLoader class and this marker class. For example:
+
+
+    class ExperimentalGraphsPlugin(
+        graphs_plugin.GraphsPlugin,
+        application.ExperimentalPlugin,
+    ):
+        pass
+
+
+    class ExperimentalDebuggerPluginLoader(
+        debugger_plugin_loader.DebuggerPluginLoader,
+        application.ExperimentalPlugin
+    ):
+        pass
     """
 
-    def __init__(self, base_loader):
-        """Creates the loader, which proxies all calls to the underlying base_loader.
-
-        :param base_loader: :class:`TBLoader`
-        """
-        self.base_loader = base_loader
-
-    def define_flags(self, parser):
-        self.base_loader.define_flags(parser)
-
-    def fix_flags(self, flags):
-        self.base_loader.fix_flags(flags)
-
-    def load(self, context):
-        return self.base_loader.load(context)
+    pass
