@@ -91,6 +91,7 @@ def tf_sass_binary(deps = [], include_paths = [], **kwargs):
         deps = deps + ["//tensorboard/webapp:theme"],
         include_paths = include_paths + [
             "external/npm/node_modules",
+            "tensorboard/webapp/theme",
         ],
         **kwargs
     )
