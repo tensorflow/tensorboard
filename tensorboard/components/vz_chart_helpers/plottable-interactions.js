@@ -200,6 +200,44 @@ var vz_chart_helpers;
     }
   }
 
+  /**
+   * Fixes #3282.
+   *
+   * Repro: when tooltip is shown, slowly move the mouse to an edge of a chart.
+   * We expect the tooltip the disappear when the cursor is on the edge of the
+   * chart.
+   *
+   * Cause:
+   * 1. For Polymer 2 and its Shadow DOM compatibility, TensorBoard opted out of
+   * the event delegation of Plottable. Plottable, by default, attaches a set of
+   * event listeners on document.body and invokes appropriate callbacks
+   * depending on the circumstances. However, with the Shadow DOM, the event
+   * re-targetting broke (harder to identify `event.target`), so TensorBoard,
+   * instead, attaches the event listeners on every Plottable container, SVGs.
+   *
+   * 2. When mouse leaves (mouseout) the container, Plottable remaps the event
+   * as mouse move and calculate whether the cursor is inside a component
+   * (Interaction.prototype._isInsideComponent, specifically) to trigger
+   * appropriate callback. The method, however is flawed since it returns, for a
+   * component that is, for instance, at <0, 0> with size of <100, 100>, true
+   * when pointer is at <100, 100>. It should only return true for [0, 100) for
+   * a given dimension, instead.  As a result, the mouseout event occurred at
+   * <100, 100> was treated as an event inside the component but all the
+   * subsequent mouse movements are not captured since they are events that
+   * occurred outside of the event target. In vanilla Plottable, this bug do not
+   * manifest since event delegation on the entire document will eventually
+   * trigger mouse out when cursor is at, for instance, <101, 100>.
+   */
+  Plottable.Interaction.prototype._isInsideComponent = function(p) {
+    return (
+      0 <= p.x &&
+      0 <= p.y &&
+      // Delta: `<` instead of `<=` here and below.
+      p.x < this._componentAttachedTo.width() &&
+      p.y < this._componentAttachedTo.height()
+    );
+  };
+
   class PointerInteraction extends Plottable.Interactions.Pointer {
     _anchor(component) {
       this._isAnchored = true;
