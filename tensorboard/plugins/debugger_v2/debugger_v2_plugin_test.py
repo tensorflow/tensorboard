@@ -917,6 +917,23 @@ class DebuggerV2PluginTest(tf.test.TestCase):
             ".*nonsense-stack-frame-id.*",
         )
 
+    def testServeDTypesMapRespondsWithCorrectMap(self):
+        response = self.server.get(_ROUTE_PREFIX + "/dtypes_map")
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        data = json.loads(response.get_data())
+        print("data:", data)  # DEBUG
+        # Make assertions on some most-frequently used dtypes.
+        dtypes_maps = data["dtypes_map"]
+        self.assertEqual(dtypes_maps["1"]["name"], "float32")
+        self.assertEqual(dtypes_maps["3"]["name"], "int32")
+        self.assertEqual(dtypes_maps["4"]["name"], "uint8")
+        self.assertEqual(dtypes_maps["7"]["name"], "string")
+        self.assertEqual(dtypes_maps["10"]["name"], "bool")
+        self.assertEqual(dtypes_maps["14"]["name"], "bfloat16")
+
 
 if __name__ == "__main__":
     tf.test.main()

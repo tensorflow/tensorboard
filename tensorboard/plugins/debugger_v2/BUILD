@@ -36,6 +36,7 @@ py_library(
         "//tensorboard:errors",
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
+        "//tensorboard/compat/tensorflow_stub",
         "//tensorboard/plugins:base_plugin",
         "@org_pocoo_werkzeug",
     ],

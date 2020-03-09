@@ -92,6 +92,13 @@ export function createDebuggerState(
       state: DataLoadState.NOT_LOADED,
       lastLoadedTimeInMs: null,
     },
+    dtypes: {
+      dtypesMap: {},
+      dtypesLoaded: {
+        state: DataLoadState.NOT_LOADED,
+        lastLoadedTimeInMs: null,
+      },
+    },
     activeRunId: null,
     alerts: createAlertsState(),
     executions: createDebuggerExecutionsState(),

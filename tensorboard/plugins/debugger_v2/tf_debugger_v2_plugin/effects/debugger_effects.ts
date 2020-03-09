@@ -30,6 +30,8 @@ import {
   debuggerLoaded,
   debuggerRunsRequested,
   debuggerRunsLoaded,
+  dtypesMapLoaded,
+  dtypesMapRequested,
   executionDataLoaded,
   executionDigestFocused,
   executionDigestsRequested,
@@ -59,6 +61,7 @@ import {
   getLoadedExecutionData,
   getLoadedStackFrames,
   getNumAlertsOfFocusedType,
+  getDtypesMapLoaded,
 } from '../store/debugger_selectors';
 import {
   DataLoadState,
@@ -70,6 +73,7 @@ import {
 } from '../store/debugger_types';
 import {
   AlertsResponse,
+  DtypesMapResponse,
   Tfdbg2HttpServerDataSource,
 } from '../data_source/tfdbg2_data_source';
 
@@ -168,6 +172,28 @@ export class DebuggerEffects {
             this.store.dispatch(
               debuggerRunsLoaded({runs: runs as DebuggerRunListing})
             );
+          }),
+          map(() => void null)
+          // TODO(cais): Add catchError() to pipe.
+        );
+      })
+    );
+  }
+
+  /**
+   * Load dtypes info when debugger plugin is loaded.
+   */
+  private loadDtypesMap(prevStream$: Observable<void>) {
+    return prevStream$.pipe(
+      withLatestFrom(this.store.select(getDtypesMapLoaded)),
+      filter(([, dtypesMapLoadState]) => {
+        return dtypesMapLoadState.state !== DataLoadState.LOADING;
+      }),
+      tap(() => this.store.dispatch(dtypesMapRequested())),
+      mergeMap(() => {
+        return this.dataSource.fetchDtypesMap().pipe(
+          tap((dtypesMapResponse: DtypesMapResponse) => {
+            this.store.dispatch(dtypesMapLoaded(dtypesMapResponse));
           }),
           map(() => void null)
           // TODO(cais): Add catchError() to pipe.
@@ -614,7 +640,7 @@ export class DebuggerEffects {
     private dataSource: Tfdbg2HttpServerDataSource
   ) {
     /**
-     * view load
+     * view load ---------> fetch dtypes map
      *  |
      *  +> fetch run +> fetch num exec
      *  |            +> fetch num alerts
@@ -643,6 +669,9 @@ export class DebuggerEffects {
         //   - number and breakdown of alerts.
         // Therefore it needs to be a shared observable.
         const onLoad$ = this.onDebuggerLoaded().pipe(share());
+
+        const loadDtypesMap$ = this.loadDtypesMap(onLoad$);
+
         const onNumExecutionLoaded$ = this.createNumExecutionLoader(onLoad$);
         const onNumAlertsLoaded$ = this.createNumAlertsAndBreakdownLoader(
           onLoad$
@@ -688,6 +717,7 @@ export class DebuggerEffects {
 
         // ExecutionDigest and ExecutionData can be loaded in parallel.
         return merge(
+          loadDtypesMap$,
           onNumAlertsLoaded$,
           onExcutionDigestLoaded$,
           onExecutionDataLoaded$

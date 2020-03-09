@@ -23,6 +23,7 @@ import {
   Alert,
 } from '../store/debugger_types';
 import {
+  DtypesMapResponse,
   ExecutionDigestsResponse,
   ExecutionDataResponse,
 } from '../data_source/tfdbg2_data_source';
@@ -39,6 +40,15 @@ import {
  * Actions for the Debugger Component.
  */
 export const debuggerLoaded = createAction('[Debugger] Debugger Loaded');
+
+export const dtypesMapRequested = createAction(
+  '[Debugger] DTypes Map Requested'
+);
+
+export const dtypesMapLoaded = createAction(
+  '[Debugger] DTypes Map Loaded',
+  props<DtypesMapResponse>()
+);
 
 export const debuggerRunsRequested = createAction(
   '[Debugger] Debugger Runs Requested'

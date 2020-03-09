@@ -21,6 +21,7 @@ import {
   StackFramesById,
   AlertType,
   Alert,
+  DtypesMap,
 } from './debugger_types';
 import {
   createAlertsState,
@@ -34,6 +35,31 @@ import {
 } from '../testing';
 
 describe('Debugger reducers', () => {
+  it(`updates dtypes-map load state on dtypesMapRequested`, () => {
+    const state = createDebuggerState();
+    const nextState = reducers(state, actions.dtypesMapRequested());
+    expect(nextState.dtypes.dtypesLoaded.state).toBe(DataLoadState.LOADING);
+    expect(nextState.dtypes.dtypesLoaded.lastLoadedTimeInMs).toBeNull();
+    expect(nextState.dtypes.dtypesMap).toEqual({});
+  });
+
+  it(`updates dtypes-map load state and map on dtypesMapLoaded`, () => {
+    const state = createDebuggerState();
+    const dtypesMapForTest: DtypesMap = {
+      '1': {name: 'float32'},
+      '10': {name: 'bool'},
+    };
+    const nextState = reducers(
+      state,
+      actions.dtypesMapLoaded({
+        dtypes_map: dtypesMapForTest,
+      })
+    );
+    expect(nextState.dtypes.dtypesLoaded.state).toBe(DataLoadState.LOADED);
+    expect(nextState.dtypes.dtypesLoaded.lastLoadedTimeInMs).toBeGreaterThan(0);
+    expect(nextState.dtypes.dtypesMap).toEqual(dtypesMapForTest);
+  });
+
   describe('alertTypeFocusToggled', () => {
     for (const focusType of [
       AlertType.FUNCTION_RECOMPILE_ALERT,

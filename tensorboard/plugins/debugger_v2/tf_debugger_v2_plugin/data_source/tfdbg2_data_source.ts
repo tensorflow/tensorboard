@@ -17,6 +17,7 @@ import {Observable} from 'rxjs';
 import {
   Alert,
   DebuggerRunListing,
+  DtypesMap,
   Execution,
   ExecutionDigest,
   StackFrame,
@@ -24,6 +25,10 @@ import {
 import {TBHttpClient} from '../../../../webapp/webapp_data_source/tb_http_client';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
+
+export interface DtypesMapResponse {
+  dtypes_map: DtypesMap;
+}
 
 export interface StackFramesResponse {
   stack_frames: StackFrame[];
@@ -65,6 +70,8 @@ export interface AlertsResponse {
 
 export abstract class Tfdbg2DataSource {
   abstract fetchRuns(): Observable<DebuggerRunListing>;
+
+  abstract fetchDtypesMap(): Observable<DtypesMapResponse>;
 
   abstract fetchExecutionDigests(
     run: string,
@@ -109,6 +116,12 @@ export class Tfdbg2HttpServerDataSource implements Tfdbg2DataSource {
   private readonly httpPathPrefix = 'data/plugin/debugger-v2';
 
   constructor(private http: TBHttpClient) {}
+
+  fetchDtypesMap(): Observable<DtypesMapResponse> {
+    return this.http.get<DtypesMapResponse>(
+      this.httpPathPrefix + '/dtypes_map'
+    );
+  }
 
   fetchRuns() {
     // TODO(cais): Once the backend uses an DataProvider that unifies tfdbg and

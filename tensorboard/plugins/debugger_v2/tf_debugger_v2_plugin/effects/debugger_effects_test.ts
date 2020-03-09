@@ -22,6 +22,8 @@ import {
   debuggerLoaded,
   debuggerRunsLoaded,
   debuggerRunsRequested,
+  dtypesMapLoaded,
+  dtypesMapRequested,
   executionDataLoaded,
   executionDigestFocused,
   executionDigestsLoaded,
@@ -38,6 +40,7 @@ import {
 } from '../actions';
 import {
   AlertsResponse,
+  DtypesMapResponse,
   ExecutionDataResponse,
   ExecutionDigestsResponse,
   StackFramesResponse,
@@ -66,6 +69,7 @@ import {
   Execution,
   ExecutionDigest,
   State,
+  DtypesMap,
 } from '../store/debugger_types';
 import {
   createDebuggerState,
@@ -252,6 +256,12 @@ describe('Debugger effects', () => {
     });
   });
 
+  function createFetchDtypesMapSpy(dtypesMapResponse: DtypesMapResponse) {
+    return spyOn(TestBed.get(Tfdbg2HttpServerDataSource), 'fetchDtypesMap')
+      .withArgs()
+      .and.returnValue(of(dtypesMapResponse));
+  }
+
   function createFetchAlertsSpy(
     runId: string,
     begin: number,
@@ -289,6 +299,12 @@ describe('Debugger effects', () => {
       __default_debugger_run__: {
         start_time: 1337,
       },
+    };
+
+    const dtypesMapForTest: DtypesMap = {
+      '1': {name: 'float32'},
+      '3': {name: 'int32'},
+      '10': {name: 'bool'},
     };
 
     function createFetchRunsSpy(runsListing: DebuggerRunListing) {
@@ -360,6 +376,9 @@ describe('Debugger effects', () => {
 
     function createFetchSpies() {
       const fetchRuns = createFetchRunsSpy(runListingForTest);
+      const fetchDtypesMap = createFetchDtypesMapSpy({
+        dtypes_map: dtypesMapForTest,
+      });
       const fetchNumAlertsSpy = createFetchAlertsSpy(
         runId,
         0,
@@ -393,6 +412,7 @@ describe('Debugger effects', () => {
       });
       return {
         fetchRuns,
+        fetchDtypesMap,
         fetchNumAlertsSpy,
         fetchExecutionDigests,
         fetchExecutionData,
@@ -464,6 +484,7 @@ describe('Debugger effects', () => {
     it('loads execution digests, data & stack trace loading if numExecutions>0', () => {
       const {
         fetchRuns,
+        fetchDtypesMap,
         fetchExecutionDigests,
         fetchExecutionData,
         fetchStackFrames,
@@ -483,12 +504,15 @@ describe('Debugger effects', () => {
 
       expect(fetchRuns).toHaveBeenCalled();
       // Once for # of execution digests; once for the first page.
+      expect(fetchDtypesMap).toHaveBeenCalledTimes(1);
       expect(fetchExecutionDigests).toHaveBeenCalledTimes(2);
       expect(fetchExecutionData).toHaveBeenCalledTimes(1);
       expect(fetchStackFrames).toHaveBeenCalledTimes(1);
       expect(dispatchedActions).toEqual([
         debuggerRunsRequested(),
         debuggerRunsLoaded({runs: runListingForTest}),
+        dtypesMapRequested(),
+        dtypesMapLoaded({dtypes_map: dtypesMapForTest}),
         numAlertsAndBreakdownRequested(),
         numAlertsAndBreakdownLoaded({
           numAlerts: numAlertsResponseForTest.num_alerts,

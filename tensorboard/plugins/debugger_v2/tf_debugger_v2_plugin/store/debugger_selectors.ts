@@ -28,6 +28,7 @@ import {
   StackFrame,
   StackFramesById,
   State,
+  DtypesMap,
 } from './debugger_types';
 
 // HACK: These imports are for type inference.
@@ -54,6 +55,20 @@ export const getDebuggerRunsLoaded = createSelector(
 export const getActiveRunId = createSelector(
   selectDebuggerState,
   (state: DebuggerState): string | null => state.activeRunId
+);
+
+export const getDtypesMapLoaded = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): LoadState => {
+    return state.dtypes.dtypesLoaded;
+  }
+);
+
+export const getDtypesMap = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): DtypesMap => {
+    return state.dtypes.dtypesMap;
+  }
 );
 
 export const getAlertsLoaded = createSelector(
