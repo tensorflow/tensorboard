@@ -705,6 +705,15 @@ describe('Debugger Container', () => {
       store.setState(
         createState(
           createDebuggerState({
+            dtypes: {
+              dtypesMap: {
+                1: {name: 'float32'},
+              },
+              dtypesLoaded: {
+                state: DataLoadState.LOADED,
+                lastLoadedTimeInMs: 1,
+              },
+            },
             executions: {
               numExecutionsLoaded: {
                 state: DataLoadState.LOADED,
@@ -759,9 +768,8 @@ describe('Debugger Container', () => {
         By.css('.shape-dtype')
       );
       expect(dtypeElements.length).toEqual(2);
-      // TODO(cais): Modify assertions when human-readable dtypes are shown.
-      expect(dtypeElements[0].nativeElement.innerText).toEqual('1');
-      expect(dtypeElements[1].nativeElement.innerText).toEqual('6');
+      expect(dtypeElements[0].nativeElement.innerText).toEqual('float32');
+      expect(dtypeElements[1].nativeElement.innerText).toEqual('Unknown dtype');
       const rankElements = fixture.debugElement.queryAll(By.css('.shape-rank'));
       expect(rankElements.length).toEqual(2);
       expect(rankElements[0].nativeElement.innerText).toEqual('0');

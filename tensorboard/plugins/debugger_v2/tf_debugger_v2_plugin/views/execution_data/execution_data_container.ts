@@ -15,11 +15,18 @@ limitations under the License.
 import {Component, Input} from '@angular/core';
 import {select, Store, createSelector} from '@ngrx/store';
 
-import {Execution, State, TensorDebugMode} from '../../store/debugger_types';
+import {
+  Execution,
+  State,
+  TensorDebugMode,
+  DtypesMap,
+} from '../../store/debugger_types';
 
-import {getFocusedExecutionData} from '../../store';
+import {getFocusedExecutionData, getDtypesMap} from '../../store';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
+
+const UNKNOWN_DTYPE_NAME = 'Unknown dtype';
 
 @Component({
   selector: 'tf-debugger-v2-execution-data',
@@ -30,6 +37,7 @@ import {getFocusedExecutionData} from '../../store';
       [tensorDebugMode]="tensorDebugMode$ | async"
       [hasDebugTensorValues]="hasDebugTensorValues$ | async"
       [debugTensorValues]="debugTensorValues$ | async"
+      [debugTensorDtypes]="debugTensorDtypes$ | async"
     ></execution-data-component>
   `,
 })
@@ -89,6 +97,48 @@ export class ExecutionDataContainer {
           } else {
             return execution.debug_tensor_values;
           }
+        }
+      )
+    )
+  );
+
+  readonly debugTensorDtypes$ = this.store.pipe(
+    select(
+      createSelector(
+        getFocusedExecutionData,
+        getDtypesMap,
+        (
+          execution: Execution | null,
+          dtypesMap: DtypesMap
+        ): string[] | null => {
+          if (execution === null || execution.debug_tensor_values === null) {
+            return null;
+          }
+          if (
+            execution.tensor_debug_mode !== TensorDebugMode.FULL_HEALTH &&
+            execution.tensor_debug_mode !== TensorDebugMode.SHAPE
+          ) {
+            // TODO(cais): Add logic for other TensorDebugModes with dtype info.
+            return null;
+          }
+          const dtypes: string[] = [];
+          for (const tensorValue of execution.debug_tensor_values) {
+            if (tensorValue === null) {
+              dtypes.push(UNKNOWN_DTYPE_NAME);
+            } else {
+              const dtypeEnum = String(
+                execution.tensor_debug_mode === TensorDebugMode.FULL_HEALTH
+                  ? tensorValue[2] // tensor_debug_mode: FULL_HEALTH
+                  : tensorValue[1] // tensor_debug_mode: SHAPE
+              );
+              dtypes.push(
+                dtypeEnum in dtypesMap
+                  ? dtypesMap[dtypeEnum].name
+                  : UNKNOWN_DTYPE_NAME
+              );
+            }
+          }
+          return dtypes;
         }
       )
     )

@@ -424,7 +424,10 @@ describe('Debugger effects', () => {
       debuggerEffects.loadData$.subscribe();
     });
 
-    it('run list loading: empty runs', () => {
+    it('dtype map & run list loading: empty runs', () => {
+      const fetchDtypesMap = createFetchDtypesMapSpy({
+        dtypes_map: dtypesMapForTest,
+      });
       const fetchRuns = createFetchRunsSpy({});
       store.overrideSelector(getDebuggerRunListing, {});
 
@@ -434,11 +437,16 @@ describe('Debugger effects', () => {
       expect(dispatchedActions).toEqual([
         debuggerRunsRequested(),
         debuggerRunsLoaded({runs: {}}),
+        dtypesMapRequested(),
+        dtypesMapLoaded({dtypes_map: dtypesMapForTest}),
       ]);
     });
 
-    it('loads numExecutions when there is a run: empty executions', () => {
+    it('loads dtypes & numExecutions if there is a run: no executions', () => {
       const fetchRuns = createFetchRunsSpy(runListingForTest);
+      const fetchDtypesMap = createFetchDtypesMapSpy({
+        dtypes_map: dtypesMapForTest,
+      });
       const fetchNumExecutionDigests = createFetchExecutionDigestsSpy(
         runId,
         0,
@@ -466,11 +474,14 @@ describe('Debugger effects', () => {
       action.next(debuggerLoaded());
 
       expect(fetchRuns).toHaveBeenCalled();
+      expect(fetchDtypesMap).toHaveBeenCalled();
       expect(fetchNumExecutionDigests).toHaveBeenCalled();
       expect(fetchNumAlerts).toHaveBeenCalled();
       expect(dispatchedActions).toEqual([
         debuggerRunsRequested(),
         debuggerRunsLoaded({runs: runListingForTest}),
+        dtypesMapRequested(),
+        dtypesMapLoaded({dtypes_map: dtypesMapForTest}),
         numAlertsAndBreakdownRequested(),
         numAlertsAndBreakdownLoaded({
           numAlerts: numAlertsResponseForTest.num_alerts,
@@ -481,7 +492,7 @@ describe('Debugger effects', () => {
       ]);
     });
 
-    it('loads execution digests, data & stack trace loading if numExecutions>0', () => {
+    it('loads dtypes, execution digests, data & stack trace loading if numExecutions>0', () => {
       const {
         fetchRuns,
         fetchDtypesMap,

@@ -924,7 +924,6 @@ class DebuggerV2PluginTest(tf.test.TestCase):
             "application/json", response.headers.get("content-type")
         )
         data = json.loads(response.get_data())
-        print("data:", data)  # DEBUG
         # Make assertions on some most-frequently used dtypes.
         dtypes_maps = data["dtypes_map"]
         self.assertEqual(dtypes_maps["1"]["name"], "float32")
