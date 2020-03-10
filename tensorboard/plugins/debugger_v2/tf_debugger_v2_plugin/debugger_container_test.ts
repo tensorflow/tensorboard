@@ -698,6 +698,111 @@ describe('Debugger Container', () => {
       expect(nanElements[0].nativeElement.innerText).toEqual('3');
     });
 
+    it('FULL_HEALTH TensorDebugMode, One outputs', () => {
+      const fixture = TestBed.createComponent(ExecutionDataContainer);
+      fixture.detectChanges();
+
+      store.setState(
+        createState(
+          createDebuggerState({
+            executions: {
+              numExecutionsLoaded: {
+                state: DataLoadState.LOADED,
+                lastLoadedTimeInMs: 111,
+              },
+              executionDigestsLoaded: {
+                state: DataLoadState.LOADED,
+                lastLoadedTimeInMs: 222,
+                pageLoadedSizes: {0: 100},
+                numExecutions: 1000,
+              },
+              executionDigests: {},
+              pageSize: 100,
+              displayCount: 50,
+              scrollBeginIndex: 90,
+              focusIndex: 98,
+              executionData: {
+                98: createTestExecutionData({
+                  op_type: 'FooOp',
+                  output_tensor_device_ids: ['d0'],
+                  output_tensor_ids: [123],
+                  tensor_debug_mode: TensorDebugMode.FULL_HEALTH,
+                  debug_tensor_values: [
+                    // [tensor_id, device_id, dtype, rank, element_count,
+                    //  neg_inf_count, pos_inf_count, nan_count,
+                    //  neg_finite_count, zero_count, pos_finite_count].
+                    [-1, -1, 1, 2, 6, 0, 0, 1, 2, 3, 0],
+                  ],
+                }),
+              },
+            },
+          })
+        )
+      );
+      fixture.detectChanges();
+
+      const opTypeElement = fixture.debugElement.query(By.css('.op-type'));
+      expect(opTypeElement.nativeElement.innerText).toEqual('FooOp');
+      const inputTensorsElement = fixture.debugElement.query(
+        By.css('.input-tensors')
+      );
+      expect(inputTensorsElement.nativeElement.innerText).toEqual('1');
+      const outputTensorsElement = fixture.debugElement.query(
+        By.css('.output-tensors')
+      );
+      expect(outputTensorsElement.nativeElement.innerText).toEqual('1');
+      const outputSlotElements = fixture.debugElement.queryAll(
+        By.css('.output-slot')
+      );
+      expect(outputSlotElements.length).toEqual(1);
+      expect(outputSlotElements[0].nativeElement.innerText).toEqual('0');
+      const dtypeElements = fixture.debugElement.queryAll(
+        By.css('.full-health-dtype')
+      );
+      expect(dtypeElements.length).toEqual(1);
+      expect(dtypeElements[0].nativeElement.innerText).toEqual('float32');
+      const rankElements = fixture.debugElement.queryAll(
+        By.css('.full-health-rank')
+      );
+      expect(rankElements.length).toEqual(1);
+      expect(rankElements[0].nativeElement.innerText).toEqual('2');
+      const sizeElements = fixture.debugElement.queryAll(
+        By.css('.full-health-size')
+      );
+      expect(sizeElements.length).toEqual(1);
+      expect(sizeElements[0].nativeElement.innerText).toEqual('6');
+      const negInfElements = fixture.debugElement.queryAll(
+        By.css('.full-health-neg-inf')
+      );
+      expect(negInfElements.length).toEqual(1);
+      expect(negInfElements[0].nativeElement.innerText).toEqual('0');
+      const posInfElements = fixture.debugElement.queryAll(
+        By.css('.full-health-pos-inf')
+      );
+      expect(posInfElements.length).toEqual(1);
+      expect(posInfElements[0].nativeElement.innerText).toEqual('0');
+      const nanElements = fixture.debugElement.queryAll(
+        By.css('.full-health-nan')
+      );
+      expect(nanElements.length).toEqual(1);
+      expect(nanElements[0].nativeElement.innerText).toEqual('1');
+      const negFiniteElements = fixture.debugElement.queryAll(
+        By.css('.full-health-neg-finite')
+      );
+      expect(negFiniteElements.length).toEqual(1);
+      expect(negFiniteElements[0].nativeElement.innerText).toEqual('2');
+      const zeroElements = fixture.debugElement.queryAll(
+        By.css('.full-health-zero')
+      );
+      expect(zeroElements.length).toEqual(1);
+      expect(zeroElements[0].nativeElement.innerText).toEqual('3');
+      const posFiniteElements = fixture.debugElement.queryAll(
+        By.css('.full-health-pos-finite')
+      );
+      expect(posFiniteElements.length).toEqual(1);
+      expect(posFiniteElements[0].nativeElement.innerText).toEqual('0');
+    });
+
     it('SHAPE TensorDebugMode, Two Outputs', () => {
       const fixture = TestBed.createComponent(ExecutionDataContainer);
       fixture.detectChanges();
@@ -729,7 +834,8 @@ describe('Debugger Container', () => {
                   tensor_debug_mode: TensorDebugMode.SHAPE,
                   debug_tensor_values: [
                     [-1, 1, 0, 1, 0, 0, 0, 0, 0, 0],
-                    [-1, 6, 2, 20, 4, 5, 0, 0, 0, 0],
+                    // Use -1337 dtype enum value to test the unknown-dtype logic.
+                    [-1, -1337, 2, 20, 4, 5, 0, 0, 0, 0],
                   ],
                 }),
               },
@@ -759,9 +865,8 @@ describe('Debugger Container', () => {
         By.css('.shape-dtype')
       );
       expect(dtypeElements.length).toEqual(2);
-      // TODO(cais): Modify assertions when human-readable dtypes are shown.
-      expect(dtypeElements[0].nativeElement.innerText).toEqual('1');
-      expect(dtypeElements[1].nativeElement.innerText).toEqual('6');
+      expect(dtypeElements[0].nativeElement.innerText).toEqual('float32');
+      expect(dtypeElements[1].nativeElement.innerText).toEqual('Unknown dtype');
       const rankElements = fixture.debugElement.queryAll(By.css('.shape-rank'));
       expect(rankElements.length).toEqual(2);
       expect(rankElements[0].nativeElement.innerText).toEqual('0');

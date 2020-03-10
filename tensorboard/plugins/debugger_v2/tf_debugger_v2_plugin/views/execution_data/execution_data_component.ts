@@ -42,6 +42,13 @@ export class ExecutionDataComponent {
   @Input()
   debugTensorValues: number[][] | null = null;
 
+  /**
+   * Dtypes of the tensors.
+   * Dtypes are available under tensor debug modes such as FULL_HEALTH.
+   */
+  @Input()
+  debugTensorDtypes: string[] | null = null;
+
   // So that the enum can be used in the template html.
   public TensorDebugMode = TensorDebugMode;
 }

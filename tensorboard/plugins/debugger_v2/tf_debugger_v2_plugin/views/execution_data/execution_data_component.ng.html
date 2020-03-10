@@ -135,6 +135,89 @@ limitations under the License.
           </div>
 
           <div
+            *ngSwitchCase="TensorDebugMode.FULL_HEALTH"
+            class="debug-tensor-values-container"
+          >
+            <table class="debug-tensor-values-table">
+              <tr>
+                <th>Slot</th>
+                <th>DType</th>
+                <th>Rank</th>
+                <th>Size</th>
+                <th>#(-inf)</th>
+                <th>#(inf)</th>
+                <th>#(nan)</th>
+                <th>#(-)</th>
+                <th>#(+)</th>
+                <th>#(0)</th>
+              </tr>
+              <tr
+                *ngFor="let singleDebugTensorValues of debugTensorValues; index as i;"
+              >
+                <td class="output-slot">
+                  {{ i }}
+                </td>
+                <td
+                  *ngIf="singleDebugTensorValues !== null"
+                  class="full-health-dtype"
+                >
+                  <ng-container *ngIf="debugTensorDtypes !== null">
+                    {{ debugTensorDtypes[i] }}
+                  </ng-container>
+                </td>
+                <td
+                  *ngIf="singleDebugTensorValues !== null"
+                  class="full-health-rank"
+                >
+                  {{ singleDebugTensorValues[3] }}
+                </td>
+                <td
+                  *ngIf="singleDebugTensorValues !== null"
+                  class="full-health-size"
+                >
+                  {{ singleDebugTensorValues[4] }}
+                </td>
+                <td
+                  *ngIf="singleDebugTensorValues !== null"
+                  class="full-health-neg-inf"
+                >
+                  {{ singleDebugTensorValues[5] }}
+                </td>
+                <td
+                  *ngIf="singleDebugTensorValues !== null"
+                  class="full-health-pos-inf"
+                >
+                  {{ singleDebugTensorValues[6] }}
+                </td>
+                <td
+                  *ngIf="singleDebugTensorValues !== null"
+                  class="full-health-nan"
+                >
+                  {{ singleDebugTensorValues[7] }}
+                </td>
+                <td
+                  *ngIf="singleDebugTensorValues !== null"
+                  class="full-health-neg-finite"
+                >
+                  {{ singleDebugTensorValues[8] }}
+                </td>
+                <td
+                  *ngIf="singleDebugTensorValues !== null"
+                  class="full-health-zero"
+                >
+                  {{ singleDebugTensorValues[9] }}
+                </td>
+                <td
+                  *ngIf="singleDebugTensorValues !== null"
+                  class="full-health-pos-finite"
+                >
+                  {{ singleDebugTensorValues[10] }}
+                </td>
+              </tr>
+            </table>
+          </div>
+
+          <div
             *ngSwitchCase="TensorDebugMode.SHAPE"
             class="debug-tensor-values-container"
           >
@@ -144,7 +227,7 @@ limitations under the License.
                 <th>DType</th>
                 <th>Rank</th>
                 <th>Size</th>
-                <th>shape</th>
+                <th>Shape</th>
               </tr>
               <tr
                 *ngFor="let singleDebugTensorValues of debugTensorValues; index as i;"
@@ -156,8 +239,9 @@ limitations under the License.
                   *ngIf="singleDebugTensorValues !== null"
                   class="shape-dtype"
                 >
-                  <!-- Show human readable dtype string. -->
-                  {{ singleDebugTensorValues[1] }}
+                  <ng-container *ngIf="debugTensorDtypes !== null">
+                    {{ debugTensorDtypes[i] }}
+                  </ng-container>
                 </td>
                 <td *ngIf="singleDebugTensorValues !== null" class="shape-rank">
                   {{ singleDebugTensorValues[2] }}
@@ -176,7 +260,7 @@ limitations under the License.
             </table>
           </div>
 
-          <!-- TODO(cais): Add other modes including FULL_HEALTH and FULL_NUMERICS. -->
+          <!-- TODO(cais): Add other modes including FULL_NUMERICS. -->
           <!-- TODO(cais): Use salient colors to hightlight non-zero counts of inf and nan. -->
         </div>
       </div>
