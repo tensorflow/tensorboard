@@ -206,6 +206,26 @@ export interface RunState {
   executions: Executions;
 }
 
+// A source-code file.
+export interface SourceFileSpec {
+  host_name: string;
+  file_path: string;
+}
+
+// A specific line of a source-code file, i.e., a stack frame.
+export interface SourceLineSpec extends SourceFileSpec {
+  lineno: number;
+}
+
+export interface SourceCodeState {
+  sourceFileListLoaded: LoadState;
+
+  // An index for all source-code files involved in the
+  // execution of the debugged proram, including eager
+  // execution and graph building.
+  sourceFileList: SourceFileSpec[];
+}
+
 export interface DebuggerState {
   // Runs that are available in the backend.
   runs: DebuggerRunListing;
@@ -222,6 +242,8 @@ export interface DebuggerState {
   // Stack frames that have been loaded from data source so far, keyed by
   // stack-frame IDs.
   stackFrames: StackFramesById;
+
+  sourceCode: SourceCodeState;
 }
 
 export interface State {
