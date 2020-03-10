@@ -47,6 +47,7 @@ from tensorboard import errors
 from tensorboard import plugin_util
 from tensorboard.backend import empty_path_redirect
 from tensorboard.backend import experiment_id
+from tensorboard.backend import experimental_plugin
 from tensorboard.backend import http_util
 from tensorboard.backend import path_prefix
 from tensorboard.backend import security_validator
@@ -179,9 +180,8 @@ def standard_tensorboard_wsgi(flags, plugin_loaders, assets_zip_provider):
         start_reloading_multiplexer(
             multiplexer, path_to_run, reload_interval, flags.reload_task
         )
-
     return TensorBoardWSGIApp(
-        flags, plugin_loaders, data_provider, assets_zip_provider, multiplexer,
+        flags, plugin_loaders, data_provider, assets_zip_provider, multiplexer
     )
 
 
@@ -256,9 +256,9 @@ def TensorBoardWSGIApp(
         if plugin is None:
             continue
         tbplugins.append(plugin)
-        if isinstance(loader, ExperimentalPlugin) or isinstance(
-            plugin, ExperimentalPlugin
-        ):
+        if isinstance(
+            loader, experimental_plugin.ExperimentalPlugin
+        ) or isinstance(plugin, experimental_plugin.ExperimentalPlugin):
             experimental_plugins.append(plugin.plugin_name)
         plugin_name_to_instance[plugin.plugin_name] = plugin
     return TensorBoardWSGI(
@@ -876,34 +876,3 @@ def make_plugin_loader(plugin_spec):
         if issubclass(plugin_spec, base_plugin.TBPlugin):
             return base_plugin.BasicLoader(plugin_spec)
     raise TypeError("Not a TBLoader or TBPlugin subclass: %r" % (plugin_spec,))
-
-
-class ExperimentalPlugin(object):
-    """A marker class used to annotate a plugin as experimental.
-
-    Experimental plugins are hidden from users by default. The plugin will only
-    be enabled for a user if the user has specified the plugin with the
-    experimentalPlugin query parameter in the URL.
-
-    The marker class can annotate either TBPlugin or TBLoader instances, whichever
-    is most convenient.
-
-    Typical usage is to create a new class that inherits from both an existing
-    TBPlugin/TBLoader class and this marker class. For example:
-
-
-    class ExperimentalGraphsPlugin(
-        graphs_plugin.GraphsPlugin,
-        application.ExperimentalPlugin,
-    ):
-        pass
-
-
-    class ExperimentalDebuggerPluginLoader(
-        debugger_plugin_loader.DebuggerPluginLoader,
-        application.ExperimentalPlugin
-    ):
-        pass
-    """
-
-    pass
