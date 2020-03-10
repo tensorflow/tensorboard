@@ -56,6 +56,16 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
         self._data_provider = debug_data_provider.LocalDebuggerV2DataProvider(
             self._logdir
         )
+        self._populate_dtypes_map()
+
+    def _populate_dtypes_map(self):
+        """Populate the map of dtypes, to prepare for later serving.
+
+        See `self.serve_dtypes_map()`.
+        """
+        self.dtypes_map = {}
+        for dtype_enum_value, dtype_string in dtypes._TYPE_TO_STRING.items():
+            self.dtypes_map[int(dtype_enum_value)] = {"name": dtype_string}
 
     def get_plugin_apps(self):
         # TODO(cais): Add routes as they are implemented.
@@ -290,9 +300,6 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
         Returns:
           Response to the request.
         """
-        dtypes_map = {}
-        for dtype_enum_value, dtype_string in dtypes._TYPE_TO_STRING.items():
-            dtypes_map[int(dtype_enum_value)] = {"name": dtype_string}
         return http_util.Respond(
-            request, {"dtypes_map": dtypes_map,}, "application/json",
+            request, {"dtypes_map": self.dtypes_map,}, "application/json",
         )
