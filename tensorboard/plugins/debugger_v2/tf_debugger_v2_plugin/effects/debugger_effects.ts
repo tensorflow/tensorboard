@@ -43,6 +43,8 @@ import {
   numAlertsAndBreakdownRequested,
   numExecutionsLoaded,
   numExecutionsRequested,
+  sourceFileListLoaded,
+  sourceFileListRequested,
   stackFramesLoaded,
 } from '../actions';
 import {
@@ -62,12 +64,14 @@ import {
   getLoadedStackFrames,
   getNumAlertsOfFocusedType,
   getDtypesMapLoaded,
+  getSourceFileListLoaded,
 } from '../store/debugger_selectors';
 import {
   DataLoadState,
   DebuggerRunListing,
   Execution,
   InfNanAlert,
+  SourceFileSpec,
   StackFrame,
   State,
 } from '../store/debugger_types';
@@ -75,6 +79,7 @@ import {
   AlertsResponse,
   DtypesMapResponse,
   Tfdbg2HttpServerDataSource,
+  SourceFileListResponse,
 } from '../data_source/tfdbg2_data_source';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
@@ -634,13 +639,45 @@ export class DebuggerEffects {
     );
   }
 
+  /**
+   * Load list of source files when debugger plugin is loaded.
+   */
+  private loadSourceFileList(prevStream$: Observable<void>) {
+    return prevStream$.pipe(
+      withLatestFrom(
+        this.store.select(getActiveRunId),
+        this.store.select(getSourceFileListLoaded)
+      ),
+      filter(([, runId, sourceFileListLoadState]) => {
+        return (
+          runId !== null &&
+          sourceFileListLoadState.state !== DataLoadState.LOADING
+        );
+      }),
+      tap(() => this.store.dispatch(sourceFileListRequested())),
+      mergeMap(([, runId]) => {
+        return this.dataSource.fetchSourceFileList(runId!).pipe(
+          tap((sourceFileListResponse: SourceFileListResponse) => {
+            const sourceFiles: SourceFileSpec[] = [];
+            sourceFileListResponse.forEach(([host_name, file_path]) => {
+              sourceFiles.push({host_name, file_path});
+            });
+            this.store.dispatch(sourceFileListLoaded({sourceFiles}));
+          }),
+          map(() => void null)
+          // TODO(cais): Add catchError() to pipe.
+        );
+      })
+    );
+  }
+
   constructor(
     private actions$: Actions,
     private store: Store<State>,
     private dataSource: Tfdbg2HttpServerDataSource
   ) {
     /**
-     * view load ---------> fetch dtypes map
+     * view load ---------> fetch source-file list
      *  |
      *  +> fetch run +> fetch num exec
      *  |            +> fetch num alerts
@@ -665,12 +702,13 @@ export class DebuggerEffects {
     this.loadData$ = createEffect(
       () => {
         // This event can trigger the loading of
+        //   - list of source files.
         //   - number of executions
         //   - number and breakdown of alerts.
         // Therefore it needs to be a shared observable.
         const onLoad$ = this.onDebuggerLoaded().pipe(share());
 
-        const loadDtypesMap$ = this.loadDtypesMap(onLoad$);
+        const loadSourceFileList$ = this.loadSourceFileList(onLoad$);
 
         const onNumExecutionLoaded$ = this.createNumExecutionLoader(onLoad$);
         const onNumAlertsLoaded$ = this.createNumAlertsAndBreakdownLoader(
@@ -720,7 +758,8 @@ export class DebuggerEffects {
           loadDtypesMap$,
           onNumAlertsLoaded$,
           onExcutionDigestLoaded$,
-          onExecutionDataLoaded$
+          onExecutionDataLoaded$,
+          loadSourceFileList$
         ).pipe(
           // createEffect expects an Observable that emits {}.
           map(() => ({}))

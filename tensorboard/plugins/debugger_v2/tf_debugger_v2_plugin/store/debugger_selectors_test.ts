@@ -24,6 +24,8 @@ import {
   getNumAlerts,
   getNumAlertsOfFocusedType,
   getFocusAlertTypesOfVisibleExecutionDigests,
+  getSourceFileList,
+  getSourceFileListLoaded,
 } from './debugger_selectors';
 import {
   AlertType,
@@ -33,6 +35,7 @@ import {
 } from './debugger_types';
 import {
   createAlertsState,
+  createDebuggerSourceCodeState,
   createDebuggerState,
   createState,
   createTestExecutionData,
@@ -519,6 +522,85 @@ describe('debugger selectors', () => {
         })
       );
       expect(getFocusedExecutionStackFrames(state)).toBeNull();
+    });
+  });
+
+  describe('getSourceFileListLoaded', () => {
+    it('returns correct NOT_LOADED state', () => {
+      const state = createState(createDebuggerState());
+      const loaded = getSourceFileListLoaded(state);
+      expect(loaded.state).toBe(DataLoadState.NOT_LOADED);
+      expect(loaded.lastLoadedTimeInMs).toBeNull();
+    });
+
+    it('returns correct LOADING state', () => {
+      const state = createState(
+        createDebuggerState({
+          sourceCode: createDebuggerSourceCodeState({
+            sourceFileListLoaded: {
+              state: DataLoadState.LOADING,
+              lastLoadedTimeInMs: 4321,
+            },
+          }),
+        })
+      );
+      const loaded = getSourceFileListLoaded(state);
+      expect(loaded.state).toBe(DataLoadState.LOADING);
+      expect(loaded.lastLoadedTimeInMs).toBe(4321);
+    });
+
+    it('returns correct LOADED state', () => {
+      const state = createState(
+        createDebuggerState({
+          sourceCode: createDebuggerSourceCodeState({
+            sourceFileListLoaded: {
+              state: DataLoadState.LOADED,
+              lastLoadedTimeInMs: 8888,
+            },
+          }),
+        })
+      );
+      const loaded = getSourceFileListLoaded(state);
+      expect(loaded.state).toBe(DataLoadState.LOADED);
+      expect(loaded.lastLoadedTimeInMs).toBe(8888);
+    });
+  });
+
+  describe('getSourceFileList', () => {
+    it('returns correct empty array state', () => {
+      const state = createState(createDebuggerState());
+      const sourceFileList = getSourceFileList(state);
+      expect(sourceFileList).toEqual([]);
+    });
+
+    it('returns correct non-empty array state', () => {
+      const state = createState(
+        createDebuggerState({
+          sourceCode: createDebuggerSourceCodeState({
+            sourceFileList: [
+              {
+                host_name: 'worker0',
+                file_path: '/tmp/main.py',
+              },
+              {
+                host_name: 'worker1',
+                file_path: '/tmp/eval.py',
+              },
+            ],
+          }),
+        })
+      );
+      const sourceFileList = getSourceFileList(state);
+      expect(sourceFileList).toEqual([
+        {
+          host_name: 'worker0',
+          file_path: '/tmp/main.py',
+        },
+        {
+          host_name: 'worker1',
+          file_path: '/tmp/eval.py',
+        },
+      ]);
     });
   });
 });

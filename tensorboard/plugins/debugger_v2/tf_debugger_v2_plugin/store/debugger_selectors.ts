@@ -25,6 +25,7 @@ import {
   ExecutionDigest,
   ExecutionDigestLoadState,
   LoadState,
+  SourceFileSpec,
   StackFrame,
   StackFramesById,
   State,
@@ -305,5 +306,19 @@ export const getFocusedExecutionStackFrames = createSelector(
       }
     }
     return stackFrames;
+  }
+);
+
+export const getSourceFileListLoaded = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): LoadState => {
+    return state.sourceCode.sourceFileListLoaded;
+  }
+);
+
+export const getSourceFileList = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): SourceFileSpec[] => {
+    return state.sourceCode.sourceFileList;
   }
 );

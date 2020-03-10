@@ -26,6 +26,7 @@ import {
   Executions,
   ExecutionDigest,
   InfNanAlert,
+  SourceCodeState,
   State,
   StackFrame,
 } from '../store/debugger_types';
@@ -103,6 +104,13 @@ export function createDebuggerState(
     alerts: createAlertsState(),
     executions: createDebuggerExecutionsState(),
     stackFrames: {},
+    sourceCode: {
+      sourceFileListLoaded: {
+        state: DataLoadState.NOT_LOADED,
+        lastLoadedTimeInMs: null,
+      },
+      sourceFileList: [],
+    },
     ...override,
   };
 }
@@ -142,6 +150,19 @@ export function createDebuggerExecutionsState(
     focusIndex: null,
     executionDigests: {},
     executionData: {},
+    ...override,
+  };
+}
+
+export function createDebuggerSourceCodeState(
+  override?: Partial<SourceCodeState>
+): SourceCodeState {
+  return {
+    sourceFileListLoaded: {
+      state: DataLoadState.NOT_LOADED,
+      lastLoadedTimeInMs: null,
+    },
+    sourceFileList: [],
     ...override,
   };
 }

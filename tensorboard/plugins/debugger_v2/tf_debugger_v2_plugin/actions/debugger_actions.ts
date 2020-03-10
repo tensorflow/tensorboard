@@ -16,11 +16,12 @@ limitations under the License.
 import {createAction, props} from '@ngrx/store';
 
 import {
+  Alert,
   AlertsBreakdown,
   AlertType,
   DebuggerRunListing,
+  SourceFileSpec,
   StackFramesById,
-  Alert,
 } from '../store/debugger_types';
 import {
   DtypesMapResponse,
@@ -137,6 +138,15 @@ export const executionDigestFocused = createAction(
 export const executionDataLoaded = createAction(
   '[Debugger] Execution Data Objects Loaded',
   props<ExecutionDataResponse>()
+);
+
+export const sourceFileListRequested = createAction(
+  '[Debugger] Source File List Requested.'
+);
+
+export const sourceFileListLoaded = createAction(
+  '[Debugger] Source File List Loaded',
+  props<{sourceFiles: SourceFileSpec[]}>()
 );
 
 export const stackFramesLoaded = createAction(

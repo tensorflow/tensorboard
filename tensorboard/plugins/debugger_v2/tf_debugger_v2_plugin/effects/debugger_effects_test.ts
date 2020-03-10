@@ -18,6 +18,7 @@ import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {of, ReplaySubject} from 'rxjs';
 import {
+  alertsOfTypeLoaded,
   alertTypeFocusToggled,
   debuggerLoaded,
   debuggerRunsLoaded,
@@ -35,14 +36,16 @@ import {
   numAlertsAndBreakdownLoaded,
   numExecutionsLoaded,
   numExecutionsRequested,
+  sourceFileListLoaded,
+  sourceFileListRequested,
   stackFramesLoaded,
-  alertsOfTypeLoaded,
 } from '../actions';
 import {
   AlertsResponse,
   DtypesMapResponse,
   ExecutionDataResponse,
   ExecutionDigestsResponse,
+  SourceFileListResponse,
   StackFramesResponse,
   Tfdbg2HttpServerDataSource,
 } from '../data_source/tfdbg2_data_source';
@@ -68,6 +71,7 @@ import {
   DebuggerRunListing,
   Execution,
   ExecutionDigest,
+  SourceFileSpec,
   State,
   DtypesMap,
 } from '../store/debugger_types';
@@ -256,10 +260,13 @@ describe('Debugger effects', () => {
     });
   });
 
-  function createFetchDtypesMapSpy(dtypesMapResponse: DtypesMapResponse) {
-    return spyOn(TestBed.get(Tfdbg2HttpServerDataSource), 'fetchDtypesMap')
-      .withArgs()
-      .and.returnValue(of(dtypesMapResponse));
+  function createFetchSourceFileListSpy(
+    runId: string,
+    sourceFilesListResponse: SourceFileListResponse
+  ) {
+    return spyOn(TestBed.get(Tfdbg2HttpServerDataSource), 'fetchSourceFileList')
+      .withArgs(runId)
+      .and.returnValue(of(sourceFilesListResponse));
   }
 
   function createFetchAlertsSpy(
@@ -374,11 +381,17 @@ describe('Debugger effects', () => {
     const stackFrame0 = createTestStackFrame();
     const stackFrame1 = createTestStackFrame();
 
+    const twoSourceFilesForTest: SourceFileListResponse = [
+      ['localhost', '/tmp/main.py'],
+      ['localhost', '/tmp/train.py'],
+    ];
+
     function createFetchSpies() {
       const fetchRuns = createFetchRunsSpy(runListingForTest);
-      const fetchDtypesMap = createFetchDtypesMapSpy({
-        dtypes_map: dtypesMapForTest,
-      });
+      const fetchSourceFileList = createFetchSourceFileListSpy(
+        runId,
+        twoSourceFilesForTest
+      );
       const fetchNumAlertsSpy = createFetchAlertsSpy(
         runId,
         0,
@@ -412,7 +425,7 @@ describe('Debugger effects', () => {
       });
       return {
         fetchRuns,
-        fetchDtypesMap,
+        fetchSourceFileList,
         fetchNumAlertsSpy,
         fetchExecutionDigests,
         fetchExecutionData,
@@ -492,51 +505,59 @@ describe('Debugger effects', () => {
       ]);
     });
 
-    it('loads dtypes, execution digests, data & stack trace loading if numExecutions>0', () => {
-      const {
-        fetchRuns,
-        fetchDtypesMap,
-        fetchExecutionDigests,
-        fetchExecutionData,
-        fetchStackFrames,
-      } = createFetchSpies();
-      store.overrideSelector(getDebuggerRunListing, runListingForTest);
-      store.overrideSelector(getNumExecutionsLoaded, {
-        state: DataLoadState.NOT_LOADED,
-        lastLoadedTimeInMs: null,
-      });
-      store.overrideSelector(getActiveRunId, runId);
-      store.overrideSelector(getNumExecutions, numExecutions);
-      store.overrideSelector(getExecutionPageSize, pageSize);
-      store.overrideSelector(getLoadedStackFrames, {});
-      store.refreshState();
+    it(
+      'loads source-file list, execution digests, data & stack trace loading ' +
+        'if numExecutions>0',
+      () => {
+        const {
+          fetchRuns,
+          fetchSourceFileList,
+          fetchExecutionDigests,
+          fetchExecutionData,
+          fetchStackFrames,
+        } = createFetchSpies();
+        store.overrideSelector(getDebuggerRunListing, runListingForTest);
+        store.overrideSelector(getNumExecutionsLoaded, {
+          state: DataLoadState.NOT_LOADED,
+          lastLoadedTimeInMs: null,
+        });
+        store.overrideSelector(getActiveRunId, runId);
+        store.overrideSelector(getNumExecutions, numExecutions);
+        store.overrideSelector(getExecutionPageSize, pageSize);
+        store.overrideSelector(getLoadedStackFrames, {});
+        store.refreshState();
 
-      action.next(debuggerLoaded());
+        action.next(debuggerLoaded());
 
-      expect(fetchRuns).toHaveBeenCalled();
-      // Once for # of execution digests; once for the first page.
-      expect(fetchDtypesMap).toHaveBeenCalledTimes(1);
-      expect(fetchExecutionDigests).toHaveBeenCalledTimes(2);
-      expect(fetchExecutionData).toHaveBeenCalledTimes(1);
-      expect(fetchStackFrames).toHaveBeenCalledTimes(1);
-      expect(dispatchedActions).toEqual([
-        debuggerRunsRequested(),
-        debuggerRunsLoaded({runs: runListingForTest}),
-        dtypesMapRequested(),
-        dtypesMapLoaded({dtypes_map: dtypesMapForTest}),
-        numAlertsAndBreakdownRequested(),
-        numAlertsAndBreakdownLoaded({
-          numAlerts: numAlertsResponseForTest.num_alerts,
-          alertsBreakdown: numAlertsResponseForTest.alerts_breakdown,
-        }),
-        numExecutionsRequested(),
-        numExecutionsLoaded({numExecutions}),
-        executionDigestsRequested(),
-        executionDigestsLoaded(executionDigestsPageResponse),
-        executionDataLoaded(executionDataResponse),
-        stackFramesLoaded({stackFrames: {aa: stackFrame0, bb: stackFrame1}}),
-      ]);
-    });
+        expect(fetchRuns).toHaveBeenCalled();
+        // Once for # of execution digests; once for the first page.
+        expect(fetchExecutionDigests).toHaveBeenCalledTimes(2);
+        expect(fetchExecutionData).toHaveBeenCalledTimes(1);
+        expect(fetchStackFrames).toHaveBeenCalledTimes(1);
+        expect(fetchSourceFileList).toHaveBeenCalledTimes(1);
+        expect(dispatchedActions).toEqual([
+          debuggerRunsRequested(),
+          debuggerRunsLoaded({runs: runListingForTest}),
+          numAlertsAndBreakdownRequested(),
+          numAlertsAndBreakdownLoaded({
+            numAlerts: numAlertsResponseForTest.num_alerts,
+            alertsBreakdown: numAlertsResponseForTest.alerts_breakdown,
+          }),
+          numExecutionsRequested(),
+          numExecutionsLoaded({numExecutions}),
+          executionDigestsRequested(),
+          executionDigestsLoaded(executionDigestsPageResponse),
+          executionDataLoaded(executionDataResponse),
+          stackFramesLoaded({stackFrames: {aa: stackFrame0, bb: stackFrame1}}),
+          sourceFileListRequested(),
+          sourceFileListLoaded({
+            sourceFiles: twoSourceFilesForTest.map(
+              ([host_name, file_path]) => ({host_name, file_path})
+            ),
+          }),
+        ]);
+      }
+    );
 
     for (const dataAlreadyExists of [false, true]) {
       it(
