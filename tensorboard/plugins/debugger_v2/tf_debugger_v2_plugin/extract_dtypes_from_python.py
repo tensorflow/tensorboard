@@ -30,7 +30,8 @@ def write_file(out_path):
         name_map = json.dumps(dtypes._TYPE_TO_STRING)
         f.write(
             "export const DTYPE_ENUM_TO_NAME: "
-            "{[enumValue: string]: string} = %s;\n" % name_map)
+            "{[enumValue: string]: string} = %s;\n" % name_map
+        )
 
 
 if __name__ == "__main__":
