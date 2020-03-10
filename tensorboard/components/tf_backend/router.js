@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 var tf_backend;
 (function (tf_backend) {
+    const EXPERIMENTAL_PLUGINS_QUERY_PARAM = 'experimentalPlugin';
     let _router = createRouter();
     /**
      * Create a router for communicating with the TensorBoard backend. You
@@ -21,7 +22,7 @@ var tf_backend;
      *
      * @param dataDir {string=} The base prefix for data endpoints.
      */
-    function createRouter(dataDir = 'data') {
+    function createRouter(dataDir = 'data', urlSearchParams = new URLSearchParams(window.location.search)) {
         if (dataDir[dataDir.length - 1] === '/') {
             dataDir = dataDir.slice(0, dataDir.length - 1);
         }
@@ -31,7 +32,9 @@ var tf_backend;
             pluginRoute: (pluginName, route, params) => {
                 return createDataPath(dataDir + '/plugin', `/${pluginName}${route}`, params);
             },
-            pluginsListing: () => createDataPath(dataDir, '/plugins_listing'),
+            pluginsListing: () => createDataPath(dataDir, '/plugins_listing', createSearchParam({
+                [EXPERIMENTAL_PLUGINS_QUERY_PARAM]: urlSearchParams.getAll(EXPERIMENTAL_PLUGINS_QUERY_PARAM),
+            })),
             runs: () => createDataPath(dataDir, '/runs'),
             runsForExperiment: (id) => {
                 return createDataPath(dataDir, '/experiment_runs', createSearchParam({ experiment: String(id) }));

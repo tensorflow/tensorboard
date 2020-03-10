@@ -47,6 +47,7 @@ from tensorboard import errors
 from tensorboard import plugin_util
 from tensorboard.backend import empty_path_redirect
 from tensorboard.backend import experiment_id
+from tensorboard.backend import experimental_plugin
 from tensorboard.backend import http_util
 from tensorboard.backend import path_prefix
 from tensorboard.backend import security_validator
@@ -88,6 +89,8 @@ DATA_PREFIX = "/data"
 PLUGIN_PREFIX = "/plugin"
 PLUGINS_LISTING_ROUTE = "/plugins_listing"
 PLUGIN_ENTRY_ROUTE = "/plugin_entry.html"
+
+EXPERIMENTAL_PLUGINS_QUERY_PARAM = "experimentalPlugin"
 
 # Slashes in a plugin name could throw the router for a loop. An empty
 # name would be confusing, too. To be safe, let's restrict the valid
@@ -246,20 +249,33 @@ def TensorBoardWSGIApp(
         window_title=flags.window_title,
     )
     tbplugins = []
+    experimental_plugins = []
     for plugin_spec in plugins:
         loader = make_plugin_loader(plugin_spec)
         plugin = loader.load(context)
         if plugin is None:
             continue
         tbplugins.append(plugin)
+        if isinstance(
+            loader, experimental_plugin.ExperimentalPlugin
+        ) or isinstance(plugin, experimental_plugin.ExperimentalPlugin):
+            experimental_plugins.append(plugin.plugin_name)
         plugin_name_to_instance[plugin.plugin_name] = plugin
-    return TensorBoardWSGI(tbplugins, flags.path_prefix, data_provider)
+    return TensorBoardWSGI(
+        tbplugins, flags.path_prefix, data_provider, experimental_plugins
+    )
 
 
 class TensorBoardWSGI(object):
     """The TensorBoard WSGI app that delegates to a set of TBPlugin."""
 
-    def __init__(self, plugins, path_prefix="", data_provider=None):
+    def __init__(
+        self,
+        plugins,
+        path_prefix="",
+        data_provider=None,
+        experimental_plugins=None,
+    ):
         """Constructs TensorBoardWSGI instance.
 
         Args:
@@ -268,6 +284,10 @@ class TensorBoardWSGI(object):
           data_provider: `tensorboard.data.provider.DataProvider` or
             `None`; if present, will inform the "active" state of
             `/plugins_listing`.
+          experimental_plugins: A list of plugin names that are only provided
+              experimentally. The corresponding plugins will only be activated for
+              a user if the user has specified the plugin with the experimentalPlugin
+              query parameter in the URL.
 
         Returns:
           A WSGI application for the set of all TBPlugin instances.
@@ -285,6 +305,7 @@ class TensorBoardWSGI(object):
         self._plugins = plugins
         self._path_prefix = path_prefix
         self._data_provider = data_provider
+        self._experimental_plugins = frozenset(experimental_plugins or ())
         if self._path_prefix.endswith("/"):
             # Should have been fixed by `fix_flags`.
             raise ValueError(
@@ -467,7 +488,13 @@ class TensorBoardWSGI(object):
             if self._data_provider is not None
             else frozenset()
         )
+        plugins_to_skip = self._experimental_plugins - frozenset(
+            request.args.getlist(EXPERIMENTAL_PLUGINS_QUERY_PARAM)
+        )
         for plugin in self._plugins:
+            if plugin.plugin_name in plugins_to_skip:
+                continue
+
             if (
                 type(plugin) is core_plugin.CorePlugin
             ):  # pylint: disable=unidiomatic-typecheck

@@ -114,14 +114,25 @@ var tf_backend;
                         assert.equal(router.pluginRoute('scalars', '/a', tf_backend.createSearchParam({ foo: '()' })), tf_backend.addParams('data/plugin/scalars/a', { foo: '()' }));
                     });
                 });
-                it('returns correct value for #pluginsListing', () => {
-                    assert.equal(router.pluginsListing(), 'data/plugins_listing');
-                });
                 it('returns correct value for #runs', () => {
                     assert.equal(router.runs(), 'data/runs');
                 });
                 it('returns correct value for #runsForExperiment', () => {
                     assert.equal(router.runsForExperiment(1), 'data/experiment_runs?experiment=1');
+                });
+            });
+            describe('#pluginsListing', () => {
+                it('returns /plugins_listing with no query params', () => {
+                    const router = tf_backend.createRouter('data', new URLSearchParams(''));
+                    assert.equal(router.pluginsListing(), 'data/plugins_listing');
+                });
+                it('returns /plugins_listing with experimentalPlugin query params', () => {
+                    const router = tf_backend.createRouter('data', new URLSearchParams('experimentalPlugin=plugin1&' +
+                        'to_ignore=ignoreme&' +
+                        'experimentalPlugin=plugin2'));
+                    assert.equal(router.pluginsListing(), 'data/plugins_listing?' +
+                        'experimentalPlugin=plugin1&' +
+                        'experimentalPlugin=plugin2');
                 });
             });
         });
