@@ -622,9 +622,10 @@ export class DebuggerEffects {
         this.store.select(getActiveRunId),
         this.store.select(getSourceFileListLoaded)
       ),
-      filter(([, runId, fileIndexLoadState]) => {
+      filter(([, runId, sourceFileListLoadState]) => {
         return (
-          runId !== null && fileIndexLoadState.state !== DataLoadState.LOADING
+          runId !== null &&
+          sourceFileListLoadState.state !== DataLoadState.LOADING
         );
       }),
       tap(() => this.store.dispatch(sourceFileListRequested())),

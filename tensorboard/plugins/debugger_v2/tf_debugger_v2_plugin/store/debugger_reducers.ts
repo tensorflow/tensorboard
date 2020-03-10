@@ -25,8 +25,6 @@ import {
   DataLoadState,
   DebuggerState,
   InfNanAlert,
-  SourceFileSpec,
-  SourceLineSpec,
   StackFramesById,
 } from './debugger_types';
 
@@ -501,6 +499,7 @@ const reducer = createReducer(
         sourceCode: {
           ...state.sourceCode,
           sourceFileListLoaded: {
+            ...state.sourceCode.sourceFileListLoaded,
             state: DataLoadState.LOADED,
             lastLoadedTimeInMs: Date.now(),
           },
