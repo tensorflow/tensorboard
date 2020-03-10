@@ -23,8 +23,6 @@ import {
   debuggerLoaded,
   debuggerRunsLoaded,
   debuggerRunsRequested,
-  dtypesMapLoaded,
-  dtypesMapRequested,
   executionDataLoaded,
   executionDigestFocused,
   executionDigestsLoaded,
@@ -42,7 +40,6 @@ import {
 } from '../actions';
 import {
   AlertsResponse,
-  DtypesMapResponse,
   ExecutionDataResponse,
   ExecutionDigestsResponse,
   SourceFileListResponse,
@@ -73,7 +70,6 @@ import {
   ExecutionDigest,
   SourceFileSpec,
   State,
-  DtypesMap,
 } from '../store/debugger_types';
 import {
   createDebuggerState,
@@ -308,12 +304,6 @@ describe('Debugger effects', () => {
       },
     };
 
-    const dtypesMapForTest: DtypesMap = {
-      '1': {name: 'float32'},
-      '3': {name: 'int32'},
-      '10': {name: 'bool'},
-    };
-
     function createFetchRunsSpy(runsListing: DebuggerRunListing) {
       return spyOn(TestBed.get(Tfdbg2HttpServerDataSource), 'fetchRuns')
         .withArgs()
@@ -437,10 +427,7 @@ describe('Debugger effects', () => {
       debuggerEffects.loadData$.subscribe();
     });
 
-    it('dtype map & run list loading: empty runs', () => {
-      const fetchDtypesMap = createFetchDtypesMapSpy({
-        dtypes_map: dtypesMapForTest,
-      });
+    it('run list loading: empty runs', () => {
       const fetchRuns = createFetchRunsSpy({});
       store.overrideSelector(getDebuggerRunListing, {});
 
@@ -450,16 +437,11 @@ describe('Debugger effects', () => {
       expect(dispatchedActions).toEqual([
         debuggerRunsRequested(),
         debuggerRunsLoaded({runs: {}}),
-        dtypesMapRequested(),
-        dtypesMapLoaded({dtypes_map: dtypesMapForTest}),
       ]);
     });
 
-    it('loads dtypes & numExecutions if there is a run: no executions', () => {
+    it('loads numExecutions when there is a run: empty executions', () => {
       const fetchRuns = createFetchRunsSpy(runListingForTest);
-      const fetchDtypesMap = createFetchDtypesMapSpy({
-        dtypes_map: dtypesMapForTest,
-      });
       const fetchNumExecutionDigests = createFetchExecutionDigestsSpy(
         runId,
         0,
@@ -487,14 +469,11 @@ describe('Debugger effects', () => {
       action.next(debuggerLoaded());
 
       expect(fetchRuns).toHaveBeenCalled();
-      expect(fetchDtypesMap).toHaveBeenCalled();
       expect(fetchNumExecutionDigests).toHaveBeenCalled();
       expect(fetchNumAlerts).toHaveBeenCalled();
       expect(dispatchedActions).toEqual([
         debuggerRunsRequested(),
         debuggerRunsLoaded({runs: runListingForTest}),
-        dtypesMapRequested(),
-        dtypesMapLoaded({dtypes_map: dtypesMapForTest}),
         numAlertsAndBreakdownRequested(),
         numAlertsAndBreakdownLoaded({
           numAlerts: numAlertsResponseForTest.num_alerts,

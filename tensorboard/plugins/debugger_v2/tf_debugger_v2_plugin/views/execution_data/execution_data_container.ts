@@ -15,14 +15,10 @@ limitations under the License.
 import {Component, Input} from '@angular/core';
 import {select, Store, createSelector} from '@ngrx/store';
 
-import {
-  Execution,
-  State,
-  TensorDebugMode,
-  DtypesMap,
-} from '../../store/debugger_types';
+import {Execution, State, TensorDebugMode} from '../../store/debugger_types';
 
-import {getDtypesMap, getFocusedExecutionData} from '../../store';
+import {getFocusedExecutionData} from '../../store';
+import {DTYPE_ENUM_TO_NAME} from '../../tf_dtypes';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
@@ -106,11 +102,7 @@ export class ExecutionDataContainer {
     select(
       createSelector(
         getFocusedExecutionData,
-        getDtypesMap,
-        (
-          execution: Execution | null,
-          dtypesMap: DtypesMap
-        ): string[] | null => {
+        (execution: Execution | null): string[] | null => {
           if (execution === null || execution.debug_tensor_values === null) {
             return null;
           }
@@ -131,11 +123,7 @@ export class ExecutionDataContainer {
                   ? tensorValue[2] // tensor_debug_mode: FULL_HEALTH
                   : tensorValue[1] // tensor_debug_mode: SHAPE
               );
-              dtypes.push(
-                dtypeEnum in dtypesMap
-                  ? dtypesMap[dtypeEnum].name
-                  : UNKNOWN_DTYPE_NAME
-              );
+              dtypes.push(DTYPE_ENUM_TO_NAME[dtypeEnum] || UNKNOWN_DTYPE_NAME);
             }
           }
           return dtypes;

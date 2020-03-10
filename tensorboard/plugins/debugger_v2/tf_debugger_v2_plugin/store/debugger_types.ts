@@ -19,8 +19,6 @@ export {DataLoadState, LoadState} from '../../../../webapp/types/data';
 
 export const DEBUGGER_FEATURE_KEY = 'debugger';
 
-export type DtypesMap = {[dtype_enum_value: string]: {name: string}};
-
 export enum TensorDebugMode {
   // NOTE(cais): The string name and number values of these enums
   // need to match TensorDebugMode in tensorflow. See
@@ -43,11 +41,6 @@ export interface DebuggerRunMetadata {
 
 export interface DebuggerRunListing {
   [runId: string]: DebuggerRunMetadata;
-}
-
-export interface DtypesState {
-  dtypesMap: DtypesMap;
-  dtypesLoaded: LoadState;
 }
 
 // Each item is [host_name, file_path, lineno, function].
@@ -237,8 +230,6 @@ export interface DebuggerState {
   // Runs that are available in the backend.
   runs: DebuggerRunListing;
   runsLoaded: LoadState;
-
-  dtypes: DtypesState;
 
   // ID of the run being currently displayed.
   activeRunId: string | null;

@@ -705,15 +705,6 @@ describe('Debugger Container', () => {
       store.setState(
         createState(
           createDebuggerState({
-            dtypes: {
-              dtypesMap: {
-                1: {name: 'float32'},
-              },
-              dtypesLoaded: {
-                state: DataLoadState.LOADED,
-                lastLoadedTimeInMs: 1,
-              },
-            },
             executions: {
               numExecutionsLoaded: {
                 state: DataLoadState.LOADED,
@@ -819,15 +810,6 @@ describe('Debugger Container', () => {
       store.setState(
         createState(
           createDebuggerState({
-            dtypes: {
-              dtypesMap: {
-                1: {name: 'float32'},
-              },
-              dtypesLoaded: {
-                state: DataLoadState.LOADED,
-                lastLoadedTimeInMs: 1,
-              },
-            },
             executions: {
               numExecutionsLoaded: {
                 state: DataLoadState.LOADED,
@@ -852,7 +834,8 @@ describe('Debugger Container', () => {
                   tensor_debug_mode: TensorDebugMode.SHAPE,
                   debug_tensor_values: [
                     [-1, 1, 0, 1, 0, 0, 0, 0, 0, 0],
-                    [-1, 6, 2, 20, 4, 5, 0, 0, 0, 0],
+                    // Use -1337 dtype enum value to test the unknown-dtype logic.
+                    [-1, -1337, 2, 20, 4, 5, 0, 0, 0, 0],
                   ],
                 }),
               },

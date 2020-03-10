@@ -79,8 +79,8 @@ tf_ng_web_test_suite(
 )
 
 py_binary(
-    name = "extract_dtype_names",
-    srcs = ["extract_dtype_names.py"],
+    name = "extract_dtypes_from_python",
+    srcs = ["extract_dtypes_from_python.py"],
     srcs_version = "PY3",
     deps = [
         "//tensorboard/compat/tensorflow_stub",
@@ -90,9 +90,9 @@ py_binary(
 genrule(
     name = "generate_dtypes",
     outs = ["tf_dtypes.ts"],
-    cmd = "$(execpath :extract_dtype_names) $@",
+    cmd = "$(execpath :extract_dtypes_from_python) $@",
     tools = [
-        ":extract_dtype_names",
+        ":extract_dtypes_from_python",
     ],
 )
 

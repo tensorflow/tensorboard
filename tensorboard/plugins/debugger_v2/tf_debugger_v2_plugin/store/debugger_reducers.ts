@@ -18,7 +18,6 @@ import * as actions from '../actions';
 import {
   ExecutionDataResponse,
   ExecutionDigestsResponse,
-  DtypesMapResponse,
 } from '../data_source/tfdbg2_data_source';
 import {
   AlertsByIndex,
@@ -40,13 +39,6 @@ const initialState: DebuggerState = {
   runsLoaded: {
     state: DataLoadState.NOT_LOADED,
     lastLoadedTimeInMs: null,
-  },
-  dtypes: {
-    dtypesMap: {},
-    dtypesLoaded: {
-      state: DataLoadState.NOT_LOADED,
-      lastLoadedTimeInMs: null,
-    },
   },
   activeRunId: null,
   alerts: {
@@ -132,37 +124,6 @@ const reducer = createReducer(
         // TODO(cais): Handle multiple runs. We currently assumes there is only
         // one run, which is okay because the backend supports only one run
         // per experiment.
-      };
-    }
-  ),
-  on(
-    actions.dtypesMapRequested,
-    (state: DebuggerState): DebuggerState => {
-      return {
-        ...state,
-        dtypes: {
-          ...state.dtypes,
-          dtypesLoaded: {
-            ...state.dtypes.dtypesLoaded,
-            state: DataLoadState.LOADING,
-          },
-        },
-      };
-    }
-  ),
-  on(
-    actions.dtypesMapLoaded,
-    (state: DebuggerState, dtypesMap: DtypesMapResponse): DebuggerState => {
-      return {
-        ...state,
-        dtypes: {
-          ...state.dtypes,
-          dtypesMap: dtypesMap.dtypes_map,
-          dtypesLoaded: {
-            state: DataLoadState.LOADED,
-            lastLoadedTimeInMs: Date.now(),
-          },
-        },
       };
     }
   ),
