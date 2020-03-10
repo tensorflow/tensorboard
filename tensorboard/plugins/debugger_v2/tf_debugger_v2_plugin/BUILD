@@ -77,3 +77,28 @@ tf_ng_web_test_suite(
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/timeline:timeline_test",
     ],
 )
+
+py_binary(
+    name = "extract_dtype_names",
+    srcs = ["extract_dtype_names.py"],
+    srcs_version = "PY3",
+    deps = [
+        "//tensorboard/compat/tensorflow_stub",
+    ],
+)
+
+genrule(
+    name = "generate_dtypes",
+    outs = ["tf_dtypes.ts"],
+    cmd = "$(execpath :extract_dtype_names) $@",
+    tools = [
+        ":extract_dtype_names",
+    ],
+)
+
+tf_ts_library(
+    name = "tf_types",
+    srcs = [
+        "tf_dtypes.ts",
+    ],
+)
