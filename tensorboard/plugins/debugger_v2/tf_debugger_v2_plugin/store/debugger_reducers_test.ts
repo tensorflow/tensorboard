@@ -1082,6 +1082,97 @@ describe('Debugger reducers', () => {
         file_path: '/tmp/train.py',
       },
     ]);
-    expect(nextState.sourceCode.sourceFiles).toEqual([null, null]);
+    expect(nextState.sourceCode.sourceFiles).toEqual([
+      {
+        loadState: DataLoadState.NOT_LOADED,
+        lines: null,
+      },
+      {
+        loadState: DataLoadState.NOT_LOADED,
+        lines: null,
+      },
+    ]);
   });
+
+  it(`updates file load state on sourceFileRequested: known file`, () => {
+    const state = createDebuggerState({
+      sourceCode: createDebuggerSourceCodeState({
+        sourceFileList: [
+          {
+            host_name: 'foo_host',
+            file_path: '/tmp/main.py',
+          },
+          {
+            host_name: 'foo_host',
+            file_path: '/tmp/model.py',
+          },
+        ],
+        sourceFiles: [
+          {
+            loadState: DataLoadState.NOT_LOADED,
+            lines: null,
+          },
+          {
+            loadState: DataLoadState.NOT_LOADED,
+            lines: null,
+          },
+        ],
+      }),
+    });
+    const nextState = reducers(
+      state,
+      actions.sourceFileRequested({
+        host_name: 'foo_host',
+        file_path: '/tmp/model.py',
+      })
+    );
+
+    expect(nextState.sourceCode.sourceFiles).toEqual([
+      {
+        loadState: DataLoadState.NOT_LOADED,
+        lines: null,
+      },
+      {
+        loadState: DataLoadState.LOADING,
+        lines: null,
+      },
+    ]);
+  });
+
+  it(`updates file load state on sourceFileRequested: unknown file`, () => {
+    const state = createDebuggerState({
+      sourceCode: createDebuggerSourceCodeState({
+        sourceFileList: [
+          {
+            host_name: 'foo_host',
+            file_path: '/tmp/main.py',
+          },
+          {
+            host_name: 'foo_host',
+            file_path: '/tmp/model.py',
+          },
+        ],
+        sourceFiles: [
+          {
+            loadState: DataLoadState.NOT_LOADED,
+            lines: null,
+          },
+          {
+            loadState: DataLoadState.NOT_LOADED,
+            lines: null,
+          },
+        ],
+      }),
+    });
+    expect(() => reducers(
+      state,
+      actions.sourceFileRequested({
+        host_name: 'foo_host',
+        file_path: '/tmp/i_am_unknown.py',
+      })
+    )).toThrowError(/Cannot find the following file.*\"\/tmp\/i_am_unknown\.py\"/);
+  });
+
+
+
 });

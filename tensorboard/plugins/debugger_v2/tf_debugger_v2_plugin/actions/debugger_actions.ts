@@ -142,7 +142,7 @@ export const sourceFileListLoaded = createAction(
 
 export const sourceFileRequested = createAction(
   '[Debugger] Source File Requested',
-  props<{hostName: string; filePath: string}>()
+  props<SourceFileSpec>()
 );
 
 export const sourceFileLoaded = createAction(

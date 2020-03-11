@@ -18,6 +18,7 @@ import * as actions from '../actions';
 import {
   ExecutionDataResponse,
   ExecutionDigestsResponse,
+  SourceFileResponse,
 } from '../data_source/tfdbg2_data_source';
 import {
   AlertsByIndex,
@@ -27,6 +28,7 @@ import {
   InfNanAlert,
   StackFramesById,
   SourceFileContent,
+  SourceFileSpec,
 } from './debugger_types';
 
 // HACK: These imports are for type inference.
@@ -513,7 +515,71 @@ const reducer = createReducer(
       const oldNumFiles = newState.sourceCode.sourceFiles.length;
       if (newNumFiles > oldNumFiles) {
         newState.sourceCode.sourceFiles.push(
-          ...new Array<null>(newNumFiles - oldNumFiles).fill(null)
+          ...new Array<SourceFileContent>(newNumFiles - oldNumFiles).fill({
+            loadState: DataLoadState.NOT_LOADED,
+            lines: null,
+          })
+        );
+      }
+      return newState;
+    }
+  ),
+  on(
+    actions.sourceFileRequested,
+    (state: DebuggerState, sourceFileSpec: SourceFileSpec): DebuggerState => {
+      const newState: DebuggerState = {
+        ...state,
+        sourceCode: {
+          ...state.sourceCode,
+          sourceFiles: state.sourceCode.sourceFiles.slice(),
+        },
+      };
+      const fileIndex = newState.sourceCode.sourceFileList.findIndex(
+        (fileSpec) =>
+          fileSpec.host_name === sourceFileSpec.host_name &&
+          fileSpec.file_path === sourceFileSpec.file_path
+      );
+      if (fileIndex >= 0) {
+        newState.sourceCode.sourceFiles[fileIndex].loadState =
+          DataLoadState.LOADING;
+      } else {
+        throw Error(
+          `Cannot find the following file in file list: ` +
+            `host_name="${sourceFileSpec.host_name}", ` +
+            `file_path="${sourceFileSpec.file_path}"`
+        );
+      }
+      return newState;
+    }
+  ),
+  on(
+    actions.sourceFileLoaded,
+    (
+      state: DebuggerState,
+      sourceFileResponse: SourceFileResponse
+    ): DebuggerState => {
+      const newState: DebuggerState = {
+        ...state,
+        sourceCode: {
+          ...state.sourceCode,
+          sourceFiles: state.sourceCode.sourceFiles.slice(),
+        },
+      };
+      const fileIndex = newState.sourceCode.sourceFileList.findIndex(
+        (fileSpec) =>
+          fileSpec.host_name === sourceFileResponse.host_name &&
+          fileSpec.file_path === sourceFileResponse.file_path
+      );
+      if (fileIndex >= 0) {
+        newState.sourceCode.sourceFiles[fileIndex] = {
+          loadState: DataLoadState.LOADED,
+          lines: sourceFileResponse.lines,
+        };
+      } else {
+        throw Error(
+          `Cannot find the following file in file list: ` +
+            `host_name="${sourceFileResponse.host_name}", ` +
+            `file_path="${sourceFileResponse.file_path}"`
         );
       }
       return newState;

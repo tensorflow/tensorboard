@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 import {LoadState} from '../../../../webapp/types/data';
+import {DataLoadState} from '../../../../webapp/types/data';
 
 export {DataLoadState, LoadState} from '../../../../webapp/types/data';
 
@@ -219,8 +220,11 @@ export interface SourceLineSpec extends SourceFileSpec {
 
 // The content and loading state of a single source file.
 export interface SourceFileContent {
+  loadState: DataLoadState;
+
   // Text of the source file, line-by-line.
-  lines: string[];
+  // Use `null` for the state wherein the file is not loaded yet.
+  lines: string[] | null;
 }
 
 export interface SourceCodeState {
@@ -233,7 +237,7 @@ export interface SourceCodeState {
 
   // The contents and loading states of individual source files,
   // For files that are still not loaded, use `null`.
-  sourceFiles: Array<SourceFileContent | null>;
+  sourceFiles: SourceFileContent[];
 }
 
 export interface DebuggerState {
