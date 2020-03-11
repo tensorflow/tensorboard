@@ -104,8 +104,8 @@ export abstract class Tfdbg2DataSource {
    * Fetch the content of an individual source-code file.
    *
    * @param run
-   * @param fileSpec Specification of the source-code file to fetch, including
-   *   its host name and file path on the host.
+   * @param fileIndex 0-based index of the file to fetch. The index can be
+   *   obtained by the list from `fetchSourceFileList()`.
    */
   abstract fetchSourceFile(
     run: string,
