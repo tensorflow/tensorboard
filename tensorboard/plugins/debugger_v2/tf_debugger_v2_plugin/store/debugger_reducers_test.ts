@@ -1139,7 +1139,7 @@ describe('Debugger reducers', () => {
     ]);
   });
 
-  it(`updates file load state on sourceFileRequested: unknown file`, () => {
+  it(`throws error on sourceFileRequested: unknown file`, () => {
     const state = createDebuggerState({
       sourceCode: createDebuggerSourceCodeState({
         sourceFileList: [
@@ -1164,15 +1164,109 @@ describe('Debugger reducers', () => {
         ],
       }),
     });
-    expect(() => reducers(
-      state,
-      actions.sourceFileRequested({
-        host_name: 'foo_host',
-        file_path: '/tmp/i_am_unknown.py',
-      })
-    )).toThrowError(/Cannot find the following file.*\"\/tmp\/i_am_unknown\.py\"/);
+    expect(() =>
+      reducers(
+        state,
+        actions.sourceFileRequested({
+          host_name: 'foo_host',
+          file_path: '/tmp/i_am_unknown.py',
+        })
+      )
+    ).toThrowError(
+      /Cannot find the following file.*\"\/tmp\/i_am_unknown\.py\"/
+    );
   });
 
+  it(`updates file load state & content on sourceFileLoaded: known file`, () => {
+    const state = createDebuggerState({
+      sourceCode: createDebuggerSourceCodeState({
+        sourceFileList: [
+          {
+            host_name: 'foo_host',
+            file_path: '/tmp/main.py',
+          },
+          {
+            host_name: 'foo_host',
+            file_path: '/tmp/model.py',
+          },
+        ],
+        sourceFiles: [
+          {
+            loadState: DataLoadState.NOT_LOADED,
+            lines: null,
+          },
+          {
+            loadState: DataLoadState.LOADING,
+            lines: null,
+          },
+        ],
+      }),
+    });
+    const nextState = reducers(
+      state,
+      actions.sourceFileLoaded({
+        host_name: 'foo_host',
+        file_path: '/tmp/model.py',
+        lines: [
+          'import tensorflow as tf',
+          '',
+          'model = tf.keras.applications.MobilNetV2()',
+        ],
+      })
+    );
 
+    expect(nextState.sourceCode.sourceFiles).toEqual([
+      {
+        loadState: DataLoadState.NOT_LOADED,
+        lines: null,
+      },
+      {
+        loadState: DataLoadState.LOADED,
+        lines: [
+          'import tensorflow as tf',
+          '',
+          'model = tf.keras.applications.MobilNetV2()',
+        ],
+      },
+    ]);
+  });
 
+  it(`throws error on sourceFileLoaded: unknown file`, () => {
+    const state = createDebuggerState({
+      sourceCode: createDebuggerSourceCodeState({
+        sourceFileList: [
+          {
+            host_name: 'foo_host',
+            file_path: '/tmp/main.py',
+          },
+          {
+            host_name: 'foo_host',
+            file_path: '/tmp/model.py',
+          },
+        ],
+        sourceFiles: [
+          {
+            loadState: DataLoadState.NOT_LOADED,
+            lines: null,
+          },
+          {
+            loadState: DataLoadState.LOADING,
+            lines: null,
+          },
+        ],
+      }),
+    });
+    expect(() =>
+      reducers(
+        state,
+        actions.sourceFileLoaded({
+          host_name: 'foo_host',
+          file_path: '/tmp/i_am_unknown.py',
+          lines: ['print("Mysterious")'],
+        })
+      )
+    ).toThrowError(
+      /Cannot find the following file.*\"\/tmp\/i_am_unknown\.py\"/
+    );
+  });
 });
