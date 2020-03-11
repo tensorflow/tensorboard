@@ -13,10 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {LoadState} from '../../../../webapp/types/data';
-import {DataLoadState} from '../../../../webapp/types/data';
+import {DataLoadState, LoadState} from '../../../../webapp/types/data';
 
-export {DataLoadState, LoadState} from '../../../../webapp/types/data';
+export {DataLoadState, LoadState};
 
 export const DEBUGGER_FEATURE_KEY = 'debugger';
 
