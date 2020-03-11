@@ -1082,7 +1082,7 @@ describe('Debugger reducers', () => {
         file_path: '/tmp/train.py',
       },
     ]);
-    expect(nextState.sourceCode.sourceFiles).toEqual([
+    expect(nextState.sourceCode.fileContents).toEqual([
       {
         loadState: DataLoadState.NOT_LOADED,
         lines: null,
@@ -1107,7 +1107,7 @@ describe('Debugger reducers', () => {
             file_path: '/tmp/model.py',
           },
         ],
-        sourceFiles: [
+        fileContents: [
           {
             loadState: DataLoadState.NOT_LOADED,
             lines: null,
@@ -1127,7 +1127,7 @@ describe('Debugger reducers', () => {
       })
     );
 
-    expect(nextState.sourceCode.sourceFiles).toEqual([
+    expect(nextState.sourceCode.fileContents).toEqual([
       {
         loadState: DataLoadState.NOT_LOADED,
         lines: null,
@@ -1152,7 +1152,7 @@ describe('Debugger reducers', () => {
             file_path: '/tmp/model.py',
           },
         ],
-        sourceFiles: [
+        fileContents: [
           {
             loadState: DataLoadState.NOT_LOADED,
             lines: null,
@@ -1190,7 +1190,7 @@ describe('Debugger reducers', () => {
             file_path: '/tmp/model.py',
           },
         ],
-        sourceFiles: [
+        fileContents: [
           {
             loadState: DataLoadState.NOT_LOADED,
             lines: null,
@@ -1215,7 +1215,7 @@ describe('Debugger reducers', () => {
       })
     );
 
-    expect(nextState.sourceCode.sourceFiles).toEqual([
+    expect(nextState.sourceCode.fileContents).toEqual([
       {
         loadState: DataLoadState.NOT_LOADED,
         lines: null,
@@ -1244,7 +1244,7 @@ describe('Debugger reducers', () => {
             file_path: '/tmp/model.py',
           },
         ],
-        sourceFiles: [
+        fileContents: [
           {
             loadState: DataLoadState.NOT_LOADED,
             lines: null,

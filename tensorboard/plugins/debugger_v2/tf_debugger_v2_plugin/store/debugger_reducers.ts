@@ -82,7 +82,7 @@ const initialState: DebuggerState = {
       lastLoadedTimeInMs: null,
     },
     sourceFileList: [],
-    sourceFiles: [],
+    fileContents: [],
   },
 };
 // TODO(cais): As `executions` is getting large, create a subreducer for it.
@@ -508,13 +508,13 @@ const reducer = createReducer(
             lastLoadedTimeInMs: Date.now(),
           },
           sourceFileList: sourceFileList.sourceFiles,
-          sourceFiles: [...state.sourceCode.sourceFiles],
+          fileContents: [...state.sourceCode.fileContents],
         },
       };
       const newNumFiles = sourceFileList.sourceFiles.length;
-      const oldNumFiles = newState.sourceCode.sourceFiles.length;
+      const oldNumFiles = newState.sourceCode.fileContents.length;
       if (newNumFiles > oldNumFiles) {
-        newState.sourceCode.sourceFiles.push(
+        newState.sourceCode.fileContents.push(
           ...new Array<SourceFileContent>(newNumFiles - oldNumFiles).fill({
             loadState: DataLoadState.NOT_LOADED,
             lines: null,
@@ -531,7 +531,7 @@ const reducer = createReducer(
         ...state,
         sourceCode: {
           ...state.sourceCode,
-          sourceFiles: state.sourceCode.sourceFiles.slice(),
+          fileContents: state.sourceCode.fileContents.slice(),
         },
       };
       const fileIndex = newState.sourceCode.sourceFileList.findIndex(
@@ -540,7 +540,7 @@ const reducer = createReducer(
           fileSpec.file_path === sourceFileSpec.file_path
       );
       if (fileIndex >= 0) {
-        newState.sourceCode.sourceFiles[fileIndex].loadState =
+        newState.sourceCode.fileContents[fileIndex].loadState =
           DataLoadState.LOADING;
       } else {
         throw Error(
@@ -562,7 +562,7 @@ const reducer = createReducer(
         ...state,
         sourceCode: {
           ...state.sourceCode,
-          sourceFiles: state.sourceCode.sourceFiles.slice(),
+          fileContents: state.sourceCode.fileContents.slice(),
         },
       };
       const fileIndex = newState.sourceCode.sourceFileList.findIndex(
@@ -571,7 +571,7 @@ const reducer = createReducer(
           fileSpec.file_path === sourceFileResponse.file_path
       );
       if (fileIndex >= 0) {
-        newState.sourceCode.sourceFiles[fileIndex] = {
+        newState.sourceCode.fileContents[fileIndex] = {
           loadState: DataLoadState.LOADED,
           lines: sourceFileResponse.lines,
         };

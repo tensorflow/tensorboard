@@ -666,6 +666,7 @@ export class DebuggerEffects {
             item.host_name === fileSpec.host_name &&
             item.file_path === fileSpec.file_path
         );
+        console.log('map():', runId, fileIndex, fileSpec, sourceFileContents); // DEBUG
         return {
           runId,
           fileIndex,
@@ -674,6 +675,7 @@ export class DebuggerEffects {
         };
       }),
       filter(({runId, fileIndex, sourceFileContents}) => {
+        console.log('map():', runId, fileIndex, sourceFileContents[fileIndex]); // DEBUG
         return (
           runId !== null &&
           fileIndex >= 0 &&
@@ -785,7 +787,7 @@ export class DebuggerEffects {
           onExcutionDigestLoaded$,
           onExecutionDataLoaded$,
           loadSourceFileList$,
-          onSourceFileRequested$,
+          onSourceFileRequested$
         ).pipe(
           // createEffect expects an Observable that emits {}.
           map(() => ({}))

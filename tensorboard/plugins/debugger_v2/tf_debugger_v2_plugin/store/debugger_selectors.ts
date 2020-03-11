@@ -312,6 +312,6 @@ export const getSourceFileList = createSelector(
 export const getSourceFileContents = createSelector(
   selectDebuggerState,
   (state: DebuggerState): SourceFileContent[] => {
-    return state.sourceCode.sourceFiles;
+    return state.sourceCode.fileContents;
   }
 );

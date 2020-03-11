@@ -103,7 +103,7 @@ export function createDebuggerState(
         lastLoadedTimeInMs: null,
       },
       sourceFileList: [],
-      sourceFiles: [],
+      fileContents: [],
     },
     ...override,
   };
@@ -157,7 +157,7 @@ export function createDebuggerSourceCodeState(
       lastLoadedTimeInMs: null,
     },
     sourceFileList: [],
-    sourceFiles: [],
+    fileContents: [],
     ...override,
   };
 }

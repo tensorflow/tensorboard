@@ -237,7 +237,7 @@ export interface SourceCodeState {
 
   // The contents and loading states of individual source files,
   // For files that are still not loaded, use `null`.
-  sourceFiles: SourceFileContent[];
+  fileContents: SourceFileContent[];
 }
 
 export interface DebuggerState {
