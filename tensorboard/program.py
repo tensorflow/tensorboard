@@ -751,7 +751,7 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
                 self.server_port,
                 self._flags.path_prefix.rstrip("/"),
             )
-        return self._url 
+        return self._url
 
     def print_serving_message(self):
         if self._flags.host is None and not self._flags.bind_all:
