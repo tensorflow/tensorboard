@@ -6,9 +6,9 @@ enum BlobState {
   // Object state is unknown. This value should never be used; it is present
   // only as a proto3 best practice.
   // See https://developers.google.com/protocol-buffers/docs/proto3#enum
-  UNKNOWN = 0;
+  BLOB_STATE_UNKNOWN = 0;
   // Object is being written and not yet finalized.
-  UNFINALIZED = 1;
+  BLOB_STATE_UNFINALIZED = 1;
   // Object is finalized.
-  CURRENT = 2;
+  BLOB_STATE_CURRENT = 2;
 }
