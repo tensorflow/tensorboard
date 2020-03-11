@@ -26,6 +26,7 @@ import {
   DebuggerState,
   InfNanAlert,
   StackFramesById,
+  SourceFileContent,
 } from './debugger_types';
 
 // HACK: These imports are for type inference.
@@ -79,6 +80,7 @@ const initialState: DebuggerState = {
       lastLoadedTimeInMs: null,
     },
     sourceFileList: [],
+    sourceFiles: [],
   },
 };
 // TODO(cais): As `executions` is getting large, create a subreducer for it.
@@ -494,7 +496,7 @@ const reducer = createReducer(
   on(
     actions.sourceFileListLoaded,
     (state: DebuggerState, sourceFileList): DebuggerState => {
-      return {
+      const newState: DebuggerState = {
         ...state,
         sourceCode: {
           ...state.sourceCode,
@@ -504,8 +506,17 @@ const reducer = createReducer(
             lastLoadedTimeInMs: Date.now(),
           },
           sourceFileList: sourceFileList.sourceFiles,
+          sourceFiles: [...state.sourceCode.sourceFiles],
         },
       };
+      const newNumFiles = sourceFileList.sourceFiles.length;
+      const oldNumFiles = newState.sourceCode.sourceFiles.length;
+      if (newNumFiles > oldNumFiles) {
+        newState.sourceCode.sourceFiles.concat(
+          new Array<null>(newNumFiles - oldNumFiles).fill(null)
+        );
+      }
+      return newState;
     }
   ),
   on(

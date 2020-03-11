@@ -217,6 +217,12 @@ export interface SourceLineSpec extends SourceFileSpec {
   lineno: number;
 }
 
+// The content and loading state of a single source file.
+export interface SourceFileContent {
+  // Text of the source file, line-by-line.
+  lines: string[];
+}
+
 export interface SourceCodeState {
   sourceFileListLoaded: LoadState;
 
@@ -224,6 +230,10 @@ export interface SourceCodeState {
   // execution of the debugged proram, including eager
   // execution and graph building.
   sourceFileList: SourceFileSpec[];
+
+  // The contents and loading states of individual source files,
+  // For files that are still not loaded, use `null`.
+  sourceFiles: Array<SourceFileContent | null>;
 }
 
 export interface DebuggerState {
