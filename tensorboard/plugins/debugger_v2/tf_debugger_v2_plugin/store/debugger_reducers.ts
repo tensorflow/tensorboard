@@ -512,8 +512,8 @@ const reducer = createReducer(
       const newNumFiles = sourceFileList.sourceFiles.length;
       const oldNumFiles = newState.sourceCode.sourceFiles.length;
       if (newNumFiles > oldNumFiles) {
-        newState.sourceCode.sourceFiles.concat(
-          new Array<null>(newNumFiles - oldNumFiles).fill(null)
+        newState.sourceCode.sourceFiles.push(
+          ...new Array<null>(newNumFiles - oldNumFiles).fill(null)
         );
       }
       return newState;

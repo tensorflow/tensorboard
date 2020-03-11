@@ -1082,5 +1082,6 @@ describe('Debugger reducers', () => {
         file_path: '/tmp/train.py',
       },
     ]);
+    expect(nextState.sourceCode.sourceFiles).toEqual([null, null]);
   });
 });
