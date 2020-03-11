@@ -26,6 +26,7 @@ import {
 } from 'rxjs/operators';
 import {
   coreLoaded,
+  manualReload,
   reload,
   pluginsListingRequested,
   pluginsListingLoaded,
@@ -49,7 +50,7 @@ export class CoreEffects {
   /** @export */
   readonly loadPluginsListing$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(coreLoaded, reload),
+      ofType(coreLoaded, reload, manualReload),
       withLatestFrom(this.store.select(getPluginsListLoaded)),
       filter(([, {state}]) => state !== DataLoadState.LOADING),
       tap(() => this.store.dispatch(pluginsListingRequested())),

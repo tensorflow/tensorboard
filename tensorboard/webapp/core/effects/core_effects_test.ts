@@ -83,6 +83,7 @@ describe('core_effects', () => {
   [
     {specSetName: '#coreLoaded', onAction: coreActions.coreLoaded()},
     {specSetName: '#reload', onAction: coreActions.reload()},
+    {specSetName: '#manualReload', onAction: coreActions.manualReload()},
   ].forEach(({specSetName, onAction}) => {
     describe(specSetName, () => {
       let recordedActions: Action[] = [];

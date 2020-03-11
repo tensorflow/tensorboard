@@ -524,8 +524,18 @@ def tensorboard_js_workspace():
                 "http://mirror.tensorflow.org/raw.githubusercontent.com/google/material-design-icons/3.0.1/action/svg/production/ic_settings_24px.svg",
                 "https://raw.githubusercontent.com/google/material-design-icons/3.0.1/action/svg/production/ic_settings_24px.svg",
             ],
+            "962aee2433f026ed7843790f6757dc3c25c34f349feb9b4fe816629b1b22442d": [
+                "http://mirror.tensorflow.org/raw.githubusercontent.com/google/material-design-icons/3.0.1/action/svg/production/ic_help_outline_24px.svg",
+                "https://raw.githubusercontent.com/google/material-design-icons/3.0.1/action/svg/production/ic_help_outline_24px.svg",
+            ],
+            "b4d30acd39de79f490eff59d72fb1f06502c117c8815359d539e4f20515494de": [
+                "http://mirror.tensorflow.org/raw.githubusercontent.com/google/material-design-icons/3.0.1/navigation/svg/production/ic_refresh_24px.svg",
+                "https://raw.githubusercontent.com/google/material-design-icons/3.0.1/navigation/svg/production/ic_refresh_24px.svg",
+            ],
         },
         rename = {
             "ic_settings_24px.svg": "settings_24px.svg",
+            "ic_help_outline_24px.svg": "help_outline_24px.svg",
+            "ic_refresh_24px.svg": "refresh_24px.svg",
         },
     )
