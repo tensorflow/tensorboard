@@ -81,7 +81,8 @@ tf_ng_web_test_suite(
 py_binary(
     name = "extract_dtypes_from_python",
     srcs = ["extract_dtypes_from_python.py"],
-    srcs_version = "PY3",
+    python_version = "PY3",
+    srcs_version = "PY2AND3",
     deps = [
         "//tensorboard/compat/tensorflow_stub",
     ],
