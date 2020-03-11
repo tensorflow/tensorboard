@@ -110,6 +110,7 @@ def _create_request_sender(
     api=None,
     allowed_plugins=_USE_DEFAULT,
     rpc_rate_limiter=_USE_DEFAULT,
+    blob_rpc_rate_limiter=_USE_DEFAULT,
 ):
     if api is _USE_DEFAULT:
         api = _create_mock_client()
@@ -117,11 +118,14 @@ def _create_request_sender(
         allowed_plugins = _SCALARS_ONLY
     if rpc_rate_limiter is _USE_DEFAULT:
         rpc_rate_limiter = util.RateLimiter(0)
+    if blob_rpc_rate_limiter is _USE_DEFAULT:
+        blob_rpc_rate_limiter = util.RateLimiter(0)
     return uploader_lib._BatchedRequestSender(
         experiment_id=experiment_id,
         api=api,
         allowed_plugins=allowed_plugins,
         rpc_rate_limiter=rpc_rate_limiter,
+        blob_rpc_rate_limiter=blob_rpc_rate_limiter,
     )
 
 
@@ -226,6 +230,42 @@ class TensorboardUploaderTest(tf.test.TestCase):
         ), self.assertRaises(AbortUploadError):
             uploader.start_uploading()
         self.assertEqual(4 + 6, mock_client.WriteScalar.call_count)
+        self.assertEqual(4 + 6, mock_rate_limiter.tick.call_count)
+
+    # Verify behavior with lots of small chunks
+    @mock.patch.object(uploader_lib, "BLOB_CHUNK_SIZE", 100)
+    def test_start_uploading_graphs(self):
+        mock_client = _create_mock_client()
+        mock_rate_limiter = mock.create_autospec(util.RateLimiter)
+        uploader = _create_uploader(
+            mock_client, "/logs/foo", rpc_rate_limiter=mock_rate_limiter,
+            allowed_plugins=["scalars", "graphs"]
+        )
+        uploader.create_experiment()
+
+        def graph_event(tag, value):
+            return event_pb2.Event(graph_def=value)
+
+        mock_logdir_loader = mock.create_autospec(logdir_loader.LogdirLoader)
+        mock_logdir_loader.get_run_events.side_effect = [
+            {
+                "run 1": [graph_event("1.1", bytes(950)), graph_event("1.2", bytes(950))],
+                "run 2": [graph_event("2.1", bytes(950)), graph_event("2.2", bytes(950))],
+            },
+            {
+                "run 3": [graph_event("3.1", bytes(950)), graph_event("3.2", bytes(950))],
+                "run 4": [graph_event("4.1", bytes(950)), graph_event("4.2", bytes(950))],
+                "run 5": [graph_event("5.1", bytes(950)), graph_event("5.2", bytes(950))],
+            },
+            AbortUploadError,
+        ]
+
+        with mock.patch.object(
+            uploader, "_logdir_loader", mock_logdir_loader
+        ), self.assertRaises(AbortUploadError):
+            uploader.start_uploading()
+        self.assertEqual(mock_client.method_calls, 'wat')
+        self.assertEqual(4 + 6, mock_client.WriteBlob.call_count)
         self.assertEqual(4 + 6, mock_rate_limiter.tick.call_count)
 
     def test_upload_empty_logdir(self):

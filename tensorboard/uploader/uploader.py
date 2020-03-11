@@ -37,9 +37,7 @@ from tensorboard import dataclass_compat
 from tensorboard.backend.event_processing import directory_loader
 from tensorboard.backend.event_processing import event_file_loader
 from tensorboard.backend.event_processing import io_wrapper
-from tensorboard.compat.proto import meta_graph_pb2
 from tensorboard.plugins.scalar import metadata as scalar_metadata
-from tensorboard.plugins.graph import metadata as graph_metadata
 from tensorboard.util import grpc_util
 from tensorboard.util import tb_logging
 from tensorboard.util import tensor_util
@@ -201,6 +199,7 @@ class TensorBoardUploader(object):
         logger.info("Logdir sync took %.3f seconds", sync_duration_secs)
 
         run_to_events = self._logdir_loader.get_run_events()
+        print(run_to_events)
         self._request_sender.send_requests(run_to_events)
 
 
