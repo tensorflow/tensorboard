@@ -156,15 +156,11 @@ tf_sass_library(
     ],
 )
 
-tf_sass_library(
+# TODO(stephanwlee): remove the alias when all usages, internal, too,
+# //tensorboard/webapp:theme are removed.
+alias(
     name = "theme",
-    srcs = [
-        "_palette.scss",
-        "_theme.scss",
-    ],
-    deps = [
-        ":angular_material_theming",
-    ],
+    actual = "//tensorboard/webapp/theme",
 )
 
 tf_sass_binary(
