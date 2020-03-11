@@ -25,6 +25,7 @@ import {
   ExecutionDigest,
   ExecutionDigestLoadState,
   LoadState,
+  SourceFileContent,
   SourceFileSpec,
   StackFrame,
   StackFramesById,
@@ -305,5 +306,12 @@ export const getSourceFileList = createSelector(
   selectDebuggerState,
   (state: DebuggerState): SourceFileSpec[] => {
     return state.sourceCode.sourceFileList;
+  }
+);
+
+export const getSourceFileContents = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): SourceFileContent[] => {
+    return state.sourceCode.sourceFiles;
   }
 );

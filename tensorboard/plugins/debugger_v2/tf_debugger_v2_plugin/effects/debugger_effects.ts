@@ -43,6 +43,8 @@ import {
   numExecutionsRequested,
   sourceFileListLoaded,
   sourceFileListRequested,
+  sourceFileLoaded,
+  sourceFileRequested,
   stackFramesLoaded,
 } from '../actions';
 import {
@@ -62,6 +64,8 @@ import {
   getLoadedStackFrames,
   getNumAlertsOfFocusedType,
   getSourceFileListLoaded,
+  getSourceFileList,
+  getSourceFileContents,
 } from '../store/debugger_selectors';
 import {
   DataLoadState,
@@ -645,6 +649,50 @@ export class DebuggerEffects {
     );
   }
 
+  /**
+   * When the a source file is requested, load its content from the data source.
+   */
+  private onSourceFileRequested(): Observable<void> {
+    return this.actions$.pipe(
+      ofType(sourceFileRequested),
+      withLatestFrom(
+        this.store.select(getActiveRunId),
+        this.store.select(getSourceFileList),
+        this.store.select(getSourceFileContents)
+      ),
+      map(([fileSpec, runId, sourceFileList, sourceFileContents]) => {
+        const fileIndex = sourceFileList.findIndex(
+          (item) =>
+            item.host_name === fileSpec.host_name &&
+            item.file_path === fileSpec.file_path
+        );
+        return {
+          runId,
+          fileIndex,
+          fileSpec,
+          sourceFileContents,
+        };
+      }),
+      filter(({runId, fileIndex, sourceFileContents}) => {
+        return (
+          runId !== null &&
+          fileIndex >= 0 &&
+          sourceFileContents[fileIndex].loadState !== DataLoadState.LOADING
+        );
+      }),
+      tap(({fileSpec}) => this.store.dispatch(sourceFileRequested(fileSpec))),
+      mergeMap(({runId, fileIndex}) => {
+        return this.dataSource.fetchSourceFile(runId!, fileIndex).pipe(
+          tap((sourceFileResponse) => {
+            this.store.dispatch(sourceFileLoaded(sourceFileResponse));
+          }),
+          map(() => void null)
+          // TODO(cais): Add catchError() to pipe.
+        );
+      })
+    );
+  }
+
   constructor(
     private actions$: Actions,
     private store: Store<State>,
@@ -670,7 +718,9 @@ export class DebuggerEffects {
      *  |                                                              |
      *  +------>+ fetch alert number and breakdown                     |
      *                                                                 |
-     *  on alert type focus --------> fetch alerts of a type ----------+
+     * on alert type focus --------> fetch alerts of a type -----------+
+     *
+     * on source file requested ---> fetch source file
      *
      **/
     this.loadData$ = createEffect(
@@ -727,12 +777,15 @@ export class DebuggerEffects {
           )
         );
 
+        const onSourceFileRequested$ = this.onSourceFileRequested();
+
         // ExecutionDigest and ExecutionData can be loaded in parallel.
         return merge(
           onNumAlertsLoaded$,
           onExcutionDigestLoaded$,
           onExecutionDataLoaded$,
-          loadSourceFileList$
+          loadSourceFileList$,
+          onSourceFileRequested$,
         ).pipe(
           // createEffect expects an Observable that emits {}.
           map(() => ({}))
