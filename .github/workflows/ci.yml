@@ -64,7 +64,7 @@ jobs:
       - run: pip freeze --all
       - name: 'Lint Python code for style with Black'
         # You can run `black .` to fix all Black complaints.
-        run: black --check .
+        run: black --check --diff .
 
   lint-docs:
     runs-on: ubuntu-16.04
