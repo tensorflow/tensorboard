@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-@import './angular_material_theming';
-@import './palette';
+@import '../angular_material_theming';
+@import './tb_palette';
 
 // Angular Material theme definition.
 
@@ -28,17 +28,16 @@ $_warn: mat-palette($mat-red);
 
 $tb-theme: mat-light-theme($_primary, $_accent, $_warn);
 
+// Overriding mat-light-theme-foreground variables.
 $tb-foreground: map_merge(
   $mat-light-theme-foreground,
   (
-    // Overriding mat-light-theme-foreground variables.
     text: mat-color($mat-gray, 900),
     secondary-text: mat-color($mat-gray, 700),
     disabled-text: mat-color($mat-gray, 600),
-
     // TB specific variable.
-    border: #ebebeb,
-    link: mat-color($mat-blue, 700)
+      border: #ebebeb,
+    link: mat-color($mat-blue, 700),
   )
 );
 
