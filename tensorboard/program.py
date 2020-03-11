@@ -731,7 +731,6 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
         if not self._url:
             if self._auto_wildcard:
                 display_host = socket.getfqdn()
-
                 # Confirm that the connection is open, otherwise change to `localhost`
                 try:
                     socket.create_connection(
