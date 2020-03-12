@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {DebugElement, NO_ERRORS_SCHEMA} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
+import {MatButtonModule} from '@angular/material/button';
 import {MatTabsModule} from '@angular/material/tabs';
 import {MatToolbarModule} from '@angular/material/toolbar';
 import {MatSelectModule} from '@angular/material/select';
@@ -22,11 +23,15 @@ import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Store} from '@ngrx/store';
 import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
+import {MatIconTestingModule} from '../testing/mat_icon.module';
 import {HeaderComponent} from './header_component';
 import {PluginSelectorComponent} from './plugin_selector_component';
 import {PluginSelectorContainer} from './plugin_selector_container';
+import {ReloadContainer} from './reload_container';
+import {getPluginsListLoaded} from '../core/store/core_selectors';
+import {DataLoadState} from '../types/data';
 
-import {changePlugin} from '../core/actions';
+import {changePlugin, manualReload} from '../core/actions';
 import {State} from '../core/store';
 import {
   createPluginMetadata,
@@ -43,10 +48,12 @@ describe('header test', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
+        MatButtonModule,
+        MatIconTestingModule,
+        MatSelectModule,
         MatTabsModule,
         MatToolbarModule,
         NoopAnimationsModule,
-        MatSelectModule,
       ],
       providers: [
         provideMockStore({
@@ -65,6 +72,7 @@ describe('header test', () => {
         HeaderComponent,
         PluginSelectorComponent,
         PluginSelectorContainer,
+        ReloadContainer,
       ],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
@@ -156,5 +164,104 @@ describe('header test', () => {
 
     expect(dispatch).toHaveBeenCalledTimes(1);
     expect(dispatch).toHaveBeenCalledWith(changePlugin({plugin: 'bar'}));
+  });
+
+  describe('reload', () => {
+    it('dispatches manual reload when clicking on the reload button', () => {
+      const dispatch = spyOn(store, 'dispatch');
+      const fixture = TestBed.createComponent(HeaderComponent);
+      fixture.detectChanges();
+
+      const button = fixture.debugElement.query(
+        By.css('app-header-reload button')
+      );
+      button.nativeElement.click();
+      fixture.detectChanges();
+
+      expect(dispatch).toHaveBeenCalledTimes(1);
+      expect(dispatch).toHaveBeenCalledWith(manualReload());
+    });
+
+    it('renders the time of refresh in title', () => {
+      store.overrideSelector(getPluginsListLoaded, {
+        state: DataLoadState.LOADED,
+        lastLoadedTimeInMs: new Date('2000/01/01').getTime(),
+      });
+      const fixture = TestBed.createComponent(HeaderComponent);
+      fixture.detectChanges();
+
+      const button = fixture.debugElement.query(
+        By.css('app-header-reload button')
+      );
+      expect(button.properties['title']).toBe(
+        'Last Updated: Jan 1, 2000, 12:00:00 AM'
+      );
+    });
+
+    it('renders "Loading" if it was never loaded before', () => {
+      store.overrideSelector(getPluginsListLoaded, {
+        state: DataLoadState.NOT_LOADED,
+        lastLoadedTimeInMs: null,
+      });
+      const fixture = TestBed.createComponent(HeaderComponent);
+      fixture.detectChanges();
+
+      const button = fixture.debugElement.query(
+        By.css('app-header-reload button')
+      );
+      expect(button.properties['title']).toBe('Loading...');
+    });
+
+    it('spins the indicator when loading', () => {
+      store.overrideSelector(getPluginsListLoaded, {
+        state: DataLoadState.NOT_LOADED,
+        lastLoadedTimeInMs: null,
+      });
+      const fixture = TestBed.createComponent(HeaderComponent);
+      fixture.detectChanges();
+
+      const buttonBefore = fixture.debugElement.query(
+        By.css('app-header-reload button')
+      );
+      expect(buttonBefore.classes['loading']).toBe(false);
+
+      store.overrideSelector(getPluginsListLoaded, {
+        state: DataLoadState.LOADING,
+        lastLoadedTimeInMs: null,
+      });
+      store.refreshState();
+      fixture.detectChanges();
+
+      const buttonAfter = fixture.debugElement.query(
+        By.css('app-header-reload button')
+      );
+      expect(buttonAfter.classes['loading']).toBe(true);
+    });
+
+    it('stops spinner when going from loading to loaded', () => {
+      store.overrideSelector(getPluginsListLoaded, {
+        state: DataLoadState.LOADING,
+        lastLoadedTimeInMs: null,
+      });
+      const fixture = TestBed.createComponent(HeaderComponent);
+      fixture.detectChanges();
+
+      const buttonBefore = fixture.debugElement.query(
+        By.css('app-header-reload button')
+      );
+      expect(buttonBefore.classes['loading']).toBe(true);
+
+      store.overrideSelector(getPluginsListLoaded, {
+        state: DataLoadState.LOADED,
+        lastLoadedTimeInMs: 1,
+      });
+      store.refreshState();
+      fixture.detectChanges();
+
+      const buttonAfter = fixture.debugElement.query(
+        By.css('app-header-reload button')
+      );
+      expect(buttonAfter.classes['loading']).toBe(false);
+    });
   });
 });

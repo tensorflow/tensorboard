@@ -10,7 +10,7 @@ exports_files(["LICENSE"])
 py_library(
     name = "base_plugin",
     srcs = ["base_plugin.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
         "@org_pythonhosted_six",

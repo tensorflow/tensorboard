@@ -1,5 +1,5 @@
 load("@npm_angular_bazel//:index.bzl", "ng_module")
-load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ng_web_test_suite", "tf_svg_bundle", "tf_ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ng_web_test_suite", "tf_sass_binary", "tf_sass_library", "tf_svg_bundle", "tf_ts_library")
 load("//tensorboard/defs:web.bzl", "tf_web_library")
 load("//tensorboard/defs:vulcanize.bzl", "tensorboard_html_binary")
 
@@ -100,26 +100,17 @@ tf_web_library(
     ],
 )
 
-tf_web_library(
-    name = "material_theme",
-    srcs = [
-        "@npm//:node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
-    ],
-    path = "/@angular",
-    strip_prefix = "node_modules/@angular/material/prebuilt-themes",
-)
-
 # Bundle the Angular app with the Polymer components and plugins, as a library.
 tf_web_library(
     name = "tensorboard-webapp",
     srcs = [
         "index.html",
+        ":styles.css",
     ],
     path = "/",
     deps = [
         ":tb_webapp",
         "//tensorboard/components:ng_polymer_lib_binary",
-        "//tensorboard/webapp:material_theme",
     ],
 )
 
@@ -153,6 +144,28 @@ tf_svg_bundle(
         # When modifying below, please make sure to update
         # //tensorboard/webapp/testing/mat_icon.module.ts.
         "@com_google_material_design_icon//:settings_24px.svg",
+        "@com_google_material_design_icon//:help_outline_24px.svg",
+        "@com_google_material_design_icon//:refresh_24px.svg",
     ],
     out = "icon_bundle.svg",
+)
+
+tf_sass_library(
+    name = "angular_material_theming",
+    srcs = [
+        "_angular_material_theming.scss",
+        "@npm//:node_modules/@angular/material/_theming.scss",
+    ],
+)
+
+# TODO(stephanwlee): remove the alias when all usages, internal, too,
+# //tensorboard/webapp:theme are removed.
+alias(
+    name = "theme",
+    actual = "//tensorboard/webapp/theme",
+)
+
+tf_sass_binary(
+    name = "styles",
+    src = "styles.scss",
 )

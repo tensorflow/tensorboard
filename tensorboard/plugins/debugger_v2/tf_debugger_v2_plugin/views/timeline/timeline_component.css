@@ -58,8 +58,35 @@ limitations under the License.
   margin-bottom: 5px;
 }
 
+.timeline-slider {
+  display: inline-block;
+  height: 48px;
+  padding: 0;
+  position: absolute;
+  right: 0;
+  width: 440px;
+}
+
+/deep/ .timeline-slider .mat-slider-thumb {
+  border-radius: 5px;
+  right: -40px;
+  width: 80px;
+}
+/* TODO(cais): Apply color #293241 to the thumb and the track. */
+
 .navigation-position-info {
   display: inline-block;
+  font-size: 14px;
   padding-left: 10px;
   padding-right: 10px;
+  line-height: 48px;
+  text-align: center;
+  vertical-align: middle;
+  width: 200px;
+}
+
+.navigation-section {
+  height: 48px;
+  position: relative;
+  vertical-align: middle;
 }

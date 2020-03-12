@@ -42,7 +42,7 @@ jobs:
       - name: 'Install flake8'
         run: |
           python -m pip install -U pip
-          pip install -r ./tensorboard/pip_package/requirements_dev.txt
+          pip install flake8 -c ./tensorboard/pip_package/requirements_dev.txt
       - run: pip freeze --all
       - name: 'Lint Python code for errors with flake8'
         # See: http://flake8.pycqa.org/en/3.7.8/user/error-codes.html
@@ -60,11 +60,11 @@ jobs:
       - name: 'Install black'
         run: |
           python -m pip install -U pip
-          pip install -r ./tensorboard/pip_package/requirements_dev.txt
+          pip install black -c ./tensorboard/pip_package/requirements_dev.txt
       - run: pip freeze --all
       - name: 'Lint Python code for style with Black'
         # You can run `black .` to fix all Black complaints.
-        run: black --check .
+        run: black --check --diff .
 
   lint-docs:
     runs-on: ubuntu-16.04
@@ -77,7 +77,7 @@ jobs:
       - name: 'Install yamllint'
         run: |
           python -m pip install -U pip
-          pip install -r ./tensorboard/pip_package/requirements_dev.txt
+          pip install yamllint -c ./tensorboard/pip_package/requirements_dev.txt
       - run: pip freeze --all
       - name: 'Lint YAML for gotchas with yamllint'
         # Use '# yamllint disable-line rule:foo' to suppress.
@@ -104,7 +104,7 @@ jobs:
       - name: 'Lint BUILD files'
         # TODO(tensorboard-team): address all lint warnings and remove the exemption.
         run:
-          git ls-files -z '*BUILD' | xargs -0 buildifier --mode=check --lint=warn
+          git ls-files -z '*BUILD' third_party/js.bzl | xargs -0 buildifier --mode=check --lint=warn
           --warnings=-load-on-top,-native-py,-native-java,-constant-glob
       - run: ./tensorboard/tools/mirror_urls_test.sh
       - name: 'Lint for no py2 BUILD targets'

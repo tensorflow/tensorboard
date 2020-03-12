@@ -64,6 +64,7 @@ py_library(
     deps = [
         ":empty_path_redirect",
         ":experiment_id",
+        ":experimental_plugin",
         ":http_util",
         ":path_prefix",
         ":security_validator",
@@ -138,6 +139,12 @@ py_test(
         "//tensorboard:test",
         "@org_pocoo_werkzeug",
     ],
+)
+
+py_library(
+    name = "experimental_plugin",
+    srcs = ["experimental_plugin.py"],
+    srcs_version = "PY2AND3",
 )
 
 py_library(

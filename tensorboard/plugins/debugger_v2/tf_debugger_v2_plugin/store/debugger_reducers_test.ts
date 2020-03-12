@@ -25,6 +25,7 @@ import {
 import {
   createAlertsState,
   createDebuggerExecutionsState,
+  createDebuggerSourceCodeState,
   createDebuggerState,
   createDebuggerStateWithLoadedExecutionDigests,
   createDigestsStateWhileLoadingExecutionDigests,
@@ -870,6 +871,69 @@ describe('Debugger reducers', () => {
     expect(nextState.executions.scrollBeginIndex).toBe(1450);
   });
 
+  for (const scrollIndex of [0, 1, 20, 50]) {
+    it(`executionScrollToIndex sets correct scrollBeginIndex ${scrollIndex}`, () => {
+      const scrollBeginIndex = 0;
+      const displayCount = 50;
+      const opTypes = new Array<string>(100);
+      opTypes.fill('FooOp');
+      const state = createDebuggerStateWithLoadedExecutionDigests(
+        scrollBeginIndex,
+        displayCount,
+        opTypes
+      );
+      const nextState = reducers(
+        state,
+        actions.executionScrollToIndex({index: scrollIndex})
+      );
+      expect(nextState.executions.scrollBeginIndex).toBe(scrollIndex);
+    });
+  }
+
+  for (const scrollIndex of [-1, 0.5, 51, 100]) {
+    it(
+      `Invalid executionScrollToIndex (${scrollIndex}) does not change scrollBeginIdnex:` +
+        `displayCount < numExecutions`,
+      () => {
+        const originalScrollBeginIndex = 3;
+        const displayCount = 50;
+        const opTypes = new Array<string>(100);
+        opTypes.fill('FooOp');
+        const state = createDebuggerStateWithLoadedExecutionDigests(
+          originalScrollBeginIndex,
+          displayCount,
+          opTypes
+        );
+        expect(() =>
+          reducers(state, actions.executionScrollToIndex({index: scrollIndex}))
+        ).toThrow();
+      }
+    );
+  }
+
+  for (const scrollIndex of [-1, 0.5, 1, 2, 20]) {
+    // In these tests, `displayCount` is 50 and there are only 20 execution digests
+    // (< 50). Hence, the only valid scrolling begin index is 0.
+    it(
+      `Invalid executionScrollToIndex (${scrollIndex}) does not change scrollBeginIdnex:` +
+        `displayCount >= numExecutions`,
+      () => {
+        const originalScrollBeginIndex = 3;
+        const displayCount = 50;
+        const opTypes = new Array<string>(20);
+        opTypes.fill('FooOp');
+        const state = createDebuggerStateWithLoadedExecutionDigests(
+          originalScrollBeginIndex,
+          displayCount,
+          opTypes
+        );
+        expect(() =>
+          reducers(state, actions.executionScrollToIndex({index: scrollIndex}))
+        ).toThrow();
+      }
+    );
+  }
+
   it(`Updates states on executionDigestFocused: scrollBeginIndex = 0`, () => {
     const state = createDebuggerState();
     const nextState = reducers(
@@ -963,5 +1027,60 @@ describe('Debugger reducers', () => {
     };
     const nextState = reducers(state, actions.stackFramesLoaded({stackFrames}));
     expect(nextState.stackFrames).toEqual(stackFrames);
+  });
+
+  it(`updates source-file list load state on sourceFileListRequested`, () => {
+    const state = createDebuggerState();
+    const nextState = reducers(state, actions.sourceFileListRequested());
+    expect(nextState.sourceCode.sourceFileListLoaded.state).toBe(
+      DataLoadState.LOADING
+    );
+    expect(
+      nextState.sourceCode.sourceFileListLoaded.lastLoadedTimeInMs
+    ).toBeNull();
+  });
+
+  it(`updates source-file list and load state sourceFileListLoaded`, () => {
+    const state = createDebuggerState({
+      sourceCode: createDebuggerSourceCodeState({
+        sourceFileList: [
+          {
+            host_name: 'foo_host',
+            file_path: '/tmp/main.py',
+          },
+        ],
+      }),
+    });
+    const nextState = reducers(
+      state,
+      actions.sourceFileListLoaded({
+        sourceFiles: [
+          {
+            host_name: 'foo_host',
+            file_path: '/tmp/main.py',
+          },
+          {
+            host_name: 'bar_host',
+            file_path: '/tmp/train.py',
+          },
+        ],
+      })
+    );
+    expect(nextState.sourceCode.sourceFileListLoaded.state).toBe(
+      DataLoadState.LOADED
+    );
+    expect(
+      nextState.sourceCode.sourceFileListLoaded.lastLoadedTimeInMs
+    ).toBeGreaterThan(0);
+    expect(nextState.sourceCode.sourceFileList).toEqual([
+      {
+        host_name: 'foo_host',
+        file_path: '/tmp/main.py',
+      },
+      {
+        host_name: 'bar_host',
+        file_path: '/tmp/train.py',
+      },
+    ]);
   });
 });

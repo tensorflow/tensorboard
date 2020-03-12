@@ -73,6 +73,13 @@ const initialState: DebuggerState = {
     executionData: {},
   },
   stackFrames: {},
+  sourceCode: {
+    sourceFileListLoaded: {
+      state: DataLoadState.NOT_LOADED,
+      lastLoadedTimeInMs: null,
+    },
+    sourceFileList: [],
+  },
 };
 // TODO(cais): As `executions` is getting large, create a subreducer for it.
 
@@ -411,6 +418,33 @@ const reducer = createReducer(
     }
   ),
   on(
+    actions.executionScrollToIndex,
+    (state: DebuggerState, action: {index: number}): DebuggerState => {
+      if (action.index < 0 || !Number.isInteger(action.index)) {
+        throw new Error(
+          `Attempt to scroll to negative or non-integer execution index ` +
+            `(${action.index})`
+        );
+      }
+      const {displayCount} = state.executions;
+      const {numExecutions} = state.executions.executionDigestsLoaded;
+      if (action.index > Math.max(0, numExecutions - displayCount)) {
+        throw new Error(
+          `Attempt to scroll to execution index (${action.index}), ` +
+            `which exceeds maximum allowed index ` +
+            `(numExecutions=${numExecutions}; displayCount=${displayCount})`
+        );
+      }
+      return {
+        ...state,
+        executions: {
+          ...state.executions,
+          scrollBeginIndex: action.index,
+        },
+      };
+    }
+  ),
+  on(
     actions.executionDigestFocused,
     (state: DebuggerState, action): DebuggerState => {
       return {
@@ -440,6 +474,38 @@ const reducer = createReducer(
         newState.executions.executionData[i] = data.executions[i - data.begin];
       }
       return newState;
+    }
+  ),
+  on(
+    actions.sourceFileListRequested,
+    (state: DebuggerState): DebuggerState => {
+      return {
+        ...state,
+        sourceCode: {
+          ...state.sourceCode,
+          sourceFileListLoaded: {
+            ...state.sourceCode.sourceFileListLoaded,
+            state: DataLoadState.LOADING,
+          },
+        },
+      };
+    }
+  ),
+  on(
+    actions.sourceFileListLoaded,
+    (state: DebuggerState, sourceFileList): DebuggerState => {
+      return {
+        ...state,
+        sourceCode: {
+          ...state.sourceCode,
+          sourceFileListLoaded: {
+            ...state.sourceCode.sourceFileListLoaded,
+            state: DataLoadState.LOADED,
+            lastLoadedTimeInMs: Date.now(),
+          },
+          sourceFileList: sourceFileList.sourceFiles,
+        },
+      };
     }
   ),
   on(

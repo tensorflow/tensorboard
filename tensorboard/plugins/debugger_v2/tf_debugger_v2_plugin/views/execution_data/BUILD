@@ -16,6 +16,7 @@ ng_module(
         "execution_data_component.ng.html",
     ],
     deps = [
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin:tf_types",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/actions",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/store",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/store:types",

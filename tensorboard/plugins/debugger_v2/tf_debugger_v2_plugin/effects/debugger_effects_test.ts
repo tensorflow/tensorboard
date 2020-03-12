@@ -18,6 +18,7 @@ import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {of, ReplaySubject} from 'rxjs';
 import {
+  alertsOfTypeLoaded,
   alertTypeFocusToggled,
   debuggerLoaded,
   debuggerRunsLoaded,
@@ -28,17 +29,20 @@ import {
   executionDigestsRequested,
   executionScrollLeft,
   executionScrollRight,
+  executionScrollToIndex,
   numAlertsAndBreakdownRequested,
   numAlertsAndBreakdownLoaded,
   numExecutionsLoaded,
   numExecutionsRequested,
+  sourceFileListLoaded,
+  sourceFileListRequested,
   stackFramesLoaded,
-  alertsOfTypeLoaded,
 } from '../actions';
 import {
   AlertsResponse,
   ExecutionDataResponse,
   ExecutionDigestsResponse,
+  SourceFileListResponse,
   StackFramesResponse,
   Tfdbg2HttpServerDataSource,
 } from '../data_source/tfdbg2_data_source';
@@ -64,6 +68,7 @@ import {
   DebuggerRunListing,
   Execution,
   ExecutionDigest,
+  SourceFileSpec,
   State,
 } from '../store/debugger_types';
 import {
@@ -251,6 +256,15 @@ describe('Debugger effects', () => {
     });
   });
 
+  function createFetchSourceFileListSpy(
+    runId: string,
+    sourceFilesListResponse: SourceFileListResponse
+  ) {
+    return spyOn(TestBed.get(Tfdbg2HttpServerDataSource), 'fetchSourceFileList')
+      .withArgs(runId)
+      .and.returnValue(of(sourceFilesListResponse));
+  }
+
   function createFetchAlertsSpy(
     runId: string,
     begin: number,
@@ -357,8 +371,17 @@ describe('Debugger effects', () => {
     const stackFrame0 = createTestStackFrame();
     const stackFrame1 = createTestStackFrame();
 
+    const twoSourceFilesForTest: SourceFileListResponse = [
+      ['localhost', '/tmp/main.py'],
+      ['localhost', '/tmp/train.py'],
+    ];
+
     function createFetchSpies() {
       const fetchRuns = createFetchRunsSpy(runListingForTest);
+      const fetchSourceFileList = createFetchSourceFileListSpy(
+        runId,
+        twoSourceFilesForTest
+      );
       const fetchNumAlertsSpy = createFetchAlertsSpy(
         runId,
         0,
@@ -392,6 +415,7 @@ describe('Debugger effects', () => {
       });
       return {
         fetchRuns,
+        fetchSourceFileList,
         fetchNumAlertsSpy,
         fetchExecutionDigests,
         fetchExecutionData,
@@ -460,47 +484,59 @@ describe('Debugger effects', () => {
       ]);
     });
 
-    it('loads execution digests, data & stack trace loading if numExecutions>0', () => {
-      const {
-        fetchRuns,
-        fetchExecutionDigests,
-        fetchExecutionData,
-        fetchStackFrames,
-      } = createFetchSpies();
-      store.overrideSelector(getDebuggerRunListing, runListingForTest);
-      store.overrideSelector(getNumExecutionsLoaded, {
-        state: DataLoadState.NOT_LOADED,
-        lastLoadedTimeInMs: null,
-      });
-      store.overrideSelector(getActiveRunId, runId);
-      store.overrideSelector(getNumExecutions, numExecutions);
-      store.overrideSelector(getExecutionPageSize, pageSize);
-      store.overrideSelector(getLoadedStackFrames, {});
-      store.refreshState();
+    it(
+      'loads source-file list, execution digests, data & stack trace loading ' +
+        'if numExecutions>0',
+      () => {
+        const {
+          fetchRuns,
+          fetchSourceFileList,
+          fetchExecutionDigests,
+          fetchExecutionData,
+          fetchStackFrames,
+        } = createFetchSpies();
+        store.overrideSelector(getDebuggerRunListing, runListingForTest);
+        store.overrideSelector(getNumExecutionsLoaded, {
+          state: DataLoadState.NOT_LOADED,
+          lastLoadedTimeInMs: null,
+        });
+        store.overrideSelector(getActiveRunId, runId);
+        store.overrideSelector(getNumExecutions, numExecutions);
+        store.overrideSelector(getExecutionPageSize, pageSize);
+        store.overrideSelector(getLoadedStackFrames, {});
+        store.refreshState();
 
-      action.next(debuggerLoaded());
+        action.next(debuggerLoaded());
 
-      expect(fetchRuns).toHaveBeenCalled();
-      // Once for # of execution digests; once for the first page.
-      expect(fetchExecutionDigests).toHaveBeenCalledTimes(2);
-      expect(fetchExecutionData).toHaveBeenCalledTimes(1);
-      expect(fetchStackFrames).toHaveBeenCalledTimes(1);
-      expect(dispatchedActions).toEqual([
-        debuggerRunsRequested(),
-        debuggerRunsLoaded({runs: runListingForTest}),
-        numAlertsAndBreakdownRequested(),
-        numAlertsAndBreakdownLoaded({
-          numAlerts: numAlertsResponseForTest.num_alerts,
-          alertsBreakdown: numAlertsResponseForTest.alerts_breakdown,
-        }),
-        numExecutionsRequested(),
-        numExecutionsLoaded({numExecutions}),
-        executionDigestsRequested(),
-        executionDigestsLoaded(executionDigestsPageResponse),
-        executionDataLoaded(executionDataResponse),
-        stackFramesLoaded({stackFrames: {aa: stackFrame0, bb: stackFrame1}}),
-      ]);
-    });
+        expect(fetchRuns).toHaveBeenCalled();
+        // Once for # of execution digests; once for the first page.
+        expect(fetchExecutionDigests).toHaveBeenCalledTimes(2);
+        expect(fetchExecutionData).toHaveBeenCalledTimes(1);
+        expect(fetchStackFrames).toHaveBeenCalledTimes(1);
+        expect(fetchSourceFileList).toHaveBeenCalledTimes(1);
+        expect(dispatchedActions).toEqual([
+          debuggerRunsRequested(),
+          debuggerRunsLoaded({runs: runListingForTest}),
+          numAlertsAndBreakdownRequested(),
+          numAlertsAndBreakdownLoaded({
+            numAlerts: numAlertsResponseForTest.num_alerts,
+            alertsBreakdown: numAlertsResponseForTest.alerts_breakdown,
+          }),
+          numExecutionsRequested(),
+          numExecutionsLoaded({numExecutions}),
+          executionDigestsRequested(),
+          executionDigestsLoaded(executionDigestsPageResponse),
+          executionDataLoaded(executionDataResponse),
+          stackFramesLoaded({stackFrames: {aa: stackFrame0, bb: stackFrame1}}),
+          sourceFileListRequested(),
+          sourceFileListLoaded({
+            sourceFiles: twoSourceFilesForTest.map(
+              ([host_name, file_path]) => ({host_name, file_path})
+            ),
+          }),
+        ]);
+      }
+    );
 
     for (const dataAlreadyExists of [false, true]) {
       it(
@@ -698,6 +734,80 @@ describe('Debugger effects', () => {
           if (dataAlreadyExists) {
             expect(fetchExecutionDigests).not.toHaveBeenCalled();
             expect(dispatchSpy).not.toHaveBeenCalled();
+          } else {
+            expect(fetchExecutionDigests).toHaveBeenCalledTimes(1);
+            expect(dispatchedActions).toEqual([
+              executionDigestsRequested(),
+              executionDigestsLoaded(executionDigestsResponse),
+            ]);
+          }
+        }
+      );
+    }
+
+    for (const {dataAlreadyExists, lastPageLoadedSize} of [
+      {
+        dataAlreadyExists: false,
+        lastPageLoadedSize: 0,
+      },
+      {
+        dataAlreadyExists: true,
+        lastPageLoadedSize: 10,
+      },
+    ]) {
+      it(
+        `scrolling to execution index triggers execution digest loading: ` +
+          `dataAlreadyExists=${dataAlreadyExists}`,
+        () => {
+          const originalScrollBeginIndex = 50;
+          const newScrollBeginIndex = originalScrollBeginIndex + 2;
+          const numExecutions = 100;
+          const displayCount = 10;
+          const pageSize = 20;
+          store.overrideSelector(getActiveRunId, runId);
+          store.overrideSelector(
+            getExecutionScrollBeginIndex,
+            newScrollBeginIndex
+          );
+          store.overrideSelector(getNumExecutions, numExecutions);
+          store.overrideSelector(getDisplayCount, displayCount);
+          store.overrideSelector(getExecutionPageSize, pageSize);
+          const pageLoadedSizes: {[pageIndex: number]: number} = {
+            0: 20,
+            1: 20,
+            2: 20,
+          };
+          pageLoadedSizes[3] = lastPageLoadedSize;
+          store.overrideSelector(getExecutionDigestsLoaded, {
+            numExecutions,
+            pageLoadedSizes,
+            state: DataLoadState.LOADED,
+            lastLoadedTimeInMs: 1234,
+          });
+
+          store.refreshState();
+
+          const executionDigestsResponse: ExecutionDigestsResponse = {
+            begin: 60,
+            end: 60 + pageSize,
+            num_digests: numExecutions,
+            execution_digests: new Array<ExecutionDigest>(pageSize).fill({
+              op_type: 'FooOp',
+              output_tensor_device_ids: ['d1'],
+            }),
+          };
+          const fetchExecutionDigests = createFetchExecutionDigestsSpy(
+            runId,
+            60,
+            60 + pageSize,
+            executionDigestsResponse
+          );
+
+          action.next(executionScrollToIndex({index: newScrollBeginIndex}));
+
+          if (dataAlreadyExists) {
+            expect(fetchExecutionDigests).not.toHaveBeenCalled();
+            expect(dispatchedActions).toEqual([]);
           } else {
             expect(fetchExecutionDigests).toHaveBeenCalledTimes(1);
             expect(dispatchedActions).toEqual([

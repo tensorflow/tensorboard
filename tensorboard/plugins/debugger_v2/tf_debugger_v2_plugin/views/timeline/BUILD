@@ -21,6 +21,8 @@ ng_module(
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/store",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/store:types",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/execution_data",
+        "//tensorboard/webapp/angular:expect_angular_material_button",
+        "//tensorboard/webapp/angular:expect_angular_material_slider",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@ngrx/store",

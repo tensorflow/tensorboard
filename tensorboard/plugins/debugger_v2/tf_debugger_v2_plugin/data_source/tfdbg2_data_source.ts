@@ -25,6 +25,10 @@ import {TBHttpClient} from '../../../../webapp/webapp_data_source/tb_http_client
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
+// The backend route for source-file list responds with an array
+// of 2-tuples: <host_name, file_path>.
+export type SourceFileListResponse = Array<[string, string]>;
+
 export interface StackFramesResponse {
   stack_frames: StackFrame[];
 }
@@ -77,6 +81,8 @@ export abstract class Tfdbg2DataSource {
     begin: number,
     end: number
   ): Observable<ExecutionDataResponse>;
+
+  abstract fetchSourceFileList(run: string): Observable<SourceFileListResponse>;
 
   abstract fetchStackFrames(
     run: string,
@@ -137,6 +143,17 @@ export class Tfdbg2HttpServerDataSource implements Tfdbg2DataSource {
           run,
           begin: String(begin),
           end: String(end),
+        },
+      }
+    );
+  }
+
+  fetchSourceFileList(run: string): Observable<SourceFileListResponse> {
+    return this.http.get<SourceFileListResponse>(
+      this.httpPathPrefix + '/source_files/list',
+      {
+        params: {
+          run,
         },
       }
     );

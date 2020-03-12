@@ -38,7 +38,9 @@ export const pluginUrlHashChanged = createAction(
 
 export const coreLoaded = createAction('[Core] Loaded');
 
-export const reload = createAction('[Core] Reload');
+export const manualReload = createAction('[Core] User Triggered Reload');
+
+export const reload = createAction('[Core] Auto Reload');
 
 export const pluginsListingRequested = createAction(
   '[Core] PluginListing Fetch Requested'

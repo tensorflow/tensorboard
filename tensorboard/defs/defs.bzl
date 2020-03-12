@@ -16,6 +16,7 @@
 load("@build_bazel_rules_nodejs//:defs.bzl", "rollup_bundle")
 load("@npm_bazel_karma//:defs.bzl", "karma_web_test_suite")
 load("@npm_bazel_typescript//:index.bzl", "ts_config", "ts_devserver", "ts_library")
+load("@io_bazel_rules_sass//:defs.bzl", "sass_binary", "sass_library")
 
 def tensorboard_webcomponent_library(**kwargs):
     """Rules referencing this will be deleted from the codebase soon."""
@@ -78,4 +79,29 @@ def tf_svg_bundle(name, srcs, out):
         tools = [
             "//tensorboard/tools:mat_bundle_icon_svg",
         ],
+    )
+
+def tf_sass_binary(deps = [], include_paths = [], **kwargs):
+    """TensorBoard wrap for declaring SASS binary.
+
+    It adds dependency on theme by default then add include Angular material
+    theme library paths for better node_modules library resolution.
+    """
+    sass_binary(
+        deps = deps + ["//tensorboard/webapp:theme"],
+        include_paths = include_paths + [
+            "external/npm/node_modules",
+            "tensorboard/webapp/theme",
+        ],
+        **kwargs
+    )
+
+def tf_sass_library(**kwargs):
+    """TensorBoard wrap for declaring SASS library.
+
+    It re-exports the sass_libray symbol so users do not have to depend on
+    "@io_bazel_rules_sass//:defs.bzl".
+    """
+    sass_library(
+        **kwargs
     )

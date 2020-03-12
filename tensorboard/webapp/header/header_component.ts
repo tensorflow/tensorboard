@@ -17,12 +17,21 @@ import {Component} from '@angular/core';
 @Component({
   selector: 'app-header',
   template: `
-    <mat-toolbar class="tb-toolbar">
+    <mat-toolbar color="primary">
       <span class="brand">TensorBoard</span>
       <plugin-selector class="plugins"></plugin-selector>
-      <span class="settings">
-        <settings-button></settings-button>
-      </span>
+      <app-header-reload></app-header-reload>
+      <settings-button></settings-button>
+      <a
+        class="readme"
+        mat-icon-button
+        href="https://github.com/tensorflow/tensorboard/blob/master/README.md"
+        rel="noopener noreferrer"
+        target="_blank"
+        aria-label="Help"
+      >
+        <mat-icon svgIcon="help_outline_24px"></mat-icon>
+      </a>
     </mat-toolbar>
   `,
   styles: [
@@ -36,7 +45,9 @@ import {Component} from '@angular/core';
       }
 
       .brand,
-      .settings {
+      .readme,
+      app-header-reload,
+      settings-button {
         flex: 0 0 auto;
       }
 

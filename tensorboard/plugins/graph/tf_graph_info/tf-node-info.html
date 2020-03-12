@@ -168,7 +168,7 @@ limitations under the License.
           <tf-node-icon
             class="node-icon"
             node="[[_node]]"
-            render-info="[[_getRenderInfo(nodeName, renderHierarchy)]]"
+            render-info="[[_getRenderInfo(graphNodeName, renderHierarchy)]]"
             color-by="[[colorBy]]"
             template-index="[[_templateIndex]]"
           ></tf-node-icon>
@@ -428,7 +428,14 @@ limitations under the License.
         is: 'tf-node-info',
 
         properties: {
-          nodeName: String,
+          /**
+           * Note: we intentionally avoid the property name 'nodeName', because
+           * Polymer Resin does not support it. Resin's contract system prevents
+           * using native HTMLElement property names unless they have an
+           * explicit security contract (e.g. 'title' is allowed).
+           * https://github.com/Polymer/polymer-resin/blob/master/lib/contracts/contracts.js
+           */
+          graphNodeName: String,
           graphHierarchy: Object,
           renderHierarchy: Object,
           /** What to color the nodes by (compute time, memory, device etc.) */
@@ -439,12 +446,12 @@ limitations under the License.
           },
           _node: {
             type: Object,
-            computed: '_getNode(nodeName, graphHierarchy)',
+            computed: '_getNode(graphNodeName, graphHierarchy)',
             observer: '_resetState',
           },
           _nodeStats: {
             type: Object,
-            computed: '_getNodeStats(nodeName, graphHierarchy)',
+            computed: '_getNodeStats(graphNodeName, graphHierarchy)',
             observer: '_resetState',
           },
           _hasDisplayableNodeStats: {
@@ -523,11 +530,11 @@ limitations under the License.
         _getTemplateIndex: function(graphHierarchy) {
           return graphHierarchy.getTemplateIndex();
         },
-        _getNode: function(nodeName, graphHierarchy) {
-          return graphHierarchy.node(nodeName);
+        _getNode: function(graphNodeName, graphHierarchy) {
+          return graphHierarchy.node(graphNodeName);
         },
-        _getNodeStats: function(nodeName, graphHierarchy) {
-          var node = this._getNode(nodeName, graphHierarchy);
+        _getNodeStats: function(graphNodeName, graphHierarchy) {
+          var node = this._getNode(graphNodeName, graphHierarchy);
           if (node) {
             return node.stats;
           }
@@ -571,13 +578,15 @@ limitations under the License.
             return '[' + shape.join(', ') + ']';
           });
         },
-        _getPrintableHTMLNodeName: function(nodeName) {
+        _getPrintableHTMLNodeName: function(graphNodeName) {
           // Insert an optional line break before each slash so that
           // long node names wrap cleanly at path boundaries.
-          return (nodeName || '').replace(/\//g, '<wbr>/');
+          return (graphNodeName || '').replace(/\//g, '<wbr>/');
         },
-        _getRenderInfo: function(nodeName, renderHierarchy) {
-          return this.renderHierarchy.getOrCreateRenderNodeByName(nodeName);
+        _getRenderInfo: function(graphNodeName, renderHierarchy) {
+          return this.renderHierarchy.getOrCreateRenderNodeByName(
+            graphNodeName
+          );
         },
         _getAttributes: function(node) {
           this.async(this._resizeList.bind(this, '#attributesList'));
@@ -749,7 +758,7 @@ limitations under the License.
           }
         },
         _toggleInclude: function() {
-          this.fire('node-toggle-inclusion', {name: this.nodeName});
+          this.fire('node-toggle-inclusion', {name: this.graphNodeName});
         },
         _nodeIncludeStateChanged: function(include, oldInclude) {
           this.set(
