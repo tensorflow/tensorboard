@@ -104,6 +104,7 @@ export function createDebuggerState(
       },
       sourceFileList: [],
       fileContents: [],
+      focusLineSpec: null,
     },
     ...override,
   };
@@ -158,6 +159,7 @@ export function createDebuggerSourceCodeState(
     },
     sourceFileList: [],
     fileContents: [],
+    focusLineSpec: null,
     ...override,
   };
 }

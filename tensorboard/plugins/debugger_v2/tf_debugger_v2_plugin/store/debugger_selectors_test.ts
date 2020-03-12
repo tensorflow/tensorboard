@@ -20,6 +20,8 @@ import {
   getFocusedExecutionData,
   getFocusedExecutionIndex,
   getFocusedExecutionStackFrames,
+  getFocusedSourceFileContent,
+  getFocusedSourceFileIndex,
   getLoadedAlertsOfFocusedType,
   getNumAlerts,
   getNumAlertsOfFocusedType,
@@ -601,6 +603,100 @@ describe('debugger selectors', () => {
           file_path: '/tmp/eval.py',
         },
       ]);
+    });
+  });
+
+  describe('getFocusedSourceFileIndex', () => {
+    it('returns correct -1 for no-focus initial state', () => {
+      const state = createState(createDebuggerState());
+      expect(getFocusedSourceFileIndex(state)).toBe(-1);
+    });
+
+    it('returns correct -1 for no-focus state with file list', () => {
+      const state = createState(
+        createDebuggerState({
+          sourceCode: createDebuggerSourceCodeState({
+            sourceFileList: [
+              {
+                host_name: 'worker0',
+                file_path: '/tmp/main.py',
+              },
+            ],
+            focusLineSpec: null,
+          }),
+        })
+      );
+      expect(getFocusedSourceFileIndex(state)).toBe(-1);
+    });
+
+    it('returns correct >=0 value', () => {
+      const state = createState(
+        createDebuggerState({
+          sourceCode: createDebuggerSourceCodeState({
+            sourceFileList: [
+              {
+                host_name: 'worker0',
+                file_path: '/tmp/main.py',
+              },
+              {
+                host_name: 'worker1',
+                file_path: '/tmp/eval.py',
+              },
+            ],
+            focusLineSpec: {
+              host_name: 'worker1',
+              file_path: '/tmp/eval.py',
+              lineno: 100,
+            },
+          }),
+        })
+      );
+      expect(getFocusedSourceFileIndex(state)).toBe(1);
+    });
+  });
+
+  describe('getFocusedSourceFileContent', () => {
+    it('returns correct null for no-focus initial state', () => {
+      const state = createState(createDebuggerState());
+      expect(getFocusedSourceFileContent(state)).toBeNull();
+    });
+
+    it('returns correct >=0 value', () => {
+      const state = createState(
+        createDebuggerState({
+          sourceCode: createDebuggerSourceCodeState({
+            sourceFileList: [
+              {
+                host_name: 'worker0',
+                file_path: '/tmp/main.py',
+              },
+              {
+                host_name: 'worker1',
+                file_path: '/tmp/eval.py',
+              },
+            ],
+            fileContents: [
+              {
+                loadState: DataLoadState.NOT_LOADED,
+                lines: null,
+              },
+              {
+                loadState: DataLoadState.LOADED,
+                lines: ['', 'import tensorflow as tf'],
+              },
+            ],
+            focusLineSpec: {
+              host_name: 'worker1',
+              file_path: '/tmp/eval.py',
+              lineno: 100,
+            },
+          }),
+        })
+      );
+      expect(getFocusedSourceFileContent(state)).toEqual({
+        loadState: DataLoadState.LOADED,
+        lines: ['', 'import tensorflow as tf'],
+      });
     });
   });
 });

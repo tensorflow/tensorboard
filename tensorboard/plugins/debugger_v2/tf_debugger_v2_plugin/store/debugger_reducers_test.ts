@@ -1094,6 +1094,40 @@ describe('Debugger reducers', () => {
     ]);
   });
 
+  it('updates focused line spec on sourceLineFocused', () => {
+    const state = createDebuggerState();
+    let nextState = reducers(
+      state,
+      actions.sourceLineFocused({
+        sourceLineSpec: {
+          host_name: 'localhost',
+          file_path: '/tmp/main.py',
+          lineno: 20,
+        },
+      })
+    );
+    expect(nextState.sourceCode.focusLineSpec).toEqual({
+      host_name: 'localhost',
+      file_path: '/tmp/main.py',
+      lineno: 20,
+    });
+    nextState = reducers(
+      state,
+      actions.sourceLineFocused({
+        sourceLineSpec: {
+          host_name: 'localhost',
+          file_path: '/tmp/train.py',
+          lineno: 30,
+        },
+      })
+    );
+    expect(nextState.sourceCode.focusLineSpec).toEqual({
+      host_name: 'localhost',
+      file_path: '/tmp/train.py',
+      lineno: 30,
+    });
+  });
+
   it(`updates file load state on sourceFileRequested: known file`, () => {
     const state = createDebuggerState({
       sourceCode: createDebuggerSourceCodeState({

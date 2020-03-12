@@ -20,6 +20,7 @@ import {
   ExecutionDigestsResponse,
   SourceFileResponse,
 } from '../data_source/tfdbg2_data_source';
+import {findFileIndex} from './debugger_store_utils';
 import {
   AlertsByIndex,
   AlertType,
@@ -27,8 +28,8 @@ import {
   DebuggerState,
   InfNanAlert,
   StackFramesById,
-  SourceFileContent,
   SourceFileSpec,
+  SourceLineSpec,
 } from './debugger_types';
 
 // HACK: These imports are for type inference.
@@ -83,6 +84,7 @@ const initialState: DebuggerState = {
     },
     sourceFileList: [],
     fileContents: [],
+    focusLineSpec: null,
   },
 };
 // TODO(cais): As `executions` is getting large, create a subreducer for it.
@@ -508,20 +510,31 @@ const reducer = createReducer(
             lastLoadedTimeInMs: Date.now(),
           },
           sourceFileList: sourceFileList.sourceFiles,
-          fileContents: [...state.sourceCode.fileContents],
+          fileContents: state.sourceCode.fileContents.slice(),
         },
       };
       const newNumFiles = sourceFileList.sourceFiles.length;
-      const oldNumFiles = newState.sourceCode.fileContents.length;
-      if (newNumFiles > oldNumFiles) {
-        newState.sourceCode.fileContents.push(
-          ...new Array<SourceFileContent>(newNumFiles - oldNumFiles).fill({
-            loadState: DataLoadState.NOT_LOADED,
-            lines: null,
-          })
-        );
+      for (let i = 0; i < newNumFiles; ++i) {
+        newState.sourceCode.fileContents[i] = state.sourceCode.fileContents[
+          i
+        ] || {
+          loadState: DataLoadState.NOT_LOADED,
+          lines: null,
+        };
       }
       return newState;
+    }
+  ),
+  on(
+    actions.sourceLineFocused,
+    (state: DebuggerState, focus): DebuggerState => {
+      return {
+        ...state,
+        sourceCode: {
+          ...state.sourceCode,
+          focusLineSpec: focus.sourceLineSpec,
+        },
+      };
     }
   ),
   on(
@@ -534,10 +547,9 @@ const reducer = createReducer(
           fileContents: state.sourceCode.fileContents.slice(),
         },
       };
-      const fileIndex = newState.sourceCode.sourceFileList.findIndex(
-        (fileSpec) =>
-          fileSpec.host_name === sourceFileSpec.host_name &&
-          fileSpec.file_path === sourceFileSpec.file_path
+      const fileIndex = findFileIndex(
+        newState.sourceCode.sourceFileList,
+        sourceFileSpec
       );
       if (fileIndex >= 0) {
         newState.sourceCode.fileContents[fileIndex].loadState =
@@ -565,10 +577,9 @@ const reducer = createReducer(
           fileContents: state.sourceCode.fileContents.slice(),
         },
       };
-      const fileIndex = newState.sourceCode.sourceFileList.findIndex(
-        (fileSpec) =>
-          fileSpec.host_name === sourceFileResponse.host_name &&
-          fileSpec.file_path === sourceFileResponse.file_path
+      const fileIndex = findFileIndex(
+        newState.sourceCode.sourceFileList,
+        sourceFileResponse
       );
       if (fileIndex >= 0) {
         newState.sourceCode.fileContents[fileIndex] = {

@@ -21,6 +21,7 @@ import {
   AlertType,
   DebuggerRunListing,
   SourceFileSpec,
+  SourceLineSpec,
   StackFramesById,
 } from '../store/debugger_types';
 import {
@@ -138,6 +139,11 @@ export const sourceFileListRequested = createAction(
 export const sourceFileListLoaded = createAction(
   '[Debugger] Source File List Loaded',
   props<{sourceFiles: SourceFileSpec[]}>()
+);
+
+export const sourceLineFocused = createAction(
+  '[Debugger] Source File Line is Focused on',
+  props<{sourceLineSpec: SourceLineSpec}>()
 );
 
 export const sourceFileRequested = createAction(

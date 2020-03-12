@@ -37,8 +37,9 @@ import {
   sourceFileListLoaded,
   sourceFileListRequested,
   stackFramesLoaded,
-  sourceFileRequested,
+  sourceLineFocused,
   sourceFileLoaded,
+  sourceFileRequested,
 } from '../actions';
 import {
   AlertsResponse,
@@ -53,6 +54,8 @@ import {
   getActiveRunId,
   getAlertsFocusType,
   getDebuggerRunListing,
+  getFocusedSourceFileContent,
+  getFocusedSourceFileIndex,
   getNumAlertsOfFocusedType,
   getNumExecutionsLoaded,
   getNumExecutions,
@@ -65,7 +68,6 @@ import {
   getLoadedStackFrames,
   getAlertsLoaded,
   getSourceFileList,
-  getSourceFileContents,
 } from '../store';
 import {
   AlertType,
@@ -1124,14 +1126,21 @@ describe('Debugger effects', () => {
         fileSpecB,
         fileSpecC,
       ]);
-      store.overrideSelector(getSourceFileContents, [
-        unloadedSourceFileContent(),
-        unloadedSourceFileContent(),
-        unloadedSourceFileContent(),
-      ]);
+      store.overrideSelector(getFocusedSourceFileIndex, fileIndex);
+      store.overrideSelector(getFocusedSourceFileContent, {
+        loadState: DataLoadState.NOT_LOADED,
+        lines: null,
+      });
       store.refreshState();
 
-      action.next(sourceFileRequested(fileSpecC));
+      action.next(
+        sourceLineFocused({
+          sourceLineSpec: {
+            ...fileSpecC,
+            lineno: 42,
+          },
+        })
+      );
 
       expect(fetchSourceFileSpy).toHaveBeenCalledTimes(1);
       expect(dispatchedActions).toEqual([
@@ -1158,14 +1167,21 @@ describe('Debugger effects', () => {
       ]);
       const fileCContent = unloadedSourceFileContent();
       fileCContent.loadState = DataLoadState.LOADING;
-      store.overrideSelector(getSourceFileContents, [
-        unloadedSourceFileContent(),
-        unloadedSourceFileContent(),
-        fileCContent,
-      ]);
+      store.overrideSelector(getFocusedSourceFileIndex, fileIndex);
+      store.overrideSelector(getFocusedSourceFileContent, {
+        loadState: DataLoadState.LOADING,
+        lines: null,
+      });
       store.refreshState();
 
-      action.next(sourceFileRequested(fileSpecC));
+      action.next(
+        sourceLineFocused({
+          sourceLineSpec: {
+            ...fileSpecC,
+            lineno: 42,
+          },
+        })
+      );
 
       expect(fetchSourceFileSpy).not.toHaveBeenCalled();
       expect(dispatchedActions).toEqual([]);

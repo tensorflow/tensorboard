@@ -235,8 +235,13 @@ export interface SourceCodeState {
   sourceFileList: SourceFileSpec[];
 
   // The contents and loading states of individual source files,
-  // For files that are still not loaded, use `null`.
+  // in the order that corresponds to `sourceFileList`.
   fileContents: SourceFileContent[];
+
+  // Index for the source line being focused on. The index is for
+  // the array in `sourceFileList`.
+  // Use `null` for the case wherein no line is focused on.
+  focusLineSpec: SourceLineSpec | null;
 }
 
 export interface DebuggerState {

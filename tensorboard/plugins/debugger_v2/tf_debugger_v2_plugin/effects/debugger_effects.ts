@@ -43,6 +43,7 @@ import {
   numExecutionsRequested,
   sourceFileListLoaded,
   sourceFileListRequested,
+  sourceLineFocused,
   sourceFileLoaded,
   sourceFileRequested,
   stackFramesLoaded,
@@ -57,6 +58,7 @@ import {
   getExecutionDigestsLoaded,
   getExecutionPageSize,
   getExecutionScrollBeginIndex,
+  getFocusedSourceFileContent,
   getNumExecutions,
   getNumExecutionsLoaded,
   getLoadedAlertsOfFocusedType,
@@ -65,8 +67,9 @@ import {
   getNumAlertsOfFocusedType,
   getSourceFileListLoaded,
   getSourceFileList,
-  getSourceFileContents,
+  getFocusedSourceFileIndex,
 } from '../store/debugger_selectors';
+import {findFileIndex} from '../store/debugger_store_utils';
 import {
   DataLoadState,
   DebuggerRunListing,
@@ -650,38 +653,40 @@ export class DebuggerEffects {
   }
 
   /**
-   * When the a source file is requested, load its content from the data source.
+   * When the a source file is focused on, load its content from the data source.
    */
-  private onSourceFileRequested(): Observable<void> {
+  private onSourceFileFocused(): Observable<void> {
     return this.actions$.pipe(
-      ofType(sourceFileRequested),
+      ofType(sourceLineFocused),
       withLatestFrom(
         this.store.select(getActiveRunId),
-        this.store.select(getSourceFileList),
-        this.store.select(getSourceFileContents)
+        this.store.select(getFocusedSourceFileIndex),
+        this.store.select(getFocusedSourceFileContent)
       ),
-      map(([fileSpec, runId, sourceFileList, sourceFileContents]) => {
-        const fileIndex = sourceFileList.findIndex(
-          (item) =>
-            item.host_name === fileSpec.host_name &&
-            item.file_path === fileSpec.file_path
-        );
+      map(([focus, runId, fileIndex, fileContent]) => {
         return {
           runId,
+          lineSpec: focus.sourceLineSpec,
           fileIndex,
-          fileSpec,
-          sourceFileContents,
+          fileContent,
         };
       }),
-      filter(({runId, fileIndex, sourceFileContents}) => {
+      filter(({runId, fileContent}) => {
         return (
           runId !== null &&
-          fileIndex >= 0 &&
-          sourceFileContents[fileIndex].loadState !== DataLoadState.LOADING
+          fileContent !== null &&
+          fileContent.loadState !== DataLoadState.LOADING
         );
       }),
-      tap(({fileSpec}) => this.store.dispatch(sourceFileRequested(fileSpec))),
-      mergeMap(({runId, fileIndex}) => {
+      tap(({lineSpec}) =>
+        this.store.dispatch(
+          sourceFileRequested({
+            host_name: lineSpec.host_name,
+            file_path: lineSpec.file_path,
+          })
+        )
+      ),
+      mergeMap(({fileIndex, runId}) => {
         return this.dataSource.fetchSourceFile(runId!, fileIndex).pipe(
           tap((sourceFileResponse) => {
             this.store.dispatch(sourceFileLoaded(sourceFileResponse));
@@ -777,7 +782,7 @@ export class DebuggerEffects {
           )
         );
 
-        const onSourceFileRequested$ = this.onSourceFileRequested();
+        const onSourceFileFocused$ = this.onSourceFileFocused();
 
         // ExecutionDigest and ExecutionData can be loaded in parallel.
         return merge(
@@ -785,7 +790,7 @@ export class DebuggerEffects {
           onExcutionDigestLoaded$,
           onExecutionDataLoaded$,
           loadSourceFileList$,
-          onSourceFileRequested$
+          onSourceFileFocused$
         ).pipe(
           // createEffect expects an Observable that emits {}.
           map(() => ({}))
