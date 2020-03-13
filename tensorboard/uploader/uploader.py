@@ -686,7 +686,6 @@ class _BlobRequestSender(object):
             metadata=self._metadata,
         )
         util.set_timestamp(request.wall_time, self._event.wall_time)
-
         with _request_logger(request):
             try:
                 # TODO(@nfelt): execute this RPC asynchronously.
@@ -714,21 +713,28 @@ class _BlobRequestSender(object):
         print('Uploading blob', end='', flush=True)
         # TODO(soergel): don't wait for responses for greater throughput
         # See https://stackoverflow.com/questions/55029342/handling-async-streaming-request-in-grpc-python
-        for response in self._api.WriteBlob(request_iterator):
-            count += 1
-            print('.', end='', flush=True)
-            # TODO(soergel): validate responses?  probably not.
-            pass
-        print(flush=True)
+        try:
+            for response in self._api.WriteBlob(request_iterator):
+                count += 1
+                print('.', end='', flush=True)
+                # TODO(soergel): validate responses?  probably not.
+                pass
+            print(flush=True)
+            upload_duration_secs = time.time() - upload_start_time
+            logger.info(
+                "Upload for %d chunks totaling %d bytes took %.3f seconds (%.3f MB/sec)",
+                count,
+                len(blob),
+                upload_duration_secs,
+                len(blob) / upload_duration_secs / (1024*1024)
+                )
+        except grpc.RpcError as e:
+            if e.code() == grpc.StatusCode.ALREADY_EXISTS:
+                logger.error("Attempted to re-upload existing blob.  Skipping.")
+            else:
+                logger.info("WriteBlob RPC call got error %s", e)
+                raise
 
-        upload_duration_secs = time.time() - upload_start_time
-        logger.info(
-            "Upload for %d chunks totaling %d bytes took %.3f seconds (%.3f MB/sec)",
-            count,
-            len(blob),
-            upload_duration_secs,
-            len(blob) / upload_duration_secs / (1024*1024)
-            )
 
     def _write_blob_request_iterator(self, blob_sequence_id, seq_index, blob):
         # For now all use cases have the blob in memory already.
