@@ -83,6 +83,7 @@ def _create_uploader(
     allowed_plugins=_USE_DEFAULT,
     logdir_poll_rate_limiter=_USE_DEFAULT,
     rpc_rate_limiter=_USE_DEFAULT,
+    blob_rpc_rate_limiter=_USE_DEFAULT,
     name=None,
     description=None,
 ):
@@ -94,12 +95,15 @@ def _create_uploader(
         logdir_poll_rate_limiter = util.RateLimiter(0)
     if rpc_rate_limiter is _USE_DEFAULT:
         rpc_rate_limiter = util.RateLimiter(0)
+    if blob_rpc_rate_limiter is _USE_DEFAULT:
+        blob_rpc_rate_limiter = util.RateLimiter(0)
     return uploader_lib.TensorBoardUploader(
         writer_client,
         logdir,
         allowed_plugins=allowed_plugins,
         logdir_poll_rate_limiter=logdir_poll_rate_limiter,
         rpc_rate_limiter=rpc_rate_limiter,
+        blob_rpc_rate_limiter=blob_rpc_rate_limiter,
         name=name,
         description=description,
     )
@@ -237,8 +241,11 @@ class TensorboardUploaderTest(tf.test.TestCase):
     def test_start_uploading_graphs(self):
         mock_client = _create_mock_client()
         mock_rate_limiter = mock.create_autospec(util.RateLimiter)
+        mock_blob_rate_limiter = mock.create_autospec(util.RateLimiter)
         uploader = _create_uploader(
-            mock_client, "/logs/foo", rpc_rate_limiter=mock_rate_limiter,
+            mock_client, "/logs/foo",
+            rpc_rate_limiter=mock_rate_limiter,
+            blob_rpc_rate_limiter=mock_blob_rate_limiter,
             allowed_plugins=["scalars", "graphs"]
         )
         uploader.create_experiment()
@@ -264,9 +271,92 @@ class TensorboardUploaderTest(tf.test.TestCase):
             uploader, "_logdir_loader", mock_logdir_loader
         ), self.assertRaises(AbortUploadError):
             uploader.start_uploading()
-        self.assertEqual(mock_client.method_calls, 'wat')
-        self.assertEqual(4 + 6, mock_client.WriteBlob.call_count)
-        self.assertEqual(4 + 6, mock_rate_limiter.tick.call_count)
+        self.assertEqual(1, mock_client.CreateExperiment.call_count)
+        self.assertEqual(10, mock_client.WriteBlob.call_count)
+        self.assertEqual(0, mock_rate_limiter.tick.call_count)
+        self.assertEqual(10, mock_blob_rate_limiter.tick.call_count)
+
+    def test_upload_server_error(self):
+        mock_client = _create_mock_client()
+        mock_rate_limiter = mock.create_autospec(util.RateLimiter)
+        mock_blob_rate_limiter = mock.create_autospec(util.RateLimiter)
+        uploader = _create_uploader(
+            mock_client, "/logs/foo",
+            rpc_rate_limiter=mock_rate_limiter,
+            blob_rpc_rate_limiter=mock_blob_rate_limiter,
+            allowed_plugins=["scalars", "graphs"]
+        )
+        uploader.create_experiment()
+
+        def graph_event(tag, value):
+            return event_pb2.Event(graph_def=value)
+
+        mock_logdir_loader = mock.create_autospec(logdir_loader.LogdirLoader)
+        mock_logdir_loader.get_run_events.side_effect = [
+            {
+                "run 1": [graph_event("1.1", bytes(950))],
+            },
+            {
+                "run 1": [graph_event("1.2", bytes(950))],
+            },
+            AbortUploadError,
+        ]
+
+        mock_client.WriteBlob.side_effect = [
+            [write_service_pb2.WriteBlobResponse()],
+            test_util.grpc_error(grpc.StatusCode.INTERNAL, "nope")
+            ]
+
+        # This demonstrates that the ALREADY_EXISTS error is handled
+        with mock.patch.object(
+            uploader, "_logdir_loader", mock_logdir_loader
+        ), self.assertRaises(grpc.RpcError):
+            uploader.start_uploading()
+        self.assertEqual(1, mock_client.CreateExperiment.call_count)
+        self.assertEqual(2, mock_client.WriteBlob.call_count)
+        self.assertEqual(0, mock_rate_limiter.tick.call_count)
+        self.assertEqual(2, mock_blob_rate_limiter.tick.call_count)
+
+    def test_upload_same_graph_twice(self):
+        mock_client = _create_mock_client()
+        mock_rate_limiter = mock.create_autospec(util.RateLimiter)
+        mock_blob_rate_limiter = mock.create_autospec(util.RateLimiter)
+        uploader = _create_uploader(
+            mock_client, "/logs/foo",
+            rpc_rate_limiter=mock_rate_limiter,
+            blob_rpc_rate_limiter=mock_blob_rate_limiter,
+            allowed_plugins=["scalars", "graphs"]
+        )
+        uploader.create_experiment()
+
+        def graph_event(tag, value):
+            return event_pb2.Event(graph_def=value)
+
+        mock_logdir_loader = mock.create_autospec(logdir_loader.LogdirLoader)
+        mock_logdir_loader.get_run_events.side_effect = [
+            {
+                "run 1": [graph_event("1.1", bytes(950))],
+            },
+            {
+                "run 1": [graph_event("1.1", bytes(950))],
+            },
+            AbortUploadError,
+        ]
+
+        mock_client.WriteBlob.side_effect = [
+            [write_service_pb2.WriteBlobResponse()],
+            test_util.grpc_error(grpc.StatusCode.ALREADY_EXISTS, "nope")
+            ]
+
+        # This demonstrates that the ALREADY_EXISTS error is handled
+        with mock.patch.object(
+            uploader, "_logdir_loader", mock_logdir_loader
+        ), self.assertRaises(AbortUploadError):
+            uploader.start_uploading()
+        self.assertEqual(1, mock_client.CreateExperiment.call_count)
+        self.assertEqual(2, mock_client.WriteBlob.call_count)
+        self.assertEqual(0, mock_rate_limiter.tick.call_count)
+        self.assertEqual(2, mock_blob_rate_limiter.tick.call_count)
 
     def test_upload_empty_logdir(self):
         logdir = self.get_temp_dir()
