@@ -555,7 +555,7 @@ const reducer = createReducer(
         newState.sourceCode.fileContents[fileIndex].loadState =
           DataLoadState.LOADING;
       } else {
-        throw Error(
+        throw new Error(
           `Cannot find the following file in file list: ` +
             `host_name="${sourceFileSpec.host_name}", ` +
             `file_path="${sourceFileSpec.file_path}"`
@@ -587,7 +587,7 @@ const reducer = createReducer(
           lines: sourceFileResponse.lines,
         };
       } else {
-        throw Error(
+        throw new Error(
           `Cannot find the following file in file list: ` +
             `host_name="${sourceFileResponse.host_name}", ` +
             `file_path="${sourceFileResponse.file_path}"`

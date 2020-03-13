@@ -250,6 +250,8 @@ export interface DebuggerState {
   runsLoaded: LoadState;
 
   // ID of the run being currently displayed.
+  // TODO(cais): The Debugger V2 plugin currently handles only one single run in
+  // its frontend. Expand the support to multiple runs.
   activeRunId: string | null;
 
   alerts: Alerts;

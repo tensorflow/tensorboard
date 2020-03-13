@@ -1209,6 +1209,16 @@ describe('Debugger reducers', () => {
     ).toThrowError(
       /Cannot find the following file.*\"\/tmp\/i_am_unknown\.py\"/
     );
+    expect(state.sourceCode.fileContents).toEqual([
+      {
+        loadState: DataLoadState.NOT_LOADED,
+        lines: null,
+      },
+      {
+        loadState: DataLoadState.NOT_LOADED,
+        lines: null,
+      },
+    ]);
   });
 
   it(`updates file load state & content on sourceFileLoaded: known file`, () => {
@@ -1302,5 +1312,15 @@ describe('Debugger reducers', () => {
     ).toThrowError(
       /Cannot find the following file.*\"\/tmp\/i_am_unknown\.py\"/
     );
+    expect(state.sourceCode.fileContents).toEqual([
+      {
+        loadState: DataLoadState.NOT_LOADED,
+        lines: null,
+      },
+      {
+        loadState: DataLoadState.LOADING,
+        lines: null,
+      },
+    ]);
   });
 });

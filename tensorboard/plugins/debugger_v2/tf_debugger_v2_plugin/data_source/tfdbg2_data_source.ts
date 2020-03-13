@@ -20,6 +20,7 @@ import {
   Execution,
   ExecutionDigest,
   StackFrame,
+  SourceFileSpec,
 } from '../store/debugger_types';
 import {TBHttpClient} from '../../../../webapp/webapp_data_source/tb_http_client';
 

@@ -328,6 +328,6 @@ export const getFocusedSourceFileContent = createSelector(
     if (fileIndex === -1) {
       return null;
     }
-    return state.sourceCode.fileContents[fileIndex];
+    return state.sourceCode.fileContents[fileIndex] || null;
   }
 );
