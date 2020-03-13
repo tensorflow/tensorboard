@@ -301,15 +301,6 @@ def tensorboard_js_workspace():
         ]),
     )
 
-    http_archive(
-        name = "ai_google_pair_facets",
-        sha256 = "e69d44a2b51b0373e6d1e2ec126b92f7927e408080d959010dee501a6fa852c6",
-        strip_prefix = "facets-cd29284009dc0e4d54107a55b978d65d105b7f7f",
-        urls = [
-            # TODO(stephanwlee); Unpin after facets make Polymer2 compat release.
-            "https://github.com/pair-code/facets/archive/cd29284009dc0e4d54107a55b978d65d105b7f7f.tar.gz",
-        ],
-    )
     web_library_external(
         name = "vaadin_vaadin_split_layout",
         licenses = ["notice"],  # Apache License 2.0
@@ -477,28 +468,6 @@ def tensorboard_js_workspace():
         ],
         path = "/test-fixture",
         exclude = ["test/**"],
-    )
-
-    filegroup_external(
-        name = "org_tensorflow_tfjs",
-        licenses = ["notice"],  # Apache 2.0
-        sha256_urls = {
-            "3870fc1d4eaefce7370b5bce3992e4dadcad8e3a5999b034302e38b2094873ea": [
-                "http://mirror.tensorflow.org/cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.1/dist/tf.min.js",
-                "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.1/dist/tf.min.js",
-            ],
-        },
-    )
-
-    filegroup_external(
-        name = "org_tensorflow_tfjs_mobilenet",
-        licenses = ["notice"],  # Apache 2.0
-        sha256_urls = {
-            "aca32ec8a778d17acb623bf495c6e60ec38312b761b9a8c88af4c841c25eba70": [
-                "http://mirror.tensorflow.org/cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@1.0.0/dist/mobilenet.js",
-                "https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@1.0.0/dist/mobilenet.js",
-            ],
-        },
     )
 
     filegroup_external(
