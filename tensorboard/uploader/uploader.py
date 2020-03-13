@@ -311,9 +311,13 @@ class _BatchedRequestSender(object):
     """
 
     def __init__(
-        self, experiment_id, api, allowed_plugins,
-        rpc_rate_limiter, blob_rpc_rate_limiter
-        ):
+        self,
+        experiment_id,
+        api,
+        allowed_plugins,
+        rpc_rate_limiter,
+        blob_rpc_rate_limiter,
+    ):
         # Map from `(run_name, tag_name)` to `SummaryMetadata` if the time
         # series is a scalar time series, else to `_NON_SCALAR_TIME_SERIES`.
         self._tag_metadata = {}
@@ -647,7 +651,8 @@ class _BlobRequestSender(object):
         self._blobs = tensor_util.make_ndarray(self._value.tensor)
         if np.ndim(self._blobs) != 1:
             raise ValueError(
-                "A blob sequence must be represented as a rank-1 Tensor")
+                "A blob sequence must be represented as a rank-1 Tensor"
+            )
         self._metadata = metadata
         self.flush()
 
@@ -710,13 +715,13 @@ class _BlobRequestSender(object):
         )
         upload_start_time = time.time()
         count = 0
-        print('Uploading blob', end='', flush=True)
+        print("Uploading blob", end="", flush=True)
         # TODO(soergel): don't wait for responses for greater throughput
         # See https://stackoverflow.com/questions/55029342/handling-async-streaming-request-in-grpc-python
         try:
             for response in self._api.WriteBlob(request_iterator):
                 count += 1
-                print('.', end='', flush=True)
+                print(".", end="", flush=True)
                 # TODO(soergel): validate responses?  probably not.
                 pass
             print(flush=True)
@@ -726,15 +731,14 @@ class _BlobRequestSender(object):
                 count,
                 len(blob),
                 upload_duration_secs,
-                len(blob) / upload_duration_secs / (1024*1024)
-                )
+                len(blob) / upload_duration_secs / (1024 * 1024),
+            )
         except grpc.RpcError as e:
             if e.code() == grpc.StatusCode.ALREADY_EXISTS:
                 logger.error("Attempted to re-upload existing blob.  Skipping.")
             else:
                 logger.info("WriteBlob RPC call got error %s", e)
                 raise
-
 
     def _write_blob_request_iterator(self, blob_sequence_id, seq_index, blob):
         # For now all use cases have the blob in memory already.

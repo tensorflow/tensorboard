@@ -243,10 +243,11 @@ class TensorboardUploaderTest(tf.test.TestCase):
         mock_rate_limiter = mock.create_autospec(util.RateLimiter)
         mock_blob_rate_limiter = mock.create_autospec(util.RateLimiter)
         uploader = _create_uploader(
-            mock_client, "/logs/foo",
+            mock_client,
+            "/logs/foo",
             rpc_rate_limiter=mock_rate_limiter,
             blob_rpc_rate_limiter=mock_blob_rate_limiter,
-            allowed_plugins=["scalars", "graphs"]
+            allowed_plugins=["scalars", "graphs"],
         )
         uploader.create_experiment()
 
@@ -256,13 +257,28 @@ class TensorboardUploaderTest(tf.test.TestCase):
         mock_logdir_loader = mock.create_autospec(logdir_loader.LogdirLoader)
         mock_logdir_loader.get_run_events.side_effect = [
             {
-                "run 1": [graph_event("1.1", bytes(950)), graph_event("1.2", bytes(950))],
-                "run 2": [graph_event("2.1", bytes(950)), graph_event("2.2", bytes(950))],
+                "run 1": [
+                    graph_event("1.1", bytes(950)),
+                    graph_event("1.2", bytes(950)),
+                ],
+                "run 2": [
+                    graph_event("2.1", bytes(950)),
+                    graph_event("2.2", bytes(950)),
+                ],
             },
             {
-                "run 3": [graph_event("3.1", bytes(950)), graph_event("3.2", bytes(950))],
-                "run 4": [graph_event("4.1", bytes(950)), graph_event("4.2", bytes(950))],
-                "run 5": [graph_event("5.1", bytes(950)), graph_event("5.2", bytes(950))],
+                "run 3": [
+                    graph_event("3.1", bytes(950)),
+                    graph_event("3.2", bytes(950)),
+                ],
+                "run 4": [
+                    graph_event("4.1", bytes(950)),
+                    graph_event("4.2", bytes(950)),
+                ],
+                "run 5": [
+                    graph_event("5.1", bytes(950)),
+                    graph_event("5.2", bytes(950)),
+                ],
             },
             AbortUploadError,
         ]
@@ -281,10 +297,11 @@ class TensorboardUploaderTest(tf.test.TestCase):
         mock_rate_limiter = mock.create_autospec(util.RateLimiter)
         mock_blob_rate_limiter = mock.create_autospec(util.RateLimiter)
         uploader = _create_uploader(
-            mock_client, "/logs/foo",
+            mock_client,
+            "/logs/foo",
             rpc_rate_limiter=mock_rate_limiter,
             blob_rpc_rate_limiter=mock_blob_rate_limiter,
-            allowed_plugins=["scalars", "graphs"]
+            allowed_plugins=["scalars", "graphs"],
         )
         uploader.create_experiment()
 
@@ -293,19 +310,15 @@ class TensorboardUploaderTest(tf.test.TestCase):
 
         mock_logdir_loader = mock.create_autospec(logdir_loader.LogdirLoader)
         mock_logdir_loader.get_run_events.side_effect = [
-            {
-                "run 1": [graph_event("1.1", bytes(950))],
-            },
-            {
-                "run 1": [graph_event("1.2", bytes(950))],
-            },
+            {"run 1": [graph_event("1.1", bytes(950))],},
+            {"run 1": [graph_event("1.2", bytes(950))],},
             AbortUploadError,
         ]
 
         mock_client.WriteBlob.side_effect = [
             [write_service_pb2.WriteBlobResponse()],
-            test_util.grpc_error(grpc.StatusCode.INTERNAL, "nope")
-            ]
+            test_util.grpc_error(grpc.StatusCode.INTERNAL, "nope"),
+        ]
 
         # This demonstrates that the ALREADY_EXISTS error is handled
         with mock.patch.object(
@@ -322,10 +335,11 @@ class TensorboardUploaderTest(tf.test.TestCase):
         mock_rate_limiter = mock.create_autospec(util.RateLimiter)
         mock_blob_rate_limiter = mock.create_autospec(util.RateLimiter)
         uploader = _create_uploader(
-            mock_client, "/logs/foo",
+            mock_client,
+            "/logs/foo",
             rpc_rate_limiter=mock_rate_limiter,
             blob_rpc_rate_limiter=mock_blob_rate_limiter,
-            allowed_plugins=["scalars", "graphs"]
+            allowed_plugins=["scalars", "graphs"],
         )
         uploader.create_experiment()
 
@@ -334,19 +348,15 @@ class TensorboardUploaderTest(tf.test.TestCase):
 
         mock_logdir_loader = mock.create_autospec(logdir_loader.LogdirLoader)
         mock_logdir_loader.get_run_events.side_effect = [
-            {
-                "run 1": [graph_event("1.1", bytes(950))],
-            },
-            {
-                "run 1": [graph_event("1.1", bytes(950))],
-            },
+            {"run 1": [graph_event("1.1", bytes(950))],},
+            {"run 1": [graph_event("1.1", bytes(950))],},
             AbortUploadError,
         ]
 
         mock_client.WriteBlob.side_effect = [
             [write_service_pb2.WriteBlobResponse()],
-            test_util.grpc_error(grpc.StatusCode.ALREADY_EXISTS, "nope")
-            ]
+            test_util.grpc_error(grpc.StatusCode.ALREADY_EXISTS, "nope"),
+        ]
 
         # This demonstrates that the ALREADY_EXISTS error is handled
         with mock.patch.object(
@@ -686,7 +696,7 @@ class BatchedRequestSenderTest(tf.test.TestCase):
         foo_tag.name = "foo"
         foo_tag.metadata.display_name = "foo"
         foo_tag.metadata.plugin_data.plugin_name = "scalars"
-        foo_tag.metadata.data_class=summary_pb2.DATA_CLASS_SCALAR
+        foo_tag.metadata.data_class = summary_pb2.DATA_CLASS_SCALAR
         foo_tag.points.add(
             step=1, wall_time=test_util.timestamp_pb(123456000000), value=5.0
         )
@@ -704,7 +714,7 @@ class BatchedRequestSenderTest(tf.test.TestCase):
         foo_tag.name = "foo"
         foo_tag.metadata.display_name = "foo"
         foo_tag.metadata.plugin_data.plugin_name = "scalars"
-        foo_tag.metadata.data_class=summary_pb2.DATA_CLASS_SCALAR
+        foo_tag.metadata.data_class = summary_pb2.DATA_CLASS_SCALAR
         foo_tag.points.add(
             step=1, wall_time=test_util.timestamp_pb(123456000000), value=1.0
         )
@@ -729,7 +739,7 @@ class BatchedRequestSenderTest(tf.test.TestCase):
         foo_tag.name = "foo/scalar_summary"
         foo_tag.metadata.display_name = "foo"
         foo_tag.metadata.plugin_data.plugin_name = "scalars"
-        foo_tag.metadata.data_class=summary_pb2.DATA_CLASS_SCALAR
+        foo_tag.metadata.data_class = summary_pb2.DATA_CLASS_SCALAR
         foo_tag.points.add(
             step=1, wall_time=test_util.timestamp_pb(123456000000), value=5.0
         )
@@ -745,7 +755,7 @@ class BatchedRequestSenderTest(tf.test.TestCase):
         foo_tag = expected_run_proto.tags.add()
         foo_tag.name = "foo"
         foo_tag.metadata.plugin_data.plugin_name = "scalars"
-        foo_tag.metadata.data_class=summary_pb2.DATA_CLASS_SCALAR
+        foo_tag.metadata.data_class = summary_pb2.DATA_CLASS_SCALAR
         foo_tag.points.add(
             step=1, wall_time=test_util.timestamp_pb(123456000000), value=5.0
         )
