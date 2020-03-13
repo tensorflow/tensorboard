@@ -19,8 +19,8 @@ import {
   DebuggerRunListing,
   Execution,
   ExecutionDigest,
-  StackFrame,
   SourceFileSpec,
+  StackFrame,
 } from '../store/debugger_types';
 import {TBHttpClient} from '../../../../webapp/webapp_data_source/tb_http_client';
 
@@ -30,13 +30,7 @@ import {TBHttpClient} from '../../../../webapp/webapp_data_source/tb_http_client
 // of 2-tuples: <host_name, file_path>.
 export type SourceFileListResponse = Array<[string, string]>;
 
-export interface SourceFileResponse {
-  // Name of the host on which the file is located.
-  host_name: string;
-
-  // Path to the source file.
-  file_path: string;
-
+export interface SourceFileResponse extends SourceFileSpec {
   // Content of the source file.
   lines: string[];
 }

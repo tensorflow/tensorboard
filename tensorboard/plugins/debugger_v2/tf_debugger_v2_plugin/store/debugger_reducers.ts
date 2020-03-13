@@ -514,10 +514,9 @@ const reducer = createReducer(
         },
       };
       const newNumFiles = sourceFileList.sourceFiles.length;
+      const {fileContents} = newState.sourceCode;
       for (let i = 0; i < newNumFiles; ++i) {
-        newState.sourceCode.fileContents[i] = state.sourceCode.fileContents[
-          i
-        ] || {
+        fileContents[i] = state.sourceCode.fileContents[i] || {
           loadState: DataLoadState.NOT_LOADED,
           lines: null,
         };
