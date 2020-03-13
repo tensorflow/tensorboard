@@ -12,43 +12,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
 @import 'tensorboard/webapp/angular_material_theming';
+@import 'tensorboard/webapp/theme/tb_palette';
 
-$tf-slate: (
-  100: #f5f6f7,
-  200: #f5f6f7,
-  300: #c6cad1,
-  400: #8e98a3,
-  500: #8e98a3,
-  700: #425066,
-  900: #293241,
-  contrast: (
-    100: $dark-primary-text,
-    200: $dark-primary-text,
-    300: $dark-primary-text,
-    400: $dark-primary-text,
-    500: $light-primary-text,
-    700: $light-primary-text,
-    900: $light-primary-text,
-  ),
-);
-
-$tf-orange: (
-  100: #f57c00,
-  200: #f57c00,
-  300: #f57c00,
-  400: #f57c00,
-  500: #f57c00,
-  700: #f57c00,
-  900: #f57c00,
-  contrast: (
-    100: $dark-primary-text,
-    300: $dark-primary-text,
-    400: $dark-primary-text,
-    500: $light-primary-text,
-    600: $light-primary-text,
-    700: $light-primary-text,
-    900: $light-primary-text,
-  ),
-);
+$tb-primary: mat-palette($tf-orange);
+$tb-accent: mat-palette($tf-orange);
+$tb-warn: mat-palette($mat-red);
