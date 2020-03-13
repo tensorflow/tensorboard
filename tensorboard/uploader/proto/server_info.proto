@@ -8,11 +8,21 @@ package tensorboard.service;
 message ServerInfoRequest {
   // Client-side TensorBoard version, per `tensorboard.version.VERSION`.
   string version = 1;
+  // Plugins for which the client wishes to upload data, specified by the user.
+  // If specifed, the list of plugins will be confirmed by the server and
+  // echoed in the PluginControl message. If one of the plugins is not
+  // supported by the server then it will respond with compatibility verdict
+  // VERDICT_ERROR.
+  //
+  // These are plugin names as stored in the the
+  // `SummaryMetadata.plugin_data.plugin_name` proto field.
+  repeated string requested_plugins = 2;
 }
 
 message ServerInfoResponse {
-  // Primary bottom-line: is the server compatible with the client, and is
-  // there anything that the end user should be aware of?
+  // Primary bottom-line: is the server compatible with the client, can it
+  // serve its request, and is there anything that the end user should be
+  // aware of?
   Compatibility compatibility = 1;
   // Identifier for a gRPC server providing the `TensorBoardExporterService` and
   // `TensorBoardWriterService` services (under the `tensorboard.service` proto
@@ -20,19 +30,15 @@ message ServerInfoResponse {
   ApiServer api_server = 2;
   // How to generate URLs to experiment pages.
   ExperimentUrlFormat url_format = 3;
-  // For which plugins should we upload data? (Even if the uploader is
-  // structurally capable of uploading data from many plugins, we only actually
-  // upload data that can be currently displayed in TensorBoard.dev. Otherwise,
-  // users may be surprised to see that experiments that they uploaded a while
-  // ago and have since shared or published now have extra information that
-  // they didn't realize had been uploaded.)
+  // Information about the plugins for which data should be uploaded.
   //
-  // The client may always choose to upload less data than is permitted by this
-  // field: e.g., if the end user specifies not to upload data for a given
-  // plugin, or the client does not yet support uploading some kind of data.
+  // If ServerInfoRequest.requested_plugins is specified then
+  // that list of plugins will be confirmed by the server and echoed in the
+  // the response. Otherwise the server will return the default set of
+  // plugins it supports.
   //
-  // If this field is omitted, there are no upfront restrictions on what the
-  // client may send.
+  // The client should only upload data for the plugins in the response even
+  // if it is capable of uploading more data.
   PluginControl plugin_control = 4;
 }
 
@@ -75,7 +81,7 @@ message ExperimentUrlFormat {
 }
 
 message PluginControl {
-  // Only send data from plugins with these names. These are plugin names as
+  // Plugins for which data should be uploaded. These are plugin names as
   // stored in the the `SummaryMetadata.plugin_data.plugin_name` proto field.
   repeated string allowed_plugins = 1;
 }

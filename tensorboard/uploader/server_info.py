@@ -30,19 +30,32 @@ from tensorboard.uploader.proto import server_info_pb2
 _REQUEST_TIMEOUT_SECONDS = 10
 
 
-def _server_info_request():
+def _server_info_request(plugins):
+    """Generates a ServerInfoRequest
+
+    Args:
+      plugins: List of plugins, by name, requested by the user and to be
+        confirmed by the server.
+
+    Returns:
+      A `server_info_pb2.ServerInfoRequest` message.
+    """
     request = server_info_pb2.ServerInfoRequest()
     request.version = version.VERSION
+    if (plugins):
+      request.requested_plugins[:] = plugins
     return request
 
 
-def fetch_server_info(origin):
+def fetch_server_info(origin, plugins):
     """Fetches server info from a remote server.
 
     Args:
       origin: The server with which to communicate. Should be a string
         like "https://tensorboard.dev", including protocol, host, and (if
         needed) port.
+      plugins: List of plugins, by name, requested by the user and to be
+        confirmed by the server.
 
     Returns:
       A `server_info_pb2.ServerInfoResponse` message.
@@ -52,7 +65,7 @@ def fetch_server_info(origin):
         communicate with the remote server.
     """
     endpoint = "%s/api/uploader" % origin
-    post_body = _server_info_request().SerializeToString()
+    post_body = _server_info_request(plugins).SerializeToString()
     try:
         response = requests.post(
             endpoint,
