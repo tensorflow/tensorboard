@@ -597,6 +597,7 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
             host = "localhost"
 
         self._host = host
+        self._url = None  # Will be set by get_url() below
 
         self._fix_werkzeug_logging()
         try:
@@ -727,20 +728,30 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
             logger.error("HTTP serving error", exc_info=exc_info)
 
     def get_url(self):
-        if self._auto_wildcard:
-            display_host = socket.gethostname()
-        else:
-            host = self._host
-            display_host = (
-                "[%s]" % host
-                if ":" in host and not host.startswith("[")
-                else host
+        if not self._url:
+            if self._auto_wildcard:
+                display_host = socket.getfqdn()
+                # Confirm that the connection is open, otherwise change to `localhost`
+                try:
+                    socket.create_connection(
+                        (display_host, self.server_port), timeout=1
+                    )
+                except socket.error as e:
+                    display_host = "localhost"
+
+            else:
+                host = self._host
+                display_host = (
+                    "[%s]" % host
+                    if ":" in host and not host.startswith("[")
+                    else host
+                )
+            self._url = "http://%s:%d%s/" % (
+                display_host,
+                self.server_port,
+                self._flags.path_prefix.rstrip("/"),
             )
-        return "http://%s:%d%s/" % (
-            display_host,
-            self.server_port,
-            self._flags.path_prefix.rstrip("/"),
-        )
+        return self._url
 
     def print_serving_message(self):
         if self._flags.host is None and not self._flags.bind_all:
