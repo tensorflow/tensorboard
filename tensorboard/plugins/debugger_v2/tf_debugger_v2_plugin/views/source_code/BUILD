@@ -10,3 +10,14 @@ tf_ts_library(
         "load_monaco_shim.ts",
     ],
 )
+
+tf_ts_library(
+    name = "source_code_test_lib",
+    testonly = True,
+    srcs = [
+        "load_monaco_shim_test.ts",
+    ],
+    deps = [
+        "@npm//@types/jasmine",
+    ],
+)
