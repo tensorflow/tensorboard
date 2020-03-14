@@ -21,9 +21,7 @@ from __future__ import print_function
 import contextlib
 import functools
 import time
-import logging
 
-import numpy as np
 import grpc
 import six
 
@@ -78,7 +76,7 @@ _MAX_REQUEST_LENGTH_BYTES = 1024 * 128
 logger = tb_logging.get_logger()
 
 # Leave breathing room within 2^22 (4 MiB) gRPC limit, using 256 KiB chunks
-BLOB_CHUNK_SIZE = 3932160  # 2^18 * 15, a bit less than 2^22.
+BLOB_CHUNK_SIZE = (2 ** 22) - (2 ** 18)
 
 
 class TensorBoardUploader(object):
@@ -199,7 +197,6 @@ class TensorBoardUploader(object):
         logger.info("Logdir sync took %.3f seconds", sync_duration_secs)
 
         run_to_events = self._logdir_loader.get_run_events()
-        print(run_to_events)
         self._request_sender.send_requests(run_to_events)
 
 
@@ -622,7 +619,11 @@ class _BlobRequestSender(object):
         self._api = api
         self._rpc_rate_limiter = rpc_rate_limiter
 
-        self._new_request()
+        # Start in the empty state, just like self._new_request().
+        self._run_name = None
+        self._event = None
+        self._value = None
+        self._metadata = None
 
     def _new_request(self):
         """Declares the previous event complete."""
@@ -649,12 +650,21 @@ class _BlobRequestSender(object):
         # it wholesale and unpack server side, or something else?
         # TODO(soergel): can we extract the proto fields directly instead?
         self._blobs = tensor_util.make_ndarray(self._value.tensor)
-        if np.ndim(self._blobs) != 1:
-            raise ValueError(
-                "A blob sequence must be represented as a rank-1 Tensor"
+        if self._blobs.ndim == 1:
+            self._metadata = metadata
+            self.flush()
+        else:
+            logger.warning(
+                "A blob sequence must be represented as a rank-1 Tensor. "
+                "Provided data has rank %d, for run %s, tag %s, step %s ('%s' plugin) .",
+                self._blobs.ndim,
+                run_name,
+                self._value.tag,
+                self._event.step,
+                metadata.plugin_data.plugin_name,
             )
-        self._metadata = metadata
-        self.flush()
+            # Skip this upload.
+            self._new_request()
 
     def flush(self):
         """Sends the current blob sequence fully, and clears it to make way for the next.

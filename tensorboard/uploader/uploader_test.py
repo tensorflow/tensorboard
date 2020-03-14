@@ -43,6 +43,7 @@ from tensorboard.uploader import util
 from tensorboard.compat.proto import event_pb2
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.histogram import summary_v2 as histogram_v2
+from tensorboard.plugins.graph import metadata as graphs_metadata
 from tensorboard.plugins.scalar import metadata as scalars_metadata
 from tensorboard.plugins.scalar import summary_v2 as scalar_v2
 from tensorboard.summary import v1 as summary_v1
@@ -247,38 +248,27 @@ class TensorboardUploaderTest(tf.test.TestCase):
             "/logs/foo",
             rpc_rate_limiter=mock_rate_limiter,
             blob_rpc_rate_limiter=mock_blob_rate_limiter,
-            allowed_plugins=["scalars", "graphs"],
+            allowed_plugins=[
+                scalars_metadata.PLUGIN_NAME,
+                graphs_metadata.PLUGIN_NAME,
+            ],
         )
         uploader.create_experiment()
 
-        def graph_event(tag, value):
-            return event_pb2.Event(graph_def=value)
+        # Of course a real Event stream will never produce the same Event twice,
+        # but is this test context it's fine to reuse this one.
+        graph_event = event_pb2.Event(graph_def=bytes(950))
 
         mock_logdir_loader = mock.create_autospec(logdir_loader.LogdirLoader)
         mock_logdir_loader.get_run_events.side_effect = [
             {
-                "run 1": [
-                    graph_event("1.1", bytes(950)),
-                    graph_event("1.2", bytes(950)),
-                ],
-                "run 2": [
-                    graph_event("2.1", bytes(950)),
-                    graph_event("2.2", bytes(950)),
-                ],
+                "run 1": [graph_event, graph_event],
+                "run 2": [graph_event, graph_event],
             },
             {
-                "run 3": [
-                    graph_event("3.1", bytes(950)),
-                    graph_event("3.2", bytes(950)),
-                ],
-                "run 4": [
-                    graph_event("4.1", bytes(950)),
-                    graph_event("4.2", bytes(950)),
-                ],
-                "run 5": [
-                    graph_event("5.1", bytes(950)),
-                    graph_event("5.2", bytes(950)),
-                ],
+                "run 3": [graph_event, graph_event],
+                "run 4": [graph_event, graph_event],
+                "run 5": [graph_event, graph_event],
             },
             AbortUploadError,
         ]
@@ -301,17 +291,21 @@ class TensorboardUploaderTest(tf.test.TestCase):
             "/logs/foo",
             rpc_rate_limiter=mock_rate_limiter,
             blob_rpc_rate_limiter=mock_blob_rate_limiter,
-            allowed_plugins=["scalars", "graphs"],
+            allowed_plugins=[
+                scalars_metadata.PLUGIN_NAME,
+                graphs_metadata.PLUGIN_NAME,
+            ],
         )
         uploader.create_experiment()
 
-        def graph_event(tag, value):
-            return event_pb2.Event(graph_def=value)
+        # Of course a real Event stream will never produce the same Event twice,
+        # but is this test context it's fine to reuse this one.
+        graph_event = event_pb2.Event(graph_def=bytes(950))
 
         mock_logdir_loader = mock.create_autospec(logdir_loader.LogdirLoader)
         mock_logdir_loader.get_run_events.side_effect = [
-            {"run 1": [graph_event("1.1", bytes(950))],},
-            {"run 1": [graph_event("1.2", bytes(950))],},
+            {"run 1": [graph_event],},
+            {"run 1": [graph_event],},
             AbortUploadError,
         ]
 
@@ -320,7 +314,8 @@ class TensorboardUploaderTest(tf.test.TestCase):
             test_util.grpc_error(grpc.StatusCode.INTERNAL, "nope"),
         ]
 
-        # This demonstrates that the ALREADY_EXISTS error is handled
+        # This demonstrates that the INTERNAL error is NOT handled, so the
+        # uploader will die if this happens.
         with mock.patch.object(
             uploader, "_logdir_loader", mock_logdir_loader
         ), self.assertRaises(grpc.RpcError):
@@ -339,17 +334,19 @@ class TensorboardUploaderTest(tf.test.TestCase):
             "/logs/foo",
             rpc_rate_limiter=mock_rate_limiter,
             blob_rpc_rate_limiter=mock_blob_rate_limiter,
-            allowed_plugins=["scalars", "graphs"],
+            allowed_plugins=[
+                scalars_metadata.PLUGIN_NAME,
+                graphs_metadata.PLUGIN_NAME,
+            ],
         )
         uploader.create_experiment()
 
-        def graph_event(tag, value):
-            return event_pb2.Event(graph_def=value)
+        graph_event = event_pb2.Event(graph_def=bytes(950))
 
         mock_logdir_loader = mock.create_autospec(logdir_loader.LogdirLoader)
         mock_logdir_loader.get_run_events.side_effect = [
-            {"run 1": [graph_event("1.1", bytes(950))],},
-            {"run 1": [graph_event("1.1", bytes(950))],},
+            {"run 1": [graph_event],},
+            {"run 1": [graph_event],},
             AbortUploadError,
         ]
 
@@ -358,7 +355,7 @@ class TensorboardUploaderTest(tf.test.TestCase):
             test_util.grpc_error(grpc.StatusCode.ALREADY_EXISTS, "nope"),
         ]
 
-        # This demonstrates that the ALREADY_EXISTS error is handled
+        # This demonstrates that the ALREADY_EXISTS error is handled gracefully.
         with mock.patch.object(
             uploader, "_logdir_loader", mock_logdir_loader
         ), self.assertRaises(AbortUploadError):

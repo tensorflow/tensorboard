@@ -99,6 +99,7 @@ py_library(
 py_test(
     name = "uploader_test",
     srcs = ["uploader_test.py"],
+    srcs_version = "PY3",
     deps = [
         ":test_util",
         ":uploader_lib",
