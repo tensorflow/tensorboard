@@ -3,6 +3,7 @@ syntax = "proto3";
 package tensorboard.service;
 
 import "google/protobuf/timestamp.proto";
+import "tensorboard/uploader/proto/blob.proto";
 import "tensorboard/uploader/proto/experiment.proto";
 import "tensorboard/compat/proto/summary.proto";
 import "tensorboard/compat/proto/tensor.proto";
@@ -15,6 +16,8 @@ service TensorBoardExporterService {
   // Stream scalars for all the runs and tags in an experiment.
   rpc StreamExperimentData(StreamExperimentDataRequest)
       returns (stream StreamExperimentDataResponse) {}
+  // Stream BLOB as chunks for a given blob_id.
+  rpc StreamBlob(StreamBlobRequest) returns (stream StreamBlobResponse) {}
 }
 
 // Request to stream the experiment_id of all the experiments owned by the
@@ -103,10 +106,18 @@ message StreamExperimentDataResponse {
   string run_name = 2;
   // The metadata of the tag `tag_name`.
   .tensorboard.SummaryMetadata tag_metadata = 3;
+
   // Data to store for the tag `tag_name.
-  ScalarPoints points = 4;
-  // Tensor data to store.
-  TensorPoints tensors = 5;
+  oneof data {
+    // Scalar data to store.
+    ScalarPoints points = 4;
+
+    // Tensor data to store.
+    TensorPoints tensors = 5;
+
+    // Blob sequences to store.
+    BlobSequencePoints blob_sequences = 6;
+  }
 
   // Data for the scalars are stored in a columnar fashion to optimize it for
   // exporting the data into textual formats like JSON.
@@ -133,4 +144,33 @@ message StreamExperimentDataResponse {
     // Value of the point at this step / timestamp.
     repeated .tensorboard.TensorProto values = 3;
   }
+
+  message BlobSequencePoints {
+    // Step index within the run.
+    repeated int64 steps = 1;
+    // Timestamp of the creation of this point.
+    repeated google.protobuf.Timestamp wall_times = 2;
+    // Value of the BLOB sequence at this step / timestamp.
+    repeated BlobSequence values = 3;
+  }
+}
+
+message StreamBlobRequest {
+  string blob_id = 1;
+}
+
+message StreamBlobResponse {
+  // The bytes in this chunk.
+  bytes data = 1;
+  // The position in the blob where this chunk begins.
+  // This must equal the sum of the sizes of the chunks sent so far.  Ignored
+  // if no data is provided.
+  int64 offset = 2;
+  // TODO(b/150443776): Add `crc32a = 3;` once the server can populate it.
+  reserved 3;
+  // Indicates that this is the last chunk of the stream.
+  bool final_chunk = 4;
+  // CRC32C of the entire blob.  Required, to protect against data corruption.
+  // This should be set only when finalize_object=True.
+  fixed32 final_crc32c = 5;
 }
