@@ -586,3 +586,36 @@ genrule(
     outs = ["d3-transition.d.ts"],
     cmd = "sed '/^declare module/d' $< | awk '/^}$$/ && !p {p++;next}1' >$@",
 )
+
+tf_web_library(
+    name = "requirejs",
+    srcs = [
+        "@org_requirejs_requirejs//:require.js",
+    ],
+    path = "/tf-imports",
+    visibility = ["//visibility:public"],
+)
+
+tf_web_library(
+    name = "monaco_editor",
+    srcs = [
+        "@com_microsoft_monaco_editor//:vs/base/browser/ui/codiconLabel/codicon/codicon.ttf",
+        "@com_microsoft_monaco_editor//:vs/base/worker/workerMain.js",
+        "@com_microsoft_monaco_editor//:vs/editor/editor.main.css",
+        "@com_microsoft_monaco_editor//:vs/editor/editor.main.js",
+        "@com_microsoft_monaco_editor//:vs/editor/editor.main.nls.js",
+    ],
+    path = "/tf-imports",
+    visibility = ["//visibility:public"],
+)
+
+tf_web_library(
+    name = "monaco_languages",
+    srcs = [
+        "@com_microsoft_monaco_languages//:_.contribution.js",
+        "@com_microsoft_monaco_languages//:python/python.contribution.js",
+        "@com_microsoft_monaco_languages//:python/python.js",
+    ],
+    path = "/tf-imports/vs",
+    visibility = ["//visibility:public"],
+)
