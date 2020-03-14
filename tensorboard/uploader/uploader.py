@@ -725,16 +725,13 @@ class _BlobRequestSender(object):
         )
         upload_start_time = time.time()
         count = 0
-        print("Uploading blob", end="", flush=True)
         # TODO(soergel): don't wait for responses for greater throughput
         # See https://stackoverflow.com/questions/55029342/handling-async-streaming-request-in-grpc-python
         try:
             for response in self._api.WriteBlob(request_iterator):
                 count += 1
-                print(".", end="", flush=True)
                 # TODO(soergel): validate responses?  probably not.
                 pass
-            print(flush=True)
             upload_duration_secs = time.time() - upload_start_time
             logger.info(
                 "Upload for %d chunks totaling %d bytes took %.3f seconds (%.3f MB/sec)",
