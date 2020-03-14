@@ -24,6 +24,11 @@ export const windowWithRequireAndMonaco: WindowWithRequireAndMonaco = window;
 const VS_PATH_PREFIX = 'vs';
 const VS_IMPORT_PATH = '/tf-imports/vs';
 
+/**
+ * If `window.monaco` is undefined, load the monaco-editor API object onto that
+ * global path dynamically. If `window.monaco` is already defined, this function
+ * is a no-op.
+ */
 export function loadMonaco(): Promise<void> {
   return new Promise<void>((resolve) => {
     if (windowWithRequireAndMonaco.monaco !== undefined) {
