@@ -15,29 +15,33 @@ limitations under the License.
 /** Shim for the `loadMonaco()` function in different build environments. */
 
 // TODO(cais): Explore better typing by depending on external libraries.
-declare const require: any;
-const windowWithMonaco: {[key: string]: unknown} = window;
+export interface WindowWithRequireAndMonaco extends Window {
+  require?: Require;
+  monaco?: any;
+}
+export const windowWithRequireAndMonaco: WindowWithRequireAndMonaco = window;
 
 const VS_PATH_PREFIX = 'vs';
 const VS_IMPORT_PATH = '/tf-imports/vs';
 
 export function loadMonaco(): Promise<void> {
   return new Promise<void>((resolve) => {
-    if (windowWithMonaco['monaco']) {
-      resolve();
+    if (windowWithRequireAndMonaco.monaco !== undefined) {
+      return resolve();
     }
 
-    require.config({
-      paths: {
-        [VS_PATH_PREFIX]: VS_IMPORT_PATH,
-      },
-      catchError: true,
-    });
-
-    require([`${VS_PATH_PREFIX}/editor/editor.main`], () => {
-      require([`${VS_PATH_PREFIX}/python/python.contribution`], () => {
-        resolve();
+    if (windowWithRequireAndMonaco.require) {
+      const require = windowWithRequireAndMonaco.require;
+      require.config({
+        paths: {
+          [VS_PATH_PREFIX]: VS_IMPORT_PATH,
+        },
       });
-    });
+      require([`${VS_PATH_PREFIX}/editor/editor.main`], () => {
+        require([`${VS_PATH_PREFIX}/python/python.contribution`], () => {
+          return resolve();
+        });
+      });
+    }
   });
 }

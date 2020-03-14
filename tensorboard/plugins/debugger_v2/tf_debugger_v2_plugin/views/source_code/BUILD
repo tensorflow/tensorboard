@@ -9,6 +9,9 @@ tf_ts_library(
     srcs = [
         "load_monaco_shim.ts",
     ],
+    deps = [
+        "@npm//@types/requirejs",
+    ]
 )
 
 tf_ts_library(
@@ -17,7 +20,10 @@ tf_ts_library(
     srcs = [
         "load_monaco_shim_test.ts",
     ],
+    tsconfig = "//:tsconfig-test",
     deps = [
+        ":load_monaco",
         "@npm//@types/jasmine",
+        "@npm//@types/requirejs",
     ],
 )

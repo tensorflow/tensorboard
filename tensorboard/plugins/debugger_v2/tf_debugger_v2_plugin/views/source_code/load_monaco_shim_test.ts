@@ -12,3 +12,49 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+
+import {loadMonaco, windowWithRequireAndMonaco} from './load_monaco_shim';
+
+describe('loadMonaco shim', () => {
+  function createMockRequire(): Require {
+    let require = ((modules: string[], callback: Function) => {
+      callback();
+    }) as any;
+    return Object.assign(require, {
+      config: () => {},
+      toUrl: () => {},
+      defined: () => {},
+      specified: () => {},
+      onError: () => {},
+      undef: () => {},
+      onResourceLoad: () => {},
+    });
+  }
+
+  // TODO(cais): Explore better typing by depending on external libraries.
+  function createMockMonaco() {
+    return {};
+  }
+
+  let requireSpy: jasmine.Spy;
+  beforeEach(() => {
+    windowWithRequireAndMonaco.require = createMockRequire();
+    requireSpy = spyOn(windowWithRequireAndMonaco, 'require').and.callThrough();
+  });
+
+  afterEach(() => {
+    delete windowWithRequireAndMonaco.require;
+    delete windowWithRequireAndMonaco.monaco;
+  });
+
+  it('async function returns without error', async () => {
+    await loadMonaco();
+    expect(requireSpy).toHaveBeenCalled();
+  });
+
+  it('does not reload monaco module if already loaded', async () => {
+    windowWithRequireAndMonaco.monaco = createMockMonaco();
+    await loadMonaco();
+    expect(requireSpy).not.toHaveBeenCalled();
+  });
+});
