@@ -80,10 +80,13 @@ py_library(
         ":logdir_loader",
         ":util",
         "//tensorboard:data_compat",
+        "//tensorboard:dataclass_compat",
         "//tensorboard:expect_grpc_installed",
         "//tensorboard/backend/event_processing:directory_loader",
         "//tensorboard/backend/event_processing:event_file_loader",
         "//tensorboard/backend/event_processing:io_wrapper",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/plugins/graph:metadata",
         "//tensorboard/plugins/scalar:metadata",
         "//tensorboard/uploader/proto:protos_all_py_pb2",
         "//tensorboard/util:grpc_util",
@@ -96,6 +99,7 @@ py_library(
 py_test(
     name = "uploader_test",
     srcs = ["uploader_test.py"],
+    srcs_version = "PY3",
     deps = [
         ":test_util",
         ":uploader_lib",
