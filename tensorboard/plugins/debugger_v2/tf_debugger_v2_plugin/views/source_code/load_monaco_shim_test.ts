@@ -16,7 +16,7 @@ limitations under the License.
 import {loadMonaco, windowWithRequireAndMonaco} from './load_monaco_shim';
 
 describe('loadMonaco shim', () => {
-  function createMockRequire(): Require {
+  function createFakeRequire(): Require {
     let require = ((modules: string[], callback: Function) => {
       callback();
     }) as any;
@@ -32,13 +32,13 @@ describe('loadMonaco shim', () => {
   }
 
   // TODO(cais): Explore better typing by depending on external libraries.
-  function createMockMonaco() {
+  function createFakeMonaco() {
     return {};
   }
 
   let requireSpy: jasmine.Spy;
   beforeEach(() => {
-    windowWithRequireAndMonaco.require = createMockRequire();
+    windowWithRequireAndMonaco.require = createFakeRequire();
     requireSpy = spyOn(windowWithRequireAndMonaco, 'require').and.callThrough();
   });
 
@@ -53,7 +53,7 @@ describe('loadMonaco shim', () => {
   });
 
   it('does not reload monaco module if already loaded', async () => {
-    windowWithRequireAndMonaco.monaco = createMockMonaco();
+    windowWithRequireAndMonaco.monaco = createFakeMonaco();
     await loadMonaco();
     expect(requireSpy).not.toHaveBeenCalled();
   });
