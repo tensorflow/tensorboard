@@ -44,7 +44,9 @@ class FakeTime(object):
 
 def scalar_metadata(display_name):
     """Makes a scalar metadata proto, for constructing expected requests."""
-    metadata = summary_pb2.SummaryMetadata(display_name=display_name)
+    metadata = summary_pb2.SummaryMetadata(
+        display_name=display_name, data_class=summary_pb2.DATA_CLASS_SCALAR
+    )
     metadata.plugin_data.plugin_name = "scalars"
     return metadata
 

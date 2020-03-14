@@ -25,11 +25,13 @@ import time
 import grpc
 import six
 
+from tensorboard.compat.proto import summary_pb2
 from tensorboard.uploader.proto import write_service_pb2
 from tensorboard.uploader.proto import experiment_pb2
 from tensorboard.uploader import logdir_loader
 from tensorboard.uploader import util
 from tensorboard import data_compat
+from tensorboard import dataclass_compat
 from tensorboard.backend.event_processing import directory_loader
 from tensorboard.backend.event_processing import event_file_loader
 from tensorboard.backend.event_processing import io_wrapper
@@ -46,6 +48,13 @@ _MIN_LOGDIR_POLL_INTERVAL_SECS = 5
 # Minimum interval between initiating write RPCs.  When writes would otherwise
 # happen more frequently, the process will sleep to use up the rest of the time.
 _MIN_WRITE_RPC_INTERVAL_SECS = 5
+
+# Minimum interval between initiating blob write RPC streams.  When writes would
+# otherwise happen more frequently, the process will sleep to use up the rest of
+# the time.  This may differ from the above RPC rate limit, because blob streams
+# are not batched, so sending a sequence of N blobs requires N streams, which
+# could reasonably be sent more frequently.
+_MIN_BLOB_WRITE_RPC_INTERVAL_SECS = 1
 
 # Age in seconds of last write after which an event file is considered inactive.
 # TODO(@nfelt): consolidate with TensorBoard --reload_multifile default logic.
@@ -66,6 +75,9 @@ _MAX_REQUEST_LENGTH_BYTES = 1024 * 128
 
 logger = tb_logging.get_logger()
 
+# Leave breathing room within 2^22 (4 MiB) gRPC limit, using 256 KiB chunks
+BLOB_CHUNK_SIZE = (2 ** 22) - (2 ** 18)
+
 
 class TensorBoardUploader(object):
     """Uploads a TensorBoard logdir to TensorBoard.dev."""
@@ -77,6 +89,7 @@ class TensorBoardUploader(object):
         allowed_plugins,
         logdir_poll_rate_limiter=None,
         rpc_rate_limiter=None,
+        blob_rpc_rate_limiter=None,
         name=None,
         description=None,
     ):
@@ -119,6 +132,14 @@ class TensorBoardUploader(object):
             )
         else:
             self._rpc_rate_limiter = rpc_rate_limiter
+
+        if blob_rpc_rate_limiter is None:
+            self._blob_rpc_rate_limiter = util.RateLimiter(
+                _MIN_BLOB_WRITE_RPC_INTERVAL_SECS
+            )
+        else:
+            self._blob_rpc_rate_limiter = blob_rpc_rate_limiter
+
         active_filter = (
             lambda secs: secs + _EVENT_FILE_INACTIVE_SECS >= time.time()
         )
@@ -146,6 +167,7 @@ class TensorBoardUploader(object):
             self._api,
             allowed_plugins=self._allowed_plugins,
             rpc_rate_limiter=self._rpc_rate_limiter,
+            blob_rpc_rate_limiter=self._blob_rpc_rate_limiter,
         )
         return response.experiment_id
 
@@ -285,13 +307,23 @@ class _BatchedRequestSender(object):
     calling its methods concurrently.
     """
 
-    def __init__(self, experiment_id, api, allowed_plugins, rpc_rate_limiter):
+    def __init__(
+        self,
+        experiment_id,
+        api,
+        allowed_plugins,
+        rpc_rate_limiter,
+        blob_rpc_rate_limiter,
+    ):
         # Map from `(run_name, tag_name)` to `SummaryMetadata` if the time
         # series is a scalar time series, else to `_NON_SCALAR_TIME_SERIES`.
         self._tag_metadata = {}
         self._allowed_plugins = frozenset(allowed_plugins)
         self._scalar_request_sender = _ScalarBatchedRequestSender(
             experiment_id, api, rpc_rate_limiter,
+        )
+        self._blob_request_sender = _BlobRequestSender(
+            experiment_id, api, blob_rpc_rate_limiter
         )
 
         # TODO(nielsene): add tensor case here
@@ -345,27 +377,55 @@ class _BatchedRequestSender(object):
                         plugin_name,
                     )
                 continue
-            if plugin_name == scalar_metadata.PLUGIN_NAME:
+
+            if metadata.data_class == summary_pb2.DATA_CLASS_SCALAR:
                 self._scalar_request_sender.add_event(
                     run_name, event, value, metadata
                 )
-            # TODO(nielsene): add Tensor plugin cases here
-            # TODO(soergel): add Graphs blob case here
+            # TODO(nielsene): add Tensor sender
+            # elif metadata.data_class == summary_pb2.DATA_CLASS_TENSOR:
+            #     self._tensor_request_sender.add_event(
+            #         run_name, event, value, metadata
+            #     )
+            elif metadata.data_class == summary_pb2.DATA_CLASS_BLOB_SEQUENCE:
+                self._blob_request_sender.add_event(
+                    run_name, event, value, metadata
+                )
 
         self._scalar_request_sender.flush()
         # TODO(nielsene): add tensor case here
-        # TODO(soergel): add blob case here
+        self._blob_request_sender.flush()
 
     def _run_values(self, run_to_events):
-        """Helper generator to create a single stream of work items."""
-        # Note that each of these joins in principle has deletion anomalies:
-        # if the input stream contains runs with no events, or events with
-        # no values, we'll lose that information. This is not a problem: we
-        # would need to prune such data from the request anyway.
+        """Helper generator to create a single stream of work items.
+
+        The events are passed through the `data_compat` and `dataclass_compat`
+        layers before being emitted, so downstream consumers may process them
+        uniformly.
+
+        Note that `dataclass_compat` may emit multiple variants of
+        the same event, for backwards compatibility.  Thus this stream should
+        be filtered to obtain the desired version of each event.  Here, we
+        ignore any event that does not have a `summary` field.
+
+        Furthermore, the events emitted here could contain values that do not
+        have `metadata.data_class` set; these too should be ignored.  In
+        `_send_summary_value(...)` above, we switch on `metadata.data_class`
+        and drop any values with an unknown (i.e., absent or unrecognized)
+        `data_class`.
+        """
+        # Note that this join in principle has deletion anomalies: if the input
+        # stream contains runs with no events, or events with no values, we'll
+        # lose that information. This is not a problem: we would need to prune
+        # such data from the request anyway.
         for (run_name, events) in six.iteritems(run_to_events):
             for event in events:
-                for value in event.summary.value:
-                    yield (run_name, event, value)
+                v2_event = data_compat.migrate_event(event)
+                dataclass_events = dataclass_compat.migrate_event(v2_event)
+                for dataclass_event in dataclass_events:
+                    if dataclass_event.summary:
+                        for value in dataclass_event.summary.value:
+                            yield (run_name, event, value)
 
 
 class _ScalarBatchedRequestSender(object):
@@ -452,7 +512,7 @@ class _ScalarBatchedRequestSender(object):
 
         self._rpc_rate_limiter.tick()
 
-        with _request_logger(request):
+        with _request_logger(request, request.runs):
             try:
                 # TODO(@nfelt): execute this RPC asynchronously.
                 grpc_util.call_with_retries(self._api.WriteScalar, request)
@@ -541,19 +601,192 @@ class _ScalarBatchedRequestSender(object):
         return point
 
 
+class _BlobRequestSender(object):
+    """Uploader for blob-type event data.
+
+    Unlike the other types, this class does not accumulate events in batches;
+    every blob is sent individually and immediately.  Nonetheless we retain
+    the `add_event()`/`flush()` structure for symmetry.
+
+    This class is not threadsafe. Use external synchronization if calling its
+    methods concurrently.
+    """
+
+    def __init__(self, experiment_id, api, rpc_rate_limiter):
+        if experiment_id is None:
+            raise ValueError("experiment_id cannot be None")
+        self._experiment_id = experiment_id
+        self._api = api
+        self._rpc_rate_limiter = rpc_rate_limiter
+
+        # Start in the empty state, just like self._new_request().
+        self._run_name = None
+        self._event = None
+        self._value = None
+        self._metadata = None
+
+    def _new_request(self):
+        """Declares the previous event complete."""
+        self._run_name = None
+        self._event = None
+        self._value = None
+        self._metadata = None
+
+    def add_event(
+        self, run_name, event, value, metadata,
+    ):
+        """Attempts to add the given event to the current request.
+
+        If the event cannot be added to the current request because the byte
+        budget is exhausted, the request is flushed, and the event is added
+        to the next request.
+        """
+        if self._value:
+            raise RuntimeError("Tried to send blob while another is pending")
+        self._run_name = run_name
+        self._event = event  # provides step and possibly plugin_name
+        self._value = value
+        # TODO(soergel): should we really unpack the tensor here, or ship
+        # it wholesale and unpack server side, or something else?
+        # TODO(soergel): can we extract the proto fields directly instead?
+        self._blobs = tensor_util.make_ndarray(self._value.tensor)
+        if self._blobs.ndim == 1:
+            self._metadata = metadata
+            self.flush()
+        else:
+            logger.warning(
+                "A blob sequence must be represented as a rank-1 Tensor. "
+                "Provided data has rank %d, for run %s, tag %s, step %s ('%s' plugin) .",
+                self._blobs.ndim,
+                run_name,
+                self._value.tag,
+                self._event.step,
+                metadata.plugin_data.plugin_name,
+            )
+            # Skip this upload.
+            self._new_request()
+
+    def flush(self):
+        """Sends the current blob sequence fully, and clears it to make way for the next.
+        """
+        if self._value:
+            blob_sequence_id = self._get_or_create_blob_sequence()
+            logger.info(
+                "Sending %d blobs for sequence id: %s",
+                len(self._blobs),
+                blob_sequence_id,
+            )
+
+            for seq_index, blob in enumerate(self._blobs):
+                # Note the _send_blob() stream is internally flow-controlled.
+                # This rate limit applies to *starting* the stream.
+                self._rpc_rate_limiter.tick()
+                self._send_blob(blob_sequence_id, seq_index, blob)
+
+            logger.info(
+                "Sent %d blobs for sequence id: %s",
+                len(self._blobs),
+                blob_sequence_id,
+            )
+
+        self._new_request()
+
+    def _get_or_create_blob_sequence(self):
+        request = write_service_pb2.GetOrCreateBlobSequenceRequest(
+            experiment_id=self._experiment_id,
+            run=self._run_name,
+            tag=self._value.tag,
+            step=self._event.step,
+            final_sequence_length=len(self._blobs),
+            metadata=self._metadata,
+        )
+        util.set_timestamp(request.wall_time, self._event.wall_time)
+        with _request_logger(request):
+            try:
+                # TODO(@nfelt): execute this RPC asynchronously.
+                response = grpc_util.call_with_retries(
+                    self._api.GetOrCreateBlobSequence, request
+                )
+                blob_sequence_id = response.blob_sequence_id
+            except grpc.RpcError as e:
+                if e.code() == grpc.StatusCode.NOT_FOUND:
+                    raise ExperimentNotFoundError()
+                logger.error("Upload call failed with error %s", e)
+                # TODO(soergel): clean up
+                raise
+
+        return blob_sequence_id
+
+    def _send_blob(self, blob_sequence_id, seq_index, blob):
+        # TODO(soergel): retry and resume logic
+
+        request_iterator = self._write_blob_request_iterator(
+            blob_sequence_id, seq_index, blob
+        )
+        upload_start_time = time.time()
+        count = 0
+        # TODO(soergel): don't wait for responses for greater throughput
+        # See https://stackoverflow.com/questions/55029342/handling-async-streaming-request-in-grpc-python
+        try:
+            for response in self._api.WriteBlob(request_iterator):
+                count += 1
+                # TODO(soergel): validate responses?  probably not.
+                pass
+            upload_duration_secs = time.time() - upload_start_time
+            logger.info(
+                "Upload for %d chunks totaling %d bytes took %.3f seconds (%.3f MB/sec)",
+                count,
+                len(blob),
+                upload_duration_secs,
+                len(blob) / upload_duration_secs / (1024 * 1024),
+            )
+        except grpc.RpcError as e:
+            if e.code() == grpc.StatusCode.ALREADY_EXISTS:
+                logger.error("Attempted to re-upload existing blob.  Skipping.")
+            else:
+                logger.info("WriteBlob RPC call got error %s", e)
+                raise
+
+    def _write_blob_request_iterator(self, blob_sequence_id, seq_index, blob):
+        # For now all use cases have the blob in memory already.
+        # In the future we may want to stream from disk; that will require
+        # refactoring here.
+        # TODO(soergel): compute crc32c's to allow server-side data validation.
+        for offset in range(0, len(blob), BLOB_CHUNK_SIZE):
+            chunk = blob[offset : offset + BLOB_CHUNK_SIZE]
+            finalize_object = offset + BLOB_CHUNK_SIZE >= len(blob)
+            request = write_service_pb2.WriteBlobRequest(
+                blob_sequence_id=blob_sequence_id,
+                index=seq_index,
+                data=chunk,
+                offset=offset,
+                crc32c=None,
+                finalize_object=finalize_object,
+                final_crc32c=None,
+            )
+            yield request
+
+
 @contextlib.contextmanager
-def _request_logger(request):
+def _request_logger(request, runs=None):
     upload_start_time = time.time()
     request_bytes = request.ByteSize()
     logger.info("Trying request of %d bytes", request_bytes)
     yield
     upload_duration_secs = time.time() - upload_start_time
-    logger.info(
-        "Upload for %d runs (%d bytes) took %.3f seconds",
-        len(request.runs),
-        request_bytes,
-        upload_duration_secs,
-    )
+    if runs:
+        logger.info(
+            "Upload for %d runs (%d bytes) took %.3f seconds",
+            len(runs),
+            request_bytes,
+            upload_duration_secs,
+        )
+    else:
+        logger.info(
+            "Upload of (%d bytes) took %.3f seconds",
+            request_bytes,
+            upload_duration_secs,
+        )
 
 
 def _varint_cost(n):
