@@ -11,7 +11,7 @@ tf_ts_library(
     ],
     deps = [
         "@npm//@types/requirejs",
-    ]
+    ],
 )
 
 tf_ts_library(
