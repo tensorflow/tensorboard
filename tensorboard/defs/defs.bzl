@@ -88,10 +88,9 @@ def tf_sass_binary(deps = [], include_paths = [], **kwargs):
     theme library paths for better node_modules library resolution.
     """
     sass_binary(
-        deps = deps + ["//tensorboard/webapp:theme"],
+        deps = deps + ["//tensorboard/webapp/theme"],
         include_paths = include_paths + [
             "external/npm/node_modules",
-            "tensorboard/webapp/theme",
         ],
         **kwargs
     )
