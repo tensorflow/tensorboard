@@ -40,10 +40,6 @@ export function loadMonaco(): Promise<void> {
       return resolve();
     }
 
-    console.log(
-      '100: windowWithRequireAndMonaco.require:',
-      windowWithRequireAndMonaco.require
-    ); // DEBUG
     if (windowWithRequireAndMonaco.require) {
       const require = windowWithRequireAndMonaco.require;
       require.config({
@@ -57,7 +53,6 @@ export function loadMonaco(): Promise<void> {
         });
       });
     } else {
-      console.log('200:'); // DEBUG
       return reject(
         'loadMonaco() failed because function require() is unavailable'
       );
