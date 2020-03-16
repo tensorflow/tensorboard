@@ -20,7 +20,8 @@ landing_page:
           <li>Profiling TensorFlow programs</li>
           <li>And much more</li>
         </ul>
-        <a href="https://tensorboard.dev">TensorBoard.dev</a> lets you easily host, track, and share your experiment results.
+        <a href="https://tensorboard.dev">TensorBoard.dev</a> lets you easily 
+        host, track, and share your experiment results.
       image_path: /tensorboard/images/tensorboard.gif
       buttons:
       - label: Get started
