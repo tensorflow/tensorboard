@@ -19,13 +19,22 @@ from __future__ import division
 from __future__ import print_function
 
 from tensorboard.compat.proto import summary_pb2
+from tensorboard.compat.proto import types_pb2
 from tensorboard.plugins.hparams import error
 from tensorboard.plugins.hparams import plugin_data_pb2
+from tensorboard.util import tensor_util
 
 
 PLUGIN_NAME = "hparams"
 PLUGIN_DATA_VERSION = 0
 
+# Tensor value for use in summaries that really only need to store
+# metadata. A length-0 float vector is of minimal serialized length
+# (6 bytes) among valid tensors. Cache this: computing it takes on the
+# order of tens of microseconds.
+NULL_TENSOR = tensor_util.make_tensor_proto(
+    [], dtype=types_pb2.DT_FLOAT, shape=(0,)
+)
 
 EXPERIMENT_TAG = "_hparams_/experiment"
 SESSION_START_INFO_TAG = "_hparams_/session_start_info"
