@@ -19,6 +19,7 @@ import {
   DebuggerRunListing,
   Execution,
   ExecutionDigest,
+  SourceFileSpec,
   StackFrame,
 } from '../store/debugger_types';
 import {TBHttpClient} from '../../../../webapp/webapp_data_source/tb_http_client';
@@ -28,6 +29,11 @@ import {TBHttpClient} from '../../../../webapp/webapp_data_source/tb_http_client
 // The backend route for source-file list responds with an array
 // of 2-tuples: <host_name, file_path>.
 export type SourceFileListResponse = Array<[string, string]>;
+
+export interface SourceFileResponse extends SourceFileSpec {
+  // Content of the source file.
+  lines: string[];
+}
 
 export interface StackFramesResponse {
   stack_frames: StackFrame[];
@@ -82,7 +88,24 @@ export abstract class Tfdbg2DataSource {
     end: number
   ): Observable<ExecutionDataResponse>;
 
+  /**
+   * Fetch the list of source-code files that the debugged program involves.
+   *
+   * @param run
+   */
   abstract fetchSourceFileList(run: string): Observable<SourceFileListResponse>;
+
+  /**
+   * Fetch the content of an individual source-code file.
+   *
+   * @param run
+   * @param fileIndex 0-based index of the file to fetch. The index can be
+   *   obtained by the list from `fetchSourceFileList()`.
+   */
+  abstract fetchSourceFile(
+    run: string,
+    fileIndex: number
+  ): Observable<SourceFileResponse>;
 
   abstract fetchStackFrames(
     run: string,
@@ -154,6 +177,21 @@ export class Tfdbg2HttpServerDataSource implements Tfdbg2DataSource {
       {
         params: {
           run,
+        },
+      }
+    );
+  }
+
+  fetchSourceFile(
+    run: string,
+    fileIndex: number
+  ): Observable<SourceFileResponse> {
+    return this.http.get<SourceFileResponse>(
+      this.httpPathPrefix + '/source_files/file',
+      {
+        params: {
+          run,
+          index: String(fileIndex),
         },
       }
     );

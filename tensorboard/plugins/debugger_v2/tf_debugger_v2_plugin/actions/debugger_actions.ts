@@ -7,7 +7,7 @@ You may obtain a copy of the License at
     http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
+distributed under the License distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
@@ -21,11 +21,13 @@ import {
   AlertType,
   DebuggerRunListing,
   SourceFileSpec,
+  SourceLineSpec,
   StackFramesById,
 } from '../store/debugger_types';
 import {
   ExecutionDigestsResponse,
   ExecutionDataResponse,
+  SourceFileResponse,
 } from '../data_source/tfdbg2_data_source';
 
 // HACK: Below import is for type inference.
@@ -137,6 +139,21 @@ export const sourceFileListRequested = createAction(
 export const sourceFileListLoaded = createAction(
   '[Debugger] Source File List Loaded',
   props<{sourceFiles: SourceFileSpec[]}>()
+);
+
+export const sourceLineFocused = createAction(
+  '[Debugger] Source File Line Is Focused on',
+  props<{sourceLineSpec: SourceLineSpec}>()
+);
+
+export const sourceFileRequested = createAction(
+  '[Debugger] Source File Requested',
+  props<SourceFileSpec>()
+);
+
+export const sourceFileLoaded = createAction(
+  '[Debugger] Source File Loaded',
+  props<SourceFileResponse>()
 );
 
 export const stackFramesLoaded = createAction(

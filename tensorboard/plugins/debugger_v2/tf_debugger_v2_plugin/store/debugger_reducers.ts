@@ -18,7 +18,9 @@ import * as actions from '../actions';
 import {
   ExecutionDataResponse,
   ExecutionDigestsResponse,
+  SourceFileResponse,
 } from '../data_source/tfdbg2_data_source';
+import {findFileIndex} from './debugger_store_utils';
 import {
   AlertsByIndex,
   AlertType,
@@ -26,6 +28,8 @@ import {
   DebuggerState,
   InfNanAlert,
   StackFramesById,
+  SourceFileSpec,
+  SourceLineSpec,
 } from './debugger_types';
 
 // HACK: These imports are for type inference.
@@ -79,6 +83,8 @@ const initialState: DebuggerState = {
       lastLoadedTimeInMs: null,
     },
     sourceFileList: [],
+    fileContents: [],
+    focusLineSpec: null,
   },
 };
 // TODO(cais): As `executions` is getting large, create a subreducer for it.
@@ -494,7 +500,7 @@ const reducer = createReducer(
   on(
     actions.sourceFileListLoaded,
     (state: DebuggerState, sourceFileList): DebuggerState => {
-      return {
+      const newState: DebuggerState = {
         ...state,
         sourceCode: {
           ...state.sourceCode,
@@ -504,8 +510,89 @@ const reducer = createReducer(
             lastLoadedTimeInMs: Date.now(),
           },
           sourceFileList: sourceFileList.sourceFiles,
+          fileContents: state.sourceCode.fileContents.slice(),
         },
       };
+      const newNumFiles = sourceFileList.sourceFiles.length;
+      const {fileContents} = newState.sourceCode;
+      for (let i = 0; i < newNumFiles; ++i) {
+        fileContents[i] = state.sourceCode.fileContents[i] || {
+          loadState: DataLoadState.NOT_LOADED,
+          lines: null,
+        };
+      }
+      return newState;
+    }
+  ),
+  on(
+    actions.sourceLineFocused,
+    (state: DebuggerState, focus): DebuggerState => {
+      return {
+        ...state,
+        sourceCode: {
+          ...state.sourceCode,
+          focusLineSpec: focus.sourceLineSpec,
+        },
+      };
+    }
+  ),
+  on(
+    actions.sourceFileRequested,
+    (state: DebuggerState, sourceFileSpec: SourceFileSpec): DebuggerState => {
+      const newState: DebuggerState = {
+        ...state,
+        sourceCode: {
+          ...state.sourceCode,
+          fileContents: state.sourceCode.fileContents.slice(),
+        },
+      };
+      const fileIndex = findFileIndex(
+        newState.sourceCode.sourceFileList,
+        sourceFileSpec
+      );
+      if (fileIndex >= 0) {
+        newState.sourceCode.fileContents[fileIndex].loadState =
+          DataLoadState.LOADING;
+      } else {
+        throw new Error(
+          `Cannot find the following file in file list: ` +
+            `host_name="${sourceFileSpec.host_name}", ` +
+            `file_path="${sourceFileSpec.file_path}"`
+        );
+      }
+      return newState;
+    }
+  ),
+  on(
+    actions.sourceFileLoaded,
+    (
+      state: DebuggerState,
+      sourceFileResponse: SourceFileResponse
+    ): DebuggerState => {
+      const newState: DebuggerState = {
+        ...state,
+        sourceCode: {
+          ...state.sourceCode,
+          fileContents: state.sourceCode.fileContents.slice(),
+        },
+      };
+      const fileIndex = findFileIndex(
+        newState.sourceCode.sourceFileList,
+        sourceFileResponse
+      );
+      if (fileIndex >= 0) {
+        newState.sourceCode.fileContents[fileIndex] = {
+          loadState: DataLoadState.LOADED,
+          lines: sourceFileResponse.lines,
+        };
+      } else {
+        throw new Error(
+          `Cannot find the following file in file list: ` +
+            `host_name="${sourceFileResponse.host_name}", ` +
+            `file_path="${sourceFileResponse.file_path}"`
+        );
+      }
+      return newState;
     }
   ),
   on(

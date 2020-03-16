@@ -8,6 +8,7 @@ ng_module(
     srcs = [
         "debugger_reducers.ts",
         "debugger_selectors.ts",
+        "debugger_store_utils.ts",
         "index.ts",
     ],
     deps = [

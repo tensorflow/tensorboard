@@ -37,12 +37,16 @@ import {
   sourceFileListLoaded,
   sourceFileListRequested,
   stackFramesLoaded,
+  sourceLineFocused,
+  sourceFileLoaded,
+  sourceFileRequested,
 } from '../actions';
 import {
   AlertsResponse,
   ExecutionDataResponse,
   ExecutionDigestsResponse,
   SourceFileListResponse,
+  SourceFileResponse,
   StackFramesResponse,
   Tfdbg2HttpServerDataSource,
 } from '../data_source/tfdbg2_data_source';
@@ -50,6 +54,8 @@ import {
   getActiveRunId,
   getAlertsFocusType,
   getDebuggerRunListing,
+  getFocusedSourceFileContent,
+  getFocusedSourceFileIndex,
   getNumAlertsOfFocusedType,
   getNumExecutionsLoaded,
   getNumExecutions,
@@ -61,6 +67,7 @@ import {
   getLoadedExecutionData,
   getLoadedStackFrames,
   getAlertsLoaded,
+  getSourceFileList,
 } from '../store';
 import {
   AlertType,
@@ -68,8 +75,9 @@ import {
   DebuggerRunListing,
   Execution,
   ExecutionDigest,
-  SourceFileSpec,
   State,
+  SourceFileSpec,
+  SourceFileContent,
 } from '../store/debugger_types';
 import {
   createDebuggerState,
@@ -1051,6 +1059,131 @@ describe('Debugger effects', () => {
         })
       );
       expect(fetchAlerts).not.toHaveBeenCalled();
+      expect(dispatchedActions).toEqual([]);
+    });
+  });
+
+  describe('loading source file content', () => {
+    const fileSpecA: SourceFileSpec = {
+      host_name: 'localhost',
+      file_path: '/home/user/main.py',
+    };
+    const fileSpecB: SourceFileSpec = {
+      host_name: 'localhost',
+      file_path: '/home/user/train.py',
+    };
+    const fileSpecC: SourceFileSpec = {
+      host_name: 'localhost',
+      file_path: '/home/user/model.py',
+    };
+
+    function unloadedSourceFileContent(): SourceFileContent {
+      return {
+        loadState: DataLoadState.NOT_LOADED,
+        lines: null,
+      };
+    }
+
+    function createFetchSourceFileSpy(
+      runId: string,
+      fileIndex: number,
+      hostName: string,
+      filePath: string,
+      lines: string[]
+    ) {
+      return spyOn(TestBed.get(Tfdbg2HttpServerDataSource), 'fetchSourceFile')
+        .withArgs(runId, fileIndex)
+        .and.returnValue(
+          of({
+            host_name: hostName,
+            file_path: filePath,
+            lines,
+          })
+        );
+    }
+
+    beforeEach(() => {
+      debuggerEffects.loadData$.subscribe();
+    });
+
+    it('loads the content of a known file', () => {
+      const runId = '__default_debugger_run__';
+      const fileIndex = 2;
+      const fileContentC: SourceFileResponse = {
+        ...fileSpecC,
+        lines: ['import tensorflow as tf', '', 'x = tf.constant(1)'],
+      };
+      const fetchSourceFileSpy = createFetchSourceFileSpy(
+        runId,
+        fileIndex,
+        fileContentC.host_name,
+        fileContentC.file_path,
+        fileContentC.lines
+      );
+      store.overrideSelector(getActiveRunId, runId);
+      store.overrideSelector(getSourceFileList, [
+        fileSpecA,
+        fileSpecB,
+        fileSpecC,
+      ]);
+      store.overrideSelector(getFocusedSourceFileIndex, fileIndex);
+      store.overrideSelector(getFocusedSourceFileContent, {
+        loadState: DataLoadState.NOT_LOADED,
+        lines: null,
+      });
+      store.refreshState();
+
+      action.next(
+        sourceLineFocused({
+          sourceLineSpec: {
+            ...fileSpecC,
+            lineno: 42,
+          },
+        })
+      );
+
+      expect(fetchSourceFileSpy).toHaveBeenCalledTimes(1);
+      expect(dispatchedActions).toEqual([
+        sourceFileRequested(fileSpecC),
+        sourceFileLoaded(fileContentC),
+      ]);
+    });
+
+    it('does not load a file being loaded', () => {
+      const runId = '__default_debugger_run__';
+      const fileIndex = 2;
+      const fetchSourceFileSpy = createFetchSourceFileSpy(
+        runId,
+        fileIndex,
+        fileSpecC.host_name,
+        fileSpecC.file_path,
+        []
+      );
+      store.overrideSelector(getActiveRunId, runId);
+      store.overrideSelector(getSourceFileList, [
+        fileSpecA,
+        fileSpecB,
+        fileSpecC,
+      ]);
+      const fileCContent = unloadedSourceFileContent();
+      fileCContent.loadState = DataLoadState.LOADING;
+      store.overrideSelector(getFocusedSourceFileIndex, fileIndex);
+      store.overrideSelector(getFocusedSourceFileContent, {
+        loadState: DataLoadState.LOADING,
+        lines: null,
+      });
+      store.refreshState();
+
+      action.next(
+        sourceLineFocused({
+          sourceLineSpec: {
+            ...fileSpecC,
+            lineno: 42,
+          },
+        })
+      );
+
+      expect(fetchSourceFileSpy).not.toHaveBeenCalled();
       expect(dispatchedActions).toEqual([]);
     });
   });

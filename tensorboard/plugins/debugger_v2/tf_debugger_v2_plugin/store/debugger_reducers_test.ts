@@ -1082,5 +1082,245 @@ describe('Debugger reducers', () => {
         file_path: '/tmp/train.py',
       },
     ]);
+    expect(nextState.sourceCode.fileContents).toEqual([
+      {
+        loadState: DataLoadState.NOT_LOADED,
+        lines: null,
+      },
+      {
+        loadState: DataLoadState.NOT_LOADED,
+        lines: null,
+      },
+    ]);
+  });
+
+  it('updates focused line spec on sourceLineFocused', () => {
+    const state = createDebuggerState();
+    let nextState = reducers(
+      state,
+      actions.sourceLineFocused({
+        sourceLineSpec: {
+          host_name: 'localhost',
+          file_path: '/tmp/main.py',
+          lineno: 20,
+        },
+      })
+    );
+    expect(nextState.sourceCode.focusLineSpec).toEqual({
+      host_name: 'localhost',
+      file_path: '/tmp/main.py',
+      lineno: 20,
+    });
+    nextState = reducers(
+      state,
+      actions.sourceLineFocused({
+        sourceLineSpec: {
+          host_name: 'localhost',
+          file_path: '/tmp/train.py',
+          lineno: 30,
+        },
+      })
+    );
+    expect(nextState.sourceCode.focusLineSpec).toEqual({
+      host_name: 'localhost',
+      file_path: '/tmp/train.py',
+      lineno: 30,
+    });
+  });
+
+  it(`updates file load state on sourceFileRequested: known file`, () => {
+    const state = createDebuggerState({
+      sourceCode: createDebuggerSourceCodeState({
+        sourceFileList: [
+          {
+            host_name: 'foo_host',
+            file_path: '/tmp/main.py',
+          },
+          {
+            host_name: 'foo_host',
+            file_path: '/tmp/model.py',
+          },
+        ],
+        fileContents: [
+          {
+            loadState: DataLoadState.NOT_LOADED,
+            lines: null,
+          },
+          {
+            loadState: DataLoadState.NOT_LOADED,
+            lines: null,
+          },
+        ],
+      }),
+    });
+    const nextState = reducers(
+      state,
+      actions.sourceFileRequested({
+        host_name: 'foo_host',
+        file_path: '/tmp/model.py',
+      })
+    );
+
+    expect(nextState.sourceCode.fileContents).toEqual([
+      {
+        loadState: DataLoadState.NOT_LOADED,
+        lines: null,
+      },
+      {
+        loadState: DataLoadState.LOADING,
+        lines: null,
+      },
+    ]);
+  });
+
+  it(`throws error on sourceFileRequested: unknown file`, () => {
+    const state = createDebuggerState({
+      sourceCode: createDebuggerSourceCodeState({
+        sourceFileList: [
+          {
+            host_name: 'foo_host',
+            file_path: '/tmp/main.py',
+          },
+          {
+            host_name: 'foo_host',
+            file_path: '/tmp/model.py',
+          },
+        ],
+        fileContents: [
+          {
+            loadState: DataLoadState.NOT_LOADED,
+            lines: null,
+          },
+          {
+            loadState: DataLoadState.NOT_LOADED,
+            lines: null,
+          },
+        ],
+      }),
+    });
+    expect(() =>
+      reducers(
+        state,
+        actions.sourceFileRequested({
+          host_name: 'foo_host',
+          file_path: '/tmp/i_am_unknown.py',
+        })
+      )
+    ).toThrowError(
+      /Cannot find the following file.*\"\/tmp\/i_am_unknown\.py\"/
+    );
+    expect(state.sourceCode.fileContents).toEqual([
+      {
+        loadState: DataLoadState.NOT_LOADED,
+        lines: null,
+      },
+      {
+        loadState: DataLoadState.NOT_LOADED,
+        lines: null,
+      },
+    ]);
+  });
+
+  it(`updates file load state & content on sourceFileLoaded: known file`, () => {
+    const state = createDebuggerState({
+      sourceCode: createDebuggerSourceCodeState({
+        sourceFileList: [
+          {
+            host_name: 'foo_host',
+            file_path: '/tmp/main.py',
+          },
+          {
+            host_name: 'foo_host',
+            file_path: '/tmp/model.py',
+          },
+        ],
+        fileContents: [
+          {
+            loadState: DataLoadState.NOT_LOADED,
+            lines: null,
+          },
+          {
+            loadState: DataLoadState.LOADING,
+            lines: null,
+          },
+        ],
+      }),
+    });
+    const nextState = reducers(
+      state,
+      actions.sourceFileLoaded({
+        host_name: 'foo_host',
+        file_path: '/tmp/model.py',
+        lines: [
+          'import tensorflow as tf',
+          '',
+          'model = tf.keras.applications.MobilNetV2()',
+        ],
+      })
+    );
+
+    expect(nextState.sourceCode.fileContents).toEqual([
+      {
+        loadState: DataLoadState.NOT_LOADED,
+        lines: null,
+      },
+      {
+        loadState: DataLoadState.LOADED,
+        lines: [
+          'import tensorflow as tf',
+          '',
+          'model = tf.keras.applications.MobilNetV2()',
+        ],
+      },
+    ]);
+  });
+
+  it(`throws error on sourceFileLoaded: unknown file`, () => {
+    const state = createDebuggerState({
+      sourceCode: createDebuggerSourceCodeState({
+        sourceFileList: [
+          {
+            host_name: 'foo_host',
+            file_path: '/tmp/main.py',
+          },
+          {
+            host_name: 'foo_host',
+            file_path: '/tmp/model.py',
+          },
+        ],
+        fileContents: [
+          {
+            loadState: DataLoadState.NOT_LOADED,
+            lines: null,
+          },
+          {
+            loadState: DataLoadState.LOADING,
+            lines: null,
+          },
+        ],
+      }),
+    });
+    expect(() =>
+      reducers(
+        state,
+        actions.sourceFileLoaded({
+          host_name: 'foo_host',
+          file_path: '/tmp/i_am_unknown.py',
+          lines: ['print("Mysterious")'],
+        })
+      )
+    ).toThrowError(
+      /Cannot find the following file.*\"\/tmp\/i_am_unknown\.py\"/
+    );
+    expect(state.sourceCode.fileContents).toEqual([
+      {
+        loadState: DataLoadState.NOT_LOADED,
+        lines: null,
+      },
+      {
+        loadState: DataLoadState.LOADING,
+        lines: null,
+      },
+    ]);
   });
 });
