@@ -13,20 +13,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-@import '../angular_material_theming';
-@import './tb_palette';
+@import 'tensorboard/webapp/angular_material_theming';
+
+/***********************************************************
+ * VARIABLE FILE IS INLINED WITH GENRULE. DO NOT IMPORT IT.
+ * Variable file declares values for $tb-primary, $tb-accent
+ * and $tb-warn
+ **********************************************************/
 
 // Angular Material theme definition.
 
 // Include non-theme styles for core.
 @include mat-core();
 
-// Defined in go/ls-visd-spec
-$_primary: mat-palette($tf-orange);
-$_accent: mat-palette($tf-orange);
-$_warn: mat-palette($mat-red);
-
-$tb-theme: mat-light-theme($_primary, $_accent, $_warn);
+$tb-theme: mat-light-theme($tb-primary, $tb-accent, $tb-warn);
 
 // Overriding mat-light-theme-foreground variables.
 $tb-foreground: map_merge(
