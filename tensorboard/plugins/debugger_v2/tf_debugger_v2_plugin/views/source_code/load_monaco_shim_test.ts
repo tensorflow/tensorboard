@@ -57,4 +57,14 @@ describe('loadMonaco shim', () => {
     await loadMonaco();
     expect(requireSpy).not.toHaveBeenCalled();
   });
+
+  fit('rejects if require.js is unavailable', async (done) => {
+    delete windowWithRequireAndMonaco.require;
+    try {
+      await loadMonaco();
+      done.fail();
+    } catch (e) {
+      done();
+    }
+  });
 });

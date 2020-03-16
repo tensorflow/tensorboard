@@ -12,7 +12,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-/** Shim for the `loadMonaco()` function in different build environments. */
+/**
+ * Shim for the `loadMonaco()` function in different build environments.
+ *
+ * This file exports the version of `loadMonaco()` appropriate for the
+ * open-source environment.
+ */
 
 // TODO(cais): Explore better typing by depending on external libraries.
 export interface WindowWithRequireAndMonaco extends Window {
@@ -21,8 +26,8 @@ export interface WindowWithRequireAndMonaco extends Window {
 }
 export const windowWithRequireAndMonaco: WindowWithRequireAndMonaco = window;
 
-const VS_PATH_PREFIX = 'vs';
-const VS_IMPORT_PATH = '/tf-imports/vs';
+const MONACO_PATH_PREFIX = 'vs';
+const MONACO_IMPORT_PATH = '/tf-imports/vs';
 
 /**
  * If `window.monaco` is undefined, load the monaco-editor API object onto that
@@ -30,23 +35,32 @@ const VS_IMPORT_PATH = '/tf-imports/vs';
  * is a no-op.
  */
 export function loadMonaco(): Promise<void> {
-  return new Promise<void>((resolve) => {
+  return new Promise<void>((resolve, reject) => {
     if (windowWithRequireAndMonaco.monaco !== undefined) {
       return resolve();
     }
 
+    console.log(
+      '100: windowWithRequireAndMonaco.require:',
+      windowWithRequireAndMonaco.require
+    ); // DEBUG
     if (windowWithRequireAndMonaco.require) {
       const require = windowWithRequireAndMonaco.require;
       require.config({
         paths: {
-          [VS_PATH_PREFIX]: VS_IMPORT_PATH,
+          [MONACO_PATH_PREFIX]: MONACO_IMPORT_PATH,
         },
       });
-      require([`${VS_PATH_PREFIX}/editor/editor.main`], () => {
-        require([`${VS_PATH_PREFIX}/python/python.contribution`], () => {
+      require([`${MONACO_PATH_PREFIX}/editor/editor.main`], () => {
+        require([`${MONACO_PATH_PREFIX}/python/python.contribution`], () => {
           return resolve();
         });
       });
+    } else {
+      console.log('200:'); // DEBUG
+      return reject(
+        'loadMonaco() failed because function require() is unavailable'
+      );
     }
   });
 }
