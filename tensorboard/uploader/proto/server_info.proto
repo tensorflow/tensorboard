@@ -8,15 +8,15 @@ package tensorboard.service;
 message ServerInfoRequest {
   // Client-side TensorBoard version, per `tensorboard.version.VERSION`.
   string version = 1;
-  // Plugins for which the client wishes to upload data, specified by the user.
-  // If specifed, the list of plugins will be confirmed by the server and
-  // echoed in the PluginControl message. If one of the plugins is not
-  // supported by the server then it will respond with compatibility verdict
-  // VERDICT_ERROR.
+  // Information about the plugins for which the client wishes to upload data.
   //
-  // These are plugin names as stored in the the
-  // `SummaryMetadata.plugin_data.plugin_name` proto field.
-  repeated string requested_plugins = 2;
+  // If specified then the list of plugins will be confirmed by the server and
+  // echoed in the PluginControl.allowed_plugins field. Otherwise the server
+  // will return the default set of plugins it supports.
+  //
+  // If one of the plugins is not supported by the server then it will respond
+  // with compatibility verdict VERDICT_ERROR.
+  PluginSpecification plugin_specification = 2;
 }
 
 message ServerInfoResponse {
@@ -32,7 +32,7 @@ message ServerInfoResponse {
   ExperimentUrlFormat url_format = 3;
   // Information about the plugins for which data should be uploaded.
   //
-  // If ServerInfoRequest.requested_plugins is specified then
+  // If PluginSpecification.requested_plugins is specified then
   // that list of plugins will be confirmed by the server and echoed in the
   // the response. Otherwise the server will return the default set of
   // plugins it supports.
@@ -78,6 +78,13 @@ message ExperimentUrlFormat {
   // Placeholder string that should be replaced with an actual experiment ID.
   // (See docs for `template` field.)
   string id_placeholder = 2;
+}
+
+message PluginSpecification {
+  // Plugins for which the client wishes to upload data. These are plugin names
+  // as stored in the the `SummaryMetadata.plugin_data.plugin_name` proto
+  // field.
+  repeated string upload_plugins = 2;
 }
 
 message PluginControl {

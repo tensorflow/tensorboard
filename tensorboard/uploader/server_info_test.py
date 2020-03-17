@@ -70,7 +70,7 @@ class FetchServerInfoTest(tb_test.TestCase):
             body = request.get_data()
             request_pb = server_info_pb2.ServerInfoRequest.FromString(body)
             self.assertEqual(request_pb.version, version.VERSION)
-            self.assertEqual(request_pb.requested_plugins, [])
+            self.assertEqual(request_pb.plugin_specification.upload_plugins, [])
             return wrappers.BaseResponse(expected_result.SerializeToString())
 
         origin = self._start_server(app)
@@ -84,7 +84,7 @@ class FetchServerInfoTest(tb_test.TestCase):
             request_pb = server_info_pb2.ServerInfoRequest.FromString(body)
             self.assertEqual(request_pb.version, version.VERSION)
             self.assertEqual(
-                request_pb.requested_plugins, ["plugin1", "plugin2"]
+                request_pb.plugin_specification.upload_plugins, ["plugin1", "plugin2"]
             )
             return wrappers.BaseResponse(
                 server_info_pb2.ServerInfoResponse().SerializeToString()
