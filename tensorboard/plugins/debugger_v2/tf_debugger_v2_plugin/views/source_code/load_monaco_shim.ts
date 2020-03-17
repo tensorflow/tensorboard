@@ -36,7 +36,7 @@ const MONACO_IMPORT_PATH = '/tf-imports/vs';
  *
  * @param paths
  */
-async function requireAsPromise(paths: string[]): Promise<void> {
+function requireAsPromise(paths: string[]): Promise<void> {
   const require = windowWithRequireAndMonaco.require!;
   return new Promise((resolve) => {
     require(paths, resolve);

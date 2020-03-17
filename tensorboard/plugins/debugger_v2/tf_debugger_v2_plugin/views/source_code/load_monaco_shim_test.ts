@@ -13,7 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {loadMonaco, windowWithRequireAndMonaco} from './load_monaco_shim';
+import {
+  loadMonaco,
+  WindowWithRequireAndMonaco,
+  windowWithRequireAndMonaco,
+} from './load_monaco_shim';
 
 describe('loadMonaco shim', () => {
   function createFakeRequire(): Require {
@@ -58,8 +62,10 @@ describe('loadMonaco shim', () => {
     expect(requireSpy).not.toHaveBeenCalled();
   });
 
-  fit('rejects if require.js is unavailable', async (done) => {
+  it('rejects if require.js is unavailable', async (done) => {
     delete windowWithRequireAndMonaco.require;
+    // TODO(cais): Use async matchers such as toBeRejectedWithError once they
+    // are available.
     try {
       await loadMonaco();
       done.fail();
