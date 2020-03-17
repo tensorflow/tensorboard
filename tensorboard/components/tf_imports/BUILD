@@ -590,32 +590,32 @@ genrule(
 tf_web_library(
     name = "requirejs",
     srcs = [
-        "@org_requirejs_requirejs//:require.js",
+        "@npm//:node_modules/requirejs/require.js",
     ],
     path = "/tf-imports",
-    visibility = ["//visibility:public"],
+    strip_prefix = "node_modules/requirejs",
 )
 
 tf_web_library(
     name = "monaco_editor",
     srcs = [
-        "@com_microsoft_monaco_editor//:vs/base/browser/ui/codiconLabel/codicon/codicon.ttf",
-        "@com_microsoft_monaco_editor//:vs/base/worker/workerMain.js",
-        "@com_microsoft_monaco_editor//:vs/editor/editor.main.css",
-        "@com_microsoft_monaco_editor//:vs/editor/editor.main.js",
-        "@com_microsoft_monaco_editor//:vs/editor/editor.main.nls.js",
+        "@npm//:node_modules/monaco-editor-core/dev/vs/base/browser/ui/codiconLabel/codicon/codicon.ttf",
+        "@npm//:node_modules/monaco-editor-core/dev/vs/base/worker/workerMain.js",
+        "@npm//:node_modules/monaco-editor-core/dev/vs/editor/editor.main.css",
+        "@npm//:node_modules/monaco-editor-core/dev/vs/editor/editor.main.js",
+        "@npm//:node_modules/monaco-editor-core/dev/vs/editor/editor.main.nls.js",
     ],
     path = "/tf-imports",
-    visibility = ["//visibility:public"],
+    strip_prefix = "node_modules/monaco-editor-core/dev",
 )
 
 tf_web_library(
     name = "monaco_languages",
     srcs = [
-        "@com_microsoft_monaco_languages//:_.contribution.js",
-        "@com_microsoft_monaco_languages//:python/python.contribution.js",
-        "@com_microsoft_monaco_languages//:python/python.js",
+        "@npm//:node_modules/monaco-languages/release/dev/_.contribution.js",
+        "@npm//:node_modules/monaco-languages/release/dev/python/python.contribution.js",
+        "@npm//:node_modules/monaco-languages/release/dev/python/python.js",
     ],
     path = "/tf-imports/vs",
-    visibility = ["//visibility:public"],
+    strip_prefix = "node_modules/monaco-languages/release/dev",
 )

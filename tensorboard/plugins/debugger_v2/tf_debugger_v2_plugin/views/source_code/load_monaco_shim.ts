@@ -30,32 +30,43 @@ const MONACO_PATH_PREFIX = 'vs';
 const MONACO_IMPORT_PATH = '/tf-imports/vs';
 
 /**
+ * require.js's require() wrapped as an async function that returns a Promise.
+ *
+ * This wrapped version does not support callback-function arguments.
+ *
+ * @param paths
+ */
+async function requireAsPromise(paths: string[]): Promise<void> {
+  const require = windowWithRequireAndMonaco.require!;
+  return new Promise((resolve) => {
+    require(paths, resolve);
+  });
+}
+
+/**
  * If `window.monaco` is undefined, load the monaco-editor API object onto that
  * global path dynamically using require.js. If `window.monaco` is already
  * defined, this function is a no-op.
  */
-export function loadMonaco(): Promise<void> {
-  return new Promise<void>((resolve, reject) => {
-    if (windowWithRequireAndMonaco.monaco !== undefined) {
-      return resolve();
-    }
+export async function loadMonaco(): Promise<void> {
+  if (windowWithRequireAndMonaco.monaco !== undefined) {
+    return;
+  }
 
-    if (windowWithRequireAndMonaco.require) {
-      const require = windowWithRequireAndMonaco.require;
-      require.config({
-        paths: {
-          [MONACO_PATH_PREFIX]: MONACO_IMPORT_PATH,
-        },
-      });
-      require([`${MONACO_PATH_PREFIX}/editor/editor.main`], () => {
-        require([`${MONACO_PATH_PREFIX}/python/python.contribution`], () => {
-          return resolve();
-        });
-      });
-    } else {
-      return reject(
-        'loadMonaco() failed because function require() is unavailable'
-      );
-    }
-  });
+  if (windowWithRequireAndMonaco.require) {
+    const require = windowWithRequireAndMonaco.require;
+    require.config({
+      paths: {
+        [MONACO_PATH_PREFIX]: MONACO_IMPORT_PATH,
+      },
+    });
+    await requireAsPromise([`${MONACO_PATH_PREFIX}/editor/editor.main`]);
+    await requireAsPromise([
+      `${MONACO_PATH_PREFIX}/python/python.contribution`,
+    ]);
+  } else {
+    throw new Error(
+      'loadMonaco() failed because function require() is unavailable'
+    );
+  }
 }
