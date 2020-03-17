@@ -146,6 +146,10 @@ message StreamExperimentDataResponse {
     repeated .tensorboard.TensorProto values = 3;
   }
 
+  message BlobSequence {
+    repeated BlobSequenceEntry entries = 1;
+  }
+
   message BlobSequencePoints {
     // Step index within the run.
     repeated int64 steps = 1;

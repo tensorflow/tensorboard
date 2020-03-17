@@ -24,7 +24,3 @@ message BlobSequenceEntry {
   // there is expected to be a blob here, but upload has not started.
   Blob blob = 1;
 }
-
-message BlobSequence {
-  repeated BlobSequenceEntry entries = 1;
-}
