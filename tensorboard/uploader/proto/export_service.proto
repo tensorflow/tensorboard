@@ -17,7 +17,8 @@ service TensorBoardExporterService {
   rpc StreamExperimentData(StreamExperimentDataRequest)
       returns (stream StreamExperimentDataResponse) {}
   // Stream blob as chunks for a given blob_id.
-  rpc StreamBlobData(StreamBlobDataRequest) returns (stream StreamBlobDataResponse) {}
+  rpc StreamBlobData(StreamBlobDataRequest)
+      returns (stream StreamBlobDataResponse) {}
 }
 
 // Request to stream the experiment_id of all the experiments owned by the
