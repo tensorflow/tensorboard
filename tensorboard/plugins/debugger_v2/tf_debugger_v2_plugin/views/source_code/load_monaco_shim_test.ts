@@ -13,11 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {
-  loadMonaco,
-  WindowWithRequireAndMonaco,
-  windowWithRequireAndMonaco,
-} from './load_monaco_shim';
+import {loadMonaco, windowWithRequireAndMonaco} from './load_monaco_shim';
 
 describe('loadMonaco shim', () => {
   function createFakeRequire(): Require {
