@@ -16,8 +16,8 @@ service TensorBoardExporterService {
   // Stream scalars for all the runs and tags in an experiment.
   rpc StreamExperimentData(StreamExperimentDataRequest)
       returns (stream StreamExperimentDataResponse) {}
-  // Stream BLOB as chunks for a given blob_id.
-  rpc StreamBlobData(StreamBlobRequest) returns (stream StreamBlobResponse) {}
+  // Stream blob as chunks for a given blob_id.
+  rpc StreamBlobData(StreamBlobDataRequest) returns (stream StreamBlobDataResponse) {}
 }
 
 // Request to stream the experiment_id of all the experiments owned by the
@@ -150,16 +150,16 @@ message StreamExperimentDataResponse {
     repeated int64 steps = 1;
     // Timestamp of the creation of this point.
     repeated google.protobuf.Timestamp wall_times = 2;
-    // Value of the BLOB sequence at this step / timestamp.
+    // Value of the blob sequence at this step / timestamp.
     repeated BlobSequence values = 3;
   }
 }
 
-message StreamBlobRequest {
+message StreamBlobDataRequest {
   string blob_id = 1;
 }
 
-message StreamBlobResponse {
+message StreamBlobDataResponse {
   // The bytes in this chunk.
   bytes data = 1;
   // The position in the blob where this chunk begins.
@@ -170,7 +170,7 @@ message StreamBlobResponse {
   reserved 3;
   // Indicates that this is the last chunk of the stream.
   bool final_chunk = 4;
-  // CRC32C of the entire blob.  Required, to protect against data corruption.
-  // This should be set only when finalize_object=True.
+  // CRC32C of the entire blob. This should be set when final_chunk=True, to
+  // protect against data corruption.
   fixed32 final_crc32c = 5;
 }
