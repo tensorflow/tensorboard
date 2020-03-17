@@ -90,15 +90,15 @@ def fetch_server_info(origin, upload_plugins):
         )
 
 
-def create_server_info(frontend_origin, api_endpoint, plugins):
+def create_server_info(frontend_origin, api_endpoint, upload_plugins):
     """Manually creates server info given a frontend and backend.
 
     Args:
       frontend_origin: The origin of the TensorBoard.dev frontend, like
         "https://tensorboard.dev" or "http://localhost:8000".
       api_endpoint: As to `server_info_pb2.ApiServer.endpoint`.
-      plugins: List of plugins, by name, requested by the user and to be
-        echoed back in the response.
+      upload_plugins: List of plugin names requested by the user and to be
+        verified by the server.
 
     Returns:
       A `server_info_pb2.ServerInfoResponse` message.
@@ -112,8 +112,7 @@ def create_server_info(frontend_origin, api_endpoint, plugins):
         placeholder = "{%s}" % placeholder
     url_format.template = "%s/experiment/%s/" % (frontend_origin, placeholder)
     url_format.id_placeholder = placeholder
-    if (plugins is not None) and (len(plugins) > 0):
-        result.plugin_control.allowed_plugins[:] = plugins
+    result.plugin_control.allowed_plugins[:] = upload_plugins
     return result
 
 

@@ -163,6 +163,7 @@ def _define_flags(parser):
         "--plugins",
         type=str,
         nargs="*",
+        default=[],
         help="List of plugins for which data should be uploaded. If "
         "unspecified then data will be uploaded for all plugins supported by "
         "the server.",
@@ -746,8 +747,7 @@ def _get_server_info(flags):
         return server_info_lib.create_server_info(
             origin, flags.api_endpoint, flags.plugins
         ) 
-    plugins = flags.plugins if hasattr(flags, 'plugins') else []
-    server_info = server_info_lib.fetch_server_info(origin, plugins)
+    server_info = server_info_lib.fetch_server_info(origin, flags.plugins)
     # Override with any API server explicitly specified on the command
     # line, but only if the server accepted our initial handshake.
     if flags.api_endpoint and server_info.api_server.endpoint:
