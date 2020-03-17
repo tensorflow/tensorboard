@@ -508,36 +508,3 @@ def tensorboard_js_workspace():
             "ic_refresh_24px.svg": "refresh_24px.svg",
         },
     )
-
-    filegroup_external(
-        name = "org_requirejs_requirejs",
-        licenses = ["notice"],  # MIT
-        sha256_urls = {
-            "d5f10f852b112a514a19f2b778eef5d2d1307878757f0a24539c051831cefaf8": [
-                "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js",
-            ],
-        },
-        rename = {"require.min.js": "require.js"},
-    )
-
-    filegroup_external(
-        name = "com_microsoft_monaco_editor",
-        licenses = ["notice"],  # MIT
-        sha256_urls_extract = {
-            "bcb9187c08d3f26469fe23f269ec7cd09f30a2c93a2e9cdaa0e9cf5c95c079c4": [
-                "https://registry.npmjs.org/monaco-editor-core/-/monaco-editor-core-0.20.0.tgz",
-            ],
-        },
-        strip_prefix = {"monaco-editor-core-0.20.0.tgz": "package/min"},
-    )
-
-    filegroup_external(
-        name = "com_microsoft_monaco_languages",
-        licenses = ["notice"],  # MIT
-        sha256_urls_extract = {
-            "c0229aff7c0a43afff5018939d3ddfe424de3c1e265d4cc9040f1e44ee3ce668": [
-                "https://registry.npmjs.org/monaco-languages/-/monaco-languages-1.10.0.tgz",
-            ],
-        },
-        strip_prefix = {"monaco-languages-1.10.0.tgz": "package/release/dev"},
-    )
