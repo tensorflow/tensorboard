@@ -314,6 +314,7 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         ":error",
+        ":protos_all_py_pb2",
         "//tensorboard/compat/proto:protos_all_py_pb2",
     ],
 )
