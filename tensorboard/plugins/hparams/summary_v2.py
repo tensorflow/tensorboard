@@ -268,7 +268,9 @@ def _summary_pb(tag, hparams_plugin_data):
     """
     summary = summary_pb2.Summary()
     summary_metadata = metadata.create_summary_metadata(hparams_plugin_data)
-    summary.value.add(tag=tag, metadata=summary_metadata)
+    value = summary.value.add(
+        tag=tag, metadata=summary_metadata, tensor=metadata.NULL_TENSOR
+    )
     return summary
 
 

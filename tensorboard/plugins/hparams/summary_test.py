@@ -70,6 +70,7 @@ class SummaryTest(tf.test.TestCase):
                 value=[
                     tf.compat.v1.Summary.Value(
                         tag="_hparams_/experiment",
+                        tensor=summary._TF_NULL_TENSOR,
                         metadata=tf.compat.v1.SummaryMetadata(
                             plugin_data=tf.compat.v1.SummaryMetadata.PluginData(
                                 plugin_name="hparams",
@@ -98,6 +99,7 @@ class SummaryTest(tf.test.TestCase):
                 value=[
                     tf.compat.v1.Summary.Value(
                         tag="_hparams_/session_end_info",
+                        tensor=summary._TF_NULL_TENSOR,
                         metadata=tf.compat.v1.SummaryMetadata(
                             plugin_data=tf.compat.v1.SummaryMetadata.PluginData(
                                 plugin_name="hparams",

@@ -39,6 +39,7 @@ except ImportError:
 from tensorboard import test
 from tensorboard.compat import tf
 from tensorboard.compat.proto import summary_pb2
+from tensorboard.compat.proto import tensor_pb2
 from tensorboard.plugins.hparams import api_pb2
 from tensorboard.plugins.hparams import metadata
 from tensorboard.plugins.hparams import plugin_data_pb2
@@ -107,6 +108,12 @@ class HParamsTest(test.TestCase):
         actual_value = values[0]
         self.assertEqual(
             actual_value.metadata.plugin_data.plugin_name, metadata.PLUGIN_NAME,
+        )
+        self.assertEqual(
+            tensor_pb2.TensorProto.FromString(
+                actual_value.tensor.SerializeToString()
+            ),
+            metadata.NULL_TENSOR,
         )
         plugin_content = actual_value.metadata.plugin_data.content
         info_pb = metadata.parse_session_start_info_plugin_data(plugin_content)

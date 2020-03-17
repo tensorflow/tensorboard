@@ -31,6 +31,8 @@ from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.graph import metadata as graphs_metadata
 from tensorboard.plugins.histogram import metadata as histogram_metadata
 from tensorboard.plugins.histogram import summary as histogram_summary
+from tensorboard.plugins.hparams import metadata as hparams_metadata
+from tensorboard.plugins.hparams import summary_v2 as hparams_summary
 from tensorboard.plugins.scalar import metadata as scalar_metadata
 from tensorboard.plugins.scalar import summary as scalar_summary
 from tensorboard.util import tensor_util
@@ -136,6 +138,29 @@ class MigrateEventTest(tf.test.TestCase):
         self.assertEqual(
             value.metadata.plugin_data.plugin_name,
             histogram_metadata.PLUGIN_NAME,
+        )
+
+    def test_hparams(self):
+        old_event = event_pb2.Event()
+        old_event.step = 0
+        old_event.wall_time = 456.75
+        hparams_pb = hparams_summary.hparams_pb({"optimizer": "adam"})
+        # Simulate legacy event with no tensor content
+        for v in hparams_pb.value:
+            v.ClearField("tensor")
+        old_event.summary.CopyFrom(hparams_pb)
+
+        new_events = self._migrate_event(old_event)
+        self.assertLen(new_events, 1)
+        self.assertLen(new_events[0].summary.value, 1)
+        value = new_events[0].summary.value[0]
+        self.assertEqual(value.tensor, hparams_metadata.NULL_TENSOR)
+        self.assertEqual(
+            value.metadata.data_class, summary_pb2.DATA_CLASS_TENSOR
+        )
+        self.assertEqual(
+            value.metadata.plugin_data,
+            hparams_pb.value[0].metadata.plugin_data,
         )
 
     def test_graph_def(self):
