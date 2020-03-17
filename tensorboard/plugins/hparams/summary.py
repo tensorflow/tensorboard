@@ -199,6 +199,8 @@ def _summary(tag, hparams_plugin_data):
     return summary
 
 
+# Like `metadata.NULL_TENSOR`, but with the TensorFlow version of the
+# proto. Slight kludge needed to expose the `TensorProto` type.
 _TF_NULL_TENSOR = type(tf.compat.v1.Summary.Value().tensor).FromString(
     metadata.NULL_TENSOR.SerializeToString()
 )
