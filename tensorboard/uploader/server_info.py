@@ -21,6 +21,7 @@ from __future__ import print_function
 from google.protobuf import message
 import requests
 
+from absl import logging
 from tensorboard import version
 from tensorboard.plugins.scalar import metadata as scalars_metadata
 from tensorboard.uploader.proto import server_info_pb2
@@ -34,16 +35,15 @@ def _server_info_request(upload_plugins):
     """Generates a ServerInfoRequest
 
     Args:
-      upload_plugins: List of plugins, by name, requested by the user and to be
-        confirmed by the server.
+      upload_plugins: List of plugin names requested by the user and to be
+        verified by the server.
 
     Returns:
       A `server_info_pb2.ServerInfoRequest` message.
     """
     request = server_info_pb2.ServerInfoRequest()
     request.version = version.VERSION
-    if upload_plugins:
-        request.plugin_specification.upload_plugins[:] = upload_plugins
+    request.plugin_specification.upload_plugins[:] = upload_plugins
     return request
 
 
@@ -54,8 +54,8 @@ def fetch_server_info(origin, upload_plugins):
       origin: The server with which to communicate. Should be a string
         like "https://tensorboard.dev", including protocol, host, and (if
         needed) port.
-      upload_plugins: List of plugins, by name, requested by the user and to be
-        confirmed by the server.
+      upload_plugins: List of plugins names requested by the user and to be
+        verified by the server.
 
     Returns:
       A `server_info_pb2.ServerInfoResponse` message.
@@ -65,7 +65,9 @@ def fetch_server_info(origin, upload_plugins):
         communicate with the remote server.
     """
     endpoint = "%s/api/uploader" % origin
-    post_body = _server_info_request(upload_plugins).SerializeToString()
+    server_info_request = _server_info_request(upload_plugins)
+    post_body = server_info_request.SerializeToString()
+    logging.info("Requested server info: <%r>", server_info_request)
     try:
         response = requests.post(
             endpoint,
