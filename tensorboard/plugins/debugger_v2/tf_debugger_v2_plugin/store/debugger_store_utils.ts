@@ -12,5 +12,25 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+/**
+ * Utility functions for the NgRx store of Debugger V2.
+ */
 
-@import 'tensorboard/webapp/theme/tb_theme';
+import {SourceFileSpec} from './debugger_types';
+
+/**
+ * Find the index of a file spec among an array of file specs.
+ * @param fileList
+ * @param fileSpec
+ * @returns The index of `fileSpec` in `fileList`. If not found, `-1`.
+ */
+export function findFileIndex(
+  fileList: SourceFileSpec[],
+  fileSpec: SourceFileSpec
+): number {
+  return fileList.findIndex(
+    (item: SourceFileSpec) =>
+      item.host_name === fileSpec.host_name &&
+      item.file_path === fileSpec.file_path
+  );
+}

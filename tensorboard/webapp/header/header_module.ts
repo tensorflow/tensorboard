@@ -37,7 +37,7 @@ import {ReloadContainer} from './reload_container';
     PluginSelectorContainer,
     ReloadContainer,
   ],
-  exports: [HeaderComponent, PluginSelectorContainer],
+  exports: [HeaderComponent, PluginSelectorContainer, ReloadContainer],
   providers: [],
   imports: [
     MatButtonModule,

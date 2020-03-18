@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 import {createSelector, createFeatureSelector} from '@ngrx/store';
+import {findFileIndex} from './debugger_store_utils';
 import {
   AlertsBreakdown,
   AlertsByIndex,
@@ -25,6 +26,7 @@ import {
   ExecutionDigest,
   ExecutionDigestLoadState,
   LoadState,
+  SourceFileContent,
   SourceFileSpec,
   StackFrame,
   StackFramesById,
@@ -305,5 +307,27 @@ export const getSourceFileList = createSelector(
   selectDebuggerState,
   (state: DebuggerState): SourceFileSpec[] => {
     return state.sourceCode.sourceFileList;
+  }
+);
+
+export const getFocusedSourceFileIndex = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): number => {
+    const {sourceFileList, focusLineSpec} = state.sourceCode;
+    if (focusLineSpec === null) {
+      return -1;
+    }
+    return findFileIndex(sourceFileList, focusLineSpec);
+  }
+);
+
+export const getFocusedSourceFileContent = createSelector(
+  selectDebuggerState,
+  getFocusedSourceFileIndex,
+  (state: DebuggerState, fileIndex: number): SourceFileContent | null => {
+    if (fileIndex === -1) {
+      return null;
+    }
+    return state.sourceCode.fileContents[fileIndex] || null;
   }
 );

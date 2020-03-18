@@ -103,6 +103,8 @@ export function createDebuggerState(
         lastLoadedTimeInMs: null,
       },
       sourceFileList: [],
+      fileContents: [],
+      focusLineSpec: null,
     },
     ...override,
   };
@@ -156,6 +158,8 @@ export function createDebuggerSourceCodeState(
       lastLoadedTimeInMs: null,
     },
     sourceFileList: [],
+    fileContents: [],
+    focusLineSpec: null,
     ...override,
   };
 }

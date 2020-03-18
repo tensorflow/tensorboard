@@ -13,9 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {LoadState} from '../../../../webapp/types/data';
+import {DataLoadState, LoadState} from '../../../../webapp/types/data';
 
-export {DataLoadState, LoadState} from '../../../../webapp/types/data';
+export {DataLoadState, LoadState};
 
 export const DEBUGGER_FEATURE_KEY = 'debugger';
 
@@ -217,6 +217,15 @@ export interface SourceLineSpec extends SourceFileSpec {
   lineno: number;
 }
 
+// The content and loading state of a single source file.
+export interface SourceFileContent {
+  loadState: DataLoadState;
+
+  // Text of the source file, line-by-line.
+  // Use `null` for the state wherein the file is not loaded yet.
+  lines: string[] | null;
+}
+
 export interface SourceCodeState {
   sourceFileListLoaded: LoadState;
 
@@ -224,6 +233,15 @@ export interface SourceCodeState {
   // execution of the debugged proram, including eager
   // execution and graph building.
   sourceFileList: SourceFileSpec[];
+
+  // The contents and loading states of individual source files,
+  // in the order that corresponds to `sourceFileList`.
+  fileContents: SourceFileContent[];
+
+  // Index for the source line being focused on. The index is for
+  // the array in `sourceFileList`.
+  // Use `null` for the case wherein no line is focused on.
+  focusLineSpec: SourceLineSpec | null;
 }
 
 export interface DebuggerState {
@@ -232,6 +250,8 @@ export interface DebuggerState {
   runsLoaded: LoadState;
 
   // ID of the run being currently displayed.
+  // TODO(cais): The Debugger V2 plugin currently handles only one single run in
+  // its frontend. Expand the support to multiple runs.
   activeRunId: string | null;
 
   alerts: Alerts;

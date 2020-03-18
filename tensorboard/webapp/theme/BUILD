@@ -2,6 +2,8 @@ load("//tensorboard/defs:defs.bzl", "tf_sass_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
+licenses(["notice"])  # Apache 2.0
+
 tf_sass_library(
     name = "theme",
     srcs = [
@@ -11,4 +13,14 @@ tf_sass_library(
     deps = [
         "//tensorboard/webapp:angular_material_theming",
     ],
+)
+
+genrule(
+    name = "inline_palette",
+    srcs = [
+        "_variable.scss",
+        "_tb_theme.template.scss",
+    ],
+    outs = ["_tb_theme.scss"],
+    cmd = "cat $(SRCS) > $@",
 )

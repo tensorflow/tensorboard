@@ -21,11 +21,13 @@ import {
   AlertType,
   DebuggerRunListing,
   SourceFileSpec,
+  SourceLineSpec,
   StackFramesById,
 } from '../store/debugger_types';
 import {
   ExecutionDigestsResponse,
   ExecutionDataResponse,
+  SourceFileResponse,
 } from '../data_source/tfdbg2_data_source';
 
 // HACK: Below import is for type inference.
@@ -137,6 +139,21 @@ export const sourceFileListRequested = createAction(
 export const sourceFileListLoaded = createAction(
   '[Debugger] Source File List Loaded',
   props<{sourceFiles: SourceFileSpec[]}>()
+);
+
+export const sourceLineFocused = createAction(
+  '[Debugger] Source File Line Is Focused on',
+  props<{sourceLineSpec: SourceLineSpec}>()
+);
+
+export const sourceFileRequested = createAction(
+  '[Debugger] Source File Requested',
+  props<SourceFileSpec>()
+);
+
+export const sourceFileLoaded = createAction(
+  '[Debugger] Source File Loaded',
+  props<SourceFileResponse>()
 );
 
 export const stackFramesLoaded = createAction(

@@ -43,6 +43,9 @@ import {
   numExecutionsRequested,
   sourceFileListLoaded,
   sourceFileListRequested,
+  sourceLineFocused,
+  sourceFileLoaded,
+  sourceFileRequested,
   stackFramesLoaded,
 } from '../actions';
 import {
@@ -55,6 +58,7 @@ import {
   getExecutionDigestsLoaded,
   getExecutionPageSize,
   getExecutionScrollBeginIndex,
+  getFocusedSourceFileContent,
   getNumExecutions,
   getNumExecutionsLoaded,
   getLoadedAlertsOfFocusedType,
@@ -62,7 +66,10 @@ import {
   getLoadedStackFrames,
   getNumAlertsOfFocusedType,
   getSourceFileListLoaded,
+  getSourceFileList,
+  getFocusedSourceFileIndex,
 } from '../store/debugger_selectors';
+import {findFileIndex} from '../store/debugger_store_utils';
 import {
   DataLoadState,
   DebuggerRunListing,
@@ -645,6 +652,52 @@ export class DebuggerEffects {
     );
   }
 
+  /**
+   * When the a source file is focused on, load its content from the data source.
+   */
+  private onSourceFileFocused(): Observable<void> {
+    return this.actions$.pipe(
+      ofType(sourceLineFocused),
+      withLatestFrom(
+        this.store.select(getActiveRunId),
+        this.store.select(getFocusedSourceFileIndex),
+        this.store.select(getFocusedSourceFileContent)
+      ),
+      map(([focus, runId, fileIndex, fileContent]) => {
+        return {
+          runId,
+          lineSpec: focus.sourceLineSpec,
+          fileIndex,
+          fileContent,
+        };
+      }),
+      filter(({runId, fileContent}) => {
+        return (
+          runId !== null &&
+          fileContent !== null &&
+          fileContent.loadState !== DataLoadState.LOADING
+        );
+      }),
+      tap(({lineSpec}) =>
+        this.store.dispatch(
+          sourceFileRequested({
+            host_name: lineSpec.host_name,
+            file_path: lineSpec.file_path,
+          })
+        )
+      ),
+      mergeMap(({fileIndex, runId}) => {
+        return this.dataSource.fetchSourceFile(runId!, fileIndex).pipe(
+          tap((sourceFileResponse) => {
+            this.store.dispatch(sourceFileLoaded(sourceFileResponse));
+          }),
+          map(() => void null)
+          // TODO(cais): Add catchError() to pipe.
+        );
+      })
+    );
+  }
+
   constructor(
     private actions$: Actions,
     private store: Store<State>,
@@ -670,7 +723,9 @@ export class DebuggerEffects {
      *  |                                                              |
      *  +------>+ fetch alert number and breakdown                     |
      *                                                                 |
-     *  on alert type focus --------> fetch alerts of a type ----------+
+     * on alert type focus --------> fetch alerts of a type -----------+
+     *
+     * on source file requested ---> fetch source file
      *
      **/
     this.loadData$ = createEffect(
@@ -727,12 +782,15 @@ export class DebuggerEffects {
           )
         );
 
+        const onSourceFileFocused$ = this.onSourceFileFocused();
+
         // ExecutionDigest and ExecutionData can be loaded in parallel.
         return merge(
           onNumAlertsLoaded$,
           onExcutionDigestLoaded$,
           onExecutionDataLoaded$,
-          loadSourceFileList$
+          loadSourceFileList$,
+          onSourceFileFocused$
         ).pipe(
           // createEffect expects an Observable that emits {}.
           map(() => ({}))
