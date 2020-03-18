@@ -1,11 +1,11 @@
-# Release 2.2.0 
+# Release 2.2.0
 
 The 2.2 minor series tracks TensorFlow 2.2.
 
 ## Features
 
 - Profile plugin now should be pip installed.
-- Debugger: 
+- Debugger:
   - Added support for alerts (#3285)
   - Support FULL_HEALTH debug mode (#3343)
   - Integration with ngrx storage (#3359)
