@@ -182,7 +182,6 @@ The proper fix is:
 
 
 class ProtoMatchTest(tf.test.TestCase):
-
     def test_each_proto_matches_tensorflow(self):
         for tf_path, tb_path in PROTO_IMPORTS:
             tf_pb2 = importlib.import_module(tf_path)
