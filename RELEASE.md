@@ -1,3 +1,26 @@
+# Release 2.2.0 
+
+The 2.2 minor series tracks TensorFlow 2.2.
+
+## Features
+
+- Angular:
+  - Multiple internal organizational improvements.
+  - Support for theming (#3349)
+- Debugger: 
+  - Added support for alerts (#3285)
+  - Support FULL_HEALTH debug mode (#3343)
+  - Integration with ngrx storage (#3359)
+
+## TensorBoard.dev updates
+
+- Improvements to [TensorBoard.dev] support:
+  - New `tensorboard dev update-metadata` command allows for updating the name and
+    description of experiments (#3277)
+  - Handshake protocol allows for more graceful control of which plugins are supported
+    for upload (#3299)
+  - Improved organization of artifacts downloaded during export (#3307)
+  
 # Release 2.1.1
 
 ## Features
