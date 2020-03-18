@@ -286,8 +286,8 @@ tensorboard_zip_file(
 )
 
 monaco_imports = [
-    "//tensorboard/components/tf_imports:monaco_editor",
-    "//tensorboard/components/tf_imports:monaco_languages",
+    "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/source_code/monaco:monaco_editor",
+    "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/source_code/monaco:monaco_languages",
 ]
 
 # TODO(stephanwlee): add ng_index.html to the srcs when it is ready for mass consumption.
