@@ -1,3 +1,40 @@
+# Release 2.2.0
+
+The 2.2 minor series tracks TensorFlow 2.2.
+
+## Features
+
+- Profile plugin now should be pip installed.
+- Debugger:
+  - Added support for alerts (#3285)
+  - Support FULL_HEALTH debug mode (#3343)
+  - Integration with ngrx storage (#3359)
+- Add S3_ENDPOINT variable (#3347)
+- Confirm that the connection to tensorboard works or change to localhost (#2371)
+- Update --reload_multifile_inactive_secs default to 24 hours (#3243)
+
+## TensorBoard.dev updates
+
+- Improvements to [TensorBoard.dev] support:
+  - New `tensorboard dev update-metadata` command allows for updating the name and
+    description of experiments (#3277)
+  - Handshake protocol allows for more graceful control of which plugins are supported
+    for upload (#3299)
+  - Improved organization of artifacts downloaded during export (#3307)
+  - Adds `--plugins` option to uploader (#3377)
+  - Support for exporting blob data (#3373)
+
+## Bug fixes
+
+- Fix for the tooltip not disappearing issue (#3347)
+- hparams: write valid tensor summaries (#3386)
+- Fixes to profiling tutorial (#3372 & #3381)
+
+## Breaking Changes
+- Note: As of TensorBoard 2.1.1+, only Python 3 is supported. There will be no further releases for Python 2 as per
+https://groups.google.com/a/tensorflow.org/forum/#!topic/developers/ifEAGK3aPls
+
+
 # Release 2.1.1
 
 ## Features
