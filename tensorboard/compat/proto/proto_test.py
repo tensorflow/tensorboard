@@ -160,7 +160,29 @@ PROTO_REPLACEMENTS = [
 ]
 
 
+MATCH_FAIL_MESSAGE_TEMPLATE = """
+{} and {} did not match: {}
+
+NOTE!
+====
+This is expected to happen when TensorFlow updates their proto definitions.
+We pin copies of the protos, but TensorFlow can freely update them at any
+time.
+
+The proper fix is:
+
+1. In your TensorFlow clone, check out the version of TensorFlow whose
+   protos you want to update (e.g., `git cehckout v2.2.0-rc0`)
+2. In your tensorboard repo, run:
+
+    ./tensorboard/compat/proto/update.sh PATH_TO_TENSORFLOW_REPO
+
+3. Review and commit any changes.
+"""
+
+
 class ProtoMatchTest(tf.test.TestCase):
+
     def test_each_proto_matches_tensorflow(self):
         for tf_path, tb_path in PROTO_IMPORTS:
             tf_pb2 = importlib.import_module(tf_path)
@@ -185,7 +207,7 @@ class ProtoMatchTest(tf.test.TestCase):
             self.assertEquals(
                 diff,
                 "",
-                "{} and {} did not match:\n{}".format(tf_path, tb_path, diff),
+                MATCH_FAIL_MESSAGE_TEMPLATE.format(tf_path, tb_path, diff),
             )
 
 
