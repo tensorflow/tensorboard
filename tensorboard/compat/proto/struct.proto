@@ -5,6 +5,8 @@ package tensorboard;
 import "tensorboard/compat/proto/tensor_shape.proto";
 import "tensorboard/compat/proto/types.proto";
 
+option go_package = "github.com/tensorflow/tensorflow/tensorflow/go/core/core_protos_go_proto";
+
 // `StructuredValue` represents a dynamically typed value representing various
 // data structures that are inspired by Python data structures typically used in
 // TensorFlow functions as inputs and outputs.
