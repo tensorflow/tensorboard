@@ -70,30 +70,11 @@ class FetchServerInfoTest(tb_test.TestCase):
             body = request.get_data()
             request_pb = server_info_pb2.ServerInfoRequest.FromString(body)
             self.assertEqual(request_pb.version, version.VERSION)
-            self.assertEqual(request_pb.plugin_specification.upload_plugins, [])
             return wrappers.BaseResponse(expected_result.SerializeToString())
 
         origin = self._start_server(app)
-        result = server_info.fetch_server_info(origin, [])
+        result = server_info.fetch_server_info(origin)
         self.assertEqual(result, expected_result)
-
-    def test_fetches_with_plugins(self):
-        @wrappers.BaseRequest.application
-        def app(request):
-            body = request.get_data()
-            request_pb = server_info_pb2.ServerInfoRequest.FromString(body)
-            self.assertEqual(request_pb.version, version.VERSION)
-            self.assertEqual(
-                request_pb.plugin_specification.upload_plugins,
-                ["plugin1", "plugin2"],
-            )
-            return wrappers.BaseResponse(
-                server_info_pb2.ServerInfoResponse().SerializeToString()
-            )
-
-        origin = self._start_server(app)
-        result = server_info.fetch_server_info(origin, ["plugin1", "plugin2"])
-        self.assertIsNotNone(result)
 
     def test_econnrefused(self):
         (family, localhost) = _localhost()
@@ -102,7 +83,7 @@ class FetchServerInfoTest(tb_test.TestCase):
         self.addCleanup(s.close)
         port = s.getsockname()[1]
         with self.assertRaises(server_info.CommunicationError) as cm:
-            server_info.fetch_server_info("http://localhost:%d" % port, [])
+            server_info.fetch_server_info("http://localhost:%d" % port)
         msg = str(cm.exception)
         self.assertIn("Failed to connect to backend", msg)
         if os.name != "nt":
@@ -116,7 +97,7 @@ class FetchServerInfoTest(tb_test.TestCase):
 
         origin = self._start_server(app)
         with self.assertRaises(server_info.CommunicationError) as cm:
-            server_info.fetch_server_info(origin, [])
+            server_info.fetch_server_info(origin)
         msg = str(cm.exception)
         self.assertIn("Non-OK status from backend (502 Bad Gateway)", msg)
         self.assertIn("very sad", msg)
@@ -129,7 +110,7 @@ class FetchServerInfoTest(tb_test.TestCase):
 
         origin = self._start_server(app)
         with self.assertRaises(server_info.CommunicationError) as cm:
-            server_info.fetch_server_info(origin, [])
+            server_info.fetch_server_info(origin)
         msg = str(cm.exception)
         self.assertIn("Corrupt response from backend", msg)
         self.assertIn("an unlikely proto", msg)
@@ -142,7 +123,7 @@ class FetchServerInfoTest(tb_test.TestCase):
             return wrappers.BaseResponse(result.SerializeToString())
 
         origin = self._start_server(app)
-        result = server_info.fetch_server_info(origin, [])
+        result = server_info.fetch_server_info(origin)
         expected_user_agent = "tensorboard/%s" % version.VERSION
         self.assertEqual(result.compatibility.details, expected_user_agent)
 
@@ -150,10 +131,10 @@ class FetchServerInfoTest(tb_test.TestCase):
 class CreateServerInfoTest(tb_test.TestCase):
     """Tests for `create_server_info`."""
 
-    def test_response(self):
+    def test(self):
         frontend = "http://localhost:8080"
         backend = "localhost:10000"
-        result = server_info.create_server_info(frontend, backend, [])
+        result = server_info.create_server_info(frontend, backend)
 
         expected_compatibility = server_info_pb2.Compatibility()
         expected_compatibility.verdict = server_info_pb2.VERDICT_OK
@@ -170,19 +151,6 @@ class CreateServerInfoTest(tb_test.TestCase):
         )
         expected_url = "http://localhost:8080/experiment/123/"
         self.assertEqual(actual_url, expected_url)
-
-        self.assertEqual(result.plugin_control.allowed_plugins, [])
-
-    def test_response_with_plugins(self):
-        frontend = "http://localhost:8080"
-        backend = "localhost:10000"
-        result = server_info.create_server_info(
-            frontend, backend, ["plugin1", "plugin2"]
-        )
-
-        self.assertEqual(
-            result.plugin_control.allowed_plugins, ["plugin1", "plugin2"]
-        )
 
 
 class ExperimentUrlTest(tb_test.TestCase):
