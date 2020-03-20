@@ -21,7 +21,6 @@ from __future__ import print_function
 from google.protobuf import message
 import requests
 
-from absl import logging
 from tensorboard import version
 from tensorboard.plugins.scalar import metadata as scalars_metadata
 from tensorboard.uploader.proto import server_info_pb2
@@ -31,31 +30,19 @@ from tensorboard.uploader.proto import server_info_pb2
 _REQUEST_TIMEOUT_SECONDS = 10
 
 
-def _server_info_request(upload_plugins):
-    """Generates a ServerInfoRequest
-
-    Args:
-      upload_plugins: List of plugin names requested by the user and to be
-        verified by the server.
-
-    Returns:
-      A `server_info_pb2.ServerInfoRequest` message.
-    """
+def _server_info_request():
     request = server_info_pb2.ServerInfoRequest()
     request.version = version.VERSION
-    request.plugin_specification.upload_plugins[:] = upload_plugins
     return request
 
 
-def fetch_server_info(origin, upload_plugins):
+def fetch_server_info(origin):
     """Fetches server info from a remote server.
 
     Args:
       origin: The server with which to communicate. Should be a string
         like "https://tensorboard.dev", including protocol, host, and (if
         needed) port.
-      upload_plugins: List of plugins names requested by the user and to be
-        verified by the server.
 
     Returns:
       A `server_info_pb2.ServerInfoResponse` message.
@@ -65,9 +52,7 @@ def fetch_server_info(origin, upload_plugins):
         communicate with the remote server.
     """
     endpoint = "%s/api/uploader" % origin
-    server_info_request = _server_info_request(upload_plugins)
-    post_body = server_info_request.SerializeToString()
-    logging.info("Requested server info: <%r>", server_info_request)
+    post_body = _server_info_request().SerializeToString()
     try:
         response = requests.post(
             endpoint,
@@ -90,15 +75,13 @@ def fetch_server_info(origin, upload_plugins):
         )
 
 
-def create_server_info(frontend_origin, api_endpoint, upload_plugins):
+def create_server_info(frontend_origin, api_endpoint):
     """Manually creates server info given a frontend and backend.
 
     Args:
       frontend_origin: The origin of the TensorBoard.dev frontend, like
         "https://tensorboard.dev" or "http://localhost:8000".
       api_endpoint: As to `server_info_pb2.ApiServer.endpoint`.
-      upload_plugins: List of plugin names requested by the user and to be
-        verified by the server.
 
     Returns:
       A `server_info_pb2.ServerInfoResponse` message.
@@ -112,7 +95,6 @@ def create_server_info(frontend_origin, api_endpoint, upload_plugins):
         placeholder = "{%s}" % placeholder
     url_format.template = "%s/experiment/%s/" % (frontend_origin, placeholder)
     url_format.id_placeholder = placeholder
-    result.plugin_control.allowed_plugins[:] = upload_plugins
     return result
 
 
