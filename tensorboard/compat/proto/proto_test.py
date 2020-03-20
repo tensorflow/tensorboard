@@ -202,7 +202,7 @@ class ProtoMatchTest(tf.test.TestCase):
                 tb_string.splitlines(1),
                 tf_string.splitlines(1),
                 fromfile=tb_path,
-                tofile=tf_path
+                tofile=tf_path,
             )
             diff = "".join(diff)
 
