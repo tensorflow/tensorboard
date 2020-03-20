@@ -743,11 +743,13 @@ def _get_intent(flags):
 
 def _get_server_info(flags):
     origin = flags.origin or _DEFAULT_ORIGIN
+    plugins = flags.plugins if hasattr(flags, 'plugins') else []
+
     if flags.api_endpoint and not flags.origin:
         return server_info_lib.create_server_info(
-            origin, flags.api_endpoint, flags.plugins
+            origin, flags.api_endpoint, plugins
         )
-    server_info = server_info_lib.fetch_server_info(origin, flags.plugins)
+    server_info = server_info_lib.fetch_server_info(origin, plugins)
     # Override with any API server explicitly specified on the command
     # line, but only if the server accepted our initial handshake.
     if flags.api_endpoint and server_info.api_server.endpoint:
