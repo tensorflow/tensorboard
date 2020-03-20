@@ -594,10 +594,12 @@ class _UploadIntent(_Intent):
         )
         _die_if_bad_experiment_name(self.name)
         _die_if_bad_experiment_description(self.description)
+        # print("allowed_plugins = %s" % (server_info_lib.allowed_plugins(server_info),))  # DEBUG
         uploader = uploader_lib.TensorBoardUploader(
             api_client,
             self.logdir,
-            allowed_plugins=server_info_lib.allowed_plugins(server_info),
+            # allowed_plugins=server_info_lib.allowed_plugins(server_info),
+            allowed_plugins=frozenset(("scalars", "graphs")),
             name=self.name,
             description=self.description,
         )
@@ -744,9 +746,12 @@ def _get_intent(flags):
 def _get_server_info(flags):
     origin = flags.origin or _DEFAULT_ORIGIN
     if flags.api_endpoint and not flags.origin:
+        flags.plugins = []  # DEBUG
         return server_info_lib.create_server_info(
             origin, flags.api_endpoint, flags.plugins
         )
+    print("flags:", flags)  # DEBUG
+    flags.plugins = []  # DEBUG
     server_info = server_info_lib.fetch_server_info(origin, flags.plugins)
     # Override with any API server explicitly specified on the command
     # line, but only if the server accepted our initial handshake.

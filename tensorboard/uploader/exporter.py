@@ -50,8 +50,17 @@ _MAX_INT64 = 2 ** 63 - 1
 _FILENAME_METADATA = "metadata.json"
 # Output filename for scalar data within an experiment directory.
 _FILENAME_SCALARS = "scalars.json"
+# Output filename for blob sequences data within an experimental directly.
+# This file does not contain the actual content of the blobs. Instead,
+# it holds `blob_file_paths` that point to the binary files that contain
+# the blobs' contents, in addition other metadata such as run and tag names.
+_FILENAME_BLOB_SEQUENCES = "blob_sequences.json"
 
 logger = tb_logging.get_logger()
+
+_BLOBS_DIR = "blobs"
+_BLOB_FILE_PREFIX = "blob_"
+_BLOB_FILE_SUFFIX = ".bin"
 
 
 class TensorBoardExporter(object):
@@ -143,15 +152,26 @@ class TensorBoardExporter(object):
             os.mkdir(experiment_dir)
 
             metadata_filepath = os.path.join(experiment_dir, _FILENAME_METADATA)
-            with _open_excl(metadata_filepath) as outfile:
+            with open(metadata_filepath, "w") as outfile:
                 json.dump(experiment_metadata, outfile, sort_keys=True)
                 outfile.write("\n")
 
             scalars_filepath = os.path.join(experiment_dir, _FILENAME_SCALARS)
+            blob_sequences_filepath = os.path.join(
+                experiment_dir, _FILENAME_BLOB_SEQUENCES
+            )
             try:
-                with _open_excl(scalars_filepath) as outfile:
-                    data = self._request_scalar_data(experiment_id, read_time)
-                    for block in data:
+                data = self._request_json_data(
+                    experiment_id, read_time, self._outdir
+                )
+                for block, filename in data:
+                    if filename == _FILENAME_SCALARS:
+                        filepath = scalars_filepath
+                    elif filename == _FILENAME_BLOB_SEQUENCES:
+                        filepath = blob_sequences_filepath
+                    else:
+                        continue
+                    with open(filepath, "a") as outfile:
                         json.dump(block, outfile, sort_keys=True)
                         outfile.write("\n")
                         outfile.flush()
@@ -162,8 +182,8 @@ class TensorBoardExporter(object):
                 else:
                     raise
 
-    def _request_scalar_data(self, experiment_id, read_time):
-        """Yields JSON-serializable blocks of scalar data."""
+    def _request_json_data(self, experiment_id, read_time, outdir):
+        """Yields tuple: (JSON-serializable data, destination file name)."""
         request = export_service_pb2.StreamExperimentDataRequest()
         request.experiment_id = experiment_id
         util.set_timestamp(request.read_timestamp, read_time)
@@ -177,22 +197,111 @@ class TensorBoardExporter(object):
             request, metadata=grpc_util.version_metadata()
         )
         for response in stream:
+            print(
+                "StreamExperimentData response: run = %s, tag = %s"
+                % (response.run_name, response.tag_name)
+            )  # DEBUG
+
             metadata = base64.b64encode(
                 response.tag_metadata.SerializeToString()
             ).decode("ascii")
-            wall_times = [
-                t.ToNanoseconds() / 1e9 for t in response.points.wall_times
-            ]
-            yield {
+
+            json_data = {
                 u"run": response.run_name,
                 u"tag": response.tag_name,
                 u"summary_metadata": metadata,
-                u"points": {
-                    u"steps": list(response.points.steps),
-                    u"wall_times": wall_times,
-                    u"values": list(response.points.values),
-                },
             }
+            filename = None
+            if response.HasField("points"):
+                json_data[u"points"] = self._process_scalar_points(
+                    response.points
+                )
+                filename = _FILENAME_SCALARS
+            elif response.HasField("blob_sequences"):
+                print(
+                    "  Found blob_sequences = %s" % (response.blob_sequences,)
+                )  # DEBUG
+                json_data[u"points"] = self._process_blob_sequence_points(
+                    response.blob_sequences, experiment_id
+                )
+                filename = _FILENAME_BLOB_SEQUENCES
+            yield json_data, filename
+
+    def _process_scalar_points(self, points):
+        wall_times = [t.ToNanoseconds() / 1e9 for t in points.wall_times]
+        return {
+            u"steps": list(points.steps),
+            u"wall_times": wall_times,
+            u"values": list(points.values),
+        }
+
+    def _process_blob_sequence_points(self, blob_sequences, experiment_id):
+        wall_times = [
+            t.ToNanoseconds() / 1e9 for t in blob_sequences.wall_times
+        ]
+        json_object = {
+            u"steps": list(blob_sequences.steps),
+            u"wall_times": wall_times,
+            u"blob_file_paths": [],
+        }
+        blob_file_paths = json_object[u"blob_file_paths"]
+        for blobseq in blob_sequences.values:
+            seq_blob_file_paths = []
+            for entry in blobseq.entries:
+                if entry.blob:
+                    # TODO(cais): Convert to file path.
+                    experiment_dir = _experiment_directory(
+                        self._outdir, experiment_id
+                    )
+                    blob_path = self._download_blob(
+                        entry.blob.blob_id, experiment_dir
+                    )
+                    seq_blob_file_paths.append(blob_path)
+                else:
+                    seq_blob_file_paths.append(None)
+            blob_file_paths.append(seq_blob_file_paths)
+        return json_object
+
+    def _download_blob(self, blob_id, experiment_dir):
+        """Download the blob via rpc.
+
+        Args:
+          blob_id: Id of the blob.
+
+        Returns:
+          If the blob is downloaded successfully:
+            The path of the downloaded blob file relative to the experiment directory.
+          Else:
+            `None`.
+        """
+        # TODO(cais): Deduplicate internal method perhaps.
+        blobs_dir = os.path.join(experiment_dir, _BLOBS_DIR)
+        if not os.path.isdir(blobs_dir):
+            _mkdir_p(blobs_dir)
+        request = export_service_pb2.StreamBlobDataRequest(blob_id=blob_id)
+        chunks = []
+        try:
+            for response in self._api.StreamBlobData(request):
+                # TODO(cais, soergel): validate the various response fields
+                chunks.append(response.data)
+                print("Got a chunk of blob!")  # DEBUG
+        except grpc.RpcError as rpc_error:
+            # TODO(cais): Revise error message for external consumption.
+            tb_logging.error(
+                "An RPC error occurred during the downloading of blob with id %s."
+                "The data of the blob will be missing.",
+                blob_id,
+            )
+            return None
+        blob = b"".join(chunks)
+        print("blob = %s" % blob)  # DEBUG
+
+        blob_abspath = os.path.join(
+            blobs_dir, _BLOB_FILE_PREFIX + blob_id + _BLOB_FILE_SUFFIX
+        )
+        with open(blob_abspath, "wb") as f:
+            f.write(blob)
+        return os.path.relpath(blob_abspath, experiment_dir)
 
 
 def list_experiments(api_client, fieldmask=None, read_time=None):
@@ -274,17 +383,3 @@ def _mkdir_p(path):
     except OSError as e:
         if e.errno != errno.EEXIST or not os.path.isdir(path):
             raise
-
-
-def _open_excl(path):
-    """Like `open(path, "x")`, but Python 2-compatible."""
-    try:
-        # `os.O_EXCL` works on Windows as well as POSIX-compliant systems.
-        # See: <https://bugs.python.org/issue12760>
-        fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL)
-    except OSError as e:
-        if e.errno == errno.EEXIST:
-            raise OutputFileExistsError(path)
-        else:
-            raise
-    return os.fdopen(fd, "w")
