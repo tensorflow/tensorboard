@@ -743,7 +743,7 @@ def _get_intent(flags):
 
 def _get_server_info(flags):
     origin = flags.origin or _DEFAULT_ORIGIN
-    plugins = flags.plugins if hasattr(flags, 'plugins') else []
+    plugins = flags.plugins if hasattr(flags, "plugins") else []
 
     if flags.api_endpoint and not flags.origin:
         return server_info_lib.create_server_info(
