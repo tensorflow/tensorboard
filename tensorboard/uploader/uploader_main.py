@@ -158,7 +158,6 @@ def _define_flags(parser):
         default=None,
         help="Experiment description. Markdown format.  Max 600 characters.",
     )
-
     upload.add_argument(
         "--plugins",
         type=str,
@@ -743,7 +742,7 @@ def _get_intent(flags):
 
 def _get_server_info(flags):
     origin = flags.origin or _DEFAULT_ORIGIN
-    plugins = flags.plugins if hasattr(flags, "plugins") else []
+    plugins = getattr(flags, "plugins", [])
 
     if flags.api_endpoint and not flags.origin:
         return server_info_lib.create_server_info(
