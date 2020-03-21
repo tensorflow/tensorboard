@@ -10,10 +10,10 @@ exports_files(["LICENSE"])
 sh_binary(
     name = "inline_favicon",
     srcs = ["inline_favicon.sh"],
-    visibility = [
-        "//tensorboard:internal",
-    ],
     data = [
         "favicon.png",
+    ],
+    visibility = [
+        "//tensorboard:internal",
     ],
 )
