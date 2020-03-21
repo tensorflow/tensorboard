@@ -594,7 +594,6 @@ class _UploadIntent(_Intent):
         )
         _die_if_bad_experiment_name(self.name)
         _die_if_bad_experiment_description(self.description)
-        # print("allowed_plugins = %s" % (server_info_lib.allowed_plugins(server_info),))  # DEBUG
         uploader = uploader_lib.TensorBoardUploader(
             api_client,
             self.logdir,
