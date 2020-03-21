@@ -158,7 +158,6 @@ def _define_flags(parser):
         default=None,
         help="Experiment description. Markdown format.  Max 600 characters.",
     )
-
     upload.add_argument(
         "--plugins",
         type=str,
@@ -597,8 +596,7 @@ class _UploadIntent(_Intent):
         uploader = uploader_lib.TensorBoardUploader(
             api_client,
             self.logdir,
-            # allowed_plugins=server_info_lib.allowed_plugins(server_info),
-            allowed_plugins=frozenset(("scalars", "graphs")),
+            allowed_plugins=server_info_lib.allowed_plugins(server_info),
             name=self.name,
             description=self.description,
         )
@@ -744,14 +742,13 @@ def _get_intent(flags):
 
 def _get_server_info(flags):
     origin = flags.origin or _DEFAULT_ORIGIN
+    plugins = getattr(flags, "plugins", [])
+
     if flags.api_endpoint and not flags.origin:
-        flags.plugins = []  # DEBUG
         return server_info_lib.create_server_info(
-            origin, flags.api_endpoint, flags.plugins
+            origin, flags.api_endpoint, plugins
         )
-    print("flags:", flags)  # DEBUG
-    flags.plugins = []  # DEBUG
-    server_info = server_info_lib.fetch_server_info(origin, flags.plugins)
+    server_info = server_info_lib.fetch_server_info(origin, plugins)
     # Override with any API server explicitly specified on the command
     # line, but only if the server accepted our initial handshake.
     if flags.api_endpoint and server_info.api_server.endpoint:
