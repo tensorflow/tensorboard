@@ -114,6 +114,14 @@ tf_web_library(
     ],
 )
 
+genrule(
+    name = "gen_index.html",
+    srcs = ["index.uninlined.html"],
+    outs = ["index.html"],
+    cmd = "$(execpath //tensorboard/logo:inline_favicon) $< >$@",
+    tools = ["//tensorboard/logo:inline_favicon"],
+)
+
 # A Vulcanized html binary for the complete app (both Angular and Polymer parts)
 tensorboard_html_binary(
     name = "ng_index",
