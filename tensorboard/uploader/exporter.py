@@ -181,7 +181,7 @@ class TensorBoardExporter(object):
                     raise
 
     def _request_json_data(self, experiment_id, read_time):
-        """Given experiment id, generates JSON data and destnation file name
+        """Given experiment id, generates JSON data and destination file name.
 
         The JSON data describes the run, tag, metadata, in addition to
           - Actual data in the case of scalars
