@@ -13,7 +13,4 @@ sh_binary(
     data = [
         "favicon.png",
     ],
-    visibility = [
-        "//tensorboard:internal",
-    ],
 )
