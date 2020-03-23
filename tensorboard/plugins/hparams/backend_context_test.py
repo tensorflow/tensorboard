@@ -28,13 +28,16 @@ except ImportError:
 import tensorflow as tf
 
 from google.protobuf import text_format
+from tensorboard.backend.event_processing import data_provider
 from tensorboard.backend.event_processing import event_accumulator
 from tensorboard.backend.event_processing import plugin_event_multiplexer
+from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.hparams import api_pb2
 from tensorboard.plugins.hparams import backend_context
 from tensorboard.plugins.hparams import metadata
 from tensorboard.plugins.hparams import plugin_data_pb2
+from tensorboard.plugins.scalar import metadata as scalars_metadata
 
 DATA_TYPE_EXPERIMENT = "experiment"
 DATA_TYPE_SESSION_START_INFO = "session_start_info"
@@ -46,13 +49,19 @@ class BackendContextTest(tf.test.TestCase):
     maxDiff = None  # pylint: disable=invalid-name
 
     def setUp(self):
-        self._mock_tb_context = mock.create_autospec(base_plugin.TBContext)
+        self._mock_tb_context = base_plugin.TBContext()
         self._mock_multiplexer = mock.create_autospec(
             plugin_event_multiplexer.EventMultiplexer
         )
         self._mock_tb_context.multiplexer = self._mock_multiplexer
         self._mock_multiplexer.PluginRunToTagToContent.side_effect = (
             self._mock_plugin_run_to_tag_to_content
+        )
+        self._mock_multiplexer.SummaryMetadata.side_effect = (
+            self._mock_summary_metadata
+        )
+        self._mock_tb_context.data_provider = data_provider.MultiplexerDataProvider(
+            self._mock_multiplexer, "/path/to/logs"
         )
         self.session_1_start_info_ = ""
         self.session_2_start_info_ = ""
@@ -96,6 +105,23 @@ class BackendContextTest(tf.test.TestCase):
             "Unexpected plugin_name '%s' passed to"
             " EventMultiplexer.PluginRunToTagToContent" % plugin_name
         )
+
+    def _mock_summary_metadata(self, run, tag):
+        if tag in ("loss", "loss2", "accuracy"):
+            plugin = scalars_metadata.PLUGIN_NAME
+            data_class = summary_pb2.DATA_CLASS_SCALAR
+        else:
+            plugin = metadata.PLUGIN_NAME
+            data_class = summary_pb2.DATA_CLASS_TENSOR
+
+        result = summary_pb2.SummaryMetadata()
+        result.plugin_data.plugin_name = plugin
+        result.plugin_data.content = (
+            self._mock_multiplexer.PluginRunToTagToContent(plugin)[run][tag]
+            or b""  # due to `_mock_plugin_run_to_tag_to_content`
+        )
+        result.data_class = data_class
+        return result
 
     def test_experiment_with_experiment_tag(self):
         experiment = """

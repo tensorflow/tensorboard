@@ -25,10 +25,15 @@ import threading
 
 import six
 
+from tensorboard.backend.event_processing import (
+    plugin_event_accumulator as event_accumulator,
+)
+from tensorboard.data import provider
 from tensorboard.plugins.hparams import api_pb2
 from tensorboard.plugins.hparams import metadata
 from google.protobuf import json_format
 from tensorboard.plugins.scalar import metadata as scalar_metadata
+from tensorboard.util import tensor_util
 
 
 class Context(object):
@@ -78,16 +83,17 @@ class Context(object):
         return experiment
 
     @property
-    def _deprecated_multiplexer(self):
-        return self._tb_context.multiplexer
-
-    @property
-    def multiplexer(self):
-        raise NotImplementedError("Do not read `Context.multiplexer` directly")
-
-    @property
     def tb_context(self):
         return self._tb_context
+
+    def _convert_plugin_metadata(self, data_provider_output):
+        return {
+            run: {
+                tag: time_series.plugin_content
+                for (tag, time_series) in tag_to_time_series.items()
+            }
+            for (run, tag_to_time_series) in data_provider_output.items()
+        }
 
     def hparams_metadata(self, experiment_id):
         """Reads summary metadata for all hparams time series.
@@ -99,12 +105,10 @@ class Context(object):
           A dict `d` such that `d[run][tag]` is a `bytes` value with the
           summary metadata content for the keyed time series.
         """
-        assert isinstance(experiment_id, str), (
-            experiment_id,
-            type(experiment_id),
-        )
-        return self._deprecated_multiplexer.PluginRunToTagToContent(
-            metadata.PLUGIN_NAME
+        return self._convert_plugin_metadata(
+            self._tb_context.data_provider.list_tensors(
+                experiment_id, plugin_name=metadata.PLUGIN_NAME
+            )
         )
 
     def scalars_metadata(self, experiment_id):
@@ -117,12 +121,10 @@ class Context(object):
           A dict `d` such that `d[run][tag]` is a `bytes` value with the
           summary metadata content for the keyed time series.
         """
-        assert isinstance(experiment_id, str), (
-            experiment_id,
-            type(experiment_id),
-        )
-        return self._deprecated_multiplexer.PluginRunToTagToContent(
-            scalar_metadata.PLUGIN_NAME
+        return self._convert_plugin_metadata(
+            self._tb_context.data_provider.list_scalars(
+                experiment_id, plugin_name=scalar_metadata.PLUGIN_NAME
+            )
         )
 
     def read_scalars(self, experiment_id, run, tag):
@@ -136,10 +138,25 @@ class Context(object):
         Returns:
           A list of `plugin_event_accumulator.TensorEvent` values.
         """
-        assert isinstance(experiment_id, str), (
+        data_provider_output = self._tb_context.data_provider.read_scalars(
             experiment_id,
-            type(experiment_id),
+            plugin_name=scalar_metadata.PLUGIN_NAME,
+            run_tag_filter=provider.RunTagFilter([run], [tag]),
+            downsample=(self._tb_context.sampling_hints or {}).get(
+                scalar_metadata.PLUGIN_NAME, 1000
+            ),
         )
+        data = data_provider_output.get(run, {}).get(tag)
+        if data is None:
+            raise KeyError("No scalar data for run=%r, tag=%r" % (run, tag))
+        return [
+            event_accumulator.TensorEvent(
+                wall_time=e.wall_time,
+                step=e.step,
+                tensor_proto=tensor_util.make_tensor_proto(e.value),
+            )
+            for e in data
+        ]
         return self._deprecated_multiplexer.Tensors(run, tag)
 
     def _find_experiment_tag(self, experiment_id):
