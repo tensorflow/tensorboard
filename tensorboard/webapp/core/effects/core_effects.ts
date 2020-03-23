@@ -34,8 +34,9 @@ import {
 } from '../actions';
 import {getPluginsListLoaded} from '../store';
 import {DataLoadState} from '../../types/data';
-import {State} from '../store/core_types';
 import {TBServerDataSource} from '../../webapp_data_source/tb_server_data_source';
+import {getEnabledExperimentalPlugins} from '../../feature_flag/store/feature_flag_selectors';
+import {State} from '../../app_state';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 /** @typehack */ import * as _typeHackNgrx from '@ngrx/store/src/models';
@@ -51,12 +52,15 @@ export class CoreEffects {
   readonly loadPluginsListing$ = createEffect(() =>
     this.actions$.pipe(
       ofType(coreLoaded, reload, manualReload),
-      withLatestFrom(this.store.select(getPluginsListLoaded)),
+      withLatestFrom(
+        this.store.select(getPluginsListLoaded),
+        this.store.select(getEnabledExperimentalPlugins)
+      ),
       filter(([, {state}]) => state !== DataLoadState.LOADING),
       tap(() => this.store.dispatch(pluginsListingRequested())),
-      mergeMap(() => {
+      mergeMap(([, , enablesExperimentalPlugins]) => {
         return zip(
-          this.webappDataSource.fetchPluginsListing(),
+          this.webappDataSource.fetchPluginsListing(enablesExperimentalPlugins),
           this.webappDataSource.fetchRuns(),
           this.webappDataSource.fetchEnvironments()
         ).pipe(

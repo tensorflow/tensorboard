@@ -28,8 +28,17 @@ export class TBServerDataSource {
 
   constructor(private http: TBHttpClient) {}
 
-  fetchPluginsListing() {
-    return this.http.get<PluginsListing>('data/plugins_listing');
+  fetchPluginsListing(enabledExperimentPluginIds: string[]) {
+    const params = enabledExperimentPluginIds.length
+      ? new URLSearchParams({
+          experimentalPlugin: enabledExperimentPluginIds.join(','),
+        })
+      : null;
+
+    const pathWithParams = params
+      ? `data/plugins_listing?${params.toString()}`
+      : 'data/plugins_listing';
+    return this.http.get<PluginsListing>(pathWithParams);
   }
 
   fetchRuns() {

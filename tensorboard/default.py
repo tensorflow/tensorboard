@@ -33,6 +33,7 @@ import os
 
 import pkg_resources
 
+from tensorboard.backend import experimental_plugin
 from tensorboard.compat import tf
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.audio import audio_plugin
@@ -55,13 +56,21 @@ from tensorboard.plugins.mesh import mesh_plugin
 
 logger = logging.getLogger(__name__)
 
+
+class ExperimentalDebuggerV2Plugin(debugger_v2_plugin.DebuggerV2Plugin,
+                               experimental_plugin.ExperimentalPlugin):
+  """Debugger v2 plugin marked as experimental."""
+
+  pass
+
+
 # Ordering matters. The order in which these lines appear determines the
 # ordering of tabs in TensorBoard's GUI.
 _PLUGINS = [
     core_plugin.CorePluginLoader,
     scalars_plugin.ScalarsPlugin,
     custom_scalars_plugin.CustomScalarsPlugin,
-    debugger_v2_plugin.DebuggerV2Plugin,
+    ExperimentalDebuggerV2Plugin,
     images_plugin.ImagesPlugin,
     audio_plugin.AudioPlugin,
     debugger_plugin_loader.DebuggerPluginLoader,

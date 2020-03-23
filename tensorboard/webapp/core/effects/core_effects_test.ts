@@ -21,13 +21,14 @@ import {ReplaySubject, of} from 'rxjs';
 
 import {CoreEffects} from './core_effects';
 import * as coreActions from '../actions';
-import {State} from '../store';
+import {StateForTesting as State} from '../../app_state';
 
 import {createPluginMetadata, createState, createCoreState} from '../testing';
 
 import {PluginsListing} from '../../types/api';
 import {DataLoadState} from '../../types/data';
 import {TBServerDataSource} from '../../webapp_data_source/tb_server_data_source';
+import {getEnabledExperimentalPlugins} from '../../feature_flag/store/feature_flag_selectors';
 import {
   TBHttpClientTestingModule,
   HttpTestingController,
@@ -74,6 +75,8 @@ describe('core_effects', () => {
     fetchEnvironments = spyOn(dataSource, 'fetchEnvironments')
       .withArgs()
       .and.returnValue(of(null));
+
+    store.overrideSelector(getEnabledExperimentalPlugins, []);
   });
 
   afterEach(() => {
@@ -96,6 +99,9 @@ describe('core_effects', () => {
       });
 
       it('fetches plugins listing and fires success action', () => {
+        store.overrideSelector(getEnabledExperimentalPlugins, []);
+        store.refreshState();
+
         const pluginsListing: PluginsListing = {
           core: createPluginMetadata('Core'),
         };
@@ -117,6 +123,41 @@ describe('core_effects', () => {
         });
         expect(recordedActions).toEqual([expected]);
       });
+
+      it(
+        'appends query params to the data/plugins_listng when ' +
+          'getEnabledExperimentalPlugins is non-empty',
+        () => {
+          store.overrideSelector(getEnabledExperimentalPlugins, [
+            'alpha',
+            'beta',
+          ]);
+          store.refreshState();
+
+          const pluginsListing: PluginsListing = {
+            core: createPluginMetadata('Core'),
+          };
+
+          action.next(onAction);
+          // Flushing the request response invokes above subscription sychronously.
+          httpMock
+            .expectOne('data/plugins_listing?experimentalPlugin=alpha%2Cbeta')
+            .flush(pluginsListing);
+
+          expect(fetchRuns).toHaveBeenCalled();
+          expect(fetchEnvironments).toHaveBeenCalled();
+
+          expect(dispatchSpy).toHaveBeenCalledTimes(1);
+          expect(dispatchSpy).toHaveBeenCalledWith(
+            coreActions.pluginsListingRequested()
+          );
+
+          const expected = coreActions.pluginsListingLoaded({
+            plugins: pluginsListing,
+          });
+          expect(recordedActions).toEqual([expected]);
+        }
+      );
 
       it('ignores the action when loadState is loading', () => {
         store.setState(
