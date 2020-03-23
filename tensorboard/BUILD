@@ -285,6 +285,11 @@ tensorboard_zip_file(
     deps = [":assets"],
 )
 
+monaco_imports = [
+    "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/source_code/monaco:monaco_editor",
+    "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/source_code/monaco:monaco_languages",
+]
+
 # TODO(stephanwlee): add ng_index.html to the srcs when it is ready for mass consumption.
 tf_web_library(
     name = "assets",
@@ -302,7 +307,10 @@ tf_web_library(
     path = "/",
     deps = [
         "@com_google_fonts_roboto",
-    ],
+    ] + select({
+        "//tensorboard:dev_build": monaco_imports,
+        "//conditions:default": [],
+    }),
 )
 
 py_library(
