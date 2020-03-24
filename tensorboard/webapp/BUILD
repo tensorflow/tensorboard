@@ -111,6 +111,8 @@ tf_web_library(
     deps = [
         ":tb_webapp",
         "//tensorboard/components:ng_polymer_lib_binary",
+        # TODO(cais): Add copybara rule.
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/source_code/monaco:requirejs",
     ],
 )
 

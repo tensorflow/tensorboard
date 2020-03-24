@@ -42,9 +42,11 @@ limitations under the License.
 }
 
 .stack-frame-lineno {
+  cursor: pointer;
   display: inline-block;
   max-width: 80px;
   text-align: left;
+  text-decoration: underline;
   width: 80px;
 }
 

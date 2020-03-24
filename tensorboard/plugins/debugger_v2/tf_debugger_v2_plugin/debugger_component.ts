@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
-import {DebuggerRunListing} from './store/debugger_types';
+import {DebuggerRunListing, SourceFileContent} from './store/debugger_types';
 
 @Component({
   selector: 'debugger-component',
@@ -30,4 +30,7 @@ export class DebuggerComponent {
 
   @Input()
   activeRunId: string | null = null;
+
+  @Input()
+  focusedSourceFileContent: SourceFileContent | null = null;
 }

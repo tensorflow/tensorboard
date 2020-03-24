@@ -18,6 +18,7 @@ ng_module(
     deps = [
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/store",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/store:types",
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/source_code",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@ngrx/store",

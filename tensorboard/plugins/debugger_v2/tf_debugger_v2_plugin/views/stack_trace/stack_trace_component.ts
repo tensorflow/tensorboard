@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, Input} from '@angular/core';
+import {Component, Input, EventEmitter, Output} from '@angular/core';
 
 export interface StackFrameForDisplay {
   host_name: string;
@@ -30,4 +30,11 @@ export interface StackFrameForDisplay {
 export class StackTraceComponent {
   @Input()
   stackFramesForDisplay: StackFrameForDisplay[] | null = null;
+
+  @Output()
+  onSourceLineClicked = new EventEmitter<{
+    host_name: string,
+    file_path: string,
+    lineno: number,
+  }>();
 }
