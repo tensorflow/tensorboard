@@ -17,7 +17,12 @@ limitations under the License.
 
 <div class="source-files-container">
   <div class="header-section">
-    Source Files Container
+    Source Code
+    <span
+      *ngIf="focusedSourceLineSpec !== null"
+    >
+      {{ focusedSourceLineSpec.file_path }}
+    </span>
   </div>
   <source-code-component
     *ngIf="focusedSourceFileContent !== null && focusedSourceFileContent.lines !== null"

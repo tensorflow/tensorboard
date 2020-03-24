@@ -26,6 +26,8 @@ import {loadMonaco, WindowWithRequireAndMonaco} from '../source_code/load_monaco
 
 const windowWithRequireAndMonaco: WindowWithRequireAndMonaco = window;
 
+const DEFAULT_CODE_FONT_SIZE = 10;
+
 @Component({
   selector: 'source-code-component',
   templateUrl: './source_code_component.ng.html',
@@ -60,13 +62,13 @@ export class SourceCodeComponent implements OnInit {
         this.editor = monaco.editor.create(this.codeViewerContainer.nativeElement, {
           value: this.lines.join("\n"),
           language: 'python',
-          // model: monaco.editor.createModel(value, 'python'),
+          readOnly: true,
+          fontSize: DEFAULT_CODE_FONT_SIZE,
           minimap: {
             enabled: true,
           },
         });
         console.log('element:', this.codeViewerContainer.nativeElement);
-        console.log('style.height:', this.codeViewerContainer.nativeElement.style.height);
       }
     }
   }

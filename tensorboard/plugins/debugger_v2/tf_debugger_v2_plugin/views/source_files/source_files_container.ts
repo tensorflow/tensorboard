@@ -15,7 +15,7 @@ limitations under the License.
 import {Component} from '@angular/core';
 import {select, Store} from '@ngrx/store';
 
-import {getFocusedSourceFileContent} from '../../store';
+import {getFocusedSourceFileContent, getFocusedSourceLineSpec} from '../../store';
 import {State} from '../../store/debugger_types';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
@@ -25,6 +25,7 @@ import {State} from '../../store/debugger_types';
   template: `
     <source-files-component
       [focusedSourceFileContent]="focusedSourceFileContent$ | async"
+      [focusedSourceLineSpec]="focusedSourceLineSpec$ | async"
     ></source-files-component>
   `,
 })
@@ -33,5 +34,9 @@ export class SourceFilesContainer {
 
   readonly focusedSourceFileContent$ = this.store.pipe(
     select(getFocusedSourceFileContent)
+  );
+
+  readonly focusedSourceLineSpec$ = this.store.pipe(
+    select(getFocusedSourceLineSpec)
   );
 }

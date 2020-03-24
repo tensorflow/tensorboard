@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {Component, Input} from '@angular/core';
 
-import {SourceFileContent} from '../../store/debugger_types';
+import {SourceFileContent, SourceLineSpec} from '../../store/debugger_types';
 
 @Component({
   selector: 'source-files-component',
@@ -24,4 +24,7 @@ import {SourceFileContent} from '../../store/debugger_types';
 export class SourceFilesComponent {
   @Input()
   focusedSourceFileContent: SourceFileContent | null = null;
+
+  @Input()
+  focusedSourceLineSpec: SourceLineSpec | null = null;
 }
