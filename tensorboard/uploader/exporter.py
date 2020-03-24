@@ -153,7 +153,7 @@ class TensorBoardExporter(object):
             os.mkdir(experiment_dir)
 
             metadata_filepath = os.path.join(experiment_dir, _FILENAME_METADATA)
-            with open(metadata_filepath, "w") as outfile:
+            with _open_excl(metadata_filepath, "w") as outfile:
                 json.dump(experiment_metadata, outfile, sort_keys=True)
                 outfile.write("\n")
 
