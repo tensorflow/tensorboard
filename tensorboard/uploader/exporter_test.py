@@ -229,8 +229,11 @@ class TensorBoardExporterTest(tb_test.TestCase):
             },
         )
 
-    def test_e2e_success_case_with_finished_blob_sequence_data(self):
-        """Covers exporting of finished and unfinished blob sequences."""
+    def test_e2e_success_case_with_blob_sequence_data(self):
+        """Covers exporting of finished and unfinished blob sequences
+
+        as well as rpc error during blob streaming.
+        """
         mock_api_client = self._create_mock_api_client()
 
         def stream_experiments(request, **kwargs):
@@ -382,7 +385,9 @@ class TensorBoardExporterTest(tb_test.TestCase):
         ) as f:
             self.assertEqual(f.read(), b"43218765")
 
-        # Test the case where blob streaming errors out.
+        # ============================================== #
+        # Test the case where blob streaming errors out. #
+        # ============================================== #
         def stream_blob_data(request, **kwargs):
             raise test_util.grpc_error(
                 grpc.StatusCode.INTERNAL, "Error for testing"
