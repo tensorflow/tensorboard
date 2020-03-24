@@ -773,7 +773,9 @@ class KerasUtilTest(tf.test.TestCase):
 
         self.assertGraphDefToModel(expected_proto, model)
 
-    def DISABLED_test_keras_model_to_graph_def_functional_sequential_model(self):
+    def DISABLED_test_keras_model_to_graph_def_functional_sequential_model(
+        self,
+    ):
         expected_proto = """
             node {
               name: "model/func_seq_input"
@@ -870,7 +872,9 @@ class KerasUtilTest(tf.test.TestCase):
 
         self.assertGraphDefToModel(expected_proto, model)
 
-    def DISABLED_test_keras_model_to_graph_def_sequential_functional_model(self):
+    def DISABLED_test_keras_model_to_graph_def_sequential_functional_model(
+        self,
+    ):
         expected_proto = """
             node {
               name: "sequential/model_input"
