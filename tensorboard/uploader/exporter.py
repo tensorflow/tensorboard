@@ -28,6 +28,7 @@ import time
 
 import six
 
+from tensorboard.uploader.proto import blob_pb2
 from tensorboard.uploader.proto import experiment_pb2
 from tensorboard.uploader.proto import export_service_pb2
 from tensorboard.uploader import util
@@ -50,10 +51,10 @@ _MAX_INT64 = 2 ** 63 - 1
 _FILENAME_METADATA = "metadata.json"
 # Output filename for scalar data within an experiment directory.
 _FILENAME_SCALARS = "scalars.json"
-# Output filename for blob sequences data within an experimental directly.
-# This file does not contain the actual content of the blobs. Instead,
-# it holds `blob_file_paths` that point to the binary files that contain
-# the blobs' contents, in addition other metadata such as run and tag names.
+# Output filename for blob sequences data within an experiment directory.
+# This file does not contain the actual contents of the blobs. Instead,
+# it holds `blob_file_path`s that point to the binary files that contain
+# the blobs' contents, in addition to other metadata such as run and tag names.
 _FILENAME_BLOB_SEQUENCES = "blob_sequences.json"
 
 logger = tb_logging.get_logger()
@@ -156,29 +157,39 @@ class TensorBoardExporter(object):
                 json.dump(experiment_metadata, outfile, sort_keys=True)
                 outfile.write("\n")
 
-            scalars_filepath = os.path.join(experiment_dir, _FILENAME_SCALARS)
-            blob_sequences_filepath = os.path.join(
-                experiment_dir, _FILENAME_BLOB_SEQUENCES
-            )
+            filename_to_filepath = {
+                _FILENAME_SCALARS: os.path.join(
+                    experiment_dir, _FILENAME_SCALARS
+                ),
+                _FILENAME_BLOB_SEQUENCES: os.path.join(
+                    experiment_dir, _FILENAME_BLOB_SEQUENCES
+                ),
+            }
+            filename_to_file = {
+                _FILENAME_SCALARS: None,
+                _FILENAME_BLOB_SEQUENCES: None,
+            }
             try:
                 data = self._request_json_data(experiment_id, read_time)
                 for block, filename in data:
-                    if filename == _FILENAME_SCALARS:
-                        filepath = scalars_filepath
-                    elif filename == _FILENAME_BLOB_SEQUENCES:
-                        filepath = blob_sequences_filepath
-                    else:
-                        continue
-                    with open(filepath, "a") as outfile:
-                        json.dump(block, outfile, sort_keys=True)
-                        outfile.write("\n")
-                        outfile.flush()
+                    if filename_to_file[filename] is None:
+                        filename_to_file[filename] = _open_excl(
+                            filename_to_filepath[filename]
+                        )
+                    outfile = filename_to_file[filename]
+                    json.dump(block, outfile, sort_keys=True)
+                    outfile.write("\n")
+                    outfile.flush()
                 yield experiment_id
             except grpc.RpcError as e:
                 if e.code() == grpc.StatusCode.CANCELLED:
                     raise GrpcTimeoutException(experiment_id)
                 else:
                     raise
+            finally:
+                for file in filename_to_file.values():
+                    if file:
+                        file.close()
 
     def _request_json_data(self, experiment_id, read_time):
         """Given experiment id, generates JSON data and destination file name.
@@ -187,9 +198,15 @@ class TensorBoardExporter(object):
           - Actual data in the case of scalars
           - Pointer to binary files in the case of blob sequences.
 
+        For the case of blob sequences, this method has the side effect of
+          downloading the contents of the blobs and writing them to files in
+          a subdirectory of the experiment directory.
+
         Args:
           experiment_id: The id of the experiment to request data for.
-          read_time: Timestamp to use snapshot the Spanner database for reads.
+          read_time: A fixed timestamp from which to export data, as float
+            seconds since epoch (like `time.time()`). Optional; defaults to the
+            current time.
 
         Yields:
           (JSON-serializable data, destination file name) tuples.
@@ -274,7 +291,11 @@ class TensorBoardExporter(object):
         for blobseq in blob_sequences.values:
             seq_blob_file_paths = []
             for entry in blobseq.entries:
-                if entry.blob.blob_id:
+                if (
+                    entry.HasField("blob")
+                    and entry.blob.state
+                    == blob_pb2.BlobState.BLOB_STATE_CURRENT
+                ):
                     blob_path = self._download_blob(
                         entry.blob.blob_id, experiment_id
                     )
@@ -289,8 +310,7 @@ class TensorBoardExporter(object):
 
         Args:
           blob_id: Id of the blob.
-          experiment_id: Id of the experiment where the blob belongs is
-            from.
+          experiment_id: Id of the experiment that the blob belongs to.
 
         Returns:
           If the blob is downloaded successfully:
@@ -305,25 +325,21 @@ class TensorBoardExporter(object):
         if not os.path.isdir(blobs_dir):
             _mkdir_p(blobs_dir)
         request = export_service_pb2.StreamBlobDataRequest(blob_id=blob_id)
-        chunks = []
-        try:
-            for response in self._api.StreamBlobData(request):
-                # TODO(cais, soergel): validate the various response fields
-                chunks.append(response.data)
-        except grpc.RpcError as rpc_error:
-            logger.error(
-                "An RPC error occurred during the downloading of blob with "
-                "id %s. As a result, the data of the blob will be missing.",
-                blob_id,
-            )
-            return None
-        blob = b"".join(chunks)
-
         blob_abspath = os.path.join(
             blobs_dir, _BLOB_FILE_PREFIX + blob_id + _BLOB_FILE_SUFFIX
         )
         with open(blob_abspath, "wb") as f:
-            f.write(blob)
+            try:
+                for response in self._api.StreamBlobData(request):
+                    # TODO(cais, soergel): validate the various response fields
+                    f.write(response.data)
+            except grpc.RpcError as rpc_error:
+                logger.error(
+                    "Omitting blob (id: %s) due to download failure: %s",
+                    blob_id,
+                    rpc_error,
+                )
+                return None
         return os.path.relpath(blob_abspath, experiment_dir)
 
 
@@ -406,3 +422,17 @@ def _mkdir_p(path):
     except OSError as e:
         if e.errno != errno.EEXIST or not os.path.isdir(path):
             raise
+
+
+def _open_excl(path):
+    """Like `open(path, "x")`, but Python 2-compatible."""
+    try:
+        # `os.O_EXCL` works on Windows as well as POSIX-compliant systems.
+        # See: <https://bugs.python.org/issue12760>
+        fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL)
+    except OSError as e:
+        if e.errno == errno.EEXIST:
+            raise OutputFileExistsError(path)
+        else:
+            raise
+    return os.fdopen(fd, "w")
