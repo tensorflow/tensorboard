@@ -238,24 +238,24 @@ describe('plugins_component', () => {
       // Stamped 'bar' and 'foo'
       expect(nativeElement.children.length).toBe(2);
       const [barElement, fooElement] = nativeElement.children;
-      const reloadSpy = jasmine.createSpy();
-      barElement.reload = reloadSpy;
+      const barReloadSpy = jasmine.createSpy();
+      barElement.reload = barReloadSpy;
       const fooReloadSpy = jasmine.createSpy();
       fooElement.reload = fooReloadSpy;
 
       setLastLoadedTime(1);
       fixture.detectChanges();
-      expect(reloadSpy).toHaveBeenCalledTimes(1);
+      expect(barReloadSpy).toHaveBeenCalledTimes(1);
       expect(fooReloadSpy).not.toHaveBeenCalled();
 
       setLastLoadedTime(1);
       fixture.detectChanges();
-      expect(reloadSpy).toHaveBeenCalledTimes(1);
+      expect(barReloadSpy).toHaveBeenCalledTimes(1);
       expect(fooReloadSpy).not.toHaveBeenCalled();
 
       setLastLoadedTime(2);
       fixture.detectChanges();
-      expect(reloadSpy).toHaveBeenCalledTimes(2);
+      expect(barReloadSpy).toHaveBeenCalledTimes(2);
       expect(fooReloadSpy).not.toHaveBeenCalled();
 
       setActivePlugin('foo');
@@ -263,7 +263,7 @@ describe('plugins_component', () => {
 
       setLastLoadedTime(3);
       fixture.detectChanges();
-      expect(reloadSpy).toHaveBeenCalledTimes(2);
+      expect(barReloadSpy).toHaveBeenCalledTimes(2);
       expect(fooReloadSpy).toHaveBeenCalledTimes(1);
     });
   });
