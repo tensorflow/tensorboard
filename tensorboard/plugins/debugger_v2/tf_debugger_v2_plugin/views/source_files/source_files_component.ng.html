@@ -15,6 +15,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<!-- <div class="source-code-container"> -->
-<div #codeViewerContainer class="code-viewer-container"></div>
-<!-- </div> -->
+<div class="source-files-container">
+  <div class="header-section">
+    Source Files Container
+  </div>
+  <source-code-component
+    *ngIf="focusedSourceFileContent !== null && focusedSourceFileContent.lines !== null"
+    [lines]="focusedSourceFileContent.lines"
+  >
+  </source-code-component>
+</div>

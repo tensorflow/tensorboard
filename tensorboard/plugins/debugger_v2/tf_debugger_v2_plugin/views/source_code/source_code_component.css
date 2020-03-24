@@ -1,0 +1,9 @@
+/* :host {
+  height: 600px;
+  width: 324px;
+} */
+
+.code-viewer-container {
+  height: 324px;
+  width: 640px;
+}

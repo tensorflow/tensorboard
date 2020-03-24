@@ -29,7 +29,6 @@ ng_module(
     ],
 )
 
-
 tf_ts_library(
     name = "load_monaco",
     srcs = [

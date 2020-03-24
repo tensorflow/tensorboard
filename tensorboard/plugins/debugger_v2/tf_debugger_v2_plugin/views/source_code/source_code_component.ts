@@ -12,7 +12,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, Input, OnInit} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  Input,
+  OnInit,
+  SimpleChanges,
+  ViewChild,
+} from '@angular/core';
 
 import {loadMonaco, WindowWithRequireAndMonaco} from '../source_code/load_monaco_shim';
 
@@ -22,6 +30,7 @@ const windowWithRequireAndMonaco: WindowWithRequireAndMonaco = window;
   selector: 'source-code-component',
   templateUrl: './source_code_component.ng.html',
   styleUrls: ['./source_code_component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SourceCodeComponent implements OnInit {
   @Input()
@@ -30,11 +39,35 @@ export class SourceCodeComponent implements OnInit {
   // @Input()
   // focusedLineno: number | null = null;
 
+  @ViewChild('codeViewerContainer', {static: true, read: ElementRef})
+  private readonly codeViewerContainer!: ElementRef<HTMLDivElement>;
+
+  private editor: any = null;
+
   async ngOnInit(): Promise<void> {
-    console.log('SourceCodeComponent.ngOnInit(): lines=', this.lines);  // DEBUG
-    if (windowWithRequireAndMonaco.monaco === undefined) {
+    // if (windowWithRequireAndMonaco.monaco === undefined) {
+    //   await loadMonaco();
+    //   console.log('Done loading monaco: lines=', this.lines);
+    // }
+  }
+
+  async ngOnChanges(changes: SimpleChanges): Promise<void> {
+    console.log('SourceCodeComponent.ngOnChanges():', changes);  // DEBUG
+    if (changes['lines'] && this.lines !== null) {
       await loadMonaco();
-      console.log('Done loading monaco:', windowWithRequireAndMonaco.monaco);
+      const monaco = windowWithRequireAndMonaco.monaco;
+      if (this.editor === null) {
+        this.editor = monaco.editor.create(this.codeViewerContainer.nativeElement, {
+          value: this.lines.join("\n"),
+          language: 'python',
+          // model: monaco.editor.createModel(value, 'python'),
+          minimap: {
+            enabled: true,
+          },
+        });
+        console.log('element:', this.codeViewerContainer.nativeElement);
+        console.log('style.height:', this.codeViewerContainer.nativeElement.style.height);
+      }
     }
   }
 }

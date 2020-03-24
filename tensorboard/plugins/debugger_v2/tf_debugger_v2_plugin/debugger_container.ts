@@ -17,11 +17,7 @@ import {createSelector, select, Store} from '@ngrx/store';
 import {State} from './store/debugger_types';
 
 import {debuggerLoaded} from './actions';
-import {
-  getActiveRunId,
-  getDebuggerRunListing,
-  getFocusedSourceFileContent,
-} from './store';
+import {getActiveRunId, getDebuggerRunListing} from './store';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
@@ -32,7 +28,6 @@ import {
       [runs]="runs$ | async"
       [runIds]="runsIds$ | async"
       [activeRunId]="activeRunId$ | async"
-      [focusedSourceFileContent]="focusedSourceFileContent$ | async"
     ></debugger-component>
   `,
 })
@@ -49,10 +44,6 @@ export class DebuggerContainer implements OnInit {
   );
 
   readonly activeRunId$ = this.store.pipe(select(getActiveRunId));
-
-  readonly focusedSourceFileContent$ = this.store.pipe(
-    select(getFocusedSourceFileContent)
-  );
 
   constructor(private readonly store: Store<State>) {}
 

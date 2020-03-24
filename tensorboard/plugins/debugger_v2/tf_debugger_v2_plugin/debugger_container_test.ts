@@ -50,6 +50,7 @@ import {ExecutionDataContainer} from './views/execution_data/execution_data_cont
 import {ExecutionDataModule} from './views/execution_data/execution_data_module';
 import {InactiveModule} from './views/inactive/inactive_module';
 import {TimelineContainer} from './views/timeline/timeline_container';
+import {SourceCodeModule} from './views/source_code/source_code_module';
 import {StackTraceContainer} from './views/stack_trace/stack_trace_container';
 import {StackTraceModule} from './views/stack_trace/stack_trace_module';
 import {TimelineModule} from './views/timeline/timeline_module';
@@ -68,6 +69,7 @@ describe('Debugger Container', () => {
         CommonModule,
         ExecutionDataModule,
         InactiveModule,
+        SourceCodeModule,
         StackTraceModule,
         TimelineModule,
       ],

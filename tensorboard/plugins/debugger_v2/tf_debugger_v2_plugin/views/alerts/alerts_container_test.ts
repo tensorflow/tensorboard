@@ -35,6 +35,7 @@ import {AlertsContainer} from './alerts_container';
 import {AlertsModule} from './alerts_module';
 import {ExecutionDataModule} from '../execution_data/execution_data_module';
 import {InactiveModule} from '../inactive/inactive_module';
+import {SourceCodeModule} from '../source_code/source_code_module';
 import {StackTraceModule} from '../stack_trace/stack_trace_module';
 import {TimelineModule} from '../timeline/timeline_module';
 
@@ -52,6 +53,7 @@ describe('Alerts Container', () => {
         CommonModule,
         ExecutionDataModule,
         InactiveModule,
+        SourceCodeModule,
         StackTraceModule,
         TimelineModule,
       ],

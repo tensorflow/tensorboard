@@ -1,4 +1,4 @@
-/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -12,22 +12,20 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
-import {DebuggerRunListing, SourceFileContent} from './store/debugger_types';
 
-@Component({
-  selector: 'debugger-component',
-  templateUrl: './debugger_component.ng.html',
-  styleUrls: ['./debugger_component.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+import {CommonModule} from '@angular/common';
+import {NgModule} from '@angular/core';
+
+import {SourceCodeModule} from '../source_code/source_code_module';
+import {SourceFilesComponent} from './source_files_component';
+import {SourceFilesContainer} from './source_files_container';
+
+@NgModule({
+  declarations: [SourceFilesComponent, SourceFilesContainer],
+  imports: [
+    CommonModule,
+    SourceCodeModule,
+  ],
+  exports: [SourceFilesContainer],
 })
-export class DebuggerComponent {
-  @Input()
-  runs: DebuggerRunListing = {};
-
-  @Input()
-  runIds: string[] = [];
-
-  @Input()
-  activeRunId: string | null = null;
-}
+export class SourceFilesModule {}

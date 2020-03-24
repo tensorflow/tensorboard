@@ -26,11 +26,7 @@ limitations under the License.
     </div>
 
     <div class="bottom-section">
-      <source-code-component
-        *ngIf="focusedSourceFileContent !== null"
-        [lines]="focusedSourceFileContent.lines"
-      >
-      </source-code-component>
+      <tf-debugger-v2-source-files></tf-debugger-v2-source-files>
       <tf-debugger-v2-stack-trace></tf-debugger-v2-stack-trace>
     </div>
     <!-- TODO(cais): Add more elements, such as graph, source code, etc.-->

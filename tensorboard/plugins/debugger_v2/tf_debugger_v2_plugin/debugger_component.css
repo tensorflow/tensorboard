@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 .bottom-section {
-  /* float: bottom; */
+  height: 360px;
   width: 100%;
 }
 
@@ -29,9 +29,10 @@ tf-debugger-v2-alerts {
   width: 200px;
 }
 
-source-code-component {
+tf-debugger-v2-source-files {
   display: inline-block;
   height: 100%;
+  vertical-align: top;
   width: 70%;
 }
 
