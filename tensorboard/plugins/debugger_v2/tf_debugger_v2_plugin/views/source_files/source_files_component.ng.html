@@ -25,8 +25,9 @@ limitations under the License.
     </span>
   </div>
   <source-code-component
-    *ngIf="focusedSourceFileContent !== null && focusedSourceFileContent.lines !== null"
+    *ngIf="focusedSourceFileContent !== null && focusedSourceLineSpec !== null && focusedSourceFileContent.lines !== null"
     [lines]="focusedSourceFileContent.lines"
+    [focusedLineno]="focusedSourceLineSpec.lineno"
   >
   </source-code-component>
 </div>

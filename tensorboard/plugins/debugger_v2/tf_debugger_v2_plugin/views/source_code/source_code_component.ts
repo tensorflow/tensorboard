@@ -38,13 +38,15 @@ export class SourceCodeComponent implements OnInit {
   @Input()
   lines: string[] | null = null;  // TODO(cais): Add spinner for `null`.
 
-  // @Input()
-  // focusedLineno: number | null = null;
+  @Input()
+  focusedLineno: number | null = null;
 
   @ViewChild('codeViewerContainer', {static: true, read: ElementRef})
   private readonly codeViewerContainer!: ElementRef<HTMLDivElement>;
 
   private editor: any = null;
+
+  private decorations: string[] = [];
 
   async ngOnInit(): Promise<void> {
     // if (windowWithRequireAndMonaco.monaco === undefined) {
@@ -55,12 +57,13 @@ export class SourceCodeComponent implements OnInit {
 
   async ngOnChanges(changes: SimpleChanges): Promise<void> {
     console.log('SourceCodeComponent.ngOnChanges():', changes);  // DEBUG
-    if (changes['lines'] && this.lines !== null) {
-      await loadMonaco();
-      const monaco = windowWithRequireAndMonaco.monaco;
+    await loadMonaco();
+    const monaco = windowWithRequireAndMonaco.monaco;
+    if (changes.lines && this.lines !== null) {
+      const value = this.lines.join("\n");
       if (this.editor === null) {
         this.editor = monaco.editor.create(this.codeViewerContainer.nativeElement, {
-          value: this.lines.join("\n"),
+          value,
           language: 'python',
           readOnly: true,
           fontSize: DEFAULT_CODE_FONT_SIZE,
@@ -69,7 +72,30 @@ export class SourceCodeComponent implements OnInit {
           },
         });
         console.log('element:', this.codeViewerContainer.nativeElement);
+      } else {
+        this.editor.setValue(value);
       }
+    }
+    if (changes.focusedLineno && this.lines && this.focusedLineno) {
+      console.log('focusedLineno = ', this.focusedLineno);  // DEBUG
+      this.editor.revealLineInCenter(
+        this.focusedLineno, monaco.editor.ScrollType.Smooth);
+      const lineLength = this.lines[this.focusedLineno - 1].length;
+      this.decorations = this.editor.deltaDecorations(this.decorations, [
+        {
+          range: new monaco.Range(this.focusedLineno, 1, this.focusedLineno, 1),
+          options: {
+            isWholeLine: true,
+            linesDecorationsClassName: 'highlight-gutter',
+          }
+        },
+        {
+          range: new monaco.Range(this.focusedLineno, 1, this.focusedLineno, lineLength + 1),
+          options: {
+            inlineClassName: 'highlight-line',
+          }
+        },
+      ]);
     }
   }
 }
