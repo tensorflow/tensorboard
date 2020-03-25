@@ -57,11 +57,12 @@ from tensorboard.plugins.mesh import mesh_plugin
 logger = logging.getLogger(__name__)
 
 
-class ExperimentalDebuggerV2Plugin(debugger_v2_plugin.DebuggerV2Plugin,
-                               experimental_plugin.ExperimentalPlugin):
-  """Debugger v2 plugin marked as experimental."""
+class ExperimentalDebuggerV2Plugin(
+    debugger_v2_plugin.DebuggerV2Plugin, experimental_plugin.ExperimentalPlugin
+):
+    """Debugger v2 plugin marked as experimental."""
 
-  pass
+    pass
 
 
 # Ordering matters. The order in which these lines appear determines the
