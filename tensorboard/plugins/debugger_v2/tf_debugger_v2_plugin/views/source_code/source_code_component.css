@@ -1,11 +1,11 @@
 .code-viewer-container {
-  height: 324px;
+  height: 336px;
   width: 100%;
 }
 
 :host ::ng-deep .highlight-gutter {
   background: rgba(255, 111, 0, 0.7);
-  width: 5px;
+  width: 5px !important;
 }
 
 :host ::ng-deep .highlight-line {

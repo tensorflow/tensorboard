@@ -675,7 +675,8 @@ export class DebuggerEffects {
         return (
           runId !== null &&
           fileContent !== null &&
-          fileContent.loadState !== DataLoadState.LOADING
+          // TODO(cais): Cover with unit test.
+          fileContent.loadState === DataLoadState.NOT_LOADED
         );
       }),
       tap(({lineSpec}) =>

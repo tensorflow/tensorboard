@@ -17,13 +17,17 @@ limitations under the License.
 
 <div class="source-files-container">
   <div class="header-section">
-    Source Code
-    <span
+    <div class="title-tag">
+      Source Code
+    </div>
+    <div
       *ngIf="focusedSourceLineSpec !== null"
+      class="file-label"
     >
       {{ focusedSourceLineSpec.file_path }}
-    </span>
+    </div>
   </div>
+
   <source-code-component
     *ngIf="focusedSourceFileContent !== null && focusedSourceLineSpec !== null && focusedSourceFileContent.lines !== null"
     [lines]="focusedSourceFileContent.lines"

@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 .bottom-section {
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
   height: 360px;
   width: 100%;
 }
@@ -32,6 +33,7 @@ tf-debugger-v2-alerts {
 tf-debugger-v2-source-files {
   display: inline-block;
   height: 100%;
+  /* padding-right: 3px; */
   vertical-align: top;
   width: 70%;
 }
@@ -39,9 +41,6 @@ tf-debugger-v2-source-files {
 tf-debugger-v2-stack-trace {
   display: inline-block;
   width: 30%;
-  /* TODO(cais): Once code-editor component is added to the left,
-     replace the `float` with a linear layout. */
-  /* float: right; */
 }
 
 tf-debugger-v2-timeline {
