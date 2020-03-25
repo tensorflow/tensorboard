@@ -675,7 +675,7 @@ export class DebuggerEffects {
         return (
           runId !== null &&
           fileContent !== null &&
-          fileContent.loadState !== DataLoadState.LOADING
+          fileContent.loadState === DataLoadState.NOT_LOADED
         );
       }),
       tap(({lineSpec}) =>
