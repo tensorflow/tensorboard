@@ -33,5 +33,22 @@ describe('feature_flag_reducers', () => {
 
       expect(nextState.enabledExperimentalPlugins).toEqual(['foo', 'bar']);
     });
+
+    it('sets the feature value of other features', () => {
+      const prevState = buildFeatureFlagState({
+        enabledExperimentalPlugins: [],
+      });
+      const nextState = reducers(
+        prevState,
+        actions.featuresLoaded({
+          features: {
+            enabledExperimentalPlugins: [],
+            enableMagicalFeature: true,
+          },
+        })
+      );
+
+      expect(nextState.enableMagicalFeature).toBe(true);
+    });
   });
 });

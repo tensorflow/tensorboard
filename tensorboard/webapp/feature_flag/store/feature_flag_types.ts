@@ -23,5 +23,5 @@ export interface FeatureFlagState {
 }
 
 export interface State {
-  [FEAUTURE_FLAG_FEATURE_KEY]?: FeatureFlagState;
+  [FEAUTURE_FLAG_FEATURE_KEY]: FeatureFlagState;
 }

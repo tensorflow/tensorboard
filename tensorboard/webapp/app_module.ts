@@ -21,15 +21,13 @@ import {EffectsModule} from '@ngrx/effects';
 import {AppContainer} from './app_container';
 import {CoreModule} from './core/core_module';
 import {HashStorageModule} from './core/views/hash_storage_module';
-import {PluginsModule} from './plugins/plugins_module';
-import {SettingsModule} from './settings/settings_module';
-
-import {ROOT_REDUCERS, loggerMetaReducerFactory} from './reducer_config';
-
-import {HeaderModule} from './header/header_module';
-import {ReloaderModule} from './reloader/reloader_module';
-import {MatIconModule} from './mat_icon_module';
 import {FeatureFlagModule} from './feature_flag/feature_flag_module';
+import {HeaderModule} from './header/header_module';
+import {MatIconModule} from './mat_icon_module';
+import {PluginsModule} from './plugins/plugins_module';
+import {ROOT_REDUCERS, loggerMetaReducerFactory} from './reducer_config';
+import {ReloaderModule} from './reloader/reloader_module';
+import {SettingsModule} from './settings/settings_module';
 
 @NgModule({
   declarations: [AppContainer],

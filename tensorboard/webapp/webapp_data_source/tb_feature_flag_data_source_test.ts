@@ -32,7 +32,7 @@ describe('tb_feature_flag_data_source', () => {
 
     describe('getFeatures', () => {
       it('returns enabledExperimentalPlugins from the query params', () => {
-        spyOn(TEST_ONLY, 'getParams').and.returnValue(
+        spyOn(TEST_ONLY.util, 'getParams').and.returnValue(
           new URLSearchParams('experimentalPlugin=a&experimentalPlugin=b')
         );
         expect(dataSource.getFeatures()).toEqual({
@@ -41,7 +41,9 @@ describe('tb_feature_flag_data_source', () => {
       });
 
       it('returns empty enabledExperimentalPlugins when empty', () => {
-        spyOn(TEST_ONLY, 'getParams').and.returnValue(new URLSearchParams(''));
+        spyOn(TEST_ONLY.util, 'getParams').and.returnValue(
+          new URLSearchParams('')
+        );
         expect(dataSource.getFeatures()).toEqual({
           enabledExperimentalPlugins: [],
         });

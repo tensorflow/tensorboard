@@ -20,12 +20,12 @@ describe('feature_flag_selectors', () => {
     it('returns a current feature', () => {
       const state = buildState(
         buildFeatureFlagState({
-          enabledExperimentalPlugins: ['foo'],
+          enableMagicFeature: true,
         })
       );
-      const actual = selectors.getFeature(state, 'enabledExperimentalPlugins');
+      const actual = selectors.getFeature(state, 'enableMagicFeature');
 
-      expect(actual).toEqual(['foo']);
+      expect(actual).toBe(true);
     });
 
     it('returns null if the value is not present', () => {

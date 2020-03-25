@@ -30,4 +30,4 @@ export class QueryParamsFeatureFlagDataSource extends TBFeatureFlagDataSource {
   }
 }
 
-export const TEST_ONLY = util;
+export const TEST_ONLY = {util};

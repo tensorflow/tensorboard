@@ -14,10 +14,24 @@ limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
 
+/**
+ * Example of the feature value:
+ *
+ * reload interval: number
+ * is feature enabled: boolean
+ * enabled experimental plugins: string[]
+ */
 export type FeatureValue = string | boolean | number | string[];
 
 @Injectable()
 export abstract class TBFeatureFlagDataSource {
+  /**
+   * Gets feature flags defined.
+   *
+   * The "feature" is very loosely defined so other applications can define more
+   * flags. It is up to the application to better type the flags and create necessary
+   * facilities (e.g., strongly typed selector).
+   */
   abstract getFeatures(): {
     enabledExperimentalPlugins: string[];
     [featureKey: string]: FeatureValue;
