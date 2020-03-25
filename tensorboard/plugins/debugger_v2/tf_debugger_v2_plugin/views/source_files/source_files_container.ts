@@ -15,7 +15,10 @@ limitations under the License.
 import {Component} from '@angular/core';
 import {select, Store} from '@ngrx/store';
 
-import {getFocusedSourceFileContent, getFocusedSourceLineSpec} from '../../store';
+import {
+  getFocusedSourceFileContent,
+  getFocusedSourceLineSpec,
+} from '../../store';
 import {State} from '../../store/debugger_types';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';

@@ -22,10 +22,7 @@ import {StackTraceContainer} from './stack_trace_container';
 
 @NgModule({
   declarations: [StackTraceComponent, StackTraceContainer],
-  imports: [
-    CommonModule,
-    SourceCodeModule,
-  ],
+  imports: [CommonModule, SourceCodeModule],
   exports: [StackTraceContainer],
 })
 export class StackTraceModule {}

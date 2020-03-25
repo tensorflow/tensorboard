@@ -23,7 +23,6 @@ import {StackFrameForDisplay} from './stack_trace_component';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
-
 @Component({
   selector: 'tf-debugger-v2-stack-trace',
   template: `
@@ -64,12 +63,11 @@ export class StackTraceContainer {
   constructor(private readonly store: Store<State>) {}
 
   onSourceLineClicked(args: {
-    host_name: string,
-    file_path: string,
-    lineno: number,
+    host_name: string;
+    file_path: string;
+    lineno: number;
   }) {
-    console.log(
-      'StackTraceContainer.onSourceLineClicked: args:', args);  // DEBUG
+    console.log('StackTraceContainer.onSourceLineClicked: args:', args); // DEBUG
     this.store.dispatch(sourceLineFocused({sourceLineSpec: args}));
   }
 }

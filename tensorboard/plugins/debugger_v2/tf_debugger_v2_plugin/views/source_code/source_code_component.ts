@@ -17,12 +17,14 @@ import {
   Component,
   ElementRef,
   Input,
-  OnInit,
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
 
-import {loadMonaco, WindowWithRequireAndMonaco} from '../source_code/load_monaco_shim';
+import {
+  loadMonaco,
+  WindowWithRequireAndMonaco,
+} from '../source_code/load_monaco_shim';
 
 const windowWithRequireAndMonaco: WindowWithRequireAndMonaco = window;
 
@@ -32,11 +34,11 @@ const DEFAULT_CODE_FONT_SIZE = 10;
   selector: 'source-code-component',
   templateUrl: './source_code_component.ng.html',
   styleUrls: ['./source_code_component.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SourceCodeComponent implements OnInit {
+export class SourceCodeComponent {
   @Input()
-  lines: string[] | null = null;  // TODO(cais): Add spinner for `null`.
+  lines: string[] | null = null; // TODO(cais): Add spinner for `null`.
 
   @Input()
   focusedLineno: number | null = null;
@@ -48,38 +50,33 @@ export class SourceCodeComponent implements OnInit {
 
   private decorations: string[] = [];
 
-  async ngOnInit(): Promise<void> {
-    // if (windowWithRequireAndMonaco.monaco === undefined) {
-    //   await loadMonaco();
-    //   console.log('Done loading monaco: lines=', this.lines);
-    // }
-  }
-
   async ngOnChanges(changes: SimpleChanges): Promise<void> {
-    console.log('SourceCodeComponent.ngOnChanges():', changes);  // DEBUG
     await loadMonaco();
     const monaco = windowWithRequireAndMonaco.monaco;
     if (changes.lines && this.lines !== null) {
-      const value = this.lines.join("\n");
+      const value = this.lines.join('\n');
       if (this.editor === null) {
-        this.editor = monaco.editor.create(this.codeViewerContainer.nativeElement, {
-          value,
-          language: 'python',
-          readOnly: true,
-          fontSize: DEFAULT_CODE_FONT_SIZE,
-          minimap: {
-            enabled: true,
-          },
-        });
-        console.log('element:', this.codeViewerContainer.nativeElement);
+        this.editor = monaco.editor.create(
+          this.codeViewerContainer.nativeElement,
+          {
+            value,
+            language: 'python',
+            readOnly: true,
+            fontSize: DEFAULT_CODE_FONT_SIZE,
+            minimap: {
+              enabled: true,
+            },
+          }
+        );
       } else {
         this.editor.setValue(value);
       }
     }
     if (changes.focusedLineno && this.lines && this.focusedLineno) {
-      console.log('focusedLineno = ', this.focusedLineno);  // DEBUG
       this.editor.revealLineInCenter(
-        this.focusedLineno, monaco.editor.ScrollType.Smooth);
+        this.focusedLineno,
+        monaco.editor.ScrollType.Smooth
+      );
       const lineLength = this.lines[this.focusedLineno - 1].length;
       this.decorations = this.editor.deltaDecorations(this.decorations, [
         {
@@ -87,13 +84,18 @@ export class SourceCodeComponent implements OnInit {
           options: {
             isWholeLine: true,
             linesDecorationsClassName: 'highlight-gutter',
-          }
+          },
         },
         {
-          range: new monaco.Range(this.focusedLineno, 1, this.focusedLineno, lineLength + 1),
+          range: new monaco.Range(
+            this.focusedLineno,
+            1,
+            this.focusedLineno,
+            lineLength + 1
+          ),
           options: {
             inlineClassName: 'highlight-line',
-          }
+          },
         },
       ]);
     }

@@ -33,8 +33,8 @@ export class StackTraceComponent {
 
   @Output()
   onSourceLineClicked = new EventEmitter<{
-    host_name: string,
-    file_path: string,
-    lineno: number,
+    host_name: string;
+    file_path: string;
+    lineno: number;
   }>();
 }

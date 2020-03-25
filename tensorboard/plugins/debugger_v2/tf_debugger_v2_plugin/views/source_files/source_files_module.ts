@@ -22,10 +22,7 @@ import {SourceFilesContainer} from './source_files_container';
 
 @NgModule({
   declarations: [SourceFilesComponent, SourceFilesContainer],
-  imports: [
-    CommonModule,
-    SourceCodeModule,
-  ],
+  imports: [CommonModule, SourceCodeModule],
   exports: [SourceFilesContainer],
 })
 export class SourceFilesModule {}
