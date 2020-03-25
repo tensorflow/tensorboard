@@ -589,9 +589,12 @@ it receives new data at least once per 24 hour period)\
             default="auto",
             choices=["false", "auto", "true"],
             help="""\
-[experimental] Whether to use generic data provider infrastructure. The
-"auto" option enables this only for dashboards that are considered
-stable under the new codepaths. (default: %(default)s)\
+[experimental] Hints whether plugins should read from generic data
+provider infrastructure. For plugins that support only the legacy
+multiplexer APIs or only the generic data APIs, this option has no
+effect. The "auto" option enables this only for plugins that are
+considered to have stable support for generic data providers. (default:
+%(default)s)\
 """,
         )
 
