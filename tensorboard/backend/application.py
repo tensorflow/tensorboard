@@ -165,10 +165,9 @@ def standard_tensorboard_wsgi(flags, plugin_loaders, assets_zip_provider):
             max_reload_threads=flags.max_reload_threads,
             event_file_active_filter=_get_event_file_active_filter(flags),
         )
-        if flags.generic_data != "false":
-            data_provider = event_data_provider.MultiplexerDataProvider(
-                multiplexer, flags.logdir or flags.logdir_spec
-            )
+        data_provider = event_data_provider.MultiplexerDataProvider(
+            multiplexer, flags.logdir or flags.logdir_spec
+        )
 
     if reload_interval >= 0:
         # We either reload the multiplexer once when TensorBoard starts up, or we
