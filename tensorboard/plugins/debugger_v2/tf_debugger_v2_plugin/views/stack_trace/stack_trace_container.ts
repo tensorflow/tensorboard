@@ -67,7 +67,6 @@ export class StackTraceContainer {
     file_path: string;
     lineno: number;
   }) {
-    console.log('StackTraceContainer.onSourceLineClicked: args:', args); // DEBUG
     this.store.dispatch(sourceLineFocused({sourceLineSpec: args}));
   }
 }

@@ -20,9 +20,16 @@ limitations under the License.
     <div class="title-tag">
       Source Code
     </div>
-    <div *ngIf="focusedSourceLineSpec !== null" class="file-label">
+    <div
+      *ngIf="focusedSourceLineSpec !== null; else noFileSelected"
+      class="file-label"
+    >
       {{ focusedSourceLineSpec.file_path }}
     </div>
+
+    <ng-template #noFileSelected>
+      (No file selected)
+    </ng-template>
   </div>
 
   <source-code-component
