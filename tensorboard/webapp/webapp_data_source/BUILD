@@ -1,6 +1,6 @@
-package(default_visibility = ["//tensorboard:internal"])
-
 load("@npm_angular_bazel//:index.bzl", "ng_module")
+
+package(default_visibility = ["//tensorboard:internal"])
 
 ng_module(
     name = "webapp_data_source",
@@ -29,6 +29,46 @@ ng_module(
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//rxjs",
+    ],
+)
+
+ng_module(
+    name = "feature_flag",
+    srcs = [
+        "tb_feature_flag_data_source.ts",
+        "tb_feature_flag_data_source_types.ts",
+        "tb_feature_flag_module.ts",
+    ],
+    deps = [
+        "//tensorboard/webapp/types",
+        "@npm//@angular/common",
+        "@npm//@angular/core",
+        "@npm//rxjs",
+    ],
+)
+
+ng_module(
+    name = "feature_flag_testing",
+    testonly = True,
+    srcs = [
+        "tb_feature_flag_testing.ts",
+    ],
+    deps = [
+        ":feature_flag",
+        "@npm//@angular/core",
+    ],
+)
+
+ng_module(
+    name = "feature_flag_test_lib",
+    testonly = True,
+    srcs = [
+        "tb_feature_flag_data_source_test.ts",
+    ],
+    deps = [
+        ":feature_flag",
+        "@npm//@angular/core",
+        "@npm//@types/jasmine",
     ],
 )
 
