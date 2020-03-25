@@ -1150,7 +1150,7 @@ describe('Debugger effects', () => {
     });
 
     for (const loadState of [DataLoadState.LOADED, DataLoadState.LOADING]) {
-      it('skips loading a loaded or loeading source file', () => {
+      it(`skips loading when file is loaded or loading: ${loadState}`, () => {
         const runId = '__default_debugger_run__';
         const fileIndex = 2;
         const fileContentC: SourceFileResponse = {
