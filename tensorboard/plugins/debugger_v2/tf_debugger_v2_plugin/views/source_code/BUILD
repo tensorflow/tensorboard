@@ -17,11 +17,6 @@ ng_module(
     ],
     deps = [
         ":load_monaco",
-        # TODO(cais): Clean up.
-        # "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin:tf_types",
-        # "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/actions",
-        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/store",
-        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/store:types",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@ngrx/store",

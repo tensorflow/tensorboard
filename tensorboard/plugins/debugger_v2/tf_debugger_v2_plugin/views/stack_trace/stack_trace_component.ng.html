@@ -46,9 +46,13 @@ limitations under the License.
           <!-- TODO(cais): Add click action associated with source-code display. -->
           <div
             class="stack-frame-lineno"
-            (click)="onSourceLineClicked.emit({host_name: stackFramesForDisplay[0].host_name, file_path: stackFrameForDisplay.file_path, lineno: stackFrameForDisplay.lineno})"
+            (click)="onSourceLineClicked.emit({
+              host_name: stackFrameForDisplay.host_name,
+              file_path: stackFrameForDisplay.file_path,
+              lineno: stackFrameForDisplay.lineno
+            })"
           >
-            Line {{ stackFrameForDisplay.lineno }}:
+            Line {{ stackFrameForDisplay.lineno }}
           </div>
           <div class="stack-frame-function">
             {{ stackFrameForDisplay.function_name }}

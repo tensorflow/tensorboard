@@ -27,6 +27,7 @@ import {
   executionScrollLeft,
   executionScrollRight,
   executionScrollToIndex,
+  sourceLineFocused,
 } from './actions';
 import {DebuggerComponent} from './debugger_component';
 import {DebuggerContainer} from './debugger_container';
@@ -960,13 +961,13 @@ describe('Debugger Container', () => {
       );
       expect(linenoElements.length).toEqual(3);
       expect(linenoElements[0].nativeElement.innerText).toEqual(
-        `Line ${stackFrame0[2]}:`
+        `Line ${stackFrame0[2]}`
       );
       expect(linenoElements[1].nativeElement.innerText).toEqual(
-        `Line ${stackFrame1[2]}:`
+        `Line ${stackFrame1[2]}`
       );
       expect(linenoElements[2].nativeElement.innerText).toEqual(
-        `Line ${stackFrame2[2]}:`
+        `Line ${stackFrame2[2]}`
       );
 
       const functionElements = fixture.debugElement.queryAll(
@@ -1023,6 +1024,62 @@ describe('Debugger Container', () => {
         By.css('.stack-frame-container')
       );
       expect(stackFrameContainers.length).toEqual(0);
+    });
+
+    it('Emits sourceLineFocused when line number is clickedd', () => {
+      const fixture = TestBed.createComponent(StackTraceContainer);
+      fixture.detectChanges();
+
+      const stackFrame0 = createTestStackFrame();
+      const stackFrame1 = createTestStackFrame();
+      const stackFrame2 = createTestStackFrame();
+      store.setState(
+        createState(
+          createDebuggerState({
+            executions: {
+              numExecutionsLoaded: {
+                state: DataLoadState.LOADED,
+                lastLoadedTimeInMs: 111,
+              },
+              executionDigestsLoaded: {
+                state: DataLoadState.LOADED,
+                lastLoadedTimeInMs: 222,
+                pageLoadedSizes: {0: 100},
+                numExecutions: 1000,
+              },
+              executionDigests: {},
+              pageSize: 100,
+              displayCount: 50,
+              scrollBeginIndex: 90,
+              focusIndex: 98,
+              executionData: {
+                98: createTestExecutionData({
+                  stack_frame_ids: ['a0', 'a1', 'a2'],
+                }),
+              },
+            },
+            stackFrames: {
+              a0: stackFrame0,
+              a1: stackFrame1,
+              a2: stackFrame2,
+            },
+          })
+        )
+      );
+      fixture.detectChanges();
+
+      const linenoElements = fixture.debugElement.queryAll(
+        By.css('.stack-frame-lineno')
+      );
+      linenoElements[1].nativeElement.click();
+      fixture.detectChanges();
+      expect(dispatchSpy).toHaveBeenCalledWith(sourceLineFocused({
+        sourceLineSpec: {
+          host_name: stackFrame1[0],
+          file_path: stackFrame1[1],
+          lineno: stackFrame1[2],
+        }
+      }));
     });
   });
 });
