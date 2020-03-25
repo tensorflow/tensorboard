@@ -42,7 +42,7 @@ tf_ts_library(
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/testing",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/execution_data",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/inactive",
-        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/source_code",
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/source_files",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/stack_trace",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/timeline",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
