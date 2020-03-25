@@ -84,6 +84,12 @@ describe('Source Files Container', () => {
     );
   }
 
+  function tearDownMonacoFakes() {
+    if (loadMonacoShim.windowWithRequireAndMonaco.monaco !== undefined) {
+      delete loadMonacoShim.windowWithRequireAndMonaco.monaco;
+    }
+  }
+
   beforeEach(async () => {
     setUpMonacoFakes();
     await TestBed.configureTestingModule({
@@ -106,6 +112,10 @@ describe('Source Files Container', () => {
     }).compileComponents();
     store = TestBed.get(Store);
     dispatchSpy = spyOn(store, 'dispatch');
+  });
+
+  afterEach(() => {
+    tearDownMonacoFakes();
   });
 
   it('renders no file selected when no source line is focused on', () => {
