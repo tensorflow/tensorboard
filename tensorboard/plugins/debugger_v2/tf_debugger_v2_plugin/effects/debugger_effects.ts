@@ -675,7 +675,6 @@ export class DebuggerEffects {
         return (
           runId !== null &&
           fileContent !== null &&
-          // TODO(cais): Cover with unit test.
           fileContent.loadState === DataLoadState.NOT_LOADED
         );
       }),
