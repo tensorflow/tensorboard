@@ -1149,6 +1149,59 @@ describe('Debugger effects', () => {
       ]);
     });
 
+    for (const {loadState, loadStateName} of [
+      {
+        loadState: DataLoadState.LOADED,
+        loadStateName: 'LOADED',
+      },
+      {
+        loadState: DataLoadState.LOADING,
+        loadStateName: 'LOADING',
+      },
+    ]) {
+      it(`skips loading when file state is ${loadStateName}`, () => {
+        const runId = '__default_debugger_run__';
+        const fileIndex = 2;
+        const fileContentC: SourceFileResponse = {
+          ...fileSpecC,
+          lines: [''],
+        };
+        const fetchSourceFileSpy = createFetchSourceFileSpy(
+          runId,
+          fileIndex,
+          fileContentC.host_name,
+          fileContentC.file_path,
+          fileContentC.lines
+        );
+        store.overrideSelector(getActiveRunId, runId);
+        store.overrideSelector(getSourceFileList, [
+          fileSpecA,
+          fileSpecB,
+          fileSpecC,
+        ]);
+        store.overrideSelector(getFocusedSourceFileIndex, fileIndex);
+        store.overrideSelector(getFocusedSourceFileContent, {
+          loadState,
+          lines: null,
+        });
+        store.refreshState();
+
+        action.next(
+          sourceLineFocused({
+            sourceLineSpec: {
+              ...fileSpecC,
+              lineno: 42,
+            },
+          })
+        );
+
+        // Due to the LOADED or LOADING state of the file, no request should
+        // have been made for the content of the file.
+        expect(fetchSourceFileSpy).not.toHaveBeenCalled();
+        expect(dispatchedActions).toEqual([]);
+      });
+    }
+
     it('does not load a file being loaded', () => {
       const runId = '__default_debugger_run__';
       const fileIndex = 2;
