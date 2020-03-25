@@ -13,14 +13,27 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Component} from '@angular/core';
-import {Store} from '@ngrx/store';
+import {Store, createSelector} from '@ngrx/store';
 import {Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 
 import {State} from '../core/store/core_types';
-import {getPluginsListLoaded} from '../core/store/core_selectors';
+import {
+  getPlugins,
+  getActivePlugin,
+  getPluginsListLoaded,
+} from '../core/store/core_selectors';
 import {manualReload} from '../core/actions';
 import {DataLoadState} from '../types/data';
+
+const isReloadDiabledByPlugin = createSelector(
+  getPlugins,
+  getActivePlugin,
+  (plugins, id) => {
+    if (!id || !plugins || !plugins[id]) return false;
+    return plugins[id].disable_reload;
+  }
+);
 
 @Component({
   selector: 'app-header-reload',
@@ -31,6 +44,7 @@ import {DataLoadState} from '../types/data';
       mat-icon-button
       (click)="triggerReload()"
       [title]="getReloadTitle(lastLoadedTimeInMs$ | async | date: 'medium')"
+      [disabled]="reloadDisabled$ | async"
     >
       <mat-icon class="refresh-icon" svgIcon="refresh_24px"></mat-icon>
     </button>
@@ -63,6 +77,10 @@ import {DataLoadState} from '../types/data';
   ],
 })
 export class ReloadContainer {
+  readonly reloadDisabled$: Observable<boolean> = this.store.select(
+    isReloadDiabledByPlugin
+  );
+
   isReloading$: Observable<boolean> = this.store
     .select(getPluginsListLoaded)
     .pipe(
