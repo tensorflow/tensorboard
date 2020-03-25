@@ -1073,13 +1073,15 @@ describe('Debugger Container', () => {
       );
       linenoElements[1].nativeElement.click();
       fixture.detectChanges();
-      expect(dispatchSpy).toHaveBeenCalledWith(sourceLineFocused({
-        sourceLineSpec: {
-          host_name: stackFrame1[0],
-          file_path: stackFrame1[1],
-          lineno: stackFrame1[2],
-        }
-      }));
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        sourceLineFocused({
+          sourceLineSpec: {
+            host_name: stackFrame1[0],
+            file_path: stackFrame1[1],
+            lineno: stackFrame1[2],
+          },
+        })
+      );
     });
   });
 });

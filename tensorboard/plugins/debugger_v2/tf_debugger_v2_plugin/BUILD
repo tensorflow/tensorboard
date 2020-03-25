@@ -77,6 +77,7 @@ tf_ng_web_test_suite(
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/store:debugger_store_test_lib",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/alerts:alerts_container_test_lib",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/source_code:source_code_test_lib",
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/source_files:source_files_container_test_lib",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/timeline:timeline_test",
     ],
 )

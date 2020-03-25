@@ -15,9 +15,13 @@
 .file-label {
   display: inline-block;
   font-weight: normal;
-  height: 100%;
-  text-align: left;
   white-space: normal;
+  padding: 0 20px;
+}
+
+.no-file-selected {
+  display: inline-block;
+  color: #666;
   padding: 0 20px;
 }
 
@@ -25,6 +29,7 @@
   display: inline-block;
   font-weight: bold;
   height: 100%;
+  padding-left: 6px;
   vertical-align: top;
 }
 

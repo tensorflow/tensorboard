@@ -20,6 +20,8 @@ limitations under the License.
     <div class="title-tag">
       Source Code
     </div>
+
+    <!-- TODO(cais): Support multiple tabs, each for a file. -->
     <div
       *ngIf="focusedSourceLineSpec !== null; else noFileSelected"
       class="file-label"
@@ -28,7 +30,9 @@ limitations under the License.
     </div>
 
     <ng-template #noFileSelected>
-      (No file selected)
+      <div class="no-file-selected">
+        (No file selected)
+      </div>
     </ng-template>
   </div>
 
