@@ -34,7 +34,6 @@ tf-debugger-v2-alerts {
 tf-debugger-v2-source-files {
   display: inline-block;
   height: 100%;
-  /* padding-right: 3px; */
   vertical-align: top;
   width: 70%;
 }
