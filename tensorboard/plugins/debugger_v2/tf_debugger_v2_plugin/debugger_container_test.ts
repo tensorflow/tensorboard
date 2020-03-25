@@ -1026,7 +1026,7 @@ describe('Debugger Container', () => {
       expect(stackFrameContainers.length).toEqual(0);
     });
 
-    it('Emits sourceLineFocused when line number is clickedd', () => {
+    it('Emits sourceLineFocused when line number is clicked', () => {
       const fixture = TestBed.createComponent(StackTraceContainer);
       fixture.detectChanges();
 

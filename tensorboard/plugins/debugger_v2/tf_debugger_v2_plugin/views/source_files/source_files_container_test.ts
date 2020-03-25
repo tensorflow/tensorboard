@@ -130,8 +130,9 @@ describe('Source Files Container', () => {
     store.overrideSelector(getFocusedSourceLineSpec, {
       host_name: 'localhost',
       file_path: '/home/user/main.py',
-      lineno: 2,
+      lineno: 3,
     });
+    store.refreshState();
     fixture.detectChanges();
     await fixture.whenStable();
 
@@ -141,7 +142,7 @@ describe('Source Files Container', () => {
     expect(editorSpy.setValue).not.toHaveBeenCalled();
     expect(editorSpy.revealLineInCenter).toHaveBeenCalledTimes(1);
     expect(editorSpy.revealLineInCenter).toHaveBeenCalledWith(
-      2,
+      3,
       monaco.editor.ScrollType.Smooth
     );
     expect(editorSpy.deltaDecorations).toHaveBeenCalledTimes(1);
@@ -192,6 +193,7 @@ describe('Source Files Container', () => {
       file_path: '/home/user/main.py',
       lineno: 2,
     });
+    store.refreshState();
     fixture.detectChanges();
     await fixture.whenStable();
 
@@ -199,7 +201,7 @@ describe('Source Files Container', () => {
     store.overrideSelector(getFocusedSourceLineSpec, {
       host_name: 'localhost',
       file_path: '/home/user/main.py',
-      lineno: 0, // Focusing on a different line of the same file.
+      lineno: 1, // Focusing on a different line of the same file.
     });
     store.refreshState();
     fixture.detectChanges();
@@ -218,7 +220,7 @@ describe('Source Files Container', () => {
     );
     // This is the call for the new lineno.
     expect(editorSpy.revealLineInCenter).toHaveBeenCalledWith(
-      0,
+      1,
       monaco.editor.ScrollType.Smooth
     );
   });
