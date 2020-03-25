@@ -59,7 +59,7 @@ export class PluginsComponent implements OnChanges {
   private readonly ngPluginContainer!: ViewContainerRef;
 
   @Input()
-  activePlugin?: UiPluginMetadata;
+  activePlugin!: UiPluginMetadata | null;
 
   @Input()
   lastUpdated?: number;
@@ -140,11 +140,15 @@ export class PluginsComponent implements OnChanges {
   }
 
   private reload() {
-    for (const instance of this.pluginInstances.values()) {
-      const maybePolymerDashboard = instance as any;
-      if (maybePolymerDashboard.reload) {
-        maybePolymerDashboard.reload();
-      }
+    if (!this.activePlugin) {
+      return;
+    }
+
+    const maybeDashboard = this.pluginInstances.get(
+      this.activePlugin.id
+    ) as any;
+    if (maybeDashboard.reload) {
+      maybeDashboard.reload();
     }
   }
 }
