@@ -1132,7 +1132,9 @@ class ListSessionGroupsTest(tf.test.TestCase):
         request_proto = api_pb2.ListSessionGroupsRequest()
         text_format.Merge(request, request_proto)
         handler = list_session_groups.Handler(
-            backend_context.Context(self._mock_tb_context), request_proto
+            context=backend_context.Context(self._mock_tb_context),
+            experiment_id="123",
+            request=request_proto,
         )
         response = handler.run()
         # Sort the metric values repeated field in each session group to

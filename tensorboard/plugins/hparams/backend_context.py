@@ -53,11 +53,9 @@ class Context(object):
             Typically, only tests should specify a value for this parameter.
         """
         self._tb_context = tb_context
-        self._experiment_from_tag = None
-        self._experiment_from_tag_lock = threading.Lock()
         self._max_domain_discrete_len = max_domain_discrete_len
 
-    def experiment(self):
+    def experiment(self, experiment_id):
         """Returns the experiment protobuffer defining the experiment.
 
         This method first attempts to find a metadata.EXPERIMENT_TAG tag and
@@ -72,9 +70,9 @@ class Context(object):
           protobuffer can be built (possibly, because the event data has not been
           completely loaded yet), returns None.
         """
-        experiment = self._find_experiment_tag()
+        experiment = self._find_experiment_tag(experiment_id)
         if experiment is None:
-            return self._compute_experiment_from_runs()
+            return self._compute_experiment_from_runs(experiment_id)
         return experiment
 
     @property
@@ -89,72 +87,87 @@ class Context(object):
     def tb_context(self):
         return self._tb_context
 
-    def hparams_metadata(self):
+    def hparams_metadata(self, experiment_id):
         """Reads summary metadata for all hparams time series.
+
+        Args:
+          experiment_id: String, from `plugin_util.experiment_id`.
 
         Returns:
           A dict `d` such that `d[run][tag]` is a `bytes` value with the
           summary metadata content for the keyed time series.
         """
+        assert isinstance(experiment_id, str), (
+            experiment_id,
+            type(experiment_id),
+        )
         return self._deprecated_multiplexer.PluginRunToTagToContent(
             metadata.PLUGIN_NAME
         )
 
-    def scalars_metadata(self):
+    def scalars_metadata(self, experiment_id):
         """Reads summary metadata for all scalar time series.
+
+        Args:
+          experiment_id: String, from `plugin_util.experiment_id`.
 
         Returns:
           A dict `d` such that `d[run][tag]` is a `bytes` value with the
           summary metadata content for the keyed time series.
         """
+        assert isinstance(experiment_id, str), (
+            experiment_id,
+            type(experiment_id),
+        )
         return self._deprecated_multiplexer.PluginRunToTagToContent(
             scalar_metadata.PLUGIN_NAME
         )
 
-    def read_scalars(self, run, tag):
+    def read_scalars(self, experiment_id, run, tag):
         """Reads values for a given scalar time series.
 
         Args:
+          experiment_id: String.
           run: String.
           tag: String.
 
         Returns:
           A list of `plugin_event_accumulator.TensorEvent` values.
         """
+        assert isinstance(experiment_id, str), (
+            experiment_id,
+            type(experiment_id),
+        )
         return self._deprecated_multiplexer.Tensors(run, tag)
 
-    def _find_experiment_tag(self):
+    def _find_experiment_tag(self, experiment_id):
         """Finds the experiment associcated with the metadata.EXPERIMENT_TAG
         tag.
-
-        Caches the experiment if it was found.
 
         Returns:
           The experiment or None if no such experiment is found.
         """
-        with self._experiment_from_tag_lock:
-            if self._experiment_from_tag is None:
-                mapping = self.hparams_metadata()
-                for tag_to_content in mapping.values():
-                    if metadata.EXPERIMENT_TAG in tag_to_content:
-                        self._experiment_from_tag = metadata.parse_experiment_plugin_data(
-                            tag_to_content[metadata.EXPERIMENT_TAG]
-                        )
-                        break
-        return self._experiment_from_tag
+        mapping = self.hparams_metadata(experiment_id)
+        for tag_to_content in mapping.values():
+            if metadata.EXPERIMENT_TAG in tag_to_content:
+                experiment = metadata.parse_experiment_plugin_data(
+                    tag_to_content[metadata.EXPERIMENT_TAG]
+                )
+                return experiment
+        return None
 
-    def _compute_experiment_from_runs(self):
+    def _compute_experiment_from_runs(self, experiment_id):
         """Computes a minimal Experiment protocol buffer by scanning the
         runs."""
-        hparam_infos = self._compute_hparam_infos()
+        hparam_infos = self._compute_hparam_infos(experiment_id)
         if not hparam_infos:
             return None
-        metric_infos = self._compute_metric_infos()
+        metric_infos = self._compute_metric_infos(experiment_id)
         return api_pb2.Experiment(
             hparam_infos=hparam_infos, metric_infos=metric_infos
         )
 
-    def _compute_hparam_infos(self):
+    def _compute_hparam_infos(self, experiment_id):
         """Computes a list of api_pb2.HParamInfo from the current run, tag
         info.
 
@@ -167,7 +180,7 @@ class Context(object):
         Returns:
           A list of api_pb2.HParamInfo messages.
         """
-        run_to_tag_to_content = self.hparams_metadata()
+        run_to_tag_to_content = self.hparams_metadata(experiment_id)
         # Construct a dict mapping an hparam name to its list of values.
         hparams = collections.defaultdict(list)
         for tag_to_content in run_to_tag_to_content.values():
@@ -236,13 +249,13 @@ class Context(object):
 
         return result
 
-    def _compute_metric_infos(self):
+    def _compute_metric_infos(self, experiment_id):
         return (
             api_pb2.MetricInfo(name=api_pb2.MetricName(group=group, tag=tag))
-            for tag, group in self._compute_metric_names()
+            for tag, group in self._compute_metric_names(experiment_id)
         )
 
-    def _compute_metric_names(self):
+    def _compute_metric_names(self, experiment_id):
         """Computes the list of metric names from all the scalar (run, tag)
         pairs.
 
@@ -268,9 +281,9 @@ class Context(object):
           A python list containing pairs. Each pair is a (tag, group) pair
           representing a metric name used in some session.
         """
-        session_runs = self._build_session_runs_set()
+        session_runs = self._build_session_runs_set(experiment_id)
         metric_names_set = set()
-        run_to_tag_to_content = self.scalars_metadata()
+        run_to_tag_to_content = self.scalars_metadata(experiment_id)
         for (run, tag_to_content) in six.iteritems(run_to_tag_to_content):
             session = _find_longest_parent_path(session_runs, run)
             if not session:
@@ -288,9 +301,9 @@ class Context(object):
         metric_names_list.sort()
         return metric_names_list
 
-    def _build_session_runs_set(self):
+    def _build_session_runs_set(self, experiment_id):
         result = set()
-        run_to_tag_to_content = self.hparams_metadata()
+        run_to_tag_to_content = self.hparams_metadata(experiment_id)
         for (run, tag_to_content) in six.iteritems(run_to_tag_to_content):
             if metadata.SESSION_START_INFO_TAG in tag_to_content:
                 result.add(run)
