@@ -47,12 +47,19 @@ def run_tag_from_session_and_metric(session_name, metric_name):
     return run, tag
 
 
+<<<<<<< HEAD
 def last_metric_eval(context, experiment_id, session_name, metric_name):
+=======
+def last_metric_eval(context, session_name, metric_name):
+>>>>>>> 86d3a766c1297eaf101b4bae591b06d95c932573
     """Returns the last evaluations of the given metric at the given session.
 
     Args:
       context: A `backend_context.Context` value.
+<<<<<<< HEAD
       experiment_id: String, as from `plugin_util.experiment_id`.
+=======
+>>>>>>> 86d3a766c1297eaf101b4bae591b06d95c932573
       session_name: String. The session name for which to get the metric
           evaluations.
       metric_name: api_pb2.MetricName proto. The name of the metric to use.
@@ -69,7 +76,11 @@ def last_metric_eval(context, experiment_id, session_name, metric_name):
     """
     try:
         run, tag = run_tag_from_session_and_metric(session_name, metric_name)
+<<<<<<< HEAD
         tensor_events = context.read_scalars(experiment_id, run, tag)
+=======
+        tensor_events = context.read_scalars(run, tag)
+>>>>>>> 86d3a766c1297eaf101b4bae591b06d95c932573
     except KeyError as e:
         raise KeyError(
             "Can't find metric %s for session: %s. Underlying error message: %s"

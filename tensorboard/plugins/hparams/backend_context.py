@@ -89,53 +89,79 @@ class Context(object):
     def tb_context(self):
         return self._tb_context
 
+<<<<<<< HEAD
     def hparams_metadata(self, experiment_id):
         """Reads summary metadata for all hparams time series.
 
         Args:
           experiment_id: String, from `plugin_util.experiment_id`.
 
+=======
+    def hparams_metadata(self):
+        """Reads summary metadata for all hparams time series.
+
+>>>>>>> 86d3a766c1297eaf101b4bae591b06d95c932573
         Returns:
           A dict `d` such that `d[run][tag]` is a `bytes` value with the
           summary metadata content for the keyed time series.
         """
+<<<<<<< HEAD
         assert isinstance(experiment_id, str), (
             experiment_id,
             type(experiment_id),
         )
+=======
+>>>>>>> 86d3a766c1297eaf101b4bae591b06d95c932573
         return self._deprecated_multiplexer.PluginRunToTagToContent(
             metadata.PLUGIN_NAME
         )
 
+<<<<<<< HEAD
     def scalars_metadata(self, experiment_id):
         """Reads summary metadata for all scalar time series.
 
         Args:
           experiment_id: String, from `plugin_util.experiment_id`.
 
+=======
+    def scalars_metadata(self):
+        """Reads summary metadata for all scalar time series.
+
+>>>>>>> 86d3a766c1297eaf101b4bae591b06d95c932573
         Returns:
           A dict `d` such that `d[run][tag]` is a `bytes` value with the
           summary metadata content for the keyed time series.
         """
+<<<<<<< HEAD
         assert isinstance(experiment_id, str), (
             experiment_id,
             type(experiment_id),
         )
+=======
+>>>>>>> 86d3a766c1297eaf101b4bae591b06d95c932573
         return self._deprecated_multiplexer.PluginRunToTagToContent(
             scalar_metadata.PLUGIN_NAME
         )
 
+<<<<<<< HEAD
     def read_scalars(self, experiment_id, run, tag):
         """Reads values for a given scalar time series.
 
         Args:
           experiment_id: String.
+=======
+    def read_scalars(self, run, tag):
+        """Reads values for a given scalar time series.
+
+        Args:
+>>>>>>> 86d3a766c1297eaf101b4bae591b06d95c932573
           run: String.
           tag: String.
 
         Returns:
           A list of `plugin_event_accumulator.TensorEvent` values.
         """
+<<<<<<< HEAD
         assert isinstance(experiment_id, str), (
             experiment_id,
             type(experiment_id),
@@ -143,6 +169,11 @@ class Context(object):
         return self._deprecated_multiplexer.Tensors(run, tag)
 
     def _find_experiment_tag(self, experiment_id):
+=======
+        return self._deprecated_multiplexer.Tensors(run, tag)
+
+    def _find_experiment_tag(self):
+>>>>>>> 86d3a766c1297eaf101b4bae591b06d95c932573
         """Finds the experiment associcated with the metadata.EXPERIMENT_TAG
         tag.
 
@@ -152,9 +183,14 @@ class Context(object):
           The experiment or None if no such experiment is found.
         """
         with self._experiment_from_tag_lock:
+<<<<<<< HEAD
             experiment = self._experiment_from_tag.get(experiment_id)
             if experiment is None:
                 mapping = self.hparams_metadata(experiment_id)
+=======
+            if self._experiment_from_tag is None:
+                mapping = self.hparams_metadata()
+>>>>>>> 86d3a766c1297eaf101b4bae591b06d95c932573
                 for tag_to_content in mapping.values():
                     if metadata.EXPERIMENT_TAG in tag_to_content:
                         experiment = metadata.parse_experiment_plugin_data(
@@ -188,7 +224,11 @@ class Context(object):
         Returns:
           A list of api_pb2.HParamInfo messages.
         """
+<<<<<<< HEAD
         run_to_tag_to_content = self.hparams_metadata(experiment_id)
+=======
+        run_to_tag_to_content = self.hparams_metadata()
+>>>>>>> 86d3a766c1297eaf101b4bae591b06d95c932573
         # Construct a dict mapping an hparam name to its list of values.
         hparams = collections.defaultdict(list)
         for tag_to_content in run_to_tag_to_content.values():
@@ -291,7 +331,11 @@ class Context(object):
         """
         session_runs = self._build_session_runs_set(experiment_id)
         metric_names_set = set()
+<<<<<<< HEAD
         run_to_tag_to_content = self.scalars_metadata(experiment_id)
+=======
+        run_to_tag_to_content = self.scalars_metadata()
+>>>>>>> 86d3a766c1297eaf101b4bae591b06d95c932573
         for (run, tag_to_content) in six.iteritems(run_to_tag_to_content):
             session = _find_longest_parent_path(session_runs, run)
             if not session:
@@ -311,7 +355,11 @@ class Context(object):
 
     def _build_session_runs_set(self, experiment_id):
         result = set()
+<<<<<<< HEAD
         run_to_tag_to_content = self.hparams_metadata(experiment_id)
+=======
+        run_to_tag_to_content = self.hparams_metadata()
+>>>>>>> 86d3a766c1297eaf101b4bae591b06d95c932573
         for (run, tag_to_content) in six.iteritems(run_to_tag_to_content):
             if metadata.SESSION_START_INFO_TAG in tag_to_content:
                 result.add(run)
