@@ -82,6 +82,7 @@ class HParamsPlugin(base_plugin.TBPlugin):
     # ---- /download_data- -------------------------------------------------------
     @wrappers.Request.application
     def download_data_route(self, request):
+        experiment_id = plugin_util.experiment_id(request.environ)
         try:
             response_format = request.args.get("format")
             columns_visibility = json.loads(
@@ -91,9 +92,11 @@ class HParamsPlugin(base_plugin.TBPlugin):
                 request, api_pb2.ListSessionGroupsRequest
             )
             session_groups = list_session_groups.Handler(
-                self._context, request_proto
+                self._context, experiment_id, request_proto
             ).run()
-            experiment = get_experiment.Handler(self._context).run()
+            experiment = get_experiment.Handler(
+                self._context, experiment_id
+            ).run()
             body, mime_type = download_data.Handler(
                 self._context,
                 experiment,
@@ -109,6 +112,7 @@ class HParamsPlugin(base_plugin.TBPlugin):
     # ---- /experiment -----------------------------------------------------------
     @wrappers.Request.application
     def get_experiment_route(self, request):
+        experiment_id = plugin_util.experiment_id(request.environ)
         try:
             # This backend currently ignores the request parameters, but (for a POST)
             # we must advance the input stream to skip them -- otherwise the next HTTP
@@ -117,7 +121,7 @@ class HParamsPlugin(base_plugin.TBPlugin):
             return http_util.Respond(
                 request,
                 json_format.MessageToJson(
-                    get_experiment.Handler(self._context).run(),
+                    get_experiment.Handler(self._context, experiment_id).run(),
                     including_default_value_fields=True,
                 ),
                 "application/json",
@@ -129,6 +133,7 @@ class HParamsPlugin(base_plugin.TBPlugin):
     # ---- /session_groups -------------------------------------------------------
     @wrappers.Request.application
     def list_session_groups_route(self, request):
+        experiment_id = plugin_util.experiment_id(request.environ)
         try:
             request_proto = _parse_request_argument(
                 request, api_pb2.ListSessionGroupsRequest
@@ -137,7 +142,7 @@ class HParamsPlugin(base_plugin.TBPlugin):
                 request,
                 json_format.MessageToJson(
                     list_session_groups.Handler(
-                        self._context, request_proto
+                        self._context, experiment_id, request_proto
                     ).run(),
                     including_default_value_fields=True,
                 ),
@@ -150,7 +155,7 @@ class HParamsPlugin(base_plugin.TBPlugin):
     # ---- /metric_evals ---------------------------------------------------------
     @wrappers.Request.application
     def list_metric_evals_route(self, request):
-        experiment = plugin_util.experiment_id(request.environ)
+        experiment_id = plugin_util.experiment_id(request.environ)
         try:
             request_proto = _parse_request_argument(
                 request, api_pb2.ListMetricEvalsRequest
@@ -162,7 +167,7 @@ class HParamsPlugin(base_plugin.TBPlugin):
                 request,
                 json.dumps(
                     list_metric_evals.Handler(
-                        request_proto, scalars_plugin, experiment
+                        request_proto, scalars_plugin, experiment_id
                     ).run()
                 ),
                 "application/json",
