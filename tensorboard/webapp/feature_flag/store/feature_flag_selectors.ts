@@ -38,6 +38,9 @@ export const getFeature = createSelector(
   }
 );
 
-export function getEnabledExperimentalPlugins(state: State): string[] {
-  return getFeature(state, 'enabledExperimentalPlugins') as string[];
-}
+export const getEnabledExperimentalPlugins = createSelector(
+  selectFeatureFlagState,
+  (state) => {
+    return state.enabledExperimentalPlugins as string[];
+  }
+);
