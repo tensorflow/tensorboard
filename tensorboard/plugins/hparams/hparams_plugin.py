@@ -74,22 +74,7 @@ class HParamsPlugin(base_plugin.TBPlugin):
         }
 
     def is_active(self):
-        """Returns True if the hparams plugin is active.
-
-        The hparams plugin is active iff there is a tag with the hparams
-        plugin name as its plugin name and the scalars plugin is
-        registered and active.
-        """
-        if not self._context.multiplexer:
-            return False
-        scalars_plugin = self._get_scalars_plugin()
-        if not scalars_plugin or not scalars_plugin.is_active():
-            return False
-        return bool(
-            self._context.multiplexer.PluginRunToTagToContent(
-                metadata.PLUGIN_NAME
-            )
-        )
+        return False  # `list_plugins` as called by TB core suffices
 
     def frontend_metadata(self):
         return base_plugin.FrontendMetadata(element_name="tf-hparams-dashboard")
@@ -172,11 +157,7 @@ class HParamsPlugin(base_plugin.TBPlugin):
             )
             scalars_plugin = self._get_scalars_plugin()
             if not scalars_plugin:
-                raise error.HParamsError(
-                    "Internal error: the scalars plugin is not"
-                    " registered; yet, the hparams plugin is"
-                    " active."
-                )
+                raise werkzeug.exceptions.NotFound("Scalars plugin not loaded")
             return http_util.Respond(
                 request,
                 json.dumps(
