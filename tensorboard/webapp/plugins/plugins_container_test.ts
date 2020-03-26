@@ -266,5 +266,35 @@ describe('plugins_component', () => {
       expect(barReloadSpy).toHaveBeenCalledTimes(2);
       expect(fooReloadSpy).toHaveBeenCalledTimes(1);
     });
+
+    fit('does not invoke reload method on dom if disable_reload', () => {
+      store.overrideSelector(getPlugins, {
+        bar: {
+          disable_reload: true,
+          enabled: true,
+          loading_mechanism: {
+            type: LoadingMechanismType.CUSTOM_ELEMENT,
+            element_name: 'tb-bar',
+          } as CustomElementLoadingMechanism,
+          tab_name: 'Bar',
+          remove_dom: false,
+        },
+      });
+      const fixture = TestBed.createComponent(PluginsContainer);
+
+      setLastLoadedTime(null, DataLoadState.NOT_LOADED);
+      setActivePlugin('bar');
+      fixture.detectChanges();
+
+      const {nativeElement} = fixture.debugElement.query(By.css('.plugins'));
+      const [barElement] = nativeElement.children;
+      const barReloadSpy = jasmine.createSpy();
+      barElement.reload = barReloadSpy;
+
+      setLastLoadedTime(1);
+      fixture.detectChanges();
+
+      expect(barReloadSpy).not.toHaveBeenCalled();
+    });
   });
 });

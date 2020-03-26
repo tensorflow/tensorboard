@@ -15,7 +15,7 @@ limitations under the License.
 import {Component} from '@angular/core';
 import {Store, createSelector} from '@ngrx/store';
 import {Observable} from 'rxjs';
-import {map} from 'rxjs/operators';
+import {map, withLatestFrom} from 'rxjs/operators';
 
 import {State} from '../core/store/core_types';
 import {
@@ -84,8 +84,9 @@ export class ReloadContainer {
   isReloading$: Observable<boolean> = this.store
     .select(getPluginsListLoaded)
     .pipe(
-      map((loaded) => {
-        return loaded.state === DataLoadState.LOADING;
+      withLatestFrom(this.reloadDisabled$),
+      map(([loaded, reloadDisabled]) => {
+        return !reloadDisabled && loaded.state === DataLoadState.LOADING;
       })
     );
 

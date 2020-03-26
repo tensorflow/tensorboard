@@ -277,5 +277,26 @@ describe('header test', () => {
       );
       expect(button.attributes['disabled']).toBe('true');
     });
+
+    it('does not spin the spinner when reload is disabled', () => {
+      store.overrideSelector(getPluginsListLoaded, {
+        state: DataLoadState.LOADING,
+        lastLoadedTimeInMs: null,
+      });
+      store.overrideSelector(getPlugins, {
+        foo: buildPluginMetadata({
+          disable_reload: true,
+          tab_name: 'Foo',
+        }),
+      });
+      store.overrideSelector(getActivePlugin, 'foo');
+      const fixture = TestBed.createComponent(HeaderComponent);
+      fixture.detectChanges();
+
+      const buttonBefore = fixture.debugElement.query(
+        By.css('app-header-reload button')
+      );
+      expect(buttonBefore.classes['loading']).toBe(false);
+    });
   });
 });
