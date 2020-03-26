@@ -29,14 +29,17 @@ except ImportError:
     import mock  # pylint: disable=unused-import
 
 from google.protobuf import text_format
+from tensorboard.backend.event_processing import data_provider
 from tensorboard.backend.event_processing import event_accumulator
 from tensorboard.backend.event_processing import plugin_event_multiplexer
+from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.hparams import api_pb2
 from tensorboard.plugins.hparams import backend_context
 from tensorboard.plugins.hparams import list_session_groups
 from tensorboard.plugins.hparams import metadata
 from tensorboard.plugins.hparams import plugin_data_pb2
+from tensorboard.plugins.scalar import metadata as scalars_metadata
 
 
 DATA_TYPE_EXPERIMENT = "experiment"
@@ -53,12 +56,30 @@ class ListSessionGroupsTest(tf.test.TestCase):
     maxDiff = None  # pylint: disable=invalid-name
 
     def setUp(self):
-        self._mock_tb_context = mock.create_autospec(base_plugin.TBContext)
+        self._mock_tb_context = base_plugin.TBContext()
+        # TODO(#3425): Remove mocking or switch to mocking data provider
+        # APIs directly.
         self._mock_multiplexer = mock.create_autospec(
             plugin_event_multiplexer.EventMultiplexer
         )
         self._mock_tb_context.multiplexer = self._mock_multiplexer
-        self._mock_multiplexer.PluginRunToTagToContent.return_value = {
+        self._mock_multiplexer.PluginRunToTagToContent.side_effect = (
+            self._mock_plugin_run_to_tag_to_content
+        )
+        self._mock_multiplexer.AllSummaryMetadata.side_effect = (
+            self._mock_all_summary_metadata
+        )
+        self._mock_multiplexer.SummaryMetadata.side_effect = (
+            self._mock_summary_metadata
+        )
+        self._mock_multiplexer.Tensors.side_effect = self._mock_tensors
+        self._mock_tb_context.data_provider = data_provider.MultiplexerDataProvider(
+            self._mock_multiplexer, "/path/to/logs"
+        )
+
+    def _mock_all_summary_metadata(self):
+        result = {}
+        hparams_content = {
             "": {
                 metadata.EXPERIMENT_TAG: self._serialized_plugin_data(
                     DATA_TYPE_EXPERIMENT,
@@ -200,12 +221,60 @@ class ListSessionGroupsTest(tf.test.TestCase):
                 ),
             },
         }
-        self._mock_multiplexer.Tensors.side_effect = self._mock_tensors
+        scalars_content = {
+            "session_1": {
+                "current_temp": b"",
+                "delta_temp": b"",
+                "optional_metric": b"",
+            },
+            "session_2": {"current_temp": b"", "delta_temp": b""},
+            "session_3": {"current_temp": b"", "delta_temp": b""},
+            "session_4": {"current_temp": b"", "delta_temp": b""},
+            "session_5": {"current_temp": b"", "delta_temp": b""},
+        }
+        for (run, tag_to_content) in hparams_content.items():
+            result.setdefault(run, {})
+            for (tag, content) in tag_to_content.items():
+                m = summary_pb2.SummaryMetadata()
+                m.data_class = summary_pb2.DATA_CLASS_TENSOR
+                m.plugin_data.plugin_name = metadata.PLUGIN_NAME
+                m.plugin_data.content = content
+                result[run][tag] = m
+        for (run, tag_to_content) in scalars_content.items():
+            result.setdefault(run, {})
+            for (tag, content) in tag_to_content.items():
+                m = summary_pb2.SummaryMetadata()
+                m.data_class = summary_pb2.DATA_CLASS_SCALAR
+                m.plugin_data.plugin_name = scalars_metadata.PLUGIN_NAME
+                m.plugin_data.content = content
+                result[run][tag] = m
+        return result
+
+    def _mock_plugin_run_to_tag_to_content(self, plugin_name):
+        result = {}
+        for (run, tag_to_metadata) in self._mock_all_summary_metadata().items():
+            for (tag, metadata) in tag_to_metadata.items():
+                if metadata.plugin_data.plugin_name != plugin_name:
+                    continue
+                result.setdefault(run, {})
+                result[run][tag] = metadata.plugin_data.content
+        return result
+
+    def _mock_summary_metadata(self, run, tag):
+        return self._mock_all_summary_metadata()[run][tag]
 
     # A mock version of EventMultiplexer.Tensors
     def _mock_tensors(self, run, tag):
+        hparams_time_series = [
+            TensorEvent(
+                wall_time=123.75, step=0, tensor_proto=metadata.NULL_TENSOR
+            )
+        ]
         result_dict = {
+            "": {metadata.EXPERIMENT_TAG: hparams_time_series[:],},
             "session_1": {
+                metadata.SESSION_START_INFO_TAG: hparams_time_series[:],
+                metadata.SESSION_END_INFO_TAG: hparams_time_series[:],
                 "current_temp": [
                     TensorEvent(
                         wall_time=1,
@@ -239,6 +308,8 @@ class ListSessionGroupsTest(tf.test.TestCase):
                 ],
             },
             "session_2": {
+                metadata.SESSION_START_INFO_TAG: hparams_time_series[:],
+                metadata.SESSION_END_INFO_TAG: hparams_time_series[:],
                 "current_temp": [
                     TensorEvent(
                         wall_time=1,
@@ -260,6 +331,8 @@ class ListSessionGroupsTest(tf.test.TestCase):
                 ],
             },
             "session_3": {
+                metadata.SESSION_START_INFO_TAG: hparams_time_series[:],
+                metadata.SESSION_END_INFO_TAG: hparams_time_series[:],
                 "current_temp": [
                     TensorEvent(
                         wall_time=1,
@@ -281,6 +354,8 @@ class ListSessionGroupsTest(tf.test.TestCase):
                 ],
             },
             "session_4": {
+                metadata.SESSION_START_INFO_TAG: hparams_time_series[:],
+                metadata.SESSION_END_INFO_TAG: hparams_time_series[:],
                 "current_temp": [
                     TensorEvent(
                         wall_time=1,
@@ -302,6 +377,8 @@ class ListSessionGroupsTest(tf.test.TestCase):
                 ],
             },
             "session_5": {
+                metadata.SESSION_START_INFO_TAG: hparams_time_series[:],
+                metadata.SESSION_END_INFO_TAG: hparams_time_series[:],
                 "current_temp": [
                     TensorEvent(
                         wall_time=1,
