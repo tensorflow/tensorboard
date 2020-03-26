@@ -42,6 +42,7 @@ py_library(
         ":protos_all_py_pb2",
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
+        "//tensorboard/data:provider",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/plugins/scalar:metadata",
         "//tensorboard/plugins/scalar:scalars_plugin",
@@ -72,14 +73,18 @@ py_test(
 py_test(
     name = "list_session_groups_test",
     size = "small",
+    timeout = "moderate",
     srcs = [
         "list_session_groups_test.py",
     ],
     deps = [
         ":hparams_plugin",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/backend/event_processing:data_provider",
         "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/backend/event_processing:event_multiplexer",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/plugins/scalar:metadata",
         "@org_pythonhosted_mock",
     ],
 )
@@ -106,8 +111,11 @@ py_test(
     deps = [
         ":hparams_plugin",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/backend/event_processing:data_provider",
         "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/backend/event_processing:event_multiplexer",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/plugins/scalar:metadata",
         "@org_pythonhosted_mock",
     ],
 )
