@@ -103,6 +103,8 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
             for (name, color, description) in data:
                 image_1x1 = tf.constant([[[color]]], dtype=tf.uint8)
                 for i in xrange(1, 11):
+                    # Use a non-monotonic sequence of sample sizes to
+                    # test `max_length` calculation.
                     k = 6 - abs(6 - i)  # 1, .., 6, .., 2
                     # a `k`-sample image summary of `i`-by-`i` images
                     image = tf.tile(image_1x1, [k, i, i, 1])
