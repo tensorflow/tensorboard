@@ -311,7 +311,7 @@ method.
 
 ### Can I customize which lines appear in a plot?
 
-Using the [custom scalars plugin](tensorboard/plugins/custom_scalar), you can
+Using the [custom scalars plugin](https://github.com/tensorflow/tensorboard/tree/master/tensorboard/plugins/custom_scalar), you can
 create scalar plots with lines for custom run-tag pairs. However, within the
 original scalars dashboard, each scalar plot corresponds to data for a specific
 tag and contains lines for each run that includes that tag.
@@ -319,7 +319,7 @@ tag and contains lines for each run that includes that tag.
 ### Can I visualize margins above and below lines?
 
 Margin plots (that visualize lower and upper bounds) may be created with the
-[custom scalars plugin](tensorboard/plugins/custom_scalar). The original
+[custom scalars plugin](https://github.com/tensorflow/tensorboard/tree/master/tensorboard/plugins/custom_scalar). The original
 scalars plugin does not support visualizing margins.
 
 ### Can I create scatterplots (or other custom plots)?
