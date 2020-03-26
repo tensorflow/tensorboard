@@ -212,6 +212,7 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         "//tensorboard:expect_pkg_resources_installed",
+        "//tensorboard/backend:experimental_plugin",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/plugins/audio:audio_plugin",
         "//tensorboard/plugins/beholder:beholder_plugin_loader",

@@ -49,6 +49,17 @@ tf_ts_library(
     ],
 )
 
+ng_module(
+    name = "app_state",
+    srcs = [
+        "app_state.ts",
+    ],
+    deps = [
+        "//tensorboard/webapp/core/store",
+        "//tensorboard/webapp/feature_flag/store:types",
+    ],
+)
+
 # Wrapper that prepares Angular app for deployment, dealing with browser
 # compatibility, Vulcanization, and configuration (e.g. prod vs. dev).
 ng_module(
@@ -147,6 +158,7 @@ tf_ng_web_test_suite(
         "//tensorboard/webapp/reloader:test_lib",
         "//tensorboard/webapp/settings:test_lib",
         "//tensorboard/webapp/webapp_data_source:feature_flag_test_lib",
+        "//tensorboard/webapp/webapp_data_source:webapp_data_source_test_lib",
     ],
 )
 
