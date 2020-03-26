@@ -73,6 +73,7 @@ py_test(
 py_test(
     name = "list_session_groups_test",
     size = "small",
+    timeout = "moderate",
     srcs = [
         "list_session_groups_test.py",
     ],
