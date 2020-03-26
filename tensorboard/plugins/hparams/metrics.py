@@ -23,6 +23,7 @@ import os
 import six
 
 from tensorboard.plugins.hparams import api_pb2
+from tensorboard.plugins.scalar import metadata as scalars_metadata
 from tensorboard.util import tensor_util
 
 
@@ -46,12 +47,11 @@ def run_tag_from_session_and_metric(session_name, metric_name):
     return run, tag
 
 
-def last_metric_eval(multiplexer, session_name, metric_name):
+def last_metric_eval(context, session_name, metric_name):
     """Returns the last evaluations of the given metric at the given session.
 
     Args:
-      multiplexer: The EventMultiplexer instance allowing access to
-          the exported summary data.
+      context: A `backend_context.Context` value.
       session_name: String. The session name for which to get the metric
           evaluations.
       metric_name: api_pb2.MetricName proto. The name of the metric to use.
@@ -68,7 +68,7 @@ def last_metric_eval(multiplexer, session_name, metric_name):
     """
     try:
         run, tag = run_tag_from_session_and_metric(session_name, metric_name)
-        tensor_events = multiplexer.Tensors(run=run, tag=tag)
+        tensor_events = context.read_scalars(run, tag)
     except KeyError as e:
         raise KeyError(
             "Can't find metric %s for session: %s. Underlying error message: %s"
