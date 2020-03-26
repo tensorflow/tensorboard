@@ -58,9 +58,9 @@ export class CoreEffects {
       ),
       filter(([, {state}]) => state !== DataLoadState.LOADING),
       tap(() => this.store.dispatch(pluginsListingRequested())),
-      mergeMap(([, , enablesExperimentalPlugins]) => {
+      mergeMap(([, , enabledExperimentalPlugins]) => {
         return zip(
-          this.webappDataSource.fetchPluginsListing(enablesExperimentalPlugins),
+          this.webappDataSource.fetchPluginsListing(enabledExperimentalPlugins),
           this.webappDataSource.fetchRuns(),
           this.webappDataSource.fetchEnvironments()
         ).pipe(

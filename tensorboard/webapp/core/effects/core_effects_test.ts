@@ -21,7 +21,7 @@ import {ReplaySubject, of} from 'rxjs';
 
 import {CoreEffects} from './core_effects';
 import * as coreActions from '../actions';
-import {StateForTesting as State} from '../../app_state';
+import {State} from '../../app_state';
 
 import {createPluginMetadata, createState, createCoreState} from '../testing';
 
@@ -38,7 +38,7 @@ describe('core_effects', () => {
   let httpMock: HttpTestingController;
   let coreEffects: CoreEffects;
   let action: ReplaySubject<Action>;
-  let store: MockStore<State>;
+  let store: MockStore<Partial<State>>;
   let fetchRuns: jasmine.Spy;
   let fetchEnvironments: jasmine.Spy;
   let dispatchSpy: jasmine.Spy;
@@ -125,7 +125,7 @@ describe('core_effects', () => {
       });
 
       it(
-        'appends query params to the data/plugins_listng when ' +
+        'appends query params to the data/plugins_listing when ' +
           'getEnabledExperimentalPlugins is non-empty',
         () => {
           store.overrideSelector(getEnabledExperimentalPlugins, [
@@ -141,7 +141,10 @@ describe('core_effects', () => {
           action.next(onAction);
           // Flushing the request response invokes above subscription sychronously.
           httpMock
-            .expectOne('data/plugins_listing?experimentalPlugin=alpha%2Cbeta')
+            .expectOne(
+              'data/plugins_listing?experimentalPlugin=alpha&' +
+                'experimentalPlugin=beta'
+            )
             .flush(pluginsListing);
 
           expect(fetchRuns).toHaveBeenCalled();

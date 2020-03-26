@@ -45,7 +45,9 @@ describe('tb_server_data_source', () => {
         dataSource
           .fetchPluginsListing(['foo', 'bar'])
           .subscribe(jasmine.createSpy());
-        httpMock.expectOne('data/plugins_listing?experimentalPlugin=foo%2Cbar');
+        httpMock.expectOne(
+          'data/plugins_listing?experimentalPlugin=foo&experimentalPlugin=bar'
+        );
       });
     });
   });

@@ -17,6 +17,3 @@ import {State as CoreState} from './core/store/core_types';
 import {State as FeatureFlagState} from './feature_flag/store/feature_flag_types';
 
 export type State = CoreState & FeatureFlagState;
-
-// Allows partial features in tests.
-export type StateForTesting = Partial<State>;
