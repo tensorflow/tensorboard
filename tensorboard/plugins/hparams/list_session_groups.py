@@ -74,13 +74,9 @@ class Handler(object):
         # in the 'groups_by_name' dict. We create the SessionGroup object, if this
         # is the first session of that group we encounter.
         groups_by_name = {}
-<<<<<<< HEAD
         run_to_tag_to_content = self._context.hparams_metadata(
             self._experiment_id
         )
-=======
-        run_to_tag_to_content = self._context.hparams_metadata()
->>>>>>> 86d3a766c1297eaf101b4bae591b06d95c932573
         for (run, tag_to_content) in six.iteritems(run_to_tag_to_content):
             if metadata.SESSION_START_INFO_TAG not in tag_to_content:
                 continue
@@ -165,14 +161,10 @@ class Handler(object):
             metric_name = metric_info.name
             try:
                 metric_eval = metrics.last_metric_eval(
-<<<<<<< HEAD
                     self._context,
                     self._experiment_id,
                     session_name,
                     metric_name,
-=======
-                    self._context, session_name, metric_name
->>>>>>> 86d3a766c1297eaf101b4bae591b06d95c932573
                 )
             except KeyError:
                 # It's ok if we don't find the metric in the session.
