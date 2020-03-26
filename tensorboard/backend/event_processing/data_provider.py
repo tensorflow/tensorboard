@@ -109,107 +109,76 @@ class MultiplexerDataProvider(provider.DataProvider):
 
     def list_scalars(self, experiment_id, plugin_name, run_tag_filter=None):
         self._validate_experiment_id(experiment_id)
-        index = self._index(
-            plugin_name, run_tag_filter, summary_pb2.DATA_CLASS_SCALAR
+        run_tag_content = self._multiplexer.PluginRunToTagToContent(plugin_name)
+        return self._list(
+            provider.ScalarTimeSeries,
+            run_tag_content,
+            run_tag_filter,
+            summary_pb2.DATA_CLASS_SCALAR,
         )
-        return self._list(provider.ScalarTimeSeries, index)
 
     def read_scalars(
         self, experiment_id, plugin_name, downsample=None, run_tag_filter=None
     ):
-        return self._read(
-            _convert_scalar_event,
-            summary_pb2.DATA_CLASS_SCALAR,
-            experiment_id,
-            plugin_name,
-            downsample,
-            run_tag_filter,
+        self._validate_downsample(downsample)
+        index = self.list_scalars(
+            experiment_id, plugin_name, run_tag_filter=run_tag_filter
         )
+        return self._read(_convert_scalar_event, index, downsample)
 
     def list_tensors(self, experiment_id, plugin_name, run_tag_filter=None):
         self._validate_experiment_id(experiment_id)
-        index = self._index(
-            plugin_name, run_tag_filter, summary_pb2.DATA_CLASS_TENSOR
+        run_tag_content = self._multiplexer.PluginRunToTagToContent(plugin_name)
+        return self._list(
+            provider.TensorTimeSeries,
+            run_tag_content,
+            run_tag_filter,
+            summary_pb2.DATA_CLASS_TENSOR,
         )
-        return self._list(provider.TensorTimeSeries, index)
 
     def read_tensors(
         self, experiment_id, plugin_name, downsample=None, run_tag_filter=None
     ):
-        return self._read(
-            _convert_tensor_event,
-            summary_pb2.DATA_CLASS_TENSOR,
-            experiment_id,
-            plugin_name,
-            downsample,
-            run_tag_filter,
+        self._validate_downsample(downsample)
+        index = self.list_tensors(
+            experiment_id, plugin_name, run_tag_filter=run_tag_filter
         )
+        return self._read(_convert_tensor_event, index, downsample)
 
-    def _index(self, plugin_name, run_tag_filter, data_class_filter):
-        """List time series and metadata matching the given filters.
-
-        This is like `_list`, but doesn't traverse `Tensors(...)` to
-        compute metadata that's not always needed.
-
-        Args:
-          plugin_name: A string plugin name filter (required).
-          run_tag_filter: An `provider.RunTagFilter`, or `None`.
-          data_class_filter: A `summary_pb2.DataClass` filter (required).
-
-        Returns:
-          A nested dict `d` such that `d[run][tag]` is a
-          `SummaryMetadata` proto.
-        """
-        if run_tag_filter is None:
-            run_tag_filter = provider.RunTagFilter(runs=None, tags=None)
-        runs = run_tag_filter.runs
-        tags = run_tag_filter.tags
-
-        # Optimization for a common case, reading a single time series.
-        if runs and len(runs) == 1 and tags and len(tags) == 1:
-            (run,) = runs
-            (tag,) = tags
-            try:
-                metadata = self._multiplexer.SummaryMetadata(run, tag)
-            except KeyError:
-                return {}
-            all_metadata = {run: {tag: metadata}}
-        else:
-            all_metadata = self._multiplexer.AllSummaryMetadata()
-
-        result = {}
-        for (run, tag_to_metadata) in all_metadata.items():
-            if runs is not None and run not in runs:
-                continue
-            result_for_run = {}
-            for (tag, metadata) in tag_to_metadata.items():
-                if tags is not None and tag not in tags:
-                    continue
-                if metadata.data_class != data_class_filter:
-                    continue
-                if metadata.plugin_data.plugin_name != plugin_name:
-                    continue
-                result[run] = result_for_run
-                result_for_run[tag] = metadata
-
-        return result
-
-    def _list(self, construct_time_series, index):
+    def _list(
+        self,
+        construct_time_series,
+        run_tag_content,
+        run_tag_filter,
+        data_class_filter,
+    ):
         """Helper to list scalar or tensor time series.
 
         Args:
           construct_time_series: `ScalarTimeSeries` or `TensorTimeSeries`.
-          index: The result of `self._index(...)`.
+          run_tag_content: Result of `_multiplexer.PluginRunToTagToContent(...)`.
+          run_tag_filter: As given by the client; may be `None`.
+          data_class_filter: A `summary_pb2.DataClass` value. Only time
+            series of this data class will be returned.
 
         Returns:
           A list of objects of type given by `construct_time_series`,
           suitable to be returned from `list_scalars` or `list_tensors`.
         """
         result = {}
-        for (run, tag_to_metadata) in index.items():
+        if run_tag_filter is None:
+            run_tag_filter = provider.RunTagFilter(runs=None, tags=None)
+        for (run, tag_to_content) in six.iteritems(run_tag_content):
             result_for_run = {}
-            result[run] = result_for_run
-            for (tag, summary_metadata) in tag_to_metadata.items():
+            for tag in tag_to_content:
+                if not self._test_run_tag(run_tag_filter, run, tag):
+                    continue
+                if (
+                    self._multiplexer.SummaryMetadata(run, tag).data_class
+                    != data_class_filter
+                ):
+                    continue
+                result[run] = result_for_run
                 max_step = None
                 max_wall_time = None
                 for event in self._multiplexer.Tensors(run, tag):
@@ -227,42 +196,27 @@ class MultiplexerDataProvider(provider.DataProvider):
                 )
         return result
 
-    def _read(
-        self,
-        convert_event,
-        data_class_filter,
-        experiment_id,
-        plugin_name,
-        downsample,
-        run_tag_filter,
-    ):
-        """Helper to read scalar, tensor, or blob sequence data.
+    def _read(self, convert_event, index, downsample):
+        """Helper to read scalar or tensor data from the multiplexer.
 
         Args:
-          convert_event: One of the `_convert_*_event` helpers.
-          data_class_filter: A `summary_pb2.DataClass` filter (required).
-          experiment_id: As to `read_*`.
-          plugin_name: As to `read_*`.
-          run_tag_filter: As to `read_*`.
-          downsample: As to `read_*`.
+          convert_event: Takes `plugin_event_accumulator.TensorEvent` to
+            either `provider.ScalarDatum` or `provider.TensorDatum`.
+          index: The result of `list_scalars` or `list_tensors`.
+          downsample: Non-negative `int`; how many samples to return per
+            time series.
 
         Returns:
           A dict of dicts of values returned by `convert_event` calls,
-          suitable to be returned from `read_*`.
+          suitable to be returned from `read_scalars` or `read_tensors`.
         """
-        self._validate_experiment_id(experiment_id)
-        self._validate_downsample(downsample)
-        index = self._index(plugin_name, run_tag_filter, data_class_filter)
         result = {}
-        for (run, tag_to_metadata) in index.items():
+        for (run, tags_for_run) in six.iteritems(index):
             result_for_run = {}
             result[run] = result_for_run
-            for tag in tag_to_metadata:
+            for (tag, metadata) in six.iteritems(tags_for_run):
                 events = self._multiplexer.Tensors(run, tag)
-                data = [
-                    convert_event(experiment_id, plugin_name, run, tag, e)
-                    for e in events
-                ]
+                data = [convert_event(e) for e in events]
                 result_for_run[tag] = _downsample(data, downsample)
         return result
 
@@ -270,14 +224,23 @@ class MultiplexerDataProvider(provider.DataProvider):
         self, experiment_id, plugin_name, run_tag_filter=None
     ):
         self._validate_experiment_id(experiment_id)
-        index = self._index(
-            plugin_name, run_tag_filter, summary_pb2.DATA_CLASS_BLOB_SEQUENCE
-        )
+        if run_tag_filter is None:
+            run_tag_filter = provider.RunTagFilter(runs=None, tags=None)
+
         result = {}
-        for (run, tag_to_metadata) in index.items():
+        run_tag_content = self._multiplexer.PluginRunToTagToContent(plugin_name)
+        for (run, tag_to_content) in six.iteritems(run_tag_content):
             result_for_run = {}
-            result[run] = result_for_run
-            for (tag, metadata) in tag_to_metadata.items():
+            for tag in tag_to_content:
+                if not self._test_run_tag(run_tag_filter, run, tag):
+                    continue
+                summary_metadata = self._multiplexer.SummaryMetadata(run, tag)
+                if (
+                    summary_metadata.data_class
+                    != summary_pb2.DATA_CLASS_BLOB_SEQUENCE
+                ):
+                    continue
+                result[run] = result_for_run
                 max_step = None
                 max_wall_time = None
                 max_length = None
@@ -293,23 +256,36 @@ class MultiplexerDataProvider(provider.DataProvider):
                     max_step=max_step,
                     max_wall_time=max_wall_time,
                     max_length=max_length,
-                    plugin_content=metadata.plugin_data.content,
-                    description=metadata.summary_description,
-                    display_name=metadata.display_name,
+                    plugin_content=summary_metadata.plugin_data.content,
+                    description=summary_metadata.summary_description,
+                    display_name=summary_metadata.display_name,
                 )
         return result
 
     def read_blob_sequences(
         self, experiment_id, plugin_name, downsample=None, run_tag_filter=None
     ):
-        return self._read(
-            _convert_blob_sequence_event,
-            summary_pb2.DATA_CLASS_BLOB_SEQUENCE,
-            experiment_id,
-            plugin_name,
-            downsample,
-            run_tag_filter,
+        self._validate_experiment_id(experiment_id)
+        self._validate_downsample(downsample)
+        index = self.list_blob_sequences(
+            experiment_id, plugin_name, run_tag_filter=run_tag_filter
         )
+        result = {}
+        for (run, tags_for_run) in six.iteritems(index):
+            result_for_run = {}
+            result[run] = result_for_run
+            for (tag, metadata) in six.iteritems(tags_for_run):
+                events = self._multiplexer.Tensors(run, tag)
+                data_by_step = {}
+                for event in events:
+                    if event.step in data_by_step:
+                        continue
+                    data_by_step[event.step] = _convert_blob_sequence_event(
+                        experiment_id, plugin_name, run, tag, event
+                    )
+                data = [datum for (step, datum) in sorted(data_by_step.items())]
+                result_for_run[tag] = _downsample(data, downsample)
+        return result
 
     def read_blob(self, blob_key):
         (
@@ -393,7 +369,7 @@ def _decode_blob_key(key):
     return (experiment_id, plugin_name, run, tag, step, index)
 
 
-def _convert_scalar_event(experiment_id, plugin_name, run, tag, event):
+def _convert_scalar_event(event):
     """Helper for `read_scalars`."""
     return provider.ScalarDatum(
         step=event.step,
@@ -402,7 +378,7 @@ def _convert_scalar_event(experiment_id, plugin_name, run, tag, event):
     )
 
 
-def _convert_tensor_event(experiment_id, plugin_name, run, tag, event):
+def _convert_tensor_event(event):
     """Helper for `read_tensors`."""
     return provider.TensorDatum(
         step=event.step,
