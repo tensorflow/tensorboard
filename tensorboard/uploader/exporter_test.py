@@ -252,10 +252,6 @@ class TensorBoardExporterTest(tb_test.TestCase):
         """Covers exporting of complete and incomplete blob sequences
 
         as well as rpc error during blob streaming.
-
-        Note that the `StreamBlobData()` method is overridden twice in this
-        test, once for the no-error condition and once for the grpc-error
-        condition.
         """
         mock_api_client = self._create_mock_api_client()
 
@@ -318,8 +314,6 @@ class TensorBoardExporterTest(tb_test.TestCase):
         mock_api_client.StreamExperimentData = mock.Mock(
             wraps=stream_experiment_data
         )
-        # NOTE(cais): `StreamBlobData` will be overridden again below for the
-        # grpc error condition.
         mock_api_client.StreamBlobData.side_effect = [
             iter(
                 [
@@ -331,16 +325,9 @@ class TensorBoardExporterTest(tb_test.TestCase):
                     ),
                 ]
             ),
-            iter(
-                [
-                    export_service_pb2.StreamBlobDataResponse(
-                        data=b"1357", offset=0, final_chunk=False,
-                    ),
-                    export_service_pb2.StreamBlobDataResponse(
-                        data=b"2468", offset=4, final_chunk=True,
-                    ),
-                ]
-            ),
+            # Raise error from `StreamBlobData` to test the grpc-error
+            # condition.
+            test_util.grpc_error(grpc.StatusCode.INTERNAL, "Error for testing"),
         ]
 
         outdir = os.path.join(self.get_temp_dir(), "outdir")
@@ -424,16 +411,15 @@ class TensorBoardExporterTest(tb_test.TestCase):
         ) as f:
             self.assertEqual(f.read(), b"43218765")
 
-        # ============================================== #
-        # Test the case where blob streaming errors out. #
-        # ============================================== #
-        def stream_blob_data(request, **kwargs):
-            raise test_util.grpc_error(
-                grpc.StatusCode.INTERNAL, "Error for testing"
-            )
+        # Check call to StreamBlobData.
+        expected_blob_data_request = export_service_pb2.StreamBlobDataRequest(
+            blob_id="train_blob"
+        )
+        mock_api_client.StreamBlobData.assert_called_once_with(
+            expected_blob_data_request, metadata=grpc_util.version_metadata()
+        )
 
-        mock_api_client.StreamBlobData = mock.Mock(wraps=stream_blob_data)
-
+        # Test the case where blob streaming errors out.
         self.assertEqual(next(generator), "456")
         # Check the blob_sequences.json file.
         with open(
