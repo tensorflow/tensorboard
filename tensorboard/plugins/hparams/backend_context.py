@@ -146,10 +146,10 @@ class Context(object):
             experiment_id,
             plugin_name=scalar_metadata.PLUGIN_NAME,
             run_tag_filter=run_tag_filter,
-            # TODO(#3436): Pass a smaller value here once we have a
-            # better guarantee that `downsample=1` will fetch the most
-            # recent datum.
-            downsample=1000,
+            # TODO(#3436): We assume that downsampling always includes
+            # the most recent datum, which holds for all implementations
+            # of interest but is not yet required by the interface.
+            downsample=1,
         )
         return {
             run: {tag: data[-1] for (tag, data) in tag_to_data.items()}
