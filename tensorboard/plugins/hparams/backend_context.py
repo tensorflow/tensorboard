@@ -129,38 +129,32 @@ class Context(object):
             )
         )
 
-    def read_scalars(self, experiment_id, run, tag):
-        """Reads values for a given scalar time series.
+    def read_last_scalars(self, experiment_id, run_tag_filter):
+        """Reads the most recent values from scalar time series.
 
         Args:
           experiment_id: String.
-          run: String.
-          tag: String.
+          run_tag_filter: Required `data.provider.RunTagFilter`, with
+            the semantics as in `read_scalars`.
 
         Returns:
-          A list of `plugin_event_accumulator.TensorEvent` values.
+          A dict `d` such that `d[run][tag]` is a `provider.ScalarDatum`
+          value, with keys only for runs and tags that actually had
+          data, which may be a subset of what was requested.
         """
         data_provider_output = self._tb_context.data_provider.read_scalars(
             experiment_id,
             plugin_name=scalar_metadata.PLUGIN_NAME,
-            run_tag_filter=provider.RunTagFilter([run], [tag]),
-            downsample=(self._tb_context.sampling_hints or {}).get(
-                scalar_metadata.PLUGIN_NAME, 1000
-            ),
+            run_tag_filter=run_tag_filter,
+            # TODO(#3436): Pass a smaller value here once we have a
+            # better guarantee that `downsample=1` will fetch the most
+            # recent datum.
+            downsample=1000,
         )
-        data = data_provider_output.get(run, {}).get(tag)
-        if data is None:
-            raise KeyError("No scalar data for run=%r, tag=%r" % (run, tag))
-        return [
-            # TODO(#3425): Change clients to depend on data provider
-            # APIs natively and remove this post-processing step.
-            event_accumulator.TensorEvent(
-                wall_time=e.wall_time,
-                step=e.step,
-                tensor_proto=tensor_util.make_tensor_proto(e.value),
-            )
-            for e in data
-        ]
+        return {
+            run: {tag: data[-1] for (tag, data) in tag_to_data.items()}
+            for (run, tag_to_data) in data_provider_output.items()
+        }
 
     def _find_experiment_tag(self, experiment_id):
         """Finds the experiment associcated with the metadata.EXPERIMENT_TAG
