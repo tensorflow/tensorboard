@@ -113,7 +113,7 @@ class BackendContextTest(tf.test.TestCase):
             }
         }
         ctxt = backend_context.Context(self._mock_tb_context)
-        self.assertProtoEquals(experiment, ctxt.experiment())
+        self.assertProtoEquals(experiment, ctxt.experiment(experiment_id="123"))
 
     def test_experiment_without_experiment_tag(self):
         self.session_1_start_info_ = """
@@ -168,7 +168,7 @@ class BackendContextTest(tf.test.TestCase):
             }
         """
         ctxt = backend_context.Context(self._mock_tb_context)
-        actual_exp = ctxt.experiment()
+        actual_exp = ctxt.experiment(experiment_id="123")
         _canonicalize_experiment(actual_exp)
         self.assertProtoEquals(expected_exp, actual_exp)
 
@@ -230,7 +230,7 @@ class BackendContextTest(tf.test.TestCase):
             }
         """
         ctxt = backend_context.Context(self._mock_tb_context)
-        actual_exp = ctxt.experiment()
+        actual_exp = ctxt.experiment(experiment_id="123")
         _canonicalize_experiment(actual_exp)
         self.assertProtoEquals(expected_exp, actual_exp)
 
@@ -285,7 +285,7 @@ class BackendContextTest(tf.test.TestCase):
         ctxt = backend_context.Context(
             self._mock_tb_context, max_domain_discrete_len=1
         )
-        actual_exp = ctxt.experiment()
+        actual_exp = ctxt.experiment(experiment_id="123")
         _canonicalize_experiment(actual_exp)
         self.assertProtoEquals(expected_exp, actual_exp)
 

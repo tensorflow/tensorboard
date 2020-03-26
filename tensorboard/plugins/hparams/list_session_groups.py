@@ -35,20 +35,22 @@ from tensorboard.plugins.hparams import metrics
 class Handler(object):
     """Handles a ListSessionGroups request."""
 
-    def __init__(self, context, request):
+    def __init__(self, context, experiment_id, request):
         """Constructor.
 
         Args:
           context: A backend_context.Context instance.
+          experiment_id: A string, as from `plugin_util.experiment_id`.
           request: A ListSessionGroupsRequest protobuf.
         """
         self._context = context
+        self._experiment_id = experiment_id
         self._request = request
         self._extractors = _create_extractors(request.col_params)
         self._filters = _create_filters(request.col_params, self._extractors)
         # Since an context.experiment() call may search through all the runs, we
         # cache it here.
-        self._experiment = context.experiment()
+        self._experiment = context.experiment(experiment_id)
 
     def run(self):
         """Handles the request specified on construction.
@@ -72,8 +74,8 @@ class Handler(object):
         # in the 'groups_by_name' dict. We create the SessionGroup object, if this
         # is the first session of that group we encounter.
         groups_by_name = {}
-        run_to_tag_to_content = self._context.multiplexer.PluginRunToTagToContent(
-            metadata.PLUGIN_NAME
+        run_to_tag_to_content = self._context.hparams_metadata(
+            self._experiment_id
         )
         for (run, tag_to_content) in six.iteritems(run_to_tag_to_content):
             if metadata.SESSION_START_INFO_TAG not in tag_to_content:
@@ -159,7 +161,10 @@ class Handler(object):
             metric_name = metric_info.name
             try:
                 metric_eval = metrics.last_metric_eval(
-                    self._context.multiplexer, session_name, metric_name
+                    self._context,
+                    self._experiment_id,
+                    session_name,
+                    metric_name,
                 )
             except KeyError:
                 # It's ok if we don't find the metric in the session.
