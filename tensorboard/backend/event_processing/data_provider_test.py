@@ -35,6 +35,8 @@ from tensorboard.plugins.histogram import metadata as histogram_metadata
 from tensorboard.plugins.histogram import summary_v2 as histogram_summary
 from tensorboard.plugins.scalar import metadata as scalar_metadata
 from tensorboard.plugins.scalar import summary_v2 as scalar_summary
+from tensorboard.plugins.image import metadata as image_metadata
+from tensorboard.plugins.image import summary_v2 as image_summary
 from tensorboard.util import tensor_util
 import tensorflow.compat.v1 as tf1
 import tensorflow.compat.v2 as tf
@@ -91,6 +93,29 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
                         name, tensor * i, step=i, description=description
                     )
 
+        logdir = os.path.join(self.logdir, "mondrian")
+        with tf.summary.create_file_writer(logdir).as_default():
+            data = [
+                ("red", (221, 28, 38), "top-right"),
+                ("blue", (1, 91, 158), "bottom-left"),
+                ("yellow", (239, 220, 111), "bottom-right"),
+            ]
+            for (name, color, description) in data:
+                image_1x1 = tf.constant([[[color]]], dtype=tf.uint8)
+                for i in xrange(1, 11):
+                    # Use a non-monotonic sequence of sample sizes to
+                    # test `max_length` calculation.
+                    k = 6 - abs(6 - i)  # 1, .., 6, .., 2
+                    # a `k`-sample image summary of `i`-by-`i` images
+                    image = tf.tile(image_1x1, [k, i, i, 1])
+                    image_summary.image(
+                        name,
+                        image,
+                        step=i,
+                        description=description,
+                        max_outputs=99,
+                    )
+
     def create_multiplexer(self):
         multiplexer = event_multiplexer.EventMultiplexer()
         multiplexer.AddRunsFromDirectory(self.logdir)
@@ -115,6 +140,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
                 "greetings",
                 "marigraphs",
                 histogram_metadata.PLUGIN_NAME,
+                image_metadata.PLUGIN_NAME,
                 scalar_metadata.PLUGIN_NAME,
             ],
         )
@@ -134,6 +160,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
                 "marigraphs",
                 graph_metadata.PLUGIN_NAME,
                 histogram_metadata.PLUGIN_NAME,
+                image_metadata.PLUGIN_NAME,
                 scalar_metadata.PLUGIN_NAME,
             ],
         )
@@ -370,6 +397,90 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
             downsample=3,
         )
         self.assertLen(result["lebesgue"]["uniform"], 3)
+
+    def test_list_blob_sequences(self):
+        provider = self.create_provider()
+
+        with self.subTest("finds all time series for a plugin"):
+            result = provider.list_blob_sequences(
+                experiment_id="unused", plugin_name=image_metadata.PLUGIN_NAME
+            )
+            self.assertItemsEqual(result.keys(), ["mondrian"])
+            self.assertItemsEqual(
+                result["mondrian"].keys(), ["red", "blue", "yellow"]
+            )
+            sample = result["mondrian"]["blue"]
+            self.assertIsInstance(sample, base_provider.BlobSequenceTimeSeries)
+            self.assertEqual(sample.max_step, 10)
+            # nothing to test for wall time, as it can't be mocked out
+            self.assertEqual(sample.plugin_content, b"")
+            self.assertEqual(sample.max_length, 6 + 2)
+            self.assertEqual(sample.description, "bottom-left")
+            self.assertEqual(sample.display_name, "")
+
+        with self.subTest("filters by run/tag"):
+            result = provider.list_blob_sequences(
+                experiment_id="unused",
+                plugin_name=image_metadata.PLUGIN_NAME,
+                run_tag_filter=base_provider.RunTagFilter(
+                    runs=["mondrian", "picasso"], tags=["yellow", "green't"]
+                ),
+            )
+            self.assertItemsEqual(result.keys(), ["mondrian"])
+            self.assertItemsEqual(result["mondrian"].keys(), ["yellow"])
+            self.assertIsInstance(
+                result["mondrian"]["yellow"],
+                base_provider.BlobSequenceTimeSeries,
+            )
+
+    def test_read_blob_sequences_and_read_blob(self):
+        provider = self.create_provider()
+
+        with self.subTest("reads all time series for a plugin"):
+            result = provider.read_blob_sequences(
+                experiment_id="unused",
+                plugin_name=image_metadata.PLUGIN_NAME,
+                downsample=4,
+            )
+            self.assertItemsEqual(result.keys(), ["mondrian"])
+            self.assertItemsEqual(
+                result["mondrian"].keys(), ["red", "blue", "yellow"]
+            )
+            sample = result["mondrian"]["blue"]
+            self.assertLen(sample, 4)  # downsampled from 10
+            last = sample[-1]
+            self.assertIsInstance(last, base_provider.BlobSequenceDatum)
+            self.assertEqual(last.step, 10)
+            self.assertLen(last.values, 2 + 2)
+            blobs = [provider.read_blob(v.blob_key) for v in last.values]
+            self.assertEqual(blobs[0], b"10")
+            self.assertEqual(blobs[1], b"10")
+            self.assertStartsWith(blobs[2], b"\x89PNG")
+            self.assertStartsWith(blobs[3], b"\x89PNG")
+
+            blue1 = blobs[2]
+            blue2 = blobs[3]
+            red1 = provider.read_blob(
+                result["mondrian"]["red"][-1].values[2].blob_key
+            )
+            self.assertEqual(blue1, blue2)
+            self.assertNotEqual(blue1, red1)
+
+        with self.subTest("filters by run/tag"):
+            result = provider.read_blob_sequences(
+                experiment_id="unused",
+                plugin_name=image_metadata.PLUGIN_NAME,
+                run_tag_filter=base_provider.RunTagFilter(
+                    runs=["mondrian", "picasso"], tags=["yellow", "green't"]
+                ),
+                downsample=1,
+            )
+            self.assertItemsEqual(result.keys(), ["mondrian"])
+            self.assertItemsEqual(result["mondrian"].keys(), ["yellow"])
+            self.assertIsInstance(
+                result["mondrian"]["yellow"][0],
+                base_provider.BlobSequenceDatum,
+            )
 
 
 class DownsampleTest(tf.test.TestCase):
