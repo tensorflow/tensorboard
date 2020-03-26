@@ -177,9 +177,10 @@ class Context(object):
         )
         if not mapping:
             return None
-        # We expect only one experiment; pick arbitrarily.
-        tag_to_content = mapping[next(iter(mapping))]
-        content = tag_to_content[next(iter(tag_to_content))]
+        # We expect only one run to have an `EXPERIMENT_TAG`; pick
+        # arbitrarily.
+        tag_to_content = next(iter(mapping.values()))
+        content = next(iter(tag_to_content.values()))
         return metadata.parse_experiment_plugin_data(content)
 
     def _compute_experiment_from_runs(self, experiment_id):
