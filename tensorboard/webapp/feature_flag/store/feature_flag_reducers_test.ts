@@ -48,7 +48,7 @@ describe('feature_flag_reducers', () => {
         })
       );
 
-      expect(nextState.enableMagicalFeature).toBe(true);
+      expect(nextState['enableMagicalFeature']).toBe(true);
     });
   });
 });
