@@ -456,6 +456,21 @@ class EventMultiplexer(object):
         accumulator = self.GetAccumulator(run)
         return accumulator.SummaryMetadata(tag)
 
+    def AllSummaryMetadata(self):
+        """Return summary metadata for all time series.
+
+        Returns:
+          A nested dict `d` such that `d[run][tag]` is a
+          `SummaryMetadata` proto for the keyed time series.
+        """
+        with self._accumulators_mutex:
+            # To avoid nested locks, we construct a copy of the run-accumulator map
+            items = list(six.iteritems(self._accumulators))
+        return {
+            run_name: accumulator.AllSummaryMetadata()
+            for run_name, accumulator in items
+        }
+
     def Runs(self):
         """Return all the run names in the `EventMultiplexer`.
 

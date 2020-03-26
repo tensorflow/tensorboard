@@ -1,3 +1,34 @@
+# Release 2.2.0
+
+The 2.2 minor series tracks TensorFlow 2.2.
+
+## Features
+
+- Profile plugin now should be pip installed from `tensorboard-plugin-profile`.
+  The new version works in Chrome 80 and Firefox, has better model insights and
+  will be more actively maintained.
+- Add S3_ENDPOINT variable (#3368)  - thanks @thealphacod3r
+- Confirm that the connection to tensorboard works or change to localhost
+  (#2371) - thanks @miguelmorin
+- Update --reload_multifile_inactive_secs default to 24 hours (#3243)
+- New `tensorboard dev update-metadata` command allows for updating the name and
+  description of experiments (#3277)
+- Improved organization of artifacts downloaded during export from
+  TensorBoard.dev (#3307)
+
+## Bug fixes
+
+- Fix for #3282 where the tooltip would remain even after the mouse leaves the
+plot (#3347)
+- Internal fix: HParams summary protos now properly include tensor values (#3386)
+- Fixes to profiling tutorial (#3372 & #3381)
+
+## Breaking Changes
+- Note: As of TensorBoard 2.1.1+, only Python 3 is supported. There will be no
+further releases for Python 2 as per
+https://groups.google.com/a/tensorflow.org/forum/#!topic/developers/ifEAGK3aPls
+
+
 # Release 2.1.1
 
 ## Features
