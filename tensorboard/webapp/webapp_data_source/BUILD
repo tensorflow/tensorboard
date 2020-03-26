@@ -18,6 +18,20 @@ ng_module(
 )
 
 ng_module(
+    name = "webapp_data_source_test_lib",
+    testonly = True,
+    srcs = [
+        "tb_server_data_source_test.ts",
+    ],
+    deps = [
+        ":http_client_testing",
+        ":webapp_data_source",
+        "@npm//@angular/core",
+        "@npm//@types/jasmine",
+    ],
+)
+
+ng_module(
     name = "http_client",
     srcs = [
         "tb_http_client.ts",
