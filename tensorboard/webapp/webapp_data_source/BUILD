@@ -26,7 +26,7 @@ ng_module(
     deps = [
         ":http_client_testing",
         ":webapp_data_source",
-        "@npm//@angular/core",
+        "//tensorboard/webapp/angular:expect_angular_core_testing",
         "@npm//@types/jasmine",
     ],
 )
@@ -81,6 +81,7 @@ ng_module(
     ],
     deps = [
         ":feature_flag",
+        "//tensorboard/webapp/angular:expect_angular_core_testing",
         "@npm//@angular/core",
         "@npm//@types/jasmine",
     ],
