@@ -25,10 +25,15 @@ import threading
 
 import six
 
+from tensorboard.backend.event_processing import (
+    plugin_event_accumulator as event_accumulator,
+)
+from tensorboard.data import provider
 from tensorboard.plugins.hparams import api_pb2
 from tensorboard.plugins.hparams import metadata
 from google.protobuf import json_format
 from tensorboard.plugins.scalar import metadata as scalar_metadata
+from tensorboard.util import tensor_util
 
 
 class Context(object):
@@ -76,33 +81,36 @@ class Context(object):
         return experiment
 
     @property
-    def _deprecated_multiplexer(self):
-        return self._tb_context.multiplexer
-
-    @property
-    def multiplexer(self):
-        raise NotImplementedError("Do not read `Context.multiplexer` directly")
-
-    @property
     def tb_context(self):
         return self._tb_context
 
-    def hparams_metadata(self, experiment_id):
+    def _convert_plugin_metadata(self, data_provider_output):
+        return {
+            run: {
+                tag: time_series.plugin_content
+                for (tag, time_series) in tag_to_time_series.items()
+            }
+            for (run, tag_to_time_series) in data_provider_output.items()
+        }
+
+    def hparams_metadata(self, experiment_id, run_tag_filter=None):
         """Reads summary metadata for all hparams time series.
 
         Args:
           experiment_id: String, from `plugin_util.experiment_id`.
+          run_tag_filter: Optional `data.provider.RunTagFilter`, with
+            the semantics as in `list_tensors`.
 
         Returns:
           A dict `d` such that `d[run][tag]` is a `bytes` value with the
           summary metadata content for the keyed time series.
         """
-        assert isinstance(experiment_id, str), (
-            experiment_id,
-            type(experiment_id),
-        )
-        return self._deprecated_multiplexer.PluginRunToTagToContent(
-            metadata.PLUGIN_NAME
+        return self._convert_plugin_metadata(
+            self._tb_context.data_provider.list_tensors(
+                experiment_id,
+                plugin_name=metadata.PLUGIN_NAME,
+                run_tag_filter=run_tag_filter,
+            )
         )
 
     def scalars_metadata(self, experiment_id):
@@ -115,12 +123,10 @@ class Context(object):
           A dict `d` such that `d[run][tag]` is a `bytes` value with the
           summary metadata content for the keyed time series.
         """
-        assert isinstance(experiment_id, str), (
-            experiment_id,
-            type(experiment_id),
-        )
-        return self._deprecated_multiplexer.PluginRunToTagToContent(
-            scalar_metadata.PLUGIN_NAME
+        return self._convert_plugin_metadata(
+            self._tb_context.data_provider.list_scalars(
+                experiment_id, plugin_name=scalar_metadata.PLUGIN_NAME
+            )
         )
 
     def read_scalars(self, experiment_id, run, tag):
@@ -134,11 +140,27 @@ class Context(object):
         Returns:
           A list of `plugin_event_accumulator.TensorEvent` values.
         """
-        assert isinstance(experiment_id, str), (
+        data_provider_output = self._tb_context.data_provider.read_scalars(
             experiment_id,
-            type(experiment_id),
+            plugin_name=scalar_metadata.PLUGIN_NAME,
+            run_tag_filter=provider.RunTagFilter([run], [tag]),
+            downsample=(self._tb_context.sampling_hints or {}).get(
+                scalar_metadata.PLUGIN_NAME, 1000
+            ),
         )
-        return self._deprecated_multiplexer.Tensors(run, tag)
+        data = data_provider_output.get(run, {}).get(tag)
+        if data is None:
+            raise KeyError("No scalar data for run=%r, tag=%r" % (run, tag))
+        return [
+            # TODO(#3425): Change clients to depend on data provider
+            # APIs natively and remove this post-processing step.
+            event_accumulator.TensorEvent(
+                wall_time=e.wall_time,
+                step=e.step,
+                tensor_proto=tensor_util.make_tensor_proto(e.value),
+            )
+            for e in data
+        ]
 
     def _find_experiment_tag(self, experiment_id):
         """Finds the experiment associcated with the metadata.EXPERIMENT_TAG
@@ -147,14 +169,19 @@ class Context(object):
         Returns:
           The experiment or None if no such experiment is found.
         """
-        mapping = self.hparams_metadata(experiment_id)
-        for tag_to_content in mapping.values():
-            if metadata.EXPERIMENT_TAG in tag_to_content:
-                experiment = metadata.parse_experiment_plugin_data(
-                    tag_to_content[metadata.EXPERIMENT_TAG]
-                )
-                return experiment
-        return None
+        mapping = self.hparams_metadata(
+            experiment_id,
+            run_tag_filter=provider.RunTagFilter(
+                tags=[metadata.EXPERIMENT_TAG]
+            ),
+        )
+        if not mapping:
+            return None
+        # We expect only one run to have an `EXPERIMENT_TAG`; pick
+        # arbitrarily.
+        tag_to_content = next(iter(mapping.values()))
+        content = next(iter(tag_to_content.values()))
+        return metadata.parse_experiment_plugin_data(content)
 
     def _compute_experiment_from_runs(self, experiment_id):
         """Computes a minimal Experiment protocol buffer by scanning the
