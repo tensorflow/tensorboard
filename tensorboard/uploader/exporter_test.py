@@ -132,6 +132,10 @@ class TensorBoardExporterTest(tb_test.TestCase):
         self.assertEqual(next(generator), "123")
         expected_files.append(os.path.join("experiment_123", "metadata.json"))
         expected_files.append(os.path.join("experiment_123", "scalars.json"))
+        # blob_sequences.json should exist and be empty.
+        expected_files.append(
+            os.path.join("experiment_123", "blob_sequences.json")
+        )
         self.assertCountEqual(expected_files, _outdir_files(outdir))
 
         expected_eids_request = export_service_pb2.StreamExperimentsRequest()
@@ -159,6 +163,10 @@ class TensorBoardExporterTest(tb_test.TestCase):
 
         expected_files.append(os.path.join("experiment_456", "metadata.json"))
         expected_files.append(os.path.join("experiment_456", "scalars.json"))
+        # blob_sequences.json should exist and be empty.
+        expected_files.append(
+            os.path.join("experiment_456", "blob_sequences.json")
+        )
         self.assertCountEqual(expected_files, _outdir_files(outdir))
         mock_api_client.StreamExperiments.assert_not_called()
         expected_data_request.experiment_id = "456"
@@ -170,6 +178,10 @@ class TensorBoardExporterTest(tb_test.TestCase):
         # was in the second response batch in the list of IDs.
         expected_files.append(os.path.join("experiment_789", "metadata.json"))
         expected_files.append(os.path.join("experiment_789", "scalars.json"))
+        # blob_sequences.json should exist and be empty.
+        expected_files.append(
+            os.path.join("experiment_789", "blob_sequences.json")
+        )
         mock_api_client.StreamExperiments.reset_mock()
         mock_api_client.StreamExperimentData.reset_mock()
         self.assertEqual(next(generator), "789")
@@ -214,6 +226,13 @@ class TensorBoardExporterTest(tb_test.TestCase):
         self.assertEqual(points, {})
         self.assertEqual(datum, {})
 
+        # Check that one of the blob_sequences data file is empty, because there
+        # no blob sequences in this experiment.
+        with open(
+            os.path.join(outdir, "experiment_456", "blob_sequences.json")
+        ) as infile:
+            self.assertEqual(infile.read(), "")
+
         # Spot-check one of the metadata files.
         with open(
             os.path.join(outdir, "experiment_789", "metadata.json")
@@ -230,9 +249,13 @@ class TensorBoardExporterTest(tb_test.TestCase):
         )
 
     def test_e2e_success_case_with_blob_sequence_data(self):
-        """Covers exporting of finished and unfinished blob sequences
+        """Covers exporting of complete and incomplete blob sequences
 
         as well as rpc error during blob streaming.
+
+        Note that the `StreamBlobData()` method is overridden twice in this
+        test, once for the no-error condition and once for the grpc-error
+        condition.
         """
         mock_api_client = self._create_mock_api_client()
 
@@ -257,7 +280,9 @@ class TensorBoardExporterTest(tb_test.TestCase):
                 response.tag_name = tag
                 display_name = "%s:%s" % (request.experiment_id, tag)
                 response.tag_metadata.CopyFrom(
-                    test_util.scalar_metadata(display_name)
+                    summary_pb2.SummaryMetadata(
+                        data_class=summary_pb2.DATA_CLASS_BLOB_SEQUENCE
+                    )
                 )
                 for step in range(1):
                     response.blob_sequences.steps.append(step)
@@ -274,10 +299,16 @@ class TensorBoardExporterTest(tb_test.TestCase):
                         blob_sequence.entries.append(
                             blob_pb2.BlobSequenceEntry(blob=blob)
                         )
-                    elif run == "test":
-                        # An unfinihsed blob.
+                        # An unfinished blob sequence.
+                        blob = blob_pb2.Blob(
+                            state=blob_pb2.BlobState.BLOB_STATE_UNFINALIZED,
+                        )
                         blob_sequence.entries.append(
-                            # `blob` unspecified: An unfinished blob.
+                            blob_pb2.BlobSequenceEntry(blob=blob)
+                        )
+                    elif run == "test":
+                        blob_sequence.entries.append(
+                            # `blob` unspecified: a hole in the blob sequence.
                             blob_pb2.BlobSequenceEntry()
                         )
                     response.blob_sequences.values.append(blob_sequence)
@@ -287,6 +318,8 @@ class TensorBoardExporterTest(tb_test.TestCase):
         mock_api_client.StreamExperimentData = mock.Mock(
             wraps=stream_experiment_data
         )
+        # NOTE(cais): `StreamBlobData` will be overridden again below for the
+        # grpc error condition.
         mock_api_client.StreamBlobData.side_effect = [
             iter(
                 [
@@ -326,6 +359,8 @@ class TensorBoardExporterTest(tb_test.TestCase):
         # data for one of them.
         self.assertEqual(next(generator), "123")
         expected_files.append(os.path.join("experiment_123", "metadata.json"))
+        # scalars.json should exist and be empty.
+        expected_files.append(os.path.join("experiment_123", "scalars.json"))
         expected_files.append(
             os.path.join("experiment_123", "blob_sequences.json")
         )
@@ -335,6 +370,12 @@ class TensorBoardExporterTest(tb_test.TestCase):
         # blobs/blob_test_blob.bin should not exist, because it contains
         # an unfinished blob.
         self.assertCountEqual(expected_files, _outdir_files(outdir))
+
+        # Check that the scalars data file is empty, because there no scalars.
+        with open(
+            os.path.join(outdir, "experiment_123", "scalars.json")
+        ) as infile:
+            self.assertEqual(infile.read(), "")
 
         # Check the blob_sequences.json file.
         with open(
@@ -349,15 +390,16 @@ class TensorBoardExporterTest(tb_test.TestCase):
         summary_metadata = summary_pb2.SummaryMetadata.FromString(
             base64.b64decode(datum.pop("summary_metadata"))
         )
-        expected_summary_metadata = test_util.scalar_metadata(
-            "123:__default_graph__"
+        expected_summary_metadata = summary_pb2.SummaryMetadata(
+            data_class=summary_pb2.DATA_CLASS_BLOB_SEQUENCE
         )
         self.assertEqual(summary_metadata, expected_summary_metadata)
         points = datum.pop("points")
         self.assertEqual(points["steps"], [0])
         self.assertEqual(points["wall_times"], [1571084520.862939144])
+        # The 1st blob is finished; the 2nd is unfinished.
         self.assertEqual(
-            points["blob_file_paths"], [["blobs/blob_train_blob.bin"]]
+            points["blob_file_paths"], [["blobs/blob_train_blob.bin", None]]
         )
 
         datum = jsons[1]
@@ -365,9 +407,6 @@ class TensorBoardExporterTest(tb_test.TestCase):
         self.assertEqual(datum.pop("tag"), "__default_graph__")
         summary_metadata = summary_pb2.SummaryMetadata.FromString(
             base64.b64decode(datum.pop("summary_metadata"))
-        )
-        expected_summary_metadata = test_util.scalar_metadata(
-            "123:__default_graph__"
         )
         self.assertEqual(summary_metadata, expected_summary_metadata)
         points = datum.pop("points")
@@ -409,25 +448,19 @@ class TensorBoardExporterTest(tb_test.TestCase):
         summary_metadata = summary_pb2.SummaryMetadata.FromString(
             base64.b64decode(datum.pop("summary_metadata"))
         )
-        expected_summary_metadata = test_util.scalar_metadata(
-            "456:__default_graph__"
-        )
         self.assertEqual(summary_metadata, expected_summary_metadata)
         points = datum.pop("points")
         self.assertEqual(points["steps"], [0])
         self.assertEqual(points["wall_times"], [1571084520.862939144])
         # `None` represents the blob that experienced error during downloading
         # and hence is missing.
-        self.assertEqual(points["blob_file_paths"], [[None]])
+        self.assertEqual(points["blob_file_paths"], [[None, None]])
 
         datum = jsons[1]
         self.assertEqual(datum.pop("run"), "test")
         self.assertEqual(datum.pop("tag"), "__default_graph__")
         summary_metadata = summary_pb2.SummaryMetadata.FromString(
             base64.b64decode(datum.pop("summary_metadata"))
-        )
-        expected_summary_metadata = test_util.scalar_metadata(
-            "456:__default_graph__"
         )
         self.assertEqual(summary_metadata, expected_summary_metadata)
         points = datum.pop("points")
@@ -527,11 +560,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
                 [_make_experiments_response(["123"])]
             )
             mock_api_client.StreamExperimentData.return_value = iter(
-                [
-                    export_service_pb2.StreamExperimentDataResponse(
-                        points=export_service_pb2.StreamExperimentDataResponse.ScalarPoints()
-                    )
-                ]
+                [export_service_pb2.StreamExperimentDataResponse()]
             )
 
             exporter = exporter_lib.TensorBoardExporter(

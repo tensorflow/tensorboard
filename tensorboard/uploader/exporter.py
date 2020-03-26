@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import print_function
 
 import base64
+import contextlib
 import errno
 import grpc
 import json
@@ -57,11 +58,11 @@ _FILENAME_SCALARS = "scalars.json"
 # the blobs' contents, in addition to other metadata such as run and tag names.
 _FILENAME_BLOB_SEQUENCES = "blob_sequences.json"
 
-logger = tb_logging.get_logger()
+_DIRNAME_BLOBS = "blobs"
+_FILENAME_BLOBS_PREFIX = "blob_"
+_FILENAME_BLOBS_SUFFIX = ".bin"
 
-_BLOBS_DIR = "blobs"
-_BLOB_FILE_PREFIX = "blob_"
-_BLOB_FILE_SUFFIX = ".bin"
+logger = tb_logging.get_logger()
 
 
 class TensorBoardExporter(object):
@@ -153,43 +154,38 @@ class TensorBoardExporter(object):
             os.mkdir(experiment_dir)
 
             metadata_filepath = os.path.join(experiment_dir, _FILENAME_METADATA)
-            with _open_excl(metadata_filepath, "w") as outfile:
+            with _open_excl(metadata_filepath) as outfile:
                 json.dump(experiment_metadata, outfile, sort_keys=True)
                 outfile.write("\n")
 
-            filename_to_filepath = {
-                _FILENAME_SCALARS: os.path.join(
-                    experiment_dir, _FILENAME_SCALARS
-                ),
-                _FILENAME_BLOB_SEQUENCES: os.path.join(
-                    experiment_dir, _FILENAME_BLOB_SEQUENCES
-                ),
-            }
-            filename_to_file = {
-                _FILENAME_SCALARS: None,
-                _FILENAME_BLOB_SEQUENCES: None,
-            }
             try:
                 data = self._request_json_data(experiment_id, read_time)
-                for block, filename in data:
-                    if filename_to_file[filename] is None:
-                        filename_to_file[filename] = _open_excl(
-                            filename_to_filepath[filename]
+                with contextlib.ExitStack() as stack:
+                    file_handles = {
+                        filename: stack.enter_context(
+                            _open_excl(os.path.join(experiment_dir, filename))
                         )
-                    outfile = filename_to_file[filename]
-                    json.dump(block, outfile, sort_keys=True)
-                    outfile.write("\n")
-                    outfile.flush()
-                yield experiment_id
+                        for filename in (
+                            _FILENAME_SCALARS,
+                            _FILENAME_BLOB_SEQUENCES,
+                        )
+                    }
+                    os.mkdir(os.path.join(experiment_dir, _DIRNAME_BLOBS))
+                    for block, filename in data:
+                        if file_handles[filename] is None:
+                            file_handles[filename] = _open_excl(
+                                os.path.join(experiment_dir, filename)
+                            )
+                        outfile = file_handles[filename]
+                        json.dump(block, outfile, sort_keys=True)
+                        outfile.write("\n")
+                        outfile.flush()
+                    yield experiment_id
             except grpc.RpcError as e:
                 if e.code() == grpc.StatusCode.CANCELLED:
                     raise GrpcTimeoutException(experiment_id)
                 else:
                     raise
-            finally:
-                for file in filename_to_file.values():
-                    if file:
-                        file.close()
 
     def _request_json_data(self, experiment_id, read_time):
         """Given experiment id, generates JSON data and destination file name.
@@ -243,7 +239,15 @@ class TensorBoardExporter(object):
                     response.blob_sequences, experiment_id
                 )
                 filename = _FILENAME_BLOB_SEQUENCES
-            yield json_data, filename
+            if filename:
+                yield json_data, filename
+            else:
+                logger.warn(
+                    "Skipping a response from experiment-data stream "
+                    "due to the lack of any valid data type (such as "
+                    "scalars and blob sequences): run=%s, tag=%s"
+                    % (response.run_name, response.tag_name)
+                )
 
     def _process_scalar_points(self, points):
         """Process scalar data points.
@@ -291,11 +295,7 @@ class TensorBoardExporter(object):
         for blobseq in blob_sequences.values:
             seq_blob_file_paths = []
             for entry in blobseq.entries:
-                if (
-                    entry.HasField("blob")
-                    and entry.blob.state
-                    == blob_pb2.BlobState.BLOB_STATE_CURRENT
-                ):
+                if entry.blob.state == blob_pb2.BlobState.BLOB_STATE_CURRENT:
                     blob_path = self._download_blob(
                         entry.blob.blob_id, experiment_id
                     )
@@ -321,16 +321,17 @@ class TensorBoardExporter(object):
         """
         # TODO(cais): Deduplicate with internal method perhaps.
         experiment_dir = _experiment_directory(self._outdir, experiment_id)
-        blobs_dir = os.path.join(experiment_dir, _BLOBS_DIR)
-        if not os.path.isdir(blobs_dir):
-            _mkdir_p(blobs_dir)
         request = export_service_pb2.StreamBlobDataRequest(blob_id=blob_id)
         blob_abspath = os.path.join(
-            blobs_dir, _BLOB_FILE_PREFIX + blob_id + _BLOB_FILE_SUFFIX
+            experiment_dir,
+            _DIRNAME_BLOBS,
+            _FILENAME_BLOBS_PREFIX + blob_id + _FILENAME_BLOBS_SUFFIX,
         )
-        with open(blob_abspath, "wb") as f:
+        with _open_excl(blob_abspath, "wb") as f:
             try:
-                for response in self._api.StreamBlobData(request):
+                for response in self._api.StreamBlobData(
+                    request, metadata=grpc_util.version_metadata()
+                ):
                     # TODO(cais, soergel): validate the various response fields
                     f.write(response.data)
             except grpc.RpcError as rpc_error:
@@ -424,8 +425,8 @@ def _mkdir_p(path):
             raise
 
 
-def _open_excl(path):
-    """Like `open(path, "x")`, but Python 2-compatible."""
+def _open_excl(path, mode="w"):
+    """Like `open(path, "x" + mode)`, but Python 2-compatible."""
     try:
         # `os.O_EXCL` works on Windows as well as POSIX-compliant systems.
         # See: <https://bugs.python.org/issue12760>
@@ -435,4 +436,4 @@ def _open_excl(path):
             raise OutputFileExistsError(path)
         else:
             raise
-    return os.fdopen(fd, "w")
+    return os.fdopen(fd, mode)
