@@ -21,6 +21,18 @@ import {TBHttpClient} from './tb_http_client';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
+function getPluginsListingQueryParams(enabledExperimentPluginIds: string[]) {
+  if (!enabledExperimentPluginIds.length) {
+    return null;
+  }
+
+  const params = new URLSearchParams();
+  for (const pluginId of enabledExperimentPluginIds) {
+    params.append('experimentalPlugin', pluginId);
+  }
+  return params;
+}
+
 @Injectable()
 export class TBServerDataSource {
   // TODO(soergel): implements WebappDataSource
@@ -28,8 +40,12 @@ export class TBServerDataSource {
 
   constructor(private http: TBHttpClient) {}
 
-  fetchPluginsListing() {
-    return this.http.get<PluginsListing>('data/plugins_listing');
+  fetchPluginsListing(enabledExperimentPluginIds: string[]) {
+    const params = getPluginsListingQueryParams(enabledExperimentPluginIds);
+    const pathWithParams = params
+      ? `data/plugins_listing?${params.toString()}`
+      : 'data/plugins_listing';
+    return this.http.get<PluginsListing>(pathWithParams);
   }
 
   fetchRuns() {
