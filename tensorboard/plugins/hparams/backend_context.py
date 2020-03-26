@@ -145,6 +145,7 @@ class Context(object):
         data_provider_output = self._tb_context.data_provider.read_scalars(
             experiment_id,
             plugin_name=scalar_metadata.PLUGIN_NAME,
+<<<<<<< HEAD
             run_tag_filter=run_tag_filter,
             # TODO(#3436): We assume that downsampling always includes
             # the most recent datum, which holds for all implementations
@@ -155,6 +156,26 @@ class Context(object):
             run: {tag: data[-1] for (tag, data) in tag_to_data.items()}
             for (run, tag_to_data) in data_provider_output.items()
         }
+=======
+            run_tag_filter=provider.RunTagFilter([run], [tag]),
+            downsample=(self._tb_context.sampling_hints or {}).get(
+                scalar_metadata.PLUGIN_NAME, 1000
+            ),
+        )
+        data = data_provider_output.get(run, {}).get(tag)
+        if data is None:
+            raise KeyError("No scalar data for run=%r, tag=%r" % (run, tag))
+        return [
+            # TODO(#3425): Change clients to depend on data provider
+            # APIs natively and remove this post-processing step.
+            event_accumulator.TensorEvent(
+                wall_time=e.wall_time,
+                step=e.step,
+                tensor_proto=tensor_util.make_tensor_proto(e.value),
+            )
+            for e in data
+        ]
+>>>>>>> 7b7486d988652e7a10bdb9dc6874b7c5bd864b96
 
     def _find_experiment_tag(self, experiment_id):
         """Finds the experiment associcated with the metadata.EXPERIMENT_TAG
