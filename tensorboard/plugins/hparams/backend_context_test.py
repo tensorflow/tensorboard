@@ -57,6 +57,9 @@ class BackendContextTest(tf.test.TestCase):
         self._mock_multiplexer.PluginRunToTagToContent.side_effect = (
             self._mock_plugin_run_to_tag_to_content
         )
+        self._mock_multiplexer.AllSummaryMetadata.side_effect = (
+            self._mock_all_summary_metadata
+        )
         self._mock_multiplexer.SummaryMetadata.side_effect = (
             self._mock_summary_metadata
         )
@@ -67,61 +70,69 @@ class BackendContextTest(tf.test.TestCase):
         self.session_2_start_info_ = ""
         self.session_3_start_info_ = ""
 
+    def _mock_all_summary_metadata(self):
+        result = {}
+        hparams_content = {
+            "exp/session_1": {
+                metadata.SESSION_START_INFO_TAG: self._serialized_plugin_data(
+                    DATA_TYPE_SESSION_START_INFO, self.session_1_start_info_
+                ),
+            },
+            "exp/session_2": {
+                metadata.SESSION_START_INFO_TAG: self._serialized_plugin_data(
+                    DATA_TYPE_SESSION_START_INFO, self.session_2_start_info_
+                ),
+            },
+            "exp/session_3": {
+                metadata.SESSION_START_INFO_TAG: self._serialized_plugin_data(
+                    DATA_TYPE_SESSION_START_INFO, self.session_3_start_info_
+                ),
+            },
+        }
+        scalars_content = {
+            "exp/session_1": {"loss": b"", "accuracy": b""},
+            "exp/session_1/eval": {"loss": b"",},
+            "exp/session_1/train": {"loss": b"",},
+            "exp/session_2": {"loss": b"", "accuracy": b"",},
+            "exp/session_2/eval": {"loss": b"",},
+            "exp/session_2/train": {"loss": b"",},
+            "exp/session_3": {"loss": b"", "accuracy": b"",},
+            "exp/session_3/eval": {"loss": b"",},
+            "exp/session_3xyz/": {"loss2": b"",},
+        }
+        for (run, tag_to_content) in hparams_content.items():
+            result.setdefault(run, {})
+            for (tag, content) in tag_to_content.items():
+                m = summary_pb2.SummaryMetadata()
+                m.data_class = summary_pb2.DATA_CLASS_TENSOR
+                m.plugin_data.plugin_name = metadata.PLUGIN_NAME
+                m.plugin_data.content = content
+                result[run][tag] = m
+        for (run, tag_to_content) in scalars_content.items():
+            result.setdefault(run, {})
+            for (tag, content) in tag_to_content.items():
+                m = summary_pb2.SummaryMetadata()
+                m.data_class = summary_pb2.DATA_CLASS_SCALAR
+                m.plugin_data.plugin_name = scalars_metadata.PLUGIN_NAME
+                m.plugin_data.content = content
+                result[run][tag] = m
+        return result
+
     def _mock_plugin_run_to_tag_to_content(self, plugin_name):
-        if plugin_name == metadata.PLUGIN_NAME:
-            return {
-                "exp/session_1": {
-                    metadata.SESSION_START_INFO_TAG: self._serialized_plugin_data(
-                        DATA_TYPE_SESSION_START_INFO, self.session_1_start_info_
-                    ),
-                },
-                "exp/session_2": {
-                    metadata.SESSION_START_INFO_TAG: self._serialized_plugin_data(
-                        DATA_TYPE_SESSION_START_INFO, self.session_2_start_info_
-                    ),
-                },
-                "exp/session_3": {
-                    metadata.SESSION_START_INFO_TAG: self._serialized_plugin_data(
-                        DATA_TYPE_SESSION_START_INFO, self.session_3_start_info_
-                    ),
-                },
-            }
-        SCALARS = event_accumulator.SCALARS  # pylint: disable=invalid-name
-        if plugin_name == SCALARS:
-            return {
-                # We use None as the content here, since the content is not
-                # used in the test.
-                "exp/session_1": {"loss": None, "accuracy": None},
-                "exp/session_1/eval": {"loss": None,},
-                "exp/session_1/train": {"loss": None,},
-                "exp/session_2": {"loss": None, "accuracy": None,},
-                "exp/session_2/eval": {"loss": None,},
-                "exp/session_2/train": {"loss": None,},
-                "exp/session_3": {"loss": None, "accuracy": None,},
-                "exp/session_3/eval": {"loss": None,},
-                "exp/session_3xyz/": {"loss2": None,},
-            }
-        self.fail(
-            "Unexpected plugin_name '%s' passed to"
-            " EventMultiplexer.PluginRunToTagToContent" % plugin_name
-        )
+        result = {}
+        for (
+            run,
+            tag_to_metadata,
+        ) in self._mock_multiplexer.AllSummaryMetadata().items():
+            for (tag, metadata) in tag_to_metadata.items():
+                if metadata.plugin_data.plugin_name != plugin_name:
+                    continue
+                result.setdefault(run, {})
+                result[run][tag] = metadata.plugin_data.content
+        return result
 
     def _mock_summary_metadata(self, run, tag):
-        if tag in ("loss", "loss2", "accuracy"):
-            plugin = scalars_metadata.PLUGIN_NAME
-            data_class = summary_pb2.DATA_CLASS_SCALAR
-        else:
-            plugin = metadata.PLUGIN_NAME
-            data_class = summary_pb2.DATA_CLASS_TENSOR
-
-        result = summary_pb2.SummaryMetadata()
-        result.plugin_data.plugin_name = plugin
-        result.plugin_data.content = (
-            self._mock_multiplexer.PluginRunToTagToContent(plugin)[run][tag]
-            or b""  # due to `_mock_plugin_run_to_tag_to_content`
-        )
-        result.data_class = data_class
-        return result
+        return self._mock_multiplexer.AllSummaryMetadata()[run][tag]
 
     def test_experiment_with_experiment_tag(self):
         experiment = """
@@ -130,14 +141,16 @@ class BackendContextTest(tf.test.TestCase):
               { name: { tag: 'current_temp' } }
             ]
         """
-        self._mock_multiplexer.PluginRunToTagToContent.side_effect = None
-        self._mock_multiplexer.PluginRunToTagToContent.return_value = {
-            "exp": {
-                metadata.EXPERIMENT_TAG: self._serialized_plugin_data(
-                    DATA_TYPE_EXPERIMENT, experiment
-                )
-            }
-        }
+        run = "exp"
+        tag = metadata.EXPERIMENT_TAG
+        m = summary_pb2.SummaryMetadata()
+        m.data_class = summary_pb2.DATA_CLASS_TENSOR
+        m.plugin_data.plugin_name = metadata.PLUGIN_NAME
+        m.plugin_data.content = self._serialized_plugin_data(
+            DATA_TYPE_EXPERIMENT, experiment
+        )
+        self._mock_multiplexer.AllSummaryMetadata.side_effect = None
+        self._mock_multiplexer.AllSummaryMetadata.return_value = {run: {tag: m}}
         ctxt = backend_context.Context(self._mock_tb_context)
         self.assertProtoEquals(experiment, ctxt.experiment(experiment_id="123"))
 

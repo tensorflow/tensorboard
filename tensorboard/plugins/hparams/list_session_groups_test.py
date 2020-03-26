@@ -64,6 +64,9 @@ class ListSessionGroupsTest(tf.test.TestCase):
         self._mock_multiplexer.PluginRunToTagToContent.side_effect = (
             self._mock_plugin_run_to_tag_to_content
         )
+        self._mock_multiplexer.AllSummaryMetadata.side_effect = (
+            self._mock_all_summary_metadata
+        )
         self._mock_multiplexer.SummaryMetadata.side_effect = (
             self._mock_summary_metadata
         )
@@ -72,8 +75,9 @@ class ListSessionGroupsTest(tf.test.TestCase):
             self._mock_multiplexer, "/path/to/logs"
         )
 
-    def _mock_plugin_run_to_tag_to_content(self, plugin_name):
-        hparams_return_value = {
+    def _mock_all_summary_metadata(self):
+        result = {}
+        hparams_content = {
             "": {
                 metadata.EXPERIMENT_TAG: self._serialized_plugin_data(
                     DATA_TYPE_EXPERIMENT,
@@ -215,7 +219,7 @@ class ListSessionGroupsTest(tf.test.TestCase):
                 ),
             },
         }
-        scalars_return_value = {
+        scalars_content = {
             "session_1": {
                 "current_temp": b"",
                 "delta_temp": b"",
@@ -226,27 +230,36 @@ class ListSessionGroupsTest(tf.test.TestCase):
             "session_4": {"current_temp": b"", "delta_temp": b""},
             "session_5": {"current_temp": b"", "delta_temp": b""},
         }
-        if plugin_name == metadata.PLUGIN_NAME:
-            return hparams_return_value
-        elif plugin_name == scalars_metadata.PLUGIN_NAME:
-            return scalars_return_value
-        else:
-            self.fail("Unexpected plugin: %r" % plugin_name)
+        for (run, tag_to_content) in hparams_content.items():
+            result.setdefault(run, {})
+            for (tag, content) in tag_to_content.items():
+                m = summary_pb2.SummaryMetadata()
+                m.data_class = summary_pb2.DATA_CLASS_TENSOR
+                m.plugin_data.plugin_name = metadata.PLUGIN_NAME
+                m.plugin_data.content = content
+                result[run][tag] = m
+        for (run, tag_to_content) in scalars_content.items():
+            result.setdefault(run, {})
+            for (tag, content) in tag_to_content.items():
+                m = summary_pb2.SummaryMetadata()
+                m.data_class = summary_pb2.DATA_CLASS_SCALAR
+                m.plugin_data.plugin_name = scalars_metadata.PLUGIN_NAME
+                m.plugin_data.content = content
+                result[run][tag] = m
+        return result
+
+    def _mock_plugin_run_to_tag_to_content(self, plugin_name):
+        result = {}
+        for (run, tag_to_metadata) in self._mock_all_summary_metadata().items():
+            for (tag, metadata) in tag_to_metadata.items():
+                if metadata.plugin_data.plugin_name != plugin_name:
+                    continue
+                result.setdefault(run, {})
+                result[run][tag] = metadata.plugin_data.content
+        return result
 
     def _mock_summary_metadata(self, run, tag):
-        if tag in ("current_temp", "delta_temp", "optional_metric"):
-            plugin = scalars_metadata.PLUGIN_NAME
-            data_class = summary_pb2.DATA_CLASS_SCALAR
-        else:
-            plugin = metadata.PLUGIN_NAME
-            data_class = summary_pb2.DATA_CLASS_TENSOR
-
-        result = summary_pb2.SummaryMetadata()
-        result.plugin_data.plugin_name = plugin
-        run_tag_content = self._mock_multiplexer.PluginRunToTagToContent(plugin)
-        result.plugin_data.content = run_tag_content[run][tag]
-        result.data_class = data_class
-        return result
+        return self._mock_all_summary_metadata()[run][tag]
 
     # A mock version of EventMultiplexer.Tensors
     def _mock_tensors(self, run, tag):
