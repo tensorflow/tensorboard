@@ -465,6 +465,11 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-10.17.17.tgz#7a183163a9e6ff720d86502db23ba4aade5999b8"
   integrity sha512-gpNnRnZP3VWzzj5k3qrpRC6Rk3H/uclhAVo1aIvwzK5p5cOrs9yEyQ8H/HBsBY0u5rrWxXEiVPQ0dEB6pkjE8Q==
 
+"@types/requirejs@^2.1.31":
+  version "2.1.31"
+  resolved "https://registry.yarnpkg.com/@types/requirejs/-/requirejs-2.1.31.tgz#a24eaa0ee4f6b84feb8f521ca6550d48490b2bc6"
+  integrity sha512-b2soeyuU76rMbcRJ4e0hEl0tbMhFwZeTC0VZnfuWlfGlk6BwWNsev6kFu/twKABPX29wkX84wU2o+cEJoXsiTw==
+
 "@types/sinon@^7.5.1":
   version "7.5.2"
   resolved "https://registry.yarnpkg.com/@types/sinon/-/sinon-7.5.2.tgz#5e2f1d120f07b9cda07e5dedd4f3bf8888fccdb9"
@@ -2858,6 +2863,16 @@ mkdirp@^0.5.0, mkdirp@^0.5.1:
   dependencies:
     minimist "^1.2.5"
 
+monaco-editor-core@^0.20.0:
+  version "0.20.0"
+  resolved "https://registry.yarnpkg.com/monaco-editor-core/-/monaco-editor-core-0.20.0.tgz#d5ce01307d298dbca6ab9194812812b32b50433f"
+  integrity sha512-4mdmfEejTvRZzrEIn70jqqNl3g15vnkRdTkJ8uMK4jiljntlwhiSc5vknZOLt1QM8za16C3tDrSl2mTL9ma2Sg==
+
+monaco-languages@^1.10.0:
+  version "1.10.0"
+  resolved "https://registry.yarnpkg.com/monaco-languages/-/monaco-languages-1.10.0.tgz#1e1b0f2b02c8c311b9db1ddb83f5c654f2f92fe1"
+  integrity sha512-ARAws17Xh0K4WsZYkJY6CqHn9EYdYN8CjzK6w/jgXIwU0owzCdUWxzu+FNJ/LeDLcKxL/YK3phcwGFj9IqX2yw==
+
 move-concurrently@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/move-concurrently/-/move-concurrently-1.0.1.tgz#be2c005fda32e0b29af1f05d7c4b33214c701f92"
@@ -3713,6 +3728,11 @@ requirejs@2.3.5:
   version "2.3.5"
   resolved "https://registry.yarnpkg.com/requirejs/-/requirejs-2.3.5.tgz#617b9acbbcb336540ef4914d790323a8d4b861b0"
   integrity sha512-svnO+aNcR/an9Dpi44C7KSAy5fFGLtmPbaaCeQaklUz8BQhS64tWWIIlvEA5jrWICzlO/X9KSzSeXFnZdBu8nw==
+
+requirejs@^2.3.6:
+  version "2.3.6"
+  resolved "https://registry.yarnpkg.com/requirejs/-/requirejs-2.3.6.tgz#e5093d9601c2829251258c0b9445d4d19fa9e7c9"
+  integrity sha512-ipEzlWQe6RK3jkzikgCupiTbTvm4S0/CAU5GlgptkN5SO6F3u0UD0K18wy6ErDqiCyP4J4YYe1HuAShvsxePLg==
 
 requires-port@^1.0.0:
   version "1.0.0"
