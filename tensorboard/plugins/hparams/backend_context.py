@@ -58,11 +58,6 @@ class Context(object):
             Typically, only tests should specify a value for this parameter.
         """
         self._tb_context = tb_context
-<<<<<<< HEAD
-        self._experiment_from_tag = {}  # experiment ID to Experiment proto
-        self._experiment_from_tag_lock = threading.Lock()
-=======
->>>>>>> 946f40812fcdbd8977e70a05c7d59fc8953422c4
         self._max_domain_discrete_len = max_domain_discrete_len
 
     def experiment(self, experiment_id):
@@ -86,7 +81,6 @@ class Context(object):
         return experiment
 
     @property
-<<<<<<< HEAD
     def tb_context(self):
         return self._tb_context
 
@@ -99,42 +93,24 @@ class Context(object):
             for (run, tag_to_time_series) in data_provider_output.items()
         }
 
-=======
-    def _deprecated_multiplexer(self):
-        return self._tb_context.multiplexer
-
-    @property
-    def multiplexer(self):
-        raise NotImplementedError("Do not read `Context.multiplexer` directly")
-
-    @property
-    def tb_context(self):
-        return self._tb_context
-
->>>>>>> 946f40812fcdbd8977e70a05c7d59fc8953422c4
-    def hparams_metadata(self, experiment_id):
+    def hparams_metadata(self, experiment_id, run_tag_filter=None):
         """Reads summary metadata for all hparams time series.
 
         Args:
           experiment_id: String, from `plugin_util.experiment_id`.
+          run_tag_filter: Optional `data.provider.RunTagFilter`, with
+            the semantics as in `list_tensors`.
 
         Returns:
           A dict `d` such that `d[run][tag]` is a `bytes` value with the
           summary metadata content for the keyed time series.
         """
-<<<<<<< HEAD
         return self._convert_plugin_metadata(
             self._tb_context.data_provider.list_tensors(
-                experiment_id, plugin_name=metadata.PLUGIN_NAME
+                experiment_id,
+                plugin_name=metadata.PLUGIN_NAME,
+                run_tag_filter=run_tag_filter,
             )
-=======
-        assert isinstance(experiment_id, str), (
-            experiment_id,
-            type(experiment_id),
-        )
-        return self._deprecated_multiplexer.PluginRunToTagToContent(
-            metadata.PLUGIN_NAME
->>>>>>> 946f40812fcdbd8977e70a05c7d59fc8953422c4
         )
 
     def scalars_metadata(self, experiment_id):
@@ -147,19 +123,10 @@ class Context(object):
           A dict `d` such that `d[run][tag]` is a `bytes` value with the
           summary metadata content for the keyed time series.
         """
-<<<<<<< HEAD
         return self._convert_plugin_metadata(
             self._tb_context.data_provider.list_scalars(
                 experiment_id, plugin_name=scalar_metadata.PLUGIN_NAME
             )
-=======
-        assert isinstance(experiment_id, str), (
-            experiment_id,
-            type(experiment_id),
-        )
-        return self._deprecated_multiplexer.PluginRunToTagToContent(
-            scalar_metadata.PLUGIN_NAME
->>>>>>> 946f40812fcdbd8977e70a05c7d59fc8953422c4
         )
 
     def read_scalars(self, experiment_id, run, tag):
@@ -173,7 +140,6 @@ class Context(object):
         Returns:
           A list of `plugin_event_accumulator.TensorEvent` values.
         """
-<<<<<<< HEAD
         data_provider_output = self._tb_context.data_provider.read_scalars(
             experiment_id,
             plugin_name=scalar_metadata.PLUGIN_NAME,
@@ -186,6 +152,8 @@ class Context(object):
         if data is None:
             raise KeyError("No scalar data for run=%r, tag=%r" % (run, tag))
         return [
+            # TODO(#3425): Change clients to depend on data provider
+            # APIs natively and remove this post-processing step.
             event_accumulator.TensorEvent(
                 wall_time=e.wall_time,
                 step=e.step,
@@ -193,13 +161,6 @@ class Context(object):
             )
             for e in data
         ]
-=======
-        assert isinstance(experiment_id, str), (
-            experiment_id,
-            type(experiment_id),
-        )
->>>>>>> 946f40812fcdbd8977e70a05c7d59fc8953422c4
-        return self._deprecated_multiplexer.Tensors(run, tag)
 
     def _find_experiment_tag(self, experiment_id):
         """Finds the experiment associcated with the metadata.EXPERIMENT_TAG
@@ -208,29 +169,18 @@ class Context(object):
         Returns:
           The experiment or None if no such experiment is found.
         """
-<<<<<<< HEAD
-        with self._experiment_from_tag_lock:
-            experiment = self._experiment_from_tag.get(experiment_id)
-            if experiment is None:
-                mapping = self.hparams_metadata(experiment_id)
-                for tag_to_content in mapping.values():
-                    if metadata.EXPERIMENT_TAG in tag_to_content:
-                        experiment = metadata.parse_experiment_plugin_data(
-                            tag_to_content[metadata.EXPERIMENT_TAG]
-                        )
-                        self._experiment_from_tag[experiment_id] = experiment
-                        break
-        return experiment
-=======
-        mapping = self.hparams_metadata(experiment_id)
-        for tag_to_content in mapping.values():
-            if metadata.EXPERIMENT_TAG in tag_to_content:
-                experiment = metadata.parse_experiment_plugin_data(
-                    tag_to_content[metadata.EXPERIMENT_TAG]
-                )
-                return experiment
-        return None
->>>>>>> 946f40812fcdbd8977e70a05c7d59fc8953422c4
+        mapping = self.hparams_metadata(
+            experiment_id,
+            run_tag_filter=provider.RunTagFilter(
+                tags=[metadata.EXPERIMENT_TAG]
+            ),
+        )
+        if not mapping:
+            return None
+        # We expect only one experiment; pick arbitrarily.
+        tag_to_content = mapping[next(iter(mapping))]
+        content = tag_to_content[next(iter(tag_to_content))]
+        return metadata.parse_experiment_plugin_data(content)
 
     def _compute_experiment_from_runs(self, experiment_id):
         """Computes a minimal Experiment protocol buffer by scanning the

@@ -50,6 +50,8 @@ class BackendContextTest(tf.test.TestCase):
 
     def setUp(self):
         self._mock_tb_context = base_plugin.TBContext()
+        # TODO(#3425): Remove mocking or switch to mocking data provider
+        # APIs directly.
         self._mock_multiplexer = mock.create_autospec(
             plugin_event_multiplexer.EventMultiplexer
         )
