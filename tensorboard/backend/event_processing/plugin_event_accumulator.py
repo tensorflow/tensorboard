@@ -283,6 +283,15 @@ class EventAccumulator(object):
         """
         return self.summary_metadata[tag]
 
+    def AllSummaryMetadata(self):
+        """Return summary metadata for all tags.
+
+        Returns:
+          A dict `d` such that `d[tag]` is a `SummaryMetadata` proto for
+          the keyed tag.
+        """
+        return dict(self.summary_metadata)
+
     def _ProcessEvent(self, event):
         """Called whenever an event is loaded."""
         event = data_compat.migrate_event(event)
