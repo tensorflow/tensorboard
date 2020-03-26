@@ -57,6 +57,8 @@ py_test(
         "//tensorboard/plugins/graph:metadata",
         "//tensorboard/plugins/histogram:metadata",
         "//tensorboard/plugins/histogram:summary_v2",
+        "//tensorboard/plugins/image:metadata",
+        "//tensorboard/plugins/image:summary_v2",
         "//tensorboard/plugins/scalar:metadata",
         "//tensorboard/plugins/scalar:summary_v2",
         "//tensorboard/util:tensor_util",
