@@ -310,7 +310,7 @@ https://www.tensorflow.org/api_docs/python/tf/train/summary_iterator)
 method.
 
 ### Can I customize which lines appear in a plot?
-                                  
+
 Using the [custom scalars plugin](/../../tree/master/tensorboard/plugins/custom_scalar), you can
 create scalar plots with lines for custom run-tag pairs. However, within the
 original scalars dashboard, each scalar plot corresponds to data for a specific
@@ -346,7 +346,7 @@ publicly accessible. You can stop the popups by specifying `--host localhost` at
 startup.
 
 ### How can I contribute to TensorBoard development?
-                   
+
 See [DEVELOPMENT.md](/DEVELOPMENT.md).
 
 ### I have a different issue that wasn't addressed here!
