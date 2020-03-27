@@ -172,10 +172,6 @@ class TensorBoardExporter(object):
                     }
                     os.mkdir(os.path.join(experiment_dir, _DIRNAME_BLOBS))
                     for block, filename in data:
-                        if file_handles[filename] is None:
-                            file_handles[filename] = _open_excl(
-                                os.path.join(experiment_dir, filename)
-                            )
                         outfile = file_handles[filename]
                         json.dump(block, outfile, sort_keys=True)
                         outfile.write("\n")
@@ -242,10 +238,11 @@ class TensorBoardExporter(object):
             if filename:
                 yield json_data, filename
             else:
-                logger.warn(
+                logger.warning(
                     "Skipping a response from experiment-data stream "
                     "due to the lack of any valid data type (such as "
-                    "scalars and blob sequences): run=%s, tag=%s"
+                    "scalars and blob sequences): run=%s, tag=%s. "
+                    "Updating tensorboard install may fix this warning."
                     % (response.run_name, response.tag_name)
                 )
 
@@ -426,7 +423,7 @@ def _mkdir_p(path):
 
 
 def _open_excl(path, mode="w"):
-    """Like `open(path, "x" + mode)`, but Python 2-compatible."""
+    """Like `open(path, mode.replace("w", "x"))`, but Python 2-compatible."""
     try:
         # `os.O_EXCL` works on Windows as well as POSIX-compliant systems.
         # See: <https://bugs.python.org/issue12760>

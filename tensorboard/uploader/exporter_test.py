@@ -382,12 +382,14 @@ class TensorBoardExporterTest(tb_test.TestCase):
         )
         self.assertEqual(summary_metadata, expected_summary_metadata)
         points = datum.pop("points")
-        self.assertEqual(points["steps"], [0])
-        self.assertEqual(points["wall_times"], [1571084520.862939144])
+        self.assertEqual(datum, {})
+        self.assertEqual(points.pop("steps"), [0])
+        self.assertEqual(points.pop("wall_times"), [1571084520.862939144])
         # The 1st blob is finished; the 2nd is unfinished.
         self.assertEqual(
-            points["blob_file_paths"], [["blobs/blob_train_blob.bin", None]]
+            points.pop("blob_file_paths"), [["blobs/blob_train_blob.bin", None]]
         )
+        self.assertEqual(points, {})
 
         datum = jsons[1]
         self.assertEqual(datum.pop("run"), "test")
@@ -397,10 +399,12 @@ class TensorBoardExporterTest(tb_test.TestCase):
         )
         self.assertEqual(summary_metadata, expected_summary_metadata)
         points = datum.pop("points")
-        self.assertEqual(points["steps"], [0])
-        self.assertEqual(points["wall_times"], [1571084520.862939144])
+        self.assertEqual(datum, {})
+        self.assertEqual(points.pop("steps"), [0])
+        self.assertEqual(points.pop("wall_times"), [1571084520.862939144])
         # `None` blob file path indicates an unfinished blob.
-        self.assertEqual(points["blob_file_paths"], [[None]])
+        self.assertEqual(points.pop("blob_file_paths"), [[None]])
+        self.assertEqual(points, {})
 
         # Check the BLOB files.
         with open(
@@ -436,11 +440,13 @@ class TensorBoardExporterTest(tb_test.TestCase):
         )
         self.assertEqual(summary_metadata, expected_summary_metadata)
         points = datum.pop("points")
-        self.assertEqual(points["steps"], [0])
-        self.assertEqual(points["wall_times"], [1571084520.862939144])
+        self.assertEqual(datum, {})
+        self.assertEqual(points.pop("steps"), [0])
+        self.assertEqual(points.pop("wall_times"), [1571084520.862939144])
         # `None` represents the blob that experienced error during downloading
         # and hence is missing.
-        self.assertEqual(points["blob_file_paths"], [[None, None]])
+        self.assertEqual(points.pop("blob_file_paths"), [[None, None]])
+        self.assertEqual(points, {})
 
         datum = jsons[1]
         self.assertEqual(datum.pop("run"), "test")
@@ -450,11 +456,13 @@ class TensorBoardExporterTest(tb_test.TestCase):
         )
         self.assertEqual(summary_metadata, expected_summary_metadata)
         points = datum.pop("points")
-        self.assertEqual(points["steps"], [0])
-        self.assertEqual(points["wall_times"], [1571084520.862939144])
+        self.assertEqual(datum, {})
+        self.assertEqual(points.pop("steps"), [0])
+        self.assertEqual(points.pop("wall_times"), [1571084520.862939144])
         # `None` represents the blob that experienced error during downloading
         # and hence is missing.
-        self.assertEqual(points["blob_file_paths"], [[None]])
+        self.assertEqual(points.pop("blob_file_paths"), [[None]])
+        self.assertEqual(points, {})
 
     def test_rejects_dangerous_experiment_ids(self):
         mock_api_client = self._create_mock_api_client()
