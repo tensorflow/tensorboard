@@ -311,7 +311,7 @@ method.
 
 ### Can I customize which lines appear in a plot?
 
-Using the [custom scalars plugin](/../../tree/master/tensorboard/plugins/custom_scalar), you can
+Using the [custom scalars plugin](../../tensorboard/plugins/custom_scalar), you can
 create scalar plots with lines for custom run-tag pairs. However, within the
 original scalars dashboard, each scalar plot corresponds to data for a specific
 tag and contains lines for each run that includes that tag.
@@ -319,7 +319,7 @@ tag and contains lines for each run that includes that tag.
 ### Can I visualize margins above and below lines?
 
 Margin plots (that visualize lower and upper bounds) may be created with the
-[custom scalars plugin](/../../tree/master/tensorboard/plugins/custom_scalar). The original
+[custom scalars plugin](../../tensorboard/plugins/custom_scalar). The original
 scalars plugin does not support visualizing margins.
 
 ### Can I create scatterplots (or other custom plots)?
@@ -335,7 +335,7 @@ TensorBoard uses [reservoir
 sampling](https://en.wikipedia.org/wiki/Reservoir_sampling) to downsample your
 data so that it can be loaded into RAM. You can modify the number of elements it
 will keep per tag in
-[tensorboard/backend/application.py](/tensorboard/backend/application.py).
+[tensorboard/backend/application.py](../../tensorboard/backend/application.py).
 See this [Stack Overflow question](http://stackoverflow.com/questions/43702546/tensorboard-doesnt-show-all-data-points/)
 for some more information.
 
@@ -347,7 +347,7 @@ startup.
 
 ### How can I contribute to TensorBoard development?
 
-See [DEVELOPMENT.md](/DEVELOPMENT.md).
+See [DEVELOPMENT.md](../../DEVELOPMENT.md).
 
 ### I have a different issue that wasn't addressed here!
 
