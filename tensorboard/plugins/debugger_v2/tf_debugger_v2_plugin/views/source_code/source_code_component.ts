@@ -90,7 +90,6 @@ export class SourceCodeComponent {
         this.editor.setValue(value);
       }
     }
-    // TODO(cais): Use `this.lines` vs. `changes.focusedLineno.currentValue`.
     if (
       changes.focusedLineno &&
       changes.focusedLineno.currentValue &&
@@ -98,14 +97,19 @@ export class SourceCodeComponent {
       this.editor !== null
     ) {
       this.editor.revealLineInCenter(
-        this.focusedLineno,
+        changes.focusedLineno.currentValue,
         monaco.editor.ScrollType.Smooth
       );
       const lineLength =
         currentLines[changes.focusedLineno.currentValue - 1].length;
       this.decorations = this.editor.deltaDecorations(this.decorations, [
         {
-          range: new monaco.Range(this.focusedLineno, 1, this.focusedLineno, 1),
+          range: new monaco.Range(
+            changes.focusedLineno.currentValue,
+            1,
+            changes.focusedLineno.currentValue,
+            1
+          ),
           options: {
             isWholeLine: true,
             linesDecorationsClassName: 'highlight-gutter',
@@ -113,9 +117,9 @@ export class SourceCodeComponent {
         },
         {
           range: new monaco.Range(
-            this.focusedLineno,
+            changes.focusedLineno.currentValue,
             1,
-            this.focusedLineno,
+            changes.focusedLineno.currentValue,
             lineLength + 1
           ),
           options: {
@@ -128,7 +132,6 @@ export class SourceCodeComponent {
 
   @HostListener('window:resize', ['$event'])
   onResize(event: Event) {
-    console.log('onResize'); // DEBUG
     if (this.editor !== null) {
       this.editor.layout();
     }

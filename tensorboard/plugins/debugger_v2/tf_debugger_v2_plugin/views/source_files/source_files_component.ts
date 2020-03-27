@@ -16,6 +16,14 @@ import {Component, Input} from '@angular/core';
 
 import {SourceFileContent, SourceLineSpec} from '../../store/debugger_types';
 
+/**
+ * Renders the content of source file(s).
+ *
+ * Unlike `SourceCodeComponent`, which displays only the content of a single
+ * source-code file, `SourceFilesComponent`is aware of the meta-informaton about
+ * the files being displayed, such their file paths. Such meta-information is
+ * displayed by this component.
+ */
 @Component({
   selector: 'source-files-component',
   templateUrl: './source_files_component.ng.html',

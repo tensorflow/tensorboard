@@ -29,7 +29,7 @@ import {createDebuggerState, createState} from '../../testing';
 import {AlertsModule} from '../alerts/alerts_module';
 import {ExecutionDataModule} from '../execution_data/execution_data_module';
 import {InactiveModule} from '../inactive/inactive_module';
-import * as loadMonacoShim from '../source_code/load_monaco_shim';
+import {setUpMonacoFakes, tearDownMonacoFakes} from '../source_code/testing';
 import {StackTraceModule} from '../stack_trace/stack_trace_module';
 import {
   getFocusedSourceFileContent,
@@ -44,51 +44,6 @@ import {SourceFilesModule} from './source_files_module';
 describe('Source Files Container', () => {
   let store: MockStore<State>;
   let dispatchSpy: jasmine.Spy;
-
-  class FakeRange {
-    constructor(
-      readonly startLineNumber: number,
-      readonly startColumn: number,
-      readonly endLineNumber: number,
-      readonly endColumn: number
-    ) {}
-  }
-
-  let loadMonacoSpy: jasmine.Spy;
-  // TODO(cais): Explore better typing by depending on 3rd-party libraries.
-  let editorSpy: jasmine.SpyObj<any>;
-  let monaco: any;
-  function setUpMonacoFakes() {
-    async function fakeLoadMonaco() {
-      monaco = {
-        editor: {
-          create: () => {
-            editorSpy = jasmine.createSpyObj('editorSpy', [
-              'deltaDecorations',
-              'revealLineInCenter',
-              'setValue',
-            ]);
-            return editorSpy;
-          },
-          ScrollType: {
-            Immediate: 1,
-            Smooth: 0,
-          },
-        },
-        Range: FakeRange,
-      };
-      loadMonacoShim.windowWithRequireAndMonaco.monaco = monaco;
-    }
-    loadMonacoSpy = spyOn(loadMonacoShim, 'loadMonaco').and.callFake(
-      fakeLoadMonaco
-    );
-  }
-
-  function tearDownMonacoFakes() {
-    if (loadMonacoShim.windowWithRequireAndMonaco.monaco !== undefined) {
-      delete loadMonacoShim.windowWithRequireAndMonaco.monaco;
-    }
-  }
 
   beforeEach(async () => {
     setUpMonacoFakes();
@@ -124,6 +79,11 @@ describe('Source Files Container', () => {
     expect(noFileSelectedElement.nativeElement.innerText).toBe(
       '(No file selected)'
     );
+
+    const sourceCodeElements = fixture.debugElement.queryAll(
+      By.css('source-code-component')
+    );
+    expect(sourceCodeElements.length).toBe(0);
   });
 
   it('renders file path and editor when a file is focused on', async () => {
@@ -142,14 +102,11 @@ describe('Source Files Container', () => {
 
     let fileLabelElement = fixture.debugElement.query(By.css('.file-label'));
     expect(fileLabelElement.nativeElement.innerText).toBe('/home/user/main.py');
-    expect(loadMonacoSpy).toHaveBeenCalledTimes(1);
-    expect(editorSpy.setValue).not.toHaveBeenCalled();
-    expect(editorSpy.revealLineInCenter).toHaveBeenCalledTimes(1);
-    expect(editorSpy.revealLineInCenter).toHaveBeenCalledWith(
-      3,
-      monaco.editor.ScrollType.Smooth
+
+    const sourceCodeElements = fixture.debugElement.queryAll(
+      By.css('source-code-component')
     );
-    expect(editorSpy.deltaDecorations).toHaveBeenCalledTimes(1);
+    expect(sourceCodeElements.length).toBe(1);
 
     // Check the behavior when a new file is focused on.
     store.overrideSelector(getFocusedSourceFileContent, {
@@ -171,60 +128,6 @@ describe('Source Files Container', () => {
     fileLabelElement = fixture.debugElement.query(By.css('.file-label'));
     expect(fileLabelElement.nativeElement.innerText).toBe(
       '/home/user/model.py'
-    );
-    // Switching to a different file relies on setValue() to render the code
-    // of the new file.
-    expect(editorSpy.setValue).toHaveBeenCalledTimes(1);
-    expect(editorSpy.setValue).toHaveBeenCalledWith(
-      'model = tf.keras.Sequential\nmodel.add(tf.keras.layers.Dense(1))'
-    );
-    expect(editorSpy.revealLineInCenter).toHaveBeenCalledTimes(2);
-    expect(editorSpy.revealLineInCenter).toHaveBeenCalledWith(
-      1,
-      monaco.editor.ScrollType.Smooth
-    );
-    expect(editorSpy.deltaDecorations).toHaveBeenCalledTimes(2);
-  });
-
-  it('switching to a different line in the same file', async () => {
-    const fixture = TestBed.createComponent(SourceFilesContainer);
-    store.overrideSelector(getFocusedSourceFileContent, {
-      loadState: DataLoadState.LOADED,
-      lines: ['import tensorflow as tf', '', 'print("hello, world")'],
-    });
-    store.overrideSelector(getFocusedSourceLineSpec, {
-      host_name: 'localhost',
-      file_path: '/home/user/main.py',
-      lineno: 2,
-    });
-    fixture.detectChanges();
-    await fixture.whenStable();
-
-    // Check the behavior when a new file is focused on.
-    store.overrideSelector(getFocusedSourceLineSpec, {
-      host_name: 'localhost',
-      file_path: '/home/user/main.py',
-      lineno: 1, // Focusing on a different line of the same file.
-    });
-    store.refreshState();
-    fixture.detectChanges();
-    await fixture.whenStable();
-
-    const fileLabelElement = fixture.debugElement.query(By.css('.file-label'));
-    expect(fileLabelElement.nativeElement.innerText).toBe('/home/user/main.py');
-    // setValue() shouldn't have been called because there is no change in file
-    // content.
-    expect(editorSpy.setValue).toHaveBeenCalledTimes(0);
-    expect(editorSpy.revealLineInCenter).toHaveBeenCalledTimes(2);
-    // This is the call for the old lineno.
-    expect(editorSpy.revealLineInCenter).toHaveBeenCalledWith(
-      2,
-      monaco.editor.ScrollType.Smooth
-    );
-    // This is the call for the new lineno.
-    expect(editorSpy.revealLineInCenter).toHaveBeenCalledWith(
-      1,
-      monaco.editor.ScrollType.Smooth
     );
   });
 });

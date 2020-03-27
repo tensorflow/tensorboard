@@ -44,3 +44,33 @@ tf_ts_library(
         "@npm//@types/requirejs",
     ],
 )
+
+tf_ts_library(
+    name = "testing",
+    srcs = [
+        "testing.ts",
+    ],
+    deps = [
+        ":load_monaco",
+        "@npm//@types/jasmine",
+    ],
+)
+
+tf_ts_library(
+    name = "source_code_component_test_lib",
+    testonly = True,
+    srcs = [
+        "source_code_component_test.ts",
+    ],
+    tsconfig = "//:tsconfig-test",
+    deps = [
+        ":source_code",
+        ":testing",
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin:debugger_v2",
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/testing",
+        "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "@npm//@angular/compiler",
+        "@npm//@angular/core",
+        "@npm//@types/jasmine",
+    ],
+)
