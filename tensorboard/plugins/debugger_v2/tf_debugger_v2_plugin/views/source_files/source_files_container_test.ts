@@ -103,12 +103,7 @@ describe('Source Files Container', () => {
         StackTraceModule,
         TimelineModule,
       ],
-      providers: [
-        provideMockStore({
-          initialState: createState(createDebuggerState()),
-        }),
-        DebuggerContainer,
-      ],
+      providers: [provideMockStore(), DebuggerContainer],
     }).compileComponents();
     store = TestBed.get(Store);
     dispatchSpy = spyOn(store, 'dispatch');
@@ -142,7 +137,6 @@ describe('Source Files Container', () => {
       file_path: '/home/user/main.py',
       lineno: 3,
     });
-    store.refreshState();
     fixture.detectChanges();
     await fixture.whenStable();
 
@@ -203,7 +197,6 @@ describe('Source Files Container', () => {
       file_path: '/home/user/main.py',
       lineno: 2,
     });
-    store.refreshState();
     fixture.detectChanges();
     await fixture.whenStable();
 

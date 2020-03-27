@@ -14,8 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 .code-viewer-container {
-  height: 336px;
-  width: 100%;
+  height: 100%;
 }
 
 :host ::ng-deep .highlight-gutter {

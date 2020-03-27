@@ -17,10 +17,7 @@ ng_module(
     ],
     deps = [
         ":load_monaco",
-        "@npm//@angular/common",
         "@npm//@angular/core",
-        "@npm//@ngrx/store",
-        "@npm//rxjs",
     ],
 )
 

@@ -13,14 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-:host {
-  font-family: 'Roboto Mono', monospace;
-  font-size: 10px;
-}
-
 .header-section {
   border-bottom: 1px solid rgba(0, 0, 0, 0.12);
-  height: 28px;
+  height: 24px;
   padding-bottom: 6px;
   vertical-align: middle;
   white-space: nowrap;
@@ -40,6 +35,14 @@ limitations under the License.
   padding: 0 20px;
 }
 
+.source-files-container {
+  display: flex;
+  flex-direction: column;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 10px;
+  height: 100%;
+}
+
 .title-tag {
   display: inline-block;
   font-weight: bold;
@@ -49,5 +52,6 @@ limitations under the License.
 }
 
 source-code-component {
+  flex-grow: 1;
   width: 100%;
 }

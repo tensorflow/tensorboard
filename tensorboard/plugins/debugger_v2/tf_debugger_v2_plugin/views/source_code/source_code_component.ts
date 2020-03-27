@@ -16,6 +16,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
+  HostListener,
   Input,
   SimpleChanges,
   ViewChild,
@@ -28,8 +29,21 @@ import {
 
 const windowWithRequireAndMonaco: WindowWithRequireAndMonaco = window;
 
+const DEFAULT_CODE_LANGUAGE = 'python';
 const DEFAULT_CODE_FONT_SIZE = 10;
 
+/**
+ * SoureCodeComponent displays the content of a source-code file.
+ *
+ * It displays the code with visual features including syntax highlighting.
+ * It additionally provides functionalities to:
+ * - Scroll to and highlight a given line by its line number.
+ *
+ * TODO(cais): Add support for line decoration and symbol decoration.
+ *
+ * Unlike SourceFilesComponent, SourceCodeComponent handles only one file at a
+ * time.
+ */
 @Component({
   selector: 'source-code-component',
   templateUrl: './source_code_component.ng.html',
@@ -37,9 +51,11 @@ const DEFAULT_CODE_FONT_SIZE = 10;
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SourceCodeComponent {
+  // Lines of the source-code file, split at line breaks.
   @Input()
   lines: string[] | null = null; // TODO(cais): Add spinner for `null`.
 
+  // Line number to scroll to and highlight, 1-based.
   @Input()
   focusedLineno: number | null = null;
 
@@ -53,14 +69,16 @@ export class SourceCodeComponent {
   async ngOnChanges(changes: SimpleChanges): Promise<void> {
     await loadMonaco();
     const monaco = windowWithRequireAndMonaco.monaco;
-    if (changes.lines && this.lines !== null) {
-      const value = this.lines.join('\n');
+    let currentLines: string[] | null = this.lines;
+    if (changes.lines && changes.lines.currentValue !== null) {
+      currentLines = changes.lines.currentValue;
+      const value = changes.lines.currentValue.join('\n');
       if (this.editor === null) {
         this.editor = monaco.editor.create(
           this.codeViewerContainer.nativeElement,
           {
             value,
-            language: 'python',
+            language: DEFAULT_CODE_LANGUAGE,
             readOnly: true,
             fontSize: DEFAULT_CODE_FONT_SIZE,
             minimap: {
@@ -72,12 +90,19 @@ export class SourceCodeComponent {
         this.editor.setValue(value);
       }
     }
-    if (changes.focusedLineno && this.lines && this.focusedLineno) {
+    // TODO(cais): Use `this.lines` vs. `changes.focusedLineno.currentValue`.
+    if (
+      changes.focusedLineno &&
+      changes.focusedLineno.currentValue &&
+      currentLines &&
+      this.editor !== null
+    ) {
       this.editor.revealLineInCenter(
         this.focusedLineno,
         monaco.editor.ScrollType.Smooth
       );
-      const lineLength = this.lines[this.focusedLineno - 1].length;
+      const lineLength =
+        currentLines[changes.focusedLineno.currentValue - 1].length;
       this.decorations = this.editor.deltaDecorations(this.decorations, [
         {
           range: new monaco.Range(this.focusedLineno, 1, this.focusedLineno, 1),
@@ -98,6 +123,14 @@ export class SourceCodeComponent {
           },
         },
       ]);
+    }
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event: Event) {
+    console.log('onResize'); // DEBUG
+    if (this.editor !== null) {
+      this.editor.layout();
     }
   }
 }
