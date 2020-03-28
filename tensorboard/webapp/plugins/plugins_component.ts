@@ -41,7 +41,12 @@ import {PluginRegistryModule} from './plugin_registry_module';
   selector: 'plugins-component',
   templateUrl: './plugins_component.ng.html',
   styles: [
-    '.plugins { height: 100%; }',
+    `
+      .plugins {
+        height: 100%;
+        position: relative;
+      }
+    `,
     'iframe { border: 0; height: 100%; width: 100%; }',
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -79,12 +84,27 @@ export class PluginsComponent implements OnChanges {
 
   private renderPlugin(plugin: UiPluginMetadata) {
     for (const element of this.pluginInstances.values()) {
-      element.style.display = 'none';
+      Object.assign(element.style, {
+        maxHeight: 0,
+        overflow: 'hidden',
+        /**
+         * We further make containers invisible. Some elements may anchor to
+         * the viewport instead of the container, in which case setting the max
+         * height here to 0 will not hide them.
+         **/
+        visibility: 'hidden',
+        position: 'absolute',
+      });
     }
 
     if (this.pluginInstances.has(plugin.id)) {
       const instance = this.pluginInstances.get(plugin.id) as HTMLElement;
-      instance.style.removeProperty('display');
+      Object.assign(instance.style, {
+        maxHeight: null,
+        overflow: null,
+        visibility: null,
+        position: null,
+      });
       return;
     }
 
