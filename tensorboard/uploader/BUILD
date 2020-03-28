@@ -15,6 +15,7 @@ py_library(
 py_library(
     name = "exporter_lib",
     srcs = ["exporter.py"],
+    srcs_version = "PY3",
     deps = [
         ":util",
         "//tensorboard:expect_grpc_installed",
