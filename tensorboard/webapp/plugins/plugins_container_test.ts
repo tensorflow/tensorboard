@@ -47,6 +47,19 @@ function expectPluginIframe(element: HTMLElement, name: string) {
   );
 }
 
+class TestableCustomElement extends HTMLElement {
+  constructor() {
+    super();
+
+    const shadow = this.attachShadow({mode: 'open'});
+    const wrapper = document.createElement('div');
+    wrapper.textContent = 'Test TensorBoard';
+    shadow.appendChild(wrapper);
+  }
+}
+
+customElements.define('tb-bar', TestableCustomElement);
+
 describe('plugins_component', () => {
   let store: MockStore<State>;
   const PLUGINS = {
@@ -163,9 +176,9 @@ describe('plugins_component', () => {
       expect(nativeElement.childElementCount).toBe(2);
       const [fooElement, barElement] = nativeElement.children;
       expectPluginIframe(fooElement, 'foo');
-      expect(fooElement.style.display).toBe('none');
+      expect(fooElement.style.visibility).toBe('hidden');
       expect(barElement.tagName).toBe('TB-BAR');
-      expect(barElement.style.display).not.toBe('none');
+      expect(barElement.style.visibility).not.toBe('hidden');
     });
 
     it('does not create same instance of plugin', async () => {
@@ -189,9 +202,9 @@ describe('plugins_component', () => {
 
       const {nativeElement} = fixture.debugElement.query(By.css('.plugins'));
       expect(nativeElement.childElementCount).toBe(2);
-      const [fooElement, barElement] = nativeElement.children;
+      const [fooElement] = nativeElement.children;
       expectPluginIframe(fooElement, 'foo');
-      expect(fooElement.style.display).not.toBe('none');
+      expect(fooElement.style.visibility).not.toBe('hidden');
     });
 
     it('creates components for plugins registered dynamically', async () => {
@@ -207,6 +220,25 @@ describe('plugins_component', () => {
       expect(nativeElement.childElementCount).toBe(1);
       const pluginElement = nativeElement.children[0];
       expect(pluginElement.tagName).toBe('EXTRA-DASHBOARD');
+    });
+
+    it('hides inactive plugin but keeps their width', async () => {
+      setActivePlugin('bar');
+
+      const fixture = TestBed.createComponent(PluginsContainer);
+      fixture.detectChanges();
+
+      setActivePlugin('foo');
+      fixture.detectChanges();
+
+      const {nativeElement} = fixture.debugElement.query(By.css('.plugins'));
+      const [barElement] = nativeElement.children;
+      expect(barElement.shadowRoot.firstElementChild.textContent).toBe(
+        'Test TensorBoard'
+      );
+      expect(
+        barElement.shadowRoot.firstElementChild.clientWidth
+      ).toBeGreaterThan(0);
     });
   });
 
