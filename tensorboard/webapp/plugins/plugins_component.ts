@@ -160,7 +160,7 @@ export class PluginsComponent implements OnChanges {
   }
 
   private reload() {
-    if (!this.activePlugin) {
+    if (!this.activePlugin || this.activePlugin.disable_reload) {
       return;
     }
 

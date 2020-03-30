@@ -28,7 +28,11 @@ import {HeaderComponent} from './header_component';
 import {PluginSelectorComponent} from './plugin_selector_component';
 import {PluginSelectorContainer} from './plugin_selector_container';
 import {ReloadContainer} from './reload_container';
-import {getPluginsListLoaded} from '../core/store/core_selectors';
+import {
+  getPluginsListLoaded,
+  getActivePlugin,
+  getPlugins,
+} from '../core/store/core_selectors';
 import {DataLoadState} from '../types/data';
 
 import {changePlugin, manualReload} from '../core/actions';
@@ -37,6 +41,7 @@ import {
   createPluginMetadata,
   createState,
   createCoreState,
+  buildPluginMetadata,
 } from '../core/testing';
 import {PluginId} from '../types/api';
 
@@ -77,24 +82,20 @@ describe('header test', () => {
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
     store = TestBed.get(Store);
+    store.overrideSelector(getPlugins, {
+      foo: createPluginMetadata('Foo Fighter'),
+      bar: createPluginMetadata('Barber'),
+    });
+    store.overrideSelector(getActivePlugin, 'foo');
   });
 
   function assertDebugElementText(el: DebugElement, text: string) {
     expect(el.nativeElement.innerText.trim().toUpperCase()).toBe(text);
   }
 
-  function setActivePlugin(activePlugin: PluginId) {
-    store.setState(
-      createState(
-        createCoreState({
-          plugins: {
-            foo: createPluginMetadata('Foo Fighter'),
-            bar: createPluginMetadata('Barber'),
-          },
-          activePlugin,
-        })
-      )
-    );
+  function setActivePlugin(activePlugin: PluginId | null) {
+    store.overrideSelector(getActivePlugin, activePlugin);
+    store.refreshState();
   }
 
   it('renders pluginsList', () => {
@@ -112,16 +113,12 @@ describe('header test', () => {
     const fixture = TestBed.createComponent(HeaderComponent);
     fixture.detectChanges();
 
-    const nextState = createState(
-      createCoreState({
-        plugins: {
-          cat: createPluginMetadata('Meow'),
-          dog: createPluginMetadata('Woof'),
-          elephant: createPluginMetadata('Trumpet'),
-        },
-      })
-    );
-    store.setState(nextState);
+    store.overrideSelector(getPlugins, {
+      cat: createPluginMetadata('Meow'),
+      dog: createPluginMetadata('Woof'),
+      elephant: createPluginMetadata('Trumpet'),
+    });
+    setActivePlugin(null);
     fixture.detectChanges();
     await fixture.whenStable();
 
@@ -262,6 +259,44 @@ describe('header test', () => {
         By.css('app-header-reload button')
       );
       expect(buttonAfter.classes['loading']).toBe(false);
+    });
+
+    it('disables the reload button if active plugin does not want reload', () => {
+      store.overrideSelector(getPlugins, {
+        foo: buildPluginMetadata({
+          disable_reload: true,
+          tab_name: 'Foo',
+        }),
+      });
+      store.overrideSelector(getActivePlugin, 'foo');
+      const fixture = TestBed.createComponent(HeaderComponent);
+      fixture.detectChanges();
+
+      const button = fixture.debugElement.query(
+        By.css('app-header-reload button')
+      );
+      expect(button.attributes['disabled']).toBe('true');
+    });
+
+    it('does not spin the spinner when reload is disabled', () => {
+      store.overrideSelector(getPluginsListLoaded, {
+        state: DataLoadState.LOADING,
+        lastLoadedTimeInMs: null,
+      });
+      store.overrideSelector(getPlugins, {
+        foo: buildPluginMetadata({
+          disable_reload: true,
+          tab_name: 'Foo',
+        }),
+      });
+      store.overrideSelector(getActivePlugin, 'foo');
+      const fixture = TestBed.createComponent(HeaderComponent);
+      fixture.detectChanges();
+
+      const buttonBefore = fixture.debugElement.query(
+        By.css('app-header-reload button')
+      );
+      expect(buttonBefore.classes['loading']).toBe(false);
     });
   });
 });
