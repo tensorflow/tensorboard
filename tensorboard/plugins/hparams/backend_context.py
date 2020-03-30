@@ -75,10 +75,38 @@ class Context(object):
           protobuffer can be built (possibly, because the event data has not been
           completely loaded yet), returns None.
         """
-        experiment = self._find_experiment_tag(experiment_id)
-        if experiment is None:
-            return self._compute_experiment_from_runs(experiment_id)
-        return experiment
+        return self.experiment_from_metadata(
+            experiment_id, self.hparams_metadata(experiment_id)
+        )
+
+    def experiment_from_metadata(
+        self, experiment_id, hparams_run_to_tag_to_content
+    ):
+        """Returns the experiment protobuffer defining the experiment.
+
+        Accepts a dict containing the plugin contents for all summary tags
+        associated with the hparams plugin, as an optimization for callers
+        who already have this information available, so that this function
+        can minimize its calls to the underlying `DataProvider`.
+
+        This method first attempts to find a metadata.EXPERIMENT_TAG tag and
+        retrieve the associated protobuffer. If no such tag is found, the method
+        will attempt to build a minimal experiment protobuffer by scanning for
+        all metadata.SESSION_START_INFO_TAG tags (to compute the hparam_infos
+        field of the experiment) and for all scalar tags (to compute the
+        metric_infos field of the experiment).
+
+        Returns:
+          The experiment protobuffer. If no tags are found from which an experiment
+          protobuffer can be built (possibly, because the event data has not been
+          completely loaded yet), returns None.
+        """
+        experiment = self._find_experiment_tag(hparams_run_to_tag_to_content)
+        if experiment:
+            return experiment
+        return self._compute_experiment_from_runs(
+            experiment_id, hparams_run_to_tag_to_content
+        )
 
     @property
     def tb_context(self):
@@ -156,39 +184,37 @@ class Context(object):
             for (run, tag_to_data) in data_provider_output.items()
         }
 
-    def _find_experiment_tag(self, experiment_id):
+    def _find_experiment_tag(self, hparams_run_to_tag_to_content):
         """Finds the experiment associcated with the metadata.EXPERIMENT_TAG
         tag.
 
         Returns:
           The experiment or None if no such experiment is found.
         """
-        mapping = self.hparams_metadata(
-            experiment_id,
-            run_tag_filter=provider.RunTagFilter(
-                tags=[metadata.EXPERIMENT_TAG]
-            ),
-        )
-        if not mapping:
-            return None
-        # We expect only one run to have an `EXPERIMENT_TAG`; pick
-        # arbitrarily.
-        tag_to_content = next(iter(mapping.values()))
-        content = next(iter(tag_to_content.values()))
-        return metadata.parse_experiment_plugin_data(content)
+        # We expect only one run to have an `EXPERIMENT_TAG`; look
+        # through all of them an arbitrarily pick the first one.
+        for tags in hparams_run_to_tag_to_content.values():
+            maybe_content = tags.get(metadata.EXPERIMENT_TAG)
+            if maybe_content:
+                return metadata.parse_experiment_plugin_data(maybe_content)
+        return None
 
-    def _compute_experiment_from_runs(self, experiment_id):
+    def _compute_experiment_from_runs(
+        self, experiment_id, hparams_run_to_tag_to_content
+    ):
         """Computes a minimal Experiment protocol buffer by scanning the
         runs."""
-        hparam_infos = self._compute_hparam_infos(experiment_id)
+        hparam_infos = self._compute_hparam_infos(hparams_run_to_tag_to_content)
         if not hparam_infos:
             return None
-        metric_infos = self._compute_metric_infos(experiment_id)
+        metric_infos = self._compute_metric_infos(
+            experiment_id, hparams_run_to_tag_to_content
+        )
         return api_pb2.Experiment(
             hparam_infos=hparam_infos, metric_infos=metric_infos
         )
 
-    def _compute_hparam_infos(self, experiment_id):
+    def _compute_hparam_infos(self, hparams_run_to_tag_to_content):
         """Computes a list of api_pb2.HParamInfo from the current run, tag
         info.
 
@@ -201,10 +227,9 @@ class Context(object):
         Returns:
           A list of api_pb2.HParamInfo messages.
         """
-        run_to_tag_to_content = self.hparams_metadata(experiment_id)
         # Construct a dict mapping an hparam name to its list of values.
         hparams = collections.defaultdict(list)
-        for tag_to_content in run_to_tag_to_content.values():
+        for tag_to_content in hparams_run_to_tag_to_content.values():
             if metadata.SESSION_START_INFO_TAG not in tag_to_content:
                 continue
             start_info = metadata.parse_session_start_info_plugin_data(
@@ -270,13 +295,17 @@ class Context(object):
 
         return result
 
-    def _compute_metric_infos(self, experiment_id):
+    def _compute_metric_infos(self, experiment_id, run_to_tag_to_content):
         return (
             api_pb2.MetricInfo(name=api_pb2.MetricName(group=group, tag=tag))
-            for tag, group in self._compute_metric_names(experiment_id)
+            for tag, group in self._compute_metric_names(
+                experiment_id, run_to_tag_to_content
+            )
         )
 
-    def _compute_metric_names(self, experiment_id):
+    def _compute_metric_names(
+        self, experiment_id, hparams_run_to_tag_to_content
+    ):
         """Computes the list of metric names from all the scalar (run, tag)
         pairs.
 
@@ -302,10 +331,14 @@ class Context(object):
           A python list containing pairs. Each pair is a (tag, group) pair
           representing a metric name used in some session.
         """
-        session_runs = self._build_session_runs_set(experiment_id)
+        session_runs = set(
+            run
+            for run, tags in hparams_run_to_tag_to_content.items()
+            if metadata.SESSION_START_INFO_TAG in tags
+        )
         metric_names_set = set()
-        run_to_tag_to_content = self.scalars_metadata(experiment_id)
-        for (run, tag_to_content) in six.iteritems(run_to_tag_to_content):
+        scalars_run_to_tag_to_content = self.scalars_metadata(experiment_id)
+        for run, tags in scalars_run_to_tag_to_content.items():
             session = _find_longest_parent_path(session_runs, run)
             if not session:
                 continue
@@ -314,21 +347,11 @@ class Context(object):
             # string.
             if group == ".":
                 group = ""
-            metric_names_set.update(
-                (tag, group) for tag in tag_to_content.keys()
-            )
+            metric_names_set.update((tag, group) for tag in tags)
         metric_names_list = list(metric_names_set)
         # Sort metrics for determinism.
         metric_names_list.sort()
         return metric_names_list
-
-    def _build_session_runs_set(self, experiment_id):
-        result = set()
-        run_to_tag_to_content = self.hparams_metadata(experiment_id)
-        for (run, tag_to_content) in six.iteritems(run_to_tag_to_content):
-            if metadata.SESSION_START_INFO_TAG in tag_to_content:
-                result.add(run)
-        return result
 
 
 def _find_longest_parent_path(path_set, path):
