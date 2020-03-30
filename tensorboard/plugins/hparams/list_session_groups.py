@@ -49,9 +49,16 @@ class Handler(object):
         self._request = request
         self._extractors = _create_extractors(request.col_params)
         self._filters = _create_filters(request.col_params, self._extractors)
+        # Query for all Hparams summary metadata up front to minimize calls to
+        # the underlying DataProvider.
+        self._hparams_run_to_tag_to_content = context.hparams_metadata(
+            experiment_id
+        )
         # Since an context.experiment() call may search through all the runs, we
         # cache it here.
-        self._experiment = context.experiment(experiment_id)
+        self._experiment = context.experiment_from_metadata(
+            experiment_id, self._hparams_run_to_tag_to_content
+        )
 
     def run(self):
         """Handles the request specified on construction.
@@ -75,21 +82,12 @@ class Handler(object):
         # in the 'groups_by_name' dict. We create the SessionGroup object, if this
         # is the first session of that group we encounter.
         groups_by_name = {}
-        run_to_tag_to_content = self._context.hparams_metadata(
-            self._experiment_id,
-            run_tag_filter=provider.RunTagFilter(
-                tags=[
-                    metadata.SESSION_START_INFO_TAG,
-                    metadata.SESSION_END_INFO_TAG,
-                ]
-            ),
-        )
         # The TensorBoard runs with session start info are the
         # "sessions", which are not necessarily the runs that actually
         # contain metrics (may be in subdirectories).
         session_names = [
             run
-            for (run, tags) in run_to_tag_to_content.items()
+            for (run, tags) in self._hparams_run_to_tag_to_content.items()
             if metadata.SESSION_START_INFO_TAG in tags
         ]
         metric_runs = set()
@@ -108,7 +106,10 @@ class Handler(object):
                 runs=metric_runs, tags=metric_tags
             ),
         )
-        for (session_name, tag_to_content) in run_to_tag_to_content.items():
+        for (
+            session_name,
+            tag_to_content,
+        ) in self._hparams_run_to_tag_to_content.items():
             if metadata.SESSION_START_INFO_TAG not in tag_to_content:
                 continue
             start_info = metadata.parse_session_start_info_plugin_data(
