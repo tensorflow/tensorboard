@@ -137,7 +137,7 @@ def run_all(logdir, verbose=False):
     for initial_temperature in [270.0, 310.0, 350.0]:
         for final_temperature in [270.0, 310.0, 350.0]:
             for heat_coefficient in [0.001, 0.005]:
-                run_name = "temperature:t0=%g,tA=%g,kH=%g" % (
+                run_name = "t0=%g,tA=%g,kH=%g" % (
                     initial_temperature,
                     final_temperature,
                     heat_coefficient,
