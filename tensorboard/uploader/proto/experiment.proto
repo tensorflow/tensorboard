@@ -29,7 +29,7 @@ message Experiment {
   // The number of bytes used for storage of tensors in this experiment,
   // across all time series, including estimated overhead. Output-only.
   int64 total_tensor_bytes = 9;
-  // The number of bytes used for storage of the content of blobs in this
+  // The number of bytes used for storage of the contents of blobs in this
   // experiment, across all time series, including estimated overhead.
   // Output-only.
   int64 total_blob_bytes = 9;
