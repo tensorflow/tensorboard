@@ -57,6 +57,28 @@ $ git cherry-pick bc4e7a6e5517daf918433a8f5983fc6bd239358f
 [pr-1334]: https://github.com/tensorflow/tensorboard/pull/1334
 [yarn]: https://yarnpkg.com/
 
+## Managing frontend dependencies
+
+TensorBoard manages frontend dependencies in two places: third_party/js.bzl and
+package.json. Polymer based components make use of the js.bzl whereas the new
+Angular modules make use of package.json through `yarn`. When adding or updating
+dependencies on package.json, please use `yarn` to manage the dependencies.
+
+For instance,
+```bash
+
+# To install new dependencies (-D for development dependencies; please refer to
+# yarn add -h for help):
+$ yarn add d3 -D @types/d3
+
+# To upgrade dependencies:
+$ yarn upgrade d3
+
+```
+
+At the end, please make sure `yarn.lock` does not update by running `yarn` after
+making a necessary commit.
+
 ## Pro tips
 
 You may find the following optional tips useful for development.
