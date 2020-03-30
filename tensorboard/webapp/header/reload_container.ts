@@ -26,11 +26,11 @@ import {
 import {manualReload} from '../core/actions';
 import {DataLoadState} from '../types/data';
 
-const isReloadDiabledByPlugin = createSelector(
+const isReloadDisabledByPlugin = createSelector(
   getPlugins,
   getActivePlugin,
   (plugins, id) => {
-    if (!id || !plugins || !plugins[id]) return false;
+    if (!id || !plugins[id]) return false;
     return plugins[id].disable_reload;
   }
 );
@@ -78,7 +78,7 @@ const isReloadDiabledByPlugin = createSelector(
 })
 export class ReloadContainer {
   readonly reloadDisabled$: Observable<boolean> = this.store.select(
-    isReloadDiabledByPlugin
+    isReloadDisabledByPlugin
   );
 
   isReloading$: Observable<boolean> = this.store

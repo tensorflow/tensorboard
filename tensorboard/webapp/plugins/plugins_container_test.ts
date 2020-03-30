@@ -267,7 +267,7 @@ describe('plugins_component', () => {
       expect(fooReloadSpy).toHaveBeenCalledTimes(1);
     });
 
-    fit('does not invoke reload method on dom if disable_reload', () => {
+    it('does not invoke reload method on dom if disable_reload', () => {
       store.overrideSelector(getPlugins, {
         bar: {
           disable_reload: true,
