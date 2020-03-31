@@ -9,6 +9,7 @@ ng_module(
     name = "source_code",
     srcs = [
         "source_code_component.ts",
+        "source_code_container.ts",
         "source_code_module.ts",
     ],
     assets = [
@@ -17,7 +18,9 @@ ng_module(
     ],
     deps = [
         ":load_monaco",
+        "@npm//@angular/common",
         "@npm//@angular/core",
+        "@npm//rxjs",
     ],
 )
 
@@ -57,13 +60,14 @@ tf_ts_library(
 )
 
 tf_ts_library(
-    name = "source_code_component_test_lib",
+    name = "source_code_container_test_lib",
     testonly = True,
     srcs = [
-        "source_code_component_test.ts",
+        "source_code_container_test.ts",
     ],
     tsconfig = "//:tsconfig-test",
     deps = [
+        ":load_monaco",  # TODO(cais): Clean up.
         ":source_code",
         ":testing",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin:debugger_v2",

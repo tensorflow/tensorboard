@@ -16,48 +16,37 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
-  HostListener,
   Input,
   SimpleChanges,
   ViewChild,
+  OnInit,
 } from '@angular/core';
+import {fromEvent, interval} from 'rxjs';
+import {debounce, tap} from 'rxjs/operators';
 
-import {
-  loadMonaco,
-  WindowWithRequireAndMonaco,
-} from '../source_code/load_monaco_shim';
-
-const windowWithRequireAndMonaco: WindowWithRequireAndMonaco = window;
+/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 const DEFAULT_CODE_LANGUAGE = 'python';
 const DEFAULT_CODE_FONT_SIZE = 10;
 
-/**
- * SoureCodeComponent displays the content of a source-code file.
- *
- * It displays the code with visual features including syntax highlighting.
- * It additionally provides functionalities to:
- * - Scroll to and highlight a given line by its line number.
- *
- * TODO(cais): Add support for line decoration and symbol decoration.
- *
- * Unlike SourceFilesComponent, SourceCodeComponent handles only one file at a
- * time.
- */
+const RESIZE_DEBOUNCE_INTERAVL_MS = 50;
+
 @Component({
   selector: 'source-code-component',
   templateUrl: './source_code_component.ng.html',
   styleUrls: ['./source_code_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SourceCodeComponent {
-  // Lines of the source-code file, split at line breaks.
+export class SourceCodeComponent implements OnInit {
   @Input()
   lines: string[] | null = null; // TODO(cais): Add spinner for `null`.
 
-  // Line number to scroll to and highlight, 1-based.
   @Input()
   focusedLineno: number | null = null;
+
+  // TODO(cais): Explore better typing by depending on external libraries.
+  @Input()
+  monaco: any | null = null;
 
   @ViewChild('codeViewerContainer', {static: true, read: ElementRef})
   private readonly codeViewerContainer!: ElementRef<HTMLDivElement>;
@@ -66,15 +55,35 @@ export class SourceCodeComponent {
 
   private decorations: string[] = [];
 
+  ngOnInit(): void {
+    // Listen to window resize event. When resize happens, re-layout
+    // monaco editor. Do this with `debounce()` to prevent re-layouting
+    // at too high a rate.
+    fromEvent(window, 'resize')
+      .pipe(
+        debounce(() => interval(RESIZE_DEBOUNCE_INTERAVL_MS)),
+        tap(() => {
+          if (this.editor !== null) {
+            this.editor.layout();
+          }
+        })
+      )
+      .subscribe();
+  }
+
   async ngOnChanges(changes: SimpleChanges): Promise<void> {
-    await loadMonaco();
-    const monaco = windowWithRequireAndMonaco.monaco;
-    let currentLines: string[] | null = this.lines;
-    if (changes.lines && changes.lines.currentValue !== null) {
-      currentLines = changes.lines.currentValue;
-      const value = changes.lines.currentValue.join('\n');
+    if (this.monaco === null) {
+      return;
+    }
+    const currentLines: string[] | null = changes.monaco
+      ? this.lines
+      : changes.lines
+      ? changes.lines.currentValue
+      : null;
+    if (currentLines) {
+      const value = currentLines.join('\n');
       if (this.editor === null) {
-        this.editor = monaco.editor.create(
+        this.editor = this.monaco.editor.create(
           this.codeViewerContainer.nativeElement,
           {
             value,
@@ -90,24 +99,33 @@ export class SourceCodeComponent {
         this.editor.setValue(value);
       }
     }
+
+    const currentFocusedLineno: number | null = changes.monaco
+      ? this.focusedLineno
+      : changes.focusedLineno
+      ? changes.focusedLineno.currentValue
+      : null;
     if (
-      changes.focusedLineno &&
-      changes.focusedLineno.currentValue &&
-      currentLines &&
-      this.editor !== null
+      currentFocusedLineno &&
+      this.lines &&
+      this.monaco !== null
+      // changes.focusedLineno &&
+      // changes.focusedLineno.currentValue &&
+      // currentLines &&
+      // this.monaco !== null &&
+      // this.editor !== null
     ) {
       this.editor.revealLineInCenter(
-        changes.focusedLineno.currentValue,
-        monaco.editor.ScrollType.Smooth
+        currentFocusedLineno,
+        this.monaco.editor.ScrollType.Smooth
       );
-      const lineLength =
-        currentLines[changes.focusedLineno.currentValue - 1].length;
+      const lineLength = this.lines[currentFocusedLineno - 1].length;
       this.decorations = this.editor.deltaDecorations(this.decorations, [
         {
-          range: new monaco.Range(
-            changes.focusedLineno.currentValue,
+          range: new this.monaco.Range(
+            currentFocusedLineno,
             1,
-            changes.focusedLineno.currentValue,
+            currentFocusedLineno,
             1
           ),
           options: {
@@ -116,10 +134,10 @@ export class SourceCodeComponent {
           },
         },
         {
-          range: new monaco.Range(
-            changes.focusedLineno.currentValue,
+          range: new this.monaco.Range(
+            currentFocusedLineno,
             1,
-            changes.focusedLineno.currentValue,
+            currentFocusedLineno,
             lineLength + 1
           ),
           options: {
@@ -129,11 +147,8 @@ export class SourceCodeComponent {
       ]);
     }
   }
-
-  @HostListener('window:resize', ['$event'])
-  onResize(event: Event) {
-    if (this.editor !== null) {
-      this.editor.layout();
-    }
-  }
 }
+
+export const TEST_ONLY = {
+  RESIZE_DEBOUNCE_INTERAVL_MS,
+};

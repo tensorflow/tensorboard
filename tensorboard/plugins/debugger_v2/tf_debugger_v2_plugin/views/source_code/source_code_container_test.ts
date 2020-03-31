@@ -18,7 +18,8 @@ limitations under the License.
 import {SimpleChange} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 
-import {SourceCodeComponent} from './source_code_component';
+import {SourceCodeComponent, TEST_ONLY} from './source_code_component';
+import {SourceCodeContainer} from './source_code_container';
 import {
   editorSpy,
   fakeMonaco,
@@ -26,12 +27,13 @@ import {
   setUpMonacoFakes,
   tearDownMonacoFakes,
 } from './testing';
+import * as loadMonacoShim from './load_monaco_shim';
 
 describe('Source Code Component', () => {
   beforeEach(async () => {
     setUpMonacoFakes();
     await TestBed.configureTestingModule({
-      declarations: [SourceCodeComponent],
+      declarations: [SourceCodeComponent, SourceCodeContainer],
     }).compileComponents();
   });
 
@@ -48,14 +50,23 @@ describe('Source Code Component', () => {
   it('renders a file and change to a new file', async () => {
     const fixture = TestBed.createComponent(SourceCodeComponent);
     const component = fixture.componentInstance;
+    component.lines = lines1;
+    component.focusedLineno = 3;
     await component.ngOnChanges({
       lines: new SimpleChange(null, lines1, true),
       focusedLineno: new SimpleChange(null, 3, true),
     });
-    component.lines = lines1;
-    component.focusedLineno = 3;
+    // Simlulate loading monaco and setting the `monaco` input after loading.
+    await loadMonacoShim.loadMonaco();
+    component.monaco = loadMonacoShim.windowWithRequireAndMonaco.monaco;
+    await component.ngOnChanges({
+      monaco: new SimpleChange(
+        null,
+        loadMonacoShim.windowWithRequireAndMonaco.monaco,
+        true
+      ),
+    });
 
-    expect(loadMonacoSpy).toHaveBeenCalledTimes(1);
     // Initial rendering of code uses monaco editor's constructor instead of
     // using `setValue()`.
     expect(editorSpy.setValue).not.toHaveBeenCalled();
@@ -66,6 +77,8 @@ describe('Source Code Component', () => {
     );
     expect(editorSpy.deltaDecorations).toHaveBeenCalledTimes(1);
 
+    component.lines = lines2;
+    component.focusedLineno = 1;
     await component.ngOnChanges({
       lines: new SimpleChange(lines1, lines2, false),
       focusedLineno: new SimpleChange(3, 1, false),
@@ -86,12 +99,14 @@ describe('Source Code Component', () => {
   it('switches to a different line in the same file', async () => {
     const fixture = TestBed.createComponent(SourceCodeComponent);
     const component = fixture.componentInstance;
+    await loadMonacoShim.loadMonaco();
+    component.monaco = loadMonacoShim.windowWithRequireAndMonaco.monaco;
+    component.lines = lines1;
+    component.focusedLineno = 2;
     await component.ngOnChanges({
       lines: new SimpleChange(null, lines1, true),
       focusedLineno: new SimpleChange(null, 2, true),
     });
-    component.lines = lines1;
-    component.focusedLineno = 2;
     await component.ngOnChanges({
       focusedLineno: new SimpleChange(2, 1, false),
     });
@@ -112,14 +127,56 @@ describe('Source Code Component', () => {
     );
   });
 
+  function sleep(durationMs: number): Promise<void> {
+    return new Promise((resolve) => {
+      setInterval(() => {
+        resolve();
+      }, durationMs);
+    });
+  }
+
   it('calls monaco editor layout() on resize', async () => {
     const fixture = TestBed.createComponent(SourceCodeComponent);
     const component = fixture.componentInstance;
+    component.ngOnInit();
+    component.lines = lines1;
+    component.focusedLineno = 3;
     await component.ngOnChanges({
       lines: new SimpleChange(null, lines1, true),
       focusedLineno: new SimpleChange(null, 3, true),
     });
-    component.onResize(new Event('resize'));
+    await loadMonacoShim.loadMonaco();
+    component.monaco = loadMonacoShim.windowWithRequireAndMonaco.monaco;
+    await component.ngOnChanges({
+      monaco: new SimpleChange(
+        null,
+        loadMonacoShim.windowWithRequireAndMonaco.monaco,
+        true
+      ),
+    });
+
+    window.dispatchEvent(new Event('resize'));
+    await sleep(TEST_ONLY.RESIZE_DEBOUNCE_INTERAVL_MS);
     expect(editorSpy.layout).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('Source Code Container', () => {
+  beforeEach(async () => {
+    setUpMonacoFakes();
+    await TestBed.configureTestingModule({
+      declarations: [SourceCodeComponent, SourceCodeContainer],
+    }).compileComponents();
+  });
+
+  afterEach(() => {
+    tearDownMonacoFakes();
+  });
+
+  it('calls loadMonaco() on ngOnInit()', () => {
+    const fixture = TestBed.createComponent(SourceCodeContainer);
+    const component = fixture.componentInstance;
+    component.ngOnInit();
+    expect(loadMonacoSpy).toHaveBeenCalledTimes(1);
   });
 });

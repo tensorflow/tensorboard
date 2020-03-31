@@ -36,12 +36,12 @@ limitations under the License.
     </ng-template>
   </div>
 
-  <source-code-component
+  <tf-debugger-v2-source-code
     *ngIf="focusedSourceFileContent !== null &&
            focusedSourceLineSpec !== null &&
            focusedSourceFileContent.lines !== null"
     [lines]="focusedSourceFileContent.lines"
     [focusedLineno]="focusedSourceLineSpec.lineno"
   >
-  </source-code-component>
+  </tf-debugger-v2-source-code>
 </div>

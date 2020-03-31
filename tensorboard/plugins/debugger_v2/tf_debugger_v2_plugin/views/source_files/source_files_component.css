@@ -51,7 +51,7 @@ limitations under the License.
   vertical-align: top;
 }
 
-source-code-component {
+tf-debugger-v2-source-code {
   flex-grow: 1;
   width: 100%;
 }

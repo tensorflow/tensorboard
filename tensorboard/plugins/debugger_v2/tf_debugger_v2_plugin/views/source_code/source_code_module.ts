@@ -13,12 +13,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 
 import {SourceCodeComponent} from './source_code_component';
+import {SourceCodeContainer} from './source_code_container';
 
 @NgModule({
-  declarations: [SourceCodeComponent],
-  exports: [SourceCodeComponent],
+  declarations: [SourceCodeComponent, SourceCodeContainer],
+  imports: [CommonModule],
+  exports: [SourceCodeContainer],
 })
 export class SourceCodeModule {}
