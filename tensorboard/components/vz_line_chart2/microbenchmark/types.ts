@@ -46,6 +46,9 @@ export interface Benchmark {
   afterEach?: (context: BenchmarkContext) => void | Promise<void>;
 }
 
+/**
+ * Size of a test. Size determines the iteration of the test.
+ */
 export enum Size {
   SMALL,
   MEDIUM,

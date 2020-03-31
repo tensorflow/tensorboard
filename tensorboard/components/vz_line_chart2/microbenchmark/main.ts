@@ -15,9 +15,9 @@ limitations under the License.
 
 import {getBenchmarks} from './spec.js';
 import {runner} from './runner.js';
-import {htmlTableReporter} from './reporter.js';
+import {htmlTableReporter, consoleReporter} from './reporter.js';
 
 (window as any).requestIdleCallback(async () => {
   const results = await runner(getBenchmarks());
-  htmlTableReporter(results);
+  consoleReporter(results);
 });

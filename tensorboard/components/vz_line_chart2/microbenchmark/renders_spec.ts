@@ -16,22 +16,24 @@ limitations under the License.
 import {benchmark, Size} from './spec.js';
 import {polymerFlush} from './polymer_util.js';
 
+function createScalarPoint(index: number, scalarValue: number) {
+  return {
+    step: index,
+    wall_time: index * 1000,
+    scalar: scalarValue,
+  };
+}
+
 const DATA_POINTS = {
-  sine1k: [...new Array(1000)].map((_, index) => ({
-    step: index,
-    wall_time: index * 1000,
-    scalar: Math.sin(index / (2 * Math.PI)),
-  })),
-  cosine1k: [...new Array(1000)].map((_, index) => ({
-    step: index,
-    wall_time: index * 1000,
-    scalar: Math.cos(index / (2 * Math.PI)),
-  })),
-  cosine100k: [...new Array(100000)].map((_, index) => ({
-    step: index,
-    wall_time: index * 1000,
-    scalar: Math.cos(index / (2 * Math.PI)),
-  })),
+  sine1k: [...new Array(1000)].map((_, index) =>
+    createScalarPoint(index, Math.sin(index / (2 * Math.PI)))
+  ),
+  cosine1k: [...new Array(1000)].map((_, index) =>
+    createScalarPoint(index, Math.cos(index / (2 * Math.PI)))
+  ),
+  cosine100k: [...new Array(100000)].map((_, index) =>
+    createScalarPoint(index, Math.cos(index / (2 * Math.PI)))
+  ),
 };
 
 const FIVE_HUNDRED_1K_DATA_POINTS = [...new Array(500)].map((_, index) => {
@@ -39,11 +41,12 @@ const FIVE_HUNDRED_1K_DATA_POINTS = [...new Array(500)].map((_, index) => {
   const name = `p${paddedIndex};`;
   return {
     name,
-    data: [...new Array(1000)].map((_, index) => ({
-      step: index,
-      wall_time: index * 1000,
-      scalar: Math.sin(index / (2 * Math.PI)) + Math.random() - 0.5,
-    })),
+    data: [...new Array(1000)].map((_, index) =>
+      createScalarPoint(
+        index,
+        Math.sin(index / (2 * Math.PI)) + Math.random() - 0.5
+      )
+    ),
   };
 });
 

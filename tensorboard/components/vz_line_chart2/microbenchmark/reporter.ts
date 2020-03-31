@@ -25,8 +25,13 @@ export function htmlTableReporter(results: Result[]) {
         timeInGcInMs,
         benchmark,
       }) => {
+        if (numIterations <= 0) {
+          throw new RangeError(
+            `numIterations has to be positive value. Got ${numIterations}`
+          );
+        }
         const avgTimeInMs = totalTimeInMs / numIterations;
-        const variance =
+        const timeVariance =
           timePerIterationInMs
             .map((time) => {
               const diff = time - avgTimeInMs;
@@ -44,7 +49,7 @@ export function htmlTableReporter(results: Result[]) {
           min: Math.min(...timePerIterationInMs),
           max: Math.max(...timePerIterationInMs),
           numIterations,
-          variance,
+          timeVariance,
           avgTimeInMs,
           avgTimeInGcInMs,
         };
@@ -56,17 +61,17 @@ export function htmlTableReporter(results: Result[]) {
         min,
         max,
         numIterations,
-        variance,
+        timeVariance,
         avgTimeInMs,
         avgTimeInGcInMs,
       }) => {
         return {
           name,
           numIterations,
-          avgTime: `${avgTimeInMs.toFixed(3)}ms / run`,
-          min: `${min.toFixed(3)}ms`,
-          max: `${max.toFixed(3)}ms`,
-          stdDeviation: Math.sqrt(variance).toFixed(6),
+          avgTimeInMs: `${avgTimeInMs.toFixed(3)}ms / run`,
+          minTimeInMs: `${min.toFixed(3)}ms`,
+          maxTimeInMs: `${max.toFixed(3)}ms`,
+          stdDeviationTimeInMs: Math.sqrt(timeVariance).toFixed(6),
           avgTimeInGcInMs: avgTimeInGcInMs
             ? `${avgTimeInGcInMs.toFixed(3)}ms`
             : 'N/A',
@@ -114,12 +119,12 @@ export function htmlTableReporter(results: Result[]) {
   // CREATE BODY
   const reporterContent = displayResults.map(
     ({
-      avgTime,
+      avgTimeInMs,
       name,
       numIterations,
-      min,
-      max,
-      stdDeviation,
+      minTimeInMs,
+      maxTimeInMs,
+      stdDeviationTimeInMs,
       avgTimeInGcInMs,
     }) => {
       const row = document.createElement('tr');
@@ -128,13 +133,13 @@ export function htmlTableReporter(results: Result[]) {
       const iterationsEl = document.createElement('td');
       iterationsEl.innerText = String(numIterations);
       const avgTimeEl = document.createElement('td');
-      avgTimeEl.innerText = avgTime;
+      avgTimeEl.innerText = avgTimeInMs;
       const minEl = document.createElement('td');
-      minEl.innerText = min;
+      minEl.innerText = minTimeInMs;
       const maxEl = document.createElement('td');
-      maxEl.innerText = max;
+      maxEl.innerText = maxTimeInMs;
       const stdDeviationEl = document.createElement('td');
-      stdDeviationEl.innerText = String(stdDeviation);
+      stdDeviationEl.innerText = String(stdDeviationTimeInMs);
       const gc = document.createElement('td');
       gc.innerText = avgTimeInGcInMs;
       (row as any).append(

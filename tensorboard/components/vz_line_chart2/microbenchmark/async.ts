@@ -12,9 +12,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+/**
+ * @fileoverview Overrides global async functions to support "wait" (or flush).
+ *
+ * It allows, when invoked `patchAsync`, user to wait for all `setTimeout` and
+ * `requestAnimationFrame` for an appropriate amount of time with the
+ * `flushAsync` method.
+ */
 
 const realRaf = window.requestAnimationFrame;
-const realCancelRAF = window.cancelAnimationFrame;
+const realCaf = window.cancelAnimationFrame;
 const realSetTimeout = window.setTimeout;
 const realClearTimeout = window.clearTimeout;
 const realSetInterval = window.setInterval;
@@ -31,7 +38,7 @@ export function patchAsync(): Async {
       window.setTimeout = realSetTimeout;
       window.requestAnimationFrame = realRaf;
       window.setInterval = realSetInterval;
-      window.cancelAnimationFrame = realCancelRAF;
+      window.cancelAnimationFrame = realCaf;
       window.clearTimeout = realClearTimeout;
     },
   };
@@ -43,11 +50,7 @@ export function patchAsync(): Async {
     throw new Error('Benchmark cannot run when there is an interval');
   };
 
-  anyWindow.setTimeout = (
-    cb: any,
-    time: number | undefined = 0,
-    ...args: any[]
-  ) => {
+  anyWindow.setTimeout = (cb: any, time: number = 0, ...args: any[]) => {
     const id = realSetTimeout(
       () => {
         cb();
@@ -61,7 +64,7 @@ export function patchAsync(): Async {
       ...args
     );
     const stringId = `to_${id}`;
-    if (time !== 0) {
+    if (!(time > 0)) {
       async.promises.set(
         stringId,
         new Promise((resolve) => {
@@ -102,7 +105,7 @@ export function patchAsync(): Async {
   };
 
   anyWindow.cancelAnimationFrame = (id: number) => {
-    realCancelRAF(id);
+    realCaf(id);
     const stringId = `raf_${id}`;
     if (idToResolve.get(stringId)) {
       idToResolve.get(stringId)!.resolve();
