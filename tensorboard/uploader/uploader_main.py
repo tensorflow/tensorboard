@@ -597,8 +597,10 @@ class _UploadIntent(_Intent):
             api_client,
             self.logdir,
             allowed_plugins=server_info_lib.allowed_plugins(server_info),
+            max_blob_size=server_info_lib.max_blob_size(server_info),
             name=self.name,
             description=self.description,
+            max_blob_size=server_info_lib.max_blob_size(server_info),
         )
         experiment_id = uploader.create_experiment()
         url = server_info_lib.experiment_url(server_info, experiment_id)
