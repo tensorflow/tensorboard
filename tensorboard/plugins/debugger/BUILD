@@ -270,6 +270,10 @@ py_test(
     size = "medium",
     srcs = ["interactive_debugger_plugin_test.py"],
     srcs_version = "PY2AND3",
+    tags = [
+        "manual",  # b/152800638
+        "notap",
+    ],
     deps = [
         ":interactive_debugger_plugin",
         "//tensorboard:expect_numpy_installed",
