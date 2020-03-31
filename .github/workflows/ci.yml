@@ -82,7 +82,6 @@ jobs:
       - name: 'Lint YAML for gotchas with yamllint'
         # Use '# yamllint disable-line rule:foo' to suppress.
         run: yamllint -c docs/.yamllint docs docs/.yamllint
-      - run: ./tensorboard/tools/docs_list_format_test.sh
       - name: 'Install nbfmt.py for checking notebook formatting'
         run: |
           nbfmt_version="e9d8ddf8c0f1160d0eae654f30c028d2b0287538"
