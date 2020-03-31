@@ -92,6 +92,8 @@ jobs:
       - run: yarn install --ignore-engines
         # You can run `yarn fix-lint` to fix all Prettier complaints.
       - run: yarn lint
+        # Make sure yarn.lock did not change with `yarn install`
+      - run: git diff --stat --exit-code -- yarn.lock
 
   lint-build:
     runs-on: ubuntu-16.04

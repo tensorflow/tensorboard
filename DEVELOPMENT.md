@@ -76,9 +76,6 @@ $ yarn upgrade d3
 
 ```
 
-At the end, please make sure `yarn.lock` does not update by running `yarn` after
-making a necessary commit.
-
 ## Pro tips
 
 You may find the following optional tips useful for development.
