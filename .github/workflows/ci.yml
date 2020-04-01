@@ -94,7 +94,7 @@ jobs:
       - run: yarn lint
         # Make sure no tests are skipped with "focused" tests.
       - run: |
-          ! git grep -E 'f(it|describe)\(' 'tensorboard/webapp/*_test.ts' 'tensorboard/plugins/*_test.ts'
+          ! git grep -E 'f(it|describe)\(' 'tensorboard/*_test.ts'
 
   lint-build:
     runs-on: ubuntu-16.04
