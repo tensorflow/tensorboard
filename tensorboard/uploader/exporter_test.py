@@ -639,16 +639,48 @@ class ListExperimentsTest(tb_test.TestCase):
         def stream_experiments(request, **kwargs):
             del request  # unused
             response = export_service_pb2.StreamExperimentsResponse()
-            response.experiments.add(experiment_id="789", name="one")
-            response.experiments.add(experiment_id="012", description="two")
+            response.experiments.add(
+                experiment_id="789",
+                name="one",
+                num_scalars=8,
+                total_tensor_bytes=1234,
+                total_blob_bytes=0,
+                num_runs=1,
+                num_tags=10,
+            )
+            response.experiments.add(
+                experiment_id="012",
+                description="two",
+                num_scalars=99,
+                total_tensor_bytes=0,
+                total_blob_bytes=12340,
+                num_runs=2,
+                num_tags=20,
+            )
             yield response
 
         mock_api_client.StreamExperiments = mock.Mock(wraps=stream_experiments)
         gen = exporter_lib.list_experiments(mock_api_client)
         mock_api_client.StreamExperiments.assert_not_called()
         expected = [
-            experiment_pb2.Experiment(experiment_id="789", name="one"),
-            experiment_pb2.Experiment(experiment_id="012", description="two"),
+            experiment_pb2.Experiment(
+                experiment_id="789",
+                name="one",
+                num_scalars=8,
+                total_tensor_bytes=1234,
+                total_blob_bytes=0,
+                num_runs=1,
+                num_tags=10,
+            ),
+            experiment_pb2.Experiment(
+                experiment_id="012",
+                description="two",
+                num_scalars=99,
+                total_tensor_bytes=0,
+                total_blob_bytes=12340,
+                num_runs=2,
+                num_tags=20,
+            ),
         ]
         self.assertEqual(list(gen), expected)
 

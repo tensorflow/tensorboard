@@ -530,10 +530,12 @@ class _ListIntent(_Intent):
                 ("Id", experiment.experiment_id),
                 ("Created", util.format_time(experiment.create_time)),
                 ("Updated", util.format_time(experiment.update_time)),
-                ("Scalars", str(experiment.num_scalars)),
                 ("Runs", str(experiment.num_runs)),
                 ("Tags", str(experiment.num_tags)),
+                ("Scalars", str(experiment.num_scalars)),
             ]
+            if experiment.total_blob_bytes:
+                data.append(("Blob bytes", str(experiment.total_blob_bytes)))
             for (name, value) in data:
                 print("\t%s %s" % (name.ljust(12), value))
         sys.stdout.flush()
