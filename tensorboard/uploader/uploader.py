@@ -87,6 +87,7 @@ class TensorBoardUploader(object):
         writer_client,
         logdir,
         allowed_plugins,
+        max_blob_size,
         logdir_poll_rate_limiter=None,
         rpc_rate_limiter=None,
         blob_rpc_rate_limiter=None,
@@ -101,6 +102,7 @@ class TensorBoardUploader(object):
           allowed_plugins: collection of string plugin names; events will only
             be uploaded if their time series's metadata specifies one of these
             plugin names
+          max_blob_size: the maximum allowed size for blob uploads.
           logdir_poll_rate_limiter: a `RateLimiter` to use to limit logdir
             polling frequency, to avoid thrashing disks, especially on networked
             file systems
@@ -117,6 +119,7 @@ class TensorBoardUploader(object):
         self._api = writer_client
         self._logdir = logdir
         self._allowed_plugins = frozenset(allowed_plugins)
+        self._max_blob_size = max_blob_size
         self._name = name
         self._description = description
         self._request_sender = None
@@ -166,6 +169,7 @@ class TensorBoardUploader(object):
             response.experiment_id,
             self._api,
             allowed_plugins=self._allowed_plugins,
+            max_blob_size=self._max_blob_size,
             rpc_rate_limiter=self._rpc_rate_limiter,
             blob_rpc_rate_limiter=self._blob_rpc_rate_limiter,
         )
@@ -312,6 +316,7 @@ class _BatchedRequestSender(object):
         experiment_id,
         api,
         allowed_plugins,
+        max_blob_size,
         rpc_rate_limiter,
         blob_rpc_rate_limiter,
     ):
@@ -323,11 +328,10 @@ class _BatchedRequestSender(object):
             experiment_id, api, rpc_rate_limiter,
         )
         self._blob_request_sender = _BlobRequestSender(
-            experiment_id, api, blob_rpc_rate_limiter
+            experiment_id, api, blob_rpc_rate_limiter, max_blob_size
         )
 
         # TODO(nielsene): add tensor case here
-        # TODO(soergel): add blob case here
 
     def send_requests(self, run_to_events):
         """Accepts a stream of TF events and sends batched write RPCs.
@@ -612,12 +616,13 @@ class _BlobRequestSender(object):
     methods concurrently.
     """
 
-    def __init__(self, experiment_id, api, rpc_rate_limiter):
+    def __init__(self, experiment_id, api, rpc_rate_limiter, max_blob_size):
         if experiment_id is None:
             raise ValueError("experiment_id cannot be None")
         self._experiment_id = experiment_id
         self._api = api
         self._rpc_rate_limiter = rpc_rate_limiter
+        self._max_blob_size = max_blob_size
 
         # Start in the empty state, just like self._new_request().
         self._run_name = None
@@ -677,14 +682,16 @@ class _BlobRequestSender(object):
                 blob_sequence_id,
             )
 
+            sent_blobs = 0
             for seq_index, blob in enumerate(self._blobs):
                 # Note the _send_blob() stream is internally flow-controlled.
                 # This rate limit applies to *starting* the stream.
                 self._rpc_rate_limiter.tick()
-                self._send_blob(blob_sequence_id, seq_index, blob)
+                sent_blobs += self._send_blob(blob_sequence_id, seq_index, blob)
 
             logger.info(
-                "Sent %d blobs for sequence id: %s",
+                "Sent %d of %d blobs for sequence id: %s",
+                sent_blobs,
                 len(self._blobs),
                 blob_sequence_id,
             )
@@ -718,7 +725,22 @@ class _BlobRequestSender(object):
         return blob_sequence_id
 
     def _send_blob(self, blob_sequence_id, seq_index, blob):
+        """Tries to send a single blob for a given index within a blob sequence.
+
+        The blob will not be sent if it was sent already, or if it is too large.
+
+        Returns:
+          The number of blobs successfully sent (i.e., 1 or 0).
+        """
         # TODO(soergel): retry and resume logic
+
+        if len(blob) > self._max_blob_size:
+            logger.warning(
+                "Blob too large; skipping.  Size %d exceeds limit of %d bytes.",
+                len(blob),
+                self._max_blob_size,
+            )
+            return 0
 
         request_iterator = self._write_blob_request_iterator(
             blob_sequence_id, seq_index, blob
@@ -740,9 +762,11 @@ class _BlobRequestSender(object):
                 upload_duration_secs,
                 len(blob) / upload_duration_secs / (1024 * 1024),
             )
+            return 1
         except grpc.RpcError as e:
             if e.code() == grpc.StatusCode.ALREADY_EXISTS:
                 logger.error("Attempted to re-upload existing blob.  Skipping.")
+                return 0
             else:
                 logger.info("WriteBlob RPC call got error %s", e)
                 raise
