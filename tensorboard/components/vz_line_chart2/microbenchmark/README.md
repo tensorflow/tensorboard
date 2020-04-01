@@ -14,6 +14,11 @@ To add a new benchmark, do:
 
 An example the benchmark run is (using consoleReporter):
 
+Hardware:
+- MacBookPro13,2, i7 @ 3.3GHz
+- macOS 10.15.4
+- Google Chrome 80.0.3987.149
+
 | name                                                    | numIterations | avgTime                    |
 | ------------------------------------------------------- | ------------- | -------------------------- |
 | charts init                                             | 10            | 65.9879999991972ms / run   |
