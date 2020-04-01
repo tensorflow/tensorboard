@@ -28,6 +28,7 @@ import {
   LoadState,
   SourceFileContent,
   SourceFileSpec,
+  SourceLineSpec,
   StackFrame,
   StackFramesById,
   State,
@@ -329,5 +330,12 @@ export const getFocusedSourceFileContent = createSelector(
       return null;
     }
     return state.sourceCode.fileContents[fileIndex] || null;
+  }
+);
+
+export const getFocusedSourceLineSpec = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): SourceLineSpec | null => {
+    return state.sourceCode.focusLineSpec;
   }
 );

@@ -26,6 +26,7 @@ import {reducers} from './store/debugger_reducers';
 import {DEBUGGER_FEATURE_KEY} from './store/debugger_types';
 import {AlertsModule} from './views/alerts/alerts_module';
 import {InactiveModule} from './views/inactive/inactive_module';
+import {SourceFilesModule} from './views/source_files/source_files_module';
 import {StackTraceModule} from './views/stack_trace/stack_trace_module';
 import {TimelineModule} from './views/timeline/timeline_module';
 import {PluginRegistryModule} from '../../../webapp/plugins/plugin_registry_module';
@@ -36,6 +37,7 @@ import {PluginRegistryModule} from '../../../webapp/plugins/plugin_registry_modu
     AlertsModule,
     CommonModule,
     InactiveModule,
+    SourceFilesModule,
     StackTraceModule,
     Tfdbg2ServerDataSourceModule,
     TimelineModule,
