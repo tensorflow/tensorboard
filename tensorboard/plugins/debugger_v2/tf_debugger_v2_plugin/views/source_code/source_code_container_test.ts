@@ -21,11 +21,11 @@ import {TestBed} from '@angular/core/testing';
 import {SourceCodeComponent, TEST_ONLY} from './source_code_component';
 import {SourceCodeContainer} from './source_code_container';
 import {
-  editorSpy,
-  fakeMonaco,
-  loadMonacoSpy,
+  fakes,
   setUpMonacoFakes,
+  spies,
   tearDownMonacoFakes,
+  windowWithRequireAndMonaco,
 } from './testing';
 import * as loadMonacoShim from './load_monaco_shim';
 
@@ -58,24 +58,20 @@ describe('Source Code Component', () => {
     });
     // Simlulate loading monaco and setting the `monaco` input after loading.
     await loadMonacoShim.loadMonaco();
-    component.monaco = loadMonacoShim.windowWithRequireAndMonaco.monaco;
+    component.monaco = windowWithRequireAndMonaco.monaco;
     await component.ngOnChanges({
-      monaco: new SimpleChange(
-        null,
-        loadMonacoShim.windowWithRequireAndMonaco.monaco,
-        true
-      ),
+      monaco: new SimpleChange(null, windowWithRequireAndMonaco.monaco, true),
     });
 
     // Initial rendering of code uses monaco editor's constructor instead of
     // using `setValue()`.
-    expect(editorSpy.setValue).not.toHaveBeenCalled();
-    expect(editorSpy.revealLineInCenter).toHaveBeenCalledTimes(1);
-    expect(editorSpy.revealLineInCenter).toHaveBeenCalledWith(
+    expect(spies.editorSpy.setValue).not.toHaveBeenCalled();
+    expect(spies.editorSpy.revealLineInCenter).toHaveBeenCalledTimes(1);
+    expect(spies.editorSpy.revealLineInCenter).toHaveBeenCalledWith(
       3,
-      fakeMonaco.editor.ScrollType.Smooth
+      fakes.fakeMonaco.editor.ScrollType.Smooth
     );
-    expect(editorSpy.deltaDecorations).toHaveBeenCalledTimes(1);
+    expect(spies.editorSpy.deltaDecorations).toHaveBeenCalledTimes(1);
 
     component.lines = lines2;
     component.focusedLineno = 1;
@@ -84,23 +80,23 @@ describe('Source Code Component', () => {
       focusedLineno: new SimpleChange(3, 1, false),
     });
 
-    expect(editorSpy.setValue).toHaveBeenCalledTimes(1);
-    expect(editorSpy.setValue).toHaveBeenCalledWith(
+    expect(spies.editorSpy.setValue).toHaveBeenCalledTimes(1);
+    expect(spies.editorSpy.setValue).toHaveBeenCalledWith(
       'model = tf.keras.Sequential\nmodel.add(tf.keras.layers.Dense(1))'
     );
-    expect(editorSpy.revealLineInCenter).toHaveBeenCalledTimes(2);
-    expect(editorSpy.revealLineInCenter).toHaveBeenCalledWith(
+    expect(spies.editorSpy.revealLineInCenter).toHaveBeenCalledTimes(2);
+    expect(spies.editorSpy.revealLineInCenter).toHaveBeenCalledWith(
       1,
-      fakeMonaco.editor.ScrollType.Smooth
+      fakes.fakeMonaco.editor.ScrollType.Smooth
     );
-    expect(editorSpy.deltaDecorations).toHaveBeenCalledTimes(2);
+    expect(spies.editorSpy.deltaDecorations).toHaveBeenCalledTimes(2);
   });
 
   it('switches to a different line in the same file', async () => {
     const fixture = TestBed.createComponent(SourceCodeComponent);
     const component = fixture.componentInstance;
     await loadMonacoShim.loadMonaco();
-    component.monaco = loadMonacoShim.windowWithRequireAndMonaco.monaco;
+    component.monaco = windowWithRequireAndMonaco.monaco;
     component.lines = lines1;
     component.focusedLineno = 2;
     await component.ngOnChanges({
@@ -113,17 +109,17 @@ describe('Source Code Component', () => {
 
     // setValue() shouldn't have been called because there is no change in file
     // content.
-    expect(editorSpy.setValue).toHaveBeenCalledTimes(0);
-    expect(editorSpy.revealLineInCenter).toHaveBeenCalledTimes(2);
+    expect(spies.editorSpy!.setValue).toHaveBeenCalledTimes(0);
+    expect(spies.editorSpy!.revealLineInCenter).toHaveBeenCalledTimes(2);
     // This is the call for the old lineno.
-    expect(editorSpy.revealLineInCenter).toHaveBeenCalledWith(
+    expect(spies.editorSpy!.revealLineInCenter).toHaveBeenCalledWith(
       2,
-      fakeMonaco.editor.ScrollType.Smooth
+      fakes.fakeMonaco.editor.ScrollType.Smooth
     );
     // This is the call for the new lineno.
-    expect(editorSpy.revealLineInCenter).toHaveBeenCalledWith(
+    expect(spies.editorSpy.revealLineInCenter).toHaveBeenCalledWith(
       1,
-      fakeMonaco.editor.ScrollType.Smooth
+      fakes.fakeMonaco.editor.ScrollType.Smooth
     );
   });
 
@@ -146,18 +142,14 @@ describe('Source Code Component', () => {
       focusedLineno: new SimpleChange(null, 3, true),
     });
     await loadMonacoShim.loadMonaco();
-    component.monaco = loadMonacoShim.windowWithRequireAndMonaco.monaco;
+    component.monaco = windowWithRequireAndMonaco.monaco;
     await component.ngOnChanges({
-      monaco: new SimpleChange(
-        null,
-        loadMonacoShim.windowWithRequireAndMonaco.monaco,
-        true
-      ),
+      monaco: new SimpleChange(null, windowWithRequireAndMonaco.monaco, true),
     });
 
     window.dispatchEvent(new Event('resize'));
     await sleep(TEST_ONLY.RESIZE_DEBOUNCE_INTERAVL_MS);
-    expect(editorSpy.layout).toHaveBeenCalledTimes(1);
+    expect(spies.editorSpy!.layout).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -177,6 +169,6 @@ describe('Source Code Container', () => {
     const fixture = TestBed.createComponent(SourceCodeContainer);
     const component = fixture.componentInstance;
     component.ngOnInit();
-    expect(loadMonacoSpy).toHaveBeenCalledTimes(1);
+    expect(spies.loadMonacoSpy!).toHaveBeenCalledTimes(1);
   });
 });

@@ -16,11 +16,12 @@ import {Component, Input} from '@angular/core';
 import {from} from 'rxjs';
 import {map} from 'rxjs/operators';
 
-import {loadMonaco, WindowWithRequireAndMonaco} from './load_monaco_shim';
+import {loadMonaco} from './load_monaco_shim';
 
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
+/** @typehack */ import * as _typeHackRxjwindowWithRequireAndMonacos from 'rxjs';
 
-const windowWithRequireAndMonaco: WindowWithRequireAndMonaco = window;
+// TODO(cais): Explore better typing by depending on external libraries.
+const windowWithRequireAndMonaco: any = window;
 
 /**
  * SourceCodeContainer displays the content of a source-code file.

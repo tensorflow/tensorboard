@@ -29,23 +29,30 @@ export class FakeRange {
   ) {}
 }
 
-export let loadMonacoSpy: jasmine.Spy;
 // TODO(cais): Explore better typing by depending on 3rd-party libraries.
-export let editorSpy: jasmine.SpyObj<any>;
-export let fakeMonaco: any;
+export const spies: {
+  loadMonacoSpy?: jasmine.Spy;
+  editorSpy?: jasmine.SpyObj<any>;
+} = {};
+
+export const fakes: {
+  fakeMonaco?: any;
+} = {};
+
+export const windowWithRequireAndMonaco: any = window;
 
 export function setUpMonacoFakes() {
   async function fakeLoadMonaco() {
-    fakeMonaco = {
+    fakes.fakeMonaco = {
       editor: {
         create: () => {
-          editorSpy = jasmine.createSpyObj('editorSpy', [
+          spies.editorSpy = jasmine.createSpyObj('editorSpy', [
             'deltaDecorations',
             'layout',
             'revealLineInCenter',
             'setValue',
           ]);
-          return editorSpy;
+          return spies.editorSpy;
         },
         ScrollType: {
           Immediate: 1,
@@ -54,15 +61,15 @@ export function setUpMonacoFakes() {
       },
       Range: FakeRange,
     };
-    loadMonacoShim.windowWithRequireAndMonaco.monaco = fakeMonaco;
+    windowWithRequireAndMonaco.monaco = fakes.fakeMonaco;
   }
-  loadMonacoSpy = spyOn(loadMonacoShim, 'loadMonaco').and.callFake(
+  spies.loadMonacoSpy = spyOn(loadMonacoShim, 'loadMonaco').and.callFake(
     fakeLoadMonaco
   );
 }
 
 export function tearDownMonacoFakes() {
-  if (loadMonacoShim.windowWithRequireAndMonaco.monaco !== undefined) {
-    delete loadMonacoShim.windowWithRequireAndMonaco.monaco;
+  if (windowWithRequireAndMonaco.monaco !== undefined) {
+    delete windowWithRequireAndMonaco.monaco;
   }
 }

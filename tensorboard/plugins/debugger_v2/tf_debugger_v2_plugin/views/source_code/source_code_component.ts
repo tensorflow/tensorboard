@@ -75,10 +75,10 @@ export class SourceCodeComponent implements OnInit {
     if (this.monaco === null) {
       return;
     }
-    const currentLines: string[] | null = changes.monaco
+    const currentLines: string[] | null = changes['monaco']
       ? this.lines
-      : changes.lines
-      ? changes.lines.currentValue
+      : changes['lines']
+      ? changes['lines'].currentValue
       : null;
     if (currentLines) {
       const value = currentLines.join('\n');
@@ -100,21 +100,12 @@ export class SourceCodeComponent implements OnInit {
       }
     }
 
-    const currentFocusedLineno: number | null = changes.monaco
+    const currentFocusedLineno: number | null = changes['monaco']
       ? this.focusedLineno
-      : changes.focusedLineno
-      ? changes.focusedLineno.currentValue
+      : changes['focusedLineno']
+      ? changes['focusedLineno'].currentValue
       : null;
-    if (
-      currentFocusedLineno &&
-      this.lines &&
-      this.monaco !== null
-      // changes.focusedLineno &&
-      // changes.focusedLineno.currentValue &&
-      // currentLines &&
-      // this.monaco !== null &&
-      // this.editor !== null
-    ) {
+    if (currentFocusedLineno && this.lines && this.monaco !== null) {
       this.editor.revealLineInCenter(
         currentFocusedLineno,
         this.monaco.editor.ScrollType.Smooth
