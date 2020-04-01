@@ -763,6 +763,7 @@ class _BlobRequestSender(object):
                 crc32c=None,
                 finalize_object=finalize_object,
                 final_crc32c=None,
+                blob_bytes=len(blob),
             )
             yield request
 

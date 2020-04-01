@@ -332,6 +332,9 @@ message WriteBlobRequest {
   // CRC32C of the entire blob.  Required, to protect against data corruption.
   // This should be set only when finalize_object=True.
   fixed32 final_crc32c = 7;
+  // Size in bytes of the entire blob.  Required in the first request
+  // to allow quota allocation and management.
+  int64 blob_bytes = 8;
 }
 
 message WriteBlobResponse {
