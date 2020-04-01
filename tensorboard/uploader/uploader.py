@@ -725,10 +725,17 @@ class _BlobRequestSender(object):
         return blob_sequence_id
 
     def _send_blob(self, blob_sequence_id, seq_index, blob):
+        """Tries to send a single blob for a given index within a blob sequence.
+
+        The blob will not be sent if it was sent already, or if it is too large.
+
+        Returns:
+          The number of blobs successfully sent (i.e., 1 or 0).
+        """
         # TODO(soergel): retry and resume logic
 
         if len(blob) > self._max_blob_size:
-            logger.warn(
+            logger.warning(
                 "Blob too large; skipping.  Size %d exceeds limit of %d bytes.",
                 len(blob),
                 self._max_blob_size,

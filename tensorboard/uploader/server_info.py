@@ -31,7 +31,8 @@ from tensorboard.uploader.proto import server_info_pb2
 _REQUEST_TIMEOUT_SECONDS = 10
 
 # Maximum blob size, if not specified by server_info
-_DEFAULT_MAX_BLOB_SIZE = 10 * (2 ** 20)   # 10 MB
+_DEFAULT_MAX_BLOB_SIZE = 10 * (2 ** 20)  # 10 MiB
+
 
 def _server_info_request(upload_plugins):
     """Generates a ServerInfoRequest
@@ -171,14 +172,15 @@ def max_blob_size(server_info):
     Returns:
       A integer giving the maximum size allowed for blob uploads, in bytes.
     """
-    if server_info.HasField("max_blob_size"):
-        return server_info.plugin_control.max_blob_size
+
+    if server_info.HasField("upload_limits"):
+        return server_info.upload_limits.max_blob_size
     else:
-        # Old server: gracefully degrade to 10 MB.
-        # TODO(@davidsoergel): Promote this
-        # branch to an error once we're confident that we won't roll
-        # back to old server versions.
+        # Old server: gracefully degrade to 10 MiB.
+        # TODO(@davidsoergel): Promote this branch to an error once we're
+        # confident that we won't roll back to old server versions.
         return _DEFAULT_MAX_BLOB_SIZE
+
 
 class CommunicationError(RuntimeError):
     """Raised upon failure to communicate with the server."""

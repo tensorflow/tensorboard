@@ -72,8 +72,6 @@ def _create_mock_client():
 
 _SCALARS_ONLY = frozenset((scalars_metadata.PLUGIN_NAME,))
 
-_TEN_MEGABYTES = 10 * (2 ** 20)
-
 # Sentinel for `_create_*` helpers, for arguments for which we want to
 # supply a default other than the `None` used by the code under test.
 _USE_DEFAULT = object()
@@ -95,7 +93,7 @@ def _create_uploader(
     if allowed_plugins is _USE_DEFAULT:
         allowed_plugins = _SCALARS_ONLY
     if max_blob_size is _USE_DEFAULT:
-        max_blob_size = _TEN_MEGABYTES
+        max_blob_size = 12345
     if logdir_poll_rate_limiter is _USE_DEFAULT:
         logdir_poll_rate_limiter = util.RateLimiter(0)
     if rpc_rate_limiter is _USE_DEFAULT:
@@ -128,7 +126,7 @@ def _create_request_sender(
     if allowed_plugins is _USE_DEFAULT:
         allowed_plugins = _SCALARS_ONLY
     if max_blob_size is _USE_DEFAULT:
-        max_blob_size = _TEN_MEGABYTES
+        max_blob_size = 12345
     if rpc_rate_limiter is _USE_DEFAULT:
         rpc_rate_limiter = util.RateLimiter(0)
     if blob_rpc_rate_limiter is _USE_DEFAULT:

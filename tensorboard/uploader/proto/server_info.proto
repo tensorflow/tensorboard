@@ -40,12 +40,16 @@ message ServerInfoResponse {
   // The client should only upload data for the plugins in the response even
   // if it is capable of uploading more data.
   PluginControl plugin_control = 4;
-  // The maximum allowed size for blob uploads.
-  // Note that the WriteBlob RPC endpoint also enforces a limit, which should be
-  // kept in sync with the one reported here.  Providing this limit in advance
-  // allows the uploader to print a better error message and to skip the upload
-  // if it is expected to fail anyway.
-  int64 max_blob_size = 5;
+  // Limits on the upload process that the client should honor.
+  // This may include limits on data size, chunk size, records per request,
+  // request rate, bandwidth, etc.  The server may enforce such limits, in which
+  // case the values reported here should be kept in sync.  Providing these
+  // limits in advance allows the client to avoid triggering server errors (both
+  // through more efficent operation and by earlier detection of real error
+  // conditions), and to print better error messages.
+  // If this field is not set, the client should choose reasonable default
+  // values to guide its behavior.
+  UploadLimits upload_limits = 5;
 }
 
 enum CompatibilityVerdict {
@@ -97,4 +101,10 @@ message PluginControl {
   // Plugins for which data should be uploaded. These are plugin names as
   // stored in the the `SummaryMetadata.plugin_data.plugin_name` proto field.
   repeated string allowed_plugins = 1;
+}
+
+message UploadLimits {
+  // The maximum allowed size for blob uploads.
+  // If this is 0, no blobs should be uploaded.
+  int64 max_blob_size = 1;
 }
