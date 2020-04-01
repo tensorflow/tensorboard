@@ -1,4 +1,4 @@
-/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,39 +13,45 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-.bottom-section {
-  border-top: 1px solid rgba(0, 0, 0, 0.12);
-  height: 353px;
-  padding-top: 6px;
+.header-section {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  height: 24px;
+  padding-bottom: 6px;
+  vertical-align: middle;
+  white-space: nowrap;
   width: 100%;
 }
 
-.top-section {
-  width: 100%;
+.file-label {
+  display: inline-block;
+  font-weight: normal;
+  white-space: normal;
+  padding: 0 20px;
 }
 
-tf-debugger-v2-alerts {
+.no-file-selected {
   display: inline-block;
-  height: 360px;
-  vertical-align: top;
-  width: 200px;
+  color: #666;
+  padding: 0 20px;
 }
 
-tf-debugger-v2-source-files {
-  display: inline-block;
+.source-files-container {
+  display: flex;
+  flex-direction: column;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 10px;
   height: 100%;
-  vertical-align: top;
-  width: 70%;
 }
 
-tf-debugger-v2-stack-trace {
+.title-tag {
   display: inline-block;
-  width: 30%;
+  font-weight: bold;
+  height: 100%;
+  padding-left: 6px;
+  vertical-align: top;
 }
 
-tf-debugger-v2-timeline {
-  display: inline-block;
-  height: 360px;
-  vertical-align: top;
-  width: 800px;
+tf-debugger-v2-source-code {
+  flex-grow: 1;
+  width: 100%;
 }
