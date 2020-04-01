@@ -13,16 +13,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {CommonModule} from '@angular/common';
-import {NgModule} from '@angular/core';
+.code-viewer-container {
+  height: 100%;
+}
 
-import {SourceCodeModule} from '../source_code/source_code_module';
-import {StackTraceComponent} from './stack_trace_component';
-import {StackTraceContainer} from './stack_trace_container';
+:host ::ng-deep .highlight-gutter {
+  background: rgba(255, 111, 0, 0.7);
+  width: 5px !important;
+}
 
-@NgModule({
-  declarations: [StackTraceComponent, StackTraceContainer],
-  imports: [CommonModule, SourceCodeModule],
-  exports: [StackTraceContainer],
-})
-export class StackTraceModule {}
+:host ::ng-deep .highlight-line {
+  background: rgba(255, 111, 0, 0.3);
+}

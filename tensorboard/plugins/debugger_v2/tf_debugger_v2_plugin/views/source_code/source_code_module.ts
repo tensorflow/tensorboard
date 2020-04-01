@@ -16,13 +16,12 @@ limitations under the License.
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 
-import {SourceCodeModule} from '../source_code/source_code_module';
-import {StackTraceComponent} from './stack_trace_component';
-import {StackTraceContainer} from './stack_trace_container';
+import {SourceCodeComponent} from './source_code_component';
+import {SourceCodeContainer} from './source_code_container';
 
 @NgModule({
-  declarations: [StackTraceComponent, StackTraceContainer],
-  imports: [CommonModule, SourceCodeModule],
-  exports: [StackTraceContainer],
+  declarations: [SourceCodeComponent, SourceCodeContainer],
+  imports: [CommonModule],
+  exports: [SourceCodeContainer],
 })
-export class StackTraceModule {}
+export class SourceCodeModule {}
