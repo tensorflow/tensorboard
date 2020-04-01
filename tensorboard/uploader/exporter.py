@@ -389,11 +389,6 @@ class OutputDirectoryExistsError(ValueError):
     pass
 
 
-class OutputFileExistsError(ValueError):
-    # Like Python 3's `__builtins__.FileExistsError`.
-    pass
-
-
 class GrpcTimeoutException(Exception):
     def __init__(self, experiment_id):
         super(GrpcTimeoutException, self).__init__(experiment_id)
