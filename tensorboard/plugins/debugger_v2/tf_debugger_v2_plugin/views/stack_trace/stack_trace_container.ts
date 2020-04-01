@@ -17,6 +17,7 @@ import {createSelector, select, Store} from '@ngrx/store';
 
 import {State} from '../../store/debugger_types';
 
+import {sourceLineFocused} from '../../actions';
 import {getFocusedExecutionStackFrames} from '../../store';
 import {StackFrameForDisplay} from './stack_trace_component';
 
@@ -27,6 +28,7 @@ import {StackFrameForDisplay} from './stack_trace_component';
   template: `
     <stack-trace-component
       [stackFramesForDisplay]="stackFramesForDisplay$ | async"
+      (onSourceLineClicked)="onSourceLineClicked($event)"
     ></stack-trace-component>
   `,
 })
@@ -59,4 +61,12 @@ export class StackTraceContainer {
   );
 
   constructor(private readonly store: Store<State>) {}
+
+  onSourceLineClicked(args: {
+    host_name: string;
+    file_path: string;
+    lineno: number;
+  }) {
+    this.store.dispatch(sourceLineFocused({sourceLineSpec: args}));
+  }
 }
