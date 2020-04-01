@@ -29,7 +29,7 @@ const initialState: CoreState = {
     lastLoadedTimeInMs: null,
   },
   reloadPeriodInMs: 30000,
-  reloadEnabled: true,
+  reloadEnabled: false,
   pageSize: 15,
 };
 

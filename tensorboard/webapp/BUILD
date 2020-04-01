@@ -29,6 +29,7 @@ ng_module(
         "//tensorboard/webapp/core/actions",
         "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/core/views:hash_storage",
+        "//tensorboard/webapp/feature_flag",
         "//tensorboard/webapp/header",
         "//tensorboard/webapp/plugins",
         "//tensorboard/webapp/reloader",
@@ -45,6 +46,17 @@ tf_ts_library(
     srcs = [
         "config_dev.ts",
         "config_prod.ts",
+    ],
+)
+
+ng_module(
+    name = "app_state",
+    srcs = [
+        "app_state.ts",
+    ],
+    deps = [
+        "//tensorboard/webapp/core/store",
+        "//tensorboard/webapp/feature_flag/store:types",
     ],
 )
 
@@ -140,10 +152,14 @@ tf_ng_web_test_suite(
         "//tensorboard/webapp/core/effects:core_effects_test_lib",
         "//tensorboard/webapp/core/store:core_store_test_lib",
         "//tensorboard/webapp/core/views:test_lib",
+        "//tensorboard/webapp/feature_flag/effects:effects_test_lib",
+        "//tensorboard/webapp/feature_flag/store:store_test_lib",
         "//tensorboard/webapp/header:test_lib",
         "//tensorboard/webapp/plugins:plugins_container_test_lib",
         "//tensorboard/webapp/reloader:test_lib",
         "//tensorboard/webapp/settings:test_lib",
+        "//tensorboard/webapp/webapp_data_source:feature_flag_test_lib",
+        "//tensorboard/webapp/webapp_data_source:webapp_data_source_test_lib",
     ],
 )
 

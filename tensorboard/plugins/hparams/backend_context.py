@@ -25,10 +25,15 @@ import threading
 
 import six
 
+from tensorboard.backend.event_processing import (
+    plugin_event_accumulator as event_accumulator,
+)
+from tensorboard.data import provider
 from tensorboard.plugins.hparams import api_pb2
 from tensorboard.plugins.hparams import metadata
 from google.protobuf import json_format
 from tensorboard.plugins.scalar import metadata as scalar_metadata
+from tensorboard.util import tensor_util
 
 
 class Context(object):
@@ -53,11 +58,9 @@ class Context(object):
             Typically, only tests should specify a value for this parameter.
         """
         self._tb_context = tb_context
-        self._experiment_from_tag = None
-        self._experiment_from_tag_lock = threading.Lock()
         self._max_domain_discrete_len = max_domain_discrete_len
 
-    def experiment(self):
+    def experiment(self, experiment_id):
         """Returns the experiment protobuffer defining the experiment.
 
         This method first attempts to find a metadata.EXPERIMENT_TAG tag and
@@ -72,53 +75,146 @@ class Context(object):
           protobuffer can be built (possibly, because the event data has not been
           completely loaded yet), returns None.
         """
-        experiment = self._find_experiment_tag()
-        if experiment is None:
-            return self._compute_experiment_from_runs()
-        return experiment
+        return self.experiment_from_metadata(
+            experiment_id, self.hparams_metadata(experiment_id)
+        )
 
-    @property
-    def multiplexer(self):
-        return self._tb_context.multiplexer
+    def experiment_from_metadata(
+        self, experiment_id, hparams_run_to_tag_to_content
+    ):
+        """Returns the experiment protobuffer defining the experiment.
+
+        Accepts a dict containing the plugin contents for all summary tags
+        associated with the hparams plugin, as an optimization for callers
+        who already have this information available, so that this function
+        can minimize its calls to the underlying `DataProvider`.
+
+        This method first attempts to find a metadata.EXPERIMENT_TAG tag and
+        retrieve the associated protobuffer. If no such tag is found, the method
+        will attempt to build a minimal experiment protobuffer by scanning for
+        all metadata.SESSION_START_INFO_TAG tags (to compute the hparam_infos
+        field of the experiment) and for all scalar tags (to compute the
+        metric_infos field of the experiment).
+
+        Returns:
+          The experiment protobuffer. If no tags are found from which an experiment
+          protobuffer can be built (possibly, because the event data has not been
+          completely loaded yet), returns None.
+        """
+        experiment = self._find_experiment_tag(hparams_run_to_tag_to_content)
+        if experiment:
+            return experiment
+        return self._compute_experiment_from_runs(
+            experiment_id, hparams_run_to_tag_to_content
+        )
 
     @property
     def tb_context(self):
         return self._tb_context
 
-    def _find_experiment_tag(self):
+    def _convert_plugin_metadata(self, data_provider_output):
+        return {
+            run: {
+                tag: time_series.plugin_content
+                for (tag, time_series) in tag_to_time_series.items()
+            }
+            for (run, tag_to_time_series) in data_provider_output.items()
+        }
+
+    def hparams_metadata(self, experiment_id, run_tag_filter=None):
+        """Reads summary metadata for all hparams time series.
+
+        Args:
+          experiment_id: String, from `plugin_util.experiment_id`.
+          run_tag_filter: Optional `data.provider.RunTagFilter`, with
+            the semantics as in `list_tensors`.
+
+        Returns:
+          A dict `d` such that `d[run][tag]` is a `bytes` value with the
+          summary metadata content for the keyed time series.
+        """
+        return self._convert_plugin_metadata(
+            self._tb_context.data_provider.list_tensors(
+                experiment_id,
+                plugin_name=metadata.PLUGIN_NAME,
+                run_tag_filter=run_tag_filter,
+            )
+        )
+
+    def scalars_metadata(self, experiment_id):
+        """Reads summary metadata for all scalar time series.
+
+        Args:
+          experiment_id: String, from `plugin_util.experiment_id`.
+
+        Returns:
+          A dict `d` such that `d[run][tag]` is a `bytes` value with the
+          summary metadata content for the keyed time series.
+        """
+        return self._convert_plugin_metadata(
+            self._tb_context.data_provider.list_scalars(
+                experiment_id, plugin_name=scalar_metadata.PLUGIN_NAME
+            )
+        )
+
+    def read_last_scalars(self, experiment_id, run_tag_filter):
+        """Reads the most recent values from scalar time series.
+
+        Args:
+          experiment_id: String.
+          run_tag_filter: Required `data.provider.RunTagFilter`, with
+            the semantics as in `read_scalars`.
+
+        Returns:
+          A dict `d` such that `d[run][tag]` is a `provider.ScalarDatum`
+          value, with keys only for runs and tags that actually had
+          data, which may be a subset of what was requested.
+        """
+        data_provider_output = self._tb_context.data_provider.read_scalars(
+            experiment_id,
+            plugin_name=scalar_metadata.PLUGIN_NAME,
+            run_tag_filter=run_tag_filter,
+            # TODO(#3436): We assume that downsampling always includes
+            # the most recent datum, which holds for all implementations
+            # of interest but is not yet required by the interface.
+            downsample=1,
+        )
+        return {
+            run: {tag: data[-1] for (tag, data) in tag_to_data.items()}
+            for (run, tag_to_data) in data_provider_output.items()
+        }
+
+    def _find_experiment_tag(self, hparams_run_to_tag_to_content):
         """Finds the experiment associcated with the metadata.EXPERIMENT_TAG
         tag.
-
-        Caches the experiment if it was found.
 
         Returns:
           The experiment or None if no such experiment is found.
         """
-        with self._experiment_from_tag_lock:
-            if self._experiment_from_tag is None:
-                mapping = self.multiplexer.PluginRunToTagToContent(
-                    metadata.PLUGIN_NAME
-                )
-                for tag_to_content in mapping.values():
-                    if metadata.EXPERIMENT_TAG in tag_to_content:
-                        self._experiment_from_tag = metadata.parse_experiment_plugin_data(
-                            tag_to_content[metadata.EXPERIMENT_TAG]
-                        )
-                        break
-        return self._experiment_from_tag
+        # We expect only one run to have an `EXPERIMENT_TAG`; look
+        # through all of them an arbitrarily pick the first one.
+        for tags in hparams_run_to_tag_to_content.values():
+            maybe_content = tags.get(metadata.EXPERIMENT_TAG)
+            if maybe_content:
+                return metadata.parse_experiment_plugin_data(maybe_content)
+        return None
 
-    def _compute_experiment_from_runs(self):
+    def _compute_experiment_from_runs(
+        self, experiment_id, hparams_run_to_tag_to_content
+    ):
         """Computes a minimal Experiment protocol buffer by scanning the
         runs."""
-        hparam_infos = self._compute_hparam_infos()
+        hparam_infos = self._compute_hparam_infos(hparams_run_to_tag_to_content)
         if not hparam_infos:
             return None
-        metric_infos = self._compute_metric_infos()
+        metric_infos = self._compute_metric_infos(
+            experiment_id, hparams_run_to_tag_to_content
+        )
         return api_pb2.Experiment(
             hparam_infos=hparam_infos, metric_infos=metric_infos
         )
 
-    def _compute_hparam_infos(self):
+    def _compute_hparam_infos(self, hparams_run_to_tag_to_content):
         """Computes a list of api_pb2.HParamInfo from the current run, tag
         info.
 
@@ -131,12 +227,9 @@ class Context(object):
         Returns:
           A list of api_pb2.HParamInfo messages.
         """
-        run_to_tag_to_content = self.multiplexer.PluginRunToTagToContent(
-            metadata.PLUGIN_NAME
-        )
         # Construct a dict mapping an hparam name to its list of values.
         hparams = collections.defaultdict(list)
-        for tag_to_content in run_to_tag_to_content.values():
+        for tag_to_content in hparams_run_to_tag_to_content.values():
             if metadata.SESSION_START_INFO_TAG not in tag_to_content:
                 continue
             start_info = metadata.parse_session_start_info_plugin_data(
@@ -202,13 +295,19 @@ class Context(object):
 
         return result
 
-    def _compute_metric_infos(self):
+    def _compute_metric_infos(
+        self, experiment_id, hparams_run_to_tag_to_content
+    ):
         return (
             api_pb2.MetricInfo(name=api_pb2.MetricName(group=group, tag=tag))
-            for tag, group in self._compute_metric_names()
+            for tag, group in self._compute_metric_names(
+                experiment_id, hparams_run_to_tag_to_content
+            )
         )
 
-    def _compute_metric_names(self):
+    def _compute_metric_names(
+        self, experiment_id, hparams_run_to_tag_to_content
+    ):
         """Computes the list of metric names from all the scalar (run, tag)
         pairs.
 
@@ -234,12 +333,14 @@ class Context(object):
           A python list containing pairs. Each pair is a (tag, group) pair
           representing a metric name used in some session.
         """
-        session_runs = self._build_session_runs_set()
-        metric_names_set = set()
-        run_to_tag_to_content = self.multiplexer.PluginRunToTagToContent(
-            scalar_metadata.PLUGIN_NAME
+        session_runs = set(
+            run
+            for run, tags in hparams_run_to_tag_to_content.items()
+            if metadata.SESSION_START_INFO_TAG in tags
         )
-        for (run, tag_to_content) in six.iteritems(run_to_tag_to_content):
+        metric_names_set = set()
+        scalars_run_to_tag_to_content = self.scalars_metadata(experiment_id)
+        for run, tags in scalars_run_to_tag_to_content.items():
             session = _find_longest_parent_path(session_runs, run)
             if not session:
                 continue
@@ -248,23 +349,11 @@ class Context(object):
             # string.
             if group == ".":
                 group = ""
-            metric_names_set.update(
-                (tag, group) for tag in tag_to_content.keys()
-            )
+            metric_names_set.update((tag, group) for tag in tags)
         metric_names_list = list(metric_names_set)
         # Sort metrics for determinism.
         metric_names_list.sort()
         return metric_names_list
-
-    def _build_session_runs_set(self):
-        result = set()
-        run_to_tag_to_content = self.multiplexer.PluginRunToTagToContent(
-            metadata.PLUGIN_NAME
-        )
-        for (run, tag_to_content) in six.iteritems(run_to_tag_to_content):
-            if metadata.SESSION_START_INFO_TAG in tag_to_content:
-                result.add(run)
-        return result
 
 
 def _find_longest_parent_path(path_set, path):

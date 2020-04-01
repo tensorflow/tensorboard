@@ -19,19 +19,26 @@ import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
 import {PluginsContainer} from './plugins_container';
 import {PluginsComponent} from './plugins_component';
+import {PluginRegistryModule} from './plugin_registry_module';
+import {ExtraDashboardModule} from './testing';
 
-import {PluginId, LoadingMechanismType} from '../types/api';
+import {
+  PluginId,
+  LoadingMechanismType,
+  CustomElementLoadingMechanism,
+  IframeLoadingMechanism,
+  NgElementLoadingMechanism,
+} from '../types/api';
 import {DataLoadState} from '../types/data';
-import {createState, createCoreState} from '../core/testing';
 import {State} from '../core/store';
-// store/index.ts doesn't export this, but it's OK to use for testing
-import {CoreState} from '../core/store/core_types';
-
+import {
+  getPlugins,
+  getActivePlugin,
+  getPluginsListLoaded,
+} from '../core/store/core_selectors';
 import {TestingDebuggerModule} from '../../plugins/debugger_v2/tf_debugger_v2_plugin/testing';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
-import {PluginRegistryModule} from './plugin_registry_module';
-import {ExtraDashboardComponent, ExtraDashboardModule} from './testing';
 
 function expectPluginIframe(element: HTMLElement, name: string) {
   expect(element.tagName).toBe('IFRAME');
@@ -40,74 +47,76 @@ function expectPluginIframe(element: HTMLElement, name: string) {
   );
 }
 
+class TestableCustomElement extends HTMLElement {
+  constructor() {
+    super();
+
+    const shadow = this.attachShadow({mode: 'open'});
+    const wrapper = document.createElement('div');
+    wrapper.textContent = 'Test TensorBoard';
+    shadow.appendChild(wrapper);
+  }
+}
+
+customElements.define('tb-bar', TestableCustomElement);
+
 describe('plugins_component', () => {
   let store: MockStore<State>;
-  const INITIAL_CORE_STATE: Partial<CoreState> = {
-    plugins: {
-      bar: {
-        disable_reload: false,
-        enabled: true,
-        loading_mechanism: {
-          type: LoadingMechanismType.CUSTOM_ELEMENT,
-          element_name: 'tb-bar',
-        },
-        tab_name: 'Bar',
-        remove_dom: false,
-      },
-      'extra-plugin': {
-        disable_reload: false,
-        enabled: true,
-        loading_mechanism: {
-          type: LoadingMechanismType.NG_COMPONENT,
-        },
-        tab_name: 'Extra',
-        remove_dom: false,
-      },
-      foo: {
-        disable_reload: false,
-        enabled: true,
-        loading_mechanism: {
-          type: LoadingMechanismType.IFRAME,
-          // This will cause 404 as test bundles do not serve
-          // data file in the karma server.
-          module_path: 'random_esmodule.js',
-        },
-        tab_name: 'Bar',
-        remove_dom: false,
-      },
+  const PLUGINS = {
+    bar: {
+      disable_reload: false,
+      enabled: true,
+      loading_mechanism: {
+        type: LoadingMechanismType.CUSTOM_ELEMENT,
+        element_name: 'tb-bar',
+      } as CustomElementLoadingMechanism,
+      tab_name: 'Bar',
+      remove_dom: false,
+    },
+    'extra-plugin': {
+      disable_reload: false,
+      enabled: true,
+      loading_mechanism: {
+        type: LoadingMechanismType.NG_COMPONENT,
+      } as NgElementLoadingMechanism,
+      tab_name: 'Extra',
+      remove_dom: false,
+    },
+    foo: {
+      disable_reload: false,
+      enabled: true,
+      loading_mechanism: {
+        type: LoadingMechanismType.IFRAME,
+        // This will cause 404 as test bundles do not serve
+        // data file in the karma server.
+        module_path: 'random_esmodule.js',
+      } as IframeLoadingMechanism,
+      tab_name: 'Bar',
+      remove_dom: false,
     },
   };
 
+  function setActivePlugin(plugin: PluginId) {
+    store.overrideSelector(getActivePlugin, plugin);
+    store.refreshState();
+  }
+
   beforeEach(async () => {
-    const initialState = createState(
-      createCoreState({
-        ...INITIAL_CORE_STATE,
-      })
-    );
     await TestBed.configureTestingModule({
-      providers: [
-        provideMockStore({initialState}),
-        PluginsContainer,
-        PluginRegistryModule,
-      ],
+      providers: [provideMockStore(), PluginsContainer, PluginRegistryModule],
       declarations: [PluginsContainer, PluginsComponent],
       imports: [TestingDebuggerModule, ExtraDashboardModule],
     }).compileComponents();
     store = TestBed.get(Store);
+    store.overrideSelector(getPlugins, PLUGINS);
+    store.overrideSelector(getActivePlugin, null);
+    store.overrideSelector(getPluginsListLoaded, {
+      state: DataLoadState.NOT_LOADED,
+      lastLoadedTimeInMs: null,
+    });
   });
 
   describe('plugin DOM creation', () => {
-    function setActivePlugin(plugin: PluginId) {
-      store.setState(
-        createState(
-          createCoreState({
-            ...INITIAL_CORE_STATE,
-            activePlugin: plugin,
-          })
-        )
-      );
-    }
-
     it('creates no plugin when there is no activePlugin', () => {
       const fixture = TestBed.createComponent(PluginsContainer);
       const el = fixture.debugElement.query(By.css('.plugins'));
@@ -167,9 +176,9 @@ describe('plugins_component', () => {
       expect(nativeElement.childElementCount).toBe(2);
       const [fooElement, barElement] = nativeElement.children;
       expectPluginIframe(fooElement, 'foo');
-      expect(fooElement.style.display).toBe('none');
+      expect(fooElement.style.visibility).toBe('hidden');
       expect(barElement.tagName).toBe('TB-BAR');
-      expect(barElement.style.display).not.toBe('none');
+      expect(barElement.style.visibility).not.toBe('hidden');
     });
 
     it('does not create same instance of plugin', async () => {
@@ -193,9 +202,9 @@ describe('plugins_component', () => {
 
       const {nativeElement} = fixture.debugElement.query(By.css('.plugins'));
       expect(nativeElement.childElementCount).toBe(2);
-      const [fooElement, barElement] = nativeElement.children;
+      const [fooElement] = nativeElement.children;
       expectPluginIframe(fooElement, 'foo');
-      expect(fooElement.style.display).not.toBe('none');
+      expect(fooElement.style.visibility).not.toBe('hidden');
     });
 
     it('creates components for plugins registered dynamically', async () => {
@@ -212,6 +221,25 @@ describe('plugins_component', () => {
       const pluginElement = nativeElement.children[0];
       expect(pluginElement.tagName).toBe('EXTRA-DASHBOARD');
     });
+
+    it('hides inactive plugin but keeps their width', async () => {
+      setActivePlugin('bar');
+
+      const fixture = TestBed.createComponent(PluginsContainer);
+      fixture.detectChanges();
+
+      setActivePlugin('foo');
+      fixture.detectChanges();
+
+      const {nativeElement} = fixture.debugElement.query(By.css('.plugins'));
+      const [barElement] = nativeElement.children;
+      expect(barElement.shadowRoot.firstElementChild.textContent).toBe(
+        'Test TensorBoard'
+      );
+      expect(
+        barElement.shadowRoot.firstElementChild.clientWidth
+      ).toBeGreaterThan(0);
+    });
   });
 
   describe('updates', () => {
@@ -219,42 +247,86 @@ describe('plugins_component', () => {
       timeInMs: number | null,
       state = DataLoadState.LOADED
     ) {
-      store.setState(
-        createState(
-          createCoreState({
-            ...INITIAL_CORE_STATE,
-            activePlugin: 'bar',
-            pluginsListLoaded: {
-              state,
-              lastLoadedTimeInMs: timeInMs,
-            },
-          })
-        )
-      );
+      store.overrideSelector(getPluginsListLoaded, {
+        state:
+          timeInMs !== null ? DataLoadState.LOADED : DataLoadState.NOT_LOADED,
+        lastLoadedTimeInMs: timeInMs,
+      });
+      store.refreshState();
     }
 
     it('invokes reload method on the dashboard DOM', () => {
       const fixture = TestBed.createComponent(PluginsContainer);
 
       setLastLoadedTime(null, DataLoadState.NOT_LOADED);
+      setActivePlugin('bar');
+      fixture.detectChanges();
+      setActivePlugin('foo');
+      fixture.detectChanges();
+      setActivePlugin('bar');
+      fixture.detectChanges();
+
+      const {nativeElement} = fixture.debugElement.query(By.css('.plugins'));
+      // Stamped 'bar' and 'foo'
+      expect(nativeElement.children.length).toBe(2);
+      const [barElement, fooElement] = nativeElement.children;
+      const barReloadSpy = jasmine.createSpy();
+      barElement.reload = barReloadSpy;
+      const fooReloadSpy = jasmine.createSpy();
+      fooElement.reload = fooReloadSpy;
+
+      setLastLoadedTime(1);
+      fixture.detectChanges();
+      expect(barReloadSpy).toHaveBeenCalledTimes(1);
+      expect(fooReloadSpy).not.toHaveBeenCalled();
+
+      setLastLoadedTime(1);
+      fixture.detectChanges();
+      expect(barReloadSpy).toHaveBeenCalledTimes(1);
+      expect(fooReloadSpy).not.toHaveBeenCalled();
+
+      setLastLoadedTime(2);
+      fixture.detectChanges();
+      expect(barReloadSpy).toHaveBeenCalledTimes(2);
+      expect(fooReloadSpy).not.toHaveBeenCalled();
+
+      setActivePlugin('foo');
+      fixture.detectChanges();
+
+      setLastLoadedTime(3);
+      fixture.detectChanges();
+      expect(barReloadSpy).toHaveBeenCalledTimes(2);
+      expect(fooReloadSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not invoke reload method on dom if disable_reload', () => {
+      store.overrideSelector(getPlugins, {
+        bar: {
+          disable_reload: true,
+          enabled: true,
+          loading_mechanism: {
+            type: LoadingMechanismType.CUSTOM_ELEMENT,
+            element_name: 'tb-bar',
+          } as CustomElementLoadingMechanism,
+          tab_name: 'Bar',
+          remove_dom: false,
+        },
+      });
+      const fixture = TestBed.createComponent(PluginsContainer);
+
+      setLastLoadedTime(null, DataLoadState.NOT_LOADED);
+      setActivePlugin('bar');
       fixture.detectChanges();
 
       const {nativeElement} = fixture.debugElement.query(By.css('.plugins'));
       const [barElement] = nativeElement.children;
-      const reloadSpy = jasmine.createSpy();
-      barElement.reload = reloadSpy;
+      const barReloadSpy = jasmine.createSpy();
+      barElement.reload = barReloadSpy;
 
       setLastLoadedTime(1);
       fixture.detectChanges();
-      expect(reloadSpy).toHaveBeenCalledTimes(1);
 
-      setLastLoadedTime(1);
-      fixture.detectChanges();
-      expect(reloadSpy).toHaveBeenCalledTimes(1);
-
-      setLastLoadedTime(2);
-      fixture.detectChanges();
-      expect(reloadSpy).toHaveBeenCalledTimes(2);
+      expect(barReloadSpy).not.toHaveBeenCalled();
     });
   });
 });
