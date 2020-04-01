@@ -653,65 +653,6 @@ class ListExperimentsTest(tb_test.TestCase):
         self.assertEqual(list(gen), expected)
 
 
-class MkdirPTest(tb_test.TestCase):
-    def test_makes_full_chain(self):
-        path = os.path.join(self.get_temp_dir(), "a", "b", "c")
-        exporter_lib._mkdir_p(path)
-        self.assertTrue(os.path.isdir(path))
-
-    def test_makes_leaf(self):
-        base = os.path.join(self.get_temp_dir(), "a", "b")
-        exporter_lib._mkdir_p(base)
-        leaf = os.path.join(self.get_temp_dir(), "a", "b", "c")
-        exporter_lib._mkdir_p(leaf)
-        self.assertTrue(os.path.isdir(leaf))
-
-    def test_fails_when_path_is_a_normal_file(self):
-        path = os.path.join(self.get_temp_dir(), "somefile")
-        with open(path, "w"):
-            pass
-        with self.assertRaises(OSError) as cm:
-            exporter_lib._mkdir_p(path)
-        self.assertEqual(cm.exception.errno, errno.EEXIST)
-
-    def test_propagates_other_errors(self):
-        base = os.path.join(self.get_temp_dir(), "somefile")
-        with open(base, "w"):
-            pass
-        leaf = os.path.join(self.get_temp_dir(), "somefile", "somedir")
-        with self.assertRaises(OSError) as cm:
-            exporter_lib._mkdir_p(leaf)
-        self.assertNotEqual(cm.exception.errno, errno.EEXIST)
-        if os.name == "nt":
-            expected_errno = errno.ENOENT
-        else:
-            expected_errno = errno.ENOTDIR
-        self.assertEqual(cm.exception.errno, expected_errno)
-
-
-class OpenExclTest(tb_test.TestCase):
-    def test_success(self):
-        path = os.path.join(self.get_temp_dir(), "test.txt")
-        with exporter_lib._open_excl(path) as outfile:
-            outfile.write("hello\n")
-        with open(path) as infile:
-            self.assertEqual(infile.read(), "hello\n")
-
-    def test_fails_when_file_exists(self):
-        path = os.path.join(self.get_temp_dir(), "test.txt")
-        with open(path, "w"):
-            pass
-        with self.assertRaises(exporter_lib.OutputFileExistsError) as cm:
-            exporter_lib._open_excl(path)
-        self.assertEqual(str(cm.exception), path)
-
-    def test_propagates_other_errors(self):
-        path = os.path.join(self.get_temp_dir(), "enoent", "test.txt")
-        with self.assertRaises(OSError) as cm:
-            exporter_lib._open_excl(path)
-        self.assertEqual(cm.exception.errno, errno.ENOENT)
-
-
 def _create_mock_api_client():
     # Create a stub instance (using a test channel) in order to derive a mock
     # from it with autospec enabled. Mocking TensorBoardExporterServiceStub
