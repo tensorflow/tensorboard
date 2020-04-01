@@ -67,7 +67,7 @@ tf_ts_library(
     ],
     tsconfig = "//:tsconfig-test",
     deps = [
-        ":load_monaco",  # TODO(cais): Clean up.
+        ":load_monaco",
         ":source_code",
         ":testing",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin:debugger_v2",
