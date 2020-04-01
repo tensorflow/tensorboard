@@ -30,7 +30,6 @@ from absl.flags import argparse_flags
 import grpc
 import six
 
-from tensorboard.uploader import dev_creds
 from tensorboard.uploader.proto import experiment_pb2
 from tensorboard.uploader.proto import export_service_pb2_grpc
 from tensorboard.uploader.proto import write_service_pb2_grpc
@@ -301,7 +300,9 @@ def _run(flags):
     elif flags.grpc_creds_type == "ssl":
         channel_creds = grpc.ssl_channel_credentials()
     elif flags.grpc_creds_type == "ssl_dev":
-        channel_creds = grpc.ssl_channel_credentials(dev_creds.DEV_SSL_CERT)
+        # Configure the dev cert to use by passing the environment variable
+        # GRPC_DEFAULT_SSL_ROOTS_FILE_PATH=path/to/cert.crt
+        channel_creds = grpc.ssl_channel_credentials()
         channel_options = [("grpc.ssl_target_name_override", "localhost")]
     else:
         msg = "Invalid --grpc_creds_type %s" % flags.grpc_creds_type
