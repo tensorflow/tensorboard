@@ -48,4 +48,5 @@ message ExperimentMask {
   bool name = 7;
   bool description = 8;
   bool total_tensor_bytes = 9;
+  bool total_blob_bytes = 10;
 }
