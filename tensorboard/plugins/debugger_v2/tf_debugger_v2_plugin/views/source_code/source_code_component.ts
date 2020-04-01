@@ -19,10 +19,11 @@ import {
   Input,
   SimpleChanges,
   ViewChild,
+  OnDestroy,
   OnInit,
 } from '@angular/core';
-import {fromEvent, interval} from 'rxjs';
-import {debounce, tap} from 'rxjs/operators';
+import {fromEvent, interval, Subject} from 'rxjs';
+import {debounce, takeUntil, tap} from 'rxjs/operators';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
@@ -37,7 +38,7 @@ const RESIZE_DEBOUNCE_INTERAVL_MS = 50;
   styleUrls: ['./source_code_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SourceCodeComponent implements OnInit {
+export class SourceCodeComponent implements OnInit, OnDestroy {
   @Input()
   lines: string[] | null = null; // TODO(cais): Add spinner for `null`.
 
@@ -55,12 +56,16 @@ export class SourceCodeComponent implements OnInit {
 
   private decorations: string[] = [];
 
+  private readonly ngUnsubscribe = new Subject();
+
   ngOnInit(): void {
     // Listen to window resize event. When resize happens, re-layout
-    // monaco editor. Do this with `debounce()` to prevent re-layouting
+    // monaco editor, so its width is always up-to-date with respect to
+    // the window size. Do this with `debounce()` to prevent re-layouting
     // at too high a rate.
-    fromEvent(window, 'resize')
+    const resizePipe = fromEvent(window, 'resize')
       .pipe(
+        takeUntil(this.ngUnsubscribe),
         debounce(() => interval(RESIZE_DEBOUNCE_INTERAVL_MS)),
         tap(() => {
           if (this.editor !== null) {
@@ -71,7 +76,12 @@ export class SourceCodeComponent implements OnInit {
       .subscribe();
   }
 
-  async ngOnChanges(changes: SimpleChanges): Promise<void> {
+  ngOnDestroy(): void {
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
     if (this.monaco === null) {
       return;
     }
