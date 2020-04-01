@@ -105,6 +105,8 @@ message PluginControl {
 
 message UploadLimits {
   // The maximum allowed size for blob uploads.
-  // If this is 0, no blobs should be uploaded.
+  // If this is 0, it is allowed to upload blobs of size 0 (though note
+  // the server may enforce a *minimum* blob size, which is a separate issue).
+  // If this is negative, no blobs should be uploaded.
   int64 max_blob_size = 1;
 }

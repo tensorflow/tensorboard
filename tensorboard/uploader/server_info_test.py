@@ -225,16 +225,13 @@ class AllowedPluginsTest(tb_test.TestCase):
         self.assertEqual(actual, frozenset(["foo", "bar"]))
 
 
-_DEFAULT_MAX_BLOB_SIZE = 10 * (2 ** 20)  # 10 MiB
-
-
 class MaxBlobSizeTest(tb_test.TestCase):
     """Tests for `max_blob_size`."""
 
     def test_old_server_no_upload_limits(self):
         info = server_info_pb2.ServerInfoResponse()
         actual = server_info.max_blob_size(info)
-        self.assertEqual(actual, _DEFAULT_MAX_BLOB_SIZE)
+        self.assertEqual(actual, server_info._DEFAULT_MAX_BLOB_SIZE)
 
     def test_upload_limits_provided_with_max_blob_size(self):
         info = server_info_pb2.ServerInfoResponse()
@@ -243,8 +240,8 @@ class MaxBlobSizeTest(tb_test.TestCase):
         self.assertEqual(actual, 42)
 
     def test_upload_limits_provided_without_max_blob_size(self):
-        # This just shows that proto3 default value of 0 is reported as usual,
-        # not handled as a special case.
+        # This just shows that the proto3 default value of 0 is reported as
+        # usual, not handled as a special case.
         info = server_info_pb2.ServerInfoResponse()
         info.upload_limits.SetInParent()
         actual = server_info.max_blob_size(info)
