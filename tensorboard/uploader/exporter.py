@@ -110,7 +110,7 @@ class TensorBoardExporter(object):
         self._outdir = output_directory
         parent_dir = os.path.dirname(self._outdir)
         if parent_dir:
-            _mkdir_p(parent_dir)
+            os.makedirs(parent_dir, exist_ok=True)
         try:
             os.mkdir(self._outdir)
         except OSError as e:
@@ -154,7 +154,7 @@ class TensorBoardExporter(object):
             os.mkdir(experiment_dir)
 
             metadata_filepath = os.path.join(experiment_dir, _FILENAME_METADATA)
-            with _open_excl(metadata_filepath) as outfile:
+            with open(metadata_filepath, "x") as outfile:
                 json.dump(experiment_metadata, outfile, sort_keys=True)
                 outfile.write("\n")
 
@@ -163,7 +163,7 @@ class TensorBoardExporter(object):
                 with contextlib.ExitStack() as stack:
                     file_handles = {
                         filename: stack.enter_context(
-                            _open_excl(os.path.join(experiment_dir, filename))
+                            open(os.path.join(experiment_dir, filename), "x")
                         )
                         for filename in (
                             _FILENAME_SCALARS,
@@ -324,7 +324,7 @@ class TensorBoardExporter(object):
             _DIRNAME_BLOBS,
             _FILENAME_BLOBS_PREFIX + blob_id + _FILENAME_BLOBS_SUFFIX,
         )
-        with _open_excl(blob_abspath, "wb") as f:
+        with open(blob_abspath, "xb") as f:
             try:
                 for response in self._api.StreamBlobData(
                     request, metadata=grpc_util.version_metadata()
@@ -389,11 +389,6 @@ class OutputDirectoryExistsError(ValueError):
     pass
 
 
-class OutputFileExistsError(ValueError):
-    # Like Python 3's `__builtins__.FileExistsError`.
-    pass
-
-
 class GrpcTimeoutException(Exception):
     def __init__(self, experiment_id):
         super(GrpcTimeoutException, self).__init__(experiment_id)
@@ -411,26 +406,3 @@ def _experiment_directory(base_dir, experiment_id):
             )
         )
     return os.path.join(base_dir, "experiment_%s" % experiment_id)
-
-
-def _mkdir_p(path):
-    """Like `os.makedirs(path, exist_ok=True)`, but Python 2-compatible."""
-    try:
-        os.makedirs(path)
-    except OSError as e:
-        if e.errno != errno.EEXIST or not os.path.isdir(path):
-            raise
-
-
-def _open_excl(path, mode="w"):
-    """Like `open(path, mode.replace("w", "x"))`, but Python 2-compatible."""
-    try:
-        # `os.O_EXCL` works on Windows as well as POSIX-compliant systems.
-        # See: <https://bugs.python.org/issue12760>
-        fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL)
-    except OSError as e:
-        if e.errno == errno.EEXIST:
-            raise OutputFileExistsError(path)
-        else:
-            raise
-    return os.fdopen(fd, mode)
