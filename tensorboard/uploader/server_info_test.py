@@ -225,6 +225,29 @@ class AllowedPluginsTest(tb_test.TestCase):
         self.assertEqual(actual, frozenset(["foo", "bar"]))
 
 
+class MaxBlobSizeTest(tb_test.TestCase):
+    """Tests for `max_blob_size`."""
+
+    def test_old_server_no_upload_limits(self):
+        info = server_info_pb2.ServerInfoResponse()
+        actual = server_info.max_blob_size(info)
+        self.assertEqual(actual, server_info._DEFAULT_MAX_BLOB_SIZE)
+
+    def test_upload_limits_provided_with_max_blob_size(self):
+        info = server_info_pb2.ServerInfoResponse()
+        info.upload_limits.max_blob_size = 42
+        actual = server_info.max_blob_size(info)
+        self.assertEqual(actual, 42)
+
+    def test_upload_limits_provided_without_max_blob_size(self):
+        # This just shows that the proto3 default value of 0 is reported as
+        # usual, not handled as a special case.
+        info = server_info_pb2.ServerInfoResponse()
+        info.upload_limits.SetInParent()
+        actual = server_info.max_blob_size(info)
+        self.assertEqual(actual, 0)
+
+
 def _localhost():
     """Gets family and nodename for a loopback address."""
     s = socket
