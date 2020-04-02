@@ -535,7 +535,9 @@ class _ListIntent(_Intent):
                 ("Scalars", str(experiment.num_scalars)),
             ]
             if experiment.total_blob_bytes:
-                data.append(("Binary object bytes", str(experiment.total_blob_bytes)))
+                data.append(
+                    ("Binary object bytes", str(experiment.total_blob_bytes))
+                )
             for (name, value) in data:
                 print("\t%s %s" % (name.ljust(20), value))
         sys.stdout.flush()
