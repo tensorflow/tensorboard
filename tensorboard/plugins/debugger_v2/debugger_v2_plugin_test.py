@@ -763,7 +763,6 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertEqual(digests[2]["op_type"], "Unpack")
         self.assertEqual(digests[2]["output_slot"], 0)
         self.assertTrue(digests[2]["op_name"])
-        # The Unpack (unstack) op is from the same graph as the placeholders.
         self.assertTrue(digests[0]["graph_id"])
 
     def testServeGraphExecutionDigestsImplicitFullRange(self):
