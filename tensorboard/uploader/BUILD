@@ -59,6 +59,7 @@ py_library(
         ":auth",
         ":dev_creds",
         ":exporter_lib",
+        ":flags_parser",
         ":server_info",
         ":uploader_lib",
         ":util",
@@ -220,5 +221,24 @@ py_test(
         "//tensorboard/plugins/scalar:metadata",
         "//tensorboard/uploader/proto:protos_all_py_pb2",
         "@org_pocoo_werkzeug",
+    ],
+)
+
+py_library(
+    name = "flags_parser",
+    srcs = ["flags_parser.py"],
+    visibility = ["//tensorboard:internal"],
+    deps = [
+        "//tensorboard:expect_absl_flags_argparse_flags_installed",
+    ],
+)
+
+py_test(
+    name = "flags_parser_test",
+    srcs = ["flags_parser_test.py"],
+    deps = [
+        ":flags_parser",
+        "//tensorboard:expect_futures_installed",
+        "//tensorboard:test",
     ],
 )
