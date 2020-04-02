@@ -198,7 +198,7 @@ def graph_execution_digest_run_tag_filter(run, begin, end, trace_id=None):
     # execution and intra-graph execution is supported by DebugDataReader.
     if trace_id is not None:
         raise NotImplementedError(
-            "trace_id support for graph_execution_digest_run_tag_filter is "
+            "trace_id support for graph_execution_digest_run_tag_filter() is "
             "not implemented yet."
         )
     return provider.RunTagFilter(
@@ -231,6 +231,10 @@ def _parse_graph_execution_digest_blob_key(blob_key):
     begin = int(key_body.split("_")[1])
     end = int(key_body.split("_")[2])
     return run, begin, end
+
+
+# TODO(cais): Add graph_execution_data_run_tag_filter()
+# TODO(cais): Add _parse_graph_execution_data_blob_key()
 
 
 def source_file_list_run_tag_filter(run):

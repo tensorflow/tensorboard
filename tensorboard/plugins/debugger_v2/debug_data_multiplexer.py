@@ -312,13 +312,12 @@ class DebuggerV2EventMultiplexer(object):
         }
 
     def GraphExecutionDigests(self, run, begin, end, trace_id=None):
-        """Get GraphExecutionTraceDigests.
+        """Get `GraphExecutionTraceDigest`s.
 
         Args:
-          run: The tfdbg2 run to get `ExecutionDigest`s from.
+          run: The tfdbg2 run to get `GraphExecutionDigest`s from.
           begin: Beginning graph-execution index.
           end: Ending graph-execution index.
-
 
         Returns:
           A JSON-serializable object containing the `ExecutionDigest`s and
@@ -327,15 +326,13 @@ class DebuggerV2EventMultiplexer(object):
         runs = self.Runs()
         if run not in runs:
             return None
-        # TODO(cais): Implement support for trace_id once joining of eager
+        # TODO(cais): Implement support for trace_id once the joining of eager
         # execution and intra-graph execution is supported by DebugDataReader.
         if trace_id is not None:
             raise NotImplementedError(
                 "trace_id support for GraphExecutoinTraceDigest is "
                 "not implemented yet."
             )
-        # TODO(cais): For scalability, use begin and end kwargs when available in
-        # `DebugDataReader.execution()`.`
         graph_exec_digests = self._reader.graph_execution_traces(digest=True)
         end = self._checkBeginEndIndices(begin, end, len(graph_exec_digests))
         return {
