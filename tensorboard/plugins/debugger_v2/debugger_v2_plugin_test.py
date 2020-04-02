@@ -724,6 +724,48 @@ class DebuggerV2PluginTest(tf.test.TestCase):
             },
         )
 
+    def testServeGraphExecutionDigestsWithEndGreaterThanBeginFullRange(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        response = self.server.get(
+            _ROUTE_PREFIX
+            + "/graph_execution/digests?run=%s&begin=0&end=3" % run
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        data = json.loads(response.get_data())
+        self.assertEqual(data["begin"], 0)
+        self.assertEqual(data["end"], 3)
+        self.assertEqual(data["num_digests"], 186)
+        digests = data["graph_execution_digests"]
+        self.assertLen(digests, 3)
+        self.assertGreater(digests[0]["wall_time"], 0)
+        self.assertEqual(digests[0]["op_type"], "Placeholder")
+        self.assertEqual(digests[0]["output_slot"], 0)
+        self.assertTrue(digests[0]["op_name"])
+        self.assertTrue(digests[0]["graph_id"])
+
+        self.assertGreaterEqual(
+            digests[1]["wall_time"], digests[0]["wall_time"]
+        )
+        self.assertEqual(digests[1]["op_type"], "Placeholder")
+        self.assertEqual(digests[1]["output_slot"], 0)
+        self.assertTrue(digests[1]["op_name"])
+        self.assertNotEqual(digests[1]["op_name"], digests[0]["op_name"])
+        self.assertTrue(digests[0]["graph_id"])
+
+        self.assertGreaterEqual(
+            digests[2]["wall_time"], digests[1]["wall_time"]
+        )
+        # The unstack() function uses the Unpack op under the hood.
+        self.assertEqual(digests[2]["op_type"], "Unpack")
+        self.assertEqual(digests[2]["output_slot"], 0)
+        self.assertTrue(digests[2]["op_name"])
+        # The Unpack (unstack) op is from the same graph as the placeholders.
+        self.assertTrue(digests[0]["graph_id"])
+
     def testServeSourceFileListIncludesThisTestFile(self):
         _generate_tfdbg_v2_data(self.logdir)
         run = self._getExactlyOneRun()
