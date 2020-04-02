@@ -724,7 +724,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
             },
         )
 
-    def testServeGraphExecutionDigestsWithEndGreaterThanBeginFullRange(self):
+    def testServeGraphExecutionDigestsPartialRange(self):
         _generate_tfdbg_v2_data(self.logdir)
         run = self._getExactlyOneRun()
         response = self.server.get(
@@ -765,6 +765,79 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertTrue(digests[2]["op_name"])
         # The Unpack (unstack) op is from the same graph as the placeholders.
         self.assertTrue(digests[0]["graph_id"])
+
+    def testServeGraphExecutionDigestsImplicitFullRange(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        response = self.server.get(
+            _ROUTE_PREFIX + "/graph_execution/digests?run=%s" % run
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        data = json.loads(response.get_data())
+        self.assertEqual(data["begin"], 0)
+        self.assertEqual(data["end"], 186)
+        self.assertEqual(data["num_digests"], 186)
+        digests = data["graph_execution_digests"]
+        self.assertLen(digests, 186)
+        self.assertGreater(digests[-1]["wall_time"], 0)
+        # Due to the while loop in the tf.function, the last op executed
+        # is a Less op.
+        self.assertEqual(digests[-1]["op_type"], "Less")
+        self.assertEqual(digests[-1]["output_slot"], 0)
+        self.assertTrue(digests[-1]["op_name"])
+        self.assertTrue(digests[-1]["graph_id"])
+
+    def testServeGraphExecutionDigestOutOfBoundsError(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+
+        # begin = 0; end = 200
+        response = self.server.get(
+            _ROUTE_PREFIX
+            + "/graph_execution/digests?run=%s&begin=0&end=200" % run
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {"error": "Invalid argument: end index (200) out of bounds (186)"},
+        )
+
+        # begin = -1; end = 2
+        response = self.server.get(
+            _ROUTE_PREFIX
+            + "/graph_execution/digests?run=%s&begin=-1&end=2" % run
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {"error": "Invalid argument: Invalid begin index (-1)"},
+        )
+
+        # begin = 2; end = 1
+        response = self.server.get(
+            _ROUTE_PREFIX
+            + "/graph_execution/digests?run=%s&begin=2&end=1" % run
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {
+                "error": "Invalid argument: "
+                "end index (1) is unexpectedly less than begin index (2)"
+            },
+        )
 
     def testServeSourceFileListIncludesThisTestFile(self):
         _generate_tfdbg_v2_data(self.logdir)
