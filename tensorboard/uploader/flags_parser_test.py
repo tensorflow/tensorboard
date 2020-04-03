@@ -20,7 +20,7 @@ from __future__ import print_function
 
 import argparse
 
-import flags_parser
+from tensorboard.uploader import flags_parser
 from tensorboard import test as tb_test
 
 
@@ -44,7 +44,7 @@ class FlagsParserTest(tb_test.TestCase):
             flags_parser.SUBCOMMAND_KEY_UPLOAD,
             getattr(flags, flags_parser.SUBCOMMAND_FLAG),
         )
-        self.assertEqual("some/log/dir", getattr(flags, "logdir"))
+        self.assertEqual("some/log/dir", flags.logdir)
 
     def test_upload_with_plugins(self):
         flags = flags_parser.parse_flags(
@@ -54,7 +54,7 @@ class FlagsParserTest(tb_test.TestCase):
             flags_parser.SUBCOMMAND_KEY_UPLOAD,
             getattr(flags, flags_parser.SUBCOMMAND_FLAG),
         )
-        self.assertEqual(["plugin1", "plugin2"], getattr(flags, "plugins"))
+        self.assertEqual(["plugin1", "plugin2"], flags.plugins)
 
 
 if __name__ == "__main__":
