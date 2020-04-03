@@ -238,7 +238,6 @@ py_test(
     srcs = ["flags_parser_test.py"],
     deps = [
         ":flags_parser",
-        "//tensorboard:expect_futures_installed",
         "//tensorboard:test",
     ],
 )
