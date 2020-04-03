@@ -26,7 +26,6 @@ import textwrap
 
 from absl import app
 from absl import logging
-from absl.flags import argparse_flags
 import grpc
 import six
 
@@ -36,6 +35,7 @@ from tensorboard.uploader.proto import export_service_pb2_grpc
 from tensorboard.uploader.proto import write_service_pb2_grpc
 from tensorboard.uploader import auth
 from tensorboard.uploader import exporter as exporter_lib
+from tensorboard.uploader import flags_parser
 from tensorboard.uploader import server_info as server_info_lib
 from tensorboard.uploader import uploader as uploader_lib
 from tensorboard.uploader import util
@@ -60,19 +60,6 @@ To log out, run `tensorboard dev auth revoke`.
 """
 
 
-_SUBCOMMAND_FLAG = "_uploader__subcommand"
-_SUBCOMMAND_KEY_UPLOAD = "UPLOAD"
-_SUBCOMMAND_KEY_DELETE = "DELETE"
-_SUBCOMMAND_KEY_LIST = "LIST"
-_SUBCOMMAND_KEY_EXPORT = "EXPORT"
-_SUBCOMMAND_KEY_UPDATE_METADATA = "UPDATEMETADATA"
-_SUBCOMMAND_KEY_AUTH = "AUTH"
-_AUTH_SUBCOMMAND_FLAG = "_uploader__subcommand_auth"
-_AUTH_SUBCOMMAND_KEY_REVOKE = "REVOKE"
-
-_DEFAULT_ORIGIN = "https://tensorboard.dev"
-
-
 # Size limits for input fields not bounded at a wire level. "Chars" in this
 # context refers to Unicode code points as stipulated by https://aip.dev/210.
 _EXPERIMENT_NAME_MAX_CHARS = 100
@@ -92,159 +79,6 @@ def _prompt_for_user_ack(intent):
     sys.stderr.write("\n")
 
 
-def _define_flags(parser):
-    """Configures flags on the provided argument parser.
-
-    Integration point for `tensorboard.program`'s subcommand system.
-
-    Args:
-      parser: An `argparse.ArgumentParser` to be mutated.
-    """
-
-    subparsers = parser.add_subparsers()
-
-    parser.add_argument(
-        "--origin",
-        type=str,
-        default="",
-        help="Experimental. Origin for TensorBoard.dev service to which "
-        "to connect. If not set, defaults to %r." % _DEFAULT_ORIGIN,
-    )
-
-    parser.add_argument(
-        "--api_endpoint",
-        type=str,
-        default="",
-        help="Experimental. Direct URL for the API server accepting "
-        "write requests. If set, will skip initial server handshake "
-        "unless `--origin` is also set.",
-    )
-
-    parser.add_argument(
-        "--grpc_creds_type",
-        type=str,
-        default="ssl",
-        choices=("local", "ssl", "ssl_dev"),
-        help="The type of credentials to use for the gRPC client",
-    )
-
-    parser.add_argument(
-        "--auth_force_console",
-        action="store_true",
-        help="Set to true to force authentication flow to use the "
-        "--console rather than a browser redirect to localhost.",
-    )
-
-    upload = subparsers.add_parser(
-        "upload", help="upload an experiment to TensorBoard.dev"
-    )
-    upload.set_defaults(**{_SUBCOMMAND_FLAG: _SUBCOMMAND_KEY_UPLOAD})
-    upload.add_argument(
-        "--logdir",
-        metavar="PATH",
-        type=str,
-        default=None,
-        help="Directory containing the logs to process",
-    )
-    upload.add_argument(
-        "--name",
-        type=str,
-        default=None,
-        help="Title of the experiment.  Max 100 characters.",
-    )
-    upload.add_argument(
-        "--description",
-        type=str,
-        default=None,
-        help="Experiment description. Markdown format.  Max 600 characters.",
-    )
-    upload.add_argument(
-        "--plugins",
-        type=str,
-        nargs="*",
-        default=[],
-        help="List of plugins for which data should be uploaded. If "
-        "unspecified then data will be uploaded for all plugins supported by "
-        "the server.",
-    )
-
-    update_metadata = subparsers.add_parser(
-        "update-metadata",
-        help="change the name, description, or other user "
-        "metadata associated with an experiment.",
-    )
-    update_metadata.set_defaults(
-        **{_SUBCOMMAND_FLAG: _SUBCOMMAND_KEY_UPDATE_METADATA}
-    )
-    update_metadata.add_argument(
-        "--experiment_id",
-        metavar="EXPERIMENT_ID",
-        type=str,
-        default=None,
-        help="ID of the experiment on which to modify the metadata.",
-    )
-    update_metadata.add_argument(
-        "--name",
-        type=str,
-        default=None,
-        help="Title of the experiment.  Max 100 characters.",
-    )
-    update_metadata.add_argument(
-        "--description",
-        type=str,
-        default=None,
-        help="Experiment description. Markdown format.  Max 600 characters.",
-    )
-
-    delete = subparsers.add_parser(
-        "delete",
-        help="permanently delete an experiment",
-        inherited_absl_flags=None,
-    )
-    delete.set_defaults(**{_SUBCOMMAND_FLAG: _SUBCOMMAND_KEY_DELETE})
-    # We would really like to call this next flag `--experiment` rather
-    # than `--experiment_id`, but this is broken inside Google due to a
-    # long-standing Python bug: <https://bugs.python.org/issue14365>
-    # (Some Google-internal dependencies define `--experimental_*` flags.)
-    # This isn't exactly a principled fix, but it gets the job done.
-    delete.add_argument(
-        "--experiment_id",
-        metavar="EXPERIMENT_ID",
-        type=str,
-        default=None,
-        help="ID of an experiment to delete permanently",
-    )
-
-    list_parser = subparsers.add_parser(
-        "list", help="list previously uploaded experiments"
-    )
-    list_parser.set_defaults(**{_SUBCOMMAND_FLAG: _SUBCOMMAND_KEY_LIST})
-
-    export = subparsers.add_parser(
-        "export", help="download all your experiment data"
-    )
-    export.set_defaults(**{_SUBCOMMAND_FLAG: _SUBCOMMAND_KEY_EXPORT})
-    export.add_argument(
-        "--outdir",
-        metavar="OUTPUT_PATH",
-        type=str,
-        default=None,
-        help="Directory into which to download all experiment data; "
-        "must not yet exist",
-    )
-
-    auth_parser = subparsers.add_parser("auth", help="log in, log out")
-    auth_parser.set_defaults(**{_SUBCOMMAND_FLAG: _SUBCOMMAND_KEY_AUTH})
-    auth_subparsers = auth_parser.add_subparsers()
-
-    auth_revoke = auth_subparsers.add_parser(
-        "revoke", help="revoke all existing credentials and log out"
-    )
-    auth_revoke.set_defaults(
-        **{_AUTH_SUBCOMMAND_FLAG: _AUTH_SUBCOMMAND_KEY_REVOKE}
-    )
-
-
 def _parse_flags(argv=("",)):
     """Integration point for `absl.app`.
 
@@ -258,14 +92,9 @@ def _parse_flags(argv=("",)):
       Either argv[:1] if argv was non-empty, or [''] otherwise, as a mechanism
       for absl.app.run() compatibility.
     """
-    parser = argparse_flags.ArgumentParser(
-        prog="uploader",
-        description=("Upload your TensorBoard experiments to TensorBoard.dev"),
-    )
-    _define_flags(parser)
     arg0 = argv[0] if argv else ""
     global _FLAGS
-    _FLAGS = parser.parse_args(argv[1:])
+    _FLAGS = flags_parser.parse_flags(argv)
     return [arg0]
 
 
@@ -683,10 +512,10 @@ def _get_intent(flags):
       base_plugin.FlagsError: If the command-line `flags` do not correctly
         specify an intent.
     """
-    cmd = getattr(flags, _SUBCOMMAND_FLAG, None)
+    cmd = getattr(flags, flags_parser.SUBCOMMAND_FLAG, None)
     if cmd is None:
         raise base_plugin.FlagsError("Must specify subcommand (try --help).")
-    if cmd == _SUBCOMMAND_KEY_UPLOAD:
+    if cmd == flags_parser.SUBCOMMAND_KEY_UPLOAD:
         if flags.logdir:
             return _UploadIntent(
                 os.path.expanduser(flags.logdir),
@@ -697,7 +526,7 @@ def _get_intent(flags):
             raise base_plugin.FlagsError(
                 "Must specify directory to upload via `--logdir`."
             )
-    if cmd == _SUBCOMMAND_KEY_UPDATE_METADATA:
+    if cmd == flags_parser.SUBCOMMAND_KEY_UPDATE_METADATA:
         if flags.experiment_id:
             if flags.name is not None or flags.description is not None:
                 return _UpdateMetadataIntent(
@@ -713,27 +542,27 @@ def _get_intent(flags):
             raise base_plugin.FlagsError(
                 "Must specify experiment to modify via `--experiment_id`."
             )
-    elif cmd == _SUBCOMMAND_KEY_DELETE:
+    elif cmd == flags_parser.SUBCOMMAND_KEY_DELETE:
         if flags.experiment_id:
             return _DeleteExperimentIntent(flags.experiment_id)
         else:
             raise base_plugin.FlagsError(
                 "Must specify experiment to delete via `--experiment_id`."
             )
-    elif cmd == _SUBCOMMAND_KEY_LIST:
+    elif cmd == flags_parser.SUBCOMMAND_KEY_LIST:
         return _ListIntent()
-    elif cmd == _SUBCOMMAND_KEY_EXPORT:
+    elif cmd == flags_parser.SUBCOMMAND_KEY_EXPORT:
         if flags.outdir:
             return _ExportIntent(flags.outdir)
         else:
             raise base_plugin.FlagsError(
                 "Must specify output directory via `--outdir`."
             )
-    elif cmd == _SUBCOMMAND_KEY_AUTH:
-        auth_cmd = getattr(flags, _AUTH_SUBCOMMAND_FLAG, None)
+    elif cmd == flags_parser.SUBCOMMAND_KEY_AUTH:
+        auth_cmd = getattr(flags, flags_parser.AUTH_SUBCOMMAND_FLAG, None)
         if auth_cmd is None:
             raise base_plugin.FlagsError("Must specify a subcommand to `auth`.")
-        if auth_cmd == _AUTH_SUBCOMMAND_KEY_REVOKE:
+        if auth_cmd == flags_parser.AUTH_SUBCOMMAND_KEY_REVOKE:
             return _AuthRevokeIntent()
         else:
             raise AssertionError("Unknown auth subcommand %r" % (auth_cmd,))
@@ -742,7 +571,7 @@ def _get_intent(flags):
 
 
 def _get_server_info(flags):
-    origin = flags.origin or _DEFAULT_ORIGIN
+    origin = flags.origin or flags_parser.DEFAULT_ORIGIN
     plugins = getattr(flags, "plugins", [])
 
     if flags.api_endpoint and not flags.origin:
@@ -793,7 +622,7 @@ class UploaderSubcommand(program.TensorBoardSubcommand):
         return "dev"
 
     def define_flags(self, parser):
-        _define_flags(parser)
+        flags_parser.define_flags(parser)
 
     def run(self, flags):
         return _run(flags)
