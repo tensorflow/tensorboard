@@ -122,7 +122,7 @@ tf_web_library(
     path = "/",
     deps = [
         ":tb_webapp",
-        "//tensorboard/components:ng_polymer_lib_binary",
+        "//tensorboard/components:polymer_lib_binary",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/source_code/monaco:requirejs",
     ],
 )
