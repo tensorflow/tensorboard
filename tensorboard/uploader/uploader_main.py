@@ -513,9 +513,10 @@ class _ListIntent(_Intent):
         fieldmask = experiment_pb2.ExperimentMask(
             create_time=True,
             update_time=True,
-            num_scalars=True,
             num_runs=True,
             num_tags=True,
+            num_scalars=True,
+            total_blob_bytes=True,
         )
         gen = exporter_lib.list_experiments(api_client, fieldmask=fieldmask)
         count = 0
