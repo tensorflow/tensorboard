@@ -38,6 +38,8 @@ PLUGIN_NAME = "debugger-v2"
 ALERTS_BLOB_TAG_PREFIX = "alerts"
 EXECUTION_DIGESTS_BLOB_TAG_PREFIX = "execution_digests"
 EXECUTION_DATA_BLOB_TAG_PREFIX = "execution_data"
+GRAPH_EXECUTION_DIGESTS_BLOB_TAG_PREFIX = "graphexec_digests"
+GRAPH_EXECUTION_DATA_BLOB_TAG_PREFIX = "graphexec_data"
 SOURCE_FILE_LIST_BLOB_TAG = "source_file_list"
 SOURCE_FILE_BLOB_TAG_PREFIX = "source_file"
 STACK_FRAMES_BLOB_TAG_PREFIX = "stack_frames"
@@ -175,6 +177,64 @@ def _parse_execution_data_blob_key(blob_key):
     begin = int(key_body.split("_")[1])
     end = int(key_body.split("_")[2])
     return run, begin, end
+
+
+def graph_execution_digest_run_tag_filter(run, begin, end, trace_id=None):
+    """Create a RunTagFilter for GraphExecutionTraceDigests.
+
+    This differs from `graph_execution_data_run_tag_filter()` in that it is for
+    the small-size digest objects for intra-graph execution debug events, instead
+    of the full-size data objects.
+
+    Args:
+      run: tfdbg2 run name.
+      begin: Beginning index of GraphExecutionTraceDigests.
+      end: Ending index of GraphExecutionTraceDigests.
+
+    Returns:
+      `RunTagFilter` for the run and range of ExecutionDigests.
+    """
+    # TODO(cais): Implement support for trace_id once joining of eager
+    # execution and intra-graph execution is supported by DebugDataReader.
+    if trace_id is not None:
+        raise NotImplementedError(
+            "trace_id support for graph_execution_digest_run_tag_filter() is "
+            "not implemented yet."
+        )
+    return provider.RunTagFilter(
+        runs=[run],
+        tags=[
+            "%s_%d_%d" % (GRAPH_EXECUTION_DIGESTS_BLOB_TAG_PREFIX, begin, end)
+        ],
+    )
+
+
+def _parse_graph_execution_digest_blob_key(blob_key):
+    """Parse the BLOB key for GraphExecutionTraceDigests.
+
+    This differs from `_parse_graph_execution_data_blob_key()` in that it is for
+    the small-size digest objects for intra-graph execution debug events,
+    instead of the full-size data objects.
+
+    Args:
+      blob_key: The BLOB key to parse. By contract, it should have the format:
+       `${GRAPH_EXECUTION_DIGESTS_BLOB_TAG_PREFIX}_${begin}_${end}.${run_id}`
+
+    Returns:
+      - run ID
+      - begin index
+      - end index
+    """
+    # TODO(cais): Support parsing trace_id when it is supported.
+    key_body, run = blob_key.split(".", 1)
+    key_body = key_body[len(GRAPH_EXECUTION_DIGESTS_BLOB_TAG_PREFIX) :]
+    begin = int(key_body.split("_")[1])
+    end = int(key_body.split("_")[2])
+    return run, begin, end
+
+
+# TODO(cais): Add graph_execution_data_run_tag_filter()
+# TODO(cais): Add _parse_graph_execution_data_blob_key()
 
 
 def source_file_list_run_tag_filter(run):
@@ -358,6 +418,7 @@ class LocalDebuggerV2DataProvider(provider.DataProvider):
                         ALERTS_BLOB_TAG_PREFIX,
                         EXECUTION_DIGESTS_BLOB_TAG_PREFIX,
                         EXECUTION_DATA_BLOB_TAG_PREFIX,
+                        GRAPH_EXECUTION_DIGESTS_BLOB_TAG_PREFIX,
                         SOURCE_FILE_BLOB_TAG_PREFIX,
                         STACK_FRAMES_BLOB_TAG_PREFIX,
                     )
@@ -383,6 +444,11 @@ class LocalDebuggerV2DataProvider(provider.DataProvider):
         elif blob_key.startswith(EXECUTION_DATA_BLOB_TAG_PREFIX):
             run, begin, end = _parse_execution_data_blob_key(blob_key)
             return json.dumps(self._multiplexer.ExecutionData(run, begin, end))
+        elif blob_key.startswith(GRAPH_EXECUTION_DIGESTS_BLOB_TAG_PREFIX):
+            run, begin, end = _parse_graph_execution_digest_blob_key(blob_key)
+            return json.dumps(
+                self._multiplexer.GraphExecutionDigests(run, begin, end)
+            )
         elif blob_key.startswith(SOURCE_FILE_LIST_BLOB_TAG):
             run = _parse_source_file_list_blob_key(blob_key)
             return json.dumps(self._multiplexer.SourceFileList(run))
