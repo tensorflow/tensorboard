@@ -13,13 +13,9 @@ tf_web_library(
     path = "/",
     deps = [
         ":analytics",
-        ":security",
-        "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/components/tf_storage",
         "//tensorboard/components/tf_tensorboard",
         "//tensorboard/components/tf_tensorboard:default_plugins",
-        "//tensorboard/components/tf_tensorboard:registry",
     ],
 )
 
@@ -37,11 +33,7 @@ tf_web_library(
     srcs = ["tensorboard.html"],
     path = "/",
     deps = [
-        ":analytics",
         ":polymer_lib_binary",
-        "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/components/tf_tensorboard",
-        "//tensorboard/components/tf_tensorboard:default_plugins",
     ],
 )
 
