@@ -60,25 +60,6 @@ class Context(object):
         self._tb_context = tb_context
         self._max_domain_discrete_len = max_domain_discrete_len
 
-    def experiment(self, experiment_id):
-        """Returns the experiment protobuffer defining the experiment.
-
-        This method first attempts to find a metadata.EXPERIMENT_TAG tag and
-        retrieve the associated protobuffer. If no such tag is found, the method
-        will attempt to build a minimal experiment protobuffer by scanning for
-        all metadata.SESSION_START_INFO_TAG tags (to compute the hparam_infos
-        field of the experiment) and for all scalar tags (to compute the
-        metric_infos field of the experiment).
-
-        Returns:
-          The experiment protobuffer. If no tags are found from which an experiment
-          protobuffer can be built (possibly, because the event data has not been
-          completely loaded yet), returns None.
-        """
-        return self.experiment_from_metadata(
-            experiment_id, self.hparams_metadata(experiment_id)
-        )
-
     def experiment_from_metadata(
         self, experiment_id, hparams_run_to_tag_to_content
     ):
