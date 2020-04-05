@@ -311,6 +311,41 @@ class DebuggerV2EventMultiplexer(object):
             "executions": [execution.to_json() for execution in executions],
         }
 
+    def GraphExecutionDigests(self, run, begin, end, trace_id=None):
+        """Get `GraphExecutionTraceDigest`s.
+
+        Args:
+          run: The tfdbg2 run to get `GraphExecutionDigest`s from.
+          begin: Beginning graph-execution index.
+          end: Ending graph-execution index.
+
+        Returns:
+          A JSON-serializable object containing the `ExecutionDigest`s and
+          related meta-information
+        """
+        runs = self.Runs()
+        if run not in runs:
+            return None
+        # TODO(cais): Implement support for trace_id once the joining of eager
+        # execution and intra-graph execution is supported by DebugDataReader.
+        if trace_id is not None:
+            raise NotImplementedError(
+                "trace_id support for GraphExecutoinTraceDigest is "
+                "not implemented yet."
+            )
+        graph_exec_digests = self._reader.graph_execution_traces(digest=True)
+        end = self._checkBeginEndIndices(begin, end, len(graph_exec_digests))
+        return {
+            "begin": begin,
+            "end": end,
+            "num_digests": len(graph_exec_digests),
+            "graph_execution_digests": [
+                digest.to_json() for digest in graph_exec_digests[begin:end]
+            ],
+        }
+
+    # TODO(cais): Add GraphExecutionTraceData().
+
     def SourceFileList(self, run):
         runs = self.Runs()
         if run not in runs:

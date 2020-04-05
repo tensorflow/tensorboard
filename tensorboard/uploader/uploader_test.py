@@ -72,7 +72,6 @@ def _create_mock_client():
 
 _SCALARS_ONLY = frozenset((scalars_metadata.PLUGIN_NAME,))
 
-
 # Sentinel for `_create_*` helpers, for arguments for which we want to
 # supply a default other than the `None` used by the code under test.
 _USE_DEFAULT = object()
@@ -82,6 +81,7 @@ def _create_uploader(
     writer_client=_USE_DEFAULT,
     logdir=None,
     allowed_plugins=_USE_DEFAULT,
+    max_blob_size=_USE_DEFAULT,
     logdir_poll_rate_limiter=_USE_DEFAULT,
     rpc_rate_limiter=_USE_DEFAULT,
     blob_rpc_rate_limiter=_USE_DEFAULT,
@@ -92,6 +92,8 @@ def _create_uploader(
         writer_client = _create_mock_client()
     if allowed_plugins is _USE_DEFAULT:
         allowed_plugins = _SCALARS_ONLY
+    if max_blob_size is _USE_DEFAULT:
+        max_blob_size = 12345
     if logdir_poll_rate_limiter is _USE_DEFAULT:
         logdir_poll_rate_limiter = util.RateLimiter(0)
     if rpc_rate_limiter is _USE_DEFAULT:
@@ -102,6 +104,7 @@ def _create_uploader(
         writer_client,
         logdir,
         allowed_plugins=allowed_plugins,
+        max_blob_size=max_blob_size,
         logdir_poll_rate_limiter=logdir_poll_rate_limiter,
         rpc_rate_limiter=rpc_rate_limiter,
         blob_rpc_rate_limiter=blob_rpc_rate_limiter,
@@ -114,6 +117,7 @@ def _create_request_sender(
     experiment_id=None,
     api=None,
     allowed_plugins=_USE_DEFAULT,
+    max_blob_size=_USE_DEFAULT,
     rpc_rate_limiter=_USE_DEFAULT,
     blob_rpc_rate_limiter=_USE_DEFAULT,
 ):
@@ -121,6 +125,8 @@ def _create_request_sender(
         api = _create_mock_client()
     if allowed_plugins is _USE_DEFAULT:
         allowed_plugins = _SCALARS_ONLY
+    if max_blob_size is _USE_DEFAULT:
+        max_blob_size = 12345
     if rpc_rate_limiter is _USE_DEFAULT:
         rpc_rate_limiter = util.RateLimiter(0)
     if blob_rpc_rate_limiter is _USE_DEFAULT:
@@ -129,6 +135,7 @@ def _create_request_sender(
         experiment_id=experiment_id,
         api=api,
         allowed_plugins=allowed_plugins,
+        max_blob_size=max_blob_size,
         rpc_rate_limiter=rpc_rate_limiter,
         blob_rpc_rate_limiter=blob_rpc_rate_limiter,
     )
@@ -281,6 +288,41 @@ class TensorboardUploaderTest(tf.test.TestCase):
         self.assertEqual(10, mock_client.WriteBlob.call_count)
         self.assertEqual(0, mock_rate_limiter.tick.call_count)
         self.assertEqual(10, mock_blob_rate_limiter.tick.call_count)
+
+    @mock.patch.object(uploader_lib, "BLOB_CHUNK_SIZE", 100)
+    def test_upload_skip_large_blob(self):
+        mock_client = _create_mock_client()
+        mock_rate_limiter = mock.create_autospec(util.RateLimiter)
+        mock_blob_rate_limiter = mock.create_autospec(util.RateLimiter)
+        uploader = _create_uploader(
+            mock_client,
+            "/logs/foo",
+            rpc_rate_limiter=mock_rate_limiter,
+            blob_rpc_rate_limiter=mock_blob_rate_limiter,
+            allowed_plugins=[
+                scalars_metadata.PLUGIN_NAME,
+                graphs_metadata.PLUGIN_NAME,
+            ],
+            max_blob_size=100,
+        )
+        uploader.create_experiment()
+
+        graph_event = event_pb2.Event(graph_def=bytes(950))
+
+        mock_logdir_loader = mock.create_autospec(logdir_loader.LogdirLoader)
+        mock_logdir_loader.get_run_events.side_effect = [
+            {"run 1": [graph_event],},
+            AbortUploadError,
+        ]
+
+        with mock.patch.object(
+            uploader, "_logdir_loader", mock_logdir_loader
+        ), self.assertRaises(AbortUploadError):
+            uploader.start_uploading()
+        self.assertEqual(1, mock_client.CreateExperiment.call_count)
+        self.assertEqual(0, mock_client.WriteBlob.call_count)
+        self.assertEqual(0, mock_rate_limiter.tick.call_count)
+        self.assertEqual(1, mock_blob_rate_limiter.tick.call_count)
 
     def test_upload_server_error(self):
         mock_client = _create_mock_client()
