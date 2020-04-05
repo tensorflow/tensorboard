@@ -338,7 +338,7 @@ class _ListIntent(_Intent):
 
         Args:
           json: If and ony if `True`, will print the list as a pretty-formatted
-            JSON.
+            JSON array.
         """
         self.json = json
 
@@ -359,7 +359,7 @@ class _ListIntent(_Intent):
         gen = exporter_lib.list_experiments(api_client, fieldmask=fieldmask)
         count = 0
         if self.json:
-            experiments_json = collections.OrderedDict()
+            experiments_json = []
         for experiment in gen:
             count += 1
             experiment_id = experiment.experiment_id
@@ -375,7 +375,9 @@ class _ListIntent(_Intent):
                 ("Tags", str(experiment.num_tags)),
             ]
             if self.json:
-                experiments_json[url] = collections.OrderedDict(data)
+                experiments_json.append(
+                    collections.OrderedDict([("url", url)] + data)
+                )
             else:
                 print(url)
                 for (name, value) in data:
