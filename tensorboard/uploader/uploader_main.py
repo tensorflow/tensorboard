@@ -376,7 +376,7 @@ class _ListIntent(_Intent):
             ]
             if self.json:
                 experiments_json.append(
-                    collections.OrderedDict([("url", url)] + data)
+                    collections.OrderedDict([("URL", url)] + data)
                 )
             else:
                 print(url)
