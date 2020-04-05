@@ -177,6 +177,9 @@ def define_flags(parser):
         "list", help="list previously uploaded experiments"
     )
     list_parser.set_defaults(**{SUBCOMMAND_FLAG: SUBCOMMAND_KEY_LIST})
+    list_parser.add_argument(
+        "--json", action="store_true", help="print the experiments as JSON",
+    )
 
     export = subparsers.add_parser(
         "export", help="download all your experiment data"

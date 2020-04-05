@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import print_function
 
 import abc
+import collections
 import json
 import os
 import sys
@@ -332,6 +333,15 @@ class _ListIntent(_Intent):
         """
     )
 
+    def __init__(self, json=None):
+        """Constructor of _ListIntent.
+
+        Args:
+          json: If and ony if `True`, will print the list as a pretty-formatted
+            JSON.
+        """
+        self.json = json
+
     def get_ack_message_body(self):
         return self._MESSAGE
 
@@ -348,11 +358,12 @@ class _ListIntent(_Intent):
         )
         gen = exporter_lib.list_experiments(api_client, fieldmask=fieldmask)
         count = 0
+        if self.json:
+            experiments_json = collections.OrderedDict()
         for experiment in gen:
             count += 1
             experiment_id = experiment.experiment_id
             url = server_info_lib.experiment_url(server_info, experiment_id)
-            print(url)
             data = [
                 ("Name", experiment.name or "[No Name]"),
                 ("Description", experiment.description or "[No Description]"),
@@ -363,8 +374,14 @@ class _ListIntent(_Intent):
                 ("Runs", str(experiment.num_runs)),
                 ("Tags", str(experiment.num_tags)),
             ]
-            for (name, value) in data:
-                print("\t%s %s" % (name.ljust(12), value))
+            if self.json:
+                experiments_json[url] = collections.OrderedDict(data)
+            else:
+                print(url)
+                for (name, value) in data:
+                    print("\t%s %s" % (name.ljust(12), value))
+        if self.json:
+            print(json.dumps(experiments_json, indent=2))
         sys.stdout.flush()
         if not count:
             sys.stderr.write(
@@ -550,7 +567,7 @@ def _get_intent(flags):
                 "Must specify experiment to delete via `--experiment_id`."
             )
     elif cmd == flags_parser.SUBCOMMAND_KEY_LIST:
-        return _ListIntent()
+        return _ListIntent(json=flags.json)
     elif cmd == flags_parser.SUBCOMMAND_KEY_EXPORT:
         if flags.outdir:
             return _ExportIntent(flags.outdir)
