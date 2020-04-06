@@ -44,22 +44,28 @@ namespace tf_tensorboard {
         type: Boolean,
         value: false,
       },
+      _boundHandleVisibilityChange: {
+        type: Object,
+      },
       autoReloadIntervalSecs: {
         type: Number,
         value: 30,
       },
     },
     attached: function() {
+      this._boundHandleVisibilityChange_ = this._handleVisibilityChange.bind(
+        this
+      );
       document.addEventListener(
         'visibilitychange',
-        this._handleVisibilityChange.bind(this)
+        this._boundHandleVisibilityChange
       );
     },
     detached: function() {
       window.clearTimeout(this._autoReloadId);
       document.removeEventListener(
         'visibilitychange',
-        this._handleVisibilityChange.bind(this)
+        this._boundHandleVisibilityChange
       );
     },
     _autoReloadObserver: function(autoReload) {
@@ -90,7 +96,7 @@ namespace tf_tensorboard {
       }
       this.reload();
     },
-    _handleVisibilityChange() {
+    _handleVisibilityChange: function() {
       if (this._isDocumentVisible() && this._missedAutoReload) {
         this._missedAutoReload = false;
         this._doReload();
@@ -100,7 +106,7 @@ namespace tf_tensorboard {
      * Wraps Page Visibility API call to determine if document is visible.
      * Can be overriden for testing purposes.
      */
-    _isDocumentVisible() {
+    _isDocumentVisible: function() {
       return document.visibilityState === 'visible';
     },
   };
