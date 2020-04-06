@@ -30,7 +30,7 @@ const activePlugin = createSelector(
   getPlugins,
   getActivePlugin,
   (plugins, id): UiPluginMetadata | null => {
-    if (!id || !plugins) return null;
+    if (!id || !plugins[id]) return null;
     return Object.assign({id}, plugins[id]);
   }
 );

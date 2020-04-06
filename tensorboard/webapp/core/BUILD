@@ -11,6 +11,7 @@ ng_module(
         "//tensorboard/webapp/core/actions",
         "//tensorboard/webapp/core/effects",
         "//tensorboard/webapp/core/store",
+        "//tensorboard/webapp/deeplink",
         "//tensorboard/webapp/webapp_data_source",
         "@npm//@angular/core",
         "@npm//@ngrx/effects",

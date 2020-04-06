@@ -21,6 +21,9 @@ import {CoreState} from './core_types';
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
 /** @typehack */ import * as _typeHackStore from '@ngrx/store/store';
 
+// TODO(stephanwlee): Since initialState is now injected, look for a way to
+// remove this.
+
 const initialState: CoreState = {
   activePlugin: null,
   plugins: {},
@@ -112,6 +115,6 @@ const reducer = createReducer(
   })
 );
 
-export function reducers(state: CoreState, action: Action) {
+export function reducers(state: CoreState | undefined, action: Action) {
   return reducer(state, action);
 }
