@@ -255,7 +255,7 @@ def TensorBoardWSGIApp(
             plugin = loader.load(context)
         except Exception:
             logger.error(
-                "Failed to invoke plugin loader %s",
+                "Failed to load plugin %s; ignoring it.",
                 getattr(loader.load, "__qualname__", loader.load),
                 exc_info=True,
             )
