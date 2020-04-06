@@ -236,6 +236,9 @@ def _parse_graph_execution_digest_blob_key(blob_key):
 def graph_execution_data_run_tag_filter(run, begin, end, trace_id=None):
     """Create a RunTagFilter for GraphExecutionTrace.
 
+    This method differs from `graph_execution_digest_run_tag_filter()` in that
+    it is for full-sized data objects for intra-graph execution events.
+
     Args:
       run: tfdbg2 run name.
       begin: Beginning index of GraphExecutionTrace.
@@ -260,9 +263,12 @@ def graph_execution_data_run_tag_filter(run, begin, end, trace_id=None):
 def _parse_graph_execution_data_blob_key(blob_key):
     """Parse the BLOB key for GraphExecutionTrace.
 
+    This method differs from `_parse_graph_execution_digest_blob_key()` in that
+    it is for full-sized data objects for intra-graph execution events.
+
     Args:
       blob_key: The BLOB key to parse. By contract, it should have the format:
-       `${GRAPH_EXECUTION_DIGESTS_BLOB_TAG_PREFIX}_${begin}_${end}.${run_id}`
+       `${GRAPH_EXECUTION_DATA_BLOB_TAG_PREFIX}_${begin}_${end}.${run_id}`
 
     Returns:
       - run ID

@@ -330,7 +330,7 @@ class DebuggerV2EventMultiplexer(object):
         # execution and intra-graph execution is supported by DebugDataReader.
         if trace_id is not None:
             raise NotImplementedError(
-                "trace_id support for GraphExecutoinTraceDigest is "
+                "trace_id support for GraphExecutionTraceDigest is "
                 "not implemented yet."
             )
         graph_exec_digests = self._reader.graph_execution_traces(digest=True)
@@ -363,7 +363,7 @@ class DebuggerV2EventMultiplexer(object):
         # execution and intra-graph execution is supported by DebugDataReader.
         if trace_id is not None:
             raise NotImplementedError(
-                "trace_id support for GraphExecutoinTraceData is "
+                "trace_id support for GraphExecutionTraceData is "
                 "not implemented yet."
             )
         graph_executions = self._reader.graph_execution_traces(digest=False)

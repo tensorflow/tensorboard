@@ -214,6 +214,9 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
         As the names imply, this route differs from `serve_execution_data()`
         in that it is for intra-graph execution, while `serve_execution_data()`
         is for top-level (eager) execution.
+
+        Unlike `serve_graph_execution_digests()`, this method serves the
+        full-sized data objects for intra-graph execution events.
         """
         experiment = plugin_util.experiment_id(request.environ)
         run = request.args.get("run")
