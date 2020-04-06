@@ -1,4 +1,4 @@
-/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,15 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {NgModule} from '@angular/core';
-import {CommonModule} from '@angular/common';
 
-import {HashStorageContainer} from './hash_storage_container';
-import {HashStorageComponent} from './hash_storage_component';
-import {DeepLinkModule} from '../../deeplink/deeplink_module';
+import {HashDeepLinker} from './hash';
 
 @NgModule({
-  declarations: [HashStorageContainer, HashStorageComponent],
-  exports: [HashStorageContainer],
-  imports: [CommonModule, DeepLinkModule],
+  providers: [HashDeepLinker],
 })
-export class HashStorageModule {}
+export class DeepLinkModule {}
