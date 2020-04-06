@@ -1,5 +1,5 @@
 load("@npm_angular_bazel//:index.bzl", "ng_module")
-load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ng_web_test_suite", "tf_sass_binary", "tf_sass_library", "tf_svg_bundle", "tf_ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ng_web_test_suite", "tf_sass_binary", "tf_sass_library", "tf_svg_bundle")
 load("//tensorboard/defs:web.bzl", "tf_web_library")
 load("//tensorboard/defs:vulcanize.bzl", "tensorboard_html_binary")
 
@@ -22,7 +22,6 @@ ng_module(
         "app_container.ng.html",
     ],
     deps = [
-        ":config",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
         "//tensorboard/webapp/core",
@@ -38,14 +37,6 @@ ng_module(
         "@npm//@angular/platform-browser",
         "@npm//@ngrx/effects",
         "@npm//@ngrx/store",
-    ],
-)
-
-tf_ts_library(
-    name = "config",
-    srcs = [
-        "config_dev.ts",
-        "config_prod.ts",
     ],
 )
 
@@ -70,7 +61,6 @@ ng_module(
     }),
     deps = [
         ":app",
-        ":config",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@angular/router",
@@ -122,7 +112,7 @@ tf_web_library(
     path = "/",
     deps = [
         ":tb_webapp",
-        "//tensorboard/components:ng_polymer_lib_binary",
+        "//tensorboard/components:polymer_lib_binary",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/source_code/monaco:requirejs",
     ],
 )
@@ -152,6 +142,7 @@ tf_ng_web_test_suite(
         "//tensorboard/webapp/core/effects:core_effects_test_lib",
         "//tensorboard/webapp/core/store:core_store_test_lib",
         "//tensorboard/webapp/core/views:test_lib",
+        "//tensorboard/webapp/deeplink:deeplink_test_lib",
         "//tensorboard/webapp/feature_flag/effects:effects_test_lib",
         "//tensorboard/webapp/feature_flag/store:store_test_lib",
         "//tensorboard/webapp/header:test_lib",

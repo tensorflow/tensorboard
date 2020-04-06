@@ -6,6 +6,7 @@ load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 ng_module(
     name = "store",
     srcs = [
+        "core_initial_state_provider.ts",
         "core_reducers.ts",
         "core_selectors.ts",
         "core_types.ts",
@@ -13,7 +14,9 @@ ng_module(
     ],
     deps = [
         "//tensorboard/webapp/core/actions",
+        "//tensorboard/webapp/deeplink",
         "//tensorboard/webapp/types",
+        "@npm//@angular/core",
         "@npm//@ngrx/store",
         "@npm//rxjs",
     ],

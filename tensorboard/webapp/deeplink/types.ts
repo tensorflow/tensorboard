@@ -1,4 +1,4 @@
-/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -12,14 +12,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-export {};
 
-(window as any).config = {
-  env: 'dev',
-};
+export interface SetStringOption {
+  defaultValue?: string;
+  // When true, setting the string does not push a new state onto the history.
+  // i.e., it uses `history.replaceState` instead of `history.pushState`.
+  useLocationReplace?: boolean;
+}
 
-declare global {
-  export const config: {
-    env: 'dev' | 'prod';
-  };
+export interface DeepLinkerInterface {
+  getString(key: string): string;
+  setString(key: string, value: string, options?: SetStringOption): void;
+  getPluginId(): string;
+  setPluginId(pluginId: string, options?: SetStringOption): void;
 }

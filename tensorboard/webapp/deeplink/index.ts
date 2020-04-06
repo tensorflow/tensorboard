@@ -1,7 +1,4 @@
-<!DOCTYPE html>
-<!--
-@license
-Copyright 2016 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,16 +11,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
--->
+==============================================================================*/
 
-<html lang="en">
-  <meta charset="utf-8" />
-  <title>TensorBoard</title>
-  <link rel="shortcut icon" href="%TENSORBOARD_FAVICON_URI%" />
-  <link rel="apple-touch-icon" href="%TENSORBOARD_FAVICON_URI%" />
-
-  <link rel="import" href="polymer_lib_binary.html" />
-  <body>
-    <tf-tensorboard use-hash brand="TensorBoard"></tf-tensorboard>
-  </body>
-</html>
+export * from './types';
+export * from './hash';
