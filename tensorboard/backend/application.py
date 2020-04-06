@@ -251,7 +251,15 @@ def TensorBoardWSGIApp(
     experimental_plugins = []
     for plugin_spec in plugins:
         loader = make_plugin_loader(plugin_spec)
-        plugin = loader.load(context)
+        try:
+            plugin = loader.load(context)
+        except Exception:
+            logger.error(
+                "Failed to invoke plugin loader %s",
+                getattr(loader.load, "__qualname__", loader.load),
+                exc_info=True,
+            )
+            plugin = None
         if plugin is None:
             continue
         tbplugins.append(plugin)
