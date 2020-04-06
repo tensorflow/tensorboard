@@ -173,10 +173,10 @@ class Context(object):
           The experiment or None if no such experiment is found.
         """
         # We expect only one run to have an `EXPERIMENT_TAG`; look
-        # through all of them an arbitrarily pick the first one.
+        # through all of them and arbitrarily pick the first one.
         for tags in hparams_run_to_tag_to_content.values():
             maybe_content = tags.get(metadata.EXPERIMENT_TAG)
-            if maybe_content:
+            if maybe_content is not None:
                 return metadata.parse_experiment_plugin_data(maybe_content)
         return None
 
