@@ -30,9 +30,9 @@ import {HashDeepLinker} from '../deeplink';
 
 @NgModule({
   imports: [
-    TBServerDataSourceModule,
-    StoreModule.forFeature(CORE_FEATURE_KEY, reducers, CORE_STORE_CONFIG_TOKEN),
     EffectsModule.forFeature([CoreEffects]),
+    StoreModule.forFeature(CORE_FEATURE_KEY, reducers, CORE_STORE_CONFIG_TOKEN),
+    TBServerDataSourceModule,
   ],
   providers: [
     {

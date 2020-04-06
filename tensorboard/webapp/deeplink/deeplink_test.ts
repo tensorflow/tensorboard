@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {TestBed} from '@angular/core/testing';
 
-import {HashDeepLinker} from './hash';
+import {HashDeepLinker, TEST_ONLY} from './hash';
 
 describe('deeplink', () => {
   let deepLinker: HashDeepLinker;
@@ -35,19 +35,19 @@ describe('deeplink', () => {
     // to not make use of the hash (it does).
 
     // Do not rely on Polymer bundle in the test.
-    const createElement = spyOn(document, 'createElement');
-    createElement.withArgs('tf-storage').and.returnValue({
+    const createElementSpy = spyOn(document, 'createElement');
+    createElementSpy.withArgs('tf-storage').and.returnValue({
       tf_storage: {
         setString: setStringSpy,
         getString: getStringSpy,
       },
     } as any);
-    createElement.withArgs('tf-globals').and.returnValue({
+    createElementSpy.withArgs('tf-globals').and.returnValue({
       tf_globals: {
         setUseHash: setUseHashSpy,
       },
     } as any);
-    createElement.and.callThrough();
+    createElementSpy.and.callThrough();
 
     deepLinker = TestBed.get(HashDeepLinker);
   });
@@ -67,12 +67,12 @@ describe('deeplink', () => {
   });
 
   it('#getPluginId calls tf_storage getString with predefined key', () => {
-    getStringSpy.withArgs('__tab__').and.returnValue('bar');
+    getStringSpy.withArgs(TEST_ONLY.TAB).and.returnValue('bar');
     expect(deepLinker.getPluginId()).toBe('bar');
   });
 
   it('#setPluginId calls tf_storage setString with predefined key', () => {
     deepLinker.setPluginId('bar');
-    expect(setStringSpy).toHaveBeenCalledWith('__tab__', 'bar', undefined);
+    expect(setStringSpy).toHaveBeenCalledWith(TEST_ONLY.TAB, 'bar', undefined);
   });
 });

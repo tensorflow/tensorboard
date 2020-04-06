@@ -50,7 +50,7 @@ export class HashDeepLinker implements DeepLinkerInterface {
   }
 
   setString(key: string, value: string, options?: SetStringOption): void {
-    return this.tfStorage.tf_storage.setString(key, value, options);
+    this.tfStorage.tf_storage.setString(key, value, options);
   }
 
   getPluginId(): string {
@@ -58,6 +58,10 @@ export class HashDeepLinker implements DeepLinkerInterface {
   }
 
   setPluginId(pluginId: string, options?: SetStringOption): void {
-    return this.setString(TAB, pluginId, options);
+    this.setString(TAB, pluginId, options);
   }
 }
+
+export const TEST_ONLY = {
+  TAB,
+};
