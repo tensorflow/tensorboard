@@ -119,6 +119,16 @@ describe('plugins_component', () => {
   describe('plugin DOM creation', () => {
     it('creates no plugin when there is no activePlugin', () => {
       const fixture = TestBed.createComponent(PluginsContainer);
+      fixture.detectChanges();
+      const el = fixture.debugElement.query(By.css('.plugins'));
+      expect(el.nativeElement.childElementCount).toBe(0);
+    });
+
+    it('creates no plugin when plugins are not loaded', () => {
+      store.overrideSelector(getPlugins, {});
+      store.overrideSelector(getActivePlugin, 'foo');
+      const fixture = TestBed.createComponent(PluginsContainer);
+      fixture.detectChanges();
       const el = fixture.debugElement.query(By.css('.plugins'));
       expect(el.nativeElement.childElementCount).toBe(0);
     });
