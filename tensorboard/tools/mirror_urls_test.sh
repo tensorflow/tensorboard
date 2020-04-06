@@ -29,16 +29,13 @@ if ! [ -f WORKSPACE ]; then
     exit 2
 fi
 
-unresolved_urls_file=
-bazel_urls_file=
+tmpdir="$(mktemp -d)"
 cleanup() {
-    rm "${unresolved_urls_file}" || true
-    rm "${bazel_urls_file}" || true
+    rm -r "${tmpdir}" || true
 }
 trap cleanup EXIT
 
 check_urls_resolve() {
-    unresolved_urls_file="$(mktemp)"
     # shellcheck disable=SC2016
     check_cmd='curl -sfL "$1" >/dev/null || printf "%s\n" "$1"'
     url_pcre='(?<=")https?://mirror\.tensorflow\.org/[^"]*'
@@ -47,18 +44,25 @@ check_urls_resolve() {
     # We use `git-grep` to efficiently get an initial result set, then
     # filter it down with GNU `grep` separately, because `git-grep` only
     # learned `-o` in Git v2.19; Travis uses v2.15.1.
+    unresolved_urls_file="${tmpdir}/unresolved_urls"
     git grep -Ph "${url_pcre}" "${exclude_bazel}" "${exclude_buildifier}" \
         | grep -o 'https\?://mirror\.tensorflow\.org/[^"]*' \
-        | sort \
-        | uniq \
-        | xargs -n 1 -P 32 -- sh -c "${check_cmd}" unused \
-        | sort \
+        | sort -u \
         >"${unresolved_urls_file}"
-    # NOTE: The above use of `xargs -P` with a single output stream is
-    # technically subject to race conditions involving interleaving
-    # output. This is unlikely to occur in practice, and if it does
-    # occur the exit status of this test will still be correct; only the
-    # list of URLs may potentially be mangled.
+    for try in 1 2 3; do
+        if ! [ -s "${unresolved_urls_file}" ]; then
+            break
+        fi
+        temp_urls_file="${tmpdir}/unresolved_urls.tmp"
+        # NOTE: This use of `xargs -P` with a single output stream is
+        # technically subject to race conditions involving interleaving
+        # output. This is unlikely to occur in practice, and if it does
+        # occur the exit status of this test will still be correct; only
+        # the list of URLs may potentially be mangled.
+        xargs -n 1 -P 32 -- sh -c "${check_cmd}" unused \
+            <"${unresolved_urls_file}" >"${temp_urls_file}"
+        mv "${temp_urls_file}" "${unresolved_urls_file}"
+    done
 
     if ! [ -s "${unresolved_urls_file}" ]; then
         return 0
@@ -75,7 +79,7 @@ check_urls_resolve() {
 }
 
 check_no_bazel_urls() {
-    bazel_urls_file="$(mktemp)"
+    bazel_urls_file="${tmpdir}/bazel_urls"
     git grep -Hn 'https\?://mirror\.bazel\.build' \
         | sort \
         >"${bazel_urls_file}"
