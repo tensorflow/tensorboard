@@ -59,7 +59,7 @@ py_test(
 py_library(
     name = "application",
     srcs = ["application.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
         ":empty_path_redirect",
