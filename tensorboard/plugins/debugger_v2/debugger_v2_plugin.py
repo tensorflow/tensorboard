@@ -64,7 +64,7 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
             "/execution/digests": self.serve_execution_digests,
             "/execution/data": self.serve_execution_data,
             "/graph_execution/digests": self.serve_graph_execution_digests,
-            # TODO(cais): Implement /graph_execution/data.
+            "/graph_execution/data": self.serve_graph_execution_data,
             "/source_files/list": self.serve_source_files_list,
             "/source_files/file": self.serve_source_file,
             "/stack_frames/stack_frames": self.serve_stack_frames,
@@ -190,6 +190,41 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
         begin = int(request.args.get("begin", "0"))
         end = int(request.args.get("end", "-1"))
         run_tag_filter = debug_data_provider.graph_execution_digest_run_tag_filter(
+            run, begin, end
+        )
+        blob_sequences = self._data_provider.read_blob_sequences(
+            experiment, self.plugin_name, run_tag_filter=run_tag_filter
+        )
+        tag = next(iter(run_tag_filter.tags))
+        try:
+            return http_util.Respond(
+                request,
+                self._data_provider.read_blob(
+                    blob_sequences[run][tag][0].blob_key
+                ),
+                "application/json",
+            )
+        except errors.InvalidArgumentError as e:
+            return _error_response(request, str(e))
+
+    @wrappers.Request.application
+    def serve_graph_execution_data(self, request):
+        """Serve detailed data objects of intra-graph execution events.
+
+        As the names imply, this route differs from `serve_execution_data()`
+        in that it is for intra-graph execution, while `serve_execution_data()`
+        is for top-level (eager) execution.
+
+        Unlike `serve_graph_execution_digests()`, this method serves the
+        full-sized data objects for intra-graph execution events.
+        """
+        experiment = plugin_util.experiment_id(request.environ)
+        run = request.args.get("run")
+        if run is None:
+            return _missing_run_error_response(request)
+        begin = int(request.args.get("begin", "0"))
+        end = int(request.args.get("end", "-1"))
+        run_tag_filter = debug_data_provider.graph_execution_data_run_tag_filter(
             run, begin, end
         )
         blob_sequences = self._data_provider.read_blob_sequences(
