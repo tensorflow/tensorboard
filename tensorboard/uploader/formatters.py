@@ -49,7 +49,7 @@ class BaseExperimentFormatter(object):
 class ReadableFormatter(BaseExperimentFormatter):
     """A formatter implementation that outputs human-readable text."""
 
-    _NAME_COLUMN_WIDTH = 12
+    _NAME_COLUMN_WIDTH = 20
 
     def __init__(self):
         super(ReadableFormatter, self).__init__()
@@ -66,6 +66,7 @@ class ReadableFormatter(BaseExperimentFormatter):
             ("Runs", str(experiment.num_runs)),
             ("Tags", str(experiment.num_tags)),
             ("Scalars", str(experiment.num_scalars)),
+            ("Binary object bytes", str(experiment.total_blob_bytes)),
         ]
         for name, value in data:
             output.append(
@@ -93,6 +94,7 @@ class JsonFormatter(object):
             ("runs", experiment.num_runs),
             ("tags", experiment.num_tags),
             ("scalars", experiment.num_scalars),
+            ("binary_object_bytes", experiment.total_blob_bytes),
         ]
         return json.dumps(
             collections.OrderedDict(data), indent=self._JSON_INDENT,

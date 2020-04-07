@@ -35,6 +35,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
             num_runs=2,
             num_tags=4,
             num_scalars=60,
+            total_blob_bytes=1234,
         )
         util.set_timestamp(experiment.create_time, 981173106)
         util.set_timestamp(experiment.update_time, 1015218367)
@@ -43,14 +44,15 @@ class TensorBoardExporterTest(tb_test.TestCase):
         output = formatter.format_experiment(experiment, experiment_url)
         expected_lines = [
             "http://tensorboard.dev/deadbeef",
-            "\tName         A name for the experiment",
-            "\tDescription  A description for the experiment",
-            "\tId           deadbeef",
-            "\tCreated      2001-02-03 04:05:06",
-            "\tUpdated      2002-03-04 05:06:07",
-            "\tRuns         2",
-            "\tTags         4",
-            "\tScalars      60",
+            "\tName                 A name for the experiment",
+            "\tDescription          A description for the experiment",
+            "\tId                   deadbeef",
+            "\tCreated              2001-02-03 04:05:06",
+            "\tUpdated              2002-03-04 05:06:07",
+            "\tRuns                 2",
+            "\tTags                 4",
+            "\tScalars              60",
+            "\tBinary object bytes  1234",
         ]
         self.assertEqual(output.split("\n"), expected_lines)
 
@@ -61,6 +63,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
             num_runs=2,
             num_tags=4,
             num_scalars=60,
+            total_blob_bytes=1234,
         )
         util.set_timestamp(experiment.create_time, 981173106)
         util.set_timestamp(experiment.update_time, 1015218367)
@@ -69,14 +72,15 @@ class TensorBoardExporterTest(tb_test.TestCase):
         output = formatter.format_experiment(experiment, experiment_url)
         expected_lines = [
             "http://tensorboard.dev/deadbeef",
-            "\tName         [No Name]",
-            "\tDescription  [No Description]",
-            "\tId           deadbeef",
-            "\tCreated      2001-02-03 04:05:06",
-            "\tUpdated      2002-03-04 05:06:07",
-            "\tRuns         2",
-            "\tTags         4",
-            "\tScalars      60",
+            "\tName                 [No Name]",
+            "\tDescription          [No Description]",
+            "\tId                   deadbeef",
+            "\tCreated              2001-02-03 04:05:06",
+            "\tUpdated              2002-03-04 05:06:07",
+            "\tRuns                 2",
+            "\tTags                 4",
+            "\tScalars              60",
+            "\tBinary object bytes  1234",
         ]
         self.assertEqual(output.split("\n"), expected_lines)
 
@@ -87,6 +91,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
             num_runs=2,
             num_tags=4,
             num_scalars=60,
+            total_blob_bytes=1234,
         )
         util.set_timestamp(experiment.create_time, 981173106)
         util.set_timestamp(experiment.update_time, 1015218367)
@@ -103,7 +108,8 @@ class TensorBoardExporterTest(tb_test.TestCase):
             '  "updated": "2002-03-04T05:06:07Z",',
             '  "runs": 2,',
             '  "tags": 4,',
-            '  "scalars": 60',
+            '  "scalars": 60,',
+            '  "binary_object_bytes": 1234',
             "}",
         ]
         self.assertEqual(output.split("\n"), expected_lines)
