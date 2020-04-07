@@ -27,6 +27,8 @@ namespace tf_tensorboard {
       const key = AUTORELOAD_LOCALSTORAGE_KEY;
       let clock;
       let callCount: number;
+      let sandbox: any;
+      let isDocumentVisible = true;
 
       beforeEach(function() {
         ls.setItem(key, 'false'); // start it turned off so we can mutate fns
@@ -35,6 +37,16 @@ namespace tf_tensorboard {
         testElement.reload = function() {
           callCount++;
         };
+
+        sandbox = sinon.sandbox.create();
+        sandbox.stub(testElement, '_isDocumentVisible', function() {
+          return isDocumentVisible;
+        });
+      });
+
+      afterEach(function() {
+        isDocumentVisible = true;
+        sandbox.restore();
       });
 
       before(function() {
@@ -44,6 +56,11 @@ namespace tf_tensorboard {
       after(function() {
         clock.restore();
       });
+
+      function simulateVisibilityChange(visibility) {
+        isDocumentVisible = visibility;
+        testElement._handleVisibilityChange();
+      }
 
       it('reads and writes autoReload state from localStorage', function() {
         ls.removeItem(key);
@@ -98,6 +115,118 @@ namespace tf_tensorboard {
         chai.assert.throws(function() {
           clock.tick(5000);
         });
+      });
+
+      it('does not reload if document is not visible', function() {
+        testElement.autoReloadIntervalSecs = 1;
+        testElement.autoReloadEnabled = true;
+
+        clock.tick(1000);
+        chai.assert.equal(callCount, 1, 'ticking clock triggered call');
+
+        simulateVisibilityChange(false);
+        clock.tick(1000);
+        chai.assert.equal(
+          callCount,
+          1,
+          'ticking clock while not visible did not trigger call'
+        );
+      });
+
+      it('reloads when document becomes visible if missed reload', function() {
+        testElement.autoReloadIntervalSecs = 1;
+        testElement.autoReloadEnabled = true;
+
+        simulateVisibilityChange(false);
+        clock.tick(1000);
+        chai.assert.equal(
+          callCount,
+          0,
+          'ticking clock while not visible did not trigger call'
+        );
+
+        simulateVisibilityChange(true);
+        chai.assert.equal(callCount, 1, 'visibility change triggered call');
+      });
+
+      it('reloads when document becomes visible if missed reload, regardless of how long not visible', function() {
+        testElement.autoReloadIntervalSecs = 1;
+        testElement.autoReloadEnabled = true;
+        clock.tick(1000);
+        chai.assert.equal(callCount, 1, 'ticking clock triggered call');
+
+        // Document is not visible during time period that includes missed auto reload but is less than
+        // autoReloadIntervalSecs
+        clock.tick(300);
+        simulateVisibilityChange(false);
+        clock.tick(800);
+        chai.assert.equal(
+          callCount,
+          1,
+          'ticking clock while not visible did not trigger call'
+        );
+
+        simulateVisibilityChange(true);
+        chai.assert.equal(callCount, 2, 'visibility change triggered call');
+      });
+
+      it('does not reload when document becomes visible if there was not a missed reload', function() {
+        testElement.autoReloadIntervalSecs = 1;
+        testElement.autoReloadEnabled = true;
+
+        clock.tick(1000);
+        chai.assert.equal(callCount, 1, 'ticking clock triggered call');
+
+        // Document is not visible during time period that does not include missed auto reload.
+        simulateVisibilityChange(false);
+        clock.tick(500);
+        simulateVisibilityChange(true);
+        chai.assert.equal(
+          callCount,
+          1,
+          'visibility change did not trigger call'
+        );
+      });
+
+      it('does not reload when document becomes visible if missed reload was already handled', function() {
+        testElement.autoReloadIntervalSecs = 1;
+        testElement.autoReloadEnabled = true;
+
+        simulateVisibilityChange(false);
+        clock.tick(1200);
+        chai.assert.equal(
+          callCount,
+          0,
+          'ticking clock while not visible did not trigger call'
+        );
+
+        simulateVisibilityChange(true);
+        chai.assert.equal(callCount, 1, 'visibility change triggered call');
+
+        // Document is not visible during time period that does not include another missed reload.
+        simulateVisibilityChange(false);
+        clock.tick(200);
+        simulateVisibilityChange(true);
+        chai.assert.equal(
+          callCount,
+          1,
+          'visibility change did not trigger call'
+        );
+      });
+
+      it('does not reload when document becomes visible if auto reload is off', function() {
+        testElement.autoReloadIntervalSecs = 1;
+        testElement.autoReloadEnabled = false;
+
+        simulateVisibilityChange(false);
+        clock.tick(5000);
+
+        simulateVisibilityChange(true);
+        chai.assert.equal(
+          callCount,
+          0,
+          'visibility change did not trigger call'
+        );
       });
     });
   });

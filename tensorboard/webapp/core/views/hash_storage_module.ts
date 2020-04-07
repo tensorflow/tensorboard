@@ -17,10 +17,11 @@ import {CommonModule} from '@angular/common';
 
 import {HashStorageContainer} from './hash_storage_container';
 import {HashStorageComponent} from './hash_storage_component';
+import {DeepLinkModule} from '../../deeplink/deeplink_module';
 
 @NgModule({
   declarations: [HashStorageContainer, HashStorageComponent],
   exports: [HashStorageContainer],
-  imports: [CommonModule],
+  imports: [CommonModule, DeepLinkModule],
 })
 export class HashStorageModule {}

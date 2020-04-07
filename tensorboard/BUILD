@@ -25,6 +25,7 @@ py_binary(
     deps = [
         ":default",
         ":dynamic_plugins",
+        ":lib",
         ":program",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/plugins:base_plugin",

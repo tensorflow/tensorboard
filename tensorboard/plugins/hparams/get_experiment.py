@@ -41,7 +41,10 @@ class Handler(object):
         Returns:
           An Experiment object.
         """
-        experiment = self._context.experiment(self._experiment_id)
+        experiment_id = self._experiment_id
+        experiment = self._context.experiment_from_metadata(
+            experiment_id, self._context.hparams_metadata(experiment_id)
+        )
         if experiment is None:
             raise error.HParamsError(
                 "Can't find an HParams-plugin experiment data in"
