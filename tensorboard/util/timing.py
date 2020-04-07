@@ -117,8 +117,8 @@ class _LogLatencyDecorator:
             "a region name is specified"
         )
 
-    def __exit__(self):
-        raise ValueError("hm")
+    def __exit__(self, *exc_info):
+        pass
 
     def __call__(self, func):
         qualname = getattr(func, "__qualname__", func)
