@@ -16,7 +16,7 @@ Developing a custom plugin does not require Bazel or building TensorBoard.
 TensorBoard at HEAD relies on the nightly installation of TensorFlow: this allows plugin authors to use the latest features of TensorFlow, but it means release versions of TensorFlow may not suffice for development. We recommend installing TensorFlow nightly in a [Python virtualenv](https://virtualenv.pypa.io), and then running your modified development copy of TensorBoard within that virtualenv. To install TensorFlow nightly within the virtualenv, as well as TensorBoard's runtime and tooling dependencies, you can run:
 
 ```sh
-$ virtualenv tf
+$ virtualenv -p python3 tf
 $ source tf/bin/activate
 (tf)$ pip install --upgrade pip
 (tf)$ pip install tf-nightly -r tensorboard/pip_package/requirements.txt -r tensorboard/pip_package/requirements_dev.txt
