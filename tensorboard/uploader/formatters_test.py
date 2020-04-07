@@ -23,6 +23,8 @@ from tensorboard import test as tb_test
 from tensorboard.uploader import formatters
 from tensorboard.uploader.proto import experiment_pb2
 
+from tensorboard.uploader import util
+
 
 class TensorBoardExporterTest(tb_test.TestCase):
     def testReadableFormatterWithNonemptyNameAndDescription(self):
@@ -34,6 +36,8 @@ class TensorBoardExporterTest(tb_test.TestCase):
             num_tags=4,
             num_scalars=60,
         )
+        util.set_timestamp(experiment.create_time, 981173106)
+        util.set_timestamp(experiment.update_time, 1015218367)
         experiment_url = "http://tensorboard.dev/deadbeef"
         formatter = formatters.ReadableFormatter()
         output = formatter.format_experiment(experiment, experiment_url)
@@ -42,8 +46,8 @@ class TensorBoardExporterTest(tb_test.TestCase):
             "\tName         A name for the experiment",
             "\tDescription  A description for the experiment",
             "\tId           deadbeef",
-            "\tCreated      1970-01-01 00:00:00",
-            "\tUpdated      1970-01-01 00:00:00",
+            "\tCreated      2001-02-03 04:05:06",
+            "\tUpdated      2002-03-04 05:06:07",
             "\tRuns         2",
             "\tTags         4",
             "\tScalars      60",
@@ -58,6 +62,8 @@ class TensorBoardExporterTest(tb_test.TestCase):
             num_tags=4,
             num_scalars=60,
         )
+        util.set_timestamp(experiment.create_time, 981173106)
+        util.set_timestamp(experiment.update_time, 1015218367)
         experiment_url = "http://tensorboard.dev/deadbeef"
         formatter = formatters.ReadableFormatter()
         output = formatter.format_experiment(experiment, experiment_url)
@@ -66,8 +72,8 @@ class TensorBoardExporterTest(tb_test.TestCase):
             "\tName         [No Name]",
             "\tDescription  [No Description]",
             "\tId           deadbeef",
-            "\tCreated      1970-01-01 00:00:00",
-            "\tUpdated      1970-01-01 00:00:00",
+            "\tCreated      2001-02-03 04:05:06",
+            "\tUpdated      2002-03-04 05:06:07",
             "\tRuns         2",
             "\tTags         4",
             "\tScalars      60",
@@ -82,6 +88,8 @@ class TensorBoardExporterTest(tb_test.TestCase):
             num_tags=4,
             num_scalars=60,
         )
+        util.set_timestamp(experiment.create_time, 981173106)
+        util.set_timestamp(experiment.update_time, 1015218367)
         experiment_url = "http://tensorboard.dev/deadbeef"
         formatter = formatters.JsonFormatter()
         output = formatter.format_experiment(experiment, experiment_url)
@@ -91,8 +99,8 @@ class TensorBoardExporterTest(tb_test.TestCase):
             '  "name": "",',
             '  "description": "",',
             '  "id": "deadbeef",',
-            '  "created": "1970-01-01 00:00:00",',
-            '  "updated": "1970-01-01 00:00:00",',
+            '  "created": "2001-02-03 04:05:06",',
+            '  "updated": "2002-03-04 05:06:07",',
             '  "runs": 2,',
             '  "tags": 4,',
             '  "scalars": 60',

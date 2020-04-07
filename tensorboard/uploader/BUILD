@@ -59,6 +59,7 @@ py_test(
     srcs = ["formatters_test.py"],
     deps = [
         ":formatters",
+        ":util",
         "//tensorboard:test",
         "//tensorboard/uploader/proto:protos_all_py_pb2",
     ],
