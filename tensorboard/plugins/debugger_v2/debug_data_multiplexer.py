@@ -315,7 +315,7 @@ class DebuggerV2EventMultiplexer(object):
         """Get `GraphExecutionTraceDigest`s.
 
         Args:
-          run: The tfdbg2 run to get `GraphExecutionDigest`s from.
+          run: The tfdbg2 run to get `GraphExecutionTraceDigest`s from.
           begin: Beginning graph-execution index.
           end: Ending graph-execution index.
 
@@ -330,7 +330,7 @@ class DebuggerV2EventMultiplexer(object):
         # execution and intra-graph execution is supported by DebugDataReader.
         if trace_id is not None:
             raise NotImplementedError(
-                "trace_id support for GraphExecutoinTraceDigest is "
+                "trace_id support for GraphExecutionTraceDigest is "
                 "not implemented yet."
             )
         graph_exec_digests = self._reader.graph_execution_traces(digest=True)
@@ -344,7 +344,39 @@ class DebuggerV2EventMultiplexer(object):
             ],
         }
 
-    # TODO(cais): Add GraphExecutionTraceData().
+    def GraphExecutionData(self, run, begin, end, trace_id=None):
+        """Get `GraphExecutionTrace`s.
+
+        Args:
+          run: The tfdbg2 run to get `GraphExecutionTrace`s from.
+          begin: Beginning graph-execution index.
+          end: Ending graph-execution index.
+
+        Returns:
+          A JSON-serializable object containing the `ExecutionDigest`s and
+          related meta-information
+        """
+        runs = self.Runs()
+        if run not in runs:
+            return None
+        # TODO(cais): Implement support for trace_id once the joining of eager
+        # execution and intra-graph execution is supported by DebugDataReader.
+        if trace_id is not None:
+            raise NotImplementedError(
+                "trace_id support for GraphExecutionTraceData is "
+                "not implemented yet."
+            )
+        graph_executions = self._reader.graph_execution_traces(digest=False)
+        end = self._checkBeginEndIndices(begin, end, len(graph_executions))
+        return {
+            "begin": begin,
+            "end": end,
+            "num_digests": len(graph_executions),
+            "graph_executions": [
+                graph_exec.to_json()
+                for graph_exec in graph_executions[begin:end]
+            ],
+        }
 
     def SourceFileList(self, run):
         runs = self.Runs()
