@@ -180,7 +180,7 @@ def define_flags(parser):
     list_parser.add_argument(
         "--json",
         action="store_true",
-        help="print the experiments JSON objects",
+        help="print the experiments as JSON objects",
     )
 
     export = subparsers.add_parser(

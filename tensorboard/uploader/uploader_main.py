@@ -67,6 +67,7 @@ _EXPERIMENT_NAME_MAX_CHARS = 100
 _EXPERIMENT_DESCRIPTION_MAX_CHARS = 600
 
 _EXPERIMENT_METADATA_JSON_INDENT = 2
+_EXPERIMENT_METADATA_READABLE_NAME_COLUMN_WIDTH = 20
 _EXPERIMENT_METADATA_URL_JSON_KEY = formatters.EXPERIMENT_METADATA_URL_JSON_KEY
 _ExperimentMetadataField = formatters.ExperimentMetadataField
 
@@ -368,7 +369,9 @@ class _ListIntent(_Intent):
                 _EXPERIMENT_METADATA_JSON_INDENT
             )
         else:
-            formatter = formatters.ReadableFormatter(20)
+            formatter = formatters.ReadableFormatter(
+                _EXPERIMENT_METADATA_READABLE_NAME_COLUMN_WIDTH
+            )
         for experiment in gen:
             count += 1
             experiment_id = experiment.experiment_id

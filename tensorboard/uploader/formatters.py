@@ -45,7 +45,7 @@ class BaseExperimentMetadataFormatter(object):
 
 
 class ReadableFormatter(BaseExperimentMetadataFormatter):
-    """A formatter implementation that outputs human-readable text output."""
+    """A formatter implementation that outputs human-readable text."""
 
     def __init__(self, name_column_width):
         """Constructor of ReadableFormatter.
