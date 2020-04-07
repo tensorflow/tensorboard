@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import threading
+
 import bleach
 
 # pylint: disable=g-bad-import-order
@@ -63,7 +65,14 @@ _ALLOWED_TAGS = [
 
 # Cache Markdown converter to avoid expensive initialization at each
 # call to `markdown_to_safe_html`.
-_markdown = markdown.Markdown(extensions=["markdown.extensions.tables"])
+class _MarkdownStore(threading.local):
+    def __init__(self):
+        self.markdown = markdown.Markdown(
+            extensions=["markdown.extensions.tables"]
+        )
+
+
+_MARKDOWN_STORE = _MarkdownStore()
 
 
 def markdown_to_safe_html(markdown_string):
@@ -90,7 +99,7 @@ def markdown_to_safe_html(markdown_string):
                 "after UTF-8 decoding -->\n"
             ) % num_null_bytes
 
-    string_html = _markdown.convert(markdown_string)
+    string_html = _MARKDOWN_STORE.markdown.convert(markdown_string)
     string_sanitized = bleach.clean(
         string_html, tags=_ALLOWED_TAGS, attributes=_ALLOWED_ATTRIBUTES
     )
