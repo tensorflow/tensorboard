@@ -235,7 +235,7 @@ class SubcommandTest(tb_test.TestCase):
         self.assertIn("payload", self.stderr.getvalue())
         self.stderr.truncate(0)
 
-    def testSubcommand_PostProcessFlags(self):
+    def testSubcommand_FixFlags(self):
         def define_flags(parser):
             parser.add_argument("--logdir", type=str)
 
@@ -254,7 +254,7 @@ class SubcommandTest(tb_test.TestCase):
         flags = _TestSubcommand.run.call_args[0][0]
         self.assertEqual(flags.logdir, "override_value")
 
-    def testSubcommand_DoesNotPostProcessFlagsForOtherCommands(self):
+    def testSubcommand_DoesNotFixFlagsForOtherCommands(self):
         def define_flags(parser):
             parser.add_argument("--logdir", type=str)
 
