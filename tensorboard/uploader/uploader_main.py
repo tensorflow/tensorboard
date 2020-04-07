@@ -360,7 +360,7 @@ class _ListIntent(_Intent):
         count = 0
 
         if self.json:
-            formatter = formatters.JsonFormatterI()
+            formatter = formatters.JsonFormatter()
         else:
             formatter = formatters.ReadableFormatter()
         for experiment in gen:

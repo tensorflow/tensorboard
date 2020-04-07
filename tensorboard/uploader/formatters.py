@@ -22,14 +22,12 @@ import abc
 import collections
 import json
 
-import six
-
 from tensorboard.uploader import util
 
 
-@six.add_metaclass(abc.ABCMeta)
 class BaseExperimentFormatter(object):
     """Abstract base class for formatting experiment information as a string."""
+    __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
     def format_experiment(self, experiment, experiment_url):
@@ -89,8 +87,8 @@ class JsonFormatter(object):
             ("name", experiment.name),
             ("description", experiment.description),
             ("id", experiment.experiment_id),
-            ("created", util.format_time(experiment.create_time)),
-            ("updated", util.format_time(experiment.update_time)),
+            ("created", util.format_time_absolute(experiment.create_time)),
+            ("updated", util.format_time_absolute(experiment.update_time)),
             ("runs", experiment.num_runs),
             ("tags", experiment.num_tags),
             ("scalars", experiment.num_scalars),

@@ -50,7 +50,6 @@ py_library(
     srcs_version = "PY3",
     deps = [
         ":util",
-        "@org_pythonhosted_six",
     ],
 )
 
