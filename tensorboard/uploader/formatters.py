@@ -12,88 +12,89 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Helpers that format experiment metadata as strings."""
+"""Helpers that format the information about experiments as strings."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import abc
 import collections
 import json
 
-EXPERIMENT_METADATA_URL_JSON_KEY = "url"
-ExperimentMetadataField = collections.namedtuple(
-    "ExperimentMetadataField",
-    ("json_key", "readable_name", "value", "formatter"),
-)
+import six
+
+from tensorboard.uploader import util
 
 
-class BaseExperimentMetadataFormatter(object):
-    """Abstract base class for formatting experiment metadata as a string."""
+@six.add_metaclass(abc.ABCMeta)
+class BaseExperimentFormatter(object):
+    """Abstract base class for formatting experiment information as a string."""
 
-    def format_experiment(self, experiment_metadata):
-        """Format a list of `ExperimentMetadataField`s as a representing string.
+    @abc.abstractmethod
+    def format_experiment(self, experiment, experiment_url):
+        """Format the information about an experiment as a representing string.
 
         Args:
-          experiment_metadata: A list of `ExperimentMetadataField`s that
-            describes an experiment.
+          experiment: An `experiment_pb2.Experiment` protobuf message for the
+            experiment to be formatted.
+          experiment_url: The URL at which the experiment can be accessed via
+            TensorBoard.
 
         Returns:
-          A string that represents the `experiment_metadata`.
+          A string that represents the experiment.
         """
-        raise NotImplementedError()
+        pass
 
 
-class ReadableFormatter(BaseExperimentMetadataFormatter):
+class ReadableFormatter(BaseExperimentFormatter):
     """A formatter implementation that outputs human-readable text."""
 
-    def __init__(self, name_column_width):
-        """Constructor of ReadableFormatter.
+    _NAME_COLUMN_WIDTH = 12
 
-        Args:
-          name_column_width: The width of the column that contains human-readable
-            field names (i.e., `readable_name` in `ExperimentMetadataField`).
-            Must be greater than the longest human-readable field name.
-        """
+    def __init__(self):
         super(ReadableFormatter, self).__init__()
-        self._name_column_width = name_column_width
 
-    def format_experiment(self, experiment_metadata):
+    def format_experiment(self, experiment, experiment_url):
         output = []
-        for metadata_field in experiment_metadata:
-            if metadata_field.json_key == EXPERIMENT_METADATA_URL_JSON_KEY:
-                output.append(metadata_field.value)
-            else:
-                output.append(
-                    "\t%s %s"
-                    % (
-                        metadata_field.readable_name.ljust(
-                            self._name_column_width
-                        ),
-                        metadata_field.formatter(metadata_field.value),
-                    )
-                )
+        output.append(experiment_url)
+        data = [
+            ("Name", experiment.name or "[No Name]"),
+            ("Description", experiment.description or "[No Description]"),
+            ("Id", experiment.experiment_id),
+            ("Created", util.format_time(experiment.create_time)),
+            ("Updated", util.format_time(experiment.update_time)),
+            ("Runs", str(experiment.num_runs)),
+            ("Tags", str(experiment.num_tags)),
+            ("Scalars", str(experiment.num_scalars)),
+        ]
+        for name, value in data:
+            output.append(
+                "\t%s %s" % (name.ljust(self._NAME_COLUMN_WIDTH), value,)
+            )
         return "\n".join(output)
 
 
 class JsonFormatter(object):
-    """A formatter implementation: outputs metadata of an experiment as JSON."""
+    """A formatter implementation: outputs experiment as JSON."""
 
-    def __init__(self, indent):
-        """Constructor of JsonFormatter.
+    _JSON_INDENT = 2
 
-        Args:
-          indent: Size of indentation (in number of spaces) used for JSON
-            formatting.
-        """
+    def __init__(self):
         super(JsonFormatter, self).__init__()
-        self._indent = indent
 
-    def format_experiment(self, experiment_metadata):
+    def format_experiment(self, experiment, experiment_url):
+        data = [
+            ("url", experiment_url),
+            ("name", experiment.name),
+            ("description", experiment.description),
+            ("id", experiment.experiment_id),
+            ("created", util.format_time(experiment.create_time)),
+            ("updated", util.format_time(experiment.update_time)),
+            ("runs", experiment.num_runs),
+            ("tags", experiment.num_tags),
+            ("scalars", experiment.num_scalars),
+        ]
         return json.dumps(
-            collections.OrderedDict(
-                (metadata_field.json_key, metadata_field.value)
-                for metadata_field in experiment_metadata
-            ),
-            indent=self._indent,
+            collections.OrderedDict(data), indent=self._JSON_INDENT,
         )

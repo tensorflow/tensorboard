@@ -21,103 +21,76 @@ from __future__ import print_function
 
 from tensorboard import test as tb_test
 from tensorboard.uploader import formatters
+from tensorboard.uploader.proto import experiment_pb2
 
 
 class TensorBoardExporterTest(tb_test.TestCase):
     def testReadableFormatterWithNonemptyNameAndDescription(self):
-        data = [
-            formatters.ExperimentMetadataField(
-                formatters.EXPERIMENT_METADATA_URL_JSON_KEY,
-                "URL",
-                "http://tensorboard.dev/deadbeef",
-                str,
-            ),
-            formatters.ExperimentMetadataField(
-                "name",
-                "Name",
-                "A name for the experiment",
-                lambda x: x or "[No Name]",
-            ),
-            formatters.ExperimentMetadataField(
-                "description",
-                "Description",
-                "A description for the experiment",
-                lambda x: x or "[No Description]",
-            ),
-        ]
-        formatter = formatters.ReadableFormatter(12)
-        output = formatter.format_experiment(data)
+        experiment = experiment_pb2.Experiment(
+            experiment_id="deadbeef",
+            name="A name for the experiment",
+            description="A description for the experiment",
+            num_runs=2,
+            num_tags=4,
+            num_scalars=60,
+        )
+        experiment_url = "http://tensorboard.dev/deadbeef"
+        formatter = formatters.ReadableFormatter()
+        output = formatter.format_experiment(experiment, experiment_url)
         lines = output.split("\n")
-        self.assertLen(lines, 3)
+        self.assertLen(lines, 9)
         self.assertEqual(lines[0], "http://tensorboard.dev/deadbeef")
         self.assertEqual(lines[1], "\tName         A name for the experiment")
         self.assertEqual(
             lines[2], "\tDescription  A description for the experiment"
         )
+        self.assertEqual(lines[3], "\tId           deadbeef")
+        self.assertEqual(lines[4], "\tCreated      1970-01-01 00:00:00")
+        self.assertEqual(lines[5], "\tUpdated      1970-01-01 00:00:00")
+        self.assertEqual(lines[6], "\tRuns         2")
+        self.assertEqual(lines[7], "\tTags         4")
+        self.assertEqual(lines[8], "\tScalars      60")
 
     def testReadableFormatterWithEmptyNameAndDescription(self):
-        data = [
-            formatters.ExperimentMetadataField(
-                formatters.EXPERIMENT_METADATA_URL_JSON_KEY,
-                "URL",
-                "http://tensorboard.dev/deadbeef",
-                str,
-            ),
-            formatters.ExperimentMetadataField(
-                "name", "Name", "", lambda x: x or "[No Name]",
-            ),
-            formatters.ExperimentMetadataField(
-                "description",
-                "Description",
-                "",
-                lambda x: x or "[No Description]",
-            ),
-        ]
-        formatter = formatters.ReadableFormatter(12)
-        output = formatter.format_experiment(data)
+        experiment = experiment_pb2.Experiment(
+            experiment_id="deadbeef",
+            # NOTE(cais): `name` and `description` are missing here.
+        )
+        experiment_url = "http://tensorboard.dev/deadbeef"
+        formatter = formatters.ReadableFormatter()
+        output = formatter.format_experiment(experiment, experiment_url)
         lines = output.split("\n")
-        self.assertLen(lines, 3)
+        self.assertLen(lines, 9)
         self.assertEqual(lines[0], "http://tensorboard.dev/deadbeef")
         self.assertEqual(lines[1], "\tName         [No Name]")
         self.assertEqual(lines[2], "\tDescription  [No Description]")
 
     def testJsonFormatterWithEmptyNameAndDescription(self):
-        data = [
-            formatters.ExperimentMetadataField(
-                formatters.EXPERIMENT_METADATA_URL_JSON_KEY,
-                "URL",
-                "http://tensorboard.dev/deadbeef",
-                str,
-            ),
-            formatters.ExperimentMetadataField(
-                "name", "Name", "", lambda x: x or "[No Name]",
-            ),
-            formatters.ExperimentMetadataField(
-                "description",
-                "Description",
-                "",
-                lambda x: x or "[No Description]",
-            ),
-            formatters.ExperimentMetadataField("runs", "Runs", 8, str,),
-            formatters.ExperimentMetadataField("tags", "Tags", 12, str,),
-            formatters.ExperimentMetadataField(
-                "binary_object_bytes", "Binary object bytes", 2000, str,
-            ),
-        ]
-        formatter = formatters.JsonFormatter(2)
-        output = formatter.format_experiment(data)
+        experiment = experiment_pb2.Experiment(
+            experiment_id="deadbeef",
+            # NOTE(cais): `name` and `description` are missing here.
+            num_runs=2,
+            num_tags=4,
+            num_scalars=60,
+        )
+        experiment_url = "http://tensorboard.dev/deadbeef"
+        formatter = formatters.JsonFormatter()
+        output = formatter.format_experiment(experiment, experiment_url)
         lines = output.split("\n")
-        self.assertLen(lines, 8)
+        self.assertLen(lines, 11)
         self.assertEqual(lines[0], "{")
         self.assertEqual(
             lines[1], '  "url": "http://tensorboard.dev/deadbeef",'
         )
         self.assertEqual(lines[2], '  "name": "",')
         self.assertEqual(lines[3], '  "description": "",')
-        self.assertEqual(lines[4], '  "runs": 8,')
-        self.assertEqual(lines[5], '  "tags": 12,')
-        self.assertEqual(lines[6], '  "binary_object_bytes": 2000')
-        self.assertEqual(lines[7], "}")
+        self.assertEqual(lines[4], '  "id": "deadbeef",')
+        self.assertEqual(lines[5], '  "created": "1970-01-01 00:00:00",')
+        self.assertEqual(lines[6], '  "updated": "1970-01-01 00:00:00",')
+        self.assertEqual(lines[7], '  "runs": 2,')
+        self.assertEqual(lines[8], '  "tags": 4,')
+        self.assertEqual(lines[9], '  "scalars": 60')
+        self.assertEqual(lines[10], "}")
 
 
 if __name__ == "__main__":

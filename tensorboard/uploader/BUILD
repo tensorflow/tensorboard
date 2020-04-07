@@ -48,6 +48,10 @@ py_library(
     name = "formatters",
     srcs = ["formatters.py"],
     srcs_version = "PY3",
+    deps = [
+        ":util",
+        "@org_pythonhosted_six",
+    ],
 )
 
 py_test(
@@ -56,6 +60,7 @@ py_test(
     deps = [
         ":formatters",
         "//tensorboard:test",
+        "//tensorboard/uploader/proto:protos_all_py_pb2",
     ],
 )
 

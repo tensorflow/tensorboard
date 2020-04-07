@@ -66,11 +66,6 @@ To log out, run `tensorboard dev auth revoke`.
 _EXPERIMENT_NAME_MAX_CHARS = 100
 _EXPERIMENT_DESCRIPTION_MAX_CHARS = 600
 
-_EXPERIMENT_METADATA_JSON_INDENT = 2
-_EXPERIMENT_METADATA_READABLE_NAME_COLUMN_WIDTH = 20
-_EXPERIMENT_METADATA_URL_JSON_KEY = formatters.EXPERIMENT_METADATA_URL_JSON_KEY
-_ExperimentMetadataField = formatters.ExperimentMetadataField
-
 
 def _prompt_for_user_ack(intent):
     """Prompts for user consent, exiting the program if they decline."""
@@ -365,56 +360,14 @@ class _ListIntent(_Intent):
         count = 0
 
         if self.json:
-            formatter = formatters.JsonFormatter(
-                _EXPERIMENT_METADATA_JSON_INDENT
-            )
+            formatter = formatters.JsonFormatterI()
         else:
-            formatter = formatters.ReadableFormatter(
-                _EXPERIMENT_METADATA_READABLE_NAME_COLUMN_WIDTH
-            )
+            formatter = formatters.ReadableFormatter()
         for experiment in gen:
             count += 1
             experiment_id = experiment.experiment_id
             url = server_info_lib.experiment_url(server_info, experiment_id)
-            data = [
-                _ExperimentMetadataField(
-                    _EXPERIMENT_METADATA_URL_JSON_KEY, "URL", url, str,
-                ),
-                _ExperimentMetadataField(
-                    "name", "Name", experiment.name, lambda x: x or "[No Name]",
-                ),
-                _ExperimentMetadataField(
-                    "description",
-                    "Description",
-                    experiment.description,
-                    lambda x: x or "[No Description]",
-                ),
-                _ExperimentMetadataField(
-                    "id", "Id", experiment.experiment_id, str
-                ),
-                _ExperimentMetadataField(
-                    "created",
-                    "Created",
-                    util.format_time(experiment.create_time),
-                    str,
-                ),
-                _ExperimentMetadataField(
-                    "updated",
-                    "Updated",
-                    util.format_time(experiment.update_time),
-                    str,
-                ),
-                _ExperimentMetadataField(
-                    "scalars", "Scalars", experiment.num_scalars, str,
-                ),
-                _ExperimentMetadataField(
-                    "runs", "Runs", experiment.num_runs, str,
-                ),
-                _ExperimentMetadataField(
-                    "tags", "Tags", experiment.num_tags, str,
-                ),
-            ]
-            print(formatter.format_experiment(data))
+            print(formatter.format_experiment(experiment, url))
         sys.stdout.flush()
         if not count:
             sys.stderr.write(
