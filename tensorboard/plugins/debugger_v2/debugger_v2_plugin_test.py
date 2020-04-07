@@ -107,6 +107,8 @@ def _generate_tfdbg_v2_data(
 
 _ROUTE_PREFIX = "/data/plugin/debugger-v2"
 
+_DEFAULT_DEVICE_SUFFIX = "GPU:0" if tf.test.is_gpu_available() else "CPU:0"
+
 
 @test_util.run_v2_only("tfdbg2 is not available in r1.")
 class DebuggerV2PluginTest(tf.test.TestCase):
@@ -825,6 +827,134 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         response = self.server.get(
             _ROUTE_PREFIX
             + "/graph_execution/digests?run=%s&begin=2&end=1" % run
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {
+                "error": "Invalid argument: "
+                "end index (1) is unexpectedly less than begin index (2)"
+            },
+        )
+
+    def testServeASingleGraphExecutionDataObject(self):
+        _generate_tfdbg_v2_data(self.logdir, tensor_debug_mode="CONCISE_HEALTH")
+        run = self._getExactlyOneRun()
+        response = self.server.get(
+            _ROUTE_PREFIX + "/graph_execution/data?run=%s&begin=0&end=1" % run
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        data = json.loads(response.get_data())
+        self.assertEqual(data["begin"], 0)
+        self.assertEqual(data["end"], 1)
+        self.assertLen(data["graph_executions"], 1)
+        graph_exec = data["graph_executions"][0]
+        self.assertStartsWith(graph_exec["op_type"], "Placeholder")
+        self.assertTrue(graph_exec["op_name"])
+        self.assertEqual(graph_exec["output_slot"], 0)
+        self.assertTrue(graph_exec["graph_id"])
+        self.assertGreaterEqual(len(graph_exec["graph_ids"]), 1)
+        self.assertEqual(graph_exec["graph_ids"][-1], graph_exec["graph_id"])
+        # [tensor_id, element_count, nan_count, neg_inf_count, pos_inf_count].
+        self.assertEqual(
+            graph_exec["debug_tensor_value"], [1.0, 4.0, 0.0, 0.0, 0.0]
+        )
+        self.assertEndsWith(graph_exec["device_name"], _DEFAULT_DEVICE_SUFFIX)
+
+    def testServeMultipleGraphExecutionDataObjects(self):
+        _generate_tfdbg_v2_data(self.logdir, tensor_debug_mode="CONCISE_HEALTH")
+        run = self._getExactlyOneRun()
+        response = self.server.get(
+            _ROUTE_PREFIX + "/graph_execution/data?run=%s&begin=0&end=3" % run
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        data = json.loads(response.get_data())
+        self.assertEqual(data["begin"], 0)
+        self.assertEqual(data["end"], 3)
+        self.assertLen(data["graph_executions"], 3)
+
+        graph_exec = data["graph_executions"][0]
+        self.assertStartsWith(graph_exec["op_type"], "Placeholder")
+        self.assertTrue(graph_exec["op_name"])
+        self.assertEqual(graph_exec["output_slot"], 0)
+        self.assertTrue(graph_exec["graph_id"])
+        self.assertGreaterEqual(len(graph_exec["graph_ids"]), 1)
+        self.assertEqual(graph_exec["graph_ids"][-1], graph_exec["graph_id"])
+        # [tensor_id, element_count, nan_count, neg_inf_count, pos_inf_count].
+        self.assertEqual(
+            graph_exec["debug_tensor_value"], [1.0, 4.0, 0.0, 0.0, 0.0]
+        )
+        self.assertEndsWith(graph_exec["device_name"], _DEFAULT_DEVICE_SUFFIX)
+
+        graph_exec = data["graph_executions"][1]
+        self.assertStartsWith(graph_exec["op_type"], "Placeholder")
+        self.assertTrue(graph_exec["op_name"])
+        self.assertEqual(graph_exec["output_slot"], 0)
+        self.assertTrue(graph_exec["graph_id"])
+        self.assertGreaterEqual(len(graph_exec["graph_ids"]), 1)
+        self.assertEqual(graph_exec["graph_ids"][-1], graph_exec["graph_id"])
+        self.assertEqual(
+            graph_exec["debug_tensor_value"], [2.0, 4.0, 0.0, 0.0, 0.0]
+        )
+        self.assertEndsWith(graph_exec["device_name"], _DEFAULT_DEVICE_SUFFIX)
+
+        graph_exec = data["graph_executions"][2]
+        # The unstack() function uses the Unpack op under the hood.
+        self.assertStartsWith(graph_exec["op_type"], "Unpack")
+        self.assertTrue(graph_exec["op_name"])
+        self.assertEqual(graph_exec["output_slot"], 0)
+        self.assertTrue(graph_exec["graph_id"])
+        self.assertGreaterEqual(len(graph_exec["graph_ids"]), 1)
+        self.assertEqual(graph_exec["graph_ids"][-1], graph_exec["graph_id"])
+        self.assertEqual(
+            graph_exec["debug_tensor_value"], [3.0, 1.0, 0.0, 0.0, 0.0]
+        )
+        self.assertEndsWith(graph_exec["device_name"], _DEFAULT_DEVICE_SUFFIX)
+
+    def testServeGraphExecutionDataObjectsOutOfBoundsError(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+
+        # _generate_tfdbg_v2_data() generates exactly 186 graph-execution
+        # traces.
+        # begin = 0; end = 187
+        response = self.server.get(
+            _ROUTE_PREFIX + "/graph_execution/data?run=%s&begin=0&end=187" % run
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {"error": "Invalid argument: end index (187) out of bounds (186)"},
+        )
+
+        # begin = -1; end = 2
+        response = self.server.get(
+            _ROUTE_PREFIX + "/graph_execution/data?run=%s&begin=-1&end=2" % run
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {"error": "Invalid argument: Invalid begin index (-1)"},
+        )
+
+        # begin = 2; end = 1
+        response = self.server.get(
+            _ROUTE_PREFIX + "/graph_execution/data?run=%s&begin=2&end=1" % run
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
