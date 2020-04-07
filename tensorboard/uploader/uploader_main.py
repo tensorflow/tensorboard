@@ -624,6 +624,9 @@ class UploaderSubcommand(program.TensorBoardSubcommand):
     def define_flags(self, parser):
         flags_parser.define_flags(parser)
 
+    def fix_flags(self, flags):
+        flags_parser.fix_flags(flags)
+
     def run(self, flags):
         return _run(flags)
 

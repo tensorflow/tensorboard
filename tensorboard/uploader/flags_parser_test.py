@@ -56,6 +56,16 @@ class FlagsParserTest(tb_test.TestCase):
         )
         self.assertEqual(["plugin1", "plugin2"], flags.plugins)
 
+    def test_upload_with_plugins_comma_separated(self):
+        flags = flags_parser.parse_flags(
+            ["uploader", "upload", "--plugins", "p1,p2,p3", "p4", "p5,p6"]
+        )
+        self.assertEqual(
+            flags_parser.SUBCOMMAND_KEY_UPLOAD,
+            getattr(flags, flags_parser.SUBCOMMAND_FLAG),
+        )
+        self.assertEqual(["p1", "p2", "p3", "p4", "p5", "p6"], flags.plugins)
+
 
 if __name__ == "__main__":
     tb_test.main()

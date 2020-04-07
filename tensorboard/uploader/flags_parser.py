@@ -47,7 +47,9 @@ def parse_flags(argv):
         description=("Upload your TensorBoard experiments to TensorBoard.dev"),
     )
     define_flags(parser)
-    return parser.parse_args(argv[1:])
+    flags = parser.parse_args(argv[1:])
+    fix_flags(flags)
+    return flags
 
 
 def define_flags(parser):
@@ -201,3 +203,11 @@ def define_flags(parser):
     auth_revoke.set_defaults(
         **{AUTH_SUBCOMMAND_FLAG: AUTH_SUBCOMMAND_KEY_REVOKE}
     )
+
+
+def fix_flags(flags):
+    if hasattr(flags, "plugins"):
+        expanded_plugins = []
+        for plugin in flags.plugins:
+            expanded_plugins.extend(str.split(plugin, ","))
+        flags.plugins = expanded_plugins

@@ -235,6 +235,45 @@ class SubcommandTest(tb_test.TestCase):
         self.assertIn("payload", self.stderr.getvalue())
         self.stderr.truncate(0)
 
+    def testSubcommand_PostProcessFlags(self):
+        def define_flags(parser):
+            parser.add_argument("--logdir", type=str)
+
+        def fix_flags(flags):
+            flags.logdir = "override_value"
+
+        tb = program.TensorBoard(
+            plugins=[core_plugin.CorePluginLoader],
+            subcommands=[
+                _TestSubcommand(define_flags=define_flags, fix_flags=fix_flags)
+            ],
+        )
+
+        tb.configure(("tb", "test", "--logdir", "first_value"))
+        tb.main()
+        flags = _TestSubcommand.run.call_args[0][0]
+        self.assertEqual(flags.logdir, "override_value")
+
+    def testSubcommand_DoesNotPostProcessFlagsForOtherCommands(self):
+        def define_flags(parser):
+            parser.add_argument("--logdir", type=str)
+
+        def fix_flags(flags):
+            flags.logdir = "override_value"
+
+        tb = program.TensorBoard(
+            plugins=[core_plugin.CorePluginLoader],
+            subcommands=[
+                _TestSubcommand(define_flags=define_flags, fix_flags=fix_flags)
+            ],
+        )
+
+        tb.configure(("tb", "serve", "--logdir", "first_value"))
+        tb.main()
+        program.TensorBoard._run_serve_subcommand.assert_called_once()
+        flags = program.TensorBoard._run_serve_subcommand.call_args[0][0]
+        self.assertEqual(flags.logdir, "first_value")
+
     def testConflictingNames_AmongSubcommands(self):
         with self.assertRaises(ValueError) as cm:
             tb = program.TensorBoard(
@@ -255,9 +294,10 @@ class SubcommandTest(tb_test.TestCase):
 
 
 class _TestSubcommand(program.TensorBoardSubcommand):
-    def __init__(self, name=None, define_flags=None):
+    def __init__(self, name=None, define_flags=None, fix_flags=None):
         self._name = name
         self._define_flags = define_flags
+        self._fix_flags = fix_flags
 
     def name(self):
         return self._name or "test"
@@ -265,6 +305,10 @@ class _TestSubcommand(program.TensorBoardSubcommand):
     def define_flags(self, parser):
         if self._define_flags:
             self._define_flags(parser)
+
+    def fix_flags(self, flags):
+        if self._fix_flags:
+            self._fix_flags(flags)
 
     def run(self, flags):
         pass
