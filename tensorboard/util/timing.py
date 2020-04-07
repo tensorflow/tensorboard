@@ -87,20 +87,28 @@ def _log_latency(name, log_level):
 
     start_level = _store.nesting_level
     try:
+        started = time.time()
         _store.nesting_level = start_level + 1
         indent = (" " * 2) * start_level
         thread = threading.current_thread()
         prefix = "%s[%x]%s" % (thread.name, thread.ident, indent)
-        logger.log(log_level, "%s ENTER %s", prefix, name)
-
-        started = time.time()
+        _log(log_level, "%s ENTER %s", prefix, name)
         yield
     finally:
         _store.nesting_level = start_level
         elapsed = time.time() - started
-        logger.log(
+        _log(
             log_level, "%s EXIT %s - %0.6fs elapsed", prefix, name, elapsed,
         )
+
+
+def _log(log_level, msg, *args):
+    # Forwarding method to ensure that all logging statements
+    # originating in this module have the same line number; if the
+    # "ENTER" log is on a line with 2-digit number and the "EXIT" log is
+    # on a line with 3-digit number, the logs are misaligned and harder
+    # to read.
+    logger.log(log_level, msg, *args)
 
 
 class _LogLatencyDecorator:
