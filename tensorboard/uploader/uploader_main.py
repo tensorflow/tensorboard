@@ -52,7 +52,7 @@ _FLAGS = None
 
 _MESSAGE_TOS = u"""\
 Your use of this service is subject to Google's Terms of Service
-Phttps://policies.google.com/terms> and Privacy Policy
+<https://policies.google.com/terms> and Privacy Policy
 <https://policies.google.com/privacy>, and TensorBoard.dev's Terms of Service
 <https://tensorboard.dev/policy/terms/>.
 
