@@ -44,6 +44,21 @@ py_test(
     ],
 )
 
+py_library(
+    name = "formatters",
+    srcs = ["formatters.py"],
+    srcs_version = "PY3",
+)
+
+py_test(
+    name = "formatters_test",
+    srcs = ["formatters_test.py"],
+    deps = [
+        ":formatters",
+        "//tensorboard:test",
+    ],
+)
+
 py_binary(
     name = "uploader",
     srcs = ["uploader_main.py"],
@@ -60,6 +75,7 @@ py_library(
         ":dev_creds",
         ":exporter_lib",
         ":flags_parser",
+        ":formatters",
         ":server_info",
         ":uploader_lib",
         ":util",

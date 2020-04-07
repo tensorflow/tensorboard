@@ -178,7 +178,9 @@ def define_flags(parser):
     )
     list_parser.set_defaults(**{SUBCOMMAND_FLAG: SUBCOMMAND_KEY_LIST})
     list_parser.add_argument(
-        "--json", action="store_true", help="print the experiments as JSON",
+        "--json",
+        action="store_true",
+        help="print the experiments JSON objects",
     )
 
     export = subparsers.add_parser(

@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import print_function
 
 import abc
-import collections
 import json
 import os
 import sys
@@ -37,6 +36,7 @@ from tensorboard.uploader.proto import write_service_pb2_grpc
 from tensorboard.uploader import auth
 from tensorboard.uploader import exporter as exporter_lib
 from tensorboard.uploader import flags_parser
+from tensorboard.uploader import formatters
 from tensorboard.uploader import server_info as server_info_lib
 from tensorboard.uploader import uploader as uploader_lib
 from tensorboard.uploader import util
@@ -65,6 +65,10 @@ To log out, run `tensorboard dev auth revoke`.
 # context refers to Unicode code points as stipulated by https://aip.dev/210.
 _EXPERIMENT_NAME_MAX_CHARS = 100
 _EXPERIMENT_DESCRIPTION_MAX_CHARS = 600
+
+_EXPERIMENT_METADATA_JSON_INDENT = 2
+_EXPERIMENT_METADATA_URL_JSON_KEY = formatters.EXPERIMENT_METADATA_URL_JSON_KEY
+_ExperimentMetadataField = formatters.ExperimentMetadataField
 
 
 def _prompt_for_user_ack(intent):
@@ -337,8 +341,8 @@ class _ListIntent(_Intent):
         """Constructor of _ListIntent.
 
         Args:
-          json: If and ony if `True`, will print the list as a pretty-formatted
-            JSON array.
+          json: If and only if `True`, will print the list as pretty-formatted
+            JSON objects, one object for each experiment.
         """
         self.json = json
 
@@ -358,32 +362,56 @@ class _ListIntent(_Intent):
         )
         gen = exporter_lib.list_experiments(api_client, fieldmask=fieldmask)
         count = 0
+
         if self.json:
-            experiments_json = []
+            formatter = formatters.JsonFormatter(
+                _EXPERIMENT_METADATA_JSON_INDENT
+            )
+        else:
+            formatter = formatters.ReadableFormatter(20)
         for experiment in gen:
             count += 1
             experiment_id = experiment.experiment_id
             url = server_info_lib.experiment_url(server_info, experiment_id)
             data = [
-                ("Name", experiment.name or "[No Name]"),
-                ("Description", experiment.description or "[No Description]"),
-                ("Id", experiment.experiment_id),
-                ("Created", util.format_time(experiment.create_time)),
-                ("Updated", util.format_time(experiment.update_time)),
-                ("Scalars", str(experiment.num_scalars)),
-                ("Runs", str(experiment.num_runs)),
-                ("Tags", str(experiment.num_tags)),
+                _ExperimentMetadataField(
+                    _EXPERIMENT_METADATA_URL_JSON_KEY, "URL", url, str,
+                ),
+                _ExperimentMetadataField(
+                    "name", "Name", experiment.name, lambda x: x or "[No Name]",
+                ),
+                _ExperimentMetadataField(
+                    "description",
+                    "Description",
+                    experiment.description,
+                    lambda x: x or "[No Description]",
+                ),
+                _ExperimentMetadataField(
+                    "id", "Id", experiment.experiment_id, str
+                ),
+                _ExperimentMetadataField(
+                    "created",
+                    "Created",
+                    util.format_time(experiment.create_time),
+                    str,
+                ),
+                _ExperimentMetadataField(
+                    "updated",
+                    "Updated",
+                    util.format_time(experiment.update_time),
+                    str,
+                ),
+                _ExperimentMetadataField(
+                    "scalars", "Scalars", experiment.num_scalars, str,
+                ),
+                _ExperimentMetadataField(
+                    "runs", "Runs", experiment.num_runs, str,
+                ),
+                _ExperimentMetadataField(
+                    "tags", "Tags", experiment.num_tags, str,
+                ),
             ]
-            if self.json:
-                experiments_json.append(
-                    collections.OrderedDict([("URL", url)] + data)
-                )
-            else:
-                print(url)
-                for (name, value) in data:
-                    print("\t%s %s" % (name.ljust(12), value))
-        if self.json:
-            print(json.dumps(experiments_json, indent=2))
+            print(formatter.format_experiment(data))
         sys.stdout.flush()
         if not count:
             sys.stderr.write(
