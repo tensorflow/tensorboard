@@ -27,6 +27,7 @@ from tensorboard.uploader import util
 
 class BaseExperimentFormatter(object):
     """Abstract base class for formatting experiment information as a string."""
+
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
