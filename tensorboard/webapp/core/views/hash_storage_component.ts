@@ -24,30 +24,10 @@ import {
   EventEmitter,
 } from '@angular/core';
 
+import {SetStringOption, HashDeepLinker} from '../../deeplink';
+
 export enum ChangedProp {
   ACTIVE_PLUGIN,
-}
-
-// TODO(tensorboard-team): remove below when storage.ts is pure TypeScript
-// module.
-const TAB = '__tab__';
-
-interface TfGlobalsElement extends HTMLElement {
-  tf_globals: {
-    setUseHash(use: boolean): void;
-  };
-}
-
-interface SetStringOption {
-  defaultValue?: string;
-  useLocationReplace?: boolean;
-}
-
-interface TfStorageElement extends HTMLElement {
-  tf_storage: {
-    setString(key: string, value: string, options: SetStringOption): void;
-    getString(key: string): string;
-  };
 }
 
 @Component({
@@ -56,13 +36,9 @@ interface TfStorageElement extends HTMLElement {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HashStorageComponent implements OnInit, OnChanges, OnDestroy {
-  private readonly tfGlobals = (document.createElement(
-    'tf-globals'
-  ) as TfGlobalsElement).tf_globals;
-  private readonly tfStorage = (document.createElement(
-    'tf-storage'
-  ) as TfStorageElement).tf_storage;
   private readonly onHashChange = this.onHashChangedImpl.bind(this);
+
+  constructor(private readonly deepLinker: HashDeepLinker) {}
 
   @Input()
   activePluginId!: string;
@@ -71,7 +47,7 @@ export class HashStorageComponent implements OnInit, OnChanges, OnDestroy {
   onValueChange = new EventEmitter<{prop: ChangedProp; value: string}>();
 
   private onHashChangedImpl() {
-    const activePluginId = this.tfStorage.getString(TAB);
+    const activePluginId = this.deepLinker.getPluginId();
 
     if (activePluginId !== this.activePluginId) {
       this.onValueChange.emit({
@@ -82,9 +58,6 @@ export class HashStorageComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnInit() {
-    // As opposed to fake hash that does not modify the URL.
-    this.tfGlobals.setUseHash(true);
-
     // Cannot use the tf_storage hash listener because it binds to event before the
     // zone.js patch. According to [1], zone.js patches various asynchronos calls and
     // event listeners to detect "changes" and mark components as dirty for re-render.
@@ -105,7 +78,7 @@ export class HashStorageComponent implements OnInit, OnChanges, OnDestroy {
       if (activePluginIdChange.firstChange) {
         option.useLocationReplace = true;
       }
-      this.tfStorage.setString(TAB, activePluginIdChange.currentValue, option);
+      this.deepLinker.setPluginId(activePluginIdChange.currentValue, option);
     }
   }
 }

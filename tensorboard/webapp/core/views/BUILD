@@ -13,6 +13,7 @@ ng_module(
     deps = [
         "//tensorboard/webapp/core/actions",
         "//tensorboard/webapp/core/store",
+        "//tensorboard/webapp/deeplink",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
@@ -34,6 +35,7 @@ tf_ts_library(
         "//tensorboard/webapp/core/actions",
         "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/core/testing",
+        "//tensorboard/webapp/deeplink",
         "@npm//@angular/common",
         "@npm//@angular/compiler",
         "@npm//@angular/core",

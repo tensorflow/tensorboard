@@ -24,53 +24,51 @@ import {pluginUrlHashChanged} from '../actions';
 
 import {HashStorageContainer} from './hash_storage_container';
 import {HashStorageComponent} from './hash_storage_component';
+import {HashDeepLinker, DeepLinkerInterface} from '../../deeplink';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 /** @typehack */ import * as _typeHackStoreTesting from '@ngrx/store/testing';
 
+class TestableDeeplinker implements DeepLinkerInterface {
+  getString(key: string) {
+    return key;
+  }
+  setString(key: string, value: string) {}
+  getPluginId() {
+    return 'plugin';
+  }
+  setPluginId(pluginId: string) {}
+}
+
 describe('hash storage test', () => {
   let store: MockStore<State>;
   let dispatchSpy: jasmine.Spy;
-  let setStringSpy: jasmine.Spy;
-  let getStringSpy: jasmine.Spy;
+  let setPluginIdSpy: jasmine.Spy;
+  let getPluginIdSpy: jasmine.Spy;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [NoopAnimationsModule, CommonModule],
-      providers: [provideMockStore(), HashStorageContainer],
+      providers: [
+        provideMockStore(),
+        HashStorageContainer,
+        {provide: HashDeepLinker, useClass: TestableDeeplinker},
+      ],
       declarations: [HashStorageContainer, HashStorageComponent],
     }).compileComponents();
     store = TestBed.get(Store);
     dispatchSpy = spyOn(store, 'dispatch');
 
-    setStringSpy = jasmine.createSpy();
-    getStringSpy = jasmine.createSpy();
-
-    // Cannot safely stub out window.location.hash or rely on test framework
-    // to not make use of the hash (it does).
-
-    // Do not rely on Polymer bundle in the test.
-    const createElement = spyOn(document, 'createElement');
-    createElement.withArgs('tf-storage').and.returnValue({
-      tf_storage: {
-        setString: setStringSpy,
-        getString: getStringSpy,
-      },
-    } as any);
-    createElement.withArgs('tf-globals').and.returnValue({
-      tf_globals: {
-        setUseHash: jasmine.createSpy(),
-      },
-    } as any);
-    createElement.and.callThrough();
+    const deepLinker = TestBed.get(HashDeepLinker);
+    setPluginIdSpy = spyOn(deepLinker, 'setPluginId');
+    getPluginIdSpy = spyOn(deepLinker, 'getPluginId');
   });
 
   it('sets the hash to plugin id by replacing on first load', () => {
     store.overrideSelector(getActivePlugin, 'foo');
     const fixture = TestBed.createComponent(HashStorageContainer);
     fixture.detectChanges();
-
-    expect(setStringSpy).toHaveBeenCalledWith(jasmine.any(String), 'foo', {
+    expect(setPluginIdSpy).toHaveBeenCalledWith('foo', {
       useLocationReplace: true,
     });
   });
@@ -79,21 +77,21 @@ describe('hash storage test', () => {
     store.overrideSelector(getActivePlugin, 'foo');
     const fixture = TestBed.createComponent(HashStorageContainer);
     fixture.detectChanges();
-    getStringSpy.and.returnValue('foo');
+    getPluginIdSpy.and.returnValue('foo');
 
     store.overrideSelector(getActivePlugin, 'bar');
     store.refreshState();
     fixture.detectChanges();
 
-    expect(setStringSpy).toHaveBeenCalledTimes(2);
-    expect(setStringSpy).toHaveBeenCalledWith(jasmine.any(String), 'bar', {});
+    expect(setPluginIdSpy).toHaveBeenCalledTimes(2);
+    expect(setPluginIdSpy).toHaveBeenCalledWith('bar', {});
   });
 
   it('dispatches plugin changed event when hash changes', () => {
     store.overrideSelector(getActivePlugin, 'foo');
     const fixture = TestBed.createComponent(HashStorageContainer);
     fixture.detectChanges();
-    getStringSpy.and.returnValue('bar');
+    getPluginIdSpy.and.returnValue('bar');
 
     window.dispatchEvent(new Event('hashchange'));
     expect(dispatchSpy).toHaveBeenCalledWith(
