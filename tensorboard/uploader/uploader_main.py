@@ -36,6 +36,7 @@ from tensorboard.uploader.proto import write_service_pb2_grpc
 from tensorboard.uploader import auth
 from tensorboard.uploader import exporter as exporter_lib
 from tensorboard.uploader import flags_parser
+from tensorboard.uploader import formatters
 from tensorboard.uploader import server_info as server_info_lib
 from tensorboard.uploader import uploader as uploader_lib
 from tensorboard.uploader import util
@@ -332,6 +333,15 @@ class _ListIntent(_Intent):
         """
     )
 
+    def __init__(self, json=None):
+        """Constructor of _ListIntent.
+
+        Args:
+          json: If and only if `True`, will print the list as pretty-formatted
+            JSON objects, one object for each experiment.
+        """
+        self.json = json
+
     def get_ack_message_body(self):
         return self._MESSAGE
 
@@ -348,23 +358,16 @@ class _ListIntent(_Intent):
         )
         gen = exporter_lib.list_experiments(api_client, fieldmask=fieldmask)
         count = 0
+
+        if self.json:
+            formatter = formatters.JsonFormatter()
+        else:
+            formatter = formatters.ReadableFormatter()
         for experiment in gen:
             count += 1
             experiment_id = experiment.experiment_id
             url = server_info_lib.experiment_url(server_info, experiment_id)
-            print(url)
-            data = [
-                ("Name", experiment.name or "[No Name]"),
-                ("Description", experiment.description or "[No Description]"),
-                ("Id", experiment.experiment_id),
-                ("Created", util.format_time(experiment.create_time)),
-                ("Updated", util.format_time(experiment.update_time)),
-                ("Scalars", str(experiment.num_scalars)),
-                ("Runs", str(experiment.num_runs)),
-                ("Tags", str(experiment.num_tags)),
-            ]
-            for (name, value) in data:
-                print("\t%s %s" % (name.ljust(12), value))
+            print(formatter.format_experiment(experiment, url))
         sys.stdout.flush()
         if not count:
             sys.stderr.write(
@@ -550,7 +553,7 @@ def _get_intent(flags):
                 "Must specify experiment to delete via `--experiment_id`."
             )
     elif cmd == flags_parser.SUBCOMMAND_KEY_LIST:
-        return _ListIntent()
+        return _ListIntent(json=flags.json)
     elif cmd == flags_parser.SUBCOMMAND_KEY_EXPORT:
         if flags.outdir:
             return _ExportIntent(flags.outdir)
