@@ -17,8 +17,8 @@
 import contextlib
 
 from tensorboard import test as tb_test
-from tensorboard.util import timing
 from tensorboard.util import tb_logging
+from tensorboard.util import timing
 
 logger = tb_logging.get_logger()
 
@@ -51,7 +51,7 @@ class LogLatencyTest(tb_test.TestCase):
 
     def test_decorator_explicit_name(self):
         decorated = timing.log_latency("my_costly_block")(self.my_slow_function)
-        with self.assert_logs_matching("my_costly_block"):
+        with self.assert_logs_matching("ENTER my_costly_block"):
             decorated()
 
     def test_context_manager_implicit_name(self):
