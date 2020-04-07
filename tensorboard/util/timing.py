@@ -24,16 +24,15 @@ from tensorboard.util import tb_logging
 logger = tb_logging.get_logger()
 
 
-def log_latency(name_or_function, log_level=None):
+def log_latency(region_name=None, log_level=None):
     """Log latency in a function or region.
 
-    This can act as a decorator: if passed a function, it returns a
-    decorated version of the function. Otherwise, the argument is
-    interpreted as a region name, and the result is either a context
-    manager or a decorator at the caller's discretion. Thus, the
-    following are all valid usages:
+    If no region name is passed, the result is a decorator. If a region
+    name is passed, the result acts as either a context manager or a
+    decorator at the caller's discretion. Thus, the following are all
+    valid usages:
 
-    >>> @log_latency
+    >>> @log_latency()
     ... def function_1():
     ...     pass
     ...
@@ -47,8 +46,9 @@ def log_latency(name_or_function, log_level=None):
     ...
 
     Args:
-        name_or_function: A callable to decorate, or a string region
-            name to use as a context manager or decorator.
+        region_name: An optional string name to associate with this
+            latency region. Optional if used as a decorator; required if
+            used as a context manager.
         log_level: Optional integer logging level constant. Defaults to
             `logging.INFO`.
 
@@ -59,12 +59,16 @@ def log_latency(name_or_function, log_level=None):
 
     if log_level is None:
         log_level = logging.INFO
-    if callable(name_or_function):
-        original = name_or_function
-        name = getattr(original, "__qualname__", original)
-        return _log_latency(name, log_level)(original)
+
+    if isinstance(region_name, str):
+        return _log_latency(region_name, log_level)
+    elif region_name is None:
+        return _LogLatencyDecorator(log_level)
     else:
-        return _log_latency(name_or_function, log_level)
+        msg = "region_name must be a string or `None`; got: %r" % (region_name,)
+        if callable(region_name):
+            msg += " (hint: write `@log_latency()` instead of `@log_latency`)"
+        raise TypeError(msg)
 
 
 class _ThreadLocalStore(threading.local):
@@ -97,3 +101,25 @@ def _log_latency(name, log_level):
         logger.log(
             log_level, "%s EXIT %s - %0.6fs elapsed", prefix, name, elapsed,
         )
+
+
+class _LogLatencyDecorator:
+    """Decorator that raises a nice error if used as a context manager."""
+
+    def __init__(self, log_level):
+        self._log_level = log_level
+
+    def __enter__(self):
+        # Caller tried to use `with log_latency()` when they needed to
+        # write `with log_latency("my_region_name")`. Let them know.
+        raise TypeError(
+            "log_latency() cannot be used as a context manager unless "
+            "a region name is specified"
+        )
+
+    def __exit__(self):
+        raise ValueError("hm")
+
+    def __call__(self, func):
+        qualname = getattr(func, "__qualname__", func)
+        return _log_latency(qualname, self._log_level)(func)
