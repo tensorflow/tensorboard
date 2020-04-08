@@ -36,7 +36,7 @@ from tensorboard.uploader import util
 
 
 class TensorBoardExporterTest(tb_test.TestCase):
-    def _run(self, formatter, experiment, experiment_url):
+    def _format(self, formatter, experiment, experiment_url):
         """Test helper that ensures formatting is done with fixed timezone."""
         try:
             with mock.patch.dict(os.environ, {"TZ": "UTC"}):
@@ -59,7 +59,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
         util.set_timestamp(experiment.update_time, 1015218367)
         experiment_url = "http://tensorboard.dev/deadbeef"
         formatter = formatters.ReadableFormatter()
-        output = self._run(formatter, experiment, experiment_url)
+        output = self._format(formatter, experiment, experiment_url)
         expected_lines = [
             "http://tensorboard.dev/deadbeef",
             "\tName                 A name for the experiment",
@@ -87,7 +87,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
         util.set_timestamp(experiment.update_time, 1015218367)
         experiment_url = "http://tensorboard.dev/deadbeef"
         formatter = formatters.ReadableFormatter()
-        output = self._run(formatter, experiment, experiment_url)
+        output = self._format(formatter, experiment, experiment_url)
         expected_lines = [
             "http://tensorboard.dev/deadbeef",
             "\tName                 [No Name]",
@@ -115,7 +115,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
         util.set_timestamp(experiment.update_time, 1015218367)
         experiment_url = "http://tensorboard.dev/deadbeef"
         formatter = formatters.JsonFormatter()
-        output = self._run(formatter, experiment, experiment_url)
+        output = self._format(formatter, experiment, experiment_url)
         expected_lines = [
             "{",
             '  "url": "http://tensorboard.dev/deadbeef",',
