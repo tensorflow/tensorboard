@@ -19,6 +19,15 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import os
+import time
+
+try:
+    # python version >= 3.3
+    from unittest import mock
+except ImportError:
+    import mock  # pylint: disable=unused-import
+
 from tensorboard import test as tb_test
 from tensorboard.uploader import formatters
 from tensorboard.uploader.proto import experiment_pb2
@@ -27,6 +36,15 @@ from tensorboard.uploader import util
 
 
 class TensorBoardExporterTest(tb_test.TestCase):
+    def _run(self, formatter, experiment, experiment_url):
+        """Test helper that ensures formatting is done with fixed timezone."""
+        try:
+            with mock.patch.dict(os.environ, {"TZ": "UTC"}):
+                time.tzset()
+                return formatter.format_experiment(experiment, experiment_url)
+        finally:
+            time.tzset()
+
     def testReadableFormatterWithNonemptyNameAndDescription(self):
         experiment = experiment_pb2.Experiment(
             experiment_id="deadbeef",
@@ -41,7 +59,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
         util.set_timestamp(experiment.update_time, 1015218367)
         experiment_url = "http://tensorboard.dev/deadbeef"
         formatter = formatters.ReadableFormatter()
-        output = formatter.format_experiment(experiment, experiment_url)
+        output = self._run(formatter, experiment, experiment_url)
         expected_lines = [
             "http://tensorboard.dev/deadbeef",
             "\tName                 A name for the experiment",
@@ -69,7 +87,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
         util.set_timestamp(experiment.update_time, 1015218367)
         experiment_url = "http://tensorboard.dev/deadbeef"
         formatter = formatters.ReadableFormatter()
-        output = formatter.format_experiment(experiment, experiment_url)
+        output = self._run(formatter, experiment, experiment_url)
         expected_lines = [
             "http://tensorboard.dev/deadbeef",
             "\tName                 [No Name]",
@@ -97,7 +115,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
         util.set_timestamp(experiment.update_time, 1015218367)
         experiment_url = "http://tensorboard.dev/deadbeef"
         formatter = formatters.JsonFormatter()
-        output = formatter.format_experiment(experiment, experiment_url)
+        output = self._run(formatter, experiment, experiment_url)
         expected_lines = [
             "{",
             '  "url": "http://tensorboard.dev/deadbeef",',
