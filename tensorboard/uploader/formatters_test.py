@@ -161,6 +161,43 @@ class TensorBoardExporterTest(tb_test.TestCase):
         ]
         self.assertEqual(output.split("\n"), expected_lines)
 
+    def testJsonFormatterWithNonUtcTimezone(self):
+        experiment = experiment_pb2.Experiment(
+            experiment_id="deadbeef",
+            # NOTE(cais): `name` and `description` are missing here.
+            num_runs=2,
+            num_tags=4,
+            num_scalars=60,
+            total_blob_bytes=1234,
+        )
+        util.set_timestamp(experiment.create_time, 981173106)
+        util.set_timestamp(experiment.update_time, 1015218367)
+        experiment_url = "http://tensorboard.dev/deadbeef"
+        formatter = formatters.JsonFormatter()
+        output = self._format(
+            formatter,
+            experiment,
+            experiment_url,
+            timezone="America/Los_Angeles",
+        )
+        expected_lines = [
+            "{",
+            '  "url": "http://tensorboard.dev/deadbeef",',
+            '  "name": "",',
+            '  "description": "",',
+            '  "id": "deadbeef",',
+            # NOTE(cais): Here we assert that the JsonFormat output is not
+            # affected by the timezone.
+            '  "created": "2001-02-03T04:05:06Z",',
+            '  "updated": "2002-03-04T05:06:07Z",',
+            '  "runs": 2,',
+            '  "tags": 4,',
+            '  "scalars": 60,',
+            '  "binary_object_bytes": 1234',
+            "}",
+        ]
+        self.assertEqual(output.split("\n"), expected_lines)
+
 
 if __name__ == "__main__":
     tb_test.main()
