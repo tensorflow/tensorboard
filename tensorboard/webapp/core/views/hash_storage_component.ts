@@ -41,7 +41,7 @@ export class HashStorageComponent implements OnInit, OnChanges, OnDestroy {
   constructor(private readonly deepLinker: HashDeepLinker) {}
 
   @Input()
-  activePluginId!: string;
+  activePluginId!: string | null;
 
   @Output()
   onValueChange = new EventEmitter<{prop: ChangedProp; value: string}>();
@@ -74,11 +74,16 @@ export class HashStorageComponent implements OnInit, OnChanges, OnDestroy {
   ngOnChanges(changes: SimpleChanges) {
     if (changes['activePluginId']) {
       const activePluginIdChange = changes['activePluginId'];
-      const option: SetStringOption = {};
+      const option: SetStringOption = {defaultValue: ''};
       if (activePluginIdChange.firstChange) {
         option.useLocationReplace = true;
       }
-      this.deepLinker.setPluginId(activePluginIdChange.currentValue, option);
+
+      const value =
+        activePluginIdChange.currentValue === null
+          ? ''
+          : activePluginIdChange.currentValue;
+      this.deepLinker.setPluginId(value, option);
     }
   }
 }
