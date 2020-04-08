@@ -48,7 +48,7 @@ class FlagsParserTest(tb_test.TestCase):
 
     def test_upload_with_plugins(self):
         flags = flags_parser.parse_flags(
-            ["uploader", "upload", "--plugins", "plugin1", "plugin2"]
+            ["uploader", "upload", "--plugins", "plugin1,plugin2"]
         )
         self.assertEqual(
             flags_parser.SUBCOMMAND_KEY_UPLOAD,
