@@ -28,6 +28,8 @@ from tensorboard.backend.event_processing import event_file_loader
 from tensorboard.compat.proto import event_pb2
 from tensorboard.compat.proto import graph_pb2
 from tensorboard.compat.proto import summary_pb2
+from tensorboard.plugins.audio import metadata as audio_metadata
+from tensorboard.plugins.audio import summary as audio_summary
 from tensorboard.plugins.graph import metadata as graphs_metadata
 from tensorboard.plugins.histogram import metadata as histogram_metadata
 from tensorboard.plugins.histogram import summary as histogram_summary
@@ -138,6 +140,36 @@ class MigrateEventTest(tf.test.TestCase):
         self.assertEqual(
             value.metadata.plugin_data.plugin_name,
             histogram_metadata.PLUGIN_NAME,
+        )
+
+    def test_audio(self):
+        old_event = event_pb2.Event()
+        old_event.step = 123
+        old_event.wall_time = 456.75
+        audio = tf.reshape(tf.linspace(0.0, 100.0, 4 * 10 * 2), (4, 10, 2))
+        audio_pb = audio_summary.pb(
+            "foo",
+            audio,
+            labels=["one", "two", "three", "four"],
+            sample_rate=44100,
+            display_name="bar",
+            description="baz",
+        )
+        old_event.summary.ParseFromString(audio_pb.SerializeToString())
+
+        new_events = self._migrate_event(old_event)
+        self.assertLen(new_events, 1)
+        self.assertLen(new_events[0].summary.value, 1)
+        value = new_events[0].summary.value[0]
+        tensor = tensor_util.make_ndarray(value.tensor)
+        self.assertEqual(tensor.shape, (3,))  # 4 clipped to max_outputs=3
+        self.assertStartsWith(tensor[0], b"RIFF")
+        self.assertStartsWith(tensor[1], b"RIFF")
+        self.assertEqual(
+            value.metadata.data_class, summary_pb2.DATA_CLASS_BLOB_SEQUENCE
+        )
+        self.assertEqual(
+            value.metadata.plugin_data.plugin_name, audio_metadata.PLUGIN_NAME,
         )
 
     def test_hparams(self):

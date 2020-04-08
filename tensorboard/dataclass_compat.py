@@ -28,6 +28,7 @@ from __future__ import print_function
 from tensorboard.compat.proto import event_pb2
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.compat.proto import types_pb2
+from tensorboard.plugins.audio import metadata as audio_metadata
 from tensorboard.plugins.graph import metadata as graphs_metadata
 from tensorboard.plugins.histogram import metadata as histograms_metadata
 from tensorboard.plugins.hparams import metadata as hparams_metadata
@@ -93,6 +94,8 @@ def _migrate_value(value):
         return _migrate_histogram_value(value)
     if plugin_name == images_metadata.PLUGIN_NAME:
         return _migrate_image_value(value)
+    if plugin_name == audio_metadata.PLUGIN_NAME:
+        return _migrate_audio_value(value)
     if plugin_name == scalars_metadata.PLUGIN_NAME:
         return _migrate_scalar_value(value)
     if plugin_name == text_metadata.PLUGIN_NAME:
@@ -114,6 +117,18 @@ def _migrate_histogram_value(value):
 
 def _migrate_image_value(value):
     value.metadata.data_class = summary_pb2.DATA_CLASS_BLOB_SEQUENCE
+    return (value,)
+
+
+def _migrate_audio_value(value):
+    value.metadata.data_class = summary_pb2.DATA_CLASS_BLOB_SEQUENCE
+    tensor = value.tensor
+    # Project out just the first axis: actual audio clips.
+    stride = 1
+    while len(tensor.tensor_shape.dim) > 1:
+        stride *= tensor.tensor_shape.dim.pop().size
+    if stride != 1:
+        tensor.string_val[:] = tensor.string_val[::stride]
     return (value,)
 
 
