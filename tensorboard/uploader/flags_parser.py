@@ -118,8 +118,7 @@ def define_flags(parser):
     )
     upload.add_argument(
         "--plugins",
-        type=str,
-        nargs="*",
+        type=lambda option: option.split(","),
         default=[],
         help="List of plugins for which data should be uploaded. If "
         "unspecified then data will be uploaded for all plugins supported by "
