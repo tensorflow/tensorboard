@@ -78,6 +78,18 @@ describe('hash storage test', () => {
     store.overrideSelector(getActivePlugin, null);
     const fixture = TestBed.createComponent(HashStorageContainer);
     fixture.detectChanges();
+
+    expect(setPluginIdSpy).toHaveBeenCalledWith('', {
+      useLocationReplace: true,
+      defaultValue: '',
+    });
+  });
+
+  it('sets the hash to empty string when activePlugin is empty string', () => {
+    store.overrideSelector(getActivePlugin, '');
+    const fixture = TestBed.createComponent(HashStorageContainer);
+    fixture.detectChanges();
+
     expect(setPluginIdSpy).toHaveBeenCalledWith('', {
       useLocationReplace: true,
       defaultValue: '',
