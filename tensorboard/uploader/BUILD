@@ -61,7 +61,6 @@ py_test(
         ":util",
         "//tensorboard:test",
         "//tensorboard/uploader/proto:protos_all_py_pb2",
-        "@org_pythonhosted_mock",
     ],
 )
 
