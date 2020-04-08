@@ -19,6 +19,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import os
+import time
+from unittest import mock
+
 from tensorboard import test as tb_test
 from tensorboard.uploader import formatters
 from tensorboard.uploader.proto import experiment_pb2
@@ -27,6 +31,15 @@ from tensorboard.uploader import util
 
 
 class TensorBoardExporterTest(tb_test.TestCase):
+    def _format(self, formatter, experiment, experiment_url, timezone="UTC"):
+        """Test helper that ensures formatting is done with known timezone."""
+        try:
+            with mock.patch.dict(os.environ, {"TZ": timezone}):
+                time.tzset()
+                return formatter.format_experiment(experiment, experiment_url)
+        finally:
+            time.tzset()
+
     def testReadableFormatterWithNonemptyNameAndDescription(self):
         experiment = experiment_pb2.Experiment(
             experiment_id="deadbeef",
@@ -41,7 +54,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
         util.set_timestamp(experiment.update_time, 1015218367)
         experiment_url = "http://tensorboard.dev/deadbeef"
         formatter = formatters.ReadableFormatter()
-        output = formatter.format_experiment(experiment, experiment_url)
+        output = self._format(formatter, experiment, experiment_url)
         expected_lines = [
             "http://tensorboard.dev/deadbeef",
             "\tName                 A name for the experiment",
@@ -49,6 +62,40 @@ class TensorBoardExporterTest(tb_test.TestCase):
             "\tId                   deadbeef",
             "\tCreated              2001-02-03 04:05:06",
             "\tUpdated              2002-03-04 05:06:07",
+            "\tRuns                 2",
+            "\tTags                 4",
+            "\tScalars              60",
+            "\tBinary object bytes  1234",
+        ]
+        self.assertEqual(output.split("\n"), expected_lines)
+
+    def testReadableFormatterWithNonUtcTimezone(self):
+        experiment = experiment_pb2.Experiment(
+            experiment_id="deadbeef",
+            name="A name for the experiment",
+            description="A description for the experiment",
+            num_runs=2,
+            num_tags=4,
+            num_scalars=60,
+            total_blob_bytes=1234,
+        )
+        util.set_timestamp(experiment.create_time, 981173106)
+        util.set_timestamp(experiment.update_time, 1015218367)
+        experiment_url = "http://tensorboard.dev/deadbeef"
+        formatter = formatters.ReadableFormatter()
+        output = self._format(
+            formatter,
+            experiment,
+            experiment_url,
+            timezone="America/Los_Angeles",
+        )
+        expected_lines = [
+            "http://tensorboard.dev/deadbeef",
+            "\tName                 A name for the experiment",
+            "\tDescription          A description for the experiment",
+            "\tId                   deadbeef",
+            "\tCreated              2001-02-02 20:05:06",
+            "\tUpdated              2002-03-03 21:06:07",
             "\tRuns                 2",
             "\tTags                 4",
             "\tScalars              60",
@@ -69,7 +116,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
         util.set_timestamp(experiment.update_time, 1015218367)
         experiment_url = "http://tensorboard.dev/deadbeef"
         formatter = formatters.ReadableFormatter()
-        output = formatter.format_experiment(experiment, experiment_url)
+        output = self._format(formatter, experiment, experiment_url)
         expected_lines = [
             "http://tensorboard.dev/deadbeef",
             "\tName                 [No Name]",
@@ -97,13 +144,50 @@ class TensorBoardExporterTest(tb_test.TestCase):
         util.set_timestamp(experiment.update_time, 1015218367)
         experiment_url = "http://tensorboard.dev/deadbeef"
         formatter = formatters.JsonFormatter()
-        output = formatter.format_experiment(experiment, experiment_url)
+        output = self._format(formatter, experiment, experiment_url)
         expected_lines = [
             "{",
             '  "url": "http://tensorboard.dev/deadbeef",',
             '  "name": "",',
             '  "description": "",',
             '  "id": "deadbeef",',
+            '  "created": "2001-02-03T04:05:06Z",',
+            '  "updated": "2002-03-04T05:06:07Z",',
+            '  "runs": 2,',
+            '  "tags": 4,',
+            '  "scalars": 60,',
+            '  "binary_object_bytes": 1234',
+            "}",
+        ]
+        self.assertEqual(output.split("\n"), expected_lines)
+
+    def testJsonFormatterWithNonUtcTimezone(self):
+        experiment = experiment_pb2.Experiment(
+            experiment_id="deadbeef",
+            # NOTE(cais): `name` and `description` are missing here.
+            num_runs=2,
+            num_tags=4,
+            num_scalars=60,
+            total_blob_bytes=1234,
+        )
+        util.set_timestamp(experiment.create_time, 981173106)
+        util.set_timestamp(experiment.update_time, 1015218367)
+        experiment_url = "http://tensorboard.dev/deadbeef"
+        formatter = formatters.JsonFormatter()
+        output = self._format(
+            formatter,
+            experiment,
+            experiment_url,
+            timezone="America/Los_Angeles",
+        )
+        expected_lines = [
+            "{",
+            '  "url": "http://tensorboard.dev/deadbeef",',
+            '  "name": "",',
+            '  "description": "",',
+            '  "id": "deadbeef",',
+            # NOTE(cais): Here we assert that the JsonFormat output is not
+            # affected by the timezone.
             '  "created": "2001-02-03T04:05:06Z",',
             '  "updated": "2002-03-04T05:06:07Z",',
             '  "runs": 2,',
