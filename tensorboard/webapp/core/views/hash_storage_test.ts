@@ -70,6 +70,29 @@ describe('hash storage test', () => {
     fixture.detectChanges();
     expect(setPluginIdSpy).toHaveBeenCalledWith('foo', {
       useLocationReplace: true,
+      defaultValue: '',
+    });
+  });
+
+  it('sets the hash to empty string when activePlugin is not set', () => {
+    store.overrideSelector(getActivePlugin, null);
+    const fixture = TestBed.createComponent(HashStorageContainer);
+    fixture.detectChanges();
+
+    expect(setPluginIdSpy).toHaveBeenCalledWith('', {
+      useLocationReplace: true,
+      defaultValue: '',
+    });
+  });
+
+  it('sets the hash to empty string when activePlugin is empty string', () => {
+    store.overrideSelector(getActivePlugin, '');
+    const fixture = TestBed.createComponent(HashStorageContainer);
+    fixture.detectChanges();
+
+    expect(setPluginIdSpy).toHaveBeenCalledWith('', {
+      useLocationReplace: true,
+      defaultValue: '',
     });
   });
 
@@ -84,7 +107,7 @@ describe('hash storage test', () => {
     fixture.detectChanges();
 
     expect(setPluginIdSpy).toHaveBeenCalledTimes(2);
-    expect(setPluginIdSpy).toHaveBeenCalledWith('bar', {});
+    expect(setPluginIdSpy).toHaveBeenCalledWith('bar', jasmine.any(Object));
   });
 
   it('dispatches plugin changed event when hash changes', () => {
