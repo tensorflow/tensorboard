@@ -25,7 +25,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+
+from tensorboard.backend import process_graph
 from tensorboard.compat.proto import event_pb2
+from tensorboard.compat.proto import graph_pb2
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.compat.proto import types_pb2
 from tensorboard.plugins.graph import metadata as graphs_metadata
@@ -54,13 +57,32 @@ def migrate_event(event):
         return _migrate_summary_event(event)
     return (event,)
 
+# Prefiltering graphs here is a stopgap.
+# This approach allows doing it in a 'private' way without touching this
+# module's public API.  Calling this method requires
+# `# pylint: disable=protected-access, which also (perhaps perversely)
+# highlights that this is not the right eventual solution.
+def _migrate_event_prefilter_graphs(event):
+    """Just like `migrate_event` except that graphs are prefiltered."""
+    if event.HasField("graph_def"):
+        return _migrate_graph_event(event, prefilter_graph=True)
+    if event.HasField("summary"):
+        return _migrate_summary_event(event)
+    return (event,)
 
-def _migrate_graph_event(old_event):
+def _migrate_graph_event(old_event, prefilter_graph=False):
     result = event_pb2.Event()
     result.wall_time = old_event.wall_time
     result.step = old_event.step
     value = result.summary.value.add(tag=graphs_metadata.RUN_GRAPH_NAME)
     graph_bytes = old_event.graph_def
+
+    if prefilter_graph:
+        # TODO(@davidsoergel): Move this stopgap to a more appropriate place.
+        graph_def = graph_pb2.GraphDef().FromString(graph_bytes)
+        process_graph.prepare_graph_for_ui(graph_def)
+        graph_bytes = graph_def.SerializeToString()
+
     value.tensor.CopyFrom(tensor_util.make_tensor_proto([graph_bytes]))
     value.metadata.plugin_data.plugin_name = graphs_metadata.PLUGIN_NAME
     # `value.metadata.plugin_data.content` left as the empty proto

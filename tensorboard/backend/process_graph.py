@@ -46,6 +46,9 @@ def prepare_graph_for_ui(
       ValueError: If `large_attrs_key is None` while `limit_attr_size != None`.
       ValueError: If `limit_attr_size` is defined, but <= 0.
     """
+    # TODO(@davidsoergel): detect whether a graph has been filtered already
+    # (to a limit_attr_size <= what is requested here).
+
     # Check input for validity.
     if limit_attr_size is not None:
         if large_attrs_key is None:
