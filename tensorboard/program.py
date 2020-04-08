@@ -259,9 +259,6 @@ class TensorBoard(object):
         if getattr(flags, _SUBCOMMAND_FLAG) == _SERVE_SUBCOMMAND_NAME:
             for loader in self.plugin_loaders:
                 loader.fix_flags(flags)
-        else:
-            subcommand = self.subcommands.get(getattr(flags, _SUBCOMMAND_FLAG))
-            subcommand.fix_flags(flags)
         self.flags = flags
         return [arg0]
 
@@ -440,15 +437,6 @@ class TensorBoardSubcommand(object):
         Args:
           parser: An `argparse.ArgumentParser` scoped to this subcommand,
             which this function should mutate.
-        """
-        pass
-
-    @abstractmethod
-    def fix_flags(self, flags):
-        """Allows flag values to be corrected or validated after parsing.
-
-        Args:
-          flags: The parsed argparse.Namespace object.
         """
         pass
 
