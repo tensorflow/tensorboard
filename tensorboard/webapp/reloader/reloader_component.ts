@@ -22,21 +22,34 @@ import {reload} from '../core/actions';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
+const documentUtil = {
+  /**
+   * Wraps Page Visibility API call to determine if document is visible.
+   * Can be overriden for testing purposes.
+   */
+  getVisibilityState(): string {
+    return document.visibilityState;
+  },
+};
+
 @Component({
   selector: 'reloader',
   template: '',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ReloaderComponent {
+  private readonly onVisibilityChange = this.onVisibilityChangeImpl.bind(this);
   private readonly reloadEnabled$ = this.store.pipe(select(getReloadEnabled));
   private readonly reloadPeriodInMs$ = this.store.pipe(
     select(getReloadPeriodInMs)
   );
   private reloadTimerId: ReturnType<typeof setTimeout> | null = null;
+  private missedAutoReload: boolean = false;
 
   constructor(private store: Store<State>) {}
 
   ngOnInit() {
+    window.addEventListener('visibilitychange', this.onVisibilityChange);
     combineLatest(
       this.reloadEnabled$.pipe(distinctUntilChanged()),
       this.reloadPeriodInMs$.pipe(distinctUntilChanged())
@@ -48,9 +61,23 @@ export class ReloaderComponent {
     });
   }
 
+  private onVisibilityChangeImpl() {
+    if (
+      documentUtil.getVisibilityState() === 'visible' &&
+      this.missedAutoReload
+    ) {
+      this.missedAutoReload = false;
+      this.store.dispatch(reload());
+    }
+  }
+
   private load(reloadPeriodInMs: number) {
     this.reloadTimerId = setTimeout(() => {
-      this.store.dispatch(reload());
+      if (documentUtil.getVisibilityState() === 'visible') {
+        this.store.dispatch(reload());
+      } else {
+        this.missedAutoReload = true;
+      }
       this.load(reloadPeriodInMs);
     }, reloadPeriodInMs);
   }
@@ -64,5 +91,8 @@ export class ReloaderComponent {
 
   ngOnDestroy() {
     this.cancelLoad();
+    window.removeEventListener('visibilitychange', this.onVisibilityChange);
   }
 }
+
+export const TEST_ONLY = {documentUtil};
