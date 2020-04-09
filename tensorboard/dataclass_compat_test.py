@@ -216,9 +216,7 @@ class MigrateEventTest(tf.test.TestCase):
         self.assertProtoEquals(graph_def, new_graph_def)
 
     def test_graph_def_experimental_filter_graph(self):
-        # Create a `GraphDef` and write it to disk as an event.
-        logdir = self.get_temp_dir()
-        writer = test_util.FileWriter(logdir)
+        # Create a `GraphDef`
         graph_def = graph_pb2.GraphDef()
         graph_def.node.add(name="alice", op="Person")
         graph_def.node.add(name="bob", op="Person")
@@ -230,15 +228,12 @@ class MigrateEventTest(tf.test.TestCase):
         graph_def.node.add(
             name="friendship", op="Friendship", input=["alice", "bob"]
         )
-        writer.add_graph(graph=None, graph_def=graph_def, global_step=123)
-        writer.flush()
 
-        # Read in the `Event` containing the written `graph_def`.
-        files = os.listdir(logdir)
-        event_file = os.path.join(logdir, files[0])
-        loader = event_file_loader.EventFileLoader(event_file)
-        events = list(loader.Load())
-        old_event = events[1]
+        # Simulate legacy graph event
+        old_event = event_pb2.Event()
+        old_event.step = 0
+        old_event.wall_time = 456.75
+        old_event.graph_def = graph_def.SerializeToString()
 
         new_events = self._migrate_event(
             old_event, experimental_filter_graph=True

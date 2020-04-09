@@ -47,7 +47,8 @@ def prepare_graph_for_ui(
       ValueError: If `limit_attr_size` is defined, but <= 0.
     """
     # TODO(@davidsoergel): detect whether a graph has been filtered already
-    # (to a limit_attr_size <= what is requested here).
+    # (to a limit_attr_size <= what is requested here).  If it is already
+    # filtered, return immediately.
 
     # Check input for validity.
     if limit_attr_size is not None:

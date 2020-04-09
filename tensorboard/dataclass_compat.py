@@ -47,6 +47,9 @@ def migrate_event(event, experimental_filter_graph=False):
       event: An `event_pb2.Event`. The caller transfers ownership of the
         event to this method; the event may be mutated, and may or may
         not appear in the returned sequence.
+      experimental_filter_graph: When a graph event is encountered, process the
+        GraphDef to filter out attributes that are too large to be shown in the
+        graph UI.
 
     Returns:
       A sequence of `event_pb2.Event`s to use instead of `event`.
