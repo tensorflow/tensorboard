@@ -249,12 +249,14 @@ class MigrateEventTest(tf.test.TestCase):
         new_graph_def_bytes = tensor[0]
         new_graph_def = graph_pb2.GraphDef.FromString(new_graph_def_bytes)
 
-        bob_node = new_graph_def.node[1]
-        expected_bob_node = node_def_pb2.NodeDef(name="bob", op="Person")
-        expected_bob_node.attr["small"].s = b"small_attr_value"
-        expected_bob_node.attr["_too_large_attrs"].list.s.append(b"large")
+        expected_graph_def = graph_pb2.GraphDef()
+        expected_graph_def.CopyFrom(graph_def)
+        del expected_graph_def.node[1].attr["large"]
+        expected_graph_def.node[1].attr["_too_large_attrs"].list.s.append(
+            b"large"
+        )
 
-        self.assertProtoEquals(bob_node, expected_bob_node)
+        self.assertProtoEquals(expected_graph_def, new_graph_def)
 
 
 if __name__ == "__main__":
