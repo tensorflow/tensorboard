@@ -27,6 +27,7 @@ from tensorboard import dataclass_compat
 from tensorboard.backend.event_processing import event_file_loader
 from tensorboard.compat.proto import event_pb2
 from tensorboard.compat.proto import graph_pb2
+from tensorboard.compat.proto import node_def_pb2
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.graph import metadata as graphs_metadata
 from tensorboard.plugins.histogram import metadata as histogram_metadata
@@ -42,11 +43,13 @@ from tensorboard.util import test_util
 class MigrateEventTest(tf.test.TestCase):
     """Tests for `migrate_event`."""
 
-    def _migrate_event(self, old_event):
+    def _migrate_event(self, old_event, experimental_filter_graph=False):
         """Like `migrate_event`, but performs some sanity checks."""
         old_event_copy = event_pb2.Event()
         old_event_copy.CopyFrom(old_event)
-        new_events = dataclass_compat.migrate_event(old_event)
+        new_events = dataclass_compat.migrate_event(
+            old_event, experimental_filter_graph
+        )
         for event in new_events:  # ensure that wall time and step are preserved
             self.assertEqual(event.wall_time, old_event.wall_time)
             self.assertEqual(event.step, old_event.step)
@@ -211,6 +214,68 @@ class MigrateEventTest(tf.test.TestCase):
         new_graph_def = graph_pb2.GraphDef.FromString(new_graph_def_bytes)
 
         self.assertProtoEquals(graph_def, new_graph_def)
+
+    def test_graph_def_experimental_filter_graph(self):
+        # Create a `GraphDef` and write it to disk as an event.
+        logdir = self.get_temp_dir()
+        writer = test_util.FileWriter(logdir)
+        graph_def = graph_pb2.GraphDef()
+        graph_def.node.add(name="alice", op="Person")
+        graph_def.node.add(name="bob", op="Person")
+
+        graph_def.node[1].attr["small"].s = b"small_attr_value"
+        graph_def.node[1].attr["large"].s = (
+            b"large_attr_value" * 100
+        )  # 1600 bytes > 1024 limit
+
+        graph_def.node.add(
+            name="friendship", op="Friendship", input=["alice", "bob"]
+        )
+        writer.add_graph(graph=None, graph_def=graph_def, global_step=123)
+        writer.flush()
+
+        # Read in the `Event` containing the written `graph_def`.
+        files = os.listdir(logdir)
+        self.assertLen(files, 1)
+        event_file = os.path.join(logdir, files[0])
+        self.assertIn("tfevents", event_file)
+        loader = event_file_loader.EventFileLoader(event_file)
+        events = list(loader.Load())
+        self.assertLen(events, 2)
+        self.assertEqual(events[0].WhichOneof("what"), "file_version")
+        self.assertEqual(events[1].WhichOneof("what"), "graph_def")
+        old_event = events[1]
+
+        new_events = self._migrate_event(
+            old_event, experimental_filter_graph=True
+        )
+        self.assertLen(new_events, 2)
+        self.assertIs(new_events[0], old_event)
+        new_event = new_events[1]
+
+        self.assertEqual(new_event.WhichOneof("what"), "summary")
+        self.assertLen(new_event.summary.value, 1)
+        tensor = tensor_util.make_ndarray(new_event.summary.value[0].tensor)
+        self.assertEqual(
+            new_event.summary.value[0].metadata.data_class,
+            summary_pb2.DATA_CLASS_BLOB_SEQUENCE,
+        )
+        self.assertEqual(
+            new_event.summary.value[0].metadata.plugin_data.plugin_name,
+            graphs_metadata.PLUGIN_NAME,
+        )
+        self.assertEqual(tensor.shape, (1,))
+        new_graph_def_bytes = tensor[0]
+        self.assertIsInstance(new_graph_def_bytes, bytes)
+        self.assertGreaterEqual(len(new_graph_def_bytes), 16)
+        new_graph_def = graph_pb2.GraphDef.FromString(new_graph_def_bytes)
+
+        bob_node = new_graph_def.node[1]
+        expected_bob_node = node_def_pb2.NodeDef(name="bob", op="Person")
+        expected_bob_node.attr["small"].s = b"small_attr_value"
+        expected_bob_node.attr["_too_large_attrs"].list.s.append(b"large")
+
+        self.assertProtoEquals(bob_node, expected_bob_node)
 
 
 if __name__ == "__main__":

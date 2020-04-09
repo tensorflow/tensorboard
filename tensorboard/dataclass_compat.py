@@ -40,7 +40,7 @@ from tensorboard.plugins.text import metadata as text_metadata
 from tensorboard.util import tensor_util
 
 
-def migrate_event(event):
+def migrate_event(event, experimental_filter_graph=False):
     """Migrate an event to a sequence of events.
 
     Args:
@@ -52,34 +52,26 @@ def migrate_event(event):
       A sequence of `event_pb2.Event`s to use instead of `event`.
     """
     if event.HasField("graph_def"):
-        return _migrate_graph_event(event)
+        return _migrate_graph_event(
+            event, experimental_filter_graph=experimental_filter_graph
+        )
     if event.HasField("summary"):
         return _migrate_summary_event(event)
     return (event,)
 
-# Prefiltering graphs here is a stopgap.
-# This approach allows doing it in a 'private' way without touching this
-# module's public API.  Calling this method requires
-# `# pylint: disable=protected-access, which also (perhaps perversely)
-# highlights that this is not the right eventual solution.
-def _migrate_event_prefilter_graphs(event):
-    """Just like `migrate_event` except that graphs are prefiltered."""
-    if event.HasField("graph_def"):
-        return _migrate_graph_event(event, prefilter_graph=True)
-    if event.HasField("summary"):
-        return _migrate_summary_event(event)
-    return (event,)
 
-def _migrate_graph_event(old_event, prefilter_graph=False):
+def _migrate_graph_event(old_event, experimental_filter_graph=False):
     result = event_pb2.Event()
     result.wall_time = old_event.wall_time
     result.step = old_event.step
     value = result.summary.value.add(tag=graphs_metadata.RUN_GRAPH_NAME)
     graph_bytes = old_event.graph_def
 
-    if prefilter_graph:
-        # TODO(@davidsoergel): Move this stopgap to a more appropriate place.
+    # TODO(@davidsoergel): Move this stopgap to a more appropriate place.
+    if experimental_filter_graph:
         graph_def = graph_pb2.GraphDef().FromString(graph_bytes)
+        # Use the default filter parameters:
+        # limit_attr_size=1024, large_attrs_key="_too_large_attrs"
         process_graph.prepare_graph_for_ui(graph_def)
         graph_bytes = graph_def.SerializeToString()
 
