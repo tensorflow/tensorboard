@@ -8,11 +8,6 @@ licenses(["notice"])  # Apache 2.0
 exports_files(["LICENSE"])
 
 py_library(
-    name = "dev_creds",
-    srcs = ["dev_creds.py"],
-)
-
-py_library(
     name = "exporter_lib",
     srcs = ["exporter.py"],
     srcs_version = "PY3",
@@ -77,7 +72,6 @@ py_library(
     visibility = ["//tensorboard:internal"],
     deps = [
         ":auth",
-        ":dev_creds",
         ":exporter_lib",
         ":flags_parser",
         ":formatters",
