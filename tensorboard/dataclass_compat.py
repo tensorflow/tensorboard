@@ -26,6 +26,7 @@ from __future__ import division
 from __future__ import print_function
 
 
+from google.protobuf import message
 from tensorboard.backend import process_graph
 from tensorboard.compat.proto import event_pb2
 from tensorboard.compat.proto import graph_pb2
@@ -38,6 +39,9 @@ from tensorboard.plugins.image import metadata as images_metadata
 from tensorboard.plugins.scalar import metadata as scalars_metadata
 from tensorboard.plugins.text import metadata as text_metadata
 from tensorboard.util import tensor_util
+from tensorboard.util import tb_logging
+
+logger = tb_logging.get_logger()
 
 
 def migrate_event(event, experimental_filter_graph=False):
@@ -72,7 +76,14 @@ def _migrate_graph_event(old_event, experimental_filter_graph=False):
 
     # TODO(@davidsoergel): Move this stopgap to a more appropriate place.
     if experimental_filter_graph:
-        graph_def = graph_pb2.GraphDef().FromString(graph_bytes)
+        try:
+            graph_def = graph_pb2.GraphDef().FromString(graph_bytes)
+        except message.DecodeError:
+            logger.warning(
+                "Could not parse GraphDef of size %d. Skipping.",
+                len(graph_bytes),
+            )
+            return (old_event,)
         # Use the default filter parameters:
         # limit_attr_size=1024, large_attrs_key="_too_large_attrs"
         process_graph.prepare_graph_for_ui(graph_def)
