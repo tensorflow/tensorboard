@@ -41,6 +41,7 @@ from tensorboard.uploader import uploader as uploader_lib
 from tensorboard.uploader import logdir_loader
 from tensorboard.uploader import util
 from tensorboard.compat.proto import event_pb2
+from tensorboard.compat.proto import graph_pb2
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.histogram import summary_v2 as histogram_v2
 from tensorboard.plugins.graph import metadata as graphs_metadata
@@ -48,6 +49,19 @@ from tensorboard.plugins.scalar import metadata as scalars_metadata
 from tensorboard.plugins.scalar import summary_v2 as scalar_v2
 from tensorboard.summary import v1 as summary_v1
 from tensorboard.util import test_util as tb_test_util
+
+
+def _create_example_graph_bytes(large_attr_size):
+    graph_def = graph_pb2.GraphDef()
+    graph_def.node.add(name="alice", op="Person")
+    graph_def.node.add(name="bob", op="Person")
+
+    graph_def.node[1].attr["small"].s = b"small_attr_value"
+    graph_def.node[1].attr["large"].s = b"l" * large_attr_size
+    graph_def.node.add(
+        name="friendship", op="Friendship", input=["alice", "bob"]
+    )
+    return graph_def.SerializeToString()
 
 
 class AbortUploadError(Exception):
@@ -264,7 +278,9 @@ class TensorboardUploaderTest(tf.test.TestCase):
 
         # Of course a real Event stream will never produce the same Event twice,
         # but is this test context it's fine to reuse this one.
-        graph_event = event_pb2.Event(graph_def=bytes(950))
+        graph_event = event_pb2.Event(
+            graph_def=_create_example_graph_bytes(950)
+        )
 
         mock_logdir_loader = mock.create_autospec(logdir_loader.LogdirLoader)
         mock_logdir_loader.get_run_events.side_effect = [
@@ -307,7 +323,9 @@ class TensorboardUploaderTest(tf.test.TestCase):
         )
         uploader.create_experiment()
 
-        graph_event = event_pb2.Event(graph_def=bytes(950))
+        graph_event = event_pb2.Event(
+            graph_def=_create_example_graph_bytes(950)
+        )
 
         mock_logdir_loader = mock.create_autospec(logdir_loader.LogdirLoader)
         mock_logdir_loader.get_run_events.side_effect = [
@@ -342,7 +360,9 @@ class TensorboardUploaderTest(tf.test.TestCase):
 
         # Of course a real Event stream will never produce the same Event twice,
         # but is this test context it's fine to reuse this one.
-        graph_event = event_pb2.Event(graph_def=bytes(950))
+        graph_event = event_pb2.Event(
+            graph_def=_create_example_graph_bytes(950)
+        )
 
         mock_logdir_loader = mock.create_autospec(logdir_loader.LogdirLoader)
         mock_logdir_loader.get_run_events.side_effect = [
@@ -383,7 +403,9 @@ class TensorboardUploaderTest(tf.test.TestCase):
         )
         uploader.create_experiment()
 
-        graph_event = event_pb2.Event(graph_def=bytes(950))
+        graph_event = event_pb2.Event(
+            graph_def=_create_example_graph_bytes(950)
+        )
 
         mock_logdir_loader = mock.create_autospec(logdir_loader.LogdirLoader)
         mock_logdir_loader.get_run_events.side_effect = [

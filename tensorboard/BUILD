@@ -466,6 +466,7 @@ py_library(
         "//tensorboard/plugins/image:metadata",
         "//tensorboard/plugins/scalar:metadata",
         "//tensorboard/util:tensor_util",
+        "@com_google_protobuf//:protobuf_python",
     ],
 )
 
