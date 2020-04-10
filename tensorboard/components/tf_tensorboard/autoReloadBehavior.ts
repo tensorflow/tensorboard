@@ -53,7 +53,7 @@ namespace tf_tensorboard {
       },
     },
     attached: function() {
-      this._boundHandleVisibilityChange_ = this._handleVisibilityChange.bind(
+      this._boundHandleVisibilityChange = this._handleVisibilityChange.bind(
         this
       );
       document.addEventListener(
