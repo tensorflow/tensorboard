@@ -460,6 +460,7 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
+        "@com_google_protobuf//:protobuf_python",
         "//tensorboard/compat:tensorflow",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/plugins/audio:metadata",
