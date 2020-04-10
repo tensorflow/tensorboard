@@ -26,7 +26,6 @@ from __future__ import division
 from __future__ import print_function
 
 
-
 from google.protobuf import message
 from tensorboard.backend import process_graph
 from tensorboard.compat.proto import event_pb2
