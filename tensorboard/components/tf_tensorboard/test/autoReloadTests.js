@@ -51,7 +51,7 @@ var tf_tensorboard;
             });
             function simulateVisibilityChange(visibility) {
                 isDocumentVisible = visibility;
-                testElement._handleVisibilityChange();
+                document.dispatchEvent(new Event('visibilitychange'));
             }
             it('reads and writes autoReload state from localStorage', function () {
                 ls.removeItem(key);

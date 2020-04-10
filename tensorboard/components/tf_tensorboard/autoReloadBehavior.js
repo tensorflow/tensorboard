@@ -49,7 +49,7 @@ var tf_tensorboard;
             },
         },
         attached: function () {
-            this._boundHandleVisibilityChange_ = this._handleVisibilityChange.bind(this);
+            this._boundHandleVisibilityChange = this._handleVisibilityChange.bind(this);
             document.addEventListener('visibilitychange', this._boundHandleVisibilityChange);
         },
         detached: function () {
