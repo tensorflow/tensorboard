@@ -25,7 +25,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+
+from tensorboard.backend import process_graph
 from tensorboard.compat.proto import event_pb2
+from tensorboard.compat.proto import graph_pb2
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.compat.proto import types_pb2
 from tensorboard.plugins.graph import metadata as graphs_metadata
@@ -37,30 +40,44 @@ from tensorboard.plugins.text import metadata as text_metadata
 from tensorboard.util import tensor_util
 
 
-def migrate_event(event):
+def migrate_event(event, experimental_filter_graph=False):
     """Migrate an event to a sequence of events.
 
     Args:
       event: An `event_pb2.Event`. The caller transfers ownership of the
         event to this method; the event may be mutated, and may or may
         not appear in the returned sequence.
+      experimental_filter_graph: When a graph event is encountered, process the
+        GraphDef to filter out attributes that are too large to be shown in the
+        graph UI.
 
     Returns:
       A sequence of `event_pb2.Event`s to use instead of `event`.
     """
     if event.HasField("graph_def"):
-        return _migrate_graph_event(event)
+        return _migrate_graph_event(
+            event, experimental_filter_graph=experimental_filter_graph
+        )
     if event.HasField("summary"):
         return _migrate_summary_event(event)
     return (event,)
 
 
-def _migrate_graph_event(old_event):
+def _migrate_graph_event(old_event, experimental_filter_graph=False):
     result = event_pb2.Event()
     result.wall_time = old_event.wall_time
     result.step = old_event.step
     value = result.summary.value.add(tag=graphs_metadata.RUN_GRAPH_NAME)
     graph_bytes = old_event.graph_def
+
+    # TODO(@davidsoergel): Move this stopgap to a more appropriate place.
+    if experimental_filter_graph:
+        graph_def = graph_pb2.GraphDef().FromString(graph_bytes)
+        # Use the default filter parameters:
+        # limit_attr_size=1024, large_attrs_key="_too_large_attrs"
+        process_graph.prepare_graph_for_ui(graph_def)
+        graph_bytes = graph_def.SerializeToString()
+
     value.tensor.CopyFrom(tensor_util.make_tensor_proto([graph_bytes]))
     value.metadata.plugin_data.plugin_name = graphs_metadata.PLUGIN_NAME
     # `value.metadata.plugin_data.content` left as the empty proto
