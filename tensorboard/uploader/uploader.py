@@ -425,7 +425,9 @@ class _BatchedRequestSender(object):
         for (run_name, events) in six.iteritems(run_to_events):
             for event in events:
                 v2_event = data_compat.migrate_event(event)
-                dataclass_events = dataclass_compat.migrate_event(v2_event)
+                dataclass_events = dataclass_compat.migrate_event(
+                    v2_event, experimental_filter_graph=True
+                )
                 for dataclass_event in dataclass_events:
                     if dataclass_event.summary:
                         for value in dataclass_event.summary.value:
