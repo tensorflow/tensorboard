@@ -12,7 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, ChangeDetectionStrategy} from '@angular/core';
+import {DOCUMENT} from '@angular/common';
+import {Component, ChangeDetectionStrategy, Inject} from '@angular/core';
 import {Store, select} from '@ngrx/store';
 import {combineLatest} from 'rxjs';
 import {distinctUntilChanged} from 'rxjs/operators';
@@ -21,16 +22,6 @@ import {getReloadEnabled, getReloadPeriodInMs, State} from '../core/store';
 import {reload} from '../core/actions';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
-
-const documentUtil = {
-  /**
-   * Wraps Page Visibility API call to determine if document is visible.
-   * Can be overriden for testing purposes.
-   */
-  getVisibilityState(): string {
-    return document.visibilityState;
-  },
-};
 
 @Component({
   selector: 'reloader',
@@ -46,10 +37,13 @@ export class ReloaderComponent {
   private reloadTimerId: ReturnType<typeof setTimeout> | null = null;
   private missedAutoReload: boolean = false;
 
-  constructor(private store: Store<State>) {}
+  constructor(
+    private store: Store<State>,
+    @Inject(DOCUMENT) private document: Document
+  ) {}
 
   ngOnInit() {
-    window.addEventListener('visibilitychange', this.onVisibilityChange);
+    this.document.addEventListener('visibilitychange', this.onVisibilityChange);
     combineLatest(
       this.reloadEnabled$.pipe(distinctUntilChanged()),
       this.reloadPeriodInMs$.pipe(distinctUntilChanged())
@@ -62,10 +56,7 @@ export class ReloaderComponent {
   }
 
   private onVisibilityChangeImpl() {
-    if (
-      documentUtil.getVisibilityState() === 'visible' &&
-      this.missedAutoReload
-    ) {
+    if (this.document.visibilityState === 'visible' && this.missedAutoReload) {
       this.missedAutoReload = false;
       this.store.dispatch(reload());
     }
@@ -73,7 +64,7 @@ export class ReloaderComponent {
 
   private load(reloadPeriodInMs: number) {
     this.reloadTimerId = setTimeout(() => {
-      if (documentUtil.getVisibilityState() === 'visible') {
+      if (this.document.visibilityState === 'visible') {
         this.store.dispatch(reload());
       } else {
         this.missedAutoReload = true;
@@ -91,8 +82,9 @@ export class ReloaderComponent {
 
   ngOnDestroy() {
     this.cancelLoad();
-    window.removeEventListener('visibilitychange', this.onVisibilityChange);
+    this.document.removeEventListener(
+      'visibilitychange',
+      this.onVisibilityChange
+    );
   }
 }
-
-export const TEST_ONLY = {documentUtil};

@@ -12,11 +12,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {DOCUMENT} from '@angular/common';
 import {TestBed, fakeAsync, tick} from '@angular/core/testing';
 import {Store} from '@ngrx/store';
 import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
-import {ReloaderComponent, TEST_ONLY} from './reloader_component';
+import {ReloaderComponent} from './reloader_component';
 
 import {reload} from '../core/actions';
 import {State} from '../core/store';
@@ -27,13 +28,24 @@ import {createState, createCoreState} from '../core/testing';
 describe('reloader_component', () => {
   let store: MockStore<State>;
   let dispatchSpy: jasmine.Spy;
-  // Specifies whether stubbed documentUtil.getVisibilityState will return
-  // 'visible' (true) or 'hidden' (false)
-  let isDocumentVisible: boolean = true;
+
+  const fakeDocument = {
+    visibilityState: 'visible',
+    addEventListener: document.addEventListener.bind(document),
+    removeEventListener: document.removeEventListener.bind(document),
+    // DOMTestComponentRenderer injects DOCUMENT and requires the following
+    // properties to function.
+    querySelectorAll: document.querySelectorAll.bind(document),
+    body: document.body,
+  };
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       providers: [
+        {
+          provide: DOCUMENT,
+          useFactory: () => fakeDocument,
+        },
         provideMockStore({
           initialState: createState(
             createCoreState({
@@ -48,15 +60,11 @@ describe('reloader_component', () => {
     }).compileComponents();
     store = TestBed.get(Store);
     dispatchSpy = spyOn(store, 'dispatch');
-    isDocumentVisible = true;
-    spyOn(TEST_ONLY.documentUtil, 'getVisibilityState').and.callFake(() =>
-      isDocumentVisible ? 'visible' : 'hidden'
-    );
   });
 
-  function simulateVisibilityChange(visibility: boolean) {
-    isDocumentVisible = visibility;
-    window.dispatchEvent(new Event('visibilitychange'));
+  function simulateVisibilityChange(visible: boolean) {
+    fakeDocument.visibilityState = visible ? 'visible' : 'hidden';
+    document.dispatchEvent(new Event('visibilitychange'));
   }
 
   it('dispatches reload action every reload period', fakeAsync(() => {
