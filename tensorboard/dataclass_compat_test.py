@@ -269,6 +269,7 @@ class MigrateEventTest(tf.test.TestCase):
         # _migrate_event emits both the original event and the migrated event,
         # but here there is no migrated event becasue the graph was unparseable.
         self.assertLen(new_events, 1)
+        self.assertProtoEquals(new_events[0], old_event)
 
 
 if __name__ == "__main__":

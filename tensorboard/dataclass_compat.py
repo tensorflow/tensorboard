@@ -78,13 +78,16 @@ def _migrate_graph_event(old_event, experimental_filter_graph=False):
     if experimental_filter_graph:
         try:
             graph_def = graph_pb2.GraphDef().FromString(graph_bytes)
-            # Use the default filter parameters:
-            # limit_attr_size=1024, large_attrs_key="_too_large_attrs"
-            process_graph.prepare_graph_for_ui(graph_def)
-            graph_bytes = graph_def.SerializeToString()
         except message.DecodeError:
-            logger.warning("Could not parse GraphDef.  Skipping.")
+            logger.warning(
+                "Could not parse GraphDef of size %d. Skipping.",
+                len(graph_bytes),
+            )
             return (old_event,)
+        # Use the default filter parameters:
+        # limit_attr_size=1024, large_attrs_key="_too_large_attrs"
+        process_graph.prepare_graph_for_ui(graph_def)
+        graph_bytes = graph_def.SerializeToString()
 
     value.tensor.CopyFrom(tensor_util.make_tensor_proto([graph_bytes]))
     value.metadata.plugin_data.plugin_name = graphs_metadata.PLUGIN_NAME

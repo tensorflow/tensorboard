@@ -51,7 +51,7 @@ from tensorboard.summary import v1 as summary_v1
 from tensorboard.util import test_util as tb_test_util
 
 
-def _create_example_graph(test_attr_size):
+def _create_example_graph_bytes(test_attr_size):
     graph_def = graph_pb2.GraphDef()
     graph_def.node.add(name="alice", op="Person")
     graph_def.node.add(name="bob", op="Person")
@@ -278,7 +278,9 @@ class TensorboardUploaderTest(tf.test.TestCase):
 
         # Of course a real Event stream will never produce the same Event twice,
         # but is this test context it's fine to reuse this one.
-        graph_event = event_pb2.Event(graph_def=_create_example_graph(950))
+        graph_event = event_pb2.Event(
+            graph_def=_create_example_graph_bytes(950)
+        )
 
         mock_logdir_loader = mock.create_autospec(logdir_loader.LogdirLoader)
         mock_logdir_loader.get_run_events.side_effect = [
@@ -321,7 +323,9 @@ class TensorboardUploaderTest(tf.test.TestCase):
         )
         uploader.create_experiment()
 
-        graph_event = event_pb2.Event(graph_def=_create_example_graph(950))
+        graph_event = event_pb2.Event(
+            graph_def=_create_example_graph_bytes(950)
+        )
 
         mock_logdir_loader = mock.create_autospec(logdir_loader.LogdirLoader)
         mock_logdir_loader.get_run_events.side_effect = [
@@ -356,7 +360,9 @@ class TensorboardUploaderTest(tf.test.TestCase):
 
         # Of course a real Event stream will never produce the same Event twice,
         # but is this test context it's fine to reuse this one.
-        graph_event = event_pb2.Event(graph_def=_create_example_graph(950))
+        graph_event = event_pb2.Event(
+            graph_def=_create_example_graph_bytes(950)
+        )
 
         mock_logdir_loader = mock.create_autospec(logdir_loader.LogdirLoader)
         mock_logdir_loader.get_run_events.side_effect = [
@@ -397,7 +403,9 @@ class TensorboardUploaderTest(tf.test.TestCase):
         )
         uploader.create_experiment()
 
-        graph_event = event_pb2.Event(graph_def=_create_example_graph(950))
+        graph_event = event_pb2.Event(
+            graph_def=_create_example_graph_bytes(950)
+        )
 
         mock_logdir_loader = mock.create_autospec(logdir_loader.LogdirLoader)
         mock_logdir_loader.get_run_events.side_effect = [
