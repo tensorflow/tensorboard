@@ -51,13 +51,13 @@ from tensorboard.summary import v1 as summary_v1
 from tensorboard.util import test_util as tb_test_util
 
 
-def _create_example_graph_bytes(test_attr_size):
+def _create_example_graph_bytes(large_attr_size):
     graph_def = graph_pb2.GraphDef()
     graph_def.node.add(name="alice", op="Person")
     graph_def.node.add(name="bob", op="Person")
 
     graph_def.node[1].attr["small"].s = b"small_attr_value"
-    graph_def.node[1].attr["large"].s = b"l" * test_attr_size
+    graph_def.node[1].attr["large"].s = b"l" * large_attr_size
     graph_def.node.add(
         name="friendship", op="Friendship", input=["alice", "bob"]
     )
