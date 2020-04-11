@@ -25,7 +25,6 @@ tf_web_library(
     deps = [
         "//tensorboard/components/tf_imports:plottable",
         "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/components/tf_imports:web_component_tester",
         "//tensorboard/components/vz_line_chart2",
     ],
 )
