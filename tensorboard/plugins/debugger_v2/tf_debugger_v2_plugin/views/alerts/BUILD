@@ -41,6 +41,7 @@ tf_ts_library(
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/store:types",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/testing",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/execution_data",
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/graph_executions",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/inactive",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/source_files",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/stack_trace",

@@ -19,6 +19,8 @@ import {
   DebuggerRunListing,
   Execution,
   ExecutionDigest,
+  GraphExecution,
+  GraphExecutionDigest,
   SourceFileSpec,
   StackFrame,
 } from '../store/debugger_types';
@@ -39,6 +41,10 @@ export interface StackFramesResponse {
   stack_frames: StackFrame[];
 }
 
+/**
+ * Response types related to top-level (eager) execution.
+ */
+
 export interface ExecutionDigestsResponse {
   begin: number;
 
@@ -56,6 +62,32 @@ export interface ExecutionDataResponse {
 
   executions: Execution[];
 }
+
+/**
+ * Response types related to intra-graph execution.
+ */
+
+export interface GraphExecutionDigestsResponse {
+  begin: number;
+
+  end: number;
+
+  num_digests: number;
+
+  graph_execution_digests: GraphExecutionDigest[];
+}
+
+export interface GraphExecutionDataResponse {
+  begin: number;
+
+  end: number;
+
+  graph_executions: GraphExecution[];
+}
+
+/**
+ * Response types related to alerts.
+ */
 
 export interface AlertsResponse {
   begin: number;
@@ -76,17 +108,43 @@ export interface AlertsResponse {
 export abstract class Tfdbg2DataSource {
   abstract fetchRuns(): Observable<DebuggerRunListing>;
 
+  /**
+   * Fetch the digest objects for top-level executions.
+   */
   abstract fetchExecutionDigests(
     run: string,
     begin: number,
     end: number
   ): Observable<ExecutionDigestsResponse>;
 
+  /**
+   * Fetch the detailed data objects for top-level executions.
+   */
   abstract fetchExecutionData(
     run: string,
     begin: number,
     end: number
   ): Observable<ExecutionDataResponse>;
+
+  /**
+   * Fetch the digest objects for intra-graph executions.
+   */
+  abstract fetchGraphExecutionDigests(
+    run: string,
+    begin: number,
+    end: number,
+    trace_id?: string
+  ): Observable<GraphExecutionDigestsResponse>;
+
+  /**
+   * Fetch the detailed data objects for top-level executions.
+   */
+  abstract fetchGraphExecutionData(
+    run: string,
+    begin: number,
+    end: number,
+    trace_id?: string
+  ): Observable<GraphExecutionDataResponse>;
 
   /**
    * Fetch the list of source-code files that the debugged program involves.
@@ -161,6 +219,52 @@ export class Tfdbg2HttpServerDataSource implements Tfdbg2DataSource {
   fetchExecutionData(run: string, begin: number, end: number) {
     return this.http.get<ExecutionDataResponse>(
       this.httpPathPrefix + '/execution/data',
+      {
+        params: {
+          run,
+          begin: String(begin),
+          end: String(end),
+        },
+      }
+    );
+  }
+
+  fetchGraphExecutionDigests(
+    run: string,
+    begin: number,
+    end: number,
+    trace_id?: string
+  ) {
+    if (trace_id !== undefined) {
+      throw new Error(
+        'trace_id is not implemented for fetchGraphExecutionDigests() yet'
+      );
+    }
+    return this.http.get<GraphExecutionDigestsResponse>(
+      this.httpPathPrefix + '/graph_execution/digests',
+      {
+        params: {
+          run,
+          begin: String(begin),
+          end: String(end),
+        },
+      }
+    );
+  }
+
+  fetchGraphExecutionData(
+    run: string,
+    begin: number,
+    end: number,
+    trace_id?: string
+  ) {
+    if (trace_id !== undefined) {
+      throw new Error(
+        'trace_id is not implemented for fetchGraphExecutionData() yet'
+      );
+    }
+    return this.http.get<GraphExecutionDataResponse>(
+      this.httpPathPrefix + '/graph_execution/data',
       {
         params: {
           run,
