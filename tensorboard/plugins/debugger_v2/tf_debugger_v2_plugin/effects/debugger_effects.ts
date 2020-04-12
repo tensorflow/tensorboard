@@ -247,10 +247,6 @@ export class DebuggerEffects {
           .fetchGraphExecutionDigests(runId, begin, end)
           .pipe(
             tap((digests) => {
-              console.log(
-                '200 fetchGraphExecutionDigests(): digests=',
-                digests
-              ); // DEBUG
               this.store.dispatch(
                 numGraphExecutionsLoaded({
                   numGraphExecutions: digests.num_digests,
@@ -748,14 +744,15 @@ export class DebuggerEffects {
     /**
      * view load ---------> fetch source-file list
      *  |
-     *  +> fetch run +> fetch num exec
+     *  +> fetch run +> fetch num of top-level (eager) executions
+     *  |            +> fetch num of intra-graph executions
      *  |            +> fetch num alerts
      *  |                +
      *  |                +> if init load and non-zero number of execs
      *  |                    +
-     *  |                    +>+-------------------+
-     *  |                    | | fetch exec digest |
-     *  |  on scroll +-------->+-------------------+<------------------+
+     *  |                    +>+-----------------------------+
+     *  |  on top-level      | | fetch top-level exec digest |
+     *  |  scroll -----------+>+-----------------------------+<--------+
      *  |                    |                                         |
      *  |                    +>+----------------------------------+    |
      *  |                      | fetch exec data and stack frames |    |
