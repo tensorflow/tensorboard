@@ -82,6 +82,12 @@ def _create_mock_client():
         experiment_id="123", url="should not be used!"
     )
     mock_client.CreateExperiment.return_value = fake_exp_response
+    mock_client.GetOrCreateBlobSequence.side_effect = (
+        write_service_pb2.GetOrCreateBlobSequenceResponse(
+            blob_sequence_id="blob%d" % i
+        )
+        for i in itertools.count()
+    )
     return mock_client
 
 
@@ -295,13 +301,6 @@ class TensorboardUploaderTest(tf.test.TestCase):
             },
             AbortUploadError,
         ]
-
-        mock_client.GetOrCreateBlobSequence.side_effect = (
-            write_service_pb2.GetOrCreateBlobSequenceResponse(
-                blob_sequence_id="blob%d" % i
-            )
-            for i in itertools.count()
-        )
 
         with mock.patch.object(
             uploader, "_logdir_loader", mock_logdir_loader
