@@ -261,7 +261,7 @@ class MigrateEventTest(tf.test.TestCase):
         # Careful: some proto parsers choke on byte arrays filled with 0, but
         # others don't (silently producing an empty proto, I guess).
         # Thus `old_event.graph_def = bytes(1024)` is an unreliable example.
-        old_event.graph_def = b"bogus"
+        old_event.graph_def = b"<malformed>"
 
         new_events = self._migrate_event(
             old_event, experimental_filter_graph=True
@@ -270,6 +270,27 @@ class MigrateEventTest(tf.test.TestCase):
         # but here there is no migrated event becasue the graph was unparseable.
         self.assertLen(new_events, 1)
         self.assertProtoEquals(new_events[0], old_event)
+
+    def test_graph_def_experimental_filter_graph_empty(self):
+        # Simulate legacy graph event with an empty graph
+        old_event = event_pb2.Event()
+        old_event.step = 0
+        old_event.wall_time = 456.75
+        old_event.graph_def = b''
+
+        new_events = self._migrate_event(
+            old_event, experimental_filter_graph=True
+        )
+        # _migrate_event emits both the original event and the migrated event.
+        # The migrated event contains a default empty GraphDef.
+        self.assertLen(new_events, 2)
+        self.assertProtoEquals(new_events[0], old_event)
+
+        new_event = new_events[1]
+        tensor = tensor_util.make_ndarray(new_event.summary.value[0].tensor)
+        new_graph_def_bytes = tensor[0]
+        new_graph_def = graph_pb2.GraphDef.FromString(new_graph_def_bytes)
+        self.assertProtoEquals(new_graph_def, graph_pb2.GraphDef())
 
 
 if __name__ == "__main__":
