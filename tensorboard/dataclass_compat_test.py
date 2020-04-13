@@ -276,7 +276,7 @@ class MigrateEventTest(tf.test.TestCase):
         old_event = event_pb2.Event()
         old_event.step = 0
         old_event.wall_time = 456.75
-        old_event.graph_def = b''
+        old_event.graph_def = b""
 
         new_events = self._migrate_event(
             old_event, experimental_filter_graph=True
