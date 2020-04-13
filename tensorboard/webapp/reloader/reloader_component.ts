@@ -39,7 +39,7 @@ export class ReloaderComponent {
 
   constructor(
     private store: Store<State>,
-    @Inject(DOCUMENT) private document: Document
+    @Inject(DOCUMENT) private readonly document: Document
   ) {}
 
   ngOnInit() {

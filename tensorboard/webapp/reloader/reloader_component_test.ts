@@ -28,23 +28,31 @@ import {createState, createCoreState} from '../core/testing';
 describe('reloader_component', () => {
   let store: MockStore<State>;
   let dispatchSpy: jasmine.Spy;
+  let fakeDocument: any;
 
-  const fakeDocument = {
-    visibilityState: 'visible',
-    addEventListener: document.addEventListener.bind(document),
-    removeEventListener: document.removeEventListener.bind(document),
-    // DOMTestComponentRenderer injects DOCUMENT and requires the following
-    // properties to function.
-    querySelectorAll: document.querySelectorAll.bind(document),
-    body: document.body,
-  };
+  function createFakeDocument() {
+    return {
+      visibilityState: 'visible',
+      addEventListener: document.addEventListener.bind(document),
+      removeEventListener: document.removeEventListener.bind(document),
+      // DOMTestComponentRenderer injects DOCUMENT and requires the following
+      // properties to function.
+      querySelectorAll: document.querySelectorAll.bind(document),
+      body: document.body,
+    };
+  }
+
+  function simulateVisibilityChange(visible: boolean) {
+    fakeDocument.visibilityState = visible ? 'visible' : 'hidden';
+    document.dispatchEvent(new Event('visibilitychange'));
+  }
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       providers: [
         {
           provide: DOCUMENT,
-          useFactory: () => fakeDocument,
+          useFactory: createFakeDocument,
         },
         provideMockStore({
           initialState: createState(
@@ -59,13 +67,9 @@ describe('reloader_component', () => {
       declarations: [ReloaderComponent],
     }).compileComponents();
     store = TestBed.get(Store);
+    fakeDocument = TestBed.get(DOCUMENT);
     dispatchSpy = spyOn(store, 'dispatch');
   });
-
-  function simulateVisibilityChange(visible: boolean) {
-    fakeDocument.visibilityState = visible ? 'visible' : 'hidden';
-    document.dispatchEvent(new Event('visibilitychange'));
-  }
 
   it('dispatches reload action every reload period', fakeAsync(() => {
     store.setState(
