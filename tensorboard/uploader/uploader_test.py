@@ -316,11 +316,7 @@ class TensorboardUploaderTest(tf.test.TestCase):
             requests = list(call[0][0])
             data = b"".join(r.data for r in requests)
             actual_graph_def = graph_pb2.GraphDef.FromString(data)
-<<<<<<< HEAD
-            self.assertEqual(actual_graph_def, expected_graph_def)
-=======
             self.assertProtoEquals(expected_graph_def, actual_graph_def)
->>>>>>> 0f36c3feb115827bfc8f1b8b73720ef487e6655b
             self.assertEqual(
                 set(r.blob_sequence_id for r in requests), {"blob%d" % i},
             )
@@ -368,7 +364,10 @@ class TensorboardUploaderTest(tf.test.TestCase):
         # Three graphs: one short, one long, one corrupt.
         bytes_0 = _create_example_graph_bytes(123)
         bytes_1 = _create_example_graph_bytes(9999)
-        bytes_2 = b"\x0a\x7fbogus"  # invalid (truncated) proto
+        # invalid (truncated) proto: length-delimited field 1 (0x0a) of
+        # length 0x7f specified, but only len("bogus") = 5 bytes given
+        # <https://developers.google.com/protocol-buffers/docs/encoding>
+        bytes_2 = b"\x0a\x7fbogus"
 
         logdir = self.get_temp_dir()
         for (i, b) in enumerate([bytes_0, bytes_1, bytes_2]):
