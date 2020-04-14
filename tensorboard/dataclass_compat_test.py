@@ -43,11 +43,7 @@ from tensorboard.plugins.scalar import summary as scalar_summary
 from tensorboard.util import tensor_util
 from tensorboard.util import test_util
 
-try:
-    # python version >= 3.3
-    from unittest import mock
-except ImportError:
-    import mock  # pylint: disable=unused-import
+tf.compat.v1.enable_eager_execution()
 
 
 class MigrateEventTest(tf.test.TestCase):
@@ -185,34 +181,66 @@ class MigrateEventTest(tf.test.TestCase):
         )
 
     def test_audio(self):
-        old_event = event_pb2.Event()
-        old_event.step = 123
-        old_event.wall_time = 456.75
-        audio = tf.reshape(tf.linspace(0.0, 100.0, 4 * 10 * 2), (4, 10, 2))
-        audio_pb = audio_summary.pb(
-            "foo",
-            audio,
-            labels=["one", "two", "three", "four"],
-            sample_rate=44100,
-            display_name="bar",
-            description="baz",
-        )
-        old_event.summary.ParseFromString(audio_pb.SerializeToString())
+        logdir = self.get_temp_dir()
+        steps = (0, 1, 2)
+        with test_util.FileWriter(logdir) as writer:
+            for step in steps:
+                event = event_pb2.Event()
+                event.step = step
+                event.wall_time = 456.75 * step
+                audio = tf.reshape(
+                    tf.linspace(0.0, 100.0, 4 * 10 * 2), (4, 10, 2)
+                )
+                audio_pb = audio_summary.pb(
+                    "foo",
+                    audio,
+                    labels=["one", "two", "three", "four"],
+                    sample_rate=44100,
+                    display_name="bar",
+                    description="baz",
+                )
+                writer.add_summary(
+                    audio_pb.SerializeToString(), global_step=step
+                )
+        files = os.listdir(logdir)
+        self.assertLen(files, 1)
+        event_file = os.path.join(logdir, files[0])
+        loader = event_file_loader.RawEventFileLoader(event_file)
+        input_events = [event_pb2.Event.FromString(x) for x in loader.Load()]
 
-        new_events = self._migrate_event(old_event)
-        self.assertLen(new_events, 1)
-        self.assertLen(new_events[0].summary.value, 1)
-        value = new_events[0].summary.value[0]
-        tensor = tensor_util.make_ndarray(value.tensor)
-        self.assertEqual(tensor.shape, (3,))  # 4 clipped to max_outputs=3
-        self.assertStartsWith(tensor[0], b"RIFF")
-        self.assertStartsWith(tensor[1], b"RIFF")
-        self.assertEqual(
-            value.metadata.data_class, summary_pb2.DATA_CLASS_BLOB_SEQUENCE
-        )
-        self.assertEqual(
-            value.metadata.plugin_data.plugin_name, audio_metadata.PLUGIN_NAME,
-        )
+        new_events = []
+        initial_metadata = {}
+        for input_event in input_events:
+            migrated = self._migrate_event(
+                input_event, initial_metadata=initial_metadata
+            )
+            new_events.extend(migrated)
+
+        self.assertLen(new_events, 4)
+        self.assertEqual(new_events[0].WhichOneof("what"), "file_version")
+        for step in steps:
+            with self.subTest("step %d" % step):
+                new_event = new_events[step + 1]
+                self.assertLen(new_event.summary.value, 1)
+                value = new_event.summary.value[0]
+                tensor = tensor_util.make_ndarray(value.tensor)
+                self.assertEqual(
+                    tensor.shape, (3,)
+                )  # 4 clipped to max_outputs=3
+                self.assertStartsWith(tensor[0], b"RIFF")
+                self.assertStartsWith(tensor[1], b"RIFF")
+                if step == min(steps):
+                    metadata = value.metadata
+                    self.assertEqual(
+                        metadata.data_class,
+                        summary_pb2.DATA_CLASS_BLOB_SEQUENCE,
+                    )
+                    self.assertEqual(
+                        metadata.plugin_data.plugin_name,
+                        audio_metadata.PLUGIN_NAME,
+                    )
+                else:
+                    self.assertFalse(value.HasField("metadata"))
 
     def test_hparams(self):
         old_event = event_pb2.Event()

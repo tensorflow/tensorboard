@@ -110,13 +110,9 @@ def _migrate_value(value, initial_metadata):
     if plugin_name == histograms_metadata.PLUGIN_NAME:
         return _migrate_histogram_value(value, initial)
     if plugin_name == images_metadata.PLUGIN_NAME:
-<<<<<<< HEAD
-        return _migrate_image_value(value)
-    if plugin_name == audio_metadata.PLUGIN_NAME:
-        return _migrate_audio_value(value)
-=======
         return _migrate_image_value(value, initial)
->>>>>>> f339182d238d730f5436d55d79f5a7d880a27cc1
+    if plugin_name == audio_metadata.PLUGIN_NAME:
+        return _migrate_audio_value(value, initial)
     if plugin_name == scalars_metadata.PLUGIN_NAME:
         return _migrate_scalar_value(value, initial)
     if plugin_name == text_metadata.PLUGIN_NAME:
@@ -144,9 +140,15 @@ def _migrate_image_value(value, initial):
     return (value,)
 
 
-<<<<<<< HEAD
-def _migrate_audio_value(value):
-    value.metadata.data_class = summary_pb2.DATA_CLASS_BLOB_SEQUENCE
+def _migrate_text_value(value, initial):
+    if initial:
+        value.metadata.data_class = summary_pb2.DATA_CLASS_TENSOR
+    return (value,)
+
+
+def _migrate_audio_value(value, initial):
+    if initial:
+        value.metadata.data_class = summary_pb2.DATA_CLASS_BLOB_SEQUENCE
     tensor = value.tensor
     # Project out just the first axis: actual audio clips.
     stride = 1
@@ -154,16 +156,6 @@ def _migrate_audio_value(value):
         stride *= tensor.tensor_shape.dim.pop().size
     if stride != 1:
         tensor.string_val[:] = tensor.string_val[::stride]
-    return (value,)
-
-
-def _migrate_text_value(value):
-    value.metadata.data_class = summary_pb2.DATA_CLASS_TENSOR
-=======
-def _migrate_text_value(value, initial):
-    if initial:
-        value.metadata.data_class = summary_pb2.DATA_CLASS_TENSOR
->>>>>>> f339182d238d730f5436d55d79f5a7d880a27cc1
     return (value,)
 
 

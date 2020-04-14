@@ -43,7 +43,8 @@ audio = summary_v2.audio
 
 
 _LABELS_WARNING = (
-    "Labels on audio summaries are deprecated and will be removed."
+    "Labels on audio summaries are deprecated and will be removed. "
+    "See <https://github.com/tensorflow/tensorboard/issues/3513>."
 )
 
 
