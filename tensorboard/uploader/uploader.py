@@ -25,16 +25,18 @@ import time
 import grpc
 import six
 
+from google.protobuf import message
+from tensorboard.compat.proto import graph_pb2
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.uploader.proto import write_service_pb2
 from tensorboard.uploader.proto import experiment_pb2
 from tensorboard.uploader import logdir_loader
 from tensorboard.uploader import util
-from tensorboard import data_compat
-from tensorboard import dataclass_compat
+from tensorboard.backend import process_graph
 from tensorboard.backend.event_processing import directory_loader
 from tensorboard.backend.event_processing import event_file_loader
 from tensorboard.backend.event_processing import io_wrapper
+from tensorboard.plugins.graph import metadata as graphs_metadata
 from tensorboard.plugins.scalar import metadata as scalar_metadata
 from tensorboard.util import grpc_util
 from tensorboard.util import tb_logging
@@ -349,7 +351,7 @@ class _BatchedRequestSender(object):
         """
 
         for (run_name, event, orig_value) in self._run_values(run_to_events):
-            value = data_compat.migrate_value(orig_value)
+            value = orig_value
             time_series_key = (run_name, value.tag)
 
             # The metadata for a time series is memorized on the first event.
@@ -403,10 +405,6 @@ class _BatchedRequestSender(object):
     def _run_values(self, run_to_events):
         """Helper generator to create a single stream of work items.
 
-        The events are passed through the `data_compat` and `dataclass_compat`
-        layers before being emitted, so downstream consumers may process them
-        uniformly.
-
         Note that `dataclass_compat` may emit multiple variants of
         the same event, for backwards compatibility.  Thus this stream should
         be filtered to obtain the desired version of each event.  Here, we
@@ -424,12 +422,9 @@ class _BatchedRequestSender(object):
         # such data from the request anyway.
         for (run_name, events) in six.iteritems(run_to_events):
             for event in events:
-                v2_event = data_compat.migrate_event(event)
-                dataclass_events = dataclass_compat.migrate_event(v2_event)
-                for dataclass_event in dataclass_events:
-                    if dataclass_event.summary:
-                        for value in dataclass_event.summary.value:
-                            yield (run_name, event, value)
+                _filter_graph_defs(event)
+                for value in event.summary.value:
+                    yield (run_name, event, value)
 
 
 class _ScalarBatchedRequestSender(object):
@@ -831,3 +826,30 @@ def _varint_cost(n):
         result += 1
         n >>= 7
     return result
+
+
+def _filter_graph_defs(event):
+    for v in event.summary.value:
+        if v.metadata.plugin_data.plugin_name != graphs_metadata.PLUGIN_NAME:
+            continue
+        if v.tag == graphs_metadata.RUN_GRAPH_NAME:
+            data = v.tensor.string_val
+            data[:] = map(_filtered_graph_bytes, data)
+
+
+def _filtered_graph_bytes(graph_bytes):
+    try:
+        graph_def = graph_pb2.GraphDef().FromString(graph_bytes)
+    # The reason for the RuntimeWarning catch here is b/27494216, whereby
+    # some proto parsers incorrectly raise that instead of DecodeError
+    # on certain kinds of malformed input. Triggering this seems to require
+    # a combination of mysterious circumstances.
+    except (message.DecodeError, RuntimeWarning):
+        logger.warning(
+            "Could not parse GraphDef of size %d.", len(graph_bytes),
+        )
+        return graph_bytes
+    # Use the default filter parameters:
+    # limit_attr_size=1024, large_attrs_key="_too_large_attrs"
+    process_graph.prepare_graph_for_ui(graph_def)
+    return graph_def.SerializeToString()

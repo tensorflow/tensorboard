@@ -458,7 +458,6 @@ py_library(
     name = "data_compat",
     srcs = ["data_compat.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/compat:tensorflow",
         "//tensorboard/compat/proto:protos_all_py_pb2",
@@ -467,6 +466,7 @@ py_library(
         "//tensorboard/plugins/image:metadata",
         "//tensorboard/plugins/scalar:metadata",
         "//tensorboard/util:tensor_util",
+        "@com_google_protobuf//:protobuf_python",
     ],
 )
 
@@ -496,7 +496,6 @@ py_library(
     name = "dataclass_compat",
     srcs = ["dataclass_compat.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/plugins/audio:metadata",

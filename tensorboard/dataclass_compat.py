@@ -38,13 +38,18 @@ from tensorboard.plugins.text import metadata as text_metadata
 from tensorboard.util import tensor_util
 
 
-def migrate_event(event):
+def migrate_event(event, initial_metadata):
     """Migrate an event to a sequence of events.
 
     Args:
       event: An `event_pb2.Event`. The caller transfers ownership of the
         event to this method; the event may be mutated, and may or may
         not appear in the returned sequence.
+      initial_metadata: Map from tag name (string) to `SummaryMetadata`
+        proto for the initial occurrence of the given tag within the
+        enclosing run. While loading a given run, the caller should
+        always pass the same dictionary here, initially `{}`; this
+        function will mutate it and reuse it for future calls.
 
     Returns:
       A sequence of `event_pb2.Event`s to use instead of `event`.
@@ -52,7 +57,7 @@ def migrate_event(event):
     if event.HasField("graph_def"):
         return _migrate_graph_event(event)
     if event.HasField("summary"):
-        return _migrate_summary_event(event)
+        return _migrate_summary_event(event, initial_metadata)
     return (event,)
 
 
@@ -71,9 +76,11 @@ def _migrate_graph_event(old_event):
     return (old_event, result)
 
 
-def _migrate_summary_event(event):
+def _migrate_summary_event(event, initial_metadata):
     values = event.summary.value
-    new_values = [new for old in values for new in _migrate_value(old)]
+    new_values = [
+        new for old in values for new in _migrate_value(old, initial_metadata)
+    ]
     # Optimization: Don't create a new event if there were no shallow
     # changes (there may still have been in-place changes).
     if len(values) == len(new_values) and all(
@@ -85,41 +92,59 @@ def _migrate_summary_event(event):
     return (event,)
 
 
-def _migrate_value(value):
+def _migrate_value(value, initial_metadata):
     """Convert an old value to a stream of new values. May mutate."""
-    if value.metadata.data_class != summary_pb2.DATA_CLASS_UNKNOWN:
+    metadata = initial_metadata.get(value.tag)
+    initial = False
+    if metadata is None:
+        initial = True
+        # Retain a copy of the initial metadata, so that even after we
+        # update its data class we know whether to also transform later
+        # events in this time series.
+        metadata = summary_pb2.SummaryMetadata()
+        metadata.CopyFrom(value.metadata)
+        initial_metadata[value.tag] = metadata
+    if metadata.data_class != summary_pb2.DATA_CLASS_UNKNOWN:
         return (value,)
-    plugin_name = value.metadata.plugin_data.plugin_name
+    plugin_name = metadata.plugin_data.plugin_name
     if plugin_name == histograms_metadata.PLUGIN_NAME:
-        return _migrate_histogram_value(value)
+        return _migrate_histogram_value(value, initial)
     if plugin_name == images_metadata.PLUGIN_NAME:
+<<<<<<< HEAD
         return _migrate_image_value(value)
     if plugin_name == audio_metadata.PLUGIN_NAME:
         return _migrate_audio_value(value)
+=======
+        return _migrate_image_value(value, initial)
+>>>>>>> f339182d238d730f5436d55d79f5a7d880a27cc1
     if plugin_name == scalars_metadata.PLUGIN_NAME:
-        return _migrate_scalar_value(value)
+        return _migrate_scalar_value(value, initial)
     if plugin_name == text_metadata.PLUGIN_NAME:
-        return _migrate_text_value(value)
+        return _migrate_text_value(value, initial)
     if plugin_name == hparams_metadata.PLUGIN_NAME:
-        return _migrate_hparams_value(value)
+        return _migrate_hparams_value(value, initial)
     return (value,)
 
 
-def _migrate_scalar_value(value):
-    value.metadata.data_class = summary_pb2.DATA_CLASS_SCALAR
+def _migrate_scalar_value(value, initial):
+    if initial:
+        value.metadata.data_class = summary_pb2.DATA_CLASS_SCALAR
     return (value,)
 
 
-def _migrate_histogram_value(value):
-    value.metadata.data_class = summary_pb2.DATA_CLASS_TENSOR
+def _migrate_histogram_value(value, initial):
+    if initial:
+        value.metadata.data_class = summary_pb2.DATA_CLASS_TENSOR
     return (value,)
 
 
-def _migrate_image_value(value):
-    value.metadata.data_class = summary_pb2.DATA_CLASS_BLOB_SEQUENCE
+def _migrate_image_value(value, initial):
+    if initial:
+        value.metadata.data_class = summary_pb2.DATA_CLASS_BLOB_SEQUENCE
     return (value,)
 
 
+<<<<<<< HEAD
 def _migrate_audio_value(value):
     value.metadata.data_class = summary_pb2.DATA_CLASS_BLOB_SEQUENCE
     tensor = value.tensor
@@ -134,11 +159,17 @@ def _migrate_audio_value(value):
 
 def _migrate_text_value(value):
     value.metadata.data_class = summary_pb2.DATA_CLASS_TENSOR
+=======
+def _migrate_text_value(value, initial):
+    if initial:
+        value.metadata.data_class = summary_pb2.DATA_CLASS_TENSOR
+>>>>>>> f339182d238d730f5436d55d79f5a7d880a27cc1
     return (value,)
 
 
-def _migrate_hparams_value(value):
-    value.metadata.data_class = summary_pb2.DATA_CLASS_TENSOR
+def _migrate_hparams_value(value, initial):
+    if initial:
+        value.metadata.data_class = summary_pb2.DATA_CLASS_TENSOR
     if not value.HasField("tensor"):
         value.tensor.CopyFrom(hparams_metadata.NULL_TENSOR)
     return (value,)

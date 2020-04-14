@@ -57,6 +57,10 @@ py_test(
     size = "medium",
     srcs = ["debugger_v2_plugin_test.py"],
     srcs_version = "PY2AND3",
+    tags = [
+        "manual",
+        "notap",  # TODO(b/153722488): Re-enable the test.
+    ],
     deps = [
         ":debug_data_multiplexer",
         ":debugger_v2_plugin",
