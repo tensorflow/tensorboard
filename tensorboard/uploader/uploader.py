@@ -829,34 +829,19 @@ def _varint_cost(n):
     return result
 
 
-<<<<<<< HEAD
 def _filter_graph_defs(event):
     for v in event.summary.value:
         if v.metadata.plugin_data.plugin_name != graphs_metadata.PLUGIN_NAME:
             continue
         if v.tag == graphs_metadata.RUN_GRAPH_NAME:
-            data = v.tensor.string_val
-            data[:] = map(_filtered_graph_bytes, data)
-=======
-def _filter_graph_defs(events):
-    for e in events:
-        for v in e.summary.value:
-            if (
-                v.metadata.plugin_data.plugin_name
-                != graphs_metadata.PLUGIN_NAME
-            ):
-                continue
-            if v.tag == graphs_metadata.RUN_GRAPH_NAME:
-                data = list(v.tensor.string_val)
-                filtered_data = [_filtered_graph_bytes(x) for x in data]
-                filtered_data = [x for x in filtered_data if x is not None]
-                if filtered_data != data:
-                    new_tensor = tensor_util.make_tensor_proto(
-                        filtered_data, dtype=types_pb2.DT_STRING
-                    )
-                    v.tensor.CopyFrom(new_tensor)
-        yield e
->>>>>>> aac18b421c38631cb5508cb3eeb490bb3bcbfb67
+            data = list(v.tensor.string_val)
+            filtered_data = [_filtered_graph_bytes(x) for x in data]
+            filtered_data = [x for x in filtered_data if x is not None]
+            if filtered_data != data:
+                new_tensor = tensor_util.make_tensor_proto(
+                    filtered_data, dtype=types_pb2.DT_STRING
+                )
+                v.tensor.CopyFrom(new_tensor)
 
 
 def _filtered_graph_bytes(graph_bytes):
