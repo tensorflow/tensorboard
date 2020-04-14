@@ -99,6 +99,7 @@ py_library(
         "//tensorboard:data_compat",
         "//tensorboard:dataclass_compat",
         "//tensorboard:expect_grpc_installed",
+        "//tensorboard/backend:process_graph",
         "//tensorboard/backend/event_processing:directory_loader",
         "//tensorboard/backend/event_processing:event_file_loader",
         "//tensorboard/backend/event_processing:io_wrapper",
@@ -110,6 +111,7 @@ py_library(
         "//tensorboard/util:tb_logging",
         "//tensorboard/util:tensor_util",
         "@org_pythonhosted_six",
+        "@com_google_protobuf//:protobuf_python",
     ],
 )
 
@@ -126,6 +128,7 @@ py_test(
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/plugins/histogram:summary_v2",
+        "//tensorboard/plugins/graph:metadata",
         "//tensorboard/plugins/scalar:metadata",
         "//tensorboard/plugins/scalar:summary_v2",
         "//tensorboard/summary:summary_v1",
@@ -133,6 +136,7 @@ py_test(
         "//tensorboard/uploader/proto:protos_all_py_pb2_grpc",
         "//tensorboard/util:test_util",
         "@org_pythonhosted_mock",
+        "@com_google_protobuf//:protobuf_python",
     ],
 )
 

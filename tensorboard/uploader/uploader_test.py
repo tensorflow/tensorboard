@@ -33,6 +33,7 @@ except ImportError:
 
 import tensorflow as tf
 
+from google.protobuf import message
 from tensorboard.uploader.proto import experiment_pb2
 from tensorboard.uploader.proto import scalar_pb2
 from tensorboard.uploader.proto import write_service_pb2
@@ -354,6 +355,65 @@ class TensorboardUploaderTest(tf.test.TestCase):
         self.assertEqual(0, mock_client.WriteBlob.call_count)
         self.assertEqual(0, mock_rate_limiter.tick.call_count)
         self.assertEqual(1, mock_blob_rate_limiter.tick.call_count)
+
+    def test_filter_graphs(self):
+        # Three graphs: one short, one long, one corrupt.
+        bytes_0 = _create_example_graph_bytes(123)
+        bytes_1 = _create_example_graph_bytes(9999)
+        bytes_2 = b"\x0a\x7fbogus"  # invalid (truncated) proto
+
+        logdir = self.get_temp_dir()
+        for (i, b) in enumerate([bytes_0, bytes_1, bytes_2]):
+            run_dir = os.path.join(logdir, "run_%04d" % i)
+            event = event_pb2.Event(step=0, wall_time=123 * i, graph_def=b)
+            with tb_test_util.FileWriter(run_dir) as writer:
+                writer.add_event(event)
+
+        limiter = mock.create_autospec(util.RateLimiter)
+        limiter.tick.side_effect = [None, AbortUploadError]
+        mock_client = _create_mock_client()
+        uploader = _create_uploader(
+            mock_client,
+            logdir,
+            logdir_poll_rate_limiter=limiter,
+            allowed_plugins=[
+                scalars_metadata.PLUGIN_NAME,
+                graphs_metadata.PLUGIN_NAME,
+            ],
+        )
+        uploader.create_experiment()
+
+        with self.assertRaises(AbortUploadError):
+            uploader.start_uploading()
+
+        actual_blobs = []
+        for call in mock_client.WriteBlob.call_args_list:
+            requests = call[0][0]
+            actual_blobs.append(b"".join(r.data for r in requests))
+
+        actual_graph_defs = []
+        for blob in actual_blobs:
+            try:
+                actual_graph_defs.append(graph_pb2.GraphDef.FromString(blob))
+            except message.DecodeError:
+                actual_graph_defs.append(None)
+
+        with self.subTest("small graphs should pass through unchanged"):
+            expected_graph_def_0 = graph_pb2.GraphDef.FromString(bytes_0)
+            self.assertEqual(actual_graph_defs[0], expected_graph_def_0)
+
+        with self.subTest("large graphs should be filtered"):
+            expected_graph_def_1 = graph_pb2.GraphDef.FromString(bytes_1)
+            del expected_graph_def_1.node[1].attr["large"]
+            expected_graph_def_1.node[1].attr["_too_large_attrs"].list.s.append(
+                b"large"
+            )
+            requests = list(mock_client.WriteBlob.call_args[0][0])
+            self.assertEqual(actual_graph_defs[1], expected_graph_def_1)
+
+        with self.subTest("corrupt graphs should be passed through unchanged"):
+            self.assertIsNone(actual_graph_defs[2])
+            self.assertEqual(actual_blobs[2], bytes_2)
 
     def test_upload_server_error(self):
         mock_client = _create_mock_client()

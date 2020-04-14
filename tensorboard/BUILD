@@ -497,7 +497,6 @@ py_library(
     srcs = ["dataclass_compat.py"],
     srcs_version = "PY2AND3",
     deps = [
-        "//tensorboard/backend:process_graph",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/plugins/graph:metadata",
         "//tensorboard/plugins/histogram:metadata",
