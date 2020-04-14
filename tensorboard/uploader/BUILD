@@ -96,8 +96,6 @@ py_library(
     deps = [
         ":logdir_loader",
         ":util",
-        "//tensorboard:data_compat",
-        "//tensorboard:dataclass_compat",
         "//tensorboard:expect_grpc_installed",
         "//tensorboard/backend:process_graph",
         "//tensorboard/backend/event_processing:directory_loader",
@@ -123,6 +121,8 @@ py_test(
         ":test_util",
         ":uploader_lib",
         ":util",
+        "//tensorboard:data_compat",
+        "//tensorboard:dataclass_compat",
         "//tensorboard:expect_grpc_installed",
         "//tensorboard:expect_grpc_testing_installed",
         "//tensorboard:expect_tensorflow_installed",
