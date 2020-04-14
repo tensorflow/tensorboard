@@ -33,11 +33,6 @@ from tensorboard.uploader.proto import write_service_pb2
 from tensorboard.uploader.proto import experiment_pb2
 from tensorboard.uploader import logdir_loader
 from tensorboard.uploader import util
-<<<<<<< HEAD
-=======
-from tensorboard import data_compat
-from tensorboard import dataclass_compat
->>>>>>> f099248586bff1e9fe8a5222d04f4390216219c3
 from tensorboard.backend import process_graph
 from tensorboard.backend.event_processing import directory_loader
 from tensorboard.backend.event_processing import event_file_loader
@@ -356,8 +351,7 @@ class _BatchedRequestSender(object):
           point is too large (say, due to a gigabyte-long tag name).
         """
 
-        for (run_name, event, orig_value) in self._run_values(run_to_events):
-            value = orig_value
+        for (run_name, event, value) in self._run_values(run_to_events):
             time_series_key = (run_name, value.tag)
 
             # The metadata for a time series is memorized on the first event.
@@ -428,19 +422,9 @@ class _BatchedRequestSender(object):
         # such data from the request anyway.
         for (run_name, events) in six.iteritems(run_to_events):
             for event in events:
-<<<<<<< HEAD
                 _filter_graph_defs(event)
                 for value in event.summary.value:
                     yield (run_name, event, value)
-=======
-                v2_event = data_compat.migrate_event(event)
-                events = dataclass_compat.migrate_event(v2_event)
-                events = _filter_graph_defs(events)
-                for event in events:
-                    if event.summary:
-                        for value in event.summary.value:
-                            yield (run_name, event, value)
->>>>>>> f099248586bff1e9fe8a5222d04f4390216219c3
 
 
 class _ScalarBatchedRequestSender(object):
@@ -844,7 +828,6 @@ def _varint_cost(n):
     return result
 
 
-<<<<<<< HEAD
 def _filter_graph_defs(event):
     for v in event.summary.value:
         if v.metadata.plugin_data.plugin_name != graphs_metadata.PLUGIN_NAME:
@@ -858,26 +841,6 @@ def _filter_graph_defs(event):
                     filtered_data, dtype=types_pb2.DT_STRING
                 )
                 v.tensor.CopyFrom(new_tensor)
-=======
-def _filter_graph_defs(events):
-    for e in events:
-        for v in e.summary.value:
-            if (
-                v.metadata.plugin_data.plugin_name
-                != graphs_metadata.PLUGIN_NAME
-            ):
-                continue
-            if v.tag == graphs_metadata.RUN_GRAPH_NAME:
-                data = list(v.tensor.string_val)
-                filtered_data = [_filtered_graph_bytes(x) for x in data]
-                filtered_data = [x for x in filtered_data if x is not None]
-                if filtered_data != data:
-                    new_tensor = tensor_util.make_tensor_proto(
-                        filtered_data, dtype=types_pb2.DT_STRING
-                    )
-                    v.tensor.CopyFrom(new_tensor)
-        yield e
->>>>>>> f099248586bff1e9fe8a5222d04f4390216219c3
 
 
 def _filtered_graph_bytes(graph_bytes):

@@ -34,11 +34,8 @@ except ImportError:
 import tensorflow as tf
 
 from google.protobuf import message
-<<<<<<< HEAD
 from tensorboard import data_compat
 from tensorboard import dataclass_compat
-=======
->>>>>>> f099248586bff1e9fe8a5222d04f4390216219c3
 from tensorboard.uploader.proto import experiment_pb2
 from tensorboard.uploader.proto import scalar_pb2
 from tensorboard.uploader.proto import write_service_pb2
