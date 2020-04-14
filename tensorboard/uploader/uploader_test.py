@@ -288,6 +288,9 @@ class TensorboardUploaderTest(tf.test.TestCase):
         graph_event = event_pb2.Event(
             graph_def=_create_example_graph_bytes(950)
         )
+        expected_graph_def = graph_pb2.GraphDef.FromString(
+            graph_event.graph_def
+        )
         mock_logdir_loader = mock.create_autospec(logdir_loader.LogdirLoader)
         mock_logdir_loader.get_run_events.side_effect = [
             {
@@ -311,7 +314,8 @@ class TensorboardUploaderTest(tf.test.TestCase):
         for (i, call) in enumerate(mock_client.WriteBlob.call_args_list):
             requests = list(call[0][0])
             data = b"".join(r.data for r in requests)
-            self.assertEqual(data, graph_event.graph_def)
+            actual_graph_def = graph_pb2.GraphDef.FromString(data)
+            self.assertEqual(actual_graph_def, expected_graph_def)
             self.assertEqual(
                 set(r.blob_sequence_id for r in requests), {"blob%d" % i},
             )
