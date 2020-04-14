@@ -28,6 +28,7 @@ import six
 from google.protobuf import message
 from tensorboard.compat.proto import graph_pb2
 from tensorboard.compat.proto import summary_pb2
+from tensorboard.compat.proto import types_pb2
 from tensorboard.uploader.proto import write_service_pb2
 from tensorboard.uploader.proto import experiment_pb2
 from tensorboard.uploader import logdir_loader
@@ -847,8 +848,14 @@ def _filter_graph_defs(events):
             ):
                 continue
             if v.tag == graphs_metadata.RUN_GRAPH_NAME:
-                data = v.tensor.string_val
-                data[:] = map(_filtered_graph_bytes, data)
+                data = list(v.tensor.string_val)
+                filtered_data = [_filtered_graph_bytes(x) for x in data]
+                filtered_data = [x for x in filtered_data if x is not None]
+                if filtered_data != data:
+                    new_tensor = tensor_util.make_tensor_proto(
+                        filtered_data, dtype=types_pb2.DT_STRING
+                    )
+                    v.tensor.CopyFrom(new_tensor)
         yield e
 
 
@@ -863,7 +870,7 @@ def _filtered_graph_bytes(graph_bytes):
         logger.warning(
             "Could not parse GraphDef of size %d.", len(graph_bytes),
         )
-        return graph_bytes
+        return None
     # Use the default filter parameters:
     # limit_attr_size=1024, large_attrs_key="_too_large_attrs"
     process_graph.prepare_graph_for_ui(graph_def)
