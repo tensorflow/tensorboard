@@ -1,6 +1,6 @@
 book_path: /tensorboard/_book.yaml
 project_path: /tensorboard/_project.yaml
-description: A suite of visualization tools to understand, debug, and optimize TensorFlow programs for machine learning experimentation.
+description: A suite of visualization tools to understand, debug, and optimize TensorFlow programs for ML experimentation.
 landing_page:
   custom_css_path: /site-assets/css/style.css
   rows:
