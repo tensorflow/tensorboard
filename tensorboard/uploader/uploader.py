@@ -25,16 +25,21 @@ import time
 import grpc
 import six
 
+from google.protobuf import message
+from tensorboard.compat.proto import graph_pb2
 from tensorboard.compat.proto import summary_pb2
+from tensorboard.compat.proto import types_pb2
 from tensorboard.uploader.proto import write_service_pb2
 from tensorboard.uploader.proto import experiment_pb2
 from tensorboard.uploader import logdir_loader
 from tensorboard.uploader import util
 from tensorboard import data_compat
 from tensorboard import dataclass_compat
+from tensorboard.backend import process_graph
 from tensorboard.backend.event_processing import directory_loader
 from tensorboard.backend.event_processing import event_file_loader
 from tensorboard.backend.event_processing import io_wrapper
+from tensorboard.plugins.graph import metadata as graphs_metadata
 from tensorboard.plugins.scalar import metadata as scalar_metadata
 from tensorboard.util import grpc_util
 from tensorboard.util import tb_logging
@@ -425,12 +430,11 @@ class _BatchedRequestSender(object):
         for (run_name, events) in six.iteritems(run_to_events):
             for event in events:
                 v2_event = data_compat.migrate_event(event)
-                dataclass_events = dataclass_compat.migrate_event(
-                    v2_event, experimental_filter_graph=True
-                )
-                for dataclass_event in dataclass_events:
-                    if dataclass_event.summary:
-                        for value in dataclass_event.summary.value:
+                events = dataclass_compat.migrate_event(v2_event)
+                events = _filter_graph_defs(events)
+                for event in events:
+                    if event.summary:
+                        for value in event.summary.value:
                             yield (run_name, event, value)
 
 
@@ -833,3 +837,41 @@ def _varint_cost(n):
         result += 1
         n >>= 7
     return result
+
+
+def _filter_graph_defs(events):
+    for e in events:
+        for v in e.summary.value:
+            if (
+                v.metadata.plugin_data.plugin_name
+                != graphs_metadata.PLUGIN_NAME
+            ):
+                continue
+            if v.tag == graphs_metadata.RUN_GRAPH_NAME:
+                data = list(v.tensor.string_val)
+                filtered_data = [_filtered_graph_bytes(x) for x in data]
+                filtered_data = [x for x in filtered_data if x is not None]
+                if filtered_data != data:
+                    new_tensor = tensor_util.make_tensor_proto(
+                        filtered_data, dtype=types_pb2.DT_STRING
+                    )
+                    v.tensor.CopyFrom(new_tensor)
+        yield e
+
+
+def _filtered_graph_bytes(graph_bytes):
+    try:
+        graph_def = graph_pb2.GraphDef().FromString(graph_bytes)
+    # The reason for the RuntimeWarning catch here is b/27494216, whereby
+    # some proto parsers incorrectly raise that instead of DecodeError
+    # on certain kinds of malformed input. Triggering this seems to require
+    # a combination of mysterious circumstances.
+    except (message.DecodeError, RuntimeWarning):
+        logger.warning(
+            "Could not parse GraphDef of size %d. Skipping.", len(graph_bytes),
+        )
+        return None
+    # Use the default filter parameters:
+    # limit_attr_size=1024, large_attrs_key="_too_large_attrs"
+    process_graph.prepare_graph_for_ui(graph_def)
+    return graph_def.SerializeToString()
