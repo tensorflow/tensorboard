@@ -23,6 +23,8 @@ import os
 import numpy as np
 import tensorflow as tf
 
+from google.protobuf import message
+
 from tensorboard import dataclass_compat
 from tensorboard.backend.event_processing import event_file_loader
 from tensorboard.compat.proto import event_pb2
@@ -38,6 +40,12 @@ from tensorboard.plugins.scalar import metadata as scalar_metadata
 from tensorboard.plugins.scalar import summary as scalar_summary
 from tensorboard.util import tensor_util
 from tensorboard.util import test_util
+
+try:
+    # python version >= 3.3
+    from unittest import mock
+except ImportError:
+    import mock  # pylint: disable=unused-import
 
 
 class MigrateEventTest(tf.test.TestCase):
@@ -254,7 +262,9 @@ class MigrateEventTest(tf.test.TestCase):
         self.assertProtoEquals(expected_graph_def, new_graph_def)
 
     def test_graph_def_experimental_filter_graph_corrupt(self):
-        # Simulate legacy graph event with an unparseable graph
+        # Simulate legacy graph event with an unparseable graph.
+        # We can't be sure whether this will produce `DecodeError` or
+        # `RuntimeWarning`, so we also check both cases below.
         old_event = event_pb2.Event()
         old_event.step = 0
         old_event.wall_time = 456.75
@@ -266,6 +276,50 @@ class MigrateEventTest(tf.test.TestCase):
         new_events = self._migrate_event(
             old_event, experimental_filter_graph=True
         )
+        # _migrate_event emits both the original event and the migrated event,
+        # but here there is no migrated event becasue the graph was unparseable.
+        self.assertLen(new_events, 1)
+        self.assertProtoEquals(new_events[0], old_event)
+
+    def test_graph_def_experimental_filter_graph_DecodeError(self):
+        # Simulate raising DecodeError when parsing a graph event
+        old_event = event_pb2.Event()
+        old_event.step = 0
+        old_event.wall_time = 456.75
+        old_event.graph_def = b"<malformed>"
+
+        with mock.patch(
+            "tensorboard.compat.proto.graph_pb2.GraphDef"
+        ) as mockGraphDef:
+            instance = mockGraphDef.return_value
+            instance.FromString.side_effect = message.DecodeError
+
+            new_events = self._migrate_event(
+                old_event, experimental_filter_graph=True
+            )
+
+        # _migrate_event emits both the original event and the migrated event,
+        # but here there is no migrated event becasue the graph was unparseable.
+        self.assertLen(new_events, 1)
+        self.assertProtoEquals(new_events[0], old_event)
+
+    def test_graph_def_experimental_filter_graph_RuntimeWarning(self):
+        # Simulate raising RuntimeWarning when parsing a graph event
+        old_event = event_pb2.Event()
+        old_event.step = 0
+        old_event.wall_time = 456.75
+        old_event.graph_def = b"<malformed>"
+
+        with mock.patch(
+            "tensorboard.compat.proto.graph_pb2.GraphDef"
+        ) as mockGraphDef:
+            instance = mockGraphDef.return_value
+            instance.FromString.side_effect = RuntimeWarning
+
+            new_events = self._migrate_event(
+                old_event, experimental_filter_graph=True
+            )
+
         # _migrate_event emits both the original event and the migrated event,
         # but here there is no migrated event becasue the graph was unparseable.
         self.assertLen(new_events, 1)

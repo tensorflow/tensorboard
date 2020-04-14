@@ -78,7 +78,11 @@ def _migrate_graph_event(old_event, experimental_filter_graph=False):
     if experimental_filter_graph:
         try:
             graph_def = graph_pb2.GraphDef().FromString(graph_bytes)
-        except message.DecodeError:
+        # The reason for the RuntimeWarning catch here is b/27494216, whereby
+        # some proto parsers incorrectly raise that instead of DecodeError
+        # on certain kinds of malformed input.  Triggering this seems to require
+        # a combination of mysterious circumstances.
+        except (message.DecodeError, RuntimeWarning):
             logger.warning(
                 "Could not parse GraphDef of size %d. Skipping.",
                 len(graph_bytes),
