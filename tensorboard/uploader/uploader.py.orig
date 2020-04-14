@@ -830,14 +830,6 @@ def _varint_cost(n):
 
 
 <<<<<<< HEAD
-def _filter_graph_defs(event):
-    for v in event.summary.value:
-        if v.metadata.plugin_data.plugin_name != graphs_metadata.PLUGIN_NAME:
-            continue
-        if v.tag == graphs_metadata.RUN_GRAPH_NAME:
-            data = v.tensor.string_val
-            data[:] = map(_filtered_graph_bytes, data)
-=======
 def _filter_graph_defs(events):
     for e in events:
         for v in e.summary.value:
@@ -856,7 +848,15 @@ def _filter_graph_defs(events):
                     )
                     v.tensor.CopyFrom(new_tensor)
         yield e
->>>>>>> aac18b421c38631cb5508cb3eeb490bb3bcbfb67
+=======
+def _filter_graph_defs(event):
+    for v in event.summary.value:
+        if v.metadata.plugin_data.plugin_name != graphs_metadata.PLUGIN_NAME:
+            continue
+        if v.tag == graphs_metadata.RUN_GRAPH_NAME:
+            data = v.tensor.string_val
+            data[:] = map(_filtered_graph_bytes, data)
+>>>>>>> 4fa593a3... backend: move compat transforms to event file loading
 
 
 def _filtered_graph_bytes(graph_bytes):
