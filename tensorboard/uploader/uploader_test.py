@@ -410,11 +410,11 @@ class TensorboardUploaderTest(tf.test.TestCase):
             except message.DecodeError:
                 actual_graph_defs.append(None)
 
-        with self.subTest("small graphs should pass through unchanged"):
+        with self.subTest("graphs with small attr values should be unchanged"):
             expected_graph_def_0 = graph_pb2.GraphDef.FromString(bytes_0)
             self.assertEqual(actual_graph_defs[0], expected_graph_def_0)
 
-        with self.subTest("large graphs should be filtered"):
+        with self.subTest("large attr values should be filtered out"):
             expected_graph_def_1 = graph_pb2.GraphDef.FromString(bytes_1)
             del expected_graph_def_1.node[1].attr["large"]
             expected_graph_def_1.node[1].attr["_too_large_attrs"].list.s.append(
@@ -423,9 +423,8 @@ class TensorboardUploaderTest(tf.test.TestCase):
             requests = list(mock_client.WriteBlob.call_args[0][0])
             self.assertEqual(actual_graph_defs[1], expected_graph_def_1)
 
-        with self.subTest("corrupt graphs should be passed through unchanged"):
-            self.assertIsNone(actual_graph_defs[2])
-            self.assertEqual(actual_blobs[2], bytes_2)
+        with self.subTest("corrupt graphs should be skipped"):
+            self.assertLen(actual_blobs, 2)
 
     def test_upload_server_error(self):
         mock_client = _create_mock_client()
