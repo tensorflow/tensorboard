@@ -51,13 +51,11 @@ except ImportError:
 class MigrateEventTest(tf.test.TestCase):
     """Tests for `migrate_event`."""
 
-    def _migrate_event(self, old_event, experimental_filter_graph=False):
+    def _migrate_event(self, old_event):
         """Like `migrate_event`, but performs some sanity checks."""
         old_event_copy = event_pb2.Event()
         old_event_copy.CopyFrom(old_event)
-        new_events = dataclass_compat.migrate_event(
-            old_event, experimental_filter_graph
-        )
+        new_events = dataclass_compat.migrate_event(old_event)
         for event in new_events:  # ensure that wall time and step are preserved
             self.assertEqual(event.wall_time, old_event.wall_time)
             self.assertEqual(event.step, old_event.step)
@@ -222,108 +220,6 @@ class MigrateEventTest(tf.test.TestCase):
         new_graph_def = graph_pb2.GraphDef.FromString(new_graph_def_bytes)
 
         self.assertProtoEquals(graph_def, new_graph_def)
-
-    def test_graph_def_experimental_filter_graph(self):
-        # Create a `GraphDef`
-        graph_def = graph_pb2.GraphDef()
-        graph_def.node.add(name="alice", op="Person")
-        graph_def.node.add(name="bob", op="Person")
-
-        graph_def.node[1].attr["small"].s = b"small_attr_value"
-        graph_def.node[1].attr["large"].s = (
-            b"large_attr_value" * 100  # 1600 bytes > 1024 limit
-        )
-        graph_def.node.add(
-            name="friendship", op="Friendship", input=["alice", "bob"]
-        )
-
-        # Simulate legacy graph event
-        old_event = event_pb2.Event()
-        old_event.step = 0
-        old_event.wall_time = 456.75
-        old_event.graph_def = graph_def.SerializeToString()
-
-        new_events = self._migrate_event(
-            old_event, experimental_filter_graph=True
-        )
-
-        new_event = new_events[1]
-        tensor = tensor_util.make_ndarray(new_event.summary.value[0].tensor)
-        new_graph_def_bytes = tensor[0]
-        new_graph_def = graph_pb2.GraphDef.FromString(new_graph_def_bytes)
-
-        expected_graph_def = graph_pb2.GraphDef()
-        expected_graph_def.CopyFrom(graph_def)
-        del expected_graph_def.node[1].attr["large"]
-        expected_graph_def.node[1].attr["_too_large_attrs"].list.s.append(
-            b"large"
-        )
-
-        self.assertProtoEquals(expected_graph_def, new_graph_def)
-
-    def test_graph_def_experimental_filter_graph_corrupt(self):
-        # Simulate legacy graph event with an unparseable graph.
-        # We can't be sure whether this will produce `DecodeError` or
-        # `RuntimeWarning`, so we also check both cases below.
-        old_event = event_pb2.Event()
-        old_event.step = 0
-        old_event.wall_time = 456.75
-        # Careful: some proto parsers choke on byte arrays filled with 0, but
-        # others don't (silently producing an empty proto, I guess).
-        # Thus `old_event.graph_def = bytes(1024)` is an unreliable example.
-        old_event.graph_def = b"<malformed>"
-
-        new_events = self._migrate_event(
-            old_event, experimental_filter_graph=True
-        )
-        # _migrate_event emits both the original event and the migrated event,
-        # but here there is no migrated event becasue the graph was unparseable.
-        self.assertLen(new_events, 1)
-        self.assertProtoEquals(new_events[0], old_event)
-
-    def test_graph_def_experimental_filter_graph_DecodeError(self):
-        # Simulate raising DecodeError when parsing a graph event
-        old_event = event_pb2.Event()
-        old_event.step = 0
-        old_event.wall_time = 456.75
-        old_event.graph_def = b"<malformed>"
-
-        with mock.patch(
-            "tensorboard.compat.proto.graph_pb2.GraphDef"
-        ) as mockGraphDef:
-            instance = mockGraphDef.return_value
-            instance.FromString.side_effect = message.DecodeError
-
-            new_events = self._migrate_event(
-                old_event, experimental_filter_graph=True
-            )
-
-        # _migrate_event emits both the original event and the migrated event,
-        # but here there is no migrated event becasue the graph was unparseable.
-        self.assertLen(new_events, 1)
-        self.assertProtoEquals(new_events[0], old_event)
-
-    def test_graph_def_experimental_filter_graph_RuntimeWarning(self):
-        # Simulate raising RuntimeWarning when parsing a graph event
-        old_event = event_pb2.Event()
-        old_event.step = 0
-        old_event.wall_time = 456.75
-        old_event.graph_def = b"<malformed>"
-
-        with mock.patch(
-            "tensorboard.compat.proto.graph_pb2.GraphDef"
-        ) as mockGraphDef:
-            instance = mockGraphDef.return_value
-            instance.FromString.side_effect = RuntimeWarning
-
-            new_events = self._migrate_event(
-                old_event, experimental_filter_graph=True
-            )
-
-        # _migrate_event emits both the original event and the migrated event,
-        # but here there is no migrated event becasue the graph was unparseable.
-        self.assertLen(new_events, 1)
-        self.assertProtoEquals(new_events[0], old_event)
 
 
 if __name__ == "__main__":
