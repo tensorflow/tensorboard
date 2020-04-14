@@ -173,10 +173,16 @@ class EventFileLoader(LegacyEventFileLoader):
     Specifically, this includes `data_compat` and `dataclass_compat`.
     """
 
+    def __init__(self, file_path):
+        super(EventFileLoader, self).__init__(file_path)
+        self._initial_metadata = {}  # from tag name to `SummaryMetadata`
+
     def Load(self):
         for event in super(EventFileLoader, self).Load():
             event = data_compat.migrate_event(event)
-            events = dataclass_compat.migrate_event(event)
+            events = dataclass_compat.migrate_event(
+                event, self._initial_metadata
+            )
             for event in events:
                 yield event
 

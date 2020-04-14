@@ -1272,9 +1272,12 @@ def _clear_wall_times(request):
 
 
 def _apply_compat(events):
+    initial_metadata = {}
     for event in events:
         event = data_compat.migrate_event(event)
-        events = dataclass_compat.migrate_event(event)
+        events = dataclass_compat.migrate_event(
+            event, initial_metadata=initial_metadata
+        )
         for event in events:
             yield event
 
