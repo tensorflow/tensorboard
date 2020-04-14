@@ -294,6 +294,8 @@ class MigrateEventTest(tf.test.TestCase):
         # Here we extract the serialized graph_def from the migrated event,
         # which is the result of such a deserialize/serialize cycle, to validate
         # these expectations.
+        # This also demonstrates that empty `GraphDefs` are not rejected or
+        # ignored.
         new_event = new_events[1]
         tensor = tensor_util.make_ndarray(new_event.summary.value[0].tensor)
         new_graph_def_bytes = tensor[0]
