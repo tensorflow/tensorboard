@@ -286,11 +286,18 @@ class MigrateEventTest(tf.test.TestCase):
         self.assertLen(new_events, 2)
         self.assertProtoEquals(new_events[0], old_event)
 
+        # We expect that parsing `b""` as a `GraphDef` produces the default
+        # 'empty' proto, just like `graph_pb2.GraphDef()`.  Furthermore, we
+        # expect serializing that to produce `b""` again (as opposed to some
+        # other representation of the default proto, e.g. one in which default
+        # values are materialized).
+        # Here we extract the serialized graph_def from the migrated event,
+        # which is the result of such a deserialize/serialize cycle, to validate
+        # these expectations.
         new_event = new_events[1]
         tensor = tensor_util.make_ndarray(new_event.summary.value[0].tensor)
         new_graph_def_bytes = tensor[0]
-        new_graph_def = graph_pb2.GraphDef.FromString(new_graph_def_bytes)
-        self.assertProtoEquals(new_graph_def, graph_pb2.GraphDef())
+        self.assertEqual(new_graph_def_bytes, b"")
 
 
 if __name__ == "__main__":
