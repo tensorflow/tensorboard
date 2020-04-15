@@ -28,7 +28,7 @@ import {createState, createCoreState} from '../core/testing';
 describe('reloader_component', () => {
   let store: MockStore<State>;
   let dispatchSpy: jasmine.Spy;
-  let fakeDocument: any;
+  let fakeDocument: Document;
 
   function createFakeDocument() {
     return {
@@ -43,7 +43,9 @@ describe('reloader_component', () => {
   }
 
   function simulateVisibilityChange(visible: boolean) {
-    fakeDocument.visibilityState = visible ? 'visible' : 'hidden';
+    Object.defineProperty(fakeDocument, 'visibilityState', {
+      get: () => (visible ? 'visible' : 'hidden'),
+    });
     document.dispatchEvent(new Event('visibilitychange'));
   }
 
