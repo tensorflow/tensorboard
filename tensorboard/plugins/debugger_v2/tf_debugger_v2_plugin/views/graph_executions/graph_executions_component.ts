@@ -15,8 +15,6 @@ limitations under the License.
 
 import {Component, Input} from '@angular/core';
 
-import {GraphExecutionDigest} from '../../store/debugger_types';
-
 @Component({
   selector: 'graph-executions-component',
   templateUrl: './graph_executions_component.ng.html',

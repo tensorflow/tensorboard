@@ -821,12 +821,10 @@ export class DebuggerEffects {
           )
         );
 
-        ///////////////////////////////////////////////
-        // Effects related to intra-graph execution. //
-        ///////////////////////////////////////////////
         const onNumGraphExecutionLoaded$ = this.createNumGraphExecutionLoader(
           onLoad$
         );
+
         const onSourceFileFocused$ = this.onSourceFileFocused();
 
         // ExecutionDigest and ExecutionData can be loaded in parallel.

@@ -205,8 +205,8 @@ export interface Alerts {
 /**
  * Base interface shared between top-level and intra-graph executions.
  *
- * Supports paged lazy loading of digess (i.e., concise data objects
- * about the execution events.)
+ * Supports paged, lazy loading of digests (i.e., concise data objects
+ * about the top-level or intra-graph execution events.)
  */
 export interface PagedExecutions {
   // Load state for the total number of top-level or intra-graph executions.
