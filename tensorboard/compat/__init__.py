@@ -67,10 +67,9 @@ def tf2():
     Raises:
       ImportError: if a TF-2.0 API is not available.
     """
-    # Import the `tf` compat API from this file and check if it's already TF 2.0.
-    if tf.__version__.startswith("2."):
-        return tf
-    elif hasattr(tf, "compat") and hasattr(tf.compat, "v2"):
-        # As a fallback, try `tensorflow.compat.v2` if it's defined.
+    # Resolve the lazy `tf` compat API from earlier in this file and try to find
+    # tf.compat.v2. Don't check tf.__version__ since this is not always reliable
+    # if TF was built with tf_api_version!=2.
+    if hasattr(tf, "compat") and hasattr(tf.compat, "v2"):
         return tf.compat.v2
     raise ImportError("cannot import tensorflow 2.0 API")
