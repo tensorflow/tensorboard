@@ -351,8 +351,7 @@ class _BatchedRequestSender(object):
           point is too large (say, due to a gigabyte-long tag name).
         """
 
-        for (run_name, event, orig_value) in self._run_values(run_to_events):
-            value = orig_value
+        for (run_name, event, value) in self._run_values(run_to_events):
             time_series_key = (run_name, value.tag)
 
             # The metadata for a time series is memorized on the first event.
@@ -853,7 +852,7 @@ def _filtered_graph_bytes(graph_bytes):
     # a combination of mysterious circumstances.
     except (message.DecodeError, RuntimeWarning):
         logger.warning(
-            "Could not parse GraphDef of size %d.", len(graph_bytes),
+            "Could not parse GraphDef of size %d. Skipping.", len(graph_bytes),
         )
         return None
     # Use the default filter parameters:

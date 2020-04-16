@@ -175,6 +175,17 @@ class EventFileLoader(LegacyEventFileLoader):
 
     def __init__(self, file_path):
         super(EventFileLoader, self).__init__(file_path)
+        # Track initial metadata for each tag, for `dataclass_compat`.
+        # This is meant to be tracked per run, not per event file, so
+        # there is a potential failure case when the second event file
+        # in a single run has no summary metadata. This only occurs when
+        # all of the following hold: (a) the events were written with
+        # the TensorFlow 1.x (not 2.x) writer, (b) the summaries were
+        # created by `tensorboard.summary.v1` ops and so do not undergo
+        # `data_compat` transformation, and (c) the file writer was
+        # reopened by calling `.reopen()` on it, which creates a new
+        # file but does not clear the tag cache. This is considered
+        # sufficiently improbable that we don't take extra mitigations.
         self._initial_metadata = {}  # from tag name to `SummaryMetadata`
 
     def Load(self):

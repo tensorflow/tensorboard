@@ -25,11 +25,16 @@ import {
   Execution,
   Executions,
   ExecutionDigest,
+  GraphExecutions,
   InfNanAlert,
   SourceCodeState,
   State,
   StackFrame,
 } from '../store/debugger_types';
+import {
+  createInitialExecutionsState,
+  createInitialGraphExecutionsState,
+} from '../store/debugger_reducers';
 
 export function createTestInfNanAlert(
   override?: Partial<InfNanAlert>
@@ -96,6 +101,7 @@ export function createDebuggerState(
     activeRunId: null,
     alerts: createAlertsState(),
     executions: createDebuggerExecutionsState(),
+    graphExecutions: createDebuggerGraphExecutionsState(),
     stackFrames: {},
     sourceCode: {
       sourceFileListLoaded: {
@@ -129,22 +135,16 @@ export function createDebuggerExecutionsState(
   override?: Partial<Executions>
 ): Executions {
   return {
-    numExecutionsLoaded: {
-      state: DataLoadState.NOT_LOADED,
-      lastLoadedTimeInMs: null,
-    },
-    executionDigestsLoaded: {
-      state: DataLoadState.NOT_LOADED,
-      lastLoadedTimeInMs: null,
-      numExecutions: 0,
-      pageLoadedSizes: {},
-    },
-    displayCount: 50,
-    pageSize: 1000,
-    scrollBeginIndex: 0,
-    focusIndex: null,
-    executionDigests: {},
-    executionData: {},
+    ...createInitialExecutionsState(),
+    ...override,
+  };
+}
+
+export function createDebuggerGraphExecutionsState(
+  override?: Partial<GraphExecutions>
+): GraphExecutions {
+  return {
+    ...createInitialGraphExecutionsState(),
     ...override,
   };
 }
