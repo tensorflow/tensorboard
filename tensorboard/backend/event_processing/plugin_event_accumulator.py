@@ -22,8 +22,6 @@ import threading
 
 import six
 
-from tensorboard import data_compat
-from tensorboard import dataclass_compat
 from tensorboard.backend.event_processing import directory_loader
 from tensorboard.backend.event_processing import directory_watcher
 from tensorboard.backend.event_processing import event_file_loader
@@ -294,13 +292,6 @@ class EventAccumulator(object):
 
     def _ProcessEvent(self, event):
         """Called whenever an event is loaded."""
-        event = data_compat.migrate_event(event)
-        events = dataclass_compat.migrate_event(event)
-        for event in events:
-            self._ProcessMigratedEvent(event)
-
-    def _ProcessMigratedEvent(self, event):
-        """Helper for `_ProcessEvent`."""
         if self._first_event_timestamp is None:
             self._first_event_timestamp = event.wall_time
 

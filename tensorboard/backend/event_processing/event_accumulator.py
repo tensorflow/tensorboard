@@ -821,11 +821,11 @@ def _GeneratorFromPath(path):
     if not path:
         raise ValueError("path must be a valid string")
     if io_wrapper.IsSummaryEventsFile(path):
-        return event_file_loader.EventFileLoader(path)
+        return event_file_loader.LegacyEventFileLoader(path)
     else:
         return directory_watcher.DirectoryWatcher(
             path,
-            event_file_loader.EventFileLoader,
+            event_file_loader.LegacyEventFileLoader,
             io_wrapper.IsSummaryEventsFile,
         )
 
