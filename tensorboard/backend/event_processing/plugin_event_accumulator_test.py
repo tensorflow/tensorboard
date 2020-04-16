@@ -65,9 +65,13 @@ class _EventGenerator(object):
         while self.items:
             event = self.items.pop(0)
             event = data_compat.migrate_event(event)
+<<<<<<< HEAD
             events = dataclass_compat.migrate_event(
                 event, self._initial_metadata
             )
+=======
+            events = dataclass_compat.migrate_event(event)
+>>>>>>> 68beffa013f5ee6cf75654746657b45c33652915
             for event in events:
                 yield event
 

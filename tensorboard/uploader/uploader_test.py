@@ -1278,12 +1278,18 @@ def _clear_wall_times(request):
 
 
 def _apply_compat(events):
+<<<<<<< HEAD
     initial_metadata = {}
     for event in events:
         event = data_compat.migrate_event(event)
         events = dataclass_compat.migrate_event(
             event, initial_metadata=initial_metadata
         )
+=======
+    for event in events:
+        event = data_compat.migrate_event(event)
+        events = dataclass_compat.migrate_event(event)
+>>>>>>> 68beffa013f5ee6cf75654746657b45c33652915
         for event in events:
             yield event
 
