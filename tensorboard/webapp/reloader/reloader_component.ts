@@ -12,7 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, ChangeDetectionStrategy} from '@angular/core';
+import {DOCUMENT} from '@angular/common';
+import {Component, ChangeDetectionStrategy, Inject} from '@angular/core';
 import {Store, select} from '@ngrx/store';
 import {combineLatest} from 'rxjs';
 import {distinctUntilChanged} from 'rxjs/operators';
@@ -28,15 +29,21 @@ import {reload} from '../core/actions';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ReloaderComponent {
+  private readonly onVisibilityChange = this.onVisibilityChangeImpl.bind(this);
   private readonly reloadEnabled$ = this.store.pipe(select(getReloadEnabled));
   private readonly reloadPeriodInMs$ = this.store.pipe(
     select(getReloadPeriodInMs)
   );
   private reloadTimerId: ReturnType<typeof setTimeout> | null = null;
+  private missedAutoReload: boolean = false;
 
-  constructor(private store: Store<State>) {}
+  constructor(
+    private store: Store<State>,
+    @Inject(DOCUMENT) private readonly document: Document
+  ) {}
 
   ngOnInit() {
+    this.document.addEventListener('visibilitychange', this.onVisibilityChange);
     combineLatest(
       this.reloadEnabled$.pipe(distinctUntilChanged()),
       this.reloadPeriodInMs$.pipe(distinctUntilChanged())
@@ -48,9 +55,20 @@ export class ReloaderComponent {
     });
   }
 
+  private onVisibilityChangeImpl() {
+    if (this.document.visibilityState === 'visible' && this.missedAutoReload) {
+      this.missedAutoReload = false;
+      this.store.dispatch(reload());
+    }
+  }
+
   private load(reloadPeriodInMs: number) {
     this.reloadTimerId = setTimeout(() => {
-      this.store.dispatch(reload());
+      if (this.document.visibilityState === 'visible') {
+        this.store.dispatch(reload());
+      } else {
+        this.missedAutoReload = true;
+      }
       this.load(reloadPeriodInMs);
     }, reloadPeriodInMs);
   }
@@ -64,5 +82,9 @@ export class ReloaderComponent {
 
   ngOnDestroy() {
     this.cancelLoad();
+    this.document.removeEventListener(
+      'visibilitychange',
+      this.onVisibilityChange
+    );
   }
 }
