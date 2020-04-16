@@ -84,6 +84,43 @@ export interface Execution extends ExecutionDigest {
   debug_tensor_values: Array<number[] | null> | null;
 }
 
+/**
+ * Digest for the execution of a Tensor inside a tf.Graph (e.g., tf.function).
+ *
+ * Mirrors data structure `class GraphExecutionTraceDigest` in
+ * https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/debug/lib/debug_events_reader.py
+ */
+export interface GraphExecutionDigest {
+  // Debugger-generated id for the inner-most (immediately-enclosing) tf.Graph.
+  graph_id: string;
+
+  op_name: string;
+
+  op_type: string;
+
+  // Output slot of the tensor on the op that it belongs to.
+  output_slot: number;
+}
+
+/**
+ * Non-digest, detaileddata object for the execution of a Tensor inside a
+ * tf.Graph (e.g., tf.function).
+ *
+ * Mirrors data structure `class GraphExecutionTrace` in
+ * https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/debug/lib/debug_events_reader.py
+ */
+export interface GraphExecution extends GraphExecutionDigest {
+  // The debugger-generated IDs of the graphs that enclose the
+  // executed op (tensor), ordered from the outermost to the innermost.
+  graph_ids: string[];
+
+  tensor_debug_mode: number;
+
+  debug_tensor_value: number[] | null;
+
+  device_name: string;
+}
+
 export enum AlertType {
   FUNCTION_RECOMPILE_ALERT = 'FunctionRecompilesAlert',
   INF_NAN_ALERT = 'InfNanAlert',
@@ -125,7 +162,7 @@ export interface ExecutionDigestLoadState extends LoadState {
   pageLoadedSizes: {[page: number]: number};
 
   // Number of top-level executions available at the data source (not
-  // necessarilty loaded by frontend yet.)
+  // necessarily loaded by frontend yet.)
   numExecutions: number;
 }
 
@@ -165,14 +202,20 @@ export interface Alerts {
   focusType: AlertType | null;
 }
 
-export interface Executions {
-  // Load state for the total number of top-level executions.
+/**
+ * Base interface shared between top-level and intra-graph executions.
+ *
+ * Supports paged, lazy loading of digests (i.e., concise data objects
+ * about the top-level or intra-graph execution events.)
+ */
+export interface PagedExecutions {
+  // Load state for the total number of top-level or intra-graph executions.
   // numExecutionsLoaded load state can go from LOADED to LOADING, as
   // the backend may keep reading in new data and see an increase in
   // the number of execution events, which the frontend will in turn see.
   numExecutionsLoaded: LoadState;
 
-  // Load state for loading ExecutionDigests.
+  // Load state for loading `ExecutionDigest`s or `GraphExecutionDigest`s.
   // executionDigestsLoaded load state can go from LOADED to LOADING, as
   // the execution digests are loaded in pages.
   executionDigestsLoaded: ExecutionDigestLoadState;
@@ -193,12 +236,28 @@ export interface Executions {
 
   // Index of focusing. `null` means no focus has been selected.
   focusIndex: number | null;
+}
 
-  // Execution digests the frontend has loaded so far.
+/**
+ * State of loading of top-level executions.
+ */
+export interface Executions extends PagedExecutions {
+  // Top-level (eager) execution digests the frontend has loaded so far.
   executionDigests: {[index: number]: ExecutionDigest};
 
-  // Detailed data objects.
+  // Detailed data objects about top-level execution.
   executionData: {[index: number]: Execution};
+}
+
+/**
+ * State of loading of intra-graph executions.
+ */
+export interface GraphExecutions extends PagedExecutions {
+  // Intra-graph execution digests the frontend has loaded so far.
+  graphExecutionDigests: {[index: number]: GraphExecutionDigest};
+
+  // Detailed data objects about intra-graph execution.
+  graphExecutionData: {[index: number]: Execution};
 }
 
 // The state of a loaded DebuggerV2 run.
@@ -256,8 +315,11 @@ export interface DebuggerState {
 
   alerts: Alerts;
 
-  // Per-run detailed data.
+  // Per-run data for top-level (eager) executions.
   executions: Executions;
+
+  // Per-run data for intra-graph (eager) executions.
+  graphExecutions: GraphExecutions;
 
   // Stack frames that have been loaded from data source so far, keyed by
   // stack-frame IDs.

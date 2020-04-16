@@ -1,6 +1,8 @@
 book_path: /tensorboard/_book.yaml
 project_path: /tensorboard/_project.yaml
-description: <!--no description-->
+description: >
+  A suite of visualization tools to understand, debug, and optimize TensorFlow
+  programs for ML experimentation.
 landing_page:
   custom_css_path: /site-assets/css/style.css
   rows:
@@ -40,8 +42,8 @@ landing_page:
       buttons:
       - label: Watch the video
         path: https://www.youtube.com/watch?v=xM8sO33x_OU
-    - heading: "Hands-on TensorBoard  (TF Dev Summit '17)"
-      youtube_id: eBbEDRsCmv4
+    - heading: "Collaborative ML with TensorBoard.dev (TF Dev Summit '20)"
+      youtube_id: v9a240kjAx4
       buttons:
       - label: Watch the video
-        path: https://www.youtube.com/watch?v=eBbEDRsCmv4
+        path: https://www.youtube.com/watch?v=v9a240kjAx4

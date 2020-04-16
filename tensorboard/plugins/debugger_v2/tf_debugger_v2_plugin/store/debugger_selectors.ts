@@ -124,6 +124,10 @@ export const getAlertsBreakdown = createSelector(
   }
 );
 
+/**
+ * Selectors related to top-level (eager) execution.
+ */
+
 export const getNumExecutionsLoaded = createSelector(
   selectDebuggerState,
   (state: DebuggerState): LoadState => {
@@ -183,6 +187,24 @@ export const getVisibleExecutionDigests = createSelector(
       }
     }
     return digests;
+  }
+);
+
+/**
+ * Selectors related to intra-graph execution.
+ */
+
+export const getNumGraphExecutionsLoaded = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): LoadState => {
+    return state.graphExecutions.numExecutionsLoaded;
+  }
+);
+
+export const getNumGraphExecutions = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): number => {
+    return state.graphExecutions.executionDigestsLoaded.numExecutions;
   }
 );
 
