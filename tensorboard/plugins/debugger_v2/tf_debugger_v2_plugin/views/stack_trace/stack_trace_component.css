@@ -57,8 +57,9 @@ limitations under the License.
   height: 360px;
   margin-left: 8px;
   max-height: 360px;
+  overflow-x: hidden;
   padding-left: 8px;
-  width: 400px;
+  width: 100%;
 }
 
 .stack-trace-host-name {
