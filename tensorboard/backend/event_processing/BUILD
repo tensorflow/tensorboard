@@ -137,6 +137,8 @@ py_library(
     srcs = ["event_file_loader.py"],
     srcs_version = "PY2AND3",
     deps = [
+        "//tensorboard:data_compat",
+        "//tensorboard:dataclass_compat",
         "//tensorboard/compat:tensorflow",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/util:platform_util",
@@ -189,8 +191,6 @@ py_library(
         ":io_wrapper",
         ":plugin_asset_util",
         ":reservoir",
-        "//tensorboard:data_compat",
-        "//tensorboard:dataclass_compat",
         "//tensorboard/compat:tensorflow",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/plugins/distribution:compressor",
@@ -205,6 +205,8 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":event_accumulator",
+        "//tensorboard:data_compat",
+        "//tensorboard:dataclass_compat",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/plugins/audio:metadata",

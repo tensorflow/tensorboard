@@ -190,8 +190,8 @@ class MigrateEventTest(tf.test.TestCase):
         self.assertLen(files, 1)
         event_file = os.path.join(logdir, files[0])
         self.assertIn("tfevents", event_file)
-        loader = event_file_loader.EventFileLoader(event_file)
-        events = list(loader.Load())
+        loader = event_file_loader.RawEventFileLoader(event_file)
+        events = [event_pb2.Event.FromString(x) for x in loader.Load()]
         self.assertLen(events, 2)
         self.assertEqual(events[0].WhichOneof("what"), "file_version")
         self.assertEqual(events[1].WhichOneof("what"), "graph_def")
