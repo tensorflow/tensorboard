@@ -256,8 +256,14 @@ export interface GraphExecutions extends PagedExecutions {
   // Intra-graph execution digests the frontend has loaded so far.
   graphExecutionDigests: {[index: number]: GraphExecutionDigest};
 
+  // Indices to GraphExecution pages currently being loaded.
+  loadingGraphExecutionDataPages: number[];
+
+  // // Indices to GraphExecution pages that have been loaded successfully.
+  // loadedGraphExecutionDataPages: number[];
+
   // Detailed data objects about intra-graph execution.
-  graphExecutionData: {[index: number]: Execution};
+  graphExecutionData: {[index: number]: GraphExecution};
 }
 
 // The state of a loaded DebuggerV2 run.

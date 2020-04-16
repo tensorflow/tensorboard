@@ -21,3 +21,55 @@ limitations under the License.
   margin-left: 8px;
   padding-left: 10px;
 }
+
+.graph-executions-viewport {
+  flex-grow: 1;
+  font-size: 12px;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.op-type {
+  display: inline-block;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  width: 80px;
+}
+
+.graph-execution-index {
+  display: inline-block;
+  text-align: right;
+  width: 40px;
+  padding-right: 4px;
+}
+
+.loading-spinner {
+  display: inline-block;
+}
+
+.tensor-container {
+  width: 100%;
+}
+
+.tensor-item {
+  display: flex;
+  flex-wrap: nowrap;
+  height: 24px;
+  line-height: 24px;
+  text-align: left;
+  vertical-align: top;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.tensor-name {
+  direction: rtl;
+  display: inline-block;
+  overflow: hidden;
+  padding-right: 8px;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 240px;
+}

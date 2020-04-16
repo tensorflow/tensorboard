@@ -25,6 +25,7 @@ import {
   Execution,
   ExecutionDigest,
   ExecutionDigestLoadState,
+  GraphExecution,
   LoadState,
   SourceFileContent,
   SourceFileSpec,
@@ -207,6 +208,41 @@ export const getNumGraphExecutions = createSelector(
     return state.graphExecutions.executionDigestsLoaded.numExecutions;
   }
 );
+
+export const getGraphExecutionScrollBeginIndex = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): number => {
+    return state.graphExecutions.scrollBeginIndex;
+  }
+); // TODO(cais): Add unit tests.
+
+export const getGraphExecutionPageSize = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): number => {
+    return state.graphExecutions.pageSize;
+  }
+); // TODO(cais): Add unit tests.
+
+export const getLoadingGraphExecutionPages = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): number[] => {
+    return state.graphExecutions.loadingGraphExecutionDataPages;
+  }
+); // TODO(cais): Add unit tests.
+
+// export const getLoadedGraphExecutionPages = createSelector(
+//   selectDebuggerState,
+//   (state: DebuggerState): number[] => {
+//     return state.graphExecutions.loadedGraphExecutionDataPages;
+//   }
+// ); // TODO(cais): Add unit tests.
+
+export const getGraphExecutionData = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): {[index: number]: GraphExecution} => {
+    return state.graphExecutions.graphExecutionData;
+  }
+); // TODO(cais): Add unit tests.
 
 /**
  * Get the focused alert types (if any) of the execution digests current being

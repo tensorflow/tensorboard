@@ -13,9 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Component} from '@angular/core';
-import {select, Store} from '@ngrx/store';
+import {createSelector, select, Store} from '@ngrx/store';
 
-import {getNumGraphExecutions} from '../../store';
+import {graphExecutionScrollToIndex} from '../../actions';
+import {getGraphExecutionData, getNumGraphExecutions} from '../../store';
 import {State} from '../../store/debugger_types';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
@@ -25,11 +26,34 @@ import {State} from '../../store/debugger_types';
   template: `
     <graph-executions-component
       [numGraphExecutions]="numGraphExecutions$ | async"
+      [graphExecutionData]="graphExecutionData$ | async"
+      [graphExecutionIndices]="graphExecutionIndices$ | async"
+      (onScrolledIndexChange)="onScrolledIndexChange($event)"
     ></graph-executions-component>
   `,
 })
 export class GraphExecutionsContainer {
   readonly numGraphExecutions$ = this.store.pipe(select(getNumGraphExecutions));
+
+  readonly graphExecutionData$ = this.store.pipe(select(getGraphExecutionData));
+
+  readonly graphExecutionIndices$ = this.store.pipe(
+    select(
+      createSelector(
+        getNumGraphExecutions,
+        (numGraphExecution: number): number[] | null => {
+          if (numGraphExecution === 0) {
+            return null;
+          }
+          return Array.from({length: numGraphExecution}).map((_, i) => i);
+        }
+      )
+    )
+  );
+
+  onScrolledIndexChange(scrolledIndex: number) {
+    this.store.dispatch(graphExecutionScrollToIndex({index: scrolledIndex}));
+  }
 
   constructor(private readonly store: Store<State>) {}
 }

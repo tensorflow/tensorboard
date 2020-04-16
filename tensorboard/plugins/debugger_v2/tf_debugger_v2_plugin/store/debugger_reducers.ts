@@ -18,6 +18,7 @@ import * as actions from '../actions';
 import {
   ExecutionDataResponse,
   ExecutionDigestsResponse,
+  GraphExecutionDataResponse,
   GraphExecutionDigestsResponse,
   SourceFileResponse,
 } from '../data_source/tfdbg2_data_source';
@@ -83,6 +84,7 @@ export function createInitialGraphExecutionsState(): GraphExecutions {
     scrollBeginIndex: 0,
     focusIndex: null,
     graphExecutionDigests: {},
+    loadingGraphExecutionDataPages: [],
     graphExecutionData: {},
   };
 }
@@ -564,6 +566,74 @@ const reducer = createReducer(
       return newState;
     }
   ),
+  on(
+    actions.graphExecutionDataRequested,
+    (state: DebuggerState, {pageIndex}): DebuggerState => {
+      if (state.activeRunId === null) {
+        return state;
+      }
+      const loadingGraphExecutionDataPages = state.graphExecutions.loadingGraphExecutionDataPages.slice();
+      if (loadingGraphExecutionDataPages.indexOf(pageIndex) === -1) {
+        loadingGraphExecutionDataPages.push(pageIndex);
+      }
+      return {
+        ...state,
+        graphExecutions: {
+          ...state.graphExecutions,
+          loadingGraphExecutionDataPages,
+        },
+      };
+    }
+  ), // TODO(cais): Add unit test.
+  on(
+    actions.graphExecutionDataLoaded,
+    (state: DebuggerState, data: GraphExecutionDataResponse): DebuggerState => {
+      console.log('graphExecutionDataLoaded reducer: data=', data); // DEBUG
+      if (state.activeRunId === null) {
+        return state;
+      }
+      const pageIndex = Math.floor(data.begin / state.graphExecutions.pageSize);
+      console.log('pageIndex reducer: pageIndex=', pageIndex); // DEBUG
+      // TODO(cais): Throw error if division is not integer?
+      const loadingGraphExecutionDataPages = state.graphExecutions.loadingGraphExecutionDataPages.slice();
+      if (loadingGraphExecutionDataPages.indexOf(pageIndex) !== -1) {
+        loadingGraphExecutionDataPages.splice(
+          loadingGraphExecutionDataPages.indexOf(pageIndex),
+          1
+        );
+      }
+      const graphExecutionData = {...state.graphExecutions.graphExecutionData};
+      for (let i = data.begin; i < data.end; ++i) {
+        graphExecutionData[i] = data.graph_executions[i - data.begin];
+      }
+      return {
+        ...state,
+        graphExecutions: {
+          ...state.graphExecutions,
+          graphExecutionData,
+          loadingGraphExecutionDataPages,
+        },
+      };
+    }
+  ), // TODO(cais): Add unit test.
+  on(
+    actions.graphExecutionScrollToIndex,
+    (state: DebuggerState, action: {index: number}): DebuggerState => {
+      if (action.index < 0 || !Number.isInteger(action.index)) {
+        throw new Error(
+          `Attempt to scroll to negative or non-integer graph-execution ` +
+            `index (${action.index})`
+        );
+      }
+      return {
+        ...state,
+        graphExecutions: {
+          ...state.graphExecutions,
+          scrollBeginIndex: action.index,
+        },
+      };
+    }
+  ), // TODO(cais): Add unit test.
   ////////////////////////////////////////////////////////
   // Reducers related to source files and stack traces. //
   ////////////////////////////////////////////////////////

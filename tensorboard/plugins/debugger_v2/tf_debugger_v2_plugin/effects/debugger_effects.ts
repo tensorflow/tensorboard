@@ -17,6 +17,7 @@ import {Store} from '@ngrx/store';
 import {Actions, createEffect, ofType} from '@ngrx/effects';
 import {merge, Observable} from 'rxjs';
 import {
+  debounceTime,
   filter,
   map,
   mergeMap,
@@ -37,6 +38,8 @@ import {
   executionScrollLeft,
   executionScrollRight,
   executionScrollToIndex,
+  graphExecutionDataLoaded,
+  graphExecutionScrollToIndex,
   numAlertsAndBreakdownLoaded,
   numAlertsAndBreakdownRequested,
   numExecutionsLoaded,
@@ -61,6 +64,9 @@ import {
   getExecutionPageSize,
   getExecutionScrollBeginIndex,
   getFocusedSourceFileContent,
+  getGraphExecutionData,
+  getGraphExecutionPageSize,
+  getGraphExecutionScrollBeginIndex,
   getNumExecutions,
   getNumExecutionsLoaded,
   getLoadedAlertsOfFocusedType,
@@ -542,6 +548,70 @@ export class DebuggerEffects {
   }
 
   /**
+   * Emits when scrolling event leads to need to load new intra-graph execution
+   * digests.
+   */
+  private onGraphExecutionScroll(): Observable<void> {
+    return this.actions$.pipe(
+      ofType(graphExecutionScrollToIndex),
+      debounceTime(100), // TODO(cais): Remove magic number.
+      withLatestFrom(
+        this.store.select(getActiveRunId),
+        this.store.select(getNumGraphExecutions),
+        this.store.select(getGraphExecutionScrollBeginIndex),
+        this.store.select(getGraphExecutionPageSize),
+        this.store.select(getGraphExecutionData)
+      ),
+      filter(
+        ([, runId, numGraphExecutions]) =>
+          runId !== null && numGraphExecutions > 0
+      ),
+      map(
+        ([
+          ,
+          runId,
+          numGraphExecutions,
+          scrollBeginIndex,
+          pageSize,
+          graphExecutionData,
+        ]) => {
+          const pageIndex = Math.floor(scrollBeginIndex / pageSize);
+          const begin = pageSize * pageIndex;
+          const end = Math.min(begin + 2 * pageSize, numGraphExecutions);
+          let dataMissing = false;
+          for (let i = begin; i < end; ++i) {
+            if (graphExecutionData[i] === undefined) {
+              dataMissing = true;
+              break;
+            }
+          }
+          return {
+            runId,
+            dataMissing,
+            begin,
+            end,
+          };
+        }
+      ),
+      filter(({dataMissing}) => dataMissing),
+      mergeMap(({runId, begin, end}) => {
+        console.log(
+          `mergeMap() 200: runId=${runId}, begin=${begin}, end=${end}`
+        ); // DEBUG
+        return this.dataSource.fetchGraphExecutionData(runId!, begin, end).pipe(
+          tap((graphExecutionDataResponse) => {
+            this.store.dispatch(
+              graphExecutionDataLoaded(graphExecutionDataResponse)
+            );
+          }),
+          map(() => void null)
+        );
+        // TODO(cais): Add catchError() to pipe.
+      })
+    );
+  }
+
+  /**
    * Emits when user focuses on an alert type.
    *
    * Returns an Observable for what additional execution digests need to be fetched.
@@ -825,6 +895,9 @@ export class DebuggerEffects {
           onLoad$
         );
 
+        // TODO(cais): Hook it up.
+        const onGraphExecutionScroll$ = this.onGraphExecutionScroll();
+
         const onSourceFileFocused$ = this.onSourceFileFocused();
 
         // ExecutionDigest and ExecutionData can be loaded in parallel.
@@ -834,7 +907,8 @@ export class DebuggerEffects {
           onExecutionDataLoaded$,
           onNumGraphExecutionLoaded$,
           loadSourceFileList$,
-          onSourceFileFocused$
+          onSourceFileFocused$,
+          onGraphExecutionScroll$
         ).pipe(
           // createEffect expects an Observable that emits {}.
           map(() => ({}))

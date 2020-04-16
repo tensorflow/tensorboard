@@ -13,14 +13,32 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {Component, Input} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+} from '@angular/core';
+
+import {GraphExecution} from '../../store/debugger_types';
 
 @Component({
   selector: 'graph-executions-component',
   templateUrl: './graph_executions_component.ng.html',
   styleUrls: ['./graph_executions_component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GraphExecutionsComponent {
   @Input()
   numGraphExecutions: number | null = null;
+
+  @Input()
+  graphExecutionData: {[index: number]: GraphExecution} = {};
+
+  @Input()
+  graphExecutionIndices: number[] | null = null;
+
+  @Output()
+  onScrolledIndexChange = new EventEmitter<number>();
 }
