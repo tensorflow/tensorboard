@@ -44,8 +44,8 @@ limitations under the License.
 }
 
 .graph-execution-index {
+  color: #757575;
   display: inline-block;
-  text-align: right;
   width: 40px;
   padding-right: 4px;
 }
