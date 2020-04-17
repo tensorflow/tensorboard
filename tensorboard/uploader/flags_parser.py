@@ -118,8 +118,7 @@ def define_flags(parser):
     )
     upload.add_argument(
         "--plugins",
-        type=str,
-        nargs="*",
+        type=lambda option: option.split(","),
         default=[],
         help="List of plugins for which data should be uploaded. If "
         "unspecified then data will be uploaded for all plugins supported by "
@@ -177,6 +176,11 @@ def define_flags(parser):
         "list", help="list previously uploaded experiments"
     )
     list_parser.set_defaults(**{SUBCOMMAND_FLAG: SUBCOMMAND_KEY_LIST})
+    list_parser.add_argument(
+        "--json",
+        action="store_true",
+        help="print the experiments as JSON objects",
+    )
 
     export = subparsers.add_parser(
         "export", help="download all your experiment data"

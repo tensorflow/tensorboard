@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import print_function
 
 import collections
+import itertools
 import os
 
 import grpc
@@ -32,6 +33,9 @@ except ImportError:
 
 import tensorflow as tf
 
+from google.protobuf import message
+from tensorboard import data_compat
+from tensorboard import dataclass_compat
 from tensorboard.uploader.proto import experiment_pb2
 from tensorboard.uploader.proto import scalar_pb2
 from tensorboard.uploader.proto import write_service_pb2
@@ -41,6 +45,7 @@ from tensorboard.uploader import uploader as uploader_lib
 from tensorboard.uploader import logdir_loader
 from tensorboard.uploader import util
 from tensorboard.compat.proto import event_pb2
+from tensorboard.compat.proto import graph_pb2
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.histogram import summary_v2 as histogram_v2
 from tensorboard.plugins.graph import metadata as graphs_metadata
@@ -48,6 +53,19 @@ from tensorboard.plugins.scalar import metadata as scalars_metadata
 from tensorboard.plugins.scalar import summary_v2 as scalar_v2
 from tensorboard.summary import v1 as summary_v1
 from tensorboard.util import test_util as tb_test_util
+
+
+def _create_example_graph_bytes(large_attr_size):
+    graph_def = graph_pb2.GraphDef()
+    graph_def.node.add(name="alice", op="Person")
+    graph_def.node.add(name="bob", op="Person")
+
+    graph_def.node[1].attr["small"].s = b"small_attr_value"
+    graph_def.node[1].attr["large"].s = b"l" * large_attr_size
+    graph_def.node.add(
+        name="friendship", op="Friendship", input=["alice", "bob"]
+    )
+    return graph_def.SerializeToString()
 
 
 class AbortUploadError(Exception):
@@ -67,6 +85,12 @@ def _create_mock_client():
         experiment_id="123", url="should not be used!"
     )
     mock_client.CreateExperiment.return_value = fake_exp_response
+    mock_client.GetOrCreateBlobSequence.side_effect = (
+        write_service_pb2.GetOrCreateBlobSequenceResponse(
+            blob_sequence_id="blob%d" % i
+        )
+        for i in itertools.count()
+    )
     return mock_client
 
 
@@ -226,13 +250,23 @@ class TensorboardUploaderTest(tf.test.TestCase):
         mock_logdir_loader = mock.create_autospec(logdir_loader.LogdirLoader)
         mock_logdir_loader.get_run_events.side_effect = [
             {
-                "run 1": [scalar_event("1.1", 5.0), scalar_event("1.2", 5.0)],
-                "run 2": [scalar_event("2.1", 5.0), scalar_event("2.2", 5.0)],
+                "run 1": _apply_compat(
+                    [scalar_event("1.1", 5.0), scalar_event("1.2", 5.0)]
+                ),
+                "run 2": _apply_compat(
+                    [scalar_event("2.1", 5.0), scalar_event("2.2", 5.0)]
+                ),
             },
             {
-                "run 3": [scalar_event("3.1", 5.0), scalar_event("3.2", 5.0)],
-                "run 4": [scalar_event("4.1", 5.0), scalar_event("4.2", 5.0)],
-                "run 5": [scalar_event("5.1", 5.0), scalar_event("5.2", 5.0)],
+                "run 3": _apply_compat(
+                    [scalar_event("3.1", 5.0), scalar_event("3.2", 5.0)]
+                ),
+                "run 4": _apply_compat(
+                    [scalar_event("4.1", 5.0), scalar_event("4.2", 5.0)]
+                ),
+                "run 5": _apply_compat(
+                    [scalar_event("5.1", 5.0), scalar_event("5.2", 5.0)]
+                ),
             },
             AbortUploadError,
         ]
@@ -264,18 +298,22 @@ class TensorboardUploaderTest(tf.test.TestCase):
 
         # Of course a real Event stream will never produce the same Event twice,
         # but is this test context it's fine to reuse this one.
-        graph_event = event_pb2.Event(graph_def=bytes(950))
-
+        graph_event = event_pb2.Event(
+            graph_def=_create_example_graph_bytes(950)
+        )
+        expected_graph_def = graph_pb2.GraphDef.FromString(
+            graph_event.graph_def
+        )
         mock_logdir_loader = mock.create_autospec(logdir_loader.LogdirLoader)
         mock_logdir_loader.get_run_events.side_effect = [
             {
-                "run 1": [graph_event, graph_event],
-                "run 2": [graph_event, graph_event],
+                "run 1": _apply_compat([graph_event, graph_event]),
+                "run 2": _apply_compat([graph_event, graph_event]),
             },
             {
-                "run 3": [graph_event, graph_event],
-                "run 4": [graph_event, graph_event],
-                "run 5": [graph_event, graph_event],
+                "run 3": _apply_compat([graph_event, graph_event]),
+                "run 4": _apply_compat([graph_event, graph_event]),
+                "run 5": _apply_compat([graph_event, graph_event]),
             },
             AbortUploadError,
         ]
@@ -286,6 +324,14 @@ class TensorboardUploaderTest(tf.test.TestCase):
             uploader.start_uploading()
         self.assertEqual(1, mock_client.CreateExperiment.call_count)
         self.assertEqual(10, mock_client.WriteBlob.call_count)
+        for (i, call) in enumerate(mock_client.WriteBlob.call_args_list):
+            requests = list(call[0][0])
+            data = b"".join(r.data for r in requests)
+            actual_graph_def = graph_pb2.GraphDef.FromString(data)
+            self.assertProtoEquals(expected_graph_def, actual_graph_def)
+            self.assertEqual(
+                set(r.blob_sequence_id for r in requests), {"blob%d" % i},
+            )
         self.assertEqual(0, mock_rate_limiter.tick.call_count)
         self.assertEqual(10, mock_blob_rate_limiter.tick.call_count)
 
@@ -307,11 +353,13 @@ class TensorboardUploaderTest(tf.test.TestCase):
         )
         uploader.create_experiment()
 
-        graph_event = event_pb2.Event(graph_def=bytes(950))
+        graph_event = event_pb2.Event(
+            graph_def=_create_example_graph_bytes(950)
+        )
 
         mock_logdir_loader = mock.create_autospec(logdir_loader.LogdirLoader)
         mock_logdir_loader.get_run_events.side_effect = [
-            {"run 1": [graph_event],},
+            {"run 1": _apply_compat([graph_event])},
             AbortUploadError,
         ]
 
@@ -323,6 +371,67 @@ class TensorboardUploaderTest(tf.test.TestCase):
         self.assertEqual(0, mock_client.WriteBlob.call_count)
         self.assertEqual(0, mock_rate_limiter.tick.call_count)
         self.assertEqual(1, mock_blob_rate_limiter.tick.call_count)
+
+    def test_filter_graphs(self):
+        # Three graphs: one short, one long, one corrupt.
+        bytes_0 = _create_example_graph_bytes(123)
+        bytes_1 = _create_example_graph_bytes(9999)
+        # invalid (truncated) proto: length-delimited field 1 (0x0a) of
+        # length 0x7f specified, but only len("bogus") = 5 bytes given
+        # <https://developers.google.com/protocol-buffers/docs/encoding>
+        bytes_2 = b"\x0a\x7fbogus"
+
+        logdir = self.get_temp_dir()
+        for (i, b) in enumerate([bytes_0, bytes_1, bytes_2]):
+            run_dir = os.path.join(logdir, "run_%04d" % i)
+            event = event_pb2.Event(step=0, wall_time=123 * i, graph_def=b)
+            with tb_test_util.FileWriter(run_dir) as writer:
+                writer.add_event(event)
+
+        limiter = mock.create_autospec(util.RateLimiter)
+        limiter.tick.side_effect = [None, AbortUploadError]
+        mock_client = _create_mock_client()
+        uploader = _create_uploader(
+            mock_client,
+            logdir,
+            logdir_poll_rate_limiter=limiter,
+            allowed_plugins=[
+                scalars_metadata.PLUGIN_NAME,
+                graphs_metadata.PLUGIN_NAME,
+            ],
+        )
+        uploader.create_experiment()
+
+        with self.assertRaises(AbortUploadError):
+            uploader.start_uploading()
+
+        actual_blobs = []
+        for call in mock_client.WriteBlob.call_args_list:
+            requests = call[0][0]
+            actual_blobs.append(b"".join(r.data for r in requests))
+
+        actual_graph_defs = []
+        for blob in actual_blobs:
+            try:
+                actual_graph_defs.append(graph_pb2.GraphDef.FromString(blob))
+            except message.DecodeError:
+                actual_graph_defs.append(None)
+
+        with self.subTest("graphs with small attr values should be unchanged"):
+            expected_graph_def_0 = graph_pb2.GraphDef.FromString(bytes_0)
+            self.assertEqual(actual_graph_defs[0], expected_graph_def_0)
+
+        with self.subTest("large attr values should be filtered out"):
+            expected_graph_def_1 = graph_pb2.GraphDef.FromString(bytes_1)
+            del expected_graph_def_1.node[1].attr["large"]
+            expected_graph_def_1.node[1].attr["_too_large_attrs"].list.s.append(
+                b"large"
+            )
+            requests = list(mock_client.WriteBlob.call_args[0][0])
+            self.assertEqual(actual_graph_defs[1], expected_graph_def_1)
+
+        with self.subTest("corrupt graphs should be skipped"):
+            self.assertLen(actual_blobs, 2)
 
     def test_upload_server_error(self):
         mock_client = _create_mock_client()
@@ -342,12 +451,14 @@ class TensorboardUploaderTest(tf.test.TestCase):
 
         # Of course a real Event stream will never produce the same Event twice,
         # but is this test context it's fine to reuse this one.
-        graph_event = event_pb2.Event(graph_def=bytes(950))
+        graph_event = event_pb2.Event(
+            graph_def=_create_example_graph_bytes(950)
+        )
 
         mock_logdir_loader = mock.create_autospec(logdir_loader.LogdirLoader)
         mock_logdir_loader.get_run_events.side_effect = [
-            {"run 1": [graph_event],},
-            {"run 1": [graph_event],},
+            {"run 1": _apply_compat([graph_event])},
+            {"run 1": _apply_compat([graph_event])},
             AbortUploadError,
         ]
 
@@ -383,12 +494,14 @@ class TensorboardUploaderTest(tf.test.TestCase):
         )
         uploader.create_experiment()
 
-        graph_event = event_pb2.Event(graph_def=bytes(950))
+        graph_event = event_pb2.Event(
+            graph_def=_create_example_graph_bytes(950)
+        )
 
         mock_logdir_loader = mock.create_autospec(logdir_loader.LogdirLoader)
         mock_logdir_loader.get_run_events.side_effect = [
-            {"run 1": [graph_event],},
-            {"run 1": [graph_event],},
+            {"run 1": _apply_compat([graph_event])},
+            {"run 1": _apply_compat([graph_event])},
             AbortUploadError,
         ]
 
@@ -608,7 +721,7 @@ class BatchedRequestSenderTest(tf.test.TestCase):
             api=mock_client,
             allowed_plugins=allowed_plugins,
         )
-        builder.send_requests({"": events})
+        builder.send_requests({"": _apply_compat(events)})
         requests = [c[0][0] for c in mock_client.WriteScalar.call_args_list]
         if requests:
             self.assertLen(requests, 1)
@@ -819,7 +932,7 @@ class BatchedRequestSenderTest(tf.test.TestCase):
         event = event_pb2.Event(step=1, wall_time=123.456)
         event.summary.value.add(tag="foo", simple_value=1.0)
         long_run_name = "A" * uploader_lib._MAX_REQUEST_LENGTH_BYTES
-        run_to_events = {long_run_name: [event]}
+        run_to_events = {long_run_name: _apply_compat([event])}
         with self.assertRaises(RuntimeError) as cm:
             builder = _create_request_sender("123", mock_client)
             builder.send_requests(run_to_events)
@@ -836,7 +949,10 @@ class BatchedRequestSenderTest(tf.test.TestCase):
         event_2 = event_pb2.Event(step=2)
         event_2.summary.value.add(tag="bar", simple_value=-2.0)
         run_to_events = collections.OrderedDict(
-            [(long_run_1, [event_1]), (long_run_2, [event_2])]
+            [
+                (long_run_1, _apply_compat([event_1])),
+                (long_run_2, _apply_compat([event_2])),
+            ]
         )
 
         builder = _create_request_sender("123", mock_client)
@@ -874,7 +990,7 @@ class BatchedRequestSenderTest(tf.test.TestCase):
         event = event_pb2.Event(step=1)
         event.summary.value.add(tag=long_tag_1, simple_value=1.0)
         event.summary.value.add(tag=long_tag_2, simple_value=2.0)
-        run_to_events = {"train": [event]}
+        run_to_events = {"train": _apply_compat([event])}
 
         builder = _create_request_sender("123", mock_client)
         builder.send_requests(run_to_events)
@@ -914,7 +1030,7 @@ class BatchedRequestSenderTest(tf.test.TestCase):
             if step > 0:
                 summary.value[0].ClearField("metadata")
             events.append(event_pb2.Event(summary=summary, step=step))
-        run_to_events = {"train": events}
+        run_to_events = {"train": _apply_compat(events)}
 
         builder = _create_request_sender("123", mock_client)
         builder.send_requests(run_to_events)
@@ -949,7 +1065,10 @@ class BatchedRequestSenderTest(tf.test.TestCase):
         event_2 = event_pb2.Event(step=2)
         event_2.summary.value.add(tag="bar", simple_value=-2.0)
         run_to_events = collections.OrderedDict(
-            [("train", [event_1]), ("test", [event_2])]
+            [
+                ("train", _apply_compat([event_1])),
+                ("test", _apply_compat([event_2])),
+            ]
         )
 
         real_create_point = (
@@ -1156,6 +1275,17 @@ def _clear_wall_times(request):
         for tag in run.tags:
             for point in tag.points:
                 point.ClearField("wall_time")
+
+
+def _apply_compat(events):
+    initial_metadata = {}
+    for event in events:
+        event = data_compat.migrate_event(event)
+        events = dataclass_compat.migrate_event(
+            event, initial_metadata=initial_metadata
+        )
+        for event in events:
+            yield event
 
 
 if __name__ == "__main__":

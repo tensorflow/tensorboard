@@ -89,14 +89,14 @@ export const alertTypeFocusToggled = createAction(
 );
 
 /**
- * Actions for the Timeline Component.
+ * Actions related to top-level (eager) execution
  */
 export const numExecutionsRequested = createAction(
-  '[Debugger] Number of Executions Requested'
+  '[Debugger] Number of Top-Level Executions Requested'
 );
 
 export const numExecutionsLoaded = createAction(
-  '[Debugger] Number of Executions Loaded',
+  '[Debugger] Number of Top-Level Executions Loaded',
   props<{numExecutions: number}>()
 );
 
@@ -130,6 +130,18 @@ export const executionDigestFocused = createAction(
 export const executionDataLoaded = createAction(
   '[Debugger] Execution Data Objects Loaded',
   props<ExecutionDataResponse>()
+);
+
+/**
+ * Actions related to intra-graph execution
+ */
+export const numGraphExecutionsRequested = createAction(
+  '[Debugger] Number of Intra-Graph Executions Requested'
+);
+
+export const numGraphExecutionsLoaded = createAction(
+  '[Debugger] Number of Intra-Graph Executions Loaded',
+  props<{numGraphExecutions: number}>()
 );
 
 export const sourceFileListRequested = createAction(

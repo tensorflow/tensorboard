@@ -8,11 +8,6 @@ licenses(["notice"])  # Apache 2.0
 exports_files(["LICENSE"])
 
 py_library(
-    name = "dev_creds",
-    srcs = ["dev_creds.py"],
-)
-
-py_library(
     name = "exporter_lib",
     srcs = ["exporter.py"],
     srcs_version = "PY3",
@@ -44,6 +39,26 @@ py_test(
     ],
 )
 
+py_library(
+    name = "formatters",
+    srcs = ["formatters.py"],
+    srcs_version = "PY3",
+    deps = [
+        ":util",
+    ],
+)
+
+py_test(
+    name = "formatters_test",
+    srcs = ["formatters_test.py"],
+    deps = [
+        ":formatters",
+        ":util",
+        "//tensorboard:test",
+        "//tensorboard/uploader/proto:protos_all_py_pb2",
+    ],
+)
+
 py_binary(
     name = "uploader",
     srcs = ["uploader_main.py"],
@@ -57,9 +72,9 @@ py_library(
     visibility = ["//tensorboard:internal"],
     deps = [
         ":auth",
-        ":dev_creds",
         ":exporter_lib",
         ":flags_parser",
+        ":formatters",
         ":server_info",
         ":uploader_lib",
         ":util",
@@ -81,9 +96,8 @@ py_library(
     deps = [
         ":logdir_loader",
         ":util",
-        "//tensorboard:data_compat",
-        "//tensorboard:dataclass_compat",
         "//tensorboard:expect_grpc_installed",
+        "//tensorboard/backend:process_graph",
         "//tensorboard/backend/event_processing:directory_loader",
         "//tensorboard/backend/event_processing:event_file_loader",
         "//tensorboard/backend/event_processing:io_wrapper",
@@ -94,6 +108,7 @@ py_library(
         "//tensorboard/util:grpc_util",
         "//tensorboard/util:tb_logging",
         "//tensorboard/util:tensor_util",
+        "@com_google_protobuf//:protobuf_python",
         "@org_pythonhosted_six",
     ],
 )
@@ -106,10 +121,13 @@ py_test(
         ":test_util",
         ":uploader_lib",
         ":util",
+        "//tensorboard:data_compat",
+        "//tensorboard:dataclass_compat",
         "//tensorboard:expect_grpc_installed",
         "//tensorboard:expect_grpc_testing_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/plugins/graph:metadata",
         "//tensorboard/plugins/histogram:summary_v2",
         "//tensorboard/plugins/scalar:metadata",
         "//tensorboard/plugins/scalar:summary_v2",
@@ -117,6 +135,7 @@ py_test(
         "//tensorboard/uploader/proto:protos_all_py_pb2",
         "//tensorboard/uploader/proto:protos_all_py_pb2_grpc",
         "//tensorboard/util:test_util",
+        "@com_google_protobuf//:protobuf_python",
         "@org_pythonhosted_mock",
     ],
 )

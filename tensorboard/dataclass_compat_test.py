@@ -23,11 +23,16 @@ import os
 import numpy as np
 import tensorflow as tf
 
+from google.protobuf import message
+
 from tensorboard import dataclass_compat
 from tensorboard.backend.event_processing import event_file_loader
 from tensorboard.compat.proto import event_pb2
 from tensorboard.compat.proto import graph_pb2
+from tensorboard.compat.proto import node_def_pb2
 from tensorboard.compat.proto import summary_pb2
+from tensorboard.plugins.audio import metadata as audio_metadata
+from tensorboard.plugins.audio import summary as audio_summary
 from tensorboard.plugins.graph import metadata as graphs_metadata
 from tensorboard.plugins.histogram import metadata as histogram_metadata
 from tensorboard.plugins.histogram import summary as histogram_summary
@@ -38,15 +43,21 @@ from tensorboard.plugins.scalar import summary as scalar_summary
 from tensorboard.util import tensor_util
 from tensorboard.util import test_util
 
+tf.compat.v1.enable_eager_execution()
+
 
 class MigrateEventTest(tf.test.TestCase):
     """Tests for `migrate_event`."""
 
-    def _migrate_event(self, old_event):
+    def _migrate_event(self, old_event, initial_metadata=None):
         """Like `migrate_event`, but performs some sanity checks."""
+        if initial_metadata is None:
+            initial_metadata = {}
         old_event_copy = event_pb2.Event()
         old_event_copy.CopyFrom(old_event)
-        new_events = dataclass_compat.migrate_event(old_event)
+        new_events = dataclass_compat.migrate_event(
+            old_event, initial_metadata=initial_metadata
+        )
         for event in new_events:  # ensure that wall time and step are preserved
             self.assertEqual(event.wall_time, old_event.wall_time)
             self.assertEqual(event.step, old_event.step)
@@ -85,6 +96,35 @@ class MigrateEventTest(tf.test.TestCase):
         new_events = self._migrate_event(old_event)
         self.assertLen(new_events, 1)
         self.assertIs(new_events[0], old_event)
+
+    def test_doesnt_add_metadata_to_later_steps(self):
+        old_events = []
+        for step in range(3):
+            e = event_pb2.Event()
+            e.step = step
+            summary = scalar_summary.pb("foo", 0.125)
+            if step > 0:
+                for v in summary.value:
+                    v.ClearField("metadata")
+            e.summary.ParseFromString(summary.SerializeToString())
+            old_events.append(e)
+
+        initial_metadata = {}
+        new_events = []
+        for e in old_events:
+            migrated = self._migrate_event(e, initial_metadata=initial_metadata)
+            new_events.extend(migrated)
+
+        self.assertLen(new_events, len(old_events))
+        self.assertEqual(
+            {
+                e.step
+                for e in new_events
+                for v in e.summary.value
+                if v.HasField("metadata")
+            },
+            {0},
+        )
 
     def test_scalar(self):
         old_event = event_pb2.Event()
@@ -140,6 +180,68 @@ class MigrateEventTest(tf.test.TestCase):
             histogram_metadata.PLUGIN_NAME,
         )
 
+    def test_audio(self):
+        logdir = self.get_temp_dir()
+        steps = (0, 1, 2)
+        with test_util.FileWriter(logdir) as writer:
+            for step in steps:
+                event = event_pb2.Event()
+                event.step = step
+                event.wall_time = 456.75 * step
+                audio = tf.reshape(
+                    tf.linspace(0.0, 100.0, 4 * 10 * 2), (4, 10, 2)
+                )
+                audio_pb = audio_summary.pb(
+                    "foo",
+                    audio,
+                    labels=["one", "two", "three", "four"],
+                    sample_rate=44100,
+                    display_name="bar",
+                    description="baz",
+                )
+                writer.add_summary(
+                    audio_pb.SerializeToString(), global_step=step
+                )
+        files = os.listdir(logdir)
+        self.assertLen(files, 1)
+        event_file = os.path.join(logdir, files[0])
+        loader = event_file_loader.RawEventFileLoader(event_file)
+        input_events = [event_pb2.Event.FromString(x) for x in loader.Load()]
+
+        new_events = []
+        initial_metadata = {}
+        for input_event in input_events:
+            migrated = self._migrate_event(
+                input_event, initial_metadata=initial_metadata
+            )
+            new_events.extend(migrated)
+
+        self.assertLen(new_events, 4)
+        self.assertEqual(new_events[0].WhichOneof("what"), "file_version")
+        for step in steps:
+            with self.subTest("step %d" % step):
+                new_event = new_events[step + 1]
+                self.assertLen(new_event.summary.value, 1)
+                value = new_event.summary.value[0]
+                tensor = tensor_util.make_ndarray(value.tensor)
+                self.assertEqual(
+                    tensor.shape, (3,)
+                )  # 4 clipped to max_outputs=3
+                self.assertStartsWith(tensor[0], b"RIFF")
+                self.assertStartsWith(tensor[1], b"RIFF")
+                if step == min(steps):
+                    metadata = value.metadata
+                    self.assertEqual(
+                        metadata.data_class,
+                        summary_pb2.DATA_CLASS_BLOB_SEQUENCE,
+                    )
+                    self.assertEqual(
+                        metadata.plugin_data.plugin_name,
+                        audio_metadata.PLUGIN_NAME,
+                    )
+                else:
+                    self.assertFalse(value.HasField("metadata"))
+
     def test_hparams(self):
         old_event = event_pb2.Event()
         old_event.step = 0
@@ -181,8 +283,8 @@ class MigrateEventTest(tf.test.TestCase):
         self.assertLen(files, 1)
         event_file = os.path.join(logdir, files[0])
         self.assertIn("tfevents", event_file)
-        loader = event_file_loader.EventFileLoader(event_file)
-        events = list(loader.Load())
+        loader = event_file_loader.RawEventFileLoader(event_file)
+        events = [event_pb2.Event.FromString(x) for x in loader.Load()]
         self.assertLen(events, 2)
         self.assertEqual(events[0].WhichOneof("what"), "file_version")
         self.assertEqual(events[1].WhichOneof("what"), "graph_def")

@@ -34,6 +34,7 @@ import {
 import {AlertsContainer} from './alerts_container';
 import {AlertsModule} from './alerts_module';
 import {ExecutionDataModule} from '../execution_data/execution_data_module';
+import {GraphExecutionsModule} from '../graph_executions/graph_executions_module';
 import {InactiveModule} from '../inactive/inactive_module';
 import {SourceFilesModule} from '../source_files/source_files_module';
 import {StackTraceModule} from '../stack_trace/stack_trace_module';
@@ -52,6 +53,7 @@ describe('Alerts Container', () => {
         AlertsModule,
         CommonModule,
         ExecutionDataModule,
+        GraphExecutionsModule,
         InactiveModule,
         SourceFilesModule,
         StackTraceModule,
