@@ -186,13 +186,11 @@ class AudioPlugin(base_plugin.TBPlugin):
         filtered_events = self._filter_by_sample(tensor_events, sample)
         content_type = self._get_mime_type(run, tag)
         for (index, tensor_event) in enumerate(filtered_events):
-            data = tensor_util.make_ndarray(tensor_event.tensor_proto)
-            label = data[sample, 1]
             response.append(
                 {
                     "wall_time": tensor_event.wall_time,
                     "step": tensor_event.step,
-                    "label": plugin_util.markdown_to_safe_html(label),
+                    "label": "",
                     "contentType": content_type,
                     "query": self._query_for_individual_audio(
                         run, tag, sample, index
@@ -240,9 +238,7 @@ class AudioPlugin(base_plugin.TBPlugin):
             events = self._filter_by_sample(
                 self._multiplexer.Tensors(run, tag), sample
             )
-            data = tensor_util.make_ndarray(events[index].tensor_proto)[
-                sample, 0
-            ]
+            data = events[index].tensor_proto.string_val[sample]
         except (KeyError, IndexError):
             return http_util.Respond(
                 request,

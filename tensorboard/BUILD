@@ -498,6 +498,7 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/plugins/audio:metadata",
         "//tensorboard/plugins/graph:metadata",
         "//tensorboard/plugins/histogram:metadata",
         "//tensorboard/plugins/hparams:metadata",
@@ -519,6 +520,8 @@ py_test(
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend/event_processing:event_file_loader",
         "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/plugins/audio:metadata",
+        "//tensorboard/plugins/audio:summary",
         "//tensorboard/plugins/graph:metadata",
         "//tensorboard/plugins/histogram:metadata",
         "//tensorboard/plugins/histogram:summary",
