@@ -143,7 +143,6 @@ def _migrate_image_value(value):
 def _migrate_text_value(value):
     if value.HasField("metadata"):
         value.metadata.data_class = summary_pb2.DATA_CLASS_TENSOR
-<<<<<<< HEAD
     return (value,)
 
 
@@ -157,8 +156,6 @@ def _migrate_audio_value(value):
         stride *= tensor.tensor_shape.dim.pop().size
     if stride != 1:
         tensor.string_val[:] = tensor.string_val[::stride]
-=======
->>>>>>> 54bf18fb6ee6e91745c48bbda540fcce6c6896fd
     return (value,)
 
 
