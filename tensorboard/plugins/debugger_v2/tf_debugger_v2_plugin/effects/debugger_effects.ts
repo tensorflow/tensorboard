@@ -39,6 +39,7 @@ import {
   executionScrollRight,
   executionScrollToIndex,
   graphExecutionDataLoaded,
+  graphExecutionDataRequested,
   graphExecutionScrollToIndex,
   numAlertsAndBreakdownLoaded,
   numAlertsAndBreakdownRequested,
@@ -553,10 +554,10 @@ export class DebuggerEffects {
    * Emits when scrolling event leads to need to load new intra-graph execution
    * digests.
    */
-  private onGraphExecutionScroll(): Observable<void> {
+  private onGraphExecutionScroll(): Observable<{}> {
     return this.actions$.pipe(
       ofType(graphExecutionScrollToIndex),
-      debounceTime(100), // TODO(cais): Remove magic number. Look at race condition.
+      debounceTime(100),
       withLatestFrom(
         this.store.select(getActiveRunId),
         this.store.select(getNumGraphExecutions),
@@ -613,27 +614,28 @@ export class DebuggerEffects {
         }
       ),
       filter(({missingPages}) => missingPages.length > 0),
+      tap(({missingPages}) => {
+        missingPages.forEach((pageIndex) =>
+          this.store.dispatch(graphExecutionDataRequested({pageIndex}))
+        );
+      }),
       mergeMap(({runId, missingPages, pageSize, numGraphExecutions}) => {
         const begin = missingPages[0] * pageSize;
         const end = Math.min(
           (missingPages[missingPages.length - 1] + 1) * pageSize,
           numGraphExecutions
         );
-        // console.log(
-        //   `mergeMap() 200: runId=${runId}, begin=${begin}, end=${end}`
-        // ); // DEBUG
         return this.dataSource.fetchGraphExecutionData(runId!, begin, end).pipe(
           tap((graphExecutionDataResponse) => {
             this.store.dispatch(
               graphExecutionDataLoaded(graphExecutionDataResponse)
             );
-          }),
-          map(() => void null)
+          })
         );
         // TODO(cais): Add catchError() to pipe.
       })
     );
-  } // TODO(cais): Add unit test.
+  }
 
   /**
    * Emits when user focuses on an alert type.
