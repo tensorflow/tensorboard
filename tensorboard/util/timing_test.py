@@ -42,7 +42,7 @@ class LogLatencyTest(tb_test.TestCase):
         pass
 
     def test_decorator_implicit_name(self):
-        decorated = timing.log_latency()(self.my_slow_function)
+        decorated = timing.log_latency(self.my_slow_function)
         with self.assert_logs_matching("ENTER LogLatencyTest.my_slow_function"):
             decorated()
         # Again: make sure it's reusable.
@@ -54,27 +54,10 @@ class LogLatencyTest(tb_test.TestCase):
         with self.assert_logs_matching("ENTER my_costly_block"):
             decorated()
 
-    def test_context_manager_implicit_name(self):
-        with self.assertRaises(TypeError) as cm:
-            with timing.log_latency():
-                pass
-            msg = str(cm.exception)
-            self.assertIn("cannot be used as a context manager", msg)
-
     def test_context_manager_explicit_name(self):
         with self.assert_logs_matching("ENTER my_slow_region"):
             with timing.log_latency("my_slow_region"):
                 pass
-
-    def test_uninvoked_decorator(self):
-        with self.assertRaises(TypeError) as cm:
-
-            @timing.log_latency
-            def hmm():
-                pass
-
-        msg = str(cm.exception)
-        self.assertIn("hint: write `@log_latency()`", msg)
 
 
 if __name__ == "__main__":
