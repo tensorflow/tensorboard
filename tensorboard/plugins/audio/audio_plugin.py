@@ -164,7 +164,6 @@ class AudioPlugin(base_plugin.TBPlugin):
             )
         content_type = self._get_mime_type(experiment, run, tag)
         response = []
-<<<<<<< HEAD
         for datum in audio:
             if len(datum.values) < sample:
                 continue
@@ -179,17 +178,6 @@ class AudioPlugin(base_plugin.TBPlugin):
                     "wall_time": datum.wall_time,
                     "label": "",
                     "step": datum.step,
-=======
-        index = 0
-        filtered_events = self._filter_by_sample(tensor_events, sample)
-        content_type = self._get_mime_type(run, tag)
-        for (index, tensor_event) in enumerate(filtered_events):
-            response.append(
-                {
-                    "wall_time": tensor_event.wall_time,
-                    "step": tensor_event.step,
-                    "label": "",
->>>>>>> 0fae2f3f870ccc93330a3110a05ac9ec97de06b2
                     "contentType": content_type,
                     "query": query,
                 }
@@ -215,29 +203,11 @@ class AudioPlugin(base_plugin.TBPlugin):
     @wrappers.Request.application
     def _serve_individual_audio(self, request):
         """Serve encoded audio data."""
-<<<<<<< HEAD
         experiment = plugin_util.experiment_id(request.environ)
         mime_type = request.args["content_type"]
         if mime_type not in _ALLOWED_MIME_TYPES:
             raise errors.InvalidArgumentError(
                 "Illegal mime type %r" % mime_type
-=======
-        tag = request.args.get("tag")
-        run = request.args.get("run")
-        index = int(request.args.get("index", "0"))
-        sample = int(request.args.get("sample", "0"))
-        try:
-            events = self._filter_by_sample(
-                self._multiplexer.Tensors(run, tag), sample
-            )
-            data = events[index].tensor_proto.string_val[sample]
-        except (KeyError, IndexError):
-            return http_util.Respond(
-                request,
-                "Invalid run, tag, index, or sample",
-                "text/plain",
-                code=400,
->>>>>>> 0fae2f3f870ccc93330a3110a05ac9ec97de06b2
             )
         blob_key = request.args["blob_key"]
         data = self._data_provider.read_blob(blob_key)
