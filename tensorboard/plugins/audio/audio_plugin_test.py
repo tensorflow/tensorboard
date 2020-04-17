@@ -219,7 +219,7 @@ class AudioPluginTest(tf.test.TestCase):
         self.assertEqual("audio/wav", response.headers.get("content-type"))
 
     def testNewStyleIndividualAudioRoute(self):
-        """Tests fetching an individual audio clip from an old-style
+        """Tests fetching an individual audio clip from a new-style
         summary."""
         response = self.server.get(
             "/data/plugin/audio/audio?run=bar&tag=quux/audio_summary&sample=0"
@@ -232,6 +232,23 @@ class AudioPluginTest(tf.test.TestCase):
         )
         self.assertEqual(200, response.status_code)
         self.assertEqual("audio/wav", response.headers.get("content-type"))
+
+    def testRequestBadContentType(self):
+        """Ensure that malicious clients can't request a non-audio MIME type."""
+        response = self.server.get(
+            "/data/plugin/audio/audio?run=bar&tag=quux/audio_summary&sample=0"
+        )
+        self.assertEqual(200, response.status_code)
+        entries = self._DeserializeResponse(response.get_data())
+        query_parts = urllib.parse.parse_qs(entries[0]["query"])
+        self.assertIn("content_type", query_parts)
+        query_parts["content-type"] = "application/javascript"
+        malicious_query = urllib.parse.urlencode(query_parts)
+        response = self.server.get(
+            "/data/plugin/audio/individualAudio?" + malicious_query
+        )
+        self.assertEqual(400, response.status_code)
+        self.assertIn(b"Illegal mime type", response.get_data())
 
     def testTagsRoute(self):
         """Tests that the /tags route offers the correct run to tag mapping."""

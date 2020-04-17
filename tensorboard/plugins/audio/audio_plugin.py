@@ -66,7 +66,7 @@ class AudioPlugin(base_plugin.TBPlugin):
         }
 
     def is_active(self):
-        return False
+        return False  # `list_plugins` as called by TB core suffices
 
     def frontend_metadata(self):
         return base_plugin.FrontendMetadata(element_name="tf-audio-dashboard")
