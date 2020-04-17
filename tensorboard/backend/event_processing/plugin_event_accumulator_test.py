@@ -59,12 +59,15 @@ class _EventGenerator(object):
         self._testcase = testcase
         self.items = []
         self.zero_out_timestamps = zero_out_timestamps
+        self._initial_metadata = {}
 
     def Load(self):
         while self.items:
             event = self.items.pop(0)
             event = data_compat.migrate_event(event)
-            events = dataclass_compat.migrate_event(event)
+            events = dataclass_compat.migrate_event(
+                event, self._initial_metadata
+            )
             for event in events:
                 yield event
 
