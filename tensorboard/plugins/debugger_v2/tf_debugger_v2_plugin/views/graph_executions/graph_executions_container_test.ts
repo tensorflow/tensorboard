@@ -16,16 +16,25 @@ limitations under the License.
  * Unit tests for the the intra-graph execution component and container.
  */
 import {CommonModule} from '@angular/common';
-import {TestBed} from '@angular/core/testing';
+import {fakeAsync, TestBed, tick} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 
 import {Store} from '@ngrx/store';
-import {provideMockStore, MockStore} from '@ngrx/store/testing';
+import {MockStore, provideMockStore} from '@ngrx/store/testing';
 
 import {DebuggerComponent} from '../../debugger_component';
 import {DebuggerContainer} from '../../debugger_container';
-import {State} from '../../store/debugger_types';
-import {createDebuggerState, createState} from '../../testing';
+import {State, GraphExecution} from '../../store/debugger_types';
+import {
+  getNumGraphExecutions,
+  getGraphExecutionData,
+  getGraphExecutionDisplayCount,
+} from '../../store';
+import {
+  createDebuggerState,
+  createState,
+  createTestGraphExecution,
+} from '../../testing';
 import {AlertsModule} from '../alerts/alerts_module';
 import {ExecutionDataModule} from '../execution_data/execution_data_module';
 import {InactiveModule} from '../inactive/inactive_module';
@@ -36,9 +45,8 @@ import {GraphExecutionsContainer} from './graph_executions_container';
 import {GraphExecutionsModule} from './graph_executions_module';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
-import {getNumGraphExecutions} from '../../store';
 
-describe('Graph Executions Container', () => {
+fdescribe('Graph Executions Container', () => {
   let store: MockStore<State>;
 
   beforeEach(async () => {
@@ -64,14 +72,55 @@ describe('Graph Executions Container', () => {
     store = TestBed.get(Store);
   });
 
-  it('renders number of graph executions', () => {
+  it('does not render execs viewport if # execs = 0', fakeAsync(() => {
+    const fixture = TestBed.createComponent(GraphExecutionsContainer);
+    store.overrideSelector(getNumGraphExecutions, 0);
+    fixture.autoDetectChanges();
+    tick(500);
+
+    const titleElement = fixture.debugElement.query(
+      By.css('.graph-executions-title')
+    );
+    expect(titleElement.nativeElement.innerText).toBe('Graph Executions (0)');
+    const viewPort = fixture.debugElement.query(
+      By.css('.graph-executions-viewport')
+    );
+    expect(viewPort).toBeNull();
+  }));
+
+  it('renders # execs and execs viewport if # execs > 0; fully loaded', fakeAsync(() => {
     const fixture = TestBed.createComponent(GraphExecutionsContainer);
     store.overrideSelector(getNumGraphExecutions, 120);
-    fixture.detectChanges();
+    const graphExecutionData: {[index: number]: GraphExecution} = {};
+    for (let i = 0; i < 120; ++i) {
+      graphExecutionData[i] = createTestGraphExecution({
+        op_name: `TestOp_${i}`,
+        op_type: `OpType_${i}`,
+      });
+    }
+    store.overrideSelector(getGraphExecutionData, graphExecutionData);
+    fixture.autoDetectChanges();
+    tick(500);
 
     const titleElement = fixture.debugElement.query(
       By.css('.graph-executions-title')
     );
     expect(titleElement.nativeElement.innerText).toBe('Graph Executions (120)');
-  });
+    const viewPort = fixture.debugElement.query(
+      By.css('.graph-executions-viewport')
+    );
+    expect(viewPort).not.toBeNull();
+    const tensorContainers = fixture.debugElement.queryAll(
+      By.css('.tensor-container')
+    );
+    expect(tensorContainers.length).toBeGreaterThan(0);
+    const tensorNames = fixture.debugElement.queryAll(By.css('.tensor-name'));
+    const opTypes = fixture.debugElement.queryAll(By.css('.op-type'));
+    expect(tensorNames.length).toBe(tensorContainers.length);
+    expect(opTypes.length).toBe(tensorContainers.length);
+    for (let i = 0; i < tensorNames.length; ++i) {
+      expect(tensorNames[i].nativeElement.innerText).toBe(`TestOp_${i}:0`);
+      expect(opTypes[i].nativeElement.innerText).toBe(`OpType_${i}`);
+    }
+  }));
 });
