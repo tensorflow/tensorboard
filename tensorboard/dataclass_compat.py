@@ -107,44 +107,44 @@ def _migrate_value(value, initial_metadata):
         return (value,)
     plugin_name = metadata.plugin_data.plugin_name
     if plugin_name == histograms_metadata.PLUGIN_NAME:
-        return _migrate_histogram_value(value, initial)
+        return _migrate_histogram_value(value)
     if plugin_name == images_metadata.PLUGIN_NAME:
-        return _migrate_image_value(value, initial)
+        return _migrate_image_value(value)
     if plugin_name == scalars_metadata.PLUGIN_NAME:
-        return _migrate_scalar_value(value, initial)
+        return _migrate_scalar_value(value)
     if plugin_name == text_metadata.PLUGIN_NAME:
-        return _migrate_text_value(value, initial)
+        return _migrate_text_value(value)
     if plugin_name == hparams_metadata.PLUGIN_NAME:
-        return _migrate_hparams_value(value, initial)
+        return _migrate_hparams_value(value)
     return (value,)
 
 
-def _migrate_scalar_value(value, initial):
-    if initial:
+def _migrate_scalar_value(value):
+    if value.HasField("metadata"):
         value.metadata.data_class = summary_pb2.DATA_CLASS_SCALAR
     return (value,)
 
 
-def _migrate_histogram_value(value, initial):
-    if initial:
+def _migrate_histogram_value(value):
+    if value.HasField("metadata"):
         value.metadata.data_class = summary_pb2.DATA_CLASS_TENSOR
     return (value,)
 
 
-def _migrate_image_value(value, initial):
-    if initial:
+def _migrate_image_value(value):
+    if value.HasField("metadata"):
         value.metadata.data_class = summary_pb2.DATA_CLASS_BLOB_SEQUENCE
     return (value,)
 
 
-def _migrate_text_value(value, initial):
-    if initial:
+def _migrate_text_value(value):
+    if value.HasField("metadata"):
         value.metadata.data_class = summary_pb2.DATA_CLASS_TENSOR
     return (value,)
 
 
-def _migrate_hparams_value(value, initial):
-    if initial:
+def _migrate_hparams_value(value):
+    if value.HasField("metadata"):
         value.metadata.data_class = summary_pb2.DATA_CLASS_TENSOR
     if not value.HasField("tensor"):
         value.tensor.CopyFrom(hparams_metadata.NULL_TENSOR)
