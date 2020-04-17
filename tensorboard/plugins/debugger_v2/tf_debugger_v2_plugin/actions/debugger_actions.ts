@@ -156,7 +156,7 @@ export const graphExecutionDataLoaded = createAction(
 );
 
 export const graphExecutionScrollToIndex = createAction(
-  '[Debugger] Scroll the Graph Execution List to Given Index',
+  '[Debugger] Scroll Intra-Graph Execution List to Given Index',
   props<{index: number}>()
 );
 

@@ -84,7 +84,7 @@ export function createInitialGraphExecutionsState(): GraphExecutions {
     scrollBeginIndex: 0,
     focusIndex: null,
     graphExecutionDigests: {},
-    loadingGraphExecutionDataPages: [],
+    graphExecutionDataLoadingPages: [],
     graphExecutionDataPageLoadedSizes: {},
     graphExecutionData: {},
   };
@@ -573,15 +573,15 @@ const reducer = createReducer(
       if (state.activeRunId === null) {
         return state;
       }
-      const loadingGraphExecutionDataPages = state.graphExecutions.loadingGraphExecutionDataPages.slice();
-      if (loadingGraphExecutionDataPages.indexOf(pageIndex) === -1) {
-        loadingGraphExecutionDataPages.push(pageIndex);
+      const graphExecutionDataLoadingPages = state.graphExecutions.graphExecutionDataLoadingPages.slice();
+      if (graphExecutionDataLoadingPages.indexOf(pageIndex) === -1) {
+        graphExecutionDataLoadingPages.push(pageIndex);
       }
       return {
         ...state,
         graphExecutions: {
           ...state.graphExecutions,
-          loadingGraphExecutionDataPages,
+          graphExecutionDataLoadingPages,
         },
       };
     }
@@ -593,18 +593,18 @@ const reducer = createReducer(
         return state;
       }
       const {pageSize} = state.graphExecutions;
-      const loadingGraphExecutionDataPages = state.graphExecutions.loadingGraphExecutionDataPages.slice();
+      const graphExecutionDataLoadingPages = state.graphExecutions.graphExecutionDataLoadingPages.slice();
       const graphExecutionDataPageLoadedSizes = {
         ...state.graphExecutions.graphExecutionDataPageLoadedSizes,
       };
       const graphExecutionData = {...state.graphExecutions.graphExecutionData};
-      // Update loadingGraphExecutionDataPages, graphExecutionDataPageLoadedSizes,
+      // Update graphExecutionDataLoadingPages, graphExecutionDataPageLoadedSizes,
       // and graphExecutionData.
       for (let i = data.begin; i < data.end; ++i) {
         const pageIndex = Math.floor(i / pageSize);
-        if (loadingGraphExecutionDataPages.indexOf(pageIndex) !== -1) {
-          loadingGraphExecutionDataPages.splice(
-            loadingGraphExecutionDataPages.indexOf(pageIndex),
+        if (graphExecutionDataLoadingPages.indexOf(pageIndex) !== -1) {
+          graphExecutionDataLoadingPages.splice(
+            graphExecutionDataLoadingPages.indexOf(pageIndex),
             1
           );
         }
@@ -620,7 +620,7 @@ const reducer = createReducer(
         ...state,
         graphExecutions: {
           ...state.graphExecutions,
-          loadingGraphExecutionDataPages,
+          graphExecutionDataLoadingPages,
           graphExecutionDataPageLoadedSizes,
           graphExecutionData,
         },

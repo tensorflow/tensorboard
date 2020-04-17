@@ -22,6 +22,12 @@ import {
   getFocusedExecutionStackFrames,
   getFocusedSourceFileContent,
   getFocusedSourceFileIndex,
+  getGraphExecutionData,
+  getGraphExecutionDataLoadingPages,
+  getGraphExecutionDataPageLoadedSizes,
+  getGraphExecutionDisplayCount,
+  getGraphExecutionPageSize,
+  getGraphExecutionScrollBeginIndex,
   getLoadedAlertsOfFocusedType,
   getNumAlerts,
   getNumAlertsOfFocusedType,
@@ -764,6 +770,145 @@ describe('debugger selectors', () => {
         })
       );
       expect(getNumGraphExecutions(state)).toBe(10);
+    });
+  });
+
+  describe('getGraphExecutionScrollBeginIndex', () => {
+    it('returns correct initial zero state', () => {
+      const state = createState(createDebuggerState());
+      expect(getGraphExecutionScrollBeginIndex(state)).toBe(0);
+    });
+
+    it('returns correct non-zero state', () => {
+      const state = createState(
+        createDebuggerState({
+          graphExecutions: createDebuggerGraphExecutionsState({
+            scrollBeginIndex: 1234567,
+          }),
+        })
+      );
+      expect(getGraphExecutionScrollBeginIndex(state)).toBe(1234567);
+    });
+  });
+
+  describe('getGraphExecutionDisplayCount', () => {
+    it('returns correct value', () => {
+      const state = createState(
+        createDebuggerState({
+          graphExecutions: createDebuggerGraphExecutionsState({
+            displayCount: 240,
+          }),
+        })
+      );
+      expect(getGraphExecutionDisplayCount(state)).toBe(240);
+    });
+  });
+
+  describe('getGraphExecutionPageSize', () => {
+    it('returns correct value', () => {
+      const state = createState(
+        createDebuggerState({
+          graphExecutions: createDebuggerGraphExecutionsState({
+            pageSize: 126,
+          }),
+        })
+      );
+      expect(getGraphExecutionPageSize(state)).toBe(126);
+    });
+  });
+
+  describe('getGraphExecutionDataLoadingPages', () => {
+    it('returns correct empty value', () => {
+      const state = createState(
+        createDebuggerState({
+          graphExecutions: createDebuggerGraphExecutionsState({
+            graphExecutionDataLoadingPages: [],
+          }),
+        })
+      );
+      expect(getGraphExecutionDataLoadingPages(state)).toEqual([]);
+    });
+
+    it('returns correct non-empty value', () => {
+      const state = createState(
+        createDebuggerState({
+          graphExecutions: createDebuggerGraphExecutionsState({
+            graphExecutionDataLoadingPages: [1, 2, 100],
+          }),
+        })
+      );
+      expect(getGraphExecutionDataLoadingPages(state)).toEqual([
+        1,
+        2,
+        100,
+      ]);
+    });
+  });
+
+  describe('getGraphExecutionDataLoadingPages', () => {
+    it('returns correct empty value', () => {
+      const state = createState(
+        createDebuggerState({
+          graphExecutions: createDebuggerGraphExecutionsState({
+            graphExecutionDataPageLoadedSizes: {},
+          }),
+        })
+      );
+      expect(getGraphExecutionDataPageLoadedSizes(state)).toEqual({});
+    });
+
+    it('returns correct non-empty value', () => {
+      const state = createState(
+        createDebuggerState({
+          graphExecutions: createDebuggerGraphExecutionsState({
+            graphExecutionDataPageLoadedSizes: {0: 10, 2: 40},
+          }),
+        })
+      );
+      expect(getGraphExecutionDataPageLoadedSizes(state)).toEqual({
+        0: 10,
+        2: 40,
+      });
+    });
+  });
+
+  describe('getGraphExecutionData', () => {
+    it('returns correct initial empty state', () => {
+      const state = createState(createDebuggerState());
+      expect(getGraphExecutionData(state)).toEqual({});
+    });
+
+    it('returns correct non-empty value', () => {
+      const state = createState(
+        createDebuggerState({
+          graphExecutions: createDebuggerGraphExecutionsState({
+            graphExecutionData: {
+              10: {
+                op_name: 'Dense_1/MatMul',
+                op_type: 'MatMul',
+                output_slot: 0,
+                graph_id: 'g1',
+                graph_ids: ['g0', 'g1'],
+                tensor_debug_mode: 2,
+                debug_tensor_value: [0, 1],
+                device_name: '/GPU:0'
+              }
+            }
+          }),
+        })
+      );
+      expect(getGraphExecutionData(state)).toEqual({
+        10: {
+          op_name: 'Dense_1/MatMul',
+          op_type: 'MatMul',
+          output_slot: 0,
+          graph_id: 'g1',
+          graph_ids: ['g0', 'g1'],
+          tensor_debug_mode: 2,
+          debug_tensor_value: [0, 1],
+          device_name: '/GPU:0'
+        }
+      });
     });
   });
 });

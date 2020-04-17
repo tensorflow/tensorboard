@@ -257,7 +257,7 @@ export interface GraphExecutions extends PagedExecutions {
   graphExecutionDigests: {[index: number]: GraphExecutionDigest};
 
   // Indices to GraphExecution pages currently being loaded.
-  loadingGraphExecutionDataPages: number[];
+  graphExecutionDataLoadingPages: number[];
 
   // Number of items in each `GraphExecution` page that have been loaded.
   graphExecutionDataPageLoadedSizes: {[page: number]: number};

@@ -214,42 +214,42 @@ export const getGraphExecutionScrollBeginIndex = createSelector(
   (state: DebuggerState): number => {
     return state.graphExecutions.scrollBeginIndex;
   }
-); // TODO(cais): Add unit tests.
+);
 
 export const getGraphExecutionDisplayCount = createSelector(
   selectDebuggerState,
   (state: DebuggerState): number => {
     return state.graphExecutions.displayCount;
   }
-); // TODO(cais): Add unit tests.
+);
 
 export const getGraphExecutionPageSize = createSelector(
   selectDebuggerState,
   (state: DebuggerState): number => {
     return state.graphExecutions.pageSize;
   }
-); // TODO(cais): Add unit tests.
+);
 
-export const getLoadingGraphExecutionPages = createSelector(
+export const getGraphExecutionDataLoadingPages = createSelector(
   selectDebuggerState,
   (state: DebuggerState): number[] => {
-    return state.graphExecutions.loadingGraphExecutionDataPages;
+    return state.graphExecutions.graphExecutionDataLoadingPages;
   }
-); // TODO(cais): Add unit tests.
+);
 
 export const getGraphExecutionDataPageLoadedSizes = createSelector(
   selectDebuggerState,
   (state: DebuggerState): {[page: number]: number} => {
     return state.graphExecutions.graphExecutionDataPageLoadedSizes;
   }
-); // TODO(cais): Add unit tests.
+);
 
 export const getGraphExecutionData = createSelector(
   selectDebuggerState,
   (state: DebuggerState): {[index: number]: GraphExecution} => {
     return state.graphExecutions.graphExecutionData;
   }
-); // TODO(cais): Add unit tests.
+);
 
 /**
  * Get the focused alert types (if any) of the execution digests current being

@@ -64,9 +64,11 @@ import {
   getExecutionPageSize,
   getExecutionScrollBeginIndex,
   getFocusedSourceFileContent,
+  getGraphExecutionDataPageLoadedSizes,
   getGraphExecutionDisplayCount,
   getGraphExecutionPageSize,
   getGraphExecutionScrollBeginIndex,
+  getGraphExecutionDataLoadingPages,
   getNumExecutions,
   getNumExecutionsLoaded,
   getLoadedAlertsOfFocusedType,
@@ -77,8 +79,6 @@ import {
   getNumGraphExecutionsLoaded,
   getSourceFileListLoaded,
   getFocusedSourceFileIndex,
-  getGraphExecutionDataPageLoadedSizes,
-  getLoadingGraphExecutionPages,
 } from '../store/debugger_selectors';
 import {
   DataLoadState,
@@ -584,7 +584,7 @@ export class DebuggerEffects {
         })
       ),
       withLatestFrom(
-        this.store.select(getLoadingGraphExecutionPages),
+        this.store.select(getGraphExecutionDataLoadingPages),
         this.store.select(getGraphExecutionDataPageLoadedSizes)
       ),
       map(
