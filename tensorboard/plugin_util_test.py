@@ -157,6 +157,13 @@ class MarkdownsToSafeHTMLTest(tb_test.TestCase):
         expected = "&lt;script&gt;alert('unsafe!')&lt;/script&gt;<p>safe</p>"
         self.assertEqual(actual, expected)
 
+    def test_sanitization_can_have_collateral_damage(self):
+        inputs = ['<table title="*chuckles* ', "I'm in danger", '<table>">']
+        combine = lambda xs: "".join(xs)
+        actual = plugin_util.markdowns_to_safe_html(inputs, combine)
+        expected = "<table></table>"
+        self.assertEqual(actual, expected)
+
 
 class ExperimentIdTest(tb_test.TestCase):
     """Tests for `plugin_util.experiment_id`."""

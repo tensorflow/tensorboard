@@ -113,7 +113,6 @@ def markdowns_to_safe_html(markdown_strings, combine):
     """
     unsafe_htmls = []
     total_null_bytes = 0
-    import contextlib
 
     for source in markdown_strings:
         # Convert to utf-8 whenever we have a binary input.
