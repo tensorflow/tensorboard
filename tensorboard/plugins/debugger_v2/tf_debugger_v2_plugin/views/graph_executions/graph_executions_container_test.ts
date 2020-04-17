@@ -25,11 +25,7 @@ import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {DebuggerComponent} from '../../debugger_component';
 import {DebuggerContainer} from '../../debugger_container';
 import {State, GraphExecution} from '../../store/debugger_types';
-import {
-  getNumGraphExecutions,
-  getGraphExecutionData,
-  getGraphExecutionDisplayCount,
-} from '../../store';
+import {getNumGraphExecutions, getGraphExecutionData} from '../../store';
 import {
   createDebuggerState,
   createState,
@@ -46,7 +42,7 @@ import {GraphExecutionsModule} from './graph_executions_module';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
-fdescribe('Graph Executions Container', () => {
+describe('Graph Executions Container', () => {
   let store: MockStore<State>;
 
   beforeEach(async () => {
@@ -114,13 +110,51 @@ fdescribe('Graph Executions Container', () => {
       By.css('.tensor-container')
     );
     expect(tensorContainers.length).toBeGreaterThan(0);
+    const graphExecutionIndices = fixture.debugElement.queryAll(
+      By.css('.graph-execution-index')
+    );
     const tensorNames = fixture.debugElement.queryAll(By.css('.tensor-name'));
     const opTypes = fixture.debugElement.queryAll(By.css('.op-type'));
+    expect(graphExecutionIndices.length).toBe(tensorContainers.length);
     expect(tensorNames.length).toBe(tensorContainers.length);
     expect(opTypes.length).toBe(tensorContainers.length);
     for (let i = 0; i < tensorNames.length; ++i) {
+      expect(graphExecutionIndices[i].nativeElement.innerText).toBe(`${i}`);
       expect(tensorNames[i].nativeElement.innerText).toBe(`TestOp_${i}:0`);
       expect(opTypes[i].nativeElement.innerText).toBe(`OpType_${i}`);
     }
+  }));
+
+  it('renders # execs and execs viewport if # execs > 0; not loaded', fakeAsync(() => {
+    const fixture = TestBed.createComponent(GraphExecutionsContainer);
+    store.overrideSelector(getNumGraphExecutions, 120);
+    store.overrideSelector(getGraphExecutionData, {});
+    fixture.autoDetectChanges();
+    tick(500);
+
+    const titleElement = fixture.debugElement.query(
+      By.css('.graph-executions-title')
+    );
+    expect(titleElement.nativeElement.innerText).toBe('Graph Executions (120)');
+    const viewPort = fixture.debugElement.query(
+      By.css('.graph-executions-viewport')
+    );
+    expect(viewPort).not.toBeNull();
+    const tensorContainers = fixture.debugElement.queryAll(
+      By.css('.tensor-container')
+    );
+    expect(tensorContainers.length).toBeGreaterThan(0);
+    const graphExecutionIndices = fixture.debugElement.queryAll(
+      By.css('.graph-execution-index')
+    );
+    const loadingElements = fixture.debugElement.queryAll(
+      By.css('.loading-spinner')
+    );
+    const tensorNames = fixture.debugElement.queryAll(By.css('.tensor-name'));
+    const opTypes = fixture.debugElement.queryAll(By.css('.op-type'));
+    expect(graphExecutionIndices.length).toBe(tensorContainers.length);
+    expect(loadingElements.length).toBe(tensorContainers.length);
+    expect(tensorNames.length).toBe(0);
+    expect(opTypes.length).toBe(0);
   }));
 });

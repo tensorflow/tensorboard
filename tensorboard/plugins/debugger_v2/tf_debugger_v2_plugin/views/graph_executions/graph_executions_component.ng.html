@@ -31,29 +31,29 @@ limitations under the License.
       *cdkVirtualFor="let i of graphExecutionIndices"
       class="tensor-container"
     >
-      <div *ngIf="graphExecutionData[i]; else dataLoading" class="tensor-item">
+      <div class="tensor-item">
         <div class="graph-execution-index">
           {{ i }}
         </div>
-        <div class="tensor-name-and-op-type">
-          <div class="tensor-name">
-            {{ graphExecutionData[i].op_name }}:{{
-            graphExecutionData[i].output_slot }}
-          </div>
-          <div class="op-type">
-            {{ graphExecutionData[i].op_type }}
+        <div *ngIf="graphExecutionData[i]; else dataLoading">
+          <div class="tensor-name-and-op-type">
+            <div class="tensor-name">
+              {{ graphExecutionData[i].op_name }}:{{
+              graphExecutionData[i].output_slot }}
+            </div>
+            <div class="op-type">
+              {{ graphExecutionData[i].op_type }}
+            </div>
           </div>
         </div>
-      </div>
 
-      <ng-template #dataLoading class="tensor-item">
-        <div class="graph-execution-index">
-          {{ i }}
-        </div>
-        <div class="loading-spinner">
-          Loading...
-        </div>
-      </ng-template>
+        <ng-template #dataLoading class="tensor-item">
+          <div class="loading-spinner">
+            Loading...
+            <!-- TODO(cais): Use mat-spinner -->
+          </div>
+        </ng-template>
+      </div>
     </div>
   </cdk-virtual-scroll-viewport>
 </div>
