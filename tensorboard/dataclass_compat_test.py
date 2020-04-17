@@ -51,11 +51,15 @@ except ImportError:
 class MigrateEventTest(tf.test.TestCase):
     """Tests for `migrate_event`."""
 
-    def _migrate_event(self, old_event):
+    def _migrate_event(self, old_event, initial_metadata=None):
         """Like `migrate_event`, but performs some sanity checks."""
+        if initial_metadata is None:
+            initial_metadata = {}
         old_event_copy = event_pb2.Event()
         old_event_copy.CopyFrom(old_event)
-        new_events = dataclass_compat.migrate_event(old_event)
+        new_events = dataclass_compat.migrate_event(
+            old_event, initial_metadata=initial_metadata
+        )
         for event in new_events:  # ensure that wall time and step are preserved
             self.assertEqual(event.wall_time, old_event.wall_time)
             self.assertEqual(event.step, old_event.step)
@@ -94,6 +98,35 @@ class MigrateEventTest(tf.test.TestCase):
         new_events = self._migrate_event(old_event)
         self.assertLen(new_events, 1)
         self.assertIs(new_events[0], old_event)
+
+    def test_doesnt_add_metadata_to_later_steps(self):
+        old_events = []
+        for step in range(3):
+            e = event_pb2.Event()
+            e.step = step
+            summary = scalar_summary.pb("foo", 0.125)
+            if step > 0:
+                for v in summary.value:
+                    v.ClearField("metadata")
+            e.summary.ParseFromString(summary.SerializeToString())
+            old_events.append(e)
+
+        initial_metadata = {}
+        new_events = []
+        for e in old_events:
+            migrated = self._migrate_event(e, initial_metadata=initial_metadata)
+            new_events.extend(migrated)
+
+        self.assertLen(new_events, len(old_events))
+        self.assertEqual(
+            {
+                e.step
+                for e in new_events
+                for v in e.summary.value
+                if v.HasField("metadata")
+            },
+            {0},
+        )
 
     def test_scalar(self):
         old_event = event_pb2.Event()
