@@ -860,7 +860,9 @@ export class DebuggerEffects {
      *                                                                 |
      * on alert type focus --------> fetch alerts of a type -----------+
      *
-     * on source file requested ---> fetch source file
+     * on source file requested ---> fetch source
+     *
+     * on graph-execution scroll --> fetch graph-execution data
      *
      **/
     this.loadData$ = createEffect(
@@ -921,10 +923,9 @@ export class DebuggerEffects {
           onLoad$
         );
 
-        // TODO(cais): Hook it up.
-        const onGraphExecutionScroll$ = this.onGraphExecutionScroll();
-
         const onSourceFileFocused$ = this.onSourceFileFocused();
+
+        const onGraphExecutionScroll$ = this.onGraphExecutionScroll();
 
         // ExecutionDigest and ExecutionData can be loaded in parallel.
         return merge(

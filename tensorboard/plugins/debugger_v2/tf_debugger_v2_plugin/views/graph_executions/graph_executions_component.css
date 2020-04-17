@@ -22,11 +22,22 @@ limitations under the License.
   padding-left: 10px;
 }
 
+.graph-execution-index {
+  color: #757575;
+  display: inline-block;
+  width: 40px;
+  padding-right: 4px;
+}
+
 .graph-executions-viewport {
   flex-grow: 1;
   font-size: 12px;
   width: 100%;
   overflow-x: hidden;
+}
+
+.loading-spinner {
+  display: inline-block;
 }
 
 .op-type {
@@ -41,17 +52,6 @@ limitations under the License.
   line-height: 14px;
   padding: 1px 3px;
   width: max-content;
-}
-
-.graph-execution-index {
-  color: #757575;
-  display: inline-block;
-  width: 40px;
-  padding-right: 4px;
-}
-
-.loading-spinner {
-  display: inline-block;
 }
 
 .tensor-container {
