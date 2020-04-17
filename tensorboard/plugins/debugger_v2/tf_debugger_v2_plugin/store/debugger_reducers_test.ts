@@ -31,6 +31,7 @@ import {
   createDebuggerStateWithLoadedExecutionDigests,
   createDigestsStateWhileLoadingExecutionDigests,
   createTestExecutionData,
+  createTestGraphExecution,
   createTestStackFrame,
   createTestInfNanAlert,
 } from '../testing';
@@ -1363,5 +1364,134 @@ describe('Debugger reducers', () => {
         nextState.graphExecutions.executionDigestsLoaded.numExecutions
       ).toEqual(12345);
     });
+  });
+
+  describe('graphExecutionDataRequested', () => {
+    it('updates loading pages by adding a new one', () => {
+      const state = createDebuggerState({
+        activeRunId: '__default_debugger_run__',
+        graphExecutions: createDebuggerGraphExecutionsState({
+          graphExecutionDataLoadingPages: [2222, 7777],
+        }),
+      });
+      const nextState = reducers(
+        state,
+        actions.graphExecutionDataRequested({pageIndex: 4321})
+      );
+      expect(nextState.graphExecutions.graphExecutionDataLoadingPages).toEqual([
+        2222,
+        7777,
+        4321,
+      ]);
+    });
+  });
+
+  describe('graphExecutionDataLoaded', () => {
+    it('with new data, updates loading pages, loaded pages and data', () => {
+      const state = createDebuggerState({
+        activeRunId: '__default_debugger_run__',
+        graphExecutions: createDebuggerGraphExecutionsState({
+          pageSize: 2,
+          graphExecutionDataLoadingPages: [1, 2],
+          graphExecutionDataPageLoadedSizes: {0: 2},
+          graphExecutionData: {
+            0: createTestGraphExecution({op_name: 'TestOp_0'}),
+            1: createTestGraphExecution({op_name: 'TestOp_1'}),
+          },
+        }),
+      });
+      const nextState = reducers(
+        state,
+        actions.graphExecutionDataLoaded({
+          begin: 2,
+          end: 4,
+          graph_executions: [
+            createTestGraphExecution({op_name: 'TestOp_2'}),
+            createTestGraphExecution({op_name: 'TestOp_3'}),
+          ],
+        })
+      );
+      expect(nextState.graphExecutions.graphExecutionDataLoadingPages).toEqual([
+        2,
+      ]);
+      expect(
+        nextState.graphExecutions.graphExecutionDataPageLoadedSizes
+      ).toEqual({
+        0: 2,
+        1: 2,
+      });
+      expect(nextState.graphExecutions.graphExecutionData).toEqual({
+        0: createTestGraphExecution({op_name: 'TestOp_0'}),
+        1: createTestGraphExecution({op_name: 'TestOp_1'}),
+        2: createTestGraphExecution({op_name: 'TestOp_2'}),
+        3: createTestGraphExecution({op_name: 'TestOp_3'}),
+      });
+    });
+
+    it('with partly new data, correctly updates pages and data', () => {
+      const state = createDebuggerState({
+        activeRunId: '__default_debugger_run__',
+        graphExecutions: createDebuggerGraphExecutionsState({
+          pageSize: 2,
+          graphExecutionDataLoadingPages: [1],
+          graphExecutionDataPageLoadedSizes: {0: 2, 1: 1},
+          graphExecutionData: {
+            0: createTestGraphExecution({op_name: 'TestOp_0'}),
+            1: createTestGraphExecution({op_name: 'TestOp_1'}),
+            2: createTestGraphExecution({op_name: 'TestOp_2'}),
+          },
+        }),
+      });
+      const nextState = reducers(
+        state,
+        actions.graphExecutionDataLoaded({
+          begin: 2,
+          end: 4,
+          graph_executions: [
+            createTestGraphExecution({op_name: 'TestOp_2'}),
+            createTestGraphExecution({op_name: 'TestOp_3'}),
+          ],
+        })
+      );
+      expect(nextState.graphExecutions.graphExecutionDataLoadingPages).toEqual(
+        []
+      );
+      expect(
+        nextState.graphExecutions.graphExecutionDataPageLoadedSizes
+      ).toEqual({
+        0: 2,
+        1: 2,
+      });
+      expect(nextState.graphExecutions.graphExecutionData).toEqual({
+        0: createTestGraphExecution({op_name: 'TestOp_0'}),
+        1: createTestGraphExecution({op_name: 'TestOp_1'}),
+        2: createTestGraphExecution({op_name: 'TestOp_2'}),
+        3: createTestGraphExecution({op_name: 'TestOp_3'}),
+      });
+    });
+  });
+
+  describe('graphExecutionScrollToIndex', () => {
+    it('updates graph-execution scrollBeginIndex', () => {
+      const state = createDebuggerState({
+        graphExecutions: createDebuggerGraphExecutionsState({
+          scrollBeginIndex: 0,
+        }),
+      });
+      const nextState = reducers(
+        state,
+        actions.graphExecutionScrollToIndex({index: 1337})
+      );
+      expect(nextState.graphExecutions.scrollBeginIndex).toBe(1337);
+    });
+
+    for (const index of [-1, 8.8, Infinity, NaN]) {
+      it(`throws error for invalid scroll index: ${index}`, () => {
+        const state = createDebuggerState();
+        expect(() =>
+          reducers(state, actions.graphExecutionScrollToIndex({index}))
+        ).toThrowError(/.*scroll.*negative or non-integer/);
+      });
+    }
   });
 });

@@ -51,6 +51,7 @@ import {
   createState,
   createTestExecutionData,
   createTestExecutionDigest,
+  createTestGraphExecution,
   createTestInfNanAlert,
 } from '../testing';
 
@@ -837,11 +838,7 @@ describe('debugger selectors', () => {
           }),
         })
       );
-      expect(getGraphExecutionDataLoadingPages(state)).toEqual([
-        1,
-        2,
-        100,
-      ]);
+      expect(getGraphExecutionDataLoadingPages(state)).toEqual([1, 2, 100]);
     });
   });
 
@@ -883,31 +880,13 @@ describe('debugger selectors', () => {
         createDebuggerState({
           graphExecutions: createDebuggerGraphExecutionsState({
             graphExecutionData: {
-              10: {
-                op_name: 'Dense_1/MatMul',
-                op_type: 'MatMul',
-                output_slot: 0,
-                graph_id: 'g1',
-                graph_ids: ['g0', 'g1'],
-                tensor_debug_mode: 2,
-                debug_tensor_value: [0, 1],
-                device_name: '/GPU:0'
-              }
-            }
+              10: createTestGraphExecution(),
+            },
           }),
         })
       );
       expect(getGraphExecutionData(state)).toEqual({
-        10: {
-          op_name: 'Dense_1/MatMul',
-          op_type: 'MatMul',
-          output_slot: 0,
-          graph_id: 'g1',
-          graph_ids: ['g0', 'g1'],
-          tensor_debug_mode: 2,
-          debug_tensor_value: [0, 1],
-          device_name: '/GPU:0'
-        }
+        10: createTestGraphExecution(),
       });
     });
   });

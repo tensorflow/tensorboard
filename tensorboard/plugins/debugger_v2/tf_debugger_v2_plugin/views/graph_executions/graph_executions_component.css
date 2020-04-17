@@ -75,7 +75,10 @@ limitations under the License.
   display: block;
   height: 16px;
   line-height: 16px;
+  overflow: hidden;
   padding: 0 2px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   width: 100%;
 }
 
@@ -85,7 +88,5 @@ limitations under the License.
   overflow: hidden;
   padding-right: 8px;
   text-align: right;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   width: 240px;
 }

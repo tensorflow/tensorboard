@@ -585,7 +585,7 @@ const reducer = createReducer(
         },
       };
     }
-  ), // TODO(cais): Add unit test.
+  ),
   on(
     actions.graphExecutionDataLoaded,
     (state: DebuggerState, data: GraphExecutionDataResponse): DebuggerState => {
@@ -598,8 +598,6 @@ const reducer = createReducer(
         ...state.graphExecutions.graphExecutionDataPageLoadedSizes,
       };
       const graphExecutionData = {...state.graphExecutions.graphExecutionData};
-      // Update graphExecutionDataLoadingPages, graphExecutionDataPageLoadedSizes,
-      // and graphExecutionData.
       for (let i = data.begin; i < data.end; ++i) {
         const pageIndex = Math.floor(i / pageSize);
         if (graphExecutionDataLoadingPages.indexOf(pageIndex) !== -1) {
@@ -608,13 +606,13 @@ const reducer = createReducer(
             1
           );
         }
+        if (graphExecutionDataPageLoadedSizes[pageIndex] === undefined) {
+          graphExecutionDataPageLoadedSizes[pageIndex] = 0;
+        }
         if (graphExecutionData[i] === undefined) {
-          graphExecutionData[i] = data.graph_executions[i - data.begin];
-          if (graphExecutionDataPageLoadedSizes[pageIndex] === undefined) {
-            graphExecutionDataPageLoadedSizes[pageIndex] = 0;
-          }
           graphExecutionDataPageLoadedSizes[pageIndex]++;
         }
+        graphExecutionData[i] = data.graph_executions[i - data.begin];
       }
       return {
         ...state,
@@ -626,7 +624,7 @@ const reducer = createReducer(
         },
       };
     }
-  ), // TODO(cais): Add unit test.
+  ),
   on(
     actions.graphExecutionScrollToIndex,
     (state: DebuggerState, action: {index: number}): DebuggerState => {
@@ -644,7 +642,7 @@ const reducer = createReducer(
         },
       };
     }
-  ), // TODO(cais): Add unit test.
+  ),
   ////////////////////////////////////////////////////////
   // Reducers related to source files and stack traces. //
   ////////////////////////////////////////////////////////

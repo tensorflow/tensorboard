@@ -593,7 +593,7 @@ export class DebuggerEffects {
           loadingPages,
           pageLoadedSizes,
         ]) => {
-          const missingPages = getMissingPages(
+          let missingPages: number[] = getMissingPages(
             scrollBeginIndex,
             Math.min(scrollBeginIndex + displayCount, numGraphExecutions),
             pageSize,
@@ -601,11 +601,9 @@ export class DebuggerEffects {
             pageLoadedSizes
           );
           // Omit pages that are already loading.
-          for (let i = missingPages.length - 1; i >= 0; --i) {
-            if (loadingPages.indexOf(missingPages[i]) !== -1) {
-              missingPages.splice(i, 1); // TODO(cais): Add unit test.
-            }
-          }
+          missingPages = missingPages.filter(
+            (page) => loadingPages.indexOf(page) === -1
+          );
           return {
             runId,
             missingPages,
