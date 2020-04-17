@@ -171,3 +171,24 @@ py_library(
         "//tensorboard/compat/proto:protos_all_py_pb2",
     ],
 )
+
+py_library(
+    name = "timing",
+    srcs = ["timing.py"],
+    srcs_version = "PY3",
+    deps = [
+        ":tb_logging",
+    ],
+)
+
+py_test(
+    name = "timing_test",
+    size = "small",
+    srcs = ["timing_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":tb_logging",
+        ":timing",
+        "//tensorboard:test",
+    ],
+)
