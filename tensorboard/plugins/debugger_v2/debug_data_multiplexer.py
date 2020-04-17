@@ -366,15 +366,18 @@ class DebuggerV2EventMultiplexer(object):
                 "trace_id support for GraphExecutionTraceData is "
                 "not implemented yet."
             )
-        graph_executions = self._reader.graph_execution_traces(digest=False)
-        end = self._checkBeginEndIndices(begin, end, len(graph_executions))
+        digests = self._reader.graph_execution_traces(digest=True)
+        end = self._checkBeginEndIndices(begin, end, len(digests))
+        digests = digests[begin:end]
+        graph_executions = [
+            self._reader.read_graph_execution_trace(digest)
+            for digest in digests
+        ]
         return {
             "begin": begin,
             "end": end,
-            "num_digests": len(graph_executions),
             "graph_executions": [
-                graph_exec.to_json()
-                for graph_exec in graph_executions[begin:end]
+                graph_exec.to_json() for graph_exec in graph_executions
             ],
         }
 
