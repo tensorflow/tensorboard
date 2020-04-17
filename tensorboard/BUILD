@@ -31,6 +31,7 @@ py_binary(
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/uploader:uploader_main_lib",
         "//tensorboard/util:tb_logging",
+        "//tensorboard/util:timing",  # non-strict dep, for patching convenience
     ],
 )
 
