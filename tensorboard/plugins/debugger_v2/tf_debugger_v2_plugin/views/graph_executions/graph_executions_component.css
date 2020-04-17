@@ -30,11 +30,17 @@ limitations under the License.
 }
 
 .op-type {
-  display: inline-block;
-  overflow: hidden;
-  text-align: left;
-  text-overflow: ellipsis;
-  width: 80px;
+  background-color: #e3e5e8;
+  border: 1px solid #c0c0c0;
+  border-radius: 4px;
+  direction: rtl;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 10px;
+  display: block;
+  height: 14px;
+  line-height: 14px;
+  padding: 1px 3px;
+  width: max-content;
 }
 
 .graph-execution-index {
@@ -53,10 +59,11 @@ limitations under the License.
 }
 
 .tensor-item {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
   display: flex;
   flex-wrap: nowrap;
-  height: 24px;
-  line-height: 24px;
+  height: 36px;
+  line-height: 36px;
   text-align: left;
   vertical-align: top;
   white-space: nowrap;
@@ -64,6 +71,15 @@ limitations under the License.
 }
 
 .tensor-name {
+  direction: rtl;
+  display: block;
+  height: 16px;
+  line-height: 16px;
+  padding: 0 2px;
+  width: 100%;
+}
+
+.tensor-name-and-op-type {
   direction: rtl;
   display: inline-block;
   overflow: hidden;

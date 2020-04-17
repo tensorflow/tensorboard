@@ -22,7 +22,8 @@ limitations under the License.
 
   <cdk-virtual-scroll-viewport
     #executionsScroll
-    itemSize="24"
+    *ngIf="numGraphExecutions !== null && numGraphExecutions > 0"
+    itemSize="37"
     class="graph-executions-viewport"
     (scrolledIndexChange)="onScrolledIndexChange.emit($event)"
   >
@@ -32,14 +33,16 @@ limitations under the License.
     >
       <div *ngIf="graphExecutionData[i]; else dataLoading" class="tensor-item">
         <div class="graph-execution-index">
-          {{ i }}
+          {{ i }}:
         </div>
-        <div class="tensor-name">
-          {{ graphExecutionData[i].op_name }}:{{
-          graphExecutionData[i].output_slot }}
-        </div>
-        <div class="op-type">
-          {{ graphExecutionData[i].op_type }}
+        <div class="tensor-name-and-op-type">
+          <div class="tensor-name">
+            {{ graphExecutionData[i].op_name }}:{{
+            graphExecutionData[i].output_slot }}
+          </div>
+          <div class="op-type">
+            {{ graphExecutionData[i].op_type }}
+          </div>
         </div>
       </div>
 

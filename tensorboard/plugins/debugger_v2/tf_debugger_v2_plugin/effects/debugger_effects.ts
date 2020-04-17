@@ -64,7 +64,7 @@ import {
   getExecutionPageSize,
   getExecutionScrollBeginIndex,
   getFocusedSourceFileContent,
-  getGraphExecutionData,
+  getGraphExecutionDisplayCount,
   getGraphExecutionPageSize,
   getGraphExecutionScrollBeginIndex,
   getNumExecutions,
@@ -77,6 +77,8 @@ import {
   getNumGraphExecutionsLoaded,
   getSourceFileListLoaded,
   getFocusedSourceFileIndex,
+  getGraphExecutionDataPageLoadedSizes,
+  getLoadingGraphExecutionPages,
 } from '../store/debugger_selectors';
 import {
   DataLoadState,
@@ -554,18 +556,17 @@ export class DebuggerEffects {
   private onGraphExecutionScroll(): Observable<void> {
     return this.actions$.pipe(
       ofType(graphExecutionScrollToIndex),
-      debounceTime(100), // TODO(cais): Remove magic number.
+      debounceTime(100), // TODO(cais): Remove magic number. Look at race condition.
       withLatestFrom(
         this.store.select(getActiveRunId),
         this.store.select(getNumGraphExecutions),
         this.store.select(getGraphExecutionScrollBeginIndex),
         this.store.select(getGraphExecutionPageSize),
-        this.store.select(getGraphExecutionData)
+        this.store.select(getGraphExecutionDisplayCount)
       ),
-      filter(
-        ([, runId, numGraphExecutions]) =>
-          runId !== null && numGraphExecutions > 0
-      ),
+      filter(([, runId, numGraphExecutions]) => {
+        return runId !== null && numGraphExecutions > 0;
+      }),
       map(
         ([
           ,
@@ -573,31 +574,56 @@ export class DebuggerEffects {
           numGraphExecutions,
           scrollBeginIndex,
           pageSize,
-          graphExecutionData,
+          displayCount,
+        ]) => ({
+          runId,
+          numGraphExecutions,
+          scrollBeginIndex,
+          pageSize,
+          displayCount,
+        })
+      ),
+      withLatestFrom(
+        this.store.select(getLoadingGraphExecutionPages),
+        this.store.select(getGraphExecutionDataPageLoadedSizes)
+      ),
+      map(
+        ([
+          {runId, numGraphExecutions, scrollBeginIndex, pageSize, displayCount},
+          loadingPages,
+          pageLoadedSizes,
         ]) => {
-          const pageIndex = Math.floor(scrollBeginIndex / pageSize);
-          const begin = pageSize * pageIndex;
-          const end = Math.min(begin + 2 * pageSize, numGraphExecutions);
-          let dataMissing = false;
-          for (let i = begin; i < end; ++i) {
-            if (graphExecutionData[i] === undefined) {
-              dataMissing = true;
-              break;
+          const missingPages = getMissingPages(
+            scrollBeginIndex,
+            Math.min(scrollBeginIndex + displayCount, numGraphExecutions),
+            pageSize,
+            numGraphExecutions,
+            pageLoadedSizes
+          );
+          // Omit pages that are already loading.
+          for (let i = missingPages.length - 1; i >= 0; --i) {
+            if (loadingPages.indexOf(missingPages[i]) !== -1) {
+              missingPages.splice(i, 1); // TODO(cais): Add unit test.
             }
           }
           return {
             runId,
-            dataMissing,
-            begin,
-            end,
+            missingPages,
+            pageSize,
+            numGraphExecutions,
           };
         }
       ),
-      filter(({dataMissing}) => dataMissing),
-      mergeMap(({runId, begin, end}) => {
-        console.log(
-          `mergeMap() 200: runId=${runId}, begin=${begin}, end=${end}`
-        ); // DEBUG
+      filter(({missingPages}) => missingPages.length > 0),
+      mergeMap(({runId, missingPages, pageSize, numGraphExecutions}) => {
+        const begin = missingPages[0] * pageSize;
+        const end = Math.min(
+          (missingPages[missingPages.length - 1] + 1) * pageSize,
+          numGraphExecutions
+        );
+        // console.log(
+        //   `mergeMap() 200: runId=${runId}, begin=${begin}, end=${end}`
+        // ); // DEBUG
         return this.dataSource.fetchGraphExecutionData(runId!, begin, end).pipe(
           tap((graphExecutionDataResponse) => {
             this.store.dispatch(
@@ -609,7 +635,7 @@ export class DebuggerEffects {
         // TODO(cais): Add catchError() to pipe.
       })
     );
-  }
+  } // TODO(cais): Add unit test.
 
   /**
    * Emits when user focuses on an alert type.

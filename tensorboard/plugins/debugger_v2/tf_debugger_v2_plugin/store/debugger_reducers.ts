@@ -40,7 +40,7 @@ import {
 /** @typehack */ import * as _typeHackStore from '@ngrx/store/store';
 
 const DEFAULT_EXECUTION_PAGE_SIZE = 100;
-const DEFAULT_GRAPH_EXECUTION_PAGE_SIZE = 100;
+const DEFAULT_GRAPH_EXECUTION_PAGE_SIZE = 200;
 
 export function createInitialExecutionsState(): Executions {
   return {
@@ -79,12 +79,13 @@ export function createInitialGraphExecutionsState(): GraphExecutions {
     },
     // TODO(cais) Remove the hardcoding of this, which is coupled with css width
     // properties.
-    displayCount: 50,
+    displayCount: 100,
     pageSize: DEFAULT_GRAPH_EXECUTION_PAGE_SIZE,
     scrollBeginIndex: 0,
     focusIndex: null,
     graphExecutionDigests: {},
     loadingGraphExecutionDataPages: [],
+    graphExecutionDataPageLoadedSizes: {},
     graphExecutionData: {},
   };
 }
@@ -588,30 +589,40 @@ const reducer = createReducer(
   on(
     actions.graphExecutionDataLoaded,
     (state: DebuggerState, data: GraphExecutionDataResponse): DebuggerState => {
-      console.log('graphExecutionDataLoaded reducer: data=', data); // DEBUG
       if (state.activeRunId === null) {
         return state;
       }
-      const pageIndex = Math.floor(data.begin / state.graphExecutions.pageSize);
-      console.log('pageIndex reducer: pageIndex=', pageIndex); // DEBUG
-      // TODO(cais): Throw error if division is not integer?
+      const {pageSize} = state.graphExecutions;
       const loadingGraphExecutionDataPages = state.graphExecutions.loadingGraphExecutionDataPages.slice();
-      if (loadingGraphExecutionDataPages.indexOf(pageIndex) !== -1) {
-        loadingGraphExecutionDataPages.splice(
-          loadingGraphExecutionDataPages.indexOf(pageIndex),
-          1
-        );
-      }
+      const graphExecutionDataPageLoadedSizes = {
+        ...state.graphExecutions.graphExecutionDataPageLoadedSizes,
+      };
       const graphExecutionData = {...state.graphExecutions.graphExecutionData};
+      // Update loadingGraphExecutionDataPages, graphExecutionDataPageLoadedSizes,
+      // and graphExecutionData.
       for (let i = data.begin; i < data.end; ++i) {
-        graphExecutionData[i] = data.graph_executions[i - data.begin];
+        const pageIndex = Math.floor(i / pageSize);
+        if (loadingGraphExecutionDataPages.indexOf(pageIndex) !== -1) {
+          loadingGraphExecutionDataPages.splice(
+            loadingGraphExecutionDataPages.indexOf(pageIndex),
+            1
+          );
+        }
+        if (graphExecutionData[i] === undefined) {
+          graphExecutionData[i] = data.graph_executions[i - data.begin];
+          if (graphExecutionDataPageLoadedSizes[pageIndex] === undefined) {
+            graphExecutionDataPageLoadedSizes[pageIndex] = 0;
+          }
+          graphExecutionDataPageLoadedSizes[pageIndex]++;
+        }
       }
       return {
         ...state,
         graphExecutions: {
           ...state.graphExecutions,
-          graphExecutionData,
           loadingGraphExecutionDataPages,
+          graphExecutionDataPageLoadedSizes,
+          graphExecutionData,
         },
       };
     }
