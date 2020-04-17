@@ -110,13 +110,9 @@ def _migrate_value(value, initial_metadata):
     if plugin_name == histograms_metadata.PLUGIN_NAME:
         return _migrate_histogram_value(value)
     if plugin_name == images_metadata.PLUGIN_NAME:
-<<<<<<< HEAD
-        return _migrate_image_value(value, initial)
-    if plugin_name == audio_metadata.PLUGIN_NAME:
-        return _migrate_audio_value(value, initial)
-=======
         return _migrate_image_value(value)
->>>>>>> 3d1d73f9d5c3aeab4205e09203d75d6524d3d04d
+    if plugin_name == audio_metadata.PLUGIN_NAME:
+        return _migrate_audio_value(value)
     if plugin_name == scalars_metadata.PLUGIN_NAME:
         return _migrate_scalar_value(value)
     if plugin_name == text_metadata.PLUGIN_NAME:
@@ -150,9 +146,8 @@ def _migrate_text_value(value):
     return (value,)
 
 
-<<<<<<< HEAD
-def _migrate_audio_value(value, initial):
-    if initial:
+def _migrate_audio_value(value):
+    if value.HasField("metadata"):
         value.metadata.data_class = summary_pb2.DATA_CLASS_BLOB_SEQUENCE
     tensor = value.tensor
     # Project out just the first axis: actual audio clips.
@@ -164,12 +159,8 @@ def _migrate_audio_value(value, initial):
     return (value,)
 
 
-def _migrate_hparams_value(value, initial):
-    if initial:
-=======
 def _migrate_hparams_value(value):
     if value.HasField("metadata"):
->>>>>>> 3d1d73f9d5c3aeab4205e09203d75d6524d3d04d
         value.metadata.data_class = summary_pb2.DATA_CLASS_TENSOR
     if not value.HasField("tensor"):
         value.tensor.CopyFrom(hparams_metadata.NULL_TENSOR)
