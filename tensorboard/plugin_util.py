@@ -85,25 +85,59 @@ def markdown_to_safe_html(markdown_string):
     Returns:
       A string containing safe HTML.
     """
-    warning = ""
-    # Convert to utf-8 whenever we have a binary input.
-    if isinstance(markdown_string, six.binary_type):
-        markdown_string_decoded = markdown_string.decode("utf-8")
-        # Remove null bytes and warn if there were any, since it probably means
-        # we were given a bad encoding.
-        markdown_string = markdown_string_decoded.replace(u"\x00", u"")
-        num_null_bytes = len(markdown_string_decoded) - len(markdown_string)
-        if num_null_bytes:
-            warning = (
-                "<!-- WARNING: discarded %d null bytes in markdown string "
-                "after UTF-8 decoding -->\n"
-            ) % num_null_bytes
+    return markdowns_to_safe_html([markdown_string], lambda xs: xs[0])
 
-    string_html = _MARKDOWN_STORE.markdown.convert(markdown_string)
-    string_sanitized = bleach.clean(
-        string_html, tags=_ALLOWED_TAGS, attributes=_ALLOWED_ATTRIBUTES
+
+def markdowns_to_safe_html(markdown_strings, combine):
+    """Convert multiple Markdown documents to one safe HTML document.
+
+    One could also achieve this by calling `markdown_to_safe_html`
+    multiple times and combining the results. Compared to that approach,
+    this function may be faster, because HTML sanitization (which can be
+    expensive) is performed only once rather than once per input. It may
+    also be less precise: if one of the input documents has unsafe HTML
+    that is sanitized away, that sanitization might affect other
+    documents, even if those documents are safe.
+
+    Args:
+      markdown_strings: List of Markdown source strings to convert, as
+        Unicode strings or UTF-8--encoded bytestrings. Markdown tables
+        are supported.
+      combine: Callback function that takes a list of unsafe HTML
+        strings of the same shape as `markdown_strings` and combines
+        them into a single unsafe HTML string, which will be sanitized
+        and returned.
+
+    Returns:
+      A string containing safe HTML.
+    """
+    unsafe_htmls = []
+    total_null_bytes = 0
+
+    for source in markdown_strings:
+        # Convert to utf-8 whenever we have a binary input.
+        if isinstance(source, six.binary_type):
+            source_decoded = source.decode("utf-8")
+            # Remove null bytes and warn if there were any, since it probably means
+            # we were given a bad encoding.
+            source = source_decoded.replace(u"\x00", u"")
+            total_null_bytes += len(source_decoded) - len(source)
+        unsafe_html = _MARKDOWN_STORE.markdown.convert(source)
+        unsafe_htmls.append(unsafe_html)
+
+    unsafe_combined = combine(unsafe_htmls)
+    sanitized_combined = bleach.clean(
+        unsafe_combined, tags=_ALLOWED_TAGS, attributes=_ALLOWED_ATTRIBUTES
     )
-    return warning + string_sanitized
+
+    warning = ""
+    if total_null_bytes:
+        warning = (
+            "<!-- WARNING: discarded %d null bytes in markdown string "
+            "after UTF-8 decoding -->\n"
+        ) % total_null_bytes
+
+    return warning + sanitized_combined
 
 
 def experiment_id(environ):

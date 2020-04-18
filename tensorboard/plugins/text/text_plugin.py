@@ -183,13 +183,11 @@ def text_array_to_html(text_arr):
             WARNING_TEMPLATE % len(text_arr.shape)
         )
         text_arr = reduce_to_2d(text_arr)
-
-    html_arr = [
-        plugin_util.markdown_to_safe_html(x) for x in text_arr.reshape(-1)
-    ]
-    html_arr = np.array(html_arr).reshape(text_arr.shape)
-
-    return warning + make_table(html_arr)
+    table = plugin_util.markdowns_to_safe_html(
+        text_arr.reshape(-1),
+        lambda xs: make_table(np.array(xs).reshape(text_arr.shape)),
+    )
+    return warning + table
 
 
 def process_event(wall_time, step, string_ndarray):
