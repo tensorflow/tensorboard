@@ -109,9 +109,9 @@ class DebuggerV2EventMultiplexer(object):
         self._reader_lock = threading.Lock()
         self._reloading = False
         self._reloading_lock = threading.Lock()
-        self._CreateOrReloadReader()
+        self._createOrReloadReader()
 
-    def _CreateOrReloadReader(self):
+    def _createOrReloadReader(self):
         """Creates or reloads reader for tfdbg2 data in the logdir.
 
         If the reader has already been created, a new one will not be created;
@@ -224,7 +224,7 @@ class DebuggerV2EventMultiplexer(object):
             at most one DebugEvent file set per directory.
         If no tfdbg2-format data exists in the `logdir`, an empty `dict`.
         """
-        self._CreateOrReloadReader()
+        self._createOrReloadReader()
         if self._reader:
             return {
                 DEFAULT_DEBUGGER_RUN_NAME: {
