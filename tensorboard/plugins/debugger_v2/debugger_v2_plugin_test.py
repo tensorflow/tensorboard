@@ -206,13 +206,15 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         responses = []
 
         def get_runs():
-            responses.append(server.get(_ROUTE_PREFIX + "/runs"))
+            responses.append(self.server.get(_ROUTE_PREFIX + "/runs"))
 
         threads = [threading.Thread(target=get_runs) for _ in range(4)]
         for thread in threads:
             thread.start()
         for thread in threads:
             thread.join()
+
+        self.assertLen(responses, 4)
         for response in responses:
             self.assertEqual(200, response.status_code)
             self.assertEqual(
@@ -225,13 +227,15 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         responses = []
 
         def get_runs():
-            responses.append(server.get(_ROUTE_PREFIX + "/runs"))
+            responses.append(self.server.get(_ROUTE_PREFIX + "/runs"))
 
         threads = [threading.Thread(target=get_runs) for _ in range(4)]
         for thread in threads:
             thread.start()
         for thread in threads:
             thread.join()
+
+        self.assertLen(responses, 4)
         for response in responses:
             self.assertEqual(200, response.status_code)
             self.assertEqual(
