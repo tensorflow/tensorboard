@@ -124,11 +124,13 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         # unit test, we disable the asynchronous behavior, so that we can
         # load the debugger data synchronously on the main thread and get
         # determinisic behavior in the tests.
-        def run_in_background_mock(target):
+        def run_repeatedly_in_background_mock(target):
             target()
 
         self.run_in_background_patch = tf.compat.v1.test.mock.patch.object(
-            debug_data_multiplexer, "run_in_background", run_in_background_mock
+            debug_data_multiplexer,
+            "run_repeatedly_in_background",
+            run_repeatedly_in_background_mock,
         )
         self.run_in_background_patch.start()
 
@@ -146,6 +148,8 @@ class DebuggerV2PluginTest(tf.test.TestCase):
 
     def testPluginIsNotActiveByDefault(self):
         self.assertFalse(self.plugin.is_active())
+
+    # TODO(cais): Add test for multithreaded is_active() and runs() calls.
 
     def testPluginIsActiveWithDataExists(self):
         _generate_tfdbg_v2_data(self.logdir)
