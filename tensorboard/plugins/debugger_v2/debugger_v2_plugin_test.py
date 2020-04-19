@@ -22,6 +22,7 @@ import json
 import os
 import six
 import socket
+import threading
 
 import tensorflow as tf
 from werkzeug import test as werkzeug_test  # pylint: disable=wrong-import-order
@@ -129,7 +130,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
 
         self.run_in_background_patch = tf.compat.v1.test.mock.patch.object(
             debug_data_multiplexer,
-            "run_repeatedly_in_background",
+            "run_in_background",
             run_repeatedly_in_background_mock,
         )
         self.run_in_background_patch.start()
@@ -149,11 +150,36 @@ class DebuggerV2PluginTest(tf.test.TestCase):
     def testPluginIsNotActiveByDefault(self):
         self.assertFalse(self.plugin.is_active())
 
-    # TODO(cais): Add test for multithreaded is_active() and runs() calls.
-
     def testPluginIsActiveWithDataExists(self):
         _generate_tfdbg_v2_data(self.logdir)
         self.assertTrue(self.plugin.is_active())
+
+    def testConcurrentCallsToPluginIsActiveWhenNotActive(self):
+        results = []
+
+        def query_is_active():
+            results.append(self.plugin.is_active())
+
+        threads = [threading.Thread(target=query_is_active) for _ in range(4)]
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join()
+        self.assertEqual(results, [False] * 4)
+
+    def testConcurrentCallsToPluginIsActiveWhenActive(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        results = []
+
+        def query_is_active():
+            results.append(self.plugin.is_active())
+
+        threads = [threading.Thread(target=query_is_active) for _ in range(4)]
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join()
+        self.assertEqual(results, [True] * 4)
 
     def testServeRunsWithoutExistingRuns(self):
         response = self.server.get(_ROUTE_PREFIX + "/runs")
@@ -175,6 +201,47 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         run = data["__default_debugger_run__"]
         self.assertIsInstance(run["start_time"], float)
         self.assertGreater(run["start_time"], 0)
+
+    def testConcurrnetServeRunsWithoutExistingRuns(self):
+        responses = []
+
+        def get_runs():
+            responses.append(server.get(_ROUTE_PREFIX + "/runs"))
+
+        threads = [threading.Thread(target=get_runs) for _ in range(4)]
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join()
+        for response in responses:
+            self.assertEqual(200, response.status_code)
+            self.assertEqual(
+                "application/json", response.headers.get("content-type")
+            )
+            self.assertEqual(json.loads(response.get_data()), dict())
+
+    def testConcurrnetServeRunsWithExistingRuns(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        responses = []
+
+        def get_runs():
+            responses.append(server.get(_ROUTE_PREFIX + "/runs"))
+
+        threads = [threading.Thread(target=get_runs) for _ in range(4)]
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join()
+        for response in responses:
+            self.assertEqual(200, response.status_code)
+            self.assertEqual(
+                "application/json", response.headers.get("content-type")
+            )
+            data = json.loads(response.get_data())
+            self.assertEqual(list(data.keys()), ["__default_debugger_run__"])
+            run = data["__default_debugger_run__"]
+            self.assertIsInstance(run["start_time"], float)
+            self.assertGreater(run["start_time"], 0)
 
     def testAlertsWhenNoAlertExists(self):
         _generate_tfdbg_v2_data(self.logdir)

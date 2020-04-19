@@ -41,7 +41,7 @@ DEFAULT_PER_TYPE_ALERT_LIMIT = 1000
 DEFAULT_RELOAD_INTERVAL_SEC = 60
 
 
-def run_repeatedly_in_background(target):
+def run_in_background(target):
     """Run a target task repeatedly in the background.
 
     In the context of this module, `target` is the `update()` method of the
@@ -54,7 +54,6 @@ def run_repeatedly_in_background(target):
     """
     # TODO(cais): Add more unit tests in debug_data_multiplexer_test.py when the
     # the behavior gets more complex.
-
     def _run_repeatedly():
         while True:
             target()
@@ -136,10 +135,10 @@ class DebuggerV2EventMultiplexer(object):
                     ]
                     # NOTE(cais): Currently each logdir is enforced to have only one
                     # DebugEvent file set. So we add hard-coded default run name.
-                    print("Calling run_repeatedly_in_background")  # DEBUG
-                    run_repeatedly_in_background(self._reader.update)
+                    print("Calling run_in_background")  # DEBUG
+                    run_in_background(self._reader.update)
                     print(
-                        "DONE Calling run_repeatedly_in_background: self._reader = %s"
+                        "DONE Calling run_in_background: self._reader = %s"
                         % self._reader
                     )  # DEBUG
                     # TODO(cais): Start off a reading thread here, instead of being
@@ -156,7 +155,6 @@ class DebuggerV2EventMultiplexer(object):
                     # TF 2.2 is released.
                     pass
                 except ValueError:
-                except ValueError as e:
                     # When no DebugEvent file set is found in the logdir, a
                     # `ValueError` is thrown.
                     pass

@@ -37,7 +37,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
     def testRunInBackground(self):
         mock_target = tf.compat.v1.test.mock.Mock()
         with tf.compat.v1.test.mock.patch("threading.Thread", MockThread):
-            debug_data_multiplexer.run_repeatedly_in_background(mock_target)
+            debug_data_multiplexer.run_in_background(mock_target)
             mock_target.assert_called_once()
 
 
