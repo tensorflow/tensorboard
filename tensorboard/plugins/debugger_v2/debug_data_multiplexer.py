@@ -41,7 +41,7 @@ DEFAULT_PER_TYPE_ALERT_LIMIT = 1000
 DEFAULT_RELOAD_INTERVAL_SEC = 60
 
 
-def run_in_background(target):
+def run_repeatedly_in_background(target):
     """Run a target task repeatedly in the background.
 
     In the context of this module, `target` is the `update()` method of the
@@ -107,27 +107,22 @@ class DebuggerV2EventMultiplexer(object):
         self._logdir = logdir
         self._reader = None
         self._reader_lock = threading.Lock()
+        self._reloading = False
+        self._reloading_lock = threading.Lock()
         self._CreateReader()
 
     def _CreateReader(self):
-        if self._reader:
-            return
         with self._reader_lock:
             if not self._reader:
                 try:
-                    print("Importing debugger v2 modules")  # DEBUG
                     from tensorflow.python.debug.lib import debug_events_reader
                     from tensorflow.python.debug.lib import (
                         debug_events_monitors,
                     )
 
-                    print("Creating DebugDataReader")  # DEBUG
                     self._reader = debug_events_reader.DebugDataReader(
                         self._logdir
                     )
-                    print(
-                        "Creating monitors: self._reader = %s" % self._reader
-                    )  # DEBUG
                     self._monitors = [
                         debug_events_monitors.InfNanMonitor(
                             self._reader, limit=DEFAULT_PER_TYPE_ALERT_LIMIT
@@ -135,12 +130,7 @@ class DebuggerV2EventMultiplexer(object):
                     ]
                     # NOTE(cais): Currently each logdir is enforced to have only one
                     # DebugEvent file set. So we add hard-coded default run name.
-                    print("Calling run_in_background")  # DEBUG
-                    run_in_background(self._reader.update)
-                    print(
-                        "DONE Calling run_in_background: self._reader = %s"
-                        % self._reader
-                    )  # DEBUG
+                    run_repeatedly_in_background(self.Reload)
                     # TODO(cais): Start off a reading thread here, instead of being
                     # called only once here.
                 except ImportError:
@@ -158,6 +148,20 @@ class DebuggerV2EventMultiplexer(object):
                     # When no DebugEvent file set is found in the logdir, a
                     # `ValueError` is thrown.
                     pass
+            else:
+                self.Reload()
+
+    def Reload(self):
+        if self._reloading:
+            return
+        with self._reloading_lock:
+            if self._reloading:
+                return
+            self._reloading = True
+            try:
+                self._reader.update()
+            finally:
+                self._reloading = False
 
     def FirstEventTimestamp(self, run):
         """Return the timestamp of the first DebugEvent of the given run.
