@@ -109,9 +109,17 @@ class DebuggerV2EventMultiplexer(object):
         self._reader_lock = threading.Lock()
         self._reloading = False
         self._reloading_lock = threading.Lock()
-        self._CreateReader()
+        self._CreateOrReloadReader()
 
-    def _CreateReader(self):
+    def _CreateOrReloadReader(self):
+        """Creates or reloads reader for tfdbg2 data in the logdir.
+
+        If the reader has already been created, a new one will not be created;
+        instead, `_reload()` will be called.
+
+        If a reader has not been created, create it and start periodic reloading
+        on a separate thread.
+        """
         with self._reader_lock:
             if not self._reader:
                 try:
@@ -130,7 +138,7 @@ class DebuggerV2EventMultiplexer(object):
                     ]
                     # NOTE(cais): Currently each logdir is enforced to have only one
                     # DebugEvent file set. So we add hard-coded default run name.
-                    run_repeatedly_in_background(self.Reload)
+                    run_repeatedly_in_background(self._reload)
                     # TODO(cais): Start off a reading thread here, instead of being
                     # called only once here.
                 except ImportError:
@@ -149,9 +157,16 @@ class DebuggerV2EventMultiplexer(object):
                     # `ValueError` is thrown.
                     pass
             else:
-                self.Reload()
+                self._reload()
 
-    def Reload(self):
+    def _reload(self):
+        """Let the tfdbg2 data reader reload.
+
+        Assumes that the reader has already been created.
+
+        Concurrent calls to this methods are noops if this method is currently
+        running.
+        """
         if self._reloading:
             return
         with self._reloading_lock:
@@ -209,7 +224,7 @@ class DebuggerV2EventMultiplexer(object):
             at most one DebugEvent file set per directory.
         If no tfdbg2-format data exists in the `logdir`, an empty `dict`.
         """
-        self._CreateReader()
+        self._CreateOrReloadReader()
         if self._reader:
             return {
                 DEFAULT_DEBUGGER_RUN_NAME: {
