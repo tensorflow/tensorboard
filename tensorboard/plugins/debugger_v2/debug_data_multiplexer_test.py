@@ -39,23 +39,44 @@ class MockThread(object):
 class DebuggerV2PluginTest(tf.test.TestCase):
     def testRunInBackgroundRepeatedly(self):
         mock_target = mock.Mock()
-        sleep_state = {"time_values": []}
+        sleep_state = {"count": 0}
 
-        def mock_sleep(time):
-            sleep_state["time_values"].append(time)
-            if len(sleep_state["time_values"]) == 10:
+        def mock_sleep():
+            sleep_state["count"] += 1
+            if sleep_state["count"] == 10:
                 raise StopIteration()
 
         with mock.patch("threading.Thread", MockThread), mock.patch.object(
-            time, "sleep", mock_sleep
+            debug_data_multiplexer._timer, "sleep", mock_sleep
         ):
             with self.assertRaises(StopIteration):
                 debug_data_multiplexer.run_repeatedly_in_background(mock_target)
             self.assertEqual(mock_target.call_count, 10)
-            self.assertEqual(
-                sleep_state["time_values"],
-                [debug_data_multiplexer.DEFAULT_RELOAD_INTERVAL_SEC] * 10,
-            )
+
+
+class TimerTest(tf.test.TestCase):
+    def testSleepWithoutWaking(self):
+        timer = debug_data_multiplexer.Timer(0.1)
+        t0 = time.time()
+        timer.sleep()
+        self.assertGreaterEqual(time.time() - t0, 0.1)
+
+    def testWakeDuringSleep(self):
+        # `interval_sec == None` means sleep forever.
+        timer = debug_data_multiplexer.Timer(None)
+        thread = threading.Thread(target=timer.sleep)
+        thread.start()
+        timer.wake()
+        thread.join()
+
+    def testSleepAfterWakeCall(self):
+        """A wake() call prior to sleep() has no effect."""
+        # `interval_sec == None` means sleep forever.
+        timer = debug_data_multiplexer.Timer(0.1)
+        timer.wake()
+        t0 = time.time()
+        timer.sleep()
+        self.assertGreaterEqual(time.time() - t0, 0.1)
 
 
 if __name__ == "__main__":

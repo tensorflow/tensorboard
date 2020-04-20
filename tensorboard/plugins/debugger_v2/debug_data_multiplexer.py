@@ -41,6 +41,24 @@ DEFAULT_PER_TYPE_ALERT_LIMIT = 1000
 DEFAULT_RELOAD_INTERVAL_SEC = 60
 
 
+class Timer(object):
+    """A timer that supports interruptable sleep()."""
+
+    def __init__(self, interval_sec):
+        self._interval_sec = interval_sec
+        self._event = threading.Event()
+
+    def sleep(self):
+        self._event.clear()
+        self._event.wait(timeout=self._interval_sec)
+
+    def wake(self):
+        self._event.set()
+
+
+_timer = Timer(DEFAULT_RELOAD_INTERVAL_SEC)
+
+
 def run_repeatedly_in_background(target):
     """Run a target task repeatedly in the background.
 
@@ -57,7 +75,7 @@ def run_repeatedly_in_background(target):
     def _run_repeatedly():
         while True:
             target()
-            time.sleep(DEFAULT_RELOAD_INTERVAL_SEC)
+            _timer.sleep()
 
     thread = threading.Thread(target=_run_repeatedly)
     thread.start()
@@ -107,18 +125,17 @@ class DebuggerV2EventMultiplexer(object):
         self._logdir = logdir
         self._reader = None
         self._reader_lock = threading.Lock()
-        self._reloading = False
-        self._reloading_lock = threading.Lock()
         self._createOrReloadReader()
 
     def _createOrReloadReader(self):
         """Creates or reloads reader for tfdbg2 data in the logdir.
 
         If the reader has already been created, a new one will not be created;
-        instead, `_reload()` will be called.
+        instead, the reader's `update()` method will be scheduled on a separate
+        thread immediately.
 
-        If a reader has not been created, create it and start periodic reloading
-        on a separate thread.
+        If a reader has not been created, create it and start periodic calls to
+        `update()` on a separate thread.
         """
         with self._reader_lock:
             if not self._reader:
@@ -138,7 +155,7 @@ class DebuggerV2EventMultiplexer(object):
                     ]
                     # NOTE(cais): Currently each logdir is enforced to have only one
                     # DebugEvent file set. So we add hard-coded default run name.
-                    run_repeatedly_in_background(self._reload)
+                    run_repeatedly_in_background(self._reader.update)
                     # TODO(cais): Start off a reading thread here, instead of being
                     # called only once here.
                 except ImportError:
@@ -157,26 +174,7 @@ class DebuggerV2EventMultiplexer(object):
                     # `ValueError` is thrown.
                     pass
             else:
-                self._reload()
-
-    def _reload(self):
-        """Let the tfdbg2 data reader reload.
-
-        Assumes that the reader has already been created.
-
-        Concurrent calls to this methods are noops if this method is currently
-        running.
-        """
-        if self._reloading:
-            return
-        with self._reloading_lock:
-            if self._reloading:
-                return
-            self._reloading = True
-            try:
-                self._reader.update()
-            finally:
-                self._reloading = False
+                _timer.wake()
 
     def FirstEventTimestamp(self, run):
         """Return the timestamp of the first DebugEvent of the given run.

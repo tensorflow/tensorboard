@@ -688,45 +688,6 @@ class DebuggerV2PluginTest(tf.test.TestCase):
             {"error": "run parameter is not provided"},
         )
 
-    def testGetAdditionalExecutionDigestsAfterFirstCall(self):
-        writer = tf.debugging.experimental.enable_dump_debug_info(
-            self.logdir,
-            circular_buffer_size=-1,
-            tensor_debug_mode="FULL_HEALTH",
-        )
-        try:
-            # Dump some intiial debug data to the logdir.
-            tf.constant(11.0) + tf.constant(22.0)
-            writer.FlushNonExecutionFiles()
-            writer.FlushExecutionFiles()
-            run = self._getExactlyOneRun()
-            response = self.server.get(
-                _ROUTE_PREFIX + "/execution/digests?run=%s&begin=0&end=0" % run
-            )
-            self.assertEqual(200, response.status_code)
-            self.assertEqual(
-                "application/json", response.headers.get("content-type")
-            )
-            data = json.loads(response.get_data())
-            initial_num_digests = data["num_digests"]
-            self.assertGreater(initial_num_digests, 0)
-
-            # Dump some more debug data to the logdir.
-            tf.constant(12.0) + tf.constant(24.0)
-            writer.FlushNonExecutionFiles()
-            writer.FlushExecutionFiles()
-            response = self.server.get(
-                _ROUTE_PREFIX + "/execution/digests?run=%s&begin=0&end=0" % run
-            )
-            self.assertEqual(200, response.status_code)
-            self.assertEqual(
-                "application/json", response.headers.get("content-type")
-            )
-            data = json.loads(response.get_data())
-            self.assertGreater(data["num_digests"], initial_num_digests)
-        finally:
-            tf.debugging.experimental.disable_dump_debug_info()
-
     def testServeASingleExecutionDataObject(self):
         _generate_tfdbg_v2_data(self.logdir, tensor_debug_mode="CONCISE_HEALTH")
         run = self._getExactlyOneRun()
