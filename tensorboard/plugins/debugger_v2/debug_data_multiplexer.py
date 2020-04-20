@@ -37,7 +37,7 @@ DEFAULT_DEBUGGER_RUN_NAME = "__default_debugger_run__"
 # ones are either repetitions of the earlier ones or caused by the earlier ones.
 DEFAULT_PER_TYPE_ALERT_LIMIT = 1000
 
-# Default interval of between calls to `DebugDataReader.update()``.
+# Default interval between successive calls to `DebugDataReader.update()``.
 DEFAULT_RELOAD_INTERVAL_SEC = 60
 
 
