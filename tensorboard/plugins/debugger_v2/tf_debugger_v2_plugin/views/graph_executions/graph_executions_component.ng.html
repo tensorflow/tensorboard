@@ -45,6 +45,25 @@ limitations under the License.
               {{ graphExecutionData[i].op_type }}
             </div>
           </div>
+
+          <div
+            *ngIf="graphExecutionData[i].debug_tensor_value !== null"
+            class="tensor-debug-info">
+            <div class="tensor-debug-info-flexbox">
+              <debug-tensor-dtype
+                dtype="{{ DTYPE_ENUM_TO_NAME[graphExecutionData[i].debug_tensor_value![2]] }}"
+              >
+              </debug-tensor-dtype>
+              <debug-tensor-rank
+                rank="{{ graphExecutionData[i].debug_tensor_value![3] }}"
+              >
+              </debug-tensor-rank>
+              <debug-tensor-size
+                size="{{ graphExecutionData[i].debug_tensor_value![4] }}"
+              >
+              </debug-tensor-size>
+            </div>
+          </div>
         </div>
 
         <ng-template #dataLoading class="tensor-item">

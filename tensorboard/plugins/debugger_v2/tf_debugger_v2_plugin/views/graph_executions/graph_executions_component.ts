@@ -22,6 +22,95 @@ import {
 } from '@angular/core';
 
 import {GraphExecution} from '../../store/debugger_types';
+import {DTYPE_ENUM_TO_NAME} from '../../tf_dtypes';
+
+@Component({
+  selector: 'debug-tensor-dtype',
+  template: `
+    <div class="dtype-container">
+      <span>
+        dtype:
+      </span>
+      <span class="dtype-name">
+        {{ dtype }}
+      </span>
+    </div>
+  `,
+  styles: [`
+    :host {
+      background-color: #e3e5e8;
+      border: 1px solid #c0c0c0;
+      border-radius: 4px;
+      height: 14px;
+      line-height: 14px;
+      margin: 0 2px;
+      padding: 1px 3px;
+      width: max-content;
+    }
+    .dtype-name {
+      font-weight: 600
+    }
+  `]
+})
+export class DebugTensorDTypeComponent {
+  @Input()
+  dtype!: string;
+}
+
+@Component({
+  selector: 'debug-tensor-rank',
+  template: `
+    <div>
+      {{ rank }}D
+    </div>
+  `,
+  styles: [`
+    :host {
+      background-color: #e3e5e8;
+      border: 1px solid #c0c0c0;
+      border-radius: 4px;
+      height: 14px;
+      line-height: 14px;
+      margin: 0 2px;
+      padding: 1px 3px;
+      width: max-content;
+    }
+  `]
+})
+export class DebugTensorRankComponent {
+  @Input()
+  rank!: number;
+}
+
+@Component({
+  selector: 'debug-tensor-size',
+  template: `
+    <div>
+      <span>
+        size:
+      </span>
+      <span class="size-value">
+        {{ size }}
+      </span>
+    </div>
+  `,
+  styles: [`
+    :host {
+      background-color: #e3e5e8;
+      border: 1px solid #c0c0c0;
+      border-radius: 4px;
+      height: 14px;
+      line-height: 14px;
+      margin: 0 2px;
+      padding: 1px 3px;
+      width: max-content;
+    }
+  `]
+})
+export class DebugTensorSizeComponent {
+  @Input()
+  size!: number;
+}
 
 @Component({
   selector: 'graph-executions-component',
@@ -41,4 +130,6 @@ export class GraphExecutionsComponent {
 
   @Output()
   onScrolledIndexChange = new EventEmitter<number>();
+
+  DTYPE_ENUM_TO_NAME = DTYPE_ENUM_TO_NAME;
 }
