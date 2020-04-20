@@ -42,7 +42,7 @@ DEFAULT_RELOAD_INTERVAL_SEC = 60
 
 
 class Timer(object):
-    """A timer that supports interruptable sleep()."""
+    """A timer that supports interruptible sleep()."""
 
     def __init__(self, interval_sec):
         """Constructor for Timer.
@@ -60,7 +60,7 @@ class Timer(object):
         self._event.wait(timeout=self._interval_sec)
 
     def wake(self):
-        """Interrupt sleep() calls if any exists.
+        """Interrupt all sleep() calls that are ongoing.
 
         This is a no-op if no sleep() is ongoing.
         """
