@@ -70,8 +70,7 @@ class TimerTest(tf.test.TestCase):
         thread.join()
 
     def testSleepAfterWakeCall(self):
-        """A wake() call prior to sleep() has no effect."""
-        # `interval_sec == None` means sleep forever.
+        """Test that a wake() call before sleep() has no effect."""
         timer = debug_data_multiplexer.Timer(0.1)
         timer.wake()
         t0 = time.time()

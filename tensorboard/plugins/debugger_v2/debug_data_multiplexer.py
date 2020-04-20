@@ -37,7 +37,7 @@ DEFAULT_DEBUGGER_RUN_NAME = "__default_debugger_run__"
 # ones are either repetitions of the earlier ones or caused by the earlier ones.
 DEFAULT_PER_TYPE_ALERT_LIMIT = 1000
 
-# Default reloading interval of the debugger data multiplexer, in seconds.
+# Default interval of between calls to `DebugDataReader.update()``.
 DEFAULT_RELOAD_INTERVAL_SEC = 60
 
 
@@ -45,14 +45,25 @@ class Timer(object):
     """A timer that supports interruptable sleep()."""
 
     def __init__(self, interval_sec):
+        """Constructor for Timer.
+
+        Args:
+          interval_sec: Amount of time to sleep on each subsequent `sleep()`
+            call (assuming not waken by `waken()`), in seconds.
+        """
         self._interval_sec = interval_sec
         self._event = threading.Event()
 
     def sleep(self):
+        """Sleep until `interval_sec` is reached or waken by `wake()`."""
         self._event.clear()
         self._event.wait(timeout=self._interval_sec)
 
     def wake(self):
+        """Interrupt sleep() calls if any exists.
+
+        This is a no-op if no sleep() is ongoing.
+        """
         self._event.set()
 
 
@@ -131,8 +142,8 @@ class DebuggerV2EventMultiplexer(object):
         """Creates or reloads reader for tfdbg2 data in the logdir.
 
         If the reader has already been created, a new one will not be created;
-        instead, the reader's `update()` method will be scheduled on a separate
-        thread immediately.
+        instead, the existing reader's `update()` method will be unblocked on a
+        separate thread immediately.
 
         If a reader has not been created, create it and start periodic calls to
         `update()` on a separate thread.
