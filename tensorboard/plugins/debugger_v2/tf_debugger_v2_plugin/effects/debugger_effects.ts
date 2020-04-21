@@ -561,36 +561,27 @@ export class DebuggerEffects {
       withLatestFrom(
         this.store.select(getActiveRunId),
         this.store.select(getNumGraphExecutions),
-        this.store.select(getGraphExecutionScrollBeginIndex),
-        this.store.select(getGraphExecutionPageSize),
-        this.store.select(getGraphExecutionDisplayCount)
+        this.store.select(getGraphExecutionScrollBeginIndex)
       ),
       filter(([, runId, numGraphExecutions]) => {
         return runId !== null && numGraphExecutions > 0;
       }),
-      map(
-        ([
-          ,
-          runId,
-          numGraphExecutions,
-          scrollBeginIndex,
-          pageSize,
-          displayCount,
-        ]) => ({
-          runId,
-          numGraphExecutions,
-          scrollBeginIndex,
-          pageSize,
-          displayCount,
-        })
-      ),
+      map(([, runId, numGraphExecutions, scrollBeginIndex]) => ({
+        runId,
+        numGraphExecutions,
+        scrollBeginIndex,
+      })),
       withLatestFrom(
+        this.store.select(getGraphExecutionPageSize),
+        this.store.select(getGraphExecutionDisplayCount),
         this.store.select(getGraphExecutionDataLoadingPages),
         this.store.select(getGraphExecutionDataPageLoadedSizes)
       ),
       map(
         ([
-          {runId, numGraphExecutions, scrollBeginIndex, pageSize, displayCount},
+          {runId, numGraphExecutions, scrollBeginIndex},
+          pageSize,
+          displayCount,
           loadingPages,
           pageLoadedSizes,
         ]) => {
@@ -860,7 +851,7 @@ export class DebuggerEffects {
      *                                                                 |
      * on alert type focus --------> fetch alerts of a type -----------+
      *
-     * on source file requested ---> fetch source
+     * on source file requested ---> fetch source file
      *
      * on graph-execution scroll --> fetch graph-execution data
      *

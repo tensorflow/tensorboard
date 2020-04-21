@@ -31,13 +31,13 @@ import {GraphExecution} from '../../store/debugger_types';
 })
 export class GraphExecutionsComponent {
   @Input()
-  numGraphExecutions: number | null = null;
+  numGraphExecutions!: number;
 
   @Input()
-  graphExecutionData: {[index: number]: GraphExecution} = {};
+  graphExecutionData!: {[index: number]: GraphExecution};
 
   @Input()
-  graphExecutionIndices: number[] | null = null;
+  graphExecutionIndices!: number[];
 
   @Output()
   onScrolledIndexChange = new EventEmitter<number>();

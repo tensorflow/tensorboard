@@ -917,68 +917,77 @@ describe('Debugger effects', () => {
       {dataExists: false, page3Size: 0, loadingPages: []},
       {dataExists: true, page3Size: 2, loadingPages: []},
     ]) {
-      it('triggers GraphExecution loading', fakeAsync(() => {
-        const runId = '__default_debugger_run__';
-        const originalScrollBeginIndex = 50;
-        const newScrollBeginIndex = originalScrollBeginIndex + 2;
-        const numGraphExecutions = 100;
-        const pageSize = 20;
-        const displayCount = 10;
-        store.overrideSelector(getActiveRunId, runId);
-        store.overrideSelector(getNumGraphExecutions, numGraphExecutions);
-        store.overrideSelector(
-          getGraphExecutionScrollBeginIndex,
-          newScrollBeginIndex
-        );
-        store.overrideSelector(getGraphExecutionPageSize, pageSize);
-        store.overrideSelector(getGraphExecutionDisplayCount, displayCount);
-        store.overrideSelector(getExecutionPageSize, pageSize);
-        store.overrideSelector(getGraphExecutionDataLoadingPages, loadingPages);
-        const pageLoadedSizes: {[pageIndex: number]: number} = {
-          0: 20,
-          1: 20,
-          2: 20,
-        };
-        pageLoadedSizes[3] = page3Size;
-        store.overrideSelector(
-          getGraphExecutionDataPageLoadedSizes,
-          pageLoadedSizes
-        );
-        store.refreshState();
+      it(
+        `triggers GraphExecution loading: dataExists=${dataExists}, ` +
+          `loadingPages=${JSON.stringify(loadingPages)}`,
+        fakeAsync(() => {
+          const runId = '__default_debugger_run__';
+          const originalScrollBeginIndex = 50;
+          const newScrollBeginIndex = originalScrollBeginIndex + 2;
+          const numGraphExecutions = 100;
+          const pageSize = 20;
+          const displayCount = 10;
+          store.overrideSelector(getActiveRunId, runId);
+          store.overrideSelector(getNumGraphExecutions, numGraphExecutions);
+          store.overrideSelector(
+            getGraphExecutionScrollBeginIndex,
+            newScrollBeginIndex
+          );
+          store.overrideSelector(getGraphExecutionPageSize, pageSize);
+          store.overrideSelector(getGraphExecutionDisplayCount, displayCount);
+          store.overrideSelector(getExecutionPageSize, pageSize);
+          store.overrideSelector(
+            getGraphExecutionDataLoadingPages,
+            loadingPages
+          );
+          const pageLoadedSizes: {[pageIndex: number]: number} = {
+            0: 20,
+            1: 20,
+            2: 20,
+          };
+          pageLoadedSizes[3] = page3Size;
+          store.overrideSelector(
+            getGraphExecutionDataPageLoadedSizes,
+            pageLoadedSizes
+          );
+          store.refreshState();
 
-        const graphExecutions = new Array<GraphExecution>(pageSize).fill(
-          createTestGraphExecution()
-        );
-        const graphExecutionDataResponse: GraphExecutionDataResponse = {
-          begin: 60,
-          end: 60 + pageSize,
-          graph_executions: graphExecutions,
-        };
-        const fetchExecutionData = createFetchGraphExecutionDataSpy(
-          runId,
-          60,
-          60 + pageSize,
-          graphExecutionDataResponse
-        );
+          const graphExecutions = new Array<GraphExecution>(pageSize).fill(
+            createTestGraphExecution()
+          );
+          const graphExecutionDataResponse: GraphExecutionDataResponse = {
+            begin: 60,
+            end: 60 + pageSize,
+            graph_executions: graphExecutions,
+          };
+          const fetchExecutionData = createFetchGraphExecutionDataSpy(
+            runId,
+            60,
+            60 + pageSize,
+            graphExecutionDataResponse
+          );
 
-        action.next(graphExecutionScrollToIndex({index: newScrollBeginIndex}));
-        tick(100);
+          action.next(
+            graphExecutionScrollToIndex({index: newScrollBeginIndex})
+          );
+          tick(100);
 
-        if (dataExists || loadingPages.length > 0) {
-          expect(fetchExecutionData).not.toHaveBeenCalled();
-          expect(dispatchedActions).toEqual([]);
-        } else {
-          expect(fetchExecutionData).toHaveBeenCalledTimes(1);
-          expect(dispatchedActions).toEqual([
-            graphExecutionDataRequested({pageIndex: 3}),
-            graphExecutionDataLoaded({
-              begin: 60,
-              end: 60 + pageSize,
-              graph_executions: graphExecutions,
-            }),
-          ]);
-        }
-      }));
+          if (dataExists || loadingPages.length > 0) {
+            expect(fetchExecutionData).not.toHaveBeenCalled();
+            expect(dispatchedActions).toEqual([]);
+          } else {
+            expect(fetchExecutionData).toHaveBeenCalledTimes(1);
+            expect(dispatchedActions).toEqual([
+              graphExecutionDataRequested({pageIndex: 3}),
+              graphExecutionDataLoaded({
+                begin: 60,
+                end: 60 + pageSize,
+                graph_executions: graphExecutions,
+              }),
+            ]);
+          }
+        })
+      );
     }
   });
 

@@ -1448,8 +1448,8 @@ describe('Debugger reducers', () => {
           begin: 2,
           end: 4,
           graph_executions: [
-            createTestGraphExecution({op_name: 'TestOp_2'}),
-            createTestGraphExecution({op_name: 'TestOp_3'}),
+            createTestGraphExecution({op_name: 'TestOp_2_overwrite'}),
+            createTestGraphExecution({op_name: 'TestOp_3_overwrite'}),
           ],
         })
       );
@@ -1465,8 +1465,8 @@ describe('Debugger reducers', () => {
       expect(nextState.graphExecutions.graphExecutionData).toEqual({
         0: createTestGraphExecution({op_name: 'TestOp_0'}),
         1: createTestGraphExecution({op_name: 'TestOp_1'}),
-        2: createTestGraphExecution({op_name: 'TestOp_2'}),
-        3: createTestGraphExecution({op_name: 'TestOp_3'}),
+        2: createTestGraphExecution({op_name: 'TestOp_2_overwrite'}),
+        3: createTestGraphExecution({op_name: 'TestOp_3_overwrite'}),
       });
     });
   });

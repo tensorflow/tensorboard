@@ -72,7 +72,7 @@ describe('Graph Executions Container', () => {
     const fixture = TestBed.createComponent(GraphExecutionsContainer);
     store.overrideSelector(getNumGraphExecutions, 0);
     fixture.autoDetectChanges();
-    tick(500);
+    tick();
 
     const titleElement = fixture.debugElement.query(
       By.css('.graph-executions-title')
@@ -96,7 +96,7 @@ describe('Graph Executions Container', () => {
     }
     store.overrideSelector(getGraphExecutionData, graphExecutionData);
     fixture.autoDetectChanges();
-    tick(500);
+    tick();
 
     const titleElement = fixture.debugElement.query(
       By.css('.graph-executions-title')
@@ -130,7 +130,7 @@ describe('Graph Executions Container', () => {
     store.overrideSelector(getNumGraphExecutions, 120);
     store.overrideSelector(getGraphExecutionData, {});
     fixture.autoDetectChanges();
-    tick(500);
+    tick();
 
     const titleElement = fixture.debugElement.query(
       By.css('.graph-executions-title')
