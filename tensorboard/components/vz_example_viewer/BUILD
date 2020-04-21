@@ -9,7 +9,7 @@ tf_web_library(
     name = "vz_example_viewer",
     srcs = [
         "vz-example-viewer.html",
-        "vz-example-viewer.ts",
+        "vz-example-viewer.js",
     ],
     path = "/vz-example-viewer",
     deps = [

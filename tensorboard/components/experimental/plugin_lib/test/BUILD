@@ -48,7 +48,7 @@ tf_web_library(
     testonly = True,
     srcs = [
         "test.html",
-        "test.ts",
+        "test.js",
     ],
     path = "/tf-plugin-lib/test",
     deps = [
