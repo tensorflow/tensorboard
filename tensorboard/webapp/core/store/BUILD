@@ -26,6 +26,7 @@ tf_ts_library(
     name = "core_store_test_lib",
     testonly = True,
     srcs = [
+        "core_initial_state_provider_test.ts",
         "core_reducers_test.ts",
     ],
     tsconfig = "//:tsconfig-test",
@@ -33,6 +34,7 @@ tf_ts_library(
         ":store",
         "//tensorboard/webapp/core/actions",
         "//tensorboard/webapp/core/testing",
+        "//tensorboard/webapp/deeplink",
         "//tensorboard/webapp/types",
         "@npm//@types/jasmine",
     ],
