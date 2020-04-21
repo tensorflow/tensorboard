@@ -17,7 +17,6 @@ import {StoreConfig} from '@ngrx/store';
 
 import {CoreState} from './core_types';
 import {HashDeepLinker} from '../../deeplink';
-import {DataLoadState} from '../../types/data';
 import {initialState} from './core_types';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
@@ -31,6 +30,6 @@ export function getConfig(deepLinker: HashDeepLinker): StoreConfig<CoreState> {
     initialState: {
       ...initialState,
       activePlugin: deepLinker.getPluginId() || null,
-    },
+    } as CoreState,
   };
 }

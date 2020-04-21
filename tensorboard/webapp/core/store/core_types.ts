@@ -29,6 +29,8 @@ export interface CoreState {
   pluginsListLoaded: LoadState;
   reloadPeriodInMs: number;
   reloadEnabled: boolean;
+  // Size of a page in a general paginated view that is configurable by user via
+  // settings.
   pageSize: number;
 }
 
