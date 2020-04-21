@@ -41,10 +41,8 @@ describe('loadMonaco shim', () => {
   }
 
   function createFakeWindow(): WindowWithRequireAndMonaco {
-    const require = () => {};
-    require.config = () => {};
     return ({
-      require,
+      require: createFakeRequire(),
     } as unknown) as WindowWithRequireAndMonaco;
   }
 
