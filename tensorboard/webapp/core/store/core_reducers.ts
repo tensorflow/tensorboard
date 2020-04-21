@@ -15,26 +15,11 @@ limitations under the License.
 import {Action, createReducer, on} from '@ngrx/store';
 import {DataLoadState} from '../../types/data';
 import * as actions from '../actions';
-import {CoreState} from './core_types';
+import {CoreState, initialState} from './core_types';
 
 // HACK: These imports are for type inference.
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
 /** @typehack */ import * as _typeHackStore from '@ngrx/store/store';
-
-// TODO(stephanwlee): Since initialState is now injected, look for a way to
-// remove this.
-
-const initialState: CoreState = {
-  activePlugin: null,
-  plugins: {},
-  pluginsListLoaded: {
-    state: DataLoadState.NOT_LOADED,
-    lastLoadedTimeInMs: null,
-  },
-  reloadPeriodInMs: 30000,
-  reloadEnabled: false,
-  pageSize: 15,
-};
 
 const reducer = createReducer(
   initialState,
