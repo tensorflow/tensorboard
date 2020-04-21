@@ -16,7 +16,7 @@ tf_web_test(
 tf_web_library(
     name = "test_web_library",
     srcs = [
-        "plugin-test.js",
+        "plugin-test.ts",
         "testable-iframe.html",
         "tests.html",
         "//tensorboard/components/experimental/plugin_lib/test:testable_plugin_bundle.js",

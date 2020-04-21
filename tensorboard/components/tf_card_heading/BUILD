@@ -11,7 +11,7 @@ tf_web_library(
         "tf-card-heading.html",
         "tf-card-heading-style.html",
         "util.html",
-        "util.js",
+        "util.ts",
     ],
     path = "/tf-card-heading",
     visibility = ["//visibility:public"],

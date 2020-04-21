@@ -9,9 +9,9 @@ licenses(["notice"])  # Apache 2.0
 tf_web_library(
     name = "tf_hparams_parallel_coords_plot",
     srcs = [
-        "axes.js",
-        "interaction_manager.js",
-        "lines.js",
+        "axes.ts",
+        "interaction_manager.ts",
+        "lines.ts",
         "tf-hparams-parallel-coords-plot.html",
         "utils.d.ts",
         "utils.html",

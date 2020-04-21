@@ -11,9 +11,9 @@ tf_web_library(
         "plottable-interactions.d.ts",
         "plottable-interactions.js",
         "vz-chart-helpers.html",
-        "vz-chart-helpers.js",
+        "vz-chart-helpers.ts",
         "vz-chart-tooltip.html",
-        "vz-chart-tooltip.js",
+        "vz-chart-tooltip.ts",
     ],
     path = "/vz-chart-helpers",
     deps = [

@@ -8,7 +8,7 @@ tf_web_library(
     name = "vz_bar_chart",
     srcs = [
         "vz-bar-chart.html",
-        "vz-bar-chart.js",
+        "vz-bar-chart.ts",
     ],
     path = "/vz-bar-chart",
     visibility = ["//visibility:public"],

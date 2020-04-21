@@ -11,15 +11,15 @@ licenses(["notice"])  # Apache 2.0
 tf_web_library(
     name = "microbenchmark",
     srcs = [
-        "async.js",
+        "async.ts",
         "main.html",
-        "main.js",
-        "polymer_util.js",
-        "renders_spec.js",
-        "reporter.js",
-        "runner.js",
-        "spec.js",
-        "types.js",
+        "main.ts",
+        "polymer_util.ts",
+        "renders_spec.ts",
+        "reporter.ts",
+        "runner.ts",
+        "spec.ts",
+        "types.ts",
     ],
     path = "/vz-line-chart2/benchmark",
     deps = [

@@ -8,7 +8,7 @@ tf_web_library(
     name = "message",
     srcs = [
         "message.html",
-        "message.js",
+        "message.ts",
     ],
     path = "/tf-plugin-util",
 )
@@ -17,7 +17,7 @@ tf_web_library(
     name = "host_internals",
     srcs = [
         "plugin-host-ipc.html",
-        "plugin-host-ipc.js",
+        "plugin-host-ipc.ts",
     ],
     path = "/tf-plugin-util",
     deps = [
@@ -28,9 +28,9 @@ tf_web_library(
 tf_web_library(
     name = "plugin_host",
     srcs = [
-        "core-host-impl.js",
+        "core-host-impl.ts",
         "plugin-host.html",
-        "runs-host-impl.js",
+        "runs-host-impl.ts",
     ],
     path = "/tf-plugin-util",
     deps = [

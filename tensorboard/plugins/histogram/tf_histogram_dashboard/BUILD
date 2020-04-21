@@ -7,7 +7,7 @@ licenses(["notice"])  # Apache 2.0
 tf_web_library(
     name = "tf_histogram_dashboard",
     srcs = [
-        "histogramCore.js",
+        "histogramCore.ts",
         "tf-histogram-core.html",
         "tf-histogram-dashboard.html",
         "tf-histogram-loader.html",
