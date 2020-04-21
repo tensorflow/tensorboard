@@ -25,11 +25,13 @@ import {
 import {
   createAlertsState,
   createDebuggerExecutionsState,
+  createDebuggerGraphExecutionsState,
   createDebuggerSourceCodeState,
   createDebuggerState,
   createDebuggerStateWithLoadedExecutionDigests,
   createDigestsStateWhileLoadingExecutionDigests,
   createTestExecutionData,
+  createTestGraphExecution,
   createTestStackFrame,
   createTestInfNanAlert,
 } from '../testing';
@@ -892,7 +894,7 @@ describe('Debugger reducers', () => {
 
   for (const scrollIndex of [-1, 0.5, 51, 100]) {
     it(
-      `Invalid executionScrollToIndex (${scrollIndex}) does not change scrollBeginIdnex:` +
+      `Invalid executionScrollToIndex (${scrollIndex}) does not change scrollBeginIndex:` +
         `displayCount < numExecutions`,
       () => {
         const originalScrollBeginIndex = 3;
@@ -915,7 +917,7 @@ describe('Debugger reducers', () => {
     // In these tests, `displayCount` is 50 and there are only 20 execution digests
     // (< 50). Hence, the only valid scrolling begin index is 0.
     it(
-      `Invalid executionScrollToIndex (${scrollIndex}) does not change scrollBeginIdnex:` +
+      `Invalid executionScrollToIndex (${scrollIndex}) does not change scrollBeginIndex:` +
         `displayCount >= numExecutions`,
       () => {
         const originalScrollBeginIndex = 3;
@@ -1322,5 +1324,174 @@ describe('Debugger reducers', () => {
         lines: null,
       },
     ]);
+  });
+
+  describe('numGraphExecutionsRequested', () => {
+    it('updates load state', () => {
+      const state = createDebuggerState({
+        activeRunId: '__default_debugger_run__',
+      });
+      const nextState = reducers(state, actions.numGraphExecutionsRequested());
+      expect(nextState.graphExecutions.numExecutionsLoaded.state).toBe(
+        DataLoadState.LOADING
+      );
+    });
+  });
+
+  describe('numGraphExecutionsLoaded', () => {
+    it('updates load state', () => {
+      const state = createDebuggerState({
+        activeRunId: '__default_debugger_run__',
+        graphExecutions: createDebuggerGraphExecutionsState({
+          numExecutionsLoaded: {
+            state: DataLoadState.LOADING,
+            lastLoadedTimeInMs: null,
+          },
+        }),
+      });
+      const t0 = Date.now();
+      const nextState = reducers(
+        state,
+        actions.numGraphExecutionsLoaded({numGraphExecutions: 12345})
+      );
+      expect(nextState.graphExecutions.numExecutionsLoaded.state).toBe(
+        DataLoadState.LOADED
+      );
+      expect(
+        nextState.graphExecutions.numExecutionsLoaded.lastLoadedTimeInMs
+      ).toBeGreaterThanOrEqual(t0);
+      expect(
+        nextState.graphExecutions.executionDigestsLoaded.numExecutions
+      ).toEqual(12345);
+    });
+  });
+
+  describe('graphExecutionDataRequested', () => {
+    it('updates loading pages by adding a new one', () => {
+      const state = createDebuggerState({
+        activeRunId: '__default_debugger_run__',
+        graphExecutions: createDebuggerGraphExecutionsState({
+          graphExecutionDataLoadingPages: [2222, 7777],
+        }),
+      });
+      const nextState = reducers(
+        state,
+        actions.graphExecutionDataRequested({pageIndex: 4321})
+      );
+      expect(nextState.graphExecutions.graphExecutionDataLoadingPages).toEqual([
+        2222,
+        7777,
+        4321,
+      ]);
+    });
+  });
+
+  describe('graphExecutionDataLoaded', () => {
+    it('with new data, updates loading pages, loaded pages and data', () => {
+      const state = createDebuggerState({
+        activeRunId: '__default_debugger_run__',
+        graphExecutions: createDebuggerGraphExecutionsState({
+          pageSize: 2,
+          graphExecutionDataLoadingPages: [1, 2],
+          graphExecutionDataPageLoadedSizes: {0: 2},
+          graphExecutionData: {
+            0: createTestGraphExecution({op_name: 'TestOp_0'}),
+            1: createTestGraphExecution({op_name: 'TestOp_1'}),
+          },
+        }),
+      });
+      const nextState = reducers(
+        state,
+        actions.graphExecutionDataLoaded({
+          begin: 2,
+          end: 4,
+          graph_executions: [
+            createTestGraphExecution({op_name: 'TestOp_2'}),
+            createTestGraphExecution({op_name: 'TestOp_3'}),
+          ],
+        })
+      );
+      expect(nextState.graphExecutions.graphExecutionDataLoadingPages).toEqual([
+        2,
+      ]);
+      expect(
+        nextState.graphExecutions.graphExecutionDataPageLoadedSizes
+      ).toEqual({
+        0: 2,
+        1: 2,
+      });
+      expect(nextState.graphExecutions.graphExecutionData).toEqual({
+        0: createTestGraphExecution({op_name: 'TestOp_0'}),
+        1: createTestGraphExecution({op_name: 'TestOp_1'}),
+        2: createTestGraphExecution({op_name: 'TestOp_2'}),
+        3: createTestGraphExecution({op_name: 'TestOp_3'}),
+      });
+    });
+
+    it('with partly new data, correctly updates pages and data', () => {
+      const state = createDebuggerState({
+        activeRunId: '__default_debugger_run__',
+        graphExecutions: createDebuggerGraphExecutionsState({
+          pageSize: 2,
+          graphExecutionDataLoadingPages: [1],
+          graphExecutionDataPageLoadedSizes: {0: 2, 1: 1},
+          graphExecutionData: {
+            0: createTestGraphExecution({op_name: 'TestOp_0'}),
+            1: createTestGraphExecution({op_name: 'TestOp_1'}),
+            2: createTestGraphExecution({op_name: 'TestOp_2'}),
+          },
+        }),
+      });
+      const nextState = reducers(
+        state,
+        actions.graphExecutionDataLoaded({
+          begin: 2,
+          end: 4,
+          graph_executions: [
+            createTestGraphExecution({op_name: 'TestOp_2_overwrite'}),
+            createTestGraphExecution({op_name: 'TestOp_3_overwrite'}),
+          ],
+        })
+      );
+      expect(nextState.graphExecutions.graphExecutionDataLoadingPages).toEqual(
+        []
+      );
+      expect(
+        nextState.graphExecutions.graphExecutionDataPageLoadedSizes
+      ).toEqual({
+        0: 2,
+        1: 2,
+      });
+      expect(nextState.graphExecutions.graphExecutionData).toEqual({
+        0: createTestGraphExecution({op_name: 'TestOp_0'}),
+        1: createTestGraphExecution({op_name: 'TestOp_1'}),
+        2: createTestGraphExecution({op_name: 'TestOp_2_overwrite'}),
+        3: createTestGraphExecution({op_name: 'TestOp_3_overwrite'}),
+      });
+    });
+  });
+
+  describe('graphExecutionScrollToIndex', () => {
+    it('updates graph-execution scrollBeginIndex', () => {
+      const state = createDebuggerState({
+        graphExecutions: createDebuggerGraphExecutionsState({
+          scrollBeginIndex: 0,
+        }),
+      });
+      const nextState = reducers(
+        state,
+        actions.graphExecutionScrollToIndex({index: 1337})
+      );
+      expect(nextState.graphExecutions.scrollBeginIndex).toBe(1337);
+    });
+
+    for (const index of [-1, 8.8, Infinity, NaN]) {
+      it(`throws error for invalid scroll index: ${index}`, () => {
+        const state = createDebuggerState();
+        expect(() =>
+          reducers(state, actions.graphExecutionScrollToIndex({index}))
+        ).toThrowError(/.*scroll.*negative or non-integer/);
+      });
+    }
   });
 });

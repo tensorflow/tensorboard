@@ -6,20 +6,22 @@ load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 licenses(["notice"])  # Apache 2.0
 
 ng_module(
-    name = "source_files",
+    name = "graph_executions",
     srcs = [
-        "source_files_component.ts",
-        "source_files_container.ts",
-        "source_files_module.ts",
+        "graph_executions_component.ts",
+        "graph_executions_container.ts",
+        "graph_executions_module.ts",
     ],
     assets = [
-        "source_files_component.css",
-        "source_files_component.ng.html",
+        "graph_executions_component.css",
+        "graph_executions_component.ng.html",
     ],
     deps = [
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin:tf_types",
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/actions",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/store",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/store:types",
-        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/source_code",
+        "//tensorboard/webapp/angular:expect_angular_cdk_scrolling",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
@@ -28,24 +30,23 @@ ng_module(
 )
 
 tf_ts_library(
-    name = "source_files_container_test_lib",
+    name = "graph_executions_container_test_lib",
     testonly = True,
     srcs = [
-        "source_files_container_test.ts",
+        "graph_executions_container_test.ts",
     ],
     tsconfig = "//:tsconfig-test",
     deps = [
-        ":source_files",
+        ":graph_executions",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin:debugger_v2",
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/actions",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/store",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/store:types",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/testing",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/alerts",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/execution_data",
-        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/graph_executions",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/inactive",
-        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/source_code:load_monaco",
-        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/source_code:testing",
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/source_files",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/stack_trace",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/timeline",
         "//tensorboard/webapp/angular:expect_angular_core_testing",

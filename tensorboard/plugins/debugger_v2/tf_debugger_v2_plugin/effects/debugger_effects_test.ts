@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {TestBed} from '@angular/core/testing';
+import {fakeAsync, TestBed, tick} from '@angular/core/testing';
 import {provideMockActions} from '@ngrx/effects/testing';
 import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
@@ -30,10 +30,15 @@ import {
   executionScrollLeft,
   executionScrollRight,
   executionScrollToIndex,
+  graphExecutionDataRequested,
+  graphExecutionDataLoaded,
+  graphExecutionScrollToIndex,
   numAlertsAndBreakdownRequested,
   numAlertsAndBreakdownLoaded,
   numExecutionsLoaded,
   numExecutionsRequested,
+  numGraphExecutionsLoaded,
+  numGraphExecutionsRequested,
   sourceFileListLoaded,
   sourceFileListRequested,
   stackFramesLoaded,
@@ -45,6 +50,8 @@ import {
   AlertsResponse,
   ExecutionDataResponse,
   ExecutionDigestsResponse,
+  GraphExecutionDataResponse,
+  GraphExecutionDigestsResponse,
   SourceFileListResponse,
   SourceFileResponse,
   StackFramesResponse,
@@ -59,10 +66,16 @@ import {
   getNumAlertsOfFocusedType,
   getNumExecutionsLoaded,
   getNumExecutions,
+  getNumGraphExecutions,
   getDisplayCount,
   getExecutionDigestsLoaded,
   getExecutionPageSize,
   getExecutionScrollBeginIndex,
+  getGraphExecutionDisplayCount,
+  getGraphExecutionDataLoadingPages,
+  getGraphExecutionDataPageLoadedSizes,
+  getGraphExecutionPageSize,
+  getGraphExecutionScrollBeginIndex,
   getLoadedAlertsOfFocusedType,
   getLoadedExecutionData,
   getLoadedStackFrames,
@@ -75,6 +88,7 @@ import {
   DebuggerRunListing,
   Execution,
   ExecutionDigest,
+  GraphExecution,
   State,
   SourceFileSpec,
   SourceFileContent,
@@ -83,9 +97,10 @@ import {
   createDebuggerState,
   createState,
   createTestExecutionData,
-  createTestStackFrame,
-  createTestInfNanAlert,
   createTestExecutionDigest,
+  createTestGraphExecution,
+  createTestInfNanAlert,
+  createTestStackFrame,
 } from '../testing';
 import {TBHttpClientTestingModule} from '../../../../webapp/webapp_data_source/tb_http_client_testing';
 
@@ -305,6 +320,34 @@ describe('Debugger effects', () => {
       .and.returnValue(of(excutionDigestsResponse));
   }
 
+  function createFetchGraphExecutionDigestsSpy(
+    runId: string,
+    begin: number,
+    end: number,
+    graphExcutionDigestsResponse: GraphExecutionDigestsResponse
+  ) {
+    return spyOn(
+      TestBed.get(Tfdbg2HttpServerDataSource),
+      'fetchGraphExecutionDigests'
+    )
+      .withArgs(runId, begin, end)
+      .and.returnValue(of(graphExcutionDigestsResponse));
+  }
+
+  function createFetchGraphExecutionDataSpy(
+    runId: string,
+    begin: number,
+    end: number,
+    graphExcutionDataResponse: GraphExecutionDataResponse
+  ) {
+    return spyOn(
+      TestBed.get(Tfdbg2HttpServerDataSource),
+      'fetchGraphExecutionData'
+    )
+      .withArgs(runId, begin, end)
+      .and.returnValue(of(graphExcutionDataResponse));
+  }
+
   describe('loadData', () => {
     const runListingForTest: DebuggerRunListing = {
       __default_debugger_run__: {
@@ -376,6 +419,9 @@ describe('Debugger effects', () => {
       end: 1,
       executions: [executionData1],
     };
+
+    const numGraphExecutions = 10;
+
     const stackFrame0 = createTestStackFrame();
     const stackFrame1 = createTestStackFrame();
 
@@ -412,12 +458,26 @@ describe('Debugger effects', () => {
       fetchExecutionDigests
         .withArgs(runId, 0, pageSize)
         .and.returnValue(of(executionDigestsPageResponse));
+      // Spy for loading detailed execution data.
       const fetchExecutionData = createFetchExecutionDataSpy(
         runId,
         0,
         1,
         executionDataResponse
       );
+      // Spy for loading number of graph executions.
+      const fetchGraphExecutionDigests = createFetchGraphExecutionDigestsSpy(
+        runId,
+        0,
+        0,
+        {
+          begin: 0,
+          end: 0,
+          num_digests: numGraphExecutions,
+          graph_execution_digests: [],
+        }
+      );
+      // Spy for loading stack frames.
       const fetchStackFrames = createFetchStackFramesSpy({
         stack_frames: [stackFrame0, stackFrame1],
       });
@@ -427,6 +487,7 @@ describe('Debugger effects', () => {
         fetchNumAlertsSpy,
         fetchExecutionDigests,
         fetchExecutionData,
+        fetchGraphExecutionDigests,
         fetchStackFrames,
       };
     }
@@ -467,6 +528,17 @@ describe('Debugger effects', () => {
         0,
         numAlertsResponseForTest
       );
+      const fetchNumGraphExecutionDigests = createFetchGraphExecutionDigestsSpy(
+        runId,
+        0,
+        0,
+        {
+          begin: 0,
+          end: 0,
+          num_digests: 0,
+          graph_execution_digests: [],
+        }
+      );
       store.overrideSelector(getDebuggerRunListing, runListingForTest);
       store.overrideSelector(getNumExecutionsLoaded, {
         state: DataLoadState.NOT_LOADED,
@@ -479,6 +551,7 @@ describe('Debugger effects', () => {
       expect(fetchRuns).toHaveBeenCalled();
       expect(fetchNumExecutionDigests).toHaveBeenCalled();
       expect(fetchNumAlerts).toHaveBeenCalled();
+      expect(fetchNumGraphExecutionDigests).toHaveBeenCalled();
       expect(dispatchedActions).toEqual([
         debuggerRunsRequested(),
         debuggerRunsLoaded({runs: runListingForTest}),
@@ -489,18 +562,21 @@ describe('Debugger effects', () => {
         }),
         numExecutionsRequested(),
         numExecutionsLoaded({numExecutions: 0}),
+        numGraphExecutionsRequested(),
+        numGraphExecutionsLoaded({numGraphExecutions: 0}),
       ]);
     });
 
     it(
-      'loads source-file list, execution digests, data & stack trace loading ' +
-        'if numExecutions>0',
+      'loads source-file list, top-level and intra-graph digests and data, ' +
+        'and stack trace, if numExecutions>0',
       () => {
         const {
           fetchRuns,
           fetchSourceFileList,
           fetchExecutionDigests,
           fetchExecutionData,
+          fetchGraphExecutionDigests,
           fetchStackFrames,
         } = createFetchSpies();
         store.overrideSelector(getDebuggerRunListing, runListingForTest);
@@ -521,6 +597,7 @@ describe('Debugger effects', () => {
         expect(fetchExecutionDigests).toHaveBeenCalledTimes(2);
         expect(fetchExecutionData).toHaveBeenCalledTimes(1);
         expect(fetchStackFrames).toHaveBeenCalledTimes(1);
+        expect(fetchGraphExecutionDigests).toHaveBeenCalledTimes(1);
         expect(fetchSourceFileList).toHaveBeenCalledTimes(1);
         expect(dispatchedActions).toEqual([
           debuggerRunsRequested(),
@@ -536,6 +613,8 @@ describe('Debugger effects', () => {
           executionDigestsLoaded(executionDigestsPageResponse),
           executionDataLoaded(executionDataResponse),
           stackFramesLoaded({stackFrames: {aa: stackFrame0, bb: stackFrame1}}),
+          numGraphExecutionsRequested(),
+          numGraphExecutionsLoaded({numGraphExecutions}),
           sourceFileListRequested(),
           sourceFileListLoaded({
             sourceFiles: twoSourceFilesForTest.map(
@@ -824,6 +903,90 @@ describe('Debugger effects', () => {
             ]);
           }
         }
+      );
+    }
+  });
+
+  describe('graphExecutionScrollToIndex', () => {
+    beforeEach(() => {
+      debuggerEffects.loadData$.subscribe();
+    });
+
+    for (const {dataExists, page3Size, loadingPages} of [
+      {dataExists: false, page3Size: 0, loadingPages: [3]},
+      {dataExists: false, page3Size: 0, loadingPages: []},
+      {dataExists: true, page3Size: 2, loadingPages: []},
+    ]) {
+      it(
+        `triggers GraphExecution loading: dataExists=${dataExists}, ` +
+          `loadingPages=${JSON.stringify(loadingPages)}`,
+        fakeAsync(() => {
+          const runId = '__default_debugger_run__';
+          const originalScrollBeginIndex = 50;
+          const newScrollBeginIndex = originalScrollBeginIndex + 2;
+          const numGraphExecutions = 100;
+          const pageSize = 20;
+          const displayCount = 10;
+          store.overrideSelector(getActiveRunId, runId);
+          store.overrideSelector(getNumGraphExecutions, numGraphExecutions);
+          store.overrideSelector(
+            getGraphExecutionScrollBeginIndex,
+            newScrollBeginIndex
+          );
+          store.overrideSelector(getGraphExecutionPageSize, pageSize);
+          store.overrideSelector(getGraphExecutionDisplayCount, displayCount);
+          store.overrideSelector(getExecutionPageSize, pageSize);
+          store.overrideSelector(
+            getGraphExecutionDataLoadingPages,
+            loadingPages
+          );
+          const pageLoadedSizes: {[pageIndex: number]: number} = {
+            0: 20,
+            1: 20,
+            2: 20,
+          };
+          pageLoadedSizes[3] = page3Size;
+          store.overrideSelector(
+            getGraphExecutionDataPageLoadedSizes,
+            pageLoadedSizes
+          );
+          store.refreshState();
+
+          const graphExecutions = new Array<GraphExecution>(pageSize).fill(
+            createTestGraphExecution()
+          );
+          const graphExecutionDataResponse: GraphExecutionDataResponse = {
+            begin: 60,
+            end: 60 + pageSize,
+            graph_executions: graphExecutions,
+          };
+          const fetchExecutionData = createFetchGraphExecutionDataSpy(
+            runId,
+            60,
+            60 + pageSize,
+            graphExecutionDataResponse
+          );
+
+          action.next(
+            graphExecutionScrollToIndex({index: newScrollBeginIndex})
+          );
+          tick(100);
+
+          if (dataExists || loadingPages.length > 0) {
+            expect(fetchExecutionData).not.toHaveBeenCalled();
+            expect(dispatchedActions).toEqual([]);
+          } else {
+            expect(fetchExecutionData).toHaveBeenCalledTimes(1);
+            expect(dispatchedActions).toEqual([
+              graphExecutionDataRequested({pageIndex: 3}),
+              graphExecutionDataLoaded({
+                begin: 60,
+                end: 60 + pageSize,
+                graph_executions: graphExecutions,
+              }),
+            ]);
+          }
+        })
       );
     }
   });

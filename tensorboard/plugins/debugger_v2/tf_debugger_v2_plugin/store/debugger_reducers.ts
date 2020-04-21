@@ -18,6 +18,8 @@ import * as actions from '../actions';
 import {
   ExecutionDataResponse,
   ExecutionDigestsResponse,
+  GraphExecutionDataResponse,
+  GraphExecutionDigestsResponse,
   SourceFileResponse,
 } from '../data_source/tfdbg2_data_source';
 import {findFileIndex} from './debugger_store_utils';
@@ -26,10 +28,11 @@ import {
   AlertType,
   DataLoadState,
   DebuggerState,
+  Executions,
+  GraphExecutions,
   InfNanAlert,
   StackFramesById,
   SourceFileSpec,
-  SourceLineSpec,
 } from './debugger_types';
 
 // HACK: These imports are for type inference.
@@ -37,6 +40,55 @@ import {
 /** @typehack */ import * as _typeHackStore from '@ngrx/store/store';
 
 const DEFAULT_EXECUTION_PAGE_SIZE = 100;
+const DEFAULT_GRAPH_EXECUTION_PAGE_SIZE = 200;
+
+export function createInitialExecutionsState(): Executions {
+  return {
+    numExecutionsLoaded: {
+      state: DataLoadState.NOT_LOADED,
+      lastLoadedTimeInMs: null,
+    },
+    executionDigestsLoaded: {
+      state: DataLoadState.NOT_LOADED,
+      lastLoadedTimeInMs: null,
+      numExecutions: 0,
+      pageLoadedSizes: {},
+    },
+    // TODO(cais) Remove the hardcoding of this, which is coupled with css width
+    // properties.
+    displayCount: 50,
+    pageSize: DEFAULT_EXECUTION_PAGE_SIZE,
+    scrollBeginIndex: 0,
+    focusIndex: null,
+    executionDigests: {},
+    executionData: {},
+  };
+}
+
+export function createInitialGraphExecutionsState(): GraphExecutions {
+  return {
+    numExecutionsLoaded: {
+      state: DataLoadState.NOT_LOADED,
+      lastLoadedTimeInMs: null,
+    },
+    executionDigestsLoaded: {
+      state: DataLoadState.NOT_LOADED,
+      lastLoadedTimeInMs: null,
+      numExecutions: 0,
+      pageLoadedSizes: {},
+    },
+    // TODO(cais) Remove the hardcoding of this, which is coupled with css width
+    // properties.
+    displayCount: 100,
+    pageSize: DEFAULT_GRAPH_EXECUTION_PAGE_SIZE,
+    scrollBeginIndex: 0,
+    focusIndex: null,
+    graphExecutionDigests: {},
+    graphExecutionDataLoadingPages: [],
+    graphExecutionDataPageLoadedSizes: {},
+    graphExecutionData: {},
+  };
+}
 
 const initialState: DebuggerState = {
   runs: {},
@@ -56,26 +108,8 @@ const initialState: DebuggerState = {
     executionIndices: {},
     focusType: null,
   },
-  executions: {
-    numExecutionsLoaded: {
-      state: DataLoadState.NOT_LOADED,
-      lastLoadedTimeInMs: null,
-    },
-    executionDigestsLoaded: {
-      numExecutions: 0,
-      pageLoadedSizes: {},
-      state: DataLoadState.NOT_LOADED,
-      lastLoadedTimeInMs: null,
-    },
-    scrollBeginIndex: 0,
-    focusIndex: null,
-    pageSize: DEFAULT_EXECUTION_PAGE_SIZE,
-    // TODO(cais) Remove the hardcoding of this, which is coupled with css width
-    // properties.
-    displayCount: 50,
-    executionDigests: {},
-    executionData: {},
-  },
+  executions: createInitialExecutionsState(),
+  graphExecutions: createInitialGraphExecutionsState(),
   stackFrames: {},
   sourceCode: {
     sourceFileListLoaded: {
@@ -272,6 +306,9 @@ const reducer = createReducer(
       return newState;
     }
   ),
+  //////////////////////////////////////////////
+  // Reducers related to top-level execution. //
+  //////////////////////////////////////////////
   on(
     actions.numExecutionsRequested,
     (state: DebuggerState): DebuggerState => {
@@ -482,6 +519,133 @@ const reducer = createReducer(
       return newState;
     }
   ),
+  ////////////////////////////////////////////////
+  // Reducers related to intra-graph execution. //
+  ////////////////////////////////////////////////
+  on(
+    actions.numGraphExecutionsRequested,
+    (state: DebuggerState): DebuggerState => {
+      if (state.activeRunId === null) {
+        return state;
+      }
+      return {
+        ...state,
+        graphExecutions: {
+          ...state.graphExecutions,
+          numExecutionsLoaded: {
+            ...state.graphExecutions.numExecutionsLoaded,
+            state: DataLoadState.LOADING,
+          },
+        },
+      };
+    }
+  ),
+  on(
+    actions.numGraphExecutionsLoaded,
+    (state: DebuggerState, {numGraphExecutions}): DebuggerState => {
+      if (state.activeRunId === null) {
+        return state;
+      }
+      const newState = {
+        ...state,
+        graphExecutions: {
+          ...state.graphExecutions,
+          numExecutionsLoaded: {
+            ...state.graphExecutions.numExecutionsLoaded,
+            state: DataLoadState.LOADED,
+            lastLoadedTimeInMs: Date.now(),
+          },
+          executionDigestsLoaded: {
+            ...state.graphExecutions.executionDigestsLoaded,
+            numExecutions: numGraphExecutions,
+          },
+        },
+      };
+      if (numGraphExecutions > 0 && state.graphExecutions.focusIndex === null) {
+        newState.graphExecutions.focusIndex = 0;
+      }
+      return newState;
+    }
+  ),
+  on(
+    actions.graphExecutionDataRequested,
+    (state: DebuggerState, {pageIndex}): DebuggerState => {
+      if (state.activeRunId === null) {
+        return state;
+      }
+      const graphExecutionDataLoadingPages = state.graphExecutions.graphExecutionDataLoadingPages.slice();
+      if (graphExecutionDataLoadingPages.indexOf(pageIndex) === -1) {
+        graphExecutionDataLoadingPages.push(pageIndex);
+      }
+      return {
+        ...state,
+        graphExecutions: {
+          ...state.graphExecutions,
+          graphExecutionDataLoadingPages,
+        },
+      };
+    }
+  ),
+  on(
+    actions.graphExecutionDataLoaded,
+    (state: DebuggerState, data: GraphExecutionDataResponse): DebuggerState => {
+      if (state.activeRunId === null) {
+        return state;
+      }
+      const {pageSize} = state.graphExecutions;
+      const graphExecutionDataLoadingPages = state.graphExecutions.graphExecutionDataLoadingPages.slice();
+      const graphExecutionDataPageLoadedSizes = {
+        ...state.graphExecutions.graphExecutionDataPageLoadedSizes,
+      };
+      const graphExecutionData = {...state.graphExecutions.graphExecutionData};
+      for (let i = data.begin; i < data.end; ++i) {
+        const pageIndex = Math.floor(i / pageSize);
+        if (graphExecutionDataLoadingPages.indexOf(pageIndex) !== -1) {
+          graphExecutionDataLoadingPages.splice(
+            graphExecutionDataLoadingPages.indexOf(pageIndex),
+            1
+          );
+        }
+        if (graphExecutionDataPageLoadedSizes[pageIndex] === undefined) {
+          graphExecutionDataPageLoadedSizes[pageIndex] = 0;
+        }
+        if (graphExecutionData[i] === undefined) {
+          graphExecutionDataPageLoadedSizes[pageIndex]++;
+        }
+        graphExecutionData[i] = data.graph_executions[i - data.begin];
+      }
+      return {
+        ...state,
+        graphExecutions: {
+          ...state.graphExecutions,
+          graphExecutionDataLoadingPages,
+          graphExecutionDataPageLoadedSizes,
+          graphExecutionData,
+        },
+      };
+    }
+  ),
+  on(
+    actions.graphExecutionScrollToIndex,
+    (state: DebuggerState, action: {index: number}): DebuggerState => {
+      if (action.index < 0 || !Number.isInteger(action.index)) {
+        throw new Error(
+          `Attempt to scroll to negative or non-integer graph-execution ` +
+            `index (${action.index})`
+        );
+      }
+      return {
+        ...state,
+        graphExecutions: {
+          ...state.graphExecutions,
+          scrollBeginIndex: action.index,
+        },
+      };
+    }
+  ),
+  ////////////////////////////////////////////////////////
+  // Reducers related to source files and stack traces. //
+  ////////////////////////////////////////////////////////
   on(
     actions.sourceFileListRequested,
     (state: DebuggerState): DebuggerState => {
