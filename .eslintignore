@@ -1,0 +1,10 @@
+bazel-*
+tensorboard/components
+tensorboard/examples
+tensorboard/defs
+tensorboard/java
+tensorboard/plugins
+# Test files are supposed to import 'jasmine' but it breaks require.js. Omit
+# for now.
+tensorboard/webapp/**/*_test.ts
+third_party

@@ -11,7 +11,9 @@
     "build": "bazel build //...",
     "test": "ibazel test //...",
     "lint": "prettier --check 'tensorboard/**/*.'{css,html,js,ts,scss} .github/**/*.yml",
-    "fix-lint": "prettier --write 'tensorboard/**/*.'{css,html,js,ts,scss} .github/**/*.yml"
+    "fix-lint": "prettier --write 'tensorboard/**/*.'{css,html,js,ts,scss} .github/**/*.yml",
+    "check": "gts check",
+    "clean": "gts clean"
   },
   "repository": {
     "type": "git",
@@ -46,6 +48,8 @@
     "@types/requirejs": "^2.1.31",
     "@types/sinon": "^7.5.2",
     "chai": "^4.2.0",
+    "eslint-plugin-prettier": "^3.1.3",
+    "gts": "^2.0.0",
     "jasmine-core": "^3.5.0",
     "karma": "^5.0.2",
     "karma-chrome-launcher": "^3.1.0",
