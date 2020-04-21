@@ -612,9 +612,7 @@ class _ScalarBatchedRequestSender(object):
         self._byte_budget -= cost
         return point
 
-# TODO: NOTE TO REVIEWERS: Happy to do some refactoring to share code but didn't want to do it
-#       before being certain about the extent of the differences with
-#       _ScalarBatchedRequestSender.
+
 class _TensorBatchedRequestSender(object):
     """Helper class for building WriteTensor() requests that fit under a size limit.
 
