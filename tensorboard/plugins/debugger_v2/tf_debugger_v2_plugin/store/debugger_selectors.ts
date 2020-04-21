@@ -25,6 +25,7 @@ import {
   Execution,
   ExecutionDigest,
   ExecutionDigestLoadState,
+  GraphExecution,
   LoadState,
   SourceFileContent,
   SourceFileSpec,
@@ -205,6 +206,48 @@ export const getNumGraphExecutions = createSelector(
   selectDebuggerState,
   (state: DebuggerState): number => {
     return state.graphExecutions.executionDigestsLoaded.numExecutions;
+  }
+);
+
+export const getGraphExecutionScrollBeginIndex = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): number => {
+    return state.graphExecutions.scrollBeginIndex;
+  }
+);
+
+export const getGraphExecutionDisplayCount = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): number => {
+    return state.graphExecutions.displayCount;
+  }
+);
+
+export const getGraphExecutionPageSize = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): number => {
+    return state.graphExecutions.pageSize;
+  }
+);
+
+export const getGraphExecutionDataLoadingPages = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): number[] => {
+    return state.graphExecutions.graphExecutionDataLoadingPages;
+  }
+);
+
+export const getGraphExecutionDataPageLoadedSizes = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): {[page: number]: number} => {
+    return state.graphExecutions.graphExecutionDataPageLoadedSizes;
+  }
+);
+
+export const getGraphExecutionData = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): {[index: number]: GraphExecution} => {
+    return state.graphExecutions.graphExecutionData;
   }
 );
 

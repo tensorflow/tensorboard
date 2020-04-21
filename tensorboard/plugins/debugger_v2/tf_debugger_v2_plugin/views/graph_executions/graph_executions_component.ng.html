@@ -20,5 +20,39 @@ limitations under the License.
     Graph Executions ({{ numGraphExecutions }})
   </div>
 
-  <!-- TODO(cais): Add cdk-virtual-scroll-viewport for graph executions -->
+  <cdk-virtual-scroll-viewport
+    *ngIf="numGraphExecutions !== null && numGraphExecutions > 0"
+    itemSize="37"
+    class="graph-executions-viewport"
+    (scrolledIndexChange)="onScrolledIndexChange.emit($event)"
+  >
+    <div
+      *cdkVirtualFor="let i of graphExecutionIndices"
+      class="tensor-container"
+    >
+      <div class="tensor-item">
+        <div class="graph-execution-index">
+          {{ i }}
+        </div>
+        <div *ngIf="graphExecutionData[i]; else dataLoading">
+          <div class="tensor-name-and-op-type">
+            <div class="tensor-name">
+              {{ graphExecutionData[i].op_name }}:{{
+              graphExecutionData[i].output_slot }}
+            </div>
+            <div class="op-type">
+              {{ graphExecutionData[i].op_type }}
+            </div>
+          </div>
+        </div>
+
+        <ng-template #dataLoading class="tensor-item">
+          <div class="loading-spinner">
+            Loading...
+            <!-- TODO(cais): Use mat-spinner -->
+          </div>
+        </ng-template>
+      </div>
+    </div>
+  </cdk-virtual-scroll-viewport>
 </div>
