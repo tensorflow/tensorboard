@@ -24,6 +24,8 @@ import six
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
+from tensorboard import data_compat
+from tensorboard import dataclass_compat
 from tensorboard.backend.event_processing import plugin_event_accumulator as ea
 from tensorboard.compat.proto import config_pb2
 from tensorboard.compat.proto import event_pb2
@@ -57,10 +59,17 @@ class _EventGenerator(object):
         self._testcase = testcase
         self.items = []
         self.zero_out_timestamps = zero_out_timestamps
+        self._initial_metadata = {}
 
     def Load(self):
         while self.items:
-            yield self.items.pop(0)
+            event = self.items.pop(0)
+            event = data_compat.migrate_event(event)
+            events = dataclass_compat.migrate_event(
+                event, self._initial_metadata
+            )
+            for event in events:
+                yield event
 
     def AddScalarTensor(self, tag, wall_time=0, step=0, value=0):
         """Add a rank-0 tensor event.

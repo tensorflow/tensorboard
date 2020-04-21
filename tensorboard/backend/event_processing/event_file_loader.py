@@ -20,6 +20,8 @@ from __future__ import print_function
 
 import contextlib
 
+from tensorboard import data_compat
+from tensorboard import dataclass_compat
 from tensorboard.compat import tf
 from tensorboard.compat.proto import event_pb2
 from tensorboard.util import platform_util
@@ -149,7 +151,7 @@ class RawEventFileLoader(object):
         logger.debug("No more events in %s", self._file_path)
 
 
-class EventFileLoader(RawEventFileLoader):
+class LegacyEventFileLoader(RawEventFileLoader):
     """An iterator that yields parsed Event protos."""
 
     def Load(self):
@@ -161,8 +163,39 @@ class EventFileLoader(RawEventFileLoader):
         Yields:
           All events in the file that have not been yielded yet.
         """
-        for record in super(EventFileLoader, self).Load():
+        for record in super(LegacyEventFileLoader, self).Load():
             yield event_pb2.Event.FromString(record)
+
+
+class EventFileLoader(LegacyEventFileLoader):
+    """An iterator that passes events through read-time compat layers.
+
+    Specifically, this includes `data_compat` and `dataclass_compat`.
+    """
+
+    def __init__(self, file_path):
+        super(EventFileLoader, self).__init__(file_path)
+        # Track initial metadata for each tag, for `dataclass_compat`.
+        # This is meant to be tracked per run, not per event file, so
+        # there is a potential failure case when the second event file
+        # in a single run has no summary metadata. This only occurs when
+        # all of the following hold: (a) the events were written with
+        # the TensorFlow 1.x (not 2.x) writer, (b) the summaries were
+        # created by `tensorboard.summary.v1` ops and so do not undergo
+        # `data_compat` transformation, and (c) the file writer was
+        # reopened by calling `.reopen()` on it, which creates a new
+        # file but does not clear the tag cache. This is considered
+        # sufficiently improbable that we don't take extra mitigations.
+        self._initial_metadata = {}  # from tag name to `SummaryMetadata`
+
+    def Load(self):
+        for event in super(EventFileLoader, self).Load():
+            event = data_compat.migrate_event(event)
+            events = dataclass_compat.migrate_event(
+                event, self._initial_metadata
+            )
+            for event in events:
+                yield event
 
 
 class TimestampedEventFileLoader(EventFileLoader):

@@ -34,6 +34,8 @@ except ImportError:
 import tensorflow as tf
 
 from google.protobuf import message
+from tensorboard import data_compat
+from tensorboard import dataclass_compat
 from tensorboard.uploader.proto import experiment_pb2
 from tensorboard.uploader.proto import scalar_pb2
 from tensorboard.uploader.proto import write_service_pb2
@@ -248,13 +250,23 @@ class TensorboardUploaderTest(tf.test.TestCase):
         mock_logdir_loader = mock.create_autospec(logdir_loader.LogdirLoader)
         mock_logdir_loader.get_run_events.side_effect = [
             {
-                "run 1": [scalar_event("1.1", 5.0), scalar_event("1.2", 5.0)],
-                "run 2": [scalar_event("2.1", 5.0), scalar_event("2.2", 5.0)],
+                "run 1": _apply_compat(
+                    [scalar_event("1.1", 5.0), scalar_event("1.2", 5.0)]
+                ),
+                "run 2": _apply_compat(
+                    [scalar_event("2.1", 5.0), scalar_event("2.2", 5.0)]
+                ),
             },
             {
-                "run 3": [scalar_event("3.1", 5.0), scalar_event("3.2", 5.0)],
-                "run 4": [scalar_event("4.1", 5.0), scalar_event("4.2", 5.0)],
-                "run 5": [scalar_event("5.1", 5.0), scalar_event("5.2", 5.0)],
+                "run 3": _apply_compat(
+                    [scalar_event("3.1", 5.0), scalar_event("3.2", 5.0)]
+                ),
+                "run 4": _apply_compat(
+                    [scalar_event("4.1", 5.0), scalar_event("4.2", 5.0)]
+                ),
+                "run 5": _apply_compat(
+                    [scalar_event("5.1", 5.0), scalar_event("5.2", 5.0)]
+                ),
             },
             AbortUploadError,
         ]
@@ -295,13 +307,13 @@ class TensorboardUploaderTest(tf.test.TestCase):
         mock_logdir_loader = mock.create_autospec(logdir_loader.LogdirLoader)
         mock_logdir_loader.get_run_events.side_effect = [
             {
-                "run 1": [graph_event, graph_event],
-                "run 2": [graph_event, graph_event],
+                "run 1": _apply_compat([graph_event, graph_event]),
+                "run 2": _apply_compat([graph_event, graph_event]),
             },
             {
-                "run 3": [graph_event, graph_event],
-                "run 4": [graph_event, graph_event],
-                "run 5": [graph_event, graph_event],
+                "run 3": _apply_compat([graph_event, graph_event]),
+                "run 4": _apply_compat([graph_event, graph_event]),
+                "run 5": _apply_compat([graph_event, graph_event]),
             },
             AbortUploadError,
         ]
@@ -347,7 +359,7 @@ class TensorboardUploaderTest(tf.test.TestCase):
 
         mock_logdir_loader = mock.create_autospec(logdir_loader.LogdirLoader)
         mock_logdir_loader.get_run_events.side_effect = [
-            {"run 1": [graph_event],},
+            {"run 1": _apply_compat([graph_event])},
             AbortUploadError,
         ]
 
@@ -445,8 +457,8 @@ class TensorboardUploaderTest(tf.test.TestCase):
 
         mock_logdir_loader = mock.create_autospec(logdir_loader.LogdirLoader)
         mock_logdir_loader.get_run_events.side_effect = [
-            {"run 1": [graph_event],},
-            {"run 1": [graph_event],},
+            {"run 1": _apply_compat([graph_event])},
+            {"run 1": _apply_compat([graph_event])},
             AbortUploadError,
         ]
 
@@ -488,8 +500,8 @@ class TensorboardUploaderTest(tf.test.TestCase):
 
         mock_logdir_loader = mock.create_autospec(logdir_loader.LogdirLoader)
         mock_logdir_loader.get_run_events.side_effect = [
-            {"run 1": [graph_event],},
-            {"run 1": [graph_event],},
+            {"run 1": _apply_compat([graph_event])},
+            {"run 1": _apply_compat([graph_event])},
             AbortUploadError,
         ]
 
@@ -709,7 +721,7 @@ class BatchedRequestSenderTest(tf.test.TestCase):
             api=mock_client,
             allowed_plugins=allowed_plugins,
         )
-        builder.send_requests({"": events})
+        builder.send_requests({"": _apply_compat(events)})
         requests = [c[0][0] for c in mock_client.WriteScalar.call_args_list]
         if requests:
             self.assertLen(requests, 1)
@@ -920,7 +932,7 @@ class BatchedRequestSenderTest(tf.test.TestCase):
         event = event_pb2.Event(step=1, wall_time=123.456)
         event.summary.value.add(tag="foo", simple_value=1.0)
         long_run_name = "A" * uploader_lib._MAX_REQUEST_LENGTH_BYTES
-        run_to_events = {long_run_name: [event]}
+        run_to_events = {long_run_name: _apply_compat([event])}
         with self.assertRaises(RuntimeError) as cm:
             builder = _create_request_sender("123", mock_client)
             builder.send_requests(run_to_events)
@@ -937,7 +949,10 @@ class BatchedRequestSenderTest(tf.test.TestCase):
         event_2 = event_pb2.Event(step=2)
         event_2.summary.value.add(tag="bar", simple_value=-2.0)
         run_to_events = collections.OrderedDict(
-            [(long_run_1, [event_1]), (long_run_2, [event_2])]
+            [
+                (long_run_1, _apply_compat([event_1])),
+                (long_run_2, _apply_compat([event_2])),
+            ]
         )
 
         builder = _create_request_sender("123", mock_client)
@@ -975,7 +990,7 @@ class BatchedRequestSenderTest(tf.test.TestCase):
         event = event_pb2.Event(step=1)
         event.summary.value.add(tag=long_tag_1, simple_value=1.0)
         event.summary.value.add(tag=long_tag_2, simple_value=2.0)
-        run_to_events = {"train": [event]}
+        run_to_events = {"train": _apply_compat([event])}
 
         builder = _create_request_sender("123", mock_client)
         builder.send_requests(run_to_events)
@@ -1015,7 +1030,7 @@ class BatchedRequestSenderTest(tf.test.TestCase):
             if step > 0:
                 summary.value[0].ClearField("metadata")
             events.append(event_pb2.Event(summary=summary, step=step))
-        run_to_events = {"train": events}
+        run_to_events = {"train": _apply_compat(events)}
 
         builder = _create_request_sender("123", mock_client)
         builder.send_requests(run_to_events)
@@ -1050,7 +1065,10 @@ class BatchedRequestSenderTest(tf.test.TestCase):
         event_2 = event_pb2.Event(step=2)
         event_2.summary.value.add(tag="bar", simple_value=-2.0)
         run_to_events = collections.OrderedDict(
-            [("train", [event_1]), ("test", [event_2])]
+            [
+                ("train", _apply_compat([event_1])),
+                ("test", _apply_compat([event_2])),
+            ]
         )
 
         real_create_point = (
@@ -1257,6 +1275,17 @@ def _clear_wall_times(request):
         for tag in run.tags:
             for point in tag.points:
                 point.ClearField("wall_time")
+
+
+def _apply_compat(events):
+    initial_metadata = {}
+    for event in events:
+        event = data_compat.migrate_event(event)
+        events = dataclass_compat.migrate_event(
+            event, initial_metadata=initial_metadata
+        )
+        for event in events:
+            yield event
 
 
 if __name__ == "__main__":

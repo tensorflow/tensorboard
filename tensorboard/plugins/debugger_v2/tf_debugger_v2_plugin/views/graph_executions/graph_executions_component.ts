@@ -28,12 +28,8 @@ import {DTYPE_ENUM_TO_NAME} from '../../tf_dtypes';
   selector: 'debug-tensor-dtype',
   template: `
     <div class="dtype-container">
-      <span>
-        dtype:
-      </span>
-      <span class="dtype-name">
-        {{ dtype }}
-      </span>
+      <span>dtype:</span>
+      <span class="dtype-name">{{ dtype }}</span>
     </div>
   `,
   styles: [`
@@ -41,6 +37,7 @@ import {DTYPE_ENUM_TO_NAME} from '../../tf_dtypes';
       background-color: #e3e5e8;
       border: 1px solid #c0c0c0;
       border-radius: 4px;
+      font-family: 'Roboto Mono', monospace;
       height: 14px;
       line-height: 14px;
       margin: 0 2px;
@@ -60,15 +57,14 @@ export class DebugTensorDTypeComponent {
 @Component({
   selector: 'debug-tensor-rank',
   template: `
-    <div>
-      {{ rank }}D
-    </div>
+    <div>{{ rank }}D</div>
   `,
   styles: [`
     :host {
       background-color: #e3e5e8;
       border: 1px solid #c0c0c0;
       border-radius: 4px;
+      font-family: 'Roboto Mono', monospace;
       height: 14px;
       line-height: 14px;
       margin: 0 2px;
@@ -86,12 +82,8 @@ export class DebugTensorRankComponent {
   selector: 'debug-tensor-size',
   template: `
     <div>
-      <span>
-        size:
-      </span>
-      <span class="size-value">
-        {{ size }}
-      </span>
+      <span>size:</span>
+      <span class="size-value">{{ size }}</span>
     </div>
   `,
   styles: [`
@@ -99,6 +91,7 @@ export class DebugTensorRankComponent {
       background-color: #e3e5e8;
       border: 1px solid #c0c0c0;
       border-radius: 4px;
+      font-family: 'Roboto Mono', monospace;
       height: 14px;
       line-height: 14px;
       margin: 0 2px;
@@ -120,13 +113,13 @@ export class DebugTensorSizeComponent {
 })
 export class GraphExecutionsComponent {
   @Input()
-  numGraphExecutions: number | null = null;
+  numGraphExecutions!: number;
 
   @Input()
-  graphExecutionData: {[index: number]: GraphExecution} = {};
+  graphExecutionData!: {[index: number]: GraphExecution};
 
   @Input()
-  graphExecutionIndices: number[] | null = null;
+  graphExecutionIndices!: number[];
 
   @Output()
   onScrolledIndexChange = new EventEmitter<number>();

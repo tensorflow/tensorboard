@@ -13,7 +13,7 @@ Colab.
 You may also be interested in the hosted TensorBoard solution at
 [TensorBoard.dev][]. You can use TensorBoard.dev to easily host, track, and
 share your ML experiments for free. For example, [this experiment][] shows a
-working example featuring the scalar dashboard.
+working example featuring the scalars and graphs dashboards.
 
 TensorBoard is designed to run entirely offline, without requiring any access
 to the Internet. For instance, this may be on your local machine, behind a
@@ -21,7 +21,7 @@ corporate firewall, or in a datacenter.
 
 [TensorBoard: Getting Started]: https://www.tensorflow.org/tensorboard/get_started
 [TensorBoard.dev]: https://tensorboard.dev
-[This experiment]: https://tensorboard.dev/experiment/AdYd1TgeTlaLWXx6I8JUbA/#scalars
+[This experiment]: https://tensorboard.dev/experiment/9E4U9wixQTyeZwGdcehMeA/#scalars
 
 # Usage
 
