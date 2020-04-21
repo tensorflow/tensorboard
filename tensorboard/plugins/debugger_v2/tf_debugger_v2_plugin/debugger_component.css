@@ -15,13 +15,18 @@ limitations under the License.
 
 .bottom-section {
   border-top: 1px solid rgba(0, 0, 0, 0.12);
-  height: 353px;
+  height: 34%;
   padding-top: 6px;
   width: 100%;
 }
 
+.debugger-container {
+  background-color: #fff;
+  height: 100%;
+}
+
 .top-section {
-  height: 360px;
+  height: 66%;
   padding: 6px 0;
   width: 100%;
 }
