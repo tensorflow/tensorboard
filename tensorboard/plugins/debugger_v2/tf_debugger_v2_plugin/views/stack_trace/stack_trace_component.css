@@ -54,7 +54,7 @@ limitations under the License.
   border-left: 1px solid rgba(0, 0, 0, 0.12);
   font-size: 10px;
   font-family: 'Roboto Mono', monospace;
-  height: 360px;
+  height: 100%;
   margin-left: 8px;
   max-height: 360px;
   overflow-x: hidden;
