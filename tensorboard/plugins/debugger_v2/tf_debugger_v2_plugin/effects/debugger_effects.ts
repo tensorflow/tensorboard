@@ -552,9 +552,21 @@ export class DebuggerEffects {
 
   /**
    * Emits when scrolling event leads to need to load new intra-graph execution
-   * digests.
+   * data.
+   *
+   * The returned observable contains the
+   *   - runId: active runId,
+   *   - missingPage: indices of missing `GraphExecution` pages that need to be
+   *     loaded by a downstream pipe.
+   *   - pageSize: GraphExecution data page size.
+   *   - numGraphExecutions: Current total number of `GraphExecution`s.
    */
-  private onGraphExecutionScroll(): Observable<{}> {
+  private onGraphExecutionScroll(): Observable<{
+    runId: string;
+    missingPages: number[];
+    pageSize: number;
+    numGraphExecutions: number;
+  }> {
     return this.actions$.pipe(
       ofType(graphExecutionScrollToIndex),
       debounceTime(100),
@@ -597,18 +609,30 @@ export class DebuggerEffects {
             (page) => loadingPages.indexOf(page) === -1
           );
           return {
-            runId,
+            runId: runId!,
             missingPages,
             pageSize,
             numGraphExecutions,
           };
         }
-      ),
+      )
+    );
+  }
+
+  private loadGraphExecutionPages(
+    prevStream$: Observable<{
+      runId: string;
+      missingPages: number[];
+      pageSize: number;
+      numGraphExecutions: number;
+    }>
+  ): Observable<void> {
+    return prevStream$.pipe(
       filter(({missingPages}) => missingPages.length > 0),
       tap(({missingPages}) => {
-        missingPages.forEach((pageIndex) =>
-          this.store.dispatch(graphExecutionDataRequested({pageIndex}))
-        );
+        missingPages.forEach((pageIndex) => {
+          this.store.dispatch(graphExecutionDataRequested({pageIndex}));
+        });
       }),
       mergeMap(({runId, missingPages, pageSize, numGraphExecutions}) => {
         const begin = missingPages[0] * pageSize;
@@ -621,7 +645,8 @@ export class DebuggerEffects {
             this.store.dispatch(
               graphExecutionDataLoaded(graphExecutionDataResponse)
             );
-          })
+          }),
+          map(() => void null)
         );
         // TODO(cais): Add catchError() to pipe.
       })
@@ -916,7 +941,9 @@ export class DebuggerEffects {
 
         const onSourceFileFocused$ = this.onSourceFileFocused();
 
-        const onGraphExecutionScroll$ = this.onGraphExecutionScroll();
+        const onGraphExecutionScroll$ = this.loadGraphExecutionPages(
+          this.onGraphExecutionScroll()
+        );
 
         // ExecutionDigest and ExecutionData can be loaded in parallel.
         return merge(
