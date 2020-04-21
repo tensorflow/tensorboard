@@ -18,6 +18,7 @@ import {StoreConfig} from '@ngrx/store';
 import {CoreState} from './core_types';
 import {HashDeepLinker} from '../../deeplink';
 import {DataLoadState} from '../../types/data';
+import {initialState} from './core_types';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
@@ -28,15 +29,8 @@ export const CORE_STORE_CONFIG_TOKEN = new InjectionToken<
 export function getConfig(deepLinker: HashDeepLinker): StoreConfig<CoreState> {
   return {
     initialState: {
+      ...initialState,
       activePlugin: deepLinker.getPluginId() || null,
-      plugins: {},
-      pluginsListLoaded: {
-        state: DataLoadState.NOT_LOADED,
-        lastLoadedTimeInMs: null,
-      },
-      reloadPeriodInMs: 30000,
-      reloadEnabled: false,
-      pageSize: 15,
     },
   };
 }

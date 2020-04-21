@@ -19,7 +19,7 @@ limitations under the License.
 // diverge in the future, that's straightforward: we'll leave types/api in place,
 // remove this import, and write the divergent state types explicitly here.
 import {PluginId, PluginsListing} from '../../types/api';
-import {LoadState} from '../../types/data';
+import {DataLoadState, LoadState} from '../../types/data';
 
 export const CORE_FEATURE_KEY = 'core';
 
@@ -35,3 +35,15 @@ export interface CoreState {
 export interface State {
   [CORE_FEATURE_KEY]?: CoreState;
 }
+
+export const initialState: CoreState = {
+  activePlugin: null,
+  plugins: {},
+  pluginsListLoaded: {
+    state: DataLoadState.NOT_LOADED,
+    lastLoadedTimeInMs: null,
+  },
+  reloadPeriodInMs: 30000,
+  reloadEnabled: false,
+  pageSize: 15,
+};
