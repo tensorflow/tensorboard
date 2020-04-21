@@ -7,7 +7,7 @@
     "doc": "docs"
   },
   "scripts": {
-    "postinstall": "ngcc",
+    "postinstall": "ngcc -p main es2015",
     "build": "bazel build //...",
     "test": "ibazel test //...",
     "lint": "prettier --check 'tensorboard/**/*.'{css,html,js,ts,scss} .github/**/*.yml",
