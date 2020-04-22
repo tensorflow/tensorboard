@@ -61,7 +61,6 @@ limitations under the License.
 .tensor-debug-info {
   display: inline-block;
   overflow: hidden;
-  width: 240px;
 }
 
 .tensor-debug-info-flexbox {

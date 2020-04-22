@@ -43,7 +43,7 @@ import {GraphExecutionsModule} from './graph_executions_module';
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 describe('Graph Executions Container', () => {
-let store: MockStore<State>;
+  let store: MockStore<State>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({

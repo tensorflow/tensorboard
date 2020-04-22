@@ -47,7 +47,8 @@ limitations under the License.
 
           <div
             *ngIf="graphExecutionData[i].debug_tensor_value !== null"
-            class="tensor-debug-info">
+            class="tensor-debug-info"
+          >
             <div class="tensor-debug-info-flexbox">
               <debug-tensor-dtype
                 dtype="{{ DTYPE_ENUM_TO_NAME[graphExecutionData[i].debug_tensor_value![2]] }}"
@@ -57,10 +58,20 @@ limitations under the License.
                 rank="{{ graphExecutionData[i].debug_tensor_value![3] }}"
               >
               </debug-tensor-rank>
-              <debug-tensor-size
+              <!-- <debug-tensor-size
+
+              > -->
+              <!-- </debug-tensor-size> -->
+              <debug-tensor-numeric-breakdown
                 size="{{ graphExecutionData[i].debug_tensor_value![4] }}"
+                numNegativeInfs="{{ graphExecutionData[i].debug_tensor_value![5] }}"
+                numPositiveInfs="{{ graphExecutionData[i].debug_tensor_value![6] }}"
+                numNaNs="{{ graphExecutionData[i].debug_tensor_value![7] }}"
+                numNegativeFinites="{{ graphExecutionData[i].debug_tensor_value![8] }}"
+                numZeros="{{ graphExecutionData[i].debug_tensor_value![9] }}"
+                numPositiveFinites="{{ graphExecutionData[i].debug_tensor_value![10] }}"
               >
-              </debug-tensor-size>
+              </debug-tensor-numeric-breakdown>
             </div>
           </div>
         </div>

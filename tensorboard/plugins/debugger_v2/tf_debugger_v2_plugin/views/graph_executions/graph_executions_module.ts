@@ -19,19 +19,21 @@ import {NgModule} from '@angular/core';
 
 import {
   DebugTensorDTypeComponent,
+  DebugTensorNumericBreakdownComponent,
   DebugTensorRankComponent,
-  DebugTensorSizeComponent,
-  GraphExecutionsComponent
+  // DebugTensorSizeComponent,
+  GraphExecutionsComponent,
 } from './graph_executions_component';
 import {GraphExecutionsContainer} from './graph_executions_container';
 
 @NgModule({
   declarations: [
     DebugTensorDTypeComponent,
+    DebugTensorNumericBreakdownComponent,
     DebugTensorRankComponent,
-    DebugTensorSizeComponent,
+    // DebugTensorSizeComponent,
     GraphExecutionsComponent,
-    GraphExecutionsContainer
+    GraphExecutionsContainer,
   ],
   imports: [CommonModule, ScrollingModule],
   exports: [GraphExecutionsContainer],

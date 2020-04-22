@@ -155,6 +155,44 @@ export interface InfNanAlert extends Alert {
   graph_execution_trace_index: number | null;
 }
 
+/**
+ * The values summarizing a tensor value watched by the debugger.
+ */
+export interface DebugTensorValue {
+  // Data type of the tensor.
+  dtype?: string;
+
+  // Rank of the tensor (e.g., 0 for scalar, 1 for 1D tensor, etc.)
+  rank?: number;
+
+  // Shape of the tensor.
+  shape?: number[];
+
+  // Size (total element count) of the tensor.
+  size?: number;
+
+  // Number of NaNa elements.
+  numNaNs?: number;
+
+  // Number of -Infinity elements.
+  numNegativeInfs?: number;
+
+  // Number of +Infinity elements.
+  numPositiveInfs?: number;
+
+  // Number of finite negative elements.
+  numNegativeFinites?: number;
+
+  // Numbe of zeros elements.
+  numZeros?: number;
+
+  // Number of finite positive elements.
+  numPositiveFinites?: number;
+
+  // Whether the tensor contains any NaN or Infinity elements.
+  hasInfOrNaN?: boolean;
+}
+
 export interface ExecutionDigestLoadState extends LoadState {
   // A map from page number to whether the page has been loaded
   //   - in full, in which case the value is pageSize.
