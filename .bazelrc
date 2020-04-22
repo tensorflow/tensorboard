@@ -1,1 +1,3 @@
-# No options currently needed. Leaving empty file to preserve history.
+# Use the Angular Ivy compiler
+# See https://github.com/angular/angular/blob/master/docs/BAZEL.md#various-flags-used-for-tests
+build --define=angular_ivy_enabled=True

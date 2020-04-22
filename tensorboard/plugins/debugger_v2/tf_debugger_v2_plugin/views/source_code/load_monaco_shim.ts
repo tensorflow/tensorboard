@@ -24,7 +24,14 @@ export interface WindowWithRequireAndMonaco extends Window {
   require?: Require;
   monaco?: any;
 }
-export const windowWithRequireAndMonaco: WindowWithRequireAndMonaco = window;
+
+function getWindow(): WindowWithRequireAndMonaco {
+  return window;
+}
+
+const utils = {
+  getWindow,
+};
 
 const MONACO_PATH_PREFIX = 'vs';
 const MONACO_IMPORT_PATH = '/tf-imports/vs';
@@ -37,7 +44,7 @@ const MONACO_IMPORT_PATH = '/tf-imports/vs';
  * @param paths
  */
 function requireAsPromise(paths: string[]): Promise<void> {
-  const require = windowWithRequireAndMonaco.require!;
+  const require = utils.getWindow().require!;
   return new Promise((resolve) => {
     require(paths, resolve);
   });
@@ -49,12 +56,13 @@ function requireAsPromise(paths: string[]): Promise<void> {
  * defined, this function is a no-op.
  */
 export async function loadMonaco(): Promise<void> {
-  if (windowWithRequireAndMonaco.monaco !== undefined) {
+  const window = utils.getWindow();
+  if (window.monaco !== undefined) {
     return;
   }
 
-  if (windowWithRequireAndMonaco.require) {
-    const require = windowWithRequireAndMonaco.require;
+  if (window.require) {
+    const require = window.require;
     require.config({
       paths: {
         [MONACO_PATH_PREFIX]: MONACO_IMPORT_PATH,
@@ -70,3 +78,7 @@ export async function loadMonaco(): Promise<void> {
     );
   }
 }
+
+export const TEST_ONLY = {
+  utils,
+};
