@@ -158,8 +158,8 @@ describe('parseDebugTensorValue', () => {
     it('2D float32', () => {
       const debugValue = parseDebugTensorValue(TensorDebugMode.SHAPE, [
         123,
-        1,
-        2,
+        1, // float32
+        2, // rank
         1200,
         30,
         40,
@@ -173,6 +173,71 @@ describe('parseDebugTensorValue', () => {
         rank: 2,
         size: 1200,
         shape: [30, 40],
+      });
+    });
+
+    it('6D float64', () => {
+      const debugValue = parseDebugTensorValue(TensorDebugMode.SHAPE, [
+        123,
+        2, // float64
+        6, // rank
+        1200,
+        1,
+        2,
+        3,
+        4,
+        5,
+        10,
+      ]);
+      expect(debugValue).toEqual({
+        dtype: 'float64',
+        rank: 6,
+        size: 1200,
+        shape: [1, 2, 3, 4, 5, 10],
+      });
+    });
+
+    it('truncated shape: 7D', () => {
+      const debugValue = parseDebugTensorValue(TensorDebugMode.SHAPE, [
+        123,
+        5, // int16
+        7, // rankk 8
+        1200,
+        3,
+        4,
+        1,
+        2,
+        1,
+        5,
+      ]);
+      expect(debugValue).toEqual({
+        dtype: 'int16',
+        rank: 7,
+        size: 1200,
+        // Truncated dimensions are filled with `undefined`s.
+        shape: [undefined, 3, 4, 1, 2, 1, 5],
+      });
+    });
+
+    it('truncated shape: 8D', () => {
+      const debugValue = parseDebugTensorValue(TensorDebugMode.SHAPE, [
+        123,
+        1, // float32
+        8, // rankk 8
+        1200,
+        3,
+        4,
+        1,
+        2,
+        1,
+        5,
+      ]);
+      expect(debugValue).toEqual({
+        dtype: 'float32',
+        rank: 8,
+        size: 1200,
+        // Truncated dimensions are filled with `undefined`s.
+        shape: [undefined, undefined, 3, 4, 1, 2, 1, 5],
       });
     });
   });

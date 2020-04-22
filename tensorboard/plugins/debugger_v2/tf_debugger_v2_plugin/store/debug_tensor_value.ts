@@ -60,11 +60,16 @@ export function parseDebugTensorValue(
     }
     case TensorDebugMode.SHAPE: {
       const rank = array![2];
+      let shape: number[] = array!.slice(4, Math.min(4 + rank, array!.length));
+      if (shape.length < rank) {
+        // The SHAPE mode truncates the shape at head.
+        shape = new Array<number>(rank - shape.length).concat(shape);
+      }
       return {
         dtype: DTYPE_ENUM_TO_NAME[array![1]],
         rank,
         size: array![3],
-        shape: array!.slice(4, 4 + rank),
+        shape,
       };
     }
     case TensorDebugMode.FULL_HEALTH: {

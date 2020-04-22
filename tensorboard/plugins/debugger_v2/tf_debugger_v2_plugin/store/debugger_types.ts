@@ -166,7 +166,10 @@ export interface DebugTensorValue {
   rank?: number;
 
   // Shape of the tensor.
-  shape?: number[];
+  // In the case where the shape is truncated beyond the highest
+  // rank a debug mode can represent, the truncated part is filled with
+  // `undefined`s.
+  shape?: Array<undefined | number>;
 
   // Size (total element count) of the tensor.
   size?: number;
@@ -191,6 +194,17 @@ export interface DebugTensorValue {
 
   // Whether the tensor contains any NaN or Infinity elements.
   hasInfOrNaN?: boolean;
+
+  // Minimum value.
+  min?: number;
+
+  // Maximum value.
+  max?: number;
+
+  // Arithemtic mean.
+  mean?: number;
+
+  variance?: number;
 }
 
 export interface ExecutionDigestLoadState extends LoadState {
