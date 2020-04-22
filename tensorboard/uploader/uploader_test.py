@@ -1039,6 +1039,10 @@ class ScalarBatchedRequestSenderTest(tf.test.TestCase):
 
         self.assertGreater(len(requests), 1)
         self.assertLess(len(requests), point_count)
+        # This is the observed number of requests when running the test. There
+        # is no reasonable way to derive this value from just reading the code.
+        # The number of requests does not have to be 33 to be correct but if it
+        # changes it probably warrants some investigation or thought.
         self.assertEqual(33, len(requests))
 
         total_points_in_result = 0
