@@ -34,7 +34,7 @@ export function parseDebugTensorValue(
   tensorDebugMode: TensorDebugMode,
   array: number[] | null
 ): DebugTensorValue {
-  switch (tensorDebugMode) {
+  switch (+tensorDebugMode) {
     case TensorDebugMode.NO_TENSOR: {
       return {};
     }

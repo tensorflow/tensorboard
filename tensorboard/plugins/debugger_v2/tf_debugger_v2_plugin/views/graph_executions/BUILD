@@ -17,9 +17,9 @@ ng_module(
         "graph_executions_component.ng.html",
     ],
     deps = [
-        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin:tf_types",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/actions",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/store",
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/store:debug_tensor_value",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/store:types",
         "//tensorboard/webapp/angular:expect_angular_cdk_scrolling",
         "@npm//@angular/common",

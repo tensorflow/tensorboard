@@ -21,8 +21,12 @@ import {
   Output,
 } from '@angular/core';
 
-import {GraphExecution} from '../../store/debugger_types';
-import {DTYPE_ENUM_TO_NAME} from '../../tf_dtypes';
+import {parseDebugTensorValue} from '../../store/debug_tensor_value';
+import {
+  DebugTensorValue,
+  GraphExecution,
+  TensorDebugMode,
+} from '../../store/debugger_types';
 
 @Component({
   selector: 'debug-tensor-dtype',
@@ -78,29 +82,6 @@ export class DebugTensorRankComponent {
   @Input()
   rank!: number;
 }
-
-// @Component({
-//   selector: 'debug-tensor-size',
-//   template: `
-
-//   `,
-//   styles: [`
-//     :host {
-//       background-color: #e3e5e8;
-//       border: 1px solid #c0c0c0;
-//       border-radius: 4px;
-//       font-family: 'Roboto Mono', monospace;
-//       height: 14px;
-//       line-height: 14px;
-//       margin: 0 2px;
-//       padding: 1px 3px;
-//       width: max-content;
-//     }
-//   `]
-// })
-// export class DebugTensorSizeComponent {
-//   @Input()
-// }
 
 @Component({
   selector: 'debug-tensor-numeric-breakdown',
@@ -209,7 +190,6 @@ export class DebugTensorNumericBreakdownComponent {
 
   @Input()
   numNaNs: number | undefined;
-  // TODO(cais): Colorize.
 
   @Input()
   numNegativeInfs: number | undefined;
@@ -227,13 +207,51 @@ export class DebugTensorNumericBreakdownComponent {
   numPositiveFinites: number | undefined;
 }
 
-// export class DebugValueComponent {
-//   @Input()
-//   tensor_debug_mode: number;
-
-//   @Input()
-//   debug_tensor_value: number[];
-// }
+@Component({
+  selector: 'debug-tensor-value',
+  template: `
+    <div class="flexbox">
+      <debug-tensor-dtype
+        *ngIf="debugTensorValue.dtype !== undefined"
+        dtype="{{ debugTensorValue.dtype }}"
+      >
+      </debug-tensor-dtype>
+      <debug-tensor-rank
+        *ngIf="debugTensorValue.rank !== undefined"
+        rank="{{ debugTensorValue.rank }}"
+      >
+      </debug-tensor-rank>
+      <debug-tensor-numeric-breakdown
+        size="{{ debugTensorValue.size }}"
+        numNegativeInfs="{{ debugTensorValue.numNegativeInfs }}"
+        numPositiveInfs="{{ debugTensorValue.numPositiveInfs }}"
+        numNaNs="{{ debugTensorValue.numNaNs }}"
+        numNegativeFinites="{{ debugTensorValue.numNegativeFinites }}"
+        numZeros="{{ debugTensorValue.numZeros }}"
+        numPositiveFinites="{{ debugTensorValue.numPositiveFinites }}"
+      >
+      </debug-tensor-numeric-breakdown>
+    </div>
+  `,
+  styles: [
+    `
+      :host {
+        display: inline-block;
+        overflow: hidden;
+      }
+      .flexbox {
+        align-items: flex-start;
+        display: flex;
+        flex-wrap: nowrap;
+        vertical-align: top;
+      }
+    `,
+  ],
+})
+export class DebugTensorValueComponent {
+  @Input()
+  debugTensorValue!: DebugTensorValue;
+}
 
 @Component({
   selector: 'graph-executions-component',
@@ -254,5 +272,5 @@ export class GraphExecutionsComponent {
   @Output()
   onScrolledIndexChange = new EventEmitter<number>();
 
-  DTYPE_ENUM_TO_NAME = DTYPE_ENUM_TO_NAME;
+  parseDebugTensorValue = parseDebugTensorValue;
 }

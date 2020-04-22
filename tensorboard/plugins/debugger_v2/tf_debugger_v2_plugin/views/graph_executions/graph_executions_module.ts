@@ -21,7 +21,7 @@ import {
   DebugTensorDTypeComponent,
   DebugTensorNumericBreakdownComponent,
   DebugTensorRankComponent,
-  // DebugTensorSizeComponent,
+  DebugTensorValueComponent,
   GraphExecutionsComponent,
 } from './graph_executions_component';
 import {GraphExecutionsContainer} from './graph_executions_container';
@@ -31,7 +31,7 @@ import {GraphExecutionsContainer} from './graph_executions_container';
     DebugTensorDTypeComponent,
     DebugTensorNumericBreakdownComponent,
     DebugTensorRankComponent,
-    // DebugTensorSizeComponent,
+    DebugTensorValueComponent,
     GraphExecutionsComponent,
     GraphExecutionsContainer,
   ],
