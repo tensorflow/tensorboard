@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Main program for the TensorBoard.dev uploader."""
+"""Integration point between TensorBoard CLI and TensorBoard.dev uploader."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -44,11 +44,6 @@ from tensorboard import program
 from tensorboard.plugins import base_plugin
 
 
-# Temporary integration point for absl compatibility; will go away once
-# migrated to TensorBoard subcommand.
-_FLAGS = None
-
-
 _MESSAGE_TOS = u"""\
 Your use of this service is subject to Google's Terms of Service
 <https://policies.google.com/terms> and Privacy Policy
@@ -77,25 +72,6 @@ def _prompt_for_user_ack(intent):
     if response.lower() not in ("y", "yes"):
         sys.exit(0)
     sys.stderr.write("\n")
-
-
-def _parse_flags(argv=("",)):
-    """Integration point for `absl.app`.
-
-    Exits if flag values are invalid.
-
-    Args:
-      argv: CLI arguments, as with `sys.argv`, where the first argument is taken
-        to be the name of the program being executed.
-
-    Returns:
-      Either argv[:1] if argv was non-empty, or [''] otherwise, as a mechanism
-      for absl.app.run() compatibility.
-    """
-    arg0 = argv[0] if argv else ""
-    global _FLAGS
-    _FLAGS = flags_parser.parse_flags(argv)
-    return [arg0]
 
 
 def _run(flags):
@@ -611,14 +587,6 @@ def _die(message):
     sys.exit(1)
 
 
-def main(unused_argv):
-    global _FLAGS
-    flags = _FLAGS
-    # Prevent accidental use of `_FLAGS` until migration to TensorBoard
-    # subcommand is complete, at which point `_FLAGS` goes away.
-    del _FLAGS
-    return _run(flags)
-
 
 class UploaderSubcommand(program.TensorBoardSubcommand):
     """Integration point with `tensorboard` CLI."""
@@ -635,6 +603,3 @@ class UploaderSubcommand(program.TensorBoardSubcommand):
     def help(self):
         return "upload data to TensorBoard.dev"
 
-
-if __name__ == "__main__":
-    app.run(main, flags_parser=_parse_flags)
