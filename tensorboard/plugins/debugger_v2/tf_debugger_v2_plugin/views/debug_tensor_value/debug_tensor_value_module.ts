@@ -18,6 +18,7 @@ import {NgModule} from '@angular/core';
 
 import {
   DebugTensorDTypeComponent,
+  DebugTensorHasInfOrNaNComponent,
   DebugTensorNumericBreakdownComponent,
   DebugTensorRankComponent,
   DebugTensorShapeComponent,
@@ -27,6 +28,7 @@ import {
 @NgModule({
   declarations: [
     DebugTensorDTypeComponent,
+    DebugTensorHasInfOrNaNComponent,
     DebugTensorNumericBreakdownComponent,
     DebugTensorRankComponent,
     DebugTensorShapeComponent,

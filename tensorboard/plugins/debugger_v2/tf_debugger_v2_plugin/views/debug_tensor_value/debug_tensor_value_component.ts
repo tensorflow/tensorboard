@@ -16,29 +16,26 @@ import {Component, Input} from '@angular/core';
 
 import {DebugTensorValue} from '../../store/debugger_types';
 
+const basicDebugInfoStyle = `
+  :host {
+    background-color: #e3e5e8;
+    border: 1px solid #c0c0c0;
+    border-radius: 4px;
+    font-family: 'Roboto Mono', monospace;
+    height: 14px;
+    line-height: 14px;
+    margin: 0 2px;
+    padding: 1px 3px;
+    width: max-content;
+  }
+`;
+
 @Component({
   selector: 'debug-tensor-dtype',
   template: `
     <span class="dtype-name">{{ dtype }}</span>
   `,
-  styles: [
-    `
-      :host {
-        background-color: #e3e5e8;
-        border: 1px solid #c0c0c0;
-        border-radius: 4px;
-        font-family: 'Roboto Mono', monospace;
-        height: 14px;
-        line-height: 14px;
-        margin: 0 2px;
-        padding: 1px 3px;
-        width: max-content;
-      }
-      .dtype-name {
-        font-weight: 600;
-      }
-    `,
-  ],
+  styles: [basicDebugInfoStyle],
 })
 export class DebugTensorDTypeComponent {
   @Input()
@@ -50,21 +47,7 @@ export class DebugTensorDTypeComponent {
   template: `
     {{ rank }}D
   `,
-  styles: [
-    `
-      :host {
-        background-color: #e3e5e8;
-        border: 1px solid #c0c0c0;
-        border-radius: 4px;
-        font-family: 'Roboto Mono', monospace;
-        height: 14px;
-        line-height: 14px;
-        margin: 0 2px;
-        padding: 1px 3px;
-        width: max-content;
-      }
-    `,
-  ],
+  styles: [basicDebugInfoStyle],
 })
 export class DebugTensorRankComponent {
   @Input()
@@ -209,21 +192,7 @@ export class DebugTensorNumericBreakdownComponent {
   template: `
     shape:{{ shapeString }}
   `,
-  styles: [
-    `
-      :host {
-        background-color: #e3e5e8;
-        border: 1px solid #c0c0c0;
-        border-radius: 4px;
-        font-family: 'Roboto Mono', monospace;
-        height: 14px;
-        line-height: 14px;
-        margin: 0 2px;
-        padding: 1px 3px;
-        width: max-content;
-      }
-    `,
-  ],
+  styles: [basicDebugInfoStyle],
 })
 export class DebugTensorShapeComponent {
   @Input()
@@ -239,6 +208,43 @@ export class DebugTensorShapeComponent {
         .join(',') +
       ']'
     );
+  }
+}
+
+@Component({
+  selector: 'debug-tensor-has-inf-or-nan',
+  template: `
+    <div [ngClass]="['container', hasInfOrNaN ? 'has-inf-or-nan' : '']">
+      {{ infoString }}
+    </div>
+  `,
+  styles: [
+    `
+      .container {
+        background-color: #e3e5e8;
+        border: 1px solid #c0c0c0;
+        border-radius: 4px;
+        color: #666666;
+        font-family: 'Roboto Mono', monospace;
+        height: 14px;
+        line-height: 14px;
+        margin: 0 2px;
+        padding: 1px 3px;
+        width: max-content;
+      }
+      .has-inf-or-nan {
+        background-color: #e52592;
+        color: #fff;
+      }
+    `,
+  ],
+})
+export class DebugTensorHasInfOrNaNComponent {
+  @Input()
+  hasInfOrNaN!: boolean;
+
+  get infoString(): string {
+    return this.hasInfOrNaN ? 'Has ∞/NaN' : 'No ∞/NaN';
   }
 }
 
@@ -261,7 +267,13 @@ export class DebugTensorShapeComponent {
         [shape]="debugTensorValue.shape"
       >
       </debug-tensor-shape>
+      <debug-tensor-has-inf-or-nan
+        *ngIf="debugTensorValue.hasInfOrNaN !== undefined"
+        [hasInfOrNaN]="debugTensorValue.hasInfOrNaN"
+      >
+      </debug-tensor-has-inf-or-nan>
       <debug-tensor-numeric-breakdown
+        *ngIf="debugTensorValue.size !== undefined"
         size="{{ debugTensorValue.size }}"
         [numNegativeInfs]="debugTensorValue.numNegativeInfs"
         [numPositiveInfs]="debugTensorValue.numPositiveInfs"
