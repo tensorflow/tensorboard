@@ -51,14 +51,15 @@ ng_module(
     ],
 )
 
+# TODO(stephanwlee): at the moment, there is no development build. Reinstate it.
 # Wrapper that prepares Angular app for deployment, dealing with browser
 # compatibility, Vulcanization, and configuration (e.g. prod vs. dev).
 ng_module(
     name = "ng_main",
-    srcs = ["bootstrap.ts"] + select({
-        "//tensorboard:dev_build": ["main.ts"],
-        "//conditions:default": ["main_prod.ts"],
-    }),
+    srcs = [
+        "bootstrap.ts",
+        "main_prod.ts",
+    ],
     deps = [
         ":app",
         "@npm//@angular/core",
@@ -72,10 +73,7 @@ ng_module(
 tf_js_binary(
     name = "tb_webapp_binary",
     compile = 1,
-    entry_point = select({
-        "//tensorboard:dev_build": ":main.ts",
-        "//conditions:default": "main_prod.ts",
-    }),
+    entry_point = "main_prod.ts",
     deps = [
         ":ng_main",
         "//tensorboard/webapp/angular:expect_angular_material_tabs",

@@ -52,15 +52,14 @@ rules_closure_dependencies(
 
 http_archive(
     name = "build_bazel_rules_nodejs",
-    sha256 = "7c4a690268be97c96f04d505224ec4cb1ae53c2c2b68be495c9bd2634296a5cd",
+    sha256 = "f9e7b9f42ae202cc2d2ce6d698ccb49a9f7f7ea572a78fd451696d03ef2ee116",
     urls = [
-        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_nodejs/releases/download/0.34.0/rules_nodejs-0.34.0.tar.gz",
-        "https://github.com/bazelbuild/rules_nodejs/releases/download/0.34.0/rules_nodejs-0.34.0.tar.gz",
+        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_nodejs/releases/download/1.6.0/rules_nodejs-1.6.0.tar.gz",
+        "https://github.com/bazelbuild/rules_nodejs/releases/download/1.6.0/rules_nodejs-1.6.0.tar.gz",
     ],
 )
 
-load("@build_bazel_rules_nodejs//:defs.bzl", "node_repositories", "yarn_install")
-node_repositories()
+load("@build_bazel_rules_nodejs//:index.bzl", "yarn_install")
 
 yarn_install(
     name = "npm",
@@ -71,10 +70,6 @@ yarn_install(
     # removes source directory without `bazel clean` which creates broken
     # symlink into node_modules folder.
     symlink_node_modules = False,
-    data = [
-        # package.json contains postinstall that requires this file.
-        "//:angular-metadata.tsconfig.json",
-    ],
 )
 
 load("@npm//:install_bazel_dependencies.bzl", "install_bazel_dependencies")
@@ -83,11 +78,11 @@ install_bazel_dependencies()
 
 http_archive(
     name = "io_bazel_rules_sass",
-    sha256 = "2ad5580e1ab6dabc6bea40699a7d78f8cae3f98b48d112812f43a0e2beec3eef",
-    strip_prefix = "rules_sass-1.23.1",
+    sha256 = "9dcfba04e4af896626f4760d866f895ea4291bc30bf7287887cefcf4707b6a62",
+    strip_prefix = "rules_sass-1.26.3",
     urls = [
-        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_sass/archive/1.23.1.zip",
-        "https://github.com/bazelbuild/rules_sass/archive/1.23.1.zip",
+        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_sass/archive/1.26.3.zip",
+        "https://github.com/bazelbuild/rules_sass/archive/1.26.3.zip",
     ],
 )
 
