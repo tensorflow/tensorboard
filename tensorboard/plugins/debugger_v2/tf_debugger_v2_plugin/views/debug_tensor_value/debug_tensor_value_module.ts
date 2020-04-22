@@ -13,17 +13,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {ScrollingModule} from '@angular/cdk/scrolling';
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 
-import {DebugTensorValueModule} from '../debug_tensor_value/debug_tensor_value_module';
-import {GraphExecutionsComponent} from './graph_executions_component';
-import {GraphExecutionsContainer} from './graph_executions_container';
+import {
+  DebugTensorDTypeComponent,
+  DebugTensorNumericBreakdownComponent,
+  DebugTensorRankComponent,
+  DebugTensorValueComponent,
+} from './debug_tensor_value_component';
 
 @NgModule({
-  declarations: [GraphExecutionsComponent, GraphExecutionsContainer],
-  imports: [CommonModule, DebugTensorValueModule, ScrollingModule],
-  exports: [GraphExecutionsContainer],
+  declarations: [
+    DebugTensorDTypeComponent,
+    DebugTensorNumericBreakdownComponent,
+    DebugTensorRankComponent,
+    DebugTensorValueComponent,
+  ],
+  imports: [CommonModule],
+  exports: [DebugTensorValueComponent],
 })
-export class GraphExecutionsModule {}
+export class DebugTensorValueModule {}
