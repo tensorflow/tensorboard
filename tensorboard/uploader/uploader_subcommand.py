@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Integration point between TensorBoard CLI and TensorBoard.dev uploader."""
+"""Entry point and high-level logic for TensorBoard.dev uploader."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -587,7 +587,6 @@ def _die(message):
     sys.exit(1)
 
 
-
 class UploaderSubcommand(program.TensorBoardSubcommand):
     """Integration point with `tensorboard` CLI."""
 
@@ -602,4 +601,3 @@ class UploaderSubcommand(program.TensorBoardSubcommand):
 
     def help(self):
         return "upload data to TensorBoard.dev"
-
