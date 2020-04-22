@@ -1079,9 +1079,7 @@ class ScalarBatchedRequestSenderTest(tf.test.TestCase):
                 raise uploader_lib._OutOfSpaceError()
 
         with mock.patch.object(
-            uploader_lib._ByteBudgetManager,
-            "add_point",
-            mock_add_point,
+            uploader_lib._ByteBudgetManager, "add_point", mock_add_point,
         ):
             sender = _create_scalar_request_sender("123", mock_client)
             self._add_events(sender, "train", _apply_compat([event_1]))
