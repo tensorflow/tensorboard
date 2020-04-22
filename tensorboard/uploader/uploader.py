@@ -331,8 +331,9 @@ class _BatchedRequestSender(object):
             experiment_id, api, rpc_rate_limiter,
         )
         self._tensor_request_sender = _TensorBatchedRequestSender(
-            experiment_id, api,
-            # TODO: ASK REVIEWERS: Should we use a different rate limiter?
+            experiment_id,
+            api,
+            # BDTODO: ASK REVIEWERS: Should we use a different rate limiter?
             rpc_rate_limiter,
         )
         self._blob_request_sender = _BlobRequestSender(
@@ -765,7 +766,6 @@ class _TensorBatchedRequestSender(object):
         point.step = event.step
         point.value.CopyFrom(value.tensor)
         util.set_timestamp(point.wall_time, event.wall_time)
-        # TODO: ASK REVIEWERS: Do we need to change the way we calculate cost?
         submessage_cost = point.ByteSize()
         cost = submessage_cost + _varint_cost(submessage_cost) + 1  # proto key
         if cost > self._byte_budget:
@@ -773,6 +773,7 @@ class _TensorBatchedRequestSender(object):
             raise _OutOfSpaceError()
         self._byte_budget -= cost
         return point
+
 
 class _BlobRequestSender(object):
     """Uploader for blob-type event data.
