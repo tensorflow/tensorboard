@@ -20,6 +20,7 @@ import {
   DebugTensorDTypeComponent,
   DebugTensorNumericBreakdownComponent,
   DebugTensorRankComponent,
+  DebugTensorShapeComponent,
   DebugTensorValueComponent,
 } from './debug_tensor_value_component';
 
@@ -28,6 +29,7 @@ import {
     DebugTensorDTypeComponent,
     DebugTensorNumericBreakdownComponent,
     DebugTensorRankComponent,
+    DebugTensorShapeComponent,
     DebugTensorValueComponent,
   ],
   imports: [CommonModule],

@@ -78,15 +78,8 @@ export class DebugTensorRankComponent {
       <span>size:</span>
       <span class="size-value">{{ size }}</span>
     </div>
-    <div
-      *ngIf="breakdownExists"
-      class="break"
-    >
-    </div>
-    <div
-      *ngIf="breakdownExists"
-      class="breakdown"
-    >
+    <div *ngIf="breakdownExists" class="break"></div>
+    <div *ngIf="breakdownExists" class="breakdown">
       <div *ngIf="numNaNs !== undefined && numNaNs > 0" class="category">
         <span class="category-tag infinite">NaN</span>
         <span>×{{ numNaNs }}</span>
@@ -133,6 +126,7 @@ export class DebugTensorRankComponent {
         border-radius: 4px;
         font-family: 'Roboto Mono', monospace;
         font-size: 10px;
+        margin: 0 2px;
         padding: 1px;
       }
       .break {
@@ -143,7 +137,7 @@ export class DebugTensorRankComponent {
         display: block;
         height: 11px;
         line-height: 11px;
-        margin: 0 3px 1px;
+        margin: 0 3px;
         vertical-align: middle;
       }
       .breakdown {
@@ -199,12 +193,52 @@ export class DebugTensorNumericBreakdownComponent {
   numPositiveFinites: number | undefined;
 
   get breakdownExists(): boolean {
-    return this.numNaNs !== undefined ||
-        this.numNegativeInfs !== undefined ||
-        this.numPositiveInfs !== undefined ||
-        this.numNegativeFinites !== undefined ||
-        this.numZeros !== undefined ||
-        this.numPositiveFinites !== undefined;
+    return (
+      this.numNaNs !== undefined ||
+      this.numNegativeInfs !== undefined ||
+      this.numPositiveInfs !== undefined ||
+      this.numNegativeFinites !== undefined ||
+      this.numZeros !== undefined ||
+      this.numPositiveFinites !== undefined
+    );
+  }
+}
+
+@Component({
+  selector: 'debug-tensor-shape',
+  template: `
+    shape:{{ shapeString }}
+  `,
+  styles: [
+    `
+      :host {
+        background-color: #e3e5e8;
+        border: 1px solid #c0c0c0;
+        border-radius: 4px;
+        font-family: 'Roboto Mono', monospace;
+        height: 14px;
+        line-height: 14px;
+        margin: 0 2px;
+        padding: 1px 3px;
+        width: max-content;
+      }
+    `,
+  ],
+})
+export class DebugTensorShapeComponent {
+  @Input()
+  shape!: Array<number | undefined>;
+
+  get shapeString(): string {
+    return (
+      '[' +
+      this.shape
+        .map((dim) => {
+          return dim === undefined ? '?' : String(dim);
+        })
+        .join(',') +
+      ']'
+    );
   }
 }
 
@@ -214,14 +248,19 @@ export class DebugTensorNumericBreakdownComponent {
     <div class="flexbox">
       <debug-tensor-dtype
         *ngIf="debugTensorValue.dtype !== undefined"
-        dtype="{{ debugTensorValue.dtype }}"
+        [dtype]="debugTensorValue.dtype"
       >
       </debug-tensor-dtype>
       <debug-tensor-rank
         *ngIf="debugTensorValue.rank !== undefined"
-        rank="{{ debugTensorValue.rank }}"
+        [rank]="debugTensorValue.rank"
       >
       </debug-tensor-rank>
+      <debug-tensor-shape
+        *ngIf="debugTensorValue.shape !== undefined"
+        [shape]="debugTensorValue.shape"
+      >
+      </debug-tensor-shape>
       <debug-tensor-numeric-breakdown
         size="{{ debugTensorValue.size }}"
         [numNegativeInfs]="debugTensorValue.numNegativeInfs"
