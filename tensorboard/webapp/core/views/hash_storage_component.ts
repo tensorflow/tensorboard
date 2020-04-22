@@ -24,8 +24,8 @@ import {
   EventEmitter,
 } from '@angular/core';
 
-import {SetStringOption, HashDeepLinker} from '../../deeplink';
-
+import {HashDeepLinker} from '../../deeplink/hash';
+import {SetStringOption} from '../../deeplink/types';
 export enum ChangedProp {
   ACTIVE_PLUGIN,
 }

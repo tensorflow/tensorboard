@@ -15,11 +15,11 @@ limitations under the License.
 import {platformBrowser} from '@angular/platform-browser';
 import 'zone.js/dist/zone.js'; // Angular runtime dep
 
-import {AppModuleNgFactory} from './app_module.ngfactory';
+import {AppModule} from './app_module';
 
 // Bootstrap needs to happen after body is ready but we cannot reliably
 // controls the order in which script gets loaded (Vulcanization inlines
 // the script in <head>).
 window.addEventListener('DOMContentLoaded', () => {
-  platformBrowser().bootstrapModuleFactory(AppModuleNgFactory);
+  platformBrowser().bootstrapModule(AppModule);
 });
