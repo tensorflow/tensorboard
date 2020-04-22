@@ -18,7 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from absl.flags import argparse_flags
 
 SUBCOMMAND_FLAG = "_uploader__subcommand"
 SUBCOMMAND_KEY_UPLOAD = "UPLOAD"
@@ -31,23 +30,6 @@ AUTH_SUBCOMMAND_FLAG = "_uploader__subcommand_auth"
 AUTH_SUBCOMMAND_KEY_REVOKE = "REVOKE"
 
 DEFAULT_ORIGIN = "https://tensorboard.dev"
-
-
-def parse_flags(argv):
-    """Parse flags for TensorBoard.dev uploader.
-
-    Exits if flag values are invalid.
-
-    Args:
-      argv: CLI arguments, as with `sys.argv`, where the first argument is taken
-        to be the name of the program being executed.
-    """
-    parser = argparse_flags.ArgumentParser(
-        prog="uploader",
-        description=("Upload your TensorBoard experiments to TensorBoard.dev"),
-    )
-    define_flags(parser)
-    return parser.parse_args(argv[1:])
 
 
 def define_flags(parser):
