@@ -31,11 +31,7 @@ import {
 } from './actions';
 import {DebuggerComponent} from './debugger_component';
 import {DebuggerContainer} from './debugger_container';
-import {
-  DataLoadState,
-  State,
-  AlertType,
-} from './store/debugger_types';
+import {DataLoadState, State, AlertType} from './store/debugger_types';
 import {
   createAlertsState,
   createDebuggerState,

@@ -45,7 +45,7 @@ export class DebugTensorDTypeComponent {
 @Component({
   selector: 'debug-tensor-rank',
   template: `
-    {{ rank }}D
+    <span class="rank-name">{{ rank }}D</span>
   `,
   styles: [basicDebugInfoStyle],
 })
@@ -93,7 +93,8 @@ export class DebugTensorRankComponent {
         <span>×{{ numZeros }}</span>
       </div>
       <div
-        *ngIf="numPositiveFinites !== undefined && numPositiveFinites > 0"z
+        *ngIf="numPositiveFinites !== undefined && numPositiveFinites > 0"
+        z
         class="category"
       >
         <span class="category-tag finite">+</span>
