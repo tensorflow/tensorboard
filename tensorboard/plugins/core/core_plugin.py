@@ -60,10 +60,8 @@ class CorePlugin(base_plugin.TBPlugin):
         """
         logdir_spec = context.flags.logdir_spec if context.flags else ""
         self._logdir = context.logdir or logdir_spec
-        self._db_uri = context.db_uri
         self._window_title = context.window_title
         self._multiplexer = context.multiplexer
-        self._db_connection_provider = context.db_connection_provider
         self._assets_zip_provider = context.assets_zip_provider
         if context.flags and context.flags.generic_data == "true":
             self._data_provider = context.data_provider
@@ -140,7 +138,7 @@ class CorePlugin(base_plugin.TBPlugin):
                 experiment
             )
         else:
-            data_location = self._logdir or self._db_uri
+            data_location = self._logdir
             experiment_metadata = None
 
         environment = {
@@ -197,19 +195,6 @@ class CorePlugin(base_plugin.TBPlugin):
                 ),
             )
             run_names = [run.run_name for run in runs]
-        elif self._db_connection_provider:
-            db = self._db_connection_provider()
-            cursor = db.execute(
-                """
-                SELECT
-                  run_name,
-                  started_time IS NULL as started_time_nulls_last,
-                  started_time
-                FROM Runs
-                ORDER BY started_time_nulls_last, started_time, run_name
-                """
-            )
-            run_names = [row[0] for row in cursor]
         else:
             # Python's list.sort is stable, so to order by started time and
             # then by name, we can just do the sorts in the reverse order.
@@ -242,27 +227,7 @@ class CorePlugin(base_plugin.TBPlugin):
         return http_util.Respond(request, results, "application/json")
 
     def list_experiments_impl(self):
-        results = []
-        if self._db_connection_provider:
-            db = self._db_connection_provider()
-            cursor = db.execute(
-                """
-                SELECT
-                  experiment_id,
-                  experiment_name,
-                  started_time,
-                  started_time IS NULL as started_time_nulls_last
-                FROM Experiments
-                ORDER BY started_time_nulls_last, started_time, experiment_name,
-                    experiment_id
-                """
-            )
-            results = [
-                {"id": row[0], "name": row[1], "startTime": row[2],}
-                for row in cursor
-            ]
-
-        return results
+        return []
 
     @wrappers.Request.application
     def _serve_experiment_runs(self, request):
@@ -275,57 +240,6 @@ class CorePlugin(base_plugin.TBPlugin):
         displayName, and lastly, inserted time.
         """
         results = []
-        if self._db_connection_provider:
-            exp_id = plugin_util.experiment_id(request.environ)
-            runs_dict = collections.OrderedDict()
-
-            db = self._db_connection_provider()
-            cursor = db.execute(
-                """
-                SELECT
-                  Runs.run_id,
-                  Runs.run_name,
-                  Runs.started_time,
-                  Runs.started_time IS NULL as started_time_nulls_last,
-                  Tags.tag_id,
-                  Tags.tag_name,
-                  Tags.display_name,
-                  Tags.plugin_name,
-                  Tags.inserted_time
-                From Runs
-                LEFT JOIN Tags ON Runs.run_id = Tags.run_id
-                WHERE Runs.experiment_id = ?
-                AND (Tags.tag_id IS NULL OR Tags.plugin_name IS NOT NULL)
-                ORDER BY started_time_nulls_last,
-                  Runs.started_time,
-                  Runs.run_name,
-                  Runs.run_id,
-                  Tags.tag_name,
-                  Tags.display_name,
-                  Tags.inserted_time;
-                """,
-                (exp_id,),
-            )
-            for row in cursor:
-                run_id = row[0]
-                if not run_id in runs_dict:
-                    runs_dict[run_id] = {
-                        "id": run_id,
-                        "name": row[1],
-                        "startTime": math.floor(row[2]),
-                        "tags": [],
-                    }
-                # tag can be missing.
-                if row[4]:
-                    runs_dict[run_id].get("tags").append(
-                        {
-                            "id": row[4],
-                            "displayName": row[6],
-                            "name": row[5],
-                            "pluginName": row[7],
-                        }
-                    )
-            results = list(runs_dict.values())
         return http_util.Respond(request, results, "application/json")
 
 

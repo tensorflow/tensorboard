@@ -250,7 +250,6 @@ class TBContext(object):
         *,
         assets_zip_provider=None,
         data_provider=None,
-        db_connection_provider=None,
         db_uri=None,
         flags=None,
         logdir=None,
@@ -273,13 +272,6 @@ class TBContext(object):
               also have been created by the tensorboard_zip_file build rule.
           data_provider: Instance of `tensorboard.data.provider.DataProvider`. May
             be `None` if `flags.generic_data` is set to `"false"`.
-          db_connection_provider: Function taking no arguments that returns a
-              PEP-249 database Connection object, or None if multiplexer should be
-              used instead. The returned value must be closed, and is safe to use in
-              a `with` statement. It is also safe to assume that calling this
-              function is cheap. The returned connection must only be used by a
-              single thread. Things like connection pooling are considered
-              implementation details of the provider.
           db_uri: The string db URI TensorBoard was started with. If this is set,
               the logdir should be None.
           flags: An object of the runtime flags provided to TensorBoard to their
@@ -302,7 +294,6 @@ class TBContext(object):
         """
         self.assets_zip_provider = assets_zip_provider
         self.data_provider = data_provider
-        self.db_connection_provider = db_connection_provider
         self.db_uri = db_uri
         self.flags = flags
         self.logdir = logdir
