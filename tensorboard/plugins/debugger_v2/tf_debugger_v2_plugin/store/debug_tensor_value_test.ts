@@ -20,8 +20,8 @@ describe('parseDebugTensorValue', () => {
   describe('CURT_HEALTH', () => {
     it('has no inf or nan', () => {
       const debugValue = parseDebugTensorValue(TensorDebugMode.CURT_HEALTH, [
-        123,
-        0,
+        123, // tensor ID
+        0, // has inf or nan?
       ]);
       expect(debugValue).toEqual({
         hasInfOrNaN: false,
@@ -30,8 +30,8 @@ describe('parseDebugTensorValue', () => {
 
     it('has inf or nan', () => {
       const debugValue = parseDebugTensorValue(TensorDebugMode.CURT_HEALTH, [
-        123,
-        1,
+        123, // tensor ID
+        1, // has inf or nan?
       ]);
       expect(debugValue).toEqual({
         hasInfOrNaN: true,
@@ -43,7 +43,7 @@ describe('parseDebugTensorValue', () => {
     it('all healthy', () => {
       const debugValue = parseDebugTensorValue(TensorDebugMode.CONCISE_HEALTH, [
         123,
-        1000,
+        1000, // size
         0,
         0,
         0,
@@ -56,7 +56,7 @@ describe('parseDebugTensorValue', () => {
     it('has nan', () => {
       const debugValue = parseDebugTensorValue(TensorDebugMode.CONCISE_HEALTH, [
         123,
-        1000,
+        1000, // size
         1,
         0,
         0,
@@ -84,7 +84,7 @@ describe('parseDebugTensorValue', () => {
     it('has pos inf', () => {
       const debugValue = parseDebugTensorValue(TensorDebugMode.CONCISE_HEALTH, [
         123,
-        1000,
+        1000, // size
         0,
         0,
         22,
@@ -98,7 +98,7 @@ describe('parseDebugTensorValue', () => {
     it('full house', () => {
       const debugValue = parseDebugTensorValue(TensorDebugMode.CONCISE_HEALTH, [
         123,
-        1000,
+        1000, // size
         10,
         20,
         30,
@@ -116,9 +116,9 @@ describe('parseDebugTensorValue', () => {
     it('0D bool', () => {
       const debugValue = parseDebugTensorValue(TensorDebugMode.SHAPE, [
         123,
-        10,
-        0,
-        1,
+        10, // bool
+        0, // rank
+        1, // size
         0,
         0,
         0,
@@ -137,9 +137,9 @@ describe('parseDebugTensorValue', () => {
     it('1D int32', () => {
       const debugValue = parseDebugTensorValue(TensorDebugMode.SHAPE, [
         123,
-        3,
-        1,
-        46,
+        3, // int32
+        1, // rank
+        46, // size
         46,
         0,
         0,
@@ -175,5 +175,107 @@ describe('parseDebugTensorValue', () => {
         shape: [30, 40],
       });
     });
+  });
+
+  describe('FULL_HEALTH', () => {
+    it('float32 2D with no inf or nan', () => {
+      const debugValue = parseDebugTensorValue(TensorDebugMode.FULL_HEALTH, [
+        123,
+        0,
+        1, // float32
+        2, // rank
+        600, // size
+        0,
+        0,
+        0,
+        100,
+        200,
+        300,
+      ]);
+      expect(debugValue).toEqual({
+        dtype: 'float32',
+        rank: 2,
+        size: 600,
+        numNegativeFinites: 100,
+        numZeros: 200,
+        numPositiveFinites: 300,
+      });
+    });
+
+    it('float64 scalar nan', () => {
+      const debugValue = parseDebugTensorValue(TensorDebugMode.FULL_HEALTH, [
+        123,
+        0,
+        2, // float64
+        0, // rank
+        1, // size
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+      ]);
+      expect(debugValue).toEqual({
+        dtype: 'float64',
+        rank: 0,
+        size: 1,
+        numNaNs: 1,
+      });
+    });
+
+    it('bfloat16 1D with -inf and +inf', () => {
+      const debugValue = parseDebugTensorValue(TensorDebugMode.FULL_HEALTH, [
+        123,
+        0,
+        14, // bfloat64.
+        1, // rank
+        10, // size
+        3,
+        7,
+        0,
+        0,
+        0,
+        0,
+      ]);
+      expect(debugValue).toEqual({
+        dtype: 'bfloat16',
+        rank: 1,
+        size: 10,
+        numNegativeInfs: 3,
+        numPositiveInfs: 7,
+      });
+    });
+  });
+
+  describe('NO_TENSOR', () => {
+    it('returns empty object', () => {
+      expect(parseDebugTensorValue(TensorDebugMode.NO_TENSOR, null)).toEqual(
+        {}
+      );
+    });
+  });
+
+  describe('FULL_TENSOR', () => {
+    it('returns empty object', () => {
+      expect(parseDebugTensorValue(TensorDebugMode.FULL_TENSOR, null)).toEqual(
+        {}
+      );
+    });
+  });
+
+  describe('Invalid TensorDebugMode', () => {
+    for (const debugMode of [
+      null,
+      undefined,
+      NaN,
+      TensorDebugMode.UNSPECIFIED,
+    ]) {
+      it('throws error', () => {
+        expect(() =>
+          parseDebugTensorValue(debugMode as TensorDebugMode, null)
+        ).toThrowError();
+      });
+    }
   });
 });
