@@ -444,6 +444,7 @@ class _ScalarBatchedRequestSender(object):
         self._experiment_id = experiment_id
         self._api = api
         self._rpc_rate_limiter = rpc_rate_limiter
+        self._byte_budget_manager = _ByteBudgetManager()
         # A lower bound on the number of bytes that we may yet add to the
         # request.
         self._byte_budget = None  # type: int
@@ -459,11 +460,8 @@ class _ScalarBatchedRequestSender(object):
         self._request = write_service_pb2.WriteScalarRequest()
         self._runs.clear()
         self._tags.clear()
-        self._byte_budget = _MAX_REQUEST_LENGTH_BYTES
         self._request.experiment_id = self._experiment_id
-        self._byte_budget -= self._request.ByteSize()
-        if self._byte_budget < 0:
-            raise RuntimeError("Byte budget too small for experiment ID")
+        self._byte_budget_manager.reset(self._request)
 
     def add_event(self, run_name, event, value, metadata):
         """Attempts to add the given event to the current request.
@@ -500,12 +498,7 @@ class _ScalarBatchedRequestSender(object):
         Starts a new, empty active request.
         """
         request = self._request
-        for (run_idx, run) in reversed(list(enumerate(request.runs))):
-            for (tag_idx, tag) in reversed(list(enumerate(run.tags))):
-                if not tag.points:
-                    del run.tags[tag_idx]
-            if not run.tags:
-                del request.runs[run_idx]
+        _prune_empty_tags_and_runs(request)
         if not request.runs:
             return
 
@@ -536,12 +529,7 @@ class _ScalarBatchedRequestSender(object):
             request budget.
         """
         run_proto = self._request.runs.add(name=run_name)
-        # We can't calculate the proto key cost exactly ahead of time, as
-        # it depends on the total size of all tags. Be conservative.
-        cost = run_proto.ByteSize() + _MAX_VARINT64_LENGTH_BYTES + 1
-        if cost > self._byte_budget:
-            raise _OutOfSpaceError()
-        self._byte_budget -= cost
+        self._byte_budget_manager.add_run(run_proto)
         return run_proto
 
     def _create_tag(self, run_proto, tag_name, metadata):
@@ -562,13 +550,7 @@ class _ScalarBatchedRequestSender(object):
         """
         tag_proto = run_proto.tags.add(name=tag_name)
         tag_proto.metadata.CopyFrom(metadata)
-        submessage_cost = tag_proto.ByteSize()
-        # We can't calculate the proto key cost exactly ahead of time, as
-        # it depends on the number of points. Be conservative.
-        cost = submessage_cost + _MAX_VARINT64_LENGTH_BYTES + 1
-        if cost > self._byte_budget:
-            raise _OutOfSpaceError()
-        self._byte_budget -= cost
+        self._byte_budget_manager.add_tag(tag_proto)
         return tag_proto
 
     def _create_point(self, tag_proto, event, value):
@@ -591,14 +573,91 @@ class _ScalarBatchedRequestSender(object):
         # TODO(@nfelt): skip tensor roundtrip for Value with simple_value set
         point.value = tensor_util.make_ndarray(value.tensor).item()
         util.set_timestamp(point.wall_time, event.wall_time)
-        submessage_cost = point.ByteSize()
-        cost = submessage_cost + _varint_cost(submessage_cost) + 1  # proto key
-        if cost > self._byte_budget:
+        try:
+            self._byte_budget_manager.add_point(point)
+        except _OutOfSpaceError as e:
             tag_proto.points.pop()
-            raise _OutOfSpaceError()
-        self._byte_budget -= cost
+            raise e
         return point
 
+
+class _ByteBudgetManager(object):
+  """Helper class for managing the request byte budget for certain RPCs.
+
+  This should be used for RPCs that organize data by Runs, Tags, and Points,
+  specifically WriteScalar and WriteTensor.
+
+  Any call to add_run(), add_tag(), or add_point() may raise an
+  _OutOfSpaceError, which is non-fatal. It signals to the caller that they
+  should flush the current request and begin a new one.
+  """
+
+  def __init__(self):
+      # The remaining number of bytes that we may yet add to the request.
+      self._byte_budget = None  # type: int
+
+  def reset(self, base_request):
+      """Resets the byte budget and calculates the cost of the base request.
+
+      Args:
+        base_request: Base request.
+
+      Raises:
+        _OutOfSpaceError: If the size of the request exceeds the entire
+          request byte budget.
+      """
+      self._byte_budget = _MAX_REQUEST_LENGTH_BYTES
+      self._byte_budget -= base_request.ByteSize()
+      if self._byte_budget < 0:
+          raise RuntimeError("Byte budget too small for base request")
+
+  def add_run(self, run_proto):
+      """Integrates the cost of a run proto into the byte budget.
+
+      Args:
+        run_proto: The proto representing a run.
+
+      Raises:
+        _OutOfSpaceError: If adding the run would exceed the remaining request
+          budget.
+      """
+      cost = run_proto.ByteSize() + _MAX_VARINT64_LENGTH_BYTES + 1
+      if cost > self._byte_budget:
+          raise _OutOfSpaceError()
+      self._byte_budget -= cost
+
+  def add_tag(self, tag_proto):
+      """Integrates the cost of a tag proto into the byte budget.
+
+      Args:
+        tag_proto: The proto representing a tag.
+
+      Raises:
+        _OutOfSpaceError: If adding the tag would exceed the remaining request
+         budget.
+      """
+      # We can't calculate the proto key cost exactly ahead of time, as
+      # it depends on the number of points. Be conservative.
+      cost = tag_proto.ByteSize() + _MAX_VARINT64_LENGTH_BYTES + 1
+      if cost > self._byte_budget:
+          raise _OutOfSpaceError()
+      self._byte_budget -= cost
+
+  def add_point(self, point_proto):
+      """Integrates the cost of a point proto into the byte budget.
+
+      Args:
+        point_proto: The proto representing a point.
+
+      Raises:
+        _OutOfSpaceError: If adding the point would exceed the remaining request
+         budget.
+      """
+      submessage_cost = point_proto.ByteSize()
+      cost = submessage_cost + _varint_cost(submessage_cost) + 1  # proto key
+      if cost > self._byte_budget:
+          raise _OutOfSpaceError()
+      self._byte_budget -= cost
 
 class _BlobRequestSender(object):
     """Uploader for blob-type event data.
@@ -826,6 +885,15 @@ def _varint_cost(n):
         result += 1
         n >>= 7
     return result
+
+
+def _prune_empty_tags_and_runs(request):
+    for (run_idx, run) in reversed(list(enumerate(request.runs))):
+        for (tag_idx, tag) in reversed(list(enumerate(run.tags))):
+            if not tag.points:
+                del run.tags[tag_idx]
+        if not run.tags:
+            del request.runs[run_idx]
 
 
 def _filter_graph_defs(event):
