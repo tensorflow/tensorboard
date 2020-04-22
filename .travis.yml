@@ -8,6 +8,10 @@ branches:
     - master
     - /^\d+\.\d+(\.\d+)?(-\S*)?$/
 
+# Update the `nvm use` stanza below when updating this.
+node_js:
+  - "11"
+
 env:
   # Keep this Bazel version in sync with the `versions.check` directive
   # near the top of our WORKSPACE file.
@@ -15,8 +19,8 @@ env:
   # Grab the BAZEL_SHA256SUM from the Bazel releases page; e.g.:
   # bazel-0.20.0-linux-x86_64.sha256
   global:
-    - BAZEL=0.26.1
-    - BAZEL_SHA256SUM=6c50e142a0a405d3d8598050d6c1b3920c8cdb82a7ffca6fc067cb474275148f
+    - BAZEL=2.1.0
+    - BAZEL_SHA256SUM=e13581d44faad6ac807dd917e682fef20359d26728166ac35dadd8ee653a580d
   matrix:
     - TF_VERSION_ID=tensorflow==1.15.0
     - TF_VERSION_ID=tf-nightly
@@ -58,6 +62,8 @@ install:
       -r tensorboard/pip_package/requirements.txt \
       -r tensorboard/pip_package/requirements_dev.txt \
       ;
+  # Keep the node version in sync with node_js key above.
+  - nvm use v11
   - |
     # Install TensorFlow if requested
     if [ -n "${TF_VERSION_ID}" ]; then

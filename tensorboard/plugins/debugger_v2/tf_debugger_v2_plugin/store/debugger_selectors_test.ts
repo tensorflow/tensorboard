@@ -22,6 +22,12 @@ import {
   getFocusedExecutionStackFrames,
   getFocusedSourceFileContent,
   getFocusedSourceFileIndex,
+  getGraphExecutionData,
+  getGraphExecutionDataLoadingPages,
+  getGraphExecutionDataPageLoadedSizes,
+  getGraphExecutionDisplayCount,
+  getGraphExecutionPageSize,
+  getGraphExecutionScrollBeginIndex,
   getLoadedAlertsOfFocusedType,
   getNumAlerts,
   getNumAlertsOfFocusedType,
@@ -45,6 +51,7 @@ import {
   createState,
   createTestExecutionData,
   createTestExecutionDigest,
+  createTestGraphExecution,
   createTestInfNanAlert,
 } from '../testing';
 
@@ -764,6 +771,123 @@ describe('debugger selectors', () => {
         })
       );
       expect(getNumGraphExecutions(state)).toBe(10);
+    });
+  });
+
+  describe('getGraphExecutionScrollBeginIndex', () => {
+    it('returns correct initial zero state', () => {
+      const state = createState(createDebuggerState());
+      expect(getGraphExecutionScrollBeginIndex(state)).toBe(0);
+    });
+
+    it('returns correct non-zero state', () => {
+      const state = createState(
+        createDebuggerState({
+          graphExecutions: createDebuggerGraphExecutionsState({
+            scrollBeginIndex: 1234567,
+          }),
+        })
+      );
+      expect(getGraphExecutionScrollBeginIndex(state)).toBe(1234567);
+    });
+  });
+
+  describe('getGraphExecutionDisplayCount', () => {
+    it('returns correct value', () => {
+      const state = createState(
+        createDebuggerState({
+          graphExecutions: createDebuggerGraphExecutionsState({
+            displayCount: 240,
+          }),
+        })
+      );
+      expect(getGraphExecutionDisplayCount(state)).toBe(240);
+    });
+  });
+
+  describe('getGraphExecutionPageSize', () => {
+    it('returns correct value', () => {
+      const state = createState(
+        createDebuggerState({
+          graphExecutions: createDebuggerGraphExecutionsState({
+            pageSize: 126,
+          }),
+        })
+      );
+      expect(getGraphExecutionPageSize(state)).toBe(126);
+    });
+  });
+
+  describe('getGraphExecutionDataLoadingPages', () => {
+    it('returns correct empty value', () => {
+      const state = createState(
+        createDebuggerState({
+          graphExecutions: createDebuggerGraphExecutionsState({
+            graphExecutionDataLoadingPages: [],
+          }),
+        })
+      );
+      expect(getGraphExecutionDataLoadingPages(state)).toEqual([]);
+    });
+
+    it('returns correct non-empty value', () => {
+      const state = createState(
+        createDebuggerState({
+          graphExecutions: createDebuggerGraphExecutionsState({
+            graphExecutionDataLoadingPages: [1, 2, 100],
+          }),
+        })
+      );
+      expect(getGraphExecutionDataLoadingPages(state)).toEqual([1, 2, 100]);
+    });
+  });
+
+  describe('getGraphExecutionDataLoadingPages', () => {
+    it('returns correct empty value', () => {
+      const state = createState(
+        createDebuggerState({
+          graphExecutions: createDebuggerGraphExecutionsState({
+            graphExecutionDataPageLoadedSizes: {},
+          }),
+        })
+      );
+      expect(getGraphExecutionDataPageLoadedSizes(state)).toEqual({});
+    });
+
+    it('returns correct non-empty value', () => {
+      const state = createState(
+        createDebuggerState({
+          graphExecutions: createDebuggerGraphExecutionsState({
+            graphExecutionDataPageLoadedSizes: {0: 10, 2: 40},
+          }),
+        })
+      );
+      expect(getGraphExecutionDataPageLoadedSizes(state)).toEqual({
+        0: 10,
+        2: 40,
+      });
+    });
+  });
+
+  describe('getGraphExecutionData', () => {
+    it('returns correct initial empty state', () => {
+      const state = createState(createDebuggerState());
+      expect(getGraphExecutionData(state)).toEqual({});
+    });
+
+    it('returns correct non-empty value', () => {
+      const state = createState(
+        createDebuggerState({
+          graphExecutions: createDebuggerGraphExecutionsState({
+            graphExecutionData: {
+              10: createTestGraphExecution(),
+            },
+          }),
+        })
+      );
+      expect(getGraphExecutionData(state)).toEqual({
+        10: createTestGraphExecution(),
+      });
     });
   });
 });

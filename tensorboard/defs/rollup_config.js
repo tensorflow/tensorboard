@@ -13,32 +13,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  Input,
-  Output,
-} from '@angular/core';
+const node = require('rollup-plugin-node-resolve');
+const commonjs = require('rollup-plugin-commonjs');
 
-import {GraphExecution} from '../../store/debugger_types';
-
-@Component({
-  selector: 'graph-executions-component',
-  templateUrl: './graph_executions_component.ng.html',
-  styleUrls: ['./graph_executions_component.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-})
-export class GraphExecutionsComponent {
-  @Input()
-  numGraphExecutions!: number;
-
-  @Input()
-  graphExecutionData!: {[index: number]: GraphExecution};
-
-  @Input()
-  graphExecutionIndices!: number[];
-
-  @Output()
-  onScrolledIndexChange = new EventEmitter<number>();
-}
+module.exports = {
+  plugins: [
+    node({
+      mainFields: ['browser', 'es2015', 'module', 'jsnext:main', 'main'],
+    }),
+    commonjs(),
+  ],
+};
