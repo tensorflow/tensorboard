@@ -78,8 +78,15 @@ export class DebugTensorRankComponent {
       <span>size:</span>
       <span class="size-value">{{ size }}</span>
     </div>
-    <div class="break"></div>
-    <div class="breakdown">
+    <div
+      *ngIf="breakdownExists"
+      class="break"
+    >
+    </div>
+    <div
+      *ngIf="breakdownExists"
+      class="breakdown"
+    >
       <div *ngIf="numNaNs !== undefined && numNaNs > 0" class="category">
         <span class="category-tag infinite">NaN</span>
         <span>×{{ numNaNs }}</span>
@@ -126,28 +133,25 @@ export class DebugTensorRankComponent {
         border-radius: 4px;
         font-family: 'Roboto Mono', monospace;
         font-size: 10px;
-        height: 28px;
-        line-height: 28px;
-        padding: 0 2px;
-        width: max-content;
+        padding: 1px;
       }
       .break {
         flex-basis: 100%;
         width: 0;
       }
       .size {
-        border-bottom: 1px solid rgba(0, 0, 0, 0.12);
         display: block;
-        height: 12px;
-        line-height: 12px;
-        margin: 0 3px;
+        height: 11px;
+        line-height: 11px;
+        margin: 0 3px 1px;
         vertical-align: middle;
       }
       .breakdown {
+        border-top: 1px solid rgba(0, 0, 0, 0.12);
         display: flex;
-        height: 12px;
-        line-height: 12px;
-        padding: 0 2px;
+        height: 11px;
+        line-height: 11px;
+        padding: 2px;
         vertical-align: middle;
       }
       .category {
@@ -177,7 +181,7 @@ export class DebugTensorNumericBreakdownComponent {
   size!: number;
 
   @Input()
-  numNaNs: number | undefined;
+  numNaNs!: number | undefined;
 
   @Input()
   numNegativeInfs: number | undefined;
@@ -193,6 +197,15 @@ export class DebugTensorNumericBreakdownComponent {
 
   @Input()
   numPositiveFinites: number | undefined;
+
+  get breakdownExists(): boolean {
+    return this.numNaNs !== undefined ||
+        this.numNegativeInfs !== undefined ||
+        this.numPositiveInfs !== undefined ||
+        this.numNegativeFinites !== undefined ||
+        this.numZeros !== undefined ||
+        this.numPositiveFinites !== undefined;
+  }
 }
 
 @Component({
@@ -211,12 +224,12 @@ export class DebugTensorNumericBreakdownComponent {
       </debug-tensor-rank>
       <debug-tensor-numeric-breakdown
         size="{{ debugTensorValue.size }}"
-        numNegativeInfs="{{ debugTensorValue.numNegativeInfs }}"
-        numPositiveInfs="{{ debugTensorValue.numPositiveInfs }}"
-        numNaNs="{{ debugTensorValue.numNaNs }}"
-        numNegativeFinites="{{ debugTensorValue.numNegativeFinites }}"
-        numZeros="{{ debugTensorValue.numZeros }}"
-        numPositiveFinites="{{ debugTensorValue.numPositiveFinites }}"
+        [numNegativeInfs]="debugTensorValue.numNegativeInfs"
+        [numPositiveInfs]="debugTensorValue.numPositiveInfs"
+        [numNaNs]="debugTensorValue.numNaNs"
+        [numNegativeFinites]="debugTensorValue.numNegativeFinites"
+        [numZeros]="debugTensorValue.numZeros"
+        [numPositiveFinites]="debugTensorValue.numPositiveFinites"
       >
       </debug-tensor-numeric-breakdown>
     </div>
