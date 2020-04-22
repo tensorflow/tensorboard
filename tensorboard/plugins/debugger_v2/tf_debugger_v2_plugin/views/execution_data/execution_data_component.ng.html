@@ -18,7 +18,7 @@ limitations under the License.
 <div class="focus-execution-container">
   <div>
     <span>
-      Execution #{{ focusedExecutionIndex }}
+      Eager Execution #{{ focusedExecutionIndex }}
     </span>
   </div>
 
@@ -58,210 +58,22 @@ limitations under the License.
         </span>
       </div>
 
-      <div *ngIf="hasDebugTensorValues">
-        <div [ngSwitch]="tensorDebugMode">
-          <div
-            *ngSwitchCase="TensorDebugMode.CURT_HEALTH"
-            class="debug-tensor-values-container"
-          >
-            <table class="debug-tensor-values-table">
-              <tr>
-                <th>Slot</th>
-                <th>Contains inf/nan?</th>
-              </tr>
-              <tr
-                *ngFor="let singleDebugTensorValues of debugTensorValues; index as i;"
-              >
-                <td
-                  *ngIf="singleDebugTensorValues !== null"
-                  class="output-slot"
-                >
-                  {{ i }}
-                </td>
-                <td
-                  *ngIf="singleDebugTensorValues !== null"
-                  class="curt-health-contains-inf-nan"
-                >
-                  {{ singleDebugTensorValues[1] ? "Yes" : "No" }}
-                </td>
-              </tr>
-            </table>
+      <div *ngIf="hasDebugTensorValues" class="output-slots">
+        <div
+          *ngFor="let singleDebugTensorValues of debugTensorValues; index as i;"
+          class="output-slot-container"
+        >
+          <div class="output-slot-number">
+            Output slot {{ i }}:
           </div>
-
-          <div
-            *ngSwitchCase="TensorDebugMode.CONCISE_HEALTH"
-            class="debug-tensor-values-container"
-          >
-            <table class="debug-tensor-values-table">
-              <tr>
-                <th>Slot</th>
-                <th>Size</th>
-                <th>#(-inf)</th>
-                <th>#(inf)</th>
-                <th>#(nan)</th>
-              </tr>
-              <tr
-                *ngFor="let singleDebugTensorValues of debugTensorValues; index as i;"
-              >
-                <td class="output-slot">
-                  {{ i }}
-                </td>
-                <td
-                  *ngIf="singleDebugTensorValues !== null"
-                  class="concise-health-size"
-                >
-                  {{ singleDebugTensorValues[1] }}
-                </td>
-                <td
-                  *ngIf="singleDebugTensorValues !== null"
-                  class="concise-health-neg-infs"
-                >
-                  {{ singleDebugTensorValues[2] }}
-                </td>
-                <td
-                  *ngIf="singleDebugTensorValues !== null"
-                  class="concise-health-pos-infs"
-                >
-                  {{ singleDebugTensorValues[3] }}
-                </td>
-                <td
-                  *ngIf="singleDebugTensorValues !== null"
-                  class="concise-health-nans"
-                >
-                  {{ singleDebugTensorValues[4] }}
-                </td>
-              </tr>
-            </table>
+          <div class="output-slot-debug-tensor-value">
+            <debug-tensor-value
+              [debugTensorValue]="parseDebugTensorValue(
+                  tensorDebugMode,
+                  singleDebugTensorValues)"
+            >
+            </debug-tensor-value>
           </div>
-
-          <div
-            *ngSwitchCase="TensorDebugMode.FULL_HEALTH"
-            class="debug-tensor-values-container"
-          >
-            <table class="debug-tensor-values-table">
-              <tr>
-                <th>Slot</th>
-                <th>DType</th>
-                <th>Rank</th>
-                <th>Size</th>
-                <th>#(-inf)</th>
-                <th>#(inf)</th>
-                <th>#(nan)</th>
-                <th>#(-)</th>
-                <th>#(+)</th>
-                <th>#(0)</th>
-              </tr>
-              <tr
-                *ngFor="let singleDebugTensorValues of debugTensorValues; index as i;"
-              >
-                <td class="output-slot">
-                  {{ i }}
-                </td>
-                <td
-                  *ngIf="singleDebugTensorValues !== null"
-                  class="full-health-dtype"
-                >
-                  <ng-container *ngIf="debugTensorDtypes !== null">
-                    {{ debugTensorDtypes[i] }}
-                  </ng-container>
-                </td>
-                <td
-                  *ngIf="singleDebugTensorValues !== null"
-                  class="full-health-rank"
-                >
-                  {{ singleDebugTensorValues[3] }}
-                </td>
-                <td
-                  *ngIf="singleDebugTensorValues !== null"
-                  class="full-health-size"
-                >
-                  {{ singleDebugTensorValues[4] }}
-                </td>
-                <td
-                  *ngIf="singleDebugTensorValues !== null"
-                  class="full-health-neg-inf"
-                >
-                  {{ singleDebugTensorValues[5] }}
-                </td>
-                <td
-                  *ngIf="singleDebugTensorValues !== null"
-                  class="full-health-pos-inf"
-                >
-                  {{ singleDebugTensorValues[6] }}
-                </td>
-                <td
-                  *ngIf="singleDebugTensorValues !== null"
-                  class="full-health-nan"
-                >
-                  {{ singleDebugTensorValues[7] }}
-                </td>
-                <td
-                  *ngIf="singleDebugTensorValues !== null"
-                  class="full-health-neg-finite"
-                >
-                  {{ singleDebugTensorValues[8] }}
-                </td>
-                <td
-                  *ngIf="singleDebugTensorValues !== null"
-                  class="full-health-zero"
-                >
-                  {{ singleDebugTensorValues[9] }}
-                </td>
-                <td
-                  *ngIf="singleDebugTensorValues !== null"
-                  class="full-health-pos-finite"
-                >
-                  {{ singleDebugTensorValues[10] }}
-                </td>
-              </tr>
-            </table>
-          </div>
-
-          <div
-            *ngSwitchCase="TensorDebugMode.SHAPE"
-            class="debug-tensor-values-container"
-          >
-            <table class="debug-tensor-values-table">
-              <tr>
-                <th>Slot</th>
-                <th>DType</th>
-                <th>Rank</th>
-                <th>Size</th>
-                <th>Shape</th>
-              </tr>
-              <tr
-                *ngFor="let singleDebugTensorValues of debugTensorValues; index as i;"
-              >
-                <td class="output-slot">
-                  {{ i }}
-                </td>
-                <td
-                  *ngIf="singleDebugTensorValues !== null"
-                  class="shape-dtype"
-                >
-                  <ng-container *ngIf="debugTensorDtypes !== null">
-                    {{ debugTensorDtypes[i] }}
-                  </ng-container>
-                </td>
-                <td *ngIf="singleDebugTensorValues !== null" class="shape-rank">
-                  {{ singleDebugTensorValues[2] }}
-                </td>
-                <td *ngIf="singleDebugTensorValues !== null" class="shape-size">
-                  {{ singleDebugTensorValues[3] }}
-                </td>
-                <td
-                  *ngIf="singleDebugTensorValues !== null"
-                  class="shape-shape"
-                >
-                  ({{ singleDebugTensorValues.slice(4, 4 +
-                  singleDebugTensorValues[2]) }})
-                </td>
-              </tr>
-            </table>
-          </div>
-
-          <!-- TODO(cais): Add other modes including FULL_NUMERICS. -->
-          <!-- TODO(cais): Use salient colors to hightlight non-zero counts of inf and nan. -->
         </div>
       </div>
     </div>
