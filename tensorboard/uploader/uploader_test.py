@@ -1453,7 +1453,6 @@ class TensorBatchedRequestSenderTest(tf.test.TestCase):
         self.assertEqual(1, len(requests[1].runs[0].tags))
         self.assertEqual("two", requests[1].runs[0].tags[0].name)
 
-
     def test_wall_time_precision(self):
         # Test a wall time that is exactly representable in float64 but has enough
         # digits to incur error if converted to nanoseconds the naive way (* 1e9).

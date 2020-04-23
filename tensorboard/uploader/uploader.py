@@ -744,6 +744,7 @@ class _ByteBudgetManager(object):
 
   For more information on the protocol buffer encoding and how byte cost
   can be calculated, visit:
+
   https://developers.google.com/protocol-buffers/docs/encoding
   """
 
