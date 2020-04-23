@@ -38,7 +38,6 @@ from werkzeug import test as werkzeug_test
 from werkzeug import wrappers
 
 from tensorboard.backend import application
-from tensorboard.backend.event_processing import db_import_multiplexer
 from tensorboard.backend.event_processing import (
     plugin_event_multiplexer as event_multiplexer,
 )
@@ -99,8 +98,6 @@ class CorePluginFlagsTest(tf.test.TestCase):
 
         with six.assertRaisesRegex(self, ValueError, event_or_logdir_req):
             loader.fix_flags(FakeFlags(inspect=True))
-        with six.assertRaisesRegex(self, ValueError, event_or_logdir_req):
-            loader.fix_flags(FakeFlags(inspect=True, db="sqlite:~/db.sqlite"))
         with six.assertRaisesRegex(
             self, ValueError, one_of_event_or_logdir_req
         ):
@@ -272,56 +269,15 @@ class CorePluginExperimentMetadataTest(tf.test.TestCase):
         self.assertNotIn("creation_time", parsed_object)
 
 
-class CorePluginDbModeTest(tf.test.TestCase):
-    def setUp(self):
-        super(CorePluginDbModeTest, self).setUp()
-        self.db_path = os.path.join(self.get_temp_dir(), "db.db")
-        self.db_uri = "sqlite:" + self.db_path
-        db_connection_provider = application.create_sqlite_connection_provider(
-            self.db_uri
-        )
-        context = base_plugin.TBContext(
-            assets_zip_provider=get_test_assets_zip_provider(),
-            db_connection_provider=db_connection_provider,
-            db_uri=self.db_uri,
-        )
-        self.plugin = core_plugin.CorePlugin(context)
-        app = application.TensorBoardWSGI([self.plugin])
-        self.server = werkzeug_test.Client(app, wrappers.BaseResponse)
-
-    def _get_json(self, server, path):
-        response = server.get(path)
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(
-            "application/json", response.headers.get("Content-Type")
-        )
-        return json.loads(response.get_data().decode("utf-8"))
-
-    def testEnvironmentForDbUri(self):
-        """Test that the environment route correctly returns the database
-        URI."""
-        parsed_object = self._get_json(self.server, "/data/environment")
-        self.assertEqual(parsed_object["data_location"], self.db_uri)
-
-
 class CorePluginTestBase(object):
     def setUp(self):
         super(CorePluginTestBase, self).setUp()
         self.logdir = self.get_temp_dir()
-        self.multiplexer = self.create_multiplexer()
-        db_uri = None
-        db_connection_provider = None
-        if isinstance(
-            self.multiplexer, db_import_multiplexer.DbImportMultiplexer
-        ):
-            db_uri = self.multiplexer.db_uri
-            db_connection_provider = self.multiplexer.db_connection_provider
+        self.multiplexer = event_multiplexer.EventMultiplexer()
         context = base_plugin.TBContext(
             assets_zip_provider=get_test_assets_zip_provider(),
             logdir=self.logdir,
             multiplexer=self.multiplexer,
-            db_uri=db_uri,
-            db_connection_provider=db_connection_provider,
         )
         self.plugin = core_plugin.CorePlugin(context)
         app = application.TensorBoardWSGI([self.plugin])
@@ -351,12 +307,6 @@ class CorePluginTestBase(object):
         run_json = self._get_json(self.server, "/data/runs")
         self.assertEqual(run_json, ["run1"])
 
-
-class CorePluginLogdirModeTest(CorePluginTestBase, tf.test.TestCase):
-    def create_multiplexer(self):
-        return event_multiplexer.EventMultiplexer()
-
-    # Not in base class because DB import mode does not set started_time.
     def testRunsAppendOnly(self):
         """Test that new runs appear after old ones in /data/runs."""
         fake_wall_times = {
@@ -422,63 +372,6 @@ class CorePluginLogdirModeTest(CorePluginTestBase, tf.test.TestCase):
                 self._get_json(self.server, "/data/runs"),
                 ["run1", "avocado", "zebra", "ox", "enigmatic", "mysterious"],
             )
-
-
-class CorePluginDbImportModeTest(CorePluginTestBase, tf.test.TestCase):
-    def create_multiplexer(self):
-        db_path = os.path.join(self.get_temp_dir(), "db.db")
-        db_uri = "sqlite:%s" % db_path
-        db_connection_provider = application.create_sqlite_connection_provider(
-            db_uri
-        )
-        return db_import_multiplexer.DbImportMultiplexer(
-            db_uri=db_uri,
-            db_connection_provider=db_connection_provider,
-            purge_orphaned_data=True,
-            max_reload_threads=1,
-        )
-
-    def _add_run(self, run_name, experiment_name="experiment"):
-        run_path = os.path.join(self.logdir, experiment_name, run_name)
-        with test_util.FileWriter(run_path) as writer:
-            writer.add_test_summary("foo")
-        self.multiplexer.AddRunsFromDirectory(self.logdir)
-        self.multiplexer.Reload()
-
-    def testExperiments(self):
-        """Test the format of the /data/experiments endpoint."""
-        self._add_run("run1", experiment_name="exp1")
-        self._add_run("run2", experiment_name="exp1")
-        self._add_run("run3", experiment_name="exp2")
-
-        [exp1, exp2] = self._get_json(self.server, "/data/experiments")
-        self.assertEqual(exp1.get("name"), "exp1")
-        self.assertEqual(exp2.get("name"), "exp2")
-
-    def testExperimentRuns(self):
-        """Test the format of the /data/experiment_runs endpoint."""
-        self._add_run("run1", experiment_name="exp1")
-        self._add_run("run2", experiment_name="exp1")
-        self._add_run("run3", experiment_name="exp2")
-
-        [exp1, exp2] = self._get_json(self.server, "/data/experiments")
-
-        exp1_runs = self._get_json(
-            self.server, "/experiment/%s/data/experiment_runs" % exp1.get("id"),
-        )
-        self.assertEqual(len(exp1_runs), 2)
-        self.assertEqual(exp1_runs[0].get("name"), "run1")
-        self.assertEqual(exp1_runs[1].get("name"), "run2")
-        self.assertEqual(len(exp1_runs[0].get("tags")), 1)
-        self.assertEqual(exp1_runs[0].get("tags")[0].get("name"), "foo")
-        self.assertEqual(len(exp1_runs[1].get("tags")), 1)
-        self.assertEqual(exp1_runs[1].get("tags")[0].get("name"), "foo")
-
-        exp2_runs = self._get_json(
-            self.server, "/experiment/%s/data/experiment_runs" % exp2.get("id"),
-        )
-        self.assertEqual(len(exp2_runs), 1)
-        self.assertEqual(exp2_runs[0].get("name"), "run3")
 
 
 def get_test_assets_zip_provider():

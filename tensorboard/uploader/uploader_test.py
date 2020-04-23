@@ -862,13 +862,7 @@ class BatchedRequestSenderTest(tf.test.TestCase):
         foo_tag.metadata.plugin_data.plugin_name = "scalars"
         foo_tag.metadata.data_class = summary_pb2.DATA_CLASS_SCALAR
         foo_tag.points.add(
-            step=1, wall_time=test_util.timestamp_pb(123456000000), value=1.0
-        )
-        foo_tag.points.add(
-            step=1, wall_time=test_util.timestamp_pb(123456000000), value=2.0
-        )
-        foo_tag.points.add(
-            step=1, wall_time=test_util.timestamp_pb(123456000000), value=3.0
+            step=1, wall_time=test_util.timestamp_pb(123456000000), value=5.0
         )
         self.assertProtoEquals(scalar_run, expected_scalar_run)
 
