@@ -162,13 +162,13 @@ Example response:
 Returns environment in which the TensorBoard app is running.
 
 The `data_location` is a user-readable string describing the source from which
-TensorBoard is reading data, such as a directory on disk or a SQLite database.
+TensorBoard is reading data, such as a directory on disk.
 
 Example response:
 
     {
       "window_title": "Custom Name",
-      "data_location": "sqlite:/Users/tbuser/some_session.sqlite"
+      "data_location": "/Users/tbuser/tensorboard_data/"
     }
 
 

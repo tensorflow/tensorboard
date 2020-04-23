@@ -166,7 +166,6 @@ py_library(
     deps = [
         ":tb_logging",
         "//tensorboard:expect_absl_logging_installed",
-        "//tensorboard:expect_sqlite3_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/compat/proto:protos_all_py_pb2",
     ],
