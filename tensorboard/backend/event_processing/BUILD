@@ -286,57 +286,6 @@ py_test(
 )
 
 py_library(
-    name = "db_import_multiplexer",
-    srcs = [
-        "db_import_multiplexer.py",
-    ],
-    srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
-    deps = [
-        ":directory_watcher",
-        ":event_file_loader",
-        ":event_multiplexer",
-        ":io_wrapper",
-        ":sqlite_writer",
-        "//tensorboard:data_compat",
-        "//tensorboard/compat:tensorflow",
-        "//tensorboard/compat/proto:protos_all_py_pb2",
-        "//tensorboard/util:tb_logging",
-        "@org_pythonhosted_six",
-    ],
-)
-
-py_test(
-    name = "db_import_multiplexer_test",
-    size = "small",
-    srcs = ["db_import_multiplexer_test.py"],
-    srcs_version = "PY2AND3",
-    deps = [
-        ":db_import_multiplexer",
-        "//tensorboard:expect_sqlite3_installed",
-        "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/compat/proto:protos_all_py_pb2",
-        "//tensorboard/util:tensor_util",
-        "//tensorboard/util:test_util",
-    ],
-)
-
-py_library(
-    name = "sqlite_writer",
-    srcs = [
-        "sqlite_writer.py",
-    ],
-    srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
-    deps = [
-        "//tensorboard/compat:tensorflow",
-        "//tensorboard/util:tb_logging",
-        "//tensorboard/util:tensor_util",
-        "@org_pythonhosted_six",
-    ],
-)
-
-py_library(
     name = "plugin_asset_util",
     srcs = ["plugin_asset_util.py"],
     srcs_version = "PY2AND3",

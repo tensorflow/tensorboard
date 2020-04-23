@@ -66,10 +66,6 @@ class ScalarsPluginTest(tf.test.TestCase):
     _RUN_WITH_SCALARS = "_RUN_WITH_SCALARS"
     _RUN_WITH_HISTOGRAM = "_RUN_WITH_HISTOGRAM"
 
-    def __init__(self, *args, **kwargs):
-        super(ScalarsPluginTest, self).__init__(*args, **kwargs)
-        self.plugin = None  # used by DB tests only
-
     def load_runs(self, run_names):
         logdir = self.get_temp_dir()
         for run_name in run_names:
@@ -83,46 +79,6 @@ class ScalarsPluginTest(tf.test.TestCase):
         multiplexer.AddRunsFromDirectory(logdir)
         multiplexer.Reload()
         return (logdir, multiplexer)
-
-    def set_up_db(self):
-        self.db_path = os.path.join(self.get_temp_dir(), "db.db")
-        self.db_uri = "sqlite:" + self.db_path
-        db_connection_provider = application.create_sqlite_connection_provider(
-            self.db_uri
-        )
-        context = base_plugin.TBContext(
-            db_connection_provider=db_connection_provider, db_uri=self.db_uri
-        )
-        self.core_plugin = core_plugin.CorePlugin(context)
-        self.plugin = scalars_plugin.ScalarsPlugin(context)
-
-    def generate_run_to_db(self, experiment_name, run_name):
-        # This method uses `tf.contrib.summary`, and so must only be invoked
-        # when TensorFlow 1.x is installed.
-        raise DeprecationWarning(
-            "tf.contrib is being removed - b/147155091. This method should be deleted."
-        )
-        tf.compat.v1.reset_default_graph()
-        with tf.compat.v1.Graph().as_default():
-            global_step = tf.compat.v1.placeholder(tf.int64)
-            db_writer = tf.contrib.summary.create_db_writer(
-                db_uri=self.db_path,
-                experiment_name=experiment_name,
-                run_name=run_name,
-                user_name="user",
-            )
-            with db_writer.as_default(), tf.contrib.summary.always_record_summaries():
-                tf.contrib.summary.scalar(
-                    self._SCALAR_TAG, 42, step=global_step
-                )
-                flush_op = tf.contrib.summary.flush(db_writer._resource)
-            with tf.compat.v1.Session() as sess:
-                sess.run(tf.contrib.summary.summary_writer_initializer_op())
-                summaries = tf.contrib.summary.all_summary_ops()
-                for step in xrange(self._STEPS):
-                    feed_dict = {global_step: step}
-                    sess.run(summaries, feed_dict=feed_dict)
-                sess.run(flush_op)
 
     def with_runs(run_names):
         """Run a test with a bare multiplexer and with a `data_provider`.
@@ -311,57 +267,6 @@ class ScalarsPluginTest(tf.test.TestCase):
             self.assertFalse(plugin.is_active())
         else:
             self.assertTrue(plugin.is_active())
-
-    @unittest.skip("tf.contrib is being removed - b/147155091")
-    @test_util.run_v1_only("Requires contrib for db writer")
-    def test_scalars_db_without_exp(self):
-        self.set_up_db()
-        self.generate_run_to_db("exp1", self._RUN_WITH_SCALARS)
-
-        (data, mime_type) = self.plugin.scalars_impl(
-            self._SCALAR_TAG,
-            self._RUN_WITH_SCALARS,
-            "eid",
-            scalars_plugin.OutputFormat.JSON,
-        )
-        self.assertEqual("application/json", mime_type)
-        # When querying DB-based backend without an experiment id, it returns all
-        # scalars without an experiment id. Such scalar can only be generated using
-        # raw SQL queries though.
-        self.assertEqual(len(data), 0)
-
-    @unittest.skip("tf.contrib is being removed - b/147155091")
-    @test_util.run_v1_only("Requires contrib for db writer")
-    def test_scalars_db_filter_by_experiment(self):
-        self.set_up_db()
-        self.generate_run_to_db("exp1", self._RUN_WITH_SCALARS)
-        all_exps = self.core_plugin.list_experiments_impl()
-        exp1 = next((x for x in all_exps if x.get("name") == "exp1"), {})
-
-        (data, mime_type) = self.plugin.scalars_impl(
-            self._SCALAR_TAG,
-            self._RUN_WITH_SCALARS,
-            exp1.get("id"),
-            scalars_plugin.OutputFormat.JSON,
-        )
-        self.assertEqual("application/json", mime_type)
-        self.assertEqual(len(data), self._STEPS)
-
-    @unittest.skip("tf.contrib is being removed - b/147155091")
-    @test_util.run_v1_only("Requires contrib for db writer")
-    def test_scalars_db_no_match(self):
-        self.set_up_db()
-        self.generate_run_to_db("exp1", self._RUN_WITH_SCALARS)
-
-        # experiment_id is a number but we passed a string here.
-        (data, mime_type) = self.plugin.scalars_impl(
-            self._SCALAR_TAG,
-            self._RUN_WITH_SCALARS,
-            "random_exp_id",
-            scalars_plugin.OutputFormat.JSON,
-        )
-        self.assertEqual("application/json", mime_type)
-        self.assertEqual(len(data), 0)
 
 
 if __name__ == "__main__":

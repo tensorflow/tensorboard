@@ -62,7 +62,6 @@ class ScalarsPlugin(base_plugin.TBPlugin):
           context: A base_plugin.TBContext instance.
         """
         self._multiplexer = context.multiplexer
-        self._db_connection_provider = context.db_connection_provider
         self._downsample_to = (context.sampling_hints or {}).get(
             self.plugin_name, _DEFAULT_DOWNSAMPLING
         )
@@ -82,21 +81,6 @@ class ScalarsPlugin(base_plugin.TBPlugin):
         tag."""
         if self._data_provider:
             return False  # `list_plugins` as called by TB core suffices
-
-        if self._db_connection_provider:
-            # The plugin is active if one relevant tag can be found in the database.
-            db = self._db_connection_provider()
-            cursor = db.execute(
-                """
-                SELECT
-                  1
-                FROM Tags
-                WHERE Tags.plugin_name = ?
-                LIMIT 1
-                """,
-                (metadata.PLUGIN_NAME,),
-            )
-            return bool(list(cursor))
 
         if not self._multiplexer:
             return False
@@ -125,34 +109,6 @@ class ScalarsPlugin(base_plugin.TBPlugin):
                         "displayName": metadatum.display_name,
                         "description": description,
                     }
-            return result
-
-        if self._db_connection_provider:
-            # Read tags from the database.
-            db = self._db_connection_provider()
-            cursor = db.execute(
-                """
-                SELECT
-                  Tags.tag_name,
-                  Tags.display_name,
-                  Runs.run_name
-                FROM Tags
-                JOIN Runs
-                  ON Tags.run_id = Runs.run_id
-                WHERE
-                  Tags.plugin_name = ?
-                """,
-                (metadata.PLUGIN_NAME,),
-            )
-            result = collections.defaultdict(dict)
-            for row in cursor:
-                tag_name, display_name, run_name = row
-                result[run_name][tag_name] = {
-                    "displayName": display_name,
-                    # TODO(chihuahua): Populate the description. Currently, the tags
-                    # table does not link with the description table.
-                    "description": "",
-                }
             return result
 
         result = collections.defaultdict(lambda: {})
@@ -187,44 +143,6 @@ class ScalarsPlugin(base_plugin.TBPlugin):
                     "No scalar data for run=%r, tag=%r" % (run, tag)
                 )
             values = [(x.wall_time, x.step, x.value) for x in scalars]
-        elif self._db_connection_provider:
-            db = self._db_connection_provider()
-            # We select for steps greater than -1 because the writer inserts
-            # placeholder rows en masse. The check for step filters out those rows.
-            cursor = db.execute(
-                """
-                SELECT
-                  Tensors.step,
-                  Tensors.computed_time,
-                  Tensors.data,
-                  Tensors.dtype
-                FROM Tensors
-                JOIN Tags
-                  ON Tensors.series = Tags.tag_id
-                JOIN Runs
-                  ON Tags.run_id = Runs.run_id
-                WHERE
-                  /* For backwards compatibility, ignore the experiment id
-                     for matching purposes if it is empty. */
-                  (:exp == '' OR Runs.experiment_id == CAST(:exp AS INT))
-                  AND Runs.run_name = :run
-                  AND Tags.tag_name = :tag
-                  AND Tags.plugin_name = :plugin
-                  AND Tensors.shape = ''
-                  AND Tensors.step > -1
-                ORDER BY Tensors.step
-                """,
-                dict(
-                    exp=experiment,
-                    run=run,
-                    tag=tag,
-                    plugin=metadata.PLUGIN_NAME,
-                ),
-            )
-            values = [
-                (wall_time, step, self._get_value(data, dtype_enum))
-                for (step, wall_time, data, dtype_enum) in cursor
-            ]
         else:
             try:
                 tensor_events = self._multiplexer.Tensors(run, tag)
