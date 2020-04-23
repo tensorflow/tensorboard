@@ -13,6 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+.focused-stack-frame {
+  background-color: #ffeee0;
+  font-weight: bold;
+}
+
 .stack-frame-array {
   height: 360px;
   overflow-x: auto;

@@ -20,6 +20,9 @@ export interface StackFrameForDisplay {
   concise_file_path: string;
   lineno: number;
   function_name: string;
+  // Whether the stack frame is being focused on (e.g.,
+  // being viewed in the source code viewer).
+  focused: boolean;
 }
 
 @Component({
