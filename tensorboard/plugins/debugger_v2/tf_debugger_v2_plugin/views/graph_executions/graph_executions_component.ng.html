@@ -45,10 +45,6 @@ limitations under the License.
             </div>
           </div>
 
-          <!-- <div
-
-            class="tensor-debug-info"
-          > -->
           <debug-tensor-value
             *ngIf="graphExecutionData[i].debug_tensor_value !== null"
             [debugTensorValue]="parseDebugTensorValue(
@@ -56,7 +52,6 @@ limitations under the License.
                 graphExecutionData[i].debug_tensor_value)"
           >
           </debug-tensor-value>
-          <!-- </div> -->
         </div>
 
         <ng-template #dataLoading class="tensor-item">

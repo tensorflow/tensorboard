@@ -31,7 +31,12 @@ import {
 } from './actions';
 import {DebuggerComponent} from './debugger_component';
 import {DebuggerContainer} from './debugger_container';
-import {DataLoadState, State, AlertType} from './store/debugger_types';
+import {
+  DataLoadState,
+  State,
+  AlertType,
+  TensorDebugMode,
+} from './store/debugger_types';
 import {
   createAlertsState,
   createDebuggerState,
@@ -42,6 +47,7 @@ import {
   createTestStackFrame,
 } from './testing';
 import {AlertsModule} from './views/alerts/alerts_module';
+import {ExecutionDataContainer} from './views/execution_data/execution_data_container';
 import {ExecutionDataModule} from './views/execution_data/execution_data_module';
 import {GraphExecutionsModule} from './views/graph_executions/graph_executions_module';
 import {InactiveModule} from './views/inactive/inactive_module';
@@ -427,6 +433,130 @@ describe('Debugger Container', () => {
       );
     });
   }
+
+  describe('Execution Data module', () => {
+    it('CURT_HEALTH TensorDebugMode, One Output', () => {
+      const fixture = TestBed.createComponent(ExecutionDataContainer);
+      fixture.detectChanges();
+
+      store.setState(
+        createState(
+          createDebuggerState({
+            executions: {
+              numExecutionsLoaded: {
+                state: DataLoadState.LOADED,
+                lastLoadedTimeInMs: 111,
+              },
+              executionDigestsLoaded: {
+                state: DataLoadState.LOADED,
+                lastLoadedTimeInMs: 222,
+                pageLoadedSizes: {0: 100},
+                numExecutions: 1000,
+              },
+              executionDigests: {},
+              pageSize: 100,
+              displayCount: 50,
+              scrollBeginIndex: 90,
+              focusIndex: 98,
+              executionData: {
+                98: createTestExecutionData({
+                  op_type: 'Inverse',
+                  tensor_debug_mode: TensorDebugMode.CURT_HEALTH,
+                  debug_tensor_values: [[0, 1]],
+                }),
+              },
+            },
+          })
+        )
+      );
+      fixture.detectChanges();
+
+      const opTypeElement = fixture.debugElement.query(By.css('.op-type'));
+      expect(opTypeElement.nativeElement.innerText).toEqual('Inverse');
+      const inputTensorsElement = fixture.debugElement.query(
+        By.css('.input-tensors')
+      );
+      expect(inputTensorsElement.nativeElement.innerText).toEqual('1');
+      const outputTensorsElement = fixture.debugElement.query(
+        By.css('.output-tensors')
+      );
+      expect(outputTensorsElement.nativeElement.innerText).toEqual('1');
+      const outputSlotElements = fixture.debugElement.queryAll(
+        By.css('.output-slot-number')
+      );
+      expect(outputSlotElements.length).toBe(1);
+      expect(outputSlotElements[0].nativeElement.innerText).toBe(
+        'Output slot 0:'
+      );
+      const debugTensorValueElements = fixture.debugElement.queryAll(
+        By.css('debug-tensor-value')
+      );
+      expect(debugTensorValueElements.length).toBe(1);
+    });
+
+    it('CURT_HEALTH TensorDebugMode, Two Outputs', () => {
+      const fixture = TestBed.createComponent(ExecutionDataContainer);
+      fixture.detectChanges();
+
+      store.setState(
+        createState(
+          createDebuggerState({
+            executions: {
+              numExecutionsLoaded: {
+                state: DataLoadState.LOADED,
+                lastLoadedTimeInMs: 111,
+              },
+              executionDigestsLoaded: {
+                state: DataLoadState.LOADED,
+                lastLoadedTimeInMs: 222,
+                pageLoadedSizes: {0: 100},
+                numExecutions: 1000,
+              },
+              executionDigests: {},
+              pageSize: 100,
+              displayCount: 50,
+              scrollBeginIndex: 90,
+              focusIndex: 98,
+              executionData: {
+                98: createTestExecutionData({
+                  op_type: 'Inverse',
+                  output_tensor_ids: [10, 11],
+                  tensor_debug_mode: TensorDebugMode.CURT_HEALTH,
+                  debug_tensor_values: [[0, 0], [0, 1]],
+                }),
+              },
+            },
+          })
+        )
+      );
+      fixture.detectChanges();
+
+      const opTypeElement = fixture.debugElement.query(By.css('.op-type'));
+      expect(opTypeElement.nativeElement.innerText).toEqual('Inverse');
+      const inputTensorsElement = fixture.debugElement.query(
+        By.css('.input-tensors')
+      );
+      expect(inputTensorsElement.nativeElement.innerText).toEqual('1');
+      const outputTensorsElement = fixture.debugElement.query(
+        By.css('.output-tensors')
+      );
+      expect(outputTensorsElement.nativeElement.innerText).toEqual('2');
+      const outputSlotElements = fixture.debugElement.queryAll(
+        By.css('.output-slot-number')
+      );
+      expect(outputSlotElements.length).toBe(2);
+      expect(outputSlotElements[0].nativeElement.innerText).toBe(
+        'Output slot 0:'
+      );
+      expect(outputSlotElements[1].nativeElement.innerText).toBe(
+        'Output slot 1:'
+      );
+      const debugTensorValueElements = fixture.debugElement.queryAll(
+        By.css('debug-tensor-value')
+      );
+      expect(debugTensorValueElements.length).toBe(2);
+    });
+  });
 
   describe('Stack Trace module', () => {
     it('Shows non-empty stack frames correctly', () => {
