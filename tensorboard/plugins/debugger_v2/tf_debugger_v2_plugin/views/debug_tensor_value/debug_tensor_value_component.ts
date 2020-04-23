@@ -45,13 +45,37 @@ export class DebugTensorDTypeComponent {
 @Component({
   selector: 'debug-tensor-rank',
   template: `
-    <span class="rank-name">{{ rank }}D</span>
+    {{ rank }}D
   `,
   styles: [basicDebugInfoStyle],
 })
 export class DebugTensorRankComponent {
   @Input()
   rank!: number;
+}
+
+@Component({
+  selector: 'debug-tensor-shape',
+  template: `
+    shape:{{ shapeString }}
+  `,
+  styles: [basicDebugInfoStyle],
+})
+export class DebugTensorShapeComponent {
+  @Input()
+  shape!: Array<number | undefined>;
+
+  get shapeString(): string {
+    return (
+      '[' +
+      this.shape
+        .map((dim) => {
+          return dim === undefined ? '?' : String(dim);
+        })
+        .join(',') +
+      ']'
+    );
+  }
 }
 
 @Component({
@@ -65,32 +89,32 @@ export class DebugTensorRankComponent {
     <div *ngIf="breakdownExists" class="breakdown">
       <div *ngIf="numNaNs !== undefined && numNaNs > 0" class="category">
         <span class="category-tag infinite">NaN</span>
-        <span>×{{ numNaNs }}</span>
+        <span class="category-count">×{{ numNaNs }}</span>
       </div>
       <div
         *ngIf="numNegativeInfs !== undefined && numNegativeInfs > 0"
         class="category"
       >
         <span class="category-tag infinite">-∞</span>
-        <span>×{{ numNegativeInfs }}</span>
+        <span class="category-count">×{{ numNegativeInfs }}</span>
       </div>
       <div
         *ngIf="numPositiveInfs !== undefined && numPositiveInfs > 0"
         class="category"
       >
         <span class="category-tag infinite">+∞</span>
-        <span>×{{ numPositiveInfs }}</span>
+        <span class="category-count">×{{ numPositiveInfs }}</span>
       </div>
       <div
         *ngIf="numNegativeFinites !== undefined && numNegativeFinites > 0"
         class="category"
       >
         <span class="category-tag finite">-</span>
-        <span>×{{ numNegativeFinites }}</span>
+        <span class="category-count">×{{ numNegativeFinites }}</span>
       </div>
       <div *ngIf="numZeros !== undefined && numZeros > 0" class="category">
         <span class="category-tag finite">0</span>
-        <span>×{{ numZeros }}</span>
+        <span class="category-count">×{{ numZeros }}</span>
       </div>
       <div
         *ngIf="numPositiveFinites !== undefined && numPositiveFinites > 0"
@@ -98,7 +122,7 @@ export class DebugTensorRankComponent {
         class="category"
       >
         <span class="category-tag finite">+</span>
-        <span>×{{ numPositiveFinites }}</span>
+        <span class="category-count">×{{ numPositiveFinites }}</span>
       </div>
     </div>
   `,
@@ -184,30 +208,6 @@ export class DebugTensorNumericBreakdownComponent {
       this.numNegativeFinites !== undefined ||
       this.numZeros !== undefined ||
       this.numPositiveFinites !== undefined
-    );
-  }
-}
-
-@Component({
-  selector: 'debug-tensor-shape',
-  template: `
-    shape:{{ shapeString }}
-  `,
-  styles: [basicDebugInfoStyle],
-})
-export class DebugTensorShapeComponent {
-  @Input()
-  shape!: Array<number | undefined>;
-
-  get shapeString(): string {
-    return (
-      '[' +
-      this.shape
-        .map((dim) => {
-          return dim === undefined ? '?' : String(dim);
-        })
-        .join(',') +
-      ']'
     );
   }
 }
