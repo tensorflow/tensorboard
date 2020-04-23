@@ -87,13 +87,6 @@ def define_flags(parser):
         help="Directory containing the logs to process",
     )
     upload.add_argument(
-        "--experiment_id",
-        metavar="ID",
-        type=str,
-        default=None,
-        help="Upload to a specific experiment ID",
-    )
-    upload.add_argument(
         "--name",
         type=str,
         default=None,
@@ -104,6 +97,13 @@ def define_flags(parser):
         type=str,
         default=None,
         help="Experiment description. Markdown format.  Max 600 characters.",
+    )
+    upload.add_argument(
+        "--experiment_id",
+        metavar="ID",
+        type=str,
+        default=None,
+        help="ID of an existing experiment to upload to",
     )
     upload.add_argument(
         "--plugins",
