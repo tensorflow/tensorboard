@@ -628,15 +628,15 @@ class _ByteBudgetManager(object):
       """
         cost = (
             # The size of the run proto without any tag fields set.
-            run_proto.ByteSize() +
+            run_proto.ByteSize()
             # The size of the varint that describes the length of the run
             # proto. We can't yet know the final size of the run proto -- we
             # haven't yet set any tag or point values -- so we can't know the
             # final size of this length varint. We conservatively assume it is
             # maximum size.
-            _MAX_VARINT64_LENGTH_BYTES +
+            + _MAX_VARINT64_LENGTH_BYTES
             # The size of the proto key.
-            1
+            + 1
         )
         if cost > self._byte_budget:
             raise _OutOfSpaceError()
@@ -654,15 +654,15 @@ class _ByteBudgetManager(object):
       """
         cost = (
             # The size of the tag proto without any tag fields set.
-            tag_proto.ByteSize() +
+            tag_proto.ByteSize()
             # The size of the varint that describes the length of the tag
             # proto. We can't yet know the final size of the tag proto -- we
             # haven't yet set any point values -- so we can't know the final
             # size of this length varint. We conservatively assume it is maximum
             # size.
-            _MAX_VARINT64_LENGTH_BYTES +
+            + _MAX_VARINT64_LENGTH_BYTES
             # The size of the proto key.
-            1
+            + 1
         )
         if cost > self._byte_budget:
             raise _OutOfSpaceError()
@@ -681,12 +681,12 @@ class _ByteBudgetManager(object):
         submessage_cost = point_proto.ByteSize()
         cost = (
             # The size of the point proto.
-            submessage_cost +
+            submessage_cost
             # The size of the varint that describes the length of the point
             # proto.
-            _varint_cost(submessage_cost) +
+            + _varint_cost(submessage_cost)
             # The size of the proto key.
-            1
+            + 1
         )
         if cost > self._byte_budget:
             raise _OutOfSpaceError()
