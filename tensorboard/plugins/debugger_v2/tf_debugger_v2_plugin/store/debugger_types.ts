@@ -201,9 +201,10 @@ export interface DebugTensorValue {
   // Maximum value.
   max?: number;
 
-  // Arithemtic mean.
+  // Arithmetic mean.
   mean?: number;
 
+  // Variance.
   variance?: number;
 }
 
