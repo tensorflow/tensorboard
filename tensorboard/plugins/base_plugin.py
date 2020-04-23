@@ -250,7 +250,6 @@ class TBContext(object):
         *,
         assets_zip_provider=None,
         data_provider=None,
-        db_uri=None,
         flags=None,
         logdir=None,
         multiplexer=None,
@@ -272,12 +271,9 @@ class TBContext(object):
               also have been created by the tensorboard_zip_file build rule.
           data_provider: Instance of `tensorboard.data.provider.DataProvider`. May
             be `None` if `flags.generic_data` is set to `"false"`.
-          db_uri: The string db URI TensorBoard was started with. If this is set,
-              the logdir should be None.
           flags: An object of the runtime flags provided to TensorBoard to their
               values.
-          logdir: The string logging directory TensorBoard was started with. If this
-              is set, the db_uri should be None.
+          logdir: The string logging directory TensorBoard was started with.
           multiplexer: An EventMultiplexer with underlying TB data. Plugins should
               copy this data over to the database when the db fields are set.
           plugin_name_to_instance: A mapping between plugin name to instance.
@@ -294,7 +290,6 @@ class TBContext(object):
         """
         self.assets_zip_provider = assets_zip_provider
         self.data_provider = data_provider
-        self.db_uri = db_uri
         self.flags = flags
         self.logdir = logdir
         self.multiplexer = multiplexer
