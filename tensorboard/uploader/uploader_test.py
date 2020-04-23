@@ -1284,7 +1284,7 @@ class TensorBatchedRequestSenderTest(tf.test.TestCase):
         with self.assertRaises(uploader_lib.ExperimentNotFoundError):
             sender.flush()
 
-    def test_no_budget_for_experiment_id(self):
+    def test_no_budget_for_base_request(self):
         mock_client = _create_mock_client()
         long_experiment_id = "A" * uploader_lib._MAX_REQUEST_LENGTH_BYTES
         with self.assertRaises(RuntimeError) as cm:
@@ -1292,7 +1292,7 @@ class TensorBatchedRequestSenderTest(tf.test.TestCase):
                 experiment_id=long_experiment_id, api=mock_client,
             )
         self.assertEqual(
-            str(cm.exception), "Byte budget too small for experiment ID"
+            str(cm.exception), "Byte budget too small for base request"
         )
 
     def test_no_room_for_single_point(self):
@@ -1363,9 +1363,9 @@ class TensorBatchedRequestSenderTest(tf.test.TestCase):
         self.assertEqual(long_tag_1, requests[0].runs[0].tags[0].name)
         # Second RPC contains the other tag.
         self.assertEqual(1, len(requests[1].runs))
+        self.assertEqual("train", requests[1].runs[0].name)
         self.assertEqual(1, len(requests[1].runs[0].tags))
         self.assertEqual(long_tag_2, requests[1].runs[0].tags[0].name)
-        self.assertEqual("train", requests[1].runs[0].name)
 
     @mock.patch.object(uploader_lib, "_MAX_REQUEST_LENGTH_BYTES", 1024)
     def test_break_at_tensor_point_boundary(self):
@@ -1411,58 +1411,48 @@ class TensorBatchedRequestSenderTest(tf.test.TestCase):
             )
         self.assertEqual(total_points_in_result, point_count)
 
-    # BDTODO: Base the version of this test on the one after the byte size refactor
-    # def test_prunes_tags_and_runs(self):
-    #     mock_client = _create_mock_client()
-    #     event_1 = event_pb2.Event(step=1)
-    #     event_1.summary.value.add(tag="one", tensor=tensor_pb2.TensorProto(double_val=[1.0]))
-    #     event_2 = event_pb2.Event(step=2)
-    #     event_2.summary.value.add(tag="two", tensor=tensor_pb2.TensorProto(double_val=[2.0]))
+    def test_prunes_tags_and_runs(self):
+        mock_client = _create_mock_client()
+        event_1 = event_pb2.Event(step=1)
+        event_1.summary.value.add(
+            tag="one", tensor=tensor_pb2.TensorProto(double_val=[1.0])
+        )
+        event_2 = event_pb2.Event(step=2)
+        event_2.summary.value.add(
+            tag="two", tensor=tensor_pb2.TensorProto(double_val=[2.0])
+        )
 
-    #     real_create_point = (
-    #         uploader_lib._TensorBatchedRequestSender._create_point
-    #     )
+        add_point_call_count_box = [0]
 
-    #     create_point_call_count_box = [0]
+        def mock_add_point(byte_budget_manager_self, point):
+            # Simulate out-of-space error the first time that we try to store
+            # the second point.
+            add_point_call_count_box[0] += 1
+            if add_point_call_count_box[0] == 2:
+                raise uploader_lib._OutOfSpaceError()
 
-    #     def mock_create_point(uploader_self, *args, **kwargs):
-    #         # Simulate out-of-space error the first time that we try to store
-    #         # the second point.
-    #         create_point_call_count_box[0] += 1
-    #         if create_point_call_count_box[0] == 2:
-    #             raise uploader_lib._OutOfSpaceError()
-    #         return real_create_point(uploader_self, *args, **kwargs)
+        with mock.patch.object(
+            uploader_lib._ByteBudgetManager, "add_point", mock_add_point,
+        ):
+            sender = _create_tensor_request_sender("123", mock_client)
+            self._add_events(sender, "train", _apply_compat([event_1]))
+            self._add_events(sender, "test", _apply_compat([event_2]))
+            sender.flush()
+        requests = [c[0][0] for c in mock_client.WriteTensor.call_args_list]
 
-    #     with mock.patch.object(
-    #         uploader_lib._TensorBatchedRequestSender,
-    #         "_create_point",
-    #         mock_create_point,
-    #     ):
-    #         sender = _create_tensor_request_sender("123", mock_client)
-    #         self._add_events(sender, "train", _apply_compat([event_1]))
-    #         self._add_events(sender, "test", _apply_compat([event_2]))
-    #         sender.flush()
-    #     requests = [c[0][0] for c in mock_client.WriteTensor.call_args_list]
-    #     for request in requests:
-    #         _clear_wall_times(request)
+        # Expect two RPC calls despite a single explicit call to flush().
+        self.assertEqual(2, len(requests))
+        # First RPC contains one tag.
+        self.assertEqual(1, len(requests[0].runs))
+        self.assertEqual("train", requests[0].runs[0].name)
+        self.assertEqual(1, len(requests[0].runs[0].tags))
+        self.assertEqual("one", requests[0].runs[0].tags[0].name)
+        # Second RPC contains the other tag.
+        self.assertEqual(1, len(requests[1].runs))
+        self.assertEqual("test", requests[1].runs[0].name)
+        self.assertEqual(1, len(requests[1].runs[0].tags))
+        self.assertEqual("two", requests[1].runs[0].tags[0].name)
 
-    #     expected = [
-    #         write_service_pb2.WriteScalarRequest(experiment_id="123"),
-    #         write_service_pb2.WriteScalarRequest(experiment_id="123"),
-    #     ]
-    #     (
-    #         expected[0]
-    #         .runs.add(name="train")
-    #         .tags.add(name="foo", metadata=test_util.scalar_metadata("foo"))
-    #         .points.add(step=1, value=1.0)
-    #     )
-    #     (
-    #         expected[1]
-    #         .runs.add(name="test")
-    #         .tags.add(name="bar", metadata=test_util.scalar_metadata("bar"))
-    #         .points.add(step=2, value=-2.0)
-    #     )
-    #     self.assertEqual(expected, requests)
 
     def test_wall_time_precision(self):
         # Test a wall time that is exactly representable in float64 but has enough

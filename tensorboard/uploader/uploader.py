@@ -448,9 +448,6 @@ class _ScalarBatchedRequestSender(object):
         self._api = api
         self._rpc_rate_limiter = rpc_rate_limiter
         self._byte_budget_manager = _ByteBudgetManager()
-        # A lower bound on the number of bytes that we may yet add to the
-        # request.
-        self._byte_budget = None  # type: int
 
         self._runs = {}  # cache: map from run name to `Run` proto in request
         self._tags = (
@@ -601,9 +598,7 @@ class _TensorBatchedRequestSender(object):
         self._experiment_id = experiment_id
         self._api = api
         self._rpc_rate_limiter = rpc_rate_limiter
-        # A lower bound on the number of bytes that we may yet add to the
-        # request.
-        self._byte_budget = None  # type: int
+        self._byte_budget_manager = _ByteBudgetManager()
 
         self._runs = {}  # cache: map from run name to `Run` proto in request
         self._tags = (
@@ -619,9 +614,7 @@ class _TensorBatchedRequestSender(object):
         self._tags.clear()
         self._byte_budget = _MAX_REQUEST_LENGTH_BYTES
         self._request.experiment_id = self._experiment_id
-        self._byte_budget -= self._request.ByteSize()
-        if self._byte_budget < 0:
-            raise RuntimeError("Byte budget too small for experiment ID")
+        self._byte_budget_manager.reset(self._request)
 
     def add_event(self, run_name, event, value, metadata):
         """Attempts to add the given event to the current request.
@@ -658,12 +651,7 @@ class _TensorBatchedRequestSender(object):
         Starts a new, empty active request.
         """
         request = self._request
-        for (run_idx, run) in reversed(list(enumerate(request.runs))):
-            for (tag_idx, tag) in reversed(list(enumerate(run.tags))):
-                if not tag.points:
-                    del run.tags[tag_idx]
-            if not run.tags:
-                del request.runs[run_idx]
+        _prune_empty_tags_and_runs(request)
         if not request.runs:
             return
 
@@ -693,12 +681,7 @@ class _TensorBatchedRequestSender(object):
             request budget.
         """
         run_proto = self._request.runs.add(name=run_name)
-        # We can't calculate the proto key cost exactly ahead of time, as
-        # it depends on the total size of all tags. Be conservative.
-        cost = run_proto.ByteSize() + _MAX_VARINT64_LENGTH_BYTES + 1
-        if cost > self._byte_budget:
-            raise _OutOfSpaceError()
-        self._byte_budget -= cost
+        self._byte_budget_manager.add_run(run_proto)
         return run_proto
 
     def _create_tag(self, run_proto, tag_name, metadata):
@@ -719,13 +702,7 @@ class _TensorBatchedRequestSender(object):
         """
         tag_proto = run_proto.tags.add(name=tag_name)
         tag_proto.metadata.CopyFrom(metadata)
-        submessage_cost = tag_proto.ByteSize()
-        # We can't calculate the proto key cost exactly ahead of time, as
-        # it depends on the number of points. Be conservative.
-        cost = submessage_cost + _MAX_VARINT64_LENGTH_BYTES + 1
-        if cost > self._byte_budget:
-            raise _OutOfSpaceError()
-        self._byte_budget -= cost
+        self._byte_budget_manager.add_tag(tag_proto)
         return tag_proto
 
     def _create_point(self, tag_proto, event, value):
@@ -747,12 +724,11 @@ class _TensorBatchedRequestSender(object):
         point.step = event.step
         point.value.CopyFrom(value.tensor)
         util.set_timestamp(point.wall_time, event.wall_time)
-        submessage_cost = point.ByteSize()
-        cost = submessage_cost + _varint_cost(submessage_cost) + 1  # proto key
-        if cost > self._byte_budget:
+        try:
+            self._byte_budget_manager.add_point(point)
+        except _OutOfSpaceError as e:
             tag_proto.points.pop()
-            raise _OutOfSpaceError()
-        self._byte_budget -= cost
+            raise e
         return point
 
 
