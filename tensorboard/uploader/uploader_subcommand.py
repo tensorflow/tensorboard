@@ -412,7 +412,9 @@ class _UploadIntent(_Intent):
             name=self.name,
             description=self.description,
         )
-        experiment_id = uploader.create_experiment(experiment_id=self.experiment_id)
+        experiment_id = uploader.create_experiment(
+            experiment_id=self.experiment_id
+        )
         url = server_info_lib.experiment_url(server_info, experiment_id)
         print(
             "Upload started and will continue reading any new data as it's added"
