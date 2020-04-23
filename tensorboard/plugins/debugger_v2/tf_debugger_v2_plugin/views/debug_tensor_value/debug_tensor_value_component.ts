@@ -33,7 +33,7 @@ const basicDebugInfoStyle = `
 @Component({
   selector: 'debug-tensor-dtype',
   template: `
-    <span class="dtype-name">{{ dtype }}</span>
+    {{ dtype }}
   `,
   styles: [basicDebugInfoStyle],
 })

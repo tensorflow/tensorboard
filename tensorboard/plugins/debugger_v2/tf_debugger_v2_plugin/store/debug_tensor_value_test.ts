@@ -201,7 +201,7 @@ describe('parseDebugTensorValue', () => {
       const debugValue = parseDebugTensorValue(TensorDebugMode.SHAPE, [
         123,
         5, // int16
-        7, // rankk 8
+        7, // rank 7
         1200,
         3,
         4,
@@ -223,7 +223,7 @@ describe('parseDebugTensorValue', () => {
       const debugValue = parseDebugTensorValue(TensorDebugMode.SHAPE, [
         123,
         1, // float32
-        8, // rankk 8
+        8, // rank 8
         1200,
         3,
         4,
@@ -293,7 +293,7 @@ describe('parseDebugTensorValue', () => {
       const debugValue = parseDebugTensorValue(TensorDebugMode.FULL_HEALTH, [
         123,
         0,
-        14, // bfloat64.
+        14, // bfloat16
         1, // rank
         10, // size
         3,

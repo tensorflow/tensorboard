@@ -50,10 +50,7 @@ describe('debug-tensor-value components', () => {
       const component = fixture.componentInstance;
       component.dtype = 'bfloat16';
       fixture.detectChanges();
-      const dtypeNameElement = fixture.debugElement.query(
-        By.css('.dtype-name')
-      );
-      expect(dtypeNameElement.nativeElement.innerText).toBe('bfloat16');
+      expect(fixture.nativeElement.innerText).toBe('bfloat16');
     });
   });
 
@@ -83,6 +80,7 @@ describe('debug-tensor-value components', () => {
       [[1, 3, 3, 7], 'shape:[1,3,3,7]'],
       [[1, 2, 3, 4, 5], 'shape:[1,2,3,4,5]'],
       [[0, 1, 2, 3, 4, 5], 'shape:[0,1,2,3,4,5]'],
+      [[undefined, 1, 3, 3, 7, 10, 20], 'shape:[?,1,3,3,7,10,20]'],
       [[undefined, undefined, 1, 3, 3, 7, 10, 20], 'shape:[?,?,1,3,3,7,10,20]'],
     ] as Array<[Array<number | undefined>, string]>) {
       it(`displays correct shape: ${JSON.stringify(expectedShapeText)}`, () => {

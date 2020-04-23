@@ -156,7 +156,7 @@ export interface InfNanAlert extends Alert {
 }
 
 /**
- * The values summarizing a tensor value watched by the debugger.
+ * Values that summarize a tensor watched by the debugger.
  */
 export interface DebugTensorValue {
   // Data type of the tensor.

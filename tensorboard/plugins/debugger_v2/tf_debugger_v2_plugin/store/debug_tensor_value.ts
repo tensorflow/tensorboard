@@ -23,12 +23,12 @@ import {DebugTensorValue, TensorDebugMode} from './debugger_types';
  * @param tensorDebugMode Tensor-debug mode.
  * @param array The array of number that represents various aspect of the
  *   instrumented tensor. The semantics of the numbers are determined by
- *   `tensorDebugModel`.
+ *   `tensorDebugMode`.
  * @returns A DebugTensorValue object with the same information as
  *   carried by `array`, but represented in a more explicit fashion.
  *   For numbers that represent breakdown of numeric values by type
  *   (e.g., counts of -inf, +inf and nan), the corresponding fields
- *   in the returned object will be defined only of the count is non-zero.
+ *   in the returned object will be defined only if the count is non-zero.
  */
 export function parseDebugTensorValue(
   tensorDebugMode: TensorDebugMode,
