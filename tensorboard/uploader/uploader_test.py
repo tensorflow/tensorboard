@@ -987,7 +987,7 @@ class ScalarBatchedRequestSenderTest(tf.test.TestCase):
         with self.assertRaises(uploader_lib.ExperimentNotFoundError):
             sender.flush()
 
-    def test_no_budget_for_experiment_id(self):
+    def test_no_budget_for_base_request(self):
         mock_client = _create_mock_client()
         long_experiment_id = "A" * uploader_lib._MAX_REQUEST_LENGTH_BYTES
         with self.assertRaises(RuntimeError) as cm:
@@ -995,7 +995,7 @@ class ScalarBatchedRequestSenderTest(tf.test.TestCase):
                 experiment_id=long_experiment_id, api=mock_client,
             )
         self.assertEqual(
-            str(cm.exception), "Byte budget too small for experiment ID"
+            str(cm.exception), "Byte budget too small for base request"
         )
 
     def test_no_room_for_single_point(self):
@@ -1108,6 +1108,10 @@ class ScalarBatchedRequestSenderTest(tf.test.TestCase):
 
         self.assertGreater(len(requests), 1)
         self.assertLess(len(requests), point_count)
+        # This is the observed number of requests when running the test. There
+        # is no reasonable way to derive this value from just reading the code.
+        # The number of requests does not have to be 33 to be correct but if it
+        # changes it probably warrants some investigation or thought.
         self.assertEqual(33, len(requests))
 
         total_points_in_result = 0
@@ -1134,24 +1138,17 @@ class ScalarBatchedRequestSenderTest(tf.test.TestCase):
         event_2 = event_pb2.Event(step=2)
         event_2.summary.value.add(tag="bar", simple_value=-2.0)
 
-        real_create_point = (
-            uploader_lib._ScalarBatchedRequestSender._create_point
-        )
+        add_point_call_count_box = [0]
 
-        create_point_call_count_box = [0]
-
-        def mock_create_point(uploader_self, *args, **kwargs):
+        def mock_add_point(byte_budget_manager_self, point):
             # Simulate out-of-space error the first time that we try to store
             # the second point.
-            create_point_call_count_box[0] += 1
-            if create_point_call_count_box[0] == 2:
+            add_point_call_count_box[0] += 1
+            if add_point_call_count_box[0] == 2:
                 raise uploader_lib._OutOfSpaceError()
-            return real_create_point(uploader_self, *args, **kwargs)
 
         with mock.patch.object(
-            uploader_lib._ScalarBatchedRequestSender,
-            "_create_point",
-            mock_create_point,
+            uploader_lib._ByteBudgetManager, "add_point", mock_add_point,
         ):
             sender = _create_scalar_request_sender("123", mock_client)
             self._add_events(sender, "train", _apply_compat([event_1]))
