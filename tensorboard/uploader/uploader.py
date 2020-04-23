@@ -590,6 +590,11 @@ class _ByteBudgetManager(object):
   Any call to add_run(), add_tag(), or add_point() may raise an
   _OutOfSpaceError, which is non-fatal. It signals to the caller that they
   should flush the current request and begin a new one.
+
+  For more information on the protocol buffer encoding and how byte cost
+  can be calculated, visit:
+
+  https://developers.google.com/protocol-buffers/docs/encoding
   """
 
     def __init__(self):
@@ -621,7 +626,18 @@ class _ByteBudgetManager(object):
         _OutOfSpaceError: If adding the run would exceed the remaining request
           budget.
       """
-        cost = run_proto.ByteSize() + _MAX_VARINT64_LENGTH_BYTES + 1
+        cost = (
+            # The size of the run proto without any tag fields set.
+            run_proto.ByteSize() +
+            # The size of the varint that describes the length of the run
+            # proto. We can't yet know the final size of the run proto -- we
+            # haven't yet set any tag or point values -- so we can't know the
+            # final size of this length varint. We conservatively assume it is
+            # maximum size.
+            _MAX_VARINT64_LENGTH_BYTES +
+            # The size of the proto key.
+            1
+        )
         if cost > self._byte_budget:
             raise _OutOfSpaceError()
         self._byte_budget -= cost
@@ -636,9 +652,18 @@ class _ByteBudgetManager(object):
         _OutOfSpaceError: If adding the tag would exceed the remaining request
          budget.
       """
-        # We can't calculate the proto key cost exactly ahead of time, as
-        # it depends on the number of points. Be conservative.
-        cost = tag_proto.ByteSize() + _MAX_VARINT64_LENGTH_BYTES + 1
+        cost = (
+            # The size of the tag proto without any tag fields set.
+            tag_proto.ByteSize() +
+            # The size of the varint that describes the length of the tag
+            # proto. We can't yet know the final size of the tag proto -- we
+            # haven't yet set any point values -- so we can't know the final
+            # size of this length varint. We conservatively assume it is maximum
+            # size.
+            _MAX_VARINT64_LENGTH_BYTES +
+            # The size of the proto key.
+            1
+        )
         if cost > self._byte_budget:
             raise _OutOfSpaceError()
         self._byte_budget -= cost
@@ -654,7 +679,15 @@ class _ByteBudgetManager(object):
          budget.
       """
         submessage_cost = point_proto.ByteSize()
-        cost = submessage_cost + _varint_cost(submessage_cost) + 1  # proto key
+        cost = (
+            # The size of the point proto.
+            submessage_cost +
+            # The size of the varint that describes the length of the point
+            # proto.
+            _varint_cost(submessage_cost) +
+            # The size of the proto key.
+            1
+        )
         if cost > self._byte_budget:
             raise _OutOfSpaceError()
         self._byte_budget -= cost
