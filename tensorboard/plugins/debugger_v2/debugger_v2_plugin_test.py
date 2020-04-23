@@ -759,7 +759,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertTrue(digests[1]["graph_id"])
 
         self.assertGreaterEqual(
-            digests[1]["wall_time"], digests[0]["wall_time"]
+            digests[2]["wall_time"], digests[1]["wall_time"]
         )
         self.assertEqual(digests[2]["op_type"], "Placeholder")
         self.assertEqual(digests[2]["output_slot"], 0)
@@ -768,7 +768,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertTrue(digests[2]["graph_id"])
 
         self.assertGreaterEqual(
-            digests[2]["wall_time"], digests[1]["wall_time"]
+            digests[3]["wall_time"], digests[2]["wall_time"]
         )
         # The unstack() function uses the Unpack op under the hood.
         self.assertEqual(digests[3]["op_type"], "Unpack")
