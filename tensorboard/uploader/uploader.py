@@ -159,24 +159,26 @@ class TensorBoardUploader(object):
             self._logdir, directory_loader_factory
         )
 
-    def create_experiment(self):
+    def create_experiment(self, experiment_id=None):
         """Creates an Experiment for this upload session and returns the ID."""
-        logger.info("Creating experiment")
-        request = write_service_pb2.CreateExperimentRequest(
-            name=self._name, description=self._description
-        )
-        response = grpc_util.call_with_retries(
-            self._api.CreateExperiment, request
-        )
+        if experiment_id is None:
+            logger.info("Creating experiment")
+	        request = write_service_pb2.CreateExperimentRequest(
+	            name=self._name, description=self._description
+	        )
+	        response = grpc_util.call_with_retries(
+	            self._api.CreateExperiment, request
+	        )
+			experiment_id = response.experiment_id
         self._request_sender = _BatchedRequestSender(
-            response.experiment_id,
+            experiment_id,
             self._api,
             allowed_plugins=self._allowed_plugins,
             max_blob_size=self._max_blob_size,
             rpc_rate_limiter=self._rpc_rate_limiter,
             blob_rpc_rate_limiter=self._blob_rpc_rate_limiter,
         )
-        return response.experiment_id
+        return experiment_id
 
     def start_uploading(self):
         """Blocks forever to continuously upload data from the logdir.

@@ -87,6 +87,13 @@ def define_flags(parser):
         help="Directory containing the logs to process",
     )
     upload.add_argument(
+        "--experiment_id",
+        metavar="ID",
+        type=str,
+        default=None,
+        help="Upload to a specific experiment ID",
+    )
+    upload.add_argument(
         "--name",
         type=str,
         default=None,
