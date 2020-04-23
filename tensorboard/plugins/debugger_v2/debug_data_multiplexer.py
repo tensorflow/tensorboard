@@ -297,14 +297,10 @@ class DebuggerV2EventMultiplexer(object):
         runs = self.Runs()
         if run not in runs:
             return None
-        # TODO(cais): For scalability, use begin and end kwargs when available in
-        # `DebugDataReader.execution()`.`
         execution_digests = self._reader.executions(digest=True)
         end = self._checkBeginEndIndices(begin, end, len(execution_digests))
         execution_digests = execution_digests[begin:end]
-        executions = [
-            self._reader.read_execution(digest) for digest in execution_digests
-        ]
+        executions = self._reader.executions(digest=False, begin=begin, end=end)
         return {
             "begin": begin,
             "end": end,
@@ -368,11 +364,9 @@ class DebuggerV2EventMultiplexer(object):
             )
         digests = self._reader.graph_execution_traces(digest=True)
         end = self._checkBeginEndIndices(begin, end, len(digests))
-        digests = digests[begin:end]
-        graph_executions = [
-            self._reader.read_graph_execution_trace(digest)
-            for digest in digests
-        ]
+        graph_executions = self._reader.graph_execution_traces(
+            digest=False, begin=begin, end=end
+        )
         return {
             "begin": begin,
             "end": end,
