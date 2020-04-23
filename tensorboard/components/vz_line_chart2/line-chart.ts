@@ -704,6 +704,7 @@ namespace vz_line_chart2 {
         if (col.static) return;
         self.drawTooltipColumn.call(self, this, col, point);
       });
+      columns.exit().remove();
       columns
         .enter()
         .append('td')
