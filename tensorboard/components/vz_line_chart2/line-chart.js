@@ -480,6 +480,7 @@ var vz_line_chart2;
                     return;
                 self.drawTooltipColumn.call(self, this, col, point);
             });
+            columns.exit().remove();
             columns
                 .enter()
                 .append('td')
