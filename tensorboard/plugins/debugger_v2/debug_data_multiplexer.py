@@ -297,14 +297,10 @@ class DebuggerV2EventMultiplexer(object):
         runs = self.Runs()
         if run not in runs:
             return None
-        # TODO(cais): For scalability, use begin and end kwargs when available in
-        # `DebugDataReader.execution()`.`
         execution_digests = self._reader.executions(digest=True)
         end = self._checkBeginEndIndices(begin, end, len(execution_digests))
         execution_digests = execution_digests[begin:end]
-        executions = [
-            self._reader.read_execution(digest) for digest in execution_digests
-        ]
+        executions = self._reader.executions(digest=False, begin=begin, end=end)
         return {
             "begin": begin,
             "end": end,
@@ -366,15 +362,16 @@ class DebuggerV2EventMultiplexer(object):
                 "trace_id support for GraphExecutionTraceData is "
                 "not implemented yet."
             )
-        graph_executions = self._reader.graph_execution_traces(digest=False)
-        end = self._checkBeginEndIndices(begin, end, len(graph_executions))
+        digests = self._reader.graph_execution_traces(digest=True)
+        end = self._checkBeginEndIndices(begin, end, len(digests))
+        graph_executions = self._reader.graph_execution_traces(
+            digest=False, begin=begin, end=end
+        )
         return {
             "begin": begin,
             "end": end,
-            "num_digests": len(graph_executions),
             "graph_executions": [
-                graph_exec.to_json()
-                for graph_exec in graph_executions[begin:end]
+                graph_exec.to_json() for graph_exec in graph_executions
             ],
         }
 
