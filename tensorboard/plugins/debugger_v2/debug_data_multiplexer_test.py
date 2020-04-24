@@ -16,6 +16,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import functools
 import threading
 import time
 
@@ -29,53 +30,55 @@ mock = tf.compat.v1.test.mock
 class MockThread(object):
     """A mock for threading.Thread for testing."""
 
-    def __init__(self, target):
+    def __init__(self, target, **kwargs):
         self._target = target
 
     def start(self):
         self._target()
 
 
-class DebuggerV2PluginTest(tf.test.TestCase):
-    def testRunInBackgroundRepeatedly(self):
+class MockEvent(object):
+    """A mock for threading.Event for testing."""
+
+    def __init__(self, num_times):
+        self._num_times = num_times
+        self._counter = 0
+        self.timeouts = []
+
+    def wait(self, timeout):
+        self.timeouts.append(timeout)
+        self._counter += 1
+        # Raises an exception when a specified number of wait() calls have
+        # happened, so that a test can terminate.
+        if self._counter == self._num_times:
+            raise StopIteration()
+
+    def set(self):
+        pass
+
+
+class RunInBackgroundRepeatedlyTest(tf.test.TestCase):
+    def testRunInBackgroundRepeatedlyThreeTimes(self):
         mock_target = mock.Mock()
-        sleep_state = {"count": 0}
-
-        def mock_sleep():
-            sleep_state["count"] += 1
-            if sleep_state["count"] == 10:
-                raise StopIteration()
-
+        mock_event = MockEvent(3)
         with mock.patch("threading.Thread", MockThread), mock.patch.object(
-            debug_data_multiplexer._timer, "sleep", mock_sleep
+            threading, "Event", lambda: mock_event
         ):
             with self.assertRaises(StopIteration):
-                debug_data_multiplexer.run_repeatedly_in_background(mock_target)
-            self.assertEqual(mock_target.call_count, 10)
+                debug_data_multiplexer.run_repeatedly_in_background(
+                    mock_target, 0.2
+                )
+            # Check calls to the target.
+            self.assertEqual(mock_target.call_count, 3)
+            # Check calls to mocked Event.set().
+            self.assertEqual(mock_event.timeouts, [0.2, 0.2, 0.2])
 
-
-class TimerTest(tf.test.TestCase):
-    def testSleepWithoutWaking(self):
-        timer = debug_data_multiplexer.Timer(0.1)
-        t0 = time.time()
-        timer.sleep()
-        self.assertGreaterEqual(time.time() - t0, 0.1)
-
-    def testWakeDuringSleep(self):
-        # `interval_sec == None` means sleep forever.
-        timer = debug_data_multiplexer.Timer(None)
-        thread = threading.Thread(target=timer.sleep)
-        thread.start()
-        timer.wake()
-        thread.join()
-
-    def testSleepAfterWakeCall(self):
-        """Test that a wake() call before sleep() has no effect."""
-        timer = debug_data_multiplexer.Timer(0.1)
-        timer.wake()
-        t0 = time.time()
-        timer.sleep()
-        self.assertGreaterEqual(time.time() - t0, 0.1)
+    def testRunIsStoppedByReturnedEventSetMethodCall(self):
+        mock_target = mock.Mock()
+        interrupt_event = debug_data_multiplexer.run_repeatedly_in_background(
+            mock_target, 0.1
+        )
+        interrupt_event.set()
 
 
 if __name__ == "__main__":

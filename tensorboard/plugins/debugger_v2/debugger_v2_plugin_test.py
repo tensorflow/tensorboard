@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import collections
 import json
 import os
 import six
@@ -125,7 +126,8 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         # unit test, we disable the asynchronous behavior, so that we can
         # load the debugger data synchronously on the main thread and get
         # determinisic behavior in the tests.
-        def run_repeatedly_in_background_mock(target):
+        def run_repeatedly_in_background_mock(target, interval_sec):
+            del interval_sec  # Unused in this mock.
             target()
 
         self.run_in_background_patch = tf.compat.v1.test.mock.patch.object(
@@ -155,7 +157,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertTrue(self.plugin.is_active())
 
     def testConcurrentCallsToPluginIsActiveWhenNotActive(self):
-        results = []
+        results = collections.deque()
 
         def query_is_active():
             results.append(self.plugin.is_active())
@@ -165,11 +167,11 @@ class DebuggerV2PluginTest(tf.test.TestCase):
             thread.start()
         for thread in threads:
             thread.join()
-        self.assertEqual(results, [False] * 4)
+        self.assertEqual(list(results), [False] * 4)
 
     def testConcurrentCallsToPluginIsActiveWhenActive(self):
         _generate_tfdbg_v2_data(self.logdir)
-        results = []
+        results = collections.deque()
 
         def query_is_active():
             results.append(self.plugin.is_active())
@@ -179,7 +181,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
             thread.start()
         for thread in threads:
             thread.join()
-        self.assertEqual(results, [True] * 4)
+        self.assertEqual(list(results), [True] * 4)
 
     def testServeRunsWithoutExistingRuns(self):
         response = self.server.get(_ROUTE_PREFIX + "/runs")
@@ -202,8 +204,8 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertIsInstance(run["start_time"], float)
         self.assertGreater(run["start_time"], 0)
 
-    def testConcurrnetServeRunsWithoutExistingRuns(self):
-        responses = []
+    def testConcurrentServeRunsWithoutExistingRuns(self):
+        responses = collections.deque()
 
         def get_runs():
             responses.append(self.server.get(_ROUTE_PREFIX + "/runs"))
@@ -222,9 +224,9 @@ class DebuggerV2PluginTest(tf.test.TestCase):
             )
             self.assertEqual(json.loads(response.get_data()), dict())
 
-    def testConcurrnetServeRunsWithExistingRuns(self):
+    def testConcurrentServeRunsWithExistingRuns(self):
         _generate_tfdbg_v2_data(self.logdir)
-        responses = []
+        responses = collections.deque()
 
         def get_runs():
             responses.append(self.server.get(_ROUTE_PREFIX + "/runs"))

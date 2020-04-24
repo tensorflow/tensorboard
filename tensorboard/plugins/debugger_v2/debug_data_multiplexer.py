@@ -38,39 +38,10 @@ DEFAULT_DEBUGGER_RUN_NAME = "__default_debugger_run__"
 DEFAULT_PER_TYPE_ALERT_LIMIT = 1000
 
 # Default interval between successive calls to `DebugDataReader.update()``.
-DEFAULT_RELOAD_INTERVAL_SEC = 60
+DEFAULT_RELOAD_INTERVAL_SEC = 30
 
 
-class Timer(object):
-    """A timer that supports interruptible sleep()."""
-
-    def __init__(self, interval_sec):
-        """Constructor for Timer.
-
-        Args:
-          interval_sec: Amount of time to sleep on each subsequent `sleep()`
-            call (assuming not waken by `waken()`), in seconds.
-        """
-        self._interval_sec = interval_sec
-        self._event = threading.Event()
-
-    def sleep(self):
-        """Sleep until `interval_sec` is reached or waken by `wake()`."""
-        self._event.clear()
-        self._event.wait(timeout=self._interval_sec)
-
-    def wake(self):
-        """Interrupt all sleep() calls that are ongoing.
-
-        This is a no-op if no sleep() is ongoing.
-        """
-        self._event.set()
-
-
-_timer = Timer(DEFAULT_RELOAD_INTERVAL_SEC)
-
-
-def run_repeatedly_in_background(target):
+def run_repeatedly_in_background(target, interval_sec):
     """Run a target task repeatedly in the background.
 
     In the context of this module, `target` is the `update()` method of the
@@ -80,16 +51,24 @@ def run_repeatedly_in_background(target):
 
     Args:
       target: The target task to run in the background, a callable with no args.
+      interval_sec: Time interval between repeats, in seconds.
+
+    Returns:
+      A `threading.Event` object that can be used to interrupt an ongoing
+      waiting interval between successive runs of `target`. To interrupt the
+      interval, call the `set()` method of the object.
     """
-    # TODO(cais): Add more unit tests in debug_data_multiplexer_test.py when the
-    # the behavior gets more complex.
+    event = threading.Event()
+
     def _run_repeatedly():
         while True:
             target()
-            _timer.sleep()
+            event.wait(interval_sec)
 
-    thread = threading.Thread(target=_run_repeatedly)
+    # Make sure the thread doesn't block program exit.
+    thread = threading.Thread(target=_run_repeatedly, daemon=True)
     thread.start()
+    return event
 
 
 def _alert_to_json(alert):
@@ -136,56 +115,73 @@ class DebuggerV2EventMultiplexer(object):
         self._logdir = logdir
         self._reader = None
         self._reader_lock = threading.Lock()
-        self._createOrReloadReader()
+        self._reload_needed_event = None
+        # Create the reader for the tfdbg2 data in the lodir as soon as
+        # the backend of the debugger-v2 plugin is created, so it doesn't need
+        # to wait for the first request from the FE to start loading data.
+        self._tryCreateLoader()
 
-    def _createOrReloadReader(self):
+    def _tryCreateLoader(self):
         """Creates or reloads reader for tfdbg2 data in the logdir.
 
-        If the reader has already been created, a new one will not be created;
-        instead, the existing reader's `update()` method will be unblocked on a
-        separate thread immediately.
+        If the reader has already been created, a new one will not be created and
+        this function is a no-op.
 
         If a reader has not been created, create it and start periodic calls to
         `update()` on a separate thread.
         """
+        if self._reader:
+            return
         with self._reader_lock:
             if not self._reader:
                 try:
+                    # TODO(cais): Avoid conditional imports and instead use
+                    # plugin loader to gate the loading of this entire plugin.
                     from tensorflow.python.debug.lib import debug_events_reader
                     from tensorflow.python.debug.lib import (
                         debug_events_monitors,
                     )
-
-                    self._reader = debug_events_reader.DebugDataReader(
-                        self._logdir
-                    )
-                    self._monitors = [
-                        debug_events_monitors.InfNanMonitor(
-                            self._reader, limit=DEFAULT_PER_TYPE_ALERT_LIMIT
-                        )
-                    ]
-                    # NOTE(cais): Currently each logdir is enforced to have only one
-                    # DebugEvent file set. So we add hard-coded default run name.
-                    run_repeatedly_in_background(self._reader.update)
-                    # TODO(cais): Start off a reading thread here, instead of being
-                    # called only once here.
                 except ImportError:
                     # This ensures graceful behavior when tensorflow install is
                     # unavailable or when the installed tensorflow version does not
                     # contain the required modules.
-                    pass
+                    return
+
+                try:
+                    self._reader = debug_events_reader.DebugDataReader(
+                        self._logdir
+                    )
                 except AttributeError:
                     # Gracefully fail for users without the required API changes to
                     # debug_events_reader.DebugDataReader introduced in
                     # TF 2.1.0.dev20200103. This should be safe to remove when
                     # TF 2.2 is released.
-                    pass
+                    return
                 except ValueError:
                     # When no DebugEvent file set is found in the logdir, a
                     # `ValueError` is thrown.
-                    pass
-            else:
-                _timer.wake()
+                    return
+
+                self._monitors = [
+                    debug_events_monitors.InfNanMonitor(
+                        self._reader, limit=DEFAULT_PER_TYPE_ALERT_LIMIT
+                    )
+                ]
+                # NOTE(cais): Currently each logdir is enforced to have only one
+                # DebugEvent file set. So we add hard-coded default run name.
+                self._reload_needed_event = run_repeatedly_in_background(
+                    self._reader.update, DEFAULT_RELOAD_INTERVAL_SEC
+                )
+
+    def _reloadReader(self):
+        """If a reader exists and has started period updating, unblock the update.
+
+        The updates are performed periodically with a sleep interval between
+        successive calls to the reader's update() method. Calling this method
+        interrupts the sleep immediately if one is ongoing.
+        """
+        if self._reload_needed_event:
+            self._reload_needed_event.set()
 
     def FirstEventTimestamp(self, run):
         """Return the timestamp of the first DebugEvent of the given run.
@@ -218,23 +214,38 @@ class DebuggerV2EventMultiplexer(object):
         )
 
     def Runs(self):
-        """Return all the run names in the `EventMultiplexer`.
+        """Return all the tfdbg2 run names in the logdir watched by this instance.
 
         The `Run()` method of this class is specialized for the tfdbg2-format
-        DebugEvent files. It only returns runs
+        DebugEvent files.
+
+        As a side effect, this method unblocks the underlying reader's period
+        reloading if a reader exists. This lets the reader update at a higher
+        frequency than the default one with 30-second sleeping period between
+        reloading when data is being queried actively from this instance.
+        Note that this `Runs()` method is used by all other public data-access
+        methods of this class (e.g., `ExecutionData()`, `GraphExecutionData()`).
+        Hence calls to those methods will lead to accelerated data reloading of
+        the reader.
 
         Returns:
-        If tfdbg2-format data exists in the `logdir` of this object, returns:
-            ```
-            {runName: { "debugger-v2": [tag1, tag2, tag3] } }
-            ```
-            where `runName` is the hard-coded string `DEFAULT_DEBUGGER_RUN_NAME`
-            string. This is related to the fact that tfdbg2 currently contains
-            at most one DebugEvent file set per directory.
-        If no tfdbg2-format data exists in the `logdir`, an empty `dict`.
+          If tfdbg2-format data exists in the `logdir` of this object, returns:
+              ```
+              {runName: { "debugger-v2": [tag1, tag2, tag3] } }
+              ```
+              where `runName` is the hard-coded string `DEFAULT_DEBUGGER_RUN_NAME`
+              string. This is related to the fact that tfdbg2 currently contains
+              at most one DebugEvent file set per directory.
+          If no tfdbg2-format data exists in the `logdir`, an empty `dict`.
         """
-        self._createOrReloadReader()
+        # Call `_tryCreateLoader()` here to cover the possibility of tfdbg2
+        # data start being written to the logdir after the tensorboard backend
+        # starts.
+        self._tryCreateLoader()
         if self._reader:
+            # If a _reader exists, unblock its reloading (on a separate thread)
+            # immediately.
+            self._reloadReader()
             return {
                 DEFAULT_DEBUGGER_RUN_NAME: {
                     # TODO(cais): Add the semantically meaningful tag names such as
