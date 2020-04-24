@@ -61,8 +61,6 @@ class FakeFlags(object):
         samples_per_plugin="",
         max_reload_threads=1,
         reload_task="auto",
-        db="",
-        db_import=False,
         window_title="",
         path_prefix="",
         reload_multifile=False,
@@ -76,8 +74,6 @@ class FakeFlags(object):
         self.samples_per_plugin = samples_per_plugin
         self.max_reload_threads = max_reload_threads
         self.reload_task = reload_task
-        self.db = db
-        self.db_import = db_import
         self.window_title = window_title
         self.path_prefix = path_prefix
         self.reload_multifile = reload_multifile
@@ -1016,87 +1012,6 @@ class TensorBoardPluginsTest(tb_test.TestCase):
         # the fact that 404 is returned demonstrates that the plugin was not
         # consulted.
         self._test_route("/data/plugin/bar/wildcard/", 404)
-
-
-class DbTest(tb_test.TestCase):
-    def testSqliteDb(self):
-        db_uri = "sqlite:" + os.path.join(self.get_temp_dir(), "db")
-        db_connection_provider = application.create_sqlite_connection_provider(
-            db_uri
-        )
-        with contextlib.closing(db_connection_provider()) as conn:
-            with conn:
-                with contextlib.closing(conn.cursor()) as c:
-                    c.execute("create table peeps (name text)")
-                    c.execute(
-                        "insert into peeps (name) values (?)", ("justine",)
-                    )
-        db_connection_provider = application.create_sqlite_connection_provider(
-            db_uri
-        )
-        with contextlib.closing(db_connection_provider()) as conn:
-            with contextlib.closing(conn.cursor()) as c:
-                c.execute("select name from peeps")
-                self.assertEqual(("justine",), c.fetchone())
-
-    def testTransactionRollback(self):
-        db_uri = "sqlite:" + os.path.join(self.get_temp_dir(), "db")
-        db_connection_provider = application.create_sqlite_connection_provider(
-            db_uri
-        )
-        with contextlib.closing(db_connection_provider()) as conn:
-            with conn:
-                with contextlib.closing(conn.cursor()) as c:
-                    c.execute("create table peeps (name text)")
-            try:
-                with conn:
-                    with contextlib.closing(conn.cursor()) as c:
-                        c.execute(
-                            "insert into peeps (name) values (?)", ("justine",)
-                        )
-                    raise IOError("hi")
-            except IOError:
-                pass
-            with contextlib.closing(conn.cursor()) as c:
-                c.execute("select name from peeps")
-                self.assertIsNone(c.fetchone())
-
-    def testTransactionRollback_doesntDoAnythingIfIsolationLevelIsNone(self):
-        # NOTE: This is a terrible idea. Don't do this.
-        db_uri = (
-            "sqlite:"
-            + os.path.join(self.get_temp_dir(), "db")
-            + "?isolation_level=null"
-        )
-        db_connection_provider = application.create_sqlite_connection_provider(
-            db_uri
-        )
-        with contextlib.closing(db_connection_provider()) as conn:
-            with conn:
-                with contextlib.closing(conn.cursor()) as c:
-                    c.execute("create table peeps (name text)")
-            try:
-                with conn:
-                    with contextlib.closing(conn.cursor()) as c:
-                        c.execute(
-                            "insert into peeps (name) values (?)", ("justine",)
-                        )
-                    raise IOError("hi")
-            except IOError:
-                pass
-            with contextlib.closing(conn.cursor()) as c:
-                c.execute("select name from peeps")
-                self.assertEqual(("justine",), c.fetchone())
-
-    def testSqliteUriErrors(self):
-        with self.assertRaises(ValueError):
-            application.create_sqlite_connection_provider("lol:cat")
-        with self.assertRaises(ValueError):
-            application.create_sqlite_connection_provider("sqlite::memory:")
-        with self.assertRaises(ValueError):
-            application.create_sqlite_connection_provider(
-                "sqlite://foo.example/bar"
-            )
 
 
 if __name__ == "__main__":

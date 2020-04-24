@@ -29,8 +29,9 @@ py_binary(
         ":program",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/plugins:base_plugin",
-        "//tensorboard/uploader:uploader_main_lib",
+        "//tensorboard/uploader:uploader_subcommand",
         "//tensorboard/util:tb_logging",
+        "//tensorboard/util:timing",  # non-strict dep, for patching convenience
     ],
 )
 
@@ -344,14 +345,6 @@ py_library(
     # This is a dummy rule used as a grpc_testing dependency in open-source.
     # We expect grpc_testing to already be installed on the system, e.g. via
     # `pip install grpcio_testing`
-    visibility = ["//visibility:public"],
-)
-
-py_library(
-    name = "expect_sqlite3_installed",
-    # This is a dummy rule used as a sqlite3 dependency in open-source.
-    # We expect sqlite3 to already be present, as it is part of the standard
-    # library.
     visibility = ["//visibility:public"],
 )
 

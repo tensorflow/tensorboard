@@ -8,7 +8,7 @@ licenses(["notice"])  # Apache 2.0
 exports_files(["LICENSE"])
 
 py_library(
-    name = "exporter_lib",
+    name = "exporter",
     srcs = ["exporter.py"],
     srcs_version = "PY3",
     deps = [
@@ -25,7 +25,7 @@ py_test(
     name = "exporter_test",
     srcs = ["exporter_test.py"],
     deps = [
-        ":exporter_lib",
+        ":exporter",
         ":test_util",
         ":util",
         "//tensorboard:expect_grpc_installed",
@@ -59,24 +59,17 @@ py_test(
     ],
 )
 
-py_binary(
-    name = "uploader",
-    srcs = ["uploader_main.py"],
-    main = "uploader_main.py",
-    deps = [":uploader_main_lib"],
-)
-
 py_library(
-    name = "uploader_main_lib",
-    srcs = ["uploader_main.py"],
+    name = "uploader_subcommand",
+    srcs = ["uploader_subcommand.py"],
     visibility = ["//tensorboard:internal"],
     deps = [
         ":auth",
-        ":exporter_lib",
+        ":exporter",
         ":flags_parser",
         ":formatters",
         ":server_info",
-        ":uploader_lib",
+        ":uploader",
         ":util",
         "//tensorboard:expect_absl_app_installed",
         "//tensorboard:expect_absl_flags_argparse_flags_installed",
@@ -91,7 +84,7 @@ py_library(
 )
 
 py_library(
-    name = "uploader_lib",
+    name = "uploader",
     srcs = ["uploader.py"],
     deps = [
         ":logdir_loader",
@@ -119,7 +112,7 @@ py_test(
     srcs_version = "PY3",
     deps = [
         ":test_util",
-        ":uploader_lib",
+        ":uploader",
         ":util",
         "//tensorboard:data_compat",
         "//tensorboard:dataclass_compat",

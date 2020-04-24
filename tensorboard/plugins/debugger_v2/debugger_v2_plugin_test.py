@@ -731,7 +731,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         run = self._getExactlyOneRun()
         response = self.server.get(
             _ROUTE_PREFIX
-            + "/graph_execution/digests?run=%s&begin=0&end=3" % run
+            + "/graph_execution/digests?run=%s&begin=0&end=4" % run
         )
         self.assertEqual(200, response.status_code)
         self.assertEqual(
@@ -739,10 +739,10 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         )
         data = json.loads(response.get_data())
         self.assertEqual(data["begin"], 0)
-        self.assertEqual(data["end"], 3)
-        self.assertEqual(data["num_digests"], 186)
+        self.assertEqual(data["end"], 4)
+        self.assertEqual(data["num_digests"], 219)
         digests = data["graph_execution_digests"]
-        self.assertLen(digests, 3)
+        self.assertLen(digests, 4)
         self.assertGreater(digests[0]["wall_time"], 0)
         self.assertEqual(digests[0]["op_type"], "Placeholder")
         self.assertEqual(digests[0]["output_slot"], 0)
@@ -752,20 +752,29 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertGreaterEqual(
             digests[1]["wall_time"], digests[0]["wall_time"]
         )
-        self.assertEqual(digests[1]["op_type"], "Placeholder")
+        self.assertEqual(digests[1]["op_type"], "Const")
         self.assertEqual(digests[1]["output_slot"], 0)
         self.assertTrue(digests[1]["op_name"])
         self.assertNotEqual(digests[1]["op_name"], digests[0]["op_name"])
-        self.assertTrue(digests[0]["graph_id"])
+        self.assertTrue(digests[1]["graph_id"])
 
         self.assertGreaterEqual(
             digests[2]["wall_time"], digests[1]["wall_time"]
         )
-        # The unstack() function uses the Unpack op under the hood.
-        self.assertEqual(digests[2]["op_type"], "Unpack")
+        self.assertEqual(digests[2]["op_type"], "Placeholder")
         self.assertEqual(digests[2]["output_slot"], 0)
         self.assertTrue(digests[2]["op_name"])
-        self.assertTrue(digests[0]["graph_id"])
+        self.assertNotEqual(digests[2]["op_name"], digests[0]["op_name"])
+        self.assertTrue(digests[2]["graph_id"])
+
+        self.assertGreaterEqual(
+            digests[3]["wall_time"], digests[2]["wall_time"]
+        )
+        # The unstack() function uses the Unpack op under the hood.
+        self.assertEqual(digests[3]["op_type"], "Unpack")
+        self.assertEqual(digests[3]["output_slot"], 0)
+        self.assertTrue(digests[3]["op_name"])
+        self.assertTrue(digests[3]["graph_id"])
 
     def testServeGraphExecutionDigestsImplicitFullRange(self):
         _generate_tfdbg_v2_data(self.logdir)
@@ -779,10 +788,10 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         )
         data = json.loads(response.get_data())
         self.assertEqual(data["begin"], 0)
-        self.assertEqual(data["end"], 186)
-        self.assertEqual(data["num_digests"], 186)
+        self.assertEqual(data["end"], 219)
+        self.assertEqual(data["num_digests"], 219)
         digests = data["graph_execution_digests"]
-        self.assertLen(digests, 186)
+        self.assertLen(digests, 219)
         self.assertGreater(digests[-1]["wall_time"], 0)
         # Due to the while loop in the tf.function, the last op executed
         # is a Less op.
@@ -795,10 +804,10 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         _generate_tfdbg_v2_data(self.logdir)
         run = self._getExactlyOneRun()
 
-        # begin = 0; end = 200
+        # begin = 0; end = 300
         response = self.server.get(
             _ROUTE_PREFIX
-            + "/graph_execution/digests?run=%s&begin=0&end=200" % run
+            + "/graph_execution/digests?run=%s&begin=0&end=300" % run
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
@@ -806,7 +815,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         )
         self.assertEqual(
             json.loads(response.get_data()),
-            {"error": "Invalid argument: end index (200) out of bounds (186)"},
+            {"error": "Invalid argument: end index (300) out of bounds (219)"},
         )
 
         # begin = -1; end = 2
@@ -903,7 +912,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertGreaterEqual(len(graph_exec["graph_ids"]), 1)
         self.assertEqual(graph_exec["graph_ids"][-1], graph_exec["graph_id"])
         self.assertEqual(
-            graph_exec["debug_tensor_value"], [2.0, 4.0, 0.0, 0.0, 0.0]
+            graph_exec["debug_tensor_value"], [3.0, 4.0, 0.0, 0.0, 0.0]
         )
         self.assertEndsWith(graph_exec["device_name"], _DEFAULT_DEVICE_SUFFIX)
 
@@ -916,7 +925,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertGreaterEqual(len(graph_exec["graph_ids"]), 1)
         self.assertEqual(graph_exec["graph_ids"][-1], graph_exec["graph_id"])
         self.assertEqual(
-            graph_exec["debug_tensor_value"], [3.0, 1.0, 0.0, 0.0, 0.0]
+            graph_exec["debug_tensor_value"], [4.0, 1.0, 0.0, 0.0, 0.0]
         )
         self.assertEndsWith(graph_exec["device_name"], _DEFAULT_DEVICE_SUFFIX)
 
@@ -926,9 +935,9 @@ class DebuggerV2PluginTest(tf.test.TestCase):
 
         # _generate_tfdbg_v2_data() generates exactly 186 graph-execution
         # traces.
-        # begin = 0; end = 187
+        # begin = 0; end = 220
         response = self.server.get(
-            _ROUTE_PREFIX + "/graph_execution/data?run=%s&begin=0&end=187" % run
+            _ROUTE_PREFIX + "/graph_execution/data?run=%s&begin=0&end=220" % run
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
@@ -936,7 +945,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         )
         self.assertEqual(
             json.loads(response.get_data()),
-            {"error": "Invalid argument: end index (187) out of bounds (186)"},
+            {"error": "Invalid argument: end index (220) out of bounds (219)"},
         )
 
         # begin = -1; end = 2

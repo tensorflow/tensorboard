@@ -17,6 +17,7 @@ import {Store} from '@ngrx/store';
 import {Actions, createEffect, ofType} from '@ngrx/effects';
 import {merge, Observable} from 'rxjs';
 import {
+  debounceTime,
   filter,
   map,
   mergeMap,
@@ -37,6 +38,9 @@ import {
   executionScrollLeft,
   executionScrollRight,
   executionScrollToIndex,
+  graphExecutionDataLoaded,
+  graphExecutionDataRequested,
+  graphExecutionScrollToIndex,
   numAlertsAndBreakdownLoaded,
   numAlertsAndBreakdownRequested,
   numExecutionsLoaded,
@@ -61,6 +65,11 @@ import {
   getExecutionPageSize,
   getExecutionScrollBeginIndex,
   getFocusedSourceFileContent,
+  getGraphExecutionDataPageLoadedSizes,
+  getGraphExecutionDisplayCount,
+  getGraphExecutionPageSize,
+  getGraphExecutionScrollBeginIndex,
+  getGraphExecutionDataLoadingPages,
   getNumExecutions,
   getNumExecutionsLoaded,
   getLoadedAlertsOfFocusedType,
@@ -542,6 +551,109 @@ export class DebuggerEffects {
   }
 
   /**
+   * Emits when scrolling event leads to need to load new intra-graph execution
+   * data.
+   *
+   * The returned observable contains the
+   *   - runId: active runId,
+   *   - missingPage: indices of missing `GraphExecution` pages that need to be
+   *     loaded by a downstream pipe.
+   *   - pageSize: GraphExecution data page size.
+   *   - numGraphExecutions: Current total number of `GraphExecution`s.
+   */
+  private onGraphExecutionScroll(): Observable<{
+    runId: string;
+    missingPages: number[];
+    pageSize: number;
+    numGraphExecutions: number;
+  }> {
+    return this.actions$.pipe(
+      ofType(graphExecutionScrollToIndex),
+      debounceTime(100),
+      withLatestFrom(
+        this.store.select(getActiveRunId),
+        this.store.select(getNumGraphExecutions),
+        this.store.select(getGraphExecutionScrollBeginIndex)
+      ),
+      filter(([, runId, numGraphExecutions]) => {
+        return runId !== null && numGraphExecutions > 0;
+      }),
+      map(([, runId, numGraphExecutions, scrollBeginIndex]) => ({
+        runId,
+        numGraphExecutions,
+        scrollBeginIndex,
+      })),
+      withLatestFrom(
+        this.store.select(getGraphExecutionPageSize),
+        this.store.select(getGraphExecutionDisplayCount),
+        this.store.select(getGraphExecutionDataLoadingPages),
+        this.store.select(getGraphExecutionDataPageLoadedSizes)
+      ),
+      map(
+        ([
+          {runId, numGraphExecutions, scrollBeginIndex},
+          pageSize,
+          displayCount,
+          loadingPages,
+          pageLoadedSizes,
+        ]) => {
+          let missingPages: number[] = getMissingPages(
+            scrollBeginIndex,
+            Math.min(scrollBeginIndex + displayCount, numGraphExecutions),
+            pageSize,
+            numGraphExecutions,
+            pageLoadedSizes
+          );
+          // Omit pages that are already loading.
+          missingPages = missingPages.filter(
+            (page) => loadingPages.indexOf(page) === -1
+          );
+          return {
+            runId: runId!,
+            missingPages,
+            pageSize,
+            numGraphExecutions,
+          };
+        }
+      )
+    );
+  }
+
+  private loadGraphExecutionPages(
+    prevStream$: Observable<{
+      runId: string;
+      missingPages: number[];
+      pageSize: number;
+      numGraphExecutions: number;
+    }>
+  ): Observable<void> {
+    return prevStream$.pipe(
+      filter(({missingPages}) => missingPages.length > 0),
+      tap(({missingPages}) => {
+        missingPages.forEach((pageIndex) => {
+          this.store.dispatch(graphExecutionDataRequested({pageIndex}));
+        });
+      }),
+      mergeMap(({runId, missingPages, pageSize, numGraphExecutions}) => {
+        const begin = missingPages[0] * pageSize;
+        const end = Math.min(
+          (missingPages[missingPages.length - 1] + 1) * pageSize,
+          numGraphExecutions
+        );
+        return this.dataSource.fetchGraphExecutionData(runId!, begin, end).pipe(
+          tap((graphExecutionDataResponse) => {
+            this.store.dispatch(
+              graphExecutionDataLoaded(graphExecutionDataResponse)
+            );
+          }),
+          map(() => void null)
+        );
+        // TODO(cais): Add catchError() to pipe.
+      })
+    );
+  }
+
+  /**
    * Emits when user focuses on an alert type.
    *
    * Returns an Observable for what additional execution digests need to be fetched.
@@ -766,6 +878,8 @@ export class DebuggerEffects {
      *
      * on source file requested ---> fetch source file
      *
+     * on graph-execution scroll --> fetch graph-execution data
+     *
      **/
     this.loadData$ = createEffect(
       () => {
@@ -827,6 +941,10 @@ export class DebuggerEffects {
 
         const onSourceFileFocused$ = this.onSourceFileFocused();
 
+        const onGraphExecutionScroll$ = this.loadGraphExecutionPages(
+          this.onGraphExecutionScroll()
+        );
+
         // ExecutionDigest and ExecutionData can be loaded in parallel.
         return merge(
           onNumAlertsLoaded$,
@@ -834,7 +952,8 @@ export class DebuggerEffects {
           onExecutionDataLoaded$,
           onNumGraphExecutionLoaded$,
           loadSourceFileList$,
-          onSourceFileFocused$
+          onSourceFileFocused$,
+          onGraphExecutionScroll$
         ).pipe(
           // createEffect expects an Observable that emits {}.
           map(() => ({}))

@@ -30,7 +30,6 @@ import json
 import os
 import re
 import shutil
-import sqlite3
 import tempfile
 import textwrap
 import threading
@@ -51,7 +50,6 @@ from tensorboard.backend import experimental_plugin
 from tensorboard.backend import http_util
 from tensorboard.backend import path_prefix
 from tensorboard.backend import security_validator
-from tensorboard.backend.event_processing import db_import_multiplexer
 from tensorboard.backend.event_processing import (
     data_provider as event_data_provider,
 )
@@ -134,40 +132,18 @@ def standard_tensorboard_wsgi(flags, plugin_loaders, assets_zip_provider):
     data_provider = None
     multiplexer = None
     reload_interval = flags.reload_interval
-    if flags.db_import:
-        # DB import mode.
-        db_uri = flags.db
-        # Create a temporary DB file if we weren't given one.
-        if not db_uri:
-            tmpdir = tempfile.mkdtemp(prefix="tbimport")
-            atexit.register(shutil.rmtree, tmpdir)
-            db_uri = "sqlite:%s/tmp.sqlite" % tmpdir
-        db_connection_provider = create_sqlite_connection_provider(db_uri)
-        logger.info("Importing logdir into DB at %s", db_uri)
-        multiplexer = db_import_multiplexer.DbImportMultiplexer(
-            db_uri=db_uri,
-            db_connection_provider=db_connection_provider,
-            purge_orphaned_data=flags.purge_orphaned_data,
-            max_reload_threads=flags.max_reload_threads,
-        )
-    elif flags.db:
-        # DB read-only mode, never load event logs.
-        reload_interval = -1
-        db_connection_provider = create_sqlite_connection_provider(flags.db)
-        multiplexer = _DbModeMultiplexer(flags.db, db_connection_provider)
-    else:
-        # Regular logdir loading mode.
-        sampling_hints = _parse_samples_per_plugin(flags)
-        multiplexer = event_multiplexer.EventMultiplexer(
-            size_guidance=DEFAULT_SIZE_GUIDANCE,
-            tensor_size_guidance=_apply_tensor_size_guidance(sampling_hints),
-            purge_orphaned_data=flags.purge_orphaned_data,
-            max_reload_threads=flags.max_reload_threads,
-            event_file_active_filter=_get_event_file_active_filter(flags),
-        )
-        data_provider = event_data_provider.MultiplexerDataProvider(
-            multiplexer, flags.logdir or flags.logdir_spec
-        )
+    # Regular logdir loading mode.
+    sampling_hints = _parse_samples_per_plugin(flags)
+    multiplexer = event_multiplexer.EventMultiplexer(
+        size_guidance=DEFAULT_SIZE_GUIDANCE,
+        tensor_size_guidance=_apply_tensor_size_guidance(sampling_hints),
+        purge_orphaned_data=flags.purge_orphaned_data,
+        max_reload_threads=flags.max_reload_threads,
+        event_file_active_filter=_get_event_file_active_filter(flags),
+    )
+    data_provider = event_data_provider.MultiplexerDataProvider(
+        multiplexer, flags.logdir or flags.logdir_spec
+    )
 
     if reload_interval >= 0:
         # We either reload the multiplexer once when TensorBoard starts up, or we
@@ -226,19 +202,9 @@ def TensorBoardWSGIApp(
 
     :type plugins: list[base_plugin.TBLoader]
     """
-    db_uri = None
-    db_connection_provider = None
-    if isinstance(
-        deprecated_multiplexer,
-        (db_import_multiplexer.DbImportMultiplexer, _DbModeMultiplexer),
-    ):
-        db_uri = deprecated_multiplexer.db_uri
-        db_connection_provider = deprecated_multiplexer.db_connection_provider
     plugin_name_to_instance = {}
     context = base_plugin.TBContext(
         data_provider=data_provider,
-        db_connection_provider=db_connection_provider,
-        db_uri=db_uri,
         flags=flags,
         logdir=flags.logdir,
         multiplexer=deprecated_multiplexer,
@@ -759,39 +725,6 @@ def start_reloading_multiplexer(
         raise ValueError("unrecognized reload_task: %s" % reload_task)
 
 
-def create_sqlite_connection_provider(db_uri):
-    """Returns function that returns SQLite Connection objects.
-
-    Args:
-      db_uri: A string URI expressing the DB file, e.g. "sqlite:~/tb.db".
-
-    Returns:
-      A function that returns a new PEP-249 DB Connection, which must be closed,
-      each time it is called.
-
-    Raises:
-      ValueError: If db_uri is not a valid sqlite file URI.
-    """
-    uri = urlparse.urlparse(db_uri)
-    if uri.scheme != "sqlite":
-        raise ValueError("Only sqlite DB URIs are supported: " + db_uri)
-    if uri.netloc:
-        raise ValueError("Can not connect to SQLite over network: " + db_uri)
-    if uri.path == ":memory:":
-        raise ValueError("Memory mode SQLite not supported: " + db_uri)
-    path = os.path.expanduser(uri.path)
-    params = _get_connect_params(uri.query)
-    # TODO(@jart): Add thread-local pooling.
-    return lambda: sqlite3.connect(path, **params)
-
-
-def _get_connect_params(query):
-    params = urlparse.parse_qs(query)
-    if any(len(v) > 2 for v in params.values()):
-        raise ValueError("DB URI params list has duplicate keys: " + query)
-    return {k: json.loads(v[0]) for k, v in params.items()}
-
-
 def _clean_path(path):
     """Removes a trailing slash from a non-root path.
 
@@ -821,44 +754,6 @@ def _get_event_file_active_filter(flags):
     if inactive_secs < 0:
         return lambda timestamp: True
     return lambda timestamp: timestamp + inactive_secs >= time.time()
-
-
-class _DbModeMultiplexer(event_multiplexer.EventMultiplexer):
-    """Shim EventMultiplexer to use when in read-only DB mode.
-
-    In read-only DB mode, the EventMultiplexer is nonfunctional - there is no
-    logdir to reload, and the data is all exposed via SQL. This class represents
-    the do-nothing EventMultiplexer for that purpose, which serves only as a
-    conduit for DB-related parameters.
-
-    The load APIs raise exceptions if called, and the read APIs always
-    return empty results.
-    """
-
-    def __init__(self, db_uri, db_connection_provider):
-        """Constructor for `_DbModeMultiplexer`.
-
-        Args:
-          db_uri: A URI to the database file in use.
-          db_connection_provider: Provider function for creating a DB connection.
-        """
-        logger.info("_DbModeMultiplexer initializing for %s", db_uri)
-        super(_DbModeMultiplexer, self).__init__()
-        self.db_uri = db_uri
-        self.db_connection_provider = db_connection_provider
-        logger.info("_DbModeMultiplexer done initializing")
-
-    def AddRun(self, path, name=None):
-        """Unsupported."""
-        raise NotImplementedError()
-
-    def AddRunsFromDirectory(self, path, name=None):
-        """Unsupported."""
-        raise NotImplementedError()
-
-    def Reload(self):
-        """Unsupported."""
-        raise NotImplementedError()
 
 
 def make_plugin_loader(plugin_spec):
