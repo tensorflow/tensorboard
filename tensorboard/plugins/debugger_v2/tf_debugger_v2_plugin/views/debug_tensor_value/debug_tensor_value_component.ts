@@ -252,51 +252,49 @@ export class DebugTensorHasInfOrNaNComponent {
 @Component({
   selector: 'debug-tensor-value',
   template: `
-    <div class="flexbox">
-      <debug-tensor-dtype
-        *ngIf="debugTensorValue.dtype !== undefined"
-        [dtype]="debugTensorValue.dtype"
-      >
-      </debug-tensor-dtype>
-      <debug-tensor-rank
-        *ngIf="debugTensorValue.rank !== undefined"
-        [rank]="debugTensorValue.rank"
-      >
-      </debug-tensor-rank>
-      <debug-tensor-shape
-        *ngIf="debugTensorValue.shape !== undefined"
-        [shape]="debugTensorValue.shape"
-      >
-      </debug-tensor-shape>
-      <debug-tensor-has-inf-or-nan
-        *ngIf="debugTensorValue.hasInfOrNaN !== undefined"
-        [hasInfOrNaN]="debugTensorValue.hasInfOrNaN"
-      >
-      </debug-tensor-has-inf-or-nan>
-      <debug-tensor-numeric-breakdown
-        *ngIf="debugTensorValue.size !== undefined"
-        size="{{ debugTensorValue.size }}"
-        [numNegativeInfs]="debugTensorValue.numNegativeInfs"
-        [numPositiveInfs]="debugTensorValue.numPositiveInfs"
-        [numNaNs]="debugTensorValue.numNaNs"
-        [numNegativeFinites]="debugTensorValue.numNegativeFinites"
-        [numZeros]="debugTensorValue.numZeros"
-        [numPositiveFinites]="debugTensorValue.numPositiveFinites"
-      >
-      </debug-tensor-numeric-breakdown>
-    </div>
+    <debug-tensor-dtype
+      *ngIf="debugTensorValue.dtype !== undefined"
+      [dtype]="debugTensorValue.dtype"
+    >
+    </debug-tensor-dtype>
+    <debug-tensor-rank
+      *ngIf="debugTensorValue.rank !== undefined"
+      [rank]="debugTensorValue.rank"
+    >
+    </debug-tensor-rank>
+    <debug-tensor-shape
+      *ngIf="debugTensorValue.shape !== undefined"
+      [shape]="debugTensorValue.shape"
+    >
+    </debug-tensor-shape>
+    <debug-tensor-has-inf-or-nan
+      *ngIf="debugTensorValue.hasInfOrNaN !== undefined"
+      [hasInfOrNaN]="debugTensorValue.hasInfOrNaN"
+    >
+    </debug-tensor-has-inf-or-nan>
+    <debug-tensor-numeric-breakdown
+      *ngIf="debugTensorValue.size !== undefined"
+      size="{{ debugTensorValue.size }}"
+      [numNegativeInfs]="debugTensorValue.numNegativeInfs"
+      [numPositiveInfs]="debugTensorValue.numPositiveInfs"
+      [numNaNs]="debugTensorValue.numNaNs"
+      [numNegativeFinites]="debugTensorValue.numNegativeFinites"
+      [numZeros]="debugTensorValue.numZeros"
+      [numPositiveFinites]="debugTensorValue.numPositiveFinites"
+    >
+    </debug-tensor-numeric-breakdown>
   `,
   styles: [
     `
       :host {
-        display: inline-block;
-        overflow: hidden;
-      }
-      .flexbox {
         align-items: flex-start;
         display: flex;
         flex-wrap: nowrap;
+        overflow: hidden;
         vertical-align: top;
+      }
+      debug-tensor-numeric-breakdown {
+        display: inline-block;
       }
     `,
   ],

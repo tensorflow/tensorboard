@@ -58,18 +58,6 @@ limitations under the License.
   width: 100%;
 }
 
-.tensor-debug-info {
-  display: inline-block;
-  overflow: hidden;
-}
-
-.tensor-debug-info-flexbox {
-  align-items: flex-start;
-  display: flex;
-  flex-wrap: nowrap;
-  vertical-align: top;
-}
-
 .tensor-item {
   border-bottom: 1px solid rgba(0, 0, 0, 0.12);
   display: flex;
@@ -77,7 +65,7 @@ limitations under the License.
   height: 36px;
   line-height: 36px;
   text-align: left;
-  vertical-align: top;
+  vertical-align: middle;
   white-space: nowrap;
   width: 100%;
 }
@@ -101,4 +89,9 @@ limitations under the License.
   padding-right: 8px;
   text-align: right;
   width: 240px;
+}
+
+debug-tensor-value {
+  display: inline-block;
+  margin: 2px 0;
 }

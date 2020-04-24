@@ -127,8 +127,8 @@ describe('debug-tensor-value components', () => {
       const countElements = fixture.debugElement.queryAll(
         By.css('.category-count')
       );
-      expect(tagElements.length).toEqual(3);
-      expect(countElements.length).toEqual(3);
+      expect(tagElements.length).toBe(3);
+      expect(countElements.length).toBe(3);
       expect(tagElements[0].nativeElement.innerText).toBe('-');
       expect(countElements[0].nativeElement.innerText).toBe('×300');
       expect(tagElements[1].nativeElement.innerText).toBe('0');
@@ -157,8 +157,8 @@ describe('debug-tensor-value components', () => {
       const countElements = fixture.debugElement.queryAll(
         By.css('.category-count')
       );
-      expect(tagElements.length).toEqual(3);
-      expect(countElements.length).toEqual(3);
+      expect(tagElements.length).toBe(3);
+      expect(countElements.length).toBe(3);
       expect(tagElements[0].nativeElement.innerText).toBe('NaN');
       expect(countElements[0].nativeElement.innerText).toBe('×300');
       expect(tagElements[1].nativeElement.innerText).toBe('-∞');

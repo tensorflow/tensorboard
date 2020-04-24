@@ -63,6 +63,8 @@ limitations under the License.
           *ngFor="let singleDebugTensorValues of debugTensorValues; index as i;"
           class="output-slot-container"
         >
+          <!-- TensorFlow's `tf.Tensor` has 0-based slots in their names. -->
+          <!-- We need to be consistent with that. -->
           <div class="output-slot-number">
             Output slot {{ i }}:
           </div>

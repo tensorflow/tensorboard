@@ -174,7 +174,7 @@ export interface DebugTensorValue {
   // Size (total element count) of the tensor.
   size?: number;
 
-  // Number of NaNa elements.
+  // Number of NaN elements.
   numNaNs?: number;
 
   // Number of -Infinity elements.

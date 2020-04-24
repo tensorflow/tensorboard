@@ -18,7 +18,7 @@ import {parseDebugTensorValue} from './debug_tensor_value';
 
 describe('parseDebugTensorValue', () => {
   describe('CURT_HEALTH', () => {
-    it('has no inf or nan', () => {
+    it('returns correct value if tensor has no inf or nan', () => {
       const debugValue = parseDebugTensorValue(TensorDebugMode.CURT_HEALTH, [
         123, // tensor ID
         0, // has inf or nan?
@@ -28,7 +28,7 @@ describe('parseDebugTensorValue', () => {
       });
     });
 
-    it('has inf or nan', () => {
+    it('returns correct value if tensor has inf or nan', () => {
       const debugValue = parseDebugTensorValue(TensorDebugMode.CURT_HEALTH, [
         123, // tensor ID
         1, // has inf or nan?
@@ -37,10 +37,20 @@ describe('parseDebugTensorValue', () => {
         hasInfOrNaN: true,
       });
     });
+
+    for (const array of [null, [0], [0, 1, 1]]) {
+      it(`throws error for null or wrong array arg: ${JSON.stringify(
+        array
+      )}`, () => {
+        expect(() =>
+          parseDebugTensorValue(TensorDebugMode.CURT_HEALTH, array)
+        ).toThrowError(/CURT_HEALTH.*expect.*length 2/);
+      });
+    }
   });
 
   describe('CONCISE_HEALTH', () => {
-    it('all healthy', () => {
+    it('returns correct value if tensor is all healthy', () => {
       const debugValue = parseDebugTensorValue(TensorDebugMode.CONCISE_HEALTH, [
         123,
         1000, // size
@@ -53,13 +63,13 @@ describe('parseDebugTensorValue', () => {
       });
     });
 
-    it('has nan', () => {
+    it('returns correct value if tensor has nan', () => {
       const debugValue = parseDebugTensorValue(TensorDebugMode.CONCISE_HEALTH, [
         123,
         1000, // size
+        0,
+        0,
         1,
-        0,
-        0,
       ]);
       expect(debugValue).toEqual({
         size: 1000,
@@ -67,12 +77,12 @@ describe('parseDebugTensorValue', () => {
       });
     });
 
-    it('has neg inf', () => {
+    it('returns correct value if tensor has neg inf', () => {
       const debugValue = parseDebugTensorValue(TensorDebugMode.CONCISE_HEALTH, [
         123,
         1000,
-        0,
         2,
+        0,
         0,
       ]);
       expect(debugValue).toEqual({
@@ -81,13 +91,13 @@ describe('parseDebugTensorValue', () => {
       });
     });
 
-    it('has pos inf', () => {
+    it('returns correct value if tensor has pos inf', () => {
       const debugValue = parseDebugTensorValue(TensorDebugMode.CONCISE_HEALTH, [
         123,
         1000, // size
         0,
-        0,
         22,
+        0,
       ]);
       expect(debugValue).toEqual({
         size: 1000,
@@ -95,7 +105,7 @@ describe('parseDebugTensorValue', () => {
       });
     });
 
-    it('full house', () => {
+    it('returns correct value if tensor has nan, -inf and inf', () => {
       const debugValue = parseDebugTensorValue(TensorDebugMode.CONCISE_HEALTH, [
         123,
         1000, // size
@@ -105,15 +115,25 @@ describe('parseDebugTensorValue', () => {
       ]);
       expect(debugValue).toEqual({
         size: 1000,
-        numNaNs: 10,
-        numNegativeInfs: 20,
-        numPositiveInfs: 30,
+        numNegativeInfs: 10,
+        numPositiveInfs: 20,
+        numNaNs: 30,
       });
     });
+
+    for (const array of [null, [0, 10, 0, 0], [0, 10, 0, 0, 0, 0]]) {
+      it(`throws error for null or wrong array arg: ${JSON.stringify(
+        array
+      )}`, () => {
+        expect(() =>
+          parseDebugTensorValue(TensorDebugMode.CONCISE_HEALTH, array)
+        ).toThrowError(/CONCISE_HEALTH.*expect.*length 5/);
+      });
+    }
   });
 
   describe('SHAPE', () => {
-    it('0D bool', () => {
+    it('returns correct value for 0D bool', () => {
       const debugValue = parseDebugTensorValue(TensorDebugMode.SHAPE, [
         123,
         10, // bool
@@ -134,7 +154,7 @@ describe('parseDebugTensorValue', () => {
       });
     });
 
-    it('1D int32', () => {
+    it('returns correct value for 1D int32', () => {
       const debugValue = parseDebugTensorValue(TensorDebugMode.SHAPE, [
         123,
         3, // int32
@@ -155,7 +175,7 @@ describe('parseDebugTensorValue', () => {
       });
     });
 
-    it('2D float32', () => {
+    it('returns correct value for 2D float32', () => {
       const debugValue = parseDebugTensorValue(TensorDebugMode.SHAPE, [
         123,
         1, // float32
@@ -176,7 +196,7 @@ describe('parseDebugTensorValue', () => {
       });
     });
 
-    it('6D float64', () => {
+    it('returns correct value for 6D float64', () => {
       const debugValue = parseDebugTensorValue(TensorDebugMode.SHAPE, [
         123,
         2, // float64
@@ -197,7 +217,7 @@ describe('parseDebugTensorValue', () => {
       });
     });
 
-    it('truncated shape: 7D', () => {
+    it('returns correct value for truncated shape: 7D', () => {
       const debugValue = parseDebugTensorValue(TensorDebugMode.SHAPE, [
         123,
         5, // int16
@@ -219,7 +239,7 @@ describe('parseDebugTensorValue', () => {
       });
     });
 
-    it('truncated shape: 8D', () => {
+    it('returns correct value for truncated shape: 8D', () => {
       const debugValue = parseDebugTensorValue(TensorDebugMode.SHAPE, [
         123,
         1, // float32
@@ -240,10 +260,24 @@ describe('parseDebugTensorValue', () => {
         shape: [undefined, undefined, 3, 4, 1, 2, 1, 5],
       });
     });
+
+    for (const array of [
+      null,
+      [123, 1, 8, 1200, 3, 4, 1, 2, 1],
+      [123, 1, 8, 1200, 3, 4, 1, 2, 1, 5, 6],
+    ]) {
+      it(`throws error for null or wrong array arg: ${JSON.stringify(
+        array
+      )}`, () => {
+        expect(() =>
+          parseDebugTensorValue(TensorDebugMode.SHAPE, array)
+        ).toThrowError(/SHAPE.*expect.*length 10/);
+      });
+    }
   });
 
   describe('FULL_HEALTH', () => {
-    it('float32 2D with no inf or nan', () => {
+    it('returns correct value for float32 2D with no inf or nan', () => {
       const debugValue = parseDebugTensorValue(TensorDebugMode.FULL_HEALTH, [
         123,
         0,
@@ -267,7 +301,7 @@ describe('parseDebugTensorValue', () => {
       });
     });
 
-    it('float64 scalar nan', () => {
+    it('returns correct value for float64 scalar nan', () => {
       const debugValue = parseDebugTensorValue(TensorDebugMode.FULL_HEALTH, [
         123,
         0,
@@ -289,7 +323,7 @@ describe('parseDebugTensorValue', () => {
       });
     });
 
-    it('bfloat16 1D with -inf and +inf', () => {
+    it('returns correct value for bfloat16 1D with -inf and +inf', () => {
       const debugValue = parseDebugTensorValue(TensorDebugMode.FULL_HEALTH, [
         123,
         0,
@@ -311,6 +345,20 @@ describe('parseDebugTensorValue', () => {
         numPositiveInfs: 7,
       });
     });
+
+    for (const array of [
+      null,
+      [123, 0, 14, 1, 10, 3, 7, 0, 0, 0],
+      [123, 0, 14, 1, 10, 3, 7, 0, 0, 0, 0, 0],
+    ]) {
+      it(`throws error for null or wrong array arg: ${JSON.stringify(
+        array
+      )}`, () => {
+        expect(() =>
+          parseDebugTensorValue(TensorDebugMode.FULL_HEALTH, array)
+        ).toThrowError(/FULL_HEALTH.*expect.*length 11/);
+      });
+    }
   });
 
   describe('NO_TENSOR', () => {
@@ -319,6 +367,16 @@ describe('parseDebugTensorValue', () => {
         {}
       );
     });
+
+    for (const array of [[], [0]]) {
+      it(`throws error for non-null array arg: ${JSON.stringify(
+        array
+      )}`, () => {
+        expect(() =>
+          parseDebugTensorValue(TensorDebugMode.NO_TENSOR, array)
+        ).toThrowError(/non-null.*NO_TENSOR/);
+      });
+    }
   });
 
   describe('FULL_TENSOR', () => {
@@ -327,6 +385,16 @@ describe('parseDebugTensorValue', () => {
         {}
       );
     });
+
+    for (const array of [[], [0]]) {
+      it(`throws error for non-null array arg: ${JSON.stringify(
+        array
+      )}`, () => {
+        expect(() =>
+          parseDebugTensorValue(TensorDebugMode.FULL_TENSOR, array)
+        ).toThrowError(/non-null.*FULL_TENSOR/);
+      });
+    }
   });
 
   describe('Invalid TensorDebugMode', () => {

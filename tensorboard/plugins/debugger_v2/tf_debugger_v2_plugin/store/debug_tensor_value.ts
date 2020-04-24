@@ -29,79 +29,119 @@ import {DebugTensorValue, TensorDebugMode} from './debugger_types';
  *   For numbers that represent breakdown of numeric values by type
  *   (e.g., counts of -inf, +inf and nan), the corresponding fields
  *   in the returned object will be defined only if the count is non-zero.
+ *   This is because the return value of this function is meant for
+ *   consumption by UI elements, which have the need to be concise.
+ *   They will omit 0 counts because those are implied and would be
+ *   space-consuming and distracting to show.
  */
 export function parseDebugTensorValue(
   tensorDebugMode: TensorDebugMode,
   array: number[] | null
 ): DebugTensorValue {
-  switch (+tensorDebugMode) {
+  switch (tensorDebugMode) {
     case TensorDebugMode.NO_TENSOR: {
+      if (array !== null) {
+        throw new Error(
+          'Unexpectedly received non-null debug-tensor-value array ' +
+            'under NO_TENSOR mode'
+        );
+      }
       return {};
     }
     case TensorDebugMode.CURT_HEALTH: {
+      if (array === null || array.length !== 2) {
+        throw new Error(
+          `Under CURT_HEALTH mode, expected debug-tensor-value array ` +
+            `to have length 2, but got ${JSON.stringify(array)}`
+        );
+      }
       return {
-        hasInfOrNaN: Boolean(array![1]),
+        hasInfOrNaN: Boolean(array[1]),
       };
     }
     case TensorDebugMode.CONCISE_HEALTH: {
+      if (array === null || array.length !== 5) {
+        throw new Error(
+          `Under CONCISE_HEALTH mode, expected debug-tensor-value array ` +
+            `to have length 5, but got ${JSON.stringify(array)}`
+        );
+      }
       const value: DebugTensorValue = {
-        size: array![1],
+        size: array[1],
       };
-      if (array![2] > 0) {
-        value.numNaNs = array![2];
+      if (array[2] > 0) {
+        value.numNegativeInfs = array[2];
       }
-      if (array![3] > 0) {
-        value.numNegativeInfs = array![3];
+      if (array[3] > 0) {
+        value.numPositiveInfs = array[3];
       }
-      if (array![4] > 0) {
-        value.numPositiveInfs = array![4];
+      if (array[4] > 0) {
+        value.numNaNs = array[4];
       }
       return value;
     }
     case TensorDebugMode.SHAPE: {
-      const rank = array![2];
-      let shape: number[] = array!.slice(4, Math.min(4 + rank, array!.length));
+      if (array === null || array.length !== 10) {
+        throw new Error(
+          `Under SHAPE mode, expected debug-tensor-value array ` +
+            `to have length 10, but got ${JSON.stringify(array)}`
+        );
+      }
+      const rank = array[2];
+      let shape: number[] = array.slice(4, Math.min(4 + rank, array.length));
       if (shape.length < rank) {
         // The SHAPE mode truncates the shape at head.
         shape = new Array<number>(rank - shape.length).concat(shape);
       }
       return {
-        dtype: DTYPE_ENUM_TO_NAME[array![1]],
+        dtype: DTYPE_ENUM_TO_NAME[array[1]],
         rank,
-        size: array![3],
+        size: array[3],
         shape,
       };
     }
     case TensorDebugMode.FULL_HEALTH: {
-      const rank = array![3];
+      if (array === null || array.length !== 11) {
+        throw new Error(
+          `Under FULL_HEALTH mode, expected debug-tensor-value array ` +
+            `to have length 11, but got ${JSON.stringify(array)}`
+        );
+      }
+      const rank = array[3];
       const value: DebugTensorValue = {
-        dtype: DTYPE_ENUM_TO_NAME[array![2]],
+        dtype: DTYPE_ENUM_TO_NAME[array[2]],
         rank,
-        size: array![4],
+        size: array[4],
       };
-      if (array![5] > 0) {
-        value.numNegativeInfs = array![5];
+      if (array[5] > 0) {
+        value.numNegativeInfs = array[5];
       }
-      if (array![6] > 0) {
-        value.numPositiveInfs = array![6];
+      if (array[6] > 0) {
+        value.numPositiveInfs = array[6];
       }
-      if (array![7] > 0) {
-        value.numNaNs = array![7];
+      if (array[7] > 0) {
+        value.numNaNs = array[7];
       }
-      if (array![8] > 0) {
-        value.numNegativeFinites = array![8];
+      if (array[8] > 0) {
+        value.numNegativeFinites = array[8];
       }
-      if (array![9] > 0) {
-        value.numZeros = array![9];
+      if (array[9] > 0) {
+        value.numZeros = array[9];
       }
-      if (array![10] > 0) {
-        value.numPositiveFinites = array![10];
+      if (array[10] > 0) {
+        value.numPositiveFinites = array[10];
       }
       return value;
     }
     case TensorDebugMode.FULL_TENSOR: {
       // Under FULL_TENSOR mode, the full tensor value is supplied via
       // separate means. No summary values are provided for the tensor value.
+      if (array !== null) {
+        throw new Error(
+          'Unexpectedly received non-null debug-tensor-value array ' +
+            'under FULL_TENSOR mode'
+        );
+      }
       return {};
     }
     default: {
