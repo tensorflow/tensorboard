@@ -894,7 +894,7 @@ describe('Debugger Container', () => {
   });
 
   describe('Stack Trace module', () => {
-    it('Shows non-empty stack frames correctly', () => {
+    it('Shows non-empty stack frames; highlights focused frame', () => {
       const fixture = TestBed.createComponent(StackTraceContainer);
       const stackFrame0 = createTestStackFrame();
       const stackFrame1 = createTestStackFrame();
@@ -970,6 +970,26 @@ describe('Debugger Container', () => {
       expect(focusedFilePathElement.nativeElement.innerText).toBe(
         stackFrame1[1].slice(stackFrame1[1].lastIndexOf('/') + 1)
       );
+    });
+
+    it('does not highlight any frame when there is no frame focus', () => {
+      const fixture = TestBed.createComponent(StackTraceContainer);
+      const stackFrame0 = createTestStackFrame();
+      const stackFrame1 = createTestStackFrame();
+      const stackFrame2 = createTestStackFrame();
+      store.overrideSelector(getFocusedExecutionStackFrames, [
+        stackFrame0,
+        stackFrame1,
+        stackFrame2,
+      ]);
+      store.overrideSelector(getFocusedSourceLineSpec, null);
+      fixture.detectChanges();
+
+      // Check that no stack frame has been highlighted by CSS class.
+      const focusedElements = fixture.debugElement.queryAll(
+        By.css('.focused-stack-frame')
+      );
+      expect(focusedElements.length).toBe(0);
     });
 
     it('Shows loading state when stack-trace data is unavailable', () => {
