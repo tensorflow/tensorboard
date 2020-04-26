@@ -436,6 +436,15 @@ py_library(
     visibility = ["//visibility:public"],
 )
 
+py_library(
+    name = "expect_pandas_installed",
+    # This is a dummy rule used as a pandas dependency in open-source.
+    # We expect pandas to already be installed on the system, e.g. via
+    # `pip install pandas`
+    visibility = ["//visibility:public"],
+)
+
+
 filegroup(
     name = "tf_web_library_default_typings",
     srcs = [
