@@ -15,6 +15,7 @@ limitations under the License.
 import {Component, Input} from '@angular/core';
 
 import {Execution, TensorDebugMode} from '../../store/debugger_types';
+import {parseDebugTensorValue} from '../../store/debug_tensor_value';
 
 @Component({
   selector: 'execution-data-component',
@@ -51,4 +52,5 @@ export class ExecutionDataComponent {
 
   // So that the enum can be used in the template html.
   public TensorDebugMode = TensorDebugMode;
+  parseDebugTensorValue = parseDebugTensorValue;
 }
