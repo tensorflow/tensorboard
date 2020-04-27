@@ -279,12 +279,12 @@ limitations under the License.
         return tf_utils.aggregateTagInfo(runToTagInfo, defaultDisplayName);
       },
       _createDataChangeCallback(tag) {
-        return function onDataChange(runToData) {
-          this.set(
-            '_tagToRunToData',
-            Object.assign({}, this._tagToRunToData, {[tag]: runToData})
-          );
-        }.bind(this);
+        return (runToData) => {
+          this.set('_tagToRunToData', {
+            ...this._tagToRunToData,
+            [tag]: runToData,
+          });
+        };
       },
       _computeRunToAvailableTimeEntries(tagToRunToData) {
         const canonicalTag = {}; // map from run to canonical tag name
