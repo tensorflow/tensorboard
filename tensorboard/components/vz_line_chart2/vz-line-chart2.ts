@@ -338,9 +338,11 @@ namespace vz_line_chart2 {
       }
     },
 
+    /**
+     * Not yet implemented.
+     */
     commitChanges() {
-      if (!this._chart) return;
-      this._chart.commitChanges();
+      // Temporarily rolled back due to PR curves breakage.
     },
 
     /**
@@ -431,7 +433,6 @@ namespace vz_line_chart2 {
           this._chart.setSeriesMetadata(name, this._seriesMetadataCache[name]);
         });
       this._chart.setVisibleSeries(this._visibleSeriesCache);
-      this._chart.commitChanges();
     },
 
     _smoothingChanged: function() {

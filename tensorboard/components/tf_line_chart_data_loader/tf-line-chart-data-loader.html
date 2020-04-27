@@ -219,8 +219,11 @@ limitations under the License.
           this.$.chart.setSeriesMetadata(name, metadata);
         },
 
+        /**
+         * Not yet implemented.
+         */
         commitChanges() {
-          this.$.chart.commitChanges();
+          // Temporarily rolled back due to PR curves breakage.
         },
 
         redraw() {
