@@ -338,11 +338,6 @@ namespace vz_line_chart2 {
       }
     },
 
-    commitChanges() {
-      if (!this._chart) return;
-      this._chart.commitChanges();
-    },
-
     /**
      * Reset the chart domain. If the chart has not rendered yet, a call to this
      * method no-ops.
@@ -431,7 +426,6 @@ namespace vz_line_chart2 {
           this._chart.setSeriesMetadata(name, this._seriesMetadataCache[name]);
         });
       this._chart.setVisibleSeries(this._visibleSeriesCache);
-      this._chart.commitChanges();
     },
 
     _smoothingChanged: function() {
