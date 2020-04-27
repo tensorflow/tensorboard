@@ -13,6 +13,7 @@ ng_module(
     ],
     deps = [
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/store:debug_tensor_value",
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/store:types",
         "@npm//@angular/common",
         "@npm//@angular/core",
     ],
