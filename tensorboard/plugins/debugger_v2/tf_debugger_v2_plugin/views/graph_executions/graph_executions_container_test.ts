@@ -24,7 +24,11 @@ import {MockStore, provideMockStore} from '@ngrx/store/testing';
 
 import {DebuggerComponent} from '../../debugger_component';
 import {DebuggerContainer} from '../../debugger_container';
-import {State, GraphExecution} from '../../store/debugger_types';
+import {
+  State,
+  GraphExecution,
+  TensorDebugMode,
+} from '../../store/debugger_types';
 import {getNumGraphExecutions, getGraphExecutionData} from '../../store';
 import {
   createDebuggerState,
@@ -92,6 +96,8 @@ describe('Graph Executions Container', () => {
       graphExecutionData[i] = createTestGraphExecution({
         op_name: `TestOp_${i}`,
         op_type: `OpType_${i}`,
+        tensor_debug_mode: TensorDebugMode.CONCISE_HEALTH,
+        debug_tensor_value: [i, 100, 0, 0, 0],
       });
     }
     store.overrideSelector(getGraphExecutionData, graphExecutionData);
@@ -123,6 +129,10 @@ describe('Graph Executions Container', () => {
       expect(tensorNames[i].nativeElement.innerText).toBe(`TestOp_${i}:0`);
       expect(opTypes[i].nativeElement.innerText).toBe(`OpType_${i}`);
     }
+    const debugTensorValueElements = fixture.debugElement.queryAll(
+      By.css('debug-tensor-value')
+    );
+    expect(debugTensorValueElements.length).toBe(tensorContainers.length);
   }));
 
   it('renders # execs and execs viewport if # execs > 0; not loaded', fakeAsync(() => {
