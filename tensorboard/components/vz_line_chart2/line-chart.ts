@@ -855,6 +855,13 @@ namespace vz_line_chart2 {
     }
 
     /**
+     * Not yet implemented.
+     */
+    public commitChanges() {
+      // Temporarily rolled back due to PR curves breakage.
+    }
+
+    /**
      * Samples a dataset so that it contains no more than _MAX_MARKERS number of
      * data points. This function returns the original dataset if it does not
      * exceed that many points.
