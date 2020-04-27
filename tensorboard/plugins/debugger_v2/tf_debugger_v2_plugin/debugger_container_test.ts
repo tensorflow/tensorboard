@@ -38,6 +38,10 @@ import {
   TensorDebugMode,
 } from './store/debugger_types';
 import {
+  getFocusedExecutionStackFrames,
+  getFocusedSourceLineSpec,
+} from './store';
+import {
   createAlertsState,
   createDebuggerState,
   createState,
@@ -559,184 +563,125 @@ describe('Debugger Container', () => {
   });
 
   describe('Stack Trace module', () => {
-    it('Shows non-empty stack frames correctly', () => {
+    it('Shows non-empty stack frames; highlights focused frame', () => {
       const fixture = TestBed.createComponent(StackTraceContainer);
-      fixture.detectChanges();
-
       const stackFrame0 = createTestStackFrame();
       const stackFrame1 = createTestStackFrame();
       const stackFrame2 = createTestStackFrame();
-      store.setState(
-        createState(
-          createDebuggerState({
-            executions: {
-              numExecutionsLoaded: {
-                state: DataLoadState.LOADED,
-                lastLoadedTimeInMs: 111,
-              },
-              executionDigestsLoaded: {
-                state: DataLoadState.LOADED,
-                lastLoadedTimeInMs: 222,
-                pageLoadedSizes: {0: 100},
-                numExecutions: 1000,
-              },
-              executionDigests: {},
-              pageSize: 100,
-              displayCount: 50,
-              scrollBeginIndex: 90,
-              focusIndex: 98,
-              executionData: {
-                98: createTestExecutionData({
-                  stack_frame_ids: ['a0', 'a1', 'a2'],
-                }),
-              },
-            },
-            stackFrames: {
-              a0: stackFrame0,
-              a1: stackFrame1,
-              a2: stackFrame2,
-            },
-          })
-        )
-      );
+      store.overrideSelector(getFocusedExecutionStackFrames, [
+        stackFrame0,
+        stackFrame1,
+        stackFrame2,
+      ]);
+      store.overrideSelector(getFocusedSourceLineSpec, {
+        host_name: stackFrame1[0],
+        file_path: stackFrame1[1],
+        lineno: stackFrame1[2],
+      });
       fixture.detectChanges();
 
       const hostNameElement = fixture.debugElement.query(
         By.css('.stack-trace-host-name')
       );
-      expect(hostNameElement.nativeElement.innerText).toEqual('(on localhost)');
+      expect(hostNameElement.nativeElement.innerText).toBe('(on localhost)');
       const stackFrameContainers = fixture.debugElement.queryAll(
         By.css('.stack-frame-container')
       );
-      expect(stackFrameContainers.length).toEqual(3);
+      expect(stackFrameContainers.length).toBe(3);
 
       const filePathElements = fixture.debugElement.queryAll(
         By.css('.stack-frame-file-path')
       );
-      expect(filePathElements.length).toEqual(3);
-      expect(filePathElements[0].nativeElement.innerText).toEqual(
+      expect(filePathElements.length).toBe(3);
+      expect(filePathElements[0].nativeElement.innerText).toBe(
         stackFrame0[1].slice(stackFrame0[1].lastIndexOf('/') + 1)
       );
-      expect(filePathElements[0].nativeElement.title).toEqual(stackFrame0[1]);
-      expect(filePathElements[1].nativeElement.innerText).toEqual(
+      expect(filePathElements[0].nativeElement.title).toBe(stackFrame0[1]);
+      expect(filePathElements[1].nativeElement.innerText).toBe(
         stackFrame1[1].slice(stackFrame1[1].lastIndexOf('/') + 1)
       );
-      expect(filePathElements[1].nativeElement.title).toEqual(stackFrame1[1]);
-      expect(filePathElements[2].nativeElement.innerText).toEqual(
+      expect(filePathElements[1].nativeElement.title).toBe(stackFrame1[1]);
+      expect(filePathElements[2].nativeElement.innerText).toBe(
         stackFrame2[1].slice(stackFrame2[1].lastIndexOf('/') + 1)
       );
-      expect(filePathElements[2].nativeElement.title).toEqual(stackFrame2[1]);
+      expect(filePathElements[2].nativeElement.title).toBe(stackFrame2[1]);
 
       const linenoElements = fixture.debugElement.queryAll(
         By.css('.stack-frame-lineno')
       );
-      expect(linenoElements.length).toEqual(3);
-      expect(linenoElements[0].nativeElement.innerText).toEqual(
+      expect(linenoElements.length).toBe(3);
+      expect(linenoElements[0].nativeElement.innerText).toBe(
         `Line ${stackFrame0[2]}`
       );
-      expect(linenoElements[1].nativeElement.innerText).toEqual(
+      expect(linenoElements[1].nativeElement.innerText).toBe(
         `Line ${stackFrame1[2]}`
       );
-      expect(linenoElements[2].nativeElement.innerText).toEqual(
+      expect(linenoElements[2].nativeElement.innerText).toBe(
         `Line ${stackFrame2[2]}`
       );
 
       const functionElements = fixture.debugElement.queryAll(
         By.css('.stack-frame-function')
       );
-      expect(functionElements.length).toEqual(3);
-      expect(functionElements[0].nativeElement.innerText).toEqual(
-        stackFrame0[3]
+      expect(functionElements.length).toBe(3);
+      expect(functionElements[0].nativeElement.innerText).toBe(stackFrame0[3]);
+      expect(functionElements[1].nativeElement.innerText).toBe(stackFrame1[3]);
+      expect(functionElements[2].nativeElement.innerText).toBe(stackFrame2[3]);
+
+      // Check the focused stack frame has been highlighted by CSS class.
+      const focusedElements = fixture.debugElement.queryAll(
+        By.css('.focused-stack-frame')
       );
-      expect(functionElements[1].nativeElement.innerText).toEqual(
-        stackFrame1[3]
+      expect(focusedElements.length).toBe(1);
+      const focusedFilePathElement = focusedElements[0].query(
+        By.css('.stack-frame-file-path')
       );
-      expect(functionElements[2].nativeElement.innerText).toEqual(
-        stackFrame2[3]
+      expect(focusedFilePathElement.nativeElement.innerText).toBe(
+        stackFrame1[1].slice(stackFrame1[1].lastIndexOf('/') + 1)
       );
+    });
+
+    it('does not highlight any frame when there is no frame focus', () => {
+      const fixture = TestBed.createComponent(StackTraceContainer);
+      const stackFrame0 = createTestStackFrame();
+      const stackFrame1 = createTestStackFrame();
+      const stackFrame2 = createTestStackFrame();
+      store.overrideSelector(getFocusedExecutionStackFrames, [
+        stackFrame0,
+        stackFrame1,
+        stackFrame2,
+      ]);
+      store.overrideSelector(getFocusedSourceLineSpec, null);
+      fixture.detectChanges();
+
+      // Check that no stack frame has been highlighted by CSS class.
+      const focusedElements = fixture.debugElement.queryAll(
+        By.css('.focused-stack-frame')
+      );
+      expect(focusedElements.length).toBe(0);
     });
 
     it('Shows loading state when stack-trace data is unavailable', () => {
       const fixture = TestBed.createComponent(StackTraceContainer);
-      fixture.detectChanges();
-
-      store.setState(
-        createState(
-          createDebuggerState({
-            executions: {
-              numExecutionsLoaded: {
-                state: DataLoadState.LOADED,
-                lastLoadedTimeInMs: 111,
-              },
-              executionDigestsLoaded: {
-                state: DataLoadState.LOADED,
-                lastLoadedTimeInMs: 222,
-                pageLoadedSizes: {0: 100},
-                numExecutions: 1000,
-              },
-              executionDigests: {},
-              pageSize: 100,
-              displayCount: 50,
-              scrollBeginIndex: 90,
-              focusIndex: 98,
-              executionData: {
-                98: createTestExecutionData({
-                  stack_frame_ids: ['a0', 'a1', 'a2'],
-                }),
-              },
-            },
-            stackFrames: {}, // Note the empty stackFrames field.
-          })
-        )
-      );
+      store.overrideSelector(getFocusedExecutionStackFrames, []);
       fixture.detectChanges();
 
       const stackFrameContainers = fixture.debugElement.queryAll(
         By.css('.stack-frame-container')
       );
-      expect(stackFrameContainers.length).toEqual(0);
+      expect(stackFrameContainers.length).toBe(0);
     });
 
     it('Emits sourceLineFocused when line number is clicked', () => {
       const fixture = TestBed.createComponent(StackTraceContainer);
-      fixture.detectChanges();
-
       const stackFrame0 = createTestStackFrame();
       const stackFrame1 = createTestStackFrame();
       const stackFrame2 = createTestStackFrame();
-      store.setState(
-        createState(
-          createDebuggerState({
-            executions: {
-              numExecutionsLoaded: {
-                state: DataLoadState.LOADED,
-                lastLoadedTimeInMs: 111,
-              },
-              executionDigestsLoaded: {
-                state: DataLoadState.LOADED,
-                lastLoadedTimeInMs: 222,
-                pageLoadedSizes: {0: 100},
-                numExecutions: 1000,
-              },
-              executionDigests: {},
-              pageSize: 100,
-              displayCount: 50,
-              scrollBeginIndex: 90,
-              focusIndex: 98,
-              executionData: {
-                98: createTestExecutionData({
-                  stack_frame_ids: ['a0', 'a1', 'a2'],
-                }),
-              },
-            },
-            stackFrames: {
-              a0: stackFrame0,
-              a1: stackFrame1,
-              a2: stackFrame2,
-            },
-          })
-        )
-      );
+      store.overrideSelector(getFocusedExecutionStackFrames, [
+        stackFrame0,
+        stackFrame1,
+        stackFrame2,
+      ]);
       fixture.detectChanges();
 
       const linenoElements = fixture.debugElement.queryAll(
