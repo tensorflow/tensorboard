@@ -331,10 +331,7 @@ class _BatchedRequestSender(object):
             experiment_id, api, rpc_rate_limiter,
         )
         self._tensor_request_sender = _TensorBatchedRequestSender(
-            experiment_id,
-            api,
-            # BDTODO: ASK REVIEWERS: Should we use a different rate limiter?
-            rpc_rate_limiter,
+            experiment_id, api, rpc_rate_limiter,
         )
         self._blob_request_sender = _BlobRequestSender(
             experiment_id, api, blob_rpc_rate_limiter, max_blob_size
