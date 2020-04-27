@@ -220,11 +220,9 @@ limitations under the License.
         this.reload();
       },
       reload() {
-        Promise.all([this._fetchTags()]).then(
-          () => {
-            this._reloadCards();
-          }
-        );
+        Promise.all([this._fetchTags()]).then(() => {
+          this._reloadCards();
+        });
       },
       _shouldOpen(index) {
         return index <= 2;
