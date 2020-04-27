@@ -47,9 +47,10 @@ limitations under the License.
 
           <debug-tensor-value
             *ngIf="graphExecutionData[i].debug_tensor_value !== null"
-            [debugTensorValue]="parseDebugTensorValue(
-                graphExecutionData[i].tensor_debug_mode,
-                graphExecutionData[i].debug_tensor_value)"
+            [debugTensorValue]="parseDebugTensorValue({
+                tensorDebugMode: graphExecutionData[i].tensor_debug_mode,
+                array: graphExecutionData[i].debug_tensor_value
+            })"
           >
           </debug-tensor-value>
         </div>

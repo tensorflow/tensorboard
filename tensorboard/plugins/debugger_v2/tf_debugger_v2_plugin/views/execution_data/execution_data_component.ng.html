@@ -70,9 +70,10 @@ limitations under the License.
           </div>
           <div class="output-slot-debug-tensor-value">
             <debug-tensor-value
-              [debugTensorValue]="parseDebugTensorValue(
-                  tensorDebugMode,
-                  singleDebugTensorValues)"
+              [debugTensorValue]="parseDebugTensorValue({
+                  tensorDebugMode: tensorDebugMode,
+                  array: singleDebugTensorValues
+              })"
             >
             </debug-tensor-value>
           </div>

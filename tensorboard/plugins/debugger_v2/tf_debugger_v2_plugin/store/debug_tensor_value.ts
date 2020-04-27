@@ -16,28 +16,90 @@ limitations under the License.
 import {DTYPE_ENUM_TO_NAME} from '../tf_dtypes';
 import {DebugTensorValue, TensorDebugMode} from './debugger_types';
 
+export interface RawDebugTensorValue {
+  tensorDebugMode: TensorDebugMode;
+  array: null | number[];
+}
+
+export interface RawDebugTensorValueNoTensor extends RawDebugTensorValue {
+  tensorDebugMode: TensorDebugMode.NO_TENSOR;
+  array: null;
+}
+
+export interface RawDebugTensorValueCurtHealth extends RawDebugTensorValue {
+  tensorDebugMode: TensorDebugMode.CURT_HEALTH;
+  array: [
+    number, // Tensor ID.
+    number // 0-1 indicator for the presence of inf/nan.
+  ];
+}
+
+export interface RawDebugTensorValueConciseHealth extends RawDebugTensorValue {
+  tensorDebugMode: TensorDebugMode.CURT_HEALTH;
+  array: [
+    number, // Tensor ID.
+    number, // Element count (size).
+    number, // -inf count.
+    number, // +inf count.
+    number // nan count.
+  ];
+}
+
+export interface RawDebugTensorValueShape extends RawDebugTensorValue {
+  tensorDebugMode: TensorDebugMode.SHAPE;
+  array: [
+    number, // Tensor ID.
+    number, // DType enum value.
+    number, // Rank.
+    number, // Size.
+    number, // Shape truncated at head to a maximum length of 6.
+    number,
+    number,
+    number,
+    number,
+    number
+  ];
+}
+
+export interface RawDebugTensorValueFullHealth extends RawDebugTensorValue {
+  tensorDebugMode: TensorDebugMode.FULL_HEALTH;
+  array: [
+    number, // Tensor ID.
+    number, // Device ID.
+    number, // DType enum value.
+    number, // Rank.
+    number, // Size.
+    number, // -inf count.
+    number, // +inf count.
+    number, // nan count.
+    number, // -finite count.
+    number, // zero count.
+    number // +finite count.
+  ];
+}
+
+export interface RawDebugTensorValueFullTensor extends RawDebugTensorValue {
+  tensorDebugMode: TensorDebugMode.FULL_HEALTH;
+  array: null;
+}
+
 /**
  * Parse a number array that represents debugging summary of an instrumented
  * tensor value.
  *
- * @param tensorDebugMode Tensor-debug mode.
- * @param array The array of number that represents various aspect of the
- *   instrumented tensor. The semantics of the numbers are determined by
- *   `tensorDebugMode`.
+ * @param tensorDebugMode and the array of number that represents various
+ *   aspect of the instrumented tensor. The semantics of the numbers are
+ *   determined by `tensorDebugMode`.
  * @returns A DebugTensorValue object with the same information as
  *   carried by `array`, but represented in a more explicit fashion.
  *   For numbers that represent breakdown of numeric values by type
  *   (e.g., counts of -inf, +inf and nan), the corresponding fields
  *   in the returned object will be defined only if the count is non-zero.
- *   This is because the return value of this function is meant for
- *   consumption by UI elements, which have the need to be concise.
- *   They will omit 0 counts because those are implied and would be
- *   space-consuming and distracting to show.
  */
 export function parseDebugTensorValue(
-  tensorDebugMode: TensorDebugMode,
-  array: number[] | null
+  raw: RawDebugTensorValue
 ): DebugTensorValue {
+  const {tensorDebugMode, array} = raw;
   switch (tensorDebugMode) {
     case TensorDebugMode.NO_TENSOR: {
       if (array !== null) {

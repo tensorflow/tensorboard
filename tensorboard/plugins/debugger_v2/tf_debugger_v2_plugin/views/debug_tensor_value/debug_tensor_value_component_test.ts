@@ -190,10 +190,10 @@ describe('debug-tensor-value components', () => {
     it('displays CURT_HEALTH data', () => {
       const fixture = TestBed.createComponent(DebugTensorValueComponent);
       const component = fixture.componentInstance;
-      component.debugTensorValue = parseDebugTensorValue(
-        TensorDebugMode.CURT_HEALTH,
-        [123, 0]
-      );
+      component.debugTensorValue = parseDebugTensorValue({
+        tensorDebugMode: TensorDebugMode.CURT_HEALTH,
+        array: [123, 0],
+      });
       fixture.detectChanges();
       expect(
         fixture.debugElement.query(By.css('debug-tensor-has-inf-or-nan'))
@@ -212,10 +212,10 @@ describe('debug-tensor-value components', () => {
     it('displays CONCISE_HEALTH data', () => {
       const fixture = TestBed.createComponent(DebugTensorValueComponent);
       const component = fixture.componentInstance;
-      component.debugTensorValue = parseDebugTensorValue(
-        TensorDebugMode.CONCISE_HEALTH,
-        [123, 345, 300, 40, 5]
-      );
+      component.debugTensorValue = parseDebugTensorValue({
+        tensorDebugMode: TensorDebugMode.CONCISE_HEALTH,
+        array: [123, 345, 300, 40, 5],
+      });
       fixture.detectChanges();
       expect(
         fixture.debugElement.query(By.css('debug-tensor-has-inf-or-nan'))
@@ -234,10 +234,10 @@ describe('debug-tensor-value components', () => {
     it('displays SHAPE data', () => {
       const fixture = TestBed.createComponent(DebugTensorValueComponent);
       const component = fixture.componentInstance;
-      component.debugTensorValue = parseDebugTensorValue(
-        TensorDebugMode.SHAPE,
-        [123, 5, 7, 1200, 3, 4, 1, 2, 1, 5]
-      );
+      component.debugTensorValue = parseDebugTensorValue({
+        tensorDebugMode: TensorDebugMode.SHAPE,
+        array: [123, 5, 7, 1200, 3, 4, 1, 2, 1, 5],
+      });
       fixture.detectChanges();
       expect(
         fixture.debugElement.query(By.css('debug-tensor-has-inf-or-nan'))
@@ -256,10 +256,10 @@ describe('debug-tensor-value components', () => {
     it('displays FULL_HEALTH data', () => {
       const fixture = TestBed.createComponent(DebugTensorValueComponent);
       const component = fixture.componentInstance;
-      component.debugTensorValue = parseDebugTensorValue(
-        TensorDebugMode.FULL_HEALTH,
-        [123, 0, 1, 2, 600, 0, 0, 0, 100, 200, 300]
-      );
+      component.debugTensorValue = parseDebugTensorValue({
+        tensorDebugMode: TensorDebugMode.FULL_HEALTH,
+        array: [123, 0, 1, 2, 600, 0, 0, 0, 100, 200, 300],
+      });
       fixture.detectChanges();
       expect(
         fixture.debugElement.query(By.css('debug-tensor-has-inf-or-nan'))
