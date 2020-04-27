@@ -44,6 +44,8 @@ export interface DebuggerRunListing {
 }
 
 // Each item is [host_name, file_path, lineno, function].
+// TODO(cais): Consider making this an object with meaningful
+// keys instead.
 export type StackFrame = [string, string, number, string];
 
 export type StackFramesById = {[id: string]: StackFrame};
