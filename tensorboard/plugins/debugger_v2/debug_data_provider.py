@@ -40,9 +40,12 @@ EXECUTION_DIGESTS_BLOB_TAG_PREFIX = "execution_digests"
 EXECUTION_DATA_BLOB_TAG_PREFIX = "execution_data"
 GRAPH_EXECUTION_DIGESTS_BLOB_TAG_PREFIX = "graphexec_digests"
 GRAPH_EXECUTION_DATA_BLOB_TAG_PREFIX = "graphexec_data"
+GRAPH_OP_INFO_BLOB_TAG_PREFIX = "graph_op_info"
 SOURCE_FILE_LIST_BLOB_TAG = "source_file_list"
 SOURCE_FILE_BLOB_TAG_PREFIX = "source_file"
 STACK_FRAMES_BLOB_TAG_PREFIX = "stack_frames"
+
+_GRAPH_OP_NAME_SEPERATOR = ","
 
 
 def alerts_run_tag_filter(run, begin, end, alert_type=None):
@@ -283,6 +286,53 @@ def _parse_graph_execution_data_blob_key(blob_key):
     return run, begin, end
 
 
+def graph_op_info_run_tag_filter(run, graph_id, op_names):
+    """Create a RunTagFilter for graph op info.
+
+    Args:
+      run: tfdbg2 run name.
+      graph_id: ID of the graph.
+        TODO(cais): Clarify whether this is the immediately enclosing graph.
+      op_names: A list of op names.
+
+    Returns:
+      `RunTagFilter` for the run and range of graph op info.
+    """
+    if not graph_id:
+        raise ValueError("graph_id must not be None or empty.")
+    return provider.RunTagFilter(
+        runs=[run],
+        tags=[
+            "%s_%s_%s_%s"
+            % (
+                GRAPH_OP_INFO_BLOB_TAG_PREFIX,
+                graph_id,
+                _GRAPH_OP_NAME_SEPERATOR.join(op_names),
+            )
+        ],
+    )
+
+
+def _parse_graph_op_info_blob_key(blob_key):
+    """Parse the BLOB key for graph op info.
+
+    Args:
+      blob_key: The BLOB key to parse. By contract, it should have the format:
+       `${GRAPH_OP_INFO_BLOB_TAG_PREFIX}_${graph_id}_${op_name_1},${op_name_2},...`
+
+    Returns:
+      - run ID
+      - grahp_id
+      - op_names as a `list` of `str`s.
+    """
+    # TODO(cais): Support parsing trace_id when it is supported.
+    key_body, run = blob_key.split(".", 1)
+    key_body = key_body[len(GRAPH_OP_INFO_BLOB_TAG_PREFIX) :]
+    _, graph_id, op_names_concat = key_body.split("_", 2)
+    op_names = op_names_concat.split(_GRAPH_OP_NAME_SEPERATOR)
+    return run, graph_id, op_names
+
+
 def source_file_list_run_tag_filter(run):
     """Create a RunTagFilter for listing source files.
 
@@ -466,6 +516,7 @@ class LocalDebuggerV2DataProvider(provider.DataProvider):
                         EXECUTION_DATA_BLOB_TAG_PREFIX,
                         GRAPH_EXECUTION_DIGESTS_BLOB_TAG_PREFIX,
                         GRAPH_EXECUTION_DATA_BLOB_TAG_PREFIX,
+                        GRAPH_OP_INFO_BLOB_TAG_PREFIX,
                         SOURCE_FILE_BLOB_TAG_PREFIX,
                         STACK_FRAMES_BLOB_TAG_PREFIX,
                     )
@@ -500,6 +551,11 @@ class LocalDebuggerV2DataProvider(provider.DataProvider):
             run, begin, end = _parse_graph_execution_data_blob_key(blob_key)
             return json.dumps(
                 self._multiplexer.GraphExecutionData(run, begin, end)
+            )
+        elif blob_key.startswith(GRAPH_OP_INFO_BLOB_TAG_PREFIX):
+            run, graph_id, op_names = _parse_graph_op_info_blob_key(blob_key)
+            return json.dumps(
+                self._multiplexer.GraphOpInfo(run, graph_id, op_names)
             )
         elif blob_key.startswith(SOURCE_FILE_LIST_BLOB_TAG):
             run = _parse_source_file_list_blob_key(blob_key)

@@ -65,6 +65,7 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
             "/execution/data": self.serve_execution_data,
             "/graph_execution/digests": self.serve_graph_execution_digests,
             "/graph_execution/data": self.serve_graph_execution_data,
+            "/graph/op_info": self.serve_graph_op_info,
             "/source_files/list": self.serve_source_files_list,
             "/source_files/file": self.serve_source_file,
             "/stack_frames/stack_frames": self.serve_stack_frames,
@@ -226,6 +227,37 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
         end = int(request.args.get("end", "-1"))
         run_tag_filter = debug_data_provider.graph_execution_data_run_tag_filter(
             run, begin, end
+        )
+        blob_sequences = self._data_provider.read_blob_sequences(
+            experiment, self.plugin_name, run_tag_filter=run_tag_filter
+        )
+        tag = next(iter(run_tag_filter.tags))
+        try:
+            return http_util.Respond(
+                request,
+                self._data_provider.read_blob(
+                    blob_sequences[run][tag][0].blob_key
+                ),
+                "application/json",
+            )
+        except errors.InvalidArgumentError as e:
+            return _error_response(request, str(e))
+
+    @wrappers.Request.application
+    def serve_graph_op_info(self, request):
+        """Serve information for ops in graphs.
+
+        # TODO(cais): Beef up doc. DO NOT SUBMIT.
+        """
+        experiment = plugin_util.experiment_id(request.environ)
+        run = request.args.get("run")
+        if run is None:
+            return _missing_run_error_response(request)
+        graph_id = request.args.get("graph_id")
+        op_names = request.args.get("end", "-1")
+        # TODO(cais): Determine array works.
+        run_tag_filter = debug_data_provider.graph_op_info_run_tag_filter(
+            run, graph_id, op_names
         )
         blob_sequences = self._data_provider.read_blob_sequences(
             experiment, self.plugin_name, run_tag_filter=run_tag_filter

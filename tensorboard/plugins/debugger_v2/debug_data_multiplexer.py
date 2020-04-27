@@ -375,6 +375,29 @@ class DebuggerV2EventMultiplexer(object):
             ],
         }
 
+    def GraphOpInfo(self, run, graph_id, op_names):
+        """TODO(cais): Add doc string."""
+        runs = self.Runs()
+        if run not in runs:
+            return None
+        # TODO(cais): Use public get_op() when available.
+        op_name = op_names[0]  # Determine if we support only 1 or a list.
+        op_creation_digest = self._reader.graph_by_id(graph_id)._op_by_name[
+            op_name
+        ]
+        self._reader.read_graph_op_creation_stack_trace(op_creation_digest)
+        return {
+            # TODO(cais): Need a stack of graph_ids.
+            "graph_ids": [op_creation_digest.graph_id],
+            "device_name": op_creation_digest.device_name,
+            "op_type": op_creation_digest.op_type,
+            "op_name": op_creation_digest.op_name,
+            "input_names": op_creation_digest.input_names,
+            "num_outputs": op_creation_digest.num_outputs,
+            "inputs": [],  # TODO(cais): Recursive call.
+            "consumers": [],  # TODO(cais): Recursive call.
+        }
+
     def SourceFileList(self, run):
         runs = self.Runs()
         if run not in runs:
