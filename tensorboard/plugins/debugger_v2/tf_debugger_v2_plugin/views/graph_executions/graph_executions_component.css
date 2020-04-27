@@ -65,7 +65,7 @@ limitations under the License.
   height: 36px;
   line-height: 36px;
   text-align: left;
-  vertical-align: top;
+  vertical-align: middle;
   white-space: nowrap;
   width: 100%;
 }
@@ -89,4 +89,9 @@ limitations under the License.
   padding-right: 8px;
   text-align: right;
   width: 240px;
+}
+
+debug-tensor-value {
+  display: inline-block;
+  margin: 2px 0;
 }
