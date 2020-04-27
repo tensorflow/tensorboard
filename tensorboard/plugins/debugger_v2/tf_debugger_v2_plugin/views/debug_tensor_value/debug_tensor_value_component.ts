@@ -118,7 +118,6 @@ export class DebugTensorShapeComponent {
       </div>
       <div
         *ngIf="numPositiveFinites !== undefined && numPositiveFinites > 0"
-        z
         class="category"
       >
         <span class="category-tag finite">+</span>
