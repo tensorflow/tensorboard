@@ -21,12 +21,15 @@ import six
 from werkzeug import wrappers
 
 from tensorboard import plugin_util
+from tensorboard.data import provider
 from tensorboard.backend import http_util
 from tensorboard.compat import tf
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.pr_curve import metadata
 from tensorboard.plugins.pr_curve import plugin_data_pb2
 from tensorboard.util import tensor_util
+
+_DEFAULT_DOWNSAMPLING = 100  # PR curves per time series
 
 
 class PrCurvesPlugin(base_plugin.TBPlugin):
@@ -41,7 +44,10 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
           context: A base_plugin.TBContext instance. A magic container that
             TensorBoard uses to make objects available to the plugin.
         """
-        self._multiplexer = context.multiplexer
+        self._data_provider = context.data_provider
+        self._downsample_to = (context.sampling_hints or {}).get(
+            metadata.PLUGIN_NAME, _DEFAULT_DOWNSAMPLING
+        )
 
     @wrappers.Request.application
     def pr_curves_route(self, request):
@@ -53,6 +59,8 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
           containing data required for PR curves for that run. Runs that either
           cannot be found or that lack tags will be excluded from the response.
         """
+        experiment = plugin_util.experiment_id(request.environ)
+
         runs = request.args.getlist("run")
         if not runs:
             return http_util.Respond(
@@ -67,14 +75,16 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
 
         try:
             response = http_util.Respond(
-                request, self.pr_curves_impl(runs, tag), "application/json"
+                request,
+                self.pr_curves_impl(experiment, runs, tag),
+                "application/json",
             )
         except ValueError as e:
             return http_util.Respond(request, str(e), "text/plain", 400)
 
         return response
 
-    def pr_curves_impl(self, runs, tag):
+    def pr_curves_impl(self, experiment, runs, tag):
         """Creates the JSON object for the PR curves response for a run-tag
         combo.
 
@@ -89,22 +99,30 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
           The JSON object for the PR curves route response.
         """
         response_mapping = {}
+        rtf = provider.RunTagFilter(runs, [tag])
+        # TODO(#3554): Can we get rid of this `list_tensors` by instead
+        # computing `num_thresholds` from the shape of the data?
+        list_result = self._data_provider.list_tensors(
+            experiment, metadata.PLUGIN_NAME, run_tag_filter=rtf,
+        )
+        read_result = self._data_provider.read_tensors(
+            experiment,
+            metadata.PLUGIN_NAME,
+            run_tag_filter=rtf,
+            downsample=self._downsample_to,
+        )
         for run in runs:
-            try:
-                tensor_events = self._multiplexer.Tensors(run, tag)
-            except KeyError:
+            data = read_result.get(run, {}).get(tag)
+            if data is None:
                 raise ValueError(
                     "No PR curves could be found for run %r and tag %r"
                     % (run, tag)
                 )
-
-            content = self._multiplexer.SummaryMetadata(
-                run, tag
-            ).plugin_data.content
+            content = list_result[run][tag].plugin_content
             pr_curve_data = metadata.parse_plugin_metadata(content)
             thresholds = self._compute_thresholds(pr_curve_data.num_thresholds)
             response_mapping[run] = [
-                self._process_tensor_event(e, thresholds) for e in tensor_events
+                self._process_datum(d, thresholds) for d in data
             ]
         return response_mapping
 
@@ -136,27 +154,27 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
             - description: The description that appears near visualizations upon the
                 user hovering over a certain icon.
         """
-        return http_util.Respond(request, self.tags_impl(), "application/json")
+        experiment = plugin_util.experiment_id(request.environ)
+        return http_util.Respond(
+            request, self.tags_impl(experiment), "application/json"
+        )
 
-    def tags_impl(self):
+    def tags_impl(self, experiment):
         """Creates the JSON object for the tags route response.
 
         Returns:
           The JSON object for the tags route response.
         """
-        runs = self._multiplexer.Runs()
-        result = {run: {} for run in runs}
-
-        mapping = self._multiplexer.PluginRunToTagToContent(
-            metadata.PLUGIN_NAME
+        mapping = self._data_provider.list_tensors(
+            experiment, metadata.PLUGIN_NAME
         )
-        for (run, tag_to_content) in six.iteritems(mapping):
-            for (tag, _) in six.iteritems(tag_to_content):
-                summary_metadata = self._multiplexer.SummaryMetadata(run, tag)
+        result = {run: {} for run in mapping}
+        for (run, tag_to_time_series) in six.iteritems(mapping):
+            for (tag, time_series) in tag_to_time_series.items():
                 result[run][tag] = {
-                    "displayName": summary_metadata.display_name,
+                    "displayName": time_series.display_name,
                     "description": plugin_util.markdown_to_safe_html(
-                        summary_metadata.summary_description
+                        time_series.description
                     ),
                 }
         return result
@@ -173,34 +191,19 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
         }
 
     def is_active(self):
-        """Determines whether this plugin is active.
-
-        This plugin is active only if PR curve summary data is read by TensorBoard.
-
-        Returns:
-          Whether this plugin is active.
-        """
-        if not self._multiplexer:
-            return False
-
-        all_runs = self._multiplexer.PluginRunToTagToContent(
-            metadata.PLUGIN_NAME
-        )
-
-        # The plugin is active if any of the runs has a tag relevant to the plugin.
-        return any(six.itervalues(all_runs))
+        return False  # `list_plugins` as called by TB core suffices
 
     def frontend_metadata(self):
         return base_plugin.FrontendMetadata(
             element_name="tf-pr-curve-dashboard", tab_name="PR Curves",
         )
 
-    def _process_tensor_event(self, event, thresholds):
-        """Converts a TensorEvent into a dict that encapsulates information on
+    def _process_datum(self, datum, thresholds):
+        """Converts a TensorDatum into a dict that encapsulates information on
         it.
 
         Args:
-          event: The TensorEvent to convert.
+          datum: The TensorDatum to convert.
           thresholds: An array of floats that ranges from 0 to 1 (in that
             direction and inclusive of 0 and 1).
 
@@ -208,10 +211,7 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
           A JSON-able dictionary of PR curve data for 1 step.
         """
         return self._make_pr_entry(
-            event.step,
-            event.wall_time,
-            tensor_util.make_ndarray(event.tensor_proto),
-            thresholds,
+            datum.step, datum.wall_time, datum.numpy, thresholds,
         )
 
     def _make_pr_entry(self, step, wall_time, data_array, thresholds):
