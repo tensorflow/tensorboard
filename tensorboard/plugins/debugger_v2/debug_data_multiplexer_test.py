@@ -41,6 +41,8 @@ class RunInBackgroundRepeatedlyTest(tf.test.TestCase):
             "Thread",
             # Use a non-daemon thread for testing. A non-daemon thread
             # will block the test process from exiting if not terminated
+            # properly. Here the thread is expected to be terminated by the
+            # `StopIteration` raised by `run_three_times()`.
             lambda target, daemon: OriginalThread(target=target, daemon=False),
         ):
             interrupt_event = debug_data_multiplexer.run_repeatedly_in_background(
