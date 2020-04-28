@@ -47,12 +47,16 @@ from tensorboard.uploader import util
 from tensorboard.compat.proto import event_pb2
 from tensorboard.compat.proto import graph_pb2
 from tensorboard.compat.proto import summary_pb2
+from tensorboard.compat.proto import tensor_pb2
+from tensorboard.compat.proto import types_pb2
+from tensorboard.plugins.histogram import metadata as histograms_metadata
 from tensorboard.plugins.histogram import summary_v2 as histogram_v2
 from tensorboard.plugins.graph import metadata as graphs_metadata
 from tensorboard.plugins.scalar import metadata as scalars_metadata
 from tensorboard.plugins.scalar import summary_v2 as scalar_v2
 from tensorboard.summary import v1 as summary_v1
 from tensorboard.util import test_util as tb_test_util
+from tensorboard.util import tensor_util
 
 
 def _create_example_graph_bytes(large_attr_size):
@@ -94,7 +98,15 @@ def _create_mock_client():
     return mock_client
 
 
-_SCALARS_ONLY = frozenset((scalars_metadata.PLUGIN_NAME,))
+# By default allow at least one plugin for each upload type: Scalar, Tensor, and
+# Blobs.
+_SCALARS_HISTOGRAMS_AND_GRAPHS = frozenset(
+    (
+        scalars_metadata.PLUGIN_NAME,
+        histograms_metadata.PLUGIN_NAME,
+        graphs_metadata.PLUGIN_NAME,
+    )
+)
 
 # Sentinel for `_create_*` helpers, for arguments for which we want to
 # supply a default other than the `None` used by the code under test.
@@ -104,7 +116,6 @@ _USE_DEFAULT = object()
 def _create_uploader(
     writer_client=_USE_DEFAULT,
     logdir=None,
-    allowed_plugins=_USE_DEFAULT,
     max_blob_size=_USE_DEFAULT,
     logdir_poll_rate_limiter=_USE_DEFAULT,
     rpc_rate_limiter=_USE_DEFAULT,
@@ -114,8 +125,6 @@ def _create_uploader(
 ):
     if writer_client is _USE_DEFAULT:
         writer_client = _create_mock_client()
-    if allowed_plugins is _USE_DEFAULT:
-        allowed_plugins = _SCALARS_ONLY
     if max_blob_size is _USE_DEFAULT:
         max_blob_size = 12345
     if logdir_poll_rate_limiter is _USE_DEFAULT:
@@ -127,7 +136,7 @@ def _create_uploader(
     return uploader_lib.TensorBoardUploader(
         writer_client,
         logdir,
-        allowed_plugins=allowed_plugins,
+        allowed_plugins=_SCALARS_HISTOGRAMS_AND_GRAPHS,
         max_blob_size=max_blob_size,
         logdir_poll_rate_limiter=logdir_poll_rate_limiter,
         rpc_rate_limiter=rpc_rate_limiter,
@@ -148,7 +157,7 @@ def _create_request_sender(
     if api is _USE_DEFAULT:
         api = _create_mock_client()
     if allowed_plugins is _USE_DEFAULT:
-        allowed_plugins = _SCALARS_ONLY
+        allowed_plugins = _SCALARS_HISTOGRAMS_AND_GRAPHS
     if max_blob_size is _USE_DEFAULT:
         max_blob_size = 12345
     if rpc_rate_limiter is _USE_DEFAULT:
@@ -171,6 +180,18 @@ def _create_scalar_request_sender(
     if api is _USE_DEFAULT:
         api = _create_mock_client()
     return uploader_lib._ScalarBatchedRequestSender(
+        experiment_id=experiment_id,
+        api=api,
+        rpc_rate_limiter=util.RateLimiter(0),
+    )
+
+
+def _create_tensor_request_sender(
+    experiment_id=None, api=None,
+):
+    if api is _USE_DEFAULT:
+        api = _create_mock_client()
+    return uploader_lib._TensorBatchedRequestSender(
         experiment_id=experiment_id,
         api=api,
         rpc_rate_limiter=util.RateLimiter(0),
@@ -248,11 +269,15 @@ class TensorboardUploaderTest(tf.test.TestCase):
 
     # Send each Event below in a separate WriteScalarRequest
     @mock.patch.object(uploader_lib, "_MAX_REQUEST_LENGTH_BYTES", 100)
-    def test_start_uploading(self):
+    def test_start_uploading_scalars(self):
         mock_client = _create_mock_client()
         mock_rate_limiter = mock.create_autospec(util.RateLimiter)
+        mock_blob_rate_limiter = mock.create_autospec(util.RateLimiter)
         uploader = _create_uploader(
-            mock_client, "/logs/foo", rpc_rate_limiter=mock_rate_limiter
+            mock_client,
+            "/logs/foo",
+            rpc_rate_limiter=mock_rate_limiter,
+            blob_rpc_rate_limiter=mock_blob_rate_limiter,
         )
         uploader.create_experiment()
 
@@ -289,6 +314,42 @@ class TensorboardUploaderTest(tf.test.TestCase):
             uploader.start_uploading()
         self.assertEqual(4 + 6, mock_client.WriteScalar.call_count)
         self.assertEqual(4 + 6, mock_rate_limiter.tick.call_count)
+        self.assertEqual(0, mock_blob_rate_limiter.tick.call_count)
+
+    def test_start_uploading_tensors(self):
+        mock_client = _create_mock_client()
+        mock_rate_limiter = mock.create_autospec(util.RateLimiter)
+        mock_blob_rate_limiter = mock.create_autospec(util.RateLimiter)
+        uploader = _create_uploader(
+            mock_client,
+            "/logs/foo",
+            rpc_rate_limiter=mock_rate_limiter,
+            blob_rpc_rate_limiter=mock_blob_rate_limiter,
+        )
+        uploader.create_experiment()
+
+        def tensor_event(tag, value):
+            return event_pb2.Event(
+                summary=histogram_v2.histogram_pb(tag, value)
+            )
+
+        mock_logdir_loader = mock.create_autospec(logdir_loader.LogdirLoader)
+        mock_logdir_loader.get_run_events.side_effect = [
+            {
+                "run 1": _apply_compat(
+                    [tensor_event("1.1", [5.0]), tensor_event("1.2", [5.0])]
+                ),
+            },
+            AbortUploadError,
+        ]
+
+        with mock.patch.object(
+            uploader, "_logdir_loader", mock_logdir_loader
+        ), self.assertRaises(AbortUploadError):
+            uploader.start_uploading()
+        self.assertEqual(1, mock_client.WriteTensor.call_count)
+        self.assertEqual(1, mock_rate_limiter.tick.call_count)
+        self.assertEqual(0, mock_blob_rate_limiter.tick.call_count)
 
     # Verify behavior with lots of small chunks
     @mock.patch.object(uploader_lib, "BLOB_CHUNK_SIZE", 100)
@@ -301,10 +362,6 @@ class TensorboardUploaderTest(tf.test.TestCase):
             "/logs/foo",
             rpc_rate_limiter=mock_rate_limiter,
             blob_rpc_rate_limiter=mock_blob_rate_limiter,
-            allowed_plugins=[
-                scalars_metadata.PLUGIN_NAME,
-                graphs_metadata.PLUGIN_NAME,
-            ],
         )
         uploader.create_experiment()
 
@@ -357,10 +414,6 @@ class TensorboardUploaderTest(tf.test.TestCase):
             "/logs/foo",
             rpc_rate_limiter=mock_rate_limiter,
             blob_rpc_rate_limiter=mock_blob_rate_limiter,
-            allowed_plugins=[
-                scalars_metadata.PLUGIN_NAME,
-                graphs_metadata.PLUGIN_NAME,
-            ],
             max_blob_size=100,
         )
         uploader.create_experiment()
@@ -404,13 +457,7 @@ class TensorboardUploaderTest(tf.test.TestCase):
         limiter.tick.side_effect = [None, AbortUploadError]
         mock_client = _create_mock_client()
         uploader = _create_uploader(
-            mock_client,
-            logdir,
-            logdir_poll_rate_limiter=limiter,
-            allowed_plugins=[
-                scalars_metadata.PLUGIN_NAME,
-                graphs_metadata.PLUGIN_NAME,
-            ],
+            mock_client, logdir, logdir_poll_rate_limiter=limiter,
         )
         uploader.create_experiment()
 
@@ -454,10 +501,6 @@ class TensorboardUploaderTest(tf.test.TestCase):
             "/logs/foo",
             rpc_rate_limiter=mock_rate_limiter,
             blob_rpc_rate_limiter=mock_blob_rate_limiter,
-            allowed_plugins=[
-                scalars_metadata.PLUGIN_NAME,
-                graphs_metadata.PLUGIN_NAME,
-            ],
         )
         uploader.create_experiment()
 
@@ -499,10 +542,6 @@ class TensorboardUploaderTest(tf.test.TestCase):
             "/logs/foo",
             rpc_rate_limiter=mock_rate_limiter,
             blob_rpc_rate_limiter=mock_blob_rate_limiter,
-            allowed_plugins=[
-                scalars_metadata.PLUGIN_NAME,
-                graphs_metadata.PLUGIN_NAME,
-            ],
         )
         uploader.create_experiment()
 
@@ -689,7 +728,7 @@ class TensorboardUploaderTest(tf.test.TestCase):
 
 class BatchedRequestSenderTest(tf.test.TestCase):
     def _populate_run_from_events(
-        self, run_proto, events, allowed_plugins=_USE_DEFAULT
+        self, scalar_run, tensor_run, events, allowed_plugins=_USE_DEFAULT
     ):
         mock_client = _create_mock_client()
         builder = _create_request_sender(
@@ -698,47 +737,66 @@ class BatchedRequestSenderTest(tf.test.TestCase):
             allowed_plugins=allowed_plugins,
         )
         builder.send_requests({"": _apply_compat(events)})
-        requests = [c[0][0] for c in mock_client.WriteScalar.call_args_list]
-        if requests:
-            self.assertLen(requests, 1)
-            self.assertLen(requests[0].runs, 1)
-            run_proto.MergeFrom(requests[0].runs[0])
+        scalar_requests = [
+            c[0][0] for c in mock_client.WriteScalar.call_args_list
+        ]
+        if scalar_requests:
+            self.assertLen(scalar_requests, 1)
+            self.assertLen(scalar_requests[0].runs, 1)
+            scalar_run.MergeFrom(scalar_requests[0].runs[0])
+        tensor_requests = [
+            c[0][0] for c in mock_client.WriteTensor.call_args_list
+        ]
+        if tensor_requests:
+            self.assertLen(tensor_requests, 1)
+            self.assertLen(tensor_requests[0].runs, 1)
+            tensor_run.MergeFrom(tensor_requests[0].runs[0])
 
     def test_empty_events(self):
-        run_proto = write_service_pb2.WriteScalarRequest.Run()
-        self._populate_run_from_events(run_proto, [])
+        scalar_run = write_service_pb2.WriteScalarRequest.Run()
+        tensor_run = write_service_pb2.WriteTensorRequest.Run()
+        self._populate_run_from_events(scalar_run, tensor_run, [])
         self.assertProtoEquals(
-            run_proto, write_service_pb2.WriteScalarRequest.Run()
+            scalar_run, write_service_pb2.WriteScalarRequest.Run()
+        )
+        self.assertProtoEquals(
+            tensor_run, write_service_pb2.WriteTensorRequest.Run()
         )
 
-    def test_skips_non_scalar_events(self):
+    def test_scalar_and_tensor_events(self):
         events = [
-            event_pb2.Event(file_version="brain.Event:2"),
             event_pb2.Event(summary=scalar_v2.scalar_pb("scalar1", 5.0)),
             event_pb2.Event(summary=scalar_v2.scalar_pb("scalar2", 5.0)),
             event_pb2.Event(
                 summary=histogram_v2.histogram_pb("histogram", [5.0])
             ),
+            event_pb2.Event(
+                summary=histogram_v2.histogram_pb("histogram", [6.0])
+            ),
         ]
-        run_proto = write_service_pb2.WriteScalarRequest.Run()
-        self._populate_run_from_events(run_proto, events)
-        tag_counts = {tag.name: len(tag.points) for tag in run_proto.tags}
-        self.assertEqual(tag_counts, {"scalar1": 1, "scalar2": 1})
+        scalar_run = write_service_pb2.WriteScalarRequest.Run()
+        tensor_run = write_service_pb2.WriteTensorRequest.Run()
+        self._populate_run_from_events(scalar_run, tensor_run, events)
+        scalar_tag_counts = _extract_tag_counts(scalar_run)
+        self.assertEqual(scalar_tag_counts, {"scalar1": 1, "scalar2": 1})
+        tensor_tag_counts = _extract_tag_counts(tensor_run)
+        self.assertEqual(tensor_tag_counts, {"histogram": 2})
 
-    def test_skips_scalar_events_in_non_scalar_time_series(self):
+    def test_skips_non_scalar_and_non_tensor_events(self):
         events = [
-            event_pb2.Event(file_version="brain.Event:2"),
             event_pb2.Event(summary=scalar_v2.scalar_pb("scalar1", 5.0)),
-            event_pb2.Event(summary=scalar_v2.scalar_pb("scalar2", 5.0)),
+            event_pb2.Event(file_version="brain.Event:2"),
             event_pb2.Event(
                 summary=histogram_v2.histogram_pb("histogram", [5.0])
             ),
-            event_pb2.Event(summary=scalar_v2.scalar_pb("histogram", 5.0)),
         ]
-        run_proto = write_service_pb2.WriteScalarRequest.Run()
-        self._populate_run_from_events(run_proto, events)
-        tag_counts = {tag.name: len(tag.points) for tag in run_proto.tags}
-        self.assertEqual(tag_counts, {"scalar1": 1, "scalar2": 1})
+        scalar_run = write_service_pb2.WriteScalarRequest.Run()
+        tensor_run = write_service_pb2.WriteTensorRequest.Run()
+        self._populate_run_from_events(scalar_run, tensor_run, events)
+        scalar_tag_counts = _extract_tag_counts(scalar_run)
+        self.assertEqual(scalar_tag_counts, {"scalar1": 1})
+        tensor_tag_counts = _extract_tag_counts(tensor_run)
+        self.assertEqual(tensor_tag_counts, {"histogram": 1})
 
     def test_skips_non_scalar_events_in_scalar_time_series(self):
         events = [
@@ -749,23 +807,32 @@ class BatchedRequestSenderTest(tf.test.TestCase):
                 summary=histogram_v2.histogram_pb("scalar2", [5.0])
             ),
         ]
-        run_proto = write_service_pb2.WriteScalarRequest.Run()
-        self._populate_run_from_events(run_proto, events)
-        tag_counts = {tag.name: len(tag.points) for tag in run_proto.tags}
-        self.assertEqual(tag_counts, {"scalar1": 1, "scalar2": 1})
+        scalar_run = write_service_pb2.WriteScalarRequest.Run()
+        tensor_run = write_service_pb2.WriteTensorRequest.Run()
+        self._populate_run_from_events(scalar_run, tensor_run, events)
+        scalar_tag_counts = _extract_tag_counts(scalar_run)
+        self.assertEqual(scalar_tag_counts, {"scalar1": 1, "scalar2": 1})
+        tensor_tag_counts = _extract_tag_counts(tensor_run)
+        self.assertEqual(tensor_tag_counts, {})
 
     def test_skips_events_from_disallowed_plugins(self):
         event = event_pb2.Event(
             step=1, wall_time=123.456, summary=scalar_v2.scalar_pb("foo", 5.0)
         )
-        run_proto = write_service_pb2.WriteScalarRequest.Run()
+        scalar_run = write_service_pb2.WriteScalarRequest.Run()
+        tensor_run = write_service_pb2.WriteTensorRequest.Run()
         self._populate_run_from_events(
-            run_proto, [event], allowed_plugins=frozenset("not-scalars")
+            scalar_run,
+            tensor_run,
+            [event],
+            allowed_plugins=frozenset("not-scalars"),
         )
-        expected_run_proto = write_service_pb2.WriteScalarRequest.Run()
-        self.assertProtoEquals(run_proto, expected_run_proto)
+        expected_scalar_run = write_service_pb2.WriteScalarRequest.Run()
+        self.assertProtoEquals(scalar_run, expected_scalar_run)
+        expected_tensor_run = write_service_pb2.WriteTensorRequest.Run()
+        self.assertProtoEquals(tensor_run, expected_tensor_run)
 
-    def test_remembers_first_metadata_in_scalar_time_series(self):
+    def test_remembers_first_metadata_in_time_series(self):
         scalar_1 = event_pb2.Event(summary=scalar_v2.scalar_pb("loss", 4.0))
         scalar_2 = event_pb2.Event(summary=scalar_v2.scalar_pb("loss", 3.0))
         scalar_2.summary.value[0].ClearField("metadata")
@@ -774,20 +841,22 @@ class BatchedRequestSenderTest(tf.test.TestCase):
             scalar_1,
             scalar_2,
         ]
-        run_proto = write_service_pb2.WriteScalarRequest.Run()
-        self._populate_run_from_events(run_proto, events)
-        tag_counts = {tag.name: len(tag.points) for tag in run_proto.tags}
-        self.assertEqual(tag_counts, {"loss": 2})
+        scalar_run = write_service_pb2.WriteScalarRequest.Run()
+        tensor_run = write_service_pb2.WriteTensorRequest.Run()
+        self._populate_run_from_events(scalar_run, tensor_run, events)
+        scalar_tag_counts = _extract_tag_counts(scalar_run)
+        self.assertEqual(scalar_tag_counts, {"loss": 2})
 
     def test_expands_multiple_values_in_event(self):
         event = event_pb2.Event(step=1, wall_time=123.456)
         event.summary.value.add(tag="foo", simple_value=1.0)
         event.summary.value.add(tag="foo", simple_value=2.0)
         event.summary.value.add(tag="foo", simple_value=3.0)
-        run_proto = write_service_pb2.WriteScalarRequest.Run()
-        self._populate_run_from_events(run_proto, [event])
-        expected_run_proto = write_service_pb2.WriteScalarRequest.Run()
-        foo_tag = expected_run_proto.tags.add()
+        scalar_run = write_service_pb2.WriteScalarRequest.Run()
+        tensor_run = write_service_pb2.WriteTensorRequest.Run()
+        self._populate_run_from_events(scalar_run, tensor_run, [event])
+        expected_scalar_run = write_service_pb2.WriteScalarRequest.Run()
+        foo_tag = expected_scalar_run.tags.add()
         foo_tag.name = "foo"
         foo_tag.metadata.display_name = "foo"
         foo_tag.metadata.plugin_data.plugin_name = "scalars"
@@ -801,7 +870,7 @@ class BatchedRequestSenderTest(tf.test.TestCase):
         foo_tag.points.add(
             step=1, wall_time=test_util.timestamp_pb(123456000000), value=3.0
         )
-        self.assertProtoEquals(run_proto, expected_run_proto)
+        self.assertProtoEquals(scalar_run, expected_scalar_run)
 
 
 class ScalarBatchedRequestSenderTest(tf.test.TestCase):
@@ -1127,6 +1196,289 @@ class ScalarBatchedRequestSenderTest(tf.test.TestCase):
         )
 
 
+class TensorBatchedRequestSenderTest(tf.test.TestCase):
+    def _add_events(self, sender, run_name, events):
+        for event in events:
+            for value in event.summary.value:
+                sender.add_event(run_name, event, value, value.metadata)
+
+    def _add_events_and_flush(self, events):
+        mock_client = _create_mock_client()
+        sender = _create_tensor_request_sender(
+            experiment_id="123", api=mock_client,
+        )
+        self._add_events(sender, "", events)
+        sender.flush()
+
+        requests = [c[0][0] for c in mock_client.WriteTensor.call_args_list]
+        self.assertLen(requests, 1)
+        self.assertLen(requests[0].runs, 1)
+        return requests[0].runs[0]
+
+    def test_histogram_event(self):
+        event = event_pb2.Event(
+            step=1,
+            wall_time=123.456,
+            summary=histogram_v2.histogram_pb("foo", [1.0]),
+        )
+        # Simplify the tensor value a bit. We care that it is copied to the
+        # request but we don't need it to be an extensive test.
+        event.summary.value[0].tensor.ClearField("tensor_shape")
+        event.summary.value[0].tensor.ClearField("tensor_content")
+
+        run_proto = self._add_events_and_flush(_apply_compat([event]))
+        expected_run_proto = write_service_pb2.WriteTensorRequest.Run()
+        foo_tag = expected_run_proto.tags.add()
+        foo_tag.name = "foo"
+        foo_tag.metadata.plugin_data.plugin_name = "histograms"
+        foo_tag.metadata.data_class = summary_pb2.DATA_CLASS_TENSOR
+        foo_tag.points.add(
+            step=1,
+            wall_time=test_util.timestamp_pb(123456000000),
+            value=tensor_pb2.TensorProto(dtype=types_pb2.DT_DOUBLE),
+        )
+        self.assertProtoEquals(run_proto, expected_run_proto)
+
+    def test_aggregation_by_tag(self):
+        def make_event(step, wall_time, tag):
+            event = event_pb2.Event(step=step, wall_time=wall_time)
+            event.summary.value.add(
+                tag=tag, tensor=tensor_pb2.TensorProto(double_val=[1.0])
+            )
+            return event
+
+        events = [
+            make_event(1, 1.0, "one"),
+            make_event(1, 2.0, "two"),
+            make_event(2, 3.0, "one"),
+            make_event(2, 4.0, "two"),
+            make_event(1, 5.0, "one"),  # Should preserve duplicate step=1.
+            make_event(1, 6.0, "three"),
+        ]
+        run_proto = self._add_events_and_flush(events)
+        tag_data = {
+            tag.name: [(p.step, p.wall_time.ToSeconds()) for p in tag.points]
+            for tag in run_proto.tags
+        }
+        self.assertEqual(
+            tag_data,
+            {
+                "one": [(1, 1.0), (2, 3.0), (1, 5.0)],
+                "two": [(1, 2.0), (2, 4.0)],
+                "three": [(1, 6.0)],
+            },
+        )
+
+    def test_propagates_experiment_deletion(self):
+        event = event_pb2.Event(step=1)
+        event.summary.value.add(
+            tag="one", tensor=tensor_pb2.TensorProto(double_val=[1.0])
+        )
+
+        mock_client = _create_mock_client()
+        sender = _create_tensor_request_sender("123", mock_client)
+        self._add_events(sender, "run", _apply_compat([event]))
+
+        error = test_util.grpc_error(grpc.StatusCode.NOT_FOUND, "nope")
+        mock_client.WriteTensor.side_effect = error
+        with self.assertRaises(uploader_lib.ExperimentNotFoundError):
+            sender.flush()
+
+    def test_no_budget_for_base_request(self):
+        mock_client = _create_mock_client()
+        long_experiment_id = "A" * uploader_lib._MAX_REQUEST_LENGTH_BYTES
+        with self.assertRaises(RuntimeError) as cm:
+            _create_tensor_request_sender(
+                experiment_id=long_experiment_id, api=mock_client,
+            )
+        self.assertEqual(
+            str(cm.exception), "Byte budget too small for base request"
+        )
+
+    def test_no_room_for_single_point(self):
+        mock_client = _create_mock_client()
+        event = event_pb2.Event(step=1)
+        event.summary.value.add(
+            tag="one", tensor=tensor_pb2.TensorProto(double_val=[1.0])
+        )
+        long_run_name = "A" * uploader_lib._MAX_REQUEST_LENGTH_BYTES
+        with self.assertRaises(RuntimeError) as cm:
+            sender = _create_tensor_request_sender("123", mock_client)
+            self._add_events(sender, long_run_name, [event])
+        self.assertEqual(str(cm.exception), "add_event failed despite flush")
+
+    @mock.patch.object(uploader_lib, "_MAX_REQUEST_LENGTH_BYTES", 1024)
+    def test_break_at_run_boundary(self):
+        mock_client = _create_mock_client()
+        # Choose run name sizes such that one run fits, but not two.
+        long_run_1 = "A" * 768
+        long_run_2 = "B" * 768
+        event_1 = event_pb2.Event(step=1)
+        event_1.summary.value.add(
+            tag="one", tensor=tensor_pb2.TensorProto(double_val=[1.0])
+        )
+        event_2 = event_pb2.Event(step=2)
+        event_2.summary.value.add(
+            tag="two", tensor=tensor_pb2.TensorProto(double_val=[2.0])
+        )
+
+        sender = _create_tensor_request_sender("123", mock_client)
+        self._add_events(sender, long_run_1, _apply_compat([event_1]))
+        self._add_events(sender, long_run_2, _apply_compat([event_2]))
+        sender.flush()
+        requests = [c[0][0] for c in mock_client.WriteTensor.call_args_list]
+
+        # Expect two RPC calls despite a single explicit call to flush().
+        self.assertEqual(2, len(requests))
+        self.assertEqual(1, len(requests[0].runs))
+        self.assertEqual(long_run_1, requests[0].runs[0].name)
+        self.assertEqual(1, len(requests[1].runs))
+        self.assertEqual(long_run_2, requests[1].runs[0].name)
+
+    @mock.patch.object(uploader_lib, "_MAX_REQUEST_LENGTH_BYTES", 1024)
+    def test_break_at_tag_boundary(self):
+        mock_client = _create_mock_client()
+        # Choose tag name sizes such that one tag fits, but not two.
+        long_tag_1 = "a" * 600
+        long_tag_2 = "b" * 600
+        event = event_pb2.Event(step=1, wall_time=1)
+        event.summary.value.add(
+            tag=long_tag_1, tensor=tensor_pb2.TensorProto(double_val=[1.0])
+        )
+        event.summary.value.add(
+            tag=long_tag_2, tensor=tensor_pb2.TensorProto(double_val=[2.0])
+        )
+
+        sender = _create_tensor_request_sender("123", mock_client)
+        self._add_events(sender, "train", _apply_compat([event]))
+        sender.flush()
+        requests = [c[0][0] for c in mock_client.WriteTensor.call_args_list]
+
+        # Expect two RPC calls despite a single explicit call to flush().
+        self.assertEqual(2, len(requests))
+        # First RPC contains one tag.
+        self.assertEqual(1, len(requests[0].runs))
+        self.assertEqual("train", requests[0].runs[0].name)
+        self.assertEqual(1, len(requests[0].runs[0].tags))
+        self.assertEqual(long_tag_1, requests[0].runs[0].tags[0].name)
+        # Second RPC contains the other tag.
+        self.assertEqual(1, len(requests[1].runs))
+        self.assertEqual("train", requests[1].runs[0].name)
+        self.assertEqual(1, len(requests[1].runs[0].tags))
+        self.assertEqual(long_tag_2, requests[1].runs[0].tags[0].name)
+
+    @mock.patch.object(uploader_lib, "_MAX_REQUEST_LENGTH_BYTES", 1024)
+    def test_break_at_tensor_point_boundary(self):
+        mock_client = _create_mock_client()
+        point_count = 2000  # comfortably saturates a single 1024-byte request
+        events = []
+        for step in range(point_count):
+            event = event_pb2.Event(step=step)
+            event.summary.value.add(
+                tag="histo",
+                tensor=tensor_pb2.TensorProto(
+                    double_val=[1.0 * step, -1.0 * step]
+                ),
+            )
+            events.append(event)
+
+        sender = _create_tensor_request_sender("123", mock_client)
+        self._add_events(sender, "train", _apply_compat(events))
+        sender.flush()
+        requests = [c[0][0] for c in mock_client.WriteTensor.call_args_list]
+
+        self.assertGreater(len(requests), 1)
+        self.assertLess(len(requests), point_count)
+        self.assertEqual(56, len(requests))
+
+        total_points_in_result = 0
+        for request in requests:
+            self.assertLen(request.runs, 1)
+            run = request.runs[0]
+            self.assertEqual(run.name, "train")
+            self.assertLen(run.tags, 1)
+            tag = run.tags[0]
+            self.assertEqual(tag.name, "histo")
+            for point in tag.points:
+                self.assertEqual(point.step, total_points_in_result)
+                self.assertEqual(
+                    point.value.double_val,
+                    [1.0 * point.step, -1.0 * point.step],
+                )
+                total_points_in_result += 1
+            self.assertLessEqual(
+                request.ByteSize(), uploader_lib._MAX_REQUEST_LENGTH_BYTES
+            )
+        self.assertEqual(total_points_in_result, point_count)
+
+    def test_prunes_tags_and_runs(self):
+        mock_client = _create_mock_client()
+        event_1 = event_pb2.Event(step=1)
+        event_1.summary.value.add(
+            tag="one", tensor=tensor_pb2.TensorProto(double_val=[1.0])
+        )
+        event_2 = event_pb2.Event(step=2)
+        event_2.summary.value.add(
+            tag="two", tensor=tensor_pb2.TensorProto(double_val=[2.0])
+        )
+
+        add_point_call_count_box = [0]
+
+        def mock_add_point(byte_budget_manager_self, point):
+            # Simulate out-of-space error the first time that we try to store
+            # the second point.
+            add_point_call_count_box[0] += 1
+            if add_point_call_count_box[0] == 2:
+                raise uploader_lib._OutOfSpaceError()
+
+        with mock.patch.object(
+            uploader_lib._ByteBudgetManager, "add_point", mock_add_point,
+        ):
+            sender = _create_tensor_request_sender("123", mock_client)
+            self._add_events(sender, "train", _apply_compat([event_1]))
+            self._add_events(sender, "test", _apply_compat([event_2]))
+            sender.flush()
+        requests = [c[0][0] for c in mock_client.WriteTensor.call_args_list]
+
+        # Expect two RPC calls despite a single explicit call to flush().
+        self.assertEqual(2, len(requests))
+        # First RPC contains one tag.
+        self.assertEqual(1, len(requests[0].runs))
+        self.assertEqual("train", requests[0].runs[0].name)
+        self.assertEqual(1, len(requests[0].runs[0].tags))
+        self.assertEqual("one", requests[0].runs[0].tags[0].name)
+        # Second RPC contains the other tag.
+        self.assertEqual(1, len(requests[1].runs))
+        self.assertEqual("test", requests[1].runs[0].name)
+        self.assertEqual(1, len(requests[1].runs[0].tags))
+        self.assertEqual("two", requests[1].runs[0].tags[0].name)
+
+    def test_wall_time_precision(self):
+        # Test a wall time that is exactly representable in float64 but has enough
+        # digits to incur error if converted to nanoseconds the naive way (* 1e9).
+        event_1 = event_pb2.Event(step=1, wall_time=1567808404.765432119)
+        event_1.summary.value.add(
+            tag="tag", tensor=tensor_pb2.TensorProto(double_val=[1.0])
+        )
+        # Test a wall time where as a float64, the fractional part on its own will
+        # introduce error if truncated to 9 decimal places instead of rounded.
+        event_2 = event_pb2.Event(step=2, wall_time=1.000000002)
+        event_2.summary.value.add(
+            tag="tag", tensor=tensor_pb2.TensorProto(double_val=[2.0])
+        )
+        run_proto = self._add_events_and_flush(
+            _apply_compat([event_1, event_2])
+        )
+        self.assertEqual(
+            test_util.timestamp_pb(1567808404765432119),
+            run_proto.tags[0].points[0].wall_time,
+        )
+        self.assertEqual(
+            test_util.timestamp_pb(1000000002),
+            run_proto.tags[0].points[1].wall_time,
+        )
+
+
 class DeleteExperimentTest(tf.test.TestCase):
     def _create_mock_client(self):
         # Create a stub instance (using a test channel) in order to derive a mock
@@ -1278,6 +1630,10 @@ def _apply_compat(events):
         )
         for event in events:
             yield event
+
+
+def _extract_tag_counts(run_proto):
+    return {tag.name: len(tag.points) for tag in run_proto.tags}
 
 
 if __name__ == "__main__":
