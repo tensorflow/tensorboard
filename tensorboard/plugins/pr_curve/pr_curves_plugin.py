@@ -100,11 +100,6 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
         """
         response_mapping = {}
         rtf = provider.RunTagFilter(runs, [tag])
-        # TODO(#3554): Can we get rid of this `list_tensors` by instead
-        # computing `num_thresholds` from the shape of the data?
-        list_result = self._data_provider.list_tensors(
-            experiment, metadata.PLUGIN_NAME, run_tag_filter=rtf,
-        )
         read_result = self._data_provider.read_tensors(
             experiment,
             metadata.PLUGIN_NAME,
@@ -118,25 +113,8 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
                     "No PR curves could be found for run %r and tag %r"
                     % (run, tag)
                 )
-            content = list_result[run][tag].plugin_content
-            pr_curve_data = metadata.parse_plugin_metadata(content)
-            thresholds = self._compute_thresholds(pr_curve_data.num_thresholds)
-            response_mapping[run] = [
-                self._process_datum(d, thresholds) for d in data
-            ]
+            response_mapping[run] = [self._process_datum(d) for d in data]
         return response_mapping
-
-    def _compute_thresholds(self, num_thresholds):
-        """Computes a list of specific thresholds from the number of
-        thresholds.
-
-        Args:
-          num_thresholds: The number of thresholds.
-
-        Returns:
-          A list of specific thresholds (floats).
-        """
-        return [float(v) / num_thresholds for v in range(1, num_thresholds + 1)]
 
     @wrappers.Request.application
     def tags_route(self, request):
@@ -198,23 +176,19 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
             element_name="tf-pr-curve-dashboard", tab_name="PR Curves",
         )
 
-    def _process_datum(self, datum, thresholds):
+    def _process_datum(self, datum):
         """Converts a TensorDatum into a dict that encapsulates information on
         it.
 
         Args:
           datum: The TensorDatum to convert.
-          thresholds: An array of floats that ranges from 0 to 1 (in that
-            direction and inclusive of 0 and 1).
 
         Returns:
           A JSON-able dictionary of PR curve data for 1 step.
         """
-        return self._make_pr_entry(
-            datum.step, datum.wall_time, datum.numpy, thresholds,
-        )
+        return self._make_pr_entry(datum.step, datum.wall_time, datum.numpy)
 
-    def _make_pr_entry(self, step, wall_time, data_array, thresholds):
+    def _make_pr_entry(self, step, wall_time, data_array):
         """Creates an entry for PR curve data. Each entry corresponds to 1
         step.
 
@@ -222,7 +196,6 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
           step: The step.
           wall_time: The wall time.
           data_array: A numpy array of PR curve data stored in the summary format.
-          thresholds: An array of floating point thresholds.
 
         Returns:
           A PR curve entry.
@@ -242,6 +215,8 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
         while end_index_inclusive > 0 and positives[end_index_inclusive] == 0:
             end_index_inclusive -= 1
         end_index = end_index_inclusive + 1
+        num_thresholds = data_array.shape[1]
+        thresholds = (np.arange(1, end_index + 1) / num_thresholds).tolist()
 
         return {
             "wall_time": wall_time,
@@ -260,5 +235,5 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
                 int(v)
                 for v in data_array[metadata.FALSE_NEGATIVES_INDEX][:end_index]
             ],
-            "thresholds": thresholds[:end_index],
+            "thresholds": thresholds,
         }
