@@ -8,6 +8,15 @@ licenses(["notice"])  # Apache 2.0
 exports_files(["LICENSE"])
 
 py_library(
+    name = "experimental",
+    srcs = ["__init__.py"],
+    srcs_version = "PY3",
+    deps = [
+        ":experiment_from_dev",
+    ]
+)
+
+py_library(
     name = "base_experiment",
     srcs = ["base_experiment.py"],
     srcs_version = "PY3",
