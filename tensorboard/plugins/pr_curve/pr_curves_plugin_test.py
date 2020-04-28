@@ -123,9 +123,6 @@ class PrCurvesPluginTest(tf.test.TestCase):
         routes = self.plugin.get_plugin_apps()
         self.assertIsInstance(routes["/tags"], collections.abc.Callable)
         self.assertIsInstance(routes["/pr_curves"], collections.abc.Callable)
-        self.assertIsInstance(
-            routes["/available_time_entries"], collections.abc.Callable
-        )
 
     def testTagsProvided(self):
         """Tests that tags are provided."""
@@ -190,38 +187,6 @@ class PrCurvesPluginTest(tf.test.TestCase):
             },
             tags_response["mask_every_other_prediction"]["blue/pr_curves"],
         )
-
-    def testAvailableSteps(self):
-        """Tests that runs are mapped to correct available steps."""
-        # Test that all runs are within the keys of the mapping.
-        response = self.plugin.available_time_entries_impl()
-        self.assertItemsEqual(
-            ["colors", "mask_every_other_prediction"], list(response.keys())
-        )
-
-        # TODO(chizeng): Find a means of testing the wall time and relative time.
-        # The wall time written to disk is computed within TensorFlow C++.
-        entries = response["colors"]
-        entry = entries[0]
-        self.assertEqual(0, entry["step"])
-        self.assertIn("wall_time", entry)
-        entry = entries[1]
-        self.assertEqual(1, entry["step"])
-        self.assertIn("wall_time", entry)
-        entry = entries[2]
-        self.assertEqual(2, entry["step"])
-        self.assertIn("wall_time", entry)
-
-        entries = response["mask_every_other_prediction"]
-        entry = entries[0]
-        self.assertEqual(0, entry["step"])
-        self.assertIn("wall_time", entry)
-        entry = entries[1]
-        self.assertEqual(1, entry["step"])
-        self.assertIn("wall_time", entry)
-        entry = entries[2]
-        self.assertEqual(2, entry["step"])
-        self.assertIn("wall_time", entry)
 
     def testPrCurvesDataCorrect(self):
         """Tests that responses for PR curves for run-tag combos are

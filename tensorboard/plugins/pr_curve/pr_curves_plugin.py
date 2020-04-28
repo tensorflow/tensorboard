@@ -161,48 +161,6 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
                 }
         return result
 
-    @wrappers.Request.application
-    def available_time_entries_route(self, request):
-        """Gets a dict mapping run to a list of time entries.
-
-        Returns:
-          A dict with string keys (all runs with PR curve data). The values of the
-          dict are lists of time entries (consisting of the fields below) to be
-          used in populating values within time sliders.
-        """
-        return http_util.Respond(
-            request, self.available_time_entries_impl(), "application/json"
-        )
-
-    def available_time_entries_impl(self):
-        """Creates the JSON object for the available time entries route
-        response.
-
-        Returns:
-          The JSON object for the available time entries route response.
-        """
-        result = {}
-        all_runs = self._multiplexer.PluginRunToTagToContent(
-            metadata.PLUGIN_NAME
-        )
-        for run, tag_to_content in all_runs.items():
-            if not tag_to_content:
-                # This run lacks data for this plugin.
-                continue
-            # Just use the list of tensor events for any of the tags to determine
-            # the steps to list for the run. The steps are often the same across
-            # tags for each run, albeit the user may elect to sample certain tags
-            # differently within the same run. If the latter occurs, TensorBoard
-            # will show the actual step of each tag atop the card for the tag.
-            tensor_events = self._multiplexer.Tensors(
-                run, min(six.iterkeys(tag_to_content))
-            )
-            result[run] = [
-                self._create_time_entry(e.step, e.wall_time)
-                for e in tensor_events
-            ]
-        return result
-
     def _create_time_entry(self, step, wall_time):
         """Creates a time entry given a tensor event.
 
@@ -228,7 +186,6 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
         return {
             "/tags": self.tags_route,
             "/pr_curves": self.pr_curves_route,
-            "/available_time_entries": self.available_time_entries_route,
         }
 
     def is_active(self):
