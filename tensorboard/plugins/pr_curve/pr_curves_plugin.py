@@ -161,22 +161,6 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
                 }
         return result
 
-    def _create_time_entry(self, step, wall_time):
-        """Creates a time entry given a tensor event.
-
-        Arguments:
-          step: The step for the time entry.
-          wall_time: The wall time for the time entry.
-
-        Returns:
-          A JSON-able time entry to be passed to the frontend in order to construct
-          the slider.
-        """
-        return {
-            "step": step,
-            "wall_time": wall_time,
-        }
-
     def get_plugin_apps(self):
         """Gets all routes offered by the plugin.
 
