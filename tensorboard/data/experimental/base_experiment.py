@@ -27,6 +27,9 @@ import six
 class BaseExperiment(object):
     """Base class for experiment data access."""
 
+    # TODO(cais): Add list_scalar_runs().
+    # TODO(cais): Add list_scalar_tags().
+
     @abc.abstractmethod
     def get_scalars(self, runs_filter=None, tags_filter=None, pivot=True):
         """Export scalar data as a pandas.DataFrame.

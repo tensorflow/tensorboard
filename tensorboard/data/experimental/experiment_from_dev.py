@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import print_function
 
 import base64
+import sys
 import time
 
 import grpc
@@ -31,43 +32,34 @@ from tensorboard.uploader import util
 from tensorboard.uploader import server_info as server_info_lib
 from tensorboard.uploader.proto import export_service_pb2
 from tensorboard.uploader.proto import export_service_pb2_grpc
+from tensorboard.uploader.proto import server_info_pb2
 from tensorboard.util import grpc_util
 
 
+DEFAULT_ORIGIN = "https://tensorboard.dev"
+
+
 class ExperimentFromDev(base_experiment.BaseExperiment):
-    def __init__(self, experiment_id):
+    def __init__(self, experiment_id, api_endpoint=None):
         super(ExperimentFromDev, self).__init__()
-        store = auth.CredentialsStore()
-        credentials = store.read_credentials()
-        print("credentials = %s" % credentials)  # DEBUG
-        channel_options = None
-        # if flags.grpc_creds_type == "local":
-        #     channel_creds = grpc.local_channel_credentials()
-        # elif flags.grpc_creds_type == "ssl":
+        server_info = _get_server_info(api_endpoint=api_endpoint)
         channel_creds = grpc.ssl_channel_credentials()
-        # elif flags.grpc_creds_type == "ssl_dev":
-        #     # Configure the dev cert to use by passing the environment variable
-        #     # GRPC_DEFAULT_SSL_ROOTS_FILE_PATH=path/to/cert.crt
-        #     channel_creds = grpc.ssl_channel_credentials()
-        #     channel_options = [("grpc.ssl_target_name_override", "localhost")]
-        # else:
-        #     msg = "Invalid --grpc_creds_type %s" % flags.grpc_creds_type
-        #     raise base_plugin.FlagsError(msg)
-        server_info = _get_server_info()
-        print("server_info = %s" % server_info)  # DEBUG
-        composite_channel_creds = grpc.composite_channel_credentials(
-            channel_creds, auth.id_token_call_credentials(credentials)
-        )
-        channel = grpc.secure_channel(
-            server_info.api_server.endpoint,
-            composite_channel_creds,
-            options=channel_options,
-        )
-        print("channel = %s" % channel)  # DEBUG
+        credentials = auth.CredentialsStore().read_credentials()
+        if credentials:
+            channel_creds = grpc.composite_channel_credentials(
+                channel_creds, auth.id_token_call_credentials(credentials)
+            )
+            channel = grpc.secure_channel(
+                server_info.api_server.endpoint, channel_creds
+            )
+        else:
+            channel = grpc.secure_channel(
+                server_info.api_server.endpoint, channel_creds
+            )
+
         self._api_client = export_service_pb2_grpc.TensorBoardExporterServiceStub(
             channel
         )
-        print("self._api_client = %s" % self._api_client)  # DEBUG
         self._experiment_id = experiment_id
 
     def get_scalars(self, runs_filter=None, tags_filter=None, pivot=True):
@@ -78,6 +70,7 @@ class ExperimentFromDev(base_experiment.BaseExperiment):
         stream = self._api_client.StreamExperimentData(
             request, metadata=grpc_util.version_metadata()
         )
+
         runs = []
         tags = []
         steps = []
@@ -87,10 +80,6 @@ class ExperimentFromDev(base_experiment.BaseExperiment):
             metadata = base64.b64encode(
                 response.tag_metadata.SerializeToString()
             ).decode("ascii")
-            print(
-                "run = %s, tag = %s, metadata = %s"
-                % (response.run_name, response.tag_name, metadata)
-            )  # DEBUG
             num_values = len(response.points.values)
             runs.extend([response.run_name] * num_values)
             tags.extend([response.tag_name] * num_values)
@@ -115,12 +104,15 @@ class ExperimentFromDev(base_experiment.BaseExperiment):
         return data_frame
 
 
-def _get_server_info():
-    origin = "https://tensorboard.dev"
-    # TODO(cais): Support flags --origin and --api_endpoint.
+def _get_server_info(api_endpoint=None):
+    # TODO(cais): Add more plugins to the list when more plugin/data types
+    # are supported
     plugins = ["scalars"]
-    server_info = server_info_lib.fetch_server_info(origin, plugins)
-    return server_info
+    if api_endpoint:
+        return server_info_lib.create_server_info(
+            DEFAULT_ORIGIN, api_endpoint, plugins
+        )
+    return server_info_lib.fetch_server_info(DEFAULT_ORIGIN, plugins)
 
 
 def _handle_server_info(info):
