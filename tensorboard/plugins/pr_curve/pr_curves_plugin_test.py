@@ -29,6 +29,7 @@ import tensorflow as tf
 from tensorboard.backend.event_processing import (
     plugin_event_multiplexer as event_multiplexer,
 )
+from tensorboard.backend.event_processing import data_provider
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.pr_curve import pr_curve_demo
 from tensorboard.plugins.pr_curve import pr_curves_plugin
@@ -55,8 +56,9 @@ class PrCurvesPluginTest(tf.test.TestCase):
         multiplexer = event_multiplexer.EventMultiplexer()
         multiplexer.AddRunsFromDirectory(logdir)
         multiplexer.Reload()
+        provider = data_provider.MultiplexerDataProvider(multiplexer, logdir)
 
-        context = base_plugin.TBContext(logdir=logdir, multiplexer=multiplexer)
+        context = base_plugin.TBContext(logdir=logdir, data_provider=provider)
         self.plugin = pr_curves_plugin.PrCurvesPlugin(context)
 
     def validatePrCurveEntry(
@@ -126,7 +128,7 @@ class PrCurvesPluginTest(tf.test.TestCase):
 
     def testTagsProvided(self):
         """Tests that tags are provided."""
-        tags_response = self.plugin.tags_impl()
+        tags_response = self.plugin.tags_impl("123")
 
         # Assert that the runs are right.
         self.assertItemsEqual(
@@ -192,7 +194,7 @@ class PrCurvesPluginTest(tf.test.TestCase):
         """Tests that responses for PR curves for run-tag combos are
         correct."""
         pr_curves_response = self.plugin.pr_curves_impl(
-            ["colors", "mask_every_other_prediction"], "blue/pr_curves"
+            "123", ["colors", "mask_every_other_prediction"], "blue/pr_curves"
         )
 
         # Assert that the runs are correct.
@@ -286,12 +288,14 @@ class PrCurvesPluginTest(tf.test.TestCase):
         with six.assertRaisesRegex(
             self, ValueError, r"No PR curves could be found"
         ):
-            self.plugin.pr_curves_impl(["colors"], "non_existent_tag")
+            self.plugin.pr_curves_impl("123", ["colors"], "non_existent_tag")
 
         with six.assertRaisesRegex(
             self, ValueError, r"No PR curves could be found"
         ):
-            self.plugin.pr_curves_impl(["non_existent_run"], "blue/pr_curves")
+            self.plugin.pr_curves_impl(
+                "123", ["non_existent_run"], "blue/pr_curves"
+            )
 
     def testPluginIsNotActive(self):
         """Tests that the plugin is inactive when no relevant data exists."""
@@ -304,11 +308,6 @@ class PrCurvesPluginTest(tf.test.TestCase):
         )
         plugin = pr_curves_plugin.PrCurvesPlugin(context)
         self.assertFalse(plugin.is_active())
-
-    def testPluginIsActive(self):
-        """Tests that the plugin is active when relevant data exists."""
-        # The set up for this test generates relevant data.
-        self.assertTrue(self.plugin.is_active())
 
 
 if __name__ == "__main__":
