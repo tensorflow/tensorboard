@@ -38,6 +38,8 @@ from tensorboard.plugins.histogram import metadata as histogram_metadata
 from tensorboard.plugins.histogram import summary as histogram_summary
 from tensorboard.plugins.hparams import metadata as hparams_metadata
 from tensorboard.plugins.hparams import summary_v2 as hparams_summary
+from tensorboard.plugins.pr_curve import metadata as pr_curve_metadata
+from tensorboard.plugins.pr_curve import summary as pr_curve_summary
 from tensorboard.plugins.scalar import metadata as scalar_metadata
 from tensorboard.plugins.scalar import summary as scalar_summary
 from tensorboard.util import tensor_util
@@ -263,6 +265,37 @@ class MigrateEventTest(tf.test.TestCase):
         self.assertEqual(
             value.metadata.plugin_data,
             hparams_pb.value[0].metadata.plugin_data,
+        )
+
+    def test_pr_curves(self):
+        old_event = event_pb2.Event()
+        old_event.step = 123
+        old_event.wall_time = 456.75
+        pr_curve_pb = pr_curve_summary.pb(
+            "foo",
+            labels=np.array([True, False, True, False]),
+            predictions=np.array([0.75, 0.25, 0.85, 0.15]),
+            num_thresholds=10,
+            display_name="bar",
+            description="baz",
+        )
+        old_event.summary.ParseFromString(pr_curve_pb.SerializeToString())
+
+        new_events = self._migrate_event(old_event)
+        self.assertLen(new_events, 1)
+        self.assertLen(new_events[0].summary.value, 1)
+        value = new_events[0].summary.value[0]
+        tensor = tensor_util.make_ndarray(value.tensor)
+        self.assertEqual(tensor.shape, (6, 10))
+        np.testing.assert_array_equal(
+            tensor, tensor_util.make_ndarray(pr_curve_pb.value[0].tensor)
+        )
+        self.assertEqual(
+            value.metadata.data_class, summary_pb2.DATA_CLASS_TENSOR
+        )
+        self.assertEqual(
+            value.metadata.plugin_data.plugin_name,
+            pr_curve_metadata.PLUGIN_NAME,
         )
 
     def test_graph_def(self):
