@@ -302,10 +302,11 @@ var vz_line_chart2;
                 this._chart.setSeriesMetadata(name, meta);
             }
         },
+        /**
+         * Not yet implemented.
+         */
         commitChanges() {
-            if (!this._chart)
-                return;
-            this._chart.commitChanges();
+            // Temporarily rolled back due to PR curves breakage.
         },
         /**
          * Reset the chart domain. If the chart has not rendered yet, a call to this
@@ -371,7 +372,6 @@ var vz_line_chart2;
                 this._chart.setSeriesMetadata(name, this._seriesMetadataCache[name]);
             });
             this._chart.setVisibleSeries(this._visibleSeriesCache);
-            this._chart.commitChanges();
         },
         _smoothingChanged: function () {
             if (!this._chart)

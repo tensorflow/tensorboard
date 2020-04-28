@@ -31,7 +31,6 @@ var vz_line_chart2;
     const _MAX_MARKERS = 20;
     class LineChart {
         constructor(xComponentsCreationMethod, yValueAccessor, yScaleType, colorScale, tooltip, tooltipColumns, fillArea, defaultXRange, defaultYRange, symbolFunction, xAxisFormatter) {
-            this.dirtyDatasets = new Set();
             this.seriesNames = [];
             this.name2datasets = {};
             this.colorScale = colorScale;
@@ -46,6 +45,9 @@ var vz_line_chart2;
             // The symbol function maps series to marker. It uses a special dataset that
             // varies based on whether smoothing is enabled.
             this.symbolFunction = symbolFunction;
+            // need to do a single bind, so we can deregister the callback from
+            // old Plottable.Datasets. (Deregistration is done by identity checks.)
+            this.onDatasetChanged = this._onDatasetChanged.bind(this);
             this._defaultXRange = defaultXRange;
             this._defaultYRange = defaultYRange;
             this.tooltipColumns = tooltipColumns;
@@ -161,6 +163,15 @@ var vz_line_chart2;
                 groups.push(this.markersScatterPlot);
             }
             return new Plottable.Components.Group(groups);
+        }
+        /** Updates the chart when a dataset changes. Called every time the data of
+         * a dataset changes to update the charts.
+         */
+        _onDatasetChanged(dataset) {
+            if (this.smoothingEnabled) {
+                this.resmoothDataset(dataset);
+            }
+            this.updateSpecialDatasets();
         }
         ignoreYOutliers(ignoreYOutliers) {
             if (ignoreYOutliers !== this._ignoreYOutliers) {
@@ -582,37 +593,15 @@ var vz_line_chart2;
             }
         }
         /**
-         * Stages update of visible series on the chart.
-         *
-         * Please call `commitChanges` for the changes to be reflected on the chart
-         * after making all the changes.
+         * Update the selected series on the chart.
          */
         setVisibleSeries(names) {
-            this.disableChanges();
             names = names.sort();
-            names.reverse(); // draw first series on top
             this.seriesNames = names;
-        }
-        disableChanges() {
-            if (!this.dirtyDatasets.size) {
-                // Prevent plots from reacting to the dataset changes.
-                this.linePlot.datasets([]);
-                if (this.smoothLinePlot) {
-                    this.smoothLinePlot.datasets([]);
-                }
-                if (this.marginAreaPlot) {
-                    this.marginAreaPlot.datasets([]);
-                }
-            }
-        }
-        commitChanges() {
-            this.datasets = this.seriesNames.map((r) => this.getDataset(r));
-            [...this.dirtyDatasets].forEach((d) => {
-                if (this.smoothingEnabled) {
-                    this.resmoothDataset(this.getDataset(d));
-                }
-            });
-            this.updateSpecialDatasets();
+            names.reverse(); // draw first series on top
+            this.datasets.forEach((d) => d.offUpdate(this.onDatasetChanged));
+            this.datasets = names.map((r) => this.getDataset(r));
+            this.datasets.forEach((d) => d.onUpdate(this.onDatasetChanged));
             this.linePlot.datasets(this.datasets);
             if (this.smoothingEnabled) {
                 this.smoothLinePlot.datasets(this.datasets);
@@ -620,8 +609,13 @@ var vz_line_chart2;
             if (this.marginAreaPlot) {
                 this.marginAreaPlot.datasets(this.datasets);
             }
-            this.measureBBoxAndMaybeInvalidateLayoutInRaf();
-            this.dirtyDatasets.clear();
+            this.updateSpecialDatasets();
+        }
+        /**
+         * Not yet implemented.
+         */
+        commitChanges() {
+            // Temporarily rolled back due to PR curves breakage.
         }
         /**
          * Samples a dataset so that it contains no more than _MAX_MARKERS number of
@@ -643,26 +637,20 @@ var vz_line_chart2;
             return new Plottable.Dataset(data, original.metadata());
         }
         /**
-         * Stages a data change of a series on the chart.
-         *
-         * Please call `commitChanges` for the changes to be reflected on the chart
-         * after making all the changes.
+         * Sets the data of a series on the chart.
          */
         setSeriesData(name, data) {
-            this.disableChanges();
             this.getDataset(name).data(data);
-            this.dirtyDatasets.add(name);
+            this.measureBBoxAndMaybeInvalidateLayoutInRaf();
         }
         /**
-         * Sets a metadata change of a series on the chart.
-         *
-         * Please call `commitChanges` for the changes to be reflected on the chart
-         * after making all the changes.
+         * Sets the metadata of a series on the chart.
          */
         setSeriesMetadata(name, meta) {
-            this.disableChanges();
-            this.getDataset(name).metadata(Object.assign({}, this.getDataset(name).metadata(), { meta }));
-            this.dirtyDatasets.add(name);
+            const newMeta = Object.assign({}, this.getDataset(name).metadata(), {
+                meta,
+            });
+            this.getDataset(name).metadata(newMeta);
         }
         smoothingUpdate(weight) {
             this.smoothingWeight = weight;
