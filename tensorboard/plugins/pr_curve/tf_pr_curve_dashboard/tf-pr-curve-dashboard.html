@@ -126,6 +126,7 @@ limitations under the License.
                   tag-metadata="[[_tagMetadata(_runToTagInfo, item.runs, item.tag)]]"
                   request-manager="[[_requestManager]]"
                   run-to-step-cap="[[_runToStep]]"
+                  on-data-change="[[_createDataChangeCallback(item.tag)]]"
                 ></tf-pr-curve-card>
               </template>
             </tf-category-paginated-view>
@@ -169,7 +170,11 @@ limitations under the License.
         // The steps that the step slider for each run should use.
         _runToAvailableTimeEntries: {
           type: Object, // map<run: string, steps: number[]>
-          value: {},
+          computed: '_computeRunToAvailableTimeEntries(_tagToRunToData)',
+        },
+        _tagToRunToData: {
+          type: Object, // map<tag: string, map<run: string: PrCurveDatum[]>>
+          value: () => ({}),
         },
         // A list of runs that are both selected and have PR curve data.
         _relevantSelectedRuns: {
@@ -177,7 +182,6 @@ limitations under the License.
           computed:
             '_computeRelevantSelectedRuns(_selectedRuns, _runToTagInfo)',
         },
-        _runsWithPrCurveData: Array, // string[]
         // The desired step value that each run should use. If a run + tag lacks a
         // PR curve at this exact step value, the greatest step value less than
         // this value will be used.
@@ -216,11 +220,9 @@ limitations under the License.
         this.reload();
       },
       reload() {
-        Promise.all([this._fetchTags(), this._fetchTimeEntriesPerRun()]).then(
-          () => {
-            this._reloadCards();
-          }
-        );
+        Promise.all([this._fetchTags()]).then(() => {
+          this._reloadCards();
+        });
       },
       _shouldOpen(index) {
         return index <= 2;
@@ -240,29 +242,6 @@ limitations under the License.
             // See the comment above `_categoriesDomReady`.
             this.set('_categoriesDomReady', true);
           });
-        });
-      },
-      _fetchTimeEntriesPerRun() {
-        const url = tf_backend
-          .getRouter()
-          .pluginRoute('pr_curves', '/available_time_entries');
-        return this._requestManager.request(url).then((timeEntriesPerRun) => {
-          // Compute the relative field for each time entry. For each step, the
-          // relative field is the number of seconds (float) since the first step.
-          _.forOwn(timeEntriesPerRun, (entries, run) => {
-            _.forEach(entries, (entry) => {
-              entry['relative'] = entry.wall_time - entries[0].wall_time;
-            });
-          });
-
-          this.set('_runToAvailableTimeEntries', timeEntriesPerRun);
-
-          const listOfRuns = _.keys(timeEntriesPerRun)
-            .slice()
-            .sort();
-          if (!_.isEqual(listOfRuns, this._runsWithPrCurveData)) {
-            this.set('_runsWithPrCurveData', listOfRuns);
-          }
         });
       },
       _reloadCards() {
@@ -298,6 +277,35 @@ limitations under the License.
         // that from the display name.
         const defaultDisplayName = tag.replace(/\/pr_curves$/, '');
         return tf_utils.aggregateTagInfo(runToTagInfo, defaultDisplayName);
+      },
+      _createDataChangeCallback(tag) {
+        return (runToData) => {
+          this.set('_tagToRunToData', {
+            ...this._tagToRunToData,
+            [tag]: runToData,
+          });
+        };
+      },
+      _computeRunToAvailableTimeEntries(tagToRunToData) {
+        const canonicalTag = {}; // map from run to canonical tag name
+        for (const [tag, runToData] of Object.entries(tagToRunToData)) {
+          for (const [run, data] of Object.entries(runToData)) {
+            // arbitrary stable ordering: smallest tag name is canonical
+            if (canonicalTag[run] == null || tag < canonicalTag[run]) {
+              canonicalTag[run] = tag;
+            }
+          }
+        }
+        const result = {};
+        for (const [run, tag] of Object.entries(canonicalTag)) {
+          const data = tagToRunToData[tag][run];
+          result[run] = data.map((d) => ({
+            step: d.step,
+            wall_time: d.wall_time,
+            relative: d.wall_time - data[0].wall_time,
+          }));
+        }
+        return result;
       },
     });
   </script>
