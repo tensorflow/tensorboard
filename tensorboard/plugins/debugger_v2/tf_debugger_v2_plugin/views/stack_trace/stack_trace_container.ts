@@ -18,7 +18,10 @@ import {createSelector, select, Store} from '@ngrx/store';
 import {State} from '../../store/debugger_types';
 
 import {sourceLineFocused} from '../../actions';
-import {getFocusedExecutionStackFrames} from '../../store';
+import {
+  getFocusedExecutionStackFrames,
+  getFocusedSourceLineSpec,
+} from '../../store';
 import {StackFrameForDisplay} from './stack_trace_component';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
@@ -37,7 +40,8 @@ export class StackTraceContainer {
     select(
       createSelector(
         getFocusedExecutionStackFrames,
-        (stackFrames) => {
+        getFocusedSourceLineSpec,
+        (stackFrames, focusedSourceLineSpec) => {
           if (stackFrames === null) {
             return null;
           }
@@ -46,12 +50,18 @@ export class StackTraceContainer {
             const [host_name, file_path, lineno, function_name] = stackFrame;
             const pathItems = file_path.split('/');
             const concise_file_path = pathItems[pathItems.length - 1];
+            const focused =
+              focusedSourceLineSpec !== null &&
+              host_name === focusedSourceLineSpec.host_name &&
+              file_path === focusedSourceLineSpec.file_path &&
+              lineno === focusedSourceLineSpec.lineno;
             output.push({
               host_name,
               file_path,
               concise_file_path,
               lineno,
               function_name,
+              focused,
             });
           }
           return output;

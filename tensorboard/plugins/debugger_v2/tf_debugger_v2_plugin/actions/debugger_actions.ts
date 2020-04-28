@@ -27,6 +27,7 @@ import {
 import {
   ExecutionDigestsResponse,
   ExecutionDataResponse,
+  GraphExecutionDataResponse,
   SourceFileResponse,
 } from '../data_source/tfdbg2_data_source';
 
@@ -144,6 +145,24 @@ export const numGraphExecutionsLoaded = createAction(
   props<{numGraphExecutions: number}>()
 );
 
+export const graphExecutionDataRequested = createAction(
+  '[Debugger] Intra-Graph Execution Data Requested',
+  props<{pageIndex: number}>()
+);
+
+export const graphExecutionDataLoaded = createAction(
+  '[Debugger] Intra-Graph Execution Data Loaded',
+  props<GraphExecutionDataResponse>()
+);
+
+export const graphExecutionScrollToIndex = createAction(
+  '[Debugger] Scroll Intra-Graph Execution List to Given Index',
+  props<{index: number}>()
+);
+
+/**
+ * Actions related to source files and stack traces.
+ */
 export const sourceFileListRequested = createAction(
   '[Debugger] Source File List Requested.'
 );

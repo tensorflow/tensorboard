@@ -21,3 +21,77 @@ limitations under the License.
   margin-left: 8px;
   padding-left: 10px;
 }
+
+.graph-execution-index {
+  color: #757575;
+  display: inline-block;
+  width: 40px;
+  padding-right: 4px;
+}
+
+.graph-executions-viewport {
+  flex-grow: 1;
+  font-size: 12px;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.loading-spinner {
+  display: inline-block;
+}
+
+.op-type {
+  background-color: #e3e5e8;
+  border: 1px solid #c0c0c0;
+  border-radius: 4px;
+  direction: rtl;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 10px;
+  display: block;
+  height: 14px;
+  line-height: 14px;
+  padding: 1px 3px;
+  width: max-content;
+}
+
+.tensor-container {
+  width: 100%;
+}
+
+.tensor-item {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-wrap: nowrap;
+  height: 36px;
+  line-height: 36px;
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.tensor-name {
+  direction: rtl;
+  display: block;
+  height: 16px;
+  line-height: 16px;
+  overflow: hidden;
+  padding: 0 2px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.tensor-name-and-op-type {
+  direction: rtl;
+  display: inline-block;
+  overflow: hidden;
+  padding-right: 8px;
+  text-align: right;
+  width: 240px;
+}
+
+debug-tensor-value {
+  display: inline-block;
+  margin: 2px 0;
+}

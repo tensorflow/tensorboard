@@ -24,6 +24,7 @@ import {
   DebuggerState,
   Execution,
   Executions,
+  GraphExecution,
   ExecutionDigest,
   GraphExecutions,
   InfNanAlert,
@@ -85,6 +86,22 @@ export function createTestExecutionDigest(
   return {
     op_type: 'TestOp',
     output_tensor_device_ids: ['d0'],
+    ...override,
+  };
+}
+
+export function createTestGraphExecution(
+  override?: Partial<GraphExecution>
+): GraphExecution {
+  return {
+    op_name: 'test_namescope/TestOp',
+    op_type: 'TestOp',
+    output_slot: 0,
+    graph_id: 'g1',
+    graph_ids: ['g0', 'g1,'],
+    device_name: '/GPU:0',
+    tensor_debug_mode: 2,
+    debug_tensor_value: [0, 1],
     ...override,
   };
 }

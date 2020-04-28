@@ -44,6 +44,8 @@ export interface DebuggerRunListing {
 }
 
 // Each item is [host_name, file_path, lineno, function].
+// TODO(cais): Consider making this an object with meaningful
+// keys instead.
 export type StackFrame = [string, string, number, string];
 
 export type StackFramesById = {[id: string]: StackFrame};
@@ -155,6 +157,59 @@ export interface InfNanAlert extends Alert {
   graph_execution_trace_index: number | null;
 }
 
+/**
+ * Values that summarize a tensor watched by the debugger.
+ */
+export interface DebugTensorValue {
+  // Data type of the tensor.
+  dtype?: string;
+
+  // Rank of the tensor (e.g., 0 for scalar, 1 for 1D tensor, etc.)
+  rank?: number;
+
+  // Shape of the tensor.
+  // In the case where the shape is truncated beyond the highest
+  // rank a debug mode can represent, the truncated part is filled with
+  // `undefined`s.
+  shape?: Array<undefined | number>;
+
+  // Size (total element count) of the tensor.
+  size?: number;
+
+  // Number of NaN elements.
+  numNaNs?: number;
+
+  // Number of -Infinity elements.
+  numNegativeInfs?: number;
+
+  // Number of +Infinity elements.
+  numPositiveInfs?: number;
+
+  // Number of finite negative elements.
+  numNegativeFinites?: number;
+
+  // Numbe of zeros elements.
+  numZeros?: number;
+
+  // Number of finite positive elements.
+  numPositiveFinites?: number;
+
+  // Whether the tensor contains any NaN or Infinity elements.
+  hasInfOrNaN?: boolean;
+
+  // Minimum value.
+  min?: number;
+
+  // Maximum value.
+  max?: number;
+
+  // Arithmetic mean.
+  mean?: number;
+
+  // Variance.
+  variance?: number;
+}
+
 export interface ExecutionDigestLoadState extends LoadState {
   // A map from page number to whether the page has been loaded
   //   - in full, in which case the value is pageSize.
@@ -256,8 +311,14 @@ export interface GraphExecutions extends PagedExecutions {
   // Intra-graph execution digests the frontend has loaded so far.
   graphExecutionDigests: {[index: number]: GraphExecutionDigest};
 
+  // Indices to GraphExecution pages currently being loaded.
+  graphExecutionDataLoadingPages: number[];
+
+  // Number of items in each `GraphExecution` page that have been loaded.
+  graphExecutionDataPageLoadedSizes: {[page: number]: number};
+
   // Detailed data objects about intra-graph execution.
-  graphExecutionData: {[index: number]: Execution};
+  graphExecutionData: {[index: number]: GraphExecution};
 }
 
 // The state of a loaded DebuggerV2 run.

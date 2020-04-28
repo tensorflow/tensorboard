@@ -339,6 +339,13 @@ namespace vz_line_chart2 {
     },
 
     /**
+     * Not yet implemented.
+     */
+    commitChanges() {
+      // Temporarily rolled back due to PR curves breakage.
+    },
+
+    /**
      * Reset the chart domain. If the chart has not rendered yet, a call to this
      * method no-ops.
      */

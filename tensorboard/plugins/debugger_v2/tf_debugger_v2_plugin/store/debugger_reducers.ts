@@ -18,6 +18,7 @@ import * as actions from '../actions';
 import {
   ExecutionDataResponse,
   ExecutionDigestsResponse,
+  GraphExecutionDataResponse,
   GraphExecutionDigestsResponse,
   SourceFileResponse,
 } from '../data_source/tfdbg2_data_source';
@@ -39,7 +40,7 @@ import {
 /** @typehack */ import * as _typeHackStore from '@ngrx/store/store';
 
 const DEFAULT_EXECUTION_PAGE_SIZE = 100;
-const DEFAULT_GRAPH_EXECUTION_PAGE_SIZE = 100;
+const DEFAULT_GRAPH_EXECUTION_PAGE_SIZE = 200;
 
 export function createInitialExecutionsState(): Executions {
   return {
@@ -78,11 +79,13 @@ export function createInitialGraphExecutionsState(): GraphExecutions {
     },
     // TODO(cais) Remove the hardcoding of this, which is coupled with css width
     // properties.
-    displayCount: 50,
+    displayCount: 100,
     pageSize: DEFAULT_GRAPH_EXECUTION_PAGE_SIZE,
     scrollBeginIndex: 0,
     focusIndex: null,
     graphExecutionDigests: {},
+    graphExecutionDataLoadingPages: [],
+    graphExecutionDataPageLoadedSizes: {},
     graphExecutionData: {},
   };
 }
@@ -562,6 +565,82 @@ const reducer = createReducer(
         newState.graphExecutions.focusIndex = 0;
       }
       return newState;
+    }
+  ),
+  on(
+    actions.graphExecutionDataRequested,
+    (state: DebuggerState, {pageIndex}): DebuggerState => {
+      if (state.activeRunId === null) {
+        return state;
+      }
+      const graphExecutionDataLoadingPages = state.graphExecutions.graphExecutionDataLoadingPages.slice();
+      if (graphExecutionDataLoadingPages.indexOf(pageIndex) === -1) {
+        graphExecutionDataLoadingPages.push(pageIndex);
+      }
+      return {
+        ...state,
+        graphExecutions: {
+          ...state.graphExecutions,
+          graphExecutionDataLoadingPages,
+        },
+      };
+    }
+  ),
+  on(
+    actions.graphExecutionDataLoaded,
+    (state: DebuggerState, data: GraphExecutionDataResponse): DebuggerState => {
+      if (state.activeRunId === null) {
+        return state;
+      }
+      const {pageSize} = state.graphExecutions;
+      const graphExecutionDataLoadingPages = state.graphExecutions.graphExecutionDataLoadingPages.slice();
+      const graphExecutionDataPageLoadedSizes = {
+        ...state.graphExecutions.graphExecutionDataPageLoadedSizes,
+      };
+      const graphExecutionData = {...state.graphExecutions.graphExecutionData};
+      for (let i = data.begin; i < data.end; ++i) {
+        const pageIndex = Math.floor(i / pageSize);
+        if (graphExecutionDataLoadingPages.indexOf(pageIndex) !== -1) {
+          graphExecutionDataLoadingPages.splice(
+            graphExecutionDataLoadingPages.indexOf(pageIndex),
+            1
+          );
+        }
+        if (graphExecutionDataPageLoadedSizes[pageIndex] === undefined) {
+          graphExecutionDataPageLoadedSizes[pageIndex] = 0;
+        }
+        if (graphExecutionData[i] === undefined) {
+          graphExecutionDataPageLoadedSizes[pageIndex]++;
+        }
+        graphExecutionData[i] = data.graph_executions[i - data.begin];
+      }
+      return {
+        ...state,
+        graphExecutions: {
+          ...state.graphExecutions,
+          graphExecutionDataLoadingPages,
+          graphExecutionDataPageLoadedSizes,
+          graphExecutionData,
+        },
+      };
+    }
+  ),
+  on(
+    actions.graphExecutionScrollToIndex,
+    (state: DebuggerState, action: {index: number}): DebuggerState => {
+      if (action.index < 0 || !Number.isInteger(action.index)) {
+        throw new Error(
+          `Attempt to scroll to negative or non-integer graph-execution ` +
+            `index (${action.index})`
+        );
+      }
+      return {
+        ...state,
+        graphExecutions: {
+          ...state.graphExecutions,
+          scrollBeginIndex: action.index,
+        },
+      };
     }
   ),
   ////////////////////////////////////////////////////////

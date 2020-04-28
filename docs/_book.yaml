@@ -23,6 +23,8 @@ upper_tabs:
         path: /tensorboard/graphs
       - title: "Hyperparameter tuning"
         path: /tensorboard/hyperparameter_tuning_with_hparams
+      - title: "Embedding projector"
+        path: /tensorboard/tensorboard_projector_plugin
       - title: "What-If tool"
         path: /tensorboard/what_if_tool
       - title: "Fairness Indicators"

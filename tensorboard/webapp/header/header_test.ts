@@ -220,7 +220,7 @@ describe('header test', () => {
       const buttonBefore = fixture.debugElement.query(
         By.css('app-header-reload button')
       );
-      expect(buttonBefore.classes['loading']).toBe(false);
+      expect(buttonBefore.classes['loading']).not.toBeDefined();
 
       store.overrideSelector(getPluginsListLoaded, {
         state: DataLoadState.LOADING,
@@ -258,7 +258,7 @@ describe('header test', () => {
       const buttonAfter = fixture.debugElement.query(
         By.css('app-header-reload button')
       );
-      expect(buttonAfter.classes['loading']).toBe(false);
+      expect(buttonAfter.classes['loading']).not.toBeDefined();
     });
 
     it('disables the reload button if active plugin does not want reload', () => {
@@ -296,7 +296,7 @@ describe('header test', () => {
       const buttonBefore = fixture.debugElement.query(
         By.css('app-header-reload button')
       );
-      expect(buttonBefore.classes['loading']).toBe(false);
+      expect(buttonBefore.classes['loading']).not.toBeDefined();
     });
   });
 });

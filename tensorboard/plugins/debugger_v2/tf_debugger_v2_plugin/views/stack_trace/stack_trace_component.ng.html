@@ -35,7 +35,10 @@ limitations under the License.
     <div
       *ngFor="let stackFrameForDisplay of stackFramesForDisplay; index as i;"
     >
-      <div class="stack-frame-container">
+      <div
+        class="stack-frame-container"
+        [ngClass]="[stackFrameForDisplay.focused ? 'focused-stack-frame' : '']"
+      >
         <div
           class="stack-frame-file-path"
           title="{{stackFrameForDisplay.file_path}}"

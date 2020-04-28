@@ -719,6 +719,7 @@ namespace vz_line_chart2 {
         if (col.static) return;
         self.drawTooltipColumn.call(self, this, col, point);
       });
+      columns.exit().remove();
       columns
         .enter()
         .append('td')
@@ -851,6 +852,13 @@ namespace vz_line_chart2 {
         this.marginAreaPlot.datasets(this.datasets);
       }
       this.updateSpecialDatasets();
+    }
+
+    /**
+     * Not yet implemented.
+     */
+    public commitChanges() {
+      // Temporarily rolled back due to PR curves breakage.
     }
 
     /**

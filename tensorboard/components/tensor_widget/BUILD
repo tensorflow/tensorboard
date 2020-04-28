@@ -100,7 +100,6 @@ tf_ts_library(
 
 tf_ts_devserver(
     name = "dev_server",
-    index_html = "demo/demo.html",
     serving_path = "/bundle.js",
     static_files = [
         "demo/demo.css",
