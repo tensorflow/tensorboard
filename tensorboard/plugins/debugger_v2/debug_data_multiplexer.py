@@ -64,8 +64,9 @@ def run_repeatedly_in_background(target, interval_sec):
         while True:
             target()
             event.wait(interval_sec)
+            event.clear()
 
-    # Make sure the thread doesn't block program exit.
+    # Use `daemon=True` to make sure the thread doesn't block program exit.
     thread = threading.Thread(target=_run_repeatedly, daemon=True)
     thread.start()
     return event
@@ -119,10 +120,10 @@ class DebuggerV2EventMultiplexer(object):
         # Create the reader for the tfdbg2 data in the lodir as soon as
         # the backend of the debugger-v2 plugin is created, so it doesn't need
         # to wait for the first request from the FE to start loading data.
-        self._tryCreateLoader()
+        self._tryCreateReader()
 
-    def _tryCreateLoader(self):
-        """Creates or reloads reader for tfdbg2 data in the logdir.
+    def _tryCreateReader(self):
+        """Try creating reader for tfdbg2 data in the logdir.
 
         If the reader has already been created, a new one will not be created and
         this function is a no-op.
@@ -167,8 +168,6 @@ class DebuggerV2EventMultiplexer(object):
                         self._reader, limit=DEFAULT_PER_TYPE_ALERT_LIMIT
                     )
                 ]
-                # NOTE(cais): Currently each logdir is enforced to have only one
-                # DebugEvent file set. So we add hard-coded default run name.
                 self._reload_needed_event = run_repeatedly_in_background(
                     self._reader.update, DEFAULT_RELOAD_INTERVAL_SEC
                 )
@@ -238,10 +237,10 @@ class DebuggerV2EventMultiplexer(object):
               at most one DebugEvent file set per directory.
           If no tfdbg2-format data exists in the `logdir`, an empty `dict`.
         """
-        # Call `_tryCreateLoader()` here to cover the possibility of tfdbg2
+        # Call `_tryCreateReader()` here to cover the possibility of tfdbg2
         # data start being written to the logdir after the tensorboard backend
         # starts.
-        self._tryCreateLoader()
+        self._tryCreateReader()
         if self._reader:
             # If a _reader exists, unblock its reloading (on a separate thread)
             # immediately.
