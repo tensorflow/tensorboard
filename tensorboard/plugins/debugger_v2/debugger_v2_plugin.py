@@ -65,7 +65,7 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
             "/execution/data": self.serve_execution_data,
             "/graph_execution/digests": self.serve_graph_execution_digests,
             "/graph_execution/data": self.serve_graph_execution_data,
-            "/graph/op_info": self.serve_graph_op_info,
+            "/graphs/op_info": self.serve_graph_op_info,
             "/source_files/list": self.serve_source_files_list,
             "/source_files/file": self.serve_source_file,
             "/stack_frames/stack_frames": self.serve_stack_frames,
@@ -254,10 +254,10 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
         if run is None:
             return _missing_run_error_response(request)
         graph_id = request.args.get("graph_id")
-        op_names = request.args.get("end", "-1")
+        op_name = request.args.get("op_name")
         # TODO(cais): Determine array works.
         run_tag_filter = debug_data_provider.graph_op_info_run_tag_filter(
-            run, graph_id, op_names
+            run, graph_id, op_name
         )
         blob_sequences = self._data_provider.read_blob_sequences(
             experiment, self.plugin_name, run_tag_filter=run_tag_filter

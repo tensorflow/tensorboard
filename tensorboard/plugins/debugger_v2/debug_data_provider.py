@@ -45,8 +45,6 @@ SOURCE_FILE_LIST_BLOB_TAG = "source_file_list"
 SOURCE_FILE_BLOB_TAG_PREFIX = "source_file"
 STACK_FRAMES_BLOB_TAG_PREFIX = "stack_frames"
 
-_GRAPH_OP_NAME_SEPERATOR = ","
-
 
 def alerts_run_tag_filter(run, begin, end, alert_type=None):
     """Create a RunTagFilter for Alerts.
@@ -286,14 +284,14 @@ def _parse_graph_execution_data_blob_key(blob_key):
     return run, begin, end
 
 
-def graph_op_info_run_tag_filter(run, graph_id, op_names):
+def graph_op_info_run_tag_filter(run, graph_id, op_name):
     """Create a RunTagFilter for graph op info.
 
     Args:
       run: tfdbg2 run name.
       graph_id: ID of the graph.
         TODO(cais): Clarify whether this is the immediately enclosing graph.
-      op_names: A list of op names.
+      op_name: Name of the op being queried (e.g., "Dense_1/MatMul")
 
     Returns:
       `RunTagFilter` for the run and range of graph op info.
@@ -302,14 +300,7 @@ def graph_op_info_run_tag_filter(run, graph_id, op_names):
         raise ValueError("graph_id must not be None or empty.")
     return provider.RunTagFilter(
         runs=[run],
-        tags=[
-            "%s_%s_%s_%s"
-            % (
-                GRAPH_OP_INFO_BLOB_TAG_PREFIX,
-                graph_id,
-                _GRAPH_OP_NAME_SEPERATOR.join(op_names),
-            )
-        ],
+        tags=["%s_%s_%s" % (GRAPH_OP_INFO_BLOB_TAG_PREFIX, graph_id, op_name)],
     )
 
 
@@ -318,19 +309,24 @@ def _parse_graph_op_info_blob_key(blob_key):
 
     Args:
       blob_key: The BLOB key to parse. By contract, it should have the format:
-       `${GRAPH_OP_INFO_BLOB_TAG_PREFIX}_${graph_id}_${op_name_1},${op_name_2},...`
+       `${GRAPH_OP_INFO_BLOB_TAG_PREFIX}_${graph_id}_${op_name}`
 
     Returns:
       - run ID
       - grahp_id
-      - op_names as a `list` of `str`s.
+      - op name
     """
-    # TODO(cais): Support parsing trace_id when it is supported.
-    key_body, run = blob_key.split(".", 1)
+    # NOTE: the op_name itself may include dots, this is why we use `rindex()`
+    # instead of `split()`.
+    last_dot_index = blob_key.rindex(".")
+    run = blob_key[last_dot_index + 1 :]
+    key_body = blob_key[:last_dot_index]
     key_body = key_body[len(GRAPH_OP_INFO_BLOB_TAG_PREFIX) :]
-    _, graph_id, op_names_concat = key_body.split("_", 2)
-    op_names = op_names_concat.split(_GRAPH_OP_NAME_SEPERATOR)
-    return run, graph_id, op_names
+    print("key_body = %s" % key_body)  # DEBUG
+    _, graph_id, op_name = key_body.split("_", 2)
+    print("graph_id = %s" % graph_id)  # DEBUG
+    print("op_name = %s" % op_name)  # DEBUG
+    return run, graph_id, op_name
 
 
 def source_file_list_run_tag_filter(run):
@@ -553,9 +549,9 @@ class LocalDebuggerV2DataProvider(provider.DataProvider):
                 self._multiplexer.GraphExecutionData(run, begin, end)
             )
         elif blob_key.startswith(GRAPH_OP_INFO_BLOB_TAG_PREFIX):
-            run, graph_id, op_names = _parse_graph_op_info_blob_key(blob_key)
+            run, graph_id, op_name = _parse_graph_op_info_blob_key(blob_key)
             return json.dumps(
-                self._multiplexer.GraphOpInfo(run, graph_id, op_names)
+                self._multiplexer.GraphOpInfo(run, graph_id, op_name)
             )
         elif blob_key.startswith(SOURCE_FILE_LIST_BLOB_TAG):
             run = _parse_source_file_list_blob_key(blob_key)

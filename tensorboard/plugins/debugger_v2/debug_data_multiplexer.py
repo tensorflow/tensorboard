@@ -446,20 +446,45 @@ class DebuggerV2EventMultiplexer(object):
             ],
         }
 
-    def GraphOpInfo(self, run, graph_id, op_names):
+    def GraphOpInfo(
+        self, run, graph_id, op_name, inputs_depth=1, consumers_depth=1
+    ):
         """TODO(cais): Add doc string."""
+        if inputs_depth > 1:
+            raise NotImplementedError("inputs_depth > 1 is not supported yet")
+        if consumers_depth > 1:
+            raise NotImplementedError(
+                "consumers_depth > 1 is not supported yet"
+            )
         runs = self.Runs()
         if run not in runs:
             return None
-        # TODO(cais): Use public get_op() when available.
-        op_name = op_names[0]  # Determine if we support only 1 or a list.
-        op_creation_digest = self._reader.graph_by_id(graph_id)._op_by_name[
-            op_name
-        ]
-        self._reader.read_graph_op_creation_stack_trace(op_creation_digest)
+        # TODO(cais): Use public get_op_creation_digest() when available.
+        op_creation_digest = self._reader.graph_by_id(graph_id)._op_by_name[op_name]
+        (
+            host_name,
+            stack_trace,
+        ) = self._reader.read_graph_op_creation_stack_trace(op_creation_digest)
+        graph_ids = self._getGraphStackIds(op_creation_digest.graph_id)
+
+        inputs = []
+        if inputs_depth > 0:
+            for input_name in op_creation_digest.input_names:
+                print("Searching for input named %s" % input_name)  # DEBUG
+                input_op_digest = None
+                graph_depth = len(graph_ids) - 1
+                while graph_depth >= 0:
+                    graph = self._reader.graph_by_id(graph_ids[graph_depth])
+                    print("Looking in graph %s" % graph.name)  # DEBUG
+                    print("  op_names: %s" % (list(graph._op_by_name.keys()),))  # DEBUG
+                    if input_name in graph._op_by_name:
+                        input_op_digest = graph._op_by_name[input_name]
+                        break
+                    graph_depth -= 1
+                print("input_op_digest = %s" % input_op_digest)  # DEBUG
+
         return {
-            # TODO(cais): Need a stack of graph_ids.
-            "graph_ids": [op_creation_digest.graph_id],
+            "graph_ids": graph_ids,
             "device_name": op_creation_digest.device_name,
             "op_type": op_creation_digest.op_type,
             "op_name": op_creation_digest.op_name,
@@ -467,7 +492,27 @@ class DebuggerV2EventMultiplexer(object):
             "num_outputs": op_creation_digest.num_outputs,
             "inputs": [],  # TODO(cais): Recursive call.
             "consumers": [],  # TODO(cais): Recursive call.
+            "host_name": host_name,
+            "stack_trace": stack_trace,  # TODO(cais): Needs more work.
         }
+
+    def _getGraphStackIds(self, graph_id):
+        """Recursively retrieve the IDs of the outer graphs of a graph.
+
+        Args:
+          graph_id: Id of the graph being queried with respect to its outer
+            graphs context.
+
+        Returns:
+          A list of graph_ids, ordered from outermost to innermost, including
+          the input `graph_id` argument as the last item.
+        """
+        graph = self._reader.graph_by_id(graph_id)
+        if graph.outer_graph_id:
+            return self._getGraphStackIds(graph.outer_graph_id) + [
+                graph.graph_id
+            ]
+        return [graph.graph_id]
 
     def SourceFileList(self, run):
         runs = self.Runs()
