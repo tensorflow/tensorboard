@@ -644,7 +644,7 @@ class ListExperimentsTest(tb_test.TestCase):
             yield response
 
         mock_api_client.StreamExperiments = mock.Mock(wraps=stream_experiments)
-        gen = exporter_lib.list_experiments(mock_api_client)
+        gen = exporter_lib.list_experiments(mock_api_runs_filterclient)
         mock_api_client.StreamExperiments.assert_not_called()
         expected = [
             experiment_pb2.Experiment(experiment_id="789", name="one"),

@@ -24,7 +24,6 @@ import time
 
 import grpc
 import numpy as np
-import pandas  # TODO(cais): Guard import with user-friendly error message.
 
 from tensorboard.data.experimental import base_experiment
 from tensorboard.uploader import auth
@@ -39,30 +38,37 @@ from tensorboard.util import grpc_util
 DEFAULT_ORIGIN = "https://tensorboard.dev"
 
 
+def import_pandas():
+    """Import panads, guarded by a user-friendly error message on failure."""
+    try:
+        import pandas
+    except ModuleNotFoundError:
+        raise ImportError(
+            "The get_scalars() feature requires the pandas package, "
+            "which does not seem to be available in your Python "
+            "environment. You can install it with command: \n\n"
+            "  pip install pandas"
+        )
+    return pandas
+
+
 class ExperimentFromDev(base_experiment.BaseExperiment):
     def __init__(self, experiment_id, api_endpoint=None):
         super(ExperimentFromDev, self).__init__()
-        server_info = _get_server_info(api_endpoint=api_endpoint)
-        channel_creds = grpc.ssl_channel_credentials()
-        credentials = auth.CredentialsStore().read_credentials()
-        if credentials:
-            channel_creds = grpc.composite_channel_credentials(
-                channel_creds, auth.id_token_call_credentials(credentials)
-            )
-            channel = grpc.secure_channel(
-                server_info.api_server.endpoint, channel_creds
-            )
-        else:
-            channel = grpc.secure_channel(
-                server_info.api_server.endpoint, channel_creds
-            )
-
-        self._api_client = export_service_pb2_grpc.TensorBoardExporterServiceStub(
-            channel
-        )
         self._experiment_id = experiment_id
+        self._api_client = get_api_client(api_endpoint=api_endpoint)
 
     def get_scalars(self, runs_filter=None, tags_filter=None, pivot=True):
+        if runs_filter is not None:
+            raise NotImplementedError(
+                "runs_filter support for get_scalars() is not implemented yet."
+            )
+        if tags_filter is not None:
+            raise NotImplementedError(
+                "tags_filter support for get_scalars() is not implemented yet."
+            )
+        pandas = import_pandas()
+
         request = export_service_pb2.StreamExperimentDataRequest()
         request.experiment_id = self._experiment_id
         read_time = time.time()
@@ -88,6 +94,7 @@ class ExperimentFromDev(base_experiment.BaseExperiment):
                 [t.ToNanoseconds() / 1e9 for t in response.points.wall_times]
             )
             values.extend(list(response.points.values))
+
         data_frame = pandas.DataFrame(
             {
                 "run": runs,
@@ -102,6 +109,20 @@ class ExperimentFromDev(base_experiment.BaseExperiment):
                 ["value", "wall_time"], ["run", "step"], "tag", aggfunc=np.stack
             )
         return data_frame
+
+
+def get_api_client(api_endpoint=None):
+    server_info = _get_server_info(api_endpoint=api_endpoint)
+    channel_creds = grpc.ssl_channel_credentials()
+    credentials = auth.CredentialsStore().read_credentials()
+    if credentials:
+        channel_creds = grpc.composite_channel_credentials(
+            channel_creds, auth.id_token_call_credentials(credentials)
+        )
+    channel = grpc.secure_channel(
+        server_info.api_server.endpoint, channel_creds
+    )
+    return export_service_pb2_grpc.TensorBoardExporterServiceStub(channel)
 
 
 def _get_server_info(api_endpoint=None):
