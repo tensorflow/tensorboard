@@ -89,8 +89,9 @@ class HistogramsPluginTest(tf.test.TestCase):
             def wrapper(self, *args, **kwargs):
                 (logdir, multiplexer) = self.load_runs(run_names)
                 with self.subTest("bare multiplexer"):
+                    flags = argparse.Namespace(generic_data="false")
                     ctx = base_plugin.TBContext(
-                        logdir=logdir, multiplexer=multiplexer
+                        logdir=logdir, multiplexer=multiplexer, flags=flags,
                     )
                     fn(
                         self,
@@ -99,12 +100,10 @@ class HistogramsPluginTest(tf.test.TestCase):
                         **kwargs
                     )
                 with self.subTest("generic data provider"):
-                    flags = argparse.Namespace(generic_data="true")
                     provider = data_provider.MultiplexerDataProvider(
                         multiplexer, logdir
                     )
                     ctx = base_plugin.TBContext(
-                        flags=flags,
                         logdir=logdir,
                         multiplexer=multiplexer,
                         data_provider=provider,
