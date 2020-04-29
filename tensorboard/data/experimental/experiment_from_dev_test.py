@@ -18,10 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import base64
-import errno
-import json
-import os
 import re
 import sys
 from unittest import mock
@@ -31,11 +27,9 @@ import grpc
 import grpc_testing
 import tensorflow as tf
 
-from tensorboard import test as tb_test
 from tensorboard.data.experimental import experiment_from_dev
 from tensorboard.uploader import test_util
 from tensorboard.uploader.proto import export_service_pb2
-from tensorboard.uploader.proto import export_service_pb2_grpc
 from tensorboard.util import grpc_util
 
 
@@ -254,4 +248,4 @@ class ExperimentFromDevTest(tf.test.TestCase):
 
 
 if __name__ == "__main__":
-    tb_test.main()
+    tf.test.main()
