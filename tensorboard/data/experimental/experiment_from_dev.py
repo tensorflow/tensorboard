@@ -73,6 +73,8 @@ class ExperimentFromDev(base_experiment.BaseExperiment):
         request.experiment_id = self._experiment_id
         read_time = time.time()
         util.set_timestamp(request.read_timestamp, read_time)
+        # TODO(cais, wchargin): Use another rpc to check for staleness and avoid
+        # a new StreamExperimentData rpc request if data is not stale.
         stream = self._api_client.StreamExperimentData(
             request, metadata=grpc_util.version_metadata()
         )
@@ -83,6 +85,7 @@ class ExperimentFromDev(base_experiment.BaseExperiment):
         wall_times = []
         values = []
         for response in stream:
+            # TODO(cais, wchargin): Display progress bar.
             metadata = base64.b64encode(
                 response.tag_metadata.SerializeToString()
             ).decode("ascii")
@@ -95,7 +98,7 @@ class ExperimentFromDev(base_experiment.BaseExperiment):
             )
             values.extend(list(response.points.values))
 
-        data_frame = pandas.DataFrame(
+        dataframe = pandas.DataFrame(
             {
                 "run": runs,
                 "tag": tags,
@@ -105,10 +108,17 @@ class ExperimentFromDev(base_experiment.BaseExperiment):
             }
         )
         if pivot:
-            data_frame = data_frame.pivot_table(
-                ["value", "wall_time"], ["run", "step"], "tag", aggfunc=np.stack
+            dataframe = dataframe.pivot_table(
+                ["value", "wall_time"], ["run", "step"], "tag",
             )
-        return data_frame
+            if np.any(dataframe.isnull().values):
+                sys.stderr.write(
+                    "WARNING: pivoted DataFrame contains missing value(s). "
+                    "This is likely due to tags that contain uneven numbers of steps. "
+                    "Consider calling `get_scalar()` with `pivot=False`"
+                )
+                sys.stderr.flush()
+        return dataframe
 
 
 def get_api_client(api_endpoint=None):

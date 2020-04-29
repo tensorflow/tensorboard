@@ -22,6 +22,8 @@ import base64
 import errno
 import json
 import os
+import re
+import sys
 from unittest import mock
 
 import numpy as np
@@ -120,6 +122,53 @@ class ExperimentFromDevTest(tf.test.TestCase):
             dataframe.loc["test", ("wall_time", "accuracy")]
         )
         self.assertAllClose(test_accracy_wall_times, 600 + 2 * np.arange(0, 10))
+
+    def test_get_scalars_with_pivot_table_with_missing_value(self):
+        mock_api_client = mock.Mock()
+
+        def stream_experiment_data(request, **kwargs):
+            self.assertEqual(request.experiment_id, "789")
+            self.assertEqual(kwargs["metadata"], grpc_util.version_metadata())
+            response = export_service_pb2.StreamExperimentDataResponse()
+            response.run_name = "train"
+            response.tag_name = "batch_loss"
+            response.points.steps.append(0)
+            response.points.values.append(0.5)
+            response.points.wall_times.add(seconds=0, nanos=0)
+            response.points.steps.append(1)
+            response.points.values.append(0.25)
+            response.points.wall_times.add(seconds=1, nanos=0)
+            yield response
+            response = export_service_pb2.StreamExperimentDataResponse()
+            response.run_name = "train"
+            response.tag_name = "epoch_loss"
+            response.points.steps.append(0)
+            response.points.values.append(0.375)
+            response.points.wall_times.add(seconds=2, nanos=0)
+            yield response
+
+        mock_api_client.StreamExperimentData = mock.Mock(
+            wraps=stream_experiment_data
+        )
+
+        stderr_messages = []
+
+        def fake_stderr_write(msg):
+            stderr_messages.append(msg)
+
+        with mock.patch.object(
+            experiment_from_dev,
+            "get_api_client",
+            lambda api_endpoint: mock_api_client,
+        ):
+            experiment = experiment_from_dev.ExperimentFromDev("789")
+            with mock.patch.object(sys.stderr, "write", fake_stderr_write):
+                dataframe = experiment.get_scalars()
+            self.assertLen(stderr_messages, 1)
+            self.assertRegexpMatches(
+                stderr_messages[0],
+                r"missing value\(s\).*uneven numbers of steps.*pivot=False",
+            )
 
     def test_get_scalars_with_non_pivot_table(self):
         mock_api_client = mock.Mock()
