@@ -61,17 +61,18 @@ class TextPluginTest(tf.test.TestCase):
                 multiplexer.AddRunsFromDirectory(self.logdir)
                 multiplexer.Reload()
                 with self.subTest("bare multiplexer"):
+                    flags = argparse.Namespace(generic_data="false")
                     ctx = base_plugin.TBContext(
-                        logdir=self.logdir, multiplexer=multiplexer
+                        logdir=self.logdir,
+                        multiplexer=multiplexer,
+                        flags=flags,
                     )
                     fn(self, text_plugin.TextPlugin(ctx), *args, **kwargs)
                 with self.subTest("generic data provider"):
-                    flags = argparse.Namespace(generic_data="true")
                     provider = data_provider.MultiplexerDataProvider(
                         multiplexer, self.logdir
                     )
                     ctx = base_plugin.TBContext(
-                        flags=flags,
                         logdir=self.logdir,
                         multiplexer=multiplexer,
                         data_provider=provider,
