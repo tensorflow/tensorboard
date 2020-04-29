@@ -149,809 +149,809 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertLen(run_listing, 1)
         return list(run_listing.keys())[0]
 
-    # def testPluginIsNotActiveByDefault(self):
-    #     self.assertFalse(self.plugin.is_active())
+    def testPluginIsNotActiveByDefault(self):
+        self.assertFalse(self.plugin.is_active())
 
-    # def testPluginIsActiveWithDataExists(self):
-    #     _generate_tfdbg_v2_data(self.logdir)
-    #     self.assertTrue(self.plugin.is_active())
+    def testPluginIsActiveWithDataExists(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        self.assertTrue(self.plugin.is_active())
 
-    # def testConcurrentCallsToPluginIsActiveWhenNotActive(self):
-    #     results = collections.deque()
+    def testConcurrentCallsToPluginIsActiveWhenNotActive(self):
+        results = collections.deque()
 
-    #     def query_is_active():
-    #         results.append(self.plugin.is_active())
+        def query_is_active():
+            results.append(self.plugin.is_active())
 
-    #     threads = [threading.Thread(target=query_is_active) for _ in range(4)]
-    #     for thread in threads:
-    #         thread.start()
-    #     for thread in threads:
-    #         thread.join()
-    #     self.assertEqual(list(results), [False] * 4)
+        threads = [threading.Thread(target=query_is_active) for _ in range(4)]
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join()
+        self.assertEqual(list(results), [False] * 4)
 
-    # def testConcurrentCallsToPluginIsActiveWhenActive(self):
-    #     _generate_tfdbg_v2_data(self.logdir)
-    #     results = collections.deque()
+    def testConcurrentCallsToPluginIsActiveWhenActive(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        results = collections.deque()
 
-    #     def query_is_active():
-    #         results.append(self.plugin.is_active())
+        def query_is_active():
+            results.append(self.plugin.is_active())
 
-    #     threads = [threading.Thread(target=query_is_active) for _ in range(4)]
-    #     for thread in threads:
-    #         thread.start()
-    #     for thread in threads:
-    #         thread.join()
-    #     self.assertEqual(list(results), [True] * 4)
+        threads = [threading.Thread(target=query_is_active) for _ in range(4)]
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join()
+        self.assertEqual(list(results), [True] * 4)
 
-    # def testServeRunsWithoutExistingRuns(self):
-    #     response = self.server.get(_ROUTE_PREFIX + "/runs")
-    #     self.assertEqual(200, response.status_code)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     self.assertEqual(json.loads(response.get_data()), dict())
+    def testServeRunsWithoutExistingRuns(self):
+        response = self.server.get(_ROUTE_PREFIX + "/runs")
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(json.loads(response.get_data()), dict())
 
-    # def testServeRunsWithExistingRuns(self):
-    #     _generate_tfdbg_v2_data(self.logdir)
-    #     response = self.server.get(_ROUTE_PREFIX + "/runs")
-    #     self.assertEqual(200, response.status_code)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     data = json.loads(response.get_data())
-    #     self.assertEqual(list(data.keys()), ["__default_debugger_run__"])
-    #     run = data["__default_debugger_run__"]
-    #     self.assertIsInstance(run["start_time"], float)
-    #     self.assertGreater(run["start_time"], 0)
+    def testServeRunsWithExistingRuns(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        response = self.server.get(_ROUTE_PREFIX + "/runs")
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        data = json.loads(response.get_data())
+        self.assertEqual(list(data.keys()), ["__default_debugger_run__"])
+        run = data["__default_debugger_run__"]
+        self.assertIsInstance(run["start_time"], float)
+        self.assertGreater(run["start_time"], 0)
 
-    # def testConcurrentServeRunsWithoutExistingRuns(self):
-    #     responses = collections.deque()
+    def testConcurrentServeRunsWithoutExistingRuns(self):
+        responses = collections.deque()
 
-    #     def get_runs():
-    #         responses.append(self.server.get(_ROUTE_PREFIX + "/runs"))
+        def get_runs():
+            responses.append(self.server.get(_ROUTE_PREFIX + "/runs"))
 
-    #     threads = [threading.Thread(target=get_runs) for _ in range(4)]
-    #     for thread in threads:
-    #         thread.start()
-    #     for thread in threads:
-    #         thread.join()
+        threads = [threading.Thread(target=get_runs) for _ in range(4)]
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join()
 
-    #     self.assertLen(responses, 4)
-    #     for response in responses:
-    #         self.assertEqual(200, response.status_code)
-    #         self.assertEqual(
-    #             "application/json", response.headers.get("content-type")
-    #         )
-    #         self.assertEqual(json.loads(response.get_data()), dict())
+        self.assertLen(responses, 4)
+        for response in responses:
+            self.assertEqual(200, response.status_code)
+            self.assertEqual(
+                "application/json", response.headers.get("content-type")
+            )
+            self.assertEqual(json.loads(response.get_data()), dict())
 
-    # def testConcurrentServeRunsWithExistingRuns(self):
-    #     _generate_tfdbg_v2_data(self.logdir)
-    #     responses = collections.deque()
+    def testConcurrentServeRunsWithExistingRuns(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        responses = collections.deque()
 
-    #     def get_runs():
-    #         responses.append(self.server.get(_ROUTE_PREFIX + "/runs"))
+        def get_runs():
+            responses.append(self.server.get(_ROUTE_PREFIX + "/runs"))
 
-    #     threads = [threading.Thread(target=get_runs) for _ in range(4)]
-    #     for thread in threads:
-    #         thread.start()
-    #     for thread in threads:
-    #         thread.join()
+        threads = [threading.Thread(target=get_runs) for _ in range(4)]
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join()
 
-    #     self.assertLen(responses, 4)
-    #     for response in responses:
-    #         self.assertEqual(200, response.status_code)
-    #         self.assertEqual(
-    #             "application/json", response.headers.get("content-type")
-    #         )
-    #         data = json.loads(response.get_data())
-    #         self.assertEqual(list(data.keys()), ["__default_debugger_run__"])
-    #         run = data["__default_debugger_run__"]
-    #         self.assertIsInstance(run["start_time"], float)
-    #         self.assertGreater(run["start_time"], 0)
+        self.assertLen(responses, 4)
+        for response in responses:
+            self.assertEqual(200, response.status_code)
+            self.assertEqual(
+                "application/json", response.headers.get("content-type")
+            )
+            data = json.loads(response.get_data())
+            self.assertEqual(list(data.keys()), ["__default_debugger_run__"])
+            run = data["__default_debugger_run__"]
+            self.assertIsInstance(run["start_time"], float)
+            self.assertGreater(run["start_time"], 0)
 
-    # def testAlertsWhenNoAlertExists(self):
-    #     _generate_tfdbg_v2_data(self.logdir)
-    #     run = self._getExactlyOneRun()
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX + "/alerts?run=%s&begin=0&end=0" % run
-    #     )
-    #     self.assertEqual(200, response.status_code)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     data = json.loads(response.get_data())
-    #     self.assertEqual(
-    #         data,
-    #         {
-    #             "begin": 0,
-    #             "end": 0,
-    #             "num_alerts": 0,
-    #             "alerts_breakdown": {},
-    #             "per_type_alert_limit": 1000,
-    #             "alert_type": None,
-    #             "alerts": [],
-    #         },
-    #     )
+    def testAlertsWhenNoAlertExists(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        response = self.server.get(
+            _ROUTE_PREFIX + "/alerts?run=%s&begin=0&end=0" % run
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        data = json.loads(response.get_data())
+        self.assertEqual(
+            data,
+            {
+                "begin": 0,
+                "end": 0,
+                "num_alerts": 0,
+                "alerts_breakdown": {},
+                "per_type_alert_limit": 1000,
+                "alert_type": None,
+                "alerts": [],
+            },
+        )
 
-    # def testGetAlertNumberOnlyWhenAlertExistsCurtHealthMode(self):
-    #     _generate_tfdbg_v2_data(
-    #         self.logdir, tensor_debug_mode="CURT_HEALTH", logarithm_times=4
-    #     )
-    #     run = self._getExactlyOneRun()
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX + "/alerts?run=%s&begin=0&end=0" % run
-    #     )
-    #     self.assertEqual(200, response.status_code)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     data = json.loads(response.get_data())
-    #     self.assertEqual(
-    #         data,
-    #         {
-    #             "begin": 0,
-    #             "end": 0,
-    #             "num_alerts": 3,
-    #             "alerts_breakdown": {"InfNanAlert": 3,},
-    #             "per_type_alert_limit": 1000,
-    #             "alert_type": None,
-    #             "alerts": [],
-    #         },
-    #     )
+    def testGetAlertNumberOnlyWhenAlertExistsCurtHealthMode(self):
+        _generate_tfdbg_v2_data(
+            self.logdir, tensor_debug_mode="CURT_HEALTH", logarithm_times=4
+        )
+        run = self._getExactlyOneRun()
+        response = self.server.get(
+            _ROUTE_PREFIX + "/alerts?run=%s&begin=0&end=0" % run
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        data = json.loads(response.get_data())
+        self.assertEqual(
+            data,
+            {
+                "begin": 0,
+                "end": 0,
+                "num_alerts": 3,
+                "alerts_breakdown": {"InfNanAlert": 3,},
+                "per_type_alert_limit": 1000,
+                "alert_type": None,
+                "alerts": [],
+            },
+        )
 
-    # def testGetAlertsContentWhenAlertExistsConciseHealthMode(self):
-    #     _generate_tfdbg_v2_data(
-    #         self.logdir, tensor_debug_mode="CONCISE_HEALTH", logarithm_times=4
-    #     )
-    #     run = self._getExactlyOneRun()
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX + "/alerts?run=%s&begin=0&end=3" % run
-    #     )
-    #     self.assertEqual(200, response.status_code)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     data = json.loads(response.get_data())
-    #     self.assertEqual(data["begin"], 0)
-    #     self.assertEqual(data["end"], 3)
-    #     self.assertEqual(data["num_alerts"], 3)
-    #     self.assertEqual(data["alerts_breakdown"], {"InfNanAlert": 3})
-    #     self.assertEqual(data["per_type_alert_limit"], 1000)
-    #     alerts = data["alerts"]
-    #     self.assertLen(alerts, 3)
-    #     self.assertEqual(
-    #         alerts[0],
-    #         {
-    #             "alert_type": "InfNanAlert",
-    #             "op_type": "Log",
-    #             "output_slot": 0,
-    #             "size": 4.0,
-    #             "num_neg_inf": 1.0,
-    #             "num_pos_inf": 0.0,
-    #             "num_nan": 0.0,
-    #             "execution_index": 4,
-    #             "graph_execution_trace_index": None,
-    #         },
-    #     )
-    #     self.assertEqual(
-    #         alerts[1],
-    #         {
-    #             "alert_type": "InfNanAlert",
-    #             "op_type": "Log",
-    #             "output_slot": 0,
-    #             "size": 4.0,
-    #             "num_neg_inf": 0.0,
-    #             "num_pos_inf": 0.0,
-    #             "num_nan": 1.0,
-    #             "execution_index": 5,
-    #             "graph_execution_trace_index": None,
-    #         },
-    #     )
-    #     self.assertEqual(
-    #         alerts[2],
-    #         {
-    #             "alert_type": "InfNanAlert",
-    #             "op_type": "Log",
-    #             "output_slot": 0,
-    #             "size": 4.0,
-    #             "num_neg_inf": 0.0,
-    #             "num_pos_inf": 0.0,
-    #             "num_nan": 4.0,
-    #             "execution_index": 6,
-    #             "graph_execution_trace_index": None,
-    #         },
-    #     )
+    def testGetAlertsContentWhenAlertExistsConciseHealthMode(self):
+        _generate_tfdbg_v2_data(
+            self.logdir, tensor_debug_mode="CONCISE_HEALTH", logarithm_times=4
+        )
+        run = self._getExactlyOneRun()
+        response = self.server.get(
+            _ROUTE_PREFIX + "/alerts?run=%s&begin=0&end=3" % run
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        data = json.loads(response.get_data())
+        self.assertEqual(data["begin"], 0)
+        self.assertEqual(data["end"], 3)
+        self.assertEqual(data["num_alerts"], 3)
+        self.assertEqual(data["alerts_breakdown"], {"InfNanAlert": 3})
+        self.assertEqual(data["per_type_alert_limit"], 1000)
+        alerts = data["alerts"]
+        self.assertLen(alerts, 3)
+        self.assertEqual(
+            alerts[0],
+            {
+                "alert_type": "InfNanAlert",
+                "op_type": "Log",
+                "output_slot": 0,
+                "size": 4.0,
+                "num_neg_inf": 1.0,
+                "num_pos_inf": 0.0,
+                "num_nan": 0.0,
+                "execution_index": 4,
+                "graph_execution_trace_index": None,
+            },
+        )
+        self.assertEqual(
+            alerts[1],
+            {
+                "alert_type": "InfNanAlert",
+                "op_type": "Log",
+                "output_slot": 0,
+                "size": 4.0,
+                "num_neg_inf": 0.0,
+                "num_pos_inf": 0.0,
+                "num_nan": 1.0,
+                "execution_index": 5,
+                "graph_execution_trace_index": None,
+            },
+        )
+        self.assertEqual(
+            alerts[2],
+            {
+                "alert_type": "InfNanAlert",
+                "op_type": "Log",
+                "output_slot": 0,
+                "size": 4.0,
+                "num_neg_inf": 0.0,
+                "num_pos_inf": 0.0,
+                "num_nan": 4.0,
+                "execution_index": 6,
+                "graph_execution_trace_index": None,
+            },
+        )
 
-    # def testGetAlertsWithInvalidBeginOrEndWhenAlertExistsCurtHealthMode(self):
-    #     _generate_tfdbg_v2_data(
-    #         self.logdir, tensor_debug_mode="CURT_HEALTH", logarithm_times=4
-    #     )
-    #     run = self._getExactlyOneRun()
+    def testGetAlertsWithInvalidBeginOrEndWhenAlertExistsCurtHealthMode(self):
+        _generate_tfdbg_v2_data(
+            self.logdir, tensor_debug_mode="CURT_HEALTH", logarithm_times=4
+        )
+        run = self._getExactlyOneRun()
 
-    #     # begin = 0; end = 5
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX + "/alerts?run=%s&begin=0&end=5" % run
-    #     )
-    #     self.assertEqual(response.status_code, 400)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     self.assertEqual(
-    #         json.loads(response.get_data()),
-    #         {"error": "Invalid argument: end index (5) out of bounds (3)"},
-    #     )
+        # begin = 0; end = 5
+        response = self.server.get(
+            _ROUTE_PREFIX + "/alerts?run=%s&begin=0&end=5" % run
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {"error": "Invalid argument: end index (5) out of bounds (3)"},
+        )
 
-    #     # begin = -1; end = 2
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX + "/alerts?run=%s&begin=-1&end=2" % run
-    #     )
-    #     self.assertEqual(response.status_code, 400)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     self.assertEqual(
-    #         json.loads(response.get_data()),
-    #         {"error": "Invalid argument: Invalid begin index (-1)"},
-    #     )
+        # begin = -1; end = 2
+        response = self.server.get(
+            _ROUTE_PREFIX + "/alerts?run=%s&begin=-1&end=2" % run
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {"error": "Invalid argument: Invalid begin index (-1)"},
+        )
 
-    #     # begin = 2; end = 1
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX + "/alerts?run=%s&begin=2&end=1" % run
-    #     )
-    #     self.assertEqual(response.status_code, 400)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     self.assertEqual(
-    #         json.loads(response.get_data()),
-    #         {
-    #             "error": "Invalid argument: "
-    #             "end index (1) is unexpectedly less than begin index (2)"
-    #         },
-    #     )
+        # begin = 2; end = 1
+        response = self.server.get(
+            _ROUTE_PREFIX + "/alerts?run=%s&begin=2&end=1" % run
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {
+                "error": "Invalid argument: "
+                "end index (1) is unexpectedly less than begin index (2)"
+            },
+        )
 
-    # def testGetAlertsWithAlertType(self):
-    #     _generate_tfdbg_v2_data(
-    #         self.logdir, tensor_debug_mode="CONCISE_HEALTH", logarithm_times=4
-    #     )
-    #     run = self._getExactlyOneRun()
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX
-    #         + "/alerts?run=%s&alert_type=InfNanAlert&begin=1&end=-1" % run
-    #     )
-    #     self.assertEqual(200, response.status_code)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     data = json.loads(response.get_data())
-    #     self.assertEqual(data["begin"], 1)
-    #     self.assertEqual(data["end"], 3)
-    #     self.assertEqual(data["num_alerts"], 3)
-    #     self.assertEqual(data["alerts_breakdown"], {"InfNanAlert": 3})
-    #     self.assertEqual(data["alert_type"], "InfNanAlert")
-    #     alerts = data["alerts"]
-    #     self.assertLen(alerts, 2)
-    #     self.assertEqual(
-    #         alerts[0],
-    #         {
-    #             "alert_type": "InfNanAlert",
-    #             "op_type": "Log",
-    #             "output_slot": 0,
-    #             "size": 4.0,
-    #             "num_neg_inf": 0.0,
-    #             "num_pos_inf": 0.0,
-    #             "num_nan": 1.0,
-    #             "execution_index": 5,
-    #             "graph_execution_trace_index": None,
-    #         },
-    #     )
-    #     self.assertEqual(
-    #         alerts[1],
-    #         {
-    #             "alert_type": "InfNanAlert",
-    #             "op_type": "Log",
-    #             "output_slot": 0,
-    #             "size": 4.0,
-    #             "num_neg_inf": 0.0,
-    #             "num_pos_inf": 0.0,
-    #             "num_nan": 4.0,
-    #             "execution_index": 6,
-    #             "graph_execution_trace_index": None,
-    #         },
-    #     )
+    def testGetAlertsWithAlertType(self):
+        _generate_tfdbg_v2_data(
+            self.logdir, tensor_debug_mode="CONCISE_HEALTH", logarithm_times=4
+        )
+        run = self._getExactlyOneRun()
+        response = self.server.get(
+            _ROUTE_PREFIX
+            + "/alerts?run=%s&alert_type=InfNanAlert&begin=1&end=-1" % run
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        data = json.loads(response.get_data())
+        self.assertEqual(data["begin"], 1)
+        self.assertEqual(data["end"], 3)
+        self.assertEqual(data["num_alerts"], 3)
+        self.assertEqual(data["alerts_breakdown"], {"InfNanAlert": 3})
+        self.assertEqual(data["alert_type"], "InfNanAlert")
+        alerts = data["alerts"]
+        self.assertLen(alerts, 2)
+        self.assertEqual(
+            alerts[0],
+            {
+                "alert_type": "InfNanAlert",
+                "op_type": "Log",
+                "output_slot": 0,
+                "size": 4.0,
+                "num_neg_inf": 0.0,
+                "num_pos_inf": 0.0,
+                "num_nan": 1.0,
+                "execution_index": 5,
+                "graph_execution_trace_index": None,
+            },
+        )
+        self.assertEqual(
+            alerts[1],
+            {
+                "alert_type": "InfNanAlert",
+                "op_type": "Log",
+                "output_slot": 0,
+                "size": 4.0,
+                "num_neg_inf": 0.0,
+                "num_pos_inf": 0.0,
+                "num_nan": 4.0,
+                "execution_index": 6,
+                "graph_execution_trace_index": None,
+            },
+        )
 
-    # def testGetAlertsWithTypeFilterAndInvalidBeginOrEndWhenAlertsExist(self):
-    #     _generate_tfdbg_v2_data(
-    #         self.logdir, tensor_debug_mode="CURT_HEALTH", logarithm_times=4
-    #     )
-    #     run = self._getExactlyOneRun()
+    def testGetAlertsWithTypeFilterAndInvalidBeginOrEndWhenAlertsExist(self):
+        _generate_tfdbg_v2_data(
+            self.logdir, tensor_debug_mode="CURT_HEALTH", logarithm_times=4
+        )
+        run = self._getExactlyOneRun()
 
-    #     # begin = 0; end = 5
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX
-    #         + "/alerts?alert_type=InfNanAlert&run=%s&begin=0&end=5" % run
-    #     )
-    #     self.assertEqual(response.status_code, 400)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     self.assertEqual(
-    #         json.loads(response.get_data()),
-    #         {"error": "Invalid argument: end index (5) out of bounds (3)"},
-    #     )
+        # begin = 0; end = 5
+        response = self.server.get(
+            _ROUTE_PREFIX
+            + "/alerts?alert_type=InfNanAlert&run=%s&begin=0&end=5" % run
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {"error": "Invalid argument: end index (5) out of bounds (3)"},
+        )
 
-    #     # begin = -1; end = 2
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX
-    #         + "/alerts?alert_type=InfNanAlert&run=%s&begin=-1&end=2" % run
-    #     )
-    #     self.assertEqual(response.status_code, 400)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     self.assertEqual(
-    #         json.loads(response.get_data()),
-    #         {"error": "Invalid argument: Invalid begin index (-1)"},
-    #     )
+        # begin = -1; end = 2
+        response = self.server.get(
+            _ROUTE_PREFIX
+            + "/alerts?alert_type=InfNanAlert&run=%s&begin=-1&end=2" % run
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {"error": "Invalid argument: Invalid begin index (-1)"},
+        )
 
-    #     # begin = 2; end = 1
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX
-    #         + "/alerts?alert_type=InfNanAlert&run=%s&begin=2&end=1" % run
-    #     )
-    #     self.assertEqual(response.status_code, 400)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     self.assertEqual(
-    #         json.loads(response.get_data()),
-    #         {
-    #             "error": "Invalid argument: "
-    #             "end index (1) is unexpectedly less than begin index (2)"
-    #         },
-    #     )
+        # begin = 2; end = 1
+        response = self.server.get(
+            _ROUTE_PREFIX
+            + "/alerts?alert_type=InfNanAlert&run=%s&begin=2&end=1" % run
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {
+                "error": "Invalid argument: "
+                "end index (1) is unexpectedly less than begin index (2)"
+            },
+        )
 
-    # def testGetAlertsWithNonexistentTypeFilterWhenAlertsExist(self):
-    #     _generate_tfdbg_v2_data(
-    #         self.logdir, tensor_debug_mode="CURT_HEALTH", logarithm_times=4
-    #     )
-    #     run = self._getExactlyOneRun()
+    def testGetAlertsWithNonexistentTypeFilterWhenAlertsExist(self):
+        _generate_tfdbg_v2_data(
+            self.logdir, tensor_debug_mode="CURT_HEALTH", logarithm_times=4
+        )
+        run = self._getExactlyOneRun()
 
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX
-    #         + "/alerts?alert_type=NonexistentAlert&run=%s&begin=0&end=-1" % run
-    #     )
+        response = self.server.get(
+            _ROUTE_PREFIX
+            + "/alerts?alert_type=NonexistentAlert&run=%s&begin=0&end=-1" % run
+        )
 
-    #     self.assertEqual(response.status_code, 400)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     self.assertEqual(
-    #         json.loads(response.get_data()),
-    #         {
-    #             "error": "Invalid argument: "
-    #             "Filtering of alerts failed: alert type NonexistentAlert "
-    #             "does not exist"
-    #         },
-    #     )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {
+                "error": "Invalid argument: "
+                "Filtering of alerts failed: alert type NonexistentAlert "
+                "does not exist"
+            },
+        )
 
-    # def testServeExecutionDigestsWithEqualBeginAndEnd(self):
-    #     _generate_tfdbg_v2_data(self.logdir)
-    #     run = self._getExactlyOneRun()
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX + "/execution/digests?run=%s&begin=0&end=0" % run
-    #     )
-    #     self.assertEqual(200, response.status_code)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     data = json.loads(response.get_data())
-    #     self.assertEqual(
-    #         data,
-    #         {"begin": 0, "end": 0, "num_digests": 3, "execution_digests": [],},
-    #     )
+    def testServeExecutionDigestsWithEqualBeginAndEnd(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        response = self.server.get(
+            _ROUTE_PREFIX + "/execution/digests?run=%s&begin=0&end=0" % run
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        data = json.loads(response.get_data())
+        self.assertEqual(
+            data,
+            {"begin": 0, "end": 0, "num_digests": 3, "execution_digests": [],},
+        )
 
-    # def testServeExecutionDigestsWithEndGreaterThanBeginFullRange(self):
-    #     _generate_tfdbg_v2_data(self.logdir)
-    #     run = self._getExactlyOneRun()
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX + "/execution/digests?run=%s&begin=0&end=3" % run
-    #     )
-    #     self.assertEqual(200, response.status_code)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     data = json.loads(response.get_data())
-    #     self.assertEqual(data["begin"], 0)
-    #     self.assertEqual(data["end"], 3)
-    #     self.assertEqual(data["num_digests"], 3)
-    #     execution_digests = data["execution_digests"]
-    #     self.assertLen(execution_digests, 3)
-    #     prev_wall_time = 0
-    #     for execution_digest in execution_digests:
-    #         self.assertGreaterEqual(
-    #             execution_digest["wall_time"], prev_wall_time
-    #         )
-    #         prev_wall_time = execution_digest["wall_time"]
-    #         self.assertStartsWith(
-    #             execution_digest["op_type"], "__inference_my_function"
-    #         )
+    def testServeExecutionDigestsWithEndGreaterThanBeginFullRange(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        response = self.server.get(
+            _ROUTE_PREFIX + "/execution/digests?run=%s&begin=0&end=3" % run
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        data = json.loads(response.get_data())
+        self.assertEqual(data["begin"], 0)
+        self.assertEqual(data["end"], 3)
+        self.assertEqual(data["num_digests"], 3)
+        execution_digests = data["execution_digests"]
+        self.assertLen(execution_digests, 3)
+        prev_wall_time = 0
+        for execution_digest in execution_digests:
+            self.assertGreaterEqual(
+                execution_digest["wall_time"], prev_wall_time
+            )
+            prev_wall_time = execution_digest["wall_time"]
+            self.assertStartsWith(
+                execution_digest["op_type"], "__inference_my_function"
+            )
 
-    # def testServeExecutionDigestsWithImplicitFullRange(self):
-    #     _generate_tfdbg_v2_data(self.logdir)
-    #     run = self._getExactlyOneRun()
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX + "/execution/digests?run=%s&begin=0" % run
-    #     )
-    #     self.assertEqual(200, response.status_code)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     data = json.loads(response.get_data())
-    #     self.assertEqual(data["begin"], 0)
-    #     self.assertEqual(data["end"], 3)
-    #     self.assertEqual(data["num_digests"], 3)
-    #     execution_digests = data["execution_digests"]
-    #     self.assertLen(execution_digests, 3)
-    #     prev_wall_time = 0
-    #     for execution_digest in execution_digests:
-    #         self.assertGreaterEqual(
-    #             execution_digest["wall_time"], prev_wall_time
-    #         )
-    #         prev_wall_time = execution_digest["wall_time"]
-    #         self.assertStartsWith(
-    #             execution_digest["op_type"], "__inference_my_function"
-    #         )
+    def testServeExecutionDigestsWithImplicitFullRange(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        response = self.server.get(
+            _ROUTE_PREFIX + "/execution/digests?run=%s&begin=0" % run
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        data = json.loads(response.get_data())
+        self.assertEqual(data["begin"], 0)
+        self.assertEqual(data["end"], 3)
+        self.assertEqual(data["num_digests"], 3)
+        execution_digests = data["execution_digests"]
+        self.assertLen(execution_digests, 3)
+        prev_wall_time = 0
+        for execution_digest in execution_digests:
+            self.assertGreaterEqual(
+                execution_digest["wall_time"], prev_wall_time
+            )
+            prev_wall_time = execution_digest["wall_time"]
+            self.assertStartsWith(
+                execution_digest["op_type"], "__inference_my_function"
+            )
 
-    # def testServeExecutionDigestsWithEndGreaterThanBeginPartialRange(self):
-    #     _generate_tfdbg_v2_data(self.logdir)
-    #     run = self._getExactlyOneRun()
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX + "/execution/digests?run=%s&begin=0&end=2" % run
-    #     )
-    #     self.assertEqual(200, response.status_code)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     data = json.loads(response.get_data())
-    #     self.assertEqual(data["begin"], 0)
-    #     self.assertEqual(data["end"], 2)
-    #     self.assertEqual(data["num_digests"], 3)
-    #     execution_digests = data["execution_digests"]
-    #     self.assertLen(execution_digests, 2)
-    #     prev_wall_time = 0
-    #     for execution_digest in execution_digests:
-    #         self.assertGreaterEqual(
-    #             execution_digest["wall_time"], prev_wall_time
-    #         )
-    #         prev_wall_time = execution_digest["wall_time"]
-    #         self.assertStartsWith(
-    #             execution_digest["op_type"], "__inference_my_function"
-    #         )
+    def testServeExecutionDigestsWithEndGreaterThanBeginPartialRange(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        response = self.server.get(
+            _ROUTE_PREFIX + "/execution/digests?run=%s&begin=0&end=2" % run
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        data = json.loads(response.get_data())
+        self.assertEqual(data["begin"], 0)
+        self.assertEqual(data["end"], 2)
+        self.assertEqual(data["num_digests"], 3)
+        execution_digests = data["execution_digests"]
+        self.assertLen(execution_digests, 2)
+        prev_wall_time = 0
+        for execution_digest in execution_digests:
+            self.assertGreaterEqual(
+                execution_digest["wall_time"], prev_wall_time
+            )
+            prev_wall_time = execution_digest["wall_time"]
+            self.assertStartsWith(
+                execution_digest["op_type"], "__inference_my_function"
+            )
 
-    # def testServeExecutionDigestOutOfBoundsError(self):
-    #     _generate_tfdbg_v2_data(self.logdir)
-    #     run = self._getExactlyOneRun()
+    def testServeExecutionDigestOutOfBoundsError(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
 
-    #     # begin = 0; end = 4
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX + "/execution/digests?run=%s&begin=0&end=4" % run
-    #     )
-    #     self.assertEqual(response.status_code, 400)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     self.assertEqual(
-    #         json.loads(response.get_data()),
-    #         {"error": "Invalid argument: end index (4) out of bounds (3)"},
-    #     )
+        # begin = 0; end = 4
+        response = self.server.get(
+            _ROUTE_PREFIX + "/execution/digests?run=%s&begin=0&end=4" % run
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {"error": "Invalid argument: end index (4) out of bounds (3)"},
+        )
 
-    #     # begin = -1; end = 2
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX + "/execution/digests?run=%s&begin=-1&end=2" % run
-    #     )
-    #     self.assertEqual(response.status_code, 400)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     self.assertEqual(
-    #         json.loads(response.get_data()),
-    #         {"error": "Invalid argument: Invalid begin index (-1)"},
-    #     )
+        # begin = -1; end = 2
+        response = self.server.get(
+            _ROUTE_PREFIX + "/execution/digests?run=%s&begin=-1&end=2" % run
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {"error": "Invalid argument: Invalid begin index (-1)"},
+        )
 
-    #     # begin = 2; end = 1
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX + "/execution/digests?run=%s&begin=2&end=1" % run
-    #     )
-    #     self.assertEqual(response.status_code, 400)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     self.assertEqual(
-    #         json.loads(response.get_data()),
-    #         {
-    #             "error": "Invalid argument: "
-    #             "end index (1) is unexpectedly less than begin index (2)"
-    #         },
-    #     )
+        # begin = 2; end = 1
+        response = self.server.get(
+            _ROUTE_PREFIX + "/execution/digests?run=%s&begin=2&end=1" % run
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {
+                "error": "Invalid argument: "
+                "end index (1) is unexpectedly less than begin index (2)"
+            },
+        )
 
-    # def testServeExecutionDigests400ResponseIfRunParamIsNotSpecified(self):
-    #     response = self.server.get(
-    #         # `run` parameter is not specified here.
-    #         _ROUTE_PREFIX
-    #         + "/execution/digests?begin=0&end=0"
-    #     )
-    #     self.assertEqual(400, response.status_code)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     self.assertEqual(
-    #         json.loads(response.get_data()),
-    #         {"error": "run parameter is not provided"},
-    #     )
+    def testServeExecutionDigests400ResponseIfRunParamIsNotSpecified(self):
+        response = self.server.get(
+            # `run` parameter is not specified here.
+            _ROUTE_PREFIX
+            + "/execution/digests?begin=0&end=0"
+        )
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {"error": "run parameter is not provided"},
+        )
 
-    # def testServeASingleExecutionDataObject(self):
-    #     _generate_tfdbg_v2_data(self.logdir, tensor_debug_mode="CONCISE_HEALTH")
-    #     run = self._getExactlyOneRun()
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX + "/execution/data?run=%s&begin=0&end=1" % run
-    #     )
-    #     self.assertEqual(200, response.status_code)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     data = json.loads(response.get_data())
-    #     self.assertEqual(data["begin"], 0)
-    #     self.assertEqual(data["end"], 1)
-    #     self.assertLen(data["executions"], 1)
-    #     execution = data["executions"][0]
-    #     self.assertStartsWith(execution["op_type"], "__inference_my_function_")
-    #     self.assertLen(execution["output_tensor_device_ids"], 1)
-    #     self.assertEqual(execution["host_name"], _HOST_NAME)
-    #     self.assertTrue(execution["stack_frame_ids"])
-    #     self.assertLen(execution["input_tensor_ids"], 1)
-    #     self.assertLen(execution["output_tensor_ids"], 1)
-    #     self.assertTrue(execution["graph_id"])
-    #     # CONCISE_HEALTH mode:
-    #     #   [[Unused tensor ID, #(elements), #(-inf), #(+inf), #(nan)]].
-    #     self.assertEqual(execution["tensor_debug_mode"], 3)
-    #     self.assertAllClose(
-    #         execution["debug_tensor_values"], [[-1.0, 1.0, 0.0, 0.0, 0.0]]
-    #     )
+    def testServeASingleExecutionDataObject(self):
+        _generate_tfdbg_v2_data(self.logdir, tensor_debug_mode="CONCISE_HEALTH")
+        run = self._getExactlyOneRun()
+        response = self.server.get(
+            _ROUTE_PREFIX + "/execution/data?run=%s&begin=0&end=1" % run
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        data = json.loads(response.get_data())
+        self.assertEqual(data["begin"], 0)
+        self.assertEqual(data["end"], 1)
+        self.assertLen(data["executions"], 1)
+        execution = data["executions"][0]
+        self.assertStartsWith(execution["op_type"], "__inference_my_function_")
+        self.assertLen(execution["output_tensor_device_ids"], 1)
+        self.assertEqual(execution["host_name"], _HOST_NAME)
+        self.assertTrue(execution["stack_frame_ids"])
+        self.assertLen(execution["input_tensor_ids"], 1)
+        self.assertLen(execution["output_tensor_ids"], 1)
+        self.assertTrue(execution["graph_id"])
+        # CONCISE_HEALTH mode:
+        #   [[Unused tensor ID, #(elements), #(-inf), #(+inf), #(nan)]].
+        self.assertEqual(execution["tensor_debug_mode"], 3)
+        self.assertAllClose(
+            execution["debug_tensor_values"], [[-1.0, 1.0, 0.0, 0.0, 0.0]]
+        )
 
-    # def testServeMultipleExecutionDataObject(self):
-    #     _generate_tfdbg_v2_data(self.logdir, tensor_debug_mode="CURT_HEALTH")
-    #     run = self._getExactlyOneRun()
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX + "/execution/data?run=%s&begin=0&end=-1" % run
-    #     )
-    #     self.assertEqual(200, response.status_code)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     data = json.loads(response.get_data())
-    #     self.assertEqual(data["begin"], 0)
-    #     self.assertEqual(data["end"], 3)
-    #     self.assertLen(data["executions"], 3)
-    #     for i in range(3):
-    #         execution = data["executions"][i]
-    #         self.assertStartsWith(
-    #             execution["op_type"], "__inference_my_function_"
-    #         )
-    #         self.assertLen(execution["output_tensor_device_ids"], 1)
-    #         self.assertEqual(execution["host_name"], _HOST_NAME)
-    #         self.assertTrue(execution["stack_frame_ids"])
-    #         self.assertLen(execution["input_tensor_ids"], 1)
-    #         self.assertLen(execution["output_tensor_ids"], 1)
-    #         self.assertTrue(execution["graph_id"])
-    #         if i > 0:
-    #             self.assertEqual(
-    #                 execution["input_tensor_ids"],
-    #                 data["executions"][i - 1]["input_tensor_ids"],
-    #             )
-    #             self.assertEqual(
-    #                 execution["graph_id"], data["executions"][i - 1]["graph_id"]
-    #             )
-    #         # CURT_HEALTH mode:
-    #         #   [[Unused tensor ID, #(inf_or_nan)]].
-    #         self.assertEqual(execution["tensor_debug_mode"], 2)
-    #         self.assertAllClose(execution["debug_tensor_values"], [[-1.0, 0.0]])
+    def testServeMultipleExecutionDataObject(self):
+        _generate_tfdbg_v2_data(self.logdir, tensor_debug_mode="CURT_HEALTH")
+        run = self._getExactlyOneRun()
+        response = self.server.get(
+            _ROUTE_PREFIX + "/execution/data?run=%s&begin=0&end=-1" % run
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        data = json.loads(response.get_data())
+        self.assertEqual(data["begin"], 0)
+        self.assertEqual(data["end"], 3)
+        self.assertLen(data["executions"], 3)
+        for i in range(3):
+            execution = data["executions"][i]
+            self.assertStartsWith(
+                execution["op_type"], "__inference_my_function_"
+            )
+            self.assertLen(execution["output_tensor_device_ids"], 1)
+            self.assertEqual(execution["host_name"], _HOST_NAME)
+            self.assertTrue(execution["stack_frame_ids"])
+            self.assertLen(execution["input_tensor_ids"], 1)
+            self.assertLen(execution["output_tensor_ids"], 1)
+            self.assertTrue(execution["graph_id"])
+            if i > 0:
+                self.assertEqual(
+                    execution["input_tensor_ids"],
+                    data["executions"][i - 1]["input_tensor_ids"],
+                )
+                self.assertEqual(
+                    execution["graph_id"], data["executions"][i - 1]["graph_id"]
+                )
+            # CURT_HEALTH mode:
+            #   [[Unused tensor ID, #(inf_or_nan)]].
+            self.assertEqual(execution["tensor_debug_mode"], 2)
+            self.assertAllClose(execution["debug_tensor_values"], [[-1.0, 0.0]])
 
-    # def testServeExecutionDataObjectsOutOfBoundsError(self):
-    #     _generate_tfdbg_v2_data(self.logdir)
-    #     run = self._getExactlyOneRun()
+    def testServeExecutionDataObjectsOutOfBoundsError(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
 
-    #     # begin = 0; end = 4
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX + "/execution/data?run=%s&begin=0&end=4" % run
-    #     )
-    #     self.assertEqual(response.status_code, 400)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     self.assertEqual(
-    #         json.loads(response.get_data()),
-    #         {"error": "Invalid argument: end index (4) out of bounds (3)"},
-    #     )
+        # begin = 0; end = 4
+        response = self.server.get(
+            _ROUTE_PREFIX + "/execution/data?run=%s&begin=0&end=4" % run
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {"error": "Invalid argument: end index (4) out of bounds (3)"},
+        )
 
-    #     # begin = -1; end = 2
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX + "/execution/data?run=%s&begin=-1&end=2" % run
-    #     )
-    #     self.assertEqual(response.status_code, 400)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     self.assertEqual(
-    #         json.loads(response.get_data()),
-    #         {"error": "Invalid argument: Invalid begin index (-1)"},
-    #     )
+        # begin = -1; end = 2
+        response = self.server.get(
+            _ROUTE_PREFIX + "/execution/data?run=%s&begin=-1&end=2" % run
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {"error": "Invalid argument: Invalid begin index (-1)"},
+        )
 
-    #     # begin = 2; end = 1
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX + "/execution/data?run=%s&begin=2&end=1" % run
-    #     )
-    #     self.assertEqual(response.status_code, 400)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     self.assertEqual(
-    #         json.loads(response.get_data()),
-    #         {
-    #             "error": "Invalid argument: "
-    #             "end index (1) is unexpectedly less than begin index (2)"
-    #         },
-    #     )
+        # begin = 2; end = 1
+        response = self.server.get(
+            _ROUTE_PREFIX + "/execution/data?run=%s&begin=2&end=1" % run
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {
+                "error": "Invalid argument: "
+                "end index (1) is unexpectedly less than begin index (2)"
+            },
+        )
 
-    # def testServeGraphExecutionDigestsPartialRange(self):
-    #     _generate_tfdbg_v2_data(self.logdir)
-    #     run = self._getExactlyOneRun()
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX
-    #         + "/graph_execution/digests?run=%s&begin=0&end=4" % run
-    #     )
-    #     self.assertEqual(200, response.status_code)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     data = json.loads(response.get_data())
-    #     self.assertEqual(data["begin"], 0)
-    #     self.assertEqual(data["end"], 4)
-    #     self.assertEqual(data["num_digests"], 219)
-    #     digests = data["graph_execution_digests"]
-    #     self.assertLen(digests, 4)
-    #     self.assertGreater(digests[0]["wall_time"], 0)
-    #     self.assertEqual(digests[0]["op_type"], "Placeholder")
-    #     self.assertEqual(digests[0]["output_slot"], 0)
-    #     self.assertTrue(digests[0]["op_name"])
-    #     self.assertTrue(digests[0]["graph_id"])
+    def testServeGraphExecutionDigestsPartialRange(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        response = self.server.get(
+            _ROUTE_PREFIX
+            + "/graph_execution/digests?run=%s&begin=0&end=4" % run
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        data = json.loads(response.get_data())
+        self.assertEqual(data["begin"], 0)
+        self.assertEqual(data["end"], 4)
+        self.assertEqual(data["num_digests"], 219)
+        digests = data["graph_execution_digests"]
+        self.assertLen(digests, 4)
+        self.assertGreater(digests[0]["wall_time"], 0)
+        self.assertEqual(digests[0]["op_type"], "Placeholder")
+        self.assertEqual(digests[0]["output_slot"], 0)
+        self.assertTrue(digests[0]["op_name"])
+        self.assertTrue(digests[0]["graph_id"])
 
-    #     self.assertGreaterEqual(
-    #         digests[1]["wall_time"], digests[0]["wall_time"]
-    #     )
-    #     self.assertEqual(digests[1]["op_type"], "Const")
-    #     self.assertEqual(digests[1]["output_slot"], 0)
-    #     self.assertTrue(digests[1]["op_name"])
-    #     self.assertNotEqual(digests[1]["op_name"], digests[0]["op_name"])
-    #     self.assertTrue(digests[1]["graph_id"])
+        self.assertGreaterEqual(
+            digests[1]["wall_time"], digests[0]["wall_time"]
+        )
+        self.assertEqual(digests[1]["op_type"], "Const")
+        self.assertEqual(digests[1]["output_slot"], 0)
+        self.assertTrue(digests[1]["op_name"])
+        self.assertNotEqual(digests[1]["op_name"], digests[0]["op_name"])
+        self.assertTrue(digests[1]["graph_id"])
 
-    #     self.assertGreaterEqual(
-    #         digests[2]["wall_time"], digests[1]["wall_time"]
-    #     )
-    #     self.assertEqual(digests[2]["op_type"], "Placeholder")
-    #     self.assertEqual(digests[2]["output_slot"], 0)
-    #     self.assertTrue(digests[2]["op_name"])
-    #     self.assertNotEqual(digests[2]["op_name"], digests[0]["op_name"])
-    #     self.assertTrue(digests[2]["graph_id"])
+        self.assertGreaterEqual(
+            digests[2]["wall_time"], digests[1]["wall_time"]
+        )
+        self.assertEqual(digests[2]["op_type"], "Placeholder")
+        self.assertEqual(digests[2]["output_slot"], 0)
+        self.assertTrue(digests[2]["op_name"])
+        self.assertNotEqual(digests[2]["op_name"], digests[0]["op_name"])
+        self.assertTrue(digests[2]["graph_id"])
 
-    #     self.assertGreaterEqual(
-    #         digests[3]["wall_time"], digests[2]["wall_time"]
-    #     )
-    #     # The unstack() function uses the Unpack op under the hood.
-    #     self.assertEqual(digests[3]["op_type"], "Unpack")
-    #     self.assertEqual(digests[3]["output_slot"], 0)
-    #     self.assertTrue(digests[3]["op_name"])
-    #     self.assertTrue(digests[3]["graph_id"])
+        self.assertGreaterEqual(
+            digests[3]["wall_time"], digests[2]["wall_time"]
+        )
+        # The unstack() function uses the Unpack op under the hood.
+        self.assertEqual(digests[3]["op_type"], "Unpack")
+        self.assertEqual(digests[3]["output_slot"], 0)
+        self.assertTrue(digests[3]["op_name"])
+        self.assertTrue(digests[3]["graph_id"])
 
-    # def testServeGraphExecutionDigestsImplicitFullRange(self):
-    #     _generate_tfdbg_v2_data(self.logdir)
-    #     run = self._getExactlyOneRun()
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX + "/graph_execution/digests?run=%s" % run
-    #     )
-    #     self.assertEqual(200, response.status_code)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     data = json.loads(response.get_data())
-    #     self.assertEqual(data["begin"], 0)
-    #     self.assertEqual(data["end"], 219)
-    #     self.assertEqual(data["num_digests"], 219)
-    #     digests = data["graph_execution_digests"]
-    #     self.assertLen(digests, 219)
-    #     self.assertGreater(digests[-1]["wall_time"], 0)
-    #     # Due to the while loop in the tf.function, the last op executed
-    #     # is a Less op.
-    #     self.assertEqual(digests[-1]["op_type"], "Less")
-    #     self.assertEqual(digests[-1]["output_slot"], 0)
-    #     self.assertTrue(digests[-1]["op_name"])
-    #     self.assertTrue(digests[-1]["graph_id"])
+    def testServeGraphExecutionDigestsImplicitFullRange(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        response = self.server.get(
+            _ROUTE_PREFIX + "/graph_execution/digests?run=%s" % run
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        data = json.loads(response.get_data())
+        self.assertEqual(data["begin"], 0)
+        self.assertEqual(data["end"], 219)
+        self.assertEqual(data["num_digests"], 219)
+        digests = data["graph_execution_digests"]
+        self.assertLen(digests, 219)
+        self.assertGreater(digests[-1]["wall_time"], 0)
+        # Due to the while loop in the tf.function, the last op executed
+        # is a Less op.
+        self.assertEqual(digests[-1]["op_type"], "Less")
+        self.assertEqual(digests[-1]["output_slot"], 0)
+        self.assertTrue(digests[-1]["op_name"])
+        self.assertTrue(digests[-1]["graph_id"])
 
-    # def testServeGraphExecutionDigestOutOfBoundsError(self):
-    #     _generate_tfdbg_v2_data(self.logdir)
-    #     run = self._getExactlyOneRun()
+    def testServeGraphExecutionDigestOutOfBoundsError(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
 
-    #     # begin = 0; end = 300
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX
-    #         + "/graph_execution/digests?run=%s&begin=0&end=300" % run
-    #     )
-    #     self.assertEqual(response.status_code, 400)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     self.assertEqual(
-    #         json.loads(response.get_data()),
-    #         {"error": "Invalid argument: end index (300) out of bounds (219)"},
-    #     )
+        # begin = 0; end = 300
+        response = self.server.get(
+            _ROUTE_PREFIX
+            + "/graph_execution/digests?run=%s&begin=0&end=300" % run
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {"error": "Invalid argument: end index (300) out of bounds (219)"},
+        )
 
-    #     # begin = -1; end = 2
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX
-    #         + "/graph_execution/digests?run=%s&begin=-1&end=2" % run
-    #     )
-    #     self.assertEqual(response.status_code, 400)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     self.assertEqual(
-    #         json.loads(response.get_data()),
-    #         {"error": "Invalid argument: Invalid begin index (-1)"},
-    #     )
+        # begin = -1; end = 2
+        response = self.server.get(
+            _ROUTE_PREFIX
+            + "/graph_execution/digests?run=%s&begin=-1&end=2" % run
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {"error": "Invalid argument: Invalid begin index (-1)"},
+        )
 
-    #     # begin = 2; end = 1
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX
-    #         + "/graph_execution/digests?run=%s&begin=2&end=1" % run
-    #     )
-    #     self.assertEqual(response.status_code, 400)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     self.assertEqual(
-    #         json.loads(response.get_data()),
-    #         {
-    #             "error": "Invalid argument: "
-    #             "end index (1) is unexpectedly less than begin index (2)"
-    #         },
-    #     )
+        # begin = 2; end = 1
+        response = self.server.get(
+            _ROUTE_PREFIX
+            + "/graph_execution/digests?run=%s&begin=2&end=1" % run
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {
+                "error": "Invalid argument: "
+                "end index (1) is unexpectedly less than begin index (2)"
+            },
+        )
 
-    # def testServeASingleGraphExecutionDataObject(self):
-    #     _generate_tfdbg_v2_data(self.logdir, tensor_debug_mode="CONCISE_HEALTH")
-    #     run = self._getExactlyOneRun()
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX + "/graph_execution/data?run=%s&begin=0&end=1" % run
-    #     )
-    #     self.assertEqual(200, response.status_code)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     data = json.loads(response.get_data())
-    #     self.assertEqual(data["begin"], 0)
-    #     self.assertEqual(data["end"], 1)
-    #     self.assertLen(data["graph_executions"], 1)
-    #     graph_exec = data["graph_executions"][0]
-    #     self.assertStartsWith(graph_exec["op_type"], "Placeholder")
-    #     self.assertTrue(graph_exec["op_name"])
-    #     self.assertEqual(graph_exec["output_slot"], 0)
-    #     self.assertTrue(graph_exec["graph_id"])
-    #     self.assertGreaterEqual(len(graph_exec["graph_ids"]), 1)
-    #     self.assertEqual(graph_exec["graph_ids"][-1], graph_exec["graph_id"])
-    #     # [tensor_id, element_count, nan_count, neg_inf_count, pos_inf_count].
-    #     self.assertEqual(
-    #         graph_exec["debug_tensor_value"], [1.0, 4.0, 0.0, 0.0, 0.0]
-    #     )
-    #     self.assertEndsWith(graph_exec["device_name"], _DEFAULT_DEVICE_SUFFIX)
+    def testServeASingleGraphExecutionDataObject(self):
+        _generate_tfdbg_v2_data(self.logdir, tensor_debug_mode="CONCISE_HEALTH")
+        run = self._getExactlyOneRun()
+        response = self.server.get(
+            _ROUTE_PREFIX + "/graph_execution/data?run=%s&begin=0&end=1" % run
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        data = json.loads(response.get_data())
+        self.assertEqual(data["begin"], 0)
+        self.assertEqual(data["end"], 1)
+        self.assertLen(data["graph_executions"], 1)
+        graph_exec = data["graph_executions"][0]
+        self.assertStartsWith(graph_exec["op_type"], "Placeholder")
+        self.assertTrue(graph_exec["op_name"])
+        self.assertEqual(graph_exec["output_slot"], 0)
+        self.assertTrue(graph_exec["graph_id"])
+        self.assertGreaterEqual(len(graph_exec["graph_ids"]), 1)
+        self.assertEqual(graph_exec["graph_ids"][-1], graph_exec["graph_id"])
+        # [tensor_id, element_count, nan_count, neg_inf_count, pos_inf_count].
+        self.assertEqual(
+            graph_exec["debug_tensor_value"], [1.0, 4.0, 0.0, 0.0, 0.0]
+        )
+        self.assertEndsWith(graph_exec["device_name"], _DEFAULT_DEVICE_SUFFIX)
 
     def testServeMultipleGraphExecutionDataObjects(self):
         _generate_tfdbg_v2_data(self.logdir, tensor_debug_mode="CONCISE_HEALTH")
@@ -1054,20 +1054,21 @@ class DebuggerV2PluginTest(tf.test.TestCase):
             },
         )
 
-    def testServeGraphOpInfo(self):
-        print("=== TEST BEGINS ===")  # DEBUG
+    def testServeGraphOpInfoForOpWithInputsAndConsumers(self):
+        """Get the op info of an op with both inputs and consumers."""
         _generate_tfdbg_v2_data(self.logdir)
         run = self._getExactlyOneRun()
-        # First, look up the name of the Less op.
+        # First, look up the graph_id and name of the 1st AddV2 op.
         response = self.server.get(
             _ROUTE_PREFIX + "/graph_execution/digests?run=%s" % run
         )
         data = json.loads(response.get_data())
         digests = data["graph_execution_digests"]
         op_types = [digest["op_type"] for digest in digests]
-        less_op_index = op_types.index("Less")
-        graph_id = digests[less_op_index]["graph_id"]
-        op_name = digests[less_op_index]["op_name"]
+        op_index = op_types.index("AddV2")
+        graph_id = digests[op_index]["graph_id"]
+        op_name = digests[op_index]["op_name"]
+        # Actually query the /graphs/op_info route.
         response = self.server.get(
             _ROUTE_PREFIX
             + "/graphs/op_info?run=%s&graph_id=%s&op_name=%s"
@@ -1076,216 +1077,405 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.get_data())
 
-        self.assertEqual(data["op_type"], "Less")
-        self.assertEqual(data["op_name"], digests[less_op_index]["op_name"])
+        # Check op's self properties.
+        self.assertEqual(data["op_type"], "AddV2")
+        self.assertEqual(data["op_name"], digests[op_index]["op_name"])
         # TODO(cais): Assert on detailed device name when available.
         self.assertIn("device_name", data)
-        # The Less op is inside a control-flow graph context, so its graph stack
-        # must have a height > 1.
+        # The op is inside a nested tf.function, so its graph stack must have a height > 1.
         self.assertGreater(len(data["graph_ids"]), 1)
-        self.assertEqual(
-            data["graph_ids"][-1], digests[less_op_index]["graph_id"]
-        )
+        self.assertEqual(data["graph_ids"][-1], digests[op_index]["graph_id"])
         self.assertLen(data["input_names"], 2)
         self.assertTrue(data["input_names"][0])
         self.assertTrue(data["input_names"][1])
         self.assertEqual(data["num_outputs"], 1)
         self.assertEqual(data["host_name"], _HOST_NAME)
-        # print(data)  # DEBUG
-        print("=== TEST ENDS ===")  # DEBUG
+        self.assertTrue(data["stack_trace"])
 
-    # def testServeSourceFileListIncludesThisTestFile(self):
-    #     _generate_tfdbg_v2_data(self.logdir)
-    #     run = self._getExactlyOneRun()
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX + "/source_files/list?run=%s" % run
-    #     )
-    #     self.assertEqual(200, response.status_code)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     source_file_list = json.loads(response.get_data())
-    #     self.assertIsInstance(source_file_list, list)
-    #     self.assertIn([_HOST_NAME, _CURRENT_FILE_FULL_PATH], source_file_list)
+        # Check input op properties.
+        inputs = data["inputs"]
+        self.assertLen(inputs, len(data["input_names"]))
+        self.assertEqual(
+            inputs[0]["op_name"],
+            debug_data_multiplexer.tensor_name_to_op_name(
+                data["input_names"][0]
+            ),
+        )
+        self.assertEqual(
+            inputs[1]["op_name"],
+            debug_data_multiplexer.tensor_name_to_op_name(
+                data["input_names"][1]
+            ),
+        )
+        # The two input tensors to the AddV2 op are from the same Unpack
+        # (unstack) op that provides 4 outputs.
+        self.assertEqual(inputs[0]["op_type"], "Unpack")
+        self.assertEqual(inputs[1]["op_type"], "Unpack")
+        self.assertTrue(inputs[0]["input_names"])
+        self.assertTrue(inputs[1]["input_names"])
+        self.assertEqual(inputs[0]["num_outputs"], 4)
+        self.assertEqual(inputs[1]["num_outputs"], 4)
+        self.assertEqual(inputs[0]["host_name"], _HOST_NAME)
+        self.assertEqual(inputs[1]["host_name"], _HOST_NAME)
+        self.assertEqual(inputs[0]["graph_ids"], data["graph_ids"])
+        self.assertEqual(inputs[1]["graph_ids"], data["graph_ids"])
+        self.assertEqual(inputs[0]["stack_trace"], inputs[1]["stack_trace"])
+        self.assertNotIn("inputs", inputs[0])
+        self.assertNotIn("inputs", inputs[1])
+        self.assertNotIn("consumers", inputs[0])
+        self.assertNotIn("consumers", inputs[0])
 
-    # def testServeSourceFileListWithoutRunParamErrors(self):
-    #     # Make request without run param.
-    #     response = self.server.get(_ROUTE_PREFIX + "/source_files/list")
-    #     self.assertEqual(400, response.status_code)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     self.assertEqual(
-    #         json.loads(response.get_data()),
-    #         {"error": "run parameter is not provided"},
-    #     )
+        # Check consuming op properties.
+        self.assertLen(data["consumers"], 1)
+        consumer = data["consumers"][0]
+        # The AddV2 is consumed by another AddV2 op in the same graph.
+        self.assertEqual(consumer["op_type"], "AddV2")
+        self.assertTrue(consumer["op_type"])
+        self.assertNotEqual(consumer["op_name"], data["op_name"])
+        self.assertIn(data["op_name"] + ":0", consumer["input_names"])
+        self.assertEqual(consumer["num_outputs"], 1)
+        self.assertEqual(consumer["host_name"], _HOST_NAME)
+        self.assertTrue(consumer["stack_trace"])
+        self.assertNotIn("inputs", consumer)
+        self.assertNotIn("consumers", consumer)
 
-    # def testServeSourceFileContentOfThisTestFile(self):
-    #     _generate_tfdbg_v2_data(self.logdir)
-    #     run = self._getExactlyOneRun()
-    #     # First, access the source file list, so we can get hold of the index
-    #     # for this file. The index is required for the request to the
-    #     # "/source_files/file" route below.
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX + "/source_files/list?run=%s" % run
-    #     )
-    #     source_file_list = json.loads(response.get_data())
-    #     index = source_file_list.index([_HOST_NAME, _CURRENT_FILE_FULL_PATH])
+    def testServeGraphOpInfoForOpWithNoConsumers(self):
+        """Get the op info of an op with no consumers in the same graph."""
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        # First, look up the graph_id and name of the Iendity op in the
+        # unstack_and_sum() graph. The Identity op marks the return value of
+        # the tf.function and hence has no consumer.
+        response = self.server.get(
+            _ROUTE_PREFIX + "/graph_execution/digests?run=%s" % run
+        )
+        data = json.loads(response.get_data())
+        digests = data["graph_execution_digests"]
+        op_types = [digest["op_type"] for digest in digests]
+        add_index_0 = op_types.index("AddV2")
+        graph_id = digests[add_index_0]["graph_id"]
+        # Actually query the /graphs/op_info route.
+        response = self.server.get(
+            _ROUTE_PREFIX
+            + "/graphs/op_info?run=%s&graph_id=%s&op_name=%s"
+            % (run, graph_id, "Identity")
+        )
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.get_data())
 
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX + "/source_files/file?run=%s&index=%d" % (run, index)
-    #     )
-    #     self.assertEqual(200, response.status_code)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     data = json.loads(response.get_data())
-    #     self.assertEqual(data["host_name"], _HOST_NAME)
-    #     self.assertEqual(data["file_path"], _CURRENT_FILE_FULL_PATH)
-    #     with open(__file__, "r") as f:
-    #         lines = f.read().split("\n")
-    #     self.assertEqual(data["lines"], lines)
+        # Check op's self properties.
+        self.assertEqual(data["op_type"], "Identity")
+        self.assertEqual(data["op_name"], "Identity")
+        # TODO(cais): Assert on detailed device name when available.
+        self.assertIn("device_name", data)
+        # The op is inside a nested tf.function, so its graph stack must have a height > 1.
+        self.assertGreater(len(data["graph_ids"]), 1)
+        self.assertEqual(data["graph_ids"][-1], graph_id)
+        self.assertLen(data["input_names"], 1)
+        self.assertTrue(data["input_names"][0])
+        self.assertEqual(data["num_outputs"], 1)
+        self.assertEqual(data["host_name"], _HOST_NAME)
+        self.assertTrue(data["stack_trace"])
 
-    # def testServeSourceFileWithoutRunErrors(self):
-    #     # Make request without run param.
-    #     response = self.server.get(_ROUTE_PREFIX + "/source_files/file")
-    #     self.assertEqual(400, response.status_code)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     self.assertEqual(
-    #         json.loads(response.get_data()),
-    #         {"error": "run parameter is not provided"},
-    #     )
+        # Check input op properties.
+        inputs = data["inputs"]
+        self.assertLen(inputs, 1)
+        self.assertEqual(inputs[0]["op_type"], "AddV2")
 
-    # def testServeSourceFileWithOutOfBoundIndexErrors(self):
-    #     _generate_tfdbg_v2_data(self.logdir)
-    #     run = self._getExactlyOneRun()
-    #     # First, access the source file list, so we can get hold of the index
-    #     # for this file. The index is required for the request to the
-    #     # "/source_files/file" route below.
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX + "/source_files/list?run=%s" % run
-    #     )
-    #     source_file_list = json.loads(response.get_data())
-    #     self.assertTrue(source_file_list)
+        # Check consumers: There should be no consumers for this Identity op.
+        self.assertEqual(data["consumers"], [])
 
-    #     # Use an out-of-bound index.
-    #     invalid_index = len(source_file_list)
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX
-    #         + "/source_files/file?run=%s&index=%d" % (run, invalid_index)
-    #     )
-    #     self.assertEqual(400, response.status_code)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     self.assertEqual(
-    #         json.loads(response.get_data()),
-    #         {
-    #             "error": "Not found: There is no source-code file at index %d"
-    #             % invalid_index
-    #         },
-    #     )
+    def testServeGraphOpInfoForOpWithNoInputs(self):
+        """Get the op info of an op with no inputs."""
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        # First, look up the graph_id and name of the 1st Placeholder op in the
+        # unstack_and_sum() graph. The Identity op marks the return value of
+        # the tf.function and hence has no consumer.
+        response = self.server.get(
+            _ROUTE_PREFIX + "/graph_execution/digests?run=%s" % run
+        )
+        data = json.loads(response.get_data())
+        digests = data["graph_execution_digests"]
+        op_types = [digest["op_type"] for digest in digests]
+        op_index = op_types.index("Placeholder")
+        graph_id = digests[op_index]["graph_id"]
+        op_name = digests[op_index]["op_name"]
+        # Actually query the /graphs/op_info route.
+        response = self.server.get(
+            _ROUTE_PREFIX
+            + "/graphs/op_info?run=%s&graph_id=%s&op_name=%s"
+            % (run, graph_id, op_name)
+        )
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.get_data())
 
-    # def testServeStackFrames(self):
-    #     _generate_tfdbg_v2_data(self.logdir)
-    #     run = self._getExactlyOneRun()
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX + "/execution/data?run=%s&begin=0&end=1" % run
-    #     )
-    #     data = json.loads(response.get_data())
-    #     stack_frame_ids = data["executions"][0]["stack_frame_ids"]
-    #     self.assertIsInstance(stack_frame_ids, list)
-    #     self.assertTrue(stack_frame_ids)
+        # Check op's self properties.
+        self.assertEqual(data["op_type"], "Placeholder")
+        self.assertTrue(data["op_name"])
+        # TODO(cais): Assert on detailed device name when available.
+        self.assertIn("device_name", data)
+        # The op is inside a nested tf.function, so its graph stack must have a height > 1.
+        self.assertGreater(len(data["graph_ids"]), 1)
+        self.assertEqual(data["graph_ids"][-1], graph_id)
+        self.assertEqual(data["input_names"], [])
+        self.assertEqual(data["num_outputs"], 1)
+        self.assertEqual(data["host_name"], _HOST_NAME)
+        self.assertTrue(data["stack_trace"])
 
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX
-    #         + "/stack_frames/stack_frames?run=%s&stack_frame_ids=%s"
-    #         % (run, ",".join(stack_frame_ids))
-    #     )
-    #     self.assertEqual(200, response.status_code)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     data = json.loads(response.get_data())
-    #     self.assertIsInstance(data, dict)
-    #     stack_frames = data["stack_frames"]
-    #     self.assertIsInstance(stack_frames, list)
-    #     self.assertLen(stack_frames, len(stack_frame_ids))
-    #     for item in stack_frames:
-    #         self.assertIsInstance(item, list)
-    #         self.assertLen(item, 4)  # [host_name, file_path, lineno, function].
-    #         self.assertEqual(item[0], _HOST_NAME)
-    #         self.assertIsInstance(item[1], six.string_types)
-    #         self.assertTrue(item[1])
-    #         self.assertIsInstance(item[2], int)
-    #         self.assertGreaterEqual(item[2], 1)
-    #         self.assertIsInstance(item[3], six.string_types)
-    #         self.assertTrue(item[3])
-    #     # Assert that the current file and current function should be in the
-    #     # stack frames.
-    #     frames_for_this_function = list(
-    #         filter(
-    #             lambda frame: frame[0] == _HOST_NAME
-    #             and frame[1] == _CURRENT_FILE_FULL_PATH
-    #             and frame[3] == "testServeStackFrames",
-    #             stack_frames,
-    #         )
-    #     )
-    #     self.assertLen(frames_for_this_function, 1)
+        # Check input op properties: The Placeholder has no inputs.
+        self.assertEqual(data["inputs"], [])
 
-    # def testServeStackFramesWithMissingStackFrameIdParamErrors(self):
-    #     _generate_tfdbg_v2_data(self.logdir)
-    #     run = self._getExactlyOneRun()
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX + "/stack_frames/stack_frames?run=%s" % run
-    #     )
-    #     self.assertEqual(400, response.status_code)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     self.assertEqual(
-    #         json.loads(response.get_data()),
-    #         {"error": "Missing stack_frame_ids parameter"},
-    #     )
+        # Check consumers.
+        # TODO(b/155308456): Once the Placholder/Const naming bug is fixed,
+        # assert on its consumers.
 
-    # def testServeStackFramesWithMissingStackFrameIdParamErrors(self):
-    #     _generate_tfdbg_v2_data(self.logdir)
-    #     run = self._getExactlyOneRun()
-    #     response = self.server.get(
-    #         # Use empty value for the stack_frame_ids parameter.
-    #         _ROUTE_PREFIX
-    #         + "/stack_frames/stack_frames?run=%s&stack_frame_ids=" % run
-    #     )
-    #     self.assertEqual(400, response.status_code)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     self.assertEqual(
-    #         json.loads(response.get_data()),
-    #         {"error": "Empty stack_frame_ids parameter"},
-    #     )
+    def testServeGraphOpInfoRespondsWithErrorForInvalidGraphId(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        # Query the /graphs/op_info route with an invalid graph_id.
+        response = self.server.get(
+            _ROUTE_PREFIX
+            + "/graphs/op_info?run=%s&graph_id=%s&op_name=%s"
+            % (run, "nonsensical-graph-id", "Placeholder")
+        )
 
-    # def testServeStackFramesWithMissingStackFrameIdParamErrors(self):
-    #     _generate_tfdbg_v2_data(self.logdir)
-    #     run = self._getExactlyOneRun()
-    #     invalid_stack_frme_id = "nonsense-stack-frame-id"
-    #     response = self.server.get(
-    #         # Use empty value for the stack_frame_ids parameter.
-    #         _ROUTE_PREFIX
-    #         + "/stack_frames/stack_frames?run=%s&stack_frame_ids=%s"
-    #         % (run, invalid_stack_frme_id)
-    #     )
-    #     self.assertEqual(400, response.status_code)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     self.assertRegexpMatches(
-    #         json.loads(response.get_data())["error"],
-    #         "Not found: Cannot find stack frame with ID"
-    #         ".*nonsense-stack-frame-id.*",
-    #     )
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {
+                "error": 'Not found: There is no graph with ID "nonsensical-graph-id"'
+            },
+        )
+
+    def testServeGraphOpInfoRespondsWithErrorForInvalidOpName(self):
+        """Get the op info of an op with no inputs."""
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        # First, look up the valid graph_id.
+        response = self.server.get(
+            _ROUTE_PREFIX + "/graph_execution/digests?run=%s" % run
+        )
+        data = json.loads(response.get_data())
+        digests = data["graph_execution_digests"]
+        op_types = [digest["op_type"] for digest in digests]
+        op_index = op_types.index("Placeholder")
+        graph_id = digests[op_index]["graph_id"]
+        # Query the/graphs/op_info route with a valid graph_id and
+        # a nonexistent op_name.
+        response = self.server.get(
+            _ROUTE_PREFIX
+            + "/graphs/op_info?run=%s&graph_id=%s&op_name=%s"
+            % (run, graph_id, "nonexistent-op-name")
+        )
+
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {
+                "error": 'Not found: There is no op named "nonexistent-op-name" '
+                'in graph with ID "%s"' % graph_id
+            },
+        )
+
+    def testServeSourceFileListIncludesThisTestFile(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        response = self.server.get(
+            _ROUTE_PREFIX + "/source_files/list?run=%s" % run
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        source_file_list = json.loads(response.get_data())
+        self.assertIsInstance(source_file_list, list)
+        self.assertIn([_HOST_NAME, _CURRENT_FILE_FULL_PATH], source_file_list)
+
+    def testServeSourceFileListWithoutRunParamErrors(self):
+        # Make request without run param.
+        response = self.server.get(_ROUTE_PREFIX + "/source_files/list")
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {"error": "run parameter is not provided"},
+        )
+
+    def testServeSourceFileContentOfThisTestFile(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        # First, access the source file list, so we can get hold of the index
+        # for this file. The index is required for the request to the
+        # "/source_files/file" route below.
+        response = self.server.get(
+            _ROUTE_PREFIX + "/source_files/list?run=%s" % run
+        )
+        source_file_list = json.loads(response.get_data())
+        index = source_file_list.index([_HOST_NAME, _CURRENT_FILE_FULL_PATH])
+
+        response = self.server.get(
+            _ROUTE_PREFIX + "/source_files/file?run=%s&index=%d" % (run, index)
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        data = json.loads(response.get_data())
+        self.assertEqual(data["host_name"], _HOST_NAME)
+        self.assertEqual(data["file_path"], _CURRENT_FILE_FULL_PATH)
+        with open(__file__, "r") as f:
+            lines = f.read().split("\n")
+        self.assertEqual(data["lines"], lines)
+
+    def testServeSourceFileWithoutRunErrors(self):
+        # Make request without run param.
+        response = self.server.get(_ROUTE_PREFIX + "/source_files/file")
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {"error": "run parameter is not provided"},
+        )
+
+    def testServeSourceFileWithOutOfBoundIndexErrors(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        # First, access the source file list, so we can get hold of the index
+        # for this file. The index is required for the request to the
+        # "/source_files/file" route below.
+        response = self.server.get(
+            _ROUTE_PREFIX + "/source_files/list?run=%s" % run
+        )
+        source_file_list = json.loads(response.get_data())
+        self.assertTrue(source_file_list)
+
+        # Use an out-of-bound index.
+        invalid_index = len(source_file_list)
+        response = self.server.get(
+            _ROUTE_PREFIX
+            + "/source_files/file?run=%s&index=%d" % (run, invalid_index)
+        )
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {
+                "error": "Not found: There is no source-code file at index %d"
+                % invalid_index
+            },
+        )
+
+    def testServeStackFrames(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        response = self.server.get(
+            _ROUTE_PREFIX + "/execution/data?run=%s&begin=0&end=1" % run
+        )
+        data = json.loads(response.get_data())
+        stack_frame_ids = data["executions"][0]["stack_frame_ids"]
+        self.assertIsInstance(stack_frame_ids, list)
+        self.assertTrue(stack_frame_ids)
+
+        response = self.server.get(
+            _ROUTE_PREFIX
+            + "/stack_frames/stack_frames?run=%s&stack_frame_ids=%s"
+            % (run, ",".join(stack_frame_ids))
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        data = json.loads(response.get_data())
+        self.assertIsInstance(data, dict)
+        stack_frames = data["stack_frames"]
+        self.assertIsInstance(stack_frames, list)
+        self.assertLen(stack_frames, len(stack_frame_ids))
+        for item in stack_frames:
+            self.assertIsInstance(item, list)
+            self.assertLen(item, 4)  # [host_name, file_path, lineno, function].
+            self.assertEqual(item[0], _HOST_NAME)
+            self.assertIsInstance(item[1], six.string_types)
+            self.assertTrue(item[1])
+            self.assertIsInstance(item[2], int)
+            self.assertGreaterEqual(item[2], 1)
+            self.assertIsInstance(item[3], six.string_types)
+            self.assertTrue(item[3])
+        # Assert that the current file and current function should be in the
+        # stack frames.
+        frames_for_this_function = list(
+            filter(
+                lambda frame: frame[0] == _HOST_NAME
+                and frame[1] == _CURRENT_FILE_FULL_PATH
+                and frame[3] == "testServeStackFrames",
+                stack_frames,
+            )
+        )
+        self.assertLen(frames_for_this_function, 1)
+
+    def testServeStackFramesWithMissingStackFrameIdParamErrors(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        response = self.server.get(
+            _ROUTE_PREFIX + "/stack_frames/stack_frames?run=%s" % run
+        )
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {"error": "Missing stack_frame_ids parameter"},
+        )
+
+    def testServeStackFramesWithMissingStackFrameIdParamErrors(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        response = self.server.get(
+            # Use empty value for the stack_frame_ids parameter.
+            _ROUTE_PREFIX
+            + "/stack_frames/stack_frames?run=%s&stack_frame_ids=" % run
+        )
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {"error": "Empty stack_frame_ids parameter"},
+        )
+
+    def testServeStackFramesWithMissingStackFrameIdParamErrors(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        invalid_stack_frme_id = "nonsense-stack-frame-id"
+        response = self.server.get(
+            # Use empty value for the stack_frame_ids parameter.
+            _ROUTE_PREFIX
+            + "/stack_frames/stack_frames?run=%s&stack_frame_ids=%s"
+            % (run, invalid_stack_frme_id)
+        )
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertRegexpMatches(
+            json.loads(response.get_data())["error"],
+            "Not found: Cannot find stack frame with ID"
+            ".*nonsense-stack-frame-id.*",
+        )
 
 
 if __name__ == "__main__":

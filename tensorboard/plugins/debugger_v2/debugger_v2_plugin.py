@@ -247,7 +247,26 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
     def serve_graph_op_info(self, request):
         """Serve information for ops in graphs.
 
-        # TODO(cais): Beef up doc. DO NOT SUBMIT.
+        The request specifies the op name and the ID of the graph that
+        contains the op.
+
+        The response contains a JSON object with the following fields:
+          - op_type
+          - op_name
+          - graph_ids: Stack of graph IDs that the op is located in, from
+            outermost to innermost.
+          - input_names: Input tensor names. This is an empty list for
+            ops with no inputs.
+          - num_outputs: Number of output tensors.
+          - host_name: Name of the host on which the op is created.
+          - stack_trace: Stack frames of the op's creation in.
+          - inputs: A recursive data object of all the input ops
+            to this op. Currently only immediate (one level of) inputs
+            are provided. This is an empty list for ops with no inputs.
+          - consumers: A recursive data object of all the ops that
+            consume the output tensors of the op. Currently only
+            immediate (one level of) consumers are provided. This is
+            an empty list for ops with no consumers.
         """
         experiment = plugin_util.experiment_id(request.environ)
         run = request.args.get("run")
@@ -271,7 +290,7 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
                 ),
                 "application/json",
             )
-        except errors.InvalidArgumentError as e:
+        except errors.NotFoundError as e:
             return _error_response(request, str(e))
 
     @wrappers.Request.application

@@ -322,10 +322,7 @@ def _parse_graph_op_info_blob_key(blob_key):
     run = blob_key[last_dot_index + 1 :]
     key_body = blob_key[:last_dot_index]
     key_body = key_body[len(GRAPH_OP_INFO_BLOB_TAG_PREFIX) :]
-    print("key_body = %s" % key_body)  # DEBUG
     _, graph_id, op_name = key_body.split("_", 2)
-    print("graph_id = %s" % graph_id)  # DEBUG
-    print("op_name = %s" % op_name)  # DEBUG
     return run, graph_id, op_name
 
 

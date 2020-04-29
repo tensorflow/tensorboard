@@ -95,6 +95,11 @@ def _alert_to_json(alert):
         raise TypeError("Unrecognized alert subtype: %s" % type(alert))
 
 
+def tensor_name_to_op_name(tensor_name):
+    # TODO(cais): Add unit test.
+    return tensor_name.split(":")[0]
+
+
 class DebuggerV2EventMultiplexer(object):
     """A class used for accessing tfdbg v2 DebugEvent data on local filesystem.
 
@@ -446,54 +451,84 @@ class DebuggerV2EventMultiplexer(object):
             ],
         }
 
-    def GraphOpInfo(
-        self, run, graph_id, op_name, inputs_depth=1, consumers_depth=1
-    ):
-        """TODO(cais): Add doc string."""
-        if inputs_depth > 1:
-            raise NotImplementedError("inputs_depth > 1 is not supported yet")
-        if consumers_depth > 1:
-            raise NotImplementedError(
-                "consumers_depth > 1 is not supported yet"
-            )
+    def GraphOpInfo(self, run, graph_id, op_name):
+        """Get the information regarding a graph op's creation.
+
+        Args:
+          run: Name of the run.
+          graph_id: Debugger-generated ID of the graph that contains
+            the op in question. This ID is available from other methods
+            of this class, e.g., the return value of `GraphExecutionDigests()`.
+          op_name: Name of the op.
+
+        Returns:
+          A JSON-serializable object containing the information regarding
+          the op's creation.
+
+        Raises:
+          NotFoundError if the graph_id or op_name does not exist.
+        """
         runs = self.Runs()
         if run not in runs:
             return None
-        # TODO(cais): Use public get_op_creation_digest() when available.
-        op_creation_digest = self._reader.graph_by_id(graph_id)._op_by_name[op_name]
+        try:
+            graph = self._reader.graph_by_id(graph_id)
+        except KeyError:
+            raise errors.NotFoundError(
+                'There is no graph with ID "%s"' % graph_id
+            )
+        try:
+            # TODO(cais): Use public get_op_creation_digest() when available.
+            op_creation_digest = graph._op_by_name[op_name]
+        except KeyError:
+            raise errors.NotFoundError(
+                'There is no op named "%s" in graph with ID "%s"'
+                % (op_name, graph_id)
+            )
+        data_object = self._opCreationDigestToDataObject(op_creation_digest)
+        # Populate data about immediate inputs.
+        data_object["inputs"] = []
+        if op_creation_digest.input_names:
+            data_object["inputs"] = [None] * len(op_creation_digest.input_names)
+            for slot, input_tensor_name in enumerate(
+                op_creation_digest.input_names
+            ):
+                input_op_name = tensor_name_to_op_name(input_tensor_name)
+                input_op_digest = graph._op_by_name.get(input_op_name, None)
+                # TODO(b/155308456): Once Placeholder and Const ops have their
+                # ad hoc naming issues fixed, remove this `if` logic.
+                if input_op_digest:
+                    data_object["inputs"][
+                        slot
+                    ] = self._opCreationDigestToDataObject(input_op_digest)
+        # Populate data about immediate consuming ops.
+        data_object["consumers"] = []
+        op_creation_digests = list(graph._op_by_name.values())
+        for digest in op_creation_digests:
+            if digest.input_names and any(
+                tensor_name_to_op_name(input_name) == op_creation_digest.op_name
+                for input_name in digest.input_names
+            ):
+                data_object["consumers"].append(
+                    self._opCreationDigestToDataObject(digest)
+                )
+        return data_object
+
+    def _opCreationDigestToDataObject(self, op_creation_digest):
+        graph_ids = self._getGraphStackIds(op_creation_digest.graph_id)
         (
             host_name,
             stack_trace,
         ) = self._reader.read_graph_op_creation_stack_trace(op_creation_digest)
-        graph_ids = self._getGraphStackIds(op_creation_digest.graph_id)
-
-        inputs = []
-        if inputs_depth > 0:
-            for input_name in op_creation_digest.input_names:
-                print("Searching for input named %s" % input_name)  # DEBUG
-                input_op_digest = None
-                graph_depth = len(graph_ids) - 1
-                while graph_depth >= 0:
-                    graph = self._reader.graph_by_id(graph_ids[graph_depth])
-                    print("Looking in graph %s" % graph.name)  # DEBUG
-                    print("  op_names: %s" % (list(graph._op_by_name.keys()),))  # DEBUG
-                    if input_name in graph._op_by_name:
-                        input_op_digest = graph._op_by_name[input_name]
-                        break
-                    graph_depth -= 1
-                print("input_op_digest = %s" % input_op_digest)  # DEBUG
-
         return {
             "graph_ids": graph_ids,
             "device_name": op_creation_digest.device_name,
             "op_type": op_creation_digest.op_type,
             "op_name": op_creation_digest.op_name,
-            "input_names": op_creation_digest.input_names,
+            "input_names": op_creation_digest.input_names or [],
             "num_outputs": op_creation_digest.num_outputs,
-            "inputs": [],  # TODO(cais): Recursive call.
-            "consumers": [],  # TODO(cais): Recursive call.
             "host_name": host_name,
-            "stack_trace": stack_trace,  # TODO(cais): Needs more work.
+            "stack_trace": stack_trace,
         }
 
     def _getGraphStackIds(self, graph_id):
