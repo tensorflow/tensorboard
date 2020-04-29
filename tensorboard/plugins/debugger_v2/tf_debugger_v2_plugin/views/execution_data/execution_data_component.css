@@ -13,12 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-.debug-tensor-values-container {
-  height: 60px;
-  overflow-x: auto;
-  overflow-y: auto;
-}
-
 .debug-tensor-values-table {
   width: 100%;
 }
@@ -55,6 +49,29 @@ limitations under the License.
   height: 120px;
   padding: 5px;
   width: 360px;
+}
+
+.output-slots {
+  height: 60px;
+  overflow-x: auto;
+  overflow-y: auto;
+}
+
+.output-slot-container {
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+  margin-top: 5px;
+  padding: 2px 0;
+  vertical-align: top;
+}
+
+.output-slot-number {
+  display: block;
+  font-family: 'Roboto Mono', monospace;
+}
+
+.output-slot-debug-tensor-value {
+  display: block;
+  margin: 3px 0 3px 30px;
 }
 
 .output-tensors {

@@ -21,6 +21,7 @@ import {
   Output,
 } from '@angular/core';
 
+import {parseDebugTensorValue} from '../../store/debug_tensor_value';
 import {GraphExecution} from '../../store/debugger_types';
 
 @Component({
@@ -41,4 +42,6 @@ export class GraphExecutionsComponent {
 
   @Output()
   onScrolledIndexChange = new EventEmitter<number>();
+
+  parseDebugTensorValue = parseDebugTensorValue;
 }

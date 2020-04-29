@@ -44,6 +44,8 @@ export interface DebuggerRunListing {
 }
 
 // Each item is [host_name, file_path, lineno, function].
+// TODO(cais): Consider making this an object with meaningful
+// keys instead.
 export type StackFrame = [string, string, number, string];
 
 export type StackFramesById = {[id: string]: StackFrame};
@@ -153,6 +155,59 @@ export interface InfNanAlert extends Alert {
   // intra-graph execution. It is `null` for InfNanAlerts due to eager
   // execution.
   graph_execution_trace_index: number | null;
+}
+
+/**
+ * Values that summarize a tensor watched by the debugger.
+ */
+export interface DebugTensorValue {
+  // Data type of the tensor.
+  dtype?: string;
+
+  // Rank of the tensor (e.g., 0 for scalar, 1 for 1D tensor, etc.)
+  rank?: number;
+
+  // Shape of the tensor.
+  // In the case where the shape is truncated beyond the highest
+  // rank a debug mode can represent, the truncated part is filled with
+  // `undefined`s.
+  shape?: Array<undefined | number>;
+
+  // Size (total element count) of the tensor.
+  size?: number;
+
+  // Number of NaN elements.
+  numNaNs?: number;
+
+  // Number of -Infinity elements.
+  numNegativeInfs?: number;
+
+  // Number of +Infinity elements.
+  numPositiveInfs?: number;
+
+  // Number of finite negative elements.
+  numNegativeFinites?: number;
+
+  // Numbe of zeros elements.
+  numZeros?: number;
+
+  // Number of finite positive elements.
+  numPositiveFinites?: number;
+
+  // Whether the tensor contains any NaN or Infinity elements.
+  hasInfOrNaN?: boolean;
+
+  // Minimum value.
+  min?: number;
+
+  // Maximum value.
+  max?: number;
+
+  // Arithmetic mean.
+  mean?: number;
+
+  // Variance.
+  variance?: number;
 }
 
 export interface ExecutionDigestLoadState extends LoadState {
