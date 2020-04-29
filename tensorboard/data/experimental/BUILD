@@ -47,6 +47,7 @@ py_library(
 py_test(
     name = "experiment_from_dev_test",
     srcs = ["experiment_from_dev_test.py"],
+    srcs_version = "PY3",
     deps = [
         ":experiment_from_dev",
         "//tensorboard:expect_grpc_installed",
@@ -65,7 +66,7 @@ py_test(
 py_binary(
     name = "test_binary",
     srcs = ["test_binary.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         "//tensorboard/data/experimental:experiment_from_dev",
         "@org_pythonhosted_six",

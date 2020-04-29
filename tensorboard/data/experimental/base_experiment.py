@@ -47,7 +47,7 @@ class BaseExperiment(object):
           If `pivot` (default):
             A pivoted DataFrame with the indexing columns of
               - run
-              - tag
+              - step
             And value columns that correspond to the tags.
             Duplicate entries for each run-step combination will be aggregated
             with `numpy.stack`. This format is more friendly to manipulation and

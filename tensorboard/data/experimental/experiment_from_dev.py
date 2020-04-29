@@ -53,6 +53,8 @@ def import_pandas():
 
 
 class ExperimentFromDev(base_experiment.BaseExperiment):
+    """Implementation of BaseExperiment, specialized for tensorboard.dev."""
+
     def __init__(self, experiment_id, api_endpoint=None):
         super(ExperimentFromDev, self).__init__()
         self._experiment_id = experiment_id
