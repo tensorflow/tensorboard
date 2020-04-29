@@ -274,7 +274,6 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
             return _missing_run_error_response(request)
         graph_id = request.args.get("graph_id")
         op_name = request.args.get("op_name")
-        # TODO(cais): Determine array works.
         run_tag_filter = debug_data_provider.graph_op_info_run_tag_filter(
             run, graph_id, op_name
         )

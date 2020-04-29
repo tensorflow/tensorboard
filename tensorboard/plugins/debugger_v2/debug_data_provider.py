@@ -289,9 +289,9 @@ def graph_op_info_run_tag_filter(run, graph_id, op_name):
 
     Args:
       run: tfdbg2 run name.
-      graph_id: ID of the graph.
-        TODO(cais): Clarify whether this is the immediately enclosing graph.
-      op_name: Name of the op being queried (e.g., "Dense_1/MatMul")
+      graph_id: Debugger-generated ID of the graph. This is assumed to
+        be the ID of the graph that immediately encloses the op in question.
+      op_name: Name of the op in question. (e.g., "Dense_1/MatMul")
 
     Returns:
       `RunTagFilter` for the run and range of graph op info.

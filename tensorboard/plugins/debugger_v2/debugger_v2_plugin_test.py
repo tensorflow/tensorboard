@@ -1082,8 +1082,14 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertEqual(data["op_name"], digests[op_index]["op_name"])
         # TODO(cais): Assert on detailed device name when available.
         self.assertIn("device_name", data)
-        # The op is inside a nested tf.function, so its graph stack must have a height > 1.
+        # The op is inside a nested tf.function, so its graph stack must have a
+        # height > 1.
         self.assertGreater(len(data["graph_ids"]), 1)
+        # All graph_ids should be non-empty strings.
+        self.assertTrue(all(data["graph_ids"]))
+        # All graph_ids should be unique (graph recursion is not currently
+        # allowed in TF.)
+        self.assertLen(set(data["graph_ids"]), len(data["graph_ids"]))
         self.assertEqual(data["graph_ids"][-1], digests[op_index]["graph_id"])
         self.assertLen(data["input_names"], 2)
         self.assertTrue(data["input_names"][0])
