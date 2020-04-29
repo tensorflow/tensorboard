@@ -42,7 +42,7 @@ def import_pandas():
     """Import panads, guarded by a user-friendly error message on failure."""
     try:
         import pandas
-    except ModuleNotFoundError:
+    except ImportError:
         raise ImportError(
             "The get_scalars() feature requires the pandas package, "
             "which does not seem to be available in your Python "
