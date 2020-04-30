@@ -20,7 +20,6 @@ tf_web_library(
 tensorboard_webcomponent_library(
     name = "legacy",
     srcs = [":tf_hparams_backend"],
-    visibility = ["//visibility:public"],
     destdir = "tf-hparams-backend",
     deps = [
         "//third_party/tensorboard/components/tf_backend:legacy",

@@ -23,13 +23,11 @@ tf_web_library(
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/vz_sorting",
     ],
-    visibility = ["//visibility:public"],
 )
 
 tensorboard_webcomponent_library(
     name = "legacy",
     srcs = [":vz_chart_helpers"],
-    visibility = ["//visibility:public"],
     destdir = "vz-chart-helpers",
     deps = [
         "//tensorboard/components/tf_imports:polymer_lib",

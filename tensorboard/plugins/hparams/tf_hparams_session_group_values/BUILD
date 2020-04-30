@@ -22,7 +22,6 @@ tf_web_library(
 tensorboard_webcomponent_library(
     name = "legacy",
     srcs = [":tf_hparams_session_group_values"],
-    visibility = ["//visibility:public"],
     destdir = "tf-hparams-session-group-values",
     deps = [
         "//tensorboard/components/tf_imports:polymer_lib",

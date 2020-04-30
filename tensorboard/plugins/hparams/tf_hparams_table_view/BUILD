@@ -12,7 +12,6 @@ tf_web_library(
         "tf-hparams-table-view.html",
     ],
     path = "/tf-hparams-table-view",
-    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_imports:vaadin_grid",

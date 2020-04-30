@@ -13,7 +13,6 @@ py_library(
     name = "audio_plugin",
     srcs = ["audio_plugin.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard:errors",
         "//tensorboard:plugin_util",
@@ -74,9 +73,6 @@ py_library(
     name = "summary",
     srcs = ["summary.py"],
     srcs_version = "PY2AND3",
-    visibility = [
-        "//visibility:public",
-    ],
     deps = [
         ":metadata",
         ":summary_v2",
@@ -142,5 +138,4 @@ py_library(
 tb_proto_library(
     name = "protos_all",
     srcs = ["plugin_data.proto"],
-    visibility = ["//visibility:public"],
 )
