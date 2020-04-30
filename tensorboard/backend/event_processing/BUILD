@@ -24,7 +24,6 @@ py_test(
     size = "small",
     srcs = ["io_wrapper_test.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         ":io_wrapper",
         "//tensorboard:expect_tensorflow_installed",
@@ -36,7 +35,6 @@ py_library(
     name = "data_provider",
     srcs = ["data_provider.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         ":event_accumulator",
         "//tensorboard:errors",
@@ -51,7 +49,6 @@ py_test(
     name = "data_provider_test",
     srcs = ["data_provider_test.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         ":data_provider",
         ":event_multiplexer",
@@ -74,7 +71,6 @@ py_library(
     name = "directory_loader",
     srcs = ["directory_loader.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         ":directory_watcher",
         ":io_wrapper",
@@ -88,7 +84,6 @@ py_test(
     size = "small",
     srcs = ["directory_loader_test.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         ":directory_loader",
         ":directory_watcher",
@@ -116,7 +111,6 @@ py_test(
     size = "small",
     srcs = ["directory_watcher_test.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         ":directory_watcher",
         "//tensorboard:expect_tensorflow_installed",
@@ -127,7 +121,6 @@ py_library(
     name = "reservoir",
     srcs = ["reservoir.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
 )
 
 py_test(
@@ -135,7 +128,6 @@ py_test(
     size = "small",
     srcs = ["reservoir_test.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         ":reservoir",
         "//tensorboard:expect_tensorflow_installed",
@@ -162,7 +154,6 @@ py_test(
     size = "small",
     srcs = ["event_file_loader_test.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         ":event_file_loader",
         "//tensorboard:expect_tensorflow_installed",
@@ -178,7 +169,6 @@ py_test(
     srcs = ["event_file_loader_test.py"],
     main = "event_file_loader_test.py",
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         ":event_file_loader",
         "//tensorboard:expect_tensorflow_installed",
@@ -216,7 +206,6 @@ py_test(
     size = "small",
     srcs = ["event_accumulator_test.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         ":event_accumulator",
         "//tensorboard:data_compat",
@@ -240,7 +229,6 @@ py_test(
     size = "small",
     srcs = ["plugin_event_accumulator_test.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         ":event_accumulator",
         "//tensorboard:expect_tensorflow_installed",
@@ -279,7 +267,6 @@ py_test(
     size = "small",
     srcs = ["event_multiplexer_test.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         ":event_accumulator",
         ":event_multiplexer",
@@ -293,7 +280,6 @@ py_test(
     size = "small",
     srcs = ["plugin_event_multiplexer_test.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         ":event_accumulator",
         ":event_multiplexer",
@@ -330,7 +316,6 @@ py_test(
     size = "small",
     srcs = ["event_file_inspector_test.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         ":event_file_inspector",
         "//tensorboard:expect_tensorflow_installed",

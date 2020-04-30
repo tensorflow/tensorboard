@@ -11,7 +11,6 @@ tf_web_library(
         "vz-bar-chart.js",
     ],
     path = "/vz-bar-chart",
-    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_imports:d3",
         "//tensorboard/components/tf_imports:lodash",

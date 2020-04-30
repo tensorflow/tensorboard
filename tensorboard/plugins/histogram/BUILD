@@ -14,7 +14,6 @@ py_library(
     name = "histograms_plugin",
     srcs = ["histograms_plugin.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         ":metadata",
         "//tensorboard:errors",
@@ -91,9 +90,6 @@ py_library(
     name = "summary",
     srcs = ["summary.py"],
     srcs_version = "PY2AND3",
-    visibility = [
-        "//visibility:public",
-    ],
     deps = [
         ":metadata",
         ":summary_v2",
@@ -147,5 +143,4 @@ py_binary(
 tb_proto_library(
     name = "protos_all",
     srcs = ["plugin_data.proto"],
-    visibility = ["//visibility:public"],
 )

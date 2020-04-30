@@ -15,7 +15,6 @@ tf_web_library(
         "tf-custom-scalar-multi-line-chart-card.html",
     ],
     path = "/tf-custom-scalar-dashboard",
-    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_card_heading",

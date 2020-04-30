@@ -24,7 +24,6 @@ tf_web_library(
         "tf-tensor-value-view.html",
     ],
     path = "/tf-debugger-dashboard",
-    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tensor_widget",
         "//tensorboard/components/tf_backend",

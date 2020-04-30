@@ -12,7 +12,6 @@ tf_web_library(
         "vz-sorting.html",
     ],
     path = "/vz-sorting",
-    visibility = ["//visibility:public"],
 )
 
 tensorboard_webcomponent_library(

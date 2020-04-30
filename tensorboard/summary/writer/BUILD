@@ -14,7 +14,6 @@ py_library(
         "record_writer.py",
     ],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/compat:tensorflow",
         "//tensorboard/compat/proto:protos_all_py_pb2",

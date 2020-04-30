@@ -11,7 +11,6 @@ tf_web_library(
         "tf-hparams-google-analytics-tracker.html",
     ],
     path = "/tf-hparams-google-analytics-tracker",
-    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_imports:polymer",
     ],
@@ -31,7 +30,6 @@ tf_web_library(
         "test/tf-hparams-google-analytics-tracker-test.html",
     ],
     path = "/tf-hparams-google-analytics-tracker",
-    visibility = ["//visibility:public"],
     deps = [
         ":tf_hparams_google_analytics_tracker",
         "//tensorboard/components/tf_imports:polymer",
@@ -45,7 +43,6 @@ tf_web_library(
 tensorboard_webcomponent_library(
     name = "legacy",
     srcs = [":tf_hparams_google_analytics_tracker"],
-    visibility = ["//visibility:public"],
     destdir = "tf-hparams-google-analytics-tracker",
     deps = [
         "//tensorboard/components/tf_imports:polymer_lib",

@@ -14,7 +14,6 @@ py_library(
     name = "text_plugin",
     srcs = ["text_plugin.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         ":metadata",
         "//tensorboard:plugin_util",
@@ -144,5 +143,4 @@ py_library(
 tb_proto_library(
     name = "protos_all",
     srcs = ["plugin_data.proto"],
-    visibility = ["//visibility:public"],
 )

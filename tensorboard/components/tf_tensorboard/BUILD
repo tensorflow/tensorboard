@@ -52,7 +52,6 @@ tf_web_library(
         "plugin-dialog.html",
     ],
     path = "/tf-tensorboard",
-    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_imports:lodash",
         "//tensorboard/components/tf_imports:polymer",
@@ -63,7 +62,6 @@ tf_web_library(
     name = "default_plugins",
     srcs = ["default-plugins.html"],
     path = "/tf-tensorboard",
-    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/plugins/audio/tf_audio_dashboard",
         "//tensorboard/plugins/beholder/tf_beholder_dashboard",

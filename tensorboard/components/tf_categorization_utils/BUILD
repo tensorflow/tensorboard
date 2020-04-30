@@ -12,7 +12,6 @@ tf_web_library(
         "tf-tag-filterer.html",
     ],
     path = "/tf-categorization-utils",
-    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_dashboard_common",

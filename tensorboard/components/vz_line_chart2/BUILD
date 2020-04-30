@@ -19,7 +19,6 @@ tf_web_library(
         "vz-line-chart2.js",
     ],
     path = "/vz-line-chart2",
-    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_imports:d3",
         "//tensorboard/components/tf_imports:lodash",
