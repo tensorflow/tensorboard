@@ -15,7 +15,6 @@ py_library(
         "//tensorboard/plugins/projector/tf_projector_plugin:projector_assets",
     ],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         ":metadata",
         ":protos_all_py_pb2",

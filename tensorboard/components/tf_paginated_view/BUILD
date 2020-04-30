@@ -13,7 +13,6 @@ tf_web_library(
         "tf-paginated-view-store.html",
     ],
     path = "/tf-paginated-view",
-    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_dashboard_common",
         "//tensorboard/components/tf_imports:polymer",

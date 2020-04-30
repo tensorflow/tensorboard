@@ -11,5 +11,4 @@ tf_web_library(
         "utils.ts",
     ],
     path = "/tf-utils",
-    visibility = ["//visibility:public"],
 )
