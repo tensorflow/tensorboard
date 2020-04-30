@@ -1,4 +1,4 @@
-package(default_visibility = ["//visibility:public"])
+package(default_visibility = ["//tensorboard:internal"])
 
 load("//tensorboard/defs:web.bzl", "tf_web_library", "tf_web_test")
 load("//tensorboard/defs:defs.bzl", "tensorboard_webcomponent_library")
@@ -20,6 +20,7 @@ tf_web_library(
 tf_web_test(
     name = "test",
     src = "/tf-hparams-google-analytics-tracker/test/tf-hparams-google-analytics-tracker-test.html",
+    visibility = ["//visibility:public"],
     web_library = ":test_lib",
 )
 
@@ -30,6 +31,7 @@ tf_web_library(
         "test/tf-hparams-google-analytics-tracker-test.html",
     ],
     path = "/tf-hparams-google-analytics-tracker",
+    visibility = ["//visibility:public"],
     deps = [
         ":tf_hparams_google_analytics_tracker",
         "//tensorboard/components/tf_imports:polymer",
@@ -43,6 +45,7 @@ tf_web_library(
 tensorboard_webcomponent_library(
     name = "legacy",
     srcs = [":tf_hparams_google_analytics_tracker"],
+    visibility = ["//visibility:public"],
     destdir = "tf-hparams-google-analytics-tracker",
     deps = [
         "//tensorboard/components/tf_imports:polymer_lib",
