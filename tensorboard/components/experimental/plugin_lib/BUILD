@@ -44,5 +44,4 @@ tf_web_library(
         "polymer-interop.html",
     ],
     path = "/tf-plugin-lib",
-    visibility = ["//visibility:public"],
 )

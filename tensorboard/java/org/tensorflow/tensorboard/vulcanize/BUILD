@@ -24,7 +24,6 @@ java_binary(
 java_binary(
     name = "Zipper",
     srcs = ["Zipper.java"],
-    visibility = ["//visibility:public"],
     deps = [
         "@com_google_guava",
         "@com_google_protobuf//:protobuf_java",

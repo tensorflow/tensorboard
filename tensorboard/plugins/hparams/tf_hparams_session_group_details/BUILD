@@ -26,7 +26,6 @@ tf_web_library(
 tensorboard_webcomponent_library(
     name = "legacy",
     srcs = [":tf_hparams_session_group_details"],
-    visibility = ["//visibility:public"],
     destdir = "tf-hparams-session-group-details",
     deps = [
         "//tensorboard/components/tf_backend:legacy",

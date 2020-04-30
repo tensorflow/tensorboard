@@ -11,7 +11,6 @@ py_library(
     name = "core_plugin",
     srcs = ["core_plugin.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",

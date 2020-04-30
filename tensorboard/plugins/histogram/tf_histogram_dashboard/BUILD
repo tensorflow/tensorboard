@@ -13,7 +13,6 @@ tf_web_library(
         "tf-histogram-loader.html",
     ],
     path = "/tf-histogram-dashboard",
-    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_card_heading",
