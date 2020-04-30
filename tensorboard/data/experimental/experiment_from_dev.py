@@ -38,8 +38,6 @@ from tensorboard.util import grpc_util
 
 DEFAULT_ORIGIN = "https://tensorboard.dev"
 
-_MISSING_VALUE_TOKEN = "N/A"
-
 
 @lazy.lazy_load("pandas")
 def pandas():
