@@ -1,4 +1,4 @@
-package(default_visibility = ["//visibility:public"])
+package(default_visibility = ["//tensorboard:internal"])
 
 load("//tensorboard/defs:defs.bzl", "tensorboard_webcomponent_library")
 load("//tensorboard/defs:web.bzl", "tf_web_library")
@@ -16,6 +16,7 @@ tf_web_library(
         "vz-chart-tooltip.js",
     ],
     path = "/vz-chart-helpers",
+    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_imports:d3",
         "//tensorboard/components/tf_imports:lodash",

@@ -1,4 +1,4 @@
-package(default_visibility = ["//visibility:public"])
+package(default_visibility = ["//tensorboard:internal"])
 
 load("//tensorboard/defs:web.bzl", "tf_web_library")
 
