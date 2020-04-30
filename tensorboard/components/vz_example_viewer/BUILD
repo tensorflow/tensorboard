@@ -1,4 +1,4 @@
-package(default_visibility = ["//visibility:public"])
+package(default_visibility = ["//tensorboard:internal"])
 
 load("//tensorboard/defs:web.bzl", "tf_web_library")
 load("//tensorboard/defs:vulcanize.bzl", "tensorboard_html_binary")
@@ -12,6 +12,7 @@ tf_web_library(
         "vz-example-viewer.ts",
     ],
     path = "/vz-example-viewer",
+    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_imports:d3",
         "//tensorboard/components/tf_imports:polymer",
@@ -34,6 +35,7 @@ tf_web_library(
     name = "demo",
     srcs = ["index.html"],
     path = "/vz-example-viewer",
+    visibility = ["//visibility:public"],
     deps = [
         ":vz_example_viewer",
         "//tensorboard/components/tf_imports:polymer",
@@ -47,5 +49,6 @@ tensorboard_html_binary(
     compile = True,  # Run Closure Compiler
     input_path = "/vz-example-viewer/index.html",
     output_path = "/vz-example-viewer/demo.html",
+    visibility = ["//visibility:public"],
     deps = [":demo"],
 )

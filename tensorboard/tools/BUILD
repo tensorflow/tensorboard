@@ -1,3 +1,5 @@
+package(default_visibility = ["//tensorboard:internal"])
+
 licenses(["notice"])  # Apache 2.0
 
 py_binary(
