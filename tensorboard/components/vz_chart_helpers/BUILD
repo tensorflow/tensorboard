@@ -1,4 +1,4 @@
-package(default_visibility = ["//visibility:public"])
+package(default_visibility = ["//tensorboard:internal"])
 
 load("//tensorboard/defs:defs.bzl", "tensorboard_webcomponent_library")
 load("//tensorboard/defs:web.bzl", "tf_web_library")
@@ -23,6 +23,7 @@ tf_web_library(
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/vz_sorting",
     ],
+    visibility = ["//visibility:public"],
 )
 
 tensorboard_webcomponent_library(
