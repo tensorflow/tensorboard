@@ -20,7 +20,7 @@ from __future__ import print_function
 
 from tensorboard import errors  # public export
 from tensorboard import lazy as _lazy
-from tensorboard import version  # public export
+from tensorboard import version as _version
 
 # TensorBoard public API.
 __all__ = [
@@ -29,7 +29,6 @@ __all__ = [
     "notebook",
     "program",
     "summary",
-    "version",
 ]
 
 
@@ -108,4 +107,4 @@ def load_ipython_extension(ipython):
     notebook._load_ipython_extension(ipython)
 
 
-__version__ = version.VERSION
+__version__ = _version.VERSION
