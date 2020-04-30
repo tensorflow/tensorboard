@@ -25,6 +25,7 @@ import time
 import grpc
 import numpy as np
 
+from tensorboard import lazy
 from tensorboard.data.experimental import base_experiment
 from tensorboard.uploader import auth
 from tensorboard.uploader import util
@@ -37,17 +38,20 @@ from tensorboard.util import grpc_util
 
 DEFAULT_ORIGIN = "https://tensorboard.dev"
 
+_MISSING_VALUE_TOKEN = "N/A"
 
-def import_pandas():
-    """Import panads, guarded by a user-friendly error message on failure."""
+
+@lazy.lazy_load("pandas")
+def pandas():
+    """Import pandas, guarded by a user-friendly error message on failure."""
     try:
         import pandas
     except ImportError:
         raise ImportError(
             "The get_scalars() feature requires the pandas package, "
             "which does not seem to be available in your Python "
-            "environment. You can install it with command: \n\n"
-            "  pip install pandas"
+            "environment. You can install it with command:\n\n"
+            "  pip install pandas\n"
         )
     return pandas
 
@@ -56,11 +60,19 @@ class ExperimentFromDev(base_experiment.BaseExperiment):
     """Implementation of BaseExperiment, specialized for tensorboard.dev."""
 
     def __init__(self, experiment_id, api_endpoint=None):
+        """Constructor of ExperimentFromDev.
+
+        Args:
+          experiment_id: String ID of the experiment on tensorboard.dev (e.g.,
+            "AdYd1TgeTlaLWXx6I8JUbA").
+          api_endpoint: Optional override value for API endpoint. Used for
+            development only.
+        """
         super(ExperimentFromDev, self).__init__()
         self._experiment_id = experiment_id
         self._api_client = get_api_client(api_endpoint=api_endpoint)
 
-    def get_scalars(self, runs_filter=None, tags_filter=None, pivot=True):
+    def get_scalars(self, runs_filter=None, tags_filter=None, pivot=None):
         if runs_filter is not None:
             raise NotImplementedError(
                 "runs_filter support for get_scalars() is not implemented yet."
@@ -69,7 +81,7 @@ class ExperimentFromDev(base_experiment.BaseExperiment):
             raise NotImplementedError(
                 "tags_filter support for get_scalars() is not implemented yet."
             )
-        pandas = import_pandas()
+        pivot = True if pivot is None else pivot
 
         request = export_service_pb2.StreamExperimentDataRequest()
         request.experiment_id = self._experiment_id
@@ -87,10 +99,7 @@ class ExperimentFromDev(base_experiment.BaseExperiment):
         wall_times = []
         values = []
         for response in stream:
-            # TODO(cais, wchargin): Display progress bar.
-            metadata = base64.b64encode(
-                response.tag_metadata.SerializeToString()
-            ).decode("ascii")
+            # TODO(cais, wchargin): Display progress bar during data loading.
             num_values = len(response.points.values)
             runs.extend([response.run_name] * num_values)
             tags.extend([response.tag_name] * num_values)
@@ -110,21 +119,29 @@ class ExperimentFromDev(base_experiment.BaseExperiment):
             }
         )
         if pivot:
-            dataframe = dataframe.pivot_table(
-                ["value", "wall_time"], ["run", "step"], "tag",
+            dataframe = self._pivot_dataframe(dataframe)
+        return dataframe
+
+    def _pivot_dataframe(self, dataframe):
+        num_missing_0 = np.count_nonzero(dataframe.isnull().values)
+        dataframe = dataframe.pivot_table(
+            ["value", "wall_time"], ["run", "step"], "tag",
+        )
+        num_missing_1 = np.count_nonzero(dataframe.isnull().values)
+        if num_missing_1 > num_missing_0:
+            raise ValueError(
+                "pivoted DataFrame contains %d missing value(s). "
+                "This is likely due to two timeseries having different "
+                "sets of steps in your experiment. "
+                "You can avoid this error by calling `get_scalars()` with "
+                "`pivot=False` to disable the DataFrame pivoting."
             )
-            if np.any(dataframe.isnull().values):
-                sys.stderr.write(
-                    "WARNING: pivoted DataFrame contains missing value(s). "
-                    "This is likely due to tags that contain uneven numbers of steps. "
-                    "Consider calling `get_scalar()` with `pivot=False`"
-                )
-                sys.stderr.flush()
         return dataframe
 
 
 def get_api_client(api_endpoint=None):
     server_info = _get_server_info(api_endpoint=api_endpoint)
+    _handle_server_info(server_info)
     channel_creds = grpc.ssl_channel_credentials()
     credentials = auth.CredentialsStore().read_credentials()
     if credentials:
@@ -155,8 +172,3 @@ def _handle_server_info(info):
         sys.stderr.flush()
     elif compat.verdict == server_info_pb2.VERDICT_ERROR:
         raise ValueError("Error [from server]: %s" % compat.details)
-    else:
-        # OK or unknown; assume OK.
-        if compat.details:
-            sys.stderr.write("%s\n" % compat.details)
-            sys.stderr.flush()

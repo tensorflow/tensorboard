@@ -23,15 +23,7 @@ import argparse
 from tensorboard.data.experimental import experiment_from_dev
 
 
-def main(args):
-    experiment = experiment_from_dev.ExperimentFromDev(
-        args.experiment_id, api_endpoint=args.api_endpoint
-    )
-    dataframe = experiment.get_scalars()
-    print(dataframe)
-
-
-if __name__ == "__main__":
+def parse_args():
     parser = argparse.ArgumentParser("Test run of ExperimentFromDev")
     parser.add_argument(
         "--experiment_id",
@@ -45,5 +37,16 @@ if __name__ == "__main__":
         default=None,
         help="Optional API endpoint used to override the default",
     )
-    args = parser.parse_args()
-    main(args)
+    return parser.parse_args()
+
+
+def main(args):
+    experiment = experiment_from_dev.ExperimentFromDev(
+        args.experiment_id, api_endpoint=args.api_endpoint
+    )
+    dataframe = experiment.get_scalars()
+    print(dataframe)
+
+
+if __name__ == "__main__":
+    main(parse_args())

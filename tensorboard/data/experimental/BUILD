@@ -20,9 +20,6 @@ py_library(
     name = "base_experiment",
     srcs = ["base_experiment.py"],
     srcs_version = "PY3",
-    deps = [
-        "@org_pythonhosted_six",
-    ],
 )
 
 py_library(
@@ -34,6 +31,7 @@ py_library(
         "//tensorboard:expect_grpc_installed",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_pandas_installed",
+        "//tensorboard:lazy",
         "//tensorboard/uploader:auth",
         "//tensorboard/uploader:server_info",
         "//tensorboard/uploader:util",
@@ -52,6 +50,7 @@ py_test(
         ":experiment_from_dev",
         "//tensorboard:expect_grpc_installed",
         "//tensorboard:expect_grpc_testing_installed",
+        "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard:test",
         "//tensorboard/compat/proto:protos_all_py_pb2",

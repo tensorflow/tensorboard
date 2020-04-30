@@ -20,18 +20,15 @@ from __future__ import print_function
 
 import abc
 
-import six
 
-
-@six.add_metaclass(abc.ABCMeta)
-class BaseExperiment(object):
+class BaseExperiment(metaclass=abc.ABCMeta):
     """Base class for experiment data access."""
 
     # TODO(cais): Add list_scalar_runs().
     # TODO(cais): Add list_scalar_tags().
 
     @abc.abstractmethod
-    def get_scalars(self, runs_filter=None, tags_filter=None, pivot=True):
+    def get_scalars(self, runs_filter=None, tags_filter=None, pivot=None):
         """Export scalar data as a pandas.DataFrame.
 
         Args:
@@ -42,6 +39,7 @@ class BaseExperiment(object):
           pivot: Whether to returned DataFrame will be pivoted (via pandas’
             `pivot_data()` method to a “wide” format wherein the tags of a
             given run and a given step are all collected in a single row.
+            If not provided, defaults to `True`.
 
         Returns:
           If `pivot` (default):
@@ -62,8 +60,6 @@ class BaseExperiment(object):
               - steps: (non-null int64)
               - wall_time: (non-null object)
               - value: (non-null float32)
-
-          The row sort order is: run start time >> tag >> steps >> wall_time
-          (ascending).
         """
+        # TODO(cais): Add description about sorting order.
         pass
