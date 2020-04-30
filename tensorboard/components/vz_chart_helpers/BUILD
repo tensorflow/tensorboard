@@ -16,6 +16,7 @@ tf_web_library(
         "vz-chart-tooltip.ts",
     ],
     path = "/vz-chart-helpers",
+    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_imports:d3",
         "//tensorboard/components/tf_imports:lodash",
@@ -23,7 +24,6 @@ tf_web_library(
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/vz_sorting",
     ],
-    visibility = ["//visibility:public"],
 )
 
 tensorboard_webcomponent_library(
