@@ -19,7 +19,7 @@ from __future__ import division
 from __future__ import print_function
 
 from tensorboard import errors  # public export
-from tensorboard import lazy
+from tensorboard import lazy as _lazy
 from tensorboard import version  # public export
 
 # TensorBoard public API.
@@ -76,21 +76,21 @@ __all__ = [
 # additional discussion.
 
 
-@lazy.lazy_load("tensorboard.notebook")
+@_lazy.lazy_load("tensorboard.notebook")
 def notebook():
     import importlib
 
     return importlib.import_module("tensorboard.notebook")
 
 
-@lazy.lazy_load("tensorboard.program")
+@_lazy.lazy_load("tensorboard.program")
 def program():
     import importlib
 
     return importlib.import_module("tensorboard.program")
 
 
-@lazy.lazy_load("tensorboard.summary")
+@_lazy.lazy_load("tensorboard.summary")
 def summary():
     import importlib
 
@@ -109,5 +109,3 @@ def load_ipython_extension(ipython):
 
 
 __version__ = version.VERSION
-
-del lazy
