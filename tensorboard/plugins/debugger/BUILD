@@ -2,16 +2,11 @@
 # TensorBoard Debugger Plugin (TDP): Allows debugging TF runtime through
 # integration with TensorFlow Debugger (tfdbg).
 
-package(default_visibility = [":internal"])
+package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
 exports_files(["LICENSE"])
-
-package_group(
-    name = "internal",
-    packages = ["//tensorboard/..."],
-)
 
 py_library(
     name = "constants",
