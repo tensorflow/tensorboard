@@ -54,7 +54,6 @@ tf_web_library(
         "vz-projector-util.ts",
     ],
     path = "/vz-projector",
-    visibility = ["//visibility:public"],
     deps = [
         ":bh_tsne",
         ":heap",

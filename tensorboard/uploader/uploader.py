@@ -572,9 +572,9 @@ class _ScalarBatchedRequestSender(object):
         util.set_timestamp(point.wall_time, event.wall_time)
         try:
             self._byte_budget_manager.add_point(point)
-        except _OutOfSpaceError as e:
+        except _OutOfSpaceError:
             tag_proto.points.pop()
-            raise e
+            raise
         return point
 
 
@@ -723,9 +723,9 @@ class _TensorBatchedRequestSender(object):
         util.set_timestamp(point.wall_time, event.wall_time)
         try:
             self._byte_budget_manager.add_point(point)
-        except _OutOfSpaceError as e:
+        except _OutOfSpaceError:
             tag_proto.points.pop()
-            raise e
+            raise
         return point
 
 

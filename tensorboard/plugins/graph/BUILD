@@ -12,7 +12,6 @@ py_library(
     name = "graphs_plugin",
     srcs = ["graphs_plugin.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         ":graph_util",
         ":keras_util",

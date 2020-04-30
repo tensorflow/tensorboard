@@ -38,7 +38,6 @@ py_library(
     name = "json_util",
     srcs = ["json_util.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/compat:tensorflow",
     ],

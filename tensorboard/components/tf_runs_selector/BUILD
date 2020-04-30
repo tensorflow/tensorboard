@@ -11,7 +11,6 @@ tf_web_library(
         "tf-wbr-string.html",
     ],
     path = "/tf-runs-selector",
-    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_color_scale",

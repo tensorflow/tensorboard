@@ -9,7 +9,6 @@ tf_web_library(
     name = "tf_graph_dashboard",
     srcs = ["tf-graph-dashboard.html"],
     path = "/tf-graph-dashboard",
-    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_dashboard_common",

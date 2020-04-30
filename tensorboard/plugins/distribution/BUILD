@@ -12,7 +12,6 @@ py_library(
     name = "distributions_plugin",
     srcs = ["distributions_plugin.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         ":compressor",
         "//tensorboard:plugin_util",
@@ -72,7 +71,6 @@ py_library(
     name = "compressor",
     srcs = ["compressor.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = ["//tensorboard:expect_numpy_installed"],
 )
 

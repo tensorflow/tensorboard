@@ -1,3 +1,5 @@
+package(default_visibility = ["//tensorboard:internal"])
+
 licenses(["notice"])  # Apache 2.0
 
 # The group of packages that are allowed to use the 'tf_hparams_main:legacy'

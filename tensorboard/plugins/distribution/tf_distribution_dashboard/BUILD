@@ -11,7 +11,6 @@ tf_web_library(
         "tf-distribution-loader.html",
     ],
     path = "/tf-distribution-dashboard",
-    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_card_heading",

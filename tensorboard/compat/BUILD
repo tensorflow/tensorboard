@@ -40,7 +40,6 @@ py_library(
 py_library(
     name = "tensorflow",
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         ":compat",
         "//tensorboard/compat/tensorflow_stub",
@@ -54,7 +53,6 @@ py_library(
     name = "no_tensorflow",
     srcs = ["notf.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         ":tensorflow",
     ],
