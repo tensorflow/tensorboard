@@ -387,15 +387,12 @@ py_library(name = "expect_pkg_resources_installed")
 # `pip install requests`.
 py_library(name = "expect_requests_installed")
 
-py_library(
-    name = "expect_pandas_installed",
-    # This is a dummy rule used as a pandas dependency in open-source.
-    # We expect pandas to already be installed on the system, e.g. via
-    # `pip install pandas`.
-    # NOTE: Unlike other parallel dependencies in this file, pandas is an
-    # optional dependency.
-    visibility = ["//visibility:public"],
-)
+# This is a dummy rule used as a pandas dependency in open-source.
+# We expect pandas to already be installed on the system, e.g. via
+# `pip install pandas`.
+# NOTE: Unlike other parallel dependencies in this file, pandas is an
+# optional dependency.
+py_library(name = "expect_pandas_installed")
 
 filegroup(
     name = "tf_web_library_default_typings",
