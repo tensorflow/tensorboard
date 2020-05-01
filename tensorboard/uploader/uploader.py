@@ -91,6 +91,7 @@ class TensorBoardUploader(object):
         logdir,
         allowed_plugins,
         max_blob_size,
+        max_tensor_point_size,
         logdir_poll_rate_limiter=None,
         rpc_rate_limiter=None,
         blob_rpc_rate_limiter=None,
@@ -106,6 +107,8 @@ class TensorBoardUploader(object):
             be uploaded if their time series's metadata specifies one of these
             plugin names
           max_blob_size: the maximum allowed size for blob uploads.
+          max_tensor_point_size: the maximum allowed size for a single tensor
+            point
           logdir_poll_rate_limiter: a `RateLimiter` to use to limit logdir
             polling frequency, to avoid thrashing disks, especially on networked
             file systems
@@ -123,6 +126,7 @@ class TensorBoardUploader(object):
         self._logdir = logdir
         self._allowed_plugins = frozenset(allowed_plugins)
         self._max_blob_size = max_blob_size
+        self._max_tensor_point_size = max_tensor_point_size
         self._name = name
         self._description = description
         self._request_sender = None
@@ -173,6 +177,7 @@ class TensorBoardUploader(object):
             self._api,
             allowed_plugins=self._allowed_plugins,
             max_blob_size=self._max_blob_size,
+            max_tensor_point_size=self._max_tensor_point_size,
             rpc_rate_limiter=self._rpc_rate_limiter,
             blob_rpc_rate_limiter=self._blob_rpc_rate_limiter,
         )
@@ -320,6 +325,7 @@ class _BatchedRequestSender(object):
         api,
         allowed_plugins,
         max_blob_size,
+        max_tensor_point_size,
         rpc_rate_limiter,
         blob_rpc_rate_limiter,
     ):
@@ -331,7 +337,7 @@ class _BatchedRequestSender(object):
             experiment_id, api, rpc_rate_limiter,
         )
         self._tensor_request_sender = _TensorBatchedRequestSender(
-            experiment_id, api, rpc_rate_limiter,
+            experiment_id, api, rpc_rate_limiter, max_tensor_point_size
         )
         self._blob_request_sender = _BlobRequestSender(
             experiment_id, api, blob_rpc_rate_limiter, max_blob_size
@@ -558,9 +564,6 @@ class _ScalarBatchedRequestSender(object):
           event: Enclosing `Event` proto with the step and wall time data.
           value: Scalar `Summary.Value` proto with the actual scalar data.
 
-        Returns:
-          The `ScalarPoint` that was added to `tag_proto.points`.
-
         Raises:
           _OutOfSpaceError: If adding the point would exceed the remaining
             request budget.
@@ -575,7 +578,6 @@ class _ScalarBatchedRequestSender(object):
         except _OutOfSpaceError as e:
             tag_proto.points.pop()
             raise e
-        return point
 
 
 class _TensorBatchedRequestSender(object):
@@ -589,12 +591,15 @@ class _TensorBatchedRequestSender(object):
     methods concurrently.
     """
 
-    def __init__(self, experiment_id, api, rpc_rate_limiter):
+    def __init__(
+        self, experiment_id, api, rpc_rate_limiter, max_tensor_point_size
+    ):
         if experiment_id is None:
             raise ValueError("experiment_id cannot be None")
         self._experiment_id = experiment_id
         self._api = api
         self._rpc_rate_limiter = rpc_rate_limiter
+        self._max_tensor_point_size = max_tensor_point_size
         self._byte_budget_manager = _ByteBudgetManager()
 
         self._runs = {}  # cache: map from run name to `Run` proto in request
@@ -710,9 +715,6 @@ class _TensorBatchedRequestSender(object):
           event: Enclosing `Event` proto with the step and wall time data.
           value: Tensor `Summary.Value` proto with the actual tensor data.
 
-        Returns:
-          The `TensorPoint` that was added to `tag_proto.points`.
-
         Raises:
           _OutOfSpaceError: If adding the point would exceed the remaining
             request budget.
@@ -721,12 +723,22 @@ class _TensorBatchedRequestSender(object):
         point.step = event.step
         point.value.CopyFrom(value.tensor)
         util.set_timestamp(point.wall_time, event.wall_time)
+
+        if point.value.ByteSize() > self._max_tensor_point_size:
+            logger.warning(
+                "Tensor too large; skipping. "
+                "Size %d exceeds limit of %d bytes.",
+                point.value.ByteSize(),
+                self._max_tensor_point_size,
+            )
+            tag_proto.points.pop()
+            return
+
         try:
             self._byte_budget_manager.add_point(point)
         except _OutOfSpaceError as e:
             tag_proto.points.pop()
             raise e
-        return point
 
 
 class _ByteBudgetManager(object):
