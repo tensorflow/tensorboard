@@ -1472,8 +1472,7 @@ class TensorBatchedRequestSenderTest(tf.test.TestCase):
         }
         # All tensor points from the same tag are filtered out, and the tag is pruned.
         self.assertEqual(
-            tag_data_2, {
-              "one": [(1, b"\x01\x02"), (2, b"\x01\x02")],},
+            tag_data_2, {"one": [(1, b"\x01\x02"), (2, b"\x01\x02")],},
         )
 
     def test_prunes_tags_and_runs(self):

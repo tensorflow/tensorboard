@@ -270,6 +270,7 @@ class MaxTensorPointSizeTest(tb_test.TestCase):
         actual = server_info.max_tensor_point_size(info)
         self.assertEqual(actual, 0)
 
+
 def _localhost():
     """Gets family and nodename for a loopback address."""
     s = socket
