@@ -43,10 +43,7 @@ namedtuple = collections.namedtuple
 
 TensorEvent = namedtuple("TensorEvent", ["wall_time", "step", "tensor_proto"])
 
-<<<<<<< HEAD
-=======
 # Legacy aliases
->>>>>>> ec20fddaa660cc60d2a200165803fcddded2d9df
 TENSORS = tag_types.TENSORS
 GRAPH = tag_types.GRAPH
 META_GRAPH = tag_types.META_GRAPH
