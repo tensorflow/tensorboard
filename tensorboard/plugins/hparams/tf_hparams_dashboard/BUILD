@@ -1,4 +1,4 @@
-package(default_visibility = ["//visibility:public"])
+package(default_visibility = ["//tensorboard:internal"])
 
 load("//tensorboard/defs:web.bzl", "tf_web_library")
 
@@ -10,7 +10,6 @@ tf_web_library(
         "tf-hparams-dashboard.html",
     ],
     path = "/tf-hparams-dashboard",
-    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_imports:polymer",

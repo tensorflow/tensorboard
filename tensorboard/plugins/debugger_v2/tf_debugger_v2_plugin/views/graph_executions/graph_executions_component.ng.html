@@ -44,6 +44,15 @@ limitations under the License.
               {{ graphExecutionData[i].op_type }}
             </div>
           </div>
+
+          <debug-tensor-value
+            *ngIf="graphExecutionData[i].debug_tensor_value !== null"
+            [debugTensorValue]="parseDebugTensorValue({
+                tensorDebugMode: graphExecutionData[i].tensor_debug_mode,
+                array: graphExecutionData[i].debug_tensor_value
+            })"
+          >
+          </debug-tensor-value>
         </div>
 
         <ng-template #dataLoading class="tensor-item">

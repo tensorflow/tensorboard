@@ -21,7 +21,6 @@ py_binary(
     srcs = ["main.py"],
     main = "main.py",
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         ":default",
         ":dynamic_plugins",
@@ -162,7 +161,6 @@ py_library(
     name = "program",
     srcs = ["program.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         ":manager",
         ":version",
@@ -211,7 +209,6 @@ py_library(
     srcs = ["default.py"],
     data = ["webfiles.zip"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard:expect_pkg_resources_installed",
         "//tensorboard/backend:experimental_plugin",
@@ -261,7 +258,6 @@ py_library(
     name = "version",
     srcs = ["version.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
 )
 
 py_test(
@@ -316,125 +312,80 @@ tf_web_library(
     }),
 )
 
-py_library(
-    name = "expect_numpy_installed",
-    # This is a dummy rule used as a numpy dependency in open-source.
-    # We expect numpy to already be installed on the system, e.g. via
-    # `pip install numpy`
-    visibility = ["//visibility:public"],
-)
+# This is a dummy rule used as a numpy dependency in open-source.
+# We expect numpy to already be installed on the system, e.g. via
+# `pip install numpy`
+py_library(name = "expect_numpy_installed")
 
-py_library(
-    name = "expect_futures_installed",
-    # This is a dummy rule used as a futures dependency in open-source.
-    # We expect futures to already be installed on the system, e.g. via
-    # `pip install futures`
-    visibility = ["//visibility:public"],
-)
+# This is a dummy rule used as a futures dependency in open-source.
+# We expect futures to already be installed on the system, e.g. via
+# `pip install futures`
+py_library(name = "expect_futures_installed")
 
-py_library(
-    name = "expect_grpc_installed",
-    # This is a dummy rule used as a grpc dependency in open-source.
-    # We expect grpc to already be installed on the system, e.g. via
-    # `pip install grpcio`
-    visibility = ["//visibility:public"],
-)
+# This is a dummy rule used as a grpc dependency in open-source.
+# We expect grpc to already be installed on the system, e.g. via
+# `pip install grpcio`
+py_library(name = "expect_grpc_installed")
 
-py_library(
-    name = "expect_grpc_testing_installed",
-    # This is a dummy rule used as a grpc_testing dependency in open-source.
-    # We expect grpc_testing to already be installed on the system, e.g. via
-    # `pip install grpcio_testing`
-    visibility = ["//visibility:public"],
-)
+# This is a dummy rule used as a grpc_testing dependency in open-source.
+# We expect grpc_testing to already be installed on the system, e.g. via
+# `pip install grpcio_testing`
+py_library(name = "expect_grpc_testing_installed")
 
-py_library(
-    name = "expect_tensorflow_installed",
-    # This is a dummy rule used as a TensorFlow dependency in open-source.
-    # We expect TensorFlow to already be installed on the system, e.g. via
-    # `pip install tensorflow`
-    visibility = ["//visibility:public"],
-)
+# This is a dummy rule used as a TensorFlow dependency in open-source.
+# We expect TensorFlow to already be installed on the system, e.g. via
+# `pip install tensorflow`
+py_library(name = "expect_tensorflow_installed")
 
-py_library(
-    name = "expect_tensorflow_datasets_installed",
-    # This is a dummy rule used as a TensorFlow Datasets dependency in open-source.
-    # We expect TensorFlow Datasets to already be installed on the system, e.g. via
-    # `pip install tensorflow_datasets`
-    visibility = ["//visibility:public"],
-)
+# This is a dummy rule used as a TensorFlow Datasets dependency in open-source.
+# We expect TensorFlow Datasets to already be installed on the system, e.g. via
+# `pip install tensorflow_datasets`
+py_library(name = "expect_tensorflow_datasets_installed")
 
-py_library(
-    name = "expect_absl_app_installed",
-    # This is a dummy rule used as a absl-py dependency in open-source.
-    # We expect absl-py to already be installed on the system, e.g. via
-    # `pip install absl-py`
-    visibility = ["//visibility:public"],
-)
+# This is a dummy rule used as a absl-py dependency in open-source.
+# We expect absl-py to already be installed on the system, e.g. via
+# `pip install absl-py`
+py_library(name = "expect_absl_app_installed")
 
-py_library(
-    name = "expect_absl_flags_installed",
-    # This is a dummy rule used as a absl-py dependency in open-source.
-    # We expect absl-py to already be installed on the system, e.g. via
-    # `pip install absl-py`
-    visibility = ["//visibility:public"],
-)
+# This is a dummy rule used as a absl-py dependency in open-source.
+# We expect absl-py to already be installed on the system, e.g. via
+# `pip install absl-py`
+py_library(name = "expect_absl_flags_installed")
 
-py_library(
-    name = "expect_absl_flags_argparse_flags_installed",
-    # This is a dummy rule used as a absl-py dependency in open-source.
-    # We expect absl-py to already be installed on the system, e.g. via
-    # `pip install absl-py`
-    visibility = ["//visibility:public"],
-)
+# This is a dummy rule used as a absl-py dependency in open-source.
+# We expect absl-py to already be installed on the system, e.g. via
+# `pip install absl-py`
+py_library(name = "expect_absl_flags_argparse_flags_installed")
 
-py_library(
-    name = "expect_absl_logging_installed",
-    # This is a dummy rule used as a absl-py dependency in open-source.
-    # We expect absl-py to already be installed on the system, e.g. via
-    # `pip install absl-py`
-    visibility = ["//visibility:public"],
-)
+# This is a dummy rule used as a absl-py dependency in open-source.
+# We expect absl-py to already be installed on the system, e.g. via
+# `pip install absl-py`
+py_library(name = "expect_absl_logging_installed")
 
-py_library(
-    name = "expect_absl_testing_absltest_installed",
-    # This is a dummy rule used as a absl-py dependency in open-source.
-    # We expect absl-py to already be installed on the system, e.g. via
-    # `pip install absl-py`
-    visibility = ["//visibility:public"],
-)
+# This is a dummy rule used as a absl-py dependency in open-source.
+# We expect absl-py to already be installed on the system, e.g. via
+# `pip install absl-py`
+py_library(name = "expect_absl_testing_absltest_installed")
 
-py_library(
-    name = "expect_google_auth_installed",
-    # This is a dummy rule used as a google_auth dependency in open-source.
-    # We expect google_auth to already be installed on the system, e.g., via
-    # `pip install google-auth`.
-    visibility = ["//visibility:public"],
-)
+# This is a dummy rule used as a google_auth dependency in open-source.
+# We expect google_auth to already be installed on the system, e.g., via
+# `pip install google-auth`.
+py_library(name = "expect_google_auth_installed")
 
-py_library(
-    name = "expect_google_auth_oauthlib_installed",
-    # This is a dummy rule used as a google_auth oauthlib_dependency in open-source.
-    # We expect google_auth_oauthlib to already be installed on the system, e.g., via
-    # `pip install google-auth-oauthlib`.
-    visibility = ["//visibility:public"],
-)
+# This is a dummy rule used as a google_auth oauthlib_dependency in open-source.
+# We expect google_auth_oauthlib to already be installed on the system, e.g., via
+# `pip install google-auth-oauthlib`.
+py_library(name = "expect_google_auth_oauthlib_installed")
 
-py_library(
-    name = "expect_pkg_resources_installed",
-    # This is a dummy rule used as a pkg-resources dependency in open-source.
-    # We expect pkg-resources to already be installed on the system, e.g., via
-    # `pip install setuptools`.
-    visibility = ["//visibility:public"],
-)
+# This is a dummy rule used as a pkg-resources dependency in open-source.
+# We expect pkg-resources to already be installed on the system, e.g., via
+# `pip install setuptools`.
+py_library(name = "expect_pkg_resources_installed")
 
-py_library(
-    name = "expect_requests_installed",
-    # This is a dummy rule used as a requests dependency in open-source.
-    # We expect requests to already be installed on the system, e.g., via
-    # `pip install requests`.
-    visibility = ["//visibility:public"],
-)
+# This is a dummy rule used as a requests dependency in open-source.
+# We expect requests to already be installed on the system, e.g., via
+# `pip install requests`.
+py_library(name = "expect_requests_installed")
 
 py_library(
     name = "expect_pandas_installed",
@@ -506,6 +457,7 @@ py_library(
         "//tensorboard/plugins/histogram:metadata",
         "//tensorboard/plugins/hparams:metadata",
         "//tensorboard/plugins/image:metadata",
+        "//tensorboard/plugins/pr_curve:metadata",
         "//tensorboard/plugins/scalar:metadata",
         "//tensorboard/plugins/text:metadata",
         "//tensorboard/util:tensor_util",
@@ -530,6 +482,8 @@ py_test(
         "//tensorboard/plugins/histogram:summary",
         "//tensorboard/plugins/hparams:metadata",
         "//tensorboard/plugins/hparams:summary_v2",
+        "//tensorboard/plugins/pr_curve:metadata",
+        "//tensorboard/plugins/pr_curve:summary",
         "//tensorboard/plugins/scalar:metadata",
         "//tensorboard/plugins/scalar:summary",
         "//tensorboard/util:tensor_util",

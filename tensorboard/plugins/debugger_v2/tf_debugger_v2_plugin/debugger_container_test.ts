@@ -34,9 +34,13 @@ import {DebuggerContainer} from './debugger_container';
 import {
   DataLoadState,
   State,
-  TensorDebugMode,
   AlertType,
+  TensorDebugMode,
 } from './store/debugger_types';
+import {
+  getFocusedExecutionStackFrames,
+  getFocusedSourceLineSpec,
+} from './store';
 import {
   createAlertsState,
   createDebuggerState,
@@ -461,8 +465,8 @@ describe('Debugger Container', () => {
               executionData: {
                 98: createTestExecutionData({
                   op_type: 'Inverse',
-                  tensor_debug_mode: TensorDebugMode.NO_TENSOR,
-                  debug_tensor_values: null,
+                  tensor_debug_mode: TensorDebugMode.CURT_HEALTH,
+                  debug_tensor_values: [[0, 1]],
                 }),
               },
             },
@@ -481,13 +485,20 @@ describe('Debugger Container', () => {
         By.css('.output-tensors')
       );
       expect(outputTensorsElement.nativeElement.innerText).toEqual('1');
-      const debugTensorValuesContainers = fixture.debugElement.queryAll(
-        By.css('.debug-tensor-values-container')
+      const outputSlotElements = fixture.debugElement.queryAll(
+        By.css('.output-slot-number')
       );
-      expect(debugTensorValuesContainers.length).toEqual(0);
+      expect(outputSlotElements.length).toBe(1);
+      expect(outputSlotElements[0].nativeElement.innerText).toBe(
+        'Output slot 0:'
+      );
+      const debugTensorValueElements = fixture.debugElement.queryAll(
+        By.css('debug-tensor-value')
+      );
+      expect(debugTensorValueElements.length).toBe(1);
     });
 
-    it('CURT_HEALTH TensorDebugMode, One Output', () => {
+    it('CURT_HEALTH TensorDebugMode, Two Outputs', () => {
       const fixture = TestBed.createComponent(ExecutionDataContainer);
       fixture.detectChanges();
 
@@ -513,8 +524,9 @@ describe('Debugger Container', () => {
               executionData: {
                 98: createTestExecutionData({
                   op_type: 'Inverse',
+                  output_tensor_ids: [10, 11],
                   tensor_debug_mode: TensorDebugMode.CURT_HEALTH,
-                  debug_tensor_values: [[-1, 1]],
+                  debug_tensor_values: [[0, 0], [0, 1]],
                 }),
               },
             },
@@ -532,542 +544,144 @@ describe('Debugger Container', () => {
       const outputTensorsElement = fixture.debugElement.query(
         By.css('.output-tensors')
       );
-      expect(outputTensorsElement.nativeElement.innerText).toEqual('1');
-      const outputSlotElements = fixture.debugElement.queryAll(
-        By.css('.output-slot')
-      );
-      expect(outputSlotElements.length).toEqual(1);
-      expect(outputSlotElements[0].nativeElement.innerText).toEqual('0');
-      const anyInfNanElements = fixture.debugElement.queryAll(
-        By.css('.curt-health-contains-inf-nan')
-      );
-      expect(anyInfNanElements.length).toEqual(1);
-      expect(anyInfNanElements[0].nativeElement.innerText).toEqual('Yes');
-    });
-
-    it('CONCISE_HEALTH TensorDebugMode, Two Outputs', () => {
-      const fixture = TestBed.createComponent(ExecutionDataContainer);
-      fixture.detectChanges();
-
-      store.setState(
-        createState(
-          createDebuggerState({
-            executions: {
-              numExecutionsLoaded: {
-                state: DataLoadState.LOADED,
-                lastLoadedTimeInMs: 111,
-              },
-              executionDigestsLoaded: {
-                state: DataLoadState.LOADED,
-                lastLoadedTimeInMs: 222,
-                pageLoadedSizes: {0: 100},
-                numExecutions: 1000,
-              },
-              executionDigests: {},
-              pageSize: 100,
-              displayCount: 50,
-              scrollBeginIndex: 90,
-              focusIndex: 98,
-              executionData: {
-                98: createTestExecutionData({
-                  op_type: 'FooOp',
-                  output_tensor_device_ids: ['d0', 'd0'],
-                  output_tensor_ids: [123, 124],
-                  tensor_debug_mode: TensorDebugMode.CONCISE_HEALTH,
-                  debug_tensor_values: [[-1, 100, 0, 0, 0], [-1, 10, 1, 2, 3]],
-                }),
-              },
-            },
-          })
-        )
-      );
-      fixture.detectChanges();
-
-      const opTypeElement = fixture.debugElement.query(By.css('.op-type'));
-      expect(opTypeElement.nativeElement.innerText).toEqual('FooOp');
-      const inputTensorsElement = fixture.debugElement.query(
-        By.css('.input-tensors')
-      );
-      expect(inputTensorsElement.nativeElement.innerText).toEqual('1');
-      const outputTensorsElement = fixture.debugElement.query(
-        By.css('.output-tensors')
-      );
       expect(outputTensorsElement.nativeElement.innerText).toEqual('2');
       const outputSlotElements = fixture.debugElement.queryAll(
-        By.css('.output-slot')
+        By.css('.output-slot-number')
       );
-      expect(outputSlotElements.length).toEqual(2);
-      expect(outputSlotElements[0].nativeElement.innerText).toEqual('0');
-      expect(outputSlotElements[1].nativeElement.innerText).toEqual('1');
-      const sizeElements = fixture.debugElement.queryAll(
-        By.css('.concise-health-size')
+      expect(outputSlotElements.length).toBe(2);
+      expect(outputSlotElements[0].nativeElement.innerText).toBe(
+        'Output slot 0:'
       );
-      expect(sizeElements.length).toEqual(2);
-      expect(sizeElements[0].nativeElement.innerText).toEqual('100');
-      expect(sizeElements[1].nativeElement.innerText).toEqual('10');
-      const negInfsElements = fixture.debugElement.queryAll(
-        By.css('.concise-health-neg-infs')
+      expect(outputSlotElements[1].nativeElement.innerText).toBe(
+        'Output slot 1:'
       );
-      expect(negInfsElements.length).toEqual(2);
-      expect(negInfsElements[0].nativeElement.innerText).toEqual('0');
-      expect(negInfsElements[1].nativeElement.innerText).toEqual('1');
-      const posInfsElements = fixture.debugElement.queryAll(
-        By.css('.concise-health-pos-infs')
+      const debugTensorValueElements = fixture.debugElement.queryAll(
+        By.css('debug-tensor-value')
       );
-      expect(posInfsElements.length).toEqual(2);
-      expect(posInfsElements[0].nativeElement.innerText).toEqual('0');
-      expect(posInfsElements[1].nativeElement.innerText).toEqual('2');
-      const nanElements = fixture.debugElement.queryAll(
-        By.css('.concise-health-nans')
-      );
-      expect(nanElements.length).toEqual(2);
-      expect(nanElements[0].nativeElement.innerText).toEqual('0');
-      expect(nanElements[1].nativeElement.innerText).toEqual('3');
-    });
-
-    it('CONCISE_HEALTH TensorDebugMode, Two Outputs, Only One With Data', () => {
-      const fixture = TestBed.createComponent(ExecutionDataContainer);
-      fixture.detectChanges();
-
-      store.setState(
-        createState(
-          createDebuggerState({
-            executions: {
-              numExecutionsLoaded: {
-                state: DataLoadState.LOADED,
-                lastLoadedTimeInMs: 111,
-              },
-              executionDigestsLoaded: {
-                state: DataLoadState.LOADED,
-                lastLoadedTimeInMs: 222,
-                pageLoadedSizes: {0: 100},
-                numExecutions: 1000,
-              },
-              executionDigests: {},
-              pageSize: 100,
-              displayCount: 50,
-              scrollBeginIndex: 90,
-              focusIndex: 98,
-              executionData: {
-                98: createTestExecutionData({
-                  op_type: 'BarOp',
-                  output_tensor_device_ids: ['d0', 'd0'],
-                  output_tensor_ids: [123, 124],
-                  tensor_debug_mode: TensorDebugMode.CONCISE_HEALTH,
-                  // First output slot has no data (e.g., due to non-floating
-                  // dtype).
-                  debug_tensor_values: [null, [-1, 10, 1, 2, 3]],
-                }),
-              },
-            },
-          })
-        )
-      );
-      fixture.detectChanges();
-
-      const opTypeElement = fixture.debugElement.query(By.css('.op-type'));
-      expect(opTypeElement.nativeElement.innerText).toEqual('BarOp');
-      const inputTensorsElement = fixture.debugElement.query(
-        By.css('.input-tensors')
-      );
-      expect(inputTensorsElement.nativeElement.innerText).toEqual('1');
-      const outputTensorsElement = fixture.debugElement.query(
-        By.css('.output-tensors')
-      );
-      expect(outputTensorsElement.nativeElement.innerText).toEqual('2');
-      const outputSlotElements = fixture.debugElement.queryAll(
-        By.css('.output-slot')
-      );
-      expect(outputSlotElements.length).toEqual(2);
-      expect(outputSlotElements[0].nativeElement.innerText).toEqual('0');
-      expect(outputSlotElements[1].nativeElement.innerText).toEqual('1');
-      const sizeElements = fixture.debugElement.queryAll(
-        By.css('.concise-health-size')
-      );
-      expect(sizeElements.length).toEqual(1);
-      expect(sizeElements[0].nativeElement.innerText).toEqual('10');
-      const negInfsElements = fixture.debugElement.queryAll(
-        By.css('.concise-health-neg-infs')
-      );
-      expect(negInfsElements.length).toEqual(1);
-      expect(negInfsElements[0].nativeElement.innerText).toEqual('1');
-      const posInfsElements = fixture.debugElement.queryAll(
-        By.css('.concise-health-pos-infs')
-      );
-      expect(posInfsElements.length).toEqual(1);
-      expect(posInfsElements[0].nativeElement.innerText).toEqual('2');
-      const nanElements = fixture.debugElement.queryAll(
-        By.css('.concise-health-nans')
-      );
-      expect(nanElements.length).toEqual(1);
-      expect(nanElements[0].nativeElement.innerText).toEqual('3');
-    });
-
-    it('FULL_HEALTH TensorDebugMode, One outputs', () => {
-      const fixture = TestBed.createComponent(ExecutionDataContainer);
-      fixture.detectChanges();
-
-      store.setState(
-        createState(
-          createDebuggerState({
-            executions: {
-              numExecutionsLoaded: {
-                state: DataLoadState.LOADED,
-                lastLoadedTimeInMs: 111,
-              },
-              executionDigestsLoaded: {
-                state: DataLoadState.LOADED,
-                lastLoadedTimeInMs: 222,
-                pageLoadedSizes: {0: 100},
-                numExecutions: 1000,
-              },
-              executionDigests: {},
-              pageSize: 100,
-              displayCount: 50,
-              scrollBeginIndex: 90,
-              focusIndex: 98,
-              executionData: {
-                98: createTestExecutionData({
-                  op_type: 'FooOp',
-                  output_tensor_device_ids: ['d0'],
-                  output_tensor_ids: [123],
-                  tensor_debug_mode: TensorDebugMode.FULL_HEALTH,
-                  debug_tensor_values: [
-                    // [tensor_id, device_id, dtype, rank, element_count,
-                    //  neg_inf_count, pos_inf_count, nan_count,
-                    //  neg_finite_count, zero_count, pos_finite_count].
-                    [-1, -1, 1, 2, 6, 0, 0, 1, 2, 3, 0],
-                  ],
-                }),
-              },
-            },
-          })
-        )
-      );
-      fixture.detectChanges();
-
-      const opTypeElement = fixture.debugElement.query(By.css('.op-type'));
-      expect(opTypeElement.nativeElement.innerText).toEqual('FooOp');
-      const inputTensorsElement = fixture.debugElement.query(
-        By.css('.input-tensors')
-      );
-      expect(inputTensorsElement.nativeElement.innerText).toEqual('1');
-      const outputTensorsElement = fixture.debugElement.query(
-        By.css('.output-tensors')
-      );
-      expect(outputTensorsElement.nativeElement.innerText).toEqual('1');
-      const outputSlotElements = fixture.debugElement.queryAll(
-        By.css('.output-slot')
-      );
-      expect(outputSlotElements.length).toEqual(1);
-      expect(outputSlotElements[0].nativeElement.innerText).toEqual('0');
-      const dtypeElements = fixture.debugElement.queryAll(
-        By.css('.full-health-dtype')
-      );
-      expect(dtypeElements.length).toEqual(1);
-      expect(dtypeElements[0].nativeElement.innerText).toEqual('float32');
-      const rankElements = fixture.debugElement.queryAll(
-        By.css('.full-health-rank')
-      );
-      expect(rankElements.length).toEqual(1);
-      expect(rankElements[0].nativeElement.innerText).toEqual('2');
-      const sizeElements = fixture.debugElement.queryAll(
-        By.css('.full-health-size')
-      );
-      expect(sizeElements.length).toEqual(1);
-      expect(sizeElements[0].nativeElement.innerText).toEqual('6');
-      const negInfElements = fixture.debugElement.queryAll(
-        By.css('.full-health-neg-inf')
-      );
-      expect(negInfElements.length).toEqual(1);
-      expect(negInfElements[0].nativeElement.innerText).toEqual('0');
-      const posInfElements = fixture.debugElement.queryAll(
-        By.css('.full-health-pos-inf')
-      );
-      expect(posInfElements.length).toEqual(1);
-      expect(posInfElements[0].nativeElement.innerText).toEqual('0');
-      const nanElements = fixture.debugElement.queryAll(
-        By.css('.full-health-nan')
-      );
-      expect(nanElements.length).toEqual(1);
-      expect(nanElements[0].nativeElement.innerText).toEqual('1');
-      const negFiniteElements = fixture.debugElement.queryAll(
-        By.css('.full-health-neg-finite')
-      );
-      expect(negFiniteElements.length).toEqual(1);
-      expect(negFiniteElements[0].nativeElement.innerText).toEqual('2');
-      const zeroElements = fixture.debugElement.queryAll(
-        By.css('.full-health-zero')
-      );
-      expect(zeroElements.length).toEqual(1);
-      expect(zeroElements[0].nativeElement.innerText).toEqual('3');
-      const posFiniteElements = fixture.debugElement.queryAll(
-        By.css('.full-health-pos-finite')
-      );
-      expect(posFiniteElements.length).toEqual(1);
-      expect(posFiniteElements[0].nativeElement.innerText).toEqual('0');
-    });
-
-    it('SHAPE TensorDebugMode, Two Outputs', () => {
-      const fixture = TestBed.createComponent(ExecutionDataContainer);
-      fixture.detectChanges();
-
-      store.setState(
-        createState(
-          createDebuggerState({
-            executions: {
-              numExecutionsLoaded: {
-                state: DataLoadState.LOADED,
-                lastLoadedTimeInMs: 111,
-              },
-              executionDigestsLoaded: {
-                state: DataLoadState.LOADED,
-                lastLoadedTimeInMs: 222,
-                pageLoadedSizes: {0: 100},
-                numExecutions: 1000,
-              },
-              executionDigests: {},
-              pageSize: 100,
-              displayCount: 50,
-              scrollBeginIndex: 90,
-              focusIndex: 98,
-              executionData: {
-                98: createTestExecutionData({
-                  op_type: 'FooOp',
-                  output_tensor_device_ids: ['d0', 'd0'],
-                  output_tensor_ids: [123, 124],
-                  tensor_debug_mode: TensorDebugMode.SHAPE,
-                  debug_tensor_values: [
-                    [-1, 1, 0, 1, 0, 0, 0, 0, 0, 0],
-                    // Use -1337 dtype enum value to test the unknown-dtype logic.
-                    [-1, -1337, 2, 20, 4, 5, 0, 0, 0, 0],
-                  ],
-                }),
-              },
-            },
-          })
-        )
-      );
-      fixture.detectChanges();
-
-      const opTypeElement = fixture.debugElement.query(By.css('.op-type'));
-      expect(opTypeElement.nativeElement.innerText).toEqual('FooOp');
-      const inputTensorsElement = fixture.debugElement.query(
-        By.css('.input-tensors')
-      );
-      expect(inputTensorsElement.nativeElement.innerText).toEqual('1');
-      const outputTensorsElement = fixture.debugElement.query(
-        By.css('.output-tensors')
-      );
-      expect(outputTensorsElement.nativeElement.innerText).toEqual('2');
-      const outputSlotElements = fixture.debugElement.queryAll(
-        By.css('.output-slot')
-      );
-      expect(outputSlotElements.length).toEqual(2);
-      expect(outputSlotElements[0].nativeElement.innerText).toEqual('0');
-      expect(outputSlotElements[1].nativeElement.innerText).toEqual('1');
-      const dtypeElements = fixture.debugElement.queryAll(
-        By.css('.shape-dtype')
-      );
-      expect(dtypeElements.length).toEqual(2);
-      expect(dtypeElements[0].nativeElement.innerText).toEqual('float32');
-      expect(dtypeElements[1].nativeElement.innerText).toEqual('Unknown dtype');
-      const rankElements = fixture.debugElement.queryAll(By.css('.shape-rank'));
-      expect(rankElements.length).toEqual(2);
-      expect(rankElements[0].nativeElement.innerText).toEqual('0');
-      expect(rankElements[1].nativeElement.innerText).toEqual('2');
-      const sizeElements = fixture.debugElement.queryAll(By.css('.shape-size'));
-      expect(sizeElements.length).toEqual(2);
-      expect(sizeElements[0].nativeElement.innerText).toEqual('1');
-      expect(sizeElements[1].nativeElement.innerText).toEqual('20');
-      const shapeElements = fixture.debugElement.queryAll(
-        By.css('.shape-shape')
-      );
-      expect(shapeElements.length).toEqual(2);
-      expect(shapeElements[0].nativeElement.innerText).toEqual('()');
-      expect(shapeElements[1].nativeElement.innerText).toEqual('(4,5)');
+      expect(debugTensorValueElements.length).toBe(2);
     });
   });
 
   describe('Stack Trace module', () => {
-    it('Shows non-empty stack frames correctly', () => {
+    it('Shows non-empty stack frames; highlights focused frame', () => {
       const fixture = TestBed.createComponent(StackTraceContainer);
-      fixture.detectChanges();
-
       const stackFrame0 = createTestStackFrame();
       const stackFrame1 = createTestStackFrame();
       const stackFrame2 = createTestStackFrame();
-      store.setState(
-        createState(
-          createDebuggerState({
-            executions: {
-              numExecutionsLoaded: {
-                state: DataLoadState.LOADED,
-                lastLoadedTimeInMs: 111,
-              },
-              executionDigestsLoaded: {
-                state: DataLoadState.LOADED,
-                lastLoadedTimeInMs: 222,
-                pageLoadedSizes: {0: 100},
-                numExecutions: 1000,
-              },
-              executionDigests: {},
-              pageSize: 100,
-              displayCount: 50,
-              scrollBeginIndex: 90,
-              focusIndex: 98,
-              executionData: {
-                98: createTestExecutionData({
-                  stack_frame_ids: ['a0', 'a1', 'a2'],
-                }),
-              },
-            },
-            stackFrames: {
-              a0: stackFrame0,
-              a1: stackFrame1,
-              a2: stackFrame2,
-            },
-          })
-        )
-      );
+      store.overrideSelector(getFocusedExecutionStackFrames, [
+        stackFrame0,
+        stackFrame1,
+        stackFrame2,
+      ]);
+      store.overrideSelector(getFocusedSourceLineSpec, {
+        host_name: stackFrame1[0],
+        file_path: stackFrame1[1],
+        lineno: stackFrame1[2],
+      });
       fixture.detectChanges();
 
       const hostNameElement = fixture.debugElement.query(
         By.css('.stack-trace-host-name')
       );
-      expect(hostNameElement.nativeElement.innerText).toEqual('(on localhost)');
+      expect(hostNameElement.nativeElement.innerText).toBe('(on localhost)');
       const stackFrameContainers = fixture.debugElement.queryAll(
         By.css('.stack-frame-container')
       );
-      expect(stackFrameContainers.length).toEqual(3);
+      expect(stackFrameContainers.length).toBe(3);
 
       const filePathElements = fixture.debugElement.queryAll(
         By.css('.stack-frame-file-path')
       );
-      expect(filePathElements.length).toEqual(3);
-      expect(filePathElements[0].nativeElement.innerText).toEqual(
+      expect(filePathElements.length).toBe(3);
+      expect(filePathElements[0].nativeElement.innerText).toBe(
         stackFrame0[1].slice(stackFrame0[1].lastIndexOf('/') + 1)
       );
-      expect(filePathElements[0].nativeElement.title).toEqual(stackFrame0[1]);
-      expect(filePathElements[1].nativeElement.innerText).toEqual(
+      expect(filePathElements[0].nativeElement.title).toBe(stackFrame0[1]);
+      expect(filePathElements[1].nativeElement.innerText).toBe(
         stackFrame1[1].slice(stackFrame1[1].lastIndexOf('/') + 1)
       );
-      expect(filePathElements[1].nativeElement.title).toEqual(stackFrame1[1]);
-      expect(filePathElements[2].nativeElement.innerText).toEqual(
+      expect(filePathElements[1].nativeElement.title).toBe(stackFrame1[1]);
+      expect(filePathElements[2].nativeElement.innerText).toBe(
         stackFrame2[1].slice(stackFrame2[1].lastIndexOf('/') + 1)
       );
-      expect(filePathElements[2].nativeElement.title).toEqual(stackFrame2[1]);
+      expect(filePathElements[2].nativeElement.title).toBe(stackFrame2[1]);
 
       const linenoElements = fixture.debugElement.queryAll(
         By.css('.stack-frame-lineno')
       );
-      expect(linenoElements.length).toEqual(3);
-      expect(linenoElements[0].nativeElement.innerText).toEqual(
+      expect(linenoElements.length).toBe(3);
+      expect(linenoElements[0].nativeElement.innerText).toBe(
         `Line ${stackFrame0[2]}`
       );
-      expect(linenoElements[1].nativeElement.innerText).toEqual(
+      expect(linenoElements[1].nativeElement.innerText).toBe(
         `Line ${stackFrame1[2]}`
       );
-      expect(linenoElements[2].nativeElement.innerText).toEqual(
+      expect(linenoElements[2].nativeElement.innerText).toBe(
         `Line ${stackFrame2[2]}`
       );
 
       const functionElements = fixture.debugElement.queryAll(
         By.css('.stack-frame-function')
       );
-      expect(functionElements.length).toEqual(3);
-      expect(functionElements[0].nativeElement.innerText).toEqual(
-        stackFrame0[3]
+      expect(functionElements.length).toBe(3);
+      expect(functionElements[0].nativeElement.innerText).toBe(stackFrame0[3]);
+      expect(functionElements[1].nativeElement.innerText).toBe(stackFrame1[3]);
+      expect(functionElements[2].nativeElement.innerText).toBe(stackFrame2[3]);
+
+      // Check the focused stack frame has been highlighted by CSS class.
+      const focusedElements = fixture.debugElement.queryAll(
+        By.css('.focused-stack-frame')
       );
-      expect(functionElements[1].nativeElement.innerText).toEqual(
-        stackFrame1[3]
+      expect(focusedElements.length).toBe(1);
+      const focusedFilePathElement = focusedElements[0].query(
+        By.css('.stack-frame-file-path')
       );
-      expect(functionElements[2].nativeElement.innerText).toEqual(
-        stackFrame2[3]
+      expect(focusedFilePathElement.nativeElement.innerText).toBe(
+        stackFrame1[1].slice(stackFrame1[1].lastIndexOf('/') + 1)
       );
+    });
+
+    it('does not highlight any frame when there is no frame focus', () => {
+      const fixture = TestBed.createComponent(StackTraceContainer);
+      const stackFrame0 = createTestStackFrame();
+      const stackFrame1 = createTestStackFrame();
+      const stackFrame2 = createTestStackFrame();
+      store.overrideSelector(getFocusedExecutionStackFrames, [
+        stackFrame0,
+        stackFrame1,
+        stackFrame2,
+      ]);
+      store.overrideSelector(getFocusedSourceLineSpec, null);
+      fixture.detectChanges();
+
+      // Check that no stack frame has been highlighted by CSS class.
+      const focusedElements = fixture.debugElement.queryAll(
+        By.css('.focused-stack-frame')
+      );
+      expect(focusedElements.length).toBe(0);
     });
 
     it('Shows loading state when stack-trace data is unavailable', () => {
       const fixture = TestBed.createComponent(StackTraceContainer);
-      fixture.detectChanges();
-
-      store.setState(
-        createState(
-          createDebuggerState({
-            executions: {
-              numExecutionsLoaded: {
-                state: DataLoadState.LOADED,
-                lastLoadedTimeInMs: 111,
-              },
-              executionDigestsLoaded: {
-                state: DataLoadState.LOADED,
-                lastLoadedTimeInMs: 222,
-                pageLoadedSizes: {0: 100},
-                numExecutions: 1000,
-              },
-              executionDigests: {},
-              pageSize: 100,
-              displayCount: 50,
-              scrollBeginIndex: 90,
-              focusIndex: 98,
-              executionData: {
-                98: createTestExecutionData({
-                  stack_frame_ids: ['a0', 'a1', 'a2'],
-                }),
-              },
-            },
-            stackFrames: {}, // Note the empty stackFrames field.
-          })
-        )
-      );
+      store.overrideSelector(getFocusedExecutionStackFrames, []);
       fixture.detectChanges();
 
       const stackFrameContainers = fixture.debugElement.queryAll(
         By.css('.stack-frame-container')
       );
-      expect(stackFrameContainers.length).toEqual(0);
+      expect(stackFrameContainers.length).toBe(0);
     });
 
     it('Emits sourceLineFocused when line number is clicked', () => {
       const fixture = TestBed.createComponent(StackTraceContainer);
-      fixture.detectChanges();
-
       const stackFrame0 = createTestStackFrame();
       const stackFrame1 = createTestStackFrame();
       const stackFrame2 = createTestStackFrame();
-      store.setState(
-        createState(
-          createDebuggerState({
-            executions: {
-              numExecutionsLoaded: {
-                state: DataLoadState.LOADED,
-                lastLoadedTimeInMs: 111,
-              },
-              executionDigestsLoaded: {
-                state: DataLoadState.LOADED,
-                lastLoadedTimeInMs: 222,
-                pageLoadedSizes: {0: 100},
-                numExecutions: 1000,
-              },
-              executionDigests: {},
-              pageSize: 100,
-              displayCount: 50,
-              scrollBeginIndex: 90,
-              focusIndex: 98,
-              executionData: {
-                98: createTestExecutionData({
-                  stack_frame_ids: ['a0', 'a1', 'a2'],
-                }),
-              },
-            },
-            stackFrames: {
-              a0: stackFrame0,
-              a1: stackFrame1,
-              a2: stackFrame2,
-            },
-          })
-        )
-      );
+      store.overrideSelector(getFocusedExecutionStackFrames, [
+        stackFrame0,
+        stackFrame1,
+        stackFrame2,
+      ]);
       fixture.detectChanges();
 
       const linenoElements = fixture.debugElement.queryAll(

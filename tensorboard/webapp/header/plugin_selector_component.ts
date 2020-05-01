@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Component, Input, Output, EventEmitter} from '@angular/core';
-import {MatTabChangeEvent} from '@angular/material/tabs';
 import {MatSelectChange} from '@angular/material/select';
 
 import {PluginId} from '../types/api';
@@ -41,8 +40,9 @@ export class PluginSelectorComponent {
     return this.activePlugins.findIndex(({id}) => id === this.selectedPlugin);
   }
 
-  onActivePluginSelectionChanged({index}: MatTabChangeEvent) {
-    this.onPluginSelectionChanged.emit(this.activePlugins[index].id);
+  onActivePluginSelection(event: Event, pluginId: PluginId) {
+    event.stopPropagation();
+    this.onPluginSelectionChanged.emit(pluginId);
   }
 
   onDisabledPluginSelectionChanged(selectChangeEvent: MatSelectChange) {

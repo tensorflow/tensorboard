@@ -17,12 +17,13 @@ import {ScrollingModule} from '@angular/cdk/scrolling';
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 
+import {DebugTensorValueModule} from '../debug_tensor_value/debug_tensor_value_module';
 import {GraphExecutionsComponent} from './graph_executions_component';
 import {GraphExecutionsContainer} from './graph_executions_container';
 
 @NgModule({
   declarations: [GraphExecutionsComponent, GraphExecutionsContainer],
-  imports: [CommonModule, ScrollingModule],
+  imports: [CommonModule, DebugTensorValueModule, ScrollingModule],
   exports: [GraphExecutionsContainer],
 })
 export class GraphExecutionsModule {}

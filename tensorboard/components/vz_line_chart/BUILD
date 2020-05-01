@@ -12,7 +12,6 @@ tf_web_library(
         "vz-line-chart.ts",
     ],
     path = "/vz-line-chart",
-    visibility = ["//visibility:public"],
     deps = [
         ":dragZoomInteraction",
         "//tensorboard/components/tf_imports:d3",
@@ -30,7 +29,6 @@ tf_web_library(
         "dragZoomInteraction.ts",
     ],
     path = "/vz-line-chart",
-    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_imports:d3",
         "//tensorboard/components/tf_imports:plottable",
@@ -40,7 +38,6 @@ tf_web_library(
 tensorboard_webcomponent_library(
     name = "dragZoomInteraction_legacy",
     srcs = [":dragZoomInteraction"],
-    visibility = ["//visibility:public"],
     destdir = "vz-line-chart",
     deps = [
         "//tensorboard/components/tf_imports_google:lib",
@@ -61,7 +58,6 @@ tf_web_library(
 tensorboard_webcomponent_library(
     name = "legacy",
     srcs = [":vz_line_chart"],
-    visibility = ["//visibility:public"],
     destdir = "vz-line-chart",
     deps = [
         ":dragZoomInteraction_legacy",

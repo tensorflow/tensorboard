@@ -2,16 +2,11 @@
 # TensorBoard Debugger Plugin (TDP): Allows debugging TF runtime through
 # integration with TensorFlow Debugger (tfdbg).
 
-package(default_visibility = [":internal"])
+package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
 exports_files(["LICENSE"])
-
-package_group(
-    name = "internal",
-    packages = ["//tensorboard/..."],
-)
 
 py_library(
     name = "constants",
@@ -159,7 +154,6 @@ py_library(
     name = "numerics_alert",
     srcs = ["numerics_alert.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         ":constants",
         "//tensorboard:expect_tensorflow_installed",
@@ -182,7 +176,6 @@ py_library(
     name = "health_pill_calc",
     srcs = ["health_pill_calc.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard:expect_numpy_installed",
     ],
@@ -289,7 +282,6 @@ py_library(
     name = "debugger_plugin",
     srcs = ["debugger_plugin.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         ":constants",
         ":debugger_server_lib",
@@ -309,7 +301,6 @@ py_library(
     name = "interactive_debugger_plugin",
     srcs = ["interactive_debugger_plugin.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         ":constants",
         ":debug_graphs_helper",
@@ -328,7 +319,6 @@ py_library(
     name = "debugger_plugin_loader",
     srcs = ["debugger_plugin_loader.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         ":constants",
         ":debugger_plugin",

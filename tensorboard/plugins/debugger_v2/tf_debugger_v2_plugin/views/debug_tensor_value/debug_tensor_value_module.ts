@@ -16,13 +16,25 @@ limitations under the License.
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 
-import {DebugTensorValueModule} from '../debug_tensor_value/debug_tensor_value_module';
-import {ExecutionDataComponent} from './execution_data_component';
-import {ExecutionDataContainer} from './execution_data_container';
+import {
+  DebugTensorDTypeComponent,
+  DebugTensorHasInfOrNaNComponent,
+  DebugTensorNumericBreakdownComponent,
+  DebugTensorRankComponent,
+  DebugTensorShapeComponent,
+  DebugTensorValueComponent,
+} from './debug_tensor_value_component';
 
 @NgModule({
-  declarations: [ExecutionDataComponent, ExecutionDataContainer],
-  imports: [CommonModule, DebugTensorValueModule],
-  exports: [ExecutionDataContainer],
+  declarations: [
+    DebugTensorDTypeComponent,
+    DebugTensorHasInfOrNaNComponent,
+    DebugTensorNumericBreakdownComponent,
+    DebugTensorRankComponent,
+    DebugTensorShapeComponent,
+    DebugTensorValueComponent,
+  ],
+  imports: [CommonModule],
+  exports: [DebugTensorValueComponent],
 })
-export class ExecutionDataModule {}
+export class DebugTensorValueModule {}

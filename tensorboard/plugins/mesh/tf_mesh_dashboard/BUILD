@@ -12,7 +12,6 @@ tf_web_library(
         "tf-mesh-loader.html",
     ],
     path = "/tf-mesh-dashboard",
-    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_card_heading",
