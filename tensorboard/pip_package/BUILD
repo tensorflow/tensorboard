@@ -39,6 +39,7 @@ sh_binary(
         "//tensorboard",  # Main tensorboard binary and everything it uses
         "//tensorboard:lib",  # User-facing overall TensorBoard API
         "//tensorboard:version",  # Version module (read by setup.py)
+        "//tensorboard/data/experimental:experiment_from_dev",
         "//tensorboard/plugins/beholder",  # User-facing beholder API
         "//tensorboard/plugins/hparams",  # User-facing hparams API
         "//tensorboard/plugins/mesh",  #  User-facing mesh API
