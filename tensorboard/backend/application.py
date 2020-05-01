@@ -53,9 +53,7 @@ from tensorboard.backend import security_validator
 from tensorboard.backend.event_processing import (
     data_provider as event_data_provider,
 )
-from tensorboard.backend.event_processing import (
-    plugin_event_accumulator as event_accumulator,
-)
+from tensorboard.backend.event_processing import tag_types
 from tensorboard.backend.event_processing import (
     plugin_event_multiplexer as event_multiplexer,
 )
@@ -70,7 +68,7 @@ from tensorboard.util import tb_logging
 
 
 DEFAULT_SIZE_GUIDANCE = {
-    event_accumulator.TENSORS: 10,
+    tag_types.TENSORS: 10,
 }
 
 # TODO(@wchargin): Once SQL mode is in play, replace this with an

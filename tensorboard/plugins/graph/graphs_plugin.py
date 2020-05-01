@@ -25,9 +25,7 @@ from werkzeug import wrappers
 from tensorboard import plugin_util
 from tensorboard.backend import http_util
 from tensorboard.backend import process_graph
-from tensorboard.backend.event_processing import (
-    plugin_event_accumulator as event_accumulator,
-)
+from tensorboard.backend.event_processing import tag_types
 from tensorboard.compat.proto import config_pb2
 from tensorboard.compat.proto import graph_pb2
 from tensorboard.data import provider
@@ -179,13 +177,13 @@ class GraphsPlugin(base_plugin.TBPlugin):
                 tag_item["conceptual_graph"] = True
 
         for (run_name, run_data) in six.iteritems(self._multiplexer.Runs()):
-            if run_data.get(event_accumulator.GRAPH):
+            if run_data.get(tag_types.GRAPH):
                 (run_item, _) = add_row_item(run_name, None)
                 run_item["run_graph"] = True
 
         for (run_name, run_data) in six.iteritems(self._multiplexer.Runs()):
-            if event_accumulator.RUN_METADATA in run_data:
-                for tag in run_data[event_accumulator.RUN_METADATA]:
+            if tag_types.RUN_METADATA in run_data:
+                for tag in run_data[tag_types.RUN_METADATA]:
                     (_, tag_item) = add_row_item(run_name, tag)
                     tag_item["profile"] = True
 

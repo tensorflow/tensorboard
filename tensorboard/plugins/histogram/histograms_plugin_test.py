@@ -30,11 +30,9 @@ import tensorflow as tf
 from tensorboard import errors
 from tensorboard.backend.event_processing import data_provider
 from tensorboard.backend.event_processing import (
-    plugin_event_accumulator as event_accumulator,
-)
-from tensorboard.backend.event_processing import (
     plugin_event_multiplexer as event_multiplexer,
 )
+from tensorboard.backend.event_processing import tag_types
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.histogram import histograms_plugin
 from tensorboard.plugins.histogram import summary
@@ -70,7 +68,7 @@ class HistogramsPluginTest(tf.test.TestCase):
         multiplexer = event_multiplexer.EventMultiplexer(
             size_guidance={
                 # don't truncate my test data, please
-                event_accumulator.TENSORS: self._STEPS,
+                tag_types.TENSORS: self._STEPS,
             }
         )
         multiplexer.AddRunsFromDirectory(logdir)

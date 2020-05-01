@@ -180,6 +180,12 @@ py_test(
 )
 
 py_library(
+    name = "tag_types",
+    srcs = ["tag_types.py"],
+    srcs_version = "PY3",
+)
+
+py_library(
     name = "event_accumulator",
     srcs = [
         "event_accumulator.py",
@@ -194,6 +200,7 @@ py_library(
         ":io_wrapper",
         ":plugin_asset_util",
         ":reservoir",
+        ":tag_types",
         "//tensorboard/compat:tensorflow",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/plugins/distribution:compressor",
