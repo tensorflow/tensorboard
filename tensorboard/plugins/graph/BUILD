@@ -20,7 +20,6 @@ py_library(
         "//tensorboard/backend:http_util",
         "//tensorboard/backend:process_graph",
         "//tensorboard/backend/event_processing:tag_types",
-        "//tensorboard/compat:tensorflow",
         "//tensorboard/data:provider",
         "//tensorboard/plugins:base_plugin",
         "@com_google_protobuf//:protobuf_python",

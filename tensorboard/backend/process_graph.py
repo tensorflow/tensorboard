@@ -22,8 +22,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from tensorboard.compat import tf
-
 
 def prepare_graph_for_ui(
     graph, limit_attr_size=1024, large_attrs_key="_too_large_attrs"
@@ -77,5 +75,5 @@ def prepare_graph_for_ui(
                     # This is used in the info card in the graph UI to show the user
                     # that some attributes are too large to be shown.
                     node.attr[large_attrs_key].list.s.append(
-                        tf.compat.as_bytes(key)
+                        key.encode("utf-8")
                     )
