@@ -1,3 +1,5 @@
+package(default_visibility = ["//tensorboard:internal"])
+
 load("@io_bazel_rules_webtesting//web:web.bzl", "web_test_archive")
 
 licenses(["notice"])

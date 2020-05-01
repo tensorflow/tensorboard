@@ -127,19 +127,18 @@ class ImagesPluginTest(tf.test.TestCase):
         def wrapper(self, *args, **kwargs):
             (logdir, multiplexer) = self._create_data()
             with self.subTest("bare multiplexer"):
+                flags = argparse.Namespace(generic_data="false")
                 ctx = base_plugin.TBContext(
-                    logdir=logdir, multiplexer=multiplexer
+                    logdir=logdir, multiplexer=multiplexer, flags=flags,
                 )
                 plugin = images_plugin.ImagesPlugin(ctx)
                 self._initialize_plugin_specific_attrs(plugin)
                 fn(self, plugin, *args, **kwargs)
             with self.subTest("generic data provider"):
-                flags = argparse.Namespace(generic_data="true")
                 provider = data_provider.MultiplexerDataProvider(
                     multiplexer, logdir
                 )
                 ctx = base_plugin.TBContext(
-                    flags=flags,
                     logdir=logdir,
                     multiplexer=multiplexer,
                     data_provider=provider,

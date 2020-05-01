@@ -63,7 +63,7 @@ class FakeFlags(object):
         event_file="",
         db="",
         path_prefix="",
-        generic_data="false",
+        generic_data="true",
     ):
         self.bind_all = bind_all
         self.host = host

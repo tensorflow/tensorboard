@@ -12,7 +12,6 @@ tf_web_library(
         "tf-hparams-sessions-pane.html",
     ],
     path = "/tf-hparams-sessions-pane",
-    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/plugins/hparams/tf_hparams_parallel_coords_view",
