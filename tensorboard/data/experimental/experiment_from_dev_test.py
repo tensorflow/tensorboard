@@ -24,15 +24,16 @@ from unittest import mock
 import grpc
 import grpc_testing
 import numpy as np
-import tensorflow as tf
+import pandas
 
+from tensorboard import test as tb_test
 from tensorboard.data.experimental import experiment_from_dev
 from tensorboard.uploader import test_util
 from tensorboard.uploader.proto import export_service_pb2
 from tensorboard.util import grpc_util
 
 
-class ExperimentFromDevTest(tf.test.TestCase):
+class ExperimentFromDevTest(tb_test.TestCase):
     def test_get_scalars_works(self):
         mock_api_client = mock.Mock()
 
@@ -82,96 +83,20 @@ class ExperimentFromDevTest(tf.test.TestCase):
                 with self.subTest("pivot=%s" % pivot):
                     dataframe = experiment.get_scalars(pivot=pivot)
 
-                    if pivot is None:  # Default behavior: pivot_table.
-                        # Check index.
-                        train_index = dataframe.loc["train"].index
-                        self.assertEqual(train_index.name, "step")
-                        self.assertAllEqual(train_index, np.arange(0, 10))
-                        test_index = dataframe.loc["test"].index
-                        self.assertEqual(test_index.name, "step")
-                        self.assertAllEqual(test_index, np.arange(0, 10))
-
-                        # Check values.
-                        train_losses = list(
-                            dataframe.loc["train", ("value", "loss")]
-                        )
-                        self.assertAllClose(
-                            train_losses, 1.0 / (np.arange(0, 10) + 1.0)
-                        )
-                        train_accuracies = list(
-                            dataframe.loc["train", ("value", "accuracy")]
-                        )
-                        self.assertAllClose(
-                            train_accuracies, 1.0 / (10.0 - np.arange(0, 10))
-                        )
-                        test_losses = list(
-                            dataframe.loc["test", ("value", "loss")]
-                        )
-                        self.assertAllClose(
-                            test_losses, -1.0 / (np.arange(0, 10) + 1.0)
-                        )
-                        test_accuracies = list(
-                            dataframe.loc["test", ("value", "accuracy")]
-                        )
-                        self.assertAllClose(
-                            test_accuracies, -1.0 / (10.0 - np.arange(0, 10))
-                        )
-
-                        # Check wall_times.
-                        train_loss_wall_times = list(
-                            dataframe.loc["train", ("wall_time", "loss")]
-                        )
-                        self.assertAllClose(
-                            train_loss_wall_times, np.arange(0, 10)
-                        )
-                        train_accracy_wall_times = list(
-                            dataframe.loc["train", ("wall_time", "accuracy")]
-                        )
-                        self.assertAllClose(
-                            train_accracy_wall_times, 2 * np.arange(0, 10)
-                        )
-                        test_loss_wall_times = list(
-                            dataframe.loc["test", ("wall_time", "loss")]
-                        )
-                        self.assertAllClose(
-                            test_loss_wall_times, 600 + np.arange(0, 10)
-                        )
-                        test_accracy_wall_times = list(
-                            dataframe.loc["test", ("wall_time", "accuracy")]
-                        )
-                        self.assertAllClose(
-                            test_accracy_wall_times, 600 + 2 * np.arange(0, 10)
-                        )
-                    else:  # pivot == False
-                        self.assertAllEqual(
-                            dataframe.columns.values,
-                            ["run", "tag", "step", "wall_time", "value"],
-                        )
-                        self.assertAllEqual(
-                            dataframe["run"].values,
-                            ["train"] * 20 + ["test"] * 20,
-                        )
-                        self.assertAllEqual(
-                            dataframe["tag"].values,
-                            (["accuracy"] * 10 + ["loss"] * 10) * 2,
-                        )
-                        self.assertAllEqual(
-                            dataframe["step"].values, list(np.arange(0, 10)) * 4
-                        )
-                        self.assertAllClose(
-                            dataframe["wall_time"].values,
-                            np.concatenate(
+                    expected = pandas.DataFrame(
+                        {
+                            "run": ["train"] * 20 + ["test"] * 20,
+                            "tag": (["accuracy"] * 10 + ["loss"] * 10) * 2,
+                            "step": list(np.arange(0, 10)) * 4,
+                            "wall_time": np.concatenate(
                                 [
-                                    2 * np.arange(0, 10),
-                                    np.arange(0, 10),
-                                    600 + 2 * np.arange(0, 10),
-                                    600 + np.arange(0, 10),
+                                    2.0 * np.arange(0, 10),
+                                    1.0 * np.arange(0, 10),
+                                    600.0 + 2.0 * np.arange(0, 10),
+                                    600.0 + np.arange(0, 10),
                                 ]
                             ),
-                        )
-                        self.assertAllClose(
-                            dataframe["value"].values,
-                            np.concatenate(
+                            "value": np.concatenate(
                                 [
                                     1.0 / (10.0 - np.arange(0, 10)),
                                     1.0 / (1.0 + np.arange(0, 10)),
@@ -179,6 +104,20 @@ class ExperimentFromDevTest(tf.test.TestCase):
                                     -1.0 / (1.0 + np.arange(0, 10)),
                                 ]
                             ),
+                        }
+                    )
+
+                    if pivot is None:  # Default behavior: pivot_table.
+                        pandas.testing.assert_frame_equal(
+                            dataframe,
+                            expected.pivot_table(
+                                ["value", "wall_time"], ["run", "step"], "tag"
+                            ),
+                            check_names=True,
+                        )
+                    else:  # pivot == False
+                        pandas.testing.assert_frame_equal(
+                            dataframe, expected, check_names=True
                         )
 
     def test_get_scalars_with_pivot_table_with_missing_value(self):
@@ -251,19 +190,17 @@ class ExperimentFromDevTest(tf.test.TestCase):
             experiment = experiment_from_dev.ExperimentFromDev("789")
             dataframe = experiment.get_scalars()
 
-        # Check index.
-        train_index = dataframe.loc["train"].index
-        self.assertEqual(train_index.name, "step")
-        self.assertAllEqual(train_index.values, [0, 1])
-        # Check values.
-        train_losses = list(dataframe.loc["train", ("value", "batch_loss")])
-        self.assertAllEqual(train_losses, [np.nan, np.inf])
-        # Check wall_times.
-        train_loss_wall_times = list(
-            dataframe.loc["train", ("wall_time", "batch_loss")]
-        )
-        self.assertAllClose(train_loss_wall_times, [0, 10])
+        expected = pandas.DataFrame(
+            {
+                "run": ["train"] * 2,
+                "tag": ["batch_loss"] * 2,
+                "step": [0, 1],
+                "value": [np.nan, np.inf],
+                "wall_time": [0.0, 10.0],
+            }
+        ).pivot_table(["value", "wall_time"], ["run", "step"], "tag")
+        pandas.testing.assert_frame_equal(dataframe, expected, check_names=True)
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    tb_test.main()
