@@ -841,7 +841,6 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertEqual(digests[2]["op_type"], "Placeholder")
         self.assertEqual(digests[2]["output_slot"], 0)
         self.assertTrue(digests[2]["op_name"])
-        self.assertNotEqual(digests[2]["op_name"], digests[0]["op_name"])
         self.assertTrue(digests[2]["graph_id"])
 
         self.assertGreaterEqual(
