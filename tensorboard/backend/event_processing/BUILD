@@ -182,7 +182,7 @@ py_test(
 py_library(
     name = "tag_types",
     srcs = ["tag_types.py"],
-    srcs_version = "PY3",
+    srcs_version = "PY2AND3",
 )
 
 py_library(
