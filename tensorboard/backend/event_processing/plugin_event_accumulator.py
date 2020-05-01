@@ -28,6 +28,7 @@ from tensorboard.backend.event_processing import event_file_loader
 from tensorboard.backend.event_processing import io_wrapper
 from tensorboard.backend.event_processing import plugin_asset_util
 from tensorboard.backend.event_processing import reservoir
+from tensorboard.backend.event_processing import tag_types
 from tensorboard.compat import tf
 from tensorboard.compat.proto import config_pb2
 from tensorboard.compat.proto import event_pb2
@@ -42,12 +43,11 @@ namedtuple = collections.namedtuple
 
 TensorEvent = namedtuple("TensorEvent", ["wall_time", "step", "tensor_proto"])
 
-## The tagTypes below are just arbitrary strings chosen to pass the type
-## information of the tag from the backend to the frontend
-TENSORS = "tensors"
-GRAPH = "graph"
-META_GRAPH = "meta_graph"
-RUN_METADATA = "run_metadata"
+# Legacy aliases
+TENSORS = tag_types.TENSORS
+GRAPH = tag_types.GRAPH
+META_GRAPH = tag_types.META_GRAPH
+RUN_METADATA = tag_types.RUN_METADATA
 
 DEFAULT_SIZE_GUIDANCE = {
     TENSORS: 500,

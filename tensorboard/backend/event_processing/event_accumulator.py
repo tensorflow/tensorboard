@@ -25,6 +25,7 @@ from tensorboard.backend.event_processing import event_file_loader
 from tensorboard.backend.event_processing import io_wrapper
 from tensorboard.backend.event_processing import plugin_asset_util
 from tensorboard.backend.event_processing import reservoir
+from tensorboard.backend.event_processing import tag_types
 from tensorboard.compat import tf
 from tensorboard.compat.proto import config_pb2
 from tensorboard.compat.proto import event_pb2
@@ -81,17 +82,16 @@ SUMMARY_TYPES = {
     "tensor": "_ProcessTensor",
 }
 
-## The tagTypes below are just arbitrary strings chosen to pass the type
-## information of the tag from the backend to the frontend
-COMPRESSED_HISTOGRAMS = "distributions"
-HISTOGRAMS = "histograms"
-IMAGES = "images"
-AUDIO = "audio"
-SCALARS = "scalars"
-TENSORS = "tensors"
-GRAPH = "graph"
-META_GRAPH = "meta_graph"
-RUN_METADATA = "run_metadata"
+# Legacy aliases
+COMPRESSED_HISTOGRAMS = tag_types.COMPRESSED_HISTOGRAMS
+HISTOGRAMS = tag_types.HISTOGRAMS
+IMAGES = tag_types.IMAGES
+AUDIO = tag_types.AUDIO
+SCALARS = tag_types.SCALARS
+TENSORS = tag_types.TENSORS
+GRAPH = tag_types.GRAPH
+META_GRAPH = tag_types.META_GRAPH
+RUN_METADATA = tag_types.RUN_METADATA
 
 ## Normal CDF for std_devs: (-Inf, -1.5, -1, -0.5, 0, 0.5, 1, 1.5, Inf)
 ## naturally gives bands around median of width 1 std dev, 2 std dev, 3 std dev,

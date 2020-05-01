@@ -41,7 +41,7 @@ py_test(
         "//tensorboard:errors",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
-        "//tensorboard/backend/event_processing:event_accumulator",
+        "//tensorboard/backend/event_processing:tag_types",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/util:test_util",
