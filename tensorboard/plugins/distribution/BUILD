@@ -28,6 +28,9 @@ py_test(
     srcs = ["distributions_plugin_test.py"],
     main = "distributions_plugin_test.py",
     srcs_version = "PY2AND3",
+    tags = [
+        "notap",  # TODO(b/155440024): flaky
+    ],
     deps = [
         ":compressor",
         ":distributions_plugin",
