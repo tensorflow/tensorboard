@@ -34,7 +34,6 @@ from six.moves.urllib import (
 import werkzeug
 
 from tensorboard.backend import json_util
-from tensorboard.compat import tf
 
 _DISALLOWED_CHAR_IN_DOMAIN = re.compile(r"\s")
 
@@ -144,9 +143,13 @@ def Respond(
         content = json.dumps(
             json_util.Cleanse(content, encoding), ensure_ascii=not charset_match
         )
-    if charset != encoding:
-        content = tf.compat.as_text(content, encoding)
-    content = tf.compat.as_bytes(content, charset)
+
+    # Ensure correct output encoding, transcoding if necessary.
+    if charset != encoding and isinstance(content, bytes):
+        content = content.decode(encoding)
+    if isinstance(content, str):
+        content = content.encode(charset)
+
     if textual and not charset_match and mimetype not in _JSON_MIMETYPES:
         content_type += "; charset=" + charset
     gzip_accepted = _ALLOWS_GZIP_PATTERN.search(

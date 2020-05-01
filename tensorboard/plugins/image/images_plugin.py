@@ -31,7 +31,6 @@ from tensorboard.backend import http_util
 from tensorboard.data import provider
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.image import metadata
-from tensorboard.compat import tf
 
 
 _IMGHDR_TO_MIMETYPE = {

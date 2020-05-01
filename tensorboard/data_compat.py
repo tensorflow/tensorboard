@@ -20,7 +20,6 @@ from __future__ import print_function
 
 import numpy as np
 
-from tensorboard.compat import tf
 from tensorboard.compat.proto import event_pb2
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.audio import metadata as audio_metadata
@@ -104,9 +103,9 @@ def _migrate_histogram_value(value):
 def _migrate_image_value(value):
     image_value = value.image
     data = [
-        tf.compat.as_bytes(str(image_value.width)),
-        tf.compat.as_bytes(str(image_value.height)),
-        tf.compat.as_bytes(image_value.encoded_image_string),
+        str(image_value.width).encode("ascii"),
+        str(image_value.height).encode("ascii"),
+        image_value.encoded_image_string,
     ]
 
     summary_metadata = image_metadata.create_summary_metadata(

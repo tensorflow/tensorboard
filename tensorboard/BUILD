@@ -403,7 +403,6 @@ py_library(
     srcs = ["data_compat.py"],
     srcs_version = "PY2AND3",
     deps = [
-        "//tensorboard/compat:tensorflow",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/plugins/audio:metadata",
         "//tensorboard/plugins/histogram:metadata",

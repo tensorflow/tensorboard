@@ -19,7 +19,6 @@ py_library(
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
-        "//tensorboard/compat:tensorflow",
         "//tensorboard/data:provider",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/util:tensor_util",

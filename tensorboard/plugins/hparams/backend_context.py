@@ -25,9 +25,6 @@ import threading
 
 import six
 
-from tensorboard.backend.event_processing import (
-    plugin_event_accumulator as event_accumulator,
-)
 from tensorboard.data import provider
 from tensorboard.plugins.hparams import api_pb2
 from tensorboard.plugins.hparams import metadata
