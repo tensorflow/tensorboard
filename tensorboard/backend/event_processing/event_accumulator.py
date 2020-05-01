@@ -82,6 +82,10 @@ SUMMARY_TYPES = {
     "tensor": "_ProcessTensor",
 }
 
+<<<<<<< HEAD
+=======
+# Legacy aliases
+>>>>>>> ec20fddaa660cc60d2a200165803fcddded2d9df
 COMPRESSED_HISTOGRAMS = tag_types.COMPRESSED_HISTOGRAMS
 HISTOGRAMS = tag_types.HISTOGRAMS
 IMAGES = tag_types.IMAGES
