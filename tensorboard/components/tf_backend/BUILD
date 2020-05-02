@@ -37,7 +37,6 @@ tf_web_library(
         "type.ts",
     ],
     path = "/tf-backend",
-    visibility = ["//visibility:public"],
 )
 
 tensorboard_webcomponent_library(

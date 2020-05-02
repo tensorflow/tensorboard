@@ -1,4 +1,4 @@
-# Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,20 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+"""String constants describing contents of an event accumulator."""
 
-# Dependencies of TensorBoard used only for testing or development.
+# Arbitrary strings chosen to pass the type information of the tag from
+# the backend to the frontend.
+TENSORS = "tensors"
+GRAPH = "graph"
+META_GRAPH = "meta_graph"
+RUN_METADATA = "run_metadata"
 
-# For tests
-grpcio-testing==1.24.3
-pandas==1.0.3
-# For gfile S3 test
-boto3==1.9.86
-moto==1.3.7
-
-# For linting
-black==19.10b0; python_version >= "3.6"
-flake8==3.7.8
-yamllint==1.17.0
-
-# For building Pip package
-virtualenv==16.7.7
+# Legacy (pre-tensor) tag types.
+COMPRESSED_HISTOGRAMS = "distributions"
+HISTOGRAMS = "histograms"
+IMAGES = "images"
+AUDIO = "audio"
+SCALARS = "scalars"

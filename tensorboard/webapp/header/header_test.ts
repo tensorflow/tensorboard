@@ -154,7 +154,7 @@ describe('header test', () => {
     const fixture = TestBed.createComponent(HeaderComponent);
     fixture.detectChanges();
 
-    const [, barEl] = fixture.debugElement.queryAll(By.css('.mat-tab-label'));
+    const [, barEl] = fixture.debugElement.queryAll(By.css('.plugin-name'));
     barEl.nativeElement.click();
     fixture.detectChanges();
     await fixture.whenStable();

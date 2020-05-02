@@ -12,7 +12,6 @@ filegroup(
         "@io_angular_clutz//:src/resources/closure.lib.d.ts",
         "clutz.d.ts",
     ],
-    visibility = ["//visibility:public"],
 )
 
 py_test(

@@ -11,7 +11,6 @@ tf_web_library(
         "tf-image-loader.html",
     ],
     path = "/tf-image-dashboard",
-    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_card_heading",

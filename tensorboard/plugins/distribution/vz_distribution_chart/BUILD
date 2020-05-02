@@ -11,7 +11,6 @@ tf_web_library(
         "vz-distribution-chart.ts",
     ],
     path = "/vz-distribution-chart",
-    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_imports:lodash",
         "//tensorboard/components/tf_imports:plottable",

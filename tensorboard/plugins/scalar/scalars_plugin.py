@@ -33,7 +33,6 @@ import numpy as np
 from tensorboard import errors
 from tensorboard import plugin_util
 from tensorboard.backend import http_util
-from tensorboard.compat import tf
 from tensorboard.data import provider
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.scalar import metadata
@@ -167,22 +166,6 @@ class ScalarsPlugin(base_plugin.TBPlugin):
             return (string_io.getvalue(), "text/csv")
         else:
             return (values, "application/json")
-
-    def _get_value(self, scalar_data_blob, dtype_enum):
-        """Obtains value for scalar event given blob and dtype enum.
-
-        Args:
-          scalar_data_blob: The blob obtained from the database.
-          dtype_enum: The enum representing the dtype.
-
-        Returns:
-          The scalar value.
-        """
-        tensorflow_dtype = tf.DType(dtype_enum)
-        buf = np.frombuffer(
-            scalar_data_blob, dtype=tensorflow_dtype.as_numpy_dtype
-        )
-        return np.asscalar(buf)
 
     @wrappers.Request.application
     def tags_route(self, request):

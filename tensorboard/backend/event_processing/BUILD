@@ -1,7 +1,7 @@
 # Description:
 # Event processing logic for TensorBoard
 
-package(default_visibility = ["//visibility:public"])
+package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
@@ -11,6 +11,7 @@ py_library(
     name = "io_wrapper",
     srcs = ["io_wrapper.py"],
     srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/compat:tensorflow",
         "//tensorboard/util:tb_logging",
@@ -97,6 +98,7 @@ py_library(
     name = "directory_watcher",
     srcs = ["directory_watcher.py"],
     srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
     deps = [
         ":io_wrapper",
         "//tensorboard/compat:tensorflow",
@@ -136,6 +138,7 @@ py_library(
     name = "event_file_loader",
     srcs = ["event_file_loader.py"],
     srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard:data_compat",
         "//tensorboard:dataclass_compat",
@@ -177,6 +180,12 @@ py_test(
 )
 
 py_library(
+    name = "tag_types",
+    srcs = ["tag_types.py"],
+    srcs_version = "PY2AND3",
+)
+
+py_library(
     name = "event_accumulator",
     srcs = [
         "event_accumulator.py",
@@ -191,6 +200,7 @@ py_library(
         ":io_wrapper",
         ":plugin_asset_util",
         ":reservoir",
+        ":tag_types",
         "//tensorboard/compat:tensorflow",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/plugins/distribution:compressor",
@@ -289,6 +299,7 @@ py_library(
     name = "plugin_asset_util",
     srcs = ["plugin_asset_util.py"],
     srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/compat:tensorflow",
     ],
@@ -298,6 +309,7 @@ py_library(
     name = "event_file_inspector",
     srcs = ["event_file_inspector.py"],
     srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
     deps = [
         ":event_accumulator",
         ":io_wrapper",

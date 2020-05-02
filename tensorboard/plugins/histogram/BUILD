@@ -14,7 +14,6 @@ py_library(
     name = "histograms_plugin",
     srcs = ["histograms_plugin.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         ":metadata",
         "//tensorboard:errors",
@@ -41,8 +40,8 @@ py_test(
         "//tensorboard:errors",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
-        "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/backend/event_processing:event_multiplexer",
+        "//tensorboard/backend/event_processing:tag_types",
         "//tensorboard/data:provider",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/util:test_util",
@@ -91,9 +90,6 @@ py_library(
     name = "summary",
     srcs = ["summary.py"],
     srcs_version = "PY2AND3",
-    visibility = [
-        "//visibility:public",
-    ],
     deps = [
         ":metadata",
         ":summary_v2",
@@ -147,5 +143,4 @@ py_binary(
 tb_proto_library(
     name = "protos_all",
     srcs = ["plugin_data.proto"],
-    visibility = ["//visibility:public"],
 )

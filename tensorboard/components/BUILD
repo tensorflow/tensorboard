@@ -68,5 +68,4 @@ tf_web_library(
         "security.html",
     ],
     path = "/",
-    visibility = ["//visibility:public"],
 )

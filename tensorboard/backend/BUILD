@@ -14,7 +14,6 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         ":json_util",
-        "//tensorboard/compat:tensorflow",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
     ],
@@ -38,10 +37,6 @@ py_library(
     name = "json_util",
     srcs = ["json_util.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
-    deps = [
-        "//tensorboard/compat:tensorflow",
-    ],
 )
 
 py_test(
@@ -71,8 +66,8 @@ py_library(
         "//tensorboard:errors",
         "//tensorboard:plugin_util",
         "//tensorboard/backend/event_processing:data_provider",
-        "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/backend/event_processing:event_multiplexer",
+        "//tensorboard/backend/event_processing:tag_types",
         "//tensorboard/plugins/core:core_plugin",
         "//tensorboard/plugins/histogram:metadata",
         "//tensorboard/plugins/image:metadata",
@@ -173,9 +168,6 @@ py_library(
     srcs = ["process_graph.py"],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
-    deps = [
-        "//tensorboard/compat:tensorflow",
-    ],
 )
 
 py_library(

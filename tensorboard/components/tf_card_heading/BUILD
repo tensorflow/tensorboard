@@ -14,7 +14,6 @@ tf_web_library(
         "util.ts",
     ],
     path = "/tf-card-heading",
-    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_markdown_view",
@@ -27,7 +26,6 @@ tf_web_library(
 tensorboard_webcomponent_library(
     name = "legacy",
     srcs = [":tf_card_heading"],
-    visibility = ["//visibility:public"],
     destdir = "tf-card-heading",
     deps = [
         "//tensorboard/components/tf_imports:polymer_lib",

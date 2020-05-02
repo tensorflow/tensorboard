@@ -12,7 +12,6 @@ py_library(
     name = "graphs_plugin",
     srcs = ["graphs_plugin.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         ":graph_util",
         ":keras_util",
@@ -20,8 +19,7 @@ py_library(
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
         "//tensorboard/backend:process_graph",
-        "//tensorboard/backend/event_processing:event_accumulator",
-        "//tensorboard/compat:tensorflow",
+        "//tensorboard/backend/event_processing:tag_types",
         "//tensorboard/data:provider",
         "//tensorboard/plugins:base_plugin",
         "@com_google_protobuf//:protobuf_python",

@@ -14,7 +14,6 @@ py_library(
     name = "custom_scalars_plugin",
     srcs = ["custom_scalars_plugin.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         ":metadata",
         ":protos_all_py_pb2",

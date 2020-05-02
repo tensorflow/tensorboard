@@ -12,7 +12,6 @@ py_library(
     name = "distributions_plugin",
     srcs = ["distributions_plugin.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         ":compressor",
         "//tensorboard:plugin_util",
@@ -35,8 +34,8 @@ py_test(
         "//tensorboard:errors",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
-        "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/backend/event_processing:event_multiplexer",
+        "//tensorboard/backend/event_processing:tag_types",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/plugins/histogram:summary",
         "//tensorboard/util:test_util",
@@ -57,8 +56,8 @@ py_test(
         ":distributions_plugin",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
-        "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/backend/event_processing:event_multiplexer",
+        "//tensorboard/backend/event_processing:tag_types",
         "//tensorboard/compat:no_tensorflow",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/plugins/histogram:summary",
@@ -72,7 +71,6 @@ py_library(
     name = "compressor",
     srcs = ["compressor.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = ["//tensorboard:expect_numpy_installed"],
 )
 

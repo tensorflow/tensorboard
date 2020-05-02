@@ -32,7 +32,6 @@ from werkzeug import wrappers
 from tensorboard import errors
 from tensorboard import plugin_util
 from tensorboard.backend import http_util
-from tensorboard.compat import tf
 from tensorboard.data import provider
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.histogram import metadata
@@ -67,7 +66,7 @@ class HistogramsPlugin(base_plugin.TBPlugin):
         self._downsample_to = (context.sampling_hints or {}).get(
             self.plugin_name, _DEFAULT_DOWNSAMPLING
         )
-        if context.flags and context.flags.generic_data == "true":
+        if context.flags and context.flags.generic_data != "false":
             self._data_provider = context.data_provider
         else:
             self._data_provider = None
@@ -187,21 +186,6 @@ class HistogramsPlugin(base_plugin.TBPlugin):
                 for e in tensor_events
             ]
         return (events, "application/json")
-
-    def _get_values(self, data_blob, dtype_enum, shape_string):
-        """Obtains values for histogram data given blob and dtype enum.
-
-        Args:
-          data_blob: The blob obtained from the database.
-          dtype_enum: The enum representing the dtype.
-          shape_string: A comma-separated string of numbers denoting shape.
-        Returns:
-          The histogram values as a list served to the frontend.
-        """
-        buf = np.frombuffer(
-            data_blob, dtype=tf.DType(dtype_enum).as_numpy_dtype
-        )
-        return buf.reshape([int(i) for i in shape_string.split(",")]).tolist()
 
     @wrappers.Request.application
     def tags_route(self, request):

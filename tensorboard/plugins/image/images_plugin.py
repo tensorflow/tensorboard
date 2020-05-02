@@ -31,7 +31,6 @@ from tensorboard.backend import http_util
 from tensorboard.data import provider
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.image import metadata
-from tensorboard.compat import tf
 
 
 _IMGHDR_TO_MIMETYPE = {
@@ -72,7 +71,7 @@ class ImagesPlugin(base_plugin.TBPlugin):
         self._downsample_to = (context.sampling_hints or {}).get(
             self.plugin_name, _DEFAULT_DOWNSAMPLING
         )
-        if context.flags and context.flags.generic_data == "true":
+        if context.flags and context.flags.generic_data != "false":
             self._data_provider = context.data_provider
         else:
             self._data_provider = None

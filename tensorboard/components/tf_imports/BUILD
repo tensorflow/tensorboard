@@ -70,7 +70,6 @@ tf_web_library(
         "@org_definitelytyped//:lodash.d.ts",
     ],
     path = "/tf-imports",
-    visibility = ["//visibility:public"],
     deps = ["@com_lodash"],
 )
 
@@ -93,7 +92,6 @@ tf_web_library(
         "@ai_google_pair_umap_js//:umap-js.min.js",
     ],
     path = "/tf-imports",
-    visibility = ["//visibility:public"],
 )
 
 tf_web_library(
@@ -103,7 +101,6 @@ tf_web_library(
         "@com_numericjs//:numeric.js",
     ],
     path = "/tf-imports",
-    visibility = ["//visibility:public"],
 )
 
 tf_web_library(
@@ -113,7 +110,6 @@ tf_web_library(
         "@io_github_waylonflinn_weblas//:weblas.js",
     ],
     path = "/tf-imports",
-    visibility = ["//visibility:public"],
 )
 
 tf_web_library(
@@ -123,7 +119,6 @@ tf_web_library(
         "@io_github_cpettitt_graphlib//:graphlib.core.js",
     ],
     path = "/tf-imports",
-    visibility = ["//visibility:public"],
     deps = [":lodash"],
 )
 
@@ -134,7 +129,6 @@ tf_web_library(
         "@io_github_cpettitt_dagre//:dagre.core.js",
     ],
     path = "/tf-imports",
-    visibility = ["//visibility:public"],
     deps = [
         ":graphlib",
         ":lodash",
@@ -149,7 +143,6 @@ tf_web_library(
         "@org_d3js//:d3.min.js",
     ],
     path = "/tf-imports",
-    visibility = ["//visibility:public"],
 )
 
 tf_web_library(
@@ -159,7 +152,6 @@ tf_web_library(
         "plottable.html",
     ],
     path = "/tf-imports",
-    visibility = ["//visibility:public"],
     deps = [
         ":d3",
         ":plottable_js_css",
@@ -184,7 +176,6 @@ tf_web_library(
     testonly = 1,
     srcs = ["web-component-tester.d.ts"],
     path = "/web_component_tester",
-    visibility = ["//visibility:public"],
     exports = [
         ":chai_typings",
         ":mocha_typings",
@@ -232,7 +223,6 @@ tf_web_library(
         "vaadin-grid.html",
     ],
     path = "/tf-imports",
-    visibility = ["//visibility:public"],
     deps = ["@vaadin_vaadin_grid"],
 )
 
@@ -242,7 +232,6 @@ tf_web_library(
         "vaadin-split-layout.html",
     ],
     path = "/tf-imports",
-    visibility = ["//visibility:public"],
     deps = ["@vaadin_vaadin_split_layout"],
 )
 
