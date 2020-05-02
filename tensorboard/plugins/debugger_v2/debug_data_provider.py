@@ -313,7 +313,7 @@ def _parse_graph_op_info_blob_key(blob_key):
 
     Returns:
       - run ID
-      - grahp_id
+      - graph_id
       - op name
     """
     # NOTE: the op_name itself may include dots, this is why we use `rindex()`

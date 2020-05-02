@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import collections
 import threading
 import time
 
@@ -463,7 +464,7 @@ class DebuggerV2EventMultiplexer(object):
 
         Returns:
           A JSON-serializable object containing the information regarding
-          the op's creation.
+            the op's creation and its immediate inputs and consumers.
 
         Raises:
           NotFoundError if the graph_id or op_name does not exist.
@@ -478,8 +479,7 @@ class DebuggerV2EventMultiplexer(object):
                 'There is no graph with ID "%s"' % graph_id
             )
         try:
-            # TODO(cais): Use public get_op_creation_digest() when available.
-            op_creation_digest = graph._op_by_name[op_name]
+            op_creation_digest = graph.get_op_creation_digest(op_name)
         except KeyError:
             raise errors.NotFoundError(
                 'There is no op named "%s" in graph with ID "%s"'
@@ -487,49 +487,33 @@ class DebuggerV2EventMultiplexer(object):
             )
         data_object = self._opCreationDigestToDataObject(op_creation_digest)
         # Populate data about immediate inputs.
-        data_object["inputs"] = []
+        data_object["inputs"] = None
         if op_creation_digest.input_names:
-            data_object["inputs"] = [None] * len(op_creation_digest.input_names)
-            for slot, input_tensor_name in enumerate(
-                op_creation_digest.input_names
-            ):
+            data_object["inputs"] = []
+            for input_tensor_name in op_creation_digest.input_names:
                 input_op_name = tensor_name_to_op_name(input_tensor_name)
-                input_op_digest = graph._op_by_name.get(input_op_name, None)
-                # TODO(b/155308456): Once Placeholder and Const ops have their
-                # ad hoc naming issues fixed, remove this `if` logic.
-                if input_op_digest:
-                    data_object["inputs"][
-                        slot
-                    ] = self._opCreationDigestToDataObject(input_op_digest)
-        # Populate data about immediate consuming ops.
-        data_object["consumers"] = []
-        op_creation_digests = list(graph._op_by_name.values())
-        for digest in op_creation_digests:
-            if digest.input_names and any(
-                tensor_name_to_op_name(input_name) == op_creation_digest.op_name
-                for input_name in digest.input_names
-            ):
-                data_object["consumers"].append(
-                    self._opCreationDigestToDataObject(digest)
+                input_op_digest = graph.get_op_creation_digest(input_op_name)
+                data_object["inputs"].append(
+                    self._opCreationDigestToDataObject(input_op_digest)
                 )
+        # Populate data about immediate consuming ops.
+        data_object["consumers"] = collections.defaultdict(list)
+        for src_slot, consumer_op_name, _ in graph.get_op_consumers(op_name):
+            digest = graph.get_op_creation_digest(consumer_op_name)
+            data_object["consumers"][src_slot].append(
+                self._opCreationDigestToDataObject(digest)
+            )
         return data_object
 
     def _opCreationDigestToDataObject(self, op_creation_digest):
-        graph_ids = self._getGraphStackIds(op_creation_digest.graph_id)
-        (
-            host_name,
-            stack_trace,
-        ) = self._reader.read_graph_op_creation_stack_trace(op_creation_digest)
-        return {
-            "graph_ids": graph_ids,
-            "device_name": op_creation_digest.device_name,
-            "op_type": op_creation_digest.op_type,
-            "op_name": op_creation_digest.op_name,
-            "input_names": op_creation_digest.input_names or [],
-            "num_outputs": op_creation_digest.num_outputs,
-            "host_name": host_name,
-            "stack_trace": stack_trace,
-        }
+        json_object = op_creation_digest.to_json()
+        del json_object["graph_id"]
+        json_object["graph_ids"] = self._getGraphStackIds(
+            op_creation_digest.graph_id
+        )
+        # TODO(cais): "num_outputs" should be populated in to_json() instead.
+        json_object["num_outputs"] = op_creation_digest.num_outputs
+        return json_object
 
     def _getGraphStackIds(self, graph_id):
         """Retrieve the IDs of all outer graphs of a graph.

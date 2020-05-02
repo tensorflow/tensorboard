@@ -255,14 +255,14 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
           - op_name
           - graph_ids: Stack of graph IDs that the op is located in, from
             outermost to innermost.
-          - input_names: Input tensor names. This is an empty list for
-            ops with no inputs.
+          - input_names: Input tensor names. This is `None` for ops without
+            inputs.
           - num_outputs: Number of output tensors.
           - host_name: Name of the host on which the op is created.
           - stack_trace: Stack frames of the op's creation in.
           - inputs: A recursive data object of all the input ops
             to this op. Currently only immediate (one level of) inputs
-            are provided. This is an empty list for ops with no inputs.
+            are provided. This is `None` for ops without inputs.
           - consumers: A recursive data object of all the ops that
             consume the output tensors of the op. Currently only
             immediate (one level of) consumers are provided. This is

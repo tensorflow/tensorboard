@@ -1089,13 +1089,14 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         # All graph_ids should be unique (graph recursion is not currently
         # allowed in TF.)
         self.assertLen(set(data["graph_ids"]), len(data["graph_ids"]))
+        self.assertNotIn("graph_id", data)
         self.assertEqual(data["graph_ids"][-1], digests[op_index]["graph_id"])
         self.assertLen(data["input_names"], 2)
         self.assertTrue(data["input_names"][0])
         self.assertTrue(data["input_names"][1])
         self.assertEqual(data["num_outputs"], 1)
         self.assertEqual(data["host_name"], _HOST_NAME)
-        self.assertTrue(data["stack_trace"])
+        self.assertTrue(data["stack_frame_ids"])
 
         # Check input op properties.
         inputs = data["inputs"]
@@ -1124,15 +1125,18 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertEqual(inputs[1]["host_name"], _HOST_NAME)
         self.assertEqual(inputs[0]["graph_ids"], data["graph_ids"])
         self.assertEqual(inputs[1]["graph_ids"], data["graph_ids"])
-        self.assertEqual(inputs[0]["stack_trace"], inputs[1]["stack_trace"])
+        self.assertEqual(
+            inputs[0]["stack_frame_ids"], inputs[1]["stack_frame_ids"]
+        )
         self.assertNotIn("inputs", inputs[0])
         self.assertNotIn("inputs", inputs[1])
         self.assertNotIn("consumers", inputs[0])
         self.assertNotIn("consumers", inputs[0])
 
         # Check consuming op properties.
-        self.assertLen(data["consumers"], 1)
-        consumer = data["consumers"][0]
+        self.assertEqual(list(data["consumers"].keys()), ["0"])
+        self.assertLen(data["consumers"]["0"], 1)
+        consumer = data["consumers"]["0"][0]
         # The AddV2 is consumed by another AddV2 op in the same graph.
         self.assertEqual(consumer["op_type"], "AddV2")
         self.assertTrue(consumer["op_type"])
@@ -1140,7 +1144,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertIn(data["op_name"] + ":0", consumer["input_names"])
         self.assertEqual(consumer["num_outputs"], 1)
         self.assertEqual(consumer["host_name"], _HOST_NAME)
-        self.assertTrue(consumer["stack_trace"])
+        self.assertTrue(consumer["stack_frame_ids"])
         self.assertNotIn("inputs", consumer)
         self.assertNotIn("consumers", consumer)
 
@@ -1180,7 +1184,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertTrue(data["input_names"][0])
         self.assertEqual(data["num_outputs"], 1)
         self.assertEqual(data["host_name"], _HOST_NAME)
-        self.assertTrue(data["stack_trace"])
+        self.assertTrue(data["stack_frame_ids"])
 
         # Check input op properties.
         inputs = data["inputs"]
@@ -1188,24 +1192,28 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertEqual(inputs[0]["op_type"], "AddV2")
 
         # Check consumers: There should be no consumers for this Identity op.
-        self.assertEqual(data["consumers"], [])
+        self.assertEqual(data["consumers"], {})
 
     def testServeGraphOpInfoForOpWithNoInputs(self):
         """Get the op info of an op with no inputs."""
         _generate_tfdbg_v2_data(self.logdir)
         run = self._getExactlyOneRun()
-        # First, look up the graph_id and name of the 1st Placeholder op in the
-        # unstack_and_sum() graph. The Identity op marks the return value of
-        # the tf.function and hence has no consumer.
+        # First, look up the graph_id and name of the Placeholder op in the
+        # same graph as the Unstack op. This Placeholder op has no inputs.
         response = self.server.get(
             _ROUTE_PREFIX + "/graph_execution/digests?run=%s" % run
         )
         data = json.loads(response.get_data())
         digests = data["graph_execution_digests"]
         op_types = [digest["op_type"] for digest in digests]
-        op_index = op_types.index("Placeholder")
-        graph_id = digests[op_index]["graph_id"]
-        op_name = digests[op_index]["op_name"]
+        graph_ids = [digest["graph_id"] for digest in digests]
+        unpack_op_index = op_types.index("Unpack")
+        unpack_op_name = digests[unpack_op_index]["op_name"]
+        graph_id = digests[unpack_op_index]["graph_id"]
+        placeholder_op_index = list(zip(graph_ids, op_types)).index(
+            (graph_id, "Placeholder")
+        )
+        op_name = digests[placeholder_op_index]["op_name"]
         # Actually query the /graphs/op_info route.
         response = self.server.get(
             _ROUTE_PREFIX
@@ -1221,19 +1229,23 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         # TODO(cais): Assert on detailed device name when available.
         self.assertIn("device_name", data)
         # The op is inside a nested tf.function, so its graph stack must have a height > 1.
+        self.assertNotIn("graph_id", data)
         self.assertGreater(len(data["graph_ids"]), 1)
         self.assertEqual(data["graph_ids"][-1], graph_id)
-        self.assertEqual(data["input_names"], [])
+        self.assertIsNone(data["input_names"])
         self.assertEqual(data["num_outputs"], 1)
         self.assertEqual(data["host_name"], _HOST_NAME)
-        self.assertTrue(data["stack_trace"])
+        self.assertTrue(data["stack_frame_ids"])
 
         # Check input op properties: The Placeholder has no inputs.
-        self.assertEqual(data["inputs"], [])
+        self.assertIsNone(data["inputs"])
 
         # Check consumers.
-        # TODO(b/155308456): Once the Placholder/Const naming bug is fixed,
-        # assert on its consumers.
+        self.assertEqual(list(data["consumers"].keys()), ["0"])
+        self.assertLen(data["consumers"]["0"], 1)
+        consumer = data["consumers"]["0"][0]
+        self.assertEqual(consumer["op_type"], "Unpack")
+        self.assertEqual(consumer["op_name"], unpack_op_name)
 
     def testServeGraphOpInfoRespondsWithErrorForInvalidGraphId(self):
         _generate_tfdbg_v2_data(self.logdir)
