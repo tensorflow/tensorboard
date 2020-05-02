@@ -314,7 +314,7 @@ class TensorBoardExporter(object):
         while True:
             tensor_file_path = os.path.join(
                 _DIRNAME_TENSORS,
-                "%.6f.npz" % wall_time + ("_%d" % index if index else ""),
+                "%.6f" % wall_time + ("_%d" % index if index else "") + ".npz",
             )
             if not os.path.exists(
                 os.path.join(experiment_dir, tensor_file_path)

@@ -37,6 +37,7 @@ py_test(
         "//tensorboard/uploader/proto:protos_all_py_pb2",
         "//tensorboard/uploader/proto:protos_all_py_pb2_grpc",
         "//tensorboard/util:grpc_util",
+        "//tensorboard/util:tensor_util",
         "@org_pythonhosted_mock",
     ],
 )
