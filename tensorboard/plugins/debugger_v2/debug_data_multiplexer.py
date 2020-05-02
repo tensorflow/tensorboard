@@ -97,7 +97,7 @@ def _alert_to_json(alert):
 
 
 def tensor_name_to_op_name(tensor_name):
-    """Helper method that extracts op name from tensor name."""
+    """Helper function that extracts op name from tensor name."""
     return tensor_name.split(":")[0]
 
 
