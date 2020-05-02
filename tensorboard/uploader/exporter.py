@@ -277,28 +277,28 @@ class TensorBoardExporter(object):
             of.
 
         Returns:
-          A JSON-serializable `dict` for the steps, wall_times and paths to the
-            .npy files that contain the saved tensor values.
+          A JSON-serializable `dict` for the steps, wall_times and the path to
+            the .npz files that contain the saved tensor values.
         """
-        experiment_dir = _experiment_directory(self._outdir, experiment_id)
-        tensor_file_paths = []
         wall_times = [t.ToNanoseconds() / 1e9 for t in points.wall_times]
-        for step, wall_time, tensor_proto in zip(
-            points.steps, wall_times, points.values
-        ):
-            tensor_file_path = self._get_tensor_file_path(
-                experiment_dir, wall_time
-            )
-            np.save(
-                os.path.join(experiment_dir, tensor_file_path),
-                tensor_util.make_ndarray(tensor_proto),
-            )
-            tensor_file_paths.append(tensor_file_path)
-        return {
+        json_object = {
             u"steps": list(points.steps),
             u"wall_times": wall_times,
-            u"tensor_file_paths": tensor_file_paths,
+            u"tensors_file_path": None,
         }
+        if not json_object["steps"]:
+            return json_object
+        experiment_dir = _experiment_directory(self._outdir, experiment_id)
+        tensors_file_path = self._get_tensor_file_path(
+            experiment_dir, json_object["wall_times"][0]
+        )
+        ndarrays = [
+            tensor_util.make_ndarray(tensor_proto)
+            for tensor_proto in points.values
+        ]
+        np.savez(os.path.join(experiment_dir, tensors_file_path), *ndarrays)
+        json_object["tensors_file_path"] = tensors_file_path
+        return json_object
 
     def _get_tensor_file_path(self, experiment_dir, wall_time):
         """Get a nonexistent path for a tensor value.
@@ -314,7 +314,7 @@ class TensorBoardExporter(object):
         while True:
             tensor_file_path = os.path.join(
                 _DIRNAME_TENSORS,
-                "%.6f.npy" % wall_time + ("_%d" % index if index else ""),
+                "%.6f.npz" % wall_time + ("_%d" % index if index else ""),
             )
             if not os.path.exists(
                 os.path.join(experiment_dir, tensor_file_path)
