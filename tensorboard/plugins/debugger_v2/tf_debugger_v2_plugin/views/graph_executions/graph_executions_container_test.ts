@@ -35,7 +35,6 @@ import {
   getGraphExecutionData,
   getGraphExecutionFocusIndex,
   getNumGraphExecutions,
-  getGraphExecutionDisplayCount,
 } from '../../store';
 import {
   createDebuggerState,
@@ -188,7 +187,7 @@ describe('Graph Executions Container', () => {
   for (const oldFocusIndex of [null, 0, 119]) {
     for (const newFocusIndex of [1, 60, 100, 118]) {
       it(
-        `Calls scrollToIndex on focusIndex change: ` +
+        `calls scrollToIndex on focusIndex change: ` +
           `${oldFocusIndex} --> ${newFocusIndex}`,
         fakeAsync(() => {
           const fixture = TestBed.createComponent(GraphExecutionsComponent);

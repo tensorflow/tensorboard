@@ -321,13 +321,19 @@ describe('Debugger reducers', () => {
             firstAlertExecutionIndex,
             firstAlertExecutionIndex + 1,
           ]);
+          const graphExecutionIndices =
+            nextState.alerts.graphExecutionIndices[AlertType.INF_NAN_ALERT];
+          expect(graphExecutionIndices).toEqual([
+            firstAlertGraphExecutionIndex,
+            firstAlertGraphExecutionIndex * 2,
+          ]);
           // Verify that the top-level execution for the first alert is scrolled
           // into view.
           expect(nextState.executions.scrollBeginIndex).toBe(
             expectedScrollBegin
           );
-          // Verify that the intra-graph execution for the first alert
-          // with a graph_execution_trace_index is focused on.
+          // Verify that the intra-graph execution for the first alert with a
+          // graph_execution_trace_index is focused on.
           expect(nextState.graphExecutions.focusIndex).toBe(
             firstAlertGraphExecutionIndex
           );
