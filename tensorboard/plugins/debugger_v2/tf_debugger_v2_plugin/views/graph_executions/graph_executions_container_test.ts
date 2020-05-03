@@ -29,7 +29,11 @@ import {
   GraphExecution,
   TensorDebugMode,
 } from '../../store/debugger_types';
-import {getNumGraphExecutions, getGraphExecutionData} from '../../store';
+import {
+  getGraphExecutionData,
+  getGraphExecutionFocusIndex,
+  getNumGraphExecutions,
+} from '../../store';
 import {
   createDebuggerState,
   createState,
@@ -101,6 +105,7 @@ describe('Graph Executions Container', () => {
       });
     }
     store.overrideSelector(getGraphExecutionData, graphExecutionData);
+    store.overrideSelector(getGraphExecutionFocusIndex, 99);
     fixture.autoDetectChanges();
     tick();
 
@@ -126,6 +131,14 @@ describe('Graph Executions Container', () => {
     expect(opTypes.length).toBe(tensorContainers.length);
     for (let i = 0; i < tensorNames.length; ++i) {
       expect(graphExecutionIndices[i].nativeElement.innerText).toBe(`${i}`);
+      const focusElement = graphExecutionIndices[i].query(
+        By.css('.graph-execution-focus')
+      );
+      if (i === 99) {
+        expect(focusElement.nativeElement.innerText).toBe('▶');
+      } else {
+        expect(focusElement).toBeNull();
+      }
       expect(tensorNames[i].nativeElement.innerText).toBe(`TestOp_${i}:0`);
       expect(opTypes[i].nativeElement.innerText).toBe(`OpType_${i}`);
     }
