@@ -34,7 +34,6 @@ import {State} from '../../store/debugger_types';
       [graphExecutionIndices]="graphExecutionIndices$ | async"
       [focusIndex]="focusIndex$ | async"
       (onScrolledIndexChange)="onScrolledIndexChange($event)"
-      P
     ></graph-executions-component>
   `,
 })
