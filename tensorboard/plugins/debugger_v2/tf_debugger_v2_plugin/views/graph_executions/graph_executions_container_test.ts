@@ -15,7 +15,9 @@ limitations under the License.
 /**
  * Unit tests for the the intra-graph execution component and container.
  */
+import {CdkVirtualScrollViewport} from '@angular/cdk/scrolling';
 import {CommonModule} from '@angular/common';
+import {SimpleChange} from '@angular/core';
 import {fakeAsync, TestBed, tick} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 
@@ -33,6 +35,7 @@ import {
   getGraphExecutionData,
   getGraphExecutionFocusIndex,
   getNumGraphExecutions,
+  getGraphExecutionDisplayCount,
 } from '../../store';
 import {
   createDebuggerState,
@@ -49,6 +52,7 @@ import {GraphExecutionsContainer} from './graph_executions_container';
 import {GraphExecutionsModule} from './graph_executions_module';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
+import {GraphExecutionsComponent} from './graph_executions_component';
 
 describe('Graph Executions Container', () => {
   let store: MockStore<State>;
@@ -180,4 +184,53 @@ describe('Graph Executions Container', () => {
     expect(tensorNames.length).toBe(0);
     expect(opTypes.length).toBe(0);
   }));
+
+  for (const oldFocusIndex of [null, 0, 119]) {
+    for (const newFocusIndex of [1, 60, 100, 118]) {
+      it(
+        `Calls scrollToIndex on focusIndex change: ` +
+          `${oldFocusIndex} --> ${newFocusIndex}`,
+        fakeAsync(() => {
+          const fixture = TestBed.createComponent(GraphExecutionsComponent);
+          const component = fixture.componentInstance;
+          const graphExecutionData: {[index: number]: GraphExecution} = {};
+          const graphExecutionIndices: number[] = [];
+          for (let i = 0; i < 120; ++i) {
+            graphExecutionData[i] = createTestGraphExecution({
+              op_name: `TestOp_${i}`,
+              op_type: `OpType_${i}`,
+              tensor_debug_mode: TensorDebugMode.CONCISE_HEALTH,
+              debug_tensor_value: [i, 100, 0, 0, 0],
+            });
+            graphExecutionIndices.push(i);
+          }
+          component.numGraphExecutions = 120;
+          component.graphExecutionData = graphExecutionData;
+          component.graphExecutionIndices = graphExecutionIndices;
+          component.focusIndex = oldFocusIndex;
+          fixture.detectChanges();
+          tick();
+
+          const viewPort = component.TEST_ONLY.getViewPort() as CdkVirtualScrollViewport;
+          const {start, end} = viewPort.getRenderedRange();
+          expect(end).toBeGreaterThan(start);
+          const scrollIndices: number[] = [];
+          const scrollToIndexSpy = spyOn(
+            viewPort,
+            'scrollToIndex'
+          ).and.callFake((scrollIndex: number) => {
+            scrollIndices.push(scrollIndex);
+          });
+
+          component.ngOnChanges({
+            focusIndex: new SimpleChange(oldFocusIndex, newFocusIndex, true),
+          });
+          expect(scrollToIndexSpy).toHaveBeenCalledTimes(1);
+          expect(scrollToIndexSpy).toHaveBeenCalledWith(
+            Math.max(newFocusIndex - Math.round(end - start) / 3, 0)
+          );
+        })
+      );
+    }
+  }
 });

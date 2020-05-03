@@ -56,18 +56,17 @@ export class GraphExecutionsComponent {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (this.viewPort && changes['focusIndex']) {
-      console.log('focusIndex -->', changes['focusIndex'].currentValue); // DEBUG
       const range = this.viewPort.getRenderedRange();
       const scrollIndex = changes['focusIndex'].currentValue;
-      // Handle programmatic scroll.
-      if (scrollIndex < range.start || scrollIndex > range.end) {
-        // Make sure that the index is scrolled to one third the view port.
-        // This is nicer than scrolling it merely to the top.
-        const halfRange = Math.floor((range.end - range.start) * 0.33);
-        const targetIndex = Math.max(scrollIndex - halfRange, 0);
-        this.viewPort.scrollToIndex(targetIndex);
-        // TODO(cais): Add unit test. DO NOT SUBMIT.
-      }
+      // Make sure that the index is scrolled to one third the view port.
+      // This is nicer than scrolling it merely to the top.
+      const thirdRange = Math.round((range.end - range.start) / 3);
+      const targetIndex = Math.max(scrollIndex - thirdRange, 0);
+      this.viewPort.scrollToIndex(targetIndex);
     }
   }
+
+  TEST_ONLY = {
+    getViewPort: () => this.viewPort,
+  };
 }
