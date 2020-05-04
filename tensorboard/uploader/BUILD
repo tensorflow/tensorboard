@@ -17,6 +17,7 @@ py_library(
         "//tensorboard/uploader/proto:protos_all_py_pb2",
         "//tensorboard/util:grpc_util",
         "//tensorboard/util:tb_logging",
+        "//tensorboard/util:tensor_util",
         "@org_pythonhosted_six",
     ],
 )
@@ -30,11 +31,13 @@ py_test(
         ":util",
         "//tensorboard:expect_grpc_installed",
         "//tensorboard:expect_grpc_testing_installed",
+        "//tensorboard:expect_numpy_installed",
         "//tensorboard:test",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/uploader/proto:protos_all_py_pb2",
         "//tensorboard/uploader/proto:protos_all_py_pb2_grpc",
         "//tensorboard/util:grpc_util",
+        "//tensorboard/util:tensor_util",
         "@org_pythonhosted_mock",
     ],
 )
