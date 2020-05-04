@@ -25,6 +25,7 @@ import os
 
 import grpc
 import grpc_testing
+import numpy as np
 
 try:
     # python version >= 3.3
@@ -41,6 +42,7 @@ from tensorboard.uploader import exporter as exporter_lib
 from tensorboard.uploader import test_util
 from tensorboard.uploader import util
 from tensorboard.util import grpc_util
+from tensorboard.util import tensor_util
 from tensorboard import test as tb_test
 from tensorboard.compat.proto import summary_pb2
 
@@ -132,11 +134,23 @@ class TensorBoardExporterTest(tb_test.TestCase):
         self.assertEqual(next(generator), "123")
         expected_files.append(os.path.join("experiment_123", "metadata.json"))
         expected_files.append(os.path.join("experiment_123", "scalars.json"))
+        expected_files.append(os.path.join("experiment_123", "tensors.json"))
         # blob_sequences.json should exist and be empty.
         expected_files.append(
             os.path.join("experiment_123", "blob_sequences.json")
         )
         self.assertCountEqual(expected_files, _outdir_files(outdir))
+
+        # Check that the tensors and blob_sequences data files are empty, because
+        # there are no tensors or blob sequences.
+        with open(
+            os.path.join(outdir, "experiment_123", "tensors.json")
+        ) as infile:
+            self.assertEqual(infile.read(), "")
+        with open(
+            os.path.join(outdir, "experiment_123", "blob_sequences.json")
+        ) as infile:
+            self.assertEqual(infile.read(), "")
 
         expected_eids_request = export_service_pb2.StreamExperimentsRequest()
         expected_eids_request.read_timestamp.CopyFrom(start_time_pb)
@@ -163,6 +177,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
 
         expected_files.append(os.path.join("experiment_456", "metadata.json"))
         expected_files.append(os.path.join("experiment_456", "scalars.json"))
+        expected_files.append(os.path.join("experiment_456", "tensors.json"))
         # blob_sequences.json should exist and be empty.
         expected_files.append(
             os.path.join("experiment_456", "blob_sequences.json")
@@ -178,6 +193,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
         # was in the second response batch in the list of IDs.
         expected_files.append(os.path.join("experiment_789", "metadata.json"))
         expected_files.append(os.path.join("experiment_789", "scalars.json"))
+        expected_files.append(os.path.join("experiment_789", "tensors.json"))
         # blob_sequences.json should exist and be empty.
         expected_files.append(
             os.path.join("experiment_789", "blob_sequences.json")
@@ -247,6 +263,176 @@ class TensorBoardExporterTest(tb_test.TestCase):
                 "update_time": "2002-03-04T05:06:07Z",
             },
         )
+
+    def test_e2e_success_case_with_only_tensors_data(self):
+        mock_api_client = self._create_mock_api_client()
+
+        def stream_experiments(request, **kwargs):
+            del request  # unused
+            self.assertEqual(kwargs["metadata"], grpc_util.version_metadata())
+
+            response = export_service_pb2.StreamExperimentsResponse()
+            response.experiments.add(experiment_id="123")
+            yield response
+
+        def stream_experiment_data(request, **kwargs):
+            self.assertEqual(kwargs["metadata"], grpc_util.version_metadata())
+            for run in ("train_1", "train_2"):
+                for tag in ("dense_1/kernel", "dense_1/bias"):
+                    response = export_service_pb2.StreamExperimentDataResponse()
+                    response.run_name = run
+                    response.tag_name = tag
+                    display_name = "%s:%s" % (request.experiment_id, tag)
+                    response.tag_metadata.CopyFrom(
+                        test_util.scalar_metadata(display_name)
+                    )
+                    for step in range(2):
+                        response.tensors.steps.append(step)
+                        response.tensors.wall_times.add(
+                            seconds=1571084520 + step,
+                            nanos=862939144 if run == "train_1" else 962939144,
+                        )
+                        response.tensors.values.append(
+                            tensor_util.make_tensor_proto(
+                                np.ones([3, 2]) * step
+                            )
+                        )
+                    yield response
+
+        mock_api_client.StreamExperiments = mock.Mock(wraps=stream_experiments)
+        mock_api_client.StreamExperimentData = mock.Mock(
+            wraps=stream_experiment_data
+        )
+
+        outdir = os.path.join(self.get_temp_dir(), "outdir")
+        exporter = exporter_lib.TensorBoardExporter(mock_api_client, outdir)
+        start_time = 1571084846.25
+        start_time_pb = test_util.timestamp_pb(1571084846250000000)
+
+        generator = exporter.export(read_time=start_time)
+        expected_files = []
+        self.assertTrue(os.path.isdir(outdir))
+        self.assertCountEqual(expected_files, _outdir_files(outdir))
+        mock_api_client.StreamExperiments.assert_not_called()
+        mock_api_client.StreamExperimentData.assert_not_called()
+
+        # The first iteration should request the list of experiments and
+        # data for one of them.
+        self.assertEqual(next(generator), "123")
+        expected_files.append(os.path.join("experiment_123", "metadata.json"))
+        # scalars.json should exist and be empty.
+        expected_files.append(os.path.join("experiment_123", "scalars.json"))
+        expected_files.append(os.path.join("experiment_123", "tensors.json"))
+        # blob_sequences.json should exist and be empty.
+        expected_files.append(
+            os.path.join("experiment_123", "blob_sequences.json")
+        )
+        expected_files.append(
+            os.path.join("experiment_123", "tensors", "1571084520.862939.npz")
+        )
+        expected_files.append(
+            os.path.join("experiment_123", "tensors", "1571084520.862939_1.npz")
+        )
+        expected_files.append(
+            os.path.join("experiment_123", "tensors", "1571084520.962939.npz")
+        )
+        expected_files.append(
+            os.path.join("experiment_123", "tensors", "1571084520.962939_1.npz")
+        )
+        self.assertCountEqual(expected_files, _outdir_files(outdir))
+
+        # Check that the scalars and blob_sequences data files are empty, because
+        # there are no scalars or blob sequences.
+        with open(
+            os.path.join(outdir, "experiment_123", "scalars.json")
+        ) as infile:
+            self.assertEqual(infile.read(), "")
+        with open(
+            os.path.join(outdir, "experiment_123", "blob_sequences.json")
+        ) as infile:
+            self.assertEqual(infile.read(), "")
+
+        expected_eids_request = export_service_pb2.StreamExperimentsRequest()
+        expected_eids_request.read_timestamp.CopyFrom(start_time_pb)
+        expected_eids_request.limit = 2 ** 63 - 1
+        expected_eids_request.experiments_mask.create_time = True
+        expected_eids_request.experiments_mask.update_time = True
+        expected_eids_request.experiments_mask.name = True
+        expected_eids_request.experiments_mask.description = True
+        mock_api_client.StreamExperiments.assert_called_once_with(
+            expected_eids_request, metadata=grpc_util.version_metadata()
+        )
+
+        expected_data_request = export_service_pb2.StreamExperimentDataRequest()
+        expected_data_request.experiment_id = "123"
+        expected_data_request.read_timestamp.CopyFrom(start_time_pb)
+        mock_api_client.StreamExperimentData.assert_called_once_with(
+            expected_data_request, metadata=grpc_util.version_metadata()
+        )
+
+        # The final StreamExperiments continuation shouldn't need to send any
+        # RPCs.
+        mock_api_client.StreamExperiments.reset_mock()
+        mock_api_client.StreamExperimentData.reset_mock()
+        self.assertEqual(list(generator), [])
+
+        # Check tensor data.
+        with open(
+            os.path.join(outdir, "experiment_123", "tensors.json")
+        ) as infile:
+            jsons = [json.loads(line) for line in infile]
+        self.assertLen(jsons, 4)
+
+        datum = jsons[0]
+        self.assertEqual(datum.pop("run"), "train_1")
+        self.assertEqual(datum.pop("tag"), "dense_1/kernel")
+        summary_metadata = summary_pb2.SummaryMetadata.FromString(
+            base64.b64decode(datum.pop("summary_metadata"))
+        )
+        expected_summary_metadata = test_util.scalar_metadata(
+            "123:dense_1/kernel"
+        )
+        self.assertEqual(summary_metadata, expected_summary_metadata)
+        points = datum.pop("points")
+        self.assertEqual(points.pop("steps"), [0, 1])
+        self.assertEqual(
+            points.pop("tensors_file_path"),
+            os.path.join("tensors", "1571084520.862939.npz"),
+        )
+        self.assertEqual(datum, {})
+
+        datum = jsons[3]
+        self.assertEqual(datum.pop("run"), "train_2")
+        self.assertEqual(datum.pop("tag"), "dense_1/bias")
+        summary_metadata = summary_pb2.SummaryMetadata.FromString(
+            base64.b64decode(datum.pop("summary_metadata"))
+        )
+        expected_summary_metadata = test_util.scalar_metadata(
+            "123:dense_1/bias"
+        )
+        self.assertEqual(summary_metadata, expected_summary_metadata)
+        points = datum.pop("points")
+        self.assertEqual(points.pop("steps"), [0, 1])
+        self.assertEqual(
+            points.pop("tensors_file_path"),
+            os.path.join("tensors", "1571084520.962939_1.npz"),
+        )
+        self.assertEqual(datum, {})
+
+        # Load and check the tensor data from the save .npz files.
+        for filename in (
+            "1571084520.862939.npz",
+            "1571084520.862939_1.npz",
+            "1571084520.962939.npz",
+            "1571084520.962939_1.npz",
+        ):
+            tensors = np.load(
+                os.path.join(outdir, "experiment_123", "tensors", filename)
+            )
+            tensors = [tensors[key] for key in tensors.keys()]
+            self.assertLen(tensors, 2)
+            np.testing.assert_array_equal(tensors[0], 0 * np.ones([3, 2]))
+            np.testing.assert_array_equal(tensors[1], 1 * np.ones([3, 2]))
 
     def test_e2e_success_case_with_blob_sequence_data(self):
         """Covers exporting of complete and incomplete blob sequences
@@ -346,8 +532,9 @@ class TensorBoardExporterTest(tb_test.TestCase):
         # data for one of them.
         self.assertEqual(next(generator), "123")
         expected_files.append(os.path.join("experiment_123", "metadata.json"))
-        # scalars.json should exist and be empty.
+        # scalars.json and tensors.json should exist and be empty.
         expected_files.append(os.path.join("experiment_123", "scalars.json"))
+        expected_files.append(os.path.join("experiment_123", "tensors.json"))
         expected_files.append(
             os.path.join("experiment_123", "blob_sequences.json")
         )
@@ -358,9 +545,14 @@ class TensorBoardExporterTest(tb_test.TestCase):
         # an unfinished blob.
         self.assertCountEqual(expected_files, _outdir_files(outdir))
 
-        # Check that the scalars data file is empty, because there no scalars.
+        # Check that the scalars and tensors data files are empty, because there
+        # no scalars or tensors.
         with open(
             os.path.join(outdir, "experiment_123", "scalars.json")
+        ) as infile:
+            self.assertEqual(infile.read(), "")
+        with open(
+            os.path.join(outdir, "experiment_123", "tensors.json")
         ) as infile:
             self.assertEqual(infile.read(), "")
 
