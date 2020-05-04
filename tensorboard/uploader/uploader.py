@@ -91,7 +91,7 @@ class TensorBoardUploader(object):
         logdir,
         allowed_plugins,
         max_blob_size,
-        max_tensor_point_size,
+        max_tensor_point_size=None,
         logdir_poll_rate_limiter=None,
         rpc_rate_limiter=None,
         blob_rpc_rate_limiter=None,
@@ -126,7 +126,14 @@ class TensorBoardUploader(object):
         self._logdir = logdir
         self._allowed_plugins = frozenset(allowed_plugins)
         self._max_blob_size = max_blob_size
-        self._max_tensor_point_size = max_tensor_point_size
+        # Note: All callers should set this value. When they do, remove the
+        # default.
+        if max_tensor_point_size is None:
+            # If max_tensor_point_size is not specified then effectively disable
+            # tensor uploads by setting max size to a negative value.
+            self._max_tensor_point_size = -1
+        else:
+            self._max_tensor_point_size = max_tensor_point_size
         self._name = name
         self._description = description
         self._request_sender = None
