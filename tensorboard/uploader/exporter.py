@@ -28,6 +28,7 @@ import string
 import time
 
 import six
+import numpy as np
 
 from tensorboard.uploader.proto import blob_pb2
 from tensorboard.uploader.proto import experiment_pb2
@@ -35,6 +36,7 @@ from tensorboard.uploader.proto import export_service_pb2
 from tensorboard.uploader import util
 from tensorboard.util import grpc_util
 from tensorboard.util import tb_logging
+from tensorboard.util import tensor_util
 
 # Characters that are assumed to be safe in filenames. Note that the
 # server's experiment IDs are base64 encodings of 16-byte blobs, so they
@@ -52,12 +54,19 @@ _MAX_INT64 = 2 ** 63 - 1
 _FILENAME_METADATA = "metadata.json"
 # Output filename for scalar data within an experiment directory.
 _FILENAME_SCALARS = "scalars.json"
+# Output filename for tensors dat within an experiment directory.
+# This file does not contain the actual values of the tensors. Instead,
+# it holds `tensors_file_path`s, which point to numpy .npz files that
+# store the actual tensor values. The json file additional additionally
+# contains other metadata such as run and tag names and `wall_time`s.
+_FILENAME_TENSORS = "tensors.json"
 # Output filename for blob sequences data within an experiment directory.
 # This file does not contain the actual contents of the blobs. Instead,
 # it holds `blob_file_path`s that point to the binary files that contain
 # the blobs' contents, in addition to other metadata such as run and tag names.
 _FILENAME_BLOB_SEQUENCES = "blob_sequences.json"
 
+_DIRNAME_TENSORS = "tensors"
 _DIRNAME_BLOBS = "blobs"
 _FILENAME_BLOBS_PREFIX = "blob_"
 _FILENAME_BLOBS_SUFFIX = ".bin"
@@ -167,9 +176,11 @@ class TensorBoardExporter(object):
                         )
                         for filename in (
                             _FILENAME_SCALARS,
+                            _FILENAME_TENSORS,
                             _FILENAME_BLOB_SEQUENCES,
                         )
                     }
+                    os.mkdir(os.path.join(experiment_dir, _DIRNAME_TENSORS))
                     os.mkdir(os.path.join(experiment_dir, _DIRNAME_BLOBS))
                     for block, filename in data:
                         outfile = file_handles[filename]
@@ -230,6 +241,11 @@ class TensorBoardExporter(object):
                     response.points
                 )
                 filename = _FILENAME_SCALARS
+            elif response.HasField("tensors"):
+                json_data[u"points"] = self._process_tensor_points(
+                    response.tensors, experiment_id
+                )
+                filename = _FILENAME_TENSORS
             elif response.HasField("blob_sequences"):
                 json_data[u"points"] = self._process_blob_sequence_points(
                     response.blob_sequences, experiment_id
@@ -237,14 +253,6 @@ class TensorBoardExporter(object):
                 filename = _FILENAME_BLOB_SEQUENCES
             if filename:
                 yield json_data, filename
-            else:
-                logger.warning(
-                    "Skipping a response from experiment-data stream "
-                    "due to the lack of any valid data type (such as "
-                    "scalars and blob sequences): run=%s, tag=%s. "
-                    "Updating tensorboard install may fix this warning."
-                    % (response.run_name, response.tag_name)
-                )
 
     def _process_scalar_points(self, points):
         """Process scalar data points.
@@ -263,6 +271,61 @@ class TensorBoardExporter(object):
             u"wall_times": wall_times,
             u"values": list(points.values),
         }
+
+    def _process_tensor_points(self, points, experiment_id):
+        """Process tensor data points.
+
+        Args:
+          points: `export_service_pb2.StreamExperimentDataResponse.TensorPoints`
+            proto.
+          experiment_id: ID of the experiment that the `TensorPoints` is a part
+            of.
+
+        Returns:
+          A JSON-serializable `dict` for the steps, wall_times and the path to
+            the .npz files that contain the saved tensor values.
+        """
+        wall_times = [t.ToNanoseconds() / 1e9 for t in points.wall_times]
+        json_object = {
+            u"steps": list(points.steps),
+            u"wall_times": wall_times,
+            u"tensors_file_path": None,
+        }
+        if not json_object["steps"]:
+            return json_object
+        experiment_dir = _experiment_directory(self._outdir, experiment_id)
+        tensors_file_path = self._get_tensor_file_path(
+            experiment_dir, json_object["wall_times"][0]
+        )
+        ndarrays = [
+            tensor_util.make_ndarray(tensor_proto)
+            for tensor_proto in points.values
+        ]
+        np.savez(os.path.join(experiment_dir, tensors_file_path), *ndarrays)
+        json_object["tensors_file_path"] = tensors_file_path
+        return json_object
+
+    def _get_tensor_file_path(self, experiment_dir, wall_time):
+        """Get a nonexistent path for a tensor value.
+
+        Args:
+          experiment_dir: Experiment directory.
+          wall_time: Timestamp of the tensor (seconds since the epoch in double).
+
+        Returns:
+          A nonexistent path for the tensor, relative to the experiemnt_dir.
+        """
+        index = 0
+        while True:
+            tensor_file_path = os.path.join(
+                _DIRNAME_TENSORS,
+                "%.6f" % wall_time + ("_%d" % index if index else "") + ".npz",
+            )
+            if not os.path.exists(
+                os.path.join(experiment_dir, tensor_file_path)
+            ):
+                return tensor_file_path
+            index += 1
 
     def _process_blob_sequence_points(self, blob_sequences, experiment_id):
         """Process blob sequence points.
