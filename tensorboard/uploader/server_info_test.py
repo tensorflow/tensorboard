@@ -262,10 +262,12 @@ class MaxTensorPointSizeTest(tb_test.TestCase):
         actual = server_info.max_tensor_point_size(info)
         self.assertEqual(actual, 42)
 
-    def test_upload_limits_provided_without_max_blob_size(self):
+    def test_upload_limits_provided_without_max_tensor_point_size(self):
         # This just shows that the proto3 default value of 0 is reported as
         # usual, not handled as a special case.
         info = server_info_pb2.ServerInfoResponse()
+        # Ensure upload_limits is set but do not explicitly set
+        # max_tensor_point_size.
         info.upload_limits.max_blob_size = 42
         actual = server_info.max_tensor_point_size(info)
         self.assertEqual(actual, 0)

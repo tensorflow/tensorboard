@@ -1433,6 +1433,7 @@ class TensorBatchedRequestSenderTest(tf.test.TestCase):
         event_1.summary.value.add(
             tag="two",
             tensor=tensor_pb2.TensorProto(
+                # 6 bytes will be filtered in the second test.
                 tensor_content=b"\x01\x02\x03\x04\x05\x06"
             ),
         )
@@ -1443,12 +1444,16 @@ class TensorBatchedRequestSenderTest(tf.test.TestCase):
         event_2.summary.value.add(
             tag="two",
             tensor=tensor_pb2.TensorProto(
+                # 7 bytes will be filtered out in both tests.
                 tensor_content=b"\x01\x02\x03\x04\x05\x06\x07"
             ),
         )
 
         run_proto = self._add_events_and_flush(
-            _apply_compat([event_1, event_2]), max_tensor_point_size=7 + 1
+            _apply_compat([event_1, event_2]),
+            # Set threshold that will filter out tensor points with 7 bytes
+            # of data and above. The additional byte is for proto overhead.
+            max_tensor_point_size=7 + 1,
         )
         tag_data = {
             tag.name: [(p.step, p.value.tensor_content) for p in tag.points]
@@ -1464,7 +1469,10 @@ class TensorBatchedRequestSenderTest(tf.test.TestCase):
         )
 
         run_proto_2 = self._add_events_and_flush(
-            _apply_compat([event_1, event_2]), max_tensor_point_size=6 + 1
+            _apply_compat([event_1, event_2]),
+            # Set threshold that will filter out tensor points with 6 bytes
+            # of data and above. The additional byte is for proto overhead.
+            max_tensor_point_size=6 + 1,
         )
         tag_data_2 = {
             tag.name: [(p.step, p.value.tensor_content) for p in tag.points]
