@@ -408,6 +408,9 @@ class _UploadIntent(_Intent):
             self.logdir,
             allowed_plugins=server_info_lib.allowed_plugins(server_info),
             max_blob_size=server_info_lib.max_blob_size(server_info),
+            max_tensor_point_size=server_info_lib.max_tensor_point_size(
+                server_info
+            ),
             name=self.name,
             description=self.description,
         )
