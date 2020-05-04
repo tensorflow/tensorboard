@@ -33,6 +33,9 @@ _REQUEST_TIMEOUT_SECONDS = 10
 # Maximum blob size, if not specified by server_info
 _DEFAULT_MAX_BLOB_SIZE = 10 * (2 ** 20)  # 10 MiB
 
+# Maximum tensor point size, if not specified by server_info
+_DEFAULT_MAX_TENSOR_POINT_SIZE = 16 * (2 ** 10)  # 16 KiB
+
 
 def _server_info_request(upload_plugins):
     """Generates a ServerInfoRequest
@@ -162,9 +165,8 @@ def max_blob_size(server_info):
     submessage is set, else falls back to a default.
 
     Note that the RPC endpoint also enforces a limit, which should be kept in
-    sync with the one provided by server_info.  Here the purpose is to provide
-    a better error message and to avoid attempting the upload if it is expected
-    to fail anyway.
+    sync with the one provided by server_info. Blobs larger than this maximum
+    should be stripped from the data set and a warning logged for the user.
 
     Args:
       server_info: A `server_info_pb2.ServerInfoResponse` message.
@@ -177,9 +179,36 @@ def max_blob_size(server_info):
         return server_info.upload_limits.max_blob_size
     else:
         # Old server: gracefully degrade to 10 MiB.
-        # TODO(@davidsoergel): Promote this branch to an error once we're
+        # TODO(@bmd3k): Promote this branch to an error once we're
         # confident that we won't roll back to old server versions.
         return _DEFAULT_MAX_BLOB_SIZE
+
+
+def max_tensor_point_size(server_info):
+    """Determines the maximum allowed size for tensor point uploads.
+
+    This pulls from the `max_tensor_point_size` on the `server_info` when that
+    submessage is set, else falls back to a default.
+
+    Note that the RPC endpoint may also enforce a limit, which should be kept in
+    sync with the one provided by server_info. Tensor points larger than this
+    maximum should be stripped from the data set and a warning logged for the
+    user.
+
+    Args:
+      server_info: A `server_info_pb2.ServerInfoResponse` message.
+
+    Returns:
+      A integer giving the maximum size allowed for tensor uploads, in bytes.
+    """
+
+    if server_info.HasField("upload_limits"):
+        return server_info.upload_limits.max_tensor_point_size
+    else:
+        # Old server: gracefully degrade to 16 KiB.
+        # TODO(@bmd3k): Promote this branch to an error once we're
+        # confident that we won't roll back to old server versions.
+        return _DEFAULT_MAX_TENSOR_POINT_SIZE
 
 
 class CommunicationError(RuntimeError):
