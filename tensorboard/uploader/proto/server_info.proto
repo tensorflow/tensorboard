@@ -109,4 +109,8 @@ message UploadLimits {
   // the server may enforce a *minimum* blob size, which is a separate issue).
   // If this is negative, no blobs should be uploaded.
   int64 max_blob_size = 1;
+  // The maximum allowed size for tensor point uploads.
+  // If this is 0, it is allowed to upload tensor points of size 0.
+  // If this is negative, no blobs should be uploaded.
+  int64 max_tensor_point_size = 2;
 }

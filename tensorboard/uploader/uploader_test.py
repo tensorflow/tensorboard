@@ -117,6 +117,7 @@ def _create_uploader(
     writer_client=_USE_DEFAULT,
     logdir=None,
     max_blob_size=_USE_DEFAULT,
+    max_tensor_point_size=_USE_DEFAULT,
     logdir_poll_rate_limiter=_USE_DEFAULT,
     rpc_rate_limiter=_USE_DEFAULT,
     blob_rpc_rate_limiter=_USE_DEFAULT,
@@ -127,6 +128,8 @@ def _create_uploader(
         writer_client = _create_mock_client()
     if max_blob_size is _USE_DEFAULT:
         max_blob_size = 12345
+    if max_tensor_point_size is _USE_DEFAULT:
+        max_tensor_point_size = 11111
     if logdir_poll_rate_limiter is _USE_DEFAULT:
         logdir_poll_rate_limiter = util.RateLimiter(0)
     if rpc_rate_limiter is _USE_DEFAULT:
@@ -138,6 +141,7 @@ def _create_uploader(
         logdir,
         allowed_plugins=_SCALARS_HISTOGRAMS_AND_GRAPHS,
         max_blob_size=max_blob_size,
+        max_tensor_point_size=max_tensor_point_size,
         logdir_poll_rate_limiter=logdir_poll_rate_limiter,
         rpc_rate_limiter=rpc_rate_limiter,
         blob_rpc_rate_limiter=blob_rpc_rate_limiter,
@@ -151,6 +155,7 @@ def _create_request_sender(
     api=None,
     allowed_plugins=_USE_DEFAULT,
     max_blob_size=_USE_DEFAULT,
+    max_tensor_point_size=_USE_DEFAULT,
     rpc_rate_limiter=_USE_DEFAULT,
     blob_rpc_rate_limiter=_USE_DEFAULT,
 ):
@@ -160,6 +165,8 @@ def _create_request_sender(
         allowed_plugins = _SCALARS_HISTOGRAMS_AND_GRAPHS
     if max_blob_size is _USE_DEFAULT:
         max_blob_size = 12345
+    if max_tensor_point_size is _USE_DEFAULT:
+        max_tensor_point_size = 11111
     if rpc_rate_limiter is _USE_DEFAULT:
         rpc_rate_limiter = util.RateLimiter(0)
     if blob_rpc_rate_limiter is _USE_DEFAULT:
@@ -169,6 +176,7 @@ def _create_request_sender(
         api=api,
         allowed_plugins=allowed_plugins,
         max_blob_size=max_blob_size,
+        max_tensor_point_size=max_tensor_point_size,
         rpc_rate_limiter=rpc_rate_limiter,
         blob_rpc_rate_limiter=blob_rpc_rate_limiter,
     )
@@ -187,14 +195,17 @@ def _create_scalar_request_sender(
 
 
 def _create_tensor_request_sender(
-    experiment_id=None, api=None,
+    experiment_id=None, api=None, max_tensor_point_size=_USE_DEFAULT,
 ):
     if api is _USE_DEFAULT:
         api = _create_mock_client()
+    if max_tensor_point_size is _USE_DEFAULT:
+        max_tensor_point_size = 11111
     return uploader_lib._TensorBatchedRequestSender(
         experiment_id=experiment_id,
         api=api,
         rpc_rate_limiter=util.RateLimiter(0),
+        max_tensor_point_size=max_tensor_point_size,
     )
 
 
@@ -1202,10 +1213,12 @@ class TensorBatchedRequestSenderTest(tf.test.TestCase):
             for value in event.summary.value:
                 sender.add_event(run_name, event, value, value.metadata)
 
-    def _add_events_and_flush(self, events):
+    def _add_events_and_flush(self, events, max_tensor_point_size=_USE_DEFAULT):
         mock_client = _create_mock_client()
         sender = _create_tensor_request_sender(
-            experiment_id="123", api=mock_client,
+            experiment_id="123",
+            api=mock_client,
+            max_tensor_point_size=max_tensor_point_size,
         )
         self._add_events(sender, "", events)
         sender.flush()
@@ -1410,6 +1423,65 @@ class TensorBatchedRequestSenderTest(tf.test.TestCase):
                 request.ByteSize(), uploader_lib._MAX_REQUEST_LENGTH_BYTES
             )
         self.assertEqual(total_points_in_result, point_count)
+
+    def test_strip_large_tensors(self):
+        # Generate test data with varying tensor point sizes. Use raw bytes.
+        event_1 = event_pb2.Event(step=1)
+        event_1.summary.value.add(
+            tag="one", tensor=tensor_pb2.TensorProto(tensor_content=b"\x01\x02")
+        )
+        event_1.summary.value.add(
+            tag="two",
+            tensor=tensor_pb2.TensorProto(
+                # 6 bytes will be filtered in the second test.
+                tensor_content=b"\x01\x02\x03\x04\x05\x06"
+            ),
+        )
+        event_2 = event_pb2.Event(step=2)
+        event_2.summary.value.add(
+            tag="one", tensor=tensor_pb2.TensorProto(tensor_content=b"\x01\x02")
+        )
+        event_2.summary.value.add(
+            tag="two",
+            tensor=tensor_pb2.TensorProto(
+                # 7 bytes will be filtered out in both tests.
+                tensor_content=b"\x01\x02\x03\x04\x05\x06\x07"
+            ),
+        )
+
+        run_proto = self._add_events_and_flush(
+            _apply_compat([event_1, event_2]),
+            # Set threshold that will filter out tensor points with 7 bytes
+            # of data and above. The additional byte is for proto overhead.
+            max_tensor_point_size=7 + 1,
+        )
+        tag_data = {
+            tag.name: [(p.step, p.value.tensor_content) for p in tag.points]
+            for tag in run_proto.tags
+        }
+        # A single tensor point is filtered out.
+        self.assertEqual(
+            tag_data,
+            {
+                "one": [(1, b"\x01\x02"), (2, b"\x01\x02")],
+                "two": [(1, b"\x01\x02\x03\x04\x05\x06")],
+            },
+        )
+
+        run_proto_2 = self._add_events_and_flush(
+            _apply_compat([event_1, event_2]),
+            # Set threshold that will filter out tensor points with 6 bytes
+            # of data and above. The additional byte is for proto overhead.
+            max_tensor_point_size=6 + 1,
+        )
+        tag_data_2 = {
+            tag.name: [(p.step, p.value.tensor_content) for p in tag.points]
+            for tag in run_proto_2.tags
+        }
+        # All tensor points from the same tag are filtered out, and the tag is pruned.
+        self.assertEqual(
+            tag_data_2, {"one": [(1, b"\x01\x02"), (2, b"\x01\x02")],},
+        )
 
     def test_prunes_tags_and_runs(self):
         mock_client = _create_mock_client()
