@@ -266,9 +266,6 @@ class TensorBoardExporterTest(tb_test.TestCase):
 
     def test_e2e_success_case_with_only_tensors_data(self):
         mock_api_client = self._create_mock_api_client()
-        mock_api_client.StreamExperiments.return_value = iter(
-            [_make_experiments_response(["789"])]
-        )
 
         def stream_experiments(request, **kwargs):
             del request  # unused

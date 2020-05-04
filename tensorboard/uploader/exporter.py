@@ -54,6 +54,11 @@ _MAX_INT64 = 2 ** 63 - 1
 _FILENAME_METADATA = "metadata.json"
 # Output filename for scalar data within an experiment directory.
 _FILENAME_SCALARS = "scalars.json"
+# Output filename for tensors dat within an experiment directory.
+# This file does not contain the actual values of the tensors. Instead,
+# it holds `tensors_file_path`s, which point to numpy .npz files that
+# store the actual tensor values. The json file additional additionally
+# contains other metadata such as run and tag names and `wall_time`s.
 _FILENAME_TENSORS = "tensors.json"
 # Output filename for blob sequences data within an experiment directory.
 # This file does not contain the actual contents of the blobs. Instead,
