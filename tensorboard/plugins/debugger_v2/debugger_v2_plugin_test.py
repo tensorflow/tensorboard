@@ -1053,6 +1053,254 @@ class DebuggerV2PluginTest(tf.test.TestCase):
             },
         )
 
+    def testServeGraphOpInfoForOpWithInputsAndConsumers(self):
+        """Get the op info of an op with both inputs and consumers."""
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        # First, look up the graph_id and name of the 1st AddV2 op.
+        response = self.server.get(
+            _ROUTE_PREFIX + "/graph_execution/digests?run=%s" % run
+        )
+        data = json.loads(response.get_data())
+        digests = data["graph_execution_digests"]
+        op_types = [digest["op_type"] for digest in digests]
+        op_index = op_types.index("AddV2")
+        graph_id = digests[op_index]["graph_id"]
+        op_name = digests[op_index]["op_name"]
+        # Actually query the /graphs/op_info route.
+        response = self.server.get(
+            _ROUTE_PREFIX
+            + "/graphs/op_info?run=%s&graph_id=%s&op_name=%s"
+            % (run, graph_id, op_name)
+        )
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.get_data())
+
+        # Check op's self properties.
+        self.assertEqual(data["op_type"], "AddV2")
+        self.assertEqual(data["op_name"], digests[op_index]["op_name"])
+        # TODO(cais): Assert on detailed device name when available.
+        self.assertIn("device_name", data)
+        # The op is inside a nested tf.function, so its graph stack must have a
+        # height > 1.
+        self.assertGreater(len(data["graph_ids"]), 1)
+        # All graph_ids should be non-empty strings.
+        self.assertTrue(all(data["graph_ids"]))
+        # All graph_ids should be unique (graph recursion is not currently
+        # allowed in TF.)
+        self.assertLen(set(data["graph_ids"]), len(data["graph_ids"]))
+        self.assertNotIn("graph_id", data)
+        self.assertEqual(data["graph_ids"][-1], digests[op_index]["graph_id"])
+        self.assertLen(data["input_names"], 2)
+        self.assertTrue(data["input_names"][0])
+        self.assertTrue(data["input_names"][1])
+        self.assertEqual(data["num_outputs"], 1)
+        self.assertEqual(data["host_name"], _HOST_NAME)
+        self.assertTrue(data["stack_frame_ids"])
+
+        # Check input op properties.
+        inputs = data["inputs"]
+        self.assertLen(inputs, len(data["input_names"]))
+        self.assertEqual(
+            inputs[0]["op_name"],
+            debug_data_multiplexer.tensor_name_to_op_name(
+                data["input_names"][0]
+            ),
+        )
+        self.assertEqual(
+            inputs[1]["op_name"],
+            debug_data_multiplexer.tensor_name_to_op_name(
+                data["input_names"][1]
+            ),
+        )
+        # The two input tensors to the AddV2 op are from the same Unpack
+        # (unstack) op that provides 4 outputs.
+        self.assertEqual(inputs[0]["op_type"], "Unpack")
+        self.assertEqual(inputs[1]["op_type"], "Unpack")
+        self.assertTrue(inputs[0]["input_names"])
+        self.assertTrue(inputs[1]["input_names"])
+        self.assertEqual(inputs[0]["num_outputs"], 4)
+        self.assertEqual(inputs[1]["num_outputs"], 4)
+        self.assertEqual(inputs[0]["host_name"], _HOST_NAME)
+        self.assertEqual(inputs[1]["host_name"], _HOST_NAME)
+        self.assertEqual(inputs[0]["graph_ids"], data["graph_ids"])
+        self.assertEqual(inputs[1]["graph_ids"], data["graph_ids"])
+        self.assertEqual(
+            inputs[0]["stack_frame_ids"], inputs[1]["stack_frame_ids"]
+        )
+        self.assertNotIn("inputs", inputs[0])
+        self.assertNotIn("inputs", inputs[1])
+        self.assertNotIn("consumers", inputs[0])
+        self.assertNotIn("consumers", inputs[0])
+
+        # Check consuming op properties.
+        self.assertEqual(list(data["consumers"].keys()), ["0"])
+        self.assertLen(data["consumers"]["0"], 1)
+        consumer = data["consumers"]["0"][0]
+        # The AddV2 is consumed by another AddV2 op in the same graph.
+        self.assertEqual(consumer["op_type"], "AddV2")
+        self.assertTrue(consumer["op_type"])
+        self.assertNotEqual(consumer["op_name"], data["op_name"])
+        self.assertIn(data["op_name"] + ":0", consumer["input_names"])
+        self.assertEqual(consumer["num_outputs"], 1)
+        self.assertEqual(consumer["host_name"], _HOST_NAME)
+        self.assertTrue(consumer["stack_frame_ids"])
+        self.assertNotIn("inputs", consumer)
+        self.assertNotIn("consumers", consumer)
+
+    def testServeGraphOpInfoForOpWithNoConsumers(self):
+        """Get the op info of an op with no consumers in the same graph."""
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        # First, look up the graph_id and name of the Iendity op in the
+        # unstack_and_sum() graph. The Identity op marks the return value of
+        # the tf.function and hence has no consumer.
+        response = self.server.get(
+            _ROUTE_PREFIX + "/graph_execution/digests?run=%s" % run
+        )
+        data = json.loads(response.get_data())
+        digests = data["graph_execution_digests"]
+        op_types = [digest["op_type"] for digest in digests]
+        add_index_0 = op_types.index("AddV2")
+        graph_id = digests[add_index_0]["graph_id"]
+        # Actually query the /graphs/op_info route.
+        response = self.server.get(
+            _ROUTE_PREFIX
+            + "/graphs/op_info?run=%s&graph_id=%s&op_name=%s"
+            % (run, graph_id, "Identity")
+        )
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.get_data())
+
+        # Check op's self properties.
+        self.assertEqual(data["op_type"], "Identity")
+        self.assertEqual(data["op_name"], "Identity")
+        # TODO(cais): Assert on detailed device name when available.
+        self.assertIn("device_name", data)
+        # The op is inside a nested tf.function, so its graph stack must have a height > 1.
+        self.assertGreater(len(data["graph_ids"]), 1)
+        self.assertEqual(data["graph_ids"][-1], graph_id)
+        self.assertLen(data["input_names"], 1)
+        self.assertTrue(data["input_names"][0])
+        self.assertEqual(data["num_outputs"], 1)
+        self.assertEqual(data["host_name"], _HOST_NAME)
+        self.assertTrue(data["stack_frame_ids"])
+
+        # Check input op properties.
+        inputs = data["inputs"]
+        self.assertLen(inputs, 1)
+        self.assertEqual(inputs[0]["op_type"], "AddV2")
+
+        # Check consumers: There should be no consumers for this Identity op.
+        self.assertEqual(data["consumers"], {})
+
+    def testServeGraphOpInfoForOpWithNoInputs(self):
+        """Get the op info of an op with no inputs."""
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        # First, look up the graph_id and name of the Placeholder op in the
+        # same graph as the Unstack op. This Placeholder op has no inputs.
+        response = self.server.get(
+            _ROUTE_PREFIX + "/graph_execution/digests?run=%s" % run
+        )
+        data = json.loads(response.get_data())
+        digests = data["graph_execution_digests"]
+        op_types = [digest["op_type"] for digest in digests]
+        graph_ids = [digest["graph_id"] for digest in digests]
+        unpack_op_index = op_types.index("Unpack")
+        unpack_op_name = digests[unpack_op_index]["op_name"]
+        graph_id = digests[unpack_op_index]["graph_id"]
+        placeholder_op_index = list(zip(graph_ids, op_types)).index(
+            (graph_id, "Placeholder")
+        )
+        op_name = digests[placeholder_op_index]["op_name"]
+        # Actually query the /graphs/op_info route.
+        response = self.server.get(
+            _ROUTE_PREFIX
+            + "/graphs/op_info?run=%s&graph_id=%s&op_name=%s"
+            % (run, graph_id, op_name)
+        )
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.get_data())
+
+        # Check op's self properties.
+        self.assertEqual(data["op_type"], "Placeholder")
+        self.assertTrue(data["op_name"])
+        # TODO(cais): Assert on detailed device name when available.
+        self.assertIn("device_name", data)
+        # The op is inside a nested tf.function, so its graph stack must have a height > 1.
+        self.assertNotIn("graph_id", data)
+        self.assertGreater(len(data["graph_ids"]), 1)
+        self.assertEqual(data["graph_ids"][-1], graph_id)
+        self.assertIsNone(data["input_names"])
+        self.assertEqual(data["num_outputs"], 1)
+        self.assertEqual(data["host_name"], _HOST_NAME)
+        self.assertTrue(data["stack_frame_ids"])
+
+        # Check input op properties: The Placeholder has no inputs.
+        self.assertIsNone(data["inputs"])
+
+        # Check consumers.
+        self.assertEqual(list(data["consumers"].keys()), ["0"])
+        self.assertLen(data["consumers"]["0"], 1)
+        consumer = data["consumers"]["0"][0]
+        self.assertEqual(consumer["op_type"], "Unpack")
+        self.assertEqual(consumer["op_name"], unpack_op_name)
+
+    def testServeGraphOpInfoRespondsWithErrorForInvalidGraphId(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        # Query the /graphs/op_info route with an invalid graph_id.
+        response = self.server.get(
+            _ROUTE_PREFIX
+            + "/graphs/op_info?run=%s&graph_id=%s&op_name=%s"
+            % (run, "nonsensical-graph-id", "Placeholder")
+        )
+
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {
+                "error": 'Not found: There is no graph with ID "nonsensical-graph-id"'
+            },
+        )
+
+    def testServeGraphOpInfoRespondsWithErrorForInvalidOpName(self):
+        """Get the op info of an op with no inputs."""
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        # First, look up the valid graph_id.
+        response = self.server.get(
+            _ROUTE_PREFIX + "/graph_execution/digests?run=%s" % run
+        )
+        data = json.loads(response.get_data())
+        digests = data["graph_execution_digests"]
+        op_types = [digest["op_type"] for digest in digests]
+        op_index = op_types.index("Placeholder")
+        graph_id = digests[op_index]["graph_id"]
+        # Query the/graphs/op_info route with a valid graph_id and
+        # a nonexistent op_name.
+        response = self.server.get(
+            _ROUTE_PREFIX
+            + "/graphs/op_info?run=%s&graph_id=%s&op_name=%s"
+            % (run, graph_id, "nonexistent-op-name")
+        )
+
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {
+                "error": 'Not found: There is no op named "nonexistent-op-name" '
+                'in graph with ID "%s"' % graph_id
+            },
+        )
+
     def testServeSourceFileListIncludesThisTestFile(self):
         _generate_tfdbg_v2_data(self.logdir)
         run = self._getExactlyOneRun()
