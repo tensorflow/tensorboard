@@ -65,6 +65,7 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
             "/execution/data": self.serve_execution_data,
             "/graph_execution/digests": self.serve_graph_execution_digests,
             "/graph_execution/data": self.serve_graph_execution_data,
+            "/graphs/op_info": self.serve_graph_op_info,
             "/source_files/list": self.serve_source_files_list,
             "/source_files/file": self.serve_source_file,
             "/stack_frames/stack_frames": self.serve_stack_frames,
@@ -240,6 +241,55 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
                 "application/json",
             )
         except errors.InvalidArgumentError as e:
+            return _error_response(request, str(e))
+
+    @wrappers.Request.application
+    def serve_graph_op_info(self, request):
+        """Serve information for ops in graphs.
+
+        The request specifies the op name and the ID of the graph that
+        contains the op.
+
+        The response contains a JSON object with the following fields:
+          - op_type
+          - op_name
+          - graph_ids: Stack of graph IDs that the op is located in, from
+            outermost to innermost.
+          - input_names: Input tensor names. This is `None` for ops without
+            inputs.
+          - num_outputs: Number of output tensors.
+          - host_name: Name of the host on which the op is created.
+          - stack_trace: Stack frames of the op's creation in.
+          - inputs: A recursive data object of all the input ops
+            to this op. Currently only immediate (one level of) inputs
+            are provided. This is `None` for ops without inputs.
+          - consumers: A recursive data object of all the ops that
+            consume the output tensors of the op. Currently only
+            immediate (one level of) consumers are provided. This is
+            an empty list for ops with no consumers.
+        """
+        experiment = plugin_util.experiment_id(request.environ)
+        run = request.args.get("run")
+        if run is None:
+            return _missing_run_error_response(request)
+        graph_id = request.args.get("graph_id")
+        op_name = request.args.get("op_name")
+        run_tag_filter = debug_data_provider.graph_op_info_run_tag_filter(
+            run, graph_id, op_name
+        )
+        blob_sequences = self._data_provider.read_blob_sequences(
+            experiment, self.plugin_name, run_tag_filter=run_tag_filter
+        )
+        tag = next(iter(run_tag_filter.tags))
+        try:
+            return http_util.Respond(
+                request,
+                self._data_provider.read_blob(
+                    blob_sequences[run][tag][0].blob_key
+                ),
+                "application/json",
+            )
+        except errors.NotFoundError as e:
             return _error_response(request, str(e))
 
     @wrappers.Request.application
