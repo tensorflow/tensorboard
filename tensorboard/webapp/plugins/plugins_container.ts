@@ -14,10 +14,12 @@ limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {Store, select, createSelector} from '@ngrx/store';
+import {combineLatest} from 'rxjs';
+import {map} from 'rxjs/operators';
 
 import {getPlugins, getActivePlugin, getPluginsListLoaded} from '../core/store';
 import {PluginMetadata} from '../types/api';
-import {LoadState} from '../types/data';
+import {LoadState, DataLoadState} from '../types/data';
 import {State} from '../core/store/core_types';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
@@ -47,6 +49,7 @@ const lastLoadedTimeInMs = createSelector(
   template: `
     <plugins-component
       [activePlugin]="activePlugin$ | async"
+      [noEnabledPlugin]="noEnabledPlugin$ | async"
       [lastUpdated]="lastLoadedTimeInMs$ | async"
     ></plugins-component>
   `,
@@ -55,6 +58,18 @@ const lastLoadedTimeInMs = createSelector(
 })
 export class PluginsContainer {
   readonly activePlugin$ = this.store.pipe(select(activePlugin));
+  readonly noEnabledPlugin$ = combineLatest(
+    this.store.select(activePlugin),
+    this.store.select(getPluginsListLoaded)
+  ).pipe(
+    map(([activePlugin, loadState]) => {
+      return (
+        activePlugin === null &&
+        (loadState.state === DataLoadState.LOADED ||
+          loadState.state === DataLoadState.FAILED)
+      );
+    })
+  );
   readonly lastLoadedTimeInMs$ = this.store.pipe(select(lastLoadedTimeInMs));
 
   constructor(private readonly store: Store<State>) {}
