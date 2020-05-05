@@ -48,6 +48,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
             num_runs=2,
             num_tags=4,
             num_scalars=60,
+            total_tensor_bytes=789,
             total_blob_bytes=1234,
         )
         util.set_timestamp(experiment.create_time, 981173106)
@@ -65,6 +66,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
             "\tRuns                 2",
             "\tTags                 4",
             "\tScalars              60",
+            "\tTensor bytes         789",
             "\tBinary object bytes  1234",
         ]
         self.assertEqual(output.split("\n"), expected_lines)
@@ -77,6 +79,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
             num_runs=2,
             num_tags=4,
             num_scalars=60,
+            total_tensor_bytes=0,
             total_blob_bytes=1234,
         )
         util.set_timestamp(experiment.create_time, 981173106)
@@ -99,6 +102,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
             "\tRuns                 2",
             "\tTags                 4",
             "\tScalars              60",
+            "\tTensor bytes         0",
             "\tBinary object bytes  1234",
         ]
         self.assertEqual(output.split("\n"), expected_lines)
@@ -110,6 +114,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
             num_runs=2,
             num_tags=4,
             num_scalars=60,
+            total_tensor_bytes=789,
             total_blob_bytes=1234,
         )
         util.set_timestamp(experiment.create_time, 981173106)
@@ -127,6 +132,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
             "\tRuns                 2",
             "\tTags                 4",
             "\tScalars              60",
+            "\tTensor bytes         789",
             "\tBinary object bytes  1234",
         ]
         self.assertEqual(output.split("\n"), expected_lines)
@@ -138,6 +144,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
             num_runs=2,
             num_tags=4,
             num_scalars=60,
+            total_tensor_bytes=789,
             total_blob_bytes=1234,
         )
         util.set_timestamp(experiment.create_time, 981173106)
@@ -156,6 +163,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
             '  "runs": 2,',
             '  "tags": 4,',
             '  "scalars": 60,',
+            '  "tensor_bytes": 789,',
             '  "binary_object_bytes": 1234',
             "}",
         ]
@@ -168,6 +176,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
             num_runs=2,
             num_tags=4,
             num_scalars=60,
+            total_tensor_bytes=789,
             total_blob_bytes=1234,
         )
         util.set_timestamp(experiment.create_time, 981173106)
@@ -193,6 +202,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
             '  "runs": 2,',
             '  "tags": 4,',
             '  "scalars": 60,',
+            '  "tensor_bytes": 789,',
             '  "binary_object_bytes": 1234',
             "}",
         ]
