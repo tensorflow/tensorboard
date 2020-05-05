@@ -57,9 +57,11 @@ const reducer = createReducer(
   on(
     actions.pluginsListingLoaded,
     (state: CoreState, {plugins}): CoreState => {
-      const [firstPlugin] = Object.keys(plugins);
-      let activePlugin =
-        state.activePlugin !== null ? state.activePlugin : firstPlugin;
+      const firstActivePlugin =
+        Object.keys(plugins).find((pluginId) => {
+          return plugins[pluginId].enabled;
+        }) || null;
+      const activePlugin = state.activePlugin || firstActivePlugin;
       return {
         ...state,
         activePlugin,
