@@ -792,7 +792,28 @@ public final class Vulcanize {
     }
   }
 
-  // Refer to https://github.com/tensorflow/tensorboard/issues/3557.
+  // When we inline the HTML based on `<link rel="import">` in `transform`, we
+  // replace the link element with parsed document. This makes us have nested
+  // documents and jsoup's Node.outerHtml (or Node.toString) are incapable of
+  // properly outputting that. Here, we flatten the document by combining all
+  // elements in `<head>` and `<body>` of nested document in one `<head>` and
+  // `<body>`.
+  //
+  // Examples:
+  // // Input
+  // <#root> <!-- document -->
+  //   <html>
+  //     <head><#root><html><body>foo</body></html></#root></head>
+  //     <body><span>bar</span></body>
+  //   </html>
+  // </html>
+  // // Output
+  // <#root> <!-- document -->
+  //   <html>
+  //     <head></head>
+  //     <body>foo<span>bar</span></body>
+  //   </html>
+  // </html>
   private static Document getFlattenedDocument(Document document) {
     Document flatDoc = new Document("/");
     flatDoc.normalise();
@@ -812,13 +833,16 @@ public final class Vulcanize {
         cloneChildrenWithoutWhitespace((Element) currentNode, rootDocumentBody);
       }
 
+      // Standard DFS.
       if (currentNode.childNodeSize() > 0) {
         currentNode = currentNode.childNode(0);
       } else {
+        // Go up in the tree if there are no sibling elemnts and repeat.
         while (currentNode != null && currentNode.nextSibling() == null) {
           currentNode = currentNode.parentNode();
         }
 
+        // currentNode can be `null` when we went up from the root document.
         if (currentNode != null) {
           currentNode = currentNode.nextSibling();
         }
