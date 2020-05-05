@@ -16,7 +16,11 @@ import {Component} from '@angular/core';
 import {createSelector, select, Store} from '@ngrx/store';
 
 import {graphExecutionScrollToIndex} from '../../actions';
-import {getGraphExecutionData, getNumGraphExecutions} from '../../store';
+import {
+  getGraphExecutionData,
+  getGraphExecutionFocusIndex,
+  getNumGraphExecutions,
+} from '../../store';
 import {State} from '../../store/debugger_types';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
@@ -28,6 +32,7 @@ import {State} from '../../store/debugger_types';
       [numGraphExecutions]="numGraphExecutions$ | async"
       [graphExecutionData]="graphExecutionData$ | async"
       [graphExecutionIndices]="graphExecutionIndices$ | async"
+      [focusIndex]="focusIndex$ | async"
       (onScrolledIndexChange)="onScrolledIndexChange($event)"
     ></graph-executions-component>
   `,
@@ -50,6 +55,8 @@ export class GraphExecutionsContainer {
       )
     )
   );
+
+  readonly focusIndex$ = this.store.pipe(select(getGraphExecutionFocusIndex));
 
   onScrolledIndexChange(scrolledIndex: number) {
     this.store.dispatch(graphExecutionScrollToIndex({index: scrolledIndex}));
