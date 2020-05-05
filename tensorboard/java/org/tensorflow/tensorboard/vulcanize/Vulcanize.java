@@ -75,7 +75,6 @@ import org.jsoup.nodes.Comment;
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Html5Printer;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.parser.Parser;
@@ -182,10 +181,11 @@ public final class Vulcanize {
     }
 
     boolean shouldExtractJs = !jsPath.isEmpty();
+    // Write an empty file for shasum when all scripts are extracted out.
     createFile(
         jsOutput, shouldExtractJs ? extractAndTransformJavaScript(document, jsPath) : "");
-    // Write an empty file for shasum when all scripts are extracted out.
-    createFile(output, Html5Printer.stringify(document));
+    Document normalizedDocument = getFlattenedDocument(document);
+    createFile(output, normalizedDocument.toString());
   }
 
   private static void createFile(Path filePath, String content) throws IOException {
@@ -776,6 +776,55 @@ public final class Vulcanize {
     lastBody.appendChild(scriptElement);
 
     return scriptContent;
+  }
+
+  private static void cloneChildrenWithoutWhitespace(Element src, Element dest) {
+    List<Node> toMove = new ArrayList<Node>();
+    for (Node node : src.childNodes()) {
+      if (node instanceof TextNode && ((TextNode) node).isBlank()) {
+        continue;
+      }
+      toMove.add(node);
+    }
+    for (int i = 0; i < toMove.size(); i++) {
+      Node node = toMove.get(i);
+      dest.appendChild(node.clone());
+    }
+  }
+
+  // Refer to https://github.com/tensorflow/tensorboard/issues/3557.
+  private static Document getFlattenedDocument(Document document) {
+    Document flatDoc = new Document("/");
+    flatDoc.normalise();
+    Element rootDocumentHead = flatDoc.head();
+    Element rootDocumentBody = flatDoc.body();
+
+    Node currentNode = document;
+    while (currentNode != null) {
+      // Do not clone the element if it is a `document` inside `<head>`.
+      // We want to traverse further and get all elements from `<head>` and `<body>`
+      if (currentNode.parentNode() != null && currentNode.parentNode().nodeName().equals("head")
+          && !(currentNode instanceof Document)) {
+        rootDocumentHead.appendChild(currentNode.clone());
+      }
+
+      if (currentNode.nodeName().equals("body")) {
+        cloneChildrenWithoutWhitespace((Element) currentNode, rootDocumentBody);
+      }
+
+      if (currentNode.childNodeSize() > 0) {
+        currentNode = currentNode.childNode(0);
+      } else {
+        while (currentNode != null && currentNode.nextSibling() == null) {
+          currentNode = currentNode.parentNode();
+        }
+
+        if (currentNode != null) {
+          currentNode = currentNode.nextSibling();
+        }
+      }
+    }
+    return flatDoc;
   }
 
   private static final class JsPrintlessErrorManager extends BasicErrorManager {
