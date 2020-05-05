@@ -42,9 +42,25 @@ import {PluginRegistryModule} from './plugin_registry_module';
   templateUrl: './plugins_component.ng.html',
   styles: [
     `
+      :host {
+        display: block;
+        position: relative;
+      }
       .plugins {
         height: 100%;
         position: relative;
+      }
+      .no-plugin {
+        background-color: #fff;
+        bottom: 0;
+        left: 0;
+        position: absolute;
+        right: 0;
+        top: 0;
+      }
+      .warning-message {
+        margin: 80px auto 0;
+        max-width: 540px;
       }
     `,
     'iframe { border: 0; height: 100%; width: 100%; }',
@@ -65,6 +81,9 @@ export class PluginsComponent implements OnChanges {
 
   @Input()
   activePlugin!: UiPluginMetadata | null;
+
+  @Input()
+  noEnabledPlugin!: boolean;
 
   @Input()
   lastUpdated?: number;
