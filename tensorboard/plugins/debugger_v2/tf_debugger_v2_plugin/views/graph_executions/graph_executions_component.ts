@@ -55,7 +55,11 @@ export class GraphExecutionsComponent {
   private readonly viewPort?: CdkVirtualScrollViewport;
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (this.viewPort && changes['focusIndex']) {
+    if (
+      this.viewPort &&
+      changes['focusIndex'] &&
+      changes['focusIndex'].currentValue !== null
+    ) {
       const range = this.viewPort.getRenderedRange();
       const scrollIndex = changes['focusIndex'].currentValue;
       // Make sure that the index is scrolled to one third the view port.

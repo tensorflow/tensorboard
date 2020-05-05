@@ -17,7 +17,6 @@ limitations under the License.
  */
 import {CdkVirtualScrollViewport} from '@angular/cdk/scrolling';
 import {CommonModule} from '@angular/common';
-import {SimpleChange} from '@angular/core';
 import {fakeAsync, TestBed, tick} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 
@@ -51,10 +50,19 @@ import {GraphExecutionsContainer} from './graph_executions_container';
 import {GraphExecutionsModule} from './graph_executions_module';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
-import {GraphExecutionsComponent} from './graph_executions_component';
 
 describe('Graph Executions Container', () => {
   let store: MockStore<State>;
+
+  const graphExecutionData: {[index: number]: GraphExecution} = {};
+  for (let i = 0; i < 120; ++i) {
+    graphExecutionData[i] = createTestGraphExecution({
+      op_name: `TestOp_${i}`,
+      op_type: `OpType_${i}`,
+      tensor_debug_mode: TensorDebugMode.CONCISE_HEALTH,
+      debug_tensor_value: [i, 100, 0, 0, 0],
+    });
+  }
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -98,15 +106,6 @@ describe('Graph Executions Container', () => {
   it('renders # execs and execs viewport if # execs > 0; fully loaded', fakeAsync(() => {
     const fixture = TestBed.createComponent(GraphExecutionsContainer);
     store.overrideSelector(getNumGraphExecutions, 120);
-    const graphExecutionData: {[index: number]: GraphExecution} = {};
-    for (let i = 0; i < 120; ++i) {
-      graphExecutionData[i] = createTestGraphExecution({
-        op_name: `TestOp_${i}`,
-        op_type: `OpType_${i}`,
-        tensor_debug_mode: TensorDebugMode.CONCISE_HEALTH,
-        debug_tensor_value: [i, 100, 0, 0, 0],
-      });
-    }
     store.overrideSelector(getGraphExecutionData, graphExecutionData);
     store.overrideSelector(getGraphExecutionFocusIndex, 99);
     fixture.autoDetectChanges();
@@ -190,26 +189,16 @@ describe('Graph Executions Container', () => {
         `calls scrollToIndex on focusIndex change: ` +
           `${oldFocusIndex} --> ${newFocusIndex}`,
         fakeAsync(() => {
-          const fixture = TestBed.createComponent(GraphExecutionsComponent);
-          const component = fixture.componentInstance;
-          const graphExecutionData: {[index: number]: GraphExecution} = {};
-          const graphExecutionIndices: number[] = [];
-          for (let i = 0; i < 120; ++i) {
-            graphExecutionData[i] = createTestGraphExecution({
-              op_name: `TestOp_${i}`,
-              op_type: `OpType_${i}`,
-              tensor_debug_mode: TensorDebugMode.CONCISE_HEALTH,
-              debug_tensor_value: [i, 100, 0, 0, 0],
-            });
-            graphExecutionIndices.push(i);
-          }
-          component.numGraphExecutions = 120;
-          component.graphExecutionData = graphExecutionData;
-          component.graphExecutionIndices = graphExecutionIndices;
-          component.focusIndex = oldFocusIndex;
-          fixture.detectChanges();
+          const fixture = TestBed.createComponent(GraphExecutionsContainer);
+          store.overrideSelector(getNumGraphExecutions, 120);
+          store.overrideSelector(getGraphExecutionData, graphExecutionData);
+          store.overrideSelector(getGraphExecutionFocusIndex, oldFocusIndex);
+          fixture.autoDetectChanges();
           tick();
 
+          const component = fixture.debugElement.query(
+            By.css('graph-executions-component')
+          ).componentInstance;
           const viewPort = component.TEST_ONLY.getViewPort() as CdkVirtualScrollViewport;
           const {start, end} = viewPort.getRenderedRange();
           expect(end).toBeGreaterThan(start);
@@ -221,9 +210,11 @@ describe('Graph Executions Container', () => {
             scrollIndices.push(scrollIndex);
           });
 
-          component.ngOnChanges({
-            focusIndex: new SimpleChange(oldFocusIndex, newFocusIndex, true),
-          });
+          store.overrideSelector(getGraphExecutionFocusIndex, newFocusIndex);
+          store.refreshState();
+          fixture.detectChanges();
+          tick();
+
           expect(scrollToIndexSpy).toHaveBeenCalledTimes(1);
           expect(scrollToIndexSpy).toHaveBeenCalledWith(
             Math.max(newFocusIndex - Math.round(end - start) / 3, 0)
@@ -232,4 +223,33 @@ describe('Graph Executions Container', () => {
       );
     }
   }
+
+  it('no scrolling happens on null focusIndex', fakeAsync(() => {
+    const fixture = TestBed.createComponent(GraphExecutionsContainer);
+    store.overrideSelector(getNumGraphExecutions, 120);
+    store.overrideSelector(getGraphExecutionData, graphExecutionData);
+    store.overrideSelector(getGraphExecutionFocusIndex, 99);
+    fixture.autoDetectChanges();
+    tick();
+
+    const component = fixture.debugElement.query(
+      By.css('graph-executions-component')
+    ).componentInstance;
+    const viewPort = component.TEST_ONLY.getViewPort() as CdkVirtualScrollViewport;
+    const {start, end} = viewPort.getRenderedRange();
+    expect(end).toBeGreaterThan(start);
+    const scrollIndices: number[] = [];
+    const scrollToIndexSpy = spyOn(viewPort, 'scrollToIndex').and.callFake(
+      (scrollIndex: number) => {
+        scrollIndices.push(scrollIndex);
+      }
+    );
+
+    store.overrideSelector(getGraphExecutionFocusIndex, null);
+    store.refreshState();
+    fixture.detectChanges();
+    tick();
+
+    expect(scrollToIndexSpy).not.toHaveBeenCalled();
+  }));
 });

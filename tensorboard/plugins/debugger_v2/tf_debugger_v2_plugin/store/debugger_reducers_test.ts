@@ -309,24 +309,22 @@ describe('Debugger reducers', () => {
             AlertType.INF_NAN_ALERT,
           ]);
           const alertsOfType = nextState.alerts.alerts[AlertType.INF_NAN_ALERT];
-          expect(Object.keys(alertsOfType).length).toBe(2);
-          expect(alertsOfType[0]).toEqual(alert0);
-          expect(alertsOfType[1]).toEqual(alert1);
-          expect(Object.keys(nextState.alerts.executionIndices)).toEqual([
-            AlertType.INF_NAN_ALERT,
-          ]);
-          const executionIndices =
-            nextState.alerts.executionIndices[AlertType.INF_NAN_ALERT];
-          expect(executionIndices).toEqual([
-            firstAlertExecutionIndex,
-            firstAlertExecutionIndex + 1,
-          ]);
-          const graphExecutionIndices =
-            nextState.alerts.graphExecutionIndices[AlertType.INF_NAN_ALERT];
-          expect(graphExecutionIndices).toEqual([
-            firstAlertGraphExecutionIndex,
-            firstAlertGraphExecutionIndex * 2,
-          ]);
+          expect(alertsOfType).toEqual({
+            0: alert0,
+            1: alert1,
+          });
+          expect(nextState.alerts.executionIndices).toEqual({
+            [AlertType.INF_NAN_ALERT]: [
+              firstAlertExecutionIndex,
+              firstAlertExecutionIndex + 1,
+            ],
+          });
+          expect(nextState.alerts.graphExecutionIndices).toEqual({
+            [AlertType.INF_NAN_ALERT]: [
+              firstAlertGraphExecutionIndex,
+              firstAlertGraphExecutionIndex * 2,
+            ],
+          });
           // Verify that the top-level execution for the first alert is scrolled
           // into view.
           expect(nextState.executions.scrollBeginIndex).toBe(
@@ -345,10 +343,12 @@ describe('Debugger reducers', () => {
       const alert0 = createTestInfNanAlert({
         op_type: 'RealDiv',
         execution_index: 10,
+        graph_execution_trace_index: 5,
       });
       const alert1 = createTestInfNanAlert({
         op_type: 'Log',
         execution_index: 11,
+        graph_execution_trace_index: 6,
       });
       const state = createDebuggerState({
         activeRunId: '__default_debugger_run__',
@@ -361,6 +361,12 @@ describe('Debugger reducers', () => {
           alertsBreakdown: {[AlertType.INF_NAN_ALERT]: 1},
           alerts: {
             [AlertType.INF_NAN_ALERT]: {0: alert0},
+          },
+          executionIndices: {
+            [AlertType.INF_NAN_ALERT]: [10],
+          },
+          graphExecutionIndices: {
+            [AlertType.INF_NAN_ALERT]: [5],
           },
         }),
       }); // `alerts` state is in a non-empty initial state.
@@ -386,19 +392,18 @@ describe('Debugger reducers', () => {
       expect(nextState.alerts.alertsBreakdown).toEqual({
         [AlertType.INF_NAN_ALERT]: 2,
       });
-      expect(Object.keys(nextState.alerts.alerts)).toEqual([
-        AlertType.INF_NAN_ALERT,
-      ]);
-      const alertsOfType = nextState.alerts.alerts[AlertType.INF_NAN_ALERT];
-      expect(Object.keys(alertsOfType).length).toBe(2);
-      expect(alertsOfType[0]).toEqual(alert0);
-      expect(alertsOfType[1]).toEqual(alert1);
-      expect(Object.keys(nextState.alerts.executionIndices)).toEqual([
-        AlertType.INF_NAN_ALERT,
-      ]);
-      const executionIndices =
-        nextState.alerts.executionIndices[AlertType.INF_NAN_ALERT];
-      expect(executionIndices[1]).toBe(11);
+      expect(nextState.alerts.alerts).toEqual({
+        [AlertType.INF_NAN_ALERT]: {
+          0: alert0,
+          1: alert1,
+        },
+      });
+      expect(nextState.alerts.executionIndices).toEqual({
+        [AlertType.INF_NAN_ALERT]: [10, 11],
+      });
+      expect(nextState.alerts.graphExecutionIndices).toEqual({
+        [AlertType.INF_NAN_ALERT]: [5, 6],
+      });
     });
 
     it('Updates alerts data: existing alert types other than the loaded', () => {
@@ -451,15 +456,13 @@ describe('Debugger reducers', () => {
         [AlertType.INF_NAN_ALERT]: 2,
         [AlertType.TENSOR_SHAPE_ALERT]: 1,
       });
-      expect(Object.keys(nextState.alerts.alerts).length).toBe(2);
-      const infNanAlerts = nextState.alerts.alerts[AlertType.INF_NAN_ALERT];
-      expect(Object.keys(infNanAlerts).length).toBe(2);
-      expect(infNanAlerts[0]).toEqual(alert0);
-      expect(infNanAlerts[1]).toEqual(alert1);
-      const tensorShapeAlerts =
-        nextState.alerts.alerts[AlertType.TENSOR_SHAPE_ALERT];
-      expect(Object.keys(tensorShapeAlerts).length).toBe(1);
-      expect(tensorShapeAlerts[0]).toEqual(tensorShapeAlert);
+      expect(nextState.alerts.alerts).toEqual({
+        [AlertType.INF_NAN_ALERT]: {
+          0: alert0,
+          1: alert1,
+        },
+        [AlertType.TENSOR_SHAPE_ALERT]: {0: tensorShapeAlert},
+      });
     });
   });
 
