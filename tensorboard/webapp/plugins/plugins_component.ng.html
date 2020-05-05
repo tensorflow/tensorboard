@@ -21,3 +21,35 @@ limitations under the License.
   <!-- render Angular built-in plugins with a dynamic component resolver. -->
   <ng-container #ngPluginContainer></ng-container>
 </div>
+<div *ngIf="noEnabledPlugin" class="no-plugin">
+  <div class="warning-message">
+    <h3>No dashboards are active for the current data set.</h3>
+    <p>Probable causes:</p>
+    <ul>
+      <li>You haven’t written any data to your event files.</li>
+      <li>TensorBoard can’t find your event files.</li>
+    </ul>
+
+    If you’re new to using TensorBoard, and want to find out how to add data and
+    set up your event files, check out the
+    <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md"
+      >README</a
+    >
+    and perhaps the
+    <a href="https://www.tensorflow.org/get_started/summaries_and_tensorboard"
+      >TensorBoard tutorial</a
+    >.
+    <p>
+      If you think TensorBoard is configured properly, please see
+      <a
+        href="https://github.com/tensorflow/tensorboard/blob/master/README.md#my-tensorboard-isnt-showing-any-data-whats-wrong"
+        >the section of the README devoted to missing data problems</a
+      >
+      and consider filing an issue on GitHub.
+    </p>
+
+    <p>
+      <i>Last reload: {{lastUpdated | date: 'medium'}}</i>
+    </p>
+  </div>
+</div>
