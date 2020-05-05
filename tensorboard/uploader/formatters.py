@@ -66,6 +66,7 @@ class ReadableFormatter(BaseExperimentFormatter):
             ("Runs", str(experiment.num_runs)),
             ("Tags", str(experiment.num_tags)),
             ("Scalars", str(experiment.num_scalars)),
+            ("Tensor bytes", str(experiment.total_tensor_bytes)),
             ("Binary object bytes", str(experiment.total_blob_bytes)),
         ]
         for name, value in data:
@@ -94,6 +95,7 @@ class JsonFormatter(object):
             ("runs", experiment.num_runs),
             ("tags", experiment.num_tags),
             ("scalars", experiment.num_scalars),
+            ("tensor_bytes", experiment.total_tensor_bytes),
             ("binary_object_bytes", experiment.total_blob_bytes),
         ]
         return json.dumps(

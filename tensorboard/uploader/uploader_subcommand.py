@@ -332,6 +332,7 @@ class _ListIntent(_Intent):
             num_runs=True,
             num_tags=True,
             num_scalars=True,
+            total_tensor_bytes=True,
             total_blob_bytes=True,
         )
         gen = exporter_lib.list_experiments(api_client, fieldmask=fieldmask)
