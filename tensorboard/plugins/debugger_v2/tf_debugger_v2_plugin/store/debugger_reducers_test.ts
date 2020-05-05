@@ -253,81 +253,102 @@ describe('Debugger reducers', () => {
         expectedScrollBegin: 0,
       },
     ]) {
-      it('Updates alerts data and scrollBeginIndex: empty initial state', () => {
-        const firstAlertExecutionIndex = 10;
-        const state = createDebuggerState({
-          activeRunId: '__default_debugger_run__',
-          alerts: createAlertsState({
-            alertsLoaded: {
-              state: DataLoadState.LOADING,
-              lastLoadedTimeInMs: null,
-            },
-          }),
-          executions: createDebuggerExecutionsState({
-            displayCount,
-            scrollBeginIndex: 0,
-          }),
-        }); // `alerts` state is in an empty initial state.
-        const alert0 = createTestInfNanAlert({
-          op_type: 'RealDiv',
-          execution_index: firstAlertExecutionIndex,
-        });
-        const alert1 = createTestInfNanAlert({
-          op_type: 'Log',
-          execution_index: firstAlertExecutionIndex + 1,
-        });
-        const nextState = reducers(
-          state,
-          actions.alertsOfTypeLoaded({
-            numAlerts: 2,
-            alertsBreakdown: {
-              InfNanAlert: 2,
-            },
-            begin: 0,
-            end: 2,
-            alertType: 'InfNanAlert',
-            alerts: [alert0, alert1],
-          })
-        );
-        expect(nextState.alerts.alertsLoaded.state).toBe(DataLoadState.LOADED);
-        expect(
-          nextState.alerts.alertsLoaded.lastLoadedTimeInMs
-        ).toBeGreaterThan(0);
-        expect(nextState.alerts.numAlerts).toBe(2);
-        expect(nextState.alerts.alertsBreakdown).toEqual({
-          [AlertType.INF_NAN_ALERT]: 2,
-        });
-        expect(Object.keys(nextState.alerts.alerts)).toEqual([
-          AlertType.INF_NAN_ALERT,
-        ]);
-        const alertsOfType = nextState.alerts.alerts[AlertType.INF_NAN_ALERT];
-        expect(Object.keys(alertsOfType).length).toBe(2);
-        expect(alertsOfType[0]).toEqual(alert0);
-        expect(alertsOfType[1]).toEqual(alert1);
-        expect(Object.keys(nextState.alerts.executionIndices)).toEqual([
-          AlertType.INF_NAN_ALERT,
-        ]);
-        const executionIndices =
-          nextState.alerts.executionIndices[AlertType.INF_NAN_ALERT];
-        expect(executionIndices).toEqual([
-          firstAlertExecutionIndex,
-          firstAlertExecutionIndex + 1,
-        ]);
-        // Verify that the first alert is scrolled into view.
-        expect(nextState.executions.scrollBeginIndex).toEqual(
-          expectedScrollBegin
-        );
-      });
+      it(
+        'Updates alerts data and scrollBeginIndex and graph-exec focusIndex: ' +
+          'empty initial state',
+        () => {
+          const firstAlertExecutionIndex = 10;
+          const firstAlertGraphExecutionIndex = 100;
+          const state = createDebuggerState({
+            activeRunId: '__default_debugger_run__',
+            alerts: createAlertsState({
+              alertsLoaded: {
+                state: DataLoadState.LOADING,
+                lastLoadedTimeInMs: null,
+              },
+            }),
+            executions: createDebuggerExecutionsState({
+              displayCount,
+              scrollBeginIndex: 0,
+            }),
+          }); // `alerts` state is in an empty initial state.
+          const alert0 = createTestInfNanAlert({
+            op_type: 'RealDiv',
+            execution_index: firstAlertExecutionIndex,
+            graph_execution_trace_index: 100,
+          });
+          const alert1 = createTestInfNanAlert({
+            op_type: 'Log',
+            execution_index: firstAlertExecutionIndex + 1,
+            graph_execution_trace_index: firstAlertGraphExecutionIndex * 2,
+          });
+          const nextState = reducers(
+            state,
+            actions.alertsOfTypeLoaded({
+              numAlerts: 2,
+              alertsBreakdown: {
+                InfNanAlert: 2,
+              },
+              begin: 0,
+              end: 2,
+              alertType: 'InfNanAlert',
+              alerts: [alert0, alert1],
+            })
+          );
+          expect(nextState.alerts.alertsLoaded.state).toBe(
+            DataLoadState.LOADED
+          );
+          expect(
+            nextState.alerts.alertsLoaded.lastLoadedTimeInMs
+          ).toBeGreaterThan(0);
+          expect(nextState.alerts.numAlerts).toBe(2);
+          expect(nextState.alerts.alertsBreakdown).toEqual({
+            [AlertType.INF_NAN_ALERT]: 2,
+          });
+          expect(Object.keys(nextState.alerts.alerts)).toEqual([
+            AlertType.INF_NAN_ALERT,
+          ]);
+          const alertsOfType = nextState.alerts.alerts[AlertType.INF_NAN_ALERT];
+          expect(alertsOfType).toEqual({
+            0: alert0,
+            1: alert1,
+          });
+          expect(nextState.alerts.executionIndices).toEqual({
+            [AlertType.INF_NAN_ALERT]: [
+              firstAlertExecutionIndex,
+              firstAlertExecutionIndex + 1,
+            ],
+          });
+          expect(nextState.alerts.graphExecutionIndices).toEqual({
+            [AlertType.INF_NAN_ALERT]: [
+              firstAlertGraphExecutionIndex,
+              firstAlertGraphExecutionIndex * 2,
+            ],
+          });
+          // Verify that the top-level execution for the first alert is scrolled
+          // into view.
+          expect(nextState.executions.scrollBeginIndex).toBe(
+            expectedScrollBegin
+          );
+          // Verify that the intra-graph execution for the first alert with a
+          // graph_execution_trace_index is focused on.
+          expect(nextState.graphExecutions.focusIndex).toBe(
+            firstAlertGraphExecutionIndex
+          );
+        }
+      );
     }
 
     it('Updates alerts data: non-empty initial state', () => {
       const alert0 = createTestInfNanAlert({
         op_type: 'RealDiv',
         execution_index: 10,
+        graph_execution_trace_index: 5,
       });
       const alert1 = createTestInfNanAlert({
         op_type: 'Log',
         execution_index: 11,
+        graph_execution_trace_index: 6,
       });
       const state = createDebuggerState({
         activeRunId: '__default_debugger_run__',
@@ -340,6 +361,12 @@ describe('Debugger reducers', () => {
           alertsBreakdown: {[AlertType.INF_NAN_ALERT]: 1},
           alerts: {
             [AlertType.INF_NAN_ALERT]: {0: alert0},
+          },
+          executionIndices: {
+            [AlertType.INF_NAN_ALERT]: [10],
+          },
+          graphExecutionIndices: {
+            [AlertType.INF_NAN_ALERT]: [5],
           },
         }),
       }); // `alerts` state is in a non-empty initial state.
@@ -365,19 +392,18 @@ describe('Debugger reducers', () => {
       expect(nextState.alerts.alertsBreakdown).toEqual({
         [AlertType.INF_NAN_ALERT]: 2,
       });
-      expect(Object.keys(nextState.alerts.alerts)).toEqual([
-        AlertType.INF_NAN_ALERT,
-      ]);
-      const alertsOfType = nextState.alerts.alerts[AlertType.INF_NAN_ALERT];
-      expect(Object.keys(alertsOfType).length).toBe(2);
-      expect(alertsOfType[0]).toEqual(alert0);
-      expect(alertsOfType[1]).toEqual(alert1);
-      expect(Object.keys(nextState.alerts.executionIndices)).toEqual([
-        AlertType.INF_NAN_ALERT,
-      ]);
-      const executionIndices =
-        nextState.alerts.executionIndices[AlertType.INF_NAN_ALERT];
-      expect(executionIndices[1]).toBe(11);
+      expect(nextState.alerts.alerts).toEqual({
+        [AlertType.INF_NAN_ALERT]: {
+          0: alert0,
+          1: alert1,
+        },
+      });
+      expect(nextState.alerts.executionIndices).toEqual({
+        [AlertType.INF_NAN_ALERT]: [10, 11],
+      });
+      expect(nextState.alerts.graphExecutionIndices).toEqual({
+        [AlertType.INF_NAN_ALERT]: [5, 6],
+      });
     });
 
     it('Updates alerts data: existing alert types other than the loaded', () => {
@@ -430,15 +456,13 @@ describe('Debugger reducers', () => {
         [AlertType.INF_NAN_ALERT]: 2,
         [AlertType.TENSOR_SHAPE_ALERT]: 1,
       });
-      expect(Object.keys(nextState.alerts.alerts).length).toBe(2);
-      const infNanAlerts = nextState.alerts.alerts[AlertType.INF_NAN_ALERT];
-      expect(Object.keys(infNanAlerts).length).toBe(2);
-      expect(infNanAlerts[0]).toEqual(alert0);
-      expect(infNanAlerts[1]).toEqual(alert1);
-      const tensorShapeAlerts =
-        nextState.alerts.alerts[AlertType.TENSOR_SHAPE_ALERT];
-      expect(Object.keys(tensorShapeAlerts).length).toBe(1);
-      expect(tensorShapeAlerts[0]).toEqual(tensorShapeAlert);
+      expect(nextState.alerts.alerts).toEqual({
+        [AlertType.INF_NAN_ALERT]: {
+          0: alert0,
+          1: alert1,
+        },
+        [AlertType.TENSOR_SHAPE_ALERT]: {0: tensorShapeAlert},
+      });
     });
   });
 

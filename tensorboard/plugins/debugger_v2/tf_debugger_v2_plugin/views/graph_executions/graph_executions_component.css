@@ -22,11 +22,16 @@ limitations under the License.
   padding-left: 10px;
 }
 
+.graph-execution-focus {
+  display: inline-block;
+}
+
 .graph-execution-index {
   color: #757575;
   display: inline-block;
-  width: 40px;
   padding-right: 4px;
+  text-align: right;
+  width: 40px;
 }
 
 .graph-executions-viewport {
