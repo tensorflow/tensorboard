@@ -63,7 +63,11 @@ export class PluginsContainer {
     this.store.select(getPluginsListLoaded)
   ).pipe(
     map(([activePlugin, loadState]) => {
-      return activePlugin === null && loadState.state === DataLoadState.LOADED;
+      return (
+        activePlugin === null &&
+        (loadState.state === DataLoadState.LOADED ||
+          loadState.state === DataLoadState.FAILED)
+      );
     })
   );
   readonly lastLoadedTimeInMs$ = this.store.pipe(select(lastLoadedTimeInMs));

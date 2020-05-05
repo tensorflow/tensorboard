@@ -358,6 +358,18 @@ describe('plugins_component', () => {
       expect(fixture.debugElement.query(By.css('.no-plugin'))).not.toBeNull();
     });
 
+    it('shows warning when the plugins listing failed to load', () => {
+      store.overrideSelector(getActivePlugin, null);
+      store.overrideSelector(getPluginsListLoaded, {
+        state: DataLoadState.FAILED,
+        lastLoadedTimeInMs: null,
+      });
+      const fixture = TestBed.createComponent(PluginsContainer);
+      fixture.detectChanges();
+
+      expect(fixture.debugElement.query(By.css('.no-plugin'))).not.toBeNull();
+    });
+
     it('does not show warning when data is not yet loaded', () => {
       store.overrideSelector(getActivePlugin, null);
       store.overrideSelector(getPluginsListLoaded, {
