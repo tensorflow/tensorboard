@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import collections
 import threading
 import time
 
@@ -93,6 +94,11 @@ def _alert_to_json(alert):
         }
     else:
         raise TypeError("Unrecognized alert subtype: %s" % type(alert))
+
+
+def tensor_name_to_op_name(tensor_name):
+    """Helper function that extracts op name from tensor name."""
+    return tensor_name.split(":")[0]
 
 
 class DebuggerV2EventMultiplexer(object):
@@ -289,6 +295,7 @@ class DebuggerV2EventMultiplexer(object):
 
         runs = self.Runs()
         if run not in runs:
+            # TODO(cais): This should generate a 400 response instead.
             return None
         alerts = []
         alerts_breakdown = dict()
@@ -445,6 +452,87 @@ class DebuggerV2EventMultiplexer(object):
                 graph_exec.to_json() for graph_exec in graph_executions
             ],
         }
+
+    def GraphOpInfo(self, run, graph_id, op_name):
+        """Get the information regarding a graph op's creation.
+
+        Args:
+          run: Name of the run.
+          graph_id: Debugger-generated ID of the graph that contains
+            the op in question. This ID is available from other methods
+            of this class, e.g., the return value of `GraphExecutionDigests()`.
+          op_name: Name of the op.
+
+        Returns:
+          A JSON-serializable object containing the information regarding
+            the op's creation and its immediate inputs and consumers.
+
+        Raises:
+          NotFoundError if the graph_id or op_name does not exist.
+        """
+        runs = self.Runs()
+        if run not in runs:
+            return None
+        try:
+            graph = self._reader.graph_by_id(graph_id)
+        except KeyError:
+            raise errors.NotFoundError(
+                'There is no graph with ID "%s"' % graph_id
+            )
+        try:
+            op_creation_digest = graph.get_op_creation_digest(op_name)
+        except KeyError:
+            raise errors.NotFoundError(
+                'There is no op named "%s" in graph with ID "%s"'
+                % (op_name, graph_id)
+            )
+        data_object = self._opCreationDigestToDataObject(op_creation_digest)
+        # Populate data about immediate inputs.
+        data_object["inputs"] = None
+        if op_creation_digest.input_names:
+            data_object["inputs"] = []
+            for input_tensor_name in op_creation_digest.input_names:
+                input_op_name = tensor_name_to_op_name(input_tensor_name)
+                input_op_digest = graph.get_op_creation_digest(input_op_name)
+                data_object["inputs"].append(
+                    self._opCreationDigestToDataObject(input_op_digest)
+                )
+        # Populate data about immediate consuming ops.
+        data_object["consumers"] = collections.defaultdict(list)
+        for src_slot, consumer_op_name, _ in graph.get_op_consumers(op_name):
+            digest = graph.get_op_creation_digest(consumer_op_name)
+            data_object["consumers"][src_slot].append(
+                self._opCreationDigestToDataObject(digest)
+            )
+        return data_object
+
+    def _opCreationDigestToDataObject(self, op_creation_digest):
+        json_object = op_creation_digest.to_json()
+        del json_object["graph_id"]
+        json_object["graph_ids"] = self._getGraphStackIds(
+            op_creation_digest.graph_id
+        )
+        # TODO(cais): "num_outputs" should be populated in to_json() instead.
+        json_object["num_outputs"] = op_creation_digest.num_outputs
+        return json_object
+
+    def _getGraphStackIds(self, graph_id):
+        """Retrieve the IDs of all outer graphs of a graph.
+
+        Args:
+          graph_id: Id of the graph being queried with respect to its outer
+            graphs context.
+
+        Returns:
+          A list of graph_ids, ordered from outermost to innermost, including
+            the input `graph_id` argument as the last item.
+        """
+        graph_ids = [graph_id]
+        graph = self._reader.graph_by_id(graph_id)
+        while graph.outer_graph_id:
+            graph_ids.insert(0, graph.outer_graph_id)
+            graph = self._reader.graph_by_id(graph.outer_graph_id)
+        return graph_ids
 
     def SourceFileList(self, run):
         runs = self.Runs()
