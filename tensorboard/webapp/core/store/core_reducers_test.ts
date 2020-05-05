@@ -14,7 +14,11 @@ limitations under the License.
 ==============================================================================*/
 import * as actions from '../actions';
 import {reducers} from './core_reducers';
-import {createPluginMetadata, createCoreState} from '../testing';
+import {
+  buildPluginMetadata,
+  createPluginMetadata,
+  createCoreState,
+} from '../testing';
 import {DataLoadState} from '../../types/data';
 
 function createPluginsListing() {
@@ -130,15 +134,36 @@ describe('core reducer', () => {
       });
     });
 
-    it('sets activePlugin to the first plugin (by key order) when not defined', () => {
+    it('sets activePlugin to the first enabled plugin when not defined', () => {
       const state = createCoreState({activePlugin: null, plugins: {}});
 
       const nextState = reducers(
         state,
-        actions.pluginsListingLoaded({plugins: createPluginsListing()})
+        actions.pluginsListingLoaded({
+          plugins: {
+            foo: buildPluginMetadata({tab_name: 'foo', enabled: false}),
+            bar: buildPluginMetadata({tab_name: 'bar', enabled: true}),
+          },
+        })
       );
 
-      expect(nextState.activePlugin).toBe('core');
+      expect(nextState.activePlugin).toBe('bar');
+    });
+
+    it('sets the plugin to null when nothing is active', () => {
+      const state = createCoreState({activePlugin: null, plugins: {}});
+
+      const nextState = reducers(
+        state,
+        actions.pluginsListingLoaded({
+          plugins: {
+            foo: buildPluginMetadata({tab_name: 'foo', enabled: false}),
+            bar: buildPluginMetadata({tab_name: 'bar', enabled: false}),
+          },
+        })
+      );
+
+      expect(nextState.activePlugin).toBeNull();
     });
 
     it('does not change activePlugin when already defined', () => {
