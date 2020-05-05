@@ -13,12 +13,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import {CdkVirtualScrollViewport} from '@angular/cdk/scrolling';
 import {
   ChangeDetectionStrategy,
   Component,
   EventEmitter,
   Input,
   Output,
+  SimpleChanges,
+  ViewChild,
 } from '@angular/core';
 
 import {parseDebugTensorValue} from '../../store/debug_tensor_value';
@@ -40,8 +43,34 @@ export class GraphExecutionsComponent {
   @Input()
   graphExecutionIndices!: number[];
 
+  @Input()
+  focusIndex!: number | null;
+
   @Output()
   onScrolledIndexChange = new EventEmitter<number>();
 
   parseDebugTensorValue = parseDebugTensorValue;
+
+  @ViewChild(CdkVirtualScrollViewport, {static: false})
+  private readonly viewPort?: CdkVirtualScrollViewport;
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (
+      this.viewPort &&
+      changes['focusIndex'] &&
+      changes['focusIndex'].currentValue !== null
+    ) {
+      const range = this.viewPort.getRenderedRange();
+      const scrollIndex = changes['focusIndex'].currentValue;
+      // Make sure that the index is scrolled to one third the view port.
+      // This is nicer than scrolling it merely to the top.
+      const thirdRange = Math.round((range.end - range.start) / 3);
+      const targetIndex = Math.max(scrollIndex - thirdRange, 0);
+      this.viewPort.scrollToIndex(targetIndex);
+    }
+  }
+
+  TEST_ONLY = {
+    getViewPort: () => this.viewPort,
+  };
 }
