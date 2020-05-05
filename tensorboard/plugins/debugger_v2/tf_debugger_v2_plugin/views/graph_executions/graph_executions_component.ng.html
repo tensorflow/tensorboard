@@ -32,6 +32,9 @@ limitations under the License.
     >
       <div class="tensor-item">
         <div class="graph-execution-index">
+          <div *ngIf="i === focusIndex" class="graph-execution-focus">
+            ▶
+          </div>
           {{ i }}
         </div>
         <div *ngIf="graphExecutionData[i]; else dataLoading">

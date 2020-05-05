@@ -251,6 +251,13 @@ export const getGraphExecutionData = createSelector(
   }
 );
 
+export const getGraphExecutionFocusIndex = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): number | null => {
+    return state.graphExecutions.focusIndex;
+  }
+);
+
 /**
  * Get the focused alert types (if any) of the execution digests current being
  * displayed. For each displayed execution digest, there are two possibilities:

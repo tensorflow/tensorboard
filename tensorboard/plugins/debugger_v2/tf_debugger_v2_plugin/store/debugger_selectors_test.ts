@@ -26,6 +26,7 @@ import {
   getGraphExecutionDataLoadingPages,
   getGraphExecutionDataPageLoadedSizes,
   getGraphExecutionDisplayCount,
+  getGraphExecutionFocusIndex,
   getGraphExecutionPageSize,
   getGraphExecutionScrollBeginIndex,
   getLoadedAlertsOfFocusedType,
@@ -889,5 +890,20 @@ describe('debugger selectors', () => {
         10: createTestGraphExecution(),
       });
     });
+  });
+
+  describe('getGraphExecutionFocusIndex', () => {
+    for (const focusIndex of [null, 0, 100]) {
+      it(`returns correct value: ${JSON.stringify(focusIndex)}`, () => {
+        const state = createState(
+          createDebuggerState({
+            graphExecutions: createDebuggerGraphExecutionsState({
+              focusIndex,
+            }),
+          })
+        );
+        expect(getGraphExecutionFocusIndex(state)).toBe(focusIndex);
+      });
+    }
   });
 });
