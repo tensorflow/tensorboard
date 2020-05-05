@@ -295,6 +295,7 @@ class DebuggerV2EventMultiplexer(object):
 
         runs = self.Runs()
         if run not in runs:
+            # TODO(cais): This should generate a 400 response instead.
             return None
         alerts = []
         alerts_breakdown = dict()
