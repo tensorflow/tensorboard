@@ -33,9 +33,10 @@ message Experiment {
   // experiment, across all time series, including estimated overhead.
   // Output-only.
   int64 total_blob_bytes = 10;
-  // The number of tensors in this experiment, across all time series.
+  // The number of bytes used for storage of the contents of tensors in this
+  // experiment, across all time series, including estimated overhead.
   // Output-only.
-  int64 num_tensors = 11;
+  int64 total_tensor_bytes = 11;
 }
 
 // Field mask for `Experiment` used in get and update RPCs. The `experiment_id`
@@ -52,5 +53,5 @@ message ExperimentMask {
   bool description = 8;
   bool total_tensor_bytes = 9;
   bool total_blob_bytes = 10;
-  bool num_tensors = 11;
+  bool total_tensor_bytes = 11;
 }
