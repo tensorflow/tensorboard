@@ -81,6 +81,7 @@ import org.jsoup.nodes.TextNode;
 import org.jsoup.parser.Parser;
 import org.jsoup.parser.Tag;
 import org.jsoup.select.Elements;
+import org.jsoup.select.NodeVisitor;
 
 /** Simple one-off solution for TensorBoard vulcanization. */
 public final class Vulcanize {
@@ -805,6 +806,8 @@ public final class Vulcanize {
    * It also prepends <!doctype html> since TensorBoard requires that the
    * document is HTML.
    *
+   * NOTE: it makes side-effect to the input `document`.
+   *
    * Examples:
    * // Input
    * <#root> <!-- document -->
@@ -843,43 +846,43 @@ public final class Vulcanize {
       }
     }
 
+    // Create `<html>`, `<head>` and `<body>`.
     flatDoc.normalise();
-    Element rootDocumentHead = flatDoc.head();
-    Element rootDocumentBody = flatDoc.body();
 
-    Node currentNode = document;
-    while (currentNode != null) {
-      // Copy childNodes from `head` into the flatDoc's head without
+    document.traverse(new FlatDocumentCopier(flatDoc));
+
+    return flatDoc;
+  }
+
+  private static class FlatDocumentCopier implements NodeVisitor {
+    private Element destHead;
+    private Element destBody;
+
+    public FlatDocumentCopier(Document dest) {
+      destHead = dest.head();
+      destBody = dest.body();
+    }
+
+    public void head(Node node, int depth) {
+      // Copy childNodes from `head` into the dest doc's head without
       // modification if the node is not a `document` (or a `<#root>` element)
       // in which case we want to traverse further and only copy the childNodes
       // in its `body` and `head` elements.
-      if (currentNode.parentNode() != null && currentNode.parentNode().nodeName().equals("head")
-          && !(currentNode instanceof Document)) {
-        rootDocumentHead.appendChild(currentNode.clone());
+      if (node.parentNode() != null && node.parentNode().nodeName().equals("head")
+          && !(node instanceof Document)) {
+        destHead.appendChild(node.clone());
       }
 
-      if (currentNode.nodeName().equals("body")) {
-        cloneChildrenWithoutWhitespace((Element) currentNode, rootDocumentBody);
-        ((Element) currentNode).empty();
-      }
-
-      // Standard DFS.
-      if (currentNode.childNodeSize() > 0) {
-        currentNode = currentNode.childNode(0);
-      } else {
-        // Go up in the tree if there are no sibling elements and repeat.
-        while (currentNode != null && currentNode.nextSibling() == null) {
-          currentNode = currentNode.parentNode();
-        }
-
-        // currentNode can be `null` when we went up from the root document.
-        if (currentNode != null) {
-          currentNode = currentNode.nextSibling();
-        }
+      if (node.nodeName().equals("body")) {
+        cloneChildrenWithoutWhitespace((Element) node, destBody);
+        // No need to further traverse the `body`. Skip by removing the nodes.
+        ((Element) node).empty();
       }
     }
 
-    return flatDoc;
+    public void tail(Node node, int depth) {
+      // Copying is done during the `head`. No need to do any work.
+    }
   }
 
   private static final class JsPrintlessErrorManager extends BasicErrorManager {
