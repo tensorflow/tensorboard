@@ -1306,7 +1306,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
                 + "/graphs/op_info?run=%s&graph_id=%s&op_name=%s"
                 % (run, graph_id, add_v2_op_name)
             )
-            self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
         data = json.loads(response.get_data())
 
         self.assertEqual(data["input_names"], ["add_v2_input:0"])
