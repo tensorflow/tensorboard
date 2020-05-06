@@ -1321,252 +1321,252 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         # consumer op.
         self.assertEqual(data["consumers"], [[None]])
 
-    # def testServeGraphOpInfoRespondsWithErrorForInvalidGraphId(self):
-    #     _generate_tfdbg_v2_data(self.logdir)
-    #     run = self._getExactlyOneRun()
-    #     # Query the /graphs/op_info route with an invalid graph_id.
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX
-    #         + "/graphs/op_info?run=%s&graph_id=%s&op_name=%s"
-    #         % (run, "nonsensical-graph-id", "Placeholder")
-    #     )
+    def testServeGraphOpInfoRespondsWithErrorForInvalidGraphId(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        # Query the /graphs/op_info route with an invalid graph_id.
+        response = self.server.get(
+            _ROUTE_PREFIX
+            + "/graphs/op_info?run=%s&graph_id=%s&op_name=%s"
+            % (run, "nonsensical-graph-id", "Placeholder")
+        )
 
-    #     self.assertEqual(400, response.status_code)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     self.assertEqual(
-    #         json.loads(response.get_data()),
-    #         {
-    #             "error": 'Not found: There is no graph with ID "nonsensical-graph-id"'
-    #         },
-    #     )
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {
+                "error": 'Not found: There is no graph with ID "nonsensical-graph-id"'
+            },
+        )
 
-    # def testServeGraphOpInfoRespondsWithErrorForInvalidOpName(self):
-    #     """Get the op info of an op with no inputs."""
-    #     _generate_tfdbg_v2_data(self.logdir)
-    #     run = self._getExactlyOneRun()
-    #     # First, look up the valid graph_id.
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX + "/graph_execution/digests?run=%s" % run
-    #     )
-    #     data = json.loads(response.get_data())
-    #     digests = data["graph_execution_digests"]
-    #     op_types = [digest["op_type"] for digest in digests]
-    #     op_index = op_types.index("Placeholder")
-    #     graph_id = digests[op_index]["graph_id"]
-    #     # Query the/graphs/op_info route with a valid graph_id and
-    #     # a nonexistent op_name.
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX
-    #         + "/graphs/op_info?run=%s&graph_id=%s&op_name=%s"
-    #         % (run, graph_id, "nonexistent-op-name")
-    #     )
+    def testServeGraphOpInfoRespondsWithErrorForInvalidOpName(self):
+        """Get the op info of an op with no inputs."""
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        # First, look up the valid graph_id.
+        response = self.server.get(
+            _ROUTE_PREFIX + "/graph_execution/digests?run=%s" % run
+        )
+        data = json.loads(response.get_data())
+        digests = data["graph_execution_digests"]
+        op_types = [digest["op_type"] for digest in digests]
+        op_index = op_types.index("Placeholder")
+        graph_id = digests[op_index]["graph_id"]
+        # Query the/graphs/op_info route with a valid graph_id and
+        # a nonexistent op_name.
+        response = self.server.get(
+            _ROUTE_PREFIX
+            + "/graphs/op_info?run=%s&graph_id=%s&op_name=%s"
+            % (run, graph_id, "nonexistent-op-name")
+        )
 
-    #     self.assertEqual(400, response.status_code)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     self.assertEqual(
-    #         json.loads(response.get_data()),
-    #         {
-    #             "error": 'Not found: There is no op named "nonexistent-op-name" '
-    #             'in graph with ID "%s"' % graph_id
-    #         },
-    #     )
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {
+                "error": 'Not found: There is no op named "nonexistent-op-name" '
+                'in graph with ID "%s"' % graph_id
+            },
+        )
 
-    # def testServeSourceFileListIncludesThisTestFile(self):
-    #     _generate_tfdbg_v2_data(self.logdir)
-    #     run = self._getExactlyOneRun()
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX + "/source_files/list?run=%s" % run
-    #     )
-    #     self.assertEqual(200, response.status_code)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     source_file_list = json.loads(response.get_data())
-    #     self.assertIsInstance(source_file_list, list)
-    #     self.assertIn([_HOST_NAME, _CURRENT_FILE_FULL_PATH], source_file_list)
+    def testServeSourceFileListIncludesThisTestFile(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        response = self.server.get(
+            _ROUTE_PREFIX + "/source_files/list?run=%s" % run
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        source_file_list = json.loads(response.get_data())
+        self.assertIsInstance(source_file_list, list)
+        self.assertIn([_HOST_NAME, _CURRENT_FILE_FULL_PATH], source_file_list)
 
-    # def testServeSourceFileListWithoutRunParamErrors(self):
-    #     # Make request without run param.
-    #     response = self.server.get(_ROUTE_PREFIX + "/source_files/list")
-    #     self.assertEqual(400, response.status_code)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     self.assertEqual(
-    #         json.loads(response.get_data()),
-    #         {"error": "run parameter is not provided"},
-    #     )
+    def testServeSourceFileListWithoutRunParamErrors(self):
+        # Make request without run param.
+        response = self.server.get(_ROUTE_PREFIX + "/source_files/list")
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {"error": "run parameter is not provided"},
+        )
 
-    # def testServeSourceFileContentOfThisTestFile(self):
-    #     _generate_tfdbg_v2_data(self.logdir)
-    #     run = self._getExactlyOneRun()
-    #     # First, access the source file list, so we can get hold of the index
-    #     # for this file. The index is required for the request to the
-    #     # "/source_files/file" route below.
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX + "/source_files/list?run=%s" % run
-    #     )
-    #     source_file_list = json.loads(response.get_data())
-    #     index = source_file_list.index([_HOST_NAME, _CURRENT_FILE_FULL_PATH])
+    def testServeSourceFileContentOfThisTestFile(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        # First, access the source file list, so we can get hold of the index
+        # for this file. The index is required for the request to the
+        # "/source_files/file" route below.
+        response = self.server.get(
+            _ROUTE_PREFIX + "/source_files/list?run=%s" % run
+        )
+        source_file_list = json.loads(response.get_data())
+        index = source_file_list.index([_HOST_NAME, _CURRENT_FILE_FULL_PATH])
 
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX + "/source_files/file?run=%s&index=%d" % (run, index)
-    #     )
-    #     self.assertEqual(200, response.status_code)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     data = json.loads(response.get_data())
-    #     self.assertEqual(data["host_name"], _HOST_NAME)
-    #     self.assertEqual(data["file_path"], _CURRENT_FILE_FULL_PATH)
-    #     with open(__file__, "r") as f:
-    #         lines = f.read().split("\n")
-    #     self.assertEqual(data["lines"], lines)
+        response = self.server.get(
+            _ROUTE_PREFIX + "/source_files/file?run=%s&index=%d" % (run, index)
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        data = json.loads(response.get_data())
+        self.assertEqual(data["host_name"], _HOST_NAME)
+        self.assertEqual(data["file_path"], _CURRENT_FILE_FULL_PATH)
+        with open(__file__, "r") as f:
+            lines = f.read().split("\n")
+        self.assertEqual(data["lines"], lines)
 
-    # def testServeSourceFileWithoutRunErrors(self):
-    #     # Make request without run param.
-    #     response = self.server.get(_ROUTE_PREFIX + "/source_files/file")
-    #     self.assertEqual(400, response.status_code)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     self.assertEqual(
-    #         json.loads(response.get_data()),
-    #         {"error": "run parameter is not provided"},
-    #     )
+    def testServeSourceFileWithoutRunErrors(self):
+        # Make request without run param.
+        response = self.server.get(_ROUTE_PREFIX + "/source_files/file")
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {"error": "run parameter is not provided"},
+        )
 
-    # def testServeSourceFileWithOutOfBoundIndexErrors(self):
-    #     _generate_tfdbg_v2_data(self.logdir)
-    #     run = self._getExactlyOneRun()
-    #     # First, access the source file list, so we can get hold of the index
-    #     # for this file. The index is required for the request to the
-    #     # "/source_files/file" route below.
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX + "/source_files/list?run=%s" % run
-    #     )
-    #     source_file_list = json.loads(response.get_data())
-    #     self.assertTrue(source_file_list)
+    def testServeSourceFileWithOutOfBoundIndexErrors(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        # First, access the source file list, so we can get hold of the index
+        # for this file. The index is required for the request to the
+        # "/source_files/file" route below.
+        response = self.server.get(
+            _ROUTE_PREFIX + "/source_files/list?run=%s" % run
+        )
+        source_file_list = json.loads(response.get_data())
+        self.assertTrue(source_file_list)
 
-    #     # Use an out-of-bound index.
-    #     invalid_index = len(source_file_list)
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX
-    #         + "/source_files/file?run=%s&index=%d" % (run, invalid_index)
-    #     )
-    #     self.assertEqual(400, response.status_code)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     self.assertEqual(
-    #         json.loads(response.get_data()),
-    #         {
-    #             "error": "Not found: There is no source-code file at index %d"
-    #             % invalid_index
-    #         },
-    #     )
+        # Use an out-of-bound index.
+        invalid_index = len(source_file_list)
+        response = self.server.get(
+            _ROUTE_PREFIX
+            + "/source_files/file?run=%s&index=%d" % (run, invalid_index)
+        )
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {
+                "error": "Not found: There is no source-code file at index %d"
+                % invalid_index
+            },
+        )
 
-    # def testServeStackFrames(self):
-    #     _generate_tfdbg_v2_data(self.logdir)
-    #     run = self._getExactlyOneRun()
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX + "/execution/data?run=%s&begin=0&end=1" % run
-    #     )
-    #     data = json.loads(response.get_data())
-    #     stack_frame_ids = data["executions"][0]["stack_frame_ids"]
-    #     self.assertIsInstance(stack_frame_ids, list)
-    #     self.assertTrue(stack_frame_ids)
+    def testServeStackFrames(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        response = self.server.get(
+            _ROUTE_PREFIX + "/execution/data?run=%s&begin=0&end=1" % run
+        )
+        data = json.loads(response.get_data())
+        stack_frame_ids = data["executions"][0]["stack_frame_ids"]
+        self.assertIsInstance(stack_frame_ids, list)
+        self.assertTrue(stack_frame_ids)
 
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX
-    #         + "/stack_frames/stack_frames?run=%s&stack_frame_ids=%s"
-    #         % (run, ",".join(stack_frame_ids))
-    #     )
-    #     self.assertEqual(200, response.status_code)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     data = json.loads(response.get_data())
-    #     self.assertIsInstance(data, dict)
-    #     stack_frames = data["stack_frames"]
-    #     self.assertIsInstance(stack_frames, list)
-    #     self.assertLen(stack_frames, len(stack_frame_ids))
-    #     for item in stack_frames:
-    #         self.assertIsInstance(item, list)
-    #         self.assertLen(item, 4)  # [host_name, file_path, lineno, function].
-    #         self.assertEqual(item[0], _HOST_NAME)
-    #         self.assertIsInstance(item[1], six.string_types)
-    #         self.assertTrue(item[1])
-    #         self.assertIsInstance(item[2], int)
-    #         self.assertGreaterEqual(item[2], 1)
-    #         self.assertIsInstance(item[3], six.string_types)
-    #         self.assertTrue(item[3])
-    #     # Assert that the current file and current function should be in the
-    #     # stack frames.
-    #     frames_for_this_function = list(
-    #         filter(
-    #             lambda frame: frame[0] == _HOST_NAME
-    #             and frame[1] == _CURRENT_FILE_FULL_PATH
-    #             and frame[3] == "testServeStackFrames",
-    #             stack_frames,
-    #         )
-    #     )
-    #     self.assertLen(frames_for_this_function, 1)
+        response = self.server.get(
+            _ROUTE_PREFIX
+            + "/stack_frames/stack_frames?run=%s&stack_frame_ids=%s"
+            % (run, ",".join(stack_frame_ids))
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        data = json.loads(response.get_data())
+        self.assertIsInstance(data, dict)
+        stack_frames = data["stack_frames"]
+        self.assertIsInstance(stack_frames, list)
+        self.assertLen(stack_frames, len(stack_frame_ids))
+        for item in stack_frames:
+            self.assertIsInstance(item, list)
+            self.assertLen(item, 4)  # [host_name, file_path, lineno, function].
+            self.assertEqual(item[0], _HOST_NAME)
+            self.assertIsInstance(item[1], six.string_types)
+            self.assertTrue(item[1])
+            self.assertIsInstance(item[2], int)
+            self.assertGreaterEqual(item[2], 1)
+            self.assertIsInstance(item[3], six.string_types)
+            self.assertTrue(item[3])
+        # Assert that the current file and current function should be in the
+        # stack frames.
+        frames_for_this_function = list(
+            filter(
+                lambda frame: frame[0] == _HOST_NAME
+                and frame[1] == _CURRENT_FILE_FULL_PATH
+                and frame[3] == "testServeStackFrames",
+                stack_frames,
+            )
+        )
+        self.assertLen(frames_for_this_function, 1)
 
-    # def testServeStackFramesWithMissingStackFrameIdParamErrors(self):
-    #     _generate_tfdbg_v2_data(self.logdir)
-    #     run = self._getExactlyOneRun()
-    #     response = self.server.get(
-    #         _ROUTE_PREFIX + "/stack_frames/stack_frames?run=%s" % run
-    #     )
-    #     self.assertEqual(400, response.status_code)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     self.assertEqual(
-    #         json.loads(response.get_data()),
-    #         {"error": "Missing stack_frame_ids parameter"},
-    #     )
+    def testServeStackFramesWithMissingStackFrameIdParamErrors(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        response = self.server.get(
+            _ROUTE_PREFIX + "/stack_frames/stack_frames?run=%s" % run
+        )
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {"error": "Missing stack_frame_ids parameter"},
+        )
 
-    # def testServeStackFramesWithMissingStackFrameIdParamErrors(self):
-    #     _generate_tfdbg_v2_data(self.logdir)
-    #     run = self._getExactlyOneRun()
-    #     response = self.server.get(
-    #         # Use empty value for the stack_frame_ids parameter.
-    #         _ROUTE_PREFIX
-    #         + "/stack_frames/stack_frames?run=%s&stack_frame_ids=" % run
-    #     )
-    #     self.assertEqual(400, response.status_code)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     self.assertEqual(
-    #         json.loads(response.get_data()),
-    #         {"error": "Empty stack_frame_ids parameter"},
-    #     )
+    def testServeStackFramesWithMissingStackFrameIdParamErrors(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        response = self.server.get(
+            # Use empty value for the stack_frame_ids parameter.
+            _ROUTE_PREFIX
+            + "/stack_frames/stack_frames?run=%s&stack_frame_ids=" % run
+        )
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {"error": "Empty stack_frame_ids parameter"},
+        )
 
-    # def testServeStackFramesWithMissingStackFrameIdParamErrors(self):
-    #     _generate_tfdbg_v2_data(self.logdir)
-    #     run = self._getExactlyOneRun()
-    #     invalid_stack_frme_id = "nonsense-stack-frame-id"
-    #     response = self.server.get(
-    #         # Use empty value for the stack_frame_ids parameter.
-    #         _ROUTE_PREFIX
-    #         + "/stack_frames/stack_frames?run=%s&stack_frame_ids=%s"
-    #         % (run, invalid_stack_frme_id)
-    #     )
-    #     self.assertEqual(400, response.status_code)
-    #     self.assertEqual(
-    #         "application/json", response.headers.get("content-type")
-    #     )
-    #     self.assertRegexpMatches(
-    #         json.loads(response.get_data())["error"],
-    #         "Not found: Cannot find stack frame with ID"
-    #         ".*nonsense-stack-frame-id.*",
-    #     )
+    def testServeStackFramesWithMissingStackFrameIdParamErrors(self):
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        invalid_stack_frme_id = "nonsense-stack-frame-id"
+        response = self.server.get(
+            # Use empty value for the stack_frame_ids parameter.
+            _ROUTE_PREFIX
+            + "/stack_frames/stack_frames?run=%s&stack_frame_ids=%s"
+            % (run, invalid_stack_frme_id)
+        )
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            "application/json", response.headers.get("content-type")
+        )
+        self.assertRegexpMatches(
+            json.loads(response.get_data())["error"],
+            "Not found: Cannot find stack frame with ID"
+            ".*nonsense-stack-frame-id.*",
+        )
 
 
 if __name__ == "__main__":

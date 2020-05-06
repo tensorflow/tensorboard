@@ -255,6 +255,7 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
           - op_name
           - graph_ids: Stack of graph IDs that the op is located in, from
             outermost to innermost. The length of this array is always >= 1.
+            The length is 1 if and only if the graph is an outermost graph.
           - input_names: Input tensor names. This is `None` for ops without
             inputs.
           - num_outputs: Number of output tensors.
@@ -263,7 +264,7 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
           - consumer_names_and_slots: The op name and input slot index for
             each of the ops that consume each of this op's output tensors.
             Each consumer is represented as a [op_name, slot] tuple.
-            E.g., for an op with two output tensors in which only the first
+            E.g., for an op with two output tensors among which only the first
             one is consumed by a downstream op, the value is:
             `[[["downsteam_op_1", 0]], []]`
             If this op has no output tensors, this is an empty array.
@@ -317,7 +318,7 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
 
     @wrappers.Request.application
     def serve_source_files_list(self, request):
-        """Serves a list of all source files involved in the debugged prograF."""
+        """Serves a list of all source files involved in the debugged program."""
         experiment = plugin_util.experiment_id(request.environ)
         run = request.args.get("run")
         if run is None:
