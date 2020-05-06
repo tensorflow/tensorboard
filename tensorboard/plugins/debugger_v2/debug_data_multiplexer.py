@@ -501,8 +501,6 @@ class DebuggerV2EventMultiplexer(object):
                     input_op_digest = None
                 data_object["inputs"].append(
                     self._opCreationDigestToDataObject(input_op_digest)
-                    if input_op_digest
-                    else None
                 )
         # Populate data about immediate consuming ops.
         num_outputs = data_object["num_outputs"]
@@ -519,11 +517,13 @@ class DebuggerV2EventMultiplexer(object):
             except KeyError:
                 digest = None
             data_object["consumers"][src_slot].append(
-                self._opCreationDigestToDataObject(digest) if digest else None
+                self._opCreationDigestToDataObject(digest)
             )
         return data_object
 
     def _opCreationDigestToDataObject(self, op_creation_digest):
+        if op_creation_digest is None:
+            return None
         json_object = op_creation_digest.to_json()
         del json_object["graph_id"]
         json_object["graph_ids"] = self._getGraphStackIds(
