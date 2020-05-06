@@ -13,13 +13,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {Component} from '@angular/core';
 
 @Component({
   selector: 'graph-component',
   templateUrl: './graph_component.ng.html',
   styleUrls: ['./graph_component.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GraphComponent {
   // TODO(cais): Add inputs: opInfo, inputOps and consumerOps.
