@@ -1262,7 +1262,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
             data["consumer_names_and_slots"], [[[consumer["op_name"], 0]]]
         )
 
-    def testServeGraphOpInfoForOpWithInputsAndConsumers(self):
+    def testServeGraphOpInfoWithInputsAndConsumerLookupFailures(self):
         """Get the op info of an op with both inputs and consumers."""
         _generate_tfdbg_v2_data(self.logdir)
         run = self._getExactlyOneRun()
