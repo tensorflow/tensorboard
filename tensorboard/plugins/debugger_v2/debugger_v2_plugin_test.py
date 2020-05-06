@@ -1284,14 +1284,14 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         def fake_get_op_creation_digest(op_name):
             if op_name == add_v2_op_name:
                 return debug_events_reader.GraphOpCreationDigest(
-                    1234.0,
-                    777,
+                    1234.0,  # wall_time
+                    777,  # offset
                     graph_id,
-                    "AddV2",
+                    "AddV2",  # op_type
                     add_v2_op_name,
-                    [12],
-                    "localhost",
-                    ["a1", "b2"],
+                    [12],  # output_tensor_ids
+                    "localhost",  # host_name
+                    ["a1", "b2"],  # stack_frame_ids
                     input_names=["add_v2_input:0"],
                 )
             else:
@@ -1313,10 +1313,11 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertLen(data["consumer_names_and_slots"], 1)
         self.assertLen(data["consumer_names_and_slots"][0], 1)
         self.assertLen(data["consumer_names_and_slots"][0][0], 2)
-        # Check input op properties, which should be None due to the KeyError
+        self.assertEqual(data["consumer_names_and_slots"][0][0][1], 0)
+        # Check input op data, which should be None due to the KeyError
         # encountered when retrieving the data about the input op.
         self.assertEqual(data["inputs"], [None])
-        # Check the consumer op properties, which should also be None due to the
+        # Check the consumer op data, which should also be None due to the
         # KeyError encountered during the retrieval of the data about the
         # consumer op.
         self.assertEqual(data["consumers"], [[None]])
