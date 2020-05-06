@@ -208,6 +208,10 @@ limitations under the License.
     Polymer({
       is: 'tf-scalar-dashboard',
       properties: {
+        reloadOnReady: {
+          type: Boolean,
+          value: true,
+        },
         _showDownloadLinks: {
           type: Boolean,
           notify: true,
@@ -306,7 +310,7 @@ limitations under the License.
         return index <= 2;
       },
       ready() {
-        this.reload();
+        if (this.reloadOnReady) this.reload();
       },
       reload() {
         this._fetchTags().then(() => {

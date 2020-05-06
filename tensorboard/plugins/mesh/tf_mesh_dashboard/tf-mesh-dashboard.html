@@ -214,6 +214,10 @@ limitations under the License.
       Polymer({
         is: 'mesh-dashboard',
         properties: {
+          reloadOnReady: {
+            type: Boolean,
+            value: true,
+          },
           /**
            * @type {Array<string>} list of runs names to display.
            */
@@ -248,7 +252,7 @@ limitations under the License.
             },
             false
           );
-          this.reload();
+          if (this.reloadOnReady) this.reload();
         },
         _getAllChildren() {
           return this.root.querySelectorAll('tf-mesh-loader');

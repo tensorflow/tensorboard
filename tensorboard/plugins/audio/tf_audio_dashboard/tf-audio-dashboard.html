@@ -115,6 +115,10 @@ tf-audio-dashboard displays a dashboard that loads audio from a TensorFlow run.
     Polymer({
       is: 'tf-audio-dashboard',
       properties: {
+        reloadOnReady: {
+          type: Boolean,
+          value: true,
+        },
         _selectedRuns: Array,
         _runToTagInfo: Object,
         _dataNotFound: Boolean,
@@ -134,7 +138,7 @@ tf-audio-dashboard displays a dashboard that loads audio from a TensorFlow run.
       },
 
       ready() {
-        this.reload();
+        if (this.reloadOnReady) this.reload();
       },
       reload() {
         this._fetchTags().then(() => {

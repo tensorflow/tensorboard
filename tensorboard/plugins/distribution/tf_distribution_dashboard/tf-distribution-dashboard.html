@@ -141,6 +141,10 @@ limitations under the License.
     Polymer({
       is: 'tf-distribution-dashboard',
       properties: {
+        reloadOnReady: {
+          type: Boolean,
+          value: true,
+        },
         _xType: {
           type: String,
           value: 'step',
@@ -168,7 +172,7 @@ limitations under the License.
         },
       },
       ready() {
-        this.reload();
+        if (this.reloadOnReady) this.reload();
       },
       reload() {
         this._fetchTags().then(() => {

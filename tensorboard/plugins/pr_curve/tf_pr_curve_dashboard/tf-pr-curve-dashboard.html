@@ -153,6 +153,10 @@ limitations under the License.
     Polymer({
       is: 'tf-pr-curve-dashboard',
       properties: {
+        reloadOnReady: {
+          type: Boolean,
+          value: true,
+        },
         // Determines how the time entry is shown. One of step, relative, or
         // wall_time.
         _timeDisplayType: {
@@ -217,7 +221,7 @@ limitations under the License.
         },
       },
       ready() {
-        this.reload();
+        if (this.reloadOnReady) this.reload();
       },
       reload() {
         Promise.all([this._fetchTags()]).then(() => {
