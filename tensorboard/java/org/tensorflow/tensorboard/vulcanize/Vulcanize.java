@@ -792,28 +792,38 @@ public final class Vulcanize {
     }
   }
 
-  // When we inline the HTML based on `<link rel="import">` in `transform`, we
-  // replace the link element with parsed document. This makes us have nested
-  // documents and jsoup's Node.outerHtml (or Node.toString) are incapable of
-  // properly outputting that. Here, we flatten the document by combining all
-  // elements in `<head>` and `<body>` of nested document in one `<head>` and
-  // `<body>`.
-  //
-  // Examples:
-  // // Input
-  // <#root> <!-- document -->
-  //   <html>
-  //     <head><#root><html><body>foo</body></html></#root></head>
-  //     <body><span>bar</span></body>
-  //   </html>
-  // </html>
-  // // Output
-  // <#root> <!-- document -->
-  //   <html>
-  //     <head></head>
-  //     <body>foo<span>bar</span></body>
-  //   </html>
-  // </html>
+  /**
+   * When we inline the HTML based on `<link rel="import">` in `transform`, we
+   * replace the link element with parsed document. This makes us have nested
+   * documents and jsoup's Node.outerHtml (or Node.toString) are incapable of
+   * properly outputting that. Here, we flatten the document by combining all
+   * elements in `<head>` and `<body>` of nested document in one `<head>` and
+   * `<body>`.
+   *
+   * Examples:
+   * // Input
+   * <#root> <!-- document -->
+   *   <html>
+   *     <head>
+   *      <#root>
+   *        <html>
+   *          <head>
+   *            <script></script>
+   *            <#root><html><body>welcome </body></html></#root>
+   *          </head>
+   *          <body>foo</body></html>
+   *      </#root></head>
+   *     <body><span>bar</span></body>
+   *   </html>
+   * </html>
+   * // Output
+   * <#root> <!-- document -->
+   *   <html>
+   *     <head><script></script></head>
+   *     <body>welcome foo<span>bar</span></body>
+   *   </html>
+   * </html>
+   **/
   private static Document getFlattenedDocument(Document document) {
     Document flatDoc = new Document("/");
     flatDoc.normalise();
@@ -822,8 +832,10 @@ public final class Vulcanize {
 
     Node currentNode = document;
     while (currentNode != null) {
-      // Do not clone the element if it is a `document` inside `<head>`.
-      // We want to traverse further and get all elements from `<head>` and `<body>`
+      // Copy childNodes from `head` into the flatDoc's head without
+      // modification if the node is not a `document` (or a `<#root>` element)
+      // in which case we want to traverse further and only copy the childNodes
+      // in its `body` and `head` elements.
       if (currentNode.parentNode() != null && currentNode.parentNode().nodeName().equals("head")
           && !(currentNode instanceof Document)) {
         rootDocumentHead.appendChild(currentNode.clone());
@@ -831,13 +843,14 @@ public final class Vulcanize {
 
       if (currentNode.nodeName().equals("body")) {
         cloneChildrenWithoutWhitespace((Element) currentNode, rootDocumentBody);
+        ((Element) currentNode).empty();
       }
 
       // Standard DFS.
       if (currentNode.childNodeSize() > 0) {
         currentNode = currentNode.childNode(0);
       } else {
-        // Go up in the tree if there are no sibling elemnts and repeat.
+        // Go up in the tree if there are no sibling elements and repeat.
         while (currentNode != null && currentNode.nextSibling() == null) {
           currentNode = currentNode.parentNode();
         }
