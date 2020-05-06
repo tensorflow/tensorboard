@@ -187,7 +187,6 @@ public final class Vulcanize {
     createFile(
         jsOutput, shouldExtractJs ? extractAndTransformJavaScript(document, jsPath) : "");
     Document normalizedDocument = getFlattenedHTML5Document(document);
-    normalizedDocument.outputSettings().syntax(Document.OutputSettings.Syntax.html);
     createFile(output, normalizedDocument.toString());
   }
 
