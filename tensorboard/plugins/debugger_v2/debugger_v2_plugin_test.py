@@ -26,7 +26,6 @@ import socket
 import threading
 
 import tensorflow as tf
-from tensorflow.python.debug.lib import debug_events_reader
 from werkzeug import test as werkzeug_test  # pylint: disable=wrong-import-order
 from werkzeug import wrappers
 
@@ -1264,6 +1263,8 @@ class DebuggerV2PluginTest(tf.test.TestCase):
 
     def testServeGraphOpInfoWithInputsAndConsumerLookupFailures(self):
         """Get the op info of an op with both inputs and consumers."""
+        from tensorflow.python.debug.lib import debug_events_reader
+
         _generate_tfdbg_v2_data(self.logdir)
         run = self._getExactlyOneRun()
         # First, look up the graph_id and name of the 1st AddV2 op.
