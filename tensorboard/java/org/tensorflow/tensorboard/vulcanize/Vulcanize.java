@@ -74,6 +74,7 @@ import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Comment;
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.DocumentType;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
@@ -184,7 +185,8 @@ public final class Vulcanize {
     // Write an empty file for shasum when all scripts are extracted out.
     createFile(
         jsOutput, shouldExtractJs ? extractAndTransformJavaScript(document, jsPath) : "");
-    Document normalizedDocument = getFlattenedDocument(document);
+    Document normalizedDocument = getFlattenedHTML5Document(document);
+    normalizedDocument.outputSettings().syntax(Document.OutputSettings.Syntax.html);
     createFile(output, normalizedDocument.toString());
   }
 
@@ -800,6 +802,9 @@ public final class Vulcanize {
    * elements in `<head>` and `<body>` of nested document in one `<head>` and
    * `<body>`.
    *
+   * It also prepends <!doctype html> since TensorBoard requires that the
+   * document is HTML.
+   *
    * Examples:
    * // Input
    * <#root> <!-- document -->
@@ -818,14 +823,26 @@ public final class Vulcanize {
    * </html>
    * // Output
    * <#root> <!-- document -->
+   *   <!doctype html>
    *   <html>
    *     <head><script></script></head>
    *     <body>welcome foo<span>bar</span></body>
    *   </html>
    * </html>
    **/
-  private static Document getFlattenedDocument(Document document) {
+  private static Document getFlattenedHTML5Document(Document document) {
     Document flatDoc = new Document("/");
+
+    flatDoc.appendChild(new DocumentType("html", "", "", ""));
+
+    // Transfer comment nodes from the `document` level. They are important
+    // license comments
+    for (Node node : document.childNodes()) {
+      if (node instanceof Comment) {
+        flatDoc.appendChild(node.clone());
+      }
+    }
+
     flatDoc.normalise();
     Element rootDocumentHead = flatDoc.head();
     Element rootDocumentBody = flatDoc.body();
@@ -861,6 +878,7 @@ public final class Vulcanize {
         }
       }
     }
+
     return flatDoc;
   }
 
