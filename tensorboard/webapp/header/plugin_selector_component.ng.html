@@ -27,6 +27,7 @@ limitations under the License.
       <span
         class="plugin-name"
         (click)="onActivePluginSelection($event, plugin.id)"
+        [attr.data-plugin-id]="plugin.id"
       >
         {{plugin.tab_name}}
       </span>
@@ -39,7 +40,11 @@ limitations under the License.
     [value]="selectedPlugin"
     (selectionChange)="onDisabledPluginSelectionChanged($event)"
   >
-    <mat-option *ngFor="let plugin of disabledPlugins" [value]="plugin.id">
+    <mat-option
+      *ngFor="let plugin of disabledPlugins"
+      [value]="plugin.id"
+      [attr.data-plugin-id]="plugin.id"
+    >
       {{ plugin.tab_name }}
     </mat-option>
   </mat-select>
