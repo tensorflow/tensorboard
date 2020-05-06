@@ -493,16 +493,33 @@ class DebuggerV2EventMultiplexer(object):
             data_object["inputs"] = []
             for input_tensor_name in op_creation_digest.input_names:
                 input_op_name = tensor_name_to_op_name(input_tensor_name)
-                input_op_digest = graph.get_op_creation_digest(input_op_name)
+                try:
+                    input_op_digest = graph.get_op_creation_digest(
+                        input_op_name
+                    )
+                except KeyError:
+                    input_op_digest = None
                 data_object["inputs"].append(
                     self._opCreationDigestToDataObject(input_op_digest)
+                    if input_op_digest
+                    else None
                 )
         # Populate data about immediate consuming ops.
-        data_object["consumers"] = collections.defaultdict(list)
-        for src_slot, consumer_op_name, _ in graph.get_op_consumers(op_name):
-            digest = graph.get_op_creation_digest(consumer_op_name)
+        num_outputs = data_object["num_outputs"]
+        data_object["consumer_names_and_slots"] = [[]] * num_outputs
+        data_object["consumers"] = [[]] * num_outputs
+        for src_slot, consumer_op_name, dst_slot in graph.get_op_consumers(
+            op_name
+        ):
+            data_object["consumer_names_and_slots"][src_slot].append(
+                [consumer_op_name, dst_slot]
+            )
+            try:
+                digest = graph.get_op_creation_digest(consumer_op_name)
+            except KeyError:
+                digest = None
             data_object["consumers"][src_slot].append(
-                self._opCreationDigestToDataObject(digest)
+                self._opCreationDigestToDataObject(digest) if digest else None
             )
         return data_object
 
