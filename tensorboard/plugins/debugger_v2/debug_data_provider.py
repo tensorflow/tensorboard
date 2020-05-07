@@ -355,11 +355,6 @@ def _parse_graph_info_blob_key(blob_key):
     Args:
       blob_key: The BLOB key to parse. By contract, it should have the format:
        `${GRAPH_INFO_BLOB_TAG_PREFIX}_${graph_id}.${run_name}`,
-      wherein
-        - `graph_id` is a UUID
-        - op_name conforms to the TensorFlow spec:
-          `^[A-Za-z0-9.][A-Za-z0-9_.\\/>-]*$`
-        - `run_name` is assumed to contain no dots (`'.'`s).
 
     Returns:
       - run name
