@@ -44,9 +44,9 @@ describe('feature_flag_effects', () => {
         provideMockStore(),
       ],
     }).compileComponents();
-    effects = TestBed.get(FeatureFlagEffects);
-    store = TestBed.get(Store);
-    dataSource = TestBed.get(TestingTBFeatureFlagDataSource);
+    effects = TestBed.inject(FeatureFlagEffects);
+    store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
+    dataSource = TestBed.inject(TestingTBFeatureFlagDataSource);
   });
 
   describe('getFeatureFlags$', () => {

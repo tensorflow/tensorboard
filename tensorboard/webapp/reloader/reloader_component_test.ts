@@ -68,8 +68,8 @@ describe('reloader_component', () => {
       ],
       declarations: [ReloaderComponent],
     }).compileComponents();
-    store = TestBed.get(Store);
-    fakeDocument = TestBed.get(DOCUMENT);
+    store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
+    fakeDocument = TestBed.inject(DOCUMENT);
     dispatchSpy = spyOn(store, 'dispatch');
   });
 
