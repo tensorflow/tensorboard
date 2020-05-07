@@ -407,11 +407,15 @@ limitations under the License.
         for (let i = 0; i < seriesData.length; i++) {
           seriesData[i] = _.mapValues(fieldsToData, (values) => values[i]);
         }
-        this.$$('tf-line-chart-data-loader').setSeriesData(run, seriesData);
+        const loader = this.$$('tf-line-chart-data-loader');
+        loader.setSeriesData(run, seriesData);
+        loader.commitChanges();
       },
       _clearSeriesData(run) {
         // Clears data for a run in the chart.
-        this.$$('tf-line-chart-data-loader').setSeriesData(run, []);
+        const loader = this.$$('tf-line-chart-data-loader');
+        loader.setSeriesData(run, []);
+        loader.commitChanges();
       },
       _updateRunToPrCurveEntry(runToDataOverTime, runToStepCap) {
         const runToEntry = {};
