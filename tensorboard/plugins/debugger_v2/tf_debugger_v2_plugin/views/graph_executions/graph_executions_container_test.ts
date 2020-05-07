@@ -84,7 +84,7 @@ describe('Graph Executions Container', () => {
         DebuggerContainer,
       ],
     }).compileComponents();
-    store = TestBed.get(Store);
+    store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
   });
 
   it('does not render execs viewport if # execs = 0', fakeAsync(() => {

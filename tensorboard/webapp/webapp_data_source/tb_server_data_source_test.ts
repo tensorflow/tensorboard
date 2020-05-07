@@ -31,8 +31,8 @@ describe('tb_server_data_source', () => {
         providers: [TBServerDataSource],
       }).compileComponents();
 
-      httpMock = TestBed.get(HttpTestingController);
-      dataSource = TestBed.get(TBServerDataSource);
+      httpMock = TestBed.inject(HttpTestingController);
+      dataSource = TestBed.inject(TBServerDataSource);
     });
 
     describe('fetchPluginsListing', () => {

@@ -88,7 +88,7 @@ describe('Debugger Container', () => {
         TimelineContainer,
       ],
     }).compileComponents();
-    store = TestBed.get(Store);
+    store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     dispatchSpy = spyOn(store, 'dispatch');
   });
 
