@@ -1097,6 +1097,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertEqual(data["name"], "my_function")
         self.assertTrue(outermost_graph_id)
         self.assertIsInstance(outermost_graph_id, str)
+        # This outer graph contains another inner graph (repeat_add).
         self.assertLen(data["inner_graph_ids"], 2)
         self.assertIn(graph_id, data["inner_graph_ids"])
 
