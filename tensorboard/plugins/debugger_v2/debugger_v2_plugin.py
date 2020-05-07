@@ -256,41 +256,42 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
           - graph_ids: Stack of graph IDs that the op is located in, from
             outermost to innermost. The length of this array is always >= 1.
             The length is 1 if and only if the graph is an outermost graph.
-          - input_names: Input tensor names. This is `None` for ops without
-            inputs.
           - num_outputs: Number of output tensors.
           - output_tensor_ids: The debugger-generated number IDs for the
             symbolic output tensors of the op (an array of numbers).
-          - consumer_names_and_slots: The op name and input slot index for
-            each of the ops that consume each of this op's output tensors.
-            Each consumer is represented as a [op_name, slot] tuple.
-            E.g., for an op with two output tensors among which only the first
-            one is consumed by a downstream op, the value is:
-            `[[["downsteam_op_1", 0]], []]`
-            If this op has no output tensors, this is an empty array.
-            If one of the output tensors of this op has no consumers, the
-            corresponding element is an empty array.
           - host_name: Name of the host on which the op is created.
-          - stack_trace: Stack frames of the op's creation in.
-          - inputs: A recursive data object of all the input ops
-            to this op. Currently only immediate (one level of) inputs
-            are provided. This is `None` for ops without inputs.
-            In the rare case wherein the data for an input cannot be retrieved
-            properly (e.g., special internal op types), the input will be
-            represented as `None`.
-          - consumers: A recursive data object of all the ops that
-            consume the output tensors of the op. Currently only
-            immediate (one level of) consumers are provided. This is
-            an empty list for ops with no consumers.
-            A length-N array, where N is the number of this op's output tensors.
-            Each element of the array is an array of data objects of this
-            schema.
+          - stack_trace: Stack frames of the op's creation.
+          - inputs: Specifications of all inputs to this op.
+            Currently only immediate (one level of) inputs are provided.
+            This is an array of length N_in, where N_in is the number of
+            data inputs received by the op. Each element of the array is an
+            object with the following fields:
+              - op_name: Name of the op that provides the input tensor.
+              - output_slot: 0-based output slot index from which the input
+                tensor emits.
+              - data: A recursive data structure of this same schema.
+                In the rare case wherein the data for an input cannot be
+                retrieved properly (e.g., special internal op types), this
+                field will be unpopulated.
+            This is an empty list for an op with no inputs.
+          - consumers: Specifications for all the downstream consuming ops of
+            this. Currently only immediate (one level of) consumers are provided.
+            This is an array of length N_out, where N_out is the number of
+            symbolic tensors output by this op.
+            Each element of the array is an array of which the length equals
+            the number of downstream ops that consume the corresponding symbolic
+            tensor (only data edges are tracked).
+            Each element of the array is an object with the following fields:
+              - op_name: Name of the op receives the output tensor as an input.
+              - input_slot: 0-based input slot index at which the downstream
+                op receives this output tensor.
+              - data: A recursive data structure of this very schema.
+                In the rare case wherein the data for a consumer op cannot be
+                retrieved properly (e.g., special internal op types), this
+                field will be unpopulated.
             If this op has no output tensors, this is an empty array.
             If one of the output tensors of this op has no consumers, the
             corresponding element is an empty array.
-            In the rare case wherein the data for an input cannot be retrieved
-            properly (e.g., special internal op types), the input will be
-            represented as `None`.
         """
         experiment = plugin_util.experiment_id(request.environ)
         run = request.args.get("run")

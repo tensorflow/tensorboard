@@ -1092,9 +1092,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertLen(set(data["graph_ids"]), len(data["graph_ids"]))
         self.assertNotIn("graph_id", data)
         self.assertEqual(data["graph_ids"][-1], digests[op_index]["graph_id"])
-        self.assertLen(data["input_names"], 2)
-        self.assertTrue(data["input_names"][0])
-        self.assertTrue(data["input_names"][1])
+        self.assertNotIn("input_names", data)
         self.assertEqual(data["num_outputs"], 1)
         self.assertLen(data["output_tensor_ids"], 1)
         self.assertIsInstance(data["output_tensor_ids"][0], int)
@@ -1103,60 +1101,68 @@ class DebuggerV2PluginTest(tf.test.TestCase):
 
         # Check input op properties.
         inputs = data["inputs"]
-        self.assertLen(inputs, len(data["input_names"]))
-        self.assertEqual(
-            inputs[0]["op_name"],
-            debug_data_multiplexer.tensor_name_to_op_name(
-                data["input_names"][0]
-            ),
-        )
-        self.assertEqual(
-            inputs[1]["op_name"],
-            debug_data_multiplexer.tensor_name_to_op_name(
-                data["input_names"][1]
-            ),
-        )
         # The two input tensors to the AddV2 op are from the same Unpack
         # (unstack) op that provides 4 outputs.
-        self.assertEqual(inputs[0]["op_type"], "Unpack")
-        self.assertEqual(inputs[1]["op_type"], "Unpack")
-        self.assertTrue(inputs[0]["input_names"])
-        self.assertTrue(inputs[1]["input_names"])
-        self.assertEqual(inputs[0]["num_outputs"], 4)
-        self.assertEqual(inputs[1]["num_outputs"], 4)
-        self.assertLen(inputs[0]["output_tensor_ids"], 4)
-        self.assertLen(inputs[1]["output_tensor_ids"], 4)
-        self.assertEqual(inputs[0]["host_name"], _HOST_NAME)
-        self.assertEqual(inputs[1]["host_name"], _HOST_NAME)
-        self.assertEqual(inputs[0]["graph_ids"], data["graph_ids"])
-        self.assertEqual(inputs[1]["graph_ids"], data["graph_ids"])
-        self.assertEqual(
-            inputs[0]["stack_frame_ids"], inputs[1]["stack_frame_ids"]
-        )
-        self.assertNotIn("inputs", inputs[0])
-        self.assertNotIn("inputs", inputs[1])
-        self.assertNotIn("consumers", inputs[0])
-        self.assertNotIn("consumers", inputs[0])
+        self.assertTrue(inputs[0]["op_name"])
+        self.assertEqual(inputs[0]["output_slot"], 0)
+        self.assertTrue(inputs[1]["op_name"])
+        self.assertEqual(inputs[1]["output_slot"], 1)
+        input0 = inputs[0]["data"]
+        input1 = inputs[1]["data"]
+        for inpt in (input0, input1):
+            self.assertEqual(inpt["op_type"], "Unpack")
+            self.assertNotIn("input_names", inpt)
+            self.assertEqual(inpt["num_outputs"], 4)
+            self.assertLen(inpt["output_tensor_ids"], 4)
+            self.assertEqual(inpt["host_name"], _HOST_NAME)
+            self.assertEqual(inpt["graph_ids"], data["graph_ids"])
+            self.assertLen(inpt["inputs"], 1)
+            self.assertTrue(inpt["inputs"][0]["op_name"])
+            self.assertIsInstance(inpt["inputs"][0]["op_name"], str)
+            self.assertEqual(inpt["inputs"][0]["output_slot"], 0)
+            self.assertNotIn("data", inpt["inputs"][0]["op_name"])
+            self.assertLen(inpt["consumers"], 4)
+            self.assertLen(inpt["consumers"][0], 1)
+            self.assertEqual(inpt["consumers"][0][0]["input_slot"], 0)
+            self.assertNotIn("data", inpt["consumers"][0][0])
+            self.assertLen(inpt["consumers"][1], 1)
+            self.assertEqual(inpt["consumers"][1][0]["input_slot"], 1)
+            self.assertNotIn("data", inpt["consumers"][1][0])
+            self.assertLen(inpt["consumers"][2], 1)
+            self.assertEqual(inpt["consumers"][2][0]["input_slot"], 1)
+            self.assertNotIn("data", inpt["consumers"][2][0])
+            self.assertLen(inpt["consumers"][3], 1)
+            self.assertEqual(inpt["consumers"][3][0]["input_slot"], 1)
+            self.assertNotIn("data", inpt["consumers"][3][0])
 
         # Check consuming op properties.
         self.assertLen(data["consumers"], 1)
         self.assertLen(data["consumers"][0], 1)
-        consumer = data["consumers"][0][0]
         # The AddV2 is consumed by another AddV2 op in the same graph.
+        self.assertTrue(data["consumers"][0][0]["op_name"])
+        self.assertIsInstance(data["consumers"][0][0]["op_name"], str)
+        self.assertEqual(data["consumers"][0][0]["input_slot"], 0)
+        consumer = data["consumers"][0][0]["data"]
         self.assertEqual(consumer["op_type"], "AddV2")
-        self.assertTrue(consumer["op_type"])
+        self.assertTrue(consumer["op_name"])
         self.assertNotEqual(consumer["op_name"], data["op_name"])
-        self.assertIn(data["op_name"] + ":0", consumer["input_names"])
         self.assertEqual(consumer["num_outputs"], 1)
         self.assertLen(consumer["output_tensor_ids"], 1)
         self.assertIsInstance(consumer["output_tensor_ids"][0], int)
         self.assertEqual(consumer["host_name"], _HOST_NAME)
         self.assertTrue(consumer["stack_frame_ids"])
-        self.assertNotIn("inputs", consumer)
-        self.assertNotIn("consumers", consumer)
-        self.assertEqual(
-            data["consumer_names_and_slots"], [[[consumer["op_name"], 0]]]
-        )
+        self.assertLen(consumer["inputs"], 2)
+        self.assertEqual(consumer["inputs"][0]["op_name"], data["op_name"])
+        self.assertEqual(consumer["inputs"][0]["output_slot"], 0)
+        self.assertNotIn("data", consumer["inputs"][0])
+        self.assertEqual(consumer["inputs"][1]["output_slot"], 2)
+        self.assertNotIn("data", consumer["inputs"][1])
+        self.assertLen(consumer["consumers"], 1)
+        self.assertLen(consumer["consumers"][0], 1)
+        self.assertTrue(consumer["consumers"][0][0]["op_name"])
+        self.assertIsInstance(consumer["consumers"][0][0]["op_name"], str)
+        self.assertEqual(consumer["consumers"][0][0]["input_slot"], 0)
+        self.assertNotIn("data", consumer["consumers"][0][0])
 
     def testServeGraphOpInfoForOpWithNoConsumers(self):
         """Get the op info of an op with no consumers in the same graph."""
@@ -1190,20 +1196,21 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         # The op is inside a nested tf.function, so its graph stack must have a height > 1.
         self.assertGreater(len(data["graph_ids"]), 1)
         self.assertEqual(data["graph_ids"][-1], graph_id)
-        self.assertLen(data["input_names"], 1)
-        self.assertTrue(data["input_names"][0])
+        self.assertNotIn("input_names", data)
         self.assertEqual(data["num_outputs"], 1)
         self.assertEqual(data["host_name"], _HOST_NAME)
         self.assertTrue(data["stack_frame_ids"])
 
         # Check input op properties.
-        inputs = data["inputs"]
-        self.assertLen(inputs, 1)
-        self.assertEqual(inputs[0]["op_type"], "AddV2")
+        self.assertLen(data["inputs"], 1)
+        self.assertTrue(data["inputs"][0]["op_name"])
+        self.assertIsInstance(data["inputs"][0]["op_name"], str)
+        self.assertEqual(data["inputs"][0]["output_slot"], 0)
+        input0 = data["inputs"][0]["data"]
+        self.assertEqual(input0["op_type"], "AddV2")
 
         # Check consumers: There should be no consumers for this Identity op.
         self.assertEqual(data["consumers"], [[]])
-        self.assertEqual(data["consumer_names_and_slots"], [[]])
 
     def testServeGraphOpInfoForOpWithNoInputs(self):
         """Get the op info of an op with no inputs."""
@@ -1243,23 +1250,22 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertNotIn("graph_id", data)
         self.assertGreater(len(data["graph_ids"]), 1)
         self.assertEqual(data["graph_ids"][-1], graph_id)
-        self.assertIsNone(data["input_names"])
+        self.assertNotIn("input_names", data)
         self.assertEqual(data["num_outputs"], 1)
         self.assertEqual(data["host_name"], _HOST_NAME)
         self.assertTrue(data["stack_frame_ids"])
 
         # Check input op properties: The Placeholder has no inputs.
-        self.assertIsNone(data["inputs"])
+        self.assertEqual(data["inputs"], [])
 
         # Check consumers.
         self.assertLen(data["consumers"], 1)
         self.assertLen(data["consumers"][0], 1)
-        consumer = data["consumers"][0][0]
+        self.assertEqual(data["consumers"][0][0]["op_name"], unpack_op_name)
+        self.assertEqual(data["consumers"][0][0]["input_slot"], 0)
+        consumer = data["consumers"][0][0]["data"]
         self.assertEqual(consumer["op_type"], "Unpack")
         self.assertEqual(consumer["op_name"], unpack_op_name)
-        self.assertEqual(
-            data["consumer_names_and_slots"], [[[consumer["op_name"], 0]]]
-        )
 
     def testServeGraphOpInfoWithInputsAndConsumerLookupFailures(self):
         """Get the op info of an op with both inputs and consumers."""
@@ -1310,18 +1316,21 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.get_data())
 
-        self.assertEqual(data["input_names"], ["add_v2_input:0"])
-        self.assertLen(data["consumer_names_and_slots"], 1)
-        self.assertLen(data["consumer_names_and_slots"][0], 1)
-        self.assertLen(data["consumer_names_and_slots"][0][0], 2)
-        self.assertEqual(data["consumer_names_and_slots"][0][0][1], 0)
-        # Check input op data, which should be None due to the KeyError
-        # encountered when retrieving the data about the input op.
-        self.assertEqual(data["inputs"], [None])
+        self.assertNotIn("input_names", data)
+        self.assertEqual(
+            data["inputs"], [{"op_name": "add_v2_input", "output_slot": 0,}]
+        )  # "data" is missing due to op lookup failure.
         # Check the consumer op data, which should also be None due to the
         # KeyError encountered during the retrieval of the data about the
         # consumer op.
-        self.assertEqual(data["consumers"], [[None]])
+        self.assertLen(data["consumers"], 1)
+        self.assertLen(data["consumers"][0], 1)
+        consumer_spec = data["consumers"][0][0]
+        self.assertTrue(consumer_spec["op_name"])
+        self.assertIsInstance(consumer_spec["op_name"], str)
+        self.assertEqual(consumer_spec["input_slot"], 0)
+        # NOTE: "data" is missing due to op lookup failure.
+        self.assertNotIn("data", consumer_spec)
 
     def testServeGraphOpInfoRespondsWithErrorForInvalidGraphId(self):
         _generate_tfdbg_v2_data(self.logdir)

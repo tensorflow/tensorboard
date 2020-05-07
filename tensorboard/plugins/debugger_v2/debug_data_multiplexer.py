@@ -96,9 +96,15 @@ def _alert_to_json(alert):
         raise TypeError("Unrecognized alert subtype: %s" % type(alert))
 
 
-def tensor_name_to_op_name(tensor_name):
-    """Helper function that extracts op name from tensor name."""
-    return tensor_name.split(":")[0]
+def parse_tensor_name(tensor_name):
+    """Helper function that extracts op name and slot from tensor name."""
+    output_slot = 0
+    if ":" in tensor_name:
+        op_name, output_slot = tensor_name.split(":")
+        output_slot = int(output_slot)
+    else:
+        op_name = tensor_name
+    return op_name, output_slot
 
 
 class DebuggerV2EventMultiplexer(object):
@@ -486,42 +492,38 @@ class DebuggerV2EventMultiplexer(object):
                 'There is no op named "%s" in graph with ID "%s"'
                 % (op_name, graph_id)
             )
-        data_object = self._opCreationDigestToDataObject(op_creation_digest)
+        data_object = self._opCreationDigestToDataObject(
+            op_creation_digest, graph
+        )
         # Populate data about immediate inputs.
-        data_object["inputs"] = None
-        if op_creation_digest.input_names:
-            data_object["inputs"] = []
-            for input_tensor_name in op_creation_digest.input_names:
-                input_op_name = tensor_name_to_op_name(input_tensor_name)
+        if data_object["inputs"]:
+            for input_spec in data_object["inputs"]:
                 try:
                     input_op_digest = graph.get_op_creation_digest(
-                        input_op_name
+                        input_spec["op_name"]
                     )
                 except KeyError:
                     input_op_digest = None
-                data_object["inputs"].append(
-                    self._opCreationDigestToDataObject(input_op_digest)
-                )
+                if input_op_digest:
+                    input_spec["data"] = self._opCreationDigestToDataObject(
+                        input_op_digest, graph
+                    )
         # Populate data about immediate consuming ops.
-        num_outputs = data_object["num_outputs"]
-        data_object["consumer_names_and_slots"] = [[]] * num_outputs
-        data_object["consumers"] = [[]] * num_outputs
-        for src_slot, consumer_op_name, dst_slot in graph.get_op_consumers(
-            op_name
-        ):
-            data_object["consumer_names_and_slots"][src_slot].append(
-                [consumer_op_name, dst_slot]
-            )
-            try:
-                digest = graph.get_op_creation_digest(consumer_op_name)
-            except KeyError:
-                digest = None
-            data_object["consumers"][src_slot].append(
-                self._opCreationDigestToDataObject(digest)
-            )
+        for slot_consumer_specs in data_object["consumers"]:
+            for consumer_spec in slot_consumer_specs:
+                try:
+                    digest = graph.get_op_creation_digest(
+                        consumer_spec["op_name"]
+                    )
+                except KeyError:
+                    digest = None
+                if digest:
+                    consumer_spec["data"] = self._opCreationDigestToDataObject(
+                        digest, graph
+                    )
         return data_object
 
-    def _opCreationDigestToDataObject(self, op_creation_digest):
+    def _opCreationDigestToDataObject(self, op_creation_digest, graph):
         if op_creation_digest is None:
             return None
         json_object = op_creation_digest.to_json()
@@ -531,6 +533,30 @@ class DebuggerV2EventMultiplexer(object):
         )
         # TODO(cais): "num_outputs" should be populated in to_json() instead.
         json_object["num_outputs"] = op_creation_digest.num_outputs
+        del json_object["input_names"]
+
+        json_object["inputs"] = []
+        if op_creation_digest.input_names:
+            for input_tensor_name in op_creation_digest.input_names:
+                input_op_name, output_slot = parse_tensor_name(
+                    input_tensor_name
+                )
+                input_spec = {
+                    "op_name": input_op_name,
+                    "output_slot": output_slot,
+                }
+                json_object["inputs"].append(input_spec)
+        json_object["consumers"] = []
+        for _ in range(json_object["num_outputs"]):
+            json_object["consumers"].append([])
+        for src_slot, consumer_op_name, dst_slot in graph.get_op_consumers(
+            json_object["op_name"]
+        ):
+            consumer_spec = {
+                "op_name": consumer_op_name,
+                "input_slot": dst_slot,
+            }
+            json_object["consumers"][src_slot].append(consumer_spec)
         return json_object
 
     def _getGraphStackIds(self, graph_id):
