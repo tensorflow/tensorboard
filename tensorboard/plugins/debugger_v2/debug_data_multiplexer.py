@@ -540,22 +540,18 @@ class DebuggerV2EventMultiplexer(object):
                 input_op_name, output_slot = parse_tensor_name(
                     input_tensor_name
                 )
-                input_spec = {
-                    "op_name": input_op_name,
-                    "output_slot": output_slot,
-                }
-                json_object["inputs"].append(input_spec)
+                json_object["inputs"].append(
+                    {"op_name": input_op_name, "output_slot": output_slot}
+                )
         json_object["consumers"] = []
         for _ in range(json_object["num_outputs"]):
             json_object["consumers"].append([])
         for src_slot, consumer_op_name, dst_slot in graph.get_op_consumers(
             json_object["op_name"]
         ):
-            consumer_spec = {
-                "op_name": consumer_op_name,
-                "input_slot": dst_slot,
-            }
-            json_object["consumers"][src_slot].append(consumer_spec)
+            json_object["consumers"][src_slot].append(
+                {"op_name": consumer_op_name, "input_slot": dst_slot}
+            )
         return json_object
 
     def _getGraphStackIds(self, graph_id):
