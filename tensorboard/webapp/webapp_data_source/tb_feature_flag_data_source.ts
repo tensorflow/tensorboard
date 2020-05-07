@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {Injectable} from '@angular/core';
 
 import {TBFeatureFlagDataSource} from './tb_feature_flag_data_source_types';
 
@@ -21,6 +22,7 @@ const util = {
   },
 };
 
+@Injectable()
 export class QueryParamsFeatureFlagDataSource extends TBFeatureFlagDataSource {
   getFeatures() {
     const params = util.getParams();
