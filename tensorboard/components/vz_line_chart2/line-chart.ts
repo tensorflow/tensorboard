@@ -90,7 +90,6 @@ namespace vz_line_chart2 {
     private lastPointsDataset: Plottable.Dataset;
     private fillArea?: FillArea;
     private datasets: Plottable.Dataset[];
-    private onDatasetChanged: (dataset: Plottable.Dataset) => void;
     private nanDataset: Plottable.Dataset;
     private smoothingWeight: number;
     private smoothingEnabled: boolean;
@@ -138,10 +137,6 @@ namespace vz_line_chart2 {
       // The symbol function maps series to marker. It uses a special dataset that
       // varies based on whether smoothing is enabled.
       this.symbolFunction = symbolFunction;
-
-      // need to do a single bind, so we can deregister the callback from
-      // old Plottable.Datasets. (Deregistration is done by identity checks.)
-      this.onDatasetChanged = this._onDatasetChanged.bind(this);
 
       this._defaultXRange = defaultXRange;
       this._defaultYRange = defaultYRange;
@@ -320,16 +315,6 @@ namespace vz_line_chart2 {
         groups.push(this.markersScatterPlot);
       }
       return new Plottable.Components.Group(groups);
-    }
-
-    /** Updates the chart when a dataset changes. Called every time the data of
-     * a dataset changes to update the charts.
-     */
-    private _onDatasetChanged(dataset: Plottable.Dataset) {
-      if (this.smoothingEnabled) {
-        this.resmoothDataset(dataset);
-      }
-      this.updateSpecialDatasets();
     }
 
     public ignoreYOutliers(ignoreYOutliers: boolean) {
@@ -833,32 +818,53 @@ namespace vz_line_chart2 {
     }
 
     /**
-     * Update the selected series on the chart.
+     * Stages update of visible series on the chart.
+     *
+     * Please call `commitChanges` for the changes to be reflected on the chart
+     * after making all the changes.
      */
     public setVisibleSeries(names: string[]) {
+      this.disableChanges();
       names = names.sort();
-      this.seriesNames = names;
-
       names.reverse(); // draw first series on top
-      this.datasets.forEach((d) => d.offUpdate(this.onDatasetChanged));
-      this.datasets = names.map((r) => this.getDataset(r));
-      this.datasets.forEach((d) => d.onUpdate(this.onDatasetChanged));
-      this.linePlot.datasets(this.datasets);
+      this.seriesNames = names;
+    }
 
+    private dirtyDatasets = new Set<string>();
+
+    private disableChanges() {
+      if (!this.dirtyDatasets.size) {
+        // Prevent plots from reacting to the dataset changes.
+        this.linePlot.datasets([]);
+        if (this.smoothLinePlot) {
+          this.smoothLinePlot.datasets([]);
+        }
+
+        if (this.marginAreaPlot) {
+          this.marginAreaPlot.datasets([]);
+        }
+      }
+    }
+
+    public commitChanges() {
+      this.datasets = this.seriesNames.map((r) => this.getDataset(r));
+      [...this.dirtyDatasets].forEach((d) => {
+        if (this.smoothingEnabled) {
+          this.resmoothDataset(this.getDataset(d));
+        }
+      });
+      this.updateSpecialDatasets();
+
+      this.linePlot.datasets(this.datasets);
       if (this.smoothingEnabled) {
         this.smoothLinePlot.datasets(this.datasets);
       }
       if (this.marginAreaPlot) {
         this.marginAreaPlot.datasets(this.datasets);
       }
-      this.updateSpecialDatasets();
-    }
 
-    /**
-     * Not yet implemented.
-     */
-    public commitChanges() {
-      // Temporarily rolled back due to PR curves breakage.
+      this.measureBBoxAndMaybeInvalidateLayoutInRaf();
+      this.dirtyDatasets.clear();
     }
 
     /**
@@ -885,21 +891,30 @@ namespace vz_line_chart2 {
     }
 
     /**
-     * Sets the data of a series on the chart.
+     * Stages a data change of a series on the chart.
+     *
+     * Please call `commitChanges` for the changes to be reflected on the chart
+     * after making all the changes.
      */
     public setSeriesData(name: string, data: vz_chart_helpers.ScalarDatum[]) {
+      this.disableChanges();
       this.getDataset(name).data(data);
-      this.measureBBoxAndMaybeInvalidateLayoutInRaf();
+      this.dirtyDatasets.add(name);
     }
 
     /**
-     * Sets the metadata of a series on the chart.
+     * Sets a metadata change of a series on the chart.
+     *
+     * Please call `commitChanges` for the changes to be reflected on the chart
+     * after making all the changes.
      */
     public setSeriesMetadata(name: string, meta: any) {
-      const newMeta = Object.assign({}, this.getDataset(name).metadata(), {
+      this.disableChanges();
+      this.getDataset(name).metadata({
+        ...this.getDataset(name).metadata(),
         meta,
       });
-      this.getDataset(name).metadata(newMeta);
+      this.dirtyDatasets.add(name);
     }
 
     public smoothingUpdate(weight: number) {
