@@ -496,18 +496,17 @@ class DebuggerV2EventMultiplexer(object):
             op_creation_digest, graph
         )
         # Populate data about immediate inputs.
-        if data_object["inputs"]:
-            for input_spec in data_object["inputs"]:
-                try:
-                    input_op_digest = graph.get_op_creation_digest(
-                        input_spec["op_name"]
-                    )
-                except KeyError:
-                    input_op_digest = None
-                if input_op_digest:
-                    input_spec["data"] = self._opCreationDigestToDataObject(
-                        input_op_digest, graph
-                    )
+        for input_spec in data_object["inputs"]:
+            try:
+                input_op_digest = graph.get_op_creation_digest(
+                    input_spec["op_name"]
+                )
+            except KeyError:
+                input_op_digest = None
+            if input_op_digest:
+                input_spec["data"] = self._opCreationDigestToDataObject(
+                    input_op_digest, graph
+                )
         # Populate data about immediate consuming ops.
         for slot_consumer_specs in data_object["consumers"]:
             for consumer_spec in slot_consumer_specs:
