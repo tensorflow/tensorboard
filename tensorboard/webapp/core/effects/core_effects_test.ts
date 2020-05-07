@@ -63,12 +63,12 @@ describe('core_effects', () => {
         provideMockStore({initialState}),
       ],
     }).compileComponents();
-    coreEffects = TestBed.get(CoreEffects);
-    httpMock = TestBed.get(HttpTestingController);
-    store = TestBed.get(Store);
+    coreEffects = TestBed.inject(CoreEffects);
+    httpMock = TestBed.inject(HttpTestingController);
+    store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     dispatchSpy = spyOn(store, 'dispatch');
 
-    const dataSource = TestBed.get(TBServerDataSource);
+    const dataSource = TestBed.inject(TBServerDataSource);
     fetchRuns = spyOn(dataSource, 'fetchRuns')
       .withArgs()
       .and.returnValue(of(null));

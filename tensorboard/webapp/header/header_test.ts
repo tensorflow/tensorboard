@@ -81,7 +81,7 @@ describe('header test', () => {
       ],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
-    store = TestBed.get(Store);
+    store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     store.overrideSelector(getPlugins, {
       foo: createPluginMetadata('Foo Fighter'),
       bar: createPluginMetadata('Barber'),
