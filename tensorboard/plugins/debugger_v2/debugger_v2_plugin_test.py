@@ -1067,7 +1067,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         op_index = op_types.index("AddV2")
         graph_id = digests[op_index]["graph_id"]
 
-        # Query the /graphs/graph route for the inner graph
+        # Query the /graphs/graph_info route for the inner graph.
         # This is the graph that contains the AddV2 op. It corresponds
         # to the function "unstack_and_sum".
         response = self.server.get(
@@ -1084,7 +1084,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         # The graph of unstack_and_sum has no inner graphs.
         self.assertEqual(data["inner_graph_ids"], [])
 
-        # Query the /graphs/graph route for the outer graph.
+        # Query the /graphs/graph_info route for the outer graph.
         # This corresponds to the function "my_function"
         response = self.server.get(
             _ROUTE_PREFIX
@@ -1100,7 +1100,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertLen(data["inner_graph_ids"], 2)
         self.assertIn(graph_id, data["inner_graph_ids"])
 
-        # Query the /graphs/graph route for the outermost graph.
+        # Query the /graphs/graph_info route for the outermost graph.
         # This is an unnamed outermost graph.
         response = self.server.get(
             _ROUTE_PREFIX
