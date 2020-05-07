@@ -80,22 +80,18 @@ class ExperimentFromDevTest(tb_test.TestCase):
         ):
             experiment = experiment_from_dev.ExperimentFromDev("789")
             for pivot in (None, False):
-                with self.subTest("pivot=%s" % pivot):
-                    dataframe = experiment.get_scalars(pivot=pivot)
-
-                    expected = pandas.DataFrame(
-                        {
+                for include_wall_time in (False, True):
+                    with self.subTest(
+                        "pivot=%s; include_wall_time=%s"
+                        % (pivot, include_wall_time)
+                    ):
+                        dataframe = experiment.get_scalars(
+                            pivot=pivot, include_wall_time=include_wall_time
+                        )
+                        data = {
                             "run": ["train"] * 20 + ["test"] * 20,
                             "tag": (["accuracy"] * 10 + ["loss"] * 10) * 2,
                             "step": list(np.arange(0, 10)) * 4,
-                            "wall_time": np.concatenate(
-                                [
-                                    2.0 * np.arange(0, 10),
-                                    1.0 * np.arange(0, 10),
-                                    600.0 + 2.0 * np.arange(0, 10),
-                                    600.0 + np.arange(0, 10),
-                                ]
-                            ),
                             "value": np.concatenate(
                                 [
                                     1.0 / (10.0 - np.arange(0, 10)),
@@ -105,19 +101,29 @@ class ExperimentFromDevTest(tb_test.TestCase):
                                 ]
                             ),
                         }
-                    )
-
-                    if pivot is None:  # Default behavior: pivot_table.
+                        if include_wall_time:
+                            data["wall_time"] = np.concatenate(
+                                [
+                                    2.0 * np.arange(0, 10),
+                                    1.0 * np.arange(0, 10),
+                                    600.0 + 2.0 * np.arange(0, 10),
+                                    600.0 + np.arange(0, 10),
+                                ]
+                            )
+                        expected = pandas.DataFrame(data)
+                        if pivot is None:  # Default behavior: pivot_table.
+                            expected = expected.pivot_table(
+                                values=(
+                                    ["value", "wall_time"]
+                                    if include_wall_time
+                                    else "value"
+                                ),
+                                index=["run", "step"],
+                                columns="tag",
+                            ).reset_index()
+                            expected.columns.name = None
                         pandas.testing.assert_frame_equal(
-                            dataframe,
-                            expected.pivot_table(
-                                ["value", "wall_time"], ["run", "step"], "tag"
-                            ),
-                            check_names=True,
-                        )
-                    else:  # pivot == False
-                        pandas.testing.assert_frame_equal(
-                            dataframe, expected, check_names=True
+                            dataframe, expected, check_names=True,
                         )
 
     def test_get_scalars_with_pivot_table_with_missing_value(self):
@@ -156,7 +162,8 @@ class ExperimentFromDevTest(tb_test.TestCase):
             experiment = experiment_from_dev.ExperimentFromDev("789")
             with self.assertRaisesRegexp(
                 ValueError,
-                r"missing value\(s\).*different sets of steps.*pivot=False",
+                r"contains missing value\(s\).*different sets of "
+                r"steps.*pivot=False",
             ):
                 experiment.get_scalars()
 
@@ -190,15 +197,19 @@ class ExperimentFromDevTest(tb_test.TestCase):
             experiment = experiment_from_dev.ExperimentFromDev("789")
             dataframe = experiment.get_scalars()
 
-        expected = pandas.DataFrame(
-            {
-                "run": ["train"] * 2,
-                "tag": ["batch_loss"] * 2,
-                "step": [0, 1],
-                "value": [np.nan, np.inf],
-                "wall_time": [0.0, 10.0],
-            }
-        ).pivot_table(["value", "wall_time"], ["run", "step"], "tag")
+        expected = (
+            pandas.DataFrame(
+                {
+                    "run": ["train"] * 2,
+                    "tag": ["batch_loss"] * 2,
+                    "step": [0, 1],
+                    "value": [np.nan, np.inf],
+                }
+            )
+            .pivot_table("value", ["run", "step"], "tag")
+            .reset_index()
+        )
+        expected.columns.name = None
         pandas.testing.assert_frame_equal(dataframe, expected, check_names=True)
 
 

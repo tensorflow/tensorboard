@@ -70,7 +70,13 @@ class ExperimentFromDev(base_experiment.BaseExperiment):
         self._experiment_id = experiment_id
         self._api_client = get_api_client(api_endpoint=api_endpoint)
 
-    def get_scalars(self, runs_filter=None, tags_filter=None, pivot=None):
+    def get_scalars(
+        self,
+        runs_filter=None,
+        tags_filter=None,
+        pivot=None,
+        include_wall_time=None,
+    ):
         if runs_filter is not None:
             raise NotImplementedError(
                 "runs_filter support for get_scalars() is not implemented yet."
@@ -80,6 +86,9 @@ class ExperimentFromDev(base_experiment.BaseExperiment):
                 "tags_filter support for get_scalars() is not implemented yet."
             )
         pivot = True if pivot is None else pivot
+        include_wall_time = (
+            False if include_wall_time is None else include_wall_time
+        )
 
         request = export_service_pb2.StreamExperimentDataRequest()
         request.experiment_id = self._experiment_id
@@ -107,15 +116,15 @@ class ExperimentFromDev(base_experiment.BaseExperiment):
             )
             values.extend(list(response.points.values))
 
-        dataframe = pandas.DataFrame(
-            {
-                "run": runs,
-                "tag": tags,
-                "step": steps,
-                "wall_time": wall_times,
-                "value": values,
-            }
-        )
+        data = {
+            "run": runs,
+            "tag": tags,
+            "step": steps,
+            "value": values,
+        }
+        if include_wall_time:
+            data["wall_time"] = wall_times
+        dataframe = pandas.DataFrame(data)
         if pivot:
             dataframe = self._pivot_dataframe(dataframe)
         return dataframe
@@ -123,17 +132,25 @@ class ExperimentFromDev(base_experiment.BaseExperiment):
     def _pivot_dataframe(self, dataframe):
         num_missing_0 = np.count_nonzero(dataframe.isnull().values)
         dataframe = dataframe.pivot_table(
-            ["value", "wall_time"], ["run", "step"], "tag",
+            values=(
+                ["value", "wall_time"]
+                if "wall_time" in dataframe.columns
+                else "value"
+            ),
+            index=["run", "step"],
+            columns="tag",
         )
         num_missing_1 = np.count_nonzero(dataframe.isnull().values)
         if num_missing_1 > num_missing_0:
             raise ValueError(
-                "pivoted DataFrame contains %d missing value(s). "
+                "pivoted DataFrame contains missing value(s). "
                 "This is likely due to two timeseries having different "
                 "sets of steps in your experiment. "
                 "You can avoid this error by calling `get_scalars()` with "
                 "`pivot=False` to disable the DataFrame pivoting."
             )
+        dataframe = dataframe.reset_index()
+        dataframe.columns.name = None
         return dataframe
 
 

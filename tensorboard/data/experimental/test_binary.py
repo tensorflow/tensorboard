@@ -20,6 +20,8 @@ from __future__ import print_function
 
 import argparse
 
+import pandas
+
 from tensorboard.data.experimental import experiment_from_dev
 
 
@@ -37,6 +39,11 @@ def parse_args():
         default=None,
         help="Optional API endpoint used to override the default",
     )
+    parser.add_argument(
+        "--include_wall_time",
+        action="store_true",
+        help="Include wall_time column(s) in the DataFrame",
+    )
     return parser.parse_args()
 
 
@@ -44,7 +51,7 @@ def main(args):
     experiment = experiment_from_dev.ExperimentFromDev(
         args.experiment_id, api_endpoint=args.api_endpoint
     )
-    dataframe = experiment.get_scalars()
+    dataframe = experiment.get_scalars(include_wall_time=args.include_wall_time)
     print(dataframe)
 
 
