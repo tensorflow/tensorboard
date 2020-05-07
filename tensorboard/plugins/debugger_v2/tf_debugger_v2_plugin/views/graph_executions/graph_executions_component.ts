@@ -19,6 +19,7 @@ import {
   Component,
   EventEmitter,
   Input,
+  OnChanges,
   Output,
   SimpleChanges,
   ViewChild,
@@ -33,7 +34,7 @@ import {GraphExecution} from '../../store/debugger_types';
   styleUrls: ['./graph_executions_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class GraphExecutionsComponent {
+export class GraphExecutionsComponent implements OnChanges {
   @Input()
   numGraphExecutions!: number;
 

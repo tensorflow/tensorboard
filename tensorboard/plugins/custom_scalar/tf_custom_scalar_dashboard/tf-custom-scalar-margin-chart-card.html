@@ -664,6 +664,7 @@ limitations under the License.
             dataSeries.getData()
           );
         });
+        this.$.loader.commitChanges();
       },
       _computeSeriesNames() {
         const runLookup = new Set(this.runs);

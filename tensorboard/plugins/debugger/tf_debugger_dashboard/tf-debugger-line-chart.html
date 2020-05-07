@@ -110,6 +110,7 @@ limitations under the License.
           seriesData.push({step: xData[i], scalar: yData[i]});
         }
         chart.setSeriesData(this._defaultSeriesName, seriesData);
+        chart.commitChanges();
       },
     });
   </script>

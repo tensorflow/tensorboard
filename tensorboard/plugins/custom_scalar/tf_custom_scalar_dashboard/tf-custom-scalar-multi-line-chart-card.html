@@ -382,6 +382,7 @@ limitations under the License.
         Object.entries(_nameToDataSeries).forEach(([name, series]) => {
           this.$.loader.setSeriesData(name, series.getData());
         });
+        this.$.loader.commitChanges();
       },
       _computeSelectedRunsSet(runs) {
         const mapping = {};

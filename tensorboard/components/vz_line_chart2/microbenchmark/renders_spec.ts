@@ -61,6 +61,7 @@ benchmark({
     context.container.appendChild(context.chart);
 
     context.chart.setVisibleSeries([]);
+    context.chart.commitChanges();
 
     await polymerFlush();
   },
@@ -82,6 +83,7 @@ benchmark({
 
     context.chart.setSeriesData('sine', DATA_POINTS.sine1k);
     context.chart.setVisibleSeries(['sine']);
+    context.chart.commitChanges();
 
     await polymerFlush();
   },
@@ -103,6 +105,7 @@ benchmark({
 
     context.chart.setSeriesData('sine', DATA_POINTS.sine1k);
     context.chart.setVisibleSeries(['sine']);
+    context.chart.commitChanges();
 
     await polymerFlush();
   },
@@ -124,6 +127,7 @@ benchmark({
 
     context.chart.setSeriesData('cosine', DATA_POINTS.cosine100k);
     context.chart.setVisibleSeries(['cosine']);
+    context.chart.commitChanges();
 
     await polymerFlush();
   },
@@ -146,6 +150,7 @@ benchmark({
     context.chart.setSeriesData('sine', DATA_POINTS.sine1k);
     context.chart.setSeriesData('cosine', DATA_POINTS.cosine1k);
     context.chart.setVisibleSeries(['cosine']);
+    context.chart.commitChanges();
     context.even = true;
 
     await polymerFlush();
@@ -177,6 +182,7 @@ benchmark({
     context.chart.setVisibleSeries(
       FIVE_HUNDRED_1K_DATA_POINTS.map(({name}) => name)
     );
+    context.chart.commitChanges();
 
     await polymerFlush();
   },
@@ -201,6 +207,7 @@ benchmark({
       context.chart.setSeriesData(name, data);
     });
     context.chart.setVisibleSeries(datapoints.map(({name}) => name));
+    context.chart.commitChanges();
 
     await polymerFlush();
     context.index = 0;
@@ -234,6 +241,7 @@ benchmark({
         context.container.appendChild(chart);
         chart.setSeriesData(name, data);
         chart.setVisibleSeries([name]);
+        chart.commitChanges();
         return chart;
       }
     );
@@ -264,6 +272,7 @@ benchmark({
         chart.style.height = '50px';
         context.container.appendChild(chart);
         chart.setSeriesData(name, data);
+        chart.commitChanges();
         return chart;
       }
     );
@@ -277,12 +286,14 @@ benchmark({
     context.charts.forEach((chart: any) => {
       chart.setVisibleSeries([]);
     });
+    context.chart.commitChanges();
 
     await context.flushAsync();
 
     context.charts.forEach((chart: any, index: number) => {
       chart.setVisibleSeries([context.names[index]]);
     });
+    context.chart.commitChanges();
 
     await context.flushAsync();
   },
@@ -300,6 +311,7 @@ benchmark({
 
     context.chart.setSeriesData('cosine', DATA_POINTS.cosine1k);
     context.chart.setVisibleSeries(['cosine']);
+    context.chart.commitChanges();
     context.chart.smoothingEnabled = true;
     context.even = true;
 
@@ -328,6 +340,7 @@ benchmark({
 
     context.chart.setSeriesData('cosine', DATA_POINTS.cosine100k);
     context.chart.setVisibleSeries(['cosine']);
+    context.chart.commitChanges();
     context.chart.smoothingEnabled = true;
     context.even = true;
 
@@ -358,6 +371,7 @@ benchmark({
 
     context.chart.setSeriesData('cosine', DATA_POINTS.cosine100k);
     context.chart.setVisibleSeries(['cosine']);
+    context.chart.commitChanges();
     context.chart.smoothingEnabled = true;
     context.even = true;
 
