@@ -187,6 +187,9 @@ public final class Vulcanize {
     createFile(
         jsOutput, shouldExtractJs ? extractAndTransformJavaScript(document, jsPath) : "");
     Document normalizedDocument = getFlattenedHTML5Document(document);
+    // Prevent from correcting the DOM structure and messing up the whitespace
+    // in the template.
+    normalizedDocument.outputSettings().prettyPrint(false);
     createFile(output, normalizedDocument.toString());
   }
 
