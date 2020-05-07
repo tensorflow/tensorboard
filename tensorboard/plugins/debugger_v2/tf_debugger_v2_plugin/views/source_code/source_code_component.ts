@@ -19,6 +19,7 @@ import {
   Input,
   SimpleChanges,
   ViewChild,
+  OnChanges,
   OnDestroy,
   OnInit,
 } from '@angular/core';
@@ -38,7 +39,7 @@ const RESIZE_DEBOUNCE_INTERAVL_MS = 50;
   styleUrls: ['./source_code_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SourceCodeComponent implements OnInit, OnDestroy {
+export class SourceCodeComponent implements OnInit, OnChanges, OnDestroy {
   @Input()
   lines: string[] | null = null; // TODO(cais): Add spinner for `null`.
 
