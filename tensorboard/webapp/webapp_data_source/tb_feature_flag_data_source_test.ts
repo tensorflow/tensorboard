@@ -27,7 +27,7 @@ describe('tb_feature_flag_data_source', () => {
         providers: [QueryParamsFeatureFlagDataSource],
       }).compileComponents();
 
-      dataSource = TestBed.get(QueryParamsFeatureFlagDataSource);
+      dataSource = TestBed.inject(QueryParamsFeatureFlagDataSource);
     });
 
     describe('getFeatures', () => {

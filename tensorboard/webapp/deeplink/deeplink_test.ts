@@ -49,7 +49,7 @@ describe('deeplink', () => {
     } as any);
     createElementSpy.and.callThrough();
 
-    deepLinker = TestBed.get(HashDeepLinker);
+    deepLinker = TestBed.inject(HashDeepLinker);
   });
 
   it('uses real hash', () => {
