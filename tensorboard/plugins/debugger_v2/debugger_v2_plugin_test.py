@@ -1118,9 +1118,6 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         """Get the op info of an op with both inputs and consumers."""
         _generate_tfdbg_v2_data(self.logdir)
         run = self._getExactlyOneRun()
-
-        # Query the /graphs/graph route for the inner graph
-        # (the one that contains the AddV2 op).
         response = self.server.get(
             _ROUTE_PREFIX
             + "/graphs/graph_info?run=%s&graph_id=%s"
