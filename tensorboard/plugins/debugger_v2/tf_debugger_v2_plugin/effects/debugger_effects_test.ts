@@ -271,9 +271,9 @@ describe('Debugger effects', () => {
         provideMockStore({initialState}),
       ],
     }).compileComponents();
-    debuggerEffects = TestBed.get(DebuggerEffects);
+    debuggerEffects = TestBed.inject(DebuggerEffects);
 
-    store = TestBed.get(Store);
+    store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     dispatchSpy = spyOn(store, 'dispatch').and.callFake((action: Action) => {
       dispatchedActions.push(action);
     });
@@ -283,7 +283,10 @@ describe('Debugger effects', () => {
     runId: string,
     sourceFilesListResponse: SourceFileListResponse
   ) {
-    return spyOn(TestBed.get(Tfdbg2HttpServerDataSource), 'fetchSourceFileList')
+    return spyOn(
+      TestBed.inject(Tfdbg2HttpServerDataSource),
+      'fetchSourceFileList'
+    )
       .withArgs(runId)
       .and.returnValue(of(sourceFilesListResponse));
   }
@@ -296,11 +299,11 @@ describe('Debugger effects', () => {
     alert_type?: string
   ) {
     if (alert_type === undefined) {
-      return spyOn(TestBed.get(Tfdbg2HttpServerDataSource), 'fetchAlerts')
+      return spyOn(TestBed.inject(Tfdbg2HttpServerDataSource), 'fetchAlerts')
         .withArgs(runId, begin, end)
         .and.returnValue(of(alertsResponse));
     } else {
-      return spyOn(TestBed.get(Tfdbg2HttpServerDataSource), 'fetchAlerts')
+      return spyOn(TestBed.inject(Tfdbg2HttpServerDataSource), 'fetchAlerts')
         .withArgs(runId, begin, end, alert_type)
         .and.returnValue(of(alertsResponse));
     }
@@ -313,7 +316,7 @@ describe('Debugger effects', () => {
     excutionDigestsResponse: ExecutionDigestsResponse
   ) {
     return spyOn(
-      TestBed.get(Tfdbg2HttpServerDataSource),
+      TestBed.inject(Tfdbg2HttpServerDataSource),
       'fetchExecutionDigests'
     )
       .withArgs(runId, begin, end)
@@ -327,7 +330,7 @@ describe('Debugger effects', () => {
     graphExcutionDigestsResponse: GraphExecutionDigestsResponse
   ) {
     return spyOn(
-      TestBed.get(Tfdbg2HttpServerDataSource),
+      TestBed.inject(Tfdbg2HttpServerDataSource),
       'fetchGraphExecutionDigests'
     )
       .withArgs(runId, begin, end)
@@ -341,7 +344,7 @@ describe('Debugger effects', () => {
     graphExcutionDataResponse: GraphExecutionDataResponse
   ) {
     return spyOn(
-      TestBed.get(Tfdbg2HttpServerDataSource),
+      TestBed.inject(Tfdbg2HttpServerDataSource),
       'fetchGraphExecutionData'
     )
       .withArgs(runId, begin, end)
@@ -356,7 +359,7 @@ describe('Debugger effects', () => {
     };
 
     function createFetchRunsSpy(runsListing: DebuggerRunListing) {
-      return spyOn(TestBed.get(Tfdbg2HttpServerDataSource), 'fetchRuns')
+      return spyOn(TestBed.inject(Tfdbg2HttpServerDataSource), 'fetchRuns')
         .withArgs()
         .and.returnValue(of(runsListing));
     }
@@ -377,7 +380,7 @@ describe('Debugger effects', () => {
       response: ExecutionDataResponse
     ) {
       return spyOn(
-        TestBed.get(Tfdbg2HttpServerDataSource),
+        TestBed.inject(Tfdbg2HttpServerDataSource),
         'fetchExecutionData'
       )
         .withArgs(runId, begin, end)
@@ -386,7 +389,7 @@ describe('Debugger effects', () => {
 
     function createFetchStackFramesSpy(stackFrames: StackFramesResponse) {
       return spyOn(
-        TestBed.get(Tfdbg2HttpServerDataSource),
+        TestBed.inject(Tfdbg2HttpServerDataSource),
         'fetchStackFrames'
       ).and.returnValue(of(stackFrames));
     }
@@ -1173,7 +1176,7 @@ describe('Debugger effects', () => {
 
     it('does not fetch alerts when alerts are already loaded', () => {
       const fetchAlerts = spyOn(
-        TestBed.get(Tfdbg2HttpServerDataSource),
+        TestBed.inject(Tfdbg2HttpServerDataSource),
         'fetchAlerts'
       );
       store.overrideSelector(getActiveRunId, runId);
@@ -1200,7 +1203,7 @@ describe('Debugger effects', () => {
 
     it('does not fetch alerts when alert type focus is set to null', () => {
       const fetchAlerts = spyOn(
-        TestBed.get(Tfdbg2HttpServerDataSource),
+        TestBed.inject(Tfdbg2HttpServerDataSource),
         'fetchAlerts'
       );
       store.overrideSelector(getActiveRunId, runId);
@@ -1254,7 +1257,10 @@ describe('Debugger effects', () => {
       filePath: string,
       lines: string[]
     ) {
-      return spyOn(TestBed.get(Tfdbg2HttpServerDataSource), 'fetchSourceFile')
+      return spyOn(
+        TestBed.inject(Tfdbg2HttpServerDataSource),
+        'fetchSourceFile'
+      )
         .withArgs(runId, fileIndex)
         .and.returnValue(
           of({
