@@ -20,7 +20,7 @@ from __future__ import print_function
 
 import threading
 
-import bleach
+from bleach.sanitizer import Cleaner
 
 # pylint: disable=g-bad-import-order
 # Google-only: import markdown_freewisdom
@@ -64,7 +64,7 @@ _ALLOWED_TAGS = [
 ]
 
 # Cache Markdown converter to avoid expensive initialization at each
-# call to `markdown_to_safe_html`.
+# call to `markdown_to_safe_html`. Cache a different instance per thread.
 class _MarkdownStore(threading.local):
     def __init__(self):
         self.markdown = markdown.Markdown(
@@ -73,6 +73,18 @@ class _MarkdownStore(threading.local):
 
 
 _MARKDOWN_STORE = _MarkdownStore()
+
+
+# Cache Cleaner to avoid expensive initialization at each call to `clean`.
+# Cache a different instance per thread.
+class _CleanerStore(threading.local):
+    def __init__(self):
+        self.cleaner = Cleaner(
+            tags=_ALLOWED_TAGS, attributes=_ALLOWED_ATTRIBUTES
+        )
+
+
+_CLEANER_STORE = _CleanerStore()
 
 
 def markdown_to_safe_html(markdown_string):
@@ -126,9 +138,7 @@ def markdowns_to_safe_html(markdown_strings, combine):
         unsafe_htmls.append(unsafe_html)
 
     unsafe_combined = combine(unsafe_htmls)
-    sanitized_combined = bleach.clean(
-        unsafe_combined, tags=_ALLOWED_TAGS, attributes=_ALLOWED_ATTRIBUTES
-    )
+    sanitized_combined = _CLEANER_STORE.cleaner.clean(unsafe_combined)
 
     warning = ""
     if total_null_bytes:
