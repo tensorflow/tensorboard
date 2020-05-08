@@ -70,9 +70,9 @@ describe('settings test', () => {
         },
       })
       .compileComponents();
-    store = TestBed.get(Store);
+    store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     dispatchSpy = spyOn(store, 'dispatch');
-    overlayContainer = TestBed.get(OverlayContainer);
+    overlayContainer = TestBed.inject(OverlayContainer);
   });
 
   it('opens a dialog when clicking on the button', async () => {

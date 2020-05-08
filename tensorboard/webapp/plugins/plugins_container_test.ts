@@ -107,7 +107,7 @@ describe('plugins_component', () => {
       declarations: [PluginsContainer, PluginsComponent],
       imports: [TestingDebuggerModule, ExtraDashboardModule],
     }).compileComponents();
-    store = TestBed.get(Store);
+    store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     store.overrideSelector(getPlugins, PLUGINS);
     store.overrideSelector(getActivePlugin, null);
     store.overrideSelector(getPluginsListLoaded, {

@@ -34,7 +34,7 @@ describe('settings polymer_interop', () => {
       declarations: [SettingsPolymerInteropContainer],
     }).compileComponents();
 
-    store = TestBed.get(Store);
+    store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     store.overrideSelector(getPageSize, 5);
 
     setLimitCalls = [];

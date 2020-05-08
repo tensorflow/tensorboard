@@ -56,10 +56,10 @@ describe('hash storage test', () => {
       ],
       declarations: [HashStorageContainer, HashStorageComponent],
     }).compileComponents();
-    store = TestBed.get(Store);
+    store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     dispatchSpy = spyOn(store, 'dispatch');
 
-    const deepLinker = TestBed.get(HashDeepLinker);
+    const deepLinker = TestBed.inject(HashDeepLinker);
     setPluginIdSpy = spyOn(deepLinker, 'setPluginId');
     getPluginIdSpy = spyOn(deepLinker, 'getPluginId');
   });
