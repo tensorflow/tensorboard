@@ -489,14 +489,14 @@ limitations under the License.
             return;
           }
 
-          alertBody.innerHTML = '';
+          alertBody.innerText = '';
 
           for (var i = 0; i < debuggerNumericAlerts.length; i++) {
             var alert = debuggerNumericAlerts[i];
             var tableRow = document.createElement('tr');
 
             var timestampTd = document.createElement('td');
-            timestampTd.innerHTML = tf.graph.util.computeHumanFriendlyTime(
+            timestampTd.innerText = tf.graph.util.computeHumanFriendlyTime(
               alert.first_timestamp
             );
             timestampTd.classList.add('first-offense-td');
@@ -507,13 +507,13 @@ limitations under the License.
 
             var tensorSection = document.createElement('div');
             tensorSection.classList.add('tensor-section-within-table');
-            tensorSection.innerHTML = alert.tensor_name;
+            tensorSection.innerText = alert.tensor_name;
             this._addOpExpansionListener(tensorSection, alert.tensor_name);
             tensorDeviceTd.appendChild(tensorSection);
 
             var deviceSection = document.createElement('div');
             deviceSection.classList.add('device-section-within-table');
-            deviceSection.innerHTML = '(' + alert.device_name + ')';
+            deviceSection.innerText = '(' + alert.device_name + ')';
             tensorDeviceTd.appendChild(deviceSection);
             tableRow.appendChild(tensorDeviceTd);
 
@@ -530,7 +530,7 @@ limitations under the License.
               negativeInfCountSection.classList.add(
                 'negative-inf-mini-health-pill-section'
               );
-              negativeInfCountSection.innerHTML = alert.neg_inf_event_count;
+              negativeInfCountSection.innerText = alert.neg_inf_event_count;
               negativeInfCountSection.setAttribute(
                 'title',
                 alert.neg_inf_event_count + ' events with -∞'
@@ -543,7 +543,7 @@ limitations under the License.
               positiveInfCountSection.classList.add(
                 'positive-inf-mini-health-pill-section'
               );
-              positiveInfCountSection.innerHTML = alert.pos_inf_event_count;
+              positiveInfCountSection.innerText = alert.pos_inf_event_count;
               positiveInfCountSection.setAttribute(
                 'title',
                 alert.pos_inf_event_count + ' events with +∞'
@@ -554,7 +554,7 @@ limitations under the License.
             if (alert.nan_event_count) {
               var nanCountSection = document.createElement('div');
               nanCountSection.classList.add('nan-mini-health-pill-section');
-              nanCountSection.innerHTML = alert.nan_event_count;
+              nanCountSection.innerText = alert.nan_event_count;
               nanCountSection.setAttribute(
                 'title',
                 alert.nan_event_count + ' events with NaN'
