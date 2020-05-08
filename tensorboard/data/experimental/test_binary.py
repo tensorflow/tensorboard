@@ -20,8 +20,6 @@ from __future__ import print_function
 
 import argparse
 
-import pandas
-
 from tensorboard.data.experimental import experiment_from_dev
 
 
