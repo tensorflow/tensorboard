@@ -865,6 +865,7 @@ public final class Vulcanize {
       destBody = dest.body();
     }
 
+    @Override
     public void head(Node node, int depth) {
       // Copy childNodes from `head` into the dest doc's head without
       // modification if the node is not a `document` (or a `<#root>` element)
@@ -882,6 +883,7 @@ public final class Vulcanize {
       }
     }
 
+    @Override
     public void tail(Node node, int depth) {
       // Copying is done during the `head`. No need to do any work.
     }
