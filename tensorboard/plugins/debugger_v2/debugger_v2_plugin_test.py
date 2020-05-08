@@ -1053,6 +1053,85 @@ class DebuggerV2PluginTest(tf.test.TestCase):
             },
         )
 
+    def testServeGraphInfo(self):
+        """Get the op info of an op with both inputs and consumers."""
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        # First, look up the graph_id of the 1st AddV2 op.
+        response = self.server.get(
+            _ROUTE_PREFIX + "/graph_execution/digests?run=%s" % run
+        )
+        data = json.loads(response.get_data())
+        digests = data["graph_execution_digests"]
+        op_types = [digest["op_type"] for digest in digests]
+        op_index = op_types.index("AddV2")
+        graph_id = digests[op_index]["graph_id"]
+
+        # Query the /graphs/graph_info route for the inner graph.
+        # This is the graph that contains the AddV2 op. It corresponds
+        # to the function "unstack_and_sum".
+        response = self.server.get(
+            _ROUTE_PREFIX
+            + "/graphs/graph_info?run=%s&graph_id=%s" % (run, graph_id)
+        )
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.get_data())
+        outer_graph_id = data["outer_graph_id"]
+        self.assertEqual(data["graph_id"], graph_id)
+        self.assertEqual(data["name"], "unstack_and_sum")
+        self.assertTrue(outer_graph_id)
+        self.assertIsInstance(outer_graph_id, str)
+        # The graph of unstack_and_sum has no inner graphs.
+        self.assertEqual(data["inner_graph_ids"], [])
+
+        # Query the /graphs/graph_info route for the outer graph.
+        # This corresponds to the function "my_function"
+        response = self.server.get(
+            _ROUTE_PREFIX
+            + "/graphs/graph_info?run=%s&graph_id=%s" % (run, outer_graph_id)
+        )
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.get_data())
+        outermost_graph_id = data["outer_graph_id"]
+        self.assertEqual(data["graph_id"], outer_graph_id)
+        self.assertEqual(data["name"], "my_function")
+        self.assertTrue(outermost_graph_id)
+        self.assertIsInstance(outermost_graph_id, str)
+        # This outer graph contains another inner graph (repeat_add).
+        self.assertLen(data["inner_graph_ids"], 2)
+        self.assertIn(graph_id, data["inner_graph_ids"])
+
+        # Query the /graphs/graph_info route for the outermost graph.
+        # This is an unnamed outermost graph.
+        response = self.server.get(
+            _ROUTE_PREFIX
+            + "/graphs/graph_info?run=%s&graph_id=%s"
+            % (run, outermost_graph_id)
+        )
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.get_data())
+        self.assertEqual(data["graph_id"], outermost_graph_id)
+        self.assertIsNone(data["name"])
+        self.assertIsNone(data["outer_graph_id"])
+        self.assertEqual(data["inner_graph_ids"], [outer_graph_id])
+
+    def testServeGraphInfoRaisesErrorForInvalidGraphId(self):
+        """Get the op info of an op with both inputs and consumers."""
+        _generate_tfdbg_v2_data(self.logdir)
+        run = self._getExactlyOneRun()
+        response = self.server.get(
+            _ROUTE_PREFIX
+            + "/graphs/graph_info?run=%s&graph_id=%s"
+            % (run, "nonsensical-graph-id")
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            json.loads(response.get_data()),
+            {
+                "error": 'Not found: There is no graph with ID "nonsensical-graph-id"'
+            },
+        )
+
     def testServeGraphOpInfoForOpWithInputsAndConsumers(self):
         """Get the op info of an op with both inputs and consumers."""
         _generate_tfdbg_v2_data(self.logdir)
