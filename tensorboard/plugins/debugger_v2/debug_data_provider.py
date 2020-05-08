@@ -40,6 +40,7 @@ EXECUTION_DIGESTS_BLOB_TAG_PREFIX = "execution_digests"
 EXECUTION_DATA_BLOB_TAG_PREFIX = "execution_data"
 GRAPH_EXECUTION_DIGESTS_BLOB_TAG_PREFIX = "graphexec_digests"
 GRAPH_EXECUTION_DATA_BLOB_TAG_PREFIX = "graphexec_data"
+GRAPH_INFO_BLOB_TAG_PREFIX = "graph_info"
 GRAPH_OP_INFO_BLOB_TAG_PREFIX = "graph_op_info"
 SOURCE_FILE_LIST_BLOB_TAG = "source_file_list"
 SOURCE_FILE_BLOB_TAG_PREFIX = "source_file"
@@ -331,6 +332,39 @@ def _parse_graph_op_info_blob_key(blob_key):
     return run, graph_id, op_name
 
 
+def graph_info_run_tag_filter(run, graph_id):
+    """Create a RunTagFilter for graph info.
+
+    Args:
+      run: tfdbg2 run name.
+      graph_id: Debugger-generated ID of the graph in question.
+
+    Returns:
+      `RunTagFilter` for the run and range of graph info.
+    """
+    if not graph_id:
+        raise ValueError("graph_id must not be None or empty.")
+    return provider.RunTagFilter(
+        runs=[run], tags=["%s_%s" % (GRAPH_INFO_BLOB_TAG_PREFIX, graph_id)],
+    )
+
+
+def _parse_graph_info_blob_key(blob_key):
+    """Parse the BLOB key for graph info.
+
+    Args:
+      blob_key: The BLOB key to parse. By contract, it should have the format:
+       `${GRAPH_INFO_BLOB_TAG_PREFIX}_${graph_id}.${run_name}`,
+
+    Returns:
+      - run name
+      - graph_id
+    """
+    key_body, run = blob_key.split(".")
+    graph_id = key_body[len(GRAPH_INFO_BLOB_TAG_PREFIX) + 1 :]
+    return run, graph_id
+
+
 def source_file_list_run_tag_filter(run):
     """Create a RunTagFilter for listing source files.
 
@@ -514,6 +548,7 @@ class LocalDebuggerV2DataProvider(provider.DataProvider):
                         EXECUTION_DATA_BLOB_TAG_PREFIX,
                         GRAPH_EXECUTION_DIGESTS_BLOB_TAG_PREFIX,
                         GRAPH_EXECUTION_DATA_BLOB_TAG_PREFIX,
+                        GRAPH_INFO_BLOB_TAG_PREFIX,
                         GRAPH_OP_INFO_BLOB_TAG_PREFIX,
                         SOURCE_FILE_BLOB_TAG_PREFIX,
                         STACK_FRAMES_BLOB_TAG_PREFIX,
@@ -550,6 +585,9 @@ class LocalDebuggerV2DataProvider(provider.DataProvider):
             return json.dumps(
                 self._multiplexer.GraphExecutionData(run, begin, end)
             )
+        elif blob_key.startswith(GRAPH_INFO_BLOB_TAG_PREFIX):
+            run, graph_id = _parse_graph_info_blob_key(blob_key)
+            return json.dumps(self._multiplexer.GraphInfo(run, graph_id))
         elif blob_key.startswith(GRAPH_OP_INFO_BLOB_TAG_PREFIX):
             run, graph_id, op_name = _parse_graph_op_info_blob_key(blob_key)
             return json.dumps(
