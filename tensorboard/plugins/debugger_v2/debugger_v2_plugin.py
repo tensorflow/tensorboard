@@ -252,7 +252,7 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
         queried.
 
         The response contains a JSON object with the following fields:
-          - graph_id: The debugger-geneated ID (echoing the request).
+          - graph_id: The debugger-generated ID (echoing the request).
           - name: The name of the graph (if any). For TensorFlow 2.x
             Function Graphs (FuncGraphs), this is typically the name of
             the underlying Python function, optionally prefixed with
