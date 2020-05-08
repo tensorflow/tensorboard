@@ -270,6 +270,8 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
               - output_slot: 0-based output slot index from which the input
                 tensor emits.
               - data: A recursive data structure of this same schema.
+                This field is not populated (undefined) at the leaf nodes
+                of this recursive data structure.
                 In the rare case wherein the data for an input cannot be
                 retrieved properly (e.g., special internal op types), this
                 field will be unpopulated.
@@ -282,10 +284,13 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
             the number of downstream ops that consume the corresponding symbolic
             tensor (only data edges are tracked).
             Each element of the array is an object with the following fields:
-              - op_name: Name of the op receives the output tensor as an input.
+              - op_name: Name of the op that receives the output tensor as an
+                input.
               - input_slot: 0-based input slot index at which the downstream
                 op receives this output tensor.
               - data: A recursive data structure of this very schema.
+                This field is not populated (undefined) at the leaf nodes
+                of this recursive data structure.
                 In the rare case wherein the data for a consumer op cannot be
                 retrieved properly (e.g., special internal op types), this
                 field will be unpopulated.

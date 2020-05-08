@@ -535,14 +535,11 @@ class DebuggerV2EventMultiplexer(object):
         del json_object["input_names"]
 
         json_object["inputs"] = []
-        if op_creation_digest.input_names:
-            for input_tensor_name in op_creation_digest.input_names:
-                input_op_name, output_slot = parse_tensor_name(
-                    input_tensor_name
-                )
-                json_object["inputs"].append(
-                    {"op_name": input_op_name, "output_slot": output_slot}
-                )
+        for input_tensor_name in op_creation_digest.input_names or []:
+            input_op_name, output_slot = parse_tensor_name(input_tensor_name)
+            json_object["inputs"].append(
+                {"op_name": input_op_name, "output_slot": output_slot}
+            )
         json_object["consumers"] = []
         for _ in range(json_object["num_outputs"]):
             json_object["consumers"].append([])
