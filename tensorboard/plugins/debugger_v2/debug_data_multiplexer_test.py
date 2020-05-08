@@ -57,5 +57,26 @@ class RunInBackgroundRepeatedlyTest(tf.test.TestCase):
         self.assertEqual(state["counter"], 3)
 
 
+class ParseTensorNameTest(tf.test.TestCase):
+    def testParseTensorNameWithNoOutputSlot(self):
+        op_name, slot = debug_data_multiplexer.parse_tensor_name("MatMul_1")
+        self.assertEqual(op_name, "MatMul_1")
+        self.assertEqual(slot, 0)
+
+    def testParseTensorNameWithZeroOutputSlot(self):
+        op_name, slot = debug_data_multiplexer.parse_tensor_name("MatMul_1:0")
+        self.assertEqual(op_name, "MatMul_1")
+        self.assertEqual(slot, 0)
+
+    def testParseTensorNameWithNonZeroOutputSlot(self):
+        op_name, slot = debug_data_multiplexer.parse_tensor_name("Unpack:10")
+        self.assertEqual(op_name, "Unpack")
+        self.assertEqual(slot, 10)
+
+    def testParseTensorNameWithInvalidSlotRaisesValueError(self):
+        with self.assertRaises(ValueError):
+            debug_data_multiplexer.parse_tensor_name("Unpack:10:10")
+
+
 if __name__ == "__main__":
     tf.test.main()
