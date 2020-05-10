@@ -28,8 +28,8 @@ import {
   ExecutionDigestLoadState,
   GraphExecution,
   GraphOpConsumerSpec,
-  GraphOpInputSpec,
   GraphOpInfo,
+  GraphOpInputSpec,
   LoadState,
   SourceFileContent,
   SourceFileSpec,
@@ -283,7 +283,6 @@ export const getFocusedGraphOpInputs = createSelector(
       ops[focusedOp.graphId] === undefined ||
       ops[focusedOp.graphId][focusedOp.opName] === undefined
     ) {
-      // TODO(cais): Test coverage.
       return null;
     } else {
       const graph = ops[focusedOp.graphId];

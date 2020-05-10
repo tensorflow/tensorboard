@@ -124,7 +124,7 @@ export interface GraphExecution extends GraphExecutionDigest {
 }
 
 /**
- * Information about an op in a graph.
+ * Information about an op in a TensorFlow graph.
  *
  * Including its enclosing graph, relation with other ops in the graph
  * (inputs and consumers), and the source-code location (stack trace)
