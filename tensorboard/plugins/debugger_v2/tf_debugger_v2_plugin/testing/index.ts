@@ -25,6 +25,8 @@ import {
   Execution,
   Executions,
   GraphExecution,
+  Graphs,
+  GraphOpInfo,
   ExecutionDigest,
   GraphExecutions,
   InfNanAlert,
@@ -35,6 +37,7 @@ import {
 import {
   createInitialExecutionsState,
   createInitialGraphExecutionsState,
+  createInitialGraphsState,
 } from '../store/debugger_reducers';
 
 export function createTestInfNanAlert(
@@ -67,6 +70,38 @@ export function createTestExecutionData(
     graph_id: null,
     tensor_debug_mode: 2,
     debug_tensor_values: [[-1, 0]],
+    ...override,
+  };
+}
+
+let testOpCounter = 0;
+
+export function createTestGraphOpInfo(
+  override?: Partial<GraphOpInfo>
+): GraphOpInfo {
+  return {
+    op_type: 'ChainOp',
+    op_name: `ChainOp_${testOpCounter++}`,
+    device_name: '/GPU:0',
+    num_outputs: 1,
+    output_tensor_ids: [testOpCounter],
+    graph_ids: ['g0', 'g1'],
+    host_name: 'localhost',
+    stack_frame_ids: ['a0', 'b1', 'c2'],
+    inputs: [
+      {
+        op_name: `ChainOp_${testOpCounter - 1}`,
+        output_slot: 0,
+      },
+    ],
+    consumers: [
+      [
+        {
+          op_name: `ChainOp_${testOpCounter + 1}`,
+          input_slot: 0,
+        },
+      ],
+    ],
     ...override,
   };
 }
@@ -119,6 +154,7 @@ export function createDebuggerState(
     alerts: createAlertsState(),
     executions: createDebuggerExecutionsState(),
     graphExecutions: createDebuggerGraphExecutionsState(),
+    graphs: createDebuggerGraphsState(),
     stackFrames: {},
     sourceCode: {
       sourceFileListLoaded: {
@@ -163,6 +199,13 @@ export function createDebuggerGraphExecutionsState(
 ): GraphExecutions {
   return {
     ...createInitialGraphExecutionsState(),
+    ...override,
+  };
+}
+
+export function createDebuggerGraphsState(override?: Partial<Graphs>) {
+  return {
+    ...createInitialGraphsState(),
     ...override,
   };
 }

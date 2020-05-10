@@ -21,6 +21,7 @@ import {
   ExecutionDigest,
   GraphExecution,
   GraphExecutionDigest,
+  GraphOpInfo,
   SourceFileSpec,
   StackFrame,
 } from '../store/debugger_types';
@@ -145,6 +146,20 @@ export abstract class Tfdbg2DataSource {
     end: number,
     trace_id?: string
   ): Observable<GraphExecutionDataResponse>;
+
+  /**
+   * Fetch the information regarding an op in a graph.
+   * @param run Name of the run that the op belongs to.
+   * @param graph_id The debugger-generated ID of the op that contains the op.
+   *   This is assumed to be the ID of the immediately-enclosing graph, i.e.,
+   *   not an outer graph context for the immediately-enclosing graph.
+   * @param op_name Name of the op being queries (e.g., "Dense_2/MatMul").
+   */
+  abstract fetchGraphOpInfo(
+    run: string,
+    graph_id: string,
+    op_name: string
+  ): Observable<GraphOpInfo>;
 
   /**
    * Fetch the list of source-code files that the debugged program involves.
@@ -273,6 +288,16 @@ export class Tfdbg2HttpServerDataSource implements Tfdbg2DataSource {
         },
       }
     );
+  }
+
+  fetchGraphOpInfo(run: string, graph_id: string, op_name: string) {
+    return this.http.get<GraphOpInfo>(this.httpPathPrefix + '/graphs/op_info', {
+      params: {
+        run,
+        graph_id,
+        op_name,
+      },
+    });
   }
 
   fetchSourceFileList(run: string): Observable<SourceFileListResponse> {

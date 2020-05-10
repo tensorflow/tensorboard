@@ -123,6 +123,88 @@ export interface GraphExecution extends GraphExecutionDigest {
   device_name: string;
 }
 
+/**
+ * Information about an op in a graph.
+ *
+ * Including its enclosing graph, relation with other ops in the graph
+ * (inputs and consumers), and the source-code location (stack trace)
+ * at which the op was created.
+ */
+export interface GraphOpInfo {
+  // Op type (e.g., "MatMul").
+  op_type: string;
+
+  // Op name, i.e., name of the node in the graph, (e.g., "Dense_2/MatMul").
+  op_name: string;
+
+  device_name: string;
+
+  // IDs of the enclosing graphs for this op, from outermost to innermost.
+  graph_ids: string[];
+
+  // Number of symoblic tensors output by the op.
+  num_outputs: number;
+
+  // Debugger-generated IDs for the symbolic output tensor(s) of this op.
+  // For an op without output tensors, this is an empty array.
+  output_tensor_ids: number[];
+
+  // The name of the host on which the op is created.
+  host_name: string;
+
+  // IDs of the frame of the stack trace at which the op is created.
+  stack_frame_ids: string[];
+
+  // Op names and slots of the immediate data input to the op.
+  //`[]` if an op has no data inputs tensors.
+  // This field does *not* track control inputs.
+  // E.g., `[{op_name: "Dense_2/ReadVariableOp_1:0", ouput_slot: 0},
+  //         {op_name: "Input:0", output_slot: 0}]`
+  inputs: GraphOpInputSpec[];
+
+  // Op names and slots of the immediate consumers of the op's output tenors.
+  // `[]` if the op provides no output tensors.
+  // If any of the output tensors of the op has no consumers, the corresponding
+  // element will be `[]`.
+  consumers: GraphOpConsumerSpec[][];
+}
+
+/**
+ * Specificaton of an input tensor to a graph op.
+ */
+export interface GraphOpInputSpec {
+  // Name of the graph op that provides the input tensor.
+  op_name: string;
+
+  // 0-based output slot index at which the op provides the input tensor.
+  output_slot: number;
+
+  // Optional recursive information about the input-providing op.
+  // This is not populated in two cases:
+  //   1. At the leaf nodes of this recursive data structure.
+  //   2. When the information is not available (e.g., backend lookup
+  //      failure related to special internal ops not tracked by the debugger).
+  data?: GraphOpInfo;
+}
+
+/**
+ * Specificaton of an op consuming an graph op's output tensor.
+ */
+export interface GraphOpConsumerSpec {
+  // Name of the graph op that consumes the output tensor.
+  op_name: string;
+
+  // 0-based input slot index at which the op consumes the output tensor.
+  input_slot: number;
+
+  // Optional recursive information about the output-consuming op.
+  // This is not populated in two cases:
+  //   1. At the leaf nodes of this recursive data structure.
+  //   2. When the information is not available (e.g., backend lookup
+  //      failure related to special internal ops not tracked by the debugger).
+  data?: GraphOpInfo;
+}
+
 export enum AlertType {
   FUNCTION_RECOMPILE_ALERT = 'FunctionRecompilesAlert',
   INF_NAN_ALERT = 'InfNanAlert',
@@ -325,6 +407,34 @@ export interface GraphExecutions extends PagedExecutions {
   graphExecutionData: {[index: number]: GraphExecution};
 }
 
+/**
+ * State of TensorFlow computation graphs known to the debugger.
+ */
+export interface Graphs {
+  // Information about ops in graphs, indexed by: graph_id / op_name.
+  // `graph_id` refers to the immediately-enclosing graph of the ops.
+  ops: {
+    [graph_id: string]: {
+      [op_name: string]: GraphOpInfo;
+    };
+  };
+
+  // What ops are currently being loaded from the data source.
+  // `graph_id` refers to the immediately-enclosing graph of the ops.
+  loadingOps: {
+    [graph_id: string]: {
+      [op_name: string]: DataLoadState;
+    };
+  };
+
+  // Op being focused on in the UI (if any).
+  // `null` is for the case in which there is no focus on any graph op.
+  focusedOp: {
+    graphId: string;
+    opName: string;
+  } | null;
+}
+
 // The state of a loaded DebuggerV2 run.
 export interface RunState {
   executions: Executions;
@@ -385,6 +495,9 @@ export interface DebuggerState {
 
   // Per-run data for intra-graph (eager) executions.
   graphExecutions: GraphExecutions;
+
+  // Per-run data for graph ops.
+  graphs: Graphs;
 
   // Stack frames that have been loaded from data source so far, keyed by
   // stack-frame IDs.

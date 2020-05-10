@@ -19,7 +19,6 @@ import {
   ExecutionDataResponse,
   ExecutionDigestsResponse,
   GraphExecutionDataResponse,
-  GraphExecutionDigestsResponse,
   SourceFileResponse,
 } from '../data_source/tfdbg2_data_source';
 import {findFileIndex} from './debugger_store_utils';
@@ -29,7 +28,9 @@ import {
   DataLoadState,
   DebuggerState,
   Executions,
+  Graphs,
   GraphExecutions,
+  GraphOpInfo,
   InfNanAlert,
   StackFramesById,
   SourceFileSpec,
@@ -90,6 +91,14 @@ export function createInitialGraphExecutionsState(): GraphExecutions {
   };
 }
 
+export function createInitialGraphsState(): Graphs {
+  return {
+    ops: {},
+    loadingOps: {},
+    focusedOp: null,
+  };
+}
+
 const initialState: DebuggerState = {
   runs: {},
   runsLoaded: {
@@ -111,6 +120,7 @@ const initialState: DebuggerState = {
   },
   executions: createInitialExecutionsState(),
   graphExecutions: createInitialGraphExecutionsState(),
+  graphs: createInitialGraphsState(),
   stackFrames: {},
   sourceCode: {
     sourceFileListLoaded: {

@@ -19,6 +19,7 @@ import {
   AlertsBreakdown,
   AlertsByIndex,
   AlertType,
+  DataLoadState,
   DEBUGGER_FEATURE_KEY,
   DebuggerRunListing,
   DebuggerState,
@@ -26,6 +27,9 @@ import {
   ExecutionDigest,
   ExecutionDigestLoadState,
   GraphExecution,
+  GraphOpConsumerSpec,
+  GraphOpInputSpec,
+  GraphOpInfo,
   LoadState,
   SourceFileContent,
   SourceFileSpec,
@@ -258,6 +262,71 @@ export const getGraphExecutionFocusIndex = createSelector(
   }
 );
 
+export const getFocusedGraphOpInfo = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): GraphOpInfo | null => {
+    const {focusedOp, ops} = state.graphs;
+    if (focusedOp === null || ops[focusedOp.graphId] === undefined) {
+      return null;
+    } else {
+      return ops[focusedOp.graphId][focusedOp.opName] || null;
+    }
+  }
+);
+
+export const getFocusedGraphOpInputs = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): GraphOpInputSpec[] | null => {
+    const {focusedOp, ops} = state.graphs;
+    if (
+      focusedOp === null ||
+      ops[focusedOp.graphId] === undefined ||
+      ops[focusedOp.graphId][focusedOp.opName] === undefined
+    ) {
+      // TODO(cais): Test coverage.
+      return null;
+    } else {
+      const graph = ops[focusedOp.graphId];
+      const {inputs} = graph[focusedOp.opName];
+      return inputs.map((inputSpec) => {
+        const spec: GraphOpInputSpec = {
+          ...inputSpec,
+        };
+        if (graph[inputSpec.op_name]) {
+          spec.data = graph[inputSpec.op_name];
+        }
+        return spec;
+      });
+    }
+  }
+);
+
+export const getFocusedGraphOpConsumers = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): GraphOpConsumerSpec[][] | null => {
+    const {focusedOp, ops} = state.graphs;
+    if (
+      focusedOp === null ||
+      ops[focusedOp.graphId] === undefined ||
+      ops[focusedOp.graphId][focusedOp.opName] === undefined
+    ) {
+      return null;
+    } else {
+      const graph = ops[focusedOp.graphId];
+      const {consumers} = graph[focusedOp.opName];
+      return consumers.map((slotConsumers) => {
+        return slotConsumers.map((consumerSpec) => {
+          const spec: GraphOpConsumerSpec = {...consumerSpec};
+          if (graph[consumerSpec.op_name]) {
+            spec.data = graph[consumerSpec.op_name];
+          }
+          return spec;
+        });
+      });
+    }
+  }
+);
+
 /**
  * Get the focused alert types (if any) of the execution digests current being
  * displayed. For each displayed execution digest, there are two possibilities:
@@ -323,6 +392,14 @@ export const getLoadedExecutionData = createSelector(
   selectDebuggerState,
   (state: DebuggerState): {[index: number]: Execution} =>
     state.executions.executionData
+);
+
+export const getLoadingGraphOps = createSelector(
+  selectDebuggerState,
+  (
+    state: DebuggerState
+  ): {[graph_id: string]: {[op_name: string]: DataLoadState}} =>
+    state.graphs.loadingOps
 );
 
 export const getLoadedStackFrames = createSelector(
