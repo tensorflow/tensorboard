@@ -266,13 +266,13 @@ export const getGraphExecutionFocusIndex = createSelector(
 /**
  * Intermediate selector for the graphs state of debugger.
  */
-const selectDebuggerGraphsState = createSelector(
+const selectDebuggerGraphs = createSelector(
   selectDebuggerState,
   (state: DebuggerState): Graphs => state.graphs
 );
 
 export const getFocusedGraphOpInfo = createSelector(
-  selectDebuggerGraphsState,
+  selectDebuggerGraphs,
   (graphs: Graphs): GraphOpInfo | null => {
     const {focusedOp, ops} = graphs;
     if (focusedOp === null || ops[focusedOp.graphId] === undefined) {
@@ -284,7 +284,7 @@ export const getFocusedGraphOpInfo = createSelector(
 );
 
 export const getFocusedGraphOpInputs = createSelector(
-  selectDebuggerGraphsState,
+  selectDebuggerGraphs,
   (graphs: Graphs): GraphOpInputSpec[] | null => {
     const {focusedOp, ops} = graphs;
     if (
@@ -310,7 +310,7 @@ export const getFocusedGraphOpInputs = createSelector(
 );
 
 export const getFocusedGraphOpConsumers = createSelector(
-  selectDebuggerGraphsState,
+  selectDebuggerGraphs,
   (graphs: Graphs): GraphOpConsumerSpec[][] | null => {
     const {focusedOp, ops} = graphs;
     if (
