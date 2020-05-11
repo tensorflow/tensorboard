@@ -30,6 +30,7 @@ import {
   GraphOpConsumerSpec,
   GraphOpInfo,
   GraphOpInputSpec,
+  Graphs,
   LoadState,
   SourceFileContent,
   SourceFileSpec,
@@ -262,10 +263,18 @@ export const getGraphExecutionFocusIndex = createSelector(
   }
 );
 
-export const getFocusedGraphOpInfo = createSelector(
+/**
+ * Intermediate selector for the graphs state of debugger.
+ */
+const selectDebuggerGraphsState = createSelector(
   selectDebuggerState,
-  (state: DebuggerState): GraphOpInfo | null => {
-    const {focusedOp, ops} = state.graphs;
+  (state: DebuggerState): Graphs => state.graphs
+);
+
+export const getFocusedGraphOpInfo = createSelector(
+  selectDebuggerGraphsState,
+  (graphs: Graphs): GraphOpInfo | null => {
+    const {focusedOp, ops} = graphs;
     if (focusedOp === null || ops[focusedOp.graphId] === undefined) {
       return null;
     } else {
@@ -275,9 +284,9 @@ export const getFocusedGraphOpInfo = createSelector(
 );
 
 export const getFocusedGraphOpInputs = createSelector(
-  selectDebuggerState,
-  (state: DebuggerState): GraphOpInputSpec[] | null => {
-    const {focusedOp, ops} = state.graphs;
+  selectDebuggerGraphsState,
+  (graphs: Graphs): GraphOpInputSpec[] | null => {
+    const {focusedOp, ops} = graphs;
     if (
       focusedOp === null ||
       ops[focusedOp.graphId] === undefined ||
@@ -301,9 +310,9 @@ export const getFocusedGraphOpInputs = createSelector(
 );
 
 export const getFocusedGraphOpConsumers = createSelector(
-  selectDebuggerState,
-  (state: DebuggerState): GraphOpConsumerSpec[][] | null => {
-    const {focusedOp, ops} = state.graphs;
+  selectDebuggerGraphsState,
+  (graphs: Graphs): GraphOpConsumerSpec[][] | null => {
+    const {focusedOp, ops} = graphs;
     if (
       focusedOp === null ||
       ops[focusedOp.graphId] === undefined ||

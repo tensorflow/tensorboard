@@ -30,7 +30,6 @@ import {
   Executions,
   Graphs,
   GraphExecutions,
-  GraphOpInfo,
   InfNanAlert,
   StackFramesById,
   SourceFileSpec,
@@ -810,6 +809,9 @@ const reducer = createReducer(
   )
 );
 
+// TODO(cais): Refactor the reducers into separate child reducers and
+// move them to separate files. Combine them with `combineReducers()`
+// for better maintainability.
 export function reducers(state: DebuggerState, action: Action) {
   return reducer(state, action);
 }
