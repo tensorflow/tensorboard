@@ -205,7 +205,6 @@ class TensorBoardUploader(object):
         while True:
             self._logdir_poll_rate_limiter.tick()
             self._upload_once()
-            t1 = time.time()
 
     def _upload_once(self):
         """Runs one upload cycle, sending zero or more RPCs."""
