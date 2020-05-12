@@ -199,7 +199,7 @@ class KerasUtilTest(tf.test.TestCase):
         d2 = tf.keras.layers.Dense(64, activation="relu")
 
         model = tf.keras.models.Model(
-          inputs=inputs, outputs=d2(d1(d0(inputs))), name='model')
+          inputs=inputs, outputs=d2(d1(d0(inputs))), name="model")
         self.assertGraphDefToModel(expected_proto, model)
 
     def test_keras_model_to_graph_def_functional_model_with_cycle(self):
