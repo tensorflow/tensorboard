@@ -113,4 +113,14 @@ message UploadLimits {
   // If this is 0, it is allowed to upload tensor points of size 0.
   // If this is negative, no blobs should be uploaded.
   int64 max_tensor_point_size = 2;
+
+  int64 max_scalar_request_size = 3;
+  int64 max_tensor_request_size = 4;
+  // BDTODO: We'll see.
+  int64 max_blob_request_size = 5;
+
+  int64 scalar_request_interval_sec = 6;
+  int64 tensor_request_interval_sec = 7;
+  // BDTODO: We'll see.
+  int64 blob_request_interval_sec = 8;
 }

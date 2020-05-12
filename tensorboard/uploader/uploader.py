@@ -50,7 +50,10 @@ _MIN_LOGDIR_POLL_INTERVAL_SECS = 5
 
 # Minimum interval between initiating write RPCs.  When writes would otherwise
 # happen more frequently, the process will sleep to use up the rest of the time.
-_MIN_WRITE_RPC_INTERVAL_SECS = 5
+_MIN_SCALAR_WRITE_RPC_INTERVAL_SECS = 5
+
+# BDTODO
+_MIN_TENSOR_WRITE_RPC_INTERVAL_SECS = 0.5
 
 # Minimum interval between initiating blob write RPC streams.  When writes would
 # otherwise happen more frequently, the process will sleep to use up the rest of
@@ -74,7 +77,11 @@ _MAX_VARINT64_LENGTH_BYTES = 10
 # Deadline Exceeded errors in the RPC server.
 #
 # [1]: https://github.com/grpc/grpc/blob/e70d8582b4b0eedc45e3d25a57b58a08b94a9f4a/include/grpc/impl/codegen/grpc_types.h#L447  # pylint: disable=line-too-long
-_MAX_REQUEST_LENGTH_BYTES = 1024 * 128
+_MAX_WRITE_SCALARS_LENGTH_BYTES = 1024 * 128
+
+# BDTODO: Notice that for rate limiter we use TENSOR_WRITE/SCALAR_WRITE
+# BDTODO
+_MAX_WRITE_TENSORS_LENGTH_BYTES = 1024 * 64
 
 logger = tb_logging.get_logger()
 
@@ -94,6 +101,7 @@ class TensorBoardUploader(object):
         max_tensor_point_size=None,
         logdir_poll_rate_limiter=None,
         rpc_rate_limiter=None,
+        tensor_rpc_rate_limiter=None,
         blob_rpc_rate_limiter=None,
         name=None,
         description=None,
@@ -143,12 +151,20 @@ class TensorBoardUploader(object):
             )
         else:
             self._logdir_poll_rate_limiter = logdir_poll_rate_limiter
+
         if rpc_rate_limiter is None:
             self._rpc_rate_limiter = util.RateLimiter(
-                _MIN_WRITE_RPC_INTERVAL_SECS
+                _MIN_SCALAR_WRITE_RPC_INTERVAL_SECS
             )
         else:
             self._rpc_rate_limiter = rpc_rate_limiter
+
+        if tensor_rpc_rate_limiter is None:
+            self._tensor_rpc_rate_limiter = util.RateLimiter(
+                _MIN_TENSOR_WRITE_RPC_INTERVAL_SECS
+            )
+        else:
+            self._tensor_rpc_rate_limiter = tensor_rpc_rate_limiter
 
         if blob_rpc_rate_limiter is None:
             self._blob_rpc_rate_limiter = util.RateLimiter(
@@ -186,6 +202,7 @@ class TensorBoardUploader(object):
             max_blob_size=self._max_blob_size,
             max_tensor_point_size=self._max_tensor_point_size,
             rpc_rate_limiter=self._rpc_rate_limiter,
+            tensor_rpc_rate_limiter=self._tensor_rpc_rate_limiter,
             blob_rpc_rate_limiter=self._blob_rpc_rate_limiter,
         )
         return response.experiment_id
@@ -334,6 +351,7 @@ class _BatchedRequestSender(object):
         max_blob_size,
         max_tensor_point_size,
         rpc_rate_limiter,
+        tensor_rpc_rate_limiter,
         blob_rpc_rate_limiter,
     ):
         # Map from `(run_name, tag_name)` to `SummaryMetadata` if the time
@@ -344,7 +362,7 @@ class _BatchedRequestSender(object):
             experiment_id, api, rpc_rate_limiter,
         )
         self._tensor_request_sender = _TensorBatchedRequestSender(
-            experiment_id, api, rpc_rate_limiter, max_tensor_point_size
+            experiment_id, api, tensor_rpc_rate_limiter, max_tensor_point_size
         )
         self._blob_request_sender = _BlobRequestSender(
             experiment_id, api, blob_rpc_rate_limiter, max_blob_size
@@ -353,8 +371,8 @@ class _BatchedRequestSender(object):
     def send_requests(self, run_to_events):
         """Accepts a stream of TF events and sends batched write RPCs.
 
-        Each sent request will be at most `_MAX_REQUEST_LENGTH_BYTES`
-        bytes long.
+        Each sent request will be batched, the size of each batch depending on
+        the type of data (Scalar vs Tensor vs Blob) being sent.
 
         Args:
           run_to_events: Mapping from run name to generator of `tf.Event`
@@ -457,7 +475,7 @@ class _ScalarBatchedRequestSender(object):
         self._experiment_id = experiment_id
         self._api = api
         self._rpc_rate_limiter = rpc_rate_limiter
-        self._byte_budget_manager = _ByteBudgetManager()
+        self._byte_budget_manager = _ByteBudgetManager(_MAX_WRITE_SCALARS_LENGTH_BYTES)
 
         self._runs = {}  # cache: map from run name to `Run` proto in request
         self._tags = (
@@ -607,7 +625,7 @@ class _TensorBatchedRequestSender(object):
         self._api = api
         self._rpc_rate_limiter = rpc_rate_limiter
         self._max_tensor_point_size = max_tensor_point_size
-        self._byte_budget_manager = _ByteBudgetManager()
+        self._byte_budget_manager = _ByteBudgetManager(_MAX_WRITE_TENSORS_LENGTH_BYTES)
 
         self._runs = {}  # cache: map from run name to `Run` proto in request
         self._tags = (
@@ -621,7 +639,6 @@ class _TensorBatchedRequestSender(object):
         self._request = write_service_pb2.WriteTensorRequest()
         self._runs.clear()
         self._tags.clear()
-        self._byte_budget = _MAX_REQUEST_LENGTH_BYTES
         self._request.experiment_id = self._experiment_id
         self._byte_budget_manager.reset(self._request)
 
@@ -764,9 +781,10 @@ class _ByteBudgetManager(object):
   https://developers.google.com/protocol-buffers/docs/encoding
   """
 
-    def __init__(self):
+    def __init__(self, max_bytes):
         # The remaining number of bytes that we may yet add to the request.
         self._byte_budget = None  # type: int
+        self._max_bytes = max_bytes
 
     def reset(self, base_request):
         """Resets the byte budget and calculates the cost of the base request.
@@ -778,7 +796,7 @@ class _ByteBudgetManager(object):
         _OutOfSpaceError: If the size of the request exceeds the entire
           request byte budget.
       """
-        self._byte_budget = _MAX_REQUEST_LENGTH_BYTES
+        self._byte_budget = self._max_bytes
         self._byte_budget -= base_request.ByteSize()
         if self._byte_budget < 0:
             raise RuntimeError("Byte budget too small for base request")
