@@ -205,6 +205,7 @@ class TensorBoardUploader(object):
         while True:
             self._logdir_poll_rate_limiter.tick()
             self._upload_once()
+            t1 = time.time()
 
     def _upload_once(self):
         """Runs one upload cycle, sending zero or more RPCs."""
@@ -758,7 +759,7 @@ class _TensorBatchedRequestSender(object):
         except ValueError as error:
             raise ValueError(
                 "The uploader failed to upload a tensor. This seems to be "
-                "due to some malformation in the tensor, which may be caused by "
+                "due to a malformation in the tensor, which may be caused by "
                 "a bug in the process that wrote the tensor.\n\n"
                 "The tensor has tag '%s' and is at step %d and wall_time %.6f.\n\n"
                 "Original error:\n%s" % (tag, step, wall_time, error)
