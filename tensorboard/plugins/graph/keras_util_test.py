@@ -199,7 +199,8 @@ class KerasUtilTest(tf.test.TestCase):
         d2 = tf.keras.layers.Dense(64, activation="relu")
 
         model = tf.keras.models.Model(
-          inputs=inputs, outputs=d2(d1(d0(inputs))), name="model")
+            inputs=inputs, outputs=d2(d1(d0(inputs))), name="model"
+        )
         self.assertGraphDefToModel(expected_proto, model)
 
     def test_keras_model_to_graph_def_functional_model_with_cycle(self):
@@ -317,7 +318,8 @@ class KerasUtilTest(tf.test.TestCase):
         encoder = tf.keras.layers.SimpleRNN(256)
 
         model = tf.keras.models.Model(
-          inputs=inputs, outputs=encoder(inputs), name="model")
+            inputs=inputs, outputs=encoder(inputs), name="model"
+        )
         self.assertGraphDefToModel(expected_proto, model)
 
     def DISABLED_test_keras_model_to_graph_def_nested_sequential_model(self):
@@ -624,7 +626,7 @@ class KerasUtilTest(tf.test.TestCase):
         model = tf.keras.models.Model(
             inputs=[main_input, auxiliary_input],
             outputs=[main_output, auxiliary_output],
-            name="model"
+            name="model",
         )
 
         self.assertGraphDefToModel(expected_proto, model)
@@ -764,18 +766,18 @@ class KerasUtilTest(tf.test.TestCase):
         d2 = tf.keras.layers.Dense(64, activation="relu")
 
         sub_model = tf.keras.models.Model(
-            inputs=[inputs2, inputs1], 
+            inputs=[inputs2, inputs1],
             outputs=[d0(inputs1), d1(inputs2)],
-            name="model"
+            name="model",
         )
 
         main_outputs = d2(
             tf.keras.layers.concatenate(sub_model([inputs2, inputs1]))
         )
         model = tf.keras.models.Model(
-            inputs=[inputs2, inputs1], 
+            inputs=[inputs2, inputs1],
             outputs=main_outputs,
-            name="model_1"
+            name="model_1",
         )
 
         self.assertGraphDefToModel(expected_proto, model)
