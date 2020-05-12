@@ -1248,8 +1248,9 @@ class TensorBatchedRequestSenderTest(tf.test.TestCase):
             wall_time=test_util.timestamp_pb(123456000000),
             value=tensor_pb2.TensorProto(dtype=types_pb2.DT_DOUBLE),
         )
-        # Simplify the tensor value a bit. We care that it is copied to the
-        # request but we don't need it to be an extensive test.
+        # Simplify the tensor value a bit before making assertions on it.
+        # We care that it is copied to the request but we don't need it to be
+        # an extensive test.
         run_proto.tags[0].points[0].value.ClearField("tensor_shape")
         run_proto.tags[0].points[0].value.ClearField("tensor_content")
         self.assertProtoEquals(run_proto, expected_run_proto)
@@ -1512,7 +1513,6 @@ class TensorBatchedRequestSenderTest(tf.test.TestCase):
             # This TensorProto has a byte size of 18.
             tensor=tensor_util.make_tensor_proto([2.0, 4.0]),
         )
-        # event_2.summary.value[-1].tensor.CopyFrom()
         event_2.summary.value.add(
             tag="two",
             # This TensorProto has a byte size of 26.
