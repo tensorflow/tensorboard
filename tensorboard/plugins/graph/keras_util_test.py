@@ -775,9 +775,7 @@ class KerasUtilTest(tf.test.TestCase):
             tf.keras.layers.concatenate(sub_model([inputs2, inputs1]))
         )
         model = tf.keras.models.Model(
-            inputs=[inputs2, inputs1],
-            outputs=main_outputs,
-            name="model_1",
+            inputs=[inputs2, inputs1], outputs=main_outputs, name="model_1",
         )
 
         self.assertGraphDefToModel(expected_proto, model)
