@@ -289,7 +289,7 @@ class S3FileSystem(object):
         try:
             stream = s3.Object(bucket, path).get(**args)["Body"].read()
         except botocore.exceptions.ClientError as exc:
-            if exc.response["Error"]["Code"] == "416":
+            if exc.response["Error"]["Code"] in ["416", "InvalidRange"]:
                 if size is not None:
                     # Asked for too much, so request just to the end. Do this
                     # in a second request so we don't check length in all cases.
