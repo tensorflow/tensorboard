@@ -104,6 +104,23 @@ message PluginControl {
 }
 
 message UploadLimits {
+  // The maximum allowed WriteScalar request size, in bytes. If this is
+  // non-positive then no blobs should be uploaded.
+  int64 max_scalar_request_size = 3;
+  // The maximum allowed WriteTensor request size, in bytes. If this is
+  // non-positive then no blobs should be uploaded.
+  int64 max_tensor_request_size = 4;
+  // The maximum allowed WriteBlob request size, in bytes. If this is
+  // non-positive then no blobs should be uploaded.
+  int64 max_blob_request_size = 5;
+
+  // The minimum interval between WriteScalar requests, in milliseconds.
+  int64 min_scalar_request_interval = 6;
+  // The minimum interval between WriteTensor requests, in milliseconds.
+  int64 min_tensor_request_interval = 7;
+  // The minimum interval between WriteBlob requests, in milliseconds.
+  int64 min_blob_request_interval = 8;
+
   // The maximum allowed size for blob uploads.
   // If this is 0, it is allowed to upload blobs of size 0 (though note
   // the server may enforce a *minimum* blob size, which is a separate issue).
