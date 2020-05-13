@@ -51,7 +51,7 @@ _MIN_LOGDIR_POLL_INTERVAL_SECS = 5
 
 # Minimum interval between initiating write RPCs.  When writes would otherwise
 # happen more frequently, the process will sleep to use up the rest of the time.
-_DEPRECATED_MIN_SCALAR_TENSOR_REQUEST_INTERVAL_MILLISECS = 1000
+_DEPRECATED_MIN_SCALAR_TENSOR_REQUEST_INTERVAL_MILLISECS = 5000
 
 # Minimum interval between initiating blob write RPC streams.  When writes would
 # otherwise happen more frequently, the process will sleep to use up the rest of
