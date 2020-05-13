@@ -1521,7 +1521,7 @@ class TensorBatchedRequestSenderTest(tf.test.TestCase):
 
         run_proto = self._add_events_and_flush(
             _apply_compat([event_1, event_2]),
-            # Set threshold that will filter out tensor points with 26 bytes
+            # Set threshold that will filter out the tensor point with 26 bytes
             # of data and above. The additional byte is for proto overhead.
             max_tensor_point_size=24,
         )
@@ -1543,8 +1543,8 @@ class TensorBatchedRequestSenderTest(tf.test.TestCase):
 
         run_proto_2 = self._add_events_and_flush(
             _apply_compat([event_1, event_2]),
-            # Set threshold that will filter out tensor points with 22 and 26 bytes
-            # of data and above. The additional byte is for proto overhead.
+            # Set threshold that will filter out the tensor points with 22 and 26
+            # bytes of data and above. The additional byte is for proto overhead.
             max_tensor_point_size=20,
         )
         tag_data_2 = {
