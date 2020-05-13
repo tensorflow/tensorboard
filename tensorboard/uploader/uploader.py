@@ -135,7 +135,7 @@ class TensorBoardUploader(object):
         if upload_limits is None:
             # This branch of code is highly deprecated. Callers to
             # TensorBoardUploader will soon be updated to always pass in
-            # upload_limits and this code and it will then be deleted.
+            # upload_limits and this code will then be deleted.
             self._upload_limits = server_info_pb2.UploadLimits()
             self._upload_limits.max_scalar_request_size = (
                 _DEPRECATED_MAX_SCALAR_TENSOR_REQUEST_SIZE_BYTES
