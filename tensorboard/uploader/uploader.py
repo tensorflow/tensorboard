@@ -741,11 +741,28 @@ class _TensorBatchedRequestSender(object):
             tag_proto.points.pop()
             return
 
+        self._validate_tensor_value(
+            value.tensor, value.tag, event.step, event.wall_time
+        )
+
         try:
             self._byte_budget_manager.add_point(point)
         except _OutOfSpaceError:
             tag_proto.points.pop()
             raise
+
+    def _validate_tensor_value(self, tensor_proto, tag, step, wall_time):
+        """Validate a TensorProto by attempting to parse it."""
+        try:
+            tensor_util.make_ndarray(tensor_proto)
+        except ValueError as error:
+            raise ValueError(
+                "The uploader failed to upload a tensor. This seems to be "
+                "due to a malformation in the tensor, which may be caused by "
+                "a bug in the process that wrote the tensor.\n\n"
+                "The tensor has tag '%s' and is at step %d and wall_time %.6f.\n\n"
+                "Original error:\n%s" % (tag, step, wall_time, error)
+            )
 
 
 class _ByteBudgetManager(object):
