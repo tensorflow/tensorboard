@@ -36,7 +36,7 @@ import {
   createTestInfNanAlert,
 } from '../testing';
 
-describe('Debugger reducers', () => {
+describe('Debugger graphs reducers', () => {
   describe('alertTypeFocusToggled', () => {
     for (const focusType of [
       AlertType.FUNCTION_RECOMPILE_ALERT,
