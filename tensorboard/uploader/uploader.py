@@ -133,25 +133,36 @@ class TensorBoardUploader(object):
         self._logdir = logdir
         self._allowed_plugins = frozenset(allowed_plugins)
         if upload_limits is None:
-          # This branch of code is highly deprecated. We hope to delete it after
-          # cleaning up some Google-internal code.
-          self._upload_limits = server_info_pb2.UploadLimits()
-          self._upload_limits.max_scalar_request_size = _DEPRECATED_MAX_SCALAR_TENSOR_REQUEST_SIZE_BYTES
-          self._upload_limits.max_tensor_request_size = _DEPRECATED_MAX_SCALAR_TENSOR_REQUEST_SIZE_BYTES
-          self._upload_limits.max_blob_request_size = _DEPRECATED_MAX_BLOB_REQUEST_SIZE_BYTES
-          self._upload_limits.min_scalar_request_interval = _DEPRECATED_MIN_SCALAR_TENSOR_REQUEST_INTERVAL_SECS
-          self._upload_limits.min_tensor_request_interval = _DEPRECATED_MIN_SCALAR_TENSOR_REQUEST_INTERVAL_SECS
-          self._upload_limits.max_blob_size = max_blob_size
-          # Note: All callers should set this value. When they do, remove the
-          # default.
-          if max_tensor_point_size is None:
-              # If max_tensor_point_size is not specified then effectively disable
-              # tensor uploads by setting max size to a negative value.
-              self._upload_limits.max_tensor_point_size = -1
-          else:
-              self._upload_limits.max_tensor_point_size = max_tensor_point_size
+            # This branch of code is highly deprecated. Callers to
+            # TensorBoardUploader will soon be updated to always pass in
+            # upload_limits and this code and it will then be deleted.
+            self._upload_limits = server_info_pb2.UploadLimits()
+            self._upload_limits.max_scalar_request_size = (
+                _DEPRECATED_MAX_SCALAR_TENSOR_REQUEST_SIZE_BYTES
+            )
+            self._upload_limits.max_tensor_request_size = (
+                _DEPRECATED_MAX_SCALAR_TENSOR_REQUEST_SIZE_BYTES
+            )
+            self._upload_limits.max_blob_request_size = (
+                _DEPRECATED_MAX_BLOB_REQUEST_SIZE_BYTES
+            )
+            self._upload_limits.min_scalar_request_interval = (
+                _DEPRECATED_MIN_SCALAR_TENSOR_REQUEST_INTERVAL_SECS
+            )
+            self._upload_limits.min_tensor_request_interval = (
+                _DEPRECATED_MIN_SCALAR_TENSOR_REQUEST_INTERVAL_SECS
+            )
+            self._upload_limits.max_blob_size = max_blob_size
+            if max_tensor_point_size is None:
+                # If max_tensor_point_size is not specified then effectively disable
+                # tensor uploads by setting max size to a negative value.
+                self._upload_limits.max_tensor_point_size = -1
+            else:
+                self._upload_limits.max_tensor_point_size = (
+                    max_tensor_point_size
+                )
         else:
-          self._upload_limits = upload_limits
+            self._upload_limits = upload_limits
 
         self._name = name
         self._description = description
@@ -368,13 +379,24 @@ class _BatchedRequestSender(object):
         self._tag_metadata = {}
         self._allowed_plugins = frozenset(allowed_plugins)
         self._scalar_request_sender = _ScalarBatchedRequestSender(
-            experiment_id, api, rpc_rate_limiter, upload_limits.max_scalar_request_size
+            experiment_id,
+            api,
+            rpc_rate_limiter,
+            upload_limits.max_scalar_request_size,
         )
         self._tensor_request_sender = _TensorBatchedRequestSender(
-            experiment_id, api, tensor_rpc_rate_limiter, upload_limits.max_tensor_request_size, upload_limits.max_tensor_point_size
+            experiment_id,
+            api,
+            tensor_rpc_rate_limiter,
+            upload_limits.max_tensor_request_size,
+            upload_limits.max_tensor_point_size,
         )
         self._blob_request_sender = _BlobRequestSender(
-            experiment_id, api, blob_rpc_rate_limiter, upload_limits.max_blob_request_size, upload_limits.max_blob_size
+            experiment_id,
+            api,
+            blob_rpc_rate_limiter,
+            upload_limits.max_blob_request_size,
+            upload_limits.max_blob_size,
         )
 
     def send_requests(self, run_to_events):
@@ -626,7 +648,12 @@ class _TensorBatchedRequestSender(object):
     """
 
     def __init__(
-        self, experiment_id, api, rpc_rate_limiter, max_request_size, max_tensor_point_size
+        self,
+        experiment_id,
+        api,
+        rpc_rate_limiter,
+        max_request_size,
+        max_tensor_point_size,
     ):
         if experiment_id is None:
             raise ValueError("experiment_id cannot be None")
@@ -898,7 +925,14 @@ class _BlobRequestSender(object):
     methods concurrently.
     """
 
-    def __init__(self, experiment_id, api, rpc_rate_limiter, max_blob_request_size, max_blob_size):
+    def __init__(
+        self,
+        experiment_id,
+        api,
+        rpc_rate_limiter,
+        max_blob_request_size,
+        max_blob_size,
+    ):
         if experiment_id is None:
             raise ValueError("experiment_id cannot be None")
         self._experiment_id = experiment_id

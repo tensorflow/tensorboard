@@ -155,7 +155,7 @@ def _create_uploader(
         writer_client,
         logdir,
         allowed_plugins=_SCALARS_HISTOGRAMS_AND_GRAPHS,
-        upload_limits = upload_limits,
+        upload_limits=upload_limits,
         logdir_poll_rate_limiter=logdir_poll_rate_limiter,
         rpc_rate_limiter=rpc_rate_limiter,
         tensor_rpc_rate_limiter=tensor_rpc_rate_limiter,
@@ -166,9 +166,7 @@ def _create_uploader(
 
 
 def _create_request_sender(
-    experiment_id=None,
-    api=None,
-    allowed_plugins=_USE_DEFAULT,
+    experiment_id=None, api=None, allowed_plugins=_USE_DEFAULT,
 ):
     if api is _USE_DEFAULT:
         api = _create_mock_client()
@@ -212,7 +210,10 @@ def _create_scalar_request_sender(
 
 
 def _create_tensor_request_sender(
-    experiment_id=None, api=_USE_DEFAULT, max_request_size=_USE_DEFAULT , max_tensor_point_size=_USE_DEFAULT,
+    experiment_id=None,
+    api=_USE_DEFAULT,
+    max_request_size=_USE_DEFAULT,
+    max_tensor_point_size=_USE_DEFAULT,
 ):
     if api is _USE_DEFAULT:
         api = _create_mock_client()
@@ -1033,7 +1034,9 @@ class ScalarBatchedRequestSenderTest(tf.test.TestCase):
         long_experiment_id = "A" * 12
         with self.assertRaises(RuntimeError) as cm:
             _create_scalar_request_sender(
-                experiment_id=long_experiment_id, api=mock_client, max_request_size=12
+                experiment_id=long_experiment_id,
+                api=mock_client,
+                max_request_size=12,
             )
         self.assertEqual(
             str(cm.exception), "Byte budget too small for base request"
@@ -1044,7 +1047,9 @@ class ScalarBatchedRequestSenderTest(tf.test.TestCase):
         event = event_pb2.Event(step=1, wall_time=123.456)
         event.summary.value.add(tag="foo", simple_value=1.0)
         long_run_name = "A" * 12
-        sender = _create_scalar_request_sender("123", mock_client, max_request_size=12)
+        sender = _create_scalar_request_sender(
+            "123", mock_client, max_request_size=12
+        )
         with self.assertRaises(RuntimeError) as cm:
             self._add_events(sender, long_run_name, [event])
         self.assertEqual(str(cm.exception), "add_event failed despite flush")
@@ -1060,9 +1065,12 @@ class ScalarBatchedRequestSenderTest(tf.test.TestCase):
         event_2 = event_pb2.Event(step=2)
         event_2.summary.value.add(tag="bar", simple_value=-2.0)
 
-        sender = _create_scalar_request_sender("123", mock_client,
+        sender = _create_scalar_request_sender(
+            "123",
+            mock_client,
             # Set a limit to request size
-            max_request_size=1024)
+            max_request_size=1024,
+        )
         self._add_events(sender, long_run_1, _apply_compat([event_1]))
         self._add_events(sender, long_run_2, _apply_compat([event_2]))
         sender.flush()
@@ -1101,9 +1109,12 @@ class ScalarBatchedRequestSenderTest(tf.test.TestCase):
         event.summary.value.add(tag=long_tag_1, simple_value=1.0)
         event.summary.value.add(tag=long_tag_2, simple_value=2.0)
 
-        sender = _create_scalar_request_sender("123", mock_client,
+        sender = _create_scalar_request_sender(
+            "123",
+            mock_client,
             # Set a limit to request size
-            max_request_size=1024)
+            max_request_size=1024,
+        )
         self._add_events(sender, "train", _apply_compat([event]))
         sender.flush()
         requests = [c[0][0] for c in mock_client.WriteScalar.call_args_list]
@@ -1143,9 +1154,12 @@ class ScalarBatchedRequestSenderTest(tf.test.TestCase):
                 summary.value[0].ClearField("metadata")
             events.append(event_pb2.Event(summary=summary, step=step))
 
-        sender = _create_scalar_request_sender("123", mock_client,
+        sender = _create_scalar_request_sender(
+            "123",
+            mock_client,
             # Set a limit to request size
-            max_request_size=1024)
+            max_request_size=1024,
+        )
         self._add_events(sender, "train", _apply_compat(events))
         sender.flush()
         requests = [c[0][0] for c in mock_client.WriteScalar.call_args_list]
@@ -1335,7 +1349,9 @@ class TensorBatchedRequestSenderTest(tf.test.TestCase):
         long_experiment_id = "A" * 12
         with self.assertRaises(RuntimeError) as cm:
             _create_tensor_request_sender(
-                experiment_id=long_experiment_id, api=mock_client, max_request_size=12
+                experiment_id=long_experiment_id,
+                api=mock_client,
+                max_request_size=12,
             )
         self.assertEqual(
             str(cm.exception), "Byte budget too small for base request"
@@ -1348,7 +1364,9 @@ class TensorBatchedRequestSenderTest(tf.test.TestCase):
             tag="one", tensor=tensor_pb2.TensorProto(double_val=[1.0])
         )
         long_run_name = "A" * 12
-        sender = _create_tensor_request_sender("123", mock_client, max_request_size=12)
+        sender = _create_tensor_request_sender(
+            "123", mock_client, max_request_size=12
+        )
         with self.assertRaises(RuntimeError) as cm:
             self._add_events(sender, long_run_name, [event])
         self.assertEqual(str(cm.exception), "add_event failed despite flush")
@@ -1368,9 +1386,12 @@ class TensorBatchedRequestSenderTest(tf.test.TestCase):
             tag="two", tensor=tensor_pb2.TensorProto(double_val=[2.0])
         )
 
-        sender = _create_tensor_request_sender("123", mock_client,
+        sender = _create_tensor_request_sender(
+            "123",
+            mock_client,
             # Set a limit to request size
-            max_request_size=1024)
+            max_request_size=1024,
+        )
         self._add_events(sender, long_run_1, _apply_compat([event_1]))
         self._add_events(sender, long_run_2, _apply_compat([event_2]))
         sender.flush()
@@ -1397,9 +1418,12 @@ class TensorBatchedRequestSenderTest(tf.test.TestCase):
             tag=long_tag_2, tensor=tensor_pb2.TensorProto(double_val=[2.0])
         )
 
-        sender = _create_tensor_request_sender("123", mock_client,
+        sender = _create_tensor_request_sender(
+            "123",
+            mock_client,
             # Set a limit to request size
-            max_request_size=1024)
+            max_request_size=1024,
+        )
         self._add_events(sender, "train", _apply_compat([event]))
         sender.flush()
         requests = [c[0][0] for c in mock_client.WriteTensor.call_args_list]
@@ -1431,9 +1455,12 @@ class TensorBatchedRequestSenderTest(tf.test.TestCase):
             )
             events.append(event)
 
-        sender = _create_tensor_request_sender("123", mock_client,
+        sender = _create_tensor_request_sender(
+            "123",
+            mock_client,
             # Set a limit to request size
-            max_request_size=1024)
+            max_request_size=1024,
+        )
         self._add_events(sender, "train", _apply_compat(events))
         sender.flush()
         requests = [c[0][0] for c in mock_client.WriteTensor.call_args_list]
