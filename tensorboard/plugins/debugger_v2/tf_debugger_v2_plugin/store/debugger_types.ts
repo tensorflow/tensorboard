@@ -143,6 +143,7 @@ export interface GraphOpInfo {
   graph_ids: string[];
 
   // Number of symoblic tensors output by the op.
+  // This is equal to the length of `output_tensor_ids`.
   num_outputs: number;
 
   // Debugger-generated IDs for the symbolic output tensor(s) of this op.
@@ -156,13 +157,13 @@ export interface GraphOpInfo {
   stack_frame_ids: string[];
 
   // Op names and slots of the immediate data input to the op.
-  //`[]` if an op has no data inputs tensors.
+  //`[]` if an op has no data input tensors.
   // This field does *not* track control inputs.
-  // E.g., `[{op_name: "Dense_2/ReadVariableOp_1:0", ouput_slot: 0},
+  // E.g., `[{op_name: "Dense_2/ReadVariableOp_1:0", output_slot: 0},
   //         {op_name: "Input:0", output_slot: 0}]`
   inputs: GraphOpInputSpec[];
 
-  // Op names and slots of the immediate consumers of the op's output tenors.
+  // Op names and slots of the immediate consumers of the op's output tensors.
   // `[]` if the op provides no output tensors.
   // If any of the output tensors of the op has no consumers, the corresponding
   // element will be `[]`.
@@ -170,7 +171,7 @@ export interface GraphOpInfo {
 }
 
 /**
- * Specificaton of an input tensor to a graph op.
+ * Specification of an input tensor to a graph op.
  */
 export interface GraphOpInputSpec {
   // Name of the graph op that provides the input tensor.
@@ -181,14 +182,16 @@ export interface GraphOpInputSpec {
 
   // Optional recursive information about the input-providing op.
   // This is not populated in two cases:
-  //   1. At the leaf nodes of this recursive data structure.
+  //   1. At the "leaf nodes" of this recursive data structure. For example,
+  //      the state may contain only one level of inputs to an op, in which
+  //      case the immediate inputs to the op this concerns are the leaf nodes.
   //   2. When the information is not available (e.g., backend lookup
   //      failure related to special internal ops not tracked by the debugger).
   data?: GraphOpInfo;
 }
 
 /**
- * Specificaton of an op consuming an graph op's output tensor.
+ * Specification of an op consuming an graph op's output tensor.
  */
 export interface GraphOpConsumerSpec {
   // Name of the graph op that consumes the output tensor.
@@ -199,7 +202,9 @@ export interface GraphOpConsumerSpec {
 
   // Optional recursive information about the output-consuming op.
   // This is not populated in two cases:
-  //   1. At the leaf nodes of this recursive data structure.
+  //   1. At the "leaf nodes" of this recursive data structure. For example,
+  //      the state may contain only one level of consumers to an op, in which
+  //      case the immediate consumers of the op this concerns are the leaf nodes.
   //   2. When the information is not available (e.g., backend lookup
   //      failure related to special internal ops not tracked by the debugger).
   data?: GraphOpInfo;
