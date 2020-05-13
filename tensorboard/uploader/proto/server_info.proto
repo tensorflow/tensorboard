@@ -114,11 +114,11 @@ message UploadLimits {
   // non-positive then no blobs should be uploaded.
   int64 max_blob_request_size = 5;
 
-  // The minimum interval between WriteScalar requests, in seconds.
+  // The minimum interval between WriteScalar requests, in milliseconds.
   int64 min_scalar_request_interval = 6;
-  // The minimum interval between WriteTensor requests, in seconds.
+  // The minimum interval between WriteTensor requests, in milliseconds.
   int64 min_tensor_request_interval = 7;
-  // The minimum interval between WriteBlob requests, in seconds.
+  // The minimum interval between WriteBlob requests, in milliseconds.
   int64 min_blob_request_interval = 8;
 
   // The maximum allowed size for blob uploads.

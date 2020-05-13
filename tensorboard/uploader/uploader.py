@@ -51,14 +51,14 @@ _MIN_LOGDIR_POLL_INTERVAL_SECS = 5
 
 # Minimum interval between initiating write RPCs.  When writes would otherwise
 # happen more frequently, the process will sleep to use up the rest of the time.
-_DEPRECATED_MIN_SCALAR_TENSOR_REQUEST_INTERVAL_SECS = 5
+_DEPRECATED_MIN_SCALAR_TENSOR_REQUEST_INTERVAL_MILLISECS = 1000
 
 # Minimum interval between initiating blob write RPC streams.  When writes would
 # otherwise happen more frequently, the process will sleep to use up the rest of
 # the time.  This may differ from the above RPC rate limit, because blob streams
 # are not batched, so sending a sequence of N blobs requires N streams, which
 # could reasonably be sent more frequently.
-_DEPRECATED_MIN_BLOB_REQUEST_INTERVAL_SECS = 1
+_DEPRECATED_MIN_BLOB_REQUEST_INTERVAL_MILLISECS = 1000
 
 # Age in seconds of last write after which an event file is considered inactive.
 # TODO(@nfelt): consolidate with TensorBoard --reload_multifile default logic.
@@ -147,15 +147,16 @@ class TensorBoardUploader(object):
                 _DEPRECATED_MAX_BLOB_REQUEST_SIZE_BYTES
             )
             self._upload_limits.min_scalar_request_interval = (
-                _DEPRECATED_MIN_SCALAR_TENSOR_REQUEST_INTERVAL_SECS
+                _DEPRECATED_MIN_SCALAR_TENSOR_REQUEST_INTERVAL_MILLISECS
             )
             self._upload_limits.min_tensor_request_interval = (
-                _DEPRECATED_MIN_SCALAR_TENSOR_REQUEST_INTERVAL_SECS
+                _DEPRECATED_MIN_SCALAR_TENSOR_REQUEST_INTERVAL_MILLISECS
             )
             self._upload_limits.max_blob_size = max_blob_size
             if max_tensor_point_size is None:
-                # If max_tensor_point_size is not specified then effectively disable
-                # tensor uploads by setting max size to a negative value.
+                # If max_tensor_point_size is not specified then effectively
+                # disable tensor uploads by setting max size to a negative
+                # value.
                 self._upload_limits.max_tensor_point_size = -1
             else:
                 self._upload_limits.max_tensor_point_size = (
@@ -176,21 +177,21 @@ class TensorBoardUploader(object):
 
         if rpc_rate_limiter is None:
             self._rpc_rate_limiter = util.RateLimiter(
-                self._upload_limits.min_scalar_request_interval
+                self._upload_limits.min_scalar_request_interval / 1000
             )
         else:
             self._rpc_rate_limiter = rpc_rate_limiter
 
         if tensor_rpc_rate_limiter is None:
             self._tensor_rpc_rate_limiter = util.RateLimiter(
-                self._upload_limits.min_tensor_request_interval
+                self._upload_limits.min_tensor_request_interval / 1000
             )
         else:
             self._tensor_rpc_rate_limiter = tensor_rpc_rate_limiter
 
         if blob_rpc_rate_limiter is None:
             self._blob_rpc_rate_limiter = util.RateLimiter(
-                self._upload_limits.min_blob_request_interval
+                self._upload_limits.min_blob_request_interval / 1000
             )
         else:
             self._blob_rpc_rate_limiter = blob_rpc_rate_limiter
