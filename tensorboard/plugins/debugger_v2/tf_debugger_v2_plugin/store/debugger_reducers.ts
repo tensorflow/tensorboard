@@ -30,6 +30,7 @@ import {
   Executions,
   Graphs,
   GraphExecutions,
+  GraphOpInfo,
   InfNanAlert,
   StackFramesById,
   SourceFileSpec,
@@ -672,6 +673,102 @@ const reducer = createReducer(
           scrollBeginIndex: action.index,
         },
       };
+    }
+  ),
+  ////////////////////////////////////////////////
+  // Reducers related to graph structures.      //
+  ////////////////////////////////////////////////
+  on(
+    actions.graphOpFocused,
+    (
+      state: DebuggerState,
+      data: {graph_id: string; op_name: string}
+    ): DebuggerState => {
+      return {
+        ...state,
+        graphs: {
+          ...state.graphs,
+          focusedOp: {
+            graphId: data.graph_id,
+            opName: data.op_name,
+          },
+        },
+      };
+    }
+  ),
+  on(
+    actions.graphOpInfoRequested,
+    (
+      state: DebuggerState,
+      data: {graph_id: string; op_name: string}
+    ): DebuggerState => {
+      const {graph_id, op_name} = data;
+      const newState: DebuggerState = {
+        ...state,
+        graphs: {
+          ...state.graphs,
+          loadingOps: {
+            ...state.graphs.loadingOps,
+          },
+        },
+      };
+      if (newState.graphs.loadingOps[graph_id] === undefined) {
+        newState.graphs.loadingOps[graph_id] = {};
+      }
+      if (newState.graphs.loadingOps[graph_id][op_name] === undefined) {
+        newState.graphs.loadingOps[graph_id][op_name] = DataLoadState.LOADING;
+      }
+      return newState;
+    }
+  ),
+  on(
+    actions.graphOpInfoLoaded,
+    (state: DebuggerState, data): DebuggerState => {
+      const opInfo: GraphOpInfo = data.graphOpInfoResponse;
+      const {inputs, consumers, graph_ids} = opInfo;
+      const graphId = graph_ids[graph_ids.length - 1];
+      const newState: DebuggerState = {
+        ...state,
+        graphs: {
+          ...state.graphs,
+          ops: {
+            ...state.graphs.ops,
+          },
+          loadingOps: {
+            ...state.graphs.loadingOps,
+          },
+        },
+      };
+      for (const input of inputs) {
+        if (!input.data) {
+          continue;
+        }
+        if (newState.graphs.ops[graphId] === undefined) {
+          newState.graphs.ops[graphId] = {};
+        }
+        newState.graphs.ops[graphId][input.op_name] = input.data;
+        delete input.data;
+      }
+      for (let i = 0; i < consumers.length; ++i) {
+        for (const consumer of consumers[i]) {
+          if (!consumer.data) {
+            continue;
+          }
+          if (newState.graphs.ops[graphId] === undefined) {
+            newState.graphs.ops[graphId] = {};
+          }
+          newState.graphs.ops[graphId][consumer.op_name] = consumer.data;
+          delete consumer.data;
+        }
+      }
+      if (newState.graphs.ops[graphId] === undefined) {
+        newState.graphs.ops[graphId] = {};
+      }
+      newState.graphs.ops[graphId][opInfo.op_name] = opInfo;
+      // Remove the loading marker for the op.
+      newState.graphs.loadingOps[graphId][opInfo.op_name] =
+        DataLoadState.LOADED;
+      return newState;
     }
   ),
   ////////////////////////////////////////////////////////

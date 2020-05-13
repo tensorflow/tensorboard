@@ -16,11 +16,11 @@ import * as actions from '../actions';
 import {ExecutionDigestsResponse} from '../data_source/tfdbg2_data_source';
 import {reducers} from './debugger_reducers';
 import {
+  Alert,
+  AlertType,
   DataLoadState,
   Execution,
   StackFramesById,
-  AlertType,
-  Alert,
 } from './debugger_types';
 import {
   createAlertsState,
