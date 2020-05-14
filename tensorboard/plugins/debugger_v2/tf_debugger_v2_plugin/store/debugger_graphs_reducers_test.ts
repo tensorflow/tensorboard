@@ -1,4 +1,4 @@
-/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -141,7 +141,7 @@ describe('Debugger reducers', () => {
       opInfo2.inputs = [
         {
           op_name: opInfo1.op_name,
-          output_slot: 1,
+          output_slot: 0,
         },
       ];
       const opInfo3 = createTestGraphOpInfo({

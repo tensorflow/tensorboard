@@ -733,20 +733,31 @@ const reducer = createReducer(
           ...state.graphs,
           ops: {
             ...state.graphs.ops,
+            [graphId]: {
+              ...state.graphs.ops[graphId],
+            },
           },
           loadingOps: {
             ...state.graphs.loadingOps,
+            [graphId]: {
+              ...state.graphs.loadingOps[graphId],
+            },
           },
         },
       };
       for (const input of inputs) {
         if (!input.data) {
+          // `input.data` can be undefined when the backend fails to look up
+          // detailed information regarding the input op (e.g., for certain
+          // TF-internal ops such as StatefulPartitionedCall).
+          // Same for `consumer.data` below.
           continue;
         }
-        if (newState.graphs.ops[graphId] === undefined) {
-          newState.graphs.ops[graphId] = {};
-        }
         newState.graphs.ops[graphId][input.op_name] = input.data;
+        // Remove `input.data` to avoid duplicated data in `opInfo`,
+        // which is put into `newState.graphs.ops[graphId][opInfo.op_name]`
+        // later.
+        // Same for `consumer.data` below.
         delete input.data;
       }
       for (let i = 0; i < consumers.length; ++i) {
@@ -754,15 +765,9 @@ const reducer = createReducer(
           if (!consumer.data) {
             continue;
           }
-          if (newState.graphs.ops[graphId] === undefined) {
-            newState.graphs.ops[graphId] = {};
-          }
           newState.graphs.ops[graphId][consumer.op_name] = consumer.data;
           delete consumer.data;
         }
-      }
-      if (newState.graphs.ops[graphId] === undefined) {
-        newState.graphs.ops[graphId] = {};
       }
       newState.graphs.ops[graphId][opInfo.op_name] = opInfo;
       // Remove the loading marker for the op.
