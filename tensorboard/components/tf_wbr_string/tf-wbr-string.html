@@ -19,7 +19,7 @@ limitations under the License.
 
 <!--
   tf-wbr-string safely renders a string, with <wbr> elements inserted
-  around select delimiters (see `const delimiterPattern` in this file).
+  around specified delimiters.
 -->
 <dom-module id="tf-wbr-string">
   <template>
@@ -37,19 +37,21 @@ limitations under the License.
       properties: {
         /** The value to render with word breaks. */
         value: String,
+        /** The regular expression for specifying word break delimiters. */
+        delimiterPattern: String,
         _parts: {
           type: Array /* string[] */,
-          computed: '_computeParts(value)',
+          computed: '_computeParts(value, delimiterPattern)',
         },
       },
-      _computeParts(value) {
+      _computeParts(value, delimiterPattern) {
         const result = [];
-        const delimiterPattern = /[/=_,-]/;
+        const delimiterRegExp = new RegExp(delimiterPattern);
         if (value == null) {
           value = '';
         }
         while (true) {
-          const idx = value.search(delimiterPattern);
+          const idx = value.search(delimiterRegExp);
           if (idx === -1) {
             result.push(value);
             break;
