@@ -29,8 +29,9 @@ from google.protobuf import message
 from tensorboard.compat.proto import graph_pb2
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.compat.proto import types_pb2
-from tensorboard.uploader.proto import write_service_pb2
+from tensorboard.uploader.proto import server_info_pb2
 from tensorboard.uploader.proto import experiment_pb2
+from tensorboard.uploader.proto import write_service_pb2
 from tensorboard.uploader import logdir_loader
 from tensorboard.uploader import util
 from tensorboard.backend import process_graph
@@ -50,14 +51,14 @@ _MIN_LOGDIR_POLL_INTERVAL_SECS = 5
 
 # Minimum interval between initiating write RPCs.  When writes would otherwise
 # happen more frequently, the process will sleep to use up the rest of the time.
-_MIN_WRITE_RPC_INTERVAL_SECS = 5
+_DEPRECATED_MIN_SCALAR_TENSOR_REQUEST_INTERVAL_MILLISECS = 5000
 
 # Minimum interval between initiating blob write RPC streams.  When writes would
 # otherwise happen more frequently, the process will sleep to use up the rest of
 # the time.  This may differ from the above RPC rate limit, because blob streams
 # are not batched, so sending a sequence of N blobs requires N streams, which
 # could reasonably be sent more frequently.
-_MIN_BLOB_WRITE_RPC_INTERVAL_SECS = 1
+_DEPRECATED_MIN_BLOB_REQUEST_INTERVAL_MILLISECS = 1000
 
 # Age in seconds of last write after which an event file is considered inactive.
 # TODO(@nfelt): consolidate with TensorBoard --reload_multifile default logic.
@@ -74,12 +75,12 @@ _MAX_VARINT64_LENGTH_BYTES = 10
 # Deadline Exceeded errors in the RPC server.
 #
 # [1]: https://github.com/grpc/grpc/blob/e70d8582b4b0eedc45e3d25a57b58a08b94a9f4a/include/grpc/impl/codegen/grpc_types.h#L447  # pylint: disable=line-too-long
-_MAX_REQUEST_LENGTH_BYTES = 1024 * 128
+_DEPRECATED_MAX_SCALAR_TENSOR_REQUEST_SIZE_BYTES = 1024 * 128
 
 logger = tb_logging.get_logger()
 
 # Leave breathing room within 2^22 (4 MiB) gRPC limit, using 256 KiB chunks
-BLOB_CHUNK_SIZE = (2 ** 22) - (2 ** 18)
+_DEPRECATED_MAX_BLOB_REQUEST_SIZE_BYTES = (2 ** 22) - (2 ** 18)
 
 
 class TensorBoardUploader(object):
@@ -90,13 +91,17 @@ class TensorBoardUploader(object):
         writer_client,
         logdir,
         allowed_plugins,
-        max_blob_size,
-        max_tensor_point_size=None,
+        upload_limits=None,
         logdir_poll_rate_limiter=None,
         rpc_rate_limiter=None,
+        tensor_rpc_rate_limiter=None,
         blob_rpc_rate_limiter=None,
         name=None,
         description=None,
+        # The following arguments are deprecated in favor of upload_limits and
+        # will be removed shortly.
+        max_blob_size=None,
+        max_tensor_point_size=None,
     ):
         """Constructs a TensorBoardUploader.
 
@@ -106,9 +111,7 @@ class TensorBoardUploader(object):
           allowed_plugins: collection of string plugin names; events will only
             be uploaded if their time series's metadata specifies one of these
             plugin names
-          max_blob_size: the maximum allowed size for blob uploads.
-          max_tensor_point_size: the maximum allowed size for a single tensor
-            point
+          upload_limits: instance of tensorboard.service.UploadLimits proto.
           logdir_poll_rate_limiter: a `RateLimiter` to use to limit logdir
             polling frequency, to avoid thrashing disks, especially on networked
             file systems
@@ -121,19 +124,47 @@ class TensorBoardUploader(object):
             explicitly rate-limit within the stream here.
           name: String name to assign to the experiment.
           description: String description to assign to the experiment.
+          max_blob_size: the maximum allowed size for blob uploads. Deprecated.
+            Use upload_limits instead.
+          max_tensor_point_size: the maximum allowed size for a single tensor
+            point. Deprecated. Use upload_limits instead.
         """
         self._api = writer_client
         self._logdir = logdir
         self._allowed_plugins = frozenset(allowed_plugins)
-        self._max_blob_size = max_blob_size
-        # Note: All callers should set this value. When they do, remove the
-        # default.
-        if max_tensor_point_size is None:
-            # If max_tensor_point_size is not specified then effectively disable
-            # tensor uploads by setting max size to a negative value.
-            self._max_tensor_point_size = -1
+        if upload_limits is None:
+            # This branch of code is highly deprecated. Callers to
+            # TensorBoardUploader will soon be updated to always pass in
+            # upload_limits and this code will then be deleted.
+            self._upload_limits = server_info_pb2.UploadLimits()
+            self._upload_limits.max_scalar_request_size = (
+                _DEPRECATED_MAX_SCALAR_TENSOR_REQUEST_SIZE_BYTES
+            )
+            self._upload_limits.max_tensor_request_size = (
+                _DEPRECATED_MAX_SCALAR_TENSOR_REQUEST_SIZE_BYTES
+            )
+            self._upload_limits.max_blob_request_size = (
+                _DEPRECATED_MAX_BLOB_REQUEST_SIZE_BYTES
+            )
+            self._upload_limits.min_scalar_request_interval = (
+                _DEPRECATED_MIN_SCALAR_TENSOR_REQUEST_INTERVAL_MILLISECS
+            )
+            self._upload_limits.min_tensor_request_interval = (
+                _DEPRECATED_MIN_SCALAR_TENSOR_REQUEST_INTERVAL_MILLISECS
+            )
+            self._upload_limits.max_blob_size = max_blob_size
+            if max_tensor_point_size is None:
+                # If max_tensor_point_size is not specified then effectively
+                # disable tensor uploads by setting max size to a negative
+                # value.
+                self._upload_limits.max_tensor_point_size = -1
+            else:
+                self._upload_limits.max_tensor_point_size = (
+                    max_tensor_point_size
+                )
         else:
-            self._max_tensor_point_size = max_tensor_point_size
+            self._upload_limits = upload_limits
+
         self._name = name
         self._description = description
         self._request_sender = None
@@ -143,16 +174,24 @@ class TensorBoardUploader(object):
             )
         else:
             self._logdir_poll_rate_limiter = logdir_poll_rate_limiter
+
         if rpc_rate_limiter is None:
             self._rpc_rate_limiter = util.RateLimiter(
-                _MIN_WRITE_RPC_INTERVAL_SECS
+                self._upload_limits.min_scalar_request_interval / 1000
             )
         else:
             self._rpc_rate_limiter = rpc_rate_limiter
 
+        if tensor_rpc_rate_limiter is None:
+            self._tensor_rpc_rate_limiter = util.RateLimiter(
+                self._upload_limits.min_tensor_request_interval / 1000
+            )
+        else:
+            self._tensor_rpc_rate_limiter = tensor_rpc_rate_limiter
+
         if blob_rpc_rate_limiter is None:
             self._blob_rpc_rate_limiter = util.RateLimiter(
-                _MIN_BLOB_WRITE_RPC_INTERVAL_SECS
+                self._upload_limits.min_blob_request_interval / 1000
             )
         else:
             self._blob_rpc_rate_limiter = blob_rpc_rate_limiter
@@ -183,9 +222,9 @@ class TensorBoardUploader(object):
             response.experiment_id,
             self._api,
             allowed_plugins=self._allowed_plugins,
-            max_blob_size=self._max_blob_size,
-            max_tensor_point_size=self._max_tensor_point_size,
+            upload_limits=self._upload_limits,
             rpc_rate_limiter=self._rpc_rate_limiter,
+            tensor_rpc_rate_limiter=self._tensor_rpc_rate_limiter,
             blob_rpc_rate_limiter=self._blob_rpc_rate_limiter,
         )
         return response.experiment_id
@@ -331,9 +370,9 @@ class _BatchedRequestSender(object):
         experiment_id,
         api,
         allowed_plugins,
-        max_blob_size,
-        max_tensor_point_size,
+        upload_limits,
         rpc_rate_limiter,
+        tensor_rpc_rate_limiter,
         blob_rpc_rate_limiter,
     ):
         # Map from `(run_name, tag_name)` to `SummaryMetadata` if the time
@@ -341,20 +380,31 @@ class _BatchedRequestSender(object):
         self._tag_metadata = {}
         self._allowed_plugins = frozenset(allowed_plugins)
         self._scalar_request_sender = _ScalarBatchedRequestSender(
-            experiment_id, api, rpc_rate_limiter,
+            experiment_id,
+            api,
+            rpc_rate_limiter,
+            upload_limits.max_scalar_request_size,
         )
         self._tensor_request_sender = _TensorBatchedRequestSender(
-            experiment_id, api, rpc_rate_limiter, max_tensor_point_size
+            experiment_id,
+            api,
+            tensor_rpc_rate_limiter,
+            upload_limits.max_tensor_request_size,
+            upload_limits.max_tensor_point_size,
         )
         self._blob_request_sender = _BlobRequestSender(
-            experiment_id, api, blob_rpc_rate_limiter, max_blob_size
+            experiment_id,
+            api,
+            blob_rpc_rate_limiter,
+            upload_limits.max_blob_request_size,
+            upload_limits.max_blob_size,
         )
 
     def send_requests(self, run_to_events):
         """Accepts a stream of TF events and sends batched write RPCs.
 
-        Each sent request will be at most `_MAX_REQUEST_LENGTH_BYTES`
-        bytes long.
+        Each sent request will be batched, the size of each batch depending on
+        the type of data (Scalar vs Tensor vs Blob) being sent.
 
         Args:
           run_to_events: Mapping from run name to generator of `tf.Event`
@@ -451,13 +501,13 @@ class _ScalarBatchedRequestSender(object):
     methods concurrently.
     """
 
-    def __init__(self, experiment_id, api, rpc_rate_limiter):
+    def __init__(self, experiment_id, api, rpc_rate_limiter, max_request_size):
         if experiment_id is None:
             raise ValueError("experiment_id cannot be None")
         self._experiment_id = experiment_id
         self._api = api
         self._rpc_rate_limiter = rpc_rate_limiter
-        self._byte_budget_manager = _ByteBudgetManager()
+        self._byte_budget_manager = _ByteBudgetManager(max_request_size)
 
         self._runs = {}  # cache: map from run name to `Run` proto in request
         self._tags = (
@@ -599,15 +649,20 @@ class _TensorBatchedRequestSender(object):
     """
 
     def __init__(
-        self, experiment_id, api, rpc_rate_limiter, max_tensor_point_size
+        self,
+        experiment_id,
+        api,
+        rpc_rate_limiter,
+        max_request_size,
+        max_tensor_point_size,
     ):
         if experiment_id is None:
             raise ValueError("experiment_id cannot be None")
         self._experiment_id = experiment_id
         self._api = api
         self._rpc_rate_limiter = rpc_rate_limiter
+        self._byte_budget_manager = _ByteBudgetManager(max_request_size)
         self._max_tensor_point_size = max_tensor_point_size
-        self._byte_budget_manager = _ByteBudgetManager()
 
         self._runs = {}  # cache: map from run name to `Run` proto in request
         self._tags = (
@@ -621,7 +676,6 @@ class _TensorBatchedRequestSender(object):
         self._request = write_service_pb2.WriteTensorRequest()
         self._runs.clear()
         self._tags.clear()
-        self._byte_budget = _MAX_REQUEST_LENGTH_BYTES
         self._request.experiment_id = self._experiment_id
         self._byte_budget_manager.reset(self._request)
 
@@ -741,11 +795,28 @@ class _TensorBatchedRequestSender(object):
             tag_proto.points.pop()
             return
 
+        self._validate_tensor_value(
+            value.tensor, value.tag, event.step, event.wall_time
+        )
+
         try:
             self._byte_budget_manager.add_point(point)
         except _OutOfSpaceError:
             tag_proto.points.pop()
             raise
+
+    def _validate_tensor_value(self, tensor_proto, tag, step, wall_time):
+        """Validate a TensorProto by attempting to parse it."""
+        try:
+            tensor_util.make_ndarray(tensor_proto)
+        except ValueError as error:
+            raise ValueError(
+                "The uploader failed to upload a tensor. This seems to be "
+                "due to a malformation in the tensor, which may be caused by "
+                "a bug in the process that wrote the tensor.\n\n"
+                "The tensor has tag '%s' and is at step %d and wall_time %.6f.\n\n"
+                "Original error:\n%s" % (tag, step, wall_time, error)
+            )
 
 
 class _ByteBudgetManager(object):
@@ -764,9 +835,10 @@ class _ByteBudgetManager(object):
   https://developers.google.com/protocol-buffers/docs/encoding
   """
 
-    def __init__(self):
+    def __init__(self, max_bytes):
         # The remaining number of bytes that we may yet add to the request.
         self._byte_budget = None  # type: int
+        self._max_bytes = max_bytes
 
     def reset(self, base_request):
         """Resets the byte budget and calculates the cost of the base request.
@@ -778,7 +850,7 @@ class _ByteBudgetManager(object):
         _OutOfSpaceError: If the size of the request exceeds the entire
           request byte budget.
       """
-        self._byte_budget = _MAX_REQUEST_LENGTH_BYTES
+        self._byte_budget = self._max_bytes
         self._byte_budget -= base_request.ByteSize()
         if self._byte_budget < 0:
             raise RuntimeError("Byte budget too small for base request")
@@ -871,12 +943,20 @@ class _BlobRequestSender(object):
     methods concurrently.
     """
 
-    def __init__(self, experiment_id, api, rpc_rate_limiter, max_blob_size):
+    def __init__(
+        self,
+        experiment_id,
+        api,
+        rpc_rate_limiter,
+        max_blob_request_size,
+        max_blob_size,
+    ):
         if experiment_id is None:
             raise ValueError("experiment_id cannot be None")
         self._experiment_id = experiment_id
         self._api = api
         self._rpc_rate_limiter = rpc_rate_limiter
+        self._max_blob_request_size = max_blob_request_size
         self._max_blob_size = max_blob_size
 
         # Start in the empty state, just like self._new_request().
@@ -1031,9 +1111,9 @@ class _BlobRequestSender(object):
         # In the future we may want to stream from disk; that will require
         # refactoring here.
         # TODO(soergel): compute crc32c's to allow server-side data validation.
-        for offset in range(0, len(blob), BLOB_CHUNK_SIZE):
-            chunk = blob[offset : offset + BLOB_CHUNK_SIZE]
-            finalize_object = offset + BLOB_CHUNK_SIZE >= len(blob)
+        for offset in range(0, len(blob), self._max_blob_request_size):
+            chunk = blob[offset : offset + self._max_blob_request_size]
+            finalize_object = offset + self._max_blob_request_size >= len(blob)
             request = write_service_pb2.WriteBlobRequest(
                 blob_sequence_id=blob_sequence_id,
                 index=seq_index,

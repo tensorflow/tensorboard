@@ -20,6 +20,9 @@ import {
   getFocusedExecutionData,
   getFocusedExecutionIndex,
   getFocusedExecutionStackFrames,
+  getFocusedGraphOpConsumers,
+  getFocusedGraphOpInfo,
+  getFocusedGraphOpInputs,
   getFocusedSourceFileContent,
   getFocusedSourceFileIndex,
   getGraphExecutionData,
@@ -30,6 +33,7 @@ import {
   getGraphExecutionPageSize,
   getGraphExecutionScrollBeginIndex,
   getLoadedAlertsOfFocusedType,
+  getLoadingGraphOps,
   getNumAlerts,
   getNumAlertsOfFocusedType,
   getNumGraphExecutions,
@@ -47,6 +51,7 @@ import {
 import {
   createAlertsState,
   createDebuggerGraphExecutionsState,
+  createDebuggerGraphsState,
   createDebuggerSourceCodeState,
   createDebuggerState,
   createState,
@@ -54,6 +59,7 @@ import {
   createTestExecutionDigest,
   createTestGraphExecution,
   createTestInfNanAlert,
+  createTestGraphOpInfo,
 } from '../testing';
 
 describe('debugger selectors', () => {
@@ -905,5 +911,337 @@ describe('debugger selectors', () => {
         expect(getGraphExecutionFocusIndex(state)).toBe(focusIndex);
       });
     }
+  });
+
+  describe('getFocusedGraphOpInfo', () => {
+    const op1Info = createTestGraphOpInfo({
+      graph_ids: ['g1'],
+      op_name: 'op1',
+    });
+    const op2Info = createTestGraphOpInfo({
+      graph_ids: ['g1'],
+      op_name: 'op2',
+    });
+
+    it('returns initial null state', () => {
+      const state = createState(createDebuggerState());
+      expect(getFocusedGraphOpInfo(state)).toBeNull();
+    });
+
+    it('returns null when no op is focused on but graph ops are loaded', () => {
+      const state = createState(
+        createDebuggerState({
+          graphs: createDebuggerGraphsState({
+            ops: {
+              g1: {
+                op1: op1Info,
+                op2: op2Info,
+              },
+            },
+            focusedOp: null,
+          }),
+        })
+      );
+      expect(getFocusedGraphOpInfo(state)).toBeNull();
+    });
+
+    it('returns null if op is focused on but graph op is not loaded', () => {
+      const state = createState(
+        createDebuggerState({
+          graphs: createDebuggerGraphsState({
+            ops: {
+              g1: {
+                op1: op1Info,
+                op2: op2Info,
+              },
+            },
+            focusedOp: {
+              graphId: 'g1',
+              opName: 'op3',
+            },
+          }),
+        })
+      );
+      expect(getFocusedGraphOpInfo(state)).toBeNull();
+    });
+
+    it('returns correct value if op is focused and loaded', () => {
+      const state = createState(
+        createDebuggerState({
+          graphs: createDebuggerGraphsState({
+            ops: {
+              g1: {
+                op1: op1Info,
+                op2: op2Info,
+              },
+            },
+            focusedOp: {
+              graphId: 'g1',
+              opName: 'op2',
+            },
+          }),
+        })
+      );
+      expect(getFocusedGraphOpInfo(state)).toEqual(op2Info);
+    });
+  });
+
+  describe('getFocusedOpInputs', () => {
+    const op1Info = createTestGraphOpInfo({
+      graph_ids: ['g1'],
+      op_name: 'op1',
+      consumers: [
+        [
+          {
+            op_name: 'op2',
+            input_slot: 0,
+          },
+        ],
+      ],
+    });
+    const op2Info = createTestGraphOpInfo({
+      graph_ids: ['g1'],
+      op_name: 'op2',
+      inputs: [
+        {
+          op_name: 'op1',
+          output_slot: 0,
+        },
+      ],
+    });
+
+    it('returns initial null state', () => {
+      const state = createState(createDebuggerState());
+      expect(getFocusedGraphOpInputs(state)).toBeNull();
+    });
+
+    it('returns initial null when graph is not loaded', () => {
+      const state = createState(
+        createDebuggerState({
+          graphs: createDebuggerGraphsState({
+            ops: {},
+            focusedOp: {
+              graphId: 'g1',
+              opName: 'op2',
+            },
+          }),
+        })
+      );
+      expect(getFocusedGraphOpInputs(state)).toBeNull();
+    });
+
+    it('returns initial null when self op is not loaded', () => {
+      const state = createState(
+        createDebuggerState({
+          graphs: createDebuggerGraphsState({
+            ops: {
+              g1: {
+                op1: op1Info,
+              },
+            },
+            focusedOp: {
+              graphId: 'g1',
+              opName: 'op2',
+            },
+          }),
+        })
+      );
+      expect(getFocusedGraphOpInputs(state)).toBeNull();
+    });
+
+    it('returns initial array without data when input op is not loaded', () => {
+      const state = createState(
+        createDebuggerState({
+          graphs: createDebuggerGraphsState({
+            ops: {
+              g1: {
+                op2: op2Info,
+              },
+            },
+            focusedOp: {
+              graphId: 'g1',
+              opName: 'op2',
+            },
+          }),
+        })
+      );
+      expect(getFocusedGraphOpInputs(state)).toEqual([
+        {
+          op_name: 'op1',
+          output_slot: 0,
+        },
+      ]);
+    });
+
+    it('returns array with data when both self and input ops are loaded', () => {
+      const state = createState(
+        createDebuggerState({
+          graphs: createDebuggerGraphsState({
+            ops: {
+              g1: {
+                op1: op1Info,
+                op2: op2Info,
+              },
+            },
+            focusedOp: {
+              graphId: 'g1',
+              opName: 'op2',
+            },
+          }),
+        })
+      );
+      expect(getFocusedGraphOpInputs(state)).toEqual([
+        {
+          op_name: 'op1',
+          output_slot: 0,
+          data: op1Info,
+        },
+      ]);
+    });
+  });
+
+  describe('getFocusedOpConsumers', () => {
+    const op1Info = createTestGraphOpInfo({
+      graph_ids: ['g1'],
+      op_name: 'op1',
+      consumers: [
+        [
+          {
+            op_name: 'op2',
+            input_slot: 0,
+          },
+        ],
+      ],
+    });
+    const op2Info = createTestGraphOpInfo({
+      graph_ids: ['g1'],
+      op_name: 'op2',
+      inputs: [
+        {
+          op_name: 'op1',
+          output_slot: 0,
+        },
+      ],
+    });
+
+    it('returns initial null state', () => {
+      const state = createState(createDebuggerState());
+      expect(getFocusedGraphOpConsumers(state)).toBeNull();
+    });
+
+    it('returns initial null when graph is not loaded', () => {
+      const state = createState(
+        createDebuggerState({
+          graphs: createDebuggerGraphsState({
+            ops: {},
+            focusedOp: {
+              graphId: 'g1',
+              opName: 'op1',
+            },
+          }),
+        })
+      );
+      expect(getFocusedGraphOpConsumers(state)).toBeNull();
+    });
+
+    it('returns initial null when self op is not loaded', () => {
+      const state = createState(
+        createDebuggerState({
+          graphs: createDebuggerGraphsState({
+            ops: {
+              g1: {
+                op2: op2Info,
+              },
+            },
+            focusedOp: {
+              graphId: 'g1',
+              opName: 'op1',
+            },
+          }),
+        })
+      );
+      expect(getFocusedGraphOpConsumers(state)).toBeNull();
+    });
+
+    it('returns initial array without data when consumer op is not loaded', () => {
+      const state = createState(
+        createDebuggerState({
+          graphs: createDebuggerGraphsState({
+            ops: {
+              g1: {
+                op1: op1Info,
+              },
+            },
+            focusedOp: {
+              graphId: 'g1',
+              opName: 'op1',
+            },
+          }),
+        })
+      );
+      console.log('');
+      expect(getFocusedGraphOpConsumers(state)).toEqual([
+        [
+          {
+            op_name: 'op2',
+            input_slot: 0,
+          },
+        ],
+      ]);
+    });
+
+    it('returns array with data when both self and input ops are loaded', () => {
+      const state = createState(
+        createDebuggerState({
+          graphs: createDebuggerGraphsState({
+            ops: {
+              g1: {
+                op1: op1Info,
+                op2: op2Info,
+              },
+            },
+            focusedOp: {
+              graphId: 'g1',
+              opName: 'op1',
+            },
+          }),
+        })
+      );
+      expect(getFocusedGraphOpConsumers(state)).toEqual([
+        [
+          {
+            op_name: 'op2',
+            input_slot: 0,
+            data: op2Info,
+          },
+        ],
+      ]);
+    });
+  });
+
+  describe('getLoadingGraphOps', () => {
+    it('returns initial empty state', () => {
+      const state = createState(createDebuggerState());
+      expect(getLoadingGraphOps(state)).toEqual({});
+    });
+
+    it('returns non-empty state', () => {
+      const state = createState(
+        createDebuggerState({
+          graphs: createDebuggerGraphsState({
+            loadingOps: {
+              g0: {},
+              g1: {Op1: DataLoadState.LOADING},
+              g2: {Op2a: DataLoadState.LOADED, Op2b: DataLoadState.FAILED},
+            },
+          }),
+        })
+      );
+      expect(getLoadingGraphOps(state)).toEqual({
+        g0: {},
+        g1: {Op1: DataLoadState.LOADING},
+        g2: {Op2a: DataLoadState.LOADED, Op2b: DataLoadState.FAILED},
+      });
+    });
   });
 });

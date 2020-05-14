@@ -122,6 +122,7 @@ py_test(
         "//tensorboard:expect_grpc_installed",
         "//tensorboard:expect_grpc_testing_installed",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:no_tensorflow",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/plugins/graph:metadata",
         "//tensorboard/plugins/histogram:summary_v2",
