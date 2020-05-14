@@ -225,52 +225,96 @@ class AllowedPluginsTest(tb_test.TestCase):
         self.assertEqual(actual, frozenset(["foo", "bar"]))
 
 
-class MaxBlobSizeTest(tb_test.TestCase):
-    """Tests for `max_blob_size`."""
+class UploadLimitsTest(tb_test.TestCase):
+    """Tests for `upload_limits`."""
 
-    def test_old_server_no_upload_limits(self):
+    def test_no_upload_limits_in_server_info(self):
         info = server_info_pb2.ServerInfoResponse()
-        actual = server_info.max_blob_size(info)
-        self.assertEqual(actual, server_info._DEFAULT_MAX_BLOB_SIZE)
+        actual = server_info.upload_limits(info)
 
-    def test_upload_limits_provided_with_max_blob_size(self):
+        expected = server_info_pb2.UploadLimits()
+        expected.max_scalar_request_size = (
+            server_info._DEFAULT_MAX_SCALAR_REQUEST_SIZE
+        )
+        expected.max_tensor_request_size = (
+            server_info._DEFAULT_MAX_TENSOR_REQUEST_SIZE
+        )
+        expected.max_blob_request_size = (
+            server_info._DEFAULT_MAX_BLOB_REQUEST_SIZE
+        )
+        expected.min_scalar_request_interval = (
+            server_info._DEFAULT_MIN_SCALAR_REQUEST_INTERVAL
+        )
+        expected.min_tensor_request_interval = (
+            server_info._DEFAULT_MIN_TENSOR_REQUEST_INTERVAL
+        )
+        expected.min_blob_request_interval = (
+            server_info._DEFAULT_MIN_BLOB_REQUEST_INTERVAL
+        )
+        expected.max_blob_size = server_info._DEFAULT_MAX_BLOB_SIZE
+        expected.max_tensor_point_size = (
+            server_info._DEFAULT_MAX_TENSOR_POINT_SIZE
+        )
+        self.assertEqual(actual, expected)
+
+    def test_upload_limits_from_server_info(self):
+        info_upload_limits = server_info_pb2.UploadLimits()
+        info_upload_limits.max_scalar_request_size = 1
+        info_upload_limits.max_tensor_request_size = 2
+        info_upload_limits.max_blob_request_size = 3
+        info_upload_limits.min_scalar_request_interval = 4
+        info_upload_limits.min_tensor_request_interval = 5
+        info_upload_limits.min_blob_request_interval = 6
+        info_upload_limits.max_blob_size = 7
+        info_upload_limits.max_tensor_point_size = 8
+
         info = server_info_pb2.ServerInfoResponse()
-        info.upload_limits.max_blob_size = 42
-        actual = server_info.max_blob_size(info)
-        self.assertEqual(actual, 42)
+        info.upload_limits.CopyFrom(info_upload_limits)
 
-    def test_upload_limits_provided_without_max_blob_size(self):
-        # This just shows that the proto3 default value of 0 is reported as
-        # usual, not handled as a special case.
+        actual = server_info.upload_limits(info)
+        self.assertEqual(actual, info_upload_limits)
+
+    def test_missing_fields_in_upload_limits(self):
         info = server_info_pb2.ServerInfoResponse()
-        info.upload_limits.SetInParent()
-        actual = server_info.max_blob_size(info)
-        self.assertEqual(actual, 0)
+        info.upload_limits.max_blob_size = 22
+        actual = server_info.upload_limits(info)
 
+        expected = server_info_pb2.UploadLimits()
+        expected.max_scalar_request_size = (
+            server_info._DEFAULT_MAX_SCALAR_REQUEST_SIZE
+        )
+        expected.max_tensor_request_size = (
+            server_info._DEFAULT_MAX_TENSOR_REQUEST_SIZE
+        )
+        expected.max_blob_request_size = (
+            server_info._DEFAULT_MAX_BLOB_REQUEST_SIZE
+        )
+        expected.min_scalar_request_interval = (
+            server_info._DEFAULT_MIN_SCALAR_REQUEST_INTERVAL
+        )
+        expected.min_tensor_request_interval = (
+            server_info._DEFAULT_MIN_TENSOR_REQUEST_INTERVAL
+        )
+        expected.min_blob_request_interval = (
+            server_info._DEFAULT_MIN_BLOB_REQUEST_INTERVAL
+        )
+        expected.max_blob_size = 22
+        expected.max_tensor_point_size = (
+            server_info._DEFAULT_MAX_TENSOR_POINT_SIZE
+        )
+        self.assertEqual(actual, expected)
 
-class MaxTensorPointSizeTest(tb_test.TestCase):
-    """Tests for `max_tensor_point_size`."""
-
-    def test_old_server_no_upload_limits(self):
+    def test_missing_max_blob_size_in_upload_limits(self):
+        # Test the one remaining field we did not test in
+        # test_missing_fields_in_upload_limits.
         info = server_info_pb2.ServerInfoResponse()
-        actual = server_info.max_tensor_point_size(info)
-        self.assertEqual(actual, server_info._DEFAULT_MAX_TENSOR_POINT_SIZE)
+        info.upload_limits.max_tensor_point_size = 22
+        actual = server_info.upload_limits(info)
 
-    def test_upload_limits_provided_with_max_tensor_point_size(self):
-        info = server_info_pb2.ServerInfoResponse()
-        info.upload_limits.max_tensor_point_size = 42
-        actual = server_info.max_tensor_point_size(info)
-        self.assertEqual(actual, 42)
-
-    def test_upload_limits_provided_without_max_tensor_point_size(self):
-        # This just shows that the proto3 default value of 0 is reported as
-        # usual, not handled as a special case.
-        info = server_info_pb2.ServerInfoResponse()
-        # Ensure upload_limits is set but do not explicitly set
-        # max_tensor_point_size.
-        info.upload_limits.max_blob_size = 42
-        actual = server_info.max_tensor_point_size(info)
-        self.assertEqual(actual, 0)
+        self.assertEqual(
+            actual.max_blob_size, server_info._DEFAULT_MAX_BLOB_SIZE
+        )
+        self.assertEqual(actual.max_tensor_point_size, 22)
 
 
 def _localhost():

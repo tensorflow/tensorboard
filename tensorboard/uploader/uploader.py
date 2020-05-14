@@ -49,17 +49,6 @@ from tensorboard.util import tensor_util
 # be expensive for network file systems.
 _MIN_LOGDIR_POLL_INTERVAL_SECS = 5
 
-# Minimum interval between initiating write RPCs.  When writes would otherwise
-# happen more frequently, the process will sleep to use up the rest of the time.
-_DEPRECATED_MIN_SCALAR_TENSOR_REQUEST_INTERVAL_MILLISECS = 5000
-
-# Minimum interval between initiating blob write RPC streams.  When writes would
-# otherwise happen more frequently, the process will sleep to use up the rest of
-# the time.  This may differ from the above RPC rate limit, because blob streams
-# are not batched, so sending a sequence of N blobs requires N streams, which
-# could reasonably be sent more frequently.
-_DEPRECATED_MIN_BLOB_REQUEST_INTERVAL_MILLISECS = 1000
-
 # Age in seconds of last write after which an event file is considered inactive.
 # TODO(@nfelt): consolidate with TensorBoard --reload_multifile default logic.
 _EVENT_FILE_INACTIVE_SECS = 4000
@@ -69,18 +58,7 @@ _EVENT_FILE_INACTIVE_SECS = 4000
 # compatible with protobuf and golang varints).
 _MAX_VARINT64_LENGTH_BYTES = 10
 
-# Maximum outgoing request size. The server-side limit is 4 MiB [1]; we
-# should pad a bit to mitigate any errors in our bookkeeping. Currently,
-# we pad a lot, because using higher request sizes causes occasional
-# Deadline Exceeded errors in the RPC server.
-#
-# [1]: https://github.com/grpc/grpc/blob/e70d8582b4b0eedc45e3d25a57b58a08b94a9f4a/include/grpc/impl/codegen/grpc_types.h#L447  # pylint: disable=line-too-long
-_DEPRECATED_MAX_SCALAR_TENSOR_REQUEST_SIZE_BYTES = 1024 * 128
-
 logger = tb_logging.get_logger()
-
-# Leave breathing room within 2^22 (4 MiB) gRPC limit, using 256 KiB chunks
-_DEPRECATED_MAX_BLOB_REQUEST_SIZE_BYTES = (2 ** 22) - (2 ** 18)
 
 
 class TensorBoardUploader(object):
@@ -91,17 +69,13 @@ class TensorBoardUploader(object):
         writer_client,
         logdir,
         allowed_plugins,
-        upload_limits=None,
+        upload_limits,
         logdir_poll_rate_limiter=None,
         rpc_rate_limiter=None,
         tensor_rpc_rate_limiter=None,
         blob_rpc_rate_limiter=None,
         name=None,
         description=None,
-        # The following arguments are deprecated in favor of upload_limits and
-        # will be removed shortly.
-        max_blob_size=None,
-        max_tensor_point_size=None,
     ):
         """Constructs a TensorBoardUploader.
 
@@ -124,46 +98,11 @@ class TensorBoardUploader(object):
             explicitly rate-limit within the stream here.
           name: String name to assign to the experiment.
           description: String description to assign to the experiment.
-          max_blob_size: the maximum allowed size for blob uploads. Deprecated.
-            Use upload_limits instead.
-          max_tensor_point_size: the maximum allowed size for a single tensor
-            point. Deprecated. Use upload_limits instead.
         """
         self._api = writer_client
         self._logdir = logdir
         self._allowed_plugins = frozenset(allowed_plugins)
-        if upload_limits is None:
-            # This branch of code is highly deprecated. Callers to
-            # TensorBoardUploader will soon be updated to always pass in
-            # upload_limits and this code will then be deleted.
-            self._upload_limits = server_info_pb2.UploadLimits()
-            self._upload_limits.max_scalar_request_size = (
-                _DEPRECATED_MAX_SCALAR_TENSOR_REQUEST_SIZE_BYTES
-            )
-            self._upload_limits.max_tensor_request_size = (
-                _DEPRECATED_MAX_SCALAR_TENSOR_REQUEST_SIZE_BYTES
-            )
-            self._upload_limits.max_blob_request_size = (
-                _DEPRECATED_MAX_BLOB_REQUEST_SIZE_BYTES
-            )
-            self._upload_limits.min_scalar_request_interval = (
-                _DEPRECATED_MIN_SCALAR_TENSOR_REQUEST_INTERVAL_MILLISECS
-            )
-            self._upload_limits.min_tensor_request_interval = (
-                _DEPRECATED_MIN_SCALAR_TENSOR_REQUEST_INTERVAL_MILLISECS
-            )
-            self._upload_limits.max_blob_size = max_blob_size
-            if max_tensor_point_size is None:
-                # If max_tensor_point_size is not specified then effectively
-                # disable tensor uploads by setting max size to a negative
-                # value.
-                self._upload_limits.max_tensor_point_size = -1
-            else:
-                self._upload_limits.max_tensor_point_size = (
-                    max_tensor_point_size
-                )
-        else:
-            self._upload_limits = upload_limits
+        self._upload_limits = upload_limits
 
         self._name = name
         self._description = description
