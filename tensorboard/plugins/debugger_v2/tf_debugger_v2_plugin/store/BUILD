@@ -47,6 +47,7 @@ tf_ts_library(
     testonly = True,
     srcs = [
         "debug_tensor_value_test.ts",
+        "debugger_graphs_reducers_test.ts",
         "debugger_reducers_test.ts",
         "debugger_selectors_test.ts",
     ],
