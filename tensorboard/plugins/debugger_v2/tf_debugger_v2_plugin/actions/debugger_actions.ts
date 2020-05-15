@@ -161,6 +161,15 @@ export const graphExecutionScrollToIndex = createAction(
 );
 
 /**
+ * Actions related to graph ops.
+ */
+
+export const graphOpFocused = createAction(
+  '[Debugger] Graph Op Is Focused On',
+  props<{graph_id: string; op_name: string}>()
+);
+
+/**
  * Actions related to source files and stack traces.
  */
 export const sourceFileListRequested = createAction(

@@ -13,13 +13,52 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {Component} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+} from '@angular/core';
+
+import {
+  GraphOpConsumerSpec,
+  GraphOpInfo,
+  GraphOpInputSpec,
+} from '../../store/debugger_types';
 
 @Component({
   selector: 'graph-component',
   templateUrl: './graph_component.ng.html',
   styleUrls: ['./graph_component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GraphComponent {
-  // TODO(cais): Add inputs: opInfo, inputOps and consumerOps.
-}
+  @Input()
+  opInfo!: GraphOpInfo;
+
+  @Input()
+  inputOps!: GraphOpInputSpec[];
+
+  @Input()
+  consumerOps!: GraphOpConsumerSpec[][];
+
+  @Output()
+  onGraphOpNavigate = new EventEmitter<{graph_id: string; op_name: string}>();
+
+  /**
+   * Get the ID of the immeidately-enclosing graph of the op.
+   */
+  get graphId() {
+    return this.opInfo.graph_ids[this.opInfo.graph_ids.length - 1];
+  }
+
+  /**
+   * Total number of consumers of all output tensors of the op.
+   */
+  get totalNumConsumers() {
+    return this.consumerOps.reduce((count, slotConsumers) => {
+      return count + slotConsumers.length;
+    }, 0);
+  }
+} // TODO(cais): Add unit tests.

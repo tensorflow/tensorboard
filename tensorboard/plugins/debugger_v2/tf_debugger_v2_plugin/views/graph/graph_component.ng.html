@@ -21,12 +21,121 @@ limitations under the License.
   </div>
 
   <div class="graph-structure-container">
-    <!-- TODO(cais): Add div for self op, input ops and consumer ops. -->
-    <!-- Make the following div "ng-template #noOpFocuse" of the else branch of an ngIf -->
+    <div *ngIf="opInfo !== undefined && opInfo !== null; else noOpFocused">
+      <div *ngIf="inputOps.length > 0; else noInputs" class="inputs-container">
+        <div>
+          <div
+            *ngFor="let inputOpInfo of inputOps; let slot = index"
+            class="input-op-section"
+          >
+            <div class="input-slot-header">
+              Input slot {{slot}}:
+            </div>
+            <div class="op-container input-op-container">
+              <div class="input-tensor-name">
+                <div
+                  class="op-name input-op-name"
+                  (click)="onGraphOpNavigate.emit({graph_id: graphId, op_name: inputOpInfo.op_name})"
+                >
+                  <span>{{inputOpInfo.op_name}}</span>
+                </div>
+                <div class="input-op-output-slot slot">
+                  Output slot: {{inputOpInfo.output_slot}}
+                </div>
+              </div>
+              <div
+                *ngIf="inputOpInfo.data !== undefined; else opInfoMissing"
+                class="op-type"
+              >
+                {{inputOpInfo.data.op_type}}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-    <div class="no-op-focused">
-      No graph op selected. Click a row in the Graph Executions table to view
-      the neighborhood of the underlying op in its graph.
+      <ng-template #noInputs>
+        <div class="inputs-container no-inputs-indicator">
+          (This op has no data input tensor.)
+        </div>
+      </ng-template>
+
+      <div class="self-op-container">
+        <div class="self-op-header">
+          Op:
+        </div>
+        <div class="op-container ">
+          <div>
+            <div class="op-name self-op-name">{{opInfo.op_name}}</div>
+            <div class="op-type">{{opInfo.op_type}}</div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        *ngIf="totalNumConsumers > 0; else noConsumers"
+        class="consumers-container"
+      >
+        <div>
+          <div
+            *ngFor="let slotConsumers of consumerOps; let slot = index"
+            class="slot-consumers-container"
+          >
+            <div class="slot-consumers-header">
+              Output slot {{slot}}: ({{slotConsumers.length}}
+              <span *ngIf="slotConsumers.length === 1; else pluralConsumers">
+                consumer)
+              </span>
+              <ng-template #pluralConsumers>
+                consumers)
+              </ng-template>
+            </div>
+
+            <div
+              *ngFor="let consumerOpInfo of slotConsumers"
+              class="consumer-section"
+            >
+              <div class="op-container consumer-op-container">
+                <div
+                  class="op-name"
+                  (click)="onGraphOpNavigate.emit({graph_id: graphId, op_name: consumerOpInfo.op_name})"
+                >
+                  <span>{{consumerOpInfo.op_name}}</span>
+                </div>
+                <div class="slot">
+                  Input slot: {{consumerOpInfo.input_slot}}
+                </div>
+                <div
+                  *ngIf="consumerOpInfo.data !== undefined; else opInfoMissing"
+                  class="op-type"
+                >
+                  {{consumerOpInfo.data.op_type}}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #noConsumers>
+        <div class="op-consumers-container">
+          (This op has {{opInfo.consumers.length}} output tensor(s) and no data
+          consumer.)
+        </div>
+      </ng-template>
     </div>
   </div>
+
+  <ng-template #opInfoMissing>
+    <span class="op-info-missing">
+      (Op info unavailable.)
+    </span>
+  </ng-template>
+
+  <ng-template #noOpFocused>
+    <div class="no-op-focused">
+      No graph op selected. Click a row in Graph Executions table to view the
+      neighborhood of an op in its graph.
+    </div>
+  </ng-template>
 </div>
