@@ -514,7 +514,7 @@ considered to have stable support for generic data providers. (default:
 
         parser.add_argument(
             "--samples_per_plugin",
-            type=str,
+            type=_parse_dict,
             default="",
             help="""\
 An optional comma separated list of plugin_name=num_samples pairs to
@@ -576,3 +576,13 @@ def _gzip(bytestring):
     with gzip.GzipFile(fileobj=out, mode="wb", compresslevel=3, mtime=0) as f:
         f.write(bytestring)
     return out.getvalue()
+
+
+def _parse_dict(value):
+    """Parses `value` as a string-to-int dict in the form `foo=12,bar=34`."""
+    result = {}
+    for token in value.split(","):
+        if token:
+            k, v = token.strip().split("=")
+            result[k] = int(v)
+    return result
