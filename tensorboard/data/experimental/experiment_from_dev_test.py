@@ -80,7 +80,8 @@ class ExperimentFromDevTest(tb_test.TestCase):
         ):
             experiment = experiment_from_dev.ExperimentFromDev("789")
             for pivot in (None, False):
-                for include_wall_time in (False, True):
+                for include_wall_time in (False, True):  # TODO(cais): Restore
+                    # for include_wall_time in (True,):  # TODO(cais): Clean up.
                     with self.subTest(
                         "pivot=%s; include_wall_time=%s"
                         % (pivot, include_wall_time)
@@ -88,40 +89,83 @@ class ExperimentFromDevTest(tb_test.TestCase):
                         dataframe = experiment.get_scalars(
                             pivot=pivot, include_wall_time=include_wall_time
                         )
-                        data = {
-                            "run": ["train"] * 20 + ["test"] * 20,
-                            "tag": (["accuracy"] * 10 + ["loss"] * 10) * 2,
-                            "step": list(np.arange(0, 10)) * 4,
-                            "value": np.concatenate(
-                                [
-                                    1.0 / (10.0 - np.arange(0, 10)),
-                                    1.0 / (1.0 + np.arange(0, 10)),
-                                    -1.0 / (10.0 - np.arange(0, 10)),
-                                    -1.0 / (1.0 + np.arange(0, 10)),
-                                ]
-                            ),
-                        }
-                        if include_wall_time:
-                            data["wall_time"] = np.concatenate(
-                                [
-                                    2.0 * np.arange(0, 10),
-                                    1.0 * np.arange(0, 10),
-                                    600.0 + 2.0 * np.arange(0, 10),
-                                    600.0 + np.arange(0, 10),
-                                ]
-                            )
-                        expected = pandas.DataFrame(data)
+
                         if pivot is None:  # Default behavior: pivot_table.
-                            expected = expected.pivot_table(
-                                values=(
-                                    ["value", "wall_time"]
-                                    if include_wall_time
-                                    else "value"
+                            run_key = (
+                                ("run", "") if include_wall_time else "run"
+                            )
+                            step_key = (
+                                ("step", "") if include_wall_time else "step"
+                            )
+                            accuracy_value_key = (
+                                ("value", "accuracy")
+                                if include_wall_time
+                                else "accuracy"
+                            )
+                            loss_value_key = (
+                                ("value", "loss")
+                                if include_wall_time
+                                else "loss"
+                            )
+                            data = {
+                                run_key: ["test"] * 10 + ["train"] * 10,
+                                step_key: np.concatenate(
+                                    [np.arange(0, 10), np.arange(0, 10)]
                                 ),
-                                index=["run", "step"],
-                                columns="tag",
-                            ).reset_index()
-                            expected.columns.name = None
+                                accuracy_value_key: np.concatenate(
+                                    [
+                                        -1.0 / (10.0 - np.arange(0, 10)),
+                                        1.0 / (10.0 - np.arange(0, 10)),
+                                    ],
+                                ),
+                                loss_value_key: np.concatenate(
+                                    [
+                                        -1.0 / (1.0 + np.arange(0, 10)),
+                                        1.0 / (1.0 + np.arange(0, 10)),
+                                    ],
+                                ),
+                            }
+                            if include_wall_time:
+                                data[
+                                    ("wall_time", "accuracy")
+                                ] = np.concatenate(
+                                    [
+                                        600.0 + 2.0 * np.arange(0, 10),
+                                        2.0 * np.arange(0, 10),
+                                    ]
+                                )
+                                data[("wall_time", "loss")] = np.concatenate(
+                                    [
+                                        600.0 + np.arange(0, 10),
+                                        1.0 * np.arange(0, 10),
+                                    ]
+                                )
+                            expected = pandas.DataFrame(data)
+                        else:  # No pivot_table.
+                            data = {
+                                "run": ["train"] * 20 + ["test"] * 20,
+                                "tag": (["accuracy"] * 10 + ["loss"] * 10) * 2,
+                                "step": list(np.arange(0, 10)) * 4,
+                                "value": np.concatenate(
+                                    [
+                                        1.0 / (10.0 - np.arange(0, 10)),
+                                        1.0 / (1.0 + np.arange(0, 10)),
+                                        -1.0 / (10.0 - np.arange(0, 10)),
+                                        -1.0 / (1.0 + np.arange(0, 10)),
+                                    ]
+                                ),
+                            }
+                            if include_wall_time:
+                                data["wall_time"] = np.concatenate(
+                                    [
+                                        2.0 * np.arange(0, 10),
+                                        1.0 * np.arange(0, 10),
+                                        600.0 + 2.0 * np.arange(0, 10),
+                                        600.0 + np.arange(0, 10),
+                                    ]
+                                )
+                            expected = pandas.DataFrame(data)
+
                         pandas.testing.assert_frame_equal(
                             dataframe, expected, check_names=True,
                         )
@@ -197,19 +241,13 @@ class ExperimentFromDevTest(tb_test.TestCase):
             experiment = experiment_from_dev.ExperimentFromDev("789")
             dataframe = experiment.get_scalars()
 
-        expected = (
-            pandas.DataFrame(
-                {
-                    "run": ["train"] * 2,
-                    "tag": ["batch_loss"] * 2,
-                    "step": [0, 1],
-                    "value": [np.nan, np.inf],
-                }
-            )
-            .pivot_table("value", ["run", "step"], "tag")
-            .reset_index()
+        expected = pandas.DataFrame(
+            {
+                "run": ["train"] * 2,
+                "step": [0, 1],
+                "batch_loss": [np.nan, np.inf],
+            }
         )
-        expected.columns.name = None
         pandas.testing.assert_frame_equal(dataframe, expected, check_names=True)
 
 

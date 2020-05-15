@@ -139,6 +139,7 @@ class ExperimentFromDev(base_experiment.BaseExperiment):
             ),
             index=["run", "step"],
             columns="tag",
+            dropna=False,
         )
         num_missing_1 = np.count_nonzero(dataframe.isnull().values)
         if num_missing_1 > num_missing_0:
@@ -149,8 +150,14 @@ class ExperimentFromDev(base_experiment.BaseExperiment):
                 "You can avoid this error by calling `get_scalars()` with "
                 "`pivot=False` to disable the DataFrame pivoting."
             )
+        # `reset_index()` removes the MultiIndex structure of the pivoted
+        # DataFrame. Before the call, the DataFrame consits of two levels
+        # of index: "run" and "step". After the call, the index become a
+        # single range index (e.g,. `dataframe[:2]` works).
         dataframe = dataframe.reset_index()
+        # Remove the columns name "tag".
         dataframe.columns.name = None
+        dataframe.columns.names = [None for name in dataframe.columns.names]
         return dataframe
 
 

@@ -46,7 +46,7 @@ class BaseExperiment(metaclass=abc.ABCMeta):
             `pivot_data()` method to a “wide” format wherein the tags of a
             given run and a given step are all collected in a single row.
             If not provided, defaults to `True`.
-          include_wall_time: Include wall_time (timestamps in microseconds since
+          include_wall_time: Include wall_time (timestamps in nanoseconds since
             the epoch in float64) as a column in the returned DataFrame.
             If not provided, defaults to `False`.
 
