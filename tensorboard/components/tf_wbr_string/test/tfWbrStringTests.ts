@@ -19,49 +19,37 @@ namespace tf_wbr_string {
 
   window.HTMLImports.whenReady(() => {
     describe('tf-wbr-string', () => {
-      it('adds wbrs for single delimiter', (done) => {
+      it('adds wbrs for single character', (done) => {
         let testElement: any = fixture('tf-wbr-string');
-        testElement.value = 'I_have_a_delimiter';
-        testElement.delimiters = '_';
+        testElement.value = 'I/have/a/delimiter';
+        testElement.delimiterPattern = '/';
         flush(() => {
           expect(testElement.shadowRoot.innerHTML).to.have.string(
-            'I_<wbr>have_<wbr>a_<wbr>delimiter<wbr>'
+            'I/<wbr>have/<wbr>a/<wbr>delimiter<wbr>'
           );
           done();
         });
       });
 
-      it('adds wbrs for multiple delimiters', (done) => {
+      it('adds wbrs for multiple single characters', (done) => {
         let testElement: any = fixture('tf-wbr-string');
-        testElement.value = 'I_have<multiple_delimiter.s';
-        testElement.delimiters = '_.<';
+        testElement.value = 'I_have-multiple_delimiter.s';
+        testElement.delimiterPattern = '[_.\\-]';
         flush(() => {
           expect(testElement.shadowRoot.innerHTML).to.have.string(
-            'I_<wbr>have&lt;<wbr>multiple_<wbr>delimiter.<wbr>s<wbr>'
+            'I_<wbr>have-<wbr>multiple_<wbr>delimiter.<wbr>s<wbr>'
           );
           done();
         });
       });
 
-      it('handles regex character class special characters', (done) => {
+      it('adds wbrs for arbitrary regex patterns', (done) => {
         let testElement: any = fixture('tf-wbr-string');
-        testElement.value = 'I^have-many]special[delimiters^here';
-        testElement.delimiters = '^-][';
+        testElement.value = 'the_theatre_heats_tea';
+        testElement.delimiterPattern = 'the|eat';
         flush(() => {
           expect(testElement.shadowRoot.innerHTML).to.have.string(
-            'I^<wbr>have-<wbr>many]<wbr>special[<wbr>delimiters^<wbr>here'
-          );
-          done();
-        });
-      });
-
-      it('handles regex metacharacters as delimiters', (done) => {
-        let testElement: any = fixture('tf-wbr-string');
-        testElement.value = 'I have\twhite space';
-        testElement.delimiters = '\\s';
-        flush(() => {
-          expect(testElement.shadowRoot.innerHTML).to.have.string(
-            'I <wbr>have\t<wbr>white <wbr>space<wbr>'
+            'the<wbr>_the<wbr>atre_heat<wbr>s_tea<wbr>'
           );
           done();
         });

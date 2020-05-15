@@ -37,30 +37,30 @@ limitations under the License.
       properties: {
         /** The value to render with word breaks. */
         value: String,
-        /** List of characters to use as word break delimiters. */
-        delimiters: String,
+        /**
+         * Regular expression pattern for specifying delimiters. Word breaks are
+         * inserted after each match.
+         */
+        delimiterPattern: String,
         _parts: {
           type: Array /* string[] */,
-          computed: '_computeParts(value, delimiters)',
+          computed: '_computeParts(value, delimiterPattern)',
         },
       },
-      _computeParts(value, delimiters) {
+      _computeParts(value, delimiterPattern) {
         const result = [];
-        if (value == null || delimiters == null) {
+        if (value == null) {
           return [];
         }
-        // Convert the list of characters into a
-        const delimiterRegExp = new RegExp(
-          '[' + delimiters.replace(/([\^\[\]\-])/g, '\\$1') + ']'
-        );
         while (true) {
-          const idx = value.search(delimiterRegExp);
-          if (idx === -1) {
+          const delimiterRegExp = new RegExp(delimiterPattern, 'g');
+          delimiterRegExp.test(value);
+          if (delimiterRegExp.lastIndex === 0) {
             result.push(value);
             break;
           } else {
-            result.push(value.slice(0, idx + 1));
-            value = value.slice(idx + 1);
+            result.push(value.slice(0, delimiterRegExp.lastIndex));
+            value = value.slice(delimiterRegExp.lastIndex);
           }
         }
         return result;
