@@ -46,10 +46,13 @@ limitations under the License.
       },
       _computeParts(value, delimiters) {
         const result = [];
-        const delimiterRegExp = new RegExp('[' + delimiters + ']');
-        if (value == null) {
-          value = '';
+        if (value == null || delimiters == null) {
+          return [];
         }
+        // Convert the list of characters into a
+        const delimiterRegExp = new RegExp(
+          '[' + delimiters.replace(/([\^\[\]\-])/g, '\\$1') + ']'
+        );
         while (true) {
           const idx = value.search(delimiterRegExp);
           if (idx === -1) {
