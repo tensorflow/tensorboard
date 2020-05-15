@@ -194,6 +194,13 @@ describe('Debugger reducers', () => {
           [opInfo3.op_name]: opInfo3,
         },
       });
+      // Verify that the input and consumer ops do not have the detailed data attached.
+      expect(
+        nextState.graphs.ops['g2'][opInfo2.op_name].inputs[0].data
+      ).toBeUndefined();
+      expect(
+        nextState.graphs.ops['g2'][opInfo2.op_name].consumers[0][0].data
+      ).toBeUndefined();
       expect(nextState.graphs.loadingOps).toEqual({
         g2: {TestOp_1: DataLoadState.LOADED},
       });

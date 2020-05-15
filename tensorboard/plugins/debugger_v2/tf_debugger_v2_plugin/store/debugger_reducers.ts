@@ -724,8 +724,8 @@ const reducer = createReducer(
   on(
     actions.graphOpInfoLoaded,
     (state: DebuggerState, data): DebuggerState => {
-      const opInfo: GraphOpInfo = data.graphOpInfoResponse;
-      const {inputs, consumers, graph_ids} = opInfo;
+      const {graphOpInfoResponse} = data;
+      const {graph_ids} = graphOpInfoResponse;
       const graphId = graph_ids[graph_ids.length - 1];
       const newState: DebuggerState = {
         ...state,
@@ -745,7 +745,7 @@ const reducer = createReducer(
           },
         },
       };
-      for (const input of inputs) {
+      for (const input of graphOpInfoResponse.inputs) {
         if (!input.data) {
           // `input.data` can be undefined when the backend fails to look up
           // detailed information regarding the input op (e.g., for certain
@@ -754,24 +754,34 @@ const reducer = createReducer(
           continue;
         }
         newState.graphs.ops[graphId][input.op_name] = input.data;
-        // Remove `input.data` to avoid duplicated data in `opInfo`,
-        // which is put into `newState.graphs.ops[graphId][opInfo.op_name]`
-        // later.
-        // Same for `consumer.data` below.
-        delete input.data;
       }
-      for (let i = 0; i < consumers.length; ++i) {
-        for (const consumer of consumers[i]) {
+      for (let i = 0; i < graphOpInfoResponse.consumers.length; ++i) {
+        for (const consumer of graphOpInfoResponse.consumers[i]) {
           if (!consumer.data) {
             continue;
           }
           newState.graphs.ops[graphId][consumer.op_name] = consumer.data;
-          delete consumer.data;
         }
       }
-      newState.graphs.ops[graphId][opInfo.op_name] = opInfo;
+      newState.graphs.ops[graphId][graphOpInfoResponse.op_name] = {
+        ...graphOpInfoResponse,
+        // Remove `input.data` to avoid duplicated data in `opInfo`,
+        // which is put into `newState.graphs.ops[graphId][opInfo.op_name]`
+        // later.
+        // Same for `consumer.data` below.
+        inputs: graphOpInfoResponse.inputs.map((input) => ({
+          op_name: input.op_name,
+          output_slot: input.output_slot,
+        })),
+        consumers: graphOpInfoResponse.consumers.map((slotConsumers) => {
+          return slotConsumers.map((consumer) => ({
+            op_name: consumer.op_name,
+            input_slot: consumer.input_slot,
+          }));
+        }),
+      };
       // Remove the loading marker for the op.
-      newState.graphs.loadingOps[graphId][opInfo.op_name] =
+      newState.graphs.loadingOps[graphId][graphOpInfoResponse.op_name] =
         DataLoadState.LOADED;
       return newState;
     }
