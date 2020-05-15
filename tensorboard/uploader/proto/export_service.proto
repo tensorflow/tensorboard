@@ -16,8 +16,7 @@ service TensorBoardExporterService {
   // Get the metadata of an experiment, including the creation time, name,
   // description, counts of scalars, tensors and blob sequences, etc. See the
   // documentation string of `Experiment` for more details.
-  rpc GetExperiment(GetExperimentRequest)
-      returns (GetExperimentResponse) {}
+  rpc GetExperiment(GetExperimentRequest) returns (GetExperimentResponse) {}
   // Stream scalars for all the runs and tags in an experiment.
   rpc StreamExperimentData(StreamExperimentDataRequest)
       returns (stream StreamExperimentDataResponse) {}
