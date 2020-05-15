@@ -16,7 +16,7 @@ service TensorBoardExporterService {
   // Get the metadata of an experiment, including the creation time, name,
   // description, counts of scalars, tensors and blob sequences, etc. See the
   // documentation string of `Experiment` for more details.
-  rpc GetExperiment(GetExperimentRequest) returns (GetExperimentResponse) {}
+  rpc GetExperiment(GetExperimentRequest) returns (Experiment) {}
   // Stream scalars for all the runs and tags in an experiment.
   rpc StreamExperimentData(StreamExperimentDataRequest)
       returns (stream StreamExperimentDataResponse) {}
@@ -95,13 +95,6 @@ message GetExperimentRequest {
   // `ExperimentMask` are set. The server may choose to populate fields that are
   // not explicitly requested.
   ExperimentMask experiments_mask = 2;
-}
-
-// Response to GetExperimentRequest.
-message GetExperimentResponse {
-  // Metadata about the experiment.
-  // See the doc string of `Experiment` for more details.
-  Experiment experiment = 1;
 }
 
 // Request to stream scalars from all the runs and tags in an experiment.
