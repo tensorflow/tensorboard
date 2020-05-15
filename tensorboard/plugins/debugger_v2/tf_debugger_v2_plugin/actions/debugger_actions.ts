@@ -20,6 +20,7 @@ import {
   AlertsBreakdown,
   AlertType,
   DebuggerRunListing,
+  GraphOpInfo,
   SourceFileSpec,
   SourceLineSpec,
   StackFramesById,
@@ -167,6 +168,16 @@ export const graphExecutionScrollToIndex = createAction(
 export const graphOpFocused = createAction(
   '[Debugger] Graph Op Is Focused On',
   props<{graph_id: string; op_name: string}>()
+);
+
+export const graphOpInfoRequested = createAction(
+  '[Debugger] Graph Op Info Requested',
+  props<{graph_id: string; op_name: string}>()
+);
+
+export const graphOpInfoLoaded = createAction(
+  '[Debugger] Graph Op Info Loaded',
+  props<{graphOpInfoResponse: GraphOpInfo}>()
 );
 
 /**
