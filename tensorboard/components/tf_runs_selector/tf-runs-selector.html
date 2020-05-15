@@ -39,7 +39,7 @@ Properties out:
       <h2>Data Location</h2>
       <tf-wbr-string
         value="[[dataLocation]]"
-        delimiter-pattern="[[_dataLocationDelimiterPattern]]"
+        delimiters="[[_dataLocationWbrDelimiters]]"
       />
     </paper-dialog>
     <div id="top-text">
@@ -60,7 +60,7 @@ Properties out:
       <div id="data-location">
         <tf-wbr-string
           value="[[_clippedDataLocation]]"
-          delimiter-pattern="[[_dataLocationDelimiterPattern]]"
+          delimiters="[[_dataLocationWbrDelimiters]]"
         /><!--
           We use HTML comments to remove spaces before the ellipsis.
         --><template
@@ -154,9 +154,9 @@ Properties out:
           value: 250,
           readOnly: true,
         },
-        _dataLocationDelimiterPattern: {
+        _dataLocationWbrDelimiters: {
           type: String,
-          value: '[/=_,-]',
+          value: '/=_,-',
           readOnly: true,
         },
         coloring: {

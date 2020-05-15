@@ -37,16 +37,16 @@ limitations under the License.
       properties: {
         /** The value to render with word breaks. */
         value: String,
-        /** The regular expression for specifying word break delimiters. */
-        delimiterPattern: String,
+        /** List of characters to use as word break delimiters. */
+        delimiters: String,
         _parts: {
           type: Array /* string[] */,
-          computed: '_computeParts(value, delimiterPattern)',
+          computed: '_computeParts(value, delimiters)',
         },
       },
-      _computeParts(value, delimiterPattern) {
+      _computeParts(value, delimiters) {
         const result = [];
-        const delimiterRegExp = new RegExp(delimiterPattern);
+        const delimiterRegExp = new RegExp('[' + delimiters + ']');
         if (value == null) {
           value = '';
         }
