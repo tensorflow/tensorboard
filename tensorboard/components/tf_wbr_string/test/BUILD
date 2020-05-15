@@ -16,8 +16,8 @@ tf_web_test(
 tf_web_library(
     name = "test_web_library",
     srcs = [
-        "tfWbrStringTests.ts",
         "tests.html",
+        "tfWbrStringTests.ts",
     ],
     path = "/tf-wbr-string/test",
     deps = [
