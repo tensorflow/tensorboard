@@ -61,4 +61,4 @@ export class GraphComponent {
       return count + slotConsumers.length;
     }, 0);
   }
-} // TODO(cais): Add unit tests.
+}
