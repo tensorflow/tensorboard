@@ -40,48 +40,51 @@ limitations under the License.
   <template>
     <tf-dashboard-layout>
       <div slot="sidebar" class="all-controls">
-        <div class="sidebar-section view-control">
-          <h3 class="title">Point of view</h3>
-          <div>
-            <paper-radio-group
-              id="view-radio-group"
-              selected="{{_selectedView}}"
-            >
-              <paper-radio-button id="all-radio-button" name="all">
-                Display all points
-              </paper-radio-button>
-              <paper-tooltip
-                animation-delay="0"
-                for="all-radio-button"
-                position="right"
-                offset="0"
+        <div class="settings">
+          <div class="sidebar-section view-control">
+            <h3 class="title">Point of view</h3>
+            <div>
+              <paper-radio-group
+                id="view-radio-group"
+                selected="{{_selectedView}}"
               >
-                Zoom and center camera to display all points at once. Note, that
-                some points could be too far (i.e. too small) to be visible.
-              </paper-tooltip>
-              <paper-radio-button id="user-radio-button" name="user">
-                Current view
-              </paper-radio-button>
-              <paper-tooltip
-                animation-delay="0"
-                for="user-radio-button"
-                position="right"
-                offset="0"
-              >
-                Keep current camera position and zoom level.
-              </paper-tooltip>
-              <paper-radio-button id="share-radio-button" name="share">
-                Share viewpoint
-              </paper-radio-button>
-              <paper-tooltip
-                animation-delay="0"
-                for="share-radio-button"
-                position="right"
-                offset="0"
-              >
-                Share viewpoint among all cameras.
-              </paper-tooltip>
-            </paper-radio-group>
+                <paper-radio-button id="all-radio-button" name="all">
+                  Display all points
+                </paper-radio-button>
+                <paper-tooltip
+                  animation-delay="0"
+                  for="all-radio-button"
+                  position="right"
+                  offset="0"
+                >
+                  Zoom and center camera to display all points at once. Note,
+                  that some points could be too far (i.e. too small) to be
+                  visible.
+                </paper-tooltip>
+                <paper-radio-button id="user-radio-button" name="user">
+                  Current view
+                </paper-radio-button>
+                <paper-tooltip
+                  animation-delay="0"
+                  for="user-radio-button"
+                  position="right"
+                  offset="0"
+                >
+                  Keep current camera position and zoom level.
+                </paper-tooltip>
+                <paper-radio-button id="share-radio-button" name="share">
+                  Share viewpoint
+                </paper-radio-button>
+                <paper-tooltip
+                  animation-delay="0"
+                  for="share-radio-button"
+                  position="right"
+                  offset="0"
+                >
+                  Share viewpoint among all cameras.
+                </paper-tooltip>
+              </paper-radio-group>
+            </div>
           </div>
         </div>
         <div class="sidebar-section runs-selector">
