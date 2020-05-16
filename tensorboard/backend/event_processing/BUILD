@@ -32,6 +32,35 @@ py_test(
 )
 
 py_library(
+    name = "data_ingester",
+    srcs = ["data_ingester.py"],
+    srcs_version = "PY3",
+    deps = [
+        ":data_provider",
+        ":event_multiplexer",
+        ":tag_types",
+        "//tensorboard/plugins/audio:metadata",
+        "//tensorboard/plugins/histogram:metadata",
+        "//tensorboard/plugins/image:metadata",
+        "//tensorboard/plugins/pr_curve:metadata",
+        "//tensorboard/plugins/scalar:metadata",
+        "//tensorboard/util:tb_logging",
+    ],
+)
+
+py_test(
+    name = "data_ingester_test",
+    srcs = ["data_ingester_test.py"],
+    python_version = "PY3",
+    srcs_version = "PY3",
+    deps = [
+        ":data_ingester",
+        "//tensorboard:test",
+        "@org_pythonhosted_mock",
+    ],
+)
+
+py_library(
     name = "data_provider",
     srcs = ["data_provider.py"],
     srcs_version = "PY2AND3",
