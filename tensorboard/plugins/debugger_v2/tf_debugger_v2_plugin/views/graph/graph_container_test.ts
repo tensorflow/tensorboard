@@ -180,7 +180,7 @@ describe('Graph Container', () => {
             expect(inputOutputSlots[0].nativeElement.innerText).toBe(
               `Output slot: ${inputOutputSlot}`
             );
-            // Clicking input op name should dispatch graphOpInfoFocused.
+            // Clicking input op name should dispatch graphOpFocused.
             inputOpNames[0].nativeElement.click();
             expect(dispatchSpy).toHaveBeenCalledTimes(1);
             expect(dispatchSpy).toHaveBeenCalledWith(
@@ -223,7 +223,7 @@ describe('Graph Container', () => {
             );
             expect(consumerOpNames.length).toBe(1);
             expect(consumerOpNames[0].nativeElement.innerText).toEqual('op3');
-            // Clicking input op name should dispatch graphOpInfoFocused.
+            // Clicking consumer op name should dispatch graphOpFocused.
             consumerOpNames[0].nativeElement.click();
             expect(dispatchSpy).toHaveBeenCalledTimes(2);
             expect(dispatchSpy).toHaveBeenCalledWith(
@@ -263,7 +263,7 @@ describe('Graph Container', () => {
   }
 
   it(
-    'renders op with no input tensor 2 consumers for 1 slot: ' +
+    'renders op with no input tensor and 2 consumers for 1 slot: ' +
       'data available',
     () => {
       const fixture = TestBed.createComponent(GraphContainer);

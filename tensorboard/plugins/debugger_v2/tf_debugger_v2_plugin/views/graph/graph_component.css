@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 
 :host {
-  max-height: inherit;
   overflow-y: auto;
 }
 
@@ -111,7 +110,7 @@ limitations under the License.
   background-color: #e3e5e8;
   border: 1px solid #c0c0c0;
   border-radius: 4px;
-  display: inline-flex;
+  display: inline-block;
   font-family: 'Roboto Mono', monospace;
   font-size: 10px;
   height: 14px;
@@ -143,7 +142,6 @@ limitations under the License.
 .slot-consumers-container {
   border-right: 1px solid rgb(0, 0, 0, 0.12);
   display: inline-block;
-  height: 100%;
   margin-right: 5px;
   padding-top: 5px;
   vertical-align: top;

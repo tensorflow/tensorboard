@@ -54,6 +54,7 @@ import {AlertsModule} from './views/alerts/alerts_module';
 import {ExecutionDataContainer} from './views/execution_data/execution_data_container';
 import {ExecutionDataModule} from './views/execution_data/execution_data_module';
 import {GraphExecutionsModule} from './views/graph_executions/graph_executions_module';
+import {GraphModule} from './views/graph/graph_module';
 import {InactiveModule} from './views/inactive/inactive_module';
 import {TimelineContainer} from './views/timeline/timeline_container';
 import {SourceFilesModule} from './views/source_files/source_files_module';
@@ -75,6 +76,7 @@ describe('Debugger Container', () => {
         CommonModule,
         ExecutionDataModule,
         GraphExecutionsModule,
+        GraphModule,
         InactiveModule,
         SourceFilesModule,
         StackTraceModule,
