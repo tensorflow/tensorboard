@@ -248,9 +248,8 @@ The images below show the CIFAR-10 model with tensor shape information:
 Often it is useful to collect runtime metadata for a run, such as total memory
 usage, total compute time, and tensor shapes for nodes. The code example below
 is a snippet from the train and test section of a modification of the
-[Estimators MNIST tutorial](../tutorials/estimators/cnn.md), in which we have
-recorded summaries and
-runtime statistics. See the
+[Estimators MNIST tutorial](https://github.com/tensorflow/docs/blob/master/site/en/r1/tutorials/estimators/cnn.ipynb),
+in which we have recorded summaries and runtime statistics. See the
 [Summaries Tutorial](./summaries.md#serializing-the-data)
 for details on how to record summaries.
 Full source is [here](https://www.tensorflow.org/code/tensorflow/examples/tutorials/mnist/mnist_with_summaries.py).
