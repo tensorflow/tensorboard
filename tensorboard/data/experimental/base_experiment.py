@@ -32,8 +32,8 @@ class BaseExperiment(metaclass=abc.ABCMeta):
         self,
         runs_filter=None,
         tags_filter=None,
-        pivot=None,
-        include_wall_time=None,
+        pivot=True,
+        include_wall_time=False,
     ):
         """Export scalar data as a pandas.DataFrame.
 

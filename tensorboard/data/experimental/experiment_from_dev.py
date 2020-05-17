@@ -74,8 +74,8 @@ class ExperimentFromDev(base_experiment.BaseExperiment):
         self,
         runs_filter=None,
         tags_filter=None,
-        pivot=None,
-        include_wall_time=None,
+        pivot=True,
+        include_wall_time=False,
     ):
         if runs_filter is not None:
             raise NotImplementedError(
@@ -85,10 +85,6 @@ class ExperimentFromDev(base_experiment.BaseExperiment):
             raise NotImplementedError(
                 "tags_filter support for get_scalars() is not implemented yet."
             )
-        pivot = True if pivot is None else pivot
-        include_wall_time = (
-            False if include_wall_time is None else include_wall_time
-        )
 
         request = export_service_pb2.StreamExperimentDataRequest()
         request.experiment_id = self._experiment_id

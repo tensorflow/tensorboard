@@ -79,7 +79,7 @@ class ExperimentFromDevTest(tb_test.TestCase):
             lambda api_endpoint: mock_api_client,
         ):
             experiment = experiment_from_dev.ExperimentFromDev("789")
-            for pivot in (None, False):
+            for pivot in (True, False):
                 for include_wall_time in (False, True):
                     with self.subTest(
                         "pivot=%s; include_wall_time=%s"
@@ -111,7 +111,7 @@ class ExperimentFromDevTest(tb_test.TestCase):
                                 ]
                             )
                         expected = pandas.DataFrame(data)
-                        if pivot is None:  # Default behavior: pivot_table.
+                        if pivot:
                             expected = expected.pivot_table(
                                 values=(
                                     ["value", "wall_time"]
