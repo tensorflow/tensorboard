@@ -33,6 +33,9 @@ import {
   graphExecutionDataRequested,
   graphExecutionDataLoaded,
   graphExecutionScrollToIndex,
+  graphOpFocused,
+  graphOpInfoLoaded,
+  graphOpInfoRequested,
   numAlertsAndBreakdownRequested,
   numAlertsAndBreakdownLoaded,
   numExecutionsLoaded,
@@ -77,6 +80,7 @@ import {
   getGraphExecutionPageSize,
   getGraphExecutionScrollBeginIndex,
   getLoadedAlertsOfFocusedType,
+  getLoadingGraphOps,
   getLoadedExecutionData,
   getLoadedStackFrames,
   getAlertsLoaded,
@@ -89,6 +93,7 @@ import {
   Execution,
   ExecutionDigest,
   GraphExecution,
+  GraphOpInfo,
   State,
   SourceFileSpec,
   SourceFileContent,
@@ -99,6 +104,7 @@ import {
   createTestExecutionData,
   createTestExecutionDigest,
   createTestGraphExecution,
+  createTestGraphOpInfo,
   createTestInfNanAlert,
   createTestStackFrame,
 } from '../testing';
@@ -277,6 +283,8 @@ describe('Debugger effects', () => {
     dispatchSpy = spyOn(store, 'dispatch').and.callFake((action: Action) => {
       dispatchedActions.push(action);
     });
+    // Subscribe to the effects.
+    debuggerEffects.loadData$.subscribe();
   });
 
   function createFetchSourceFileListSpy(
@@ -351,6 +359,27 @@ describe('Debugger effects', () => {
       .and.returnValue(of(graphExcutionDataResponse));
   }
 
+  function createFetchGraphOpInfoSpy(
+    run: string,
+    graph_id: string,
+    op_name: string,
+    graphOpInfo: GraphOpInfo
+  ) {
+    return spyOn(TestBed.inject(Tfdbg2HttpServerDataSource), 'fetchGraphOpInfo')
+      .withArgs(run, graph_id, op_name)
+      .and.returnValue(of(graphOpInfo));
+  }
+
+  function createFetchStackFramesSpy(
+    run: string,
+    stackFrameIds: string[],
+    stackFrames: StackFramesResponse
+  ) {
+    return spyOn(TestBed.inject(Tfdbg2HttpServerDataSource), 'fetchStackFrames')
+      .withArgs(run, stackFrameIds)
+      .and.returnValue(of(stackFrames));
+  }
+
   describe('loadData', () => {
     const runListingForTest: DebuggerRunListing = {
       __default_debugger_run__: {
@@ -385,13 +414,6 @@ describe('Debugger effects', () => {
       )
         .withArgs(runId, begin, end)
         .and.returnValue(of(response));
-    }
-
-    function createFetchStackFramesSpy(stackFrames: StackFramesResponse) {
-      return spyOn(
-        TestBed.inject(Tfdbg2HttpServerDataSource),
-        'fetchStackFrames'
-      ).and.returnValue(of(stackFrames));
     }
 
     const runId = '__default_debugger_run__';
@@ -481,7 +503,7 @@ describe('Debugger effects', () => {
         }
       );
       // Spy for loading stack frames.
-      const fetchStackFrames = createFetchStackFramesSpy({
+      const fetchStackFrames = createFetchStackFramesSpy(runId, ['aa', 'bb'], {
         stack_frames: [stackFrame0, stackFrame1],
       });
       return {
@@ -494,10 +516,6 @@ describe('Debugger effects', () => {
         fetchStackFrames,
       };
     }
-
-    beforeEach(() => {
-      debuggerEffects.loadData$.subscribe();
-    });
 
     it('run list loading: empty runs', () => {
       const fetchRuns = createFetchRunsSpy({});
@@ -667,9 +685,13 @@ describe('Debugger effects', () => {
             scrollBeginIndex + displayIndexOfFocus + 1,
             executionDataResponse
           );
-          const fetchStackFrames = createFetchStackFramesSpy({
-            stack_frames: [stackFrame0, stackFrame1],
-          });
+          const fetchStackFrames = createFetchStackFramesSpy(
+            runId,
+            ['aa', 'bb'],
+            {
+              stack_frames: [stackFrame0, stackFrame1],
+            }
+          );
 
           action.next(
             executionDigestFocused({displayIndex: displayIndexOfFocus})
@@ -911,10 +933,6 @@ describe('Debugger effects', () => {
   });
 
   describe('graphExecutionScrollToIndex', () => {
-    beforeEach(() => {
-      debuggerEffects.loadData$.subscribe();
-    });
-
     for (const {dataExists, page3Size, loadingPages} of [
       {dataExists: false, page3Size: 0, loadingPages: [3]},
       {dataExists: false, page3Size: 0, loadingPages: []},
@@ -1019,10 +1037,6 @@ describe('Debugger effects', () => {
     const execDigest09 = createTestExecutionDigest();
     const execDigest10 = createTestExecutionDigest();
     const execDigest11 = createTestExecutionDigest();
-
-    beforeEach(() => {
-      debuggerEffects.loadData$.subscribe();
-    });
 
     it('fetches alerts and execution digest page if data is missing', () => {
       const fetchInfNanAlerts = createFetchAlertsSpy(
@@ -1271,10 +1285,6 @@ describe('Debugger effects', () => {
         );
     }
 
-    beforeEach(() => {
-      debuggerEffects.loadData$.subscribe();
-    });
-
     it('loads the content of a known file', () => {
       const runId = '__default_debugger_run__';
       const fileIndex = 2;
@@ -1407,6 +1417,117 @@ describe('Debugger effects', () => {
 
       expect(fetchSourceFileSpy).not.toHaveBeenCalled();
       expect(dispatchedActions).toEqual([]);
+    });
+  });
+
+  describe('loading graph op info', () => {
+    const runId = '__default_debugger_run__';
+
+    const graphOpInfoResponse = createTestGraphOpInfo({
+      op_name: 'namespace_1/op1',
+      graph_ids: ['g1', 'g2'],
+      stack_frame_ids: ['aaa1', 'bbb2'],
+    });
+    const stackFrame0 = createTestStackFrame();
+    const stackFrame1 = createTestStackFrame();
+
+    it('fetches missing op and missing stack frames', () => {
+      const fetchGraphOpInfo = createFetchGraphOpInfoSpy(
+        runId,
+        'g2',
+        'namespace_1/op_1',
+        graphOpInfoResponse
+      );
+      const fetchStackFrames = createFetchStackFramesSpy(
+        runId,
+        ['aaa1', 'bbb2'],
+        {
+          stack_frames: [stackFrame0, stackFrame1],
+        }
+      );
+      store.overrideSelector(getActiveRunId, runId);
+      store.overrideSelector(getLoadingGraphOps, {
+        g2: {
+          other_op: DataLoadState.LOADED,
+        },
+      });
+      store.overrideSelector(getLoadedStackFrames, {});
+      store.refreshState();
+
+      action.next(
+        graphOpFocused({
+          graph_id: 'g2',
+          op_name: 'namespace_1/op_1',
+        })
+      );
+
+      expect(fetchGraphOpInfo).toHaveBeenCalledTimes(1);
+      expect(fetchStackFrames).toHaveBeenCalledTimes(1);
+      expect(dispatchedActions).toEqual([
+        graphOpInfoRequested({graph_id: 'g2', op_name: 'namespace_1/op_1'}),
+        graphOpInfoLoaded({graphOpInfoResponse}),
+        stackFramesLoaded({
+          stackFrames: {aaa1: stackFrame0, bbb2: stackFrame1},
+        }),
+      ]);
+    });
+
+    for (const opLoadState of [DataLoadState.LOADING, DataLoadState.LOADED]) {
+      it(`skips a loading or loaded op: state=${opLoadState}`, () => {
+        store.overrideSelector(getActiveRunId, runId);
+        store.overrideSelector(getLoadingGraphOps, {
+          g2: {
+            'namespace_1/op_1': opLoadState,
+          },
+        });
+        store.refreshState();
+
+        action.next(
+          graphOpFocused({
+            graph_id: 'g2',
+            op_name: 'namespace_1/op_1',
+          })
+        );
+        // No action should have been dispatched.
+        expect(dispatchedActions).toEqual([]);
+      });
+    }
+
+    it('skips subset of stack frames that are already loaded', () => {
+      const fetchGraphOpInfo = createFetchGraphOpInfoSpy(
+        runId,
+        'g2',
+        'namespace_1/op_1',
+        graphOpInfoResponse
+      );
+      const fetchStackFrames = createFetchStackFramesSpy(runId, ['aaa1'], {
+        stack_frames: [stackFrame0],
+      });
+      store.overrideSelector(getActiveRunId, runId);
+      store.overrideSelector(getLoadingGraphOps, {
+        g2: {
+          other_op: DataLoadState.LOADED,
+        },
+      });
+      // The second stack frame is already loaded.
+      store.overrideSelector(getLoadedStackFrames, {bbb2: stackFrame1});
+      store.refreshState();
+
+      action.next(
+        graphOpFocused({
+          graph_id: 'g2',
+          op_name: 'namespace_1/op_1',
+        })
+      );
+
+      expect(fetchGraphOpInfo).toHaveBeenCalledTimes(1);
+      expect(fetchStackFrames).toHaveBeenCalledTimes(1);
+      expect(dispatchedActions).toEqual([
+        graphOpInfoRequested({graph_id: 'g2', op_name: 'namespace_1/op_1'}),
+        graphOpInfoLoaded({graphOpInfoResponse}),
+        // Only the first (missing) stack frame should have been loaded.
+        stackFramesLoaded({stackFrames: {aaa1: stackFrame0}}),
+      ]);
     });
   });
 });
