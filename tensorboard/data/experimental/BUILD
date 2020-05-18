@@ -22,7 +22,6 @@ py_library(
         "//tensorboard:expect_grpc_installed",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_pandas_installed",
-        "//tensorboard:lazy",
         "//tensorboard/uploader:auth",
         "//tensorboard/uploader:server_info",
         "//tensorboard/uploader:util",

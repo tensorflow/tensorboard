@@ -79,7 +79,7 @@ class ExperimentFromDevTest(tb_test.TestCase):
             lambda api_endpoint: mock_api_client,
         ):
             experiment = experiment_from_dev.ExperimentFromDev("789")
-            for pivot in (True, False):
+            for pivot in (False, True):
                 for include_wall_time in (False, True):
                     with self.subTest(
                         "pivot=%s; include_wall_time=%s"
@@ -208,7 +208,7 @@ class ExperimentFromDevTest(tb_test.TestCase):
                 r"contains missing value\(s\).*different sets of "
                 r"steps.*pivot=False",
             ):
-                experiment.get_scalars()
+                experiment.get_scalars(pivot=True)
 
     def test_get_scalars_with_actual_inf_and_nan(self):
         """Test for get_scalars() call that involve inf and nan in user data."""
@@ -238,7 +238,7 @@ class ExperimentFromDevTest(tb_test.TestCase):
             lambda api_endpoint: mock_api_client,
         ):
             experiment = experiment_from_dev.ExperimentFromDev("789")
-            dataframe = experiment.get_scalars()
+            dataframe = experiment.get_scalars(pivot=True)
 
         expected = pandas.DataFrame(
             {
