@@ -136,6 +136,7 @@ var vz_chart_helper;
                     viewportHeight - anchorTop + vz_chart_helpers.TOOLTIP_Y_PIXEL_OFFSET;
             }
             const newStyle = {
+                contain: 'content',
                 opacity: 1,
                 left: left ? `${left}px` : null,
                 right: right ? `${right}px` : null,
