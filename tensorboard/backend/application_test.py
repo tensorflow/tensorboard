@@ -58,7 +58,7 @@ class FakeFlags(object):
         logdir_spec="",
         purge_orphaned_data=True,
         reload_interval=60,
-        samples_per_plugin="",
+        samples_per_plugin=None,
         max_reload_threads=1,
         reload_task="auto",
         window_title="",
@@ -71,7 +71,7 @@ class FakeFlags(object):
         self.logdir_spec = logdir_spec
         self.purge_orphaned_data = purge_orphaned_data
         self.reload_interval = reload_interval
-        self.samples_per_plugin = samples_per_plugin
+        self.samples_per_plugin = samples_per_plugin or {}
         self.max_reload_threads = max_reload_threads
         self.reload_task = reload_task
         self.window_title = window_title

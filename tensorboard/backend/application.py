@@ -96,16 +96,6 @@ _VALID_PLUGIN_RE = re.compile(r"^[A-Za-z0-9_-]+$")
 logger = tb_logging.get_logger()
 
 
-def _parse_samples_per_plugin(flags):
-    result = {}
-    if not flags or not flags.samples_per_plugin:
-        return result
-    for token in flags.samples_per_plugin.split(","):
-        k, v = token.strip().split("=")
-        result[k] = int(v)
-    return result
-
-
 def _apply_tensor_size_guidance(sampling_hints):
     """Apply user per-summary size guidance overrides."""
     tensor_size_guidance = dict(DEFAULT_TENSOR_SIZE_GUIDANCE)
@@ -131,7 +121,7 @@ def standard_tensorboard_wsgi(flags, plugin_loaders, assets_zip_provider):
     multiplexer = None
     reload_interval = flags.reload_interval
     # Regular logdir loading mode.
-    sampling_hints = _parse_samples_per_plugin(flags)
+    sampling_hints = flags.samples_per_plugin
     multiplexer = event_multiplexer.EventMultiplexer(
         size_guidance=DEFAULT_SIZE_GUIDANCE,
         tensor_size_guidance=_apply_tensor_size_guidance(sampling_hints),
@@ -208,7 +198,7 @@ def TensorBoardWSGIApp(
         multiplexer=deprecated_multiplexer,
         assets_zip_provider=assets_zip_provider,
         plugin_name_to_instance=plugin_name_to_instance,
-        sampling_hints=_parse_samples_per_plugin(flags),
+        sampling_hints=flags.samples_per_plugin,
         window_title=flags.window_title,
     )
     tbplugins = []
