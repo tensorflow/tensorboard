@@ -39,20 +39,26 @@ class UploadTracker(object):
     def scalar_start(self):
         self._num_scalars += 1
         self._progress_bar.set_description("Uploading scalars")
+        self._progress_bar.update()
         # print("scalar_start(): num_scalars = %s" % self._num_scalars)  # DEBUG
 
     def tensor_start(self):
         self._num_tensors += 1
         self._progress_bar.set_description("Uploading tensors")
+        self._progress_bar.update()
         # print("tensor_start(): num_tensors = %s" % self._num_tensors)  # DEBUG
 
     def blob_sequence_start(self):
         self._num_blob_sequences += 1
+        self._progress_bar.set_description("Uploading blobs")
+        self._progress_bar.update()
         # print("blob_sequence_start(): num_blob_sequences = %s" % self._num_blob_sequences)  # DEBUG
 
     def scalar_done(self, is_uploaded):
         if is_uploaded:
             self._num_scalars_uploaded += 1
+        self._progress_bar.set_description("Done uploading scalars")
+        self._progress_bar.update()
         # print(
         #     "scalar_done(): num_scalars_uploaded = %s" % self._num_scalars_uploaded
         # )  # DEBUG
@@ -60,7 +66,11 @@ class UploadTracker(object):
     def tensor_done(self, is_uploaded):
         if is_uploaded:
             self._num_tensors_uploaded += 1
+        self._progress_bar.set_description("Done uploading tensors")
+        self._progress_bar.update()
 
     def blob_sequence_done(self, is_uploaded):
         if is_uploaded:
             self._num_blob_sequences_uploaded += 1
+        self._progress_bar.set_description("Done uploading blobs")
+        self._progress_bar.update()
