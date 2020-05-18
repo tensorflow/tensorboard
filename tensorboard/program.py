@@ -413,7 +413,8 @@ class TensorBoard(object):
             self.plugin_loaders,
             ingester.data_provider,
             self.assets_zip_provider,
-            ingester.deprecated_multiplexer)
+            ingester.deprecated_multiplexer,
+        )
         return self.server_class(app, self.flags)
 
 
