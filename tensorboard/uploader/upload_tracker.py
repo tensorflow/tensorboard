@@ -26,7 +26,6 @@ import tqdm
 class UploadTracker(object):
     def __init__(self):
         self._num_scalars = 0
-        self._num_scalars_uploaded = 0
         self._num_tensors = 0
         self._num_tensors_uploaded = 0
         self._num_blob_sequences = 0
@@ -34,6 +33,7 @@ class UploadTracker(object):
         self._description_length = 30
 
     def _set_description(self, text):
+        text = "[ %s ]"  % text
         if len(text) < self._description_length:
             text += " " * self._description_length
         elif len(text) > self._description_length:
@@ -58,33 +58,28 @@ class UploadTracker(object):
         sys.stdout.write(
             "Uploaded %d scalars, %d tensors, %d blob sequences\n"
             % (
-                self._num_scalars_uploaded,
+                self._num_scalars,
                 self._num_tensors_uploaded,
                 self._num_blob_sequences_uploaded,
             )
         )
 
-    def scalar_start(self):
-        self._num_scalars += 1
-        self._set_description("Uploading scalars")
+    def scalars_start(self, num_scalars):
+        self._num_scalars += num_scalars
+        self._set_description("Uploading %d scalars" % num_scalars)
         self._progress_bar.update()
-        # print("scalar_start(): num_scalars = %s" % self._num_scalars)  # DEBUG
 
     def tensor_start(self):
         self._num_tensors += 1
         self._set_description("Uploading tensors")
         self._progress_bar.update()
-        # print("tensor_start(): num_tensors = %s" % self._num_tensors)  # DEBUG
 
     def blob_sequence_start(self):
         self._num_blob_sequences += 1
         self._set_description("Uploading blobs")
         self._progress_bar.update()
-        # print("blob_sequence_start(): num_blob_sequences = %s" % self._num_blob_sequences)  # DEBUG
 
-    def scalar_done(self, is_uploaded):
-        if is_uploaded:
-            self._num_scalars_uploaded += 1
+    def scalars_done(self):
         self._set_description("Done uploading scalars")
         self._progress_bar.update()
 

@@ -476,6 +476,7 @@ class _ScalarBatchedRequestSender(object):
         self._request = write_service_pb2.WriteScalarRequest()
         self._runs.clear()
         self._tags.clear()
+        self._num_values = 0
         self._request.experiment_id = self._experiment_id
         self._byte_budget_manager.reset(self._request)
 
@@ -507,6 +508,7 @@ class _ScalarBatchedRequestSender(object):
             tag_proto = self._create_tag(run_proto, value.tag, metadata)
             self._tags[(run_name, value.tag)] = tag_proto
         self._create_point(tag_proto, event, value)
+        self._num_values += 1
 
     def flush(self):
         """Sends the active request after removing empty runs and tags.
@@ -522,10 +524,10 @@ class _ScalarBatchedRequestSender(object):
 
         with _request_logger(request, request.runs):
             try:
-                self._tracker.scalar_start()
+                self._tracker.scalars_start(self._num_values)
                 # TODO(@nfelt): execute this RPC asynchronously.
                 grpc_util.call_with_retries(self._api.WriteScalar, request)
-                self._tracker.scalar_done(is_uploaded=True)
+                self._tracker.scalars_done()
             except grpc.RpcError as e:
                 if e.code() == grpc.StatusCode.NOT_FOUND:
                     raise ExperimentNotFoundError()
