@@ -62,6 +62,7 @@ such as different X scales (linear and temporal), tooltips and smoothing.
       }
 
       #chartdiv .main {
+        contain: strict;
         cursor: crosshair;
       }
 
@@ -75,11 +76,15 @@ such as different X scales (linear and temporal), tooltips and smoothing.
         cursor: grabbing;
       }
 
+      #chartdiv {
+        contain: strict;
+      }
+
       #chartdiv line.guide-line {
         stroke: #999;
         stroke-width: 1.5px;
       }
-      #chartdiv:hover {
+      #chartdiv:hover .main {
         will-change: transform;
       }
 
