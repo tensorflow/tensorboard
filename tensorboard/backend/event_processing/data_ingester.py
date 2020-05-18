@@ -77,7 +77,7 @@ class LocalDataIngester(object):
         if flags.logdir:
             self._path_to_run = {os.path.expanduser(flags.logdir): None}
         else:
-            self._path_to_run = parse_event_files_spec(flags.logdir_spec)
+            self._path_to_run = _parse_event_files_spec(flags.logdir_spec)
 
     @property
     def data_provider(self):
