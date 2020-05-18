@@ -91,6 +91,7 @@ py_library(
     srcs = ["uploader.py"],
     deps = [
         ":logdir_loader",
+        ":upload_tracker",
         ":util",
         "//tensorboard:expect_grpc_installed",
         "//tensorboard/backend:process_graph",
@@ -105,6 +106,14 @@ py_library(
         "//tensorboard/util:tb_logging",
         "//tensorboard/util:tensor_util",
         "@com_google_protobuf//:protobuf_python",
+        "@org_pythonhosted_six",
+    ],
+)
+
+py_library(
+    name = "upload_tracker",
+    srcs = ["upload_tracker.py"],
+    deps = [
         "@org_pythonhosted_six",
     ],
 )
