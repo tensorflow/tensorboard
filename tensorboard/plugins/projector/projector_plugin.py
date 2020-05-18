@@ -387,6 +387,10 @@ class ProjectorPlugin(base_plugin.TBPlugin):
             for tensor_name, tensor_shape in var_map.items():
                 if len(tensor_shape) != 2:
                     continue
+                # Optimizer slot values are the same shape as embeddings
+                # but are not embeddings.
+                if ".OPTIMIZER_SLOT" in tensor_name:
+                    continue
                 embedding = self._get_embedding(tensor_name, config)
                 if not embedding:
                     embedding = config.embeddings.add()
@@ -413,6 +417,9 @@ class ProjectorPlugin(base_plugin.TBPlugin):
     def _read_latest_config_files(self, run_path_pairs):
         """Reads and returns the projector config files in every run
         directory."""
+        """If no specific config exists, use the default config provided in
+        the root directory."""
+        default_config_fpath = os.path.join(self.logdir, metadata.PROJECTOR_FILENAME)
         configs = {}
         config_fpaths = {}
         for run_name, assets_dir in run_path_pairs:
@@ -422,6 +429,12 @@ class ProjectorPlugin(base_plugin.TBPlugin):
                 with tf.io.gfile.GFile(config_fpath, "r") as f:
                     file_content = f.read()
                 text_format.Merge(file_content, config)
+            elif tf.io.gfile.exists(default_config_fpath):
+                with tf.io.gfile.GFile(default_config_fpath, "r") as f:
+                    file_content = f.read()
+                text_format.Merge(file_content, config)
+                for embedding in config.embeddings:
+                    embedding.metadata_path = _rel_to_abs_asset_path(embedding.metadata_path, default_config_fpath)
             has_tensor_files = False
             for embedding in config.embeddings:
                 if embedding.tensor_path:
