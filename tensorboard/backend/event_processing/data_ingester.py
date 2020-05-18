@@ -133,7 +133,7 @@ class LocalDataIngester(object):
                 )
             _reload()
         else:
-            raise ValueError("unrecognized reload_task: %s" % reload_task)
+            raise ValueError("unrecognized reload_task: %s" % self._reload_task)
 
 
 def _get_event_file_active_filter(flags):
