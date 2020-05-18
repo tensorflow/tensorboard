@@ -158,7 +158,7 @@ class TensorBoardUploader(object):
         response = grpc_util.call_with_retries(
             self._api.CreateExperiment, request
         )
-        tracker = upload_tracker.UploadTracker()
+        self._tracker = upload_tracker.UploadTracker()
         self._request_sender = _BatchedRequestSender(
             response.experiment_id,
             self._api,
@@ -167,7 +167,7 @@ class TensorBoardUploader(object):
             rpc_rate_limiter=self._rpc_rate_limiter,
             tensor_rpc_rate_limiter=self._tensor_rpc_rate_limiter,
             blob_rpc_rate_limiter=self._blob_rpc_rate_limiter,
-            tracker=tracker,
+            tracker=self._tracker,
         )
         return response.experiment_id
 
@@ -187,15 +187,6 @@ class TensorBoardUploader(object):
             self._logdir_poll_rate_limiter.tick()
             self._upload_once()
 
-    # def _count_values(self, run_to_events):
-    #     num_values = 0
-    #     for run_name in run_to_events:
-    #         print("run_name = %s" % run_name)  # DEBUG
-    #         for event in run_to_events[run_name]:
-    #             # print("event = %s" % event)  # DEBUG
-    #             num_values += len(event.summary.value)
-    #     return num_values
-
     def _upload_once(self):
         """Runs one upload cycle, sending zero or more RPCs."""
         logger.info("Starting an upload cycle")
@@ -206,11 +197,9 @@ class TensorBoardUploader(object):
         logger.info("Logdir sync took %.3f seconds", sync_duration_secs)
 
         run_to_events = self._logdir_loader.get_run_events()
-        # num_values = self._count_values(run_to_events
-        # print("num_values = %d" % num_values)  # DEBUG
-        # import sys
-        # sys.exit(1)  # DEBUG
+        self._tracker.send_start()
         self._request_sender.send_requests(run_to_events)
+        self._tracker.send_done()
 
 
 def update_experiment_metadata(
