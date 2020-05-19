@@ -99,6 +99,13 @@ def define_flags(parser):
         help="Experiment description. Markdown format.  Max 600 characters.",
     )
     upload.add_argument(
+        "--one_shot",
+        action="store_true",
+        help="Upload only the currently-existing data in the logdir and exit, "
+        "instead of continuously listening for and uploading new data in the "
+        "logdir.",
+    )
+    upload.add_argument(
         "--plugins",
         type=lambda option: option.split(","),
         default=[],

@@ -77,6 +77,7 @@ class TensorBoardUploader(object):
         blob_rpc_rate_limiter=None,
         name=None,
         description=None,
+        one_shot=None,
     ):
         """Constructs a TensorBoardUploader.
 
@@ -99,6 +100,9 @@ class TensorBoardUploader(object):
             explicitly rate-limit within the stream here.
           name: String name to assign to the experiment.
           description: String description to assign to the experiment.
+          one_shot: Upload only the current data in the logdir and exit
+            with done, instead of listening to the logdir continuously for new
+            data without exiting. Default: `False`.
         """
         self._api = writer_client
         self._logdir = logdir
@@ -107,6 +111,7 @@ class TensorBoardUploader(object):
 
         self._name = name
         self._description = description
+        self._one_shot = False if one_shot is None else one_shot
         self._request_sender = None
         if logdir_poll_rate_limiter is None:
             self._logdir_poll_rate_limiter = util.RateLimiter(
@@ -186,6 +191,8 @@ class TensorBoardUploader(object):
         while True:
             self._logdir_poll_rate_limiter.tick()
             self._upload_once()
+            if self._one_shot:
+                break
 
     def _upload_once(self):
         """Runs one upload cycle, sending zero or more RPCs."""

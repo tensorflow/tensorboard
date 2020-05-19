@@ -390,10 +390,11 @@ class _UploadIntent(_Intent):
         """
     )
 
-    def __init__(self, logdir, name=None, description=None):
+    def __init__(self, logdir, name=None, description=None, one_shot=None):
         self.logdir = logdir
         self.name = name
         self.description = description
+        self.one_shot = one_shot
 
     def get_ack_message_body(self):
         return self._MESSAGE_TEMPLATE.format(logdir=self.logdir)
@@ -411,6 +412,7 @@ class _UploadIntent(_Intent):
             upload_limits=server_info_lib.upload_limits(server_info),
             name=self.name,
             description=self.description,
+            one_shot=self.one_shot,
         )
         experiment_id = uploader.create_experiment()
         url = server_info_lib.experiment_url(server_info, experiment_id)
@@ -503,6 +505,7 @@ def _get_intent(flags):
                 os.path.expanduser(flags.logdir),
                 name=flags.name,
                 description=flags.description,
+                one_shot=flags.one_shot,
             )
         else:
             raise base_plugin.FlagsError(
