@@ -1,3 +1,32 @@
+# Release 2.2.2
+
+## Features
+
+- Some performance improvements to line charts (#3524)
+- Performance improvements in the Text plugin due to batch HTML
+  sanitization (#3529)
+- Performance improvements in backend markdown cleaning for tag
+  rendering (#3599)
+- CSS/layout performance optimization by applying layout/layer bound where
+  possible (#3642)
+- The `tensorboard dev list` subcommand now reports the total size of stored
+  tensors (used as the backing storage type for Histograms) (#3652)
+
+## TensorBoard.dev updates
+
+- TensorBoard.dev now supports the Histograms plugin, for experiments
+  uploaded starting from this release
+  - The `tensorboard dev upload` subcommand now sends the histograms, when
+    available, so that it can be rendered via the Histograms plugin on
+    TensorBoard.dev
+- This release may support additional plugins in the future, once those plugins
+  are enabled in the TensorBoard.dev service
+
+## Breaking changes
+
+- The experimental and legacy SQLite support (via the `--db_import` and `--db`
+  flags) is removed to ease maintenance (#3539)
+
 # Release 2.2.1
 
 ## TensorBoard.dev updates
