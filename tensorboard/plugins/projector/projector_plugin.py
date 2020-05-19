@@ -419,7 +419,9 @@ class ProjectorPlugin(base_plugin.TBPlugin):
         directory."""
         """If no specific config exists, use the default config provided in
         the root directory."""
-        default_config_fpath = os.path.join(self.logdir, metadata.PROJECTOR_FILENAME)
+        default_config_fpath = os.path.join(
+            self.logdir, metadata.PROJECTOR_FILENAME
+        )
         configs = {}
         config_fpaths = {}
         for run_name, assets_dir in run_path_pairs:
@@ -434,7 +436,9 @@ class ProjectorPlugin(base_plugin.TBPlugin):
                     file_content = f.read()
                 text_format.Merge(file_content, config)
                 for embedding in config.embeddings:
-                    embedding.metadata_path = _rel_to_abs_asset_path(embedding.metadata_path, default_config_fpath)
+                    embedding.metadata_path = _rel_to_abs_asset_path(
+                        embedding.metadata_path, default_config_fpath
+                    )
             has_tensor_files = False
             for embedding in config.embeddings:
                 if embedding.tensor_path:
