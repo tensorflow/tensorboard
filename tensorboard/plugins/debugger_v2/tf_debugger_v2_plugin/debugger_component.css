@@ -62,6 +62,7 @@ tf-debugger-v2-stack-trace {
 .top-center-section {
   display: inline-block;
   height: 100%;
+  overflow: auto;
   vertical-align: top;
   width: 55%;
 }

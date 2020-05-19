@@ -13,8 +13,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Component} from '@angular/core';
-import {Store} from '@ngrx/store';
+import {select, Store} from '@ngrx/store';
 
+import {graphOpFocused} from '../../actions';
+import {
+  getFocusedGraphOpConsumers,
+  getFocusedGraphOpInfo,
+  getFocusedGraphOpInputs,
+} from '../../store';
 import {State} from '../../store/debugger_types';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
@@ -22,11 +28,24 @@ import {State} from '../../store/debugger_types';
 @Component({
   selector: 'tf-debugger-v2-graph',
   template: `
-    <graph-component></graph-component>
+    <graph-component
+      [opInfo]="opInfo$ | async"
+      [inputOps]="inputOps$ | async"
+      [consumerOps]="consumerOps$ | async"
+      (onGraphOpNavigate)="onGraphOpNavigate($event)"
+    ></graph-component>
   `,
 })
 export class GraphContainer {
-  // TOOD(cais): Add input attributes based on store selectors.
+  readonly opInfo$ = this.store.pipe(select(getFocusedGraphOpInfo));
+
+  readonly inputOps$ = this.store.pipe(select(getFocusedGraphOpInputs));
+
+  readonly consumerOps$ = this.store.pipe(select(getFocusedGraphOpConsumers));
+
+  onGraphOpNavigate(event: {graph_id: string; op_name: string}) {
+    this.store.dispatch(graphOpFocused(event));
+  }
 
   constructor(private readonly store: Store<State>) {}
 }

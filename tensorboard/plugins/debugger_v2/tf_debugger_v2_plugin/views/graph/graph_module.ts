@@ -18,9 +18,10 @@ import {NgModule} from '@angular/core';
 
 import {GraphComponent} from './graph_component';
 import {GraphContainer} from './graph_container';
+import {GraphOpComponent} from './graph_op_component';
 
 @NgModule({
-  declarations: [GraphComponent, GraphContainer],
+  declarations: [GraphComponent, GraphOpComponent, GraphContainer],
   imports: [CommonModule],
   exports: [GraphContainer],
 })
