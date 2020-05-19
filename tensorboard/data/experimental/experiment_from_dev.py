@@ -25,6 +25,7 @@ import time
 import grpc
 import numpy as np
 
+from tensorboard import lazy
 from tensorboard.data.experimental import base_experiment
 from tensorboard.uploader import auth
 from tensorboard.uploader import util
@@ -38,7 +39,8 @@ from tensorboard.util import grpc_util
 DEFAULT_ORIGIN = "https://tensorboard.dev"
 
 
-def import_pandas():
+@lazy.lazy_load("pandas")
+def pandas():
     """Import pandas, guarded by a user-friendly error message on failure."""
     try:
         import pandas
@@ -75,10 +77,6 @@ class ExperimentFromDev(base_experiment.BaseExperiment):
         pivot=False,
         include_wall_time=False,
     ):
-        # NOTE(b/155980442): Import pandas early in this method, so if the
-        # Python environment does not have pandas installed, an error can be
-        # raised early, before any rpc call is made.
-        pandas = import_pandas()
         if runs_filter is not None:
             raise NotImplementedError(
                 "runs_filter support for get_scalars() is not implemented yet."
