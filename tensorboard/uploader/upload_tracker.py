@@ -33,8 +33,8 @@ class UploadTracker(object):
     def __init__(self):
         self._cumulative_num_scalars = 0
         self._cumulative_num_tensors = 0
-        self._cumulative_num_blob_sequences = 0
-        self._cumulative_num_blob_sequences_uploaded = 0
+        self._cumulative_num_blobs = 0
+        self._cumulative_num_blobs_uploaded = 0
 
     def _dummy_generator(self):
         while True:
@@ -44,8 +44,8 @@ class UploadTracker(object):
     def send_start(self):
         self._num_scalars = 0
         self._num_tensors = 0
-        self._num_blob_sequences = 0
-        self._num_blob_sequences_uploaded = 0
+        self._num_blobs = 0
+        self._num_blobs_uploaded = 0
         self._progress_bar = None
 
     def _update_status(self, message):
@@ -59,31 +59,25 @@ class UploadTracker(object):
     def send_done(self):
         self._cumulative_num_scalars += self._num_scalars
         self._cumulative_num_tensors += self._num_tensors
-        self._cumulative_num_blob_sequences += self._num_blob_sequences
-        self._cumulative_num_blob_sequences += self._num_blob_sequences
-        self._cumulative_num_blob_sequences_uploaded += (
-            self._num_blob_sequences_uploaded
-        )
-        if (
-            self._num_scalars
-            or self._num_tensors
-            or self._num_blob_sequences_uploaded
-        ):
+        self._cumulative_num_blobs += self._num_blobs
+        self._cumulative_num_blobs += self._num_blobs
+        self._cumulative_num_blobs_uploaded += self._num_blobs_uploaded
+        if self._num_scalars or self._num_tensors or self._num_blobs_uploaded:
             if self._progress_bar:
                 self._update_status("")
                 self._progress_bar.close()
             # TODO(cais): Only populate the existing data types.
             sys.stdout.write(
-                "[%s] Uploaded %d scalars, %d tensors, %d binary-object sequences "
-                "(Cumulative: %d scalars, %d tensors, %d binary-object sequences)\n"
+                "[%s] Uploaded %d scalars, %d tensors, %d binary objects "
+                "(Cumulative: %d scalars, %d tensors, %d binary objects)\n"
                 % (
                     readable_time_string(),
                     self._num_scalars,
                     self._num_tensors,
-                    self._num_blob_sequences_uploaded,
+                    self._num_blobs_uploaded,
                     self._cumulative_num_scalars,
                     self._cumulative_num_tensors,
-                    self._cumulative_num_blob_sequences_uploaded,
+                    self._cumulative_num_blobs_uploaded,
                 )
             )
             sys.stdout.flush()
@@ -106,10 +100,10 @@ class UploadTracker(object):
     def tensors_done(self):
         pass
 
-    def blob_sequence_start(self):
-        self._num_blob_sequences += 1
-        self._update_status("Uploading binary-object sequence...")
+    def blob_start(self):
+        self._num_blobs += 1
+        self._update_status("Uploading binary object...")
 
-    def blob_sequence_done(self, is_uploaded):
+    def blob_done(self, is_uploaded):
         if is_uploaded:
-            self._num_blob_sequences_uploaded += 1
+            self._num_blobs_uploaded += 1

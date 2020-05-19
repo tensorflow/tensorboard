@@ -106,6 +106,13 @@ def define_flags(parser):
         "logdir.",
     )
     upload.add_argument(
+        "--dry_run",
+        action="store_true",
+        help="Run the uploader without actually sending data to the server. "
+        "Useful for estimating the kinds and amount of data that will be "
+        "uploaded in a default, non-dry-run usage of the uploader.",
+    )
+    upload.add_argument(
         "--plugins",
         type=lambda option: option.split(","),
         default=[],

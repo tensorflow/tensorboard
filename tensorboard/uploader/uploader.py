@@ -78,6 +78,7 @@ class TensorBoardUploader(object):
         name=None,
         description=None,
         one_shot=None,
+        dry_run=None,
     ):
         """Constructs a TensorBoardUploader.
 
@@ -103,6 +104,7 @@ class TensorBoardUploader(object):
           one_shot: Upload only the current data in the logdir and exit
             with done, instead of listening to the logdir continuously for new
             data without exiting. Default: `False`.
+          dry_run: Skip sending actual data to the server. Deafult: `False`.
         """
         self._api = writer_client
         self._logdir = logdir
@@ -112,6 +114,7 @@ class TensorBoardUploader(object):
         self._name = name
         self._description = description
         self._one_shot = False if one_shot is None else one_shot
+        self._dry_run = False if dry_run is None else dry_run
         self._request_sender = None
         if logdir_poll_rate_limiter is None:
             self._logdir_poll_rate_limiter = util.RateLimiter(
@@ -156,16 +159,21 @@ class TensorBoardUploader(object):
 
     def create_experiment(self):
         """Creates an Experiment for this upload session and returns the ID."""
-        logger.info("Creating experiment")
-        request = write_service_pb2.CreateExperimentRequest(
-            name=self._name, description=self._description
-        )
-        response = grpc_util.call_with_retries(
-            self._api.CreateExperiment, request
-        )
+        if self._dry_run:
+            # TODO(cais): Consider making self._api a wrapper.
+            experiment_id = "dummy-experiment-id"
+        else:
+            logger.info("Creating experiment")
+            request = write_service_pb2.CreateExperimentRequest(
+                name=self._name, description=self._description
+            )
+            response = grpc_util.call_with_retries(
+                self._api.CreateExperiment, request
+            )
+            experiment_id = response.experiment_id
         self._tracker = upload_tracker.UploadTracker()
         self._request_sender = _BatchedRequestSender(
-            response.experiment_id,
+            experiment_id,
             self._api,
             allowed_plugins=self._allowed_plugins,
             upload_limits=self._upload_limits,
@@ -173,8 +181,9 @@ class TensorBoardUploader(object):
             tensor_rpc_rate_limiter=self._tensor_rpc_rate_limiter,
             blob_rpc_rate_limiter=self._blob_rpc_rate_limiter,
             tracker=self._tracker,
+            dry_run=self._dry_run,
         )
-        return response.experiment_id
+        return experiment_id
 
     def start_uploading(self):
         """Blocks forever to continuously upload data from the logdir.
@@ -326,17 +335,20 @@ class _BatchedRequestSender(object):
         tensor_rpc_rate_limiter,
         blob_rpc_rate_limiter,
         tracker,
+        dry_run,
     ):
         # Map from `(run_name, tag_name)` to `SummaryMetadata` if the time
         # series is a scalar time series, else to `_NON_SCALAR_TIME_SERIES`.
         self._tag_metadata = {}
         self._allowed_plugins = frozenset(allowed_plugins)
+        self._dry_run = dry_run
         self._scalar_request_sender = _ScalarBatchedRequestSender(
             experiment_id,
             api,
             rpc_rate_limiter,
             upload_limits.max_scalar_request_size,
-            tracker,
+            tracker=tracker,
+            dry_run=self._dry_run,
         )
         self._tensor_request_sender = _TensorBatchedRequestSender(
             experiment_id,
@@ -344,7 +356,8 @@ class _BatchedRequestSender(object):
             tensor_rpc_rate_limiter,
             upload_limits.max_tensor_request_size,
             upload_limits.max_tensor_point_size,
-            tracker,
+            tracker=tracker,
+            dry_run=self._dry_run,
         )
         self._blob_request_sender = _BlobRequestSender(
             experiment_id,
@@ -352,7 +365,8 @@ class _BatchedRequestSender(object):
             blob_rpc_rate_limiter,
             upload_limits.max_blob_request_size,
             upload_limits.max_blob_size,
-            tracker,
+            tracker=tracker,
+            dry_run=self._dry_run,
         )
         self._tracker = tracker
 
@@ -463,6 +477,7 @@ class _ScalarBatchedRequestSender(object):
         rpc_rate_limiter,
         max_request_size,
         tracker=None,
+        dry_run=False,
     ):
         if experiment_id is None:
             raise ValueError("experiment_id cannot be None")
@@ -471,6 +486,7 @@ class _ScalarBatchedRequestSender(object):
         self._rpc_rate_limiter = rpc_rate_limiter
         self._byte_budget_manager = _ByteBudgetManager(max_request_size)
         self._tracker = tracker
+        self._dry_run = dry_run
 
         self._runs = {}  # cache: map from run name to `Run` proto in request
         self._tags = (
@@ -533,7 +549,8 @@ class _ScalarBatchedRequestSender(object):
             try:
                 self._tracker.scalars_start(self._num_values)
                 # TODO(@nfelt): execute this RPC asynchronously.
-                grpc_util.call_with_retries(self._api.WriteScalar, request)
+                if not self._dry_run:
+                    grpc_util.call_with_retries(self._api.WriteScalar, request)
                 self._tracker.scalars_done()
             except grpc.RpcError as e:
                 if e.code() == grpc.StatusCode.NOT_FOUND:
@@ -622,7 +639,8 @@ class _TensorBatchedRequestSender(object):
         rpc_rate_limiter,
         max_request_size,
         max_tensor_point_size,
-        tracker,
+        tracker=None,
+        dry_run=False,
     ):
         if experiment_id is None:
             raise ValueError("experiment_id cannot be None")
@@ -632,6 +650,7 @@ class _TensorBatchedRequestSender(object):
         self._byte_budget_manager = _ByteBudgetManager(max_request_size)
         self._max_tensor_point_size = max_tensor_point_size
         self._tracker = tracker
+        self._dry_run = dry_run
 
         self._runs = {}  # cache: map from run name to `Run` proto in request
         self._tags = (
@@ -694,7 +713,8 @@ class _TensorBatchedRequestSender(object):
         with _request_logger(request, request.runs):
             try:
                 self._tracker.tensors_start(self._num_values)
-                grpc_util.call_with_retries(self._api.WriteTensor, request)
+                if not self._dry_run:
+                    grpc_util.call_with_retries(self._api.WriteTensor, request)
                 self._tracker.tensors_done()
             except grpc.RpcError as e:
                 if e.code() == grpc.StatusCode.NOT_FOUND:
@@ -923,7 +943,8 @@ class _BlobRequestSender(object):
         rpc_rate_limiter,
         max_blob_request_size,
         max_blob_size,
-        tracker,
+        tracker=None,
+        dry_run=False,
     ):
         if experiment_id is None:
             raise ValueError("experiment_id cannot be None")
@@ -933,6 +954,7 @@ class _BlobRequestSender(object):
         self._max_blob_request_size = max_blob_request_size
         self._max_blob_size = max_blob_size
         self._tracker = tracker
+        self._dry_run = dry_run
 
         # Start in the empty state, just like self._new_request().
         self._run_name = None
@@ -997,9 +1019,9 @@ class _BlobRequestSender(object):
                 # Note the _send_blob() stream is internally flow-controlled.
                 # This rate limit applies to *starting* the stream.
                 self._rpc_rate_limiter.tick()
-                self._tracker.blob_sequence_start()
+                self._tracker.blob_start()
                 sent_blobs += self._send_blob(blob_sequence_id, seq_index, blob)
-                self._tracker.blob_sequence_done(is_uploaded=bool(sent_blobs))
+                self._tracker.blob_done(is_uploaded=bool(sent_blobs))
 
             logger.info(
                 "Sent %d of %d blobs for sequence id: %s",
@@ -1020,6 +1042,8 @@ class _BlobRequestSender(object):
             metadata=self._metadata,
         )
         util.set_timestamp(request.wall_time, self._event.wall_time)
+        if self._dry_run:
+            return "dummy-blob-sequence-id"
         with _request_logger(request):
             try:
                 # TODO(@nfelt): execute this RPC asynchronously.
@@ -1060,6 +1084,8 @@ class _BlobRequestSender(object):
         count = 0
         # TODO(soergel): don't wait for responses for greater throughput
         # See https://stackoverflow.com/questions/55029342/handling-async-streaming-request-in-grpc-python
+        if self._dry_run:
+            return 1
         try:
             for response in self._api.WriteBlob(request_iterator):
                 count += 1

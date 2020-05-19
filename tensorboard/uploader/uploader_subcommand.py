@@ -390,11 +390,14 @@ class _UploadIntent(_Intent):
         """
     )
 
-    def __init__(self, logdir, name=None, description=None, one_shot=None):
+    def __init__(
+        self, logdir, name=None, description=None, one_shot=None, dry_run=None
+    ):
         self.logdir = logdir
         self.name = name
         self.description = description
         self.one_shot = one_shot
+        self.dry_run = dry_run
 
     def get_ack_message_body(self):
         return self._MESSAGE_TEMPLATE.format(logdir=self.logdir)
@@ -413,6 +416,7 @@ class _UploadIntent(_Intent):
             name=self.name,
             description=self.description,
             one_shot=self.one_shot,
+            dry_run=self.dry_run,
         )
         experiment_id = uploader.create_experiment()
         url = server_info_lib.experiment_url(server_info, experiment_id)
@@ -420,7 +424,8 @@ class _UploadIntent(_Intent):
             "Upload started and will continue reading any new data as it's added"
         )
         print("to the logdir. To stop uploading, press Ctrl-C.")
-        print("View your TensorBoard live at: %s" % url)
+        if not self.dry_run:
+            print("View your TensorBoard live at: %s" % url)
         try:
             uploader.start_uploading()
         except uploader_lib.ExperimentNotFoundError:
@@ -432,7 +437,8 @@ class _UploadIntent(_Intent):
             return
         # TODO(@nfelt): make it possible for the upload cycle to end once we
         #   detect that no more runs are active, so this code can be reached.
-        print("Done! View your TensorBoard at %s" % url)
+        if not self.dry_run:
+            print("Done! View your TensorBoard at %s" % url)
 
 
 class _ExportIntent(_Intent):
@@ -506,6 +512,7 @@ def _get_intent(flags):
                 name=flags.name,
                 description=flags.description,
                 one_shot=flags.one_shot,
+                dry_run=flags.dry_run,
             )
         else:
             raise base_plugin.FlagsError(
