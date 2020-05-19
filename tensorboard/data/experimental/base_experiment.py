@@ -46,10 +46,10 @@ class BaseExperiment(metaclass=abc.ABCMeta):
             `pivot_data()` method to a “wide” format wherein the tags of a
             given run and a given step are all collected in a single row.
             Setting `pivot` to `True` stipulates that the sets of step values
-            are identical among all tags of the experiment (after any run and
-            tag filtering), so that the pivoting operation will not introduce
-            missing values in the resultant DataFrame. Failing to meet this
-            condition will cause `pivot=True` to raise a `ValueError`.
+            are identical among all tags in every run of the experiment (after
+            any run and tag filtering), so that the pivoting operation will not
+            introduce missing values in the resultant DataFrame. Failing to meet
+            this condition will cause `pivot=True` to raise a `ValueError`.
             If not provided, defaults to `False`.
           include_wall_time: Include wall_time (timestamps in nanoseconds since
             the epoch in float64) as a column in the returned DataFrame.
