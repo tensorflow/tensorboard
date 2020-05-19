@@ -72,7 +72,7 @@ class ExperimentFromDev(base_experiment.BaseExperiment):
         self,
         runs_filter=None,
         tags_filter=None,
-        pivot=True,
+        pivot=False,
         include_wall_time=False,
     ):
         # NOTE(#3650): Import pandas early in this method, so if the
