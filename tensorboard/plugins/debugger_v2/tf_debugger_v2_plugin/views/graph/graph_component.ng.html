@@ -72,15 +72,12 @@ limitations under the License.
             *ngFor="let slotConsumers of consumerOps; let slot = index"
             class="slot-consumers-container"
           >
-            <!-- TODO(b/156957839): Use proper angular i18n. -->
             <div class="slot-consumers-header">
               Output slot {{slot}}: ({{slotConsumers.length}}
-              <span *ngIf="slotConsumers.length === 1; else pluralConsumers">
-                consumer)
-              </span>
-              <ng-template #pluralConsumers>
-                consumers)
-              </ng-template>
+              <span i18n>
+                {slotConsumers.length, plural, =0 {consumer} =1 {consumer} other
+                {consumers}}</span
+              >)
             </div>
 
             <div
@@ -101,16 +98,12 @@ limitations under the License.
       </div>
 
       <ng-template #noConsumers>
-        <!-- TODO(b/156957839): Use proper angular i18n. -->
         <div class="op-consumers-container">
           (This op has {{opInfo.consumers.length}} output
-          <span *ngIf="opInfo.consumers.length === 1; else pluralTensors">
-            tensor
-          </span>
-          <ng-template #pluralTensors>
-            tensors
-          </ng-template>
-          and no consumer.)
+          <span i18n>
+            {opInfo.consumers.length, plural, =0 {tensor} =1 {tensor} other
+            {tensors}}</span
+          > and no consumer.)
         </div>
       </ng-template>
     </div>
