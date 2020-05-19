@@ -71,7 +71,8 @@ def TensorBoardWSGIApp(
 
     Args:
       flags: An argparse.Namespace containing TensorBoard CLI flags.
-      plugins: A list of plugin loader instances.
+      plugins: A list of plugins, which can be provided as TBPlugin subclasses
+          or TBLoader instances or subclasses.
       assets_zip_provider: See TBContext documentation for more information.
       data_provider: Instance of `tensorboard.data.provider.DataProvider`. May
           be `None` if `flags.generic_data` is set to `"false"` in which case
