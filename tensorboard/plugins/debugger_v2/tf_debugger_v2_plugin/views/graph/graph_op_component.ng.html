@@ -17,13 +17,13 @@ limitations under the License.
 
 <button class="op-container">
   <div class="input-tensor-name">
-    <div
+    <button
       class="op-name"
       [ngClass]="[kind === 'self' ? 'self-op-name' : '']"
       (click)="onOpNameClick.emit({op_name: opName})"
     >
       <span>{{ opName }}</span>
-    </div>
+    </button>
     <div *ngIf="kind !== 'self'" class="slot">
       <span [ngSwitch]="kind">
         <span *ngSwitchCase="'input'">

@@ -34,10 +34,13 @@ limitations under the License.
 }
 
 .op-name {
-  display: inline-block;
+  background-color: transparent;
+  border: none;
   cursor: pointer;
-  display: block;
+  display: inline-block;
   overflow-wrap: anywhere;
+  padding: 0;
+  text-align: right;
   text-decoration: underline;
   white-space: pre-wrap;
 }
