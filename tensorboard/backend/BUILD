@@ -65,7 +65,6 @@ py_library(
         ":security_validator",
         "//tensorboard:errors",
         "//tensorboard:plugin_util",
-        "//tensorboard/backend/event_processing:data_provider",
         "//tensorboard/plugins/core:core_plugin",
         "//tensorboard/util:tb_logging",
         "@org_pocoo_werkzeug",
