@@ -262,6 +262,11 @@ limitations under the License.
         flex-wrap: wrap;
       }
 
+      ::slotted([slot='items']) {
+        /* Tooltip for descriptions and others break with more strict ones. */
+        contain: style;
+      }
+
       #page-input {
         display: inline-block;
         width: var(--tf-category-paginated-view-page-input-width, 100%);

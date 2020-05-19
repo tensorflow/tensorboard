@@ -67,6 +67,7 @@ def tf_ng_web_test_suite(runtime_deps = [], bootstrap = [], deps = [], **kwargs)
         bootstrap = bootstrap + [
             "@npm//:node_modules/zone.js/dist/zone-testing-bundle.js",
             "@npm//:node_modules/reflect-metadata/Reflect.js",
+            "@npm//:node_modules/@angular/localize/bundles/localize-init.umd.js",
         ],
         runtime_deps = runtime_deps + [
             "//tensorboard/webapp/testing:initialize_testbed",
