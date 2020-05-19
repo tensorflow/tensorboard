@@ -499,6 +499,7 @@ class _ScalarBatchedRequestSender(object):
                 raise RuntimeError("add_event failed despite flush")
 
     def _add_event_internal(self, run_name, event, value, metadata):
+        self._num_values += 1
         run_proto = self._runs.get(run_name)
         if run_proto is None:
             run_proto = self._create_run(run_name)
@@ -508,7 +509,6 @@ class _ScalarBatchedRequestSender(object):
             tag_proto = self._create_tag(run_proto, value.tag, metadata)
             self._tags[(run_name, value.tag)] = tag_proto
         self._create_point(tag_proto, event, value)
-        self._num_values += 1
 
     def flush(self):
         """Sends the active request after removing empty runs and tags.
@@ -640,6 +640,7 @@ class _TensorBatchedRequestSender(object):
         self._tags.clear()
         self._request.experiment_id = self._experiment_id
         self._byte_budget_manager.reset(self._request)
+        self._num_values = 0
 
     def add_event(self, run_name, event, value, metadata):
         """Attempts to add the given event to the current request.
@@ -660,6 +661,7 @@ class _TensorBatchedRequestSender(object):
                 raise RuntimeError("add_event failed despite flush")
 
     def _add_event_internal(self, run_name, event, value, metadata):
+        self._num_values += 1
         run_proto = self._runs.get(run_name)
         if run_proto is None:
             run_proto = self._create_run(run_name)
@@ -684,9 +686,9 @@ class _TensorBatchedRequestSender(object):
 
         with _request_logger(request, request.runs):
             try:
-                self._tracker.tensor_start()
+                self._tracker.tensors_start(self._num_values)
                 grpc_util.call_with_retries(self._api.WriteTensor, request)
-                self._tracker.tensor_done(is_uploaded=True)
+                self._tracker.tensors_done()
             except grpc.RpcError as e:
                 if e.code() == grpc.StatusCode.NOT_FOUND:
                     raise ExperimentNotFoundError()

@@ -84,12 +84,12 @@ class UploadTracker(object):
     def scalars_done(self):
         pass
 
-    def tensor_start(self):
-        self._num_tensors += 1
-        self._set_description("Uploading tensors")
+    def tensors_start(self, num_tensors):
+        self._num_tensors += num_tensors
+        self._set_description("Uploading %d tensors" % num_tensors)
         self._progress_bar.update()
 
-    def tensor_done(self, is_uploaded):
+    def tensors_done(self):
         pass
 
     def blob_sequence_start(self):
