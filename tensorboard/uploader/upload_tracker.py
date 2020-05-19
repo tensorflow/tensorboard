@@ -25,72 +25,78 @@ import tqdm
 
 class UploadTracker(object):
     def __init__(self):
-        self._num_scalars = 0
-        self._num_tensors = 0
-        self._num_tensors_uploaded = 0
-        self._num_blob_sequences = 0
-        self._num_blob_sequences_uploaded = 0
-        self._description_length = 30
+        self._cumulative_num_scalars = 0
+        self._cumulative_num_tensors = 0
+        self._cumulative_num_blob_sequences = 0
+        self._cumulative_num_blob_sequences_uploaded = 0
 
     def _set_description(self, text):
-        text = "[ %s ]"  % text
-        if len(text) < self._description_length:
-            text += " " * self._description_length
-        elif len(text) > self._description_length:
-            text = text[: self._description_length]
-        self._progress_bar.set_description(text)
+        self._progress_bar.set_description("%s" % text)
 
     def _dummy_generator(self):
         while True:
             # Yield an arbitrary value 0: The progress bar is indefinite.
-            yield 1
+            yield 0
 
     def send_start(self):
+        self._num_scalars = 0
+        self._num_tensors = 0
+        self._num_blob_sequences = 0
+        self._num_blob_sequences_uploaded = 0
         self._progress_bar = tqdm.tqdm(
-            self._dummy_generator(), unit=" requests"
+            self._dummy_generator(), bar_format="{desc}"
         )
-        self._progress_bar.set_description("Upload starting...")
-        self._progress_bar.update()
 
     def send_done(self):
-        self._set_description("Upload done.")
-        self._progress_bar.close()
-        sys.stdout.write(
-            "Uploaded %d scalars, %d tensors, %d blob sequences\n"
-            % (
-                self._num_scalars,
-                self._num_tensors_uploaded,
-                self._num_blob_sequences_uploaded,
-            )
+        self._cumulative_num_scalars += self._num_scalars
+        self._cumulative_num_tensors += self._num_tensors
+        self._cumulative_num_blob_sequences += (
+            self._cumulative_num_blob_sequences
         )
+        self._cumulative_num_blob_sequences_uploaded += (
+            self._cumulative_num_blob_sequences_uploaded
+        )
+        if (
+            self._num_scalars
+            or self._num_tensors
+            or self._num_blob_sequences_uploaded
+        ):
+            self._progress_bar.close()
+            # TODO(cais): Only populate the existing data types.
+            sys.stdout.write(
+                "Uploaded %d scalars, %d tensors, %d blob sequences "
+                "(Cumulative: %d scalars, %d tensors, %d blob sequences)\n"
+                % (
+                    self._num_scalars,
+                    self._num_tensors,
+                    self._num_blob_sequences_uploaded,
+                    self._cumulative_num_scalars,
+                    self._cumulative_num_tensors,
+                    self._cumulative_num_blob_sequences_uploaded,
+                )
+            )
 
     def scalars_start(self, num_scalars):
         self._num_scalars += num_scalars
         self._set_description("Uploading %d scalars" % num_scalars)
         self._progress_bar.update()
 
+    def scalars_done(self):
+        pass
+
     def tensor_start(self):
         self._num_tensors += 1
         self._set_description("Uploading tensors")
         self._progress_bar.update()
+
+    def tensor_done(self, is_uploaded):
+        pass
 
     def blob_sequence_start(self):
         self._num_blob_sequences += 1
         self._set_description("Uploading blobs")
         self._progress_bar.update()
 
-    def scalars_done(self):
-        self._set_description("Done uploading scalars")
-        self._progress_bar.update()
-
-    def tensor_done(self, is_uploaded):
-        if is_uploaded:
-            self._num_tensors_uploaded += 1
-        self._set_description("Done uploading tensors")
-        self._progress_bar.update()
-
     def blob_sequence_done(self, is_uploaded):
         if is_uploaded:
             self._num_blob_sequences_uploaded += 1
-        self._set_description("Done uploading blobs")
-        self._progress_bar.update()
