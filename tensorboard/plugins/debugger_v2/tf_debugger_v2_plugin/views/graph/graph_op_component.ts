@@ -34,7 +34,7 @@ export class GraphOpComponent {
   // Must be a valid number if kind is 'input' or 'consumer'.
   // If kind is 'input', this is the 0-based output slot index that
   // provides the input tensor.
-  // If kind is i'consumer', this is the 0-based input slot index
+  // If kind is 'consumer', this is the 0-based input slot index
   // at which the consumer receives the input.
   @Input()
   slot: number | undefined;
