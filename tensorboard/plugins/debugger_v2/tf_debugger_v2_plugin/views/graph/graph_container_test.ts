@@ -87,8 +87,9 @@ describe('Graph Container', () => {
       for (const neighborDataAvailable of [false, true]) {
         it(
           `renders op with 1 input tensor and 1 consumer: ` +
-            `neighborDataAvailable=${neighborDataAvailable}; ` +
-            `consumerInputSlot=${consumerInputSlot}]`,
+            `inputOutputSlot=${inputOutputSlot}]; ` +
+            `consumerInputSlot=${consumerInputSlot}]; ` +
+            `neighborDataAvailable=${neighborDataAvailable};`,
           () => {
             const fixture = TestBed.createComponent(GraphContainer);
             const op1 = createTestGraphOpInfo({
@@ -198,7 +199,7 @@ describe('Graph Container', () => {
               const opInfoMissing = inputsContainer.query(
                 By.css('.op-info-missing')
               );
-              expect(opInfoMissing.nativeElement.innerText).toEqual(
+              expect(opInfoMissing.nativeElement.innerText).toBe(
                 '(Op info unavailable.)'
               );
             }
@@ -222,7 +223,7 @@ describe('Graph Container', () => {
               By.css('.op-name')
             );
             expect(consumerOpNames.length).toBe(1);
-            expect(consumerOpNames[0].nativeElement.innerText).toEqual('op3');
+            expect(consumerOpNames[0].nativeElement.innerText).toBe('op3');
             // Clicking consumer op name should dispatch graphOpFocused.
             consumerOpNames[0].nativeElement.click();
             expect(dispatchSpy).toHaveBeenCalledTimes(2);
@@ -244,7 +245,7 @@ describe('Graph Container', () => {
             );
             if (neighborDataAvailable) {
               expect(consumerOpTypes.length).toBe(1);
-              expect(consumerOpTypes[0].nativeElement.innerText).toEqual(
+              expect(consumerOpTypes[0].nativeElement.innerText).toBe(
                 'ConsumerOp'
               );
             } else {
@@ -252,7 +253,7 @@ describe('Graph Container', () => {
               const opInfoMissing = slotConsumersContainer.query(
                 By.css('.op-info-missing')
               );
-              expect(opInfoMissing.nativeElement.innerText).toEqual(
+              expect(opInfoMissing.nativeElement.innerText).toBe(
                 '(Op info unavailable.)'
               );
             }
@@ -343,7 +344,7 @@ describe('Graph Container', () => {
         By.css('.no-inputs-indicator')
       );
       expect(noInputsIndicator.nativeElement.innerText).toBe(
-        '(This op has no data input tensor.)'
+        '(This op has no input tensor.)'
       );
       // Check consumers section.
       const consumersContainer = fixture.debugElement.query(
@@ -365,8 +366,8 @@ describe('Graph Container', () => {
         By.css('.op-name')
       );
       expect(consumerOpNames.length).toBe(2);
-      expect(consumerOpNames[0].nativeElement.innerText).toEqual('op2a');
-      expect(consumerOpNames[1].nativeElement.innerText).toEqual('op2b');
+      expect(consumerOpNames[0].nativeElement.innerText).toBe('op2a');
+      expect(consumerOpNames[1].nativeElement.innerText).toBe('op2b');
       const consumerInputSlots = slotConsumersContainer.queryAll(
         By.css('.slot')
       );
@@ -381,8 +382,8 @@ describe('Graph Container', () => {
         By.css('.op-type')
       );
       expect(consumerOpTypes.length).toBe(2);
-      expect(consumerOpTypes[0].nativeElement.innerText).toEqual('ConsumerAOp');
-      expect(consumerOpTypes[1].nativeElement.innerText).toEqual('ConsumerBOp');
+      expect(consumerOpTypes[0].nativeElement.innerText).toBe('ConsumerAOp');
+      expect(consumerOpTypes[1].nativeElement.innerText).toBe('ConsumerBOp');
     }
   );
 
@@ -471,7 +472,7 @@ describe('Graph Container', () => {
         By.css('.no-inputs-indicator')
       );
       expect(noInputsIndicator.nativeElement.innerText).toBe(
-        '(This op has no data input tensor.)'
+        '(This op has no input tensor.)'
       );
       // Check consumers section.
       const consumersContainer = fixture.debugElement.query(
@@ -497,7 +498,7 @@ describe('Graph Container', () => {
         By.css('.op-name')
       );
       expect(consumerOpNames.length).toBe(1);
-      expect(consumerOpNames[0].nativeElement.innerText).toEqual('op2a');
+      expect(consumerOpNames[0].nativeElement.innerText).toBe('op2a');
       let consumerInputSlots = slotConsumersContainer0.queryAll(
         By.css('.slot')
       );
@@ -509,7 +510,7 @@ describe('Graph Container', () => {
         By.css('.op-type')
       );
       expect(consumerOpTypes.length).toBe(1);
-      expect(consumerOpTypes[0].nativeElement.innerText).toEqual('ConsumerAOp');
+      expect(consumerOpTypes[0].nativeElement.innerText).toBe('ConsumerAOp');
       // 2nd output slot.
       slotConsumersHeader = slotConsumersContainer1.queryAll(
         By.css('.slot-consumers-header')
@@ -528,7 +529,7 @@ describe('Graph Container', () => {
       );
       consumerOpTypes = slotConsumersContainer1.queryAll(By.css('.op-type'));
       expect(consumerOpTypes.length).toBe(1);
-      expect(consumerOpTypes[0].nativeElement.innerText).toEqual('ConsumerBOp');
+      expect(consumerOpTypes[0].nativeElement.innerText).toBe('ConsumerBOp');
     }
   );
 
@@ -623,8 +624,8 @@ describe('Graph Container', () => {
     const noConsumers = fixture.debugElement.query(
       By.css('.op-consumers-container')
     );
-    expect(noConsumers.nativeElement.innerText).toEqual(
-      '(This op has 1 output tensor(s) and no data consumer.)'
+    expect(noConsumers.nativeElement.innerText).toBe(
+      '(This op has 1 output tensor and no consumer.)'
     );
   });
 });

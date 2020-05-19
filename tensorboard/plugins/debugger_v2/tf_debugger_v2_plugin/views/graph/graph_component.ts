@@ -47,7 +47,7 @@ export class GraphComponent {
   onGraphOpNavigate = new EventEmitter<{graph_id: string; op_name: string}>();
 
   /**
-   * Get the ID of the immeidately-enclosing graph of the op.
+   * Get the ID of the immediately-enclosing graph of the op.
    */
   get graphId() {
     return this.opInfo.graph_ids[this.opInfo.graph_ids.length - 1];

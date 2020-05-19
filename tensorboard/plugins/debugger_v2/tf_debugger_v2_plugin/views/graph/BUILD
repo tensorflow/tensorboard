@@ -11,10 +11,13 @@ ng_module(
         "graph_component.ts",
         "graph_container.ts",
         "graph_module.ts",
+        "graph_op_component.ts",
     ],
     assets = [
         "graph_component.css",
         "graph_component.ng.html",
+        "graph_op_component.css",
+        "graph_op_component.ng.html",
     ],
     deps = [
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/actions",

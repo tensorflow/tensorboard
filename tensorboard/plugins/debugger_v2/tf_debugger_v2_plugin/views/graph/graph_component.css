@@ -47,16 +47,6 @@ limitations under the License.
   padding-top: 5px;
 }
 
-.input-op-name {
-  display: inline-block;
-  overflow-wrap: anywhere;
-  text-decoration: underline;
-}
-
-.input-op-output-slot {
-  display: inline-block;
-}
-
 .input-op-section {
   border-right: 1px solid rgb(0, 0, 0, 0.12);
   display: inline-block;
@@ -79,47 +69,6 @@ limitations under the License.
   font-size: 13px;
 }
 
-.op-container {
-  border: 2px solid #c6cad1;
-  border-radius: 4px;
-  box-shadow: 1px 3px #eee;
-  cursor: pointer;
-  margin: 0 5px 0 0;
-  padding: 2px 6px;
-  text-align: right;
-  width: 200px;
-}
-
-.op-container:hover {
-  border: 2px solid #ffd3b2;
-}
-
-.op-info-missing {
-  color: #808080;
-}
-
-.op-name {
-  cursor: pointer;
-  display: block;
-  overflow-wrap: anywhere;
-  text-decoration: underline;
-  white-space: pre-wrap;
-}
-
-.op-type {
-  background-color: #e3e5e8;
-  border: 1px solid #c0c0c0;
-  border-radius: 4px;
-  display: inline-block;
-  font-family: 'Roboto Mono', monospace;
-  font-size: 10px;
-  height: 14px;
-  line-height: 14px;
-  margin-top: 3px;
-  padding: 1px 3px;
-  width: max-content;
-}
-
 .self-op-header {
   font-weight: bold;
   margin-bottom: 5px;
@@ -130,19 +79,14 @@ limitations under the License.
   padding-bottom: 5px;
 }
 
-.self-op-name {
-  font-weight: bold;
-  text-decoration: none;
-}
-
-.slot {
-  color: #707070;
-}
-
 .slot-consumers-container {
   border-right: 1px solid rgb(0, 0, 0, 0.12);
   display: inline-block;
   margin-right: 5px;
   padding-top: 5px;
   vertical-align: top;
+}
+
+.slot-consumers-header {
+  white-space: nowrap;
 }
