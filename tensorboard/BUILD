@@ -167,6 +167,7 @@ py_library(
         "//tensorboard:expect_absl_flags_installed",
         "//tensorboard:expect_absl_logging_installed",
         "//tensorboard/backend:application",
+        "//tensorboard/backend/event_processing:data_ingester",
         "//tensorboard/backend/event_processing:event_file_inspector",
         "//tensorboard/util:argparse_util",
         "@org_pocoo_werkzeug",
@@ -189,6 +190,7 @@ py_test(
         "//tensorboard/plugins/core:core_plugin",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_mock",
+        "@org_pythonhosted_six",
     ],
 )
 

@@ -56,6 +56,7 @@ from werkzeug import serving
 from tensorboard import manager
 from tensorboard import version
 from tensorboard.backend import application
+from tensorboard.backend.event_processing import data_ingester
 from tensorboard.backend.event_processing import event_file_inspector as efi
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.core import core_plugin
@@ -405,8 +406,14 @@ class TensorBoard(object):
 
     def _make_server(self):
         """Constructs the TensorBoard WSGI app and instantiates the server."""
-        app = application.standard_tensorboard_wsgi(
-            self.flags, self.plugin_loaders, self.assets_zip_provider
+        ingester = data_ingester.LocalDataIngester(self.flags)
+        ingester.start()
+        app = application.TensorBoardWSGIApp(
+            self.flags,
+            self.plugin_loaders,
+            ingester.data_provider,
+            self.assets_zip_provider,
+            ingester.deprecated_multiplexer,
         )
         return self.server_class(app, self.flags)
 

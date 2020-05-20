@@ -1179,7 +1179,6 @@ describe('debugger selectors', () => {
           }),
         })
       );
-      console.log('');
       expect(getFocusedGraphOpConsumers(state)).toEqual([
         [
           {

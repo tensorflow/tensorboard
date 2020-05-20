@@ -158,6 +158,7 @@ namespace vz_chart_helper {
       }
 
       const newStyle = {
+        contain: 'content',
         opacity: 1,
         left: left ? `${left}px` : null,
         right: right ? `${right}px` : null,

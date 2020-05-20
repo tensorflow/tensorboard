@@ -98,14 +98,17 @@ handle these situations gracefully.
         overflow: hidden;
       }
       #outer-container {
-        overflow-y: auto;
-        overflow-x: hidden;
-        width: 100%;
+        contain: content;
         flex-grow: 1;
         flex-shrink: 1;
+        overflow-x: hidden;
+        overflow-y: auto;
+        width: 100%;
+        will-change: transform;
         word-wrap: break-word;
       }
       .name-row {
+        contain: content;
         padding-top: 5px;
         padding-bottom: 5px;
         display: flex;
