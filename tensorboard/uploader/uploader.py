@@ -341,13 +341,14 @@ class _BatchedRequestSender(object):
         # series is a scalar time series, else to `_NON_SCALAR_TIME_SERIES`.
         self._tag_metadata = {}
         self._allowed_plugins = frozenset(allowed_plugins)
+        self._tracker = tracker
         self._dry_run = dry_run
         self._scalar_request_sender = _ScalarBatchedRequestSender(
             experiment_id,
             api,
             rpc_rate_limiter,
             upload_limits.max_scalar_request_size,
-            tracker=tracker,
+            tracker=self._tracker,
             dry_run=self._dry_run,
         )
         self._tensor_request_sender = _TensorBatchedRequestSender(
@@ -356,7 +357,7 @@ class _BatchedRequestSender(object):
             tensor_rpc_rate_limiter,
             upload_limits.max_tensor_request_size,
             upload_limits.max_tensor_point_size,
-            tracker=tracker,
+            tracker=self._tracker,
             dry_run=self._dry_run,
         )
         self._blob_request_sender = _BlobRequestSender(
@@ -365,7 +366,7 @@ class _BatchedRequestSender(object):
             blob_rpc_rate_limiter,
             upload_limits.max_blob_request_size,
             upload_limits.max_blob_size,
-            tracker=tracker,
+            tracker=self._tracker,
             dry_run=self._dry_run,
         )
         self._tracker = tracker
@@ -398,6 +399,8 @@ class _BatchedRequestSender(object):
                 self._tag_metadata[time_series_key] = metadata
 
             plugin_name = metadata.plugin_data.plugin_name
+            if value.HasField("metadata"):
+                self._tracker.add_plugin_name(plugin_name)
             if value.HasField("metadata") and (
                 plugin_name != value.metadata.plugin_data.plugin_name
             ):
@@ -1019,9 +1022,9 @@ class _BlobRequestSender(object):
                 # Note the _send_blob() stream is internally flow-controlled.
                 # This rate limit applies to *starting* the stream.
                 self._rpc_rate_limiter.tick()
-                self._tracker.blob_start()
+                self._tracker.blob_start(len(blob))
                 sent_blobs += self._send_blob(blob_sequence_id, seq_index, blob)
-                self._tracker.blob_done(is_uploaded=bool(sent_blobs))
+                self._tracker.blob_done(bool(sent_blobs), len(blob))
 
             logger.info(
                 "Sent %d of %d blobs for sequence id: %s",
