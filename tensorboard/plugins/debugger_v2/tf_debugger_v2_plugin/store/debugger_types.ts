@@ -420,6 +420,8 @@ export interface Graphs {
   // `graph_id` refers to the immediately-enclosing graph of the ops.
   ops: {
     [graph_id: string]: {
+      // TODO(#3661): Decide on a way to avoid potential conflict with
+      // JavaScript builtin names.
       [op_name: string]: GraphOpInfo;
     };
   };
@@ -428,6 +430,8 @@ export interface Graphs {
   // `graph_id` refers to the immediately-enclosing graph of the ops.
   loadingOps: {
     [graph_id: string]: {
+      // TODO(#3661): Decide on a way to avoid potential conflict with
+      // JavaScript builtin names.
       [op_name: string]: DataLoadState;
     };
   };
