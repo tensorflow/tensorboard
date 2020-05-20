@@ -20,10 +20,12 @@ Provides TensorBoardWSGIApp for building a TensorBoard WSGI app.
 import base64
 import collections
 import hashlib
+import io
 import json
 import re
 import textwrap
 import time
+import zipfile
 
 import six
 from six.moves.urllib import (
@@ -71,11 +73,15 @@ def TensorBoardWSGIApp(
 
     Args:
       flags: An argparse.Namespace containing TensorBoard CLI flags.
-      plugins: A list of plugin loader instances.
-      assets_zip_provider: See TBContext documentation for more information.
+      plugins: A list of plugins, which can be provided as TBPlugin subclasses
+          or TBLoader instances or subclasses.
       data_provider: Instance of `tensorboard.data.provider.DataProvider`. May
           be `None` if `flags.generic_data` is set to `"false"` in which case
           `deprecated_multiplexer` must be passed instead.
+      assets_zip_provider: See TBContext documentation for more information. If
+          `None` a placeholder assets zipfile will be used containing only a
+          default `index.html` file, and the actual frontend assets must be
+          supplied by middleware wrapping this WSGI app.
       deprecated_multiplexer: Optional `plugin_event_multiplexer.EventMultiplexer`
           to use for any plugins not yet enabled for the DataProvider API.
           Required if the data_provider argument is not passed.
@@ -85,6 +91,8 @@ def TensorBoardWSGIApp(
 
     :type plugins: list[base_plugin.TBLoader]
     """
+    if assets_zip_provider is None:
+        assets_zip_provider = _placeholder_assets_zip_provider
     plugin_name_to_instance = {}
     context = base_plugin.TBContext(
         data_provider=data_provider,
@@ -546,3 +554,11 @@ def _clean_path(path):
     if path != "/" and path.endswith("/"):
         return path[:-1]
     return path
+
+
+def _placeholder_assets_zip_provider():
+    """Defines a default assets zip provider containing a dummy index.html."""
+    memfile = io.BytesIO()
+    with zipfile.ZipFile(memfile, mode="w") as zf:
+        zf.writestr("index.html", "TensorBoard placeholder index.html")
+    return memfile
