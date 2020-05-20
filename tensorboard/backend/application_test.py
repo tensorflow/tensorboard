@@ -685,7 +685,6 @@ class MakePluginLoaderTest(tb_test.TestCase):
 class TensorBoardPluginsTest(tb_test.TestCase):
     def setUp(self):
         self.context = None
-        dummy_assets_zip_provider = lambda: None
         # The application should have added routes for both plugins.
         self.app = application.TensorBoardWSGIApp(
             FakeFlags(logdir=self.get_temp_dir()),
@@ -713,7 +712,6 @@ class TensorBoardPluginsTest(tb_test.TestCase):
                 ),
             ],
             data_provider=FakeDataProvider(),
-            assets_zip_provider=dummy_assets_zip_provider,
         )
 
         self.server = werkzeug_test.Client(self.app, wrappers.BaseResponse)
