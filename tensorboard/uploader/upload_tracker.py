@@ -41,6 +41,7 @@ def readable_bytes_string(bytes):
 
 class UploadTracker(object):
     """Tracker for uploader progress and status."""
+
     def __init__(self):
         self._cumulative_num_scalars = 0
         self._cumulative_num_tensors = 0
