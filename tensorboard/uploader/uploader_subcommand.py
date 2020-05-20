@@ -424,7 +424,11 @@ class _UploadIntent(_Intent):
             "Upload started and will continue reading any new data as it's added"
         )
         print("to the logdir. To stop uploading, press Ctrl-C.")
-        if not self.dry_run:
+        if self.dry_run:
+            print(
+                "This is a dry-run. Data are not uploaded to tensorboard.dev."
+            )
+        else:
             print("View your TensorBoard live at: %s" % url)
         try:
             uploader.start_uploading()
@@ -437,7 +441,9 @@ class _UploadIntent(_Intent):
             return
         # TODO(@nfelt): make it possible for the upload cycle to end once we
         #   detect that no more runs are active, so this code can be reached.
-        if not self.dry_run:
+        if self.dry_run:
+            print("Dry run concluded.")
+        else:
             print("Done! View your TensorBoard at %s" % url)
 
 

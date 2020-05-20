@@ -40,13 +40,18 @@ def readable_bytes_string(bytes):
 
 
 class UploadTracker(object):
+    """Tracker for uploader progress and status."""
     def __init__(self):
         self._cumulative_num_scalars = 0
         self._cumulative_num_tensors = 0
+        self._cumulative_num_tensors_skipped = 0
+        self._cumulative_tensor_bytes = 0
+        self._cumulative_tensor_bytes_skipped = 0
         self._cumulative_num_blobs = 0
         self._cumulative_num_blobs_uploaded = 0
         self._cumulative_blob_bytes_uploaded = 0
         self._cumulative_plugin_names = set()
+        self._dot_counter = 0
 
     def _dummy_generator(self):
         while True:
@@ -56,6 +61,9 @@ class UploadTracker(object):
     def send_start(self):
         self._num_scalars = 0
         self._num_tensors = 0
+        self._num_tensors_skipped = 0
+        self._tensor_bytes = 0
+        self._tensor_bytes_skipped = 0
         self._num_blobs = 0
         self._num_blobs_uploaded = 0
         self._blob_bytes_uploaded = 0
@@ -63,6 +71,9 @@ class UploadTracker(object):
         self._progress_bar = None
 
     def _update_status(self, message):
+        if message:
+            self._dot_counter += 1
+            message += "." * (self._dot_counter % 3 + 1)
         if not self._progress_bar:
             self._progress_bar = tqdm.tqdm(
                 self._dummy_generator(), bar_format="{desc}"
@@ -73,6 +84,9 @@ class UploadTracker(object):
     def send_done(self):
         self._cumulative_num_scalars += self._num_scalars
         self._cumulative_num_tensors += self._num_tensors
+        self._cumulative_num_tensors_skipped += self._num_tensors_skipped
+        self._cumulative_tensor_bytes += self._tensor_bytes
+        self._cumulative_tensor_bytes_skipped += self._tensor_bytes_skipped
         self._cumulative_num_blobs += self._num_blobs
         self._cumulative_num_blobs += self._num_blobs
         self._cumulative_num_blobs_uploaded += self._num_blobs_uploaded
@@ -83,18 +97,22 @@ class UploadTracker(object):
                 self._update_status("")
                 self._progress_bar.close()
             # TODO(cais): Only populate the existing data types.
+            # TODO(cais0): Print skipped bytes if non-zero.
             sys.stdout.write(
-                "[%s] Uploaded %d scalars, %d tensors, %d binary objects (%s) (Plugins: %s)\n"
-                "    (Cumulative: %d scalars, %d tensors, %d binary objects (%s))\n"
+                "[%s] Uploaded %d scalars, %d tensors (%s), %d binary objects (%s)\n"
+                "    Plugins: %s\n"
+                "    Cumulative: %d scalars, %d tensors (%s), %d binary objects (%s)\n"
                 % (
                     readable_time_string(),
                     self._num_scalars,
                     self._num_tensors,
+                    readable_bytes_string(self._tensor_bytes),
                     self._num_blobs_uploaded,
                     readable_bytes_string(self._blob_bytes_uploaded),
                     ", ".join(self._plugin_names),
                     self._cumulative_num_scalars,
                     self._cumulative_num_tensors,
+                    readable_bytes_string(self._cumulative_tensor_bytes),
                     self._cumulative_num_blobs_uploaded,
                     readable_bytes_string(self._cumulative_blob_bytes_uploaded),
                 )
@@ -108,16 +126,31 @@ class UploadTracker(object):
         if not num_scalars:
             return
         self._num_scalars += num_scalars
-        self._update_status("Uploading %d scalars..." % num_scalars)
+        self._update_status("Uploading %d scalars" % num_scalars)
 
     def scalars_done(self):
         pass
 
-    def tensors_start(self, num_tensors):
+    def tensors_start(
+        self, num_tensors, num_tensors_skipped, bytes, bytes_skipped
+    ):
         if not num_tensors:
             return
         self._num_tensors += num_tensors
-        self._update_status("Uploading %d tensors..." % num_tensors)
+        self._tensor_bytes += bytes
+        self._num_tensors_skipped += num_tensors_skipped
+        self._tensor_bytes_skipped = bytes_skipped
+        # TODO(cais): Populate the "skipped" part if and only if
+        # num_tensors_skipped > 0.
+        self._update_status(
+            "Uploading %d tensors (%s) (Skipped %d tensors, %s)"
+            % (
+                num_tensors,
+                readable_bytes_string(bytes),
+                num_tensors_skipped,
+                readable_bytes_string(bytes_skipped),
+            )
+        )
 
     def tensors_done(self):
         pass
@@ -125,8 +158,7 @@ class UploadTracker(object):
     def blob_start(self, blob_bytes):
         self._num_blobs += 1
         self._update_status(
-            "Uploading binary object (%s)..."
-            % readable_bytes_string(blob_bytes)
+            "Uploading binary object (%s)" % readable_bytes_string(blob_bytes)
         )
 
     def blob_done(self, is_uploaded, blob_bytes_uploaded):

@@ -670,6 +670,9 @@ class _TensorBatchedRequestSender(object):
         self._request.experiment_id = self._experiment_id
         self._byte_budget_manager.reset(self._request)
         self._num_values = 0
+        self._num_values_skipped = 0
+        self._tensor_bytes = 0
+        self._tensor_bytes_skipped = 0
 
     def add_event(self, run_name, event, value, metadata):
         """Attempts to add the given event to the current request.
@@ -690,7 +693,6 @@ class _TensorBatchedRequestSender(object):
                 raise RuntimeError("add_event failed despite flush")
 
     def _add_event_internal(self, run_name, event, value, metadata):
-        self._num_values += 1
         run_proto = self._runs.get(run_name)
         if run_proto is None:
             run_proto = self._create_run(run_name)
@@ -715,7 +717,12 @@ class _TensorBatchedRequestSender(object):
 
         with _request_logger(request, request.runs):
             try:
-                self._tracker.tensors_start(self._num_values)
+                self._tracker.tensors_start(
+                    self._num_values,
+                    self._num_values_skipped,
+                    self._tensor_bytes,
+                    self._tensor_bytes_skipped,
+                )
                 if not self._dry_run:
                     grpc_util.call_with_retries(self._api.WriteTensor, request)
                 self._tracker.tensors_done()
@@ -789,7 +796,12 @@ class _TensorBatchedRequestSender(object):
                 self._max_tensor_point_size,
             )
             tag_proto.points.pop()
+            self._num_values_skipped += 1
+            self._tensor_bytes_skipped += point.value.ByteSize()
             return
+
+        self._num_values += 1
+        self._tensor_bytes += point.value.ByteSize()
 
         self._validate_tensor_value(
             value.tensor, value.tag, event.step, event.wall_time
