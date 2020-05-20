@@ -1229,23 +1229,17 @@ describe('debugger selectors', () => {
         createDebuggerState({
           graphs: createDebuggerGraphsState({
             loadingOps: {
-              g0: new Map(),
-              g1: new Map([['Op1', DataLoadState.LOADING]]),
-              g2: new Map([
-                ['Op2a', DataLoadState.LOADED],
-                ['Op2b', DataLoadState.FAILED],
-              ]),
+              g0: {},
+              g1: {Op1: DataLoadState.LOADING},
+              g2: {Op2a: DataLoadState.LOADED, Op2b: DataLoadState.FAILED},
             },
           }),
         })
       );
       expect(getLoadingGraphOps(state)).toEqual({
-        g0: new Map(),
-        g1: new Map([['Op1', DataLoadState.LOADING]]),
-        g2: new Map([
-          ['Op2a', DataLoadState.LOADED],
-          ['Op2b', DataLoadState.FAILED],
-        ]),
+        g0: {},
+        g1: {Op1: DataLoadState.LOADING},
+        g2: {Op2a: DataLoadState.LOADED, Op2b: DataLoadState.FAILED},
       });
     });
   });

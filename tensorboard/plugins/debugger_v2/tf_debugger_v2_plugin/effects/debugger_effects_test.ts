@@ -1447,7 +1447,9 @@ describe('Debugger effects', () => {
       );
       store.overrideSelector(getActiveRunId, runId);
       store.overrideSelector(getLoadingGraphOps, {
-        g2: new Map([['other_op', DataLoadState.LOADED]]),
+        g2: {
+          other_op: DataLoadState.LOADED,
+        },
       });
       store.overrideSelector(getLoadedStackFrames, {});
       store.refreshState();
@@ -1474,7 +1476,9 @@ describe('Debugger effects', () => {
       it(`skips a loading or loaded op: state=${opLoadState}`, () => {
         store.overrideSelector(getActiveRunId, runId);
         store.overrideSelector(getLoadingGraphOps, {
-          g2: new Map([['namespace_1/op_1', opLoadState]]),
+          g2: {
+            'namespace_1/op_1': opLoadState,
+          },
         });
         store.refreshState();
 
@@ -1501,7 +1505,9 @@ describe('Debugger effects', () => {
       });
       store.overrideSelector(getActiveRunId, runId);
       store.overrideSelector(getLoadingGraphOps, {
-        g2: new Map([['other_op', DataLoadState.LOADED]]),
+        g2: {
+          other_op: DataLoadState.LOADED,
+        },
       });
       // The second stack frame is already loaded.
       store.overrideSelector(getLoadedStackFrames, {bbb2: stackFrame1});

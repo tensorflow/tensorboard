@@ -713,13 +713,10 @@ const reducer = createReducer(
         },
       };
       if (newState.graphs.loadingOps[graph_id] === undefined) {
-        newState.graphs.loadingOps[graph_id] = new Map<string, DataLoadState>();
+        newState.graphs.loadingOps[graph_id] = {};
       }
-      if (newState.graphs.loadingOps[graph_id].get(op_name) === undefined) {
-        newState.graphs.loadingOps[graph_id].set(
-          op_name,
-          DataLoadState.LOADING
-        );
+      if (newState.graphs.loadingOps[graph_id][op_name] === undefined) {
+        newState.graphs.loadingOps[graph_id][op_name] = DataLoadState.LOADING;
       }
       return newState;
     }
@@ -742,7 +739,9 @@ const reducer = createReducer(
           },
           loadingOps: {
             ...state.graphs.loadingOps,
-            [graphId]: new Map(state.graphs.loadingOps[graphId]),
+            [graphId]: {
+              ...state.graphs.loadingOps[graphId],
+            },
           },
         },
       };
@@ -782,10 +781,8 @@ const reducer = createReducer(
         }),
       };
       // Remove the loading marker for the op.
-      newState.graphs.loadingOps[graphId].set(
-        graphOpInfoResponse.op_name,
-        DataLoadState.LOADED
-      );
+      newState.graphs.loadingOps[graphId][graphOpInfoResponse.op_name] =
+        DataLoadState.LOADED;
       return newState;
     }
   ),
