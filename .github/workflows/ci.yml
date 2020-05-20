@@ -84,7 +84,7 @@ jobs:
         run: yamllint -c docs/.yamllint docs docs/.yamllint
       - name: 'Install nbfmt.py for checking notebook formatting'
         run: |
-          nbfmt_version="04458102aafe1ccc9d703b832db3ac4d038ecd6c"
+          nbfmt_version="78692e5013fe070a33c7501245157b395c2e7e84"
           wget "https://raw.githubusercontent.com/tensorflow/docs/${nbfmt_version}/tools/nbfmt.py"
           pip install absl-py
           chmod +x ./nbfmt.py
