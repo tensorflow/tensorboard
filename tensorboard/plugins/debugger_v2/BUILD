@@ -57,6 +57,12 @@ py_test(
     size = "medium",
     srcs = ["debugger_v2_plugin_test.py"],
     srcs_version = "PY2AND3",
+    # NOTE(cais): This test requires more recent changes in TensorFlow than TF
+    # 2.2.0.
+    tags = [
+        "manual",
+        "notap",
+    ],
     deps = [
         ":debug_data_multiplexer",
         ":debugger_v2_plugin",
