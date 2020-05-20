@@ -439,9 +439,7 @@ export const getLoadedExecutionData = createSelector(
 
 export const getLoadingGraphOps = createSelector(
   selectDebuggerState,
-  (
-    state: DebuggerState
-  ): {[graph_id: string]: {[op_name: string]: DataLoadState}} =>
+  (state: DebuggerState): {[graph_id: string]: Map<string, DataLoadState>} =>
     state.graphs.loadingOps
 );
 

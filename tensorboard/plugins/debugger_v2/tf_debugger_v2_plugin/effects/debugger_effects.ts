@@ -662,10 +662,14 @@ export class DebuggerEffects {
    *
    * Load graph op info from the /graphs/op_info route when necessary.
    *
-   * @returns the IDs of the stack frames of the op's creation for downstream
-   * consumption.
+   * @returns An object with two keys for downstream consumption:
+   *   - runId: the current active run ID.
+   *   - stackFrameIds: the IDs of the stack frames of the op's creation.
    */
-  private loadGraphOpInfo(): Observable<string[]> {
+  private loadGraphOpInfo(): Observable<{
+    runId: string;
+    stackFrameIds: string[];
+  }> {
     return this.actions$.pipe(
       ofType(graphOpFocused),
       withLatestFrom(
@@ -677,8 +681,8 @@ export class DebuggerEffects {
         return (
           runId !== null &&
           (loadingOps[graph_id] === undefined ||
-            loadingOps[graph_id][op_name] === undefined ||
-            loadingOps[graph_id][op_name] === DataLoadState.FAILED)
+            loadingOps[graph_id].get(op_name) === undefined ||
+            loadingOps[graph_id].get(op_name) === DataLoadState.FAILED)
         );
       }),
       tap(([actionData]) =>
@@ -687,9 +691,14 @@ export class DebuggerEffects {
       mergeMap(([actionData, runId]) => {
         const {graph_id, op_name} = actionData;
         return this.dataSource.fetchGraphOpInfo(runId!, graph_id, op_name).pipe(
+          tap((graphOpInfoResponse) =>
+            this.store.dispatch(graphOpInfoLoaded({graphOpInfoResponse}))
+          ),
           map((graphOpInfoResponse) => {
-            this.store.dispatch(graphOpInfoLoaded({graphOpInfoResponse}));
-            return graphOpInfoResponse.stack_frame_ids;
+            return {
+              runId: runId!,
+              stackFrameIds: graphOpInfoResponse.stack_frame_ids,
+            };
           })
         );
         // TODO(cais): Add catchError() to pipe.
@@ -698,14 +707,11 @@ export class DebuggerEffects {
   }
 
   private loadGraphOpStackFrames(
-    prevStream$: Observable<string[]>
+    prevStream$: Observable<{runId: string; stackFrameIds: string[]}>
   ): Observable<void> {
     return prevStream$.pipe(
-      withLatestFrom(
-        this.store.select(getActiveRunId),
-        this.store.select(getLoadedStackFrames)
-      ),
-      map(([stackFrameIds, runId, loadedStackFrames]) => {
+      withLatestFrom(this.store.select(getLoadedStackFrames)),
+      map(([{runId, stackFrameIds}, loadedStackFrames]) => {
         const missingStackFrameIds = stackFrameIds.filter(
           (stackFrameId) => loadedStackFrames[stackFrameId] === undefined
         );
