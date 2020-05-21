@@ -152,10 +152,10 @@ describe('Graph Executions Container', () => {
     );
     expect(debugTensorValueElements.length).toBe(tensorContainers.length);
 
-    // Clicking the tensor item buttons should have dispatched proper actions.
+    // Clicking the tensor name buttons should dispatch the proper action.
     const dispatchSpy = spyOn(store, 'dispatch');
     const tensorItemClickables = fixture.debugElement.queryAll(
-      By.css('.tensor-item-clickable')
+      By.css('.tensor-name')
     );
     expect(tensorItemClickables.length).toBe(tensorContainers.length);
     tensorItemClickables[0].nativeElement.click();

@@ -37,19 +37,18 @@ limitations under the License.
           </div>
           {{ i }}
         </div>
-        <button
-          *ngIf="graphExecutionData[i]; else dataLoading"
-          class="tensor-item-clickable"
-          (click)="onClick.emit({
-            graph_id: graphExecutionData[i].graph_id,
-            op_name: graphExecutionData[i].op_name
-          })"
-        >
+        <div *ngIf="graphExecutionData[i]; else dataLoading">
           <div class="tensor-name-and-op-type">
-            <div class="tensor-name">
+            <button
+              class="tensor-name"
+              (click)="onTensorNameClick.emit({
+                graph_id: graphExecutionData[i].graph_id,
+                op_name: graphExecutionData[i].op_name
+              })"
+            >
               {{ graphExecutionData[i].op_name }}:{{
               graphExecutionData[i].output_slot }}
-            </div>
+            </button>
             <div class="op-type">
               {{ graphExecutionData[i].op_type }}
             </div>
@@ -63,7 +62,7 @@ limitations under the License.
             })"
           >
           </debug-tensor-value>
-        </button>
+        </div>
 
         <ng-template #dataLoading class="tensor-item">
           <div class="loading-spinner">

@@ -51,7 +51,7 @@ export class GraphExecutionsComponent implements OnChanges {
   onScrolledIndexChange = new EventEmitter<number>();
 
   @Output()
-  onClick = new EventEmitter<{
+  onTensorNameClick = new EventEmitter<{
     graph_id: string;
     op_name: string;
   }>();

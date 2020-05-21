@@ -67,35 +67,33 @@ limitations under the License.
   border-bottom: 1px solid rgba(0, 0, 0, 0.12);
   display: flex;
   flex-wrap: nowrap;
-  height: 36px;
-  line-height: 36px;
+  height: 38px;
+  line-height: 38px;
   text-align: left;
   vertical-align: middle;
   white-space: nowrap;
   width: 100%;
 }
 
-.tensor-item-clickable {
+.tensor-name {
   background-color: transparent;
   border: none;
   cursor: pointer;
-  padding: 0;
-}
-
-.tensor-item-clickable:focus {
-  outline: 2px solid #c6cad1;
-}
-
-.tensor-name {
   direction: rtl;
   display: block;
   height: 16px;
   line-height: 16px;
   overflow: hidden;
   padding: 0 2px;
+  text-align: right;
+  text-decoration: underline;
   text-overflow: ellipsis;
   white-space: nowrap;
   width: 100%;
+}
+
+.tensor-name:focus {
+  outline: 0;
 }
 
 .tensor-name-and-op-type {

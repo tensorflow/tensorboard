@@ -34,7 +34,7 @@ import {State} from '../../store/debugger_types';
       [graphExecutionIndices]="graphExecutionIndices$ | async"
       [focusIndex]="focusIndex$ | async"
       (onScrolledIndexChange)="onScrolledIndexChange($event)"
-      (onClick)="onClick($event)"
+      (onTensorNameClick)="onTensorNameClick($event)"
     ></graph-executions-component>
   `,
 })
@@ -63,7 +63,7 @@ export class GraphExecutionsContainer {
     this.store.dispatch(graphExecutionScrollToIndex({index: scrolledIndex}));
   }
 
-  onClick(event: {graph_id: string; op_name: string}) {
+  onTensorNameClick(event: {graph_id: string; op_name: string}) {
     this.store.dispatch(
       graphOpFocused({
         graph_id: event.graph_id,
