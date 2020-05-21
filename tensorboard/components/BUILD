@@ -6,10 +6,8 @@ load("//tensorboard/defs:vulcanize.bzl", "tensorboard_html_binary")
 licenses(["notice"])  # Apache 2.0
 
 tf_web_library(
-    name = "polymer_lib",
-    srcs = [
-        "polymer_lib.html",
-    ],
+    name = "tensorboard",
+    srcs = ["tensorboard.html"],
     path = "/",
     deps = [
         ":analytics",
@@ -19,27 +17,9 @@ tf_web_library(
     ],
 )
 
-# This Polymer only binary without entry point.
-tensorboard_html_binary(
-    name = "polymer_lib_binary",
-    compile = True,
-    input_path = "/polymer_lib.html",
-    output_path = "/polymer_lib_binary.html",
-    deps = [":polymer_lib"],
-)
-
-tf_web_library(
-    name = "tensorboard",
-    srcs = ["tensorboard.html"],
-    path = "/",
-    deps = [
-        ":polymer_lib_binary",
-    ],
-)
-
 tensorboard_html_binary(
     name = "index",
-    compile = False,
+    compile = True,
     input_path = "/tensorboard.html",
     js_path = "/index.js",
     output_path = "/index.html",
@@ -68,4 +48,33 @@ tf_web_library(
         "security.html",
     ],
     path = "/",
+)
+
+tf_web_library(
+    name = "ng_polymer_lib",
+    srcs = [
+        "ng_polymer_lib.html",
+    ],
+    path = "/",
+    deps = [
+        ":analytics",
+        ":security",
+        "//tensorboard/components/tf_backend",
+        "//tensorboard/components/tf_imports:polymer",
+        "//tensorboard/components/tf_storage",
+        "//tensorboard/components/tf_tensorboard",
+        "//tensorboard/components/tf_tensorboard:default_plugins",
+        "//tensorboard/components/tf_tensorboard:registry",
+    ],
+)
+
+# This Polymer only binary (as opposed to ng_index) allows ng_index to be built without
+# JSCompiler step. In other words, Angular-only changes can be built faster
+# incrementally.
+tensorboard_html_binary(
+    name = "ng_polymer_lib_binary",
+    compile = False,
+    input_path = "/ng_polymer_lib.html",
+    output_path = "/ng_polymer_lib_binary.html",
+    deps = [":ng_polymer_lib"],
 )
