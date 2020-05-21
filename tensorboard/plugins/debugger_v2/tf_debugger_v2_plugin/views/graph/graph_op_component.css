@@ -25,6 +25,10 @@ limitations under the License.
   width: 200px;
 }
 
+.op-container:focus {
+  outline: 0;
+}
+
 .op-container:hover {
   border: 2px solid #ffd3b2;
 }
@@ -43,6 +47,10 @@ limitations under the License.
   text-align: right;
   text-decoration: underline;
   white-space: pre-wrap;
+}
+
+.op-name:focus {
+  outline: 0;
 }
 
 .op-type {
