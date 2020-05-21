@@ -22,10 +22,10 @@ const basicDebugInfoStyle = `
     border: 1px solid #c0c0c0;
     border-radius: 4px;
     font-family: 'Roboto Mono', monospace;
-    height: 14px;
-    line-height: 14px;
+    height: 12px;
+    line-height: 12px;
     margin: 0 2px;
-    padding: 1px 3px;
+    padding: 0 3px;
     width: max-content;
   }
 `;

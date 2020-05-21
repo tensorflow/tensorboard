@@ -50,6 +50,12 @@ export class GraphExecutionsComponent implements OnChanges {
   @Output()
   onScrolledIndexChange = new EventEmitter<number>();
 
+  @Output()
+  onClick = new EventEmitter<{
+    graph_id: string;
+    op_name: string;
+  }>();
+
   parseDebugTensorValue = parseDebugTensorValue;
 
   @ViewChild(CdkVirtualScrollViewport, {static: false})

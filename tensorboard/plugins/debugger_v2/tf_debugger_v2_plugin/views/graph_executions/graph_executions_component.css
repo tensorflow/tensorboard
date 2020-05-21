@@ -50,9 +50,9 @@ limitations under the License.
   border: 1px solid #c0c0c0;
   border-radius: 4px;
   direction: rtl;
+  display: block;
   font-family: 'Roboto Mono', monospace;
   font-size: 10px;
-  display: block;
   height: 14px;
   line-height: 14px;
   padding: 1px 3px;
@@ -73,6 +73,17 @@ limitations under the License.
   vertical-align: middle;
   white-space: nowrap;
   width: 100%;
+}
+
+.tensor-item-clickable {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.tensor-item-clickable:focus {
+  outline: 2px solid #c6cad1;
 }
 
 .tensor-name {

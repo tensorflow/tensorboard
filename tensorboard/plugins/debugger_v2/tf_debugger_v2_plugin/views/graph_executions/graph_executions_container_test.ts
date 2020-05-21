@@ -23,6 +23,7 @@ import {By} from '@angular/platform-browser';
 import {Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 
+import {graphOpFocused} from '../../actions';
 import {DebuggerComponent} from '../../debugger_component';
 import {DebuggerContainer} from '../../debugger_container';
 import {
@@ -59,6 +60,8 @@ describe('Graph Executions Container', () => {
     graphExecutionData[i] = createTestGraphExecution({
       op_name: `TestOp_${i}`,
       op_type: `OpType_${i}`,
+      graph_id: 'g2',
+      graph_ids: ['g0', 'g1', 'g2'],
       tensor_debug_mode: TensorDebugMode.CONCISE_HEALTH,
       debug_tensor_value: [i, 100, 0, 0, 0],
     });
@@ -148,6 +151,29 @@ describe('Graph Executions Container', () => {
       By.css('debug-tensor-value')
     );
     expect(debugTensorValueElements.length).toBe(tensorContainers.length);
+
+    // Clicking the tensor item buttons should have dispatched proper actions.
+    const dispatchSpy = spyOn(store, 'dispatch');
+    const tensorItemClickables = fixture.debugElement.queryAll(
+      By.css('.tensor-item-clickable')
+    );
+    expect(tensorItemClickables.length).toBe(tensorContainers.length);
+    tensorItemClickables[0].nativeElement.click();
+    expect(dispatchSpy).toHaveBeenCalledTimes(1);
+    expect(dispatchSpy).toHaveBeenCalledWith(
+      graphOpFocused({
+        graph_id: 'g2',
+        op_name: 'TestOp_0',
+      })
+    );
+    tensorItemClickables[tensorContainers.length - 1].nativeElement.click();
+    expect(dispatchSpy).toHaveBeenCalledTimes(2);
+    expect(dispatchSpy).toHaveBeenCalledWith(
+      graphOpFocused({
+        graph_id: 'g2',
+        op_name: `TestOp_${tensorContainers.length - 1}`,
+      })
+    );
   }));
 
   it('renders # execs and execs viewport if # execs > 0; not loaded', fakeAsync(() => {
