@@ -83,17 +83,17 @@ limitations under the License.
   display: block;
   height: 16px;
   line-height: 16px;
+  margin: 2px 0 1px;
   overflow: hidden;
   padding: 0 2px;
   text-align: right;
   text-decoration: underline;
   text-overflow: ellipsis;
   white-space: nowrap;
-  width: 100%;
 }
 
 .tensor-name:focus {
-  outline: 0;
+  outline: 1px solid #c6cad1;
 }
 
 .tensor-name-and-op-type {
