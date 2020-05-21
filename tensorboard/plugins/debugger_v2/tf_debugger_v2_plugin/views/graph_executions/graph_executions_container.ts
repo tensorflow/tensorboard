@@ -64,12 +64,7 @@ export class GraphExecutionsContainer {
   }
 
   onTensorNameClick(event: {graph_id: string; op_name: string}) {
-    this.store.dispatch(
-      graphOpFocused({
-        graph_id: event.graph_id,
-        op_name: event.op_name,
-      })
-    );
+    this.store.dispatch(graphOpFocused(event));
   }
 
   constructor(private readonly store: Store<State>) {}
