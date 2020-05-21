@@ -74,14 +74,13 @@ import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Comment;
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.DocumentType;
 import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Html5Printer;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.parser.Parser;
 import org.jsoup.parser.Tag;
 import org.jsoup.select.Elements;
-import org.jsoup.select.NodeVisitor;
 
 /** Simple one-off solution for TensorBoard vulcanization. */
 public final class Vulcanize {
@@ -183,14 +182,10 @@ public final class Vulcanize {
     }
 
     boolean shouldExtractJs = !jsPath.isEmpty();
-    // Write an empty file for shasum when all scripts are extracted out.
     createFile(
         jsOutput, shouldExtractJs ? extractAndTransformJavaScript(document, jsPath) : "");
-    Document normalizedDocument = getFlattenedHTML5Document(document);
-    // Prevent from correcting the DOM structure and messing up the whitespace
-    // in the template.
-    normalizedDocument.outputSettings().prettyPrint(false);
-    createFile(output, normalizedDocument.toString());
+    // Write an empty file for shasum when all scripts are extracted out.
+    createFile(output, Html5Printer.stringify(document));
   }
 
   private static void createFile(Path filePath, String content) throws IOException {
@@ -781,112 +776,6 @@ public final class Vulcanize {
     lastBody.appendChild(scriptElement);
 
     return scriptContent;
-  }
-
-  private static void cloneChildrenWithoutWhitespace(Element src, Element dest) {
-    List<Node> toMove = new ArrayList<Node>();
-    for (Node node : src.childNodes()) {
-      if (node instanceof TextNode && ((TextNode) node).isBlank()) {
-        continue;
-      }
-      toMove.add(node);
-    }
-    for (int i = 0; i < toMove.size(); i++) {
-      Node node = toMove.get(i);
-      dest.appendChild(node.clone());
-    }
-  }
-
-  /**
-   * When we inline the HTML based on `<link rel="import">` in `transform`, we
-   * replace the link element with parsed document. This makes us have nested
-   * documents and jsoup's Node.outerHtml (or Node.toString) are incapable of
-   * properly outputting that. Here, we flatten the document by combining all
-   * elements in `<head>` and `<body>` of nested document in one `<head>` and
-   * `<body>`.
-   *
-   * It also prepends <!doctype html> since TensorBoard requires that the
-   * document is HTML.
-   *
-   * NOTE: it makes side-effect to the input `document`.
-   *
-   * Examples:
-   * // Input
-   * <#root> <!-- document -->
-   *   <html>
-   *     <head>
-   *      <#root>
-   *        <html>
-   *          <head>
-   *            <script></script>
-   *            <#root><html><body>welcome </body></html></#root>
-   *          </head>
-   *          <body>foo</body></html>
-   *      </#root></head>
-   *     <body><span>bar</span></body>
-   *   </html>
-   * </html>
-   * // Output
-   * <#root> <!-- document -->
-   *   <!doctype html>
-   *   <html>
-   *     <head><script></script></head>
-   *     <body>welcome foo<span>bar</span></body>
-   *   </html>
-   * </html>
-   **/
-  private static Document getFlattenedHTML5Document(Document document) {
-    Document flatDoc = new Document("/");
-
-    flatDoc.appendChild(new DocumentType("html", "", "", ""));
-
-    // Transfer comment nodes from the `document` level. They are important
-    // license comments
-    for (Node node : document.childNodes()) {
-      if (node instanceof Comment) {
-        flatDoc.appendChild(node.clone());
-      }
-    }
-
-    // Create `<html>`, `<head>` and `<body>`.
-    flatDoc.normalise();
-
-    document.traverse(new FlatDocumentCopier(flatDoc));
-
-    return flatDoc;
-  }
-
-  private static class FlatDocumentCopier implements NodeVisitor {
-    private Element destHead;
-    private Element destBody;
-
-    public FlatDocumentCopier(Document dest) {
-      destHead = dest.head();
-      destBody = dest.body();
-    }
-
-    @Override
-    public void head(Node node, int depth) {
-      // Copy childNodes from `head` into the dest doc's head without
-      // modification if the node is not a `document` (or a `<#root>` element)
-      // in which case we want to traverse further and only copy the childNodes
-      // in its `body` and `head` elements.
-      if (node.parentNode() != null && node.parentNode().nodeName().equals("head")
-          && !(node instanceof Document)) {
-        destHead.appendChild(node.clone());
-      }
-
-      if (node.nodeName().equals("body")) {
-        cloneChildrenWithoutWhitespace((Element) node, destBody);
-        // No need to further traverse the `body`. Skip by removing the nodes.
-        ((Element) node).empty();
-      }
-    }
-
-    @Override
-    public void tail(Node node, int depth) {
-      // Copying is done during the `head`. No need to do any work.
-    }
   }
 
   private static final class JsPrintlessErrorManager extends BasicErrorManager {
