@@ -151,14 +151,22 @@ describe('Graph Executions Container', () => {
       By.css('debug-tensor-value')
     );
     expect(debugTensorValueElements.length).toBe(tensorContainers.length);
+  }));
 
-    // Clicking the tensor name buttons should dispatch the proper action.
+  it('clicking the tensor name buttons dispatches graphOpFocused', fakeAsync(() => {
+    const fixture = TestBed.createComponent(GraphExecutionsContainer);
+    store.overrideSelector(getNumGraphExecutions, 2);
+    store.overrideSelector(getGraphExecutionData, {
+      0: graphExecutionData[0],
+      1: graphExecutionData[1],
+    });
+    fixture.autoDetectChanges();
+    tick();
+
     const dispatchSpy = spyOn(store, 'dispatch');
-    const tensorItemClickables = fixture.debugElement.queryAll(
-      By.css('.tensor-name')
-    );
-    expect(tensorItemClickables.length).toBe(tensorContainers.length);
-    tensorItemClickables[0].nativeElement.click();
+    const tensorNames = fixture.debugElement.queryAll(By.css('.tensor-name'));
+    expect(tensorNames.length).toBe(2);
+    tensorNames[0].nativeElement.click();
     expect(dispatchSpy).toHaveBeenCalledTimes(1);
     expect(dispatchSpy).toHaveBeenCalledWith(
       graphOpFocused({
@@ -166,12 +174,12 @@ describe('Graph Executions Container', () => {
         op_name: 'TestOp_0',
       })
     );
-    tensorItemClickables[tensorContainers.length - 1].nativeElement.click();
+    tensorNames[1].nativeElement.click();
     expect(dispatchSpy).toHaveBeenCalledTimes(2);
     expect(dispatchSpy).toHaveBeenCalledWith(
       graphOpFocused({
         graph_id: 'g2',
-        op_name: `TestOp_${tensorContainers.length - 1}`,
+        op_name: `TestOp_1`,
       })
     );
   }));

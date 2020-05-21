@@ -78,13 +78,14 @@ limitations under the License.
 .tensor-name {
   background-color: transparent;
   border: none;
+  box-sizing: border-box;
   cursor: pointer;
   direction: rtl;
   display: block;
   height: 16px;
   line-height: 16px;
   margin: 2px 0 1px;
-  max-width: calc(100% - 3px);
+  max-width: calc(100% - 2px);
   overflow: hidden;
   padding: 0 2px;
   text-align: right;
