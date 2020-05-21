@@ -84,6 +84,7 @@ limitations under the License.
   height: 16px;
   line-height: 16px;
   margin: 2px 0 1px;
+  max-width: calc(100% - 3px);
   overflow: hidden;
   padding: 0 2px;
   text-align: right;
