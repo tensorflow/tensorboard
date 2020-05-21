@@ -64,6 +64,7 @@ py_library(
         ":errors",
         ":lazy",
         ":version",
+        "//tensorboard/data:lib_init_only",
     ],
 )
 

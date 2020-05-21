@@ -110,6 +110,7 @@ build() (
   # env markers are handled (https://github.com/pypa/setuptools/pull/1081)
   export PYTHONWARNINGS=ignore:DEPRECATION  # suppress Python 2.7 deprecation spam
   pip install -qU wheel 'setuptools>=36.2.0'
+  pip install -r requirements.txt
 
   # Overrides file timestamps in the zip archive to make the build
   # reproducible. (Date is mostly arbitrary, but must be past 1980 to be

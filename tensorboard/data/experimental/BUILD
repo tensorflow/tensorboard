@@ -22,6 +22,7 @@ py_library(
         "//tensorboard:expect_grpc_installed",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_pandas_installed",
+        "//tensorboard:lazy",
         "//tensorboard/uploader:auth",
         "//tensorboard/uploader:server_info",
         "//tensorboard/uploader:util",
@@ -47,6 +48,16 @@ py_test(
         "//tensorboard/uploader/proto:protos_all_py_pb2",
         "//tensorboard/util:grpc_util",
         "@org_pythonhosted_mock",
+    ],
+)
+
+py_library(
+    name = "lib_init_only",
+    srcs = ["__init__.py"],
+    srcs_version = "PY2AND3",
+    visibility = ["//tensorboard:internal"],
+    deps = [
+        ":experiment_from_dev",
     ],
 )
 

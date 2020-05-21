@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from tensorboard import data
 from tensorboard import errors  # public export
 from tensorboard import lazy as _lazy
 from tensorboard import version as _version
