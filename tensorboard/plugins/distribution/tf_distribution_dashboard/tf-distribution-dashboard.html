@@ -47,18 +47,20 @@ limitations under the License.
   <template>
     <tf-dashboard-layout>
       <div class="sidebar" slot="sidebar">
-        <div class="sidebar-section">
-          <tf-option-selector
-            id="xTypeSelector"
-            name="Horizontal axis"
-            selected-id="{{_xType}}"
-          >
-            <paper-button id="step">step</paper-button>
-            <paper-button id="relative">relative</paper-button>
-            <paper-button id="wall_time">wall</paper-button>
-          </tf-option-selector>
+        <div class="settings">
+          <div class="sidebar-section">
+            <tf-option-selector
+              id="xTypeSelector"
+              name="Horizontal axis"
+              selected-id="{{_xType}}"
+            >
+              <paper-button id="step">step</paper-button>
+              <paper-button id="relative">relative</paper-button>
+              <paper-button id="wall_time">wall</paper-button>
+            </tf-option-selector>
+          </div>
         </div>
-        <div class="sidebar-section">
+        <div class="sidebar-section runs-selector">
           <tf-runs-selector selected-runs="{{_selectedRuns}}">
           </tf-runs-selector>
         </div>
