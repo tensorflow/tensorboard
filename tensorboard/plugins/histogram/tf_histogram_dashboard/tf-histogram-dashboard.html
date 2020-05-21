@@ -46,28 +46,30 @@ limitations under the License.
   <template>
     <tf-dashboard-layout>
       <div slot="sidebar">
-        <div class="sidebar-section">
-          <tf-option-selector
-            id="histogramModeSelector"
-            name="Histogram mode"
-            selected-id="{{_histogramMode}}"
-          >
-            <paper-button id="overlay">overlay</paper-button>
-            <paper-button id="offset">offset</paper-button>
-          </tf-option-selector>
+        <div class="settings">
+          <div class="sidebar-section">
+            <tf-option-selector
+              id="histogramModeSelector"
+              name="Histogram mode"
+              selected-id="{{_histogramMode}}"
+            >
+              <paper-button id="overlay">overlay</paper-button>
+              <paper-button id="offset">offset</paper-button>
+            </tf-option-selector>
+          </div>
+          <div class="sidebar-section">
+            <tf-option-selector
+              id="timePropertySelector"
+              name="Offset time axis"
+              selected-id="{{_timeProperty}}"
+            >
+              <paper-button id="step">step</paper-button>
+              <paper-button id="relative">relative</paper-button>
+              <paper-button id="wall_time">wall</paper-button>
+            </tf-option-selector>
+          </div>
         </div>
-        <div class="sidebar-section">
-          <tf-option-selector
-            id="timePropertySelector"
-            name="Offset time axis"
-            selected-id="{{_timeProperty}}"
-          >
-            <paper-button id="step">step</paper-button>
-            <paper-button id="relative">relative</paper-button>
-            <paper-button id="wall_time">wall</paper-button>
-          </tf-option-selector>
-        </div>
-        <div class="sidebar-section">
+        <div class="sidebar-section runs-selector">
           <tf-runs-selector selected-runs="{{_selectedRuns}}">
           </tf-runs-selector>
         </div>

@@ -33,10 +33,23 @@ limitations under the License.
         display: flex;
         flex-direction: column;
         height: 100%;
-        margin-right: 20px;
+        margin-right: 10px;
         overflow-x: hidden;
         padding: 5px 0;
         text-overflow: ellipsis;
+      }
+
+      .settings {
+        min-height: 50px;
+        overflow-x: hidden;
+        overflow-y: auto;
+        will-change: transform;
+      }
+
+      .runs-selector {
+        display: flex;
+        flex-grow: 1;
+        min-height: 200px;
       }
 
       tf-runs-selector {
@@ -55,18 +68,15 @@ limitations under the License.
 
       .sidebar-section {
         border-top: solid 1px rgba(0, 0, 0, 0.12);
+        margin-right: 10px;
         padding: var(--sidebar-vertical-padding) 0
           var(--sidebar-vertical-padding) var(--sidebar-left-padding);
         position: relative;
+        overflow: hidden;
       }
 
       .sidebar-section:first-of-type {
         border: none;
-      }
-
-      .sidebar-section:last-of-type {
-        flex-grow: 1;
-        display: flex;
       }
 
       .sidebar-section paper-button {

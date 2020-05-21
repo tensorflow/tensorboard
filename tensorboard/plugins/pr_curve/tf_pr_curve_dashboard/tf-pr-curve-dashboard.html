@@ -44,30 +44,35 @@ limitations under the License.
   <template>
     <tf-dashboard-layout>
       <div class="sidebar" slot="sidebar">
-        <div class="sidebar-section">
-          <tf-option-selector
-            id="time-type-selector"
-            name="Time Display Type"
-            selected-id="{{_timeDisplayType}}"
-          >
-            <paper-button id="step">step</paper-button
-            ><!--
-            --><paper-button id="relative">relative</paper-button
-            ><!--
-            --><paper-button id="wall_time">wall</paper-button>
-          </tf-option-selector>
-        </div>
-        <template is="dom-if" if="[[_runToAvailableTimeEntries]]">
-          <div class="sidebar-section" id="steps-selector-container">
-            <tf-pr-curve-steps-selector
-              runs="[[_relevantSelectedRuns]]"
-              run-to-step="{{_runToStep}}"
-              run-to-available-time-entries="[[_runToAvailableTimeEntries]]"
-              time-display-type="[[_timeDisplayType]]"
-            ></tf-pr-curve-steps-selector>
+        <div class="settings">
+          <div class="sidebar-section">
+            <tf-option-selector
+              id="time-type-selector"
+              name="Time Display Type"
+              selected-id="{{_timeDisplayType}}"
+            >
+              <paper-button id="step">step</paper-button>
+              <!--
+            -->
+              <paper-button id="relative">relative</paper-button>
+              <!--
+            -->
+              <paper-button id="wall_time">wall</paper-button>
+            </tf-option-selector>
           </div>
-        </template>
-        <div class="sidebar-section">
+          <template is="dom-if" if="[[_runToAvailableTimeEntries]]">
+            <div class="sidebar-section" id="steps-selector-container">
+              <tf-pr-curve-steps-selector
+                runs="[[_relevantSelectedRuns]]"
+                run-to-step="{{_runToStep}}"
+                run-to-available-time-entries="[[_runToAvailableTimeEntries]]"
+                time-display-type="[[_timeDisplayType]]"
+              >
+              </tf-pr-curve-steps-selector>
+            </div>
+          </template>
+        </div>
+        <div class="sidebar-section runs-selector">
           <tf-runs-selector selected-runs="{{_selectedRuns}}">
           </tf-runs-selector>
         </div>
@@ -141,9 +146,10 @@ limitations under the License.
         max-width: 540px;
         margin: 80px auto 0 auto;
       }
+
       /** Do not let the steps selector occlude the run selector. */
       #steps-selector-container {
-        max-height: 40%;
+        max-height: 60%;
         overflow-y: auto;
       }
     </style>
