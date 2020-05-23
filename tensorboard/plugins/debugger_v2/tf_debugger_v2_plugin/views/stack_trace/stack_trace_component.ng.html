@@ -16,20 +16,53 @@ limitations under the License.
 -->
 
 <div class="stack-trace-container">
-  <div>
+  <div class="stack-trace-header">
     <span class="stack-trace-title">
       Stack Trace
     </span>
-    <span
-      *ngIf="stackFramesForDisplay !== null && stackFramesForDisplay.length > 0"
-      class="stack-trace-host-name"
+
+    <div
+      *ngIf="stackTraceType !== null; else noStackTrace"
+      class="stack-trace-aux-info"
     >
-      (on {{ stackFramesForDisplay[0].host_name }})
-    </span>
+      <span>
+        <span [ngSwitch]="stackTraceType" class="stack-trace-type">
+          <span *ngSwitchCase="CodeLocationType.EXECUTION">
+            Eager execution of
+          </span>
+          <span *ngSwitchCase="CodeLocationType.GRAPH_OP_CREATION">
+            Creation of graph op
+          </span>
+        </span>
+        <span
+          *ngIf="originOpInfo !== null && originOpInfo.opName !== null"
+          class="op-name"
+        >
+          "{{ originOpInfo.opName }}"
+        </span>
+        <span *ngIf="originOpInfo !== null" class="op-type">
+          {{ originOpInfo.opType }}
+        </span>
+      </span>
+      <div>
+        <span
+          *ngIf="stackFramesForDisplay !== null && stackFramesForDisplay.length > 0"
+          class="stack-trace-host-name"
+        >
+          (Host name: {{ stackFramesForDisplay[0].host_name }})
+        </span>
+      </div>
+    </div>
+
+    <ng-template #noStackTrace>
+      <div class="stack-trace-aux-info no-stack-trace">
+        Click an eager execution or graph op to show its original stack trace.
+      </div>
+    </ng-template>
   </div>
 
   <div
-    *ngIf="stackFramesForDisplay !== null; else loading_section"
+    *ngIf="stackFramesForDisplay !== null; else loadingSection"
     class="stack-frame-array"
   >
     <div
@@ -64,7 +97,7 @@ limitations under the License.
     </div>
   </div>
 
-  <ng-template #loading_section>
+  <ng-template #loadingSection>
     <!-- TODO(cais): Display loading spinner. -->
   </ng-template>
 </div>

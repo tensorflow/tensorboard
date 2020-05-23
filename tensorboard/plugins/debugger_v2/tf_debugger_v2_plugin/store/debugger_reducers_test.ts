@@ -18,6 +18,7 @@ import {reducers} from './debugger_reducers';
 import {
   Alert,
   AlertType,
+  CodeLocationType,
   DataLoadState,
   Execution,
   StackFramesById,
@@ -969,6 +970,7 @@ describe('Debugger graphs reducers', () => {
       })
     );
     expect(nextState.executions.focusIndex).toBe(12);
+    expect(nextState.codeLocationFocusType).toBe(CodeLocationType.EXECUTION);
   });
 
   it(`Updates states on executionDigestFocused: scrollBeginIndex > 0`, () => {

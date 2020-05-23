@@ -26,6 +26,7 @@ limitations under the License.
   display: inline-block;
   font-weight: normal;
   white-space: normal;
+  overflow-wrap: anywhere;
   padding: 0 20px;
 }
 

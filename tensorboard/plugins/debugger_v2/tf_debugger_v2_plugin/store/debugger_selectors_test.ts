@@ -19,7 +19,7 @@ import {
   getAlertsLoaded,
   getFocusedExecutionData,
   getFocusedExecutionIndex,
-  getFocusedExecutionStackFrames,
+  getFocusedStackFrames,
   getFocusedGraphOpConsumers,
   getFocusedGraphOpInfo,
   getFocusedGraphOpInputs,
@@ -44,6 +44,7 @@ import {
 } from './debugger_selectors';
 import {
   AlertType,
+  CodeLocationType,
   DataLoadState,
   DEBUGGER_FEATURE_KEY,
   StackFrame,
@@ -60,6 +61,7 @@ import {
   createTestGraphExecution,
   createTestInfNanAlert,
   createTestGraphOpInfo,
+  createTestStackFrame,
 } from '../testing';
 
 describe('debugger selectors', () => {
@@ -427,7 +429,7 @@ describe('debugger selectors', () => {
     });
   });
 
-  describe('getFocusedExecutionStackFrames', () => {
+  describe('getFocusedStackFrames', () => {
     it('returns correct stack frames when there is no focus', () => {
       const state = createState(
         createDebuggerState({
@@ -450,26 +452,16 @@ describe('debugger selectors', () => {
             executionDigests: {},
             executionData: {},
           },
+          codeLocationFocusType: null,
         })
       );
-      expect(getFocusedExecutionStackFrames(state)).toBe(null);
+      expect(getFocusedStackFrames(state)).toBe(null);
     });
 
-    it('returns correct stack frames when there is no focus', () => {
-      const stackFrame1: StackFrame = ['localhost', '/tmp/main.py', 10, 'main'];
-      const stackFrame2: StackFrame = [
-        'localhost',
-        '/tmp/model.py',
-        20,
-        'initialize',
-      ];
-      const stackFrame3: StackFrame = [
-        'localhost',
-        '/tmp/model.py',
-        30,
-        'create_weight',
-      ];
-
+    it('returns correct eager stack frames', () => {
+      const stackFrame1: StackFrame = createTestStackFrame();
+      const stackFrame2: StackFrame = createTestStackFrame();
+      const stackFrame3: StackFrame = createTestStackFrame();
       const state = createState(
         createDebuggerState({
           activeRunId: '__default_debugger_run__',
@@ -500,12 +492,45 @@ describe('debugger selectors', () => {
             a2: stackFrame2,
             a3: stackFrame3,
           },
+          codeLocationFocusType: CodeLocationType.EXECUTION,
         })
       );
-      expect(getFocusedExecutionStackFrames(state)).toEqual([
-        stackFrame1,
-        stackFrame3,
-      ]);
+      expect(getFocusedStackFrames(state)).toEqual([stackFrame1, stackFrame3]);
+    });
+
+    it('returns correct graph-op-creation stack frames', () => {
+      const stackFrame1: StackFrame = createTestStackFrame();
+      const stackFrame2: StackFrame = createTestStackFrame();
+      const stackFrame3: StackFrame = createTestStackFrame();
+      const state = createState(
+        createDebuggerState({
+          activeRunId: '__default_debugger_run__',
+          graphs: {
+            ops: {
+              f1: {
+                op7: createTestGraphOpInfo({
+                  stack_frame_ids: ['a1', 'a2'],
+                }),
+                op8: createTestGraphOpInfo({
+                  stack_frame_ids: ['a1', 'a3'],
+                }),
+              },
+            },
+            loadingOps: {},
+            focusedOp: {
+              graphId: 'f1',
+              opName: 'op8',
+            },
+          },
+          stackFrames: {
+            a1: stackFrame1,
+            a2: stackFrame2,
+            a3: stackFrame3,
+          },
+          codeLocationFocusType: CodeLocationType.GRAPH_OP_CREATION,
+        })
+      );
+      expect(getFocusedStackFrames(state)).toEqual([stackFrame1, stackFrame3]);
     });
 
     it('returns null when subset of frames is missing', () => {
@@ -540,7 +565,7 @@ describe('debugger selectors', () => {
           },
         })
       );
-      expect(getFocusedExecutionStackFrames(state)).toBeNull();
+      expect(getFocusedStackFrames(state)).toBeNull();
     });
   });
 

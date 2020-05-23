@@ -512,7 +512,26 @@ export interface DebuggerState {
   // stack-frame IDs.
   stackFrames: StackFramesById;
 
+  // What the currently focused code location (stack trace) describes.
+  //   - `null` is for the case where no code location is focused on.
+  //   - `CodeLocationType.EXECUTION` is for the code location of an eager
+  //     (top-level) execution.
+  //   - `CodeLocationType.GRAPH_OP_CREATION` is for the code location of
+  //     the creation of a graph op.
+  codeLocationFocusType: CodeLocationType | null;
+
   sourceCode: SourceCodeState;
+}
+
+/**
+ * The type of origin of a code location (incl. stack trace.)
+ */
+export enum CodeLocationType {
+  // The code location for an eager (top-level) execution.
+  EXECUTION = 'execution',
+
+  // The code location for the creation of of an op (node) in a graph.
+  GRAPH_OP_CREATION = 'graph_op_creation',
 }
 
 export interface State {

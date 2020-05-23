@@ -15,12 +15,15 @@ limitations under the License.
 import {Component} from '@angular/core';
 import {createSelector, select, Store} from '@ngrx/store';
 
-import {State} from '../../store/debugger_types';
+import {CodeLocationType, State} from '../../store/debugger_types';
 
 import {sourceLineFocused} from '../../actions';
 import {
-  getFocusedExecutionStackFrames,
+  getCodeLocationFocusType,
+  getFocusedExecutionData,
+  getFocusedGraphOpInfo,
   getFocusedSourceLineSpec,
+  getFocusedStackFrames,
 } from '../../store';
 import {StackFrameForDisplay} from './stack_trace_component';
 
@@ -30,16 +33,53 @@ import {StackFrameForDisplay} from './stack_trace_component';
   selector: 'tf-debugger-v2-stack-trace',
   template: `
     <stack-trace-component
+      [stackTraceType]="stackTraceType$ | async"
+      [originOpInfo]="originOpInfo$ | async"
       [stackFramesForDisplay]="stackFramesForDisplay$ | async"
       (onSourceLineClicked)="onSourceLineClicked($event)"
     ></stack-trace-component>
   `,
 })
 export class StackTraceContainer {
+  readonly stackTraceType$ = this.store.pipe(select(getCodeLocationFocusType));
+
+  readonly originOpInfo$ = this.store.pipe(
+    select(
+      createSelector(
+        getCodeLocationFocusType,
+        getFocusedExecutionData,
+        getFocusedGraphOpInfo,
+        (codeLocationFocusType, executionData, graphOpInfo) => {
+          if (codeLocationFocusType === null) {
+            return null;
+          }
+          if (codeLocationFocusType === CodeLocationType.EXECUTION) {
+            if (executionData === null) {
+              return null;
+            }
+            return {
+              opType: executionData.op_type,
+              opName: null,
+            };
+          } else {
+            // This is CodeLocationType.GRAPH_OP_CREATION.
+            if (graphOpInfo === null) {
+              return null;
+            }
+            return {
+              opType: graphOpInfo.op_type,
+              opName: graphOpInfo.op_name,
+            };
+          }
+        }
+      )
+    )
+  );
+
   readonly stackFramesForDisplay$ = this.store.pipe(
     select(
       createSelector(
-        getFocusedExecutionStackFrames,
+        getFocusedStackFrames,
         getFocusedSourceLineSpec,
         (stackFrames, focusedSourceLineSpec) => {
           if (stackFrames === null) {

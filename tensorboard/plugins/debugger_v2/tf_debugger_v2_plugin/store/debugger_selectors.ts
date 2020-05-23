@@ -20,6 +20,7 @@ import {
   AlertsByIndex,
   Alerts,
   AlertType,
+  CodeLocationType,
   DataLoadState,
   DEBUGGER_FEATURE_KEY,
   DebuggerRunListing,
@@ -461,6 +462,13 @@ export const getFocusedExecutionData = createSelector(
   }
 );
 
+export const getCodeLocationFocusType = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): CodeLocationType | null => {
+    return state.codeLocationFocusType;
+  }
+);
+
 /**
  * Get the stack trace (frames) of the execution event currently focused on
  * (if any).
@@ -469,14 +477,33 @@ export const getFocusedExecutionData = createSelector(
  * If any of the stack frames is missing (i.e., hasn't been loaded from
  * the data source yet), returns null.
  */
-export const getFocusedExecutionStackFrames = createSelector(
+export const getFocusedStackFrames = createSelector(
   selectDebuggerState,
   (state: DebuggerState): StackFrame[] | null => {
-    const {focusIndex, executionData} = state.executions;
-    if (focusIndex === null || executionData[focusIndex] === undefined) {
+    if (state.codeLocationFocusType === null) {
       return null;
     }
-    const stackFrameIds = executionData[focusIndex].stack_frame_ids;
+    let stackFrameIds: string[] = [];
+    if (state.codeLocationFocusType === CodeLocationType.EXECUTION) {
+      const {focusIndex, executionData} = state.executions;
+      if (focusIndex === null || executionData[focusIndex] === undefined) {
+        return null;
+      }
+      stackFrameIds = executionData[focusIndex].stack_frame_ids;
+    } else {
+      // This is CodeLocationType.GRAPH_OP_CREATION.
+      if (state.graphs.focusedOp === null) {
+        return null;
+      }
+      const {graphId, opName} = state.graphs.focusedOp;
+      if (
+        state.graphs.ops[graphId] === undefined ||
+        state.graphs.ops[graphId][opName] === undefined
+      ) {
+        return null;
+      }
+      stackFrameIds = state.graphs.ops[graphId][opName].stack_frame_ids;
+    }
     const stackFrames: StackFrame[] = [];
     for (const stackFrameId of stackFrameIds) {
       if (state.stackFrames[stackFrameId] != null) {
