@@ -99,6 +99,13 @@ def define_flags(parser):
         help="Experiment description. Markdown format.  Max 600 characters.",
     )
     upload.add_argument(
+        "--experiment_id",
+        metavar="ID",
+        type=str,
+        default=None,
+        help="ID of an existing experiment to upload to",
+    )
+    upload.add_argument(
         "--plugins",
         type=lambda option: option.split(","),
         default=[],

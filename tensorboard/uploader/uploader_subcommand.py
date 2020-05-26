@@ -390,10 +390,11 @@ class _UploadIntent(_Intent):
         """
     )
 
-    def __init__(self, logdir, name=None, description=None):
+    def __init__(self, logdir, name=None, description=None, experiment_id=None):
         self.logdir = logdir
         self.name = name
         self.description = description
+        self.experiment_id = experiment_id
 
     def get_ack_message_body(self):
         return self._MESSAGE_TEMPLATE.format(logdir=self.logdir)
@@ -412,7 +413,9 @@ class _UploadIntent(_Intent):
             name=self.name,
             description=self.description,
         )
-        experiment_id = uploader.create_experiment()
+        experiment_id = uploader.create_experiment(
+            experiment_id=self.experiment_id
+        )
         url = server_info_lib.experiment_url(server_info, experiment_id)
         print(
             "Upload started and will continue reading any new data as it's added"
@@ -503,6 +506,7 @@ def _get_intent(flags):
                 os.path.expanduser(flags.logdir),
                 name=flags.name,
                 description=flags.description,
+                experiment_id=flags.experiment_id,
             )
         else:
             raise base_plugin.FlagsError(
