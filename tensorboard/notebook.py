@@ -23,6 +23,7 @@ from __future__ import print_function
 import datetime
 import errno
 import json
+import os
 import random
 import shlex
 import sys
@@ -378,18 +379,31 @@ def _display_ipython(port, height, display_handle):
       <script>
         (function() {
           const frame = document.getElementById(%JSON_ID%);
-          const url = new URL("/", window.location);
-          url.port = %PORT%;
+          const url = new URL("%ABS_PATH%", window.location);
+          %PORT_CHANGE%
           frame.src = url;
         })();
       </script>
-  """
+    """
     replacements = [
         ("%HTML_ID%", html_escape(frame_id, quote=True)),
         ("%JSON_ID%", json.dumps(frame_id)),
-        ("%PORT%", "%d" % port),
         ("%HEIGHT%", "%d" % height),
     ]
+    if "TENSORBOARD_PROXY_URL" in os.environ:
+        abs_path = os.environ["TENSORBOARD_PROXY_URL"]
+        # Allow %PORT% in $TENSORBOARD_PROXY_URL
+        abs_path = abs_path.replace("%PORT%", "%d" % port)
+        replacements.extend([
+            ("%ABS_PATH%", abs_path),
+            ("%PORT_CHANGE%", ""),
+        ])
+    else:
+        replacements.extend([
+            ("%ABS_PATH%", "/"),
+            ("%PORT_CHANGE%", "url.port = %d;" % port),
+        ])
+
     for (k, v) in replacements:
         shell = shell.replace(k, v)
     iframe = IPython.display.HTML(shell)
