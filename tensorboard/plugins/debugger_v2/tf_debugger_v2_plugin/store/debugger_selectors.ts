@@ -506,7 +506,7 @@ export const getCodeLocationOrigin = createSelector(
       } as CodeLocationGraphOpCreationOrigin;
     }
   }
-); // TODO(cais): Add unit test.
+);
 
 /**
  * Get the stack trace (frames) of the execution event currently focused on
