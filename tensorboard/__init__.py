@@ -18,7 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from tensorboard import data
 from tensorboard import errors  # public export
 from tensorboard import lazy as _lazy
 from tensorboard import version as _version
@@ -74,6 +73,13 @@ __all__ = [
 #
 # See <https://github.com/tensorflow/tensorboard/issues/1989> for
 # additional discussion.
+
+
+@_lazy.lazy_load("tensorboard.data")
+def data():
+    import importlib
+
+    return importlib.import_module("tensorboard.data")
 
 
 @_lazy.lazy_load("tensorboard.notebook")
