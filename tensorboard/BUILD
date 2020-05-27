@@ -45,6 +45,7 @@ py_library(
         ":lib_init_only",
         ":notebook",
         ":program",
+        "//tensorboard/data:lib_init_only",
         "//tensorboard/summary",
         "//tensorboard/summary/writer",
     ],
@@ -64,7 +65,6 @@ py_library(
         ":errors",
         ":lazy",
         ":version",
-        "//tensorboard/data:lib_init_only",
     ],
 )
 
