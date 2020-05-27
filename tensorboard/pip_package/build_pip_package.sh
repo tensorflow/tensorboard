@@ -101,7 +101,7 @@ build() (
       s/^from webencodings/from tensorboard._vendor.webencodings/
     ' {} +
 
-  virtualenv -q venv
+  virtualenv -q -p python3 venv
   export VIRTUAL_ENV=venv
   export PATH="${PWD}/venv/bin:${PATH}"
   unset PYTHON_HOME
