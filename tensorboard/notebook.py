@@ -394,15 +394,13 @@ def _display_ipython(port, height, display_handle):
         abs_path = os.environ["TENSORBOARD_PROXY_URL"]
         # Allow %PORT% in $TENSORBOARD_PROXY_URL
         abs_path = abs_path.replace("%PORT%", "%d" % port)
-        replacements.extend([
-            ("%ABS_PATH%", abs_path),
-            ("%PORT_CHANGE%", ""),
-        ])
+        replacements.extend(
+            [("%ABS_PATH%", abs_path), ("%PORT_CHANGE%", ""),]
+        )
     else:
-        replacements.extend([
-            ("%ABS_PATH%", "/"),
-            ("%PORT_CHANGE%", "url.port = %d;" % port),
-        ])
+        replacements.extend(
+            [("%ABS_PATH%", "/"), ("%PORT_CHANGE%", "url.port = %d;" % port),]
+        )
 
     for (k, v) in replacements:
         shell = shell.replace(k, v)
