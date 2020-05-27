@@ -518,20 +518,52 @@ export interface DebuggerState {
   //     (top-level) execution.
   //   - `CodeLocationType.GRAPH_OP_CREATION` is for the code location of
   //     the creation of a graph op.
+  // This state is currently set based on what relevant part of the UI
+  // was clicked by the user most recently: whether it is an event in the
+  // eager-execution timeline or an item in the graph-execution scroll.
   codeLocationFocusType: CodeLocationType | null;
 
   sourceCode: SourceCodeState;
 }
 
 /**
- * The type of origin of a code location (incl. stack trace.)
+ * The type of origin of a code location (incl. stack trace).
  */
 export enum CodeLocationType {
   // The code location for an eager (top-level) execution.
-  EXECUTION = 'execution',
+  EXECUTION,
 
   // The code location for the creation of of an op (node) in a graph.
-  GRAPH_OP_CREATION = 'graph_op_creation',
+  GRAPH_OP_CREATION,
+}
+
+/**
+ * Information regarding the origin of a code location (incl. stack trace).
+ * This base interface is inherited by child interfaces for eager execution
+ * and graph-op creation, respectively.
+ */
+export interface CodeLocationOrigin {
+  codeLocationType: CodeLocationType;
+
+  opType: string;
+}
+
+/**
+ * A code location originated from an eager (top-level) execution event.
+ */
+export interface CodeLocationExecutionOrigin extends CodeLocationOrigin {
+  codeLocationType: CodeLocationType.EXECUTION;
+
+  executionIndex: number;
+}
+
+/**
+ * A code location originated from a graph-op creation event.
+ */
+export interface CodeLocationGraphOpCreationOrigin extends CodeLocationOrigin {
+  codeLocationType: CodeLocationType.GRAPH_OP_CREATION;
+
+  opName: string;
 }
 
 export interface State {

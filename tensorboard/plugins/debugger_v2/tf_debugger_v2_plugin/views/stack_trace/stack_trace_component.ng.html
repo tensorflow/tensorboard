@@ -22,26 +22,30 @@ limitations under the License.
     </span>
 
     <div
-      *ngIf="stackTraceType !== null; else noStackTrace"
+      *ngIf="codeLocationType !== null; else noStackTrace"
       class="stack-trace-aux-info"
     >
       <span>
-        <span [ngSwitch]="stackTraceType" class="stack-trace-type">
-          <span *ngSwitchCase="CodeLocationType.EXECUTION">
-            Eager execution of
-          </span>
-          <span *ngSwitchCase="CodeLocationType.GRAPH_OP_CREATION">
+        <span [ngSwitch]="codeLocationType" class="code-location-origin">
+          <div *ngSwitchCase="CodeLocationType.EXECUTION">
+            Eager execution
+            <span *ngIf="opType !== null" class="eager-execution-index">
+              #{{ executionIndex }}:
+            </span>
+            <span *ngIf="opType !== null" class="op-type">
+              {{ opType }}
+            </span>
+          </div>
+
+          <div *ngSwitchCase="CodeLocationType.GRAPH_OP_CREATION">
             Creation of graph op
-          </span>
-        </span>
-        <span
-          *ngIf="originOpInfo !== null && originOpInfo.opName !== null"
-          class="op-name"
-        >
-          "{{ originOpInfo.opName }}"
-        </span>
-        <span *ngIf="originOpInfo !== null" class="op-type">
-          {{ originOpInfo.opType }}
+            <span *ngIf="opName !== null" class="op-name">
+              "{{ opName }}"
+            </span>
+            <span *ngIf="opType !== null" class="op-type">
+              {{ opType }}
+            </span>
+          </div>
         </span>
       </span>
       <div>

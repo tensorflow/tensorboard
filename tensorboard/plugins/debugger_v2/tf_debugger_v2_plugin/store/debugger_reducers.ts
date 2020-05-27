@@ -529,6 +529,8 @@ const reducer = createReducer(
           ...state.executions,
           focusIndex: state.executions.scrollBeginIndex + action.displayIndex,
         },
+        // An eager-execution event was last focused on, update the
+        // code-location focus type to `EXECUTION`.
         codeLocationFocusType: CodeLocationType.EXECUTION,
       };
     }
@@ -695,6 +697,8 @@ const reducer = createReducer(
             opName: data.op_name,
           },
         },
+        // An graph event was last focused on, update the
+        // code-location focus type to `GRAPH_OP_CREATION`.
         codeLocationFocusType: CodeLocationType.GRAPH_OP_CREATION,
       };
     }

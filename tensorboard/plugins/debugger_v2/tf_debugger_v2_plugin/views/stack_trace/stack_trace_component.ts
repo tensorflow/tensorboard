@@ -34,18 +34,20 @@ export interface StackFrameForDisplay {
 })
 export class StackTraceComponent {
   @Input()
-  stackTraceType!: CodeLocationType | null;
+  codeLocationType!: CodeLocationType | null;
 
   @Input()
-  originOpInfo!: {
-    // The name of the op that the stack trace is about.
-    // E.g., 'Dense_2/MatMul'.
-    // For eager execution, this is null.
-    opName: string | null;
-    // The type of the op that the stack trace is about.
-    // E.g., 'MatMul'.
-    opType: string;
-  } | null;
+  opType!: string | null;
+
+  // Index of eager (top-level) execution, not `null` only for
+  // `CodeLocationType.GRAPH_OP_CREATION`.
+  @Input()
+  opName!: string | null;
+
+  // Index of eager (top-level) execution, not `null` only for
+  // `CodeLocationType.EXECUTION`.
+  @Input()
+  executionIndex!: number | null;
 
   @Input()
   stackFramesForDisplay: StackFrameForDisplay[] | null = null;

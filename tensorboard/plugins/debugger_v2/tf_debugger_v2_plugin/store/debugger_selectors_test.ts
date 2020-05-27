@@ -17,6 +17,7 @@ import {
   getAlertsBreakdown,
   getAlertsFocusType,
   getAlertsLoaded,
+  getCodeLocationOrigin,
   getFocusedExecutionData,
   getFocusedExecutionIndex,
   getFocusedStackFrames,
@@ -45,12 +46,15 @@ import {
 import {
   AlertType,
   CodeLocationType,
+  CodeLocationExecutionOrigin,
+  CodeLocationGraphOpCreationOrigin,
   DataLoadState,
   DEBUGGER_FEATURE_KEY,
   StackFrame,
 } from './debugger_types';
 import {
   createAlertsState,
+  createDebuggerExecutionsState,
   createDebuggerGraphExecutionsState,
   createDebuggerGraphsState,
   createDebuggerSourceCodeState,
@@ -429,6 +433,68 @@ describe('debugger selectors', () => {
     });
   });
 
+  describe('getCodeLocationOrigin', () => {
+    it('returns null initial state', () => {
+      const state = createState(createDebuggerState());
+      expect(getCodeLocationOrigin(state)).toBeNull();
+    });
+
+    it('returns correct origin for eager execution', () => {
+      const state = createState(
+        createDebuggerState({
+          codeLocationFocusType: CodeLocationType.EXECUTION,
+          executions: createDebuggerExecutionsState({
+            focusIndex: 1,
+            executionData: {
+              0: createTestExecutionData({
+                op_type: 'Type1Op',
+              }),
+              1: createTestExecutionData({
+                op_type: 'Type2Op',
+              }),
+            },
+          }),
+        })
+      );
+      expect(getCodeLocationOrigin(state)).toEqual({
+        codeLocationType: CodeLocationType.EXECUTION,
+        opType: 'Type2Op',
+        executionIndex: 1,
+      } as CodeLocationExecutionOrigin);
+    });
+
+    it('returns correct origin for graph-op creation', () => {
+      const state = createState(
+        createDebuggerState({
+          codeLocationFocusType: CodeLocationType.GRAPH_OP_CREATION,
+          graphs: createDebuggerGraphsState({
+            focusedOp: {
+              graphId: 'f1',
+              opName: 'op2',
+            },
+            ops: {
+              f1: {
+                op1: createTestGraphOpInfo({
+                  op_type: 'Type1Op',
+                  op_name: 'foo',
+                }),
+                op2: createTestGraphOpInfo({
+                  op_type: 'Type2Op',
+                  op_name: 'bar',
+                }),
+              },
+            },
+          }),
+        })
+      );
+      expect(getCodeLocationOrigin(state)).toEqual({
+        codeLocationType: CodeLocationType.GRAPH_OP_CREATION,
+        opType: 'Type2Op',
+        opName: 'bar',
+      } as CodeLocationGraphOpCreationOrigin);
+    });
+  });
+
   describe('getFocusedStackFrames', () => {
     it('returns correct stack frames when there is no focus', () => {
       const state = createState(
@@ -531,6 +597,33 @@ describe('debugger selectors', () => {
         })
       );
       expect(getFocusedStackFrames(state)).toEqual([stackFrame1, stackFrame3]);
+    });
+
+    it('returns null when no graph op is focused on', () => {
+      const stackFrame1: StackFrame = createTestStackFrame();
+      const stackFrame2: StackFrame = createTestStackFrame();
+      const state = createState(
+        createDebuggerState({
+          activeRunId: '__default_debugger_run__',
+          graphs: {
+            ops: {
+              f1: {
+                op1: createTestGraphOpInfo({
+                  stack_frame_ids: ['a1', 'a2'],
+                }),
+              },
+            },
+            loadingOps: {},
+            focusedOp: null,
+          },
+          stackFrames: {
+            a1: stackFrame1,
+            a2: stackFrame2,
+          },
+          codeLocationFocusType: CodeLocationType.GRAPH_OP_CREATION,
+        })
+      );
+      expect(getFocusedStackFrames(state)).toBeNull();
     });
 
     it('returns null when subset of frames is missing', () => {
