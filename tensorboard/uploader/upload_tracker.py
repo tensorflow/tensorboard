@@ -1,4 +1,4 @@
-# Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -212,11 +212,11 @@ class UploadStats(object):
         return ", ".join(string_pieces)
 
 
-STYLE_RESET = "\033[0m"
-STYLE_BOLD = "\033[1m"
-STYLE_GREEN = "\033[32m"
-STYLE_YELLOW = "\033[33m"
-STYLE_DARKGRAY = "\033[90m"
+_STYLE_RESET = "\033[0m"
+_STYLE_BOLD = "\033[1m"
+_STYLE_GREEN = "\033[32m"
+_STYLE_YELLOW = "\033[33m"
+_STYLE_DARKGRAY = "\033[90m"
 
 
 class UploadTracker(object):
@@ -240,28 +240,28 @@ class UploadTracker(object):
             # Yield an arbitrary value 0: The progress bar is indefinite.
             yield 0
 
-    def _update_uploading_status(self, message, color_code=STYLE_GREEN):
+    def _update_uploading_status(self, message, color_code=_STYLE_GREEN):
         message += "." * 3
         self._uploading_bar.set_description_str(
-            color_code + message + STYLE_RESET
+            color_code + message + _STYLE_RESET
         )
         self._uploading_bar.update()
 
     def _update_cumulative_status(self):
         uploaded_message = "%s[%s]%s Uploaded %s" % (
-            STYLE_BOLD,
+            _STYLE_BOLD,
             readable_time_string(),
-            STYLE_RESET,
+            _STYLE_RESET,
             self._stats.uploaded_summary,
         )
         self._cumulative_uploaded_bar.set_description_str(uploaded_message)
         self._cumulative_uploaded_bar.update()
         if self._stats.skipped_any:
             skipped_message = "%s%s Skipped %s%s" % (
-                STYLE_DARKGRAY,
+                _STYLE_DARKGRAY,
                 " " * 21,
                 self._stats.skipped_summary,
-                STYLE_RESET,
+                _STYLE_RESET,
             )
             self._cumulative_skipped_bar.set_description_str(skipped_message)
             self._cumulative_skipped_bar.update()
@@ -279,7 +279,7 @@ class UploadTracker(object):
             yield
         finally:
             self._update_uploading_status(
-                "Listening for new data in logdir", color_code=STYLE_YELLOW
+                "Listening for new data in logdir", color_code=_STYLE_YELLOW
             )
 
     @contextlib.contextmanager
