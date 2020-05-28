@@ -50,6 +50,16 @@ py_test(
     ],
 )
 
+py_library(
+    name = "lib_init_only",
+    srcs = ["__init__.py"],
+    srcs_version = "PY3",
+    visibility = ["//tensorboard:internal"],
+    deps = [
+        ":experiment_from_dev",
+    ],
+)
+
 py_binary(
     name = "test_binary",
     srcs = ["test_binary.py"],
