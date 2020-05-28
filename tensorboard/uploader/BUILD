@@ -114,7 +114,6 @@ py_library(
     name = "upload_tracker",
     srcs = ["upload_tracker.py"],
     deps = [
-        ":util",
         "//tensorboard:expect_tqdm_installed",
     ],
 )
@@ -147,7 +146,6 @@ py_test(
         "@org_pythonhosted_mock",
     ],
 )
-
 
 py_test(
     name = "upload_tracker_test",

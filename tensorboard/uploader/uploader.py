@@ -100,7 +100,7 @@ class TensorBoardUploader(object):
             explicitly rate-limit within the stream here.
           name: String name to assign to the experiment.
           description: String description to assign to the experiment.
-          verbosity: Level of verbosity, as an integer. Supported value:
+          verbosity: Level of verbosity, an integer. Supported value:
               0 - No upload statistics is printed.
               1 - Print upload statistics while uploading data (default).
         """

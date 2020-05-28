@@ -102,7 +102,7 @@ def define_flags(parser):
         "--verbose",
         type=int,
         default=1,
-        help="Verbosity of the upload during data uploading. Supoprted values: "
+        help="Verbosity of the upload during data uploading. Supported values: "
         "0: no statistics printed during uploading. 1 (default): print data "
         "statistics as data is uploaded.",
     )

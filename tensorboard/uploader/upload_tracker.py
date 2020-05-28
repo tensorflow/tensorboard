@@ -27,7 +27,7 @@ import tqdm
 
 def readable_time_string():
     """Get a human-readable time string for the present."""
-    return f"{datetime.now():%Y-%m-%dT%H:%M:%S}"
+    return datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
 
 
 def readable_bytes_string(bytes):
