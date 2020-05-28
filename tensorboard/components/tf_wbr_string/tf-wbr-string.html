@@ -18,8 +18,8 @@ limitations under the License.
 <link rel="import" href="../tf-imports/polymer.html" />
 
 <!--
-  tf-wbr-string safely renders a string, with <wbr> elements inserted
-  around specified delimiters.
+  tf-wbr-string safely renders a string, with <wbr> word break elements inserted
+  after substrings that match a regular expression pattern.
 -->
 <dom-module id="tf-wbr-string">
   <template>
@@ -38,8 +38,11 @@ limitations under the License.
         /** The value to render with word breaks. */
         value: String,
         /**
-         * Regular expression pattern for specifying delimiters. Word breaks are
-         * inserted after each match.
+         * Regular expression pattern for specifying delimiters. <wbr> elements
+         * are inserted after all non-overlapping matches. A match that is
+         * overlapped by another match further to the left is ignored. Empty
+         * matches will consume the remainder of the string so it is advised
+         * to not allow empty matches in your pattern.
          */
         delimiterPattern: String,
         _parts: {
@@ -49,9 +52,6 @@ limitations under the License.
       },
       _computeParts(value, delimiterPattern) {
         const result = [];
-        if (value == null) {
-          return [];
-        }
         while (true) {
           const delimiterRegExp = new RegExp(delimiterPattern, 'g');
           delimiterRegExp.test(value);
