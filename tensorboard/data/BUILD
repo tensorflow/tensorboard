@@ -8,6 +8,16 @@ licenses(["notice"])  # Apache 2.0
 exports_files(["LICENSE"])
 
 py_library(
+    name = "lib_init_only",
+    srcs = ["__init__.py"],
+    srcs_version = "PY2AND3",
+    visibility = ["//tensorboard:internal"],
+    deps = [
+        "//tensorboard/data/experimental:lib_init_only",
+    ],
+)
+
+py_library(
     name = "provider",
     srcs = ["provider.py"],
     srcs_version = "PY3",

@@ -45,6 +45,7 @@ py_library(
         ":lib_init_only",
         ":notebook",
         ":program",
+        "//tensorboard/data:lib_init_only",
         "//tensorboard/summary",
         "//tensorboard/summary/writer",
     ],
