@@ -45,54 +45,56 @@ TensorFlow run.
   <template>
     <tf-dashboard-layout>
       <div class="sidebar" slot="sidebar">
-        <div class="sidebar-section">
-          <div class="line-item">
-            <paper-checkbox checked="{{_actualSize}}"
-              >Show actual image size</paper-checkbox
-            >
+        <div class="settings">
+          <div class="sidebar-section">
+            <div class="line-item">
+              <paper-checkbox checked="{{_actualSize}}"
+                >Show actual image size</paper-checkbox
+              >
+            </div>
+          </div>
+          <div class="sidebar-section">
+            <h3 class="tooltip-container">Brightness adjustment</h3>
+            <div class="resettable-slider-container">
+              <paper-slider
+                min="0"
+                max="2"
+                snaps
+                pin
+                step="0.01"
+                value="{{_brightnessAdjustment}}"
+                immediate-value="{{_brightnessAdjustment}}"
+              ></paper-slider>
+              <paper-button
+                class="x-button"
+                on-tap="_resetBrightness"
+                disabled="[[_brightnessIsDefault]]"
+                >Reset</paper-button
+              >
+            </div>
+          </div>
+          <div class="sidebar-section">
+            <h3 class="tooltip-container">Contrast adjustment</h3>
+            <div class="resettable-slider-container">
+              <paper-slider
+                min="0"
+                max="500"
+                snaps
+                pin
+                step="1"
+                value="{{_contrastPercentage}}"
+                immediate-value="{{_contrastPercentage}}"
+              ></paper-slider>
+              <paper-button
+                class="x-button"
+                on-tap="_resetContrast"
+                disabled="[[_contrastIsDefault]]"
+                >Reset</paper-button
+              >
+            </div>
           </div>
         </div>
-        <div class="sidebar-section">
-          <h3 class="tooltip-container">Brightness adjustment</h3>
-          <div class="resettable-slider-container">
-            <paper-slider
-              min="0"
-              max="2"
-              snaps
-              pin
-              step="0.01"
-              value="{{_brightnessAdjustment}}"
-              immediate-value="{{_brightnessAdjustment}}"
-            ></paper-slider>
-            <paper-button
-              class="x-button"
-              on-tap="_resetBrightness"
-              disabled="[[_brightnessIsDefault]]"
-              >Reset</paper-button
-            >
-          </div>
-        </div>
-        <div class="sidebar-section">
-          <h3 class="tooltip-container">Contrast adjustment</h3>
-          <div class="resettable-slider-container">
-            <paper-slider
-              min="0"
-              max="500"
-              snaps
-              pin
-              step="1"
-              value="{{_contrastPercentage}}"
-              immediate-value="{{_contrastPercentage}}"
-            ></paper-slider>
-            <paper-button
-              class="x-button"
-              on-tap="_resetContrast"
-              disabled="[[_contrastIsDefault]]"
-              >Reset</paper-button
-            >
-          </div>
-        </div>
-        <div class="sidebar-section">
+        <div class="sidebar-section runs-selector">
           <tf-runs-selector
             id="runs-selector"
             selected-runs="{{_selectedRuns}}"

@@ -60,6 +60,7 @@ py_test(
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard:plugin_util",
         "//tensorboard/backend:application",
+        "//tensorboard/backend/event_processing:data_provider",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/compat:no_tensorflow",
         "//tensorboard/plugins:base_plugin",

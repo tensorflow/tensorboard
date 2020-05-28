@@ -30,11 +30,48 @@ from tensorboard.uploader.proto import server_info_pb2
 # Request timeout for communicating with remote server.
 _REQUEST_TIMEOUT_SECONDS = 10
 
-# Maximum blob size, if not specified by server_info
-_DEFAULT_MAX_BLOB_SIZE = 10 * (2 ** 20)  # 10 MiB
+# Minimum interval between initiating write WriteScalar RPCs, if not specified
+# by server_info, in milliseconds
+_DEFAULT_MIN_SCALAR_REQUEST_INTERVAL = 5000
 
-# Maximum tensor point size, if not specified by server_info
-_DEFAULT_MAX_TENSOR_POINT_SIZE = 16 * (2 ** 10)  # 16 KiB
+# Minimum interval between initiating write WriteTensor RPCs, if not specified
+# by server_info, in milliseconds.
+_DEFAULT_MIN_TENSOR_REQUEST_INTERVAL = 1000
+
+# Minimum interval between initiating blob write RPC streams, if not specified
+# by server_info, in milliseconds.
+# This may differ from the above RPC rate limits, because blob streams
+# are not batched, so sending a sequence of N blobs requires N streams, which
+# could reasonably be sent more frequently.
+_DEFAULT_MIN_BLOB_REQUEST_INTERVAL = 1000
+
+# Maximum WriteScalar request size, if not specified by server_info, in bytes.
+# The server-side limit is 4 MiB [1]; we should pad a bit to mitigate any errors
+# in our bookkeeping. Currently, we pad a lot because WriteScalar is relatively
+# slow and we would otherwise risk Deadline Exceeded errors.
+#
+# [1]: https://github.com/grpc/grpc/blob/e70d8582b4b0eedc45e3d25a57b58a08b94a9f4a/include/grpc/impl/codegen/grpc_types.h#L447  # pylint: disable=line-too-long
+_DEFAULT_MAX_SCALAR_REQUEST_SIZE = 128 * (2 ** 10)  # 128KiB
+
+# Maximum WriteTensor request size, if not specified by server_info, in bytes.
+# The server-side limit is 4 MiB [1]; we should pad a bit to mitigate any errors
+# in our bookkeeping. Currently, we pad a lot.
+#
+# [1]: https://github.com/grpc/grpc/blob/e70d8582b4b0eedc45e3d25a57b58a08b94a9f4a/include/grpc/impl/codegen/grpc_types.h#L447  # pylint: disable=line-too-long
+_DEFAULT_MAX_TENSOR_REQUEST_SIZE = 512 * (2 ** 10)  # 512KiB
+
+# Maximum WriteBlob request size, if not specified by server_info, in bytes.
+# The server-side limit is 4 MiB [1]; we pad with a 256 KiB chunk to mitigate
+# any errors in our bookkeeping.
+#
+# [1]: https://github.com/grpc/grpc/blob/e70d8582b4b0eedc45e3d25a57b58a08b94a9f4a/include/grpc/impl/codegen/grpc_types.h#L447  # pylint: disable=line-too-long
+_DEFAULT_MAX_BLOB_REQUEST_SIZE = 4 * (2 ** 20) - 256 * (2 ** 10)  # 4MiB-256KiB
+
+# Maximum blob size, if not specified by server_info, in bytes.
+_DEFAULT_MAX_BLOB_SIZE = 10 * (2 ** 20)  # 10MiB
+
+# Maximum tensor point size, if not specified by server_info, in bytes.
+_DEFAULT_MAX_TENSOR_POINT_SIZE = 16 * (2 ** 10)  # 16KiB
 
 
 def _server_info_request(upload_plugins):
@@ -158,57 +195,44 @@ def allowed_plugins(server_info):
         return frozenset((scalars_metadata.PLUGIN_NAME,))
 
 
-def max_blob_size(server_info):
-    """Determines the maximum allowed size for blob uploads.
-
-    This pulls from the `max_blob_size` on the `server_info` when that
-    submessage is set, else falls back to a default.
-
-    Note that the RPC endpoint also enforces a limit, which should be kept in
-    sync with the one provided by server_info. Blobs larger than this maximum
-    should be stripped from the data set and a warning logged for the user.
+def upload_limits(server_info):
+    """Returns UploadLimits, from server_info if possible, otherwise from defaults.
 
     Args:
       server_info: A `server_info_pb2.ServerInfoResponse` message.
 
     Returns:
-      A integer giving the maximum size allowed for blob uploads, in bytes.
+      An instance of UploadLimits.
     """
-
     if server_info.HasField("upload_limits"):
-        return server_info.upload_limits.max_blob_size
+        upload_limits = server_info.upload_limits
     else:
-        # Old server: gracefully degrade to 10 MiB.
-        # TODO(@bmd3k): Promote this branch to an error once we're
-        # confident that we won't roll back to old server versions.
-        return _DEFAULT_MAX_BLOB_SIZE
+        upload_limits = server_info_pb2.UploadLimits()
 
+    if not upload_limits.max_scalar_request_size:
+        upload_limits.max_scalar_request_size = _DEFAULT_MAX_SCALAR_REQUEST_SIZE
+    if not upload_limits.max_tensor_request_size:
+        upload_limits.max_tensor_request_size = _DEFAULT_MAX_TENSOR_REQUEST_SIZE
+    if not upload_limits.max_blob_request_size:
+        upload_limits.max_blob_request_size = _DEFAULT_MAX_BLOB_REQUEST_SIZE
+    if not upload_limits.min_scalar_request_interval:
+        upload_limits.min_scalar_request_interval = (
+            _DEFAULT_MIN_SCALAR_REQUEST_INTERVAL
+        )
+    if not upload_limits.min_tensor_request_interval:
+        upload_limits.min_tensor_request_interval = (
+            _DEFAULT_MIN_TENSOR_REQUEST_INTERVAL
+        )
+    if not upload_limits.min_blob_request_interval:
+        upload_limits.min_blob_request_interval = (
+            _DEFAULT_MIN_BLOB_REQUEST_INTERVAL
+        )
+    if not upload_limits.max_blob_size:
+        upload_limits.max_blob_size = _DEFAULT_MAX_BLOB_SIZE
 
-def max_tensor_point_size(server_info):
-    """Determines the maximum allowed size for tensor point uploads.
-
-    This pulls from the `max_tensor_point_size` on the `server_info` when that
-    submessage is set, else falls back to a default.
-
-    Note that the RPC endpoint may also enforce a limit, which should be kept in
-    sync with the one provided by server_info. Tensor points larger than this
-    maximum should be stripped from the data set and a warning logged for the
-    user.
-
-    Args:
-      server_info: A `server_info_pb2.ServerInfoResponse` message.
-
-    Returns:
-      A integer giving the maximum size allowed for tensor uploads, in bytes.
-    """
-
-    if server_info.HasField("upload_limits"):
-        return server_info.upload_limits.max_tensor_point_size
-    else:
-        # Old server: gracefully degrade to 16 KiB.
-        # TODO(@bmd3k): Promote this branch to an error once we're
-        # confident that we won't roll back to old server versions.
-        return _DEFAULT_MAX_TENSOR_POINT_SIZE
+    if not upload_limits.max_tensor_point_size:
+        upload_limits.max_tensor_point_size = _DEFAULT_MAX_TENSOR_POINT_SIZE
+    return upload_limits
 
 
 class CommunicationError(RuntimeError):

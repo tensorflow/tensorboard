@@ -37,6 +37,17 @@ def parse_args():
         default=None,
         help="Optional API endpoint used to override the default",
     )
+    parser.add_argument(
+        "--pivot",
+        action="store_true",
+        help="Pivot the DataFrame, so that the tags become columns "
+        "of the DataFrame.",
+    )
+    parser.add_argument(
+        "--include_wall_time",
+        action="store_true",
+        help="Include wall_time column(s) in the DataFrame",
+    )
     return parser.parse_args()
 
 
@@ -44,7 +55,9 @@ def main(args):
     experiment = experiment_from_dev.ExperimentFromDev(
         args.experiment_id, api_endpoint=args.api_endpoint
     )
-    dataframe = experiment.get_scalars()
+    dataframe = experiment.get_scalars(
+        pivot=args.pivot, include_wall_time=args.include_wall_time
+    )
     print(dataframe)
 
 

@@ -13,12 +13,54 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+:host {
+  overflow-y: auto;
+}
+
+.consumers-container {
+  padding-bottom: 5px;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.consumer-section {
+  display: block;
+  margin: 5px 0;
+}
+
 .graph-structure-container {
-  text-align: center;
+  font-size: 12px;
+  overflow-y: auto;
+  white-space: nowrap;
+}
+
+.inputs-container {
+  border-bottom: 1px solid rgb(0, 0, 0, 0.12);
+  margin-top: 5px;
+  overflow-x: auto;
+  padding-bottom: 0;
+  white-space: nowrap;
 }
 
 .input-op-container {
-  display: inline-table;
+  display: inline-block;
+  padding-top: 5px;
+}
+
+.input-op-section {
+  border-right: 1px solid rgb(0, 0, 0, 0.12);
+  display: inline-block;
+  margin-right: 5px;
+  padding-bottom: 5px;
+}
+
+.input-slot-header {
+  margin-bottom: 5px;
+}
+
+.input-tensor-name {
+  display: block;
+  white-space: nowrap;
 }
 
 .no-op-focused {
@@ -27,11 +69,24 @@ limitations under the License.
   font-size: 13px;
 }
 
-.op-container {
-  border: 1px solid #c6cad1;
-  border-radius: 3px;
-  display: table;
-  height: max-content;
-  margin: 0 auto;
-  width: 300px;
+.self-op-header {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.self-op-container {
+  border-bottom: 1px solid rgb(0, 0, 0, 0.12);
+  padding-bottom: 5px;
+}
+
+.slot-consumers-container {
+  border-right: 1px solid rgb(0, 0, 0, 0.12);
+  display: inline-block;
+  margin-right: 5px;
+  padding-top: 5px;
+  vertical-align: top;
+}
+
+.slot-consumers-header {
+  white-space: nowrap;
 }

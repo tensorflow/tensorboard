@@ -25,7 +25,6 @@ import time
 import grpc
 import numpy as np
 
-from tensorboard import lazy
 from tensorboard.data.experimental import base_experiment
 from tensorboard.uploader import auth
 from tensorboard.uploader import util
@@ -39,8 +38,7 @@ from tensorboard.util import grpc_util
 DEFAULT_ORIGIN = "https://tensorboard.dev"
 
 
-@lazy.lazy_load("pandas")
-def pandas():
+def import_pandas():
     """Import pandas, guarded by a user-friendly error message on failure."""
     try:
         import pandas
@@ -70,7 +68,17 @@ class ExperimentFromDev(base_experiment.BaseExperiment):
         self._experiment_id = experiment_id
         self._api_client = get_api_client(api_endpoint=api_endpoint)
 
-    def get_scalars(self, runs_filter=None, tags_filter=None, pivot=None):
+    def get_scalars(
+        self,
+        runs_filter=None,
+        tags_filter=None,
+        pivot=False,
+        include_wall_time=False,
+    ):
+        # NOTE(#3650): Import pandas early in this method, so if the
+        # Python environment does not have pandas installed, an error can be
+        # raised early, before any rpc call is made.
+        pandas = import_pandas()
         if runs_filter is not None:
             raise NotImplementedError(
                 "runs_filter support for get_scalars() is not implemented yet."
@@ -79,7 +87,6 @@ class ExperimentFromDev(base_experiment.BaseExperiment):
             raise NotImplementedError(
                 "tags_filter support for get_scalars() is not implemented yet."
             )
-        pivot = True if pivot is None else pivot
 
         request = export_service_pb2.StreamExperimentDataRequest()
         request.experiment_id = self._experiment_id
@@ -107,15 +114,15 @@ class ExperimentFromDev(base_experiment.BaseExperiment):
             )
             values.extend(list(response.points.values))
 
-        dataframe = pandas.DataFrame(
-            {
-                "run": runs,
-                "tag": tags,
-                "step": steps,
-                "wall_time": wall_times,
-                "value": values,
-            }
-        )
+        data = {
+            "run": runs,
+            "tag": tags,
+            "step": steps,
+            "value": values,
+        }
+        if include_wall_time:
+            data["wall_time"] = wall_times
+        dataframe = pandas.DataFrame(data)
         if pivot:
             dataframe = self._pivot_dataframe(dataframe)
         return dataframe
@@ -123,17 +130,32 @@ class ExperimentFromDev(base_experiment.BaseExperiment):
     def _pivot_dataframe(self, dataframe):
         num_missing_0 = np.count_nonzero(dataframe.isnull().values)
         dataframe = dataframe.pivot_table(
-            ["value", "wall_time"], ["run", "step"], "tag",
+            values=(
+                ["value", "wall_time"]
+                if "wall_time" in dataframe.columns
+                else "value"
+            ),
+            index=["run", "step"],
+            columns="tag",
+            dropna=False,
         )
         num_missing_1 = np.count_nonzero(dataframe.isnull().values)
         if num_missing_1 > num_missing_0:
             raise ValueError(
-                "pivoted DataFrame contains %d missing value(s). "
+                "pivoted DataFrame contains missing value(s). "
                 "This is likely due to two timeseries having different "
                 "sets of steps in your experiment. "
                 "You can avoid this error by calling `get_scalars()` with "
                 "`pivot=False` to disable the DataFrame pivoting."
             )
+        # `reset_index()` removes the MultiIndex structure of the pivoted
+        # DataFrame. Before the call, the DataFrame consits of two levels
+        # of index: "run" and "step". After the call, the index become a
+        # single range index (e.g,. `dataframe[:2]` works).
+        dataframe = dataframe.reset_index()
+        # Remove the columns name "tag".
+        dataframe.columns.name = None
+        dataframe.columns.names = [None for name in dataframe.columns.names]
         return dataframe
 
 

@@ -19,7 +19,6 @@ import {
   ExecutionDataResponse,
   ExecutionDigestsResponse,
   GraphExecutionDataResponse,
-  GraphExecutionDigestsResponse,
   SourceFileResponse,
 } from '../data_source/tfdbg2_data_source';
 import {findFileIndex} from './debugger_store_utils';
@@ -29,7 +28,9 @@ import {
   DataLoadState,
   DebuggerState,
   Executions,
+  Graphs,
   GraphExecutions,
+  GraphOpInfo,
   InfNanAlert,
   StackFramesById,
   SourceFileSpec,
@@ -90,6 +91,14 @@ export function createInitialGraphExecutionsState(): GraphExecutions {
   };
 }
 
+export function createInitialGraphsState(): Graphs {
+  return {
+    ops: {},
+    loadingOps: {},
+    focusedOp: null,
+  };
+}
+
 const initialState: DebuggerState = {
   runs: {},
   runsLoaded: {
@@ -111,6 +120,7 @@ const initialState: DebuggerState = {
   },
   executions: createInitialExecutionsState(),
   graphExecutions: createInitialGraphExecutionsState(),
+  graphs: createInitialGraphsState(),
   stackFrames: {},
   sourceCode: {
     sourceFileListLoaded: {
@@ -665,6 +675,117 @@ const reducer = createReducer(
       };
     }
   ),
+  ////////////////////////////////////////////////
+  // Reducers related to graph structures.      //
+  ////////////////////////////////////////////////
+  on(
+    actions.graphOpFocused,
+    (
+      state: DebuggerState,
+      data: {graph_id: string; op_name: string}
+    ): DebuggerState => {
+      return {
+        ...state,
+        graphs: {
+          ...state.graphs,
+          focusedOp: {
+            graphId: data.graph_id,
+            opName: data.op_name,
+          },
+        },
+      };
+    }
+  ),
+  on(
+    actions.graphOpInfoRequested,
+    (
+      state: DebuggerState,
+      data: {graph_id: string; op_name: string}
+    ): DebuggerState => {
+      const {graph_id, op_name} = data;
+      const newState: DebuggerState = {
+        ...state,
+        graphs: {
+          ...state.graphs,
+          loadingOps: {
+            ...state.graphs.loadingOps,
+          },
+        },
+      };
+      if (newState.graphs.loadingOps[graph_id] === undefined) {
+        newState.graphs.loadingOps[graph_id] = {};
+      }
+      if (newState.graphs.loadingOps[graph_id][op_name] === undefined) {
+        newState.graphs.loadingOps[graph_id][op_name] = DataLoadState.LOADING;
+      }
+      return newState;
+    }
+  ),
+  on(
+    actions.graphOpInfoLoaded,
+    (state: DebuggerState, data): DebuggerState => {
+      const {graphOpInfoResponse} = data;
+      const {graph_ids} = graphOpInfoResponse;
+      const graphId = graph_ids[graph_ids.length - 1];
+      const newState: DebuggerState = {
+        ...state,
+        graphs: {
+          ...state.graphs,
+          ops: {
+            ...state.graphs.ops,
+            [graphId]: {
+              ...state.graphs.ops[graphId],
+            },
+          },
+          loadingOps: {
+            ...state.graphs.loadingOps,
+            [graphId]: {
+              ...state.graphs.loadingOps[graphId],
+            },
+          },
+        },
+      };
+      for (const input of graphOpInfoResponse.inputs) {
+        if (!input.data) {
+          // `input.data` can be undefined when the backend fails to look up
+          // detailed information regarding the input op (e.g., for certain
+          // TF-internal ops such as StatefulPartitionedCall).
+          // Same for `consumer.data` below.
+          continue;
+        }
+        newState.graphs.ops[graphId][input.op_name] = input.data;
+      }
+      for (let i = 0; i < graphOpInfoResponse.consumers.length; ++i) {
+        for (const consumer of graphOpInfoResponse.consumers[i]) {
+          if (!consumer.data) {
+            continue;
+          }
+          newState.graphs.ops[graphId][consumer.op_name] = consumer.data;
+        }
+      }
+      newState.graphs.ops[graphId][graphOpInfoResponse.op_name] = {
+        ...graphOpInfoResponse,
+        // Remove `input.data` to avoid duplicated data in `opInfo`,
+        // which is put into `newState.graphs.ops[graphId][opInfo.op_name]`
+        // later.
+        // Same for `consumer.data` below.
+        inputs: graphOpInfoResponse.inputs.map((input) => ({
+          op_name: input.op_name,
+          output_slot: input.output_slot,
+        })),
+        consumers: graphOpInfoResponse.consumers.map((slotConsumers) => {
+          return slotConsumers.map((consumer) => ({
+            op_name: consumer.op_name,
+            input_slot: consumer.input_slot,
+          }));
+        }),
+      };
+      // Remove the loading marker for the op.
+      newState.graphs.loadingOps[graphId][graphOpInfoResponse.op_name] =
+        DataLoadState.LOADED;
+      return newState;
+    }
+  ),
   ////////////////////////////////////////////////////////
   // Reducers related to source files and stack traces. //
   ////////////////////////////////////////////////////////
@@ -800,6 +921,9 @@ const reducer = createReducer(
   )
 );
 
+// TODO(cais): Refactor the reducers into separate child reducers and
+// move them to separate files. Combine them with `combineReducers()`
+// for better maintainability.
 export function reducers(state: DebuggerState, action: Action) {
   return reducer(state, action);
 }

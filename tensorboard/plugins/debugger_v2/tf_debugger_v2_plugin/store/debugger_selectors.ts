@@ -18,15 +18,24 @@ import {findFileIndex} from './debugger_store_utils';
 import {
   AlertsBreakdown,
   AlertsByIndex,
+  Alerts,
   AlertType,
+  DataLoadState,
   DEBUGGER_FEATURE_KEY,
   DebuggerRunListing,
   DebuggerState,
   Execution,
   ExecutionDigest,
   ExecutionDigestLoadState,
+  Executions,
   GraphExecution,
+  GraphExecutions,
+  GraphOpConsumerSpec,
+  GraphOpInfo,
+  GraphOpInputSpec,
+  Graphs,
   LoadState,
+  SourceCodeState,
   SourceFileContent,
   SourceFileSpec,
   SourceLineSpec,
@@ -61,24 +70,32 @@ export const getActiveRunId = createSelector(
   (state: DebuggerState): string | null => state.activeRunId
 );
 
-export const getAlertsLoaded = createSelector(
+/**
+ * Intermediate selector for alerts.
+ */
+const selectAlerts = createSelector(
   selectDebuggerState,
-  (state: DebuggerState): LoadState => {
-    return state.alerts.alertsLoaded;
+  (state: DebuggerState): Alerts => state.alerts
+);
+
+export const getAlertsLoaded = createSelector(
+  selectAlerts,
+  (alerts: Alerts): LoadState => {
+    return alerts.alertsLoaded;
   }
 );
 
 export const getNumAlerts = createSelector(
-  selectDebuggerState,
-  (state: DebuggerState): number => {
-    return state.alerts.numAlerts;
+  selectAlerts,
+  (alerts: Alerts): number => {
+    return alerts.numAlerts;
   }
 );
 
 export const getAlertsFocusType = createSelector(
-  selectDebuggerState,
-  (state: DebuggerState): AlertType | null => {
-    return state.alerts.focusType;
+  selectAlerts,
+  (alerts: Alerts): AlertType | null => {
+    return alerts.focusType;
   }
 );
 
@@ -90,12 +107,12 @@ export const getAlertsFocusType = createSelector(
  * data have been loaded by the front end.
  */
 export const getNumAlertsOfFocusedType = createSelector(
-  selectDebuggerState,
-  (state: DebuggerState): number => {
-    if (state.alerts.focusType === null) {
+  selectAlerts,
+  (alerts: Alerts): number => {
+    if (alerts.focusType === null) {
       return 0;
     }
-    return state.alerts.alertsBreakdown[state.alerts.focusType] || 0;
+    return alerts.alertsBreakdown[alerts.focusType] || 0;
   }
 );
 
@@ -106,22 +123,22 @@ export const getNumAlertsOfFocusedType = createSelector(
  * If no alert type focus exists, returns null.
  */
 export const getLoadedAlertsOfFocusedType = createSelector(
-  selectDebuggerState,
-  (state: DebuggerState): AlertsByIndex | null => {
-    if (state.alerts.focusType === null) {
+  selectAlerts,
+  (alerts: Alerts): AlertsByIndex | null => {
+    if (alerts.focusType === null) {
       return null;
     }
-    if (state.alerts.alerts[state.alerts.focusType] === undefined) {
+    if (alerts.alerts[alerts.focusType] === undefined) {
       return null;
     }
-    return state.alerts.alerts[state.alerts.focusType];
+    return alerts.alerts[alerts.focusType];
   }
 );
 
 export const getAlertsBreakdown = createSelector(
-  selectDebuggerState,
-  (state: DebuggerState): AlertsBreakdown => {
-    return state.alerts.alertsBreakdown;
+  selectAlerts,
+  (alerts: Alerts): AlertsBreakdown => {
+    return alerts.alertsBreakdown;
   }
 );
 
@@ -129,60 +146,67 @@ export const getAlertsBreakdown = createSelector(
  * Selectors related to top-level (eager) execution.
  */
 
-export const getNumExecutionsLoaded = createSelector(
+/**
+ * Intermeidate selector for executions.
+ */
+export const selectExecutionsState = createSelector(
   selectDebuggerState,
-  (state: DebuggerState): LoadState => {
-    return state.executions.numExecutionsLoaded;
+  (state: DebuggerState): Executions => state.executions
+);
+
+export const getNumExecutionsLoaded = createSelector(
+  selectExecutionsState,
+  (executions: Executions): LoadState => {
+    return executions.numExecutionsLoaded;
   }
 );
 
 export const getExecutionDigestsLoaded = createSelector(
-  selectDebuggerState,
-  (state: DebuggerState): ExecutionDigestLoadState => {
-    return state.executions.executionDigestsLoaded;
+  selectExecutionsState,
+  (executions: Executions): ExecutionDigestLoadState => {
+    return executions.executionDigestsLoaded;
   }
 );
 
 export const getNumExecutions = createSelector(
-  selectDebuggerState,
-  (state: DebuggerState): number => {
-    return state.executions.executionDigestsLoaded.numExecutions;
+  selectExecutionsState,
+  (executions: Executions): number => {
+    return executions.executionDigestsLoaded.numExecutions;
   }
 );
 
 export const getExecutionScrollBeginIndex = createSelector(
-  selectDebuggerState,
-  (state: DebuggerState): number => {
-    return state.executions.scrollBeginIndex;
+  selectExecutionsState,
+  (executions: Executions): number => {
+    return executions.scrollBeginIndex;
   }
 );
 
 export const getExecutionPageSize = createSelector(
-  selectDebuggerState,
-  (state: DebuggerState): number => {
-    return state.executions.pageSize;
+  selectExecutionsState,
+  (executions: Executions): number => {
+    return executions.pageSize;
   }
 );
 
 export const getDisplayCount = createSelector(
-  selectDebuggerState,
-  (state: DebuggerState): number => {
-    return state.executions.displayCount;
+  selectExecutionsState,
+  (executions: Executions): number => {
+    return executions.displayCount;
   }
 );
 
 export const getVisibleExecutionDigests = createSelector(
-  selectDebuggerState,
-  (state: DebuggerState): Array<ExecutionDigest | null> => {
+  selectExecutionsState,
+  (executions: Executions): Array<ExecutionDigest | null> => {
     const digests: Array<ExecutionDigest | null> = [];
     for (
-      let executionIndex = state.executions.scrollBeginIndex;
-      executionIndex <
-      state.executions.scrollBeginIndex + state.executions.displayCount;
+      let executionIndex = executions.scrollBeginIndex;
+      executionIndex < executions.scrollBeginIndex + executions.displayCount;
       ++executionIndex
     ) {
-      if (executionIndex in state.executions.executionDigests) {
-        digests.push(state.executions.executionDigests[executionIndex]);
+      if (executionIndex in executions.executionDigests) {
+        digests.push(executions.executionDigests[executionIndex]);
       } else {
         digests.push(null);
       }
@@ -192,13 +216,21 @@ export const getVisibleExecutionDigests = createSelector(
 );
 
 /**
- * Selectors related to intra-graph execution.
+ * Selectors related to intra-graph executions.
  */
 
-export const getNumGraphExecutionsLoaded = createSelector(
+/**
+ * Intermediate selector for alerts.
+ */
+export const selectGraphExecutions = createSelector(
   selectDebuggerState,
-  (state: DebuggerState): LoadState => {
-    return state.graphExecutions.numExecutionsLoaded;
+  (state: DebuggerState): GraphExecutions => state.graphExecutions
+);
+
+export const getNumGraphExecutionsLoaded = createSelector(
+  selectGraphExecutions,
+  (graphExecutions: GraphExecutions): LoadState => {
+    return graphExecutions.numExecutionsLoaded;
   }
 );
 
@@ -210,51 +242,123 @@ export const getNumGraphExecutions = createSelector(
 );
 
 export const getGraphExecutionScrollBeginIndex = createSelector(
-  selectDebuggerState,
-  (state: DebuggerState): number => {
-    return state.graphExecutions.scrollBeginIndex;
+  selectGraphExecutions,
+  (graphExecutions: GraphExecutions): number => {
+    return graphExecutions.scrollBeginIndex;
   }
 );
 
 export const getGraphExecutionDisplayCount = createSelector(
-  selectDebuggerState,
-  (state: DebuggerState): number => {
-    return state.graphExecutions.displayCount;
+  selectGraphExecutions,
+  (graphExecutions: GraphExecutions): number => {
+    return graphExecutions.displayCount;
   }
 );
 
 export const getGraphExecutionPageSize = createSelector(
-  selectDebuggerState,
-  (state: DebuggerState): number => {
-    return state.graphExecutions.pageSize;
+  selectGraphExecutions,
+  (graphExecutions: GraphExecutions): number => {
+    return graphExecutions.pageSize;
   }
 );
 
 export const getGraphExecutionDataLoadingPages = createSelector(
-  selectDebuggerState,
-  (state: DebuggerState): number[] => {
-    return state.graphExecutions.graphExecutionDataLoadingPages;
+  selectGraphExecutions,
+  (graphExecutions: GraphExecutions): number[] => {
+    return graphExecutions.graphExecutionDataLoadingPages;
   }
 );
 
 export const getGraphExecutionDataPageLoadedSizes = createSelector(
-  selectDebuggerState,
-  (state: DebuggerState): {[page: number]: number} => {
-    return state.graphExecutions.graphExecutionDataPageLoadedSizes;
+  selectGraphExecutions,
+  (graphExecutions: GraphExecutions): {[page: number]: number} => {
+    return graphExecutions.graphExecutionDataPageLoadedSizes;
   }
 );
 
 export const getGraphExecutionData = createSelector(
-  selectDebuggerState,
-  (state: DebuggerState): {[index: number]: GraphExecution} => {
-    return state.graphExecutions.graphExecutionData;
+  selectGraphExecutions,
+  (graphExecutions: GraphExecutions): {[index: number]: GraphExecution} => {
+    return graphExecutions.graphExecutionData;
   }
 );
 
 export const getGraphExecutionFocusIndex = createSelector(
+  selectGraphExecutions,
+  (graphExecutions: GraphExecutions): number | null => {
+    return graphExecutions.focusIndex;
+  }
+);
+
+/**
+ * Intermediate selector for the graphs state of debugger.
+ */
+const selectDebuggerGraphs = createSelector(
   selectDebuggerState,
-  (state: DebuggerState): number | null => {
-    return state.graphExecutions.focusIndex;
+  (state: DebuggerState): Graphs => state.graphs
+);
+
+export const getFocusedGraphOpInfo = createSelector(
+  selectDebuggerGraphs,
+  (graphs: Graphs): GraphOpInfo | null => {
+    const {focusedOp, ops} = graphs;
+    if (focusedOp === null || ops[focusedOp.graphId] === undefined) {
+      return null;
+    } else {
+      return ops[focusedOp.graphId][focusedOp.opName] || null;
+    }
+  }
+);
+
+export const getFocusedGraphOpInputs = createSelector(
+  selectDebuggerGraphs,
+  (graphs: Graphs): GraphOpInputSpec[] | null => {
+    const {focusedOp, ops} = graphs;
+    if (
+      focusedOp === null ||
+      ops[focusedOp.graphId] === undefined ||
+      ops[focusedOp.graphId][focusedOp.opName] === undefined
+    ) {
+      return null;
+    } else {
+      const graph = ops[focusedOp.graphId];
+      const {inputs} = graph[focusedOp.opName];
+      return inputs.map((inputSpec) => {
+        const spec: GraphOpInputSpec = {
+          ...inputSpec,
+        };
+        if (graph[inputSpec.op_name]) {
+          spec.data = graph[inputSpec.op_name];
+        }
+        return spec;
+      });
+    }
+  }
+);
+
+export const getFocusedGraphOpConsumers = createSelector(
+  selectDebuggerGraphs,
+  (graphs: Graphs): GraphOpConsumerSpec[][] | null => {
+    const {focusedOp, ops} = graphs;
+    if (
+      focusedOp === null ||
+      ops[focusedOp.graphId] === undefined ||
+      ops[focusedOp.graphId][focusedOp.opName] === undefined
+    ) {
+      return null;
+    } else {
+      const graph = ops[focusedOp.graphId];
+      const {consumers} = graph[focusedOp.opName];
+      return consumers.map((slotConsumers) => {
+        return slotConsumers.map((consumerSpec) => {
+          const spec: GraphOpConsumerSpec = {...consumerSpec};
+          if (graph[consumerSpec.op_name]) {
+            spec.data = graph[consumerSpec.op_name];
+          }
+          return spec;
+        });
+      });
+    }
   }
 );
 
@@ -292,10 +396,18 @@ export const getFocusAlertTypesOfVisibleExecutionDigests = createSelector(
   }
 );
 
-export const getFocusedExecutionIndex = createSelector(
+/**
+ * Intermediate selector for top-level executions.
+ */
+export const selectExecutions = createSelector(
   selectDebuggerState,
-  (state: DebuggerState): number | null => {
-    return state.executions.focusIndex;
+  (state: DebuggerState): Executions => state.executions
+);
+
+export const getFocusedExecutionIndex = createSelector(
+  selectExecutions,
+  (executions: Executions): number | null => {
+    return executions.focusIndex;
   }
 );
 
@@ -303,12 +415,12 @@ export const getFocusedExecutionIndex = createSelector(
  * Get the display index of the execution digest being focused on (if any).
  */
 export const getFocusedExecutionDisplayIndex = createSelector(
-  selectDebuggerState,
-  (state: DebuggerState): number | null => {
-    if (state.executions.focusIndex === null) {
+  selectExecutions,
+  (executions: Executions): number | null => {
+    if (executions.focusIndex === null) {
       return null;
     }
-    const {focusIndex, scrollBeginIndex, displayCount} = state.executions;
+    const {focusIndex, scrollBeginIndex, displayCount} = executions;
     if (
       focusIndex < scrollBeginIndex ||
       focusIndex >= scrollBeginIndex + displayCount
@@ -320,9 +432,17 @@ export const getFocusedExecutionDisplayIndex = createSelector(
 );
 
 export const getLoadedExecutionData = createSelector(
+  selectExecutions,
+  (executions: Executions): {[index: number]: Execution} =>
+    executions.executionData
+);
+
+export const getLoadingGraphOps = createSelector(
   selectDebuggerState,
-  (state: DebuggerState): {[index: number]: Execution} =>
-    state.executions.executionData
+  (
+    state: DebuggerState
+  ): {[graph_id: string]: {[op_name: string]: DataLoadState}} =>
+    state.graphs.loadingOps
 );
 
 export const getLoadedStackFrames = createSelector(
@@ -331,9 +451,9 @@ export const getLoadedStackFrames = createSelector(
 );
 
 export const getFocusedExecutionData = createSelector(
-  selectDebuggerState,
-  (state: DebuggerState): Execution | null => {
-    const {focusIndex, executionData} = state.executions;
+  selectExecutions,
+  (executions: Executions): Execution | null => {
+    const {focusIndex, executionData} = executions;
     if (focusIndex === null || executionData[focusIndex] === undefined) {
       return null;
     }
@@ -369,24 +489,32 @@ export const getFocusedExecutionStackFrames = createSelector(
   }
 );
 
-export const getSourceFileListLoaded = createSelector(
+/**
+ * Intermediate selector for source code.
+ */
+export const selectSourceCode = createSelector(
   selectDebuggerState,
-  (state: DebuggerState): LoadState => {
-    return state.sourceCode.sourceFileListLoaded;
+  (state: DebuggerState): SourceCodeState => state.sourceCode
+);
+
+export const getSourceFileListLoaded = createSelector(
+  selectSourceCode,
+  (sourceCode: SourceCodeState): LoadState => {
+    return sourceCode.sourceFileListLoaded;
   }
 );
 
 export const getSourceFileList = createSelector(
-  selectDebuggerState,
-  (state: DebuggerState): SourceFileSpec[] => {
-    return state.sourceCode.sourceFileList;
+  selectSourceCode,
+  (sourceCode: SourceCodeState): SourceFileSpec[] => {
+    return sourceCode.sourceFileList;
   }
 );
 
 export const getFocusedSourceFileIndex = createSelector(
-  selectDebuggerState,
-  (state: DebuggerState): number => {
-    const {sourceFileList, focusLineSpec} = state.sourceCode;
+  selectSourceCode,
+  (sourceCode: SourceCodeState): number => {
+    const {sourceFileList, focusLineSpec} = sourceCode;
     if (focusLineSpec === null) {
       return -1;
     }
@@ -395,19 +523,22 @@ export const getFocusedSourceFileIndex = createSelector(
 );
 
 export const getFocusedSourceFileContent = createSelector(
-  selectDebuggerState,
+  selectSourceCode,
   getFocusedSourceFileIndex,
-  (state: DebuggerState, fileIndex: number): SourceFileContent | null => {
+  (
+    sourceCode: SourceCodeState,
+    fileIndex: number
+  ): SourceFileContent | null => {
     if (fileIndex === -1) {
       return null;
     }
-    return state.sourceCode.fileContents[fileIndex] || null;
+    return sourceCode.fileContents[fileIndex] || null;
   }
 );
 
 export const getFocusedSourceLineSpec = createSelector(
-  selectDebuggerState,
-  (state: DebuggerState): SourceLineSpec | null => {
-    return state.sourceCode.focusLineSpec;
+  selectSourceCode,
+  (sourceCode: SourceCodeState): SourceLineSpec | null => {
+    return sourceCode.focusLineSpec;
   }
 );
