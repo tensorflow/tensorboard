@@ -10,13 +10,13 @@ exports_files(["LICENSE"])
 py_library(
     name = "base_experiment",
     srcs = ["base_experiment.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
 )
 
 py_library(
     name = "experiment_from_dev",
     srcs = ["experiment_from_dev.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":base_experiment",
         "//tensorboard:expect_grpc_installed",
@@ -53,7 +53,7 @@ py_test(
 py_library(
     name = "lib_init_only",
     srcs = ["__init__.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     visibility = ["//tensorboard:internal"],
     deps = [
         ":experiment_from_dev",
@@ -63,7 +63,7 @@ py_library(
 py_binary(
     name = "test_binary",
     srcs = ["test_binary.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         "//tensorboard/data/experimental:experiment_from_dev",
         "@org_pythonhosted_six",
