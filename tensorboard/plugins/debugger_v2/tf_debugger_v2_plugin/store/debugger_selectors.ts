@@ -22,7 +22,6 @@ import {
   AlertType,
   CodeLocationExecutionOrigin,
   CodeLocationGraphOpCreationOrigin,
-  CodeLocationOrigin,
   CodeLocationType,
   DataLoadState,
   DEBUGGER_FEATURE_KEY,
@@ -480,7 +479,7 @@ export const getCodeLocationOrigin = createSelector(
     executionIndex: number | null,
     executionData: Execution | null,
     graphOpInfo: GraphOpInfo | null
-  ): CodeLocationOrigin | null => {
+  ): CodeLocationExecutionOrigin | CodeLocationGraphOpCreationOrigin | null => {
     const {codeLocationFocusType} = state;
     if (codeLocationFocusType === null) {
       return null;
@@ -493,7 +492,7 @@ export const getCodeLocationOrigin = createSelector(
         codeLocationType: CodeLocationType.EXECUTION,
         opType: executionData.op_type,
         executionIndex,
-      } as CodeLocationExecutionOrigin;
+      };
     } else {
       // This is CodeLocationType.GRAPH_OP_CREATION.
       if (graphOpInfo === null) {
@@ -503,7 +502,7 @@ export const getCodeLocationOrigin = createSelector(
         codeLocationType: CodeLocationType.GRAPH_OP_CREATION,
         opType: graphOpInfo.op_type,
         opName: graphOpInfo.op_name,
-      } as CodeLocationGraphOpCreationOrigin;
+      };
     }
   }
 );

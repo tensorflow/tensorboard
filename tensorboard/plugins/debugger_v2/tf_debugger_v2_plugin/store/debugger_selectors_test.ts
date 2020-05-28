@@ -46,8 +46,6 @@ import {
 import {
   AlertType,
   CodeLocationType,
-  CodeLocationExecutionOrigin,
-  CodeLocationGraphOpCreationOrigin,
   DataLoadState,
   DEBUGGER_FEATURE_KEY,
   StackFrame,
@@ -460,7 +458,7 @@ describe('debugger selectors', () => {
         codeLocationType: CodeLocationType.EXECUTION,
         opType: 'Type2Op',
         executionIndex: 1,
-      } as CodeLocationExecutionOrigin);
+      });
     });
 
     it('returns correct origin for graph-op creation', () => {
@@ -491,7 +489,7 @@ describe('debugger selectors', () => {
         codeLocationType: CodeLocationType.GRAPH_OP_CREATION,
         opType: 'Type2Op',
         opName: 'bar',
-      } as CodeLocationGraphOpCreationOrigin);
+      });
     });
   });
 
