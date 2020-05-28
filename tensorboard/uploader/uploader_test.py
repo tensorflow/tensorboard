@@ -44,6 +44,7 @@ from tensorboard.uploader.proto import server_info_pb2
 from tensorboard.uploader.proto import write_service_pb2
 from tensorboard.uploader.proto import write_service_pb2_grpc
 from tensorboard.uploader import test_util
+from tensorboard.uploader import upload_tracker
 from tensorboard.uploader import uploader as uploader_lib
 from tensorboard.uploader import logdir_loader
 from tensorboard.uploader import util
@@ -128,6 +129,7 @@ def _create_uploader(
     blob_rpc_rate_limiter=_USE_DEFAULT,
     name=None,
     description=None,
+    verbosity=0,  # Use 0 to minimize littering the test output.
 ):
     if writer_client is _USE_DEFAULT:
         writer_client = _create_mock_client()
@@ -164,11 +166,12 @@ def _create_uploader(
         blob_rpc_rate_limiter=blob_rpc_rate_limiter,
         name=name,
         description=description,
+        verbosity=verbosity,
     )
 
 
 def _create_request_sender(
-    experiment_id=None, api=None, allowed_plugins=_USE_DEFAULT,
+    experiment_id=None, api=None, allowed_plugins=_USE_DEFAULT, tracker=None,
 ):
     if api is _USE_DEFAULT:
         api = _create_mock_client()
@@ -193,6 +196,7 @@ def _create_request_sender(
         rpc_rate_limiter=rpc_rate_limiter,
         tensor_rpc_rate_limiter=tensor_rpc_rate_limiter,
         blob_rpc_rate_limiter=blob_rpc_rate_limiter,
+        tracker=tracker,
     )
 
 
@@ -306,16 +310,21 @@ class TensorboardUploaderTest(tf.test.TestCase):
         mock_rate_limiter = mock.create_autospec(util.RateLimiter)
         mock_tensor_rate_limiter = mock.create_autospec(util.RateLimiter)
         mock_blob_rate_limiter = mock.create_autospec(util.RateLimiter)
-        uploader = _create_uploader(
-            mock_client,
-            "/logs/foo",
-            # Send each Event below in a separate WriteScalarRequest
-            max_scalar_request_size=100,
-            rpc_rate_limiter=mock_rate_limiter,
-            tensor_rpc_rate_limiter=mock_tensor_rate_limiter,
-            blob_rpc_rate_limiter=mock_blob_rate_limiter,
-        )
-        uploader.create_experiment()
+        mock_tracker = mock.MagicMock()
+        with mock.patch.object(
+            upload_tracker, "UploadTracker", return_value=mock_tracker
+        ):
+            uploader = _create_uploader(
+                mock_client,
+                "/logs/foo",
+                # Send each Event below in a separate WriteScalarRequest
+                max_scalar_request_size=100,
+                rpc_rate_limiter=mock_rate_limiter,
+                tensor_rpc_rate_limiter=mock_tensor_rate_limiter,
+                blob_rpc_rate_limiter=mock_blob_rate_limiter,
+                verbosity=1,  # In order to test the upload tracker.
+            )
+            uploader.create_experiment()
 
         def scalar_event(tag, value):
             return event_pb2.Event(summary=scalar_v2.scalar_pb(tag, value))
@@ -353,19 +362,31 @@ class TensorboardUploaderTest(tf.test.TestCase):
         self.assertEqual(0, mock_tensor_rate_limiter.tick.call_count)
         self.assertEqual(0, mock_blob_rate_limiter.tick.call_count)
 
+        # Check upload tracker calls.
+        self.assertEqual(mock_tracker.send_tracker.call_count, 2)
+        self.assertEqual(mock_tracker.scalars_tracker.call_count, 10)
+        self.assertLen(mock_tracker.scalars_tracker.call_args[0], 1)
+        self.assertEqual(mock_tracker.tensors_tracker.call_count, 0)
+        self.assertEqual(mock_tracker.blob_tracker.call_count, 0)
+
     def test_start_uploading_tensors(self):
         mock_client = _create_mock_client()
         mock_rate_limiter = mock.create_autospec(util.RateLimiter)
         mock_tensor_rate_limiter = mock.create_autospec(util.RateLimiter)
         mock_blob_rate_limiter = mock.create_autospec(util.RateLimiter)
-        uploader = _create_uploader(
-            mock_client,
-            "/logs/foo",
-            rpc_rate_limiter=mock_rate_limiter,
-            tensor_rpc_rate_limiter=mock_tensor_rate_limiter,
-            blob_rpc_rate_limiter=mock_blob_rate_limiter,
-        )
-        uploader.create_experiment()
+        mock_tracker = mock.MagicMock()
+        with mock.patch.object(
+            upload_tracker, "UploadTracker", return_value=mock_tracker
+        ):
+            uploader = _create_uploader(
+                mock_client,
+                "/logs/foo",
+                rpc_rate_limiter=mock_rate_limiter,
+                tensor_rpc_rate_limiter=mock_tensor_rate_limiter,
+                blob_rpc_rate_limiter=mock_blob_rate_limiter,
+                verbosity=1,  # In order to test the upload tracker.
+            )
+            uploader.create_experiment()
 
         def tensor_event(tag, value):
             return event_pb2.Event(
@@ -391,21 +412,43 @@ class TensorboardUploaderTest(tf.test.TestCase):
         self.assertEqual(1, mock_tensor_rate_limiter.tick.call_count)
         self.assertEqual(0, mock_blob_rate_limiter.tick.call_count)
 
+        # Check upload tracker calls.
+        self.assertEqual(mock_tracker.send_tracker.call_count, 1)
+        self.assertEqual(mock_tracker.scalars_tracker.call_count, 0)
+        tensors_tracker = mock_tracker.tensors_tracker
+        self.assertEqual(tensors_tracker.call_count, 1)
+        self.assertLen(tensors_tracker.call_args[0], 4)
+        self.assertEqual(tensors_tracker.call_args[0][0], 2)  # num_tensors
+        self.assertEqual(
+            tensors_tracker.call_args[0][1], 0
+        )  # num_tensors_skipped
+        # tensor_bytes: avoid asserting the exact value as it's hard to reason about.
+        self.assertGreater(tensors_tracker.call_args[0][2], 0)
+        self.assertEqual(
+            tensors_tracker.call_args[0][3], 0
+        )  # tensor_bytes_skipped
+        self.assertEqual(mock_tracker.blob_tracker.call_count, 0)
+
     def test_start_uploading_graphs(self):
         mock_client = _create_mock_client()
         mock_rate_limiter = mock.create_autospec(util.RateLimiter)
         mock_tensor_rate_limiter = mock.create_autospec(util.RateLimiter)
         mock_blob_rate_limiter = mock.create_autospec(util.RateLimiter)
-        uploader = _create_uploader(
-            mock_client,
-            "/logs/foo",
-            # Verify behavior with lots of small chunks
-            max_blob_request_size=100,
-            rpc_rate_limiter=mock_rate_limiter,
-            tensor_rpc_rate_limiter=mock_tensor_rate_limiter,
-            blob_rpc_rate_limiter=mock_blob_rate_limiter,
-        )
-        uploader.create_experiment()
+        mock_tracker = mock.MagicMock()
+        with mock.patch.object(
+            upload_tracker, "UploadTracker", return_value=mock_tracker
+        ):
+            uploader = _create_uploader(
+                mock_client,
+                "/logs/foo",
+                # Verify behavior with lots of small chunks
+                max_blob_request_size=100,
+                rpc_rate_limiter=mock_rate_limiter,
+                tensor_rpc_rate_limiter=mock_tensor_rate_limiter,
+                blob_rpc_rate_limiter=mock_blob_rate_limiter,
+                verbosity=1,  # In order to test tracker.
+            )
+            uploader.create_experiment()
 
         # Of course a real Event stream will never produce the same Event twice,
         # but is this test context it's fine to reuse this one.
@@ -446,6 +489,14 @@ class TensorboardUploaderTest(tf.test.TestCase):
         self.assertEqual(0, mock_rate_limiter.tick.call_count)
         self.assertEqual(0, mock_tensor_rate_limiter.tick.call_count)
         self.assertEqual(10, mock_blob_rate_limiter.tick.call_count)
+
+        # Check upload tracker calls.
+        self.assertEqual(mock_tracker.send_tracker.call_count, 2)
+        self.assertEqual(mock_tracker.scalars_tracker.call_count, 0)
+        self.assertEqual(mock_tracker.tensors_tracker.call_count, 0)
+        self.assertEqual(mock_tracker.blob_tracker.call_count, 10)
+        self.assertLen(mock_tracker.blob_tracker.call_args[0], 1)
+        self.assertGreater(mock_tracker.blob_tracker.call_args[0][0], 0)
 
     def test_upload_skip_large_blob(self):
         mock_client = _create_mock_client()
@@ -768,6 +819,43 @@ class TensorboardUploaderTest(tf.test.TestCase):
         # Empty third round
         uploader._upload_once()
         mock_client.WriteScalar.assert_not_called()
+
+    def test_verbosity_zero_skips_upload_tracker(self):
+        mock_client = _create_mock_client()
+        mock_tracker = mock.MagicMock()
+        with mock.patch.object(
+            upload_tracker, "UploadTracker", return_value=mock_tracker
+        ):
+            uploader = _create_uploader(
+                mock_client,
+                "/logs/foo",
+                verbosity=0,  # Explicitly set verbosity to 0.
+            )
+            uploader.create_experiment()
+
+        def scalar_event(tag, value):
+            return event_pb2.Event(summary=scalar_v2.scalar_pb(tag, value))
+
+        mock_logdir_loader = mock.create_autospec(logdir_loader.LogdirLoader)
+        mock_logdir_loader.get_run_events.side_effect = [
+            {
+                "run 1": _apply_compat(
+                    [scalar_event("1.1", 5.0), scalar_event("1.2", 5.0)]
+                ),
+            },
+            AbortUploadError,
+        ]
+
+        with mock.patch.object(
+            uploader, "_logdir_loader", mock_logdir_loader
+        ), self.assertRaises(AbortUploadError):
+            uploader.start_uploading()
+
+        # Check upload tracker calls: expect no calls.
+        self.assertEqual(mock_tracker.send_tracker.call_count, 0)
+        self.assertEqual(mock_tracker.scalars_tracker.call_count, 0)
+        self.assertEqual(mock_tracker.tensors_tracker.call_count, 0)
+        self.assertEqual(mock_tracker.blob_tracker.call_count, 0)
 
 
 class BatchedRequestSenderTest(tf.test.TestCase):

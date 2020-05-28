@@ -91,6 +91,7 @@ py_library(
     srcs = ["uploader.py"],
     deps = [
         ":logdir_loader",
+        ":upload_tracker",
         ":util",
         "//tensorboard:expect_grpc_installed",
         "//tensorboard/backend:process_graph",
@@ -109,12 +110,22 @@ py_library(
     ],
 )
 
+py_library(
+    name = "upload_tracker",
+    srcs = ["upload_tracker.py"],
+    deps = [
+        ":util",
+        "//tensorboard:expect_tqdm_installed",
+    ],
+)
+
 py_test(
     name = "uploader_test",
     srcs = ["uploader_test.py"],
     srcs_version = "PY3",
     deps = [
         ":test_util",
+        ":upload_tracker",
         ":uploader",
         ":util",
         "//tensorboard:data_compat",
@@ -133,6 +144,18 @@ py_test(
         "//tensorboard/uploader/proto:protos_all_py_pb2_grpc",
         "//tensorboard/util:test_util",
         "@com_google_protobuf//:protobuf_python",
+        "@org_pythonhosted_mock",
+    ],
+)
+
+
+py_test(
+    name = "upload_tracker_test",
+    srcs = ["upload_tracker_test.py"],
+    srcs_version = "PY3",
+    deps = [
+        ":upload_tracker",
+        "//tensorboard:test",
         "@org_pythonhosted_mock",
     ],
 )
