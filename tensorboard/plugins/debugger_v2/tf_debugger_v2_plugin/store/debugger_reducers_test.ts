@@ -1057,6 +1057,30 @@ describe('Debugger graphs reducers', () => {
     expect(nextState.stackFrames).toEqual(stackFrames);
   });
 
+  it(`updates states to true on setStickToBottommostFrameInFocusedFile`, () => {
+    const state = createDebuggerState({
+      activeRunId: '__default_debugger_run__',
+      stickToBottommostFrameInFocusedFile: false,
+    });
+    const nextState = reducers(
+      state,
+      actions.setStickToBottommostFrameInFocusedFile({value: true})
+    );
+    expect(nextState.stickToBottommostFrameInFocusedFile).toBe(true);
+  });
+
+  it(`updates states to false on setStickToBottommostFrameInFocusedFile`, () => {
+    const state = createDebuggerState({
+      activeRunId: '__default_debugger_run__',
+      stickToBottommostFrameInFocusedFile: true,
+    });
+    const nextState = reducers(
+      state,
+      actions.setStickToBottommostFrameInFocusedFile({value: false})
+    );
+    expect(nextState.stickToBottommostFrameInFocusedFile).toBe(false);
+  });
+
   it(`updates source-file list load state on sourceFileListRequested`, () => {
     const state = createDebuggerState();
     const nextState = reducers(state, actions.sourceFileListRequested());

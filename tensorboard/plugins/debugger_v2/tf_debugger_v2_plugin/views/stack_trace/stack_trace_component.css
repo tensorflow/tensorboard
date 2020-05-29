@@ -13,9 +13,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+.focused-file {
+  font-weight: bold;
+}
+
 .focused-stack-frame {
   background-color: rgba(255, 111, 0, 0.3);
-  font-weight: bold;
 }
 
 .no-stack-trace {
@@ -76,7 +79,7 @@ limitations under the License.
 }
 
 .stack-trace-aux-info {
-  margin-top: 3px;
+  margin-top: 15px;
   padding-left: 24px;
 }
 
@@ -96,6 +99,7 @@ limitations under the License.
 .stack-trace-header {
   box-shadow: 0 5px 3px -3px #ccc;
   padding-bottom: 3px;
+  position: relative;
 }
 .stack-trace-host-name {
   color: #808080;
@@ -103,4 +107,12 @@ limitations under the License.
 
 .stack-trace-title {
   font-weight: bold;
+  justify-content: space-around;
+}
+
+.stick-to-bottommost-frame {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 220px;
 }

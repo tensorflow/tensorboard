@@ -17,6 +17,7 @@ limitations under the License.
  */
 import {CommonModule} from '@angular/common';
 import {TestBed} from '@angular/core/testing';
+import {MatSlideToggleChange} from '@angular/material/slide-toggle';
 import {By} from '@angular/platform-browser';
 
 import {Store} from '@ngrx/store';
@@ -27,6 +28,7 @@ import {
   executionScrollLeft,
   executionScrollRight,
   executionScrollToIndex,
+  setStickToBottommostFrameInFocusedFile,
   sourceLineFocused,
 } from './actions';
 import {DebuggerComponent} from './debugger_component';
@@ -42,6 +44,7 @@ import {
   getCodeLocationOrigin,
   getFocusedSourceLineSpec,
   getFocusedStackFrames,
+  getStickToBottommostFrameInFocusedFile,
 } from './store';
 import {
   createAlertsState,
@@ -50,7 +53,6 @@ import {
   createDebuggerExecutionsState,
   createDebuggerStateWithLoadedExecutionDigests,
   createTestExecutionData,
-  createTestGraphOpInfo,
   createTestStackFrame,
 } from './testing';
 import {AlertsModule} from './views/alerts/alerts_module';
@@ -568,25 +570,25 @@ describe('Debugger Container', () => {
   });
 
   describe('Stack Trace container', () => {
-    it('shows non-empty eager stack frames; highlights focused frame', () => {
+    it('shows non-empty eager stack frames; highlights focused file and frame', () => {
       const fixture = TestBed.createComponent(StackTraceContainer);
       store.overrideSelector(getCodeLocationOrigin, {
         codeLocationType: CodeLocationType.EXECUTION,
         opType: 'FooOp',
         executionIndex: 12,
       });
-      const stackFrame0 = createTestStackFrame();
-      const stackFrame1 = createTestStackFrame();
-      const stackFrame2 = createTestStackFrame();
+      const stackFrame0 = createTestStackFrame('/tmp/file_1.py', 5);
+      const stackFrame1 = createTestStackFrame('/tmp/file_2.py', 10);
+      const stackFrame2 = createTestStackFrame('/tmp/file_2.py', 20);
       store.overrideSelector(getFocusedStackFrames, [
         stackFrame0,
         stackFrame1,
         stackFrame2,
       ]);
       store.overrideSelector(getFocusedSourceLineSpec, {
-        host_name: stackFrame1[0],
-        file_path: stackFrame1[1],
-        lineno: stackFrame1[2],
+        host_name: stackFrame2[0],
+        file_path: stackFrame2[1],
+        lineno: stackFrame2[2],
       });
       fixture.detectChanges();
 
@@ -646,17 +648,43 @@ describe('Debugger Container', () => {
       expect(functionElements[1].nativeElement.innerText).toBe(stackFrame1[3]);
       expect(functionElements[2].nativeElement.innerText).toBe(stackFrame2[3]);
 
-      // Check the focused stack frame has been highlighted by CSS class.
-      const focusedElements = fixture.debugElement.queryAll(
+      // Check the frames in the focused file (including the focused frame per se
+      // and another frame) have been highlighted byt he proper CSS class.
+      const focusedFileElements = fixture.debugElement.queryAll(
+        By.css('.focused-file')
+      );
+      expect(focusedFileElements.length).toBe(2);
+      expect(
+        focusedFileElements[0].query(By.css('.stack-frame-file-path'))
+          .nativeElement.innerText
+      ).toBe('file_2.py');
+      expect(
+        focusedFileElements[1].query(By.css('.stack-frame-file-path'))
+          .nativeElement.innerText
+      ).toBe('file_2.py');
+      expect(
+        focusedFileElements[0].query(By.css('.stack-frame-lineno'))
+          .nativeElement.innerText
+      ).toBe('Line 10');
+      expect(
+        focusedFileElements[1].query(By.css('.stack-frame-lineno'))
+          .nativeElement.innerText
+      ).toBe('Line 20');
+
+      // Check the focused stack frame has been highlighted by the proper CSS class.
+      const focusedFrameElements = fixture.debugElement.queryAll(
         By.css('.focused-stack-frame')
       );
-      expect(focusedElements.length).toBe(1);
-      const focusedFilePathElement = focusedElements[0].query(
-        By.css('.stack-frame-file-path')
-      );
-      expect(focusedFilePathElement.nativeElement.innerText).toBe(
-        stackFrame1[1].slice(stackFrame1[1].lastIndexOf('/') + 1)
-      );
+      expect(focusedFrameElements.length).toBe(1);
+      // const focusedFilePathElement = ;
+      expect(
+        focusedFrameElements[0].query(By.css('.stack-frame-file-path'))
+          .nativeElement.innerText
+      ).toBe('file_2.py');
+      expect(
+        focusedFrameElements[0].query(By.css('.stack-frame-lineno'))
+          .nativeElement.innerText
+      ).toBe('Line 20');
     });
 
     it('shows non-empty graph-op-creation stack frames; highlights focused frame', () => {
@@ -814,6 +842,185 @@ describe('Debugger Container', () => {
           },
         })
       );
+    });
+
+    for (const stickToValue of [false, true]) {
+      it(`sets stick-to-bottommost-frame slide toggle: value=${stickToValue}`, () => {
+        const fixture = TestBed.createComponent(StackTraceContainer);
+        store.overrideSelector(
+          getStickToBottommostFrameInFocusedFile,
+          stickToValue
+        );
+        fixture.detectChanges();
+
+        const stickToBottommostElement = fixture.debugElement.query(
+          By.css('.stick-to-bottommost-frame')
+        );
+        expect(
+          stickToBottommostElement.nativeElement.getAttribute(
+            'ng-reflect-checked'
+          )
+        ).toBe(stickToValue ? 'true' : 'false');
+      });
+    }
+
+    it('changing stick-to-bottommost-frame slide toggle dispatches action', () => {
+      const fixture = TestBed.createComponent(StackTraceContainer);
+      const stickToBottommostElement = fixture.debugElement.query(
+        By.css('.stick-to-bottommost-frame')
+      );
+      stickToBottommostElement.triggerEventHandler('change', {
+        checked: true,
+      } as MatSlideToggleChange);
+      fixture.detectChanges();
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        setStickToBottommostFrameInFocusedFile({value: true})
+      );
+      stickToBottommostElement.triggerEventHandler('change', {
+        checked: false,
+      } as MatSlideToggleChange);
+      fixture.detectChanges();
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        setStickToBottommostFrameInFocusedFile({value: false})
+      );
+    });
+
+    it('auto-focuses onto bottommost frame on set stick-to-bottommost', () => {
+      const fixture = TestBed.createComponent(StackTraceContainer);
+      store.overrideSelector(getCodeLocationOrigin, {
+        codeLocationType: CodeLocationType.EXECUTION,
+        opType: 'FooOp',
+        executionIndex: 12,
+      });
+      const stackFrame0 = createTestStackFrame('/tmp/file_1.py', 5);
+      const stackFrame1 = createTestStackFrame('/tmp/file_2.py', 10);
+      const stackFrame2 = createTestStackFrame('/tmp/file_2.py', 20);
+      store.overrideSelector(getStickToBottommostFrameInFocusedFile, false);
+      store.overrideSelector(getFocusedStackFrames, [
+        stackFrame0,
+        stackFrame1,
+        stackFrame2,
+      ]);
+      store.overrideSelector(getFocusedSourceLineSpec, {
+        host_name: stackFrame1[0],
+        file_path: stackFrame1[1],
+        lineno: stackFrame1[2],
+      });
+      fixture.detectChanges();
+
+      store.overrideSelector(getStickToBottommostFrameInFocusedFile, true);
+      store.refreshState();
+      fixture.detectChanges();
+
+      const [host_name, file_path, lineno] = stackFrame2;
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        sourceLineFocused({
+          sourceLineSpec: {host_name, file_path, lineno},
+        })
+      );
+    });
+
+    it('auto-focuses onto bottommost frame when focusing on non-bottommost frame', () => {
+      const fixture = TestBed.createComponent(StackTraceContainer);
+      store.overrideSelector(getCodeLocationOrigin, {
+        codeLocationType: CodeLocationType.EXECUTION,
+        opType: 'FooOp',
+        executionIndex: 12,
+      });
+      const stackFrame0 = createTestStackFrame('/tmp/file_1.py', 5);
+      const stackFrame1 = createTestStackFrame('/tmp/file_2.py', 10);
+      const stackFrame2 = createTestStackFrame('/tmp/file_2.py', 20);
+      store.overrideSelector(getStickToBottommostFrameInFocusedFile, true);
+      store.overrideSelector(getFocusedStackFrames, [
+        stackFrame0,
+        stackFrame1,
+        stackFrame2,
+      ]);
+      // Start from focusing on file_1; later file_2 will be focused on.
+      store.overrideSelector(getFocusedSourceLineSpec, {
+        host_name: stackFrame0[0],
+        file_path: stackFrame0[1],
+        lineno: stackFrame0[2],
+      });
+      fixture.detectChanges();
+
+      // stackFrame1 is not the bottom most in the file; stackFrame2 is.
+      // So we expect a dispatching of sourceLineFocused for stackFrame2 below.
+      store.overrideSelector(getFocusedSourceLineSpec, {
+        host_name: stackFrame1[0],
+        file_path: stackFrame1[1],
+        lineno: stackFrame1[2],
+      });
+      store.refreshState();
+      fixture.detectChanges();
+
+      const [host_name, file_path, lineno] = stackFrame2;
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        sourceLineFocused({
+          sourceLineSpec: {host_name, file_path, lineno},
+        })
+      );
+    });
+
+    it('no auto-focusing occurs if already focusing on bottommost frame', () => {
+      const fixture = TestBed.createComponent(StackTraceContainer);
+      store.overrideSelector(getCodeLocationOrigin, {
+        codeLocationType: CodeLocationType.EXECUTION,
+        opType: 'FooOp',
+        executionIndex: 12,
+      });
+      const stackFrame0 = createTestStackFrame('/tmp/file_1.py', 5);
+      const stackFrame1 = createTestStackFrame('/tmp/file_2.py', 10);
+      const stackFrame2 = createTestStackFrame('/tmp/file_2.py', 20);
+      store.overrideSelector(getStickToBottommostFrameInFocusedFile, true);
+      store.overrideSelector(getFocusedStackFrames, [
+        stackFrame0,
+        stackFrame1,
+        stackFrame2,
+      ]);
+      // Start from focusing on file_1; later file_2 will be focused on.
+      store.overrideSelector(getFocusedSourceLineSpec, {
+        host_name: stackFrame0[0],
+        file_path: stackFrame0[1],
+        lineno: stackFrame0[2],
+      });
+      fixture.detectChanges();
+
+      // stackFrame2 is already the bottom most in the file.
+      // So expect no action dispatching below.
+      store.overrideSelector(getFocusedSourceLineSpec, {
+        host_name: stackFrame2[0],
+        file_path: stackFrame2[1],
+        lineno: stackFrame2[2],
+      });
+      store.refreshState();
+      fixture.detectChanges();
+
+      expect(dispatchSpy).not.toHaveBeenCalled();
+    });
+
+    it('no auto-focusing occurs if there is no focused frame', () => {
+      const fixture = TestBed.createComponent(StackTraceContainer);
+      store.overrideSelector(getCodeLocationOrigin, {
+        codeLocationType: CodeLocationType.EXECUTION,
+        opType: 'FooOp',
+        executionIndex: 12,
+      });
+      const stackFrame0 = createTestStackFrame();
+      const stackFrame1 = createTestStackFrame();
+      store.overrideSelector(getStickToBottommostFrameInFocusedFile, false);
+      store.overrideSelector(getFocusedStackFrames, [stackFrame0, stackFrame1]);
+      // No stack frame is being focused on.
+      store.overrideSelector(getFocusedSourceLineSpec, null);
+      fixture.detectChanges();
+
+      // Because no stack frame is focused on, toggling stack-to-bottommost-
+      // frame-in-focused-file to true should not dispatch any actions.
+      store.overrideSelector(getStickToBottommostFrameInFocusedFile, true);
+      store.refreshState();
+      fixture.detectChanges();
+
+      expect(dispatchSpy).not.toHaveBeenCalled();
     });
   });
 });

@@ -18,8 +18,18 @@ limitations under the License.
 <div class="stack-trace-container">
   <div class="stack-trace-header">
     <span class="stack-trace-title">
-      Stack Trace
+      <div class="stack-trace-title-text">
+        Stack Trace
+      </div>
     </span>
+
+    <mat-slide-toggle
+      class="stick-to-bottommost-frame"
+      [checked]="stickToBottommostFrameInFocusedFile"
+      (change)="onToggleBottommostFrameInFile.emit($event.checked)"
+    >
+      Stick to bottommost frame in file
+    </mat-slide-toggle>
 
     <div
       *ngIf="codeLocationType !== null; else noStackTrace"
@@ -74,7 +84,10 @@ limitations under the License.
     >
       <div
         class="stack-frame-container"
-        [ngClass]="[stackFrameForDisplay.focused ? 'focused-stack-frame' : '']"
+        [ngClass]="[
+          stackFrameForDisplay.belongsToFocusedFile ? 'focused-file' : '',
+          stackFrameForDisplay.focused ? 'focused-stack-frame' : ''
+        ]"
       >
         <div
           class="stack-frame-file-path"

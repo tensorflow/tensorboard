@@ -63,6 +63,7 @@ tf_ts_library(
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/stack_trace",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/timeline",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "//tensorboard/webapp/angular:expect_angular_material_slide_toggle",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "@npm//@angular/common",
         "@npm//@angular/compiler",

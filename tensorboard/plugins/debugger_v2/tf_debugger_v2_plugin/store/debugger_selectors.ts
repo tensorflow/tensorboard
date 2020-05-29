@@ -607,3 +607,10 @@ export const getFocusedSourceLineSpec = createSelector(
     return sourceCode.focusLineSpec;
   }
 );
+
+export const getStickToBottommostFrameInFocusedFile = createSelector(
+  selectDebuggerState,
+  (debuggerState: DebuggerState) => {
+    return debuggerState.stickToBottommostFrameInFocusedFile;
+  }
+);

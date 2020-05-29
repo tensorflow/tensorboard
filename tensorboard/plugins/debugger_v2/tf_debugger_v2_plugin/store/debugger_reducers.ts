@@ -123,6 +123,7 @@ const initialState: DebuggerState = {
   graphs: createInitialGraphsState(),
   stackFrames: {},
   codeLocationFocusType: null,
+  stickToBottommostFrameInFocusedFile: false,
   sourceCode: {
     sourceFileListLoaded: {
       state: DataLoadState.NOT_LOADED,
@@ -922,6 +923,20 @@ const reducer = createReducer(
       const newState: DebuggerState = {
         ...state,
         stackFrames: {...state.stackFrames, ...stackFrames.stackFrames},
+      };
+      return newState;
+    }
+  ),
+  on(
+    actions.setStickToBottommostFrameInFocusedFile,
+    (state: DebuggerState, arg: {value: boolean}): DebuggerState => {
+      const runId = state.activeRunId;
+      if (runId === null) {
+        return state;
+      }
+      const newState: DebuggerState = {
+        ...state,
+        stickToBottommostFrameInFocusedFile: arg.value,
       };
       return newState;
     }

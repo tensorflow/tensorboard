@@ -20,6 +20,7 @@ ng_module(
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/store",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/store:types",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/source_code",
+        "//tensorboard/webapp/angular:expect_angular_material_slide_toggle",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@ngrx/store",

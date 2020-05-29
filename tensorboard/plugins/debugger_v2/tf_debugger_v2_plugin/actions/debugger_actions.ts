@@ -211,3 +211,8 @@ export const stackFramesLoaded = createAction(
   '[Debugger] A Set of Stack Frames Have Been Loaded',
   props<{stackFrames: StackFramesById}>()
 );
+
+export const setStickToBottommostFrameInFocusedFile = createAction(
+  '[Debugger] Set Sticking to Bottommost Frame in Focused File',
+  props<{value: boolean}>()
+);

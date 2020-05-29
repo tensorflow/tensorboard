@@ -22,9 +22,19 @@ export interface StackFrameForDisplay {
   concise_file_path: string;
   lineno: number;
   function_name: string;
-  // Whether the stack frame is being focused on (e.g.,
-  // being viewed in the source code viewer).
+  // Whether the stack frame is a part of the focused file.
+  // Being a part of the focused file is a necessary but insufficient
+  // condition for being the focused stack frame (see `focused` below).
+  belongsToFocusedFile: boolean;
+  // Whether the stack frame is the one being focused on (e.g.,
+  // being viewed in the source code viewer). If this field is `true`,
+  // `belongsToFocusedFile` must also be `true`.
   focused: boolean;
+  // Whether this frame should be automatically focused on even though the
+  // user may have focused on a different frame in the same file.
+  // This is applicable only if the `stickToBottommostFrameInFocusedFile` is
+  // `true` in the ngrx store.
+  autoFocus: boolean;
 }
 
 @Component({
@@ -50,6 +60,9 @@ export class StackTraceComponent {
   executionIndex!: number | null;
 
   @Input()
+  stickToBottommostFrameInFocusedFile!: boolean;
+
+  @Input()
   stackFramesForDisplay: StackFrameForDisplay[] | null = null;
 
   @Output()
@@ -58,6 +71,9 @@ export class StackTraceComponent {
     file_path: string;
     lineno: number;
   }>();
+
+  @Output()
+  onToggleBottommostFrameInFile = new EventEmitter<boolean>();
 
   CodeLocationType = CodeLocationType;
 }

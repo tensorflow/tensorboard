@@ -106,11 +106,14 @@ export function createTestGraphOpInfo(
   };
 }
 
-export function createTestStackFrame(): StackFrame {
+export function createTestStackFrame(
+  file_path?: string,
+  lineno?: number
+): StackFrame {
   return [
     'localhost', // Host name.
-    `/tmp/file_${Math.floor(Math.random() * 1e6)}.py`, // File path.
-    1 + Math.floor(Math.random() * 1e3), // Lineno.
+    file_path || `/tmp/file_${Math.floor(Math.random() * 1e6)}.py`, // File path.
+    lineno || 1 + Math.floor(Math.random() * 1e3), // Lineno.
     `function_${Math.floor(Math.random() * 1e3)}`, // Function name.
   ];
 }
@@ -156,6 +159,7 @@ export function createDebuggerState(
     graphExecutions: createDebuggerGraphExecutionsState(),
     graphs: createDebuggerGraphsState(),
     stackFrames: {},
+    stickToBottommostFrameInFocusedFile: false,
     codeLocationFocusType: null,
     sourceCode: {
       sourceFileListLoaded: {
