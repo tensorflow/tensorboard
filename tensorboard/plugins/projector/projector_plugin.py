@@ -387,6 +387,10 @@ class ProjectorPlugin(base_plugin.TBPlugin):
             for tensor_name, tensor_shape in var_map.items():
                 if len(tensor_shape) != 2:
                     continue
+                # Optimizer slot values are the same shape as embeddings
+                # but are not embeddings.
+                if ".OPTIMIZER_SLOT" in tensor_name:
+                    continue
                 embedding = self._get_embedding(tensor_name, config)
                 if not embedding:
                     embedding = config.embeddings.add()
