@@ -15,12 +15,13 @@ limitations under the License.
 import {Component} from '@angular/core';
 import {createSelector, select, Store} from '@ngrx/store';
 
-import {State} from '../../store/debugger_types';
+import {CodeLocationType, State} from '../../store/debugger_types';
 
 import {sourceLineFocused} from '../../actions';
 import {
-  getFocusedExecutionStackFrames,
+  getCodeLocationOrigin,
   getFocusedSourceLineSpec,
+  getFocusedStackFrames,
 } from '../../store';
 import {StackFrameForDisplay} from './stack_trace_component';
 
@@ -30,16 +31,76 @@ import {StackFrameForDisplay} from './stack_trace_component';
   selector: 'tf-debugger-v2-stack-trace',
   template: `
     <stack-trace-component
+      [codeLocationType]="codeLocationType$ | async"
+      [opType]="opType$ | async"
+      [opName]="opName$ | async"
+      [executionIndex]="executionIndex$ | async"
       [stackFramesForDisplay]="stackFramesForDisplay$ | async"
       (onSourceLineClicked)="onSourceLineClicked($event)"
     ></stack-trace-component>
   `,
 })
 export class StackTraceContainer {
+  readonly codeLocationType$ = this.store.pipe(
+    select(
+      createSelector(
+        getCodeLocationOrigin,
+        (originInfo): CodeLocationType | null => {
+          return originInfo === null ? null : originInfo.codeLocationType;
+        }
+      )
+    )
+  );
+
+  readonly opType$ = this.store.pipe(
+    select(
+      createSelector(
+        getCodeLocationOrigin,
+        (originInfo): string | null => {
+          return originInfo === null ? null : originInfo.opType;
+        }
+      )
+    )
+  );
+
+  readonly opName$ = this.store.pipe(
+    select(
+      createSelector(
+        getCodeLocationOrigin,
+        (originInfo): string | null => {
+          if (
+            originInfo === null ||
+            originInfo.codeLocationType !== CodeLocationType.GRAPH_OP_CREATION
+          ) {
+            return null;
+          }
+          return originInfo.opName;
+        }
+      )
+    )
+  );
+
+  readonly executionIndex$ = this.store.pipe(
+    select(
+      createSelector(
+        getCodeLocationOrigin,
+        (originInfo): number | null => {
+          if (
+            originInfo === null ||
+            originInfo.codeLocationType !== CodeLocationType.EXECUTION
+          ) {
+            return null;
+          }
+          return originInfo.executionIndex;
+        }
+      )
+    )
+  );
+
   readonly stackFramesForDisplay$ = this.store.pipe(
     select(
       createSelector(
-        getFocusedExecutionStackFrames,
+        getFocusedStackFrames,
         getFocusedSourceLineSpec,
         (stackFrames, focusedSourceLineSpec) => {
           if (stackFrames === null) {

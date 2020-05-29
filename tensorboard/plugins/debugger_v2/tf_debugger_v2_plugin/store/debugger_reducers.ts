@@ -25,12 +25,12 @@ import {findFileIndex} from './debugger_store_utils';
 import {
   AlertsByIndex,
   AlertType,
+  CodeLocationType,
   DataLoadState,
   DebuggerState,
   Executions,
   Graphs,
   GraphExecutions,
-  GraphOpInfo,
   InfNanAlert,
   StackFramesById,
   SourceFileSpec,
@@ -122,6 +122,7 @@ const initialState: DebuggerState = {
   graphExecutions: createInitialGraphExecutionsState(),
   graphs: createInitialGraphsState(),
   stackFrames: {},
+  codeLocationFocusType: null,
   sourceCode: {
     sourceFileListLoaded: {
       state: DataLoadState.NOT_LOADED,
@@ -528,6 +529,9 @@ const reducer = createReducer(
           ...state.executions,
           focusIndex: state.executions.scrollBeginIndex + action.displayIndex,
         },
+        // An eager-execution event was last focused on, update the
+        // code-location focus type to `EXECUTION`.
+        codeLocationFocusType: CodeLocationType.EXECUTION,
       };
     }
   ),
@@ -693,6 +697,9 @@ const reducer = createReducer(
             opName: data.op_name,
           },
         },
+        // An graph event was last focused on, update the
+        // code-location focus type to `GRAPH_OP_CREATION`.
+        codeLocationFocusType: CodeLocationType.GRAPH_OP_CREATION,
       };
     }
   ),
