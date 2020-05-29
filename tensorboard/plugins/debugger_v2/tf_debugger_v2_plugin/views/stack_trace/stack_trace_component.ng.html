@@ -16,20 +16,57 @@ limitations under the License.
 -->
 
 <div class="stack-trace-container">
-  <div>
+  <div class="stack-trace-header">
     <span class="stack-trace-title">
       Stack Trace
     </span>
-    <span
-      *ngIf="stackFramesForDisplay !== null && stackFramesForDisplay.length > 0"
-      class="stack-trace-host-name"
+
+    <div
+      *ngIf="codeLocationType !== null; else noStackTrace"
+      class="stack-trace-aux-info"
     >
-      (on {{ stackFramesForDisplay[0].host_name }})
-    </span>
+      <span>
+        <span [ngSwitch]="codeLocationType" class="code-location-origin">
+          <div *ngSwitchCase="CodeLocationType.EXECUTION">
+            Eager execution
+            <span *ngIf="opType !== null" class="eager-execution-index">
+              #{{ executionIndex }}:
+            </span>
+            <span *ngIf="opType !== null" class="op-type">
+              {{ opType }}
+            </span>
+          </div>
+
+          <div *ngSwitchCase="CodeLocationType.GRAPH_OP_CREATION">
+            Creation of graph op
+            <span *ngIf="opName !== null" class="op-name">
+              "{{ opName }}"
+            </span>
+            <span *ngIf="opType !== null" class="op-type">
+              {{ opType }}
+            </span>
+          </div>
+        </span>
+      </span>
+      <div>
+        <span
+          *ngIf="stackFramesForDisplay !== null && stackFramesForDisplay.length > 0"
+          class="stack-trace-host-name"
+        >
+          (Host name: {{ stackFramesForDisplay[0].host_name }})
+        </span>
+      </div>
+    </div>
+
+    <ng-template #noStackTrace>
+      <div class="stack-trace-aux-info no-stack-trace">
+        Click an eager execution or graph op to show its original stack trace.
+      </div>
+    </ng-template>
   </div>
 
   <div
-    *ngIf="stackFramesForDisplay !== null; else loading_section"
+    *ngIf="stackFramesForDisplay !== null; else loadingSection"
     class="stack-frame-array"
   >
     <div
@@ -64,7 +101,7 @@ limitations under the License.
     </div>
   </div>
 
-  <ng-template #loading_section>
+  <ng-template #loadingSection>
     <!-- TODO(cais): Display loading spinner. -->
   </ng-template>
 </div>

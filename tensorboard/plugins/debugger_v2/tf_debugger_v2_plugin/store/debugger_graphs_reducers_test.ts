@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import * as actions from '../actions';
 import {reducers} from './debugger_reducers';
-import {DataLoadState} from './debugger_types';
+import {CodeLocationType, DataLoadState} from './debugger_types';
 import {
   createDebuggerGraphsState,
   createDebuggerState,
@@ -33,6 +33,9 @@ describe('Debugger reducers', () => {
         graphId: 'g2',
         opName: 'TestOp_12',
       });
+      expect(nextState.codeLocationFocusType).toBe(
+        CodeLocationType.GRAPH_OP_CREATION
+      );
     });
 
     it('sets focusedOp in graphs state from non-empty state', () => {
@@ -52,6 +55,9 @@ describe('Debugger reducers', () => {
         graphId: 'g2',
         opName: 'TestOp_12',
       });
+      expect(nextState.codeLocationFocusType).toBe(
+        CodeLocationType.GRAPH_OP_CREATION
+      );
     });
   });
 
