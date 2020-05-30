@@ -82,12 +82,14 @@ tf_ng_web_test_suite(
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/store:debugger_store_test_lib",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/alerts:alerts_container_test_lib",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/debug_tensor_value:debug_tensor_value_component_test_lib",
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/execution_data:execution_data_container_test_lib",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/graph:graph_container_test_lib",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/graph_executions:graph_executions_container_test_lib",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/source_code:source_code_container_test_lib",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/source_code:source_code_test_lib",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/source_files:source_files_container_test_lib",
-        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/timeline:timeline_test",
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/stack_trace:stack_trace_container_test_lib",
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/timeline:timeline_container_test_lib",
     ],
 )
 
