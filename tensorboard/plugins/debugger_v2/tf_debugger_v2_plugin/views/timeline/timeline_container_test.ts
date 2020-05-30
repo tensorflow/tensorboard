@@ -75,7 +75,6 @@ describe('getExecutionDigestForDisplay', () => {
   });
 });
 
-
 describe('Timeline Container', () => {
   let store: MockStore<State>;
   let dispatchSpy: jasmine.Spy;
