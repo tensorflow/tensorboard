@@ -63,17 +63,17 @@ function findBottommostStackFrameInFocusedFile(
   if (focusedSourceLineSpec === null) {
     return null;
   }
-  let bottommostStackFrame: StackFrame | null = null;
-  for (const stackFrame of stackFrames) {
+  for (let i = stackFrames.length - 1; i >= 0; --i) {
+    const stackFrame = stackFrames[i];
     const [host_name, file_path] = stackFrame;
     if (
       host_name === focusedSourceLineSpec.host_name &&
       file_path === focusedSourceLineSpec.file_path
     ) {
-      bottommostStackFrame = stackFrame;
+      return stackFrame;
     }
   }
-  return bottommostStackFrame;
+  return null;
 }
 
 @Component({
@@ -152,7 +152,7 @@ export class StackTraceContainer {
 
   readonly stickToBottommostFrameInFocusedFile$ = this.store.pipe(
     select(getStickToBottommostFrameInFocusedFile)
-  ); // TODO(cais): Use or delete.
+  );
 
   readonly stackFramesForDisplay$ = this.store.pipe(
     select(
