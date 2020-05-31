@@ -19,10 +19,9 @@ import {
   CodeLocationType,
   State,
 } from '../../store/debugger_types';
-
 import {
-  sourceLineFocused,
   setStickToBottommostFrameInFocusedFile,
+  sourceLineFocused,
 } from '../../actions';
 import {
   getCodeLocationOrigin,
