@@ -103,7 +103,8 @@ export const numExecutionsLoaded = createAction(
 );
 
 export const executionDigestsRequested = createAction(
-  '[Debugger] ExecutionDigests Requested'
+  '[Debugger] ExecutionDigests Requested',
+  props<{begin: number; end: number}>()
 );
 
 export const executionDigestsLoaded = createAction(
