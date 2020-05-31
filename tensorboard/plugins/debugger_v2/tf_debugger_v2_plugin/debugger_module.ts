@@ -21,7 +21,7 @@ import {EffectsModule} from '@ngrx/effects';
 import {Tfdbg2ServerDataSourceModule} from './data_source/tfdbg2_data_source_module';
 import {DebuggerComponent} from './debugger_component';
 import {DebuggerContainer} from './debugger_container';
-import {DebuggerEffects} from './effects';
+import {DebuggerEffects, StackTraceEffects} from './effects';
 import {reducers} from './store/debugger_reducers';
 import {DEBUGGER_FEATURE_KEY} from './store/debugger_types';
 import {AlertsModule} from './views/alerts/alerts_module';
@@ -46,7 +46,7 @@ import {PluginRegistryModule} from '../../../webapp/plugins/plugin_registry_modu
     Tfdbg2ServerDataSourceModule,
     TimelineModule,
     StoreModule.forFeature(DEBUGGER_FEATURE_KEY, reducers),
-    EffectsModule.forFeature([DebuggerEffects]),
+    EffectsModule.forFeature([DebuggerEffects, StackTraceEffects]),
     PluginRegistryModule.forPlugin('debugger-v2', DebuggerContainer),
   ],
   exports: [DebuggerContainer],

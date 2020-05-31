@@ -14,12 +14,9 @@ limitations under the License.
 ==============================================================================*/
 import {Component} from '@angular/core';
 import {createSelector, select, Store} from '@ngrx/store';
-import {tap} from 'rxjs/operators';
 
 import {
   CodeLocationType,
-  SourceLineSpec,
-  StackFrame,
   State,
 } from '../../store/debugger_types';
 
@@ -36,45 +33,6 @@ import {
 import {StackFrameForDisplay} from './stack_trace_component';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
-
-function sourceLineSpecEqualsStackFrame(
-  spec: SourceLineSpec,
-  stackFrame: StackFrame
-) {
-  const [host_name, file_path, lineno] = stackFrame;
-  return (
-    spec.host_name === host_name &&
-    spec.file_path === file_path &&
-    spec.lineno === lineno
-  );
-}
-
-/**
- * Helper method for finding the bottommost stack frame in a stack trace.
- * @param stackFrames Stack frames of the stack trace to look in.
- * @param focusedSourceLineSpec The currently focuse stack frame.
- * @returns The stack frame that is in the same file as `focusedSourceLineSpec`,
- *   but at the bottommost location.
- */
-function findBottommostStackFrameInFocusedFile(
-  stackFrames: StackFrame[],
-  focusedSourceLineSpec: SourceLineSpec | null
-): StackFrame | null {
-  if (focusedSourceLineSpec === null) {
-    return null;
-  }
-  for (let i = stackFrames.length - 1; i >= 0; --i) {
-    const stackFrame = stackFrames[i];
-    const [host_name, file_path] = stackFrame;
-    if (
-      host_name === focusedSourceLineSpec.host_name &&
-      file_path === focusedSourceLineSpec.file_path
-    ) {
-      return stackFrame;
-    }
-  }
-  return null;
-}
 
 @Component({
   selector: 'tf-debugger-v2-stack-trace',
@@ -160,20 +118,11 @@ export class StackTraceContainer {
         getFocusedStackFrames,
         getFocusedSourceLineSpec,
         getStickToBottommostFrameInFocusedFile,
-        (
-          stackFrames,
-          focusedSourceLineSpec,
-          stickToBottommostFrameInFocusedFile
-        ): StackFrameForDisplay[] | null => {
+        (stackFrames, focusedSourceLineSpec): StackFrameForDisplay[] | null => {
           if (stackFrames === null) {
             return null;
           }
           const output: StackFrameForDisplay[] = [];
-          // Find the stackFrame that is the bottom in the focused file.
-          const bottommostFrameInFocusedFile = findBottommostStackFrameInFocusedFile(
-            stackFrames,
-            focusedSourceLineSpec
-          );
           // Correctly label all the stack frames for display.
           for (const stackFrame of stackFrames) {
             const [host_name, file_path, lineno, function_name] = stackFrame;
@@ -185,7 +134,7 @@ export class StackTraceContainer {
               file_path === focusedSourceLineSpec.file_path;
             const focused =
               belongsToFocusedFile && lineno === focusedSourceLineSpec!.lineno;
-            const stackFrameForDisplay: StackFrameForDisplay = {
+            output.push({
               host_name,
               file_path,
               concise_file_path,
@@ -193,43 +142,12 @@ export class StackTraceContainer {
               function_name,
               belongsToFocusedFile,
               focused,
-              autoFocus: false,
-            };
-            if (
-              stickToBottommostFrameInFocusedFile &&
-              stackFrame === bottommostFrameInFocusedFile &&
-              focusedSourceLineSpec !== null &&
-              !sourceLineSpecEqualsStackFrame(focusedSourceLineSpec, stackFrame)
-            ) {
-              stackFrameForDisplay.autoFocus = true;
-            }
-            output.push(stackFrameForDisplay);
+            });
           }
           return output;
         }
       )
-    ),
-    tap((stackFramesForDisplay: StackFrameForDisplay[] | null) => {
-      if (stackFramesForDisplay === null) {
-        return;
-      }
-      for (const stackFrame of stackFramesForDisplay) {
-        if (stackFrame.autoFocus) {
-          this.store.dispatch(
-            sourceLineFocused({
-              sourceLineSpec: {
-                host_name: stackFrame.host_name,
-                file_path: stackFrame.file_path,
-                lineno: stackFrame.lineno,
-              },
-            })
-          );
-          // TODO(cais): In addition to dispatching the action, also
-          // scroll the corresponding frame into the view automatically.
-          break;
-        }
-      }
-    })
+    )
   );
 
   constructor(private readonly store: Store<State>) {}

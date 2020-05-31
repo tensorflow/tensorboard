@@ -14,3 +14,4 @@ limitations under the License.
 ==============================================================================*/
 
 export * from './debugger_effects';
+export * from './stack_trace_effects';

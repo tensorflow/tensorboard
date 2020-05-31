@@ -8,6 +8,7 @@ ng_module(
     srcs = [
         "debugger_effects.ts",
         "index.ts",
+        "stack_trace_effects.ts",
     ],
     deps = [
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/actions",
@@ -27,6 +28,7 @@ tf_ts_library(
     testonly = True,
     srcs = [
         "debugger_effects_test.ts",
+        "stack_trace_effects_test.ts",
     ],
     deps = [
         ":effects",

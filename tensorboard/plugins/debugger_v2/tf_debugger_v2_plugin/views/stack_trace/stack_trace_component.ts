@@ -30,11 +30,6 @@ export interface StackFrameForDisplay {
   // being viewed in the source code viewer). If this field is `true`,
   // `belongsToFocusedFile` must also be `true`.
   focused: boolean;
-  // Whether this frame should be automatically focused on even though the
-  // user may have focused on a different frame in the same file.
-  // This is applicable only if the `stickToBottommostFrameInFocusedFile` is
-  // `true` in the ngrx store.
-  autoFocus: boolean;
 }
 
 @Component({

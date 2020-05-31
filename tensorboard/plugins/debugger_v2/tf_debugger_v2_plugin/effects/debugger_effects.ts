@@ -68,6 +68,7 @@ import {
   getExecutionPageSize,
   getExecutionScrollBeginIndex,
   getFocusedSourceFileContent,
+  getFocusedSourceFileIndex,
   getGraphExecutionDataPageLoadedSizes,
   getGraphExecutionDisplayCount,
   getGraphExecutionPageSize,
@@ -83,7 +84,6 @@ import {
   getNumGraphExecutions,
   getNumGraphExecutionsLoaded,
   getSourceFileListLoaded,
-  getFocusedSourceFileIndex,
 } from '../store/debugger_selectors';
 import {
   DataLoadState,
