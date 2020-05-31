@@ -402,7 +402,7 @@ const reducer = createReducer(
       ];
       const match = findRange(loadingRanges, range.begin, range.end);
       if (match === -1) {
-        loadingRanges.push(range);
+        loadingRanges.push({begin: range.begin, end: range.end});
       }
       const newState = {
         ...state,

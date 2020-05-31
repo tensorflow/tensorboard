@@ -233,6 +233,8 @@ export function createDebuggerSourceCodeState(
 export function createDigestsStateWhileLoadingExecutionDigests(
   pageSize: number,
   numExecutions: number,
+  loadingBegin: number,
+  loadingEnd: number,
   executionDigests?: {[index: number]: ExecutionDigest},
   pageLoadedSize?: {[page: number]: number}
 ): DebuggerState {
@@ -256,8 +258,12 @@ export function createDigestsStateWhileLoadingExecutionDigests(
       executionDigestsLoaded: {
         numExecutions,
         pageLoadedSizes: pageLoadedSize || {},
-        state: DataLoadState.LOADING,
-        lastLoadedTimeInMs: executionDigests == null ? Date.now() : null,
+        loadingRanges: [
+          {
+            begin: loadingBegin,
+            end: loadingEnd,
+          },
+        ],
       },
       executionDigests: executionDigests == null ? {} : executionDigests,
     }),
@@ -295,8 +301,7 @@ export function createDebuggerStateWithLoadedExecutionDigests(
       executionDigestsLoaded: {
         numExecutions: opTypes == null ? 1500 : opTypes.length,
         pageLoadedSizes: {},
-        state: DataLoadState.LOADED,
-        lastLoadedTimeInMs: Date.now(),
+        loadingRanges: [],
       },
       executionDigests: {},
       executionData: {},

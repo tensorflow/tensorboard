@@ -243,8 +243,7 @@ describe('debugger selectors', () => {
               lastLoadedTimeInMs: null,
             },
             executionDigestsLoaded: {
-              state: DataLoadState.NOT_LOADED,
-              lastLoadedTimeInMs: null,
+              loadingRanges: [],
               pageLoadedSizes: {},
               numExecutions: 0,
             },
@@ -282,8 +281,7 @@ describe('debugger selectors', () => {
               lastLoadedTimeInMs: null,
             },
             executionDigestsLoaded: {
-              state: DataLoadState.NOT_LOADED,
-              lastLoadedTimeInMs: null,
+              loadingRanges: [],
               pageLoadedSizes: {},
               numExecutions: 0,
             },
@@ -323,8 +321,7 @@ describe('debugger selectors', () => {
                 lastLoadedTimeInMs: null,
               },
               executionDigestsLoaded: {
-                state: DataLoadState.NOT_LOADED,
-                lastLoadedTimeInMs: null,
+                loadingRanges: [],
                 pageLoadedSizes: {},
                 numExecutions: 0,
               },
@@ -353,8 +350,7 @@ describe('debugger selectors', () => {
               lastLoadedTimeInMs: null,
             },
             executionDigestsLoaded: {
-              state: DataLoadState.NOT_LOADED,
-              lastLoadedTimeInMs: null,
+              loadingRanges: [],
               pageLoadedSizes: {},
               numExecutions: 0,
             },
@@ -381,8 +377,7 @@ describe('debugger selectors', () => {
               lastLoadedTimeInMs: null,
             },
             executionDigestsLoaded: {
-              state: DataLoadState.NOT_LOADED,
-              lastLoadedTimeInMs: null,
+              loadingRanges: [],
               pageLoadedSizes: {},
               numExecutions: 10,
             },
@@ -411,8 +406,7 @@ describe('debugger selectors', () => {
               lastLoadedTimeInMs: null,
             },
             executionDigestsLoaded: {
-              state: DataLoadState.NOT_LOADED,
-              lastLoadedTimeInMs: null,
+              loadingRanges: [],
               pageLoadedSizes: {},
               numExecutions: 10,
             },
@@ -504,8 +498,7 @@ describe('debugger selectors', () => {
               lastLoadedTimeInMs: null,
             },
             executionDigestsLoaded: {
-              state: DataLoadState.NOT_LOADED,
-              lastLoadedTimeInMs: null,
+              loadingRanges: [],
               pageLoadedSizes: {},
               numExecutions: 0,
             },
@@ -535,8 +528,7 @@ describe('debugger selectors', () => {
               lastLoadedTimeInMs: null,
             },
             executionDigestsLoaded: {
-              state: DataLoadState.NOT_LOADED,
-              lastLoadedTimeInMs: null,
+              loadingRanges: [],
               pageLoadedSizes: {},
               numExecutions: 0,
             },
@@ -634,8 +626,7 @@ describe('debugger selectors', () => {
               lastLoadedTimeInMs: null,
             },
             executionDigestsLoaded: {
-              state: DataLoadState.NOT_LOADED,
-              lastLoadedTimeInMs: null,
+              loadingRanges: [],
               pageLoadedSizes: {},
               numExecutions: 0,
             },
@@ -885,8 +876,7 @@ describe('debugger selectors', () => {
         createDebuggerState({
           graphExecutions: createDebuggerGraphExecutionsState({
             executionDigestsLoaded: {
-              state: DataLoadState.LOADING,
-              lastLoadedTimeInMs: null,
+              loadingRanges: [],
               pageLoadedSizes: {},
               numExecutions: 10,
             },

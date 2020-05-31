@@ -354,7 +354,7 @@ export class DebuggerEffects {
         const end = Math.min(numExecutions, pageSize);
         return (
           runId !== null && findRange(loaded.loadingRanges, begin, end) === -1
-        );
+        ); // TODO(cais): Add unit test for already loading.
       }),
       map(([, numExecutions, runId, pageSize]) => {
         const begin = 0;

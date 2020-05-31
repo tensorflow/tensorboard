@@ -507,8 +507,7 @@ describe('Debugger graphs reducers', () => {
           lastLoadedTimeInMs: null,
         },
         executionDigestsLoaded: {
-          state: DataLoadState.NOT_LOADED,
-          lastLoadedTimeInMs: null,
+          loadingRanges: [],
           pageLoadedSizes: {},
           numExecutions: 0,
         },
@@ -555,8 +554,7 @@ describe('Debugger graphs reducers', () => {
           lastLoadedTimeInMs: null,
         },
         executionDigestsLoaded: {
-          state: DataLoadState.NOT_LOADED,
-          lastLoadedTimeInMs: null,
+          loadingRanges: [],
           pageLoadedSizes: {},
           numExecutions: 0,
         },
@@ -583,6 +581,8 @@ describe('Debugger graphs reducers', () => {
     expect(nextState.executions.focusIndex).toBeNull();
   });
 
+  // TODO(cais): Add unit test for the case of already loading other pages or the
+  // page itself.
   it('Updates states on executionDigestsRequested', () => {
     const state = createDebuggerState({
       runs: {
@@ -603,18 +603,23 @@ describe('Debugger graphs reducers', () => {
         executionDigestsLoaded: {
           numExecutions: 1337,
           pageLoadedSizes: {},
-          state: DataLoadState.NOT_LOADED,
-          lastLoadedTimeInMs: null,
+          loadingRanges: [],
         },
       }),
     });
-    const nextState = reducers(state, actions.executionDigestsRequested());
-    expect(nextState.executions.executionDigestsLoaded.state).toBe(
-      DataLoadState.LOADING
+    const nextState = reducers(
+      state,
+      actions.executionDigestsRequested({
+        begin: 0,
+        end: 100,
+      })
     );
-    expect(
-      nextState.executions.executionDigestsLoaded.lastLoadedTimeInMs
-    ).toBeNull();
+    expect(nextState.executions.executionDigestsLoaded.loadingRanges).toEqual([
+      {
+        begin: 0,
+        end: 100,
+      },
+    ]);
     expect(nextState.executions.executionDigestsLoaded.numExecutions).toBe(
       1337
     );
@@ -628,7 +633,9 @@ describe('Debugger graphs reducers', () => {
     const numExecutions = 1337;
     const state = createDigestsStateWhileLoadingExecutionDigests(
       pageSize,
-      numExecutions
+      numExecutions,
+      0,
+      pageSize
     );
     const excutionDigestsResponse: ExecutionDigestsResponse = {
       begin: 0,
@@ -647,12 +654,9 @@ describe('Debugger graphs reducers', () => {
       state,
       actions.executionDigestsLoaded(excutionDigestsResponse)
     );
-    expect(nextState.executions.executionDigestsLoaded.state).toBe(
-      DataLoadState.LOADED
+    expect(nextState.executions.executionDigestsLoaded.loadingRanges).toEqual(
+      []
     );
-    expect(
-      nextState.executions.executionDigestsLoaded.lastLoadedTimeInMs
-    ).toBeGreaterThanOrEqual(t0);
     expect(nextState.executions.executionDigestsLoaded.numExecutions).toEqual(
       numExecutions
     );
@@ -676,6 +680,8 @@ describe('Debugger graphs reducers', () => {
     const state = createDigestsStateWhileLoadingExecutionDigests(
       pageSize,
       numExecutions,
+      0 /* Begin of loading range. */,
+      4 /* End of loading range. */,
       {
         0: {op_type: 'Relu', output_tensor_device_ids: ['a']},
         1: {op_type: 'Identity', output_tensor_device_ids: ['a']},
@@ -700,12 +706,9 @@ describe('Debugger graphs reducers', () => {
       state,
       actions.executionDigestsLoaded(excutionDigestsResponse)
     );
-    expect(nextState.executions.executionDigestsLoaded.state).toBe(
-      DataLoadState.LOADED
+    expect(nextState.executions.executionDigestsLoaded.loadingRanges).toEqual(
+      []
     );
-    expect(
-      nextState.executions.executionDigestsLoaded.lastLoadedTimeInMs
-    ).toBeGreaterThanOrEqual(t0);
     expect(nextState.executions.executionDigestsLoaded.numExecutions).toBe(
       numExecutions
     );
@@ -739,6 +742,8 @@ describe('Debugger graphs reducers', () => {
     const state = createDigestsStateWhileLoadingExecutionDigests(
       pageSize,
       numExecutions,
+      0 /* Begin of loading range. */,
+      2 /* End of loading range. */,
       {
         2: {op_type: 'Relu', output_tensor_device_ids: ['a']},
         3: {op_type: 'Identity', output_tensor_device_ids: ['a']},
@@ -763,12 +768,9 @@ describe('Debugger graphs reducers', () => {
       state,
       actions.executionDigestsLoaded(excutionDigestsResponse)
     );
-    expect(nextState.executions.executionDigestsLoaded.state).toBe(
-      DataLoadState.LOADED
+    expect(nextState.executions.executionDigestsLoaded.loadingRanges).toEqual(
+      []
     );
-    expect(
-      nextState.executions.executionDigestsLoaded.lastLoadedTimeInMs
-    ).toBeGreaterThanOrEqual(t0);
     expect(nextState.executions.executionDigestsLoaded.numExecutions).toBe(
       numExecutions
     );
@@ -804,6 +806,8 @@ describe('Debugger graphs reducers', () => {
     const state = createDigestsStateWhileLoadingExecutionDigests(
       pageSize,
       numExecutions,
+      2,
+      4,
       {
         0: {op_type: 'MatMul', output_tensor_device_ids: ['a']},
         1: {op_type: 'BiasAdd', output_tensor_device_ids: ['a']},
@@ -826,12 +830,9 @@ describe('Debugger graphs reducers', () => {
       state,
       actions.executionDigestsLoaded(excutionDigestsResponse)
     );
-    expect(nextState.executions.executionDigestsLoaded.state).toBe(
-      DataLoadState.LOADED
+    expect(nextState.executions.executionDigestsLoaded.loadingRanges).toEqual(
+      []
     );
-    expect(
-      nextState.executions.executionDigestsLoaded.lastLoadedTimeInMs
-    ).toBeGreaterThanOrEqual(t0);
     // Update in total execution count should be reflected.
     expect(nextState.executions.executionDigestsLoaded.numExecutions).toBe(
       numExecutions + 1
@@ -981,8 +982,7 @@ describe('Debugger graphs reducers', () => {
           lastLoadedTimeInMs: null,
         },
         executionDigestsLoaded: {
-          state: DataLoadState.NOT_LOADED,
-          lastLoadedTimeInMs: null,
+          loadingRanges: [],
           pageLoadedSizes: {},
           numExecutions: 0,
         },

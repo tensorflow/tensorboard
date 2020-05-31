@@ -630,7 +630,7 @@ describe('Debugger effects', () => {
           }),
           numExecutionsRequested(),
           numExecutionsLoaded({numExecutions}),
-          executionDigestsRequested(),
+          executionDigestsRequested({begin: 0, end: 2}),
           executionDigestsLoaded(executionDigestsPageResponse),
           executionDataLoaded(executionDataResponse),
           stackFramesLoaded({stackFrames: {aa: stackFrame0, bb: stackFrame1}}),
@@ -744,8 +744,7 @@ describe('Debugger effects', () => {
           store.overrideSelector(getExecutionDigestsLoaded, {
             numExecutions,
             pageLoadedSizes,
-            state: DataLoadState.LOADED,
-            lastLoadedTimeInMs: 1234,
+            loadingRanges: [],
           });
 
           store.refreshState();
@@ -777,7 +776,10 @@ describe('Debugger effects', () => {
           } else {
             expect(fetchExecutionDigests).toHaveBeenCalledTimes(1);
             expect(dispatchedActions).toEqual([
-              executionDigestsRequested(),
+              executionDigestsRequested({
+                begin: 60,
+                end: 60 + pageSize,
+              }),
               executionDigestsLoaded(executionDigestsResponse),
             ]);
           }
@@ -816,8 +818,7 @@ describe('Debugger effects', () => {
           store.overrideSelector(getExecutionDigestsLoaded, {
             numExecutions,
             pageLoadedSizes,
-            state: DataLoadState.LOADED,
-            lastLoadedTimeInMs: 1234,
+            loadingRanges: [],
           });
 
           store.refreshState();
@@ -849,7 +850,10 @@ describe('Debugger effects', () => {
           } else {
             expect(fetchExecutionDigests).toHaveBeenCalledTimes(1);
             expect(dispatchedActions).toEqual([
-              executionDigestsRequested(),
+              executionDigestsRequested({
+                begin: 20,
+                end: 20 + pageSize,
+              }),
               executionDigestsLoaded(executionDigestsResponse),
             ]);
           }
@@ -893,8 +897,7 @@ describe('Debugger effects', () => {
           store.overrideSelector(getExecutionDigestsLoaded, {
             numExecutions,
             pageLoadedSizes,
-            state: DataLoadState.LOADED,
-            lastLoadedTimeInMs: 1234,
+            loadingRanges: [],
           });
 
           store.refreshState();
@@ -923,7 +926,10 @@ describe('Debugger effects', () => {
           } else {
             expect(fetchExecutionDigests).toHaveBeenCalledTimes(1);
             expect(dispatchedActions).toEqual([
-              executionDigestsRequested(),
+              executionDigestsRequested({
+                begin: 60,
+                end: 60 + pageSize,
+              }),
               executionDigestsLoaded(executionDigestsResponse),
             ]);
           }
@@ -1078,8 +1084,7 @@ describe('Debugger effects', () => {
       store.overrideSelector(getExecutionDigestsLoaded, {
         numExecutions,
         pageLoadedSizes: {},
-        state: DataLoadState.NOT_LOADED,
-        lastLoadedTimeInMs: null,
+        loadingRanges: [],
       });
 
       store.refreshState();
@@ -1103,7 +1108,10 @@ describe('Debugger effects', () => {
           alertType: AlertType.INF_NAN_ALERT,
           alerts: [alert0, alert1],
         }),
-        executionDigestsRequested(),
+        executionDigestsRequested({
+          begin: 8,
+          end: 12,
+        }),
         executionDigestsLoaded({
           num_digests: numExecutions,
           begin: 8,
@@ -1160,8 +1168,7 @@ describe('Debugger effects', () => {
         pageLoadedSizes: {
           2: 4, // The page of eecution digest has already been loaded.
         },
-        state: DataLoadState.LOADED,
-        lastLoadedTimeInMs: 1234,
+        loadingRanges: [],
       });
 
       store.refreshState();
