@@ -1,4 +1,4 @@
-/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -12,6 +12,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+/**
+ * Stack-trace related ngrx effects in DebuggerV2.
+ */
 import {Injectable} from '@angular/core';
 import {createSelector, select, Store} from '@ngrx/store';
 import {createEffect} from '@ngrx/effects';
@@ -70,6 +73,11 @@ function findBottommostStackFrameInFocusedFile(
 
 @Injectable()
 export class StackTraceEffects {
+  /**
+   * Automatically focus onto the bottommost (in the Python sense)
+   * stack frame when a source file is focused on, when
+   * the store has `stickToBottommsotFrameInFocusedFile` set to `true`.
+   */
   /** @export */
   readonly stickingToBottommostFrameEffect$: Observable<void>;
 
