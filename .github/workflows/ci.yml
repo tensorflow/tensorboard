@@ -115,7 +115,7 @@ jobs:
         # TODO(tensorboard-team): address all lint warnings and remove the exemption.
         run:
           git ls-files -z '*BUILD' third_party/js.bzl | xargs -0 buildifier --mode=check --lint=warn
-          --warnings=-load-on-top,-native-py,-native-java,-constant-glob
+          --warnings=-native-py,-native-java,-constant-glob
       - run: ./tensorboard/tools/mirror_urls_test.sh
       - name: 'Lint for no py2 BUILD targets'
         # Use | to start a literal so YAML doesn't complain about the '!' character.
