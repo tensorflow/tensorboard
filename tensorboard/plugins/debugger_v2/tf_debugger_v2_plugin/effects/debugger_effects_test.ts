@@ -792,7 +792,6 @@ describe('Debugger effects', () => {
         `scrolling left triggers execution digest loading: ` +
           `dataAlreadyExists=${dataAlreadyExists}`,
         () => {
-          const dataAlreadyExists = false; // TODO(cais): Fix this.
           const originalScrollBeginIndex = 40;
           const scrollBeginIndex = originalScrollBeginIndex - 1;
           const numExecutions = 100;
