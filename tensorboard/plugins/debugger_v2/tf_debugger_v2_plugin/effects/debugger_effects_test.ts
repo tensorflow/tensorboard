@@ -792,7 +792,7 @@ describe('Debugger effects', () => {
         `scrolling left triggers execution digest loading: ` +
           `dataAlreadyExists=${dataAlreadyExists}`,
         () => {
-          const dataAlreadyExists = false;
+          const dataAlreadyExists = false; // TODO(cais): Fix this.
           const originalScrollBeginIndex = 40;
           const scrollBeginIndex = originalScrollBeginIndex - 1;
           const numExecutions = 100;
@@ -860,6 +860,46 @@ describe('Debugger effects', () => {
         }
       );
     }
+
+    it('does not fetch execution digest page if currently loading', () => {
+      const originalScrollBeginIndex = 40;
+      const scrollBeginIndex = originalScrollBeginIndex - 1;
+      const numExecutions = 100;
+      const displayCount = 10;
+      const pageSize = 20;
+      store.overrideSelector(getActiveRunId, runId);
+      store.overrideSelector(getExecutionScrollBeginIndex, scrollBeginIndex);
+      store.overrideSelector(getNumExecutions, numExecutions);
+      store.overrideSelector(getDisplayCount, displayCount);
+      store.overrideSelector(getExecutionPageSize, pageSize);
+      let pageLoadedSizes: {[pageIndex: number]: number} = {};
+      pageLoadedSizes = {
+        0: 20,
+        1: 10,
+        2: 20,
+      };
+      store.overrideSelector(getExecutionDigestsLoaded, {
+        numExecutions,
+        pageLoadedSizes,
+        loadingRanges: [
+          {
+            begin: 20,
+            end: 20 + pageSize,
+          },
+        ],
+      });
+
+      store.refreshState();
+
+      const fetchExecutionDigests = spyOn(
+        TestBed.inject(Tfdbg2HttpServerDataSource),
+        'fetchExecutionDigests'
+      );
+      action.next(executionScrollLeft());
+
+      expect(fetchExecutionDigests).not.toHaveBeenCalled();
+      expect(dispatchedActions).toEqual([]);
+    });
 
     for (const {dataAlreadyExists, lastPageLoadedSize} of [
       {

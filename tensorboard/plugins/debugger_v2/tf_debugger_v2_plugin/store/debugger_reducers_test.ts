@@ -581,8 +581,6 @@ describe('Debugger graphs reducers', () => {
     expect(nextState.executions.focusIndex).toBeNull();
   });
 
-  // TODO(cais): Add unit test for the case of already loading other pages or the
-  // page itself.
   it('Updates states on executionDigestsRequested', () => {
     const state = createDebuggerState({
       runs: {
@@ -603,7 +601,7 @@ describe('Debugger graphs reducers', () => {
         executionDigestsLoaded: {
           numExecutions: 1337,
           pageLoadedSizes: {},
-          loadingRanges: [],
+          loadingRanges: [{begin: 100, end: 200}],
         },
       }),
     });
@@ -615,6 +613,10 @@ describe('Debugger graphs reducers', () => {
       })
     );
     expect(nextState.executions.executionDigestsLoaded.loadingRanges).toEqual([
+      {
+        begin: 100,
+        end: 200,
+      },
       {
         begin: 0,
         end: 100,
@@ -634,9 +636,15 @@ describe('Debugger graphs reducers', () => {
     const state = createDigestsStateWhileLoadingExecutionDigests(
       pageSize,
       numExecutions,
-      0,
-      pageSize
+      0 /* Begin of loading range. */,
+      pageSize /* End of loading range. */
     );
+    // Add another range being loaded. Later will assert the range is preserved
+    // by the reducer.
+    state.executions.executionDigestsLoaded.loadingRanges.push({
+      begin: pageSize,
+      end: pageSize * 2,
+    });
     const excutionDigestsResponse: ExecutionDigestsResponse = {
       begin: 0,
       end: pageSize,
@@ -649,14 +657,16 @@ describe('Debugger graphs reducers', () => {
         output_tensor_device_ids: [`de${i}`],
       });
     }
-    const t0 = Date.now();
     const nextState = reducers(
       state,
       actions.executionDigestsLoaded(excutionDigestsResponse)
     );
-    expect(nextState.executions.executionDigestsLoaded.loadingRanges).toEqual(
-      []
-    );
+    expect(nextState.executions.executionDigestsLoaded.loadingRanges).toEqual([
+      {
+        begin: pageSize,
+        end: pageSize * 2,
+      },
+    ]);
     expect(nextState.executions.executionDigestsLoaded.numExecutions).toEqual(
       numExecutions
     );

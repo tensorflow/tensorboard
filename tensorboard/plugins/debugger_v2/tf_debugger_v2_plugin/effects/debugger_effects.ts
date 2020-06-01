@@ -349,13 +349,7 @@ export class DebuggerEffects {
         this.store.select(getExecutionPageSize),
         this.store.select(getExecutionDigestsLoaded)
       ),
-      filter(([, numExecutions, runId, pageSize, loaded]) => {
-        const begin = 0; // TODO(cais): Deduplicate with below.
-        const end = Math.min(numExecutions, pageSize);
-        return (
-          runId !== null && findRange(loaded.loadingRanges, begin, end) === -1
-        ); // TODO(cais): Add unit test for already loading.
-      }),
+      filter(([, , runId]) => runId !== null),
       map(([, numExecutions, runId, pageSize]) => {
         const begin = 0;
         const end = Math.min(numExecutions, pageSize);
@@ -402,10 +396,6 @@ export class DebuggerEffects {
         }
       ),
       withLatestFrom(this.store.select(getExecutionDigestsLoaded)),
-      filter(([props, loaded]) => {
-        const {begin, end} = props;
-        return findRange(loaded.loadingRanges, begin, end) === -1;
-      }),
       map(([props, loaded]) => {
         return {
           props,
@@ -443,11 +433,16 @@ export class DebuggerEffects {
     }>
   ): Observable<void> {
     return prevStream$.pipe(
-      filter(({begin, end}) => end > begin),
-      tap(({begin, end}) => {
+      withLatestFrom(this.store.select(getExecutionDigestsLoaded)),
+      filter(([{begin, end}, loaded]) => {
+        return (
+          end > begin && findRange(loaded.loadingRanges, begin, end) === -1
+        );
+      }),
+      tap(([{begin, end}]) => {
         this.store.dispatch(executionDigestsRequested({begin, end}));
       }),
-      mergeMap(({runId, begin, end}) => {
+      mergeMap(([{runId, begin, end}]) => {
         return this.dataSource.fetchExecutionDigests(runId, begin, end).pipe(
           tap((digests) => {
             this.store.dispatch(executionDigestsLoaded(digests));
