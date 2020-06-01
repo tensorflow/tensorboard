@@ -1,6 +1,6 @@
-package(default_visibility = ["//tensorboard:internal"])
-
 load("@io_bazel_rules_webtesting//web:py.bzl", "py_web_test_suite")
+
+package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
 
