@@ -160,6 +160,13 @@ def _read_tensor_tsv_file(fpath):
     return np.array(tensor, dtype="float32")
 
 
+def _read_tensor_binary_file(fpath, shape):
+    if len(shape) != 2:
+        raise ValueError("Tensor must be 2D, got shape {}".format(shape))
+    tensor = np.fromfile(fpath, dtype="float32")
+    return tensor.reshape(shape)
+
+
 def _assets_dir_to_logdir(assets_dir):
     sub_path = os.path.sep + metadata.PLUGINS_DIR + os.path.sep
     if sub_path in assets_dir:
@@ -363,17 +370,25 @@ class ProjectorPlugin(base_plugin.TBPlugin):
                 if embedding.tensor_name.endswith(":0"):
                     embedding.tensor_name = embedding.tensor_name[:-2]
                 # Find the size of embeddings associated with a tensors file.
-                if embedding.tensor_path and not embedding.tensor_shape:
+                if embedding.tensor_path:
                     fpath = _rel_to_abs_asset_path(
                         embedding.tensor_path, self.config_fpaths[run]
                     )
                     tensor = self.tensor_cache.get((run, embedding.tensor_name))
                     if tensor is None:
-                        tensor = _read_tensor_tsv_file(fpath)
+                        try:
+                            tensor = _read_tensor_tsv_file(fpath)
+                        except UnicodeDecodeError:
+                            tensor = _read_tensor_binary_file(
+                                fpath, embedding.tensor_shape
+                            )
                         self.tensor_cache.set(
                             (run, embedding.tensor_name), tensor
                         )
-                    embedding.tensor_shape.extend([len(tensor), len(tensor[0])])
+                    if not embedding.tensor_shape:
+                        embedding.tensor_shape.extend(
+                            [len(tensor), len(tensor[0])]
+                        )
 
             reader = self._get_reader_for_run(run)
             if not reader:
@@ -670,7 +685,12 @@ class ProjectorPlugin(base_plugin.TBPlugin):
                         "text/plain",
                         400,
                     )
-                tensor = _read_tensor_tsv_file(fpath)
+                try:
+                    tensor = _read_tensor_tsv_file(fpath)
+                except UnicodeDecodeError:
+                    tensor = _read_tensor_binary_file(
+                        fpath, embedding.tensor_shape
+                    )
             else:
                 reader = self._get_reader_for_run(run)
                 if not reader or not reader.has_tensor(name):
