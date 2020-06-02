@@ -297,11 +297,14 @@ export interface DebugTensorValue {
   variance?: number;
 }
 
-export interface ExecutionDigestLoadState extends LoadState {
+export interface ExecutionDigestLoadState {
   // A map from page number to whether the page has been loaded
   //   - in full, in which case the value is pageSize.
   //   - partially, in which case the value is an integer < pageSize.
   pageLoadedSizes: {[page: number]: number};
+
+  // Execution-digest indices that are currently loading.
+  loadingRanges: Array<{begin: number; end: number}>;
 
   // Number of top-level executions available at the data source (not
   // necessarily loaded by frontend yet.)

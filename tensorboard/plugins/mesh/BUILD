@@ -1,10 +1,10 @@
+load("//tensorboard/defs:protos.bzl", "tb_proto_library")
+
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
 exports_files(["LICENSE"])
-
-load("//tensorboard/defs:protos.bzl", "tb_proto_library")
 
 # Public-facing API, included in Pip package.
 py_library(

@@ -1,11 +1,11 @@
 # Description:
 # TensorBoard plugin for precision-recall curves.
 
+load("//tensorboard/defs:protos.bzl", "tb_proto_library")
+
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
-
-load("//tensorboard/defs:protos.bzl", "tb_proto_library")
 
 py_library(
     name = "metadata",
