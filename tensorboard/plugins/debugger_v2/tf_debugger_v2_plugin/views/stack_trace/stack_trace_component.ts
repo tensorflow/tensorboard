@@ -90,7 +90,7 @@ export class StackTraceComponent implements AfterViewChecked {
     );
     if (focusedFrameElement !== null) {
       // Scroll the focused frame into view when there is a focused frame.
-      focusedFrameElement.scrollIntoView();
+      focusedFrameElement.scrollIntoView({block: 'nearest'});
       return;
     }
     const lastFrameElement: HTMLElement | null = stackElement.querySelector(
@@ -99,7 +99,7 @@ export class StackTraceComponent implements AfterViewChecked {
     if (lastFrameElement) {
       // Scroll the last frame into view only when there is no stack frame being
       // focused on.
-      lastFrameElement.scrollIntoView();
+      lastFrameElement.scrollIntoView({block: 'nearest'});
     }
   }
 }
