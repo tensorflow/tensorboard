@@ -70,7 +70,7 @@ export function findBeginEndRangeIndex(
  * @returns `True` if and only if one of the ranges of `ranges` strictly
  *   includes `[begin, end)`.
  */
-export function arrayOfBeginEndRangesIncludes(
+export function beginEndRangesInclude(
   ranges: Array<{begin: number; end: number}>,
   begin: number,
   end: number
