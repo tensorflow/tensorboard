@@ -22,9 +22,7 @@ import {By} from '@angular/platform-browser';
 import {Store} from '@ngrx/store';
 import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
-import {
-  sourceLineFocused,
-} from '../../actions';
+import {sourceLineFocused} from '../../actions';
 import {DebuggerComponent} from '../../debugger_component';
 import {DebuggerContainer} from '../../debugger_container';
 import {CodeLocationType, State} from '../../store/debugger_types';
@@ -39,6 +37,7 @@ import {
   createState,
   createTestStackFrame,
 } from '../../testing';
+import {StackTraceComponent} from './stack_trace_component';
 import {StackTraceContainer} from './stack_trace_container';
 import {StackTraceModule} from './stack_trace_module';
 
@@ -326,4 +325,86 @@ describe('Stack Trace container', () => {
       }
     });
   }
+
+  it('scroll to the last frame when no frame is in focus', () => {
+    const fixture = TestBed.createComponent(StackTraceComponent);
+    const component = fixture.componentInstance;
+    component.codeLocationType = CodeLocationType.EXECUTION;
+    component.opType = 'FooOp';
+    component.opName = null;
+    component.executionIndex = 3;
+    component.stickToBottommostFrameInFocusedFile = false;
+    component.stackFramesForDisplay = [
+      {
+        host_name: 'localhost',
+        file_path: '/tmp/main.py',
+        concise_file_path: 'main.py',
+        lineno: 5,
+        function_name: 'func1',
+        belongsToFocusedFile: false,
+        focused: false,
+      },
+      {
+        host_name: 'localhost',
+        file_path: '/tmp/main.py',
+        concise_file_path: 'main.py',
+        lineno: 10,
+        function_name: 'func1',
+        belongsToFocusedFile: false,
+        focused: false,
+      },
+    ];
+    fixture.detectChanges();
+
+    const stackFrameContainers = fixture.debugElement.queryAll(
+      By.css('.stack-frame-container')
+    );
+    const lastElementScroll = spyOn(
+      stackFrameContainers[1].nativeElement,
+      'scrollIntoView'
+    );
+    component.ngAfterViewChecked();
+    expect(lastElementScroll).toHaveBeenCalled();
+  });
+
+  it('scroll to the focused frame when a frame is in focus', () => {
+    const fixture = TestBed.createComponent(StackTraceComponent);
+    const component = fixture.componentInstance;
+    component.codeLocationType = CodeLocationType.EXECUTION;
+    component.opType = 'FooOp';
+    component.opName = null;
+    component.executionIndex = 3;
+    component.stickToBottommostFrameInFocusedFile = false;
+    component.stackFramesForDisplay = [
+      {
+        host_name: 'localhost',
+        file_path: '/tmp/main.py',
+        concise_file_path: 'main.py',
+        lineno: 5,
+        function_name: 'func1',
+        belongsToFocusedFile: true,
+        focused: true,
+      },
+      {
+        host_name: 'localhost',
+        file_path: '/tmp/main.py',
+        concise_file_path: 'main.py',
+        lineno: 10,
+        function_name: 'func1',
+        belongsToFocusedFile: false,
+        focused: false,
+      },
+    ];
+    fixture.detectChanges();
+
+    const stackFrameContainers = fixture.debugElement.queryAll(
+      By.css('.stack-frame-container')
+    );
+    const focusedElementScroll = spyOn(
+      stackFrameContainers[0].nativeElement,
+      'scrollIntoView'
+    );
+    component.ngAfterViewChecked();
+    expect(focusedElementScroll).toHaveBeenCalled();
+  });
 });

@@ -90,7 +90,7 @@ export class StackTraceComponent implements AfterViewChecked {
     );
     if (focusedFrameElement !== null) {
       // Scroll the focused frame into view when there is a focused frame.
-      focusedFrameElement.scrollIntoView;
+      focusedFrameElement.scrollIntoView();
       return;
     }
     const lastFrameElement: HTMLElement | null = stackElement.querySelector(

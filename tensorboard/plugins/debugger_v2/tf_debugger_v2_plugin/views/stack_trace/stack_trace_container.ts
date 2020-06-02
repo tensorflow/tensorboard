@@ -16,10 +16,7 @@ import {Component} from '@angular/core';
 import {createSelector, select, Store} from '@ngrx/store';
 
 import {CodeLocationType, State} from '../../store/debugger_types';
-import {
-  setStickToBottommostFrameInFocusedFile,
-  sourceLineFocused,
-} from '../../actions';
+import {sourceLineFocused} from '../../actions';
 import {
   getCodeLocationOrigin,
   getFocusedSourceLineSpec,
