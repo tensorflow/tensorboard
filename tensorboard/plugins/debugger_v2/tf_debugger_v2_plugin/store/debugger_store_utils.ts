@@ -61,7 +61,7 @@ export function findBeginEndRangeIndex(
 }
 
 /**
- * Detemrine if an array of ranges contains a range that strictly includes
+ * Determines if an array of ranges contains a range that strictly includes
  * `[begin, end)`.
  *
  * @param ranges The ranges to search in.
