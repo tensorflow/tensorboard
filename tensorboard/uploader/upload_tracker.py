@@ -354,7 +354,7 @@ class UploadTracker(object):
 
     @contextlib.contextmanager
     def blob_tracker(self, blob_bytes):
-        """Constructor of BlobTracker.
+        """Creates context manager tracker for uploading a blob.
 
         Args:
           blob_bytes: Total byte size of the blob being uploaded.
