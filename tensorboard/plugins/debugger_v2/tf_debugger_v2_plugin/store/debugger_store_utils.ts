@@ -36,7 +36,8 @@ export function findFileIndex(
 }
 
 /**
- * Find a range (with begin and end properties) in an array of such ranges.
+ * Find first range (with begin and end properties) in an array of range
+ * that strictly includes the `[begin, end)` range.
  *
  * @param range The ranges to search in.
  * @param begin The begin of the range to search for (inclusive).
@@ -50,11 +51,9 @@ export function findBeginEndRangeIndex(
 ): number {
   if (begin >= end) {
     throw new Error(
-      `Expected begin to be less than eng, ` +
+      `Expected begin to be less than end, ` +
         `but got begin=${begin}, end=${end}`
     );
   }
-  return ranges.findIndex(
-    (range) => range.begin === begin && range.end === end
-  );
+  return ranges.findIndex((range) => range.begin <= begin && range.end >= end);
 }
