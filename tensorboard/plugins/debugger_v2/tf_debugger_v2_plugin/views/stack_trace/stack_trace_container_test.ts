@@ -17,14 +17,12 @@ limitations under the License.
  */
 import {CommonModule} from '@angular/common';
 import {TestBed} from '@angular/core/testing';
-import {MatSlideToggleChange} from '@angular/material/slide-toggle';
 import {By} from '@angular/platform-browser';
 
 import {Store} from '@ngrx/store';
 import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
 import {
-  setStickToBottommostFrameInFocusedFile,
   sourceLineFocused,
 } from '../../actions';
 import {DebuggerComponent} from '../../debugger_component';

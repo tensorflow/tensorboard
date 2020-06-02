@@ -84,14 +84,16 @@ export class StackTraceComponent implements AfterViewChecked {
     if (this.stackFrameArray === undefined) {
       return;
     }
-    const focusedFrameElement: HTMLElement | null = this.stackFrameArray.nativeElement.querySelector(
+    const stackElement = this.stackFrameArray.nativeElement;
+    const focusedFrameElement: HTMLElement | null = stackElement.querySelector(
       `.focused-stack-frame`
     );
     if (focusedFrameElement !== null) {
       // Scroll the focused frame into view when there is a focused frame.
       focusedFrameElement.scrollIntoView;
+      return;
     }
-    const lastFrameElement: HTMLElement | null = this.stackFrameArray.nativeElement.querySelector(
+    const lastFrameElement: HTMLElement | null = stackElement.querySelector(
       '.stack-frame-container:last-child'
     );
     if (lastFrameElement) {
@@ -100,4 +102,4 @@ export class StackTraceComponent implements AfterViewChecked {
       lastFrameElement.scrollIntoView();
     }
   }
-} // TODO(cais): Add unit tests?
+}
