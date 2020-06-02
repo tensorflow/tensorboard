@@ -113,8 +113,9 @@ limitations under the License.
 }
 
 .stick-to-bottommost-frame {
+  color:#666;
   position: absolute;
   right: 0;
   top: 0;
-  width: 220px;
+  width: 280px;
 }

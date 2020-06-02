@@ -23,13 +23,12 @@ limitations under the License.
       </div>
     </span>
 
-    <mat-slide-toggle
+    <div
       class="stick-to-bottommost-frame"
-      [checked]="stickToBottommostFrameInFocusedFile"
+      *ngIf="stickToBottommostFrameInFocusedFile"
     >
-      Stick to bottommost frame in file
-    </mat-slide-toggle>
-    <!-- TODO(cais): Clean this up. -->
+      Sticking to bottommost frame in file
+    </div>
 
     <div
       *ngIf="codeLocationType !== null; else noStackTrace"

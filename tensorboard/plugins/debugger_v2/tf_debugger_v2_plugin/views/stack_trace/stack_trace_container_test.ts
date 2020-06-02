@@ -310,7 +310,7 @@ describe('Stack Trace container', () => {
   });
 
   for (const stickToValue of [false, true]) {
-    it(`sets stick-to-bottommost-frame slide toggle: value=${stickToValue}`, () => {
+    it(`sets stick-to-bottommost-frame div: value=${stickToValue}`, () => {
       const fixture = TestBed.createComponent(StackTraceContainer);
       store.overrideSelector(
         getStickToBottommostFrameInFocusedFile,
@@ -321,11 +321,11 @@ describe('Stack Trace container', () => {
       const stickToBottommostElement = fixture.debugElement.query(
         By.css('.stick-to-bottommost-frame')
       );
-      expect(
-        stickToBottommostElement.nativeElement.getAttribute(
-          'ng-reflect-checked'
-        )
-      ).toBe(stickToValue ? 'true' : 'false');
+      if (stickToValue) {
+        expect(stickToBottommostElement).not.toBeNull();
+      } else {
+        expect(stickToBottommostElement).toBeNull();
+      }
     });
   }
 });
