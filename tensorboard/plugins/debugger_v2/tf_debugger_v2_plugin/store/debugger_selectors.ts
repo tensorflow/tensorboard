@@ -14,7 +14,10 @@ limitations under the License.
 ==============================================================================*/
 
 import {createSelector, createFeatureSelector} from '@ngrx/store';
-import {findFileIndex} from './debugger_store_utils';
+import {
+  findFileIndex,
+  getBottommostStackFrameInFocusedFile,
+} from './debugger_store_utils';
 import {
   AlertsBreakdown,
   AlertsByIndex,
@@ -508,6 +511,53 @@ export const getCodeLocationOrigin = createSelector(
 );
 
 /**
+ * Helper function that extracts the stack trace being focused on.
+ *
+ * This examines whether the current focused code location is for an
+ * eager (top-level) execution or a graph-op creation, and then queries
+ * the corresponding substates accordingly.
+ *
+ * @param state
+ */
+export function getFocusedStackFramesHelper(
+  state: DebuggerState
+): StackFrame[] | null {
+  if (state.codeLocationFocusType === null) {
+    return null;
+  }
+  let stackFrameIds: string[] = [];
+  if (state.codeLocationFocusType === CodeLocationType.EXECUTION) {
+    const {focusIndex, executionData} = state.executions;
+    if (focusIndex === null || executionData[focusIndex] === undefined) {
+      return null;
+    }
+    stackFrameIds = executionData[focusIndex].stack_frame_ids;
+  } else {
+    // This is CodeLocationType.GRAPH_OP_CREATION.
+    if (state.graphs.focusedOp === null) {
+      return null;
+    }
+    const {graphId, opName} = state.graphs.focusedOp;
+    if (
+      state.graphs.ops[graphId] === undefined ||
+      state.graphs.ops[graphId][opName] === undefined
+    ) {
+      return null;
+    }
+    stackFrameIds = state.graphs.ops[graphId][opName].stack_frame_ids;
+  }
+  const stackFrames: StackFrame[] = [];
+  for (const stackFrameId of stackFrameIds) {
+    if (state.stackFrames[stackFrameId] != null) {
+      stackFrames.push(state.stackFrames[stackFrameId]);
+    } else {
+      return null;
+    }
+  }
+  return stackFrames;
+}
+
+/**
  * Get the stack trace (frames) of the execution event currently focused on
  * (if any).
  *
@@ -517,41 +567,7 @@ export const getCodeLocationOrigin = createSelector(
  */
 export const getFocusedStackFrames = createSelector(
   selectDebuggerState,
-  (state: DebuggerState): StackFrame[] | null => {
-    if (state.codeLocationFocusType === null) {
-      return null;
-    }
-    let stackFrameIds: string[] = [];
-    if (state.codeLocationFocusType === CodeLocationType.EXECUTION) {
-      const {focusIndex, executionData} = state.executions;
-      if (focusIndex === null || executionData[focusIndex] === undefined) {
-        return null;
-      }
-      stackFrameIds = executionData[focusIndex].stack_frame_ids;
-    } else {
-      // This is CodeLocationType.GRAPH_OP_CREATION.
-      if (state.graphs.focusedOp === null) {
-        return null;
-      }
-      const {graphId, opName} = state.graphs.focusedOp;
-      if (
-        state.graphs.ops[graphId] === undefined ||
-        state.graphs.ops[graphId][opName] === undefined
-      ) {
-        return null;
-      }
-      stackFrameIds = state.graphs.ops[graphId][opName].stack_frame_ids;
-    }
-    const stackFrames: StackFrame[] = [];
-    for (const stackFrameId of stackFrameIds) {
-      if (state.stackFrames[stackFrameId] != null) {
-        stackFrames.push(state.stackFrames[stackFrameId]);
-      } else {
-        return null;
-      }
-    }
-    return stackFrames;
-  }
+  getFocusedStackFramesHelper
 );
 
 /**
@@ -602,9 +618,16 @@ export const getFocusedSourceFileContent = createSelector(
 );
 
 export const getFocusedSourceLineSpec = createSelector(
-  selectSourceCode,
-  (sourceCode: SourceCodeState): SourceLineSpec | null => {
-    return sourceCode.focusLineSpec;
+  selectDebuggerState,
+  (state: DebuggerState): SourceLineSpec | null => {
+    const stackFrames = getFocusedStackFramesHelper(state);
+    const focusedLineSpec = state.sourceCode.focusLineSpec;
+    if (stackFrames !== null && focusedLineSpec !== null) {
+      return getBottommostStackFrameInFocusedFile(stackFrames, focusedLineSpec);
+      // Add unit tests.
+    } else {
+      return focusedLineSpec;
+    }
   }
 );
 

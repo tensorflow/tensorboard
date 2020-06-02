@@ -28,7 +28,6 @@ tf_ts_library(
     testonly = True,
     srcs = [
         "debugger_effects_test.ts",
-        "stack_trace_effects_test.ts",
     ],
     deps = [
         ":effects",

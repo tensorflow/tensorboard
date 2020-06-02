@@ -12,7 +12,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {
+  AfterViewChecked,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  Output,
+  ViewChild,
+} from '@angular/core';
 
 import {CodeLocationType} from '../../store/debugger_types';
 
@@ -37,7 +45,7 @@ export interface StackFrameForDisplay {
   templateUrl: './stack_trace_component.ng.html',
   styleUrls: ['./stack_trace_component.css'],
 })
-export class StackTraceComponent {
+export class StackTraceComponent implements AfterViewChecked {
   @Input()
   codeLocationType!: CodeLocationType | null;
 
@@ -67,8 +75,29 @@ export class StackTraceComponent {
     lineno: number;
   }>();
 
-  @Output()
-  onToggleBottommostFrameInFile = new EventEmitter<boolean>();
+  @ViewChild('stackFrameArray')
+  private readonly stackFrameArray!: ElementRef<HTMLDivElement>;
 
   CodeLocationType = CodeLocationType;
-}
+
+  ngAfterViewChecked(): void {
+    if (this.stackFrameArray === undefined) {
+      return;
+    }
+    const focusedFrameElement: HTMLElement | null = this.stackFrameArray.nativeElement.querySelector(
+      `.focused-stack-frame`
+    );
+    if (focusedFrameElement !== null) {
+      // Scroll the focused frame into view when there is a focused frame.
+      focusedFrameElement.scrollIntoView;
+    }
+    const lastFrameElement: HTMLElement | null = this.stackFrameArray.nativeElement.querySelector(
+      '.stack-frame-container:last-child'
+    );
+    if (lastFrameElement) {
+      // Scroll the last frame into view only when there is no stack frame being
+      // focused on.
+      lastFrameElement.scrollIntoView();
+    }
+  }
+} // TODO(cais): Add unit tests?

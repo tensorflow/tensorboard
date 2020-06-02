@@ -43,7 +43,6 @@ import {StackFrameForDisplay} from './stack_trace_component';
       "
       [stackFramesForDisplay]="stackFramesForDisplay$ | async"
       (onSourceLineClicked)="onSourceLineClicked($event)"
-      (onToggleBottommostFrameInFile)="onToggleBottommostFrameInFile($event)"
     ></stack-trace-component>
   `,
 })
@@ -154,9 +153,5 @@ export class StackTraceContainer {
     lineno: number;
   }) {
     this.store.dispatch(sourceLineFocused({sourceLineSpec: args}));
-  }
-
-  onToggleBottommostFrameInFile(value: boolean) {
-    this.store.dispatch(setStickToBottommostFrameInFocusedFile({value}));
   }
 }

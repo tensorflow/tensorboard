@@ -42,8 +42,8 @@ limitations under the License.
 }
 
 .stack-frame-array {
-  height: 360px;
-  overflow-x: auto;
+  height: 300px;
+  overflow-x: hidden;
   overflow-y: auto;
 }
 
@@ -66,7 +66,9 @@ limitations under the License.
   max-width: 200px;
   padding-left: 10px;
   text-align: left;
+  white-space: normal;
   width: 200px;
+  word-wrap: anywhere;
 }
 
 .stack-frame-lineno {

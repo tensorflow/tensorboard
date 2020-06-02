@@ -21,7 +21,11 @@ import {
   GraphExecutionDataResponse,
   SourceFileResponse,
 } from '../data_source/tfdbg2_data_source';
-import {findFileIndex} from './debugger_store_utils';
+import {getFocusedStackFramesHelper} from './debugger_selectors';
+import {
+  findFileIndex,
+  isFrameBottommosInStackTrace,
+} from './debugger_store_utils';
 import {
   AlertsByIndex,
   AlertType,
@@ -842,13 +846,21 @@ const reducer = createReducer(
   on(
     actions.sourceLineFocused,
     (state: DebuggerState, focus): DebuggerState => {
-      return {
+      const focusedStackTrace = getFocusedStackFramesHelper(state);
+      const newState = {
         ...state,
         sourceCode: {
           ...state.sourceCode,
           focusLineSpec: focus.sourceLineSpec,
         },
       };
+      if (focusedStackTrace !== null) {
+        newState.stickToBottommostFrameInFocusedFile = isFrameBottommosInStackTrace(
+          focusedStackTrace,
+          focus.sourceLineSpec
+        ); // TODO(cais): Add unit test.
+      }
+      return newState;
     }
   ),
   on(

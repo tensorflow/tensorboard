@@ -26,10 +26,10 @@ limitations under the License.
     <mat-slide-toggle
       class="stick-to-bottommost-frame"
       [checked]="stickToBottommostFrameInFocusedFile"
-      (change)="onToggleBottommostFrameInFile.emit($event.checked)"
     >
       Stick to bottommost frame in file
     </mat-slide-toggle>
+    <!-- TODO(cais): Clean this up. -->
 
     <div
       *ngIf="codeLocationType !== null; else noStackTrace"
@@ -76,39 +76,37 @@ limitations under the License.
   </div>
 
   <div
+    #stackFrameArray
     *ngIf="stackFramesForDisplay !== null; else loadingSection"
     class="stack-frame-array"
   >
     <div
       *ngFor="let stackFrameForDisplay of stackFramesForDisplay; index as i;"
+      class="stack-frame-container"
+      [ngClass]="[
+        stackFrameForDisplay.belongsToFocusedFile ? 'focused-file' : '',
+        stackFrameForDisplay.focused ? 'focused-stack-frame' : ''
+      ]"
     >
       <div
-        class="stack-frame-container"
-        [ngClass]="[
-          stackFrameForDisplay.belongsToFocusedFile ? 'focused-file' : '',
-          stackFrameForDisplay.focused ? 'focused-stack-frame' : ''
-        ]"
+        class="stack-frame-file-path"
+        title="{{stackFrameForDisplay.file_path}}"
       >
+        {{ stackFrameForDisplay.concise_file_path }}
+      </div>
+      <div class="stack-frame-lineno-function">
         <div
-          class="stack-frame-file-path"
-          title="{{stackFrameForDisplay.file_path}}"
+          class="stack-frame-lineno"
+          (click)="onSourceLineClicked.emit({
+            host_name: stackFrameForDisplay.host_name,
+            file_path: stackFrameForDisplay.file_path,
+            lineno: stackFrameForDisplay.lineno
+          })"
         >
-          {{ stackFrameForDisplay.concise_file_path }}
+          Line {{ stackFrameForDisplay.lineno }}
         </div>
-        <div class="stack-frame-lineno-function">
-          <div
-            class="stack-frame-lineno"
-            (click)="onSourceLineClicked.emit({
-              host_name: stackFrameForDisplay.host_name,
-              file_path: stackFrameForDisplay.file_path,
-              lineno: stackFrameForDisplay.lineno
-            })"
-          >
-            Line {{ stackFrameForDisplay.lineno }}
-          </div>
-          <div class="stack-frame-function">
-            {{ stackFrameForDisplay.function_name }}
-          </div>
+        <div class="stack-frame-function">
+          {{ stackFrameForDisplay.function_name }}
         </div>
       </div>
     </div>
