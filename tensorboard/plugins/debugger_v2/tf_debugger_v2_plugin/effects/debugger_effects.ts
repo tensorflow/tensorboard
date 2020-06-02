@@ -85,7 +85,7 @@ import {
   getSourceFileListLoaded,
   getFocusedSourceFileIndex,
 } from '../store/debugger_selectors';
-import {findBeginEndRangeIndex} from '../store/debugger_store_utils';
+import {arrayOfBeginEndRangesIncludes} from '../store/debugger_store_utils';
 import {
   DataLoadState,
   DebuggerRunListing,
@@ -436,7 +436,7 @@ export class DebuggerEffects {
       filter(([{begin, end}, loaded]) => {
         return (
           end > begin &&
-          findBeginEndRangeIndex(loaded.loadingRanges, begin, end) === -1
+          !arrayOfBeginEndRangesIncludes(loaded.loadingRanges, begin, end)
         );
       }),
       tap(([{begin, end}]) => {
