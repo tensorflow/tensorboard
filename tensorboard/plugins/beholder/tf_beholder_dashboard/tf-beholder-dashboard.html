@@ -371,6 +371,10 @@ with MonitoredSession(..., hooks=[beholder_hook]) as sess:
         is: 'tf-beholder-dashboard',
 
         properties: {
+          reloadOnReady: {
+            type: Boolean,
+            value: true,
+          },
           _requestManager: {
             type: Object,
             value: () => new tf_backend.RequestManager(10, 0),
@@ -528,7 +532,7 @@ with MonitoredSession(..., hooks=[beholder_hook]) as sess:
         },
 
         ready() {
-          this.reload();
+          if (this.reloadOnReady) this.reload();
         },
 
         reload() {
