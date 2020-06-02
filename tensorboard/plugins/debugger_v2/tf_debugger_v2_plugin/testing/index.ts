@@ -230,14 +230,22 @@ export function createDebuggerSourceCodeState(
  * Create a DebuggerState the emulates the state during the loading of
  * executionDigests, for testing.
  */
-export function createDigestsStateWhileLoadingExecutionDigests(
-  pageSize: number,
-  numExecutions: number,
-  loadingBegin: number,
-  loadingEnd: number,
-  executionDigests?: {[index: number]: ExecutionDigest},
-  pageLoadedSize?: {[page: number]: number}
-): DebuggerState {
+export function createDigestsStateWhileLoadingExecutionDigests(args: {
+  pageSize: number;
+  numExecutions: number;
+  loadingBegin: number;
+  loadingEnd: number;
+  executionDigests?: {[index: number]: ExecutionDigest};
+  pageLoadedSize?: {[page: number]: number};
+}): DebuggerState {
+  const {
+    pageSize,
+    numExecutions,
+    loadingBegin,
+    loadingEnd,
+    executionDigests,
+    pageLoadedSize,
+  } = args;
   return createDebuggerState({
     runs: {
       __default_debugger_run__: {

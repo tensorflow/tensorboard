@@ -85,7 +85,7 @@ import {
   getSourceFileListLoaded,
   getFocusedSourceFileIndex,
 } from '../store/debugger_selectors';
-import {findRange} from '../store/debugger_store_utils';
+import {findBeginEndRangeIndex} from '../store/debugger_store_utils';
 import {
   DataLoadState,
   DebuggerRunListing,
@@ -346,8 +346,7 @@ export class DebuggerEffects {
       withLatestFrom(
         this.store.select(getNumExecutions),
         this.store.select(getActiveRunId),
-        this.store.select(getExecutionPageSize),
-        this.store.select(getExecutionDigestsLoaded)
+        this.store.select(getExecutionPageSize)
       ),
       filter(([, , runId]) => runId !== null),
       map(([, numExecutions, runId, pageSize]) => {
@@ -436,7 +435,8 @@ export class DebuggerEffects {
       withLatestFrom(this.store.select(getExecutionDigestsLoaded)),
       filter(([{begin, end}, loaded]) => {
         return (
-          end > begin && findRange(loaded.loadingRanges, begin, end) === -1
+          end > begin &&
+          findBeginEndRangeIndex(loaded.loadingRanges, begin, end) === -1
         );
       }),
       tap(([{begin, end}]) => {

@@ -633,12 +633,12 @@ describe('Debugger graphs reducers', () => {
   it('On executionDigestsLoaded: correct digests & page sizes updates', () => {
     const pageSize = 100;
     const numExecutions = 1337;
-    const state = createDigestsStateWhileLoadingExecutionDigests(
+    const state = createDigestsStateWhileLoadingExecutionDigests({
       pageSize,
       numExecutions,
-      0 /* Begin of loading range. */,
-      pageSize /* End of loading range. */
-    );
+      loadingBegin: 0,
+      loadingEnd: pageSize,
+    });
     // Add another range being loaded. Later will assert the range is preserved
     // by the reducer.
     state.executions.executionDigestsLoaded.loadingRanges.push({
@@ -687,19 +687,19 @@ describe('Debugger graphs reducers', () => {
   it('On executionDigestsLoaded: Incomplete 1st page --> larger 1st page', () => {
     const pageSize = 100;
     const numExecutions = 4;
-    const state = createDigestsStateWhileLoadingExecutionDigests(
+    const state = createDigestsStateWhileLoadingExecutionDigests({
       pageSize,
       numExecutions,
-      0 /* Begin of loading range. */,
-      4 /* End of loading range. */,
-      {
+      loadingBegin: 0,
+      loadingEnd: 4,
+      executionDigests: {
         0: {op_type: 'Relu', output_tensor_device_ids: ['a']},
         1: {op_type: 'Identity', output_tensor_device_ids: ['a']},
       },
-      {
+      pageLoadedSize: {
         0: 2 /* Previously loaded incomplete first page. */,
-      }
-    );
+      },
+    });
     const excutionDigestsResponse: ExecutionDigestsResponse = {
       begin: 0,
       end: 4,
@@ -749,19 +749,19 @@ describe('Debugger graphs reducers', () => {
   it('On executionDigestsLoaded: Adding a new page before existing', () => {
     const pageSize = 2;
     const numExecutions = 4;
-    const state = createDigestsStateWhileLoadingExecutionDigests(
+    const state = createDigestsStateWhileLoadingExecutionDigests({
       pageSize,
       numExecutions,
-      0 /* Begin of loading range. */,
-      2 /* End of loading range. */,
-      {
+      loadingBegin: 0,
+      loadingEnd: 2,
+      executionDigests: {
         2: {op_type: 'Relu', output_tensor_device_ids: ['a']},
         3: {op_type: 'Identity', output_tensor_device_ids: ['a']},
       },
-      {
+      pageLoadedSize: {
         1: 2 /* Previously loaded 2nd page. */,
-      }
-    );
+      },
+    });
     const excutionDigestsResponse: ExecutionDigestsResponse = {
       begin: 0,
       end: 2,
@@ -813,19 +813,19 @@ describe('Debugger graphs reducers', () => {
   it('On executionDigestsLoaded: Adding a new page after existing', () => {
     const pageSize = 2;
     const numExecutions = 4;
-    const state = createDigestsStateWhileLoadingExecutionDigests(
+    const state = createDigestsStateWhileLoadingExecutionDigests({
       pageSize,
       numExecutions,
-      2,
-      4,
-      {
+      loadingBegin: 2,
+      loadingEnd: 4,
+      executionDigests: {
         0: {op_type: 'MatMul', output_tensor_device_ids: ['a']},
         1: {op_type: 'BiasAdd', output_tensor_device_ids: ['a']},
       },
-      {
+      pageLoadedSize: {
         0: 2 /* Previously loaded 1st page. */,
-      }
-    );
+      },
+    });
     const excutionDigestsResponse: ExecutionDigestsResponse = {
       begin: 2,
       end: 4,

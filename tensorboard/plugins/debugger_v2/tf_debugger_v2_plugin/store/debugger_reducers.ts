@@ -21,7 +21,7 @@ import {
   GraphExecutionDataResponse,
   SourceFileResponse,
 } from '../data_source/tfdbg2_data_source';
-import {findFileIndex, findRange} from './debugger_store_utils';
+import {findFileIndex, findBeginEndRangeIndex} from './debugger_store_utils';
 import {
   AlertsByIndex,
   AlertType,
@@ -400,7 +400,11 @@ const reducer = createReducer(
       const loadingRanges = [
         ...state.executions.executionDigestsLoaded.loadingRanges,
       ];
-      const match = findRange(loadingRanges, range.begin, range.end);
+      const match = findBeginEndRangeIndex(
+        loadingRanges,
+        range.begin,
+        range.end
+      );
       if (match === -1) {
         loadingRanges.push({begin: range.begin, end: range.end});
       }
@@ -430,7 +434,11 @@ const reducer = createReducer(
       const loadingRanges = [
         ...state.executions.executionDigestsLoaded.loadingRanges,
       ];
-      const matchIndex = findRange(loadingRanges, digests.begin, digests.end);
+      const matchIndex = findBeginEndRangeIndex(
+        loadingRanges,
+        digests.begin,
+        digests.end
+      );
       if (matchIndex !== -1) {
         loadingRanges.splice(matchIndex, 1);
       }
