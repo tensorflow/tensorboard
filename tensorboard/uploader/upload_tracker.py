@@ -222,18 +222,28 @@ _STYLE_DARKGRAY = "\033[90m"
 class UploadTracker(object):
     """Tracker for uploader progress and status."""
 
-    def __init__(self):
+    _SUPPORTED_VERBISITY_VALUES = (0, 1)
+
+    def __init__(self, verbosity):
+        if verbosity not in self._SUPPORTED_VERBISITY_VALUES:
+            raise ValueError(
+                "Unsupported verbosity value %s (supported values: %s)"
+                % (verbosity, self._SUPPORTED_VERBISITY_VALUES)
+            )
+        self._verbosity = verbosity
+
         self._stats = UploadStats()
         self._dot_counter = 0
-        self._cumulative_uploaded_bar = tqdm.tqdm(
-            self._dummy_generator(), bar_format="{desc}", position=1
-        )
-        self._cumulative_skipped_bar = tqdm.tqdm(
-            self._dummy_generator(), bar_format="{desc}", position=2
-        )
-        self._uploading_bar = tqdm.tqdm(
-            self._dummy_generator(), bar_format="{desc}", position=3
-        )
+        if self._verbosity:
+            self._cumulative_uploaded_bar = tqdm.tqdm(
+                self._dummy_generator(), bar_format="{desc}", position=1
+            )
+            self._cumulative_skipped_bar = tqdm.tqdm(
+                self._dummy_generator(), bar_format="{desc}", position=2
+            )
+            self._uploading_bar = tqdm.tqdm(
+                self._dummy_generator(), bar_format="{desc}", position=3
+            )
 
     def _dummy_generator(self):
         while True:
@@ -241,6 +251,8 @@ class UploadTracker(object):
             yield 0
 
     def _update_uploading_status(self, message, color_code=_STYLE_GREEN):
+        if not self._verbosity:
+            return
         message += "." * 3
         self._uploading_bar.set_description_str(
             color_code + message + _STYLE_RESET
@@ -248,6 +260,8 @@ class UploadTracker(object):
         self._uploading_bar.update()
 
     def _update_cumulative_status(self):
+        if not self._verbosity:
+            return
         uploaded_message = "%s[%s]%s Uploaded %s" % (
             _STYLE_BOLD,
             readable_time_string(),
@@ -309,10 +323,10 @@ class UploadTracker(object):
         Args:
           num_tensors: Total number of tensors in the batch.
           num_tensors_skipped: Number of tensors skipped (a subset of
-            `num_tensors`).
+            `num_tensors`). Hence this must be `<= num_tensors`.
           tensor_bytes: Total byte size of the tensors in the batch.
           tensor_bytes_skipped: Byte size of skipped tensors in the batch (a
-            subset of `tensor_bytes`).
+            subset of `tensor_bytes`). Must be `<= tensor_bytes`.
         """
         if num_tensors_skipped:
             message = "Uploading %d tensors (%s) (Skipping %d tensors, %s)" % (
@@ -343,9 +357,6 @@ class UploadTracker(object):
         """Constructor of BlobTracker.
 
         Args:
-          upload_stats: An instance of `UploadStats` to be used to keep track
-            of uploaded blob and its byte size.
-          update_status: A callable for updating status message.
           blob_bytes: Total byte size of the blob being uploaded.
         """
         self._update_uploading_status(

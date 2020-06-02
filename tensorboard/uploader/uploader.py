@@ -163,9 +163,7 @@ class TensorBoardUploader(object):
         response = grpc_util.call_with_retries(
             self._api.CreateExperiment, request
         )
-        self._tracker = (
-            upload_tracker.UploadTracker() if self._verbosity == 1 else None
-        )
+        self._tracker = upload_tracker.UploadTracker(verbosity=self._verbosity)
         self._request_sender = _BatchedRequestSender(
             response.experiment_id,
             self._api,
@@ -204,9 +202,7 @@ class TensorBoardUploader(object):
         logger.info("Logdir sync took %.3f seconds", sync_duration_secs)
 
         run_to_events = self._logdir_loader.get_run_events()
-        with contextlib.ExitStack() as stack:
-            if self._tracker:
-                stack.enter_context(self._tracker.send_tracker())
+        with self._tracker.send_tracker():
             self._request_sender.send_requests(run_to_events)
 
 
@@ -534,19 +530,15 @@ class _ScalarBatchedRequestSender(object):
 
         self._rpc_rate_limiter.tick()
 
-        with contextlib.ExitStack() as stack:
-            stack.enter_context(_request_logger(request, request.runs))
-            if self._tracker:
-                stack.enter_context(
-                    self._tracker.scalars_tracker(self._num_values)
-                )
-            try:
-                # TODO(@nfelt): execute this RPC asynchronously.
-                grpc_util.call_with_retries(self._api.WriteScalar, request)
-            except grpc.RpcError as e:
-                if e.code() == grpc.StatusCode.NOT_FOUND:
-                    raise ExperimentNotFoundError()
-                logger.error("Upload call failed with error %s", e)
+        with _request_logger(request, request.runs):
+            with self._tracker.scalars_tracker(self._num_values):
+                try:
+                    # TODO(@nfelt): execute this RPC asynchronously.
+                    grpc_util.call_with_retries(self._api.WriteScalar, request)
+                except grpc.RpcError as e:
+                    if e.code() == grpc.StatusCode.NOT_FOUND:
+                        raise ExperimentNotFoundError()
+                    logger.error("Upload call failed with error %s", e)
 
         self._new_request()
 
@@ -701,23 +693,19 @@ class _TensorBatchedRequestSender(object):
 
         self._rpc_rate_limiter.tick()
 
-        with contextlib.ExitStack() as stack:
-            stack.enter_context(_request_logger(request, request.runs))
-            if self._tracker:
-                stack.enter_context(
-                    self._tracker.tensors_tracker(
-                        self._num_values,
-                        self._num_values_skipped,
-                        self._tensor_bytes,
-                        self._tensor_bytes_skipped,
-                    )
-                )
-            try:
-                grpc_util.call_with_retries(self._api.WriteTensor, request)
-            except grpc.RpcError as e:
-                if e.code() == grpc.StatusCode.NOT_FOUND:
-                    raise ExperimentNotFoundError()
-                logger.error("Upload call failed with error %s", e)
+        with _request_logger(request, request.runs):
+            with self._tracker.tensors_tracker(
+                self._num_values,
+                self._num_values_skipped,
+                self._tensor_bytes,
+                self._tensor_bytes_skipped,
+            ):
+                try:
+                    grpc_util.call_with_retries(self._api.WriteTensor, request)
+                except grpc.RpcError as e:
+                    if e.code() == grpc.StatusCode.NOT_FOUND:
+                        raise ExperimentNotFoundError()
+                    logger.error("Upload call failed with error %s", e)
 
         self._new_request()
 
@@ -776,6 +764,8 @@ class _TensorBatchedRequestSender(object):
         point.value.CopyFrom(value.tensor)
         util.set_timestamp(point.wall_time, event.wall_time)
 
+        self._num_values += 1
+        self._tensor_bytes += point.value.ByteSize()
         if point.value.ByteSize() > self._max_tensor_point_size:
             logger.warning(
                 "Tensor too large; skipping. "
@@ -787,9 +777,6 @@ class _TensorBatchedRequestSender(object):
             self._num_values_skipped += 1
             self._tensor_bytes_skipped += point.value.ByteSize()
             return
-
-        self._num_values += 1
-        self._tensor_bytes += point.value.ByteSize()
 
         self._validate_tensor_value(
             value.tensor, value.tag, event.step, event.wall_time
@@ -1020,11 +1007,7 @@ class _BlobRequestSender(object):
                 # Note the _send_blob() stream is internally flow-controlled.
                 # This rate limit applies to *starting* the stream.
                 self._rpc_rate_limiter.tick()
-                with contextlib.ExitStack() as stack:
-                    if self._tracker:
-                        blob_tracker = stack.enter_context(
-                            self._tracker.blob_tracker(len(blob))
-                        )
+                with self._tracker.blob_tracker(len(blob)) as blob_tracker:
                     sent_blobs += self._send_blob(
                         blob_sequence_id, seq_index, blob
                     )

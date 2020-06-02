@@ -171,7 +171,7 @@ def _create_uploader(
 
 
 def _create_request_sender(
-    experiment_id=None, api=None, allowed_plugins=_USE_DEFAULT, tracker=None,
+    experiment_id=None, api=None, allowed_plugins=_USE_DEFAULT,
 ):
     if api is _USE_DEFAULT:
         api = _create_mock_client()
@@ -196,7 +196,7 @@ def _create_request_sender(
         rpc_rate_limiter=rpc_rate_limiter,
         tensor_rpc_rate_limiter=tensor_rpc_rate_limiter,
         blob_rpc_rate_limiter=blob_rpc_rate_limiter,
-        tracker=tracker,
+        tracker=upload_tracker.UploadTracker(verbosity=0),
     )
 
 
@@ -212,6 +212,7 @@ def _create_scalar_request_sender(
         api=api,
         rpc_rate_limiter=util.RateLimiter(0),
         max_request_size=max_request_size,
+        tracker=upload_tracker.UploadTracker(verbosity=0),
     )
 
 
@@ -233,6 +234,7 @@ def _create_tensor_request_sender(
         rpc_rate_limiter=util.RateLimiter(0),
         max_request_size=max_request_size,
         max_tensor_point_size=max_tensor_point_size,
+        tracker=upload_tracker.UploadTracker(verbosity=0),
     )
 
 
@@ -820,12 +822,12 @@ class TensorboardUploaderTest(tf.test.TestCase):
         uploader._upload_once()
         mock_client.WriteScalar.assert_not_called()
 
-    def test_verbosity_zero_skips_upload_tracker(self):
+    def test_verbosity_zero_creates_upload_tracker_with_verbosity_zero(self):
         mock_client = _create_mock_client()
         mock_tracker = mock.MagicMock()
         with mock.patch.object(
             upload_tracker, "UploadTracker", return_value=mock_tracker
-        ):
+        ) as mock_constructor:
             uploader = _create_uploader(
                 mock_client,
                 "/logs/foo",
@@ -851,11 +853,9 @@ class TensorboardUploaderTest(tf.test.TestCase):
         ), self.assertRaises(AbortUploadError):
             uploader.start_uploading()
 
-        # Check upload tracker calls: expect no calls.
-        self.assertEqual(mock_tracker.send_tracker.call_count, 0)
-        self.assertEqual(mock_tracker.scalars_tracker.call_count, 0)
-        self.assertEqual(mock_tracker.tensors_tracker.call_count, 0)
-        self.assertEqual(mock_tracker.blob_tracker.call_count, 0)
+        self.assertEqual(mock_constructor.call_count, 1)
+        self.assertEqual(mock_constructor.call_args[1], {"verbosity": 0})
+        self.assertEqual(mock_tracker.scalars_tracker.call_count, 1)
 
 
 class BatchedRequestSenderTest(tf.test.TestCase):
