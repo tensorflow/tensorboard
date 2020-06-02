@@ -36,8 +36,8 @@ export function findFileIndex(
 }
 
 /**
- * Find first range (with begin and end properties) in an array of range
- * that strictly includes the `[begin, end)` range.
+ * Find the first range (with begin and end properties) in an array of ranges
+ * that strictly includes `[begin, end)`.
  *
  * @param range The ranges to search in.
  * @param begin The begin of the range to search for (inclusive).
