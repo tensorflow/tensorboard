@@ -52,7 +52,7 @@ limitations under the License.
         [min]="0"
         [max]="scrollBeginIndexUpperLimit"
         [value]="scrollBeginIndex"
-        (change)="onSliderChange.emit($event.value)"
+        (input)="onSliderChange.emit($event.value)"
       ></mat-slider>
     </div>
 

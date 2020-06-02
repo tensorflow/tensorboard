@@ -21,7 +21,7 @@ import {
   GraphExecutionDataResponse,
   SourceFileResponse,
 } from '../data_source/tfdbg2_data_source';
-import {findFileIndex} from './debugger_store_utils';
+import {findFileIndex, findBeginEndRangeIndex} from './debugger_store_utils';
 import {
   AlertsByIndex,
   AlertType,
@@ -50,8 +50,7 @@ export function createInitialExecutionsState(): Executions {
       lastLoadedTimeInMs: null,
     },
     executionDigestsLoaded: {
-      state: DataLoadState.NOT_LOADED,
-      lastLoadedTimeInMs: null,
+      loadingRanges: [],
       numExecutions: 0,
       pageLoadedSizes: {},
     },
@@ -73,8 +72,7 @@ export function createInitialGraphExecutionsState(): GraphExecutions {
       lastLoadedTimeInMs: null,
     },
     executionDigestsLoaded: {
-      state: DataLoadState.NOT_LOADED,
-      lastLoadedTimeInMs: null,
+      loadingRanges: [],
       numExecutions: 0,
       pageLoadedSizes: {},
     },
@@ -391,21 +389,36 @@ const reducer = createReducer(
   ),
   on(
     actions.executionDigestsRequested,
-    (state: DebuggerState): DebuggerState => {
+    (
+      state: DebuggerState,
+      range: {begin: number; end: number}
+    ): DebuggerState => {
       const runId = state.activeRunId;
       if (runId === null) {
         return state;
       }
-      return {
+      const loadingRanges = [
+        ...state.executions.executionDigestsLoaded.loadingRanges,
+      ];
+      const match = findBeginEndRangeIndex(
+        loadingRanges,
+        range.begin,
+        range.end
+      );
+      if (match === -1) {
+        loadingRanges.push({begin: range.begin, end: range.end});
+      }
+      const newState = {
         ...state,
         executions: {
           ...state.executions,
           executionDigestsLoaded: {
             ...state.executions.executionDigestsLoaded,
-            state: DataLoadState.LOADING,
+            loadingRanges,
           },
         },
       };
+      return newState;
     }
   ),
   on(
@@ -418,6 +431,17 @@ const reducer = createReducer(
       if (runId === null) {
         return state;
       }
+      const loadingRanges = [
+        ...state.executions.executionDigestsLoaded.loadingRanges,
+      ];
+      const matchIndex = findBeginEndRangeIndex(
+        loadingRanges,
+        digests.begin,
+        digests.end
+      );
+      if (matchIndex !== -1) {
+        loadingRanges.splice(matchIndex, 1);
+      }
       const newState: DebuggerState = {
         ...state,
         executions: {
@@ -425,8 +449,7 @@ const reducer = createReducer(
           executionDigestsLoaded: {
             ...state.executions.executionDigestsLoaded,
             numExecutions: digests.num_digests,
-            state: DataLoadState.LOADED,
-            lastLoadedTimeInMs: Date.now(),
+            loadingRanges,
           },
           executionDigests: {...state.executions.executionDigests},
         },

@@ -351,7 +351,7 @@ describe('Timeline Container', () => {
 
       const slider = fixture.debugElement.query(By.css('.timeline-slider'));
 
-      slider.triggerEventHandler('change', {value: scrollBeginIndex});
+      slider.triggerEventHandler('input', {value: scrollBeginIndex});
       fixture.detectChanges();
       expect(dispatchSpy).toHaveBeenCalledWith(
         executionScrollToIndex({index: scrollBeginIndex})

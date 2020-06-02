@@ -34,3 +34,54 @@ export function findFileIndex(
       item.file_path === fileSpec.file_path
   );
 }
+
+/**
+ * Find the first range (with begin and end properties) in an array of ranges
+ * that equals `[begin, end)`.
+ *
+ * @param ranges The ranges to search in.
+ * @param begin The begin of the range to search for (inclusive).
+ * @param end The end of the range to search for (exclusive).
+ * @returns Index (>=0) if found. -1 if not found.
+ */
+export function findBeginEndRangeIndex(
+  ranges: Array<{begin: number; end: number}>,
+  begin: number,
+  end: number
+): number {
+  if (begin >= end) {
+    throw new Error(
+      `Expected begin to be less than end, ` +
+        `but got begin=${begin}, end=${end}`
+    );
+  }
+  return ranges.findIndex(
+    (range) => range.begin === begin && range.end === end
+  );
+}
+
+/**
+ * Determines if an array of ranges contains a range that strictly includes
+ * `[begin, end)`.
+ *
+ * @param ranges The ranges to search in.
+ * @param begin The begin of the range to search for (inclusive).
+ * @param end The end of the range to search for (exclusive).
+ * @returns `True` if and only if one of the ranges of `ranges` strictly
+ *   includes `[begin, end)`.
+ */
+export function beginEndRangesInclude(
+  ranges: Array<{begin: number; end: number}>,
+  begin: number,
+  end: number
+): boolean {
+  if (begin >= end) {
+    throw new Error(
+      `Expected begin to be less than end, ` +
+        `but got begin=${begin}, end=${end}`
+    );
+  }
+  return (
+    ranges.findIndex((range) => range.begin >= begin && range.end <= end) !== -1
+  );
+}

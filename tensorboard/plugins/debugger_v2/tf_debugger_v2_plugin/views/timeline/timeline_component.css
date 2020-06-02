@@ -61,10 +61,10 @@ limitations under the License.
 .timeline-slider {
   display: inline-block;
   height: 48px;
+  left: 340px; /* Total width of the two buttons and text div to the left. */
   padding: 0;
   position: absolute;
-  right: 0;
-  width: 440px;
+  right: 40px;
 }
 
 /deep/ .timeline-slider .mat-slider-thumb {
@@ -75,18 +75,19 @@ limitations under the License.
 /* TODO(cais): Apply color #293241 to the thumb and the track. */
 
 .navigation-position-info {
-  display: inline-block;
+  display: inline-flex;
   font-size: 14px;
+  max-width: 200px;
   padding-left: 10px;
   padding-right: 10px;
-  line-height: 48px;
   text-align: center;
   vertical-align: middle;
-  width: 200px;
 }
 
 .navigation-section {
   height: 48px;
+  line-height: 48px;
   position: relative;
   vertical-align: middle;
+  width: 100%;
 }
