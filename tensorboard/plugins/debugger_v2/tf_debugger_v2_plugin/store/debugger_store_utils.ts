@@ -68,7 +68,7 @@ export function isFrameBottommosInStackTrace(
     );
   }
   return matchingIndex === bottommostIndex;
-} // TODO(cais): Add unit test.
+}
 
 /**
  * Finds the bottommost stack frame in a stack trace.
@@ -100,7 +100,7 @@ export function getBottommostStackFrameInFocusedFile(
     }
   }
   return null;
-} // TODO(cais): Add unit test.
+}
 
 /**
  * Find the first range (with begin and end properties) in an array of ranges

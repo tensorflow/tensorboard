@@ -328,25 +328,4 @@ describe('Stack Trace container', () => {
       ).toBe(stickToValue ? 'true' : 'false');
     });
   }
-
-  it('changing stick-to-bottommost-frame slide toggle dispatches action', () => {
-    const fixture = TestBed.createComponent(StackTraceContainer);
-    const stickToBottommostElement = fixture.debugElement.query(
-      By.css('.stick-to-bottommost-frame')
-    );
-    stickToBottommostElement.triggerEventHandler('change', {
-      checked: true,
-    } as MatSlideToggleChange);
-    fixture.detectChanges();
-    expect(dispatchSpy).toHaveBeenCalledWith(
-      setStickToBottommostFrameInFocusedFile({value: true})
-    );
-    stickToBottommostElement.triggerEventHandler('change', {
-      checked: false,
-    } as MatSlideToggleChange);
-    fixture.detectChanges();
-    expect(dispatchSpy).toHaveBeenCalledWith(
-      setStickToBottommostFrameInFocusedFile({value: false})
-    );
-  });
 });

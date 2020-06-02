@@ -50,6 +50,7 @@ tf_ts_library(
         "debugger_graphs_reducers_test.ts",
         "debugger_reducers_test.ts",
         "debugger_selectors_test.ts",
+        "debugger_store_utils_test.ts",
     ],
     tsconfig = "//:tsconfig-test",
     deps = [

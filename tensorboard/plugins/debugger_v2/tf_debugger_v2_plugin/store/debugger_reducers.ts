@@ -39,6 +39,7 @@ import {
   InfNanAlert,
   StackFramesById,
   SourceFileSpec,
+  SourceLineSpec,
 } from './debugger_types';
 
 // HACK: These imports are for type inference.
@@ -869,7 +870,10 @@ const reducer = createReducer(
   ),
   on(
     actions.sourceLineFocused,
-    (state: DebuggerState, focus): DebuggerState => {
+    (
+      state: DebuggerState,
+      focus: {sourceLineSpec: SourceLineSpec}
+    ): DebuggerState => {
       const focusedStackTrace = getFocusedStackFramesHelper(state);
       const newState = {
         ...state,
@@ -882,7 +886,7 @@ const reducer = createReducer(
         newState.stickToBottommostFrameInFocusedFile = isFrameBottommosInStackTrace(
           focusedStackTrace,
           focus.sourceLineSpec
-        ); // TODO(cais): Add unit test.
+        );
       }
       return newState;
     }

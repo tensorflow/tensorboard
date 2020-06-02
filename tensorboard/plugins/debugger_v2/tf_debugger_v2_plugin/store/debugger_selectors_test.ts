@@ -26,6 +26,7 @@ import {
   getFocusedGraphOpInputs,
   getFocusedSourceFileContent,
   getFocusedSourceFileIndex,
+  getFocusedSourceLineSpec,
   getGraphExecutionData,
   getGraphExecutionDataLoadingPages,
   getGraphExecutionDataPageLoadedSizes,
@@ -1347,6 +1348,171 @@ describe('debugger selectors', () => {
         g1: {Op1: DataLoadState.LOADING},
         g2: {Op2a: DataLoadState.LOADED, Op2b: DataLoadState.FAILED},
       });
+    });
+  });
+
+  describe('getFocusedSourceLineSpec', () => {
+    const stackFrame0 = createTestStackFrame('main.py', 10);
+    const stackFrame1 = createTestStackFrame('main.py', 20);
+    const stackFrame2 = createTestStackFrame('train.py', 5);
+    const stackFrame3 = createTestStackFrame('train.py', 15);
+
+    for (const [stickToBottommostFrameInFocusedFile, expectedLineno] of [
+      [false, 5],
+      [true, 15],
+    ] as Array<[boolean, number]>) {
+      it(
+        `returns bottommost frame for eager execution: ` +
+          `stickToBottommostFrameInFocusedFile=${stickToBottommostFrameInFocusedFile}`,
+        () => {
+          const state = createState(
+            createDebuggerState({
+              executions: createDebuggerExecutionsState({
+                executionData: {
+                  0: createTestExecutionData({
+                    stack_frame_ids: ['s0', 's1'],
+                  }),
+                  1: createTestExecutionData({
+                    stack_frame_ids: ['s2', 's3'],
+                  }),
+                },
+                focusIndex: 1,
+              }),
+              stackFrames: {
+                s0: stackFrame0,
+                s1: stackFrame1,
+                s2: stackFrame2,
+                s3: stackFrame3,
+              },
+              sourceCode: createDebuggerSourceCodeState({
+                focusLineSpec: {
+                  host_name: 'localhost',
+                  file_path: 'train.py',
+                  lineno: 5,
+                },
+              }),
+              codeLocationFocusType: CodeLocationType.EXECUTION,
+              stickToBottommostFrameInFocusedFile,
+            })
+          );
+          const focused = getFocusedSourceLineSpec(state);
+          expect(focused).toEqual({
+            host_name: 'localhost',
+            file_path: 'train.py',
+            lineno: expectedLineno,
+          });
+        }
+      );
+    }
+
+    for (const [stickToBottommostFrameInFocusedFile, expectedLineno] of [
+      [false, 10],
+      [true, 20],
+    ] as Array<[boolean, number]>) {
+      it(
+        `returns bottommost frame for graph-op creation: ` +
+          `stickToBottommostFrameInFocusedFile=${stickToBottommostFrameInFocusedFile}`,
+        () => {
+          const state = createState(
+            createDebuggerState({
+              graphs: createDebuggerGraphsState({
+                ops: {
+                  g1: {
+                    op1: createTestGraphOpInfo({
+                      stack_frame_ids: ['s0', 's1'],
+                    }),
+                    op2: createTestGraphOpInfo({
+                      stack_frame_ids: ['s2', 's3'],
+                    }),
+                  },
+                },
+                focusedOp: {
+                  graphId: 'g1',
+                  opName: 'op1',
+                },
+              }),
+              stackFrames: {
+                s0: stackFrame0,
+                s1: stackFrame1,
+                s2: stackFrame2,
+                s3: stackFrame3,
+              },
+              sourceCode: createDebuggerSourceCodeState({
+                focusLineSpec: {
+                  host_name: 'localhost',
+                  file_path: 'main.py',
+                  lineno: 10,
+                },
+              }),
+              codeLocationFocusType: CodeLocationType.GRAPH_OP_CREATION,
+              stickToBottommostFrameInFocusedFile,
+            })
+          );
+          const focused = getFocusedSourceLineSpec(state);
+          expect(focused).toEqual({
+            host_name: 'localhost',
+            file_path: 'main.py',
+            lineno: expectedLineno,
+          });
+        }
+      );
+    }
+
+    it('returns null when no source line is focused on', () => {
+      const state = createState(
+        createDebuggerState({
+          graphs: createDebuggerGraphsState({
+            ops: {
+              g1: {
+                op1: createTestGraphOpInfo({
+                  stack_frame_ids: ['s0', 's1'],
+                }),
+              },
+            },
+            focusedOp: {
+              graphId: 'g1',
+              opName: 'op1',
+            },
+          }),
+          stackFrames: {
+            s0: stackFrame0,
+            s1: stackFrame1,
+          },
+          sourceCode: createDebuggerSourceCodeState({
+            focusLineSpec: null,
+          }),
+          codeLocationFocusType: CodeLocationType.GRAPH_OP_CREATION,
+          stickToBottommostFrameInFocusedFile: true,
+        })
+      );
+      expect(getFocusedSourceLineSpec(state)).toBeNull();
+    });
+
+    it('returns null when no stack frame is focused on', () => {
+      const state = createState(
+        createDebuggerState({
+          graphs: createDebuggerGraphsState({
+            ops: {
+              g1: {
+                op1: createTestGraphOpInfo({
+                  stack_frame_ids: ['s0', 's1'],
+                }),
+              },
+            },
+            focusedOp: null,
+          }),
+          stackFrames: {
+            s0: stackFrame0,
+            s1: stackFrame1,
+          },
+          sourceCode: createDebuggerSourceCodeState({
+            focusLineSpec: null,
+          }),
+          codeLocationFocusType: CodeLocationType.GRAPH_OP_CREATION,
+          stickToBottommostFrameInFocusedFile: true,
+        })
+      );
+      expect(getFocusedSourceLineSpec(state)).toBeNull();
     });
   });
 });

@@ -622,9 +622,12 @@ export const getFocusedSourceLineSpec = createSelector(
   (state: DebuggerState): SourceLineSpec | null => {
     const stackFrames = getFocusedStackFramesHelper(state);
     const focusedLineSpec = state.sourceCode.focusLineSpec;
-    if (stackFrames !== null && focusedLineSpec !== null) {
+    if (
+      state.stickToBottommostFrameInFocusedFile &&
+      stackFrames !== null &&
+      focusedLineSpec !== null
+    ) {
       return getBottommostStackFrameInFocusedFile(stackFrames, focusedLineSpec);
-      // Add unit tests.
     } else {
       return focusedLineSpec;
     }

@@ -1156,38 +1156,62 @@ describe('Debugger graphs reducers', () => {
     ]);
   });
 
-  it('updates focused line spec on sourceLineFocused', () => {
-    const state = createDebuggerState();
-    let nextState = reducers(
-      state,
-      actions.sourceLineFocused({
-        sourceLineSpec: {
-          host_name: 'localhost',
-          file_path: '/tmp/main.py',
-          lineno: 20,
-        },
-      })
-    );
-    expect(nextState.sourceCode.focusLineSpec).toEqual({
-      host_name: 'localhost',
-      file_path: '/tmp/main.py',
-      lineno: 20,
-    });
-    nextState = reducers(
-      state,
-      actions.sourceLineFocused({
-        sourceLineSpec: {
-          host_name: 'localhost',
-          file_path: '/tmp/train.py',
-          lineno: 30,
-        },
-      })
-    );
-    expect(nextState.sourceCode.focusLineSpec).toEqual({
-      host_name: 'localhost',
-      file_path: '/tmp/train.py',
-      lineno: 30,
-    });
+  describe('sourceLineFocused', () => {
+    const stackFrame0 = createTestStackFrame('main.py', 10);
+    const stackFrame1 = createTestStackFrame('main.py', 20);
+
+    for (const [focusLineno, initialStick, expectedStick] of [
+      [20, false, true],
+      [20, true, true],
+      [10, true, false],
+      [10, false, false],
+    ] as Array<[number, boolean, boolean]>) {
+      it(
+        `updates focused line spec and flips ` +
+          `stickToBottommostFrameInFocusedFile: ` +
+          `focusedLineno=${focusLineno}, initialStick=${initialStick}, ` +
+          `expectedStick=${expectedStick}`,
+        () => {
+          const state = createDebuggerState({
+            executions: createDebuggerExecutionsState({
+              executionData: {
+                0: createTestExecutionData({
+                  stack_frame_ids: ['s0', 's1'],
+                }),
+              },
+              focusIndex: 0,
+            }),
+            stackFrames: {
+              s0: stackFrame0,
+              s1: stackFrame1,
+            },
+            sourceCode: createDebuggerSourceCodeState({
+              focusLineSpec: null,
+            }),
+            codeLocationFocusType: CodeLocationType.EXECUTION,
+            stickToBottommostFrameInFocusedFile: initialStick,
+          });
+          let nextState = reducers(
+            state,
+            actions.sourceLineFocused({
+              sourceLineSpec: {
+                host_name: 'localhost',
+                file_path: 'main.py',
+                lineno: focusLineno,
+              },
+            })
+          );
+          expect(nextState.sourceCode.focusLineSpec).toEqual({
+            host_name: 'localhost',
+            file_path: 'main.py',
+            lineno: focusLineno,
+          });
+          expect(nextState.stickToBottommostFrameInFocusedFile).toBe(
+            expectedStick
+          );
+        }
+      );
+    }
   });
 
   it(`updates file load state on sourceFileRequested: known file`, () => {
