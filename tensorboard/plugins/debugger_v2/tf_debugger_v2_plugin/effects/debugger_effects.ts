@@ -85,6 +85,7 @@ import {
   getSourceFileListLoaded,
   getFocusedSourceFileIndex,
 } from '../store/debugger_selectors';
+import {beginEndRangesInclude} from '../store/debugger_store_utils';
 import {
   DataLoadState,
   DebuggerRunListing,
@@ -345,12 +346,9 @@ export class DebuggerEffects {
       withLatestFrom(
         this.store.select(getNumExecutions),
         this.store.select(getActiveRunId),
-        this.store.select(getExecutionPageSize),
-        this.store.select(getExecutionDigestsLoaded)
+        this.store.select(getExecutionPageSize)
       ),
-      filter(([, , runId, , loaded]) => {
-        return runId !== null && loaded.state !== DataLoadState.LOADING;
-      }),
+      filter(([, , runId]) => runId !== null),
       map(([, numExecutions, runId, pageSize]) => {
         const begin = 0;
         const end = Math.min(numExecutions, pageSize);
@@ -397,7 +395,6 @@ export class DebuggerEffects {
         }
       ),
       withLatestFrom(this.store.select(getExecutionDigestsLoaded)),
-      filter(([, loaded]) => loaded.state !== DataLoadState.LOADING),
       map(([props, loaded]) => {
         return {
           props,
@@ -435,11 +432,17 @@ export class DebuggerEffects {
     }>
   ): Observable<void> {
     return prevStream$.pipe(
-      filter(({begin, end}) => end > begin),
-      tap(() => {
-        this.store.dispatch(executionDigestsRequested());
+      withLatestFrom(this.store.select(getExecutionDigestsLoaded)),
+      filter(([{begin, end}, loaded]) => {
+        return (
+          end > begin &&
+          !beginEndRangesInclude(loaded.loadingRanges, begin, end)
+        );
       }),
-      mergeMap(({runId, begin, end}) => {
+      tap(([{begin, end}]) => {
+        this.store.dispatch(executionDigestsRequested({begin, end}));
+      }),
+      mergeMap(([{runId, begin, end}]) => {
         return this.dataSource.fetchExecutionDigests(runId, begin, end).pipe(
           tap((digests) => {
             this.store.dispatch(executionDigestsLoaded(digests));

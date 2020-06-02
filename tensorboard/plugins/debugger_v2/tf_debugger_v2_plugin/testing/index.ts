@@ -230,12 +230,22 @@ export function createDebuggerSourceCodeState(
  * Create a DebuggerState the emulates the state during the loading of
  * executionDigests, for testing.
  */
-export function createDigestsStateWhileLoadingExecutionDigests(
-  pageSize: number,
-  numExecutions: number,
-  executionDigests?: {[index: number]: ExecutionDigest},
-  pageLoadedSize?: {[page: number]: number}
-): DebuggerState {
+export function createDigestsStateWhileLoadingExecutionDigests(args: {
+  pageSize: number;
+  numExecutions: number;
+  loadingBegin: number;
+  loadingEnd: number;
+  executionDigests?: {[index: number]: ExecutionDigest};
+  pageLoadedSize?: {[page: number]: number};
+}): DebuggerState {
+  const {
+    pageSize,
+    numExecutions,
+    loadingBegin,
+    loadingEnd,
+    executionDigests,
+    pageLoadedSize,
+  } = args;
   return createDebuggerState({
     runs: {
       __default_debugger_run__: {
@@ -256,8 +266,12 @@ export function createDigestsStateWhileLoadingExecutionDigests(
       executionDigestsLoaded: {
         numExecutions,
         pageLoadedSizes: pageLoadedSize || {},
-        state: DataLoadState.LOADING,
-        lastLoadedTimeInMs: executionDigests == null ? Date.now() : null,
+        loadingRanges: [
+          {
+            begin: loadingBegin,
+            end: loadingEnd,
+          },
+        ],
       },
       executionDigests: executionDigests == null ? {} : executionDigests,
     }),
@@ -295,8 +309,7 @@ export function createDebuggerStateWithLoadedExecutionDigests(
       executionDigestsLoaded: {
         numExecutions: opTypes == null ? 1500 : opTypes.length,
         pageLoadedSizes: {},
-        state: DataLoadState.LOADED,
-        lastLoadedTimeInMs: Date.now(),
+        loadingRanges: [],
       },
       executionDigests: {},
       executionData: {},

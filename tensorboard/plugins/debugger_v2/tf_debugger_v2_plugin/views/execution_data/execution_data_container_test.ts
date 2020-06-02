@@ -71,8 +71,7 @@ describe('Execution Data Container', () => {
               lastLoadedTimeInMs: 111,
             },
             executionDigestsLoaded: {
-              state: DataLoadState.LOADED,
-              lastLoadedTimeInMs: 222,
+              loadingRanges: [],
               pageLoadedSizes: {0: 100},
               numExecutions: 1000,
             },
@@ -130,8 +129,7 @@ describe('Execution Data Container', () => {
               lastLoadedTimeInMs: 111,
             },
             executionDigestsLoaded: {
-              state: DataLoadState.LOADED,
-              lastLoadedTimeInMs: 222,
+              loadingRanges: [],
               pageLoadedSizes: {0: 100},
               numExecutions: 1000,
             },
