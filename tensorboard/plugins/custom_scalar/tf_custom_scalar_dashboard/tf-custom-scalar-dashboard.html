@@ -329,9 +329,13 @@ writer.add_summary(layout_summary)
           value: true,
           readOnly: true,
         },
+        reloadOnReady: {
+          type: Boolean,
+          value: true,
+        },
       },
       ready() {
-        this.reload();
+        if (this.reloadOnReady) this.reload();
       },
       reload() {
         const url = tf_backend.getRouter().pluginsListing();

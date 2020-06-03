@@ -18,8 +18,8 @@ limitations under the License.
 <link rel="import" href="../tf-imports/polymer.html" />
 
 <!--
-  tf-wbr-string safely renders a string, with <wbr> elements inserted
-  around select delimiters (see `const delimiterPattern` in this file).
+  tf-wbr-string safely renders a string, with <wbr> word break elements inserted
+  after substrings that match a regular expression pattern.
 -->
 <dom-module id="tf-wbr-string">
   <template>
@@ -37,25 +37,30 @@ limitations under the License.
       properties: {
         /** The value to render with word breaks. */
         value: String,
+        /**
+         * Regular expression pattern for specifying delimiters. <wbr> elements
+         * are inserted after all non-overlapping matches. A match that is
+         * overlapped by another match further to the left is ignored. Empty
+         * matches will consume the remainder of the string so it is advised
+         * to not allow empty matches in your pattern.
+         */
+        delimiterPattern: String,
         _parts: {
           type: Array /* string[] */,
-          computed: '_computeParts(value)',
+          computed: '_computeParts(value, delimiterPattern)',
         },
       },
-      _computeParts(value) {
+      _computeParts(value, delimiterPattern) {
         const result = [];
-        const delimiterPattern = /[/=_,-]/;
-        if (value == null) {
-          value = '';
-        }
         while (true) {
-          const idx = value.search(delimiterPattern);
-          if (idx === -1) {
+          const delimiterRegExp = new RegExp(delimiterPattern, 'g');
+          delimiterRegExp.test(value);
+          if (delimiterRegExp.lastIndex === 0) {
             result.push(value);
             break;
           } else {
-            result.push(value.slice(0, idx + 1));
-            value = value.slice(idx + 1);
+            result.push(value.slice(0, delimiterRegExp.lastIndex));
+            value = value.slice(delimiterRegExp.lastIndex);
           }
         }
         return result;

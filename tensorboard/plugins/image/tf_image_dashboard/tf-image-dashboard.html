@@ -201,6 +201,10 @@ TensorFlow run.
     Polymer({
       is: 'tf-image-dashboard',
       properties: {
+        reloadOnReady: {
+          type: Boolean,
+          value: true,
+        },
         _selectedRuns: Array,
         _runToTagInfo: Object,
         _dataNotFound: Boolean,
@@ -250,7 +254,7 @@ TensorFlow run.
       },
 
       ready() {
-        this.reload();
+        if (this.reloadOnReady) this.reload();
       },
       reload() {
         this._fetchTags().then(() => {

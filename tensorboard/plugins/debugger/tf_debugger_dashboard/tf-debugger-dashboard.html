@@ -670,6 +670,10 @@ limitations under the License.
          * }
          */
         _latestSessionRun: Object,
+        reloadOnReady: {
+          type: Boolean,
+          value: true,
+        },
       },
 
       observers: [
@@ -688,7 +692,7 @@ limitations under the License.
           false
         );
 
-        this.reload();
+        if (this.reloadOnReady) this.reload();
       },
 
       long_poll() {
