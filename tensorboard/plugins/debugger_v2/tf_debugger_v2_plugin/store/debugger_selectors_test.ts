@@ -467,14 +467,20 @@ describe('debugger selectors', () => {
             },
             ops: {
               f1: new Map([
-                ['op1', createTestGraphOpInfo({
-                  op_type: 'Type1Op',
-                  op_name: 'foo',
-                })],
-                ['op2', createTestGraphOpInfo({
-                  op_type: 'Type2Op',
-                  op_name: 'bar',
-                })],
+                [
+                  'op1',
+                  createTestGraphOpInfo({
+                    op_type: 'Type1Op',
+                    op_name: 'foo',
+                  }),
+                ],
+                [
+                  'op2',
+                  createTestGraphOpInfo({
+                    op_type: 'Type2Op',
+                    op_name: 'bar',
+                  }),
+                ],
               ]),
             },
           }),
@@ -565,12 +571,18 @@ describe('debugger selectors', () => {
           graphs: {
             ops: {
               f1: new Map([
-                ['op7', createTestGraphOpInfo({
-                  stack_frame_ids: ['a1', 'a2'],
-                })],
-                ['op8', createTestGraphOpInfo({
-                  stack_frame_ids: ['a1', 'a3'],
-                })],
+                [
+                  'op7',
+                  createTestGraphOpInfo({
+                    stack_frame_ids: ['a1', 'a2'],
+                  }),
+                ],
+                [
+                  'op8',
+                  createTestGraphOpInfo({
+                    stack_frame_ids: ['a1', 'a3'],
+                  }),
+                ],
               ]),
             },
             loadingOps: {},
@@ -599,9 +611,12 @@ describe('debugger selectors', () => {
           graphs: {
             ops: {
               f1: new Map([
-                ['op1', createTestGraphOpInfo({
-                  stack_frame_ids: ['a1', 'a2'],
-                })],
+                [
+                  'op1',
+                  createTestGraphOpInfo({
+                    stack_frame_ids: ['a1', 'a2'],
+                  }),
+                ],
               ]),
             },
             loadingOps: {},
@@ -1040,10 +1055,7 @@ describe('debugger selectors', () => {
         createDebuggerState({
           graphs: createDebuggerGraphsState({
             ops: {
-              g1: new Map([
-                ['op1', op1Info],
-                ['op2', op2Info],
-              ]),
+              g1: new Map([['op1', op1Info], ['op2', op2Info]]),
             },
             focusedOp: null,
           }),
@@ -1057,10 +1069,7 @@ describe('debugger selectors', () => {
         createDebuggerState({
           graphs: createDebuggerGraphsState({
             ops: {
-              g1: new Map([
-                ['op1', op1Info],
-                ['op2', op2Info],
-              ]),
+              g1: new Map([['op1', op1Info], ['op2', op2Info]]),
             },
             focusedOp: {
               graphId: 'g1',
@@ -1077,10 +1086,7 @@ describe('debugger selectors', () => {
         createDebuggerState({
           graphs: createDebuggerGraphsState({
             ops: {
-              g1: new Map([
-                ['op1', op1Info],
-                ['op2', op2Info],
-              ]),
+              g1: new Map([['op1', op1Info], ['op2', op2Info]]),
             },
             focusedOp: {
               graphId: 'g1',
@@ -1181,10 +1187,7 @@ describe('debugger selectors', () => {
         createDebuggerState({
           graphs: createDebuggerGraphsState({
             ops: {
-              g1: new Map([
-                ['op1', op1Info],
-                ['op2', op2Info],
-              ]),
+              g1: new Map([['op1', op1Info], ['op2', op2Info]]),
             },
             focusedOp: {
               graphId: 'g1',
@@ -1293,10 +1296,7 @@ describe('debugger selectors', () => {
         createDebuggerState({
           graphs: createDebuggerGraphsState({
             ops: {
-              g1: new Map([
-                ['op1', op1Info],
-                ['op2', op2Info],
-              ]),
+              g1: new Map([['op1', op1Info], ['op2', op2Info]]),
             },
             focusedOp: {
               graphId: 'g1',
@@ -1328,17 +1328,23 @@ describe('debugger selectors', () => {
         createDebuggerState({
           graphs: createDebuggerGraphsState({
             loadingOps: {
-              g0: {},
-              g1: {Op1: DataLoadState.LOADING},
-              g2: {Op2a: DataLoadState.LOADED, Op2b: DataLoadState.FAILED},
+              g0: new Map(),
+              g1: new Map([['Op1', DataLoadState.LOADING]]),
+              g2: new Map([
+                ['Op2a', DataLoadState.LOADED],
+                ['Op2b', DataLoadState.FAILED],
+              ]),
             },
           }),
         })
       );
       expect(getLoadingGraphOps(state)).toEqual({
-        g0: {},
-        g1: {Op1: DataLoadState.LOADING},
-        g2: {Op2a: DataLoadState.LOADED, Op2b: DataLoadState.FAILED},
+        g0: new Map(),
+        g1: new Map([['Op1', DataLoadState.LOADING]]),
+        g2: new Map([
+          ['Op2a', DataLoadState.LOADED],
+          ['Op2b', DataLoadState.FAILED],
+        ]),
       });
     });
   });
