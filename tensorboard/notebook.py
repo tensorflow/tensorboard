@@ -395,17 +395,17 @@ def _display_ipython(port, height, display_handle):
         replacements = [
             ("%HTML_ID%", html_escape(frame_id, quote=True)),
             ("%JSON_ID%", json.dumps(frame_id)),
-            ("%URL%", json.dumps(proxy_url)),
-            ("%PORT%", "0"),
             ("%HEIGHT%", "%d" % height),
+            ("%PORT%", "0"),
+            ("%URL%", json.dumps(proxy_url)),
         ]
     else:
         replacements = [
             ("%HTML_ID%", html_escape(frame_id, quote=True)),
             ("%JSON_ID%", json.dumps(frame_id)),
-            ("%URL%", json.dumps("/")),
-            ("%PORT%", "%d" % port),
             ("%HEIGHT%", "%d" % height),
+            ("%PORT%", "%d" % port),
+            ("%URL%", json.dumps("/")),
         ]
 
     for (k, v) in replacements:
