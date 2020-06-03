@@ -379,28 +379,34 @@ def _display_ipython(port, height, display_handle):
       <script>
         (function() {
           const frame = document.getElementById(%JSON_ID%);
-          const url = new URL("%ABS_PATH%", window.location);
-          %PORT_CHANGE%
+          const url = new URL(%URL%, window.location);
+          const port = %PORT%;
+          if (port) {
+            url.port = port;
+          }
           frame.src = url;
         })();
       </script>
     """
-    replacements = [
-        ("%HTML_ID%", html_escape(frame_id, quote=True)),
-        ("%JSON_ID%", json.dumps(frame_id)),
-        ("%HEIGHT%", "%d" % height),
-    ]
-    if "TENSORBOARD_PROXY_URL" in os.environ:
-        abs_path = os.environ["TENSORBOARD_PROXY_URL"]
+    proxy_url = os.environ.get("TENSORBOARD_PROXY_URL")
+    if proxy_url is not None:
         # Allow %PORT% in $TENSORBOARD_PROXY_URL
-        abs_path = abs_path.replace("%PORT%", "%d" % port)
-        replacements.extend(
-            [("%ABS_PATH%", abs_path), ("%PORT_CHANGE%", ""),]
-        )
+        proxy_url = proxy_url.replace("%PORT%", "%d" % port)
+        replacements = [
+            ("%HTML_ID%", html_escape(frame_id, quote=True)),
+            ("%JSON_ID%", json.dumps(frame_id)),
+            ("%URL%", json.dumps(proxy_url)),
+            ("%PORT%", "0"),
+            ("%HEIGHT%", "%d" % height),
+        ]
     else:
-        replacements.extend(
-            [("%ABS_PATH%", "/"), ("%PORT_CHANGE%", "url.port = %d;" % port),]
-        )
+        replacements = [
+            ("%HTML_ID%", html_escape(frame_id, quote=True)),
+            ("%JSON_ID%", json.dumps(frame_id)),
+            ("%URL%", json.dumps("/")),
+            ("%PORT%", "%d" % port),
+            ("%HEIGHT%", "%d" % height),
+        ]
 
     for (k, v) in replacements:
         shell = shell.replace(k, v)
