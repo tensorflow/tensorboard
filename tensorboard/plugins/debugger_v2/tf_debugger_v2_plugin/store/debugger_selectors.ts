@@ -308,7 +308,7 @@ export const getFocusedGraphOpInfo = createSelector(
     if (focusedOp === null || ops[focusedOp.graphId] === undefined) {
       return null;
     } else {
-      return ops[focusedOp.graphId][focusedOp.opName] || null;
+      return ops[focusedOp.graphId].get(focusedOp.opName) || null;
     }
   }
 );
@@ -320,18 +320,18 @@ export const getFocusedGraphOpInputs = createSelector(
     if (
       focusedOp === null ||
       ops[focusedOp.graphId] === undefined ||
-      ops[focusedOp.graphId][focusedOp.opName] === undefined
+      !ops[focusedOp.graphId].has(focusedOp.opName)
     ) {
       return null;
     } else {
       const graph = ops[focusedOp.graphId];
-      const {inputs} = graph[focusedOp.opName];
+      const {inputs} = graph.get(focusedOp.opName)!;
       return inputs.map((inputSpec) => {
         const spec: GraphOpInputSpec = {
           ...inputSpec,
         };
-        if (graph[inputSpec.op_name]) {
-          spec.data = graph[inputSpec.op_name];
+        if (graph.has(inputSpec.op_name)) {
+          spec.data = graph.get(inputSpec.op_name);
         }
         return spec;
       });
@@ -346,17 +346,17 @@ export const getFocusedGraphOpConsumers = createSelector(
     if (
       focusedOp === null ||
       ops[focusedOp.graphId] === undefined ||
-      ops[focusedOp.graphId][focusedOp.opName] === undefined
+      !ops[focusedOp.graphId].has(focusedOp.opName)
     ) {
       return null;
     } else {
       const graph = ops[focusedOp.graphId];
-      const {consumers} = graph[focusedOp.opName];
+      const {consumers} = graph.get(focusedOp.opName)!;
       return consumers.map((slotConsumers) => {
         return slotConsumers.map((consumerSpec) => {
           const spec: GraphOpConsumerSpec = {...consumerSpec};
-          if (graph[consumerSpec.op_name]) {
-            spec.data = graph[consumerSpec.op_name];
+          if (graph.has(consumerSpec.op_name)) {
+            spec.data = graph.get(consumerSpec.op_name);
           }
           return spec;
         });
@@ -536,11 +536,11 @@ export const getFocusedStackFrames = createSelector(
       const {graphId, opName} = state.graphs.focusedOp;
       if (
         state.graphs.ops[graphId] === undefined ||
-        state.graphs.ops[graphId][opName] === undefined
+        !state.graphs.ops[graphId].has(opName)
       ) {
         return null;
       }
-      stackFrameIds = state.graphs.ops[graphId][opName].stack_frame_ids;
+      stackFrameIds = state.graphs.ops[graphId].get(opName)!.stack_frame_ids;
     }
     const stackFrames: StackFrame[] = [];
     for (const stackFrameId of stackFrameIds) {
