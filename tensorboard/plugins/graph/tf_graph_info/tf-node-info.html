@@ -24,7 +24,6 @@ limitations under the License.
 <link rel="import" href="../tf-imports/polymer.html" />
 <link rel="import" href="../tf-graph-common/tf-graph-common.html" />
 <link rel="import" href="../tf-graph-common/tf-node-icon.html" />
-<link rel="import" href="../tf-wbr-string/tf-wbr-string.html" />
 <link rel="import" href="tf-node-list-item.html" />
 
 <dom-module id="tf-node-info">
@@ -163,9 +162,7 @@ limitations under the License.
             class="toggle-button"
           >
           </paper-icon-button>
-          <div class="node-name">
-            <tf-wbr-string value="[[_node.name]]" delimiter-pattern="/" />
-          </div>
+          <div class="node-name" id="nodetitle"></div>
         </div>
         <div secondary>
           <tf-node-icon
@@ -581,6 +578,11 @@ limitations under the License.
             return '[' + shape.join(', ') + ']';
           });
         },
+        _getPrintableHTMLNodeName: function(graphNodeName) {
+          // Insert an optional line break before each slash so that
+          // long node names wrap cleanly at path boundaries.
+          return (graphNodeName || '').replace(/\//g, '<wbr>/');
+        },
         _getRenderInfo: function(graphNodeName, renderHierarchy) {
           return this.renderHierarchy.getOrCreateRenderNodeByName(
             graphNodeName
@@ -742,6 +744,12 @@ limitations under the License.
             '_groupButtonText',
             tf.graph.scene.node.getGroupSettingLabel(this._node)
           );
+
+          if (this._node) {
+            Polymer.dom(
+              this.$.nodetitle
+            ).innerHTML = this._getPrintableHTMLNodeName(this._node.name);
+          }
         },
         _resizeList: function(selector) {
           var list = document.querySelector(selector);
