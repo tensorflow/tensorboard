@@ -684,10 +684,10 @@ export class DebuggerEffects {
         return (
           runId !== null &&
           (loadingOps[graph_id] === undefined ||
-            loadingOps[graph_id][op_name] === undefined ||
+            !loadingOps[graph_id].has(op_name) ||
             !(
-              loadingOps[graph_id][op_name] === DataLoadState.LOADING ||
-              loadingOps[graph_id][op_name] === DataLoadState.LOADED
+              loadingOps[graph_id].get(op_name) === DataLoadState.LOADING ||
+              loadingOps[graph_id].get(op_name) === DataLoadState.LOADED
             ))
         );
       }),

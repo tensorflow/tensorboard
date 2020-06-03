@@ -743,10 +743,13 @@ const reducer = createReducer(
         },
       };
       if (newState.graphs.loadingOps[graph_id] === undefined) {
-        newState.graphs.loadingOps[graph_id] = {};
+        newState.graphs.loadingOps[graph_id] = new Map<string, DataLoadState>();
       }
-      if (newState.graphs.loadingOps[graph_id][op_name] === undefined) {
-        newState.graphs.loadingOps[graph_id][op_name] = DataLoadState.LOADING;
+      if (!newState.graphs.loadingOps[graph_id].has(op_name)) {
+        newState.graphs.loadingOps[graph_id].set(
+          op_name,
+          DataLoadState.LOADING
+        );
       }
       return newState;
     }
@@ -763,15 +766,11 @@ const reducer = createReducer(
           ...state.graphs,
           ops: {
             ...state.graphs.ops,
-            [graphId]: {
-              ...state.graphs.ops[graphId],
-            },
+            [graphId]: new Map(state.graphs.ops[graphId]),
           },
           loadingOps: {
             ...state.graphs.loadingOps,
-            [graphId]: {
-              ...state.graphs.loadingOps[graphId],
-            },
+            [graphId]: new Map(state.graphs.loadingOps[graphId]),
           },
         },
       };
@@ -783,21 +782,21 @@ const reducer = createReducer(
           // Same for `consumer.data` below.
           continue;
         }
-        newState.graphs.ops[graphId][input.op_name] = input.data;
+        newState.graphs.ops[graphId].set(input.op_name, input.data);
       }
       for (let i = 0; i < graphOpInfoResponse.consumers.length; ++i) {
         for (const consumer of graphOpInfoResponse.consumers[i]) {
           if (!consumer.data) {
             continue;
           }
-          newState.graphs.ops[graphId][consumer.op_name] = consumer.data;
+          newState.graphs.ops[graphId].set(consumer.op_name, consumer.data);
         }
       }
-      newState.graphs.ops[graphId][graphOpInfoResponse.op_name] = {
+      newState.graphs.ops[graphId].set(graphOpInfoResponse.op_name, {
         ...graphOpInfoResponse,
         // Remove `input.data` to avoid duplicated data in `opInfo`,
         // which is put into `newState.graphs.ops[graphId][opInfo.op_name]`
-        // later.
+        // later.d
         // Same for `consumer.data` below.
         inputs: graphOpInfoResponse.inputs.map((input) => ({
           op_name: input.op_name,
@@ -809,10 +808,12 @@ const reducer = createReducer(
             input_slot: consumer.input_slot,
           }));
         }),
-      };
+      });
       // Remove the loading marker for the op.
-      newState.graphs.loadingOps[graphId][graphOpInfoResponse.op_name] =
-        DataLoadState.LOADED;
+      newState.graphs.loadingOps[graphId].set(
+        graphOpInfoResponse.op_name,
+        DataLoadState.LOADED
+      );
       return newState;
     }
   ),
