@@ -16,6 +16,7 @@ tf_web_library(
     deps = [
         "//tensorboard/components/tf_dashboard_common",
         "//tensorboard/components/tf_imports:polymer",
+        "//tensorboard/components/tf_wbr_string",
         "//tensorboard/plugins/graph/tf_graph_common",
         "//tensorboard/plugins/graph/tf_graph_debugger_data_card",
         "//tensorboard/plugins/graph/tf_graph_op_compat_card",
