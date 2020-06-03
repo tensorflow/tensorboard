@@ -22,7 +22,7 @@ limitations under the License.
 <link rel="import" href="../tf-color-scale/tf-color-scale.html" />
 <link rel="import" href="../tf-dashboard-common/scrollbar-style.html" />
 <link rel="import" href="../tf-dashboard-common/tf-multi-checkbox.html" />
-<link rel="import" href="../tf-wbr-string/tf-wbr-string.html" />
+<link rel="import" href="tf-wbr-string.html" />
 
 <!--
 tf-runs-selector creates a set of checkboxes to display which runs are
@@ -37,10 +37,7 @@ Properties out:
   <template>
     <paper-dialog with-backdrop id="data-location-dialog">
       <h2>Data Location</h2>
-      <tf-wbr-string
-        value="[[dataLocation]]"
-        delimiter-pattern="[[_dataLocationDelimiterPattern]]"
-      />
+      <tf-wbr-string value="[[dataLocation]]" />
     </paper-dialog>
     <div id="top-text">
       <h3 id="tooltip-help" class="tooltip-container">Runs</h3>
@@ -58,10 +55,7 @@ Properties out:
     </paper-button>
     <template is="dom-if" if="[[dataLocation]]">
       <div id="data-location">
-        <tf-wbr-string
-          value="[[_clippedDataLocation]]"
-          delimiter-pattern="[[_dataLocationDelimiterPattern]]"
-        /><!--
+        <tf-wbr-string value="[[_clippedDataLocation]]" /><!--
           We use HTML comments to remove spaces before the ellipsis.
         --><template
           is="dom-if"
@@ -152,11 +146,6 @@ Properties out:
         _dataLocationClipLength: {
           type: Number,
           value: 250,
-          readOnly: true,
-        },
-        _dataLocationDelimiterPattern: {
-          type: String,
-          value: '[/=_,-]',
           readOnly: true,
         },
         coloring: {

@@ -227,6 +227,11 @@ limitations under the License.
         _getNode: function(nodeName, graphHierarchy) {
           return graphHierarchy.node(nodeName);
         },
+        _getPrintableHTMLNodeName: function(nodeName) {
+          // Insert an optional line break before each slash so that
+          // long node names wrap cleanly at path boundaries.
+          return (nodeName || '').replace(/\//g, '<wbr>/');
+        },
         _getRenderInfo: function(nodeName, renderHierarchy) {
           return this.renderHierarchy.getOrCreateRenderNodeByName(nodeName);
         },
