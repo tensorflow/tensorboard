@@ -28,6 +28,7 @@ from tensorboard import plugin_util
 from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.distribution import compressor
+from tensorboard.plugins.distribution import metadata
 from tensorboard.plugins.histogram import histograms_plugin
 
 
@@ -40,7 +41,7 @@ class DistributionsPlugin(base_plugin.TBPlugin):
     `tensorboard.plugins.histogram.summary` module).
     """
 
-    plugin_name = "distributions"
+    plugin_name = metadata.PLUGIN_NAME
 
     # Use a round number + 1 since sampling includes both start and end steps,
     # so N+1 samples corresponds to dividing the step sequence into N intervals.

@@ -14,6 +14,7 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         ":compressor",
+        ":metadata",
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
         "//tensorboard/plugins:base_plugin",
@@ -84,4 +85,10 @@ py_test(
         ":compressor",
         "//tensorboard:expect_tensorflow_installed",
     ],
+)
+
+py_library(
+    name = "metadata",
+    srcs = ["metadata.py"],
+    srcs_version = "PY2AND3",
 )
