@@ -8,7 +8,6 @@ tf_web_library(
     name = "tf_runs_selector",
     srcs = [
         "tf-runs-selector.html",
-        "tf-wbr-string.html",
     ],
     path = "/tf-runs-selector",
     deps = [
@@ -16,6 +15,7 @@ tf_web_library(
         "//tensorboard/components/tf_color_scale",
         "//tensorboard/components/tf_dashboard_common",
         "//tensorboard/components/tf_imports:polymer",
+        "//tensorboard/components/tf_wbr_string",
         "@org_polymer_paper_button",
         "@org_polymer_paper_dialog",
         "@org_polymer_paper_styles",
