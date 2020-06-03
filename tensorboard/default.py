@@ -88,6 +88,20 @@ _PLUGINS = [
 
 
 def get_plugins():
+    """Returns a list specifying all known TensorBoard plugins.
+
+    This includes both first-party, statically bundled plugins and
+    dynamic plugins.
+
+    This list can be passed to the `tensorboard.program.TensorBoard` API.
+
+    Returns:
+      The list of default first-party plugins.
+    """
+    return get_static_plugins() + get_dynamic_plugins()
+
+
+def get_static_plugins():
     """Returns a list specifying TensorBoard's default first-party plugins.
 
     Plugins are specified in this list either via a TBLoader instance to load the
@@ -96,7 +110,7 @@ def get_plugins():
     This list can be passed to the `tensorboard.program.TensorBoard` API.
 
     Returns:
-      The list of default plugins.
+      The list of default first-party plugins.
 
     :rtype: list[Type[base_plugin.TBLoader] | Type[base_plugin.TBPlugin]]
     """

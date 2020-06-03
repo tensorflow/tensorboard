@@ -69,7 +69,7 @@ describe('Debugger reducers', () => {
         actions.graphOpInfoRequested({graph_id: 'g8', op_name: 'x'})
       );
       expect(nextState.graphs.loadingOps).toEqual({
-        g8: {x: DataLoadState.LOADING},
+        g8: new Map([['x', DataLoadState.LOADING]]),
       });
     });
 
@@ -77,8 +77,8 @@ describe('Debugger reducers', () => {
       const state = createDebuggerState({
         graphs: createDebuggerGraphsState({
           loadingOps: {
-            g1: {Op1: DataLoadState.LOADING},
-            g2: {Op2: DataLoadState.LOADING},
+            g1: new Map([['Op1', DataLoadState.LOADING]]),
+            g2: new Map([['Op2', DataLoadState.LOADING]]),
           },
         }),
       });
@@ -87,11 +87,11 @@ describe('Debugger reducers', () => {
         actions.graphOpInfoRequested({graph_id: 'g2', op_name: 'Op3'})
       );
       expect(nextState.graphs.loadingOps).toEqual({
-        g1: {Op1: DataLoadState.LOADING},
-        g2: {
-          Op2: DataLoadState.LOADING,
-          Op3: DataLoadState.LOADING,
-        },
+        g1: new Map([['Op1', DataLoadState.LOADING]]),
+        g2: new Map([
+          ['Op2', DataLoadState.LOADING],
+          ['Op3', DataLoadState.LOADING],
+        ]),
       });
     });
 
@@ -99,8 +99,8 @@ describe('Debugger reducers', () => {
       const state = createDebuggerState({
         graphs: createDebuggerGraphsState({
           loadingOps: {
-            g1: {Op1: DataLoadState.LOADING},
-            g2: {Op2: DataLoadState.LOADING},
+            g1: new Map([['Op1', DataLoadState.LOADING]]),
+            g2: new Map([['Op2', DataLoadState.LOADING]]),
           },
         }),
       });
@@ -109,8 +109,8 @@ describe('Debugger reducers', () => {
         actions.graphOpInfoRequested({graph_id: 'g2', op_name: 'Op2'})
       );
       expect(nextState.graphs.loadingOps).toEqual({
-        g1: {Op1: DataLoadState.LOADING},
-        g2: {Op2: DataLoadState.LOADING},
+        g1: new Map([['Op1', DataLoadState.LOADING]]),
+        g2: new Map([['Op2', DataLoadState.LOADING]]),
       });
     });
   });
@@ -121,10 +121,10 @@ describe('Debugger reducers', () => {
       const state = createDebuggerState({
         graphs: createDebuggerGraphsState({
           ops: {
-            g0: {[opInfo0.op_name]: opInfo0},
+            g0: new Map([[opInfo0.op_name, opInfo0]]),
           },
           loadingOps: {
-            g2: {TestOp_1: DataLoadState.LOADING},
+            g2: new Map([['TestOp_1', DataLoadState.LOADING]]),
           },
         }),
       });
@@ -192,23 +192,23 @@ describe('Debugger reducers', () => {
 
       expect(nextState.graphs.ops).toEqual({
         // Verify the old graph op data hasn't changed.
-        g0: {[opInfo0.op_name]: opInfo0},
+        g0: new Map([[opInfo0.op_name, opInfo0]]),
         // 'g2' is the immediately-enclosing graph of the three ops.
-        g2: {
-          [opInfo1.op_name]: opInfo1,
-          [opInfo2.op_name]: opInfo2,
-          [opInfo3.op_name]: opInfo3,
-        },
+        g2: new Map([
+          [opInfo1.op_name, opInfo1],
+          [opInfo2.op_name, opInfo2],
+          [opInfo3.op_name, opInfo3],
+        ]),
       });
       // Verify that the input and consumer ops do not have the detailed data attached.
       expect(
-        nextState.graphs.ops['g2'][opInfo2.op_name].inputs[0].data
+        nextState.graphs.ops['g2'].get(opInfo2.op_name)!.inputs[0].data
       ).toBeUndefined();
       expect(
-        nextState.graphs.ops['g2'][opInfo2.op_name].consumers[0][0].data
+        nextState.graphs.ops['g2'].get(opInfo2.op_name)!.consumers[0][0].data
       ).toBeUndefined();
       expect(nextState.graphs.loadingOps).toEqual({
-        g2: {TestOp_1: DataLoadState.LOADED},
+        g2: new Map([['TestOp_1', DataLoadState.LOADED]]),
       });
     });
 
@@ -217,14 +217,15 @@ describe('Debugger reducers', () => {
       const state = createDebuggerState({
         graphs: createDebuggerGraphsState({
           ops: {
-            g0: {[opInfo0.op_name]: opInfo0},
+            // TODO(cais): Is typing necessary?
+            g0: new Map([[opInfo0.op_name, opInfo0]]),
           },
           loadingOps: {
-            g1: {TestOp_11: DataLoadState.LOADING},
-            g2: {
-              TestOp_2: DataLoadState.LOADING,
-              TestOp_22: DataLoadState.LOADING,
-            },
+            g1: new Map([['TestOp_11', DataLoadState.LOADING]]),
+            g2: new Map([
+              ['TestOp_2', DataLoadState.LOADING],
+              ['TestOp_22', DataLoadState.LOADING],
+            ]),
           },
         }),
       });
@@ -328,22 +329,22 @@ describe('Debugger reducers', () => {
 
       expect(nextState.graphs.ops).toEqual({
         // Verify the old graph op data hasn't changed.
-        g0: {[opInfo0.op_name]: opInfo0},
+        g0: new Map([[opInfo0.op_name, opInfo0]]),
         // 'g2' is the immediately-enclosing graph of the three ops.
-        g2: {
-          [opInfo1a.op_name]: opInfo1a,
-          [opInfo1b.op_name]: opInfo1b,
-          [opInfo2.op_name]: opInfo2,
-          [opInfo3a.op_name]: opInfo3a,
-          [opInfo3b.op_name]: opInfo3b,
-        },
+        g2: new Map([
+          [opInfo1a.op_name, opInfo1a],
+          [opInfo1b.op_name, opInfo1b],
+          [opInfo2.op_name, opInfo2],
+          [opInfo3a.op_name, opInfo3a],
+          [opInfo3b.op_name, opInfo3b],
+        ]),
       });
       expect(nextState.graphs.loadingOps).toEqual({
-        g1: {TestOp_11: DataLoadState.LOADING},
-        g2: {
-          TestOp_2: DataLoadState.LOADED,
-          TestOp_22: DataLoadState.LOADING,
-        },
+        g1: new Map([['TestOp_11', DataLoadState.LOADING]]),
+        g2: new Map([
+          ['TestOp_2', DataLoadState.LOADED],
+          ['TestOp_22', DataLoadState.LOADING],
+        ]),
       });
     });
 
@@ -352,10 +353,11 @@ describe('Debugger reducers', () => {
       const state = createDebuggerState({
         graphs: createDebuggerGraphsState({
           ops: {
-            g0: {[opInfo0.op_name]: opInfo0}, // Pre-existing op in store.
+            // Pre-existing op in store.
+            g0: new Map([[opInfo0.op_name, opInfo0]]),
           },
           loadingOps: {
-            g2: {TestOp_3: DataLoadState.LOADING},
+            g2: new Map([['TestOp_3', DataLoadState.LOADING]]),
           },
         }),
       });
@@ -398,14 +400,11 @@ describe('Debugger reducers', () => {
       );
 
       expect(nextState.graphs.ops).toEqual({
-        g0: {[opInfo0.op_name]: opInfo0},
-        g2: {
-          [opInfo1.op_name]: opInfo1,
-          [opInfo2.op_name]: opInfo2,
-        },
+        g0: new Map([[opInfo0.op_name, opInfo0]]),
+        g2: new Map([[opInfo1.op_name, opInfo1], [opInfo2.op_name, opInfo2]]),
       });
       expect(nextState.graphs.loadingOps).toEqual({
-        g2: {TestOp_3: DataLoadState.LOADED},
+        g2: new Map([['TestOp_3', DataLoadState.LOADED]]),
       });
     });
 
@@ -414,10 +413,11 @@ describe('Debugger reducers', () => {
       const state = createDebuggerState({
         graphs: createDebuggerGraphsState({
           ops: {
-            g0: {[opInfo0.op_name]: opInfo0}, // Pre-existing op in store.
+            // Pre-existing op in store.
+            g0: new Map([[opInfo0.op_name, opInfo0]]),
           },
           loadingOps: {
-            g2: {TestOp_4: DataLoadState.LOADING},
+            g2: new Map([['TestOp_4', DataLoadState.LOADING]]),
           },
         }),
       });
@@ -462,14 +462,11 @@ describe('Debugger reducers', () => {
       );
 
       expect(nextState.graphs.ops).toEqual({
-        g0: {[opInfo0.op_name]: opInfo0},
-        g2: {
-          [opInfo1.op_name]: opInfo1,
-          [opInfo2.op_name]: opInfo2,
-        },
+        g0: new Map([[opInfo0.op_name, opInfo0]]),
+        g2: new Map([[opInfo1.op_name, opInfo1], [opInfo2.op_name, opInfo2]]),
       });
       expect(nextState.graphs.loadingOps).toEqual({
-        g2: {TestOp_4: DataLoadState.LOADED},
+        g2: new Map([['TestOp_4', DataLoadState.LOADED]]),
       });
     });
   });

@@ -62,7 +62,7 @@ def run_main():
         )
 
     tensorboard = program.TensorBoard(
-        default.get_plugins() + default.get_dynamic_plugins(),
+        default.get_plugins(),
         program.get_default_assets_zip_provider(),
         subcommands=[uploader_subcommand.UploaderSubcommand()],
     )
