@@ -73,6 +73,23 @@ class DataProvider(object):
     for 3 random inputs from this batch". A single blob can of course be
     represented as a blob sequence that always has exactly one element.
 
+    When reading time series, *downsampling* refers to selecting a
+    subset of the points in each time series. Downsampling only occurs
+    across the step axis (rather than, e.g., the blobs in a single blob
+    sequence datum), and occurs individually within each time series.
+    When downsampling, the latest datum should always be included in the
+    sample, so that clients have a view of metrics that is maximally up
+    to date. Implementations may choose to force the first (oldest)
+    datum to be included in each sample as well, but this is not
+    required; clients should not make assumptions either way. The
+    remainder of the points in the sample should be selected uniformly
+    at random from available points. Downsampling should be
+    deterministic within a time series. It is also useful for the
+    downsampling behavior to depend only on the set of step values
+    within a time series, such that two "parallel" time series with data
+    at exactly the same steps also retain the same steps after
+    downsampling.
+
     Every time series belongs to a specific experiment and is owned by a
     specific plugin. (Thus, the "primary key" for a time series has four
     components: experiment, plugin, run, tag.) The experiment ID is an
@@ -187,7 +204,8 @@ class DataProvider(object):
           plugin_name: String name of the TensorBoard plugin that created
             the data to be queried. Required.
           downsample: Integer number of steps to which to downsample the
-            results (e.g., `1000`). Required.
+            results (e.g., `1000`). See `DataProvider` class docstring
+            for details about this parameter. Required.
           run_tag_filter: Optional `RunTagFilter` value. If provided, a time
             series will only be included in the result if its run and tag
             both pass this filter. If `None`, all time series will be
@@ -239,7 +257,8 @@ class DataProvider(object):
           plugin_name: String name of the TensorBoard plugin that created
             the data to be queried. Required.
           downsample: Integer number of steps to which to downsample the
-            results (e.g., `1000`). Required.
+            results (e.g., `1000`). See `DataProvider` class docstring
+            for details about this parameter. Required.
           run_tag_filter: Optional `RunTagFilter` value. If provided, a time
             series will only be included in the result if its run and tag
             both pass this filter. If `None`, all time series will be
@@ -290,8 +309,9 @@ class DataProvider(object):
           experiment_id: ID of enclosing experiment.
           plugin_name: String name of the TensorBoard plugin that created the data
             to be queried. Required.
-          downsample: Integer number of steps to which to downsample the results
-            (e.g., `1000`). Required.
+          downsample: Integer number of steps to which to downsample the
+            results (e.g., `1000`). See `DataProvider` class docstring
+            for details about this parameter. Required.
           run_tag_filter: Optional `RunTagFilter` value. If provided, a time series
             will only be included in the result if its run and tag both pass this
             filter. If `None`, all time series will be included. The result will
