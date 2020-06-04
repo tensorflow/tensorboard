@@ -62,6 +62,9 @@ import {PluginRegistryModule} from './plugin_registry_module';
         margin: 80px auto 0;
         max-width: 540px;
       }
+      .last-reload-time {
+        font-style: italic;
+      }
     `,
     'iframe { border: 0; height: 100%; width: 100%; }',
   ],
