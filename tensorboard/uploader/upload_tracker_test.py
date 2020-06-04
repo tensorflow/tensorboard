@@ -331,11 +331,11 @@ class UploadTrackerTest(tb_test.TestCase):
         self.assertEqual(self.mock_write.call_count, 5)
         self.assertEqual(self.mock_flush.call_count, 4)
         self.assertIn(
-            "Uploaded 0 scalars, 0 tensors, 0 binary objects\n",
+            "Total uploaded: 0 scalars, 0 tensors, 0 binary objects\n",
             self.mock_write.call_args_list[2][0][0],
         )
         self.assertIn(
-            "Skipped: 1 binary objects (2048.0 MB)\n",
+            "Total skipped: 1 binary objects (2048.0 MB)\n",
             self.mock_write.call_args_list[3][0][0],
         )
 

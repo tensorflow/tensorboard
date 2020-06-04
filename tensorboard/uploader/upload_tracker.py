@@ -267,7 +267,7 @@ class UploadTracker(object):
 
         message += "." * 3
         sys.stdout.write(
-            "\r" + _STYLE_ERASE_LINE + color_code + message + _STYLE_RESET
+            _STYLE_ERASE_LINE + color_code + message + _STYLE_RESET + "\r"
         )
         sys.stdout.flush()
 
@@ -277,7 +277,7 @@ class UploadTracker(object):
         if not self._stats.has_new_data_since_last_summarize():
             return
         uploaded_str, skipped_str = self._stats.summarize()
-        uploaded_message = "\n%s[%s]%s Uploaded %s\n" % (
+        uploaded_message = "%s[%s]%s Total uploaded: %s\n" % (
             _STYLE_BOLD,
             readable_time_string(),
             _STYLE_RESET,
@@ -286,7 +286,7 @@ class UploadTracker(object):
         sys.stdout.write(uploaded_message)
         if skipped_str:
             sys.stdout.write(
-                "%sSkipped: %s\n%s"
+                "%sTotal skipped: %s\n%s"
                 % (_STYLE_DARKGRAY, skipped_str, _STYLE_RESET)
             )
         sys.stdout.flush()
