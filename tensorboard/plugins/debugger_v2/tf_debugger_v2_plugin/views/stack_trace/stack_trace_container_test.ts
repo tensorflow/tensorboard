@@ -62,96 +62,116 @@ describe('Stack Trace container', () => {
     dispatchSpy = spyOn(store, 'dispatch');
   });
 
-  it('shows non-empty eager stack frames; highlights focused frame', () => {
-    const fixture = TestBed.createComponent(StackTraceContainer);
-    store.overrideSelector(getCodeLocationOrigin, {
-      codeLocationType: CodeLocationType.EXECUTION,
-      opType: 'FooOp',
-      executionIndex: 12,
-    });
-    const stackFrame0 = createTestStackFrame();
-    const stackFrame1 = createTestStackFrame();
-    const stackFrame2 = createTestStackFrame();
-    store.overrideSelector(getFocusedStackFrames, [
-      stackFrame0,
-      stackFrame1,
-      stackFrame2,
-    ]);
-    store.overrideSelector(getFocusedSourceLineSpec, {
-      host_name: stackFrame1[0],
-      file_path: stackFrame1[1],
-      lineno: stackFrame1[2],
-    });
-    fixture.detectChanges();
+  for (const stickToBottommostFrame of [false, true]) {
+    it(
+      `shows non-empty eager stack frames; highlights focused frame: ` +
+        `stickToBottommostFrame=${stickToBottommostFrame}`,
+      () => {
+        const fixture = TestBed.createComponent(StackTraceContainer);
+        store.overrideSelector(getCodeLocationOrigin, {
+          codeLocationType: CodeLocationType.EXECUTION,
+          opType: 'FooOp',
+          executionIndex: 12,
+        });
+        const stackFrame0 = createTestStackFrame();
+        const stackFrame1 = createTestStackFrame();
+        const stackFrame2 = createTestStackFrame();
+        store.overrideSelector(getFocusedStackFrames, [
+          stackFrame0,
+          stackFrame1,
+          stackFrame2,
+        ]);
+        store.overrideSelector(getFocusedSourceLineSpec, {
+          host_name: stackFrame1[0],
+          file_path: stackFrame1[1],
+          lineno: stackFrame1[2],
+        });
+        store.overrideSelector(
+          getStickToBottommostFrameInFocusedFile,
+          stickToBottommostFrame
+        );
+        fixture.detectChanges();
 
-    const stackTraceTypeElement = fixture.debugElement.query(
-      By.css('.code-location-origin')
-    );
-    expect(stackTraceTypeElement.nativeElement.innerText.trim()).toBe(
-      'Eager execution #12: FooOp'
-    );
-    const hostNameElement = fixture.debugElement.query(
-      By.css('.stack-trace-host-name')
-    );
-    expect(hostNameElement.nativeElement.innerText).toBe(
-      '(Host name: localhost)'
-    );
-    const stackFrameContainers = fixture.debugElement.queryAll(
-      By.css('.stack-frame-container')
-    );
-    expect(stackFrameContainers.length).toBe(3);
+        const stackTraceTypeElement = fixture.debugElement.query(
+          By.css('.code-location-origin')
+        );
+        expect(stackTraceTypeElement.nativeElement.innerText.trim()).toBe(
+          'Eager execution #12: FooOp'
+        );
+        const hostNameElement = fixture.debugElement.query(
+          By.css('.stack-trace-host-name')
+        );
+        expect(hostNameElement.nativeElement.innerText).toBe(
+          '(Host name: localhost)'
+        );
+        const stackFrameContainers = fixture.debugElement.queryAll(
+          By.css('.stack-frame-container')
+        );
+        expect(stackFrameContainers.length).toBe(3);
 
-    const filePathElements = fixture.debugElement.queryAll(
-      By.css('.stack-frame-file-path')
-    );
-    expect(filePathElements.length).toBe(3);
-    expect(filePathElements[0].nativeElement.innerText).toBe(
-      stackFrame0[1].slice(stackFrame0[1].lastIndexOf('/') + 1)
-    );
-    expect(filePathElements[0].nativeElement.title).toBe(stackFrame0[1]);
-    expect(filePathElements[1].nativeElement.innerText).toBe(
-      stackFrame1[1].slice(stackFrame1[1].lastIndexOf('/') + 1)
-    );
-    expect(filePathElements[1].nativeElement.title).toBe(stackFrame1[1]);
-    expect(filePathElements[2].nativeElement.innerText).toBe(
-      stackFrame2[1].slice(stackFrame2[1].lastIndexOf('/') + 1)
-    );
-    expect(filePathElements[2].nativeElement.title).toBe(stackFrame2[1]);
+        const filePathElements = fixture.debugElement.queryAll(
+          By.css('.stack-frame-file-path')
+        );
+        expect(filePathElements.length).toBe(3);
+        expect(filePathElements[0].nativeElement.innerText).toBe(
+          stackFrame0[1].slice(stackFrame0[1].lastIndexOf('/') + 1)
+        );
+        expect(filePathElements[0].nativeElement.title).toBe(stackFrame0[1]);
+        expect(filePathElements[1].nativeElement.innerText).toBe(
+          stackFrame1[1].slice(stackFrame1[1].lastIndexOf('/') + 1)
+        );
+        expect(filePathElements[1].nativeElement.title).toBe(stackFrame1[1]);
+        expect(filePathElements[2].nativeElement.innerText).toBe(
+          stackFrame2[1].slice(stackFrame2[1].lastIndexOf('/') + 1)
+        );
+        expect(filePathElements[2].nativeElement.title).toBe(stackFrame2[1]);
 
-    const linenoElements = fixture.debugElement.queryAll(
-      By.css('.stack-frame-lineno')
-    );
-    expect(linenoElements.length).toBe(3);
-    expect(linenoElements[0].nativeElement.innerText).toBe(
-      `Line ${stackFrame0[2]}`
-    );
-    expect(linenoElements[1].nativeElement.innerText).toBe(
-      `Line ${stackFrame1[2]}`
-    );
-    expect(linenoElements[2].nativeElement.innerText).toBe(
-      `Line ${stackFrame2[2]}`
-    );
+        const linenoElements = fixture.debugElement.queryAll(
+          By.css('.stack-frame-lineno')
+        );
+        expect(linenoElements.length).toBe(3);
+        expect(linenoElements[0].nativeElement.innerText).toBe(
+          `Line ${stackFrame0[2]}`
+        );
+        expect(linenoElements[1].nativeElement.innerText).toBe(
+          `Line ${stackFrame1[2]}`
+        );
+        expect(linenoElements[2].nativeElement.innerText).toBe(
+          `Line ${stackFrame2[2]}`
+        );
 
-    const functionElements = fixture.debugElement.queryAll(
-      By.css('.stack-frame-function')
-    );
-    expect(functionElements.length).toBe(3);
-    expect(functionElements[0].nativeElement.innerText).toBe(stackFrame0[3]);
-    expect(functionElements[1].nativeElement.innerText).toBe(stackFrame1[3]);
-    expect(functionElements[2].nativeElement.innerText).toBe(stackFrame2[3]);
+        const functionElements = fixture.debugElement.queryAll(
+          By.css('.stack-frame-function')
+        );
+        expect(functionElements.length).toBe(3);
+        expect(functionElements[0].nativeElement.innerText).toBe(
+          stackFrame0[3]
+        );
+        expect(functionElements[1].nativeElement.innerText).toBe(
+          stackFrame1[3]
+        );
+        expect(functionElements[2].nativeElement.innerText).toBe(
+          stackFrame2[3]
+        );
 
-    // Check the focused stack frame has been highlighted by CSS class.
-    const focusedElements = fixture.debugElement.queryAll(
-      By.css('.focused-stack-frame')
+        // Check the focused stack frame has been highlighted by CSS class.
+        const focusedElements = fixture.debugElement.queryAll(
+          By.css('.focused-stack-frame')
+        );
+        expect(focusedElements.length).toBe(1);
+        const stickToBottomIndicator = focusedElements[0].query(
+          By.css('.stick-to-bottommost-indicator')
+        );
+        expect(stickToBottomIndicator !== null).toBe(stickToBottommostFrame);
+        const focusedFilePathElement = focusedElements[0].query(
+          By.css('.stack-frame-file-path')
+        );
+        expect(focusedFilePathElement.nativeElement.innerText).toBe(
+          stackFrame1[1].slice(stackFrame1[1].lastIndexOf('/') + 1)
+        );
+      }
     );
-    expect(focusedElements.length).toBe(1);
-    const focusedFilePathElement = focusedElements[0].query(
-      By.css('.stack-frame-file-path')
-    );
-    expect(focusedFilePathElement.nativeElement.innerText).toBe(
-      stackFrame1[1].slice(stackFrame1[1].lastIndexOf('/') + 1)
-    );
-  });
+  }
 
   it('shows non-empty graph-op-creation stack frames; highlights focused frame', () => {
     const fixture = TestBed.createComponent(StackTraceContainer);
@@ -305,26 +325,6 @@ describe('Stack Trace container', () => {
       })
     );
   });
-
-  for (const stickToValue of [false, true]) {
-    it(`sets stick-to-bottommost-frame div: value=${stickToValue}`, () => {
-      const fixture = TestBed.createComponent(StackTraceContainer);
-      store.overrideSelector(
-        getStickToBottommostFrameInFocusedFile,
-        stickToValue
-      );
-      fixture.detectChanges();
-
-      const stickToBottommostElement = fixture.debugElement.query(
-        By.css('.stick-to-bottommost-frame')
-      );
-      if (stickToValue) {
-        expect(stickToBottommostElement).not.toBeNull();
-      } else {
-        expect(stickToBottommostElement).toBeNull();
-      }
-    });
-  }
 
   it('scroll to the last frame when no frame is in focus', () => {
     const fixture = TestBed.createComponent(StackTraceComponent);

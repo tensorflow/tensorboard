@@ -111,10 +111,9 @@ limitations under the License.
   font-weight: bold;
 }
 
-.stick-to-bottommost-frame {
-  color: #666;
-  position: absolute;
-  right: 0;
-  top: 0;
-  width: 280px;
+.stick-to-bottommost-indicator {
+  display: inline-block;
+  font-weight: bold;
+  font-size: 12px;
+  padding-right: 3px;
 }
