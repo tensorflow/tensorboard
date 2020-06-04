@@ -164,7 +164,7 @@ class UploadStats(object):
         later.
 
         Returns:
-          A tuple with two strings:
+          A tuple with two items:
           - A string summarizing all data uploaded so far.
           - If any data was skipped, a string for all skipped data. Else, `None`.
         """
@@ -202,7 +202,7 @@ class UploadStats(object):
         )
         return ", ".join(string_pieces), skipped_string
 
-    def _skipped_any(self):  # TODO(cais): Removal?
+    def _skipped_any(self):
         """Whether any data was skipped."""
         return self._num_tensors_skipped or self._num_blobs_skipped
 
