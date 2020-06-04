@@ -113,6 +113,8 @@ export function createTestStackFrame(
   return [
     'localhost', // Host name.
     file_path || `/tmp/file_${Math.floor(Math.random() * 1e6)}.py`, // File path.
+    // `lineno` is assumed to be 1-based. So a value of 0 means use default
+    // behavior.
     lineno || 1 + Math.floor(Math.random() * 1e3), // Lineno.
     `function_${Math.floor(Math.random() * 1e3)}`, // Function name.
   ];

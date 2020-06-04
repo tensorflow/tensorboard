@@ -16,7 +16,7 @@ limitations under the License.
 import {createTestStackFrame} from '../testing';
 import {
   getBottommostStackFrameInFocusedFile,
-  isFrameBottommosInStackTrace,
+  isFrameBottommostInStackTrace,
 } from './debugger_store_utils';
 
 describe('Debugger store utils', () => {
@@ -26,10 +26,10 @@ describe('Debugger store utils', () => {
   const stackFrame3 = createTestStackFrame('train.py', 15);
   const stackTrace = [stackFrame0, stackFrame1, stackFrame2, stackFrame3];
 
-  describe('isFrameBottommosInStackTrace', () => {
+  describe('isFrameBottommostInStackTrace', () => {
     it('returns true for bottommost frame', () => {
       expect(
-        isFrameBottommosInStackTrace(stackTrace, {
+        isFrameBottommostInStackTrace(stackTrace, {
           host_name: 'localhost',
           file_path: 'main.py',
           lineno: 20,
@@ -39,7 +39,7 @@ describe('Debugger store utils', () => {
 
     it('returns false for non-bottommost frame', () => {
       expect(
-        isFrameBottommosInStackTrace(stackTrace, {
+        isFrameBottommostInStackTrace(stackTrace, {
           host_name: 'localhost',
           file_path: 'train.py',
           lineno: 5,
@@ -49,7 +49,7 @@ describe('Debugger store utils', () => {
 
     it('throws Error for nonexistent frame', () => {
       expect(() =>
-        isFrameBottommosInStackTrace(stackTrace, {
+        isFrameBottommostInStackTrace(stackTrace, {
           host_name: 'localhost',
           file_path: 'nonexistent.py',
           lineno: 5,

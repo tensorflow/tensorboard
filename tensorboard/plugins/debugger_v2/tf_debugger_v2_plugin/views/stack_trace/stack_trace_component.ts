@@ -97,8 +97,6 @@ export class StackTraceComponent implements AfterViewChecked {
       '.stack-frame-container:last-child'
     );
     if (lastFrameElement) {
-      // Scroll the last frame into view only when there is no stack frame being
-      // focused on.
       lastFrameElement.scrollIntoView({block: 'nearest'});
     }
   }

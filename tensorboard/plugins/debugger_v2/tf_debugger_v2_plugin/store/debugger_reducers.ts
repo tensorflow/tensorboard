@@ -21,11 +21,11 @@ import {
   GraphExecutionDataResponse,
   SourceFileResponse,
 } from '../data_source/tfdbg2_data_source';
-import {getFocusedStackFramesHelper} from './debugger_selectors';
 import {
   findFileIndex,
   findBeginEndRangeIndex,
-  isFrameBottommosInStackTrace,
+  getFocusedStackFramesHelper,
+  isFrameBottommostInStackTrace,
 } from './debugger_store_utils';
 import {
   AlertsByIndex,
@@ -884,7 +884,7 @@ const reducer = createReducer(
         },
       };
       if (focusedStackTrace !== null) {
-        newState.stickToBottommostFrameInFocusedFile = isFrameBottommosInStackTrace(
+        newState.stickToBottommostFrameInFocusedFile = isFrameBottommostInStackTrace(
           focusedStackTrace,
           focus.sourceLineSpec
         );
@@ -964,20 +964,6 @@ const reducer = createReducer(
       const newState: DebuggerState = {
         ...state,
         stackFrames: {...state.stackFrames, ...stackFrames.stackFrames},
-      };
-      return newState;
-    }
-  ),
-  on(
-    actions.setStickToBottommostFrameInFocusedFile,
-    (state: DebuggerState, arg: {value: boolean}): DebuggerState => {
-      const runId = state.activeRunId;
-      if (runId === null) {
-        return state;
-      }
-      const newState: DebuggerState = {
-        ...state,
-        stickToBottommostFrameInFocusedFile: arg.value,
       };
       return newState;
     }

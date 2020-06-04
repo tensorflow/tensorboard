@@ -17,6 +17,7 @@ import {createSelector, createFeatureSelector} from '@ngrx/store';
 import {
   findFileIndex,
   getBottommostStackFrameInFocusedFile,
+  getFocusedStackFramesHelper,
 } from './debugger_store_utils';
 import {
   AlertsBreakdown,
@@ -509,53 +510,6 @@ export const getCodeLocationOrigin = createSelector(
 );
 
 /**
- * Helper function that extracts the stack trace being focused on.
- *
- * This examines whether the current focused code location is for an
- * eager (top-level) execution or a graph-op creation, and then queries
- * the corresponding substates accordingly.
- *
- * @param state
- */
-export function getFocusedStackFramesHelper(
-  state: DebuggerState
-): StackFrame[] | null {
-  if (state.codeLocationFocusType === null) {
-    return null;
-  }
-  let stackFrameIds: string[] = [];
-  if (state.codeLocationFocusType === CodeLocationType.EXECUTION) {
-    const {focusIndex, executionData} = state.executions;
-    if (focusIndex === null || executionData[focusIndex] === undefined) {
-      return null;
-    }
-    stackFrameIds = executionData[focusIndex].stack_frame_ids;
-  } else {
-    // This is CodeLocationType.GRAPH_OP_CREATION.
-    if (state.graphs.focusedOp === null) {
-      return null;
-    }
-    const {graphId, opName} = state.graphs.focusedOp;
-    if (
-      state.graphs.ops[graphId] === undefined ||
-      !state.graphs.ops[graphId].has(opName)
-    ) {
-      return null;
-    }
-    stackFrameIds = state.graphs.ops[graphId].get(opName)!.stack_frame_ids;
-  }
-  const stackFrames: StackFrame[] = [];
-  for (const stackFrameId of stackFrameIds) {
-    if (state.stackFrames[stackFrameId] != null) {
-      stackFrames.push(state.stackFrames[stackFrameId]);
-    } else {
-      return null;
-    }
-  }
-  return stackFrames;
-}
-
-/**
  * Get the stack trace (frames) of the execution event currently focused on
  * (if any).
  *
@@ -564,6 +518,8 @@ export function getFocusedStackFramesHelper(
  * the data source yet), returns null.
  */
 export const getFocusedStackFrames = createSelector(
+  // TODO(cais): Rename this function as `getFocusedStackTrace()` to
+  // minimize confusion with `getFocusedLineSpec()`.
   selectDebuggerState,
   getFocusedStackFramesHelper
 );

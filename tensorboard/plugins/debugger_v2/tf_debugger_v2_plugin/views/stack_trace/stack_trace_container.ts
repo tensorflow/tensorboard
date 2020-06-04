@@ -109,7 +109,6 @@ export class StackTraceContainer {
       createSelector(
         getFocusedStackFrames,
         getFocusedSourceLineSpec,
-        getStickToBottommostFrameInFocusedFile,
         (stackFrames, focusedSourceLineSpec): StackFrameForDisplay[] | null => {
           if (stackFrames === null) {
             return null;
