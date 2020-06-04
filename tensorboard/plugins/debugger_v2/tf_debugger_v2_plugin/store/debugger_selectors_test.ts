@@ -26,7 +26,7 @@ import {
   getFocusedGraphOpInputs,
   getFocusedSourceFileContent,
   getFocusedSourceFileIndex,
-  getFocusedSourceLineSpec,
+  getMaybeBottommostStickingFocusedSourceLineSpec,
   getGraphExecutionData,
   getGraphExecutionDataLoadingPages,
   getGraphExecutionDataPageLoadedSizes,
@@ -1350,7 +1350,7 @@ describe('debugger selectors', () => {
     });
   });
 
-  describe('getFocusedSourceLineSpec', () => {
+  describe('getMaybeBottommostStickingFocusedSourceLineSpec', () => {
     const stackFrame0 = createTestStackFrame('main.py', 10);
     const stackFrame1 = createTestStackFrame('main.py', 20);
     const stackFrame2 = createTestStackFrame('train.py', 5);
@@ -1394,7 +1394,9 @@ describe('debugger selectors', () => {
               stickToBottommostFrameInFocusedFile,
             })
           );
-          const focused = getFocusedSourceLineSpec(state);
+          const focused = getMaybeBottommostStickingFocusedSourceLineSpec(
+            state
+          );
           expect(focused).toEqual({
             host_name: 'localhost',
             file_path: 'train.py',
@@ -1453,7 +1455,9 @@ describe('debugger selectors', () => {
               stickToBottommostFrameInFocusedFile,
             })
           );
-          const focused = getFocusedSourceLineSpec(state);
+          const focused = getMaybeBottommostStickingFocusedSourceLineSpec(
+            state
+          );
           expect(focused).toEqual({
             host_name: 'localhost',
             file_path: 'main.py',
@@ -1493,7 +1497,7 @@ describe('debugger selectors', () => {
           stickToBottommostFrameInFocusedFile: true,
         })
       );
-      expect(getFocusedSourceLineSpec(state)).toBeNull();
+      expect(getMaybeBottommostStickingFocusedSourceLineSpec(state)).toBeNull();
     });
 
     it('returns null when no stack frame is focused on', () => {
@@ -1523,7 +1527,7 @@ describe('debugger selectors', () => {
           stickToBottommostFrameInFocusedFile: true,
         })
       );
-      expect(getFocusedSourceLineSpec(state)).toBeNull();
+      expect(getMaybeBottommostStickingFocusedSourceLineSpec(state)).toBeNull();
     });
   });
 });

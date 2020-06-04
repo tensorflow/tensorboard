@@ -19,7 +19,7 @@ import {CodeLocationType, State} from '../../store/debugger_types';
 import {sourceLineFocused} from '../../actions';
 import {
   getCodeLocationOrigin,
-  getFocusedSourceLineSpec,
+  getMaybeBottommostStickingFocusedSourceLineSpec,
   getFocusedStackFrames,
   getStickToBottommostFrameInFocusedFile,
 } from '../../store';
@@ -108,7 +108,7 @@ export class StackTraceContainer {
     select(
       createSelector(
         getFocusedStackFrames,
-        getFocusedSourceLineSpec,
+        getMaybeBottommostStickingFocusedSourceLineSpec,
         (stackFrames, focusedSourceLineSpec): StackFrameForDisplay[] | null => {
           if (stackFrames === null) {
             return null;

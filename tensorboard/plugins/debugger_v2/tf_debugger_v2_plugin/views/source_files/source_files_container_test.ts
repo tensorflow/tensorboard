@@ -34,7 +34,7 @@ import {setUpMonacoFakes, tearDownMonacoFakes} from '../source_code/testing';
 import {StackTraceModule} from '../stack_trace/stack_trace_module';
 import {
   getFocusedSourceFileContent,
-  getFocusedSourceLineSpec,
+  getMaybeBottommostStickingFocusedSourceLineSpec,
 } from '../../store';
 import {TimelineModule} from '../timeline/timeline_module';
 import {SourceFilesContainer} from './source_files_container';
@@ -94,7 +94,7 @@ describe('Source Files Container', () => {
       loadState: DataLoadState.LOADED,
       lines: ['import tensorflow as tf', '', 'print("hello, world")'],
     });
-    store.overrideSelector(getFocusedSourceLineSpec, {
+    store.overrideSelector(getMaybeBottommostStickingFocusedSourceLineSpec, {
       host_name: 'localhost',
       file_path: '/home/user/main.py',
       lineno: 3,
@@ -118,7 +118,7 @@ describe('Source Files Container', () => {
         'model.add(tf.keras.layers.Dense(1))',
       ],
     });
-    store.overrideSelector(getFocusedSourceLineSpec, {
+    store.overrideSelector(getMaybeBottommostStickingFocusedSourceLineSpec, {
       host_name: 'localhost',
       file_path: '/home/user/model.py',
       lineno: 1,

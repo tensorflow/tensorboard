@@ -476,9 +476,16 @@ export interface SourceCodeState {
   // in the order that corresponds to `sourceFileList`.
   fileContents: SourceFileContent[];
 
-  // Index for the source line being focused on. The index is for
-  // the array in `sourceFileList`.
+  // Index for the source line being focused on by the user.
+  // The index is for the array in `sourceFileList`.
   // Use `null` for the case wherein no line is focused on.
+  // NOTE: Depending on other states of the ngrx store, the UI may
+  // choose to show this source-file line or a different line in its
+  // source-coe view. For instance, if may focus on this same file,
+  // but a different line, depending on which execution or graph op
+  // the user is looking at. This level of indirection allows the
+  // UI to "follow" line in a file when the user navigates executions
+  // and graph ops.
   focusLineSpec: SourceLineSpec | null;
 }
 

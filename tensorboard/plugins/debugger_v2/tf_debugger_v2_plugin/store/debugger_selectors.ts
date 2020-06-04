@@ -571,19 +571,30 @@ export const getFocusedSourceFileContent = createSelector(
   }
 );
 
-export const getFocusedSourceLineSpec = createSelector(
+/**
+ * Get the source-code line being focused on.
+ *
+ * If the `stickingToBottommostFrameInFocusedFile` state is `true` and
+ * `focusedLIneSpec` is not null, this selector will return the bottommost
+ * stack frame in the file in `focusedLIneSpec`.
+ * Else, it'll directly return the value of `focusedLIneSpec`.
+ *
+ * This selector allows the UI to "track" lines in a source file of interest
+ * as a user navigates executions or graph ops.
+ */
+export const getMaybeBottommostStickingFocusedSourceLineSpec = createSelector(
   selectDebuggerState,
   (state: DebuggerState): SourceLineSpec | null => {
     const stackFrames = getFocusedStackFramesHelper(state);
-    const focusedLineSpec = state.sourceCode.focusLineSpec;
+    const {focusLineSpec} = state.sourceCode;
     if (
       state.stickToBottommostFrameInFocusedFile &&
       stackFrames !== null &&
-      focusedLineSpec !== null
+      focusLineSpec !== null
     ) {
-      return getBottommostStackFrameInFocusedFile(stackFrames, focusedLineSpec);
+      return getBottommostStackFrameInFocusedFile(stackFrames, focusLineSpec);
     } else {
-      return focusedLineSpec;
+      return focusLineSpec;
     }
   }
 );
