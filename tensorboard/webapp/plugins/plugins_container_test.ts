@@ -91,17 +91,7 @@ describe('plugins_component', () => {
         // data file in the karma server.
         module_path: 'random_esmodule.js',
       } as IframeLoadingMechanism,
-      tab_name: 'Foo',
-      remove_dom: false,
-    },
-    baz: {
-      disable_reload: false,
-      enabled: true,
-      loading_mechanism: {
-        type: LoadingMechanismType.CUSTOM_ELEMENT,
-        element_name: 'tb-baz',
-      } as CustomElementLoadingMechanism,
-      tab_name: 'Baz',
+      tab_name: 'Bar',
       remove_dom: false,
     },
   };
@@ -263,9 +253,6 @@ describe('plugins_component', () => {
   });
 
   describe('updates', () => {
-    let barReloadSpy: jasmine.Spy;
-    let bazReloadSpy: jasmine.Spy;
-
     function setLastLoadedTime(
       timeInMs: number | null,
       state = DataLoadState.LOADED
@@ -278,67 +265,48 @@ describe('plugins_component', () => {
       store.refreshState();
     }
 
-    beforeEach(() => {
-      barReloadSpy = jasmine.createSpy();
-      bazReloadSpy = jasmine.createSpy();
-      const bar = document.createElement('div');
-      (bar as any).reload = barReloadSpy;
-      const baz = document.createElement('div');
-      (baz as any).reload = bazReloadSpy;
-      spyOn(document, 'createElement')
-        .and.callThrough()
-        .withArgs('tb-baz')
-        .and.returnValue(baz)
-        .withArgs('tb-bar')
-        .and.returnValue(bar);
-    });
-
-    it('does not reload on render', () => {
-      setActivePlugin('bar');
-      setLastLoadedTime(0, DataLoadState.NOT_LOADED);
-      const fixture = TestBed.createComponent(PluginsContainer);
-      fixture.detectChanges();
-
-      expect(barReloadSpy).not.toHaveBeenCalled();
-      expect(bazReloadSpy).not.toHaveBeenCalled();
-    });
-
     it('invokes reload method on the dashboard DOM', () => {
       const fixture = TestBed.createComponent(PluginsContainer);
 
       setLastLoadedTime(null, DataLoadState.NOT_LOADED);
       setActivePlugin('bar');
       fixture.detectChanges();
-      setActivePlugin('baz');
+      setActivePlugin('foo');
       fixture.detectChanges();
       setActivePlugin('bar');
       fixture.detectChanges();
 
-      expect(barReloadSpy).toHaveBeenCalledTimes(0);
-      expect(bazReloadSpy).not.toHaveBeenCalled();
+      const {nativeElement} = fixture.debugElement.query(By.css('.plugins'));
+      // Stamped 'bar' and 'foo'
+      expect(nativeElement.children.length).toBe(2);
+      const [barElement, fooElement] = nativeElement.children;
+      const barReloadSpy = jasmine.createSpy();
+      barElement.reload = barReloadSpy;
+      const fooReloadSpy = jasmine.createSpy();
+      fooElement.reload = fooReloadSpy;
 
       setLastLoadedTime(1);
       fixture.detectChanges();
       expect(barReloadSpy).toHaveBeenCalledTimes(1);
-      expect(bazReloadSpy).not.toHaveBeenCalled();
+      expect(fooReloadSpy).not.toHaveBeenCalled();
 
       setLastLoadedTime(1);
       fixture.detectChanges();
       expect(barReloadSpy).toHaveBeenCalledTimes(1);
-      expect(bazReloadSpy).not.toHaveBeenCalled();
+      expect(fooReloadSpy).not.toHaveBeenCalled();
 
       setLastLoadedTime(2);
       fixture.detectChanges();
       expect(barReloadSpy).toHaveBeenCalledTimes(2);
-      expect(bazReloadSpy).not.toHaveBeenCalled();
+      expect(fooReloadSpy).not.toHaveBeenCalled();
 
-      setActivePlugin('baz');
+      setActivePlugin('foo');
       fixture.detectChanges();
 
       setLastLoadedTime(3);
       fixture.detectChanges();
       expect(barReloadSpy).toHaveBeenCalledTimes(2);
-      expect(bazReloadSpy).toHaveBeenCalledTimes(1);
+      expect(fooReloadSpy).toHaveBeenCalledTimes(1);
     });
 
     it('does not invoke reload method on dom if disable_reload', () => {
@@ -360,8 +328,10 @@ describe('plugins_component', () => {
       setActivePlugin('bar');
       fixture.detectChanges();
 
-      setLastLoadedTime(0);
-      fixture.detectChanges();
+      const {nativeElement} = fixture.debugElement.query(By.css('.plugins'));
+      const [barElement] = nativeElement.children;
+      const barReloadSpy = jasmine.createSpy();
+      barElement.reload = barReloadSpy;
 
       setLastLoadedTime(1);
       fixture.detectChanges();

@@ -51,7 +51,6 @@ const lastLoadedTimeInMs = createSelector(
       [activePlugin]="activePlugin$ | async"
       [noEnabledPlugin]="noEnabledPlugin$ | async"
       [lastUpdated]="lastLoadedTimeInMs$ | async"
-      [reloadId]="reloadId$ | async"
     ></plugins-component>
   `,
   styles: ['plugins-component { height: 100%; }'],
@@ -72,9 +71,6 @@ export class PluginsContainer {
     })
   );
   readonly lastLoadedTimeInMs$ = this.store.pipe(select(lastLoadedTimeInMs));
-
-  // An id that changes when data has to be refreshed.
-  readonly reloadId$ = this.store.select(lastLoadedTimeInMs);
 
   constructor(private readonly store: Store<State>) {}
 }
