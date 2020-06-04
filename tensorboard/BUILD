@@ -390,11 +390,6 @@ py_library(name = "expect_pkg_resources_installed")
 # `pip install requests`.
 py_library(name = "expect_requests_installed")
 
-# This is a dummy rule used as a tqdm dependency in open-source.
-# We expect tqdm to already be installed on the system, e.g. via
-# `pip install tqdm`.
-py_library(name = "expect_tqdm_installed")
-
 # This is a dummy rule used as a pandas dependency in open-source.
 # We expect pandas to already be installed on the system, e.g. via
 # `pip install pandas`.

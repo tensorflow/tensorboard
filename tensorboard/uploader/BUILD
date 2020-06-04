@@ -113,9 +113,7 @@ py_library(
 py_library(
     name = "upload_tracker",
     srcs = ["upload_tracker.py"],
-    deps = [
-        "//tensorboard:expect_tqdm_installed",
-    ],
+    deps = [],
 )
 
 py_test(

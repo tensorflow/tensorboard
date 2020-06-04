@@ -21,8 +21,7 @@ from __future__ import print_function
 import contextlib
 from datetime import datetime
 import sys
-
-import tqdm
+import time
 
 
 def readable_time_string():
@@ -44,6 +43,8 @@ class UploadStats(object):
     """Statistics of uploading."""
 
     def __init__(self):
+        self._last_summarized_timestamp = time.time()
+        self._last_data_added_timestamp = 0
         self._num_scalars = 0
         self._num_tensors = 0
         self._num_tensors_skipped = 0
@@ -61,6 +62,7 @@ class UploadStats(object):
         Args:
           num_scalars: Number of scalars uploaded in this batch.
         """
+        self._refresh_last_data_added_timestamp()
         self._num_scalars += num_scalars
 
     def add_tensors(
@@ -84,6 +86,7 @@ class UploadStats(object):
         """
         assert num_tensors_skipped <= num_tensors
         assert tensor_bytes_skipped <= tensor_bytes
+        self._refresh_last_data_added_timestamp()
         self._num_tensors += num_tensors
         self._num_tensors_skipped += num_tensors_skipped
         self._tensor_bytes += tensor_bytes
@@ -97,6 +100,7 @@ class UploadStats(object):
           is_skipped: Whether the uploading of the blob is skipped due to
             reasons such as size exceeding limit.
         """
+        self._refresh_last_data_added_timestamp()
         self._num_blobs += 1
         self._blob_bytes += blob_bytes
         if is_skipped:
@@ -109,6 +113,7 @@ class UploadStats(object):
         Args:
           plugin_name: Name of the plugin.
         """
+        self._refresh_last_data_added_timestamp()
         self._plugin_names.add(plugin_name)
 
     @property
@@ -151,9 +156,19 @@ class UploadStats(object):
     def plugin_names(self):
         return self._plugin_names
 
-    @property
-    def uploaded_summary(self):
-        """Get a summary string for actually-uploaded data."""
+    def summarize(self):
+        """Get a summary string for actually-uploaded and skipped data.
+
+        Calling this property also marks the "last_summarized" timestamp, so that
+        the has_new_data_since_last_summarize() will be able to report the correct value
+        later.
+
+        Returns:
+          A tuple with two strings:
+          - A string summarizing all data uploaded so far.
+          - If any data was skipped, a string for all skipped data. Else, `None`.
+        """
+        self._last_summarized_timestamp = time.time()
         string_pieces = []
         string_pieces.append("%d scalars" % self._num_scalars)
         uploaded_tensor_count = self._num_tensors - self._num_tensors_skipped
@@ -182,15 +197,19 @@ class UploadStats(object):
                 )
             )
         )
-        return ", ".join(string_pieces)
+        skipped_string = (
+            self._skipped_summary() if self._skipped_any() else None
+        )
+        return ", ".join(string_pieces), skipped_string
 
-    @property
-    def skipped_any(self):
+    def _skipped_any(self):  # TODO(cais): Removal?
         """Whether any data was skipped."""
         return self._num_tensors_skipped or self._num_blobs_skipped
 
-    @property
-    def skipped_summary(self):
+    def has_new_data_since_last_summarize(self):
+        return self._last_data_added_timestamp > self._last_summarized_timestamp
+
+    def _skipped_summary(self):
         """Get a summary string for skipped data."""
         string_pieces = []
         if self._num_tensors_skipped:
@@ -211,12 +230,16 @@ class UploadStats(object):
             )
         return ", ".join(string_pieces)
 
+    def _refresh_last_data_added_timestamp(self):
+        self._last_data_added_timestamp = time.time()
+
 
 _STYLE_RESET = "\033[0m"
 _STYLE_BOLD = "\033[1m"
 _STYLE_GREEN = "\033[32m"
 _STYLE_YELLOW = "\033[33m"
 _STYLE_DARKGRAY = "\033[90m"
+_STYLE_ERASE_LINE = "\033[2K"
 
 
 class UploadTracker(object):
@@ -231,19 +254,7 @@ class UploadTracker(object):
                 % (verbosity, self._SUPPORTED_VERBISITY_VALUES)
             )
         self._verbosity = verbosity
-
         self._stats = UploadStats()
-        self._dot_counter = 0
-        if self._verbosity:
-            self._cumulative_uploaded_bar = tqdm.tqdm(
-                self._dummy_generator(), bar_format="{desc}", position=1
-            )
-            self._cumulative_skipped_bar = tqdm.tqdm(
-                self._dummy_generator(), bar_format="{desc}", position=2
-            )
-            self._uploading_bar = tqdm.tqdm(
-                self._dummy_generator(), bar_format="{desc}", position=3
-            )
 
     def _dummy_generator(self):
         while True:
@@ -253,32 +264,32 @@ class UploadTracker(object):
     def _update_uploading_status(self, message, color_code=_STYLE_GREEN):
         if not self._verbosity:
             return
+
         message += "." * 3
-        self._uploading_bar.set_description_str(
-            color_code + message + _STYLE_RESET
+        sys.stdout.write(
+            "\r" + _STYLE_ERASE_LINE + color_code + message + _STYLE_RESET
         )
-        self._uploading_bar.update()
+        sys.stdout.flush()
 
     def _update_cumulative_status(self):
         if not self._verbosity:
             return
-        uploaded_message = "%s[%s]%s Uploaded %s" % (
+        if not self._stats.has_new_data_since_last_summarize():
+            return
+        uploaded_str, skipped_str = self._stats.summarize()
+        uploaded_message = "\n%s[%s]%s Uploaded %s\n" % (
             _STYLE_BOLD,
             readable_time_string(),
             _STYLE_RESET,
-            self._stats.uploaded_summary,
+            uploaded_str,
         )
-        self._cumulative_uploaded_bar.set_description_str(uploaded_message)
-        self._cumulative_uploaded_bar.update()
-        if self._stats.skipped_any:
-            skipped_message = "%s%s Skipped %s%s" % (
-                _STYLE_DARKGRAY,
-                " " * 21,
-                self._stats.skipped_summary,
-                _STYLE_RESET,
+        sys.stdout.write(uploaded_message)
+        if skipped_str:
+            sys.stdout.write(
+                "%sSkipped: %s\n%s"
+                % (_STYLE_DARKGRAY, skipped_str, _STYLE_RESET)
             )
-            self._cumulative_skipped_bar.set_description_str(skipped_message)
-            self._cumulative_skipped_bar.update()
+        sys.stdout.flush()
         # TODO(cais): Add summary of what plugins have been involved, once it's
         # clear how to get canonical plugin names.
 
@@ -288,10 +299,12 @@ class UploadTracker(object):
     @contextlib.contextmanager
     def send_tracker(self):
         """Create a context manager for a round of data sending."""
-        self._update_uploading_status("Data upload starting")
         try:
+            # self._reset_bars()
+            self._update_uploading_status("Data upload starting")
             yield
         finally:
+            self._update_cumulative_status()
             self._update_uploading_status(
                 "Listening for new data in logdir", color_code=_STYLE_YELLOW
             )
@@ -308,7 +321,6 @@ class UploadTracker(object):
             yield
         finally:
             self._stats.add_scalars(num_scalars)
-            self._update_cumulative_status()
 
     @contextlib.contextmanager
     def tensors_tracker(
@@ -350,7 +362,6 @@ class UploadTracker(object):
                 tensor_bytes,
                 tensor_bytes_skipped,
             )
-            self._update_cumulative_status()
 
     @contextlib.contextmanager
     def blob_tracker(self, blob_bytes):
@@ -365,7 +376,7 @@ class UploadTracker(object):
         try:
             yield _BlobTracker(self._stats, blob_bytes)
         finally:
-            self._update_cumulative_status()
+            pass
 
 
 class _BlobTracker(object):

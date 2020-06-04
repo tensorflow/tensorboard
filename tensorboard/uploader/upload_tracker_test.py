@@ -18,9 +18,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from unittest import mock
+import sys
 
-import tqdm
+from unittest import mock
 
 from tensorboard import test as tb_test
 from tensorboard.uploader import upload_tracker
@@ -113,6 +113,10 @@ class UploadStatsTest(tb_test.TestCase):
         stats.add_plugin("histograms")
         self.assertEqual(stats.plugin_names, set(["histograms", "scalars"]))
 
+    def testHasNewDataSinceLastSummarizeReturnsFalseInitially(self):
+        stats = upload_tracker.UploadStats()
+        self.assertEqual(stats.has_new_data_since_last_summarize(), False)
+
     def testUploadedSummaryWithTensorsAndBlobs(self):
         stats = upload_tracker.UploadStats()
         stats.add_scalars(1234)
@@ -124,292 +128,228 @@ class UploadStatsTest(tb_test.TestCase):
         )
         stats.add_blob(blob_bytes=1000, is_skipped=False)
         stats.add_blob(blob_bytes=2000, is_skipped=True)
+        self.assertEqual(stats.has_new_data_since_last_summarize(), True)
+        uploaded_summary, skipped_summary = stats.summarize()
         self.assertEqual(
-            stats.uploaded_summary,
+            uploaded_summary,
             "1234 scalars, 40 tensors (200 B), 1 binary objects (1000 B)",
         )
-
-    def testUploadedSummaryWithoutTensorsOrBLobs(self):
-        stats = upload_tracker.UploadStats()
-        stats.add_scalars(1234)
         self.assertEqual(
-            stats.uploaded_summary, "1234 scalars, 0 tensors, 0 binary objects",
+            skipped_summary, "10 tensors (1.8 kB), 1 binary objects (2.0 kB)",
         )
+        self.assertEqual(stats.has_new_data_since_last_summarize(), False)
 
-    def testSkippedAnyReturnsFalse(self):
+    def testSummarizeeWithoutTensorsOrBlobs(self):
         stats = upload_tracker.UploadStats()
         stats.add_scalars(1234)
-        stats.add_tensors(
-            num_tensors=50,
-            num_tensors_skipped=0,
-            tensor_bytes=2000,
-            tensor_bytes_skipped=0,
-        )
-        stats.add_blob(blob_bytes=1000, is_skipped=False)
-        self.assertFalse(stats.skipped_any)
-
-    def testSkippedAnyReturnsTrue(self):
-        stats = upload_tracker.UploadStats()
-        stats.add_scalars(1234)
-        stats.add_tensors(
-            num_tensors=50,
-            num_tensors_skipped=10,
-            tensor_bytes=2000,
-            tensor_bytes_skipped=1800,
-        )
-        stats.add_blob(blob_bytes=1000, is_skipped=False)
-        stats.add_blob(blob_bytes=2000, is_skipped=True)
-        self.assertTrue(stats.skipped_any)
-
-    def testSkippedSummary(self):
-        stats = upload_tracker.UploadStats()
-        stats.add_scalars(1234)
-        stats.add_tensors(
-            num_tensors=50,
-            num_tensors_skipped=10,
-            tensor_bytes=2000,
-            tensor_bytes_skipped=1800,
-        )
-        stats.add_blob(blob_bytes=1000, is_skipped=False)
-        stats.add_blob(blob_bytes=2000, is_skipped=True)
+        self.assertEqual(stats.has_new_data_since_last_summarize(), True)
+        (uploaded_summary, skipped_summary) = stats.summarize()
         self.assertEqual(
-            stats.skipped_summary,
-            "10 tensors (1.8 kB), 1 binary objects (2.0 kB)",
+            uploaded_summary, "1234 scalars, 0 tensors, 0 binary objects",
         )
+        self.assertIsNone(skipped_summary)
+        self.assertEqual(stats.has_new_data_since_last_summarize(), False)
+
+    def testHasNewDataSinceLastSummarizeReturnsTrueAfterNewScalars(self):
+        stats = upload_tracker.UploadStats()
+        self.assertEqual(stats.has_new_data_since_last_summarize(), False)
+        stats.add_scalars(1234)
+        self.assertEqual(stats.has_new_data_since_last_summarize(), True)
+        stats.summarize()
+        self.assertEqual(stats.has_new_data_since_last_summarize(), False)
+        stats.add_scalars(4321)
+        self.assertEqual(stats.has_new_data_since_last_summarize(), True)
+
+    def testHasNewDataSinceLastSummarizeReturnsTrueAfterNewTensors(self):
+        stats = upload_tracker.UploadStats()
+        self.assertEqual(stats.has_new_data_since_last_summarize(), False)
+        stats.add_scalars(1234)
+        self.assertEqual(stats.has_new_data_since_last_summarize(), True)
+        stats.summarize()
+        self.assertEqual(stats.has_new_data_since_last_summarize(), False)
+        stats.add_tensors(
+            num_tensors=10,
+            num_tensors_skipped=10,
+            tensor_bytes=1000,
+            tensor_bytes_skipped=1000,
+        )
+        self.assertEqual(stats.has_new_data_since_last_summarize(), True)
+
+    def testHasNewDataSinceLastSummarizeReturnsTrueAfterNewTensors(self):
+        stats = upload_tracker.UploadStats()
+        self.assertEqual(stats.has_new_data_since_last_summarize(), False)
+        stats.add_scalars(1234)
+        self.assertEqual(stats.has_new_data_since_last_summarize(), True)
+        stats.summarize()
+        self.assertEqual(stats.has_new_data_since_last_summarize(), False)
+        stats.add_blob(blob_bytes=2000, is_skipped=True)
+        self.assertEqual(stats.has_new_data_since_last_summarize(), True)
 
 
 class UploadTrackerTest(tb_test.TestCase):
     """Test for the UploadTracker class."""
 
     def setUp(self):
+        super(UploadTrackerTest, self).setUp()
         self.cumulative_bar = mock.MagicMock()
         self.skipped_bar = mock.MagicMock()
         self.uploading_bar = mock.MagicMock()
-        self.fake_tqdm = mock.MagicMock(
-            side_effect=[
-                self.cumulative_bar,
-                self.skipped_bar,
-                self.uploading_bar,
-            ]
+        self.mock_write = mock.MagicMock()
+        self.mock_stdout_write = mock.patch.object(
+            sys.stdout, "write", self.mock_write
         )
+        self.mock_stdout_write.start()
+        self.mock_flush = mock.MagicMock()
+        self.mock_stdout_flush = mock.patch.object(
+            sys.stdout, "flush", self.mock_flush
+        )
+        self.mock_stdout_flush.start()
+
+    def tearDown(self):
+        self.mock_stdout_write.stop()
+        self.mock_stdout_flush.stop()
+        super(UploadTrackerTest, self).tearDown()
 
     def testSendTracker(self):
-        with mock.patch.object(tqdm, "tqdm", self.fake_tqdm):
-            tracker = upload_tracker.UploadTracker(verbosity=1)
-            with tracker.send_tracker():
-                self.assertEqual(
-                    self.uploading_bar.set_description_str.call_count, 1
-                )
-                self.assertIn(
-                    "Data upload starting...",
-                    self.uploading_bar.set_description_str.call_args[0][0],
-                )
-                self.assertEqual(self.uploading_bar.update.call_count, 1)
-            self.assertEqual(
-                self.uploading_bar.set_description_str.call_count, 2
-            )
+        tracker = upload_tracker.UploadTracker(verbosity=1)
+        with tracker.send_tracker():
+            self.assertEqual(self.mock_write.call_count, 1)
+            self.assertEqual(self.mock_flush.call_count, 1)
             self.assertIn(
-                "Listening for new data in logdir...",
-                self.uploading_bar.set_description_str.call_args[0][0],
+                "Data upload starting...", self.mock_write.call_args[0][0],
             )
-            self.assertEqual(self.uploading_bar.update.call_count, 2)
-            self.assertEqual(
-                self.cumulative_bar.set_description_str.call_count, 0
-            )
-            self.assertEqual(
-                self.cumulative_bar.set_description_str.call_count, 0
-            )
-            self.assertEqual(self.skipped_bar.set_description_str.call_count, 0)
+        self.assertEqual(self.mock_write.call_count, 2)
+        self.assertEqual(self.mock_flush.call_count, 2)
+        self.assertIn(
+            "Listening for new data in logdir...",
+            self.mock_write.call_args[0][0],
+        )
 
     def testSendTrackerWithVerbosity0(self):
-        with mock.patch.object(tqdm, "tqdm", self.fake_tqdm):
-            tracker = upload_tracker.UploadTracker(verbosity=0)
-            with tracker.send_tracker():
-                self.assertEqual(self.fake_tqdm.call_count, 0)
-            self.assertEqual(self.fake_tqdm.call_count, 0)
+        tracker = upload_tracker.UploadTracker(verbosity=0)
+        with tracker.send_tracker():
+            self.assertEqual(self.mock_write.call_count, 0)
+            self.assertEqual(self.mock_flush.call_count, 0)
+        self.assertEqual(self.mock_write.call_count, 0)
+        self.assertEqual(self.mock_flush.call_count, 0)
 
     def testScalarsTracker(self):
-        with mock.patch.object(tqdm, "tqdm", self.fake_tqdm):
-            tracker = upload_tracker.UploadTracker(verbosity=1)
-            with tracker.scalars_tracker(123):
-                self.assertEqual(
-                    self.uploading_bar.set_description_str.call_count, 1
-                )
-                self.assertIn(
-                    "Uploading 123 scalars...",
-                    self.uploading_bar.set_description_str.call_args[0][0],
-                )
-                self.assertEqual(self.uploading_bar.update.call_count, 1)
-                self.assertEqual(
-                    self.cumulative_bar.set_description_str.call_count, 0
-                )
-            self.assertEqual(
-                self.cumulative_bar.set_description_str.call_count, 1
-            )
+        tracker = upload_tracker.UploadTracker(verbosity=1)
+        with tracker.scalars_tracker(123):
+            self.assertEqual(self.mock_write.call_count, 1)
+            self.assertEqual(self.mock_flush.call_count, 1)
             self.assertIn(
-                "Uploaded 123 scalars, 0 tensors, 0 binary objects",
-                self.cumulative_bar.set_description_str.call_args[0][0],
+                "Uploading 123 scalars...", self.mock_write.call_args[0][0],
             )
-            self.assertEqual(self.cumulative_bar.update.call_count, 1)
-            self.assertEqual(self.skipped_bar.set_description_str.call_count, 0)
+        self.assertEqual(self.mock_write.call_count, 1)
+        self.assertEqual(self.mock_flush.call_count, 1)
 
     def testScalarsTrackerWithVerbosity0(self):
-        with mock.patch.object(tqdm, "tqdm", self.fake_tqdm):
-            tracker = upload_tracker.UploadTracker(verbosity=0)
-            with tracker.scalars_tracker(123):
-                self.assertEqual(self.fake_tqdm.call_count, 0)
-            self.assertEqual(self.fake_tqdm.call_count, 0)
+        tracker = upload_tracker.UploadTracker(verbosity=0)
+        with tracker.scalars_tracker(123):
+            self.assertEqual(self.mock_write.call_count, 0)
+            self.assertEqual(self.mock_flush.call_count, 0)
+        self.assertEqual(self.mock_write.call_count, 0)
+        self.assertEqual(self.mock_flush.call_count, 0)
 
     def testTensorsTrackerWithSkippedTensors(self):
-        with mock.patch.object(tqdm, "tqdm", self.fake_tqdm):
-            tracker = upload_tracker.UploadTracker(verbosity=1)
-            with tracker.tensors_tracker(
-                num_tensors=200,
-                num_tensors_skipped=50,
-                tensor_bytes=6000,
-                tensor_bytes_skipped=4000,
-            ):
-                self.assertEqual(
-                    self.uploading_bar.set_description_str.call_count, 1
-                )
-                self.assertIn(
-                    "Uploading 150 tensors (2.0 kB) (Skipping 50 tensors, 3.9 kB)",
-                    self.uploading_bar.set_description_str.call_args[0][0],
-                )
-                self.assertEqual(self.uploading_bar.update.call_count, 1)
-                self.assertEqual(
-                    self.cumulative_bar.set_description_str.call_count, 0
-                )
-            self.assertEqual(
-                self.cumulative_bar.set_description_str.call_count, 1
-            )
+        tracker = upload_tracker.UploadTracker(verbosity=1)
+        with tracker.tensors_tracker(
+            num_tensors=200,
+            num_tensors_skipped=50,
+            tensor_bytes=6000,
+            tensor_bytes_skipped=4000,
+        ):
+            self.assertEqual(self.mock_write.call_count, 1)
+            self.assertEqual(self.mock_flush.call_count, 1)
             self.assertIn(
-                "Uploaded 0 scalars, 150 tensors (2.0 kB), 0 binary objects",
-                self.cumulative_bar.set_description_str.call_args[0][0],
-            )
-            self.assertEqual(self.cumulative_bar.update.call_count, 1)
-            self.assertEqual(self.skipped_bar.set_description_str.call_count, 1)
-            self.assertIn(
-                "Skipped 50 tensors (3.9 kB)",
-                self.skipped_bar.set_description_str.call_args[0][0],
+                "Uploading 150 tensors (2.0 kB) (Skipping 50 tensors, 3.9 kB)",
+                self.mock_write.call_args[0][0],
             )
 
     def testTensorsTrackerWithVerbosity0(self):
-        with mock.patch.object(tqdm, "tqdm", self.fake_tqdm):
-            tracker = upload_tracker.UploadTracker(verbosity=0)
-            with tracker.tensors_tracker(
-                num_tensors=200,
-                num_tensors_skipped=50,
-                tensor_bytes=6000,
-                tensor_bytes_skipped=4000,
-            ):
-                self.assertEqual(self.fake_tqdm.call_count, 0)
-            self.assertEqual(self.fake_tqdm.call_count, 0)
+        tracker = upload_tracker.UploadTracker(verbosity=0)
+        with tracker.tensors_tracker(
+            num_tensors=200,
+            num_tensors_skipped=50,
+            tensor_bytes=6000,
+            tensor_bytes_skipped=4000,
+        ):
+            self.assertEqual(self.mock_write.call_count, 0)
+            self.assertEqual(self.mock_flush.call_count, 0)
+        self.assertEqual(self.mock_write.call_count, 0)
+        self.assertEqual(self.mock_flush.call_count, 0)
 
     def testTensorsTrackerWithoutSkippedTensors(self):
-        with mock.patch.object(tqdm, "tqdm", self.fake_tqdm):
-            tracker = upload_tracker.UploadTracker(verbosity=1)
-            with tracker.tensors_tracker(
-                num_tensors=200,
-                num_tensors_skipped=0,
-                tensor_bytes=6000,
-                tensor_bytes_skipped=0,
-            ):
-                self.assertEqual(
-                    self.uploading_bar.set_description_str.call_count, 1
-                )
-                self.assertIn(
-                    "Uploading 200 tensors (5.9 kB)",
-                    self.uploading_bar.set_description_str.call_args[0][0],
-                )
-                self.assertEqual(self.uploading_bar.update.call_count, 1)
-                self.assertEqual(
-                    self.cumulative_bar.set_description_str.call_count, 0
-                )
-            self.assertEqual(
-                self.cumulative_bar.set_description_str.call_count, 1
-            )
+        tracker = upload_tracker.UploadTracker(verbosity=1)
+        with tracker.tensors_tracker(
+            num_tensors=200,
+            num_tensors_skipped=0,
+            tensor_bytes=6000,
+            tensor_bytes_skipped=0,
+        ):
+            self.assertEqual(self.mock_write.call_count, 1)
+            self.assertEqual(self.mock_flush.call_count, 1)
             self.assertIn(
-                "Uploaded 0 scalars, 200 tensors (5.9 kB), 0 binary objects",
-                self.cumulative_bar.set_description_str.call_args[0][0],
+                "Uploading 200 tensors (5.9 kB)",
+                self.mock_write.call_args[0][0],
             )
-            self.assertEqual(self.cumulative_bar.update.call_count, 1)
-            self.assertEqual(self.skipped_bar.set_description_str.call_count, 0)
 
     def testBlobTrackerUploaded(self):
-        with mock.patch.object(tqdm, "tqdm", self.fake_tqdm):
-            tracker = upload_tracker.UploadTracker(verbosity=1)
-            with tracker.blob_tracker(blob_bytes=2048) as blob_tracker:
-                self.assertEqual(
-                    self.uploading_bar.set_description_str.call_count, 1
-                )
-                self.assertIn(
-                    "Uploading binary object (2.0 kB)",
-                    self.uploading_bar.set_description_str.call_args[0][0],
-                )
-                self.assertEqual(self.uploading_bar.update.call_count, 1)
-                self.assertEqual(
-                    self.cumulative_bar.set_description_str.call_count, 0
-                )
-                blob_tracker.mark_uploaded(is_uploaded=True)
-            self.assertEqual(
-                self.cumulative_bar.set_description_str.call_count, 1
-            )
+        tracker = upload_tracker.UploadTracker(verbosity=1)
+        with tracker.blob_tracker(blob_bytes=2048) as blob_tracker:
+            self.assertEqual(self.mock_write.call_count, 1)
+            self.assertEqual(self.mock_flush.call_count, 1)
             self.assertIn(
-                "Uploaded 0 scalars, 0 tensors, 1 binary objects (2.0 kB)",
-                self.cumulative_bar.set_description_str.call_args[0][0],
+                "Uploading binary object (2.0 kB)",
+                self.mock_write.call_args[0][0],
             )
-            self.assertEqual(self.cumulative_bar.update.call_count, 1)
-            self.assertEqual(self.skipped_bar.set_description_str.call_count, 0)
 
     def testBlobTrackerWithVerbosity0(self):
-        with mock.patch.object(tqdm, "tqdm", self.fake_tqdm):
-            tracker = upload_tracker.UploadTracker(verbosity=0)
-            with tracker.blob_tracker(blob_bytes=2048):
-                self.assertEqual(self.fake_tqdm.call_count, 0)
-            self.assertEqual(self.fake_tqdm.call_count, 0)
+        tracker = upload_tracker.UploadTracker(verbosity=0)
+        with tracker.blob_tracker(blob_bytes=2048):
+            self.assertEqual(self.mock_write.call_count, 0)
+            self.assertEqual(self.mock_flush.call_count, 0)
+        self.assertEqual(self.mock_write.call_count, 0)
+        self.assertEqual(self.mock_flush.call_count, 0)
 
     def testBlobTrackerNotUploaded(self):
-        with mock.patch.object(tqdm, "tqdm", self.fake_tqdm):
-            tracker = upload_tracker.UploadTracker(verbosity=1)
+        tracker = upload_tracker.UploadTracker(verbosity=1)
+        with tracker.send_tracker():
+            self.assertEqual(self.mock_write.call_count, 1)
+            self.assertEqual(self.mock_flush.call_count, 1)
             with tracker.blob_tracker(
                 blob_bytes=2048 * 1024 * 1024
             ) as blob_tracker:
-                self.assertEqual(
-                    self.uploading_bar.set_description_str.call_count, 1
-                )
+                self.assertEqual(self.mock_write.call_count, 2)
+                self.assertEqual(self.mock_flush.call_count, 2)
                 self.assertIn(
                     "Uploading binary object (2048.0 MB)",
-                    self.uploading_bar.set_description_str.call_args[0][0],
-                )
-                self.assertEqual(self.uploading_bar.update.call_count, 1)
-                self.assertEqual(
-                    self.cumulative_bar.set_description_str.call_count, 0
+                    self.mock_write.call_args[0][0],
                 )
                 blob_tracker.mark_uploaded(is_uploaded=False)
-            self.assertEqual(
-                self.cumulative_bar.set_description_str.call_count, 1
-            )
-            self.assertIn(
-                "Uploaded 0 scalars, 0 tensors, 0 binary objects",
-                self.cumulative_bar.set_description_str.call_args[0][0],
-            )
-            self.assertEqual(self.cumulative_bar.update.call_count, 1)
-            self.assertEqual(self.skipped_bar.set_description_str.call_count, 1)
-            self.assertIn(
-                "Skipped 1 binary objects (2048.0 MB)",
-                self.skipped_bar.set_description_str.call_args[0][0],
-            )
+        self.assertEqual(self.mock_write.call_count, 5)
+        self.assertEqual(self.mock_flush.call_count, 4)
+        self.assertIn(
+            "Uploaded 0 scalars, 0 tensors, 0 binary objects\n",
+            self.mock_write.call_args_list[2][0][0],
+        )
+        self.assertIn(
+            "Skipped: 1 binary objects (2048.0 MB)\n",
+            self.mock_write.call_args_list[3][0][0],
+        )
 
     def testInvalidVerbosityRaisesError(self):
+        with self.assertRaises(ValueError):
+            upload_tracker.UploadTracker(verbosity="1")
         with self.assertRaises(ValueError):
             upload_tracker.UploadTracker(verbosity=-1)
         with self.assertRaises(ValueError):
             upload_tracker.UploadTracker(verbosity=0.5)
         with self.assertRaises(ValueError):
-            upload_tracker.UploadTracker(verbosity=None)
-        with self.assertRaises(ValueError):
             upload_tracker.UploadTracker(verbosity=100)
+        with self.assertRaises(ValueError):
+            upload_tracker.UploadTracker(verbosity=None)
 
 
 if __name__ == "__main__":
