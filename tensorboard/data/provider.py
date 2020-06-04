@@ -81,10 +81,11 @@ class DataProvider(object):
     sample, so that clients have a view of metrics that is maximally up
     to date. Implementations may choose to force the first (oldest)
     datum to be included in each sample as well, but this is not
-    required. The remainder of the points in the sample should be
-    selected uniformly at random from available points. Downsampling
-    should be deterministic within a time series. It is also useful for
-    the downsampling behavior to depend only on the set of step values
+    required; clients should not make assumptions either way. The
+    remainder of the points in the sample should be selected uniformly
+    at random from available points. Downsampling should be
+    deterministic within a time series. It is also useful for the
+    downsampling behavior to depend only on the set of step values
     within a time series, such that two "parallel" time series with data
     at exactly the same steps also retain the same steps after
     downsampling.
