@@ -49,7 +49,10 @@ limitations under the License.
     </p>
 
     <p>
-      <i>Last reload: {{lastUpdated | date: 'medium'}}</i>
+      <!-- Class name used to hide this element in screenshot tests. -->
+      <span class="last-reload-time"
+        >Last reload: {{lastUpdated | date: 'medium'}}</span
+      >
     </p>
   </div>
 </div>
