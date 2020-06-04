@@ -20,6 +20,9 @@ import {
   AlertsByIndex,
   Alerts,
   AlertType,
+  CodeLocationExecutionOrigin,
+  CodeLocationGraphOpCreationOrigin,
+  CodeLocationType,
   DataLoadState,
   DEBUGGER_FEATURE_KEY,
   DebuggerRunListing,
@@ -305,7 +308,7 @@ export const getFocusedGraphOpInfo = createSelector(
     if (focusedOp === null || ops[focusedOp.graphId] === undefined) {
       return null;
     } else {
-      return ops[focusedOp.graphId][focusedOp.opName] || null;
+      return ops[focusedOp.graphId].get(focusedOp.opName) || null;
     }
   }
 );
@@ -317,18 +320,18 @@ export const getFocusedGraphOpInputs = createSelector(
     if (
       focusedOp === null ||
       ops[focusedOp.graphId] === undefined ||
-      ops[focusedOp.graphId][focusedOp.opName] === undefined
+      !ops[focusedOp.graphId].has(focusedOp.opName)
     ) {
       return null;
     } else {
       const graph = ops[focusedOp.graphId];
-      const {inputs} = graph[focusedOp.opName];
+      const {inputs} = graph.get(focusedOp.opName)!;
       return inputs.map((inputSpec) => {
         const spec: GraphOpInputSpec = {
           ...inputSpec,
         };
-        if (graph[inputSpec.op_name]) {
-          spec.data = graph[inputSpec.op_name];
+        if (graph.has(inputSpec.op_name)) {
+          spec.data = graph.get(inputSpec.op_name);
         }
         return spec;
       });
@@ -343,17 +346,17 @@ export const getFocusedGraphOpConsumers = createSelector(
     if (
       focusedOp === null ||
       ops[focusedOp.graphId] === undefined ||
-      ops[focusedOp.graphId][focusedOp.opName] === undefined
+      !ops[focusedOp.graphId].has(focusedOp.opName)
     ) {
       return null;
     } else {
       const graph = ops[focusedOp.graphId];
-      const {consumers} = graph[focusedOp.opName];
+      const {consumers} = graph.get(focusedOp.opName)!;
       return consumers.map((slotConsumers) => {
         return slotConsumers.map((consumerSpec) => {
           const spec: GraphOpConsumerSpec = {...consumerSpec};
-          if (graph[consumerSpec.op_name]) {
-            spec.data = graph[consumerSpec.op_name];
+          if (graph.has(consumerSpec.op_name)) {
+            spec.data = graph.get(consumerSpec.op_name);
           }
           return spec;
         });
@@ -439,9 +442,7 @@ export const getLoadedExecutionData = createSelector(
 
 export const getLoadingGraphOps = createSelector(
   selectDebuggerState,
-  (
-    state: DebuggerState
-  ): {[graph_id: string]: {[op_name: string]: DataLoadState}} =>
+  (state: DebuggerState): {[graph_id: string]: Map<string, DataLoadState>} =>
     state.graphs.loadingOps
 );
 
@@ -462,6 +463,49 @@ export const getFocusedExecutionData = createSelector(
 );
 
 /**
+ * Get information regarding the op that's the origin of the focused
+ * code location (stack trace).
+ * This selector covers both eager execution and graph-op creation.
+ */
+export const getCodeLocationOrigin = createSelector(
+  selectDebuggerState,
+  getFocusedExecutionIndex,
+  getFocusedExecutionData,
+  getFocusedGraphOpInfo,
+  (
+    state: DebuggerState,
+    executionIndex: number | null,
+    executionData: Execution | null,
+    graphOpInfo: GraphOpInfo | null
+  ): CodeLocationExecutionOrigin | CodeLocationGraphOpCreationOrigin | null => {
+    const {codeLocationFocusType} = state;
+    if (codeLocationFocusType === null) {
+      return null;
+    }
+    if (codeLocationFocusType === CodeLocationType.EXECUTION) {
+      if (executionIndex === null || executionData === null) {
+        return null;
+      }
+      return {
+        codeLocationType: CodeLocationType.EXECUTION,
+        opType: executionData.op_type,
+        executionIndex,
+      };
+    } else {
+      // This is CodeLocationType.GRAPH_OP_CREATION.
+      if (graphOpInfo === null) {
+        return null;
+      }
+      return {
+        codeLocationType: CodeLocationType.GRAPH_OP_CREATION,
+        opType: graphOpInfo.op_type,
+        opName: graphOpInfo.op_name,
+      };
+    }
+  }
+);
+
+/**
  * Get the stack trace (frames) of the execution event currently focused on
  * (if any).
  *
@@ -469,14 +513,33 @@ export const getFocusedExecutionData = createSelector(
  * If any of the stack frames is missing (i.e., hasn't been loaded from
  * the data source yet), returns null.
  */
-export const getFocusedExecutionStackFrames = createSelector(
+export const getFocusedStackFrames = createSelector(
   selectDebuggerState,
   (state: DebuggerState): StackFrame[] | null => {
-    const {focusIndex, executionData} = state.executions;
-    if (focusIndex === null || executionData[focusIndex] === undefined) {
+    if (state.codeLocationFocusType === null) {
       return null;
     }
-    const stackFrameIds = executionData[focusIndex].stack_frame_ids;
+    let stackFrameIds: string[] = [];
+    if (state.codeLocationFocusType === CodeLocationType.EXECUTION) {
+      const {focusIndex, executionData} = state.executions;
+      if (focusIndex === null || executionData[focusIndex] === undefined) {
+        return null;
+      }
+      stackFrameIds = executionData[focusIndex].stack_frame_ids;
+    } else {
+      // This is CodeLocationType.GRAPH_OP_CREATION.
+      if (state.graphs.focusedOp === null) {
+        return null;
+      }
+      const {graphId, opName} = state.graphs.focusedOp;
+      if (
+        state.graphs.ops[graphId] === undefined ||
+        !state.graphs.ops[graphId].has(opName)
+      ) {
+        return null;
+      }
+      stackFrameIds = state.graphs.ops[graphId].get(opName)!.stack_frame_ids;
+    }
     const stackFrames: StackFrame[] = [];
     for (const stackFrameId of stackFrameIds) {
       if (state.stackFrames[stackFrameId] != null) {

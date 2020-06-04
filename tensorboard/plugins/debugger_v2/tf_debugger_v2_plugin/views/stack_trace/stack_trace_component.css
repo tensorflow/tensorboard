@@ -18,6 +18,26 @@ limitations under the License.
   font-weight: bold;
 }
 
+.no-stack-trace {
+  color: #808080;
+}
+
+.op-name {
+  word-wrap: anywhere;
+}
+
+.op-type {
+  background-color: #e3e5e8;
+  border: 1px solid #c0c0c0;
+  border-radius: 4px;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 10px;
+  height: 14px;
+  line-height: 14px;
+  padding: 1px 3px;
+  width: max-content;
+}
+
 .stack-frame-array {
   height: 360px;
   overflow-x: auto;
@@ -55,6 +75,11 @@ limitations under the License.
   width: 80px;
 }
 
+.stack-trace-aux-info {
+  margin-top: 3px;
+  padding-left: 24px;
+}
+
 .stack-trace-container {
   border-left: 1px solid rgba(0, 0, 0, 0.12);
   font-size: 10px;
@@ -63,10 +88,15 @@ limitations under the License.
   margin-left: 8px;
   max-height: 360px;
   overflow-x: hidden;
+  overflow-y: hidden;
   padding-left: 8px;
   width: 100%;
 }
 
+.stack-trace-header {
+  box-shadow: 0 5px 3px -3px #ccc;
+  padding-bottom: 3px;
+}
 .stack-trace-host-name {
   color: #808080;
 }

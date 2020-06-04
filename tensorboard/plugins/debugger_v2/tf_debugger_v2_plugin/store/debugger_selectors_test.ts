@@ -17,9 +17,10 @@ import {
   getAlertsBreakdown,
   getAlertsFocusType,
   getAlertsLoaded,
+  getCodeLocationOrigin,
   getFocusedExecutionData,
   getFocusedExecutionIndex,
-  getFocusedExecutionStackFrames,
+  getFocusedStackFrames,
   getFocusedGraphOpConsumers,
   getFocusedGraphOpInfo,
   getFocusedGraphOpInputs,
@@ -44,12 +45,15 @@ import {
 } from './debugger_selectors';
 import {
   AlertType,
+  CodeLocationType,
   DataLoadState,
   DEBUGGER_FEATURE_KEY,
+  GraphOpInfo,
   StackFrame,
 } from './debugger_types';
 import {
   createAlertsState,
+  createDebuggerExecutionsState,
   createDebuggerGraphExecutionsState,
   createDebuggerGraphsState,
   createDebuggerSourceCodeState,
@@ -60,6 +64,7 @@ import {
   createTestGraphExecution,
   createTestInfNanAlert,
   createTestGraphOpInfo,
+  createTestStackFrame,
 } from '../testing';
 
 describe('debugger selectors', () => {
@@ -239,8 +244,7 @@ describe('debugger selectors', () => {
               lastLoadedTimeInMs: null,
             },
             executionDigestsLoaded: {
-              state: DataLoadState.NOT_LOADED,
-              lastLoadedTimeInMs: null,
+              loadingRanges: [],
               pageLoadedSizes: {},
               numExecutions: 0,
             },
@@ -278,8 +282,7 @@ describe('debugger selectors', () => {
               lastLoadedTimeInMs: null,
             },
             executionDigestsLoaded: {
-              state: DataLoadState.NOT_LOADED,
-              lastLoadedTimeInMs: null,
+              loadingRanges: [],
               pageLoadedSizes: {},
               numExecutions: 0,
             },
@@ -319,8 +322,7 @@ describe('debugger selectors', () => {
                 lastLoadedTimeInMs: null,
               },
               executionDigestsLoaded: {
-                state: DataLoadState.NOT_LOADED,
-                lastLoadedTimeInMs: null,
+                loadingRanges: [],
                 pageLoadedSizes: {},
                 numExecutions: 0,
               },
@@ -349,8 +351,7 @@ describe('debugger selectors', () => {
               lastLoadedTimeInMs: null,
             },
             executionDigestsLoaded: {
-              state: DataLoadState.NOT_LOADED,
-              lastLoadedTimeInMs: null,
+              loadingRanges: [],
               pageLoadedSizes: {},
               numExecutions: 0,
             },
@@ -377,8 +378,7 @@ describe('debugger selectors', () => {
               lastLoadedTimeInMs: null,
             },
             executionDigestsLoaded: {
-              state: DataLoadState.NOT_LOADED,
-              lastLoadedTimeInMs: null,
+              loadingRanges: [],
               pageLoadedSizes: {},
               numExecutions: 10,
             },
@@ -407,8 +407,7 @@ describe('debugger selectors', () => {
               lastLoadedTimeInMs: null,
             },
             executionDigestsLoaded: {
-              state: DataLoadState.NOT_LOADED,
-              lastLoadedTimeInMs: null,
+              loadingRanges: [],
               pageLoadedSizes: {},
               numExecutions: 10,
             },
@@ -427,7 +426,75 @@ describe('debugger selectors', () => {
     });
   });
 
-  describe('getFocusedExecutionStackFrames', () => {
+  describe('getCodeLocationOrigin', () => {
+    it('returns null initial state', () => {
+      const state = createState(createDebuggerState());
+      expect(getCodeLocationOrigin(state)).toBeNull();
+    });
+
+    it('returns correct origin for eager execution', () => {
+      const state = createState(
+        createDebuggerState({
+          codeLocationFocusType: CodeLocationType.EXECUTION,
+          executions: createDebuggerExecutionsState({
+            focusIndex: 1,
+            executionData: {
+              0: createTestExecutionData({
+                op_type: 'Type1Op',
+              }),
+              1: createTestExecutionData({
+                op_type: 'Type2Op',
+              }),
+            },
+          }),
+        })
+      );
+      expect(getCodeLocationOrigin(state)).toEqual({
+        codeLocationType: CodeLocationType.EXECUTION,
+        opType: 'Type2Op',
+        executionIndex: 1,
+      });
+    });
+
+    it('returns correct origin for graph-op creation', () => {
+      const state = createState(
+        createDebuggerState({
+          codeLocationFocusType: CodeLocationType.GRAPH_OP_CREATION,
+          graphs: createDebuggerGraphsState({
+            focusedOp: {
+              graphId: 'f1',
+              opName: 'op2',
+            },
+            ops: {
+              f1: new Map([
+                [
+                  'op1',
+                  createTestGraphOpInfo({
+                    op_type: 'Type1Op',
+                    op_name: 'foo',
+                  }),
+                ],
+                [
+                  'op2',
+                  createTestGraphOpInfo({
+                    op_type: 'Type2Op',
+                    op_name: 'bar',
+                  }),
+                ],
+              ]),
+            },
+          }),
+        })
+      );
+      expect(getCodeLocationOrigin(state)).toEqual({
+        codeLocationType: CodeLocationType.GRAPH_OP_CREATION,
+        opType: 'Type2Op',
+        opName: 'bar',
+      });
+    });
+  });
+
+  describe('getFocusedStackFrames', () => {
     it('returns correct stack frames when there is no focus', () => {
       const state = createState(
         createDebuggerState({
@@ -438,8 +505,7 @@ describe('debugger selectors', () => {
               lastLoadedTimeInMs: null,
             },
             executionDigestsLoaded: {
-              state: DataLoadState.NOT_LOADED,
-              lastLoadedTimeInMs: null,
+              loadingRanges: [],
               pageLoadedSizes: {},
               numExecutions: 0,
             },
@@ -450,26 +516,16 @@ describe('debugger selectors', () => {
             executionDigests: {},
             executionData: {},
           },
+          codeLocationFocusType: null,
         })
       );
-      expect(getFocusedExecutionStackFrames(state)).toBe(null);
+      expect(getFocusedStackFrames(state)).toBe(null);
     });
 
-    it('returns correct stack frames when there is no focus', () => {
-      const stackFrame1: StackFrame = ['localhost', '/tmp/main.py', 10, 'main'];
-      const stackFrame2: StackFrame = [
-        'localhost',
-        '/tmp/model.py',
-        20,
-        'initialize',
-      ];
-      const stackFrame3: StackFrame = [
-        'localhost',
-        '/tmp/model.py',
-        30,
-        'create_weight',
-      ];
-
+    it('returns correct eager stack frames', () => {
+      const stackFrame1: StackFrame = createTestStackFrame();
+      const stackFrame2: StackFrame = createTestStackFrame();
+      const stackFrame3: StackFrame = createTestStackFrame();
       const state = createState(
         createDebuggerState({
           activeRunId: '__default_debugger_run__',
@@ -479,8 +535,7 @@ describe('debugger selectors', () => {
               lastLoadedTimeInMs: null,
             },
             executionDigestsLoaded: {
-              state: DataLoadState.NOT_LOADED,
-              lastLoadedTimeInMs: null,
+              loadingRanges: [],
               pageLoadedSizes: {},
               numExecutions: 0,
             },
@@ -500,12 +555,81 @@ describe('debugger selectors', () => {
             a2: stackFrame2,
             a3: stackFrame3,
           },
+          codeLocationFocusType: CodeLocationType.EXECUTION,
         })
       );
-      expect(getFocusedExecutionStackFrames(state)).toEqual([
-        stackFrame1,
-        stackFrame3,
-      ]);
+      expect(getFocusedStackFrames(state)).toEqual([stackFrame1, stackFrame3]);
+    });
+
+    it('returns correct graph-op-creation stack frames', () => {
+      const stackFrame1: StackFrame = createTestStackFrame();
+      const stackFrame2: StackFrame = createTestStackFrame();
+      const stackFrame3: StackFrame = createTestStackFrame();
+      const state = createState(
+        createDebuggerState({
+          activeRunId: '__default_debugger_run__',
+          graphs: {
+            ops: {
+              f1: new Map([
+                [
+                  'op7',
+                  createTestGraphOpInfo({
+                    stack_frame_ids: ['a1', 'a2'],
+                  }),
+                ],
+                [
+                  'op8',
+                  createTestGraphOpInfo({
+                    stack_frame_ids: ['a1', 'a3'],
+                  }),
+                ],
+              ]),
+            },
+            loadingOps: {},
+            focusedOp: {
+              graphId: 'f1',
+              opName: 'op8',
+            },
+          },
+          stackFrames: {
+            a1: stackFrame1,
+            a2: stackFrame2,
+            a3: stackFrame3,
+          },
+          codeLocationFocusType: CodeLocationType.GRAPH_OP_CREATION,
+        })
+      );
+      expect(getFocusedStackFrames(state)).toEqual([stackFrame1, stackFrame3]);
+    });
+
+    it('returns null when no graph op is focused on', () => {
+      const stackFrame1: StackFrame = createTestStackFrame();
+      const stackFrame2: StackFrame = createTestStackFrame();
+      const state = createState(
+        createDebuggerState({
+          activeRunId: '__default_debugger_run__',
+          graphs: {
+            ops: {
+              f1: new Map([
+                [
+                  'op1',
+                  createTestGraphOpInfo({
+                    stack_frame_ids: ['a1', 'a2'],
+                  }),
+                ],
+              ]),
+            },
+            loadingOps: {},
+            focusedOp: null,
+          },
+          stackFrames: {
+            a1: stackFrame1,
+            a2: stackFrame2,
+          },
+          codeLocationFocusType: CodeLocationType.GRAPH_OP_CREATION,
+        })
+      );
+      expect(getFocusedStackFrames(state)).toBeNull();
     });
 
     it('returns null when subset of frames is missing', () => {
@@ -518,8 +642,7 @@ describe('debugger selectors', () => {
               lastLoadedTimeInMs: null,
             },
             executionDigestsLoaded: {
-              state: DataLoadState.NOT_LOADED,
-              lastLoadedTimeInMs: null,
+              loadingRanges: [],
               pageLoadedSizes: {},
               numExecutions: 0,
             },
@@ -540,7 +663,7 @@ describe('debugger selectors', () => {
           },
         })
       );
-      expect(getFocusedExecutionStackFrames(state)).toBeNull();
+      expect(getFocusedStackFrames(state)).toBeNull();
     });
   });
 
@@ -769,8 +892,7 @@ describe('debugger selectors', () => {
         createDebuggerState({
           graphExecutions: createDebuggerGraphExecutionsState({
             executionDigestsLoaded: {
-              state: DataLoadState.LOADING,
-              lastLoadedTimeInMs: null,
+              loadingRanges: [],
               pageLoadedSizes: {},
               numExecutions: 10,
             },
@@ -933,10 +1055,7 @@ describe('debugger selectors', () => {
         createDebuggerState({
           graphs: createDebuggerGraphsState({
             ops: {
-              g1: {
-                op1: op1Info,
-                op2: op2Info,
-              },
+              g1: new Map([['op1', op1Info], ['op2', op2Info]]),
             },
             focusedOp: null,
           }),
@@ -950,10 +1069,7 @@ describe('debugger selectors', () => {
         createDebuggerState({
           graphs: createDebuggerGraphsState({
             ops: {
-              g1: {
-                op1: op1Info,
-                op2: op2Info,
-              },
+              g1: new Map([['op1', op1Info], ['op2', op2Info]]),
             },
             focusedOp: {
               graphId: 'g1',
@@ -970,10 +1086,7 @@ describe('debugger selectors', () => {
         createDebuggerState({
           graphs: createDebuggerGraphsState({
             ops: {
-              g1: {
-                op1: op1Info,
-                op2: op2Info,
-              },
+              g1: new Map([['op1', op1Info], ['op2', op2Info]]),
             },
             focusedOp: {
               graphId: 'g1',
@@ -1035,9 +1148,7 @@ describe('debugger selectors', () => {
         createDebuggerState({
           graphs: createDebuggerGraphsState({
             ops: {
-              g1: {
-                op1: op1Info,
-              },
+              g1: new Map([['op1', op1Info]]),
             },
             focusedOp: {
               graphId: 'g1',
@@ -1054,9 +1165,7 @@ describe('debugger selectors', () => {
         createDebuggerState({
           graphs: createDebuggerGraphsState({
             ops: {
-              g1: {
-                op2: op2Info,
-              },
+              g1: new Map([['op2', op2Info]]),
             },
             focusedOp: {
               graphId: 'g1',
@@ -1078,10 +1187,7 @@ describe('debugger selectors', () => {
         createDebuggerState({
           graphs: createDebuggerGraphsState({
             ops: {
-              g1: {
-                op1: op1Info,
-                op2: op2Info,
-              },
+              g1: new Map([['op1', op1Info], ['op2', op2Info]]),
             },
             focusedOp: {
               graphId: 'g1',
@@ -1149,9 +1255,7 @@ describe('debugger selectors', () => {
         createDebuggerState({
           graphs: createDebuggerGraphsState({
             ops: {
-              g1: {
-                op2: op2Info,
-              },
+              g1: new Map([['op2', op2Info]]),
             },
             focusedOp: {
               graphId: 'g1',
@@ -1168,9 +1272,7 @@ describe('debugger selectors', () => {
         createDebuggerState({
           graphs: createDebuggerGraphsState({
             ops: {
-              g1: {
-                op1: op1Info,
-              },
+              g1: new Map([['op1', op1Info]]),
             },
             focusedOp: {
               graphId: 'g1',
@@ -1194,10 +1296,7 @@ describe('debugger selectors', () => {
         createDebuggerState({
           graphs: createDebuggerGraphsState({
             ops: {
-              g1: {
-                op1: op1Info,
-                op2: op2Info,
-              },
+              g1: new Map([['op1', op1Info], ['op2', op2Info]]),
             },
             focusedOp: {
               graphId: 'g1',
@@ -1229,17 +1328,23 @@ describe('debugger selectors', () => {
         createDebuggerState({
           graphs: createDebuggerGraphsState({
             loadingOps: {
-              g0: {},
-              g1: {Op1: DataLoadState.LOADING},
-              g2: {Op2a: DataLoadState.LOADED, Op2b: DataLoadState.FAILED},
+              g0: new Map(),
+              g1: new Map([['Op1', DataLoadState.LOADING]]),
+              g2: new Map([
+                ['Op2a', DataLoadState.LOADED],
+                ['Op2b', DataLoadState.FAILED],
+              ]),
             },
           }),
         })
       );
       expect(getLoadingGraphOps(state)).toEqual({
-        g0: {},
-        g1: {Op1: DataLoadState.LOADING},
-        g2: {Op2a: DataLoadState.LOADED, Op2b: DataLoadState.FAILED},
+        g0: new Map(),
+        g1: new Map([['Op1', DataLoadState.LOADING]]),
+        g2: new Map([
+          ['Op2a', DataLoadState.LOADED],
+          ['Op2b', DataLoadState.FAILED],
+        ]),
       });
     });
   });

@@ -149,6 +149,10 @@ limitations under the License.
     Polymer({
       is: 'tf-histogram-dashboard',
       properties: {
+        reloadOnReady: {
+          type: Boolean,
+          value: true,
+        },
         _histogramMode: {
           type: String,
           value: 'offset',
@@ -196,7 +200,7 @@ limitations under the License.
       },
 
       ready() {
-        this.reload();
+        if (this.reloadOnReady) this.reload();
       },
       reload() {
         this._fetchTags().then(() => {

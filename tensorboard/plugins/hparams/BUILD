@@ -1,12 +1,12 @@
 # Description:
 # TensorBoard plugin for hparams
 
+load("//tensorboard/defs:web.bzl", "tf_web_library")
+load("//tensorboard/defs:protos.bzl", "tb_proto_library")
+
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
-
-load("//tensorboard/defs:web.bzl", "tf_web_library")
-load("//tensorboard/defs:protos.bzl", "tb_proto_library")
 
 exports_files(["LICENSE"])
 

@@ -1,11 +1,11 @@
 # Description:
 # TensorBoard plugin for scalars
 
+load("//tensorboard/defs:protos.bzl", "tb_proto_library")
+
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
-
-load("//tensorboard/defs:protos.bzl", "tb_proto_library")
 
 exports_files(["LICENSE"])
 

@@ -1,9 +1,9 @@
 # Description:
 # TensorBoard, a dashboard for investigating TensorFlow
 
-package(default_visibility = ["//tensorboard:internal"])
-
 load("//tensorboard/defs:protos.bzl", "tb_proto_library")
+
+package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 

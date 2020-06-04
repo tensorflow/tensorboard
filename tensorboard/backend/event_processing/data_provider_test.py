@@ -295,6 +295,8 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
                     )
 
     def test_read_scalars_downsamples(self):
+        # TODO(@wchargin): Verify that this always includes the most
+        # recent datum, as specified by the interface.
         multiplexer = self.create_multiplexer()
         provider = data_provider.MultiplexerDataProvider(
             multiplexer, self.logdir

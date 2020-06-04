@@ -14,6 +14,8 @@ limitations under the License.
 ==============================================================================*/
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 
+import {CodeLocationType} from '../../store/debugger_types';
+
 export interface StackFrameForDisplay {
   host_name: string;
   file_path: string;
@@ -32,6 +34,22 @@ export interface StackFrameForDisplay {
 })
 export class StackTraceComponent {
   @Input()
+  codeLocationType!: CodeLocationType | null;
+
+  @Input()
+  opType!: string | null;
+
+  // Index of eager (top-level) execution, not `null` only for
+  // `CodeLocationType.GRAPH_OP_CREATION`.
+  @Input()
+  opName!: string | null;
+
+  // Index of eager (top-level) execution, not `null` only for
+  // `CodeLocationType.EXECUTION`.
+  @Input()
+  executionIndex!: number | null;
+
+  @Input()
   stackFramesForDisplay: StackFrameForDisplay[] | null = null;
 
   @Output()
@@ -40,4 +58,6 @@ export class StackTraceComponent {
     file_path: string;
     lineno: number;
   }>();
+
+  CodeLocationType = CodeLocationType;
 }

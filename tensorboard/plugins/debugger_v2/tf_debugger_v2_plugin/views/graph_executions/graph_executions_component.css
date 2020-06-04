@@ -34,6 +34,11 @@ limitations under the License.
   width: 40px;
 }
 
+.graph-executions-title {
+  box-shadow: 0 5px 3px -3px #ccc;
+  padding-bottom: 5px;
+}
+
 .graph-executions-viewport {
   flex-grow: 1;
   font-size: 12px;

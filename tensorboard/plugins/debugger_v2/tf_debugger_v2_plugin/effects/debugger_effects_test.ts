@@ -630,7 +630,7 @@ describe('Debugger effects', () => {
           }),
           numExecutionsRequested(),
           numExecutionsLoaded({numExecutions}),
-          executionDigestsRequested(),
+          executionDigestsRequested({begin: 0, end: 2}),
           executionDigestsLoaded(executionDigestsPageResponse),
           executionDataLoaded(executionDataResponse),
           stackFramesLoaded({stackFrames: {aa: stackFrame0, bb: stackFrame1}}),
@@ -744,8 +744,7 @@ describe('Debugger effects', () => {
           store.overrideSelector(getExecutionDigestsLoaded, {
             numExecutions,
             pageLoadedSizes,
-            state: DataLoadState.LOADED,
-            lastLoadedTimeInMs: 1234,
+            loadingRanges: [],
           });
 
           store.refreshState();
@@ -777,7 +776,10 @@ describe('Debugger effects', () => {
           } else {
             expect(fetchExecutionDigests).toHaveBeenCalledTimes(1);
             expect(dispatchedActions).toEqual([
-              executionDigestsRequested(),
+              executionDigestsRequested({
+                begin: 60,
+                end: 60 + pageSize,
+              }),
               executionDigestsLoaded(executionDigestsResponse),
             ]);
           }
@@ -790,7 +792,6 @@ describe('Debugger effects', () => {
         `scrolling left triggers execution digest loading: ` +
           `dataAlreadyExists=${dataAlreadyExists}`,
         () => {
-          const dataAlreadyExists = false;
           const originalScrollBeginIndex = 40;
           const scrollBeginIndex = originalScrollBeginIndex - 1;
           const numExecutions = 100;
@@ -816,8 +817,7 @@ describe('Debugger effects', () => {
           store.overrideSelector(getExecutionDigestsLoaded, {
             numExecutions,
             pageLoadedSizes,
-            state: DataLoadState.LOADED,
-            lastLoadedTimeInMs: 1234,
+            loadingRanges: [],
           });
 
           store.refreshState();
@@ -849,13 +849,56 @@ describe('Debugger effects', () => {
           } else {
             expect(fetchExecutionDigests).toHaveBeenCalledTimes(1);
             expect(dispatchedActions).toEqual([
-              executionDigestsRequested(),
+              executionDigestsRequested({
+                begin: 20,
+                end: 20 + pageSize,
+              }),
               executionDigestsLoaded(executionDigestsResponse),
             ]);
           }
         }
       );
     }
+
+    it('does not fetch execution digest page if currently loading', () => {
+      const originalScrollBeginIndex = 40;
+      const scrollBeginIndex = originalScrollBeginIndex - 1;
+      const numExecutions = 100;
+      const displayCount = 10;
+      const pageSize = 20;
+      store.overrideSelector(getActiveRunId, runId);
+      store.overrideSelector(getExecutionScrollBeginIndex, scrollBeginIndex);
+      store.overrideSelector(getNumExecutions, numExecutions);
+      store.overrideSelector(getDisplayCount, displayCount);
+      store.overrideSelector(getExecutionPageSize, pageSize);
+      let pageLoadedSizes: {[pageIndex: number]: number} = {};
+      pageLoadedSizes = {
+        0: 20,
+        1: 10,
+        2: 20,
+      };
+      store.overrideSelector(getExecutionDigestsLoaded, {
+        numExecutions,
+        pageLoadedSizes,
+        loadingRanges: [
+          {
+            begin: 20,
+            end: 20 + pageSize,
+          },
+        ],
+      });
+
+      store.refreshState();
+
+      const fetchExecutionDigests = spyOn(
+        TestBed.inject(Tfdbg2HttpServerDataSource),
+        'fetchExecutionDigests'
+      );
+      action.next(executionScrollLeft());
+
+      expect(fetchExecutionDigests).not.toHaveBeenCalled();
+      expect(dispatchedActions).toEqual([]);
+    });
 
     for (const {dataAlreadyExists, lastPageLoadedSize} of [
       {
@@ -893,8 +936,7 @@ describe('Debugger effects', () => {
           store.overrideSelector(getExecutionDigestsLoaded, {
             numExecutions,
             pageLoadedSizes,
-            state: DataLoadState.LOADED,
-            lastLoadedTimeInMs: 1234,
+            loadingRanges: [],
           });
 
           store.refreshState();
@@ -923,7 +965,10 @@ describe('Debugger effects', () => {
           } else {
             expect(fetchExecutionDigests).toHaveBeenCalledTimes(1);
             expect(dispatchedActions).toEqual([
-              executionDigestsRequested(),
+              executionDigestsRequested({
+                begin: 60,
+                end: 60 + pageSize,
+              }),
               executionDigestsLoaded(executionDigestsResponse),
             ]);
           }
@@ -1078,8 +1123,7 @@ describe('Debugger effects', () => {
       store.overrideSelector(getExecutionDigestsLoaded, {
         numExecutions,
         pageLoadedSizes: {},
-        state: DataLoadState.NOT_LOADED,
-        lastLoadedTimeInMs: null,
+        loadingRanges: [],
       });
 
       store.refreshState();
@@ -1103,7 +1147,10 @@ describe('Debugger effects', () => {
           alertType: AlertType.INF_NAN_ALERT,
           alerts: [alert0, alert1],
         }),
-        executionDigestsRequested(),
+        executionDigestsRequested({
+          begin: 8,
+          end: 12,
+        }),
         executionDigestsLoaded({
           num_digests: numExecutions,
           begin: 8,
@@ -1160,8 +1207,7 @@ describe('Debugger effects', () => {
         pageLoadedSizes: {
           2: 4, // The page of eecution digest has already been loaded.
         },
-        state: DataLoadState.LOADED,
-        lastLoadedTimeInMs: 1234,
+        loadingRanges: [],
       });
 
       store.refreshState();
@@ -1447,9 +1493,7 @@ describe('Debugger effects', () => {
       );
       store.overrideSelector(getActiveRunId, runId);
       store.overrideSelector(getLoadingGraphOps, {
-        g2: {
-          other_op: DataLoadState.LOADED,
-        },
+        g2: new Map([['other_op', DataLoadState.LOADED]]),
       });
       store.overrideSelector(getLoadedStackFrames, {});
       store.refreshState();
@@ -1476,9 +1520,7 @@ describe('Debugger effects', () => {
       it(`skips a loading or loaded op: state=${opLoadState}`, () => {
         store.overrideSelector(getActiveRunId, runId);
         store.overrideSelector(getLoadingGraphOps, {
-          g2: {
-            'namespace_1/op_1': opLoadState,
-          },
+          g2: new Map([['namespace_1/op_1', opLoadState]]),
         });
         store.refreshState();
 
@@ -1505,9 +1547,7 @@ describe('Debugger effects', () => {
       });
       store.overrideSelector(getActiveRunId, runId);
       store.overrideSelector(getLoadingGraphOps, {
-        g2: {
-          other_op: DataLoadState.LOADED,
-        },
+        g2: new Map([['other_op', DataLoadState.LOADED]]),
       });
       // The second stack frame is already loaded.
       store.overrideSelector(getLoadedStackFrames, {bbb2: stackFrame1});

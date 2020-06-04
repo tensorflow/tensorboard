@@ -297,11 +297,14 @@ export interface DebugTensorValue {
   variance?: number;
 }
 
-export interface ExecutionDigestLoadState extends LoadState {
+export interface ExecutionDigestLoadState {
   // A map from page number to whether the page has been loaded
   //   - in full, in which case the value is pageSize.
   //   - partially, in which case the value is an integer < pageSize.
   pageLoadedSizes: {[page: number]: number};
+
+  // Execution-digest indices that are currently loading.
+  loadingRanges: Array<{begin: number; end: number}>;
 
   // Number of top-level executions available at the data source (not
   // necessarily loaded by frontend yet.)
@@ -419,21 +422,13 @@ export interface Graphs {
   // Information about ops in graphs, indexed by: graph_id / op_name.
   // `graph_id` refers to the immediately-enclosing graph of the ops.
   ops: {
-    [graph_id: string]: {
-      // TODO(#3661): Decide on a way to avoid potential conflict with
-      // JavaScript builtin names.
-      [op_name: string]: GraphOpInfo;
-    };
+    [graph_id: string]: Map<string, GraphOpInfo>;
   };
 
   // What ops are currently being loaded from the data source.
   // `graph_id` refers to the immediately-enclosing graph of the ops.
   loadingOps: {
-    [graph_id: string]: {
-      // TODO(#3661): Decide on a way to avoid potential conflict with
-      // JavaScript builtin names.
-      [op_name: string]: DataLoadState;
-    };
+    [graph_id: string]: Map<string, DataLoadState>;
   };
 
   // Op being focused on in the UI (if any).
@@ -512,7 +507,58 @@ export interface DebuggerState {
   // stack-frame IDs.
   stackFrames: StackFramesById;
 
+  // What the currently focused code location (stack trace) describes.
+  //   - `null` is for the case where no code location is focused on.
+  //   - `CodeLocationType.EXECUTION` is for the code location of an eager
+  //     (top-level) execution.
+  //   - `CodeLocationType.GRAPH_OP_CREATION` is for the code location of
+  //     the creation of a graph op.
+  // This state is currently set based on what relevant part of the UI
+  // was clicked by the user most recently: whether it is an event in the
+  // eager-execution timeline or an item in the graph-execution scroll.
+  codeLocationFocusType: CodeLocationType | null;
+
   sourceCode: SourceCodeState;
+}
+
+/**
+ * The type of origin of a code location (incl. stack trace).
+ */
+export enum CodeLocationType {
+  // The code location for an eager (top-level) execution.
+  EXECUTION,
+
+  // The code location for the creation of of an op (node) in a graph.
+  GRAPH_OP_CREATION,
+}
+
+/**
+ * Information regarding the origin of a code location (incl. stack trace).
+ * This base interface is inherited by child interfaces for eager execution
+ * and graph-op creation, respectively.
+ */
+export interface CodeLocationOrigin {
+  codeLocationType: CodeLocationType;
+
+  opType: string;
+}
+
+/**
+ * A code location originated from an eager (top-level) execution event.
+ */
+export interface CodeLocationExecutionOrigin extends CodeLocationOrigin {
+  codeLocationType: CodeLocationType.EXECUTION;
+
+  executionIndex: number;
+}
+
+/**
+ * A code location originated from a graph-op creation event.
+ */
+export interface CodeLocationGraphOpCreationOrigin extends CodeLocationOrigin {
+  codeLocationType: CodeLocationType.GRAPH_OP_CREATION;
+
+  opName: string;
 }
 
 export interface State {

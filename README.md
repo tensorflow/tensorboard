@@ -69,9 +69,9 @@ work, but there may be bugs or performance issues.
 The first step in using TensorBoard is acquiring data from your TensorFlow run.
 For this, you need
 [summary ops](https://www.tensorflow.org/api_docs/python/tf/summary).
-Summary ops are ops, like
+Summary ops are ops, just like
 [`tf.matmul`](https://www.tensorflow.org/api_docs/python/tf/linalg/matmul)
-or
+and
 [`tf.nn.relu`](https://www.tensorflow.org/api_docs/python/tf/nn/relu),
 which means they take in tensors, produce tensors, and are evaluated from within
 a TensorFlow graph. However, summary ops have a twist: the Tensors they produce

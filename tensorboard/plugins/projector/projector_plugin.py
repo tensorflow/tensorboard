@@ -160,6 +160,13 @@ def _read_tensor_tsv_file(fpath):
     return np.array(tensor, dtype="float32")
 
 
+def _read_tensor_binary_file(fpath, shape):
+    if len(shape) != 2:
+        raise ValueError("Tensor must be 2D, got shape {}".format(shape))
+    tensor = np.fromfile(fpath, dtype="float32")
+    return tensor.reshape(shape)
+
+
 def _assets_dir_to_logdir(assets_dir):
     sub_path = os.path.sep + metadata.PLUGINS_DIR + os.path.sep
     if sub_path in assets_dir:
@@ -363,17 +370,25 @@ class ProjectorPlugin(base_plugin.TBPlugin):
                 if embedding.tensor_name.endswith(":0"):
                     embedding.tensor_name = embedding.tensor_name[:-2]
                 # Find the size of embeddings associated with a tensors file.
-                if embedding.tensor_path and not embedding.tensor_shape:
+                if embedding.tensor_path:
                     fpath = _rel_to_abs_asset_path(
                         embedding.tensor_path, self.config_fpaths[run]
                     )
                     tensor = self.tensor_cache.get((run, embedding.tensor_name))
                     if tensor is None:
-                        tensor = _read_tensor_tsv_file(fpath)
+                        try:
+                            tensor = _read_tensor_tsv_file(fpath)
+                        except UnicodeDecodeError:
+                            tensor = _read_tensor_binary_file(
+                                fpath, embedding.tensor_shape
+                            )
                         self.tensor_cache.set(
                             (run, embedding.tensor_name), tensor
                         )
-                    embedding.tensor_shape.extend([len(tensor), len(tensor[0])])
+                    if not embedding.tensor_shape:
+                        embedding.tensor_shape.extend(
+                            [len(tensor), len(tensor[0])]
+                        )
 
             reader = self._get_reader_for_run(run)
             if not reader:
@@ -386,6 +401,10 @@ class ProjectorPlugin(base_plugin.TBPlugin):
             var_map = reader.get_variable_to_shape_map()
             for tensor_name, tensor_shape in var_map.items():
                 if len(tensor_shape) != 2:
+                    continue
+                # Optimizer slot values are the same shape as embeddings
+                # but are not embeddings.
+                if ".OPTIMIZER_SLOT" in tensor_name:
                     continue
                 embedding = self._get_embedding(tensor_name, config)
                 if not embedding:
@@ -413,6 +432,22 @@ class ProjectorPlugin(base_plugin.TBPlugin):
     def _read_latest_config_files(self, run_path_pairs):
         """Reads and returns the projector config files in every run
         directory."""
+        """If no specific config exists, use the default config provided in
+        the root directory."""
+        default_config_fpath = os.path.join(
+            self.logdir, metadata.PROJECTOR_FILENAME
+        )
+        default_config = ProjectorConfig()
+        if tf.io.gfile.exists(default_config_fpath):
+            with tf.io.gfile.GFile(default_config_fpath, "r") as f:
+                file_content = f.read()
+            text_format.Merge(file_content, default_config)
+            # Relative metadata paths do not work with subdirs, so convert
+            # any metadata paths to absolute paths.
+            for embedding in default_config.embeddings:
+                embedding.metadata_path = _rel_to_abs_asset_path(
+                    embedding.metadata_path, default_config_fpath
+                )
         configs = {}
         config_fpaths = {}
         for run_name, assets_dir in run_path_pairs:
@@ -422,6 +457,8 @@ class ProjectorPlugin(base_plugin.TBPlugin):
                 with tf.io.gfile.GFile(config_fpath, "r") as f:
                     file_content = f.read()
                 text_format.Merge(file_content, config)
+            elif tf.io.gfile.exists(default_config_fpath):
+                config = default_config
             has_tensor_files = False
             for embedding in config.embeddings:
                 if embedding.tensor_path:
@@ -648,7 +685,12 @@ class ProjectorPlugin(base_plugin.TBPlugin):
                         "text/plain",
                         400,
                     )
-                tensor = _read_tensor_tsv_file(fpath)
+                try:
+                    tensor = _read_tensor_tsv_file(fpath)
+                except UnicodeDecodeError:
+                    tensor = _read_tensor_binary_file(
+                        fpath, embedding.tensor_shape
+                    )
             else:
                 reader = self._get_reader_for_run(run)
                 if not reader or not reader.has_tensor(name):
