@@ -458,12 +458,7 @@ class _ScalarBatchedRequestSender(object):
     """
 
     def __init__(
-        self,
-        experiment_id,
-        api,
-        rpc_rate_limiter,
-        max_request_size,
-        tracker,
+        self, experiment_id, api, rpc_rate_limiter, max_request_size, tracker,
     ):
         if experiment_id is None:
             raise ValueError("experiment_id cannot be None")
