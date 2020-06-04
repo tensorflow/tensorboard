@@ -463,7 +463,7 @@ class _ScalarBatchedRequestSender(object):
         api,
         rpc_rate_limiter,
         max_request_size,
-        tracker=None,
+        tracker,
     ):
         if experiment_id is None:
             raise ValueError("experiment_id cannot be None")
@@ -622,7 +622,7 @@ class _TensorBatchedRequestSender(object):
         rpc_rate_limiter,
         max_request_size,
         max_tensor_point_size,
-        tracker=None,
+        tracker,
     ):
         if experiment_id is None:
             raise ValueError("experiment_id cannot be None")
@@ -933,7 +933,7 @@ class _BlobRequestSender(object):
         rpc_rate_limiter,
         max_blob_request_size,
         max_blob_size,
-        tracker=None,
+        tracker,
     ):
         if experiment_id is None:
             raise ValueError("experiment_id cannot be None")
@@ -1011,8 +1011,7 @@ class _BlobRequestSender(object):
                     sent_blobs += self._send_blob(
                         blob_sequence_id, seq_index, blob
                     )
-                    if self._tracker:
-                        blob_tracker.mark_uploaded(bool(sent_blobs))
+                    blob_tracker.mark_uploaded(bool(sent_blobs))
 
             logger.info(
                 "Sent %d of %d blobs for sequence id: %s",
