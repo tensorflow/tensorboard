@@ -68,6 +68,7 @@ py_library(
     visibility = ["//tensorboard:internal"],
     deps = [
         ":auth",
+        ":dry_run_stubs",
         ":exporter",
         ":flags_parser",
         ":formatters",
@@ -121,9 +122,12 @@ py_test(
     srcs = ["uploader_test.py"],
     srcs_version = "PY3",
     deps = [
+        ":dry_run_stubs",
+        ":server_info",
         ":test_util",
         ":upload_tracker",
         ":uploader",
+        ":uploader_subcommand",
         ":util",
         "//tensorboard:data_compat",
         "//tensorboard:dataclass_compat",
@@ -152,6 +156,27 @@ py_test(
     deps = [
         ":upload_tracker",
         "//tensorboard:test",
+        "@org_pythonhosted_mock",
+    ],
+)
+
+py_library(
+    name = "dry_run_stubs",
+    srcs = ["dry_run_stubs.py"],
+    deps = [
+        "//tensorboard/uploader/proto:protos_all_py_pb2",
+        "//tensorboard/uploader/proto:protos_all_py_pb2_grpc",
+    ],
+)
+
+py_test(
+    name = "dry_run_stubs_test",
+    srcs = ["dry_run_stubs_test.py"],
+    srcs_version = "PY3",
+    deps = [
+        ":dry_run_stubs",
+        "//tensorboard:test",
+        "//tensorboard/uploader/proto:protos_all_py_pb2",
         "@org_pythonhosted_mock",
     ],
 )

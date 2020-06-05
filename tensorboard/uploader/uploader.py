@@ -78,6 +78,7 @@ class TensorBoardUploader(object):
         name=None,
         description=None,
         verbosity=None,
+        one_shot=None,
     ):
         """Constructs a TensorBoardUploader.
 
@@ -103,6 +104,10 @@ class TensorBoardUploader(object):
           verbosity: Level of verbosity, an integer. Supported value:
               0 - No upload statistics is printed.
               1 - Print upload statistics while uploading data (default).
+         one_shot: Once uploading starts, upload only the existing data in and
+          then return immediately, instead of the default behavior in which
+          the uploader keeps listening for new data in the logdir and upload
+          them when it appears.
         """
         self._api = writer_client
         self._logdir = logdir
@@ -112,6 +117,7 @@ class TensorBoardUploader(object):
         self._name = name
         self._description = description
         self._verbosity = 1 if verbosity is None else verbosity
+        self._one_shot = False if one_shot is None else one_shot
         self._request_sender = None
         if logdir_poll_rate_limiter is None:
             self._logdir_poll_rate_limiter = util.RateLimiter(
@@ -191,6 +197,8 @@ class TensorBoardUploader(object):
         while True:
             self._logdir_poll_rate_limiter.tick()
             self._upload_once()
+            if self._one_shot:
+                break
 
     def _upload_once(self):
         """Runs one upload cycle, sending zero or more RPCs."""

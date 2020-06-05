@@ -107,6 +107,20 @@ def define_flags(parser):
         "statistics as data is uploaded.",
     )
     upload.add_argument(
+        "--dry_run",
+        action="store_true",
+        help="Perform a dry run of uploading. In a dry run, the data is read "
+        "the logdir as pointed to by the --logdir flag and statistics are "
+        "displayed (if --verbose is not 0), but no data is actually uploaded "
+        "to the server.",
+    )
+    upload.add_argument(
+        "--one_shot",
+        action="store_true",
+        help="Upload only the existing data in the logdir and then exit "
+        "immediately, instead of keep listening for new data in the logdir.",
+    )
+    upload.add_argument(
         "--plugins",
         type=lambda option: option.split(","),
         default=[],
