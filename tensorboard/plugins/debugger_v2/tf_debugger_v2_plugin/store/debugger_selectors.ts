@@ -16,7 +16,6 @@ limitations under the License.
 import {createSelector, createFeatureSelector} from '@ngrx/store';
 import {
   findFileIndex,
-  getBottommostStackFrameInFocusedFile,
   getFocusedStackFramesHelper,
 } from './debugger_store_utils';
 import {
