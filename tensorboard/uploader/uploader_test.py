@@ -2000,21 +2000,20 @@ class UploadIntentTest(tf.test.TestCase):
             max_blob_size=128000,
         )
         with mock.patch.object(
+            server_info_lib,
+            "allowed_plugins",
+            return_value=_SCALARS_HISTOGRAMS_AND_GRAPHS,
+        ), mock.patch.object(
+            server_info_lib, "upload_limits", return_value=upload_limits
+        ), mock.patch.object(
             dry_run_stubs,
             "DryRunTensorBoardWriterStub",
             side_effect=dry_run_stubs.DryRunTensorBoardWriterStub,
         ) as mock_dry_run_stub:
-            with mock.patch.object(
-                server_info_lib,
-                "allowed_plugins",
-                return_value=_SCALARS_HISTOGRAMS_AND_GRAPHS,
-            ), mock.patch.object(
-                server_info_lib, "upload_limits", return_value=upload_limits
-            ):
-                intent = uploader_subcommand.UploadIntent(
-                    self.get_temp_dir(), dry_run=True, one_shot=True
-                )
-                intent.execute(mock_server_info, mock_channel)
+            intent = uploader_subcommand.UploadIntent(
+                self.get_temp_dir(), dry_run=True, one_shot=True
+            )
+            intent.execute(mock_server_info, mock_channel)
         self.assertEqual(mock_dry_run_stub.call_count, 1)
 
 
