@@ -335,6 +335,33 @@ class TensorBoard(object):
         thread.start()
         return server.get_url()
 
+    def create_wsgi_app(self):
+        """Create a TensorBoard WSGI application.
+
+        The result of this method is a WSGI application (see PEP 3333)
+        that serves the TensorBoard interface. You should call this
+        method directly if you want to compose TensorBoard into a larger
+        WSGI application, e.g., with Werkzeug's `DispatcherMiddleware`.
+        If you're just trying to start a server that only serves
+        TensorBoard, you don't need to call this method; call `main` or
+        `launch` instead.
+
+        This method is heavyweight: e.g., it may start a new thread for
+        data loading. You probably should not call it more than once.
+
+        Returns:
+          A PEP 3333-compliant WSGI callable.
+        """
+        ingester = data_ingester.LocalDataIngester(self.flags)
+        ingester.start()
+        return application.TensorBoardWSGIApp(
+            self.flags,
+            self.plugin_loaders,
+            ingester.data_provider,
+            self.assets_zip_provider,
+            ingester.deprecated_multiplexer,
+        )
+
     def _register_info(self, server):
         """Write a TensorBoardInfo file and arrange for its cleanup.
 
@@ -406,15 +433,7 @@ class TensorBoard(object):
 
     def _make_server(self):
         """Constructs the TensorBoard WSGI app and instantiates the server."""
-        ingester = data_ingester.LocalDataIngester(self.flags)
-        ingester.start()
-        app = application.TensorBoardWSGIApp(
-            self.flags,
-            self.plugin_loaders,
-            ingester.data_provider,
-            self.assets_zip_provider,
-            ingester.deprecated_multiplexer,
-        )
+        app = self.create_wsgi_app()
         return self.server_class(app, self.flags)
 
 
