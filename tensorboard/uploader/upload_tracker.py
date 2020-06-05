@@ -253,7 +253,6 @@ class UploadStats(object):
 
 _STYLE_RESET = "\033[0m"
 _STYLE_BOLD = "\033[1m"
-_STYLE_RED = "\033[31m"
 _STYLE_GREEN = "\033[32m"
 _STYLE_YELLOW = "\033[33m"
 _STYLE_DARKGRAY = "\033[90m"
