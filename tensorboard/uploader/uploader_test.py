@@ -43,10 +43,13 @@ from tensorboard.uploader.proto import scalar_pb2
 from tensorboard.uploader.proto import server_info_pb2
 from tensorboard.uploader.proto import write_service_pb2
 from tensorboard.uploader.proto import write_service_pb2_grpc
+from tensorboard.uploader import dry_run_stubs
 from tensorboard.uploader import test_util
 from tensorboard.uploader import upload_tracker
 from tensorboard.uploader import uploader as uploader_lib
+from tensorboard.uploader import uploader_subcommand
 from tensorboard.uploader import logdir_loader
+from tensorboard.uploader import server_info as server_info_lib
 from tensorboard.uploader import util
 from tensorboard.compat.proto import event_pb2
 from tensorboard.compat.proto import graph_pb2
@@ -130,6 +133,7 @@ def _create_uploader(
     name=None,
     description=None,
     verbosity=0,  # Use 0 to minimize littering the test output.
+    one_shot=None,
 ):
     if writer_client is _USE_DEFAULT:
         writer_client = _create_mock_client()
@@ -148,12 +152,13 @@ def _create_uploader(
     if blob_rpc_rate_limiter is _USE_DEFAULT:
         blob_rpc_rate_limiter = util.RateLimiter(0)
 
-    upload_limits = server_info_pb2.UploadLimits()
-    upload_limits.max_scalar_request_size = max_scalar_request_size
-    upload_limits.max_tensor_request_size = 128000
-    upload_limits.max_blob_request_size = max_blob_request_size
-    upload_limits.max_blob_size = max_blob_size
-    upload_limits.max_tensor_point_size = 11111
+    upload_limits = server_info_pb2.UploadLimits(
+        max_scalar_request_size=max_scalar_request_size,
+        max_tensor_request_size=128000,
+        max_tensor_point_size=11111,
+        max_blob_request_size=max_blob_request_size,
+        max_blob_size=max_blob_size,
+    )
 
     return uploader_lib.TensorBoardUploader(
         writer_client,
@@ -167,6 +172,7 @@ def _create_uploader(
         name=name,
         description=description,
         verbosity=verbosity,
+        one_shot=one_shot,
     )
 
 
@@ -178,11 +184,12 @@ def _create_request_sender(
     if allowed_plugins is _USE_DEFAULT:
         allowed_plugins = _SCALARS_HISTOGRAMS_AND_GRAPHS
 
-    upload_limits = server_info_pb2.UploadLimits()
-    upload_limits.max_blob_size = 12345
-    upload_limits.max_tensor_point_size = 11111
-    upload_limits.max_scalar_request_size = 128000
-    upload_limits.max_tensor_request_size = 128000
+    upload_limits = server_info_pb2.UploadLimits(
+        max_scalar_request_size=128000,
+        max_tensor_request_size=128000,
+        max_tensor_point_size=11111,
+        max_blob_size=12345,
+    )
 
     rpc_rate_limiter = util.RateLimiter(0)
     tensor_rpc_rate_limiter = util.RateLimiter(0)
@@ -367,6 +374,60 @@ class TensorboardUploaderTest(tf.test.TestCase):
         # Check upload tracker calls.
         self.assertEqual(mock_tracker.send_tracker.call_count, 2)
         self.assertEqual(mock_tracker.scalars_tracker.call_count, 10)
+        self.assertLen(mock_tracker.scalars_tracker.call_args[0], 1)
+        self.assertEqual(mock_tracker.tensors_tracker.call_count, 0)
+        self.assertEqual(mock_tracker.blob_tracker.call_count, 0)
+
+    def test_start_uploading_scalars_one_shot(self):
+        """Check that one-shot uploading stops without AbortUploadError."""
+        mock_client = _create_mock_client()
+        mock_rate_limiter = mock.create_autospec(util.RateLimiter)
+        mock_tensor_rate_limiter = mock.create_autospec(util.RateLimiter)
+        mock_blob_rate_limiter = mock.create_autospec(util.RateLimiter)
+        mock_tracker = mock.MagicMock()
+        with mock.patch.object(
+            upload_tracker, "UploadTracker", return_value=mock_tracker
+        ):
+            uploader = _create_uploader(
+                mock_client,
+                "/logs/foo",
+                # Send each Event below in a separate WriteScalarRequest
+                max_scalar_request_size=100,
+                rpc_rate_limiter=mock_rate_limiter,
+                tensor_rpc_rate_limiter=mock_tensor_rate_limiter,
+                blob_rpc_rate_limiter=mock_blob_rate_limiter,
+                verbosity=1,  # In order to test the upload tracker.
+                one_shot=True,
+            )
+            uploader.create_experiment()
+
+        def scalar_event(tag, value):
+            return event_pb2.Event(summary=scalar_v2.scalar_pb(tag, value))
+
+        mock_logdir_loader = mock.create_autospec(logdir_loader.LogdirLoader)
+        mock_logdir_loader.get_run_events.side_effect = [
+            {
+                "run 1": _apply_compat(
+                    [scalar_event("1.1", 5.0), scalar_event("1.2", 5.0)]
+                ),
+                "run 2": _apply_compat(
+                    [scalar_event("2.1", 5.0), scalar_event("2.2", 5.0)]
+                ),
+            },
+            # Note the lack of AbortUploadError here.
+        ]
+
+        with mock.patch.object(uploader, "_logdir_loader", mock_logdir_loader):
+            uploader.start_uploading()
+
+        self.assertEqual(4, mock_client.WriteScalar.call_count)
+        self.assertEqual(4, mock_rate_limiter.tick.call_count)
+        self.assertEqual(0, mock_tensor_rate_limiter.tick.call_count)
+        self.assertEqual(0, mock_blob_rate_limiter.tick.call_count)
+
+        # Check upload tracker calls.
+        self.assertEqual(mock_tracker.send_tracker.call_count, 1)
+        self.assertEqual(mock_tracker.scalars_tracker.call_count, 4)
         self.assertLen(mock_tracker.scalars_tracker.call_args[0], 1)
         self.assertEqual(mock_tracker.tensors_tracker.call_count, 0)
         self.assertEqual(mock_tracker.blob_tracker.call_count, 0)
@@ -1924,6 +1985,36 @@ class VarintCostTest(tf.test.TestCase):
         self.assertEqual(uploader_lib._varint_cost(128), 2)
         self.assertEqual(uploader_lib._varint_cost(128 * 128 - 1), 2)
         self.assertEqual(uploader_lib._varint_cost(128 * 128), 3)
+
+
+class UploadIntentTest(tf.test.TestCase):
+    def testUploadIntentUnderDryRunOneShot(self):
+        """Test the upload intent under the dry-run + one-shot mode."""
+        mock_server_info = mock.MagicMock()
+        mock_channel = mock.MagicMock()
+        upload_limits = server_info_pb2.UploadLimits(
+            max_scalar_request_size=128000,
+            max_tensor_request_size=128000,
+            max_tensor_point_size=11111,
+            max_blob_request_size=128000,
+            max_blob_size=128000,
+        )
+        with mock.patch.object(
+            server_info_lib,
+            "allowed_plugins",
+            return_value=_SCALARS_HISTOGRAMS_AND_GRAPHS,
+        ), mock.patch.object(
+            server_info_lib, "upload_limits", return_value=upload_limits
+        ), mock.patch.object(
+            dry_run_stubs,
+            "DryRunTensorBoardWriterStub",
+            side_effect=dry_run_stubs.DryRunTensorBoardWriterStub,
+        ) as mock_dry_run_stub:
+            intent = uploader_subcommand.UploadIntent(
+                self.get_temp_dir(), dry_run=True, one_shot=True
+            )
+            intent.execute(mock_server_info, mock_channel)
+        self.assertEqual(mock_dry_run_stub.call_count, 1)
 
 
 def _clear_wall_times(request):
