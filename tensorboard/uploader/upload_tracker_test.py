@@ -85,16 +85,6 @@ class UploadStatsTest(tb_test.TestCase):
                 tensor_bytes_skipped=0,
             )
 
-    def testAddTensorsNumTensorsSkippedGreaterThanNumTenosrsErrors(self):
-        stats = upload_tracker.UploadStats()
-        with self.assertRaises(AssertionError):
-            stats.add_tensors(
-                num_tensors=10,
-                num_tensors_skipped=12,
-                tensor_bytes=1000,
-                tensor_bytes_skipped=0,
-            )
-
     def testAddBlob(self):
         stats = upload_tracker.UploadStats()
         stats.add_blob(blob_bytes=1000, is_skipped=False)
