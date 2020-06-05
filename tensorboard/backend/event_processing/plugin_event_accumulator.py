@@ -299,7 +299,7 @@ class EventAccumulator(object):
             new_file_version = _ParseFileVersion(event.file_version)
             if self.file_version and self.file_version != new_file_version:
                 ## This should not happen.
-                logger.warn(
+                logger.warning(
                     (
                         "Found new file_version for event.proto. This will "
                         "affect purging logic for TensorFlow restarts. "
@@ -318,7 +318,7 @@ class EventAccumulator(object):
         # inside the meta_graph_def.
         if event.HasField("graph_def"):
             if self._graph is not None:
-                logger.warn(
+                logger.warning(
                     (
                         "Found more than one graph event per run, or there was "
                         "a metagraph containing a graph_def, as well as one or "
@@ -330,7 +330,7 @@ class EventAccumulator(object):
             self._graph_from_metagraph = False
         elif event.HasField("meta_graph_def"):
             if self._meta_graph is not None:
-                logger.warn(
+                logger.warning(
                     (
                         "Found more than one metagraph event per run. "
                         "Overwriting the metagraph with the newest event."
@@ -344,7 +344,7 @@ class EventAccumulator(object):
                 meta_graph.ParseFromString(self._meta_graph)
                 if meta_graph.graph_def:
                     if self._graph is not None:
-                        logger.warn(
+                        logger.warning(
                             (
                                 "Found multiple metagraphs containing graph_defs,"
                                 "but did not find any graph events.  Overwriting the "
@@ -356,7 +356,7 @@ class EventAccumulator(object):
         elif event.HasField("tagged_run_metadata"):
             tag = event.tagged_run_metadata.tag
             if tag in self._tagged_metadata:
-                logger.warn(
+                logger.warning(
                     'Found more than one "run metadata" event with tag '
                     + tag
                     + ". Overwriting it with the newest event."
@@ -381,7 +381,7 @@ class EventAccumulator(object):
                                     plugin_data.plugin_name
                                 ][tag] = plugin_data.content
                         else:
-                            logger.warn(
+                            logger.warning(
                                 (
                                     "This summary with tag %r is oddly not associated with a "
                                     "plugin."
@@ -611,7 +611,7 @@ class EventAccumulator(object):
                 event.wall_time,
                 num_expired,
             )
-            logger.warn(purge_msg)
+            logger.warning(purge_msg)
 
 
 def _GetPurgeMessage(
@@ -672,7 +672,7 @@ def _ParseFileVersion(file_version):
     except ValueError:
         ## This should never happen according to the definition of file_version
         ## specified in event.proto.
-        logger.warn(
+        logger.warning(
             (
                 "Invalid event.proto file_version. Defaulting to use of "
                 "out-of-order event.step logic for purging expired events."

@@ -255,7 +255,7 @@ class TensorStore(object):
             if mapping == "image/png":
                 output = tensor_helper.array_to_base64_png(output)
             elif mapping and mapping != "none":
-                logger.warn(
+                logger.warning(
                     "Unsupported mapping mode after recomining time steps: %s",
                     mapping,
                 )

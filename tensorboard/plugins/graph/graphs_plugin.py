@@ -138,7 +138,7 @@ class GraphsPlugin(base_plugin.TBPlugin):
                 # as a content of plugin data. It contains single string that denotes a version.
                 # https://github.com/tensorflow/tensorflow/blob/11f4ecb54708865ec757ca64e4805957b05d7570/tensorflow/python/ops/summary_ops_v2.py#L789-L790
                 if content != b"1":
-                    logger.warn(
+                    logger.warning(
                         "Ignoring unrecognizable version of RunMetadata."
                     )
                     continue
@@ -153,7 +153,7 @@ class GraphsPlugin(base_plugin.TBPlugin):
         for run_name, tag_to_content in six.iteritems(mapping):
             for (tag, content) in six.iteritems(tag_to_content):
                 if content != b"1":
-                    logger.warn(
+                    logger.warning(
                         "Ignoring unrecognizable version of RunMetadata."
                     )
                     continue
@@ -169,7 +169,7 @@ class GraphsPlugin(base_plugin.TBPlugin):
         for run_name, tag_to_content in six.iteritems(mapping):
             for (tag, content) in six.iteritems(tag_to_content):
                 if content != b"1":
-                    logger.warn(
+                    logger.warning(
                         "Ignoring unrecognizable version of RunMetadata."
                     )
                     continue
