@@ -234,7 +234,7 @@ class TensorBoardWSGI(object):
                     type(plugin) is core_plugin.CorePlugin
                 ):  # pylint: disable=unidiomatic-typecheck
                     raise
-                logger.warn(
+                logger.warning(
                     "Plugin %s failed. Exception: %s",
                     plugin.plugin_name,
                     str(e),
@@ -518,7 +518,7 @@ class TensorBoardWSGI(object):
                         environ, start_response
                     )
 
-            logger.warn("path %s not found, sending 404", clean_path)
+            logger.warning("path %s not found, sending 404", clean_path)
             return http_util.Respond(
                 request, "Not found", "text/plain", code=404
             )(environ, start_response)

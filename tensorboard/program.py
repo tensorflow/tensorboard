@@ -666,7 +666,7 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
                     socket.AI_PASSIVE,
                 )
             except socket.gaierror as e:
-                logger.warn(
+                logger.warning(
                     "Failed to auto-detect wildcard address, assuming %s: %s",
                     fallback_address,
                     str(e),
@@ -681,7 +681,7 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
                 return addrs_by_family[socket.AF_INET6][0]
             if hasattr(socket, "AF_INET") and addrs_by_family[socket.AF_INET]:
                 return addrs_by_family[socket.AF_INET][0]
-        logger.warn(
+        logger.warning(
             "Failed to auto-detect wildcard address, assuming %s",
             fallback_address,
         )
@@ -714,7 +714,7 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
                     hasattr(errno, "EAFNOSUPPORT")
                     and e.errno != errno.EAFNOSUPPORT
                 ):
-                    logger.warn(
+                    logger.warning(
                         "Failed to dual-bind to IPv4 wildcard: %s", str(e)
                     )
         super(WerkzeugServer, self).server_bind()
@@ -728,7 +728,7 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
         exc_info = sys.exc_info()
         e = exc_info[1]
         if isinstance(e, IOError) and e.errno == errno.EPIPE:
-            logger.warn(
+            logger.warning(
                 "EPIPE caused by %s in HTTP serving" % str(client_address)
             )
         else:

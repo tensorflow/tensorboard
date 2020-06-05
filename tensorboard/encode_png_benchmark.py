@@ -137,7 +137,7 @@ def main(unused_argv):
         )  # best-of-three timing
         unit_time = total_time / thread_count
         if total_time < 2.0:
-            logger.warn(
+            logger.warning(
                 "This benchmark is running too quickly! This "
                 "may cause misleading timing data. Consider "
                 "increasing the image size until it takes at "

@@ -68,14 +68,14 @@ class VideoWriter(object):
                 if not self.output:
                     new_output = self.outputs[self.output_index]
                     if self.output_index > original_output_index:
-                        logger.warn(
+                        logger.warning(
                             "Falling back to video output %s", new_output.name()
                         )
                     self.output = new_output(self.directory, self.frame_shape)
                 self.output.emit_frame(np_array)
                 return
             except (IOError, OSError) as e:
-                logger.warn(
+                logger.warning(
                     "Video output type %s not available: %s",
                     self.current_output().name(),
                     str(e),

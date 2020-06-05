@@ -204,7 +204,7 @@ class CorePlugin(base_plugin.TBPlugin):
                 try:
                     return self._multiplexer.FirstEventTimestamp(run_name)
                 except ValueError as e:
-                    logger.warn(
+                    logger.warning(
                         "Unable to get first event timestamp for run %s: %s",
                         run_name,
                         e,
