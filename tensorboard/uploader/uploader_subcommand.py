@@ -448,14 +448,11 @@ class UploadIntent(_Intent):
             print("Experiment was deleted; uploading has been cancelled")
             return
         except KeyboardInterrupt:
-            print()
-            print("Upload stopped. View your TensorBoard at %s" % url)
-            return
-        # TODO(@nfelt): make it possible for the upload cycle to end once we
-        #   detect that no more runs are active, so this code can be reached.
-
-        if not self.dry_run:
-            print("Done! View your TensorBoard at %s" % url)
+            pass
+        finally:
+            if not self.dry_run:
+                print()
+                print("Done! View your TensorBoard at %s" % url)
 
 
 class _ExportIntent(_Intent):

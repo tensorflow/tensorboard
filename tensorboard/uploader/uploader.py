@@ -104,10 +104,10 @@ class TensorBoardUploader(object):
           verbosity: Level of verbosity, an integer. Supported value:
               0 - No upload statistics is printed.
               1 - Print upload statistics while uploading data (default).
-         one_shot: Once uploading starts, upload only the existing data in and
-          the logdir and then return immediately, instead of the default
-          behavior in which the uploader keeps listening for new data in the
-          logdir and upload them when it appears.
+         one_shot: Once uploading starts, upload only the existing data in
+            the logdir and then return immediately, instead of the default
+            behavior of continuing to listen for new data in the logdir and
+            upload them when it appears.
         """
         self._api = writer_client
         self._logdir = logdir

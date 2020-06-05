@@ -118,7 +118,8 @@ def define_flags(parser):
         "--one_shot",
         action="store_true",
         help="Upload only the existing data in the logdir and then exit "
-        "immediately, instead of keep listening for new data in the logdir.",
+        "immediately, instead of continuing to listen for new data in the "
+        "logdir.",
     )
     upload.add_argument(
         "--plugins",

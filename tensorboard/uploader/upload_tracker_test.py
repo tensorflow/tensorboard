@@ -185,7 +185,7 @@ class UploadStatsTest(tb_test.TestCase):
         stats.add_blob(blob_bytes=2000, is_skipped=True)
         self.assertEqual(stats.has_new_data_since_last_summarize(), True)
 
-    def testHasDataInitiallyReturnsFlase(self):
+    def testHasDataInitiallyReturnsFalse(self):
         stats = upload_tracker.UploadStats()
         self.assertEqual(stats.has_data(), False)
 
@@ -204,7 +204,7 @@ class UploadStatsTest(tb_test.TestCase):
         )
         self.assertEqual(stats.has_data(), True)
 
-    def testHasDataReturnsTrueWithskippedTensors(self):
+    def testHasDataReturnsTrueWithSkippedTensors(self):
         stats = upload_tracker.UploadStats()
         stats.add_tensors(
             num_tensors=10,
