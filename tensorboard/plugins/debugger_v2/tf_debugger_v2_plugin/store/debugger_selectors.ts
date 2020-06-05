@@ -519,7 +519,7 @@ export const getCodeLocationOrigin = createSelector(
  */
 export const getFocusedStackFrames = createSelector(
   // TODO(cais): Rename this function as `getFocusedStackTrace()` to
-  // minimize confusion with `getFocusedLineSpec()`.
+  // minimize confusion with `getFocusedSourceLineSpec()`.
   selectDebuggerState,
   getFocusedStackFramesHelper
 );
@@ -582,21 +582,10 @@ export const getFocusedSourceFileContent = createSelector(
  * This selector allows the UI to "track" lines in a source file of interest
  * as a user navigates executions or graph ops.
  */
-export const getMaybeBottommostStickingFocusedSourceLineSpec = createSelector(
+export const getFocusedSourceLineSpec = createSelector(
   selectDebuggerState,
-  (state: DebuggerState): SourceLineSpec | null => {
-    const stackFrames = getFocusedStackFramesHelper(state);
-    const {focusLineSpec} = state.sourceCode;
-    if (
-      state.stickToBottommostFrameInFocusedFile &&
-      stackFrames !== null &&
-      focusLineSpec !== null
-    ) {
-      return getBottommostStackFrameInFocusedFile(stackFrames, focusLineSpec);
-    } else {
-      return focusLineSpec;
-    }
-  }
+  (state: DebuggerState): SourceLineSpec | null =>
+    state.sourceCode.focusLineSpec
 );
 
 export const getStickToBottommostFrameInFocusedFile = createSelector(

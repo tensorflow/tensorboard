@@ -107,11 +107,12 @@ export function createTestGraphOpInfo(
 }
 
 export function createTestStackFrame(
+  host_name?: string,
   file_path?: string,
   lineno?: number
 ): StackFrame {
   return [
-    'localhost', // Host name.
+    host_name || 'localhost', // Host name.
     file_path || `/tmp/file_${Math.floor(Math.random() * 1e6)}.py`, // File path.
     // `lineno` is assumed to be 1-based. So a value of 0 means use default
     // behavior.

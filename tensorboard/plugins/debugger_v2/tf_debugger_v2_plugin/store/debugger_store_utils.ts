@@ -160,21 +160,6 @@ export function beginEndRangesInclude(
 }
 
 /**
- * Helper method that converts a stack frame to a source line spec.
- *
- * TODO(cais): Remove this method once typing unifies onto SourceLineSpec.
- *
- * @param stackFrame
- * @returns The equivalent source-line spec to `stackFrame`.
- */
-export function stackFrameToSourceLineSpec(
-  stackFrame: StackFrame
-): SourceLineSpec {
-  const [host_name, file_path, lineno] = stackFrame;
-  return {host_name, file_path, lineno};
-}
-
-/**
  * Helper function that extracts the stack trace being focused on.
  *
  * This examines whether the current focused code location is for an
@@ -219,4 +204,35 @@ export function getFocusedStackFramesHelper(
     }
   }
   return stackFrames;
+}
+
+/**
+ * Computes bottommost stack frame in the currently-focused stack trace.
+ *
+ * @param state Input DebuggerState (will not be mutated).
+ * @returns If `stickToBottommostFrameInFocusedFile` and there is a stack trace
+ *   in focus and if a bottommost frame can be found in the file currently in
+ *   focus, return the bottommost frame. Else, return the current value of
+ *   `focusLineSpec` in `state.sourceCode`.
+ */
+export function computeBottommostLineSpec(
+  state: DebuggerState
+): SourceLineSpec | null {
+  const currentFocusLineSpec = state.sourceCode.focusLineSpec;
+  if (!state.stickToBottommostFrameInFocusedFile) {
+    return currentFocusLineSpec;
+  }
+  const focusedStackFrame = getFocusedStackFramesHelper(state);
+  if (focusedStackFrame === null) {
+    return currentFocusLineSpec;
+  }
+  const bottommost = getBottommostStackFrameInFocusedFile(
+    focusedStackFrame,
+    currentFocusLineSpec
+  );
+  if (bottommost === null) {
+    return currentFocusLineSpec;
+  } else {
+    return bottommost;
+  }
 }

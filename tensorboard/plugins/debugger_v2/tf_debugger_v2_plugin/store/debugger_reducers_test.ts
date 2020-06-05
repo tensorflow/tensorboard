@@ -984,6 +984,74 @@ describe('Debugger graphs reducers', () => {
     expect(nextState.codeLocationFocusType).toBe(CodeLocationType.EXECUTION);
   });
 
+  for (const [
+    stickToBottommostFrameInFocusedFile,
+    stackFrameIsLoaded,
+    expectedLineno,
+  ] of [
+    [false, false, 20],
+    [false, true, 20],
+    [true, false, 20],
+    [true, true, 30],
+  ] as Array<[boolean, boolean, number]>)
+    it(
+      `executionDigestFocused: focusLineSpec sticking behavior: ` +
+        `stickToBottommostFrameInFocusedFile=` +
+        `${stickToBottommostFrameInFocusedFile}; ` +
+        `stackFrameIsLoaded=${stackFrameIsLoaded}`,
+      () => {
+        const stackFrame0 = createTestStackFrame('localhost', 'main.py', 10);
+        const stackFrame1 = createTestStackFrame('localhost', 'main.py', 20);
+        const stackFrame2 = createTestStackFrame('localhost', 'main.py', 30);
+        const state = createDebuggerState({
+          executions: createDebuggerExecutionsState({
+            executionData: {
+              10: createTestExecutionData({
+                stack_frame_ids: ['s0', 's1'],
+              }),
+              12: createTestExecutionData({
+                stack_frame_ids: ['s0', 's2'],
+              }),
+            },
+            focusIndex: 10,
+          }),
+          stackFrames: stackFrameIsLoaded
+            ? {
+                s0: stackFrame0,
+                s1: stackFrame1,
+                s2: stackFrame2,
+              }
+            : {
+                s0: stackFrame0,
+                s1: stackFrame1,
+              },
+          sourceCode: createDebuggerSourceCodeState({
+            focusLineSpec: {
+              host_name: 'localhost',
+              file_path: 'main.py',
+              lineno: 20,
+            },
+          }),
+          stickToBottommostFrameInFocusedFile,
+        });
+        const nextState = reducers(
+          state,
+          actions.executionDigestFocused({
+            displayIndex: 12,
+          })
+        );
+        expect(nextState.executions.focusIndex).toBe(12);
+        expect(nextState.codeLocationFocusType).toBe(
+          CodeLocationType.EXECUTION
+        );
+        expect(nextState.sourceCode.focusLineSpec).toEqual({
+          host_name: 'localhost',
+          file_path: 'main.py',
+          lineno: expectedLineno,
+        });
+      }
+    );
+
   it(`Updates states on executionDigestFocused: scrollBeginIndex > 0`, () => {
     const state = createDebuggerState({
       executions: {
@@ -1067,6 +1135,50 @@ describe('Debugger graphs reducers', () => {
     expect(nextState.stackFrames).toEqual(stackFrames);
   });
 
+  it('loaing stack frame updates focused line spec', () => {
+    const stackFrame0 = createTestStackFrame('localhost', 'main.py', 10);
+    const stackFrame1 = createTestStackFrame('localhost', 'main.py', 20);
+    const stackFrame2 = createTestStackFrame('localhost', 'main.py', 30);
+    const state = createDebuggerState({
+      activeRunId: '__default_debugger_run__',
+      executions: createDebuggerExecutionsState({
+        executionData: {
+          10: createTestExecutionData({
+            stack_frame_ids: ['s0', 's1'],
+          }),
+          12: createTestExecutionData({
+            stack_frame_ids: ['s0', 's2'],
+          }),
+        },
+        focusIndex: 12,
+      }),
+      stackFrames: {
+        s0: stackFrame0,
+        s1: stackFrame1,
+      }, // The bottommost frame (s2) is initially not loaded.
+      sourceCode: createDebuggerSourceCodeState({
+        focusLineSpec: {
+          host_name: 'localhost',
+          file_path: 'main.py',
+          lineno: 20,
+        },
+      }),
+      codeLocationFocusType: CodeLocationType.EXECUTION,
+      stickToBottommostFrameInFocusedFile: true,
+    });
+    const nextState = reducers(
+      state,
+      actions.stackFramesLoaded({
+        stackFrames: {s2: stackFrame2},
+      })
+    );
+    expect(nextState.sourceCode.focusLineSpec).toEqual({
+      host_name: 'localhost',
+      file_path: 'main.py',
+      lineno: 30,
+    });
+  });
+
   it(`updates source-file list load state on sourceFileListRequested`, () => {
     const state = createDebuggerState();
     const nextState = reducers(state, actions.sourceFileListRequested());
@@ -1133,8 +1245,8 @@ describe('Debugger graphs reducers', () => {
   });
 
   describe('sourceLineFocused', () => {
-    const stackFrame0 = createTestStackFrame('main.py', 10);
-    const stackFrame1 = createTestStackFrame('main.py', 20);
+    const stackFrame0 = createTestStackFrame('localhost', 'main.py', 10);
+    const stackFrame1 = createTestStackFrame('localhost', 'main.py', 20);
 
     for (const [focusLineno, initialStick, expectedStick] of [
       [20, false, true],

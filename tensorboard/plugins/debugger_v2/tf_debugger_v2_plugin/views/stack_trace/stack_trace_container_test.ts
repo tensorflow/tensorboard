@@ -29,7 +29,7 @@ import {CodeLocationType, State} from '../../store/debugger_types';
 import {
   getCodeLocationOrigin,
   getFocusedStackFrames,
-  getMaybeBottommostStickingFocusedSourceLineSpec,
+  getFocusedSourceLineSpec,
   getStickToBottommostFrameInFocusedFile,
 } from '../../store';
 import {
@@ -81,14 +81,11 @@ describe('Stack Trace container', () => {
           stackFrame1,
           stackFrame2,
         ]);
-        store.overrideSelector(
-          getMaybeBottommostStickingFocusedSourceLineSpec,
-          {
-            host_name: stackFrame1[0],
-            file_path: stackFrame1[1],
-            lineno: stackFrame1[2],
-          }
-        );
+        store.overrideSelector(getFocusedSourceLineSpec, {
+          host_name: stackFrame1[0],
+          file_path: stackFrame1[1],
+          lineno: stackFrame1[2],
+        });
         store.overrideSelector(
           getStickToBottommostFrameInFocusedFile,
           stickToBottommostFrame
@@ -186,7 +183,7 @@ describe('Stack Trace container', () => {
     const stackFrame0 = createTestStackFrame();
     const stackFrame1 = createTestStackFrame();
     store.overrideSelector(getFocusedStackFrames, [stackFrame0, stackFrame1]);
-    store.overrideSelector(getMaybeBottommostStickingFocusedSourceLineSpec, {
+    store.overrideSelector(getFocusedSourceLineSpec, {
       host_name: stackFrame0[0],
       file_path: stackFrame0[1],
       lineno: stackFrame0[2],
@@ -280,10 +277,7 @@ describe('Stack Trace container', () => {
       stackFrame1,
       stackFrame2,
     ]);
-    store.overrideSelector(
-      getMaybeBottommostStickingFocusedSourceLineSpec,
-      null
-    );
+    store.overrideSelector(getFocusedSourceLineSpec, null);
     fixture.detectChanges();
 
     // Check that no stack frame has been highlighted by CSS class.

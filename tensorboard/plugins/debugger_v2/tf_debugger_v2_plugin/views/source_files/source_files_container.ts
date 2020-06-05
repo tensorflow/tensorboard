@@ -17,7 +17,7 @@ import {select, Store} from '@ngrx/store';
 
 import {
   getFocusedSourceFileContent,
-  getMaybeBottommostStickingFocusedSourceLineSpec,
+  getFocusedSourceLineSpec,
 } from '../../store';
 import {State} from '../../store/debugger_types';
 
@@ -40,6 +40,6 @@ export class SourceFilesContainer {
   );
 
   readonly focusedSourceLineSpec$ = this.store.pipe(
-    select(getMaybeBottommostStickingFocusedSourceLineSpec)
+    select(getFocusedSourceLineSpec)
   );
 }
