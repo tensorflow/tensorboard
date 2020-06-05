@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from absl import logging
+
 import contextlib
 from datetime import datetime
 import sys
@@ -156,6 +158,21 @@ class UploadStats(object):
     def plugin_names(self):
         return self._plugin_names
 
+    def has_data(self):
+        """Has any data been tracked by this instance.
+
+        This counts the tensor and blob data that have been scanned
+        but skipped.
+
+        Returns:
+          Whether this stats tracking object has tracked any data.
+        """
+        return (
+            self._num_scalars > 0
+            or self._num_tensors > 0
+            or self._num_blobs > 0
+        )
+
     def summarize(self):
         """Get a summary string for actually-uploaded and skipped data.
 
@@ -236,6 +253,7 @@ class UploadStats(object):
 
 _STYLE_RESET = "\033[0m"
 _STYLE_BOLD = "\033[1m"
+_STYLE_RED = "\033[31m"
 _STYLE_GREEN = "\033[32m"
 _STYLE_YELLOW = "\033[33m"
 _STYLE_DARKGRAY = "\033[90m"
@@ -255,6 +273,7 @@ class UploadTracker(object):
             )
         self._verbosity = verbosity
         self._stats = UploadStats()
+        self._send_count = 0
 
     def _dummy_generator(self):
         while True:
@@ -264,23 +283,40 @@ class UploadTracker(object):
     def _update_uploading_status(self, message, color_code=_STYLE_GREEN):
         if not self._verbosity:
             return
-
         message += "." * 3
         sys.stdout.write(
             _STYLE_ERASE_LINE + color_code + message + _STYLE_RESET + "\r"
         )
         sys.stdout.flush()
 
-    def _update_cumulative_status(self):
+    def _upload_start(self):
+        """Write an update indicating the start of the uploading."""
+        if not self._verbosity:
+            return
+        start_message = "%s[%s]%s Uploader started.\n" % (
+            _STYLE_BOLD,
+            readable_time_string(),
+            _STYLE_RESET,
+        )
+        sys.stdout.write(start_message)
+        sys.stdout.flush()
+
+    def has_data(self):
+        """Determine if any data has been uploaded under the tracker's watch."""
+        return self._stats.has_data()
+
+    def _update_cumulative_status(self, is_end=False):
+        """Write an update summarizing the data uploaded since the start."""
         if not self._verbosity:
             return
         if not self._stats.has_new_data_since_last_summarize():
             return
         uploaded_str, skipped_str = self._stats.summarize()
-        uploaded_message = "%s[%s]%s Total uploaded: %s\n" % (
+        uploaded_message = "%s[%s]%s%s Total uploaded: %s\n" % (
             _STYLE_BOLD,
             readable_time_string(),
             _STYLE_RESET,
+            "Uploader ended." if is_end else "",
             uploaded_str,
         )
         sys.stdout.write(uploaded_message)
@@ -299,6 +335,9 @@ class UploadTracker(object):
     @contextlib.contextmanager
     def send_tracker(self):
         """Create a context manager for a round of data sending."""
+        self._send_count += 1
+        if self._send_count == 1:
+            self._upload_start()
         try:
             # self._reset_bars()
             self._update_uploading_status("Data upload starting")

@@ -199,6 +199,11 @@ class TensorBoardUploader(object):
             self._upload_once()
             if self._one_shot:
                 break
+        if self._one_shot and not self._tracker.has_data():
+            logger.warning(
+                "One-shot mode was used on a logdir (%s) "
+                "without any uploadable data" % self._logdir
+            )
 
     def _upload_once(self):
         """Runs one upload cycle, sending zero or more RPCs."""
