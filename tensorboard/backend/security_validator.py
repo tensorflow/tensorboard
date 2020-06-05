@@ -48,7 +48,7 @@ _CSP_IGNORE = {
 
 
 def _maybe_raise_value_error(error_msg):
-    logger.warn("In 3.0, this warning will become an error:\n%s" % error_msg)
+    logger.warning("In 3.0, this warning will become an error:\n%s" % error_msg)
     # TODO(3.x): raise a value error.
 
 

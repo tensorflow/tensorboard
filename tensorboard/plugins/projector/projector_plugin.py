@@ -484,7 +484,7 @@ class ProjectorPlugin(base_plugin.TBPlugin):
                 and _using_tf()
                 and not tf.io.gfile.glob(config.model_checkpoint_path + "*")
             ):
-                logger.warn(
+                logger.warning(
                     'Checkpoint file "%s" not found',
                     config.model_checkpoint_path,
                 )
@@ -503,7 +503,9 @@ class ProjectorPlugin(base_plugin.TBPlugin):
             try:
                 reader = tf.train.load_checkpoint(config.model_checkpoint_path)
             except Exception:  # pylint: disable=broad-except
-                logger.warn('Failed reading "%s"', config.model_checkpoint_path)
+                logger.warning(
+                    'Failed reading "%s"', config.model_checkpoint_path
+                )
         self.readers[run] = reader
         return reader
 
