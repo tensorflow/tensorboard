@@ -18,8 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from unittest import mock
-
 from tensorboard import test as tb_test
 from tensorboard.uploader import dry_run_stubs
 from tensorboard.uploader.proto import write_service_pb2
