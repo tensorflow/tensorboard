@@ -85,16 +85,6 @@ class UploadStatsTest(tb_test.TestCase):
                 tensor_bytes_skipped=0,
             )
 
-    def testAddTensorsNumTensorsSkippedGreaterThanNumTenosrsErrors(self):
-        stats = upload_tracker.UploadStats()
-        with self.assertRaises(AssertionError):
-            stats.add_tensors(
-                num_tensors=10,
-                num_tensors_skipped=12,
-                tensor_bytes=1000,
-                tensor_bytes_skipped=0,
-            )
-
     def testAddBlob(self):
         stats = upload_tracker.UploadStats()
         stats.add_blob(blob_bytes=1000, is_skipped=False)
@@ -185,6 +175,45 @@ class UploadStatsTest(tb_test.TestCase):
         stats.add_blob(blob_bytes=2000, is_skipped=True)
         self.assertEqual(stats.has_new_data_since_last_summarize(), True)
 
+    def testHasDataInitiallyReturnsFalse(self):
+        stats = upload_tracker.UploadStats()
+        self.assertEqual(stats.has_data(), False)
+
+    def testHasDataReturnsTrueWithScalars(self):
+        stats = upload_tracker.UploadStats()
+        stats.add_scalars(1)
+        self.assertEqual(stats.has_data(), True)
+
+    def testHasDataReturnsTrueWithUnskippedTensors(self):
+        stats = upload_tracker.UploadStats()
+        stats.add_tensors(
+            num_tensors=10,
+            num_tensors_skipped=0,
+            tensor_bytes=1000,
+            tensor_bytes_skipped=0,
+        )
+        self.assertEqual(stats.has_data(), True)
+
+    def testHasDataReturnsTrueWithSkippedTensors(self):
+        stats = upload_tracker.UploadStats()
+        stats.add_tensors(
+            num_tensors=10,
+            num_tensors_skipped=10,
+            tensor_bytes=1000,
+            tensor_bytes_skipped=1000,
+        )
+        self.assertEqual(stats.has_data(), True)
+
+    def testHasDataReturnsTrueWithUnskippedBlob(self):
+        stats = upload_tracker.UploadStats()
+        stats.add_blob(blob_bytes=1000, is_skipped=False)
+        self.assertEqual(stats.has_data(), True)
+
+    def testHasDataReturnsTrueWithSkippedBlob(self):
+        stats = upload_tracker.UploadStats()
+        stats.add_blob(blob_bytes=1000, is_skipped=True)
+        self.assertEqual(stats.has_data(), True)
+
 
 class UploadTrackerTest(tb_test.TestCase):
     """Test for the UploadTracker class."""
@@ -213,17 +242,18 @@ class UploadTrackerTest(tb_test.TestCase):
     def testSendTracker(self):
         tracker = upload_tracker.UploadTracker(verbosity=1)
         with tracker.send_tracker():
-            self.assertEqual(self.mock_write.call_count, 1)
-            self.assertEqual(self.mock_flush.call_count, 1)
+            self.assertEqual(self.mock_write.call_count, 2)
+            self.assertEqual(self.mock_flush.call_count, 2)
             self.assertIn(
                 "Data upload starting...", self.mock_write.call_args[0][0],
             )
-        self.assertEqual(self.mock_write.call_count, 2)
-        self.assertEqual(self.mock_flush.call_count, 2)
+        self.assertEqual(self.mock_write.call_count, 3)
+        self.assertEqual(self.mock_flush.call_count, 3)
         self.assertIn(
             "Listening for new data in logdir...",
             self.mock_write.call_args[0][0],
         )
+        self.assertEqual(tracker.has_data(), False)
 
     def testSendTrackerWithVerbosity0(self):
         tracker = upload_tracker.UploadTracker(verbosity=0)
@@ -243,6 +273,7 @@ class UploadTrackerTest(tb_test.TestCase):
             )
         self.assertEqual(self.mock_write.call_count, 1)
         self.assertEqual(self.mock_flush.call_count, 1)
+        self.assertEqual(tracker.has_data(), True)
 
     def testScalarsTrackerWithVerbosity0(self):
         tracker = upload_tracker.UploadTracker(verbosity=0)
@@ -266,6 +297,7 @@ class UploadTrackerTest(tb_test.TestCase):
                 "Uploading 150 tensors (2.0 kB) (Skipping 50 tensors, 3.9 kB)",
                 self.mock_write.call_args[0][0],
             )
+        self.assertEqual(tracker.has_data(), True)
 
     def testTensorsTrackerWithVerbosity0(self):
         tracker = upload_tracker.UploadTracker(verbosity=0)
@@ -294,6 +326,7 @@ class UploadTrackerTest(tb_test.TestCase):
                 "Uploading 200 tensors (5.9 kB)",
                 self.mock_write.call_args[0][0],
             )
+        self.assertEqual(tracker.has_data(), True)
 
     def testBlobTrackerUploaded(self):
         tracker = upload_tracker.UploadTracker(verbosity=1)
@@ -316,28 +349,32 @@ class UploadTrackerTest(tb_test.TestCase):
     def testBlobTrackerNotUploaded(self):
         tracker = upload_tracker.UploadTracker(verbosity=1)
         with tracker.send_tracker():
-            self.assertEqual(self.mock_write.call_count, 1)
-            self.assertEqual(self.mock_flush.call_count, 1)
+            self.assertEqual(self.mock_write.call_count, 2)
+            self.assertEqual(self.mock_flush.call_count, 2)
+            self.assertIn(
+                "Uploader started.", self.mock_write.call_args_list[0][0][0],
+            )
             with tracker.blob_tracker(
                 blob_bytes=2048 * 1024 * 1024
             ) as blob_tracker:
-                self.assertEqual(self.mock_write.call_count, 2)
-                self.assertEqual(self.mock_flush.call_count, 2)
+                self.assertEqual(self.mock_write.call_count, 3)
+                self.assertEqual(self.mock_flush.call_count, 3)
                 self.assertIn(
                     "Uploading binary object (2048.0 MB)",
                     self.mock_write.call_args[0][0],
                 )
                 blob_tracker.mark_uploaded(is_uploaded=False)
-        self.assertEqual(self.mock_write.call_count, 5)
-        self.assertEqual(self.mock_flush.call_count, 4)
+        self.assertEqual(self.mock_write.call_count, 6)
+        self.assertEqual(self.mock_flush.call_count, 5)
         self.assertIn(
             "Total uploaded: 0 scalars, 0 tensors, 0 binary objects\n",
-            self.mock_write.call_args_list[2][0][0],
+            self.mock_write.call_args_list[3][0][0],
         )
         self.assertIn(
             "Total skipped: 1 binary objects (2048.0 MB)\n",
-            self.mock_write.call_args_list[3][0][0],
+            self.mock_write.call_args_list[4][0][0],
         )
+        self.assertEqual(tracker.has_data(), True)
 
     def testInvalidVerbosityRaisesError(self):
         with self.assertRaises(ValueError):
