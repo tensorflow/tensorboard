@@ -1167,7 +1167,7 @@ describe('Debugger graphs reducers', () => {
             codeLocationFocusType: CodeLocationType.EXECUTION,
             stickToBottommostFrameInFocusedFile: initialStick,
           });
-          let nextState = reducers(
+          const nextState = reducers(
             state,
             actions.sourceLineFocused({
               sourceLineSpec: {

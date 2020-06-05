@@ -17,7 +17,9 @@ import {createTestStackFrame} from '../testing';
 import {
   getBottommostStackFrameInFocusedFile,
   isFrameBottommostInStackTrace,
+  stackFrameToSourceLineSpec,
 } from './debugger_store_utils';
+import {SourceLineSpec} from './debugger_types';
 
 describe('Debugger store utils', () => {
   const stackFrame0 = createTestStackFrame('main.py', 10);
@@ -29,21 +31,19 @@ describe('Debugger store utils', () => {
   describe('isFrameBottommostInStackTrace', () => {
     it('returns true for bottommost frame', () => {
       expect(
-        isFrameBottommostInStackTrace(stackTrace, {
-          host_name: 'localhost',
-          file_path: 'main.py',
-          lineno: 20,
-        })
+        isFrameBottommostInStackTrace(
+          stackTrace,
+          stackFrameToSourceLineSpec(stackFrame1)
+        )
       ).toBe(true);
     });
 
     it('returns false for non-bottommost frame', () => {
       expect(
-        isFrameBottommostInStackTrace(stackTrace, {
-          host_name: 'localhost',
-          file_path: 'train.py',
-          lineno: 5,
-        })
+        isFrameBottommostInStackTrace(
+          stackTrace,
+          stackFrameToSourceLineSpec(stackFrame2)
+        )
       ).toBe(false);
     });
 
@@ -61,52 +61,32 @@ describe('Debugger store utils', () => {
   describe('getBottommostStackFrameInFocusedFile', () => {
     it('returns the bottommost frame if input is not bottommost', () => {
       expect(
-        getBottommostStackFrameInFocusedFile(stackTrace, {
-          host_name: 'localhost',
-          file_path: 'main.py',
-          lineno: 10,
-        })
-      ).toEqual({
-        host_name: 'localhost',
-        file_path: 'main.py',
-        lineno: 20,
-      });
+        getBottommostStackFrameInFocusedFile(
+          stackTrace,
+          stackFrameToSourceLineSpec(stackFrame0)
+        )
+      ).toEqual(stackFrameToSourceLineSpec(stackFrame1));
       expect(
-        getBottommostStackFrameInFocusedFile(stackTrace, {
-          host_name: 'localhost',
-          file_path: 'train.py',
-          lineno: 5,
-        })
-      ).toEqual({
-        host_name: 'localhost',
-        file_path: 'train.py',
-        lineno: 15,
-      });
+        getBottommostStackFrameInFocusedFile(
+          stackTrace,
+          stackFrameToSourceLineSpec(stackFrame2)
+        )
+      ).toEqual(stackFrameToSourceLineSpec(stackFrame3));
     });
 
     it('returns the bottommost frame if input is already bottommost', () => {
       expect(
-        getBottommostStackFrameInFocusedFile(stackTrace, {
-          host_name: 'localhost',
-          file_path: 'main.py',
-          lineno: 20,
-        })
-      ).toEqual({
-        host_name: 'localhost',
-        file_path: 'main.py',
-        lineno: 20,
-      });
+        getBottommostStackFrameInFocusedFile(
+          stackTrace,
+          stackFrameToSourceLineSpec(stackFrame1)
+        )
+      ).toEqual(stackFrameToSourceLineSpec(stackFrame1));
       expect(
-        getBottommostStackFrameInFocusedFile(stackTrace, {
-          host_name: 'localhost',
-          file_path: 'train.py',
-          lineno: 15,
-        })
-      ).toEqual({
-        host_name: 'localhost',
-        file_path: 'train.py',
-        lineno: 15,
-      });
+        getBottommostStackFrameInFocusedFile(
+          stackTrace,
+          stackFrameToSourceLineSpec(stackFrame3)
+        )
+      ).toEqual(stackFrameToSourceLineSpec(stackFrame3));
     });
 
     it('returns null if focused line spec matches no file path', () => {

@@ -96,7 +96,7 @@ export class StackTraceComponent implements AfterViewChecked {
     const lastFrameElement: HTMLElement | null = stackElement.querySelector(
       '.stack-frame-container:last-child'
     );
-    if (lastFrameElement) {
+    if (lastFrameElement !== null) {
       lastFrameElement.scrollIntoView({block: 'nearest'});
     }
   }

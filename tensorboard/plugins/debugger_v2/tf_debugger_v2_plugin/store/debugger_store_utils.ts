@@ -160,6 +160,21 @@ export function beginEndRangesInclude(
 }
 
 /**
+ * Helper method that converts a stack frame to a source line spec.
+ *
+ * TODO(cais): Remove this method once typing unifies onto SourceLineSpec.
+ *
+ * @param stackFrame
+ * @returns The equivalent source-line spec to `stackFrame`.
+ */
+export function stackFrameToSourceLineSpec(
+  stackFrame: StackFrame
+): SourceLineSpec {
+  const [host_name, file_path, lineno] = stackFrame;
+  return {host_name, file_path, lineno};
+}
+
+/**
  * Helper function that extracts the stack trace being focused on.
  *
  * This examines whether the current focused code location is for an
