@@ -65,7 +65,7 @@ class SecurityValidatorMiddlewareTest(tb_test.TestCase):
         app = security_validator.SecurityValidatorMiddleware(_simple_app)
         server = werkzeug_test.Client(app, BaseResponse)
 
-        with mock.patch.object(logger, "warn") as mock_warn:
+        with mock.patch.object(logger, "warning") as mock_warn:
             server.get("")
 
         if expected_warn_substr is None:

@@ -442,7 +442,7 @@ def list_experiments(api_client, fieldmask=None, read_time=None):
             )
         else:
             # No data: not technically a problem, but not expected.
-            logger.warn(
+            logger.warning(
                 "StreamExperiments RPC returned response with no experiments: <%r>",
                 response,
             )

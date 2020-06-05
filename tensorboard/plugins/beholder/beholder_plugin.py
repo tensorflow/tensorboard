@@ -98,7 +98,7 @@ class BeholderPlugin(base_plugin.TBPlugin):
                 )
             return True
         except tf.errors.PermissionDeniedError as e:
-            logger.warn(
+            logger.warning(
                 "Unable to write Beholder config, controls will be disabled: %s",
                 e,
             )

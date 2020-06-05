@@ -79,7 +79,7 @@ def parse_plugin_metadata(content):
     if result.version == 0:
         return result
     else:
-        logger.warn(
+        logger.warning(
             "Unknown metadata version: %s. The latest version known to "
             "this build of TensorBoard is %s; perhaps a newer build is "
             "available?",
