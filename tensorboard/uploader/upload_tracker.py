@@ -304,18 +304,17 @@ class UploadTracker(object):
         """Determine if any data has been uploaded under the tracker's watch."""
         return self._stats.has_data()
 
-    def _update_cumulative_status(self, is_end=False):
+    def _update_cumulative_status(self):
         """Write an update summarizing the data uploaded since the start."""
         if not self._verbosity:
             return
         if not self._stats.has_new_data_since_last_summarize():
             return
         uploaded_str, skipped_str = self._stats.summarize()
-        uploaded_message = "%s[%s]%s%s Total uploaded: %s\n" % (
+        uploaded_message = "%s[%s]%s Total uploaded: %s\n" % (
             _STYLE_BOLD,
             readable_time_string(),
             _STYLE_RESET,
-            "Uploader ended." if is_end else "",
             uploaded_str,
         )
         sys.stdout.write(uploaded_message)
