@@ -120,18 +120,6 @@ _SCALARS_HISTOGRAMS_AND_GRAPHS = frozenset(
 _USE_DEFAULT = object()
 
 
-def _create_upload_limits(
-    max_scalar_request_size, max_blob_request_size, max_blob_size,
-):
-    upload_limits = server_info_pb2.UploadLimits()
-    upload_limits.max_scalar_request_size = max_scalar_request_size
-    upload_limits.max_tensor_request_size = 128000
-    upload_limits.max_blob_request_size = max_blob_request_size
-    upload_limits.max_blob_size = max_blob_size
-    upload_limits.max_tensor_point_size = 11111
-    return upload_limits
-
-
 def _create_uploader(
     writer_client=_USE_DEFAULT,
     logdir=None,
@@ -164,8 +152,12 @@ def _create_uploader(
     if blob_rpc_rate_limiter is _USE_DEFAULT:
         blob_rpc_rate_limiter = util.RateLimiter(0)
 
-    upload_limits = _create_upload_limits(
-        max_scalar_request_size, max_blob_request_size, max_blob_size
+    upload_limits = server_info_pb2.UploadLimits(
+        max_scalar_request_size=max_scalar_request_size,
+        max_tensor_request_size=128000,
+        max_tensor_point_size=11111,
+        max_blob_request_size=max_blob_request_size,
+        max_blob_size=max_blob_size,
     )
 
     return uploader_lib.TensorBoardUploader(
@@ -192,11 +184,12 @@ def _create_request_sender(
     if allowed_plugins is _USE_DEFAULT:
         allowed_plugins = _SCALARS_HISTOGRAMS_AND_GRAPHS
 
-    upload_limits = server_info_pb2.UploadLimits()
-    upload_limits.max_blob_size = 12345
-    upload_limits.max_tensor_point_size = 11111
-    upload_limits.max_scalar_request_size = 128000
-    upload_limits.max_tensor_request_size = 128000
+    upload_limits = server_info_pb2.UploadLimits(
+        max_scalar_request_size=128000,
+        max_tensor_request_size=128000,
+        max_tensor_point_size=11111,
+        max_blob_size=12345,
+    )
 
     rpc_rate_limiter = util.RateLimiter(0)
     tensor_rpc_rate_limiter = util.RateLimiter(0)
@@ -1996,10 +1989,16 @@ class VarintCostTest(tf.test.TestCase):
 
 class UploadIntentTest(tf.test.TestCase):
     def testUploadIntentUnderDryRunOneShot(self):
-        """Test the upload intent under dry-run + one-shot modes."""
+        """Test the upload intent under the dry-run + one-shot mode."""
         mock_server_info = mock.MagicMock()
         mock_channel = mock.MagicMock()
-        upload_limits = _create_upload_limits(128000, 128000, 12345)
+        upload_limits = server_info_pb2.UploadLimits(
+            max_scalar_request_size=128000,
+            max_tensor_request_size=128000,
+            max_tensor_point_size=11111,
+            max_blob_request_size=128000,
+            max_blob_size=128000,
+        )
         with mock.patch.object(
             dry_run_stubs,
             "DryRunTensorBoardWriterStub",

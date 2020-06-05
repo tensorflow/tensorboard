@@ -110,7 +110,7 @@ def define_flags(parser):
         "--dry_run",
         action="store_true",
         help="Perform a dry run of uploading. In a dry run, the data is read "
-        "the logdir as pointed to by the --logdir flag and statistics are "
+        "from the logdir as pointed to by the --logdir flag and statistics are "
         "displayed (if --verbose is not 0), but no data is actually uploaded "
         "to the server.",
     )
