@@ -14,7 +14,10 @@ limitations under the License.
 ==============================================================================*/
 
 import {createSelector, createFeatureSelector} from '@ngrx/store';
-import {findFileIndex} from './debugger_store_utils';
+import {
+  findFileIndex,
+  getFocusedStackFramesHelper,
+} from './debugger_store_utils';
 import {
   AlertsBreakdown,
   AlertsByIndex,
@@ -514,42 +517,10 @@ export const getCodeLocationOrigin = createSelector(
  * the data source yet), returns null.
  */
 export const getFocusedStackFrames = createSelector(
+  // TODO(cais): Rename this function as `getFocusedStackTrace()` to
+  // minimize confusion with `getFocusedSourceLineSpec()`.
   selectDebuggerState,
-  (state: DebuggerState): StackFrame[] | null => {
-    if (state.codeLocationFocusType === null) {
-      return null;
-    }
-    let stackFrameIds: string[] = [];
-    if (state.codeLocationFocusType === CodeLocationType.EXECUTION) {
-      const {focusIndex, executionData} = state.executions;
-      if (focusIndex === null || executionData[focusIndex] === undefined) {
-        return null;
-      }
-      stackFrameIds = executionData[focusIndex].stack_frame_ids;
-    } else {
-      // This is CodeLocationType.GRAPH_OP_CREATION.
-      if (state.graphs.focusedOp === null) {
-        return null;
-      }
-      const {graphId, opName} = state.graphs.focusedOp;
-      if (
-        state.graphs.ops[graphId] === undefined ||
-        !state.graphs.ops[graphId].has(opName)
-      ) {
-        return null;
-      }
-      stackFrameIds = state.graphs.ops[graphId].get(opName)!.stack_frame_ids;
-    }
-    const stackFrames: StackFrame[] = [];
-    for (const stackFrameId of stackFrameIds) {
-      if (state.stackFrames[stackFrameId] != null) {
-        stackFrames.push(state.stackFrames[stackFrameId]);
-      } else {
-        return null;
-      }
-    }
-    return stackFrames;
-  }
+  getFocusedStackFramesHelper
 );
 
 /**
@@ -599,9 +570,26 @@ export const getFocusedSourceFileContent = createSelector(
   }
 );
 
+/**
+ * Get the source-code line being focused on.
+ *
+ * If the `stickingToBottommostFrameInFocusedFile` state is `true` and
+ * `focusedLIneSpec` is not null, this selector will return the bottommost
+ * stack frame in the file in `focusedLIneSpec`.
+ * Else, it'll directly return the value of `focusedLIneSpec`.
+ *
+ * This selector allows the UI to "track" lines in a source file of interest
+ * as a user navigates executions or graph ops.
+ */
 export const getFocusedSourceLineSpec = createSelector(
-  selectSourceCode,
-  (sourceCode: SourceCodeState): SourceLineSpec | null => {
-    return sourceCode.focusLineSpec;
+  selectDebuggerState,
+  (state: DebuggerState): SourceLineSpec | null =>
+    state.sourceCode.focusLineSpec
+);
+
+export const getStickToBottommostFrameInFocusedFile = createSelector(
+  selectDebuggerState,
+  (debuggerState: DebuggerState) => {
+    return debuggerState.stickToBottommostFrameInFocusedFile;
   }
 );

@@ -17,8 +17,10 @@ import {reducers} from './debugger_reducers';
 import {CodeLocationType, DataLoadState} from './debugger_types';
 import {
   createDebuggerGraphsState,
+  createDebuggerSourceCodeState,
   createDebuggerState,
   createTestGraphOpInfo,
+  createTestStackFrame,
 } from '../testing';
 
 describe('Debugger reducers', () => {
@@ -59,6 +61,87 @@ describe('Debugger reducers', () => {
         CodeLocationType.GRAPH_OP_CREATION
       );
     });
+
+    for (const [
+      stickToBottommostFrameInFocusedFile,
+      stackFrameIsLoaded,
+      expectedLineno,
+    ] of [
+      [false, false, 20],
+      [false, true, 20],
+      [true, false, 20],
+      [true, true, 30],
+    ] as Array<[boolean, boolean, number]>) {
+      it(
+        `focusLineSpec sticking behavior: ` +
+          `stickToBottommostFrameInFocusedFile=` +
+          `${stickToBottommostFrameInFocusedFile}; ` +
+          `stackFrameIsLoaded=${stackFrameIsLoaded}`,
+        () => {
+          const stackFrame0 = createTestStackFrame('localhost', 'main.py', 10);
+          const stackFrame1 = createTestStackFrame('localhost', 'main.py', 20);
+          const stackFrame2 = createTestStackFrame('localhost', 'main.py', 30);
+          const state = createDebuggerState({
+            graphs: createDebuggerGraphsState({
+              ops: {
+                g1: new Map([
+                  [
+                    'op1',
+                    createTestGraphOpInfo({
+                      stack_frame_ids: ['s0', 's1'],
+                    }),
+                  ],
+                  [
+                    'op2',
+                    createTestGraphOpInfo({
+                      stack_frame_ids: ['s0', 's2'],
+                    }),
+                  ],
+                ]),
+              },
+              focusedOp: {
+                graphId: 'g1',
+                opName: 'op1',
+              },
+            }),
+            stackFrames: stackFrameIsLoaded
+              ? {
+                  s0: stackFrame0,
+                  s1: stackFrame1,
+                  s2: stackFrame2,
+                }
+              : {
+                  s0: stackFrame0,
+                  s1: stackFrame1,
+                },
+            sourceCode: createDebuggerSourceCodeState({
+              focusLineSpec: {
+                host_name: 'localhost',
+                file_path: 'main.py',
+                lineno: 20,
+              },
+            }),
+            stickToBottommostFrameInFocusedFile,
+          });
+          const nextState = reducers(
+            state,
+            actions.graphOpFocused({graph_id: 'g1', op_name: 'op2'})
+          );
+          expect(nextState.graphs.focusedOp).toEqual({
+            graphId: 'g1',
+            opName: 'op2',
+          });
+          expect(nextState.codeLocationFocusType).toBe(
+            CodeLocationType.GRAPH_OP_CREATION
+          );
+          expect(nextState.sourceCode.focusLineSpec).toEqual({
+            host_name: 'localhost',
+            file_path: 'main.py',
+            lineno: expectedLineno,
+          });
+        }
+      );
+    }
   });
 
   describe('graphOpInfoRequested', () => {

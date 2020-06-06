@@ -16,12 +16,12 @@ import {Component} from '@angular/core';
 import {createSelector, select, Store} from '@ngrx/store';
 
 import {CodeLocationType, State} from '../../store/debugger_types';
-
 import {sourceLineFocused} from '../../actions';
 import {
   getCodeLocationOrigin,
   getFocusedSourceLineSpec,
   getFocusedStackFrames,
+  getStickToBottommostFrameInFocusedFile,
 } from '../../store';
 import {StackFrameForDisplay} from './stack_trace_component';
 
@@ -35,6 +35,9 @@ import {StackFrameForDisplay} from './stack_trace_component';
       [opType]="opType$ | async"
       [opName]="opName$ | async"
       [executionIndex]="executionIndex$ | async"
+      [stickToBottommostFrameInFocusedFile]="
+        stickToBottommostFrameInFocusedFile$ | async
+      "
       [stackFramesForDisplay]="stackFramesForDisplay$ | async"
       (onSourceLineClicked)="onSourceLineClicked($event)"
     ></stack-trace-component>
@@ -97,31 +100,38 @@ export class StackTraceContainer {
     )
   );
 
+  readonly stickToBottommostFrameInFocusedFile$ = this.store.pipe(
+    select(getStickToBottommostFrameInFocusedFile)
+  );
+
   readonly stackFramesForDisplay$ = this.store.pipe(
     select(
       createSelector(
         getFocusedStackFrames,
         getFocusedSourceLineSpec,
-        (stackFrames, focusedSourceLineSpec) => {
+        (stackFrames, focusedSourceLineSpec): StackFrameForDisplay[] | null => {
           if (stackFrames === null) {
             return null;
           }
           const output: StackFrameForDisplay[] = [];
+          // Correctly label all the stack frames for display.
           for (const stackFrame of stackFrames) {
             const [host_name, file_path, lineno, function_name] = stackFrame;
             const pathItems = file_path.split('/');
             const concise_file_path = pathItems[pathItems.length - 1];
-            const focused =
+            const belongsToFocusedFile =
               focusedSourceLineSpec !== null &&
               host_name === focusedSourceLineSpec.host_name &&
-              file_path === focusedSourceLineSpec.file_path &&
-              lineno === focusedSourceLineSpec.lineno;
+              file_path === focusedSourceLineSpec.file_path;
+            const focused =
+              belongsToFocusedFile && lineno === focusedSourceLineSpec!.lineno;
             output.push({
               host_name,
               file_path,
               concise_file_path,
               lineno,
               function_name,
+              belongsToFocusedFile,
               focused,
             });
           }

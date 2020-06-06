@@ -26,6 +26,7 @@ import {
   getFocusedGraphOpInputs,
   getFocusedSourceFileContent,
   getFocusedSourceFileIndex,
+  getFocusedSourceLineSpec,
   getGraphExecutionData,
   getGraphExecutionDataLoadingPages,
   getGraphExecutionDataPageLoadedSizes,
@@ -1345,6 +1346,33 @@ describe('debugger selectors', () => {
           ['Op2a', DataLoadState.LOADED],
           ['Op2b', DataLoadState.FAILED],
         ]),
+      });
+    });
+  });
+
+  describe('getFocusedSourceLineSpec', () => {
+    it(`returns non-null focused source line spec`, () => {
+      const state = createState(createDebuggerState());
+      expect(getFocusedSourceLineSpec(state)).toBeNull();
+    });
+
+    it(`returns non-null focused source line spec`, () => {
+      const state = createState(
+        createDebuggerState({
+          sourceCode: createDebuggerSourceCodeState({
+            focusLineSpec: {
+              host_name: 'localhost',
+              file_path: 'train.py',
+              lineno: 5,
+            },
+          }),
+        })
+      );
+      const focused = getFocusedSourceLineSpec(state);
+      expect(focused).toEqual({
+        host_name: 'localhost',
+        file_path: 'train.py',
+        lineno: 5,
       });
     });
   });
