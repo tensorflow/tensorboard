@@ -8,10 +8,11 @@ ng_module(
     srcs = [
         "debugger_reducers.ts",
         "debugger_selectors.ts",
+        "debugger_store_utils.ts",
         "index.ts",
     ],
     deps = [
-        ":debugger_store_utils",
+        ":debugger_store_helpers",
         ":types",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/actions",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/data_source",
@@ -20,9 +21,9 @@ ng_module(
 )
 
 ng_module(
-    name = "debugger_store_utils",
+    name = "debugger_store_helpers",
     srcs = [
-        "debugger_store_utils.ts",
+        "debugger_store_helpers.ts",
     ],
     visibility = [
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/store:__subpackages__",
@@ -68,7 +69,7 @@ tf_ts_library(
     tsconfig = "//:tsconfig-test",
     deps = [
         ":debug_tensor_value",
-        ":debugger_store_utils",
+        ":debugger_store_helpers",
         ":store",
         ":types",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/actions",
