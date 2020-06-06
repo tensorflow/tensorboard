@@ -13,9 +13,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+.focused-file {
+  font-weight: bold;
+}
+
 .focused-stack-frame {
   background-color: rgba(255, 111, 0, 0.3);
-  font-weight: bold;
 }
 
 .no-stack-trace {
@@ -39,8 +42,8 @@ limitations under the License.
 }
 
 .stack-frame-array {
-  height: 360px;
-  overflow-x: auto;
+  height: 300px;
+  overflow-x: hidden;
   overflow-y: auto;
 }
 
@@ -63,7 +66,9 @@ limitations under the License.
   max-width: 200px;
   padding-left: 10px;
   text-align: left;
+  white-space: normal;
   width: 200px;
+  word-wrap: anywhere;
 }
 
 .stack-frame-lineno {
@@ -76,12 +81,14 @@ limitations under the License.
 }
 
 .stack-trace-aux-info {
-  margin-top: 3px;
+  margin-top: 15px;
   padding-left: 24px;
 }
 
 .stack-trace-container {
   border-left: 1px solid rgba(0, 0, 0, 0.12);
+  display: flexbox;
+  flex-direction: column;
   font-size: 10px;
   font-family: 'Roboto Mono', monospace;
   height: 100%;
@@ -103,4 +110,11 @@ limitations under the License.
 
 .stack-trace-title {
   font-weight: bold;
+}
+
+.stick-to-bottommost-indicator {
+  display: inline-block;
+  font-weight: bold;
+  font-size: 12px;
+  padding-right: 3px;
 }

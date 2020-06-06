@@ -476,8 +476,8 @@ export interface SourceCodeState {
   // in the order that corresponds to `sourceFileList`.
   fileContents: SourceFileContent[];
 
-  // Index for the source line being focused on. The index is for
-  // the array in `sourceFileList`.
+  // Index for the source line being focused on by the user.
+  // The index is for the array in `sourceFileList`.
   // Use `null` for the case wherein no line is focused on.
   focusLineSpec: SourceLineSpec | null;
 }
@@ -506,6 +506,15 @@ export interface DebuggerState {
   // Stack frames that have been loaded from data source so far, keyed by
   // stack-frame IDs.
   stackFrames: StackFramesById;
+
+  // Whether the bottommost frame in a focused source file should be
+  // automatically focused on.
+  //
+  // N.B.: Python stack frames are printed from bottommost to topmost,
+  // so what we mean by a "bottommost" stack frame is actually the one that
+  // appears at the top in a stack trace in most other languages such as
+  // Java and C++.
+  stickToBottommostFrameInFocusedFile: boolean;
 
   // What the currently focused code location (stack trace) describes.
   //   - `null` is for the case where no code location is focused on.

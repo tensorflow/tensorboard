@@ -21,7 +21,13 @@ import {
   GraphExecutionDataResponse,
   SourceFileResponse,
 } from '../data_source/tfdbg2_data_source';
-import {findFileIndex, findBeginEndRangeIndex} from './debugger_store_utils';
+import {
+  computeBottommostLineSpec,
+  findFileIndex,
+  findBeginEndRangeIndex,
+  getFocusedStackFramesHelper,
+  isFrameBottommostInStackTrace,
+} from './debugger_store_utils';
 import {
   AlertsByIndex,
   AlertType,
@@ -34,6 +40,7 @@ import {
   InfNanAlert,
   StackFramesById,
   SourceFileSpec,
+  SourceLineSpec,
 } from './debugger_types';
 
 // HACK: These imports are for type inference.
@@ -121,6 +128,7 @@ const initialState: DebuggerState = {
   graphs: createInitialGraphsState(),
   stackFrames: {},
   codeLocationFocusType: null,
+  stickToBottommostFrameInFocusedFile: false,
   sourceCode: {
     sourceFileListLoaded: {
       state: DataLoadState.NOT_LOADED,
@@ -546,7 +554,7 @@ const reducer = createReducer(
   on(
     actions.executionDigestFocused,
     (state: DebuggerState, action): DebuggerState => {
-      return {
+      const newState = {
         ...state,
         executions: {
           ...state.executions,
@@ -555,7 +563,12 @@ const reducer = createReducer(
         // An eager-execution event was last focused on, update the
         // code-location focus type to `EXECUTION`.
         codeLocationFocusType: CodeLocationType.EXECUTION,
+        sourceCode: {
+          ...state.sourceCode,
+        },
       };
+      newState.sourceCode.focusLineSpec = computeBottommostLineSpec(newState);
+      return newState;
     }
   ),
   on(
@@ -711,7 +724,7 @@ const reducer = createReducer(
       state: DebuggerState,
       data: {graph_id: string; op_name: string}
     ): DebuggerState => {
-      return {
+      const newState = {
         ...state,
         graphs: {
           ...state.graphs,
@@ -723,7 +736,12 @@ const reducer = createReducer(
         // An graph event was last focused on, update the
         // code-location focus type to `GRAPH_OP_CREATION`.
         codeLocationFocusType: CodeLocationType.GRAPH_OP_CREATION,
+        sourceCode: {
+          ...state.sourceCode,
+        },
       };
+      newState.sourceCode.focusLineSpec = computeBottommostLineSpec(newState);
+      return newState;
     }
   ),
   on(
@@ -864,14 +882,25 @@ const reducer = createReducer(
   ),
   on(
     actions.sourceLineFocused,
-    (state: DebuggerState, focus): DebuggerState => {
-      return {
+    (
+      state: DebuggerState,
+      focus: {sourceLineSpec: SourceLineSpec}
+    ): DebuggerState => {
+      const focusedStackTrace = getFocusedStackFramesHelper(state);
+      const newState = {
         ...state,
         sourceCode: {
           ...state.sourceCode,
           focusLineSpec: focus.sourceLineSpec,
         },
       };
+      if (focusedStackTrace !== null) {
+        newState.stickToBottommostFrameInFocusedFile = isFrameBottommostInStackTrace(
+          focusedStackTrace,
+          focus.sourceLineSpec
+        );
+      }
+      return newState;
     }
   ),
   on(
@@ -946,7 +975,11 @@ const reducer = createReducer(
       const newState: DebuggerState = {
         ...state,
         stackFrames: {...state.stackFrames, ...stackFrames.stackFrames},
+        sourceCode: {
+          ...state.sourceCode,
+        },
       };
+      newState.sourceCode.focusLineSpec = computeBottommostLineSpec(newState);
       return newState;
     }
   )
