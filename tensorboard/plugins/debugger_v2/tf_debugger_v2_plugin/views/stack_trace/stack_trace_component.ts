@@ -90,14 +90,18 @@ export class StackTraceComponent implements AfterViewChecked {
     );
     if (focusedFrameElement !== null) {
       // Scroll the focused frame into view when there is a focused frame.
-      focusedFrameElement.scrollIntoView({block: 'nearest'});
+      this.scrollToElement(stackElement, focusedFrameElement);
       return;
     }
     const lastFrameElement: HTMLElement | null = stackElement.querySelector(
       '.stack-frame-container:last-child'
     );
     if (lastFrameElement !== null) {
-      lastFrameElement.scrollIntoView({block: 'nearest'});
+      this.scrollToElement(stackElement, lastFrameElement);
     }
+  }
+
+  scrollToElement(parentElement: HTMLElement, element: HTMLElement): void {
+    parentElement.scrollTop = element.offsetTop;
   }
 }

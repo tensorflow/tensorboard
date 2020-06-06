@@ -356,15 +356,18 @@ describe('Stack Trace container', () => {
     ];
     fixture.detectChanges();
 
-    const stackFrameContainers = fixture.debugElement.queryAll(
-      By.css('.stack-frame-container')
-    );
-    const lastElementScroll = spyOn(
-      stackFrameContainers[1].nativeElement,
-      'scrollIntoView'
-    );
+    const scrollSpy = spyOn(component, 'scrollToElement');
     component.ngAfterViewChecked();
-    expect(lastElementScroll).toHaveBeenCalled();
+    const stackElement = fixture.debugElement.query(
+      By.css('.stack-frame-array')
+    );
+    const lastFrameElement = fixture.debugElement.query(
+      By.css('.stack-frame-container:last-child')
+    );
+    expect(scrollSpy).toHaveBeenCalledWith(
+      stackElement.nativeElement,
+      lastFrameElement.nativeElement
+    );
   });
 
   it('scroll to the focused frame when a frame is in focus', () => {
@@ -397,14 +400,17 @@ describe('Stack Trace container', () => {
     ];
     fixture.detectChanges();
 
-    const stackFrameContainers = fixture.debugElement.queryAll(
-      By.css('.stack-frame-container')
-    );
-    const focusedElementScroll = spyOn(
-      stackFrameContainers[0].nativeElement,
-      'scrollIntoView'
-    );
+    const scrollSpy = spyOn(component, 'scrollToElement');
     component.ngAfterViewChecked();
-    expect(focusedElementScroll).toHaveBeenCalled();
+    const stackElement = fixture.debugElement.query(
+      By.css('.stack-frame-array')
+    );
+    const focusedFrameElement = fixture.debugElement.query(
+      By.css('.focused-stack-frame')
+    );
+    expect(scrollSpy).toHaveBeenCalledWith(
+      stackElement.nativeElement,
+      focusedFrameElement.nativeElement
+    );
   });
 });
