@@ -45,7 +45,10 @@ class RunInBackgroundRepeatedlyTest(tf.test.TestCase):
             # `StopIteration` raised by `run_three_times()`.
             lambda target, daemon: OriginalThread(target=target, daemon=False),
         ):
-            interrupt_event = debug_data_multiplexer.run_repeatedly_in_background(
+            (
+                interrupt_event,
+                thread,
+            ) = debug_data_multiplexer.run_repeatedly_in_background(
                 run_three_times,
                 None,  # `interval_sec is None` means indefinite wait()
             )
@@ -54,6 +57,7 @@ class RunInBackgroundRepeatedlyTest(tf.test.TestCase):
             interrupt_event.set()
             time.sleep(0.05)
             interrupt_event.set()
+        thread.join()
         self.assertEqual(state["counter"], 3)
 
 

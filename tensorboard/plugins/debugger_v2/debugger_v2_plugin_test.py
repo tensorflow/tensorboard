@@ -130,6 +130,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         def run_repeatedly_in_background_mock(target, interval_sec):
             del interval_sec  # Unused in this mock.
             target()
+            return None, None
 
         self.run_in_background_patch = tf.compat.v1.test.mock.patch.object(
             debug_data_multiplexer,

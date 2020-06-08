@@ -55,9 +55,10 @@ def run_repeatedly_in_background(target, interval_sec):
       interval_sec: Time interval between repeats, in seconds.
 
     Returns:
-      A `threading.Event` object that can be used to interrupt an ongoing
-      waiting interval between successive runs of `target`. To interrupt the
-      interval, call the `set()` method of the object.
+      - A `threading.Event` object that can be used to interrupt an ongoing
+          waiting interval between successive runs of `target`. To interrupt the
+          interval, call the `set()` method of the object.
+      - The `threading.Thread` object on which `target` is run repeatedly.
     """
     event = threading.Event()
 
@@ -70,7 +71,7 @@ def run_repeatedly_in_background(target, interval_sec):
     # Use `daemon=True` to make sure the thread doesn't block program exit.
     thread = threading.Thread(target=_run_repeatedly, daemon=True)
     thread.start()
-    return event
+    return event, thread
 
 
 def _alert_to_json(alert):
@@ -180,7 +181,7 @@ class DebuggerV2EventMultiplexer(object):
                         self._reader, limit=DEFAULT_PER_TYPE_ALERT_LIMIT
                     )
                 ]
-                self._reload_needed_event = run_repeatedly_in_background(
+                self._reload_needed_event, _ = run_repeatedly_in_background(
                     self._reader.update, DEFAULT_RELOAD_INTERVAL_SEC
                 )
 
