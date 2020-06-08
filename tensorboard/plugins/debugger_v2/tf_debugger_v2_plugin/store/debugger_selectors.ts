@@ -14,10 +14,8 @@ limitations under the License.
 ==============================================================================*/
 
 import {createSelector, createFeatureSelector} from '@ngrx/store';
-import {
-  findFileIndex,
-  getFocusedStackFramesHelper,
-} from './debugger_store_utils';
+import {getFocusedStackFramesHelper} from './debugger_store_helpers';
+import {findFileIndex} from './debugger_store_utils';
 import {
   AlertsBreakdown,
   AlertsByIndex,

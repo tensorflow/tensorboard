@@ -21,11 +21,11 @@ import {
   GraphExecutionDataResponse,
   SourceFileResponse,
 } from '../data_source/tfdbg2_data_source';
+import {getFocusedStackFramesHelper} from './debugger_store_helpers';
 import {
   computeBottommostLineSpec,
   findFileIndex,
   findBeginEndRangeIndex,
-  getFocusedStackFramesHelper,
   isFrameBottommostInStackTrace,
 } from './debugger_store_utils';
 import {
