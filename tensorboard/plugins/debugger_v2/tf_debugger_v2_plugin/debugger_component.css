@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 .bottom-section {
+  box-sizing: border-box;
   border-top: 1px solid rgba(0, 0, 0, 0.12);
   height: 34%;
   padding-top: 6px;
@@ -21,13 +22,17 @@ limitations under the License.
 }
 
 .debugger-container {
+  box-sizing: border-box;
   background-color: #fff;
   height: 100%;
+  overflow: hidden;
 }
 
 .top-section {
+  box-sizing: border-box;
   height: 66%;
   padding: 6px 0;
+  white-space: nowrap;
   width: 100%;
 }
 
@@ -56,6 +61,7 @@ tf-debugger-v2-source-files {
 
 tf-debugger-v2-stack-trace {
   display: inline-block;
+  height: 100%;
   width: 30%;
 }
 
