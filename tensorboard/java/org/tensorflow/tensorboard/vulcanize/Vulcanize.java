@@ -861,7 +861,7 @@ public final class Vulcanize {
           elementStr = elementStr.substring(0, MAX_ELEMENT_STR_LEN) + "...";
         }
         throw new RuntimeException(
-            "Nested doc (e.g., <link> importing outside the head of a a document) " +
+            "Nested doc (e.g., <link> importing outside the head of a document) " +
             "is not supported.\nOffending element: " + elementStr);
       }
     }
