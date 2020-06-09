@@ -855,9 +855,14 @@ public final class Vulcanize {
 
     for (Element subdoc : flatDoc.getElementsByTag("#root")) {
       if (subdoc != flatDoc) {
+        final int MAX_ELEMENT_STR_LEN = 200;
+        String elementStr = subdoc.toString();
+        if (elementStr.length() > MAX_ELEMENT_STR_LEN) {
+          elementStr = elementStr.substring(0, MAX_ELEMENT_STR_LEN) + "...";
+        }
         throw new RuntimeException(
             "Nested doc (e.g., <link> importing outside the head of a a document) " +
-            "is not supported.");
+            "is not supported.\nOffending element: " + elementStr);
       }
     }
 
