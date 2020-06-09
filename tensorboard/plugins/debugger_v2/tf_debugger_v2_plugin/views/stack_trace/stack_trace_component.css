@@ -45,6 +45,8 @@ limitations under the License.
   height: 300px;
   overflow-x: hidden;
   overflow-y: auto;
+  /* Minus padding-left of the parent (stack-trace-container). */
+  width: calc(100% - 8px);
 }
 
 .stack-frame-container {
@@ -87,6 +89,7 @@ limitations under the License.
 
 .stack-trace-container {
   border-left: 1px solid rgba(0, 0, 0, 0.12);
+  box-sizing: border-box;
   display: flexbox;
   flex-direction: column;
   font-size: 10px;
