@@ -853,6 +853,14 @@ public final class Vulcanize {
 
     document.traverse(new FlatDocumentCopier(flatDoc));
 
+    for (Element subdoc : flatDoc.getElementsByTag("#root")) {
+      if (subdoc != flatDoc) {
+        throw new RuntimeException(
+            "Nested doc (e.g., <link> importing outside the head of a a document) " +
+            "is not supported.");
+      }
+    }
+
     return flatDoc;
   }
 
