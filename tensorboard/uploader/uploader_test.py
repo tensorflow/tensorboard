@@ -2023,6 +2023,47 @@ class UploadIntentTest(tf.test.TestCase):
             mock_stdout_write.call_args_list[-1][0][0], "\nDone.\n"
         )
 
+    def testUploadIntentDryRunNonOneShotInterrupted(self):
+        mock_server_info = mock.MagicMock()
+        mock_channel = mock.MagicMock()
+        mock_stdout_write = mock.MagicMock()
+        mock_uploader = mock.MagicMock()
+        with mock.patch.object(
+            mock_uploader, "start_uploading", side_effect=KeyboardInterrupt(),
+        ), mock.patch.object(
+            uploader_lib, "TensorBoardUploader", return_value=mock_uploader
+        ), mock.patch.object(
+            sys.stdout, "write", mock_stdout_write
+        ):
+            intent = uploader_subcommand.UploadIntent(
+                self.get_temp_dir(), dry_run=True, one_shot=False
+            )
+            intent.execute(mock_server_info, mock_channel)
+        self.assertEqual(
+            mock_stdout_write.call_args_list[-1][0][0], "\nInterrupted.\n"
+        )
+
+    def testUploadIntentNonDryRunNonOneShotInterrupted(self):
+        mock_server_info = mock.MagicMock()
+        mock_channel = mock.MagicMock()
+        mock_stdout_write = mock.MagicMock()
+        mock_uploader = mock.MagicMock()
+        with mock.patch.object(
+            mock_uploader, "start_uploading", side_effect=KeyboardInterrupt(),
+        ), mock.patch.object(
+            uploader_lib, "TensorBoardUploader", return_value=mock_uploader
+        ), mock.patch.object(
+            sys.stdout, "write", mock_stdout_write
+        ):
+            intent = uploader_subcommand.UploadIntent(
+                self.get_temp_dir(), dry_run=False, one_shot=False
+            )
+            intent.execute(mock_server_info, mock_channel)
+        self.assertIn(
+            "\nInterrupted. View your TensorBoard at ",
+            mock_stdout_write.call_args_list[-1][0][0],
+        )
+
 
 def _clear_wall_times(request):
     """Clears the wall_time fields in a WriteScalarRequest to be
