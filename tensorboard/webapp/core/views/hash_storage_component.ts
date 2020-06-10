@@ -74,10 +74,11 @@ export class HashStorageComponent implements OnInit, OnChanges, OnDestroy {
   ngOnChanges(changes: SimpleChanges) {
     if (changes['activePluginId']) {
       const activePluginIdChange = changes['activePluginId'];
-      const option: SetStringOption = {defaultValue: ''};
-      if (activePluginIdChange.firstChange) {
-        option.useLocationReplace = true;
-      }
+
+      const option: SetStringOption = {
+        defaultValue: '',
+        useLocationReplace: activePluginIdChange.previousValue === null,
+      };
 
       const value =
         activePluginIdChange.currentValue === null
