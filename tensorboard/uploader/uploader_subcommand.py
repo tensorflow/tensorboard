@@ -450,7 +450,6 @@ class UploadIntent(_Intent):
             return
         except KeyboardInterrupt:
             interrupted = True
-            pass
         finally:
             end_message = "\n"
             if interrupted:
