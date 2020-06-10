@@ -441,18 +441,25 @@ class UploadIntent(_Intent):
                 "No data will be sent to tensorboard.dev. **\n"
             )
         else:
-            print("View your TensorBoard live at: %s" % url)
+            print("\nView your TensorBoard live at: %s\n" % url)
+        interrupted = False
         try:
             uploader.start_uploading()
         except uploader_lib.ExperimentNotFoundError:
             print("Experiment was deleted; uploading has been cancelled")
             return
         except KeyboardInterrupt:
-            pass
+            interrupted = True
         finally:
+            end_message = "\n"
+            if interrupted:
+                end_message += "Interrupted."
+            else:
+                end_message += "Done."
             if not self.dry_run:
-                print()
-                print("Done! View your TensorBoard at %s" % url)
+                end_message += " View your TensorBoard at %s" % url
+            sys.stdout.write(end_message + "\n")
+            sys.stdout.flush()
 
 
 class _ExportIntent(_Intent):
