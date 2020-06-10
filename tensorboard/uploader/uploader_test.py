@@ -22,6 +22,7 @@ import collections
 import itertools
 import os
 import re
+import sys
 
 import grpc
 import grpc_testing
@@ -1999,12 +2000,15 @@ class UploadIntentTest(tf.test.TestCase):
             max_blob_request_size=128000,
             max_blob_size=128000,
         )
+        mock_stdout_write = mock.MagicMock()
         with mock.patch.object(
             server_info_lib,
             "allowed_plugins",
             return_value=_SCALARS_HISTOGRAMS_AND_GRAPHS,
         ), mock.patch.object(
             server_info_lib, "upload_limits", return_value=upload_limits
+        ), mock.patch.object(
+            sys.stdout, "write", mock_stdout_write
         ), mock.patch.object(
             dry_run_stubs,
             "DryRunTensorBoardWriterStub",
@@ -2015,6 +2019,9 @@ class UploadIntentTest(tf.test.TestCase):
             )
             intent.execute(mock_server_info, mock_channel)
         self.assertEqual(mock_dry_run_stub.call_count, 1)
+        self.assertEqual(
+            mock_stdout_write.call_args_list[-1][0][0], "\nDone.\n"
+        )
 
 
 def _clear_wall_times(request):
