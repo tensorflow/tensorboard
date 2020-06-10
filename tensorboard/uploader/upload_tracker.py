@@ -292,12 +292,12 @@ class UploadTracker(object):
         """Write an update indicating the start of the uploading."""
         if not self._verbosity:
             return
-        start_message = "%s[%s]%s Uploader started." % (
+        start_message = "%s[%s]%s Uploader started.\n" % (
             _STYLE_BOLD,
             readable_time_string(),
             _STYLE_RESET,
         )
-        sys.stdout.write(start_message + "\n")
+        sys.stdout.write(start_message)
         sys.stdout.flush()
 
     def has_data(self):
