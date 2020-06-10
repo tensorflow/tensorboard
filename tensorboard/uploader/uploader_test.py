@@ -22,6 +22,7 @@ import collections
 import itertools
 import os
 import re
+import sys
 
 import grpc
 import grpc_testing
@@ -1999,12 +2000,15 @@ class UploadIntentTest(tf.test.TestCase):
             max_blob_request_size=128000,
             max_blob_size=128000,
         )
+        mock_stdout_write = mock.MagicMock()
         with mock.patch.object(
             server_info_lib,
             "allowed_plugins",
             return_value=_SCALARS_HISTOGRAMS_AND_GRAPHS,
         ), mock.patch.object(
             server_info_lib, "upload_limits", return_value=upload_limits
+        ), mock.patch.object(
+            sys.stdout, "write", mock_stdout_write
         ), mock.patch.object(
             dry_run_stubs,
             "DryRunTensorBoardWriterStub",
@@ -2015,6 +2019,50 @@ class UploadIntentTest(tf.test.TestCase):
             )
             intent.execute(mock_server_info, mock_channel)
         self.assertEqual(mock_dry_run_stub.call_count, 1)
+        self.assertEqual(
+            mock_stdout_write.call_args_list[-1][0][0], "\nDone.\n"
+        )
+
+    def testUploadIntentDryRunNonOneShotInterrupted(self):
+        mock_server_info = mock.MagicMock()
+        mock_channel = mock.MagicMock()
+        mock_stdout_write = mock.MagicMock()
+        mock_uploader = mock.MagicMock()
+        with mock.patch.object(
+            mock_uploader, "start_uploading", side_effect=KeyboardInterrupt(),
+        ), mock.patch.object(
+            uploader_lib, "TensorBoardUploader", return_value=mock_uploader
+        ), mock.patch.object(
+            sys.stdout, "write", mock_stdout_write
+        ):
+            intent = uploader_subcommand.UploadIntent(
+                self.get_temp_dir(), dry_run=True, one_shot=False
+            )
+            intent.execute(mock_server_info, mock_channel)
+        self.assertEqual(
+            mock_stdout_write.call_args_list[-1][0][0], "\nInterrupted.\n"
+        )
+
+    def testUploadIntentNonDryRunNonOneShotInterrupted(self):
+        mock_server_info = mock.MagicMock()
+        mock_channel = mock.MagicMock()
+        mock_stdout_write = mock.MagicMock()
+        mock_uploader = mock.MagicMock()
+        with mock.patch.object(
+            mock_uploader, "start_uploading", side_effect=KeyboardInterrupt(),
+        ), mock.patch.object(
+            uploader_lib, "TensorBoardUploader", return_value=mock_uploader
+        ), mock.patch.object(
+            sys.stdout, "write", mock_stdout_write
+        ):
+            intent = uploader_subcommand.UploadIntent(
+                self.get_temp_dir(), dry_run=False, one_shot=False
+            )
+            intent.execute(mock_server_info, mock_channel)
+        self.assertIn(
+            "\nInterrupted. View your TensorBoard at ",
+            mock_stdout_write.call_args_list[-1][0][0],
+        )
 
 
 def _clear_wall_times(request):
