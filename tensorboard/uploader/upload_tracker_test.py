@@ -364,7 +364,7 @@ class UploadTrackerTest(tb_test.TestCase):
                     self.mock_write.call_args[0][0],
                 )
                 blob_tracker.mark_uploaded(is_uploaded=False)
-        self.assertEqual(self.mock_write.call_count, 6)
+        self.assertEqual(self.mock_write.call_count, 7)
         self.assertEqual(self.mock_flush.call_count, 5)
         self.assertIn(
             "Total uploaded: 0 scalars, 0 tensors, 0 binary objects\n",

@@ -256,6 +256,7 @@ _STYLE_BOLD = "\033[1m"
 _STYLE_GREEN = "\033[32m"
 _STYLE_YELLOW = "\033[33m"
 _STYLE_DARKGRAY = "\033[90m"
+_STYLE_UP_LINE = "\033[1A"
 _STYLE_ERASE_LINE = "\033[2K"
 
 
@@ -284,7 +285,12 @@ class UploadTracker(object):
             return
         message += "." * 3
         sys.stdout.write(
-            _STYLE_ERASE_LINE + color_code + message + _STYLE_RESET + "\r"
+            _STYLE_UP_LINE
+            + _STYLE_ERASE_LINE
+            + color_code
+            + message
+            + _STYLE_RESET
+            + "\n"
         )
         sys.stdout.flush()
 
@@ -297,7 +303,7 @@ class UploadTracker(object):
             readable_time_string(),
             _STYLE_RESET,
         )
-        sys.stdout.write(start_message)
+        sys.stdout.write(start_message + "\n")
         sys.stdout.flush()
 
     def has_data(self):
@@ -311,7 +317,8 @@ class UploadTracker(object):
         if not self._stats.has_new_data_since_last_summarize():
             return
         uploaded_str, skipped_str = self._stats.summarize()
-        uploaded_message = "%s[%s]%s Total uploaded: %s\n" % (
+        uploaded_message = "%s%s[%s]%s Total uploaded: %s\n" % (
+            _STYLE_UP_LINE,
             _STYLE_BOLD,
             readable_time_string(),
             _STYLE_RESET,
@@ -323,6 +330,7 @@ class UploadTracker(object):
                 "%sTotal skipped: %s\n%s"
                 % (_STYLE_DARKGRAY, skipped_str, _STYLE_RESET)
             )
+        sys.stdout.write("\n")
         sys.stdout.flush()
         # TODO(cais): Add summary of what plugins have been involved, once it's
         # clear how to get canonical plugin names.
