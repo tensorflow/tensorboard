@@ -165,6 +165,20 @@ limitations under the License.
         ) {
           return;
         }
+
+        const observer = new MutationObserver((mutationsList) => {
+          for (const mutation of mutationsList) {
+            if (mutation.type === 'childList') {
+              for (const node of mutation.addedNodes) {
+                if (node instanceof Element) {
+                  node.setAttribute('slot', 'items');
+                }
+              }
+            }
+          }
+        });
+        observer.observe(this, {childList: true});
+
         Array.from(this.children).forEach((child) => {
           Polymer.dom(this).removeChild(child);
         });
