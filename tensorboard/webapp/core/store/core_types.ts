@@ -47,5 +47,5 @@ export const initialState: CoreState = {
   },
   reloadPeriodInMs: 30000,
   reloadEnabled: false,
-  pageSize: 15,
+  pageSize: 12,
 };
