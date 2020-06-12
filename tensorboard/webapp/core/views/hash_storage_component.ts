@@ -77,13 +77,16 @@ export class HashStorageComponent implements OnInit, OnChanges, OnDestroy {
 
       const option: SetStringOption = {
         defaultValue: '',
-        useLocationReplace: activePluginIdChange.previousValue === null,
+        useLocationReplace:
+          activePluginIdChange.previousValue === null ||
+          activePluginIdChange.firstChange,
       };
 
       const value =
         activePluginIdChange.currentValue === null
           ? ''
           : activePluginIdChange.currentValue;
+      console.log(value);
       this.deepLinker.setPluginId(value, option);
     }
   }

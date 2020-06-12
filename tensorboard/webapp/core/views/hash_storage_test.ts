@@ -98,7 +98,7 @@ describe('hash storage test', () => {
       {
         id: '',
         option: {
-          useLocationReplace: false,
+          useLocationReplace: true,
           defaultValue: '',
         },
       },
@@ -125,7 +125,7 @@ describe('hash storage test', () => {
     fixture.detectChanges();
 
     expect(setPluginIdSpy).toHaveBeenCalledWith('', {
-      useLocationReplace: false,
+      useLocationReplace: true,
       defaultValue: '',
     });
   });
@@ -136,7 +136,7 @@ describe('hash storage test', () => {
     fixture.detectChanges();
 
     expect(setPluginIdSpy).toHaveBeenCalledWith('', {
-      useLocationReplace: false,
+      useLocationReplace: true,
       defaultValue: '',
     });
   });
