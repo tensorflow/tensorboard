@@ -21,6 +21,7 @@ import {CommonModule} from '@angular/common';
 import {getActivePlugin} from '../store';
 import {State} from '../store/core_types';
 import {pluginUrlHashChanged} from '../actions';
+import {SetStringOption} from '../../deeplink/types';
 
 import {HashStorageContainer} from './hash_storage_container';
 import {HashStorageComponent} from './hash_storage_component';
@@ -64,14 +65,58 @@ describe('hash storage test', () => {
     getPluginIdSpy = spyOn(deepLinker, 'getPluginId');
   });
 
-  it('sets the hash to plugin id by replacing on first load', () => {
-    store.overrideSelector(getActivePlugin, 'foo');
+  it('sets hash to plugin id when plugin id changes from null to value', () => {
+    const setPluginIdCalls: Array<{
+      id: string | null;
+      option: SetStringOption;
+    }> = [];
+    setPluginIdSpy.and.callFake(
+      (id: string | null, option: SetStringOption) => {
+        setPluginIdCalls.push({
+          id,
+          option,
+        });
+      }
+    );
+    store.overrideSelector(getActivePlugin, null);
     const fixture = TestBed.createComponent(HashStorageContainer);
     fixture.detectChanges();
-    expect(setPluginIdSpy).toHaveBeenCalledWith('foo', {
-      useLocationReplace: true,
-      defaultValue: '',
-    });
+
+    store.overrideSelector(getActivePlugin, null);
+    store.refreshState();
+    fixture.detectChanges();
+
+    store.overrideSelector(getActivePlugin, 'foo');
+    store.refreshState();
+    fixture.detectChanges();
+
+    store.overrideSelector(getActivePlugin, null);
+    store.refreshState();
+    fixture.detectChanges();
+
+    expect(setPluginIdCalls).toEqual([
+      {
+        id: '',
+        option: {
+          useLocationReplace: true,
+          defaultValue: '',
+        },
+      },
+      {
+        id: 'foo',
+        option: {
+          useLocationReplace: true,
+          defaultValue: '',
+        },
+      },
+      {
+        id: '',
+        option: {
+          useLocationReplace: false,
+          defaultValue: '',
+        },
+      },
+    ]);
   });
 
   it('sets the hash to empty string when activePlugin is not set', () => {
