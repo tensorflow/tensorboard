@@ -52,7 +52,7 @@ from tensorboard.plugins.profile_redirect import profile_redirect_plugin
 from tensorboard.plugins.scalar import scalars_plugin
 from tensorboard.plugins.text import text_plugin
 from tensorboard.plugins.mesh import mesh_plugin
-
+from tensorboard.webapp.plugins.text import text_v2_plugin
 
 logger = logging.getLogger(__name__)
 
@@ -64,6 +64,12 @@ class ExperimentalDebuggerV2Plugin(
 
     pass
 
+class ExperimentalTextV2Plugin(
+    text_v2_plugin.TextV2Plugin, experimental_plugin.ExperimentalPlugin
+):
+   """Angular Text Plugin marked as experimental."""
+   
+   pass
 
 # Ordering matters. The order in which these lines appear determines the
 # ordering of tabs in TensorBoard's GUI.
@@ -84,6 +90,7 @@ _PLUGINS = [
     beholder_plugin_loader.BeholderPluginLoader,
     hparams_plugin.HParamsPlugin,
     mesh_plugin.MeshPlugin,
+    ExperimentalTextV2Plugin, 
 ]
 
 

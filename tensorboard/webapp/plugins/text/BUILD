@@ -3,67 +3,37 @@
 # the internals of a TensorFlow program (e.g., graphs, functions and tensors),
 # with a focus on TensorFlow 2.x.
 
+load("//tensorboard/defs:protos.bzl", "tb_proto_library")
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
 
 py_library(
-    name = "debug_data_multiplexer",
-    srcs = ["debug_data_multiplexer.py"],
+    name = "text_v2_plugin",
+    srcs = ["text_v2_plugin.py"],
     srcs_version = "PY2AND3",
     deps = [
-        "//tensorboard:errors",
-        "//tensorboard:expect_tensorflow_installed",
-    ],
-)
-
-py_library(
-    name = "debug_data_provider",
-    srcs = ["debug_data_provider.py"],
-    srcs_version = "PY2AND3",
-    deps = [
-        ":debug_data_multiplexer",
-        "//tensorboard/data:provider",
-    ],
-)
-
-py_library(
-    name = "debugger_v2_plugin",
-    srcs = ["debugger_v2_plugin.py"],
-    srcs_version = "PY2AND3",
-    deps = [
-        ":debug_data_provider",
-        "//tensorboard:errors",
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
         "//tensorboard/plugins:base_plugin",
+        "//tensorboard/util:tensor_util",
+        "//tensorboard/data:provider",
+        "//tensorboard/plugins/text:text_plugin",
+        "//tensorboard/webapp/plugins/text:metadata",
         "@org_pocoo_werkzeug",
     ],
 )
 
-py_test(
-    name = "debug_data_multiplexer_test",
-    size = "small",
-    srcs = ["debug_data_multiplexer_test.py"],
+py_library(
+    name = "metadata",
+    srcs = ["metadata.py"],
     srcs_version = "PY2AND3",
-    deps = [
-        ":debug_data_multiplexer",
-        "//tensorboard:expect_tensorflow_installed",
+    visibility = [
+        "//tensorboard:internal"
     ],
-)
-
-py_test(
-    name = "debugger_v2_plugin_test",
-    size = "medium",
-    srcs = ["debugger_v2_plugin_test.py"],
-    srcs_version = "PY2AND3",
     deps = [
-        ":debug_data_multiplexer",
-        ":debugger_v2_plugin",
-        "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/backend:application",
-        "//tensorboard/plugins:base_plugin",
-        "//tensorboard/util:test_util",
-        "@org_pythonhosted_six",
+        #":protos_all_py_pb2",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/util:tb_logging",
     ],
 )
