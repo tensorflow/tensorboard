@@ -15,7 +15,7 @@ limitations under the License.
 import {Injectable} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {Actions, createEffect, ofType} from '@ngrx/effects';
-import {merge, Observable} from 'rxjs';
+import {merge, Observable, timer} from 'rxjs';
 import {
   debounceTime,
   filter,
@@ -187,6 +187,12 @@ export class DebuggerEffects {
       // TODO(cais): Explore consolidating this effect with the greater
       // webapp (in tensorboard/webapp), e.g., during PluginChanged actions.
       ofType(debuggerLoaded),
+      // delay(8000),
+      // repeatWhen(() => interval(5000)),
+      // repeatWhen(completed => {
+      //   console.log('completed:', completed);  // DEBUG
+      //   return completed.pipe(delay(5000));
+      // }),
       withLatestFrom(this.store.select(getDebuggerRunsLoaded)),
       filter(([, {state}]) => state !== DataLoadState.LOADING),
       tap(() => this.store.dispatch(debuggerRunsRequested())),
@@ -985,18 +991,33 @@ export class DebuggerEffects {
      **/
     this.loadData$ = createEffect(
       () => {
+        // TODO(cais): Refactor to a method.
+        const timer$ = timer(0, 2000).pipe(
+          withLatestFrom(this.store.select(getActiveRunId)),
+          filter(([, runId]) => {
+            return runId !== null;
+          }),
+          tap(() => {
+            console.log('timer!'); // DEBUG
+          }),
+          map(() => void null)
+        );
+
         // This event can trigger the loading of
         //   - list of source files.
         //   - number of executions
         //   - number and breakdown of alerts.
         // Therefore it needs to be a shared observable.
         const onLoad$ = this.onDebuggerLoaded().pipe(share());
+        const onLoadWithRepeat$ = merge(onLoad$, timer$);
 
-        const loadSourceFileList$ = this.loadSourceFileList(onLoad$);
+        const loadSourceFileList$ = this.loadSourceFileList(onLoadWithRepeat$);
 
-        const onNumExecutionLoaded$ = this.createNumExecutionLoader(onLoad$);
+        const onNumExecutionLoaded$ = this.createNumExecutionLoader(
+          onLoadWithRepeat$
+        );
         const onNumAlertsLoaded$ = this.createNumAlertsAndBreakdownLoader(
-          onLoad$
+          onLoadWithRepeat$
         );
 
         const onAlertTypeFocused$ = this.onAlertTypeFocused();
@@ -1038,7 +1059,7 @@ export class DebuggerEffects {
         );
 
         const onNumGraphExecutionLoaded$ = this.createNumGraphExecutionLoader(
-          onLoad$
+          onLoadWithRepeat$
         );
 
         const onSourceFileFocused$ = this.onSourceFileFocused();
@@ -1061,6 +1082,7 @@ export class DebuggerEffects {
           onSourceFileFocused$,
           onGraphExecutionScroll$,
           loadGraphOpInfoAndStackTrace$
+          // timer$
         ).pipe(
           // createEffect expects an Observable that emits {}.
           map(() => ({}))
