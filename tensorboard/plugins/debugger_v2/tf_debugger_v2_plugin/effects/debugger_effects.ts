@@ -28,6 +28,7 @@ import {
 import {
   alertsOfTypeLoaded,
   alertTypeFocusToggled,
+  debuggerDataPoll,
   debuggerLoaded,
   debuggerRunsRequested,
   debuggerRunsLoaded,
@@ -76,6 +77,8 @@ import {
   getGraphExecutionDataLoadingPages,
   getNumExecutions,
   getNumExecutionsLoaded,
+  getLastDataPollTime,
+  getLastNewPollDataTime,
   getLoadedAlertsOfFocusedType,
   getLoadedExecutionData,
   getLoadedStackFrames,
@@ -104,6 +107,42 @@ import {
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 /** @typehack */ import * as _typeHackNgrxStore from '@ngrx/store/src/models';
 /** @typehack */ import * as _typeHackNgrxEffects from '@ngrx/effects/effects';
+
+const POLLING_BACKOFF_FACTOR = 2;
+let minimumPollingInterval = 2 * 1e3;
+let maximumPollingInterval = 30 * 1e3;
+
+export function setMinimumPollingIntervals(
+  minPollingInterval: number,
+  maxPollingInterval: number
+): void {
+  minimumPollingInterval = minPollingInterval;
+  maximumPollingInterval = maxPollingInterval;
+}
+
+/**
+ * Get the current polling interval based on the time lapsed since
+ * last new polling data and the last polling event.
+ *
+ * This specifies a backoff behavior where a longer period of no new data
+ * leads to a longer polling interval, with a ceiling as the limit.
+ *
+ * @param timeSinceLastNewData The amount of time between the arrival of the
+ *   last new polling data and the last polling event.
+ * @returns The current polling interval, i.e., low bound for the time between
+ *   the last polling event and the next one.
+ */
+export function getCurrentPollingInterval(
+  timeSinceLastNewData: number
+): number {
+  if (timeSinceLastNewData < minimumPollingInterval * POLLING_BACKOFF_FACTOR) {
+    return minimumPollingInterval;
+  } else if (timeSinceLastNewData > maximumPollingInterval) {
+    return maximumPollingInterval;
+  } else {
+    return Math.floor(timeSinceLastNewData / 1e3) * 1e3;
+  }
+}
 
 /**
  * Getting page indices that are missing from the data and hence need to be
@@ -182,8 +221,11 @@ export class DebuggerEffects {
   /**
    * When the debugger plugin is first loaded, request list of runs.
    */
-  private onDebuggerLoaded() {
+  // TODO(cais): Rename this function to onDataPoll();
+  // private onDebuggerLoaded(prevStream$: Observable<void>): Observable<void> {
+  private onDebuggerLoaded(): Observable<void> {
     return this.actions$.pipe(
+      // return prevStream$.pipe(
       // TODO(cais): Explore consolidating this effect with the greater
       // webapp (in tensorboard/webapp), e.g., during PluginChanged actions.
       ofType(debuggerLoaded),
@@ -197,6 +239,7 @@ export class DebuggerEffects {
       filter(([, {state}]) => state !== DataLoadState.LOADING),
       tap(() => this.store.dispatch(debuggerRunsRequested())),
       mergeMap(() => {
+        // console.log('Merge map: fetchRuns');  // DEBUG
         return this.dataSource.fetchRuns().pipe(
           tap((runs) => {
             this.store.dispatch(
@@ -207,6 +250,52 @@ export class DebuggerEffects {
           // TODO(cais): Add catchError() to pipe.
         );
       })
+    );
+  }
+
+  /**
+   * Create a polling observable that drives loading "root-level" data.
+   *
+   * The polling observable backs off its polling frequency when the last
+   * several polling events yielded no new data.
+   *
+   * "Root-level" data refers to:
+   *   - ID of active run.
+   *   - Number of eager executions.
+   *   - Number of graph executions.
+   *   - NUmber of alerts.
+   */
+  private createDataPolling(): Observable<void> {
+    return timer(0, minimumPollingInterval).pipe(
+      withLatestFrom(
+        this.store.select(getActiveRunId),
+        this.store.select(getLastDataPollTime),
+        this.store.select(getLastNewPollDataTime)
+      ),
+      filter(([, runId, lastDataPollTime, lastNewPollDataTime]) => {
+        // console.log('filter: 100');  // DEBUG
+        // if (timerIndex === 0) {
+        //   return false;
+        // }  // TODO(cais): Remove.
+        // console.log('filter: 200');  // DEBUG
+        const timeSinceLastNewData = lastDataPollTime - lastNewPollDataTime;
+        const currentPollingInterval = getCurrentPollingInterval(
+          timeSinceLastNewData
+        );
+        console.log(
+          `timeSinceLastNewData = ${timeSinceLastNewData}; ` +
+            `currentPollingInterval = ${currentPollingInterval}`
+        ); // TODO(cais): Remove.
+        return (
+          runId !== null &&
+          Date.now() - lastDataPollTime >= currentPollingInterval
+        );
+      }),
+      // TODO(cais): Add unit test.
+      tap(() => {
+        this.store.dispatch(debuggerDataPoll());
+      }),
+      map(() => void null)
     );
   }
 
@@ -991,33 +1080,27 @@ export class DebuggerEffects {
      **/
     this.loadData$ = createEffect(
       () => {
-        // TODO(cais): Refactor to a method.
-        const timer$ = timer(0, 2000).pipe(
-          withLatestFrom(this.store.select(getActiveRunId)),
-          filter(([, runId]) => {
-            return runId !== null;
-          }),
-          tap(() => {
-            console.log('timer!'); // DEBUG
-          }),
-          map(() => void null)
-        );
-
         // This event can trigger the loading of
         //   - list of source files.
         //   - number of executions
         //   - number and breakdown of alerts.
         // Therefore it needs to be a shared observable.
-        const onLoad$ = this.onDebuggerLoaded().pipe(share());
-        const onLoadWithRepeat$ = merge(onLoad$, timer$);
+        // ;
+        // const dataPoll$ = this.onDebuggerLoaded(this.createDataPolling()).pipe(
+        //   share()
+        // );
+        // const onDebuggerLoaded$ = ;
+        const dataPoll$ = merge(
+          this.onDebuggerLoaded(),
+          this.createDataPolling()
+        ).pipe(share());
+        // const onLoadWithRepeat$ = merge(onLoad$, timer$);
 
-        const loadSourceFileList$ = this.loadSourceFileList(onLoadWithRepeat$);
+        const loadSourceFileList$ = this.loadSourceFileList(dataPoll$);
 
-        const onNumExecutionLoaded$ = this.createNumExecutionLoader(
-          onLoadWithRepeat$
-        );
+        const onNumExecutionLoaded$ = this.createNumExecutionLoader(dataPoll$);
         const onNumAlertsLoaded$ = this.createNumAlertsAndBreakdownLoader(
-          onLoadWithRepeat$
+          dataPoll$
         );
 
         const onAlertTypeFocused$ = this.onAlertTypeFocused();
@@ -1059,7 +1142,7 @@ export class DebuggerEffects {
         );
 
         const onNumGraphExecutionLoaded$ = this.createNumGraphExecutionLoader(
-          onLoadWithRepeat$
+          dataPoll$
         );
 
         const onSourceFileFocused$ = this.onSourceFileFocused();
@@ -1082,7 +1165,6 @@ export class DebuggerEffects {
           onSourceFileFocused$,
           onGraphExecutionScroll$,
           loadGraphOpInfoAndStackTrace$
-          // timer$
         ).pipe(
           // createEffect expects an Observable that emits {}.
           map(() => ({}))

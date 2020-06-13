@@ -111,6 +111,8 @@ const initialState: DebuggerState = {
     lastLoadedTimeInMs: null,
   },
   activeRunId: null,
+  lastDataPollTime: -1, // TODO(cais): Confirm.
+  lastNewPollDataTime: -1, // TODO(cais): Confirm.
   alerts: {
     alertsLoaded: {
       state: DataLoadState.NOT_LOADED,
@@ -171,17 +173,32 @@ const reducer = createReducer(
     actions.debuggerRunsLoaded,
     (state: DebuggerState, {runs}): DebuggerState => {
       const runIds = Object.keys(runs);
+      // TODO(cais): Add unit test.
+      const activeRunChanged = runIds.length > 0 && state.activeRunId === null;
       return {
         ...state,
+        lastNewPollDataTime: activeRunChanged
+          ? Date.now()
+          : state.lastNewPollDataTime,
         runs,
         runsLoaded: {
           state: DataLoadState.LOADED,
           lastLoadedTimeInMs: Date.now(),
         },
-        activeRunId: runIds.length ? runIds[0] : null,
+        activeRunId: runIds.length > 0 ? runIds[0] : null,
         // TODO(cais): Handle multiple runs. We currently assumes there is only
         // one run, which is okay because the backend supports only one run
         // per experiment.
+      };
+    }
+  ),
+  on(
+    actions.debuggerDataPoll,
+    (state: DebuggerState): DebuggerState => {
+      return {
+        ...state,
+        // TODO(cais): Add unit test.
+        lastDataPollTime: Date.now(),
       };
     }
   ),
@@ -211,8 +228,13 @@ const reducer = createReducer(
       if (runId === null) {
         return state;
       }
+      const numAlertsIncreased = numAlerts > state.alerts.numAlerts;
       return {
         ...state,
+        // TODO(cais): Add unit test.
+        lastNewPollDataTime: numAlertsIncreased
+          ? Date.now()
+          : state.lastNewPollDataTime,
         alerts: {
           ...state.alerts,
           alertsLoaded: {
@@ -374,8 +396,14 @@ const reducer = createReducer(
       if (runId === null) {
         return state;
       }
+      // TODO(cais): Add unit test.
+      const numExecutionsIncreased =
+        numExecutions > state.executions.executionDigestsLoaded.numExecutions;
       const newState = {
         ...state,
+        lastNewPollDataTime: numExecutionsIncreased
+          ? Date.now()
+          : state.lastNewPollDataTime,
         executions: {
           ...state.executions,
           numExecutionsLoaded: {
@@ -618,8 +646,15 @@ const reducer = createReducer(
       if (state.activeRunId === null) {
         return state;
       }
+      // TODO(cais): Add unit test.
+      const numGraphExecutionsIncreased =
+        numGraphExecutions >
+        state.graphExecutions.executionDigestsLoaded.numExecutions;
       const newState = {
         ...state,
+        lastNewPollDataTime: numGraphExecutionsIncreased
+          ? Date.now()
+          : state.lastNewPollDataTime,
         graphExecutions: {
           ...state.graphExecutions,
           numExecutionsLoaded: {

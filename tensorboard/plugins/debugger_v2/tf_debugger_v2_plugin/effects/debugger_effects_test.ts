@@ -16,7 +16,8 @@ import {fakeAsync, TestBed, tick} from '@angular/core/testing';
 import {provideMockActions} from '@ngrx/effects/testing';
 import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
-import {of, ReplaySubject} from 'rxjs';
+import {empty, of, ReplaySubject} from 'rxjs';
+import * as rxjs from 'rxjs';
 import {
   alertsOfTypeLoaded,
   alertTypeFocusToggled,
@@ -260,6 +261,7 @@ describe('Debugger effects', () => {
   let debuggerEffects: DebuggerEffects;
   let action: ReplaySubject<Action>;
   let store: MockStore<State>;
+  let timerSpy: jasmine.Spy | null;
   let dispatchSpy: jasmine.Spy;
   let dispatchedActions: Action[];
 
@@ -277,15 +279,29 @@ describe('Debugger effects', () => {
         provideMockStore({initialState}),
       ],
     }).compileComponents();
-    debuggerEffects = TestBed.inject(DebuggerEffects);
 
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     dispatchSpy = spyOn(store, 'dispatch').and.callFake((action: Action) => {
       dispatchedActions.push(action);
     });
-    // Subscribe to the effects.
-    debuggerEffects.loadData$.subscribe();
+    // Create and subscribe to the effects.
+    createAndSubscribeToDebuggerEffects(true /* mockTimer */);
   });
+
+  function createAndSubscribeToDebuggerEffects(mockTimer: boolean) {
+    if (mockTimer) {
+      timerSpy = spyOn(rxjs, 'timer').and.callFake(
+        (dueTime: number, period: number) => {
+          // console.log('In fake timer:', dueTime, period);  // DEBUG
+          return empty(); // Mock it as empty Observable.
+        }
+      );
+    } else {
+      timerSpy = null;
+    }
+    debuggerEffects = TestBed.inject(DebuggerEffects);
+    debuggerEffects.loadData$.subscribe();
+  }
 
   function createFetchSourceFileListSpy(
     runId: string,
@@ -523,6 +539,7 @@ describe('Debugger effects', () => {
 
       action.next(debuggerLoaded());
 
+      expect(timerSpy).toHaveBeenCalledTimes(1);
       expect(fetchRuns).toHaveBeenCalled();
       expect(dispatchedActions).toEqual([
         debuggerRunsRequested(),
@@ -569,6 +586,7 @@ describe('Debugger effects', () => {
 
       action.next(debuggerLoaded());
 
+      expect(timerSpy).toHaveBeenCalledTimes(1);
       expect(fetchRuns).toHaveBeenCalled();
       expect(fetchNumExecutionDigests).toHaveBeenCalled();
       expect(fetchNumAlerts).toHaveBeenCalled();
@@ -586,6 +604,7 @@ describe('Debugger effects', () => {
         numGraphExecutionsRequested(),
         numGraphExecutionsLoaded({numGraphExecutions: 0}),
       ]);
+      console.log('=== TEST ENDS ==='); // DEBUG
     });
 
     it(

@@ -487,6 +487,16 @@ export interface DebuggerState {
   runs: DebuggerRunListing;
   runsLoaded: LoadState;
 
+  // Timestamp for the last data polling.
+  lastDataPollTime: number;
+  // Timestamp for the last noo-empty data polling result.
+  // This is updated when any of the following is refreshed:
+  // - activeRunId
+  // - executions.executionDigestsLoaded.numExecutions
+  // - graphExecutions.executionDigestsLoaded.numExecutions
+  // - alerts.alertsLoaded.numAlerts
+  lastNewPollDataTime: number;
+
   // ID of the run being currently displayed.
   // TODO(cais): The Debugger V2 plugin currently handles only one single run in
   // its frontend. Expand the support to multiple runs.
