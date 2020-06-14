@@ -116,7 +116,9 @@ const DEFAULT_POLLING_BACKOFF_FACTOR = 2;
 let minimumPollingInterval = DEFAULT_MINIMUM_POLLING_INTERVAL;
 // Maximum polling interval in miliseconds.
 let maximumPollingInterval = DEFAULT_MAXIMUM_POLLING_INTERVAL;
-// Backoff behavior takes effect when time since last new
+// Backoff behavior takes effect when time since the elapsed time between the
+// most recent arrival of new polling result and the most recent polling event
+// exceeds `pollingBackoffFactor * minimumPollingInterval`.
 let pollingBackoffFactor = DEFAULT_POLLING_BACKOFF_FACTOR;
 
 export function setDataPollingOptions(options: {
@@ -250,11 +252,8 @@ export class DebuggerEffects {
   /**
    * When the debugger plugin is first loaded, request list of runs.
    */
-  // TODO(cais): Rename this function to onDataPoll();
-  // private onDebuggerLoaded(prevStream$: Observable<void>): Observable<void> {
   private onDebuggerLoaded(): Observable<void> {
     return this.actions$.pipe(
-      // return prevStream$.pipe(
       // TODO(cais): Explore consolidating this effect with the greater
       // webapp (in tensorboard/webapp), e.g., during PluginChanged actions.
       ofType(debuggerLoaded),
@@ -298,9 +297,7 @@ export class DebuggerEffects {
           Date.now() - lastDataPollTime >= currentPollingInterval
         );
       }),
-      tap(() => {
-        this.store.dispatch(debuggerDataPoll());
-      }),
+      tap(() => this.store.dispatch(debuggerDataPoll())),
       map(() => void null)
     );
   }
@@ -1093,16 +1090,10 @@ export class DebuggerEffects {
         //   - number of executions
         //   - number and breakdown of alerts.
         // Therefore it needs to be a shared observable.
-        // ;
-        // const dataPoll$ = this.onDebuggerLoaded(this.createDataPolling()).pipe(
-        //   share()
-        // );
-        // const onDebuggerLoaded$ = ;
         const dataPoll$ = merge(
           this.onDebuggerLoaded(),
           this.createDataPolling()
         ).pipe(share());
-        // const onLoadWithRepeat$ = merge(onLoad$, timer$);
 
         const loadSourceFileList$ = this.loadSourceFileList(dataPoll$);
 

@@ -46,7 +46,7 @@ import {
 export const debuggerLoaded = createAction('[Debugger] Debugger Loaded');
 
 export const debuggerDataPoll = createAction(
-  '[Debugger] A New Debugger Data Polling Event is Started'
+  '[Debugger] A New Debugger Data Polling Event Begins'
 );
 
 export const debuggerRunsRequested = createAction(
