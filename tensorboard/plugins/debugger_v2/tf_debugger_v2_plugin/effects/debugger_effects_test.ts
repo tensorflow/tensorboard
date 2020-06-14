@@ -1042,7 +1042,7 @@ describe('Debugger effects', () => {
   });
 
   describe('Timer-based polling', () => {
-    function createAndSubscribeToDebuggerEffects() {
+    function createAndSubscribeToDebuggerEffectsWithOneShotTimer() {
       timerSpy = spyOn(rxjs, 'timer').and.callFake(
         (dueTime: number, period: number) => {
           return of(1).pipe(delay(2000));
@@ -1098,7 +1098,7 @@ describe('Debugger effects', () => {
     });
 
     it('triggers polling after first polling interval', fakeAsync(() => {
-      createAndSubscribeToDebuggerEffects();
+      createAndSubscribeToDebuggerEffectsWithOneShotTimer();
       expect(fetchNumExecutionDigests).toHaveBeenCalledTimes(0);
       expect(fetchNumAlerts).toHaveBeenCalledTimes(0);
       expect(fetchNumGraphExecutionDigests).toHaveBeenCalledTimes(0);
@@ -1108,7 +1108,6 @@ describe('Debugger effects', () => {
       store.overrideSelector(getDebuggerRunListing, runListingForTest);
       store.refreshState();
       tick(2000); // Wait for the polling interval.
-      console.log(dispatchedActions);
       // Run list is not expected to be polled.
       expect(fetchRuns).toHaveBeenCalledTimes(0);
       expect(fetchNumExecutionDigests).toHaveBeenCalledTimes(1);
@@ -1119,11 +1118,10 @@ describe('Debugger effects', () => {
     }));
 
     it('skips when there is no active run', fakeAsync(() => {
-      createAndSubscribeToDebuggerEffects();
+      createAndSubscribeToDebuggerEffectsWithOneShotTimer();
       store.overrideSelector(getActiveRunId, null);
       store.refreshState();
       tick(2000); // Wait for the polling interval.
-      console.log(dispatchedActions);
       expect(fetchRuns).toHaveBeenCalledTimes(0);
       // Expect no polling due to the lack of active run.
       expect(fetchNumExecutionDigests).toHaveBeenCalledTimes(0);
@@ -1137,7 +1135,7 @@ describe('Debugger effects', () => {
       'skipps polling when current polling interval is > ' +
         ' time since last poll',
       fakeAsync(() => {
-        createAndSubscribeToDebuggerEffects();
+        createAndSubscribeToDebuggerEffectsWithOneShotTimer();
         const t0 = Date.now();
         store.overrideSelector(getLastNewPollDataTime, t0 - 60e3);
         store.overrideSelector(getLastDataPollTime, t0 - 2e3);
