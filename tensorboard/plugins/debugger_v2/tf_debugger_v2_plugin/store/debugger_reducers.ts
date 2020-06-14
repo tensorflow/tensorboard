@@ -111,8 +111,8 @@ const initialState: DebuggerState = {
     lastLoadedTimeInMs: null,
   },
   activeRunId: null,
-  lastDataPollTime: -1, // TODO(cais): Confirm.
-  lastNewPollDataTime: -1, // TODO(cais): Confirm.
+  lastDataPollTime: -1,
+  lastNewPollDataTime: -1,
   alerts: {
     alertsLoaded: {
       state: DataLoadState.NOT_LOADED,
@@ -173,7 +173,6 @@ const reducer = createReducer(
     actions.debuggerRunsLoaded,
     (state: DebuggerState, {runs}): DebuggerState => {
       const runIds = Object.keys(runs);
-      // TODO(cais): Add unit test.
       const activeRunChanged = runIds.length > 0 && state.activeRunId === null;
       return {
         ...state,
@@ -197,7 +196,6 @@ const reducer = createReducer(
     (state: DebuggerState): DebuggerState => {
       return {
         ...state,
-        // TODO(cais): Add unit test.
         lastDataPollTime: Date.now(),
       };
     }
@@ -231,7 +229,6 @@ const reducer = createReducer(
       const numAlertsIncreased = numAlerts > state.alerts.numAlerts;
       return {
         ...state,
-        // TODO(cais): Add unit test.
         lastNewPollDataTime: numAlertsIncreased
           ? Date.now()
           : state.lastNewPollDataTime,
@@ -396,7 +393,6 @@ const reducer = createReducer(
       if (runId === null) {
         return state;
       }
-      // TODO(cais): Add unit test.
       const numExecutionsIncreased =
         numExecutions > state.executions.executionDigestsLoaded.numExecutions;
       const newState = {
@@ -646,7 +642,6 @@ const reducer = createReducer(
       if (state.activeRunId === null) {
         return state;
       }
-      // TODO(cais): Add unit test.
       const numGraphExecutionsIncreased =
         numGraphExecutions >
         state.graphExecutions.executionDigestsLoaded.numExecutions;

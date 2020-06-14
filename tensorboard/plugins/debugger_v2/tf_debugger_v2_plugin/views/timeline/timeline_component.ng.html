@@ -16,15 +16,10 @@ limitations under the License.
 -->
 
 <div>
-  <!-- TODO(cais): Add unit test for number of eager executions in parens. -->
-  <div div="timeline-title">
+  <div class="timeline-title">
     Python Execution Timeline
-    <span div="execution-count">
+    <span class="execution-count">
       ({{ numExecutions }})
-    </span>
-    <!-- TODO(cais): Replace with a material spinner. -->
-    <span *ngIf="loadingNumExecutions" class="loading-num-executions">
-      Loading...
     </span>
   </div>
 

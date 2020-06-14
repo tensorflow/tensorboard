@@ -29,10 +29,10 @@ import {
 } from '../../actions';
 import {DebuggerComponent} from '../../debugger_component';
 import {DebuggerContainer} from '../../debugger_container';
-import {DataLoadState, State, AlertType} from '../../store/debugger_types';
+import {getNumExecutions} from '../../store';
+import {State, AlertType} from '../../store/debugger_types';
 import {
   createAlertsState,
-  createDebuggerExecutionsState,
   createDebuggerState,
   createDebuggerStateWithLoadedExecutionDigests,
   createState,
@@ -95,65 +95,7 @@ describe('Timeline Container', () => {
     dispatchSpy = spyOn(store, 'dispatch');
   });
 
-  it('shows loading number of executions', () => {
-    const fixture = TestBed.createComponent(TimelineContainer);
-    fixture.detectChanges();
-
-    store.setState(
-      createState(
-        createDebuggerState({
-          runs: {},
-          runsLoaded: {
-            state: DataLoadState.LOADED,
-            lastLoadedTimeInMs: Date.now(),
-          },
-          executions: createDebuggerExecutionsState({
-            numExecutionsLoaded: {
-              state: DataLoadState.LOADING,
-              lastLoadedTimeInMs: null,
-            },
-          }),
-        })
-      )
-    );
-    fixture.detectChanges();
-
-    const loadingElements = fixture.debugElement.queryAll(
-      By.css('.loading-num-executions')
-    );
-    expect(loadingElements.length).toEqual(1);
-  });
-
-  it('hides loading number of executions', () => {
-    const fixture = TestBed.createComponent(TimelineContainer);
-    fixture.detectChanges();
-
-    store.setState(
-      createState(
-        createDebuggerState({
-          runs: {},
-          runsLoaded: {
-            state: DataLoadState.LOADED,
-            lastLoadedTimeInMs: Date.now(),
-          },
-          executions: createDebuggerExecutionsState({
-            numExecutionsLoaded: {
-              state: DataLoadState.LOADED,
-              lastLoadedTimeInMs: 111,
-            },
-          }),
-        })
-      )
-    );
-    fixture.detectChanges();
-
-    const loadingElements = fixture.debugElement.queryAll(
-      By.css('.loading-num-executions')
-    );
-    expect(loadingElements.length).toEqual(0);
-  });
-
-  it('shows correct display range for executions', () => {
+  it('shows total number of executions', () => {
     const fixture = TestBed.createComponent(TimelineContainer);
     fixture.detectChanges();
 
@@ -168,13 +110,20 @@ describe('Timeline Container', () => {
       )
     );
     fixture.detectChanges();
+  });
 
-    const navigationPositionInfoElement = fixture.debugElement.query(
-      By.css('.navigation-position-info')
+  it('shows correct display range for executions', () => {
+    const fixture = TestBed.createComponent(TimelineContainer);
+    fixture.detectChanges();
+
+    store.overrideSelector(getNumExecutions, 42);
+    store.refreshState();
+    fixture.detectChanges();
+
+    const executionCountElement = fixture.debugElement.query(
+      By.css('.execution-count')
     );
-    expect(navigationPositionInfoElement.nativeElement.innerText).toBe(
-      'Execution: 977 ~ 1076 of 1500'
-    );
+    expect(executionCountElement.nativeElement.innerText).toBe('(42)');
   });
 
   it('left-button click dispatches executionScrollLeft action', () => {

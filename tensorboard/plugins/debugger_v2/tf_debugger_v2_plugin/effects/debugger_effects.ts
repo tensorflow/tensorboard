@@ -108,16 +108,42 @@ import {
 /** @typehack */ import * as _typeHackNgrxStore from '@ngrx/store/src/models';
 /** @typehack */ import * as _typeHackNgrxEffects from '@ngrx/effects/effects';
 
-const POLLING_BACKOFF_FACTOR = 2;
-let minimumPollingInterval = 2 * 1e3;
-let maximumPollingInterval = 30 * 1e3;
+const DEFAULT_MINIMUM_POLLING_INTERVAL = 2 * 1e3;
+const DEFAULT_MAXIMUM_POLLING_INTERVAL = 30 * 1e3;
+const DEFAULT_POLLING_BACKOFF_FACTOR = 2;
 
-export function setMinimumPollingIntervals(
-  minPollingInterval: number,
-  maxPollingInterval: number
-): void {
+// Minimum polling interval in milliseconds.
+let minimumPollingInterval = DEFAULT_MINIMUM_POLLING_INTERVAL;
+// Maximum polling interval in miliseconds.
+let maximumPollingInterval = DEFAULT_MAXIMUM_POLLING_INTERVAL;
+// Backoff behavior takes effect when time since last new
+let pollingBackoffFactor = DEFAULT_POLLING_BACKOFF_FACTOR;
+
+export function setDataPollingOptions(options: {
+  minPollingInterval: number;
+  maxPollingInterval: number;
+  backoffFactor: number;
+}): void {
+  const {minPollingInterval, maxPollingInterval, backoffFactor} = options;
+  if (backoffFactor < 0) {
+    throw new Error(`Invalid pollingBackoffFactor (${backoffFactor})`);
+  }
+  if (minPollingInterval * backoffFactor >= maximumPollingInterval) {
+    throw new Error(
+      `minPollingInterval * backoffFactor ` +
+        `(${minPollingInterval * backoffFactor}) is expected to be < ` +
+        `maxPollingInterval (${maxPollingInterval}), but is not`
+    );
+  }
   minimumPollingInterval = minPollingInterval;
   maximumPollingInterval = maxPollingInterval;
+  pollingBackoffFactor = backoffFactor;
+}
+
+export function resetDataPollingOptions(): void {
+  minimumPollingInterval = DEFAULT_MINIMUM_POLLING_INTERVAL;
+  maximumPollingInterval = DEFAULT_MAXIMUM_POLLING_INTERVAL;
+  pollingBackoffFactor = DEFAULT_POLLING_BACKOFF_FACTOR;
 }
 
 /**
@@ -127,20 +153,23 @@ export function setMinimumPollingIntervals(
  * This specifies a backoff behavior where a longer period of no new data
  * leads to a longer polling interval, with a ceiling as the limit.
  *
- * @param timeSinceLastNewData The amount of time between the arrival of the
- *   last new polling data and the last polling event.
+ * @param lastNewPollDataToLastPollTime The amount of time between the most
+ *   recent arrival of new polling result and the last polling event.
  * @returns The current polling interval, i.e., low bound for the time between
  *   the last polling event and the next one.
  */
 export function getCurrentPollingInterval(
-  timeSinceLastNewData: number
+  lastNewPollDataToLastPollTime: number
 ): number {
-  if (timeSinceLastNewData < minimumPollingInterval * POLLING_BACKOFF_FACTOR) {
-    return minimumPollingInterval;
-  } else if (timeSinceLastNewData > maximumPollingInterval) {
+  if (lastNewPollDataToLastPollTime > maximumPollingInterval) {
     return maximumPollingInterval;
+  } else if (
+    lastNewPollDataToLastPollTime >
+    minimumPollingInterval * pollingBackoffFactor
+  ) {
+    return lastNewPollDataToLastPollTime;
   } else {
-    return Math.floor(timeSinceLastNewData / 1e3) * 1e3;
+    return minimumPollingInterval;
   }
 }
 
@@ -229,17 +258,10 @@ export class DebuggerEffects {
       // TODO(cais): Explore consolidating this effect with the greater
       // webapp (in tensorboard/webapp), e.g., during PluginChanged actions.
       ofType(debuggerLoaded),
-      // delay(8000),
-      // repeatWhen(() => interval(5000)),
-      // repeatWhen(completed => {
-      //   console.log('completed:', completed);  // DEBUG
-      //   return completed.pipe(delay(5000));
-      // }),
       withLatestFrom(this.store.select(getDebuggerRunsLoaded)),
       filter(([, {state}]) => state !== DataLoadState.LOADING),
       tap(() => this.store.dispatch(debuggerRunsRequested())),
       mergeMap(() => {
-        // console.log('Merge map: fetchRuns');  // DEBUG
         return this.dataSource.fetchRuns().pipe(
           tap((runs) => {
             this.store.dispatch(
@@ -254,16 +276,10 @@ export class DebuggerEffects {
   }
 
   /**
-   * Create a polling observable that drives loading "root-level" data.
+   * Create a polling Observable that drives loading "root-level" data.
    *
    * The polling observable backs off its polling frequency when the last
    * several polling events yielded no new data.
-   *
-   * "Root-level" data refers to:
-   *   - ID of active run.
-   *   - Number of eager executions.
-   *   - Number of graph executions.
-   *   - NUmber of alerts.
    */
   private createDataPolling(): Observable<void> {
     return timer(0, minimumPollingInterval).pipe(
@@ -273,25 +289,15 @@ export class DebuggerEffects {
         this.store.select(getLastNewPollDataTime)
       ),
       filter(([, runId, lastDataPollTime, lastNewPollDataTime]) => {
-        // console.log('filter: 100');  // DEBUG
-        // if (timerIndex === 0) {
-        //   return false;
-        // }  // TODO(cais): Remove.
-        // console.log('filter: 200');  // DEBUG
         const timeSinceLastNewData = lastDataPollTime - lastNewPollDataTime;
         const currentPollingInterval = getCurrentPollingInterval(
           timeSinceLastNewData
         );
-        console.log(
-          `timeSinceLastNewData = ${timeSinceLastNewData}; ` +
-            `currentPollingInterval = ${currentPollingInterval}`
-        ); // TODO(cais): Remove.
         return (
           runId !== null &&
           Date.now() - lastDataPollTime >= currentPollingInterval
         );
       }),
-      // TODO(cais): Add unit test.
       tap(() => {
         this.store.dispatch(debuggerDataPoll());
       }),
@@ -1047,8 +1053,11 @@ export class DebuggerEffects {
     private dataSource: Tfdbg2HttpServerDataSource
   ) {
     /**
-     * view load ---------> fetch source-file list
-     *  |
+     *           Backoff-enabled polling
+     *               |            |
+     *               |            v
+     * view load ----+----> fetch source-file list
+     *  |            |
      *  +> fetch run +> fetch num of top-level (eager) executions
      *  |            +> fetch num of intra-graph executions
      *  |            +> fetch num alerts
@@ -1076,7 +1085,6 @@ export class DebuggerEffects {
      * on graph-op-info requested --> fetch graph-op info ------+
      *                                                          |
      *                                fetch stack frames <------+
-     *
      **/
     this.loadData$ = createEffect(
       () => {

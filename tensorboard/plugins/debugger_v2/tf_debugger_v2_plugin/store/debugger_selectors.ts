@@ -78,13 +78,11 @@ export const getActiveRunId = createSelector(
  * Selectors related to data polling.
  */
 
-// TODO(cais): Add unit test.
 export const getLastDataPollTime = createSelector(
   selectDebuggerState,
   (state: DebuggerState): number => state.lastDataPollTime
 );
 
-// TODO(cais): Add unit test.
 export const getLastNewPollDataTime = createSelector(
   selectDebuggerState,
   (state: DebuggerState): number => state.lastNewPollDataTime
