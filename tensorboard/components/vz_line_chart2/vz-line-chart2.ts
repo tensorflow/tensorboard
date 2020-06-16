@@ -304,8 +304,10 @@ namespace vz_line_chart2 {
       if (!this._chart) {
         return true;
       }
-      return isScaleFitToData(this._chart.xAxis.getScale()) &&
-          isScaleFitToData(this._chart.yAxis.getScale());
+      return (
+        isScaleFitToData(this._chart.xAxis.getScale()) &&
+        isScaleFitToData(this._chart.yAxis.getScale())
+      );
 
       function isScaleFitToData(scale) {
         const domain = scale.getTransformationDomain();
