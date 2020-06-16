@@ -197,7 +197,7 @@ const reducer = createReducer(
     }
   ),
   on(
-    actions.debuggerDataPoll,
+    actions.debuggerDataPollOnset,
     (state: DebuggerState): DebuggerState => {
       return {
         ...state,

@@ -47,7 +47,7 @@ export const debuggerLoaded = createAction('[Debugger] Debugger Loaded');
 
 export const debuggerUnloaded = createAction('[Debugger] Debugger Unloaded');
 
-export const debuggerDataPoll = createAction(
+export const debuggerDataPollOnset = createAction(
   '[Debugger] A New Debugger Data Polling Event Begins'
 );
 

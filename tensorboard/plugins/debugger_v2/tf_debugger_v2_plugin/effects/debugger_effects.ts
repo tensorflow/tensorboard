@@ -33,7 +33,7 @@ import {manualReload, reload} from '../../../../webapp/core/actions';
 import {
   alertsOfTypeLoaded,
   alertTypeFocusToggled,
-  debuggerDataPoll,
+  debuggerDataPollOnset,
   debuggerLoaded,
   debuggerRunsRequested,
   debuggerRunsLoaded,
@@ -123,7 +123,7 @@ export const MAX_POLLING_INTERVAL_MS = 60e3;
 export const POLLING_BACKOFF_FACTOR = 2;
 
 /**
- * Get the current polling interval based on the time lapsed since
+ * Computes the current polling interval based on the time lapsed since
  * last new polling data and the last polling event.
  *
  * This specifies a backoff behavior where a longer period of no new data
@@ -263,7 +263,7 @@ export class DebuggerEffects {
           this.actions$.pipe(ofType(debuggerUnloaded))
         );
       }),
-      tap(() => this.store.dispatch(debuggerDataPoll())),
+      tap(() => this.store.dispatch(debuggerDataPollOnset())),
       map(() => void null)
     );
   }
@@ -271,7 +271,7 @@ export class DebuggerEffects {
   private onCoreReload(): Observable<void> {
     return this.actions$.pipe(
       ofType(manualReload, reload),
-      tap(() => this.store.dispatch(debuggerDataPoll())),
+      tap(() => this.store.dispatch(debuggerDataPollOnset())),
       map(() => void null)
     );
   }

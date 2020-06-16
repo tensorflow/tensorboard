@@ -22,7 +22,7 @@ import {manualReload, reload} from '../../../../webapp/core/actions';
 import {
   alertsOfTypeLoaded,
   alertTypeFocusToggled,
-  debuggerDataPoll,
+  debuggerDataPollOnset,
   debuggerLoaded,
   debuggerRunsLoaded,
   debuggerRunsRequested,
@@ -642,7 +642,7 @@ describe('Debugger effects', () => {
 
         expect(fetchRuns).toHaveBeenCalled();
         expect(dispatchedActions).toEqual([
-          debuggerDataPoll(),
+          debuggerDataPollOnset(),
           debuggerRunsRequested(),
           debuggerRunsLoaded({runs: {}}),
         ]);
@@ -694,7 +694,7 @@ describe('Debugger effects', () => {
           expect(fetchNumAlerts).toHaveBeenCalled();
           expect(fetchNumGraphExecutionDigests).toHaveBeenCalled();
           expect(dispatchedActions).toEqual([
-            debuggerDataPoll(),
+            debuggerDataPollOnset(),
             debuggerRunsRequested(),
             debuggerRunsLoaded({runs: runListingForTest}),
             numAlertsAndBreakdownRequested(),
@@ -744,7 +744,7 @@ describe('Debugger effects', () => {
           expect(fetchGraphExecutionDigests).toHaveBeenCalledTimes(1);
           expect(fetchSourceFileList).toHaveBeenCalledTimes(1);
           expect(dispatchedActions).toEqual([
-            debuggerDataPoll(),
+            debuggerDataPollOnset(),
             debuggerRunsRequested(),
             debuggerRunsLoaded({runs: runListingForTest}),
             numAlertsAndBreakdownRequested(),

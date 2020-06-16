@@ -241,12 +241,12 @@ describe('Debugger graphs reducers', () => {
     expect(nextState.lastNonEmptyPollDataTimeMs).toBe(1234);
   });
 
-  it('debuggerDataPoll updates lastDataPollOnsetTimeMs', () => {
+  it('debuggerDataPollOnset updates lastDataPollOnsetTimeMs', () => {
     const state = createDebuggerState({
       lastDataPollOnsetTimeMs: 0,
     });
     const t0 = Date.now();
-    const nextState = reducers(state, actions.debuggerDataPoll());
+    const nextState = reducers(state, actions.debuggerDataPollOnset());
     expect(nextState.lastDataPollOnsetTimeMs).toBeGreaterThanOrEqual(t0);
   });
 
