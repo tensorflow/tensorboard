@@ -111,6 +111,13 @@ const initialState: DebuggerState = {
     lastLoadedTimeInMs: null,
   },
   activeRunId: null,
+  // The initial values of lastDataPollOnsetTimeMs and
+  // lastNonEmptyPollDataTimeMs ensures that initially, before
+  // the onset of any data polling, the difference of the two
+  // is 0, which causes a backing-off polling algorithm to use
+  // the lower-bound polling interval.
+  lastDataPollOnsetTimeMs: -1,
+  lastNonEmptyPollDataTimeMs: 1,
   alerts: {
     alertsLoaded: {
       state: DataLoadState.NOT_LOADED,
@@ -171,17 +178,30 @@ const reducer = createReducer(
     actions.debuggerRunsLoaded,
     (state: DebuggerState, {runs}): DebuggerState => {
       const runIds = Object.keys(runs);
+      const activeRunChanged = runIds.length > 0 && state.activeRunId === null;
       return {
         ...state,
+        lastNonEmptyPollDataTimeMs: activeRunChanged
+          ? Date.now()
+          : state.lastNonEmptyPollDataTimeMs,
         runs,
         runsLoaded: {
           state: DataLoadState.LOADED,
           lastLoadedTimeInMs: Date.now(),
         },
-        activeRunId: runIds.length ? runIds[0] : null,
+        activeRunId: runIds.length > 0 ? runIds[0] : null,
         // TODO(cais): Handle multiple runs. We currently assumes there is only
         // one run, which is okay because the backend supports only one run
         // per experiment.
+      };
+    }
+  ),
+  on(
+    actions.debuggerDataPollOnset,
+    (state: DebuggerState): DebuggerState => {
+      return {
+        ...state,
+        lastDataPollOnsetTimeMs: Date.now(),
       };
     }
   ),
@@ -211,8 +231,12 @@ const reducer = createReducer(
       if (runId === null) {
         return state;
       }
+      const numAlertsIncreased = numAlerts > state.alerts.numAlerts;
       return {
         ...state,
+        lastNonEmptyPollDataTimeMs: numAlertsIncreased
+          ? Date.now()
+          : state.lastNonEmptyPollDataTimeMs,
         alerts: {
           ...state.alerts,
           alertsLoaded: {
@@ -374,8 +398,13 @@ const reducer = createReducer(
       if (runId === null) {
         return state;
       }
+      const numExecutionsIncreased =
+        numExecutions > state.executions.executionDigestsLoaded.numExecutions;
       const newState = {
         ...state,
+        lastNonEmptyPollDataTimeMs: numExecutionsIncreased
+          ? Date.now()
+          : state.lastNonEmptyPollDataTimeMs,
         executions: {
           ...state.executions,
           numExecutionsLoaded: {
@@ -618,8 +647,14 @@ const reducer = createReducer(
       if (state.activeRunId === null) {
         return state;
       }
+      const numGraphExecutionsIncreased =
+        numGraphExecutions >
+        state.graphExecutions.executionDigestsLoaded.numExecutions;
       const newState = {
         ...state,
+        lastNonEmptyPollDataTimeMs: numGraphExecutionsIncreased
+          ? Date.now()
+          : state.lastNonEmptyPollDataTimeMs,
         graphExecutions: {
           ...state.graphExecutions,
           numExecutionsLoaded: {

@@ -156,6 +156,8 @@ export function createDebuggerState(
       state: DataLoadState.NOT_LOADED,
       lastLoadedTimeInMs: null,
     },
+    lastDataPollOnsetTimeMs: -1,
+    lastNonEmptyPollDataTimeMs: -1,
     activeRunId: null,
     alerts: createAlertsState(),
     executions: createDebuggerExecutionsState(),

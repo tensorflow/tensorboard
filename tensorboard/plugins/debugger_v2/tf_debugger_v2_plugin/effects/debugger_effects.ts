@@ -13,24 +13,31 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
-import {Store} from '@ngrx/store';
+import {Action, Store} from '@ngrx/store';
 import {Actions, createEffect, ofType} from '@ngrx/effects';
-import {merge, Observable} from 'rxjs';
+import {merge, Observable, of, timer} from 'rxjs';
 import {
   debounceTime,
+  delayWhen,
   filter,
   map,
   mergeMap,
+  repeatWhen,
   share,
+  switchMap,
+  takeUntil,
   tap,
   withLatestFrom,
 } from 'rxjs/operators';
+import {manualReload, reload} from '../../../../webapp/core/actions';
 import {
   alertsOfTypeLoaded,
   alertTypeFocusToggled,
+  debuggerDataPollOnset,
   debuggerLoaded,
   debuggerRunsRequested,
   debuggerRunsLoaded,
+  debuggerUnloaded,
   executionDataLoaded,
   executionDigestFocused,
   executionDigestsRequested,
@@ -83,6 +90,7 @@ import {
   getNumAlertsOfFocusedType,
   getNumGraphExecutions,
   getNumGraphExecutionsLoaded,
+  getPollSilenceTimeMs,
   getSourceFileListLoaded,
 } from '../store/debugger_selectors';
 import {beginEndRangesInclude} from '../store/debugger_store_utils';
@@ -104,6 +112,40 @@ import {
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 /** @typehack */ import * as _typeHackNgrxStore from '@ngrx/store/src/models';
 /** @typehack */ import * as _typeHackNgrxEffects from '@ngrx/effects/effects';
+
+// Minimum polling interval in milliseconds.
+export const MIN_POLLING_INTERVAL_MS = 2e3;
+// Maximum polling interval in miliseconds.
+export const MAX_POLLING_INTERVAL_MS = 60e3;
+// Backoff behavior takes effect when time since the elapsed time between the
+// most recent arrival of new polling result and the most recent polling event
+// exceeds `pollingBackoffFactor * minimumPollingInterval`.
+export const POLLING_BACKOFF_FACTOR = 2;
+
+/**
+ * Computes the current polling interval based on the time lapsed since
+ * last new polling data and the last polling event.
+ *
+ * This specifies a backoff behavior where a longer period of no new data
+ * leads to a longer polling interval, with a ceiling as the limit.
+ *
+ * @param pollSilenceTime The amount of time between the most
+ *   recent arrival of new polling result and the last polling event.
+ * @returns The current polling interval, i.e., low bound for the time between
+ *   the last polling event and the next one.
+ */
+export function getCurrentPollingInterval(pollSilenceTime: number): number {
+  if (pollSilenceTime > MAX_POLLING_INTERVAL_MS) {
+    return MAX_POLLING_INTERVAL_MS;
+  } else if (
+    pollSilenceTime >
+    MIN_POLLING_INTERVAL_MS * POLLING_BACKOFF_FACTOR
+  ) {
+    return pollSilenceTime;
+  } else {
+    return MIN_POLLING_INTERVAL_MS;
+  }
+}
 
 /**
  * Getting page indices that are missing from the data and hence need to be
@@ -167,6 +209,34 @@ function getMissingPages(
   return missingPages;
 }
 
+/**
+ * Repeat an input stream at given intervals.
+ * @param stream$ The stream to repeat.
+ * @param pollingIntervalStream$ The stream of polling intervals.
+ *   The latest value of this stream will be used as the interval between
+ *   the previous repeat and the next one.
+ * @param terminationStream$ Terminate the repeat on values from this stream.
+ * @returns Stream with the timed repeats.
+ */
+function createTimedRepeater(
+  stream$: Observable<any>,
+  pollingIntervalStream$: Observable<number>,
+  terminationStream$: Observable<any>
+): Observable<void> {
+  return stream$.pipe(
+    repeatWhen((completed) =>
+      completed.pipe(
+        withLatestFrom(pollingIntervalStream$),
+        delayWhen(([, pollingInterval]) => {
+          return timer(pollingInterval);
+        })
+      )
+    ),
+    takeUntil(terminationStream$),
+    map(() => void null)
+  );
+}
+
 @Injectable()
 export class DebuggerEffects {
   /**
@@ -179,14 +249,38 @@ export class DebuggerEffects {
   /** @export */
   readonly loadData$: Observable<{}>;
 
-  /**
-   * When the debugger plugin is first loaded, request list of runs.
-   */
-  private onDebuggerLoaded() {
+  private onDebuggerDataPoll(): Observable<void> {
     return this.actions$.pipe(
-      // TODO(cais): Explore consolidating this effect with the greater
-      // webapp (in tensorboard/webapp), e.g., during PluginChanged actions.
       ofType(debuggerLoaded),
+      switchMap((action: Action) => {
+        return createTimedRepeater(
+          of(action),
+          this.store.select(getPollSilenceTimeMs).pipe(
+            map((pollSilenceTime) => {
+              return getCurrentPollingInterval(pollSilenceTime);
+            })
+          ),
+          this.actions$.pipe(ofType(debuggerUnloaded))
+        );
+      }),
+      tap(() => this.store.dispatch(debuggerDataPollOnset())),
+      map(() => void null)
+    );
+  }
+
+  private onCoreReload(): Observable<void> {
+    return this.actions$.pipe(
+      ofType(manualReload, reload),
+      tap(() => this.store.dispatch(debuggerDataPollOnset())),
+      map(() => void null)
+    );
+  }
+
+  /**
+   * Request list of debugger runs.
+   */
+  private loadDebuggerRuns(prevStream$: Observable<void>): Observable<void> {
+    return prevStream$.pipe(
       withLatestFrom(this.store.select(getDebuggerRunsLoaded)),
       filter(([, {state}]) => state !== DataLoadState.LOADING),
       tap(() => this.store.dispatch(debuggerRunsRequested())),
@@ -952,9 +1046,12 @@ export class DebuggerEffects {
     private dataSource: Tfdbg2HttpServerDataSource
   ) {
     /**
-     * view load ---------> fetch source-file list
+     * view load and subsequent
+     * backoff polls, auto and
+     * manual reload events
      *  |
-     *  +> fetch run +> fetch num of top-level (eager) executions
+     *  +> fetch run-+> fetch source-file list
+     *  |            +> fetch num of top-level (eager) executions
      *  |            +> fetch num of intra-graph executions
      *  |            +> fetch num alerts
      *  |                +
@@ -981,7 +1078,6 @@ export class DebuggerEffects {
      * on graph-op-info requested --> fetch graph-op info ------+
      *                                                          |
      *                                fetch stack frames <------+
-     *
      **/
     this.loadData$ = createEffect(
       () => {
@@ -990,13 +1086,17 @@ export class DebuggerEffects {
         //   - number of executions
         //   - number and breakdown of alerts.
         // Therefore it needs to be a shared observable.
-        const onLoad$ = this.onDebuggerLoaded().pipe(share());
+        const loadRunData$ = this.loadDebuggerRuns(
+          merge(this.onDebuggerDataPoll(), this.onCoreReload())
+        ).pipe(share());
 
-        const loadSourceFileList$ = this.loadSourceFileList(onLoad$);
+        const loadSourceFileList$ = this.loadSourceFileList(loadRunData$);
 
-        const onNumExecutionLoaded$ = this.createNumExecutionLoader(onLoad$);
+        const onNumExecutionLoaded$ = this.createNumExecutionLoader(
+          loadRunData$
+        );
         const onNumAlertsLoaded$ = this.createNumAlertsAndBreakdownLoader(
-          onLoad$
+          loadRunData$
         );
 
         const onAlertTypeFocused$ = this.onAlertTypeFocused();
@@ -1038,7 +1138,7 @@ export class DebuggerEffects {
         );
 
         const onNumGraphExecutionLoaded$ = this.createNumGraphExecutionLoader(
-          onLoad$
+          loadRunData$
         );
 
         const onSourceFileFocused$ = this.onSourceFileFocused();
@@ -1072,5 +1172,6 @@ export class DebuggerEffects {
 }
 
 export const TEST_ONLY = {
+  createTimedRepeater,
   getMissingPages,
 };

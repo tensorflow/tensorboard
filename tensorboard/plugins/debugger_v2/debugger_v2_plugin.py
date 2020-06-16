@@ -86,7 +86,7 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
 
     def frontend_metadata(self):
         return base_plugin.FrontendMetadata(
-            is_ng_component=True, tab_name="Debugger V2", disable_reload=True
+            is_ng_component=True, tab_name="Debugger V2", disable_reload=False
         )
 
     @wrappers.Request.application

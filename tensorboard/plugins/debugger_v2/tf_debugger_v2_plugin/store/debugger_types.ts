@@ -487,6 +487,23 @@ export interface DebuggerState {
   runs: DebuggerRunListing;
   runsLoaded: LoadState;
 
+  // Timestamp for the onset of the last data polling (including the
+  // initial data-loading event triggered by plugin loading,
+  // and those triggered by TensorBoard's core auto and manual
+  // reloading).
+  // -1 is used as the initial value to indicate that no polling
+  // has ever happened.
+  lastDataPollOnsetTimeMs: number;
+  // Timestamp for the last non-empty data polling result (including errors).
+  // This is updated when any of the following is refreshed:
+  // - activeRunId
+  // - executions.executionDigestsLoaded.numExecutions
+  // - graphExecutions.executionDigestsLoaded.numExecutions
+  // - alerts.alertsLoaded.numAlerts
+  // -1 is used as the initial value to indicate that no non-empty
+  // polling result has arrived.
+  lastNonEmptyPollDataTimeMs: number;
+
   // ID of the run being currently displayed.
   // TODO(cais): The Debugger V2 plugin currently handles only one single run in
   // its frontend. Expand the support to multiple runs.
