@@ -296,6 +296,25 @@ namespace vz_line_chart2 {
     },
 
     /**
+     * Returns whether or not the current scales are fit to the visible data.
+     * When scales do not fit due to transformations (pan, zoom), calling
+     * resetDomain() will make them fit.
+     */
+    isDomainFitToData() {
+      if (!this._chart) {
+        return true;
+      }
+      return isScaleFitToData(this._chart.xAxis.getScale()) &&
+          isScaleFitToData(this._chart.yAxis.getScale());
+
+      function isScaleFitToData(scale) {
+        const domain = scale.getTransformationDomain();
+        const extent = scale.getTransformationExtent();
+        return domain[0] === extent[0] && domain[1] === extent[1];
+      }
+    },
+
+    /**
      * Sets the series that the chart displays. Series with other names will
      * not be displayed.
      *
