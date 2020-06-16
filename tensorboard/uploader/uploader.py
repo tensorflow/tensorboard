@@ -538,15 +538,16 @@ class _ScalarBatchedRequestSender(object):
 
         self._rpc_rate_limiter.tick()
 
-        with _request_logger(request, request.runs):
-            with self._tracker.scalars_tracker(self._num_values):
-                try:
-                    # TODO(@nfelt): execute this RPC asynchronously.
-                    grpc_util.call_with_retries(self._api.WriteScalar, request)
-                except grpc.RpcError as e:
-                    if e.code() == grpc.StatusCode.NOT_FOUND:
-                        raise ExperimentNotFoundError()
-                    logger.error("Upload call failed with error %s", e)
+        with _request_logger(
+            request, request.runs
+        ), self._tracker.scalars_tracker(self._num_values):
+            try:
+                # TODO(@nfelt): execute this RPC asynchronously.
+                grpc_util.call_with_retries(self._api.WriteScalar, request)
+            except grpc.RpcError as e:
+                if e.code() == grpc.StatusCode.NOT_FOUND:
+                    raise ExperimentNotFoundError()
+                logger.error("Upload call failed with error %s", e)
 
         self._new_request()
 

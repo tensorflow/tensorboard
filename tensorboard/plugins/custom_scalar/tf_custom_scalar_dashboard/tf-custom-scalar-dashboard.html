@@ -192,36 +192,34 @@ writer.add_summary(layout_summary)
               initial-opened="[[category.metadata.opened]]"
             >
               <template>
-                <div>
-                  <template is="dom-if" if="[[chart.multiline]]">
-                    <tf-custom-scalar-multi-line-chart-card
-                      active="[[active]]"
-                      request-manager="[[_requestManager]]"
-                      runs="[[_selectedRuns]]"
-                      title="[[chart.title]]"
-                      x-type="[[_xType]]"
-                      smoothing-enabled="[[_smoothingEnabled]]"
-                      smoothing-weight="[[_smoothingWeight]]"
-                      tooltip-sorting-method="[[tooltipSortingMethod]]"
-                      ignore-y-outliers="[[_ignoreYOutliers]]"
-                      show-download-links="[[_showDownloadLinks]]"
-                      tag-regexes="[[chart.multiline.tag]]"
-                    ></tf-custom-scalar-multi-line-chart-card>
-                  </template>
-                  <template is="dom-if" if="[[chart.margin]]">
-                    <tf-custom-scalar-margin-chart-card
-                      active="[[active]]"
-                      request-manager="[[_requestManager]]"
-                      runs="[[_selectedRuns]]"
-                      title="[[chart.title]]"
-                      x-type="[[_xType]]"
-                      tooltip-sorting-method="[[tooltipSortingMethod]]"
-                      ignore-y-outliers="[[_ignoreYOutliers]]"
-                      show-download-links="[[_showDownloadLinks]]"
-                      margin-chart-series="[[chart.margin.series]]"
-                    ></tf-custom-scalar-margin-chart-card>
-                  </template>
-                </div>
+                <template is="dom-if" if="[[chart.multiline]]">
+                  <tf-custom-scalar-multi-line-chart-card
+                    active="[[active]]"
+                    request-manager="[[_requestManager]]"
+                    runs="[[_selectedRuns]]"
+                    title="[[chart.title]]"
+                    x-type="[[_xType]]"
+                    smoothing-enabled="[[_smoothingEnabled]]"
+                    smoothing-weight="[[_smoothingWeight]]"
+                    tooltip-sorting-method="[[tooltipSortingMethod]]"
+                    ignore-y-outliers="[[_ignoreYOutliers]]"
+                    show-download-links="[[_showDownloadLinks]]"
+                    tag-regexes="[[chart.multiline.tag]]"
+                  ></tf-custom-scalar-multi-line-chart-card>
+                </template>
+                <template is="dom-if" if="[[chart.margin]]">
+                  <tf-custom-scalar-margin-chart-card
+                    active="[[active]]"
+                    request-manager="[[_requestManager]]"
+                    runs="[[_selectedRuns]]"
+                    title="[[chart.title]]"
+                    x-type="[[_xType]]"
+                    tooltip-sorting-method="[[tooltipSortingMethod]]"
+                    ignore-y-outliers="[[_ignoreYOutliers]]"
+                    show-download-links="[[_showDownloadLinks]]"
+                    margin-chart-series="[[chart.margin.series]]"
+                  ></tf-custom-scalar-margin-chart-card>
+                </template>
               </template>
             </tf-category-paginated-view>
           </template>

@@ -61,7 +61,8 @@ Properties out:
         <tf-wbr-string
           value="[[_clippedDataLocation]]"
           delimiter-pattern="[[_dataLocationDelimiterPattern]]"
-        /><!--
+        ></tf-wbr-string
+        ><!--
           We use HTML comments to remove spaces before the ellipsis.
         --><template
           is="dom-if"
@@ -196,7 +197,7 @@ Properties out:
         if (dataLocation.length > dataLocationClipLength) {
           // Clip the dataLocation to avoid blocking the runs selector. Let the
           // user view a more full version of the dataLocation.
-          dataLocation.substring(0, dataLocationClipLength);
+          return dataLocation.substring(0, dataLocationClipLength);
         } else {
           return dataLocation;
         }

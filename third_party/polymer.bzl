@@ -1173,8 +1173,8 @@ def tensorboard_polymer_workspace():
       ],
       strip_prefix = "paper-styles-2.1.0",
       path = "/paper-styles",
+      # Deliberately omitting "classes/global.html" from srcs below.
       srcs = [
-          "classes/global.html",
           "classes/shadow.html",
           "classes/typography.html",
           "color.html",

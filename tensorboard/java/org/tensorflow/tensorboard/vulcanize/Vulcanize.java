@@ -35,6 +35,7 @@ import com.google.javascript.jscomp.CheckLevel;
 import com.google.javascript.jscomp.CompilationLevel;
 import com.google.javascript.jscomp.Compiler;
 import com.google.javascript.jscomp.CompilerOptions;
+import com.google.javascript.jscomp.DependencyOptions;
 import com.google.javascript.jscomp.DiagnosticGroup;
 import com.google.javascript.jscomp.DiagnosticGroups;
 import com.google.javascript.jscomp.DiagnosticType;
@@ -118,7 +119,7 @@ public final class Vulcanize {
   private static int insideDemoSnippet;
   private static boolean testOnly;
   private static boolean wantsCompile;
-  private static List<Pattern> ignoreRegExs = new ArrayList<>();
+  private static final List<Pattern> ignoreRegExs = new ArrayList<>();
 
   // This is the default argument to Vulcanize for when the path_regexs_for_noinline attribute in
   // third_party/tensorboard/defs/vulcanize.bzl is not set.
@@ -126,8 +127,7 @@ public final class Vulcanize {
 
   private static final Pattern ABS_URI_PATTERN = Pattern.compile("^(?:/|[A-Za-z][A-Za-z0-9+.-]*:)");
 
-  public static void main(String[] args)
-      throws FileNotFoundException, IOException, IllegalArgumentException {
+  public static void main(String[] args) throws IOException {
     int argIdx = 0;
     compilationLevel = CompilationLevel.fromString(args[argIdx++]);
     wantsCompile = args[argIdx++].equals("true");
@@ -484,7 +484,7 @@ public final class Vulcanize {
     // or vz-example-viewer should be explicitly imported by the code that uses it. Alternatively,
     // we could ensure that the input order to the compiler is correct and all inputs are used, and
     // turn off both sorting and pruning.
-    options.setDependencyOptions(com.google.javascript.jscomp.DependencyOptions.sortOnly());
+    options.setDependencyOptions(DependencyOptions.sortOnly());
 
     // Polymer pass.
     options.setPolymerVersion(2);
@@ -519,7 +519,9 @@ public final class Vulcanize {
               return CheckLevel.OFF;
             }
             if (error.getSourceName().startsWith("javascript/externs")
-                || error.getSourceName().contains("com_google_javascript_closure_compiler_externs")) {
+                || error
+                    .getSourceName()
+                    .contains("com_google_javascript_closure_compiler_externs")) {
               // TODO(@jart): Figure out why these "mismatch of the removeEventListener property on
               //             type" warnings are showing up.
               //             https://github.com/google/closure-compiler/pull/1959
@@ -535,9 +537,11 @@ public final class Vulcanize {
             if (IGNORE_PATHS_PATTERN.matcher(error.getSourceName()).matches()) {
               return CheckLevel.OFF;
             }
-            if ((error.getSourceName().startsWith("/tf-") || error.getSourceName().startsWith("/vz-"))
+            if ((error.getSourceName().startsWith("/tf-")
+                    || error.getSourceName().startsWith("/vz-"))
                 && error.getType().key.equals("JSC_VAR_MULTIPLY_DECLARED_ERROR")) {
-              return CheckLevel.OFF; // TODO(@jart): Remove when tf/vz components/plugins are ES6 modules.
+              // TODO(@jart): Remove when tf/vz components/plugins are ES6 modules.
+              return CheckLevel.OFF;
             }
             if (error.getType().key.equals("JSC_POLYMER_UNQUALIFIED_BEHAVIOR")
                 || error.getType().key.equals("JSC_POLYMER_UNANNOTATED_BEHAVIOR")) {
@@ -722,9 +726,9 @@ public final class Vulcanize {
   }
 
   private static ImmutableMultimap<DiagnosticType, String> initDiagnosticGroups() {
-    DiagnosticGroups groups = new DiagnosticGroups();
     Multimap<DiagnosticType, String> builder = HashMultimap.create();
-    for (Map.Entry<String, DiagnosticGroup> group : groups.getRegisteredGroups().entrySet()) {
+    for (Map.Entry<String, DiagnosticGroup> group :
+        DiagnosticGroups.getRegisteredGroups().entrySet()) {
       for (DiagnosticType type : group.getValue().getTypes()) {
         builder.put(type, group.getKey());
       }
@@ -732,8 +736,7 @@ public final class Vulcanize {
     return ImmutableMultimap.copyOf(builder);
   }
 
-  private static String extractScriptContent(Document document)
-      throws FileNotFoundException, IOException, IllegalArgumentException {
+  private static String extractScriptContent(Document document) throws IOException {
     Elements scripts = document.getElementsByTag("script");
     StringBuilder sourcesBuilder = new StringBuilder();
 
@@ -772,7 +775,7 @@ public final class Vulcanize {
   }
 
   private static String extractAndTransformJavaScript(Document document, Webpath jsPath)
-      throws FileNotFoundException, IOException, IllegalArgumentException {
+      throws IOException {
     String scriptContent = extractScriptContent(document);
 
     Element lastBody = Iterables.getLast(document.getElementsByTag("body"));
@@ -784,15 +787,14 @@ public final class Vulcanize {
   }
 
   private static void cloneChildrenWithoutWhitespace(Element src, Element dest) {
-    List<Node> toMove = new ArrayList<Node>();
+    List<Node> toMove = new ArrayList<>();
     for (Node node : src.childNodes()) {
       if (node instanceof TextNode && ((TextNode) node).isBlank()) {
         continue;
       }
       toMove.add(node);
     }
-    for (int i = 0; i < toMove.size(); i++) {
-      Node node = toMove.get(i);
+    for (Node node : toMove) {
       dest.appendChild(node.clone());
     }
   }
@@ -854,15 +856,15 @@ public final class Vulcanize {
     document.traverse(new FlatDocumentCopier(flatDoc));
 
     for (Element subdoc : flatDoc.getElementsByTag("#root")) {
-      if (subdoc != flatDoc) {
-        final int MAX_ELEMENT_STR_LEN = 200;
+      if (!subdoc.equals(flatDoc)) {
+        final int maxElementStrLen = 200;
         String parentStr = subdoc.parent().outerHtml();
-        if (parentStr.length() > MAX_ELEMENT_STR_LEN) {
-          parentStr = parentStr.substring(0, MAX_ELEMENT_STR_LEN) + "...";
+        if (parentStr.length() > maxElementStrLen) {
+          parentStr = parentStr.substring(0, maxElementStrLen) + "...";
         }
         throw new RuntimeException(
-            "Nested doc (e.g., <link> importing outside the head of a document) " +
-            "is not supported.\nParent of offending element: " + parentStr);
+            "Nested doc (e.g., <link> importing outside the head of a document) "
+            + "is not supported.\nParent of offending element: " + parentStr);
       }
     }
 
@@ -870,8 +872,8 @@ public final class Vulcanize {
   }
 
   private static class FlatDocumentCopier implements NodeVisitor {
-    private Element destHead;
-    private Element destBody;
+    private final Element destHead;
+    private final Element destBody;
 
     public FlatDocumentCopier(Document dest) {
       destHead = dest.head();
@@ -910,4 +912,6 @@ public final class Vulcanize {
     @Override
     public void printSummary() {}
   }
+
+  private Vulcanize() {}
 }
