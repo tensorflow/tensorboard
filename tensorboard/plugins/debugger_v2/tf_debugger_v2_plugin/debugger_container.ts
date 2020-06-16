@@ -12,11 +12,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {createSelector, select, Store} from '@ngrx/store';
 import {State} from './store/debugger_types';
 
-import {debuggerLoaded} from './actions';
+import {debuggerLoaded, debuggerUnloaded} from './actions';
 import {getActiveRunId, getDebuggerRunListing} from './store';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
@@ -31,7 +31,7 @@ import {getActiveRunId, getDebuggerRunListing} from './store';
     ></debugger-component>
   `,
 })
-export class DebuggerContainer implements OnInit {
+export class DebuggerContainer implements OnInit, OnDestroy {
   readonly runs$ = this.store.pipe(select(getDebuggerRunListing));
 
   readonly runsIds$ = this.store.pipe(
@@ -49,5 +49,9 @@ export class DebuggerContainer implements OnInit {
 
   ngOnInit(): void {
     this.store.dispatch(debuggerLoaded());
+  }
+
+  ngOnDestroy(): void {
+    this.store.dispatch(debuggerUnloaded());
   }
 }

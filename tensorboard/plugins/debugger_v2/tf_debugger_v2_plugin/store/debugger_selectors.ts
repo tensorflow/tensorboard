@@ -75,6 +75,22 @@ export const getActiveRunId = createSelector(
 );
 
 /**
+ * Selectors related to data polling.
+ */
+
+/**
+ * Get the time elapsed from the last time at which a data polling
+ * yielded new data and the last polling time, in milliseconds.
+ * That is: this is how long polling has yielded no new data.
+ */
+export const getPollSilenceTimeMs = createSelector(
+  selectDebuggerState,
+  (state: DebuggerState): number => {
+    return state.lastDataPollOnsetTimeMs - state.lastNonEmptyPollDataTimeMs;
+  }
+);
+
+/**
  * Intermediate selector for alerts.
  */
 const selectAlerts = createSelector(
