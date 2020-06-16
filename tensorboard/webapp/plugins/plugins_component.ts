@@ -65,8 +65,12 @@ import {PluginRegistryModule} from './plugin_registry_module';
       .last-reload-time {
         font-style: italic;
       }
+      .plugins ::ng-deep iframe {
+        border: 0;
+        height: 100%;
+        width: 100%;
+      }
     `,
-    'iframe { border: 0; height: 100%; width: 100%; }',
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
