@@ -108,8 +108,7 @@ export class SettingsDialogComponent implements OnInit, OnDestroy {
   );
   readonly reloadPeriodControl = new FormControl(15, [
     Validators.required,
-    // Validators.min(15),  // TODO(cais): Restore to 15.
-    Validators.min(5),
+    Validators.min(15),
   ]);
   readonly paginationControl = new FormControl(1, [
     Validators.required,

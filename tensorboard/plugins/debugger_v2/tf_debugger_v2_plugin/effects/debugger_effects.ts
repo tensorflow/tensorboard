@@ -256,9 +256,6 @@ function createTimedRepeater(
       completed.pipe(
         withLatestFrom(pollingIntervalStream$),
         delayWhen(([, pollingInterval]) => {
-          console.log(
-            `In retryWhen tap: currentPollingInterval=${pollingInterval}`
-          ); // DEBUG
           return timer(pollingInterval);
         })
       )
@@ -284,7 +281,6 @@ export class DebuggerEffects {
     return this.actions$.pipe(
       ofType(debuggerLoaded),
       switchMap((action: Action) => {
-        console.log('In switchMap()'); // DEBUG
         return createTimedRepeater(
           of(action),
           this.store.select(getPollSilenceTime).pipe(
@@ -295,11 +291,7 @@ export class DebuggerEffects {
           this.actions$.pipe(ofType(debuggerUnloaded))
         );
       }),
-      tap(() => {
-        // TODO(cais): Simplify.
-        console.log('onAutoReload(): filter'); // DEBUG
-        return this.store.dispatch(debuggerDataPoll());
-      }),
+      tap(() => this.store.dispatch(debuggerDataPoll())),
       map(() => void null)
     );
   }
@@ -318,13 +310,9 @@ export class DebuggerEffects {
   private loadDebuggerRuns(prevStream$: Observable<void>): Observable<void> {
     return prevStream$.pipe(
       withLatestFrom(this.store.select(getDebuggerRunsLoaded)),
-      filter(([, {state}]) => {
-        console.log('loadDebuggerRuns() filter:'); // DEBUG
-        return state !== DataLoadState.LOADING; // TODO(cais): Simplify.
-      }),
+      filter(([, {state}]) => state !== DataLoadState.LOADING),
       tap(() => this.store.dispatch(debuggerRunsRequested())),
       mergeMap(() => {
-        console.log('loadDebuggerRuns() mergeMap:'); // DEBUG
         return this.dataSource.fetchRuns().pipe(
           tap((runs) => {
             this.store.dispatch(

@@ -373,8 +373,7 @@ describe('Debugger effects', () => {
 
   function createAndSubscribeToDebuggerEffectsWithEmptyRepeater() {
     spyOn(TEST_ONLY, 'createTimedRepeater').and.callFake(
-      (stream: Observable<any>) =>
-        stream.pipe(tap((obj) => console.log('stream obj:', obj)))
+      (stream: Observable<any>) => stream
     );
     debuggerEffects = TestBed.inject(DebuggerEffects);
     debuggerEffects.loadData$.subscribe();

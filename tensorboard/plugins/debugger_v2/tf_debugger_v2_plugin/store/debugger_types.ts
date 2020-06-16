@@ -487,8 +487,10 @@ export interface DebuggerState {
   runs: DebuggerRunListing;
   runsLoaded: LoadState;
 
-  // Timestamp for the last data polling (not including the
-  // initial data-loading event triggered by plugin loading).
+  // Timestamp for the last data polling (including the
+  // initial data-loading event triggered by plugin loading,
+  // and those triggered by TensorBoard's core auto and manual
+  // reloading).
   lastDataPollTime: number;
   // Timestamp for the last non-empty data polling result.
   // This is updated when any of the following is refreshed:
