@@ -90,7 +90,7 @@ import {
   getNumAlertsOfFocusedType,
   getNumGraphExecutions,
   getNumGraphExecutionsLoaded,
-  getPollSilenceTime,
+  getPollSilenceTimeMs,
   getSourceFileListLoaded,
 } from '../store/debugger_selectors';
 import {beginEndRangesInclude} from '../store/debugger_store_utils';
@@ -113,45 +113,14 @@ import {
 /** @typehack */ import * as _typeHackNgrxStore from '@ngrx/store/src/models';
 /** @typehack */ import * as _typeHackNgrxEffects from '@ngrx/effects/effects';
 
-const DEFAULT_MINIMUM_POLLING_INTERVAL = 2 * 1e3;
-const DEFAULT_MAXIMUM_POLLING_INTERVAL = 60 * 1e3;
-const DEFAULT_POLLING_BACKOFF_FACTOR = 2;
-
 // Minimum polling interval in milliseconds.
-let minimumPollingInterval = DEFAULT_MINIMUM_POLLING_INTERVAL;
+export const MIN_POLLING_INTERVAL_MS = 2e3;
 // Maximum polling interval in miliseconds.
-let maximumPollingInterval = DEFAULT_MAXIMUM_POLLING_INTERVAL;
+export const MAX_POLLING_INTERVAL_MS = 60e3;
 // Backoff behavior takes effect when time since the elapsed time between the
 // most recent arrival of new polling result and the most recent polling event
 // exceeds `pollingBackoffFactor * minimumPollingInterval`.
-let pollingBackoffFactor = DEFAULT_POLLING_BACKOFF_FACTOR;
-
-export function setDataPollingOptions(options: {
-  minPollingInterval: number;
-  maxPollingInterval: number;
-  backoffFactor: number;
-}): void {
-  const {minPollingInterval, maxPollingInterval, backoffFactor} = options;
-  if (backoffFactor < 0) {
-    throw new Error(`Invalid pollingBackoffFactor (${backoffFactor})`);
-  }
-  if (minPollingInterval * backoffFactor >= maximumPollingInterval) {
-    throw new Error(
-      `minPollingInterval * backoffFactor ` +
-        `(${minPollingInterval * backoffFactor}) is expected to be < ` +
-        `maxPollingInterval (${maxPollingInterval}), but is not`
-    );
-  }
-  minimumPollingInterval = minPollingInterval;
-  maximumPollingInterval = maxPollingInterval;
-  pollingBackoffFactor = backoffFactor;
-}
-
-export function resetDataPollingOptions(): void {
-  minimumPollingInterval = DEFAULT_MINIMUM_POLLING_INTERVAL;
-  maximumPollingInterval = DEFAULT_MAXIMUM_POLLING_INTERVAL;
-  pollingBackoffFactor = DEFAULT_POLLING_BACKOFF_FACTOR;
-}
+export const POLLING_BACKOFF_FACTOR = 2;
 
 /**
  * Get the current polling interval based on the time lapsed since
@@ -166,12 +135,15 @@ export function resetDataPollingOptions(): void {
  *   the last polling event and the next one.
  */
 export function getCurrentPollingInterval(pollSilenceTime: number): number {
-  if (pollSilenceTime > maximumPollingInterval) {
-    return maximumPollingInterval;
-  } else if (pollSilenceTime > minimumPollingInterval * pollingBackoffFactor) {
+  if (pollSilenceTime > MAX_POLLING_INTERVAL_MS) {
+    return MAX_POLLING_INTERVAL_MS;
+  } else if (
+    pollSilenceTime >
+    MIN_POLLING_INTERVAL_MS * POLLING_BACKOFF_FACTOR
+  ) {
     return pollSilenceTime;
   } else {
-    return minimumPollingInterval;
+    return MIN_POLLING_INTERVAL_MS;
   }
 }
 
@@ -277,13 +249,13 @@ export class DebuggerEffects {
   /** @export */
   readonly loadData$: Observable<{}>;
 
-  private onDebuggerLoaded(): Observable<void> {
+  private onDebuggerDataPoll(): Observable<void> {
     return this.actions$.pipe(
       ofType(debuggerLoaded),
       switchMap((action: Action) => {
         return createTimedRepeater(
           of(action),
-          this.store.select(getPollSilenceTime).pipe(
+          this.store.select(getPollSilenceTimeMs).pipe(
             map((pollSilenceTime) => {
               return getCurrentPollingInterval(pollSilenceTime);
             })
@@ -1115,7 +1087,7 @@ export class DebuggerEffects {
         //   - number and breakdown of alerts.
         // Therefore it needs to be a shared observable.
         const loadRunData$ = this.loadDebuggerRuns(
-          merge(this.onDebuggerLoaded(), this.onCoreReload())
+          merge(this.onDebuggerDataPoll(), this.onCoreReload())
         ).pipe(share());
 
         const loadSourceFileList$ = this.loadSourceFileList(loadRunData$);

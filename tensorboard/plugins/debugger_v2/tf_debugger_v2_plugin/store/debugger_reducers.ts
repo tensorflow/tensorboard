@@ -111,8 +111,13 @@ const initialState: DebuggerState = {
     lastLoadedTimeInMs: null,
   },
   activeRunId: null,
-  lastDataPollTime: -1,
-  lastNewPollDataTime: -1,
+  // The initial values of lastDataPollOnsetTimeMs and
+  // lastNonEmptyPollDataTimeMs ensures that initially, before
+  // the onset of any data polling, the difference of the two
+  // is 0, which causes a backing-off polling algorithm to use
+  // the lower-bound polling interval.
+  lastDataPollOnsetTimeMs: -1,
+  lastNonEmptyPollDataTimeMs: 1,
   alerts: {
     alertsLoaded: {
       state: DataLoadState.NOT_LOADED,
@@ -176,9 +181,9 @@ const reducer = createReducer(
       const activeRunChanged = runIds.length > 0 && state.activeRunId === null;
       return {
         ...state,
-        lastNewPollDataTime: activeRunChanged
+        lastNonEmptyPollDataTimeMs: activeRunChanged
           ? Date.now()
-          : state.lastNewPollDataTime,
+          : state.lastNonEmptyPollDataTimeMs,
         runs,
         runsLoaded: {
           state: DataLoadState.LOADED,
@@ -196,7 +201,7 @@ const reducer = createReducer(
     (state: DebuggerState): DebuggerState => {
       return {
         ...state,
-        lastDataPollTime: Date.now(),
+        lastDataPollOnsetTimeMs: Date.now(),
       };
     }
   ),
@@ -229,9 +234,9 @@ const reducer = createReducer(
       const numAlertsIncreased = numAlerts > state.alerts.numAlerts;
       return {
         ...state,
-        lastNewPollDataTime: numAlertsIncreased
+        lastNonEmptyPollDataTimeMs: numAlertsIncreased
           ? Date.now()
-          : state.lastNewPollDataTime,
+          : state.lastNonEmptyPollDataTimeMs,
         alerts: {
           ...state.alerts,
           alertsLoaded: {
@@ -397,9 +402,9 @@ const reducer = createReducer(
         numExecutions > state.executions.executionDigestsLoaded.numExecutions;
       const newState = {
         ...state,
-        lastNewPollDataTime: numExecutionsIncreased
+        lastNonEmptyPollDataTimeMs: numExecutionsIncreased
           ? Date.now()
-          : state.lastNewPollDataTime,
+          : state.lastNonEmptyPollDataTimeMs,
         executions: {
           ...state.executions,
           numExecutionsLoaded: {
@@ -647,9 +652,9 @@ const reducer = createReducer(
         state.graphExecutions.executionDigestsLoaded.numExecutions;
       const newState = {
         ...state,
-        lastNewPollDataTime: numGraphExecutionsIncreased
+        lastNonEmptyPollDataTimeMs: numGraphExecutionsIncreased
           ? Date.now()
-          : state.lastNewPollDataTime,
+          : state.lastNonEmptyPollDataTimeMs,
         graphExecutions: {
           ...state.graphExecutions,
           numExecutionsLoaded: {

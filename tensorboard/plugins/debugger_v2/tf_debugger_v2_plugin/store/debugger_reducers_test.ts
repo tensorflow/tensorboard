@@ -154,7 +154,7 @@ describe('Debugger graphs reducers', () => {
         },
       });
       expect(nextState.activeRunId).toBe('foo_debugger_run');
-      expect(nextState.lastNewPollDataTime).toBeGreaterThanOrEqual(t0);
+      expect(nextState.lastNonEmptyPollDataTimeMs).toBeGreaterThanOrEqual(t0);
     });
 
     it('Overrides existing runs on successful runs loading', () => {
@@ -192,27 +192,31 @@ describe('Debugger graphs reducers', () => {
     });
   });
 
-  it('Overrides activeRunId and lastNewPollDataTime on debuggerRunsLoaded', () => {
-    const state = createDebuggerState();
-    const t0 = Date.now();
-    const nextState = reducers(
-      state,
-      actions.debuggerRunsLoaded({
-        runs: {
-          __default_debugger_run__: {
-            start_time: 222,
+  it(
+    'Overrides activeRunId and lastNonEmptyPollDataTimeMs ' +
+      'on debuggerRunsLoaded',
+    () => {
+      const state = createDebuggerState();
+      const t0 = Date.now();
+      const nextState = reducers(
+        state,
+        actions.debuggerRunsLoaded({
+          runs: {
+            __default_debugger_run__: {
+              start_time: 222,
+            },
           },
-        },
-      })
-    );
-    expect(nextState.activeRunId).toBe('__default_debugger_run__');
-    expect(nextState.lastNewPollDataTime).toBeGreaterThanOrEqual(t0);
-  });
+        })
+      );
+      expect(nextState.activeRunId).toBe('__default_debugger_run__');
+      expect(nextState.lastNonEmptyPollDataTimeMs).toBeGreaterThanOrEqual(t0);
+    }
+  );
 
-  it('Keeps lastNewPollDataTime when there is not new run', () => {
+  it('Keeps lastNonEmptyPollDataTimeMs when there is not new run', () => {
     const state = createDebuggerState({
       activeRunId: '__default_debugger_run__',
-      lastNewPollDataTime: 1234,
+      lastNonEmptyPollDataTimeMs: 1234,
       runs: {
         foo_debugger_run: {
           start_time: 111,
@@ -234,16 +238,16 @@ describe('Debugger graphs reducers', () => {
       })
     );
     expect(nextState.activeRunId).toBe('__default_debugger_run__');
-    expect(nextState.lastNewPollDataTime).toBe(1234);
+    expect(nextState.lastNonEmptyPollDataTimeMs).toBe(1234);
   });
 
-  it('debuggerDataPoll updates lastDataPollTime', () => {
+  it('debuggerDataPoll updates lastDataPollOnsetTimeMs', () => {
     const state = createDebuggerState({
-      lastDataPollTime: 0,
+      lastDataPollOnsetTimeMs: 0,
     });
     const t0 = Date.now();
     const nextState = reducers(state, actions.debuggerDataPoll());
-    expect(nextState.lastDataPollTime).toBeGreaterThanOrEqual(t0);
+    expect(nextState.lastDataPollOnsetTimeMs).toBeGreaterThanOrEqual(t0);
   });
 
   it('Updates alert load state on numAlertsAndBreakdownRequested', () => {
@@ -283,13 +287,13 @@ describe('Debugger graphs reducers', () => {
       InfNanAlerts: 29,
       FunctionRecompileAlerts: 1,
     });
-    expect(nextState.lastNewPollDataTime).toBeGreaterThanOrEqual(t0);
+    expect(nextState.lastNonEmptyPollDataTimeMs).toBeGreaterThanOrEqual(t0);
   });
 
   it('updates on numAlertsAndBreakdownLoaded from non-empty state', () => {
     const state = createDebuggerState({
       activeRunId: '__default_debugger_run__',
-      lastNewPollDataTime: 1234,
+      lastNonEmptyPollDataTimeMs: 1234,
       alerts: createAlertsState({
         alertsLoaded: {
           state: DataLoadState.LOADING,
@@ -320,13 +324,13 @@ describe('Debugger graphs reducers', () => {
       InfNanAlerts: 30,
       FunctionRecompileAlerts: 1,
     });
-    expect(nextState.lastNewPollDataTime).toBeGreaterThanOrEqual(t0);
+    expect(nextState.lastNonEmptyPollDataTimeMs).toBeGreaterThanOrEqual(t0);
   });
 
-  it('keeps lastNewPollDataTime when there is no new alerts', () => {
+  it('keeps lastNonEmptyPollDataTimeMs when there is no new alerts', () => {
     const state = createDebuggerState({
       activeRunId: '__default_debugger_run__',
-      lastNewPollDataTime: 1234,
+      lastNonEmptyPollDataTimeMs: 1234,
       alerts: createAlertsState({
         alertsLoaded: {
           state: DataLoadState.LOADING,
@@ -347,7 +351,7 @@ describe('Debugger graphs reducers', () => {
         },
       })
     );
-    expect(nextState.lastNewPollDataTime).toBe(1234);
+    expect(nextState.lastNonEmptyPollDataTimeMs).toBe(1234);
   });
 
   describe('alertsOfTypeLoaded', () => {
@@ -641,7 +645,7 @@ describe('Debugger graphs reducers', () => {
       1337
     );
     expect(nextState.executions.focusIndex).toBe(0);
-    expect(nextState.lastNewPollDataTime).toBeGreaterThanOrEqual(t0);
+    expect(nextState.lastNonEmptyPollDataTimeMs).toBeGreaterThanOrEqual(t0);
   });
 
   it('Updates states correctly on numExecutionsLoaded: empty', () => {
@@ -673,7 +677,7 @@ describe('Debugger graphs reducers', () => {
         executionDigests: {},
         executionData: {},
       },
-      lastNewPollDataTime: 1234,
+      lastNonEmptyPollDataTimeMs: 1234,
     });
     const t0 = Date.now();
     const nextState = reducers(
@@ -688,7 +692,7 @@ describe('Debugger graphs reducers', () => {
     ).toBeGreaterThanOrEqual(t0);
     expect(nextState.executions.executionDigestsLoaded.numExecutions).toBe(0);
     expect(nextState.executions.focusIndex).toBeNull();
-    expect(nextState.lastNewPollDataTime).toBe(1234);
+    expect(nextState.lastNonEmptyPollDataTimeMs).toBe(1234);
   });
 
   it('Updates states on executionDigestsRequested', () => {
@@ -1621,10 +1625,10 @@ describe('Debugger graphs reducers', () => {
   });
 
   describe('numGraphExecutionsLoaded', () => {
-    it('updates load state and lastNewPollDataTime', () => {
+    it('updates load state and lastNonEmptyPollDataTimeMs', () => {
       const state = createDebuggerState({
         activeRunId: '__default_debugger_run__',
-        lastNewPollDataTime: 1234,
+        lastNonEmptyPollDataTimeMs: 1234,
         graphExecutions: createDebuggerGraphExecutionsState({
           numExecutionsLoaded: {
             state: DataLoadState.LOADING,
@@ -1646,13 +1650,13 @@ describe('Debugger graphs reducers', () => {
       expect(
         nextState.graphExecutions.executionDigestsLoaded.numExecutions
       ).toEqual(12345);
-      expect(nextState.lastNewPollDataTime).toBeGreaterThanOrEqual(t0);
+      expect(nextState.lastNonEmptyPollDataTimeMs).toBeGreaterThanOrEqual(t0);
     });
 
-    it('keeps lastNewPollDataTime if there is no new graph executions', () => {
+    it('keeps lastNonEmptyPollDataTimeMs if there is no new graph executions', () => {
       const state = createDebuggerState({
         activeRunId: '__default_debugger_run__',
-        lastNewPollDataTime: 1234,
+        lastNonEmptyPollDataTimeMs: 1234,
         graphExecutions: createDebuggerGraphExecutionsState({
           executionDigestsLoaded: {
             numExecutions: 12345,
@@ -1679,7 +1683,7 @@ describe('Debugger graphs reducers', () => {
       expect(
         nextState.graphExecutions.executionDigestsLoaded.numExecutions
       ).toEqual(12345);
-      expect(nextState.lastNewPollDataTime).toBe(1234);
+      expect(nextState.lastNonEmptyPollDataTimeMs).toBe(1234);
     });
   });
 

@@ -17,7 +17,7 @@ import {provideMockActions} from '@ngrx/effects/testing';
 import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {empty, Observable, of, ReplaySubject, timer} from 'rxjs';
-import {take, tap} from 'rxjs/operators';
+import {take} from 'rxjs/operators';
 import {manualReload, reload} from '../../../../webapp/core/actions';
 import {
   alertsOfTypeLoaded,
@@ -116,47 +116,62 @@ import {TBHttpClientTestingModule} from '../../../../webapp/webapp_data_source/t
 import {
   DebuggerEffects,
   getCurrentPollingInterval,
+  MAX_POLLING_INTERVAL_MS,
+  MIN_POLLING_INTERVAL_MS,
+  POLLING_BACKOFF_FACTOR,
   TEST_ONLY,
-  resetDataPollingOptions,
-  setDataPollingOptions,
 } from './debugger_effects';
 
 describe('getCurrentPollingInterval', () => {
-  beforeEach(() => {
-    setDataPollingOptions({
-      minPollingInterval: 200,
-      maxPollingInterval: 10000,
-      backoffFactor: 2,
-    });
-  });
-
-  afterEach(() => {
-    resetDataPollingOptions();
+  it('constants are valid', () => {
+    expect(MIN_POLLING_INTERVAL_MS).toBeGreaterThan(0);
+    expect(MAX_POLLING_INTERVAL_MS).toBeGreaterThan(MIN_POLLING_INTERVAL_MS);
+    expect(POLLING_BACKOFF_FACTOR).toBeGreaterThan(1);
+    expect(MAX_POLLING_INTERVAL_MS).toBeGreaterThan(
+      MIN_POLLING_INTERVAL_MS * POLLING_BACKOFF_FACTOR
+    );
   });
 
   it('returns minmum value input below minimum', () => {
-    expect(getCurrentPollingInterval(-Infinity)).toBe(200);
-    expect(getCurrentPollingInterval(-200)).toBe(200);
-    expect(getCurrentPollingInterval(-1)).toBe(200);
-    expect(getCurrentPollingInterval(0)).toBe(200);
-    expect(getCurrentPollingInterval(100)).toBe(200);
-    expect(getCurrentPollingInterval(200)).toBe(200);
+    expect(getCurrentPollingInterval(-Infinity)).toBe(MIN_POLLING_INTERVAL_MS);
+    expect(getCurrentPollingInterval(-MIN_POLLING_INTERVAL_MS)).toBe(
+      MIN_POLLING_INTERVAL_MS
+    );
+    expect(getCurrentPollingInterval(0)).toBe(MIN_POLLING_INTERVAL_MS);
+    expect(getCurrentPollingInterval(MIN_POLLING_INTERVAL_MS / 2)).toBe(
+      MIN_POLLING_INTERVAL_MS
+    );
+    expect(getCurrentPollingInterval(MIN_POLLING_INTERVAL_MS)).toBe(
+      MIN_POLLING_INTERVAL_MS
+    );
   });
 
   it('returns minmum value input between minimum and minimum * factor', () => {
-    expect(getCurrentPollingInterval(300)).toBe(200);
+    expect(
+      getCurrentPollingInterval(
+        (MIN_POLLING_INTERVAL_MS * (POLLING_BACKOFF_FACTOR + 1)) / 2
+      )
+    ).toBe(MIN_POLLING_INTERVAL_MS);
   });
 
   it('returns input value for input between minimum * factor and max', () => {
-    expect(getCurrentPollingInterval(500)).toBe(500);
-    expect(getCurrentPollingInterval(5000)).toBe(5000);
-    expect(getCurrentPollingInterval(10000)).toBe(10000);
+    const pollSilenceTimeMillis =
+      (MIN_POLLING_INTERVAL_MS * POLLING_BACKOFF_FACTOR +
+        MAX_POLLING_INTERVAL_MS) /
+      2;
+    expect(getCurrentPollingInterval(pollSilenceTimeMillis)).toBe(
+      pollSilenceTimeMillis
+    );
   });
 
   it('returns maximum for inputs > maximum', () => {
-    expect(getCurrentPollingInterval(10001)).toBe(10000);
-    expect(getCurrentPollingInterval(1000 * 1000)).toBe(10000);
-    expect(getCurrentPollingInterval(Infinity)).toBe(10000);
+    expect(getCurrentPollingInterval(MAX_POLLING_INTERVAL_MS + 1)).toBe(
+      MAX_POLLING_INTERVAL_MS
+    );
+    expect(getCurrentPollingInterval(MAX_POLLING_INTERVAL_MS * 1000)).toBe(
+      MAX_POLLING_INTERVAL_MS
+    );
+    expect(getCurrentPollingInterval(Infinity)).toBe(MAX_POLLING_INTERVAL_MS);
   });
 });
 
@@ -1102,11 +1117,6 @@ describe('Debugger effects', () => {
     let fetchSourceFileList: jasmine.Spy;
 
     beforeEach(() => {
-      setDataPollingOptions({
-        minPollingInterval: 2e3,
-        maxPollingInterval: 60e3,
-        backoffFactor: 2,
-      });
       fetchRuns = createFetchRunsSpy(runListingForTest);
       fetchNumExecutionDigests = createFetchExecutionDigestsSpy(runId, 0, 0, {
         begin: 0,
@@ -1134,10 +1144,6 @@ describe('Debugger effects', () => {
       fetchSourceFileList = createFetchSourceFileListSpy(runId, [
         ['localhost', '/tmp/main.py'],
       ]);
-    });
-
-    afterEach(() => {
-      resetDataPollingOptions();
     });
 
     it('triggers polling after first polling interval', fakeAsync(() => {

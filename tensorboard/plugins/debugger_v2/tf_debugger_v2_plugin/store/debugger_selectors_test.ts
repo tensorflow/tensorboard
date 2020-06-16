@@ -41,7 +41,7 @@ import {
   getNumGraphExecutions,
   getNumGraphExecutionsLoaded,
   getFocusAlertTypesOfVisibleExecutionDigests,
-  getPollSilenceTime,
+  getPollSilenceTimeMs,
   getSourceFileList,
   getSourceFileListLoaded,
 } from './debugger_selectors';
@@ -70,35 +70,35 @@ import {
 } from '../testing';
 
 describe('debugger selectors', () => {
-  describe('getPollSilenceTime', () => {
-    it('returns correct zero value', () => {
+  describe('getPollSilenceTimeMs', () => {
+    it('returns correct zero value for initial state', () => {
       const state = createState(
         createDebuggerState({
-          lastDataPollTime: -1,
-          lastNewPollDataTime: -1,
+          lastDataPollOnsetTimeMs: -1,
+          lastNonEmptyPollDataTimeMs: -1,
         })
       );
-      expect(getPollSilenceTime(state)).toBe(0);
+      expect(getPollSilenceTimeMs(state)).toBe(0);
     });
 
     it('returns correct positive value: no data yet', () => {
       const state = createState(
         createDebuggerState({
-          lastDataPollTime: 1234,
-          lastNewPollDataTime: -1,
+          lastDataPollOnsetTimeMs: 1234,
+          lastNonEmptyPollDataTimeMs: -1,
         })
       );
-      expect(getPollSilenceTime(state)).toBe(1235);
+      expect(getPollSilenceTimeMs(state)).toBe(1235);
     });
 
     it('returns correct positive value: has been data', () => {
       const state = createState(
         createDebuggerState({
-          lastDataPollTime: 1234,
-          lastNewPollDataTime: 1000,
+          lastDataPollOnsetTimeMs: 1234,
+          lastNonEmptyPollDataTimeMs: 1000,
         })
       );
-      expect(getPollSilenceTime(state)).toBe(234);
+      expect(getPollSilenceTimeMs(state)).toBe(234);
     });
   });
 
