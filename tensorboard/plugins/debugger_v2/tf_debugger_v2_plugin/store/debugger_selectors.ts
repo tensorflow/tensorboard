@@ -78,14 +78,15 @@ export const getActiveRunId = createSelector(
  * Selectors related to data polling.
  */
 
-export const getLastDataPollTime = createSelector(
+/**
+ * Get the time elapsed from the last time at which a data polling
+ * yielded new data and the last polling time.
+ */
+export const getPollSilenceTime = createSelector(
   selectDebuggerState,
-  (state: DebuggerState): number => state.lastDataPollTime
-);
-
-export const getLastNewPollDataTime = createSelector(
-  selectDebuggerState,
-  (state: DebuggerState): number => state.lastNewPollDataTime
+  (state: DebuggerState): number => {
+    return state.lastDataPollTime - state.lastNewPollDataTime;
+  }
 );
 
 /**

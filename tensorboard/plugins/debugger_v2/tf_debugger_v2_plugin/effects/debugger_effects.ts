@@ -15,18 +15,14 @@ limitations under the License.
 import {Injectable} from '@angular/core';
 import {Action, Store} from '@ngrx/store';
 import {Actions, createEffect, ofType} from '@ngrx/effects';
-import {merge, Observable, of, range, timer} from 'rxjs';
+import {merge, Observable, of, timer} from 'rxjs';
 import {
-  catchError,
   debounceTime,
   delayWhen,
-  delay,
   filter,
   map,
   mergeMap,
-  repeat,
   repeatWhen,
-  retryWhen,
   share,
   switchMap,
   takeUntil,
@@ -41,6 +37,7 @@ import {
   debuggerLoaded,
   debuggerRunsRequested,
   debuggerRunsLoaded,
+  debuggerUnloaded,
   executionDataLoaded,
   executionDigestFocused,
   executionDigestsRequested,
@@ -86,8 +83,6 @@ import {
   getGraphExecutionDataLoadingPages,
   getNumExecutions,
   getNumExecutionsLoaded,
-  getLastDataPollTime,
-  getLastNewPollDataTime,
   getLoadedAlertsOfFocusedType,
   getLoadedExecutionData,
   getLoadedStackFrames,
@@ -95,6 +90,7 @@ import {
   getNumAlertsOfFocusedType,
   getNumGraphExecutions,
   getNumGraphExecutionsLoaded,
+  getPollSilenceTime,
   getSourceFileListLoaded,
 } from '../store/debugger_selectors';
 import {beginEndRangesInclude} from '../store/debugger_store_utils';
@@ -118,7 +114,7 @@ import {
 /** @typehack */ import * as _typeHackNgrxEffects from '@ngrx/effects/effects';
 
 const DEFAULT_MINIMUM_POLLING_INTERVAL = 2 * 1e3;
-const DEFAULT_MAXIMUM_POLLING_INTERVAL = 30 * 1e3;
+const DEFAULT_MAXIMUM_POLLING_INTERVAL = 60 * 1e3;
 const DEFAULT_POLLING_BACKOFF_FACTOR = 2;
 
 // Minimum polling interval in milliseconds.
@@ -164,21 +160,16 @@ export function resetDataPollingOptions(): void {
  * This specifies a backoff behavior where a longer period of no new data
  * leads to a longer polling interval, with a ceiling as the limit.
  *
- * @param lastNewPollDataToLastPollTime The amount of time between the most
+ * @param pollSilenceTime The amount of time between the most
  *   recent arrival of new polling result and the last polling event.
  * @returns The current polling interval, i.e., low bound for the time between
  *   the last polling event and the next one.
  */
-export function getCurrentPollingInterval(
-  lastNewPollDataToLastPollTime: number
-): number {
-  if (lastNewPollDataToLastPollTime > maximumPollingInterval) {
+export function getCurrentPollingInterval(pollSilenceTime: number): number {
+  if (pollSilenceTime > maximumPollingInterval) {
     return maximumPollingInterval;
-  } else if (
-    lastNewPollDataToLastPollTime >
-    minimumPollingInterval * pollingBackoffFactor
-  ) {
-    return lastNewPollDataToLastPollTime;
+  } else if (pollSilenceTime > minimumPollingInterval * pollingBackoffFactor) {
+    return pollSilenceTime;
   } else {
     return minimumPollingInterval;
   }
@@ -246,6 +237,37 @@ function getMissingPages(
   return missingPages;
 }
 
+/**
+ * Repeat an input stream at given intervals.
+ * @param stream$ The stream to repeat.
+ * @param pollingIntervalStream$ The stream of polling intervals.
+ *   The latest value of this stream will be used as the interval between
+ *   the previous repeat and the next one.
+ * @param terminationStream$ Terminate the repeat on values from this stream.
+ * @returns Stream with the timed repeats.
+ */
+function createTimedRepeater(
+  stream$: Observable<any>,
+  pollingIntervalStream$: Observable<number>,
+  terminationStream$: Observable<any>
+): Observable<void> {
+  return stream$.pipe(
+    repeatWhen((completed) =>
+      completed.pipe(
+        withLatestFrom(pollingIntervalStream$),
+        delayWhen(([, pollingInterval]) => {
+          console.log(
+            `In retryWhen tap: currentPollingInterval=${pollingInterval}`
+          ); // DEBUG
+          return timer(pollingInterval);
+        })
+      )
+    ),
+    takeUntil(terminationStream$),
+    map(() => void null)
+  );
+}
+
 @Injectable()
 export class DebuggerEffects {
   /**
@@ -258,18 +280,51 @@ export class DebuggerEffects {
   /** @export */
   readonly loadData$: Observable<{}>;
 
-  /**
-   * When the debugger plugin is first loaded, request list of runs.
-   */
   private onDebuggerLoaded(): Observable<void> {
     return this.actions$.pipe(
-      // TODO(cais): Explore consolidating this effect with the greater
-      // webapp (in tensorboard/webapp), e.g., during PluginChanged actions.
       ofType(debuggerLoaded),
+      switchMap((action: Action) => {
+        console.log('In switchMap()'); // DEBUG
+        return createTimedRepeater(
+          of(action),
+          this.store.select(getPollSilenceTime).pipe(
+            map((pollSilenceTime) => {
+              return getCurrentPollingInterval(pollSilenceTime);
+            })
+          ),
+          this.actions$.pipe(ofType(debuggerUnloaded))
+        );
+      }),
+      tap(() => {
+        // TODO(cais): Simplify.
+        console.log('onAutoReload(): filter'); // DEBUG
+        return this.store.dispatch(debuggerDataPoll());
+      }),
+      map(() => void null)
+    );
+  }
+
+  private onCoreReload(): Observable<void> {
+    return this.actions$.pipe(
+      ofType(manualReload, reload),
+      tap(() => this.store.dispatch(debuggerDataPoll())),
+      map(() => void null)
+    );
+  }
+
+  /**
+   * Request list of debugger runs.
+   */
+  private loadDebuggerRuns(prevStream$: Observable<void>): Observable<void> {
+    return prevStream$.pipe(
       withLatestFrom(this.store.select(getDebuggerRunsLoaded)),
-      filter(([, {state}]) => state !== DataLoadState.LOADING),
+      filter(([, {state}]) => {
+        console.log('loadDebuggerRuns() filter:'); // DEBUG
+        return state !== DataLoadState.LOADING; // TODO(cais): Simplify.
+      }),
       tap(() => this.store.dispatch(debuggerRunsRequested())),
       mergeMap(() => {
+        console.log('loadDebuggerRuns() mergeMap:'); // DEBUG
         return this.dataSource.fetchRuns().pipe(
           tap((runs) => {
             this.store.dispatch(
@@ -280,54 +335,6 @@ export class DebuggerEffects {
           // TODO(cais): Add catchError() to pipe.
         );
       })
-    );
-  }
-
-  private createBackoffRepeater(
-    prevStream$: Observable<any>,
-    lastPollTimeStream$: Observable<number>,
-    lastNewPollDataTimeStream$: Observable<number>,
-    terminationEventStream$: Observable<any>
-  ): Observable<void> {
-    return prevStream$.pipe(
-      repeatWhen((completed) =>
-        completed.pipe(
-          withLatestFrom(lastPollTimeStream$, lastNewPollDataTimeStream$),
-          delayWhen(([, lastDataPollTime, lastNewPollDataTime]) => {
-            const t = lastDataPollTime - lastNewPollDataTime;
-            const currentPollingInterval = getCurrentPollingInterval(t);
-            console.log(
-              `In retryWhen tap: t=${t}, ` +
-                `currentPollingInterval=${currentPollingInterval}`
-            ); // DEBUG
-            return timer(currentPollingInterval);
-          })
-        )
-      ),
-      takeUntil(terminationEventStream$),
-      map(() => void null)
-    );
-  }
-
-  private onManualReload(): Observable<void> {
-    return this.actions$.pipe(ofType(manualReload));
-  } // TODO(cais): Make use of this.
-
-  private onAutoReload(): Observable<void> {
-    return this.actions$.pipe(
-      // TODO(cais): Change to auto only. DO NOT SUBMIT.
-      ofType(manualReload, reload),
-      switchMap((action: Action) => {
-        return this.createBackoffRepeater(
-          of(action),
-          this.store.select(getLastDataPollTime),
-          this.store.select(getLastNewPollDataTime),
-          // TODO(cais): Change this to autoReload. DO NOT SUBMIT.
-          this.actions$.pipe(ofType(manualReload))
-        );
-      }),
-      tap(() => this.store.dispatch(debuggerDataPoll())),
-      map(() => void null)
     );
   }
 
@@ -1079,12 +1086,12 @@ export class DebuggerEffects {
     private dataSource: Tfdbg2HttpServerDataSource
   ) {
     /**
-     *           Backoff-enabled polling
-     *               |            |
-     *               |            v
-     * view load ----+----> fetch source-file list
-     *  |            |
-     *  +> fetch run +> fetch num of top-level (eager) executions
+     * view load and subsequent
+     * backoff polls, auto and
+     * manual reload events
+     *  |
+     *  +> fetch run-+> fetch source-file list
+     *  |            +> fetch num of top-level (eager) executions
      *  |            +> fetch num of intra-graph executions
      *  |            +> fetch num alerts
      *  |                +
@@ -1119,17 +1126,17 @@ export class DebuggerEffects {
         //   - number of executions
         //   - number and breakdown of alerts.
         // Therefore it needs to be a shared observable.
-        const dataPoll$ = merge(
-          this.onDebuggerLoaded(),
-          this.onAutoReload()
-          // this.createDataPolling()
+        const loadRunData$ = this.loadDebuggerRuns(
+          merge(this.onDebuggerLoaded(), this.onCoreReload())
         ).pipe(share());
 
-        const loadSourceFileList$ = this.loadSourceFileList(dataPoll$);
+        const loadSourceFileList$ = this.loadSourceFileList(loadRunData$);
 
-        const onNumExecutionLoaded$ = this.createNumExecutionLoader(dataPoll$);
+        const onNumExecutionLoaded$ = this.createNumExecutionLoader(
+          loadRunData$
+        );
         const onNumAlertsLoaded$ = this.createNumAlertsAndBreakdownLoader(
-          dataPoll$
+          loadRunData$
         );
 
         const onAlertTypeFocused$ = this.onAlertTypeFocused();
@@ -1171,7 +1178,7 @@ export class DebuggerEffects {
         );
 
         const onNumGraphExecutionLoaded$ = this.createNumGraphExecutionLoader(
-          dataPoll$
+          loadRunData$
         );
 
         const onSourceFileFocused$ = this.onSourceFileFocused();
@@ -1194,7 +1201,6 @@ export class DebuggerEffects {
           onSourceFileFocused$,
           onGraphExecutionScroll$,
           loadGraphOpInfoAndStackTrace$
-          // this.reloadAction(this.onAutoReload()),  // TODO(cais): Clean up. Remove.
         ).pipe(
           // createEffect expects an Observable that emits {}.
           map(() => ({}))
@@ -1206,5 +1212,6 @@ export class DebuggerEffects {
 }
 
 export const TEST_ONLY = {
+  createTimedRepeater,
   getMissingPages,
 };

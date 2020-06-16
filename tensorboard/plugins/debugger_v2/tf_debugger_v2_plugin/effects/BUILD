@@ -39,6 +39,7 @@ tf_ts_library(
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "//tensorboard/webapp/webapp_data_source:http_client_testing",
+        "//tensorboard/webapp/core/actions",
         "@npm//@angular/common",
         "@npm//@angular/compiler",
         "@npm//@angular/core",

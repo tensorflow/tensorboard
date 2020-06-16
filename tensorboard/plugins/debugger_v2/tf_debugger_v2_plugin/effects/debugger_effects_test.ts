@@ -16,9 +16,9 @@ import {fakeAsync, TestBed, tick} from '@angular/core/testing';
 import {provideMockActions} from '@ngrx/effects/testing';
 import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
-import {empty, of, ReplaySubject} from 'rxjs';
-import {delay} from 'rxjs/operators';
-import * as rxjs from 'rxjs';
+import {empty, Observable, of, ReplaySubject, timer} from 'rxjs';
+import {take, tap} from 'rxjs/operators';
+import {manualReload, reload} from '../../../../webapp/core/actions';
 import {
   alertsOfTypeLoaded,
   alertTypeFocusToggled,
@@ -26,6 +26,7 @@ import {
   debuggerLoaded,
   debuggerRunsLoaded,
   debuggerRunsRequested,
+  debuggerUnloaded,
   executionDataLoaded,
   executionDigestFocused,
   executionDigestsLoaded,
@@ -82,8 +83,6 @@ import {
   getGraphExecutionDataPageLoadedSizes,
   getGraphExecutionPageSize,
   getGraphExecutionScrollBeginIndex,
-  getLastDataPollTime,
-  getLastNewPollDataTime,
   getLoadedAlertsOfFocusedType,
   getLoadingGraphOps,
   getLoadedExecutionData,
@@ -159,6 +158,45 @@ describe('getCurrentPollingInterval', () => {
     expect(getCurrentPollingInterval(1000 * 1000)).toBe(10000);
     expect(getCurrentPollingInterval(Infinity)).toBe(10000);
   });
+});
+
+describe('createTimedRepeater', () => {
+  it('emits values at expected times', fakeAsync(() => {
+    const inputStream$ = of(42);
+    const polllingIntervalStream$ = of(1000);
+    const terminationStream$ = empty();
+    const outputStream$ = TEST_ONLY.createTimedRepeater(
+      inputStream$,
+      polllingIntervalStream$,
+      terminationStream$
+    ).pipe(take(3));
+    let numValues = 0;
+    outputStream$.subscribe(() => {
+      numValues++;
+    });
+    expect(numValues).toBe(1);
+    tick(1000);
+    expect(numValues).toBe(2);
+    tick(1000);
+    expect(numValues).toBe(3);
+  }));
+
+  it('terminates on termnation event', fakeAsync(() => {
+    const inputStream$ = of(42);
+    const polllingIntervalStream$ = of(1000);
+    const terminationStream$ = timer(2500);
+    const outputStream$ = TEST_ONLY.createTimedRepeater(
+      inputStream$,
+      polllingIntervalStream$,
+      terminationStream$
+    );
+    let numValues = 0;
+    outputStream$.subscribe(() => {
+      numValues++;
+    });
+    tick(4000);
+    expect(numValues).toBe(3);
+  }));
 });
 
 describe('getMissingPages', () => {
@@ -309,7 +347,6 @@ describe('Debugger effects', () => {
   let debuggerEffects: DebuggerEffects;
   let action: ReplaySubject<Action>;
   let store: MockStore<State>;
-  let timerSpy: jasmine.Spy;
   let dispatchSpy: jasmine.Spy;
   let dispatchedActions: Action[];
 
@@ -334,11 +371,10 @@ describe('Debugger effects', () => {
     });
   });
 
-  function createAndSubscribeToDebuggerEffectsWithEmptyTimer() {
-    timerSpy = spyOn(rxjs, 'timer').and.callFake(
-      (dueTime: number, period: number) => {
-        return empty(); // Mock it as empty Observable.
-      }
+  function createAndSubscribeToDebuggerEffectsWithEmptyRepeater() {
+    spyOn(TEST_ONLY, 'createTimedRepeater').and.callFake(
+      (stream: Observable<any>) =>
+        stream.pipe(tap((obj) => console.log('stream obj:', obj)))
     );
     debuggerEffects = TestBed.inject(DebuggerEffects);
     debuggerEffects.loadData$.subscribe();
@@ -576,139 +612,152 @@ describe('Debugger effects', () => {
     }
 
     beforeEach(() => {
-      createAndSubscribeToDebuggerEffectsWithEmptyTimer();
+      createAndSubscribeToDebuggerEffectsWithEmptyRepeater();
     });
 
-    it('run list loading: empty runs', () => {
-      const fetchRuns = createFetchRunsSpy({});
-      store.overrideSelector(getDebuggerRunListing, {});
+    for (const triggerAction of [
+      debuggerLoaded(),
+      reload(),
+      manualReload(),
+    ] as Action[]) {
+      it(`run list loading on ${triggerAction.type}: empty runs`, () => {
+        const fetchRuns = createFetchRunsSpy({});
+        store.overrideSelector(getDebuggerRunListing, {});
 
-      action.next(debuggerLoaded());
-
-      expect(timerSpy).toHaveBeenCalledTimes(1);
-      expect(fetchRuns).toHaveBeenCalled();
-      expect(dispatchedActions).toEqual([
-        debuggerRunsRequested(),
-        debuggerRunsLoaded({runs: {}}),
-      ]);
-    });
-
-    it('loads numExecutions when there is a run: empty executions', () => {
-      const fetchRuns = createFetchRunsSpy(runListingForTest);
-      const fetchNumExecutionDigests = createFetchExecutionDigestsSpy(
-        runId,
-        0,
-        0,
-        {
-          begin: 0,
-          end: 0,
-          num_digests: 0,
-          execution_digests: [],
-        }
-      );
-      const fetchNumAlerts = createFetchAlertsSpy(
-        runId,
-        0,
-        0,
-        numAlertsResponseForTest
-      );
-      const fetchNumGraphExecutionDigests = createFetchGraphExecutionDigestsSpy(
-        runId,
-        0,
-        0,
-        {
-          begin: 0,
-          end: 0,
-          num_digests: 0,
-          graph_execution_digests: [],
-        }
-      );
-      store.overrideSelector(getDebuggerRunListing, runListingForTest);
-      store.overrideSelector(getNumExecutionsLoaded, {
-        state: DataLoadState.NOT_LOADED,
-        lastLoadedTimeInMs: null,
-      });
-      store.refreshState();
-
-      action.next(debuggerLoaded());
-
-      expect(timerSpy).toHaveBeenCalledTimes(1);
-      expect(fetchRuns).toHaveBeenCalled();
-      expect(fetchNumExecutionDigests).toHaveBeenCalled();
-      expect(fetchNumAlerts).toHaveBeenCalled();
-      expect(fetchNumGraphExecutionDigests).toHaveBeenCalled();
-      expect(dispatchedActions).toEqual([
-        debuggerRunsRequested(),
-        debuggerRunsLoaded({runs: runListingForTest}),
-        numAlertsAndBreakdownRequested(),
-        numAlertsAndBreakdownLoaded({
-          numAlerts: numAlertsResponseForTest.num_alerts,
-          alertsBreakdown: numAlertsResponseForTest.alerts_breakdown,
-        }),
-        numExecutionsRequested(),
-        numExecutionsLoaded({numExecutions: 0}),
-        numGraphExecutionsRequested(),
-        numGraphExecutionsLoaded({numGraphExecutions: 0}),
-      ]);
-    });
-
-    it(
-      'loads source-file list, top-level and intra-graph digests and data, ' +
-        'and stack trace, if numExecutions>0',
-      () => {
-        const {
-          fetchRuns,
-          fetchSourceFileList,
-          fetchExecutionDigests,
-          fetchExecutionData,
-          fetchGraphExecutionDigests,
-          fetchStackFrames,
-        } = createFetchSpies();
-        store.overrideSelector(getDebuggerRunListing, runListingForTest);
-        store.overrideSelector(getNumExecutionsLoaded, {
-          state: DataLoadState.NOT_LOADED,
-          lastLoadedTimeInMs: null,
-        });
-        store.overrideSelector(getActiveRunId, runId);
-        store.overrideSelector(getNumExecutions, numExecutions);
-        store.overrideSelector(getExecutionPageSize, pageSize);
-        store.overrideSelector(getLoadedStackFrames, {});
-        store.refreshState();
-
-        action.next(debuggerLoaded());
+        action.next(triggerAction);
 
         expect(fetchRuns).toHaveBeenCalled();
-        // Once for # of execution digests; once for the first page.
-        expect(fetchExecutionDigests).toHaveBeenCalledTimes(2);
-        expect(fetchExecutionData).toHaveBeenCalledTimes(1);
-        expect(fetchStackFrames).toHaveBeenCalledTimes(1);
-        expect(fetchGraphExecutionDigests).toHaveBeenCalledTimes(1);
-        expect(fetchSourceFileList).toHaveBeenCalledTimes(1);
         expect(dispatchedActions).toEqual([
+          debuggerDataPoll(),
           debuggerRunsRequested(),
-          debuggerRunsLoaded({runs: runListingForTest}),
-          numAlertsAndBreakdownRequested(),
-          numAlertsAndBreakdownLoaded({
-            numAlerts: numAlertsResponseForTest.num_alerts,
-            alertsBreakdown: numAlertsResponseForTest.alerts_breakdown,
-          }),
-          numExecutionsRequested(),
-          numExecutionsLoaded({numExecutions}),
-          executionDigestsRequested({begin: 0, end: 2}),
-          executionDigestsLoaded(executionDigestsPageResponse),
-          executionDataLoaded(executionDataResponse),
-          stackFramesLoaded({stackFrames: {aa: stackFrame0, bb: stackFrame1}}),
-          numGraphExecutionsRequested(),
-          numGraphExecutionsLoaded({numGraphExecutions}),
-          sourceFileListRequested(),
-          sourceFileListLoaded({
-            sourceFiles: twoSourceFilesForTest.map(
-              ([host_name, file_path]) => ({host_name, file_path})
-            ),
-          }),
+          debuggerRunsLoaded({runs: {}}),
         ]);
-      }
-    );
+      });
+
+      it(
+        `loads numExecutions on ${triggerAction.type}: ` + `empty executions`,
+        () => {
+          const fetchRuns = createFetchRunsSpy(runListingForTest);
+          const fetchNumExecutionDigests = createFetchExecutionDigestsSpy(
+            runId,
+            0,
+            0,
+            {
+              begin: 0,
+              end: 0,
+              num_digests: 0,
+              execution_digests: [],
+            }
+          );
+          const fetchNumAlerts = createFetchAlertsSpy(
+            runId,
+            0,
+            0,
+            numAlertsResponseForTest
+          );
+          const fetchNumGraphExecutionDigests = createFetchGraphExecutionDigestsSpy(
+            runId,
+            0,
+            0,
+            {
+              begin: 0,
+              end: 0,
+              num_digests: 0,
+              graph_execution_digests: [],
+            }
+          );
+          store.overrideSelector(getDebuggerRunListing, runListingForTest);
+          store.overrideSelector(getNumExecutionsLoaded, {
+            state: DataLoadState.NOT_LOADED,
+            lastLoadedTimeInMs: null,
+          });
+          store.refreshState();
+
+          action.next(triggerAction);
+
+          expect(fetchRuns).toHaveBeenCalled();
+          expect(fetchNumExecutionDigests).toHaveBeenCalled();
+          expect(fetchNumAlerts).toHaveBeenCalled();
+          expect(fetchNumGraphExecutionDigests).toHaveBeenCalled();
+          expect(dispatchedActions).toEqual([
+            debuggerDataPoll(),
+            debuggerRunsRequested(),
+            debuggerRunsLoaded({runs: runListingForTest}),
+            numAlertsAndBreakdownRequested(),
+            numAlertsAndBreakdownLoaded({
+              numAlerts: numAlertsResponseForTest.num_alerts,
+              alertsBreakdown: numAlertsResponseForTest.alerts_breakdown,
+            }),
+            numExecutionsRequested(),
+            numExecutionsLoaded({numExecutions: 0}),
+            numGraphExecutionsRequested(),
+            numGraphExecutionsLoaded({numGraphExecutions: 0}),
+          ]);
+        }
+      );
+
+      it(
+        `on ${triggerAction.type}, ` +
+          `loads source-file list, top-level and intra-graph digests and data, ` +
+          `and stack trace, if numExecutions>0`,
+        () => {
+          const {
+            fetchRuns,
+            fetchSourceFileList,
+            fetchExecutionDigests,
+            fetchExecutionData,
+            fetchGraphExecutionDigests,
+            fetchStackFrames,
+          } = createFetchSpies();
+          store.overrideSelector(getDebuggerRunListing, runListingForTest);
+          store.overrideSelector(getNumExecutionsLoaded, {
+            state: DataLoadState.NOT_LOADED,
+            lastLoadedTimeInMs: null,
+          });
+          store.overrideSelector(getActiveRunId, runId);
+          store.overrideSelector(getNumExecutions, numExecutions);
+          store.overrideSelector(getExecutionPageSize, pageSize);
+          store.overrideSelector(getLoadedStackFrames, {});
+          store.refreshState();
+
+          action.next(triggerAction);
+
+          expect(fetchRuns).toHaveBeenCalled();
+          // Once for # of execution digests; once for the first page.
+          expect(fetchExecutionDigests).toHaveBeenCalledTimes(2);
+          expect(fetchExecutionData).toHaveBeenCalledTimes(1);
+          expect(fetchStackFrames).toHaveBeenCalledTimes(1);
+          expect(fetchGraphExecutionDigests).toHaveBeenCalledTimes(1);
+          expect(fetchSourceFileList).toHaveBeenCalledTimes(1);
+          expect(dispatchedActions).toEqual([
+            debuggerDataPoll(),
+            debuggerRunsRequested(),
+            debuggerRunsLoaded({runs: runListingForTest}),
+            numAlertsAndBreakdownRequested(),
+            numAlertsAndBreakdownLoaded({
+              numAlerts: numAlertsResponseForTest.num_alerts,
+              alertsBreakdown: numAlertsResponseForTest.alerts_breakdown,
+            }),
+            numExecutionsRequested(),
+            numExecutionsLoaded({numExecutions}),
+            executionDigestsRequested({begin: 0, end: 2}),
+            executionDigestsLoaded(executionDigestsPageResponse),
+            executionDataLoaded(executionDataResponse),
+            stackFramesLoaded({
+              stackFrames: {aa: stackFrame0, bb: stackFrame1},
+            }),
+            numGraphExecutionsRequested(),
+            numGraphExecutionsLoaded({numGraphExecutions}),
+            sourceFileListRequested(),
+            sourceFileListLoaded({
+              sourceFiles: twoSourceFilesForTest.map(
+                ([host_name, file_path]) => ({host_name, file_path})
+              ),
+            }),
+          ]);
+        }
+      );
+    }
 
     for (const dataAlreadyExists of [false, true]) {
       it(
@@ -1042,12 +1091,7 @@ describe('Debugger effects', () => {
   });
 
   describe('Timer-based polling', () => {
-    function createAndSubscribeToDebuggerEffectsWithOneShotTimer() {
-      timerSpy = spyOn(rxjs, 'timer').and.callFake(
-        (dueTime: number, period: number) => {
-          return of(1).pipe(delay(2000));
-        }
-      );
+    function createAndSubscribeToDebuggerEffects() {
       debuggerEffects = TestBed.inject(DebuggerEffects);
       debuggerEffects.loadData$.subscribe();
     }
@@ -1061,7 +1105,7 @@ describe('Debugger effects', () => {
     beforeEach(() => {
       setDataPollingOptions({
         minPollingInterval: 2e3,
-        maxPollingInterval: 30e3,
+        maxPollingInterval: 60e3,
         backoffFactor: 2,
       });
       fetchRuns = createFetchRunsSpy(runListingForTest);
@@ -1098,67 +1142,30 @@ describe('Debugger effects', () => {
     });
 
     it('triggers polling after first polling interval', fakeAsync(() => {
-      createAndSubscribeToDebuggerEffectsWithOneShotTimer();
-      expect(fetchNumExecutionDigests).toHaveBeenCalledTimes(0);
-      expect(fetchNumAlerts).toHaveBeenCalledTimes(0);
-      expect(fetchNumGraphExecutionDigests).toHaveBeenCalledTimes(0);
-      expect(fetchSourceFileList).toHaveBeenCalledTimes(0);
-
+      createAndSubscribeToDebuggerEffects();
       store.overrideSelector(getActiveRunId, runId);
       store.overrideSelector(getDebuggerRunListing, runListingForTest);
       store.refreshState();
-      tick(2000); // Wait for the polling interval.
-      // Run list is not expected to be polled.
-      expect(fetchRuns).toHaveBeenCalledTimes(0);
+      action.next(debuggerLoaded());
+      expect(fetchRuns).toHaveBeenCalledTimes(1);
       expect(fetchNumExecutionDigests).toHaveBeenCalledTimes(1);
       expect(fetchNumAlerts).toHaveBeenCalledTimes(1);
       expect(fetchNumGraphExecutionDigests).toHaveBeenCalledTimes(1);
       expect(fetchSourceFileList).toHaveBeenCalledTimes(1);
-      expect(dispatchedActions[0]).toEqual(debuggerDataPoll());
-    }));
 
-    it('skips when there is no active run', fakeAsync(() => {
-      createAndSubscribeToDebuggerEffectsWithOneShotTimer();
-      store.overrideSelector(getActiveRunId, null);
-      store.refreshState();
       tick(2000); // Wait for the polling interval.
-      expect(fetchRuns).toHaveBeenCalledTimes(0);
-      // Expect no polling due to the lack of active run.
-      expect(fetchNumExecutionDigests).toHaveBeenCalledTimes(0);
-      expect(fetchNumAlerts).toHaveBeenCalledTimes(0);
-      expect(fetchNumGraphExecutionDigests).toHaveBeenCalledTimes(0);
-      expect(fetchSourceFileList).toHaveBeenCalledTimes(0);
-      expect(dispatchedActions).toEqual([]);
+      action.next(debuggerUnloaded());
+      expect(fetchRuns).toHaveBeenCalledTimes(2);
+      expect(fetchNumExecutionDigests).toHaveBeenCalledTimes(2);
+      expect(fetchNumAlerts).toHaveBeenCalledTimes(2);
+      expect(fetchNumGraphExecutionDigests).toHaveBeenCalledTimes(2);
+      expect(fetchSourceFileList).toHaveBeenCalledTimes(2);
     }));
-
-    it(
-      'skipps polling when current polling interval is > ' +
-        ' time since last poll',
-      fakeAsync(() => {
-        createAndSubscribeToDebuggerEffectsWithOneShotTimer();
-        const t0 = Date.now();
-        store.overrideSelector(getLastNewPollDataTime, t0 - 60e3);
-        store.overrideSelector(getLastDataPollTime, t0 - 2e3);
-        // This combination of lastNewPollDataTime and lastDataPollTime will
-        // cause the current polling interval to be the maximum value (30e3).
-        store.overrideSelector(getActiveRunId, runId);
-        store.overrideSelector(getDebuggerRunListing, runListingForTest);
-        store.refreshState();
-        tick(2000); // Wait for the polling interval.
-        expect(fetchRuns).toHaveBeenCalledTimes(0);
-        // Expect no polling due to the longer current polling interval.
-        expect(fetchNumExecutionDigests).toHaveBeenCalledTimes(0);
-        expect(fetchNumAlerts).toHaveBeenCalledTimes(0);
-        expect(fetchNumGraphExecutionDigests).toHaveBeenCalledTimes(0);
-        expect(fetchSourceFileList).toHaveBeenCalledTimes(0);
-        expect(dispatchedActions).toEqual([]);
-      })
-    );
   });
 
   describe('graphExecutionScrollToIndex', () => {
     beforeEach(() => {
-      createAndSubscribeToDebuggerEffectsWithEmptyTimer();
+      createAndSubscribeToDebuggerEffectsWithEmptyRepeater();
     });
 
     for (const {dataExists, page3Size, loadingPages} of [
@@ -1267,7 +1274,7 @@ describe('Debugger effects', () => {
     const execDigest11 = createTestExecutionDigest();
 
     beforeEach(() => {
-      createAndSubscribeToDebuggerEffectsWithEmptyTimer();
+      createAndSubscribeToDebuggerEffectsWithEmptyRepeater();
     });
 
     it('fetches alerts and execution digest page if data is missing', () => {
@@ -1519,7 +1526,7 @@ describe('Debugger effects', () => {
     }
 
     beforeEach(() => {
-      createAndSubscribeToDebuggerEffectsWithEmptyTimer();
+      createAndSubscribeToDebuggerEffectsWithEmptyRepeater();
     });
 
     it('loads the content of a known file', () => {
@@ -1669,7 +1676,7 @@ describe('Debugger effects', () => {
     const stackFrame1 = createTestStackFrame();
 
     beforeEach(() => {
-      createAndSubscribeToDebuggerEffectsWithEmptyTimer();
+      createAndSubscribeToDebuggerEffectsWithEmptyRepeater();
     });
 
     it('fetches missing op and missing stack frames', () => {

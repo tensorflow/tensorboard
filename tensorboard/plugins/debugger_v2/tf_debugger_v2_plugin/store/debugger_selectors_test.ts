@@ -41,6 +41,7 @@ import {
   getNumGraphExecutions,
   getNumGraphExecutionsLoaded,
   getFocusAlertTypesOfVisibleExecutionDigests,
+  getPollSilenceTime,
   getSourceFileList,
   getSourceFileListLoaded,
 } from './debugger_selectors';
@@ -69,6 +70,38 @@ import {
 } from '../testing';
 
 describe('debugger selectors', () => {
+  describe('getPollSilenceTime', () => {
+    it('returns correct zero value', () => {
+      const state = createState(
+        createDebuggerState({
+          lastDataPollTime: -1,
+          lastNewPollDataTime: -1,
+        })
+      );
+      expect(getPollSilenceTime(state)).toBe(0);
+    });
+
+    it('returns correct positive value: no data yet', () => {
+      const state = createState(
+        createDebuggerState({
+          lastDataPollTime: 1234,
+          lastNewPollDataTime: -1,
+        })
+      );
+      expect(getPollSilenceTime(state)).toBe(1235);
+    });
+
+    it('returns correct positive value: has been data', () => {
+      const state = createState(
+        createDebuggerState({
+          lastDataPollTime: 1234,
+          lastNewPollDataTime: 1000,
+        })
+      );
+      expect(getPollSilenceTime(state)).toBe(234);
+    });
+  });
+
   describe('getAlertsLoaded', () => {
     it('returns correct NOT_LOADED state', () => {
       const state = createState(createDebuggerState());
