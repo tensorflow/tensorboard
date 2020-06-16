@@ -13,18 +13,27 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
-import {Store} from '@ngrx/store';
+import {Action, Store} from '@ngrx/store';
 import {Actions, createEffect, ofType} from '@ngrx/effects';
-import {merge, Observable, timer} from 'rxjs';
+import {merge, Observable, of, range, timer} from 'rxjs';
 import {
+  catchError,
   debounceTime,
+  delayWhen,
+  delay,
   filter,
   map,
   mergeMap,
+  repeat,
+  repeatWhen,
+  retryWhen,
   share,
+  switchMap,
+  takeUntil,
   tap,
   withLatestFrom,
 } from 'rxjs/operators';
+import {manualReload, reload} from '../../../../webapp/core/actions';
 import {
   alertsOfTypeLoaded,
   alertTypeFocusToggled,
@@ -274,27 +283,47 @@ export class DebuggerEffects {
     );
   }
 
-  /**
-   * Create a polling Observable that drives loading "root-level" data.
-   *
-   * The polling observable backs off its polling frequency when the last
-   * several polling events yielded no new data.
-   */
-  private createDataPolling(): Observable<void> {
-    return timer(0, minimumPollingInterval).pipe(
-      withLatestFrom(
-        this.store.select(getActiveRunId),
-        this.store.select(getLastDataPollTime),
-        this.store.select(getLastNewPollDataTime)
+  private createBackoffRepeater(
+    prevStream$: Observable<any>,
+    lastPollTimeStream$: Observable<number>,
+    lastNewPollDataTimeStream$: Observable<number>,
+    terminationEventStream$: Observable<any>
+  ): Observable<void> {
+    return prevStream$.pipe(
+      repeatWhen((completed) =>
+        completed.pipe(
+          withLatestFrom(lastPollTimeStream$, lastNewPollDataTimeStream$),
+          delayWhen(([, lastDataPollTime, lastNewPollDataTime]) => {
+            const t = lastDataPollTime - lastNewPollDataTime;
+            const currentPollingInterval = getCurrentPollingInterval(t);
+            console.log(
+              `In retryWhen tap: t=${t}, ` +
+                `currentPollingInterval=${currentPollingInterval}`
+            ); // DEBUG
+            return timer(currentPollingInterval);
+          })
+        )
       ),
-      filter(([, runId, lastDataPollTime, lastNewPollDataTime]) => {
-        const timeSinceLastNewData = lastDataPollTime - lastNewPollDataTime;
-        const currentPollingInterval = getCurrentPollingInterval(
-          timeSinceLastNewData
-        );
-        return (
-          runId !== null &&
-          Date.now() - lastDataPollTime >= currentPollingInterval
+      takeUntil(terminationEventStream$),
+      map(() => void null)
+    );
+  }
+
+  private onManualReload(): Observable<void> {
+    return this.actions$.pipe(ofType(manualReload));
+  } // TODO(cais): Make use of this.
+
+  private onAutoReload(): Observable<void> {
+    return this.actions$.pipe(
+      // TODO(cais): Change to auto only. DO NOT SUBMIT.
+      ofType(manualReload, reload),
+      switchMap((action: Action) => {
+        return this.createBackoffRepeater(
+          of(action),
+          this.store.select(getLastDataPollTime),
+          this.store.select(getLastNewPollDataTime),
+          // TODO(cais): Change this to autoReload. DO NOT SUBMIT.
+          this.actions$.pipe(ofType(manualReload))
         );
       }),
       tap(() => this.store.dispatch(debuggerDataPoll())),
@@ -1092,7 +1121,8 @@ export class DebuggerEffects {
         // Therefore it needs to be a shared observable.
         const dataPoll$ = merge(
           this.onDebuggerLoaded(),
-          this.createDataPolling()
+          this.onAutoReload()
+          // this.createDataPolling()
         ).pipe(share());
 
         const loadSourceFileList$ = this.loadSourceFileList(dataPoll$);
@@ -1164,6 +1194,7 @@ export class DebuggerEffects {
           onSourceFileFocused$,
           onGraphExecutionScroll$,
           loadGraphOpInfoAndStackTrace$
+          // this.reloadAction(this.onAutoReload()),  // TODO(cais): Clean up. Remove.
         ).pipe(
           // createEffect expects an Observable that emits {}.
           map(() => ({}))
