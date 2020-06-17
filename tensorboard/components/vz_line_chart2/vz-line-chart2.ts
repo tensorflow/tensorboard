@@ -296,22 +296,22 @@ namespace vz_line_chart2 {
     },
 
     /**
-     * Returns whether or not the current scales contain all visible data, after
-     * applying smoothing and outlier detection.
+     * Returns whether the extent of rendered data values fits the current
+     * chart viewport domain (includes smoothing and outlier detection).
      *
-     * This is true when there is no data, and false when data exists beyond the
-     * selected view due to transformations (pan, zoom).
+     * This is true when there is no data, and false when the domain has been
+     * transformed from the extent via transformations (pan, zoom).
      */
-    isDataWithinVisibleDomain() {
+    isDataFitToDomain() {
       if (!this._chart) {
         return true;
       }
       return (
-        isDataWithinVisibleDomain(this._chart.xAxis.getScale()) &&
-        isDataWithinVisibleDomain(this._chart.yAxis.getScale())
+        isDataFitToDomain(this._chart.xAxis.getScale()) &&
+        isDataFitToDomain(this._chart.yAxis.getScale())
       );
 
-      function isDataWithinVisibleDomain(scale) {
+      function isDataFitToDomain(scale) {
         /**
          * Domain represents the currently displayed region, possibly a zoomed
          * in or zoomed out view of the data.
@@ -321,7 +321,7 @@ namespace vz_line_chart2 {
          */
         const domain = scale.getTransformationDomain();
         const extent = scale.getTransformationExtent();
-        return extent[0] >= domain[0] && extent[1] <= domain[1];
+        return extent[0] == domain[0] && extent[1] == domain[1];
       }
     },
 
