@@ -16,7 +16,9 @@ limitations under the License.
 .bottom-section {
   box-sizing: border-box;
   border-top: 1px solid rgba(0, 0, 0, 0.12);
+  display: flex;
   height: 34%;
+  justify-content: space-between;
   padding-top: 6px;
   width: 100%;
 }
@@ -28,11 +30,16 @@ limitations under the License.
   overflow: hidden;
 }
 
+.filler-div {
+  display: inline-block;
+}
+
 .top-section {
   box-sizing: border-box;
+  display: flex;
   height: 66%;
+  justify-content: space-between;
   padding: 6px 0;
-  white-space: nowrap;
   width: 100%;
 }
 
@@ -41,6 +48,7 @@ tf-debugger-v2-alerts {
   display: inline-block;
   height: 100%;
   margin-right: 10px;
+  min-width: 160px;
   vertical-align: top;
   width: calc(15% - 11px);
 }
@@ -48,6 +56,7 @@ tf-debugger-v2-alerts {
 tf-debugger-v2-graph-executions {
   display: inline-block;
   height: 100%;
+  min-width: 480px;
   vertical-align: top;
   width: 30%;
 }
@@ -62,6 +71,7 @@ tf-debugger-v2-source-files {
 tf-debugger-v2-stack-trace {
   display: inline-block;
   height: 100%;
+  min-width: 480px;
   width: 30%;
 }
 

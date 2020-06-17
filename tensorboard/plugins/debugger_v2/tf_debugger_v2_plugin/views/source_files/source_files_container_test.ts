@@ -78,8 +78,8 @@ describe('Source Files Container', () => {
     const noFileSelectedElement = fixture.debugElement.query(
       By.css('.no-file-selected')
     );
-    expect(noFileSelectedElement.nativeElement.innerText).toBe(
-      '(No file selected)'
+    expect(noFileSelectedElement.nativeElement.innerText).toContain(
+      'No file selected'
     );
 
     const sourceCodeElements = fixture.debugElement.queryAll(
