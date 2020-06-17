@@ -321,7 +321,7 @@ namespace vz_line_chart2 {
          */
         const domain = scale.getTransformationDomain();
         const extent = scale.getTransformationExtent();
-        return extent[0] == domain[0] && extent[1] == domain[1];
+        return extent[0] === domain[0] && extent[1] === domain[1];
       }
     },
 
