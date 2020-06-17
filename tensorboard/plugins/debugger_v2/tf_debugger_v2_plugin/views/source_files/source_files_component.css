@@ -36,6 +36,7 @@ limitations under the License.
   display: inline-block;
   color: #666;
   padding: 0 20px;
+  white-space: normal;
 }
 
 .source-files-container {
