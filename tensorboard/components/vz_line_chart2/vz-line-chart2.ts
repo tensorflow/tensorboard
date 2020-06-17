@@ -296,23 +296,32 @@ namespace vz_line_chart2 {
     },
 
     /**
-     * Returns whether or not the current scales are fit to the visible data.
-     * When scales do not fit due to transformations (pan, zoom), calling
-     * resetDomain() will make them fit.
+     * Returns whether or not the current scales contain all visible data, after
+     * applying smoothing and outlier detection.
+     *
+     * This is true when there is no data, and false when data exists beyond the
+     * selected view due to transformations (pan, zoom).
      */
-    isDomainFitToData() {
+    isDataWithinVisibleDomain() {
       if (!this._chart) {
         return true;
       }
       return (
-        isScaleFitToData(this._chart.xAxis.getScale()) &&
-        isScaleFitToData(this._chart.yAxis.getScale())
+        isDataWithinVisibleDomain(this._chart.xAxis.getScale()) &&
+        isDataWithinVisibleDomain(this._chart.yAxis.getScale())
       );
 
-      function isScaleFitToData(scale) {
+      function isDataWithinVisibleDomain(scale) {
+        /**
+         * Domain represents the currently displayed region, possibly a zoomed
+         * in or zoomed out view of the data.
+         *
+         * Extent represents the extent of the data, the range of all provided
+         * datum values.
+         */
         const domain = scale.getTransformationDomain();
         const extent = scale.getTransformationExtent();
-        return domain[0] === extent[0] && domain[1] === extent[1];
+        return extent[0] >= domain[0] && extent[1] <= domain[1];
       }
     },
 
