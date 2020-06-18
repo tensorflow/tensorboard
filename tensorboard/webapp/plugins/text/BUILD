@@ -4,6 +4,7 @@
 # with a focus on TensorFlow 2.x.
 
 load("//tensorboard/defs:protos.bzl", "tb_proto_library")
+
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
@@ -15,12 +16,11 @@ py_library(
     deps = [
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
-        "//tensorboard/plugins:base_plugin",
-        "//tensorboard/util:tensor_util",
         "//tensorboard/data:provider",
+        "//tensorboard/plugins:base_plugin",
         "//tensorboard/plugins/text:metadata",
+        "//tensorboard/util:tensor_util",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
     ],
 )
-

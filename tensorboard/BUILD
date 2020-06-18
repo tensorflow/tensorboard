@@ -233,7 +233,7 @@ py_library(
         "//tensorboard/plugins/scalar:scalars_plugin",
         "//tensorboard/plugins/text:text_plugin",
         "//tensorboard/webapp/plugins/text:text_v2_plugin",
-      ],
+    ],
 )
 
 py_library(
