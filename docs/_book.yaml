@@ -33,6 +33,8 @@ upper_tabs:
         path: /tensorboard/tensorboard_profiling_keras
       - title: "TensorBoard in notebooks"
         path: /tensorboard/tensorboard_in_notebooks
+      - title: "TensorBoard DataFrame API"
+        path: /tensorboard/dataframe_api
       - heading: "Versions"
       - title: "Migrate from TF 1 to TF 2"
         path: /tensorboard/migrate
