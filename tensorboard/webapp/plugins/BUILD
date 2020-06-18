@@ -20,7 +20,6 @@ ng_module(
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin:debugger_v2",
         "//tensorboard/webapp/core",
         "//tensorboard/webapp/core/store",
-        "//tensorboard/webapp/plugins/text/tf_text_v2:text_v2",
         "//tensorboard/webapp/types",
         "@npm//@angular/common",
         "@npm//@angular/core",
