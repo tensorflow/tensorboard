@@ -67,6 +67,7 @@ limitations under the License.
   color: #808080;
   font-family: 'Roboto', Arial, Helvetica, sans-serif;
   font-size: 13px;
+  white-space: normal;
 }
 
 .self-op-header {

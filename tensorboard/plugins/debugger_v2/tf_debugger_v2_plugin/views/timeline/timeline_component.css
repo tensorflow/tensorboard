@@ -77,6 +77,7 @@ limitations under the License.
 .navigation-position-info {
   display: inline-flex;
   font-size: 14px;
+  line-height: normal;
   max-width: 200px;
   padding-left: 10px;
   padding-right: 10px;
