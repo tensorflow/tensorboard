@@ -63,7 +63,7 @@ class DefaultTest(test.TestCase):
     def test_get_dynamic_plugin(self, mock_iter_entry_points):
         mock_iter_entry_points.return_value = [FakeEntryPoint.create()]
 
-        actual_plugins = default.get
+        actual_plugins = default.get_dynamic_plugins()
 
         mock_iter_entry_points.assert_called_with("tensorboard_plugins")
         self.assertEqual(actual_plugins, [FakePlugin])
