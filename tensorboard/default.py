@@ -64,12 +64,14 @@ class ExperimentalDebuggerV2Plugin(
 
     pass
 
+
 class ExperimentalTextV2Plugin(
     text_v2_plugin.TextV2Plugin, experimental_plugin.ExperimentalPlugin
 ):
-   """Angular Text Plugin marked as experimental."""
-   
-   pass
+    """Angular Text Plugin marked as experimental."""
+
+    pass
+
 
 # Ordering matters. The order in which these lines appear determines the
 # ordering of tabs in TensorBoard's GUI.
@@ -90,7 +92,7 @@ _PLUGINS = [
     beholder_plugin_loader.BeholderPluginLoader,
     hparams_plugin.HParamsPlugin,
     mesh_plugin.MeshPlugin,
-    ExperimentalTextV2Plugin, 
+    ExperimentalTextV2Plugin,
 ]
 
 

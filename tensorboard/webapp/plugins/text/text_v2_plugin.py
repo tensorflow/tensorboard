@@ -31,7 +31,7 @@ from tensorboard.util import tensor_util
 from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
 from tensorboard.data import provider
-from tensorboard.plugins.text import metadata 
+from tensorboard.plugins.text import metadata
 
 # HTTP routes
 TAGS_ROUTE = "/tags"
@@ -43,7 +43,8 @@ WARNING_TEMPLATE = textwrap.dedent(
   2d tables are supported. Showing a 2d slice of the data instead."""
 )
 
-_DEFAULT_DOWNSAMPLING = 100 # text tensors per time series
+_DEFAULT_DOWNSAMPLING = 100  # text tensors per time series
+
 
 def reduce_to_2d(arr):
     """Given a np.npdarray with nDims > 2, reduce it to 2d.
@@ -71,6 +72,7 @@ def reduce_to_2d(arr):
     slices = ([0] * (ndims - 2)) + [slice(None), slice(None)]
     return arr[slices]
 
+
 def reduce_and_jsonify(text_arr):
     """Take a numpy.ndarray containing strings, and convert it into a
     json-compatible list, also squashing it to two dimensions if necessary.
@@ -93,13 +95,14 @@ def reduce_and_jsonify(text_arr):
     warning = ""
     if not text_arr.shape:
         # It is a scalar. No need to put it in a table, just apply markdown
-        return text_arr.tolist(), text_arr.shape, warning 
+        return text_arr.tolist(), text_arr.shape, warning
     if len(text_arr.shape) > 2:
         warning = plugin_util.markdown_to_safe_html(
             WARNING_TEMPLATE % len(text_arr.shape)
         )
         text_arr = reduce_to_2d(text_arr)
     return text_arr.tolist(), text_arr.shape, warning
+
 
 def create_event(wall_time, step, string_ndarray):
     """Convert a text event into a JSON-compatible response with rank <= 2"""
@@ -108,16 +111,17 @@ def create_event(wall_time, step, string_ndarray):
         "wall_time": wall_time,
         "step": step,
         "text": formatted_string_array,
-        "shape": shape, 
+        "shape": shape,
         "warning": warning,
     }
 
+
 class TextV2Plugin(base_plugin.TBPlugin):
     """Angular Text Plugin For Tensorboard"""
-    
+
     plugin_name = "text_v2"
 
-    def __init__ (self, context):
+    def __init__(self, context):
         """Instantiates Angular TextPlugin via TensorBoard core.
 
         Args:
@@ -131,12 +135,12 @@ class TextV2Plugin(base_plugin.TBPlugin):
             self._data_provider = context.data_provider
         else:
             self._data_provider = None
-    
+
     def frontend_metadata(self):
         return base_plugin.FrontendMetadata(
             is_ng_component=True, tab_name="Text v2", disable_reload=False
         )
-    
+
     def is_active(self):
         """Determines whether this plugin is active.
 
@@ -152,7 +156,7 @@ class TextV2Plugin(base_plugin.TBPlugin):
         return bool(
             self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
         )
-    
+
     def index_impl(self, experiment):
         if self._data_provider:
             mapping = self._data_provider.list_tensors(
@@ -166,7 +170,7 @@ class TextV2Plugin(base_plugin.TBPlugin):
             run: list(tag_to_content)
             for (run, tag_to_content) in six.iteritems(mapping)
         }
-   
+
     def text_impl(self, run, tag, experiment):
         if self._data_provider:
             all_text = self._data_provider.read_tensors(
@@ -179,7 +183,7 @@ class TextV2Plugin(base_plugin.TBPlugin):
             if text is None:
                 return []
             return [create_event(d.wall_time, d.step, d.numpy) for d in text]
-        try:    
+        try:
             text_events = self._multiplexer.Tensors(run, tag)
         except KeyError:
             text_events = []
@@ -189,7 +193,7 @@ class TextV2Plugin(base_plugin.TBPlugin):
             )
             for e in text_events
         ]
-    
+
     @wrappers.Request.application
     def text_route(self, request):
         experiment = plugin_util.experiment_id(request.environ)
@@ -197,7 +201,7 @@ class TextV2Plugin(base_plugin.TBPlugin):
         tag = request.args.get("tag")
         response = self.text_impl(run, tag, experiment)
         return http_util.Respond(request, response, "application/json")
-    
+
     @wrappers.Request.application
     def tags_route(self, request):
         experiment = plugin_util.experiment_id(request.environ)
@@ -209,4 +213,3 @@ class TextV2Plugin(base_plugin.TBPlugin):
             TAGS_ROUTE: self.tags_route,
             TEXT_ROUTE: self.text_route,
         }
-
