@@ -80,7 +80,7 @@ def reduce_and_jsonify(text_arr):
     If the ndarray contains a single scalar string, then that ndarray is
     converted to a list. If it contains an array of strings,
     that array is converted to a list.  If the array contains dimensionality
-    greater than 2, all but two of the dimensions are removed, and a warning 
+    greater than 2, all but two of the dimensions are removed, and a warning
     message is generated.  The list, shape of the array, and any warning
     message is returned.
 

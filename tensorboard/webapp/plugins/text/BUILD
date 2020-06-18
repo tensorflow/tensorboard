@@ -3,8 +3,6 @@
 # the internals of a TensorFlow program (e.g., graphs, functions and tensors),
 # with a focus on TensorFlow 2.x.
 
-load("//tensorboard/defs:protos.bzl", "tb_proto_library")
-
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
