@@ -37,12 +37,6 @@ from tensorboard.plugins.text import metadata
 TAGS_ROUTE = "/tags"
 TEXT_ROUTE = "/text"
 
-WARNING_TEMPLATE = textwrap.dedent(
-    """\
-  **Warning:** This text summary contained data of dimensionality %d, but only \
-  2d tables are supported. Showing a 2d slice of the data instead."""
-)
-
 _DEFAULT_DOWNSAMPLING = 100  # text tensors per time series
 
 
@@ -80,9 +74,9 @@ def reduce_and_jsonify(text_ndarr):
     If the ndarray contains a single scalar string, then that ndarray is
     converted to a list. If it contains an array of strings,
     that array is converted to a list.  If the array contains dimensionality
-    greater than 2, all but two of the dimensions are removed, and a warning
-    boolean is set to true.  The list, shape of the array, and any warning
-    boolean are returned.
+    greater than 2, all but two of the dimensions are removed, and a squashed
+    boolean is set to true.  Returned is a list, the shape of the original
+    array, and a boolean indicating squashsing has occured.
 
     Args:
       text_arr: A numpy.ndarray containing strings.
@@ -91,27 +85,28 @@ def reduce_and_jsonify(text_ndarr):
         a tuple containing:
             The JSON-compatible list
             The shape of the array
-            A warning boolean (true if array resized, false otherwise)
+            A boolean indicating if the array was squashed
     """
-    warning = False
+    shape = text_ndarr.shape
+    squashed = False
     if not text_ndarr.shape:
         # It is a scalar. Just make json-compatible and return
-        return text_ndarr.tolist(), text_ndarr.shape, warning
-    if len(text_ndarr.shape) > 2:
-        warning = True
+        return text_ndarr.tolist(), shape, squashed
+    if len(shape) > 2:
+        squashed = True
         text_ndarr = reduce_to_2d(text_ndarr)
-    return text_ndarr.tolist(), text_ndarr.shape, warning
+    return text_ndarr.tolist(), shape, squashed
 
 
 def create_event(wall_time, step, string_ndarray):
     """Convert a text event into a JSON-compatible response with rank <= 2"""
-    formatted_string_array, shape, warning = reduce_and_jsonify(string_ndarray)
+    formatted_string_array, shape, squashed = reduce_and_jsonify(string_ndarray)
     return {
         "wall_time": wall_time,
         "step": step,
         "string_array": formatted_string_array,
         "shape": shape,
-        "warning": warning,
+        "squashed": squashed,
     }
 
 
