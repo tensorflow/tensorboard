@@ -31,7 +31,7 @@ on the frontend.
 Example:
 
   {
-    step: 4
-    text: "<table>↵<tbody>↵<tr>↵<td><p>....</p></td>↵</tr>↵</tbody>↵</table>"
-    wall_time: 1591289315.827554
+    "step": 4
+    "text": "<table>↵<tbody>↵<tr>↵<td><p>....</p></td>↵</tr>↵</tbody>↵</table>"
+    "wall_time": 1591289315.827554
   }
