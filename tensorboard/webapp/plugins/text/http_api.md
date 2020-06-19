@@ -32,9 +32,9 @@ the dimensionality of the array was reduced.
 Example:
 
   {
-    shape: [2, 2]
-    step: 1
-    string_array: [["×", "**0**"], ["**0**", "0"]]
-    wall_time: 1591289315.824522
-    warning: false
+    "shape": [2, 2]
+    "step": 1
+    "string_array": [["×", "**0**"], ["**0**", "0"]]
+    "wall_time": 1591289315.824522
+    "warning": false
   }
