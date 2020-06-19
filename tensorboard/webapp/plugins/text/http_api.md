@@ -23,10 +23,10 @@ Runs without any text tags are omitted from the result.
 ## `/data/plugin/text_v2/text?run=foo&tag=bar`
 
 Returns an array of text events for the given run and tag.  Each event is
-a dictionary with members `wall_time`, `step`, `text`, `shape`, and `warning`, 
-where `wall_time` is a floating-point number of seconds since epoch, `step` is 
+a dictionary with members `wall_time`, `step`, `text`, `shape`, and `warning`,
+where `wall_time` is a floating-point number of seconds since epoch, `step` is
 an integer step counter, `string` is an n-dimensional array, `shape` is an array
-of the sizes of each dimension, and `warning` is a boolean indicating whether 
+of the sizes of each dimension, and `warning` is a boolean indicating whether
 the dimensionality of the array was reduced.
 
 Example:
