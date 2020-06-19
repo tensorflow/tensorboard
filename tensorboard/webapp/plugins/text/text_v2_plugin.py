@@ -39,7 +39,6 @@ TEXT_ROUTE = "/text"
 
 _DEFAULT_DOWNSAMPLING = 100  # text tensors per time series
 
-
 def reduce_to_2d(arr):
     """Given a np.npdarray with nDims > 2, reduce it to 2d.
 
@@ -84,7 +83,7 @@ def reduce_and_jsonify(text_ndarr):
     Returns:
         a tuple containing:
             The JSON-compatible list
-            The shape of the array
+            The shape of the array (before being squashed)
             A boolean indicating if the array was squashed
     """
     shape = text_ndarr.shape
