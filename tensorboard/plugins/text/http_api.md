@@ -10,6 +10,7 @@ Retrieves an index of tags containint text data.
 Returns a dictionary mapping from `runName` (quoted string) to an
 array of `tagName`. Here is an example:
 
+```
   {
     "text_demo_run": [
       "simple_example/greeting",
@@ -17,6 +18,7 @@ array of `tagName`. Here is an example:
       "higher_order_tensors/multiplication_table"
     ]
   }
+```
 
 Runs without any text tags are omitted from the result.
 
@@ -30,8 +32,10 @@ on the frontend.
 
 Example:
 
+```
   {
     "step": 4
     "text": "<table>↵<tbody>↵<tr>↵<td><p>....</p></td>↵</tr>↵</tbody>↵</table>"
     "wall_time": 1591289315.827554
   }
+```
