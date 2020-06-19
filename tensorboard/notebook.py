@@ -49,12 +49,18 @@ from tensorboard import manager
 _CONTEXT_COLAB = "_CONTEXT_COLAB"
 _CONTEXT_IPYTHON = "_CONTEXT_IPYTHON"
 _CONTEXT_NONE = "_CONTEXT_NONE"
+_CONTEXT_CUSTOM = "_CONTEXT_CUSTOM"
 
+_custom_display = None
+
+def register_custom_display(func):
+    _custom_display = func
 
 def _get_context():
     """Determine the most specific context that we're in.
 
     Returns:
+      _CONTEXT_CUSTOM: If user has registered a custom display function.
       _CONTEXT_COLAB: If in Colab with an IPython notebook context.
       _CONTEXT_IPYTHON: If not in Colab, but we are in an IPython notebook
         context (e.g., from running `jupyter notebook` at the command
@@ -62,6 +68,10 @@ def _get_context():
       _CONTEXT_NONE: Otherwise (e.g., by running a Python script at the
         command-line or using the `ipython` interactive shell).
     """
+
+    if _custom_display is not None:
+        return _CONTEXT_CUSTOM
+
     # In Colab, the `google.colab` module is available, but the shell
     # returned by `IPython.get_ipython` does not have a `get_trait`
     # method.
@@ -145,7 +155,7 @@ def start(args_string):
     except ImportError:
         IPython = None
 
-    if context == _CONTEXT_NONE:
+    if context == _CONTEXT_NONE or context == _CONTEXT_CUSTOM:
         handle = None
         print("Launching TensorBoard...")
     else:
@@ -314,6 +324,7 @@ def _display(port=None, height=None, print_message=False, display_handle=None):
             pass
 
     fn = {
+        _CONTEXT_CUSTOM: _custom_display,
         _CONTEXT_COLAB: _display_colab,
         _CONTEXT_IPYTHON: _display_ipython,
         _CONTEXT_NONE: _display_cli,
