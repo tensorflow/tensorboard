@@ -73,7 +73,7 @@ def reduce_to_2d(arr):
     return arr[slices]
 
 
-def reduce_and_jsonify(text_arr):
+def reduce_and_jsonify(text_ndarr):
     """Take a numpy.ndarray containing strings, and convert it into a
     json-compatible list, also squashing it to two dimensions if necessary.
 
@@ -81,27 +81,26 @@ def reduce_and_jsonify(text_arr):
     converted to a list. If it contains an array of strings,
     that array is converted to a list.  If the array contains dimensionality
     greater than 2, all but two of the dimensions are removed, and a warning
-    message is generated.  The list, shape of the array, and any warning
-    message is returned.
+    boolean is set to true.  The list, shape of the array, and any warning
+    boolean are returned.
 
     Args:
       text_arr: A numpy.ndarray containing strings.
 
     Returns:
-        The JSON-compatible list
-        The shape of the array
-        A warning message (empty string if no warning)
+        a tuple containing:
+            The JSON-compatible list
+            The shape of the array
+            A warning boolean (true if array resized, false otherwise)
     """
-    warning = ""
-    if not text_arr.shape:
-        # It is a scalar. No need to put it in a table, just apply markdown
-        return text_arr.tolist(), text_arr.shape, warning
-    if len(text_arr.shape) > 2:
-        warning = plugin_util.markdown_to_safe_html(
-            WARNING_TEMPLATE % len(text_arr.shape)
-        )
-        text_arr = reduce_to_2d(text_arr)
-    return text_arr.tolist(), text_arr.shape, warning
+    warning = False
+    if not text_ndarr.shape:
+        # It is a scalar. Just make json-compatible and return
+        return text_ndarr.tolist(), text_ndarr.shape, warning
+    if len(text_ndarr.shape) > 2:
+        warning = True
+        text_ndarr = reduce_to_2d(text_ndarr)
+    return text_ndarr.tolist(), text_ndarr.shape, warning
 
 
 def create_event(wall_time, step, string_ndarray):
@@ -110,14 +109,14 @@ def create_event(wall_time, step, string_ndarray):
     return {
         "wall_time": wall_time,
         "step": step,
-        "text": formatted_string_array,
+        "string_array": formatted_string_array,
         "shape": shape,
         "warning": warning,
     }
 
 
 class TextV2Plugin(base_plugin.TBPlugin):
-    """Angular Text Plugin For Tensorboard"""
+    """Angular Text Plugin For TensorBoard"""
 
     plugin_name = "text_v2"
 
