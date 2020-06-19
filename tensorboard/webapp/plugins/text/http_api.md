@@ -23,11 +23,13 @@ Runs without any text tags are omitted from the result.
 ## `/data/plugin/text_v2/text?run=foo&tag=bar`
 
 Returns an array of text events for the given run and tag.  Each event is
-a dictionary with members `wall_time`, `step`, `text`, `shape`, and `warning`,
+a dictionary with members `wall_time`, `step`, `string_array`, `shape`, and `squashed`,
 where `wall_time` is a floating-point number of seconds since epoch, `step` is
-an integer step counter, `string` is an n-dimensional array, `shape` is an array
-of the sizes of each dimension, and `squashed` is a boolean indicating whether
-the dimensionality of the array was reduced.
+an integer step counter, `string_array` is an n-dimensional array, `shape` is the
+size of each dimension in the tensor provided to the text-summarizer (Note this will
+be different from the shape of `string_array` if squashing has occured), and
+`squashed` is a boolean indicating whether the dimensionality of the array
+was reduced (or squashed).
 
 Example:
 

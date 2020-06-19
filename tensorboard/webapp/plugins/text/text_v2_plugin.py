@@ -39,7 +39,6 @@ TEXT_ROUTE = "/text"
 
 _DEFAULT_DOWNSAMPLING = 100  # text tensors per time series
 
-
 def reduce_to_2d(arr):
     """Given a np.npdarray with nDims > 2, reduce it to 2d.
 
@@ -79,7 +78,7 @@ def reduce_and_jsonify(text_ndarr):
     array, and a boolean indicating squashsing has occured.
 
     Args:
-      text_arr: A numpy.ndarray containing strings.
+        text_arr: A numpy.ndarray containing strings.
 
     Returns:
         a tuple containing:
