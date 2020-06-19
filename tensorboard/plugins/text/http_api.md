@@ -34,8 +34,8 @@ Example:
 
 ```json
   {
-    "step": 4
-    "text": "<table>↵<tbody>↵<tr>↵<td><p>....</p></td>↵</tr>↵</tbody>↵</table>"
+    "step": 4,
+    "text": "<table>↵<tbody>↵<tr>↵<td><p>....</p></td>↵</tr>↵</tbody>↵</table>",
     "wall_time": 1591289315.827554
   }
 ```
