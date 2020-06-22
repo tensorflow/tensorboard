@@ -9,7 +9,7 @@ Retrieves an index of tags containint text data.
 
 Returns a dictionary mapping from `runName` (quoted string) to an
 array of `tagName`. Here is an example:
-
+```json
   {
     "text_demo_run": [
       "simple_example/greeting",
@@ -17,7 +17,7 @@ array of `tagName`. Here is an example:
       "higher_order_tensors/multiplication_table"
     ]
   }
-
+```
 Runs without any text tags are omitted from the result.
 
 ## `/data/plugin/text_v2/text?run=foo&tag=bar`
@@ -32,11 +32,12 @@ be different from the shape of `string_array` if squashing has occured), and
 was reduced (or squashed).
 
 Example:
-
+```json
   {
-    "shape": [2, 2]
-    "step": 1
-    "string_array": [["×", "**0**"], ["**0**", "0"]]
-    "wall_time": 1591289315.824522
+    "shape": [2, 2],
+    "step": 1,
+    "string_array": [["×", "**0**"], ["**0**", "0"]],
+    "wall_time": 1591289315.824522,
     "squashed": false
   }
+  ```
