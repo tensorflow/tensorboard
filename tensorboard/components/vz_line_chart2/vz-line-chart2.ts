@@ -296,6 +296,36 @@ namespace vz_line_chart2 {
     },
 
     /**
+     * Returns whether the extent of rendered data values fits the current
+     * chart viewport domain (includes smoothing and outlier detection).
+     *
+     * This is true when there is no data, and false when the domain has been
+     * transformed from the extent via transformations (pan, zoom).
+     */
+    isDataFitToDomain() {
+      if (!this._chart) {
+        return true;
+      }
+      return (
+        isDataFitToDomain(this._chart.xAxis.getScale()) &&
+        isDataFitToDomain(this._chart.yAxis.getScale())
+      );
+
+      function isDataFitToDomain(scale) {
+        /**
+         * Domain represents the currently displayed region, possibly a zoomed
+         * in or zoomed out view of the data.
+         *
+         * Extent represents the extent of the data, the range of all provided
+         * datum values.
+         */
+        const domain = scale.getTransformationDomain();
+        const extent = scale.getTransformationExtent();
+        return extent[0] === domain[0] && extent[1] === domain[1];
+      }
+    },
+
+    /**
      * Sets the series that the chart displays. Series with other names will
      * not be displayed.
      *
