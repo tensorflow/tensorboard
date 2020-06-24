@@ -23,3 +23,23 @@ py_library(
         "@org_pythonhosted_six",
     ],
 )
+
+py_test(
+    name = "text_v2_plugin_test",
+    size = "small",
+    srcs = ["text_v2_plugin_test.py"],
+    main = "text_v2_plugin_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":text_v2_plugin",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard:plugin_util",
+        "//tensorboard/backend:application",
+        "//tensorboard/backend/event_processing:data_provider",
+        "//tensorboard/backend/event_processing:event_multiplexer",
+        "//tensorboard/plugins:base_plugin",
+        "//tensorboard/util:test_util",
+        "@org_pocoo_werkzeug",
+        "@org_pythonhosted_six",
+    ],
+)
