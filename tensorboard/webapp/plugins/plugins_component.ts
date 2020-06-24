@@ -37,6 +37,10 @@ import {
 } from '../types/api';
 import {PluginRegistryModule} from './plugin_registry_module';
 
+interface ExperimentalPluginHostLib extends HTMLElement {
+  registerPluginIframe(iframe: HTMLIFrameElement, plugin_id: string): void;
+}
+
 @Component({
   selector: 'plugins-component',
   templateUrl: './plugins_component.ng.html',
@@ -75,6 +79,10 @@ import {PluginRegistryModule} from './plugin_registry_module';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PluginsComponent implements OnChanges {
+  private readonly experimentPluginHostLib = document.createElement(
+    'tf-experimental-plugin-host-lib'
+  ) as ExperimentalPluginHostLib;
+
   constructor(
     private readonly componentFactoryResolver: ComponentFactoryResolver,
     private readonly pluginRegistry: PluginRegistryModule
@@ -157,6 +165,10 @@ export class PluginsComponent implements OnChanges {
         pluginElement.setAttribute(
           'src',
           `data/plugin_entry.html?name=${plugin.id}`
+        );
+        this.experimentPluginHostLib.registerPluginIframe(
+          pluginElement,
+          plugin.id
         );
         this.pluginsContainer.nativeElement.appendChild(pluginElement);
         break;
