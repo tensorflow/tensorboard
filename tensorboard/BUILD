@@ -186,7 +186,6 @@ py_test(
         ":default",
         ":program",
         ":test",
-        "//tensorboard/backend:application",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/plugins/core:core_plugin",
         "@org_pocoo_werkzeug",
