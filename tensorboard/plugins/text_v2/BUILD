@@ -12,10 +12,10 @@ py_library(
     srcs = ["text_v2_plugin.py"],
     srcs_version = "PY2AND3",
     deps = [
+        "//tensorboard:expect_numpy_installed",
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
         "//tensorboard/data:provider",
-        "//tensorboard:expect_numpy_installed",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/plugins/text:metadata",
         "//tensorboard/util:tensor_util",

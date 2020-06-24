@@ -100,7 +100,9 @@ def reduce_and_jsonify(text_ndarr):
 
 def create_event(wall_time, step, string_ndarray):
     """Convert a text event into a JSON-compatible response with rank <= 2"""
-    formatted_string_array, original_shape, truncated = reduce_and_jsonify(string_ndarray)
+    formatted_string_array, original_shape, truncated = reduce_and_jsonify(
+        string_ndarray
+    )
     return {
         "wall_time": wall_time,
         "step": step,
