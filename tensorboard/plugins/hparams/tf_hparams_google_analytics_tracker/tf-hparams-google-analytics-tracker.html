@@ -27,7 +27,7 @@ In open source, we do not track users, so the methods in this object are no-ops.
 
     Polymer({
       is: 'tf-hparams-google-analytics-tracker',
-
+      _template: null, // strictTemplatePolicy requires a template (even a null one).
       handleEvent: function(e) {},
     });
   })();
