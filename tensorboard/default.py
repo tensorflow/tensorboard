@@ -51,8 +51,8 @@ from tensorboard.plugins.pr_curve import pr_curves_plugin
 from tensorboard.plugins.profile_redirect import profile_redirect_plugin
 from tensorboard.plugins.scalar import scalars_plugin
 from tensorboard.plugins.text import text_plugin
+from tensorboard.plugins.text_v2 import text_v2_plugin
 from tensorboard.plugins.mesh import mesh_plugin
-from tensorboard.webapp.plugins.text import text_v2_plugin
 
 
 logger = logging.getLogger(__name__)

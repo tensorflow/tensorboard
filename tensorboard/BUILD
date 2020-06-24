@@ -232,7 +232,7 @@ py_library(
         "//tensorboard/plugins/profile_redirect:profile_redirect_plugin",
         "//tensorboard/plugins/scalar:scalars_plugin",
         "//tensorboard/plugins/text:text_plugin",
-        "//tensorboard/webapp/plugins/text:text_v2_plugin",
+        "//tensorboard/plugins/text_v2:text_v2_plugin",
     ],
 )
 
