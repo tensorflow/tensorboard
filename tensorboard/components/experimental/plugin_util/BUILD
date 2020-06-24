@@ -36,6 +36,7 @@ tf_web_library(
     deps = [
         ":host_internals",
         "//tensorboard/components/tf_backend",
+        "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_storage",
     ],
 )

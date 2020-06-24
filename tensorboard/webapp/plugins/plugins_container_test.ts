@@ -62,6 +62,8 @@ customElements.define('tb-bar', TestableCustomElement);
 
 describe('plugins_component', () => {
   let store: MockStore<State>;
+  let createElementSpy: jasmine.Spy;
+
   const PLUGINS = {
     bar: {
       disable_reload: false,
@@ -114,6 +116,13 @@ describe('plugins_component', () => {
       state: DataLoadState.NOT_LOADED,
       lastLoadedTimeInMs: null,
     });
+
+    createElementSpy = spyOn(document, 'createElement').and.callThrough();
+    createElementSpy
+      .withArgs('tf-experimental-plugin-host-lib')
+      .and.returnValue({
+        registerPluginIframe: () => {},
+      });
   });
 
   describe('plugin DOM creation', () => {
@@ -149,6 +158,12 @@ describe('plugins_component', () => {
     });
 
     it('creates an element for IFRAME type of plugin', async () => {
+      const registerPluginIframeSpy = jasmine.createSpy();
+      createElementSpy
+        .withArgs('tf-experimental-plugin-host-lib')
+        .and.returnValue({
+          registerPluginIframe: registerPluginIframeSpy,
+        });
       const fixture = TestBed.createComponent(PluginsContainer);
       fixture.detectChanges();
 
@@ -161,6 +176,10 @@ describe('plugins_component', () => {
       expect(nativeElement.childElementCount).toBe(1);
       const pluginElement = nativeElement.children[0];
       expectPluginIframe(pluginElement, 'foo');
+      expect(registerPluginIframeSpy).toHaveBeenCalledWith(
+        pluginElement,
+        'foo'
+      );
     });
 
     it('keeps instance of plugin after being inactive but hides it', async () => {
