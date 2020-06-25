@@ -45,35 +45,24 @@ class TextPluginTest(tf.test.TestCase):
     def setUp(self):
         self.logdir = self.get_temp_dir()
 
-    def with_plugin(generate_testdata=True, include_text=True):
-        """Run a test with a bare multiplexer and with a `data_provider`.
+    def create_plugin(self, generate_testdata=True, include_text=True):
+        """Run a test with a `data_provider`."""
+        if generate_testdata:
+            self.generate_testdata(include_text=include_text)
 
-        The decorated function will receive an initialized
-        `TextPluginV2` object as its first positional argument.
-        """
+        multiplexer = event_multiplexer.EventMultiplexer()
+        multiplexer.AddRunsFromDirectory(self.logdir)
+        multiplexer.Reload()
 
-        def decorator(fn):
-            @functools.wraps(fn)
-            def wrapper(self, *args, **kwargs):
-                if generate_testdata:
-                    self.generate_testdata(include_text=include_text)
-                multiplexer = event_multiplexer.EventMultiplexer()
-                multiplexer.AddRunsFromDirectory(self.logdir)
-                multiplexer.Reload()
-                with self.subTest("generic data provider"):
-                    provider = data_provider.MultiplexerDataProvider(
-                        multiplexer, self.logdir
-                    )
-                    ctx = base_plugin.TBContext(
-                        logdir=self.logdir,
-                        multiplexer=multiplexer,
-                        data_provider=provider,
-                    )
-                    fn(self, text_v2_plugin.TextV2Plugin(ctx), *args, **kwargs)
+        provider = data_provider.MultiplexerDataProvider(
+            multiplexer, self.logdir
+        )
 
-            return wrapper
+        ctx = base_plugin.TBContext(
+            logdir=self.logdir, multiplexer=multiplexer, data_provider=provider,
+        )
 
-        return decorator
+        return text_v2_plugin.TextV2Plugin(ctx)
 
     def generate_testdata(self, include_text=True, logdir=None):
         tf.compat.v1.reset_default_graph()
@@ -110,21 +99,21 @@ class TextPluginTest(tf.test.TestCase):
                 summ = sess.run(scalar_summary, feed_dict={placeholder: []})
                 writer.add_summary(summ)
 
-    @with_plugin()
-    def testRoutesProvided(self, plugin):
+    def testRoutesProvided(self):
+        plugin = self.create_plugin()
         routes = plugin.get_plugin_apps()
         self.assertIsInstance(routes["/tags"], collections.abc.Callable)
         self.assertIsInstance(routes["/text"], collections.abc.Callable)
 
-    @with_plugin()
-    def testIndex(self, plugin):
+    def testIndex(self):
+        plugin = self.create_plugin()
         index = plugin.index_impl(experiment="123")
         self.assertItemsEqual(["fry", "leela"], index.keys())
         self.assertItemsEqual(["message", "vector"], index["fry"])
         self.assertItemsEqual(["message", "vector"], index["leela"])
 
-    @with_plugin()
-    def testText(self, plugin):
+    def testText(self):
+        plugin = self.create_plugin()
         fry = plugin.text_impl("fry", "message", experiment="123")
         leela = plugin.text_impl("leela", "message", experiment="123")
         self.assertEqual(len(fry), 4)
@@ -133,20 +122,13 @@ class TextPluginTest(tf.test.TestCase):
             self.assertEqual(fry[i]["step"], i)
             self.assertEqual(leela[i]["step"], i)
 
-        table = plugin.text_impl("fry", "vector", experiment="123")[0][
-            "string_array"
-        ]
-        self.assertEqual(table, [b"one", b"two", b"three", b"four"])
+        fry_event_data = plugin.text_impl("fry", "vector", experiment="123")[0]
 
-        original_shape = plugin.text_impl("fry", "vector", experiment="123")[0][
-            "original_shape"
-        ]
-        self.assertEqual(original_shape, (4,))
-
-        truncated = plugin.text_impl("fry", "vector", experiment="123")[0][
-            "truncated"
-        ]
-        self.assertEqual(truncated, False)
+        self.assertEqual(
+            fry_event_data["string_array"], [b"one", b"two", b"three", b"four"]
+        )
+        self.assertEqual(fry_event_data["original_shape"], (4,))
+        self.assertEqual(fry_event_data["truncated"], False)
 
     def test_reduce_to_2d(self):
         def make_range_array(dim):
@@ -174,16 +156,6 @@ class TextPluginTest(tf.test.TestCase):
         scalar_expected = ("foo", (), False)
         self.assertEqual(convert(scalar), scalar_expected)
 
-        # Check that underscores are preserved correctly; this detects erroneous
-        # use of UTF-16 or UTF-32 encoding when calling markdown_to_safe_html(),
-        # which would introduce spurious null bytes and cause undesired <em> tags
-        # around the underscores.
-        scalar_underscores = np.array("word_with_underscores")
-        scalar_underscores_expected = ("word_with_underscores", (), False)
-        self.assertEqual(
-            convert(scalar_underscores), scalar_underscores_expected
-        )
-
         vector = np.array(["foo", "bar"])
         vector_expected = (["foo", "bar"], (2,), False)
         self.assertEqual(convert(vector), vector_expected)
@@ -202,28 +174,10 @@ class TextPluginTest(tf.test.TestCase):
         d3_expected = ([["foo", "bar"], ["zoink", "zod"]], (2, 2, 2), True)
         self.assertEqual(convert(d3), d3_expected)
 
-    @with_plugin(generate_testdata=False)
-    def testPluginIsActiveWhenNoRuns(self, plugin):
+    def testIsActiveReturnsFalse(self):
         """The plugin should be inactive when there are no runs."""
+        plugin = self.create_plugin(generate_testdata=False)
         self.assertFalse(plugin.is_active())
-
-    @with_plugin()
-    def testPluginIsActiveWhenTextRuns(self, plugin):
-        """The plugin should be active when there are runs with text."""
-        self.assertFalse(plugin.is_active())
-
-    @with_plugin(include_text=False)
-    def testPluginIsActiveWhenRunsButNoText(self, plugin):
-        """The plugin should be inactive when there are runs but none has
-        text."""
-        self.assertFalse(plugin.is_active())
-
-    @with_plugin()
-    def testPluginIndexImpl(self, plugin):
-        run_to_tags = plugin.index_impl(experiment="123")
-        self.assertItemsEqual(["fry", "leela"], run_to_tags.keys())
-        self.assertItemsEqual(["message", "vector"], run_to_tags["fry"])
-        self.assertItemsEqual(["message", "vector"], run_to_tags["leela"])
 
 
 if __name__ == "__main__":
