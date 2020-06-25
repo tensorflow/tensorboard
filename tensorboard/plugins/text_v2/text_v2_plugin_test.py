@@ -30,6 +30,8 @@ from tensorboard.backend.event_processing import (
     plugin_event_multiplexer as event_multiplexer,
 )
 from tensorboard.plugins import base_plugin
+from tensorboard.plugins.scalar.summary_v2 import scalar
+from tensorboard.plugins.text.summary_v2 import text
 from tensorboard.plugins.text_v2 import text_v2_plugin
 from tensorboard.util import test_util
 
@@ -70,14 +72,14 @@ class TextPluginTest(tf.test.TestCase):
                 for gem in GEMS:
                     message = run_name + " *loves* " + gem
                     if include_text:
-                        tf.summary.text("message", message, step)
+                        text("message", message, step)
                     step += 1
 
                 vector_message = ["one", "two", "three", "four"]
                 if include_text:
-                    tf.summary.text("vector", vector_message, 0)
+                    text("vector", vector_message, 0)
 
-                tf.summary.scalar("twelve", tf.constant(12), 0)
+                scalar("twelve", tf.constant(12), 0)
 
             writer.close()
 
