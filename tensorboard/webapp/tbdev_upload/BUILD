@@ -6,8 +6,8 @@ package(default_visibility = ["//tensorboard:internal"])
 ng_module(
     name = "tbdev_upload",
     srcs = [
-        "tbdev_upload_dialog_component.ts",
         "tbdev_upload_button_component.ts",
+        "tbdev_upload_dialog_component.ts",
         "tbdev_upload_module.ts",
     ],
     assets = [
