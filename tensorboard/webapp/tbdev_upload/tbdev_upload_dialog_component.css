@@ -32,7 +32,6 @@ h3 {
 }
 
 p {
-  /* BDTODO: Need to determine if there are constants for these things. */
   font-size: 12px;
   line-height: 20px;
   color: #202124;
