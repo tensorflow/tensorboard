@@ -107,7 +107,8 @@ python -m tensorflow.python.debug.examples.v2.debug_mnist_v2 \
 
 ## Starting the Debugger V2 GUI in TensorBoard
 
-Running the program with the debugger instrumentation creates a logdir at /tmp/tfdbg2_logdir. We can point start TensorBoard and point at the logdir by:
+Running the program with the debugger instrumentation creates a logdir at
+/tmp/tfdbg2_logdir. We can point start TensorBoard and point at the logdir by:
 
 ```sh
 tensorboard --logdir /tmp/tfdbg2_logdir
@@ -117,7 +118,7 @@ In the web browser, navigate to TensorBoard’s page at http://localhost:6006. T
 “Debugger V2” plugin should be activated by default, displaying a page that
 looks like the following:
 
-TODO(cais): Add screenshot 1.
+![Debugger V2 full view screenshot](./images/debugger_v2_1_full_view.png)
 
 ## Using Debugger V2 GUI to find the root cause of NaNs
 
@@ -158,7 +159,7 @@ this by scrolling up and down the Graph Execution list. This observation
 provides a strong hint that the `Log` op beingthe source of the numerical
 instability in this TF2 program.
 
-TODO(cais): Add screenshot 2.
+![Debugger V2: Nan / Infinity alerts and graph execution list](./images/debugger_v2_2_nan_inf_alerts.png)
 
 Why does this `Log` op spit out a -∞? Answering that question requires examining
 the input to the op. Clicking on the name of the tensor (“Log:0”) brings up a
@@ -171,7 +172,7 @@ Graph Execution list? By using the background color and the “input” labels a
 visual aids, we can see that the `logits:0` tensor is two rows above the `Log:0`
 tensor, that is, in row #65.
 
-TODO(cais): Add screenshot 3.
+![Debugger V2: Graph structure view and tracing to input tensor](./images/debugger_v2_3_graph_input.png)
 
 A more careful look at the numerical breakdown of the “logits:0” tensor in row
 #65 reveals why its consumer `Log:0` produces a -∞: Among the 1000 elements of
@@ -190,11 +191,11 @@ tracing the graph ops and execution events to their source. When we clicked the
 the original stack trace of the Log op’s creation. The stack trace is somewhat
 large because it includes many frames from TensorFlow’s internal code (e.g.,
 gen_math_ops.py and dumping_callback.py), which we can safely ignore for most
-debugging tasks. The frame of interest is Line 204 of debug_mnist_v2.py (i.e,
+debugging tasks. The frame of interest is Line 216 of debug_mnist_v2.py (i.e,
 the Python file we’re actually trying to debug). Clicking “Line 204” brings up
 a view of the corresponding line of code in the Source Code section.
 
-TODO(cais): Add screenshot 4.
+![Debugger V2: Source code and stack trace](./images/debugger_v2_4_source_code.png)
 
 This finally brings us to the source code that created the problematic Log op
 from its logits input. This is our custom categorical cross-entropy loss
