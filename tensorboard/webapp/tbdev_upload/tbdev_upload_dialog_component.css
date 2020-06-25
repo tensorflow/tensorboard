@@ -12,8 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-:host > div,
-:host > p {
+div, p {
   margin: 16px 0;
 }
 
@@ -27,20 +26,23 @@ limitations under the License.
 
 h3 {
   font-size: 14px;
-  line-height: 20px;
   font-weight: 500;
+  line-height: 1.5;
 }
 
 p {
-  font-size: 12px;
-  line-height: 20px;
   color: #202124;
+  font-size: 12px;
+  line-height: 1.5;
 }
 
-.code {
-  padding: 12px;
-  border-radius: 4px;
+.snippet {
   background: #f5f6f7;
+  border-radius: 4px;
+  padding: 12px;
+}
+
+code {
   font-size: 14px;
-  line-height: 20px;
+  line-height: 1.5;
 }

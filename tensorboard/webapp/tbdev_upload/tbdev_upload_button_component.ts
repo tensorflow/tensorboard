@@ -30,8 +30,8 @@ import {TbdevUploadDialogComponent} from './tbdev_upload_dialog_component';
   styles: [
     `
       .button-contents {
-        display: flex;
         align-items: center;
+        display: flex;
       }
       mat-icon {
         margin-right: 6px;
