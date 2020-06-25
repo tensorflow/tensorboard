@@ -211,7 +211,9 @@ The value-clipping fix to this bug will look something like:
 ```
 
 It will resolve the numerical instability in this TF2 program and cause the MLP
-to train successfully.
+to train successfully. Another possible approach to fixing the numerical
+instability is to use
+[`tf.keras.losses.CategoricalCrossentropy`](https://www.tensorflow.org/api_docs/python/tf/keras/losses/CategoricalCrossentropy).
 
 This concludes our journey from observing a TF2 model bug to coming up with a
 code change that fixes the bug, aided by the Debugger V2 tool, which provides
