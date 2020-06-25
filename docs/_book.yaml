@@ -35,6 +35,8 @@ upper_tabs:
         path: /tensorboard/tensorboard_in_notebooks
       - title: "TensorBoard Data as DataFrames"
         path: /tensorboard/dataframe_api
+      - title: "Debugger V2"
+        path: /tensorboard/debugger_v2
       - heading: "Versions"
       - title: "Migrate from TF 1 to TF 2"
         path: /tensorboard/migrate
