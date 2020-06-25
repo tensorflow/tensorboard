@@ -1,5 +1,5 @@
 load("@npm_angular_bazel//:index.bzl", "ng_module")
-load("//tensorboard/defs:defs.bzl", "tf_ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_sass_binary", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -11,7 +11,7 @@ ng_module(
         "tbdev_upload_module.ts",
     ],
     assets = [
-        "tbdev_upload_dialog_component.css",
+        ":styles",
         "tbdev_upload_dialog_component.ng.html",
     ],
     deps = [
@@ -22,6 +22,11 @@ ng_module(
         "@npm//@angular/common",
         "@npm//@angular/core",
     ],
+)
+
+tf_sass_binary(
+    name = "styles",
+    src = "tbdev_upload_dialog_component.scss",
 )
 
 tf_ts_library(
