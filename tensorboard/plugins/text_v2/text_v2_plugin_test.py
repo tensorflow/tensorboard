@@ -35,6 +35,10 @@ from tensorboard.plugins.text.summary_v2 import text
 from tensorboard.plugins.text_v2 import text_v2_plugin
 from tensorboard.util import test_util
 
+
+tf.compat.v1.enable_v2_behavior()
+
+
 GEMS = ["garnet", "amethyst", "pearl", "steven"]
 
 
@@ -65,7 +69,7 @@ class TextPluginTest(tf.test.TestCase):
         run_names = ["fry", "leela"]
         for run_name in run_names:
             subdir = os.path.join(self.logdir, run_name)
-            writer = tf.summary.create_file_writer(subdir)
+            writer = tf.compat.v2.summary.create_file_writer(subdir)
 
             with writer.as_default():
                 step = 0
