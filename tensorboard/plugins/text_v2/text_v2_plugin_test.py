@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,11 +19,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import argparse
 import collections.abc
-import functools
 import os
-import textwrap
 import numpy as np
 import tensorflow as tf
 
@@ -35,8 +32,6 @@ from tensorboard.backend.event_processing import (
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.text_v2 import text_v2_plugin
 from tensorboard.util import test_util
-
-tf.compat.v1.disable_v2_behavior()
 
 GEMS = ["garnet", "amethyst", "pearl", "steven"]
 
@@ -65,39 +60,26 @@ class TextPluginTest(tf.test.TestCase):
         return text_v2_plugin.TextV2Plugin(ctx)
 
     def generate_testdata(self, include_text=True, logdir=None):
-        tf.compat.v1.reset_default_graph()
-        sess = tf.compat.v1.Session()
-        placeholder = tf.compat.v1.placeholder(tf.string)
-        summary_tensor = tf.compat.v1.summary.text("message", placeholder)
-        vector_summary = tf.compat.v1.summary.text("vector", placeholder)
-        scalar_summary = tf.compat.v1.summary.scalar("twelve", tf.constant(12))
-
         run_names = ["fry", "leela"]
         for run_name in run_names:
             subdir = os.path.join(self.logdir, run_name)
-            with test_util.FileWriterCache.get(subdir) as writer:
-                writer.add_graph(sess.graph)
+            writer = tf.summary.create_file_writer(subdir)
 
+            with writer.as_default():
                 step = 0
                 for gem in GEMS:
                     message = run_name + " *loves* " + gem
-                    feed_dict = {
-                        placeholder: message,
-                    }
                     if include_text:
-                        summ = sess.run(summary_tensor, feed_dict=feed_dict)
-                        writer.add_summary(summ, global_step=step)
+                        tf.summary.text("message", message, step)
                     step += 1
 
                 vector_message = ["one", "two", "three", "four"]
                 if include_text:
-                    summ = sess.run(
-                        vector_summary, feed_dict={placeholder: vector_message}
-                    )
-                    writer.add_summary(summ)
+                    tf.summary.text("vector", vector_message, 0)
 
-                summ = sess.run(scalar_summary, feed_dict={placeholder: []})
-                writer.add_summary(summ)
+                tf.summary.scalar("twelve", tf.constant(12), 0)
+
+            writer.close()
 
     def testRoutesProvided(self):
         plugin = self.create_plugin()
@@ -175,7 +157,8 @@ class TextPluginTest(tf.test.TestCase):
         self.assertEqual(convert(d3), d3_expected)
 
     def testIsActiveReturnsFalse(self):
-        """The plugin should be inactive when there are no runs."""
+        """The plugin should always return false because this is now handled
+        by TensorBoard core."""
         plugin = self.create_plugin(generate_testdata=False)
         self.assertFalse(plugin.is_active())
 
