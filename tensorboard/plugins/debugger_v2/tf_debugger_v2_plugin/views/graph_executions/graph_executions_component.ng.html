@@ -42,6 +42,7 @@ limitations under the License.
             <button
               class="tensor-name"
               (click)="onTensorNameClick.emit({
+                index: i,
                 graph_id: graphExecutionData[i].graph_id,
                 op_name: graphExecutionData[i].op_name
               })"

@@ -15,7 +15,11 @@ limitations under the License.
 import {Component} from '@angular/core';
 import {createSelector, select, Store} from '@ngrx/store';
 
-import {graphExecutionScrollToIndex, graphOpFocused} from '../../actions';
+import {
+  graphExecutionFocused,
+  graphExecutionScrollToIndex,
+  graphOpFocused,
+} from '../../actions';
 import {
   getGraphExecutionData,
   getGraphExecutionFocusIndex,
@@ -63,8 +67,14 @@ export class GraphExecutionsContainer {
     this.store.dispatch(graphExecutionScrollToIndex({index: scrolledIndex}));
   }
 
-  onTensorNameClick(event: {graph_id: string; op_name: string}) {
-    this.store.dispatch(graphOpFocused(event));
+  onTensorNameClick(event: {index: number; graph_id: string; op_name: string}) {
+    this.store.dispatch(
+      graphOpFocused({
+        graph_id: event.graph_id,
+        op_name: event.op_name,
+      })
+    );
+    this.store.dispatch(graphExecutionFocused({index: event.index}));
   }
 
   constructor(private readonly store: Store<State>) {}

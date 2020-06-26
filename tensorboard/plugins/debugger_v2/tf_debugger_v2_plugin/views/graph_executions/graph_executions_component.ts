@@ -52,6 +52,7 @@ export class GraphExecutionsComponent implements OnChanges {
 
   @Output()
   onTensorNameClick = new EventEmitter<{
+    index: number;
     graph_id: string;
     op_name: string;
   }>();
@@ -73,7 +74,12 @@ export class GraphExecutionsComponent implements OnChanges {
       // This is nicer than scrolling it merely to the top.
       const thirdRange = Math.round((range.end - range.start) / 3);
       const targetIndex = Math.max(scrollIndex - thirdRange, 0);
-      this.viewPort.scrollToIndex(targetIndex);
+      const useSmoothScrolling =
+        scrollIndex >= range.start && scrollIndex < range.end;
+      this.viewPort.scrollToIndex(
+        targetIndex,
+        useSmoothScrolling ? 'smooth' : undefined
+      );
     }
   }
 

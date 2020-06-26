@@ -750,6 +750,24 @@ const reducer = createReducer(
       };
     }
   ),
+  on(
+    actions.graphExecutionFocused,
+    (state: DebuggerState, action: {index: number}): DebuggerState => {
+      if (action.index < 0 || !Number.isInteger(action.index)) {
+        throw new Error(
+          `Attempt to scroll to negative or non-integer graph-execution ` +
+            `index (${action.index})`
+        );
+      }
+      return {
+        ...state,
+        graphExecutions: {
+          ...state.graphExecutions,
+          focusIndex: action.index,
+        },
+      };
+    }
+  ),
   ////////////////////////////////////////////////
   // Reducers related to graph structures.      //
   ////////////////////////////////////////////////

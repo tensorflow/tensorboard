@@ -23,7 +23,7 @@ import {By} from '@angular/platform-browser';
 import {Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 
-import {graphOpFocused} from '../../actions';
+import {graphExecutionFocused, graphOpFocused} from '../../actions';
 import {DebuggerComponent} from '../../debugger_component';
 import {DebuggerContainer} from '../../debugger_container';
 import {
@@ -167,21 +167,23 @@ describe('Graph Executions Container', () => {
     const tensorNames = fixture.debugElement.queryAll(By.css('.tensor-name'));
     expect(tensorNames.length).toBe(2);
     tensorNames[0].nativeElement.click();
-    expect(dispatchSpy).toHaveBeenCalledTimes(1);
+    expect(dispatchSpy).toHaveBeenCalledTimes(2);
     expect(dispatchSpy).toHaveBeenCalledWith(
       graphOpFocused({
         graph_id: 'g2',
         op_name: 'TestOp_0',
       })
     );
+    expect(dispatchSpy).toHaveBeenCalledWith(graphExecutionFocused({index: 0}));
     tensorNames[1].nativeElement.click();
-    expect(dispatchSpy).toHaveBeenCalledTimes(2);
+    expect(dispatchSpy).toHaveBeenCalledTimes(4);
     expect(dispatchSpy).toHaveBeenCalledWith(
       graphOpFocused({
         graph_id: 'g2',
         op_name: `TestOp_1`,
       })
     );
+    expect(dispatchSpy).toHaveBeenCalledWith(graphExecutionFocused({index: 1}));
   }));
 
   it('renders # execs and execs viewport if # execs > 0; not loaded', fakeAsync(() => {
@@ -250,8 +252,10 @@ describe('Graph Executions Container', () => {
           tick();
 
           expect(scrollToIndexSpy).toHaveBeenCalledTimes(1);
+          const inRange = newFocusIndex >= start && newFocusIndex < end;
           expect(scrollToIndexSpy).toHaveBeenCalledWith(
-            Math.max(newFocusIndex - Math.round(end - start) / 3, 0)
+            Math.max(newFocusIndex - Math.round(end - start) / 3, 0),
+            inRange ? 'smooth' : undefined
           );
         })
       );

@@ -1815,4 +1815,25 @@ describe('Debugger graphs reducers', () => {
       });
     }
   });
+
+  describe('graphExecutionFocused', () => {
+    for (const initialFocusIndex of [null, 3, 30]) {
+      it(
+        `Updates graphExecutions focusIndex: ` +
+          `initialFocusIndex=${initialFocusIndex}`,
+        () => {
+          const state = createDebuggerState({
+            graphExecutions: createDebuggerGraphExecutionsState({
+              focusIndex: initialFocusIndex,
+            }),
+          });
+          const nextState = reducers(
+            state,
+            actions.graphExecutionFocused({index: 10})
+          );
+          expect(nextState.graphExecutions.focusIndex).toBe(10);
+        }
+      );
+    }
+  });
 });

@@ -168,6 +168,11 @@ export const graphExecutionScrollToIndex = createAction(
   props<{index: number}>()
 );
 
+export const graphExecutionFocused = createAction(
+  '[Debugger] Graph Execution is Focused On',
+  props<{index: number}>()
+);
+
 /**
  * Actions related to graph ops.
  */
