@@ -147,6 +147,7 @@ tf_ng_web_test_suite(
         "//tensorboard/webapp/plugins:plugins_container_test_lib",
         "//tensorboard/webapp/reloader:test_lib",
         "//tensorboard/webapp/settings:test_lib",
+        "//tensorboard/webapp/tbdev_upload:test_lib",
         "//tensorboard/webapp/webapp_data_source:feature_flag_test_lib",
         "//tensorboard/webapp/webapp_data_source:webapp_data_source_test_lib",
     ],
@@ -157,9 +158,10 @@ tf_svg_bundle(
     srcs = [
         # When modifying below, please make sure to update
         # //tensorboard/webapp/testing/mat_icon.module.ts.
-        "@com_google_material_design_icon//:settings_24px.svg",
         "@com_google_material_design_icon//:help_outline_24px.svg",
+        "@com_google_material_design_icon//:info_outline_24px.svg",
         "@com_google_material_design_icon//:refresh_24px.svg",
+        "@com_google_material_design_icon//:settings_24px.svg",
     ],
     out = "icon_bundle.svg",
 )
