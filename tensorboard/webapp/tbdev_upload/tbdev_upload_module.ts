@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {ClipboardModule} from '@angular/cdk/clipboard';
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {MatButtonModule} from '@angular/material/button';
@@ -25,6 +26,12 @@ import {TbdevUploadDialogComponent} from './tbdev_upload_dialog_component';
   declarations: [TbdevUploadButtonComponent, TbdevUploadDialogComponent],
   exports: [TbdevUploadButtonComponent],
   entryComponents: [TbdevUploadDialogComponent],
-  imports: [CommonModule, MatButtonModule, MatDialogModule, MatIconModule],
+  imports: [
+    ClipboardModule,
+    CommonModule,
+    MatButtonModule,
+    MatDialogModule,
+    MatIconModule,
+  ],
 })
 export class TbdevUploadModule {}
