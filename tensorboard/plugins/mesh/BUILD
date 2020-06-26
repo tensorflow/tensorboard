@@ -66,7 +66,6 @@ py_library(
     deps = [
         ":summary",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "@org_pocoo_werkzeug",
     ],

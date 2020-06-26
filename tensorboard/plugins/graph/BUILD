@@ -44,7 +44,6 @@ py_library(
     deps = [
         ":graphs_plugin",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:data_provider",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/compat/proto:protos_all_py_pb2",
@@ -82,7 +81,6 @@ py_test(
     deps = [
         ":graphs_plugin",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:data_provider",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/compat:no_tensorflow",

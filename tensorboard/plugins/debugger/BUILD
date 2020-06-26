@@ -342,7 +342,6 @@ py_test(
         ":debugger_plugin_testlib",
         ":numerics_alert",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "@org_python_pypi_portpicker",
     ],
