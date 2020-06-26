@@ -489,22 +489,27 @@ def tensorboard_js_workspace():
         name = "com_google_material_design_icon",
         licenses = ["notice"],  # Apache 2.0
         sha256_urls = {
-            "d0872fb94037822164c8cea43a2ebeafdd1b664ff0fdc9387f0e1e1a7ee74628": [
-                "http://mirror.tensorflow.org/raw.githubusercontent.com/google/material-design-icons/3.0.1/action/svg/production/ic_settings_24px.svg",
-                "https://raw.githubusercontent.com/google/material-design-icons/3.0.1/action/svg/production/ic_settings_24px.svg",
-            ],
             "962aee2433f026ed7843790f6757dc3c25c34f349feb9b4fe816629b1b22442d": [
                 "http://mirror.tensorflow.org/raw.githubusercontent.com/google/material-design-icons/3.0.1/action/svg/production/ic_help_outline_24px.svg",
                 "https://raw.githubusercontent.com/google/material-design-icons/3.0.1/action/svg/production/ic_help_outline_24px.svg",
+            ],
+            "f3d6e717a2d6fa6caec61221fb4b838663abbd1a58933dd7d2824b408932d3fe": [
+                "http://mirror.tensorflow.org/raw.githubusercontent.com/google/material-design-icons/3.0.1/action/svg/production/ic_info_outline_24px.svg",
+                "https://raw.githubusercontent.com/google/material-design-icons/3.0.1/action/svg/production/ic_info_outline_24px.svg",
             ],
             "b4d30acd39de79f490eff59d72fb1f06502c117c8815359d539e4f20515494de": [
                 "http://mirror.tensorflow.org/raw.githubusercontent.com/google/material-design-icons/3.0.1/navigation/svg/production/ic_refresh_24px.svg",
                 "https://raw.githubusercontent.com/google/material-design-icons/3.0.1/navigation/svg/production/ic_refresh_24px.svg",
             ],
+            "d0872fb94037822164c8cea43a2ebeafdd1b664ff0fdc9387f0e1e1a7ee74628": [
+                "http://mirror.tensorflow.org/raw.githubusercontent.com/google/material-design-icons/3.0.1/action/svg/production/ic_settings_24px.svg",
+                "https://raw.githubusercontent.com/google/material-design-icons/3.0.1/action/svg/production/ic_settings_24px.svg",
+            ],
         },
         rename = {
-            "ic_settings_24px.svg": "settings_24px.svg",
             "ic_help_outline_24px.svg": "help_outline_24px.svg",
+            "ic_info_outline_24px.svg": "info_outline_24px.svg",
             "ic_refresh_24px.svg": "refresh_24px.svg",
+            "ic_settings_24px.svg": "settings_24px.svg",
         },
     )
