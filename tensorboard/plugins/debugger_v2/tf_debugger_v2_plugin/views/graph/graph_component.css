@@ -52,11 +52,10 @@ limitations under the License.
 .input-slot-header {
   /** NOTE: If this is changed, change the corresponding color in
       graph_execution_component.css as well. */
-  background-color: #b6d694;
+  background-color: #fff099;
   margin-bottom: 5px;
 }
-
-.input-tensor-name {
+ACK .input-tensor-name {
   display: block;
   white-space: nowrap;
 }

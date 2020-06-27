@@ -356,8 +356,8 @@ export const getFocusedGraphOpInputs = createSelector(
 );
 
 // How many graph-execution indices at most to look back in order to find the
-// indices of the graph-execution events that consistute the input to the
-// currently focused graph-execution event.
+// indices of the graph-execution events that consistute the immediate input to
+// the currently focused graph-execution event.
 const MAX_LOOK_BACK = 200;
 
 /**
@@ -392,7 +392,6 @@ export const getFocusedGraphExecutionInputIndices = createSelector(
     }
     const graph_id = data[focusIndex].graph_id;
     const limit = Math.max(0, focusIndex - MAX_LOOK_BACK);
-    let i = focusIndex - 1;
     for (let i = focusIndex - 1; i >= limit; --i) {
       if (data[i] === undefined) {
         continue;

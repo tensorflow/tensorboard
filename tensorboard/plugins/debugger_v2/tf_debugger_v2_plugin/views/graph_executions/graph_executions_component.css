@@ -49,7 +49,7 @@ limitations under the License.
 .input-of-focus {
   /** NOTE: If this is changed, change the corresponding color in
       graph_component.css as well. */
-  background-color: #b6d694;
+  background-color: #fff099;
 }
 
 .loading-spinner {
