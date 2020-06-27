@@ -26,7 +26,7 @@ import {
 } from '@angular/core';
 
 import {parseDebugTensorValue} from '../../store/debug_tensor_value';
-import {GraphExecution} from '../../store/debugger_types';
+import {GraphExecution, GraphOpInputSpec} from '../../store/debugger_types';
 
 @Component({
   selector: 'graph-executions-component',
@@ -53,11 +53,7 @@ export class GraphExecutionsComponent implements OnChanges {
    * If the currently-focusd tensor has no inputs, the value is `[]`.
    */
   @Input()
-  focusInputTensors!: Array<{
-    graph_id: string;
-    op_name: string;
-    output_slot: number;
-  }> | null;
+  focusInputIndices!: number[] | null;
 
   @Output()
   onScrolledIndexChange = new EventEmitter<number>();
@@ -95,17 +91,11 @@ export class GraphExecutionsComponent implements OnChanges {
     }
   }
 
-  isFocusInputTensor(graphExecution: GraphExecution): boolean {
-    if (this.focusInputTensors === null) {
+  isFocusInputTensor(graphExecutionIndex: number): boolean {
+    if (this.focusInputIndices === null) {
       return false;
     }
-    return this.focusInputTensors.some((inputTensorSpec) => {
-      return (
-        inputTensorSpec.graph_id === graphExecution.graph_id &&
-        inputTensorSpec.op_name === graphExecution.op_name &&
-        inputTensorSpec.output_slot === graphExecution.output_slot
-      );
-    });
+    return this.focusInputIndices.indexOf(graphExecutionIndex) !== -1;
   }
 
   TEST_ONLY = {

@@ -344,6 +344,7 @@ export const getFocusedGraphOpInputs = createSelector(
       const {inputs} = graph.get(focusedOp.opName)!;
       return inputs.map((inputSpec) => {
         const spec: GraphOpInputSpec = {
+          graph_id: focusedOp.graphId,
           ...inputSpec,
         };
         if (graph.has(inputSpec.op_name)) {

@@ -21,13 +21,17 @@ import {
   graphOpFocused,
 } from '../../actions';
 import {
-  getFocusedGraphOpInfo,
   getFocusedGraphOpInputs,
   getGraphExecutionData,
   getGraphExecutionFocusIndex,
   getNumGraphExecutions,
-} from '../../store';
-import {State, GraphOpInfo, GraphOpInputSpec} from '../../store/debugger_types';
+} from '../../store'; // TODO(cais): Clean up imports. DO NOT SUBMIT.
+import {
+  State,
+  GraphOpInfo,
+  GraphOpInputSpec,
+  GraphExecution,
+} from '../../store/debugger_types';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
@@ -39,7 +43,7 @@ import {State, GraphOpInfo, GraphOpInputSpec} from '../../store/debugger_types';
       [graphExecutionData]="graphExecutionData$ | async"
       [graphExecutionIndices]="graphExecutionIndices$ | async"
       [focusIndex]="focusIndex$ | async"
-      [focusInputTensors]="focusInputTensors$ | async"
+      [focusInputIndices]="focusInputIndices$ | async"
       (onScrolledIndexChange)="onScrolledIndexChange($event)"
       (onTensorNameClick)="onTensorNameClick($event)"
     ></graph-executions-component>
@@ -66,21 +70,53 @@ export class GraphExecutionsContainer {
 
   readonly focusIndex$ = this.store.pipe(select(getGraphExecutionFocusIndex));
 
-  readonly focusInputTensors$ = this.store.pipe(
+  /**
+   * Inferred graph-execution indices that belong to the immediate inputs
+   * to the currently-focused graph op.
+   */
+  readonly focusInputIndices$ = this.store.pipe(
     select(
       createSelector(
-        getFocusedGraphOpInfo,
+        getGraphExecutionFocusIndex,
+        getGraphExecutionData,
         getFocusedGraphOpInputs,
-        (opInfo: GraphOpInfo | null, opInputs: GraphOpInputSpec[] | null) => {
-          if (opInfo === null || opInputs === null) {
-            // TODO(cais): Add unit tests.
+        (
+          focusIndex: number | null,
+          data: {[index: number]: GraphExecution},
+          opInputs: GraphOpInputSpec[] | null
+        ): number[] | null => {
+          // TODO(cais): This should perhaps be refactored into its own
+          // selector.
+          if (focusIndex === null || opInputs === null) {
             return null;
           }
-          return opInputs.map((opInput) => ({
-            graph_id: opInfo.graph_ids[opInfo.graph_ids.length - 1],
-            op_name: opInput.op_name,
-            output_slot: opInput.output_slot,
-          }));
+          const inputFound: boolean[] = opInputs.map((_) => false);
+          const inputIndices: number[] = [];
+          const MAX_LOOK_BACK = 1000;
+          const limit = Math.max(0, focusIndex - MAX_LOOK_BACK);
+          let i = focusIndex - 1;
+          for (let i = focusIndex - 1; i >= limit; --i) {
+            if (data[i] === undefined) {
+              continue;
+            }
+            for (let j = 0; j < opInputs.length; ++j) {
+              if (inputFound[j]) {
+                continue;
+              }
+              if (
+                data[i].graph_id === opInputs[j].graph_id &&
+                data[i].op_name === opInputs[j].op_name &&
+                data[i].output_slot === opInputs[j].output_slot
+              ) {
+                inputIndices.push(i);
+                inputFound[j] = true;
+              }
+            }
+            if (inputFound.every((found) => found)) {
+              break;
+            }
+          }
+          return inputIndices;
         }
       )
     )

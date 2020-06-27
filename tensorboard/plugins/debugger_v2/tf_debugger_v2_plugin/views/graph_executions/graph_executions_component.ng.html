@@ -32,7 +32,7 @@ limitations under the License.
     >
       <div
         class="tensor-item"
-        [ngClass]="[isFocusInputTensor(graphExecutionData[i]) ? 'input-of-focus' : '']"
+        [ngClass]="[isFocusInputTensor(i) ? 'input-of-focus' : '']"
       >
         <!--- TODO(cais): Add unit tests. -->
         <div class="graph-execution-index">
