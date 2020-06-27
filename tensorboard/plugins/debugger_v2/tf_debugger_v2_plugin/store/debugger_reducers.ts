@@ -870,7 +870,6 @@ const reducer = createReducer(
         // later.d
         // Same for `consumer.data` below.
         inputs: graphOpInfoResponse.inputs.map((input) => ({
-          graph_id: graphId,
           op_name: input.op_name,
           output_slot: input.output_slot,
         })),

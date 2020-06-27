@@ -26,7 +26,7 @@ import {
 } from '@angular/core';
 
 import {parseDebugTensorValue} from '../../store/debug_tensor_value';
-import {GraphExecution, GraphOpInputSpec} from '../../store/debugger_types';
+import {GraphExecution} from '../../store/debugger_types';
 
 @Component({
   selector: 'graph-executions-component',
@@ -91,7 +91,7 @@ export class GraphExecutionsComponent implements OnChanges {
     }
   }
 
-  isFocusInputTensor(graphExecutionIndex: number): boolean {
+  isInputOfFocus(graphExecutionIndex: number): boolean {
     if (this.focusInputIndices === null) {
       return false;
     }

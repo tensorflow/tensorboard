@@ -382,7 +382,6 @@ export const getFocusedGraphExecutionInputIndices = createSelector(
     data: {[index: number]: GraphExecution},
     opInputs: GraphOpInputSpec[] | null
   ): number[] | null => {
-    // TODO(cais): Add unit test.
     if (focusIndex === null || opInputs === null) {
       return null;
     }
@@ -400,7 +399,7 @@ export const getFocusedGraphExecutionInputIndices = createSelector(
       }
       for (let j = 0; j < opInputs.length; ++j) {
         if (
-          inputFound[j] !== undefined &&
+          !inputFound[j] &&
           data[i].graph_id === graph_id &&
           data[i].op_name === opInputs[j].op_name &&
           data[i].output_slot === opInputs[j].output_slot
@@ -413,6 +412,7 @@ export const getFocusedGraphExecutionInputIndices = createSelector(
         }
       }
     }
+    inputIndices.sort();
     return inputIndices;
   }
 );

@@ -21,18 +21,12 @@ import {
   graphOpFocused,
 } from '../../actions';
 import {
-  getFocusedGraphOpInputs,
   getGraphExecutionData,
   getGraphExecutionFocusIndex,
   getNumGraphExecutions,
   getFocusedGraphExecutionInputIndices,
-} from '../../store'; // TODO(cais): Clean up imports. DO NOT SUBMIT.
-import {
-  State,
-  GraphOpInfo,
-  GraphOpInputSpec,
-  GraphExecution,
-} from '../../store/debugger_types';
+} from '../../store';
+import {State} from '../../store/debugger_types';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
