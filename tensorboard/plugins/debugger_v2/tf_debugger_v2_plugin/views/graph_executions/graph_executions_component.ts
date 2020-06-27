@@ -47,6 +47,18 @@ export class GraphExecutionsComponent implements OnChanges {
   @Input()
   focusIndex!: number | null;
 
+  /**
+   * The input tensors of the currently-focused tensor (graph execution event).
+   * If no graph execution is focused, the value is `null`.
+   * If the currently-focusd tensor has no inputs, the value is `[]`.
+   */
+  @Input()
+  focusInputTensors!: Array<{
+    graph_id: string;
+    op_name: string;
+    output_slot: number;
+  }> | null;
+
   @Output()
   onScrolledIndexChange = new EventEmitter<number>();
 
@@ -81,6 +93,19 @@ export class GraphExecutionsComponent implements OnChanges {
         useSmoothScrolling ? 'smooth' : undefined
       );
     }
+  }
+
+  isFocusInputTensor(graphExecution: GraphExecution): boolean {
+    if (this.focusInputTensors === null) {
+      return false;
+    }
+    return this.focusInputTensors.some((inputTensorSpec) => {
+      return (
+        inputTensorSpec.graph_id === graphExecution.graph_id &&
+        inputTensorSpec.op_name === graphExecution.op_name &&
+        inputTensorSpec.output_slot === graphExecution.output_slot
+      );
+    });
   }
 
   TEST_ONLY = {

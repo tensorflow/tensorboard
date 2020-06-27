@@ -21,11 +21,13 @@ import {
   graphOpFocused,
 } from '../../actions';
 import {
+  getFocusedGraphOpInfo,
+  getFocusedGraphOpInputs,
   getGraphExecutionData,
   getGraphExecutionFocusIndex,
   getNumGraphExecutions,
 } from '../../store';
-import {State} from '../../store/debugger_types';
+import {State, GraphOpInfo, GraphOpInputSpec} from '../../store/debugger_types';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
@@ -37,6 +39,7 @@ import {State} from '../../store/debugger_types';
       [graphExecutionData]="graphExecutionData$ | async"
       [graphExecutionIndices]="graphExecutionIndices$ | async"
       [focusIndex]="focusIndex$ | async"
+      [focusInputTensors]="focusInputTensors$ | async"
       (onScrolledIndexChange)="onScrolledIndexChange($event)"
       (onTensorNameClick)="onTensorNameClick($event)"
     ></graph-executions-component>
@@ -62,6 +65,26 @@ export class GraphExecutionsContainer {
   );
 
   readonly focusIndex$ = this.store.pipe(select(getGraphExecutionFocusIndex));
+
+  readonly focusInputTensors$ = this.store.pipe(
+    select(
+      createSelector(
+        getFocusedGraphOpInfo,
+        getFocusedGraphOpInputs,
+        (opInfo: GraphOpInfo | null, opInputs: GraphOpInputSpec[] | null) => {
+          if (opInfo === null || opInputs === null) {
+            // TODO(cais): Add unit tests.
+            return null;
+          }
+          return opInputs.map((opInput) => ({
+            graph_id: opInfo.graph_ids[opInfo.graph_ids.length - 1],
+            op_name: opInput.op_name,
+            output_slot: opInput.output_slot,
+          }));
+        }
+      )
+    )
+  );
 
   onScrolledIndexChange(scrolledIndex: number) {
     this.store.dispatch(graphExecutionScrollToIndex({index: scrolledIndex}));

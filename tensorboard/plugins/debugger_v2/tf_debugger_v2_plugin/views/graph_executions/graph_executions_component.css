@@ -13,6 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+.consumer-of-focus {
+  background: #12b5cb;
+}
+
 .graph-executions-container {
   border-left: 1px solid rgba(0, 0, 0, 0.12);
   display: flex;
@@ -44,6 +48,12 @@ limitations under the License.
   font-size: 12px;
   width: 100%;
   overflow-x: hidden;
+}
+
+.input-of-focus {
+  /** NOTE: If this is changed, change the corresponding color in
+      graph_component.css as well. */
+  background-color: #b6d694;
 }
 
 .loading-spinner {

@@ -43,7 +43,6 @@ import {
   SourceFileContent,
   SourceFileSpec,
   SourceLineSpec,
-  StackFrame,
   StackFramesById,
   State,
 } from './debugger_types';
