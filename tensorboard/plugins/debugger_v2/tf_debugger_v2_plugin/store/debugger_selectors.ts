@@ -344,7 +344,6 @@ export const getFocusedGraphOpInputs = createSelector(
       const {inputs} = graph.get(focusedOp.opName)!;
       return inputs.map((inputSpec) => {
         const spec: GraphOpInputSpec = {
-          graph_id: focusedOp.graphId,
           ...inputSpec,
         };
         if (graph.has(inputSpec.op_name)) {
@@ -353,6 +352,68 @@ export const getFocusedGraphOpInputs = createSelector(
         return spec;
       });
     }
+  }
+);
+
+// How many graph-execution indices at most to look back in order to find the
+// indices of the graph-execution events that consistute the input to the
+// currently focused graph-execution event.
+const MAX_LOOK_BACK = 200;
+
+/**
+ * Makes best-effort attempt to find the graph-execution indices that
+ * constitutes the immediate inputs to the currently-focused graph-execution
+ * event.
+ *
+ * If no graph-execution event is currently focused on, returns `null`.
+ * It may skip indices if some of the data for the graph-execution events that
+ * are immediate inputs has not been loaded yet.
+ * If the currently-focused graph-execution events is a no-input op, returns
+ * an empty array.
+ * If the immediate input events are more than `MAX_LOOK_BACK` before the
+ * currently focused index (rare), the returned array may be incomplete.
+ */
+export const getFocusedGraphExecutionInputIndices = createSelector(
+  getGraphExecutionFocusIndex,
+  getGraphExecutionData,
+  getFocusedGraphOpInputs,
+  (
+    focusIndex: number | null,
+    data: {[index: number]: GraphExecution},
+    opInputs: GraphOpInputSpec[] | null
+  ): number[] | null => {
+    // TODO(cais): Add unit test.
+    if (focusIndex === null || opInputs === null) {
+      return null;
+    }
+    const inputFound: boolean[] = opInputs.map((_) => false);
+    const inputIndices: number[] = [];
+    if (opInputs.length === 0) {
+      return inputIndices;
+    }
+    const graph_id = data[focusIndex].graph_id;
+    const limit = Math.max(0, focusIndex - MAX_LOOK_BACK);
+    let i = focusIndex - 1;
+    for (let i = focusIndex - 1; i >= limit; --i) {
+      if (data[i] === undefined) {
+        continue;
+      }
+      for (let j = 0; j < opInputs.length; ++j) {
+        if (
+          inputFound[j] !== undefined &&
+          data[i].graph_id === graph_id &&
+          data[i].op_name === opInputs[j].op_name &&
+          data[i].output_slot === opInputs[j].output_slot
+        ) {
+          inputIndices.push(i);
+          inputFound[j] = true;
+          if (inputFound.every((found) => found)) {
+            break;
+          }
+        }
+      }
+    }
+    return inputIndices;
   }
 );
 

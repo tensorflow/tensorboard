@@ -25,6 +25,7 @@ import {
   getGraphExecutionData,
   getGraphExecutionFocusIndex,
   getNumGraphExecutions,
+  getFocusedGraphExecutionInputIndices,
 } from '../../store'; // TODO(cais): Clean up imports. DO NOT SUBMIT.
 import {
   State,
@@ -75,51 +76,7 @@ export class GraphExecutionsContainer {
    * to the currently-focused graph op.
    */
   readonly focusInputIndices$ = this.store.pipe(
-    select(
-      createSelector(
-        getGraphExecutionFocusIndex,
-        getGraphExecutionData,
-        getFocusedGraphOpInputs,
-        (
-          focusIndex: number | null,
-          data: {[index: number]: GraphExecution},
-          opInputs: GraphOpInputSpec[] | null
-        ): number[] | null => {
-          // TODO(cais): This should perhaps be refactored into its own
-          // selector.
-          if (focusIndex === null || opInputs === null) {
-            return null;
-          }
-          const inputFound: boolean[] = opInputs.map((_) => false);
-          const inputIndices: number[] = [];
-          const MAX_LOOK_BACK = 1000;
-          const limit = Math.max(0, focusIndex - MAX_LOOK_BACK);
-          let i = focusIndex - 1;
-          for (let i = focusIndex - 1; i >= limit; --i) {
-            if (data[i] === undefined) {
-              continue;
-            }
-            for (let j = 0; j < opInputs.length; ++j) {
-              if (inputFound[j]) {
-                continue;
-              }
-              if (
-                data[i].graph_id === opInputs[j].graph_id &&
-                data[i].op_name === opInputs[j].op_name &&
-                data[i].output_slot === opInputs[j].output_slot
-              ) {
-                inputIndices.push(i);
-                inputFound[j] = true;
-              }
-            }
-            if (inputFound.every((found) => found)) {
-              break;
-            }
-          }
-          return inputIndices;
-        }
-      )
-    )
+    select(getFocusedGraphExecutionInputIndices)
   );
 
   onScrolledIndexChange(scrolledIndex: number) {

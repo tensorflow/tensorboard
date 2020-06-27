@@ -174,8 +174,6 @@ export interface GraphOpInfo {
  * Specification of an input tensor to a graph op.
  */
 export interface GraphOpInputSpec {
-  graph_id: string;
-
   // Name of the graph op that provides the input tensor.
   op_name: string;
 

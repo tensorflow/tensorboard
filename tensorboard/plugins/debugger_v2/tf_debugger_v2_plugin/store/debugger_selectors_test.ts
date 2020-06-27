@@ -1240,6 +1240,8 @@ describe('debugger selectors', () => {
     });
   });
 
+  describe('getFocusedGraphOpInfo', () => {});
+
   describe('getFocusedOpConsumers', () => {
     const op1Info = createTestGraphOpInfo({
       graph_ids: ['g1'],
