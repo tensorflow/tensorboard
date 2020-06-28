@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ClipboardModule} from '@angular/cdk/clipboard';
+import {CdkCopyToClipboard, ClipboardModule} from '@angular/cdk/clipboard';
 import {OverlayContainer} from '@angular/cdk/overlay';
 import {TestBed} from '@angular/core/testing';
 import {MatButtonModule} from '@angular/material/button';
@@ -25,9 +25,13 @@ import {TbdevUploadDialogComponent} from './tbdev_upload_dialog_component';
 import {TbdevUploadButtonComponent} from './tbdev_upload_button_component';
 
 describe('tbdev upload test', () => {
+  // const clipboardSpy = jasmine.createSpyObj('CdkCopyToClipboard', ['copy']);
   let overlayContainer: OverlayContainer;
 
   beforeEach(async () => {
+    // I had hoped I could provide a mocked directive implementation using
+    // TestBed providers but the element always constructs a real
+    // instance of CdkCopyToClipboard.
     await TestBed.configureTestingModule({
       imports: [
         ClipboardModule,
@@ -37,6 +41,16 @@ describe('tbdev upload test', () => {
         NoopAnimationsModule,
       ],
       declarations: [TbdevUploadDialogComponent, TbdevUploadButtonComponent],
+      // providers: [
+      //   {
+      //     providers: CdkCopyToClipboard,
+      //     useFactory: () => {
+      //       debugger;
+      //       return clipboardSpy;
+      //     },
+      //   },
+      // ],
+      // providers: [{providers: CdkCopyToClipboard, useValue: clipboardSpy}],
     }).compileComponents();
     overlayContainer = TestBed.inject(OverlayContainer);
   });
@@ -59,5 +73,19 @@ describe('tbdev upload test', () => {
       .querySelectorAll('tbdev-upload-dialog');
 
     expect(tbdevUploadDialogsAfter.length).toBe(1);
+  });
+
+  fit('allows command to be copied', async () => {
+    const fixture = TestBed.createComponent(TbdevUploadDialogComponent);
+    fixture.detectChanges();
+
+    const copyElement = fixture.debugElement.query(By.css('.command-copy'));
+
+    // Is it possible to get a reference to the directive here so I can
+    // spy on it?
+
+    copyElement.nativeElement.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
   });
 });
