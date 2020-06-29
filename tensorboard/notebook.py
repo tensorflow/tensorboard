@@ -54,6 +54,7 @@ _CONTEXT_CUSTOM = "_CONTEXT_CUSTOM"
 _custom_display = None
 
 def register_custom_display(func):
+    global _custom_display
     _custom_display = func
 
 def _get_context():
