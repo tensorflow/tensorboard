@@ -19,4 +19,6 @@ import {Component} from '@angular/core';
   templateUrl: './tbdev_upload_dialog_component.ng.html',
   styleUrls: ['./tbdev_upload_dialog_component.css'],
 })
-export class TbdevUploadDialogComponent {}
+export class TbdevUploadDialogComponent {
+  readonly commandText: string = 'tensorboard dev upload --logdir {logdir}';
+}

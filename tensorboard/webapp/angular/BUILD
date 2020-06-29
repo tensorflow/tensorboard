@@ -30,6 +30,15 @@ tf_ts_library(
     ],
 )
 
+# This is a dummy rule used as a @angular/material/tabs dependency.
+tf_ts_library(
+    name = "expect_angular_cdk_clipboard",
+    srcs = [],
+    deps = [
+        "@npm//@angular/material",
+    ],
+)
+
 # This is a dummy rule used as a @angular/core/testing dependency.
 # This is not a replacement for @angular/core dependency.
 tf_ts_library(
