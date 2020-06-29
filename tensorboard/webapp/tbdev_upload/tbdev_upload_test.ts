@@ -63,7 +63,7 @@ describe('tbdev upload test', () => {
     expect(tbdevUploadDialogsAfter.length).toBe(1);
   });
 
-  fit('allows command to be copied', async () => {
+  it('allows command to be copied', async () => {
     const fixture = TestBed.createComponent(TbdevUploadDialogComponent);
     fixture.detectChanges();
 
