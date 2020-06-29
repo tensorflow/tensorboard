@@ -20,7 +20,7 @@ import {TbdevUploadDialogComponent} from './tbdev_upload_dialog_component';
 @Component({
   selector: 'tbdev-upload-button',
   template: `
-    <button mat-raised-button color="primary" (click)="openDialog()">
+    <button mat-stroked-button (click)="openDialog()">
       <span class="button-contents">
         <mat-icon svgIcon="info_outline_24px"></mat-icon>
         Upload
@@ -32,6 +32,7 @@ import {TbdevUploadDialogComponent} from './tbdev_upload_dialog_component';
       .button-contents {
         align-items: center;
         display: flex;
+        text-transform: uppercase;
       }
       mat-icon {
         margin-right: 6px;
