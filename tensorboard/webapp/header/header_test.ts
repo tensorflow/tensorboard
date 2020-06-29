@@ -47,8 +47,9 @@ import {PluginId} from '../types/api';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
-describe('header test', () => {
+fdescribe('header test', () => {
   let store: MockStore<State>;
+  let fakeWindow: any = {};
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -72,6 +73,7 @@ describe('header test', () => {
           ),
         }),
         HeaderComponent,
+        {provide: 'window', useValue: fakeWindow},
       ],
       declarations: [
         HeaderComponent,
@@ -87,6 +89,9 @@ describe('header test', () => {
       bar: createPluginMetadata('Barber'),
     });
     store.overrideSelector(getActivePlugin, 'foo');
+    fakeWindow.location = {
+      hostname: 'mytensorboardhost.com',
+    };
   });
 
   function assertDebugElementText(el: DebugElement, text: string) {
@@ -161,6 +166,38 @@ describe('header test', () => {
 
     expect(dispatch).toHaveBeenCalledTimes(1);
     expect(dispatch).toHaveBeenCalledWith(changePlugin({plugin: 'bar'}));
+  });
+
+  describe('upload', () => {
+    it('does not show upload button if hostname is not localhost', async () => {
+      fakeWindow.location.hostname = 'notlocalhost';
+      const fixture = TestBed.createComponent(HeaderComponent);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const upload = fixture.debugElement.query(By.css('tbdev-upload-button'));
+      expect(upload).toBeNull();
+    });
+
+    it('shows upload button if hostname is localhost', async () => {
+      fakeWindow.location.hostname = 'localhost';
+      const fixture = TestBed.createComponent(HeaderComponent);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const upload = fixture.debugElement.query(By.css('tbdev-upload-button'));
+      expect(upload).not.toBeNull();
+    });
+
+    it('shows upload button if hostname is 127.0.0.1', async () => {
+      fakeWindow.location.hostname = '127.0.0.1';
+      const fixture = TestBed.createComponent(HeaderComponent);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const upload = fixture.debugElement.query(By.css('tbdev-upload-button'));
+      expect(upload).not.toBeNull();
+    });
   });
 
   describe('reload', () => {
