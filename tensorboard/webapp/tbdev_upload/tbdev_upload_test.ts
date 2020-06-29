@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {CdkCopyToClipboard, ClipboardModule} from '@angular/cdk/clipboard';
+import {Clipboard, ClipboardModule} from '@angular/cdk/clipboard';
 import {OverlayContainer} from '@angular/cdk/overlay';
 import {TestBed} from '@angular/core/testing';
 import {MatButtonModule} from '@angular/material/button';
@@ -25,7 +25,7 @@ import {TbdevUploadDialogComponent} from './tbdev_upload_dialog_component';
 import {TbdevUploadButtonComponent} from './tbdev_upload_button_component';
 
 describe('tbdev upload test', () => {
-  // const clipboardSpy = jasmine.createSpyObj('CdkCopyToClipboard', ['copy']);
+  const clipboardSpy = jasmine.createSpyObj('Clipboard', ['copy']);
   let overlayContainer: OverlayContainer;
 
   beforeEach(async () => {
@@ -41,16 +41,7 @@ describe('tbdev upload test', () => {
         NoopAnimationsModule,
       ],
       declarations: [TbdevUploadDialogComponent, TbdevUploadButtonComponent],
-      // providers: [
-      //   {
-      //     providers: CdkCopyToClipboard,
-      //     useFactory: () => {
-      //       debugger;
-      //       return clipboardSpy;
-      //     },
-      //   },
-      // ],
-      // providers: [{providers: CdkCopyToClipboard, useValue: clipboardSpy}],
+      providers: [{provide: Clipboard, useValue: clipboardSpy}],
     }).compileComponents();
     overlayContainer = TestBed.inject(OverlayContainer);
   });
@@ -80,12 +71,12 @@ describe('tbdev upload test', () => {
     fixture.detectChanges();
 
     const copyElement = fixture.debugElement.query(By.css('.command-copy'));
-
-    // Is it possible to get a reference to the directive here so I can
-    // spy on it?
-
     copyElement.nativeElement.click();
     fixture.detectChanges();
     await fixture.whenStable();
+
+    expect(clipboardSpy.copy).toHaveBeenCalledWith(
+      'tensorboard dev upload --logdir {logdir}'
+    );
   });
 });
