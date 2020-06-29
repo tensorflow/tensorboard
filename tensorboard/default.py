@@ -51,6 +51,7 @@ from tensorboard.plugins.pr_curve import pr_curves_plugin
 from tensorboard.plugins.profile_redirect import profile_redirect_plugin
 from tensorboard.plugins.scalar import scalars_plugin
 from tensorboard.plugins.text import text_plugin
+from tensorboard.plugins.text_v2 import text_v2_plugin
 from tensorboard.plugins.mesh import mesh_plugin
 
 
@@ -61,6 +62,14 @@ class ExperimentalDebuggerV2Plugin(
     debugger_v2_plugin.DebuggerV2Plugin, experimental_plugin.ExperimentalPlugin
 ):
     """Debugger v2 plugin marked as experimental."""
+
+    pass
+
+
+class ExperimentalTextV2Plugin(
+    text_v2_plugin.TextV2Plugin, experimental_plugin.ExperimentalPlugin
+):
+    """Angular Text Plugin marked as experimental."""
 
     pass
 
@@ -84,6 +93,7 @@ _PLUGINS = [
     beholder_plugin_loader.BeholderPluginLoader,
     hparams_plugin.HParamsPlugin,
     mesh_plugin.MeshPlugin,
+    ExperimentalTextV2Plugin,
 ]
 
 
