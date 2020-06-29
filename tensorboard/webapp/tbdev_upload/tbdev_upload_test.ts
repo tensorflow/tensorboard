@@ -29,9 +29,6 @@ describe('tbdev upload test', () => {
   let overlayContainer: OverlayContainer;
 
   beforeEach(async () => {
-    // I had hoped I could provide a mocked directive implementation using
-    // TestBed providers but the element always constructs a real
-    // instance of CdkCopyToClipboard.
     await TestBed.configureTestingModule({
       imports: [
         ClipboardModule,
