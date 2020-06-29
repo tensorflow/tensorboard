@@ -13,10 +13,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Component} from '@angular/core';
+import {MatDialogRef} from '@angular/material/dialog';
 
 @Component({
   selector: 'tbdev-upload-dialog',
   templateUrl: './tbdev_upload_dialog_component.ng.html',
   styleUrls: ['./tbdev_upload_dialog_component.css'],
 })
-export class TbdevUploadDialogComponent {}
+export class TbdevUploadDialogComponent {
+  constructor(private dialogRef: MatDialogRef<TbdevUploadDialogComponent>) {}
+
+  onClose(): void {
+    this.dialogRef.close();
+  }
+}
