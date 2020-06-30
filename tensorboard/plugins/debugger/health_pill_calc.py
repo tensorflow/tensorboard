@@ -59,7 +59,7 @@ def calc_health_pill(tensor):
     health_pill[0] = 1.0
 
     if not (
-        np.issubdtype(tensor.dtype, np.float)
+        np.issubdtype(tensor.dtype, np.floating)
         or np.issubdtype(tensor.dtype, np.complex)
         or np.issubdtype(tensor.dtype, np.integer)
         or tensor.dtype == np.bool
