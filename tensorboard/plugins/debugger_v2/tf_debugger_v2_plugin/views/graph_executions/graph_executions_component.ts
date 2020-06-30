@@ -91,11 +91,20 @@ export class GraphExecutionsComponent implements OnChanges {
     }
   }
 
+  /**
+   * Computes if given graph-execution index is an immediate input tensor to
+   * the graph execution currently focused on.
+   *
+   * @param graphExecutionIndex
+   * @returns If no graph execution is focused on, `false`. If a graph execution
+   *   is being focused on, `true` if `graphExecutionIndex` points to a graph-
+   *   execution event that forms the immediate input to the focused one.
+   */
   isInputOfFocus(graphExecutionIndex: number): boolean {
     if (this.focusInputIndices === null) {
       return false;
     }
-    return this.focusInputIndices.indexOf(graphExecutionIndex) !== -1;
+    return this.focusInputIndices.includes(graphExecutionIndex);
   }
 
   TEST_ONLY = {

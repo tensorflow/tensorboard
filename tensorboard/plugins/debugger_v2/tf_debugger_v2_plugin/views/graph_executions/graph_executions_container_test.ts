@@ -23,7 +23,7 @@ import {By} from '@angular/platform-browser';
 import {Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 
-import {graphExecutionFocused, graphOpFocused} from '../../actions';
+import {graphExecutionFocused} from '../../actions';
 import {DebuggerComponent} from '../../debugger_component';
 import {DebuggerContainer} from '../../debugger_container';
 import {
@@ -174,7 +174,7 @@ describe('Graph Executions Container', () => {
     })
   );
 
-  it('clicking the tensor name buttons dispatches graphOpFocused', fakeAsync(() => {
+  it('clicking tensor name dispatches graphExecutionFocused', fakeAsync(() => {
     const fixture = TestBed.createComponent(GraphExecutionsContainer);
     store.overrideSelector(getNumGraphExecutions, 2);
     store.overrideSelector(getGraphExecutionData, {
@@ -188,23 +188,23 @@ describe('Graph Executions Container', () => {
     const tensorNames = fixture.debugElement.queryAll(By.css('.tensor-name'));
     expect(tensorNames.length).toBe(2);
     tensorNames[0].nativeElement.click();
-    expect(dispatchSpy).toHaveBeenCalledTimes(2);
+    expect(dispatchSpy).toHaveBeenCalledTimes(1);
     expect(dispatchSpy).toHaveBeenCalledWith(
-      graphOpFocused({
+      graphExecutionFocused({
+        index: 0,
         graph_id: 'g2',
         op_name: 'TestOp_0',
       })
     );
-    expect(dispatchSpy).toHaveBeenCalledWith(graphExecutionFocused({index: 0}));
     tensorNames[1].nativeElement.click();
-    expect(dispatchSpy).toHaveBeenCalledTimes(4);
+    expect(dispatchSpy).toHaveBeenCalledTimes(2);
     expect(dispatchSpy).toHaveBeenCalledWith(
-      graphOpFocused({
+      graphExecutionFocused({
+        index: 1,
         graph_id: 'g2',
-        op_name: `TestOp_1`,
+        op_name: 'TestOp_1',
       })
     );
-    expect(dispatchSpy).toHaveBeenCalledWith(graphExecutionFocused({index: 1}));
   }));
 
   it('renders # execs and execs viewport if # execs > 0; not loaded', fakeAsync(() => {

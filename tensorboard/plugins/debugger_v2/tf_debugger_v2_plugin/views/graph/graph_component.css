@@ -51,11 +51,13 @@ limitations under the License.
 
 .input-slot-header {
   /** NOTE: If this is changed, change the corresponding color in
-      graph_execution_component.css as well. */
+      graph_execution_component.css as well.
+      TODO(b/160229578): deduplication using tf_sass_library. */
   background-color: #fff099;
   margin-bottom: 5px;
 }
-ACK .input-tensor-name {
+
+.input-tensor-name {
   display: block;
   white-space: nowrap;
 }

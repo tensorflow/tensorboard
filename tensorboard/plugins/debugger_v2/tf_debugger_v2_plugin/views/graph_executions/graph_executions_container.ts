@@ -18,7 +18,6 @@ import {createSelector, select, Store} from '@ngrx/store';
 import {
   graphExecutionFocused,
   graphExecutionScrollToIndex,
-  graphOpFocused,
 } from '../../actions';
 import {
   getGraphExecutionData,
@@ -78,13 +77,7 @@ export class GraphExecutionsContainer {
   }
 
   onTensorNameClick(event: {index: number; graph_id: string; op_name: string}) {
-    this.store.dispatch(
-      graphOpFocused({
-        graph_id: event.graph_id,
-        op_name: event.op_name,
-      })
-    );
-    this.store.dispatch(graphExecutionFocused({index: event.index}));
+    this.store.dispatch(graphExecutionFocused(event));
   }
 
   constructor(private readonly store: Store<State>) {}

@@ -170,7 +170,7 @@ export const graphExecutionScrollToIndex = createAction(
 
 export const graphExecutionFocused = createAction(
   '[Debugger] Graph Execution is Focused On',
-  props<{index: number}>()
+  props<{index: number; graph_id: string; op_name: string}>()
 );
 
 /**

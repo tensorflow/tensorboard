@@ -1300,6 +1300,14 @@ describe('debugger selectors', () => {
       op_name: 'op4',
       inputs: [],
     });
+    const graphOps = {
+      g1: new Map([
+        ['op1', op1Info],
+        ['op2', op2Info],
+        ['op3', op3Info],
+        ['op4', op4Info],
+      ]),
+    };
 
     it('returns null under initial state', () => {
       const state = createState(createDebuggerState());
@@ -1341,15 +1349,15 @@ describe('debugger selectors', () => {
         createDebuggerState({
           graphExecutions: createDebuggerGraphExecutionsState({
             graphExecutionData: {
+              // This is a past run of the tensor that is the immediate input.
+              // Should be ignored.
               6: createTestGraphExecution({
-                // This is a past run of the tensor that is the immediate input.
-                // Should be ignored.
                 graph_id: 'g1',
                 op_name: 'op1',
                 output_slot: 0,
               }),
+              // This is the immedate input.
               8: createTestGraphExecution({
-                // This is the immedate input.
                 graph_id: 'g1',
                 op_name: 'op1',
                 output_slot: 0,
@@ -1360,13 +1368,14 @@ describe('debugger selectors', () => {
                 op_name: 'op4',
                 output_slot: 0,
               }),
+              // The focused op.
               10: createTestGraphExecution({
                 graph_id: 'g1',
                 op_name: 'op2',
                 output_slot: 0,
               }),
-              // This is a future run of the tensor that is the immediate
-              // input. Should be ignored.
+              // This is a future run of the tensor that is the immediate input.
+              // Should be ignored.
               12: createTestGraphExecution({
                 graph_id: 'g1',
                 op_name: 'op1',
@@ -1376,14 +1385,7 @@ describe('debugger selectors', () => {
             focusIndex: 10,
           }),
           graphs: createDebuggerGraphsState({
-            ops: {
-              g1: new Map([
-                ['op1', op1Info],
-                ['op2', op2Info],
-                ['op3', op3Info],
-                ['op4', op4Info],
-              ]),
-            },
+            ops: graphOps,
             focusedOp: {
               graphId: 'g1',
               opName: 'op2',
@@ -1399,8 +1401,8 @@ describe('debugger selectors', () => {
         createDebuggerState({
           graphExecutions: createDebuggerGraphExecutionsState({
             graphExecutionData: {
-              // This is a past run of the tensor that is the 1st immediate input.
-              // Should be ignored.
+              // This is a past run of the tensor that is the 1st immediate
+              // input. Should be ignored.
               5: createTestGraphExecution({
                 graph_id: 'g1',
                 op_name: 'op1',
@@ -1424,6 +1426,7 @@ describe('debugger selectors', () => {
                 op_name: 'op2',
                 output_slot: 0,
               }),
+              // The focused graph execution.
               12: createTestGraphExecution({
                 graph_id: 'g1',
                 op_name: 'op3',
@@ -1433,14 +1436,7 @@ describe('debugger selectors', () => {
             focusIndex: 12,
           }),
           graphs: createDebuggerGraphsState({
-            ops: {
-              g1: new Map([
-                ['op1', op1Info],
-                ['op2', op2Info],
-                ['op3', op3Info],
-                ['op4', op4Info],
-              ]),
-            },
+            ops: graphOps,
             focusedOp: {
               graphId: 'g1',
               opName: 'op3',
@@ -1462,6 +1458,7 @@ describe('debugger selectors', () => {
                 op_name: 'op2',
                 output_slot: 0,
               }),
+              // The focused graphe execution.
               12: createTestGraphExecution({
                 graph_id: 'g1',
                 op_name: 'op3',
@@ -1478,14 +1475,7 @@ describe('debugger selectors', () => {
             focusIndex: 12,
           }),
           graphs: createDebuggerGraphsState({
-            ops: {
-              g1: new Map([
-                ['op1', op1Info],
-                ['op2', op2Info],
-                ['op3', op3Info],
-                ['op4', op4Info],
-              ]),
-            },
+            ops: graphOps,
             focusedOp: {
               graphId: 'g1',
               opName: 'op3',
@@ -1501,13 +1491,11 @@ describe('debugger selectors', () => {
         createDebuggerState({
           graphExecutions: createDebuggerGraphExecutionsState({
             graphExecutionData: {
-              // Unrelated op. Should be ignored.
               5: createTestGraphExecution({
                 graph_id: 'g1',
                 op_name: 'op1',
                 output_slot: 0,
               }),
-              // Unrelated op. Should be ignored.
               6: createTestGraphExecution({
                 graph_id: 'g1',
                 op_name: 'op2',
@@ -1522,14 +1510,7 @@ describe('debugger selectors', () => {
             focusIndex: 12,
           }),
           graphs: createDebuggerGraphsState({
-            ops: {
-              g1: new Map([
-                ['op1', op1Info],
-                ['op2', op2Info],
-                ['op3', op3Info],
-                ['op4', op4Info],
-              ]),
-            },
+            ops: graphOps,
             focusedOp: {
               graphId: 'g1',
               opName: 'op4',

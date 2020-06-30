@@ -32,7 +32,7 @@ limitations under the License.
     >
       <div
         class="tensor-item"
-        [ngClass]="[isInputOfFocus(i) ? 'input-of-focus' : '']"
+        [ngClass]="{'input-of-focus': isInputOfFocus(i)}"
       >
         <div class="graph-execution-index">
           <div *ngIf="i === focusIndex" class="graph-execution-focus">

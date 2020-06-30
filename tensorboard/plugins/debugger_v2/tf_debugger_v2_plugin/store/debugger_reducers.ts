@@ -752,20 +752,16 @@ const reducer = createReducer(
   ),
   on(
     actions.graphExecutionFocused,
-    (state: DebuggerState, action: {index: number}): DebuggerState => {
-      if (action.index < 0 || !Number.isInteger(action.index)) {
-        throw new Error(
-          `Attempt to scroll to negative or non-integer graph-execution ` +
-            `index (${action.index})`
-        );
-      }
-      return {
-        ...state,
-        graphExecutions: {
-          ...state.graphExecutions,
-          focusIndex: action.index,
-        },
-      };
+    (
+      state: DebuggerState,
+      action: {index: number; graph_id: string; op_name: string}
+    ): DebuggerState => {
+      return graphOpFocusReducerHelper(
+        state,
+        action.graph_id,
+        action.op_name,
+        action.index
+      );
     }
   ),
   ////////////////////////////////////////////////
@@ -775,26 +771,9 @@ const reducer = createReducer(
     actions.graphOpFocused,
     (
       state: DebuggerState,
-      data: {graph_id: string; op_name: string}
+      action: {graph_id: string; op_name: string}
     ): DebuggerState => {
-      const newState = {
-        ...state,
-        graphs: {
-          ...state.graphs,
-          focusedOp: {
-            graphId: data.graph_id,
-            opName: data.op_name,
-          },
-        },
-        // An graph event was last focused on, update the
-        // code-location focus type to `GRAPH_OP_CREATION`.
-        codeLocationFocusType: CodeLocationType.GRAPH_OP_CREATION,
-        sourceCode: {
-          ...state.sourceCode,
-        },
-      };
-      newState.sourceCode.focusLineSpec = computeBottommostLineSpec(newState);
-      return newState;
+      return graphOpFocusReducerHelper(state, action.graph_id, action.op_name);
     }
   ),
   on(
@@ -1037,6 +1016,38 @@ const reducer = createReducer(
     }
   )
 );
+
+function graphOpFocusReducerHelper(
+  state: DebuggerState,
+  graphId: string,
+  opName: string,
+  graphExecutionIndex?: number
+): DebuggerState {
+  const newState: DebuggerState = {
+    ...state,
+    graphs: {
+      ...state.graphs,
+      focusedOp: {
+        graphId,
+        opName,
+      },
+    },
+    // An graph event was last focused on, update the
+    // code-location focus type to `GRAPH_OP_CREATION`.
+    codeLocationFocusType: CodeLocationType.GRAPH_OP_CREATION,
+    sourceCode: {
+      ...state.sourceCode,
+    },
+  };
+  newState.sourceCode.focusLineSpec = computeBottommostLineSpec(newState);
+  if (graphExecutionIndex !== undefined) {
+    newState.graphExecutions = {
+      ...state.graphExecutions,
+      focusIndex: graphExecutionIndex,
+    };
+  }
+  return newState;
+}
 
 // TODO(cais): Refactor the reducers into separate child reducers and
 // move them to separate files. Combine them with `combineReducers()`
