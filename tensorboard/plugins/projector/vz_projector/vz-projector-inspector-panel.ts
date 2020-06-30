@@ -69,6 +69,10 @@ namespace vz_projector {
     private setFilterButton: HTMLButtonElement;
     private clearSelectionButton: HTMLButtonElement;
     private limitMessage: HTMLDivElement;
+    private selectedElements: string[];
+    private relationType: HTMLSelectElement;
+    private saveButton: HTMLButtonElement;
+    private searchVal: string;
 
     ready() {
       super.ready();
@@ -79,7 +83,11 @@ namespace vz_projector {
       ) as HTMLButtonElement;
       this.limitMessage = this.$$('.limit-msg') as HTMLDivElement;
       this.searchBox = this.$$('#search-box') as ProjectorInput;
+      this.relationType = this.$$('#relation') as HTMLSelectElement;
+      this.saveButton = this.$$('.save-button') as HTMLButtonElement;
+      this.selectedElements = [];
       this.displayContexts = [];
+      this.searchVal = '';
     }
 
     initialize(
@@ -302,6 +310,7 @@ namespace vz_projector {
           this.projectorEventContext.notifyHoverOverPoint(null);
         };
         rowLink.onclick = () => {
+          this.searchVal = label;
           this.projectorEventContext.notifySelectionChanged([index]);
         };
 
@@ -389,13 +398,24 @@ namespace vz_projector {
           neighbor.dist,
           minDist
         );
-        labelElement.innerText = this.getLabelFromIndex(neighbor.index);
 
+        labelElement.innerText = this.getLabelFromIndex(neighbor.index);
         const valueElement = document.createElement('div');
         valueElement.className = 'value';
         valueElement.innerText = neighbor.dist.toFixed(3);
 
-        labelValueElement.appendChild(labelElement);
+        // create checkbox element
+        const checkboxElement = document.createElement('input');
+        checkboxElement.setAttribute('type', 'checkbox');
+        checkboxElement.setAttribute('value', labelElement.innerText);
+
+        // create div to bind checkbox and value
+        const divElement = document.createElement('div');
+        divElement.className = 'inline-label';
+        divElement.appendChild(checkboxElement);
+        divElement.appendChild(labelElement);
+
+        labelValueElement.appendChild(divElement);
         labelValueElement.appendChild(valueElement);
 
         const barElement = document.createElement('div');
@@ -437,6 +457,10 @@ namespace vz_projector {
         };
         neighborElementLink.onclick = () => {
           this.projectorEventContext.notifySelectionChanged([neighbor.index]);
+        };
+        checkboxElement.onclick = (e) => {
+          e.stopPropagation();
+          this.selectedElements.push(labelElement.innerText);
         };
       }
     }
@@ -530,6 +554,24 @@ namespace vz_projector {
 
       this.clearSelectionButton.onclick = () => {
         projector.adjustSelectionAndHover([]);
+      };
+
+      this.saveButton.onclick = () => {
+        const exportObj = {
+          name: [this.searchVal],
+          label: [this.searchVal],
+          relType: [this.relationType.value],
+          elements: this.selectedElements,
+        };
+        var dataStr =
+          'data:text/json;charset=utf-8,' +
+          encodeURIComponent(JSON.stringify(exportObj, null, 2));
+        var downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.setAttribute('href', dataStr);
+        downloadAnchorNode.setAttribute('download', this.searchVal + '.json');
+        document.body.appendChild(downloadAnchorNode); // required for firefox
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
       };
       this.enableResetFilterButton(false);
     }

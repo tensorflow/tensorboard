@@ -66,8 +66,8 @@ limitations under the License.
         flex-direction: column;
       }
 
-      .nn > *,
-      .metadata-info > * {
+      .nn>*,
+      .metadata-info>* {
         padding: 0 20px;
       }
 
@@ -195,6 +195,7 @@ limitations under the License.
         --paper-slider-input: {
           width: 64px;
         }
+
         --paper-input-container-input: {
           font-size: 14px;
         }
@@ -227,6 +228,18 @@ limitations under the License.
       .nn-list {
         flex: 1 0 100px;
       }
+
+      .inline-label {
+        display: flex;
+        align-items: center;
+      }
+
+      .custom-feature {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 1rem;
+      }
     </style>
     <div class="container">
       <div class="buttons">
@@ -234,15 +247,23 @@ limitations under the License.
         <button class="button set-filter">Isolate selection</button>
         <button class="button clear-selection">Clear selection</button>
       </div>
+      <div class="custom-feature">
+        <div>
+          <label class="option-label" for="relation">Relation Type</label>
+          <select id="relation" name="relation">
+            <option value="same_as">Same As</option>
+            <option value="is">Is</option>
+            <option value="has">Has</option>
+            <option value="close_to">Close To</option>
+          </select>
+        </div>
+        <button class="button save-button">Save</button>
+      </div>
       <div class="search-by">
         <vz-projector-input id="search-box" label="Search"></vz-projector-input>
         <paper-dropdown-menu no-animations label="by">
-          <paper-listbox
-            attr-for-selected="value"
-            class="dropdown-content"
-            selected="{{selectedMetadataField}}"
-            slot="dropdown-content"
-          >
+          <paper-listbox attr-for-selected="value" class="dropdown-content" selected="{{selectedMetadataField}}"
+            slot="dropdown-content">
             <template is="dom-repeat" items="[[metadataFields]]">
               <paper-item value="[[item]]" label="[[item]]">
                 [[item]]
@@ -258,27 +279,13 @@ limitations under the License.
           <div class="neighbors-options">
             <div class="slider num-nn">
               <span class="option-label">neighbors</span>
-              <paper-icon-button
-                icon="help"
-                class="help-icon"
-              ></paper-icon-button>
-              <paper-tooltip
-                position="bottom"
-                animation-delay="0"
-                fit-to-visible-bounds
-              >
+              <paper-icon-button icon="help" class="help-icon"></paper-icon-button>
+              <paper-tooltip position="bottom" animation-delay="0" fit-to-visible-bounds>
                 The number of neighbors (in the original space) to show when
                 clicking on a point.
               </paper-tooltip>
-              <paper-slider
-                class="nn-slider"
-                pin
-                min="5"
-                max="999"
-                editable
-                value="{{numNN}}"
-                on-change="updateNumNN"
-              ></paper-slider>
+              <paper-slider class="nn-slider" pin min="5" max="999" editable value="{{numNN}}" on-change="updateNumNN">
+              </paper-slider>
             </div>
           </div>
           <div class="distance">
@@ -292,15 +299,8 @@ limitations under the License.
             <template is="dom-if" if="[[spriteImagesAvailable]]">
               <paper-checkbox checked="{{showNeighborImages}}">
                 show images
-                <paper-icon-button
-                  icon="help"
-                  class="help-icon"
-                ></paper-icon-button>
-                <paper-tooltip
-                  position="bottom"
-                  animation-delay="0"
-                  fit-to-visible-bounds
-                >
+                <paper-icon-button icon="help" class="help-icon"></paper-icon-button>
+                <paper-tooltip position="bottom" animation-delay="0" fit-to-visible-bounds>
                   Show the images of the nearest neighbors.
                 </paper-tooltip>
               </paper-checkbox>
@@ -314,27 +314,13 @@ limitations under the License.
         <div class="neighbors-options">
           <div class="slider num-nn">
             <span class="option-label">neighbors</span>
-            <paper-icon-button
-              icon="help"
-              class="help-icon"
-            ></paper-icon-button>
-            <paper-tooltip
-              position="bottom"
-              animation-delay="0"
-              fit-to-visible-bounds
-            >
+            <paper-icon-button icon="help" class="help-icon"></paper-icon-button>
+            <paper-tooltip position="bottom" animation-delay="0" fit-to-visible-bounds>
               The number of neighbors (in the selected space) to show when
               clicking on a point.
             </paper-tooltip>
-            <paper-slider
-              class="nn-slider"
-              pin
-              min="5"
-              max="999"
-              editable
-              value="{{numNN}}"
-              on-change="updateNumNN"
-            ></paper-slider>
+            <paper-slider class="nn-slider" pin min="5" max="999" editable value="{{numNN}}" on-change="updateNumNN">
+            </paper-slider>
           </div>
         </div>
         <p>{{metadataColumn}} labels (click to apply):</p>
