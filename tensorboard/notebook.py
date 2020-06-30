@@ -55,7 +55,7 @@ _custom_display = None
 
 
 def register_custom_display(func):
-    """Register a custom inline display function
+    """Register a custom function to display a running TensorBoard instance.
 
     Args:
       func: a function that takes in the following parameters and renders the
