@@ -489,6 +489,10 @@ def tensorboard_js_workspace():
         name = "com_google_material_design_icon",
         licenses = ["notice"],  # Apache 2.0
         sha256_urls = {
+            "fa4ad2661739c9ecefa121c41f5c95de878d4990ee86413124585a3af7d7dffb": [
+                "http://mirror.tensorflow.org/raw.githubusercontent.com/google/material-design-icons/3.0.1/content/svg/production/ic_content_copy_24px.svg",
+                "https://raw.githubusercontent.com/google/material-design-icons/3.0.1/content/svg/production/ic_content_copy_24px.svg",
+            ],
             "962aee2433f026ed7843790f6757dc3c25c34f349feb9b4fe816629b1b22442d": [
                 "http://mirror.tensorflow.org/raw.githubusercontent.com/google/material-design-icons/3.0.1/action/svg/production/ic_help_outline_24px.svg",
                 "https://raw.githubusercontent.com/google/material-design-icons/3.0.1/action/svg/production/ic_help_outline_24px.svg",
@@ -507,6 +511,7 @@ def tensorboard_js_workspace():
             ],
         },
         rename = {
+            "ic_content_copy_24px.svg": "content_copy_24px.svg",
             "ic_help_outline_24px.svg": "help_outline_24px.svg",
             "ic_info_outline_24px.svg": "info_outline_24px.svg",
             "ic_refresh_24px.svg": "refresh_24px.svg",

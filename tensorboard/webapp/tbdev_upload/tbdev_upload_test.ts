@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {Clipboard, ClipboardModule} from '@angular/cdk/clipboard';
 import {OverlayContainer} from '@angular/cdk/overlay';
 import {TestBed} from '@angular/core/testing';
 import {MatButtonModule} from '@angular/material/button';
@@ -19,16 +20,25 @@ import {MatDialogModule} from '@angular/material/dialog';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 
+import {MatIconTestingModule} from '../testing/mat_icon.module';
 import {TbdevUploadDialogComponent} from './tbdev_upload_dialog_component';
 import {TbdevUploadButtonComponent} from './tbdev_upload_button_component';
 
 describe('tbdev upload test', () => {
+  const clipboardSpy = jasmine.createSpyObj('Clipboard', ['copy']);
   let overlayContainer: OverlayContainer;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MatButtonModule, MatDialogModule, NoopAnimationsModule],
+      imports: [
+        ClipboardModule,
+        MatButtonModule,
+        MatDialogModule,
+        MatIconTestingModule,
+        NoopAnimationsModule,
+      ],
       declarations: [TbdevUploadDialogComponent, TbdevUploadButtonComponent],
+      providers: [{provide: Clipboard, useValue: clipboardSpy}],
     }).compileComponents();
     overlayContainer = TestBed.inject(OverlayContainer);
   });
@@ -51,5 +61,19 @@ describe('tbdev upload test', () => {
       .querySelectorAll('tbdev-upload-dialog');
 
     expect(tbdevUploadDialogsAfter.length).toBe(1);
+  });
+
+  it('allows command to be copied', async () => {
+    const fixture = TestBed.createComponent(TbdevUploadDialogComponent);
+    fixture.detectChanges();
+
+    const copyElement = fixture.debugElement.query(By.css('.command-copy'));
+    copyElement.nativeElement.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(clipboardSpy.copy).toHaveBeenCalledWith(
+      'tensorboard dev upload --logdir {logdir}'
+    );
   });
 });
