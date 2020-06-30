@@ -158,6 +158,7 @@ tf_svg_bundle(
     srcs = [
         # When modifying below, please make sure to update
         # //tensorboard/webapp/testing/mat_icon.module.ts.
+        "@com_google_material_design_icon//:content_copy_24px.svg",
         "@com_google_material_design_icon//:help_outline_24px.svg",
         "@com_google_material_design_icon//:info_outline_24px.svg",
         "@com_google_material_design_icon//:refresh_24px.svg",

@@ -15,6 +15,7 @@ ng_module(
         "tbdev_upload_dialog_component.ng.html",
     ],
     deps = [
+        "//tensorboard/webapp/angular:expect_angular_cdk_clipboard",
         "//tensorboard/webapp/angular:expect_angular_material_button",
         "//tensorboard/webapp/angular:expect_angular_material_dialog",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
@@ -38,6 +39,7 @@ tf_ts_library(
     tsconfig = "//:tsconfig-test",
     deps = [
         ":tbdev_upload",
+        "//tensorboard/webapp/angular:expect_angular_cdk_clipboard",
         "//tensorboard/webapp/angular:expect_angular_cdk_overlay",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_angular_material_button",

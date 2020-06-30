@@ -24,8 +24,16 @@ limitations under the License.
 <p>
   To upload a logdir to TensorBoard.dev, run the command:
 </p>
-<div class="snippet">
-  <code>tensorboard dev upload --logdir {{ '{' }}logdir{{ '}' }}</code>
+<div class="command">
+  <code>{{commandText}}</code>
+  <button
+    mat-icon-button
+    class="command-copy"
+    [cdkCopyToClipboard]="commandText"
+    title="Click to copy the command"
+  >
+    <mat-icon svgIcon="content_copy_24px"></mat-icon>
+  </button>
 </div>
 <p>
   Only certain plugins are currently supported. Uploaded TensorBoards are public

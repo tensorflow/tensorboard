@@ -15,6 +15,7 @@ limitations under the License.
 import {Component, Input, NgModule} from '@angular/core';
 
 const KNOWN_SVG_ICON = new Set([
+  'content_copy_24px',
   'help_outline_24px',
   'info_outline_24px',
   'refresh_24px',
