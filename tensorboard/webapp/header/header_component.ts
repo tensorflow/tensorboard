@@ -14,6 +14,10 @@ limitations under the License.
 ==============================================================================*/
 import {Component, Inject, OnInit} from '@angular/core';
 
+// A list of hostname values that will trigger the tbdev-upload-button button to
+// appear.
+const LOCAL_HOSTNAMES: string[] = ['localhost', '127.0.0.1'];
+
 @Component({
   selector: 'app-header',
   template: `
@@ -73,8 +77,6 @@ export class HeaderComponent implements OnInit {
   constructor(@Inject('window') private window: Window) {}
 
   ngOnInit() {
-    this.showUpload = ['localhost', '127.0.0.1'].includes(
-      this.window.location.hostname
-    );
+    this.showUpload = LOCAL_HOSTNAMES.includes(this.window.location.hostname);
   }
 }
