@@ -32,8 +32,8 @@ class CustomDisplayAPITest(tb_test.TestCase):
 
     counter = 0
 
-    # Mock a StartLaunched result so to prevent starting a Tensorboard
-    # process in the following tests
+    # Mock a StartLaunched result to prevent starting a Tensorboard process
+    # when calling notebook.start()
     _info = manager.TensorBoardInfo(
         version="x.x",
         start_time=0,
