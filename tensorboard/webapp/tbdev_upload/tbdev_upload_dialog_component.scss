@@ -59,13 +59,14 @@ code {
   justify-content: flex-end;
 }
 
-.bottom-buttons button,
-.bottom-buttons a {
-  color: map-get($tb-foreground, link);
+.close-button {
+  color: map-get($tb-foreground, secondary);
   text-transform: uppercase;
-  margin-right: 16px;
+  margin-right: 8px;
+
 }
 
-.bottom-buttons > :last-child {
-  margin-right: 0
+.learn-more-button {
+  color: map-get($tb-foreground, link);
+  text-transform: uppercase;
 }
