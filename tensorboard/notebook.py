@@ -55,6 +55,17 @@ _custom_display = None
 
 
 def register_custom_display(func):
+    """Register a custom inline display function
+
+    Args:
+      func: a function that takes in the following parameters and renders the
+            Tensorboard UI.
+            port:           The port that the Tensorboard process listens to.
+            height:         The height of the frame into which to render the
+                            TensorBoard UI.
+            display_handle: If not None, an IPython display handle into which
+                            to render TensorBoard.
+    """
     global _custom_display
     _custom_display = func
 
