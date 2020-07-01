@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {createAction, props} from '@ngrx/store';
-import {PluginId, PluginsListing} from '../../types/api';
+import {Environment, PluginId, PluginsListing} from '../../types/api';
 
 // HACK: Below import is for type inference.
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
@@ -72,4 +72,9 @@ export const changeReloadPeriod = createAction(
 export const changePageSize = createAction(
   '[Core] Page Size Change',
   props<{size: number}>()
+);
+
+export const environmentLoaded = createAction(
+  '[Core] Environment Fetch Successful',
+  props<{environment: Environment}>()
 );

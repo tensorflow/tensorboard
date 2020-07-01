@@ -19,12 +19,18 @@ import {MatButtonModule} from '@angular/material/button';
 import {MatDialogModule} from '@angular/material/dialog';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
+import {Store} from '@ngrx/store';
+import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
-import {MatIconTestingModule} from '../testing/mat_icon.module';
+import {State} from '../core/store';
 import {TbdevUploadDialogComponent} from './tbdev_upload_dialog_component';
 import {TbdevUploadButtonComponent} from './tbdev_upload_button_component';
 
+import {createCoreState, createEnvironment, createState} from '../core/testing';
+import {MatIconTestingModule} from '../testing/mat_icon.module';
+
 describe('tbdev upload test', () => {
+  let store: MockStore<State>;
   const clipboardSpy = jasmine.createSpyObj('Clipboard', ['copy']);
   let overlayContainer: OverlayContainer;
 
@@ -38,8 +44,20 @@ describe('tbdev upload test', () => {
         NoopAnimationsModule,
       ],
       declarations: [TbdevUploadDialogComponent, TbdevUploadButtonComponent],
-      providers: [{provide: Clipboard, useValue: clipboardSpy}],
+      providers: [
+        provideMockStore({
+          initialState: createState(
+            createCoreState({
+              environment: createEnvironment({
+                data_location: '',
+              }),
+            })
+          ),
+        }),
+        {provide: Clipboard, useValue: clipboardSpy},
+      ],
     }).compileComponents();
+    store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     overlayContainer = TestBed.inject(OverlayContainer);
   });
 
@@ -63,17 +81,48 @@ describe('tbdev upload test', () => {
     expect(tbdevUploadDialogsAfter.length).toBe(1);
   });
 
-  it('allows command to be copied', async () => {
+  it('prints command and allows it to be copied', async () => {
     const fixture = TestBed.createComponent(TbdevUploadDialogComponent);
     fixture.detectChanges();
 
+    const codeElement = fixture.debugElement.query(By.css('code'));
+    expect(codeElement.nativeElement.textContent).toBe(
+      'tensorboard dev upload --logdir {logdir}'
+    );
+
     const copyElement = fixture.debugElement.query(By.css('.command-copy'));
     copyElement.nativeElement.click();
-    fixture.detectChanges();
-    await fixture.whenStable();
 
     expect(clipboardSpy.copy).toHaveBeenCalledWith(
       'tensorboard dev upload --logdir {logdir}'
+    );
+  });
+
+  it('updates with data_location', async () => {
+    const fixture = TestBed.createComponent(TbdevUploadDialogComponent);
+    fixture.detectChanges();
+
+    store.setState(
+      createState(
+        createCoreState({
+          environment: createEnvironment({
+            data_location: '/some/data/location',
+          }),
+        })
+      )
+    );
+    fixture.detectChanges();
+
+    const codeElement = fixture.debugElement.query(By.css('code'));
+    expect(codeElement.nativeElement.textContent).toBe(
+      'tensorboard dev upload --logdir /some/data/location'
+    );
+
+    const copyElement = fixture.debugElement.query(By.css('.command-copy'));
+    copyElement.nativeElement.click();
+
+    expect(clipboardSpy.copy).toHaveBeenCalledWith(
+      'tensorboard dev upload --logdir /some/data/location'
     );
   });
 });

@@ -20,8 +20,11 @@ ng_module(
         "//tensorboard/webapp/angular:expect_angular_material_dialog",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/core",
+        "//tensorboard/webapp/core/store",
         "@npm//@angular/common",
         "@npm//@angular/core",
+        "@npm//@ngrx/store",
+        "@npm//rxjs",
     ],
 )
 
@@ -46,12 +49,14 @@ tf_ts_library(
         "//tensorboard/webapp/angular:expect_angular_material_dialog",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
         "//tensorboard/webapp/core/actions",
+        "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/core/testing",
         "//tensorboard/webapp/testing:mat_icon",
         "@npm//@angular/common",
         "@npm//@angular/compiler",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
+        "@npm//@ngrx/store",
         "@npm//@types/jasmine",
     ],
 )

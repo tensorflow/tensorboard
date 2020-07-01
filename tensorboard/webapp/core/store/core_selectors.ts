@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 import {createSelector, createFeatureSelector} from '@ngrx/store';
-import {PluginId, PluginsListing} from '../../types/api';
+import {Environment, PluginId, PluginsListing} from '../../types/api';
 import {LoadState} from '../../types/data';
 import {CoreState, State, CORE_FEATURE_KEY} from './core_types';
 
@@ -64,5 +64,12 @@ export const getPageSize = createSelector(
   selectCoreState,
   (state: CoreState): number => {
     return state.pageSize;
+  }
+);
+
+export const getEnvironment = createSelector(
+  selectCoreState,
+  (state: CoreState): Environment => {
+    return state.environment;
   }
 );

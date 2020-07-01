@@ -47,7 +47,7 @@ import {PluginId} from '../types/api';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
-fdescribe('header test', () => {
+describe('header test', () => {
   let store: MockStore<State>;
   let fakeWindow: any = {};
 

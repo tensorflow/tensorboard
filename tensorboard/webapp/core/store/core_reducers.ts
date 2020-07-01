@@ -74,6 +74,12 @@ const reducer = createReducer(
     }
   ),
   on(
+    actions.environmentLoaded,
+    (state: CoreState, {environment}): CoreState => {
+      return {...state, environment: environment};
+    }
+  ),
+  on(
     actions.toggleReloadEnabled,
     (state: CoreState): CoreState => {
       return {

@@ -23,7 +23,12 @@ import {CoreEffects} from './core_effects';
 import * as coreActions from '../actions';
 import {State} from '../../app_state';
 
-import {createPluginMetadata, createState, createCoreState} from '../testing';
+import {
+  createEnvironment,
+  createPluginMetadata,
+  createState,
+  createCoreState,
+} from '../testing';
 
 import {PluginsListing} from '../../types/api';
 import {DataLoadState} from '../../types/data';
@@ -40,7 +45,7 @@ describe('core_effects', () => {
   let action: ReplaySubject<Action>;
   let store: MockStore<Partial<State>>;
   let fetchRuns: jasmine.Spy;
-  let fetchEnvironments: jasmine.Spy;
+  let fetchEnvironment: jasmine.Spy;
   let dispatchSpy: jasmine.Spy;
 
   beforeEach(async () => {
@@ -72,9 +77,9 @@ describe('core_effects', () => {
     fetchRuns = spyOn(dataSource, 'fetchRuns')
       .withArgs()
       .and.returnValue(of(null));
-    fetchEnvironments = spyOn(dataSource, 'fetchEnvironments')
+    fetchEnvironment = spyOn(dataSource, 'fetchEnvironment')
       .withArgs()
-      .and.returnValue(of(null));
+      .and.returnValue(of(createEnvironment()));
 
     store.overrideSelector(getEnabledExperimentalPlugins, []);
   });
@@ -89,13 +94,8 @@ describe('core_effects', () => {
     {specSetName: '#manualReload', onAction: coreActions.manualReload()},
   ].forEach(({specSetName, onAction}) => {
     describe(specSetName, () => {
-      let recordedActions: Action[] = [];
-
       beforeEach(() => {
-        recordedActions = [];
-        coreEffects.loadPluginsListing$.subscribe((action: Action) => {
-          recordedActions.push(action);
-        });
+        coreEffects.fetchWebAppData$.subscribe(() => {});
       });
 
       it('fetches plugins listing and fires success action', () => {
@@ -111,17 +111,22 @@ describe('core_effects', () => {
         httpMock.expectOne('data/plugins_listing').flush(pluginsListing);
 
         expect(fetchRuns).toHaveBeenCalled();
-        expect(fetchEnvironments).toHaveBeenCalled();
+        expect(fetchEnvironment).toHaveBeenCalled();
 
-        expect(dispatchSpy).toHaveBeenCalledTimes(1);
+        expect(dispatchSpy).toHaveBeenCalledTimes(3);
         expect(dispatchSpy).toHaveBeenCalledWith(
           coreActions.pluginsListingRequested()
         );
-
-        const expected = coreActions.pluginsListingLoaded({
-          plugins: pluginsListing,
-        });
-        expect(recordedActions).toEqual([expected]);
+        expect(dispatchSpy).toHaveBeenCalledWith(
+          coreActions.pluginsListingLoaded({
+            plugins: pluginsListing,
+          })
+        );
+        expect(dispatchSpy).toHaveBeenCalledWith(
+          coreActions.environmentLoaded({
+            environment: createEnvironment(),
+          })
+        );
       });
 
       it(
@@ -148,17 +153,22 @@ describe('core_effects', () => {
             .flush(pluginsListing);
 
           expect(fetchRuns).toHaveBeenCalled();
-          expect(fetchEnvironments).toHaveBeenCalled();
+          expect(fetchEnvironment).toHaveBeenCalled();
 
-          expect(dispatchSpy).toHaveBeenCalledTimes(1);
+          expect(dispatchSpy).toHaveBeenCalledTimes(3);
           expect(dispatchSpy).toHaveBeenCalledWith(
             coreActions.pluginsListingRequested()
           );
-
-          const expected = coreActions.pluginsListingLoaded({
-            plugins: pluginsListing,
-          });
-          expect(recordedActions).toEqual([expected]);
+          expect(dispatchSpy).toHaveBeenCalledWith(
+            coreActions.pluginsListingLoaded({
+              plugins: pluginsListing,
+            })
+          );
+          expect(dispatchSpy).toHaveBeenCalledWith(
+            coreActions.environmentLoaded({
+              environment: createEnvironment(),
+            })
+          );
         }
       );
 
@@ -198,11 +208,7 @@ describe('core_effects', () => {
 
         action.next(onAction);
         httpMock.expectOne('data/plugins_listing').flush(pluginsListing);
-
-        const expected = coreActions.pluginsListingLoaded({
-          plugins: pluginsListing,
-        });
-        expect(recordedActions).toEqual([expected]);
+        expect(dispatchSpy).toHaveBeenCalledTimes(3);
 
         store.setState(
           createState(

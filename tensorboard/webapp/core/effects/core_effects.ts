@@ -15,7 +15,7 @@ limitations under the License.
 import {Injectable} from '@angular/core';
 import {Action, Store} from '@ngrx/store';
 import {Actions, ofType, createEffect} from '@ngrx/effects';
-import {Observable, of, zip} from 'rxjs';
+import {EMPTY, Observable, of, zip} from 'rxjs';
 import {
   map,
   mergeMap,
@@ -26,6 +26,7 @@ import {
 } from 'rxjs/operators';
 import {
   coreLoaded,
+  environmentLoaded,
   manualReload,
   reload,
   pluginsListingRequested,
@@ -49,27 +50,38 @@ export class CoreEffects {
    * think it is unused property and deadcode eliminate away.
    */
   /** @export */
-  readonly loadPluginsListing$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(coreLoaded, reload, manualReload),
-      withLatestFrom(
-        this.store.select(getPluginsListLoaded),
-        this.store.select(getEnabledExperimentalPlugins)
+  readonly fetchWebAppData$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(coreLoaded, reload, manualReload),
+        withLatestFrom(
+          this.store.select(getPluginsListLoaded),
+          this.store.select(getEnabledExperimentalPlugins)
+        ),
+        filter(([, {state}]) => state !== DataLoadState.LOADING),
+        tap(() => this.store.dispatch(pluginsListingRequested())),
+        mergeMap(([, , enabledExperimentalPlugins]) => {
+          return zip(
+            this.webappDataSource.fetchPluginsListing(
+              enabledExperimentalPlugins
+            ),
+            this.webappDataSource.fetchEnvironment(),
+            this.webappDataSource.fetchRuns()
+          ).pipe(
+            map(
+              ([plugins, environment]) => {
+                this.store.dispatch(pluginsListingLoaded({plugins}));
+                this.store.dispatch(environmentLoaded({environment}));
+              },
+              catchError(() => {
+                this.store.dispatch(pluginsListingFailed());
+                return EMPTY;
+              })
+            )
+          );
+        })
       ),
-      filter(([, {state}]) => state !== DataLoadState.LOADING),
-      tap(() => this.store.dispatch(pluginsListingRequested())),
-      mergeMap(([, , enabledExperimentalPlugins]) => {
-        return zip(
-          this.webappDataSource.fetchPluginsListing(enabledExperimentalPlugins),
-          this.webappDataSource.fetchRuns(),
-          this.webappDataSource.fetchEnvironments()
-        ).pipe(
-          map(([plugins]) => {
-            return pluginsListingLoaded({plugins});
-          }, catchError(() => of(pluginsListingFailed())))
-        ) as Observable<Action>;
-      })
-    )
+    {dispatch: false}
   );
 
   constructor(
