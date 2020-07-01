@@ -47,6 +47,7 @@ import {
   executionScrollToIndex,
   graphExecutionDataLoaded,
   graphExecutionDataRequested,
+  graphExecutionFocused,
   graphExecutionScrollToIndex,
   graphOpFocused,
   graphOpInfoLoaded,
@@ -768,7 +769,7 @@ export class DebuggerEffects {
     stackFrameIds: string[];
   }> {
     return this.actions$.pipe(
-      ofType(graphOpFocused),
+      ofType(graphOpFocused, graphExecutionFocused),
       withLatestFrom(
         this.store.select(getActiveRunId),
         this.store.select(getLoadingGraphOps)
@@ -785,8 +786,13 @@ export class DebuggerEffects {
             ))
         );
       }),
-      tap(([actionData]) =>
-        this.store.dispatch(graphOpInfoRequested(actionData))
+      tap(([{graph_id, op_name}]) =>
+        this.store.dispatch(
+          graphOpInfoRequested({
+            graph_id,
+            op_name,
+          })
+        )
       ),
       mergeMap(([actionData, runId]) => {
         const {graph_id, op_name} = actionData;
@@ -1075,9 +1081,9 @@ export class DebuggerEffects {
      *
      * on graph-execution scroll --> fetch graph-execution data
      *
-     * on graph-op-info requested --> fetch graph-op info ------+
-     *                                                          |
-     *                                fetch stack frames <------+
+     * on graph-op focus & graph-execution focus --> fetch graph-op info ---+
+     *                                                                      |
+     *                                            fetch stack frames <------+
      **/
     this.loadData$ = createEffect(
       () => {

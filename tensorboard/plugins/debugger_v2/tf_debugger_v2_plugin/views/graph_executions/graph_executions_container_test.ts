@@ -23,7 +23,7 @@ import {By} from '@angular/platform-browser';
 import {Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 
-import {graphOpFocused} from '../../actions';
+import {graphExecutionFocused} from '../../actions';
 import {DebuggerComponent} from '../../debugger_component';
 import {DebuggerContainer} from '../../debugger_container';
 import {
@@ -35,6 +35,7 @@ import {
   getGraphExecutionData,
   getGraphExecutionFocusIndex,
   getNumGraphExecutions,
+  getFocusedGraphExecutionInputIndices,
 } from '../../store';
 import {
   createDebuggerState,
@@ -106,54 +107,74 @@ describe('Graph Executions Container', () => {
     expect(viewPort).toBeNull();
   }));
 
-  it('renders # execs and execs viewport if # execs > 0; fully loaded', fakeAsync(() => {
-    const fixture = TestBed.createComponent(GraphExecutionsContainer);
-    store.overrideSelector(getNumGraphExecutions, 120);
-    store.overrideSelector(getGraphExecutionData, graphExecutionData);
-    store.overrideSelector(getGraphExecutionFocusIndex, 99);
-    fixture.autoDetectChanges();
-    tick();
+  it(
+    'renders # execs and execs viewport if # execs > 0; fully loaded:' +
+      'highlights focus and inputs',
+    fakeAsync(() => {
+      const fixture = TestBed.createComponent(GraphExecutionsContainer);
+      store.overrideSelector(getNumGraphExecutions, 120);
+      store.overrideSelector(getGraphExecutionData, graphExecutionData);
+      store.overrideSelector(getGraphExecutionFocusIndex, 99);
+      store.overrideSelector(getFocusedGraphExecutionInputIndices, [1, 2]);
+      fixture.autoDetectChanges();
+      tick();
 
-    const titleElement = fixture.debugElement.query(
-      By.css('.graph-executions-title')
-    );
-    expect(titleElement.nativeElement.innerText).toBe('Graph Executions (120)');
-    const viewPort = fixture.debugElement.query(
-      By.css('.graph-executions-viewport')
-    );
-    expect(viewPort).not.toBeNull();
-    const tensorContainers = fixture.debugElement.queryAll(
-      By.css('.tensor-container')
-    );
-    expect(tensorContainers.length).toBeGreaterThan(0);
-    const graphExecutionIndices = fixture.debugElement.queryAll(
-      By.css('.graph-execution-index')
-    );
-    const tensorNames = fixture.debugElement.queryAll(By.css('.tensor-name'));
-    const opTypes = fixture.debugElement.queryAll(By.css('.op-type'));
-    expect(graphExecutionIndices.length).toBe(tensorContainers.length);
-    expect(tensorNames.length).toBe(tensorContainers.length);
-    expect(opTypes.length).toBe(tensorContainers.length);
-    for (let i = 0; i < tensorNames.length; ++i) {
-      expect(graphExecutionIndices[i].nativeElement.innerText).toBe(`${i}`);
-      const focusElement = graphExecutionIndices[i].query(
-        By.css('.graph-execution-focus')
+      const titleElement = fixture.debugElement.query(
+        By.css('.graph-executions-title')
       );
-      if (i === 99) {
-        expect(focusElement.nativeElement.innerText).toBe('▶');
-      } else {
-        expect(focusElement).toBeNull();
+      expect(titleElement.nativeElement.innerText).toBe(
+        'Graph Executions (120)'
+      );
+      const viewPort = fixture.debugElement.query(
+        By.css('.graph-executions-viewport')
+      );
+      expect(viewPort).not.toBeNull();
+      const tensorContainers = fixture.debugElement.queryAll(
+        By.css('.tensor-container')
+      );
+      expect(tensorContainers.length).toBeGreaterThan(0);
+      const graphExecutionIndices = fixture.debugElement.queryAll(
+        By.css('.graph-execution-index')
+      );
+      const tensorNames = fixture.debugElement.queryAll(By.css('.tensor-name'));
+      const opTypes = fixture.debugElement.queryAll(By.css('.op-type'));
+      expect(graphExecutionIndices.length).toBe(tensorContainers.length);
+      expect(tensorNames.length).toBe(tensorContainers.length);
+      expect(opTypes.length).toBe(tensorContainers.length);
+      for (let i = 0; i < tensorNames.length; ++i) {
+        expect(graphExecutionIndices[i].nativeElement.innerText).toBe(`${i}`);
+        const focusElement = graphExecutionIndices[i].query(
+          By.css('.graph-execution-focus')
+        );
+        if (i === 99) {
+          expect(focusElement.nativeElement.innerText).toBe('▶');
+        } else {
+          expect(focusElement).toBeNull();
+        }
+        expect(tensorNames[i].nativeElement.innerText).toBe(`TestOp_${i}:0`);
+        expect(opTypes[i].nativeElement.innerText).toBe(`OpType_${i}`);
       }
-      expect(tensorNames[i].nativeElement.innerText).toBe(`TestOp_${i}:0`);
-      expect(opTypes[i].nativeElement.innerText).toBe(`OpType_${i}`);
-    }
-    const debugTensorValueElements = fixture.debugElement.queryAll(
-      By.css('debug-tensor-value')
-    );
-    expect(debugTensorValueElements.length).toBe(tensorContainers.length);
-  }));
+      const debugTensorValueElements = fixture.debugElement.queryAll(
+        By.css('debug-tensor-value')
+      );
+      expect(debugTensorValueElements.length).toBe(tensorContainers.length);
+      // Check the highlighting of inputs to the focused graph execution event.
+      const inputsOfFocus = fixture.debugElement.queryAll(
+        By.css('.input-of-focus')
+      );
+      expect(inputsOfFocus.length).toBe(2);
+      expect(
+        inputsOfFocus[0].query(By.css('.graph-execution-index')).nativeElement
+          .innerText
+      ).toBe('1');
+      expect(
+        inputsOfFocus[1].query(By.css('.graph-execution-index')).nativeElement
+          .innerText
+      ).toBe('2');
+    })
+  );
 
-  it('clicking the tensor name buttons dispatches graphOpFocused', fakeAsync(() => {
+  it('dispatches graphExecutionFocused on tensor name click', fakeAsync(() => {
     const fixture = TestBed.createComponent(GraphExecutionsContainer);
     store.overrideSelector(getNumGraphExecutions, 2);
     store.overrideSelector(getGraphExecutionData, {
@@ -169,7 +190,8 @@ describe('Graph Executions Container', () => {
     tensorNames[0].nativeElement.click();
     expect(dispatchSpy).toHaveBeenCalledTimes(1);
     expect(dispatchSpy).toHaveBeenCalledWith(
-      graphOpFocused({
+      graphExecutionFocused({
+        index: 0,
         graph_id: 'g2',
         op_name: 'TestOp_0',
       })
@@ -177,9 +199,10 @@ describe('Graph Executions Container', () => {
     tensorNames[1].nativeElement.click();
     expect(dispatchSpy).toHaveBeenCalledTimes(2);
     expect(dispatchSpy).toHaveBeenCalledWith(
-      graphOpFocused({
+      graphExecutionFocused({
+        index: 1,
         graph_id: 'g2',
-        op_name: `TestOp_1`,
+        op_name: 'TestOp_1',
       })
     );
   }));
@@ -250,8 +273,10 @@ describe('Graph Executions Container', () => {
           tick();
 
           expect(scrollToIndexSpy).toHaveBeenCalledTimes(1);
+          const inRange = newFocusIndex >= start && newFocusIndex < end;
           expect(scrollToIndexSpy).toHaveBeenCalledWith(
-            Math.max(newFocusIndex - Math.round(end - start) / 3, 0)
+            Math.max(newFocusIndex - Math.round(end - start) / 3, 0),
+            inRange ? 'smooth' : undefined
           );
         })
       );

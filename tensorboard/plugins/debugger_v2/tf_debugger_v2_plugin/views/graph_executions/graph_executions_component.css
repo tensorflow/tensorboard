@@ -46,6 +46,12 @@ limitations under the License.
   overflow-x: hidden;
 }
 
+.input-of-focus {
+  /** NOTE: If this is changed, change the corresponding color in
+      graph_component.css as well. */
+  background-color: #fff099;
+}
+
 .loading-spinner {
   display: inline-block;
 }

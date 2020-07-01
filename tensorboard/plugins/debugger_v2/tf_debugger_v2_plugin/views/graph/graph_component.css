@@ -42,11 +42,6 @@ limitations under the License.
   white-space: nowrap;
 }
 
-.input-op-container {
-  display: inline-block;
-  padding-top: 5px;
-}
-
 .input-op-section {
   border-right: 1px solid rgb(0, 0, 0, 0.12);
   display: inline-block;
@@ -55,6 +50,10 @@ limitations under the License.
 }
 
 .input-slot-header {
+  /** NOTE: If this is changed, change the corresponding color in
+      graph_execution_component.css as well.
+      TODO(b/160229578): deduplication using tf_sass_library. */
+  background-color: #fff099;
   margin-bottom: 5px;
 }
 

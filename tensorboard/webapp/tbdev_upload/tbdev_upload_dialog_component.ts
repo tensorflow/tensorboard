@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Component} from '@angular/core';
+import {MatDialogRef} from '@angular/material/dialog';
 
 @Component({
   selector: 'tbdev-upload-dialog',
@@ -21,4 +22,10 @@ import {Component} from '@angular/core';
 })
 export class TbdevUploadDialogComponent {
   readonly commandText: string = 'tensorboard dev upload --logdir {logdir}';
+
+  constructor(private dialogRef: MatDialogRef<TbdevUploadDialogComponent>) {}
+
+  onClose(): void {
+    this.dialogRef.close();
+  }
 }
