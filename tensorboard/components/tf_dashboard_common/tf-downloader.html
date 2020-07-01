@@ -34,14 +34,9 @@ limitations under the License.
       </paper-listbox>
     </paper-dropdown-menu>
     <template is="dom-if" if="[[_run]]">
-      <a download="[[_csvName(tag, _run)]]" href="[[_csvUrl(tag, _run, urlFn)]]"
-        >CSV</a
+      <a download href="[[_csvUrl(tag, _run, urlFn)]]">CSV</a
       ><!--
-      --><a
-        download="[[_jsonName(tag, _run)]]"
-        href="[[_jsonUrl(tag, _run, urlFn)]]"
-        >JSON</a
-      >
+      --><a download href="[[_jsonUrl(tag, _run, urlFn)]]">JSON</a>
     </template>
     <style>
       :host {
@@ -79,9 +74,9 @@ limitations under the License.
         tag: String,
         // Clients pass `urlFn: (tag: string, run: string) => string`,
         // which should generate a URL to download data for a given
-        // run/tag combination. The data at the URL should be in JSON
-        // form, and the URL should be such that adding a query
-        // parameter `format=csv` instead yields CSV data.
+        // run/tag combination. The URL should allow adding the query
+        // parameter `format=csv` to get CSV data and adding the query
+        // parameter `format=json` to get JSON data.
         urlFn: Function,
       },
       _csvUrl(tag, run, urlFn) {
@@ -90,15 +85,7 @@ limitations under the License.
       },
       _jsonUrl(tag, run, urlFn) {
         if (!run) return '';
-        return urlFn(tag, run);
-      },
-      _csvName(tag, run) {
-        if (!run) return '';
-        return `run-${run}-tag-${tag}.csv`;
-      },
-      _jsonName(tag, run) {
-        if (!run) return '';
-        return `run-${run}-tag-${tag}.json`;
+        return tf_backend.addParams(urlFn(tag, run), {format: 'json'});
       },
     });
   </script>
