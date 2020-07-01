@@ -174,7 +174,7 @@ describe('Graph Executions Container', () => {
     })
   );
 
-  it('clicking tensor name dispatches graphExecutionFocused', fakeAsync(() => {
+  it('dispatches graphExecutionFocused on tensor name click', fakeAsync(() => {
     const fixture = TestBed.createComponent(GraphExecutionsContainer);
     store.overrideSelector(getNumGraphExecutions, 2);
     store.overrideSelector(getGraphExecutionData, {
