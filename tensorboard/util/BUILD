@@ -143,6 +143,24 @@ py_test(
 )
 
 py_library(
+    name = "string_util",
+    srcs = ["string_util.py"],
+    srcs_version = "PY2AND3",
+)
+
+py_test(
+    name = "string_util_test",
+    size = "small",
+    srcs = ["string_util_test.py"],
+    srcs_version = "PY2AND3",
+    tags = ["support_notf"],
+    deps = [
+        ":string_util",
+        "//tensorboard:test",
+    ],
+)
+
+py_library(
     name = "tb_logging",
     srcs = ["tb_logging.py"],
     srcs_version = "PY2AND3",
