@@ -26,7 +26,7 @@ import {takeUntil} from 'rxjs/operators';
   styleUrls: ['./tbdev_upload_dialog_component.css'],
 })
 export class TbdevUploadDialogComponent implements OnInit, OnDestroy {
-  commandText: string = 'tensorboard dev upload --logdir {logdir}';
+  commandText: string = this.getCommandText('');
   readonly environment$ = this.store.pipe(select(getEnvironment));
 
   private ngUnsubscribe = new Subject();
@@ -38,8 +38,7 @@ export class TbdevUploadDialogComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.ngUnsubscribe))
       .subscribe((environment) => {
         if (environment && environment.data_location) {
-          this.commandText =
-            'tensorboard dev upload --logdir ' + environment.data_location;
+          this.commandText = this.getCommandText(environment.data_location);
         }
       });
   }
@@ -47,5 +46,19 @@ export class TbdevUploadDialogComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.ngUnsubscribe.next();
     this.ngUnsubscribe.complete();
+  }
+
+  private getCommandText(logdir?: string) {
+    if (!logdir) {
+      // Without logdir we print a literal '{logdir}' string that user will
+      // have to manually substitute.
+      return 'tensorboard dev upload --logdir {logdir}';
+    } else {
+      // With logdir we substitute the value into the command for the user.
+      // We assume that logdir is sufficiently long that we want to print it on
+      // the next line. If the logdir value is still too long then the CSS will
+      // render a scrollbar underneath.
+      return 'tensorboard dev upload --logdir \\\n    ' + logdir;
+    }
   }
 }

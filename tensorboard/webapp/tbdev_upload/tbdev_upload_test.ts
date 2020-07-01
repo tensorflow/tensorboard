@@ -115,14 +115,14 @@ describe('tbdev upload test', () => {
 
     const codeElement = fixture.debugElement.query(By.css('code'));
     expect(codeElement.nativeElement.textContent).toBe(
-      'tensorboard dev upload --logdir /some/data/location'
+      'tensorboard dev upload --logdir \\\n    /some/data/location'
     );
 
     const copyElement = fixture.debugElement.query(By.css('.command-copy'));
     copyElement.nativeElement.click();
 
     expect(clipboardSpy.copy).toHaveBeenCalledWith(
-      'tensorboard dev upload --logdir /some/data/location'
+      'tensorboard dev upload --logdir \\\n    /some/data/location'
     );
   });
 });
