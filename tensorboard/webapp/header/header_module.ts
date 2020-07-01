@@ -39,7 +39,7 @@ import {ReloadContainer} from './reload_container';
     ReloadContainer,
   ],
   exports: [HeaderComponent, PluginSelectorContainer, ReloadContainer],
-  providers: [{provide: 'window', useValue: window}],
+  providers: [],
   imports: [
     MatButtonModule,
     MatIconModule,
