@@ -16,6 +16,7 @@ import * as actions from '../actions';
 import {reducers} from './core_reducers';
 import {
   buildPluginMetadata,
+  createEnvironment,
   createPluginMetadata,
   createCoreState,
 } from '../testing';
@@ -175,6 +176,22 @@ describe('core reducer', () => {
       );
 
       expect(nextState.activePlugin).toBe('foo');
+    });
+  });
+
+  describe('#environmentLoaded', () => {
+    it('sets environment with the payload', () => {
+      const state = createCoreState({
+        environment: createEnvironment({data_location: '/original/location'}),
+      });
+      const nextState = reducers(
+        state,
+        actions.environmentLoaded({
+          environment: createEnvironment({data_location: '/new/location'}),
+        })
+      );
+
+      expect(nextState.environment.data_location).toEqual('/new/location');
     });
   });
 

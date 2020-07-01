@@ -54,6 +54,14 @@ export const pluginsListingFailed = createAction(
 );
 
 /**
+ * Action for when Environment data has been loaded from the WebApp server.
+ */
+export const environmentLoaded = createAction(
+  '[Core] Environment Fetch Successful',
+  props<{environment: Environment}>()
+);
+
+/**
  * Action for when user wants to enable/disable reload.
  */
 export const toggleReloadEnabled = createAction('[Core] Reload Enable Toggled');
@@ -72,9 +80,4 @@ export const changeReloadPeriod = createAction(
 export const changePageSize = createAction(
   '[Core] Page Size Change',
   props<{size: number}>()
-);
-
-export const environmentLoaded = createAction(
-  '[Core] Environment Fetch Successful',
-  props<{environment: Environment}>()
 );

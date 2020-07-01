@@ -98,7 +98,7 @@ describe('core_effects', () => {
         coreEffects.fetchWebAppData$.subscribe(() => {});
       });
 
-      it('fetches plugins listing and fires success action', () => {
+      it('fetches webapp data and fires success action', () => {
         store.overrideSelector(getEnabledExperimentalPlugins, []);
         store.refreshState();
 
