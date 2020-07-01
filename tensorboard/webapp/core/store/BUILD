@@ -13,6 +13,7 @@ ng_module(
         "index.ts",
     ],
     deps = [
+        "//tensorboard/webapp/core:types",
         "//tensorboard/webapp/core/actions",
         "//tensorboard/webapp/deeplink",
         "//tensorboard/webapp/types",
@@ -28,6 +29,7 @@ tf_ts_library(
     srcs = [
         "core_initial_state_provider_test.ts",
         "core_reducers_test.ts",
+        "core_selectors_test.ts",
     ],
     tsconfig = "//:tsconfig-test",
     deps = [

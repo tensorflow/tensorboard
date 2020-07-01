@@ -15,6 +15,8 @@ limitations under the License.
 import {createAction, props} from '@ngrx/store';
 import {Environment, PluginId, PluginsListing} from '../../types/api';
 
+import {Run, RunId} from '../types';
+
 // HACK: Below import is for type inference.
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
 /** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
@@ -80,4 +82,14 @@ export const changeReloadPeriod = createAction(
 export const changePageSize = createAction(
   '[Core] Page Size Change',
   props<{size: number}>()
+);
+
+export const polymerInteropRunSelectionChanged = createAction(
+  '[Core] Run Selection Changed',
+  props<{nextSelection: RunId[]}>()
+);
+
+export const fetchRunSucceeded = createAction(
+  '[Core] Run Fetch Successful',
+  props<{runs: Run[]}>()
 );

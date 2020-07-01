@@ -105,6 +105,21 @@ const reducer = createReducer(
       ...state,
       pageSize: nextPageSize,
     };
+  }),
+  on(actions.fetchRunSucceeded, (state, {runs}) => {
+    // Do not modify the runSelection since the Polymer component is the
+    // force of truth for the Polymer Interop.
+    return {...state, polymerInteropRuns: runs};
+  }),
+  on(actions.polymerInteropRunSelectionChanged, (state, {nextSelection}) => {
+    const selectionSet = new Set(nextSelection);
+    const newSelection = new Map();
+
+    state.polymerInteropRuns.forEach(({id}) => {
+      newSelection.set(id, selectionSet.has(id));
+    });
+
+    return {...state, polymerInteropRunSelection: newSelection};
   })
 );
 
