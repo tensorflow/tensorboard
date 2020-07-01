@@ -88,6 +88,7 @@ def Respond(
     content_encoding=None,
     encoding="utf-8",
     csp_scripts_sha256s=None,
+    filename=None,
 ):
     """Construct a werkzeug Response.
 
@@ -128,6 +129,10 @@ def Respond(
         elements for script-src of the Content-Security-Policy. If it is None, the
         HTML will disallow any script to execute. It is only be used when the
         content_type is text/html.
+      filename: If non-empty, the `Content-Disposition: attachment` header will
+        be sent specifying this value as the filename. For most user agents this
+        will trigger a file download. Callers should take care to sanitize the
+        filename if derived from user-controlled strings.
 
     Returns:
       A werkzeug Response object (a WSGI application).
@@ -184,6 +189,8 @@ def Respond(
     headers.append(("X-Content-Type-Options", "nosniff"))
     if content_encoding:
         headers.append(("Content-Encoding", content_encoding))
+    if filename:
+        headers.append(("Content-Disposition", 'filename="%s"' % filename))
     if expires > 0:
         e = wsgiref.handlers.format_date_time(time.time() + float(expires))
         headers.append(("Expires", e))

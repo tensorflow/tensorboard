@@ -219,6 +219,13 @@ class RespondTest(tb_test.TestCase):
         r = http_util.Respond(q, "<b>hello world</b>", "text/html", expires=60)
         self.assertEqual(r.headers.get("Cache-Control"), "private, max-age=60")
 
+    def testFilename_setsContentDisposition(self):
+        q = wrappers.Request(wtest.EnvironBuilder().get_environ())
+        r = http_util.Respond(q, "hi!", "text/html", filename="foo.html")
+        self.assertEqual(
+            r.headers.get("Content-Disposition"), 'filename="foo.html"',
+        )
+
     def testCsp(self):
         q = wrappers.Request(wtest.EnvironBuilder().get_environ())
         r = http_util.Respond(
