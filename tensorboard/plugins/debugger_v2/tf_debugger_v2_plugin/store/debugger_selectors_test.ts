@@ -44,13 +44,13 @@ import {
   getPollSilenceTimeMs,
   getSourceFileList,
   getSourceFileListLoaded,
+  getFocusedGraphExecutionInputIndices,
 } from './debugger_selectors';
 import {
   AlertType,
   CodeLocationType,
   DataLoadState,
   DEBUGGER_FEATURE_KEY,
-  GraphOpInfo,
   StackFrame,
 } from './debugger_types';
 import {
@@ -1237,6 +1237,288 @@ describe('debugger selectors', () => {
           data: op1Info,
         },
       ]);
+    });
+  });
+
+  describe('getFocusedGraphExecutionInputIndices', () => {
+    // The opInfo instances below form a simple graph:
+    //   op1:0 ----> op2:0 ----> op3:0
+    //    |                       ^
+    //    +-----------------------|
+    //
+    //   op4:0
+    const op1Info = createTestGraphOpInfo({
+      graph_ids: ['g1'],
+      op_name: 'op1',
+      consumers: [
+        [
+          {
+            op_name: 'op2',
+            input_slot: 0,
+          },
+          {
+            op_name: 'op3',
+            input_slot: 0,
+          },
+        ],
+      ],
+    });
+    const op2Info = createTestGraphOpInfo({
+      graph_ids: ['g1'],
+      op_name: 'op2',
+      inputs: [
+        {
+          op_name: 'op1',
+          output_slot: 0,
+        },
+      ],
+      consumers: [
+        [
+          {
+            op_name: 'op3',
+            input_slot: 1,
+          },
+        ],
+      ],
+    });
+    const op3Info = createTestGraphOpInfo({
+      graph_ids: ['g1'],
+      op_name: 'op3',
+      inputs: [
+        {
+          op_name: 'op1',
+          output_slot: 0,
+        },
+        {
+          op_name: 'op2',
+          output_slot: 0,
+        },
+      ],
+    });
+    const op4Info = createTestGraphOpInfo({
+      graph_ids: ['g1'],
+      op_name: 'op4',
+      inputs: [],
+    });
+    const graphOps = {
+      g1: new Map([
+        ['op1', op1Info],
+        ['op2', op2Info],
+        ['op3', op3Info],
+        ['op4', op4Info],
+      ]),
+    };
+
+    it('returns null under initial state', () => {
+      const state = createState(createDebuggerState());
+      expect(getFocusedGraphExecutionInputIndices(state)).toBeNull();
+    });
+
+    it('returns null when no graph execution is focused on', () => {
+      const state = createState(
+        createDebuggerState({
+          graphExecutions: createDebuggerGraphExecutionsState({
+            graphExecutionData: {
+              8: createTestGraphExecution({
+                // This is the immedate input.
+                graph_id: 'g1',
+                op_name: 'op1',
+                output_slot: 0,
+              }),
+              10: createTestGraphExecution({
+                graph_id: 'g1',
+                op_name: 'op2',
+                output_slot: 0,
+              }),
+            },
+            focusIndex: null,
+          }),
+          graphs: createDebuggerGraphsState({
+            ops: {
+              g1: new Map([['op1', op1Info], ['op2', op2Info]]),
+            },
+            focusedOp: null,
+          }),
+        })
+      );
+      expect(getFocusedGraphExecutionInputIndices(state)).toBeNull();
+    });
+
+    it('returns single input index while skipping earlier & later ones', () => {
+      const state = createState(
+        createDebuggerState({
+          graphExecutions: createDebuggerGraphExecutionsState({
+            graphExecutionData: {
+              // This is a past run of the tensor that is the immediate input.
+              // Should be ignored.
+              6: createTestGraphExecution({
+                graph_id: 'g1',
+                op_name: 'op1',
+                output_slot: 0,
+              }),
+              // This is the immedate input.
+              8: createTestGraphExecution({
+                graph_id: 'g1',
+                op_name: 'op1',
+                output_slot: 0,
+              }),
+              // Unrelated op, should be ignored.
+              9: createTestGraphExecution({
+                graph_id: 'g1',
+                op_name: 'op4',
+                output_slot: 0,
+              }),
+              // The focused op.
+              10: createTestGraphExecution({
+                graph_id: 'g1',
+                op_name: 'op2',
+                output_slot: 0,
+              }),
+              // This is a future run of the tensor that is the immediate input.
+              // Should be ignored.
+              12: createTestGraphExecution({
+                graph_id: 'g1',
+                op_name: 'op1',
+                output_slot: 0,
+              }),
+            },
+            focusIndex: 10,
+          }),
+          graphs: createDebuggerGraphsState({
+            ops: graphOps,
+            focusedOp: {
+              graphId: 'g1',
+              opName: 'op2',
+            },
+          }),
+        })
+      );
+      expect(getFocusedGraphExecutionInputIndices(state)).toEqual([8]);
+    });
+
+    it('returns 2 input indices for 2-input op: inputs fully loaded', () => {
+      const state = createState(
+        createDebuggerState({
+          graphExecutions: createDebuggerGraphExecutionsState({
+            graphExecutionData: {
+              // This is a past run of the tensor that is the 1st immediate
+              // input. Should be ignored.
+              5: createTestGraphExecution({
+                graph_id: 'g1',
+                op_name: 'op1',
+                output_slot: 0,
+              }),
+              // This is the 1st immedate input.
+              6: createTestGraphExecution({
+                graph_id: 'g1',
+                op_name: 'op1',
+                output_slot: 0,
+              }),
+              // Unrelated op, should be ignored.
+              9: createTestGraphExecution({
+                graph_id: 'g1',
+                op_name: 'op4',
+                output_slot: 0,
+              }),
+              // This is the 2nd immediate input.
+              10: createTestGraphExecution({
+                graph_id: 'g1',
+                op_name: 'op2',
+                output_slot: 0,
+              }),
+              // The focused graph execution.
+              12: createTestGraphExecution({
+                graph_id: 'g1',
+                op_name: 'op3',
+                output_slot: 0,
+              }),
+            },
+            focusIndex: 12,
+          }),
+          graphs: createDebuggerGraphsState({
+            ops: graphOps,
+            focusedOp: {
+              graphId: 'g1',
+              opName: 'op3',
+            },
+          }),
+        })
+      );
+      expect(getFocusedGraphExecutionInputIndices(state)).toEqual([10, 6]);
+    });
+
+    it('returns 1 input indices for 2-input op: inputs partially loaded', () => {
+      const state = createState(
+        createDebuggerState({
+          graphExecutions: createDebuggerGraphExecutionsState({
+            graphExecutionData: {
+              // This is the 2nd immediate input.
+              10: createTestGraphExecution({
+                graph_id: 'g1',
+                op_name: 'op2',
+                output_slot: 0,
+              }),
+              // The focused graphe execution.
+              12: createTestGraphExecution({
+                graph_id: 'g1',
+                op_name: 'op3',
+                output_slot: 0,
+              }),
+              // This is the same tensor as the 1st immedate input, but in the
+              // future. Should be ignored.
+              13: createTestGraphExecution({
+                graph_id: 'g1',
+                op_name: 'op1',
+                output_slot: 0,
+              }),
+            },
+            focusIndex: 12,
+          }),
+          graphs: createDebuggerGraphsState({
+            ops: graphOps,
+            focusedOp: {
+              graphId: 'g1',
+              opName: 'op3',
+            },
+          }),
+        })
+      );
+      expect(getFocusedGraphExecutionInputIndices(state)).toEqual([10]);
+    });
+
+    it('returns empty array for no-input op', () => {
+      const state = createState(
+        createDebuggerState({
+          graphExecutions: createDebuggerGraphExecutionsState({
+            graphExecutionData: {
+              5: createTestGraphExecution({
+                graph_id: 'g1',
+                op_name: 'op1',
+                output_slot: 0,
+              }),
+              6: createTestGraphExecution({
+                graph_id: 'g1',
+                op_name: 'op2',
+                output_slot: 0,
+              }),
+              10: createTestGraphExecution({
+                graph_id: 'g1',
+                op_name: 'op4',
+                output_slot: 0,
+              }),
+            },
+            focusIndex: 12,
+          }),
+          graphs: createDebuggerGraphsState({
+            ops: graphOps,
+            focusedOp: {
+              graphId: 'g1',
+              opName: 'op4',
+            },
+          }),
+        })
+      );
+      expect(getFocusedGraphExecutionInputIndices(state)).toEqual([]);
     });
   });
 

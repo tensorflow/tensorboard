@@ -47,11 +47,20 @@ export class GraphExecutionsComponent implements OnChanges {
   @Input()
   focusIndex!: number | null;
 
+  /**
+   * The input tensors of the currently-focused tensor (graph execution event).
+   * If no graph execution is focused, the value is `null`.
+   * If the currently-focusd tensor has no inputs, the value is `[]`.
+   */
+  @Input()
+  focusInputIndices!: number[] | null;
+
   @Output()
   onScrolledIndexChange = new EventEmitter<number>();
 
   @Output()
   onTensorNameClick = new EventEmitter<{
+    index: number;
     graph_id: string;
     op_name: string;
   }>();
@@ -73,8 +82,29 @@ export class GraphExecutionsComponent implements OnChanges {
       // This is nicer than scrolling it merely to the top.
       const thirdRange = Math.round((range.end - range.start) / 3);
       const targetIndex = Math.max(scrollIndex - thirdRange, 0);
-      this.viewPort.scrollToIndex(targetIndex);
+      const useSmoothScrolling =
+        scrollIndex >= range.start && scrollIndex < range.end;
+      this.viewPort.scrollToIndex(
+        targetIndex,
+        useSmoothScrolling ? 'smooth' : undefined
+      );
     }
+  }
+
+  /**
+   * Computes if given graph-execution index is an immediate input tensor to
+   * the graph execution currently focused on.
+   *
+   * @param graphExecutionIndex
+   * @returns If no graph execution is focused on, `false`. If a graph execution
+   *   is being focused on, `true` if `graphExecutionIndex` points to a graph-
+   *   execution event that forms the immediate input to the focused one.
+   */
+  isInputOfFocus(graphExecutionIndex: number): boolean {
+    if (this.focusInputIndices === null) {
+      return false;
+    }
+    return this.focusInputIndices.includes(graphExecutionIndex);
   }
 
   TEST_ONLY = {

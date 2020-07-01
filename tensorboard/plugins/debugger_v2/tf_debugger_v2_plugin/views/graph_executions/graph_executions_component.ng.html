@@ -30,7 +30,10 @@ limitations under the License.
       *cdkVirtualFor="let i of graphExecutionIndices"
       class="tensor-container"
     >
-      <div class="tensor-item">
+      <div
+        class="tensor-item"
+        [ngClass]="{'input-of-focus': isInputOfFocus(i)}"
+      >
         <div class="graph-execution-index">
           <div *ngIf="i === focusIndex" class="graph-execution-focus">
             ▶
@@ -42,6 +45,7 @@ limitations under the License.
             <button
               class="tensor-name"
               (click)="onTensorNameClick.emit({
+                index: i,
                 graph_id: graphExecutionData[i].graph_id,
                 op_name: graphExecutionData[i].op_name
               })"
