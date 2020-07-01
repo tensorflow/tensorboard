@@ -276,12 +276,6 @@ py_test(
     ],
 )
 
-config_setting(
-    name = "dev_build",
-    # consider changing this to fastbuild
-    values = {"compilation_mode": "dbg"},
-)
-
 tensorboard_zip_file(
     name = "webfiles",
     deps = [":assets"],
@@ -296,23 +290,16 @@ monaco_imports = [
 tf_web_library(
     name = "assets",
     srcs = [
-        "//tensorboard/components:index.html",
-        "//tensorboard/components:index.js",
-    ] + select({
-        "//tensorboard:dev_build": [
-            "//tensorboard/webapp:ng_index.html",
-            "//tensorboard/webapp:ng_index.js",
-            "//tensorboard/webapp:svg_bundle",
-        ],
-        "//conditions:default": [],
-    }),
+        "//tensorboard/components:legacy.html",
+        "//tensorboard/components:legacy.js",
+        "//tensorboard/webapp:index.html",
+        "//tensorboard/webapp:index.js",
+        "//tensorboard/webapp:svg_bundle",
+    ],
     path = "/",
     deps = [
         "@com_google_fonts_roboto",
-    ] + select({
-        "//tensorboard:dev_build": monaco_imports,
-        "//conditions:default": [],
-    }),
+    ] + monaco_imports,
 )
 
 # This is a dummy rule used as a numpy dependency in open-source.
