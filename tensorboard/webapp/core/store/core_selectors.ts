@@ -46,6 +46,13 @@ export const getPlugins = createSelector(
   }
 );
 
+export const getEnvironment = createSelector(
+  selectCoreState,
+  (state: CoreState): Environment => {
+    return state.environment;
+  }
+);
+
 export const getReloadEnabled = createSelector(
   selectCoreState,
   (state: CoreState): boolean => {
@@ -64,12 +71,5 @@ export const getPageSize = createSelector(
   selectCoreState,
   (state: CoreState): number => {
     return state.pageSize;
-  }
-);
-
-export const getEnvironment = createSelector(
-  selectCoreState,
-  (state: CoreState): Environment => {
-    return state.environment;
   }
 );
