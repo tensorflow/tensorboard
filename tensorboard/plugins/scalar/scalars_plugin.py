@@ -36,17 +36,11 @@ from tensorboard.backend import http_util
 from tensorboard.data import provider
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.scalar import metadata
+from tensorboard.util import string_util
 from tensorboard.util import tensor_util
 
 
 _DEFAULT_DOWNSAMPLING = 1000  # scalars per time series
-
-
-class OutputFormat(object):
-    """An enum used to list the valid output formats for API calls."""
-
-    JSON = "json"
-    CSV = "csv"
 
 
 class ScalarsPlugin(base_plugin.TBPlugin):
@@ -127,7 +121,7 @@ class ScalarsPlugin(base_plugin.TBPlugin):
 
         return result
 
-    def scalars_impl(self, tag, run, experiment, output_format):
+    def scalars_impl(self, tag, run, experiment):
         """Result of the form `(body, mime_type)`."""
         if self._data_provider:
             all_scalars = self._data_provider.read_scalars(
@@ -163,15 +157,7 @@ class ScalarsPlugin(base_plugin.TBPlugin):
                 )
                 for tensor_event in tensor_events
             ]
-
-        if output_format == OutputFormat.CSV:
-            string_io = StringIO()
-            writer = csv.writer(string_io)
-            writer.writerow(["Wall time", "Step", "Value"])
-            writer.writerows(values)
-            return (string_io.getvalue(), "text/csv")
-        else:
-            return (values, "application/json")
+        return values
 
     @wrappers.Request.application
     def tags_route(self, request):
@@ -186,7 +172,22 @@ class ScalarsPlugin(base_plugin.TBPlugin):
         run = request.args.get("run")
         experiment = plugin_util.experiment_id(request.environ)
         output_format = request.args.get("format")
-        (body, mime_type) = self.scalars_impl(
-            tag, run, experiment, output_format
+        filename = "run-%s-tag-%s" % (
+            string_util.sanitize_for_filename(run),
+            string_util.sanitize_for_filename(tag),
         )
-        return http_util.Respond(request, body, mime_type)
+        values = self.scalars_impl(tag, run, experiment)
+        if output_format == "csv":
+            string_io = StringIO()
+            writer = csv.writer(string_io)
+            writer.writerow(["Wall time", "Step", "Value"])
+            writer.writerows(values)
+            body = string_io.getvalue()
+            return http_util.Respond(
+                request, body, "text/csv", filename=filename + ".csv"
+            )
+        elif output_format == "json":
+            return http_util.Respond(
+                request, values, "application/json", filename=filename + ".json"
+            )
+        return http_util.Respond(request, values, "application/json")
