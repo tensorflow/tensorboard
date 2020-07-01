@@ -60,7 +60,7 @@ code {
 }
 
 .close-button {
-  color: map-get($tb-foreground, secondary);
+  color: map-get($tb-foreground, secondary-text);
   text-transform: uppercase;
   margin-right: 8px;
 }

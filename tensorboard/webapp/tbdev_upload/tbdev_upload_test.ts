@@ -87,9 +87,6 @@ describe('tbdev upload test', () => {
 
     const copyElement = fixture.debugElement.query(By.css('.close-button'));
     copyElement.nativeElement.click();
-    fixture.detectChanges();
-    await fixture.whenStable();
-
     expect(matDialogRefSpy.close).toHaveBeenCalled();
   });
 });
