@@ -45,13 +45,13 @@ const LOCAL_HOSTNAMES: string[] = ['localhost', '127.0.0.1'];
   ],
 })
 export class TbdevUploadButtonComponent {
-  @HostBinding('class.shown') shown: boolean = false;
+  @HostBinding('class.shown') shown: boolean;
 
   constructor(
-    @Inject('window') private readonly window: Window,
+    @Inject('window') window: Window,
     private readonly dialog: MatDialog
   ) {
-    this.shown = LOCAL_HOSTNAMES.includes(this.window.location.hostname);
+    this.shown = LOCAL_HOSTNAMES.includes(window.location.hostname);
   }
 
   openDialog(): void {
