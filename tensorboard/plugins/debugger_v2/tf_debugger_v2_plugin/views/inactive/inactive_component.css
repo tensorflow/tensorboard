@@ -51,13 +51,13 @@ limitations under the License.
   display: inline-block;
   margin: 10px 60px;
   vertical-align: top;
-  width: 300px;
+  width: 310px;
 }
 
 .exhibit .description {
   font-weight: bold;
   text-align: center;
-  width: 350px;
+  width: 310px;
 }
 
 .exhibit .screenshot canvas {
