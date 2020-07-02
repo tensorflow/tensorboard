@@ -16,7 +16,7 @@ import {Clipboard, ClipboardModule} from '@angular/cdk/clipboard';
 import {OverlayContainer} from '@angular/cdk/overlay';
 import {TestBed} from '@angular/core/testing';
 import {MatButtonModule} from '@angular/material/button';
-import {MatDialogModule} from '@angular/material/dialog';
+import {MatDialogModule, MatDialogRef} from '@angular/material/dialog';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Store} from '@ngrx/store';
@@ -32,6 +32,8 @@ import {MatIconTestingModule} from '../testing/mat_icon.module';
 describe('tbdev upload test', () => {
   let store: MockStore<State>;
   const clipboardSpy = jasmine.createSpyObj('Clipboard', ['copy']);
+  const fakeWindow: any = {};
+  const matDialogRefSpy = jasmine.createSpyObj('MatDialogRef', ['close']);
   let overlayContainer: OverlayContainer;
 
   beforeEach(async () => {
@@ -55,10 +57,45 @@ describe('tbdev upload test', () => {
           ),
         }),
         {provide: Clipboard, useValue: clipboardSpy},
+        {provide: 'window', useValue: fakeWindow},
+        {provide: MatDialogRef, useValue: matDialogRefSpy},
       ],
     }).compileComponents();
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     overlayContainer = TestBed.inject(OverlayContainer);
+    fakeWindow.location = {
+      hostname: 'localhost',
+    };
+  });
+
+  it('does not show upload button if hostname is not localhost', async () => {
+    fakeWindow.location.hostname = 'notlocalhost.com';
+    const fixture = TestBed.createComponent(TbdevUploadButtonComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(fixture.debugElement.classes.shown).toBeUndefined();
+    expect(fixture.debugElement.children.length).toEqual(0);
+  });
+
+  it('shows upload button if hostname is localhost', async () => {
+    fakeWindow.location.hostname = 'localhost';
+    const fixture = TestBed.createComponent(TbdevUploadButtonComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(fixture.debugElement.classes.shown).toBeDefined();
+    expect(fixture.debugElement.children.length).toEqual(1);
+  });
+
+  it('shows upload button if hostname is 127.0.0.1', async () => {
+    fakeWindow.location.hostname = '127.0.0.1';
+    const fixture = TestBed.createComponent(TbdevUploadButtonComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(fixture.debugElement.classes.shown).toBeDefined();
+    expect(fixture.debugElement.children.length).toEqual(1);
   });
 
   it('opens a dialog when clicking on the button', async () => {
@@ -124,5 +161,14 @@ describe('tbdev upload test', () => {
     expect(clipboardSpy.copy).toHaveBeenCalledWith(
       'tensorboard dev upload --logdir \\\n    /some/data/location'
     );
+  });
+
+  it('can be closed with button', async () => {
+    const fixture = TestBed.createComponent(TbdevUploadDialogComponent);
+    fixture.detectChanges();
+
+    const copyElement = fixture.debugElement.query(By.css('.close-button'));
+    copyElement.nativeElement.click();
+    expect(matDialogRefSpy.close).toHaveBeenCalled();
   });
 });

@@ -558,13 +558,12 @@ def with_port_scanning(cls):
         base_port = (
             core_plugin.DEFAULT_PORT if flags.port is None else flags.port
         )
-        max_attempts = 10 if should_scan else 1
 
         if base_port > 0xFFFF:
             raise TensorBoardServerException(
                 "TensorBoard cannot bind to port %d > %d" % (base_port, 0xFFFF)
             )
-        max_attempts = 10 if should_scan else 1
+        max_attempts = 100 if should_scan else 1
         base_port = min(base_port + max_attempts, 0x10000) - max_attempts
 
         for port in xrange(base_port, base_port + max_attempts):

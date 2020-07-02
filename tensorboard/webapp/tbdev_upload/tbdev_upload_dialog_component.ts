@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Component, OnInit, OnDestroy} from '@angular/core';
+import {MatDialogRef} from '@angular/material/dialog';
 import {Store, select} from '@ngrx/store';
 import {State, getEnvironment} from '../core/store';
 import {Subject} from 'rxjs';
@@ -31,7 +32,7 @@ export class TbdevUploadDialogComponent implements OnInit, OnDestroy {
 
   private ngUnsubscribe = new Subject();
 
-  constructor(private store: Store<State>) {}
+  constructor(private dialogRef: MatDialogRef<TbdevUploadDialogComponent>, private store: Store<State>) {}
 
   ngOnInit() {
     this.environment$
@@ -48,6 +49,10 @@ export class TbdevUploadDialogComponent implements OnInit, OnDestroy {
     this.ngUnsubscribe.complete();
   }
 
+  onClose(): void {
+    this.dialogRef.close();
+  }
+
   private getCommandText(logdir?: string) {
     if (!logdir) {
       // Without logdir we print a literal '{logdir}' string that user will
@@ -60,5 +65,4 @@ export class TbdevUploadDialogComponent implements OnInit, OnDestroy {
       // render a scrollbar underneath.
       return 'tensorboard dev upload --logdir \\\n    ' + logdir;
     }
-  }
 }

@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, Inject, OnInit} from '@angular/core';
+import {Component, Inject} from '@angular/core';
 
 @Component({
   selector: 'app-header',
@@ -20,7 +20,7 @@ import {Component, Inject, OnInit} from '@angular/core';
     <mat-toolbar color="primary">
       <span class="brand">TensorBoard</span>
       <plugin-selector class="plugins"></plugin-selector>
-      <tbdev-upload-button *ngIf="showUpload"></tbdev-upload-button>
+      <tbdev-upload-button></tbdev-upload-button>
       <app-header-reload></app-header-reload>
       <settings-button></settings-button>
       <a
@@ -45,7 +45,7 @@ import {Component, Inject, OnInit} from '@angular/core';
         width: 100%;
       }
 
-      tbdev-upload-button {
+      tbdev-upload-button.shown {
         margin: 0 8px 0 16px;
       }
 
@@ -67,14 +67,4 @@ import {Component, Inject, OnInit} from '@angular/core';
     `,
   ],
 })
-export class HeaderComponent implements OnInit {
-  showUpload: boolean = false;
-
-  constructor(@Inject('window') private window: Window) {}
-
-  ngOnInit() {
-    this.showUpload = ['localhost', '127.0.0.1'].includes(
-      this.window.location.hostname
-    );
-  }
-}
+export class HeaderComponent {}
