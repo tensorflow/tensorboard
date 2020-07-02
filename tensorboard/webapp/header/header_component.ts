@@ -20,6 +20,7 @@ import {Component} from '@angular/core';
     <mat-toolbar color="primary">
       <span class="brand">TensorBoard</span>
       <plugin-selector class="plugins"></plugin-selector>
+      <tbdev-upload-button></tbdev-upload-button>
       <app-header-reload></app-header-reload>
       <settings-button></settings-button>
       <a
@@ -42,6 +43,10 @@ import {Component} from '@angular/core';
         height: 64px;
         overflow: hidden;
         width: 100%;
+      }
+
+      tbdev-upload-button.shown {
+        margin: 0 8px 0 16px;
       }
 
       .brand,
