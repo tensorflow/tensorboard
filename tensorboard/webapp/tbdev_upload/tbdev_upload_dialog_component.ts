@@ -32,7 +32,10 @@ export class TbdevUploadDialogComponent implements OnInit, OnDestroy {
 
   private ngUnsubscribe = new Subject();
 
-  constructor(private dialogRef: MatDialogRef<TbdevUploadDialogComponent>, private store: Store<State>) {}
+  constructor(
+    private dialogRef: MatDialogRef<TbdevUploadDialogComponent>,
+    private store: Store<State>
+  ) {}
 
   ngOnInit() {
     this.environment$
@@ -65,4 +68,5 @@ export class TbdevUploadDialogComponent implements OnInit, OnDestroy {
       // render a scrollbar underneath.
       return 'tensorboard dev upload --logdir \\\n    ' + logdir;
     }
+  }
 }
