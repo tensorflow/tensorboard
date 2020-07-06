@@ -12,19 +12,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, HostBinding, Inject} from '@angular/core';
+import {Component} from '@angular/core';
 import {MatDialog} from '@angular/material/dialog';
 
 import {TbdevUploadDialogComponent} from './tbdev_upload_dialog_component';
 
-// A list of hostname values that will trigger the tbdev-upload-button button to
-// appear.
-const LOCAL_HOSTNAMES: string[] = ['localhost', '127.0.0.1'];
-
 @Component({
   selector: 'tbdev-upload-button',
   template: `
-    <button mat-stroked-button *ngIf="shown" (click)="openDialog()">
+    <button mat-raised-button color="primary" (click)="openDialog()">
       <span class="button-contents">
         <mat-icon svgIcon="info_outline_24px"></mat-icon>
         Upload
@@ -36,7 +32,6 @@ const LOCAL_HOSTNAMES: string[] = ['localhost', '127.0.0.1'];
       .button-contents {
         align-items: center;
         display: flex;
-        text-transform: uppercase;
       }
       mat-icon {
         margin-right: 6px;
@@ -45,14 +40,7 @@ const LOCAL_HOSTNAMES: string[] = ['localhost', '127.0.0.1'];
   ],
 })
 export class TbdevUploadButtonComponent {
-  @HostBinding('class.shown') shown: boolean;
-
-  constructor(
-    @Inject('window') window: Window,
-    private readonly dialog: MatDialog
-  ) {
-    this.shown = LOCAL_HOSTNAMES.includes(window.location.hostname);
-  }
+  constructor(private dialog: MatDialog) {}
 
   openDialog(): void {
     this.dialog.open(TbdevUploadDialogComponent, {
