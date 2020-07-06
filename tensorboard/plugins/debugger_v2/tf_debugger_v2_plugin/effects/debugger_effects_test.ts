@@ -36,6 +36,7 @@ import {
   executionScrollToIndex,
   graphExecutionDataRequested,
   graphExecutionDataLoaded,
+  graphExecutionFocused,
   graphExecutionScrollToIndex,
   graphOpFocused,
   graphOpInfoLoaded,
@@ -1684,97 +1685,106 @@ describe('Debugger effects', () => {
       createAndSubscribeToDebuggerEffectsWithEmptyRepeater();
     });
 
-    it('fetches missing op and missing stack frames', () => {
-      const fetchGraphOpInfo = createFetchGraphOpInfoSpy(
-        runId,
-        'g2',
-        'namespace_1/op_1',
-        graphOpInfoResponse
-      );
-      const fetchStackFrames = createFetchStackFramesSpy(
-        runId,
-        ['aaa1', 'bbb2'],
-        {
-          stack_frames: [stackFrame0, stackFrame1],
+    for (const testAction of [
+      graphOpFocused({
+        graph_id: 'g2',
+        op_name: 'namespace_1/op_1',
+      }),
+      graphExecutionFocused({
+        index: 42,
+        graph_id: 'g2',
+        op_name: 'namespace_1/op_1',
+      }),
+    ] as Action[]) {
+      it(
+        `fetches missing op and missing stack frames: ` +
+          `action: ${testAction.type}`,
+        () => {
+          const fetchGraphOpInfo = createFetchGraphOpInfoSpy(
+            runId,
+            'g2',
+            'namespace_1/op_1',
+            graphOpInfoResponse
+          );
+          const fetchStackFrames = createFetchStackFramesSpy(
+            runId,
+            ['aaa1', 'bbb2'],
+            {
+              stack_frames: [stackFrame0, stackFrame1],
+            }
+          );
+          store.overrideSelector(getActiveRunId, runId);
+          store.overrideSelector(getLoadingGraphOps, {
+            g2: new Map([['other_op', DataLoadState.LOADED]]),
+          });
+          store.overrideSelector(getLoadedStackFrames, {});
+          store.refreshState();
+
+          action.next(testAction);
+
+          expect(fetchGraphOpInfo).toHaveBeenCalledTimes(1);
+          expect(fetchStackFrames).toHaveBeenCalledTimes(1);
+          expect(dispatchedActions).toEqual([
+            graphOpInfoRequested({graph_id: 'g2', op_name: 'namespace_1/op_1'}),
+            graphOpInfoLoaded({graphOpInfoResponse}),
+            stackFramesLoaded({
+              stackFrames: {aaa1: stackFrame0, bbb2: stackFrame1},
+            }),
+          ]);
         }
       );
-      store.overrideSelector(getActiveRunId, runId);
-      store.overrideSelector(getLoadingGraphOps, {
-        g2: new Map([['other_op', DataLoadState.LOADED]]),
-      });
-      store.overrideSelector(getLoadedStackFrames, {});
-      store.refreshState();
 
-      action.next(
-        graphOpFocused({
-          graph_id: 'g2',
-          op_name: 'namespace_1/op_1',
-        })
-      );
+      for (const opLoadState of [DataLoadState.LOADING, DataLoadState.LOADED]) {
+        it(
+          `skips a loading or loaded op:  state=${opLoadState}, ` +
+            `action=${testAction.type}`,
+          () => {
+            store.overrideSelector(getActiveRunId, runId);
+            store.overrideSelector(getLoadingGraphOps, {
+              g2: new Map([['namespace_1/op_1', opLoadState]]),
+            });
+            store.refreshState();
 
-      expect(fetchGraphOpInfo).toHaveBeenCalledTimes(1);
-      expect(fetchStackFrames).toHaveBeenCalledTimes(1);
-      expect(dispatchedActions).toEqual([
-        graphOpInfoRequested({graph_id: 'g2', op_name: 'namespace_1/op_1'}),
-        graphOpInfoLoaded({graphOpInfoResponse}),
-        stackFramesLoaded({
-          stackFrames: {aaa1: stackFrame0, bbb2: stackFrame1},
-        }),
-      ]);
-    });
-
-    for (const opLoadState of [DataLoadState.LOADING, DataLoadState.LOADED]) {
-      it(`skips a loading or loaded op: state=${opLoadState}`, () => {
-        store.overrideSelector(getActiveRunId, runId);
-        store.overrideSelector(getLoadingGraphOps, {
-          g2: new Map([['namespace_1/op_1', opLoadState]]),
-        });
-        store.refreshState();
-
-        action.next(
-          graphOpFocused({
-            graph_id: 'g2',
-            op_name: 'namespace_1/op_1',
-          })
+            action.next(testAction);
+            // No action should have been dispatched.
+            expect(dispatchedActions).toEqual([]);
+          }
         );
-        // No action should have been dispatched.
-        expect(dispatchedActions).toEqual([]);
-      });
+      }
+
+      it(
+        `skips subset of stack frames that are already loaded: ` +
+          `action=${testAction.type}`,
+        () => {
+          const fetchGraphOpInfo = createFetchGraphOpInfoSpy(
+            runId,
+            'g2',
+            'namespace_1/op_1',
+            graphOpInfoResponse
+          );
+          const fetchStackFrames = createFetchStackFramesSpy(runId, ['aaa1'], {
+            stack_frames: [stackFrame0],
+          });
+          store.overrideSelector(getActiveRunId, runId);
+          store.overrideSelector(getLoadingGraphOps, {
+            g2: new Map([['other_op', DataLoadState.LOADED]]),
+          });
+          // The second stack frame is already loaded.
+          store.overrideSelector(getLoadedStackFrames, {bbb2: stackFrame1});
+          store.refreshState();
+
+          action.next(testAction);
+
+          expect(fetchGraphOpInfo).toHaveBeenCalledTimes(1);
+          expect(fetchStackFrames).toHaveBeenCalledTimes(1);
+          expect(dispatchedActions).toEqual([
+            graphOpInfoRequested({graph_id: 'g2', op_name: 'namespace_1/op_1'}),
+            graphOpInfoLoaded({graphOpInfoResponse}),
+            // Only the first (missing) stack frame should have been loaded.
+            stackFramesLoaded({stackFrames: {aaa1: stackFrame0}}),
+          ]);
+        }
+      );
     }
-
-    it('skips subset of stack frames that are already loaded', () => {
-      const fetchGraphOpInfo = createFetchGraphOpInfoSpy(
-        runId,
-        'g2',
-        'namespace_1/op_1',
-        graphOpInfoResponse
-      );
-      const fetchStackFrames = createFetchStackFramesSpy(runId, ['aaa1'], {
-        stack_frames: [stackFrame0],
-      });
-      store.overrideSelector(getActiveRunId, runId);
-      store.overrideSelector(getLoadingGraphOps, {
-        g2: new Map([['other_op', DataLoadState.LOADED]]),
-      });
-      // The second stack frame is already loaded.
-      store.overrideSelector(getLoadedStackFrames, {bbb2: stackFrame1});
-      store.refreshState();
-
-      action.next(
-        graphOpFocused({
-          graph_id: 'g2',
-          op_name: 'namespace_1/op_1',
-        })
-      );
-
-      expect(fetchGraphOpInfo).toHaveBeenCalledTimes(1);
-      expect(fetchStackFrames).toHaveBeenCalledTimes(1);
-      expect(dispatchedActions).toEqual([
-        graphOpInfoRequested({graph_id: 'g2', op_name: 'namespace_1/op_1'}),
-        graphOpInfoLoaded({graphOpInfoResponse}),
-        // Only the first (missing) stack frame should have been loaded.
-        stackFramesLoaded({stackFrames: {aaa1: stackFrame0}}),
-      ]);
-    });
   });
 });

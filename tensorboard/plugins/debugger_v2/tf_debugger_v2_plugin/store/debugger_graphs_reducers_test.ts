@@ -21,6 +21,7 @@ import {
   createDebuggerState,
   createTestGraphOpInfo,
   createTestStackFrame,
+  createDebuggerGraphExecutionsState,
 } from '../testing';
 
 describe('Debugger reducers', () => {
@@ -142,6 +143,58 @@ describe('Debugger reducers', () => {
         }
       );
     }
+  });
+
+  describe('graphExecutionFocused', () => {
+    it('sets focusIndex, focusedOp & focus type from empty state', () => {
+      const state = createDebuggerState();
+      const nextState = reducers(
+        state,
+        actions.graphExecutionFocused({
+          index: 42,
+          graph_id: 'g2',
+          op_name: 'TestOp_12',
+        })
+      );
+      expect(nextState.graphExecutions.focusIndex).toBe(42);
+      expect(nextState.graphs.focusedOp).toEqual({
+        graphId: 'g2',
+        opName: 'TestOp_12',
+      });
+      expect(nextState.codeLocationFocusType).toBe(
+        CodeLocationType.GRAPH_OP_CREATION
+      );
+    });
+
+    it('sets focusIndex, focusedOp & focus type from non-empty state', () => {
+      const state = createDebuggerState({
+        graphExecutions: createDebuggerGraphExecutionsState({
+          focusIndex: 3,
+        }),
+        graphs: createDebuggerGraphsState({
+          focusedOp: {
+            graphId: 'g1',
+            opName: 'TestOp_1',
+          },
+        }),
+      });
+      const nextState = reducers(
+        state,
+        actions.graphExecutionFocused({
+          index: 42,
+          graph_id: 'g2',
+          op_name: 'TestOp_12',
+        })
+      );
+      expect(nextState.graphExecutions.focusIndex).toBe(42);
+      expect(nextState.graphs.focusedOp).toEqual({
+        graphId: 'g2',
+        opName: 'TestOp_12',
+      });
+      expect(nextState.codeLocationFocusType).toBe(
+        CodeLocationType.GRAPH_OP_CREATION
+      );
+    });
   });
 
   describe('graphOpInfoRequested', () => {
