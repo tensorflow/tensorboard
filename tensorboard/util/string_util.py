@@ -55,7 +55,7 @@ def _make_filename_sanitizer_mapping():
     """
     mapping = collections.defaultdict(lambda: None)
     remapped_chars = string.punctuation
-    allowed_chars = string.ascii_letters + string.digits + "-_="
+    allowed_chars = string.ascii_letters + string.digits + "-_=,"
     for char in remapped_chars:
         mapping[ord(char)] = "_"
     for char in allowed_chars:

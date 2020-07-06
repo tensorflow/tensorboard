@@ -27,12 +27,15 @@ class StringUtilTest(tb_test.TestCase):
 
         check("", "")
         check("foo", "foo")
+        check("sub/dir", "sub_dir")
+        check("/rootdir", "_rootdir")
         check("bad.exe", "bad_exe")
         check(
             "punct!#$%&'()*+,-./:;<=>?@[\]^_`{|}~\"uation",
-            "punct___________-_____=______________uation",
+            "punct__________,-_____=______________uation",
         )
         check("w h\ti\nt\re\x0bs\x0cpace", "whitespace")
+        check("uñicode", "uicode")
         check("emo\U0001F95Dji", "emoji")
 
 
