@@ -54,6 +54,9 @@ import {Component} from '@angular/core';
       app-header-reload,
       settings-button {
         flex: 0 0 auto;
+      }
+
+      .brand {
         letter-spacing: -0.025em;
         margin-left: 10px;
         text-rendering: optimizeLegibility;
