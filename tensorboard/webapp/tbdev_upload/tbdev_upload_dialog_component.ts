@@ -23,7 +23,9 @@ import {MatDialogRef} from '@angular/material/dialog';
 export class TbdevUploadDialogComponent {
   readonly commandText: string = 'tensorboard dev upload --logdir {logdir}';
 
-  constructor(private dialogRef: MatDialogRef<TbdevUploadDialogComponent>) {}
+  constructor(
+    private readonly dialogRef: MatDialogRef<TbdevUploadDialogComponent>
+  ) {}
 
   onClose(): void {
     this.dialogRef.close();
