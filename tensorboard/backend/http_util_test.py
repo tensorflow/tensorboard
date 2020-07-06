@@ -226,6 +226,13 @@ class RespondTest(tb_test.TestCase):
             r.headers.get("Content-Disposition"), 'filename="foo.html"',
         )
 
+    def testFilename_setsContentDisposition_handlesQuoting(self):
+        q = wrappers.Request(wtest.EnvironBuilder().get_environ())
+        r = http_util.Respond(q, "hi!", "text/html", filename=r'\"weird"')
+        self.assertEqual(
+            r.headers.get("Content-Disposition"), r'filename="\\\"weird\""',
+        )
+
     def testCsp(self):
         q = wrappers.Request(wtest.EnvironBuilder().get_environ())
         r = http_util.Respond(

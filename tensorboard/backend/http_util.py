@@ -190,7 +190,10 @@ def Respond(
     if content_encoding:
         headers.append(("Content-Encoding", content_encoding))
     if filename:
-        headers.append(("Content-Disposition", 'filename="%s"' % filename))
+        quoted_filename = werkzeug.http.quote_header_value(
+            filename, allow_token=False  # Always use quotes even if not needed.
+        )
+        headers.append(("Content-Disposition", "filename=%s" % quoted_filename))
     if expires > 0:
         e = wsgiref.handlers.format_date_time(time.time() + float(expires))
         headers.append(("Expires", e))
