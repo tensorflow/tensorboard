@@ -24,7 +24,6 @@ import {MatToolbarModule} from '@angular/material/toolbar';
 
 import {CoreModule} from '../core/core_module';
 import {SettingsModule} from '../settings/settings_module';
-import {TbdevUploadModule} from '../tbdev_upload/tbdev_upload_module';
 
 import {HeaderComponent} from './header_component';
 import {PluginSelectorComponent} from './plugin_selector_component';
@@ -49,7 +48,6 @@ import {ReloadContainer} from './reload_container';
     CommonModule,
     CoreModule,
     SettingsModule,
-    TbdevUploadModule,
   ],
 })
 export class HeaderModule {}
