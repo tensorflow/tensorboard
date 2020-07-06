@@ -140,7 +140,7 @@ tf_web_library(
     srcs = [
         "d3.d.ts",
         "d3.html",
-        "@org_d3js//:d3.min.js",
+        "@npm//:node_modules/d3/dist/d3.min.js",
     ],
     path = "/tf-imports",
 )
