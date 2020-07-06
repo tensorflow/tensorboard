@@ -63,9 +63,14 @@ class NPMIPlugin(base_plugin.TBPlugin):
     }
 
   def is_active(self):
-    return bool(
-      self._multiplexer.PluginRunToTagToContent(self.plugin_name)
-    )
+    """Determines whether this plugin is active.
+
+    This plugin is only active if TensorBoard sampled any text summaries.
+
+    Returns:
+      Whether this plugin is active.
+    """
+    return False  # `list_plugins` as called by TB core suffices
 
   def frontend_metadata(self):
     return base_plugin.FrontendMetadata(
