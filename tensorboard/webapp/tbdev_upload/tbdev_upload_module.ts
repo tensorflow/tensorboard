@@ -33,5 +33,6 @@ import {TbdevUploadDialogComponent} from './tbdev_upload_dialog_component';
     MatDialogModule,
     MatIconModule,
   ],
+  providers: [{provide: 'window', useValue: window}],
 })
 export class TbdevUploadModule {}
