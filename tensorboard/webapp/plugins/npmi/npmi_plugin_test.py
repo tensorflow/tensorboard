@@ -94,7 +94,7 @@ class NPMIPluginTest(tf.test.TestCase):
             if col_index == 0:
               python_annotations.append(column)
             else:
-              python_result[len(python_result) - 1].appen(column)
+              python_result[len(python_result) - 1].append(column)
 
 
       with writer.as_default():
@@ -106,19 +106,19 @@ class NPMIPluginTest(tf.test.TestCase):
         summary.metric_results('metric_classes', 'test', tensor_classes, 1)
       writer.close()
 
-    def testRoutesProvided(self):
-      plugin = self.create_plugin()
-      routes = plugin.get_plugin_apps()
-      self.assertIsInstance(routes["/tags"], collections.abc.Callable)
-      self.assertIsInstance(routes["/annotations"], collections.abc.Callable)
-      self.assertIsInstance(routes["/metrics"], collections.abc.Callable)
-      self.assertIsInstance(routes["/values"], collections.abc.Callable)
+  def testRoutesProvided(self):
+    plugin = self.create_plugin()
+    routes = plugin.get_plugin_apps()
+    self.assertIsInstance(routes["/tags"], collections.abc.Callable)
+    self.assertIsInstance(routes["/annotations"], collections.abc.Callable)
+    self.assertIsInstance(routes["/metrics"], collections.abc.Callable)
+    self.assertIsInstance(routes["/values"], collections.abc.Callable)
 
-    def testIsActiveReturnsFalse(self):
-      """The plugin should always return false because this is now handled
-      by TensorBoard core."""
-      plugin = self.create_plugin(generate_testdata=False)
-      self.assertFalse(True)
+  def testIsActiveReturnsFalse(self):
+    """The plugin should always return false because this is now handled
+    by TensorBoard core."""
+    plugin = self.create_plugin(generate_testdata=False)
+    self.assertFalse(plugin.is_active())
 
 
 if __name__ == "__main__":
