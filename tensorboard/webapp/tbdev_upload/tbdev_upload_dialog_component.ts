@@ -66,7 +66,8 @@ export class TbdevUploadDialogComponent implements OnInit, OnDestroy {
       // We assume that logdir is sufficiently long that we want to print it on
       // the next line. If the logdir value is still too long then the CSS will
       // render a scrollbar underneath.
-      return 'tensorboard dev upload --logdir \\\n    ' + logdir;
+      const escapedLogdir = logdir.replace(/'/g, "'\\''");
+      return "tensorboard dev upload --logdir \\\n    '" + escapedLogdir + "'";
     }
   }
 }
