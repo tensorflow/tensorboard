@@ -13,10 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
-import {forkJoin, from} from 'rxjs';
+import {from, forkJoin, Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 
-import {Environment, PluginsListing} from '../types/api';
+import {Environment, PluginsListing, GetRunsResponse} from '../types/api';
+import {Run} from '../core/types';
 
 import {TBHttpClient} from './tb_http_client';
 
@@ -49,11 +50,27 @@ export class TBServerDataSource {
     return this.http.get<PluginsListing>(pathWithParams);
   }
 
-  fetchRuns() {
-    return from(this.tfBackend.runsStore.refresh());
+  fetchRuns(): Observable<Run[]> {
+    const dataFetch = this.http.get<GetRunsResponse>('data/runs');
+    // Force a data load for the polymer-specific portion of the app.
+    // This leads to duplicate requests but hopefully the state is temporary until
+    // we migrate everything from polymer to angular.
+    const polymerRunsRefresh = from(this.tfBackend.runsStore.refresh());
+    // Wait for both operations to complete and return the response from the
+    // explicit http get call.
+    return forkJoin([dataFetch, polymerRunsRefresh]).pipe(
+      map(([runs]) => {
+        return runs.map((run) => {
+          return {
+            id: run,
+            name: run,
+          };
+        });
+      })
+    );
   }
 
-  fetchEnvironment() {
+  fetchEnvironment(): Observable<Environment> {
     // Make a request for data for the angular-specific portion of the app.
     const dataFetch = this.http.get<Environment>('data/environment');
     // Force a data load for the polymer-specific portion of the app.

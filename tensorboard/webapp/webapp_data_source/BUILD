@@ -10,6 +10,7 @@ ng_module(
     ],
     deps = [
         ":http_client",
+        "//tensorboard/webapp/core:types",
         "//tensorboard/webapp/types",
         "@npm//@angular/common",
         "@npm//@angular/core",
