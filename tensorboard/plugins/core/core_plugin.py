@@ -133,9 +133,11 @@ class CorePlugin(base_plugin.TBPlugin):
         """
         if self._data_provider:
             experiment = plugin_util.experiment_id(request.environ)
-            data_location = self._data_provider.data_location(experiment)
+            data_location = self._data_provider.data_location(
+                experiment_id=experiment
+            )
             experiment_metadata = self._data_provider.experiment_metadata(
-                experiment
+                experiment_id=experiment
             )
         else:
             data_location = self._logdir

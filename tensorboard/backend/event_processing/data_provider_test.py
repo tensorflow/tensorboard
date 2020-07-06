@@ -454,7 +454,9 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
             self.assertIsInstance(last, base_provider.BlobSequenceDatum)
             self.assertEqual(last.step, 10)
             self.assertLen(last.values, 2 + 2)
-            blobs = [provider.read_blob(v.blob_key) for v in last.values]
+            blobs = [
+                provider.read_blob(blob_key=v.blob_key) for v in last.values
+            ]
             self.assertEqual(blobs[0], b"10")
             self.assertEqual(blobs[1], b"10")
             self.assertStartsWith(blobs[2], b"\x89PNG")
@@ -463,7 +465,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
             blue1 = blobs[2]
             blue2 = blobs[3]
             red1 = provider.read_blob(
-                result["mondrian"]["red"][-1].values[2].blob_key
+                blob_key=result["mondrian"]["red"][-1].values[2].blob_key
             )
             self.assertEqual(blue1, blue2)
             self.assertNotEqual(blue1, red1)

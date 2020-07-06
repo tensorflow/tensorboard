@@ -187,7 +187,6 @@ class AudioPlugin(base_plugin.TBPlugin):
         # TODO(@wchargin): Move this call from `/audio` (called many
         # times) to `/tags` (called few times) to reduce data provider
         # calls.
-        self._data_provider.list_blob_sequences
         mapping = self._data_provider.list_blob_sequences(
             experiment_id=experiment, plugin_name=metadata.PLUGIN_NAME,
         )
@@ -209,7 +208,7 @@ class AudioPlugin(base_plugin.TBPlugin):
                 "Illegal mime type %r" % mime_type
             )
         blob_key = request.args["blob_key"]
-        data = self._data_provider.read_blob(blob_key)
+        data = self._data_provider.read_blob(blob_key=blob_key)
         return http_util.Respond(request, data, mime_type)
 
     @wrappers.Request.application

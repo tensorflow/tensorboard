@@ -477,7 +477,7 @@ class LocalDebuggerV2DataProvider(provider.DataProvider):
             logdir
         )
 
-    def list_runs(self, experiment_id):
+    def list_runs(self, *, experiment_id):
         """List runs available.
 
         Args:
@@ -502,25 +502,35 @@ class LocalDebuggerV2DataProvider(provider.DataProvider):
         except ValueError as e:
             return None
 
-    def list_scalars(self, experiment_id, plugin_name, run_tag_filter=None):
+    def list_scalars(self, *, experiment_id, plugin_name, run_tag_filter=None):
         del experiment_id, plugin_name, run_tag_filter  # Unused.
         raise TypeError("Debugger V2 DataProvider doesn't support scalars.")
 
     def read_scalars(
-        self, experiment_id, plugin_name, downsample=None, run_tag_filter=None
+        self,
+        *,
+        experiment_id,
+        plugin_name,
+        downsample=None,
+        run_tag_filter=None
     ):
         del experiment_id, plugin_name, downsample, run_tag_filter
         raise TypeError("Debugger V2 DataProvider doesn't support scalars.")
 
     def list_blob_sequences(
-        self, experiment_id, plugin_name, run_tag_filter=None
+        self, *, experiment_id, plugin_name, run_tag_filter=None
     ):
         del experiment_id, plugin_name, run_tag_filter  # Unused currently.
         # TODO(cais): Implement this.
         raise NotImplementedError()
 
     def read_blob_sequences(
-        self, experiment_id, plugin_name, downsample=None, run_tag_filter=None
+        self,
+        *,
+        experiment_id,
+        plugin_name,
+        downsample=None,
+        run_tag_filter=None
     ):
         del experiment_id, downsample  # Unused.
         if plugin_name != PLUGIN_NAME:
@@ -559,7 +569,7 @@ class LocalDebuggerV2DataProvider(provider.DataProvider):
                     ]
         return output
 
-    def read_blob(self, blob_key):
+    def read_blob(self, *, blob_key):
         if blob_key.startswith(ALERTS_BLOB_TAG_PREFIX):
             run, begin, end, alert_type = _parse_alerts_blob_key(blob_key)
             return json.dumps(

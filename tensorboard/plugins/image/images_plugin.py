@@ -273,7 +273,7 @@ class ImagesPlugin(base_plugin.TBPlugin):
         Returns:
           A bytestring of the raw image bytes.
         """
-        return self._data_provider.read_blob(blob_key)
+        return self._data_provider.read_blob(blob_key=blob_key)
 
     def _get_legacy_individual_image(self, run, tag, index, sample):
         """Returns the actual image bytes for a given image.
