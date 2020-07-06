@@ -181,10 +181,7 @@ class ScalarsPluginTest(tf.test.TestCase):
         else:
             with self.assertRaises(errors.NotFoundError):
                 plugin.scalars_impl(
-                    self._SCALAR_TAG,
-                    run_name,
-                    "eid",
-                    scalars_plugin.OutputFormat.JSON,
+                    tag_name, run_name, "eid", scalars_plugin.OutputFormat.JSON,
                 )
 
     @with_runs(
@@ -203,10 +200,7 @@ class ScalarsPluginTest(tf.test.TestCase):
         else:
             with self.assertRaises(errors.NotFoundError):
                 plugin.scalars_impl(
-                    self._SCALAR_TAG,
-                    run_name,
-                    "eid",
-                    scalars_plugin.OutputFormat.CSV,
+                    tag_name, run_name, "eid", scalars_plugin.OutputFormat.CSV,
                 )
 
     def test_scalars_json_with_legacy_scalars(self):

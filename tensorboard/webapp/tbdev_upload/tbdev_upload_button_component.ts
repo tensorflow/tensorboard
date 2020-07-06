@@ -48,7 +48,7 @@ export class TbdevUploadButtonComponent {
   @HostBinding('class.shown') shown: boolean;
 
   constructor(
-    @Inject('window') window: Window,
+    @Inject('window') readonly window: Window,
     private readonly dialog: MatDialog
   ) {
     this.shown = LOCAL_HOSTNAMES.includes(window.location.hostname);

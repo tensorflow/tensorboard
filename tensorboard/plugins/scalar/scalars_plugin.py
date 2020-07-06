@@ -144,6 +144,12 @@ class ScalarsPlugin(base_plugin.TBPlugin):
             values = [(x.wall_time, x.step, x.value) for x in scalars]
         else:
             try:
+                # Check that this tag is actually a scalar summary.
+                meta = self._multiplexer.SummaryMetadata(run, tag)
+                if meta.plugin_data.plugin_name != metadata.PLUGIN_NAME:
+                    raise errors.NotFoundError(
+                        "Data for run=%r, tag=%r is not scalar" % (run, tag)
+                    )
                 tensor_events = self._multiplexer.Tensors(run, tag)
             except KeyError:
                 raise errors.NotFoundError(
