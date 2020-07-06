@@ -14,6 +14,8 @@ limitations under the License.
 ==============================================================================*/
 import {Component, OnInit} from '@angular/core';
 import {Store} from '@ngrx/store';
+import {select} from 'd3';
+
 import {coreLoaded} from './core/actions';
 import {State} from './core/store';
 
@@ -25,7 +27,9 @@ import {State} from './core/store';
   styleUrls: ['./app_container.css'],
 })
 export class AppContainer implements OnInit {
-  constructor(private readonly store: Store<State>) {}
+  constructor(private readonly store: Store<State>) {
+    console.log(select('tb-webapp'));
+  }
 
   ngOnInit() {
     this.store.dispatch(coreLoaded());
