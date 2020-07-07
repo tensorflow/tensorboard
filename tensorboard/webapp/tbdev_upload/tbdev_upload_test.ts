@@ -23,8 +23,9 @@ import {Store} from '@ngrx/store';
 import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
 import {State} from '../core/store';
-import {TbdevUploadDialogComponent} from './tbdev_upload_dialog_component';
 import {TbdevUploadButtonComponent} from './tbdev_upload_button_component';
+import {TbdevUploadDialogComponent} from './tbdev_upload_dialog_component';
+import {TbdevUploadDialogContainer} from './tbdev_upload_dialog_container';
 
 import {createCoreState, createEnvironment, createState} from '../core/testing';
 import {MatIconTestingModule} from '../testing/mat_icon.module';
@@ -45,7 +46,11 @@ describe('tbdev upload test', () => {
         MatIconTestingModule,
         NoopAnimationsModule,
       ],
-      declarations: [TbdevUploadDialogComponent, TbdevUploadButtonComponent],
+      declarations: [
+        TbdevUploadButtonComponent,
+        TbdevUploadDialogComponent,
+        TbdevUploadDialogContainer,
+      ],
       providers: [
         provideMockStore({
           initialState: createState(
@@ -119,7 +124,7 @@ describe('tbdev upload test', () => {
   });
 
   it('prints command and allows it to be copied', async () => {
-    const fixture = TestBed.createComponent(TbdevUploadDialogComponent);
+    const fixture = TestBed.createComponent(TbdevUploadDialogContainer);
     fixture.detectChanges();
 
     const codeElement = fixture.debugElement.query(By.css('code'));
@@ -136,7 +141,7 @@ describe('tbdev upload test', () => {
   });
 
   it('updates with data_location', async () => {
-    const fixture = TestBed.createComponent(TbdevUploadDialogComponent);
+    const fixture = TestBed.createComponent(TbdevUploadDialogContainer);
     fixture.detectChanges();
 
     store.setState(
@@ -164,7 +169,7 @@ describe('tbdev upload test', () => {
   });
 
   it('escapes single quotes in data_location', async () => {
-    const fixture = TestBed.createComponent(TbdevUploadDialogComponent);
+    const fixture = TestBed.createComponent(TbdevUploadDialogContainer);
     fixture.detectChanges();
 
     store.setState(
@@ -185,7 +190,7 @@ describe('tbdev upload test', () => {
   });
 
   it('can be closed with button', async () => {
-    const fixture = TestBed.createComponent(TbdevUploadDialogComponent);
+    const fixture = TestBed.createComponent(TbdevUploadDialogContainer);
     fixture.detectChanges();
 
     const copyElement = fixture.debugElement.query(By.css('.close-button'));

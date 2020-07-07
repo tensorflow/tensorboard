@@ -12,52 +12,28 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, OnInit, OnDestroy} from '@angular/core';
+import {Component, Input} from '@angular/core';
 import {MatDialogRef} from '@angular/material/dialog';
-import {Store, select} from '@ngrx/store';
-import {State, getEnvironment} from '../core/store';
-import {Subject} from 'rxjs';
-import {takeUntil} from 'rxjs/operators';
-
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 @Component({
-  selector: 'tbdev-upload-dialog',
+  selector: 'tbdev-upload-dialog-component',
   templateUrl: './tbdev_upload_dialog_component.ng.html',
   styleUrls: ['./tbdev_upload_dialog_component.css'],
 })
-export class TbdevUploadDialogComponent implements OnInit, OnDestroy {
-  commandText: string = this.getCommandText('');
-  readonly environment$ = this.store.pipe(select(getEnvironment));
-
-  private ngUnsubscribe = new Subject();
-
+export class TbdevUploadDialogComponent {
   constructor(
-    private dialogRef: MatDialogRef<TbdevUploadDialogComponent>,
-    private store: Store<State>
+    private readonly dialogRef: MatDialogRef<TbdevUploadDialogComponent>
   ) {}
 
-  ngOnInit() {
-    this.environment$
-      .pipe(takeUntil(this.ngUnsubscribe))
-      .subscribe((environment) => {
-        if (environment && environment.data_location) {
-          this.commandText = this.getCommandText(environment.data_location);
-        }
-      });
-  }
-
-  ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
-  }
+  @Input()
+  logdir!: string;
 
   onClose(): void {
     this.dialogRef.close();
   }
 
-  private getCommandText(logdir?: string) {
-    if (!logdir) {
+  getCommandText(): string {
+    if (!this.logdir) {
       // Without logdir we print a literal '{logdir}' string that user will
       // have to manually substitute.
       return 'tensorboard dev upload --logdir {logdir}';
@@ -66,7 +42,7 @@ export class TbdevUploadDialogComponent implements OnInit, OnDestroy {
       // We assume that logdir is sufficiently long that we want to print it on
       // the next line. If the logdir value is still too long then the CSS will
       // render a scrollbar underneath.
-      const escapedLogdir = logdir.replace(/'/g, "'\\''");
+      const escapedLogdir = this.logdir.replace(/'/g, "'\\''");
       return "tensorboard dev upload --logdir \\\n    '" + escapedLogdir + "'";
     }
   }

@@ -8,6 +8,7 @@ ng_module(
     srcs = [
         "tbdev_upload_button_component.ts",
         "tbdev_upload_dialog_component.ts",
+        "tbdev_upload_dialog_container.ts",
         "tbdev_upload_module.ts",
     ],
     assets = [
