@@ -33,12 +33,11 @@ ng_module(
         "//tensorboard/webapp/plugins",
         "//tensorboard/webapp/reloader",
         "//tensorboard/webapp/settings",
+        "//tensorboard/webapp/third_party:d3",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@ngrx/effects",
         "@npm//@ngrx/store",
-        "@npm//@types/d3",
-        "@npm//d3",
     ],
 )
 
