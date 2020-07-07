@@ -44,8 +44,8 @@ def _missing_run_error_response(request):
 
 class NPMIPlugin(base_plugin.TBPlugin):
     """nPMI Plugin for Tensorboard."""
-    plugin_name = "npmi"
 
+    plugin_name = "npmi"
 
     def __init__(self, context):
         """Instantiates the nPMI Plugin via Tensorboard core.
@@ -56,7 +56,6 @@ class NPMIPlugin(base_plugin.TBPlugin):
         super(NPMIPlugin, self).__init__(context)
         self._logdir = context.logdir
         self._multiplexer = context.multiplexer
-
 
     def get_plugin_apps(self):
         return {

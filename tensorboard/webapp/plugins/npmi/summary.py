@@ -44,9 +44,7 @@ def metric_results(name, title, guest, step=None, description=None):
         `tf.summary.experimental.get_step()` is None.
     """
     with tf.summary.experimental.summary_scope(
-        name,
-        title,
-        values=[guest, step],
+        name, title, values=[guest, step],
     ) as (tag, _):
         return tf.summary.write(
             tag=tag,
@@ -60,7 +58,6 @@ def _create_summary_metadata(description, title):
     return summary_pb2.SummaryMetadata(
         summary_description=description,
         plugin_data=summary_pb2.SummaryMetadata.PluginData(
-            plugin_name='npmi',
-            content=title.encode('utf_8'),  # table title
+            plugin_name='npmi', content=title.encode('utf_8'),  # table title
         ),
     )
