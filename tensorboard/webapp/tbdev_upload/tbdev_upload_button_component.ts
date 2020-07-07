@@ -24,12 +24,7 @@ const LOCAL_HOSTNAMES: string[] = ['localhost', '127.0.0.1'];
 @Component({
   selector: 'tbdev-upload-button',
   template: `
-    <button
-      mat-stroked-button
-      *ngIf="shown"
-      (click)="openDialog()"
-      class="button"
-    >
+    <button mat-stroked-button *ngIf="shown" (click)="openDialog()">
       <span class="button-contents">
         <mat-icon svgIcon="info_outline_24px"></mat-icon>
         Upload
@@ -40,7 +35,7 @@ const LOCAL_HOSTNAMES: string[] = ['localhost', '127.0.0.1'];
     `
       /* More precise selector than angular material selectors to override
          styling. */
-      button.button.mat-stroked-button {
+      button.mat-stroked-button {
         background-color: rgba(198, 202, 209, 0.2);
         border: 1px solid #e9e9e9;
       }
