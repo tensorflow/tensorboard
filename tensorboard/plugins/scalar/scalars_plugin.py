@@ -64,7 +64,7 @@ class ScalarsPlugin(base_plugin.TBPlugin):
         self._downsample_to = (context.sampling_hints or {}).get(
             self.plugin_name, _DEFAULT_DOWNSAMPLING
         )
-        if context.flags and context.flags.generic_data != "false":
+        if not context.flags or context.flags.generic_data != "false":
             self._data_provider = context.data_provider
         else:
             self._data_provider = None
@@ -144,6 +144,12 @@ class ScalarsPlugin(base_plugin.TBPlugin):
             values = [(x.wall_time, x.step, x.value) for x in scalars]
         else:
             try:
+                # Check that this tag is actually a scalar summary.
+                meta = self._multiplexer.SummaryMetadata(run, tag)
+                if meta.plugin_data.plugin_name != metadata.PLUGIN_NAME:
+                    raise errors.NotFoundError(
+                        "Data for run=%r, tag=%r is not scalar" % (run, tag)
+                    )
                 tensor_events = self._multiplexer.Tensors(run, tag)
             except KeyError:
                 raise errors.NotFoundError(

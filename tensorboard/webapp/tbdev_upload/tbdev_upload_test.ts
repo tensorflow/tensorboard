@@ -79,7 +79,7 @@ describe('tbdev upload test', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    expect(fixture.debugElement.classes.shown).toBeUndefined();
+    expect(fixture.debugElement.classes['shown']).toBeUndefined();
     expect(fixture.debugElement.children.length).toEqual(0);
   });
 
@@ -89,7 +89,7 @@ describe('tbdev upload test', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    expect(fixture.debugElement.classes.shown).toBeDefined();
+    expect(fixture.debugElement.classes['shown']).toBeDefined();
     expect(fixture.debugElement.children.length).toEqual(1);
   });
 
@@ -99,7 +99,7 @@ describe('tbdev upload test', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    expect(fixture.debugElement.classes.shown).toBeDefined();
+    expect(fixture.debugElement.classes['shown']).toBeDefined();
     expect(fixture.debugElement.children.length).toEqual(1);
   });
 

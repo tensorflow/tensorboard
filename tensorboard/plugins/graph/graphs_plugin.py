@@ -215,7 +215,9 @@ class GraphsPlugin(base_plugin.TBPlugin):
             except IndexError:
                 return None
             # Always use the blob_key approach for now, even if there is a direct url.
-            graph_raw = self._data_provider.read_blob(blob_ref.blob_key)
+            graph_raw = self._data_provider.read_blob(
+                blob_key=blob_ref.blob_key
+            )
             # This method ultimately returns pbtxt, but we have to deserialize and
             # later reserialize this anyway, because a) this way we accept binary
             # protobufs too, and b) below we run `prepare_graph_for_ui` on the graph.

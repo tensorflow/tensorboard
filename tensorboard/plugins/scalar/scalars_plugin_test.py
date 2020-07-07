@@ -23,12 +23,15 @@ import argparse
 import collections.abc
 import csv
 import functools
+import json
 import os.path
 import unittest
 
 from six import StringIO
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
+from werkzeug import test as werkzeug_test
+from werkzeug import wrappers
 
 from tensorboard import errors
 from tensorboard.backend import application
@@ -168,76 +171,37 @@ class ScalarsPluginTest(tf.test.TestCase):
             plugin.index_impl("eid"),
         )
 
-    @with_runs(
-        [_RUN_WITH_LEGACY_SCALARS, _RUN_WITH_SCALARS, _RUN_WITH_HISTOGRAM]
-    )
-    def _test_scalars_json(self, plugin, run_name, tag_name, should_work=True):
-        if should_work:
-            (data, mime_type) = plugin.scalars_impl(
-                tag_name, run_name, "eid", scalars_plugin.OutputFormat.JSON
+    @with_runs([_RUN_WITH_LEGACY_SCALARS])
+    def test_scalars_with_legacy_scalars(self, plugin):
+        data, mime_type = plugin.scalars_impl(
+            self._LEGACY_SCALAR_TAG,
+            self._RUN_WITH_LEGACY_SCALARS,
+            "eid",
+            scalars_plugin.OutputFormat.JSON,
+        )
+        self.assertEqual("application/json", mime_type)
+        self.assertEqual(len(data), self._STEPS)
+
+    @with_runs([_RUN_WITH_SCALARS])
+    def test_scalars_with_scalars(self, plugin):
+        data, mime_type = plugin.scalars_impl(
+            "%s/scalar_summary" % self._SCALAR_TAG,
+            self._RUN_WITH_SCALARS,
+            "eid",
+            scalars_plugin.OutputFormat.JSON,
+        )
+        self.assertEqual("application/json", mime_type)
+        self.assertEqual(len(data), self._STEPS)
+
+    @with_runs([_RUN_WITH_HISTOGRAM])
+    def test_scalars_with_histogram(self, plugin):
+        with self.assertRaises(errors.NotFoundError):
+            plugin.scalars_impl(
+                self._HISTOGRAM_TAG,
+                self._RUN_WITH_HISTOGRAM,
+                "eid",
+                scalars_plugin.OutputFormat.JSON,
             )
-            self.assertEqual("application/json", mime_type)
-            self.assertEqual(len(data), self._STEPS)
-        else:
-            with self.assertRaises(errors.NotFoundError):
-                plugin.scalars_impl(
-                    self._SCALAR_TAG,
-                    run_name,
-                    "eid",
-                    scalars_plugin.OutputFormat.JSON,
-                )
-
-    @with_runs(
-        [_RUN_WITH_LEGACY_SCALARS, _RUN_WITH_SCALARS, _RUN_WITH_HISTOGRAM]
-    )
-    def _test_scalars_csv(self, plugin, run_name, tag_name, should_work=True):
-        if should_work:
-            (data, mime_type) = plugin.scalars_impl(
-                tag_name, run_name, "eid", scalars_plugin.OutputFormat.CSV
-            )
-            self.assertEqual("text/csv", mime_type)
-            s = StringIO(data)
-            reader = csv.reader(s)
-            self.assertEqual(["Wall time", "Step", "Value"], next(reader))
-            self.assertEqual(len(list(reader)), self._STEPS)
-        else:
-            with self.assertRaises(errors.NotFoundError):
-                plugin.scalars_impl(
-                    self._SCALAR_TAG,
-                    run_name,
-                    "eid",
-                    scalars_plugin.OutputFormat.CSV,
-                )
-
-    def test_scalars_json_with_legacy_scalars(self):
-        self._test_scalars_json(
-            self._RUN_WITH_LEGACY_SCALARS, self._LEGACY_SCALAR_TAG
-        )
-
-    def test_scalars_json_with_scalars(self):
-        self._test_scalars_json(
-            self._RUN_WITH_SCALARS, "%s/scalar_summary" % self._SCALAR_TAG
-        )
-
-    def test_scalars_json_with_histogram(self):
-        self._test_scalars_json(
-            self._RUN_WITH_HISTOGRAM, self._HISTOGRAM_TAG, should_work=False
-        )
-
-    def test_scalars_csv_with_legacy_scalars(self):
-        self._test_scalars_csv(
-            self._RUN_WITH_LEGACY_SCALARS, self._LEGACY_SCALAR_TAG
-        )
-
-    def test_scalars_csv_with_scalars(self):
-        self._test_scalars_csv(
-            self._RUN_WITH_SCALARS, "%s/scalar_summary" % self._SCALAR_TAG
-        )
-
-    def test_scalars_csv_with_histogram(self):
-        self._test_scalars_csv(
-            self._RUN_WITH_HISTOGRAM, self._HISTOGRAM_TAG, should_work=False
-        )
 
     @with_runs([_RUN_WITH_LEGACY_SCALARS])
     def test_active_with_legacy_scalars(self, plugin):
@@ -265,6 +229,37 @@ class ScalarsPluginTest(tf.test.TestCase):
             self.assertFalse(plugin.is_active())
         else:
             self.assertTrue(plugin.is_active())
+
+    @with_runs([_RUN_WITH_SCALARS])
+    def test_download_url_json(self, plugin):
+        wsgi_app = application.TensorBoardWSGI([plugin])
+        server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)
+        response = server.get(
+            "/data/plugin/scalars/scalars?run=%s&tag=%s"
+            % (self._RUN_WITH_SCALARS, "%s/scalar_summary" % self._SCALAR_TAG,)
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("application/json", response.headers["Content-Type"])
+        payload = json.loads(response.get_data())
+        self.assertEqual(len(payload), self._STEPS)
+
+    @with_runs([_RUN_WITH_SCALARS])
+    def test_download_url_csv(self, plugin):
+        wsgi_app = application.TensorBoardWSGI([plugin])
+        server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)
+        response = server.get(
+            "/data/plugin/scalars/scalars?run=%s&tag=%s&format=csv"
+            % (self._RUN_WITH_SCALARS, "%s/scalar_summary" % self._SCALAR_TAG,)
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            "text/csv; charset=utf-8", response.headers["Content-Type"]
+        )
+        payload = response.get_data()
+        s = StringIO(payload.decode("utf-8"))
+        reader = csv.reader(s)
+        self.assertEqual(["Wall time", "Step", "Value"], next(reader))
+        self.assertEqual(len(list(reader)), self._STEPS)
 
 
 if __name__ == "__main__":
