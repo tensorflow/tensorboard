@@ -31,6 +31,7 @@ from werkzeug import wrappers
 
 from google.protobuf import json_format
 from tensorboard.backend import application
+from tensorboard.backend.event_processing import data_provider
 from tensorboard.backend.event_processing import (
     plugin_event_multiplexer as event_multiplexer,
 )
@@ -162,10 +163,12 @@ class CustomScalarsPluginTest(tf.test.TestCase):
         multiplexer = event_multiplexer.EventMultiplexer()
         multiplexer.AddRunsFromDirectory(logdir)
         multiplexer.Reload()
+        provider = data_provider.MultiplexerDataProvider(multiplexer, logdir)
         plugin_name_to_instance = {}
         context = base_plugin.TBContext(
             logdir=logdir,
             multiplexer=multiplexer,
+            data_provider=provider,
             plugin_name_to_instance=plugin_name_to_instance,
         )
         scalars_plugin_instance = scalars_plugin.ScalarsPlugin(context)
