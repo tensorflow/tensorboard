@@ -73,7 +73,7 @@ class NPMIPluginTest(tf.test.TestCase):
                 ["Description", "A", "B"],
                 ["name_1", 1.0, -1.0],
                 ["name_2", -0.5, 0.5],
-            ]
+            ],
         }
         for run_name in run_names:
             subdir = os.path.join(self.logdir, run_name)
@@ -100,12 +100,15 @@ class NPMIPluginTest(tf.test.TestCase):
                 tensor_result = tf.convert_to_tensor(python_result)
                 tensor_annotations = tf.convert_to_tensor(python_annotations)
                 tensor_classes = tf.convert_to_tensor(python_classes)
-                summary.metric_results("metric_results", "test", tensor_result,
-                                       1)
-                summary.metric_results("metric_annotations", "test",
-                                       tensor_annotations, 1)
-                summary.metric_results("metric_classes", "test", tensor_classes,
-                                       1)
+                summary.metric_results(
+                    "metric_results", "test", tensor_result, 1
+                )
+                summary.metric_results(
+                    "metric_annotations", "test", tensor_annotations, 1
+                )
+                summary.metric_results(
+                    "metric_classes", "test", tensor_classes, 1
+                )
             writer.close()
 
     def testRoutesProvided(self):
@@ -133,10 +136,12 @@ class NPMIPluginTest(tf.test.TestCase):
         plugin = self.create_plugin()
         annotations = plugin.annotations_impl()
         annotations = json.loads(annotations)
-        self.assertItemsEqual(["name_1", "name_2"],
-                              annotations["run_1"]["annotations"])
-        self.assertItemsEqual(["name_1", "name_2"],
-                              annotations["run_2"]["annotations"])
+        self.assertItemsEqual(
+            ["name_1", "name_2"], annotations["run_1"]["annotations"]
+        )
+        self.assertItemsEqual(
+            ["name_1", "name_2"], annotations["run_2"]["annotations"]
+        )
 
     def testMetrics(self):
         plugin = self.create_plugin()

@@ -58,6 +58,6 @@ def _create_summary_metadata(description, title):
     return summary_pb2.SummaryMetadata(
         summary_description=description,
         plugin_data=summary_pb2.SummaryMetadata.PluginData(
-            plugin_name='npmi', content=title.encode('utf_8'),  # table title
+            plugin_name="npmi", content=title.encode("utf_8"),  # table title
         ),
     )
