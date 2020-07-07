@@ -302,25 +302,7 @@ class CustomScalarsPluginTest(tf.test.TestCase):
         self.assertDictEqual({}, local_plugin.layout_impl())
 
     def testIsActive(self):
-        self.assertTrue(self.plugin.is_active())
-
-    def testIsNotActiveDueToNoLayout(self):
-        # The bar directory contains scalar data but no layout.
-        local_plugin = self.createPlugin(os.path.join(self.logdir, "bar"))
-        self.assertFalse(local_plugin.is_active())
-
-    def testIsNotActiveDueToNoScalarsData(self):
-        # Generate a directory with a layout but no scalars data.
-        directory = os.path.join(self.logdir, "no_scalars")
-        with test_util.FileWriterCache.get(directory) as writer:
-            writer.add_summary(
-                test_util.ensure_tb_summary_proto(
-                    summary.pb(self.logdir_layout)
-                )
-            )
-
-        local_plugin = self.createPlugin(directory)
-        self.assertFalse(local_plugin.is_active())
+        self.assertFalse(self.plugin.is_active())
 
 
 if __name__ == "__main__":
