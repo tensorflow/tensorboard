@@ -113,7 +113,7 @@ class Context(object):
         """
         return self._convert_plugin_metadata(
             self._tb_context.data_provider.list_tensors(
-                experiment_id,
+                experiment_id=experiment_id,
                 plugin_name=metadata.PLUGIN_NAME,
                 run_tag_filter=run_tag_filter,
             )
@@ -131,7 +131,8 @@ class Context(object):
         """
         return self._convert_plugin_metadata(
             self._tb_context.data_provider.list_scalars(
-                experiment_id, plugin_name=scalar_metadata.PLUGIN_NAME
+                experiment_id=experiment_id,
+                plugin_name=scalar_metadata.PLUGIN_NAME,
             )
         )
 
@@ -149,7 +150,7 @@ class Context(object):
           data, which may be a subset of what was requested.
         """
         data_provider_output = self._tb_context.data_provider.read_scalars(
-            experiment_id,
+            experiment_id=experiment_id,
             plugin_name=scalar_metadata.PLUGIN_NAME,
             run_tag_filter=run_tag_filter,
             # TODO(#3436): We assume that downsampling always includes
