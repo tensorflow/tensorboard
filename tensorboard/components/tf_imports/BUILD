@@ -136,13 +136,24 @@ tf_web_library(
 )
 
 tf_web_library(
+    name = "d3_lib",
+    srcs = [
+        "@npm//:node_modules/d3/dist/d3.min.js",
+    ],
+    path = "/tf-imports",
+    strip_prefix = "node_modules/d3/dist",
+)
+
+tf_web_library(
     name = "d3",
     srcs = [
         "d3.d.ts",
         "d3.html",
-        "@npm//:node_modules/d3/dist/d3.min.js",
     ],
     path = "/tf-imports",
+    deps = [
+        ":d3_lib",
+    ],
 )
 
 tf_web_library(
