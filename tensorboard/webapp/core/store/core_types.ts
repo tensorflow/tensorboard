@@ -36,7 +36,7 @@ export interface CoreState {
   pageSize: number;
   environment: Environment;
   // TODO(stephanwlee): move these state to the `runs` features.
-  // For now, we want them here for Polymer interp states reasons, too.
+  // For now, we want them here for Polymer interop states reasons, too.
   polymerInteropRuns: Run[];
   polymerInteropRunSelection: Map<RunId, boolean>;
 }

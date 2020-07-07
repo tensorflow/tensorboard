@@ -108,7 +108,7 @@ const reducer = createReducer(
   }),
   on(actions.fetchRunSucceeded, (state, {runs}) => {
     // Do not modify the runSelection since the Polymer component is the
-    // force of truth for the Polymer Interop.
+    // source of truth for the Polymer Interop.
     return {...state, polymerInteropRuns: runs};
   }),
   on(actions.polymerInteropRunSelectionChanged, (state, {nextSelection}) => {
