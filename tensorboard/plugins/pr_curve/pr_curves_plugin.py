@@ -100,8 +100,8 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
         response_mapping = {}
         rtf = provider.RunTagFilter(runs, [tag])
         read_result = self._data_provider.read_tensors(
-            experiment,
-            metadata.PLUGIN_NAME,
+            experiment_id=experiment,
+            plugin_name=metadata.PLUGIN_NAME,
             run_tag_filter=rtf,
             downsample=self._downsample_to,
         )
@@ -143,7 +143,7 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
           The JSON object for the tags route response.
         """
         mapping = self._data_provider.list_tensors(
-            experiment, metadata.PLUGIN_NAME
+            experiment_id=experiment, plugin_name=metadata.PLUGIN_NAME
         )
         result = {run: {} for run in mapping}
         for (run, tag_to_time_series) in six.iteritems(mapping):
