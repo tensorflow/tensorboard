@@ -28,17 +28,20 @@ limitations under the License.
   height: 100%;
   font-family: Roboto;
   font-size: 15px;
+  overflow-y: auto;
   padding: 50px;
 }
 
 .details-container {
+  display: inline-flex;
   vertical-align: middle;
+  width: 100%;
 }
 
 .details {
   display: inline-block;
   margin: 10px 60px;
-  width: 440px;
+  width: 50%;
 }
 
 .exhibit-container {
