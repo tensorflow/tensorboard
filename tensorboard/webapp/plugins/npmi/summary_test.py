@@ -37,7 +37,7 @@ class SummaryTest(tf.test.TestCase):
         self.assertEqual(metadata.plugin_data.content, b"test")
 
     def testMetricResults(self):
-        python_annotations = ["name_1", 'name_2"]
+        python_annotations = ["name_1", "name_2"]
         tensor_annotations = tf.convert_to_tensor(python_annotations)
         self.write_results("metric_annotations", "test", tensor_annotations)
         event_files = sorted(glob.glob(os.path.join(self.get_temp_dir(), "*")))
