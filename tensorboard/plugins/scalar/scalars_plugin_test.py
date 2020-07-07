@@ -80,9 +80,34 @@ class ScalarsPluginTest(tf.test.TestCase):
         multiplexer.AddRunsFromDirectory(logdir)
         multiplexer.Reload()
 
+<<<<<<< HEAD
         provider = data_provider.MultiplexerDataProvider(multiplexer, logdir)
         ctx = base_plugin.TBContext(logdir=logdir, data_provider=provider,)
         return scalars_plugin.ScalarsPlugin(ctx)
+=======
+    def with_runs(run_names):
+        """Run a test with an initialized scalars plugin.
+
+        The decorated function will receive an initialized
+        `ScalarsPlugin` object as its first positional argument.
+        """
+
+        def decorator(fn):
+            @functools.wraps(fn)
+            def wrapper(self, *args, **kwargs):
+                (logdir, multiplexer) = self.load_runs(run_names)
+                provider = data_provider.MultiplexerDataProvider(
+                    multiplexer, logdir
+                )
+                ctx = base_plugin.TBContext(
+                    logdir=logdir, data_provider=provider,
+                )
+                fn(self, scalars_plugin.ScalarsPlugin(ctx), *args, **kwargs)
+
+            return wrapper
+
+        return decorator
+>>>>>>> 1be9847e37ddd44eaf77b602bda180a73149720c
 
     def generate_run(self, logdir, run_name):
         subdir = os.path.join(logdir, run_name)
@@ -175,18 +200,28 @@ class ScalarsPluginTest(tf.test.TestCase):
                 scalars_plugin.OutputFormat.JSON,
             )
 
+<<<<<<< HEAD
     def test_active_with_legacy_scalars(self):
         plugin = self.load_plugin([self._RUN_WITH_LEGACY_SCALARS])
         self.assertFalse(plugin.is_active())
 
     def test_active_with_scalars(self):
         plugin = self.load_plugin([self._RUN_WITH_SCALARS])
+=======
+    @with_runs([_RUN_WITH_LEGACY_SCALARS])
+    def test_active_with_legacy_scalars(self, plugin):
+        self.assertFalse(plugin.is_active())
+
+    @with_runs([_RUN_WITH_SCALARS])
+    def test_active_with_scalars(self, plugin):
+>>>>>>> 1be9847e37ddd44eaf77b602bda180a73149720c
         self.assertFalse(plugin.is_active())
 
     def test_active_with_histogram(self):
         plugin = self.load_plugin([self._RUN_WITH_HISTOGRAM])
         self.assertFalse(plugin.is_active())
 
+<<<<<<< HEAD
     def test_active_with_all(self):
         plugin = self.load_plugin(
             [
@@ -195,6 +230,12 @@ class ScalarsPluginTest(tf.test.TestCase):
                 self._RUN_WITH_HISTOGRAM,
             ]
         )
+=======
+    @with_runs(
+        [_RUN_WITH_LEGACY_SCALARS, _RUN_WITH_SCALARS, _RUN_WITH_HISTOGRAM]
+    )
+    def test_active_with_all(self, plugin):
+>>>>>>> 1be9847e37ddd44eaf77b602bda180a73149720c
         self.assertFalse(plugin.is_active())
 
     def test_download_url_json(self):
