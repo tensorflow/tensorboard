@@ -38,11 +38,11 @@ tf_web_library(
 )
 
 tensorboard_html_binary(
-    name = "index",
+    name = "legacy",
     compile = False,
     input_path = "/tensorboard.html",
-    js_path = "/index.js",
-    output_path = "/index.html",
+    js_path = "/legacy.js",
+    output_path = "/legacy.html",
     deps = [":tensorboard"],
 )
 
