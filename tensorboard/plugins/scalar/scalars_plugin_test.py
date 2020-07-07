@@ -82,7 +82,7 @@ class ScalarsPluginTest(tf.test.TestCase):
         return (logdir, multiplexer)
 
     def with_runs(run_names):
-        """Run a test with a bare multiplexer and with a `data_provider`.
+        """Run a test with an initialized scalars plugin.
 
         The decorated function will receive an initialized
         `ScalarsPlugin` object as its first positional argument.
@@ -92,25 +92,13 @@ class ScalarsPluginTest(tf.test.TestCase):
             @functools.wraps(fn)
             def wrapper(self, *args, **kwargs):
                 (logdir, multiplexer) = self.load_runs(run_names)
-                with self.subTest("bare multiplexer"):
-                    ctx = base_plugin.TBContext(
-                        logdir=logdir,
-                        multiplexer=multiplexer,
-                        flags=argparse.Namespace(generic_data="false"),
-                    )
-                    fn(self, scalars_plugin.ScalarsPlugin(ctx), *args, **kwargs)
-                with self.subTest("generic data provider"):
-                    flags = argparse.Namespace(generic_data="true")
-                    provider = data_provider.MultiplexerDataProvider(
-                        multiplexer, logdir
-                    )
-                    ctx = base_plugin.TBContext(
-                        flags=flags,
-                        logdir=logdir,
-                        multiplexer=multiplexer,
-                        data_provider=provider,
-                    )
-                    fn(self, scalars_plugin.ScalarsPlugin(ctx), *args, **kwargs)
+                provider = data_provider.MultiplexerDataProvider(
+                    multiplexer, logdir
+                )
+                ctx = base_plugin.TBContext(
+                    logdir=logdir, data_provider=provider,
+                )
+                fn(self, scalars_plugin.ScalarsPlugin(ctx), *args, **kwargs)
 
             return wrapper
 
@@ -205,17 +193,11 @@ class ScalarsPluginTest(tf.test.TestCase):
 
     @with_runs([_RUN_WITH_LEGACY_SCALARS])
     def test_active_with_legacy_scalars(self, plugin):
-        if plugin._data_provider:
-            self.assertFalse(plugin.is_active())
-        else:
-            self.assertTrue(plugin.is_active())
+        self.assertFalse(plugin.is_active())
 
     @with_runs([_RUN_WITH_SCALARS])
     def test_active_with_scalars(self, plugin):
-        if plugin._data_provider:
-            self.assertFalse(plugin.is_active())
-        else:
-            self.assertTrue(plugin.is_active())
+        self.assertFalse(plugin.is_active())
 
     @with_runs([_RUN_WITH_HISTOGRAM])
     def test_active_with_histogram(self, plugin):
@@ -225,10 +207,7 @@ class ScalarsPluginTest(tf.test.TestCase):
         [_RUN_WITH_LEGACY_SCALARS, _RUN_WITH_SCALARS, _RUN_WITH_HISTOGRAM]
     )
     def test_active_with_all(self, plugin):
-        if plugin._data_provider:
-            self.assertFalse(plugin.is_active())
-        else:
-            self.assertTrue(plugin.is_active())
+        self.assertFalse(plugin.is_active())
 
     @with_runs([_RUN_WITH_SCALARS])
     def test_download_url_json(self, plugin):
