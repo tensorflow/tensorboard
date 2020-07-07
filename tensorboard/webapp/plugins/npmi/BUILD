@@ -30,9 +30,9 @@ py_test(
         ":summary",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard:plugin_util",
-        "//tensorboard/plugins:base_plugin",
         "//tensorboard/backend/event_processing:data_provider",
         "//tensorboard/backend/event_processing:event_multiplexer",
+        "//tensorboard/plugins:base_plugin",
         "//tensorboard/util:test_util",
     ],
 )
