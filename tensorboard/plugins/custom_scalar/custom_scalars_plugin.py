@@ -121,9 +121,12 @@ class CustomScalarsPlugin(base_plugin.TBPlugin):
     def download_data_route(self, request):
         run = request.args.get("run")
         tag = request.args.get("tag")
+        experiment = plugin_util.experiment_id(request.environ)
         response_format = request.args.get("format")
         try:
-            body, mime_type = self.download_data_impl(run, tag, response_format)
+            body, mime_type = self.download_data_impl(
+                run, tag, experiment, response_format
+            )
         except ValueError as e:
             return http_util.Respond(
                 request=request,
