@@ -65,13 +65,12 @@ export class CoreEffects {
             this.webappDataSource.fetchPluginsListing(
               enabledExperimentalPlugins
             ),
-            this.webappDataSource.fetchEnvironment(),
+            this.fetchEnvironment(),
             this.webappDataSource.fetchRuns()
           ).pipe(
             map(
-              ([plugins, environment]) => {
+              ([plugins]) => {
                 this.store.dispatch(pluginsListingLoaded({plugins}));
-                this.store.dispatch(environmentLoaded({environment}));
               },
               catchError(() => {
                 this.store.dispatch(pluginsListingFailed());
@@ -83,6 +82,14 @@ export class CoreEffects {
       ),
     {dispatch: false}
   );
+
+  private fetchEnvironment() {
+    return this.webappDataSource.fetchEnvironment().pipe(
+      tap((environment) => {
+        this.store.dispatch(environmentLoaded({environment}));
+      })
+    );
+  }
 
   constructor(
     private actions$: Actions,
