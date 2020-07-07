@@ -77,8 +77,7 @@ class NPMIPlugin(base_plugin.TBPlugin):
       is_ng_component=True, tab_name="npmi", disable_reload=True
     )
 
-  @wrappers.Request.application
-  def serve_tags(self, request):
+  def tags_impl(self):
     mapping = self._multiplexer.PluginRunToTagToContent(self.plugin_name)
     result = {run: {} for run in self._multiplexer.Runs()}
     for (run, tag_to_content) in six.iteritems(mapping):
@@ -88,10 +87,9 @@ class NPMIPlugin(base_plugin.TBPlugin):
           "table": summary_metadata.plugin_data.content.decode("utf-8")
         }
     contents = json.dumps(result, sort_keys=True)
-    return http_util.Respond(request, contents, "application/json")
+    return contents
 
-  @wrappers.Request.application
-  def serve_annotations(self, request):
+  def annotations_impl(self):
     mapping = self._multiplexer.PluginRunToTagToContent(self.plugin_name)
     result = {run: {} for run in self._multiplexer.Runs()}
     for (run, _) in six.iteritems(mapping):
@@ -104,10 +102,9 @@ class NPMIPlugin(base_plugin.TBPlugin):
         "annotations": event_data
       }
     contents = json.dumps(result)
-    return http_util.Respond(request, contents, "application/json")
+    return contents
 
-  @wrappers.Request.application
-  def serve_metrics(self, request):
+  def metrics_impl(self):
     mapping = self._multiplexer.PluginRunToTagToContent(self.plugin_name)
     result = {run: {} for run in self._multiplexer.Runs()}
     for (run, _) in six.iteritems(mapping):
@@ -120,10 +117,9 @@ class NPMIPlugin(base_plugin.TBPlugin):
         "metrics": event_data
       }
     contents = json.dumps(result)
-    return http_util.Respond(request, contents, "application/json")
+    return contents
 
-  @wrappers.Request.application
-  def serve_values(self, request):
+  def values_impl(self):
     mapping = self._multiplexer.PluginRunToTagToContent(self.plugin_name)
     result = {run: {} for run in self._multiplexer.Runs()}
     for (run, _) in six.iteritems(mapping):
@@ -135,4 +131,24 @@ class NPMIPlugin(base_plugin.TBPlugin):
     contents = json.dumps(result)
     # This is ugly, but there should never be a NaN string to break this
     contents = contents.replace("NaN", "null")
+    return contents
+
+  @wrappers.Request.application
+  def serve_tags(self, request):
+    contents = self.tags_impl()
+    return http_util.Respond(request, contents, "application/json")
+
+  @wrappers.Request.application
+  def serve_annotations(self, request):
+    contents = self.annotations_impl()
+    return http_util.Respond(request, contents, "application/json")
+
+  @wrappers.Request.application
+  def serve_metrics(self, request):
+    contents = self.metrics_impl()
+    return http_util.Respond(request, contents, "application/json")
+
+  @wrappers.Request.application
+  def serve_values(self, request):
+    contents = self.values_impl()
     return http_util.Respond(request, contents, "application/json")

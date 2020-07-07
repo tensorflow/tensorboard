@@ -21,6 +21,7 @@ from __future__ import print_function
 
 import collections.abc
 import os
+import json
 import numpy as np
 import tensorflow as tf
 
@@ -65,13 +66,13 @@ class NPMIPluginTest(tf.test.TestCase):
     ground_truth = {
         "run_1": [
             ['Description', 'A', 'B'],
-            ['name_1', '0.1', '0.3'],
-            ['name_2', '0.2', '0.4'],
+            ['name_1', 1.0, -1.0],
+            ['name_2', -0.5, 0.5],
         ],
         "run_2": [
             ['Description', 'A', 'B'],
-            ['name_1', '0.3', '0.5'],
-            ['name_2', '0.2', '0.1'],
+            ['name_1', 1.0, -1.0],
+            ['name_2', -0.5, 0.5],
         ]
     }
     for run_name in run_names:
@@ -95,8 +96,6 @@ class NPMIPluginTest(tf.test.TestCase):
               python_annotations.append(column)
             else:
               python_result[len(python_result) - 1].append(column)
-
-
       with writer.as_default():
         tensor_result = tf.convert_to_tensor(python_result)
         tensor_annotations = tf.convert_to_tensor(python_annotations)
@@ -113,6 +112,44 @@ class NPMIPluginTest(tf.test.TestCase):
     self.assertIsInstance(routes["/annotations"], collections.abc.Callable)
     self.assertIsInstance(routes["/metrics"], collections.abc.Callable)
     self.assertIsInstance(routes["/values"], collections.abc.Callable)
+
+  def testTags(self):
+    plugin = self.create_plugin()
+    tags = plugin.tags_impl()
+    tags = json.loads(tags)
+    gt_runs = ['run_1', 'run_2']
+    gt_tags = ['metric_annotations', 'metric_classes', 'metric_results']
+    self.assertItemsEqual(gt_runs, tags.keys())
+    self.assertItemsEqual(gt_tags, tags['run_1'].keys())
+    self.assertItemsEqual(gt_tags, tags['run_2'].keys())
+    for item in tags:
+      for tag in tags[item]:
+        self.assertEqual('test', tags[item][tag]['table'])
+
+  def testAnnotations(self):
+    plugin = self.create_plugin()
+    annotations = plugin.annotations_impl()
+    annotations = json.loads(annotations)
+    self.assertItemsEqual(['name_1', 'name_2'],
+                          annotations['run_1']['annotations'])
+    self.assertItemsEqual(['name_1', 'name_2'],
+                          annotations['run_2']['annotations'])
+
+  def testMetrics(self):
+    plugin = self.create_plugin()
+    metrics = plugin.metrics_impl()
+    metrics = json.loads(metrics)
+    self.assertItemsEqual(['A', 'B'], metrics['run_1']['metrics'])
+    self.assertItemsEqual(['A', 'B'], metrics['run_2']['metrics'])
+
+  def testValues(self):
+    plugin = self.create_plugin()
+    values = plugin.values_impl()
+    values = json.loads(values)
+    self.assertItemsEqual([1.0, -1.0], values['run_1']['values'][0])
+    self.assertItemsEqual([0.5, -0.5], values['run_1']['values'][1])
+    self.assertItemsEqual([1.0, -1.0], values['run_2']['values'][0])
+    self.assertItemsEqual([0.5, -0.5], values['run_2']['values'][1])
 
   def testIsActiveReturnsFalse(self):
     """The plugin should always return false because this is now handled

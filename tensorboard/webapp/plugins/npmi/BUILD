@@ -48,3 +48,15 @@ py_library(
         "//tensorboard:expect_tensorflow_installed",
     ],
 )
+
+py_test(
+    name = "summary_test",
+    size = "small",
+    srcs = ["summary_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":summary",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/util:test_util",
+    ],
+)
