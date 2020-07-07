@@ -18,7 +18,7 @@ limitations under the License.
 // redundant copies in sync.  If the state shape and the API types need to
 // diverge in the future, that's straightforward: we'll leave types/api in place,
 // remove this import, and write the divergent state types explicitly here.
-import {PluginId, PluginsListing} from '../../types/api';
+import {Environment, PluginId, PluginsListing} from '../../types/api';
 import {DataLoadState, LoadState} from '../../types/data';
 
 export const CORE_FEATURE_KEY = 'core';
@@ -32,6 +32,7 @@ export interface CoreState {
   // Size of a page in a general paginated view that is configurable by user via
   // settings.
   pageSize: number;
+  environment: Environment;
 }
 
 export interface State {
@@ -48,4 +49,8 @@ export const initialState: CoreState = {
   reloadPeriodInMs: 30000,
   reloadEnabled: false,
   pageSize: 12,
+  environment: {
+    data_location: '',
+    window_title: '',
+  },
 };
