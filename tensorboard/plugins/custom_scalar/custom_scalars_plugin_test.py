@@ -19,12 +19,18 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import csv
+import io
+import json
 import os
 
 import numpy as np
 import tensorflow as tf
+from werkzeug import test as werkzeug_test
+from werkzeug import wrappers
 
 from google.protobuf import json_format
+from tensorboard.backend import application
 from tensorboard.backend.event_processing import (
     plugin_event_multiplexer as event_multiplexer,
 )
@@ -176,17 +182,39 @@ class CustomScalarsPluginTest(tf.test.TestCase):
             ] = plugin_instance
         return custom_scalars_plugin_instance
 
-    def testDownloadData(self):
-        body, mime_type = self.plugin.download_data_impl(
-            "foo", "squares/scalar_summary", "exp_id", "json"
+    def test_download_url_json(self):
+        wsgi_app = application.TensorBoardWSGI([self.plugin])
+        server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)
+        response = server.get(
+            "/data/plugin/custom_scalars/download_data?run=%s&tag=%s"
+            % ("foo", "squares/scalar_summary")
         )
-        self.assertEqual("application/json", mime_type)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("application/json", response.headers["Content-Type"])
+        body = json.loads(response.get_data())
         self.assertEqual(4, len(body))
         for step, entry in enumerate(body):
             # The time stamp should be reasonable.
             self.assertGreater(entry[0], 0)
             self.assertEqual(step, entry[1])
             np.testing.assert_allclose(step * step, entry[2])
+
+    def test_download_url_csv(self):
+        wsgi_app = application.TensorBoardWSGI([self.plugin])
+        server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)
+        response = server.get(
+            "/data/plugin/custom_scalars/download_data?run=%s&tag=%s&format=csv"
+            % ("foo", "squares/scalar_summary")
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            "text/csv; charset=utf-8", response.headers["Content-Type"]
+        )
+        payload = response.get_data()
+        s = io.StringIO(payload.decode("utf-8"))
+        reader = csv.reader(s)
+        self.assertEqual(["Wall time", "Step", "Value"], next(reader))
+        self.assertEqual(len(list(reader)), 4)
 
     def testScalars(self):
         body = self.plugin.scalars_impl("bar", "increments", "exp_id")
