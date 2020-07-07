@@ -13,9 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
-import {from} from 'rxjs';
+import {forkJoin, from} from 'rxjs';
+import {map} from 'rxjs/operators';
 
-import {PluginsListing} from '../types/api';
+import {Environment, PluginsListing} from '../types/api';
 
 import {TBHttpClient} from './tb_http_client';
 
@@ -52,7 +53,19 @@ export class TBServerDataSource {
     return from(this.tfBackend.runsStore.refresh());
   }
 
-  fetchEnvironments() {
-    return from(this.tfBackend.environmentStore.refresh());
+  fetchEnvironment() {
+    // Make a request for data for the angular-specific portion of the app.
+    const dataFetch = this.http.get<Environment>('data/environment');
+    // Force a data load for the polymer-specific portion of the app.
+    // This leads to duplicate requests but hopefully the state is temporary until
+    // we migrate everything from polymer to angular.
+    const polymerEnvironmentRefresh = from(
+      this.tfBackend.environmentStore.refresh()
+    );
+    // Wait for both operations to complete and return the response from the
+    // explicit http get call.
+    return forkJoin([dataFetch, polymerEnvironmentRefresh]).pipe(
+      map(([data]) => data)
+    );
   }
 }

@@ -66,3 +66,10 @@ export interface PluginMetadata {
 export type PluginsListing = {
   [pluginName: string]: PluginMetadata;
 };
+
+export interface Environment {
+  /** @export */
+  data_location: string;
+  /** @export */
+  window_title: string;
+}

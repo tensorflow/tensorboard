@@ -15,7 +15,7 @@ limitations under the License.
 import {Component, HostBinding, Inject} from '@angular/core';
 import {MatDialog} from '@angular/material/dialog';
 
-import {TbdevUploadDialogComponent} from './tbdev_upload_dialog_component';
+import {TbdevUploadDialogContainer} from './tbdev_upload_dialog_container';
 
 // A list of hostname values that will trigger the tbdev-upload-button button to
 // appear.
@@ -55,7 +55,7 @@ export class TbdevUploadButtonComponent {
   }
 
   openDialog(): void {
-    this.dialog.open(TbdevUploadDialogComponent, {
+    this.dialog.open(TbdevUploadDialogContainer, {
       width: '560px',
     });
   }

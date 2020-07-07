@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {createAction, props} from '@ngrx/store';
-import {PluginId, PluginsListing} from '../../types/api';
+import {Environment, PluginId, PluginsListing} from '../../types/api';
 
 // HACK: Below import is for type inference.
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
@@ -51,6 +51,14 @@ export const pluginsListingLoaded = createAction(
 );
 export const pluginsListingFailed = createAction(
   '[Core] PluginListing Fetch Failed'
+);
+
+/**
+ * Action for when Environment data has been loaded from the WebApp server.
+ */
+export const environmentLoaded = createAction(
+  '[Core] Environment Fetch Successful',
+  props<{environment: Environment}>()
 );
 
 /**
