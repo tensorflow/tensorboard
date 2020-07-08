@@ -177,7 +177,7 @@ tensor, that is, in row #85.
 ![Debugger V2: Graph structure view and tracing to input tensor](./images/debugger_v2_3_graph_input.png)
 
 A more careful look at the numerical breakdown of the “logits:0” tensor in row
-#65 reveals why its consumer `Log:0` produces a -∞: Among the 1000 elements of
+#85 reveals why its consumer `Log:0` produces a -∞: Among the 1000 elements of
 “logits:0”, one element has a value of 0. The -∞ is a result of computing the
 natural logarithm of 0! If we can somehow ensure that the Log op gets exposed to
 only positive inputs, we’ll be able to prevent the NaN/∞ from happening. This
