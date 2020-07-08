@@ -21,6 +21,8 @@ limitations under the License.
 import {Environment, PluginId, PluginsListing} from '../../types/api';
 import {DataLoadState, LoadState} from '../../types/data';
 
+import {Run, RunId} from '../types';
+
 export const CORE_FEATURE_KEY = 'core';
 
 export interface CoreState {
@@ -33,6 +35,10 @@ export interface CoreState {
   // settings.
   pageSize: number;
   environment: Environment;
+  // TODO(stephanwlee): move these state to the `runs` features.
+  // For now, we want them here for Polymer interop states reasons, too.
+  polymerInteropRuns: Run[];
+  polymerInteropRunSelection: Map<RunId, boolean>;
 }
 
 export interface State {
@@ -53,4 +59,6 @@ export const initialState: CoreState = {
     data_location: '',
     window_title: '',
   },
+  polymerInteropRuns: [],
+  polymerInteropRunSelection: new Map(),
 };
