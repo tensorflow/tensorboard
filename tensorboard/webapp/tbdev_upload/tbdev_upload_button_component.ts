@@ -17,38 +17,13 @@ import {MatDialog} from '@angular/material/dialog';
 
 import {TbdevUploadDialogContainer} from './tbdev_upload_dialog_container';
 
-// A list of hostname values that will trigger the tbdev-upload-button button to
-// appear.
+// A list of hostname values that will trigger the button to appear.
 const LOCAL_HOSTNAMES: string[] = ['localhost', '127.0.0.1'];
 
 @Component({
   selector: 'tbdev-upload-button',
-  template: `
-    <button mat-stroked-button *ngIf="shown" (click)="openDialog()">
-      <span class="button-contents">
-        <mat-icon svgIcon="info_outline_24px"></mat-icon>
-        Upload
-      </span>
-    </button>
-  `,
-  styles: [
-    `
-      /* More precise selector than angular material selectors to override
-         styling. */
-      button.mat-stroked-button {
-        background-color: rgba(198, 202, 209, 0.2);
-        border: 1px solid #e9e9e9;
-      }
-      .button-contents {
-        align-items: center;
-        display: flex;
-        text-transform: uppercase;
-      }
-      mat-icon {
-        margin-right: 6px;
-      }
-    `,
-  ],
+  templateUrl: './tbdev_upload_button_component.ng.html',
+  styleUrls: ['./tbdev_upload_button_component.css'],
 })
 export class TbdevUploadButtonComponent {
   @HostBinding('class.shown') shown: boolean;

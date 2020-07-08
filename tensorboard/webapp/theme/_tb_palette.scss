@@ -34,10 +34,13 @@ $tf-slate: (
   ),
 );
 
-$tf-orange: (
-  100: #f57c00,
-  200: #f57c00,
-  300: #f57c00,
+/* BDTODO: Material colors:
+ https://material.io/archive/guidelines/style/color.html#color-color-palette
+*/
+ $tf-orange: (
+  100: #ec8c2a,
+  200: #ec8c2a,
+  300: #ec8c2a,
   400: #f57c00,
   500: #f57c00,
   700: #f57c00,
