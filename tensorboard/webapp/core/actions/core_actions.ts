@@ -84,6 +84,11 @@ export const changePageSize = createAction(
   props<{size: number}>()
 );
 
+/**
+ * Action for when user wants to change the runs selection in the tf-runs-selector.
+ *
+ * Action is reserved for the wrapper for the Polymer based tf-runs-selector.
+ */
 export const polymerInteropRunSelectionChanged = createAction(
   '[Core] Run Selection Changed',
   props<{nextSelection: RunId[]}>()
