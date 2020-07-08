@@ -1,4 +1,4 @@
-# Debugging TensorFlow 2 Programs Using TensorBoard Debugger V2
+# Debugging Numerical Issues in TensorFlow Programs Using TensorBoard Debugger V2
 
 > *NOTE*: tf.debugging.experimental.enable_dump_debug_info() is an experimental
 > API and may be subject to breaking changes in the future.
