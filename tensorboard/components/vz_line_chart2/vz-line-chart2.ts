@@ -444,9 +444,23 @@ namespace vz_line_chart2 {
         );
         var div = d3.select(this.$.chartdiv);
         chart.renderTo(div);
-        if (this._chart) this._chart.destroy();
+        let prevAxisDomains = null;
+        if (this._chart) {
+          prevAxisDomains = {
+            x: this._chart.xScale.getTransformationDomain(),
+            y: this._chart.yScale.getTransformationDomain(),
+          };
+          this._chart.destroy();
+        }
         this._chart = chart;
         this._chart.onAnchor(() => this.fire('chart-attached'));
+
+        // If the new chart replaces an old one, preserve the old chart's
+        // pan/zoom transformation.
+        if (prevAxisDomains) {
+          this._chart.xScale.setTransformationDomain(prevAxisDomains.x);
+          this._chart.yScale.setTransformationDomain(prevAxisDomains.y);
+        }
       }, 350);
     },
 
