@@ -218,7 +218,7 @@ namespace tf_storage {
     return {get, set, getInitializer, getObserver, disposeBinding};
   }
 
-  export function initialize() {
+  export function migrateLegacyURLScheme() {
     /**
      * TODO(psybuzz): move to some compatibility file.
      * For each WIT URL param in the legacy scheme, create another URL param
