@@ -20,6 +20,7 @@ describe('deeplink', () => {
   let deepLinker: HashDeepLinker;
   let setStringSpy: jasmine.Spy;
   let getStringSpy: jasmine.Spy;
+  let migrateLegacyURLSchemeSpy: jasmine.Spy;
   let setUseHashSpy: jasmine.Spy;
 
   beforeEach(async () => {
@@ -29,6 +30,7 @@ describe('deeplink', () => {
 
     setStringSpy = jasmine.createSpy();
     getStringSpy = jasmine.createSpy();
+    migrateLegacyURLSchemeSpy = jasmine.createSpy();
     setUseHashSpy = jasmine.createSpy();
 
     // Cannot safely stub out window.location.hash or rely on test framework
@@ -40,6 +42,7 @@ describe('deeplink', () => {
       tf_storage: {
         setString: setStringSpy,
         getString: getStringSpy,
+        migrateLegacyURLScheme: migrateLegacyURLSchemeSpy,
       },
     } as any);
     createElementSpy.withArgs('tf-globals').and.returnValue({
@@ -52,8 +55,9 @@ describe('deeplink', () => {
     deepLinker = TestBed.inject(HashDeepLinker);
   });
 
-  it('uses real hash', () => {
+  it('uses real hash and migrates legacy URLs', () => {
     expect(setUseHashSpy).toHaveBeenCalledWith(true);
+    expect(migrateLegacyURLSchemeSpy).toHaveBeenCalled();
   });
 
   it('#getString calls tf_storage getString', () => {
