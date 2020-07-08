@@ -18,6 +18,25 @@ py_library(
 )
 
 py_library(
+    name = "auth",
+    srcs = ["auth.py"],
+    srcs_version = "PY3",
+    deps = [],
+)
+
+py_test(
+    name = "auth_test",
+    size = "small",
+    srcs = ["auth_test.py"],
+    srcs_version = "PY3",
+    tags = ["support_notf"],
+    deps = [
+        ":auth",
+        "//tensorboard:test",
+    ],
+)
+
+py_library(
     name = "provider",
     srcs = ["provider.py"],
     srcs_version = "PY3",
