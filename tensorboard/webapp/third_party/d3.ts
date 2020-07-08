@@ -13,8 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 /**
- * @fileoverview This is an d3 interop file that paves the differences within
- * google internal repository and the external repository.
+ * @fileoverview This is an d3 interop that papers over the differences within
+ * google internal repository and the external repository. Please depend on this
+ * module instead of depending on the d3 directly.
  *
  * Due to differences in the module system, there is no easy way to make a d3
  * import consistent in both places. The problem goes away when the Polymer

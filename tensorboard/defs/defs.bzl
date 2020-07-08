@@ -71,6 +71,7 @@ def tf_ng_web_test_suite(runtime_deps = [], bootstrap = [], deps = [], **kwargs)
         ],
         runtime_deps = runtime_deps + [
             "//tensorboard/webapp/testing:initialize_testbed",
+            "@npm//d3",
         ],
         deps = deps + [
             "//tensorboard/webapp/testing:test_support_lib",
