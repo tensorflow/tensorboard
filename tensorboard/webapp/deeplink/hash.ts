@@ -31,6 +31,7 @@ interface TfStorageElement extends HTMLElement {
   tf_storage: {
     setString(key: string, value: string, options?: SetStringOption): void;
     getString(key: string): string;
+    initialize(): void;
   };
 }
 
@@ -42,7 +43,10 @@ export class HashDeepLinker implements DeepLinkerInterface {
     this.tfStorage = document.createElement('tf-storage') as TfStorageElement;
     const tfGlobals = document.createElement('tf-globals') as TfGlobalsElement;
 
+    // Note: `initialize()` must be called before `setUseHash`, so that
+    // tfStorage reads from the actual URL, not the fake hash for tests only.
     tfGlobals.tf_globals.setUseHash(true);
+    this.tfStorage.tf_storage.initialize();
   }
 
   getString(key: string): string {
