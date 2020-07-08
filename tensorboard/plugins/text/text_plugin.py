@@ -176,7 +176,7 @@ def text_array_to_html(text_arr):
     """
     if not text_arr.shape:
         # It is a scalar. No need to put it in a table, just apply markdown
-        return plugin_util.markdown_to_safe_html(np.asscalar(text_arr))
+        return plugin_util.markdown_to_safe_html(text_arr.item())
     warning = ""
     if len(text_arr.shape) > 2:
         warning = plugin_util.markdown_to_safe_html(
@@ -215,7 +215,7 @@ class TextPlugin(base_plugin.TBPlugin):
         self._downsample_to = (context.sampling_hints or {}).get(
             self.plugin_name, _DEFAULT_DOWNSAMPLING
         )
-        if context.flags and context.flags.generic_data != "false":
+        if not context.flags or context.flags.generic_data != "false":
             self._data_provider = context.data_provider
         else:
             self._data_provider = None

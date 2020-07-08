@@ -60,14 +60,10 @@ class ScalarsPlugin(base_plugin.TBPlugin):
         Args:
           context: A base_plugin.TBContext instance.
         """
-        self._multiplexer = context.multiplexer
         self._downsample_to = (context.sampling_hints or {}).get(
             self.plugin_name, _DEFAULT_DOWNSAMPLING
         )
-        if context.flags and context.flags.generic_data != "false":
-            self._data_provider = context.data_provider
-        else:
-            self._data_provider = None
+        self._data_provider = context.data_provider
 
     def get_plugin_apps(self):
         return {
@@ -76,17 +72,7 @@ class ScalarsPlugin(base_plugin.TBPlugin):
         }
 
     def is_active(self):
-        """The scalars plugin is active iff any run has at least one scalar
-        tag."""
-        if self._data_provider:
-            return False  # `list_plugins` as called by TB core suffices
-
-        if not self._multiplexer:
-            return False
-
-        return bool(
-            self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
-        )
+        return False  # `list_plugins` as called by TB core suffices
 
     def frontend_metadata(self):
         return base_plugin.FrontendMetadata(element_name="tf-scalar-dashboard")
@@ -94,70 +80,35 @@ class ScalarsPlugin(base_plugin.TBPlugin):
     def index_impl(self, experiment=None):
         """Return {runName: {tagName: {displayName: ..., description:
         ...}}}."""
-        if self._data_provider:
-            mapping = self._data_provider.list_scalars(
-                experiment_id=experiment, plugin_name=metadata.PLUGIN_NAME,
-            )
-            result = {run: {} for run in mapping}
-            for (run, tag_to_content) in six.iteritems(mapping):
-                for (tag, metadatum) in six.iteritems(tag_to_content):
-                    description = plugin_util.markdown_to_safe_html(
-                        metadatum.description
-                    )
-                    result[run][tag] = {
-                        "displayName": metadatum.display_name,
-                        "description": description,
-                    }
-            return result
-
-        result = collections.defaultdict(lambda: {})
-        mapping = self._multiplexer.PluginRunToTagToContent(
-            metadata.PLUGIN_NAME
+        mapping = self._data_provider.list_scalars(
+            experiment_id=experiment, plugin_name=metadata.PLUGIN_NAME,
         )
+        result = {run: {} for run in mapping}
         for (run, tag_to_content) in six.iteritems(mapping):
-            for (tag, content) in six.iteritems(tag_to_content):
-                content = metadata.parse_plugin_metadata(content)
-                summary_metadata = self._multiplexer.SummaryMetadata(run, tag)
+            for (tag, metadatum) in six.iteritems(tag_to_content):
+                description = plugin_util.markdown_to_safe_html(
+                    metadatum.description
+                )
                 result[run][tag] = {
-                    "displayName": summary_metadata.display_name,
-                    "description": plugin_util.markdown_to_safe_html(
-                        summary_metadata.summary_description
-                    ),
+                    "displayName": metadatum.display_name,
+                    "description": description,
                 }
-
         return result
 
     def scalars_impl(self, tag, run, experiment, output_format):
         """Result of the form `(body, mime_type)`."""
-        if self._data_provider:
-            all_scalars = self._data_provider.read_scalars(
-                experiment_id=experiment,
-                plugin_name=metadata.PLUGIN_NAME,
-                downsample=self._downsample_to,
-                run_tag_filter=provider.RunTagFilter(runs=[run], tags=[tag]),
+        all_scalars = self._data_provider.read_scalars(
+            experiment_id=experiment,
+            plugin_name=metadata.PLUGIN_NAME,
+            downsample=self._downsample_to,
+            run_tag_filter=provider.RunTagFilter(runs=[run], tags=[tag]),
+        )
+        scalars = all_scalars.get(run, {}).get(tag, None)
+        if scalars is None:
+            raise errors.NotFoundError(
+                "No scalar data for run=%r, tag=%r" % (run, tag)
             )
-            scalars = all_scalars.get(run, {}).get(tag, None)
-            if scalars is None:
-                raise errors.NotFoundError(
-                    "No scalar data for run=%r, tag=%r" % (run, tag)
-                )
-            values = [(x.wall_time, x.step, x.value) for x in scalars]
-        else:
-            try:
-                tensor_events = self._multiplexer.Tensors(run, tag)
-            except KeyError:
-                raise errors.NotFoundError(
-                    "No scalar data for run=%r, tag=%r" % (run, tag)
-                )
-            values = [
-                (
-                    tensor_event.wall_time,
-                    tensor_event.step,
-                    tensor_util.make_ndarray(tensor_event.tensor_proto).item(),
-                )
-                for tensor_event in tensor_events
-            ]
-
+        values = [(x.wall_time, x.step, x.value) for x in scalars]
         if output_format == OutputFormat.CSV:
             string_io = StringIO()
             writer = csv.writer(string_io)

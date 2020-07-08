@@ -104,7 +104,7 @@ class DataProvider(object):
     defined in `tensorboard.errors`, like `tensorboard.errors.NotFoundError`.
     """
 
-    def data_location(self, experiment_id):
+    def data_location(self, *, experiment_id):
         """Render a human-readable description of the data source.
 
         For instance, this might return a path to a directory on disk.
@@ -119,7 +119,7 @@ class DataProvider(object):
         """
         return ""
 
-    def experiment_metadata(self, experiment_id):
+    def experiment_metadata(self, *, experiment_id):
         """Retrieve metadata of a given experiment.
 
         The metadata may include fields such as name and description
@@ -135,7 +135,7 @@ class DataProvider(object):
         """
         return None
 
-    def list_plugins(self, experiment_id):
+    def list_plugins(self, *, experiment_id):
         """List all plugins that own data in a given experiment.
 
         This should be the set of all plugin names `p` such that calling
@@ -155,7 +155,7 @@ class DataProvider(object):
         return None
 
     @abc.abstractmethod
-    def list_runs(self, experiment_id):
+    def list_runs(self, *, experiment_id):
         """List all runs within an experiment.
 
         Args:
@@ -170,7 +170,7 @@ class DataProvider(object):
         pass
 
     @abc.abstractmethod
-    def list_scalars(self, experiment_id, plugin_name, run_tag_filter=None):
+    def list_scalars(self, *, experiment_id, plugin_name, run_tag_filter=None):
         """List metadata about scalar time series.
 
         Args:
@@ -195,7 +195,12 @@ class DataProvider(object):
 
     @abc.abstractmethod
     def read_scalars(
-        self, experiment_id, plugin_name, downsample=None, run_tag_filter=None
+        self,
+        *,
+        experiment_id,
+        plugin_name,
+        downsample=None,
+        run_tag_filter=None
     ):
         """Read values from scalar time series.
 
@@ -224,7 +229,7 @@ class DataProvider(object):
         """
         pass
 
-    def list_tensors(self, experiment_id, plugin_name, run_tag_filter=None):
+    def list_tensors(self, *, experiment_id, plugin_name, run_tag_filter=None):
         """List metadata about tensor time series.
 
         Args:
@@ -248,7 +253,12 @@ class DataProvider(object):
         pass
 
     def read_tensors(
-        self, experiment_id, plugin_name, downsample=None, run_tag_filter=None
+        self,
+        *,
+        experiment_id,
+        plugin_name,
+        downsample=None,
+        run_tag_filter=None
     ):
         """Read values from tensor time series.
 
@@ -278,7 +288,7 @@ class DataProvider(object):
         pass
 
     def list_blob_sequences(
-        self, experiment_id, plugin_name, run_tag_filter=None
+        self, *, experiment_id, plugin_name, run_tag_filter=None
     ):
         """List metadata about blob sequence time series.
 
@@ -301,7 +311,12 @@ class DataProvider(object):
         pass
 
     def read_blob_sequences(
-        self, experiment_id, plugin_name, downsample=None, run_tag_filter=None
+        self,
+        *,
+        experiment_id,
+        plugin_name,
+        downsample=None,
+        run_tag_filter=None
     ):
         """Read values from blob sequence time series.
 
@@ -327,7 +342,7 @@ class DataProvider(object):
         """
         pass
 
-    def read_blob(self, blob_key):
+    def read_blob(self, *, blob_key):
         """Read data for a single blob.
 
         Args:

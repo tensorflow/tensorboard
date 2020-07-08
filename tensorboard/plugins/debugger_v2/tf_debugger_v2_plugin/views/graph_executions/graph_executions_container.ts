@@ -15,11 +15,15 @@ limitations under the License.
 import {Component} from '@angular/core';
 import {createSelector, select, Store} from '@ngrx/store';
 
-import {graphExecutionScrollToIndex, graphOpFocused} from '../../actions';
+import {
+  graphExecutionFocused,
+  graphExecutionScrollToIndex,
+} from '../../actions';
 import {
   getGraphExecutionData,
   getGraphExecutionFocusIndex,
   getNumGraphExecutions,
+  getFocusedGraphExecutionInputIndices,
 } from '../../store';
 import {State} from '../../store/debugger_types';
 
@@ -33,6 +37,7 @@ import {State} from '../../store/debugger_types';
       [graphExecutionData]="graphExecutionData$ | async"
       [graphExecutionIndices]="graphExecutionIndices$ | async"
       [focusIndex]="focusIndex$ | async"
+      [focusInputIndices]="focusInputIndices$ | async"
       (onScrolledIndexChange)="onScrolledIndexChange($event)"
       (onTensorNameClick)="onTensorNameClick($event)"
     ></graph-executions-component>
@@ -59,12 +64,20 @@ export class GraphExecutionsContainer {
 
   readonly focusIndex$ = this.store.pipe(select(getGraphExecutionFocusIndex));
 
+  /**
+   * Inferred graph-execution indices that belong to the immediate inputs
+   * to the currently-focused graph op.
+   */
+  readonly focusInputIndices$ = this.store.pipe(
+    select(getFocusedGraphExecutionInputIndices)
+  );
+
   onScrolledIndexChange(scrolledIndex: number) {
     this.store.dispatch(graphExecutionScrollToIndex({index: scrolledIndex}));
   }
 
-  onTensorNameClick(event: {graph_id: string; op_name: string}) {
-    this.store.dispatch(graphOpFocused(event));
+  onTensorNameClick(event: {index: number; graph_id: string; op_name: string}) {
+    this.store.dispatch(graphExecutionFocused(event));
   }
 
   constructor(private readonly store: Store<State>) {}

@@ -63,7 +63,7 @@ class CorePlugin(base_plugin.TBPlugin):
         self._window_title = context.window_title
         self._multiplexer = context.multiplexer
         self._assets_zip_provider = context.assets_zip_provider
-        if context.flags and context.flags.generic_data != "false":
+        if not context.flags or context.flags.generic_data != "false":
             self._data_provider = context.data_provider
         else:
             self._data_provider = None
@@ -133,9 +133,11 @@ class CorePlugin(base_plugin.TBPlugin):
         """
         if self._data_provider:
             experiment = plugin_util.experiment_id(request.environ)
-            data_location = self._data_provider.data_location(experiment)
+            data_location = self._data_provider.data_location(
+                experiment_id=experiment
+            )
             experiment_metadata = self._data_provider.experiment_metadata(
-                experiment
+                experiment_id=experiment
             )
         else:
             data_location = self._logdir

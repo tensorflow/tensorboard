@@ -104,7 +104,7 @@ tf_web_library(
 tf_web_library(
     name = "tensorboard-webapp",
     srcs = [
-        "index.html",
+        "index.inlined.html",
         ":styles.css",
     ],
     path = "/",
@@ -118,17 +118,17 @@ tf_web_library(
 genrule(
     name = "gen_index.html",
     srcs = ["index.uninlined.html"],
-    outs = ["index.html"],
+    outs = ["index.inlined.html"],
     cmd = "$(execpath //tensorboard/logo:inline_favicon) $< >$@",
     tools = ["//tensorboard/logo:inline_favicon"],
 )
 
 # A Vulcanized html binary for the complete app (both Angular and Polymer parts)
 tensorboard_html_binary(
-    name = "ng_index",
-    input_path = "/index.html",
-    js_path = "/ng_index.js",
-    output_path = "/ng_index.html",
+    name = "index",
+    input_path = "/index.inlined.html",
+    js_path = "/index.js",
+    output_path = "/index.html",
     deps = [":tensorboard-webapp"],
 )
 
@@ -147,6 +147,7 @@ tf_ng_web_test_suite(
         "//tensorboard/webapp/plugins:plugins_container_test_lib",
         "//tensorboard/webapp/reloader:test_lib",
         "//tensorboard/webapp/settings:test_lib",
+        "//tensorboard/webapp/tbdev_upload:test_lib",
         "//tensorboard/webapp/webapp_data_source:feature_flag_test_lib",
         "//tensorboard/webapp/webapp_data_source:webapp_data_source_test_lib",
     ],
@@ -157,9 +158,11 @@ tf_svg_bundle(
     srcs = [
         # When modifying below, please make sure to update
         # //tensorboard/webapp/testing/mat_icon.module.ts.
-        "@com_google_material_design_icon//:settings_24px.svg",
+        "@com_google_material_design_icon//:content_copy_24px.svg",
         "@com_google_material_design_icon//:help_outline_24px.svg",
+        "@com_google_material_design_icon//:info_outline_24px.svg",
         "@com_google_material_design_icon//:refresh_24px.svg",
+        "@com_google_material_design_icon//:settings_24px.svg",
     ],
     out = "icon_bundle.svg",
 )

@@ -134,7 +134,7 @@ smoke() (
   tensorboard --port=0 --logdir=smokedir 2>pipe &
   perl -ne 'print STDERR;/http:.*:(\d+)/ and print $1.v10 and exit 0' <pipe >port
   curl -fs "http://localhost:$(cat port)" >index.html
-  grep '<tf-tensorboard' index.html
+  grep '<tb-webapp' index.html
   curl -fs "http://localhost:$(cat port)/data/logdir" >logdir.json
   grep 'smokedir' logdir.json
   curl -fs "http://localhost:$(cat port)/data/plugin/projector/runs" >projector_runs.json
