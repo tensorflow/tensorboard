@@ -7,9 +7,10 @@ Catastrophic events involving [NaN](https://en.wikipedia.org/wiki/NaN)s can
 sometimes occur during a TensorFlow program, crippling the model training
 processes. The root cause of such events are often obscure, especially for
 models of non-trivial size and complexity. To make it easier to debug this type
-of model bugs, TensorFlow 2.3+ provides a specialized dashboard in TensorBoard
-called Debugger V2. Here we demonstrate how to use this tool by working through
-a real bug involving NaNs in a neural network written in TensorFlow 2 (TF2).
+of model bugs, TensorBoard 2.3+ (together with TensorFlow 2.3+) provides a
+specialized dashboard called Debugger V2. Here we demonstrate how to use this
+tool by working through a real bug involving NaNs in a neural network written in
+TensorFlow.
 
 The techniques illustrated in this tutorial are applicable to other types of
 debugging activities such as inspecting runtime tensor shapes in complex
