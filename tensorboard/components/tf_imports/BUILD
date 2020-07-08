@@ -135,6 +135,7 @@ tf_web_library(
     ],
 )
 
+# Separated out from ":d3" because of strip_prefix.
 tf_web_library(
     name = "d3_lib",
     srcs = [
