@@ -38,7 +38,7 @@ var tf_storage;
      */
     tf_storage.DISAMBIGUATOR = 'disambiguator';
     // Keep an up-to-date store of URL params, which iframed plugins can request.
-    tf_storage.urlDict = componentToDict(readComponent());
+    tf_storage.urlDict = {};
     tf_storage.addHashListener(() => {
         tf_storage.urlDict = componentToDict(readComponent());
     });
