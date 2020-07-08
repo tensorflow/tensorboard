@@ -18,7 +18,7 @@ from __future__ import division
 from __future__ import print_function
 
 from tensorboard.compat.proto import summary_pb2
-import tensorflow as tf
+from tensorboard.compat import tf2 as tf
 
 
 def metric_results(name, title, guest, step=None, description=None):

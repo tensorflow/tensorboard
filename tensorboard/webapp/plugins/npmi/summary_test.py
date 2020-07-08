@@ -24,12 +24,26 @@ import os
 import numpy as np
 import tensorflow as tf
 
+from tensorboard.compat import tf2
 from tensorboard.webapp.plugins.npmi import summary
+
+try:
+    tf2.__version__  # Force lazy import to resolve
+except ImportError:
+    tf2 = None
+
+try:
+    tf.compat.v1.enable_eager_execution()
+except AttributeError:
+    # TF 2.0 doesn't have this symbol because eager is the default.
+    pass
 
 
 class SummaryTest(tf.test.TestCase):
     def setUp(self):
         super(SummaryTest, self).setUp()
+        if tf2 is None:
+            self.skipTest("v2 summary API not available")
 
     def testMetadata(self):
         metadata = summary._create_summary_metadata(None, "test")
@@ -49,7 +63,7 @@ class SummaryTest(tf.test.TestCase):
                 self.assertAllEqual(parsed, [b"name_1", b"name_2"])
 
     def write_results(self, name, title, tensor):
-        writer = tf.compat.v2.summary.create_file_writer(self.get_temp_dir())
+        writer = tf2.summary.create_file_writer(self.get_temp_dir())
         with writer.as_default():
             summary.metric_results(name, title, tensor, 1)
         writer.close()

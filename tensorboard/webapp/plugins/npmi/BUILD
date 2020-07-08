@@ -57,6 +57,7 @@ py_test(
     deps = [
         ":summary",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/backend/event_processing:data_provider",
         "//tensorboard/util:test_util",
     ],
 )
