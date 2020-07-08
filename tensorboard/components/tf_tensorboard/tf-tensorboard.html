@@ -988,6 +988,7 @@ limitations under the License.
           }
         });
 
+        // Migration must happen after calling `setUseHash`.
         tf_storage.migrateLegacyURLScheme();
 
         this._reloadData();
