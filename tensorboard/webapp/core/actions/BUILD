@@ -9,6 +9,7 @@ tf_ts_library(
         "index.ts",
     ],
     deps = [
+        "//tensorboard/webapp/core:types",
         "//tensorboard/webapp/types",
         "@npm//@ngrx/store",
     ],

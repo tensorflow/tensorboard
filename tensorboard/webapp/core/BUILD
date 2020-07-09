@@ -18,3 +18,10 @@ ng_module(
         "@npm//@ngrx/store",
     ],
 )
+
+ng_module(
+    name = "types",
+    srcs = [
+        "types.ts",
+    ],
+)
