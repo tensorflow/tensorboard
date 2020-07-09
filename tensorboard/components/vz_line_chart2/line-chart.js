@@ -751,6 +751,45 @@ var vz_line_chart2;
             if (this.outer)
                 this.outer.onAnchor(fn);
         }
+        /**
+         * Returns the currently visible domain of the x/y axes.
+         */
+        getAxisDomains() {
+            return {
+                x: this.xScale.getTransformationDomain(),
+                y: this.yScale.getTransformationDomain(),
+            };
+        }
+        /**
+         * Sets the viewport domain.
+         */
+        setAxisDomains(domains) {
+            this.xScale.setTransformationDomain(domains.x);
+            this.yScale.setTransformationDomain(domains.y);
+        }
+        /**
+         * Returns whether the extent of rendered data values fits the current
+         * chart viewport domain (includes smoothing and outlier detection).
+         *
+         * This is true when there is no data, and false when the domain has been
+         * transformed from the extent via transformations (pan, zoom).
+         */
+        isDataFitToDomain() {
+            return (isDataFitToDomain(this.xAxis.getScale()) &&
+                isDataFitToDomain(this.yAxis.getScale()));
+            function isDataFitToDomain(scale) {
+                /**
+                 * Domain represents the currently displayed region, possibly a zoomed
+                 * in or zoomed out view of the data.
+                 *
+                 * Extent represents the extent of the data, the range of all provided
+                 * datum values.
+                 */
+                const domain = scale.getTransformationDomain();
+                const extent = scale.getTransformationExtent();
+                return extent[0] === domain[0] && extent[1] === domain[1];
+            }
+        }
     }
     vz_line_chart2.LineChart = LineChart;
 })(vz_line_chart2 || (vz_line_chart2 = {})); // namespace vz_line_chart2

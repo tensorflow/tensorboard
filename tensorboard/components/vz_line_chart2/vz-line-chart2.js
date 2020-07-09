@@ -269,23 +269,7 @@ var vz_line_chart2;
          * transformed from the extent via transformations (pan, zoom).
          */
         isDataFitToDomain() {
-            if (!this._chart) {
-                return true;
-            }
-            return (isDataFitToDomain(this._chart.xAxis.getScale()) &&
-                isDataFitToDomain(this._chart.yAxis.getScale()));
-            function isDataFitToDomain(scale) {
-                /**
-                 * Domain represents the currently displayed region, possibly a zoomed
-                 * in or zoomed out view of the data.
-                 *
-                 * Extent represents the extent of the data, the range of all provided
-                 * datum values.
-                 */
-                const domain = scale.getTransformationDomain();
-                const extent = scale.getTransformationExtent();
-                return extent[0] === domain[0] && extent[1] === domain[1];
-            }
+            return this._chart ? this._chart.isDataFitToDomain() : true;
         },
         /**
          * Sets the series that the chart displays. Series with other names will
@@ -379,10 +363,18 @@ var vz_line_chart2;
                 var chart = new vz_line_chart2.LineChart(xComponentsCreationMethod, this.yValueAccessor, yScaleType, colorScale, this.$.tooltip, this.tooltipColumns, this.fillArea, this.defaultXRange, this.defaultYRange, this.symbolFunction, this.xAxisFormatter);
                 var div = d3.select(this.$.chartdiv);
                 chart.renderTo(div);
-                if (this._chart)
+                let prevAxisDomains = null;
+                if (this._chart) {
+                    prevAxisDomains = this._chart.getAxisDomains();
                     this._chart.destroy();
+                }
                 this._chart = chart;
                 this._chart.onAnchor(() => this.fire('chart-attached'));
+                // If the new chart replaces an old one, preserve the old chart's
+                // pan/zoom transformation.
+                if (prevAxisDomains) {
+                    this._chart.setAxisDomains(prevAxisDomains);
+                }
             }, 350);
         },
         _reloadFromCache: function () {

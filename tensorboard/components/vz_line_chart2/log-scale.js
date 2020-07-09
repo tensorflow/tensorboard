@@ -55,6 +55,9 @@ var vz_line_chart2;
         getTransformationDomain() {
             return this.domain();
         }
+        setTransformationDomain(domain) {
+            this.domain(domain);
+        }
         getTransformationExtent() {
             return this._getUnboundedExtent(true);
         }
