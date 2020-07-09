@@ -82,9 +82,23 @@ export const getRuns = createSelector(
   }
 );
 
-export const getRunSelection = createSelector(
+const selectSelection = createSelector(
   selectCoreState,
-  (state: CoreState): Map<RunId, boolean> => {
+  (state: CoreState): Set<RunId> => {
     return state.polymerInteropRunSelection;
+  }
+);
+
+export const getRunSelection = createSelector(
+  getRuns,
+  selectSelection,
+  (runs: Run[], selection: Set<RunId>): Map<RunId, boolean> => {
+    const runSelection = new Map();
+
+    for (const {id} of runs) {
+      runSelection.set(id, selection.has(id));
+    }
+
+    return runSelection;
   }
 );
