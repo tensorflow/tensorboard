@@ -39,14 +39,14 @@ $tf-slate: (
    more work. One source to consider is tensorboard-color.html, which contains
    several orange values, but only one of them (--tb-orange-strong) is used
    widely. */
- $tf-orange: (
+$tf-orange: (
   100: mat-color($mat-orange, 500),
   200: mat-color($mat-orange, 500),
   300: mat-color($mat-orange, 500),
   400: mat-color($mat-orange, 500),
   500: mat-color($mat-orange, 500),
-  700: mat-color($mat-orange, 700), /* --tb-orange-strong */
-  900: mat-color($mat-orange, 700), /* --tb-orange-strong */
+  700: mat-color($mat-orange, 700),
+  900: mat-color($mat-orange, 700),
   contrast: (
     100: $dark-primary-text,
     300: $dark-primary-text,
