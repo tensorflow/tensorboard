@@ -97,8 +97,8 @@ py_test(
     ],
     deps = [
         ":hparams_plugin",
-        "//tensorboard/backend:context",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/backend:context",
         "@org_pythonhosted_mock",
     ],
 )
