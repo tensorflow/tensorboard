@@ -9,7 +9,6 @@ py_binary(
     srcs = ["inline_images.py"],
     python_version = "PY3",
     srcs_version = "PY2AND3",
-    deps = [],
 )
 
 genrule(

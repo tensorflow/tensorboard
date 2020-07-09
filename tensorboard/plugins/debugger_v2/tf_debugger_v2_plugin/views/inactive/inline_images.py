@@ -39,7 +39,7 @@ def inline_images():
             base64_content = base64.b64encode(f.read()).decode("utf-8")
         data_uri = "data:%s;base64,%s" % (MIME_TYPE, base64_content)
         image_basename = os.path.basename(image_file)
-        image_template = "%%%s%%" % image_basename
+        image_template = "%" + image_basename + "%"
         if image_template not in html:
             raise ValueError(
                 "Cannot find %s in input html file %s"
