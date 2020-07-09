@@ -32,7 +32,6 @@ MIME_TYPE = "image/png"
 
 def inline_images():
     input_html_path = sys.argv[1]
-    print("input_html_path = %s")
     image_files = sys.argv[2:]
     with open(input_html_path, "r") as f:
         html = f.read()
