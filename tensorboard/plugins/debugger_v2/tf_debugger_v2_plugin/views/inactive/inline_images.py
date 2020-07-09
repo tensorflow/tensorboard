@@ -15,7 +15,8 @@
 """Inline png images in html.
 
 Replaces %*.png% in the input .html file with a data URI containing the
-image content of the corresopnding .png files in the images/ subdirectory.
+base64-encoded image content of the corresopnding .png files in the images/
+subdirectory.
 """
 
 from __future__ import absolute_import
