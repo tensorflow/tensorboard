@@ -17,6 +17,7 @@ py_library(
         ":keras_util",
         ":metadata",
         "//tensorboard:plugin_util",
+        "//tensorboard/backend:context",
         "//tensorboard/backend:http_util",
         "//tensorboard/backend:process_graph",
         "//tensorboard/backend/event_processing:tag_types",
@@ -44,6 +45,7 @@ py_library(
     deps = [
         ":graphs_plugin",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/backend:context",
         "//tensorboard/backend/event_processing:data_provider",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/compat/proto:protos_all_py_pb2",

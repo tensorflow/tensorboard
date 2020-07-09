@@ -132,12 +132,13 @@ class CorePlugin(base_plugin.TBPlugin):
         * window_title is the title of the TensorBoard web page.
         """
         if self._data_provider:
+            ctx = plugin_util.context(request.environ)
             experiment = plugin_util.experiment_id(request.environ)
             data_location = self._data_provider.data_location(
-                experiment_id=experiment
+                ctx, experiment_id=experiment
             )
             experiment_metadata = self._data_provider.experiment_metadata(
-                experiment_id=experiment
+                ctx, experiment_id=experiment
             )
         else:
             data_location = self._logdir
@@ -186,9 +187,10 @@ class CorePlugin(base_plugin.TBPlugin):
         run name.
         """
         if self._data_provider:
+            ctx = plugin_util.context(request.environ)
             experiment = plugin_util.experiment_id(request.environ)
             runs = sorted(
-                self._data_provider.list_runs(experiment_id=experiment),
+                self._data_provider.list_runs(ctx, experiment_id=experiment),
                 key=lambda run: (
                     run.start_time
                     if run.start_time is not None

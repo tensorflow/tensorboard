@@ -28,6 +28,7 @@ except ImportError:
 import tensorflow as tf
 
 from google.protobuf import text_format
+from tensorboard.backend import context
 from tensorboard.backend.event_processing import data_provider
 from tensorboard.backend.event_processing import event_accumulator
 from tensorboard.backend.event_processing import plugin_event_multiplexer
@@ -154,9 +155,12 @@ class BackendContextTest(tf.test.TestCase):
         self._mock_multiplexer.AllSummaryMetadata.side_effect = None
         self._mock_multiplexer.AllSummaryMetadata.return_value = {run: {tag: m}}
         ctxt = backend_context.Context(self._mock_tb_context)
+        request_ctx = context.RequestContext()
         self.assertProtoEquals(
             experiment,
-            ctxt.experiment_from_metadata("123", ctxt.hparams_metadata("123")),
+            ctxt.experiment_from_metadata(
+                request_ctx, "123", ctxt.hparams_metadata(request_ctx, "123")
+            ),
         )
 
     def test_experiment_without_experiment_tag(self):
@@ -212,8 +216,9 @@ class BackendContextTest(tf.test.TestCase):
             }
         """
         ctxt = backend_context.Context(self._mock_tb_context)
+        request_ctx = context.RequestContext()
         actual_exp = ctxt.experiment_from_metadata(
-            "123", ctxt.hparams_metadata("123")
+            request_ctx, "123", ctxt.hparams_metadata(request_ctx, "123")
         )
         _canonicalize_experiment(actual_exp)
         self.assertProtoEquals(expected_exp, actual_exp)
@@ -276,8 +281,9 @@ class BackendContextTest(tf.test.TestCase):
             }
         """
         ctxt = backend_context.Context(self._mock_tb_context)
+        request_ctx = context.RequestContext()
         actual_exp = ctxt.experiment_from_metadata(
-            "123", ctxt.hparams_metadata("123")
+            request_ctx, "123", ctxt.hparams_metadata(request_ctx, "123")
         )
         _canonicalize_experiment(actual_exp)
         self.assertProtoEquals(expected_exp, actual_exp)
@@ -333,8 +339,9 @@ class BackendContextTest(tf.test.TestCase):
         ctxt = backend_context.Context(
             self._mock_tb_context, max_domain_discrete_len=1
         )
+        request_ctx = context.RequestContext()
         actual_exp = ctxt.experiment_from_metadata(
-            "123", ctxt.hparams_metadata("123")
+            request_ctx, "123", ctxt.hparams_metadata(request_ctx, "123"),
         )
         _canonicalize_experiment(actual_exp)
         self.assertProtoEquals(expected_exp, actual_exp)

@@ -82,6 +82,7 @@ py_test(
         ":data_provider",
         ":event_multiplexer",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/backend:context",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/data:provider",
         "//tensorboard/plugins/graph:metadata",

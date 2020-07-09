@@ -28,6 +28,7 @@ import os.path
 import tensorflow as tf
 
 from google.protobuf import text_format
+from tensorboard.backend import context
 from tensorboard.backend.event_processing import data_provider
 from tensorboard.backend.event_processing import (
     plugin_event_multiplexer as event_multiplexer,
@@ -187,7 +188,10 @@ class GraphsPluginV1Test(GraphsPluginBaseTest, tf.test.TestCase):
     def _get_graph(self, plugin, *args, **kwargs):
         """Set up runs, then fetch and return the graph as a proto."""
         (graph_pbtxt, mime_type) = plugin.graph_impl(
-            _RUN_WITH_GRAPH_WITH_METADATA[0], *args, **kwargs
+            context.RequestContext(),
+            _RUN_WITH_GRAPH_WITH_METADATA[0],
+            *args,
+            **kwargs
         )
         self.assertEqual(mime_type, "text/x-protobuf")
         return text_format.Parse(graph_pbtxt, tf.compat.v1.GraphDef())
@@ -240,7 +244,7 @@ class GraphsPluginV1Test(GraphsPluginBaseTest, tf.test.TestCase):
             # Data providers don't yet pass RunMetadata, so this entry is completely omitted.
             del expected["_RUN_WITHOUT_GRAPH_WITH_METADATA"]
 
-        actual = plugin.info_impl("eid")
+        actual = plugin.info_impl(context.RequestContext(), "eid")
         self.assertEqual(expected, actual)
 
     @with_runs([_RUN_WITH_GRAPH_WITH_METADATA])

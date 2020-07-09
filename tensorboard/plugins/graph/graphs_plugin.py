@@ -23,6 +23,7 @@ import six
 from werkzeug import wrappers
 
 from tensorboard import plugin_util
+from tensorboard.backend import context
 from tensorboard.backend import http_util
 from tensorboard.backend import process_graph
 from tensorboard.backend.event_processing import tag_types
@@ -77,7 +78,8 @@ class GraphsPlugin(base_plugin.TBPlugin):
         if self._data_provider:
             return False  # `list_plugins` as called by TB core suffices
 
-        return bool(self.info_impl())
+        empty_context = context.RequestContext()  # not used
+        return bool(self.info_impl(empty_context))
 
     def frontend_metadata(self):
         return base_plugin.FrontendMetadata(
@@ -86,7 +88,7 @@ class GraphsPlugin(base_plugin.TBPlugin):
             disable_reload=True,
         )
 
-    def info_impl(self, experiment=None):
+    def info_impl(self, ctx, experiment=None):
         """Returns a dict of all runs and their data availabilities."""
         result = {}
 
@@ -117,7 +119,7 @@ class GraphsPlugin(base_plugin.TBPlugin):
 
         if self._data_provider:
             mapping = self._data_provider.list_blob_sequences(
-                experiment_id=experiment, plugin_name=metadata.PLUGIN_NAME,
+                ctx, experiment_id=experiment, plugin_name=metadata.PLUGIN_NAME,
             )
             for (run_name, tag_to_time_series) in six.iteritems(mapping):
                 for tag in tag_to_time_series:
@@ -191,6 +193,7 @@ class GraphsPlugin(base_plugin.TBPlugin):
 
     def graph_impl(
         self,
+        ctx,
         run,
         tag,
         is_conceptual,
@@ -204,6 +207,7 @@ class GraphsPlugin(base_plugin.TBPlugin):
             if tag is None:
                 tag = metadata.RUN_GRAPH_NAME
             graph_blob_sequences = self._data_provider.read_blob_sequences(
+                ctx,
                 experiment_id=experiment,
                 plugin_name=metadata.PLUGIN_NAME,
                 run_tag_filter=provider.RunTagFilter(runs=[run], tags=[tag]),
@@ -216,7 +220,7 @@ class GraphsPlugin(base_plugin.TBPlugin):
                 return None
             # Always use the blob_key approach for now, even if there is a direct url.
             graph_raw = self._data_provider.read_blob(
-                blob_key=blob_ref.blob_key
+                ctx, blob_key=blob_ref.blob_key
             )
             # This method ultimately returns pbtxt, but we have to deserialize and
             # later reserialize this anyway, because a) this way we accept binary
@@ -280,14 +284,16 @@ class GraphsPlugin(base_plugin.TBPlugin):
 
     @wrappers.Request.application
     def info_route(self, request):
+        ctx = plugin_util.context(request.environ)
         experiment = plugin_util.experiment_id(request.environ)
-        info = self.info_impl(experiment)
+        info = self.info_impl(ctx, experiment)
         return http_util.Respond(request, info, "application/json")
 
     @wrappers.Request.application
     def graph_route(self, request):
         """Given a single run, return the graph definition in protobuf
         format."""
+        ctx = plugin_util.context(request.environ)
         experiment = plugin_util.experiment_id(request.environ)
         run = request.args.get("run")
         tag = request.args.get("tag")
@@ -315,6 +321,7 @@ class GraphsPlugin(base_plugin.TBPlugin):
 
         try:
             result = self.graph_impl(
+                ctx,
                 run,
                 tag,
                 is_conceptual,
