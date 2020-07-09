@@ -648,13 +648,13 @@ visualization.
               return outlineColor(timeAccessor(d));
             });
 
-        var hoverEnter = histogramEnter
-            .append('g')
-            .attr('class', 'hover')
-            .style('fill', function(d) {
-              return outlineColor(timeAccessor(d));
-            }),
-          hoverUpdate = histogramUpdate.select('.hover');
+        var hoverEnter = histogramEnter.append('g').attr('class', 'hover');
+
+        var hoverUpdate = histogramUpdate
+          .select('.hover')
+          .style('fill', function(d) {
+            return outlineColor(timeAccessor(d));
+          });
 
         hoverEnter.append('circle').attr('r', 2);
 

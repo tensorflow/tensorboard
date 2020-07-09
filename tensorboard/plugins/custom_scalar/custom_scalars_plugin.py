@@ -90,26 +90,8 @@ class CustomScalarsPlugin(base_plugin.TBPlugin):
         }
 
     def is_active(self):
-        """This plugin is active if 2 conditions hold.
-
-        1. The scalars plugin is registered and active.
-        2. There is a custom layout for the dashboard.
-
-        Returns: A boolean. Whether the plugin is active.
-        """
-        if not self._multiplexer:
-            return False
-
-        scalars_plugin_instance = self._get_scalars_plugin()
-        if not (
-            scalars_plugin_instance and scalars_plugin_instance.is_active()
-        ):
-            return False
-
-        # This plugin is active if any run has a layout.
-        return bool(
-            self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
-        )
+        """Plugin is active if there is a custom layout for the dashboard."""
+        return False  # `list_plugins` as called by TB core suffices
 
     def frontend_metadata(self):
         return base_plugin.FrontendMetadata(
@@ -121,9 +103,12 @@ class CustomScalarsPlugin(base_plugin.TBPlugin):
     def download_data_route(self, request):
         run = request.args.get("run")
         tag = request.args.get("tag")
+        experiment = plugin_util.experiment_id(request.environ)
         response_format = request.args.get("format")
         try:
-            body, mime_type = self.download_data_impl(run, tag, response_format)
+            body, mime_type = self.download_data_impl(
+                run, tag, experiment, response_format
+            )
         except ValueError as e:
             return http_util.Respond(
                 request=request,

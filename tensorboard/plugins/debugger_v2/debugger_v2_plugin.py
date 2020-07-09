@@ -82,7 +82,7 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
         Returns:
           `True` if and only if data in tfdbg v2's DebugEvent format is available.
         """
-        return bool(self._data_provider.list_runs(""))
+        return bool(self._data_provider.list_runs(experiment_id=""))
 
     def frontend_metadata(self):
         return base_plugin.FrontendMetadata(
@@ -92,7 +92,7 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
     @wrappers.Request.application
     def serve_runs(self, request):
         experiment = plugin_util.experiment_id(request.environ)
-        runs = self._data_provider.list_runs(experiment)
+        runs = self._data_provider.list_runs(experiment_id=experiment)
         run_listing = dict()
         for run in runs:
             run_listing[run.run_id] = {"start_time": run.start_time}
@@ -111,14 +111,16 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
             run, begin, end, alert_type=alert_type
         )
         blob_sequences = self._data_provider.read_blob_sequences(
-            experiment, self.plugin_name, run_tag_filter=run_tag_filter
+            experiment_id=experiment,
+            plugin_name=self.plugin_name,
+            run_tag_filter=run_tag_filter,
         )
         tag = next(iter(run_tag_filter.tags))
         try:
             return http_util.Respond(
                 request,
                 self._data_provider.read_blob(
-                    blob_sequences[run][tag][0].blob_key
+                    blob_key=blob_sequences[run][tag][0].blob_key
                 ),
                 "application/json",
             )
@@ -137,14 +139,16 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
             run, begin, end
         )
         blob_sequences = self._data_provider.read_blob_sequences(
-            experiment, self.plugin_name, run_tag_filter=run_tag_filter
+            experiment_id=experiment,
+            plugin_name=self.plugin_name,
+            run_tag_filter=run_tag_filter,
         )
         tag = next(iter(run_tag_filter.tags))
         try:
             return http_util.Respond(
                 request,
                 self._data_provider.read_blob(
-                    blob_sequences[run][tag][0].blob_key
+                    blob_key=blob_sequences[run][tag][0].blob_key
                 ),
                 "application/json",
             )
@@ -163,14 +167,16 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
             run, begin, end
         )
         blob_sequences = self._data_provider.read_blob_sequences(
-            experiment, self.plugin_name, run_tag_filter=run_tag_filter
+            experiment_id=experiment,
+            plugin_name=self.plugin_name,
+            run_tag_filter=run_tag_filter,
         )
         tag = next(iter(run_tag_filter.tags))
         try:
             return http_util.Respond(
                 request,
                 self._data_provider.read_blob(
-                    blob_sequences[run][tag][0].blob_key
+                    blob_key=blob_sequences[run][tag][0].blob_key
                 ),
                 "application/json",
             )
@@ -195,14 +201,16 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
             run, begin, end
         )
         blob_sequences = self._data_provider.read_blob_sequences(
-            experiment, self.plugin_name, run_tag_filter=run_tag_filter
+            experiment_id=experiment,
+            plugin_name=self.plugin_name,
+            run_tag_filter=run_tag_filter,
         )
         tag = next(iter(run_tag_filter.tags))
         try:
             return http_util.Respond(
                 request,
                 self._data_provider.read_blob(
-                    blob_sequences[run][tag][0].blob_key
+                    blob_key=blob_sequences[run][tag][0].blob_key
                 ),
                 "application/json",
             )
@@ -230,14 +238,16 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
             run, begin, end
         )
         blob_sequences = self._data_provider.read_blob_sequences(
-            experiment, self.plugin_name, run_tag_filter=run_tag_filter
+            experiment_id=experiment,
+            plugin_name=self.plugin_name,
+            run_tag_filter=run_tag_filter,
         )
         tag = next(iter(run_tag_filter.tags))
         try:
             return http_util.Respond(
                 request,
                 self._data_provider.read_blob(
-                    blob_sequences[run][tag][0].blob_key
+                    blob_key=blob_sequences[run][tag][0].blob_key
                 ),
                 "application/json",
             )
@@ -274,14 +284,16 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
             run, graph_id
         )
         blob_sequences = self._data_provider.read_blob_sequences(
-            experiment, self.plugin_name, run_tag_filter=run_tag_filter
+            experiment_id=experiment,
+            plugin_name=self.plugin_name,
+            run_tag_filter=run_tag_filter,
         )
         tag = next(iter(run_tag_filter.tags))
         try:
             return http_util.Respond(
                 request,
                 self._data_provider.read_blob(
-                    blob_sequences[run][tag][0].blob_key
+                    blob_key=blob_sequences[run][tag][0].blob_key
                 ),
                 "application/json",
             )
@@ -353,14 +365,16 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
             run, graph_id, op_name
         )
         blob_sequences = self._data_provider.read_blob_sequences(
-            experiment, self.plugin_name, run_tag_filter=run_tag_filter
+            experiment_id=experiment,
+            plugin_name=self.plugin_name,
+            run_tag_filter=run_tag_filter,
         )
         tag = next(iter(run_tag_filter.tags))
         try:
             return http_util.Respond(
                 request,
                 self._data_provider.read_blob(
-                    blob_sequences[run][tag][0].blob_key
+                    blob_key=blob_sequences[run][tag][0].blob_key
                 ),
                 "application/json",
             )
@@ -378,12 +392,16 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
             run
         )
         blob_sequences = self._data_provider.read_blob_sequences(
-            experiment, self.plugin_name, run_tag_filter=run_tag_filter
+            experiment_id=experiment,
+            plugin_name=self.plugin_name,
+            run_tag_filter=run_tag_filter,
         )
         tag = next(iter(run_tag_filter.tags))
         return http_util.Respond(
             request,
-            self._data_provider.read_blob(blob_sequences[run][tag][0].blob_key),
+            self._data_provider.read_blob(
+                blob_key=blob_sequences[run][tag][0].blob_key
+            ),
             "application/json",
         )
 
@@ -417,14 +435,16 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
             run, index
         )
         blob_sequences = self._data_provider.read_blob_sequences(
-            experiment, self.plugin_name, run_tag_filter=run_tag_filter
+            experiment_id=experiment,
+            plugin_name=self.plugin_name,
+            run_tag_filter=run_tag_filter,
         )
         tag = next(iter(run_tag_filter.tags))
         try:
             return http_util.Respond(
                 request,
                 self._data_provider.read_blob(
-                    blob_sequences[run][tag][0].blob_key
+                    blob_key=blob_sequences[run][tag][0].blob_key
                 ),
                 "application/json",
             )
@@ -458,14 +478,16 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
             run, stack_frame_ids
         )
         blob_sequences = self._data_provider.read_blob_sequences(
-            experiment, self.plugin_name, run_tag_filter=run_tag_filter
+            experiment_id=experiment,
+            plugin_name=self.plugin_name,
+            run_tag_filter=run_tag_filter,
         )
         tag = next(iter(run_tag_filter.tags))
         try:
             return http_util.Respond(
                 request,
                 self._data_provider.read_blob(
-                    blob_sequences[run][tag][0].blob_key
+                    blob_key=blob_sequences[run][tag][0].blob_key
                 ),
                 "application/json",
             )

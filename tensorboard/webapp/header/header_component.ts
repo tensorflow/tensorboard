@@ -56,6 +56,12 @@ import {Component} from '@angular/core';
         flex: 0 0 auto;
       }
 
+      .brand {
+        letter-spacing: -0.025em;
+        margin-left: 10px;
+        text-rendering: optimizeLegibility;
+      }
+
       .plugins {
         align-items: center;
         display: flex;

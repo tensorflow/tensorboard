@@ -165,13 +165,13 @@ class FakeDataProvider(provider.DataProvider):
     def __init__(self):
         pass
 
-    def list_runs(self, experiment_id):
+    def list_runs(self, *, experiment_id):
         raise NotImplementedError()
 
-    def list_scalars(self, experiment_id):
+    def list_scalars(self, *, experiment_id):
         raise NotImplementedError()
 
-    def read_scalars(self, experiment_id):
+    def read_scalars(self, *, experiment_id):
         raise NotImplementedError()
 
 
@@ -320,7 +320,7 @@ class ApplicationTest(tb_test.TestCase):
     def testPluginsListingWithDataProviderListActivePlugins(self):
         prov = FakeDataProvider()
         self.assertIsNotNone(prov.list_plugins)
-        prov.list_plugins = lambda experiment_id: ("foo", "bar")
+        prov.list_plugins = lambda *, experiment_id: ("foo", "bar")
 
         plugins = [
             FakePlugin(plugin_name="foo", is_active_value=False),

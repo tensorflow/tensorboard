@@ -23,12 +23,15 @@ import argparse
 import collections.abc
 import csv
 import functools
+import json
 import os.path
 import unittest
 
 from six import StringIO
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
+from werkzeug import test as werkzeug_test
+from werkzeug import wrappers
 
 from tensorboard import errors
 from tensorboard.backend import application
@@ -64,7 +67,7 @@ class ScalarsPluginTest(tf.test.TestCase):
     _RUN_WITH_SCALARS = "_RUN_WITH_SCALARS"
     _RUN_WITH_HISTOGRAM = "_RUN_WITH_HISTOGRAM"
 
-    def load_runs(self, run_names):
+    def load_plugin(self, run_names):
         logdir = self.get_temp_dir()
         for run_name in run_names:
             self.generate_run(logdir, run_name)
@@ -76,42 +79,10 @@ class ScalarsPluginTest(tf.test.TestCase):
         )
         multiplexer.AddRunsFromDirectory(logdir)
         multiplexer.Reload()
-        return (logdir, multiplexer)
 
-    def with_runs(run_names):
-        """Run a test with a bare multiplexer and with a `data_provider`.
-
-        The decorated function will receive an initialized
-        `ScalarsPlugin` object as its first positional argument.
-        """
-
-        def decorator(fn):
-            @functools.wraps(fn)
-            def wrapper(self, *args, **kwargs):
-                (logdir, multiplexer) = self.load_runs(run_names)
-                with self.subTest("bare multiplexer"):
-                    ctx = base_plugin.TBContext(
-                        logdir=logdir,
-                        multiplexer=multiplexer,
-                        flags=argparse.Namespace(generic_data="false"),
-                    )
-                    fn(self, scalars_plugin.ScalarsPlugin(ctx), *args, **kwargs)
-                with self.subTest("generic data provider"):
-                    flags = argparse.Namespace(generic_data="true")
-                    provider = data_provider.MultiplexerDataProvider(
-                        multiplexer, logdir
-                    )
-                    ctx = base_plugin.TBContext(
-                        flags=flags,
-                        logdir=logdir,
-                        multiplexer=multiplexer,
-                        data_provider=provider,
-                    )
-                    fn(self, scalars_plugin.ScalarsPlugin(ctx), *args, **kwargs)
-
-            return wrapper
-
-        return decorator
+        provider = data_provider.MultiplexerDataProvider(multiplexer, logdir)
+        ctx = base_plugin.TBContext(logdir=logdir, data_provider=provider,)
+        return scalars_plugin.ScalarsPlugin(ctx)
 
     def generate_run(self, logdir, run_name):
         subdir = os.path.join(logdir, run_name)
@@ -137,17 +108,21 @@ class ScalarsPluginTest(tf.test.TestCase):
                     assert False, "Invalid run name: %r" % run_name
                 writer.add_summary(summ, global_step=step)
 
-    @with_runs([])
-    def testRoutesProvided(self, plugin):
+    def testRoutesProvided(self):
         """Tests that the plugin offers the correct routes."""
+        plugin = self.load_plugin([])
         routes = plugin.get_plugin_apps()
         self.assertIsInstance(routes["/scalars"], collections.abc.Callable)
         self.assertIsInstance(routes["/tags"], collections.abc.Callable)
 
-    @with_runs(
-        [_RUN_WITH_LEGACY_SCALARS, _RUN_WITH_SCALARS, _RUN_WITH_HISTOGRAM]
-    )
-    def test_index(self, plugin):
+    def test_index(self):
+        plugin = self.load_plugin(
+            [
+                self._RUN_WITH_LEGACY_SCALARS,
+                self._RUN_WITH_SCALARS,
+                self._RUN_WITH_HISTOGRAM,
+            ]
+        )
         self.assertEqual(
             {
                 self._RUN_WITH_LEGACY_SCALARS: {
@@ -168,103 +143,90 @@ class ScalarsPluginTest(tf.test.TestCase):
             plugin.index_impl("eid"),
         )
 
-    @with_runs(
-        [_RUN_WITH_LEGACY_SCALARS, _RUN_WITH_SCALARS, _RUN_WITH_HISTOGRAM]
-    )
-    def _test_scalars_json(self, plugin, run_name, tag_name, should_work=True):
-        if should_work:
-            (data, mime_type) = plugin.scalars_impl(
-                tag_name, run_name, "eid", scalars_plugin.OutputFormat.JSON
+    def test_scalars_with_legacy_scalars(self):
+        plugin = self.load_plugin([self._RUN_WITH_LEGACY_SCALARS])
+        data, mime_type = plugin.scalars_impl(
+            self._LEGACY_SCALAR_TAG,
+            self._RUN_WITH_LEGACY_SCALARS,
+            "eid",
+            scalars_plugin.OutputFormat.JSON,
+        )
+        self.assertEqual("application/json", mime_type)
+        self.assertEqual(len(data), self._STEPS)
+
+    def test_scalars_with_scalars(self):
+        plugin = self.load_plugin([self._RUN_WITH_SCALARS])
+        data, mime_type = plugin.scalars_impl(
+            "%s/scalar_summary" % self._SCALAR_TAG,
+            self._RUN_WITH_SCALARS,
+            "eid",
+            scalars_plugin.OutputFormat.JSON,
+        )
+        self.assertEqual("application/json", mime_type)
+        self.assertEqual(len(data), self._STEPS)
+
+    def test_scalars_with_histogram(self):
+        plugin = self.load_plugin([self._RUN_WITH_HISTOGRAM])
+        with self.assertRaises(errors.NotFoundError):
+            plugin.scalars_impl(
+                self._HISTOGRAM_TAG,
+                self._RUN_WITH_HISTOGRAM,
+                "eid",
+                scalars_plugin.OutputFormat.JSON,
             )
-            self.assertEqual("application/json", mime_type)
-            self.assertEqual(len(data), self._STEPS)
-        else:
-            with self.assertRaises(errors.NotFoundError):
-                plugin.scalars_impl(
-                    self._SCALAR_TAG,
-                    run_name,
-                    "eid",
-                    scalars_plugin.OutputFormat.JSON,
-                )
 
-    @with_runs(
-        [_RUN_WITH_LEGACY_SCALARS, _RUN_WITH_SCALARS, _RUN_WITH_HISTOGRAM]
-    )
-    def _test_scalars_csv(self, plugin, run_name, tag_name, should_work=True):
-        if should_work:
-            (data, mime_type) = plugin.scalars_impl(
-                tag_name, run_name, "eid", scalars_plugin.OutputFormat.CSV
-            )
-            self.assertEqual("text/csv", mime_type)
-            s = StringIO(data)
-            reader = csv.reader(s)
-            self.assertEqual(["Wall time", "Step", "Value"], next(reader))
-            self.assertEqual(len(list(reader)), self._STEPS)
-        else:
-            with self.assertRaises(errors.NotFoundError):
-                plugin.scalars_impl(
-                    self._SCALAR_TAG,
-                    run_name,
-                    "eid",
-                    scalars_plugin.OutputFormat.CSV,
-                )
-
-    def test_scalars_json_with_legacy_scalars(self):
-        self._test_scalars_json(
-            self._RUN_WITH_LEGACY_SCALARS, self._LEGACY_SCALAR_TAG
-        )
-
-    def test_scalars_json_with_scalars(self):
-        self._test_scalars_json(
-            self._RUN_WITH_SCALARS, "%s/scalar_summary" % self._SCALAR_TAG
-        )
-
-    def test_scalars_json_with_histogram(self):
-        self._test_scalars_json(
-            self._RUN_WITH_HISTOGRAM, self._HISTOGRAM_TAG, should_work=False
-        )
-
-    def test_scalars_csv_with_legacy_scalars(self):
-        self._test_scalars_csv(
-            self._RUN_WITH_LEGACY_SCALARS, self._LEGACY_SCALAR_TAG
-        )
-
-    def test_scalars_csv_with_scalars(self):
-        self._test_scalars_csv(
-            self._RUN_WITH_SCALARS, "%s/scalar_summary" % self._SCALAR_TAG
-        )
-
-    def test_scalars_csv_with_histogram(self):
-        self._test_scalars_csv(
-            self._RUN_WITH_HISTOGRAM, self._HISTOGRAM_TAG, should_work=False
-        )
-
-    @with_runs([_RUN_WITH_LEGACY_SCALARS])
-    def test_active_with_legacy_scalars(self, plugin):
-        if plugin._data_provider:
-            self.assertFalse(plugin.is_active())
-        else:
-            self.assertTrue(plugin.is_active())
-
-    @with_runs([_RUN_WITH_SCALARS])
-    def test_active_with_scalars(self, plugin):
-        if plugin._data_provider:
-            self.assertFalse(plugin.is_active())
-        else:
-            self.assertTrue(plugin.is_active())
-
-    @with_runs([_RUN_WITH_HISTOGRAM])
-    def test_active_with_histogram(self, plugin):
+    def test_active_with_legacy_scalars(self):
+        plugin = self.load_plugin([self._RUN_WITH_LEGACY_SCALARS])
         self.assertFalse(plugin.is_active())
 
-    @with_runs(
-        [_RUN_WITH_LEGACY_SCALARS, _RUN_WITH_SCALARS, _RUN_WITH_HISTOGRAM]
-    )
-    def test_active_with_all(self, plugin):
-        if plugin._data_provider:
-            self.assertFalse(plugin.is_active())
-        else:
-            self.assertTrue(plugin.is_active())
+    def test_active_with_scalars(self):
+        plugin = self.load_plugin([self._RUN_WITH_SCALARS])
+        self.assertFalse(plugin.is_active())
+
+    def test_active_with_histogram(self):
+        plugin = self.load_plugin([self._RUN_WITH_HISTOGRAM])
+        self.assertFalse(plugin.is_active())
+
+    def test_active_with_all(self):
+        plugin = self.load_plugin(
+            [
+                self._RUN_WITH_LEGACY_SCALARS,
+                self._RUN_WITH_SCALARS,
+                self._RUN_WITH_HISTOGRAM,
+            ]
+        )
+        self.assertFalse(plugin.is_active())
+
+    def test_download_url_json(self):
+        plugin = self.load_plugin([self._RUN_WITH_SCALARS])
+        wsgi_app = application.TensorBoardWSGI([plugin])
+        server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)
+        response = server.get(
+            "/data/plugin/scalars/scalars?run=%s&tag=%s"
+            % (self._RUN_WITH_SCALARS, "%s/scalar_summary" % self._SCALAR_TAG,)
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("application/json", response.headers["Content-Type"])
+        payload = json.loads(response.get_data())
+        self.assertEqual(len(payload), self._STEPS)
+
+    def test_download_url_csv(self):
+        plugin = self.load_plugin([self._RUN_WITH_SCALARS])
+        wsgi_app = application.TensorBoardWSGI([plugin])
+        server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)
+        response = server.get(
+            "/data/plugin/scalars/scalars?run=%s&tag=%s&format=csv"
+            % (self._RUN_WITH_SCALARS, "%s/scalar_summary" % self._SCALAR_TAG,)
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            "text/csv; charset=utf-8", response.headers["Content-Type"]
+        )
+        payload = response.get_data()
+        s = StringIO(payload.decode("utf-8"))
+        reader = csv.reader(s)
+        self.assertEqual(["Wall time", "Step", "Value"], next(reader))
+        self.assertEqual(len(list(reader)), self._STEPS)
 
 
 if __name__ == "__main__":

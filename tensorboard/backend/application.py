@@ -372,7 +372,7 @@ class TensorBoardWSGI(object):
         response = collections.OrderedDict()
         eid = plugin_util.experiment_id(request.environ)
         plugins_with_data = frozenset(
-            self._data_provider.list_plugins(eid) or frozenset()
+            self._data_provider.list_plugins(experiment_id=eid) or frozenset()
             if self._data_provider is not None
             else frozenset()
         )

@@ -71,7 +71,7 @@ class ImagesPlugin(base_plugin.TBPlugin):
         self._downsample_to = (context.sampling_hints or {}).get(
             self.plugin_name, _DEFAULT_DOWNSAMPLING
         )
-        if context.flags and context.flags.generic_data != "false":
+        if not context.flags or context.flags.generic_data != "false":
             self._data_provider = context.data_provider
         else:
             self._data_provider = None
@@ -273,7 +273,7 @@ class ImagesPlugin(base_plugin.TBPlugin):
         Returns:
           A bytestring of the raw image bytes.
         """
-        return self._data_provider.read_blob(blob_key)
+        return self._data_provider.read_blob(blob_key=blob_key)
 
     def _get_legacy_individual_image(self, run, tag, index, sample):
         """Returns the actual image bytes for a given image.
