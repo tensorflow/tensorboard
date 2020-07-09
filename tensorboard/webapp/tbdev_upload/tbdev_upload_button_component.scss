@@ -16,7 +16,7 @@ limitations under the License.
 
 /* Override material styling with more precise selector. */
 :host button.mat-stroked-button {
-  background-color: mat-color($tb-primary, 300);
+  background-color: mat-color($tb-primary, 500);
   border: 1px solid map-get($tb-foreground, border);
 }
 

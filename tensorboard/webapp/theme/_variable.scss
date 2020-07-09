@@ -15,6 +15,6 @@ limitations under the License.
 @import 'tensorboard/webapp/angular_material_theming';
 @import 'tensorboard/webapp/theme/tb_palette';
 
-$tb-primary: mat-palette($tf-orange);
+$tb-primary: mat-palette($tf-orange, 700, 400, 700);
 $tb-accent: mat-palette($tf-orange);
 $tb-warn: mat-palette($mat-red);
