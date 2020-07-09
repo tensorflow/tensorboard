@@ -40,14 +40,13 @@ $tf-slate: (
    several orange values, but only one of them (--tb-orange-strong) is used
    widely. */
  $tf-orange: (
-  /* BDTODO: FF9429 instead? This is what is used by "Send Feedback" */
-  100: #ff9800, /* Material Orange 500 */
-  200: #ff9800, /* Material Orange 500 */
-  300: #ff9800, /* Material Orange 500 */
-  400: #ff9800, /* Material Orange 500 */
-  500: #ff9800, /* Material Orange 500 */
-  700: #f57c00, /* Material Orange 700 --tb-orange-strong */
-  900: #f57c00, /* Material Orange 700 --tb-orange-strong */
+  100: mat-color($mat-orange, 500),
+  200: mat-color($mat-orange, 500),
+  300: mat-color($mat-orange, 500),
+  400: mat-color($mat-orange, 500),
+  500: mat-color($mat-orange, 500),
+  700: mat-color($mat-orange, 700), /* --tb-orange-strong */
+  900: mat-color($mat-orange, 700), /* --tb-orange-strong */
   contrast: (
     100: $dark-primary-text,
     300: $dark-primary-text,
