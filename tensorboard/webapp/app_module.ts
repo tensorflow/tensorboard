@@ -44,7 +44,7 @@ import {SettingsModule} from './settings/settings_module';
     SettingsModule,
     StoreModule.forRoot(ROOT_REDUCERS, {
       runtimeChecks: {
-        strictStateSerializability: true,
+        strictStateSerializability: false,
         strictActionSerializability: true,
       },
     }),
