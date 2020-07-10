@@ -26,7 +26,7 @@ import numpy as np
 import six
 import tensorflow as tf
 
-from tensorboard.backend import context
+from tensorboard import context
 from tensorboard.backend.event_processing import (
     plugin_event_multiplexer as event_multiplexer,
 )

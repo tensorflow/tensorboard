@@ -26,7 +26,7 @@ except ImportError:
 import tensorflow as tf
 
 from google.protobuf import text_format
-from tensorboard.backend import context
+from tensorboard import context
 from tensorboard.plugins.hparams import api_pb2
 from tensorboard.plugins.hparams import list_metric_evals
 from tensorboard.plugins.scalar import scalars_plugin

@@ -78,8 +78,8 @@ py_test(
     ],
     deps = [
         ":hparams_plugin",
+        "//tensorboard:context",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/backend:context",
         "//tensorboard/backend/event_processing:data_provider",
         "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/backend/event_processing:event_multiplexer",
@@ -97,8 +97,8 @@ py_test(
     ],
     deps = [
         ":hparams_plugin",
+        "//tensorboard:context",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/backend:context",
         "@org_pythonhosted_mock",
     ],
 )
@@ -111,8 +111,8 @@ py_test(
     ],
     deps = [
         ":hparams_plugin",
+        "//tensorboard:context",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/backend:context",
         "//tensorboard/backend/event_processing:data_provider",
         "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/backend/event_processing:event_multiplexer",

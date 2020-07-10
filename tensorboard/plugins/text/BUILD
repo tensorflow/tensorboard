@@ -36,9 +36,9 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":text_plugin",
+        "//tensorboard:context",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard:plugin_util",
-        "//tensorboard/backend:context",
         "//tensorboard/backend/event_processing:data_provider",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/plugins:base_plugin",
@@ -57,9 +57,9 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":text_plugin",
+        "//tensorboard:context",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard:plugin_util",
-        "//tensorboard/backend:context",
         "//tensorboard/backend/event_processing:data_provider",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/compat:no_tensorflow",
