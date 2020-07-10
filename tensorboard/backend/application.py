@@ -89,7 +89,8 @@ def TensorBoardWSGIApp(
           to use for any plugins not yet enabled for the DataProvider API.
           Required if the data_provider argument is not passed.
       auth_providers: Optional mapping whose values are `AuthProvider` values
-          (with arbitrary keys). Defaults to `{}`.
+        and whose keys are used by (e.g.) data providers to specify
+        `AuthProvider`s via the `AuthContext.get` interface. Defaults to `{}`.
 
     Returns:
       A WSGI application that implements the TensorBoard backend.
@@ -187,7 +188,9 @@ class TensorBoardWSGI(object):
               a user if the user has specified the plugin with the experimentalPlugin
               query parameter in the URL.
           auth_providers: Optional mapping whose values are `AuthProvider`
-              values (with arbitrary keys). Defaults to `{}`.
+            values and whose keys are used by (e.g.) data providers to specify
+            `AuthProvider`s via the `AuthContext.get` interface.
+            Defaults to `{}`.
 
         Returns:
           A WSGI application for the set of all TBPlugin instances.
