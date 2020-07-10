@@ -168,10 +168,10 @@ class MarkdownsToSafeHTMLTest(tb_test.TestCase):
 
 class ContextTest(tb_test.TestCase):
     def test_context(self):
-        environ = context.update_environ({})
-        self.assertEqual(
-            context.from_environ(environ), plugin_util.context(environ)
-        )
+        ctx = context.RequestContext()
+        environ = {}
+        context.set_in_environ(environ, ctx)
+        self.assertEqual(context.from_environ(environ), ctx)
 
 
 class ExperimentIdTest(tb_test.TestCase):
