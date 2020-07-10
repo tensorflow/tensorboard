@@ -77,11 +77,11 @@ class ScalarsPlugin(base_plugin.TBPlugin):
     def frontend_metadata(self):
         return base_plugin.FrontendMetadata(element_name="tf-scalar-dashboard")
 
-    def index_impl(self, experiment=None):
+    def index_impl(self, ctx, experiment=None):
         """Return {runName: {tagName: {displayName: ..., description:
         ...}}}."""
         mapping = self._data_provider.list_scalars(
-            experiment_id=experiment, plugin_name=metadata.PLUGIN_NAME,
+            ctx, experiment_id=experiment, plugin_name=metadata.PLUGIN_NAME,
         )
         result = {run: {} for run in mapping}
         for (run, tag_to_content) in six.iteritems(mapping):
@@ -95,9 +95,10 @@ class ScalarsPlugin(base_plugin.TBPlugin):
                 }
         return result
 
-    def scalars_impl(self, tag, run, experiment, output_format):
+    def scalars_impl(self, ctx, tag, run, experiment, output_format):
         """Result of the form `(body, mime_type)`."""
         all_scalars = self._data_provider.read_scalars(
+            ctx,
             experiment_id=experiment,
             plugin_name=metadata.PLUGIN_NAME,
             downsample=self._downsample_to,
@@ -120,8 +121,9 @@ class ScalarsPlugin(base_plugin.TBPlugin):
 
     @wrappers.Request.application
     def tags_route(self, request):
+        ctx = plugin_util.context(request.environ)
         experiment = plugin_util.experiment_id(request.environ)
-        index = self.index_impl(experiment=experiment)
+        index = self.index_impl(ctx, experiment=experiment)
         return http_util.Respond(request, index, "application/json")
 
     @wrappers.Request.application
@@ -129,9 +131,10 @@ class ScalarsPlugin(base_plugin.TBPlugin):
         """Given a tag and single run, return array of ScalarEvents."""
         tag = request.args.get("tag")
         run = request.args.get("run")
+        ctx = plugin_util.context(request.environ)
         experiment = plugin_util.experiment_id(request.environ)
         output_format = request.args.get("format")
         (body, mime_type) = self.scalars_impl(
-            tag, run, experiment, output_format
+            ctx, tag, run, experiment, output_format
         )
         return http_util.Respond(request, body, mime_type)

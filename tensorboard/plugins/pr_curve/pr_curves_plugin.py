@@ -58,6 +58,7 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
           containing data required for PR curves for that run. Runs that either
           cannot be found or that lack tags will be excluded from the response.
         """
+        ctx = plugin_util.context(request.environ)
         experiment = plugin_util.experiment_id(request.environ)
 
         runs = request.args.getlist("run")
@@ -75,7 +76,7 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
         try:
             response = http_util.Respond(
                 request,
-                self.pr_curves_impl(experiment, runs, tag),
+                self.pr_curves_impl(ctx, experiment, runs, tag),
                 "application/json",
             )
         except ValueError as e:
@@ -83,7 +84,7 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
 
         return response
 
-    def pr_curves_impl(self, experiment, runs, tag):
+    def pr_curves_impl(self, ctx, experiment, runs, tag):
         """Creates the JSON object for the PR curves response for a run-tag
         combo.
 
@@ -100,6 +101,7 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
         response_mapping = {}
         rtf = provider.RunTagFilter(runs, [tag])
         read_result = self._data_provider.read_tensors(
+            ctx,
             experiment_id=experiment,
             plugin_name=metadata.PLUGIN_NAME,
             run_tag_filter=rtf,
@@ -131,19 +133,20 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
             - description: The description that appears near visualizations upon the
                 user hovering over a certain icon.
         """
+        ctx = plugin_util.context(request.environ)
         experiment = plugin_util.experiment_id(request.environ)
         return http_util.Respond(
-            request, self.tags_impl(experiment), "application/json"
+            request, self.tags_impl(ctx, experiment), "application/json"
         )
 
-    def tags_impl(self, experiment):
+    def tags_impl(self, ctx, experiment):
         """Creates the JSON object for the tags route response.
 
         Returns:
           The JSON object for the tags route response.
         """
         mapping = self._data_provider.list_tensors(
-            experiment_id=experiment, plugin_name=metadata.PLUGIN_NAME
+            ctx, experiment_id=experiment, plugin_name=metadata.PLUGIN_NAME
         )
         result = {run: {} for run in mapping}
         for (run, tag_to_time_series) in six.iteritems(mapping):

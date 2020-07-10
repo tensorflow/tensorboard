@@ -239,10 +239,10 @@ class TextPlugin(base_plugin.TBPlugin):
     def frontend_metadata(self):
         return base_plugin.FrontendMetadata(element_name="tf-text-dashboard")
 
-    def index_impl(self, experiment):
+    def index_impl(self, ctx, experiment):
         if self._data_provider:
             mapping = self._data_provider.list_tensors(
-                experiment_id=experiment, plugin_name=metadata.PLUGIN_NAME,
+                ctx, experiment_id=experiment, plugin_name=metadata.PLUGIN_NAME,
             )
         else:
             mapping = self._multiplexer.PluginRunToTagToContent(
@@ -255,13 +255,15 @@ class TextPlugin(base_plugin.TBPlugin):
 
     @wrappers.Request.application
     def tags_route(self, request):
+        ctx = plugin_util.context(request.environ)
         experiment = plugin_util.experiment_id(request.environ)
-        index = self.index_impl(experiment)
+        index = self.index_impl(ctx, experiment)
         return http_util.Respond(request, index, "application/json")
 
-    def text_impl(self, run, tag, experiment):
+    def text_impl(self, ctx, run, tag, experiment):
         if self._data_provider:
             all_text = self._data_provider.read_tensors(
+                ctx,
                 experiment_id=experiment,
                 plugin_name=metadata.PLUGIN_NAME,
                 downsample=self._downsample_to,
@@ -285,10 +287,11 @@ class TextPlugin(base_plugin.TBPlugin):
 
     @wrappers.Request.application
     def text_route(self, request):
+        ctx = plugin_util.context(request.environ)
         experiment = plugin_util.experiment_id(request.environ)
         run = request.args.get("run")
         tag = request.args.get("tag")
-        response = self.text_impl(run, tag, experiment)
+        response = self.text_impl(ctx, run, tag, experiment)
         return http_util.Respond(request, response, "application/json")
 
     def get_plugin_apps(self):

@@ -28,6 +28,7 @@ import numpy as np
 import tensorflow as tf
 
 from tensorboard import plugin_util
+from tensorboard import context
 from tensorboard.backend.event_processing import data_provider
 from tensorboard.backend.event_processing import (
     plugin_event_multiplexer as event_multiplexer,
@@ -126,22 +127,28 @@ class TextPluginTest(tf.test.TestCase):
 
     @with_plugin()
     def testIndex(self, plugin):
-        index = plugin.index_impl(experiment="123")
+        index = plugin.index_impl(context.RequestContext(), experiment="123")
         self.assertItemsEqual(["fry", "leela"], index.keys())
         self.assertItemsEqual(["message", "vector"], index["fry"])
         self.assertItemsEqual(["message", "vector"], index["leela"])
 
     @with_plugin()
     def testText(self, plugin):
-        fry = plugin.text_impl("fry", "message", experiment="123")
-        leela = plugin.text_impl("leela", "message", experiment="123")
+        fry = plugin.text_impl(
+            context.RequestContext(), "fry", "message", experiment="123"
+        )
+        leela = plugin.text_impl(
+            context.RequestContext(), "leela", "message", experiment="123"
+        )
         self.assertEqual(len(fry), 4)
         self.assertEqual(len(leela), 4)
         for i in range(4):
             self.assertEqual(fry[i]["step"], i)
             self.assertEqual(leela[i]["step"], i)
 
-        table = plugin.text_impl("fry", "vector", experiment="123")[0]["text"]
+        table = plugin.text_impl(
+            context.RequestContext(), "fry", "vector", experiment="123"
+        )[0]["text"]
         self.assertEqual(
             table,
             textwrap.dedent(
@@ -424,7 +431,9 @@ class TextPluginTest(tf.test.TestCase):
 
     @with_plugin()
     def testPluginIndexImpl(self, plugin):
-        run_to_tags = plugin.index_impl(experiment="123")
+        run_to_tags = plugin.index_impl(
+            context.RequestContext(), experiment="123"
+        )
         self.assertItemsEqual(["fry", "leela"], run_to_tags.keys())
         self.assertItemsEqual(["message", "vector"], run_to_tags["fry"])
         self.assertItemsEqual(["message", "vector"], run_to_tags["leela"])

@@ -370,9 +370,11 @@ class TensorBoardWSGI(object):
           A werkzeug.Response object.
         """
         response = collections.OrderedDict()
+        ctx = plugin_util.context(request.environ)
         eid = plugin_util.experiment_id(request.environ)
         plugins_with_data = frozenset(
-            self._data_provider.list_plugins(experiment_id=eid) or frozenset()
+            self._data_provider.list_plugins(ctx, experiment_id=eid)
+            or frozenset()
             if self._data_provider is not None
             else frozenset()
         )
