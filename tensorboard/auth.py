@@ -16,8 +16,11 @@
 
 import abc
 
+import six
 
-class AuthProvider(metaclass=abc.ABCMeta):
+
+@six.add_metaclass(abc.ABCMeta)
+class AuthProvider(object):
     """Authentication provider for a specific kind of credential."""
 
     def authenticate(self, environ):
@@ -40,7 +43,7 @@ class AuthProvider(metaclass=abc.ABCMeta):
         pass
 
 
-class AuthContext:
+class AuthContext(object):
     """Authentication context within the scope of a single request.
 
     Auth providers are keyed within an `AuthContext` by arbitrary

@@ -84,7 +84,7 @@ py_test(
 py_library(
     name = "auth",
     srcs = ["auth.py"],
-    srcs_version = "PY3",
+    srcs_version = "PY2AND3",
     deps = [],
 )
 
@@ -103,7 +103,7 @@ py_test(
 py_library(
     name = "context",
     srcs = ["context.py"],
-    srcs_version = "PY3",
+    srcs_version = "PY2AND3",
     deps = [
         ":auth",
     ],
