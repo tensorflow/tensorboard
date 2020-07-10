@@ -27,7 +27,7 @@ from bleach.sanitizer import Cleaner
 import markdown
 import six
 
-from tensorboard.backend import context as _context
+from tensorboard import context as _context
 from tensorboard.backend import experiment_id as _experiment_id
 
 
