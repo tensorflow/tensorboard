@@ -31,7 +31,7 @@ class Handler(object):
         """Constructor.
 
         Args:
-            request_context: A tensorboard.backend.context.RequestContext.
+            request_context: A tensorboard.context.RequestContext.
             request: A ListSessionGroupsRequest protobuf.
             scalars_plugin_instance: A scalars_plugin.ScalarsPlugin.
             experiment: A experiment ID, as a possibly-empty `str`.
