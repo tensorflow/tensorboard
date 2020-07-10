@@ -29,6 +29,7 @@ except ImportError:
     import mock  # pylint: disable=unused-import
 
 from google.protobuf import text_format
+from tensorboard import context
 from tensorboard.backend.event_processing import data_provider
 from tensorboard.backend.event_processing import event_accumulator
 from tensorboard.backend.event_processing import plugin_event_multiplexer
@@ -1209,7 +1210,8 @@ class ListSessionGroupsTest(tf.test.TestCase):
         request_proto = api_pb2.ListSessionGroupsRequest()
         text_format.Merge(request, request_proto)
         handler = list_session_groups.Handler(
-            context=backend_context.Context(self._mock_tb_context),
+            backend_context=backend_context.Context(self._mock_tb_context),
+            request_context=context.RequestContext(),
             experiment_id="123",
             request=request_proto,
         )

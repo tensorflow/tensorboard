@@ -16,6 +16,7 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         ":metadata",
+        "//tensorboard:context",
         "//tensorboard:errors",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:plugin_util",
@@ -37,6 +38,7 @@ py_test(
     deps = [
         ":histograms_plugin",
         ":summary",
+        "//tensorboard:context",
         "//tensorboard:errors",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend/event_processing:data_provider",
@@ -60,6 +62,7 @@ py_test(
     deps = [
         ":histograms_plugin",
         ":summary",
+        "//tensorboard:context",
         "//tensorboard:errors",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend/event_processing:data_provider",

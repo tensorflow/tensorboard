@@ -35,6 +35,7 @@ from werkzeug import wrappers
 
 from tensorboard import errors
 from tensorboard.backend import application
+from tensorboard import context
 from tensorboard.backend.event_processing import data_provider
 from tensorboard.backend.event_processing import (
     plugin_event_multiplexer as event_multiplexer,
@@ -140,12 +141,13 @@ class ScalarsPluginTest(tf.test.TestCase):
                 },
                 # _RUN_WITH_HISTOGRAM omitted: No scalar data.
             },
-            plugin.index_impl("eid"),
+            plugin.index_impl(context.RequestContext(), "eid"),
         )
 
     def test_scalars_with_legacy_scalars(self):
         plugin = self.load_plugin([self._RUN_WITH_LEGACY_SCALARS])
         data, mime_type = plugin.scalars_impl(
+            context.RequestContext(),
             self._LEGACY_SCALAR_TAG,
             self._RUN_WITH_LEGACY_SCALARS,
             "eid",
@@ -157,6 +159,7 @@ class ScalarsPluginTest(tf.test.TestCase):
     def test_scalars_with_scalars(self):
         plugin = self.load_plugin([self._RUN_WITH_SCALARS])
         data, mime_type = plugin.scalars_impl(
+            context.RequestContext(),
             "%s/scalar_summary" % self._SCALAR_TAG,
             self._RUN_WITH_SCALARS,
             "eid",
@@ -169,6 +172,7 @@ class ScalarsPluginTest(tf.test.TestCase):
         plugin = self.load_plugin([self._RUN_WITH_HISTOGRAM])
         with self.assertRaises(errors.NotFoundError):
             plugin.scalars_impl(
+                context.RequestContext(),
                 self._HISTOGRAM_TAG,
                 self._RUN_WITH_HISTOGRAM,
                 "eid",

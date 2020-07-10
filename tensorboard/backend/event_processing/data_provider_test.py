@@ -24,6 +24,7 @@ import six
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import numpy as np
 
+from tensorboard import context
 from tensorboard.backend.event_processing import data_provider
 from tensorboard.backend.event_processing import (
     plugin_event_multiplexer as event_multiplexer,
@@ -49,6 +50,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
     def setUp(self):
         super(MultiplexerDataProviderTest, self).setUp()
         self.logdir = self.get_temp_dir()
+        self.ctx = context.RequestContext()
 
         logdir = os.path.join(self.logdir, "polynomials")
         with tf.summary.create_file_writer(logdir).as_default():
@@ -128,12 +130,12 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
 
     def test_data_location(self):
         provider = self.create_provider()
-        result = provider.data_location(experiment_id="unused")
+        result = provider.data_location(self.ctx, experiment_id="unused")
         self.assertEqual(result, self.logdir)
 
     def test_list_plugins_with_no_graph(self):
         provider = self.create_provider()
-        result = provider.list_plugins(experiment_id="unused")
+        result = provider.list_plugins(self.ctx, experiment_id="unused")
         self.assertItemsEqual(
             result,
             [
@@ -152,7 +154,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
             writer.flush()
 
         provider = self.create_provider()
-        result = provider.list_plugins(experiment_id="unused")
+        result = provider.list_plugins(self.ctx, experiment_id="unused")
         self.assertItemsEqual(
             result,
             [
@@ -194,7 +196,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
         provider = data_provider.MultiplexerDataProvider(
             multiplexer, "fake_logdir"
         )
-        result = provider.list_runs(experiment_id="unused")
+        result = provider.list_runs(self.ctx, experiment_id="unused")
         self.assertItemsEqual(
             result,
             [
@@ -208,6 +210,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
     def test_list_scalars_all(self):
         provider = self.create_provider()
         result = provider.list_scalars(
+            self.ctx,
             experiment_id="unused",
             plugin_name=scalar_metadata.PLUGIN_NAME,
             run_tag_filter=None,
@@ -229,6 +232,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
         provider = self.create_provider()
 
         result = provider.list_scalars(
+            self.ctx,
             experiment_id="unused",
             plugin_name=scalar_metadata.PLUGIN_NAME,
             run_tag_filter=base_provider.RunTagFilter(["waves"], ["square"]),
@@ -237,6 +241,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
         self.assertItemsEqual(result["waves"].keys(), ["square"])
 
         result = provider.list_scalars(
+            self.ctx,
             experiment_id="unused",
             plugin_name=scalar_metadata.PLUGIN_NAME,
             run_tag_filter=base_provider.RunTagFilter(
@@ -248,6 +253,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
         self.assertItemsEqual(result["waves"].keys(), ["square"])
 
         result = provider.list_scalars(
+            self.ctx,
             experiment_id="unused",
             plugin_name=scalar_metadata.PLUGIN_NAME,
             run_tag_filter=base_provider.RunTagFilter(runs=["waves", "hugs"]),
@@ -256,6 +262,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
         self.assertItemsEqual(result["waves"].keys(), ["sine", "square"])
 
         result = provider.list_scalars(
+            self.ctx,
             experiment_id="unused",
             plugin_name=scalar_metadata.PLUGIN_NAME,
             run_tag_filter=base_provider.RunTagFilter(["un"], ["likely"]),
@@ -273,6 +280,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
             tags=["sine", "square", "cube", "iridescence"],
         )
         result = provider.read_scalars(
+            self.ctx,
             experiment_id="unused",
             plugin_name=scalar_metadata.PLUGIN_NAME,
             run_tag_filter=run_tag_filter,
@@ -302,6 +310,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
             multiplexer, self.logdir
         )
         result = provider.read_scalars(
+            self.ctx,
             experiment_id="unused",
             plugin_name=scalar_metadata.PLUGIN_NAME,
             downsample=3,
@@ -318,6 +327,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
             "can only convert an array of size 1 to a Python scalar",
         ):
             provider.read_scalars(
+                self.ctx,
                 experiment_id="unused",
                 plugin_name="greetings",
                 run_tag_filter=run_tag_filter,
@@ -327,6 +337,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
     def test_list_tensors_all(self):
         provider = self.create_provider()
         result = provider.list_tensors(
+            self.ctx,
             experiment_id="unused",
             plugin_name=histogram_metadata.PLUGIN_NAME,
             run_tag_filter=None,
@@ -349,6 +360,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
         # Quick check only, as scalars and tensors use the same underlying
         # filtering implementation.
         result = provider.list_tensors(
+            self.ctx,
             experiment_id="unused",
             plugin_name=histogram_metadata.PLUGIN_NAME,
             run_tag_filter=base_provider.RunTagFilter(
@@ -368,6 +380,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
             runs=["lebesgue"], tags=["uniform", "bimodal"],
         )
         result = provider.read_tensors(
+            self.ctx,
             experiment_id="unused",
             plugin_name=histogram_metadata.PLUGIN_NAME,
             run_tag_filter=run_tag_filter,
@@ -394,6 +407,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
             multiplexer, self.logdir
         )
         result = provider.read_tensors(
+            self.ctx,
             experiment_id="unused",
             plugin_name=histogram_metadata.PLUGIN_NAME,
             downsample=3,
@@ -405,7 +419,9 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
 
         with self.subTest("finds all time series for a plugin"):
             result = provider.list_blob_sequences(
-                experiment_id="unused", plugin_name=image_metadata.PLUGIN_NAME
+                self.ctx,
+                experiment_id="unused",
+                plugin_name=image_metadata.PLUGIN_NAME,
             )
             self.assertItemsEqual(result.keys(), ["mondrian"])
             self.assertItemsEqual(
@@ -422,6 +438,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
 
         with self.subTest("filters by run/tag"):
             result = provider.list_blob_sequences(
+                self.ctx,
                 experiment_id="unused",
                 plugin_name=image_metadata.PLUGIN_NAME,
                 run_tag_filter=base_provider.RunTagFilter(
@@ -440,6 +457,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
 
         with self.subTest("reads all time series for a plugin"):
             result = provider.read_blob_sequences(
+                self.ctx,
                 experiment_id="unused",
                 plugin_name=image_metadata.PLUGIN_NAME,
                 downsample=4,
@@ -455,7 +473,8 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
             self.assertEqual(last.step, 10)
             self.assertLen(last.values, 2 + 2)
             blobs = [
-                provider.read_blob(blob_key=v.blob_key) for v in last.values
+                provider.read_blob(self.ctx, blob_key=v.blob_key)
+                for v in last.values
             ]
             self.assertEqual(blobs[0], b"10")
             self.assertEqual(blobs[1], b"10")
@@ -465,13 +484,15 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
             blue1 = blobs[2]
             blue2 = blobs[3]
             red1 = provider.read_blob(
-                blob_key=result["mondrian"]["red"][-1].values[2].blob_key
+                self.ctx,
+                blob_key=result["mondrian"]["red"][-1].values[2].blob_key,
             )
             self.assertEqual(blue1, blue2)
             self.assertNotEqual(blue1, red1)
 
         with self.subTest("filters by run/tag"):
             result = provider.read_blob_sequences(
+                self.ctx,
                 experiment_id="unused",
                 plugin_name=image_metadata.PLUGIN_NAME,
                 run_tag_filter=base_provider.RunTagFilter(
