@@ -73,3 +73,5 @@ export interface Environment {
   /** @export */
   window_title: string;
 }
+
+export type GetRunsResponse = string[];
