@@ -8,28 +8,6 @@ licenses(["notice"])  # Apache 2.0
 exports_files(["LICENSE"])
 
 py_library(
-    name = "context",
-    srcs = ["context.py"],
-    srcs_version = "PY3",
-    deps = [
-        "//tensorboard/data:auth",
-    ],
-)
-
-py_test(
-    name = "context_test",
-    size = "small",
-    srcs = ["context_test.py"],
-    srcs_version = "PY3",
-    tags = ["support_notf"],
-    deps = [
-        ":context",
-        "//tensorboard:test",
-        "//tensorboard/data:auth",
-    ],
-)
-
-py_library(
     name = "http_util",
     srcs = ["http_util.py"],
     srcs_version = "PY2AND3",
