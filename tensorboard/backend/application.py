@@ -542,10 +542,9 @@ class TensorBoardWSGI(object):
 
 
 def _handling_errors(wsgi_app):
-    def wrapper(*args):
-        (environ, start_response) = (args[-2], args[-1])
+    def wrapper(environ, start_response):
         try:
-            return wsgi_app(*args)
+            return wsgi_app(environ, start_response)
         except errors.PublicError as e:
             request = wrappers.Request(environ)
             error_app = http_util.Respond(
