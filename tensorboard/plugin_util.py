@@ -27,6 +27,7 @@ from bleach.sanitizer import Cleaner
 import markdown
 import six
 
+from tensorboard import context as _context
 from tensorboard.backend import experiment_id as _experiment_id
 
 
@@ -148,6 +149,15 @@ def markdowns_to_safe_html(markdown_strings, combine):
         ) % total_null_bytes
 
     return warning + sanitized_combined
+
+
+def context(environ):
+    """Get a TensorBoard `RequestContext` from a WSGI environment.
+
+    Returns:
+      A `RequestContext` value.
+    """
+    return _context.from_environ(environ)
 
 
 def experiment_id(environ):
