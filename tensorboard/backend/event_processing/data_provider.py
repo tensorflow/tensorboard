@@ -88,12 +88,18 @@ class MultiplexerDataProvider(provider.DataProvider):
             return None
 
     def data_location(self, ctx=None, *, experiment_id):
+<<<<<<< HEAD
         self._validate_context(ctx)
+=======
+>>>>>>> 2e982dc3e03c4b85f285345c2cc992268d00d9fc
         self._validate_experiment_id(experiment_id)
         return str(self._logdir)
 
     def list_plugins(self, ctx=None, *, experiment_id):
+<<<<<<< HEAD
         self._validate_context(ctx)
+=======
+>>>>>>> 2e982dc3e03c4b85f285345c2cc992268d00d9fc
         self._validate_experiment_id(experiment_id)
         # Note: This result may include plugins that only have time
         # series with `DATA_CLASS_UNKNOWN`, which will not actually be
@@ -103,7 +109,10 @@ class MultiplexerDataProvider(provider.DataProvider):
         return self._multiplexer.ActivePlugins()
 
     def list_runs(self, ctx=None, *, experiment_id):
+<<<<<<< HEAD
         self._validate_context(ctx)
+=======
+>>>>>>> 2e982dc3e03c4b85f285345c2cc992268d00d9fc
         self._validate_experiment_id(experiment_id)
         return [
             provider.Run(
@@ -117,7 +126,10 @@ class MultiplexerDataProvider(provider.DataProvider):
     def list_scalars(
         self, ctx=None, *, experiment_id, plugin_name, run_tag_filter=None
     ):
+<<<<<<< HEAD
         self._validate_context(ctx)
+=======
+>>>>>>> 2e982dc3e03c4b85f285345c2cc992268d00d9fc
         self._validate_experiment_id(experiment_id)
         index = self._index(
             plugin_name, run_tag_filter, summary_pb2.DATA_CLASS_SCALAR
@@ -144,7 +156,10 @@ class MultiplexerDataProvider(provider.DataProvider):
     def list_tensors(
         self, ctx=None, *, experiment_id, plugin_name, run_tag_filter=None
     ):
+<<<<<<< HEAD
         self._validate_context(ctx)
+=======
+>>>>>>> 2e982dc3e03c4b85f285345c2cc992268d00d9fc
         self._validate_experiment_id(experiment_id)
         index = self._index(
             plugin_name, run_tag_filter, summary_pb2.DATA_CLASS_TENSOR
@@ -341,7 +356,10 @@ class MultiplexerDataProvider(provider.DataProvider):
         return result
 
     def read_blob(self, ctx=None, *, blob_key):
+<<<<<<< HEAD
         self._validate_context(ctx)
+=======
+>>>>>>> 2e982dc3e03c4b85f285345c2cc992268d00d9fc
         (
             unused_experiment_id,
             plugin_name,
