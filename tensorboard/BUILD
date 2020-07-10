@@ -85,7 +85,9 @@ py_library(
     name = "auth",
     srcs = ["auth.py"],
     srcs_version = "PY2AND3",
-    deps = [],
+    deps = [
+        "@org_pythonhosted_six",
+    ],
 )
 
 py_test(
