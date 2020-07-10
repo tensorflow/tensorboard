@@ -12,9 +12,20 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-@import 'tensorboard/webapp/angular_material_theming';
-@import 'tensorboard/webapp/theme/tb_palette';
+@import 'tensorboard/webapp/theme/tb_theme';
 
-$tb-primary: mat-palette($tf-orange, 700, 400, 700);
-$tb-accent: mat-palette($tf-orange);
-$tb-warn: mat-palette($mat-red);
+/* Override material styling with more precise selector. */
+:host button.mat-stroked-button {
+  background-color: mat-color($tb-primary, 500);
+  border: 1px solid map-get($tb-foreground, border);
+}
+
+.button-contents {
+  align-items: center;
+  display: flex;
+  text-transform: uppercase;
+}
+
+mat-icon {
+  margin-right: 6px;
+}

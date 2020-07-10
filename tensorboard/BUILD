@@ -101,6 +101,7 @@ py_test(
 )
 
 py_library(
+<<<<<<< HEAD
     name = "context",
     srcs = ["context.py"],
     srcs_version = "PY3",
@@ -123,6 +124,8 @@ py_test(
 )
 
 py_library(
+=======
+>>>>>>> 994df38c264a642e147faac4c4e3f0796c6beef2
     name = "errors",
     srcs = ["errors.py"],
     srcs_version = "PY2AND3",
