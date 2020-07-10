@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Tests for tensorboard.backend.context."""
+"""Tests for tensorboard.context."""
 
+from tensorboard import auth as auth_lib
+from tensorboard import context
 from tensorboard import test as tb_test
-from tensorboard.backend import context
-from tensorboard.data import auth as auth_lib
 
 
 class RequestContextTest(tb_test.TestCase):
@@ -34,7 +34,9 @@ class RequestContextTest(tb_test.TestCase):
         auth = auth_lib.AuthContext({}, environ)
         self.assertNotEqual(context.from_environ(environ).auth, auth)
 
-        environ = context.update_environ(environ, auth=auth)
+        context.set_in_environ(
+            environ, context.from_environ(environ).replace(auth=auth)
+        )
         self.assertEqual(environ["one"], "two")
         self.assertEqual(environ["three"], "four")
         self.assertEqual(context.from_environ(environ).auth, auth)

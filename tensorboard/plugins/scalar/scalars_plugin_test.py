@@ -35,7 +35,7 @@ from werkzeug import wrappers
 
 from tensorboard import errors
 from tensorboard.backend import application
-from tensorboard.backend import context
+from tensorboard import context
 from tensorboard.backend.event_processing import data_provider
 from tensorboard.backend.event_processing import (
     plugin_event_multiplexer as event_multiplexer,

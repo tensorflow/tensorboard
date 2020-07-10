@@ -31,7 +31,7 @@ from werkzeug import wrappers
 
 from tensorboard import errors
 from tensorboard import plugin_util
-from tensorboard.backend import context
+from tensorboard import context
 from tensorboard.backend import http_util
 from tensorboard.data import provider
 from tensorboard.plugins import base_plugin

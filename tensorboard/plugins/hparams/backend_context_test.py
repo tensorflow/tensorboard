@@ -28,7 +28,7 @@ except ImportError:
 import tensorflow as tf
 
 from google.protobuf import text_format
-from tensorboard.backend import context
+from tensorboard import context
 from tensorboard.backend.event_processing import data_provider
 from tensorboard.backend.event_processing import event_accumulator
 from tensorboard.backend.event_processing import plugin_event_multiplexer

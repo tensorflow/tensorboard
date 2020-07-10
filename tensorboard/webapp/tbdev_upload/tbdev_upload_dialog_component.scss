@@ -39,6 +39,11 @@ p {
   line-height: 1.5;
 }
 
+.anchor-text {
+  color: map-get($tb-foreground, link);
+  text-decoration: none;
+}
+
 .command {
   align-items: center;
   background: #f5f6f7;

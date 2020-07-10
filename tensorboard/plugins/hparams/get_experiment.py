@@ -29,7 +29,7 @@ class Handler(object):
         """Constructor.
 
         Args:
-          request_context: A tensorboard.backend.context.RequestContext.
+          request_context: A tensorboard.context.RequestContext.
           backend_context: A backend_context.Context instance.
           experiment_id: A string, as from `plugin_util.experiment_id`.
         """

@@ -23,7 +23,7 @@ import six
 from werkzeug import wrappers
 
 from tensorboard import plugin_util
-from tensorboard.backend import context
+from tensorboard import context
 from tensorboard.backend import http_util
 from tensorboard.backend import process_graph
 from tensorboard.backend.event_processing import tag_types

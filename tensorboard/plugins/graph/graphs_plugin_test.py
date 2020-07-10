@@ -28,7 +28,7 @@ import os.path
 import tensorflow as tf
 
 from google.protobuf import text_format
-from tensorboard.backend import context
+from tensorboard import context
 from tensorboard.backend.event_processing import data_provider
 from tensorboard.backend.event_processing import (
     plugin_event_multiplexer as event_multiplexer,

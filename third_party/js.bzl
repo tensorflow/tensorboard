@@ -281,26 +281,6 @@ def tensorboard_js_workspace():
         },
     )
 
-    filegroup_external(
-        name = "org_d3js",
-        # no @license header
-        licenses = ["notice"],  # BSD-3-Clause
-        sha256_urls_extract = {
-            "05a9c2b9c206447be0e26b3a705e7f8df4943df2d063ddc5bf0274f50ec44727": [
-                "http://mirror.tensorflow.org/github.com/d3/d3/releases/download/v5.7.0/d3.zip",
-                "https://github.com/d3/d3/releases/download/v5.7.0/d3.zip",
-            ],
-        },
-        # TODO(jart): Use srcs=["d3.js"] instead of this once supported.
-        generated_rule_name = "all_files",
-        extra_build_file_content = "\n".join([
-            "filegroup(",
-            "    name = \"org_d3js\",",
-            "    srcs = [\"d3.js\"],",
-            ")",
-        ]),
-    )
-
     web_library_external(
         name = "vaadin_vaadin_split_layout",
         licenses = ["notice"],  # Apache License 2.0

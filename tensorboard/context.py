@@ -14,7 +14,7 @@
 # ==============================================================================
 """Request-scoped context."""
 
-from tensorboard.data import auth as auth_lib
+from tensorboard import auth as auth_lib
 
 
 class _TensorBoardRequestContextKey:
@@ -46,7 +46,11 @@ class RequestContext:
           See "Fields" on class docstring. All arguments are optional
           and will be replaced with default values if appropriate.
         """
-        self.auth = auth if auth is not None else auth_lib.AuthContext.empty()
+        self._auth = auth if auth is not None else auth_lib.AuthContext.empty()
+
+    @property
+    def auth(self):
+        return self._auth
 
     def replace(self, **kwargs):
         """Create a copy of this context with updated key-value pairs.
@@ -68,7 +72,7 @@ class RequestContext:
 def from_environ(environ):
     """Get a `RequestContext` from a WSGI environment.
 
-    See also `update_environ`.
+    See also `set_in_environ`.
 
     Args:
       environ: A WSGI environment (see PEP 3333).
@@ -81,19 +85,14 @@ def from_environ(environ):
     return result if result is not None else RequestContext()
 
 
-def update_environ(environ, **kwargs):
-    """Update the `RequestContext` in a WSGI environment.
+def set_in_environ(environ, ctx):
+    """Set the `RequestContext` in a WSGI environment.
 
-    The result of `from_environ(update_environ(environ, **kwargs))` is
-    equivalent to `from_environ(environ).replace(**kwargs)`.
+    After `set_in_environ(e, ctx)`, `from_environ(e) is ctx`. The input
+    environment is mutated.
 
     Args:
-      environ: A WSGI environment to update; will not be modified.
-      **kwargs: As to `RequestContext.replace`.
-
-    Returns:
-      A new WSGI environment.
+      environ: A WSGI environment to update.
+      ctx: A new `RequestContext` value.
     """
-    environ = dict(environ)
-    environ[_WSGI_KEY] = from_environ(environ).replace(**kwargs)
-    return environ
+    environ[_WSGI_KEY] = ctx

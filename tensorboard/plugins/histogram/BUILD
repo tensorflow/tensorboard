@@ -16,10 +16,10 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         ":metadata",
+        "//tensorboard:context",
         "//tensorboard:errors",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:plugin_util",
-        "//tensorboard/backend:context",
         "//tensorboard/backend:http_util",
         "//tensorboard/data:provider",
         "//tensorboard/plugins:base_plugin",
@@ -38,9 +38,9 @@ py_test(
     deps = [
         ":histograms_plugin",
         ":summary",
+        "//tensorboard:context",
         "//tensorboard:errors",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/backend:context",
         "//tensorboard/backend/event_processing:data_provider",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/backend/event_processing:tag_types",
@@ -62,9 +62,9 @@ py_test(
     deps = [
         ":histograms_plugin",
         ":summary",
+        "//tensorboard:context",
         "//tensorboard:errors",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/backend:context",
         "//tensorboard/backend/event_processing:data_provider",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/backend/event_processing:tag_types",

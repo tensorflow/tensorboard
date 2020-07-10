@@ -63,6 +63,8 @@ export function createCoreState(override?: Partial<CoreState>): CoreState {
     reloadEnabled: true,
     pageSize: 10,
     environment: createEnvironment(),
+    polymerInteropRuns: [],
+    polymerInteropRunSelection: new Map(),
     ...override,
   };
 }

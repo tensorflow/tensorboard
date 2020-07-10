@@ -123,7 +123,7 @@ class CustomScalarsPlugin(base_plugin.TBPlugin):
         """Provides a response for downloading scalars data for a data series.
 
         Args:
-          ctx: A tensorboard.backend.context.RequestContext value.
+          ctx: A tensorboard.context.RequestContext value.
           run: The run.
           tag: The specific tag.
           experiment: An experiment ID, as a possibly-empty `str`.
@@ -191,7 +191,7 @@ class CustomScalarsPlugin(base_plugin.TBPlugin):
         """Given a tag regex and single run, return ScalarEvents.
 
         Args:
-          ctx: A tensorboard.backend.context.RequestContext value.
+          ctx: A tensorboard.context.RequestContext value.
           run: A run string.
           tag_regex_string: A regular expression that captures portions of tags.
 

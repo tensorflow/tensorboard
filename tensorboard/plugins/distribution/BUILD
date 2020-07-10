@@ -32,9 +32,9 @@ py_test(
     deps = [
         ":compressor",
         ":distributions_plugin",
+        "//tensorboard:context",
         "//tensorboard:errors",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/backend:context",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/backend/event_processing:tag_types",
         "//tensorboard/plugins:base_plugin",
@@ -55,9 +55,9 @@ py_test(
     deps = [
         ":compressor",
         ":distributions_plugin",
+        "//tensorboard:context",
         "//tensorboard:errors",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/backend:context",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/backend/event_processing:tag_types",
         "//tensorboard/compat:no_tensorflow",

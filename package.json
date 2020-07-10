@@ -77,6 +77,8 @@
     "@angular/router": "^9.0.0",
     "@ngrx/effects": "^9.0.0",
     "@ngrx/store": "^9.0.0",
+    "@types/d3": "5.7.2",
+    "d3": "5.7.0",
     "monaco-editor-core": "^0.20.0",
     "monaco-languages": "^1.10.0",
     "requirejs": "^2.3.6",
