@@ -43,7 +43,7 @@ from werkzeug import wrappers
 from tensorboard import errors
 from tensorboard import plugin_util
 from tensorboard import test as tb_test
-from tensorboard.data import auth
+from tensorboard import auth
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import (
     plugin_event_multiplexer as event_multiplexer,

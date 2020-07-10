@@ -36,8 +36,8 @@ from werkzeug import wrappers
 
 from tensorboard import errors
 from tensorboard import plugin_util
-from tensorboard.data import auth
-from tensorboard.backend import context
+from tensorboard import auth
+from tensorboard import context
 from tensorboard.backend import empty_path_redirect
 from tensorboard.backend import experiment_id
 from tensorboard.backend import experimental_plugin
@@ -559,13 +559,12 @@ def _handling_errors(wsgi_app):
 
 
 def _auth_context_middleware(wsgi_app, auth_providers):
-    def wrapper(*args):
-        args = list(args)
-        environ = args[-2]
+    def wrapper(environ, start_response):
+        environ = dict(environ)
         auth_ctx = auth.AuthContext(auth_providers, environ)
-        environ = context.update_environ(environ, auth=auth_ctx)
-        args[-2] = environ
-        return wsgi_app(*args)
+        ctx = context.from_environ(environ).replace(auth=auth_ctx)
+        context.set_in_environ(environ, ctx)
+        return wsgi_app(environ, start_response)
 
     return wrapper
 
