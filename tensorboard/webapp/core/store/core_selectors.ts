@@ -17,6 +17,7 @@ import {createSelector, createFeatureSelector} from '@ngrx/store';
 import {Environment, PluginId, PluginsListing} from '../../types/api';
 import {LoadState} from '../../types/data';
 import {CoreState, State, CORE_FEATURE_KEY} from './core_types';
+import {Run, RunId} from '../types';
 
 // HACK: These imports are for type inference.
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
@@ -71,5 +72,19 @@ export const getPageSize = createSelector(
   selectCoreState,
   (state: CoreState): number => {
     return state.pageSize;
+  }
+);
+
+export const getRuns = createSelector(
+  selectCoreState,
+  (state: CoreState): Run[] => {
+    return state.polymerInteropRuns;
+  }
+);
+
+export const getRunSelection = createSelector(
+  selectCoreState,
+  (state: CoreState): Map<RunId, boolean> => {
+    return state.polymerInteropRunSelection;
   }
 );

@@ -20,9 +20,9 @@ import textwrap
 
 import six
 
+from tensorboard import context
 from tensorboard import plugin_util
 from tensorboard import test as tb_test
-from tensorboard.backend import context
 from tensorboard.backend import experiment_id
 
 

@@ -14,9 +14,9 @@
 # ==============================================================================
 """Tests for tensorboard.backend.context."""
 
+from tensorboard import auth as auth_lib
+from tensorboard import context
 from tensorboard import test as tb_test
-from tensorboard.backend import context
-from tensorboard.data import auth as auth_lib
 
 
 class RequestContextTest(tb_test.TestCase):

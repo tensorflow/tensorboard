@@ -14,7 +14,7 @@
 # ==============================================================================
 """Request-scoped context."""
 
-from tensorboard.data import auth as auth_lib
+from tensorboard import auth as auth_lib
 
 
 class _TensorBoardRequestContextKey:
@@ -46,7 +46,11 @@ class RequestContext:
           See "Fields" on class docstring. All arguments are optional
           and will be replaced with default values if appropriate.
         """
-        self.auth = auth if auth is not None else auth_lib.AuthContext.empty()
+        self._auth = auth if auth is not None else auth_lib.AuthContext.empty()
+
+    @property
+    def auth(self):
+        return self._auth
 
     def replace(self, **kwargs):
         """Create a copy of this context with updated key-value pairs.
