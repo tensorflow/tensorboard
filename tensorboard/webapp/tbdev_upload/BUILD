@@ -12,7 +12,9 @@ ng_module(
         "tbdev_upload_module.ts",
     ],
     assets = [
-        ":styles",
+        ":tbdev_upload_button_component_css",
+        ":tbdev_upload_dialog_component_css",
+        "tbdev_upload_button_component.ng.html",
         "tbdev_upload_dialog_component.ng.html",
     ],
     deps = [
@@ -30,7 +32,12 @@ ng_module(
 )
 
 tf_sass_binary(
-    name = "styles",
+    name = "tbdev_upload_button_component_css",
+    src = "tbdev_upload_button_component.scss",
+)
+
+tf_sass_binary(
+    name = "tbdev_upload_dialog_component_css",
     src = "tbdev_upload_dialog_component.scss",
 )
 
