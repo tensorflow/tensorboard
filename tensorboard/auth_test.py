@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Tests for tensorboard.data.auth."""
+"""Tests for tensorboard.auth."""
 
+from tensorboard import auth
 from tensorboard import test as tb_test
-from tensorboard.data import auth
 
 
 class AuthContextTest(tb_test.TestCase):
