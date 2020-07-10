@@ -363,18 +363,11 @@ var vz_line_chart2;
                 var chart = new vz_line_chart2.LineChart(xComponentsCreationMethod, this.yValueAccessor, yScaleType, colorScale, this.$.tooltip, this.tooltipColumns, this.fillArea, this.defaultXRange, this.defaultYRange, this.symbolFunction, this.xAxisFormatter);
                 var div = d3.select(this.$.chartdiv);
                 chart.renderTo(div);
-                let prevAxisDomains = null;
                 if (this._chart) {
-                    prevAxisDomains = this._chart.getAxisDomains();
                     this._chart.destroy();
                 }
                 this._chart = chart;
                 this._chart.onAnchor(() => this.fire('chart-attached'));
-                // If the new chart replaces an old one, preserve the old chart's
-                // pan/zoom transformation.
-                if (prevAxisDomains) {
-                    this._chart.setAxisDomains(prevAxisDomains);
-                }
             }, 350);
         },
         _reloadFromCache: function () {

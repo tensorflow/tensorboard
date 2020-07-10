@@ -752,15 +752,6 @@ var vz_line_chart2;
                 this.outer.onAnchor(fn);
         }
         /**
-         * Returns the currently visible domain of the x/y axes.
-         */
-        getAxisDomains() {
-            return {
-                x: this.xScale.getTransformationDomain(),
-                y: this.yScale.getTransformationDomain(),
-            };
-        }
-        /**
          * Sets the viewport domain.
          */
         setAxisDomains(domains) {
