@@ -100,11 +100,15 @@ class DataProvider(object):
     plugin name should correspond to the `plugin_data.plugin_name` field
     of the `SummaryMetadata` proto passed to `tf.summary.write`.
 
+    All methods on this class take a `RequestContext` parameter as the
+    first positional argument. This argument is temporarily optional to
+    facilitate migration, but will be required in the future.
+
     Unless otherwise noted, any methods on this class may raise errors
     defined in `tensorboard.errors`, like `tensorboard.errors.NotFoundError`.
     """
 
-    def data_location(self, *, experiment_id):
+    def data_location(self, ctx=None, *, experiment_id):
         """Render a human-readable description of the data source.
 
         For instance, this might return a path to a directory on disk.
@@ -112,6 +116,7 @@ class DataProvider(object):
         The default implementation always returns the empty string.
 
         Args:
+          ctx: A TensorBoard `RequestContext` value.
           experiment_id: ID of enclosing experiment.
 
         Returns:
@@ -119,13 +124,14 @@ class DataProvider(object):
         """
         return ""
 
-    def experiment_metadata(self, *, experiment_id):
+    def experiment_metadata(self, ctx=None, *, experiment_id):
         """Retrieve metadata of a given experiment.
 
         The metadata may include fields such as name and description
         of the experiment, as well as a timestamp for the experiment.
 
         Args:
+          ctx: A TensorBoard `RequestContext` value.
           experiment_id:  ID of the experiment in question.
 
         Returns:
@@ -135,7 +141,7 @@ class DataProvider(object):
         """
         return None
 
-    def list_plugins(self, *, experiment_id):
+    def list_plugins(self, ctx=None, *, experiment_id):
         """List all plugins that own data in a given experiment.
 
         This should be the set of all plugin names `p` such that calling
@@ -146,6 +152,7 @@ class DataProvider(object):
         This operation is optional, but may later become required.
 
         Args:
+          ctx: A TensorBoard `RequestContext` value.
           experiment_id: ID of enclosing experiment.
 
         Returns:
@@ -155,10 +162,11 @@ class DataProvider(object):
         return None
 
     @abc.abstractmethod
-    def list_runs(self, *, experiment_id):
+    def list_runs(self, ctx=None, *, experiment_id):
         """List all runs within an experiment.
 
         Args:
+          ctx: A TensorBoard `RequestContext` value.
           experiment_id: ID of enclosing experiment.
 
         Returns:
@@ -170,10 +178,13 @@ class DataProvider(object):
         pass
 
     @abc.abstractmethod
-    def list_scalars(self, *, experiment_id, plugin_name, run_tag_filter=None):
+    def list_scalars(
+        self, ctx=None, *, experiment_id, plugin_name, run_tag_filter=None
+    ):
         """List metadata about scalar time series.
 
         Args:
+          ctx: A TensorBoard `RequestContext` value.
           experiment_id: ID of enclosing experiment.
           plugin_name: String name of the TensorBoard plugin that created
             the data to be queried. Required.
@@ -196,6 +207,7 @@ class DataProvider(object):
     @abc.abstractmethod
     def read_scalars(
         self,
+        ctx=None,
         *,
         experiment_id,
         plugin_name,
@@ -205,6 +217,7 @@ class DataProvider(object):
         """Read values from scalar time series.
 
         Args:
+          ctx: A TensorBoard `RequestContext` value.
           experiment_id: ID of enclosing experiment.
           plugin_name: String name of the TensorBoard plugin that created
             the data to be queried. Required.
@@ -229,10 +242,13 @@ class DataProvider(object):
         """
         pass
 
-    def list_tensors(self, *, experiment_id, plugin_name, run_tag_filter=None):
+    def list_tensors(
+        self, ctx=None, *, experiment_id, plugin_name, run_tag_filter=None
+    ):
         """List metadata about tensor time series.
 
         Args:
+          ctx: A TensorBoard `RequestContext` value.
           experiment_id: ID of enclosing experiment.
           plugin_name: String name of the TensorBoard plugin that created
             the data to be queried. Required.
@@ -254,6 +270,7 @@ class DataProvider(object):
 
     def read_tensors(
         self,
+        ctx=None,
         *,
         experiment_id,
         plugin_name,
@@ -263,6 +280,7 @@ class DataProvider(object):
         """Read values from tensor time series.
 
         Args:
+          ctx: A TensorBoard `RequestContext` value.
           experiment_id: ID of enclosing experiment.
           plugin_name: String name of the TensorBoard plugin that created
             the data to be queried. Required.
@@ -288,11 +306,12 @@ class DataProvider(object):
         pass
 
     def list_blob_sequences(
-        self, *, experiment_id, plugin_name, run_tag_filter=None
+        self, ctx=None, *, experiment_id, plugin_name, run_tag_filter=None
     ):
         """List metadata about blob sequence time series.
 
         Args:
+          ctx: A TensorBoard `RequestContext` value.
           experiment_id: ID of enclosing experiment.
           plugin_name: String name of the TensorBoard plugin that created the data
             to be queried. Required.
@@ -312,6 +331,7 @@ class DataProvider(object):
 
     def read_blob_sequences(
         self,
+        ctx=None,
         *,
         experiment_id,
         plugin_name,
@@ -321,6 +341,7 @@ class DataProvider(object):
         """Read values from blob sequence time series.
 
         Args:
+          ctx: A TensorBoard `RequestContext` value.
           experiment_id: ID of enclosing experiment.
           plugin_name: String name of the TensorBoard plugin that created the data
             to be queried. Required.
@@ -342,10 +363,11 @@ class DataProvider(object):
         """
         pass
 
-    def read_blob(self, *, blob_key):
+    def read_blob(self, ctx=None, *, blob_key):
         """Read data for a single blob.
 
         Args:
+          ctx: A TensorBoard `RequestContext` value.
           blob_key: A key identifying the desired blob, as provided by
             `read_blob_sequences(...)`.
 

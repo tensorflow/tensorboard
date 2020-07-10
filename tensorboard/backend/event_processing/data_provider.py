@@ -83,11 +83,11 @@ class MultiplexerDataProvider(provider.DataProvider):
         except ValueError as e:
             return None
 
-    def data_location(self, *, experiment_id):
+    def data_location(self, ctx=None, *, experiment_id):
         self._validate_experiment_id(experiment_id)
         return str(self._logdir)
 
-    def list_plugins(self, *, experiment_id):
+    def list_plugins(self, ctx=None, *, experiment_id):
         self._validate_experiment_id(experiment_id)
         # Note: This result may include plugins that only have time
         # series with `DATA_CLASS_UNKNOWN`, which will not actually be
@@ -96,7 +96,7 @@ class MultiplexerDataProvider(provider.DataProvider):
         # mostly harmless.
         return self._multiplexer.ActivePlugins()
 
-    def list_runs(self, *, experiment_id):
+    def list_runs(self, ctx=None, *, experiment_id):
         self._validate_experiment_id(experiment_id)
         return [
             provider.Run(
@@ -107,7 +107,9 @@ class MultiplexerDataProvider(provider.DataProvider):
             for run in self._multiplexer.Runs()
         ]
 
-    def list_scalars(self, *, experiment_id, plugin_name, run_tag_filter=None):
+    def list_scalars(
+        self, ctx=None, *, experiment_id, plugin_name, run_tag_filter=None
+    ):
         self._validate_experiment_id(experiment_id)
         index = self._index(
             plugin_name, run_tag_filter, summary_pb2.DATA_CLASS_SCALAR
@@ -116,6 +118,7 @@ class MultiplexerDataProvider(provider.DataProvider):
 
     def read_scalars(
         self,
+        ctx=None,
         *,
         experiment_id,
         plugin_name,
@@ -129,7 +132,9 @@ class MultiplexerDataProvider(provider.DataProvider):
         )
         return self._read(_convert_scalar_event, index, downsample)
 
-    def list_tensors(self, *, experiment_id, plugin_name, run_tag_filter=None):
+    def list_tensors(
+        self, ctx=None, *, experiment_id, plugin_name, run_tag_filter=None
+    ):
         self._validate_experiment_id(experiment_id)
         index = self._index(
             plugin_name, run_tag_filter, summary_pb2.DATA_CLASS_TENSOR
@@ -138,6 +143,7 @@ class MultiplexerDataProvider(provider.DataProvider):
 
     def read_tensors(
         self,
+        ctx=None,
         *,
         experiment_id,
         plugin_name,
@@ -258,7 +264,7 @@ class MultiplexerDataProvider(provider.DataProvider):
         return result
 
     def list_blob_sequences(
-        self, *, experiment_id, plugin_name, run_tag_filter=None
+        self, ctx=None, *, experiment_id, plugin_name, run_tag_filter=None
     ):
         self._validate_experiment_id(experiment_id)
         index = self._index(
@@ -292,6 +298,7 @@ class MultiplexerDataProvider(provider.DataProvider):
 
     def read_blob_sequences(
         self,
+        ctx=None,
         *,
         experiment_id,
         plugin_name,
@@ -320,7 +327,7 @@ class MultiplexerDataProvider(provider.DataProvider):
                 result_for_run[tag] = _downsample(data, downsample)
         return result
 
-    def read_blob(self, *, blob_key):
+    def read_blob(self, ctx=None, *, blob_key):
         (
             unused_experiment_id,
             plugin_name,

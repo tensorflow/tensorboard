@@ -165,13 +165,13 @@ class FakeDataProvider(provider.DataProvider):
     def __init__(self):
         pass
 
-    def list_runs(self, *, experiment_id):
+    def list_runs(self, ctx=None, *, experiment_id):
         raise NotImplementedError()
 
-    def list_scalars(self, *, experiment_id):
+    def list_scalars(self, ctx=None, *, experiment_id):
         raise NotImplementedError()
 
-    def read_scalars(self, *, experiment_id):
+    def read_scalars(self, ctx=None, *, experiment_id):
         raise NotImplementedError()
 
 
