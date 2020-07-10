@@ -26,7 +26,7 @@ class _TensorBoardRequestContextKey:
 _WSGI_KEY = _TensorBoardRequestContextKey()
 
 
-class RequestContext:
+class RequestContext(object):
     """Container of request-scoped values.
 
     This context is for cross-cutting concerns: authentication,
@@ -39,8 +39,12 @@ class RequestContext:
       auth: An `AuthContext`, which may be empty but is never `None`.
     """
 
-    def __init__(self, *, auth=None):
+    def __init__(self, auth=None):
         """Create a request context.
+
+        The argument list is sorted and may be extended in the future;
+        therefore, callers must pass only named arguments to this
+        initializer.
 
         Args:
           See "Fields" on class docstring. All arguments are optional
