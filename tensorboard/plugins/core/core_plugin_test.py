@@ -208,19 +208,11 @@ class CorePluginExperimentMetadataTest(tf.test.TestCase):
         """Test environment route returns correct metadata about experiment."""
 
         class FakeDataProvider(object):
-<<<<<<< HEAD
             def data_location(self, ctx, *, experiment_id):
                 del experiment_id  # Unused.
                 return ""
 
             def experiment_metadata(self, ctx, *, experiment_id):
-=======
-            def data_location(self, ctx=None, *, experiment_id):
-                del experiment_id  # Unused.
-                return ""
-
-            def experiment_metadata(self, ctx=None, *, experiment_id):
->>>>>>> 2e982dc3e03c4b85f285345c2cc992268d00d9fc
                 del experiment_id  # Unused.
                 return provider.ExperimentMetadata(
                     experiment_name="Experiment #5 (実験＃5)",
