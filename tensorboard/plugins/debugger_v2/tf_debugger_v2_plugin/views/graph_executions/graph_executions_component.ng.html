@@ -44,14 +44,14 @@ limitations under the License.
           <div class="tensor-name-and-op-type">
             <button
               class="tensor-name"
+              title="{{ getTensorName(i) }}"
               (click)="onTensorNameClick.emit({
                 index: i,
                 graph_id: graphExecutionData[i].graph_id,
                 op_name: graphExecutionData[i].op_name
               })"
             >
-              {{ graphExecutionData[i].op_name }}:{{
-              graphExecutionData[i].output_slot }}
+              {{ getTensorName(i) }}
             </button>
             <div class="op-type">
               {{ graphExecutionData[i].op_type }}
