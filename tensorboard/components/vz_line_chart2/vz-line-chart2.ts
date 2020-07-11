@@ -239,7 +239,10 @@ namespace vz_line_chart2 {
     },
 
     observers: [
-      '_makeChart(xComponentsCreationMethod, xType, yValueAccessor, yScaleType, tooltipColumns, colorScale, isAttached)',
+      '_makeChart(xComponentsCreationMethod, xType, yValueAccessor, yScaleType)',
+      // Properties that do not affect positions of rendered points should
+      // preserve the chart's previous viewport domain.
+      '_makeChartWithPreviousDomain(colorScale, isAttached, tooltipColumns)',
       // Refer to the cache and, if available, load data of a new visible series.
       '_reloadFromCache(_chart, _visibleSeriesCache)',
       '_smoothingChanged(smoothingEnabled, smoothingWeight, _chart)',
@@ -264,7 +267,10 @@ namespace vz_line_chart2 {
 
     detached() {
       this.cancelAsync(this._makeChartAsyncCallbackId);
-      if (this._chart) this._chart.destroy();
+      if (this._chart) {
+        this._chart.destroy();
+        this._chart = undefined;
+      }
       if (this._listeners) {
         this._listeners.forEach(({node, eventName, func, option}) => {
           node.removeEventListener(eventName, func, option);
@@ -377,20 +383,14 @@ namespace vz_line_chart2 {
      * Creates a chart, and asynchronously renders it. Fires a chart-rendered
      * event after the chart is rendered.
      */
-    _makeChart: function(
-      xComponentsCreationMethod,
-      xType,
-      yValueAccessor,
-      yScaleType,
-      tooltipColumns,
-      colorScale
-    ) {
+    _createChart: function(preserveDomain?: boolean) {
       // Find the actual xComponentsCreationMethod.
-      if (!xType && !xComponentsCreationMethod) {
-        xComponentsCreationMethod = vz_chart_helpers.stepX;
-      } else if (xType) {
-        xComponentsCreationMethod = () =>
-          vz_chart_helpers.getXComponents(xType);
+      let normalXComponentsCreationMethod = this.xComponentsCreationMethod;
+      if (!this.xType && !normalXComponentsCreationMethod) {
+        normalXComponentsCreationMethod = vz_chart_helpers.stepX;
+      } else if (this.xType) {
+        normalXComponentsCreationMethod = () =>
+          vz_chart_helpers.getXComponents(this.xType);
       }
 
       if (this._makeChartAsyncCallbackId !== null) {
@@ -401,7 +401,7 @@ namespace vz_line_chart2 {
       this._makeChartAsyncCallbackId = this.async(function() {
         this._makeChartAsyncCallbackId = null;
         if (
-          !xComponentsCreationMethod ||
+          !normalXComponentsCreationMethod ||
           !this.yValueAccessor ||
           !this.tooltipColumns
         ) {
@@ -411,10 +411,10 @@ namespace vz_line_chart2 {
         // asynchronous, and values may have changed in between the call being
         // initiated and actually being run.
         var chart = new LineChart(
-          xComponentsCreationMethod,
+          normalXComponentsCreationMethod,
           this.yValueAccessor,
-          yScaleType,
-          colorScale,
+          this.yScaleType,
+          this.colorScale,
           this.$.tooltip,
           this.tooltipColumns,
           this.fillArea,
@@ -425,12 +425,28 @@ namespace vz_line_chart2 {
         );
         var div = d3.select(this.$.chartdiv);
         chart.renderTo(div);
+        let prevAxisDomains = null;
         if (this._chart) {
+          prevAxisDomains = this._chart.getAxisDomains();
           this._chart.destroy();
         }
         this._chart = chart;
         this._chart.onAnchor(() => this.fire('chart-attached'));
+
+        // If the new chart replaces an old one, preserve the old chart's
+        // pan/zoom transformation.
+        if (prevAxisDomains && preserveDomain) {
+          this._chart.setAxisDomains(prevAxisDomains);
+        }
       }, 350);
+    },
+
+    _makeChart: function() {
+      this._createChart();
+    },
+
+    _makeChartWithPreviousDomain: function() {
+      this._createChart(true /* preserveDomain */);
     },
 
     _reloadFromCache: function() {

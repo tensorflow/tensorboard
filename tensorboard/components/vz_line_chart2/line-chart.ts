@@ -1022,6 +1022,16 @@ namespace vz_line_chart2 {
     }
 
     /**
+     * Returns the currently visible domain of the x/y axes.
+     */
+    public getAxisDomains(): AxisDomains {
+      return {
+        x: this.xScale.getTransformationDomain(),
+        y: this.yScale.getTransformationDomain(),
+      };
+    }
+
+    /**
      * Sets the viewport domain.
      */
     public setAxisDomains(domains: AxisDomains) {
