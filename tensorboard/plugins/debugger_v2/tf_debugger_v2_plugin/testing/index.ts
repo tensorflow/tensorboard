@@ -140,17 +140,6 @@ export function createTestStackFrameAsArray(
   ];
 }
 
-export function stackFrameAsArray2StackFrame(
-  array: StackFrameAsArray
-): StackFrame {
-  return {
-    host_name: array[0],
-    file_path: array[1],
-    lineno: array[2],
-    function_name: array[3],
-  };
-}
-
 export function createTestExecutionDigest(
   override?: Partial<ExecutionDigest>
 ): ExecutionDigest {

@@ -91,6 +91,7 @@ import {
   getAlertsLoaded,
   getSourceFileList,
 } from '../store';
+import {stackFrameAsArray2StackFrame} from '../store/debugger_store_utils';
 import {
   AlertType,
   DataLoadState,
@@ -112,7 +113,6 @@ import {
   createTestGraphOpInfo,
   createTestInfNanAlert,
   createTestStackFrameAsArray,
-  stackFrameAsArray2StackFrame,
 } from '../testing';
 import {TBHttpClientTestingModule} from '../../../../webapp/webapp_data_source/tb_http_client_testing';
 import {

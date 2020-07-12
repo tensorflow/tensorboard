@@ -18,7 +18,12 @@ limitations under the License.
 
 import {getFocusedStackFramesHelper} from './debugger_store_helpers';
 
-import {DebuggerState, SourceFileSpec, StackFrame} from './debugger_types';
+import {
+  DebuggerState,
+  SourceFileSpec,
+  StackFrame,
+  StackFrameAsArray,
+} from './debugger_types';
 
 /**
  * Find the index of a file spec among an array of file specs.
@@ -35,6 +40,40 @@ export function findFileIndex(
       item.host_name === fileSpec.host_name &&
       item.file_path === fileSpec.file_path
   );
+}
+
+/**
+ * Converts an object representation of a stack frame into the array
+ * representation.
+ * @param stackFrame
+ * @returns StackFrameAsArray
+ */
+export function stackFrame2StackFrameAsArray(
+  stackFrame: StackFrame
+): StackFrameAsArray {
+  return [
+    stackFrame.host_name,
+    stackFrame.file_path,
+    stackFrame.lineno,
+    stackFrame.function_name,
+  ];
+}
+
+/**
+ * Converts an array representation of a stack frame into the object
+ * representation.
+ * @param array
+ * @returns StackFrame
+ */
+export function stackFrameAsArray2StackFrame(
+  array: StackFrameAsArray
+): StackFrame {
+  return {
+    host_name: array[0],
+    file_path: array[1],
+    lineno: array[2],
+    function_name: array[3],
+  };
 }
 
 /**
