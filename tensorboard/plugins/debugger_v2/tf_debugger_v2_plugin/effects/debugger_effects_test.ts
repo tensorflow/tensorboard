@@ -1571,7 +1571,7 @@ describe('Debugger effects', () => {
 
       action.next(
         sourceLineFocused({
-          sourceLineSpec: {
+          stackFrame: {
             ...fileSpecC,
             lineno: 42,
             function_name: 'foo',
@@ -1625,7 +1625,7 @@ describe('Debugger effects', () => {
 
         action.next(
           sourceLineFocused({
-            sourceLineSpec: {
+            stackFrame: {
               ...fileSpecC,
               lineno: 42,
               function_name: 'foo',
@@ -1667,7 +1667,7 @@ describe('Debugger effects', () => {
 
       action.next(
         sourceLineFocused({
-          sourceLineSpec: {
+          stackFrame: {
             ...fileSpecC,
             lineno: 42,
             function_name: 'foo',

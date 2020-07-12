@@ -1431,7 +1431,7 @@ describe('Debugger graphs reducers', () => {
           const nextState = reducers(
             state,
             actions.sourceLineFocused({
-              sourceLineSpec: {
+              stackFrame: {
                 host_name: 'localhost',
                 file_path: 'main.py',
                 lineno: focusLineno,

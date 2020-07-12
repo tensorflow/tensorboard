@@ -144,6 +144,6 @@ export class StackTraceContainer {
   constructor(private readonly store: Store<State>) {}
 
   onSourceLineClicked(args: StackFrame) {
-    this.store.dispatch(sourceLineFocused({sourceLineSpec: args}));
+    this.store.dispatch(sourceLineFocused({stackFrame: args}));
   }
 }

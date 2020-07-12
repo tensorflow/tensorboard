@@ -914,22 +914,19 @@ const reducer = createReducer(
   ),
   on(
     actions.sourceLineFocused,
-    (
-      state: DebuggerState,
-      focus: {sourceLineSpec: StackFrame}
-    ): DebuggerState => {
+    (state: DebuggerState, focus: {stackFrame: StackFrame}): DebuggerState => {
       const focusedStackTrace = getFocusedStackFramesHelper(state);
       const newState = {
         ...state,
         sourceCode: {
           ...state.sourceCode,
-          focusLineSpec: focus.sourceLineSpec,
+          focusLineSpec: focus.stackFrame,
         },
       };
       if (focusedStackTrace !== null) {
         newState.stickToBottommostFrameInFocusedFile = isFrameBottommostInStackTrace(
           focusedStackTrace,
-          focus.sourceLineSpec
+          focus.stackFrame
         );
       }
       return newState;

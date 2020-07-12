@@ -327,7 +327,7 @@ describe('Stack Trace container', () => {
     fixture.detectChanges();
     expect(dispatchSpy).toHaveBeenCalledWith(
       sourceLineFocused({
-        sourceLineSpec: stackFrame1,
+        stackFrame: stackFrame1,
       })
     );
   });

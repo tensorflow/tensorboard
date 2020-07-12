@@ -206,7 +206,7 @@ export const sourceFileListLoaded = createAction(
 
 export const sourceLineFocused = createAction(
   '[Debugger] Source File Line Is Focused on',
-  props<{sourceLineSpec: StackFrame}>()
+  props<{stackFrame: StackFrame}>()
 );
 
 export const sourceFileRequested = createAction(

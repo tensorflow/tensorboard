@@ -81,30 +81,29 @@ export function stackFrameAsArray2StackFrame(
  * in a given stack trace.
  *
  * @param stackFrames The stack trace to examine.
- * @param sourceLineSpec A spec that describes a frame in the stack trace.
- * @returns Whether `sourceLineSpec` points to the bottommost stack frame
+ * @param stackFrame A spec that describes a frame in the stack trace.
+ * @returns Whether `stackFrame` points to the bottommost stack frame
  *   (in the Python sense) of the file it belongs to among the frames in
  *   `stackFrames`.
- * @throws Error if `sourceLineSpec` is not a frame in `stackFrames`.
+ * @throws Error if `stackFrame` is not a frame in `stackFrames`.
  */
 export function isFrameBottommostInStackTrace(
   stackFrames: StackFrame[],
-  sourceLineSpec: StackFrame
+  stackFrame: StackFrame
 ): boolean {
   let matchingIndex = -1;
   let bottommostIndex = -1;
-  stackFrames.forEach((stackFrame, i) => {
-    const {file_path, lineno} = stackFrame;
-    if (file_path === sourceLineSpec.file_path) {
+  stackFrames.forEach(({file_path, lineno}, i) => {
+    if (file_path === stackFrame.file_path) {
       bottommostIndex = i;
-      if (lineno === sourceLineSpec.lineno) {
+      if (lineno === stackFrame.lineno) {
         matchingIndex = i;
       }
     }
   });
   if (matchingIndex === -1) {
     throw new Error(
-      `sourceLineSpec ${JSON.stringify(sourceLineSpec)} ` +
+      `Stack frame ${JSON.stringify(stackFrame)} ` +
         `is not found in stack frames.`
     );
   }
