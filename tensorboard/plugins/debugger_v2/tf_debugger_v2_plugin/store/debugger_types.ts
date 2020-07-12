@@ -43,12 +43,7 @@ export interface DebuggerRunListing {
   [runId: string]: DebuggerRunMetadata;
 }
 
-// Each item is [host_name, file_path, lineno, function].
-// TODO(cais): Consider making this an object with meaningful
-// keys instead.
-export type StackFrame = [string, string, number, string];
-
-export type StackFramesById = {[id: string]: StackFrame};
+export type StackFramesById = {[id: string]: SourceLineSpec};
 
 /**
  * Digest for top-level execution.
@@ -453,7 +448,14 @@ export interface SourceFileSpec {
 // A specific line of a source-code file, i.e., a stack frame.
 export interface SourceLineSpec extends SourceFileSpec {
   lineno: number;
+  function_name: string;
 }
+
+// Stack frame represented as an array. Used in the responses of stack-frame
+// data soruces. The semantics of the elements are:
+// `[host_name, file_path, lineno, function_name]`.
+// `lineno` is 1-based.
+export type StackFrameAsArray = [string, string, number, string];
 
 // The content and loading state of a single source file.
 export interface SourceFileContent {

@@ -101,7 +101,7 @@ import {
   Execution,
   InfNanAlert,
   SourceFileSpec,
-  StackFrame,
+  SourceLineSpec,
   State,
 } from '../store/debugger_types';
 import {
@@ -633,13 +633,24 @@ export class DebuggerEffects {
         return this.dataSource.fetchStackFrames(runId!, stackFrameIds).pipe(
           tap((stackFramesResponse) => {
             const stackFramesById: {
-              [stackFrameId: string]: StackFrame;
+              [stackFrameId: string]: SourceLineSpec;
             } = {};
             // TODO(cais): Do this reshaping in the backend and simplify
             // the frontend code here.
             for (let i = 0; i < stackFrameIds.length; ++i) {
-              stackFramesById[stackFrameIds[i]] =
-                stackFramesResponse.stack_frames[i];
+              const [
+                host_name,
+                file_path,
+                lineno,
+                function_name,
+              ] = stackFramesResponse.stack_frames[i];
+              stackFramesById[stackFrameIds[i]] = {
+                host_name,
+                file_path,
+                lineno,
+                function_name,
+              };
+              stackFramesResponse.stack_frames[i];
             }
             this.store.dispatch(
               stackFramesLoaded({stackFrames: stackFramesById})
@@ -832,13 +843,23 @@ export class DebuggerEffects {
           .pipe(
             tap((stackFramesResponse) => {
               const stackFramesById: {
-                [stackFrameId: string]: StackFrame;
+                [stackFrameId: string]: SourceLineSpec;
               } = {};
               // TODO(cais): Do this reshaping in the backend and simplify
               // the frontend code here.
               for (let i = 0; i < missingStackFrameIds.length; ++i) {
-                stackFramesById[missingStackFrameIds[i]] =
-                  stackFramesResponse.stack_frames[i];
+                const [
+                  host_name,
+                  file_path,
+                  lineno,
+                  function_name,
+                ] = stackFramesResponse.stack_frames[i];
+                stackFramesById[missingStackFrameIds[i]] = {
+                  host_name,
+                  file_path,
+                  lineno,
+                  function_name,
+                };
               }
               this.store.dispatch(
                 stackFramesLoaded({stackFrames: stackFramesById})

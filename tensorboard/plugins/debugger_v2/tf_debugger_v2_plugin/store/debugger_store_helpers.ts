@@ -16,7 +16,11 @@ limitations under the License.
  * Internal helper functions for the NgRx store of Debugger V2.
  */
 
-import {CodeLocationType, DebuggerState, StackFrame} from './debugger_types';
+import {
+  CodeLocationType,
+  DebuggerState,
+  SourceLineSpec,
+} from './debugger_types';
 
 /**
  * Helper function that extracts the stack trace being focused on.
@@ -29,7 +33,7 @@ import {CodeLocationType, DebuggerState, StackFrame} from './debugger_types';
  */
 export function getFocusedStackFramesHelper(
   state: DebuggerState
-): StackFrame[] | null {
+): SourceLineSpec[] | null {
   if (state.codeLocationFocusType === null) {
     return null;
   }
@@ -54,7 +58,7 @@ export function getFocusedStackFramesHelper(
     }
     stackFrameIds = state.graphs.ops[graphId].get(opName)!.stack_frame_ids;
   }
-  const stackFrames: StackFrame[] = [];
+  const stackFrames: SourceLineSpec[] = [];
   for (const stackFrameId of stackFrameIds) {
     if (state.stackFrames[stackFrameId] != null) {
       stackFrames.push(state.stackFrames[stackFrameId]);

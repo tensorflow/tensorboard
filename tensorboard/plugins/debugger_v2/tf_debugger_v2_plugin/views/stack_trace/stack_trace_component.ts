@@ -73,6 +73,7 @@ export class StackTraceComponent implements AfterViewChecked {
     host_name: string;
     file_path: string;
     lineno: number;
+    function_name: string;
   }>();
 
   @ViewChild('stackFrameArray')

@@ -32,7 +32,8 @@ import {
   InfNanAlert,
   SourceCodeState,
   State,
-  StackFrame,
+  SourceLineSpec,
+  StackFrameAsArray,
 } from '../store/debugger_types';
 import {
   createInitialExecutionsState,
@@ -109,16 +110,45 @@ export function createTestGraphOpInfo(
 export function createTestStackFrame(
   host_name?: string,
   file_path?: string,
-  lineno?: number
-): StackFrame {
+  lineno?: number,
+  function_name?: string
+): SourceLineSpec {
+  return {
+    host_name: host_name || 'localhost', // Host name.
+    file_path: file_path || `/tmp/file_${Math.floor(Math.random() * 1e6)}.py`, // File path.
+    // `lineno` is assumed to be 1-based. So a value of 0 means use default
+    // behavior.
+    lineno: lineno || 1 + Math.floor(Math.random() * 1e3), // Lineno.
+    function_name:
+      function_name || `function_${Math.floor(Math.random() * 1e3)}`, // Function name.
+  };
+}
+
+export function createTestStackFrameAsArray(
+  host_name?: string,
+  file_path?: string,
+  lineno?: number,
+  function_name?: string
+): StackFrameAsArray {
   return [
     host_name || 'localhost', // Host name.
     file_path || `/tmp/file_${Math.floor(Math.random() * 1e6)}.py`, // File path.
     // `lineno` is assumed to be 1-based. So a value of 0 means use default
     // behavior.
     lineno || 1 + Math.floor(Math.random() * 1e3), // Lineno.
-    `function_${Math.floor(Math.random() * 1e3)}`, // Function name.
+    function_name || `function_${Math.floor(Math.random() * 1e3)}`, // Function name.
   ];
+}
+
+export function stackFrameAsArray2StackFrame(
+  array: StackFrameAsArray
+): SourceLineSpec {
+  return {
+    host_name: array[0],
+    file_path: array[1],
+    lineno: array[2],
+    function_name: array[3],
+  };
 }
 
 export function createTestExecutionDigest(

@@ -15,7 +15,11 @@ limitations under the License.
 import {Component} from '@angular/core';
 import {createSelector, select, Store} from '@ngrx/store';
 
-import {CodeLocationType, State} from '../../store/debugger_types';
+import {
+  CodeLocationType,
+  SourceLineSpec,
+  State,
+} from '../../store/debugger_types';
 import {sourceLineFocused} from '../../actions';
 import {
   getCodeLocationOrigin,
@@ -116,7 +120,7 @@ export class StackTraceContainer {
           const output: StackFrameForDisplay[] = [];
           // Correctly label all the stack frames for display.
           for (const stackFrame of stackFrames) {
-            const [host_name, file_path, lineno, function_name] = stackFrame;
+            const {host_name, file_path, lineno, function_name} = stackFrame;
             const pathItems = file_path.split('/');
             const concise_file_path = pathItems[pathItems.length - 1];
             const belongsToFocusedFile =
@@ -143,11 +147,7 @@ export class StackTraceContainer {
 
   constructor(private readonly store: Store<State>) {}
 
-  onSourceLineClicked(args: {
-    host_name: string;
-    file_path: string;
-    lineno: number;
-  }) {
+  onSourceLineClicked(args: SourceLineSpec) {
     this.store.dispatch(sourceLineFocused({sourceLineSpec: args}));
   }
 }

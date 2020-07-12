@@ -23,7 +23,7 @@ import {
   GraphExecutionDigest,
   GraphOpInfo,
   SourceFileSpec,
-  StackFrame,
+  StackFrameAsArray,
 } from '../store/debugger_types';
 import {TBHttpClient} from '../../../../webapp/webapp_data_source/tb_http_client';
 
@@ -39,7 +39,7 @@ export interface SourceFileResponse extends SourceFileSpec {
 }
 
 export interface StackFramesResponse {
-  stack_frames: StackFrame[];
+  stack_frames: StackFrameAsArray[];
 }
 
 /**

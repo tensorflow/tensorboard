@@ -51,7 +51,7 @@ import {
   CodeLocationType,
   DataLoadState,
   DEBUGGER_FEATURE_KEY,
-  StackFrame,
+  SourceLineSpec,
 } from './debugger_types';
 import {
   createAlertsState,
@@ -557,9 +557,9 @@ describe('debugger selectors', () => {
     });
 
     it('returns correct eager stack frames', () => {
-      const stackFrame1: StackFrame = createTestStackFrame();
-      const stackFrame2: StackFrame = createTestStackFrame();
-      const stackFrame3: StackFrame = createTestStackFrame();
+      const stackFrame1: SourceLineSpec = createTestStackFrame();
+      const stackFrame2: SourceLineSpec = createTestStackFrame();
+      const stackFrame3: SourceLineSpec = createTestStackFrame();
       const state = createState(
         createDebuggerState({
           activeRunId: '__default_debugger_run__',
@@ -596,9 +596,9 @@ describe('debugger selectors', () => {
     });
 
     it('returns correct graph-op-creation stack frames', () => {
-      const stackFrame1: StackFrame = createTestStackFrame();
-      const stackFrame2: StackFrame = createTestStackFrame();
-      const stackFrame3: StackFrame = createTestStackFrame();
+      const stackFrame1: SourceLineSpec = createTestStackFrame();
+      const stackFrame2: SourceLineSpec = createTestStackFrame();
+      const stackFrame3: SourceLineSpec = createTestStackFrame();
       const state = createState(
         createDebuggerState({
           activeRunId: '__default_debugger_run__',
@@ -637,8 +637,8 @@ describe('debugger selectors', () => {
     });
 
     it('returns null when no graph op is focused on', () => {
-      const stackFrame1: StackFrame = createTestStackFrame();
-      const stackFrame2: StackFrame = createTestStackFrame();
+      const stackFrame1: SourceLineSpec = createTestStackFrame();
+      const stackFrame2: SourceLineSpec = createTestStackFrame();
       const state = createState(
         createDebuggerState({
           activeRunId: '__default_debugger_run__',
@@ -692,8 +692,18 @@ describe('debugger selectors', () => {
             },
           },
           stackFrames: {
-            a1: ['localhost', '/tmp/main.py', 10, 'main'],
-            a2: ['localhost', '/tmp/model.py', 20, 'initialize'],
+            a1: {
+              host_name: 'localhost',
+              file_path: '/tmp/main.py',
+              lineno: 10,
+              function_name: 'main',
+            },
+            a2: {
+              host_name: 'localhost',
+              file_path: '/tmp/model.py',
+              lineno: 20,
+              function_name: 'initialize',
+            },
           },
         })
       );
@@ -821,6 +831,7 @@ describe('debugger selectors', () => {
               host_name: 'worker1',
               file_path: '/tmp/eval.py',
               lineno: 100,
+              function_name: 'train_fn',
             },
           }),
         })
@@ -863,6 +874,7 @@ describe('debugger selectors', () => {
               host_name: 'worker1',
               file_path: '/tmp/eval.py',
               lineno: 100,
+              function_name: 'train_fn',
             },
           }),
         })
@@ -1679,6 +1691,7 @@ describe('debugger selectors', () => {
               host_name: 'localhost',
               file_path: 'train.py',
               lineno: 5,
+              function_name: 'train_fn',
             },
           }),
         })
@@ -1688,6 +1701,7 @@ describe('debugger selectors', () => {
         host_name: 'localhost',
         file_path: 'train.py',
         lineno: 5,
+        function_name: 'train_fn',
       });
     });
   });

@@ -18,12 +18,7 @@ limitations under the License.
 
 import {getFocusedStackFramesHelper} from './debugger_store_helpers';
 
-import {
-  DebuggerState,
-  SourceFileSpec,
-  SourceLineSpec,
-  StackFrame,
-} from './debugger_types';
+import {DebuggerState, SourceFileSpec, SourceLineSpec} from './debugger_types';
 
 /**
  * Find the index of a file spec among an array of file specs.
@@ -54,13 +49,13 @@ export function findFileIndex(
  * @throws Error if `sourceLineSpec` is not a frame in `stackFrames`.
  */
 export function isFrameBottommostInStackTrace(
-  stackFrames: StackFrame[],
+  stackFrames: SourceLineSpec[],
   sourceLineSpec: SourceLineSpec
 ): boolean {
   let matchingIndex = -1;
   let bottommostIndex = -1;
   stackFrames.forEach((stackFrame, i) => {
-    const [, file_path, lineno] = stackFrame;
+    const {file_path, lineno} = stackFrame;
     if (file_path === sourceLineSpec.file_path) {
       bottommostIndex = i;
       if (lineno === sourceLineSpec.lineno) {
@@ -86,7 +81,7 @@ export function isFrameBottommostInStackTrace(
  *   but at the bottommost location.
  */
 export function getBottommostStackFrameInFocusedFile(
-  stackFrames: StackFrame[],
+  stackFrames: SourceLineSpec[],
   focusedSourceLineSpec: SourceLineSpec | null
 ): SourceLineSpec | null {
   if (focusedSourceLineSpec === null) {
@@ -94,16 +89,12 @@ export function getBottommostStackFrameInFocusedFile(
   }
   for (let i = stackFrames.length - 1; i >= 0; --i) {
     const stackFrame = stackFrames[i];
-    const [host_name, file_path] = stackFrame;
+    const {host_name, file_path} = stackFrame;
     if (
       host_name === focusedSourceLineSpec.host_name &&
       file_path === focusedSourceLineSpec.file_path
     ) {
-      return {
-        host_name: stackFrame[0],
-        file_path: stackFrame[1],
-        lineno: stackFrame[2],
-      };
+      return stackFrame;
     }
   }
   return null;

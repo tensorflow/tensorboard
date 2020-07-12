@@ -111,7 +111,8 @@ import {
   createTestGraphExecution,
   createTestGraphOpInfo,
   createTestInfNanAlert,
-  createTestStackFrame,
+  createTestStackFrameAsArray,
+  stackFrameAsArray2StackFrame,
 } from '../testing';
 import {TBHttpClientTestingModule} from '../../../../webapp/webapp_data_source/tb_http_client_testing';
 import {
@@ -556,8 +557,8 @@ describe('Debugger effects', () => {
 
     const numGraphExecutions = 10;
 
-    const stackFrame0 = createTestStackFrame();
-    const stackFrame1 = createTestStackFrame();
+    const stackFrame0 = createTestStackFrameAsArray();
+    const stackFrame1 = createTestStackFrameAsArray();
 
     const twoSourceFilesForTest: SourceFileListResponse = [
       ['localhost', '/tmp/main.py'],
@@ -759,7 +760,10 @@ describe('Debugger effects', () => {
             executionDigestsLoaded(executionDigestsPageResponse),
             executionDataLoaded(executionDataResponse),
             stackFramesLoaded({
-              stackFrames: {aa: stackFrame0, bb: stackFrame1},
+              stackFrames: {
+                aa: stackFrameAsArray2StackFrame(stackFrame0),
+                bb: stackFrameAsArray2StackFrame(stackFrame1),
+              },
             }),
             numGraphExecutionsRequested(),
             numGraphExecutionsLoaded({numGraphExecutions}),
@@ -835,7 +839,10 @@ describe('Debugger effects', () => {
             expect(dispatchedActions).toEqual([
               executionDataLoaded(executionDataResponse),
               stackFramesLoaded({
-                stackFrames: {aa: stackFrame0, bb: stackFrame1},
+                stackFrames: {
+                  aa: stackFrameAsArray2StackFrame(stackFrame0),
+                  bb: stackFrameAsArray2StackFrame(stackFrame1),
+                },
               }),
             ]);
           }
@@ -1567,6 +1574,7 @@ describe('Debugger effects', () => {
           sourceLineSpec: {
             ...fileSpecC,
             lineno: 42,
+            function_name: 'foo',
           },
         })
       );
@@ -1620,6 +1628,7 @@ describe('Debugger effects', () => {
             sourceLineSpec: {
               ...fileSpecC,
               lineno: 42,
+              function_name: 'foo',
             },
           })
         );
@@ -1661,6 +1670,7 @@ describe('Debugger effects', () => {
           sourceLineSpec: {
             ...fileSpecC,
             lineno: 42,
+            function_name: 'foo',
           },
         })
       );
@@ -1678,8 +1688,8 @@ describe('Debugger effects', () => {
       graph_ids: ['g1', 'g2'],
       stack_frame_ids: ['aaa1', 'bbb2'],
     });
-    const stackFrame0 = createTestStackFrame();
-    const stackFrame1 = createTestStackFrame();
+    const stackFrame0 = createTestStackFrameAsArray();
+    const stackFrame1 = createTestStackFrameAsArray();
 
     beforeEach(() => {
       createAndSubscribeToDebuggerEffectsWithEmptyRepeater();
@@ -1728,7 +1738,10 @@ describe('Debugger effects', () => {
             graphOpInfoRequested({graph_id: 'g2', op_name: 'namespace_1/op_1'}),
             graphOpInfoLoaded({graphOpInfoResponse}),
             stackFramesLoaded({
-              stackFrames: {aaa1: stackFrame0, bbb2: stackFrame1},
+              stackFrames: {
+                aaa1: stackFrameAsArray2StackFrame(stackFrame0),
+                bbb2: stackFrameAsArray2StackFrame(stackFrame1),
+              },
             }),
           ]);
         }
@@ -1770,7 +1783,9 @@ describe('Debugger effects', () => {
             g2: new Map([['other_op', DataLoadState.LOADED]]),
           });
           // The second stack frame is already loaded.
-          store.overrideSelector(getLoadedStackFrames, {bbb2: stackFrame1});
+          store.overrideSelector(getLoadedStackFrames, {
+            bbb2: stackFrameAsArray2StackFrame(stackFrame1),
+          });
           store.refreshState();
 
           action.next(testAction);
@@ -1781,7 +1796,9 @@ describe('Debugger effects', () => {
             graphOpInfoRequested({graph_id: 'g2', op_name: 'namespace_1/op_1'}),
             graphOpInfoLoaded({graphOpInfoResponse}),
             // Only the first (missing) stack frame should have been loaded.
-            stackFramesLoaded({stackFrames: {aaa1: stackFrame0}}),
+            stackFramesLoaded({
+              stackFrames: {aaa1: stackFrameAsArray2StackFrame(stackFrame0)},
+            }),
           ]);
         }
       );

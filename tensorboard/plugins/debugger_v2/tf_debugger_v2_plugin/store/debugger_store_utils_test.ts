@@ -20,10 +20,25 @@ import {
 } from './debugger_store_utils';
 
 describe('Debugger store utils', () => {
-  const stackFrame0 = createTestStackFrame('localhost', 'main.py', 10);
-  const stackFrame1 = createTestStackFrame('localhost', 'main.py', 20);
-  const stackFrame2 = createTestStackFrame('localhost', 'train.py', 5);
-  const stackFrame3 = createTestStackFrame('localhost', 'train.py', 15);
+  const stackFrame0 = createTestStackFrame(
+    'localhost',
+    'main.py',
+    10,
+    '<module>'
+  );
+  const stackFrame1 = createTestStackFrame('localhost', 'main.py', 20, 'main');
+  const stackFrame2 = createTestStackFrame(
+    'localhost',
+    'train.py',
+    5,
+    'train_fn'
+  );
+  const stackFrame3 = createTestStackFrame(
+    'localhost',
+    'train.py',
+    15,
+    'model_fn'
+  );
   const stackTrace = [stackFrame0, stackFrame1, stackFrame2, stackFrame3];
 
   describe('isFrameBottommostInStackTrace', () => {
@@ -33,6 +48,7 @@ describe('Debugger store utils', () => {
           host_name: 'localhost',
           file_path: 'main.py',
           lineno: 20,
+          function_name: 'main',
         })
       ).toBe(true);
     });
@@ -43,6 +59,7 @@ describe('Debugger store utils', () => {
           host_name: 'localhost',
           file_path: 'train.py',
           lineno: 5,
+          function_name: 'train_fn',
         })
       ).toBe(false);
     });
@@ -53,6 +70,7 @@ describe('Debugger store utils', () => {
           host_name: 'localhost',
           file_path: 'nonexistent.py',
           lineno: 5,
+          function_name: 'nusuth',
         })
       ).toThrowError(/nonexistent.*is not found in stack frames/);
     });
@@ -65,22 +83,26 @@ describe('Debugger store utils', () => {
           host_name: 'localhost',
           file_path: 'main.py',
           lineno: 10,
+          function_name: '<module>',
         })
       ).toEqual({
         host_name: 'localhost',
         file_path: 'main.py',
         lineno: 20,
+        function_name: 'main',
       });
       expect(
         getBottommostStackFrameInFocusedFile(stackTrace, {
           host_name: 'localhost',
           file_path: 'train.py',
           lineno: 5,
+          function_name: 'train_fn',
         })
       ).toEqual({
         host_name: 'localhost',
         file_path: 'train.py',
         lineno: 15,
+        function_name: 'model_fn',
       });
     });
 
@@ -90,22 +112,26 @@ describe('Debugger store utils', () => {
           host_name: 'localhost',
           file_path: 'main.py',
           lineno: 20,
+          function_name: 'main',
         })
       ).toEqual({
         host_name: 'localhost',
         file_path: 'main.py',
         lineno: 20,
+        function_name: 'main',
       });
       expect(
         getBottommostStackFrameInFocusedFile(stackTrace, {
           host_name: 'localhost',
           file_path: 'train.py',
           lineno: 15,
+          function_name: 'model_fn',
         })
       ).toEqual({
         host_name: 'localhost',
         file_path: 'train.py',
         lineno: 15,
+        function_name: 'model_fn',
       });
     });
 
@@ -115,6 +141,7 @@ describe('Debugger store utils', () => {
           host_name: 'localhost',
           file_path: 'nonexistent.py', // file path is different.
           lineno: 66,
+          function_name: 'nusuth',
         })
       ).toBeNull();
     });
@@ -125,6 +152,7 @@ describe('Debugger store utils', () => {
           host_name: 'remotehost', // host name is different.
           file_path: 'main.py',
           lineno: 20,
+          function_name: 'nusuth',
         })
       ).toBeNull();
     });
