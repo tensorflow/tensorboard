@@ -43,7 +43,7 @@ export interface DebuggerRunListing {
   [runId: string]: DebuggerRunMetadata;
 }
 
-export type StackFramesById = {[id: string]: SourceLineSpec};
+export type StackFramesById = {[id: string]: StackFrame};
 
 /**
  * Digest for top-level execution.
@@ -446,7 +446,7 @@ export interface SourceFileSpec {
 }
 
 // A specific line of a source-code file, i.e., a stack frame.
-export interface SourceLineSpec extends SourceFileSpec {
+export interface StackFrame extends SourceFileSpec {
   lineno: number;
   function_name: string;
 }
@@ -481,7 +481,7 @@ export interface SourceCodeState {
   // Index for the source line being focused on by the user.
   // The index is for the array in `sourceFileList`.
   // Use `null` for the case wherein no line is focused on.
-  focusLineSpec: SourceLineSpec | null;
+  focusLineSpec: StackFrame | null;
 }
 
 export interface DebuggerState {

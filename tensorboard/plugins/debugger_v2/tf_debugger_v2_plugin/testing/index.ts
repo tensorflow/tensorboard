@@ -32,7 +32,7 @@ import {
   InfNanAlert,
   SourceCodeState,
   State,
-  SourceLineSpec,
+  StackFrame,
   StackFrameAsArray,
 } from '../store/debugger_types';
 import {
@@ -112,7 +112,7 @@ export function createTestStackFrame(
   file_path?: string,
   lineno?: number,
   function_name?: string
-): SourceLineSpec {
+): StackFrame {
   return {
     host_name: host_name || 'localhost', // Host name.
     file_path: file_path || `/tmp/file_${Math.floor(Math.random() * 1e6)}.py`, // File path.
@@ -142,7 +142,7 @@ export function createTestStackFrameAsArray(
 
 export function stackFrameAsArray2StackFrame(
   array: StackFrameAsArray
-): SourceLineSpec {
+): StackFrame {
   return {
     host_name: array[0],
     file_path: array[1],

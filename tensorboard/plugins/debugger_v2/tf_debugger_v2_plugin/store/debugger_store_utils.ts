@@ -18,7 +18,7 @@ limitations under the License.
 
 import {getFocusedStackFramesHelper} from './debugger_store_helpers';
 
-import {DebuggerState, SourceFileSpec, SourceLineSpec} from './debugger_types';
+import {DebuggerState, SourceFileSpec, StackFrame} from './debugger_types';
 
 /**
  * Find the index of a file spec among an array of file specs.
@@ -49,8 +49,8 @@ export function findFileIndex(
  * @throws Error if `sourceLineSpec` is not a frame in `stackFrames`.
  */
 export function isFrameBottommostInStackTrace(
-  stackFrames: SourceLineSpec[],
-  sourceLineSpec: SourceLineSpec
+  stackFrames: StackFrame[],
+  sourceLineSpec: StackFrame
 ): boolean {
   let matchingIndex = -1;
   let bottommostIndex = -1;
@@ -81,9 +81,9 @@ export function isFrameBottommostInStackTrace(
  *   but at the bottommost location.
  */
 export function getBottommostStackFrameInFocusedFile(
-  stackFrames: SourceLineSpec[],
-  focusedSourceLineSpec: SourceLineSpec | null
-): SourceLineSpec | null {
+  stackFrames: StackFrame[],
+  focusedSourceLineSpec: StackFrame | null
+): StackFrame | null {
   if (focusedSourceLineSpec === null) {
     return null;
   }
@@ -162,7 +162,7 @@ export function beginEndRangesInclude(
  */
 export function computeBottommostLineSpec(
   state: DebuggerState
-): SourceLineSpec | null {
+): StackFrame | null {
   const currentFocusLineSpec = state.sourceCode.focusLineSpec;
   if (!state.stickToBottommostFrameInFocusedFile) {
     return currentFocusLineSpec;

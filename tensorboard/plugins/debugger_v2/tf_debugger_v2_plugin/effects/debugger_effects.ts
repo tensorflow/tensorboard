@@ -101,7 +101,7 @@ import {
   Execution,
   InfNanAlert,
   SourceFileSpec,
-  SourceLineSpec,
+  StackFrame,
   State,
 } from '../store/debugger_types';
 import {
@@ -633,7 +633,7 @@ export class DebuggerEffects {
         return this.dataSource.fetchStackFrames(runId!, stackFrameIds).pipe(
           tap((stackFramesResponse) => {
             const stackFramesById: {
-              [stackFrameId: string]: SourceLineSpec;
+              [stackFrameId: string]: StackFrame;
             } = {};
             // TODO(cais): Do this reshaping in the backend and simplify
             // the frontend code here.
@@ -843,7 +843,7 @@ export class DebuggerEffects {
           .pipe(
             tap((stackFramesResponse) => {
               const stackFramesById: {
-                [stackFrameId: string]: SourceLineSpec;
+                [stackFrameId: string]: StackFrame;
               } = {};
               // TODO(cais): Do this reshaping in the backend and simplify
               // the frontend code here.

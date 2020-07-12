@@ -51,7 +51,7 @@ import {
   CodeLocationType,
   DataLoadState,
   DEBUGGER_FEATURE_KEY,
-  SourceLineSpec,
+  StackFrame,
 } from './debugger_types';
 import {
   createAlertsState,
@@ -557,9 +557,9 @@ describe('debugger selectors', () => {
     });
 
     it('returns correct eager stack frames', () => {
-      const stackFrame1: SourceLineSpec = createTestStackFrame();
-      const stackFrame2: SourceLineSpec = createTestStackFrame();
-      const stackFrame3: SourceLineSpec = createTestStackFrame();
+      const stackFrame1: StackFrame = createTestStackFrame();
+      const stackFrame2: StackFrame = createTestStackFrame();
+      const stackFrame3: StackFrame = createTestStackFrame();
       const state = createState(
         createDebuggerState({
           activeRunId: '__default_debugger_run__',
@@ -596,9 +596,9 @@ describe('debugger selectors', () => {
     });
 
     it('returns correct graph-op-creation stack frames', () => {
-      const stackFrame1: SourceLineSpec = createTestStackFrame();
-      const stackFrame2: SourceLineSpec = createTestStackFrame();
-      const stackFrame3: SourceLineSpec = createTestStackFrame();
+      const stackFrame1: StackFrame = createTestStackFrame();
+      const stackFrame2: StackFrame = createTestStackFrame();
+      const stackFrame3: StackFrame = createTestStackFrame();
       const state = createState(
         createDebuggerState({
           activeRunId: '__default_debugger_run__',
@@ -637,8 +637,8 @@ describe('debugger selectors', () => {
     });
 
     it('returns null when no graph op is focused on', () => {
-      const stackFrame1: SourceLineSpec = createTestStackFrame();
-      const stackFrame2: SourceLineSpec = createTestStackFrame();
+      const stackFrame1: StackFrame = createTestStackFrame();
+      const stackFrame2: StackFrame = createTestStackFrame();
       const state = createState(
         createDebuggerState({
           activeRunId: '__default_debugger_run__',

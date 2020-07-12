@@ -15,11 +15,7 @@ limitations under the License.
 import {Component} from '@angular/core';
 import {createSelector, select, Store} from '@ngrx/store';
 
-import {
-  CodeLocationType,
-  SourceLineSpec,
-  State,
-} from '../../store/debugger_types';
+import {CodeLocationType, StackFrame, State} from '../../store/debugger_types';
 import {sourceLineFocused} from '../../actions';
 import {
   getCodeLocationOrigin,
@@ -147,7 +143,7 @@ export class StackTraceContainer {
 
   constructor(private readonly store: Store<State>) {}
 
-  onSourceLineClicked(args: SourceLineSpec) {
+  onSourceLineClicked(args: StackFrame) {
     this.store.dispatch(sourceLineFocused({sourceLineSpec: args}));
   }
 }

@@ -22,7 +22,7 @@ import {
   DebuggerRunListing,
   GraphOpInfo,
   SourceFileSpec,
-  SourceLineSpec,
+  StackFrame,
   StackFramesById,
 } from '../store/debugger_types';
 import {
@@ -206,7 +206,7 @@ export const sourceFileListLoaded = createAction(
 
 export const sourceLineFocused = createAction(
   '[Debugger] Source File Line Is Focused on',
-  props<{sourceLineSpec: SourceLineSpec}>()
+  props<{sourceLineSpec: StackFrame}>()
 );
 
 export const sourceFileRequested = createAction(
