@@ -103,7 +103,7 @@ _PLUGINS = [
     hparams_plugin.HParamsPlugin,
     mesh_plugin.MeshPlugin,
     ExperimentalTextV2Plugin,
-    ExperimentalNPMIPlugin,
+    ExperimentalNpmiPlugin,
 ]
 
 
