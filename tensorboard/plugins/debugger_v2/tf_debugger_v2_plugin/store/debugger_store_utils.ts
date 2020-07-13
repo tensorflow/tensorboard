@@ -43,7 +43,7 @@ export function findFileIndex(
 }
 
 /**
- * Converts an object representation of a stack frame into the array
+ * Converts the object representation of a stack frame into the array
  * representation.
  * @param stackFrame
  * @returns StackFrameAsArray
@@ -60,7 +60,7 @@ export function stackFrame2StackFrameAsArray(
 }
 
 /**
- * Converts an array representation of a stack frame into the object
+ * Convertsthe array representation of a stack frame into the object
  * representation.
  * @param array
  * @returns StackFrame
@@ -102,10 +102,7 @@ export function isFrameBottommostInStackTrace(
     }
   });
   if (matchingIndex === -1) {
-    throw new Error(
-      `Stack frame ${JSON.stringify(stackFrame)} ` +
-        `is not found in stack frames.`
-    );
+    throw new Error(`Stack frame ${JSON.stringify(stackFrame)} is not found.`);
   }
   return matchingIndex === bottommostIndex;
 }

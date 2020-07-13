@@ -114,13 +114,13 @@ export function createTestStackFrame(
   function_name?: string
 ): StackFrame {
   return {
-    host_name: host_name || 'localhost', // Host name.
-    file_path: file_path || `/tmp/file_${Math.floor(Math.random() * 1e6)}.py`, // File path.
+    host_name: host_name || 'localhost',
+    file_path: file_path || `/tmp/file_${Math.floor(Math.random() * 1e6)}.py`,
     // `lineno` is assumed to be 1-based. So a value of 0 means use default
     // behavior.
-    lineno: lineno || 1 + Math.floor(Math.random() * 1e3), // Lineno.
+    lineno: lineno || 1 + Math.floor(Math.random() * 1e3),
     function_name:
-      function_name || `function_${Math.floor(Math.random() * 1e3)}`, // Function name.
+      function_name || `function_${Math.floor(Math.random() * 1e3)}`,
   };
 }
 

@@ -644,7 +644,6 @@ export class DebuggerEffects {
               stackFramesById[stackFrameIds[i]] = stackFrameAsArray2StackFrame(
                 stackFramesResponse.stack_frames[i]
               );
-              stackFramesResponse.stack_frames[i];
             }
             this.store.dispatch(
               stackFramesLoaded({stackFrames: stackFramesById})

@@ -557,8 +557,8 @@ describe('Debugger effects', () => {
 
     const numGraphExecutions = 10;
 
-    const stackFrame0 = createTestStackFrameAsArray();
-    const stackFrame1 = createTestStackFrameAsArray();
+    const stackFrameAsArray0 = createTestStackFrameAsArray();
+    const stackFrameAsArray1 = createTestStackFrameAsArray();
 
     const twoSourceFilesForTest: SourceFileListResponse = [
       ['localhost', '/tmp/main.py'],
@@ -614,7 +614,7 @@ describe('Debugger effects', () => {
       );
       // Spy for loading stack frames.
       const fetchStackFrames = createFetchStackFramesSpy(runId, ['aa', 'bb'], {
-        stack_frames: [stackFrame0, stackFrame1],
+        stack_frames: [stackFrameAsArray0, stackFrameAsArray1],
       });
       return {
         fetchRuns,
@@ -761,8 +761,8 @@ describe('Debugger effects', () => {
             executionDataLoaded(executionDataResponse),
             stackFramesLoaded({
               stackFrames: {
-                aa: stackFrameAsArray2StackFrame(stackFrame0),
-                bb: stackFrameAsArray2StackFrame(stackFrame1),
+                aa: stackFrameAsArray2StackFrame(stackFrameAsArray0),
+                bb: stackFrameAsArray2StackFrame(stackFrameAsArray1),
               },
             }),
             numGraphExecutionsRequested(),
@@ -821,7 +821,7 @@ describe('Debugger effects', () => {
             runId,
             ['aa', 'bb'],
             {
-              stack_frames: [stackFrame0, stackFrame1],
+              stack_frames: [stackFrameAsArray0, stackFrameAsArray1],
             }
           );
 
@@ -840,8 +840,8 @@ describe('Debugger effects', () => {
               executionDataLoaded(executionDataResponse),
               stackFramesLoaded({
                 stackFrames: {
-                  aa: stackFrameAsArray2StackFrame(stackFrame0),
-                  bb: stackFrameAsArray2StackFrame(stackFrame1),
+                  aa: stackFrameAsArray2StackFrame(stackFrameAsArray0),
+                  bb: stackFrameAsArray2StackFrame(stackFrameAsArray1),
                 },
               }),
             ]);
@@ -1688,8 +1688,8 @@ describe('Debugger effects', () => {
       graph_ids: ['g1', 'g2'],
       stack_frame_ids: ['aaa1', 'bbb2'],
     });
-    const stackFrame0 = createTestStackFrameAsArray();
-    const stackFrame1 = createTestStackFrameAsArray();
+    const stackFrameAsArray0 = createTestStackFrameAsArray();
+    const stackFrameAsArray1 = createTestStackFrameAsArray();
 
     beforeEach(() => {
       createAndSubscribeToDebuggerEffectsWithEmptyRepeater();
@@ -1720,7 +1720,7 @@ describe('Debugger effects', () => {
             runId,
             ['aaa1', 'bbb2'],
             {
-              stack_frames: [stackFrame0, stackFrame1],
+              stack_frames: [stackFrameAsArray0, stackFrameAsArray1],
             }
           );
           store.overrideSelector(getActiveRunId, runId);
@@ -1739,8 +1739,8 @@ describe('Debugger effects', () => {
             graphOpInfoLoaded({graphOpInfoResponse}),
             stackFramesLoaded({
               stackFrames: {
-                aaa1: stackFrameAsArray2StackFrame(stackFrame0),
-                bbb2: stackFrameAsArray2StackFrame(stackFrame1),
+                aaa1: stackFrameAsArray2StackFrame(stackFrameAsArray0),
+                bbb2: stackFrameAsArray2StackFrame(stackFrameAsArray1),
               },
             }),
           ]);
@@ -1776,7 +1776,7 @@ describe('Debugger effects', () => {
             graphOpInfoResponse
           );
           const fetchStackFrames = createFetchStackFramesSpy(runId, ['aaa1'], {
-            stack_frames: [stackFrame0],
+            stack_frames: [stackFrameAsArray0],
           });
           store.overrideSelector(getActiveRunId, runId);
           store.overrideSelector(getLoadingGraphOps, {
@@ -1784,7 +1784,7 @@ describe('Debugger effects', () => {
           });
           // The second stack frame is already loaded.
           store.overrideSelector(getLoadedStackFrames, {
-            bbb2: stackFrameAsArray2StackFrame(stackFrame1),
+            bbb2: stackFrameAsArray2StackFrame(stackFrameAsArray1),
           });
           store.refreshState();
 
@@ -1797,7 +1797,9 @@ describe('Debugger effects', () => {
             graphOpInfoLoaded({graphOpInfoResponse}),
             // Only the first (missing) stack frame should have been loaded.
             stackFramesLoaded({
-              stackFrames: {aaa1: stackFrameAsArray2StackFrame(stackFrame0)},
+              stackFrames: {
+                aaa1: stackFrameAsArray2StackFrame(stackFrameAsArray0),
+              },
             }),
           ]);
         }

@@ -451,10 +451,11 @@ export interface StackFrame extends SourceFileSpec {
   function_name: string;
 }
 
-// Stack frame represented as an array. Used in the responses of stack-frame
-// data soruces. The semantics of the elements are:
-// `[host_name, file_path, lineno, function_name]`.
-// `lineno` is 1-based.
+// Stack frame represented as an array. Used to represent the
+// stack-frame-related responses from the data soruces.
+// The semantics of the elements are:
+//   `[host_name, file_path, lineno, function_name]`,
+// wherein `lineno` is 1-based.
 export type StackFrameAsArray = [string, string, number, string];
 
 // The content and loading state of a single source file.

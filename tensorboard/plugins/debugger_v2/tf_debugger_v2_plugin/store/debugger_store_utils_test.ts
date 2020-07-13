@@ -72,7 +72,7 @@ describe('Debugger store utils', () => {
           lineno: 5,
           function_name: 'nusuth',
         })
-      ).toThrowError(/nonexistent.*is not found in stack frames/);
+      ).toThrowError(/nonexistent.*is not found/);
     });
   });
 
