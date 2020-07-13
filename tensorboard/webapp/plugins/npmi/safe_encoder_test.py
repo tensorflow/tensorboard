@@ -30,19 +30,18 @@ class SafeEncoderTest(tf.test.TestCase):
         super(SafeEncoderTest, self).setUp()
 
     def testNaN(self):
-        nan_encoded = json.dumps(
-            {"test": np.nan}, cls=safe_encoder.SafeEncoder)
-        self.assertEqual(nan_encoded, "{\"test\": null}")
+        nan_encoded = json.dumps({"test": np.nan}, cls=safe_encoder.SafeEncoder)
+        self.assertEqual(nan_encoded, '{"test": null}')
 
     def testInf(self):
-        inf_encoded = json.dumps(
-            {"test": np.inf}, cls=safe_encoder.SafeEncoder)
-        self.assertEqual(inf_encoded, "{\"test\": Infinity}")
+        inf_encoded = json.dumps({"test": np.inf}, cls=safe_encoder.SafeEncoder)
+        self.assertEqual(inf_encoded, '{"test": Infinity}')
 
     def testNegInf(self):
         neg_inf_encoded = json.dumps(
-            {"test": np.NINF}, cls=safe_encoder.SafeEncoder)
-        self.assertEqual(neg_inf_encoded, "{\"test\": -Infinity}")
+            {"test": np.NINF}, cls=safe_encoder.SafeEncoder
+        )
+        self.assertEqual(neg_inf_encoded, '{"test": -Infinity}')
 
 
 if __name__ == "__main__":

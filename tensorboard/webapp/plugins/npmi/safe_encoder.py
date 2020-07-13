@@ -41,9 +41,13 @@ class SafeEncoder(json.JSONEncoder):
         else:
             _encoder = json.encoder.encode_basestring
 
-        def floatstr(o, allow_nan=self.allow_nan,
-                     _inf=json.encoder.INFINITY, _neginf=-json.encoder.INFINITY,
-                     nan_str=self.nan_str):
+        def floatstr(
+            o,
+            allow_nan=self.allow_nan,
+            _inf=json.encoder.INFINITY,
+            _neginf=-json.encoder.INFINITY,
+            nan_str=self.nan_str,
+        ):
             """Makes a string out of a float value
 
             Args:
@@ -57,19 +61,27 @@ class SafeEncoder(json.JSONEncoder):
             if o != o:
                 text = nan_str
             elif o == _inf:
-                text = 'Infinity'
+                text = "Infinity"
             elif o == _neginf:
-                text = '-Infinity'
+                text = "-Infinity"
             else:
                 return str(o)
             if not allow_nan:
                 raise ValueError(
-                    "Out of range float values are not JSON compliant: " +
-                    repr(o))
+                    "Out of range float values are not JSON compliant: "
+                    + repr(o))
             return text
 
         _iterencode = json.encoder._make_iterencode(
-            markers, self.default, _encoder, self.indent, floatstr,
-            self.key_separator, self.item_separator, self.sort_keys,
-            self.skipkeys, _one_shot)
+            markers,
+            self.default,
+            _encoder,
+            self.indent,
+            floatstr,
+            self.key_separator,
+            self.item_separator,
+            self.sort_keys,
+            self.skipkeys,
+            _one_shot,
+        )
         return _iterencode(o, 0)
