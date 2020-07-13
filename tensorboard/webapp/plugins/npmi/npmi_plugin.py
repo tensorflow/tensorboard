@@ -30,6 +30,7 @@ from tensorboard.plugins import base_plugin
 from tensorboard.backend import http_util
 
 from tensorboard.webapp.plugins.npmi import safe_encoder
+from tensorboard.webapp.plugins.npmi import metadata
 
 
 def _error_response(request, error_message):
@@ -56,6 +57,7 @@ class NpmiPlugin(base_plugin.TBPlugin):
         super(NpmiPlugin, self).__init__(context)
         self._logdir = context.logdir
         self._multiplexer = context.multiplexer
+        self._data_provider = context.data_provider
 
     def get_plugin_apps(self):
         return {

@@ -25,6 +25,7 @@ import tensorflow as tf
 
 from tensorboard.compat import tf2
 from tensorboard.webapp.plugins.npmi import summary
+from tensorboard.webapp.plugins.npmi import metadata
 
 try:
     tf2.__version__  # Force lazy import to resolve
@@ -45,11 +46,11 @@ class SummaryTest(tf.test.TestCase):
             self.skipTest("v2 summary API not available")
 
     def testMetadata(self):
-        metadata = summary._create_summary_metadata(None, "test")
-        plugin_data = metadata.plugin_data
+        data = metadata.create_summary_metadata(None, "test")
+        plugin_data = data.plugin_data
         content = plugin_data.content
-        metadata_content = summary.parse_plugin_metadata(content)
-        self.assertEqual(metadata.plugin_data.plugin_name, "npmi")
+        metadata_content = metadata.parse_plugin_metadata(content)
+        self.assertEqual(data.plugin_data.plugin_name, "npmi")
         self.assertEqual(metadata_content.title, "test")
 
     def testMetricResults(self):

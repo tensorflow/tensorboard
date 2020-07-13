@@ -24,6 +24,7 @@ import os
 import json
 import tensorflow as tf
 
+from tensorboard import context
 from tensorboard import plugin_util
 from tensorboard.backend.event_processing import data_provider
 from tensorboard.backend.event_processing import (

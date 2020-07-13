@@ -15,6 +15,7 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         ":safe_encoder",
+        ":metadata",
         "//tensorboard:errors",
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
@@ -35,6 +36,7 @@ py_test(
         ":summary",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard:plugin_util",
+        "//tensorboard:context",
         "//tensorboard/backend/event_processing:data_provider",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/plugins:base_plugin",
@@ -50,9 +52,8 @@ py_library(
         "//visibility:public",
     ],
     deps = [
-        ":protos_all_py_pb2",
+        ":metadata",
         "//tensorboard/compat",
-        "//tensorboard/compat/proto:protos_all_py_pb2",
     ],
 )
 
@@ -63,6 +64,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":summary",
+        ":metadata",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/compat",
         "//tensorboard/util:test_util",
@@ -89,6 +91,20 @@ py_test(
         ":safe_encoder",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/util:test_util",
+    ],
+)
+
+py_library(
+    name = "metadata",
+    srcs = ["metadata.py"],
+    srcs_version = "PY2AND3",
+    visibility = [
+        "//tensorboard:internal",
+    ],
+    deps = [
+        ":protos_all_py_pb2",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/util:tb_logging",
     ],
 )
 

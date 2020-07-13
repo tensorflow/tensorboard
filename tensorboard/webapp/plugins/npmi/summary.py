@@ -17,10 +17,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from tensorboard.compat.proto import summary_pb2
-from tensorboard.webapp.plugins.npmi import plugin_data_pb2
-
 from tensorboard.compat import tf2 as tf
+
+from tensorboard.webapp.plugins.npmi import metadata
 
 
 def npmi_metrics(title, tensor, step=None, description=None):
@@ -52,7 +51,7 @@ def npmi_metrics(title, tensor, step=None, description=None):
             tag=tag,
             tensor=tensor,
             step=step,
-            metadata=_create_summary_metadata(description, title),
+            metadata=metadata.create_summary_metadata(description, title),
         )
 
 
@@ -85,7 +84,7 @@ def npmi_annotations(title, tensor, step=None, description=None):
             tag=tag,
             tensor=tensor,
             step=step,
-            metadata=_create_summary_metadata(description, title),
+            metadata=metadata.create_summary_metadata(description, title),
         )
 
 
@@ -119,29 +118,5 @@ def npmi_values(title, tensor, step=None, description=None):
             tag=tag,
             tensor=tensor,
             step=step,
-            metadata=_create_summary_metadata(description, title),
+            metadata=metadata.create_summary_metadata(description, title),
         )
-
-
-def _create_summary_metadata(description, title):
-    content = plugin_data_pb2.NpmiPluginData(title=title)
-    return summary_pb2.SummaryMetadata(
-        summary_description=description,
-        plugin_data=summary_pb2.SummaryMetadata.PluginData(
-            plugin_name="npmi", content=content.SerializeToString(),
-        ),
-    )
-
-
-def parse_plugin_metadata(content):
-    """Parse summary metadata to a Python object.
-    Arguments:
-      content: The `content` field of a `SummaryMetadata` proto
-        corresponding to the scalar plugin.
-    Returns:
-      A `ScalarPluginData` protobuf object.
-    """
-    if not isinstance(content, bytes):
-        raise TypeError("Content type must be bytes")
-    result = plugin_data_pb2.NpmiPluginData.FromString(content)
-    return result
