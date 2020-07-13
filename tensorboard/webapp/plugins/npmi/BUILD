@@ -3,6 +3,8 @@
 # models. nPMI is a technique presented in a paper (https://svn.spraakdata.gu.se/repos/gerlof/pub/www/Docs/npmi-pfd.pdfhttps://svn.spraakdata.gu.se/repos/gerlof/pub/www/Docs/npmi-pfd.pdf)
 # presented by Gerlof Bouma.
 
+load("//tensorboard/defs:protos.bzl", "tb_proto_library")
+
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
@@ -48,6 +50,7 @@ py_library(
         "//visibility:public",
     ],
     deps = [
+        ":protos_all_py_pb2",
         "//tensorboard/compat",
         "//tensorboard/compat/proto:protos_all_py_pb2",
     ],
@@ -87,4 +90,9 @@ py_test(
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/util:test_util",
     ],
+)
+
+tb_proto_library(
+    name = "protos_all",
+    srcs = ["plugin_data.proto"],
 )

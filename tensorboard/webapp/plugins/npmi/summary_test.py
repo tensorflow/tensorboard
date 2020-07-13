@@ -46,8 +46,11 @@ class SummaryTest(tf.test.TestCase):
 
     def testMetadata(self):
         metadata = summary._create_summary_metadata(None, "test")
+        plugin_data = metadata.plugin_data
+        content = plugin_data.content
+        metadata_content = summary.parse_plugin_metadata(content)
         self.assertEqual(metadata.plugin_data.plugin_name, "npmi")
-        self.assertEqual(metadata.plugin_data.content, b"test")
+        self.assertEqual(metadata_content.title, "test")
 
     def testMetricResults(self):
         python_annotations = ["name_1", "name_2"]
