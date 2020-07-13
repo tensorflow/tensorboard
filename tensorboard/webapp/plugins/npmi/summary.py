@@ -21,19 +21,19 @@ from tensorboard.compat.proto import summary_pb2
 from tensorboard.compat import tf2 as tf
 
 
-def metric_results(name, title, guest, step=None, description=None):
-    """Write a "npmi" summary.
+def npmi_metrics(title, tensor, step=None, description=None):
+    """Write the list of calculated metrics for this run.
 
     Arguments:
-      name: A name for this summary. The summary tag used for TensorBoard will be
-        this name prefixed by any active name scopes.
-      title: The title of this table. Will be added to the metadata.
-      guest: A `Tensor`.
+      title: The title of this table. Will be added to the metadata. Tables are
+        there to support multiple exports from our exporter at the same time and
+        be able to distinguish them.
+      tensor: A `Tensor` of shape (num_metrics) and dtype string.
       step: Explicit `int64`-castable monotonic step value for this summary. If
-        omitted, this defaults to `tf.summary.experimental.get_step()`, which must
-        not be None.
-      description: Optional long-form description for this summary, as a constant
-        `str`. Markdown is supported. Defaults to empty.
+        omitted, this defaults to `tf.summary.experimental.get_step()`, which
+        must not be None.
+      description: Optional long-form description for this summary, as a
+        constant `str`. Markdown is supported. Defaults to empty.
 
     Returns:
       True on success, or false if no summary was written because no default
@@ -44,11 +44,78 @@ def metric_results(name, title, guest, step=None, description=None):
         `tf.summary.experimental.get_step()` is None.
     """
     with tf.summary.experimental.summary_scope(
-        name, title, values=[guest, step],
+        'metric_classes', title, values=[tensor, step],
     ) as (tag, _):
         return tf.summary.write(
             tag=tag,
-            tensor=guest,
+            tensor=tensor,
+            step=step,
+            metadata=_create_summary_metadata(description, title),
+        )
+
+
+def npmi_annotations(title, tensor, step=None, description=None):
+    """Write the annotations for this run.
+
+    Arguments:
+      title: The title of this table. Will be added to the metadata. Tables are
+        there to support multiple exports from our exporter at the same time and
+        be able to distinguish them.
+      tensor: A `Tensor` of shape (num_annotations) and dtype string.
+      step: Explicit `int64`-castable monotonic step value for this summary. If
+        omitted, this defaults to `tf.summary.experimental.get_step()`, which
+        must not be None.
+      description: Optional long-form description for this summary, as a
+        constant `str`. Markdown is supported. Defaults to empty.
+
+    Returns:
+      True on success, or false if no summary was written because no default
+      summary writer was available.
+
+    Raises:
+      ValueError: if a default writer exists, but no step was provided and
+        `tf.summary.experimental.get_step()` is None.
+    """
+    with tf.summary.experimental.summary_scope(
+        'metric_annotations', title, values=[tensor, step],
+    ) as (tag, _):
+        return tf.summary.write(
+            tag=tag,
+            tensor=tensor,
+            step=step,
+            metadata=_create_summary_metadata(description, title),
+        )
+
+
+def npmi_values(title, tensor, step=None, description=None):
+    """Write the actual npmi values.
+
+    Arguments:
+      title: The title of this table. Will be added to the metadata. Tables are
+        there to support multiple exports from our exporter at the same time and
+        be able to distinguish them.
+      tensor: A `Tensor` of shape (num_annotations, num_metrics) and dtype
+        float.
+      step: Explicit `int64`-castable monotonic step value for this summary. If
+        omitted, this defaults to `tf.summary.experimental.get_step()`, which
+        must not be None.
+      description: Optional long-form description for this summary, as a
+        constant `str`. Markdown is supported. Defaults to empty.
+
+    Returns:
+      True on success, or false if no summary was written because no default
+      summary writer was available.
+
+    Raises:
+      ValueError: if a default writer exists, but no step was provided and
+        `tf.summary.experimental.get_step()` is None.
+    """
+    with tf.summary.experimental.summary_scope(
+        'metric_results', title, values=[tensor, step],
+    ) as (tag, _):
+        return tf.summary.write(
+            tag=tag,
+            tensor=tensor,
             step=step,
             metadata=_create_summary_metadata(description, title),
         )

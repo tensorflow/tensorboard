@@ -98,15 +98,9 @@ class NpmiPluginTest(tf.test.TestCase):
                 tensor_result = tf.convert_to_tensor(python_result)
                 tensor_annotations = tf.convert_to_tensor(python_annotations)
                 tensor_classes = tf.convert_to_tensor(python_classes)
-                summary.metric_results(
-                    "metric_results", "test", tensor_result, 1
-                )
-                summary.metric_results(
-                    "metric_annotations", "test", tensor_annotations, 1
-                )
-                summary.metric_results(
-                    "metric_classes", "test", tensor_classes, 1
-                )
+                summary.npmi_values("test", tensor_result, 1)
+                summary.npmi_annotations("test", tensor_annotations, 1)
+                summary.npmi_metrics("test", tensor_classes, 1)
             writer.close()
 
     def testRoutesProvided(self):
