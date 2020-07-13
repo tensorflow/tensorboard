@@ -47,7 +47,8 @@ py_library(
         "//visibility:public",
     ],
     deps = [
-        "//tensorboard:expect_tensorflow_installed",
+      "//tensorboard/compat",
+      "//tensorboard/compat/proto:protos_all_py_pb2",
     ],
 )
 
