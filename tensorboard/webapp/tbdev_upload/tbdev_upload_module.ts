@@ -21,11 +21,16 @@ import {MatIconModule} from '@angular/material/icon';
 
 import {TbdevUploadButtonComponent} from './tbdev_upload_button_component';
 import {TbdevUploadDialogComponent} from './tbdev_upload_dialog_component';
+import {TbdevUploadDialogContainer} from './tbdev_upload_dialog_container';
 
 @NgModule({
-  declarations: [TbdevUploadButtonComponent, TbdevUploadDialogComponent],
+  declarations: [
+    TbdevUploadButtonComponent,
+    TbdevUploadDialogComponent,
+    TbdevUploadDialogContainer,
+  ],
   exports: [TbdevUploadButtonComponent],
-  entryComponents: [TbdevUploadDialogComponent],
+  entryComponents: [TbdevUploadDialogContainer],
   imports: [
     ClipboardModule,
     CommonModule,

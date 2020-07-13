@@ -16,6 +16,7 @@ import * as actions from '../actions';
 import {reducers} from './core_reducers';
 import {
   buildPluginMetadata,
+  createEnvironment,
   createPluginMetadata,
   createCoreState,
 } from '../testing';
@@ -178,6 +179,22 @@ describe('core reducer', () => {
     });
   });
 
+  describe('#environmentLoaded', () => {
+    it('sets environment with the payload', () => {
+      const state = createCoreState({
+        environment: createEnvironment({data_location: '/original/location'}),
+      });
+      const nextState = reducers(
+        state,
+        actions.environmentLoaded({
+          environment: createEnvironment({data_location: '/new/location'}),
+        })
+      );
+
+      expect(nextState.environment.data_location).toEqual('/new/location');
+    });
+  });
+
   describe('#toggleReloadEnabled', () => {
     it('toggles reloadEnabled', () => {
       const state1 = createCoreState({reloadEnabled: false});
@@ -218,6 +235,49 @@ describe('core reducer', () => {
         actions.changeReloadPeriod({periodInMs: -1000})
       );
       expect(state2.reloadPeriodInMs).toBe(1);
+    });
+  });
+
+  describe('#fetchRunSucceeded', () => {
+    it('sets polymerInteropRuns', () => {
+      const state = createCoreState({polymerInteropRuns: []});
+
+      const nextState = reducers(
+        state,
+        actions.fetchRunSucceeded({
+          runs: [{id: '1', name: 'Run name 1'}, {id: '2', name: 'Run name 2'}],
+        })
+      );
+
+      expect(nextState.polymerInteropRuns).toEqual([
+        {id: '1', name: 'Run name 1'},
+        {id: '2', name: 'Run name 2'},
+      ]);
+    });
+  });
+
+  describe('#polymerInteropRunSelectionChanged', () => {
+    it('changes the polymerInteropRunSelection', () => {
+      const state = createCoreState({
+        polymerInteropRuns: [
+          {id: '1', name: 'Run name 1'},
+          {id: '2', name: 'Run name 2'},
+          {id: '3', name: 'Run name 3'},
+          {id: '4', name: 'Run name 4'},
+        ],
+        polymerInteropRunSelection: new Map(),
+      });
+
+      const nextState = reducers(
+        state,
+        actions.polymerInteropRunSelectionChanged({
+          nextSelection: ['1', '2', '4'],
+        })
+      );
+
+      expect(nextState.polymerInteropRunSelection).toEqual(
+        new Map([['1', true], ['2', true], ['3', false], ['4', true]])
+      );
     });
   });
 });

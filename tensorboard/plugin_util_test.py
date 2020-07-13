@@ -20,6 +20,7 @@ import textwrap
 
 import six
 
+from tensorboard import context
 from tensorboard import plugin_util
 from tensorboard import test as tb_test
 from tensorboard.backend import experiment_id
@@ -163,6 +164,14 @@ class MarkdownsToSafeHTMLTest(tb_test.TestCase):
         actual = plugin_util.markdowns_to_safe_html(inputs, combine)
         expected = "<table></table>"
         self.assertEqual(actual, expected)
+
+
+class ContextTest(tb_test.TestCase):
+    def test_context(self):
+        ctx = context.RequestContext()
+        environ = {}
+        context.set_in_environ(environ, ctx)
+        self.assertEqual(context.from_environ(environ), ctx)
 
 
 class ExperimentIdTest(tb_test.TestCase):

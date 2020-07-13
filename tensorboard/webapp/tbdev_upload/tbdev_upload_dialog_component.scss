@@ -39,6 +39,11 @@ p {
   line-height: 1.5;
 }
 
+.anchor-text {
+  color: map-get($tb-foreground, link);
+  text-decoration: none;
+}
+
 .command {
   align-items: center;
   background: #f5f6f7;
@@ -46,6 +51,10 @@ p {
   display: flex;
   justify-content: space-between;
   padding: 2px 12px;
+}
+
+pre {
+  overflow-x: auto;
 }
 
 code {

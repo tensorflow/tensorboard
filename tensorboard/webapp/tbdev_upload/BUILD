@@ -8,10 +8,13 @@ ng_module(
     srcs = [
         "tbdev_upload_button_component.ts",
         "tbdev_upload_dialog_component.ts",
+        "tbdev_upload_dialog_container.ts",
         "tbdev_upload_module.ts",
     ],
     assets = [
-        ":styles",
+        ":tbdev_upload_button_component_css",
+        ":tbdev_upload_dialog_component_css",
+        "tbdev_upload_button_component.ng.html",
         "tbdev_upload_dialog_component.ng.html",
     ],
     deps = [
@@ -20,13 +23,21 @@ ng_module(
         "//tensorboard/webapp/angular:expect_angular_material_dialog",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/core",
+        "//tensorboard/webapp/core/store",
         "@npm//@angular/common",
         "@npm//@angular/core",
+        "@npm//@ngrx/store",
+        "@npm//rxjs",
     ],
 )
 
 tf_sass_binary(
-    name = "styles",
+    name = "tbdev_upload_button_component_css",
+    src = "tbdev_upload_button_component.scss",
+)
+
+tf_sass_binary(
+    name = "tbdev_upload_dialog_component_css",
     src = "tbdev_upload_dialog_component.scss",
 )
 
@@ -45,13 +56,16 @@ tf_ts_library(
         "//tensorboard/webapp/angular:expect_angular_material_button",
         "//tensorboard/webapp/angular:expect_angular_material_dialog",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
+        "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "//tensorboard/webapp/core/actions",
+        "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/core/testing",
         "//tensorboard/webapp/testing:mat_icon",
         "@npm//@angular/common",
         "@npm//@angular/compiler",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
+        "@npm//@ngrx/store",
         "@npm//@types/jasmine",
     ],
 )

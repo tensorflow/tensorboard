@@ -70,7 +70,7 @@ class AudioPlugin(base_plugin.TBPlugin):
     def frontend_metadata(self):
         return base_plugin.FrontendMetadata(element_name="tf-audio-dashboard")
 
-    def _index_impl(self, experiment):
+    def _index_impl(self, ctx, experiment):
         """Return information about the tags in each run.
 
         Result is a dictionary of the form
@@ -96,7 +96,7 @@ class AudioPlugin(base_plugin.TBPlugin):
         dictionary for `"minibatch_input"` will contain `"samples": 10`.
         """
         mapping = self._data_provider.list_blob_sequences(
-            experiment_id=experiment, plugin_name=metadata.PLUGIN_NAME,
+            ctx, experiment_id=experiment, plugin_name=metadata.PLUGIN_NAME,
         )
         result = {run: {} for run in mapping}
         for (run, tag_to_time_series) in mapping.items():
@@ -126,15 +126,18 @@ class AudioPlugin(base_plugin.TBPlugin):
         Returns:
           A werkzeug.Response application.
         """
+        ctx = plugin_util.context(request.environ)
         experiment = plugin_util.experiment_id(request.environ)
         tag = request.args.get("tag")
         run = request.args.get("run")
         sample = int(request.args.get("sample", 0))
 
-        response = self._audio_response_for_run(experiment, run, tag, sample)
+        response = self._audio_response_for_run(
+            ctx, experiment, run, tag, sample
+        )
         return http_util.Respond(request, response, "application/json")
 
-    def _audio_response_for_run(self, experiment, run, tag, sample):
+    def _audio_response_for_run(self, ctx, experiment, run, tag, sample):
         """Builds a JSON-serializable object with information about audio.
 
         Args:
@@ -151,6 +154,7 @@ class AudioPlugin(base_plugin.TBPlugin):
           content type, and query string for each audio entry.
         """
         all_audio = self._data_provider.read_blob_sequences(
+            ctx,
             experiment_id=experiment,
             plugin_name=metadata.PLUGIN_NAME,
             downsample=self._downsample_to,
@@ -161,7 +165,7 @@ class AudioPlugin(base_plugin.TBPlugin):
             raise errors.NotFoundError(
                 "No audio data for run=%r, tag=%r" % (run, tag)
             )
-        content_type = self._get_mime_type(experiment, run, tag)
+        content_type = self._get_mime_type(ctx, experiment, run, tag)
         response = []
         for datum in audio:
             if len(datum.values) < sample:
@@ -183,12 +187,12 @@ class AudioPlugin(base_plugin.TBPlugin):
             )
         return response
 
-    def _get_mime_type(self, experiment, run, tag):
+    def _get_mime_type(self, ctx, experiment, run, tag):
         # TODO(@wchargin): Move this call from `/audio` (called many
         # times) to `/tags` (called few times) to reduce data provider
         # calls.
         mapping = self._data_provider.list_blob_sequences(
-            experiment_id=experiment, plugin_name=metadata.PLUGIN_NAME,
+            ctx, experiment_id=experiment, plugin_name=metadata.PLUGIN_NAME,
         )
         time_series = mapping.get(run, {}).get(tag, None)
         if time_series is None:
@@ -201,6 +205,7 @@ class AudioPlugin(base_plugin.TBPlugin):
     @wrappers.Request.application
     def _serve_individual_audio(self, request):
         """Serve encoded audio data."""
+        ctx = plugin_util.context(request.environ)
         experiment = plugin_util.experiment_id(request.environ)
         mime_type = request.args["content_type"]
         if mime_type not in _ALLOWED_MIME_TYPES:
@@ -208,11 +213,12 @@ class AudioPlugin(base_plugin.TBPlugin):
                 "Illegal mime type %r" % mime_type
             )
         blob_key = request.args["blob_key"]
-        data = self._data_provider.read_blob(blob_key=blob_key)
+        data = self._data_provider.read_blob(ctx, blob_key=blob_key)
         return http_util.Respond(request, data, mime_type)
 
     @wrappers.Request.application
     def _serve_tags(self, request):
+        ctx = plugin_util.context(request.environ)
         experiment = plugin_util.experiment_id(request.environ)
-        index = self._index_impl(experiment)
+        index = self._index_impl(ctx, experiment)
         return http_util.Respond(request, index, "application/json")

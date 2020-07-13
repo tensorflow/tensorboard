@@ -25,14 +25,18 @@ from tensorboard.plugins.scalar import scalars_plugin
 class Handler(object):
     """Handles a ListMetricEvals request."""
 
-    def __init__(self, request, scalars_plugin_instance, experiment):
+    def __init__(
+        self, request_context, request, scalars_plugin_instance, experiment
+    ):
         """Constructor.
 
         Args:
+            request_context: A tensorboard.context.RequestContext.
             request: A ListSessionGroupsRequest protobuf.
             scalars_plugin_instance: A scalars_plugin.ScalarsPlugin.
             experiment: A experiment ID, as a possibly-empty `str`.
         """
+        self._request_context = request_context
         self._request = request
         self._scalars_plugin_instance = scalars_plugin_instance
         self._experiment = experiment
@@ -48,6 +52,10 @@ class Handler(object):
             self._request.session_name, self._request.metric_name
         )
         body, _ = self._scalars_plugin_instance.scalars_impl(
-            tag, run, self._experiment, scalars_plugin.OutputFormat.JSON
+            self._request_context,
+            tag,
+            run,
+            self._experiment,
+            scalars_plugin.OutputFormat.JSON,
         )
         return body

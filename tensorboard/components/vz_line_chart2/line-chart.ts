@@ -52,6 +52,11 @@ namespace vz_line_chart2 {
     meta: any;
   };
 
+  export interface AxisDomains {
+    x: [number, number];
+    y: [number, number];
+  }
+
   /**
    * The maximum number of marker symbols within any line for a data series. Too
    * many markers clutter the chart.
@@ -1014,6 +1019,41 @@ namespace vz_line_chart2 {
 
     public onAnchor(fn: () => void) {
       if (this.outer) this.outer.onAnchor(fn);
+    }
+
+    /**
+     * Sets the viewport domain.
+     */
+    public setAxisDomains(domains: AxisDomains) {
+      this.xScale.setTransformationDomain(domains.x);
+      this.yScale.setTransformationDomain(domains.y);
+    }
+
+    /**
+     * Returns whether the extent of rendered data values fits the current
+     * chart viewport domain (includes smoothing and outlier detection).
+     *
+     * This is true when there is no data, and false when the domain has been
+     * transformed from the extent via transformations (pan, zoom).
+     */
+    public isDataFitToDomain(): boolean {
+      return (
+        isDataFitToDomain(this.xAxis.getScale()) &&
+        isDataFitToDomain(this.yAxis.getScale())
+      );
+
+      function isDataFitToDomain(scale) {
+        /**
+         * Domain represents the currently displayed region, possibly a zoomed
+         * in or zoomed out view of the data.
+         *
+         * Extent represents the extent of the data, the range of all provided
+         * datum values.
+         */
+        const domain = scale.getTransformationDomain();
+        const extent = scale.getTransformationExtent();
+        return extent[0] === domain[0] && extent[1] === domain[1];
+      }
     }
   }
 } // namespace vz_line_chart2

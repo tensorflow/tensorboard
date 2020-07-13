@@ -26,6 +26,7 @@ from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
 from tensorboard import errors
+from tensorboard import context
 from tensorboard.backend.event_processing import (
     plugin_event_multiplexer as event_multiplexer,
 )
@@ -143,7 +144,7 @@ class DistributionsPluginTest(tf.test.TestCase):
                     },
                 },
             },
-            self.plugin.index_impl(experiment="exp"),
+            self.plugin.index_impl(context.RequestContext(), experiment="exp"),
         )
 
     def _test_distributions(self, run_name, tag_name, should_work=True):
@@ -156,7 +157,7 @@ class DistributionsPluginTest(tf.test.TestCase):
         )
         if should_work:
             (data, mime_type) = self.plugin.distributions_impl(
-                tag_name, run_name, experiment="exp"
+                context.RequestContext(), tag_name, run_name, experiment="exp"
             )
             self.assertEqual("application/json", mime_type)
             self.assertEqual(len(data), self._STEPS)
@@ -168,7 +169,10 @@ class DistributionsPluginTest(tf.test.TestCase):
         else:
             with self.assertRaises(errors.NotFoundError):
                 self.plugin.distributions_impl(
-                    self._DISTRIBUTION_TAG, run_name, experiment="exp"
+                    context.RequestContext(),
+                    self._DISTRIBUTION_TAG,
+                    run_name,
+                    experiment="exp",
                 )
 
     def test_distributions_with_scalars(self):

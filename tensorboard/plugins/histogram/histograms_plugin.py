@@ -31,6 +31,7 @@ from werkzeug import wrappers
 
 from tensorboard import errors
 from tensorboard import plugin_util
+from tensorboard import context
 from tensorboard.backend import http_util
 from tensorboard.data import provider
 from tensorboard.plugins import base_plugin
@@ -84,16 +85,17 @@ class HistogramsPlugin(base_plugin.TBPlugin):
             return False  # `list_plugins` as called by TB core suffices
 
         if self._multiplexer:
-            return any(self.index_impl(experiment="").values())
+            empty_context = context.RequestContext()  # not used
+            return any(self.index_impl(empty_context, experiment="").values())
 
         return False
 
-    def index_impl(self, experiment):
+    def index_impl(self, ctx, experiment):
         """Return {runName: {tagName: {displayName: ..., description:
         ...}}}."""
         if self._data_provider:
             mapping = self._data_provider.list_tensors(
-                experiment_id=experiment, plugin_name=metadata.PLUGIN_NAME,
+                ctx, experiment_id=experiment, plugin_name=metadata.PLUGIN_NAME,
             )
             result = {run: {} for run in mapping}
             for (run, tag_to_content) in six.iteritems(mapping):
@@ -131,7 +133,7 @@ class HistogramsPlugin(base_plugin.TBPlugin):
             element_name="tf-histogram-dashboard"
         )
 
-    def histograms_impl(self, tag, run, experiment, downsample_to=None):
+    def histograms_impl(self, ctx, tag, run, experiment, downsample_to=None):
         """Result of the form `(body, mime_type)`.
 
         At most `downsample_to` events will be returned. If this value is
@@ -147,6 +149,7 @@ class HistogramsPlugin(base_plugin.TBPlugin):
                 else self._downsample_to
             )
             all_histograms = self._data_provider.read_tensors(
+                ctx,
                 experiment_id=experiment,
                 plugin_name=metadata.PLUGIN_NAME,
                 downsample=sample_count,
@@ -189,18 +192,20 @@ class HistogramsPlugin(base_plugin.TBPlugin):
 
     @wrappers.Request.application
     def tags_route(self, request):
+        ctx = plugin_util.context(request.environ)
         experiment = plugin_util.experiment_id(request.environ)
-        index = self.index_impl(experiment=experiment)
+        index = self.index_impl(ctx, experiment=experiment)
         return http_util.Respond(request, index, "application/json")
 
     @wrappers.Request.application
     def histograms_route(self, request):
         """Given a tag and single run, return array of histogram values."""
+        ctx = plugin_util.context(request.environ)
         experiment = plugin_util.experiment_id(request.environ)
         tag = request.args.get("tag")
         run = request.args.get("run")
         (body, mime_type) = self.histograms_impl(
-            tag, run, experiment=experiment, downsample_to=self.SAMPLE_SIZE
+            ctx, tag, run, experiment=experiment, downsample_to=self.SAMPLE_SIZE
         )
         return http_util.Respond(request, body, mime_type)
 

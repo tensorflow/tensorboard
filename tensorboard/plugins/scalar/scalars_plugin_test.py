@@ -35,6 +35,7 @@ from werkzeug import wrappers
 
 from tensorboard import errors
 from tensorboard.backend import application
+from tensorboard import context
 from tensorboard.backend.event_processing import data_provider
 from tensorboard.backend.event_processing import (
     plugin_event_multiplexer as event_multiplexer,
@@ -67,7 +68,7 @@ class ScalarsPluginTest(tf.test.TestCase):
     _RUN_WITH_SCALARS = "_RUN_WITH_SCALARS"
     _RUN_WITH_HISTOGRAM = "_RUN_WITH_HISTOGRAM"
 
-    def load_runs(self, run_names):
+    def load_plugin(self, run_names):
         logdir = self.get_temp_dir()
         for run_name in run_names:
             self.generate_run(logdir, run_name)
@@ -79,42 +80,10 @@ class ScalarsPluginTest(tf.test.TestCase):
         )
         multiplexer.AddRunsFromDirectory(logdir)
         multiplexer.Reload()
-        return (logdir, multiplexer)
 
-    def with_runs(run_names):
-        """Run a test with a bare multiplexer and with a `data_provider`.
-
-        The decorated function will receive an initialized
-        `ScalarsPlugin` object as its first positional argument.
-        """
-
-        def decorator(fn):
-            @functools.wraps(fn)
-            def wrapper(self, *args, **kwargs):
-                (logdir, multiplexer) = self.load_runs(run_names)
-                with self.subTest("bare multiplexer"):
-                    ctx = base_plugin.TBContext(
-                        logdir=logdir,
-                        multiplexer=multiplexer,
-                        flags=argparse.Namespace(generic_data="false"),
-                    )
-                    fn(self, scalars_plugin.ScalarsPlugin(ctx), *args, **kwargs)
-                with self.subTest("generic data provider"):
-                    flags = argparse.Namespace(generic_data="true")
-                    provider = data_provider.MultiplexerDataProvider(
-                        multiplexer, logdir
-                    )
-                    ctx = base_plugin.TBContext(
-                        flags=flags,
-                        logdir=logdir,
-                        multiplexer=multiplexer,
-                        data_provider=provider,
-                    )
-                    fn(self, scalars_plugin.ScalarsPlugin(ctx), *args, **kwargs)
-
-            return wrapper
-
-        return decorator
+        provider = data_provider.MultiplexerDataProvider(multiplexer, logdir)
+        ctx = base_plugin.TBContext(logdir=logdir, data_provider=provider,)
+        return scalars_plugin.ScalarsPlugin(ctx)
 
     def generate_run(self, logdir, run_name):
         subdir = os.path.join(logdir, run_name)
@@ -140,17 +109,21 @@ class ScalarsPluginTest(tf.test.TestCase):
                     assert False, "Invalid run name: %r" % run_name
                 writer.add_summary(summ, global_step=step)
 
-    @with_runs([])
-    def testRoutesProvided(self, plugin):
+    def testRoutesProvided(self):
         """Tests that the plugin offers the correct routes."""
+        plugin = self.load_plugin([])
         routes = plugin.get_plugin_apps()
         self.assertIsInstance(routes["/scalars"], collections.abc.Callable)
         self.assertIsInstance(routes["/tags"], collections.abc.Callable)
 
-    @with_runs(
-        [_RUN_WITH_LEGACY_SCALARS, _RUN_WITH_SCALARS, _RUN_WITH_HISTOGRAM]
-    )
-    def test_index(self, plugin):
+    def test_index(self):
+        plugin = self.load_plugin(
+            [
+                self._RUN_WITH_LEGACY_SCALARS,
+                self._RUN_WITH_SCALARS,
+                self._RUN_WITH_HISTOGRAM,
+            ]
+        )
         self.assertEqual(
             {
                 self._RUN_WITH_LEGACY_SCALARS: {
@@ -168,12 +141,13 @@ class ScalarsPluginTest(tf.test.TestCase):
                 },
                 # _RUN_WITH_HISTOGRAM omitted: No scalar data.
             },
-            plugin.index_impl("eid"),
+            plugin.index_impl(context.RequestContext(), "eid"),
         )
 
-    @with_runs([_RUN_WITH_LEGACY_SCALARS])
-    def test_scalars_with_legacy_scalars(self, plugin):
+    def test_scalars_with_legacy_scalars(self):
+        plugin = self.load_plugin([self._RUN_WITH_LEGACY_SCALARS])
         data, mime_type = plugin.scalars_impl(
+            context.RequestContext(),
             self._LEGACY_SCALAR_TAG,
             self._RUN_WITH_LEGACY_SCALARS,
             "eid",
@@ -182,9 +156,10 @@ class ScalarsPluginTest(tf.test.TestCase):
         self.assertEqual("application/json", mime_type)
         self.assertEqual(len(data), self._STEPS)
 
-    @with_runs([_RUN_WITH_SCALARS])
-    def test_scalars_with_scalars(self, plugin):
+    def test_scalars_with_scalars(self):
+        plugin = self.load_plugin([self._RUN_WITH_SCALARS])
         data, mime_type = plugin.scalars_impl(
+            context.RequestContext(),
             "%s/scalar_summary" % self._SCALAR_TAG,
             self._RUN_WITH_SCALARS,
             "eid",
@@ -193,45 +168,41 @@ class ScalarsPluginTest(tf.test.TestCase):
         self.assertEqual("application/json", mime_type)
         self.assertEqual(len(data), self._STEPS)
 
-    @with_runs([_RUN_WITH_HISTOGRAM])
-    def test_scalars_with_histogram(self, plugin):
+    def test_scalars_with_histogram(self):
+        plugin = self.load_plugin([self._RUN_WITH_HISTOGRAM])
         with self.assertRaises(errors.NotFoundError):
             plugin.scalars_impl(
+                context.RequestContext(),
                 self._HISTOGRAM_TAG,
                 self._RUN_WITH_HISTOGRAM,
                 "eid",
                 scalars_plugin.OutputFormat.JSON,
             )
 
-    @with_runs([_RUN_WITH_LEGACY_SCALARS])
-    def test_active_with_legacy_scalars(self, plugin):
-        if plugin._data_provider:
-            self.assertFalse(plugin.is_active())
-        else:
-            self.assertTrue(plugin.is_active())
-
-    @with_runs([_RUN_WITH_SCALARS])
-    def test_active_with_scalars(self, plugin):
-        if plugin._data_provider:
-            self.assertFalse(plugin.is_active())
-        else:
-            self.assertTrue(plugin.is_active())
-
-    @with_runs([_RUN_WITH_HISTOGRAM])
-    def test_active_with_histogram(self, plugin):
+    def test_active_with_legacy_scalars(self):
+        plugin = self.load_plugin([self._RUN_WITH_LEGACY_SCALARS])
         self.assertFalse(plugin.is_active())
 
-    @with_runs(
-        [_RUN_WITH_LEGACY_SCALARS, _RUN_WITH_SCALARS, _RUN_WITH_HISTOGRAM]
-    )
-    def test_active_with_all(self, plugin):
-        if plugin._data_provider:
-            self.assertFalse(plugin.is_active())
-        else:
-            self.assertTrue(plugin.is_active())
+    def test_active_with_scalars(self):
+        plugin = self.load_plugin([self._RUN_WITH_SCALARS])
+        self.assertFalse(plugin.is_active())
 
-    @with_runs([_RUN_WITH_SCALARS])
-    def test_download_url_json(self, plugin):
+    def test_active_with_histogram(self):
+        plugin = self.load_plugin([self._RUN_WITH_HISTOGRAM])
+        self.assertFalse(plugin.is_active())
+
+    def test_active_with_all(self):
+        plugin = self.load_plugin(
+            [
+                self._RUN_WITH_LEGACY_SCALARS,
+                self._RUN_WITH_SCALARS,
+                self._RUN_WITH_HISTOGRAM,
+            ]
+        )
+        self.assertFalse(plugin.is_active())
+
+    def test_download_url_json(self):
+        plugin = self.load_plugin([self._RUN_WITH_SCALARS])
         wsgi_app = application.TensorBoardWSGI([plugin])
         server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)
         response = server.get(
@@ -243,8 +214,8 @@ class ScalarsPluginTest(tf.test.TestCase):
         payload = json.loads(response.get_data())
         self.assertEqual(len(payload), self._STEPS)
 
-    @with_runs([_RUN_WITH_SCALARS])
-    def test_download_url_csv(self, plugin):
+    def test_download_url_csv(self):
+        plugin = self.load_plugin([self._RUN_WITH_SCALARS])
         wsgi_app = application.TensorBoardWSGI([plugin])
         server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)
         response = server.get(

@@ -303,26 +303,7 @@ namespace vz_line_chart2 {
      * transformed from the extent via transformations (pan, zoom).
      */
     isDataFitToDomain() {
-      if (!this._chart) {
-        return true;
-      }
-      return (
-        isDataFitToDomain(this._chart.xAxis.getScale()) &&
-        isDataFitToDomain(this._chart.yAxis.getScale())
-      );
-
-      function isDataFitToDomain(scale) {
-        /**
-         * Domain represents the currently displayed region, possibly a zoomed
-         * in or zoomed out view of the data.
-         *
-         * Extent represents the extent of the data, the range of all provided
-         * datum values.
-         */
-        const domain = scale.getTransformationDomain();
-        const extent = scale.getTransformationExtent();
-        return extent[0] === domain[0] && extent[1] === domain[1];
-      }
+      return this._chart ? this._chart.isDataFitToDomain() : true;
     },
 
     /**
@@ -444,7 +425,9 @@ namespace vz_line_chart2 {
         );
         var div = d3.select(this.$.chartdiv);
         chart.renderTo(div);
-        if (this._chart) this._chart.destroy();
+        if (this._chart) {
+          this._chart.destroy();
+        }
         this._chart = chart;
         this._chart.onAnchor(() => this.fire('chart-attached'));
       }, 350);

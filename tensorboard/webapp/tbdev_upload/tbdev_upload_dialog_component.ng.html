@@ -16,20 +16,28 @@ limitations under the License.
 -->
 <h3>Upload to TensorBoard.dev</h3>
 <p>
-  TensorBoard.dev enables you to easily host, track, and share your ML
-  experiments with everyone. You can share a link to the uploaded TensorBoard in
-  papers, blog posts, and social media. This can showcase the results more
-  effectively and helps reproducibility.
+  <a
+    href="https://tensorboard.dev"
+    target="_blank"
+    rel="noreferrer noopener"
+    class="anchor-text"
+  >
+    TensorBoard.dev</a
+  >
+  enables you to easily host, track, and share your ML experiments with
+  everyone. You can share a link to the uploaded TensorBoard in papers, blog
+  posts, and social media. This can showcase the results more effectively and
+  helps reproducibility.
 </p>
 <p>
   To upload a logdir to TensorBoard.dev, run the command:
 </p>
 <div class="command">
-  <code>{{commandText}}</code>
+  <pre><code>{{getCommandText()}}</code></pre>
   <button
     mat-icon-button
     class="command-copy"
-    [cdkCopyToClipboard]="commandText"
+    [cdkCopyToClipboard]="getCommandText()"
     title="Click to copy the command"
   >
     <mat-icon svgIcon="content_copy_24px"></mat-icon>

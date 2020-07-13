@@ -36,28 +36,32 @@ from tensorboard.plugins.hparams import metrics
 class Handler(object):
     """Handles a ListSessionGroups request."""
 
-    def __init__(self, context, experiment_id, request):
+    def __init__(
+        self, request_context, backend_context, experiment_id, request
+    ):
         """Constructor.
 
         Args:
-          context: A backend_context.Context instance.
+          request_context: A tensorboard.context.RequestContext.
+          backend_context: A backend_context.Context instance.
           experiment_id: A string, as from `plugin_util.experiment_id`.
           request: A ListSessionGroupsRequest protobuf.
         """
-        self._context = context
+        self._request_context = request_context
+        self._backend_context = backend_context
         self._experiment_id = experiment_id
         self._request = request
         self._extractors = _create_extractors(request.col_params)
         self._filters = _create_filters(request.col_params, self._extractors)
         # Query for all Hparams summary metadata up front to minimize calls to
         # the underlying DataProvider.
-        self._hparams_run_to_tag_to_content = context.hparams_metadata(
-            experiment_id
+        self._hparams_run_to_tag_to_content = backend_context.hparams_metadata(
+            request_context, experiment_id
         )
         # Since an context.experiment() call may search through all the runs, we
         # cache it here.
-        self._experiment = context.experiment_from_metadata(
-            experiment_id, self._hparams_run_to_tag_to_content
+        self._experiment = backend_context.experiment_from_metadata(
+            request_context, experiment_id, self._hparams_run_to_tag_to_content
         )
 
     def run(self):
@@ -100,7 +104,8 @@ class Handler(object):
                 )
                 metric_runs.add(run)
                 metric_tags.add(tag)
-        all_metric_evals = self._context.read_last_scalars(
+        all_metric_evals = self._backend_context.read_last_scalars(
+            self._request_context,
             self._experiment_id,
             run_tag_filter=provider.RunTagFilter(
                 runs=metric_runs, tags=metric_tags

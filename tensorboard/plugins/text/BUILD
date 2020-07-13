@@ -36,6 +36,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":text_plugin",
+        "//tensorboard:context",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard:plugin_util",
         "//tensorboard/backend/event_processing:data_provider",
@@ -56,6 +57,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":text_plugin",
+        "//tensorboard:context",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard:plugin_util",
         "//tensorboard/backend/event_processing:data_provider",

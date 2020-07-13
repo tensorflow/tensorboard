@@ -19,12 +19,19 @@ import {MatButtonModule} from '@angular/material/button';
 import {MatDialogModule, MatDialogRef} from '@angular/material/dialog';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
+import {Store} from '@ngrx/store';
+import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
-import {MatIconTestingModule} from '../testing/mat_icon.module';
-import {TbdevUploadDialogComponent} from './tbdev_upload_dialog_component';
+import {State} from '../core/store';
 import {TbdevUploadButtonComponent} from './tbdev_upload_button_component';
+import {TbdevUploadDialogComponent} from './tbdev_upload_dialog_component';
+import {TbdevUploadDialogContainer} from './tbdev_upload_dialog_container';
+
+import {createCoreState, createEnvironment, createState} from '../core/testing';
+import {MatIconTestingModule} from '../testing/mat_icon.module';
 
 describe('tbdev upload test', () => {
+  let store: MockStore<State>;
   const clipboardSpy = jasmine.createSpyObj('Clipboard', ['copy']);
   const fakeWindow: any = {};
   const matDialogRefSpy = jasmine.createSpyObj('MatDialogRef', ['close']);
@@ -39,13 +46,27 @@ describe('tbdev upload test', () => {
         MatIconTestingModule,
         NoopAnimationsModule,
       ],
-      declarations: [TbdevUploadDialogComponent, TbdevUploadButtonComponent],
+      declarations: [
+        TbdevUploadButtonComponent,
+        TbdevUploadDialogComponent,
+        TbdevUploadDialogContainer,
+      ],
       providers: [
+        provideMockStore({
+          initialState: createState(
+            createCoreState({
+              environment: createEnvironment({
+                data_location: '',
+              }),
+            })
+          ),
+        }),
         {provide: Clipboard, useValue: clipboardSpy},
         {provide: 'window', useValue: fakeWindow},
         {provide: MatDialogRef, useValue: matDialogRefSpy},
       ],
     }).compileComponents();
+    store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     overlayContainer = TestBed.inject(OverlayContainer);
     fakeWindow.location = {
       hostname: 'localhost',
@@ -102,22 +123,74 @@ describe('tbdev upload test', () => {
     expect(tbdevUploadDialogsAfter.length).toBe(1);
   });
 
-  it('allows command to be copied', async () => {
-    const fixture = TestBed.createComponent(TbdevUploadDialogComponent);
+  it('prints command and allows it to be copied', async () => {
+    const fixture = TestBed.createComponent(TbdevUploadDialogContainer);
     fixture.detectChanges();
+
+    const codeElement = fixture.debugElement.query(By.css('code'));
+    expect(codeElement.nativeElement.textContent).toBe(
+      'tensorboard dev upload --logdir {logdir}'
+    );
 
     const copyElement = fixture.debugElement.query(By.css('.command-copy'));
     copyElement.nativeElement.click();
-    fixture.detectChanges();
-    await fixture.whenStable();
 
     expect(clipboardSpy.copy).toHaveBeenCalledWith(
       'tensorboard dev upload --logdir {logdir}'
     );
   });
 
+  it('updates with data_location', async () => {
+    const fixture = TestBed.createComponent(TbdevUploadDialogContainer);
+    fixture.detectChanges();
+
+    store.setState(
+      createState(
+        createCoreState({
+          environment: createEnvironment({
+            data_location: '/some/data/location',
+          }),
+        })
+      )
+    );
+    fixture.detectChanges();
+
+    const codeElement = fixture.debugElement.query(By.css('code'));
+    expect(codeElement.nativeElement.textContent).toBe(
+      "tensorboard dev upload --logdir \\\n    '/some/data/location'"
+    );
+
+    const copyElement = fixture.debugElement.query(By.css('.command-copy'));
+    copyElement.nativeElement.click();
+
+    expect(clipboardSpy.copy).toHaveBeenCalledWith(
+      "tensorboard dev upload --logdir \\\n    '/some/data/location'"
+    );
+  });
+
+  it('escapes single quotes in data_location', async () => {
+    const fixture = TestBed.createComponent(TbdevUploadDialogContainer);
+    fixture.detectChanges();
+
+    store.setState(
+      createState(
+        createCoreState({
+          environment: createEnvironment({
+            data_location: "/loc' || echo $PWD'",
+          }),
+        })
+      )
+    );
+    fixture.detectChanges();
+
+    const codeElement = fixture.debugElement.query(By.css('code'));
+    expect(codeElement.nativeElement.textContent).toBe(
+      "tensorboard dev upload --logdir \\\n    '/loc'\\'' || echo $PWD'\\'''"
+    );
+  });
+
   it('can be closed with button', async () => {
-    const fixture = TestBed.createComponent(TbdevUploadDialogComponent);
+    const fixture = TestBed.createComponent(TbdevUploadDialogContainer);
     fixture.detectChanges();
 
     const copyElement = fixture.debugElement.query(By.css('.close-button'));

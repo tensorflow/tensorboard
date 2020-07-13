@@ -43,6 +43,7 @@ from werkzeug import wrappers
 from tensorboard import errors
 from tensorboard import plugin_util
 from tensorboard import test as tb_test
+from tensorboard import auth
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import (
     plugin_event_multiplexer as event_multiplexer,
@@ -165,13 +166,13 @@ class FakeDataProvider(provider.DataProvider):
     def __init__(self):
         pass
 
-    def list_runs(self, *, experiment_id):
+    def list_runs(self, ctx=None, *, experiment_id):
         raise NotImplementedError()
 
-    def list_scalars(self, *, experiment_id):
+    def list_scalars(self, ctx=None, *, experiment_id):
         raise NotImplementedError()
 
-    def read_scalars(self, *, experiment_id):
+    def read_scalars(self, ctx=None, *, experiment_id):
         raise NotImplementedError()
 
 
@@ -217,20 +218,6 @@ class HandlingErrorsTest(tb_test.TestCase):
         with self.assertRaises(ValueError) as cm:
             response = server.get("/")
         self.assertEqual(str(cm.exception), "something borked internally")
-
-    def test_passes_through_non_wsgi_args(self):
-        class C(object):
-            @application._handling_errors
-            def __call__(self, environ, start_response):
-                start_response("200 OK", [("Content-Type", "text/html")])
-                yield b"All is well"
-
-        app = C()
-        server = werkzeug_test.Client(app, wrappers.BaseResponse)
-        response = server.get("/")
-        self.assertEqual(response.get_data(), b"All is well")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.headers.get("Content-Type"), "text/html")
 
 
 class ApplicationTest(tb_test.TestCase):
@@ -320,7 +307,7 @@ class ApplicationTest(tb_test.TestCase):
     def testPluginsListingWithDataProviderListActivePlugins(self):
         prov = FakeDataProvider()
         self.assertIsNotNone(prov.list_plugins)
-        prov.list_plugins = lambda *, experiment_id: ("foo", "bar")
+        prov.list_plugins = lambda ctx, *, experiment_id: ("foo", "bar")
 
         plugins = [
             FakePlugin(plugin_name="foo", is_active_value=False),
@@ -682,6 +669,13 @@ class MakePluginLoaderTest(tb_test.TestCase):
             application.make_plugin_loader(FakePlugin())
 
 
+class HeaderAuthProvider(auth.AuthProvider):
+    """Simple auth provider that returns the `Authorization` header value."""
+
+    def authenticate(self, environ):
+        return environ.get("HTTP_AUTHORIZATION")
+
+
 class TensorBoardPluginsTest(tb_test.TestCase):
     def setUp(self):
         self.context = None
@@ -712,6 +706,7 @@ class TensorBoardPluginsTest(tb_test.TestCase):
                 ),
             ],
             data_provider=FakeDataProvider(),
+            auth_providers={HeaderAuthProvider: HeaderAuthProvider()},
         )
 
         self.server = werkzeug_test.Client(self.app, wrappers.BaseResponse)
@@ -726,7 +721,13 @@ class TensorBoardPluginsTest(tb_test.TestCase):
 
     @wrappers.Request.application
     def _foo_handler(self, request):
-        return wrappers.Response(response="hello world", status=200)
+        ctx = plugin_util.context(request.environ)
+        header_auth = ctx.auth.get(HeaderAuthProvider)
+        if header_auth is None:
+            response = "hello world"
+        else:
+            response = "%s access granted" % (header_auth,)
+        return wrappers.Response(response=response, status=200)
 
     def _bar_handler(self):
         pass
@@ -828,6 +829,17 @@ class TensorBoardPluginsTest(tb_test.TestCase):
         # the fact that 404 is returned demonstrates that the plugin was not
         # consulted.
         self._test_route("/data/plugin/bar/wildcard/", 404)
+
+    def testAuthProviders(self):
+        route = "/data/plugin/foo/foo_route"
+
+        res = self.server.get(route)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.get_data(), b"hello world")
+
+        res = self.server.get(route, headers=[("Authorization", "top secret")])
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.get_data(), b"top secret access granted")
 
 
 if __name__ == "__main__":

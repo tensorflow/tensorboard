@@ -12,22 +12,38 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component} from '@angular/core';
+import {Component, Input} from '@angular/core';
 import {MatDialogRef} from '@angular/material/dialog';
 
 @Component({
-  selector: 'tbdev-upload-dialog',
+  selector: 'tbdev-upload-dialog-component',
   templateUrl: './tbdev_upload_dialog_component.ng.html',
   styleUrls: ['./tbdev_upload_dialog_component.css'],
 })
 export class TbdevUploadDialogComponent {
-  readonly commandText: string = 'tensorboard dev upload --logdir {logdir}';
-
   constructor(
     private readonly dialogRef: MatDialogRef<TbdevUploadDialogComponent>
   ) {}
 
+  @Input()
+  logdir!: string;
+
   onClose(): void {
     this.dialogRef.close();
+  }
+
+  getCommandText(): string {
+    if (!this.logdir) {
+      // Without logdir we print a literal '{logdir}' string that user will
+      // have to manually substitute.
+      return 'tensorboard dev upload --logdir {logdir}';
+    } else {
+      // With logdir we substitute the value into the command for the user.
+      // We assume that logdir is sufficiently long that we want to print it on
+      // the next line. If the logdir value is still too long then the CSS will
+      // render a scrollbar underneath.
+      const escapedLogdir = this.logdir.replace(/'/g, "'\\''");
+      return "tensorboard dev upload --logdir \\\n    '" + escapedLogdir + "'";
+    }
   }
 }

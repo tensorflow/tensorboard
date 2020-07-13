@@ -58,7 +58,7 @@ class Context(object):
         self._max_domain_discrete_len = max_domain_discrete_len
 
     def experiment_from_metadata(
-        self, experiment_id, hparams_run_to_tag_to_content
+        self, ctx, experiment_id, hparams_run_to_tag_to_content
     ):
         """Returns the experiment protobuffer defining the experiment.
 
@@ -83,7 +83,7 @@ class Context(object):
         if experiment:
             return experiment
         return self._compute_experiment_from_runs(
-            experiment_id, hparams_run_to_tag_to_content
+            ctx, experiment_id, hparams_run_to_tag_to_content
         )
 
     @property
@@ -99,7 +99,7 @@ class Context(object):
             for (run, tag_to_time_series) in data_provider_output.items()
         }
 
-    def hparams_metadata(self, experiment_id, run_tag_filter=None):
+    def hparams_metadata(self, ctx, experiment_id, run_tag_filter=None):
         """Reads summary metadata for all hparams time series.
 
         Args:
@@ -113,13 +113,14 @@ class Context(object):
         """
         return self._convert_plugin_metadata(
             self._tb_context.data_provider.list_tensors(
+                ctx,
                 experiment_id=experiment_id,
                 plugin_name=metadata.PLUGIN_NAME,
                 run_tag_filter=run_tag_filter,
             )
         )
 
-    def scalars_metadata(self, experiment_id):
+    def scalars_metadata(self, ctx, experiment_id):
         """Reads summary metadata for all scalar time series.
 
         Args:
@@ -131,12 +132,13 @@ class Context(object):
         """
         return self._convert_plugin_metadata(
             self._tb_context.data_provider.list_scalars(
+                ctx,
                 experiment_id=experiment_id,
                 plugin_name=scalar_metadata.PLUGIN_NAME,
             )
         )
 
-    def read_last_scalars(self, experiment_id, run_tag_filter):
+    def read_last_scalars(self, ctx, experiment_id, run_tag_filter):
         """Reads the most recent values from scalar time series.
 
         Args:
@@ -150,6 +152,7 @@ class Context(object):
           data, which may be a subset of what was requested.
         """
         data_provider_output = self._tb_context.data_provider.read_scalars(
+            ctx,
             experiment_id=experiment_id,
             plugin_name=scalar_metadata.PLUGIN_NAME,
             run_tag_filter=run_tag_filter,
@@ -179,7 +182,7 @@ class Context(object):
         return None
 
     def _compute_experiment_from_runs(
-        self, experiment_id, hparams_run_to_tag_to_content
+        self, ctx, experiment_id, hparams_run_to_tag_to_content
     ):
         """Computes a minimal Experiment protocol buffer by scanning the
         runs."""
@@ -187,7 +190,7 @@ class Context(object):
         if not hparam_infos:
             return None
         metric_infos = self._compute_metric_infos(
-            experiment_id, hparams_run_to_tag_to_content
+            ctx, experiment_id, hparams_run_to_tag_to_content
         )
         return api_pb2.Experiment(
             hparam_infos=hparam_infos, metric_infos=metric_infos
@@ -275,17 +278,17 @@ class Context(object):
         return result
 
     def _compute_metric_infos(
-        self, experiment_id, hparams_run_to_tag_to_content
+        self, ctx, experiment_id, hparams_run_to_tag_to_content
     ):
         return (
             api_pb2.MetricInfo(name=api_pb2.MetricName(group=group, tag=tag))
             for tag, group in self._compute_metric_names(
-                experiment_id, hparams_run_to_tag_to_content
+                ctx, experiment_id, hparams_run_to_tag_to_content
             )
         )
 
     def _compute_metric_names(
-        self, experiment_id, hparams_run_to_tag_to_content
+        self, ctx, experiment_id, hparams_run_to_tag_to_content
     ):
         """Computes the list of metric names from all the scalar (run, tag)
         pairs.
@@ -318,7 +321,9 @@ class Context(object):
             if metadata.SESSION_START_INFO_TAG in tags
         )
         metric_names_set = set()
-        scalars_run_to_tag_to_content = self.scalars_metadata(experiment_id)
+        scalars_run_to_tag_to_content = self.scalars_metadata(
+            ctx, experiment_id
+        )
         for run, tags in scalars_run_to_tag_to_content.items():
             session = _find_longest_parent_path(session_runs, run)
             if not session:

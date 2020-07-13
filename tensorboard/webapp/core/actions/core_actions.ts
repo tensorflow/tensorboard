@@ -13,7 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {createAction, props} from '@ngrx/store';
-import {PluginId, PluginsListing} from '../../types/api';
+import {Environment, PluginId, PluginsListing} from '../../types/api';
+
+import {Run, RunId} from '../types';
 
 // HACK: Below import is for type inference.
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
@@ -54,6 +56,14 @@ export const pluginsListingFailed = createAction(
 );
 
 /**
+ * Action for when Environment data has been loaded from the WebApp server.
+ */
+export const environmentLoaded = createAction(
+  '[Core] Environment Fetch Successful',
+  props<{environment: Environment}>()
+);
+
+/**
  * Action for when user wants to enable/disable reload.
  */
 export const toggleReloadEnabled = createAction('[Core] Reload Enable Toggled');
@@ -72,4 +82,19 @@ export const changeReloadPeriod = createAction(
 export const changePageSize = createAction(
   '[Core] Page Size Change',
   props<{size: number}>()
+);
+
+/**
+ * Action for when user wants to change the runs selection in the tf-runs-selector.
+ *
+ * Action is reserved for the wrapper for the Polymer based tf-runs-selector.
+ */
+export const polymerInteropRunSelectionChanged = createAction(
+  '[Core] Run Selection Changed',
+  props<{nextSelection: RunId[]}>()
+);
+
+export const fetchRunSucceeded = createAction(
+  '[Core] Run Fetch Successful',
+  props<{runs: Run[]}>()
 );

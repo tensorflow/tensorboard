@@ -17,13 +17,19 @@ import {TestBed} from '@angular/core/testing';
 import {provideMockActions} from '@ngrx/effects/testing';
 import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
-import {ReplaySubject, of} from 'rxjs';
+import {Subject, ReplaySubject, of} from 'rxjs';
 
 import {CoreEffects} from './core_effects';
 import * as coreActions from '../actions';
 import {State} from '../../app_state';
 
-import {createPluginMetadata, createState, createCoreState} from '../testing';
+import {
+  createEnvironment,
+  createPluginMetadata,
+  createState,
+  createCoreState,
+} from '../testing';
+import {Run} from '../types';
 
 import {PluginsListing} from '../../types/api';
 import {DataLoadState} from '../../types/data';
@@ -39,9 +45,9 @@ describe('core_effects', () => {
   let coreEffects: CoreEffects;
   let action: ReplaySubject<Action>;
   let store: MockStore<Partial<State>>;
-  let fetchRuns: jasmine.Spy;
-  let fetchEnvironments: jasmine.Spy;
-  let dispatchSpy: jasmine.Spy;
+  let fetchEnvironment: jasmine.Spy;
+  let fetchRunsSubjects: Array<Subject<Array<Run>>>;
+  let recordedActions: Action[] = [];
 
   beforeEach(async () => {
     action = new ReplaySubject<Action>(1);
@@ -66,15 +72,22 @@ describe('core_effects', () => {
     coreEffects = TestBed.inject(CoreEffects);
     httpMock = TestBed.inject(HttpTestingController);
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
-    dispatchSpy = spyOn(store, 'dispatch');
+
+    recordedActions = [];
+    spyOn(store, 'dispatch').and.callFake((action: Action) => {
+      recordedActions.push(action);
+    });
 
     const dataSource = TestBed.inject(TBServerDataSource);
-    fetchRuns = spyOn(dataSource, 'fetchRuns')
+    fetchEnvironment = spyOn(dataSource, 'fetchEnvironment')
       .withArgs()
-      .and.returnValue(of(null));
-    fetchEnvironments = spyOn(dataSource, 'fetchEnvironments')
-      .withArgs()
-      .and.returnValue(of(null));
+      .and.returnValue(of(createEnvironment()));
+    fetchRunsSubjects = [];
+    spyOn(dataSource, 'fetchRuns').and.callFake(() => {
+      const fetchRunSubject = new Subject<Array<Run>>();
+      fetchRunsSubjects.push(fetchRunSubject);
+      return fetchRunSubject;
+    });
 
     store.overrideSelector(getEnabledExperimentalPlugins, []);
   });
@@ -89,16 +102,11 @@ describe('core_effects', () => {
     {specSetName: '#manualReload', onAction: coreActions.manualReload()},
   ].forEach(({specSetName, onAction}) => {
     describe(specSetName, () => {
-      let recordedActions: Action[] = [];
-
       beforeEach(() => {
-        recordedActions = [];
-        coreEffects.loadPluginsListing$.subscribe((action: Action) => {
-          recordedActions.push(action);
-        });
+        coreEffects.fetchWebAppData$.subscribe(() => {});
       });
 
-      it('fetches plugins listing and fires success action', () => {
+      it('fetches webapp data and fires success action', () => {
         store.overrideSelector(getEnabledExperimentalPlugins, []);
         store.refreshState();
 
@@ -107,21 +115,25 @@ describe('core_effects', () => {
         };
 
         action.next(onAction);
+
+        fetchRunsSubjects[0].next([{id: '1', name: 'Run 1'}]);
+        fetchRunsSubjects[0].complete();
         // Flushing the request response invokes above subscription sychronously.
         httpMock.expectOne('data/plugins_listing').flush(pluginsListing);
+        expect(fetchEnvironment).toHaveBeenCalled();
 
-        expect(fetchRuns).toHaveBeenCalled();
-        expect(fetchEnvironments).toHaveBeenCalled();
-
-        expect(dispatchSpy).toHaveBeenCalledTimes(1);
-        expect(dispatchSpy).toHaveBeenCalledWith(
-          coreActions.pluginsListingRequested()
-        );
-
-        const expected = coreActions.pluginsListingLoaded({
-          plugins: pluginsListing,
-        });
-        expect(recordedActions).toEqual([expected]);
+        expect(recordedActions).toEqual([
+          coreActions.pluginsListingRequested(),
+          coreActions.environmentLoaded({
+            environment: createEnvironment(),
+          }),
+          coreActions.fetchRunSucceeded({
+            runs: [{id: '1', name: 'Run 1'}],
+          }),
+          coreActions.pluginsListingLoaded({
+            plugins: pluginsListing,
+          }),
+        ]);
       });
 
       it(
@@ -147,18 +159,22 @@ describe('core_effects', () => {
             )
             .flush(pluginsListing);
 
-          expect(fetchRuns).toHaveBeenCalled();
-          expect(fetchEnvironments).toHaveBeenCalled();
+          fetchRunsSubjects[0].next([{id: '1', name: 'Run 1'}]);
+          fetchRunsSubjects[0].complete();
+          expect(fetchEnvironment).toHaveBeenCalled();
 
-          expect(dispatchSpy).toHaveBeenCalledTimes(1);
-          expect(dispatchSpy).toHaveBeenCalledWith(
-            coreActions.pluginsListingRequested()
-          );
-
-          const expected = coreActions.pluginsListingLoaded({
-            plugins: pluginsListing,
-          });
-          expect(recordedActions).toEqual([expected]);
+          expect(recordedActions).toEqual([
+            coreActions.pluginsListingRequested(),
+            coreActions.environmentLoaded({
+              environment: createEnvironment(),
+            }),
+            coreActions.fetchRunSucceeded({
+              runs: [{id: '1', name: 'Run 1'}],
+            }),
+            coreActions.pluginsListingLoaded({
+              plugins: pluginsListing,
+            }),
+          ]);
         }
       );
 
@@ -183,7 +199,7 @@ describe('core_effects', () => {
         action.next(onAction);
         httpMock.expectNone('data/plugins_listing');
 
-        expect(dispatchSpy).not.toHaveBeenCalled();
+        expect(recordedActions).toEqual([]);
 
         store.setState(
           createState(
@@ -198,11 +214,20 @@ describe('core_effects', () => {
 
         action.next(onAction);
         httpMock.expectOne('data/plugins_listing').flush(pluginsListing);
-
-        const expected = coreActions.pluginsListingLoaded({
-          plugins: pluginsListing,
-        });
-        expect(recordedActions).toEqual([expected]);
+        fetchRunsSubjects[0].next([{id: '1', name: 'Run 1'}]);
+        fetchRunsSubjects[0].complete();
+        expect(recordedActions).toEqual([
+          coreActions.pluginsListingRequested(),
+          coreActions.environmentLoaded({
+            environment: createEnvironment(),
+          }),
+          coreActions.fetchRunSucceeded({
+            runs: [{id: '1', name: 'Run 1'}],
+          }),
+          coreActions.pluginsListingLoaded({
+            plugins: pluginsListing,
+          }),
+        ]);
 
         store.setState(
           createState(
