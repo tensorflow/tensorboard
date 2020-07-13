@@ -108,18 +108,17 @@ class ScalarsPlugin(base_plugin.TBPlugin):
         result = {}
         for run in all_scalars:
             scalars = all_scalars.get(run, {}).get(tag, [])
-            # if scalars is None:
-            #     raise errors.NotFoundError(
-            #         "No scalar data for run=%r, tag=%r" % (run, tag)
-            #     )
+            # Note we do not raise an error if data for a given run was not
+            # found; we just return an empty array in that case.
             values = [(x.wall_time, x.step, x.value) for x in scalars]
             result[run] = values
 
         if output_format == OutputFormat.CSV:
-            if(runs.length > 1):
+            if runs.length > 1:
                 raise errors.InvalidArgumentError(
                     "Not implemented: Return CSV data for more than one run "
-                    "at a time.")
+                    "at a time."
+                    )
             string_io = StringIO()
             writer = csv.writer(string_io)
             writer.writerow(["Wall time", "Step", "Value"])
