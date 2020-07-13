@@ -42,7 +42,7 @@ def _missing_run_error_response(request):
     return _error_response(request, "run parameter is not provided")
 
 
-class NPMIPlugin(base_plugin.TBPlugin):
+class NpmiPlugin(base_plugin.TBPlugin):
     """nPMI Plugin for Tensorboard."""
 
     plugin_name = "npmi"
@@ -53,7 +53,7 @@ class NPMIPlugin(base_plugin.TBPlugin):
         Args:
             context: A base_plugin.TBContext instance.
         """
-        super(NPMIPlugin, self).__init__(context)
+        super(NpmiPlugin, self).__init__(context)
         self._logdir = context.logdir
         self._multiplexer = context.multiplexer
 

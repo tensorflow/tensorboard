@@ -33,13 +33,12 @@ from tensorboard.backend.event_processing import (
 from tensorboard.plugins import base_plugin
 from tensorboard.webapp.plugins.npmi import npmi_plugin
 from tensorboard.webapp.plugins.npmi import summary
-from tensorboard.util import test_util
 
 
 tf.compat.v1.enable_v2_behavior()
 
 
-class NPMIPluginTest(tf.test.TestCase):
+class NpmiPluginTest(tf.test.TestCase):
     def setUp(self):
         self.logdir = self.get_temp_dir()
 
@@ -59,7 +58,7 @@ class NPMIPluginTest(tf.test.TestCase):
             logdir=self.logdir, multiplexer=multiplexer, data_provider=provider
         )
 
-        return npmi_plugin.NPMIPlugin(ctx)
+        return npmi_plugin.NpmiPlugin(ctx)
 
     def generate_testdata(self):
         run_names = ["run_1", "run_2"]

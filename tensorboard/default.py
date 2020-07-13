@@ -75,10 +75,10 @@ class ExperimentalTextV2Plugin(
     pass
 
 
-class ExperimentalNPMIPlugin(
-    npmi_plugin.NPMIPlugin, experimental_plugin.ExperimentalPlugin
+class ExperimentalNpmiPlugin(
+    npmi_plugin.NpmiPlugin, experimental_plugin.ExperimentalPlugin
 ):
-    """Angular NPMI Plugin marked as experimental."""
+    """Angular nPMI Plugin marked as experimental."""
 
     pass
 
