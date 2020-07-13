@@ -1,6 +1,7 @@
 # Description:
 # TensorBoard nPMI Plugin: A plugin for inspecting nPMI calculations for trained
-# models.
+# models. nPMI is a technique presented in a paper (https://svn.spraakdata.gu.se/repos/gerlof/pub/www/Docs/npmi-pfd.pdfhttps://svn.spraakdata.gu.se/repos/gerlof/pub/www/Docs/npmi-pfd.pdf)
+# presented by Gerlof Bouma.
 
 package(default_visibility = ["//tensorboard:internal"])
 
