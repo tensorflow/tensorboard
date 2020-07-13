@@ -196,7 +196,7 @@ limitations under the License.
       observers: ['_optionsOrSessionGroupsChanged(options.*, sessionGroups.*)'],
 
       _optionsOrSessionGroupsChanged() {
-        if (this.options === null) {
+        if (this.options == null) {
           return;
         }
         const configuration = this.options.configuration;

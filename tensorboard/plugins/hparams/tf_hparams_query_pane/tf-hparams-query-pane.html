@@ -447,6 +447,24 @@ TODO(erez): Add aggregation controls for repeated sessions.
           notify: true,
         },
 
+        // We track both "data found" and "data not found", because this
+        // makes it expedient to display nothing until the initial fetch is
+        // complete.  In the absence of this "undefined" case, we would end up
+        // briefly displaying the "no data" message before the data arrives.
+        // Note that, in the context of a dom-if condition, we cannot easily
+        // distinguish between false and undefined.
+        dataFound: {
+          type: Boolean,
+          value: false,
+          notify: true,
+        },
+
+        noDataFound: {
+          type: Boolean,
+          value: false,
+          notify: true,
+        },
+
         // ---- Private properties --------------------------------------------
         // The experiment object returned by the backend. See the definition of
         // the Experiment protocol buffer in api.proto.
@@ -617,17 +635,36 @@ TODO(erez): Add aggregation controls for repeated sessions.
         const experimentRequest = {
           experimentName: this.experimentName,
         };
-        this.backend.getExperiment(experimentRequest).then((experiment) => {
-          if (_.isEqual(experiment, this._experiment)) {
-            // No need to update anything if there are no changes.
-            return;
-          }
-          this.set('_experiment', experiment);
-          this._computeHParams();
-          this._computeMetrics();
-          this._queryServer();
-          this._resolveGetExperiment();
-        });
+        this.backend
+          .getExperiment(experimentRequest)
+          .then((experiment) => {
+            if (_.isEqual(experiment, this._experiment)) {
+              // No need to update anything if there are no changes.
+              return;
+            }
+            this.set('_experiment', experiment);
+            // Doing this immediately, not only in finally(), allows the
+            // parent template to start rendering the results table before the
+            // table contents have been fetched.
+            this._computeDataFound();
+            this._computeHParams();
+            this._computeMetrics();
+            this._queryServer();
+            this._resolveGetExperiment();
+          })
+          .finally(() => {
+            this._computeDataFound();
+          });
+      },
+
+      _computeDataFound() {
+        const result = Boolean(
+          this._experiment &&
+            this._experiment.hparamInfos &&
+            this._experiment.hparamInfos.length > 0
+        );
+        this.set('dataFound', result);
+        this.set('noDataFound', !result);
       },
 
       // Updates the _hparams property from the _experiment property.
@@ -765,6 +802,9 @@ TODO(erez): Add aggregation controls for repeated sessions.
       // above. Returns a promise, for use in unit-tests, that resolves (with
       // 'undefined') when the ListSessionGroups RPC returns.
       _queryServerNoDebounce() {
+        if (!this._hparams) {
+          return null;
+        }
         return this._sendListSessionGroupsRequest().then(
           this._listSessionGroupsCanceller.cancellable(({value, cancelled}) => {
             if (cancelled) {
