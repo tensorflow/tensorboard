@@ -20,8 +20,6 @@ from __future__ import print_function
 
 import json
 import six
-import numpy as np
-from pathlib import Path
 from werkzeug import wrappers
 import werkzeug
 

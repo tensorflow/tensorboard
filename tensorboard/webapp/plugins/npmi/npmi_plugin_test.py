@@ -22,7 +22,6 @@ from __future__ import print_function
 import collections.abc
 import os
 import json
-import numpy as np
 import tensorflow as tf
 
 from tensorboard import plugin_util
