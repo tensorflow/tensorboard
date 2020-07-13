@@ -94,7 +94,8 @@ class NpmiPluginTest(tf.test.TestCase):
                         if col_index == 0:
                             python_annotations.append(column)
                         else:
-                            python_result[len(python_result) - 1].append(column)
+                            python_result[len(python_result) -
+                                          1].append(column)
             with writer.as_default():
                 tensor_result = tf.convert_to_tensor(python_result)
                 tensor_annotations = tf.convert_to_tensor(python_annotations)
@@ -114,7 +115,7 @@ class NpmiPluginTest(tf.test.TestCase):
 
     def testTags(self):
         plugin = self.create_plugin()
-        tags = plugin.tags_impl()
+        tags = plugin.tags_impl(context.RequestContext(), experiment="exp")
         tags = json.loads(tags)
         gt_runs = ["run_1", "run_2"]
         gt_tags = ["metric_annotations", "metric_classes", "metric_results"]

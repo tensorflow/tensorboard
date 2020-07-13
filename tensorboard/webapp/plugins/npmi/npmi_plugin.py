@@ -82,16 +82,17 @@ class NpmiPlugin(base_plugin.TBPlugin):
             is_ng_component=True, tab_name="npmi", disable_reload=True
         )
 
-    def tags_impl(self):
-        mapping = self._multiplexer.PluginRunToTagToContent(self.plugin_name)
-        result = {run: {} for run in self._multiplexer.Runs()}
+    def tags_impl(self, ctx, experiment):
+        mapping = self._data_provider.list_tensors(
+            ctx, experiment_id=experiment, plugin_name=self.plugin_name
+        )
+        print(mapping)
+        result = {run: {} for run in mapping}
         for (run, tag_to_content) in six.iteritems(mapping):
-            for tag in tag_to_content:
-                summary_metadata = self._multiplexer.SummaryMetadata(run, tag)
+            for tag, metadatum in tag_to_content:
+                content = metadata.parse_plugin_metadata(metadatum.content)
                 result[run][tag] = {
-                    "table": summary_metadata.plugin_data.content.decode(
-                        "utf-8"
-                    )
+                    "table": content.title
                 }
         contents = json.dumps(result, sort_keys=True)
         return contents
@@ -132,22 +133,24 @@ class NpmiPlugin(base_plugin.TBPlugin):
         contents = json.dumps(result, cls=safe_encoder.SafeEncoder)
         return contents
 
-    @wrappers.Request.application
+    @ wrappers.Request.application
     def serve_tags(self, request):
-        contents = self.tags_impl()
+        ctx = plugin_util.context(request.environ)
+        experiment = plugin_util.experiment_id(request.environ)
+        contents = self.tags_impl(ctx, experiment=experiment)
         return http_util.Respond(request, contents, "application/json")
 
-    @wrappers.Request.application
+    @ wrappers.Request.application
     def serve_annotations(self, request):
         contents = self.annotations_impl()
         return http_util.Respond(request, contents, "application/json")
 
-    @wrappers.Request.application
+    @ wrappers.Request.application
     def serve_metrics(self, request):
         contents = self.metrics_impl()
         return http_util.Respond(request, contents, "application/json")
 
-    @wrappers.Request.application
+    @ wrappers.Request.application
     def serve_values(self, request):
         contents = self.values_impl()
         return http_util.Respond(request, contents, "application/json")
