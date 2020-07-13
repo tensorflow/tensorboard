@@ -118,7 +118,7 @@ class ScalarsPlugin(base_plugin.TBPlugin):
                 raise errors.InvalidArgumentError(
                     "Not implemented: Return CSV data for more than one run "
                     "at a time."
-                    )
+                )
             string_io = StringIO()
             writer = csv.writer(string_io)
             writer.writerow(["Wall time", "Step", "Value"])
@@ -156,7 +156,9 @@ class ScalarsPlugin(base_plugin.TBPlugin):
                     json_runs,
                     e,
                 )
-                return http_util.Respond(request, response, "text/plain", code=400)
+                return http_util.Respond(
+                    request, response, "text/plain", code=400
+                )
 
         ctx = plugin_util.context(request.environ)
         experiment = plugin_util.experiment_id(request.environ)
