@@ -69,7 +69,8 @@ class SafeEncoder(json.JSONEncoder):
             if not allow_nan:
                 raise ValueError(
                     "Out of range float values are not JSON compliant: "
-                    + repr(o))
+                    + repr(o)
+                )
             return text
 
         _iterencode = json.encoder._make_iterencode(
