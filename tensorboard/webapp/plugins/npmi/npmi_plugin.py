@@ -103,7 +103,7 @@ class NpmiPlugin(base_plugin.TBPlugin):
                 tensor.decode("utf-8")
                 for tensor in tensor_util.make_ndarray(event.tensor_proto)
             ]
-            result[run] = {"annotations": event_data}
+            result[run] = event_data
         contents = json.dumps(result)
         return contents
 
@@ -116,7 +116,7 @@ class NpmiPlugin(base_plugin.TBPlugin):
                 tensor.decode("utf-8")
                 for tensor in tensor_util.make_ndarray(event.tensor_proto)
             ]
-            result[run] = {"metrics": event_data}
+            result[run] = event_data
         contents = json.dumps(result)
         return contents
 
@@ -126,7 +126,7 @@ class NpmiPlugin(base_plugin.TBPlugin):
         for (run, _) in six.iteritems(mapping):
             event = self._multiplexer.Tensors(run, "metric_results")[0]
             event_data = tensor_util.make_ndarray(event.tensor_proto).tolist()
-            result[run] = {"values": event_data}
+            result[run] = event_data
         contents = json.dumps(result)
         # This is ugly, but there should never be a NaN string to break this
         contents = contents.replace("NaN", "null")

@@ -135,28 +135,24 @@ class NpmiPluginTest(tf.test.TestCase):
         plugin = self.create_plugin()
         annotations = plugin.annotations_impl()
         annotations = json.loads(annotations)
-        self.assertItemsEqual(
-            ["name_1", "name_2"], annotations["run_1"]["annotations"]
-        )
-        self.assertItemsEqual(
-            ["name_1", "name_2"], annotations["run_2"]["annotations"]
-        )
+        self.assertItemsEqual(["name_1", "name_2"], annotations["run_1"])
+        self.assertItemsEqual(["name_1", "name_2"], annotations["run_2"])
 
     def testMetrics(self):
         plugin = self.create_plugin()
         metrics = plugin.metrics_impl()
         metrics = json.loads(metrics)
-        self.assertItemsEqual(["A", "B"], metrics["run_1"]["metrics"])
-        self.assertItemsEqual(["A", "B"], metrics["run_2"]["metrics"])
+        self.assertItemsEqual(["A", "B"], metrics["run_1"])
+        self.assertItemsEqual(["A", "B"], metrics["run_2"])
 
     def testValues(self):
         plugin = self.create_plugin()
         values = plugin.values_impl()
         values = json.loads(values)
-        self.assertItemsEqual([1.0, -1.0], values["run_1"]["values"][0])
-        self.assertItemsEqual([0.5, -0.5], values["run_1"]["values"][1])
-        self.assertItemsEqual([1.0, -1.0], values["run_2"]["values"][0])
-        self.assertItemsEqual([0.5, -0.5], values["run_2"]["values"][1])
+        self.assertItemsEqual([1.0, -1.0], values["run_1"][0])
+        self.assertItemsEqual([0.5, -0.5], values["run_1"][1])
+        self.assertItemsEqual([1.0, -1.0], values["run_2"][0])
+        self.assertItemsEqual([0.5, -0.5], values["run_2"][1])
 
     def testIsActiveReturnsFalse(self):
         """The plugin should always return false because this is now handled
