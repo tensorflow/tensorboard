@@ -44,7 +44,7 @@ def npmi_metrics(title, tensor, step=None, description=None):
         `tf.summary.experimental.get_step()` is None.
     """
     with tf.summary.experimental.summary_scope(
-        'metric_classes', title, values=[tensor, step],
+        "metric_classes", title, values=[tensor, step],
     ) as (tag, _):
         return tf.summary.write(
             tag=tag,
@@ -77,7 +77,7 @@ def npmi_annotations(title, tensor, step=None, description=None):
         `tf.summary.experimental.get_step()` is None.
     """
     with tf.summary.experimental.summary_scope(
-        'metric_annotations', title, values=[tensor, step],
+        "metric_annotations", title, values=[tensor, step],
     ) as (tag, _):
         return tf.summary.write(
             tag=tag,
@@ -111,7 +111,7 @@ def npmi_values(title, tensor, step=None, description=None):
         `tf.summary.experimental.get_step()` is None.
     """
     with tf.summary.experimental.summary_scope(
-        'metric_results', title, values=[tensor, step],
+        "metric_results", title, values=[tensor, step],
     ) as (tag, _):
         return tf.summary.write(
             tag=tag,

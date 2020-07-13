@@ -47,8 +47,8 @@ py_library(
         "//visibility:public",
     ],
     deps = [
-      "//tensorboard/compat",
-      "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/compat",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
     ],
 )
 
