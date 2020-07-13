@@ -162,7 +162,7 @@ limitations under the License.
               <template>
                 <tf-scalar-card
                   active="[[active]]"
-                  data-to-load="[[item.series]]"
+                  tag-and-runs="[[item]]"
                   ignore-y-outliers="[[_ignoreYOutliers]]"
                   multi-experiments="[[_getMultiExperiments(dataSelection)]]"
                   request-manager="[[_requestManager]]"
@@ -361,6 +361,7 @@ limitations under the License.
         categories.forEach((category) => {
           category.items = category.items.map((item) => ({
             tag: item.tag,
+            runs: item.runs,
             series: item.runs.map((run) => ({run, tag: item.tag})),
           }));
         });

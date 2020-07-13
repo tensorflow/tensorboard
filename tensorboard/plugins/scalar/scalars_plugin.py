@@ -24,6 +24,7 @@ from __future__ import print_function
 
 import collections
 import csv
+import json
 
 import six
 from six import StringIO
@@ -95,29 +96,37 @@ class ScalarsPlugin(base_plugin.TBPlugin):
                 }
         return result
 
-    def scalars_impl(self, ctx, tag, run, experiment, output_format):
+    def scalars_impl(self, ctx, tag, runs, experiment, output_format):
         """Result of the form `(body, mime_type)`."""
         all_scalars = self._data_provider.read_scalars(
             ctx,
             experiment_id=experiment,
             plugin_name=metadata.PLUGIN_NAME,
             downsample=self._downsample_to,
-            run_tag_filter=provider.RunTagFilter(runs=[run], tags=[tag]),
+            run_tag_filter=provider.RunTagFilter(runs=runs, tags=[tag]),
         )
-        scalars = all_scalars.get(run, {}).get(tag, None)
-        if scalars is None:
-            raise errors.NotFoundError(
-                "No scalar data for run=%r, tag=%r" % (run, tag)
-            )
-        values = [(x.wall_time, x.step, x.value) for x in scalars]
+        result = {}
+        for run in all_scalars:
+            scalars = all_scalars.get(run, {}).get(tag, [])
+            # if scalars is None:
+            #     raise errors.NotFoundError(
+            #         "No scalar data for run=%r, tag=%r" % (run, tag)
+            #     )
+            values = [(x.wall_time, x.step, x.value) for x in scalars]
+            result[run] = values
+
         if output_format == OutputFormat.CSV:
+            if(runs.length > 1):
+                raise errors.InvalidArgumentError(
+                    "Not implemented: Return CSV data for more than one run "
+                    "at a time.")
             string_io = StringIO()
             writer = csv.writer(string_io)
             writer.writerow(["Wall time", "Step", "Value"])
             writer.writerows(values)
             return (string_io.getvalue(), "text/csv")
         else:
-            return (values, "application/json")
+            return (json.dumps(result), "application/json")
 
     @wrappers.Request.application
     def tags_route(self, request):
@@ -129,12 +138,31 @@ class ScalarsPlugin(base_plugin.TBPlugin):
     @wrappers.Request.application
     def scalars_route(self, request):
         """Given a tag and single run, return array of ScalarEvents."""
-        tag = request.args.get("tag")
-        run = request.args.get("run")
+        if request.method == "GET":
+            tag = request.args.get("tag")
+            run = request.args.get("run")
+            runs = [run]
+        else:
+            tag = request.form["tag"]
+            json_runs = request.form["runs"]
+            try:
+                runs = json.loads(json_runs)
+            except Exception as e:  # pylint: disable=broad-except
+                # Different JSON libs raise different exceptions, so we just do a
+                # catch-all here. This problem is complicated by how Tensorboard might be
+                # run in many different environments, as it is open-source.
+                # TODO(@caisq, @chihuahua): Create platform-dependent adapter to catch
+                # specific types of exceptions, instead of the broad catching here.
+                response = ("Could not decode runs JSON string %r: %s") % (
+                    json_runs,
+                    e,
+                )
+                return http_util.Respond(request, response, "text/plain", code=400)
+
         ctx = plugin_util.context(request.environ)
         experiment = plugin_util.experiment_id(request.environ)
         output_format = request.args.get("format")
         (body, mime_type) = self.scalars_impl(
-            ctx, tag, run, experiment, output_format
+            ctx, tag, runs, experiment, output_format
         )
         return http_util.Respond(request, body, mime_type)

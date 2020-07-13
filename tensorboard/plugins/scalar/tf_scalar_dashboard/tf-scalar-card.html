@@ -45,8 +45,8 @@ limitations under the License.
       <tf-line-chart-data-loader
         active="[[active]]"
         color-scale="[[_getColorScale(colorScale)]]"
-        data-series="[[_getDataSeries(dataToLoad.*)]]"
-        data-to-load="[[dataToLoad]]"
+        data-series="[[_getDataSeries(tagAndRuns.series)]]"
+        data-to-load="[[_asSingletonArray(tagAndRuns)]]"
         get-data-load-name="[[_getDataLoadName]]"
         get-data-load-url="[[getDataLoadUrl]]"
         request-data="[[requestData]]"
@@ -102,7 +102,7 @@ limitations under the License.
       <template is="dom-if" if="[[showDownloadLinks]]">
         <div class="download-links">
           <tf-downloader
-            runs="[[_runsFromData(dataToLoad)]]"
+            runs="[[_runsFromData(tagAndRuns.series)]]"
             tag="[[tag]]"
             url-fn="[[_downloadUrlFn]]"
           ></tf-downloader>
@@ -191,7 +191,9 @@ limitations under the License.
         /**
          * @type {Array<Object>}
          */
-        dataToLoad: Array,
+        // dataToLoad: Array,
+
+        tagAndRuns: Object,
 
         /**
          * @type {vz_chart_helpers.XType}
@@ -218,14 +220,17 @@ limitations under the License.
           type: Object,
           value: function() {
             return (scalarChart, datum, data) => {
-              const formattedData = data.map((datum) => ({
-                wall_time: new Date(datum[0] * 1000),
-                step: datum[1],
-                scalar: datum[2],
-              }));
-              const name = this._getSeriesNameFromDatum(datum);
-              scalarChart.setSeriesMetadata(name, datum);
-              scalarChart.setSeriesData(name, formattedData);
+              for (const run in data) {
+                const points = data[run];
+                const formattedData = points.map((point) => ({
+                  wall_time: new Date(point[0] * 1000),
+                  step: point[1],
+                  scalar: point[2],
+                }));
+                const name = this._getSeriesNameForRun(run, datum.experiment);
+                scalarChart.setSeriesMetadata(name, {run, tag: datum.tag});
+                scalarChart.setSeriesData(name, formattedData);
+              }
               scalarChart.commitChanges();
             };
           },
@@ -235,14 +240,12 @@ limitations under the License.
         getDataLoadUrl: {
           type: Function,
           value: function() {
-            return ({tag, run}) => {
-              return tf_backend
+            return ({tag, runs}) => {
+              const url = tf_backend
                 .getRouter()
-                .pluginRoute(
-                  'scalars',
-                  '/scalars',
-                  new URLSearchParams({tag, run})
-                );
+                .pluginRoute('scalars', '/scalars');
+              const postdata = {tag, runs: JSON.stringify(runs)};
+              return [url, postdata];
             };
           },
         },
@@ -266,7 +269,7 @@ limitations under the License.
         _getDataLoadName: {
           type: Function,
           value: function() {
-            return (datum) => this._getSeriesNameFromDatum(datum);
+            return (datum) => datum.tag;
           },
         },
 
@@ -325,10 +328,12 @@ limitations under the License.
         return data.map((datum) => datum.run);
       },
       _getDataSeries() {
-        return this.dataToLoad.map((d) => this._getSeriesNameFromDatum(d));
+        return this.tagAndRuns.series.map((d) =>
+          this._getSeriesNameForRun(d.run, d.experiment)
+        );
       },
       // name is a stable identifier for a series.
-      _getSeriesNameFromDatum({run, experiment = {name: '_default'}}) {
+      _getSeriesNameForRun(run, experiment = {name: '_default'}) {
         return JSON.stringify([experiment.name, run]);
       },
       // title is a visible string of a series for the UI.
@@ -347,6 +352,9 @@ limitations under the License.
             return tf_color_scale.runsColorScale(run);
           },
         };
+      },
+      _asSingletonArray(x) {
+        return [x];
       },
     });
   </script>
