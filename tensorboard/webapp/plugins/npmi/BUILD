@@ -12,6 +12,7 @@ py_library(
     srcs = ["npmi_plugin.py"],
     srcs_version = "PY2AND3",
     deps = [
+        ":safe_encoder",
         "//tensorboard:errors",
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
@@ -61,6 +62,29 @@ py_test(
         ":summary",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/compat",
+        "//tensorboard/util:test_util",
+    ],
+)
+
+py_library(
+    name = "safe_encoder",
+    srcs = ["safe_encoder.py"],
+    srcs_version = "PY2AND3",
+    visibility = [
+        "//visibility:public",
+    ],
+    deps = [
+    ],
+)
+
+py_test(
+    name = "safe_encoder_test",
+    size = "small",
+    srcs = ["safe_encoder_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":safe_encoder",
+        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/util:test_util",
     ],
 )

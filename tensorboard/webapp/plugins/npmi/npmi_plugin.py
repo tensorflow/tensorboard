@@ -29,6 +29,8 @@ from tensorboard.util import tensor_util
 from tensorboard.plugins import base_plugin
 from tensorboard.backend import http_util
 
+from tensorboard.webapp.plugins.npmi import safe_encoder
+
 
 def _error_response(request, error_message):
     return http_util.Respond(
@@ -125,9 +127,7 @@ class NpmiPlugin(base_plugin.TBPlugin):
             event = self._multiplexer.Tensors(run, "metric_results")[0]
             event_data = tensor_util.make_ndarray(event.tensor_proto).tolist()
             result[run] = event_data
-        contents = json.dumps(result)
-        # This is ugly, but there should never be a NaN string to break this
-        contents = contents.replace("NaN", "null")
+        contents = json.dumps(result, cls=safe_encoder.SafeEncoder)
         return contents
 
     @wrappers.Request.application
