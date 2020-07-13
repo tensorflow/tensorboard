@@ -84,8 +84,10 @@ py_test(
 py_library(
     name = "auth",
     srcs = ["auth.py"],
-    srcs_version = "PY3",
-    deps = [],
+    srcs_version = "PY2AND3",
+    deps = [
+        "@org_pythonhosted_six",
+    ],
 )
 
 py_test(
@@ -96,6 +98,28 @@ py_test(
     tags = ["support_notf"],
     deps = [
         ":auth",
+        "//tensorboard:test",
+    ],
+)
+
+py_library(
+    name = "context",
+    srcs = ["context.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":auth",
+    ],
+)
+
+py_test(
+    name = "context_test",
+    size = "small",
+    srcs = ["context_test.py"],
+    srcs_version = "PY3",
+    tags = ["support_notf"],
+    deps = [
+        ":auth",
+        ":context",
         "//tensorboard:test",
     ],
 )
@@ -512,6 +536,7 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
+        ":context",
         "//tensorboard/backend:experiment_id",
         "@org_mozilla_bleach",
         "@org_pythonhosted_markdown",
@@ -526,6 +551,7 @@ py_test(
     srcs_version = "PY2AND3",
     tags = ["support_notf"],
     deps = [
+        ":context",
         ":plugin_util",
         ":test",
         "//tensorboard/backend:experiment_id",

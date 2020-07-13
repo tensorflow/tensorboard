@@ -77,14 +77,14 @@ class DistributionsPlugin(base_plugin.TBPlugin):
             element_name="tf-distribution-dashboard",
         )
 
-    def distributions_impl(self, tag, run, experiment):
+    def distributions_impl(self, ctx, tag, run, experiment):
         """Result of the form `(body, mime_type)`.
 
         Raises:
           tensorboard.errors.PublicError: On invalid request.
         """
         (histograms, mime_type) = self._histograms_plugin.histograms_impl(
-            tag, run, experiment=experiment, downsample_to=self.SAMPLE_SIZE
+            ctx, tag, run, experiment=experiment, downsample_to=self.SAMPLE_SIZE
         )
         return (
             [self._compress(histogram) for histogram in histograms],
@@ -96,23 +96,25 @@ class DistributionsPlugin(base_plugin.TBPlugin):
         converted_buckets = compressor.compress_histogram(buckets)
         return [wall_time, step, converted_buckets]
 
-    def index_impl(self, experiment):
-        return self._histograms_plugin.index_impl(experiment=experiment)
+    def index_impl(self, ctx, experiment):
+        return self._histograms_plugin.index_impl(ctx, experiment=experiment)
 
     @wrappers.Request.application
     def tags_route(self, request):
+        ctx = plugin_util.context(request.environ)
         experiment = plugin_util.experiment_id(request.environ)
-        index = self.index_impl(experiment=experiment)
+        index = self.index_impl(ctx, experiment=experiment)
         return http_util.Respond(request, index, "application/json")
 
     @wrappers.Request.application
     def distributions_route(self, request):
         """Given a tag and single run, return an array of compressed
         histograms."""
+        ctx = plugin_util.context(request.environ)
         experiment = plugin_util.experiment_id(request.environ)
         tag = request.args.get("tag")
         run = request.args.get("run")
         (body, mime_type) = self.distributions_impl(
-            tag, run, experiment=experiment
+            ctx, tag, run, experiment=experiment
         )
         return http_util.Respond(request, body, mime_type)

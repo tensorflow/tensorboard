@@ -143,17 +143,18 @@ class TextV2Plugin(base_plugin.TBPlugin):
         """
         return False  # `list_plugins` as called by TB core suffices
 
-    def index_impl(self, experiment):
+    def index_impl(self, ctx, experiment):
         mapping = self._data_provider.list_tensors(
-            experiment_id=experiment, plugin_name=metadata.PLUGIN_NAME,
+            ctx, experiment_id=experiment, plugin_name=metadata.PLUGIN_NAME,
         )
         return {
             run: list(tag_to_content)
             for (run, tag_to_content) in six.iteritems(mapping)
         }
 
-    def text_impl(self, run, tag, experiment):
+    def text_impl(self, ctx, run, tag, experiment):
         all_text = self._data_provider.read_tensors(
+            ctx,
             experiment_id=experiment,
             plugin_name=metadata.PLUGIN_NAME,
             downsample=self._downsample_to,
@@ -166,16 +167,18 @@ class TextV2Plugin(base_plugin.TBPlugin):
 
     @wrappers.Request.application
     def text_route(self, request):
+        ctx = plugin_util.context(request.environ)
         experiment = plugin_util.experiment_id(request.environ)
         run = request.args.get("run")
         tag = request.args.get("tag")
-        response = self.text_impl(run, tag, experiment)
+        response = self.text_impl(ctx, run, tag, experiment)
         return http_util.Respond(request, response, "application/json")
 
     @wrappers.Request.application
     def tags_route(self, request):
+        ctx = plugin_util.context(request.environ)
         experiment = plugin_util.experiment_id(request.environ)
-        index = self.index_impl(experiment)
+        index = self.index_impl(ctx, experiment)
         return http_util.Respond(request, index, "application/json")
 
     def get_plugin_apps(self):

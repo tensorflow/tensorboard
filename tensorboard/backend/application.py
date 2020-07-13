@@ -36,6 +36,8 @@ from werkzeug import wrappers
 
 from tensorboard import errors
 from tensorboard import plugin_util
+from tensorboard import auth
+from tensorboard import context
 from tensorboard.backend import empty_path_redirect
 from tensorboard.backend import experiment_id
 from tensorboard.backend import experimental_plugin
@@ -68,6 +70,7 @@ def TensorBoardWSGIApp(
     data_provider=None,
     assets_zip_provider=None,
     deprecated_multiplexer=None,
+    auth_providers=None,
 ):
     """Constructs a TensorBoard WSGI app from plugins and data providers.
 
@@ -85,6 +88,9 @@ def TensorBoardWSGIApp(
       deprecated_multiplexer: Optional `plugin_event_multiplexer.EventMultiplexer`
           to use for any plugins not yet enabled for the DataProvider API.
           Required if the data_provider argument is not passed.
+      auth_providers: Optional mapping whose values are `AuthProvider` values
+        and whose keys are used by (e.g.) data providers to specify
+        `AuthProvider`s via the `AuthContext.get` interface. Defaults to `{}`.
 
     Returns:
       A WSGI application that implements the TensorBoard backend.
@@ -126,7 +132,11 @@ def TensorBoardWSGIApp(
             experimental_plugins.append(plugin.plugin_name)
         plugin_name_to_instance[plugin.plugin_name] = plugin
     return TensorBoardWSGI(
-        tbplugins, flags.path_prefix, data_provider, experimental_plugins
+        tbplugins,
+        flags.path_prefix,
+        data_provider,
+        experimental_plugins,
+        auth_providers,
     )
 
 
@@ -163,6 +173,7 @@ class TensorBoardWSGI(object):
         path_prefix="",
         data_provider=None,
         experimental_plugins=None,
+        auth_providers=None,
     ):
         """Constructs TensorBoardWSGI instance.
 
@@ -176,6 +187,10 @@ class TensorBoardWSGI(object):
               experimentally. The corresponding plugins will only be activated for
               a user if the user has specified the plugin with the experimentalPlugin
               query parameter in the URL.
+          auth_providers: Optional mapping whose values are `AuthProvider`
+            values and whose keys are used by (e.g.) data providers to specify
+            `AuthProvider`s via the `AuthContext.get` interface.
+            Defaults to `{}`.
 
         Returns:
           A WSGI application for the set of all TBPlugin instances.
@@ -194,6 +209,7 @@ class TensorBoardWSGI(object):
         self._path_prefix = path_prefix
         self._data_provider = data_provider
         self._experimental_plugins = frozenset(experimental_plugins or ())
+        self._auth_providers = auth_providers or {}
         if self._path_prefix.endswith("/"):
             # Should have been fixed by `fix_flags`.
             raise ValueError(
@@ -296,6 +312,7 @@ class TensorBoardWSGI(object):
     def _create_wsgi_app(self):
         """Apply middleware to create the final WSGI app."""
         app = self._route_request
+        app = _auth_context_middleware(app, self._auth_providers)
         app = empty_path_redirect.EmptyPathRedirectMiddleware(app)
         app = experiment_id.ExperimentIdMiddleware(app)
         app = path_prefix.PathPrefixMiddleware(app, self._path_prefix)
@@ -370,9 +387,11 @@ class TensorBoardWSGI(object):
           A werkzeug.Response object.
         """
         response = collections.OrderedDict()
+        ctx = plugin_util.context(request.environ)
         eid = plugin_util.experiment_id(request.environ)
         plugins_with_data = frozenset(
-            self._data_provider.list_plugins(experiment_id=eid) or frozenset()
+            self._data_provider.list_plugins(ctx, experiment_id=eid)
+            or frozenset()
             if self._data_provider is not None
             else frozenset()
         )
@@ -537,6 +556,17 @@ def _handling_errors(wsgi_app):
             return error_app(environ, start_response)
         # Let other exceptions be handled by the server, as an opaque
         # internal server error.
+
+    return wrapper
+
+
+def _auth_context_middleware(wsgi_app, auth_providers):
+    def wrapper(environ, start_response):
+        environ = dict(environ)
+        auth_ctx = auth.AuthContext(auth_providers, environ)
+        ctx = context.from_environ(environ).replace(auth=auth_ctx)
+        context.set_in_environ(environ, ctx)
+        return wsgi_app(environ, start_response)
 
     return wrapper
 

@@ -16,6 +16,7 @@ py_library(
         ":graph_util",
         ":keras_util",
         ":metadata",
+        "//tensorboard:context",
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
         "//tensorboard/backend:process_graph",
@@ -43,6 +44,7 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         ":graphs_plugin",
+        "//tensorboard:context",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend/event_processing:data_provider",
         "//tensorboard/backend/event_processing:event_multiplexer",

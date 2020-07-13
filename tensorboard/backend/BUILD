@@ -63,6 +63,8 @@ py_library(
         ":http_util",
         ":path_prefix",
         ":security_validator",
+        "//tensorboard:auth",
+        "//tensorboard:context",
         "//tensorboard:errors",
         "//tensorboard:plugin_util",
         "//tensorboard/plugins/core:core_plugin",
@@ -80,6 +82,7 @@ py_test(
     tags = ["support_notf"],
     deps = [
         ":application",
+        "//tensorboard:auth",
         "//tensorboard:errors",
         "//tensorboard:plugin_util",
         "//tensorboard:test",
