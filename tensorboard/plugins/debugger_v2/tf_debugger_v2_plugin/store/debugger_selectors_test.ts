@@ -692,8 +692,18 @@ describe('debugger selectors', () => {
             },
           },
           stackFrames: {
-            a1: ['localhost', '/tmp/main.py', 10, 'main'],
-            a2: ['localhost', '/tmp/model.py', 20, 'initialize'],
+            a1: {
+              host_name: 'localhost',
+              file_path: '/tmp/main.py',
+              lineno: 10,
+              function_name: 'main',
+            },
+            a2: {
+              host_name: 'localhost',
+              file_path: '/tmp/model.py',
+              lineno: 20,
+              function_name: 'initialize',
+            },
           },
         })
       );
@@ -821,6 +831,7 @@ describe('debugger selectors', () => {
               host_name: 'worker1',
               file_path: '/tmp/eval.py',
               lineno: 100,
+              function_name: 'train_fn',
             },
           }),
         })
@@ -863,6 +874,7 @@ describe('debugger selectors', () => {
               host_name: 'worker1',
               file_path: '/tmp/eval.py',
               lineno: 100,
+              function_name: 'train_fn',
             },
           }),
         })
@@ -1679,6 +1691,7 @@ describe('debugger selectors', () => {
               host_name: 'localhost',
               file_path: 'train.py',
               lineno: 5,
+              function_name: 'train_fn',
             },
           }),
         })
@@ -1688,6 +1701,7 @@ describe('debugger selectors', () => {
         host_name: 'localhost',
         file_path: 'train.py',
         lineno: 5,
+        function_name: 'train_fn',
       });
     });
   });

@@ -81,11 +81,7 @@ describe('Stack Trace container', () => {
           stackFrame1,
           stackFrame2,
         ]);
-        store.overrideSelector(getFocusedSourceLineSpec, {
-          host_name: stackFrame1[0],
-          file_path: stackFrame1[1],
-          lineno: stackFrame1[2],
-        });
+        store.overrideSelector(getFocusedSourceLineSpec, stackFrame1);
         store.overrideSelector(
           getStickToBottommostFrameInFocusedFile,
           stickToBottommostFrame
@@ -114,30 +110,42 @@ describe('Stack Trace container', () => {
         );
         expect(filePathElements.length).toBe(3);
         expect(filePathElements[0].nativeElement.innerText).toBe(
-          stackFrame0[1].slice(stackFrame0[1].lastIndexOf('/') + 1)
+          stackFrame0.file_path.slice(
+            stackFrame0.file_path.lastIndexOf('/') + 1
+          )
         );
-        expect(filePathElements[0].nativeElement.title).toBe(stackFrame0[1]);
+        expect(filePathElements[0].nativeElement.title).toBe(
+          stackFrame0.file_path
+        );
         expect(filePathElements[1].nativeElement.innerText).toBe(
-          stackFrame1[1].slice(stackFrame1[1].lastIndexOf('/') + 1)
+          stackFrame1.file_path.slice(
+            stackFrame1.file_path.lastIndexOf('/') + 1
+          )
         );
-        expect(filePathElements[1].nativeElement.title).toBe(stackFrame1[1]);
+        expect(filePathElements[1].nativeElement.title).toBe(
+          stackFrame1.file_path
+        );
         expect(filePathElements[2].nativeElement.innerText).toBe(
-          stackFrame2[1].slice(stackFrame2[1].lastIndexOf('/') + 1)
+          stackFrame2.file_path.slice(
+            stackFrame2.file_path.lastIndexOf('/') + 1
+          )
         );
-        expect(filePathElements[2].nativeElement.title).toBe(stackFrame2[1]);
+        expect(filePathElements[2].nativeElement.title).toBe(
+          stackFrame2.file_path
+        );
 
         const linenoElements = fixture.debugElement.queryAll(
           By.css('.stack-frame-lineno')
         );
         expect(linenoElements.length).toBe(3);
         expect(linenoElements[0].nativeElement.innerText).toBe(
-          `Line ${stackFrame0[2]}`
+          `Line ${stackFrame0.lineno}`
         );
         expect(linenoElements[1].nativeElement.innerText).toBe(
-          `Line ${stackFrame1[2]}`
+          `Line ${stackFrame1.lineno}`
         );
         expect(linenoElements[2].nativeElement.innerText).toBe(
-          `Line ${stackFrame2[2]}`
+          `Line ${stackFrame2.lineno}`
         );
 
         const functionElements = fixture.debugElement.queryAll(
@@ -145,13 +153,13 @@ describe('Stack Trace container', () => {
         );
         expect(functionElements.length).toBe(3);
         expect(functionElements[0].nativeElement.innerText).toBe(
-          stackFrame0[3]
+          stackFrame0.function_name
         );
         expect(functionElements[1].nativeElement.innerText).toBe(
-          stackFrame1[3]
+          stackFrame1.function_name
         );
         expect(functionElements[2].nativeElement.innerText).toBe(
-          stackFrame2[3]
+          stackFrame2.function_name
         );
 
         // Check the focused stack frame has been highlighted by CSS class.
@@ -167,7 +175,9 @@ describe('Stack Trace container', () => {
           By.css('.stack-frame-file-path')
         );
         expect(focusedFilePathElement.nativeElement.innerText).toBe(
-          stackFrame1[1].slice(stackFrame1[1].lastIndexOf('/') + 1)
+          stackFrame1.file_path.slice(
+            stackFrame1.file_path.lastIndexOf('/') + 1
+          )
         );
       }
     );
@@ -183,11 +193,7 @@ describe('Stack Trace container', () => {
     const stackFrame0 = createTestStackFrame();
     const stackFrame1 = createTestStackFrame();
     store.overrideSelector(getFocusedStackFrames, [stackFrame0, stackFrame1]);
-    store.overrideSelector(getFocusedSourceLineSpec, {
-      host_name: stackFrame0[0],
-      file_path: stackFrame0[1],
-      lineno: stackFrame0[2],
-    });
+    store.overrideSelector(getFocusedSourceLineSpec, stackFrame0);
     fixture.detectChanges();
 
     const stackTraceTypeElement = fixture.debugElement.query(
@@ -212,31 +218,35 @@ describe('Stack Trace container', () => {
     );
     expect(filePathElements.length).toBe(2);
     expect(filePathElements[0].nativeElement.innerText).toBe(
-      stackFrame0[1].slice(stackFrame0[1].lastIndexOf('/') + 1)
+      stackFrame0.file_path.slice(stackFrame0.file_path.lastIndexOf('/') + 1)
     );
-    expect(filePathElements[0].nativeElement.title).toBe(stackFrame0[1]);
+    expect(filePathElements[0].nativeElement.title).toBe(stackFrame0.file_path);
     expect(filePathElements[1].nativeElement.innerText).toBe(
-      stackFrame1[1].slice(stackFrame1[1].lastIndexOf('/') + 1)
+      stackFrame1.file_path.slice(stackFrame1.file_path.lastIndexOf('/') + 1)
     );
-    expect(filePathElements[1].nativeElement.title).toBe(stackFrame1[1]);
+    expect(filePathElements[1].nativeElement.title).toBe(stackFrame1.file_path);
 
     const linenoElements = fixture.debugElement.queryAll(
       By.css('.stack-frame-lineno')
     );
     expect(linenoElements.length).toBe(2);
     expect(linenoElements[0].nativeElement.innerText).toBe(
-      `Line ${stackFrame0[2]}`
+      `Line ${stackFrame0.lineno}`
     );
     expect(linenoElements[1].nativeElement.innerText).toBe(
-      `Line ${stackFrame1[2]}`
+      `Line ${stackFrame1.lineno}`
     );
 
     const functionElements = fixture.debugElement.queryAll(
       By.css('.stack-frame-function')
     );
     expect(functionElements.length).toBe(2);
-    expect(functionElements[0].nativeElement.innerText).toBe(stackFrame0[3]);
-    expect(functionElements[1].nativeElement.innerText).toBe(stackFrame1[3]);
+    expect(functionElements[0].nativeElement.innerText).toBe(
+      stackFrame0.function_name
+    );
+    expect(functionElements[1].nativeElement.innerText).toBe(
+      stackFrame1.function_name
+    );
 
     // Check the focused stack frame has been highlighted by CSS class.
     const focusedElements = fixture.debugElement.queryAll(
@@ -247,7 +257,7 @@ describe('Stack Trace container', () => {
       By.css('.stack-frame-file-path')
     );
     expect(focusedFilePathElement.nativeElement.innerText).toBe(
-      stackFrame0[1].slice(stackFrame1[1].lastIndexOf('/') + 1)
+      stackFrame0.file_path.slice(stackFrame1.file_path.lastIndexOf('/') + 1)
     );
   });
 
@@ -317,11 +327,7 @@ describe('Stack Trace container', () => {
     fixture.detectChanges();
     expect(dispatchSpy).toHaveBeenCalledWith(
       sourceLineFocused({
-        sourceLineSpec: {
-          host_name: stackFrame1[0],
-          file_path: stackFrame1[1],
-          lineno: stackFrame1[2],
-        },
+        stackFrame: stackFrame1,
       })
     );
   });

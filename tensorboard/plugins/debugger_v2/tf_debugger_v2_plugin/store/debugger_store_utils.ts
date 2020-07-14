@@ -21,8 +21,8 @@ import {getFocusedStackFramesHelper} from './debugger_store_helpers';
 import {
   DebuggerState,
   SourceFileSpec,
-  SourceLineSpec,
   StackFrame,
+  StackFrameAsArray,
 } from './debugger_types';
 
 /**
@@ -47,32 +47,28 @@ export function findFileIndex(
  * in a given stack trace.
  *
  * @param stackFrames The stack trace to examine.
- * @param sourceLineSpec A spec that describes a frame in the stack trace.
- * @returns Whether `sourceLineSpec` points to the bottommost stack frame
+ * @param stackFrame A spec that describes a frame in the stack trace.
+ * @returns Whether `stackFrame` points to the bottommost stack frame
  *   (in the Python sense) of the file it belongs to among the frames in
  *   `stackFrames`.
- * @throws Error if `sourceLineSpec` is not a frame in `stackFrames`.
+ * @throws Error if `stackFrame` is not a frame in `stackFrames`.
  */
 export function isFrameBottommostInStackTrace(
   stackFrames: StackFrame[],
-  sourceLineSpec: SourceLineSpec
+  stackFrame: StackFrame
 ): boolean {
   let matchingIndex = -1;
   let bottommostIndex = -1;
-  stackFrames.forEach((stackFrame, i) => {
-    const [, file_path, lineno] = stackFrame;
-    if (file_path === sourceLineSpec.file_path) {
+  stackFrames.forEach(({file_path, lineno}, i) => {
+    if (file_path === stackFrame.file_path) {
       bottommostIndex = i;
-      if (lineno === sourceLineSpec.lineno) {
+      if (lineno === stackFrame.lineno) {
         matchingIndex = i;
       }
     }
   });
   if (matchingIndex === -1) {
-    throw new Error(
-      `sourceLineSpec ${JSON.stringify(sourceLineSpec)} ` +
-        `is not found in stack frames.`
-    );
+    throw new Error(`Stack frame ${JSON.stringify(stackFrame)} is not found.`);
   }
   return matchingIndex === bottommostIndex;
 }
@@ -87,23 +83,19 @@ export function isFrameBottommostInStackTrace(
  */
 export function getBottommostStackFrameInFocusedFile(
   stackFrames: StackFrame[],
-  focusedSourceLineSpec: SourceLineSpec | null
-): SourceLineSpec | null {
+  focusedSourceLineSpec: StackFrame | null
+): StackFrame | null {
   if (focusedSourceLineSpec === null) {
     return null;
   }
   for (let i = stackFrames.length - 1; i >= 0; --i) {
     const stackFrame = stackFrames[i];
-    const [host_name, file_path] = stackFrame;
+    const {host_name, file_path} = stackFrame;
     if (
       host_name === focusedSourceLineSpec.host_name &&
       file_path === focusedSourceLineSpec.file_path
     ) {
-      return {
-        host_name: stackFrame[0],
-        file_path: stackFrame[1],
-        lineno: stackFrame[2],
-      };
+      return stackFrame;
     }
   }
   return null;
@@ -171,7 +163,7 @@ export function beginEndRangesInclude(
  */
 export function computeBottommostLineSpec(
   state: DebuggerState
-): SourceLineSpec | null {
+): StackFrame | null {
   const currentFocusLineSpec = state.sourceCode.focusLineSpec;
   if (!state.stickToBottommostFrameInFocusedFile) {
     return currentFocusLineSpec;
