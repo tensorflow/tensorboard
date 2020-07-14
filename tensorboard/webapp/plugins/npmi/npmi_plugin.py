@@ -28,9 +28,12 @@ from tensorboard import plugin_util
 from tensorboard.util import tensor_util
 from tensorboard.plugins import base_plugin
 from tensorboard.backend import http_util
+from tensorboard.data import provider
 
 from tensorboard.webapp.plugins.npmi import safe_encoder
 from tensorboard.webapp.plugins.npmi import metadata
+
+_DEFAULT_DOWNSAMPLING = 1 # text tensors per time series
 
 
 def _error_response(request, error_message):
@@ -56,7 +59,9 @@ class NpmiPlugin(base_plugin.TBPlugin):
         """
         super(NpmiPlugin, self).__init__(context)
         self._logdir = context.logdir
-        self._multiplexer = context.multiplexer
+        self._downsample_to = (context.sampling_hints or {}).get(
+            self.plugin_name, _DEFAULT_DOWNSAMPLING
+        )
         self._data_provider = context.data_provider
 
     def get_plugin_apps(self):
@@ -86,49 +91,90 @@ class NpmiPlugin(base_plugin.TBPlugin):
         mapping = self._data_provider.list_tensors(
             ctx, experiment_id=experiment, plugin_name=self.plugin_name
         )
-        print(mapping)
         result = {run: {} for run in mapping}
         for (run, tag_to_content) in six.iteritems(mapping):
-            for tag, metadatum in tag_to_content:
-                content = metadata.parse_plugin_metadata(metadatum.content)
+            for (tag, metadatum) in six.iteritems(tag_to_content):
+                content = metadata.parse_plugin_metadata(
+                    metadatum.plugin_content
+                )
                 result[run][tag] = {
                     "table": content.title
                 }
         contents = json.dumps(result, sort_keys=True)
         return contents
 
-    def annotations_impl(self):
-        mapping = self._multiplexer.PluginRunToTagToContent(self.plugin_name)
-        result = {run: {} for run in self._multiplexer.Runs()}
+    def annotations_impl(self, ctx, experiment):
+        mapping = self._data_provider.list_tensors(
+            ctx, experiment_id=experiment,
+            plugin_name=self.plugin_name,
+            run_tag_filter=provider.RunTagFilter(tags=["metric_annotations"])
+        )
+        result = {run: {} for run in mapping}
         for (run, _) in six.iteritems(mapping):
-            event = self._multiplexer.Tensors(run, "metric_annotations")[0]
+            all_annotations = self._data_provider.read_tensors(
+                ctx,
+                experiment_id=experiment,
+                plugin_name=self.plugin_name,
+                run_tag_filter=provider.RunTagFilter(
+                    runs=[run],
+                    tags=["metric_annotations"]),
+                downsample=self._downsample_to,
+            )
+            annotations = all_annotations.get(run, {}).get("metric_annotations",
+                {})
             event_data = [
-                tensor.decode("utf-8")
-                for tensor in tensor_util.make_ndarray(event.tensor_proto)
+                annotation.decode("utf-8")
+                for annotation in annotations[0].numpy
             ]
             result[run] = event_data
         contents = json.dumps(result)
         return contents
 
-    def metrics_impl(self):
-        mapping = self._multiplexer.PluginRunToTagToContent(self.plugin_name)
-        result = {run: {} for run in self._multiplexer.Runs()}
+    def metrics_impl(self, ctx, experiment):
+        mapping = self._data_provider.list_tensors(
+            ctx, experiment_id=experiment,
+            plugin_name=self.plugin_name,
+            run_tag_filter=provider.RunTagFilter(tags=["metric_classes"])
+        )
+        result = {run: {} for run in mapping}
         for (run, _) in six.iteritems(mapping):
-            event = self._multiplexer.Tensors(run, "metric_classes")[0]
+            all_metrics = self._data_provider.read_tensors(
+                ctx,
+                experiment_id=experiment,
+                plugin_name=self.plugin_name,
+                run_tag_filter=provider.RunTagFilter(
+                    runs=[run],
+                    tags=["metric_classes"]),
+                downsample=self._downsample_to,
+            )
+            metrics = all_metrics.get(run, {}).get("metric_classes", {})
             event_data = [
-                tensor.decode("utf-8")
-                for tensor in tensor_util.make_ndarray(event.tensor_proto)
+                metric.decode("utf-8")
+                for metric in metrics[0].numpy
             ]
             result[run] = event_data
         contents = json.dumps(result)
         return contents
 
-    def values_impl(self):
-        mapping = self._multiplexer.PluginRunToTagToContent(self.plugin_name)
-        result = {run: {} for run in self._multiplexer.Runs()}
+    def values_impl(self, ctx, experiment):
+        mapping = self._data_provider.list_tensors(
+            ctx, experiment_id=experiment,
+            plugin_name=self.plugin_name,
+            run_tag_filter=provider.RunTagFilter(tags=["metric_results"])
+        )
+        result = {run: {} for run in mapping}
         for (run, _) in six.iteritems(mapping):
-            event = self._multiplexer.Tensors(run, "metric_results")[0]
-            event_data = tensor_util.make_ndarray(event.tensor_proto).tolist()
+            all_values = self._data_provider.read_tensors(
+                ctx,
+                experiment_id=experiment,
+                plugin_name=self.plugin_name,
+                run_tag_filter=provider.RunTagFilter(
+                    runs=[run],
+                    tags=["metric_results"]),
+                downsample=self._downsample_to,
+            )
+            values = all_values.get(run, {}).get("metric_results", {})
+            event_data = values[0].numpy.tolist()
             result[run] = event_data
         contents = json.dumps(result, cls=safe_encoder.SafeEncoder)
         return contents
@@ -142,15 +188,21 @@ class NpmiPlugin(base_plugin.TBPlugin):
 
     @wrappers.Request.application
     def serve_annotations(self, request):
-        contents = self.annotations_impl()
+        ctx = plugin_util.context(request.environ)
+        experiment = plugin_util.experiment_id(request.environ)
+        contents = self.annotations_impl(ctx, experiment=experiment)
         return http_util.Respond(request, contents, "application/json")
 
     @wrappers.Request.application
     def serve_metrics(self, request):
-        contents = self.metrics_impl()
+        ctx = plugin_util.context(request.environ)
+        experiment = plugin_util.experiment_id(request.environ)
+        contents = self.metrics_impl(ctx, experiment=experiment)
         return http_util.Respond(request, contents, "application/json")
 
     @wrappers.Request.application
     def serve_values(self, request):
-        contents = self.values_impl()
+        ctx = plugin_util.context(request.environ)
+        experiment = plugin_util.experiment_id(request.environ)
+        contents = self.values_impl(ctx, experiment=experiment)
         return http_util.Respond(request, contents, "application/json")
