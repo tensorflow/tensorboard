@@ -133,24 +133,24 @@ class NpmiPlugin(base_plugin.TBPlugin):
         contents = json.dumps(result, cls=safe_encoder.SafeEncoder)
         return contents
 
-    @ wrappers.Request.application
+    @wrappers.Request.application
     def serve_tags(self, request):
         ctx = plugin_util.context(request.environ)
         experiment = plugin_util.experiment_id(request.environ)
         contents = self.tags_impl(ctx, experiment=experiment)
         return http_util.Respond(request, contents, "application/json")
 
-    @ wrappers.Request.application
+    @wrappers.Request.application
     def serve_annotations(self, request):
         contents = self.annotations_impl()
         return http_util.Respond(request, contents, "application/json")
 
-    @ wrappers.Request.application
+    @wrappers.Request.application
     def serve_metrics(self, request):
         contents = self.metrics_impl()
         return http_util.Respond(request, contents, "application/json")
 
-    @ wrappers.Request.application
+    @wrappers.Request.application
     def serve_values(self, request):
         contents = self.values_impl()
         return http_util.Respond(request, contents, "application/json")
