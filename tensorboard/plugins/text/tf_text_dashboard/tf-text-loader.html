@@ -36,7 +36,6 @@ tf-text-loader displays markdown text data from the Text plugin.
       elevation="1"
       id="steps-container"
       class="container scrollbar"
-      style="border-color: [[_runColor]]"
     >
       <template is="dom-repeat" items="[[_texts]]">
         <paper-material elevation="1" class="step-container">
@@ -67,6 +66,7 @@ tf-text-loader displays markdown text data from the Text plugin.
         max-height: 500px;
         overflow: auto;
         padding: 10px;
+        border-color: var(--tb-text-loader-outline);
       }
       .text {
         background-color: white;
@@ -122,8 +122,14 @@ tf-text-loader displays markdown text data from the Text plugin.
           value: () => new tf_backend.Canceller(),
         },
       },
+      observers: ['_changeRunColor(_runColor)'],
       _computeRunColor(run) {
         return tf_color_scale.runsColorScale(run);
+      },
+      _changeRunColor(runColor) {
+        this.updateStyles({
+          '--tb-text-loader-outline': runColor,
+        });
       },
       attached() {
         this._attached = true;
