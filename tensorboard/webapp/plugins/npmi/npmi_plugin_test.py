@@ -22,6 +22,7 @@ from __future__ import print_function
 import collections.abc
 import os
 import json
+import numpy as np
 import tensorflow as tf
 
 from tensorboard import context
@@ -71,7 +72,7 @@ class NpmiPluginTest(tf.test.TestCase):
             "run_2": [
                 ["Description", "A", "B"],
                 ["name_1", 1.0, -1.0],
-                ["name_2", -0.5, 0.5],
+                ["name_2", -0.5, np.nan],
             ],
         }
         for run_name in run_names:
@@ -150,7 +151,7 @@ class NpmiPluginTest(tf.test.TestCase):
         self.assertItemsEqual([1.0, -1.0], values["run_1"][0])
         self.assertItemsEqual([0.5, -0.5], values["run_1"][1])
         self.assertItemsEqual([1.0, -1.0], values["run_2"][0])
-        self.assertItemsEqual([0.5, -0.5], values["run_2"][1])
+        self.assertItemsEqual([-0.5, None], values["run_2"][1])
 
     def testIsActiveReturnsFalse(self):
         """The plugin should always return false because this is now handled

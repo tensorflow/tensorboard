@@ -20,6 +20,7 @@ from __future__ import print_function
 
 import json
 import six
+import math
 from werkzeug import wrappers
 import werkzeug
 
@@ -30,7 +31,6 @@ from tensorboard.plugins import base_plugin
 from tensorboard.backend import http_util
 from tensorboard.data import provider
 
-from tensorboard.webapp.plugins.npmi import safe_encoder
 from tensorboard.webapp.plugins.npmi import metadata
 
 _DEFAULT_DOWNSAMPLING = 1  # text tensors per time series
@@ -44,6 +44,10 @@ def _error_response(request, error_message):
 
 def _missing_run_error_response(request):
     return _error_response(request, "run parameter is not provided")
+
+
+def convert_nan_none(arr):
+    return [convert_nan_none(e) if isinstance(e, list) else None if math.isnan(e) else e for e in arr]
 
 
 class NpmiPlugin(base_plugin.TBPlugin):
@@ -174,8 +178,9 @@ class NpmiPlugin(base_plugin.TBPlugin):
             )
             values = all_values.get(run, {}).get("metric_results", {})
             event_data = values[0].numpy.tolist()
+            event_data = convert_nan_none(event_data)
             result[run] = event_data
-        contents = json.dumps(result, cls=safe_encoder.SafeEncoder)
+        contents = json.dumps(result)
         return contents
 
     @wrappers.Request.application
