@@ -69,11 +69,7 @@ export class StackTraceComponent implements AfterViewChecked {
   stackFramesForDisplay: StackFrameForDisplay[] | null = null;
 
   @Output()
-  onSourceLineClicked = new EventEmitter<{
-    host_name: string;
-    file_path: string;
-    lineno: number;
-  }>();
+  onSourceLineClicked = new EventEmitter<StackFrameForDisplay>();
 
   @ViewChild('stackFrameArray')
   private readonly stackFrameArray!: ElementRef<HTMLDivElement>;

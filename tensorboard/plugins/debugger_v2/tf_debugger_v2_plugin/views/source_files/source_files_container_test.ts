@@ -98,6 +98,7 @@ describe('Source Files Container', () => {
       host_name: 'localhost',
       file_path: '/home/user/main.py',
       lineno: 3,
+      function_name: 'main',
     });
     fixture.detectChanges();
     await fixture.whenStable();
@@ -122,6 +123,7 @@ describe('Source Files Container', () => {
       host_name: 'localhost',
       file_path: '/home/user/model.py',
       lineno: 1,
+      function_name: 'model_fn',
     });
     store.refreshState();
     fixture.detectChanges();
