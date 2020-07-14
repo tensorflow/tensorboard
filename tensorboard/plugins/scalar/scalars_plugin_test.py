@@ -35,7 +35,6 @@ from werkzeug import wrappers
 
 from tensorboard import errors
 from tensorboard.backend import application
-from tensorboard import context
 from tensorboard.backend.event_processing import data_provider
 from tensorboard.backend.event_processing import (
     plugin_event_multiplexer as event_multiplexer,
@@ -85,6 +84,12 @@ class ScalarsPluginTest(tf.test.TestCase):
         ctx = base_plugin.TBContext(logdir=logdir, data_provider=provider,)
         return scalars_plugin.ScalarsPlugin(ctx)
 
+    def load_server(self, run_names):
+        plugin = self.load_plugin(run_names)
+        wsgi_app = application.TensorBoardWSGI([plugin])
+        server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)
+        return server
+
     def generate_run(self, logdir, run_name):
         subdir = os.path.join(logdir, run_name)
         with test_util.FileWriterCache.get(subdir) as writer:
@@ -109,21 +114,17 @@ class ScalarsPluginTest(tf.test.TestCase):
                     assert False, "Invalid run name: %r" % run_name
                 writer.add_summary(summ, global_step=step)
 
-    def testRoutesProvided(self):
-        """Tests that the plugin offers the correct routes."""
-        plugin = self.load_plugin([])
-        routes = plugin.get_plugin_apps()
-        self.assertIsInstance(routes["/scalars"], collections.abc.Callable)
-        self.assertIsInstance(routes["/tags"], collections.abc.Callable)
-
     def test_index(self):
-        plugin = self.load_plugin(
+        server = self.load_server(
             [
                 self._RUN_WITH_LEGACY_SCALARS,
                 self._RUN_WITH_SCALARS,
                 self._RUN_WITH_HISTOGRAM,
             ]
         )
+        response = server.get("/data/plugin/scalars/tags")
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("application/json", response.headers["Content-Type"])
         self.assertEqual(
             {
                 self._RUN_WITH_LEGACY_SCALARS: {
@@ -141,43 +142,45 @@ class ScalarsPluginTest(tf.test.TestCase):
                 },
                 # _RUN_WITH_HISTOGRAM omitted: No scalar data.
             },
-            plugin.index_impl(context.RequestContext(), "eid"),
+            json.loads(response.get_data()),
         )
 
     def test_scalars_with_legacy_scalars(self):
-        plugin = self.load_plugin([self._RUN_WITH_LEGACY_SCALARS])
-        data, mime_type = plugin.scalars_impl(
-            context.RequestContext(),
-            self._LEGACY_SCALAR_TAG,
-            self._RUN_WITH_LEGACY_SCALARS,
-            "eid",
-            scalars_plugin.OutputFormat.JSON,
+        server = self.load_server([self._RUN_WITH_LEGACY_SCALARS])
+        response = server.get(
+            "/data/plugin/scalars/scalars",
+            query_string={
+                "run": self._RUN_WITH_LEGACY_SCALARS,
+                "tag": self._LEGACY_SCALAR_TAG,
+            },
         )
-        self.assertEqual("application/json", mime_type)
-        self.assertEqual(len(data), self._STEPS)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("application/json", response.headers["Content-Type"])
+        self.assertEqual(self._STEPS, len(json.loads(response.get_data())))
 
     def test_scalars_with_scalars(self):
-        plugin = self.load_plugin([self._RUN_WITH_SCALARS])
-        data, mime_type = plugin.scalars_impl(
-            context.RequestContext(),
-            "%s/scalar_summary" % self._SCALAR_TAG,
-            self._RUN_WITH_SCALARS,
-            "eid",
-            scalars_plugin.OutputFormat.JSON,
+        server = self.load_server([self._RUN_WITH_SCALARS])
+        response = server.get(
+            "/data/plugin/scalars/scalars",
+            query_string={
+                "run": self._RUN_WITH_SCALARS,
+                "tag": "%s/scalar_summary" % self._SCALAR_TAG,
+            },
         )
-        self.assertEqual("application/json", mime_type)
-        self.assertEqual(len(data), self._STEPS)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("application/json", response.headers["Content-Type"])
+        self.assertEqual(self._STEPS, len(json.loads(response.get_data())))
 
     def test_scalars_with_histogram(self):
-        plugin = self.load_plugin([self._RUN_WITH_HISTOGRAM])
-        with self.assertRaises(errors.NotFoundError):
-            plugin.scalars_impl(
-                context.RequestContext(),
-                self._HISTOGRAM_TAG,
-                self._RUN_WITH_HISTOGRAM,
-                "eid",
-                scalars_plugin.OutputFormat.JSON,
-            )
+        server = self.load_server([self._RUN_WITH_HISTOGRAM])
+        response = server.get(
+            "/data/plugin/scalars/scalars",
+            query_string={
+                "run": self._RUN_WITH_HISTOGRAM,
+                "tag": "%s/scalar_summary" % self._HISTOGRAM_TAG,
+            },
+        )
+        self.assertEqual(404, response.status_code)
 
     def test_active_with_legacy_scalars(self):
         plugin = self.load_plugin([self._RUN_WITH_LEGACY_SCALARS])
