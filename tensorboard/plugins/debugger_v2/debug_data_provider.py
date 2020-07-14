@@ -616,7 +616,7 @@ class LocalDebuggerV2DataProvider(provider.DataProvider):
         elif blob_key.startswith(STACK_FRAMES_BLOB_TAG_PREFIX):
             run, stack_frame_ids = _parse_stack_frames_blob_key(blob_key)
             return json.dumps(
-              self._multiplexer.StackFrames(run, stack_frame_ids)
+                self._multiplexer.StackFrames(run, stack_frame_ids)
             )
         else:
             raise ValueError("Unrecognized blob_key: %s" % blob_key)
