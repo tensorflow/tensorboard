@@ -52,11 +52,6 @@ namespace vz_line_chart2 {
     meta: any;
   };
 
-  export interface AxisDomains {
-    x: [number, number];
-    y: [number, number];
-  }
-
   /**
    * The maximum number of marker symbols within any line for a data series. Too
    * many markers clutter the chart.
@@ -956,6 +951,14 @@ namespace vz_line_chart2 {
       }
     }
 
+    public setColorScale(colorScale: Plottable.Scales.Color) {
+      this.colorScale = colorScale;
+    }
+
+    public setTooltipColumns(tooltipColumns: vz_chart_helpers.TooltipColumn[]) {
+      this.tooltipColumns = tooltipColumns;
+    }
+
     public setTooltipSortingMethod(method: string) {
       this.tooltipSortingMethod = method;
     }
@@ -1019,24 +1022,6 @@ namespace vz_line_chart2 {
 
     public onAnchor(fn: () => void) {
       if (this.outer) this.outer.onAnchor(fn);
-    }
-
-    /**
-     * Returns the currently visible domain of the x/y axes.
-     */
-    public getAxisDomains(): AxisDomains {
-      return {
-        x: this.xScale.getTransformationDomain(),
-        y: this.yScale.getTransformationDomain(),
-      };
-    }
-
-    /**
-     * Sets the viewport domain.
-     */
-    public setAxisDomains(domains: AxisDomains) {
-      this.xScale.setTransformationDomain(domains.x);
-      this.yScale.setTransformationDomain(domains.y);
     }
 
     /**
