@@ -47,7 +47,14 @@ def _missing_run_error_response(request):
 
 
 def convert_nan_none(arr):
-    return [convert_nan_none(e) if isinstance(e, list) else None if math.isnan(e) else e for e in arr]
+    return [
+        convert_nan_none(e)
+        if isinstance(e, list)
+        else None
+        if math.isnan(e)
+        else e
+        for e in arr
+    ]
 
 
 class NpmiPlugin(base_plugin.TBPlugin):
