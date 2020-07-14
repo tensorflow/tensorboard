@@ -33,7 +33,7 @@ from tensorboard.data import provider
 from tensorboard.webapp.plugins.npmi import safe_encoder
 from tensorboard.webapp.plugins.npmi import metadata
 
-_DEFAULT_DOWNSAMPLING = 1 # text tensors per time series
+_DEFAULT_DOWNSAMPLING = 1  # text tensors per time series
 
 
 def _error_response(request, error_message):
@@ -97,17 +97,16 @@ class NpmiPlugin(base_plugin.TBPlugin):
                 content = metadata.parse_plugin_metadata(
                     metadatum.plugin_content
                 )
-                result[run][tag] = {
-                    "table": content.title
-                }
+                result[run][tag] = {"table": content.title}
         contents = json.dumps(result, sort_keys=True)
         return contents
 
     def annotations_impl(self, ctx, experiment):
         mapping = self._data_provider.list_tensors(
-            ctx, experiment_id=experiment,
+            ctx,
+            experiment_id=experiment,
             plugin_name=self.plugin_name,
-            run_tag_filter=provider.RunTagFilter(tags=["metric_annotations"])
+            run_tag_filter=provider.RunTagFilter(tags=["metric_annotations"]),
         )
         result = {run: {} for run in mapping}
         for (run, _) in six.iteritems(mapping):
@@ -116,12 +115,13 @@ class NpmiPlugin(base_plugin.TBPlugin):
                 experiment_id=experiment,
                 plugin_name=self.plugin_name,
                 run_tag_filter=provider.RunTagFilter(
-                    runs=[run],
-                    tags=["metric_annotations"]),
+                    runs=[run], tags=["metric_annotations"]
+                ),
                 downsample=self._downsample_to,
             )
-            annotations = all_annotations.get(run, {}).get("metric_annotations",
-                {})
+            annotations = all_annotations.get(run, {}).get(
+                "metric_annotations", {}
+            )
             event_data = [
                 annotation.decode("utf-8")
                 for annotation in annotations[0].numpy
@@ -132,9 +132,10 @@ class NpmiPlugin(base_plugin.TBPlugin):
 
     def metrics_impl(self, ctx, experiment):
         mapping = self._data_provider.list_tensors(
-            ctx, experiment_id=experiment,
+            ctx,
+            experiment_id=experiment,
             plugin_name=self.plugin_name,
-            run_tag_filter=provider.RunTagFilter(tags=["metric_classes"])
+            run_tag_filter=provider.RunTagFilter(tags=["metric_classes"]),
         )
         result = {run: {} for run in mapping}
         for (run, _) in six.iteritems(mapping):
@@ -143,24 +144,22 @@ class NpmiPlugin(base_plugin.TBPlugin):
                 experiment_id=experiment,
                 plugin_name=self.plugin_name,
                 run_tag_filter=provider.RunTagFilter(
-                    runs=[run],
-                    tags=["metric_classes"]),
+                    runs=[run], tags=["metric_classes"]
+                ),
                 downsample=self._downsample_to,
             )
             metrics = all_metrics.get(run, {}).get("metric_classes", {})
-            event_data = [
-                metric.decode("utf-8")
-                for metric in metrics[0].numpy
-            ]
+            event_data = [metric.decode("utf-8") for metric in metrics[0].numpy]
             result[run] = event_data
         contents = json.dumps(result)
         return contents
 
     def values_impl(self, ctx, experiment):
         mapping = self._data_provider.list_tensors(
-            ctx, experiment_id=experiment,
+            ctx,
+            experiment_id=experiment,
             plugin_name=self.plugin_name,
-            run_tag_filter=provider.RunTagFilter(tags=["metric_results"])
+            run_tag_filter=provider.RunTagFilter(tags=["metric_results"]),
         )
         result = {run: {} for run in mapping}
         for (run, _) in six.iteritems(mapping):
@@ -169,8 +168,8 @@ class NpmiPlugin(base_plugin.TBPlugin):
                 experiment_id=experiment,
                 plugin_name=self.plugin_name,
                 run_tag_filter=provider.RunTagFilter(
-                    runs=[run],
-                    tags=["metric_results"]),
+                    runs=[run], tags=["metric_results"]
+                ),
                 downsample=self._downsample_to,
             )
             values = all_values.get(run, {}).get("metric_results", {})

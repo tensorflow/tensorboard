@@ -14,8 +14,8 @@ py_library(
     srcs = ["npmi_plugin.py"],
     srcs_version = "PY2AND3",
     deps = [
-        ":safe_encoder",
         ":metadata",
+        ":safe_encoder",
         "//tensorboard:errors",
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
@@ -34,9 +34,9 @@ py_test(
     deps = [
         ":npmi_plugin",
         ":summary",
+        "//tensorboard:context",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard:plugin_util",
-        "//tensorboard:context",
         "//tensorboard/backend/event_processing:data_provider",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/plugins:base_plugin",
@@ -63,8 +63,8 @@ py_test(
     srcs = ["summary_test.py"],
     srcs_version = "PY2AND3",
     deps = [
-        ":summary",
         ":metadata",
+        ":summary",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/compat",
         "//tensorboard/util:test_util",
