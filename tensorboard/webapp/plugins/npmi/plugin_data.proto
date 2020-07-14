@@ -22,5 +22,7 @@ package tensorboard;
 // as `content` a binary string that is the encoding of an
 // `NpmiPluginData` proto.
 message NpmiPluginData {
-  string title = 1;
+  // Version `0` is the only supported version.
+  int32 version = 1;
+  string title = 2;
 }

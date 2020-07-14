@@ -20,12 +20,19 @@ from __future__ import print_function
 from tensorboard.compat.proto import summary_pb2
 
 from tensorboard.webapp.plugins.npmi import plugin_data_pb2
+from tensorboard.util import tb_logging
+
+logger = tb_logging.get_logger()
 
 PLUGIN_NAME = "npmi"
 
+# The most recent value for the `version` field of the
+# `ScalarPluginData` proto.
+PROTO_VERSION = 0
+
 
 def create_summary_metadata(description, title):
-    content = plugin_data_pb2.NpmiPluginData(title=title)
+    content = plugin_data_pb2.NpmiPluginData(version=PROTO_VERSION, title=title)
     return summary_pb2.SummaryMetadata(
         summary_description=description,
         plugin_data=summary_pb2.SummaryMetadata.PluginData(
@@ -45,4 +52,14 @@ def parse_plugin_metadata(content):
     if not isinstance(content, bytes):
         raise TypeError("Content type must be bytes")
     result = plugin_data_pb2.NpmiPluginData.FromString(content)
-    return result
+    if result.version == 0:
+        return result
+    else:
+        logger.warning(
+            "Unknown metadata version: %s. The latest version known to "
+            "this build of TensorBoard is %s; perhaps a newer build is "
+            "available?",
+            result.version,
+            PROTO_VERSION,
+        )
+        return result
