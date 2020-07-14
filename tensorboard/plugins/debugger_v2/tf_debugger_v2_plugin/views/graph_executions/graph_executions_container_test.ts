@@ -152,6 +152,7 @@ describe('Graph Executions Container', () => {
           expect(focusElement).toBeNull();
         }
         expect(tensorNames[i].nativeElement.innerText).toBe(`TestOp_${i}:0`);
+        expect(tensorNames[i].nativeElement.title).toBe(`TestOp_${i}:0`);
         expect(opTypes[i].nativeElement.innerText).toBe(`OpType_${i}`);
       }
       const debugTensorValueElements = fixture.debugElement.queryAll(
