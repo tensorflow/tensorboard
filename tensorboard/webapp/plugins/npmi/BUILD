@@ -75,11 +75,6 @@ py_library(
     name = "safe_encoder",
     srcs = ["safe_encoder.py"],
     srcs_version = "PY2AND3",
-    visibility = [
-        "//visibility:public",
-    ],
-    deps = [
-    ],
 )
 
 py_test(
@@ -104,7 +99,6 @@ py_library(
     deps = [
         ":protos_all_py_pb2",
         "//tensorboard/compat/proto:protos_all_py_pb2",
-        "//tensorboard/util:tb_logging",
     ],
 )
 
