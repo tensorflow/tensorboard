@@ -1115,24 +1115,21 @@ describe('Debugger graphs reducers', () => {
         `${stickToBottommostFrameInFocusedFile}; ` +
         `stackFrameIsLoaded=${stackFrameIsLoaded}`,
       () => {
-        const stackFrame0 = createTestStackFrame(
-          'localhost',
-          'main.py',
-          10,
-          '<module>'
-        );
-        const stackFrame1 = createTestStackFrame(
-          'localhost',
-          'main.py',
-          20,
-          'main'
-        );
-        const stackFrame2 = createTestStackFrame(
-          'localhost',
-          'main.py',
-          30,
-          'helper'
-        );
+        const stackFrame0 = createTestStackFrame({
+          file_path: 'main.py',
+          lineno: 10,
+          function_name: '<module>',
+        });
+        const stackFrame1 = createTestStackFrame({
+          file_path: 'main.py',
+          lineno: 20,
+          function_name: 'main',
+        });
+        const stackFrame2 = createTestStackFrame({
+          file_path: 'main.py',
+          lineno: 30,
+          function_name: 'helper',
+        });
         const state = createDebuggerState({
           executions: createDebuggerExecutionsState({
             executionData: {
@@ -1268,24 +1265,21 @@ describe('Debugger graphs reducers', () => {
   });
 
   it('loaing stack frame updates focused line spec', () => {
-    const stackFrame0 = createTestStackFrame(
-      'localhost',
-      'main.py',
-      10,
-      '<module>'
-    );
-    const stackFrame1 = createTestStackFrame(
-      'localhost',
-      'main.py',
-      20,
-      'main'
-    );
-    const stackFrame2 = createTestStackFrame(
-      'localhost',
-      'main.py',
-      30,
-      'helper'
-    );
+    const stackFrame0 = createTestStackFrame({
+      file_path: 'main.py',
+      lineno: 10,
+      function_name: '<module>',
+    });
+    const stackFrame1 = createTestStackFrame({
+      file_path: 'main.py',
+      lineno: 20,
+      function_name: 'main',
+    });
+    const stackFrame2 = createTestStackFrame({
+      file_path: 'main.py',
+      lineno: 30,
+      function_name: 'helper',
+    });
     const state = createDebuggerState({
       activeRunId: '__default_debugger_run__',
       executions: createDebuggerExecutionsState({
@@ -1394,8 +1388,14 @@ describe('Debugger graphs reducers', () => {
   });
 
   describe('sourceLineFocused', () => {
-    const stackFrame0 = createTestStackFrame('localhost', 'main.py', 10);
-    const stackFrame1 = createTestStackFrame('localhost', 'main.py', 20);
+    const stackFrame0 = createTestStackFrame({
+      file_path: 'main.py',
+      lineno: 10,
+    });
+    const stackFrame1 = createTestStackFrame({
+      file_path: 'main.py',
+      lineno: 20,
+    });
 
     for (const [focusLineno, initialStick, expectedStick] of [
       [20, false, true],

@@ -94,10 +94,7 @@ import {
   getPollSilenceTimeMs,
   getSourceFileListLoaded,
 } from '../store/debugger_selectors';
-import {
-  beginEndRangesInclude,
-  stackFrameAsArray2StackFrame,
-} from '../store/debugger_store_utils';
+import {beginEndRangesInclude} from '../store/debugger_store_utils';
 import {
   DataLoadState,
   DebuggerRunListing,
@@ -638,12 +635,9 @@ export class DebuggerEffects {
             const stackFramesById: {
               [stackFrameId: string]: StackFrame;
             } = {};
-            // TODO(cais): Do this reshaping in the backend and simplify
-            // the frontend code here.
             for (let i = 0; i < stackFrameIds.length; ++i) {
-              stackFramesById[stackFrameIds[i]] = stackFrameAsArray2StackFrame(
-                stackFramesResponse.stack_frames[i]
-              );
+              stackFramesById[stackFrameIds[i]] =
+                stackFramesResponse.stack_frames[i];
             }
             this.store.dispatch(
               stackFramesLoaded({stackFrames: stackFramesById})
@@ -841,11 +835,8 @@ export class DebuggerEffects {
               // TODO(cais): Do this reshaping in the backend and simplify
               // the frontend code here.
               for (let i = 0; i < missingStackFrameIds.length; ++i) {
-                stackFramesById[
-                  missingStackFrameIds[i]
-                ] = stackFrameAsArray2StackFrame(
-                  stackFramesResponse.stack_frames[i]
-                );
+                stackFramesById[missingStackFrameIds[i]] =
+                  stackFramesResponse.stack_frames[i];
               }
               this.store.dispatch(
                 stackFramesLoaded({stackFrames: stackFramesById})

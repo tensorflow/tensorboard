@@ -43,40 +43,6 @@ export function findFileIndex(
 }
 
 /**
- * Converts the object representation of a stack frame into the array
- * representation.
- * @param stackFrame
- * @returns StackFrameAsArray
- */
-export function stackFrame2StackFrameAsArray(
-  stackFrame: StackFrame
-): StackFrameAsArray {
-  return [
-    stackFrame.host_name,
-    stackFrame.file_path,
-    stackFrame.lineno,
-    stackFrame.function_name,
-  ];
-}
-
-/**
- * Convertsthe array representation of a stack frame into the object
- * representation.
- * @param array
- * @returns StackFrame
- */
-export function stackFrameAsArray2StackFrame(
-  array: StackFrameAsArray
-): StackFrame {
-  return {
-    host_name: array[0],
-    file_path: array[1],
-    lineno: array[2],
-    function_name: array[3],
-  };
-}
-
-/**
  * Determines if a source-line spec points at the bottommost in its file
  * in a given stack trace.
  *

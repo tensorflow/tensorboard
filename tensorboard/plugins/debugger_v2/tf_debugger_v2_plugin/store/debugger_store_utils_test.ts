@@ -20,25 +20,26 @@ import {
 } from './debugger_store_utils';
 
 describe('Debugger store utils', () => {
-  const stackFrame0 = createTestStackFrame(
-    'localhost',
-    'main.py',
-    10,
-    '<module>'
-  );
-  const stackFrame1 = createTestStackFrame('localhost', 'main.py', 20, 'main');
-  const stackFrame2 = createTestStackFrame(
-    'localhost',
-    'train.py',
-    5,
-    'train_fn'
-  );
-  const stackFrame3 = createTestStackFrame(
-    'localhost',
-    'train.py',
-    15,
-    'model_fn'
-  );
+  const stackFrame0 = createTestStackFrame({
+    file_path: 'main.py',
+    lineno: 10,
+    function_name: '<module>',
+  });
+  const stackFrame1 = createTestStackFrame({
+    file_path: 'main.py',
+    lineno: 20,
+    function_name: 'main',
+  });
+  const stackFrame2 = createTestStackFrame({
+    file_path: 'train.py',
+    lineno: 5,
+    function_name: 'train_fn',
+  });
+  const stackFrame3 = createTestStackFrame({
+    file_path: 'train.py',
+    lineno: 15,
+    function_name: 'model_fn',
+  });
   const stackTrace = [stackFrame0, stackFrame1, stackFrame2, stackFrame3];
 
   describe('isFrameBottommostInStackTrace', () => {

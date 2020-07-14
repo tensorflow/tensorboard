@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
 import {Observable} from 'rxjs';
+import {map} from 'rxjs/operators';
 import {
   Alert,
   DebuggerRunListing,
@@ -23,6 +24,7 @@ import {
   GraphExecutionDigest,
   GraphOpInfo,
   SourceFileSpec,
+  StackFrame,
   StackFrameAsArray,
 } from '../store/debugger_types';
 import {TBHttpClient} from '../../../../webapp/webapp_data_source/tb_http_client';
@@ -38,8 +40,12 @@ export interface SourceFileResponse extends SourceFileSpec {
   lines: string[];
 }
 
-export interface StackFramesResponse {
+export interface RawStackFramesResponse {
   stack_frames: StackFrameAsArray[];
+}
+
+export interface StackFramesResponse {
+  stack_frames: StackFrame[];
 }
 
 /**
@@ -104,6 +110,19 @@ export interface AlertsResponse {
   alert_type?: string;
 
   alerts: Alert[];
+}
+
+/**
+ * Convertsthe array representation of a stack frame into the object
+ * representation.
+ */
+function stackFrameAsArrayToStackFrame(array: StackFrameAsArray): StackFrame {
+  return {
+    host_name: array[0],
+    file_path: array[1],
+    lineno: array[2],
+    function_name: array[3],
+  };
 }
 
 export abstract class Tfdbg2DataSource {
@@ -327,16 +346,29 @@ export class Tfdbg2HttpServerDataSource implements Tfdbg2DataSource {
     );
   }
 
-  fetchStackFrames(run: string, stackFrameIds: string[]) {
-    return this.http.get<StackFramesResponse>(
-      this.httpPathPrefix + '/stack_frames/stack_frames',
-      {
-        params: {
-          run,
-          stack_frame_ids: stackFrameIds.join(','),
-        },
-      }
-    );
+  fetchStackFrames(
+    run: string,
+    stackFrameIds: string[]
+  ): Observable<StackFramesResponse> {
+    return this.http
+      .get<RawStackFramesResponse>(
+        this.httpPathPrefix + '/stack_frames/stack_frames',
+        {
+          params: {
+            run,
+            stack_frame_ids: stackFrameIds.join(','),
+          },
+        }
+      )
+      .pipe(
+        map((rawResponse: RawStackFramesResponse) => {
+          return {
+            stack_frames: rawResponse.stack_frames.map((stackFrameAsArray) =>
+              stackFrameAsArrayToStackFrame(stackFrameAsArray)
+            ),
+          };
+        })
+      );
   }
 
   fetchAlerts(run: string, begin: number, end: number, alert_type?: string) {
