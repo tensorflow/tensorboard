@@ -113,7 +113,7 @@ export interface AlertsResponse {
 }
 
 /**
- * Convertsthe array representation of a stack frame into the object
+ * Converts the array representation of a stack frame into the object
  * representation.
  */
 function stackFrameAsArrayToStackFrame(array: StackFrameAsArray): StackFrame {
