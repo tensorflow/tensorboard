@@ -459,6 +459,10 @@ TODO(erez): Add aggregation controls for repeated sessions.
           notify: true,
         },
 
+        // Note that `noDataFound = false` means that we don't know yet whether
+        // data will be found or not (i.e., the fetch has not yet returned).
+        // `noDataFound = true` means the fetch completed, and there really is
+        // no data.
         noDataFound: {
           type: Boolean,
           value: false,
@@ -643,10 +647,6 @@ TODO(erez): Add aggregation controls for repeated sessions.
               return;
             }
             this.set('_experiment', experiment);
-            // Doing this immediately, not only in finally(), allows the
-            // parent template to start rendering the results table before the
-            // table contents have been fetched.
-            this._computeDataFound();
             this._computeHParams();
             this._computeMetrics();
             this._queryServer();
@@ -661,7 +661,9 @@ TODO(erez): Add aggregation controls for repeated sessions.
         const result = Boolean(
           this._experiment &&
             this._experiment.hparamInfos &&
-            this._experiment.hparamInfos.length > 0
+            this._experiment.hparamInfos.length > 0 &&
+            this._experiment.metricInfos &&
+            this._experiment.metricInfos.length > 0
         );
         this.set('dataFound', result);
         this.set('noDataFound', !result);
@@ -802,7 +804,7 @@ TODO(erez): Add aggregation controls for repeated sessions.
       // above. Returns a promise, for use in unit-tests, that resolves (with
       // 'undefined') when the ListSessionGroups RPC returns.
       _queryServerNoDebounce() {
-        if (!this._hparams) {
+        if (!this._hparams || !this._metrics) {
           return null;
         }
         return this._sendListSessionGroupsRequest().then(
