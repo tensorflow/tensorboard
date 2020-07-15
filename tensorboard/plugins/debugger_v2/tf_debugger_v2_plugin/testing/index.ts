@@ -33,6 +33,7 @@ import {
   SourceCodeState,
   State,
   StackFrame,
+  StackFrameAsArray,
 } from '../store/debugger_types';
 import {
   createInitialExecutionsState,
@@ -106,19 +107,23 @@ export function createTestGraphOpInfo(
   };
 }
 
-export function createTestStackFrame(
-  host_name?: string,
-  file_path?: string,
-  lineno?: number
-): StackFrame {
-  return [
-    host_name || 'localhost', // Host name.
-    file_path || `/tmp/file_${Math.floor(Math.random() * 1e6)}.py`, // File path.
+export function createTestStackFrame(options?: {
+  host_name?: string;
+  file_path?: string;
+  lineno?: number;
+  function_name?: string;
+}): StackFrame {
+  options = options || {};
+  return {
+    host_name: options.host_name || 'localhost',
+    file_path:
+      options.file_path || `/tmp/file_${Math.floor(Math.random() * 1e6)}.py`,
     // `lineno` is assumed to be 1-based. So a value of 0 means use default
     // behavior.
-    lineno || 1 + Math.floor(Math.random() * 1e3), // Lineno.
-    `function_${Math.floor(Math.random() * 1e3)}`, // Function name.
-  ];
+    lineno: options.lineno || 1 + Math.floor(Math.random() * 1e3),
+    function_name:
+      options.function_name || `function_${Math.floor(Math.random() * 1e3)}`,
+  };
 }
 
 export function createTestExecutionDigest(
