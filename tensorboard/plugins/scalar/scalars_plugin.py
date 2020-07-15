@@ -114,10 +114,10 @@ class ScalarsPlugin(base_plugin.TBPlugin):
             result[run] = values
 
         if output_format == OutputFormat.CSV:
-            if runs.length > 1:
+            if len(runs) > 1:
                 raise errors.InvalidArgumentError(
-                    "Not implemented: Return CSV data for more than one run "
-                    "at a time."
+                    "Only a single run may be read at a time when requesting "
+                    "scalar data in CSV form."
                 )
             string_io = StringIO()
             writer = csv.writer(string_io)
@@ -125,7 +125,7 @@ class ScalarsPlugin(base_plugin.TBPlugin):
             writer.writerows(values)
             return (string_io.getvalue(), "text/csv")
         else:
-            return (json.dumps(result), "application/json")
+            return (result, "application/json")
 
     @wrappers.Request.application
     def tags_route(self, request):
@@ -141,24 +141,19 @@ class ScalarsPlugin(base_plugin.TBPlugin):
             tag = request.args.get("tag")
             run = request.args.get("run")
             runs = [run]
-        else:
+        elif request.method == "POST":
             tag = request.form["tag"]
             json_runs = request.form["runs"]
             try:
                 runs = json.loads(json_runs)
-            except Exception as e:  # pylint: disable=broad-except
-                # Different JSON libs raise different exceptions, so we just do a
-                # catch-all here. This problem is complicated by how Tensorboard might be
-                # run in many different environments, as it is open-source.
-                # TODO(@caisq, @chihuahua): Create platform-dependent adapter to catch
-                # specific types of exceptions, instead of the broad catching here.
-                response = ("Could not decode runs JSON string %r: %s") % (
-                    json_runs,
-                    e,
-                )
-                return http_util.Respond(
-                    request, response, "text/plain", code=400
-                )
+            except json.JSONDecodeError as e:
+                raise errors.InvalidArgumentError(e)
+        else:
+            response = (
+                "%s requests are forbidden by the scalars plugin."
+                % request.method
+            )
+            return http_util.Respond(request, response, "text/plain", code=405)
 
         ctx = plugin_util.context(request.environ)
         experiment = plugin_util.experiment_id(request.environ)

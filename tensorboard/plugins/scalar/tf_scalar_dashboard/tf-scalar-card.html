@@ -215,16 +215,14 @@ limitations under the License.
           type: Object,
           value: function() {
             return (scalarChart, datum, data) => {
-              for (const run in data) {
-                const points = data[run];
+              for (const [run, points] of Object.entries(data)) {
                 const formattedData = points.map((point) => ({
                   wall_time: new Date(point[0] * 1000),
                   step: point[1],
                   scalar: point[2],
                 }));
-                const name = this._getSeriesNameForRun(run, datum.experiment);
-                scalarChart.setSeriesMetadata(name, {run, tag: datum.tag});
-                scalarChart.setSeriesData(name, formattedData);
+                scalarChart.setSeriesMetadata(run, {run, tag: datum.tag});
+                scalarChart.setSeriesData(run, formattedData);
               }
               scalarChart.commitChanges();
             };
@@ -323,13 +321,7 @@ limitations under the License.
         return data.map((datum) => datum.run);
       },
       _getDataSeries() {
-        return this.tagAndRuns.series.map((d) =>
-          this._getSeriesNameForRun(d.run, d.experiment)
-        );
-      },
-      // name is a stable identifier for a series.
-      _getSeriesNameForRun(run, experiment = {name: '_default'}) {
-        return JSON.stringify([experiment.name, run]);
+        return this.tagAndRuns.series.map((d) => d.run);
       },
       // title is a visible string of a series for the UI.
       _getSeriesDisplayNameFromDatum(datum) {

@@ -83,20 +83,21 @@ namespace tf_dashboard_common {
         value: function() {
           return (datum) => {
             const dataLoadUrl = this.getDataLoadUrl(datum);
-            var url;
-            var postdata = {};
-            if (Array.isArray(dataLoadUrl)) {
-              [url, postdata] = dataLoadUrl;
-            } else {
+            let url;
+            let postData = {};
+            if (typeof dataLoadUrl === 'string') {
               url = dataLoadUrl;
+            } else {
+              url = dataLoadUrl.url;
+              postData = dataLoadUrl.postData;
             }
-            return this.requestManager.request(url, postdata);
+            return this.requestManager.request(url, postData);
           };
         },
       },
 
       // A function that takes a datum and returns a string URL for fetching
-      // data.  Optionally, returns a tuple of (URL, postdata).
+      // data.  Optionally, returns an object like {url, postData}.
       getDataLoadUrl: Function,
 
       dataLoading: {
