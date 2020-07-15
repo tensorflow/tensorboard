@@ -61,3 +61,15 @@ instead be in CSV format:
     1443856985.705543,1448,0.7461960315704346
     1443857105.704628,3438,0.5427092909812927
     1443857225.705133,5417,0.5457325577735901
+
+## `/data/plugin/scalars/scalarsmulti`
+
+Accepts a POST request with data of the form
+
+    {
+      "tag": "foo",
+      "runs": ["bar", "baz],
+    }
+
+Returns a dict, keyed by run name, where each value is an array of the form
+`[wall_time, step, value]` as above.

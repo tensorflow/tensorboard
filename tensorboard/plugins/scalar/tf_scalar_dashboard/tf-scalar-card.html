@@ -45,7 +45,7 @@ limitations under the License.
       <tf-line-chart-data-loader
         active="[[active]]"
         color-scale="[[_getColorScale(colorScale)]]"
-        data-series="[[_getDataSeries(tagAndRuns.series)]]"
+        data-series="[[tagAndRuns.runs]]"
         data-to-load="[[_asSingletonArray(tagAndRuns)]]"
         get-data-load-name="[[_getDataLoadName]]"
         get-data-load-url="[[getDataLoadUrl]]"
@@ -102,7 +102,7 @@ limitations under the License.
       <template is="dom-if" if="[[showDownloadLinks]]">
         <div class="download-links">
           <tf-downloader
-            runs="[[_runsFromData(tagAndRuns.series)]]"
+            runs="[[tagAndRuns.runs]]"
             tag="[[tag]]"
             url-fn="[[_downloadUrlFn]]"
           ></tf-downloader>
@@ -188,6 +188,7 @@ limitations under the License.
       properties: {
         tag: String,
 
+        // {tag: string, runs: string[]}
         tagAndRuns: Object,
 
         /**
@@ -221,8 +222,13 @@ limitations under the License.
                   step: point[1],
                   scalar: point[2],
                 }));
-                scalarChart.setSeriesMetadata(run, {run, tag: datum.tag});
-                scalarChart.setSeriesData(run, formattedData);
+                const name = this._getSeriesNameForRun(run);
+                console.log(name, datum, formattedData);
+                scalarChart.setSeriesMetadata(name, {
+                  run,
+                  tag: datum.tag,
+                });
+                scalarChart.setSeriesData(name, formattedData);
               }
               scalarChart.commitChanges();
             };
@@ -236,9 +242,9 @@ limitations under the License.
             return ({tag, runs}) => {
               const url = tf_backend
                 .getRouter()
-                .pluginRoute('scalars', '/scalars');
-              const postdata = {tag, runs: JSON.stringify(runs)};
-              return [url, postdata];
+                .pluginRoute('scalars', '/scalarsmulti');
+              const postData = {tag, runs: JSON.stringify(runs)};
+              return {url, postData};
             };
           },
         },
@@ -282,8 +288,7 @@ limitations under the License.
             columns.splice(ind, 1, {
               title: 'Name',
               evaluate: (d) => {
-                const datum = d.dataset.metadata().meta;
-                return this._getSeriesDisplayNameFromDatum(datum);
+                return d.dataset.metadata().meta.run;
               },
             });
             return columns;
@@ -317,15 +322,9 @@ limitations under the License.
         // specifier, truncating the SVG. (See issue #1874.)
         this.$$('#svgLink').href = `data:image/svg+xml;base64,${btoa(svgStr)}`;
       },
-      _runsFromData(data) {
-        return data.map((datum) => datum.run);
-      },
-      _getDataSeries() {
-        return this.tagAndRuns.series.map((d) => d.run);
-      },
-      // title is a visible string of a series for the UI.
-      _getSeriesDisplayNameFromDatum(datum) {
-        return datum.run;
+      // name is a stable identifier for a series.
+      _getSeriesNameForRun(run, experiment = {name: '_default'}) {
+        return JSON.stringify([experiment.name, run]);
       },
       _getColorScale() {
         if (this.colorScale !== null) {

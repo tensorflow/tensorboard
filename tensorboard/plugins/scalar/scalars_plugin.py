@@ -70,6 +70,7 @@ class ScalarsPlugin(base_plugin.TBPlugin):
         return {
             "/scalars": self.scalars_route,
             "/tags": self.tags_route,
+            "/scalarsmulti": self.scalars_multirun_route,
         }
 
     def is_active(self):
@@ -96,7 +97,31 @@ class ScalarsPlugin(base_plugin.TBPlugin):
                 }
         return result
 
-    def scalars_impl(self, ctx, tag, runs, experiment, output_format):
+    def _scalars_impl(self, ctx, tag, run, experiment, output_format):
+        """Result of the form `(body, mime_type)`."""
+        all_scalars = self._data_provider.read_scalars(
+            ctx,
+            experiment_id=experiment,
+            plugin_name=metadata.PLUGIN_NAME,
+            downsample=self._downsample_to,
+            run_tag_filter=provider.RunTagFilter(runs=[run], tags=[tag]),
+        )
+        scalars = all_scalars.get(run, {}).get(tag, None)
+        if scalars is None:
+            raise errors.NotFoundError(
+                "No scalar data for run=%r, tag=%r" % (run, tag)
+            )
+        values = [(x.wall_time, x.step, x.value) for x in scalars]
+        if output_format == OutputFormat.CSV:
+            string_io = StringIO()
+            writer = csv.writer(string_io)
+            writer.writerow(["Wall time", "Step", "Value"])
+            writer.writerows(values)
+            return (string_io.getvalue(), "text/csv")
+        else:
+            return (values, "application/json")
+
+    def _scalars_multirun_impl(self, ctx, tag, runs, experiment):
         """Result of the form `(body, mime_type)`."""
         all_scalars = self._data_provider.read_scalars(
             ctx,
@@ -113,19 +138,7 @@ class ScalarsPlugin(base_plugin.TBPlugin):
             values = [(x.wall_time, x.step, x.value) for x in scalars]
             result[run] = values
 
-        if output_format == OutputFormat.CSV:
-            if len(runs) > 1:
-                raise errors.InvalidArgumentError(
-                    "Only a single run may be read at a time when requesting "
-                    "scalar data in CSV form."
-                )
-            string_io = StringIO()
-            writer = csv.writer(string_io)
-            writer.writerow(["Wall time", "Step", "Value"])
-            writer.writerows(values)
-            return (string_io.getvalue(), "text/csv")
-        else:
-            return (result, "application/json")
+        return (result, "application/json")
 
     @wrappers.Request.application
     def tags_route(self, request):
@@ -140,8 +153,25 @@ class ScalarsPlugin(base_plugin.TBPlugin):
         if request.method == "GET":
             tag = request.args.get("tag")
             run = request.args.get("run")
-            runs = [run]
-        elif request.method == "POST":
+        else:
+            response = (
+                "%s requests are forbidden by the scalars plugin."
+                % request.method
+            )
+            return http_util.Respond(request, response, "text/plain", code=405)
+
+        ctx = plugin_util.context(request.environ)
+        experiment = plugin_util.experiment_id(request.environ)
+        output_format = request.args.get("format")
+        (body, mime_type) = self._scalars_impl(
+            ctx, tag, run, experiment, output_format
+        )
+        return http_util.Respond(request, body, mime_type)
+
+    @wrappers.Request.application
+    def scalars_multirun_route(self, request):
+        """Given a tag and runs, return dict of run to array of ScalarEvents."""
+        if request.method == "POST":
             tag = request.form["tag"]
             json_runs = request.form["runs"]
             try:
@@ -157,8 +187,7 @@ class ScalarsPlugin(base_plugin.TBPlugin):
 
         ctx = plugin_util.context(request.environ)
         experiment = plugin_util.experiment_id(request.environ)
-        output_format = request.args.get("format")
-        (body, mime_type) = self.scalars_impl(
-            ctx, tag, runs, experiment, output_format
+        (body, mime_type) = self._scalars_multirun_impl(
+            ctx, tag, runs, experiment
         )
         return http_util.Respond(request, body, mime_type)

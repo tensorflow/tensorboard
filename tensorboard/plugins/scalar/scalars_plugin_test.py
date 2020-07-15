@@ -171,6 +171,21 @@ class ScalarsPluginTest(tf.test.TestCase):
         self.assertEqual("application/json", response.headers["Content-Type"])
         self.assertEqual(self._STEPS, len(json.loads(response.get_data())))
 
+    def test_scalarsmulti_with_scalars(self):
+        server = self.load_server([self._RUN_WITH_SCALARS])
+        response = server.post(
+            "/data/plugin/scalars/scalarsmulti",
+            data={
+                "runs": json.dumps([self._RUN_WITH_SCALARS]),
+                "tag": "%s/scalar_summary" % self._SCALAR_TAG,
+            },
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("application/json", response.headers["Content-Type"])
+        r = json.loads(response.get_data())
+        self.assertItemsEqual([self._RUN_WITH_SCALARS], r.keys())
+        self.assertEqual(self._STEPS, len(r[self._RUN_WITH_SCALARS]))
+
     def test_scalars_with_histogram(self):
         server = self.load_server([self._RUN_WITH_HISTOGRAM])
         response = server.get(
