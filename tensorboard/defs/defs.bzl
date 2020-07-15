@@ -45,10 +45,19 @@ def tf_ts_config(**kwargs):
 
     ts_config(**kwargs)
 
-def tf_ts_library(**kwargs):
-    """TensorBoard wrapper for the rule for a TypeScript library."""
+def tf_ts_library(strict_checks = True, tsconfig = None, **kwargs):
+    """TensorBoard wrapper for the rule for a TypeScript library.
 
-    ts_library(**kwargs)
+    Args:
+      strict_checks: whether to enable stricter type checking. Default is True.
+          Please use `strict_checks = False` for only Polymer based targets.
+      tsconfig: TypeScript configuration. If specified, it overrides strict_checks.
+      **kwargs: keyword arguments to ts_library build rule.
+    """
+    if not strict_checks and not tsconfig:
+        tsconfig = "//:tsconfig-lax"
+
+    ts_library(tsconfig = tsconfig or "//:tsconfig.json", **kwargs)
 
 def tf_ts_devserver(**kwargs):
     """TensorBoard wrapper for the rule for a TypeScript dev server."""
