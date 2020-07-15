@@ -693,6 +693,12 @@ var vz_line_chart2;
                 this.markersScatterPlot.y(this.getYAxisAccessor(), this.yScale);
             }
         }
+        setColorScale(colorScale) {
+            this.colorScale = colorScale;
+        }
+        setTooltipColumns(tooltipColumns) {
+            this.tooltipColumns = tooltipColumns;
+        }
         setTooltipSortingMethod(method) {
             this.tooltipSortingMethod = method;
         }
@@ -750,13 +756,6 @@ var vz_line_chart2;
         onAnchor(fn) {
             if (this.outer)
                 this.outer.onAnchor(fn);
-        }
-        /**
-         * Sets the viewport domain.
-         */
-        setAxisDomains(domains) {
-            this.xScale.setTransformationDomain(domains.x);
-            this.yScale.setTransformationDomain(domains.y);
         }
         /**
          * Returns whether the extent of rendered data values fits the current

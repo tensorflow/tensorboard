@@ -212,7 +212,9 @@ var vz_line_chart2;
             _makeChartAsyncCallbackId: { type: Number, value: null },
         },
         observers: [
-            '_makeChart(xComponentsCreationMethod, xType, yValueAccessor, yScaleType, tooltipColumns, colorScale, isAttached)',
+            '_makeChart(xComponentsCreationMethod, xType, yValueAccessor, yScaleType, isAttached)',
+            '_colorScaleChanged(colorScale)',
+            '_tooltipColumnsChanged(tooltipColumns)',
             // Refer to the cache and, if available, load data of a new visible series.
             '_reloadFromCache(_chart, _visibleSeriesCache)',
             '_smoothingChanged(smoothingEnabled, smoothingWeight, _chart)',
@@ -234,8 +236,10 @@ var vz_line_chart2;
         },
         detached() {
             this.cancelAsync(this._makeChartAsyncCallbackId);
-            if (this._chart)
+            if (this._chart) {
                 this._chart.destroy();
+                this._chart = undefined;
+            }
             if (this._listeners) {
                 this._listeners.forEach(({ node, eventName, func, option }) => {
                     node.removeEventListener(eventName, func, option);
@@ -338,21 +342,22 @@ var vz_line_chart2;
          * Creates a chart, and asynchronously renders it. Fires a chart-rendered
          * event after the chart is rendered.
          */
-        _makeChart: function (xComponentsCreationMethod, xType, yValueAccessor, yScaleType, tooltipColumns, colorScale) {
-            // Find the actual xComponentsCreationMethod.
-            if (!xType && !xComponentsCreationMethod) {
-                xComponentsCreationMethod = vz_chart_helpers.stepX;
-            }
-            else if (xType) {
-                xComponentsCreationMethod = () => vz_chart_helpers.getXComponents(xType);
-            }
+        _makeChart: function () {
             if (this._makeChartAsyncCallbackId !== null) {
                 this.cancelAsync(this._makeChartAsyncCallbackId);
                 this._makeChartAsyncCallbackId = null;
             }
             this._makeChartAsyncCallbackId = this.async(function () {
                 this._makeChartAsyncCallbackId = null;
-                if (!xComponentsCreationMethod ||
+                // Find the actual xComponentsCreationMethod.
+                let normalXComponentsCreationMethod = this.xComponentsCreationMethod;
+                if (!this.xType && !normalXComponentsCreationMethod) {
+                    normalXComponentsCreationMethod = vz_chart_helpers.stepX;
+                }
+                else if (this.xType) {
+                    normalXComponentsCreationMethod = () => vz_chart_helpers.getXComponents(this.xType);
+                }
+                if (!normalXComponentsCreationMethod ||
                     !this.yValueAccessor ||
                     !this.tooltipColumns) {
                     return;
@@ -360,7 +365,7 @@ var vz_line_chart2;
                 // We directly reference properties of `this` because this call is
                 // asynchronous, and values may have changed in between the call being
                 // initiated and actually being run.
-                var chart = new vz_line_chart2.LineChart(xComponentsCreationMethod, this.yValueAccessor, yScaleType, colorScale, this.$.tooltip, this.tooltipColumns, this.fillArea, this.defaultXRange, this.defaultYRange, this.symbolFunction, this.xAxisFormatter);
+                var chart = new vz_line_chart2.LineChart(normalXComponentsCreationMethod, this.yValueAccessor, this.yScaleType, this.colorScale, this.$.tooltip, this.tooltipColumns, this.fillArea, this.defaultXRange, this.defaultYRange, this.symbolFunction, this.xAxisFormatter);
                 var div = d3.select(this.$.chartdiv);
                 chart.renderTo(div);
                 if (this._chart) {
@@ -398,6 +403,17 @@ var vz_line_chart2;
             if (!this._chart)
                 return;
             this._chart.ignoreYOutliers(this.ignoreYOutliers);
+        },
+        _colorScaleChanged: function () {
+            if (!this._chart)
+                return;
+            this._chart.setColorScale(this.colorScale);
+            this._chart.redraw();
+        },
+        _tooltipColumnsChanged: function () {
+            if (!this._chart)
+                return;
+            this._chart.setTooltipColumns(this.tooltipColumns);
         },
         _tooltipSortingMethodChanged: function () {
             if (!this._chart)
