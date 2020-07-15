@@ -323,12 +323,12 @@ limitations under the License.
       },
       _getDataSeries() {
         return this.tagAndRuns.series.map((d) =>
-          this._getSeriesNameForRun(d.run, d.experiment)
+          this._getSeriesNameForRun(d.run)
         );
       },
       // name is a stable identifier for a series.
-      _getSeriesNameForRun(run, experiment = {name: '_default'}) {
-        return JSON.stringify([experiment.name, run]);
+      _getSeriesNameForRun(run) {
+        return JSON.stringify(run);
       },
       _getColorScale() {
         if (this.colorScale !== null) {
@@ -338,7 +338,7 @@ limitations under the License.
         // defined in tf_color_scale.
         return {
           scale: (name) => {
-            const [exp, run] = JSON.parse(name);
+            const run = JSON.parse(name);
             return tf_color_scale.runsColorScale(run);
           },
         };
