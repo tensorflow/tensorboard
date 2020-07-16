@@ -42,8 +42,8 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//tensorboard:internal"],
     deps = [
-        ":lib_init_only",
         ":errors",
+        ":lib_init_only",
         ":notebook",
         ":program",
         "//tensorboard/data:lib_init_only",
