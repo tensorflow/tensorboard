@@ -241,8 +241,8 @@ limitations under the License.
             return ({tag, runs}) => {
               const url = tf_backend
                 .getRouter()
-                .pluginRoute('scalars', '/scalarsmulti');
-              const postData = {tag, runs: JSON.stringify(runs)};
+                .pluginRoute('scalars', '/scalars_multirun');
+              const postData = {query: JSON.stringify({tag, runs})};
               return {url, postData};
             };
           },

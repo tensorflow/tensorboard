@@ -62,13 +62,14 @@ instead be in CSV format:
     1443857105.704628,3438,0.5427092909812927
     1443857225.705133,5417,0.5457325577735901
 
-## `/data/plugin/scalars/scalarsmulti`
+## `/data/plugin/scalars/scalars_multirun`
 
-Accepts a POST request with data of the form
+Accepts a POST request where the form data has a single field called `query`,
+containing a JSON-encoded dict of this shape:
 
     {
       "tag": "foo",
-      "runs": ["bar", "baz],
+      "runs": ["bar", "baz"],
     }
 
 Returns a dict, keyed by run name, where each value is an array of the form

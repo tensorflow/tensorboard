@@ -58,6 +58,7 @@ class ScalarsPluginTest(tf.test.TestCase):
     _LEGACY_SCALAR_TAG = "ancient-values"
     _SCALAR_TAG = "simple-values"
     _HISTOGRAM_TAG = "complicated-values"
+    _TEXT_TAG = "text-values"
 
     _DISPLAY_NAME = "Walrus population"
     _DESCRIPTION = "the *most* valuable statistic"
@@ -66,6 +67,8 @@ class ScalarsPluginTest(tf.test.TestCase):
     _RUN_WITH_LEGACY_SCALARS = "_RUN_WITH_LEGACY_SCALARS"
     _RUN_WITH_SCALARS = "_RUN_WITH_SCALARS"
     _RUN_WITH_HISTOGRAM = "_RUN_WITH_HISTOGRAM"
+    _RUN_WITH_TEXT = "_RUN_WITH_TEXT"
+    _RUN_WITH_NOTHING = "_RUN_WITH_NOTHING"
 
     def load_plugin(self, run_names):
         logdir = self.get_temp_dir()
@@ -110,6 +113,12 @@ class ScalarsPluginTest(tf.test.TestCase):
                     summ = tf.compat.v1.summary.histogram(
                         self._HISTOGRAM_TAG, data
                     ).numpy()
+                elif run_name == self._RUN_WITH_TEXT:
+                    summ = tf.compat.v1.summary.text(
+                        self._TEXT_TAG, tf.as_string(data)
+                    ).numpy()
+                elif run_name == self._RUN_WITH_NOTHING:
+                    continue
                 else:
                     assert False, "Invalid run name: %r" % run_name
                 writer.add_summary(summ, global_step=step)
@@ -171,13 +180,17 @@ class ScalarsPluginTest(tf.test.TestCase):
         self.assertEqual("application/json", response.headers["Content-Type"])
         self.assertEqual(self._STEPS, len(json.loads(response.get_data())))
 
-    def test_scalarsmulti_with_scalars(self):
+    def test_scalars_multirun_with_scalars(self):
         server = self.load_server([self._RUN_WITH_SCALARS])
         response = server.post(
-            "/data/plugin/scalars/scalarsmulti",
+            "/data/plugin/scalars/scalars_multirun",
             data={
-                "runs": json.dumps([self._RUN_WITH_SCALARS]),
-                "tag": "%s/scalar_summary" % self._SCALAR_TAG,
+                "query": json.dumps(
+                    {
+                        "tag": "%s/scalar_summary" % self._SCALAR_TAG,
+                        "runs": [self._RUN_WITH_SCALARS],
+                    }
+                )
             },
         )
         self.assertEqual(200, response.status_code)
@@ -185,6 +198,42 @@ class ScalarsPluginTest(tf.test.TestCase):
         r = json.loads(response.get_data())
         self.assertItemsEqual([self._RUN_WITH_SCALARS], r.keys())
         self.assertEqual(self._STEPS, len(r[self._RUN_WITH_SCALARS]))
+
+    def test_scalars_multirun_with_no_scalars(self):
+        server = self.load_server([self._RUN_WITH_SCALARS])
+        response = server.post(
+            "/data/plugin/scalars/scalars_multirun",
+            data={
+                "query": json.dumps(
+                    {
+                        "tag": "%s/scalar_summary" % self._SCALAR_TAG,
+                        "runs": [self._RUN_WITH_TEXT],
+                    }
+                )
+            },
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("application/json", response.headers["Content-Type"])
+        r = json.loads(response.get_data())
+        self.assertEmpty(r)
+
+    def test_scalars_multirun_with_empty_run(self):
+        server = self.load_server([self._RUN_WITH_NOTHING])
+        response = server.post(
+            "/data/plugin/scalars/scalars_multirun",
+            data={
+                "query": json.dumps(
+                    {
+                        "tag": "%s/scalar_summary" % self._SCALAR_TAG,
+                        "runs": [self._RUN_WITH_NOTHING],
+                    }
+                )
+            },
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("application/json", response.headers["Content-Type"])
+        r = json.loads(response.get_data())
+        self.assertEmpty(r)
 
     def test_scalars_with_histogram(self):
         server = self.load_server([self._RUN_WITH_HISTOGRAM])

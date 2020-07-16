@@ -88,8 +88,7 @@ namespace tf_dashboard_common {
             if (typeof dataLoadUrl === 'string') {
               url = dataLoadUrl;
             } else {
-              url = dataLoadUrl.url;
-              postData = dataLoadUrl.postData;
+              ({url, postData} = dataLoadUrl);
             }
             return this.requestManager.request(url, postData);
           };

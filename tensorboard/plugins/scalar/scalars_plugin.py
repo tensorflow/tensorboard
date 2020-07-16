@@ -70,7 +70,7 @@ class ScalarsPlugin(base_plugin.TBPlugin):
         return {
             "/scalars": self.scalars_route,
             "/tags": self.tags_route,
-            "/scalarsmulti": self.scalars_multirun_route,
+            "/scalars_multirun": self.scalars_multirun_route,
         }
 
     def is_active(self):
@@ -151,15 +151,8 @@ class ScalarsPlugin(base_plugin.TBPlugin):
     @wrappers.Request.application
     def scalars_route(self, request):
         """Given a tag and single run, return array of ScalarEvents."""
-        if request.method == "GET":
-            tag = request.args.get("tag")
-            run = request.args.get("run")
-        else:
-            response = (
-                "%s requests are forbidden by the scalars plugin."
-                % request.method
-            )
-            return http_util.Respond(request, response, "text/plain", code=405)
+        tag = request.args.get("tag")
+        run = request.args.get("run")
 
         ctx = plugin_util.context(request.environ)
         experiment = plugin_util.experiment_id(request.environ)
@@ -172,19 +165,13 @@ class ScalarsPlugin(base_plugin.TBPlugin):
     @wrappers.Request.application
     def scalars_multirun_route(self, request):
         """Given a tag and runs, return dict of run to array of ScalarEvents."""
-        if request.method == "POST":
-            tag = request.form["tag"]
-            json_runs = request.form["runs"]
-            try:
-                runs = json.loads(json_runs)
-            except json.JSONDecodeError as e:
-                raise errors.InvalidArgumentError(e)
-        else:
-            response = (
-                "%s requests are forbidden by the scalars plugin."
-                % request.method
-            )
-            return http_util.Respond(request, response, "text/plain", code=405)
+        try:
+            query = json.loads(request.form["query"])
+        except json.JSONDecodeError as e:
+            raise errors.InvalidArgumentError(e)
+
+        tag = query["tag"]
+        runs = query["runs"]
 
         ctx = plugin_util.context(request.environ)
         experiment = plugin_util.experiment_id(request.environ)
