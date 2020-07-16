@@ -88,6 +88,7 @@ def Respond(
     content_encoding=None,
     encoding="utf-8",
     csp_scripts_sha256s=None,
+    headers=None,
 ):
     """Construct a werkzeug Response.
 
@@ -128,6 +129,9 @@ def Respond(
         elements for script-src of the Content-Security-Policy. If it is None, the
         HTML will disallow any script to execute. It is only be used when the
         content_type is text/html.
+      headers: Any additional headers to include on the response, as a
+        list of key-value tuples: e.g., `[("Allow", "GET")]`. In case of
+        conflict, these may be overridden with headers added by this function.
 
     Returns:
       A werkzeug Response object (a WSGI application).
@@ -179,7 +183,7 @@ def Respond(
         content_encoding = None
         direct_passthrough = True
 
-    headers = []
+    headers = list(headers or [])
     headers.append(("Content-Length", str(content_length)))
     headers.append(("X-Content-Type-Options", "nosniff"))
     if content_encoding:

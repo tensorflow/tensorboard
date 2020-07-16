@@ -195,17 +195,22 @@ class HandlingErrorsTest(tb_test.TestCase):
         @application._handling_errors
         @wrappers.Request.application
         def app(request):
-            raise errors.NotFoundError("no scalar data for run=foo, tag=bar")
+            raise errors.UnauthenticatedError(
+                "who are you?", challenge='Digest realm="https://example.com"'
+            )
 
         server = werkzeug_test.Client(app, wrappers.BaseResponse)
         response = server.get("/")
         self.assertEqual(
-            response.get_data(),
-            b"Not found: no scalar data for run=foo, tag=bar",
+            response.get_data(), b"Unauthenticated: who are you?",
         )
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 401)
         self.assertStartsWith(
             response.headers.get("Content-Type"), "text/plain"
+        )
+        self.assertEqual(
+            response.headers.get("WWW-Authenticate"),
+            'Digest realm="https://example.com"',
         )
 
     def test_internal_errors_propagate(self):
