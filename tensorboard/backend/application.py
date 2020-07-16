@@ -551,7 +551,11 @@ def _handling_errors(wsgi_app):
         except errors.PublicError as e:
             request = wrappers.Request(environ)
             error_app = http_util.Respond(
-                request, str(e), "text/plain", code=e.http_code
+                request,
+                str(e),
+                "text/plain",
+                code=e.http_code,
+                headers=e.headers,
             )
             return error_app(environ, start_response)
         # Let other exceptions be handled by the server, as an opaque
