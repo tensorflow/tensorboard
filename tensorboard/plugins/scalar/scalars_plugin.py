@@ -132,11 +132,12 @@ class ScalarsPlugin(base_plugin.TBPlugin):
         )
         result = {}
         for run in all_scalars:
-            scalars = all_scalars.get(run, {}).get(tag, [])
+            scalars = all_scalars[run][tag]
             # Note we do not raise an error if data for a given run was not
-            # found; we just return an empty array in that case.
-            values = [(x.wall_time, x.step, x.value) for x in scalars]
-            result[run] = values
+            # found; we just omit the run that case.
+            if scalars:
+                values = [(x.wall_time, x.step, x.value) for x in scalars]
+                result[run] = values
 
         return (result, "application/json")
 

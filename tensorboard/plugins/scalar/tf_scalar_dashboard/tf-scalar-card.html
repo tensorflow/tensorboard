@@ -322,8 +322,8 @@ limitations under the License.
         this.$$('#svgLink').href = `data:image/svg+xml;base64,${btoa(svgStr)}`;
       },
       _getDataSeries() {
-        return this.tagAndRuns.series.map((d) =>
-          this._getSeriesNameForRun(d.run)
+        return this.tagAndRuns.runs.map((run) =>
+          this._getSeriesNameForRun(run)
         );
       },
       // name is a stable identifier for a series.
