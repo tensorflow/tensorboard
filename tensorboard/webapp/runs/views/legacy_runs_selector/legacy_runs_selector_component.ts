@@ -39,6 +39,10 @@ export class LegacyRunsSelectorComponent implements AfterViewInit {
   private selector!: ElementRef;
 
   ngAfterViewInit() {
+    /**
+     * The event is dispatched by Polymer when `selectedRuns` prop changes because it
+     * notifies (it is implicitly fired by Polymer library).
+     */
     this.selector.nativeElement.addEventListener(
       'selected-runs-changed',
       (event: PolymerChangeEvent) => {
