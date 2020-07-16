@@ -434,22 +434,6 @@ class ProjectorPlugin(base_plugin.TBPlugin):
     def _read_latest_config_files(self, run_path_pairs):
         """Reads and returns the projector config files in every run
         directory."""
-        """If no specific config exists, use the default config provided in
-        the root directory."""
-        default_config_fpath = os.path.join(
-            self.logdir, metadata.PROJECTOR_FILENAME
-        )
-        default_config = ProjectorConfig()
-        if tf.io.gfile.exists(default_config_fpath):
-            with tf.io.gfile.GFile(default_config_fpath, "r") as f:
-                file_content = f.read()
-            text_format.Merge(file_content, default_config)
-            # Relative metadata paths do not work with subdirs, so convert
-            # any metadata paths to absolute paths.
-            for embedding in default_config.embeddings:
-                embedding.metadata_path = _rel_to_abs_asset_path(
-                    embedding.metadata_path, default_config_fpath
-                )
         configs = {}
         config_fpaths = {}
         for run_name, assets_dir in run_path_pairs:
@@ -459,8 +443,6 @@ class ProjectorPlugin(base_plugin.TBPlugin):
                 with tf.io.gfile.GFile(config_fpath, "r") as f:
                     file_content = f.read()
                 text_format.Merge(file_content, config)
-            elif tf.io.gfile.exists(default_config_fpath):
-                config = default_config
             has_tensor_files = False
             for embedding in config.embeddings:
                 if embedding.tensor_path:
