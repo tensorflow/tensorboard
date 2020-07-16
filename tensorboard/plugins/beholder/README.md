@@ -1,5 +1,11 @@
 # The Beholder Plugin
 
+NOTE: The Beholder plugin is deprecated and will be removed in a future release
+of TensorBoard. Please see https://github.com/tensorflow/tensorboard/issues/3843
+for recommendations if you want to keep using the plugin or adopt it yourself.
+
+---
+
 The Beholder plugin shows a live video feed of tensor data in TensorBoard during
 model training. It can display model variable values, arbitrary NumPy arrays
 (e.g. for gradients or activations), or pre-existing image frames.
