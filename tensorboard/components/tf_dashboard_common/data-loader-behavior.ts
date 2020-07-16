@@ -84,7 +84,7 @@ namespace tf_dashboard_common {
           return (datum) => {
             const dataLoadUrl = this.getDataLoadUrl(datum);
             let url;
-            let postData = {};
+            let postData;
             if (typeof dataLoadUrl === 'string') {
               url = dataLoadUrl;
             } else {
