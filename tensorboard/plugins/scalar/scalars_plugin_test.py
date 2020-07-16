@@ -58,7 +58,6 @@ class ScalarsPluginTest(tf.test.TestCase):
     _LEGACY_SCALAR_TAG = "ancient-values"
     _SCALAR_TAG = "simple-values"
     _HISTOGRAM_TAG = "complicated-values"
-    _TEXT_TAG = "text-values"
 
     _DISPLAY_NAME = "Walrus population"
     _DESCRIPTION = "the *most* valuable statistic"
@@ -67,7 +66,6 @@ class ScalarsPluginTest(tf.test.TestCase):
     _RUN_WITH_LEGACY_SCALARS = "_RUN_WITH_LEGACY_SCALARS"
     _RUN_WITH_SCALARS = "_RUN_WITH_SCALARS"
     _RUN_WITH_HISTOGRAM = "_RUN_WITH_HISTOGRAM"
-    _RUN_WITH_TEXT = "_RUN_WITH_TEXT"
     _RUN_WITH_NOTHING = "_RUN_WITH_NOTHING"
 
     def load_plugin(self, run_names):
@@ -112,10 +110,6 @@ class ScalarsPluginTest(tf.test.TestCase):
                 elif run_name == self._RUN_WITH_HISTOGRAM:
                     summ = tf.compat.v1.summary.histogram(
                         self._HISTOGRAM_TAG, data
-                    ).numpy()
-                elif run_name == self._RUN_WITH_TEXT:
-                    summ = tf.compat.v1.summary.text(
-                        self._TEXT_TAG, tf.as_string(data)
                     ).numpy()
                 elif run_name == self._RUN_WITH_NOTHING:
                     continue
@@ -181,14 +175,19 @@ class ScalarsPluginTest(tf.test.TestCase):
         self.assertEqual(self._STEPS, len(json.loads(response.get_data())))
 
     def test_scalars_multirun_with_scalars(self):
-        server = self.load_server([self._RUN_WITH_SCALARS])
+        server = self.load_server(
+            [self._RUN_WITH_SCALARS, self._RUN_WITH_HISTOGRAM]
+        )
         response = server.post(
             "/data/plugin/scalars/scalars_multirun",
             data={
                 "query": json.dumps(
                     {
                         "tag": "%s/scalar_summary" % self._SCALAR_TAG,
-                        "runs": [self._RUN_WITH_SCALARS],
+                        "runs": [
+                            self._RUN_WITH_SCALARS,
+                            self._RUN_WITH_HISTOGRAM,
+                        ],
                     }
                 )
             },
@@ -200,14 +199,14 @@ class ScalarsPluginTest(tf.test.TestCase):
         self.assertEqual(self._STEPS, len(r[self._RUN_WITH_SCALARS]))
 
     def test_scalars_multirun_with_no_scalars(self):
-        server = self.load_server([self._RUN_WITH_SCALARS])
+        server = self.load_server([self._RUN_WITH_HISTOGRAM])
         response = server.post(
             "/data/plugin/scalars/scalars_multirun",
             data={
                 "query": json.dumps(
                     {
                         "tag": "%s/scalar_summary" % self._SCALAR_TAG,
-                        "runs": [self._RUN_WITH_TEXT],
+                        "runs": [self._RUN_WITH_HISTOGRAM],
                     }
                 )
             },

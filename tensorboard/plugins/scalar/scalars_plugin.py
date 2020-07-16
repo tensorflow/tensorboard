@@ -131,13 +131,12 @@ class ScalarsPlugin(base_plugin.TBPlugin):
             run_tag_filter=provider.RunTagFilter(runs=runs, tags=[tag]),
         )
         result = {}
+        # Note we do not raise an error if data for a given run was not
+        # found; we just omit the run that case.
         for run in all_scalars:
             scalars = all_scalars[run][tag]
-            # Note we do not raise an error if data for a given run was not
-            # found; we just omit the run that case.
-            if scalars:
-                values = [(x.wall_time, x.step, x.value) for x in scalars]
-                result[run] = values
+            values = [(x.wall_time, x.step, x.value) for x in scalars]
+            result[run] = values
 
         return (result, "application/json")
 
