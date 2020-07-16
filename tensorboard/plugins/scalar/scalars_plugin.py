@@ -97,7 +97,7 @@ class ScalarsPlugin(base_plugin.TBPlugin):
                 }
         return result
 
-    def _scalars_impl(self, ctx, tag, run, experiment, output_format):
+    def scalars_impl(self, ctx, tag, run, experiment, output_format):
         """Result of the form `(body, mime_type)`."""
         all_scalars = self._data_provider.read_scalars(
             ctx,
@@ -163,7 +163,7 @@ class ScalarsPlugin(base_plugin.TBPlugin):
         ctx = plugin_util.context(request.environ)
         experiment = plugin_util.experiment_id(request.environ)
         output_format = request.args.get("format")
-        (body, mime_type) = self._scalars_impl(
+        (body, mime_type) = self.scalars_impl(
             ctx, tag, run, experiment, output_format
         )
         return http_util.Respond(request, body, mime_type)
