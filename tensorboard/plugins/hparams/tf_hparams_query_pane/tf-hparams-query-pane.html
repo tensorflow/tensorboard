@@ -453,17 +453,17 @@ TODO(erez): Add aggregation controls for repeated sessions.
         // briefly displaying the "no data" message before the data arrives.
         // Note that, in the context of a dom-if condition, we cannot easily
         // distinguish between false and undefined.
-        dataFound: {
+        dataLoadedWithNonEmptyHparams: {
           type: Boolean,
           value: false,
           notify: true,
         },
 
-        // Note that `noDataFound = false` means that we don't know yet whether
-        // data will be found or not (i.e., the fetch has not yet returned).
-        // `noDataFound = true` means the fetch completed, and there really is
-        // no data.
-        noDataFound: {
+        // Note that `dataLoadedWithEmptyHparams = false` means that we don't
+        // know yet whether data will be found or not (i.e., the fetch has not
+        // yet returned).  `dataLoadedWithEmptyHparams = true` means the fetch
+        // completed, and there really is no data.
+        dataLoadedWithEmptyHparams: {
           type: Boolean,
           value: false,
           notify: true,
@@ -665,8 +665,8 @@ TODO(erez): Add aggregation controls for repeated sessions.
             this._experiment.metricInfos &&
             this._experiment.metricInfos.length > 0
         );
-        this.set('dataFound', result);
-        this.set('noDataFound', !result);
+        this.set('dataLoadedWithNonEmptyHparams', result);
+        this.set('dataLoadedWithEmptyHparams', !result);
       },
 
       // Updates the _hparams property from the _experiment property.
@@ -805,7 +805,7 @@ TODO(erez): Add aggregation controls for repeated sessions.
       // 'undefined') when the ListSessionGroups RPC returns.
       _queryServerNoDebounce() {
         if (!this._hparams || !this._metrics) {
-          return null;
+          return;
         }
         return this._sendListSessionGroupsRequest().then(
           this._listSessionGroupsCanceller.cancellable(({value, cancelled}) => {

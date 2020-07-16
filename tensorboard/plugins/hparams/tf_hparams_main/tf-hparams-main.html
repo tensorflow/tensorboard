@@ -46,13 +46,13 @@ TODO(erez): Add aggregation of repeated trials.
           experiment-name="[[experimentName]]"
           configuration="{{_configuration}}"
           session-groups="{{_sessionGroups}}"
-          data-found="{{_dataFound}}"
-          no-data-found="{{_noDataFound}}"
+          data-loaded-with-non-empty-hparams="{{_dataLoadedWithNonEmptyHparams}}"
+          data-loaded-with-empty-hparams="{{_dataLoadedWithEmptyHparams}}"
         >
         </tf-hparams-query-pane>
       </div>
       <div class="center" slot="center">
-        <template is="dom-if" if="[[_noDataFound]]">
+        <template is="dom-if" if="[[_dataLoadedWithEmptyHparams]]">
           <div class="no-data-warning">
             <h3>No hparams data was found.</h3>
             <p>Probable causes:</p>
@@ -91,7 +91,7 @@ TODO(erez): Add aggregation of repeated trials.
           </div>
         </template>
 
-        <template is="dom-if" if="[[_dataFound]]">
+        <template is="dom-if" if="[[_dataLoadedWithNonEmptyHparams]]">
           <tf-hparams-sessions-pane
             id="sessions-pane"
             backend="[[backend]]"
@@ -158,8 +158,8 @@ TODO(erez): Add aggregation of repeated trials.
 
         _configuration: Object,
         _sessionGroups: Array,
-        _dataFound: Boolean,
-        _noDataFound: Boolean,
+        _dataLoadedWithNonEmptyHparams: Boolean,
+        _dataLoadedWithEmptyHparams: Boolean,
       },
 
       // This can be called to refresh the plugin.
