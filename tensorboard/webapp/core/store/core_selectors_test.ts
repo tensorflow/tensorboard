@@ -39,11 +39,30 @@ describe('core selectors', () => {
     it('returns state', () => {
       const state = createState(
         createCoreState({
-          polymerInteropRunSelection: new Map([['1', false], ['2', true]]),
+          polymerInteropRuns: [
+            {id: '1', name: 'Run name'},
+            {id: '2', name: 'Run 2 name'},
+          ],
+          polymerInteropRunSelection: new Set(['2']),
         })
       );
       expect(selectors.getRunSelection(state)).toEqual(
         new Map([['1', false], ['2', true]])
+      );
+    });
+
+    it('omits selection when run is not in the list', () => {
+      const state = createState(
+        createCoreState({
+          polymerInteropRuns: [
+            {id: '1', name: 'Run name'},
+            {id: '2', name: 'Run 2 name'},
+          ],
+          polymerInteropRunSelection: new Set(['1', '5']),
+        })
+      );
+      expect(selectors.getRunSelection(state)).toEqual(
+        new Map([['1', true], ['2', false]])
       );
     });
   });
