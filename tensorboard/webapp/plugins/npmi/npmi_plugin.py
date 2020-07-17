@@ -33,7 +33,7 @@ from tensorboard.data import provider
 
 from tensorboard.webapp.plugins.npmi import metadata
 
-_DEFAULT_DOWNSAMPLING = 1  # text tensors per time series
+_DEFAULT_DOWNSAMPLING = 1  # nPMI tensors per time series
 
 
 def _error_response(request, error_message):
@@ -46,6 +46,7 @@ def _missing_run_error_response(request):
     return _error_response(request, "run parameter is not provided")
 
 
+# Convert all NaNs in a multidimensional list to None
 def convert_nan_none(arr):
     return [
         convert_nan_none(e)
