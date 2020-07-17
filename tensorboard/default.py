@@ -53,7 +53,7 @@ from tensorboard.plugins.scalar import scalars_plugin
 from tensorboard.plugins.text import text_plugin
 from tensorboard.plugins.text_v2 import text_v2_plugin
 from tensorboard.plugins.mesh import mesh_plugin
-from tensorboard.webapp.plugins.npmi import npmi_plugin
+from tensorboard.plugins.npmi import npmi_plugin
 
 
 logger = logging.getLogger(__name__)
