@@ -712,7 +712,7 @@ class TensorBoardPluginsTest(tb_test.TestCase):
             ],
             data_provider=FakeDataProvider(),
             auth_providers={HeaderAuthProvider: HeaderAuthProvider()},
-            extra_routes=[self._auth_check_middleware],
+            middlewares=[self._auth_check_middleware],
         )
 
         self.server = werkzeug_test.Client(self.app, wrappers.BaseResponse)
@@ -859,7 +859,7 @@ class TensorBoardPluginsTest(tb_test.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.get_data(), b"top secret access granted")
 
-    def testExtraRoutesMiddleware(self):
+    def testExtraMiddlewares(self):
         # Must have `experiment_id` and auth context middlewares to pass.
         route = "/experiment/123/auth_check"
         res = self.server.get(route, headers=[("Authorization", "got it")])
