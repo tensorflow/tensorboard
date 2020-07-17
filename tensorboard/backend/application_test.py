@@ -712,9 +712,22 @@ class TensorBoardPluginsTest(tb_test.TestCase):
             ],
             data_provider=FakeDataProvider(),
             auth_providers={HeaderAuthProvider: HeaderAuthProvider()},
+            extra_routes=[self._auth_check_middleware],
         )
 
         self.server = werkzeug_test.Client(self.app, wrappers.BaseResponse)
+
+    def _auth_check_middleware(self, app):
+        def auth_check_app(environ, start_response):
+            request = wrappers.Request(environ)
+            if request.path != "/auth_check":
+                return app(environ, start_response)
+            ctx = plugin_util.context(environ)
+            header_auth = ctx.auth.get(HeaderAuthProvider)
+            rapp = wrappers.Response(response=header_auth, status=200)
+            return rapp(environ, start_response)
+
+        return auth_check_app
 
     def _construction_callback(self, context):
         """Called when a plugin is constructed."""
@@ -845,6 +858,13 @@ class TensorBoardPluginsTest(tb_test.TestCase):
         res = self.server.get(route, headers=[("Authorization", "top secret")])
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.get_data(), b"top secret access granted")
+
+    def testExtraRoutesMiddleware(self):
+        # Must have `experiment_id` and auth context middlewares to pass.
+        route = "/experiment/123/auth_check"
+        res = self.server.get(route, headers=[("Authorization", "got it")])
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.get_data(), b"got it")
 
 
 if __name__ == "__main__":
