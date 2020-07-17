@@ -100,9 +100,9 @@ class NpmiPluginTest(tf.test.TestCase):
                 tensor_result = tf.convert_to_tensor(python_result)
                 tensor_annotations = tf.convert_to_tensor(python_annotations)
                 tensor_classes = tf.convert_to_tensor(python_classes)
-                summary.npmi_values("test", tensor_result, 1)
-                summary.npmi_annotations("test", tensor_annotations, 1)
-                summary.npmi_metrics("test", tensor_classes, 1)
+                summary.npmi_values(tensor_result, 1)
+                summary.npmi_annotations(tensor_annotations, 1)
+                summary.npmi_metrics(tensor_classes, 1)
             writer.close()
 
     def testRoutesProvided(self):
@@ -118,13 +118,10 @@ class NpmiPluginTest(tf.test.TestCase):
         tags = plugin.tags_impl(context.RequestContext(), experiment="exp")
         tags = json.loads(tags)
         gt_runs = ["run_1", "run_2"]
-        gt_tags = ["metric_annotations", "metric_classes", "metric_results"]
+        gt_tags = ["_npmi_/annotations", "_npmi_/metrics", "_npmi_/values"]
         self.assertItemsEqual(gt_runs, tags.keys())
-        self.assertItemsEqual(gt_tags, tags["run_1"].keys())
-        self.assertItemsEqual(gt_tags, tags["run_2"].keys())
-        for item in tags:
-            for tag in tags[item]:
-                self.assertEqual("test", tags[item][tag]["table"])
+        self.assertItemsEqual(gt_tags, tags["run_1"])
+        self.assertItemsEqual(gt_tags, tags["run_2"])
 
     def testAnnotations(self):
         plugin = self.create_plugin()

@@ -22,13 +22,10 @@ from tensorboard.compat import tf2 as tf
 from tensorboard.webapp.plugins.npmi import metadata
 
 
-def npmi_metrics(title, tensor, step=None, description=None):
+def npmi_metrics(tensor, step=None, description=None):
     """Write the list of calculated metrics for this run.
 
     Arguments:
-      title: The title of this table. Will be added to the metadata. Tables are
-        there to support multiple exports from our exporter at the same time and
-        be able to distinguish them.
       tensor: A `Tensor` of shape (num_metrics) and dtype string.
       step: Explicit `int64`-castable monotonic step value for this summary. If
         omitted, this defaults to `tf.summary.experimental.get_step()`, which
@@ -45,23 +42,20 @@ def npmi_metrics(title, tensor, step=None, description=None):
         `tf.summary.experimental.get_step()` is None.
     """
     with tf.summary.experimental.summary_scope(
-        "metric_classes", title, values=[tensor, step],
+        metadata.METRICS_TAG, '', values=[tensor, step],
     ) as (tag, _):
         return tf.summary.write(
             tag=tag,
             tensor=tensor,
             step=step,
-            metadata=metadata.create_summary_metadata(description, title),
+            metadata=metadata.create_summary_metadata(description),
         )
 
 
-def npmi_annotations(title, tensor, step=None, description=None):
+def npmi_annotations(tensor, step=None, description=None):
     """Write the annotations for this run.
 
     Arguments:
-      title: The title of this table. Will be added to the metadata. Tables are
-        there to support multiple exports from our exporter at the same time and
-        be able to distinguish them.
       tensor: A `Tensor` of shape (num_annotations) and dtype string.
       step: Explicit `int64`-castable monotonic step value for this summary. If
         omitted, this defaults to `tf.summary.experimental.get_step()`, which
@@ -78,23 +72,20 @@ def npmi_annotations(title, tensor, step=None, description=None):
         `tf.summary.experimental.get_step()` is None.
     """
     with tf.summary.experimental.summary_scope(
-        "metric_annotations", title, values=[tensor, step],
+        metadata.ANNOTATIONS_TAG, '', values=[tensor, step],
     ) as (tag, _):
         return tf.summary.write(
             tag=tag,
             tensor=tensor,
             step=step,
-            metadata=metadata.create_summary_metadata(description, title),
+            metadata=metadata.create_summary_metadata(description),
         )
 
 
-def npmi_values(title, tensor, step=None, description=None):
+def npmi_values(tensor, step=None, description=None):
     """Write the actual npmi values.
 
     Arguments:
-      title: The title of this table. Will be added to the metadata. Tables are
-        there to support multiple exports from our exporter at the same time and
-        be able to distinguish them.
       tensor: A `Tensor` of shape (num_annotations, num_metrics) and dtype
         float.
       step: Explicit `int64`-castable monotonic step value for this summary. If
@@ -112,11 +103,11 @@ def npmi_values(title, tensor, step=None, description=None):
         `tf.summary.experimental.get_step()` is None.
     """
     with tf.summary.experimental.summary_scope(
-        "metric_results", title, values=[tensor, step],
+        metadata.VALUES_TAG, '', values=[tensor, step],
     ) as (tag, _):
         return tf.summary.write(
             tag=tag,
             tensor=tensor,
             step=step,
-            metadata=metadata.create_summary_metadata(description, title),
+            metadata=metadata.create_summary_metadata(description),
         )

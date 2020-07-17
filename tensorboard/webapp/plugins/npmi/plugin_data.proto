@@ -24,5 +24,4 @@ package tensorboard;
 message NpmiPluginData {
   // Version `0` is the only supported version.
   int32 version = 1;
-  string title = 2;
 }

@@ -105,11 +105,12 @@ class NpmiPlugin(base_plugin.TBPlugin):
         )
         result = {run: {} for run in mapping}
         for (run, tag_to_content) in six.iteritems(mapping):
+            result[run] = []
             for (tag, metadatum) in six.iteritems(tag_to_content):
                 content = metadata.parse_plugin_metadata(
                     metadatum.plugin_content
                 )
-                result[run][tag] = {"table": content.title}
+                result[run].append(tag)
         contents = json.dumps(result, sort_keys=True)
         return contents
 
@@ -118,7 +119,9 @@ class NpmiPlugin(base_plugin.TBPlugin):
             ctx,
             experiment_id=experiment,
             plugin_name=self.plugin_name,
-            run_tag_filter=provider.RunTagFilter(tags=["metric_annotations"]),
+            run_tag_filter=provider.RunTagFilter(
+                tags=[metadata.ANNOTATIONS_TAG]
+            ),
         )
         result = {run: {} for run in mapping}
         for (run, _) in six.iteritems(mapping):
@@ -127,12 +130,12 @@ class NpmiPlugin(base_plugin.TBPlugin):
                 experiment_id=experiment,
                 plugin_name=self.plugin_name,
                 run_tag_filter=provider.RunTagFilter(
-                    runs=[run], tags=["metric_annotations"]
+                    runs=[run], tags=[metadata.ANNOTATIONS_TAG]
                 ),
                 downsample=self._downsample_to,
             )
             annotations = all_annotations.get(run, {}).get(
-                "metric_annotations", {}
+                metadata.ANNOTATIONS_TAG, {}
             )
             event_data = [
                 annotation.decode("utf-8")
@@ -147,7 +150,7 @@ class NpmiPlugin(base_plugin.TBPlugin):
             ctx,
             experiment_id=experiment,
             plugin_name=self.plugin_name,
-            run_tag_filter=provider.RunTagFilter(tags=["metric_classes"]),
+            run_tag_filter=provider.RunTagFilter(tags=[metadata.METRICS_TAG]),
         )
         result = {run: {} for run in mapping}
         for (run, _) in six.iteritems(mapping):
@@ -156,11 +159,11 @@ class NpmiPlugin(base_plugin.TBPlugin):
                 experiment_id=experiment,
                 plugin_name=self.plugin_name,
                 run_tag_filter=provider.RunTagFilter(
-                    runs=[run], tags=["metric_classes"]
+                    runs=[run], tags=[metadata.METRICS_TAG]
                 ),
                 downsample=self._downsample_to,
             )
-            metrics = all_metrics.get(run, {}).get("metric_classes", {})
+            metrics = all_metrics.get(run, {}).get(metadata.METRICS_TAG, {})
             event_data = [metric.decode("utf-8") for metric in metrics[0].numpy]
             result[run] = event_data
         contents = json.dumps(result)
@@ -171,7 +174,7 @@ class NpmiPlugin(base_plugin.TBPlugin):
             ctx,
             experiment_id=experiment,
             plugin_name=self.plugin_name,
-            run_tag_filter=provider.RunTagFilter(tags=["metric_results"]),
+            run_tag_filter=provider.RunTagFilter(tags=[metadata.VALUES_TAG]),
         )
         result = {run: {} for run in mapping}
         for (run, _) in six.iteritems(mapping):
@@ -180,11 +183,11 @@ class NpmiPlugin(base_plugin.TBPlugin):
                 experiment_id=experiment,
                 plugin_name=self.plugin_name,
                 run_tag_filter=provider.RunTagFilter(
-                    runs=[run], tags=["metric_results"]
+                    runs=[run], tags=[metadata.VALUES_TAG]
                 ),
                 downsample=self._downsample_to,
             )
-            values = all_values.get(run, {}).get("metric_results", {})
+            values = all_values.get(run, {}).get(metadata.VALUES_TAG, {})
             event_data = values[0].numpy.tolist()
             event_data = convert_nan_none(event_data)
             result[run] = event_data

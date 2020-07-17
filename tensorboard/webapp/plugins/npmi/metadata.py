@@ -30,9 +30,13 @@ PLUGIN_NAME = "npmi"
 # `ScalarPluginData` proto.
 PROTO_VERSION = 0
 
+ANNOTATIONS_TAG = "_npmi_/annotations"
+METRICS_TAG = "_npmi_/metrics"
+VALUES_TAG = "_npmi_/values"
 
-def create_summary_metadata(description, title):
-    content = plugin_data_pb2.NpmiPluginData(version=PROTO_VERSION, title=title)
+
+def create_summary_metadata(description):
+    content = plugin_data_pb2.NpmiPluginData(version=PROTO_VERSION)
     return summary_pb2.SummaryMetadata(
         summary_description=description,
         plugin_data=summary_pb2.SummaryMetadata.PluginData(

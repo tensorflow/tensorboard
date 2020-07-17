@@ -46,29 +46,28 @@ class SummaryTest(tf.test.TestCase):
             self.skipTest("v2 summary API not available")
 
     def testMetadata(self):
-        data = metadata.create_summary_metadata(None, "test")
+        data = metadata.create_summary_metadata(None)
         plugin_data = data.plugin_data
         content = plugin_data.content
         metadata_content = metadata.parse_plugin_metadata(content)
         self.assertEqual(data.plugin_data.plugin_name, "npmi")
-        self.assertEqual(metadata_content.title, "test")
 
     def testMetricResults(self):
         python_annotations = ["name_1", "name_2"]
         tensor_annotations = tf.convert_to_tensor(python_annotations)
-        self.write_results("test", tensor_annotations)
+        self.write_results(tensor_annotations)
         event_files = sorted(glob.glob(os.path.join(self.get_temp_dir(), "*")))
         self.assertEqual(len(event_files), 1)
         for summary in tf.compat.v1.train.summary_iterator(event_files[0]):
             for value in summary.summary.value:
-                self.assertEqual(value.tag, "metric_annotations")
+                self.assertEqual(value.tag, metadata.ANNOTATIONS_TAG)
                 parsed = tf.make_ndarray(value.tensor)
                 self.assertAllEqual(parsed, [b"name_1", b"name_2"])
 
-    def write_results(self, title, tensor):
+    def write_results(self, tensor):
         writer = tf2.summary.create_file_writer(self.get_temp_dir())
         with writer.as_default():
-            summary.npmi_annotations(title, tensor, 1)
+            summary.npmi_annotations(tensor, 1)
         writer.close()
 
 
