@@ -24,8 +24,8 @@ import os
 import tensorflow as tf
 
 from tensorboard.compat import tf2
-from tensorboard.webapp.plugins.npmi import summary
-from tensorboard.webapp.plugins.npmi import metadata
+from tensorboard.plugins.npmi import summary
+from tensorboard.plugins.npmi import metadata
 
 try:
     tf2.__version__  # Force lazy import to resolve

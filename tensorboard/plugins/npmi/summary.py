@@ -19,7 +19,7 @@ from __future__ import print_function
 
 from tensorboard.compat import tf2 as tf
 
-from tensorboard.webapp.plugins.npmi import metadata
+from tensorboard.plugins.npmi import metadata
 
 
 def npmi_metrics(tensor, step=None, description=None):

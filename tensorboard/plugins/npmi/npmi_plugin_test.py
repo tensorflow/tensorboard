@@ -32,8 +32,8 @@ from tensorboard.backend.event_processing import (
     plugin_event_multiplexer as event_multiplexer,
 )
 from tensorboard.plugins import base_plugin
-from tensorboard.webapp.plugins.npmi import npmi_plugin
-from tensorboard.webapp.plugins.npmi import summary
+from tensorboard.plugins.npmi import npmi_plugin
+from tensorboard.plugins.npmi import summary
 
 
 tf.compat.v1.enable_v2_behavior()

@@ -31,7 +31,7 @@ from tensorboard.plugins import base_plugin
 from tensorboard.backend import http_util
 from tensorboard.data import provider
 
-from tensorboard.webapp.plugins.npmi import metadata
+from tensorboard.plugins.npmi import metadata
 
 _DEFAULT_DOWNSAMPLING = 1  # nPMI tensors per time series
 

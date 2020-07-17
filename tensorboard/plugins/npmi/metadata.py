@@ -19,7 +19,7 @@ from __future__ import print_function
 
 from tensorboard.compat.proto import summary_pb2
 
-from tensorboard.webapp.plugins.npmi import plugin_data_pb2
+from tensorboard.plugins.npmi import plugin_data_pb2
 from tensorboard.util import tb_logging
 
 logger = tb_logging.get_logger()
