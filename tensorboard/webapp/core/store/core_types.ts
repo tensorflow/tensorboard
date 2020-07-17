@@ -38,7 +38,7 @@ export interface CoreState {
   // TODO(stephanwlee): move these state to the `runs` features.
   // For now, we want them here for Polymer interop states reasons, too.
   polymerInteropRuns: Run[];
-  polymerInteropRunSelection: Map<RunId, boolean>;
+  polymerInteropRunSelection: Set<RunId>;
 }
 
 export interface State {
@@ -60,5 +60,5 @@ export const initialState: CoreState = {
     window_title: '',
   },
   polymerInteropRuns: [],
-  polymerInteropRunSelection: new Map(),
+  polymerInteropRunSelection: new Set(),
 };

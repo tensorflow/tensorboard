@@ -112,14 +112,7 @@ const reducer = createReducer(
     return {...state, polymerInteropRuns: runs};
   }),
   on(actions.polymerInteropRunSelectionChanged, (state, {nextSelection}) => {
-    const selectionSet = new Set(nextSelection);
-    const newSelection = new Map();
-
-    state.polymerInteropRuns.forEach(({id}) => {
-      newSelection.set(id, selectionSet.has(id));
-    });
-
-    return {...state, polymerInteropRunSelection: newSelection};
+    return {...state, polymerInteropRunSelection: new Set(nextSelection)};
   })
 );
 
