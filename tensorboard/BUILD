@@ -270,12 +270,12 @@ py_library(
         "//tensorboard/plugins/hparams:hparams_plugin",
         "//tensorboard/plugins/image:images_plugin",
         "//tensorboard/plugins/mesh:mesh_plugin",
+        "//tensorboard/plugins/npmi:npmi_plugin",
         "//tensorboard/plugins/pr_curve:pr_curves_plugin",
         "//tensorboard/plugins/profile_redirect:profile_redirect_plugin",
         "//tensorboard/plugins/scalar:scalars_plugin",
         "//tensorboard/plugins/text:text_plugin",
         "//tensorboard/plugins/text_v2:text_v2_plugin",
-        "//tensorboard/plugins/npmi:npmi_plugin",
     ],
 )
 
