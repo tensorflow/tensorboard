@@ -71,7 +71,7 @@ def TensorBoardWSGIApp(
     assets_zip_provider=None,
     deprecated_multiplexer=None,
     auth_providers=None,
-    middlewares=None,
+    experimental_middlewares=None,
 ):
     """Constructs a TensorBoard WSGI app from plugins and data providers.
 
@@ -92,13 +92,14 @@ def TensorBoardWSGIApp(
       auth_providers: Optional mapping whose values are `AuthProvider` values
         and whose keys are used by (e.g.) data providers to specify
         `AuthProvider`s via the `AuthContext.get` interface. Defaults to `{}`.
-      middlewares: Optional list of WSGI middlewares (i.e., callables that take
-        a WSGI application and return a WSGI application) to apply directly
-        around the core TensorBoard app itself, "inside" the request
-        redirection machinery for `--path_prefix`, experiment IDs, etc. You can
-        use this to add handlers for additional routes. Middlewares are applied
-        in listed order, so the first element of this list is the innermost
-        application. Defaults to `[]`.
+      experimental_middlewares: Optional list of WSGI middlewares (i.e.,
+        callables that take a WSGI application and return a WSGI application)
+        to apply directly around the core TensorBoard app itself, "inside" the
+        request redirection machinery for `--path_prefix`, experiment IDs, etc.
+        You can use this to add handlers for additional routes. Middlewares are
+        applied in listed order, so the first element of this list is the
+        innermost application. Defaults to `[]`. This parameter is experimental
+        and may be reworked or removed.
 
     Returns:
       A WSGI application that implements the TensorBoard backend.
@@ -145,7 +146,7 @@ def TensorBoardWSGIApp(
         data_provider,
         experimental_plugins,
         auth_providers,
-        middlewares,
+        experimental_middlewares,
     )
 
 
@@ -183,7 +184,7 @@ class TensorBoardWSGI(object):
         data_provider=None,
         experimental_plugins=None,
         auth_providers=None,
-        middlewares=None,
+        experimental_middlewares=None,
     ):
         """Constructs TensorBoardWSGI instance.
 
@@ -201,8 +202,9 @@ class TensorBoardWSGI(object):
             values and whose keys are used by (e.g.) data providers to specify
             `AuthProvider`s via the `AuthContext.get` interface.
             Defaults to `{}`.
-          middlewares: Optional list of WSGI middlewares to apply directly
-            around the core TensorBoard app itself. Defaults to `[]`.
+          experimental_middlewares: Optional list of WSGI middlewares to apply
+            directly around the core TensorBoard app itself. Defaults to `[]`.
+            This parameter is experimental and may be reworked or removed.
 
         Returns:
           A WSGI application for the set of all TBPlugin instances.
@@ -222,7 +224,7 @@ class TensorBoardWSGI(object):
         self._data_provider = data_provider
         self._experimental_plugins = frozenset(experimental_plugins or ())
         self._auth_providers = auth_providers or {}
-        self._extra_middlewares = list(middlewares or [])
+        self._extra_middlewares = list(experimental_middlewares or [])
         if self._path_prefix.endswith("/"):
             # Should have been fixed by `fix_flags`.
             raise ValueError(

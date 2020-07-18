@@ -712,7 +712,7 @@ class TensorBoardPluginsTest(tb_test.TestCase):
             ],
             data_provider=FakeDataProvider(),
             auth_providers={HeaderAuthProvider: HeaderAuthProvider()},
-            middlewares=[self._auth_check_middleware],
+            experimental_middlewares=[self._auth_check_middleware],
         )
 
         self.server = werkzeug_test.Client(self.app, wrappers.BaseResponse)
