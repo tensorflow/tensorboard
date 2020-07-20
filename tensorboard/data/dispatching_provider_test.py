@@ -287,14 +287,8 @@ class DispatchingDataProviderTest(tb_test.TestCase):
         self.assertEqual(listing, expected_listing)
 
         blobs = self._get_blobs(self.with_unpfx, "bar:a:b:c")
-        self.assertEqual(
-            blobs,
-            {
-                "a:b:c/test": {
-                    "input.images": [[b"experiment: a:b:c", b"name: Bar"]]
-                }
-            },
-        )
+        expected_blobs = self._get_blobs(self.bar_provider, "a:b:c")
+        self.assertEqual(blobs, expected_blobs)
 
     def test_blob_sequences_unprefixed(self):
         listing = self.with_unpfx.list_blob_sequences(
@@ -306,14 +300,8 @@ class DispatchingDataProviderTest(tb_test.TestCase):
         self.assertEqual(listing, expected_listing)
 
         blobs = self._get_blobs(self.with_unpfx, "baz")
-        self.assertEqual(
-            blobs,
-            {
-                "baz/test": {
-                    "input.images": [[b"experiment: baz", b"name: BAZ"]]
-                }
-            },
-        )
+        expected_blobs = self._get_blobs(self.baz_provider, "baz")
+        self.assertEqual(blobs, expected_blobs)
 
     def test_blobs_error_cases(self):
         with self.assertRaisesRegex(
