@@ -255,21 +255,6 @@ class DispatchingDataProviderTest(tb_test.TestCase):
         self.assertNotEmpty(expected_reading)
         self.assertEqual(reading, expected_reading)
 
-    def _read_blobs(self, blob_sequences):
-        result = {}
-        for run in reading:
-            result[run] = {}
-            for tag in reading[run]:
-                result[run][tag] = []
-                for datum in reading[run][tag]:
-                    result[run][tag].append(
-                        [
-                            dp.read_blob(_ctx(), blob_key=ref.blob_key)
-                            for ref in datum.values
-                        ]
-                    )
-        return result
-
     def _get_blobs(self, data_provider, experiment_id):
         """Read and fetch all blobs for an experiment."""
         reading = data_provider.read_blob_sequences(
