@@ -42,6 +42,7 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//tensorboard:internal"],
     deps = [
+        ":errors",
         ":lib_init_only",
         ":notebook",
         ":program",
@@ -62,7 +63,6 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//tensorboard:internal"],
     deps = [
-        ":errors",
         ":lazy",
         ":version",
     ],
@@ -127,7 +127,7 @@ py_test(
 py_library(
     name = "errors",
     srcs = ["errors.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
 )
 
 py_test(
@@ -270,6 +270,7 @@ py_library(
         "//tensorboard/plugins/hparams:hparams_plugin",
         "//tensorboard/plugins/image:images_plugin",
         "//tensorboard/plugins/mesh:mesh_plugin",
+        "//tensorboard/plugins/npmi:npmi_plugin",
         "//tensorboard/plugins/pr_curve:pr_curves_plugin",
         "//tensorboard/plugins/profile_redirect:profile_redirect_plugin",
         "//tensorboard/plugins/scalar:scalars_plugin",
