@@ -13,6 +13,7 @@ ts_config(
     deps = [":tsconfig.json"],
 )
 
+# Inspired from internal tsconfig generation for project like TensorBoard.
 ts_config(
     name = "tsconfig-lax",
     src = "tsconfig-lax.json",

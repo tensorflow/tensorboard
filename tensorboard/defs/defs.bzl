@@ -54,10 +54,10 @@ def tf_ts_library(strict_checks = True, tsconfig = None, **kwargs):
       tsconfig: TypeScript configuration. If specified, it overrides strict_checks.
       **kwargs: keyword arguments to ts_library build rule.
     """
-    if not strict_checks and not tsconfig:
-        tsconfig = "//:tsconfig-lax"
+    if not tsconfig:
+        tsconfig = "//:tsconfig.json" if strict_checks else "//:tsconfig-lax"
 
-    ts_library(tsconfig = tsconfig or "//:tsconfig.json", **kwargs)
+    ts_library(tsconfig = tsconfig, **kwargs)
 
 def tf_ts_devserver(**kwargs):
     """TensorBoard wrapper for the rule for a TypeScript dev server."""
