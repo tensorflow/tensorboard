@@ -1,3 +1,84 @@
+# Release 2.3.0
+
+The 2.3 minor series tracks TensorFlow 2.3.
+
+## Features
+
+- The 30 sec default reload period is now customizable in the Settings UI
+  (#2794)
+- 🧪 **Experimental** Debugger V2 is now available; see the
+  [tutorial][debugger-v2-tutorial] on how to use the experimental TensorFlow
+  APIs to spot NaN's in tensors, view graphs generated from executions, and the
+  related lines in the Python source code (#3821)
+
+## TensorBoard.dev updates
+- Added support for showing the Distributions tab (#3762)
+- Uploader now displays data statistics in the console while uploading data
+  (#3678)
+- Added new uploader command line flags (#3707)
+  - `--dry_run`: causes the uploader to only read the logdir and display
+    statistics (if `--verbose` is the default 1) without uploading any data to
+    the server
+  - `--one_shot`: causes the uploader to exit immediately after all existing
+    data in the logdir are uploaded; this mode prints a warning message if the
+    logdir doesn't contain any uploadable data
+- Upload button in the header offers a convenient, copyable command
+- 🧪 **Experimental** DataFrame API: You can now read Scalars data from
+  TensorBoard.dev as a Pandas DataFrame (learn more [here][dataframe-tutorial])
+
+[debugger-v2-tutorial]: https://www.tensorflow.org/tensorboard/debugger_v2
+[dataframe-tutorial]: https://www.tensorflow.org/tensorboard/dataframe_api
+
+## Bug fixes
+- Projector plugin
+  - Shows data when logs exist in both logdir root and subdirectory (#3694)
+  - Fixed incorrect embeddings from TF2 checkpoints (#3679)
+  - Added support for binary format, with 2x speedup loading large tensors in
+    some cases (#3685) - thanks [@RustingSword](https://github.com/RustingSword)
+  - Added [Colab tutorial][projector-colab] for Projector plugin (#3423)
+- Notebooks
+  - Increased port scanning from 10 to 100 to better support multi-tenant
+    Notebooks (#3780) - thanks [@jerrylian-db](https://github.com/jerrylian-db)
+  - Add proxy (e.g. jupyter-server-proxy) support for %tensorboard magics
+    (#3674) - thanks [@zac-hopkinson](https://github.com/zac-hopkinson)
+    - Set the TENSORBOARD_PROXY_URL environment variable
+      `export TENSORBOARD_PROXY_URL="/proxy/%PORT%/"`
+- Dynamic plugins (Projector, Fairness Indicators, Profiler, What-If Tool)
+  appear when TensorBoard is launched programmatically via Python (#3695)
+- Fixed download links in Custom Scalars (#3794)
+- Updated broken docs (#3440, #3459, #3561, #3681) - thanks
+  [@LexusH](https://github.com/LexusH),
+  [@ManishAradwad](https://github.com/ManishAradwad),
+  [@ricmatsui](https://github.com/ricmatsui),
+  [@robertlugg](https://github.com/robertlugg)
+- Better handling of S3-related InvalidRange errors (#3609) - thanks
+  [@ahirner](https://github.com/ahirner)
+- Fixed deprecated numpy usage (#3768) - thanks
+  [@lgeiger](https://github.com/lgeiger)
+
+[projector-colab]: https://www.tensorflow.org/tensorboard/tensorboard_projector_plugin
+
+## Deprecations
+
+- Beholder will be removed in a future release (#3843)
+- Debugger (V1) will be removed in a future release, in favor of the
+  aforementioned V2 version
+
+## Misc
+
+The frontend now uses Angular (replaces the Polymer entry point, which will be
+removed in a future release; still visible at the `/legacy.html` endpoint)
+(#3779). If you observe any bugs that do not reproduce under `/legacy.html`,
+please file an issue.
+
+For dynamic plugins, please see their respective pages
+([Fairness Indicators][fairness-docs], [Profiler][profiler-docs],
+[What-If Tool][wit-docs]).
+
+[fairness-docs]: https://github.com/tensorflow/fairness-indicators/commits/master
+[profiler-docs]: https://github.com/tensorflow/profiler/commits/master
+[wit-docs]: https://github.com/PAIR-code/what-if-tool/blob/master/RELEASE.md
+
 # Release 2.2.2
 
 ## Features
