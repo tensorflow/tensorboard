@@ -35,6 +35,7 @@ import {
   getPlugins,
   getActivePlugin,
   getPluginsListLoaded,
+  getEnvironment,
 } from '../core/store/core_selectors';
 import {TestingDebuggerModule} from '../../plugins/debugger_v2/tf_debugger_v2_plugin/testing';
 
@@ -115,6 +116,10 @@ describe('plugins_component', () => {
     store.overrideSelector(getPluginsListLoaded, {
       state: DataLoadState.NOT_LOADED,
       lastLoadedTimeInMs: null,
+    });
+    store.overrideSelector(getEnvironment, {
+      data_location: 'foobar',
+      window_title: 'Tests!',
     });
 
     createElementSpy = spyOn(document, 'createElement').and.callThrough();
@@ -360,22 +365,52 @@ describe('plugins_component', () => {
   });
 
   describe('warning pages', () => {
-    it('shows warning when no plugin is active after list is loaded', () => {
+    it('does not show any warning while fetching when list was never fetched', () => {
+      store.overrideSelector(getPlugins, {});
+      store.overrideSelector(getPluginsListLoaded, {
+        state: DataLoadState.LOADING,
+        lastLoadedTimeInMs: null,
+      });
+      store.overrideSelector(getActivePlugin, null);
+
       const fixture = TestBed.createComponent(PluginsContainer);
       fixture.detectChanges();
 
-      expect(fixture.debugElement.query(By.css('.no-plugin'))).toBeNull();
+      expect(fixture.debugElement.query(By.css('.warning'))).toBeNull();
+    });
 
-      store.overrideSelector(getActivePlugin, null);
+    it('shows warning when plugin id is not known', () => {
+      store.overrideSelector(getActivePlugin, 'you_do_not_know_me');
       store.overrideSelector(getPluginsListLoaded, {
         state: DataLoadState.LOADED,
         lastLoadedTimeInMs: 123,
       });
-      store.refreshState();
+      const fixture = TestBed.createComponent(PluginsContainer);
       fixture.detectChanges();
 
-      expect(fixture.debugElement.query(By.css('.no-plugin'))).not.toBeNull();
+      expect(
+        fixture.debugElement.query(By.css('.unknown-plugin'))
+      ).not.toBeNull();
     });
+
+    it(
+      'shows warning when plugin id is not known when pluginList is cached and' +
+        'is loading (updating)',
+      () => {
+        store.overrideSelector(getPlugins, PLUGINS);
+        store.overrideSelector(getPluginsListLoaded, {
+          state: DataLoadState.LOADING,
+          lastLoadedTimeInMs: 123,
+        });
+        store.overrideSelector(getActivePlugin, 'you_do_not_know_me');
+        const fixture = TestBed.createComponent(PluginsContainer);
+        fixture.detectChanges();
+
+        expect(
+          fixture.debugElement.query(By.css('.unknown-plugin'))
+        ).not.toBeNull();
+      }
+    );
 
     it('shows warning when the plugins listing failed to load', () => {
       store.overrideSelector(getActivePlugin, null);
@@ -386,19 +421,78 @@ describe('plugins_component', () => {
       const fixture = TestBed.createComponent(PluginsContainer);
       fixture.detectChanges();
 
-      expect(fixture.debugElement.query(By.css('.no-plugin'))).not.toBeNull();
+      expect(
+        fixture.debugElement.query(By.css('.no-active-plugin'))
+      ).not.toBeNull();
     });
 
-    it('does not show warning when data is not yet loaded', () => {
+    it(
+      'shows no active plugin warning even when loading when list was previous ' +
+        'loaded',
+      () => {
+        store.overrideSelector(getActivePlugin, null);
+        store.overrideSelector(getPluginsListLoaded, {
+          state: DataLoadState.LOADING,
+          lastLoadedTimeInMs: 123,
+        });
+        const fixture = TestBed.createComponent(PluginsContainer);
+        fixture.detectChanges();
+
+        expect(
+          fixture.debugElement.query(By.css('.no-active-plugin'))
+        ).not.toBeNull();
+      }
+    );
+
+    it('shows warning when no plugin is active after list is loaded', () => {
       store.overrideSelector(getActivePlugin, null);
       store.overrideSelector(getPluginsListLoaded, {
-        state: DataLoadState.LOADING,
+        state: DataLoadState.LOADED,
         lastLoadedTimeInMs: 123,
       });
       const fixture = TestBed.createComponent(PluginsContainer);
       fixture.detectChanges();
 
-      expect(fixture.debugElement.query(By.css('.no-plugin'))).toBeNull();
+      expect(
+        fixture.debugElement.query(By.css('.no-active-plugin'))
+      ).not.toBeNull();
+    });
+
+    describe('data location', () => {
+      it('rendersin the warning', () => {
+        store.overrideSelector(getEnvironment, {
+          data_location: 'my-location',
+          window_title: '',
+        });
+        store.overrideSelector(getActivePlugin, null);
+        store.overrideSelector(getPluginsListLoaded, {
+          state: DataLoadState.LOADED,
+          lastLoadedTimeInMs: 123,
+        });
+        const fixture = TestBed.createComponent(PluginsContainer);
+        fixture.detectChanges();
+
+        expect(
+          fixture.debugElement.query(By.css('.data-location')).nativeElement
+            .textContent
+        ).toBe('Log directory: my-location');
+      });
+
+      it('does not render when it is empty', () => {
+        store.overrideSelector(getEnvironment, {
+          data_location: '',
+          window_title: '',
+        });
+        store.overrideSelector(getActivePlugin, null);
+        store.overrideSelector(getPluginsListLoaded, {
+          state: DataLoadState.LOADED,
+          lastLoadedTimeInMs: 123,
+        });
+        const fixture = TestBed.createComponent(PluginsContainer);
+        fixture.detectChanges();
+
+        expect(fixture.debugElement.query(By.css('.data-location'))).toBeNull();
+      });
     });
   });
 });

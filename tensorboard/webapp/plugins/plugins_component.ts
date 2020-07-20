@@ -41,6 +41,13 @@ interface ExperimentalPluginHostLib extends HTMLElement {
   registerPluginIframe(iframe: HTMLIFrameElement, plugin_id: string): void;
 }
 
+export enum PluginLoadState {
+  NO_ENABLED_PLUGINS,
+  UNKNOWN_PLUGIN_ID,
+  LOADED,
+  LOADING,
+}
+
 @Component({
   selector: 'plugins-component',
   templateUrl: './plugins_component.ng.html',
@@ -54,7 +61,7 @@ interface ExperimentalPluginHostLib extends HTMLElement {
         height: 100%;
         position: relative;
       }
-      .no-plugin {
+      .warning {
         background-color: #fff;
         bottom: 0;
         left: 0;
@@ -95,14 +102,21 @@ export class PluginsComponent implements OnChanges {
   private readonly ngPluginContainer!: ViewContainerRef;
 
   @Input()
+  activePluginId!: string | null;
+
+  @Input()
   activePlugin!: UiPluginMetadata | null;
 
   @Input()
-  noEnabledPlugin!: boolean;
+  pluginLoadState!: PluginLoadState;
+
+  @Input()
+  dataLocation!: string;
 
   @Input()
   lastUpdated?: number;
 
+  readonly PluginLoadState = PluginLoadState;
   readonly LoadingMechanismType = LoadingMechanismType;
 
   private readonly pluginInstances = new Map<string, HTMLElement>();
