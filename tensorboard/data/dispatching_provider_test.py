@@ -23,7 +23,7 @@ from tensorboard.data import dispatching_provider
 from tensorboard.data import provider
 
 
-class FiniteProvider(provider.DataProvider):
+class PlaceholderDataProvider(provider.DataProvider):
     """Data provider with parameterized test data."""
 
     def __init__(self, name, eids):
@@ -79,14 +79,16 @@ class FiniteProvider(provider.DataProvider):
         self._validate_eid(experiment_id)
         if run_tag_filter is None:
             run_tag_filter = provider.RunTagFilter()
-        runs = run_tag_filter.runs or []
-        tags = run_tag_filter.tags or []
-        result = {}
-        for run in runs:
-            run_data = {}
-            result[run] = run_data
-            for tag in tags:
-                run_data[tag] = [
+        rtf = run_tag_filter
+        expected_run = "%s/train" % experiment_id
+        expected_tag = "loss.%s" % plugin_name
+        if rtf.runs is not None and expected_run not in rtf.runs:
+            return {}
+        if rtf.tags is not None and expected_tag not in rtf.tags:
+            return {}
+        return {
+            expected_run: {
+                expected_tag: [
                     provider.ScalarDatum(
                         step=0, wall_time=0.0, value=float(len(plugin_name))
                     ),
@@ -94,7 +96,8 @@ class FiniteProvider(provider.DataProvider):
                         step=1, wall_time=0.5, value=float(len(experiment_id))
                     ),
                 ]
-        return result
+            }
+        }
 
     def list_tensors(
         self, ctx, *, experiment_id, plugin_name, run_tag_filter=None
@@ -145,14 +148,16 @@ class FiniteProvider(provider.DataProvider):
         self._validate_eid(experiment_id)
         if run_tag_filter is None:
             run_tag_filter = provider.RunTagFilter()
-        runs = run_tag_filter.runs or []
-        tags = run_tag_filter.tags or []
-        result = {}
-        for run in runs:
-            run_data = {}
-            result[run] = run_data
-            for tag in tags:
-                run_data[tag] = [
+        rtf = run_tag_filter
+        expected_run = "%s/test" % experiment_id
+        expected_tag = "input.%s" % plugin_name
+        if rtf.runs is not None and expected_run not in rtf.runs:
+            return {}
+        if rtf.tags is not None and expected_tag not in rtf.tags:
+            return {}
+        return {
+            expected_run: {
+                expected_tag: [
                     provider.BlobSequenceDatum(
                         step=0,
                         wall_time=0.0,
@@ -160,13 +165,12 @@ class FiniteProvider(provider.DataProvider):
                             self._make_blob_reference(
                                 "experiment: %s" % experiment_id
                             ),
-                            self._make_blob_reference(
-                                "downsample: %s" % downsample
-                            ),
+                            self._make_blob_reference("name: %s" % self._name),
                         ],
                     ),
                 ]
-        return result
+            }
+        }
 
     def _make_blob_reference(self, text):
         key = base64.urlsafe_b64encode(
@@ -184,11 +188,11 @@ class FiniteProvider(provider.DataProvider):
 
 class DispatchingDataProviderTest(tb_test.TestCase):
     def setUp(self):
-        providers = {
-            "foo": FiniteProvider("foo", ["123", "456"]),
-            "bar": FiniteProvider("Bar", ["a:b:c", "@xyz@"]),
-        }
-        unprefixed = FiniteProvider("BAZ", ["baz"])
+        self.foo_provider = PlaceholderDataProvider("foo", ["123", "456"])
+        self.bar_provider = PlaceholderDataProvider("Bar", ["a:b:c", "@xyz@"])
+        self.baz_provider = PlaceholderDataProvider("BAZ", ["baz"])
+        providers = {"foo": self.foo_provider, "bar": self.bar_provider}
+        unprefixed = self.baz_provider
         self.with_unpfx = dispatching_provider.DispatchingDataProvider(
             providers, unprefixed_provider=unprefixed
         )
@@ -199,22 +203,23 @@ class DispatchingDataProviderTest(tb_test.TestCase):
     def test_data_location(self):
         self.assertEqual(
             self.with_unpfx.data_location(_ctx(), experiment_id="foo:123"),
-            "foo://123",
+            self.foo_provider.data_location(_ctx(), experiment_id="123"),
         )
         self.assertEqual(
             self.with_unpfx.data_location(_ctx(), experiment_id="bar:a:b:c"),
-            "Bar://a:b:c",
+            self.bar_provider.data_location(_ctx(), experiment_id="a:b:c"),
         )
         self.assertEqual(
             self.with_unpfx.data_location(_ctx(), experiment_id="baz"),
-            "BAZ://baz",
+            self.baz_provider.data_location(_ctx(), experiment_id="baz"),
         )
         with self.assertRaisesRegex(
-            errors.NotFoundError, "Unknown data provider key: 'quux'"
+            errors.NotFoundError, "Unknown prefix in experiment ID: 'quux:hmm'"
         ):
             self.with_unpfx.data_location(_ctx(), experiment_id="quux:hmm")
         with self.assertRaisesRegex(
-            errors.NotFoundError, "No unprefixed data provider specified"
+            errors.NotFoundError,
+            "No data provider found for unprefixed experiment ID: 'quux'",
         ):
             self.without_unpfx.data_location(_ctx(), experiment_id="quux")
 
@@ -224,17 +229,9 @@ class DispatchingDataProviderTest(tb_test.TestCase):
         )
         self.assertEqual(
             listing,
-            {
-                "123/train": {
-                    "loss.scalars": provider.ScalarTimeSeries(
-                        max_step=2,
-                        max_wall_time=0.5,
-                        plugin_content=b"",
-                        description="Hello from foo",
-                        display_name="loss",
-                    )
-                }
-            },
+            self.foo_provider.list_scalars(
+                _ctx(), experiment_id="123", plugin_name="scalars"
+            ),
         )
 
         reading = self.with_unpfx.read_scalars(
@@ -246,87 +243,103 @@ class DispatchingDataProviderTest(tb_test.TestCase):
                 ["123/train"], ["loss.scalars"]
             ),
         )
-        self.assertEqual(
-            reading,
-            {
-                "123/train": {
-                    "loss.scalars": [
-                        provider.ScalarDatum(
-                            step=0, wall_time=0.0, value=float(len("scalars"))
-                        ),
-                        provider.ScalarDatum(
-                            step=1, wall_time=0.5, value=float(len("123"))
-                        ),
+        expected_reading = self.foo_provider.read_scalars(
+            _ctx(),
+            experiment_id="123",
+            plugin_name="scalars",
+            downsample=1000,
+            run_tag_filter=provider.RunTagFilter(
+                ["123/train"], ["loss.scalars"]
+            ),
+        )
+        self.assertNotEmpty(expected_reading)
+        self.assertEqual(reading, expected_reading)
+
+    def _read_blobs(self, blob_sequences):
+        result = {}
+        for run in reading:
+            result[run] = {}
+            for tag in reading[run]:
+                result[run][tag] = []
+                for datum in reading[run][tag]:
+                    result[run][tag].append(
+                        [
+                            dp.read_blob(_ctx(), blob_key=ref.blob_key)
+                            for ref in datum.values
+                        ]
+                    )
+        return result
+
+    def _get_blobs(self, data_provider, experiment_id):
+        """Read and fetch all blobs for an experiment."""
+        reading = data_provider.read_blob_sequences(
+            _ctx(),
+            experiment_id=experiment_id,
+            plugin_name="images",
+            downsample=10,
+            run_tag_filter=provider.RunTagFilter(),
+        )
+        result = {}
+        for run in reading:
+            result[run] = {}
+            for tag in reading[run]:
+                result[run][tag] = []
+                for datum in reading[run][tag]:
+                    blob_values = [
+                        data_provider.read_blob(_ctx(), blob_key=ref.blob_key)
+                        for ref in datum.values
                     ]
+                    result[run][tag].append(blob_values)
+        return result
+
+    def test_blob_sequences_prefixed(self):
+        listing = self.with_unpfx.list_blob_sequences(
+            _ctx(), experiment_id="bar:a:b:c", plugin_name="images"
+        )
+        expected_listing = self.bar_provider.list_blob_sequences(
+            _ctx(), experiment_id="a:b:c", plugin_name="images"
+        )
+        self.assertEqual(listing, expected_listing)
+
+        blobs = self._get_blobs(self.with_unpfx, "bar:a:b:c")
+        self.assertEqual(
+            blobs,
+            {
+                "a:b:c/test": {
+                    "input.images": [[b"experiment: a:b:c", b"name: Bar"]]
                 }
             },
         )
 
-    def test_blob_sequences(self):
-        def get_blobs(dp, experiment_id):
-            """List, read, and fetch all blobs in a given context."""
-            listing = dp.list_blob_sequences(
-                _ctx(), experiment_id=experiment_id, plugin_name="images"
-            )
-            reading = dp.read_blob_sequences(
-                _ctx(),
-                experiment_id=experiment_id,
-                plugin_name="images",
-                downsample=10,
-                run_tag_filter=provider.RunTagFilter(
-                    runs=list(listing),
-                    tags=sorted(set().union(*listing.values())),
-                ),
-            )
-            result = {}
-            for run in reading:
-                result[run] = {}
-                for tag in reading[run]:
-                    result[run][tag] = []
-                    for datum in reading[run][tag]:
-                        result[run][tag].append(
-                            [
-                                dp.read_blob(_ctx(), blob_key=ref.blob_key)
-                                for ref in datum.values
-                            ]
-                        )
-            return result
+    def test_blob_sequences_unprefixed(self):
+        listing = self.with_unpfx.list_blob_sequences(
+            _ctx(), experiment_id="baz", plugin_name="images"
+        )
+        expected_listing = self.baz_provider.list_blob_sequences(
+            _ctx(), experiment_id="baz", plugin_name="images"
+        )
+        self.assertEqual(listing, expected_listing)
 
-        with self.subTest("prefixed sub-provider"):
-            result = get_blobs(self.with_unpfx, "foo:123")
-            self.assertEqual(
-                result,
-                {
-                    "123/test": {
-                        "input.images": [
-                            [b"experiment: 123", b"downsample: 10"]
-                        ]
-                    }
-                },
-            )
+        blobs = self._get_blobs(self.with_unpfx, "baz")
+        self.assertEqual(
+            blobs,
+            {
+                "baz/test": {
+                    "input.images": [[b"experiment: baz", b"name: BAZ"]]
+                }
+            },
+        )
 
-        with self.subTest("unprefixed sub-provider"):
-            result = get_blobs(self.with_unpfx, "baz")
-            self.assertEqual(
-                result,
-                {
-                    "baz/test": {
-                        "input.images": [
-                            [b"experiment: baz", b"downsample: 10"]
-                        ]
-                    }
-                },
-            )
-
-        with self.subTest("error cases"):
-            with self.assertRaisesRegex(
-                errors.NotFoundError, "Unknown data provider key: 'quux'"
-            ):
-                get_blobs(self.with_unpfx, "quux:hmm")
-            with self.assertRaisesRegex(
-                errors.NotFoundError, "No unprefixed data provider specified"
-            ):
-                result = get_blobs(self.without_unpfx, "baz")
+    def test_blobs_error_cases(self):
+        with self.assertRaisesRegex(
+            errors.NotFoundError, "Unknown prefix in experiment ID: 'quux:hmm'",
+        ):
+            self._get_blobs(self.with_unpfx, "quux:hmm")
+        with self.assertRaisesRegex(
+            errors.NotFoundError,
+            "No data provider found for unprefixed experiment ID: 'baz'",
+        ):
+            result = self._get_blobs(self.without_unpfx, "baz")
 
 
 def _ctx():

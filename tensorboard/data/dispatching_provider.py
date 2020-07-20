@@ -53,9 +53,9 @@ class DispatchingDataProvider(provider.DataProvider):
         """Initialize a `DispatchingDataProvider`.
 
         Args:
-          providers: Dict mapping provider name (`str`) to data
-            provider instance (`provider.DataProvider`). Keys will
-            appear in experiment IDs and so should be URL-safe.
+          providers: Dict mapping prefix (`str`) to sub-provider
+            instance (`provider.DataProvider`). Keys will appear in
+            experiment IDs and so must be URL-safe.
           unprefixed_provider: Optional `provider.DataProvider` instance
             to use with experiment IDs that do not have a prefix.
 
@@ -80,13 +80,16 @@ class DispatchingDataProvider(provider.DataProvider):
         if len(parts) == 1:
             if self._unprefixed_provider is None:
                 raise errors.NotFoundError(
-                    "No unprefixed data provider specified"
+                    "No data provider found for unprefixed experiment ID: %r"
+                    % experiment_id
                 )
             return (None, experiment_id, self._unprefixed_provider)
         (prefix, sub_eid) = parts
         sub_provider = self._providers.get(prefix)
         if sub_provider is None:
-            raise errors.NotFoundError("Unknown data provider key: %r" % prefix)
+            raise errors.NotFoundError(
+                "Unknown prefix in experiment ID: %r" % experiment_id
+            )
         return (prefix, sub_eid, sub_provider)
 
     def _simple_delegate(get_method):
@@ -138,7 +141,8 @@ class DispatchingDataProvider(provider.DataProvider):
         sub_provider = self._providers.get(prefix)
         if sub_provider is None:
             raise errors.NotFoundError(
-                "Invalid blob key: no such provider: %r; have: %r" % prefix
+                "Invalid blob key: no such provider: %r; have: %r"
+                % (prefix, sorted(self._providers))
             )
         return sub_provider.read_blob(ctx, blob_key=sub_key)
 
@@ -153,7 +157,8 @@ def _convert_blob_references(prefix, references):
         sub-provider.
 
     Returns:
-      A new list of `provider.BlobReference`s whose blob keys have been encoded per `_encode_blob_key`.
+      A new list of `provider.BlobReference`s whose blob keys have been
+      encoded per `_encode_blob_key`.
     """
     return [
         provider.BlobReference(
@@ -198,7 +203,7 @@ def _decode_blob_key(key):
     """
     failure = errors.NotFoundError("Invalid blob key: %r" % key)
 
-    b64_str = key + "=="
+    b64_str = key + "=="  # ensure adequate padding (overpadding is okay)
     json_str = base64.urlsafe_b64decode(b64_str).decode("ascii")
     payload = json.loads(json_str)
     if not isinstance(payload, list) or len(payload) != 2:
