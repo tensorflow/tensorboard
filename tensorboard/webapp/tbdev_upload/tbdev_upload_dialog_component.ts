@@ -21,6 +21,9 @@ import {MatDialogRef} from '@angular/material/dialog';
   styleUrls: ['./tbdev_upload_dialog_component.css'],
 })
 export class TbdevUploadDialogComponent {
+  readonly tensorboardDotDevUrl: string =
+    'https://tensorboard.dev/?utm_source=tensorboard';
+
   constructor(
     private readonly dialogRef: MatDialogRef<TbdevUploadDialogComponent>
   ) {}
