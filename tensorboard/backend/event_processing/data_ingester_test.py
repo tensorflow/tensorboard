@@ -134,12 +134,12 @@ class ParseEventFilesSpecTest(tb_test.TestCase):
         )
 
     def testExpandsUser(self):
+        # USERPROFILE is used for simulating Python 3.8 on Windows.
         old_home = os.environ.get("HOME", None)
         old_userprofile = os.environ.get("USERPROFILE", None)
         try:
             test_home_directory = "/usr/eliza"
             os.environ["HOME"] = test_home_directory
-            os.environ["USERPROFILE"] = test_home_directory
             self.assertPlatformSpecificLogdirParsing(
                 posixpath, "~/lol/cat~dog", {"/usr/eliza/lol/cat~dog": None}
             )
@@ -156,12 +156,12 @@ class ParseEventFilesSpecTest(tb_test.TestCase):
                 os.environ["USERPROFILE"] = old_userprofile
 
     def testExpandsUserForMultipleDirectories(self):
+        # USERPROFILE is used for simulating Python 3.8 on Windows.
         old_home = os.environ.get("HOME", None)
         old_userprofile = os.environ.get("USERPROFILE", None)
         try:
             test_home_directory = "/usr/eliza"
             os.environ["HOME"] = test_home_directory
-            os.environ["USERPROFILE"] = test_home_directory
             self.assertPlatformSpecificLogdirParsing(
                 posixpath,
                 "a:~/lol,b:~/cat",
