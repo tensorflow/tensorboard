@@ -53,6 +53,7 @@ from tensorboard.plugins.scalar import scalars_plugin
 from tensorboard.plugins.text import text_plugin
 from tensorboard.plugins.text_v2 import text_v2_plugin
 from tensorboard.plugins.mesh import mesh_plugin
+from tensorboard.plugins.npmi import npmi_plugin
 
 
 logger = logging.getLogger(__name__)
@@ -62,6 +63,14 @@ class ExperimentalTextV2Plugin(
     text_v2_plugin.TextV2Plugin, experimental_plugin.ExperimentalPlugin
 ):
     """Angular Text Plugin marked as experimental."""
+
+    pass
+
+
+class ExperimentalNpmiPlugin(
+    npmi_plugin.NpmiPlugin, experimental_plugin.ExperimentalPlugin
+):
+    """Angular nPMI Plugin marked as experimental."""
 
     pass
 
@@ -86,6 +95,7 @@ _PLUGINS = [
     hparams_plugin.HParamsPlugin,
     mesh_plugin.MeshPlugin,
     ExperimentalTextV2Plugin,
+    ExperimentalNpmiPlugin,
 ]
 
 

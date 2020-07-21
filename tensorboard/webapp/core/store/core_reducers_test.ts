@@ -265,7 +265,7 @@ describe('core reducer', () => {
           {id: '3', name: 'Run name 3'},
           {id: '4', name: 'Run name 4'},
         ],
-        polymerInteropRunSelection: new Map(),
+        polymerInteropRunSelection: new Set(),
       });
 
       const nextState = reducers(
@@ -276,7 +276,7 @@ describe('core reducer', () => {
       );
 
       expect(nextState.polymerInteropRunSelection).toEqual(
-        new Map([['1', true], ['2', true], ['3', false], ['4', true]])
+        new Set(['1', '2', '4'])
       );
     });
   });
