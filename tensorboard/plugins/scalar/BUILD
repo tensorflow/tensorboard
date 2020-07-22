@@ -45,7 +45,6 @@ py_test(
         "//tensorboard/backend/event_processing:tag_types",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/plugins:base_plugin",
-        "//tensorboard/util:test_util",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
     ],
