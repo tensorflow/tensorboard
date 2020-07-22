@@ -22,13 +22,11 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import collections
 import csv
 
 import six
 from six import StringIO
 from werkzeug import wrappers
-import numpy as np
 
 from tensorboard import errors
 from tensorboard import plugin_util
@@ -36,7 +34,6 @@ from tensorboard.backend import http_util
 from tensorboard.data import provider
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.scalar import metadata
-from tensorboard.util import tensor_util
 
 
 _DEFAULT_DOWNSAMPLING = 1000  # scalars per time series
@@ -131,6 +128,11 @@ class ScalarsPlugin(base_plugin.TBPlugin):
         """Given a tag and single run, return array of ScalarEvents."""
         tag = request.args.get("tag")
         run = request.args.get("run")
+        if tag is None or run is None:
+            raise errors.InvalidArgumentError(
+                "Both run and tag must be specified: tag=%r, run=%r" % (tag, run)
+            )
+
         ctx = plugin_util.context(request.environ)
         experiment = plugin_util.experiment_id(request.environ)
         output_format = request.args.get("format")
