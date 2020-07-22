@@ -19,9 +19,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import argparse
+import collections.abc
 import csv
+import functools
 import json
 import os.path
+import unittest
 
 from six import StringIO
 from six.moves import xrange  # pylint: disable=redefined-builtin
@@ -171,10 +175,7 @@ class ScalarsPluginTest(tf.test.TestCase):
         server = self.load_server([self._RUN_WITH_SCALARS])
         response = server.get(
             "/data/plugin/scalars/scalars",
-            query_string={
-                "run": None,
-                "tag": "foo_tag"
-            },
+            query_string={"run": None, "tag": "foo_tag"},
         )
         print("Response: ", response.status_code)
 
@@ -182,10 +183,7 @@ class ScalarsPluginTest(tf.test.TestCase):
         server = self.load_server([self._RUN_WITH_SCALARS])
         response = server.get(
             "/data/plugin/scalars/scalars",
-            query_string={
-                "run": "foo_run",
-                "tag": None
-            },
+            query_string={"run": "foo_run", "tag": None},
         )
         self.assertEqual(400, response.status_code)
 
