@@ -177,7 +177,7 @@ class ScalarsPluginTest(tf.test.TestCase):
             "/data/plugin/scalars/scalars",
             query_string={"run": None, "tag": "foo_tag"},
         )
-        print("Response: ", response.status_code)
+        self.assertEqual(400, response.status_code)
 
     def test_scalars_with_scalars_unspecified_tag(self):
         server = self.load_server([self._RUN_WITH_SCALARS])
