@@ -45,7 +45,7 @@ limitations under the License.
       <tf-line-chart-data-loader
         active="[[active]]"
         color-scale="[[_getColorScale(colorScale)]]"
-        data-series="[[_getDataSeries()]]"
+        data-series="[[_getDataSeries(tagAndRuns)]]"
         data-to-load="[[_asSingletonArray(tagAndRuns)]]"
         get-data-load-name="[[_getDataLoadName]]"
         get-data-load-url="[[getDataLoadUrl]]"
@@ -321,10 +321,8 @@ limitations under the License.
         // specifier, truncating the SVG. (See issue #1874.)
         this.$$('#svgLink').href = `data:image/svg+xml;base64,${btoa(svgStr)}`;
       },
-      _getDataSeries() {
-        return this.tagAndRuns.runs.map((run) =>
-          this._getSeriesNameForRun(run)
-        );
+      _getDataSeries(tagAndRuns) {
+        return tagAndRuns.runs.map((run) => this._getSeriesNameForRun(run));
       },
       // name is a stable identifier for a series.
       _getSeriesNameForRun(run) {
