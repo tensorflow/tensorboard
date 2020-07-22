@@ -24,6 +24,8 @@ import six
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
+from tensorboard import data_compat
+from tensorboard import dataclass_compat
 from tensorboard.backend.event_processing import plugin_event_accumulator as ea
 from tensorboard.compat.proto import config_pb2
 from tensorboard.compat.proto import event_pb2
@@ -32,6 +34,7 @@ from tensorboard.compat.proto import meta_graph_pb2
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.audio import metadata as audio_metadata
 from tensorboard.plugins.audio import summary as audio_summary
+from tensorboard.plugins.graph import metadata as graph_metadata
 from tensorboard.plugins.image import metadata as image_metadata
 from tensorboard.plugins.image import summary as image_summary
 from tensorboard.plugins.scalar import metadata as scalar_metadata
@@ -56,10 +59,17 @@ class _EventGenerator(object):
         self._testcase = testcase
         self.items = []
         self.zero_out_timestamps = zero_out_timestamps
+        self._initial_metadata = {}
 
     def Load(self):
         while self.items:
-            yield self.items.pop(0)
+            event = self.items.pop(0)
+            event = data_compat.migrate_event(event)
+            events = dataclass_compat.migrate_event(
+                event, self._initial_metadata
+            )
+            for event in events:
+                yield event
 
     def AddScalarTensor(self, tag, wall_time=0, step=0, value=0):
         """Add a rank-0 tensor event.
@@ -196,7 +206,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
         discard events based on the step value of SessionLog.START.
         """
         warnings = []
-        self.stubs.Set(logger, "warn", warnings.append)
+        self.stubs.Set(logger, "warning", warnings.append)
 
         gen = _EventGenerator(self)
         acc = ea.EventAccumulator(gen)
@@ -257,7 +267,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
         discard events based on the step value of SessionLog.START.
         """
         warnings = []
-        self.stubs.Set(logger, "warn", warnings.append)
+        self.stubs.Set(logger, "warning", warnings.append)
 
         gen = _EventGenerator(self)
         acc = ea.EventAccumulator(gen)
@@ -390,6 +400,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
         accumulator.Reload()
 
         tags = [
+            graph_metadata.RUN_GRAPH_NAME,
             u"accuracy/scalar_summary",
             u"xent/scalar_summary",
         ]
@@ -399,7 +410,8 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
         )
 
         self.assertItemsEqual(
-            accumulator.ActivePlugins(), [scalar_metadata.PLUGIN_NAME]
+            accumulator.ActivePlugins(),
+            [scalar_metadata.PLUGIN_NAME, graph_metadata.PLUGIN_NAME],
         )
 
     def testNewStyleAudioSummary(self):
@@ -432,6 +444,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
         accumulator.Reload()
 
         tags = [
+            graph_metadata.RUN_GRAPH_NAME,
             u"1/one/audio_summary",
             u"2/two/audio_summary",
             u"3/three/audio_summary",
@@ -442,7 +455,8 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
         )
 
         self.assertItemsEqual(
-            accumulator.ActivePlugins(), [audio_metadata.PLUGIN_NAME]
+            accumulator.ActivePlugins(),
+            [audio_metadata.PLUGIN_NAME, graph_metadata.PLUGIN_NAME],
         )
 
     def testNewStyleImageSummary(self):
@@ -473,6 +487,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
         accumulator.Reload()
 
         tags = [
+            graph_metadata.RUN_GRAPH_NAME,
             u"1/images/image_summary",
             u"2/images/image_summary",
             u"3/images/image_summary",
@@ -483,7 +498,8 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
         )
 
         self.assertItemsEqual(
-            accumulator.ActivePlugins(), [image_metadata.PLUGIN_NAME]
+            accumulator.ActivePlugins(),
+            [image_metadata.PLUGIN_NAME, graph_metadata.PLUGIN_NAME],
         )
 
     def testTFSummaryTensor(self):
@@ -641,7 +657,7 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
         self.assertTagsEqual(
             acc.Tags(),
             {
-                ea.TENSORS: ["id", "sq"],
+                ea.TENSORS: [graph_metadata.RUN_GRAPH_NAME, "id", "sq"],
                 ea.GRAPH: True,
                 ea.META_GRAPH: True,
                 ea.RUN_METADATA: ["test run"],

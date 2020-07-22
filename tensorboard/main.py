@@ -28,10 +28,13 @@ from __future__ import print_function
 
 import os
 
-# Disable the TF GCS filesystem cache which interacts pathologically with the
-# pattern of reads used by TensorBoard for logdirs. See for details:
-#   https://github.com/tensorflow/tensorboard/issues/1225
-# This must be set before the first import of tensorflow.
+# TF versions prior to 1.15.0 included default GCS filesystem caching logic
+# that interacted pathologically with the pattern of reads used by TensorBoard
+# for logdirs. See: https://github.com/tensorflow/tensorboard/issues/1225
+# The problematic behavior was fixed in 1.15.0 by
+# https://github.com/tensorflow/tensorflow/commit/e43b94649d3e1ac5d538e4eca9166b899511d681
+# but for older versions of TF, we avoid a regression by setting this env var to
+# disable the cache, which must be done before the first import of tensorflow.
 os.environ["GCS_READ_CACHE_DISABLED"] = "1"
 
 
@@ -41,7 +44,7 @@ from tensorboard import default
 from tensorboard import program
 from tensorboard.compat import tf
 from tensorboard.plugins import base_plugin
-from tensorboard.uploader import uploader_main
+from tensorboard.uploader import uploader_subcommand
 from tensorboard.util import tb_logging
 
 
@@ -59,9 +62,9 @@ def run_main():
         )
 
     tensorboard = program.TensorBoard(
-        default.get_plugins() + default.get_dynamic_plugins(),
+        default.get_plugins(),
         program.get_default_assets_zip_provider(),
-        subcommands=[uploader_main.UploaderSubcommand()],
+        subcommands=[uploader_subcommand.UploaderSubcommand()],
     )
     try:
         from absl import app

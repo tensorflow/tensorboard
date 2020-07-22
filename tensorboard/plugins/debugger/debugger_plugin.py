@@ -434,7 +434,7 @@ class DebuggerPlugin(base_plugin.TBPlugin):
         events_loader = event_file_loader.EventFileLoader(file_path)
         for event in events_loader.Load():
             if not event.HasField("summary"):
-                logger.warn(
+                logger.warning(
                     "An event in a debugger events file lacks a summary."
                 )
                 continue
@@ -461,7 +461,7 @@ class DebuggerPlugin(base_plugin.TBPlugin):
                             )
                         )
                     except ValueError as err:
-                        logger.warn(
+                        logger.warning(
                             "Could not parse the JSON string containing data for "
                             "the debugger plugin: %r, %r",
                             content,
@@ -480,7 +480,7 @@ class DebuggerPlugin(base_plugin.TBPlugin):
                     continue
 
                 if not value.HasField("tensor"):
-                    logger.warn(
+                    logger.warning(
                         "An event in a debugger events file lacks a tensor value."
                     )
                     continue
@@ -489,7 +489,7 @@ class DebuggerPlugin(base_plugin.TBPlugin):
                     r"^(.*):(\d+):DebugNumericSummary$", value.node_name
                 )
                 if not match:
-                    logger.warn(
+                    logger.warning(
                         (
                             "A event with a health pill has an invalid watch, (i.e., an "
                             "unexpected debug op): %r"

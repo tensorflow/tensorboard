@@ -56,6 +56,7 @@ from werkzeug import serving
 from tensorboard import manager
 from tensorboard import version
 from tensorboard.backend import application
+from tensorboard.backend.event_processing import data_ingester
 from tensorboard.backend.event_processing import event_file_inspector as efi
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.core import core_plugin
@@ -405,8 +406,14 @@ class TensorBoard(object):
 
     def _make_server(self):
         """Constructs the TensorBoard WSGI app and instantiates the server."""
-        app = application.standard_tensorboard_wsgi(
-            self.flags, self.plugin_loaders, self.assets_zip_provider
+        ingester = data_ingester.LocalDataIngester(self.flags)
+        ingester.start()
+        app = application.TensorBoardWSGIApp(
+            self.flags,
+            self.plugin_loaders,
+            ingester.data_provider,
+            self.assets_zip_provider,
+            ingester.deprecated_multiplexer,
         )
         return self.server_class(app, self.flags)
 
@@ -551,13 +558,12 @@ def with_port_scanning(cls):
         base_port = (
             core_plugin.DEFAULT_PORT if flags.port is None else flags.port
         )
-        max_attempts = 10 if should_scan else 1
 
         if base_port > 0xFFFF:
             raise TensorBoardServerException(
                 "TensorBoard cannot bind to port %d > %d" % (base_port, 0xFFFF)
             )
-        max_attempts = 10 if should_scan else 1
+        max_attempts = 100 if should_scan else 1
         base_port = min(base_port + max_attempts, 0x10000) - max_attempts
 
         for port in xrange(base_port, base_port + max_attempts):
@@ -597,6 +603,7 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
             host = "localhost"
 
         self._host = host
+        self._url = None  # Will be set by get_url() below
 
         self._fix_werkzeug_logging()
         try:
@@ -658,7 +665,7 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
                     socket.AI_PASSIVE,
                 )
             except socket.gaierror as e:
-                logger.warn(
+                logger.warning(
                     "Failed to auto-detect wildcard address, assuming %s: %s",
                     fallback_address,
                     str(e),
@@ -673,7 +680,7 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
                 return addrs_by_family[socket.AF_INET6][0]
             if hasattr(socket, "AF_INET") and addrs_by_family[socket.AF_INET]:
                 return addrs_by_family[socket.AF_INET][0]
-        logger.warn(
+        logger.warning(
             "Failed to auto-detect wildcard address, assuming %s",
             fallback_address,
         )
@@ -706,7 +713,7 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
                     hasattr(errno, "EAFNOSUPPORT")
                     and e.errno != errno.EAFNOSUPPORT
                 ):
-                    logger.warn(
+                    logger.warning(
                         "Failed to dual-bind to IPv4 wildcard: %s", str(e)
                     )
         super(WerkzeugServer, self).server_bind()
@@ -720,27 +727,37 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
         exc_info = sys.exc_info()
         e = exc_info[1]
         if isinstance(e, IOError) and e.errno == errno.EPIPE:
-            logger.warn(
+            logger.warning(
                 "EPIPE caused by %s in HTTP serving" % str(client_address)
             )
         else:
             logger.error("HTTP serving error", exc_info=exc_info)
 
     def get_url(self):
-        if self._auto_wildcard:
-            display_host = socket.gethostname()
-        else:
-            host = self._host
-            display_host = (
-                "[%s]" % host
-                if ":" in host and not host.startswith("[")
-                else host
+        if not self._url:
+            if self._auto_wildcard:
+                display_host = socket.getfqdn()
+                # Confirm that the connection is open, otherwise change to `localhost`
+                try:
+                    socket.create_connection(
+                        (display_host, self.server_port), timeout=1
+                    )
+                except socket.error as e:
+                    display_host = "localhost"
+
+            else:
+                host = self._host
+                display_host = (
+                    "[%s]" % host
+                    if ":" in host and not host.startswith("[")
+                    else host
+                )
+            self._url = "http://%s:%d%s/" % (
+                display_host,
+                self.server_port,
+                self._flags.path_prefix.rstrip("/"),
             )
-        return "http://%s:%d%s/" % (
-            display_host,
-            self.server_port,
-            self._flags.path_prefix.rstrip("/"),
-        )
+        return self._url
 
     def print_serving_message(self):
         if self._flags.host is None and not self._flags.bind_all:

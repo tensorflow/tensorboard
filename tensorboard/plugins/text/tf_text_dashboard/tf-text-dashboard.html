@@ -41,7 +41,7 @@ tf-text-dashboard displays a dashboard that loads texts from a TensorFlow run.
   <template>
     <tf-dashboard-layout>
       <div class="sidebar" slot="sidebar">
-        <div class="sidebar-section">
+        <div class="sidebar-section runs-selector">
           <tf-runs-selector selected-runs="{{_selectedRuns}}">
           </tf-runs-selector>
         </div>
@@ -112,6 +112,10 @@ tf-text-dashboard displays a dashboard that loads texts from a TensorFlow run.
     Polymer({
       is: 'tf-text-dashboard',
       properties: {
+        reloadOnReady: {
+          type: Boolean,
+          value: true,
+        },
         _selectedRuns: Array,
         _runToTag: Object, // map<run: string, tags: string[]>
         _dataNotFound: Boolean,
@@ -132,7 +136,7 @@ tf-text-dashboard displays a dashboard that loads texts from a TensorFlow run.
         },
       },
       ready() {
-        this.reload();
+        if (this.reloadOnReady) this.reload();
       },
       reload() {
         this._fetchTags().then(() => {

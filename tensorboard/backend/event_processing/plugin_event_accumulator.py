@@ -22,13 +22,13 @@ import threading
 
 import six
 
-from tensorboard import data_compat
 from tensorboard.backend.event_processing import directory_loader
 from tensorboard.backend.event_processing import directory_watcher
 from tensorboard.backend.event_processing import event_file_loader
 from tensorboard.backend.event_processing import io_wrapper
 from tensorboard.backend.event_processing import plugin_asset_util
 from tensorboard.backend.event_processing import reservoir
+from tensorboard.backend.event_processing import tag_types
 from tensorboard.compat import tf
 from tensorboard.compat.proto import config_pb2
 from tensorboard.compat.proto import event_pb2
@@ -43,12 +43,11 @@ namedtuple = collections.namedtuple
 
 TensorEvent = namedtuple("TensorEvent", ["wall_time", "step", "tensor_proto"])
 
-## The tagTypes below are just arbitrary strings chosen to pass the type
-## information of the tag from the backend to the frontend
-TENSORS = "tensors"
-GRAPH = "graph"
-META_GRAPH = "meta_graph"
-RUN_METADATA = "run_metadata"
+# Legacy aliases
+TENSORS = tag_types.TENSORS
+GRAPH = tag_types.GRAPH
+META_GRAPH = tag_types.META_GRAPH
+RUN_METADATA = tag_types.RUN_METADATA
 
 DEFAULT_SIZE_GUIDANCE = {
     TENSORS: 500,
@@ -282,6 +281,15 @@ class EventAccumulator(object):
         """
         return self.summary_metadata[tag]
 
+    def AllSummaryMetadata(self):
+        """Return summary metadata for all tags.
+
+        Returns:
+          A dict `d` such that `d[tag]` is a `SummaryMetadata` proto for
+          the keyed tag.
+        """
+        return dict(self.summary_metadata)
+
     def _ProcessEvent(self, event):
         """Called whenever an event is loaded."""
         if self._first_event_timestamp is None:
@@ -291,7 +299,7 @@ class EventAccumulator(object):
             new_file_version = _ParseFileVersion(event.file_version)
             if self.file_version and self.file_version != new_file_version:
                 ## This should not happen.
-                logger.warn(
+                logger.warning(
                     (
                         "Found new file_version for event.proto. This will "
                         "affect purging logic for TensorFlow restarts. "
@@ -310,7 +318,7 @@ class EventAccumulator(object):
         # inside the meta_graph_def.
         if event.HasField("graph_def"):
             if self._graph is not None:
-                logger.warn(
+                logger.warning(
                     (
                         "Found more than one graph event per run, or there was "
                         "a metagraph containing a graph_def, as well as one or "
@@ -322,7 +330,7 @@ class EventAccumulator(object):
             self._graph_from_metagraph = False
         elif event.HasField("meta_graph_def"):
             if self._meta_graph is not None:
-                logger.warn(
+                logger.warning(
                     (
                         "Found more than one metagraph event per run. "
                         "Overwriting the metagraph with the newest event."
@@ -336,7 +344,7 @@ class EventAccumulator(object):
                 meta_graph.ParseFromString(self._meta_graph)
                 if meta_graph.graph_def:
                     if self._graph is not None:
-                        logger.warn(
+                        logger.warning(
                             (
                                 "Found multiple metagraphs containing graph_defs,"
                                 "but did not find any graph events.  Overwriting the "
@@ -348,7 +356,7 @@ class EventAccumulator(object):
         elif event.HasField("tagged_run_metadata"):
             tag = event.tagged_run_metadata.tag
             if tag in self._tagged_metadata:
-                logger.warn(
+                logger.warning(
                     'Found more than one "run metadata" event with tag '
                     + tag
                     + ". Overwriting it with the newest event."
@@ -356,8 +364,6 @@ class EventAccumulator(object):
             self._tagged_metadata[tag] = event.tagged_run_metadata.run_metadata
         elif event.HasField("summary"):
             for value in event.summary.value:
-                value = data_compat.migrate_value(value)
-
                 if value.HasField("metadata"):
                     tag = value.tag
                     # We only store the first instance of the metadata. This check
@@ -375,7 +381,7 @@ class EventAccumulator(object):
                                     plugin_data.plugin_name
                                 ][tag] = plugin_data.content
                         else:
-                            logger.warn(
+                            logger.warning(
                                 (
                                     "This summary with tag %r is oddly not associated with a "
                                     "plugin."
@@ -605,7 +611,7 @@ class EventAccumulator(object):
                 event.wall_time,
                 num_expired,
             )
-            logger.warn(purge_msg)
+            logger.warning(purge_msg)
 
 
 def _GetPurgeMessage(
@@ -666,7 +672,7 @@ def _ParseFileVersion(file_version):
     except ValueError:
         ## This should never happen according to the definition of file_version
         ## specified in event.proto.
-        logger.warn(
+        logger.warning(
             (
                 "Invalid event.proto file_version. Defaulting to use of "
                 "out-of-order event.step logic for purging expired events."

@@ -64,6 +64,14 @@ namespace vz_line_chart2 {
       return this.domain() as [number, number];
     }
 
+    public setTransformationDomain(domain: [number, number]) {
+      this.domain(domain);
+    }
+
+    public getTransformationExtent(): [number, number] {
+      return this._getUnboundedExtent(true) as [number, number];
+    }
+
     protected _getDomain() {
       return this._untransformedDomain;
     }

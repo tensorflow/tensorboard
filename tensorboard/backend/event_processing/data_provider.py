@@ -21,13 +21,14 @@ from __future__ import print_function
 import base64
 import collections
 import json
+import random
 
 import six
 
 from tensorboard import errors
 from tensorboard.backend.event_processing import plugin_event_accumulator
+from tensorboard.compat.proto import summary_pb2
 from tensorboard.data import provider
-from tensorboard.plugins.graph import metadata as graphs_metadata
 from tensorboard.util import tb_logging
 from tensorboard.util import tensor_util
 
@@ -47,6 +48,10 @@ class MultiplexerDataProvider(provider.DataProvider):
         self._multiplexer = multiplexer
         self._logdir = logdir
 
+    def _validate_context(self, ctx):
+        if type(ctx).__name__ != "RequestContext":
+            raise TypeError("ctx must be a RequestContext; got: %r" % (ctx,))
+
     def _validate_experiment_id(self, experiment_id):
         # This data provider doesn't consume the experiment ID at all, but
         # as a courtesy to callers we require that it be a valid string, to
@@ -56,6 +61,16 @@ class MultiplexerDataProvider(provider.DataProvider):
                 "experiment_id must be %r, but got %r: %r"
                 % (str, type(experiment_id), experiment_id)
             )
+
+    def _validate_downsample(self, downsample):
+        if downsample is None:
+            raise TypeError("`downsample` required but not given")
+        if isinstance(downsample, int):
+            return  # OK
+        raise TypeError(
+            "`downsample` must be an int, but got %r: %r"
+            % (type(downsample), downsample)
+        )
 
     def _test_run_tag(self, run_tag_filter, run, tag):
         runs = run_tag_filter.runs
@@ -72,24 +87,23 @@ class MultiplexerDataProvider(provider.DataProvider):
         except ValueError as e:
             return None
 
-    def data_location(self, experiment_id):
+    def data_location(self, ctx=None, *, experiment_id):
+        self._validate_context(ctx)
         self._validate_experiment_id(experiment_id)
         return str(self._logdir)
 
-    def list_plugins(self, experiment_id):
+    def list_plugins(self, ctx=None, *, experiment_id):
+        self._validate_context(ctx)
         self._validate_experiment_id(experiment_id)
-        normal_plugins = self._multiplexer.ActivePlugins()
-        graph_plugins = (
-            (graphs_metadata.PLUGIN_NAME,)
-            if any(
-                run[plugin_event_accumulator.GRAPH]
-                for run in self._multiplexer.Runs().values()
-            )
-            else ()
-        )
-        return frozenset().union(normal_plugins, graph_plugins)
+        # Note: This result may include plugins that only have time
+        # series with `DATA_CLASS_UNKNOWN`, which will not actually be
+        # accessible via `list_*` or read_*`. This is inconsistent with
+        # the specification for `list_plugins`, but the bug should be
+        # mostly harmless.
+        return self._multiplexer.ActivePlugins()
 
-    def list_runs(self, experiment_id):
+    def list_runs(self, ctx=None, *, experiment_id):
+        self._validate_context(ctx)
         self._validate_experiment_id(experiment_id)
         return [
             provider.Run(
@@ -100,65 +114,125 @@ class MultiplexerDataProvider(provider.DataProvider):
             for run in self._multiplexer.Runs()
         ]
 
-    def list_scalars(self, experiment_id, plugin_name, run_tag_filter=None):
+    def list_scalars(
+        self, ctx=None, *, experiment_id, plugin_name, run_tag_filter=None
+    ):
+        self._validate_context(ctx)
         self._validate_experiment_id(experiment_id)
-        run_tag_content = self._multiplexer.PluginRunToTagToContent(plugin_name)
-        return self._list(
-            provider.ScalarTimeSeries, run_tag_content, run_tag_filter
+        index = self._index(
+            plugin_name, run_tag_filter, summary_pb2.DATA_CLASS_SCALAR
         )
+        return self._list(provider.ScalarTimeSeries, index)
 
     def read_scalars(
-        self, experiment_id, plugin_name, downsample=None, run_tag_filter=None
+        self,
+        ctx=None,
+        *,
+        experiment_id,
+        plugin_name,
+        downsample=None,
+        run_tag_filter=None
     ):
-        # TODO(@wchargin): Downsampling not implemented, as the multiplexer
-        # is already downsampled. We could downsample on top of the existing
-        # sampling, which would be nice for testing.
-        del downsample  # ignored for now
-        index = self.list_scalars(
-            experiment_id, plugin_name, run_tag_filter=run_tag_filter
-        )
-        return self._read(_convert_scalar_event, index)
-
-    def list_tensors(self, experiment_id, plugin_name, run_tag_filter=None):
+        self._validate_context(ctx)
         self._validate_experiment_id(experiment_id)
-        run_tag_content = self._multiplexer.PluginRunToTagToContent(plugin_name)
-        return self._list(
-            provider.TensorTimeSeries, run_tag_content, run_tag_filter
+        self._validate_downsample(downsample)
+        index = self._index(
+            plugin_name, run_tag_filter, summary_pb2.DATA_CLASS_SCALAR
         )
+        return self._read(_convert_scalar_event, index, downsample)
+
+    def list_tensors(
+        self, ctx=None, *, experiment_id, plugin_name, run_tag_filter=None
+    ):
+        self._validate_context(ctx)
+        self._validate_experiment_id(experiment_id)
+        index = self._index(
+            plugin_name, run_tag_filter, summary_pb2.DATA_CLASS_TENSOR
+        )
+        return self._list(provider.TensorTimeSeries, index)
 
     def read_tensors(
-        self, experiment_id, plugin_name, downsample=None, run_tag_filter=None
+        self,
+        ctx=None,
+        *,
+        experiment_id,
+        plugin_name,
+        downsample=None,
+        run_tag_filter=None
     ):
-        # TODO(@wchargin): Downsampling not implemented, as the multiplexer
-        # is already downsampled. We could downsample on top of the existing
-        # sampling, which would be nice for testing.
-        del downsample  # ignored for now
-        index = self.list_tensors(
-            experiment_id, plugin_name, run_tag_filter=run_tag_filter
+        self._validate_context(ctx)
+        self._validate_experiment_id(experiment_id)
+        self._validate_downsample(downsample)
+        index = self._index(
+            plugin_name, run_tag_filter, summary_pb2.DATA_CLASS_TENSOR
         )
-        return self._read(_convert_tensor_event, index)
+        return self._read(_convert_tensor_event, index, downsample)
 
-    def _list(self, construct_time_series, run_tag_content, run_tag_filter):
+    def _index(self, plugin_name, run_tag_filter, data_class_filter):
+        """List time series and metadata matching the given filters.
+
+        This is like `_list`, but doesn't traverse `Tensors(...)` to
+        compute metadata that's not always needed.
+
+        Args:
+          plugin_name: A string plugin name filter (required).
+          run_tag_filter: An `provider.RunTagFilter`, or `None`.
+          data_class_filter: A `summary_pb2.DataClass` filter (required).
+
+        Returns:
+          A nested dict `d` such that `d[run][tag]` is a
+          `SummaryMetadata` proto.
+        """
+        if run_tag_filter is None:
+            run_tag_filter = provider.RunTagFilter(runs=None, tags=None)
+        runs = run_tag_filter.runs
+        tags = run_tag_filter.tags
+
+        # Optimization for a common case, reading a single time series.
+        if runs and len(runs) == 1 and tags and len(tags) == 1:
+            (run,) = runs
+            (tag,) = tags
+            try:
+                metadata = self._multiplexer.SummaryMetadata(run, tag)
+            except KeyError:
+                return {}
+            all_metadata = {run: {tag: metadata}}
+        else:
+            all_metadata = self._multiplexer.AllSummaryMetadata()
+
+        result = {}
+        for (run, tag_to_metadata) in all_metadata.items():
+            if runs is not None and run not in runs:
+                continue
+            result_for_run = {}
+            for (tag, metadata) in tag_to_metadata.items():
+                if tags is not None and tag not in tags:
+                    continue
+                if metadata.data_class != data_class_filter:
+                    continue
+                if metadata.plugin_data.plugin_name != plugin_name:
+                    continue
+                result[run] = result_for_run
+                result_for_run[tag] = metadata
+
+        return result
+
+    def _list(self, construct_time_series, index):
         """Helper to list scalar or tensor time series.
 
         Args:
           construct_time_series: `ScalarTimeSeries` or `TensorTimeSeries`.
-          run_tag_content: Result of `_multiplexer.PluginRunToTagToContent(...)`.
-          run_tag_filter: As given by the client; may be `None`.
+          index: The result of `self._index(...)`.
 
         Returns:
           A list of objects of type given by `construct_time_series`,
           suitable to be returned from `list_scalars` or `list_tensors`.
         """
         result = {}
-        if run_tag_filter is None:
-            run_tag_filter = provider.RunTagFilter(runs=None, tags=None)
-        for (run, tag_to_content) in six.iteritems(run_tag_content):
+        for (run, tag_to_metadata) in index.items():
             result_for_run = {}
-            for tag in tag_to_content:
-                if not self._test_run_tag(run_tag_filter, run, tag):
-                    continue
-                result[run] = result_for_run
+            result[run] = result_for_run
+            for (tag, summary_metadata) in tag_to_metadata.items():
                 max_step = None
                 max_wall_time = None
                 for event in self._multiplexer.Tensors(run, tag):
@@ -176,13 +250,15 @@ class MultiplexerDataProvider(provider.DataProvider):
                 )
         return result
 
-    def _read(self, convert_event, index):
+    def _read(self, convert_event, index, downsample):
         """Helper to read scalar or tensor data from the multiplexer.
 
         Args:
           convert_event: Takes `plugin_event_accumulator.TensorEvent` to
             either `provider.ScalarDatum` or `provider.TensorDatum`.
-          index: The result of `list_scalars` or `list_tensors`.
+          index: The result of `self._index(...)`.
+          downsample: Non-negative `int`; how many samples to return per
+            time series.
 
         Returns:
           A dict of dicts of values returned by `convert_event` calls,
@@ -194,109 +270,97 @@ class MultiplexerDataProvider(provider.DataProvider):
             result[run] = result_for_run
             for (tag, metadata) in six.iteritems(tags_for_run):
                 events = self._multiplexer.Tensors(run, tag)
-                result_for_run[tag] = [convert_event(e) for e in events]
+                data = [convert_event(e) for e in events]
+                result_for_run[tag] = _downsample(data, downsample)
         return result
 
     def list_blob_sequences(
-        self, experiment_id, plugin_name, run_tag_filter=None
+        self, ctx=None, *, experiment_id, plugin_name, run_tag_filter=None
     ):
+        self._validate_context(ctx)
         self._validate_experiment_id(experiment_id)
-        if run_tag_filter is None:
-            run_tag_filter = provider.RunTagFilter(runs=None, tags=None)
-
-        # TODO(davidsoergel, wchargin): consider images, etc.
-        # Note this plugin_name can really just be 'graphs' for now; the
-        # v2 cases are not handled yet.
-        if plugin_name != graphs_metadata.PLUGIN_NAME:
-            logger.warn("Directory has no blob data for plugin %r", plugin_name)
-            return {}
-
-        result = collections.defaultdict(lambda: {})
-        for (run, run_info) in six.iteritems(self._multiplexer.Runs()):
-            tag = graphs_metadata.RUN_GRAPH_NAME
-            if not self._test_run_tag(run_tag_filter, run, tag):
-                continue
-            if not run_info[plugin_event_accumulator.GRAPH]:
-                continue
-            result[run][tag] = provider.BlobSequenceTimeSeries(
-                max_step=0,
-                max_wall_time=0,
-                latest_max_index=0,  # Graphs are always one blob at a time
-                plugin_content=None,
-                description=None,
-                display_name=None,
-            )
+        index = self._index(
+            plugin_name, run_tag_filter, summary_pb2.DATA_CLASS_BLOB_SEQUENCE
+        )
+        result = {}
+        for (run, tag_to_metadata) in index.items():
+            result_for_run = {}
+            result[run] = result_for_run
+            for (tag, metadata) in tag_to_metadata.items():
+                max_step = None
+                max_wall_time = None
+                max_length = None
+                for event in self._multiplexer.Tensors(run, tag):
+                    if max_step is None or max_step < event.step:
+                        max_step = event.step
+                    if max_wall_time is None or max_wall_time < event.wall_time:
+                        max_wall_time = event.wall_time
+                    length = _tensor_size(event.tensor_proto)
+                    if max_length is None or length > max_length:
+                        max_length = length
+                result_for_run[tag] = provider.BlobSequenceTimeSeries(
+                    max_step=max_step,
+                    max_wall_time=max_wall_time,
+                    max_length=max_length,
+                    plugin_content=metadata.plugin_data.content,
+                    description=metadata.summary_description,
+                    display_name=metadata.display_name,
+                )
         return result
 
     def read_blob_sequences(
-        self, experiment_id, plugin_name, downsample=None, run_tag_filter=None
+        self,
+        ctx=None,
+        *,
+        experiment_id,
+        plugin_name,
+        downsample=None,
+        run_tag_filter=None
     ):
+        self._validate_context(ctx)
         self._validate_experiment_id(experiment_id)
-        # TODO(davidsoergel, wchargin): consider images, etc.
-        # Note this plugin_name can really just be 'graphs' for now; the
-        # v2 cases are not handled yet.
-        if plugin_name != graphs_metadata.PLUGIN_NAME:
-            logger.warn("Directory has no blob data for plugin %r", plugin_name)
-            return {}
-
-        result = collections.defaultdict(
-            lambda: collections.defaultdict(lambda: [])
+        self._validate_downsample(downsample)
+        index = self._index(
+            plugin_name, run_tag_filter, summary_pb2.DATA_CLASS_BLOB_SEQUENCE
         )
-        for (run, run_info) in six.iteritems(self._multiplexer.Runs()):
-            tag = graphs_metadata.RUN_GRAPH_NAME
-            if not self._test_run_tag(run_tag_filter, run, tag):
-                continue
-            if not run_info[plugin_event_accumulator.GRAPH]:
-                continue
-
-            time_series = result[run][tag]
-
-            wall_time = 0.0  # dummy value for graph
-            step = 0  # dummy value for graph
-            index = 0  # dummy value for graph
-
-            # In some situations these blobs may have directly accessible URLs.
-            # But, for now, we assume they don't.
-            graph_url = None
-            graph_blob_key = _encode_blob_key(
-                experiment_id, plugin_name, run, tag, step, index
-            )
-            blob_ref = provider.BlobReference(graph_blob_key, graph_url)
-
-            datum = provider.BlobSequenceDatum(
-                wall_time=wall_time, step=step, values=(blob_ref,),
-            )
-            time_series.append(datum)
+        result = {}
+        for (run, tags) in six.iteritems(index):
+            result_for_run = {}
+            result[run] = result_for_run
+            for tag in tags:
+                events = self._multiplexer.Tensors(run, tag)
+                data_by_step = {}
+                for event in events:
+                    if event.step in data_by_step:
+                        continue
+                    data_by_step[event.step] = _convert_blob_sequence_event(
+                        experiment_id, plugin_name, run, tag, event
+                    )
+                data = [datum for (step, datum) in sorted(data_by_step.items())]
+                result_for_run[tag] = _downsample(data, downsample)
         return result
 
-    def read_blob(self, blob_key):
-        # note: ignoring nearly all key elements: there is only one graph per run.
+    def read_blob(self, ctx=None, *, blob_key):
+        self._validate_context(ctx)
         (
             unused_experiment_id,
             plugin_name,
             run,
-            unused_tag,
-            unused_step,
-            unused_index,
+            tag,
+            step,
+            index,
         ) = _decode_blob_key(blob_key)
 
-        # TODO(davidsoergel, wchargin): consider images, etc.
-        if plugin_name != graphs_metadata.PLUGIN_NAME:
-            logger.warn("Directory has no blob data for plugin %r", plugin_name)
-            raise errors.NotFoundError()
-
-        serialized_graph = self._multiplexer.SerializedGraph(run)
-
-        # TODO(davidsoergel): graph_defs have no step attribute so we don't filter
-        # on it.  Other blob types might, though.
-
-        if serialized_graph is None:
-            logger.warn("No blob found for key %r", blob_key)
-            raise errors.NotFoundError()
-
-        # TODO(davidsoergel): consider internal structure of non-graphdef blobs.
-        # In particular, note we ignore the requested index, since it's always 0.
-        return serialized_graph
+        summary_metadata = self._multiplexer.SummaryMetadata(run, tag)
+        if summary_metadata.data_class != summary_pb2.DATA_CLASS_BLOB_SEQUENCE:
+            raise errors.NotFoundError(blob_key)
+        tensor_events = self._multiplexer.Tensors(run, tag)
+        # In case of multiple events at this step, take first (arbitrary).
+        matching_step = next((e for e in tensor_events if e.step == step), None)
+        if not matching_step:
+            raise errors.NotFoundError("%s: no such step %r" % (blob_key, step))
+        tensor = tensor_util.make_ndarray(matching_step.tensor_proto)
+        return tensor[index]
 
 
 # TODO(davidsoergel): deduplicate with other implementations
@@ -375,3 +439,72 @@ def _convert_tensor_event(event):
         wall_time=event.wall_time,
         numpy=tensor_util.make_ndarray(event.tensor_proto),
     )
+
+
+def _convert_blob_sequence_event(experiment_id, plugin_name, run, tag, event):
+    """Helper for `read_blob_sequences`."""
+    num_blobs = _tensor_size(event.tensor_proto)
+    values = tuple(
+        provider.BlobReference(
+            _encode_blob_key(
+                experiment_id, plugin_name, run, tag, event.step, idx,
+            )
+        )
+        for idx in range(num_blobs)
+    )
+    return provider.BlobSequenceDatum(
+        wall_time=event.wall_time, step=event.step, values=values,
+    )
+
+
+def _tensor_size(tensor_proto):
+    """Compute the number of elements in a tensor.
+
+    This does not deserialize the full tensor contents.
+
+    Args:
+      tensor_proto: A `tensorboard.compat.proto.tensor_pb2.TensorProto`.
+
+    Returns:
+      A non-negative `int`.
+    """
+    # This is the same logic that `tensor_util.make_ndarray` uses to
+    # compute the size, but without the actual buffer copies.
+    result = 1
+    for dim in tensor_proto.tensor_shape.dim:
+        result *= dim.size
+    return result
+
+
+def _downsample(xs, k):
+    """Downsample `xs` to at most `k` elements.
+
+    If `k` is larger than `xs`, then the contents of `xs` itself will be
+    returned. If `k` is smaller than `xs`, the last element of `xs` will
+    always be included (unless `k` is `0`) and the preceding elements
+    will be selected uniformly at random.
+
+    This differs from `random.sample` in that it returns a subsequence
+    (i.e., order is preserved) and that it permits `k > len(xs)`.
+
+    The random number generator will always be `random.Random(0)`, so
+    this function is deterministic (within a Python process).
+
+    Args:
+      xs: A sequence (`collections.abc.Sequence`).
+      k: A non-negative integer.
+
+    Returns:
+      A new list whose elements are a subsequence of `xs` of length
+      `min(k, len(xs))` and that is guaranteed to include the last
+      element of `xs`, uniformly selected among such subsequences.
+    """
+
+    if k > len(xs):
+        return list(xs)
+    if k == 0:
+        return []
+    indices = random.Random(0).sample(six.moves.xrange(len(xs) - 1), k - 1)
+    indices.sort()
+    indices += [len(xs) - 1]
+    return [xs[i] for i in indices]

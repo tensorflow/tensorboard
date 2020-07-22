@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 namespace tf_backend {
+  const EXPERIMENTAL_PLUGINS_QUERY_PARAM = 'experimentalPlugin';
+
   export interface Router {
     environment: () => string;
     experiments: () => string;
@@ -34,7 +36,10 @@ namespace tf_backend {
    *
    * @param dataDir {string=} The base prefix for data endpoints.
    */
-  export function createRouter(dataDir = 'data'): Router {
+  export function createRouter(
+    dataDir = 'data',
+    urlSearchParams = new URLSearchParams(window.location.search)
+  ): Router {
     if (dataDir[dataDir.length - 1] === '/') {
       dataDir = dataDir.slice(0, dataDir.length - 1);
     }
@@ -52,7 +57,16 @@ namespace tf_backend {
           params
         );
       },
-      pluginsListing: () => createDataPath(dataDir, '/plugins_listing'),
+      pluginsListing: () =>
+        createDataPath(
+          dataDir,
+          '/plugins_listing',
+          createSearchParam({
+            [EXPERIMENTAL_PLUGINS_QUERY_PARAM]: urlSearchParams.getAll(
+              EXPERIMENTAL_PLUGINS_QUERY_PARAM
+            ),
+          })
+        ),
       runs: () => createDataPath(dataDir, '/runs'),
       runsForExperiment: (id) => {
         return createDataPath(

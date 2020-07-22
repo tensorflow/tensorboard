@@ -31,6 +31,18 @@ class DataProviderTest(tb_test.TestCase):
             provider.DataProvider()
 
 
+class ExperimentMetadataTest(tb_test.TestCase):
+    def test_attributes(self):
+        e1 = provider.ExperimentMetadata(
+            experiment_name="FooExperiment",
+            experiment_description="Experiment on Foo",
+            creation_time=1.25,
+        )
+        self.assertEqual(e1.experiment_name, "FooExperiment")
+        self.assertEqual(e1.experiment_description, "Experiment on Foo")
+        self.assertEqual(e1.creation_time, 1.25)
+
+
 class RunTest(tb_test.TestCase):
     def test_eq(self):
         a1 = provider.Run(run_id="a", run_name="aa", start_time=1.25)
@@ -49,6 +61,18 @@ class RunTest(tb_test.TestCase):
 
 
 class ScalarTimeSeriesTest(tb_test.TestCase):
+    def _scalar_time_series(
+        self, max_step, max_wall_time, plugin_content, description, display_name
+    ):
+        # Helper to use explicit kwargs.
+        return provider.ScalarTimeSeries(
+            max_step=max_step,
+            max_wall_time=max_wall_time,
+            plugin_content=plugin_content,
+            description=description,
+            display_name=display_name,
+        )
+
     def test_repr(self):
         x = provider.ScalarTimeSeries(
             max_step=77,
@@ -65,17 +89,17 @@ class ScalarTimeSeriesTest(tb_test.TestCase):
         self.assertIn(repr(x.display_name), repr_)
 
     def test_eq(self):
-        x1 = provider.ScalarTimeSeries(77, 1234.5, b"\x12", "one", "two")
-        x2 = provider.ScalarTimeSeries(77, 1234.5, b"\x12", "one", "two")
-        x3 = provider.ScalarTimeSeries(66, 4321.0, b"\x7F", "hmm", "hum")
+        x1 = self._scalar_time_series(77, 1234.5, b"\x12", "one", "two")
+        x2 = self._scalar_time_series(77, 1234.5, b"\x12", "one", "two")
+        x3 = self._scalar_time_series(66, 4321.0, b"\x7F", "hmm", "hum")
         self.assertEqual(x1, x2)
         self.assertNotEqual(x1, x3)
         self.assertNotEqual(x1, object())
 
     def test_hash(self):
-        x1 = provider.ScalarTimeSeries(77, 1234.5, b"\x12", "one", "two")
-        x2 = provider.ScalarTimeSeries(77, 1234.5, b"\x12", "one", "two")
-        x3 = provider.ScalarTimeSeries(66, 4321.0, b"\x7F", "hmm", "hum")
+        x1 = self._scalar_time_series(77, 1234.5, b"\x12", "one", "two")
+        x2 = self._scalar_time_series(77, 1234.5, b"\x12", "one", "two")
+        x3 = self._scalar_time_series(66, 4321.0, b"\x7F", "hmm", "hum")
         self.assertEqual(hash(x1), hash(x2))
         # The next check is technically not required by the `__hash__`
         # contract, but _should_ pass; failure on this assertion would at
@@ -111,6 +135,18 @@ class ScalarDatumTest(tb_test.TestCase):
 
 
 class TensorTimeSeriesTest(tb_test.TestCase):
+    def _tensor_time_series(
+        self, max_step, max_wall_time, plugin_content, description, display_name
+    ):
+        # Helper to use explicit kwargs.
+        return provider.TensorTimeSeries(
+            max_step=max_step,
+            max_wall_time=max_wall_time,
+            plugin_content=plugin_content,
+            description=description,
+            display_name=display_name,
+        )
+
     def test_repr(self):
         x = provider.TensorTimeSeries(
             max_step=77,
@@ -127,17 +163,17 @@ class TensorTimeSeriesTest(tb_test.TestCase):
         self.assertIn(repr(x.display_name), repr_)
 
     def test_eq(self):
-        x1 = provider.TensorTimeSeries(77, 1234.5, b"\x12", "one", "two")
-        x2 = provider.TensorTimeSeries(77, 1234.5, b"\x12", "one", "two")
-        x3 = provider.TensorTimeSeries(66, 4321.0, b"\x7F", "hmm", "hum")
+        x1 = self._tensor_time_series(77, 1234.5, b"\x12", "one", "two")
+        x2 = self._tensor_time_series(77, 1234.5, b"\x12", "one", "two")
+        x3 = self._tensor_time_series(66, 4321.0, b"\x7F", "hmm", "hum")
         self.assertEqual(x1, x2)
         self.assertNotEqual(x1, x3)
         self.assertNotEqual(x1, object())
 
     def test_hash(self):
-        x1 = provider.TensorTimeSeries(77, 1234.5, b"\x12", "one", "two")
-        x2 = provider.TensorTimeSeries(77, 1234.5, b"\x12", "one", "two")
-        x3 = provider.TensorTimeSeries(66, 4321.0, b"\x7F", "hmm", "hum")
+        x1 = self._tensor_time_series(77, 1234.5, b"\x12", "one", "two")
+        x2 = self._tensor_time_series(77, 1234.5, b"\x12", "one", "two")
+        x3 = self._tensor_time_series(66, 4321.0, b"\x7F", "hmm", "hum")
         self.assertEqual(hash(x1), hash(x2))
         # The next check is technically not required by the `__hash__`
         # contract, but _should_ pass; failure on this assertion would at
@@ -189,11 +225,30 @@ class TensorDatumTest(tb_test.TestCase):
 
 
 class BlobSequenceTimeSeriesTest(tb_test.TestCase):
+    def _blob_sequence_time_series(
+        self,
+        max_step,
+        max_wall_time,
+        max_length,
+        plugin_content,
+        description,
+        display_name,
+    ):
+        # Helper to use explicit kwargs.
+        return provider.BlobSequenceTimeSeries(
+            max_step=max_step,
+            max_wall_time=max_wall_time,
+            max_length=max_length,
+            plugin_content=plugin_content,
+            description=description,
+            display_name=display_name,
+        )
+
     def test_repr(self):
         x = provider.BlobSequenceTimeSeries(
             max_step=77,
             max_wall_time=1234.5,
-            latest_max_index=6,
+            max_length=6,
             plugin_content=b"AB\xCD\xEF!\x00",
             description="test test",
             display_name="one two",
@@ -201,19 +256,19 @@ class BlobSequenceTimeSeriesTest(tb_test.TestCase):
         repr_ = repr(x)
         self.assertIn(repr(x.max_step), repr_)
         self.assertIn(repr(x.max_wall_time), repr_)
-        self.assertIn(repr(x.latest_max_index), repr_)
+        self.assertIn(repr(x.max_length), repr_)
         self.assertIn(repr(x.plugin_content), repr_)
         self.assertIn(repr(x.description), repr_)
         self.assertIn(repr(x.display_name), repr_)
 
     def test_eq(self):
-        x1 = provider.BlobSequenceTimeSeries(
+        x1 = self._blob_sequence_time_series(
             77, 1234.5, 6, b"\x12", "one", "two"
         )
-        x2 = provider.BlobSequenceTimeSeries(
+        x2 = self._blob_sequence_time_series(
             77, 1234.5, 6, b"\x12", "one", "two"
         )
-        x3 = provider.BlobSequenceTimeSeries(
+        x3 = self._blob_sequence_time_series(
             66, 4321.0, 7, b"\x7F", "hmm", "hum"
         )
         self.assertEqual(x1, x2)
@@ -221,13 +276,13 @@ class BlobSequenceTimeSeriesTest(tb_test.TestCase):
         self.assertNotEqual(x1, object())
 
     def test_hash(self):
-        x1 = provider.BlobSequenceTimeSeries(
+        x1 = self._blob_sequence_time_series(
             77, 1234.5, 6, b"\x12", "one", "two"
         )
-        x2 = provider.BlobSequenceTimeSeries(
+        x2 = self._blob_sequence_time_series(
             77, 1234.5, 6, b"\x12", "one", "two"
         )
-        x3 = provider.BlobSequenceTimeSeries(
+        x3 = self._blob_sequence_time_series(
             66, 4321.0, 7, b"\x7F", "hmm", "hum"
         )
         self.assertEqual(hash(x1), hash(x2))

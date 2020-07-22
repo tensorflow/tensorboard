@@ -31,12 +31,15 @@ from werkzeug import wrappers
 
 from tensorboard import errors
 from tensorboard import plugin_util
+from tensorboard import context
 from tensorboard.backend import http_util
-from tensorboard.compat import tf
 from tensorboard.data import provider
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.histogram import metadata
 from tensorboard.util import tensor_util
+
+
+_DEFAULT_DOWNSAMPLING = 500  # histograms per time series
 
 
 class HistogramsPlugin(base_plugin.TBPlugin):
@@ -61,8 +64,10 @@ class HistogramsPlugin(base_plugin.TBPlugin):
           context: A base_plugin.TBContext instance.
         """
         self._multiplexer = context.multiplexer
-        self._db_connection_provider = context.db_connection_provider
-        if context.flags and context.flags.generic_data == "true":
+        self._downsample_to = (context.sampling_hints or {}).get(
+            self.plugin_name, _DEFAULT_DOWNSAMPLING
+        )
+        if not context.flags or context.flags.generic_data != "false":
             self._data_provider = context.data_provider
         else:
             self._data_provider = None
@@ -79,32 +84,18 @@ class HistogramsPlugin(base_plugin.TBPlugin):
         if self._data_provider:
             return False  # `list_plugins` as called by TB core suffices
 
-        if self._db_connection_provider:
-            # The plugin is active if one relevant tag can be found in the database.
-            db = self._db_connection_provider()
-            cursor = db.execute(
-                """
-                SELECT
-                  1
-                FROM Tags
-                WHERE Tags.plugin_name = ?
-                LIMIT 1
-                """,
-                (metadata.PLUGIN_NAME,),
-            )
-            return bool(list(cursor))
-
         if self._multiplexer:
-            return any(self.index_impl(experiment="").values())
+            empty_context = context.RequestContext()  # not used
+            return any(self.index_impl(empty_context, experiment="").values())
 
         return False
 
-    def index_impl(self, experiment):
+    def index_impl(self, ctx, experiment):
         """Return {runName: {tagName: {displayName: ..., description:
         ...}}}."""
         if self._data_provider:
             mapping = self._data_provider.list_tensors(
-                experiment_id=experiment, plugin_name=metadata.PLUGIN_NAME,
+                ctx, experiment_id=experiment, plugin_name=metadata.PLUGIN_NAME,
             )
             result = {run: {} for run in mapping}
             for (run, tag_to_content) in six.iteritems(mapping):
@@ -116,34 +107,6 @@ class HistogramsPlugin(base_plugin.TBPlugin):
                         "displayName": metadatum.display_name,
                         "description": description,
                     }
-            return result
-
-        if self._db_connection_provider:
-            # Read tags from the database.
-            db = self._db_connection_provider()
-            cursor = db.execute(
-                """
-                SELECT
-                  Tags.tag_name,
-                  Tags.display_name,
-                  Runs.run_name
-                FROM Tags
-                JOIN Runs
-                  ON Tags.run_id = Runs.run_id
-                WHERE
-                  Tags.plugin_name = ?
-                """,
-                (metadata.PLUGIN_NAME,),
-            )
-            result = collections.defaultdict(dict)
-            for row in cursor:
-                tag_name, display_name, run_name = row
-                result[run_name][tag_name] = {
-                    "displayName": display_name,
-                    # TODO(chihuahua): Populate the description. Currently, the tags
-                    # table does not link with the description table.
-                    "description": "",
-                }
             return result
 
         runs = self._multiplexer.Runs()
@@ -170,24 +133,26 @@ class HistogramsPlugin(base_plugin.TBPlugin):
             element_name="tf-histogram-dashboard"
         )
 
-    def histograms_impl(self, tag, run, experiment, downsample_to=None):
+    def histograms_impl(self, ctx, tag, run, experiment, downsample_to=None):
         """Result of the form `(body, mime_type)`.
 
         At most `downsample_to` events will be returned. If this value is
-        `None`, then no downsampling will be performed.
+        `None`, then default downsampling will be performed.
 
         Raises:
           tensorboard.errors.PublicError: On invalid request.
         """
         if self._data_provider:
-            # Downsample reads to 500 histograms per time series, which is
-            # the default size guidance for histograms under the multiplexer
-            # loading logic.
-            SAMPLE_COUNT = downsample_to if downsample_to is not None else 500
+            sample_count = (
+                downsample_to
+                if downsample_to is not None
+                else self._downsample_to
+            )
             all_histograms = self._data_provider.read_tensors(
+                ctx,
                 experiment_id=experiment,
                 plugin_name=metadata.PLUGIN_NAME,
-                downsample=SAMPLE_COUNT,
+                downsample=sample_count,
                 run_tag_filter=provider.RunTagFilter(runs=[run], tags=[tag]),
             )
             histograms = all_histograms.get(run, {}).get(tag, None)
@@ -203,70 +168,6 @@ class HistogramsPlugin(base_plugin.TBPlugin):
                 histograms = _downsample(rng, histograms, downsample_to)
             events = [
                 (e.wall_time, e.step, e.numpy.tolist()) for e in histograms
-            ]
-        elif self._db_connection_provider:
-            # Serve data from the database.
-            db = self._db_connection_provider()
-            cursor = db.cursor()
-            # Prefetch the tag ID matching this run and tag.
-            cursor.execute(
-                """
-                SELECT
-                  tag_id
-                FROM Tags
-                JOIN Runs USING (run_id)
-                WHERE
-                  Runs.run_name = :run
-                  AND Tags.tag_name = :tag
-                  AND Tags.plugin_name = :plugin
-                """,
-                {"run": run, "tag": tag, "plugin": metadata.PLUGIN_NAME},
-            )
-            row = cursor.fetchone()
-            if not row:
-                raise errors.NotFoundError(
-                    "No histogram tag %r for run %r" % (tag, run)
-                )
-            (tag_id,) = row
-            # Fetch tensor values, optionally with linear-spaced sampling by step.
-            # For steps ranging from s_min to s_max and sample size k, this query
-            # divides the range into k - 1 equal-sized intervals and returns the
-            # lowest step at or above each of the k interval boundaries (which always
-            # includes s_min and s_max, and may be fewer than k results if there are
-            # intervals where no steps are present). For contiguous steps the results
-            # can be formally expressed as the following:
-            #   [s_min + math.ceil(i / k * (s_max - s_min)) for i in range(0, k + 1)]
-            cursor.execute(
-                """
-                SELECT
-                  MIN(step) AS step,
-                  computed_time,
-                  data,
-                  dtype,
-                  shape
-                FROM Tensors
-                INNER JOIN (
-                  SELECT
-                    MIN(step) AS min_step,
-                    MAX(step) AS max_step
-                  FROM Tensors
-                  /* Filter out NULL so we can use TensorSeriesStepIndex. */
-                  WHERE series = :tag_id AND step IS NOT NULL
-                )
-                /* Ensure we omit reserved rows, which have NULL step values. */
-                WHERE series = :tag_id AND step IS NOT NULL
-                /* Bucket rows into sample_size linearly spaced buckets, or do
-                   no sampling if sample_size is NULL. */
-                GROUP BY
-                  IFNULL(:sample_size - 1, max_step - min_step)
-                  * (step - min_step) / (max_step - min_step)
-                ORDER BY step
-                """,
-                {"tag_id": tag_id, "sample_size": downsample_to},
-            )
-            events = [
-                (computed_time, step, self._get_values(data, dtype, shape))
-                for step, computed_time, data, dtype, shape in cursor
             ]
         else:
             # Serve data from events files.
@@ -289,35 +190,22 @@ class HistogramsPlugin(base_plugin.TBPlugin):
             ]
         return (events, "application/json")
 
-    def _get_values(self, data_blob, dtype_enum, shape_string):
-        """Obtains values for histogram data given blob and dtype enum.
-
-        Args:
-          data_blob: The blob obtained from the database.
-          dtype_enum: The enum representing the dtype.
-          shape_string: A comma-separated string of numbers denoting shape.
-        Returns:
-          The histogram values as a list served to the frontend.
-        """
-        buf = np.frombuffer(
-            data_blob, dtype=tf.DType(dtype_enum).as_numpy_dtype
-        )
-        return buf.reshape([int(i) for i in shape_string.split(",")]).tolist()
-
     @wrappers.Request.application
     def tags_route(self, request):
+        ctx = plugin_util.context(request.environ)
         experiment = plugin_util.experiment_id(request.environ)
-        index = self.index_impl(experiment=experiment)
+        index = self.index_impl(ctx, experiment=experiment)
         return http_util.Respond(request, index, "application/json")
 
     @wrappers.Request.application
     def histograms_route(self, request):
         """Given a tag and single run, return array of histogram values."""
+        ctx = plugin_util.context(request.environ)
         experiment = plugin_util.experiment_id(request.environ)
         tag = request.args.get("tag")
         run = request.args.get("run")
         (body, mime_type) = self.histograms_impl(
-            tag, run, experiment=experiment, downsample_to=self.SAMPLE_SIZE
+            ctx, tag, run, experiment=experiment, downsample_to=self.SAMPLE_SIZE
         )
         return http_util.Respond(request, body, mime_type)
 

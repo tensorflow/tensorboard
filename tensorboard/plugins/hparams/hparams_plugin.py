@@ -28,6 +28,7 @@ import json
 import werkzeug
 from werkzeug import wrappers
 
+from tensorboard import plugin_util
 from tensorboard.plugins.hparams import api_pb2
 from tensorboard.plugins.hparams import backend_context
 from tensorboard.plugins.hparams import download_data
@@ -73,22 +74,7 @@ class HParamsPlugin(base_plugin.TBPlugin):
         }
 
     def is_active(self):
-        """Returns True if the hparams plugin is active.
-
-        The hparams plugin is active iff there is a tag with the hparams
-        plugin name as its plugin name and the scalars plugin is
-        registered and active.
-        """
-        if not self._context.multiplexer:
-            return False
-        scalars_plugin = self._get_scalars_plugin()
-        if not scalars_plugin or not scalars_plugin.is_active():
-            return False
-        return bool(
-            self._context.multiplexer.PluginRunToTagToContent(
-                metadata.PLUGIN_NAME
-            )
-        )
+        return False  # `list_plugins` as called by TB core suffices
 
     def frontend_metadata(self):
         return base_plugin.FrontendMetadata(element_name="tf-hparams-dashboard")
@@ -96,6 +82,8 @@ class HParamsPlugin(base_plugin.TBPlugin):
     # ---- /download_data- -------------------------------------------------------
     @wrappers.Request.application
     def download_data_route(self, request):
+        ctx = plugin_util.context(request.environ)
+        experiment_id = plugin_util.experiment_id(request.environ)
         try:
             response_format = request.args.get("format")
             columns_visibility = json.loads(
@@ -105,9 +93,11 @@ class HParamsPlugin(base_plugin.TBPlugin):
                 request, api_pb2.ListSessionGroupsRequest
             )
             session_groups = list_session_groups.Handler(
-                self._context, request_proto
+                ctx, self._context, experiment_id, request_proto
             ).run()
-            experiment = get_experiment.Handler(self._context).run()
+            experiment = get_experiment.Handler(
+                ctx, self._context, experiment_id
+            ).run()
             body, mime_type = download_data.Handler(
                 self._context,
                 experiment,
@@ -123,6 +113,8 @@ class HParamsPlugin(base_plugin.TBPlugin):
     # ---- /experiment -----------------------------------------------------------
     @wrappers.Request.application
     def get_experiment_route(self, request):
+        ctx = plugin_util.context(request.environ)
+        experiment_id = plugin_util.experiment_id(request.environ)
         try:
             # This backend currently ignores the request parameters, but (for a POST)
             # we must advance the input stream to skip them -- otherwise the next HTTP
@@ -131,7 +123,9 @@ class HParamsPlugin(base_plugin.TBPlugin):
             return http_util.Respond(
                 request,
                 json_format.MessageToJson(
-                    get_experiment.Handler(self._context).run(),
+                    get_experiment.Handler(
+                        ctx, self._context, experiment_id
+                    ).run(),
                     including_default_value_fields=True,
                 ),
                 "application/json",
@@ -143,6 +137,8 @@ class HParamsPlugin(base_plugin.TBPlugin):
     # ---- /session_groups -------------------------------------------------------
     @wrappers.Request.application
     def list_session_groups_route(self, request):
+        ctx = plugin_util.context(request.environ)
+        experiment_id = plugin_util.experiment_id(request.environ)
         try:
             request_proto = _parse_request_argument(
                 request, api_pb2.ListSessionGroupsRequest
@@ -151,7 +147,7 @@ class HParamsPlugin(base_plugin.TBPlugin):
                 request,
                 json_format.MessageToJson(
                     list_session_groups.Handler(
-                        self._context, request_proto
+                        ctx, self._context, experiment_id, request_proto
                     ).run(),
                     including_default_value_fields=True,
                 ),
@@ -164,22 +160,20 @@ class HParamsPlugin(base_plugin.TBPlugin):
     # ---- /metric_evals ---------------------------------------------------------
     @wrappers.Request.application
     def list_metric_evals_route(self, request):
+        ctx = plugin_util.context(request.environ)
+        experiment_id = plugin_util.experiment_id(request.environ)
         try:
             request_proto = _parse_request_argument(
                 request, api_pb2.ListMetricEvalsRequest
             )
             scalars_plugin = self._get_scalars_plugin()
             if not scalars_plugin:
-                raise error.HParamsError(
-                    "Internal error: the scalars plugin is not"
-                    " registered; yet, the hparams plugin is"
-                    " active."
-                )
+                raise werkzeug.exceptions.NotFound("Scalars plugin not loaded")
             return http_util.Respond(
                 request,
                 json.dumps(
                     list_metric_evals.Handler(
-                        request_proto, scalars_plugin
+                        ctx, request_proto, scalars_plugin, experiment_id
                     ).run()
                 ),
                 "application/json",

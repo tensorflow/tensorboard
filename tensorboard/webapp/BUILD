@@ -1,5 +1,5 @@
 load("@npm_angular_bazel//:index.bzl", "ng_module")
-load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ng_web_test_suite", "tf_svg_bundle", "tf_ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ng_web_test_suite", "tf_sass_binary", "tf_sass_library", "tf_svg_bundle")
 load("//tensorboard/defs:web.bzl", "tf_web_library")
 load("//tensorboard/defs:vulcanize.bzl", "tensorboard_html_binary")
 
@@ -22,15 +22,18 @@ ng_module(
         "app_container.ng.html",
     ],
     deps = [
-        ":config",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
         "//tensorboard/webapp/core",
         "//tensorboard/webapp/core/actions",
         "//tensorboard/webapp/core/store",
+        "//tensorboard/webapp/core/views:hash_storage",
+        "//tensorboard/webapp/feature_flag",
         "//tensorboard/webapp/header",
         "//tensorboard/webapp/plugins",
         "//tensorboard/webapp/reloader",
+        "//tensorboard/webapp/runs",
+        "//tensorboard/webapp/settings",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@ngrx/effects",
@@ -38,25 +41,28 @@ ng_module(
     ],
 )
 
-tf_ts_library(
-    name = "config",
+ng_module(
+    name = "app_state",
     srcs = [
-        "config_dev.ts",
-        "config_prod.ts",
+        "app_state.ts",
+    ],
+    deps = [
+        "//tensorboard/webapp/core/store",
+        "//tensorboard/webapp/feature_flag/store:types",
     ],
 )
 
+# TODO(stephanwlee): at the moment, there is no development build. Reinstate it.
 # Wrapper that prepares Angular app for deployment, dealing with browser
 # compatibility, Vulcanization, and configuration (e.g. prod vs. dev).
 ng_module(
     name = "ng_main",
-    srcs = ["bootstrap.ts"] + select({
-        "//tensorboard:dev_build": ["main.ts"],
-        "//conditions:default": ["main_prod.ts"],
-    }),
+    srcs = [
+        "bootstrap.ts",
+        "main_prod.ts",
+    ],
     deps = [
         ":app",
-        ":config",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@angular/router",
@@ -68,10 +74,7 @@ ng_module(
 tf_js_binary(
     name = "tb_webapp_binary",
     compile = 1,
-    entry_point = select({
-        "//tensorboard:dev_build": ":main.ts",
-        "//conditions:default": "main_prod.ts",
-    }),
+    entry_point = "main_prod.ts",
     deps = [
         ":ng_main",
         "//tensorboard/webapp/angular:expect_angular_material_tabs",
@@ -98,35 +101,35 @@ tf_web_library(
     ],
 )
 
-tf_web_library(
-    name = "material_theme",
-    srcs = [
-        "@npm//:node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
-    ],
-    path = "/@angular",
-    strip_prefix = "node_modules/@angular/material/prebuilt-themes",
-)
-
 # Bundle the Angular app with the Polymer components and plugins, as a library.
 tf_web_library(
     name = "tensorboard-webapp",
     srcs = [
-        "index.html",
+        "index.inlined.html",
+        ":styles.css",
     ],
     path = "/",
     deps = [
         ":tb_webapp",
-        "//tensorboard/components:ng_polymer_lib_binary",
-        "//tensorboard/webapp:material_theme",
+        "//tensorboard/components:polymer_lib_binary",
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/source_code/monaco:requirejs",
     ],
+)
+
+genrule(
+    name = "gen_index.html",
+    srcs = ["index.uninlined.html"],
+    outs = ["index.inlined.html"],
+    cmd = "$(execpath //tensorboard/logo:inline_favicon) $< >$@",
+    tools = ["//tensorboard/logo:inline_favicon"],
 )
 
 # A Vulcanized html binary for the complete app (both Angular and Polymer parts)
 tensorboard_html_binary(
-    name = "ng_index",
-    input_path = "/index.html",
-    js_path = "/ng_index.js",
-    output_path = "/ng_index.html",
+    name = "index",
+    input_path = "/index.inlined.html",
+    js_path = "/index.js",
+    output_path = "/index.html",
     deps = [":tensorboard-webapp"],
 )
 
@@ -137,10 +140,17 @@ tf_ng_web_test_suite(
     deps = [
         "//tensorboard/webapp/core/effects:core_effects_test_lib",
         "//tensorboard/webapp/core/store:core_store_test_lib",
+        "//tensorboard/webapp/core/views:test_lib",
+        "//tensorboard/webapp/deeplink:deeplink_test_lib",
+        "//tensorboard/webapp/feature_flag/effects:effects_test_lib",
+        "//tensorboard/webapp/feature_flag/store:store_test_lib",
         "//tensorboard/webapp/header:test_lib",
         "//tensorboard/webapp/plugins:plugins_container_test_lib",
         "//tensorboard/webapp/reloader:test_lib",
         "//tensorboard/webapp/settings:test_lib",
+        "//tensorboard/webapp/tbdev_upload:test_lib",
+        "//tensorboard/webapp/webapp_data_source:feature_flag_test_lib",
+        "//tensorboard/webapp/webapp_data_source:webapp_data_source_test_lib",
     ],
 )
 
@@ -149,7 +159,31 @@ tf_svg_bundle(
     srcs = [
         # When modifying below, please make sure to update
         # //tensorboard/webapp/testing/mat_icon.module.ts.
+        "@com_google_material_design_icon//:content_copy_24px.svg",
+        "@com_google_material_design_icon//:help_outline_24px.svg",
+        "@com_google_material_design_icon//:info_outline_24px.svg",
+        "@com_google_material_design_icon//:refresh_24px.svg",
         "@com_google_material_design_icon//:settings_24px.svg",
     ],
     out = "icon_bundle.svg",
+)
+
+tf_sass_library(
+    name = "angular_material_theming",
+    srcs = [
+        "_angular_material_theming.scss",
+        "@npm//:node_modules/@angular/material/_theming.scss",
+    ],
+)
+
+# TODO(stephanwlee): remove the alias when all usages, internal, too,
+# //tensorboard/webapp:theme are removed.
+alias(
+    name = "theme",
+    actual = "//tensorboard/webapp/theme",
+)
+
+tf_sass_binary(
+    name = "styles",
+    src = "styles.scss",
 )

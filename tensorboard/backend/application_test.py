@@ -43,6 +43,7 @@ from werkzeug import wrappers
 from tensorboard import errors
 from tensorboard import plugin_util
 from tensorboard import test as tb_test
+from tensorboard import auth
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import (
     plugin_event_multiplexer as event_multiplexer,
@@ -58,11 +59,9 @@ class FakeFlags(object):
         logdir_spec="",
         purge_orphaned_data=True,
         reload_interval=60,
-        samples_per_plugin="",
+        samples_per_plugin=None,
         max_reload_threads=1,
         reload_task="auto",
-        db="",
-        db_import=False,
         window_title="",
         path_prefix="",
         reload_multifile=False,
@@ -73,11 +72,9 @@ class FakeFlags(object):
         self.logdir_spec = logdir_spec
         self.purge_orphaned_data = purge_orphaned_data
         self.reload_interval = reload_interval
-        self.samples_per_plugin = samples_per_plugin
+        self.samples_per_plugin = samples_per_plugin or {}
         self.max_reload_threads = max_reload_threads
         self.reload_task = reload_task
-        self.db = db
-        self.db_import = db_import
         self.window_title = window_title
         self.path_prefix = path_prefix
         self.reload_multifile = reload_multifile
@@ -169,13 +166,13 @@ class FakeDataProvider(provider.DataProvider):
     def __init__(self):
         pass
 
-    def list_runs(self, experiment_id):
+    def list_runs(self, ctx=None, *, experiment_id):
         raise NotImplementedError()
 
-    def list_scalars(self, experiment_id):
+    def list_scalars(self, ctx=None, *, experiment_id):
         raise NotImplementedError()
 
-    def read_scalars(self, experiment_id):
+    def read_scalars(self, ctx=None, *, experiment_id):
         raise NotImplementedError()
 
 
@@ -198,17 +195,22 @@ class HandlingErrorsTest(tb_test.TestCase):
         @application._handling_errors
         @wrappers.Request.application
         def app(request):
-            raise errors.NotFoundError("no scalar data for run=foo, tag=bar")
+            raise errors.UnauthenticatedError(
+                "who are you?", challenge='Digest realm="https://example.com"'
+            )
 
         server = werkzeug_test.Client(app, wrappers.BaseResponse)
         response = server.get("/")
         self.assertEqual(
-            response.get_data(),
-            b"Not found: no scalar data for run=foo, tag=bar",
+            response.get_data(), b"Unauthenticated: who are you?",
         )
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 401)
         self.assertStartsWith(
             response.headers.get("Content-Type"), "text/plain"
+        )
+        self.assertEqual(
+            response.headers.get("WWW-Authenticate"),
+            'Digest realm="https://example.com"',
         )
 
     def test_internal_errors_propagate(self):
@@ -221,20 +223,6 @@ class HandlingErrorsTest(tb_test.TestCase):
         with self.assertRaises(ValueError) as cm:
             response = server.get("/")
         self.assertEqual(str(cm.exception), "something borked internally")
-
-    def test_passes_through_non_wsgi_args(self):
-        class C(object):
-            @application._handling_errors
-            def __call__(self, environ, start_response):
-                start_response("200 OK", [("Content-Type", "text/html")])
-                yield b"All is well"
-
-        app = C()
-        server = werkzeug_test.Client(app, wrappers.BaseResponse)
-        response = server.get("/")
-        self.assertEqual(response.get_data(), b"All is well")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.headers.get("Content-Type"), "text/html")
 
 
 class ApplicationTest(tb_test.TestCase):
@@ -324,7 +312,7 @@ class ApplicationTest(tb_test.TestCase):
     def testPluginsListingWithDataProviderListActivePlugins(self):
         prov = FakeDataProvider()
         self.assertIsNotNone(prov.list_plugins)
-        prov.list_plugins = lambda experiment_id: ("foo", "bar")
+        prov.list_plugins = lambda ctx, *, experiment_id: ("foo", "bar")
 
         plugins = [
             FakePlugin(plugin_name="foo", is_active_value=False),
@@ -372,6 +360,64 @@ class ApplicationTest(tb_test.TestCase):
             parsed_object = self._get_json("/data/plugins_listing")
         self.assertEqual(parsed_object["foo"]["enabled"], False)
         self.assertEqual(parsed_object["baz"]["enabled"], True)
+
+    def testPluginsListingWithExperimentalPlugin(self):
+        plugins = [
+            FakePlugin(plugin_name="bar"),
+            FakePlugin(plugin_name="foo"),
+            FakePlugin(plugin_name="bazz"),
+        ]
+        app = application.TensorBoardWSGI(plugins, experimental_plugins=["foo"])
+        self._install_server(app)
+
+        plugins_without_flag = self._get_json("/data/plugins_listing")
+        self.assertIsNotNone(plugins_without_flag.get("bar"))
+        self.assertIsNone(plugins_without_flag.get("foo"))
+        self.assertIsNotNone(plugins_without_flag.get("bazz"))
+
+        plugins_with_flag = self._get_json(
+            "/data/plugins_listing?experimentalPlugin=foo"
+        )
+        self.assertIsNotNone(plugins_with_flag.get("bar"))
+        self.assertIsNotNone(plugins_with_flag.get("foo"))
+        self.assertIsNotNone(plugins_with_flag.get("bazz"))
+
+        plugins_with_useless_flag = self._get_json(
+            "/data/plugins_listing?experimentalPlugin=bar"
+        )
+        self.assertIsNotNone(plugins_with_useless_flag.get("bar"))
+        self.assertIsNone(plugins_with_useless_flag.get("foo"))
+        self.assertIsNotNone(plugins_with_useless_flag.get("bazz"))
+
+    def testPluginsListingWithMultipleExperimentalPlugins(self):
+        plugins = [
+            FakePlugin(plugin_name="bar"),
+            FakePlugin(plugin_name="foo"),
+            FakePlugin(plugin_name="bazz"),
+        ]
+        app = application.TensorBoardWSGI(
+            plugins, experimental_plugins=["bar", "bazz"]
+        )
+        self._install_server(app)
+
+        plugins_without_flag = self._get_json("/data/plugins_listing")
+        self.assertIsNone(plugins_without_flag.get("bar"))
+        self.assertIsNotNone(plugins_without_flag.get("foo"))
+        self.assertIsNone(plugins_without_flag.get("bazz"))
+
+        plugins_with_one_flag = self._get_json(
+            "/data/plugins_listing?experimentalPlugin=bar"
+        )
+        self.assertIsNotNone(plugins_with_one_flag.get("bar"))
+        self.assertIsNotNone(plugins_with_one_flag.get("foo"))
+        self.assertIsNone(plugins_with_one_flag.get("bazz"))
+
+        plugins_with_multiple_flags = self._get_json(
+            "/data/plugins_listing?experimentalPlugin=bar&experimentalPlugin=bazz"
+        )
+        self.assertIsNotNone(plugins_with_multiple_flags.get("bar"))
+        self.assertIsNotNone(plugins_with_multiple_flags.get("foo"))
+        self.assertIsNotNone(plugins_with_multiple_flags.get("bazz"))
 
     def testPluginEntry(self):
         """Test the data/plugin_entry.html endpoint."""
@@ -536,7 +582,7 @@ class ApplicationPluginNameTest(tb_test.TestCase):
 
     def testComprehensiveName(self):
         application.TensorBoardWSGI(
-            plugins=[FakePlugin(plugin_name="Scalar-Dashboard_3000.1")]
+            plugins=[FakePlugin(plugin_name="Scalar-Dashboard_3000")]
         )
 
     def testNameIsNone(self):
@@ -551,6 +597,12 @@ class ApplicationPluginNameTest(tb_test.TestCase):
         with six.assertRaisesRegex(self, ValueError, r"invalid name"):
             application.TensorBoardWSGI(
                 plugins=[FakePlugin(plugin_name="scalars/data")]
+            )
+
+    def testNameWithPeriods(self):
+        with six.assertRaisesRegex(self, ValueError, r"invalid name"):
+            application.TensorBoardWSGI(
+                plugins=[FakePlugin(plugin_name="scalars.data")]
             )
 
     def testNameWithSpaces(self):
@@ -622,195 +674,18 @@ class MakePluginLoaderTest(tb_test.TestCase):
             application.make_plugin_loader(FakePlugin())
 
 
-class GetEventFileActiveFilterTest(tb_test.TestCase):
-    def testDisabled(self):
-        flags = FakeFlags("logdir", reload_multifile=False)
-        self.assertIsNone(application._get_event_file_active_filter(flags))
+class HeaderAuthProvider(auth.AuthProvider):
+    """Simple auth provider that returns the `Authorization` header value."""
 
-    def testInactiveSecsZero(self):
-        flags = FakeFlags(
-            "logdir", reload_multifile=True, reload_multifile_inactive_secs=0
-        )
-        self.assertIsNone(application._get_event_file_active_filter(flags))
-
-    def testInactiveSecsNegative(self):
-        flags = FakeFlags(
-            "logdir", reload_multifile=True, reload_multifile_inactive_secs=-1
-        )
-        filter_fn = application._get_event_file_active_filter(flags)
-        self.assertTrue(filter_fn(0))
-        self.assertTrue(filter_fn(time.time()))
-        self.assertTrue(filter_fn(float("inf")))
-
-    def testInactiveSecs(self):
-        flags = FakeFlags(
-            "logdir", reload_multifile=True, reload_multifile_inactive_secs=10
-        )
-        filter_fn = application._get_event_file_active_filter(flags)
-        with mock.patch.object(time, "time") as mock_time:
-            mock_time.return_value = 100
-            self.assertFalse(filter_fn(0))
-            self.assertFalse(filter_fn(time.time() - 11))
-            self.assertTrue(filter_fn(time.time() - 10))
-            self.assertTrue(filter_fn(time.time()))
-            self.assertTrue(filter_fn(float("inf")))
-
-
-class ParseEventFilesSpecTest(tb_test.TestCase):
-    def assertPlatformSpecificLogdirParsing(self, pathObj, logdir, expected):
-        """A custom assertion to test :func:`parse_event_files_spec` under
-        various systems.
-
-        Args:
-            pathObj: a custom replacement object for `os.path`, typically
-              `posixpath` or `ntpath`
-            logdir: the string to be parsed by
-              :func:`~application.parse_event_files_spec`
-            expected: the expected dictionary as returned by
-              :func:`~application.parse_event_files_spec`
-        """
-
-        with mock.patch("os.path", pathObj):
-            self.assertEqual(
-                application.parse_event_files_spec(logdir), expected
-            )
-
-    def testBasic(self):
-        self.assertPlatformSpecificLogdirParsing(
-            posixpath, "/lol/cat", {"/lol/cat": None}
-        )
-        self.assertPlatformSpecificLogdirParsing(
-            ntpath, r"C:\lol\cat", {r"C:\lol\cat": None}
-        )
-
-    def testRunName(self):
-        self.assertPlatformSpecificLogdirParsing(
-            posixpath, "lol:/cat", {"/cat": "lol"}
-        )
-        self.assertPlatformSpecificLogdirParsing(
-            ntpath, "lol:C:\\cat", {"C:\\cat": "lol"}
-        )
-
-    def testPathWithColonThatComesAfterASlash_isNotConsideredARunName(self):
-        self.assertPlatformSpecificLogdirParsing(
-            posixpath, "/lol:/cat", {"/lol:/cat": None}
-        )
-
-    def testExpandsUser(self):
-        oldhome = os.environ.get("HOME", None)
-        try:
-            os.environ["HOME"] = "/usr/eliza"
-            self.assertPlatformSpecificLogdirParsing(
-                posixpath, "~/lol/cat~dog", {"/usr/eliza/lol/cat~dog": None}
-            )
-            os.environ["HOME"] = r"C:\Users\eliza"
-            self.assertPlatformSpecificLogdirParsing(
-                ntpath, r"~\lol\cat~dog", {r"C:\Users\eliza\lol\cat~dog": None}
-            )
-        finally:
-            if oldhome is not None:
-                os.environ["HOME"] = oldhome
-
-    def testExpandsUserForMultipleDirectories(self):
-        oldhome = os.environ.get("HOME", None)
-        try:
-            os.environ["HOME"] = "/usr/eliza"
-            self.assertPlatformSpecificLogdirParsing(
-                posixpath,
-                "a:~/lol,b:~/cat",
-                {"/usr/eliza/lol": "a", "/usr/eliza/cat": "b"},
-            )
-            os.environ["HOME"] = r"C:\Users\eliza"
-            self.assertPlatformSpecificLogdirParsing(
-                ntpath,
-                r"aa:~\lol,bb:~\cat",
-                {r"C:\Users\eliza\lol": "aa", r"C:\Users\eliza\cat": "bb"},
-            )
-        finally:
-            if oldhome is not None:
-                os.environ["HOME"] = oldhome
-
-    def testMultipleDirectories(self):
-        self.assertPlatformSpecificLogdirParsing(
-            posixpath, "/a,/b", {"/a": None, "/b": None}
-        )
-        self.assertPlatformSpecificLogdirParsing(
-            ntpath, "C:\\a,C:\\b", {"C:\\a": None, "C:\\b": None}
-        )
-
-    def testNormalizesPaths(self):
-        self.assertPlatformSpecificLogdirParsing(
-            posixpath, "/lol/.//cat/../cat", {"/lol/cat": None}
-        )
-        self.assertPlatformSpecificLogdirParsing(
-            ntpath, "C:\\lol\\.\\\\cat\\..\\cat", {"C:\\lol\\cat": None}
-        )
-
-    def testAbsolutifies(self):
-        self.assertPlatformSpecificLogdirParsing(
-            posixpath, "lol/cat", {posixpath.realpath("lol/cat"): None}
-        )
-        self.assertPlatformSpecificLogdirParsing(
-            ntpath, "lol\\cat", {ntpath.realpath("lol\\cat"): None}
-        )
-
-    def testRespectsGCSPath(self):
-        self.assertPlatformSpecificLogdirParsing(
-            posixpath, "gs://foo/path", {"gs://foo/path": None}
-        )
-        self.assertPlatformSpecificLogdirParsing(
-            ntpath, "gs://foo/path", {"gs://foo/path": None}
-        )
-
-    def testRespectsHDFSPath(self):
-        self.assertPlatformSpecificLogdirParsing(
-            posixpath, "hdfs://foo/path", {"hdfs://foo/path": None}
-        )
-        self.assertPlatformSpecificLogdirParsing(
-            ntpath, "hdfs://foo/path", {"hdfs://foo/path": None}
-        )
-
-    def testDoesNotExpandUserInGCSPath(self):
-        self.assertPlatformSpecificLogdirParsing(
-            posixpath, "gs://~/foo/path", {"gs://~/foo/path": None}
-        )
-        self.assertPlatformSpecificLogdirParsing(
-            ntpath, "gs://~/foo/path", {"gs://~/foo/path": None}
-        )
-
-    def testDoesNotNormalizeGCSPath(self):
-        self.assertPlatformSpecificLogdirParsing(
-            posixpath, "gs://foo/./path//..", {"gs://foo/./path//..": None}
-        )
-        self.assertPlatformSpecificLogdirParsing(
-            ntpath, "gs://foo/./path//..", {"gs://foo/./path//..": None}
-        )
-
-    def testRunNameWithGCSPath(self):
-        self.assertPlatformSpecificLogdirParsing(
-            posixpath, "lol:gs://foo/path", {"gs://foo/path": "lol"}
-        )
-        self.assertPlatformSpecificLogdirParsing(
-            ntpath, "lol:gs://foo/path", {"gs://foo/path": "lol"}
-        )
-
-    def testSingleLetterGroup(self):
-        self.assertPlatformSpecificLogdirParsing(
-            posixpath, "A:/foo/path", {"/foo/path": "A"}
-        )
-        # single letter groups are not supported on Windows
-        with self.assertRaises(AssertionError):
-            self.assertPlatformSpecificLogdirParsing(
-                ntpath, "A:C:\\foo\\path", {"C:\\foo\\path": "A"}
-            )
+    def authenticate(self, environ):
+        return environ.get("HTTP_AUTHORIZATION")
 
 
 class TensorBoardPluginsTest(tb_test.TestCase):
     def setUp(self):
         self.context = None
-        dummy_assets_zip_provider = lambda: None
         # The application should have added routes for both plugins.
-        self.app = application.standard_tensorboard_wsgi(
+        self.app = application.TensorBoardWSGIApp(
             FakeFlags(logdir=self.get_temp_dir()),
             [
                 FakePluginLoader(
@@ -835,10 +710,24 @@ class TensorBoardPluginsTest(tb_test.TestCase):
                     routes_mapping={"/eid": self._eid_handler,},
                 ),
             ],
-            dummy_assets_zip_provider,
+            data_provider=FakeDataProvider(),
+            auth_providers={HeaderAuthProvider: HeaderAuthProvider()},
+            experimental_middlewares=[self._auth_check_middleware],
         )
 
         self.server = werkzeug_test.Client(self.app, wrappers.BaseResponse)
+
+    def _auth_check_middleware(self, app):
+        def auth_check_app(environ, start_response):
+            request = wrappers.Request(environ)
+            if request.path != "/auth_check":
+                return app(environ, start_response)
+            ctx = plugin_util.context(environ)
+            header_auth = ctx.auth.get(HeaderAuthProvider)
+            rapp = wrappers.Response(response=header_auth, status=200)
+            return rapp(environ, start_response)
+
+        return auth_check_app
 
     def _construction_callback(self, context):
         """Called when a plugin is constructed."""
@@ -850,7 +739,13 @@ class TensorBoardPluginsTest(tb_test.TestCase):
 
     @wrappers.Request.application
     def _foo_handler(self, request):
-        return wrappers.Response(response="hello world", status=200)
+        ctx = plugin_util.context(request.environ)
+        header_auth = ctx.auth.get(HeaderAuthProvider)
+        if header_auth is None:
+            response = "hello world"
+        else:
+            response = "%s access granted" % (header_auth,)
+        return wrappers.Response(response=response, status=200)
 
     def _bar_handler(self):
         pass
@@ -953,86 +848,23 @@ class TensorBoardPluginsTest(tb_test.TestCase):
         # consulted.
         self._test_route("/data/plugin/bar/wildcard/", 404)
 
+    def testAuthProviders(self):
+        route = "/data/plugin/foo/foo_route"
 
-class DbTest(tb_test.TestCase):
-    def testSqliteDb(self):
-        db_uri = "sqlite:" + os.path.join(self.get_temp_dir(), "db")
-        db_connection_provider = application.create_sqlite_connection_provider(
-            db_uri
-        )
-        with contextlib.closing(db_connection_provider()) as conn:
-            with conn:
-                with contextlib.closing(conn.cursor()) as c:
-                    c.execute("create table peeps (name text)")
-                    c.execute(
-                        "insert into peeps (name) values (?)", ("justine",)
-                    )
-        db_connection_provider = application.create_sqlite_connection_provider(
-            db_uri
-        )
-        with contextlib.closing(db_connection_provider()) as conn:
-            with contextlib.closing(conn.cursor()) as c:
-                c.execute("select name from peeps")
-                self.assertEqual(("justine",), c.fetchone())
+        res = self.server.get(route)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.get_data(), b"hello world")
 
-    def testTransactionRollback(self):
-        db_uri = "sqlite:" + os.path.join(self.get_temp_dir(), "db")
-        db_connection_provider = application.create_sqlite_connection_provider(
-            db_uri
-        )
-        with contextlib.closing(db_connection_provider()) as conn:
-            with conn:
-                with contextlib.closing(conn.cursor()) as c:
-                    c.execute("create table peeps (name text)")
-            try:
-                with conn:
-                    with contextlib.closing(conn.cursor()) as c:
-                        c.execute(
-                            "insert into peeps (name) values (?)", ("justine",)
-                        )
-                    raise IOError("hi")
-            except IOError:
-                pass
-            with contextlib.closing(conn.cursor()) as c:
-                c.execute("select name from peeps")
-                self.assertIsNone(c.fetchone())
+        res = self.server.get(route, headers=[("Authorization", "top secret")])
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.get_data(), b"top secret access granted")
 
-    def testTransactionRollback_doesntDoAnythingIfIsolationLevelIsNone(self):
-        # NOTE: This is a terrible idea. Don't do this.
-        db_uri = (
-            "sqlite:"
-            + os.path.join(self.get_temp_dir(), "db")
-            + "?isolation_level=null"
-        )
-        db_connection_provider = application.create_sqlite_connection_provider(
-            db_uri
-        )
-        with contextlib.closing(db_connection_provider()) as conn:
-            with conn:
-                with contextlib.closing(conn.cursor()) as c:
-                    c.execute("create table peeps (name text)")
-            try:
-                with conn:
-                    with contextlib.closing(conn.cursor()) as c:
-                        c.execute(
-                            "insert into peeps (name) values (?)", ("justine",)
-                        )
-                    raise IOError("hi")
-            except IOError:
-                pass
-            with contextlib.closing(conn.cursor()) as c:
-                c.execute("select name from peeps")
-                self.assertEqual(("justine",), c.fetchone())
-
-    def testSqliteUriErrors(self):
-        with self.assertRaises(ValueError):
-            application.create_sqlite_connection_provider("lol:cat")
-        with self.assertRaises(ValueError):
-            application.create_sqlite_connection_provider("sqlite::memory:")
-        with self.assertRaises(ValueError):
-            application.create_sqlite_connection_provider(
-                "sqlite://foo.example/bar"
-            )
+    def testExtraMiddlewares(self):
+        # Must have `experiment_id` and auth context middlewares to pass.
+        route = "/experiment/123/auth_check"
+        res = self.server.get(route, headers=[("Authorization", "got it")])
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.get_data(), b"got it")
 
 
 if __name__ == "__main__":

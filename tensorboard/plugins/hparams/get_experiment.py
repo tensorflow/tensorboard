@@ -25,13 +25,17 @@ from tensorboard.plugins.hparams import error
 class Handler(object):
     """Handles a GetExperiment request."""
 
-    def __init__(self, context):
+    def __init__(self, request_context, backend_context, experiment_id):
         """Constructor.
 
         Args:
-          context: A backend_context.Context instance.
+          request_context: A tensorboard.context.RequestContext.
+          backend_context: A backend_context.Context instance.
+          experiment_id: A string, as from `plugin_util.experiment_id`.
         """
-        self._context = context
+        self._request_context = request_context
+        self._backend_context = backend_context
+        self._experiment_id = experiment_id
 
     def run(self):
         """Handles the request specified on construction.
@@ -39,7 +43,14 @@ class Handler(object):
         Returns:
           An Experiment object.
         """
-        experiment = self._context.experiment()
+        experiment_id = self._experiment_id
+        experiment = self._backend_context.experiment_from_metadata(
+            self._request_context,
+            experiment_id,
+            self._backend_context.hparams_metadata(
+                self._request_context, experiment_id
+            ),
+        )
         if experiment is None:
             raise error.HParamsError(
                 "Can't find an HParams-plugin experiment data in"

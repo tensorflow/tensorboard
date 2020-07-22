@@ -194,6 +194,10 @@ limitations under the License.
         // received. We index into this object after determining which step to
         // draw PR curves for.
         _runToDataOverTime: Object,
+        // Data change listener. Callback will be invoked with one
+        // argument: an object mapping `run` to a list of PR curve data
+        // as returned by the `/pr_curves` route.
+        onDataChange: Function,
         _colorScaleFunction: {
           type: Object, // function: string => string
           value: () => ({scale: tf_color_scale.runsColorScale}),
@@ -319,6 +323,7 @@ limitations under the License.
         'reload(runs, tag)',
         '_setChartData(_runToPrCurveEntry, _previousRunToPrCurveEntry, _setOfRelevantRuns)',
         '_updateRunToPrCurveEntry(_runToDataOverTime, runToStepCap)',
+        '_notifyDataChange(_runToDataOverTime)',
       ],
       _createProcessDataFunction() {
         // This function is called when data is received from the backend.
@@ -402,11 +407,15 @@ limitations under the License.
         for (let i = 0; i < seriesData.length; i++) {
           seriesData[i] = _.mapValues(fieldsToData, (values) => values[i]);
         }
-        this.$$('tf-line-chart-data-loader').setSeriesData(run, seriesData);
+        const loader = this.$$('tf-line-chart-data-loader');
+        loader.setSeriesData(run, seriesData);
+        loader.commitChanges();
       },
       _clearSeriesData(run) {
         // Clears data for a run in the chart.
-        this.$$('tf-line-chart-data-loader').setSeriesData(run, []);
+        const loader = this.$$('tf-line-chart-data-loader');
+        loader.setSeriesData(run, []);
+        loader.commitChanges();
       },
       _updateRunToPrCurveEntry(runToDataOverTime, runToStepCap) {
         const runToEntry = {};
@@ -426,6 +435,11 @@ limitations under the License.
         this.set('_previousRunToPrCurveEntry', this._runToPrCurveEntry);
 
         this.set('_runToPrCurveEntry', runToEntry);
+      },
+      _notifyDataChange(runToDataOverTime) {
+        if (this.onDataChange) {
+          this.onDataChange(runToDataOverTime);
+        }
       },
       _computeEntryClosestOrEqualToStepCap(stepCap, entries) {
         const entryIndex = Math.min(

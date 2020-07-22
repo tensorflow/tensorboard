@@ -1,7 +1,7 @@
-package(default_visibility = ["//tensorboard:internal"])
-
 load("//tensorboard/defs:defs.bzl", "tensorboard_webcomponent_library")
 load("//tensorboard/defs:web.bzl", "tf_web_library")
+
+package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
@@ -12,7 +12,6 @@ tf_web_library(
         "tf-smoothing-input.html",
     ],
     path = "/tf-scalar-dashboard",
-    visibility = ["//visibility:public"],
     deps = [
         ":tf_scalar_card",
         "//tensorboard/components/tf_backend",
@@ -63,7 +62,6 @@ tf_web_library(
 tensorboard_webcomponent_library(
     name = "tf_scalar_card_legacy",
     srcs = [":tf_scalar_card"],
-    visibility = ["//visibility:public"],
     destdir = "tf-scalar-dashboard",
     deps = [
         "//tensorboard/components/tf_backend:legacy",

@@ -1,11 +1,11 @@
 # Description:
 # TensorBoard plugin for the Text
 
+load("//tensorboard/defs:protos.bzl", "tb_proto_library")
+
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
-
-load("//tensorboard/defs:protos.bzl", "tb_proto_library")
 
 exports_files(["LICENSE"])
 
@@ -14,11 +14,11 @@ py_library(
     name = "text_plugin",
     srcs = ["text_plugin.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         ":metadata",
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
+        "//tensorboard/data:provider",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/util:tensor_util",
         "@org_mozilla_bleach",
@@ -36,9 +36,10 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":text_plugin",
+        "//tensorboard:context",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard:plugin_util",
-        "//tensorboard/backend:application",
+        "//tensorboard/backend/event_processing:data_provider",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/util:test_util",
@@ -56,9 +57,10 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":text_plugin",
+        "//tensorboard:context",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard:plugin_util",
-        "//tensorboard/backend:application",
+        "//tensorboard/backend/event_processing:data_provider",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/compat:no_tensorflow",
         "//tensorboard/plugins:base_plugin",
@@ -142,5 +144,4 @@ py_library(
 tb_proto_library(
     name = "protos_all",
     srcs = ["plugin_data.proto"],
-    visibility = ["//visibility:public"],
 )

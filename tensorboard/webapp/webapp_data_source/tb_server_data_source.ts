@@ -13,31 +13,76 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
+import {from, forkJoin, Observable} from 'rxjs';
+import {map} from 'rxjs/operators';
 
-import {from} from 'rxjs';
+import {Environment, PluginsListing, GetRunsResponse} from '../types/api';
+import {Run} from '../core/types';
 
-import {PluginsListing} from '../types/api';
+import {TBHttpClient} from './tb_http_client';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
+
+function getPluginsListingQueryParams(enabledExperimentPluginIds: string[]) {
+  if (!enabledExperimentPluginIds.length) {
+    return null;
+  }
+
+  const params = new URLSearchParams();
+  for (const pluginId of enabledExperimentPluginIds) {
+    params.append('experimentalPlugin', pluginId);
+  }
+  return params;
+}
 
 @Injectable()
 export class TBServerDataSource {
   // TODO(soergel): implements WebappDataSource
-  private tfStorage = document.createElement('tf-storage') as any;
   private tfBackend = (document.createElement('tf-backend') as any).tf_backend;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: TBHttpClient) {}
 
-  fetchPluginsListing() {
-    return this.http.get<PluginsListing>('data/plugins_listing');
+  fetchPluginsListing(enabledExperimentPluginIds: string[]) {
+    const params = getPluginsListingQueryParams(enabledExperimentPluginIds);
+    const pathWithParams = params
+      ? `data/plugins_listing?${params.toString()}`
+      : 'data/plugins_listing';
+    return this.http.get<PluginsListing>(pathWithParams);
   }
 
-  fetchRuns() {
-    return from(this.tfBackend.runsStore.refresh());
+  fetchRuns(): Observable<Run[]> {
+    const dataFetch = this.http.get<GetRunsResponse>('data/runs');
+    // Force a data load for the polymer-specific portion of the app.
+    // This leads to duplicate requests but hopefully the state is temporary until
+    // we migrate everything from polymer to angular.
+    const polymerRunsRefresh = from(this.tfBackend.runsStore.refresh());
+    // Wait for both operations to complete and return the response from the
+    // explicit http get call.
+    return forkJoin([dataFetch, polymerRunsRefresh]).pipe(
+      map(([runs]) => {
+        return runs.map((run) => {
+          return {
+            id: run,
+            name: run,
+          };
+        });
+      })
+    );
   }
 
-  fetchEnvironments() {
-    return from(this.tfBackend.environmentStore.refresh());
+  fetchEnvironment(): Observable<Environment> {
+    // Make a request for data for the angular-specific portion of the app.
+    const dataFetch = this.http.get<Environment>('data/environment');
+    // Force a data load for the polymer-specific portion of the app.
+    // This leads to duplicate requests but hopefully the state is temporary until
+    // we migrate everything from polymer to angular.
+    const polymerEnvironmentRefresh = from(
+      this.tfBackend.environmentStore.refresh()
+    );
+    // Wait for both operations to complete and return the response from the
+    // explicit http get call.
+    return forkJoin([dataFetch, polymerEnvironmentRefresh]).pipe(
+      map(([data]) => data)
+    );
   }
 }

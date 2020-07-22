@@ -26,10 +26,8 @@ To install Fairness Indicators for TensorBoard, run:
 python3 -m virtualenv ~/tensorboard_demo
 source ~/tensorboard_demo/bin/activate
 pip install --upgrade pip
-pip install tensorboard_plugin_fairness_indicators
-pip install "tensorflow_model_analysis>=0.15.4"
-pip uninstall -y tensorboard
-pip install --upgrade tb-nightly
+pip install fairness_indicators
+pip install tensorboard-plugin-fairness-indicators
 ```
 
 ## Demo
@@ -84,7 +82,7 @@ Fairness Indicators dashboard.
 
 ### Demo Colab
 
-[Fairness_Indicators_TensorBoard_Plugin_Example_Colab.ipynb](https://github.com/tensorflow/fairness-indicators/blob/master/fairness_indicators/examples/Fairness_Indicators_TensorBoard_Plugin_Example_Colab.ipynb)
+[Fairness_Indicators_TensorBoard_Plugin_Example_Colab.ipynb](https://github.com/tensorflow/fairness-indicators/blob/master/fairness_indicators/documentation/examples/Fairness_Indicators_TensorBoard_Plugin_Example_Colab.ipynb)
 contains an end-to-end demo to train and evaluate a model and visualize fairness evaluation
 results in TensorBoard.
 

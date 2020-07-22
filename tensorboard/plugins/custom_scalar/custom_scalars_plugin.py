@@ -32,6 +32,7 @@ import numpy as np
 
 from werkzeug import wrappers
 
+from tensorboard import plugin_util
 from tensorboard.backend import http_util
 from tensorboard.compat import tf
 from tensorboard.plugins import base_plugin
@@ -89,26 +90,8 @@ class CustomScalarsPlugin(base_plugin.TBPlugin):
         }
 
     def is_active(self):
-        """This plugin is active if 2 conditions hold.
-
-        1. The scalars plugin is registered and active.
-        2. There is a custom layout for the dashboard.
-
-        Returns: A boolean. Whether the plugin is active.
-        """
-        if not self._multiplexer:
-            return False
-
-        scalars_plugin_instance = self._get_scalars_plugin()
-        if not (
-            scalars_plugin_instance and scalars_plugin_instance.is_active()
-        ):
-            return False
-
-        # This plugin is active if any run has a layout.
-        return bool(
-            self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
-        )
+        """Plugin is active if there is a custom layout for the dashboard."""
+        return False  # `list_plugins` as called by TB core suffices
 
     def frontend_metadata(self):
         return base_plugin.FrontendMetadata(
@@ -118,11 +101,15 @@ class CustomScalarsPlugin(base_plugin.TBPlugin):
 
     @wrappers.Request.application
     def download_data_route(self, request):
+        ctx = plugin_util.context(request.environ)
         run = request.args.get("run")
         tag = request.args.get("tag")
+        experiment = plugin_util.experiment_id(request.environ)
         response_format = request.args.get("format")
         try:
-            body, mime_type = self.download_data_impl(run, tag, response_format)
+            body, mime_type = self.download_data_impl(
+                ctx, run, tag, experiment, response_format
+            )
         except ValueError as e:
             return http_util.Respond(
                 request=request,
@@ -132,14 +119,16 @@ class CustomScalarsPlugin(base_plugin.TBPlugin):
             )
         return http_util.Respond(request, body, mime_type)
 
-    def download_data_impl(self, run, tag, response_format):
+    def download_data_impl(self, ctx, run, tag, experiment, response_format):
         """Provides a response for downloading scalars data for a data series.
 
         Args:
+          ctx: A tensorboard.context.RequestContext value.
           run: The run.
           tag: The specific tag.
-          response_format: A string. One of the values of the OutputFormat enum of
-            the scalar plugin.
+          experiment: An experiment ID, as a possibly-empty `str`.
+          response_format: A string. One of the values of the OutputFormat enum
+            of the scalar plugin.
 
         Raises:
           ValueError: If the scalars plugin is not registered.
@@ -159,7 +148,7 @@ class CustomScalarsPlugin(base_plugin.TBPlugin):
             )
 
         body, mime_type = scalars_plugin_instance.scalars_impl(
-            tag, run, None, response_format
+            ctx, tag, run, experiment, response_format
         )
         return body, mime_type
 
@@ -179,12 +168,14 @@ class CustomScalarsPlugin(base_plugin.TBPlugin):
           payload: Object<string, ScalarEvent[]>,
         }
         """
+        ctx = plugin_util.context(request.environ)
         tag_regex_string = request.args.get("tag")
         run = request.args.get("run")
+        experiment = plugin_util.experiment_id(request.environ)
         mime_type = "application/json"
 
         try:
-            body = self.scalars_impl(run, tag_regex_string)
+            body = self.scalars_impl(ctx, run, tag_regex_string, experiment)
         except ValueError as e:
             return http_util.Respond(
                 request=request,
@@ -196,10 +187,11 @@ class CustomScalarsPlugin(base_plugin.TBPlugin):
         # Produce the response.
         return http_util.Respond(request, body, mime_type)
 
-    def scalars_impl(self, run, tag_regex_string):
+    def scalars_impl(self, ctx, run, tag_regex_string, experiment):
         """Given a tag regex and single run, return ScalarEvents.
 
         Args:
+          ctx: A tensorboard.context.RequestContext value.
           run: A run string.
           tag_regex_string: A regular expression that captures portions of tags.
 
@@ -250,9 +242,9 @@ class CustomScalarsPlugin(base_plugin.TBPlugin):
 
             form = scalars_plugin.OutputFormat.JSON
             payload = {
-                tag: scalars_plugin_instance.scalars_impl(tag, run, None, form)[
-                    0
-                ]
+                tag: scalars_plugin_instance.scalars_impl(
+                    ctx, tag, run, experiment, form
+                )[0]
                 for tag in tag_to_data.keys()
                 if regex.match(tag)
             }
@@ -298,7 +290,7 @@ class CustomScalarsPlugin(base_plugin.TBPlugin):
             string_array = tensor_util.make_ndarray(
                 tensor_events[0].tensor_proto
             )
-            content = np.asscalar(string_array)
+            content = string_array.item()
             layout_proto = layout_pb2.Layout()
             layout_proto.ParseFromString(tf.compat.as_bytes(content))
 

@@ -28,6 +28,7 @@ from werkzeug import wrappers
 
 from tensorboard import test as tb_test
 from tensorboard import version
+from tensorboard.plugins.scalar import metadata as scalars_metadata
 from tensorboard.uploader import server_info
 from tensorboard.uploader.proto import server_info_pb2
 
@@ -69,11 +70,30 @@ class FetchServerInfoTest(tb_test.TestCase):
             body = request.get_data()
             request_pb = server_info_pb2.ServerInfoRequest.FromString(body)
             self.assertEqual(request_pb.version, version.VERSION)
+            self.assertEqual(request_pb.plugin_specification.upload_plugins, [])
             return wrappers.BaseResponse(expected_result.SerializeToString())
 
         origin = self._start_server(app)
-        result = server_info.fetch_server_info(origin)
+        result = server_info.fetch_server_info(origin, [])
         self.assertEqual(result, expected_result)
+
+    def test_fetches_with_plugins(self):
+        @wrappers.BaseRequest.application
+        def app(request):
+            body = request.get_data()
+            request_pb = server_info_pb2.ServerInfoRequest.FromString(body)
+            self.assertEqual(request_pb.version, version.VERSION)
+            self.assertEqual(
+                request_pb.plugin_specification.upload_plugins,
+                ["plugin1", "plugin2"],
+            )
+            return wrappers.BaseResponse(
+                server_info_pb2.ServerInfoResponse().SerializeToString()
+            )
+
+        origin = self._start_server(app)
+        result = server_info.fetch_server_info(origin, ["plugin1", "plugin2"])
+        self.assertIsNotNone(result)
 
     def test_econnrefused(self):
         (family, localhost) = _localhost()
@@ -82,7 +102,7 @@ class FetchServerInfoTest(tb_test.TestCase):
         self.addCleanup(s.close)
         port = s.getsockname()[1]
         with self.assertRaises(server_info.CommunicationError) as cm:
-            server_info.fetch_server_info("http://localhost:%d" % port)
+            server_info.fetch_server_info("http://localhost:%d" % port, [])
         msg = str(cm.exception)
         self.assertIn("Failed to connect to backend", msg)
         if os.name != "nt":
@@ -96,7 +116,7 @@ class FetchServerInfoTest(tb_test.TestCase):
 
         origin = self._start_server(app)
         with self.assertRaises(server_info.CommunicationError) as cm:
-            server_info.fetch_server_info(origin)
+            server_info.fetch_server_info(origin, [])
         msg = str(cm.exception)
         self.assertIn("Non-OK status from backend (502 Bad Gateway)", msg)
         self.assertIn("very sad", msg)
@@ -109,7 +129,7 @@ class FetchServerInfoTest(tb_test.TestCase):
 
         origin = self._start_server(app)
         with self.assertRaises(server_info.CommunicationError) as cm:
-            server_info.fetch_server_info(origin)
+            server_info.fetch_server_info(origin, [])
         msg = str(cm.exception)
         self.assertIn("Corrupt response from backend", msg)
         self.assertIn("an unlikely proto", msg)
@@ -122,7 +142,7 @@ class FetchServerInfoTest(tb_test.TestCase):
             return wrappers.BaseResponse(result.SerializeToString())
 
         origin = self._start_server(app)
-        result = server_info.fetch_server_info(origin)
+        result = server_info.fetch_server_info(origin, [])
         expected_user_agent = "tensorboard/%s" % version.VERSION
         self.assertEqual(result.compatibility.details, expected_user_agent)
 
@@ -130,10 +150,10 @@ class FetchServerInfoTest(tb_test.TestCase):
 class CreateServerInfoTest(tb_test.TestCase):
     """Tests for `create_server_info`."""
 
-    def test(self):
+    def test_response(self):
         frontend = "http://localhost:8080"
         backend = "localhost:10000"
-        result = server_info.create_server_info(frontend, backend)
+        result = server_info.create_server_info(frontend, backend, [])
 
         expected_compatibility = server_info_pb2.Compatibility()
         expected_compatibility.verdict = server_info_pb2.VERDICT_OK
@@ -151,6 +171,19 @@ class CreateServerInfoTest(tb_test.TestCase):
         expected_url = "http://localhost:8080/experiment/123/"
         self.assertEqual(actual_url, expected_url)
 
+        self.assertEqual(result.plugin_control.allowed_plugins, [])
+
+    def test_response_with_plugins(self):
+        frontend = "http://localhost:8080"
+        backend = "localhost:10000"
+        result = server_info.create_server_info(
+            frontend, backend, ["plugin1", "plugin2"]
+        )
+
+        self.assertEqual(
+            result.plugin_control.allowed_plugins, ["plugin1", "plugin2"]
+        )
+
 
 class ExperimentUrlTest(tb_test.TestCase):
     """Tests for `experiment_url`."""
@@ -161,6 +194,127 @@ class ExperimentUrlTest(tb_test.TestCase):
         info.url_format.id_placeholder = "???"
         actual = server_info.experiment_url(info, "123")
         self.assertEqual(actual, "https://unittest.tensorboard.dev/x/123")
+
+
+class AllowedPluginsTest(tb_test.TestCase):
+    """Tests for `allowed_plugins`."""
+
+    def test_old_server_no_plugins(self):
+        info = server_info_pb2.ServerInfoResponse()
+        actual = server_info.allowed_plugins(info)
+        self.assertEqual(actual, frozenset([scalars_metadata.PLUGIN_NAME]))
+
+    def test_provided_but_no_plugins(self):
+        info = server_info_pb2.ServerInfoResponse()
+        info.plugin_control.SetInParent()
+        actual = server_info.allowed_plugins(info)
+        self.assertEqual(actual, frozenset([]))
+
+    def test_scalars_only(self):
+        info = server_info_pb2.ServerInfoResponse()
+        info.plugin_control.allowed_plugins.append(scalars_metadata.PLUGIN_NAME)
+        actual = server_info.allowed_plugins(info)
+        self.assertEqual(actual, frozenset([scalars_metadata.PLUGIN_NAME]))
+
+    def test_more_plugins(self):
+        info = server_info_pb2.ServerInfoResponse()
+        info.plugin_control.allowed_plugins.append("foo")
+        info.plugin_control.allowed_plugins.append("bar")
+        info.plugin_control.allowed_plugins.append("foo")
+        actual = server_info.allowed_plugins(info)
+        self.assertEqual(actual, frozenset(["foo", "bar"]))
+
+
+class UploadLimitsTest(tb_test.TestCase):
+    """Tests for `upload_limits`."""
+
+    def test_no_upload_limits_in_server_info(self):
+        info = server_info_pb2.ServerInfoResponse()
+        actual = server_info.upload_limits(info)
+
+        expected = server_info_pb2.UploadLimits()
+        expected.max_scalar_request_size = (
+            server_info._DEFAULT_MAX_SCALAR_REQUEST_SIZE
+        )
+        expected.max_tensor_request_size = (
+            server_info._DEFAULT_MAX_TENSOR_REQUEST_SIZE
+        )
+        expected.max_blob_request_size = (
+            server_info._DEFAULT_MAX_BLOB_REQUEST_SIZE
+        )
+        expected.min_scalar_request_interval = (
+            server_info._DEFAULT_MIN_SCALAR_REQUEST_INTERVAL
+        )
+        expected.min_tensor_request_interval = (
+            server_info._DEFAULT_MIN_TENSOR_REQUEST_INTERVAL
+        )
+        expected.min_blob_request_interval = (
+            server_info._DEFAULT_MIN_BLOB_REQUEST_INTERVAL
+        )
+        expected.max_blob_size = server_info._DEFAULT_MAX_BLOB_SIZE
+        expected.max_tensor_point_size = (
+            server_info._DEFAULT_MAX_TENSOR_POINT_SIZE
+        )
+        self.assertEqual(actual, expected)
+
+    def test_upload_limits_from_server_info(self):
+        info_upload_limits = server_info_pb2.UploadLimits()
+        info_upload_limits.max_scalar_request_size = 1
+        info_upload_limits.max_tensor_request_size = 2
+        info_upload_limits.max_blob_request_size = 3
+        info_upload_limits.min_scalar_request_interval = 4
+        info_upload_limits.min_tensor_request_interval = 5
+        info_upload_limits.min_blob_request_interval = 6
+        info_upload_limits.max_blob_size = 7
+        info_upload_limits.max_tensor_point_size = 8
+
+        info = server_info_pb2.ServerInfoResponse()
+        info.upload_limits.CopyFrom(info_upload_limits)
+
+        actual = server_info.upload_limits(info)
+        self.assertEqual(actual, info_upload_limits)
+
+    def test_missing_fields_in_upload_limits(self):
+        info = server_info_pb2.ServerInfoResponse()
+        info.upload_limits.max_blob_size = 22
+        actual = server_info.upload_limits(info)
+
+        expected = server_info_pb2.UploadLimits()
+        expected.max_scalar_request_size = (
+            server_info._DEFAULT_MAX_SCALAR_REQUEST_SIZE
+        )
+        expected.max_tensor_request_size = (
+            server_info._DEFAULT_MAX_TENSOR_REQUEST_SIZE
+        )
+        expected.max_blob_request_size = (
+            server_info._DEFAULT_MAX_BLOB_REQUEST_SIZE
+        )
+        expected.min_scalar_request_interval = (
+            server_info._DEFAULT_MIN_SCALAR_REQUEST_INTERVAL
+        )
+        expected.min_tensor_request_interval = (
+            server_info._DEFAULT_MIN_TENSOR_REQUEST_INTERVAL
+        )
+        expected.min_blob_request_interval = (
+            server_info._DEFAULT_MIN_BLOB_REQUEST_INTERVAL
+        )
+        expected.max_blob_size = 22
+        expected.max_tensor_point_size = (
+            server_info._DEFAULT_MAX_TENSOR_POINT_SIZE
+        )
+        self.assertEqual(actual, expected)
+
+    def test_missing_max_blob_size_in_upload_limits(self):
+        # Test the one remaining field we did not test in
+        # test_missing_fields_in_upload_limits.
+        info = server_info_pb2.ServerInfoResponse()
+        info.upload_limits.max_tensor_point_size = 22
+        actual = server_info.upload_limits(info)
+
+        self.assertEqual(
+            actual.max_blob_size, server_info._DEFAULT_MAX_BLOB_SIZE
+        )
+        self.assertEqual(actual.max_tensor_point_size, 22)
 
 
 def _localhost():

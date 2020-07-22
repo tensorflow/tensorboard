@@ -17,24 +17,15 @@
 Provides TensorBoardWSGIApp for building a TensorBoard WSGI app.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
-import atexit
 import base64
 import collections
-import contextlib
 import hashlib
+import io
 import json
-import os
 import re
-import shutil
-import sqlite3
-import tempfile
 import textwrap
-import threading
 import time
+import zipfile
 
 import six
 from six.moves.urllib import (
@@ -45,154 +36,32 @@ from werkzeug import wrappers
 
 from tensorboard import errors
 from tensorboard import plugin_util
+from tensorboard import auth
+from tensorboard import context
 from tensorboard.backend import empty_path_redirect
 from tensorboard.backend import experiment_id
+from tensorboard.backend import experimental_plugin
 from tensorboard.backend import http_util
 from tensorboard.backend import path_prefix
 from tensorboard.backend import security_validator
-from tensorboard.backend.event_processing import db_import_multiplexer
-from tensorboard.backend.event_processing import (
-    data_provider as event_data_provider,
-)
-from tensorboard.backend.event_processing import (
-    plugin_event_accumulator as event_accumulator,
-)
-from tensorboard.backend.event_processing import (
-    plugin_event_multiplexer as event_multiplexer,
-)
 from tensorboard.plugins import base_plugin
-from tensorboard.plugins.audio import metadata as audio_metadata
 from tensorboard.plugins.core import core_plugin
-from tensorboard.plugins.histogram import metadata as histogram_metadata
-from tensorboard.plugins.image import metadata as image_metadata
-from tensorboard.plugins.pr_curve import metadata as pr_curve_metadata
-from tensorboard.plugins.scalar import metadata as scalar_metadata
 from tensorboard.util import tb_logging
 
-
-DEFAULT_SIZE_GUIDANCE = {
-    event_accumulator.TENSORS: 10,
-}
-
-# TODO(@wchargin): Once SQL mode is in play, replace this with an
-# alternative that does not privilege first-party plugins.
-DEFAULT_TENSOR_SIZE_GUIDANCE = {
-    scalar_metadata.PLUGIN_NAME: 1000,
-    image_metadata.PLUGIN_NAME: 10,
-    audio_metadata.PLUGIN_NAME: 10,
-    histogram_metadata.PLUGIN_NAME: 500,
-    pr_curve_metadata.PLUGIN_NAME: 100,
-}
 
 DATA_PREFIX = "/data"
 PLUGIN_PREFIX = "/plugin"
 PLUGINS_LISTING_ROUTE = "/plugins_listing"
 PLUGIN_ENTRY_ROUTE = "/plugin_entry.html"
 
+EXPERIMENTAL_PLUGINS_QUERY_PARAM = "experimentalPlugin"
+
 # Slashes in a plugin name could throw the router for a loop. An empty
 # name would be confusing, too. To be safe, let's restrict the valid
 # names as follows.
-_VALID_PLUGIN_RE = re.compile(r"^[A-Za-z0-9_.-]+$")
+_VALID_PLUGIN_RE = re.compile(r"^[A-Za-z0-9_-]+$")
 
 logger = tb_logging.get_logger()
-
-
-def tensor_size_guidance_from_flags(flags):
-    """Apply user per-summary size guidance overrides."""
-
-    tensor_size_guidance = dict(DEFAULT_TENSOR_SIZE_GUIDANCE)
-    if not flags or not flags.samples_per_plugin:
-        return tensor_size_guidance
-
-    for token in flags.samples_per_plugin.split(","):
-        k, v = token.strip().split("=")
-        tensor_size_guidance[k] = int(v)
-
-    return tensor_size_guidance
-
-
-def standard_tensorboard_wsgi(flags, plugin_loaders, assets_zip_provider):
-    """Construct a TensorBoardWSGIApp with standard plugins and multiplexer.
-
-    Args:
-      flags: An argparse.Namespace containing TensorBoard CLI flags.
-      plugin_loaders: A list of TBLoader instances.
-      assets_zip_provider: See TBContext documentation for more information.
-
-    Returns:
-      The new TensorBoard WSGI application.
-
-    :type plugin_loaders: list[base_plugin.TBLoader]
-    :rtype: TensorBoardWSGI
-    """
-    data_provider = None
-    multiplexer = None
-    reload_interval = flags.reload_interval
-    if flags.db_import:
-        # DB import mode.
-        db_uri = flags.db
-        # Create a temporary DB file if we weren't given one.
-        if not db_uri:
-            tmpdir = tempfile.mkdtemp(prefix="tbimport")
-            atexit.register(shutil.rmtree, tmpdir)
-            db_uri = "sqlite:%s/tmp.sqlite" % tmpdir
-        db_connection_provider = create_sqlite_connection_provider(db_uri)
-        logger.info("Importing logdir into DB at %s", db_uri)
-        multiplexer = db_import_multiplexer.DbImportMultiplexer(
-            db_uri=db_uri,
-            db_connection_provider=db_connection_provider,
-            purge_orphaned_data=flags.purge_orphaned_data,
-            max_reload_threads=flags.max_reload_threads,
-        )
-    elif flags.db:
-        # DB read-only mode, never load event logs.
-        reload_interval = -1
-        db_connection_provider = create_sqlite_connection_provider(flags.db)
-        multiplexer = _DbModeMultiplexer(flags.db, db_connection_provider)
-    else:
-        # Regular logdir loading mode.
-        multiplexer = event_multiplexer.EventMultiplexer(
-            size_guidance=DEFAULT_SIZE_GUIDANCE,
-            tensor_size_guidance=tensor_size_guidance_from_flags(flags),
-            purge_orphaned_data=flags.purge_orphaned_data,
-            max_reload_threads=flags.max_reload_threads,
-            event_file_active_filter=_get_event_file_active_filter(flags),
-        )
-        if flags.generic_data != "false":
-            data_provider = event_data_provider.MultiplexerDataProvider(
-                multiplexer, flags.logdir or flags.logdir_spec
-            )
-
-    if reload_interval >= 0:
-        # We either reload the multiplexer once when TensorBoard starts up, or we
-        # continuously reload the multiplexer.
-        if flags.logdir:
-            path_to_run = {os.path.expanduser(flags.logdir): None}
-        else:
-            path_to_run = parse_event_files_spec(flags.logdir_spec)
-        start_reloading_multiplexer(
-            multiplexer, path_to_run, reload_interval, flags.reload_task
-        )
-    return TensorBoardWSGIApp(
-        flags, plugin_loaders, data_provider, assets_zip_provider, multiplexer
-    )
-
-
-def _handling_errors(wsgi_app):
-    def wrapper(*args):
-        (environ, start_response) = (args[-2], args[-1])
-        try:
-            return wsgi_app(*args)
-        except errors.PublicError as e:
-            request = wrappers.Request(environ)
-            error_app = http_util.Respond(
-                request, str(e), "text/plain", code=e.http_code
-            )
-            return error_app(environ, start_response)
-        # Let other exceptions be handled by the server, as an opaque
-        # internal server error.
-
-    return wrapper
 
 
 def TensorBoardWSGIApp(
@@ -201,60 +70,122 @@ def TensorBoardWSGIApp(
     data_provider=None,
     assets_zip_provider=None,
     deprecated_multiplexer=None,
+    auth_providers=None,
+    experimental_middlewares=None,
 ):
     """Constructs a TensorBoard WSGI app from plugins and data providers.
 
     Args:
       flags: An argparse.Namespace containing TensorBoard CLI flags.
-      plugins: A list of plugin loader instances.
-      assets_zip_provider: See TBContext documentation for more information.
+      plugins: A list of plugins, which can be provided as TBPlugin subclasses
+          or TBLoader instances or subclasses.
       data_provider: Instance of `tensorboard.data.provider.DataProvider`. May
           be `None` if `flags.generic_data` is set to `"false"` in which case
           `deprecated_multiplexer` must be passed instead.
+      assets_zip_provider: See TBContext documentation for more information. If
+          `None` a placeholder assets zipfile will be used containing only a
+          default `index.html` file, and the actual frontend assets must be
+          supplied by middleware wrapping this WSGI app.
       deprecated_multiplexer: Optional `plugin_event_multiplexer.EventMultiplexer`
           to use for any plugins not yet enabled for the DataProvider API.
           Required if the data_provider argument is not passed.
+      auth_providers: Optional mapping whose values are `AuthProvider` values
+        and whose keys are used by (e.g.) data providers to specify
+        `AuthProvider`s via the `AuthContext.get` interface. Defaults to `{}`.
+      experimental_middlewares: Optional list of WSGI middlewares (i.e.,
+        callables that take a WSGI application and return a WSGI application)
+        to apply directly around the core TensorBoard app itself, "inside" the
+        request redirection machinery for `--path_prefix`, experiment IDs, etc.
+        You can use this to add handlers for additional routes. Middlewares are
+        applied in listed order, so the first element of this list is the
+        innermost application. Defaults to `[]`. This parameter is experimental
+        and may be reworked or removed.
 
     Returns:
       A WSGI application that implements the TensorBoard backend.
 
     :type plugins: list[base_plugin.TBLoader]
     """
-    db_uri = None
-    db_connection_provider = None
-    if isinstance(
-        deprecated_multiplexer,
-        (db_import_multiplexer.DbImportMultiplexer, _DbModeMultiplexer),
-    ):
-        db_uri = deprecated_multiplexer.db_uri
-        db_connection_provider = deprecated_multiplexer.db_connection_provider
+    if assets_zip_provider is None:
+        assets_zip_provider = _placeholder_assets_zip_provider
     plugin_name_to_instance = {}
     context = base_plugin.TBContext(
         data_provider=data_provider,
-        db_connection_provider=db_connection_provider,
-        db_uri=db_uri,
         flags=flags,
         logdir=flags.logdir,
         multiplexer=deprecated_multiplexer,
         assets_zip_provider=assets_zip_provider,
         plugin_name_to_instance=plugin_name_to_instance,
+        sampling_hints=flags.samples_per_plugin,
         window_title=flags.window_title,
     )
     tbplugins = []
+    experimental_plugins = []
     for plugin_spec in plugins:
         loader = make_plugin_loader(plugin_spec)
-        plugin = loader.load(context)
+        try:
+            plugin = loader.load(context)
+        except Exception:
+            logger.error(
+                "Failed to load plugin %s; ignoring it.",
+                getattr(loader.load, "__qualname__", loader.load),
+                exc_info=True,
+            )
+            plugin = None
         if plugin is None:
             continue
         tbplugins.append(plugin)
+        if isinstance(
+            loader, experimental_plugin.ExperimentalPlugin
+        ) or isinstance(plugin, experimental_plugin.ExperimentalPlugin):
+            experimental_plugins.append(plugin.plugin_name)
         plugin_name_to_instance[plugin.plugin_name] = plugin
-    return TensorBoardWSGI(tbplugins, flags.path_prefix, data_provider)
+    return TensorBoardWSGI(
+        tbplugins,
+        flags.path_prefix,
+        data_provider,
+        experimental_plugins,
+        auth_providers,
+        experimental_middlewares,
+    )
+
+
+def make_plugin_loader(plugin_spec):
+    """Returns a plugin loader for the given plugin.
+
+    Args:
+      plugin_spec: A TBPlugin subclass, or a TBLoader instance or subclass.
+
+    Returns:
+      A TBLoader for the given plugin.
+
+    :type plugin_spec:
+      Type[base_plugin.TBPlugin] | Type[base_plugin.TBLoader] |
+      base_plugin.TBLoader
+    :rtype: base_plugin.TBLoader
+    """
+    if isinstance(plugin_spec, base_plugin.TBLoader):
+        return plugin_spec
+    if isinstance(plugin_spec, type):
+        if issubclass(plugin_spec, base_plugin.TBLoader):
+            return plugin_spec()
+        if issubclass(plugin_spec, base_plugin.TBPlugin):
+            return base_plugin.BasicLoader(plugin_spec)
+    raise TypeError("Not a TBLoader or TBPlugin subclass: %r" % (plugin_spec,))
 
 
 class TensorBoardWSGI(object):
     """The TensorBoard WSGI app that delegates to a set of TBPlugin."""
 
-    def __init__(self, plugins, path_prefix="", data_provider=None):
+    def __init__(
+        self,
+        plugins,
+        path_prefix="",
+        data_provider=None,
+        experimental_plugins=None,
+        auth_providers=None,
+        experimental_middlewares=None,
+    ):
         """Constructs TensorBoardWSGI instance.
 
         Args:
@@ -263,6 +194,17 @@ class TensorBoardWSGI(object):
           data_provider: `tensorboard.data.provider.DataProvider` or
             `None`; if present, will inform the "active" state of
             `/plugins_listing`.
+          experimental_plugins: A list of plugin names that are only provided
+              experimentally. The corresponding plugins will only be activated for
+              a user if the user has specified the plugin with the experimentalPlugin
+              query parameter in the URL.
+          auth_providers: Optional mapping whose values are `AuthProvider`
+            values and whose keys are used by (e.g.) data providers to specify
+            `AuthProvider`s via the `AuthContext.get` interface.
+            Defaults to `{}`.
+          experimental_middlewares: Optional list of WSGI middlewares to apply
+            directly around the core TensorBoard app itself. Defaults to `[]`.
+            This parameter is experimental and may be reworked or removed.
 
         Returns:
           A WSGI application for the set of all TBPlugin instances.
@@ -280,6 +222,9 @@ class TensorBoardWSGI(object):
         self._plugins = plugins
         self._path_prefix = path_prefix
         self._data_provider = data_provider
+        self._experimental_plugins = frozenset(experimental_plugins or ())
+        self._auth_providers = auth_providers or {}
+        self._extra_middlewares = list(experimental_middlewares or [])
         if self._path_prefix.endswith("/"):
             # Should have been fixed by `fix_flags`.
             raise ValueError(
@@ -320,7 +265,7 @@ class TensorBoardWSGI(object):
                     type(plugin) is core_plugin.CorePlugin
                 ):  # pylint: disable=unidiomatic-typecheck
                     raise
-                logger.warn(
+                logger.warning(
                     "Plugin %s failed. Exception: %s",
                     plugin.plugin_name,
                     str(e),
@@ -382,6 +327,9 @@ class TensorBoardWSGI(object):
     def _create_wsgi_app(self):
         """Apply middleware to create the final WSGI app."""
         app = self._route_request
+        for middleware in self._extra_middlewares:
+            app = middleware(app)
+        app = _auth_context_middleware(app, self._auth_providers)
         app = empty_path_redirect.EmptyPathRedirectMiddleware(app)
         app = experiment_id.ExperimentIdMiddleware(app)
         app = path_prefix.PathPrefixMiddleware(app, self._path_prefix)
@@ -456,13 +404,21 @@ class TensorBoardWSGI(object):
           A werkzeug.Response object.
         """
         response = collections.OrderedDict()
+        ctx = plugin_util.context(request.environ)
         eid = plugin_util.experiment_id(request.environ)
         plugins_with_data = frozenset(
-            self._data_provider.list_plugins(eid) or frozenset()
+            self._data_provider.list_plugins(ctx, experiment_id=eid)
+            or frozenset()
             if self._data_provider is not None
             else frozenset()
         )
+        plugins_to_skip = self._experimental_plugins - frozenset(
+            request.args.getlist(EXPERIMENTAL_PLUGINS_QUERY_PARAM)
+        )
         for plugin in self._plugins:
+            if plugin.plugin_name in plugins_to_skip:
+                continue
+
             if (
                 type(plugin) is core_plugin.CorePlugin
             ):  # pylint: disable=unidiomatic-typecheck
@@ -598,159 +554,42 @@ class TensorBoardWSGI(object):
                         environ, start_response
                     )
 
-            logger.warn("path %s not found, sending 404", clean_path)
+            logger.warning("path %s not found, sending 404", clean_path)
             return http_util.Respond(
                 request, "Not found", "text/plain", code=404
             )(environ, start_response)
         # pylint: enable=too-many-function-args
 
 
-def parse_event_files_spec(logdir_spec):
-    """Parses `logdir_spec` into a map from paths to run group names.
-
-    The `--logdir_spec` flag format is a comma-separated list of path
-    specifications. A path spec looks like 'group_name:/path/to/directory' or
-    '/path/to/directory'; in the latter case, the group is unnamed. Group names
-    cannot start with a forward slash: /foo:bar/baz will be interpreted as a spec
-    with no name and path '/foo:bar/baz'.
-
-    Globs are not supported.
-
-    Args:
-      logdir: A comma-separated list of run specifications.
-    Returns:
-      A dict mapping directory paths to names like {'/path/to/directory': 'name'}.
-      Groups without an explicit name are named after their path. If logdir is
-      None, returns an empty dict, which is helpful for testing things that don't
-      require any valid runs.
-    """
-    files = {}
-    if logdir_spec is None:
-        return files
-    # Make sure keeping consistent with ParseURI in core/lib/io/path.cc
-    uri_pattern = re.compile("[a-zA-Z][0-9a-zA-Z.]*://.*")
-    for specification in logdir_spec.split(","):
-        # Check if the spec contains group. A spec start with xyz:// is regarded as
-        # URI path spec instead of group spec. If the spec looks like /foo:bar/baz,
-        # then we assume it's a path with a colon. If the spec looks like
-        # [a-zA-z]:\foo then we assume its a Windows path and not a single letter
-        # group
-        if (
-            uri_pattern.match(specification) is None
-            and ":" in specification
-            and specification[0] != "/"
-            and not os.path.splitdrive(specification)[0]
-        ):
-            # We split at most once so run_name:/path:with/a/colon will work.
-            run_name, _, path = specification.partition(":")
-        else:
-            run_name = None
-            path = specification
-        if uri_pattern.match(path) is None:
-            path = os.path.realpath(os.path.expanduser(path))
-        files[path] = run_name
-    return files
-
-
-def start_reloading_multiplexer(
-    multiplexer, path_to_run, load_interval, reload_task
-):
-    """Starts automatically reloading the given multiplexer.
-
-    If `load_interval` is positive, the thread will reload the multiplexer
-    by calling `ReloadMultiplexer` every `load_interval` seconds, starting
-    immediately. Otherwise, reloads the multiplexer once and never again.
-
-    Args:
-      multiplexer: The `EventMultiplexer` to add runs to and reload.
-      path_to_run: A dict mapping from paths to run names, where `None` as the run
-        name is interpreted as a run name equal to the path.
-      load_interval: An integer greater than or equal to 0. If positive, how many
-        seconds to wait after one load before starting the next load. Otherwise,
-        reloads the multiplexer once and never again (no continuous reloading).
-      reload_task: Indicates the type of background task to reload with.
-
-    Raises:
-      ValueError: If `load_interval` is negative.
-    """
-    if load_interval < 0:
-        raise ValueError("load_interval is negative: %d" % load_interval)
-
-    def _reload():
-        while True:
-            start = time.time()
-            logger.info("TensorBoard reload process beginning")
-            for path, name in six.iteritems(path_to_run):
-                multiplexer.AddRunsFromDirectory(path, name)
-            logger.info(
-                "TensorBoard reload process: Reload the whole Multiplexer"
+def _handling_errors(wsgi_app):
+    def wrapper(environ, start_response):
+        try:
+            return wsgi_app(environ, start_response)
+        except errors.PublicError as e:
+            request = wrappers.Request(environ)
+            error_app = http_util.Respond(
+                request,
+                str(e),
+                "text/plain",
+                code=e.http_code,
+                headers=e.headers,
             )
-            multiplexer.Reload()
-            duration = time.time() - start
-            logger.info(
-                "TensorBoard done reloading. Load took %0.3f secs", duration
-            )
-            if load_interval == 0:
-                # Only load the multiplexer once. Do not continuously reload.
-                break
-            time.sleep(load_interval)
+            return error_app(environ, start_response)
+        # Let other exceptions be handled by the server, as an opaque
+        # internal server error.
 
-    if reload_task == "process":
-        logger.info("Launching reload in a child process")
-        import multiprocessing
-
-        process = multiprocessing.Process(target=_reload, name="Reloader")
-        # Best-effort cleanup; on exit, the main TB parent process will attempt to
-        # kill all its daemonic children.
-        process.daemon = True
-        process.start()
-    elif reload_task in ("thread", "auto"):
-        logger.info("Launching reload in a daemon thread")
-        thread = threading.Thread(target=_reload, name="Reloader")
-        # Make this a daemon thread, which won't block TB from exiting.
-        thread.daemon = True
-        thread.start()
-    elif reload_task == "blocking":
-        if load_interval != 0:
-            raise ValueError(
-                "blocking reload only allowed with load_interval=0"
-            )
-        _reload()
-    else:
-        raise ValueError("unrecognized reload_task: %s" % reload_task)
+    return wrapper
 
 
-def create_sqlite_connection_provider(db_uri):
-    """Returns function that returns SQLite Connection objects.
+def _auth_context_middleware(wsgi_app, auth_providers):
+    def wrapper(environ, start_response):
+        environ = dict(environ)
+        auth_ctx = auth.AuthContext(auth_providers, environ)
+        ctx = context.from_environ(environ).replace(auth=auth_ctx)
+        context.set_in_environ(environ, ctx)
+        return wsgi_app(environ, start_response)
 
-    Args:
-      db_uri: A string URI expressing the DB file, e.g. "sqlite:~/tb.db".
-
-    Returns:
-      A function that returns a new PEP-249 DB Connection, which must be closed,
-      each time it is called.
-
-    Raises:
-      ValueError: If db_uri is not a valid sqlite file URI.
-    """
-    uri = urlparse.urlparse(db_uri)
-    if uri.scheme != "sqlite":
-        raise ValueError("Only sqlite DB URIs are supported: " + db_uri)
-    if uri.netloc:
-        raise ValueError("Can not connect to SQLite over network: " + db_uri)
-    if uri.path == ":memory:":
-        raise ValueError("Memory mode SQLite not supported: " + db_uri)
-    path = os.path.expanduser(uri.path)
-    params = _get_connect_params(uri.query)
-    # TODO(@jart): Add thread-local pooling.
-    return lambda: sqlite3.connect(path, **params)
-
-
-def _get_connect_params(query):
-    params = urlparse.parse_qs(query)
-    if any(len(v) > 2 for v in params.values()):
-        raise ValueError("DB URI params list has duplicate keys: " + query)
-    return {k: json.loads(v[0]) for k, v in params.items()}
+    return wrapper
 
 
 def _clean_path(path):
@@ -767,80 +606,9 @@ def _clean_path(path):
     return path
 
 
-def _get_event_file_active_filter(flags):
-    """Returns a predicate for whether an event file load timestamp is active.
-
-    Returns:
-      A predicate function accepting a single UNIX timestamp float argument, or
-      None if multi-file loading is not enabled.
-    """
-    if not flags.reload_multifile:
-        return None
-    inactive_secs = flags.reload_multifile_inactive_secs
-    if inactive_secs == 0:
-        return None
-    if inactive_secs < 0:
-        return lambda timestamp: True
-    return lambda timestamp: timestamp + inactive_secs >= time.time()
-
-
-class _DbModeMultiplexer(event_multiplexer.EventMultiplexer):
-    """Shim EventMultiplexer to use when in read-only DB mode.
-
-    In read-only DB mode, the EventMultiplexer is nonfunctional - there is no
-    logdir to reload, and the data is all exposed via SQL. This class represents
-    the do-nothing EventMultiplexer for that purpose, which serves only as a
-    conduit for DB-related parameters.
-
-    The load APIs raise exceptions if called, and the read APIs always
-    return empty results.
-    """
-
-    def __init__(self, db_uri, db_connection_provider):
-        """Constructor for `_DbModeMultiplexer`.
-
-        Args:
-          db_uri: A URI to the database file in use.
-          db_connection_provider: Provider function for creating a DB connection.
-        """
-        logger.info("_DbModeMultiplexer initializing for %s", db_uri)
-        super(_DbModeMultiplexer, self).__init__()
-        self.db_uri = db_uri
-        self.db_connection_provider = db_connection_provider
-        logger.info("_DbModeMultiplexer done initializing")
-
-    def AddRun(self, path, name=None):
-        """Unsupported."""
-        raise NotImplementedError()
-
-    def AddRunsFromDirectory(self, path, name=None):
-        """Unsupported."""
-        raise NotImplementedError()
-
-    def Reload(self):
-        """Unsupported."""
-        raise NotImplementedError()
-
-
-def make_plugin_loader(plugin_spec):
-    """Returns a plugin loader for the given plugin.
-
-    Args:
-      plugin_spec: A TBPlugin subclass, or a TBLoader instance or subclass.
-
-    Returns:
-      A TBLoader for the given plugin.
-
-    :type plugin_spec:
-      Type[base_plugin.TBPlugin] | Type[base_plugin.TBLoader] |
-      base_plugin.TBLoader
-    :rtype: base_plugin.TBLoader
-    """
-    if isinstance(plugin_spec, base_plugin.TBLoader):
-        return plugin_spec
-    if isinstance(plugin_spec, type):
-        if issubclass(plugin_spec, base_plugin.TBLoader):
-            return plugin_spec()
-        if issubclass(plugin_spec, base_plugin.TBPlugin):
-            return base_plugin.BasicLoader(plugin_spec)
-    raise TypeError("Not a TBLoader or TBPlugin subclass: %r" % (plugin_spec,))
+def _placeholder_assets_zip_provider():
+    """Defines a default assets zip provider containing a dummy index.html."""
+    memfile = io.BytesIO()
+    with zipfile.ZipFile(memfile, mode="w") as zf:
+        zf.writestr("index.html", "TensorBoard placeholder index.html")
+    return memfile

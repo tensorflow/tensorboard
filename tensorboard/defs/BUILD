@@ -1,6 +1,6 @@
-package(default_visibility = ["//tensorboard:internal"])
-
 load("//tensorboard/defs:protos.bzl", "tb_proto_library")
+
+package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
@@ -12,7 +12,6 @@ filegroup(
         "@io_angular_clutz//:src/resources/closure.lib.d.ts",
         "clutz.d.ts",
     ],
-    visibility = ["//visibility:public"],
 )
 
 py_test(
@@ -50,3 +49,5 @@ exports_files(
     ["clutz.d.ts"],
     visibility = ["//tensorboard:internal"],
 )
+
+exports_files(["rollup_config.js"])

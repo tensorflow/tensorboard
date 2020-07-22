@@ -26,6 +26,8 @@ import {
   OnChanges,
   SimpleChanges,
   ViewChild,
+  ComponentFactoryResolver,
+  ViewContainerRef,
 } from '@angular/core';
 
 import {UiPluginMetadata} from './plugins_container';
@@ -33,22 +35,70 @@ import {
   LoadingMechanismType,
   CustomElementLoadingMechanism,
 } from '../types/api';
+import {PluginRegistryModule} from './plugin_registry_module';
+
+interface ExperimentalPluginHostLib extends HTMLElement {
+  registerPluginIframe(iframe: HTMLIFrameElement, plugin_id: string): void;
+}
 
 @Component({
   selector: 'plugins-component',
   templateUrl: './plugins_component.ng.html',
   styles: [
-    '.plugins { height: 100%; }',
-    'iframe { border: 0; height: 100%; width: 100%; }',
+    `
+      :host {
+        display: block;
+        position: relative;
+      }
+      .plugins {
+        height: 100%;
+        position: relative;
+      }
+      .no-plugin {
+        background-color: #fff;
+        bottom: 0;
+        left: 0;
+        position: absolute;
+        right: 0;
+        top: 0;
+      }
+      .warning-message {
+        margin: 80px auto 0;
+        max-width: 540px;
+      }
+      .last-reload-time {
+        font-style: italic;
+      }
+      .plugins ::ng-deep iframe {
+        border: 0;
+        height: 100%;
+        width: 100%;
+      }
+    `,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PluginsComponent implements OnChanges {
+  private readonly experimentPluginHostLib = document.createElement(
+    'tf-experimental-plugin-host-lib'
+  ) as ExperimentalPluginHostLib;
+
+  constructor(
+    private readonly componentFactoryResolver: ComponentFactoryResolver,
+    private readonly pluginRegistry: PluginRegistryModule
+  ) {}
+
   @ViewChild('pluginContainer', {static: true, read: ElementRef})
   private readonly pluginsContainer!: ElementRef<HTMLDivElement>;
 
+  @ViewChild('ngPluginContainer', {static: true, read: ViewContainerRef})
+  private readonly ngPluginContainer!: ViewContainerRef;
+
   @Input()
-  activePlugin?: UiPluginMetadata;
+  activePlugin!: UiPluginMetadata | null;
+
+  @Input()
+  noEnabledPlugin!: boolean;
 
   @Input()
   lastUpdated?: number;
@@ -68,18 +118,32 @@ export class PluginsComponent implements OnChanges {
 
   private renderPlugin(plugin: UiPluginMetadata) {
     for (const element of this.pluginInstances.values()) {
-      element.style.display = 'none';
+      Object.assign(element.style, {
+        maxHeight: 0,
+        overflow: 'hidden',
+        /**
+         * We further make containers invisible. Some elements may anchor to
+         * the viewport instead of the container, in which case setting the max
+         * height here to 0 will not hide them.
+         **/
+        visibility: 'hidden',
+        position: 'absolute',
+      });
     }
 
     if (this.pluginInstances.has(plugin.id)) {
       const instance = this.pluginInstances.get(plugin.id) as HTMLElement;
-      instance.style.removeProperty('display');
+      Object.assign(instance.style, {
+        maxHeight: null,
+        overflow: null,
+        visibility: null,
+        position: null,
+      });
       return;
     }
 
     const pluginElement = this.createPlugin(plugin);
     if (pluginElement) {
-      pluginElement.id = plugin.id;
       this.pluginInstances.set(plugin.id, pluginElement);
     }
   }
@@ -97,17 +161,33 @@ export class PluginsComponent implements OnChanges {
       }
       case LoadingMechanismType.IFRAME: {
         pluginElement = document.createElement('iframe');
-        pluginElement.id = plugin.id;
         // Ideally should use the DOMSanitizer but it is not usable in TypeScript.
         pluginElement.setAttribute(
           'src',
           `data/plugin_entry.html?name=${plugin.id}`
         );
+        this.experimentPluginHostLib.registerPluginIframe(
+          pluginElement,
+          plugin.id
+        );
         this.pluginsContainer.nativeElement.appendChild(pluginElement);
         break;
       }
       case LoadingMechanismType.NG_COMPONENT:
-        // Let the Angular template render the component.
+        const ngComponentClass = this.pluginRegistry.getComponent(plugin.id);
+        if (ngComponentClass) {
+          const componentFactory = this.componentFactoryResolver.resolveComponentFactory(
+            ngComponentClass
+          );
+          const pluginComponent = this.ngPluginContainer.createComponent(
+            componentFactory
+          );
+          pluginElement = pluginComponent.location.nativeElement;
+        } else {
+          console.error(
+            `No registered Angular component for plugin: ${plugin.id}`
+          );
+        }
         break;
       case LoadingMechanismType.NONE:
         break;
@@ -118,11 +198,15 @@ export class PluginsComponent implements OnChanges {
   }
 
   private reload() {
-    for (const instance of this.pluginInstances.values()) {
-      const maybePolymerDashboard = instance as any;
-      if (maybePolymerDashboard.reload) {
-        maybePolymerDashboard.reload();
-      }
+    if (!this.activePlugin || this.activePlugin.disable_reload) {
+      return;
+    }
+
+    const maybeDashboard = this.pluginInstances.get(
+      this.activePlugin.id
+    ) as any;
+    if (maybeDashboard.reload) {
+      maybeDashboard.reload();
     }
   }
 }

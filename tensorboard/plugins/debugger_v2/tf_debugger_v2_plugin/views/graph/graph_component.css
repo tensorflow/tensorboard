@@ -1,0 +1,92 @@
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+==============================================================================*/
+
+:host {
+  overflow-y: auto;
+}
+
+.consumers-container {
+  padding-bottom: 5px;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.consumer-section {
+  display: block;
+  margin: 5px 0;
+}
+
+.graph-structure-container {
+  font-size: 12px;
+  overflow-y: auto;
+  white-space: nowrap;
+}
+
+.inputs-container {
+  border-bottom: 1px solid rgb(0, 0, 0, 0.12);
+  margin-top: 5px;
+  overflow-x: auto;
+  padding-bottom: 0;
+  white-space: nowrap;
+}
+
+.input-op-section {
+  border-right: 1px solid rgb(0, 0, 0, 0.12);
+  display: inline-block;
+  margin-right: 5px;
+  padding-bottom: 5px;
+}
+
+.input-slot-header {
+  /** NOTE: If this is changed, change the corresponding color in
+      graph_execution_component.css as well.
+      TODO(b/160229578): deduplication using tf_sass_library. */
+  background-color: #fff099;
+  margin-bottom: 5px;
+}
+
+.input-tensor-name {
+  display: block;
+  white-space: nowrap;
+}
+
+.no-op-focused {
+  color: #808080;
+  font-family: 'Roboto', Arial, Helvetica, sans-serif;
+  font-size: 13px;
+  white-space: normal;
+}
+
+.self-op-header {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.self-op-container {
+  border-bottom: 1px solid rgb(0, 0, 0, 0.12);
+  padding-bottom: 5px;
+}
+
+.slot-consumers-container {
+  border-right: 1px solid rgb(0, 0, 0, 0.12);
+  display: inline-block;
+  margin-right: 5px;
+  padding-top: 5px;
+  vertical-align: top;
+}
+
+.slot-consumers-header {
+  white-space: nowrap;
+}

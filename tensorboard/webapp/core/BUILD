@@ -1,6 +1,6 @@
-package(default_visibility = ["//tensorboard:internal"])
-
 load("@npm_angular_bazel//:index.bzl", "ng_module")
+
+package(default_visibility = ["//tensorboard:internal"])
 
 ng_module(
     name = "core",
@@ -11,9 +11,17 @@ ng_module(
         "//tensorboard/webapp/core/actions",
         "//tensorboard/webapp/core/effects",
         "//tensorboard/webapp/core/store",
+        "//tensorboard/webapp/deeplink",
         "//tensorboard/webapp/webapp_data_source",
         "@npm//@angular/core",
         "@npm//@ngrx/effects",
         "@npm//@ngrx/store",
+    ],
+)
+
+ng_module(
+    name = "types",
+    srcs = [
+        "types.ts",
     ],
 )

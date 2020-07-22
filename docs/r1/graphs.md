@@ -5,7 +5,7 @@ TensorFlow computation graphs are powerful but complicated. The graph visualizat
 ![Visualization of a TensorFlow graph](https://www.tensorflow.org/images/graph_vis_animation.gif "Visualization of a TensorFlow graph")
 *Visualization of a TensorFlow graph.*
 
-To see your own graph, run TensorBoard pointing it to the log directory of the job, click on the graph tab on the top pane and select the appropriate run using the menu at the upper left corner. For in depth information on how to run TensorBoard and make sure you are logging all the necessary information, see [TensorBoard: Visualizing Learning](../guide/summaries_and_tensorboard.md).
+To see your own graph, run TensorBoard pointing it to the log directory of the job, click on the graph tab on the top pane and select the appropriate run using the menu at the upper left corner. For in depth information on how to run TensorBoard and make sure you are logging all the necessary information, see [TensorBoard: Visualizing Learning](./summaries.md).
 
 ## Name scoping and nodes
 
@@ -248,10 +248,9 @@ The images below show the CIFAR-10 model with tensor shape information:
 Often it is useful to collect runtime metadata for a run, such as total memory
 usage, total compute time, and tensor shapes for nodes. The code example below
 is a snippet from the train and test section of a modification of the
-[Estimators MNIST tutorial](../tutorials/estimators/cnn.md), in which we have
-recorded summaries and
-runtime statistics. See the
-[Summaries Tutorial](../guide/summaries_and_tensorboard.md#serializing-the-data)
+[Estimators MNIST tutorial](https://github.com/tensorflow/docs/blob/master/site/en/r1/tutorials/estimators/cnn.ipynb),
+in which we have recorded summaries and runtime statistics. See the
+[Summaries Tutorial](./summaries.md#serializing-the-data)
 for details on how to record summaries.
 Full source is [here](https://www.tensorflow.org/code/tensorflow/examples/tutorials/mnist/mnist_with_summaries.py).
 

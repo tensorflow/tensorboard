@@ -9,15 +9,13 @@ exports_files(["LICENSE"])
 
 py_library(
     name = "tensorflow_stub",
-    srcs = glob([
-        "*.py",
+    srcs = glob(["*.py"]) + [
         "compat/__init__.py",
         "compat/v1/__init__.py",
         "io/__init__.py",
         "io/gfile.py",
-    ]),
+    ],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard:expect_absl_flags_installed",
         "//tensorboard:expect_numpy_installed",

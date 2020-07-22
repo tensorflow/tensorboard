@@ -1,8 +1,8 @@
-package(default_visibility = ["//tensorboard:internal"])
-
 load("@npm_bazel_jasmine//:index.bzl", "jasmine_node_test")
 load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ts_config", "tf_ts_devserver", "tf_ts_library")
 load("//tensorboard/defs:web.bzl", "tf_web_library")
+
+package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
@@ -100,7 +100,6 @@ tf_ts_library(
 
 tf_ts_devserver(
     name = "dev_server",
-    index_html = "demo/demo.html",
     serving_path = "/bundle.js",
     static_files = [
         "demo/demo.css",

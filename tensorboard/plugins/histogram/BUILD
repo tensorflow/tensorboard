@@ -1,11 +1,11 @@
 # Description:
 # TensorBoard plugin for histograms
 
+load("//tensorboard/defs:protos.bzl", "tb_proto_library")
+
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
-
-load("//tensorboard/defs:protos.bzl", "tb_proto_library")
 
 exports_files(["LICENSE"])
 
@@ -14,9 +14,9 @@ py_library(
     name = "histograms_plugin",
     srcs = ["histograms_plugin.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         ":metadata",
+        "//tensorboard:context",
         "//tensorboard:errors",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:plugin_util",
@@ -38,11 +38,12 @@ py_test(
     deps = [
         ":histograms_plugin",
         ":summary",
+        "//tensorboard:context",
         "//tensorboard:errors",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/backend:application",
-        "//tensorboard/backend/event_processing:event_accumulator",
+        "//tensorboard/backend/event_processing:data_provider",
         "//tensorboard/backend/event_processing:event_multiplexer",
+        "//tensorboard/backend/event_processing:tag_types",
         "//tensorboard/data:provider",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/util:test_util",
@@ -61,11 +62,14 @@ py_test(
     deps = [
         ":histograms_plugin",
         ":summary",
+        "//tensorboard:context",
+        "//tensorboard:errors",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/backend:application",
-        "//tensorboard/backend/event_processing:event_accumulator",
+        "//tensorboard/backend/event_processing:data_provider",
         "//tensorboard/backend/event_processing:event_multiplexer",
+        "//tensorboard/backend/event_processing:tag_types",
         "//tensorboard/compat:no_tensorflow",
+        "//tensorboard/data:provider",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/util:test_util",
         "@org_pocoo_werkzeug",
@@ -91,9 +95,6 @@ py_library(
     name = "summary",
     srcs = ["summary.py"],
     srcs_version = "PY2AND3",
-    visibility = [
-        "//visibility:public",
-    ],
     deps = [
         ":metadata",
         ":summary_v2",
@@ -147,5 +148,4 @@ py_binary(
 tb_proto_library(
     name = "protos_all",
     srcs = ["plugin_data.proto"],
-    visibility = ["//visibility:public"],
 )

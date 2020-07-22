@@ -68,9 +68,19 @@ namespace tb_plugin.lib.DO_NOT_USE_INTERNAL {
         spec: 'guest (src) to host (dest)',
         beforeEachFunc: function() {
           this.destWindow = window;
-          this.destListen = tb_plugin.host.listen;
+          this.destListen = (
+            type: lib.DO_NOT_USE_INTERNAL.MessageType,
+            callback: Function
+          ) => {
+            tb_plugin.host.listen(type, (context, data) => {
+              return callback(data);
+            });
+          };
           this.destUnlisten = tb_plugin.host.unlisten;
-          this.destSendMessage = (type, payload) => {
+          this.destSendMessage = (
+            type: lib.DO_NOT_USE_INTERNAL.MessageType,
+            payload: lib.DO_NOT_USE_INTERNAL.PayloadType
+          ) => {
             return tb_plugin.host
               .broadcast(type, payload)
               .then(([result]) => result);

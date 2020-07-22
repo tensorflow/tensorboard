@@ -3,7 +3,10 @@ syntax = "proto3";
 package tensorboard.service;
 
 import "google/protobuf/timestamp.proto";
+import "tensorboard/uploader/proto/blob.proto";
+import "tensorboard/uploader/proto/experiment.proto";
 import "tensorboard/compat/proto/summary.proto";
+import "tensorboard/compat/proto/tensor.proto";
 
 // Service for exporting data from TensorBoard.dev.
 service TensorBoardExporterService {
@@ -13,6 +16,9 @@ service TensorBoardExporterService {
   // Stream scalars for all the runs and tags in an experiment.
   rpc StreamExperimentData(StreamExperimentDataRequest)
       returns (stream StreamExperimentDataResponse) {}
+  // Stream blob as chunks for a given blob_id.
+  rpc StreamBlobData(StreamBlobDataRequest)
+      returns (stream StreamBlobDataResponse) {}
 }
 
 // Request to stream the experiment_id of all the experiments owned by the
@@ -31,7 +37,10 @@ message StreamExperimentsRequest {
   int64 limit = 3;
   // Field mask for what experiment data to return via the `experiments` field
   // on the response. If not specified, this should be interpreted the same as
-  // an empty message: i.e., only the experiment ID should be returned.
+  // an empty message: i.e., only the experiment ID should be returned. Other
+  // fields of `Experiment` will be populated if their corresponding bits in the
+  // `ExperimentMask` are set. The server may choose to populate fields that are
+  // not explicitly requested.
   ExperimentMask experiments_mask = 4;
 }
 
@@ -71,38 +80,6 @@ message StreamExperimentsResponse {
   repeated Experiment experiments = 2;
 }
 
-// Metadata about an experiment.
-message Experiment {
-  // Permanent ID of this experiment; e.g.: "AdYd1TgeTlaLWXx6I8JUbA".
-  string experiment_id = 1;
-  // The time that the experiment was created.
-  google.protobuf.Timestamp create_time = 2;
-  // The time that the experiment was last modified: i.e., the most recent time
-  // that scalars were added to the experiment.
-  google.protobuf.Timestamp update_time = 3;
-  // The number of scalars in this experiment, across all time series.
-  int64 num_scalars = 4;
-  // The number of distinct run names in this experiment.
-  int64 num_runs = 5;
-  // The number of distinct tag names in this experiment. A tag name that
-  // appears in multiple runs will be counted only once.
-  int64 num_tags = 6;
-}
-
-// Field mask for `Experiment`. The `experiment_id` field is always implicitly
-// considered to be requested. Other fields of `Experiment` will be populated
-// if their corresponding bits in the `ExperimentMask` are set. The server may
-// choose to populate fields that are not explicitly requested.
-message ExperimentMask {
-  reserved 1;
-  reserved "experiment_id";
-  bool create_time = 2;
-  bool update_time = 3;
-  bool num_scalars = 4;
-  bool num_runs = 5;
-  bool num_tags = 6;
-}
-
 // Request to stream scalars from all the runs and tags in an experiment.
 message StreamExperimentDataRequest {
   // The permanent ID of the experiment whose data need to be streamed.
@@ -114,15 +91,15 @@ message StreamExperimentDataRequest {
   google.protobuf.Timestamp read_timestamp = 2;
 }
 
-// Streams scalars from all the runs and tags in an experiment. Each stream
+// Streams data from all the runs and tags in an experiment. Each stream
 // result only contains data for a single tag from a single run. For example if
 // there are five runs and each run had two tags, the RPC will return a stream
 // of at least ten `StreamExperimentDataResponse`s, each one having the
-// scalars for one tag. The values from a single tag may be split among multiple
-// responses.  Users need to aggregate information from entire stream to get
-// data for the entire experiment. Empty experiments will have zero stream
-// results. Empty runs that doesn't have any tags need not be supported by a
-// hosted service.
+// either scalars or tensors for one tag. The values from a single tag may be
+// split among multiple responses.  Users need to aggregate information from
+// entire stream to get data for the entire experiment. Empty experiments will
+// have zero stream results. Empty runs that doesn't have any tags need not
+// be supported by a hosted service.
 message StreamExperimentDataResponse {
   // Name of the tag whose data is contained in this response.
   string tag_name = 1;
@@ -130,8 +107,18 @@ message StreamExperimentDataResponse {
   string run_name = 2;
   // The metadata of the tag `tag_name`.
   .tensorboard.SummaryMetadata tag_metadata = 3;
+
   // Data to store for the tag `tag_name.
-  ScalarPoints points = 4;
+  oneof data {
+    // Scalar data to store.
+    ScalarPoints points = 4;
+
+    // Tensor data to store.
+    TensorPoints tensors = 5;
+
+    // Blob sequences to store.
+    BlobSequencePoints blob_sequences = 6;
+  }
 
   // Data for the scalars are stored in a columnar fashion to optimize it for
   // exporting the data into textual formats like JSON.
@@ -145,4 +132,46 @@ message StreamExperimentDataResponse {
     // Value of the point at this step / timestamp.
     repeated double values = 3;
   }
+
+  // Data for the Tensors are stored in a columnar fashion to optimize it for
+  // exporting the data into textual formats like JSON.
+  // The data for the ith tensor is { steps[i], wall_times[i], values[i] }.
+  // The data here is sorted by step values in ascending order.
+  message TensorPoints {
+    // Step index within the run.
+    repeated int64 steps = 1;
+    // Timestamp of the creation of this point.
+    repeated google.protobuf.Timestamp wall_times = 2;
+    // Value of the point at this step / timestamp.
+    repeated .tensorboard.TensorProto values = 3;
+  }
+
+  message BlobSequencePoints {
+    // Step index within the run.
+    repeated int64 steps = 1;
+    // Timestamp of the creation of this point.
+    repeated google.protobuf.Timestamp wall_times = 2;
+    // Value of the blob sequence at this step / timestamp.
+    repeated BlobSequence values = 3;
+  }
+}
+
+message StreamBlobDataRequest {
+  string blob_id = 1;
+}
+
+message StreamBlobDataResponse {
+  // The bytes in this chunk.
+  bytes data = 1;
+  // The position in the blob where this chunk begins.
+  // This must equal the sum of the sizes of the chunks sent so far.  Ignored
+  // if no data is provided.
+  int64 offset = 2;
+  // TODO(b/150443776): Add `crc32a = 3;` once the server can populate it.
+  reserved 3;
+  // Indicates that this is the last chunk of the stream.
+  bool final_chunk = 4;
+  // CRC32C of the entire blob. This should be set when final_chunk=True, to
+  // protect against data corruption.
+  fixed32 final_crc32c = 5;
 }

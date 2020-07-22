@@ -1,8 +1,8 @@
-package(default_visibility = ["//tensorboard:internal"])
-
 load("//tensorboard/defs:defs.bzl", "tensorboard_webcomponent_library")
 load("//tensorboard/defs:hacks.bzl", "tensorboard_typescript_bundle")
 load("//tensorboard/defs:web.bzl", "tf_web_library")
+
+package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
@@ -70,7 +70,6 @@ tf_web_library(
         "@org_definitelytyped//:lodash.d.ts",
     ],
     path = "/tf-imports",
-    visibility = ["//visibility:public"],
     deps = ["@com_lodash"],
 )
 
@@ -93,7 +92,6 @@ tf_web_library(
         "@ai_google_pair_umap_js//:umap-js.min.js",
     ],
     path = "/tf-imports",
-    visibility = ["//visibility:public"],
 )
 
 tf_web_library(
@@ -103,7 +101,6 @@ tf_web_library(
         "@com_numericjs//:numeric.js",
     ],
     path = "/tf-imports",
-    visibility = ["//visibility:public"],
 )
 
 tf_web_library(
@@ -113,7 +110,6 @@ tf_web_library(
         "@io_github_waylonflinn_weblas//:weblas.js",
     ],
     path = "/tf-imports",
-    visibility = ["//visibility:public"],
 )
 
 tf_web_library(
@@ -123,7 +119,6 @@ tf_web_library(
         "@io_github_cpettitt_graphlib//:graphlib.core.js",
     ],
     path = "/tf-imports",
-    visibility = ["//visibility:public"],
     deps = [":lodash"],
 )
 
@@ -134,11 +129,20 @@ tf_web_library(
         "@io_github_cpettitt_dagre//:dagre.core.js",
     ],
     path = "/tf-imports",
-    visibility = ["//visibility:public"],
     deps = [
         ":graphlib",
         ":lodash",
     ],
+)
+
+# Separated out from ":d3" because of strip_prefix.
+tf_web_library(
+    name = "d3_lib",
+    srcs = [
+        "@npm//:node_modules/d3/dist/d3.min.js",
+    ],
+    path = "/tf-imports",
+    strip_prefix = "node_modules/d3/dist",
 )
 
 tf_web_library(
@@ -146,10 +150,11 @@ tf_web_library(
     srcs = [
         "d3.d.ts",
         "d3.html",
-        "@org_d3js//:d3.min.js",
     ],
     path = "/tf-imports",
-    visibility = ["//visibility:public"],
+    deps = [
+        ":d3_lib",
+    ],
 )
 
 tf_web_library(
@@ -159,7 +164,6 @@ tf_web_library(
         "plottable.html",
     ],
     path = "/tf-imports",
-    visibility = ["//visibility:public"],
     deps = [
         ":d3",
         ":plottable_js_css",
@@ -184,7 +188,6 @@ tf_web_library(
     testonly = 1,
     srcs = ["web-component-tester.d.ts"],
     path = "/web_component_tester",
-    visibility = ["//visibility:public"],
     exports = [
         ":chai_typings",
         ":mocha_typings",
@@ -232,7 +235,6 @@ tf_web_library(
         "vaadin-grid.html",
     ],
     path = "/tf-imports",
-    visibility = ["//visibility:public"],
     deps = ["@vaadin_vaadin_grid"],
 )
 
@@ -242,7 +244,6 @@ tf_web_library(
         "vaadin-split-layout.html",
     ],
     path = "/tf-imports",
-    visibility = ["//visibility:public"],
     deps = ["@vaadin_vaadin_split_layout"],
 )
 

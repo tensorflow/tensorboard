@@ -22,23 +22,19 @@ import {By} from '@angular/platform-browser';
 import {Store} from '@ngrx/store';
 import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
-import {
-  debuggerLoaded,
-  executionScrollLeft,
-  executionScrollRight,
-} from './actions';
+import {debuggerLoaded} from './actions';
 import {DebuggerComponent} from './debugger_component';
 import {DebuggerContainer} from './debugger_container';
 import {DataLoadState, State} from './store/debugger_types';
-import {
-  createDebuggerState,
-  createState,
-  createDebuggerExecutionsState,
-  createDebuggerStateWithLoadedExecutionDigests,
-} from './testing';
+import {createDebuggerState, createState} from './testing';
 import {AlertsModule} from './views/alerts/alerts_module';
+import {ExecutionDataModule} from './views/execution_data/execution_data_module';
+import {GraphExecutionsModule} from './views/graph_executions/graph_executions_module';
+import {GraphModule} from './views/graph/graph_module';
 import {InactiveModule} from './views/inactive/inactive_module';
 import {TimelineContainer} from './views/timeline/timeline_container';
+import {SourceFilesModule} from './views/source_files/source_files_module';
+import {StackTraceModule} from './views/stack_trace/stack_trace_module';
 import {TimelineModule} from './views/timeline/timeline_module';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
@@ -50,7 +46,17 @@ describe('Debugger Container', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [DebuggerComponent, DebuggerContainer],
-      imports: [AlertsModule, CommonModule, InactiveModule, TimelineModule],
+      imports: [
+        AlertsModule,
+        CommonModule,
+        ExecutionDataModule,
+        GraphExecutionsModule,
+        GraphModule,
+        InactiveModule,
+        SourceFilesModule,
+        StackTraceModule,
+        TimelineModule,
+      ],
       providers: [
         provideMockStore({
           initialState: createState(createDebuggerState()),
@@ -59,7 +65,7 @@ describe('Debugger Container', () => {
         TimelineContainer,
       ],
     }).compileComponents();
-    store = TestBed.get(Store);
+    store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     dispatchSpy = spyOn(store, 'dispatch');
   });
 
@@ -139,153 +145,5 @@ describe('Debugger Container', () => {
       By.css('tf-debugger-v2-alerts')
     );
     expect(alertsElement).toBeNull();
-  });
-
-  describe('Timeline module', () => {
-    it('shows loading number of executions', () => {
-      const fixture = TestBed.createComponent(TimelineContainer);
-      fixture.detectChanges();
-
-      store.setState(
-        createState(
-          createDebuggerState({
-            runs: {},
-            runsLoaded: {
-              state: DataLoadState.LOADED,
-              lastLoadedTimeInMs: Date.now(),
-            },
-            executions: createDebuggerExecutionsState({
-              numExecutionsLoaded: {
-                state: DataLoadState.LOADING,
-                lastLoadedTimeInMs: null,
-              },
-            }),
-          })
-        )
-      );
-      fixture.detectChanges();
-
-      const loadingElements = fixture.debugElement.queryAll(
-        By.css('.loading-num-executions')
-      );
-      expect(loadingElements.length).toEqual(1);
-    });
-
-    it('hides loading number of executions', () => {
-      const fixture = TestBed.createComponent(TimelineContainer);
-      fixture.detectChanges();
-
-      store.setState(
-        createState(
-          createDebuggerState({
-            runs: {},
-            runsLoaded: {
-              state: DataLoadState.LOADED,
-              lastLoadedTimeInMs: Date.now(),
-            },
-            executions: createDebuggerExecutionsState({
-              numExecutionsLoaded: {
-                state: DataLoadState.LOADED,
-                lastLoadedTimeInMs: 111,
-              },
-            }),
-          })
-        )
-      );
-      fixture.detectChanges();
-
-      const loadingElements = fixture.debugElement.queryAll(
-        By.css('.loading-num-executions')
-      );
-      expect(loadingElements.length).toEqual(0);
-    });
-
-    it('shows correct display range for executions', () => {
-      const fixture = TestBed.createComponent(TimelineContainer);
-      fixture.detectChanges();
-
-      const scrollBeginIndex = 977;
-      const dislpaySize = 100;
-      store.setState(
-        createState(
-          createDebuggerStateWithLoadedExecutionDigests(
-            scrollBeginIndex,
-            dislpaySize
-          )
-        )
-      );
-      fixture.detectChanges();
-
-      const navigationPositionInfoElement = fixture.debugElement.query(
-        By.css('.navigation-position-info')
-      );
-      expect(navigationPositionInfoElement.nativeElement.innerText).toBe(
-        'Execution: 977 ~ 1076 of 1500'
-      );
-    });
-
-    it('left-button click dispatches executionScrollLeft action', () => {
-      const fixture = TestBed.createComponent(TimelineContainer);
-      fixture.detectChanges();
-      store.setState(
-        createState(createDebuggerStateWithLoadedExecutionDigests(0, 50))
-      );
-      fixture.detectChanges();
-
-      const leftBUtton = fixture.debugElement.query(
-        By.css('.navigation-button-left')
-      );
-      leftBUtton.nativeElement.click();
-      fixture.detectChanges();
-      expect(dispatchSpy).toHaveBeenCalledWith(executionScrollLeft());
-    });
-
-    it('right-button click dispatches executionScrollRight action', () => {
-      const fixture = TestBed.createComponent(TimelineContainer);
-      fixture.detectChanges();
-      store.setState(
-        createState(createDebuggerStateWithLoadedExecutionDigests(0, 50))
-      );
-      fixture.detectChanges();
-
-      const rightButton = fixture.debugElement.query(
-        By.css('.navigation-button-right')
-      );
-      rightButton.nativeElement.click();
-      fixture.detectChanges();
-      expect(dispatchSpy).toHaveBeenCalledWith(executionScrollRight());
-    });
-
-    it('displays correct op names', () => {
-      const fixture = TestBed.createComponent(TimelineContainer);
-      fixture.detectChanges();
-      const scrollBeginIndex = 100;
-      const displayCount = 40;
-      const opTypes: string[] = [];
-      for (let i = 0; i < 200; ++i) {
-        opTypes.push(`${i}Op`);
-      }
-      store.setState(
-        createState(
-          createDebuggerStateWithLoadedExecutionDigests(
-            scrollBeginIndex,
-            displayCount,
-            opTypes
-          )
-        )
-      );
-      fixture.detectChanges();
-
-      const executionDigests = fixture.debugElement.queryAll(
-        By.css('.execution-digest')
-      );
-      expect(executionDigests.length).toEqual(40);
-      const strLen = 1;
-      for (let i = 0; i < 40; ++i) {
-        expect(executionDigests[i].nativeElement.innerText).toEqual(
-          opTypes[i + 100].slice(0, strLen)
-        );
-      }
-    });
   });
 });

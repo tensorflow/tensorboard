@@ -1,13 +1,15 @@
-package(default_visibility = ["//tensorboard:internal"])
-
 load("//tensorboard/defs:web.bzl", "tf_web_library")
 load("//tensorboard/defs:vulcanize.bzl", "tensorboard_html_binary")
+
+package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
 tf_web_library(
-    name = "tensorboard",
-    srcs = ["tensorboard.html"],
+    name = "polymer_lib",
+    srcs = [
+        "polymer_lib.html",
+    ],
     path = "/",
     deps = [
         ":analytics",
@@ -17,13 +19,39 @@ tf_web_library(
     ],
 )
 
+# This Polymer only binary without entry point.
 tensorboard_html_binary(
-    name = "index",
+    name = "polymer_lib_binary",
     compile = True,
+    input_path = "/polymer_lib.html",
+    output_path = "/polymer_lib_binary.html",
+    deps = [":polymer_lib"],
+)
+
+tf_web_library(
+    name = "tensorboard",
+    srcs = ["tensorboard.html"],
+    path = "/",
+    deps = [
+        ":polymer_lib_binary",
+    ],
+)
+
+tensorboard_html_binary(
+    name = "legacy",
+    compile = False,
     input_path = "/tensorboard.html",
-    js_path = "/index.js",
-    output_path = "/index.html",
+    js_path = "/legacy.js",
+    output_path = "/legacy.html",
     deps = [":tensorboard"],
+)
+
+genrule(
+    name = "gen_tensorboard.html",
+    srcs = ["tensorboard.uninlined.html"],
+    outs = ["tensorboard.html"],
+    cmd = "$(execpath //tensorboard/logo:inline_favicon) $< >$@",
+    tools = ["//tensorboard/logo:inline_favicon"],
 )
 
 tf_web_library(
@@ -40,52 +68,4 @@ tf_web_library(
         "security.html",
     ],
     path = "/",
-    visibility = ["//visibility:public"],
-)
-
-tf_web_library(
-    name = "ng_polymer_lib",
-    srcs = [
-        "ng_polymer_lib.html",
-    ],
-    path = "/",
-    deps = [
-        ":analytics",
-        ":security",
-        "//tensorboard/components/tf_backend",
-        "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/components/tf_storage",
-        "//tensorboard/components/tf_tensorboard",
-        "//tensorboard/components/tf_tensorboard:default_plugins",
-        "//tensorboard/components/tf_tensorboard:registry",
-    ],
-)
-
-# This Polymer only binary (as opposed to ng_index) allows ng_index to be built without
-# JSCompiler step. In other words, Angular-only changes can be built faster
-# incrementally.
-tensorboard_html_binary(
-    name = "ng_polymer_lib_binary",
-    compile = True,
-    input_path = "/ng_polymer_lib.html",
-    output_path = "/ng_polymer_lib_binary.html",
-    deps = [":ng_polymer_lib"],
-)
-
-tf_web_library(
-    name = "trace_viewer",
-    srcs = ["trace_viewer.html"],
-    path = "/",
-    deps = [
-        "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/components/tf_trace_viewer",
-    ],
-)
-
-tensorboard_html_binary(
-    name = "trace_viewer_index",
-    input_path = "/trace_viewer.html",
-    js_path = "/trace_viewer_index.js",
-    output_path = "/trace_viewer_index.html",
-    deps = [":trace_viewer"],
 )

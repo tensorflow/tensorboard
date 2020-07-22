@@ -17,15 +17,11 @@ set -eu
 
 usage() {
   cat <<EOF
-usage: test_pip_package
-            [--only-default-python | --all-pythons]
-            [--tf-version VERSION]
+usage: test_pip_package [--tf-version VERSION]
 
 Test pre-built TensorBoard Pip packages.
 
 Options:
-  --all-pythons: Test on both Python 2 and Python 3. This is the default.
-  --default-python-only: Test only using the stock "python" binary.
   --tf-version VERSION: Test against the provided version of TensorFlow,
       given as a Pip package specifier like "tensorflow==2.0.0a0" or
       "tf-nightly". If empty, will test without installing TensorFlow.
@@ -43,19 +39,7 @@ main() {
   command -v virtualenv >/dev/null
   initialize_workdir
   extract_wheels
-  case "${pythons}" in
-    all)
-      smoke python2
-      smoke python3
-      ;;
-    default-only)
-      smoke python
-      ;;
-    *)
-      printf >&2 'invariant violation: unknown "pythons" value: %s\n' "${pythons}"
-      exit 1
-      ;;
-  esac
+  smoke python3
 }
 
 cleanup() {
@@ -72,14 +56,6 @@ parse_args() {
       --help)
         usage
         exit 2
-        ;;
-      --all-pythons)
-        pythons=all
-        shift
-        ;;
-      --default-python-only)
-        pythons=default-only
-        shift
         ;;
       --tf-version)
         if [ $# -lt 2 ]; then
@@ -158,7 +134,7 @@ smoke() (
   tensorboard --port=0 --logdir=smokedir 2>pipe &
   perl -ne 'print STDERR;/http:.*:(\d+)/ and print $1.v10 and exit 0' <pipe >port
   curl -fs "http://localhost:$(cat port)" >index.html
-  grep '<tf-tensorboard' index.html
+  grep '<tb-webapp' index.html
   curl -fs "http://localhost:$(cat port)/data/logdir" >logdir.json
   grep 'smokedir' logdir.json
   curl -fs "http://localhost:$(cat port)/data/plugin/projector/runs" >projector_runs.json

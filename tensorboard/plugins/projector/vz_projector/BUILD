@@ -1,7 +1,7 @@
-package(default_visibility = ["//tensorboard:internal"])
-
 load("//tensorboard/defs:web.bzl", "tf_web_library")
 load("//tensorboard/defs:vulcanize.bzl", "tensorboard_html_binary")
+
+package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
@@ -54,7 +54,6 @@ tf_web_library(
         "vz-projector-util.ts",
     ],
     path = "/vz-projector",
-    visibility = ["//visibility:public"],
     deps = [
         ":bh_tsne",
         ":heap",

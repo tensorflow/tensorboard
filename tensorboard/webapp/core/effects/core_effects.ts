@@ -15,7 +15,7 @@ limitations under the License.
 import {Injectable} from '@angular/core';
 import {Action, Store} from '@ngrx/store';
 import {Actions, ofType, createEffect} from '@ngrx/effects';
-import {Observable, of, zip} from 'rxjs';
+import {EMPTY, Observable, of, zip} from 'rxjs';
 import {
   map,
   mergeMap,
@@ -26,15 +26,19 @@ import {
 } from 'rxjs/operators';
 import {
   coreLoaded,
+  environmentLoaded,
+  manualReload,
   reload,
   pluginsListingRequested,
   pluginsListingLoaded,
   pluginsListingFailed,
+  fetchRunSucceeded,
 } from '../actions';
 import {getPluginsListLoaded} from '../store';
 import {DataLoadState} from '../../types/data';
-import {State} from '../store/core_types';
 import {TBServerDataSource} from '../../webapp_data_source/tb_server_data_source';
+import {getEnabledExperimentalPlugins} from '../../feature_flag/store/feature_flag_selectors';
+import {State} from '../../app_state';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 /** @typehack */ import * as _typeHackNgrx from '@ngrx/store/src/models';
@@ -47,29 +51,58 @@ export class CoreEffects {
    * think it is unused property and deadcode eliminate away.
    */
   /** @export */
-  readonly loadPluginsListing$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(coreLoaded, reload),
-      withLatestFrom(this.store.select(getPluginsListLoaded)),
-      filter(([, {state}]) => state !== DataLoadState.LOADING),
-      tap(() => this.store.dispatch(pluginsListingRequested())),
-      mergeMap(() => {
-        return zip(
-          this.webappDataSource.fetchPluginsListing(),
-          this.webappDataSource.fetchRuns(),
-          this.webappDataSource.fetchEnvironments()
-        ).pipe(
-          map(([plugins]) => {
-            return pluginsListingLoaded({plugins});
-          }, catchError(() => of(pluginsListingFailed())))
-        ) as Observable<Action>;
-      })
-    )
+  readonly fetchWebAppData$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(coreLoaded, reload, manualReload),
+        withLatestFrom(
+          this.store.select(getPluginsListLoaded),
+          this.store.select(getEnabledExperimentalPlugins)
+        ),
+        filter(([, {state}]) => state !== DataLoadState.LOADING),
+        tap(() => this.store.dispatch(pluginsListingRequested())),
+        mergeMap(([, , enabledExperimentalPlugins]) => {
+          return zip(
+            this.webappDataSource.fetchPluginsListing(
+              enabledExperimentalPlugins
+            ),
+            this.fetchEnvironment(),
+            this.fetchRuns()
+          ).pipe(
+            map(
+              ([plugins]) => {
+                this.store.dispatch(pluginsListingLoaded({plugins}));
+              },
+              catchError(() => {
+                this.store.dispatch(pluginsListingFailed());
+                return EMPTY;
+              })
+            )
+          );
+        })
+      ),
+    {dispatch: false}
   );
+
+  private fetchEnvironment() {
+    return this.webappDataSource.fetchEnvironment().pipe(
+      tap((environment) => {
+        this.store.dispatch(environmentLoaded({environment}));
+      })
+    );
+  }
 
   constructor(
     private actions$: Actions,
     private store: Store<State>,
     private webappDataSource: TBServerDataSource
   ) {}
+
+  private fetchRuns() {
+    return this.webappDataSource.fetchRuns().pipe(
+      tap((runs) => {
+        this.store.dispatch(fetchRunSucceeded({runs}));
+      })
+    );
+  }
 }

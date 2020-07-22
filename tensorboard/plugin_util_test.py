@@ -20,6 +20,7 @@ import textwrap
 
 import six
 
+from tensorboard import context
 from tensorboard import plugin_util
 from tensorboard import test as tb_test
 from tensorboard.backend import experiment_id
@@ -138,6 +139,39 @@ class MarkdownToSafeHTMLTest(tb_test.TestCase):
             "after UTF-8 decoding -->\n"
             "<p>un_der_score</p>",
         )
+
+
+class MarkdownsToSafeHTMLTest(tb_test.TestCase):
+    # Most of the heavy lifting is tested by `MarkdownToSafeHTMLTest`.
+
+    def test_simple(self):
+        inputs = ["0", "*1*", "**2**"]
+        combine = lambda xs: "<br>".join(xs)
+        actual = plugin_util.markdowns_to_safe_html(inputs, combine)
+        expected = "<p>0</p><br><p><em>1</em></p><br><p><strong>2</strong></p>"
+        self.assertEqual(actual, expected)
+
+    def test_sanitizes_combination_result(self):
+        inputs = ["safe"]
+        combine = lambda xs: "<script>alert('unsafe!')</script>%s" % xs[0]
+        actual = plugin_util.markdowns_to_safe_html(inputs, combine)
+        expected = "&lt;script&gt;alert('unsafe!')&lt;/script&gt;<p>safe</p>"
+        self.assertEqual(actual, expected)
+
+    def test_sanitization_can_have_collateral_damage(self):
+        inputs = ['<table title="*chuckles* ', "I'm in danger", '<table>">']
+        combine = lambda xs: "".join(xs)
+        actual = plugin_util.markdowns_to_safe_html(inputs, combine)
+        expected = "<table></table>"
+        self.assertEqual(actual, expected)
+
+
+class ContextTest(tb_test.TestCase):
+    def test_context(self):
+        ctx = context.RequestContext()
+        environ = {}
+        context.set_in_environ(environ, ctx)
+        self.assertEqual(context.from_environ(environ), ctx)
 
 
 class ExperimentIdTest(tb_test.TestCase):

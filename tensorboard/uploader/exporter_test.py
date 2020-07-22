@@ -25,6 +25,7 @@ import os
 
 import grpc
 import grpc_testing
+import numpy as np
 
 try:
     # python version >= 3.3
@@ -33,41 +34,64 @@ except ImportError:
     import mock  # pylint: disable=unused-import
 
 
+from tensorboard.uploader.proto import blob_pb2
+from tensorboard.uploader.proto import experiment_pb2
 from tensorboard.uploader.proto import export_service_pb2
 from tensorboard.uploader.proto import export_service_pb2_grpc
 from tensorboard.uploader import exporter as exporter_lib
 from tensorboard.uploader import test_util
+from tensorboard.uploader import util
 from tensorboard.util import grpc_util
+from tensorboard.util import tensor_util
 from tensorboard import test as tb_test
 from tensorboard.compat.proto import summary_pb2
+
+
+def _make_experiments_response(eids):
+    """Make a `StreamExperimentsResponse` with experiments with only IDs."""
+    response = export_service_pb2.StreamExperimentsResponse()
+    for eid in eids:
+        response.experiments.add(experiment_id=eid)
+    return response
+
+
+def _outdir_files(outdir):
+    """Recursively list `outdir`."""
+    result = []
+    for (dirpath, dirnames, filenames) in os.walk(outdir):
+        for filename in filenames:
+            fullpath = os.path.join(dirpath, filename)
+            result.append(os.path.relpath(fullpath, outdir))
+    return result
 
 
 class TensorBoardExporterTest(tb_test.TestCase):
     def _create_mock_api_client(self):
         return _create_mock_api_client()
 
-    def _make_experiments_response(self, eids):
-        return export_service_pb2.StreamExperimentsResponse(experiment_ids=eids)
-
-    def test_e2e_success_case(self):
+    def test_e2e_success_case_with_only_scalar_data(self):
         mock_api_client = self._create_mock_api_client()
         mock_api_client.StreamExperiments.return_value = iter(
-            [
-                export_service_pb2.StreamExperimentsResponse(
-                    experiment_ids=["789"]
-                ),
-            ]
+            [_make_experiments_response(["789"])]
         )
 
         def stream_experiments(request, **kwargs):
             del request  # unused
             self.assertEqual(kwargs["metadata"], grpc_util.version_metadata())
-            yield export_service_pb2.StreamExperimentsResponse(
-                experiment_ids=["123", "456"]
-            )
-            yield export_service_pb2.StreamExperimentsResponse(
-                experiment_ids=["789"]
-            )
+
+            response = export_service_pb2.StreamExperimentsResponse()
+            response.experiments.add(experiment_id="123")
+            response.experiments.add(experiment_id="456")
+            yield response
+
+            response = export_service_pb2.StreamExperimentsResponse()
+            experiment = response.experiments.add()
+            experiment.experiment_id = "789"
+            experiment.name = "bert"
+            experiment.description = "ernie"
+            util.set_timestamp(experiment.create_time, 981173106)
+            util.set_timestamp(experiment.update_time, 1015218367)
+            yield response
 
         def stream_experiment_data(request, **kwargs):
             self.assertEqual(kwargs["metadata"], grpc_util.version_metadata())
@@ -101,19 +125,40 @@ class TensorBoardExporterTest(tb_test.TestCase):
         generator = exporter.export(read_time=start_time)
         expected_files = []
         self.assertTrue(os.path.isdir(outdir))
-        self.assertCountEqual(expected_files, os.listdir(outdir))
+        self.assertCountEqual(expected_files, _outdir_files(outdir))
         mock_api_client.StreamExperiments.assert_not_called()
         mock_api_client.StreamExperimentData.assert_not_called()
 
         # The first iteration should request the list of experiments and
         # data for one of them.
         self.assertEqual(next(generator), "123")
-        expected_files.append("scalars_123.json")
-        self.assertCountEqual(expected_files, os.listdir(outdir))
+        expected_files.append(os.path.join("experiment_123", "metadata.json"))
+        expected_files.append(os.path.join("experiment_123", "scalars.json"))
+        expected_files.append(os.path.join("experiment_123", "tensors.json"))
+        # blob_sequences.json should exist and be empty.
+        expected_files.append(
+            os.path.join("experiment_123", "blob_sequences.json")
+        )
+        self.assertCountEqual(expected_files, _outdir_files(outdir))
+
+        # Check that the tensors and blob_sequences data files are empty, because
+        # there are no tensors or blob sequences.
+        with open(
+            os.path.join(outdir, "experiment_123", "tensors.json")
+        ) as infile:
+            self.assertEqual(infile.read(), "")
+        with open(
+            os.path.join(outdir, "experiment_123", "blob_sequences.json")
+        ) as infile:
+            self.assertEqual(infile.read(), "")
 
         expected_eids_request = export_service_pb2.StreamExperimentsRequest()
         expected_eids_request.read_timestamp.CopyFrom(start_time_pb)
         expected_eids_request.limit = 2 ** 63 - 1
+        expected_eids_request.experiments_mask.create_time = True
+        expected_eids_request.experiments_mask.update_time = True
+        expected_eids_request.experiments_mask.name = True
+        expected_eids_request.experiments_mask.description = True
         mock_api_client.StreamExperiments.assert_called_once_with(
             expected_eids_request, metadata=grpc_util.version_metadata()
         )
@@ -130,8 +175,14 @@ class TensorBoardExporterTest(tb_test.TestCase):
         mock_api_client.StreamExperimentData.reset_mock()
         self.assertEqual(next(generator), "456")
 
-        expected_files.append("scalars_456.json")
-        self.assertCountEqual(expected_files, os.listdir(outdir))
+        expected_files.append(os.path.join("experiment_456", "metadata.json"))
+        expected_files.append(os.path.join("experiment_456", "scalars.json"))
+        expected_files.append(os.path.join("experiment_456", "tensors.json"))
+        # blob_sequences.json should exist and be empty.
+        expected_files.append(
+            os.path.join("experiment_456", "blob_sequences.json")
+        )
+        self.assertCountEqual(expected_files, _outdir_files(outdir))
         mock_api_client.StreamExperiments.assert_not_called()
         expected_data_request.experiment_id = "456"
         mock_api_client.StreamExperimentData.assert_called_once_with(
@@ -140,12 +191,18 @@ class TensorBoardExporterTest(tb_test.TestCase):
 
         # Again, request data for the next experiment; this experiment ID
         # was in the second response batch in the list of IDs.
-        expected_files.append("scalars_789.json")
+        expected_files.append(os.path.join("experiment_789", "metadata.json"))
+        expected_files.append(os.path.join("experiment_789", "scalars.json"))
+        expected_files.append(os.path.join("experiment_789", "tensors.json"))
+        # blob_sequences.json should exist and be empty.
+        expected_files.append(
+            os.path.join("experiment_789", "blob_sequences.json")
+        )
         mock_api_client.StreamExperiments.reset_mock()
         mock_api_client.StreamExperimentData.reset_mock()
         self.assertEqual(next(generator), "789")
 
-        self.assertCountEqual(expected_files, os.listdir(outdir))
+        self.assertCountEqual(expected_files, _outdir_files(outdir))
         mock_api_client.StreamExperiments.assert_not_called()
         expected_data_request.experiment_id = "789"
         mock_api_client.StreamExperimentData.assert_called_once_with(
@@ -157,12 +214,14 @@ class TensorBoardExporterTest(tb_test.TestCase):
         mock_api_client.StreamExperimentData.reset_mock()
         self.assertEqual(list(generator), [])
 
-        self.assertCountEqual(expected_files, os.listdir(outdir))
+        self.assertCountEqual(expected_files, _outdir_files(outdir))
         mock_api_client.StreamExperiments.assert_not_called()
         mock_api_client.StreamExperimentData.assert_not_called()
 
-        # Spot-check one of the files.
-        with open(os.path.join(outdir, "scalars_456.json")) as infile:
+        # Spot-check one of the scalar data files.
+        with open(
+            os.path.join(outdir, "experiment_456", "scalars.json")
+        ) as infile:
             jsons = [json.loads(line) for line in infile]
         self.assertLen(jsons, 4)
         datum = jsons[2]
@@ -183,14 +242,426 @@ class TensorBoardExporterTest(tb_test.TestCase):
         self.assertEqual(points, {})
         self.assertEqual(datum, {})
 
+        # Check that one of the blob_sequences data file is empty, because there
+        # no blob sequences in this experiment.
+        with open(
+            os.path.join(outdir, "experiment_456", "blob_sequences.json")
+        ) as infile:
+            self.assertEqual(infile.read(), "")
+
+        # Spot-check one of the metadata files.
+        with open(
+            os.path.join(outdir, "experiment_789", "metadata.json")
+        ) as infile:
+            metadata = json.load(infile)
+        self.assertEqual(
+            metadata,
+            {
+                "name": "bert",
+                "description": "ernie",
+                "create_time": "2001-02-03T04:05:06Z",
+                "update_time": "2002-03-04T05:06:07Z",
+            },
+        )
+
+    def test_e2e_success_case_with_only_tensors_data(self):
+        mock_api_client = self._create_mock_api_client()
+
+        def stream_experiments(request, **kwargs):
+            del request  # unused
+            self.assertEqual(kwargs["metadata"], grpc_util.version_metadata())
+
+            response = export_service_pb2.StreamExperimentsResponse()
+            response.experiments.add(experiment_id="123")
+            yield response
+
+        def stream_experiment_data(request, **kwargs):
+            self.assertEqual(kwargs["metadata"], grpc_util.version_metadata())
+            for run in ("train_1", "train_2"):
+                for tag in ("dense_1/kernel", "dense_1/bias"):
+                    response = export_service_pb2.StreamExperimentDataResponse()
+                    response.run_name = run
+                    response.tag_name = tag
+                    display_name = "%s:%s" % (request.experiment_id, tag)
+                    response.tag_metadata.CopyFrom(
+                        test_util.scalar_metadata(display_name)
+                    )
+                    for step in range(2):
+                        response.tensors.steps.append(step)
+                        response.tensors.wall_times.add(
+                            seconds=1571084520 + step,
+                            nanos=862939144 if run == "train_1" else 962939144,
+                        )
+                        response.tensors.values.append(
+                            tensor_util.make_tensor_proto(
+                                np.ones([3, 2]) * step
+                            )
+                        )
+                    yield response
+
+        mock_api_client.StreamExperiments = mock.Mock(wraps=stream_experiments)
+        mock_api_client.StreamExperimentData = mock.Mock(
+            wraps=stream_experiment_data
+        )
+
+        outdir = os.path.join(self.get_temp_dir(), "outdir")
+        exporter = exporter_lib.TensorBoardExporter(mock_api_client, outdir)
+        start_time = 1571084846.25
+        start_time_pb = test_util.timestamp_pb(1571084846250000000)
+
+        generator = exporter.export(read_time=start_time)
+        expected_files = []
+        self.assertTrue(os.path.isdir(outdir))
+        self.assertCountEqual(expected_files, _outdir_files(outdir))
+        mock_api_client.StreamExperiments.assert_not_called()
+        mock_api_client.StreamExperimentData.assert_not_called()
+
+        # The first iteration should request the list of experiments and
+        # data for one of them.
+        self.assertEqual(next(generator), "123")
+        expected_files.append(os.path.join("experiment_123", "metadata.json"))
+        # scalars.json should exist and be empty.
+        expected_files.append(os.path.join("experiment_123", "scalars.json"))
+        expected_files.append(os.path.join("experiment_123", "tensors.json"))
+        # blob_sequences.json should exist and be empty.
+        expected_files.append(
+            os.path.join("experiment_123", "blob_sequences.json")
+        )
+        expected_files.append(
+            os.path.join("experiment_123", "tensors", "1571084520.862939.npz")
+        )
+        expected_files.append(
+            os.path.join("experiment_123", "tensors", "1571084520.862939_1.npz")
+        )
+        expected_files.append(
+            os.path.join("experiment_123", "tensors", "1571084520.962939.npz")
+        )
+        expected_files.append(
+            os.path.join("experiment_123", "tensors", "1571084520.962939_1.npz")
+        )
+        self.assertCountEqual(expected_files, _outdir_files(outdir))
+
+        # Check that the scalars and blob_sequences data files are empty, because
+        # there are no scalars or blob sequences.
+        with open(
+            os.path.join(outdir, "experiment_123", "scalars.json")
+        ) as infile:
+            self.assertEqual(infile.read(), "")
+        with open(
+            os.path.join(outdir, "experiment_123", "blob_sequences.json")
+        ) as infile:
+            self.assertEqual(infile.read(), "")
+
+        expected_eids_request = export_service_pb2.StreamExperimentsRequest()
+        expected_eids_request.read_timestamp.CopyFrom(start_time_pb)
+        expected_eids_request.limit = 2 ** 63 - 1
+        expected_eids_request.experiments_mask.create_time = True
+        expected_eids_request.experiments_mask.update_time = True
+        expected_eids_request.experiments_mask.name = True
+        expected_eids_request.experiments_mask.description = True
+        mock_api_client.StreamExperiments.assert_called_once_with(
+            expected_eids_request, metadata=grpc_util.version_metadata()
+        )
+
+        expected_data_request = export_service_pb2.StreamExperimentDataRequest()
+        expected_data_request.experiment_id = "123"
+        expected_data_request.read_timestamp.CopyFrom(start_time_pb)
+        mock_api_client.StreamExperimentData.assert_called_once_with(
+            expected_data_request, metadata=grpc_util.version_metadata()
+        )
+
+        # The final StreamExperiments continuation shouldn't need to send any
+        # RPCs.
+        mock_api_client.StreamExperiments.reset_mock()
+        mock_api_client.StreamExperimentData.reset_mock()
+        self.assertEqual(list(generator), [])
+
+        # Check tensor data.
+        with open(
+            os.path.join(outdir, "experiment_123", "tensors.json")
+        ) as infile:
+            jsons = [json.loads(line) for line in infile]
+        self.assertLen(jsons, 4)
+
+        datum = jsons[0]
+        self.assertEqual(datum.pop("run"), "train_1")
+        self.assertEqual(datum.pop("tag"), "dense_1/kernel")
+        summary_metadata = summary_pb2.SummaryMetadata.FromString(
+            base64.b64decode(datum.pop("summary_metadata"))
+        )
+        expected_summary_metadata = test_util.scalar_metadata(
+            "123:dense_1/kernel"
+        )
+        self.assertEqual(summary_metadata, expected_summary_metadata)
+        points = datum.pop("points")
+        self.assertEqual(points.pop("steps"), [0, 1])
+        self.assertEqual(
+            points.pop("tensors_file_path"),
+            os.path.join("tensors", "1571084520.862939.npz"),
+        )
+        self.assertEqual(datum, {})
+
+        datum = jsons[3]
+        self.assertEqual(datum.pop("run"), "train_2")
+        self.assertEqual(datum.pop("tag"), "dense_1/bias")
+        summary_metadata = summary_pb2.SummaryMetadata.FromString(
+            base64.b64decode(datum.pop("summary_metadata"))
+        )
+        expected_summary_metadata = test_util.scalar_metadata(
+            "123:dense_1/bias"
+        )
+        self.assertEqual(summary_metadata, expected_summary_metadata)
+        points = datum.pop("points")
+        self.assertEqual(points.pop("steps"), [0, 1])
+        self.assertEqual(
+            points.pop("tensors_file_path"),
+            os.path.join("tensors", "1571084520.962939_1.npz"),
+        )
+        self.assertEqual(datum, {})
+
+        # Load and check the tensor data from the save .npz files.
+        for filename in (
+            "1571084520.862939.npz",
+            "1571084520.862939_1.npz",
+            "1571084520.962939.npz",
+            "1571084520.962939_1.npz",
+        ):
+            tensors = np.load(
+                os.path.join(outdir, "experiment_123", "tensors", filename)
+            )
+            tensors = [tensors[key] for key in tensors.keys()]
+            self.assertLen(tensors, 2)
+            np.testing.assert_array_equal(tensors[0], 0 * np.ones([3, 2]))
+            np.testing.assert_array_equal(tensors[1], 1 * np.ones([3, 2]))
+
+    def test_e2e_success_case_with_blob_sequence_data(self):
+        """Covers exporting of complete and incomplete blob sequences
+
+        as well as rpc error during blob streaming.
+        """
+        mock_api_client = self._create_mock_api_client()
+
+        def stream_experiments(request, **kwargs):
+            del request  # unused
+            self.assertEqual(kwargs["metadata"], grpc_util.version_metadata())
+
+            response = export_service_pb2.StreamExperimentsResponse()
+            response.experiments.add(experiment_id="123")
+            yield response
+            response = export_service_pb2.StreamExperimentsResponse()
+            response.experiments.add(experiment_id="456")
+            yield response
+
+        def stream_experiment_data(request, **kwargs):
+            self.assertEqual(kwargs["metadata"], grpc_util.version_metadata())
+
+            tag = "__default_graph__"
+            for run in ("train", "test"):
+                response = export_service_pb2.StreamExperimentDataResponse()
+                response.run_name = run
+                response.tag_name = tag
+                display_name = "%s:%s" % (request.experiment_id, tag)
+                response.tag_metadata.CopyFrom(
+                    summary_pb2.SummaryMetadata(
+                        data_class=summary_pb2.DATA_CLASS_BLOB_SEQUENCE
+                    )
+                )
+                for step in range(1):
+                    response.blob_sequences.steps.append(step)
+                    response.blob_sequences.wall_times.add(
+                        seconds=1571084520 + step, nanos=862939144
+                    )
+                    blob_sequence = blob_pb2.BlobSequence()
+                    if run == "train":
+                        # A finished blob sequence.
+                        blob = blob_pb2.Blob(
+                            blob_id="%s_blob" % run,
+                            state=blob_pb2.BlobState.BLOB_STATE_CURRENT,
+                        )
+                        blob_sequence.entries.append(
+                            blob_pb2.BlobSequenceEntry(blob=blob)
+                        )
+                        # An unfinished blob sequence.
+                        blob = blob_pb2.Blob(
+                            state=blob_pb2.BlobState.BLOB_STATE_UNFINALIZED,
+                        )
+                        blob_sequence.entries.append(
+                            blob_pb2.BlobSequenceEntry(blob=blob)
+                        )
+                    elif run == "test":
+                        blob_sequence.entries.append(
+                            # `blob` unspecified: a hole in the blob sequence.
+                            blob_pb2.BlobSequenceEntry()
+                        )
+                    response.blob_sequences.values.append(blob_sequence)
+                yield response
+
+        mock_api_client.StreamExperiments = mock.Mock(wraps=stream_experiments)
+        mock_api_client.StreamExperimentData = mock.Mock(
+            wraps=stream_experiment_data
+        )
+        mock_api_client.StreamBlobData.side_effect = [
+            iter(
+                [
+                    export_service_pb2.StreamBlobDataResponse(
+                        data=b"4321", offset=0, final_chunk=False,
+                    ),
+                    export_service_pb2.StreamBlobDataResponse(
+                        data=b"8765", offset=4, final_chunk=True,
+                    ),
+                ]
+            ),
+            # Raise error from `StreamBlobData` to test the grpc-error
+            # condition.
+            test_util.grpc_error(grpc.StatusCode.INTERNAL, "Error for testing"),
+        ]
+
+        outdir = os.path.join(self.get_temp_dir(), "outdir")
+        exporter = exporter_lib.TensorBoardExporter(mock_api_client, outdir)
+        start_time = 1571084846.25
+        start_time_pb = test_util.timestamp_pb(1571084846250000000)
+
+        generator = exporter.export(read_time=start_time)
+        expected_files = []
+        self.assertTrue(os.path.isdir(outdir))
+        self.assertCountEqual(expected_files, _outdir_files(outdir))
+        mock_api_client.StreamExperiments.assert_not_called()
+        mock_api_client.StreamExperimentData.assert_not_called()
+
+        # The first iteration should request the list of experiments and
+        # data for one of them.
+        self.assertEqual(next(generator), "123")
+        expected_files.append(os.path.join("experiment_123", "metadata.json"))
+        # scalars.json and tensors.json should exist and be empty.
+        expected_files.append(os.path.join("experiment_123", "scalars.json"))
+        expected_files.append(os.path.join("experiment_123", "tensors.json"))
+        expected_files.append(
+            os.path.join("experiment_123", "blob_sequences.json")
+        )
+        expected_files.append(
+            os.path.join("experiment_123", "blobs", "blob_train_blob.bin")
+        )
+        # blobs/blob_test_blob.bin should not exist, because it contains
+        # an unfinished blob.
+        self.assertCountEqual(expected_files, _outdir_files(outdir))
+
+        # Check that the scalars and tensors data files are empty, because there
+        # no scalars or tensors.
+        with open(
+            os.path.join(outdir, "experiment_123", "scalars.json")
+        ) as infile:
+            self.assertEqual(infile.read(), "")
+        with open(
+            os.path.join(outdir, "experiment_123", "tensors.json")
+        ) as infile:
+            self.assertEqual(infile.read(), "")
+
+        # Check the blob_sequences.json file.
+        with open(
+            os.path.join(outdir, "experiment_123", "blob_sequences.json")
+        ) as infile:
+            jsons = [json.loads(line) for line in infile]
+        self.assertLen(jsons, 2)
+
+        datum = jsons[0]
+        self.assertEqual(datum.pop("run"), "train")
+        self.assertEqual(datum.pop("tag"), "__default_graph__")
+        summary_metadata = summary_pb2.SummaryMetadata.FromString(
+            base64.b64decode(datum.pop("summary_metadata"))
+        )
+        expected_summary_metadata = summary_pb2.SummaryMetadata(
+            data_class=summary_pb2.DATA_CLASS_BLOB_SEQUENCE
+        )
+        self.assertEqual(summary_metadata, expected_summary_metadata)
+        points = datum.pop("points")
+        self.assertEqual(datum, {})
+        self.assertEqual(points.pop("steps"), [0])
+        self.assertEqual(points.pop("wall_times"), [1571084520.862939144])
+        # The 1st blob is finished; the 2nd is unfinished.
+        self.assertEqual(
+            points.pop("blob_file_paths"), [["blobs/blob_train_blob.bin", None]]
+        )
+        self.assertEqual(points, {})
+
+        datum = jsons[1]
+        self.assertEqual(datum.pop("run"), "test")
+        self.assertEqual(datum.pop("tag"), "__default_graph__")
+        summary_metadata = summary_pb2.SummaryMetadata.FromString(
+            base64.b64decode(datum.pop("summary_metadata"))
+        )
+        self.assertEqual(summary_metadata, expected_summary_metadata)
+        points = datum.pop("points")
+        self.assertEqual(datum, {})
+        self.assertEqual(points.pop("steps"), [0])
+        self.assertEqual(points.pop("wall_times"), [1571084520.862939144])
+        # `None` blob file path indicates an unfinished blob.
+        self.assertEqual(points.pop("blob_file_paths"), [[None]])
+        self.assertEqual(points, {})
+
+        # Check the BLOB files.
+        with open(
+            os.path.join(
+                outdir, "experiment_123", "blobs", "blob_train_blob.bin"
+            ),
+            "rb",
+        ) as f:
+            self.assertEqual(f.read(), b"43218765")
+
+        # Check call to StreamBlobData.
+        expected_blob_data_request = export_service_pb2.StreamBlobDataRequest(
+            blob_id="train_blob"
+        )
+        mock_api_client.StreamBlobData.assert_called_once_with(
+            expected_blob_data_request, metadata=grpc_util.version_metadata()
+        )
+
+        # Test the case where blob streaming errors out.
+        self.assertEqual(next(generator), "456")
+        # Check the blob_sequences.json file.
+        with open(
+            os.path.join(outdir, "experiment_456", "blob_sequences.json")
+        ) as infile:
+            jsons = [json.loads(line) for line in infile]
+        self.assertLen(jsons, 2)
+
+        datum = jsons[0]
+        self.assertEqual(datum.pop("run"), "train")
+        self.assertEqual(datum.pop("tag"), "__default_graph__")
+        summary_metadata = summary_pb2.SummaryMetadata.FromString(
+            base64.b64decode(datum.pop("summary_metadata"))
+        )
+        self.assertEqual(summary_metadata, expected_summary_metadata)
+        points = datum.pop("points")
+        self.assertEqual(datum, {})
+        self.assertEqual(points.pop("steps"), [0])
+        self.assertEqual(points.pop("wall_times"), [1571084520.862939144])
+        # `None` represents the blob that experienced error during downloading
+        # and hence is missing.
+        self.assertEqual(points.pop("blob_file_paths"), [[None, None]])
+        self.assertEqual(points, {})
+
+        datum = jsons[1]
+        self.assertEqual(datum.pop("run"), "test")
+        self.assertEqual(datum.pop("tag"), "__default_graph__")
+        summary_metadata = summary_pb2.SummaryMetadata.FromString(
+            base64.b64decode(datum.pop("summary_metadata"))
+        )
+        self.assertEqual(summary_metadata, expected_summary_metadata)
+        points = datum.pop("points")
+        self.assertEqual(datum, {})
+        self.assertEqual(points.pop("steps"), [0])
+        self.assertEqual(points.pop("wall_times"), [1571084520.862939144])
+        # `None` represents the blob that experienced error during downloading
+        # and hence is missing.
+        self.assertEqual(points.pop("blob_file_paths"), [[None]])
+        self.assertEqual(points, {})
+
     def test_rejects_dangerous_experiment_ids(self):
         mock_api_client = self._create_mock_api_client()
 
         def stream_experiments(request, **kwargs):
             del request  # unused
-            yield export_service_pb2.StreamExperimentsResponse(
-                experiment_ids=["../authorized_keys"]
-            )
+            yield _make_experiments_response(["../authorized_keys"])
 
         mock_api_client.StreamExperiments = stream_experiments
 
@@ -217,9 +688,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
 
         def stream_experiments(request, **kwargs):
             del request  # unused
-            yield export_service_pb2.StreamExperimentsResponse(
-                experiment_ids=[experiment_id]
-            )
+            yield _make_experiments_response([experiment_id])
 
         def stream_experiment_data(request, **kwargs):
             raise test_util.grpc_error(
@@ -248,9 +717,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
 
         def stream_experiments(request, **kwargs):
             del request  # unused
-            yield export_service_pb2.StreamExperimentsResponse(
-                experiment_ids=[experiment_id]
-            )
+            yield _make_experiments_response([experiment_id])
 
         def stream_experiment_data(request, **kwargs):
             del request  # unused
@@ -276,11 +743,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
             os.chdir(self.get_temp_dir())
             mock_api_client = self._create_mock_api_client()
             mock_api_client.StreamExperiments.return_value = iter(
-                [
-                    export_service_pb2.StreamExperimentsResponse(
-                        experiment_ids=["123"]
-                    ),
-                ]
+                [_make_experiments_response(["123"])]
             )
             mock_api_client.StreamExperimentData.return_value = iter(
                 [export_service_pb2.StreamExperimentDataResponse()]
@@ -308,29 +771,6 @@ class TensorBoardExporterTest(tb_test.TestCase):
         mock_api_client.StreamExperiments.assert_not_called()
         mock_api_client.StreamExperimentData.assert_not_called()
 
-    def test_rejects_existing_file(self):
-        mock_api_client = self._create_mock_api_client()
-
-        def stream_experiments(request, **kwargs):
-            del request  # unused
-            yield export_service_pb2.StreamExperimentsResponse(
-                experiment_ids=["123"]
-            )
-
-        mock_api_client.StreamExperiments = stream_experiments
-
-        outdir = os.path.join(self.get_temp_dir(), "outdir")
-        exporter = exporter_lib.TensorBoardExporter(mock_api_client, outdir)
-        generator = exporter.export()
-
-        with open(os.path.join(outdir, "scalars_123.json"), "w"):
-            pass
-
-        with self.assertRaises(exporter_lib.OutputFileExistsError):
-            next(generator)
-
-        mock_api_client.StreamExperimentData.assert_not_called()
-
     def test_propagates_mkdir_errors(self):
         mock_api_client = self._create_mock_api_client()
         outdir = os.path.join(self.get_temp_dir(), "some_file", "outdir")
@@ -346,6 +786,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
 
 class ListExperimentsTest(tb_test.TestCase):
     def test_experiment_ids_only(self):
+        # Legacy server behavior; should raise an error.
         mock_api_client = _create_mock_api_client()
 
         def stream_experiments(request, **kwargs):
@@ -358,21 +799,15 @@ class ListExperimentsTest(tb_test.TestCase):
             )
 
         mock_api_client.StreamExperiments = mock.Mock(wraps=stream_experiments)
-        gen = exporter_lib.list_experiments(mock_api_client)
-        mock_api_client.StreamExperiments.assert_not_called()
-        self.assertEqual(list(gen), ["123", "456", "789"])
+        with self.assertRaises(RuntimeError) as cm:
+            list(exporter_lib.list_experiments(mock_api_client))
+        self.assertIn(repr(["123", "456"]), str(cm.exception))
 
     def test_mixed_experiments_and_ids(self):
         mock_api_client = _create_mock_api_client()
 
         def stream_experiments(request, **kwargs):
             del request  # unused
-
-            # Should include `experiment_ids` when no `experiments` given.
-            response = export_service_pb2.StreamExperimentsResponse()
-            response.experiment_ids.append("123")
-            response.experiment_ids.append("456")
-            yield response
 
             # Should ignore `experiment_ids` in the presence of `experiments`.
             response = export_service_pb2.StreamExperimentsResponse()
@@ -381,83 +816,33 @@ class ListExperimentsTest(tb_test.TestCase):
             response.experiments.add(experiment_id="012")
             yield response
 
-            # Should include `experiments` even when no `experiment_ids` are given.
+        mock_api_client.StreamExperiments = mock.Mock(wraps=stream_experiments)
+        gen = exporter_lib.list_experiments(mock_api_client)
+        mock_api_client.StreamExperiments.assert_not_called()
+        expected = [
+            experiment_pb2.Experiment(experiment_id="789"),
+            experiment_pb2.Experiment(experiment_id="012"),
+        ]
+        self.assertEqual(list(gen), expected)
+
+    def test_experiments_only(self):
+        mock_api_client = _create_mock_api_client()
+
+        def stream_experiments(request, **kwargs):
+            del request  # unused
             response = export_service_pb2.StreamExperimentsResponse()
-            response.experiments.add(experiment_id="345")
-            response.experiments.add(experiment_id="678")
+            response.experiments.add(experiment_id="789", name="one")
+            response.experiments.add(experiment_id="012", description="two")
             yield response
 
         mock_api_client.StreamExperiments = mock.Mock(wraps=stream_experiments)
         gen = exporter_lib.list_experiments(mock_api_client)
         mock_api_client.StreamExperiments.assert_not_called()
         expected = [
-            "123",
-            "456",
-            export_service_pb2.Experiment(experiment_id="789"),
-            export_service_pb2.Experiment(experiment_id="012"),
-            export_service_pb2.Experiment(experiment_id="345"),
-            export_service_pb2.Experiment(experiment_id="678"),
+            experiment_pb2.Experiment(experiment_id="789", name="one"),
+            experiment_pb2.Experiment(experiment_id="012", description="two"),
         ]
         self.assertEqual(list(gen), expected)
-
-
-class MkdirPTest(tb_test.TestCase):
-    def test_makes_full_chain(self):
-        path = os.path.join(self.get_temp_dir(), "a", "b", "c")
-        exporter_lib._mkdir_p(path)
-        self.assertTrue(os.path.isdir(path))
-
-    def test_makes_leaf(self):
-        base = os.path.join(self.get_temp_dir(), "a", "b")
-        exporter_lib._mkdir_p(base)
-        leaf = os.path.join(self.get_temp_dir(), "a", "b", "c")
-        exporter_lib._mkdir_p(leaf)
-        self.assertTrue(os.path.isdir(leaf))
-
-    def test_fails_when_path_is_a_normal_file(self):
-        path = os.path.join(self.get_temp_dir(), "somefile")
-        with open(path, "w"):
-            pass
-        with self.assertRaises(OSError) as cm:
-            exporter_lib._mkdir_p(path)
-        self.assertEqual(cm.exception.errno, errno.EEXIST)
-
-    def test_propagates_other_errors(self):
-        base = os.path.join(self.get_temp_dir(), "somefile")
-        with open(base, "w"):
-            pass
-        leaf = os.path.join(self.get_temp_dir(), "somefile", "somedir")
-        with self.assertRaises(OSError) as cm:
-            exporter_lib._mkdir_p(leaf)
-        self.assertNotEqual(cm.exception.errno, errno.EEXIST)
-        if os.name == "nt":
-            expected_errno = errno.ENOENT
-        else:
-            expected_errno = errno.ENOTDIR
-        self.assertEqual(cm.exception.errno, expected_errno)
-
-
-class OpenExclTest(tb_test.TestCase):
-    def test_success(self):
-        path = os.path.join(self.get_temp_dir(), "test.txt")
-        with exporter_lib._open_excl(path) as outfile:
-            outfile.write("hello\n")
-        with open(path) as infile:
-            self.assertEqual(infile.read(), "hello\n")
-
-    def test_fails_when_file_exists(self):
-        path = os.path.join(self.get_temp_dir(), "test.txt")
-        with open(path, "w"):
-            pass
-        with self.assertRaises(exporter_lib.OutputFileExistsError) as cm:
-            exporter_lib._open_excl(path)
-        self.assertEqual(str(cm.exception), path)
-
-    def test_propagates_other_errors(self):
-        path = os.path.join(self.get_temp_dir(), "enoent", "test.txt")
-        with self.assertRaises(OSError) as cm:
-            exporter_lib._open_excl(path)
-        self.assertEqual(cm.exception.errno, errno.ENOENT)
 
 
 def _create_mock_api_client():

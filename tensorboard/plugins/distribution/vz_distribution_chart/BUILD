@@ -1,6 +1,6 @@
-package(default_visibility = ["//tensorboard:internal"])
-
 load("//tensorboard/defs:web.bzl", "tf_web_library")
+
+package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
@@ -11,7 +11,6 @@ tf_web_library(
         "vz-distribution-chart.ts",
     ],
     path = "/vz-distribution-chart",
-    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_imports:lodash",
         "//tensorboard/components/tf_imports:plottable",

@@ -12,19 +12,42 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {LoadingMechanismType, PluginMetadata} from '../../types/api';
+import {
+  Environment,
+  LoadingMechanismType,
+  PluginMetadata,
+} from '../../types/api';
 import {DataLoadState} from '../../types/data';
 import {CoreState, State, CORE_FEATURE_KEY} from '../store/core_types';
 
-export function createPluginMetadata(displayName: string): PluginMetadata {
+export function buildPluginMetadata(
+  override: Partial<PluginMetadata>
+): PluginMetadata {
   return {
     disable_reload: false,
     enabled: true,
     loading_mechanism: {
       type: LoadingMechanismType.NONE,
     },
-    tab_name: displayName,
+    tab_name: 'foo',
     remove_dom: false,
+    ...override,
+  };
+}
+
+export function createPluginMetadata(displayName: string): PluginMetadata {
+  return buildPluginMetadata({
+    tab_name: displayName,
+  });
+}
+
+export function createEnvironment(
+  override?: Partial<Environment>
+): Environment {
+  return {
+    data_location: 'test/dir',
+    window_title: 'TensorBoard',
+    ...override,
   };
 }
 
@@ -38,6 +61,10 @@ export function createCoreState(override?: Partial<CoreState>): CoreState {
     },
     reloadPeriodInMs: 30000,
     reloadEnabled: true,
+    pageSize: 10,
+    environment: createEnvironment(),
+    polymerInteropRuns: [],
+    polymerInteropRunSelection: new Set(),
     ...override,
   };
 }

@@ -67,43 +67,9 @@ def tf2():
     Raises:
       ImportError: if a TF-2.0 API is not available.
     """
-    # Import the `tf` compat API from this file and check if it's already TF 2.0.
-    if tf.__version__.startswith("2."):
-        return tf
-    elif hasattr(tf, "compat") and hasattr(tf.compat, "v2"):
-        # As a fallback, try `tensorflow.compat.v2` if it's defined.
+    # Resolve the lazy `tf` compat API from earlier in this file and try to find
+    # tf.compat.v2. Don't check tf.__version__ since this is not always reliable
+    # if TF was built with tf_api_version!=2.
+    if hasattr(tf, "compat") and hasattr(tf.compat, "v2"):
         return tf.compat.v2
     raise ImportError("cannot import tensorflow 2.0 API")
-
-
-# TODO(https://github.com/tensorflow/tensorboard/issues/1711): remove this
-@_lazy.lazy_load("tensorboard.compat._pywrap_tensorflow")
-def _pywrap_tensorflow():
-    """Provide pywrap_tensorflow access in TensorBoard.
-
-    pywrap_tensorflow cannot be accessed from tf.python.pywrap_tensorflow
-    and needs to be imported using
-    `from tensorflow.python import pywrap_tensorflow`. Therefore, we provide
-    a separate accessor function for it here.
-
-    NOTE: pywrap_tensorflow is not part of TensorFlow API and this
-    dependency will go away soon.
-
-    Returns:
-      pywrap_tensorflow import, if available.
-
-    Raises:
-      ImportError: if we couldn't import pywrap_tensorflow.
-    """
-    try:
-        from tensorboard.compat import notf
-    except ImportError:
-        try:
-            from tensorflow.python import pywrap_tensorflow
-
-            return pywrap_tensorflow
-        except ImportError:
-            pass
-    from tensorboard.compat.tensorflow_stub import pywrap_tensorflow
-
-    return pywrap_tensorflow

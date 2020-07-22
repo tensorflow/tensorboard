@@ -13,33 +13,41 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {TestBed} from '@angular/core/testing';
-import {
-  HttpClientTestingModule,
-  HttpTestingController,
-} from '@angular/common/http/testing';
+
 import {provideMockActions} from '@ngrx/effects/testing';
 import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
-import {ReplaySubject, of} from 'rxjs';
+import {Subject, ReplaySubject, of} from 'rxjs';
 
 import {CoreEffects} from './core_effects';
 import * as coreActions from '../actions';
-import {State} from '../store';
+import {State} from '../../app_state';
 
-import {createPluginMetadata, createState, createCoreState} from '../testing';
+import {
+  createEnvironment,
+  createPluginMetadata,
+  createState,
+  createCoreState,
+} from '../testing';
+import {Run} from '../types';
 
 import {PluginsListing} from '../../types/api';
 import {DataLoadState} from '../../types/data';
 import {TBServerDataSource} from '../../webapp_data_source/tb_server_data_source';
+import {getEnabledExperimentalPlugins} from '../../feature_flag/store/feature_flag_selectors';
+import {
+  TBHttpClientTestingModule,
+  HttpTestingController,
+} from '../../webapp_data_source/tb_http_client_testing';
 
 describe('core_effects', () => {
   let httpMock: HttpTestingController;
   let coreEffects: CoreEffects;
   let action: ReplaySubject<Action>;
-  let store: MockStore<State>;
-  let fetchRuns: jasmine.Spy;
-  let fetchEnvironments: jasmine.Spy;
-  let dispatchSpy: jasmine.Spy;
+  let store: MockStore<Partial<State>>;
+  let fetchEnvironment: jasmine.Spy;
+  let fetchRunsSubjects: Array<Subject<Array<Run>>>;
+  let recordedActions: Action[] = [];
 
   beforeEach(async () => {
     action = new ReplaySubject<Action>(1);
@@ -53,7 +61,7 @@ describe('core_effects', () => {
       })
     );
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
+      imports: [TBHttpClientTestingModule],
       providers: [
         provideMockActions(action),
         CoreEffects,
@@ -61,18 +69,27 @@ describe('core_effects', () => {
         provideMockStore({initialState}),
       ],
     }).compileComponents();
-    coreEffects = TestBed.get(CoreEffects);
-    httpMock = TestBed.get(HttpTestingController);
-    store = TestBed.get(Store);
-    dispatchSpy = spyOn(store, 'dispatch');
+    coreEffects = TestBed.inject(CoreEffects);
+    httpMock = TestBed.inject(HttpTestingController);
+    store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
 
-    const dataSource = TestBed.get(TBServerDataSource);
-    fetchRuns = spyOn(dataSource, 'fetchRuns')
+    recordedActions = [];
+    spyOn(store, 'dispatch').and.callFake((action: Action) => {
+      recordedActions.push(action);
+    });
+
+    const dataSource = TestBed.inject(TBServerDataSource);
+    fetchEnvironment = spyOn(dataSource, 'fetchEnvironment')
       .withArgs()
-      .and.returnValue(of(null));
-    fetchEnvironments = spyOn(dataSource, 'fetchEnvironments')
-      .withArgs()
-      .and.returnValue(of(null));
+      .and.returnValue(of(createEnvironment()));
+    fetchRunsSubjects = [];
+    spyOn(dataSource, 'fetchRuns').and.callFake(() => {
+      const fetchRunSubject = new Subject<Array<Run>>();
+      fetchRunsSubjects.push(fetchRunSubject);
+      return fetchRunSubject;
+    });
+
+    store.overrideSelector(getEnabledExperimentalPlugins, []);
   });
 
   afterEach(() => {
@@ -82,39 +99,84 @@ describe('core_effects', () => {
   [
     {specSetName: '#coreLoaded', onAction: coreActions.coreLoaded()},
     {specSetName: '#reload', onAction: coreActions.reload()},
+    {specSetName: '#manualReload', onAction: coreActions.manualReload()},
   ].forEach(({specSetName, onAction}) => {
     describe(specSetName, () => {
-      let recordedActions: Action[] = [];
-
       beforeEach(() => {
-        recordedActions = [];
-        coreEffects.loadPluginsListing$.subscribe((action: Action) => {
-          recordedActions.push(action);
-        });
+        coreEffects.fetchWebAppData$.subscribe(() => {});
       });
 
-      it('fetches plugins listing and fires success action', () => {
+      it('fetches webapp data and fires success action', () => {
+        store.overrideSelector(getEnabledExperimentalPlugins, []);
+        store.refreshState();
+
         const pluginsListing: PluginsListing = {
           core: createPluginMetadata('Core'),
         };
 
         action.next(onAction);
+
+        fetchRunsSubjects[0].next([{id: '1', name: 'Run 1'}]);
+        fetchRunsSubjects[0].complete();
         // Flushing the request response invokes above subscription sychronously.
         httpMock.expectOne('data/plugins_listing').flush(pluginsListing);
+        expect(fetchEnvironment).toHaveBeenCalled();
 
-        expect(fetchRuns).toHaveBeenCalled();
-        expect(fetchEnvironments).toHaveBeenCalled();
-
-        expect(dispatchSpy).toHaveBeenCalledTimes(1);
-        expect(dispatchSpy).toHaveBeenCalledWith(
-          coreActions.pluginsListingRequested()
-        );
-
-        const expected = coreActions.pluginsListingLoaded({
-          plugins: pluginsListing,
-        });
-        expect(recordedActions).toEqual([expected]);
+        expect(recordedActions).toEqual([
+          coreActions.pluginsListingRequested(),
+          coreActions.environmentLoaded({
+            environment: createEnvironment(),
+          }),
+          coreActions.fetchRunSucceeded({
+            runs: [{id: '1', name: 'Run 1'}],
+          }),
+          coreActions.pluginsListingLoaded({
+            plugins: pluginsListing,
+          }),
+        ]);
       });
+
+      it(
+        'appends query params to the data/plugins_listing when ' +
+          'getEnabledExperimentalPlugins is non-empty',
+        () => {
+          store.overrideSelector(getEnabledExperimentalPlugins, [
+            'alpha',
+            'beta',
+          ]);
+          store.refreshState();
+
+          const pluginsListing: PluginsListing = {
+            core: createPluginMetadata('Core'),
+          };
+
+          action.next(onAction);
+          // Flushing the request response invokes above subscription sychronously.
+          httpMock
+            .expectOne(
+              'data/plugins_listing?experimentalPlugin=alpha&' +
+                'experimentalPlugin=beta'
+            )
+            .flush(pluginsListing);
+
+          fetchRunsSubjects[0].next([{id: '1', name: 'Run 1'}]);
+          fetchRunsSubjects[0].complete();
+          expect(fetchEnvironment).toHaveBeenCalled();
+
+          expect(recordedActions).toEqual([
+            coreActions.pluginsListingRequested(),
+            coreActions.environmentLoaded({
+              environment: createEnvironment(),
+            }),
+            coreActions.fetchRunSucceeded({
+              runs: [{id: '1', name: 'Run 1'}],
+            }),
+            coreActions.pluginsListingLoaded({
+              plugins: pluginsListing,
+            }),
+          ]);
+        }
+      );
 
       it('ignores the action when loadState is loading', () => {
         store.setState(
@@ -137,7 +199,7 @@ describe('core_effects', () => {
         action.next(onAction);
         httpMock.expectNone('data/plugins_listing');
 
-        expect(dispatchSpy).not.toHaveBeenCalled();
+        expect(recordedActions).toEqual([]);
 
         store.setState(
           createState(
@@ -152,11 +214,20 @@ describe('core_effects', () => {
 
         action.next(onAction);
         httpMock.expectOne('data/plugins_listing').flush(pluginsListing);
-
-        const expected = coreActions.pluginsListingLoaded({
-          plugins: pluginsListing,
-        });
-        expect(recordedActions).toEqual([expected]);
+        fetchRunsSubjects[0].next([{id: '1', name: 'Run 1'}]);
+        fetchRunsSubjects[0].complete();
+        expect(recordedActions).toEqual([
+          coreActions.pluginsListingRequested(),
+          coreActions.environmentLoaded({
+            environment: createEnvironment(),
+          }),
+          coreActions.fetchRunSucceeded({
+            runs: [{id: '1', name: 'Run 1'}],
+          }),
+          coreActions.pluginsListingLoaded({
+            plugins: pluginsListing,
+          }),
+        ]);
 
         store.setState(
           createState(

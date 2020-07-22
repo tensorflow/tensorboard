@@ -32,8 +32,20 @@ limitations under the License.
   text-decoration: underline;
 }
 
+.execution-digest.focused {
+  background-color: #ffd4b3;
+  border: 1px solid #000;
+  font-weight: bold;
+}
+
+.execution-digest.InfNanAlert {
+  background-color: #e52592;
+  color: #fff;
+}
+/* TODO(cais): Add css classes for other alert types that involve execution. */
+
 .execution-digest:hover {
-  border: 1px solid black;
+  border: 1px solid #000;
   font-weight: bold;
 }
 
@@ -46,8 +58,37 @@ limitations under the License.
   margin-bottom: 5px;
 }
 
-.navigation-position-info {
+.timeline-slider {
   display: inline-block;
+  height: 48px;
+  left: 340px; /* Total width of the two buttons and text div to the left. */
+  padding: 0;
+  position: absolute;
+  right: 40px;
+}
+
+/deep/ .timeline-slider .mat-slider-thumb {
+  border-radius: 5px;
+  right: -40px;
+  width: 80px;
+}
+/* TODO(cais): Apply color #293241 to the thumb and the track. */
+
+.navigation-position-info {
+  display: inline-flex;
+  font-size: 14px;
+  line-height: normal;
+  max-width: 200px;
   padding-left: 10px;
   padding-right: 10px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.navigation-section {
+  height: 48px;
+  line-height: 48px;
+  position: relative;
+  vertical-align: middle;
+  width: 100%;
 }

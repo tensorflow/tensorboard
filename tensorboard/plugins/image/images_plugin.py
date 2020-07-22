@@ -25,11 +25,12 @@ import six
 from six.moves import urllib
 from werkzeug import wrappers
 
+from tensorboard import errors
 from tensorboard import plugin_util
 from tensorboard.backend import http_util
+from tensorboard.data import provider
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.image import metadata
-from tensorboard.compat import tf
 
 
 _IMGHDR_TO_MIMETYPE = {
@@ -41,6 +42,7 @@ _IMGHDR_TO_MIMETYPE = {
 }
 
 _DEFAULT_IMAGE_MIMETYPE = "application/octet-stream"
+_DEFAULT_DOWNSAMPLING = 10  # images per time series
 
 
 # Extend imghdr.tests to include svg.
@@ -66,7 +68,13 @@ class ImagesPlugin(base_plugin.TBPlugin):
           context: A base_plugin.TBContext instance.
         """
         self._multiplexer = context.multiplexer
-        self._db_connection_provider = context.db_connection_provider
+        self._downsample_to = (context.sampling_hints or {}).get(
+            self.plugin_name, _DEFAULT_DOWNSAMPLING
+        )
+        if not context.flags or context.flags.generic_data != "false":
+            self._data_provider = context.data_provider
+        else:
+            self._data_provider = None
 
     def get_plugin_apps(self):
         return {
@@ -78,19 +86,9 @@ class ImagesPlugin(base_plugin.TBPlugin):
     def is_active(self):
         """The images plugin is active iff any run has at least one relevant
         tag."""
-        if self._db_connection_provider:
-            # The plugin is active if one relevant tag can be found in the database.
-            db = self._db_connection_provider()
-            cursor = db.execute(
-                """
-                SELECT 1
-                FROM Tags
-                WHERE Tags.plugin_name = ?
-                LIMIT 1
-                """,
-                (metadata.PLUGIN_NAME,),
-            )
-            return bool(list(cursor))
+        if self._data_provider:
+            return False  # `list_plugins` as called by TB core suffices
+
         if not self._multiplexer:
             return False
         return bool(
@@ -100,43 +98,22 @@ class ImagesPlugin(base_plugin.TBPlugin):
     def frontend_metadata(self):
         return base_plugin.FrontendMetadata(element_name="tf-image-dashboard")
 
-    def _index_impl(self):
-        if self._db_connection_provider:
-            db = self._db_connection_provider()
-            cursor = db.execute(
-                """
-                SELECT
-                  Runs.run_name,
-                  Tags.tag_name,
-                  Tags.display_name,
-                  Descriptions.description,
-                  /* Subtract 2 for leading width and height elements. */
-                  MAX(CAST (Tensors.shape AS INT)) - 2 AS samples
-                FROM Tags
-                JOIN Runs USING (run_id)
-                JOIN Tensors ON Tags.tag_id = Tensors.series
-                LEFT JOIN Descriptions ON Tags.tag_id = Descriptions.id
-                WHERE Tags.plugin_name = :plugin
-                  /* Shape should correspond to a rank-1 tensor. */
-                  AND NOT INSTR(Tensors.shape, ',')
-                  /* Required to use TensorSeriesStepIndex. */
-                  AND Tensors.step IS NOT NULL
-                GROUP BY Tags.tag_id
-                HAVING samples >= 1
-                """,
-                {"plugin": metadata.PLUGIN_NAME},
+    def _index_impl(self, ctx, experiment):
+        if self._data_provider:
+            mapping = self._data_provider.list_blob_sequences(
+                ctx, experiment_id=experiment, plugin_name=metadata.PLUGIN_NAME,
             )
-            result = collections.defaultdict(dict)
-            for row in cursor:
-                run_name, tag_name, display_name, description, samples = row
-                description = description or ""  # Handle missing descriptions.
-                result[run_name][tag_name] = {
-                    "displayName": display_name,
-                    "description": plugin_util.markdown_to_safe_html(
-                        description
-                    ),
-                    "samples": samples,
-                }
+            result = {run: {} for run in mapping}
+            for (run, tag_to_content) in six.iteritems(mapping):
+                for (tag, metadatum) in six.iteritems(tag_to_content):
+                    description = plugin_util.markdown_to_safe_html(
+                        metadatum.description
+                    )
+                    result[run][tag] = {
+                        "displayName": metadatum.display_name,
+                        "description": description,
+                        "samples": metadatum.max_length - 2,  # width, height
+                    }
             return result
 
         runs = self._multiplexer.Runs()
@@ -179,18 +156,22 @@ class ImagesPlugin(base_plugin.TBPlugin):
         Returns:
           A werkzeug.Response application.
         """
+        ctx = plugin_util.context(request.environ)
+        experiment = plugin_util.experiment_id(request.environ)
         tag = request.args.get("tag")
         run = request.args.get("run")
         sample = int(request.args.get("sample", 0))
         try:
-            response = self._image_response_for_run(run, tag, sample)
+            response = self._image_response_for_run(
+                ctx, experiment, run, tag, sample
+            )
         except KeyError:
             return http_util.Respond(
                 request, "Invalid run or tag", "text/plain", code=400
             )
         return http_util.Respond(request, response, "application/json")
 
-    def _image_response_for_run(self, run, tag, sample):
+    def _image_response_for_run(self, ctx, experiment, run, tag, sample):
         """Builds a JSON-serializable object with information about images.
 
         Args:
@@ -204,44 +185,34 @@ class ImagesPlugin(base_plugin.TBPlugin):
         Returns:
           A list of dictionaries containing the wall time, step, and URL
           for each image.
+
+        Raises:
+          KeyError, NotFoundError: If no image data exists for the given
+            parameters.
         """
-        if self._db_connection_provider:
-            db = self._db_connection_provider()
-            cursor = db.execute(
-                """
-                SELECT
-                  computed_time,
-                  step
-                FROM Tensors
-                JOIN TensorStrings AS T0
-                  ON Tensors.rowid = T0.tensor_rowid
-                JOIN TensorStrings AS T1
-                  ON Tensors.rowid = T1.tensor_rowid
-                WHERE
-                  series = (
-                    SELECT tag_id
-                    FROM Runs
-                    CROSS JOIN Tags USING (run_id)
-                    WHERE Runs.run_name = :run AND Tags.tag_name = :tag)
-                  AND step IS NOT NULL
-                  AND dtype = :dtype
-                  /* Should be n-vector, n >= 3: [width, height, samples...] */
-                  AND (NOT INSTR(shape, ',') AND CAST (shape AS INT) >= 3)
-                  AND T0.idx = 0
-                  AND T1.idx = 1
-                ORDER BY step
-                """,
-                {"run": run, "tag": tag, "dtype": tf.string.as_datatype_enum},
+        if self._data_provider:
+            all_images = self._data_provider.read_blob_sequences(
+                ctx,
+                experiment_id=experiment,
+                plugin_name=metadata.PLUGIN_NAME,
+                downsample=self._downsample_to,
+                run_tag_filter=provider.RunTagFilter(runs=[run], tags=[tag]),
             )
+            images = all_images.get(run, {}).get(tag, None)
+            if images is None:
+                raise errors.NotFoundError(
+                    "No image data for run=%r, tag=%r" % (run, tag)
+                )
             return [
                 {
-                    "wall_time": computed_time,
-                    "step": step,
-                    "query": self._query_for_individual_image(
-                        run, tag, sample, index
+                    "wall_time": datum.wall_time,
+                    "step": datum.step,
+                    "query": self._data_provider_query(
+                        datum.values[sample + 2]
                     ),
                 }
-                for index, (computed_time, step) in enumerate(cursor)
+                for datum in images
+                if len(datum.values) - 2 > sample
             ]
         response = []
         index = 0
@@ -292,8 +263,25 @@ class ImagesPlugin(base_plugin.TBPlugin):
         )
         return query_string
 
-    def _get_individual_image(self, run, tag, index, sample):
+    def _data_provider_query(self, blob_reference):
+        return urllib.parse.urlencode({"blob_key": blob_reference.blob_key})
+
+    def _get_generic_data_individual_image(self, ctx, blob_key):
         """Returns the actual image bytes for a given image.
+
+        Args:
+          blob_key: As returned by a previous `read_blob_sequences` call.
+
+        Returns:
+          A bytestring of the raw image bytes.
+        """
+        return self._data_provider.read_blob(ctx, blob_key=blob_key)
+
+    def _get_legacy_individual_image(self, run, tag, index, sample):
+        """Returns the actual image bytes for a given image.
+
+        Applies to multiplexer and DB-mode loading paths only. With a
+        data provider, use `_get_generic_data_individual_image` instead.
 
         Args:
           run: The name of the run the image belongs to.
@@ -305,45 +293,9 @@ class ImagesPlugin(base_plugin.TBPlugin):
         Returns:
           A bytestring of the raw image bytes.
         """
-        if self._db_connection_provider:
-            db = self._db_connection_provider()
-            cursor = db.execute(
-                """
-                SELECT data
-                FROM TensorStrings
-                WHERE
-                  /* Skip first 2 elements which are width and height. */
-                  idx = 2 + :sample
-                  AND tensor_rowid = (
-                    SELECT rowid
-                    FROM Tensors
-                    WHERE
-                      series = (
-                         SELECT tag_id
-                         FROM Runs
-                         CROSS JOIN Tags USING (run_id)
-                         WHERE
-                           Runs.run_name = :run
-                           AND Tags.tag_name = :tag)
-                      AND step IS NOT NULL
-                      AND dtype = :dtype
-                      /* Should be n-vector, n >= 3: [width, height, samples...] */
-                      AND (NOT INSTR(shape, ',') AND CAST (shape AS INT) >= 3)
-                    ORDER BY step
-                    LIMIT 1
-                    OFFSET :index)
-                """,
-                {
-                    "run": run,
-                    "tag": tag,
-                    "sample": sample,
-                    "index": index,
-                    "dtype": tf.string.as_datatype_enum,
-                },
-            )
-            (data,) = cursor.fetchone()
-            return six.binary_type(data)
-
+        assert (
+            not self._data_provider
+        ), "Use `_get_generic_data_individual_image` when data provider present"
         events = self._filter_by_sample(
             self._multiplexer.Tensors(run, tag), sample
         )
@@ -353,12 +305,19 @@ class ImagesPlugin(base_plugin.TBPlugin):
     @wrappers.Request.application
     def _serve_individual_image(self, request):
         """Serves an individual image."""
-        run = request.args.get("run")
-        tag = request.args.get("tag")
-        index = int(request.args.get("index", "0"))
-        sample = int(request.args.get("sample", "0"))
         try:
-            data = self._get_individual_image(run, tag, index, sample)
+            if self._data_provider:
+                ctx = plugin_util.context(request.environ)
+                blob_key = request.args["blob_key"]
+                data = self._get_generic_data_individual_image(ctx, blob_key)
+            else:
+                run = request.args.get("run")
+                tag = request.args.get("tag")
+                index = int(request.args.get("index", "0"))
+                sample = int(request.args.get("sample", "0"))
+                data = self._get_legacy_individual_image(
+                    run, tag, index, sample
+                )
         except (KeyError, IndexError):
             return http_util.Respond(
                 request,
@@ -374,5 +333,7 @@ class ImagesPlugin(base_plugin.TBPlugin):
 
     @wrappers.Request.application
     def _serve_tags(self, request):
-        index = self._index_impl()
+        ctx = plugin_util.context(request.environ)
+        experiment = plugin_util.experiment_id(request.environ)
+        index = self._index_impl(ctx, experiment)
         return http_util.Respond(request, index, "application/json")

@@ -39,6 +39,7 @@ sh_binary(
         "//tensorboard",  # Main tensorboard binary and everything it uses
         "//tensorboard:lib",  # User-facing overall TensorBoard API
         "//tensorboard:version",  # Version module (read by setup.py)
+        "//tensorboard/data/experimental:experiment_from_dev",
         "//tensorboard/plugins/beholder",  # User-facing beholder API
         "//tensorboard/plugins/hparams",  # User-facing hparams API
         "//tensorboard/plugins/mesh",  #  User-facing mesh API
@@ -83,8 +84,7 @@ genrule(
         "LICENSE.tensorflow",
         "@org_polymer//:LICENSE.txt",
         "@com_palantir_plottable//:package/LICENSE",
-        "@org_d3js//:LICENSE",
-        "@org_chromium_catapult_vulcanized_trace_viewer//:LICENSE",
+        "@npm//:node_modules/d3/LICENSE",
         "@io_github_cpettitt_dagre//:LICENSE",
         "@io_github_cpettitt_graphlib//:LICENSE",
         "@io_github_waylonflinn_weblas//:LICENSE",

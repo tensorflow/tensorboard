@@ -13,14 +13,71 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+.bottom-section {
+  box-sizing: border-box;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-grow: 1;
+  height: 34%;
+  padding-top: 6px;
+}
+
+.debugger-container {
+  box-sizing: border-box;
+  background-color: #fff;
+  height: 100%;
+  overflow: hidden;
+}
+
+.top-section {
+  box-sizing: border-box;
+  display: flex;
+  flex-grow: 1;
+  height: 66%;
+  padding: 6px 0;
+}
+
 tf-debugger-v2-alerts {
+  border-right: 1px solid rgba(0, 0, 0, 0.12);
   display: inline-block;
-  height: 360px;
-  width: 200px;
+  margin-right: 10px;
+  min-width: 160px;
+  width: calc(15% - 11px);
+}
+
+tf-debugger-v2-graph-executions {
+  display: inline-block;
+  flex-grow: 1;
+  min-width: 540px;
+  width: 540px;
+}
+
+tf-debugger-v2-source-files {
+  display: inline-block;
+  height: 100%;
+  width: 70%;
+}
+
+tf-debugger-v2-stack-trace {
+  display: inline-block;
+  flex-grow: 1;
+  height: 100%;
+  min-width: 540px;
+  width: 540px;
+}
+
+.top-center-section {
+  display: inline-block;
+  overflow: auto;
+  width: 55%;
 }
 
 tf-debugger-v2-timeline {
-  display: inline-block;
-  height: 360px;
-  width: 800px;
+  display: block;
+}
+
+tf-debugger-v2-graph {
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+  display: block;
+  margin-top: 5px;
 }

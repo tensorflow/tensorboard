@@ -15,10 +15,30 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<div>
-  <div>Debugging</div>
-  <div>
-    <span>Alerts</span>
+<div class="alerts-container">
+  <div class="debugging-title">Debugging</div>
+  <div class="num-alerts-container">
+    <div class="num-alerts-label">Alerts</div>
+    <div class="num-alerts-value" [ngClass]="[numAlerts > 0 ? 'non-zero' : '']">
+      {{ numAlerts }}
+    </div>
   </div>
-  <!-- TODO(cais): Flesh out the details. -->
+  <div class="alerts-breakdown-container">
+    <!-- TODO(cais): Make clickable things buttons, to facilitate a11y.
+         Here and elsewhere. -->
+    <div
+      *ngFor="let breakdown of alertsBreakdown;"
+      class="alerts-breakdown-type"
+      [ngClass]="[breakdown.type === focusType ? 'focus' : '']"
+      (click)="onToggleFocusType.emit(breakdown.type)"
+    >
+      <div class="alert-type-name">
+        {{ breakdown.displayName }}
+      </div>
+      <div class="alert-type-count">
+        {{ breakdown.displaySymbol }}: {{ breakdown.count }}
+      </div>
+      <div></div>
+    </div>
+  </div>
 </div>

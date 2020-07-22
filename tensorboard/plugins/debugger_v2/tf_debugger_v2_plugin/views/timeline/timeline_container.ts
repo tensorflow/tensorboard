@@ -12,14 +12,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ChangeDetectionStrategy, Component, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {select, Store, createSelector} from '@ngrx/store';
 
 import {State} from '../../store/debugger_types';
 import {
-  alertsViewLoaded,
+  executionDigestFocused,
   executionScrollLeft,
   executionScrollRight,
+  executionScrollToIndex,
 } from '../../actions';
 import {
   getActiveRunId,
@@ -28,7 +29,10 @@ import {
   getNumExecutions,
   getExecutionPageSize,
   getExecutionScrollBeginIndex,
+  getFocusedExecutionDisplayIndex,
+  getFocusedExecutionIndex,
   getVisibleExecutionDigests,
+  getFocusAlertTypesOfVisibleExecutionDigests,
 } from '../../store';
 import {DataLoadState, ExecutionDigest} from '../../store/debugger_types';
 import {ExecutionDigestForDisplay} from './timeline_component';
@@ -88,16 +92,22 @@ function getExecutionDigestForDisplay(
       [loadingNumExecutions]="loadingNumExecutions$ | async"
       [numExecutions]="numExecutions$ | async"
       [scrollBeginIndex]="scrollBeginIndex$ | async"
+      [scrollBeginIndexUpperLimit]="scrollBeginIndexUpperLimit$ | async"
       [pageSize]="pageSize$ | async"
       [displayCount]="displayCount$ | async"
       [displayExecutionDigests]="displayExecutionDigests$ | async"
+      [displayFocusedAlertTypes]="displayFocusedAlertTypes$ | async"
+      [focusedExecutionIndex]="focusedExecutionIndex$ | async"
+      [focusedExecutionDisplayIndex]="focusedExecutionDisplayIndex$ | async"
       (onNavigateLeft)="onNavigateLeft()"
       (onNavigateRight)="onNavigateRight()"
+      (onExecutionDigestClicked)="onExecutionDigestClicked($event)"
+      (onSliderChange)="onSliderChange($event)"
     ></timeline-component>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TimelineContainer implements OnInit {
+export class TimelineContainer {
   readonly activeRunId$ = this.store.pipe(select(getActiveRunId));
 
   readonly loadingNumExecutions$ = this.store.pipe(
@@ -113,6 +123,18 @@ export class TimelineContainer implements OnInit {
 
   readonly scrollBeginIndex$ = this.store.pipe(
     select(getExecutionScrollBeginIndex)
+  );
+
+  readonly scrollBeginIndexUpperLimit$ = this.store.pipe(
+    select(
+      createSelector(
+        getNumExecutions,
+        getDisplayCount,
+        (numExecutions, displayCount) => {
+          return Math.max(0, numExecutions - displayCount);
+        }
+      )
+    )
   );
 
   readonly pageSize$ = this.store.pipe(select(getExecutionPageSize));
@@ -132,13 +154,21 @@ export class TimelineContainer implements OnInit {
     )
   );
 
+  readonly displayFocusedAlertTypes$ = this.store.pipe(
+    select(getFocusAlertTypesOfVisibleExecutionDigests)
+  );
+
+  readonly focusedExecutionIndex$ = this.store.pipe(
+    select(getFocusedExecutionIndex)
+  );
+
+  readonly focusedExecutionDisplayIndex$ = this.store.pipe(
+    select(getFocusedExecutionDisplayIndex)
+  );
+
   readonly numExecutions$ = this.store.pipe(select(getNumExecutions));
 
   constructor(private readonly store: Store<State>) {}
-
-  ngOnInit(): void {
-    this.store.dispatch(alertsViewLoaded());
-  }
 
   onNavigateLeft() {
     this.store.dispatch(executionScrollLeft());
@@ -146,6 +176,14 @@ export class TimelineContainer implements OnInit {
 
   onNavigateRight() {
     this.store.dispatch(executionScrollRight());
+  }
+
+  onExecutionDigestClicked(index: number) {
+    this.store.dispatch(executionDigestFocused({displayIndex: index}));
+  }
+
+  onSliderChange(value: number) {
+    this.store.dispatch(executionScrollToIndex({index: value}));
   }
 }
 

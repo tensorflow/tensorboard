@@ -17,4 +17,17 @@ limitations under the License.
 <link rel="import" href="plugin-host-ipc.html" />
 
 <link rel="import" href="../tf-backend/tf-backend.html" />
+<link rel="import" href="../tf-storage/tf-storage.html" />
+<script src="core-host-impl.js"></script>
 <script src="runs-host-impl.js"></script>
+
+<link rel="import" href="../tf-imports/polymer.html" />
+<script>
+  // HACK: this Polymer component allows the experimental plugin host APIs
+  // to be accessible across bundle binary.
+  Polymer({
+    is: 'tf-experimental-plugin-host-lib',
+    _template: null, // strictTemplatePolicy requires a template (even a null one).
+    registerPluginIframe: tb_plugin.host.registerPluginIframe,
+  });
+</script>

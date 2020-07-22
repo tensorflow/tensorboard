@@ -35,6 +35,7 @@ import com.google.javascript.jscomp.CheckLevel;
 import com.google.javascript.jscomp.CompilationLevel;
 import com.google.javascript.jscomp.Compiler;
 import com.google.javascript.jscomp.CompilerOptions;
+import com.google.javascript.jscomp.DependencyOptions;
 import com.google.javascript.jscomp.DiagnosticGroup;
 import com.google.javascript.jscomp.DiagnosticGroups;
 import com.google.javascript.jscomp.DiagnosticType;
@@ -74,13 +75,14 @@ import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Comment;
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.DocumentType;
 import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Html5Printer;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.parser.Parser;
 import org.jsoup.parser.Tag;
 import org.jsoup.select.Elements;
+import org.jsoup.select.NodeVisitor;
 
 /** Simple one-off solution for TensorBoard vulcanization. */
 public final class Vulcanize {
@@ -117,7 +119,7 @@ public final class Vulcanize {
   private static int insideDemoSnippet;
   private static boolean testOnly;
   private static boolean wantsCompile;
-  private static List<Pattern> ignoreRegExs = new ArrayList<>();
+  private static final List<Pattern> ignoreRegExs = new ArrayList<>();
 
   // This is the default argument to Vulcanize for when the path_regexs_for_noinline attribute in
   // third_party/tensorboard/defs/vulcanize.bzl is not set.
@@ -125,8 +127,7 @@ public final class Vulcanize {
 
   private static final Pattern ABS_URI_PATTERN = Pattern.compile("^(?:/|[A-Za-z][A-Za-z0-9+.-]*:)");
 
-  public static void main(String[] args)
-      throws FileNotFoundException, IOException, IllegalArgumentException {
+  public static void main(String[] args) throws IOException {
     int argIdx = 0;
     compilationLevel = CompilationLevel.fromString(args[argIdx++]);
     wantsCompile = args[argIdx++].equals("true");
@@ -182,10 +183,14 @@ public final class Vulcanize {
     }
 
     boolean shouldExtractJs = !jsPath.isEmpty();
+    // Write an empty file for shasum when all scripts are extracted out.
     createFile(
         jsOutput, shouldExtractJs ? extractAndTransformJavaScript(document, jsPath) : "");
-    // Write an empty file for shasum when all scripts are extracted out.
-    createFile(output, Html5Printer.stringify(document));
+    Document normalizedDocument = getFlattenedHTML5Document(document);
+    // Prevent from correcting the DOM structure and messing up the whitespace
+    // in the template.
+    normalizedDocument.outputSettings().prettyPrint(false);
+    createFile(output, normalizedDocument.toString());
   }
 
   private static void createFile(Path filePath, String content) throws IOException {
@@ -479,7 +484,7 @@ public final class Vulcanize {
     // or vz-example-viewer should be explicitly imported by the code that uses it. Alternatively,
     // we could ensure that the input order to the compiler is correct and all inputs are used, and
     // turn off both sorting and pruning.
-    options.setDependencyOptions(com.google.javascript.jscomp.DependencyOptions.sortOnly());
+    options.setDependencyOptions(DependencyOptions.sortOnly());
 
     // Polymer pass.
     options.setPolymerVersion(2);
@@ -514,7 +519,9 @@ public final class Vulcanize {
               return CheckLevel.OFF;
             }
             if (error.getSourceName().startsWith("javascript/externs")
-                || error.getSourceName().contains("com_google_javascript_closure_compiler_externs")) {
+                || error
+                    .getSourceName()
+                    .contains("com_google_javascript_closure_compiler_externs")) {
               // TODO(@jart): Figure out why these "mismatch of the removeEventListener property on
               //             type" warnings are showing up.
               //             https://github.com/google/closure-compiler/pull/1959
@@ -530,9 +537,11 @@ public final class Vulcanize {
             if (IGNORE_PATHS_PATTERN.matcher(error.getSourceName()).matches()) {
               return CheckLevel.OFF;
             }
-            if ((error.getSourceName().startsWith("/tf-") || error.getSourceName().startsWith("/vz-"))
+            if ((error.getSourceName().startsWith("/tf-")
+                    || error.getSourceName().startsWith("/vz-"))
                 && error.getType().key.equals("JSC_VAR_MULTIPLY_DECLARED_ERROR")) {
-              return CheckLevel.OFF; // TODO(@jart): Remove when tf/vz components/plugins are ES6 modules.
+              // TODO(@jart): Remove when tf/vz components/plugins are ES6 modules.
+              return CheckLevel.OFF;
             }
             if (error.getType().key.equals("JSC_POLYMER_UNQUALIFIED_BEHAVIOR")
                 || error.getType().key.equals("JSC_POLYMER_UNANNOTATED_BEHAVIOR")) {
@@ -717,9 +726,9 @@ public final class Vulcanize {
   }
 
   private static ImmutableMultimap<DiagnosticType, String> initDiagnosticGroups() {
-    DiagnosticGroups groups = new DiagnosticGroups();
     Multimap<DiagnosticType, String> builder = HashMultimap.create();
-    for (Map.Entry<String, DiagnosticGroup> group : groups.getRegisteredGroups().entrySet()) {
+    for (Map.Entry<String, DiagnosticGroup> group :
+        DiagnosticGroups.getRegisteredGroups().entrySet()) {
       for (DiagnosticType type : group.getValue().getTypes()) {
         builder.put(type, group.getKey());
       }
@@ -727,8 +736,7 @@ public final class Vulcanize {
     return ImmutableMultimap.copyOf(builder);
   }
 
-  private static String extractScriptContent(Document document)
-      throws FileNotFoundException, IOException, IllegalArgumentException {
+  private static String extractScriptContent(Document document) throws IOException {
     Elements scripts = document.getElementsByTag("script");
     StringBuilder sourcesBuilder = new StringBuilder();
 
@@ -767,7 +775,7 @@ public final class Vulcanize {
   }
 
   private static String extractAndTransformJavaScript(Document document, Webpath jsPath)
-      throws FileNotFoundException, IOException, IllegalArgumentException {
+      throws IOException {
     String scriptContent = extractScriptContent(document);
 
     Element lastBody = Iterables.getLast(document.getElementsByTag("body"));
@@ -778,6 +786,124 @@ public final class Vulcanize {
     return scriptContent;
   }
 
+  private static void cloneChildrenWithoutWhitespace(Element src, Element dest) {
+    List<Node> toMove = new ArrayList<>();
+    for (Node node : src.childNodes()) {
+      if (node instanceof TextNode && ((TextNode) node).isBlank()) {
+        continue;
+      }
+      toMove.add(node);
+    }
+    for (Node node : toMove) {
+      dest.appendChild(node.clone());
+    }
+  }
+
+  /**
+   * When we inline the HTML based on `<link rel="import">` in `transform`, we
+   * replace the link element with parsed document. This makes us have nested
+   * documents and jsoup's Node.outerHtml (or Node.toString) are incapable of
+   * properly outputting that. Here, we flatten the document by combining all
+   * elements in `<head>` and `<body>` of nested document in one `<head>` and
+   * `<body>`.
+   *
+   * It also prepends <!doctype html> since TensorBoard requires that the
+   * document is HTML.
+   *
+   * NOTE: it makes side-effect to the input `document`.
+   *
+   * Examples:
+   * // Input
+   * <#root> <!-- document -->
+   *   <html>
+   *     <head>
+   *      <#root>
+   *        <html>
+   *          <head>
+   *            <script></script>
+   *            <#root><html><body>welcome </body></html></#root>
+   *          </head>
+   *          <body>foo</body></html>
+   *      </#root></head>
+   *     <body><span>bar</span></body>
+   *   </html>
+   * </html>
+   * // Output
+   * <#root> <!-- document -->
+   *   <!doctype html>
+   *   <html>
+   *     <head><script></script></head>
+   *     <body>welcome foo<span>bar</span></body>
+   *   </html>
+   * </html>
+   **/
+  private static Document getFlattenedHTML5Document(Document document) {
+    Document flatDoc = new Document("/");
+
+    flatDoc.appendChild(new DocumentType("html", "", "", ""));
+
+    // Transfer comment nodes from the `document` level. They are important
+    // license comments
+    for (Node node : document.childNodes()) {
+      if (node instanceof Comment) {
+        flatDoc.appendChild(node.clone());
+      }
+    }
+
+    // Create `<html>`, `<head>` and `<body>`.
+    flatDoc.normalise();
+
+    document.traverse(new FlatDocumentCopier(flatDoc));
+
+    for (Element subdoc : flatDoc.getElementsByTag("#root")) {
+      if (!subdoc.equals(flatDoc)) {
+        final int maxElementStrLen = 200;
+        String parentStr = subdoc.parent().outerHtml();
+        if (parentStr.length() > maxElementStrLen) {
+          parentStr = parentStr.substring(0, maxElementStrLen) + "...";
+        }
+        throw new RuntimeException(
+            "Nested doc (e.g., <link> importing outside the head of a document) "
+            + "is not supported.\nParent of offending element: " + parentStr);
+      }
+    }
+
+    return flatDoc;
+  }
+
+  private static class FlatDocumentCopier implements NodeVisitor {
+    private final Element destHead;
+    private final Element destBody;
+
+    public FlatDocumentCopier(Document dest) {
+      destHead = dest.head();
+      destBody = dest.body();
+    }
+
+    @Override
+    public void head(Node node, int depth) {
+      // Copy childNodes from `head` into the dest doc's head without
+      // modification if the node is not a `document` (or a `<#root>` element)
+      // in which case we want to traverse further and only copy the childNodes
+      // in its `body` and `head` elements.
+      if (node.parentNode() != null && node.parentNode().nodeName().equals("head")
+          && !(node instanceof Document)) {
+        destHead.appendChild(node.clone());
+      }
+
+      if (node.nodeName().equals("body")) {
+        cloneChildrenWithoutWhitespace((Element) node, destBody);
+        // No need to further traverse the `body`. Skip by removing the nodes.
+        ((Element) node).empty();
+      }
+    }
+
+    @Override
+    public void tail(Node node, int depth) {
+      // Copying is done during the `head`. No need to do any work.
+    }
+  }
+
   private static final class JsPrintlessErrorManager extends BasicErrorManager {
 
     @Override
@@ -786,4 +912,6 @@ public final class Vulcanize {
     @Override
     public void printSummary() {}
   }
+
+  private Vulcanize() {}
 }

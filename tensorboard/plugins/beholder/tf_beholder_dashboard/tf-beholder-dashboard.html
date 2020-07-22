@@ -32,6 +32,12 @@ limitations under the License.
 <dom-module id="tf-beholder-dashboard">
   <template>
     <tf-plugin-dialog id="initialDialog"></tf-plugin-dialog>
+    <div class="deprecation-warning">
+      Beholder is deprecated and will be removed in a future TensorBoard
+      release. Please see
+      <a href="https://github.com/tensorflow/tensorboard/issues/3843">#3843</a>
+      for details.
+    </div>
     <tf-dashboard-layout>
       <div class="sidebar" slot="sidebar">
         <template is="dom-if" if="[[_controls_disabled]]">
@@ -261,6 +267,21 @@ with MonitoredSession(..., hooks=[beholder_hook]) as sess:
     </tf-dashboard-layout>
     <style include="dashboard-style"></style>
     <style>
+      .deprecation-warning {
+        background-color: #c6cad1; /* $tf-slate 300 */
+        border-bottom: 1px solid var(--tb-ui-dark-accent);
+        box-sizing: border-box;
+        font-style: italic;
+        height: 60px;
+        padding: 20px;
+        text-align: center;
+      }
+
+      tf-dashboard-layout {
+        /* Leave space for .deprecation-warning top bar. */
+        height: calc(100% - 60px);
+      }
+
       .center {
         height: 100%;
         display: flex;
@@ -371,6 +392,10 @@ with MonitoredSession(..., hooks=[beholder_hook]) as sess:
         is: 'tf-beholder-dashboard',
 
         properties: {
+          reloadOnReady: {
+            type: Boolean,
+            value: true,
+          },
           _requestManager: {
             type: Object,
             value: () => new tf_backend.RequestManager(10, 0),
@@ -528,7 +553,7 @@ with MonitoredSession(..., hooks=[beholder_hook]) as sess:
         },
 
         ready() {
-          this.reload();
+          if (this.reloadOnReady) this.reload();
         },
 
         reload() {

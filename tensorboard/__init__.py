@@ -18,9 +18,17 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from tensorboard import errors  # public export
-from tensorboard import lazy
-from tensorboard import version
+from tensorboard import lazy as _lazy
+from tensorboard import version as _version
+
+# TensorBoard public API.
+__all__ = [
+    "__version__",
+    "errors",
+    "notebook",
+    "program",
+    "summary",
+]
 
 
 # Please be careful when changing the structure of this file.
@@ -66,21 +74,35 @@ from tensorboard import version
 # additional discussion.
 
 
-@lazy.lazy_load("tensorboard.notebook")
+@_lazy.lazy_load("tensorboard.data")
+def data():
+    import importlib
+
+    return importlib.import_module("tensorboard.data")
+
+
+@_lazy.lazy_load("tensorboard.errors")
+def errors():
+    import importlib
+
+    return importlib.import_module("tensorboard.errors")
+
+
+@_lazy.lazy_load("tensorboard.notebook")
 def notebook():
     import importlib
 
     return importlib.import_module("tensorboard.notebook")
 
 
-@lazy.lazy_load("tensorboard.program")
+@_lazy.lazy_load("tensorboard.program")
 def program():
     import importlib
 
     return importlib.import_module("tensorboard.program")
 
 
-@lazy.lazy_load("tensorboard.summary")
+@_lazy.lazy_load("tensorboard.summary")
 def summary():
     import importlib
 
@@ -98,4 +120,4 @@ def load_ipython_extension(ipython):
     notebook._load_ipython_extension(ipython)
 
 
-__version__ = version.VERSION
+__version__ = _version.VERSION

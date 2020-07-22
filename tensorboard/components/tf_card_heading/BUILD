@@ -1,7 +1,7 @@
-package(default_visibility = ["//tensorboard:internal"])
-
 load("//tensorboard/defs:defs.bzl", "tensorboard_webcomponent_library")
 load("//tensorboard/defs:web.bzl", "tf_web_library")
+
+package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
@@ -14,7 +14,6 @@ tf_web_library(
         "util.ts",
     ],
     path = "/tf-card-heading",
-    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_markdown_view",
@@ -27,7 +26,6 @@ tf_web_library(
 tensorboard_webcomponent_library(
     name = "legacy",
     srcs = [":tf_card_heading"],
-    visibility = ["//visibility:public"],
     destdir = "tf-card-heading",
     deps = [
         "//tensorboard/components/tf_imports:polymer_lib",

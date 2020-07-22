@@ -20,10 +20,35 @@ on:
   pull_request: {}
 
 env:
-  BUILDIFIER: '0.29.0'
-  BUILDIFIER_SHA256SUM: '4c985c883eafdde9c0e8cf3c8595b8bfdf32e77571c369bf8ddae83b042028d6'
+  BUILDIFIER: '3.0.0'
+  BUILDIFIER_SHA256SUM: 'e92a6793c7134c5431c58fbc34700664f101e5c9b1c1fcd93b97978e8b7f88db'
 
 jobs:
+  lint-python-flake8:
+    runs-on: ubuntu-16.04
+    strategy:
+      fail-fast: false
+      matrix:
+        # flake8 should run on each Python version that we target,
+        # because the errors and warnings can differ due to language
+        # changes, and we want to catch them all.
+        python_version: ['3.5', '3.7']
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python_version }}
+          architecture: 'x64'
+      - name: 'Install flake8'
+        run: |
+          python -m pip install -U pip
+          pip install flake8 -c ./tensorboard/pip_package/requirements_dev.txt
+      - run: pip freeze --all
+      - name: 'Lint Python code for errors with flake8'
+        # See: http://flake8.pycqa.org/en/3.7.8/user/error-codes.html
+        # Use the comment '# noqa: <error code>' to suppress.
+        run: flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+
   lint-python:
     runs-on: ubuntu-16.04
     steps:
@@ -32,18 +57,14 @@ jobs:
         with:
           python-version: '3.6'
           architecture: 'x64'
-      - name: 'Install black and flake8'
+      - name: 'Install black'
         run: |
           python -m pip install -U pip
-          pip install -r ./tensorboard/pip_package/requirements_dev.txt
+          pip install black -c ./tensorboard/pip_package/requirements_dev.txt
       - run: pip freeze --all
-      - name: 'Lint Python code for errors with flake8'
-        # See: http://flake8.pycqa.org/en/3.7.8/user/error-codes.html
-        # Use the comment '# noqa: <error code>' to suppress.
-        run: flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
       - name: 'Lint Python code for style with Black'
         # You can run `black .` to fix all Black complaints.
-        run: black --check .
+        run: black --check --diff .
 
   lint-docs:
     runs-on: ubuntu-16.04
@@ -56,12 +77,19 @@ jobs:
       - name: 'Install yamllint'
         run: |
           python -m pip install -U pip
-          pip install -r ./tensorboard/pip_package/requirements_dev.txt
+          pip install yamllint -c ./tensorboard/pip_package/requirements_dev.txt
       - run: pip freeze --all
       - name: 'Lint YAML for gotchas with yamllint'
         # Use '# yamllint disable-line rule:foo' to suppress.
         run: yamllint -c docs/.yamllint docs docs/.yamllint
-      - run: ./tensorboard/tools/docs_list_format_test.sh
+      - name: 'Install nbfmt.py for checking notebook formatting'
+        run: |
+          nbfmt_version="78692e5013fe070a33c7501245157b395c2e7e84"
+          wget "https://raw.githubusercontent.com/tensorflow/docs/${nbfmt_version}/tools/nbfmt.py"
+          pip install absl-py
+          chmod +x ./nbfmt.py
+      - name: 'Check Colab notebooks for formatting'
+        run: git ls-files -z '*.ipynb' | xargs -0 ./nbfmt.py --test
 
   lint-frontend:
     runs-on: ubuntu-16.04
@@ -71,6 +99,9 @@ jobs:
       - run: yarn install --ignore-engines
         # You can run `yarn fix-lint` to fix all Prettier complaints.
       - run: yarn lint
+        # Make sure no tests are skipped with "focused" tests.
+      - run: |
+          ! git grep -E 'f(it|describe)\(' 'tensorboard/*_test.ts'
 
   lint-build:
     runs-on: ubuntu-16.04
@@ -81,8 +112,28 @@ jobs:
           ci/download_buildifier.sh "${BUILDIFIER}" "${BUILDIFIER_SHA256SUM}" ~/buildifier
           sudo mv ~/buildifier /usr/local/bin/buildifier
       - name: 'Lint BUILD files'
-        run: git ls-files -z '*BUILD' | xargs -0 buildifier --mode=check
+        # TODO(tensorboard-team): address all lint warnings and remove the exemption.
+        run:
+          git ls-files -z '*BUILD' third_party/js.bzl | xargs -0 buildifier --mode=check --lint=warn
+          --warnings=-native-py,-native-java
       - run: ./tensorboard/tools/mirror_urls_test.sh
+      - name: 'Lint for no py2 BUILD targets'
+        # Use | to start a literal so YAML doesn't complain about the '!' character.
+        run: |
+          ! git grep 'python_version = "PY2"' '*BUILD'
+
+  lint-proto:
+    runs-on: ubuntu-16.04
+    steps:
+      - uses: actions/checkout@v1
+      - name: clang-format lint
+        uses: DoozyX/clang-format-lint-action@v0.5
+        with:
+          source: ./tensorboard
+          # Exclude tensorboard/compat because the source of truth is TensorFlow.
+          exclude: ./tensorboard/compat/proto
+          extensions: 'proto'
+          clangFormatVersion: 9
 
   check-misc:
     runs-on: ubuntu-16.04

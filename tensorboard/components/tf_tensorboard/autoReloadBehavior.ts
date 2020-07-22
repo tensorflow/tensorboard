@@ -39,13 +39,34 @@ namespace tf_tensorboard {
       _autoReloadId: {
         type: Number,
       },
+      // Tracks whethere an auto reload was missed because the document was not visible.
+      _missedAutoReload: {
+        type: Boolean,
+        value: false,
+      },
+      _boundHandleVisibilityChange: {
+        type: Object,
+      },
       autoReloadIntervalSecs: {
         type: Number,
         value: 30,
       },
     },
+    attached: function() {
+      this._boundHandleVisibilityChange = this._handleVisibilityChange.bind(
+        this
+      );
+      document.addEventListener(
+        'visibilitychange',
+        this._boundHandleVisibilityChange
+      );
+    },
     detached: function() {
       window.clearTimeout(this._autoReloadId);
+      document.removeEventListener(
+        'visibilitychange',
+        this._boundHandleVisibilityChange
+      );
     },
     _autoReloadObserver: function(autoReload) {
       window.localStorage.setItem(AUTORELOAD_LOCALSTORAGE_KEY, autoReload);
@@ -59,14 +80,34 @@ namespace tf_tensorboard {
       }
     },
     _doAutoReload: function() {
-      if (this.reload == null) {
-        throw new Error('AutoReloadBehavior requires a reload method');
+      if (this._isDocumentVisible()) {
+        this._doReload();
+      } else {
+        this._missedAutoReload = true;
       }
-      this.reload();
       this._autoReloadId = window.setTimeout(
         () => this._doAutoReload(),
         this.autoReloadIntervalSecs * 1000
       );
+    },
+    _doReload: function() {
+      if (this.reload == null) {
+        throw new Error('AutoReloadBehavior requires a reload method');
+      }
+      this.reload();
+    },
+    _handleVisibilityChange: function() {
+      if (this._isDocumentVisible() && this._missedAutoReload) {
+        this._missedAutoReload = false;
+        this._doReload();
+      }
+    },
+    /**
+     * Wraps Page Visibility API call to determine if document is visible.
+     * Can be overriden for testing purposes.
+     */
+    _isDocumentVisible: function() {
+      return document.visibilityState === 'visible';
     },
   };
 } // namespace tf_tensorboard

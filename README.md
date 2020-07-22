@@ -1,4 +1,4 @@
-# TensorBoard [![Travis build status](https://travis-ci.org/tensorflow/tensorboard.svg?branch=master)](https://travis-ci.org/tensorflow/tensorboard/) [![Compat check PyPI](https://python-compatibility-tools.appspot.com/one_badge_image?package=tensorboard)](https://python-compatibility-tools.appspot.com/one_badge_target?package=tensorboard)
+# TensorBoard [![Travis build status](https://travis-ci.org/tensorflow/tensorboard.svg?branch=master)](https://travis-ci.org/tensorflow/tensorboard/) [![GitHub Actions CI](https://github.com/tensorflow/tensorboard/workflows/CI/badge.svg)](https://github.com/tensorflow/tensorboard/actions?query=workflow%3ACI+branch%3Amaster+event%3Apush) [![Compat check PyPI](https://python-compatibility-tools.appspot.com/one_badge_image?package=tensorboard)](https://python-compatibility-tools.appspot.com/one_badge_target?package=tensorboard)
 
 TensorBoard is a suite of web applications for inspecting and understanding your
 TensorFlow runs and graphs.
@@ -13,17 +13,16 @@ Colab.
 You may also be interested in the hosted TensorBoard solution at
 [TensorBoard.dev][]. You can use TensorBoard.dev to easily host, track, and
 share your ML experiments for free. For example, [this experiment][] shows a
-working example featuring the scalar dashboard.
+working example featuring the scalars, graphs, histograms, and distributions
+dashboards.
 
 TensorBoard is designed to run entirely offline, without requiring any access
 to the Internet. For instance, this may be on your local machine, behind a
-corporate firewall, or in a datacenter. Currently, there is one exception where
-TensorBoard does require Internet access: the optional profile plugin, when
-active, connects to a Google-hosted CDN to load the Google Charts library.
+corporate firewall, or in a datacenter.
 
 [TensorBoard: Getting Started]: https://www.tensorflow.org/tensorboard/get_started
 [TensorBoard.dev]: https://tensorboard.dev
-[This experiment]: https://tensorboard.dev/experiment/AdYd1TgeTlaLWXx6I8JUbA/#scalars
+[This experiment]: https://tensorboard.dev/experiment/Ux93Qo4LT9SPBSLugwPsyQ/#scalars
 
 # Usage
 
@@ -71,9 +70,9 @@ work, but there may be bugs or performance issues.
 The first step in using TensorBoard is acquiring data from your TensorFlow run.
 For this, you need
 [summary ops](https://www.tensorflow.org/api_docs/python/tf/summary).
-Summary ops are ops, like
+Summary ops are ops, just like
 [`tf.matmul`](https://www.tensorflow.org/api_docs/python/tf/linalg/matmul)
-or
+and
 [`tf.nn.relu`](https://www.tensorflow.org/api_docs/python/tf/nn/relu),
 which means they take in tensors, produce tensors, and are evaluated from within
 a TensorFlow graph. However, summary ops have a twist: the Tensors they produce
@@ -137,13 +136,17 @@ For example, here is a well-organized TensorBoard log directory, with two runs,
 /tensorboard --logdir /some/path/mnist_experiments
 ```
 
+#### Logdir & Logdir_spec (Legacy Mode)
+
 You may also pass a comma separated list of log directories, and TensorBoard
 will watch each directory. You can also assign names to individual log
 directories by putting a colon between the name and the path, as in
 
 ```
-tensorboard --logdir name1:/path/to/logs/1,name2:/path/to/logs/2
+tensorboard --logdir_spec name1:/path/to/logs/1,name2:/path/to/logs/2
 ```
+
+_This flag (`--logdir_spec`) is discouraged and can usually be avoided_. TensorBoard walks log directories recursively; for finer-grained control, prefer using a symlink tree. _Some features may not work when using `--logdir_spec` instead of `--logdir`._
 
 # The Visualizations
 
@@ -224,7 +227,7 @@ example, you may view your input data after it has been embedded in a high-
 dimensional space by your model. The embedding projector reads data from your
 model checkpoint file, and may be configured with additional metadata, like
 a vocabulary file or sprite images. For more details, see [the embedding
-projector tutorial](https://www.tensorflow.org/get_started/embedding_viz).
+projector tutorial](https://www.tensorflow.org/tutorials/text/word_embeddings).
 
 ### Text Dashboard
 

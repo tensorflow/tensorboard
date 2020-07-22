@@ -33,6 +33,7 @@ import os
 
 import pkg_resources
 
+from tensorboard.backend import experimental_plugin
 from tensorboard.compat import tf
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.audio import audio_plugin
@@ -46,17 +47,33 @@ from tensorboard.plugins.graph import graphs_plugin
 from tensorboard.plugins.histogram import histograms_plugin
 from tensorboard.plugins.hparams import hparams_plugin
 from tensorboard.plugins.image import images_plugin
-from tensorboard.plugins.interactive_inference import (
-    interactive_inference_plugin_loader,
-)
 from tensorboard.plugins.pr_curve import pr_curves_plugin
-from tensorboard.plugins.profile import profile_plugin_loader
+from tensorboard.plugins.profile_redirect import profile_redirect_plugin
 from tensorboard.plugins.scalar import scalars_plugin
 from tensorboard.plugins.text import text_plugin
+from tensorboard.plugins.text_v2 import text_v2_plugin
 from tensorboard.plugins.mesh import mesh_plugin
+from tensorboard.plugins.npmi import npmi_plugin
 
 
 logger = logging.getLogger(__name__)
+
+
+class ExperimentalTextV2Plugin(
+    text_v2_plugin.TextV2Plugin, experimental_plugin.ExperimentalPlugin
+):
+    """Angular Text Plugin marked as experimental."""
+
+    pass
+
+
+class ExperimentalNpmiPlugin(
+    npmi_plugin.NpmiPlugin, experimental_plugin.ExperimentalPlugin
+):
+    """Angular nPMI Plugin marked as experimental."""
+
+    pass
+
 
 # Ordering matters. The order in which these lines appear determines the
 # ordering of tabs in TensorBoard's GUI.
@@ -64,24 +81,39 @@ _PLUGINS = [
     core_plugin.CorePluginLoader,
     scalars_plugin.ScalarsPlugin,
     custom_scalars_plugin.CustomScalarsPlugin,
-    debugger_v2_plugin.DebuggerV2Plugin,
     images_plugin.ImagesPlugin,
     audio_plugin.AudioPlugin,
     debugger_plugin_loader.DebuggerPluginLoader,
+    debugger_v2_plugin.DebuggerV2Plugin,
     graphs_plugin.GraphsPlugin,
     distributions_plugin.DistributionsPlugin,
     histograms_plugin.HistogramsPlugin,
     text_plugin.TextPlugin,
     pr_curves_plugin.PrCurvesPlugin,
-    profile_plugin_loader.ProfilePluginLoader,
+    profile_redirect_plugin.ProfileRedirectPluginLoader,
     beholder_plugin_loader.BeholderPluginLoader,
-    interactive_inference_plugin_loader.InteractiveInferencePluginLoader,
     hparams_plugin.HParamsPlugin,
     mesh_plugin.MeshPlugin,
+    ExperimentalTextV2Plugin,
+    ExperimentalNpmiPlugin,
 ]
 
 
 def get_plugins():
+    """Returns a list specifying all known TensorBoard plugins.
+
+    This includes both first-party, statically bundled plugins and
+    dynamic plugins.
+
+    This list can be passed to the `tensorboard.program.TensorBoard` API.
+
+    Returns:
+      The list of default first-party plugins.
+    """
+    return get_static_plugins() + get_dynamic_plugins()
+
+
+def get_static_plugins():
     """Returns a list specifying TensorBoard's default first-party plugins.
 
     Plugins are specified in this list either via a TBLoader instance to load the
@@ -90,7 +122,7 @@ def get_plugins():
     This list can be passed to the `tensorboard.program.TensorBoard` API.
 
     Returns:
-      The list of default plugins.
+      The list of default first-party plugins.
 
     :rtype: list[Type[base_plugin.TBLoader] | Type[base_plugin.TBPlugin]]
     """

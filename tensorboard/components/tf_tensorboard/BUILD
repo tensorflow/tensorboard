@@ -1,7 +1,6 @@
-package(default_visibility = ["//tensorboard:internal"])
-
 load("//tensorboard/defs:web.bzl", "tf_web_library")
-load("//tensorboard/defs:vulcanize.bzl", "tensorboard_html_binary")
+
+package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
@@ -53,7 +52,6 @@ tf_web_library(
         "plugin-dialog.html",
     ],
     path = "/tf-tensorboard",
-    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_imports:lodash",
         "//tensorboard/components/tf_imports:polymer",
@@ -64,7 +62,6 @@ tf_web_library(
     name = "default_plugins",
     srcs = ["default-plugins.html"],
     path = "/tf-tensorboard",
-    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/plugins/audio/tf_audio_dashboard",
         "//tensorboard/plugins/beholder/tf_beholder_dashboard",
@@ -75,10 +72,9 @@ tf_web_library(
         "//tensorboard/plugins/histogram/tf_histogram_dashboard",
         "//tensorboard/plugins/hparams/tf_hparams_dashboard",
         "//tensorboard/plugins/image/tf_image_dashboard",
-        "//tensorboard/plugins/interactive_inference/tf_interactive_inference_dashboard",
         "//tensorboard/plugins/mesh/tf_mesh_dashboard",
         "//tensorboard/plugins/pr_curve/tf_pr_curve_dashboard",
-        "//tensorboard/plugins/profile/tf_profile_dashboard",
+        "//tensorboard/plugins/profile_redirect/tf_profile_redirect_dashboard",
         "//tensorboard/plugins/scalar/tf_scalar_dashboard",
         "//tensorboard/plugins/text/tf_text_dashboard",
     ],

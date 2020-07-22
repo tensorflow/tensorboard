@@ -60,12 +60,10 @@ class CorePlugin(base_plugin.TBPlugin):
         """
         logdir_spec = context.flags.logdir_spec if context.flags else ""
         self._logdir = context.logdir or logdir_spec
-        self._db_uri = context.db_uri
         self._window_title = context.window_title
         self._multiplexer = context.multiplexer
-        self._db_connection_provider = context.db_connection_provider
         self._assets_zip_provider = context.assets_zip_provider
-        if context.flags and context.flags.generic_data == "true":
+        if not context.flags or context.flags.generic_data != "false":
             self._data_provider = context.data_provider
         else:
             self._data_provider = None
@@ -134,18 +132,31 @@ class CorePlugin(base_plugin.TBPlugin):
         * window_title is the title of the TensorBoard web page.
         """
         if self._data_provider:
+            ctx = plugin_util.context(request.environ)
             experiment = plugin_util.experiment_id(request.environ)
-            data_location = self._data_provider.data_location(experiment)
+            data_location = self._data_provider.data_location(
+                ctx, experiment_id=experiment
+            )
+            experiment_metadata = self._data_provider.experiment_metadata(
+                ctx, experiment_id=experiment
+            )
         else:
-            data_location = self._logdir or self._db_uri
-        return http_util.Respond(
-            request,
-            {
-                "data_location": data_location,
-                "window_title": self._window_title,
-            },
-            "application/json",
-        )
+            data_location = self._logdir
+            experiment_metadata = None
+
+        environment = {
+            "data_location": data_location,
+            "window_title": self._window_title,
+        }
+        if experiment_metadata is not None:
+            environment.update(
+                {
+                    "experiment_name": experiment_metadata.experiment_name,
+                    "experiment_description": experiment_metadata.experiment_description,
+                    "creation_time": experiment_metadata.creation_time,
+                }
+            )
+        return http_util.Respond(request, environment, "application/json",)
 
     @wrappers.Request.application
     def _serve_logdir(self, request):
@@ -176,9 +187,10 @@ class CorePlugin(base_plugin.TBPlugin):
         run name.
         """
         if self._data_provider:
+            ctx = plugin_util.context(request.environ)
             experiment = plugin_util.experiment_id(request.environ)
             runs = sorted(
-                self._data_provider.list_runs(experiment_id=experiment),
+                self._data_provider.list_runs(ctx, experiment_id=experiment),
                 key=lambda run: (
                     run.start_time
                     if run.start_time is not None
@@ -187,19 +199,6 @@ class CorePlugin(base_plugin.TBPlugin):
                 ),
             )
             run_names = [run.run_name for run in runs]
-        elif self._db_connection_provider:
-            db = self._db_connection_provider()
-            cursor = db.execute(
-                """
-                SELECT
-                  run_name,
-                  started_time IS NULL as started_time_nulls_last,
-                  started_time
-                FROM Runs
-                ORDER BY started_time_nulls_last, started_time, run_name
-                """
-            )
-            run_names = [row[0] for row in cursor]
         else:
             # Python's list.sort is stable, so to order by started time and
             # then by name, we can just do the sorts in the reverse order.
@@ -209,7 +208,7 @@ class CorePlugin(base_plugin.TBPlugin):
                 try:
                     return self._multiplexer.FirstEventTimestamp(run_name)
                 except ValueError as e:
-                    logger.warn(
+                    logger.warning(
                         "Unable to get first event timestamp for run %s: %s",
                         run_name,
                         e,
@@ -232,27 +231,7 @@ class CorePlugin(base_plugin.TBPlugin):
         return http_util.Respond(request, results, "application/json")
 
     def list_experiments_impl(self):
-        results = []
-        if self._db_connection_provider:
-            db = self._db_connection_provider()
-            cursor = db.execute(
-                """
-                SELECT
-                  experiment_id,
-                  experiment_name,
-                  started_time,
-                  started_time IS NULL as started_time_nulls_last
-                FROM Experiments
-                ORDER BY started_time_nulls_last, started_time, experiment_name,
-                    experiment_id
-                """
-            )
-            results = [
-                {"id": row[0], "name": row[1], "startTime": row[2],}
-                for row in cursor
-            ]
-
-        return results
+        return []
 
     @wrappers.Request.application
     def _serve_experiment_runs(self, request):
@@ -265,57 +244,6 @@ class CorePlugin(base_plugin.TBPlugin):
         displayName, and lastly, inserted time.
         """
         results = []
-        if self._db_connection_provider:
-            exp_id = plugin_util.experiment_id(request.environ)
-            runs_dict = collections.OrderedDict()
-
-            db = self._db_connection_provider()
-            cursor = db.execute(
-                """
-                SELECT
-                  Runs.run_id,
-                  Runs.run_name,
-                  Runs.started_time,
-                  Runs.started_time IS NULL as started_time_nulls_last,
-                  Tags.tag_id,
-                  Tags.tag_name,
-                  Tags.display_name,
-                  Tags.plugin_name,
-                  Tags.inserted_time
-                From Runs
-                LEFT JOIN Tags ON Runs.run_id = Tags.run_id
-                WHERE Runs.experiment_id = ?
-                AND (Tags.tag_id IS NULL OR Tags.plugin_name IS NOT NULL)
-                ORDER BY started_time_nulls_last,
-                  Runs.started_time,
-                  Runs.run_name,
-                  Runs.run_id,
-                  Tags.tag_name,
-                  Tags.display_name,
-                  Tags.inserted_time;
-                """,
-                (exp_id,),
-            )
-            for row in cursor:
-                run_id = row[0]
-                if not run_id in runs_dict:
-                    runs_dict[run_id] = {
-                        "id": run_id,
-                        "name": row[1],
-                        "startTime": math.floor(row[2]),
-                        "tags": [],
-                    }
-                # tag can be missing.
-                if row[4]:
-                    runs_dict[run_id].get("tags").append(
-                        {
-                            "id": row[4],
-                            "displayName": row[6],
-                            "name": row[5],
-                            "pluginName": row[7],
-                        }
-                    )
-            results = list(runs_dict.values())
         return http_util.Respond(request, results, "application/json")
 
 
@@ -559,7 +487,7 @@ of running out of memory if the logdir contains many active event files.
             "--reload_multifile_inactive_secs",
             metavar="SECONDS",
             type=int,
-            default=4000,
+            default=86400,
             help="""\
 [experimental] Configures the age threshold in seconds at which an event file
 that has no event wall time more recent than that will be considered an
@@ -568,7 +496,7 @@ no maximum age will be enforced, but beware of running out of memory and
 heavier filesystem read traffic. If set to 0, this reverts to the older
 last-file-only polling strategy (akin to --reload_multifile=false).
 (default: %(default)s - intended to ensure an event file remains active if
-it receives new data at least once per hour)\
+it receives new data at least once per 24 hour period)\
 """,
         )
 
@@ -579,15 +507,18 @@ it receives new data at least once per hour)\
             default="auto",
             choices=["false", "auto", "true"],
             help="""\
-[experimental] Whether to use generic data provider infrastructure. The
-"auto" option enables this only for dashboards that are considered
-stable under the new codepaths. (default: %(default)s)\
+[experimental] Hints whether plugins should read from generic data
+provider infrastructure. For plugins that support only the legacy
+multiplexer APIs or only the generic data APIs, this option has no
+effect. The "auto" option enables this only for plugins that are
+considered to have stable support for generic data providers. (default:
+%(default)s)\
 """,
         )
 
         parser.add_argument(
             "--samples_per_plugin",
-            type=str,
+            type=_parse_samples_per_plugin,
             default="",
             help="""\
 An optional comma separated list of plugin_name=num_samples pairs to
@@ -649,3 +580,13 @@ def _gzip(bytestring):
     with gzip.GzipFile(fileobj=out, mode="wb", compresslevel=3, mtime=0) as f:
         f.write(bytestring)
     return out.getvalue()
+
+
+def _parse_samples_per_plugin(value):
+    """Parses `value` as a string-to-int dict in the form `foo=12,bar=34`."""
+    result = {}
+    for token in value.split(","):
+        if token:
+            k, v = token.strip().split("=")
+            result[k] = int(v)
+    return result

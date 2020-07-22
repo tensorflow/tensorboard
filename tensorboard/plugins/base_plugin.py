@@ -117,12 +117,13 @@ class FrontendMetadata(object):
 
     def __init__(
         self,
+        *,
         disable_reload=None,
         element_name=None,
         es_module_path=None,
         remove_dom=None,
         tab_name=None,
-        is_ng_component=False,
+        is_ng_component=None
     ):
         """Creates a `FrontendMetadata` value.
 
@@ -149,7 +150,7 @@ class FrontendMetadata(object):
               instance, the tab name should not use underscores to separate
               words. Should be a `str` or `None` (the default; indicates to
               use the plugin name as the tab name).
-          is_ng_component: Set to `True` only for built-in Agnular plugins.
+          is_ng_component: Set to `True` only for built-in Angular plugins.
               In this case, the `plugin_name` property of the Plugin, which is
               mapped to the `id` property in JavaScript's `UiPluginMetadata` type,
               is used to select the Angular component. A `True` value is mutually
@@ -162,7 +163,9 @@ class FrontendMetadata(object):
         self._es_module_path = es_module_path
         self._remove_dom = False if remove_dom is None else remove_dom
         self._tab_name = tab_name
-        self._is_ng_component = is_ng_component
+        self._is_ng_component = (
+            False if is_ng_component is None else is_ng_component
+        )
 
     @property
     def disable_reload(self):
@@ -244,15 +247,15 @@ class TBContext(object):
 
     def __init__(
         self,
+        *,
         assets_zip_provider=None,
         data_provider=None,
-        db_connection_provider=None,
-        db_uri=None,
         flags=None,
         logdir=None,
         multiplexer=None,
         plugin_name_to_instance=None,
-        window_title=None,
+        sampling_hints=None,
+        window_title=None
     ):
         """Instantiates magic container.
 
@@ -268,19 +271,9 @@ class TBContext(object):
               also have been created by the tensorboard_zip_file build rule.
           data_provider: Instance of `tensorboard.data.provider.DataProvider`. May
             be `None` if `flags.generic_data` is set to `"false"`.
-          db_connection_provider: Function taking no arguments that returns a
-              PEP-249 database Connection object, or None if multiplexer should be
-              used instead. The returned value must be closed, and is safe to use in
-              a `with` statement. It is also safe to assume that calling this
-              function is cheap. The returned connection must only be used by a
-              single thread. Things like connection pooling are considered
-              implementation details of the provider.
-          db_uri: The string db URI TensorBoard was started with. If this is set,
-              the logdir should be None.
           flags: An object of the runtime flags provided to TensorBoard to their
               values.
-          logdir: The string logging directory TensorBoard was started with. If this
-              is set, the db_uri should be None.
+          logdir: The string logging directory TensorBoard was started with.
           multiplexer: An EventMultiplexer with underlying TB data. Plugins should
               copy this data over to the database when the db fields are set.
           plugin_name_to_instance: A mapping between plugin name to instance.
@@ -289,16 +282,19 @@ class TBContext(object):
               plugin may be absent from this mapping until it is registered. Plugin
               logic should handle cases in which a plugin is absent from this
               mapping, lest a KeyError is raised.
+          sampling_hints: Map from plugin name to `int` or `NoneType`, where
+              the value represents the user-specified downsampling limit as
+              given to the `--samples_per_plugin` flag, or `None` if none was
+              explicitly given for this plugin.
           window_title: A string specifying the window title.
         """
         self.assets_zip_provider = assets_zip_provider
         self.data_provider = data_provider
-        self.db_connection_provider = db_connection_provider
-        self.db_uri = db_uri
         self.flags = flags
         self.logdir = logdir
         self.multiplexer = multiplexer
         self.plugin_name_to_instance = plugin_name_to_instance
+        self.sampling_hints = sampling_hints
         self.window_title = window_title
 
 

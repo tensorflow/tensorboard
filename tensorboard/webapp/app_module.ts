@@ -15,18 +15,19 @@ limitations under the License.
 import {BrowserModule} from '@angular/platform-browser';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {NgModule} from '@angular/core';
-import {StoreModule} from '@ngrx/store';
+import {StoreModule, META_REDUCERS} from '@ngrx/store';
 import {EffectsModule} from '@ngrx/effects';
 
 import {AppContainer} from './app_container';
 import {CoreModule} from './core/core_module';
-import {PluginsModule} from './plugins/plugins_module';
-
-import {ROOT_REDUCERS, metaReducers} from './reducer_config';
-
+import {HashStorageModule} from './core/views/hash_storage_module';
+import {FeatureFlagModule} from './feature_flag/feature_flag_module';
 import {HeaderModule} from './header/header_module';
-import {ReloaderModule} from './reloader/reloader_module';
 import {MatIconModule} from './mat_icon_module';
+import {PluginsModule} from './plugins/plugins_module';
+import {ROOT_REDUCERS, loggerMetaReducerFactory} from './reducer_config';
+import {ReloaderModule} from './reloader/reloader_module';
+import {SettingsModule} from './settings/settings_module';
 
 @NgModule({
   declarations: [AppContainer],
@@ -34,20 +35,28 @@ import {MatIconModule} from './mat_icon_module';
     BrowserModule,
     BrowserAnimationsModule,
     CoreModule,
+    FeatureFlagModule,
+    HashStorageModule,
     HeaderModule,
     MatIconModule,
     PluginsModule,
     ReloaderModule,
+    SettingsModule,
     StoreModule.forRoot(ROOT_REDUCERS, {
-      metaReducers,
       runtimeChecks: {
-        strictStateSerializability: true,
+        strictStateSerializability: false,
         strictActionSerializability: true,
       },
     }),
     EffectsModule.forRoot([]),
   ],
-  providers: [],
+  providers: [
+    {
+      provide: META_REDUCERS,
+      useFactory: loggerMetaReducerFactory,
+      multi: true,
+    },
+  ],
   bootstrap: [AppContainer],
 })
 export class AppModule {}

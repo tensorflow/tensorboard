@@ -18,8 +18,10 @@ limitations under the License.
 // redundant copies in sync.  If the state shape and the API types need to
 // diverge in the future, that's straightforward: we'll leave types/api in place,
 // remove this import, and write the divergent state types explicitly here.
-import {PluginId, PluginsListing} from '../../types/api';
-import {LoadState} from '../../types/data';
+import {Environment, PluginId, PluginsListing} from '../../types/api';
+import {DataLoadState, LoadState} from '../../types/data';
+
+import {Run, RunId} from '../types';
 
 export const CORE_FEATURE_KEY = 'core';
 
@@ -29,8 +31,34 @@ export interface CoreState {
   pluginsListLoaded: LoadState;
   reloadPeriodInMs: number;
   reloadEnabled: boolean;
+  // Size of a page in a general paginated view that is configurable by user via
+  // settings.
+  pageSize: number;
+  environment: Environment;
+  // TODO(stephanwlee): move these state to the `runs` features.
+  // For now, we want them here for Polymer interop states reasons, too.
+  polymerInteropRuns: Run[];
+  polymerInteropRunSelection: Set<RunId>;
 }
 
 export interface State {
   [CORE_FEATURE_KEY]?: CoreState;
 }
+
+export const initialState: CoreState = {
+  activePlugin: null,
+  plugins: {},
+  pluginsListLoaded: {
+    state: DataLoadState.NOT_LOADED,
+    lastLoadedTimeInMs: null,
+  },
+  reloadPeriodInMs: 30000,
+  reloadEnabled: false,
+  pageSize: 12,
+  environment: {
+    data_location: '',
+    window_title: '',
+  },
+  polymerInteropRuns: [],
+  polymerInteropRunSelection: new Set(),
+};

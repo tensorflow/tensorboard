@@ -34,7 +34,6 @@ from six.moves.urllib import (
 import werkzeug
 
 from tensorboard.backend import json_util
-from tensorboard.compat import tf
 
 _DISALLOWED_CHAR_IN_DOMAIN = re.compile(r"\s")
 
@@ -89,6 +88,7 @@ def Respond(
     content_encoding=None,
     encoding="utf-8",
     csp_scripts_sha256s=None,
+    headers=None,
 ):
     """Construct a werkzeug Response.
 
@@ -129,6 +129,9 @@ def Respond(
         elements for script-src of the Content-Security-Policy. If it is None, the
         HTML will disallow any script to execute. It is only be used when the
         content_type is text/html.
+      headers: Any additional headers to include on the response, as a
+        list of key-value tuples: e.g., `[("Allow", "GET")]`. In case of
+        conflict, these may be overridden with headers added by this function.
 
     Returns:
       A werkzeug Response object (a WSGI application).
@@ -144,9 +147,13 @@ def Respond(
         content = json.dumps(
             json_util.Cleanse(content, encoding), ensure_ascii=not charset_match
         )
-    if charset != encoding:
-        content = tf.compat.as_text(content, encoding)
-    content = tf.compat.as_bytes(content, charset)
+
+    # Ensure correct output encoding, transcoding if necessary.
+    if charset != encoding and isinstance(content, bytes):
+        content = content.decode(encoding)
+    if isinstance(content, str):
+        content = content.encode(charset)
+
     if textual and not charset_match and mimetype not in _JSON_MIMETYPES:
         content_type += "; charset=" + charset
     gzip_accepted = _ALLOWS_GZIP_PATTERN.search(
@@ -176,7 +183,7 @@ def Respond(
         content_encoding = None
         direct_passthrough = True
 
-    headers = []
+    headers = list(headers or [])
     headers.append(("Content-Length", str(content_length)))
     headers.append(("X-Content-Type-Options", "nosniff"))
     if content_encoding:

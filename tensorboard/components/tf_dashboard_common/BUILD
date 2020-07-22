@@ -1,7 +1,7 @@
-package(default_visibility = ["//tensorboard:internal"])
-
 load("//tensorboard/defs:defs.bzl", "tensorboard_webcomponent_library")
 load("//tensorboard/defs:web.bzl", "tf_web_library")
+
+package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
@@ -38,7 +38,6 @@ tf_web_library(
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_storage",
         "//tensorboard/components/vz_sorting",
-        "@org_polymer_iron_ajax",
         "@org_polymer_iron_behaviors",
         "@org_polymer_iron_collapse",
         "@org_polymer_iron_flex_layout",
@@ -85,7 +84,6 @@ tensorboard_webcomponent_library(
         "//tensorboard/components/tf_imports_google:lib",
         "//tensorboard/components/tf_storage:legacy",
         "//tensorboard/components/vz_sorting:legacy",
-        "//third_party/javascript/polymer/v2/iron-ajax:lib",
         "//third_party/javascript/polymer/v2/iron-behaviors:lib",
         "//third_party/javascript/polymer/v2/iron-collapse:lib",
         "//third_party/javascript/polymer/v2/iron-flex-layout:lib",

@@ -16,26 +16,40 @@ import {NgModule} from '@angular/core';
 // Uses `async` pipe.
 import {CommonModule} from '@angular/common';
 
+import {MatButtonModule} from '@angular/material/button';
+import {MatIconModule} from '@angular/material/icon';
+import {MatSelectModule} from '@angular/material/select';
 import {MatTabsModule} from '@angular/material/tabs';
 import {MatToolbarModule} from '@angular/material/toolbar';
-import {MatSelectModule} from '@angular/material/select';
 
-import {HeaderComponent} from './header_component';
-import {HeaderContainer} from './header_container';
 import {CoreModule} from '../core/core_module';
 import {SettingsModule} from '../settings/settings_module';
+import {TbdevUploadModule} from '../tbdev_upload/tbdev_upload_module';
+
+import {HeaderComponent} from './header_component';
+import {PluginSelectorComponent} from './plugin_selector_component';
+import {PluginSelectorContainer} from './plugin_selector_container';
+import {ReloadContainer} from './reload_container';
 
 @NgModule({
-  declarations: [HeaderComponent, HeaderContainer],
-  exports: [HeaderComponent, HeaderContainer],
+  declarations: [
+    HeaderComponent,
+    PluginSelectorComponent,
+    PluginSelectorContainer,
+    ReloadContainer,
+  ],
+  exports: [HeaderComponent, PluginSelectorContainer, ReloadContainer],
   providers: [],
   imports: [
-    MatToolbarModule,
+    MatButtonModule,
+    MatIconModule,
     MatTabsModule,
+    MatToolbarModule,
     MatSelectModule,
     CommonModule,
     CoreModule,
     SettingsModule,
+    TbdevUploadModule,
   ],
 })
 export class HeaderModule {}

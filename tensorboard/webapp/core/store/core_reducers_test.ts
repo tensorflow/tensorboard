@@ -14,7 +14,12 @@ limitations under the License.
 ==============================================================================*/
 import * as actions from '../actions';
 import {reducers} from './core_reducers';
-import {createPluginMetadata, createCoreState} from '../testing';
+import {
+  buildPluginMetadata,
+  createEnvironment,
+  createPluginMetadata,
+  createCoreState,
+} from '../testing';
 import {DataLoadState} from '../../types/data';
 
 function createPluginsListing() {
@@ -25,24 +30,33 @@ function createPluginsListing() {
 }
 
 describe('core reducer', () => {
-  describe('#changePlugin', () => {
-    it('sets activePlugin to the one in action payload', () => {
-      const state = createCoreState({activePlugin: 'foo', plugins: {}});
+  [
+    {
+      action: actions.changePlugin({plugin: 'bar'}),
+    },
+    {
+      action: actions.pluginUrlHashChanged({plugin: 'bar'}),
+    },
+  ].forEach(({action}) => {
+    describe(action.type, () => {
+      it('sets activePlugin to the one in action payload', () => {
+        const state = createCoreState({activePlugin: 'foo', plugins: {}});
 
-      const nextState = reducers(state, actions.changePlugin({plugin: 'bar'}));
+        const nextState = reducers(state, action);
 
-      expect(nextState.activePlugin).toBe('bar');
-    });
-
-    it('does not change plugins when activePlugin changes', () => {
-      const state = createCoreState({
-        activePlugin: 'foo',
-        plugins: createPluginsListing(),
+        expect(nextState.activePlugin).toBe('bar');
       });
 
-      const nextState = reducers(state, actions.changePlugin({plugin: 'bar'}));
+      it('does not change plugins when activePlugin changes', () => {
+        const state = createCoreState({
+          activePlugin: 'foo',
+          plugins: createPluginsListing(),
+        });
 
-      expect(nextState.plugins).toEqual(createPluginsListing());
+        const nextState = reducers(state, action);
+
+        expect(nextState.plugins).toEqual(createPluginsListing());
+      });
     });
   });
 
@@ -121,15 +135,36 @@ describe('core reducer', () => {
       });
     });
 
-    it('sets activePlugin to the first plugin (by key order) when not defined', () => {
+    it('sets activePlugin to the first enabled plugin when not defined', () => {
       const state = createCoreState({activePlugin: null, plugins: {}});
 
       const nextState = reducers(
         state,
-        actions.pluginsListingLoaded({plugins: createPluginsListing()})
+        actions.pluginsListingLoaded({
+          plugins: {
+            foo: buildPluginMetadata({tab_name: 'foo', enabled: false}),
+            bar: buildPluginMetadata({tab_name: 'bar', enabled: true}),
+          },
+        })
       );
 
-      expect(nextState.activePlugin).toBe('core');
+      expect(nextState.activePlugin).toBe('bar');
+    });
+
+    it('sets the plugin to null when nothing is active', () => {
+      const state = createCoreState({activePlugin: null, plugins: {}});
+
+      const nextState = reducers(
+        state,
+        actions.pluginsListingLoaded({
+          plugins: {
+            foo: buildPluginMetadata({tab_name: 'foo', enabled: false}),
+            bar: buildPluginMetadata({tab_name: 'bar', enabled: false}),
+          },
+        })
+      );
+
+      expect(nextState.activePlugin).toBeNull();
     });
 
     it('does not change activePlugin when already defined', () => {
@@ -141,6 +176,22 @@ describe('core reducer', () => {
       );
 
       expect(nextState.activePlugin).toBe('foo');
+    });
+  });
+
+  describe('#environmentLoaded', () => {
+    it('sets environment with the payload', () => {
+      const state = createCoreState({
+        environment: createEnvironment({data_location: '/original/location'}),
+      });
+      const nextState = reducers(
+        state,
+        actions.environmentLoaded({
+          environment: createEnvironment({data_location: '/new/location'}),
+        })
+      );
+
+      expect(nextState.environment.data_location).toEqual('/new/location');
     });
   });
 
@@ -184,6 +235,49 @@ describe('core reducer', () => {
         actions.changeReloadPeriod({periodInMs: -1000})
       );
       expect(state2.reloadPeriodInMs).toBe(1);
+    });
+  });
+
+  describe('#fetchRunSucceeded', () => {
+    it('sets polymerInteropRuns', () => {
+      const state = createCoreState({polymerInteropRuns: []});
+
+      const nextState = reducers(
+        state,
+        actions.fetchRunSucceeded({
+          runs: [{id: '1', name: 'Run name 1'}, {id: '2', name: 'Run name 2'}],
+        })
+      );
+
+      expect(nextState.polymerInteropRuns).toEqual([
+        {id: '1', name: 'Run name 1'},
+        {id: '2', name: 'Run name 2'},
+      ]);
+    });
+  });
+
+  describe('#polymerInteropRunSelectionChanged', () => {
+    it('changes the polymerInteropRunSelection', () => {
+      const state = createCoreState({
+        polymerInteropRuns: [
+          {id: '1', name: 'Run name 1'},
+          {id: '2', name: 'Run name 2'},
+          {id: '3', name: 'Run name 3'},
+          {id: '4', name: 'Run name 4'},
+        ],
+        polymerInteropRunSelection: new Set(),
+      });
+
+      const nextState = reducers(
+        state,
+        actions.polymerInteropRunSelectionChanged({
+          nextSelection: ['1', '2', '4'],
+        })
+      );
+
+      expect(nextState.polymerInteropRunSelection).toEqual(
+        new Set(['1', '2', '4'])
+      );
     });
   });
 });

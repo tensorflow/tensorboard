@@ -23,11 +23,10 @@ import six
 from werkzeug import wrappers
 
 from tensorboard import plugin_util
+from tensorboard import context
 from tensorboard.backend import http_util
 from tensorboard.backend import process_graph
-from tensorboard.backend.event_processing import (
-    plugin_event_accumulator as event_accumulator,
-)
+from tensorboard.backend.event_processing import tag_types
 from tensorboard.compat.proto import config_pb2
 from tensorboard.compat.proto import graph_pb2
 from tensorboard.data import provider
@@ -79,7 +78,8 @@ class GraphsPlugin(base_plugin.TBPlugin):
         if self._data_provider:
             return False  # `list_plugins` as called by TB core suffices
 
-        return bool(self.info_impl())
+        empty_context = context.RequestContext()  # not used
+        return bool(self.info_impl(empty_context))
 
     def frontend_metadata(self):
         return base_plugin.FrontendMetadata(
@@ -88,7 +88,7 @@ class GraphsPlugin(base_plugin.TBPlugin):
             disable_reload=True,
         )
 
-    def info_impl(self, experiment=None):
+    def info_impl(self, ctx, experiment=None):
         """Returns a dict of all runs and their data availabilities."""
         result = {}
 
@@ -119,7 +119,7 @@ class GraphsPlugin(base_plugin.TBPlugin):
 
         if self._data_provider:
             mapping = self._data_provider.list_blob_sequences(
-                experiment_id=experiment, plugin_name=metadata.PLUGIN_NAME,
+                ctx, experiment_id=experiment, plugin_name=metadata.PLUGIN_NAME,
             )
             for (run_name, tag_to_time_series) in six.iteritems(mapping):
                 for tag in tag_to_time_series:
@@ -140,7 +140,7 @@ class GraphsPlugin(base_plugin.TBPlugin):
                 # as a content of plugin data. It contains single string that denotes a version.
                 # https://github.com/tensorflow/tensorflow/blob/11f4ecb54708865ec757ca64e4805957b05d7570/tensorflow/python/ops/summary_ops_v2.py#L789-L790
                 if content != b"1":
-                    logger.warn(
+                    logger.warning(
                         "Ignoring unrecognizable version of RunMetadata."
                     )
                     continue
@@ -155,7 +155,7 @@ class GraphsPlugin(base_plugin.TBPlugin):
         for run_name, tag_to_content in six.iteritems(mapping):
             for (tag, content) in six.iteritems(tag_to_content):
                 if content != b"1":
-                    logger.warn(
+                    logger.warning(
                         "Ignoring unrecognizable version of RunMetadata."
                     )
                     continue
@@ -171,7 +171,7 @@ class GraphsPlugin(base_plugin.TBPlugin):
         for run_name, tag_to_content in six.iteritems(mapping):
             for (tag, content) in six.iteritems(tag_to_content):
                 if content != b"1":
-                    logger.warn(
+                    logger.warning(
                         "Ignoring unrecognizable version of RunMetadata."
                     )
                     continue
@@ -179,13 +179,13 @@ class GraphsPlugin(base_plugin.TBPlugin):
                 tag_item["conceptual_graph"] = True
 
         for (run_name, run_data) in six.iteritems(self._multiplexer.Runs()):
-            if run_data.get(event_accumulator.GRAPH):
+            if run_data.get(tag_types.GRAPH):
                 (run_item, _) = add_row_item(run_name, None)
                 run_item["run_graph"] = True
 
         for (run_name, run_data) in six.iteritems(self._multiplexer.Runs()):
-            if event_accumulator.RUN_METADATA in run_data:
-                for tag in run_data[event_accumulator.RUN_METADATA]:
+            if tag_types.RUN_METADATA in run_data:
+                for tag in run_data[tag_types.RUN_METADATA]:
                     (_, tag_item) = add_row_item(run_name, tag)
                     tag_item["profile"] = True
 
@@ -193,6 +193,7 @@ class GraphsPlugin(base_plugin.TBPlugin):
 
     def graph_impl(
         self,
+        ctx,
         run,
         tag,
         is_conceptual,
@@ -206,9 +207,11 @@ class GraphsPlugin(base_plugin.TBPlugin):
             if tag is None:
                 tag = metadata.RUN_GRAPH_NAME
             graph_blob_sequences = self._data_provider.read_blob_sequences(
+                ctx,
                 experiment_id=experiment,
                 plugin_name=metadata.PLUGIN_NAME,
                 run_tag_filter=provider.RunTagFilter(runs=[run], tags=[tag]),
+                downsample=1,
             )
             blob_datum_list = graph_blob_sequences.get(run, {}).get(tag, ())
             try:
@@ -216,7 +219,9 @@ class GraphsPlugin(base_plugin.TBPlugin):
             except IndexError:
                 return None
             # Always use the blob_key approach for now, even if there is a direct url.
-            graph_raw = self._data_provider.read_blob(blob_ref.blob_key)
+            graph_raw = self._data_provider.read_blob(
+                ctx, blob_key=blob_ref.blob_key
+            )
             # This method ultimately returns pbtxt, but we have to deserialize and
             # later reserialize this anyway, because a) this way we accept binary
             # protobufs too, and b) below we run `prepare_graph_for_ui` on the graph.
@@ -279,14 +284,16 @@ class GraphsPlugin(base_plugin.TBPlugin):
 
     @wrappers.Request.application
     def info_route(self, request):
+        ctx = plugin_util.context(request.environ)
         experiment = plugin_util.experiment_id(request.environ)
-        info = self.info_impl(experiment)
+        info = self.info_impl(ctx, experiment)
         return http_util.Respond(request, info, "application/json")
 
     @wrappers.Request.application
     def graph_route(self, request):
         """Given a single run, return the graph definition in protobuf
         format."""
+        ctx = plugin_util.context(request.environ)
         experiment = plugin_util.experiment_id(request.environ)
         run = request.args.get("run")
         tag = request.args.get("tag")
@@ -314,6 +321,7 @@ class GraphsPlugin(base_plugin.TBPlugin):
 
         try:
             result = self.graph_impl(
+                ctx,
                 run,
                 tag,
                 is_conceptual,

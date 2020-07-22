@@ -19,19 +19,18 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import collections
+import collections.abc
 import os.path
 
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
 from tensorboard import errors
-from tensorboard.backend.event_processing import (
-    plugin_event_accumulator as event_accumulator,
-)
+from tensorboard import context
 from tensorboard.backend.event_processing import (
     plugin_event_multiplexer as event_multiplexer,
 )
+from tensorboard.backend.event_processing import tag_types
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.distribution import compressor
 from tensorboard.plugins.distribution import distributions_plugin
@@ -69,7 +68,7 @@ class DistributionsPluginTest(tf.test.TestCase):
         multiplexer = event_multiplexer.EventMultiplexer(
             size_guidance={
                 # don't truncate my test data, please
-                event_accumulator.TENSORS: self._STEPS,
+                tag_types.TENSORS: self._STEPS,
             }
         )
         multiplexer.AddRunsFromDirectory(self.logdir)
@@ -115,8 +114,10 @@ class DistributionsPluginTest(tf.test.TestCase):
         """Tests that the plugin offers the correct routes."""
         self.set_up_with_runs([self._RUN_WITH_SCALARS])
         routes = self.plugin.get_plugin_apps()
-        self.assertIsInstance(routes["/distributions"], collections.Callable)
-        self.assertIsInstance(routes["/tags"], collections.Callable)
+        self.assertIsInstance(
+            routes["/distributions"], collections.abc.Callable
+        )
+        self.assertIsInstance(routes["/tags"], collections.abc.Callable)
 
     def test_index(self):
         self.set_up_with_runs(
@@ -143,7 +144,7 @@ class DistributionsPluginTest(tf.test.TestCase):
                     },
                 },
             },
-            self.plugin.index_impl(experiment="exp"),
+            self.plugin.index_impl(context.RequestContext(), experiment="exp"),
         )
 
     def _test_distributions(self, run_name, tag_name, should_work=True):
@@ -156,7 +157,7 @@ class DistributionsPluginTest(tf.test.TestCase):
         )
         if should_work:
             (data, mime_type) = self.plugin.distributions_impl(
-                tag_name, run_name, experiment="exp"
+                context.RequestContext(), tag_name, run_name, experiment="exp"
             )
             self.assertEqual("application/json", mime_type)
             self.assertEqual(len(data), self._STEPS)
@@ -168,7 +169,10 @@ class DistributionsPluginTest(tf.test.TestCase):
         else:
             with self.assertRaises(errors.NotFoundError):
                 self.plugin.distributions_impl(
-                    self._DISTRIBUTION_TAG, run_name, experiment="exp"
+                    context.RequestContext(),
+                    self._DISTRIBUTION_TAG,
+                    run_name,
+                    experiment="exp",
                 )
 
     def test_distributions_with_scalars(self):

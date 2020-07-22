@@ -1,7 +1,7 @@
-package(default_visibility = ["//tensorboard:internal"])
-
 load("//tensorboard/defs:defs.bzl", "tensorboard_webcomponent_library")
 load("//tensorboard/defs:web.bzl", "tf_web_library")
+
+package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
@@ -11,7 +11,6 @@ tf_web_library(
         "tf-line-chart-data-loader.html",
     ],
     path = "/tf-line-chart-data-loader",
-    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_color_scale",
@@ -26,7 +25,6 @@ tf_web_library(
 tensorboard_webcomponent_library(
     name = "legacy",
     srcs = [":tf_line_chart_data_loader"],
-    visibility = ["//visibility:public"],
     destdir = "tf-line-chart-data-loader",
     deps = [
         "//tensorboard/components/tf_backend:legacy",

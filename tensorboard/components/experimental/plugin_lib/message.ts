@@ -124,7 +124,7 @@ export class IPC {
     this.port.postMessage(JSON.stringify(message));
   }
 
-  sendMessage(type: MessageType, payload: PayloadType): Promise<PayloadType> {
+  sendMessage(type: MessageType, payload?: PayloadType): Promise<PayloadType> {
     const id = this.id++;
     const message: Message = {type, id, payload, error: null, isReply: false};
     this.postMessage(message);

@@ -1,6 +1,6 @@
-package(default_visibility = ["//tensorboard:internal"])
-
 load("//tensorboard/defs:defs.bzl", "tf_ts_library")
+
+package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
@@ -9,6 +9,12 @@ licenses(["notice"])  # Apache 2.0
 tf_ts_library(
     name = "expect_angular_common_http",
     srcs = [],
+    visibility = [
+        "//tensorboard/webapp/webapp_data_source:__subpackages__",
+    ],
+    deps = [
+        "@npm//@angular/common",
+    ],
 )
 
 # This is a dummy rule used as a @angular/common/testing dependency.
@@ -16,6 +22,21 @@ tf_ts_library(
 tf_ts_library(
     name = "expect_angular_common_http_testing",
     srcs = [],
+    visibility = [
+        "//tensorboard/webapp/webapp_data_source:__subpackages__",
+    ],
+    deps = [
+        "@npm//@angular/common",
+    ],
+)
+
+# This is a dummy rule used as a @angular/material/tabs dependency.
+tf_ts_library(
+    name = "expect_angular_cdk_clipboard",
+    srcs = [],
+    deps = [
+        "@npm//@angular/material",
+    ],
 )
 
 # This is a dummy rule used as a @angular/core/testing dependency.
@@ -58,6 +79,15 @@ tf_ts_library(
 # This is a dummy rule used as a @angular/material/dialog dependency.
 tf_ts_library(
     name = "expect_angular_material_dialog",
+    srcs = [],
+    deps = [
+        "@npm//@angular/material",
+    ],
+)
+
+# This is a dummy rule used as a @angular/material/slider dependency.
+tf_ts_library(
+    name = "expect_angular_material_slider",
     srcs = [],
     deps = [
         "@npm//@angular/material",
@@ -121,5 +151,25 @@ tf_ts_library(
     srcs = [],
     deps = [
         "@npm//@angular/cdk",
+    ],
+)
+
+# This is a dummy rule used as a @angular/cdk/scrolling dependency.
+tf_ts_library(
+    name = "expect_angular_cdk_scrolling",
+    srcs = [],
+    deps = [
+        "@npm//@angular/cdk",
+    ],
+)
+
+# This is a dummy rule used as a @ngrx/store/testing dependency.
+# This is not a replacement for @ngrx/store dependency.
+tf_ts_library(
+    name = "expect_ngrx_store_testing",
+    testonly = True,
+    srcs = [],
+    deps = [
+        "@npm//@ngrx/store",
     ],
 )

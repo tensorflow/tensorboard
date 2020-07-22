@@ -219,6 +219,20 @@ class RespondTest(tb_test.TestCase):
         r = http_util.Respond(q, "<b>hello world</b>", "text/html", expires=60)
         self.assertEqual(r.headers.get("Cache-Control"), "private, max-age=60")
 
+    def testHeaders(self):
+        q = wrappers.Request(wtest.EnvironBuilder().get_environ())
+        body = "No GET, only POST"
+        r = http_util.Respond(
+            q,
+            body,
+            "text/plain",
+            code=405,
+            headers=[("Allow", "POST"), ("Content-Length", "777")],
+        )
+        # non-conflicting headers passed through, conflicts overridden
+        self.assertEqual(r.headers.get("Allow"), "POST")
+        self.assertEqual(r.headers.get("Content-Length"), str(len(body)))
+
     def testCsp(self):
         q = wrappers.Request(wtest.EnvironBuilder().get_environ())
         r = http_util.Respond(

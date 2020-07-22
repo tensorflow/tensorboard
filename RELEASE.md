@@ -1,3 +1,108 @@
+# Release 2.2.2
+
+## Features
+
+- Some performance improvements to line charts (#3524)
+- Performance improvements in the Text plugin due to batch HTML
+  sanitization (#3529)
+- Performance improvements in backend markdown cleaning for tag
+  rendering (#3599)
+- CSS/layout performance optimization by applying layout/layer bound where
+  possible (#3642)
+- The `tensorboard dev list` subcommand now reports the total size of stored
+  tensors (used as the backing storage type for Histograms) (#3652)
+
+## TensorBoard.dev updates
+
+- TensorBoard.dev now supports the Histograms plugin, for experiments
+  uploaded starting from this release
+  - The `tensorboard dev upload` subcommand now sends the histograms, when
+    available, so that it can be rendered via the Histograms plugin on
+    TensorBoard.dev
+- This release may support additional plugins in the future, once those plugins
+  are enabled in the TensorBoard.dev service
+
+## Breaking changes
+
+- The experimental and legacy SQLite support (via the `--db_import` and `--db`
+  flags) is removed to ease maintenance (#3539)
+
+# Release 2.2.1
+
+## TensorBoard.dev updates
+
+- TensorBoard.dev now renders model graphs, for experiments uploaded starting
+  from this release.
+  - The `tensorboard dev upload` subcommand now sends the model graph, when
+    available, so that it can be rendered via the Graphs plugin on
+    TensorBoard.dev.
+  - Large node attribute values (which would not be rendered anyway) are
+    filtered out before upload.
+  - Graphs that remain larger than 10MB after filtering are not uploaded.
+- The `tensorboard dev upload` command supports a `--plugins` option to
+  explicitly indicate the desired plugins for which summary data should be
+  uploaded (#3402, #3492)
+- The `tensorboard dev list` subcommand now reports the total size of stored
+  binary objects (e.g., graphs) for each experiment (#3464)
+- The `tensorboard dev list` subcommand now accepts a `--json` flag to allow
+  parsing the output more easily (#3480)
+
+## Features
+
+- Auto-reload is now disabled when the browser tab is not visible, saving
+  network bandwidth (#3483)
+- New logo used in the favicon (#3406)
+
+## Bug fixes
+
+- Plugin loading: When a plugin fails to load, TensorBoard logs an error and
+  continues, instead of crashing (#3484, #3486)
+- Eliminated sporadic HTTP 500 errors for XHRs that do markdown rendering (#3491)
+
+# Release 2.2.0
+
+The 2.2 minor series tracks TensorFlow 2.2.
+
+## Features
+
+- Profile plugin now should be pip installed from `tensorboard-plugin-profile`.
+  The new version works in Chrome 80 and Firefox, has better model insights and
+  will be more actively maintained.
+- Add S3_ENDPOINT variable (#3368)  - thanks @thealphacod3r
+- Confirm that the connection to tensorboard works or change to localhost
+  (#2371) - thanks @miguelmorin
+- Update --reload_multifile_inactive_secs default to 24 hours (#3243)
+- New `tensorboard dev update-metadata` command allows for updating the name and
+  description of experiments (#3277)
+- Improved organization of artifacts downloaded during export from
+  TensorBoard.dev (#3307)
+
+## Bug fixes
+
+- Fix for #3282 where the tooltip would remain even after the mouse leaves the
+plot (#3347)
+- Internal fix: HParams summary protos now properly include tensor values (#3386)
+- Fixes to profiling tutorial (#3372 & #3381)
+
+## Breaking Changes
+- Note: As of TensorBoard 2.1.1+, only Python 3 is supported. There will be no
+further releases for Python 2 as per
+https://groups.google.com/a/tensorflow.org/forum/#!topic/developers/ifEAGK3aPls
+
+
+# Release 2.1.1
+
+## Features
+
+- Uploader: Added ability to upload and modify experiment name and description (#3277)
+
+## Breaking changes
+
+- As per
+  https://groups.google.com/a/tensorflow.org/forum/#!topic/developers/ifEAGK3aPls
+  this patch does not support Python 2.  Only Python 3 is supported
+
+
 # Release 2.1.0
 
 The 2.1 minor series tracks TensorFlow 2.1.

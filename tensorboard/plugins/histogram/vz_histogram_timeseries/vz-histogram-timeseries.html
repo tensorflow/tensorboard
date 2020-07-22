@@ -289,7 +289,10 @@ visualization.
         _name: {type: String, value: null},
         _data: {type: Array, value: null},
       },
-      observers: ['redraw(timeProperty, _attached)', '_modeRedraw(mode)'],
+      observers: [
+        'redraw(timeProperty, colorScale, _attached)',
+        '_modeRedraw(mode)',
+      ],
       ready: function() {
         // Polymer's way of scoping styles on nodes that d3 created
         this.scopeSubtree(this.$.svg, true);
@@ -645,13 +648,13 @@ visualization.
               return outlineColor(timeAccessor(d));
             });
 
-        var hoverEnter = histogramEnter
-            .append('g')
-            .attr('class', 'hover')
-            .style('fill', function(d) {
-              return outlineColor(timeAccessor(d));
-            }),
-          hoverUpdate = histogramUpdate.select('.hover');
+        var hoverEnter = histogramEnter.append('g').attr('class', 'hover');
+
+        var hoverUpdate = histogramUpdate
+          .select('.hover')
+          .style('fill', function(d) {
+            return outlineColor(timeAccessor(d));
+          });
 
         hoverEnter.append('circle').attr('r', 2);
 

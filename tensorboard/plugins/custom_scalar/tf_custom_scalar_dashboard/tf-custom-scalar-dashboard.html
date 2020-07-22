@@ -47,58 +47,60 @@ limitations under the License.
   <template>
     <tf-dashboard-layout>
       <div class="sidebar" slot="sidebar">
-        <div class="sidebar-section">
-          <div class="line-item">
-            <paper-checkbox checked="{{_showDownloadLinks}}"
-              >Show data download links</paper-checkbox
-            >
-          </div>
-          <div class="line-item">
-            <paper-checkbox checked="{{_ignoreYOutliers}}"
-              >Ignore outliers in chart scaling</paper-checkbox
-            >
-          </div>
-          <div id="tooltip-sorting">
-            <div id="tooltip-sorting-label">Tooltip sorting method:</div>
-            <paper-dropdown-menu
-              no-label-float
-              selected-item-label="{{_tooltipSortingMethod}}"
-            >
-              <paper-listbox
-                class="dropdown-content"
-                selected="0"
-                slot="dropdown-content"
+        <div class="settings">
+          <div class="sidebar-section">
+            <div class="line-item">
+              <paper-checkbox checked="{{_showDownloadLinks}}"
+                >Show data download links</paper-checkbox
               >
-                <paper-item>default</paper-item>
-                <paper-item>descending</paper-item>
-                <paper-item>ascending</paper-item>
-                <paper-item>nearest</paper-item>
-              </paper-listbox>
-            </paper-dropdown-menu>
+            </div>
+            <div class="line-item">
+              <paper-checkbox checked="{{_ignoreYOutliers}}"
+                >Ignore outliers in chart scaling</paper-checkbox
+              >
+            </div>
+            <div id="tooltip-sorting">
+              <div id="tooltip-sorting-label">Tooltip sorting method:</div>
+              <paper-dropdown-menu
+                no-label-float
+                selected-item-label="{{_tooltipSortingMethod}}"
+              >
+                <paper-listbox
+                  class="dropdown-content"
+                  selected="0"
+                  slot="dropdown-content"
+                >
+                  <paper-item>default</paper-item>
+                  <paper-item>descending</paper-item>
+                  <paper-item>ascending</paper-item>
+                  <paper-item>nearest</paper-item>
+                </paper-listbox>
+              </paper-dropdown-menu>
+            </div>
+          </div>
+          <div class="sidebar-section">
+            <tf-smoothing-input
+              weight="{{_smoothingWeight}}"
+              step="0.001"
+              min="0"
+              max="1"
+            ></tf-smoothing-input>
+          </div>
+          <div class="sidebar-section">
+            <tf-option-selector
+              id="x-type-selector"
+              name="Horizontal Axis"
+              selected-id="{{_xType}}"
+            >
+              <paper-button id="step">step</paper-button
+              ><!--
+            --><paper-button id="relative">relative</paper-button
+              ><!--
+            --><paper-button id="wall_time">wall</paper-button>
+            </tf-option-selector>
           </div>
         </div>
-        <div class="sidebar-section">
-          <tf-smoothing-input
-            weight="{{_smoothingWeight}}"
-            step="0.001"
-            min="0"
-            max="1"
-          ></tf-smoothing-input>
-        </div>
-        <div class="sidebar-section">
-          <tf-option-selector
-            id="x-type-selector"
-            name="Horizontal Axis"
-            selected-id="{{_xType}}"
-          >
-            <paper-button id="step">step</paper-button
-            ><!--
-            --><paper-button id="relative">relative</paper-button
-            ><!--
-            --><paper-button id="wall_time">wall</paper-button>
-          </tf-option-selector>
-        </div>
-        <div class="sidebar-section">
+        <div class="sidebar-section runs-selector">
           <tf-runs-selector selected-runs="{{_selectedRuns}}">
           </tf-runs-selector>
         </div>
@@ -190,36 +192,34 @@ writer.add_summary(layout_summary)
               initial-opened="[[category.metadata.opened]]"
             >
               <template>
-                <div>
-                  <template is="dom-if" if="[[chart.multiline]]">
-                    <tf-custom-scalar-multi-line-chart-card
-                      active="[[active]]"
-                      request-manager="[[_requestManager]]"
-                      runs="[[_selectedRuns]]"
-                      title="[[chart.title]]"
-                      x-type="[[_xType]]"
-                      smoothing-enabled="[[_smoothingEnabled]]"
-                      smoothing-weight="[[_smoothingWeight]]"
-                      tooltip-sorting-method="[[tooltipSortingMethod]]"
-                      ignore-y-outliers="[[_ignoreYOutliers]]"
-                      show-download-links="[[_showDownloadLinks]]"
-                      tag-regexes="[[chart.multiline.tag]]"
-                    ></tf-custom-scalar-multi-line-chart-card>
-                  </template>
-                  <template is="dom-if" if="[[chart.margin]]">
-                    <tf-custom-scalar-margin-chart-card
-                      active="[[active]]"
-                      request-manager="[[_requestManager]]"
-                      runs="[[_selectedRuns]]"
-                      title="[[chart.title]]"
-                      x-type="[[_xType]]"
-                      tooltip-sorting-method="[[tooltipSortingMethod]]"
-                      ignore-y-outliers="[[_ignoreYOutliers]]"
-                      show-download-links="[[_showDownloadLinks]]"
-                      margin-chart-series="[[chart.margin.series]]"
-                    ></tf-custom-scalar-margin-chart-card>
-                  </template>
-                </div>
+                <template is="dom-if" if="[[chart.multiline]]">
+                  <tf-custom-scalar-multi-line-chart-card
+                    active="[[active]]"
+                    request-manager="[[_requestManager]]"
+                    runs="[[_selectedRuns]]"
+                    title="[[chart.title]]"
+                    x-type="[[_xType]]"
+                    smoothing-enabled="[[_smoothingEnabled]]"
+                    smoothing-weight="[[_smoothingWeight]]"
+                    tooltip-sorting-method="[[tooltipSortingMethod]]"
+                    ignore-y-outliers="[[_ignoreYOutliers]]"
+                    show-download-links="[[_showDownloadLinks]]"
+                    tag-regexes="[[chart.multiline.tag]]"
+                  ></tf-custom-scalar-multi-line-chart-card>
+                </template>
+                <template is="dom-if" if="[[chart.margin]]">
+                  <tf-custom-scalar-margin-chart-card
+                    active="[[active]]"
+                    request-manager="[[_requestManager]]"
+                    runs="[[_selectedRuns]]"
+                    title="[[chart.title]]"
+                    x-type="[[_xType]]"
+                    tooltip-sorting-method="[[tooltipSortingMethod]]"
+                    ignore-y-outliers="[[_ignoreYOutliers]]"
+                    show-download-links="[[_showDownloadLinks]]"
+                    margin-chart-series="[[chart.margin.series]]"
+                  ></tf-custom-scalar-margin-chart-card>
+                </template>
               </template>
             </tf-category-paginated-view>
           </template>
@@ -327,9 +327,13 @@ writer.add_summary(layout_summary)
           value: true,
           readOnly: true,
         },
+        reloadOnReady: {
+          type: Boolean,
+          value: true,
+        },
       },
       ready() {
-        this.reload();
+        if (this.reloadOnReady) this.reload();
       },
       reload() {
         const url = tf_backend.getRouter().pluginsListing();

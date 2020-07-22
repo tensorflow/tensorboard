@@ -1,10 +1,10 @@
+load("//tensorboard/defs:protos.bzl", "tb_proto_library")
+
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
 exports_files(["LICENSE"])
-
-load("//tensorboard/defs:protos.bzl", "tb_proto_library")
 
 # Public-facing API, included in Pip package.
 py_library(
@@ -45,7 +45,6 @@ py_library(
     name = "mesh_plugin",
     srcs = ["mesh_plugin.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         ":metadata",
         ":protos_all_py_pb2",
@@ -67,7 +66,6 @@ py_library(
     deps = [
         ":summary",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "@org_pocoo_werkzeug",
     ],
@@ -113,9 +111,6 @@ py_library(
     name = "summary_v2",
     srcs = ["summary_v2.py"],
     srcs_version = "PY2AND3",
-    visibility = [
-        "//visibility:public",
-    ],
     deps = [
         ":metadata",
         "//tensorboard/compat:tensorflow",
@@ -155,16 +150,12 @@ py_test(
 tb_proto_library(
     name = "protos_all",
     srcs = ["plugin_data.proto"],
-    visibility = ["//visibility:public"],
 )
 
 py_library(
     name = "demo_utils",
     srcs = ["demo_utils.py"],
     srcs_version = "PY2AND3",
-    visibility = [
-        "//visibility:public",
-    ],
     deps = [
         "//tensorboard:expect_numpy_installed",
         "//tensorboard/compat:tensorflow",
@@ -189,9 +180,6 @@ py_binary(
     name = "mesh_demo",
     srcs = ["mesh_demo.py"],
     srcs_version = "PY2AND3",
-    visibility = [
-        "//visibility:public",
-    ],
     deps = [
         ":demo_utils",
         ":summary",
@@ -206,9 +194,6 @@ py_binary(
     name = "mesh_demo_v2",
     srcs = ["mesh_demo_v2.py"],
     srcs_version = "PY2AND3",
-    visibility = [
-        "//visibility:public",
-    ],
     deps = [
         ":demo_utils",
         ":summary_v2",
@@ -224,5 +209,4 @@ filegroup(
     srcs = [
         "test_data/icosphere.ply",
     ],
-    visibility = ["//visibility:public"],
 )

@@ -1,6 +1,6 @@
-package(default_visibility = ["//tensorboard:internal"])
-
 load("//tensorboard/defs:protos.bzl", "tb_proto_library")
+
+package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
@@ -166,8 +166,28 @@ py_library(
     deps = [
         ":tb_logging",
         "//tensorboard:expect_absl_logging_installed",
-        "//tensorboard:expect_sqlite3_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/compat/proto:protos_all_py_pb2",
+    ],
+)
+
+py_library(
+    name = "timing",
+    srcs = ["timing.py"],
+    srcs_version = "PY3",
+    deps = [
+        ":tb_logging",
+    ],
+)
+
+py_test(
+    name = "timing_test",
+    size = "small",
+    srcs = ["timing_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":tb_logging",
+        ":timing",
+        "//tensorboard:test",
     ],
 )

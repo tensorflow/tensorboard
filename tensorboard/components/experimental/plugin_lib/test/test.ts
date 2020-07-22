@@ -17,7 +17,9 @@ async function createIframe(): Promise<HTMLIFrameElement> {
   return new Promise<HTMLIFrameElement>((resolve) => {
     const iframe = document.createElement('iframe') as HTMLIFrameElement;
     document.body.appendChild(iframe);
-    iframe.src = './testable-iframe.html';
+    tb_plugin.host.registerPluginIframe(iframe, 'sample_plugin');
+
+    iframe.src = './testable-iframe.html?name=sample_plugin';
     iframe.onload = () => resolve(iframe);
   });
 }
@@ -29,8 +31,7 @@ describe('plugin lib integration', () => {
     this.sandbox = sinon.sandbox.create({useFakeServer: true});
     this.sandbox.server.respondImmediately = true;
     this.iframe = await createIframe();
-    this.lib = (this.iframe.contentWindow as any).plugin_lib;
-    this.libInternal = (this.iframe.contentWindow as any).plugin_internal;
+    this.lib = (this.iframe.contentWindow as any).tb_plugin_lib.experimental;
   });
 
   afterEach(function() {
@@ -83,9 +84,90 @@ describe('plugin lib integration', () => {
 
         // Await another message to ensure the iframe processed the next message
         // (if any).
-        await this.libInternal.sendMessage('foo');
+        await this.lib.runs.getRuns();
 
         expect(runsChanged).to.not.have.been.called;
+      });
+    });
+  });
+
+  describe('lib.core', () => {
+    describe('#getURLPluginData', () => {
+      /**
+       * These tests use tf_globals' fake hash to make tf_storage think that the
+       * host's URL has been updated.
+       */
+      it('returns URL data', async function() {
+        const hash = [
+          'sample_plugin',
+          'p.sample_plugin.foo=bar',
+          'p.sample_plugin.foo2=bar2',
+        ].join('&');
+        tf_globals.setFakeHash(hash);
+        window.dispatchEvent(new Event('hashchange'));
+
+        const data = await this.lib.core.getURLPluginData();
+        expect(data).to.deep.equal({
+          foo: 'bar',
+          foo2: 'bar2',
+        });
+      });
+
+      it('ignores unrelated URL data', async function() {
+        const hash = [
+          'sample_plugin',
+          'tagFilter=loss',
+          'p.sample_plugin.foo=bar',
+          'p.sample_plugin.foo=bar_from_duplicate',
+          'smoothing=0.5',
+          'p.sample_plugin.foo2=bar2',
+          'p.sample_plugin2.foo=bar',
+        ].join('&');
+        tf_globals.setFakeHash(hash);
+        window.dispatchEvent(new Event('hashchange'));
+
+        const data = await this.lib.core.getURLPluginData();
+        expect(data).to.deep.equal({
+          foo: 'bar_from_duplicate',
+          foo2: 'bar2',
+        });
+      });
+
+      it('handles incomplete URL data', async function() {
+        const hash = [
+          'sample_plugin',
+          'tagFilter=loss',
+          'p.sample_plugin',
+          'p.sample_plugin.',
+        ].join('&');
+        tf_globals.setFakeHash(hash);
+        window.dispatchEvent(new Event('hashchange'));
+
+        const data = await this.lib.core.getURLPluginData();
+        expect(data).to.deep.equal({});
+      });
+
+      it('handles non alphanumeric data', async function() {
+        const hash = [
+          'sample_plugin',
+          'p.sample_plugin.foo=bar%20baz',
+          'p.sample_plugin.foo2=0.123',
+          'p.sample_plugin.foo3=false',
+          'p.sample_plugin.foo4=',
+          'p.sample_plugin.foo5',
+          'p.sample_plugin.foo.with.dots=bar.dotted',
+        ].join('&');
+        tf_globals.setFakeHash(hash);
+        window.dispatchEvent(new Event('hashchange'));
+
+        const data = await this.lib.core.getURLPluginData();
+        expect(data).to.deep.equal({
+          foo: 'bar baz',
+          foo2: '0.123',
+          foo3: 'false',
+          foo4: '',
+          'foo.with.dots': 'bar.dotted',
+        });
       });
     });
   });

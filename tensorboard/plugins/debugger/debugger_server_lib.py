@@ -118,7 +118,7 @@ class DebuggerDataStreamHandler(
           event: The Event proto to be processed.
         """
         if not event.summary.value:
-            logger.warn("The summary of the event lacks a value.")
+            logger.warning("The summary of the event lacks a value.")
             return
 
         # The node name property is actually a watch key, which is a concatenation
@@ -141,7 +141,7 @@ class DebuggerDataStreamHandler(
             len(shape) != 1
             or shape[0] < constants.MIN_DEBUG_NUMERIC_SUMMARY_TENSOR_LENGTH
         ):
-            logger.warn(
+            logger.warning(
                 "Health-pill tensor either lacks a dimension or is "
                 "shaped incorrectly: %s" % shape
             )
@@ -149,7 +149,7 @@ class DebuggerDataStreamHandler(
 
         match = re.match(r"^(.*):(\d+)$", node_name_and_output_slot)
         if not match:
-            logger.warn(
+            logger.warning(
                 (
                     "A event with a health pill has an invalid node name and output "
                     "slot combination, (i.e., an unexpected debug op): %r"

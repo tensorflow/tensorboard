@@ -12,6 +12,7 @@ py_library(
     srcs = ["debug_data_multiplexer.py"],
     srcs_version = "PY2AND3",
     deps = [
+        "//tensorboard:errors",
         "//tensorboard:expect_tensorflow_installed",
     ],
 )
@@ -32,6 +33,7 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         ":debug_data_provider",
+        "//tensorboard:errors",
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
         "//tensorboard/plugins:base_plugin",
@@ -62,5 +64,6 @@ py_test(
         "//tensorboard/backend:application",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/util:test_util",
+        "@org_pythonhosted_six",
     ],
 )

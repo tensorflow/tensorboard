@@ -1,7 +1,7 @@
-package(default_visibility = ["//tensorboard:internal"])
-
 load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 load("@npm_angular_bazel//:index.bzl", "ng_module")
+
+package(default_visibility = ["//tensorboard:internal"])
 
 ng_module(
     name = "effects",
@@ -10,8 +10,10 @@ ng_module(
         "index.ts",
     ],
     deps = [
+        "//tensorboard/webapp:app_state",
         "//tensorboard/webapp/core/actions",
         "//tensorboard/webapp/core/store",
+        "//tensorboard/webapp/feature_flag/store",
         "//tensorboard/webapp/types",
         "//tensorboard/webapp/webapp_data_source",
         "@npm//@angular/common",
@@ -30,13 +32,17 @@ tf_ts_library(
     ],
     deps = [
         ":effects",
-        "//tensorboard/webapp/angular:expect_angular_common_http_testing",
+        "//tensorboard/webapp:app_state",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "//tensorboard/webapp/angular:expect_ngrx_store_testing",
+        "//tensorboard/webapp/core:types",
         "//tensorboard/webapp/core/actions",
         "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/core/testing",
+        "//tensorboard/webapp/feature_flag/store",
         "//tensorboard/webapp/types",
         "//tensorboard/webapp/webapp_data_source",
+        "//tensorboard/webapp/webapp_data_source:http_client_testing",
         "@npm//@angular/common",
         "@npm//@angular/compiler",
         "@npm//@angular/core",

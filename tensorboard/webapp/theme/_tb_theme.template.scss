@@ -1,0 +1,52 @@
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+==============================================================================*/
+
+@import 'tensorboard/webapp/angular_material_theming';
+
+/***********************************************************
+ * VARIABLE FILE IS INLINED WITH GENRULE. DO NOT IMPORT IT.
+ * Variable file declares values for $tb-primary, $tb-accent
+ * and $tb-warn
+ **********************************************************/
+
+// Angular Material theme definition.
+
+// Include non-theme styles for core.
+@include mat-core();
+
+$tb-theme: mat-light-theme($tb-primary, $tb-accent, $tb-warn);
+
+// Overriding mat-light-theme-foreground variables.
+$tb-foreground: map_merge(
+  $mat-light-theme-foreground,
+  (
+    text: mat-color($mat-gray, 900),
+    secondary-text: mat-color($mat-gray, 700),
+    disabled-text: mat-color($mat-gray, 600),
+    // TB specific variable.
+      border: #ebebeb,
+    link: mat-color($mat-blue, 700),
+  )
+);
+
+$tb-theme: map_merge(
+  $tb-theme,
+  (
+    foreground: $tb-foreground,
+  )
+);
+
+// Include all theme-styles for the components based on the current theme.
+@include angular-material-theme($tb-theme);

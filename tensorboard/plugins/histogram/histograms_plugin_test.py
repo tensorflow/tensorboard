@@ -20,7 +20,7 @@ from __future__ import division
 from __future__ import print_function
 
 import argparse
-import collections
+import collections.abc
 import functools
 import os.path
 
@@ -28,13 +28,12 @@ from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
 from tensorboard import errors
+from tensorboard import context
 from tensorboard.backend.event_processing import data_provider
-from tensorboard.backend.event_processing import (
-    plugin_event_accumulator as event_accumulator,
-)
 from tensorboard.backend.event_processing import (
     plugin_event_multiplexer as event_multiplexer,
 )
+from tensorboard.backend.event_processing import tag_types
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.histogram import histograms_plugin
 from tensorboard.plugins.histogram import summary
@@ -70,7 +69,7 @@ class HistogramsPluginTest(tf.test.TestCase):
         multiplexer = event_multiplexer.EventMultiplexer(
             size_guidance={
                 # don't truncate my test data, please
-                event_accumulator.TENSORS: self._STEPS,
+                tag_types.TENSORS: self._STEPS,
             }
         )
         multiplexer.AddRunsFromDirectory(logdir)
@@ -89,8 +88,9 @@ class HistogramsPluginTest(tf.test.TestCase):
             def wrapper(self, *args, **kwargs):
                 (logdir, multiplexer) = self.load_runs(run_names)
                 with self.subTest("bare multiplexer"):
+                    flags = argparse.Namespace(generic_data="false")
                     ctx = base_plugin.TBContext(
-                        logdir=logdir, multiplexer=multiplexer
+                        logdir=logdir, multiplexer=multiplexer, flags=flags,
                     )
                     fn(
                         self,
@@ -99,12 +99,10 @@ class HistogramsPluginTest(tf.test.TestCase):
                         **kwargs
                     )
                 with self.subTest("generic data provider"):
-                    flags = argparse.Namespace(generic_data="true")
                     provider = data_provider.MultiplexerDataProvider(
                         multiplexer, logdir
                     )
                     ctx = base_plugin.TBContext(
-                        flags=flags,
                         logdir=logdir,
                         multiplexer=multiplexer,
                         data_provider=provider,
@@ -156,8 +154,8 @@ class HistogramsPluginTest(tf.test.TestCase):
     def test_routes_provided(self, plugin):
         """Tests that the plugin offers the correct routes."""
         routes = plugin.get_plugin_apps()
-        self.assertIsInstance(routes["/histograms"], collections.Callable)
-        self.assertIsInstance(routes["/tags"], collections.Callable)
+        self.assertIsInstance(routes["/histograms"], collections.abc.Callable)
+        self.assertIsInstance(routes["/tags"], collections.abc.Callable)
 
     @with_runs(
         [_RUN_WITH_SCALARS, _RUN_WITH_LEGACY_HISTOGRAM, _RUN_WITH_HISTOGRAM,]
@@ -180,7 +178,7 @@ class HistogramsPluginTest(tf.test.TestCase):
                     },
                 },
             },
-            plugin.index_impl(experiment="exp"),
+            plugin.index_impl(context.RequestContext(), experiment="exp"),
         )
 
     @with_runs(
@@ -197,7 +195,10 @@ class HistogramsPluginTest(tf.test.TestCase):
         else:
             with self.assertRaises(errors.NotFoundError):
                 plugin.histograms_impl(
-                    self._HISTOGRAM_TAG, run_name, experiment="exp"
+                    context.RequestContext(),
+                    self._HISTOGRAM_TAG,
+                    run_name,
+                    experiment="exp",
                 )
 
     def _check_histograms_result(self, plugin, tag_name, run_name, downsample):
@@ -209,7 +210,11 @@ class HistogramsPluginTest(tf.test.TestCase):
             expected_length = self._STEPS
 
         (data, mime_type) = plugin.histograms_impl(
-            tag_name, run_name, experiment="exp", downsample_to=downsample_to
+            context.RequestContext(),
+            tag_name,
+            run_name,
+            experiment="exp",
+            downsample_to=downsample_to,
         )
         self.assertEqual("application/json", mime_type)
         self.assertEqual(

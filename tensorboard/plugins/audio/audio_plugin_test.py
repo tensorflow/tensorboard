@@ -18,7 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import collections
+import collections.abc
 import json
 import os
 import shutil
@@ -35,6 +35,7 @@ from tensorboard.backend import application
 from tensorboard.backend.event_processing import (
     plugin_event_multiplexer as event_multiplexer,
 )
+from tensorboard.backend.event_processing import data_provider
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.audio import audio_plugin
 from tensorboard.plugins.audio import summary
@@ -119,8 +120,11 @@ class AudioPluginTest(tf.test.TestCase):
             {"foo": foo_directory, "bar": bar_directory,}
         )
         multiplexer.Reload()
+        provider = data_provider.MultiplexerDataProvider(
+            multiplexer, self.log_dir
+        )
         context = base_plugin.TBContext(
-            logdir=self.log_dir, multiplexer=multiplexer
+            logdir=self.log_dir, data_provider=provider
         )
         self.plugin = audio_plugin.AudioPlugin(context)
         wsgi_app = application.TensorBoardWSGI([self.plugin])
@@ -143,9 +147,11 @@ class AudioPluginTest(tf.test.TestCase):
     def testRoutesProvided(self):
         """Tests that the plugin offers the correct routes."""
         routes = self.plugin.get_plugin_apps()
-        self.assertIsInstance(routes["/audio"], collections.Callable)
-        self.assertIsInstance(routes["/individualAudio"], collections.Callable)
-        self.assertIsInstance(routes["/tags"], collections.Callable)
+        self.assertIsInstance(routes["/audio"], collections.abc.Callable)
+        self.assertIsInstance(
+            routes["/individualAudio"], collections.abc.Callable
+        )
+        self.assertIsInstance(routes["/tags"], collections.abc.Callable)
 
     def testOldStyleAudioRoute(self):
         """Tests that the /audio routes returns correct old-style data."""
@@ -163,22 +169,14 @@ class AudioPluginTest(tf.test.TestCase):
         self.assertEqual("audio/wav", entry["contentType"])
         self.assertEqual("", entry["label"])
         self.assertEqual(0, entry["step"])
-        parsed_query = urllib.parse.parse_qs(entry["query"])
-        self.assertListEqual(["foo"], parsed_query["run"])
-        self.assertListEqual(["baz/audio/0"], parsed_query["tag"])
-        self.assertListEqual(["0"], parsed_query["sample"])
-        self.assertListEqual(["0"], parsed_query["index"])
+        urllib.parse.parse_qs(entry["query"])  # should parse
 
         # Verify that the 2nd entry is correct.
         entry = entries[1]
         self.assertEqual("audio/wav", entry["contentType"])
         self.assertEqual("", entry["label"])
         self.assertEqual(1, entry["step"])
-        parsed_query = urllib.parse.parse_qs(entry["query"])
-        self.assertListEqual(["foo"], parsed_query["run"])
-        self.assertListEqual(["baz/audio/0"], parsed_query["tag"])
-        self.assertListEqual(["0"], parsed_query["sample"])
-        self.assertListEqual(["1"], parsed_query["index"])
+        urllib.parse.parse_qs(entry["query"])  # should parse
 
     def testNewStyleAudioRoute(self):
         """Tests that the /audio routes returns correct new-style data."""
@@ -194,50 +192,63 @@ class AudioPluginTest(tf.test.TestCase):
         # Verify that the 1st entry is correct.
         entry = entries[0]
         self.assertEqual("audio/wav", entry["contentType"])
-        self.assertEqual(
-            "<p>step <strong>%s</strong>, sample 0</p>" % entry["step"],
-            entry["label"],
-        )
+        self.assertEqual("", entry["label"])
         self.assertEqual(0, entry["step"])
-        parsed_query = urllib.parse.parse_qs(entry["query"])
-        self.assertListEqual(["bar"], parsed_query["run"])
-        self.assertListEqual(["quux/audio_summary"], parsed_query["tag"])
-        self.assertListEqual(["0"], parsed_query["sample"])
-        self.assertListEqual(["0"], parsed_query["index"])
+        urllib.parse.parse_qs(entry["query"])  # should parse
 
         # Verify that the 2nd entry is correct.
         entry = entries[1]
         self.assertEqual("audio/wav", entry["contentType"])
-        self.assertEqual(
-            "<p>step <strong>%s</strong>, sample 0</p>" % entry["step"],
-            entry["label"],
-        )
+        self.assertEqual("", entry["label"])
         self.assertEqual(1, entry["step"])
-        parsed_query = urllib.parse.parse_qs(entry["query"])
-        self.assertListEqual(["bar"], parsed_query["run"])
-        self.assertListEqual(["quux/audio_summary"], parsed_query["tag"])
-        self.assertListEqual(["0"], parsed_query["sample"])
-        self.assertListEqual(["1"], parsed_query["index"])
+        urllib.parse.parse_qs(entry["query"])  # should parse
 
     def testOldStyleIndividualAudioRoute(self):
         """Tests fetching an individual audio clip from an old-style
         summary."""
         response = self.server.get(
-            "/data/plugin/audio/individualAudio"
-            "?run=foo&tag=baz/audio/0&sample=0&index=0"
+            "/data/plugin/audio/audio?run=foo&tag=baz/audio/0&sample=0"
+        )
+        self.assertEqual(200, response.status_code)
+        entries = self._DeserializeResponse(response.get_data())
+        query_string = entries[0]["query"]
+        response = self.server.get(
+            "/data/plugin/audio/individualAudio?" + query_string
         )
         self.assertEqual(200, response.status_code)
         self.assertEqual("audio/wav", response.headers.get("content-type"))
 
     def testNewStyleIndividualAudioRoute(self):
-        """Tests fetching an individual audio clip from an old-style
+        """Tests fetching an individual audio clip from a new-style
         summary."""
         response = self.server.get(
-            "/data/plugin/audio/individualAudio"
-            "?run=bar&tag=quux/audio_summary&sample=0&index=0"
+            "/data/plugin/audio/audio?run=bar&tag=quux/audio_summary&sample=0"
+        )
+        self.assertEqual(200, response.status_code)
+        entries = self._DeserializeResponse(response.get_data())
+        query_string = entries[0]["query"]
+        response = self.server.get(
+            "/data/plugin/audio/individualAudio?" + query_string
         )
         self.assertEqual(200, response.status_code)
         self.assertEqual("audio/wav", response.headers.get("content-type"))
+
+    def testRequestBadContentType(self):
+        """Ensure that malicious clients can't request a non-audio MIME type."""
+        response = self.server.get(
+            "/data/plugin/audio/audio?run=bar&tag=quux/audio_summary&sample=0"
+        )
+        self.assertEqual(200, response.status_code)
+        entries = self._DeserializeResponse(response.get_data())
+        query_parts = urllib.parse.parse_qs(entries[0]["query"])
+        self.assertIn("content_type", query_parts)
+        query_parts["content-type"] = "application/javascript"
+        malicious_query = urllib.parse.urlencode(query_parts)
+        response = self.server.get(
+            "/data/plugin/audio/individualAudio?" + malicious_query
+        )
+        self.assertEqual(400, response.status_code)
+        self.assertIn(b"Illegal mime type", response.get_data())
 
     def testTagsRoute(self):
         """Tests that the /tags route offers the correct run to tag mapping."""

@@ -15,27 +15,17 @@ limitations under the License.
 import {Action, createReducer, on} from '@ngrx/store';
 import {DataLoadState} from '../../types/data';
 import * as actions from '../actions';
-import {CoreState} from './core_types';
+import {CoreState, initialState} from './core_types';
 
 // HACK: These imports are for type inference.
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
 /** @typehack */ import * as _typeHackStore from '@ngrx/store/store';
 
-const initialState: CoreState = {
-  activePlugin: null,
-  plugins: {},
-  pluginsListLoaded: {
-    state: DataLoadState.NOT_LOADED,
-    lastLoadedTimeInMs: null,
-  },
-  reloadPeriodInMs: 30000,
-  reloadEnabled: true,
-};
-
 const reducer = createReducer(
   initialState,
   on(
     actions.changePlugin,
+    actions.pluginUrlHashChanged,
     (state: CoreState, {plugin}): CoreState => {
       return {...state, activePlugin: plugin};
     }
@@ -67,9 +57,11 @@ const reducer = createReducer(
   on(
     actions.pluginsListingLoaded,
     (state: CoreState, {plugins}): CoreState => {
-      const [firstPlugin] = Object.keys(plugins);
-      let activePlugin =
-        state.activePlugin !== null ? state.activePlugin : firstPlugin;
+      const firstEnabledPluginId =
+        Object.keys(plugins).find((pluginId) => {
+          return plugins[pluginId].enabled;
+        }) || null;
+      const activePlugin = state.activePlugin || firstEnabledPluginId;
       return {
         ...state,
         activePlugin,
@@ -79,6 +71,12 @@ const reducer = createReducer(
           lastLoadedTimeInMs: Date.now(),
         },
       };
+    }
+  ),
+  on(
+    actions.environmentLoaded,
+    (state: CoreState, {environment}): CoreState => {
+      return {...state, environment: environment};
     }
   ),
   on(
@@ -100,9 +98,24 @@ const reducer = createReducer(
         reloadPeriodInMs: nextReloadPeriod,
       };
     }
-  )
+  ),
+  on(actions.changePageSize, (state: CoreState, {size}) => {
+    const nextPageSize = size > 0 ? size : state.pageSize;
+    return {
+      ...state,
+      pageSize: nextPageSize,
+    };
+  }),
+  on(actions.fetchRunSucceeded, (state, {runs}) => {
+    // Do not modify the runSelection since the Polymer component is the
+    // source of truth for the Polymer Interop.
+    return {...state, polymerInteropRuns: runs};
+  }),
+  on(actions.polymerInteropRunSelectionChanged, (state, {nextSelection}) => {
+    return {...state, polymerInteropRunSelection: new Set(nextSelection)};
+  })
 );
 
-export function reducers(state: CoreState, action: Action) {
+export function reducers(state: CoreState | undefined, action: Action) {
   return reducer(state, action);
 }

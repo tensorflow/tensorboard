@@ -1,11 +1,11 @@
 # Description:
 # TensorBoard plugin for precision-recall curves.
 
+load("//tensorboard/defs:protos.bzl", "tb_proto_library")
+
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
-
-load("//tensorboard/defs:protos.bzl", "tb_proto_library")
 
 py_library(
     name = "metadata",
@@ -29,8 +29,7 @@ py_library(
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
-        "//tensorboard/backend/event_processing:event_accumulator",
-        "//tensorboard/compat:tensorflow",
+        "//tensorboard/data:provider",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/util:tensor_util",
         "@org_pocoo_werkzeug",
@@ -47,9 +46,11 @@ py_test(
         ":metadata",
         ":pr_curve_demo_lib",
         ":pr_curves_plugin",
+        "//tensorboard:context",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/backend:application",
+        "//tensorboard/backend/event_processing:data_provider",
+        "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/plugins:base_plugin",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
@@ -67,9 +68,11 @@ py_test(
         ":metadata",
         ":pr_curve_demo_lib",
         ":pr_curves_plugin",
+        "//tensorboard:context",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/backend:application",
+        "//tensorboard/backend/event_processing:data_provider",
+        "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/compat:no_tensorflow",
         "//tensorboard/plugins:base_plugin",
         "@org_pocoo_werkzeug",

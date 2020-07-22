@@ -160,33 +160,54 @@ PROTO_REPLACEMENTS = [
 ]
 
 
+MATCH_FAIL_MESSAGE_TEMPLATE = """
+{}
+
+NOTE!
+====
+This is expected to happen when TensorFlow updates their proto definitions.
+We pin copies of the protos, but TensorFlow can freely update them at any
+time.
+
+The proper fix is:
+
+1. In your TensorFlow clone, check out the version of TensorFlow whose
+   protos you want to update (e.g., `git checkout v2.2.0-rc0`)
+2. In your tensorboard repo, run:
+
+    ./tensorboard/compat/proto/update.sh PATH_TO_TENSORFLOW_REPO
+
+3. Review and commit any changes.
+"""
+
+
 class ProtoMatchTest(tf.test.TestCase):
     def test_each_proto_matches_tensorflow(self):
         for tf_path, tb_path in PROTO_IMPORTS:
             tf_pb2 = importlib.import_module(tf_path)
             tb_pb2 = importlib.import_module(tb_path)
-            expected = descriptor_pb2.FileDescriptorProto()
-            actual = descriptor_pb2.FileDescriptorProto()
-            tf_pb2.DESCRIPTOR.CopyToProto(expected)
-            tb_pb2.DESCRIPTOR.CopyToProto(actual)
+            tf_descriptor = descriptor_pb2.FileDescriptorProto()
+            tb_descriptor = descriptor_pb2.FileDescriptorProto()
+            tf_pb2.DESCRIPTOR.CopyToProto(tf_descriptor)
+            tb_pb2.DESCRIPTOR.CopyToProto(tb_descriptor)
 
             # Convert expected to be actual since this matches the
             # replacements done in proto/update.sh
-            actual = str(actual)
-            expected = str(expected)
+            tb_string = str(tb_descriptor)
+            tf_string = str(tf_descriptor)
             for orig, repl in PROTO_REPLACEMENTS:
-                expected = expected.replace(orig, repl)
+                tf_string = tf_string.replace(orig, repl)
 
             diff = difflib.unified_diff(
-                actual.splitlines(1), expected.splitlines(1)
+                tb_string.splitlines(1),
+                tf_string.splitlines(1),
+                fromfile=tb_path,
+                tofile=tf_path,
             )
             diff = "".join(diff)
 
-            self.assertEquals(
-                diff,
-                "",
-                "{} and {} did not match:\n{}".format(tf_path, tb_path, diff),
-            )
+            if diff:
+                self.fail(MATCH_FAIL_MESSAGE_TEMPLATE.format(diff))
 
 
 if __name__ == "__main__":
