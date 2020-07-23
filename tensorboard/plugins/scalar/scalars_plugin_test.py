@@ -40,6 +40,7 @@ from tensorboard.plugins.scalar import scalars_plugin
 from tensorboard.plugins.scalar import summary
 from tensorboard.util import test_util
 
+
 tf.compat.v1.enable_eager_execution()
 
 
