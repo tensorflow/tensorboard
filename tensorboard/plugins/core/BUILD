@@ -31,7 +31,6 @@ py_test(
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_multiplexer",
-        "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/data:provider",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/util:test_util",

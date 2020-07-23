@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import print_function
 
 # Standard library modules
-import collections
 
 # Third-party modules
 import numpy as np

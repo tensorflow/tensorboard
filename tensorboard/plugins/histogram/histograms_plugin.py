@@ -25,7 +25,6 @@ from __future__ import print_function
 import collections
 import random
 
-import numpy as np
 import six
 from werkzeug import wrappers
 

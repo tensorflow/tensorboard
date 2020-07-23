@@ -22,11 +22,8 @@ import json
 import six
 import math
 from werkzeug import wrappers
-import werkzeug
 
-from tensorboard import errors
 from tensorboard import plugin_util
-from tensorboard.util import tensor_util
 from tensorboard.plugins import base_plugin
 from tensorboard.backend import http_util
 from tensorboard.data import provider

@@ -19,7 +19,6 @@ from __future__ import print_function
 
 import numpy as np
 
-import tensorflow as tf
 from tensorboard.plugins.debugger import tensor_helper
 from tensorboard.util import tb_logging
 from tensorflow.python.debug.lib import debug_data
