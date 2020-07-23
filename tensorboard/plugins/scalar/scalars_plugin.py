@@ -131,6 +131,12 @@ class ScalarsPlugin(base_plugin.TBPlugin):
         """Given a tag and single run, return array of ScalarEvents."""
         tag = request.args.get("tag")
         run = request.args.get("run")
+        if tag is None or run is None:
+            raise errors.InvalidArgumentError(
+                "Both run and tag must be specified: tag=%r, run=%r"
+                % (tag, run)
+            )
+
         ctx = plugin_util.context(request.environ)
         experiment = plugin_util.experiment_id(request.environ)
         output_format = request.args.get("format")

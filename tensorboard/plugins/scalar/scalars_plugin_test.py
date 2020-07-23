@@ -171,6 +171,22 @@ class ScalarsPluginTest(tf.test.TestCase):
         self.assertEqual("application/json", response.headers["Content-Type"])
         self.assertEqual(self._STEPS, len(json.loads(response.get_data())))
 
+    def test_scalars_with_scalars_unspecified_run(self):
+        server = self.load_server([self._RUN_WITH_SCALARS])
+        response = server.get(
+            "/data/plugin/scalars/scalars",
+            query_string={"run": None, "tag": "foo_tag"},
+        )
+        self.assertEqual(400, response.status_code)
+
+    def test_scalars_with_scalars_unspecified_tag(self):
+        server = self.load_server([self._RUN_WITH_SCALARS])
+        response = server.get(
+            "/data/plugin/scalars/scalars",
+            query_string={"run": "foo_run", "tag": None},
+        )
+        self.assertEqual(400, response.status_code)
+
     def test_scalars_with_histogram(self):
         server = self.load_server([self._RUN_WITH_HISTOGRAM])
         response = server.get(
