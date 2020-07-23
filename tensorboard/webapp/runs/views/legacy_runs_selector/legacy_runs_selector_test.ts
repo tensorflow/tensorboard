@@ -68,7 +68,20 @@ describe('legacy_runs_selector test', () => {
     expect(element.nativeElement).toBe(testableRunSelector);
   });
 
+  it('dispatches initial selection from the Polymer component', () => {
+    (testableRunSelector as any).selectedRuns = ['foo'];
+    const fixture = TestBed.createComponent(LegacyRunsSelectorContainer);
+    fixture.detectChanges();
+
+    expect(recordedActions).toEqual([
+      polymerInteropRunSelectionChanged({
+        nextSelection: ['foo'],
+      }),
+    ]);
+  });
+
   it('dispatches action when polymer component dispatches change', () => {
+    (testableRunSelector as any).selectedRuns = ['foo'];
     const fixture = TestBed.createComponent(LegacyRunsSelectorContainer);
     fixture.detectChanges();
 
@@ -80,6 +93,7 @@ describe('legacy_runs_selector test', () => {
     testableRunSelector.dispatchEvent(event);
 
     expect(recordedActions).toEqual([
+      jasmine.any(Object),
       polymerInteropRunSelectionChanged({
         nextSelection: ['foo', 'bar'],
       }),
