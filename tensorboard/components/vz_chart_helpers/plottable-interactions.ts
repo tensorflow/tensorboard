@@ -51,9 +51,7 @@ THE SOFTWARE.
  */
 namespace vz_chart_helpers {
   // HACK: parentElement does not work for webcomponents.
-  function getHtmlElementAncestors(
-    elem: Element | Node | HTMLElement | DocumentFragment
-  ) {
+  function getHtmlElementAncestors(elem: Node) {
     const elems = [];
     while (elem && elem instanceof HTMLElement) {
       elems.push(elem);
