@@ -15,6 +15,7 @@ py_library(
     srcs = ["scalars_plugin.py"],
     srcs_version = "PY2AND3",
     deps = [
+        "//tensorboard:errors",
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
         "//tensorboard/data:provider",
@@ -115,6 +116,7 @@ py_test(
     deps = [
         ":metadata",
         ":summary",
+        "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/util:tensor_util",
