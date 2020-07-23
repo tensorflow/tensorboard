@@ -32,7 +32,6 @@ py_test(
     main = "scalars_plugin_test.py",
     srcs_version = "PY2AND3",
     deps = [
-        ":metadata",
         ":scalars_plugin",
         ":summary",
         "//tensorboard:expect_tensorflow_installed",
@@ -56,7 +55,6 @@ py_test(
     main = "scalars_plugin_test.py",
     srcs_version = "PY2AND3",
     deps = [
-        ":metadata",
         ":scalars_plugin",
         ":summary",
         "//tensorboard:expect_tensorflow_installed",
