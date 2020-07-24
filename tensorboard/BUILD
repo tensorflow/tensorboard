@@ -32,8 +32,8 @@ py_binary(
         ":program",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/plugins:base_plugin",
-        "//tensorboard/summary",  # Necessary to suppress TF startup warning
-        "//tensorboard/summary:tf_summary",  # Necessary to suppress TF startup warning
+        "//tensorboard/summary",  # Suppress TF startup warning
+        "//tensorboard/summary:tf_summary",  # Suppress TF startup warning
         "//tensorboard/uploader:uploader_subcommand",
         "//tensorboard/util:tb_logging",
         "//tensorboard/util:timing",  # non-strict dep, for patching convenience
