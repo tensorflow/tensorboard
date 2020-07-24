@@ -45,16 +45,27 @@ py_library(
     ],
 )
 
+py_library(
+    name = "im_util",
+    testonly = True,
+    srcs = ["im_util.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/util:op_evaluator",
+    ],
+)
+
 py_test(
     name = "tensor_helper_test",
     size = "small",
     srcs = ["tensor_helper_test.py"],
     srcs_version = "PY2AND3",
     deps = [
+        ":im_util",
         ":tensor_helper",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/plugins/beholder:im_util",
         "@org_pythonhosted_six",
     ],
 )
@@ -76,10 +87,10 @@ py_test(
     srcs = ["tensor_store_test.py"],
     srcs_version = "PY2AND3",
     deps = [
+        ":im_util",
         ":tensor_store",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/plugins/beholder:im_util",
     ],
 )
 
