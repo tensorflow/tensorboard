@@ -24,7 +24,7 @@ import {getRunSelection} from '../../core/store/core_selectors';
   selector: 'npmi',
   template: `<npmi-component [runs]="runs$ | async"></npmi-component>`,
 })
-export class NPMIContainer {
+export class NpmiContainer {
   readonly runs$ = this.coreStore.pipe(select(getRunSelection));
 
   constructor(private readonly coreStore: Store<CoreState>) {}

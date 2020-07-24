@@ -15,18 +15,18 @@ limitations under the License.
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 
-import {NPMIComponent} from './npmi_component';
-import {NPMIContainer} from './npmi_container';
+import {NpmiComponent} from './npmi_component';
+import {NpmiContainer} from './npmi_container';
 
 import {PluginRegistryModule} from '../../plugins/plugin_registry_module';
 
 @NgModule({
-  declarations: [NPMIComponent, NPMIContainer],
+  declarations: [NpmiComponent, NpmiContainer],
   imports: [
     CommonModule,
-    PluginRegistryModule.forPlugin('npmi', NPMIContainer),
+    PluginRegistryModule.forPlugin('npmi', NpmiContainer),
   ],
-  exports: [NPMIContainer],
-  entryComponents: [NPMIContainer],
+  exports: [NpmiContainer],
+  entryComponents: [NpmiContainer],
 })
-export class NPMIModule {}
+export class NpmiModule {}

@@ -21,6 +21,6 @@ import {RunId} from '../../core/types';
   styleUrls: ['./npmi_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class NPMIComponent {
+export class NpmiComponent {
   @Input() runs: Map<RunId, boolean> = new Map();
 }
