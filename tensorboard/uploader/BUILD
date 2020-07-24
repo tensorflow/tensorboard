@@ -18,7 +18,6 @@ py_library(
         "//tensorboard/util:grpc_util",
         "//tensorboard/util:tb_logging",
         "//tensorboard/util:tensor_util",
-        "@org_pythonhosted_six",
     ],
 )
 
@@ -74,8 +73,6 @@ py_library(
         ":formatters",
         ":server_info",
         ":uploader",
-        ":util",
-        "//tensorboard:expect_absl_app_installed",
         "//tensorboard:expect_absl_flags_argparse_flags_installed",
         "//tensorboard:expect_absl_flags_installed",
         "//tensorboard:expect_absl_logging_installed",
@@ -101,7 +98,6 @@ py_library(
         "//tensorboard/backend/event_processing:io_wrapper",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/plugins/graph:metadata",
-        "//tensorboard/plugins/scalar:metadata",
         "//tensorboard/uploader/proto:protos_all_py_pb2",
         "//tensorboard/util:grpc_util",
         "//tensorboard/util:tb_logging",
@@ -165,7 +161,6 @@ py_library(
     srcs = ["dry_run_stubs.py"],
     deps = [
         "//tensorboard/uploader/proto:protos_all_py_pb2",
-        "//tensorboard/uploader/proto:protos_all_py_pb2_grpc",
     ],
 )
 

@@ -231,7 +231,6 @@ py_library(
         ":plugin_asset_util",
         ":reservoir",
         ":tag_types",
-        "//tensorboard/compat:tensorflow",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/plugins/distribution:compressor",
         "//tensorboard/util:tb_logging",
