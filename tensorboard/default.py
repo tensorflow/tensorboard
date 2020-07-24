@@ -75,14 +75,6 @@ class ExperimentalNpmiPlugin(
     pass
 
 
-class ExperimentalNpmiPlugin(
-    npmi_plugin.NpmiPlugin, experimental_plugin.ExperimentalPlugin
-):
-    """Angular nPMI Plugin marked as experimental."""
-
-    pass
-
-
 # Ordering matters. The order in which these lines appear determines the
 # ordering of tabs in TensorBoard's GUI.
 _PLUGINS = [
