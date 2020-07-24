@@ -5,15 +5,15 @@
 
 load("//tensorboard/defs:protos.bzl", "tb_proto_library")
 
-package(default_visibility=["//tensorboard:internal"])
+package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
 
 py_library(
-    name="npmi_plugin",
-    srcs=["npmi_plugin.py"],
-    srcs_version="PY2AND3",
-    deps=[
+    name = "npmi_plugin",
+    srcs = ["npmi_plugin.py"],
+    srcs_version = "PY2AND3",
+    deps = [
         ":metadata",
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
@@ -22,12 +22,12 @@ py_library(
 )
 
 py_test(
-    name="npmi_plugin_test",
-    size="small",
-    srcs=["npmi_plugin_test.py"],
-    main="npmi_plugin_test.py",
-    srcs_version="PY2AND3",
-    deps=[
+    name = "npmi_plugin_test",
+    size = "small",
+    srcs = ["npmi_plugin_test.py"],
+    main = "npmi_plugin_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
         ":npmi_plugin",
         ":summary",
         "//tensorboard:context",
@@ -40,19 +40,24 @@ py_test(
 )
 
 py_library(
-    name="summary",
-    srcs=["summary.py"],
-    srcs_version="PY2AND3",
-    visibility=["//visibility:public",],
-    deps=[":metadata", "//tensorboard/compat",],
+    name = "summary",
+    srcs = ["summary.py"],
+    srcs_version = "PY2AND3",
+    visibility = [
+        "//visibility:public",
+    ],
+    deps = [
+        ":metadata",
+        "//tensorboard/compat",
+    ],
 )
 
 py_test(
-    name="summary_test",
-    size="small",
-    srcs=["summary_test.py"],
-    srcs_version="PY2AND3",
-    deps=[
+    name = "summary_test",
+    size = "small",
+    srcs = ["summary_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
         ":metadata",
         ":summary",
         "//tensorboard:expect_tensorflow_installed",
@@ -62,11 +67,13 @@ py_test(
 )
 
 py_library(
-    name="metadata",
-    srcs=["metadata.py"],
-    srcs_version="PY2AND3",
-    visibility=["//tensorboard:internal",],
-    deps=[
+    name = "metadata",
+    srcs = ["metadata.py"],
+    srcs_version = "PY2AND3",
+    visibility = [
+        "//tensorboard:internal",
+    ],
+    deps = [
         ":protos_all_py_pb2",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/util:tb_logging",
@@ -74,5 +81,6 @@ py_library(
 )
 
 tb_proto_library(
-    name="protos_all", srcs=["plugin_data.proto"],
+    name = "protos_all",
+    srcs = ["plugin_data.proto"],
 )

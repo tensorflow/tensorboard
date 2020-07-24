@@ -1,17 +1,17 @@
 # Description:
 #   TensorBoard core plugin.
 
-package(default_visibility=["//tensorboard:internal"])
+package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
 exports_files(["LICENSE"])
 
 py_library(
-    name="core_plugin",
-    srcs=["core_plugin.py"],
-    srcs_version="PY2AND3",
-    deps=[
+    name = "core_plugin",
+    srcs = ["core_plugin.py"],
+    srcs_version = "PY2AND3",
+    deps = [
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
         "//tensorboard/plugins:base_plugin",
@@ -22,11 +22,11 @@ py_library(
 )
 
 py_test(
-    name="core_plugin_test",
-    size="small",
-    srcs=["core_plugin_test.py"],
-    srcs_version="PY2AND3",
-    deps=[
+    name = "core_plugin_test",
+    size = "small",
+    srcs = ["core_plugin_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
         ":core_plugin",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",

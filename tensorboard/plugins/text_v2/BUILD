@@ -3,15 +3,15 @@
 # the internals of a TensorFlow program (e.g., graphs, functions and tensors),
 # with a focus on TensorFlow 2.x.
 
-package(default_visibility=["//tensorboard:internal"])
+package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
 
 py_library(
-    name="text_v2_plugin",
-    srcs=["text_v2_plugin.py"],
-    srcs_version="PY2AND3",
-    deps=[
+    name = "text_v2_plugin",
+    srcs = ["text_v2_plugin.py"],
+    srcs_version = "PY2AND3",
+    deps = [
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
@@ -24,12 +24,12 @@ py_library(
 )
 
 py_test(
-    name="text_v2_plugin_test",
-    size="small",
-    srcs=["text_v2_plugin_test.py"],
-    main="text_v2_plugin_test.py",
-    srcs_version="PY2AND3",
-    deps=[
+    name = "text_v2_plugin_test",
+    size = "small",
+    srcs = ["text_v2_plugin_test.py"],
+    main = "text_v2_plugin_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
         ":text_v2_plugin",
         "//tensorboard:context",
         "//tensorboard:expect_tensorflow_installed",

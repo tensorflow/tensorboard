@@ -4,7 +4,7 @@
 load("//tensorboard/defs:web.bzl", "tf_web_library")
 load("//tensorboard/defs:protos.bzl", "tb_proto_library")
 
-package(default_visibility=["//tensorboard:internal"])
+package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
@@ -12,16 +12,20 @@ exports_files(["LICENSE"])
 
 # Public-facing API, included in Pip package.
 py_library(
-    name="hparams",
-    srcs=["__init__.py"],
-    srcs_version="PY2AND3",
-    visibility=["//visibility:public"],
-    deps=[":api", ":summary", ":summary_v2",],
+    name = "hparams",
+    srcs = ["__init__.py"],
+    srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":api",
+        ":summary",
+        ":summary_v2",
+    ],
 )
 
 py_library(
-    name="hparams_plugin",
-    srcs=[
+    name = "hparams_plugin",
+    srcs = [
         "backend_context.py",
         "download_data.py",
         "get_experiment.py",
@@ -30,8 +34,8 @@ py_library(
         "list_session_groups.py",
         "metrics.py",
     ],
-    srcs_version="PY2AND3",
-    deps=[
+    srcs_version = "PY2AND3",
+    deps = [
         ":error",
         ":metadata",
         ":protos_all_py_pb2",
@@ -50,10 +54,12 @@ py_library(
 )
 
 py_test(
-    name="download_data_test",
-    size="small",
-    srcs=["download_data_test.py",],
-    deps=[
+    name = "download_data_test",
+    size = "small",
+    srcs = [
+        "download_data_test.py",
+    ],
+    deps = [
         ":hparams_plugin",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend/event_processing:event_accumulator",
@@ -64,11 +70,13 @@ py_test(
 )
 
 py_test(
-    name="list_session_groups_test",
-    size="small",
-    timeout="moderate",
-    srcs=["list_session_groups_test.py",],
-    deps=[
+    name = "list_session_groups_test",
+    size = "small",
+    timeout = "moderate",
+    srcs = [
+        "list_session_groups_test.py",
+    ],
+    deps = [
         ":hparams_plugin",
         "//tensorboard:context",
         "//tensorboard:expect_tensorflow_installed",
@@ -82,10 +90,12 @@ py_test(
 )
 
 py_test(
-    name="list_metric_evals_test",
-    size="small",
-    srcs=["list_metric_evals_test.py",],
-    deps=[
+    name = "list_metric_evals_test",
+    size = "small",
+    srcs = [
+        "list_metric_evals_test.py",
+    ],
+    deps = [
         ":hparams_plugin",
         "//tensorboard:context",
         "//tensorboard:expect_tensorflow_installed",
@@ -94,10 +104,12 @@ py_test(
 )
 
 py_test(
-    name="backend_context_test",
-    size="small",
-    srcs=["backend_context_test.py",],
-    deps=[
+    name = "backend_context_test",
+    size = "small",
+    srcs = [
+        "backend_context_test.py",
+    ],
+    deps = [
         ":hparams_plugin",
         "//tensorboard:context",
         "//tensorboard:expect_tensorflow_installed",
@@ -110,10 +122,10 @@ py_test(
 )
 
 py_binary(
-    name="hparams_demo",
-    srcs=["hparams_demo.py"],
-    srcs_version="PY2AND3",
-    deps=[
+    name = "hparams_demo",
+    srcs = ["hparams_demo.py"],
+    srcs_version = "PY2AND3",
+    deps = [
         ":api",
         ":protos_all_py_pb2",
         ":summary",
@@ -127,10 +139,10 @@ py_binary(
 )
 
 py_binary(
-    name="hparams_minimal_demo",
-    srcs=["hparams_minimal_demo.py"],
-    srcs_version="PY2AND3",
-    deps=[
+    name = "hparams_minimal_demo",
+    srcs = ["hparams_minimal_demo.py"],
+    srcs_version = "PY2AND3",
+    deps = [
         ":protos_all_py_pb2",
         ":summary",
         "//tensorboard:expect_absl_app_installed",
@@ -142,10 +154,10 @@ py_binary(
 )
 
 py_binary(
-    name="hparams_util",
-    srcs=["hparams_util.py"],
-    srcs_version="PY2AND3",
-    deps=[
+    name = "hparams_util",
+    srcs = ["hparams_util.py"],
+    srcs_version = "PY2AND3",
+    deps = [
         ":protos_all_py_pb2",
         ":summary",
         "//tensorboard:expect_absl_app_installed",
@@ -157,32 +169,44 @@ py_binary(
 )
 
 sh_test(
-    name="hparams_util_test",
-    srcs=["hparams_util_test.sh"],
-    data=[":hparams_util",],
+    name = "hparams_util_test",
+    srcs = ["hparams_util_test.sh"],
+    data = [
+        ":hparams_util",
+    ],
 )
 
 py_library(
-    name="api",
-    srcs=["api.py"],
-    srcs_version="PY2AND3",
-    visibility=["//visibility:public",],
-    deps=[":keras", ":summary_v2",],
+    name = "api",
+    srcs = ["api.py"],
+    srcs_version = "PY2AND3",
+    visibility = [
+        "//visibility:public",
+    ],
+    deps = [
+        ":keras",
+        ":summary_v2",
+    ],
 )
 
 py_test(
-    name="api_test",
-    size="small",
-    srcs=["api_test.py"],
-    srcs_version="PY2AND3",
-    deps=[":api", ":keras", ":summary_v2", "//tensorboard:test",],
+    name = "api_test",
+    size = "small",
+    srcs = ["api_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":api",
+        ":keras",
+        ":summary_v2",
+        "//tensorboard:test",
+    ],
 )
 
 py_library(
-    name="keras",
-    srcs=["keras.py"],
-    srcs_version="PY2AND3",
-    deps=[
+    name = "keras",
+    srcs = ["keras.py"],
+    srcs_version = "PY2AND3",
+    deps = [
         ":protos_all_py_pb2",
         ":summary",
         ":summary_v2",
@@ -191,11 +215,11 @@ py_library(
 )
 
 py_test(
-    name="keras_test",
-    size="small",
-    srcs=["keras_test.py"],
-    srcs_version="PY2AND3",
-    deps=[
+    name = "keras_test",
+    size = "small",
+    srcs = ["keras_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
         ":api",
         ":keras",
         ":metadata",
@@ -209,10 +233,10 @@ py_test(
 )
 
 py_library(
-    name="summary_v2",
-    srcs=["summary_v2.py"],
-    srcs_version="PY2AND3",
-    deps=[
+    name = "summary_v2",
+    srcs = ["summary_v2.py"],
+    srcs_version = "PY2AND3",
+    deps = [
         ":metadata",
         ":protos_all_py_pb2",
         "//tensorboard:expect_numpy_installed",
@@ -223,11 +247,11 @@ py_library(
 )
 
 py_test(
-    name="summary_v2_test",
-    size="small",
-    srcs=["summary_v2_test.py"],
-    srcs_version="PY2AND3",
-    deps=[
+    name = "summary_v2_test",
+    size = "small",
+    srcs = ["summary_v2_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
         ":metadata",
         ":protos_all_py_pb2",
         ":summary_v2",
@@ -242,13 +266,13 @@ py_test(
 )
 
 py_test(
-    name="summary_v2_notf_test",
-    size="small",
-    srcs=["summary_v2_test.py"],
-    main="summary_v2_test.py",
-    srcs_version="PY2AND3",
-    tags=["support_notf"],
-    deps=[
+    name = "summary_v2_notf_test",
+    size = "small",
+    srcs = ["summary_v2_test.py"],
+    main = "summary_v2_test.py",
+    srcs_version = "PY2AND3",
+    tags = ["support_notf"],
+    deps = [
         ":metadata",
         ":protos_all_py_pb2",
         ":summary_v2",
@@ -263,11 +287,13 @@ py_test(
 )
 
 py_library(
-    name="summary",
-    srcs=["summary.py"],
-    srcs_version="PY2AND3",
-    visibility=["//visibility:public",],
-    deps=[
+    name = "summary",
+    srcs = ["summary.py"],
+    srcs_version = "PY2AND3",
+    visibility = [
+        "//visibility:public",
+    ],
+    deps = [
         ":metadata",
         ":protos_all_py_pb2",
         "//tensorboard:expect_tensorflow_installed",
@@ -276,10 +302,10 @@ py_library(
 )
 
 py_test(
-    name="summary_test",
-    srcs=["summary_test.py"],
-    srcs_version="PY2AND3",
-    deps=[
+    name = "summary_test",
+    srcs = ["summary_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
         ":protos_all_py_pb2",
         ":summary",
         "//tensorboard:expect_tensorflow_installed",
@@ -287,10 +313,10 @@ py_test(
 )
 
 py_library(
-    name="metadata",
-    srcs=["metadata.py"],
-    srcs_version="PY2AND3",
-    deps=[
+    name = "metadata",
+    srcs = ["metadata.py"],
+    srcs_version = "PY2AND3",
+    deps = [
         ":error",
         ":protos_all_py_pb2",
         "//tensorboard/compat/proto:protos_all_py_pb2",
@@ -299,15 +325,25 @@ py_library(
 )
 
 py_library(
-    name="error", srcs=["error.py"], srcs_version="PY2AND3",
+    name = "error",
+    srcs = ["error.py"],
+    srcs_version = "PY2AND3",
 )
 
 tb_proto_library(
-    name="protos_all",
-    srcs=["api.proto", "hparams_util.proto", "plugin_data.proto",],
-    visibility=["//visibility:public"],
+    name = "protos_all",
+    srcs = [
+        "api.proto",
+        "hparams_util.proto",
+        "plugin_data.proto",
+    ],
+    visibility = ["//visibility:public"],
 )
 
 tf_web_library(
-    name="api_d_ts", srcs=["api.d.ts",], path="/tf-hparams",
+    name = "api_d_ts",
+    srcs = [
+        "api.d.ts",
+    ],
+    path = "/tf-hparams",
 )
