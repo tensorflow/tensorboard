@@ -14,7 +14,6 @@
 # ==============================================================================
 """Tests for the example plugin."""
 
-import os
 import ntpath
 import posixpath
 import unittest

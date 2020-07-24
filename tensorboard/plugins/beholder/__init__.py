@@ -13,6 +13,7 @@
 # limitations under the License.
 
 # Only import Beholder API when tensorflow is available.
+# flake8: noqa
 try:
     # pylint: disable=unused-import
     import tensorflow

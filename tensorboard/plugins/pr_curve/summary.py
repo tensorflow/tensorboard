@@ -208,7 +208,7 @@ def pb(
           Markdown is supported. Defaults to empty.
     """
     # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
-    import tensorflow.compat.v1 as tf
+    import tensorflow.compat.v1 as tf  # noqa: F401
 
     if num_thresholds is None:
         num_thresholds = _DEFAULT_NUM_THRESHOLDS

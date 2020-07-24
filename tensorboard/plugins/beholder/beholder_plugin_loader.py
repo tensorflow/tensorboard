@@ -38,10 +38,10 @@ class BeholderPluginLoader(base_plugin.TBLoader):
         """
         try:
             # pylint: disable=unused-import
-            import tensorflow
+            import tensorflow  # noqa: F401
         except ImportError:
             return
 
-        from tensorboard.plugins.beholder.beholder_plugin import BeholderPlugin
+        from tensorboard.plugins.beholder.beholder_plugin import BeholderPlugin  # noqa: F401
 
         return BeholderPlugin(context)

@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import print_function
 
 import base64
-import errno
 import json
 import os
 

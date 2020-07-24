@@ -24,7 +24,6 @@ import unittest
 from google.protobuf import text_format
 import numpy as np
 import six
-from six.moves import xrange  # pylint: disable=redefined-builtin
 
 try:
     # python version >= 3.3

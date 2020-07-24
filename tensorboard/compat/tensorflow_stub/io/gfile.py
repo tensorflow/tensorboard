@@ -24,16 +24,12 @@ from __future__ import division
 from __future__ import print_function
 
 from collections import namedtuple
-import binascii
-import collections
 import glob as py_glob
 import io
 import os
-import shutil
 import six
 import sys
 import tempfile
-import uuid
 
 try:
     import botocore.exceptions

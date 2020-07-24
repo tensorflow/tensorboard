@@ -54,7 +54,6 @@ from six.moves import xrange
 from absl import app
 from absl import logging
 import numpy as np
-import tensorflow as tf
 
 from tensorboard.util import encoder
 from tensorboard.util import tb_logging

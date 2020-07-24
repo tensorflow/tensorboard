@@ -130,7 +130,7 @@ the interactive Debugger Dashboard. This flag is mutually exclusive with
             # Verify that the required Python packages are installed.
             try:
                 # pylint: disable=unused-import
-                import tensorflow
+                import tensorflow  # noqa: F401
             except ImportError:
                 raise ImportError(
                     "To use the debugger plugin, you need to have TensorFlow installed:\n"

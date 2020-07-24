@@ -27,7 +27,6 @@ from __future__ import print_function
 
 from tensorboard.compat.proto import event_pb2
 from tensorboard.compat.proto import summary_pb2
-from tensorboard.compat.proto import types_pb2
 from tensorboard.plugins.audio import metadata as audio_metadata
 from tensorboard.plugins.graph import metadata as graphs_metadata
 from tensorboard.plugins.histogram import metadata as histograms_metadata

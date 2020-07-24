@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import print_function
 
 from tensorboard.uploader.proto import write_service_pb2
-from tensorboard.uploader.proto import write_service_pb2_grpc
 
 
 class DryRunTensorBoardWriterStub(object):

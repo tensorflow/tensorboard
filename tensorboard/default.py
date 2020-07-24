@@ -29,13 +29,10 @@ from __future__ import division
 from __future__ import print_function
 
 import logging
-import os
 
 import pkg_resources
 
 from tensorboard.backend import experimental_plugin
-from tensorboard.compat import tf
-from tensorboard.plugins import base_plugin
 from tensorboard.plugins.audio import audio_plugin
 from tensorboard.plugins.beholder import beholder_plugin_loader
 from tensorboard.plugins.core import core_plugin
