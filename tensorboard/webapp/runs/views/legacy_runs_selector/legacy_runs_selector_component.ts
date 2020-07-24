@@ -49,5 +49,9 @@ export class LegacyRunsSelectorComponent implements AfterViewInit {
         this.onSelectionChange.emit(event.detail.value as string[]);
       }
     );
+    setTimeout(() => {
+      // Dispatch the initial value from the component.
+      this.onSelectionChange.emit(this.selector.nativeElement.selectedRuns);
+    });
   }
 }

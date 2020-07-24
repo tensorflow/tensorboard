@@ -19,13 +19,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import argparse
-import collections.abc
 import csv
-import functools
 import json
 import os.path
-import unittest
 
 from six import StringIO
 from six.moves import xrange  # pylint: disable=redefined-builtin
@@ -33,7 +29,6 @@ import tensorflow as tf
 from werkzeug import test as werkzeug_test
 from werkzeug import wrappers
 
-from tensorboard import errors
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import data_provider
 from tensorboard.backend.event_processing import (
@@ -41,8 +36,6 @@ from tensorboard.backend.event_processing import (
 )
 from tensorboard.backend.event_processing import tag_types
 from tensorboard.plugins import base_plugin
-from tensorboard.plugins.core import core_plugin
-from tensorboard.plugins.scalar import metadata
 from tensorboard.plugins.scalar import scalars_plugin
 from tensorboard.plugins.scalar import summary
 from tensorboard.util import test_util
@@ -170,6 +163,22 @@ class ScalarsPluginTest(tf.test.TestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual("application/json", response.headers["Content-Type"])
         self.assertEqual(self._STEPS, len(json.loads(response.get_data())))
+
+    def test_scalars_with_scalars_unspecified_run(self):
+        server = self.load_server([self._RUN_WITH_SCALARS])
+        response = server.get(
+            "/data/plugin/scalars/scalars",
+            query_string={"run": None, "tag": "foo_tag"},
+        )
+        self.assertEqual(400, response.status_code)
+
+    def test_scalars_with_scalars_unspecified_tag(self):
+        server = self.load_server([self._RUN_WITH_SCALARS])
+        response = server.get(
+            "/data/plugin/scalars/scalars",
+            query_string={"run": "foo_run", "tag": None},
+        )
+        self.assertEqual(400, response.status_code)
 
     def test_scalars_with_histogram(self):
         server = self.load_server([self._RUN_WITH_HISTOGRAM])
