@@ -34,7 +34,7 @@ ng_module(
 )
 
 tf_ts_library(
-    name = "test_lib",
+    name = "npmi_test_lib",
     testonly = True,
     srcs = [
         "npmi_container_test.ts",
