@@ -47,7 +47,6 @@ from tensorboard.backend.event_processing import (
 )
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.debugger import interactive_debugger_plugin
-from tensorboard.util import test_util
 
 # These unit tests for Debugger Plugin V1 are tied to TF1.x behavior
 # (`tf.Session`s).

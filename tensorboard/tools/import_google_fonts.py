@@ -26,7 +26,6 @@ Safari support requires Mac OS X Sierra or later.
 
 import hashlib
 import httplib
-import itertools
 import os
 import re
 import sys
@@ -34,7 +33,6 @@ import urlparse
 
 from absl import app
 from absl import flags
-import tensorflow as tf
 
 ROBOTO_URLS = [
     "https://fonts.googleapis.com/css?family=Roboto:400,300,300italic,400italic,500,500italic,700,700italic",

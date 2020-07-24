@@ -16,25 +16,26 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-PLUGIN_NAME = "beholder"
-TAG_NAME = "beholder-frame"
-SUMMARY_FILENAME = "frame.summary"
-CONFIG_FILENAME = "config.pkl"
-SECTION_INFO_FILENAME = "section-info.pkl"
-SUMMARY_COLLECTION_KEY_NAME = "summaries_beholder"
+import tensorflow as tf
 
-DEFAULT_CONFIG = {
-    "values": "trainable_variables",
-    "mode": "variance",
-    "scaling": "layer",
-    "window_size": 15,
-    "FPS": 10,
-    "is_recording": False,
-    "show_all": False,
-    "colormap": "magma",
-}
+from tensorboard.util import op_evaluator
 
-SECTION_HEIGHT = 128
-IMAGE_WIDTH = 512 + 256
+# pylint: disable=not-context-manager
 
-TB_WHITE = 245
+
+class PNGDecoder(op_evaluator.PersistentOpEvaluator):
+    def __init__(self):
+        super(PNGDecoder, self).__init__()
+        self._image_placeholder = None
+        self._decode_op = None
+
+    def initialize_graph(self):
+        self._image_placeholder = tf.compat.v1.placeholder(dtype=tf.string)
+        self._decode_op = tf.image.decode_png(self._image_placeholder)
+
+    # pylint: disable=arguments-differ
+    def run(self, image):
+        return self._decode_op.eval(feed_dict={self._image_placeholder: image,})
+
+
+decode_png = PNGDecoder()

@@ -59,7 +59,6 @@ py_test(
         ":metadata",
         ":protos_all_py_pb2",
         ":summary",
-        "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/util:tensor_util",

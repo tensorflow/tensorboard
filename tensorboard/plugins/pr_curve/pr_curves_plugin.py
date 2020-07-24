@@ -25,8 +25,6 @@ from tensorboard.data import provider
 from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.pr_curve import metadata
-from tensorboard.plugins.pr_curve import plugin_data_pb2
-from tensorboard.util import tensor_util
 
 _DEFAULT_DOWNSAMPLING = 100  # PR curves per time series
 

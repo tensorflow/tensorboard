@@ -27,7 +27,6 @@ import os
 import string
 import time
 
-import six
 import numpy as np
 
 from tensorboard.uploader.proto import blob_pb2

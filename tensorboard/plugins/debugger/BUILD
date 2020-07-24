@@ -30,7 +30,6 @@ py_test(
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/util:tb_logging",
-        "//tensorboard/util:test_util",
         "@org_python_pypi_portpicker",
     ],
 )
@@ -46,16 +45,27 @@ py_library(
     ],
 )
 
+py_library(
+    name = "im_util",
+    testonly = True,
+    srcs = ["im_util.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/util:op_evaluator",
+    ],
+)
+
 py_test(
     name = "tensor_helper_test",
     size = "small",
     srcs = ["tensor_helper_test.py"],
     srcs_version = "PY2AND3",
     deps = [
+        ":im_util",
         ":tensor_helper",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/plugins/beholder:im_util",
         "@org_pythonhosted_six",
     ],
 )
@@ -67,7 +77,6 @@ py_library(
     deps = [
         ":tensor_helper",
         "//tensorboard:expect_numpy_installed",
-        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/util:tb_logging",
     ],
 )
@@ -78,10 +87,10 @@ py_test(
     srcs = ["tensor_store_test.py"],
     srcs_version = "PY2AND3",
     deps = [
+        ":im_util",
         ":tensor_store",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/plugins/beholder:im_util",
     ],
 )
 
@@ -253,7 +262,6 @@ py_test(
         ":debugger_server_lib",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/util:test_util",
         "@org_python_pypi_portpicker",
     ],
 )
@@ -270,7 +278,6 @@ py_test(
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/plugins:base_plugin",
-        "//tensorboard/util:test_util",
         "@org_pocoo_werkzeug",
         "@org_python_pypi_portpicker",
         "@org_pythonhosted_six",
@@ -306,7 +313,6 @@ py_library(
         ":debug_graphs_helper",
         ":interactive_debugger_server_lib",
         "//tensorboard:expect_futures_installed",
-        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:http_util",
         "//tensorboard/backend:process_graph",
         "//tensorboard/plugins:base_plugin",
@@ -327,7 +333,6 @@ py_library(
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/util:tb_logging",
         "@org_pocoo_werkzeug",
-        "@org_pythonhosted_six",
     ],
 )
 

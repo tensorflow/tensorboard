@@ -35,7 +35,6 @@ py_test(
     deps = [
         ":metadata",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/util:test_util",
         "@org_pythonhosted_mock",
         "@org_pythonhosted_six",
     ],
@@ -65,7 +64,6 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         ":summary",
-        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "@org_pocoo_werkzeug",
     ],
@@ -128,7 +126,6 @@ py_test(
         ":summary",
         ":test_utils",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/util:test_util",
     ],
 )
 
@@ -143,7 +140,6 @@ py_test(
         ":summary",
         ":test_utils",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/util:test_util",
     ],
 )
 

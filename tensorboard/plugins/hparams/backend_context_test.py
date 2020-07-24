@@ -30,7 +30,6 @@ import tensorflow as tf
 from google.protobuf import text_format
 from tensorboard import context
 from tensorboard.backend.event_processing import data_provider
-from tensorboard.backend.event_processing import event_accumulator
 from tensorboard.backend.event_processing import plugin_event_multiplexer
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins import base_plugin

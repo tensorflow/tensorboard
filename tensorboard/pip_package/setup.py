@@ -56,7 +56,6 @@ setup(
     },
     package_data={
         "tensorboard": ["webfiles.zip",],
-        "tensorboard.plugins.beholder": ["resources/*",],
         # Must keep this in sync with tf_projector_plugin:projector_assets
         "tensorboard.plugins.projector": [
             "tf_projector_plugin/index.js",

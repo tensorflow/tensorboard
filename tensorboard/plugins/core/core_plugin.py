@@ -18,12 +18,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import collections
 import functools
 import gzip
-import math
 import mimetypes
-import os
 import zipfile
 
 import six

@@ -25,7 +25,7 @@ import numpy as np
 import six
 import tensorflow as tf
 
-from tensorboard.plugins.beholder import im_util
+from tensorboard.plugins.debugger import im_util
 from tensorboard.plugins.debugger import tensor_helper
 
 

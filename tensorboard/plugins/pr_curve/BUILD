@@ -25,13 +25,11 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         ":metadata",
-        ":protos_all_py_pb2",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
         "//tensorboard/data:provider",
         "//tensorboard/plugins:base_plugin",
-        "//tensorboard/util:tensor_util",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
     ],

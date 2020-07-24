@@ -64,7 +64,6 @@ tf_web_library(
     path = "/tf-tensorboard",
     deps = [
         "//tensorboard/plugins/audio/tf_audio_dashboard",
-        "//tensorboard/plugins/beholder/tf_beholder_dashboard",
         "//tensorboard/plugins/custom_scalar/tf_custom_scalar_dashboard",
         "//tensorboard/plugins/debugger/tf_debugger_dashboard",
         "//tensorboard/plugins/distribution/tf_distribution_dashboard",

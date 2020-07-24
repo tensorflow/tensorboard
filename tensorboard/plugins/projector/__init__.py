@@ -30,9 +30,15 @@ import os
 from google.protobuf import text_format as _text_format
 from tensorboard.compat import tf
 from tensorboard.plugins.projector import metadata as _metadata
-from tensorboard.plugins.projector.projector_config_pb2 import EmbeddingInfo
-from tensorboard.plugins.projector.projector_config_pb2 import SpriteMetadata
-from tensorboard.plugins.projector.projector_config_pb2 import ProjectorConfig
+from tensorboard.plugins.projector.projector_config_pb2 import (  # noqa: F401
+    EmbeddingInfo,
+)
+from tensorboard.plugins.projector.projector_config_pb2 import (  # noqa: F401
+    SpriteMetadata,
+)
+from tensorboard.plugins.projector.projector_config_pb2 import (  # noqa: F401
+    ProjectorConfig,
+)
 
 
 def visualize_embeddings(logdir, config):
