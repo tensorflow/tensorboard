@@ -1,0 +1,188 @@
+<!--
+@license
+Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../paper-icon-button/paper-icon-button.html" />
+<link rel="import" href="../paper-dialog/paper-dialog.html" />
+<link
+  rel="import"
+  href="../paper-dialog-scrollable/paper-dialog-scrollable.html"
+/>
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../tf-markdown-view/tf-markdown-view.html" />
+<link rel="import" href="tf-card-heading-style.html" />
+<link rel="import" href="util.html" />
+
+<!--
+  A compact heading to appear above a single visualization, summarizing
+  the metadata about a tag or run-tag combination.
+
+  Properties (all optional):
+    - `displayName`, `tag`, and `description` are properties from the
+      relevant Summary protobuf.
+    - `run` is the name of the TensorFlow run, if applicable.
+    - `color` can be set to display a colored border at the left of the
+      card; if left unset, no border will be displayed.
+    - Any children of this component will be rendered below the above
+      information, and can be used to display (for example) some small
+      control widgets.
+-->
+<dom-module id="tf-card-heading">
+  <template>
+    <div class="container">
+      <figcaption class="content">
+        <div class="heading-row">
+          <template is="dom-if" if="[[_nameLabel]]">
+            <div itemprop="name" class="heading-label name">
+              [[_nameLabel]]
+            </div>
+          </template>
+          <template is="dom-if" if="[[run]]">
+            <!-- Extra wrapping span needed to avoid flexbox blockification. -->
+            <!-- (see flexbox spec, section 4 "Flex Items") -->
+            <span>
+              <span
+                itemprop="run"
+                id="heading-run"
+                class="heading-label heading-right run"
+                >[[run]]</span
+              >
+            </span>
+          </template>
+        </div>
+        <template is="dom-if" if="[[_tagLabel]]">
+          <div class="heading-row">
+            <div class="heading-label">
+              tag: <span itemprop="tag">[[_tagLabel]]</span>
+            </div>
+          </div>
+        </template>
+        <slot></slot>
+      </figcaption>
+      <template is="dom-if" if="[[description]]">
+        <paper-icon-button
+          icon="info"
+          on-tap="_toggleDescriptionDialog"
+          title="Show summary description"
+        ></paper-icon-button>
+      </template>
+      <paper-dialog
+        id="descriptionDialog"
+        no-overlap
+        horizontal-align="auto"
+        vertical-align="auto"
+      >
+        <paper-dialog-scrollable>
+          <tf-markdown-view html="[[description]]"></tf-markdown-view>
+        </paper-dialog-scrollable>
+      </paper-dialog>
+    </div>
+    <style include="tf-card-heading-style">
+      .container {
+        display: flex;
+      }
+      .content {
+        font-size: 12px;
+        flex-grow: 1;
+      }
+      .name {
+        font-size: 14px;
+      }
+      .run {
+        font-size: 11px;
+        width: auto;
+        border-radius: 3px;
+        font-weight: bold;
+        padding: 1px 4px 2px;
+      }
+      paper-icon-button {
+        flex-grow: 0;
+      }
+      paper-dialog-scrollable {
+        max-width: 640px;
+      }
+      #heading-run {
+        background: var(--tf-card-heading-background-color);
+        color: var(--tf-card-heading-color);
+      }
+    </style>
+  </template>
+  <script>
+    Polymer({
+      is: 'tf-card-heading',
+
+      properties: {
+        displayName: {type: String, value: null},
+        tag: {type: String, value: null},
+        run: {type: String, value: null},
+        description: {type: String, value: null},
+        color: {type: String, value: null}, // a CSS color (e.g., '#abcdef')
+
+        _runBackground: {
+          type: String,
+          computed: '_computeRunBackground(color)',
+          readOnly: true,
+          observer: '_updateHeadingStyle',
+        },
+
+        _runColor: {
+          type: String,
+          computed: '_computeRunColor(color)',
+          readOnly: true,
+          observer: '_updateHeadingStyle',
+        },
+
+        _nameLabel: {
+          type: String,
+          computed: '_computeNameLabel(displayName, tag)',
+        },
+
+        _tagLabel: {
+          type: String,
+          computed: '_computeTagLabel(displayName, tag)',
+        },
+      },
+
+      _updateHeadingStyle() {
+        this.updateStyles({
+          '--tf-card-heading-background-color': this._runBackground,
+          '--tf-card-heading-color': this._runColor,
+        });
+      },
+
+      _computeRunBackground(color) {
+        return color || 'none';
+      },
+
+      _computeRunColor(color) {
+        return tf_card_heading.pickTextColor(color);
+      },
+
+      _computeNameLabel(displayName, tag) {
+        return displayName || tag || '';
+      },
+
+      _computeTagLabel(displayName, tag) {
+        return tag && tag !== displayName ? tag : '';
+      },
+
+      _toggleDescriptionDialog(e) {
+        this.$.descriptionDialog.positionTarget = e.target;
+        this.$.descriptionDialog.toggle();
+      },
+    });
+  </script>
+</dom-module>
