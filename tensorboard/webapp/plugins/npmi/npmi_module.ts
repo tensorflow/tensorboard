@@ -1,4 +1,4 @@
-/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -12,25 +12,21 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
+import {NgModule} from '@angular/core';
 
-import {PluginsContainer} from './plugins_container';
-import {PluginsComponent} from './plugins_component';
-import {CoreModule} from '../core/core_module';
-import {PluginRegistryModule} from './plugin_registry_module';
-import {DebuggerModule} from '../../plugins/debugger_v2/tf_debugger_v2_plugin/debugger_module';
-import {NPMIModule} from './npmi/npmi_module';
+import {NPMIComponent} from './npmi_component';
+import {NPMIContainer} from './npmi_container';
+
+import {PluginRegistryModule} from '../../plugins/plugin_registry_module';
 
 @NgModule({
-  declarations: [PluginsContainer, PluginsComponent],
-  exports: [PluginsContainer],
+  declarations: [NPMIComponent, NPMIContainer],
   imports: [
-    CoreModule,
     CommonModule,
-    PluginRegistryModule,
-    DebuggerModule,
-    NPMIModule,
+    PluginRegistryModule.forPlugin('npmi', NPMIContainer),
   ],
+  exports: [NPMIContainer],
+  entryComponents: [NPMIContainer],
 })
-export class PluginsModule {}
+export class NPMIModule {}
