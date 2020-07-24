@@ -26,7 +26,6 @@ import json
 import os
 import random
 import shlex
-import sys
 import textwrap
 import time
 
@@ -66,7 +65,7 @@ def _get_context():
     # returned by `IPython.get_ipython` does not have a `get_trait`
     # method.
     try:
-        import google.colab
+        import google.colab  # noqa: F401
         import IPython
     except ImportError:
         pass

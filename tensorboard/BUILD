@@ -257,7 +257,6 @@ py_library(
     deps = [
         "//tensorboard:expect_pkg_resources_installed",
         "//tensorboard/backend:experimental_plugin",
-        "//tensorboard/plugins:base_plugin",
         "//tensorboard/plugins/audio:audio_plugin",
         "//tensorboard/plugins/core:core_plugin",
         "//tensorboard/plugins/custom_scalar:custom_scalars_plugin",

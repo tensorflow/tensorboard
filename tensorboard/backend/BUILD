@@ -86,7 +86,6 @@ py_test(
         "//tensorboard:errors",
         "//tensorboard:plugin_util",
         "//tensorboard:test",
-        "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/data:provider",
         "//tensorboard/plugins:base_plugin",
         "@org_pocoo_werkzeug",

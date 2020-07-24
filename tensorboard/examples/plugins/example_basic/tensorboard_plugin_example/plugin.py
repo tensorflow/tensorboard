@@ -21,7 +21,6 @@ from __future__ import print_function
 import json
 import os
 
-import numpy as np
 import six
 from tensorboard.plugins import base_plugin
 from tensorboard.util import tensor_util

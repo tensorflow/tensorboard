@@ -23,7 +23,6 @@ import six
 import tensorflow as tf
 from tensorboard.plugins.mesh import metadata
 from tensorboard.plugins.mesh import plugin_data_pb2
-from tensorboard.util import test_util
 
 
 class MetadataTest(tf.test.TestCase):

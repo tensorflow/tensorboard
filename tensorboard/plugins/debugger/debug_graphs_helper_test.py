@@ -45,7 +45,6 @@ from tensorflow.python.debug.lib import grpc_debug_test_server
 from tensorboard.compat.proto import config_pb2
 from tensorboard.plugins.debugger import debug_graphs_helper
 from tensorboard.util import tb_logging
-from tensorboard.util import test_util
 
 logger = tb_logging.get_logger()
 

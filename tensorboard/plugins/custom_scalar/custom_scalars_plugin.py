@@ -28,7 +28,6 @@ from __future__ import print_function
 import re
 
 from google.protobuf import json_format
-import numpy as np
 
 from werkzeug import wrappers
 

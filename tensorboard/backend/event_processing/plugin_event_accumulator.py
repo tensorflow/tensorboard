@@ -29,7 +29,6 @@ from tensorboard.backend.event_processing import io_wrapper
 from tensorboard.backend.event_processing import plugin_asset_util
 from tensorboard.backend.event_processing import reservoir
 from tensorboard.backend.event_processing import tag_types
-from tensorboard.compat import tf
 from tensorboard.compat.proto import config_pb2
 from tensorboard.compat.proto import event_pb2
 from tensorboard.compat.proto import graph_pb2

@@ -20,7 +20,6 @@ from __future__ import print_function
 
 import collections
 
-from werkzeug import wrappers
 from werkzeug.datastructures import Headers
 from werkzeug import http
 

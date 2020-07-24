@@ -24,7 +24,6 @@ import os
 import sys
 import textwrap
 
-from absl import app
 from absl import logging
 import grpc
 import six
@@ -39,7 +38,6 @@ from tensorboard.uploader import flags_parser
 from tensorboard.uploader import formatters
 from tensorboard.uploader import server_info as server_info_lib
 from tensorboard.uploader import uploader as uploader_lib
-from tensorboard.uploader import util
 from tensorboard.uploader.proto import server_info_pb2
 from tensorboard import program
 from tensorboard.plugins import base_plugin

@@ -18,11 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import sys
 from unittest import mock
 
-import grpc
-import grpc_testing
 import numpy as np
 import pandas
 
