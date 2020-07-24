@@ -21,7 +21,6 @@ from __future__ import print_function
 import collections
 import functools
 import imghdr
-import math
 import mimetypes
 import os
 import threading

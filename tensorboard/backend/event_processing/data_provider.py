@@ -19,14 +19,12 @@ from __future__ import division
 from __future__ import print_function
 
 import base64
-import collections
 import json
 import random
 
 import six
 
 from tensorboard import errors
-from tensorboard.backend.event_processing import plugin_event_accumulator
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.data import provider
 from tensorboard.util import tb_logging

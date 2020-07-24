@@ -13,7 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Utilities for graph plugin."""
-from tensorboard.compat.proto import function_pb2
 
 
 class _ProtoListDuplicateKeyError(Exception):

@@ -23,7 +23,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import importlib as _importlib
 
 import tensorboard.lazy as _lazy
 
@@ -44,7 +43,7 @@ def tf():
       ImportError: if a TF-like API is not available.
     """
     try:
-        from tensorboard.compat import notf
+        from tensorboard.compat import notf  # noqa: F401
     except ImportError:
         try:
             import tensorflow

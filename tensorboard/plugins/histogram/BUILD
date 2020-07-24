@@ -18,7 +18,6 @@ py_library(
         ":metadata",
         "//tensorboard:context",
         "//tensorboard:errors",
-        "//tensorboard:expect_numpy_installed",
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
         "//tensorboard/data:provider",

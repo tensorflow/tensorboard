@@ -18,7 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import textwrap
 
 # Necessary for an internal test with special behavior for numpy.
 import numpy as np
@@ -31,7 +30,6 @@ from tensorboard.backend import http_util
 from tensorboard.plugins.text import metadata
 from tensorboard import plugin_util
 from tensorboard.data import provider
-from tensorboard.util import tensor_util
 
 # HTTP routes
 TAGS_ROUTE = "/tags"

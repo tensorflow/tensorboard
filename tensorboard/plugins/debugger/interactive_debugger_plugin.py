@@ -25,7 +25,6 @@ import sys
 import threading
 
 from six.moves import xrange  # pylint:disable=redefined-builtin
-import tensorflow as tf
 from werkzeug import wrappers
 
 from tensorboard.backend import http_util

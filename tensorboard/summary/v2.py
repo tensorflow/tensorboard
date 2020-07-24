@@ -21,10 +21,10 @@ from __future__ import division
 from __future__ import print_function
 
 # pylint: disable=unused-import
-from tensorboard.plugins.audio.summary_v2 import audio
-from tensorboard.plugins.histogram.summary_v2 import histogram
-from tensorboard.plugins.image.summary_v2 import image
-from tensorboard.plugins.scalar.summary_v2 import scalar
-from tensorboard.plugins.text.summary_v2 import text
+from tensorboard.plugins.audio.summary_v2 import audio  # noqa: F401
+from tensorboard.plugins.histogram.summary_v2 import histogram  # noqa: F401
+from tensorboard.plugins.image.summary_v2 import image  # noqa: F401
+from tensorboard.plugins.scalar.summary_v2 import scalar  # noqa: F401
+from tensorboard.plugins.text.summary_v2 import text  # noqa: F401
 
 del absolute_import, division, print_function

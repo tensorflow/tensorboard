@@ -26,7 +26,7 @@ class ProfileRedirectPluginLoader(base_plugin.TBLoader):
 
     def load(self, context):
         try:
-            import tensorboard_plugin_profile
+            import tensorboard_plugin_profile  # noqa: F401
 
             # If we successfully load the dynamic plugin, don't show
             # this redirect plugin at all.

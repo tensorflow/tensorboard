@@ -25,7 +25,6 @@ from tensorboard.plugins.mesh import summary
 from tensorboard.plugins.mesh import metadata
 from tensorboard.plugins.mesh import plugin_data_pb2
 from tensorboard.plugins.mesh import test_utils
-from tensorboard.util import test_util
 
 
 class MeshSummaryTest(tf.test.TestCase):

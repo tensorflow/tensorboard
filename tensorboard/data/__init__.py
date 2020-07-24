@@ -17,4 +17,4 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from tensorboard.data import experimental
+from tensorboard.data import experimental  # noqa: F401

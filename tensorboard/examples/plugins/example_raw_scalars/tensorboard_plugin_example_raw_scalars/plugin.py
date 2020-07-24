@@ -18,19 +18,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import collections
-import csv
-import functools
-import json
 import mimetypes
 import os
 
 import six
 from werkzeug import wrappers
-import werkzeug
 
 from tensorboard import errors
-from tensorboard import plugin_util
 from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
 from tensorboard.util import tensor_util
