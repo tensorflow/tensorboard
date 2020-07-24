@@ -1,38 +1,71 @@
+load("//tensorboard/defs:web.bzl", "tf_web_library")
+load("//tensorboard/defs:vulcanize.bzl", "tensorboard_html_binary")
+
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
-alias(
+tf_web_library(
     name = "polymer_lib",
-    actual = "//tensorboard/components_polymer3:polymer_lib",
+    srcs = [
+        "polymer_lib.html",
+    ],
+    path = "/",
+    deps = [
+        ":analytics",
+        "//tensorboard/components/tf_imports:polymer",
+        "//tensorboard/components/tf_tensorboard",
+        "//tensorboard/components/tf_tensorboard:default_plugins",
+    ],
 )
 
-alias(
+# This Polymer only binary without entry point.
+tensorboard_html_binary(
     name = "polymer_lib_binary",
-    actual = "//tensorboard/components_polymer3:polymer_lib_binary",
+    compile = True,
+    input_path = "/polymer_lib.html",
+    output_path = "/polymer_lib_binary.html",
+    deps = [":polymer_lib"],
 )
 
-alias(
+tf_web_library(
     name = "tensorboard",
-    actual = "//tensorboard/components_polymer3:tensorboard",
+    srcs = ["tensorboard.html"],
+    path = "/",
+    deps = [
+        ":polymer_lib_binary",
+    ],
 )
 
-alias(
-    name = "legacy.js",
-    actual = "//tensorboard/components_polymer3:legacy.js",
+tensorboard_html_binary(
+    name = "legacy",
+    compile = False,
+    input_path = "/tensorboard.html",
+    js_path = "/legacy.js",
+    output_path = "/legacy.html",
+    deps = [":tensorboard"],
 )
 
-alias(
-    name = "legacy.html",
-    actual = "//tensorboard/components_polymer3:legacy.html",
+genrule(
+    name = "gen_tensorboard.html",
+    srcs = ["tensorboard.uninlined.html"],
+    outs = ["tensorboard.html"],
+    cmd = "$(execpath //tensorboard/logo:inline_favicon) $< >$@",
+    tools = ["//tensorboard/logo:inline_favicon"],
 )
 
-alias(
+tf_web_library(
     name = "analytics",
-    actual = "//tensorboard/components_polymer3:analytics",
+    srcs = [
+        "analytics.html",
+    ],
+    path = "/",
 )
 
-alias(
+tf_web_library(
     name = "security",
-    actual = "//tensorboard/components_polymer3:security",
+    srcs = [
+        "security.html",
+    ],
+    path = "/",
 )

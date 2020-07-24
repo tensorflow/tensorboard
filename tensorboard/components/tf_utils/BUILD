@@ -1,8 +1,14 @@
+load("//tensorboard/defs:web.bzl", "tf_web_library")
+
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
-alias(
+tf_web_library(
     name = "tf_utils",
-    actual = "//tensorboard/components_polymer3/tf_utils:tf_utils",
+    srcs = [
+        "tf-utils.html",
+        "utils.ts",
+    ],
+    path = "/tf-utils",
 )

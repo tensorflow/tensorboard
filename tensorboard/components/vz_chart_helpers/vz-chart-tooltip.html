@@ -1,0 +1,37 @@
+<!--
+@license
+Copyright 2016 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../tf-imports/lodash.html" />
+
+<!--
+vz-chart-tooltip is a generic component that renders a component using the
+portal technique.
+
+Especially with the shadow DOM, it is hard to make modal/tooltips appear above
+other DOM elements not occuluded by scrollbar. The portal technique essentially
+renders a DOM on body at the end while keeping it accessible by components
+deeply nested inside others. The component tries to keep how/where it is
+rendered transparent from the client DOM.
+
+Example usage:
+  <vz-chart-tooltip position="auto" content-component-name="foo-bar">
+  </vz-chart-tooltip>
+-->
+<dom-module id="vz-chart-tooltip">
+  <script src="vz-chart-tooltip.js"></script>
+</dom-module>

@@ -1,13 +1,9 @@
 load("//tensorboard/defs:web.bzl", "tf_web_library")
+load("//tensorboard/defs:vulcanize.bzl", "tensorboard_html_binary")
 
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
-
-alias(
-    name = "tf_projector_plugin",
-    actual = "//tensorboard/plugins/projector/polymer3/tf_projector_plugin:tf_projector_plugin",
-)
 
 tf_web_library(
     name = "projector_assets",
@@ -20,29 +16,27 @@ tf_web_library(
     path = "/tf-projector",
 )
 
-genrule(
-    name = "index_js_gen",
-    srcs = [
-        "//tensorboard/plugins/projector/polymer3/tf_projector_plugin:index.js",
+tensorboard_html_binary(
+    name = "projector_binary",
+    compile = True,
+    input_path = "/tf-projector/tf-projector-plugin.html",
+    js_path = "/projector_binary.js",
+    output_path = "/tf-projector/projector_binary.html",
+    deps = [
+        ":tf_projector_plugin",
     ],
-    outs = ["index.js"],
-    cmd = "cat $(SRCS) > $@",
 )
 
-genrule(
-    name = "projector_binary_js_gen",
+tf_web_library(
+    name = "tf_projector_plugin",
     srcs = [
-        "//tensorboard/plugins/projector/polymer3/tf_projector_plugin:projector_binary.js",
+        "tf-projector-plugin.html",
     ],
-    outs = ["projector_binary.js"],
-    cmd = "cat $(SRCS) > $@",
-)
-
-genrule(
-    name = "projector_binary_html_gen",
-    srcs = [
-        "//tensorboard/plugins/projector/polymer3/tf_projector_plugin:projector_binary.html",
+    path = "/tf-projector",
+    deps = [
+        "//tensorboard/components:security",
+        "//tensorboard/components/tf_imports:polymer",
+        "//tensorboard/plugins/projector/vz_projector",
+        "@com_google_fonts_roboto",
     ],
-    outs = ["projector_binary.html"],
-    cmd = "cat $(SRCS) > $@",
 )
