@@ -18,6 +18,7 @@ py_library(
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
         "//tensorboard/plugins:base_plugin",
+        "@org_pocoo_werkzeug",
     ],
 )
 
