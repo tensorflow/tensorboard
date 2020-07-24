@@ -17,9 +17,9 @@ package_group(
 
 # The standard TensorBoard binary that serves the webapp.
 # The two //tensorboard/summary lines are to suppress an
-# annoying startup warning
-# emitted by TensorFlow that "Limited tf.compat.v2.summary API
-# due to missing TensorBoard installation
+# annoying startup warning emitted by TensorFlow that
+# "Limited tf.compat.v2.summary API due to missing TensorBoard
+# installation.
 py_binary(
     name = "tensorboard",
     srcs = ["main.py"],
