@@ -42,6 +42,8 @@ class BeholderPluginLoader(base_plugin.TBLoader):
         except ImportError:
             return
 
-        from tensorboard.plugins.beholder.beholder_plugin import BeholderPlugin  # noqa: F401
+        from tensorboard.plugins.beholder.beholder_plugin import (
+            BeholderPlugin,
+        )  # noqa: F401
 
         return BeholderPlugin(context)

@@ -3,7 +3,7 @@
 
 load("//tensorboard/defs:protos.bzl", "tb_proto_library")
 
-package(default_visibility = ["//tensorboard:internal"])
+package(default_visibility=["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
@@ -11,10 +11,10 @@ exports_files(["LICENSE"])
 
 ## Custom Scalars Plugin ##
 py_library(
-    name = "custom_scalars_plugin",
-    srcs = ["custom_scalars_plugin.py"],
-    srcs_version = "PY2AND3",
-    deps = [
+    name="custom_scalars_plugin",
+    srcs=["custom_scalars_plugin.py"],
+    srcs_version="PY2AND3",
+    deps=[
         ":metadata",
         ":protos_all_py_pb2",
         "//tensorboard:plugin_util",
@@ -30,20 +30,18 @@ py_library(
 )
 
 py_library(
-    name = "metadata",
-    srcs = ["metadata.py"],
-    srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
-    deps = [
-        "//tensorboard/compat/proto:protos_all_py_pb2",
-    ],
+    name="metadata",
+    srcs=["metadata.py"],
+    srcs_version="PY2AND3",
+    visibility=["//visibility:public"],
+    deps=["//tensorboard/compat/proto:protos_all_py_pb2",],
 )
 
 py_library(
-    name = "summary",
-    srcs = ["summary.py"],
-    srcs_version = "PY2AND3",
-    deps = [
+    name="summary",
+    srcs=["summary.py"],
+    srcs_version="PY2AND3",
+    deps=[
         ":metadata",
         ":protos_all_py_pb2",
         "//tensorboard:expect_tensorflow_installed",
@@ -51,11 +49,11 @@ py_library(
 )
 
 py_test(
-    name = "summary_test",
-    size = "small",
-    srcs = ["summary_test.py"],
-    srcs_version = "PY2AND3",
-    deps = [
+    name="summary_test",
+    size="small",
+    srcs=["summary_test.py"],
+    srcs_version="PY2AND3",
+    deps=[
         ":metadata",
         ":protos_all_py_pb2",
         ":summary",
@@ -67,11 +65,11 @@ py_test(
 )
 
 py_test(
-    name = "custom_scalars_plugin_test",
-    size = "small",
-    srcs = ["custom_scalars_plugin_test.py"],
-    srcs_version = "PY2AND3",
-    deps = [
+    name="custom_scalars_plugin_test",
+    size="small",
+    srcs=["custom_scalars_plugin_test.py"],
+    srcs_version="PY2AND3",
+    deps=[
         ":custom_scalars_plugin",
         ":protos_all_py_pb2",
         ":summary",
@@ -91,12 +89,12 @@ py_test(
 
 # TODO(#2007): Remove this after pruning unnecessary TensorFlow deps in main test
 py_test(
-    name = "custom_scalars_plugin_notf_test",
-    size = "small",
-    srcs = ["custom_scalars_plugin_test.py"],
-    main = "custom_scalars_plugin_test.py",
-    srcs_version = "PY2AND3",
-    deps = [
+    name="custom_scalars_plugin_notf_test",
+    size="small",
+    srcs=["custom_scalars_plugin_test.py"],
+    main="custom_scalars_plugin_test.py",
+    srcs_version="PY2AND3",
+    deps=[
         ":custom_scalars_plugin",
         ":protos_all_py_pb2",
         ":summary",
@@ -116,16 +114,16 @@ py_test(
 )
 
 tb_proto_library(
-    name = "protos_all",
-    srcs = ["layout.proto"],
-    visibility = ["//visibility:public"],
+    name="protos_all",
+    srcs=["layout.proto"],
+    visibility=["//visibility:public"],
 )
 
 py_binary(
-    name = "custom_scalar_demo",
-    srcs = ["custom_scalar_demo.py"],
-    srcs_version = "PY2AND3",
-    deps = [
+    name="custom_scalar_demo",
+    srcs=["custom_scalar_demo.py"],
+    srcs_version="PY2AND3",
+    deps=[
         ":protos_all_py_pb2",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/summary:summary_v1",
