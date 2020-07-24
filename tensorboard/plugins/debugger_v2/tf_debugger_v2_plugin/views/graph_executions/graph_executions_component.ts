@@ -91,6 +91,13 @@ export class GraphExecutionsComponent implements OnChanges {
     }
   }
 
+  getTensorName(graphExecutionIndex: number): string {
+    return (
+      `${this.graphExecutionData[graphExecutionIndex].op_name}:` +
+      `${this.graphExecutionData[graphExecutionIndex].output_slot}`
+    );
+  }
+
   /**
    * Computes if given graph-execution index is an immediate input tensor to
    * the graph execution currently focused on.

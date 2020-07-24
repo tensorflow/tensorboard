@@ -42,6 +42,7 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//tensorboard:internal"],
     deps = [
+        ":errors",
         ":lib_init_only",
         ":notebook",
         ":program",
@@ -62,7 +63,6 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//tensorboard:internal"],
     deps = [
-        ":errors",
         ":lazy",
         ":version",
     ],
@@ -127,7 +127,7 @@ py_test(
 py_library(
     name = "errors",
     srcs = ["errors.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
 )
 
 py_test(

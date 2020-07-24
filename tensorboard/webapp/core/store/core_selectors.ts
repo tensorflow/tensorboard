@@ -82,9 +82,27 @@ export const getRuns = createSelector(
   }
 );
 
-export const getRunSelection = createSelector(
+const selectSelection = createSelector(
   selectCoreState,
-  (state: CoreState): Map<RunId, boolean> => {
+  (state: CoreState): Set<RunId> => {
     return state.polymerInteropRunSelection;
+  }
+);
+
+/**
+ * runSelection can be `null` when information is yet missing; e.g., run selection for an
+ * experiment that is not yet fetched.
+ */
+export const getRunSelection = createSelector(
+  getRuns,
+  selectSelection,
+  (runs: Run[], selection: Set<RunId>): Map<RunId, boolean> | null => {
+    const runSelection = new Map();
+
+    for (const {id} of runs) {
+      runSelection.set(id, selection.has(id));
+    }
+
+    return runSelection;
   }
 );

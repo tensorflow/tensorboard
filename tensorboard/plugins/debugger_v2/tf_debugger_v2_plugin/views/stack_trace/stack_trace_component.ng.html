@@ -94,11 +94,7 @@ limitations under the License.
         </div>
         <div
           class="stack-frame-lineno"
-          (click)="onSourceLineClicked.emit({
-            host_name: stackFrameForDisplay.host_name,
-            file_path: stackFrameForDisplay.file_path,
-            lineno: stackFrameForDisplay.lineno
-          })"
+          (click)="onSourceLineClicked.emit(stackFrameForDisplay)"
         >
           Line {{ stackFrameForDisplay.lineno }}
         </div>

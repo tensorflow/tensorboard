@@ -635,8 +635,6 @@ export class DebuggerEffects {
             const stackFramesById: {
               [stackFrameId: string]: StackFrame;
             } = {};
-            // TODO(cais): Do this reshaping in the backend and simplify
-            // the frontend code here.
             for (let i = 0; i < stackFrameIds.length; ++i) {
               stackFramesById[stackFrameIds[i]] =
                 stackFramesResponse.stack_frames[i];
@@ -1014,7 +1012,7 @@ export class DebuggerEffects {
       map(([focus, runId, fileIndex, fileContent]) => {
         return {
           runId,
-          lineSpec: focus.sourceLineSpec,
+          stackFrame: focus.stackFrame,
           fileIndex,
           fileContent,
         };
@@ -1026,11 +1024,11 @@ export class DebuggerEffects {
           fileContent.loadState === DataLoadState.NOT_LOADED
         );
       }),
-      tap(({lineSpec}) =>
+      tap(({stackFrame}) =>
         this.store.dispatch(
           sourceFileRequested({
-            host_name: lineSpec.host_name,
-            file_path: lineSpec.file_path,
+            host_name: stackFrame.host_name,
+            file_path: stackFrame.file_path,
           })
         )
       ),

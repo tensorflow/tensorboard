@@ -42,7 +42,7 @@ import {
   SourceCodeState,
   SourceFileContent,
   SourceFileSpec,
-  SourceLineSpec,
+  StackFrame,
   StackFramesById,
   State,
 } from './debugger_types';
@@ -656,8 +656,7 @@ export const getFocusedSourceFileContent = createSelector(
  */
 export const getFocusedSourceLineSpec = createSelector(
   selectDebuggerState,
-  (state: DebuggerState): SourceLineSpec | null =>
-    state.sourceCode.focusLineSpec
+  (state: DebuggerState): StackFrame | null => state.sourceCode.focusLineSpec
 );
 
 export const getStickToBottommostFrameInFocusedFile = createSelector(

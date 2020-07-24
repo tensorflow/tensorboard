@@ -18,6 +18,7 @@ from __future__ import print_function
 
 import os
 import time
+import warnings
 
 import numpy as np
 import tensorflow as tf
@@ -44,8 +45,20 @@ from tensorboard.util import tb_logging
 logger = tb_logging.get_logger()
 
 
+def _log_deprecation_warning():
+    separator = "=" * 70
+    lines = [
+        separator,
+        "Beholder is deprecated and will be removed in a future TensorBoard",
+        "release. See https://github.com/tensorflow/tensorboard/issues/3843",
+        separator,
+    ]
+    warnings.warn("\n" + "\n".join(lines), stacklevel=3)
+
+
 class Beholder(object):
     def __init__(self, logdir):
+        _log_deprecation_warning()
         self.PLUGIN_LOGDIR = logdir + "/plugins/" + PLUGIN_NAME
 
         self.is_recording = False
@@ -226,6 +239,7 @@ class BeholderHook(tf.estimator.SessionRunHook):
         Args:
           logdir: Directory where Beholder should write data.
         """
+        _log_deprecation_warning()
         self._logdir = logdir
         self.beholder = None
 

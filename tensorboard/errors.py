@@ -30,12 +30,20 @@ from __future__ import print_function
 
 
 class PublicError(RuntimeError):
-    """An error whose text does not contain sensitive information."""
+    """An error whose text does not contain sensitive information.
+
+    Fields:
+      http_code: Integer between 400 and 599 inclusive (e.g., 404).
+      headers: List of additional key-value pairs to include in the
+        response body, like `[("Allow", "GET")]` for HTTP 405 or
+        `[("WWW-Authenticate", "Digest")]` for HTTP 401. May be empty.
+    """
 
     http_code = 500  # default; subclasses should override
 
     def __init__(self, details):
         super(PublicError, self).__init__(details)
+        self.headers = []
 
 
 class InvalidArgumentError(PublicError):
@@ -70,6 +78,36 @@ class NotFoundError(PublicError):
     def __init__(self, details=None):
         msg = _format_message("Not found", details)
         super(NotFoundError, self).__init__(msg)
+
+
+class UnauthenticatedError(PublicError):
+    """Request does not have valid authentication credentials for the operation.
+
+    The text of this error is assumed not to contain sensitive data,
+    and so may appear in (e.g.) the response body of a failed HTTP
+    request.
+
+    Corresponds to HTTP 401 Unauthorized (despite the name) or Google
+    error code `UNAUTHENTICATED`. HTTP 401 responses are required to
+    contain a `WWW-Authenticate` challenge, so `UnauthenticatedError`
+    values are, too.
+    """
+
+    http_code = 401
+
+    def __init__(self, details=None, *, challenge):
+        """Initialize an `UnauthenticatedError`.
+
+        Args;
+          details: Optional public, user-facing error message, as a
+            string or any value that can be converted to string, or
+            `None` to omit details.
+          challenge: String value of the `WWW-Authenticate` HTTP header
+            as described in RFC 7235.
+        """
+        msg = _format_message("Unauthenticated", details)
+        super(UnauthenticatedError, self).__init__(msg)
+        self.headers.append(("WWW-Authenticate", challenge))
 
 
 class PermissionDeniedError(PublicError):

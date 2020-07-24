@@ -134,38 +134,52 @@ class ParseEventFilesSpecTest(tb_test.TestCase):
         )
 
     def testExpandsUser(self):
-        oldhome = os.environ.get("HOME", None)
+        # USERPROFILE is used for simulating Python 3.8 on Windows.
+        old_home = os.environ.get("HOME", None)
+        old_userprofile = os.environ.get("USERPROFILE", None)
         try:
-            os.environ["HOME"] = "/usr/eliza"
+            test_home_directory = "/usr/eliza"
+            os.environ["HOME"] = test_home_directory
             self.assertPlatformSpecificLogdirParsing(
                 posixpath, "~/lol/cat~dog", {"/usr/eliza/lol/cat~dog": None}
             )
-            os.environ["HOME"] = r"C:\Users\eliza"
+            test_home_directory = r"C:\Users\eliza"
+            os.environ["HOME"] = test_home_directory
+            os.environ["USERPROFILE"] = test_home_directory
             self.assertPlatformSpecificLogdirParsing(
                 ntpath, r"~\lol\cat~dog", {r"C:\Users\eliza\lol\cat~dog": None}
             )
         finally:
-            if oldhome is not None:
-                os.environ["HOME"] = oldhome
+            if old_home is not None:
+                os.environ["HOME"] = old_home
+            if old_userprofile is not None:
+                os.environ["USERPROFILE"] = old_userprofile
 
     def testExpandsUserForMultipleDirectories(self):
-        oldhome = os.environ.get("HOME", None)
+        # USERPROFILE is used for simulating Python 3.8 on Windows.
+        old_home = os.environ.get("HOME", None)
+        old_userprofile = os.environ.get("USERPROFILE", None)
         try:
-            os.environ["HOME"] = "/usr/eliza"
+            test_home_directory = "/usr/eliza"
+            os.environ["HOME"] = test_home_directory
             self.assertPlatformSpecificLogdirParsing(
                 posixpath,
                 "a:~/lol,b:~/cat",
                 {"/usr/eliza/lol": "a", "/usr/eliza/cat": "b"},
             )
-            os.environ["HOME"] = r"C:\Users\eliza"
+            test_home_directory = r"C:\Users\eliza"
+            os.environ["HOME"] = test_home_directory
+            os.environ["USERPROFILE"] = test_home_directory
             self.assertPlatformSpecificLogdirParsing(
                 ntpath,
                 r"aa:~\lol,bb:~\cat",
                 {r"C:\Users\eliza\lol": "aa", r"C:\Users\eliza\cat": "bb"},
             )
         finally:
-            if oldhome is not None:
-                os.environ["HOME"] = oldhome
+            if old_home is not None:
+                os.environ["HOME"] = old_home
+            if old_userprofile is not None:
+                os.environ["USERPROFILE"] = old_userprofile
 
     def testMultipleDirectories(self):
         self.assertPlatformSpecificLogdirParsing(

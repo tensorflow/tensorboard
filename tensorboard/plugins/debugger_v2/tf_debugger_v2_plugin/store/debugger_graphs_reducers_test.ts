@@ -67,21 +67,34 @@ describe('Debugger reducers', () => {
       stickToBottommostFrameInFocusedFile,
       stackFrameIsLoaded,
       expectedLineno,
+      expectedFunctionName,
     ] of [
-      [false, false, 20],
-      [false, true, 20],
-      [true, false, 20],
-      [true, true, 30],
-    ] as Array<[boolean, boolean, number]>) {
+      [false, false, 20, 'main'],
+      [false, true, 20, 'main'],
+      [true, false, 20, 'main'],
+      [true, true, 30, 'helper'],
+    ] as Array<[boolean, boolean, number, string]>) {
       it(
         `focusLineSpec sticking behavior: ` +
           `stickToBottommostFrameInFocusedFile=` +
           `${stickToBottommostFrameInFocusedFile}; ` +
           `stackFrameIsLoaded=${stackFrameIsLoaded}`,
         () => {
-          const stackFrame0 = createTestStackFrame('localhost', 'main.py', 10);
-          const stackFrame1 = createTestStackFrame('localhost', 'main.py', 20);
-          const stackFrame2 = createTestStackFrame('localhost', 'main.py', 30);
+          const stackFrame0 = createTestStackFrame({
+            file_path: 'main.py',
+            lineno: 10,
+            function_name: '<module>',
+          });
+          const stackFrame1 = createTestStackFrame({
+            file_path: 'main.py',
+            lineno: 20,
+            function_name: 'main',
+          });
+          const stackFrame2 = createTestStackFrame({
+            file_path: 'main.py',
+            lineno: 30,
+            function_name: 'helper',
+          });
           const state = createDebuggerState({
             graphs: createDebuggerGraphsState({
               ops: {
@@ -120,6 +133,7 @@ describe('Debugger reducers', () => {
                 host_name: 'localhost',
                 file_path: 'main.py',
                 lineno: 20,
+                function_name: 'main',
               },
             }),
             stickToBottommostFrameInFocusedFile,
@@ -139,6 +153,7 @@ describe('Debugger reducers', () => {
             host_name: 'localhost',
             file_path: 'main.py',
             lineno: expectedLineno,
+            function_name: expectedFunctionName,
           });
         }
       );

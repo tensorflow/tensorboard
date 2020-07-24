@@ -759,7 +759,10 @@ describe('Debugger effects', () => {
             executionDigestsLoaded(executionDigestsPageResponse),
             executionDataLoaded(executionDataResponse),
             stackFramesLoaded({
-              stackFrames: {aa: stackFrame0, bb: stackFrame1},
+              stackFrames: {
+                aa: stackFrame0,
+                bb: stackFrame1,
+              },
             }),
             numGraphExecutionsRequested(),
             numGraphExecutionsLoaded({numGraphExecutions}),
@@ -835,7 +838,10 @@ describe('Debugger effects', () => {
             expect(dispatchedActions).toEqual([
               executionDataLoaded(executionDataResponse),
               stackFramesLoaded({
-                stackFrames: {aa: stackFrame0, bb: stackFrame1},
+                stackFrames: {
+                  aa: stackFrame0,
+                  bb: stackFrame1,
+                },
               }),
             ]);
           }
@@ -1564,9 +1570,10 @@ describe('Debugger effects', () => {
 
       action.next(
         sourceLineFocused({
-          sourceLineSpec: {
+          stackFrame: {
             ...fileSpecC,
             lineno: 42,
+            function_name: 'foo',
           },
         })
       );
@@ -1617,9 +1624,10 @@ describe('Debugger effects', () => {
 
         action.next(
           sourceLineFocused({
-            sourceLineSpec: {
+            stackFrame: {
               ...fileSpecC,
               lineno: 42,
+              function_name: 'foo',
             },
           })
         );
@@ -1658,9 +1666,10 @@ describe('Debugger effects', () => {
 
       action.next(
         sourceLineFocused({
-          sourceLineSpec: {
+          stackFrame: {
             ...fileSpecC,
             lineno: 42,
+            function_name: 'foo',
           },
         })
       );
@@ -1728,7 +1737,10 @@ describe('Debugger effects', () => {
             graphOpInfoRequested({graph_id: 'g2', op_name: 'namespace_1/op_1'}),
             graphOpInfoLoaded({graphOpInfoResponse}),
             stackFramesLoaded({
-              stackFrames: {aaa1: stackFrame0, bbb2: stackFrame1},
+              stackFrames: {
+                aaa1: stackFrame0,
+                bbb2: stackFrame1,
+              },
             }),
           ]);
         }
@@ -1770,7 +1782,9 @@ describe('Debugger effects', () => {
             g2: new Map([['other_op', DataLoadState.LOADED]]),
           });
           // The second stack frame is already loaded.
-          store.overrideSelector(getLoadedStackFrames, {bbb2: stackFrame1});
+          store.overrideSelector(getLoadedStackFrames, {
+            bbb2: stackFrame1,
+          });
           store.refreshState();
 
           action.next(testAction);
@@ -1781,7 +1795,11 @@ describe('Debugger effects', () => {
             graphOpInfoRequested({graph_id: 'g2', op_name: 'namespace_1/op_1'}),
             graphOpInfoLoaded({graphOpInfoResponse}),
             // Only the first (missing) stack frame should have been loaded.
-            stackFramesLoaded({stackFrames: {aaa1: stackFrame0}}),
+            stackFramesLoaded({
+              stackFrames: {
+                aaa1: stackFrame0,
+              },
+            }),
           ]);
         }
       );
