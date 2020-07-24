@@ -28,6 +28,9 @@ py_binary(
         ":program",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/plugins:base_plugin",
+        # The next two lines are to suppress an annoying startup warning
+        # emitted by TensorFlow that "Limited tf.compat.v2.summary API due to
+        # missing TensorBoard installation".
         "//tensorboard/summary",
         "//tensorboard/summary:tf_summary",
         "//tensorboard/uploader:uploader_subcommand",
