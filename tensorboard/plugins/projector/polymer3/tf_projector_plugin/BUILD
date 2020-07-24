@@ -18,12 +18,13 @@ tf_web_library(
 
 tensorboard_html_binary(
     name = "projector_binary",
-    compile = True,
+    compile = False,
     input_path = "/tf-projector/tf-projector-plugin.html",
     js_path = "/projector_binary.js",
     output_path = "/tf-projector/projector_binary.html",
     deps = [
         ":tf_projector_plugin",
+        "//tensorboard/plugins/projector/polymer3/vz_projector:standalone_lib",
     ],
 )
 
@@ -34,9 +35,7 @@ tf_web_library(
     ],
     path = "/tf-projector",
     deps = [
-        "//tensorboard/components:security",
-        "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/plugins/projector/vz_projector",
+        "//tensorboard/plugins/projector/polymer3/vz_projector:standalone_lib",
         "@com_google_fonts_roboto",
     ],
 )
