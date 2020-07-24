@@ -32,3 +32,30 @@ ng_module(
         "@npm//rxjs",
     ],
 )
+
+tf_ts_library(
+    name = "test_lib",
+    testonly = True,
+    srcs = [
+        "npmi_container_test.ts",
+    ],
+    tsconfig = "//:tsconfig-test",
+    deps = [
+        ":npmi",
+        "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "//tensorboard/webapp/angular:expect_ngrx_store_testing",
+        "@npm//@angular/common",
+        "@npm//@angular/compiler",
+        "@npm//@angular/core",
+        "@npm//@angular/platform-browser",
+        "@npm//@ngrx/store",
+        "@npm//@types/jasmine",
+    ],
+)
+
+tf_ng_web_test_suite(
+    name = "karma_test",
+    deps = [
+        ":test_lib",
+    ],
+)
