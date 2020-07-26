@@ -34,18 +34,21 @@ describe('Npmi Container', () => {
     await TestBed.configureTestingModule({
       declarations: [NpmiComponent, NpmiContainer],
       providers: [
+        provideMockStore({
+          initialState: '',
+        }),
         NpmiContainer,
       ],
     }).compileComponents();
   });
 
-  it('renders nomi component', () => {
+  it('renders npmi component', () => {
     const fixture = TestBed.createComponent(NpmiContainer);
     fixture.detectChanges();
 
-    const inactiveElement = fixture.debugElement.query(
-      By.css('npmi-container')
+    const npmiElement = fixture.debugElement.query(
+      By.css('npmi-component')
     );
-    expect(inactiveElement).toBeTruthy();
+    expect(npmiElement).toBeTruthy();
   });
 });

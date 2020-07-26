@@ -52,10 +52,3 @@ tf_ts_library(
         "@npm//@types/jasmine",
     ],
 )
-
-tf_ng_web_test_suite(
-    name = "karma_test",
-    deps = [
-        ":test_lib",
-    ],
-)
