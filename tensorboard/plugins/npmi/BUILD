@@ -43,6 +43,16 @@ py_test(
     ],
 )
 
+py_binary(
+    name = "npmi_demo",
+    srcs = ["npmi_demo.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":summary",
+        "//tensorboard:expect_tensorflow_installed",
+    ],
+)
+
 py_library(
     name = "summary",
     srcs = ["summary.py"],
