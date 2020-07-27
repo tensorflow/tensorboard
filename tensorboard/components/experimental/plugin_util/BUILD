@@ -1,42 +1,18 @@
-load("//tensorboard/defs:web.bzl", "tf_web_library")
-
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
-tf_web_library(
-    name = "message",
-    srcs = [
-        "message.html",
-        "message.js",
-    ],
-    path = "/tf-plugin-util",
-)
-
-tf_web_library(
-    name = "host_internals",
-    srcs = [
-        "plugin-host-ipc.html",
-        "plugin-host-ipc.js",
-    ],
-    path = "/tf-plugin-util",
-    deps = [
-        ":message",
-    ],
-)
-
-tf_web_library(
+alias(
     name = "plugin_host",
-    srcs = [
-        "core-host-impl.js",
-        "plugin-host.html",
-        "runs-host-impl.js",
-    ],
-    path = "/tf-plugin-util",
-    deps = [
-        ":host_internals",
-        "//tensorboard/components/tf_backend",
-        "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/components/tf_storage",
-    ],
+    actual = "//tensorboard/components_polymer3/experimental/plugin_util:plugin_host",
+)
+
+alias(
+    name = "host_internals",
+    actual = "//tensorboard/components_polymer3/experimental/plugin_util:host_internals",
+)
+
+alias(
+    name = "message",
+    actual = "//tensorboard/components_polymer3/experimental/plugin_util:message",
 )

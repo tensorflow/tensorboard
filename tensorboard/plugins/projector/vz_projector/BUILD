@@ -1,132 +1,28 @@
-load("//tensorboard/defs:web.bzl", "tf_web_library")
-load("//tensorboard/defs:vulcanize.bzl", "tensorboard_html_binary")
-
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
-tf_web_library(
-    name = "vz_projector",
-    srcs = [
-        "analyticsLogger.js",
-        "bundle.html",
-        "data.js",
-        "data-provider.js",
-        "data-provider-demo.js",
-        "data-provider-proto.js",
-        "data-provider-server.js",
-        "external.d.ts",
-        "knn.js",
-        "label.js",
-        "logging.js",
-        "projectorEventContext.js",
-        "projectorScatterPlotAdapter.js",
-        "renderContext.js",
-        "scatterPlot.js",
-        "scatterPlotRectangleSelector.js",
-        "scatterPlotVisualizer.js",
-        "scatterPlotVisualizer3DLabels.js",
-        "scatterPlotVisualizerCanvasLabels.js",
-        "scatterPlotVisualizerPolylines.js",
-        "scatterPlotVisualizerSprites.js",
-        "styles.html",
-        "umap.d.ts",
-        "util.js",
-        "vector.js",
-        "vz-projector.html",
-        "vz-projector.js",
-        "vz-projector-app.html",
-        "vz-projector-bookmark-panel.html",
-        "vz-projector-bookmark-panel.js",
-        "vz-projector-dashboard.html",
-        "vz-projector-data-panel.html",
-        "vz-projector-data-panel.js",
-        "vz-projector-input.html",
-        "vz-projector-input.js",
-        "vz-projector-inspector-panel.html",
-        "vz-projector-inspector-panel.js",
-        "vz-projector-legend.html",
-        "vz-projector-legend.js",
-        "vz-projector-metadata-card.html",
-        "vz-projector-metadata-card.js",
-        "vz-projector-projections-panel.html",
-        "vz-projector-projections-panel.js",
-        "vz-projector-util.js",
-    ],
-    path = "/vz-projector",
-    deps = [
-        ":bh_tsne",
-        ":heap",
-        ":sptree",
-        "//tensorboard/components/tf_backend",
-        "//tensorboard/components/tf_dashboard_common",
-        "//tensorboard/components/tf_imports:d3",
-        "//tensorboard/components/tf_imports:numericjs",
-        "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/components/tf_imports:threejs",
-        "//tensorboard/components/tf_imports:umap-js",
-        "//tensorboard/components/tf_imports:weblas",
-        "//tensorboard/components/tf_tensorboard:registry",
-        "@org_polymer_iron_collapse",
-        "@org_polymer_iron_icons",
-        "@org_polymer_paper_button",
-        "@org_polymer_paper_checkbox",
-        "@org_polymer_paper_dialog",
-        "@org_polymer_paper_dialog_scrollable",
-        "@org_polymer_paper_dropdown_menu",
-        "@org_polymer_paper_icon_button",
-        "@org_polymer_paper_input",
-        "@org_polymer_paper_item",
-        "@org_polymer_paper_listbox",
-        "@org_polymer_paper_slider",
-        "@org_polymer_paper_spinner",
-        "@org_polymer_paper_styles",
-        "@org_polymer_paper_toast",
-        "@org_polymer_paper_toggle_button",
-        "@org_polymer_paper_tooltip",
-    ],
-)
-
-tf_web_library(
-    name = "heap",
-    srcs = ["heap.js"],
-    path = "/vz-projector",
-)
-
-tf_web_library(
-    name = "sptree",
-    srcs = ["sptree.js"],
-    path = "/vz-projector",
-)
-
-tf_web_library(
-    name = "bh_tsne",
-    srcs = ["bh_tsne.js"],
-    path = "/vz-projector",
-    deps = [":sptree"],
-)
-
-################# Standalone development #################
-
-tf_web_library(
+alias(
     name = "standalone_lib",
-    srcs = [
-        "standalone.html",
-        "standalone_projector_config.json",
-    ],
-    path = "/",
-    deps = [
-        ":vz_projector",
-        "//tensorboard/components/tf_imports:polymer",
-        "@org_polymer_iron_icons",
-        "@org_polymer_paper_icon_button",
-        "@org_polymer_paper_tooltip",
-    ],
+    actual = "//tensorboard/plugins/projector/polymer3/vz_projector:standalone_lib",
 )
 
-tensorboard_html_binary(
-    name = "devserver",
-    input_path = "/standalone.html",
-    output_path = "/index.html",
-    deps = [":standalone_lib"],
+alias(
+    name = "vz_projector",
+    actual = "//tensorboard/plugins/projector/polymer3/vz_projector:vz_projector",
+)
+
+alias(
+    name = "heap",
+    actual = "//tensorboard/plugins/projector/polymer3/vz_projector:heap",
+)
+
+alias(
+    name = "bh_tsne",
+    actual = "//tensorboard/plugins/projector/polymer3/vz_projector:bh_tsne",
+)
+
+alias(
+    name = "sptree",
+    actual = "//tensorboard/plugins/projector/polymer3/vz_projector:sptree",
 )
