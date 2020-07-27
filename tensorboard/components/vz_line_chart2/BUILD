@@ -1,13 +1,64 @@
+load("//tensorboard/defs:defs.bzl", "tensorboard_webcomponent_library")
+load("//tensorboard/defs:web.bzl", "tf_web_library")
+
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
-alias(
-    name = "vz_line_chart2",
-    actual = "//tensorboard/components_polymer3/vz_line_chart2:vz_line_chart2",
+tf_web_library(
+    name = "dragZoomInteraction",
+    srcs = [
+        "dragZoomInteraction.html",
+        "dragZoomInteraction.js",
+    ],
+    path = "/vz-line-chart",
+    deps = [
+        "//tensorboard/components/tf_imports:d3",
+        "//tensorboard/components/tf_imports:plottable",
+    ],
 )
 
-alias(
-    name = "dragZoomInteraction",
-    actual = "//tensorboard/components_polymer3/vz_line_chart2:dragZoomInteraction",
+tensorboard_webcomponent_library(
+    name = "dragZoomInteraction_legacy",
+    srcs = [":dragZoomInteraction"],
+    destdir = "vz-line-chart",
+    deps = [
+        "//tensorboard/components/tf_imports_google:lib",
+    ],
+)
+
+tf_web_library(
+    name = "vz_line_chart2",
+    srcs = [
+        "line-chart.js",
+        "line-chart-exporter.js",
+        "linear-scale.js",
+        "log-scale.js",
+        "panZoomDragLayer.html",
+        "panZoomDragLayer.js",
+        "tf-scale.js",
+        "vz-line-chart2.html",
+        "vz-line-chart2.js",
+    ],
+    path = "/vz-line-chart2",
+    deps = [
+        ":dragZoomInteraction",
+        "//tensorboard/components/tf_imports:d3",
+        "//tensorboard/components/tf_imports:lodash",
+        "//tensorboard/components/tf_imports:plottable",
+        "//tensorboard/components/tf_imports:polymer",
+        "//tensorboard/components/vz_chart_helpers",
+    ],
+)
+
+tensorboard_webcomponent_library(
+    name = "legacy",
+    srcs = [":vz_line_chart2"],
+    destdir = "vz-line-chart2",
+    deps = [
+        ":dragZoomInteraction_legacy",
+        "//tensorboard/components/tf_imports:polymer_lib",
+        "//tensorboard/components/tf_imports_google:lib",
+        "//tensorboard/components/vz_chart_helpers:legacy",
+    ],
 )

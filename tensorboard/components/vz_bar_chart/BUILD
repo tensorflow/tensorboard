@@ -1,8 +1,21 @@
+load("//tensorboard/defs:web.bzl", "tf_web_library")
+
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
-alias(
+tf_web_library(
     name = "vz_bar_chart",
-    actual = "//tensorboard/components_polymer3/vz_bar_chart:vz_bar_chart",
+    srcs = [
+        "vz-bar-chart.html",
+        "vz-bar-chart.js",
+    ],
+    path = "/vz-bar-chart",
+    deps = [
+        "//tensorboard/components/tf_imports:d3",
+        "//tensorboard/components/tf_imports:lodash",
+        "//tensorboard/components/tf_imports:plottable",
+        "//tensorboard/components/tf_imports:polymer",
+        "//tensorboard/components/vz_chart_helpers",
+    ],
 )

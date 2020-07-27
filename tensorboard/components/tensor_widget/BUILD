@@ -1,23 +1,94 @@
+load("@npm_bazel_jasmine//:index.bzl", "jasmine_node_test")
+load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ts_config", "tf_ts_library")
+load("//tensorboard/defs:web.bzl", "tf_web_library")
+
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
-alias(
+tf_web_library(
     name = "tensor_widget",
-    actual = "//tensorboard/components_polymer3/tensor_widget:tensor_widget",
+    srcs = [
+        "tensor-widget.css",
+        "tensor-widget.html",
+        ":tensor_widget_binary.js",
+    ],
+    path = "/tensor-widget",
+    deps = [
+        ":tensor_widget_binary",
+    ],
 )
 
-alias(
+tf_js_binary(
     name = "tensor_widget_binary",
-    actual = "//tensorboard/components_polymer3/tensor_widget:tensor_widget_binary",
+    srcs = [
+        "externs.js",
+    ],
+    compile = 1,
+    entry_point = ":tensor-widget-interop.ts",
+    deps = [
+        ":tensor_widget_binary_lib",
+    ],
 )
 
-alias(
+tf_ts_library(
     name = "tensor_widget_binary_lib",
-    actual = "//tensorboard/components_polymer3/tensor_widget:tensor_widget_binary_lib",
+    srcs = [
+        "tensor-widget-interop.ts",
+    ],
+    tsconfig = ":tsconfig",
+    deps = [
+        ":tensor_widget_lib",
+    ],
 )
 
-alias(
+tf_ts_library(
     name = "tensor_widget_lib",
-    actual = "//tensorboard/components_polymer3/tensor_widget:tensor_widget_lib",
+    srcs = [
+        "colormap.ts",
+        "dtype-utils.ts",
+        "health-pill-types.ts",
+        "menu.ts",
+        "selection.ts",
+        "shape-utils.ts",
+        "slicing-control.ts",
+        "string-utils.ts",
+        "tensor-widget.ts",
+        "tensor-widget-impl.ts",
+        "types.ts",
+        "version.ts",
+    ],
+    tsconfig = ":tsconfig",
+)
+
+tf_ts_library(
+    name = "test_lib",
+    testonly = True,
+    srcs = [
+        "colormap-test.ts",
+        "dtype-utils-test.ts",
+        "selection-test.ts",
+        "shape-utils-test.ts",
+        "string-utils-test.ts",
+    ],
+    deps = [
+        ":tensor_widget_lib",
+        "@npm//@types/chai",
+        "@npm//@types/jasmine",
+        "@npm//chai",
+    ],
+)
+
+jasmine_node_test(
+    name = "test",
+    srcs = [":test_lib"],
+    deps = [
+        "@npm//chai",
+    ],
+)
+
+tf_ts_config(
+    name = "tsconfig",
+    src = "tsconfig.json",
+    deps = [],
 )

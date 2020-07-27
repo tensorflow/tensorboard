@@ -16,7 +16,7 @@ tf_web_test(
 tf_web_library(
     name = "test_web_library",
     srcs = [
-        "sortingTests.ts",
+        "sortingTests.js",
         "tests.html",
     ],
     path = "/vz-sorting/test",

@@ -16,7 +16,7 @@ tf_web_test(
 tf_web_library(
     name = "test_web_library",
     srcs = [
-        "storageTests.ts",
+        "storageTests.js",
         "tests.html",
     ],
     path = "/tf-storage/test",

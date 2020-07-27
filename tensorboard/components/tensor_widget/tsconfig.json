@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "inlineSourceMap": true,
+    "moduleResolution": "node",
+    "skipLibCheck": true,
+    "noResolve": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": true,
+    "lib": [
+      "dom",
+      "es5",
+      "es2015.collection",
+      "es2015.iterable",
+      "es2015.promise"
+    ],
+    "types": []
+  }
+}

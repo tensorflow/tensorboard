@@ -1,13 +1,51 @@
+load("//tensorboard/defs:defs.bzl", "tensorboard_webcomponent_library")
+load("//tensorboard/defs:web.bzl", "tf_web_library")
+
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
-alias(
+tf_web_library(
     name = "tf_backend",
-    actual = "//tensorboard/components_polymer3/tf_backend:tf_backend",
+    srcs = [
+        "backend.js",
+        "baseStore.js",
+        "canceller.js",
+        "environmentStore.js",
+        "experimentsStore.js",
+        "requestManager.js",
+        "router.js",
+        "runsStore.js",
+        "tf-backend.html",
+        "tf-backend-polymer.js",
+        "urlPathHelpers.js",
+    ],
+    path = "/tf-backend",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":type",
+        "//tensorboard/components/tf_imports:lodash",
+        "//tensorboard/components/tf_imports:plottable",
+        "//tensorboard/components/tf_imports:polymer",
+        "//tensorboard/components/vz_sorting",
+    ],
 )
 
-alias(
+tf_web_library(
     name = "type",
-    actual = "//tensorboard/components_polymer3/tf_backend:type",
+    srcs = [
+        "type.js",
+    ],
+    path = "/tf-backend",
+)
+
+tensorboard_webcomponent_library(
+    name = "legacy",
+    srcs = [":tf_backend"],
+    destdir = "tf-backend",
+    deps = [
+        "//tensorboard/components/tf_imports:polymer_lib",
+        "//tensorboard/components/tf_imports_google:lib",
+        "//tensorboard/components/vz_sorting:legacy",
+    ],
 )

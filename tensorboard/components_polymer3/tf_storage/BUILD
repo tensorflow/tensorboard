@@ -8,10 +8,10 @@ licenses(["notice"])  # Apache 2.0
 tf_web_library(
     name = "tf_storage",
     srcs = [
-        "listeners.ts",
-        "storage.ts",
+        "listeners.js",
+        "storage.js",
         "tf-storage.html",
-        "tf-storage-polymer.ts",
+        "tf-storage-polymer.js",
     ],
     path = "/tf-storage",
     visibility = ["//visibility:public"],

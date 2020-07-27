@@ -8,7 +8,7 @@ tf_web_library(
     name = "tf_utils",
     srcs = [
         "tf-utils.html",
-        "utils.ts",
+        "utils.js",
     ],
     path = "/tf-utils",
 )

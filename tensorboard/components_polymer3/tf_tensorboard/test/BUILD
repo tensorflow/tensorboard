@@ -16,8 +16,8 @@ tf_web_test(
 tf_web_library(
     name = "test_web_library",
     srcs = [
-        "autoReloadTests.ts",
-        "tensorboardTests.ts",
+        "autoReloadTests.js",
+        "tensorboardTests.js",
         "tests.html",
     ],
     path = "/tf-tensorboard/test",

@@ -1,13 +1,32 @@
+load("//tensorboard/defs:web.bzl", "tf_web_library")
+
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
-alias(
-    name = "demo",
-    actual = "//tensorboard/plugins/distribution/polymer3/vz_distribution_chart:demo",
+tf_web_library(
+    name = "vz_distribution_chart",
+    srcs = [
+        "vz-distribution-chart.html",
+        "vz-distribution-chart.js",
+    ],
+    path = "/vz-distribution-chart",
+    deps = [
+        "//tensorboard/components/tf_imports:lodash",
+        "//tensorboard/components/tf_imports:plottable",
+        "//tensorboard/components/tf_imports:polymer",
+        "//tensorboard/components/vz_chart_helpers",
+    ],
 )
 
-alias(
-    name = "vz_distribution_chart",
-    actual = "//tensorboard/plugins/distribution/polymer3/vz_distribution_chart:vz_distribution_chart",
+tf_web_library(
+    name = "demo",
+    srcs = ["index.html"],
+    path = "/vz-distribution-chart",
+    deps = [
+        ":vz_distribution_chart",
+        "//tensorboard/components/tf_imports:polymer",
+        "@org_polymer_iron_demo_helpers",
+        "@org_polymer_paper_styles",
+    ],
 )
