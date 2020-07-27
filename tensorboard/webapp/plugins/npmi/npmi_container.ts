@@ -22,7 +22,9 @@ import {getRunSelection} from '../../core/store/core_selectors';
 
 @Component({
   selector: 'npmi',
-  template: `<npmi-component [runs]="runs$ | async"></npmi-component>`,
+  template: `
+    <npmi-component [runs]="runs$ | async"></npmi-component>
+  `,
 })
 export class NpmiContainer {
   readonly runs$ = this.coreStore.pipe(select(getRunSelection));

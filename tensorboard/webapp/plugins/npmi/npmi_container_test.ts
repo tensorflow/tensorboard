@@ -46,9 +46,7 @@ describe('Npmi Container', () => {
     const fixture = TestBed.createComponent(NpmiContainer);
     fixture.detectChanges();
 
-    const npmiElement = fixture.debugElement.query(
-      By.css('npmi-component')
-    );
+    const npmiElement = fixture.debugElement.query(By.css('npmi-component'));
     expect(npmiElement).toBeTruthy();
   });
 });
