@@ -18,9 +18,9 @@ ng_module(
     deps = [
         ":plugin_registry",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin:debugger_v2",
-        "//tensorboard/webapp/plugins/npmi:npmi",
         "//tensorboard/webapp/core",
         "//tensorboard/webapp/core/store",
+        "//tensorboard/webapp/plugins/npmi",
         "//tensorboard/webapp/types",
         "@npm//@angular/common",
         "@npm//@angular/core",

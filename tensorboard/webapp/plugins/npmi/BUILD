@@ -1,6 +1,5 @@
 load("@npm_angular_bazel//:index.bzl", "ng_module")
-load("//tensorboard/defs:defs.bzl", "tf_ng_web_test_suite", "tf_ts_library")
-load("//tensorboard/defs:defs.bzl", "tf_sass_binary", "tf_sass_library")
+load("//tensorboard/defs:defs.bzl", "tf_sass_binary", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
