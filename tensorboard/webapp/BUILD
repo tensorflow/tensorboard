@@ -146,12 +146,12 @@ tf_ng_web_test_suite(
         "//tensorboard/webapp/feature_flag/store:store_test_lib",
         "//tensorboard/webapp/header:test_lib",
         "//tensorboard/webapp/plugins:plugins_container_test_lib",
+        "//tensorboard/webapp/plugins/npmi:npmi_test_lib",
         "//tensorboard/webapp/reloader:test_lib",
         "//tensorboard/webapp/settings:test_lib",
         "//tensorboard/webapp/tbdev_upload:test_lib",
         "//tensorboard/webapp/webapp_data_source:feature_flag_test_lib",
         "//tensorboard/webapp/webapp_data_source:webapp_data_source_test_lib",
-        "//tensorboard/webapp/plugins/npmi:npmi_test_lib",
     ],
 )
 
