@@ -662,7 +662,7 @@ MOUNTAINS = [
     "VORDERUNNÜTZ",
     "MONTE ZERMULA",
     "MONT' ORFANO",
-    "GOVCA"
+    "GOVCA",
 ]
 
 
@@ -687,13 +687,10 @@ def setup_run(logdir, verbose, run_name):
 
 
 def setup_all(logdir, verbose=False):
-    for run in ["run_1",
-"run_2"]:
+    for run in ["run_1", "run_2"]:
         if verbose:
             print("--- Setting up Run: %s" % run)
-        setup_run(logdir,
-verbose,
-run)
+        setup_run(logdir, verbose, run)
 
 
 def main(unused_argv):
