@@ -13,6 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+// If true, TensorBoard stores its hash in the URI state.
+// If false, tab switching in TensorBoard will not update location hash,
+// because hash updates interfere with wct_tests.
 let _useHash = false;
 
 export function setUseHash(shouldUseHash: boolean): void {
