@@ -1,4 +1,3 @@
-load("//tensorboard/defs:defs.bzl", "tensorboard_webcomponent_library")
 load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
@@ -11,10 +10,4 @@ tf_ts_library(
         "sorting.ts",
     ],
     strict_checks = False,
-)
-
-tensorboard_webcomponent_library(
-    name = "legacy",
-    srcs = [":vz_sorting"],
-    destdir = "vz-sorting",
 )

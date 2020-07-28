@@ -10,8 +10,8 @@ licenses(["notice"])  # Apache 2.0
 tf_web_test(
     name = "test",
     src = "/vz-sorting/test/tests.html",
+    tags = ["manual"],
     web_library = ":test_web_library",
-    tags = ["manual"]
 )
 
 tf_web_library(
