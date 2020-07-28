@@ -27,16 +27,21 @@ import './panZoomDragLayer.html';
 
 import {
   getXComponents,
-  stepX,
-  Point,
-  stepFormatter,
-  timeFormatter,
-  relativeFormatter,
-  relativeAccessor,
   multiscaleFormatter,
+  Point,
+  relativeAccessor,
+  relativeFormatter,
+  stepFormatter,
+  stepX,
+  SymbolFn,
+  timeFormatter,
+  TooltipColumn,
+  XComponents,
+  XType,
   Y_TOOLTIP_FORMATTER_PRECISION,
 } from '../vz_chart_helpers/vz-chart-helpers';
 import {TooltipPosition} from '../vz_chart_helpers/vz-chart-tooltip';
+import {YScaleType, FillArea} from './line-chart';
 
 const valueFormatter = multiscaleFormatter(Y_TOOLTIP_FORMATTER_PRECISION);
 
@@ -139,58 +144,157 @@ class VzLineChart2 extends LegacyElementMixin(PolymerElement) {
     </style>
   `;
 
+  /**
+   * Scale that maps series names to colors. The default colors are from
+   * d3.schemeCategory10. Use this property to replace the default line
+   * colors with colors of your own choice.
+   */
   @property({type: Object})
-  colorScale: object = new Plottable.Scales.Color().range(
+  colorScale: Plottable.Scales.Color = new Plottable.Scales.Color().range(
     d3.schemeCategory10.slice(0)
   );
 
+  /**
+   * A function that takes a data series string and returns a
+   * Plottable.SymbolFactory to use for rendering that series. This property
+   * implements the vz_chart_helpers.SymbolFn interface.
+   */
   @property({type: Object})
-  symbolFunction: object;
+  symbolFunction: SymbolFn;
 
+  /**
+   * Whether smoothing is enabled or not. If true, smoothed lines will be
+   * plotted in the chart while the unsmoothed lines will be ghosted in
+   * the background.
+   */
   @property({
     type: Boolean,
     notify: true,
   })
   smoothingEnabled: boolean = false;
 
+  /**
+   * Weight (between 0.0 and 1.0) of the smoothing. A value of 0.0
+   * means very little smoothing, possibly no smoothing at all. A
+   * value of 1.0 means a whole lot of smoothing, possibly so much as
+   * to make the whole plot appear as a constant function.
+   *
+   * Has no effect when `smoothingEnabled` is `false`.
+   */
   @property({type: Number})
   smoothingWeight: number = 0.6;
 
+  /**
+   * This is a helper field for automatically generating commonly used
+   * functions for xComponentsCreationMethod. Valid values are what can
+   * be processed by vz_chart_helpers.getXComponents() and include
+   * "step", "wall_time", and "relative".
+   */
   @property({type: String})
-  xType: string = '';
+  xType: XType = XType.STEP;
 
+  /**
+   * We accept a function for creating an XComponents object instead of such
+   * an object itself because the Axis must be made right when we make the
+   * LineChart object, lest we use a previously destroyed Axis. See the async
+   * logic below that uses this property.
+   *
+   * Note that this function returns a function because polymer calls the
+   * outer function to compute the value. We actually want the value of this
+   * property to be the inner function.
+   */
   @property({type: Object})
-  xComponentsCreationMethod: any = null;
+  xComponentsCreationMethod: (() => XComponents) | null = null;
 
+  /**
+   * A formatter for values along the X-axis. Optional. Defaults to a
+   * reasonable formatter.
+   */
   @property({type: Object})
-  xAxisFormatter: object;
+  xAxisFormatter: (d: number) => string;
 
+  /**
+   * A method that implements the Plottable.IAccessor<number> interface. Used
+   * for accessing the y value from a data point.
+   *
+   * Note that this function returns a function because polymer calls the
+   * outer function to compute the value. We actually want the value of this
+   * property to be the inner function.
+   */
   @property({type: Object})
   yValueAccessor: (d: any) => string = (d) => d.scalar;
 
+  /**
+   * An array of ChartHelper.TooltipColumn objects. Used to populate the table
+   * within the tooltip. The table contains 1 row per run.
+   *
+   * Note that this function returns a function because polymer calls the
+   * outer function to compute the value. We actually want the value of this
+   * property to be the inner function.
+   */
   @property({type: Array})
-  tooltipColumns: unknown[] = DEFAULT_TOOLTIP_COLUMNS;
+  tooltipColumns: TooltipColumn[] = DEFAULT_TOOLTIP_COLUMNS;
 
+  /**
+   * An optional FillArea object. If provided, the chart will
+   * visualize fill area alongside the primary line for each series. If set,
+   * consider setting ignoreYOutliers to false. Otherwise, outlier
+   * calculations may deem some margins to be outliers, and some portions of
+   * the fill area may not display.
+   */
   @property({type: Object})
-  fillArea: object;
+  fillArea: FillArea;
 
+  /**
+   * An optional array of 2 numbers for the min and max of the default range
+   * of the Y axis. If not provided, a reasonable range will be generated.
+   * This property is a list instead of 2 individual properties to emphasize
+   * that both the min and the max must be specified (or neither at all).
+   */
   @property({type: Array})
   defaultXRange: unknown[];
 
+  /**
+   * An optional array of 2 numbers for the min and max of the default range
+   * of the Y axis. If not provided, a reasonable range will be generated.
+   * This property is a list instead of 2 individual properties to emphasize
+   * that both the min and the max must be specified (or neither at all).
+   */
   @property({type: Array})
   defaultYRange: unknown[];
 
+  /**
+   * The scale for the y-axis. Allows:
+   * - "linear" - linear scale (Plottable.Scales.Linear)
+   * - "log" - modified-log scale (Plottable.Scales.ModifiedLog)
+   */
   @property({type: String})
-  yScaleType: string = 'linear';
+  yScaleType: YScaleType = YScaleType.LINEAR;
 
-  @property({
-    type: Boolean,
-  })
+  /**
+   * Whether to ignore outlier data when computing the yScale domain.
+   */
+  @property({type: Boolean})
   ignoreYOutliers: boolean = false;
 
+  /**
+   * Change how the tooltip is sorted. Allows:
+   * - "default" - Sort the tooltip by input order.
+   * - "ascending" - Sort the tooltip by ascending value.
+   * - "descending" - Sort the tooltip by descending value.
+   * - "nearest" - Sort the tooltip by closest to cursor.
+   */
   @property({type: String})
   tooltipSortingMethod: string = 'default';
 
+  /**
+   * Changes how the tooltip is positioned. Allows:
+   * - "bottom" - Position the tooltip on the bottom of the chart.
+   * - "right" - Position the tooltip to the right of the chart.
+   * - "auto" - Position the tooltip to the bottom of the chart in most case.
+   *            Position the tooltip above the chart if there isn't sufficient
+   *            space below.
+   */
   @property({type: String})
   tooltipPosition: TooltipPosition = TooltipPosition.BOTTOM;
 

@@ -17,10 +17,15 @@ import * as d3 from 'd3';
 
 import {TfScale} from './tf-scale';
 
+// Smallest positive non-zero value represented by IEEE 754 binary (64 bit)	import * as d3 from 'd3';
+// floating-point number.
+// https://www.ecma-international.org/ecma-262/5.1/#sec-8.5
 export const MIN_POSITIVE_VALUE = Math.pow(2, -1074);
+
 function log(x: number): number {
   return Math.log10(x);
 }
+
 function pow(x: number): number {
   return Math.pow(10, x);
 }

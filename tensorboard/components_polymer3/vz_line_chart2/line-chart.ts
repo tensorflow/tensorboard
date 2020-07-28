@@ -30,7 +30,11 @@ import {LogScale} from './log-scale';
 import {ITfScale} from './tf-scale';
 import {PanZoomDragLayer} from './panZoomDragLayer';
 
-interface FillArea {
+/**
+ * An interface that describes a fill area to visualize. The fill area is
+ * visualized with a less intense version of the color for a given series.
+ */
+export interface FillArea {
   // The lower end of the fill area.
   lowerAccessor: Plottable.IAccessor<number>;
   // The higher end of the fill area.
@@ -40,10 +44,12 @@ enum TooltipColumnEvalType {
   TEXT,
   DOM,
 }
-enum YScaleType {
+
+export enum YScaleType {
   LOG = 'log',
   LINEAR = 'linear',
 }
+
 export type LineChartStatus = {
   smoothingEnabled: boolean;
 };
@@ -51,7 +57,7 @@ export type LineChartStatus = {
 /**
  * Adds private APIs for default swatch column on the first column.
  */
-export interface LineChartTooltipColumn extends TooltipColumn {
+interface LineChartTooltipColumn extends TooltipColumn {
   evalType: TooltipColumnEvalType;
   enter: () => void;
 }
@@ -115,7 +121,7 @@ export class LineChart {
   constructor(
     xComponentsCreationMethod: () => XComponents,
     yValueAccessor: Plottable.IAccessor<number>,
-    yScaleType: string,
+    yScaleType: YScaleType,
     colorScale: Plottable.Scales.Color,
     tooltip: VzChartTooltip,
     tooltipColumns: TooltipColumn[],
@@ -153,7 +159,7 @@ export class LineChart {
   private buildChart(
     xComponentsCreationMethod: () => XComponents,
     yValueAccessor: Plottable.IAccessor<number>,
-    yScaleType: string,
+    yScaleType: YScaleType,
     fillArea: FillArea,
     xAxisFormatter: (number) => string
   ) {
