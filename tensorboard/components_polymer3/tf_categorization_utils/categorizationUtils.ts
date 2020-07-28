@@ -12,6 +12,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+
+/**
+ * Functions to extract categories of tags and/or run-tag combinations
+ * from a run-to-tag mapping. The resulting categories can be fed to a
+ * `tf-category-paginated-view`.
+ */
 import * as _ from 'lodash';
 import {Experiment, Run} from '../tf_backend/type';
 import {getTags} from '../tf_backend/backend';
