@@ -32,7 +32,7 @@ tf.compat.v1.enable_eager_execution()
 LOGDIR = "/tmp/npmi_demo"
 
 
-def setup_run(logdir, verbose, run_name):
+def setup_run(logdir, run_name):
     # Getting a list of dummy annotations from a separate file.
     python_annotations = npmi_demo_data.MOUNTAINS
     # Writing out random nPMI values.
@@ -58,7 +58,7 @@ def setup_all(logdir, verbose=False):
     for run in ["run_1", "run_2"]:
         if verbose:
             print("--- Setting up Run: %s" % run)
-        setup_run(logdir, verbose, run)
+        setup_run(logdir, run)
 
 
 def main(unused_argv):
