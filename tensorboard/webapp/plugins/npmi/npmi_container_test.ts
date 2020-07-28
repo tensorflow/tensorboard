@@ -19,7 +19,7 @@ import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 
 import {Store} from '@ngrx/store';
-import {State} from './app_state';
+import {State} from '../../app_state';
 import {getRunSelection} from './../../core/store/core_selectors';
 import {provideMockStore, MockStore} from '@ngrx/store/testing';
 

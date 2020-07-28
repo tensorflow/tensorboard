@@ -15,7 +15,7 @@ limitations under the License.
 import {Component} from '@angular/core';
 import {select, Store} from '@ngrx/store';
 
-import {State} from './app_state';
+import {State} from '../../app_state';
 import {getRunSelection} from '../../core/store/core_selectors';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
