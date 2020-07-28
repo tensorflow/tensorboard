@@ -15,30 +15,46 @@
 """Inline file contents in destination file.
 
 Replaces special template syntax (e.g., `%filename.ext%`) in the destination file.
+
+Usage: inline_file_content.py <dest-file> <src-file> [<src-file>...]
 """
 
 import os
+import re
 import sys
 
 
-def inline_content():
+def main():
     dest_file_path = sys.argv[1]
     src_paths = sys.argv[2:]
+
     with open(dest_file_path, "r") as f:
-        html = f.read()
+        dest_content = f.read()
+
+    template_name_to_content = {}
+
     for src_path in src_paths:
-        with open(src_path, "rb") as f:
-            content = f.read().decode("utf-8")
+        with open(src_path, "r") as f:
+            content = f.read()
+
         src_basename = os.path.basename(src_path)
-        template_string = "%" + src_basename + "%"
-        if template_string not in html:
-            raise ValueError(
-                "Cannot find %s in dest file %s"
-                % (template_string, dest_file_path)
-            )
-        html = html.replace(template_string, content)
-    sys.stdout.write(html)
+
+        if src_basename in template_name_to_content:
+            raise ValueError("Duplicate src basename: %s" % src_basename)
+        template_name_to_content[src_basename] = content
+
+    search_key = (
+        "%("
+        + "|".join([re.escape(key) for key in template_name_to_content])
+        + ")%"
+    )
+
+    def replace_key_with_content(match):
+        return template_name_to_content[match.group(1)]
+
+    inlined_content = re.sub(search_key, replace_key_with_content, dest_content)
+    sys.stdout.write(inlined_content)
 
 
 if __name__ == "__main__":
-    inline_content()
+    main()
