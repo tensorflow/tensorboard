@@ -22,5 +22,5 @@ import {RunId} from '../../core/types';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NpmiComponent {
-  @Input() runs: Map<RunId, boolean> = new Map();
+  @Input() runs!: Map<RunId, boolean>;
 }
