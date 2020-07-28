@@ -37,7 +37,8 @@ def setup_run(logdir, verbose, run_name):
     mountains = []
     lines = f.readlines()
     for line in lines:
-        mountains.append(line)
+        if not line.startswith('#'):
+            mountains.append(line)
     f.close()
     python_annotations = mountains
     # Writing out random nPMI values.

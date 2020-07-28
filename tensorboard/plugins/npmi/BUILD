@@ -3,6 +3,7 @@
 # models. nPMI is a technique presented in a paper (https://svn.spraakdata.gu.se/repos/gerlof/pub/www/Docs/npmi-pfd.pdfhttps://svn.spraakdata.gu.se/repos/gerlof/pub/www/Docs/npmi-pfd.pdf)
 # presented by Gerlof Bouma.
 
+load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
 load("//tensorboard/defs:protos.bzl", "tb_proto_library")
 
 package(default_visibility = ["//tensorboard:internal"])
@@ -46,14 +47,14 @@ py_test(
 py_binary(
     name = "npmi_demo",
     srcs = ["npmi_demo.py"],
+    data = [
+        "mountains.txt",
+    ],
     srcs_version = "PY2AND3",
     deps = [
         ":summary",
         "//tensorboard:expect_tensorflow_installed",
     ],
-    data = [
-        "mountains.txt"
-    ]
 )
 
 py_library(

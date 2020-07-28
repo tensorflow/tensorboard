@@ -6,4 +6,4 @@ The plugin is currently experimental and under active development.
 
 ## Demo Data
 
-To experiment with the plugin without the need to generate real log data, simply generate demo data using `bazel run //tensorboard/plugins/npmi:npmi_demo` and then start the plugin with `bazel run -c dbg tensorboard -- --logdir /tmp/npmi_demo`.
+To experiment with the plugin without the need to generate real log data, simply generate demo data using `bazel run //tensorboard/plugins/npmi:npmi_demo` and then start the plugin with `bazel run tensorboard -- --logdir /tmp/npmi_demo`.
