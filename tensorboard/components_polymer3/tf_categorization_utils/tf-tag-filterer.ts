@@ -17,12 +17,8 @@ import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, property} from '@polymer/decorators';
 import '@polymer/iron-icon';
 import '@polymer/paper-input';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-storage/tf-storage.html';
-import '@polymer/iron-icon';
-import '@polymer/paper-input';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-storage/tf-storage.html';
+import {getStringInitializer, getStringObserver} from '../tf_storage/storage';
+
 @customElement('tf-tag-filterer')
 class TfTagFilterer extends PolymerElement {
   static readonly template = html`
@@ -41,26 +37,30 @@ class TfTagFilterer extends PolymerElement {
       }
     </style>
   `;
+
   @property({
     type: String,
     notify: true,
     computed: '_computeTagFilter(_tagFilter)',
   })
   tagFilter: string;
+
   @property({
     type: String,
     observer: '_tagFilterObserver',
   })
-  _tagFilter: string = tf_storage.getStringInitializer('tagFilter', {
+  _tagFilter: string = getStringInitializer('tagFilter', {
+    defaultValue: '',
+    useLocalStorage: false,
+    polymerProperty: '_tagFilter',
+  })();
+
+  _tagFilterObserver = getStringObserver('tagFilter', {
     defaultValue: '',
     useLocalStorage: false,
     polymerProperty: '_tagFilter',
   });
-  _tagFilterObserver = tf_storage.getStringObserver('tagFilter', {
-    defaultValue: '',
-    useLocalStorage: false,
-    polymerProperty: '_tagFilter',
-  });
+
   _computeTagFilter() {
     return this._tagFilter;
   }

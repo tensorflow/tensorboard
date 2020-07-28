@@ -12,22 +12,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
-import {DO_NOT_SUBMIT} from '../tf-backend/tf-backend.html';
-/* Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+import * as _ from 'lodash';
+import {Experiment, Run} from '../tf_backend/type';
+import {getTags} from '../tf_backend/backend';
+import {compareTagNames} from '../vz_sorting/sorting';
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
 export type RunToTag = {
   [run: string]: string[];
 };
@@ -44,6 +33,7 @@ export interface SearchResultsMetadata {
   validRegex: boolean;
   universalRegex: boolean; // is the search query ".*"? ("(?:)" doesn't count)
 }
+
 export type CategoryMetadata = PrefixGroupMetadata | SearchResultsMetadata;
 export interface Category<T> {
   name: string;
@@ -59,10 +49,11 @@ export type RunTagCategory = Category<{
   run: string;
 }>;
 export type Series = {
-  experiment: tf_backend.Experiment;
+  experiment: Experiment;
   run: string;
   tag: string;
 };
+
 /**
  * Organize data by tagPrefix, tag, then list of series which is comprised of
  * an experiment and a run.
@@ -71,7 +62,9 @@ export type SeriesCategory = Category<{
   tag: string;
   series: Series[];
 }>;
+
 export type RawCategory = Category<string>; // Intermediate structure.
+
 /**
  * Compute a category containing the search results for the given query.
  */
@@ -122,6 +115,7 @@ export function categorizeByPrefix(
   });
   return categories;
 }
+
 /*
  * Compute the standard categorization of the given input, including
  * both search categories and prefix categories.
@@ -131,12 +125,13 @@ export function categorize(xs: string[], query = ''): RawCategory[] {
   const byPrefix = categorizeByPrefix(xs);
   return [].concat(byFilter, byPrefix);
 }
+
 export function categorizeTags(
   runToTag: RunToTag,
   selectedRuns: string[],
   query?: string
 ): TagCategory[] {
-  const tags = tf_backend.getTags(runToTag);
+  const tags = getTags(runToTag);
   const categories = categorize(tags, query);
   const tagToRuns = createTagToRuns(_.pick(runToTag, selectedRuns));
   return categories.map(({name, metadata, items}) => ({
@@ -148,6 +143,7 @@ export function categorizeTags(
     })),
   }));
 }
+
 function createTagToRuns(runToTag: RunToTag): Map<string, string[]> {
   const tagToRun = new Map();
   Object.keys(runToTag).forEach((run) => {
@@ -159,10 +155,8 @@ function createTagToRuns(runToTag: RunToTag): Map<string, string[]> {
   });
   return tagToRun;
 }
-function createRunToTagForPlugin(
-  runs: tf_backend.Run[],
-  pluginName: string
-): RunToTag {
+
+function createRunToTagForPlugin(runs: Run[], pluginName: string): RunToTag {
   const runToTag = {};
   runs.forEach((run) => {
     runToTag[run.name] = run.tags
@@ -171,6 +165,7 @@ function createRunToTagForPlugin(
   });
   return runToTag;
 }
+
 function compareTagRun(
   a,
   b: {
@@ -178,12 +173,13 @@ function compareTagRun(
     run: string;
   }
 ): number {
-  const c = vz_sorting.compareTagNames(a.tag, b.tag);
+  const c = compareTagNames(a.tag, b.tag);
   if (c != 0) {
     return c;
   }
-  return vz_sorting.compareTagNames(a.run, b.run);
+  return compareTagNames(a.run, b.run);
 }
+
 export function categorizeRunTagCombinations(
   runToTag: RunToTag,
   selectedRuns: string[],
