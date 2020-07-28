@@ -15,11 +15,12 @@ limitations under the License.
 /**
  * Unit tests for the NPMI Container.
  */
-import {CommonModule} from '@angular/common';
 import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 
 import {Store} from '@ngrx/store';
+import {State} from './app_state';
+import {getRunSelection} from './../../core/store/core_selectors';
 import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
 import {NpmiComponent} from './npmi_component';
@@ -28,18 +29,15 @@ import {NpmiContainer} from './npmi_container';
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 describe('Npmi Container', () => {
-  let dispatchSpy: jasmine.Spy;
+  let store: MockStore<State>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [NpmiComponent, NpmiContainer],
-      providers: [
-        provideMockStore({
-          initialState: '',
-        }),
-        NpmiContainer,
-      ],
+      providers: [provideMockStore({}), NpmiContainer],
     }).compileComponents();
+    store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
+    store.overrideSelector(getRunSelection, new Map());
   });
 
   it('renders npmi component', () => {

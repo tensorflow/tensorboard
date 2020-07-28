@@ -22,11 +22,11 @@ ng_module(
         "npmi_component.ng.html",
     ],
     deps = [
+        ":app_state",
         "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/plugins:plugin_registry",
         "@npm//@angular/common",
         "@npm//@angular/core",
-        "@npm//@ngrx/effects",
         "@npm//@ngrx/store",
         "@npm//rxjs",
     ],
@@ -40,14 +40,26 @@ tf_ts_library(
     ],
     tsconfig = "//:tsconfig-test",
     deps = [
+        ":app_state",
         ":npmi",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
+        "//tensorboard/webapp/core/store",
         "@npm//@angular/common",
         "@npm//@angular/compiler",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@ngrx/store",
         "@npm//@types/jasmine",
+    ],
+)
+
+ng_module(
+    name = "app_state",
+    srcs = [
+        "app_state.ts",
+    ],
+    deps = [
+        "//tensorboard/webapp/core/store",
     ],
 )
