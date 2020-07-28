@@ -51,6 +51,9 @@ py_binary(
         ":summary",
         "//tensorboard:expect_tensorflow_installed",
     ],
+    data = [
+        "mountains.txt"
+    ]
 )
 
 py_library(
