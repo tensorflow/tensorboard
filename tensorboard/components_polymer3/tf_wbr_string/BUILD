@@ -1,16 +1,17 @@
-load("//tensorboard/defs:web.bzl", "tf_web_library")
+load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
-tf_web_library(
+tf_ts_library(
     name = "tf_wbr_string",
     srcs = [
-        "tf-wbr-string.html",
+        "tf-wbr-string.ts",
     ],
-    path = "/tf-wbr-string",
+    strict_checks = False,
     deps = [
-        "//tensorboard/components/tf_imports:polymer",
+        "@npm//@polymer/decorators",
+        "@npm//@polymer/polymer",
     ],
 )
