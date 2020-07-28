@@ -34,8 +34,8 @@ def tf_js_binary(compile, deps, **kwargs):
     rollup_bundle(
         config_file = "//tensorboard/defs:rollup_config.js",
         deps = deps + [
-            "@npm//rollup-plugin-commonjs",
-            "@npm//rollup-plugin-node-resolve",
+            "@npm//@rollup/plugin-commonjs",
+            "@npm//@rollup/plugin-node-resolve",
         ],
         **kwargs
     )
