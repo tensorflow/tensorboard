@@ -13,10 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-/**	
- * A query parameter value can either be a string or a list of strings.	
- * A string `"foo"` is encoded as `key=foo`; a list `["foo", "bar"]` is	
- * encoded as `key=foo&key=bar`.	
+/**
+ * A query parameter value can either be a string or a list of strings.
+ * A string `"foo"` is encoded as `key=foo`; a list `["foo", "bar"]` is
+ * encoded as `key=foo&key=bar`.
  */
 export type QueryValue = string | string[];
 export type QueryParams = {
