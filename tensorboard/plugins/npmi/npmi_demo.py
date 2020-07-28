@@ -24,6 +24,7 @@ from absl import app
 import tensorflow as tf
 import numpy as np
 from tensorboard.plugins.npmi import summary
+from tensorboard.plugins.npmi import npmi_demo_data
 
 tf.compat.v1.enable_eager_execution()
 
@@ -32,15 +33,8 @@ LOGDIR = "/tmp/npmi_demo"
 
 
 def setup_run(logdir, verbose, run_name):
-    # Getting a list of dummy annotations from a txt file.
-    f = open("./tensorboard/plugins/npmi/mountains.txt", "r")
-    mountains = []
-    lines = f.readlines()
-    for line in lines:
-        if not line.startswith("#"):
-            mountains.append(line)
-    f.close()
-    python_annotations = mountains
+    # Getting a list of dummy annotations from a separate file.
+    python_annotations = npmi_demo_data.MOUNTAINS
     # Writing out random nPMI values.
     python_classes = ["nPMI@SKIABLE", "nPMI@NOT_SKIABLE"]
     python_result = np.random.rand(len(python_annotations), len(python_classes))
