@@ -191,7 +191,7 @@ class VzLineChart2 extends LegacyElementMixin(PolymerElement) {
    * "step", "wall_time", and "relative".
    */
   @property({type: String})
-  xType: XType = XType.STEP;
+  xType: XType | null = null;
 
   /**
    * We accept a function for creating an XComponents object instead of such
