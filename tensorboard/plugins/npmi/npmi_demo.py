@@ -37,7 +37,7 @@ def setup_run(logdir, verbose, run_name):
     mountains = []
     lines = f.readlines()
     for line in lines:
-        if not line.startswith('#'):
+        if not line.startswith("#"):
             mountains.append(line)
     f.close()
     python_annotations = mountains
