@@ -1,3 +1,4 @@
+load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 load("//tensorboard/defs:web.bzl", "tf_web_library")
 load("//tensorboard/defs:vulcanize.bzl", "tensorboard_html_binary")
 
@@ -54,12 +55,11 @@ genrule(
     tools = ["//tensorboard/logo:inline_favicon"],
 )
 
-tf_web_library(
+tf_ts_library(
     name = "analytics",
     srcs = [
-        "analytics.html",
+        "analytics.ts",
     ],
-    path = "/",
 )
 
 tf_web_library(
