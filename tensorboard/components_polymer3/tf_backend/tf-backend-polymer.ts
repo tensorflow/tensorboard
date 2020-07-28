@@ -12,13 +12,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-var tf_backend;
-(function (tf_backend) {
-    // HACK: this Polymer component allows stores to be accessible from
-    // tf-ng-tensorboard by exposing otherwise mangled smybols.
-    Polymer({
-        is: 'tf-backend',
-        _template: null,
-        tf_backend: tf_backend,
-    });
-})(tf_backend || (tf_backend = {})); // namespace tf_backend
+import {PolymerElement} from '@polymer/polymer';
+import {customElement} from '@polymer/decorators';
+
+import * as tf_backend from './tf-backend';
+
+// HACK: this Polymer component allows stores to be accessible from
+// tf-ng-tensorboard by exposing otherwise mangled smybols.
+
+@customElement('tf-backend')
+class TfBackend extends PolymerElement {
+  _template = null;
+  tf_backend = tf_backend;
+}
