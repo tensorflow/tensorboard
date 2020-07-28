@@ -84,7 +84,7 @@ class NpmiPlugin(base_plugin.TBPlugin):
     def is_active(self):
         """Determines whether this plugin is active.
 
-        This plugin is only active if TensorBoard sampled any text summaries.
+        This plugin is only active if TensorBoard sampled any npmi summaries.
 
         Returns:
           Whether this plugin is active.

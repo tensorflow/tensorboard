@@ -3,6 +3,7 @@
 # models. nPMI is a technique presented in a paper (https://svn.spraakdata.gu.se/repos/gerlof/pub/www/Docs/npmi-pfd.pdfhttps://svn.spraakdata.gu.se/repos/gerlof/pub/www/Docs/npmi-pfd.pdf)
 # presented by Gerlof Bouma.
 
+load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
 load("//tensorboard/defs:protos.bzl", "tb_proto_library")
 
 package(default_visibility = ["//tensorboard:internal"])
@@ -37,6 +38,28 @@ py_test(
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/util:test_util",
+    ],
+)
+
+py_binary(
+    name = "npmi_demo",
+    srcs = ["npmi_demo.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":npmi_demo_data",
+        ":summary",
+        "//tensorboard:expect_tensorflow_installed",
+    ],
+)
+
+py_library(
+    name = "npmi_demo_data",
+    srcs = ["npmi_demo_data.py"],
+    srcs_version = "PY2AND3",
+    visibility = [
+        "//tensorboard:internal",
+    ],
+    deps = [
     ],
 )
 
