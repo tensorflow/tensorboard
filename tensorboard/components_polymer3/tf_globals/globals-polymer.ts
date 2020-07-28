@@ -12,12 +12,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-namespace tf_globals {
-  // HACK: this Polymer component allows stores to be accessible from
-  // tf-ng-tensorboard by exposing otherwise mangled smybols.
-  Polymer({
-    is: 'tf-globals',
-    _template: null, // strictTemplatePolicy requires a template (even a null one).
-    tf_globals: tf_globals,
-  });
-} // namespace tf_globals
+import {PolymerElement} from '@polymer/polymer';
+import {customElement} from '@polymer/decorators';
+
+import * as tf_globals from './globals';
+
+@customElement('tf-globals')
+class TfGlobals extends PolymerElement {
+  _template = null;
+  tf_globals = tf_globals;
+}
