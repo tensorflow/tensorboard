@@ -31,110 +31,97 @@ limitations under the License.
  * [1]: Using string to access property prevents JSCompiler mangling and make the
  * property stable across different versions of a bundle.
  */
-namespace tb_plugin.lib.DO_NOT_USE_INTERNAL {
-  export type PayloadType =
-    | null
-    | undefined
-    | string
-    | string[]
-    | boolean
-    | boolean[]
-    | number
-    | number[]
-    | object
-    | object[];
+export type PayloadType =
+  | null
+  | undefined
+  | string
+  | string[]
+  | boolean
+  | boolean[]
+  | number
+  | number[]
+  | object
+  | object[];
 
-  export interface Message {
-    type: string;
-    id: number;
-    payload: PayloadType;
-    error: string | null;
-    isReply: boolean;
+export interface Message {
+  type: string;
+  id: number;
+  payload: PayloadType;
+  error: string | null;
+  isReply: boolean;
+}
+
+export type MessageType = string;
+
+export type MessageCallback = (payload: any) => any;
+
+interface PromiseResolver {
+  resolve: (data: any) => void;
+  reject: (error: Error) => void;
+}
+
+export class IPC {
+  private id = 0;
+  private readonly responseWaits = new Map<number, PromiseResolver>();
+  private readonly listeners = new Map<MessageType, MessageCallback>();
+  constructor(private port: MessagePort) {
+    this.port.addEventListener('message', (event) => this.onMessage(event));
   }
-
-  export type MessageType = string;
-  export type MessageCallback = (payload: any) => any;
-
-  interface PromiseResolver {
-    resolve: (data: any) => void;
-    reject: (error: Error) => void;
+  listen(type: MessageType, callback: MessageCallback) {
+    this.listeners.set(type, callback);
   }
-
-  export class IPC {
-    private id = 0;
-    private readonly responseWaits = new Map<number, PromiseResolver>();
-    private readonly listeners = new Map<MessageType, MessageCallback>();
-
-    constructor(private port: MessagePort) {
-      this.port.addEventListener('message', (event) => this.onMessage(event));
-    }
-
-    listen(type: MessageType, callback: MessageCallback) {
-      this.listeners.set(type, callback);
-    }
-
-    unlisten(type: MessageType) {
-      this.listeners.delete(type);
-    }
-
-    private async onMessage(event: MessageEvent) {
-      const message = JSON.parse(event.data) as Message;
-      // Please see [1] for reason why we use string to access the property.
-      const type = message['type'];
-      const id = message['id'];
-      const payload = message['payload'];
-      const error = message['error'];
-      const isReply = message['isReply'];
-
-      if (isReply) {
-        if (!this.responseWaits.has(id)) return;
-        const {resolve, reject} = this.responseWaits.get(id) as PromiseResolver;
-        this.responseWaits.delete(id);
-        if (error) {
-          reject(new Error(error));
-        } else {
-          resolve(payload);
-        }
-        return;
+  unlisten(type: MessageType) {
+    this.listeners.delete(type);
+  }
+  private async onMessage(event: MessageEvent) {
+    const message = JSON.parse(event.data) as Message;
+    // Please see [1] for reason why we use string to access the property.
+    const type = message['type'];
+    const id = message['id'];
+    const payload = message['payload'];
+    const error = message['error'];
+    const isReply = message['isReply'];
+    if (isReply) {
+      if (!this.responseWaits.has(id)) return;
+      const {resolve, reject} = this.responseWaits.get(id) as PromiseResolver;
+      this.responseWaits.delete(id);
+      if (error) {
+        reject(new Error(error));
+      } else {
+        resolve(payload);
       }
-
-      let replyPayload = null;
-      let replyError = null;
-      if (this.listeners.has(type)) {
-        const callback = this.listeners.get(type) as MessageCallback;
-        try {
-          const result = await callback(payload);
-          replyPayload = result;
-        } catch (e) {
-          replyError = e;
-        }
+      return;
+    }
+    let replyPayload = null;
+    let replyError = null;
+    if (this.listeners.has(type)) {
+      const callback = this.listeners.get(type) as MessageCallback;
+      try {
+        const result = await callback(payload);
+        replyPayload = result;
+      } catch (e) {
+        replyError = e;
       }
-
-      // Please see [1] for reason why we use string to access the property.
-      const replyMessage: Message = {
-        ['type']: type,
-        ['id']: id,
-        ['payload']: replyPayload,
-        ['error']: replyError,
-        ['isReply']: true,
-      };
-      this.postMessage(replyMessage);
     }
-
-    private postMessage(message: Message) {
-      this.port.postMessage(JSON.stringify(message));
-    }
-
-    sendMessage(
-      type: MessageType,
-      payload?: PayloadType
-    ): Promise<PayloadType> {
-      const id = this.id++;
-      const message: Message = {type, id, payload, error: null, isReply: false};
-      this.postMessage(message);
-      return new Promise((resolve, reject) => {
-        this.responseWaits.set(id, {resolve, reject});
-      });
-    }
+    // Please see [1] for reason why we use string to access the property.
+    const replyMessage: Message = {
+      ['type']: type,
+      ['id']: id,
+      ['payload']: replyPayload,
+      ['error']: replyError,
+      ['isReply']: true,
+    };
+    this.postMessage(replyMessage);
   }
-} // namespace tb_plugin.lib.DO_NOT_USE_INTERNAL
+  private postMessage(message: Message) {
+    this.port.postMessage(JSON.stringify(message));
+  }
+  sendMessage(type: MessageType, payload?: PayloadType): Promise<PayloadType> {
+    const id = this.id++;
+    const message: Message = {type, id, payload, error: null, isReply: false};
+    this.postMessage(message);
+    return new Promise((resolve, reject) => {
+      this.responseWaits.set(id, {resolve, reject});
+    });
+  }
+}

@@ -11,6 +11,7 @@ licenses(["notice"])  # Apache 2.0
 tf_web_test(
     name = "test",
     src = "/tf-plugin-lib/test/test.html",
+    tags = ["manual"],
     web_library = ":test_web_library",
 )
 
