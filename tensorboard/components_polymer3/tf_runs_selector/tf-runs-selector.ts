@@ -14,25 +14,22 @@ limitations under the License.
 ==============================================================================*/
 
 import { PolymerElement, html } from "@polymer/polymer";
-import { customElement, property } from "@polymer/decorators";
+import {LegacyElementMixin} from '@polymer/polymer/lib/legacy/legacy-element-mixin';
+import { computed, customElement, property } from "@polymer/decorators";
 import "@polymer/paper-button";
 import "@polymer/paper-dialog";
-import { DO_NOT_SUBMIT } from "../tf-imports/polymer.html";
-import { DO_NOT_SUBMIT } from "../tf-backend/tf-backend.html";
-import { DO_NOT_SUBMIT } from "../tf-color-scale/tf-color-scale.html";
-import { DO_NOT_SUBMIT } from "../tf-dashboard-common/scrollbar-style.html";
-import { DO_NOT_SUBMIT } from "../tf-dashboard-common/tf-multi-checkbox.html";
-import { DO_NOT_SUBMIT } from "../tf-wbr-string/tf-wbr-string.html";
-import "@polymer/paper-button";
-import "@polymer/paper-dialog";
-import { DO_NOT_SUBMIT } from "../tf-imports/polymer.html";
-import { DO_NOT_SUBMIT } from "../tf-backend/tf-backend.html";
-import { DO_NOT_SUBMIT } from "../tf-color-scale/tf-color-scale.html";
-import { DO_NOT_SUBMIT } from "../tf-dashboard-common/scrollbar-style.html";
-import { DO_NOT_SUBMIT } from "../tf-dashboard-common/tf-multi-checkbox.html";
-import { DO_NOT_SUBMIT } from "../tf-wbr-string/tf-wbr-string.html";
+
+import * as baseStore from "../tf_backend/baseStore";
+import {environmentStore} from "../tf_backend/environmentStore";
+import {runsStore} from "../tf_backend/runsStore";
+import {runsColorScale} from "../tf_color_scale/colorScale";
+import * as storage from "../tf_storage/storage";
+
+import "../tf_dashboard_common/tf-multi-checkbox";
+import "../tf_wbr_string/tf-wbr-string";
+
 @customElement("tf-runs-selector")
-class TfRunsSelector extends PolymerElement {
+class TfRunsSelector extends LegacyElementMixin(PolymerElement) {
     static readonly template = html `<paper-dialog with-backdrop="" id="data-location-dialog">
       <h2>Data Location</h2>
       <tf-wbr-string value="[[dataLocation]]" delimiter-pattern="[[_dataLocationDelimiterPattern]]">
@@ -96,65 +93,81 @@ class TfRunsSelector extends PolymerElement {
         max-width: 288px;
       }
     </style>`;
+
     @property({
         type: Object,
         observer: '_storeRunSelectionState'
     })
-    runSelectionState: object = tf_storage.getObjectInitializer('runSelectionState', {
+    runSelectionState: object = storage.getObjectInitializer('runSelectionState', {
         defaultValue: {},
-    });
+    })();
+
     @property({
         type: String,
         observer: '_regexObserver'
     })
-    regexInput: string = tf_storage.getStringInitializer('regexInput', {
+    regexInput: string = storage.getStringInitializer('regexInput', {
         defaultValue: '',
-    });
+    })();
+
     @property({
         type: Array,
         notify: true
     })
     selectedRuns: unknown[];
+
     @property({ type: Array })
     runs: unknown[];
+
     @property({
         type: String,
         notify: true
     })
     dataLocation: string;
+
     @property({
         type: Number,
         readOnly: true
     })
     _dataLocationClipLength: number = 250;
+
     @property({
         type: String,
         readOnly: true
     })
     _dataLocationDelimiterPattern: string = '[/=_,-]';
+
     @property({
         type: Object
     })
     coloring: object = {
-        getColor: tf_color_scale.runsColorScale,
+        getColor: runsColorScale,
     };
+
+    _runStoreListener: baseStore.ListenKey;
+
+    _envStoreListener: baseStore.ListenKey;
+
     attached() {
-        this._runStoreListener = tf_backend.runsStore.addListener(() => {
-            this.set('runs', tf_backend.runsStore.getRuns());
+        this._runStoreListener = runsStore.addListener(() => {
+            this.set('runs', runsStore.getRuns());
         });
-        this.set('runs', tf_backend.runsStore.getRuns());
-        this._envStoreListener = tf_backend.environmentStore.addListener(() => {
-            this.set('dataLocation', tf_backend.environmentStore.getDataLocation());
+        this.set('runs', runsStore.getRuns());
+        this._envStoreListener = environmentStore.addListener(() => {
+            this.set('dataLocation', environmentStore.getDataLocation());
         });
-        this.set('dataLocation', tf_backend.environmentStore.getDataLocation());
+        this.set('dataLocation', environmentStore.getDataLocation());
     }
+
     detached() {
-        tf_backend.runsStore.removeListenerByKey(this._runStoreListener);
-        tf_backend.environmentStore.removeListenerByKey(this._envStoreListener);
+        runsStore.removeListenerByKey(this._runStoreListener);
+        environmentStore.removeListenerByKey(this._envStoreListener);
     }
+
     _toggleAll() {
-        this.$.multiCheckbox.toggleAll();
+        (this.$.multiCheckbox as any).toggleAll();
     }
+
     @computed("dataLocation", "_dataLocationClipLength")
     get _clippedDataLocation(): string {
         var dataLocation = this.dataLocation;
@@ -172,15 +185,19 @@ class TfRunsSelector extends PolymerElement {
             return dataLocation;
         }
     }
+
     _openDataLocationDialog(event) {
         event.preventDefault();
-        this.$$('#data-location-dialog').open();
+        (this.$$('#data-location-dialog') as any).open();
     }
+
     _shouldShowExpandDataLocationButton(dataLocation, _dataLocationClipLength) {
         return dataLocation && dataLocation.length > _dataLocationClipLength;
     }
-    _storeRunSelectionState = tf_storage.getObjectObserver('runSelectionState', { defaultValue: {} });
-    _regexObserver = tf_storage.getStringObserver('regexInput', {
+
+    _storeRunSelectionState = storage.getObjectObserver('runSelectionState', { defaultValue: {} });
+
+    _regexObserver = storage.getStringObserver('regexInput', {
         defaultValue: '',
     });
 }
