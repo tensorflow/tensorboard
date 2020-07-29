@@ -1,6 +1,4 @@
-<!--
-@license
-Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2017 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,12 +11,12 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
--->
+==============================================================================*/
 
-<!--
-  Shared stylesheet for figure captions.
--->
-<dom-module id="tf-card-heading-style">
+customElements.whenDefined('dom-module').then(() => {
+  // Shared stylesheet for figure captions.
+  const styleElement = document.createElement('dom-module');
+  styleElement.innerHTML = `
   <template>
     <style>
       figcaption {
@@ -47,4 +45,6 @@ limitations under the License.
       }
     </style>
   </template>
-</dom-module>
+  `;
+  (styleElement as any).register('tf-card-heading-style');
+});
