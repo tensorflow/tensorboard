@@ -13,12 +13,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import * as _ from 'lodash';
+
+import {Canceller} from '../tf_backend/canceller';
+
 type CacheKey = string;
+
 // NOT_LOADED is implicit
 enum LoadState {
   LOADING,
   LOADED,
 }
+
 /**
  * @polymerBehavior
  */
@@ -98,7 +104,7 @@ export const DataLoaderBehavior = {
     },
     _canceller: {
       type: Object,
-      value: () => new tf_backend.Canceller(),
+      value: () => new Canceller(),
     },
     _loadDataAsync: {
       type: Number,
