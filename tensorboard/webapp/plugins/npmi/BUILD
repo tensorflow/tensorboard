@@ -23,6 +23,7 @@ ng_module(
     ],
     deps = [
         "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/plugins:plugin_registry",
         "@npm//@angular/common",
         "@npm//@angular/core",
@@ -41,6 +42,7 @@ tf_ts_library(
     deps = [
         ":npmi",
         "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "@npm//@angular/common",
