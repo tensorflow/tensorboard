@@ -94,6 +94,7 @@
     "@polymer/paper-input": "^3.1.0",
     "@polymer/paper-item": "^3.0.1",
     "@polymer/paper-listbox": "^3.0.1",
+    "@polymer/paper-material": "^3.0.1",
     "@polymer/paper-menu-button": "^3.0.1",
     "@polymer/paper-slider": "^3.0.1",
     "@polymer/paper-spinner": "^3.0.2",
