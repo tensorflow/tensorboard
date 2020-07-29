@@ -15,12 +15,10 @@ limitations under the License.
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {customElement} from '@polymer/decorators';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from 'scrollbar-style.html';
-import {DO_NOT_SUBMIT} from 'tensorboard-color.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from 'scrollbar-style.html';
-import {DO_NOT_SUBMIT} from 'tensorboard-color.html';
+
+import './tensorboard-color';
+import './scrollbar-style';
+
 @customElement('tf-dashboard-layout')
 class TfDashboardLayout extends PolymerElement {
   static readonly template = html`
