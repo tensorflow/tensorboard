@@ -1,4 +1,4 @@
-/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2018 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,27 +13,40 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import {computed, customElement, observe, property} from '@polymer/decorators';
+import '@polymer/iron-icon';
+import '@polymer/paper-checkbox';
+import {PaperInputElement} from '@polymer/paper-input/paper-input';
 import {PolymerElement, html} from '@polymer/polymer';
-import {customElement, property} from '@polymer/decorators';
-import '@polymer/iron-icon';
-import '@polymer/paper-checkbox';
-import '@polymer/paper-input';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from 'run-color-style.html';
-import {DO_NOT_SUBMIT} from 'scrollbar-style.html';
-import '@polymer/iron-icon';
-import '@polymer/paper-checkbox';
-import '@polymer/paper-input';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from 'run-color-style.html';
-import {DO_NOT_SUBMIT} from 'scrollbar-style.html';
+import {LegacyElementMixin} from '@polymer/polymer/lib/legacy/legacy-element-mixin';
+
+import './run-color-style';
+import './scrollbar-style';
+
 export type FilterableCheckboxListItem = {
   id: string | number;
   title: string;
   subtitle?: string;
 };
+
+/*
+tf-filterable-checkbox-list creates a list of checkboxes with a filter input at
+the top. The list is primarily used for multiple selection of items.
+
+Properties in:
+  - colorsCheckbox: whether to color the check boxes.
+  - coloring: an object that contains method, getColor. Used only when
+              colorsCheckbox is true,
+  - items: items of {id: string, title: string, subtitle: ?string}.
+  - maxItemsToEnableByDefault: maximum number of items to automatically enable.
+  - selectionState: object denoting selection state of the checkboxes.
+
+Properties out:
+  - selectedItems: Array of items that are selected and not filtered out.
+*/
+
 @customElement('tf-filterable-checkbox-list')
-class TfFilterableCheckboxList extends PolymerElement {
+class TfFilterableCheckboxList extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
     <style include="scrollbar-style"></style>
     <style include="run-color-style"></style>
@@ -166,61 +179,71 @@ class TfFilterableCheckboxList extends PolymerElement {
       }
     </style>
   `;
+
   @property({type: String})
   label: string;
+
   @property({
     type: Boolean,
   })
   useCheckboxColors: boolean = true;
+
   @property({
     type: Object,
   })
-  coloring: object = {
+  coloring: {getColor: (FilterableCheckboxListItem) => string} = {
     getColor: (item: FilterableCheckboxListItem): string => '',
   };
+
   @property({
     type: Array,
     observer: '_pruneSelectionState',
   })
-  items: unknown[] = (): Array<FilterableCheckboxListItem> => [];
+  items: FilterableCheckboxListItem[] = [];
+
   @property({
     type: String,
   })
   _regexString: string = '';
+
   @property({
     type: Array,
     computed: 'computeItemsMatchingRegex(items.*, _regex)',
   })
-  _itemsMatchingRegex: unknown[];
+  _itemsMatchingRegex: FilterableCheckboxListItem[];
+
   @property({
     // if an item is explicitly enabled, True, if explicitly disabled, False.
     // if undefined, default value (enable for first k items, disable after).
     type: Object,
   })
   selectionState: object = () => ({});
+
   @property({
     type: Array,
     notify: true,
     computed: '_computeSelectedItems(_itemsMatchingRegex.*, selectionState.*)',
   })
   selectedItems: unknown[];
+
   @property({
     // When TB first loads, if it has k or fewer items, they are all enabled
     // by default. If there are more, then all items are disabled.
     type: Number,
   })
   maxItemsToEnableByDefault: number = 40;
+
   @property({
     type: Boolean,
   })
   allToggleDisabled: boolean = false;
-  @observe('useCheckboxColors')
-  _synchronizeColors() {}
+
   detached() {
     this.cancelDebouncer('_setRegex');
   }
+
   @computed('_regexString')
-  get _regex(): object {
+  get _regex(): RegExp | null {
     var regexString = this._regexString;
     try {
       return new RegExp(regexString);
@@ -228,10 +251,12 @@ class TfFilterableCheckboxList extends PolymerElement {
       return null;
     }
   }
+
   computeItemsMatchingRegex(__, ___) {
     const regex = this._regex;
     return regex ? this.items.filter((n) => regex.test(n.title)) : this.items;
   }
+
   _computeSelectedItems(__, ___) {
     const selectionState = this.selectionState;
     const num = this.maxItemsToEnableByDefault;
@@ -245,7 +270,7 @@ class TfFilterableCheckboxList extends PolymerElement {
   }
   // ================== EVENT LISTENERS ===================
   _debouncedRegexChange() {
-    const val = this.$.input.value;
+    const val = (this.$.input as PaperInputElement).value;
     if (val == '') {
       // If the user cleared the field, they may be done typing, so
       // update more quickly.
@@ -262,6 +287,7 @@ class TfFilterableCheckboxList extends PolymerElement {
       );
     }
   }
+
   @observe('coloring')
   _synchronizeColors() {
     var e = this.coloring;
@@ -269,18 +295,20 @@ class TfFilterableCheckboxList extends PolymerElement {
     checkboxes.forEach((cb) => {
       // Setting the null value will clear previously set color.
       const color = this.useCheckboxColors
-        ? this.coloring.getColor(cb.name)
+        ? this.coloring.getColor((cb as any).name)
         : null;
-      cb.customStyle['--paper-checkbox-checked-color'] = color;
-      cb.customStyle['--paper-checkbox-checked-ink-color'] = color;
-      cb.customStyle['--paper-checkbox-unchecked-color'] = color;
-      cb.customStyle['--paper-checkbox-unchecked-ink-color'] = color;
+      const customStyle = (cb as any).customStyle;
+      customStyle['--paper-checkbox-checked-color'] = color;
+      customStyle['--paper-checkbox-checked-ink-color'] = color;
+      customStyle['--paper-checkbox-unchecked-color'] = color;
+      customStyle['--paper-checkbox-unchecked-ink-color'] = color;
     });
     // The updateStyles call fails silently if the browser does not have focus,
     // e.g., if TensorBoard was opened into a new tab that is not visible.
     // So we wait for requestAnimationFrame.
     window.requestAnimationFrame(() => this.updateStyles());
   }
+
   _checkboxTapped(e) {
     const checkbox = e.currentTarget;
     const newSelectedNames = Object.assign({}, this.selectionState, {
@@ -299,6 +327,7 @@ class TfFilterableCheckboxList extends PolymerElement {
     // n.b. notifyPath won't work because names may have periods.
     this.selectionState = newSelectedNames;
   }
+
   _toggleAll() {
     let anyToggledOn = this._itemsMatchingRegex.some(
       (n) => this.selectionState[n.id]
@@ -319,6 +348,7 @@ class TfFilterableCheckboxList extends PolymerElement {
     });
     this.selectionState = newSelection;
   }
+
   /**
    * Remove selection state of an item that no longer exists in the `items`.
    */
