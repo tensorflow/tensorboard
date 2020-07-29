@@ -84,7 +84,7 @@ export class TfDownloader extends PolymerElement {
   // run/tag combination. The data at the URL should be in JSON
   // form, and the URL should be such that adding a query
   // parameter `format=csv` instead yields CSV data.
-  @property({type: Function})
+  @property({type: Object})
   urlFn: object;
 
   _csvUrl(tag, run, urlFn) {
