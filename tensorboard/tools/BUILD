@@ -15,3 +15,8 @@ sh_binary(
         "//tensorboard:internal",
     ],
 )
+
+py_binary(
+    name = "inline_file_content",
+    srcs = ["inline_file_content.py"],
+)
