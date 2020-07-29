@@ -81,7 +81,9 @@ export const DEFAULT_TOOLTIP_COLUMNS = [
 ];
 
 @customElement('vz-line-chart2')
-class VzLineChart2 extends LegacyElementMixin(PolymerElement) {
+export class VzLineChart2<SeriesMetadata = {}> extends LegacyElementMixin(
+  PolymerElement
+) {
   static readonly template = html`
     <div id="chartdiv"></div>
     <vz-chart-tooltip
@@ -408,7 +410,7 @@ class VzLineChart2 extends LegacyElementMixin(PolymerElement) {
    * @param {string} name Name of the series.
    * @param {*} meta Metadata of the dataset used for later
    */
-  setSeriesMetadata(name: string, meta: any) {
+  setSeriesMetadata(name: string, meta: SeriesMetadata) {
     this._seriesMetadataCache[name] = meta;
     if (this._chart) {
       this._chart.setSeriesMetadata(name, meta);
