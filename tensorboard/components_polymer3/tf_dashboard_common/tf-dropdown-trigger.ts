@@ -1,6 +1,4 @@
-<!--
-@license
-Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,43 +11,47 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
--->
-<link rel="import" href="../iron-icon/iron-icon.html" />
-<link rel="import" href="../iron-behaviors/iron-control-state.html" />
-<link rel="import" href="../tf-imports/polymer.html" />
+==============================================================================*/
 
-<!--
-  tf-dropdown-trigger is a paper-menu-button trigger that has similar asthetics
-  as paper-input: it has (optional) floating label and name on the button.
+import {PolymerElement, html} from '@polymer/polymer';
+import {LegacyElementMixin} from '@polymer/polymer/lib/legacy/legacy-element-mixin';
+import {customElement, property, observe} from '@polymer/decorators';
+import {PaperInkyFocusBehavior} from '@polymer/paper-behaviors/paper-inky-focus-behavior';
+import '@polymer/iron-icon';
 
-  Example usage:
-
-      <paper-menu-button>
-        <tf-dropdown-trigger
-          name="[[_getValueLabel(selectedItems.*)]]"
-          class="dropdown-trigger"
-          label="[[label]]"
-          label-float="[[labelFloat]]"
-          slot="dropdown-trigger"
-        ></tf-dropdown-trigger>
-        <div slot="dropdown-content">
-          conten goes here
-        </div>
-      </paper-menu-button>
--->
-<dom-module id="tf-dropdown-trigger">
-  <template>
-    <div class="label hidden-label" aria-hidden>[[label]]</div>
+/**
+ * tf-dropdown-trigger is a paper-menu-button trigger that has similar asthetics
+ * as paper-input: it has (optional) floating label and name on the button.
+ *
+ * Example usage:
+ *
+ *     <paper-menu-button>
+ *       <tf-dropdown-trigger
+ *         name="[[_getValueLabel(selectedItems.*)]]"
+ *         class="dropdown-trigger"
+ *         label="[[label]]"
+ *         label-float="[[labelFloat]]"
+ *         slot="dropdown-trigger"
+ *       ></tf-dropdown-trigger>
+ *       <div slot="dropdown-content">
+ *         conten goes here
+ *       </div>
+ *     </paper-menu-button>
+ */
+@customElement('tf-dropdown-trigger')
+class TfDropdownTrigger extends LegacyElementMixin(PolymerElement) {
+  static readonly template = html`
+    <div class="label hidden-label" aria-hidden="">[[label]]</div>
     <div class="content">
       <div class="label real-label">[[label]]</div>
       <span>[[name]]</span>
-      <iron-icon icon="arrow-drop-down" aria-hidden></iron-icon>
+      <iron-icon icon="arrow-drop-down" aria-hidden=""></iron-icon>
     </div>
-    <div class="underline" aria-hidden>
+    <div class="underline" aria-hidden="">
       <div class="unfocused-line"></div>
       <div class="focused-line"></div>
     </div>
-    <paper-ripple id="ripple" aria-hidden></paper-ripple>
+    <paper-ripple id="ripple" aria-hidden=""></paper-ripple>
     <style>
       :host {
         border-radius: 2px;
@@ -142,49 +144,43 @@ limitations under the License.
         transform: scale3d(0, 1, 1);
       }
     </style>
-  </template>
-  <script>
-    Polymer({
-      is: 'tf-dropdown-trigger',
+  `;
 
-      hostAttributes: {
-        role: 'button',
-        tabindex: '0',
-      },
+  @property({type: String})
+  label: string;
 
-      behaviors: [Polymer.PaperInkyFocusBehavior],
+  @property({
+    type: Boolean,
+  })
+  labelFloat: boolean = false;
 
-      properties: {
-        label: String,
+  @property({type: String})
+  name: string;
 
-        labelFloat: {
-          type: Boolean,
-          value: false,
-        },
+  hostAttributes = {
+    role: 'button',
+    tabindex: '0',
+  };
 
-        name: String,
-      },
+  mixinBehaviors = [PaperInkyFocusBehavior];
 
-      observers: ['_setHostClass(label, name, labelFloat)'],
+  @observe('label', 'name', 'labelFloat')
+  _setHostClass() {
+    this.toggleClass('label-floats', this.labelFloat);
+    this.toggleClass('label-floating', Boolean(this.name));
+    this.toggleClass(
+      'label-shown',
+      Boolean(this.label) && (!this.name || this.labelFloat)
+    );
+  }
 
-      _setHostClass() {
-        this.toggleClass('label-floats', this.labelFloat);
-        this.toggleClass('label-floating', this.name);
-        this.toggleClass(
-          'label-shown',
-          Boolean(this.label) && (!this.name || this.labelFloat)
-        );
-      },
-
-      /**
-       * Overrides PaperRippleBehavior because it was dis-satisfying.
-       * Specifically, it was forcing a circular ripple that does not fill the
-       * entire container.
-       * @override
-       */
-      _createRipple() {
-        return this.$.ripple;
-      },
-    });
-  </script>
-</dom-module>
+  /**
+   * Overrides PaperRippleBehavior because it was dis-satisfying.
+   * Specifically, it was forcing a circular ripple that does not fill the
+   * entire container.
+   * @override
+   */
+  _createRipple() {
+    return this.$.ripple;
+  }
+}

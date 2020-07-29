@@ -1,6 +1,4 @@
-<!--
-@license
-Copyright 2016 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2016 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,11 +11,11 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
--->
+==============================================================================*/
 
-<link rel="import" href="../tf-imports/polymer.html" />
-
-<style is="custom-style">
+const style = document.createElement('style');
+style.setAttribute('is', 'custom-style');
+style.textContent = `
   :root {
     --tb-orange-weak: #ffa726;
     --tb-orange-strong: #f57c00;
@@ -28,4 +26,5 @@ limitations under the License.
     --tb-ui-light-accent: #e0e0e0;
     --tb-graph-faded: #e0d4b3;
   }
-</style>
+`;
+document.head.appendChild(style);
