@@ -13,17 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 /**
- * PLEASE KEEP THIS FILE IN SYNC WITH plugin_lib/message.ts.
- * The differences are:
- * plugin_lib/message.ts
- * - uses module style
- * - uses tf_ts_library whose srcs require to end with .ts
- * plugin_util/message.ts
- * - uses namespace and tf_web_library
- * - gets combined as JS before sync and requires to be end with ".js" internally.
- * Because of above requirements, we bypass by copying the source.
- */
-/**
  * This file defines utilities shared by TensorBoard (plugin host) and the
  * dynamic plugin library, used by plugin authors.
  */
@@ -52,7 +41,6 @@ export interface Message {
 }
 
 export type MessageType = string;
-
 export type MessageCallback = (payload: any) => any;
 
 interface PromiseResolver {
@@ -64,15 +52,19 @@ export class IPC {
   private id = 0;
   private readonly responseWaits = new Map<number, PromiseResolver>();
   private readonly listeners = new Map<MessageType, MessageCallback>();
+
   constructor(private port: MessagePort) {
     this.port.addEventListener('message', (event) => this.onMessage(event));
   }
+
   listen(type: MessageType, callback: MessageCallback) {
     this.listeners.set(type, callback);
   }
+
   unlisten(type: MessageType) {
     this.listeners.delete(type);
   }
+
   private async onMessage(event: MessageEvent) {
     const message = JSON.parse(event.data) as Message;
     // Please see [1] for reason why we use string to access the property.
@@ -81,6 +73,7 @@ export class IPC {
     const payload = message['payload'];
     const error = message['error'];
     const isReply = message['isReply'];
+
     if (isReply) {
       if (!this.responseWaits.has(id)) return;
       const {resolve, reject} = this.responseWaits.get(id) as PromiseResolver;
@@ -92,6 +85,7 @@ export class IPC {
       }
       return;
     }
+
     let replyPayload = null;
     let replyError = null;
     if (this.listeners.has(type)) {
@@ -103,6 +97,7 @@ export class IPC {
         replyError = e;
       }
     }
+
     // Please see [1] for reason why we use string to access the property.
     const replyMessage: Message = {
       ['type']: type,
@@ -113,9 +108,11 @@ export class IPC {
     };
     this.postMessage(replyMessage);
   }
+
   private postMessage(message: Message) {
     this.port.postMessage(JSON.stringify(message));
   }
+
   sendMessage(type: MessageType, payload?: PayloadType): Promise<PayloadType> {
     const id = this.id++;
     const message: Message = {type, id, payload, error: null, isReply: false};
