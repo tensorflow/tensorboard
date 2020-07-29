@@ -1,3 +1,4 @@
+load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 load("//tensorboard/defs:web.bzl", "tf_web_library")
 load("//tensorboard/defs:vulcanize.bzl", "tensorboard_html_binary")
 
@@ -12,7 +13,7 @@ tf_web_library(
     ],
     path = "/",
     deps = [
-        ":analytics",
+        ":analytics_html",
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_tensorboard",
         "//tensorboard/components/tf_tensorboard:default_plugins",
@@ -55,11 +56,18 @@ genrule(
 )
 
 tf_web_library(
-    name = "analytics",
+    name = "analytics_html",
     srcs = [
         "analytics.html",
     ],
     path = "/",
+)
+
+tf_ts_library(
+    name = "analytics",
+    srcs = [
+        "analytics.ts",
+    ],
 )
 
 tf_web_library(
