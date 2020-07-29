@@ -30,6 +30,7 @@ tf_ts_library(
         "//tensorboard/components_polymer3/tf_color_scale",
         "//tensorboard/components_polymer3/tf_storage",
         "//tensorboard/components_polymer3/vz_sorting",
+        "@npm//@polymer/decorators",
         "@npm//@polymer/iron-behaviors",
         "@npm//@polymer/iron-collapse",
         "@npm//@polymer/iron-flex-layout",
@@ -50,6 +51,7 @@ tf_ts_library(
         "@npm//@polymer/paper-toggle-button",
         "@npm//@polymer/polymer",
         "@npm//@types/d3",
+        "@npm//@types/lodash",
         "@npm//d3",
     ],
 )
