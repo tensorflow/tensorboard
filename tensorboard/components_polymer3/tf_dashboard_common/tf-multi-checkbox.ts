@@ -219,10 +219,10 @@ class TfMultiCheckbox extends PolymerElement {
   @property({
     type: Object,
   })
-        // Updating the regex can be slow, because it involves updating styles
-        // on a large number of Polymer paper-checkboxes. We don't want to do
-        // this while the user is typing, as it may make a bad, laggy UI.
-        // So we debounce the updates that come from user typing.
+  // Updating the regex can be slow, because it involves updating styles
+  // on a large number of Polymer paper-checkboxes. We don't want to do
+  // this while the user is typing, as it may make a bad, laggy UI.
+  // So we debounce the updates that come from user typing.
   _debouncedRegexChange: () => void = function() {
     var debounced = _.debounce(
       (r) => {
