@@ -53,5 +53,6 @@ tf_ts_library(
         "@npm//@types/d3",
         "@npm//@types/lodash",
         "@npm//d3",
+        "@npm//lodash",
     ],
 )
