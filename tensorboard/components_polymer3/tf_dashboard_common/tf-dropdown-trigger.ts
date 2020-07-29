@@ -14,15 +14,32 @@ limitations under the License.
 ==============================================================================*/
 
 import {PolymerElement, html} from '@polymer/polymer';
-import {customElement, property} from '@polymer/decorators';
+import {LegacyElementMixin} from '@polymer/polymer/lib/legacy/legacy-element-mixin';
+import {customElement, property, observe} from '@polymer/decorators';
+import {PaperInkyFocusBehavior} from '@polymer/paper-behaviors/paper-inky-focus-behavior';
 import '@polymer/iron-icon';
-import '@polymer/iron-behaviors';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import '@polymer/iron-icon';
-import '@polymer/iron-behaviors';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
+
+/**
+ * tf-dropdown-trigger is a paper-menu-button trigger that has similar asthetics
+ * as paper-input: it has (optional) floating label and name on the button.
+ *
+ * Example usage:
+ *
+ *     <paper-menu-button>
+ *       <tf-dropdown-trigger
+ *         name="[[_getValueLabel(selectedItems.*)]]"
+ *         class="dropdown-trigger"
+ *         label="[[label]]"
+ *         label-float="[[labelFloat]]"
+ *         slot="dropdown-trigger"
+ *       ></tf-dropdown-trigger>
+ *       <div slot="dropdown-content">
+ *         conten goes here
+ *       </div>
+ *     </paper-menu-button>
+ */
 @customElement('tf-dropdown-trigger')
-class TfDropdownTrigger extends PolymerElement {
+class TfDropdownTrigger extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
     <div class="label hidden-label" aria-hidden="">[[label]]</div>
     <div class="content">
@@ -128,28 +145,35 @@ class TfDropdownTrigger extends PolymerElement {
       }
     </style>
   `;
+
   @property({type: String})
   label: string;
+
   @property({
     type: Boolean,
   })
   labelFloat: boolean = false;
+
   @property({type: String})
   name: string;
-  hostAttributes: {
-    role: 'button';
-    tabindex: '0';
+
+  hostAttributes = {
+    role: 'button',
+    tabindex: '0',
   };
-  behaviors: [Polymer.PaperInkyFocusBehavior];
+
+  mixinBehaviors = [PaperInkyFocusBehavior];
+
   @observe('label', 'name', 'labelFloat')
   _setHostClass() {
     this.toggleClass('label-floats', this.labelFloat);
-    this.toggleClass('label-floating', this.name);
+    this.toggleClass('label-floating', Boolean(this.name));
     this.toggleClass(
       'label-shown',
       Boolean(this.label) && (!this.name || this.labelFloat)
     );
   }
+
   /**
    * Overrides PaperRippleBehavior because it was dis-satisfying.
    * Specifically, it was forcing a circular ripple that does not fill the
