@@ -1,4 +1,4 @@
-/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2016 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,13 +18,11 @@ import {customElement, property} from '@polymer/decorators';
 import '@polymer/paper-dropdown-menu';
 import '@polymer/paper-item';
 import '@polymer/paper-listbox';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import '@polymer/paper-dropdown-menu';
-import '@polymer/paper-item';
-import '@polymer/paper-listbox';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
+
+import {addParams} from '../tf_backend/urlPathHelpers';
+
 @customElement('tf-downloader')
-class TfDownloader extends PolymerElement {
+export class TfDownloader extends PolymerElement {
   static readonly template = html`
     <paper-dropdown-menu
       no-label-float="true"
@@ -71,28 +69,39 @@ class TfDownloader extends PolymerElement {
       }
     </style>
   `;
-  @property({
-    type: String,
-  })
+
+  @property({type: String})
   _run: string = '';
+
   @property({type: Array})
-  runs: unknown[];
+  runs: string[];
+
   @property({type: String})
   tag: string;
+
+  // Clients pass `urlFn: (tag: string, run: string) => string`,
+  // which should generate a URL to download data for a given
+  // run/tag combination. The data at the URL should be in JSON
+  // form, and the URL should be such that adding a query
+  // parameter `format=csv` instead yields CSV data.
   @property({type: Function})
   urlFn: object;
+
   _csvUrl(tag, run, urlFn) {
     if (!run) return '';
-    return tf_backend.addParams(urlFn(tag, run), {format: 'csv'});
+    return addParams(urlFn(tag, run), {format: 'csv'});
   }
+
   _jsonUrl(tag, run, urlFn) {
     if (!run) return '';
     return urlFn(tag, run);
   }
+
   _csvName(tag, run) {
     if (!run) return '';
     return `run-${run}-tag-${tag}.csv`;
   }
+
   _jsonName(tag, run) {
     if (!run) return '';
     return `run-${run}-tag-${tag}.json`;
