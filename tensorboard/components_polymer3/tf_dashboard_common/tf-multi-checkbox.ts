@@ -13,42 +13,68 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import { PolymerElement, html } from "@polymer/polymer";
-import { customElement, property } from "@polymer/decorators";
-import "@polymer/iron-icons";
-import "@polymer/paper-checkbox";
-import "@polymer/paper-icon-button";
-import "@polymer/paper-input";
-import { DO_NOT_SUBMIT } from "../tf-imports/polymer.html";
-import { DO_NOT_SUBMIT } from "../tf-color-scale/tf-color-scale.html";
-import { DO_NOT_SUBMIT } from "../tf-imports/lodash.html";
-import { DO_NOT_SUBMIT } from "../tf-storage/tf-storage.html";
-import { DO_NOT_SUBMIT } from "run-color-style.html";
-import { DO_NOT_SUBMIT } from "scrollbar-style.html";
-import "@polymer/iron-icons";
-import "@polymer/paper-checkbox";
-import "@polymer/paper-icon-button";
-import "@polymer/paper-input";
-import { DO_NOT_SUBMIT } from "../tf-imports/polymer.html";
-import { DO_NOT_SUBMIT } from "../tf-color-scale/tf-color-scale.html";
-import { DO_NOT_SUBMIT } from "../tf-imports/lodash.html";
-import { DO_NOT_SUBMIT } from "../tf-storage/tf-storage.html";
-import { DO_NOT_SUBMIT } from "run-color-style.html";
-import { DO_NOT_SUBMIT } from "scrollbar-style.html";
-@customElement("tf-multi-checkbox")
+import {PolymerElement, html} from '@polymer/polymer';
+import {customElement, property} from '@polymer/decorators';
+import '@polymer/iron-icons';
+import '@polymer/paper-checkbox';
+import '@polymer/paper-icon-button';
+import '@polymer/paper-input';
+import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
+import {DO_NOT_SUBMIT} from '../tf-color-scale/tf-color-scale.html';
+import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
+import {DO_NOT_SUBMIT} from '../tf-storage/tf-storage.html';
+import {DO_NOT_SUBMIT} from 'run-color-style.html';
+import {DO_NOT_SUBMIT} from 'scrollbar-style.html';
+import '@polymer/iron-icons';
+import '@polymer/paper-checkbox';
+import '@polymer/paper-icon-button';
+import '@polymer/paper-input';
+import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
+import {DO_NOT_SUBMIT} from '../tf-color-scale/tf-color-scale.html';
+import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
+import {DO_NOT_SUBMIT} from '../tf-storage/tf-storage.html';
+import {DO_NOT_SUBMIT} from 'run-color-style.html';
+import {DO_NOT_SUBMIT} from 'scrollbar-style.html';
+@customElement('tf-multi-checkbox')
 class TfMultiCheckbox extends PolymerElement {
-    static readonly template = html `<style include="scrollbar-style"></style>
+  static readonly template = html`
+    <style include="scrollbar-style"></style>
     <style include="run-color-style"></style>
 
-    <paper-input id="names-regex" no-label-float="" label="Write a regex to filter runs" value="[[regex]]" on-bind-value-changed="_debouncedRegexChange"></paper-input>
+    <paper-input
+      id="names-regex"
+      no-label-float=""
+      label="Write a regex to filter runs"
+      value="[[regex]]"
+      on-bind-value-changed="_debouncedRegexChange"
+    ></paper-input>
     <div id="outer-container" class="scrollbar">
-      <template is="dom-repeat" items="[[namesMatchingRegex]]" on-dom-change="synchronizeColors">
+      <template
+        is="dom-repeat"
+        items="[[namesMatchingRegex]]"
+        on-dom-change="synchronizeColors"
+      >
         <div class="name-row">
-          <div class="icon-container checkbox-container vertical-align-container">
-            <paper-checkbox class="checkbox vertical-align-center" id$="checkbox-[[item]]" name="[[item]]" checked$="[[_isChecked(item, selectionState.*)]]" on-change="_checkboxChange"></paper-checkbox>
+          <div
+            class="icon-container checkbox-container vertical-align-container"
+          >
+            <paper-checkbox
+              class="checkbox vertical-align-center"
+              id$="checkbox-[[item]]"
+              name="[[item]]"
+              checked$="[[_isChecked(item, selectionState.*)]]"
+              on-change="_checkboxChange"
+            ></paper-checkbox>
           </div>
-          <div class="icon-container isolator-container vertical-align-container">
-            <paper-icon-button icon="radio-button-unchecked" class="isolator vertical-align-center" on-tap="_isolateName" name="[[item]]"></paper-icon-button>
+          <div
+            class="icon-container isolator-container vertical-align-container"
+          >
+            <paper-icon-button
+              icon="radio-button-unchecked"
+              class="isolator vertical-align-center"
+              on-tap="_isolateName"
+              name="[[item]]"
+            ></paper-icon-button>
           </div>
           <div class="item-label-container">
             <span>[[item]]</span>
@@ -137,156 +163,162 @@ class TfMultiCheckbox extends PolymerElement {
       .vertical-align-container .vertical-align-top {
         align-self: start;
       }
-    </style>`;
-    @property({
-        type: Array
-    })
-    names: unknown[] = () => [];
-    @property({
-        type: Object
-    })
-    coloring: object = {
-        getColor: () => "",
+    </style>
+  `;
+  @property({
+    type: Array,
+  })
+  names: unknown[] = () => [];
+  @property({
+    type: Object,
+  })
+  coloring: object = {
+    getColor: () => '',
+  };
+  @property({
+    type: String,
+    notify: true,
+  })
+  regex: string = '';
+  @property({
+    type: Array,
+    computed: 'computeNamesMatchingRegex(names.*, _regex)',
+  })
+  namesMatchingRegex: unknown[];
+  @property({
+    // If a name is explicitly enabled by user gesture, True, if explicitly
+    // disabled, False. If undefined, default value (enable for first k
+    // names, disable after).
+    type: Object,
+    notify: true,
+  })
+  selectionState: object = () => ({});
+  @property({
+    type: Array,
+    notify: true,
+    computed: 'computeOutSelected(namesMatchingRegex.*, selectionState.*)',
+  })
+  outSelected: unknown[];
+  @property({
+    // When TB first loads, if it has k or fewer names, they are all enabled
+    // by default. If there are more, then they are all disabled.
+    type: Number,
+  })
+  maxNamesToEnableByDefault: number = 40;
+  @property({
+    type: Object,
+  })
+  _debouncedRegexChange: object = function() {
+    var debounced = _.debounce(
+      (r) => {
+        this.regex = r;
+      },
+      150,
+      {leading: false}
+    );
+    return function() {
+      var r = this.$$('#names-regex').value;
+      if (r == '') {
+        // If the user cleared the field, they may be done typing, so
+        // update more quickly.
+        this.async(() => {
+          this.regex = r;
+        }, 30);
+      } else {
+        debounced(r);
+      }
     };
-    @property({
-        type: String,
-        notify: true
-    })
-    regex: string = "";
-    @property({
-        type: Array,
-        computed: "computeNamesMatchingRegex(names.*, _regex)"
-    })
-    namesMatchingRegex: unknown[];
-    @property({
-        // If a name is explicitly enabled by user gesture, True, if explicitly
-        // disabled, False. If undefined, default value (enable for first k
-        // names, disable after).
-        type: Object,
-        notify: true
-    })
-    selectionState: object = () => ({});
-    @property({
-        type: Array,
-        notify: true,
-        computed: "computeOutSelected(namesMatchingRegex.*, selectionState.*)"
-    })
-    outSelected: unknown[];
-    @property({
-        // When TB first loads, if it has k or fewer names, they are all enabled
-        // by default. If there are more, then they are all disabled.
-        type: Number
-    })
-    maxNamesToEnableByDefault: number = 40;
-    @property({
-        type: Object
-    })
-    _debouncedRegexChange: object = function () {
-        var debounced = _.debounce((r) => {
-            this.regex = r;
-        }, 150, { leading: false });
-        return function () {
-            var r = this.$$("#names-regex").value;
-            if (r == "") {
-                // If the user cleared the field, they may be done typing, so
-                // update more quickly.
-                this.async(() => {
-                    this.regex = r;
-                }, 30);
-            }
-            else {
-                debounced(r);
-            }
-        };
-    };
-    @computed("regex")
-    get _regex(): object {
-        var regexString = this.regex;
-        try {
-            return new RegExp(regexString);
-        }
-        catch (e) {
-            return null;
-        }
+  };
+  @computed('regex')
+  get _regex(): object {
+    var regexString = this.regex;
+    try {
+      return new RegExp(regexString);
+    } catch (e) {
+      return null;
     }
-    @observe("selectionState", "names")
-    _setIsolatorIcon() {
-        var selectionMap = this.selectionState;
-        var numChecked = _.filter(_.values(selectionMap)).length;
-        var buttons = Array.prototype.slice.call(this.root.querySelectorAll(".isolator"));
-        buttons.forEach(function (b) {
-            if (numChecked === 1 && selectionMap[b.name]) {
-                b.icon = "radio-button-checked";
-            }
-            else {
-                b.icon = "radio-button-unchecked";
-            }
-        });
-    }
-    computeNamesMatchingRegex(__, ___) {
-        const regex = this._regex;
-        return regex ? this.names.filter((n) => regex.test(n)) : this.names;
-    }
-    computeOutSelected(__, ___) {
-        var selectionState = this.selectionState;
-        var num = this.maxNamesToEnableByDefault;
-        var allEnabled = this.namesMatchingRegex.length <= num;
-        return this.namesMatchingRegex.filter((n) => {
-            return selectionState[n] == null ? allEnabled : selectionState[n];
-        });
-    }
-    synchronizeColors(e) {
-        this._setIsolatorIcon();
-        const checkboxes = this.root.querySelectorAll("paper-checkbox");
-        checkboxes.forEach((p) => {
-            const color = this.coloring.getColor(p.name);
-            p.updateStyles({
-                "--paper-checkbox-checked-color": color,
-                "--paper-checkbox-checked-ink-color": color,
-                "--paper-checkbox-unchecked-color": color,
-                "--paper-checkbox-unchecked-ink-color": color,
-            });
-        });
-        const buttons = this.root.querySelectorAll(".isolator");
-        buttons.forEach((p) => {
-            const color = this.coloring.getColor(p.name);
-            p.style["color"] = color;
-        });
-        // The updateStyles call fails silently if the browser doesn't have focus,
-        // e.g. if TensorBoard was opened into a new tab that isn't visible.
-        // So we wait for requestAnimationFrame.
-        window.requestAnimationFrame(() => {
-            this.updateStyles();
-        });
-    }
-    _isolateName(e) {
-        // If user clicks on the label for one name, enable it and disable all other
-        // names.
-        var name = (Polymer.dom(e) as any).localTarget.name;
-        var selectionState = {};
-        this.names.forEach(function (n) {
-            selectionState[n] = n == name;
-        });
-        this.selectionState = selectionState;
-    }
-    _checkboxChange(e) {
-        var target = (Polymer.dom(e) as any).localTarget;
-        const newSelectionState = _.clone(this.selectionState);
-        newSelectionState[target.name] = target.checked;
-        // n.b. notifyPath won't work because names may have periods.
-        this.selectionState = newSelectionState;
-    }
-    _isChecked(item, outSelectedChange) {
-        return this.outSelected.indexOf(item) != -1;
-    }
-    toggleAll() {
-        // If any are toggled on, we turn everything off. Or, if none are toggled
-        // on, we turn everything on.
-        const anyToggledOn = this.namesMatchingRegex.some((name) => this.outSelected.includes(name));
-        const newSelectionState = {};
-        this.names.forEach((n) => {
-            newSelectionState[n] = !anyToggledOn;
-        });
-        this.selectionState = newSelectionState;
-    }
+  }
+  @observe('selectionState', 'names')
+  _setIsolatorIcon() {
+    var selectionMap = this.selectionState;
+    var numChecked = _.filter(_.values(selectionMap)).length;
+    var buttons = Array.prototype.slice.call(
+      this.root.querySelectorAll('.isolator')
+    );
+    buttons.forEach(function(b) {
+      if (numChecked === 1 && selectionMap[b.name]) {
+        b.icon = 'radio-button-checked';
+      } else {
+        b.icon = 'radio-button-unchecked';
+      }
+    });
+  }
+  computeNamesMatchingRegex(__, ___) {
+    const regex = this._regex;
+    return regex ? this.names.filter((n) => regex.test(n)) : this.names;
+  }
+  computeOutSelected(__, ___) {
+    var selectionState = this.selectionState;
+    var num = this.maxNamesToEnableByDefault;
+    var allEnabled = this.namesMatchingRegex.length <= num;
+    return this.namesMatchingRegex.filter((n) => {
+      return selectionState[n] == null ? allEnabled : selectionState[n];
+    });
+  }
+  synchronizeColors(e) {
+    this._setIsolatorIcon();
+    const checkboxes = this.root.querySelectorAll('paper-checkbox');
+    checkboxes.forEach((p) => {
+      const color = this.coloring.getColor(p.name);
+      p.updateStyles({
+        '--paper-checkbox-checked-color': color,
+        '--paper-checkbox-checked-ink-color': color,
+        '--paper-checkbox-unchecked-color': color,
+        '--paper-checkbox-unchecked-ink-color': color,
+      });
+    });
+    const buttons = this.root.querySelectorAll('.isolator');
+    buttons.forEach((p) => {
+      const color = this.coloring.getColor(p.name);
+      p.style['color'] = color;
+    });
+    // The updateStyles call fails silently if the browser doesn't have focus,
+    // e.g. if TensorBoard was opened into a new tab that isn't visible.
+    // So we wait for requestAnimationFrame.
+    window.requestAnimationFrame(() => {
+      this.updateStyles();
+    });
+  }
+  _isolateName(e) {
+    // If user clicks on the label for one name, enable it and disable all other
+    // names.
+    var name = (Polymer.dom(e) as any).localTarget.name;
+    var selectionState = {};
+    this.names.forEach(function(n) {
+      selectionState[n] = n == name;
+    });
+    this.selectionState = selectionState;
+  }
+  _checkboxChange(e) {
+    var target = (Polymer.dom(e) as any).localTarget;
+    const newSelectionState = _.clone(this.selectionState);
+    newSelectionState[target.name] = target.checked;
+    // n.b. notifyPath won't work because names may have periods.
+    this.selectionState = newSelectionState;
+  }
+  _isChecked(item, outSelectedChange) {
+    return this.outSelected.indexOf(item) != -1;
+  }
+  toggleAll() {
+    // If any are toggled on, we turn everything off. Or, if none are toggled
+    // on, we turn everything on.
+    const anyToggledOn = this.namesMatchingRegex.some((name) =>
+      this.outSelected.includes(name)
+    );
+    const newSelectionState = {};
+    this.names.forEach((n) => {
+      newSelectionState[n] = !anyToggledOn;
+    });
+    this.selectionState = newSelectionState;
+  }
 }

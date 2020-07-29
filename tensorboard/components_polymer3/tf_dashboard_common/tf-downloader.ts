@@ -13,19 +13,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import { PolymerElement, html } from "@polymer/polymer";
-import { customElement, property } from "@polymer/decorators";
-import "@polymer/paper-dropdown-menu";
-import "@polymer/paper-item";
-import "@polymer/paper-listbox";
-import { DO_NOT_SUBMIT } from "../tf-imports/polymer.html";
-import "@polymer/paper-dropdown-menu";
-import "@polymer/paper-item";
-import "@polymer/paper-listbox";
-import { DO_NOT_SUBMIT } from "../tf-imports/polymer.html";
-@customElement("tf-downloader")
+import {PolymerElement, html} from '@polymer/polymer';
+import {customElement, property} from '@polymer/decorators';
+import '@polymer/paper-dropdown-menu';
+import '@polymer/paper-item';
+import '@polymer/paper-listbox';
+import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
+import '@polymer/paper-dropdown-menu';
+import '@polymer/paper-item';
+import '@polymer/paper-listbox';
+import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
+@customElement('tf-downloader')
 class TfDownloader extends PolymerElement {
-    static readonly template = html `<paper-dropdown-menu no-label-float="true" label="run to download" selected-item-label="{{_run}}">
+  static readonly template = html`
+    <paper-dropdown-menu
+      no-label-float="true"
+      label="run to download"
+      selected-item-label="{{_run}}"
+    >
       <paper-listbox slot="dropdown-content">
         <template is="dom-repeat" items="[[runs]]">
           <paper-item no-label-float="true">[[item]]</paper-item>
@@ -33,8 +38,14 @@ class TfDownloader extends PolymerElement {
       </paper-listbox>
     </paper-dropdown-menu>
     <template is="dom-if" if="[[_run]]">
-      <a download="[[_csvName(tag, _run)]]" href="[[_csvUrl(tag, _run, urlFn)]]">CSV</a><!--
-      --><a download="[[_jsonName(tag, _run)]]" href="[[_jsonUrl(tag, _run, urlFn)]]">JSON</a>
+      <a download="[[_csvName(tag, _run)]]" href="[[_csvUrl(tag, _run, urlFn)]]"
+        >CSV</a
+      ><!--
+      --><a
+        download="[[_jsonName(tag, _run)]]"
+        href="[[_jsonUrl(tag, _run, urlFn)]]"
+        >JSON</a
+      >
     </template>
     <style>
       :host {
@@ -58,35 +69,32 @@ class TfDownloader extends PolymerElement {
       paper-input {
         font-size: 22px;
       }
-    </style>`;
-    @property({
-        type: String
-    })
-    _run: string = '';
-    @property({ type: Array })
-    runs: unknown[];
-    @property({ type: String })
-    tag: string;
-    @property({ type: Function })
-    urlFn: object;
-    _csvUrl(tag, run, urlFn) {
-        if (!run)
-            return '';
-        return tf_backend.addParams(urlFn(tag, run), { format: 'csv' });
-    }
-    _jsonUrl(tag, run, urlFn) {
-        if (!run)
-            return '';
-        return urlFn(tag, run);
-    }
-    _csvName(tag, run) {
-        if (!run)
-            return '';
-        return `run-${run}-tag-${tag}.csv`;
-    }
-    _jsonName(tag, run) {
-        if (!run)
-            return '';
-        return `run-${run}-tag-${tag}.json`;
-    }
+    </style>
+  `;
+  @property({
+    type: String,
+  })
+  _run: string = '';
+  @property({type: Array})
+  runs: unknown[];
+  @property({type: String})
+  tag: string;
+  @property({type: Function})
+  urlFn: object;
+  _csvUrl(tag, run, urlFn) {
+    if (!run) return '';
+    return tf_backend.addParams(urlFn(tag, run), {format: 'csv'});
+  }
+  _jsonUrl(tag, run, urlFn) {
+    if (!run) return '';
+    return urlFn(tag, run);
+  }
+  _csvName(tag, run) {
+    if (!run) return '';
+    return `run-${run}-tag-${tag}.csv`;
+  }
+  _jsonName(tag, run) {
+    if (!run) return '';
+    return `run-${run}-tag-${tag}.json`;
+  }
 }

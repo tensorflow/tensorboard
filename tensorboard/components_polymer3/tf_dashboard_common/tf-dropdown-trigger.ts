@@ -13,17 +13,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import { PolymerElement, html } from "@polymer/polymer";
-import { customElement, property } from "@polymer/decorators";
-import "@polymer/iron-icon";
-import "@polymer/iron-behaviors";
-import { DO_NOT_SUBMIT } from "../tf-imports/polymer.html";
-import "@polymer/iron-icon";
-import "@polymer/iron-behaviors";
-import { DO_NOT_SUBMIT } from "../tf-imports/polymer.html";
-@customElement("tf-dropdown-trigger")
+import {PolymerElement, html} from '@polymer/polymer';
+import {customElement, property} from '@polymer/decorators';
+import '@polymer/iron-icon';
+import '@polymer/iron-behaviors';
+import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
+import '@polymer/iron-icon';
+import '@polymer/iron-behaviors';
+import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
+@customElement('tf-dropdown-trigger')
 class TfDropdownTrigger extends PolymerElement {
-    static readonly template = html `<div class="label hidden-label" aria-hidden="">[[label]]</div>
+  static readonly template = html`
+    <div class="label hidden-label" aria-hidden="">[[label]]</div>
     <div class="content">
       <div class="label real-label">[[label]]</div>
       <span>[[name]]</span>
@@ -125,33 +126,37 @@ class TfDropdownTrigger extends PolymerElement {
         transform-origin: center;
         transform: scale3d(0, 1, 1);
       }
-    </style>`;
-    @property({ type: String })
-    label: string;
-    @property({
-        type: Boolean
-    })
-    labelFloat: boolean = false;
-    @property({ type: String })
-    name: string;
-    hostAttributes: {
-        role: 'button';
-        tabindex: '0';
-    };
-    behaviors: [Polymer.PaperInkyFocusBehavior];
-    @observe("label", "name", "labelFloat")
-    _setHostClass() {
-        this.toggleClass('label-floats', this.labelFloat);
-        this.toggleClass('label-floating', this.name);
-        this.toggleClass('label-shown', Boolean(this.label) && (!this.name || this.labelFloat));
-    }
-    /**
-     * Overrides PaperRippleBehavior because it was dis-satisfying.
-     * Specifically, it was forcing a circular ripple that does not fill the
-     * entire container.
-     * @override
-     */
-    _createRipple() {
-        return this.$.ripple;
-    }
+    </style>
+  `;
+  @property({type: String})
+  label: string;
+  @property({
+    type: Boolean,
+  })
+  labelFloat: boolean = false;
+  @property({type: String})
+  name: string;
+  hostAttributes: {
+    role: 'button';
+    tabindex: '0';
+  };
+  behaviors: [Polymer.PaperInkyFocusBehavior];
+  @observe('label', 'name', 'labelFloat')
+  _setHostClass() {
+    this.toggleClass('label-floats', this.labelFloat);
+    this.toggleClass('label-floating', this.name);
+    this.toggleClass(
+      'label-shown',
+      Boolean(this.label) && (!this.name || this.labelFloat)
+    );
+  }
+  /**
+   * Overrides PaperRippleBehavior because it was dis-satisfying.
+   * Specifically, it was forcing a circular ripple that does not fill the
+   * entire container.
+   * @override
+   */
+  _createRipple() {
+    return this.$.ripple;
+  }
 }

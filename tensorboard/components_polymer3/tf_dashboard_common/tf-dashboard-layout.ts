@@ -13,17 +13,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import { PolymerElement, html } from "@polymer/polymer";
-import { customElement } from "@polymer/decorators";
-import { DO_NOT_SUBMIT } from "../tf-imports/polymer.html";
-import { DO_NOT_SUBMIT } from "scrollbar-style.html";
-import { DO_NOT_SUBMIT } from "tensorboard-color.html";
-import { DO_NOT_SUBMIT } from "../tf-imports/polymer.html";
-import { DO_NOT_SUBMIT } from "scrollbar-style.html";
-import { DO_NOT_SUBMIT } from "tensorboard-color.html";
-@customElement("tf-dashboard-layout")
+import {PolymerElement, html} from '@polymer/polymer';
+import {customElement} from '@polymer/decorators';
+import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
+import {DO_NOT_SUBMIT} from 'scrollbar-style.html';
+import {DO_NOT_SUBMIT} from 'tensorboard-color.html';
+import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
+import {DO_NOT_SUBMIT} from 'scrollbar-style.html';
+import {DO_NOT_SUBMIT} from 'tensorboard-color.html';
+@customElement('tf-dashboard-layout')
 class TfDashboardLayout extends PolymerElement {
-    static readonly template = html `<div id="sidebar">
+  static readonly template = html`
+    <div id="sidebar">
       <slot name="sidebar"></slot>
     </div>
 
@@ -66,5 +67,6 @@ class TfDashboardLayout extends PolymerElement {
       .tf-graph-dashboard #center {
         background: #fff;
       }
-    </style>`;
+    </style>
+  `;
 }

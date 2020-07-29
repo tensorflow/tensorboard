@@ -13,15 +13,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import { PolymerElement, html } from "@polymer/polymer";
-import { customElement, property } from "@polymer/decorators";
-import { DO_NOT_SUBMIT } from "../tf-imports/polymer.html";
-import { DO_NOT_SUBMIT } from "tensorboard-color.html";
-import { DO_NOT_SUBMIT } from "../tf-imports/polymer.html";
-import { DO_NOT_SUBMIT } from "tensorboard-color.html";
-@customElement("tf-option-selector")
+import {PolymerElement, html} from '@polymer/polymer';
+import {customElement, property} from '@polymer/decorators';
+import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
+import {DO_NOT_SUBMIT} from 'tensorboard-color.html';
+import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
+import {DO_NOT_SUBMIT} from 'tensorboard-color.html';
+@customElement('tf-option-selector')
 class TfOptionSelector extends PolymerElement {
-    static readonly template = html `<div id="wrap">
+  static readonly template = html`
+    <div id="wrap">
       <h3>[[name]]</h3>
       <div class="content-wrapper"><slot></slot></div>
     </div>
@@ -53,33 +54,36 @@ class TfOptionSelector extends PolymerElement {
         margin: 0 0 5px;
         pointer-events: none;
       }
-    </style>`;
-    @property({ type: String })
-    name: string;
-    @property({
-        type: String,
-        notify: true,
-        observer: '_selectedIdChanged'
-    })
-    selectedId: string;
-    attached() {
-        this.async(function () {
-            this.getEffectiveChildren().forEach(function (node) {
-                this.listen(node, 'tap', '_selectTarget');
-            }.bind(this));
-        });
+    </style>
+  `;
+  @property({type: String})
+  name: string;
+  @property({
+    type: String,
+    notify: true,
+    observer: '_selectedIdChanged',
+  })
+  selectedId: string;
+  attached() {
+    this.async(function() {
+      this.getEffectiveChildren().forEach(
+        function(node) {
+          this.listen(node, 'tap', '_selectTarget');
+        }.bind(this)
+      );
+    });
+  }
+  _selectTarget(e) {
+    this.selectedId = e.currentTarget.id;
+  }
+  _selectedIdChanged() {
+    var selected = this.queryEffectiveChildren('#' + this.selectedId);
+    if (!selected) {
+      return;
     }
-    _selectTarget(e) {
-        this.selectedId = e.currentTarget.id;
-    }
-    _selectedIdChanged() {
-        var selected = this.queryEffectiveChildren('#' + this.selectedId);
-        if (!selected) {
-            return;
-        }
-        this.getEffectiveChildren().forEach(function (node) {
-            node.classList.remove('selected');
-        });
-        selected.classList.add('selected');
-    }
+    this.getEffectiveChildren().forEach(function(node) {
+      node.classList.remove('selected');
+    });
+    selected.classList.add('selected');
+  }
 }
