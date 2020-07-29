@@ -75,9 +75,8 @@ py_binary(
     deps = [
         "//tensorboard:expect_absl_logging_installed",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/util:tb_logging",
-        "@org_pythonhosted_six",
-    ],
+        ":summary_v2",
+      ],
 )
 
 py_library(
