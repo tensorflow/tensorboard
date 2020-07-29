@@ -14,13 +14,12 @@ limitations under the License.
 ==============================================================================*/
 
 import {PolymerElement, html} from '@polymer/polymer';
+import {LegacyElementMixin} from '@polymer/polymer/lib/legacy/legacy-element-mixin';
 import {customElement, property} from '@polymer/decorators';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from 'tensorboard-color.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from 'tensorboard-color.html';
+import './tensorboard-color';
+
 @customElement('tf-option-selector')
-class TfOptionSelector extends PolymerElement {
+class TfOptionSelector extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
     <div id="wrap">
       <h3>[[name]]</h3>
@@ -56,14 +55,17 @@ class TfOptionSelector extends PolymerElement {
       }
     </style>
   `;
+
   @property({type: String})
   name: string;
+
   @property({
     type: String,
     notify: true,
     observer: '_selectedIdChanged',
   })
   selectedId: string;
+
   attached() {
     this.async(function() {
       this.getEffectiveChildren().forEach(
@@ -73,17 +75,19 @@ class TfOptionSelector extends PolymerElement {
       );
     });
   }
+
   _selectTarget(e) {
     this.selectedId = e.currentTarget.id;
   }
+
   _selectedIdChanged() {
     var selected = this.queryEffectiveChildren('#' + this.selectedId);
     if (!selected) {
       return;
     }
     this.getEffectiveChildren().forEach(function(node) {
-      node.classList.remove('selected');
+      (node as HTMLElement).classList.remove('selected');
     });
-    selected.classList.add('selected');
+    (selected as HTMLElement).classList.add('selected');
   }
 }
