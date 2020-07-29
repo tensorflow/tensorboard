@@ -13,18 +13,36 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import {computed, customElement, property} from '@polymer/decorators';
+import '@polymer/paper-menu-button';
+import '@polymer/paper-menu-button';
 import {PolymerElement, html} from '@polymer/polymer';
-import {customElement, property} from '@polymer/decorators';
-import '@polymer/paper-menu-button';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from './tf-dropdown-trigger.html';
-import {DO_NOT_SUBMIT} from './tf-filterable-checkbox-list.html';
-import '@polymer/paper-menu-button';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from './tf-dropdown-trigger.html';
-import {DO_NOT_SUBMIT} from './tf-filterable-checkbox-list.html';
+import {LegacyElementMixin} from '@polymer/polymer/lib/legacy/legacy-element-mixin';
+
+import './tf-dropdown-trigger';
+import {FilterableCheckboxListItem} from './tf-filterable-checkbox-list';
+
+/*
+tf-filterable-checkbox-dropdown creates a dropdown whose content is a list of
+checkboxes with a filter input at the top. The list is primarily used for
+multiple selection of items.
+
+Properties in:
+  - label: label for the dropdown trigger button.
+  - placeholder: placeholder in the dropdown trigger button.
+  - colorsCheckbox: whether to color the check boxes.
+  - coloring: an object that contains method, getColor. Used only when
+              colorsCheckbox is true,
+  - items: items of {id: string, title: string, subtitle: ?string}.
+  - maxItemsToEnableByDefault: maximum number of items to automatically enable.
+  - selectionState: object of checkbox selections.
+
+Properties out:
+  - selectedItems: Array of items that are selected and not filterd out.
+*/
+
 @customElement('tf-filterable-checkbox-dropdown')
-class TfFilterableCheckboxDropdown extends PolymerElement {
+class TfFilterableCheckboxDropdown extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
     <paper-menu-button
       vertical-align="top"
@@ -74,39 +92,44 @@ class TfFilterableCheckboxDropdown extends PolymerElement {
       }
     </style>
   `;
+
   @property({type: String})
   label: string;
+
   @property({type: String})
   placeholder: string;
-  @property({
-    type: Boolean,
-  })
+
+  @property({type: Boolean})
   labelFloat: boolean = false;
-  @property({
-    type: Boolean,
-  })
+
+  @property({type: Boolean})
   useCheckboxColors: boolean = true;
+
   @property({type: Object})
   coloring: object;
+
   @property({
     type: Array,
   })
-  items: unknown[] = () => [];
+  items: FilterableCheckboxListItem[] = [];
+
   @property({type: Number})
   maxItemsToEnableByDefault: number;
-  @property({
-    type: Object,
-  })
-  selectionState: object = () => ({});
+
+  @property({type: Object})
+  selectionState: Record<string, boolean> = {};
+
   @property({
     type: Array,
     notify: true,
   })
-  selectedItems: unknown[] = () => [];
+  selectedItems: FilterableCheckboxListItem[] = [];
+
   @property({
     type: Boolean,
   })
   _opened: boolean = false;
+
   // ====================== COMPUTED ======================
   _getValueLabel(_) {
     if (this.selectedItems.length == this.items.length) {
@@ -120,6 +143,7 @@ class TfFilterableCheckboxDropdown extends PolymerElement {
     }
     return `${this.selectedItems.length} Selected`;
   }
+
   @computed('_opened', 'coloring')
   get _coloring(): object {
     return Object.assign({}, this.coloring);
