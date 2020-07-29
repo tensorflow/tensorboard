@@ -13,28 +13,27 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import {computed, observe, customElement, property} from '@polymer/decorators';
+import '@polymer/iron-icons';
+import {PaperCheckboxElement} from '@polymer/paper-checkbox';
+import {PaperIconButtonElement} from '@polymer/paper-icon-button';
+import '@polymer/paper-input';
 import {PolymerElement, html} from '@polymer/polymer';
-import {customElement, property} from '@polymer/decorators';
-import '@polymer/iron-icons';
-import '@polymer/paper-checkbox';
-import '@polymer/paper-icon-button';
-import '@polymer/paper-input';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-color-scale/tf-color-scale.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
-import {DO_NOT_SUBMIT} from '../tf-storage/tf-storage.html';
-import {DO_NOT_SUBMIT} from 'run-color-style.html';
-import {DO_NOT_SUBMIT} from 'scrollbar-style.html';
-import '@polymer/iron-icons';
-import '@polymer/paper-checkbox';
-import '@polymer/paper-icon-button';
-import '@polymer/paper-input';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-color-scale/tf-color-scale.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
-import {DO_NOT_SUBMIT} from '../tf-storage/tf-storage.html';
-import {DO_NOT_SUBMIT} from 'run-color-style.html';
-import {DO_NOT_SUBMIT} from 'scrollbar-style.html';
+import * as _ from 'lodash';
+
+import './run-color-style';
+import './scrollbar-style';
+import './tf-color-scale';
+
+/*
+tf-multi-checkbox creates a list of checkboxes that can be used to toggle on or off
+a large number of values. Each checkbox displays a name, and may also have an
+associated tooltip value. Checkboxes can be highlighted, hidden, and re-ordered.
+
+tf-multi-checkbox assumes that the names may be very long compared to the width
+of the checkbox, and the number of names may also be very large, and works to
+handle these situations gracefully.
+*/
 @customElement('tf-multi-checkbox')
 class TfMultiCheckbox extends PolymerElement {
   static readonly template = html`
@@ -165,26 +164,34 @@ class TfMultiCheckbox extends PolymerElement {
       }
     </style>
   `;
+
   @property({
     type: Array,
   })
-  names: unknown[] = () => [];
+  // All the values of the checkbox.
+  names: string[] = [];
+
   @property({
     type: Object,
   })
-  coloring: object = {
+  coloring: {getColor: (name: string) => string} = {
     getColor: () => '',
   };
+
   @property({
     type: String,
     notify: true,
   })
+  // Regex for filtering the names.
   regex: string = '';
+
   @property({
     type: Array,
     computed: 'computeNamesMatchingRegex(names.*, _regex)',
   })
-  namesMatchingRegex: unknown[];
+  // Runs that match the regex.
+  namesMatchingRegex: string[];
+
   @property({
     // If a name is explicitly enabled by user gesture, True, if explicitly
     // disabled, False. If undefined, default value (enable for first k
@@ -192,23 +199,31 @@ class TfMultiCheckbox extends PolymerElement {
     type: Object,
     notify: true,
   })
-  selectionState: object = () => ({});
+  selectionState: Record<string, boolean> = {};
+
   @property({
     type: Array,
     notify: true,
     computed: 'computeOutSelected(namesMatchingRegex.*, selectionState.*)',
   })
-  outSelected: unknown[];
+  // Allows state to persist across regex filtering.
+  outSelected: string[];
+
   @property({
     // When TB first loads, if it has k or fewer names, they are all enabled
     // by default. If there are more, then they are all disabled.
     type: Number,
   })
   maxNamesToEnableByDefault: number = 40;
+
   @property({
     type: Object,
   })
-  _debouncedRegexChange: object = function() {
+        // Updating the regex can be slow, because it involves updating styles
+        // on a large number of Polymer paper-checkboxes. We don't want to do
+        // this while the user is typing, as it may make a bad, laggy UI.
+        // So we debounce the updates that come from user typing.
+  _debouncedRegexChange: () => void = function() {
     var debounced = _.debounce(
       (r) => {
         this.regex = r;
@@ -229,8 +244,9 @@ class TfMultiCheckbox extends PolymerElement {
       }
     };
   };
+
   @computed('regex')
-  get _regex(): object {
+  get _regex(): RegExp | null {
     var regexString = this.regex;
     try {
       return new RegExp(regexString);
@@ -238,6 +254,7 @@ class TfMultiCheckbox extends PolymerElement {
       return null;
     }
   }
+
   @observe('selectionState', 'names')
   _setIsolatorIcon() {
     var selectionMap = this.selectionState;
@@ -253,10 +270,12 @@ class TfMultiCheckbox extends PolymerElement {
       }
     });
   }
+
   computeNamesMatchingRegex(__, ___) {
     const regex = this._regex;
     return regex ? this.names.filter((n) => regex.test(n)) : this.names;
   }
+
   computeOutSelected(__, ___) {
     var selectionState = this.selectionState;
     var num = this.maxNamesToEnableByDefault;
@@ -265,12 +284,13 @@ class TfMultiCheckbox extends PolymerElement {
       return selectionState[n] == null ? allEnabled : selectionState[n];
     });
   }
+
   synchronizeColors(e) {
     this._setIsolatorIcon();
     const checkboxes = this.root.querySelectorAll('paper-checkbox');
-    checkboxes.forEach((p) => {
-      const color = this.coloring.getColor(p.name);
-      p.updateStyles({
+    checkboxes.forEach((p: PaperCheckboxElement) => {
+      const color = this.coloring.getColor((p as any).name);
+      (p as any).updateStyles({
         '--paper-checkbox-checked-color': color,
         '--paper-checkbox-checked-ink-color': color,
         '--paper-checkbox-unchecked-color': color,
@@ -278,8 +298,8 @@ class TfMultiCheckbox extends PolymerElement {
       });
     });
     const buttons = this.root.querySelectorAll('.isolator');
-    buttons.forEach((p) => {
-      const color = this.coloring.getColor(p.name);
+    buttons.forEach((p: PaperIconButtonElement) => {
+      const color = this.coloring.getColor((p as any).name);
       p.style['color'] = color;
     });
     // The updateStyles call fails silently if the browser doesn't have focus,
@@ -289,26 +309,30 @@ class TfMultiCheckbox extends PolymerElement {
       this.updateStyles();
     });
   }
+
   _isolateName(e) {
     // If user clicks on the label for one name, enable it and disable all other
     // names.
-    var name = (Polymer.dom(e) as any).localTarget.name;
+    var name = ((e.target as PaperIconButtonElement) as any).name;
     var selectionState = {};
     this.names.forEach(function(n) {
       selectionState[n] = n == name;
     });
     this.selectionState = selectionState;
   }
+
   _checkboxChange(e) {
-    var target = (Polymer.dom(e) as any).localTarget;
+    var target = e.target as PaperCheckboxElement;
     const newSelectionState = _.clone(this.selectionState);
-    newSelectionState[target.name] = target.checked;
+    newSelectionState[(target as any).name] = (target as any).checked;
     // n.b. notifyPath won't work because names may have periods.
     this.selectionState = newSelectionState;
   }
-  _isChecked(item, outSelectedChange) {
+
+  _isChecked(item: string, outSelectedChange): boolean {
     return this.outSelected.indexOf(item) != -1;
   }
+
   toggleAll() {
     // If any are toggled on, we turn everything off. Or, if none are toggled
     // on, we turn everything on.
