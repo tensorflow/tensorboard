@@ -12,125 +12,152 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import { DO_NOT_SUBMIT } from "../tf-imports/d3.html";
+import { DO_NOT_SUBMIT } from "../tf-imports/dagre.html";
+import { DO_NOT_SUBMIT } from "../tf-imports/graphlib.html";
+import { DO_NOT_SUBMIT } from "../tf-imports/lodash.html";
+import { DO_NOT_SUBMIT } from "annotation";
+import { DO_NOT_SUBMIT } from "common";
+import { DO_NOT_SUBMIT } from "contextmenu";
+import { DO_NOT_SUBMIT } from "edge";
+import { DO_NOT_SUBMIT } from "externs";
+import { DO_NOT_SUBMIT } from "graph";
+import { DO_NOT_SUBMIT } from "hierarchy";
+import { DO_NOT_SUBMIT } from "layout";
+import { DO_NOT_SUBMIT } from "loader";
+import { DO_NOT_SUBMIT } from "node";
+import { DO_NOT_SUBMIT } from "op";
+import { DO_NOT_SUBMIT } from "parser";
+import { DO_NOT_SUBMIT } from "proto";
+import { DO_NOT_SUBMIT } from "render";
+import { DO_NOT_SUBMIT } from "scene";
+import { DO_NOT_SUBMIT } from "template";
+import { DO_NOT_SUBMIT } from "util";
+/* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
-module tf {
-  /**
-   * Mapping from color palette name to color palette, which contains
-   * exact colors for multiple states of a single color palette.
-   */
-  export let COLORS = [
+Licensed under the Apache License, Version 2.0 (the 'License');
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an 'AS IS' BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+==============================================================================*/
+export let COLORS = [
     {
-      name: 'Google Blue',
-      color: '#4184f3',
-      active: '#3a53c5',
-      disabled: '#cad8fc',
+        name: "Google Blue",
+        color: "#4184f3",
+        active: "#3a53c5",
+        disabled: "#cad8fc",
     },
     {
-      name: 'Google Red',
-      color: '#db4437',
-      active: '#8f2a0c',
-      disabled: '#e8c6c1',
+        name: "Google Red",
+        color: "#db4437",
+        active: "#8f2a0c",
+        disabled: "#e8c6c1",
     },
     {
-      name: 'Google Yellow',
-      color: '#f4b400',
-      active: '#db9200',
-      disabled: '#f7e8b0',
+        name: "Google Yellow",
+        color: "#f4b400",
+        active: "#db9200",
+        disabled: "#f7e8b0",
     },
     {
-      name: 'Google Green',
-      color: '#0f9d58',
-      active: '#488046',
-      disabled: '#c2e1cc',
+        name: "Google Green",
+        color: "#0f9d58",
+        active: "#488046",
+        disabled: "#c2e1cc",
     },
     {
-      name: 'Purple',
-      color: '#aa46bb',
-      active: '#5c1398',
-      disabled: '#d7bce6',
+        name: "Purple",
+        color: "#aa46bb",
+        active: "#5c1398",
+        disabled: "#d7bce6",
     },
     {
-      name: 'Teal',
-      color: '#00abc0',
-      active: '#47828e',
-      disabled: '#c2eaf2',
+        name: "Teal",
+        color: "#00abc0",
+        active: "#47828e",
+        disabled: "#c2eaf2",
     },
     {
-      name: 'Deep Orange',
-      color: '#ff6f42',
-      active: '#ca4a06',
-      disabled: '#f2cbba',
+        name: "Deep Orange",
+        color: "#ff6f42",
+        active: "#ca4a06",
+        disabled: "#f2cbba",
     },
     {
-      name: 'Lime',
-      color: '#9d9c23',
-      active: '#7f771d',
-      disabled: '#f1f4c2',
+        name: "Lime",
+        color: "#9d9c23",
+        active: "#7f771d",
+        disabled: "#f1f4c2",
     },
     {
-      name: 'Indigo',
-      color: '#5b6abf',
-      active: '#3e47a9',
-      disabled: '#c5c8e8',
+        name: "Indigo",
+        color: "#5b6abf",
+        active: "#3e47a9",
+        disabled: "#c5c8e8",
     },
     {
-      name: 'Pink',
-      color: '#ef6191',
-      active: '#ca1c60',
-      disabled: '#e9b9ce',
+        name: "Pink",
+        color: "#ef6191",
+        active: "#ca1c60",
+        disabled: "#e9b9ce",
     },
     {
-      name: 'Deep Teal',
-      color: '#00786a',
-      active: '#2b4f43',
-      disabled: '#bededa',
+        name: "Deep Teal",
+        color: "#00786a",
+        active: "#2b4f43",
+        disabled: "#bededa",
     },
     {
-      name: 'Deep Pink',
-      color: '#c1175a',
-      active: '#75084f',
-      disabled: '#de8cae',
+        name: "Deep Pink",
+        color: "#c1175a",
+        active: "#75084f",
+        disabled: "#de8cae",
     },
     {
-      name: 'Gray',
-      color: '#9E9E9E', // 500
-      active: '#424242', // 800
-      disabled: 'F5F5F5', // 100
+        name: "Gray",
+        color: "#9E9E9E",
+        active: "#424242",
+        disabled: "F5F5F5",
     },
-  ].reduce((m, c) => {
+].reduce((m, c) => {
     m[c.name] = c;
     return m;
-  }, {});
-
-  /**
-   * Mapping from op category to color palette name
-   * e.g.,  OP_GROUP_COLORS['state_ops'] = 'Google Blue';
-   */
-  export let OP_GROUP_COLORS = [
+}, {});
+/**
+ * Mapping from op category to color palette name
+ * e.g.,  OP_GROUP_COLORS['state_ops'] = 'Google Blue';
+ */
+export let OP_GROUP_COLORS = [
     {
-      color: 'Google Red',
-      groups: [
-        'gen_legacy_ops',
-        'legacy_ops',
-        'legacy_flogs_input',
-        'legacy_image_input',
-        'legacy_input_example_input',
-        'legacy_sequence_input',
-        'legacy_seti_input_input',
-      ],
+        color: "Google Red",
+        groups: [
+            "gen_legacy_ops",
+            "legacy_ops",
+            "legacy_flogs_input",
+            "legacy_image_input",
+            "legacy_input_example_input",
+            "legacy_sequence_input",
+            "legacy_seti_input_input",
+        ],
     },
-    {color: 'Deep Orange', groups: ['constant_ops']},
-    {color: 'Indigo', groups: ['state_ops']},
-    {color: 'Purple', groups: ['nn_ops', 'nn']},
-    {color: 'Google Green', groups: ['math_ops']},
-    {color: 'Lime', groups: ['array_ops']},
-    {color: 'Teal', groups: ['control_flow_ops', 'data_flow_ops']},
-    {color: 'Pink', groups: ['summary_ops']},
-    {color: 'Deep Pink', groups: ['io_ops']},
-  ].reduce((m, c) => {
-    c.groups.forEach(function(group) {
-      m[group] = c.color;
+    { color: "Deep Orange", groups: ["constant_ops"] },
+    { color: "Indigo", groups: ["state_ops"] },
+    { color: "Purple", groups: ["nn_ops", "nn"] },
+    { color: "Google Green", groups: ["math_ops"] },
+    { color: "Lime", groups: ["array_ops"] },
+    { color: "Teal", groups: ["control_flow_ops", "data_flow_ops"] },
+    { color: "Pink", groups: ["summary_ops"] },
+    { color: "Deep Pink", groups: ["io_ops"] },
+].reduce((m, c) => {
+    c.groups.forEach(function (group) {
+        m[group] = c.color;
     });
     return m;
-  }, {});
-}
+}, {});
