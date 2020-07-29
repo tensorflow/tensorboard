@@ -13,7 +13,7 @@ tf_web_library(
     ],
     path = "/",
     deps = [
-        ":analytics",
+        ":analytics_html",
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_tensorboard",
         "//tensorboard/components/tf_tensorboard:default_plugins",
@@ -53,6 +53,14 @@ genrule(
     outs = ["tensorboard.html"],
     cmd = "$(execpath //tensorboard/logo:inline_favicon) $< >$@",
     tools = ["//tensorboard/logo:inline_favicon"],
+)
+
+tf_web_library(
+    name = "analytics_html",
+    srcs = [
+        "analytics.html",
+    ],
+    path = "/",
 )
 
 tf_ts_library(
