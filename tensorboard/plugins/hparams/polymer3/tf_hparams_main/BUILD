@@ -20,18 +20,3 @@ tf_web_library(
         "//tensorboard/plugins/hparams/tf_hparams_sessions_pane",
     ],
 )
-
-# webcomponent_library version of the web app. Allows embedding the plugin in
-# another web app.
-tensorboard_webcomponent_library(
-    name = "legacy",
-    srcs = [":tf_hparams_main"],
-    visibility = ["//tensorboard/plugins/hparams/external_users:whitelist"],
-    destdir = "tf-hparams-main",
-    deps = [
-        "//tensorboard/components/tf_imports:polymer_lib",
-        "//tensorboard/components/tf_imports_google:lib",
-        "//tensorboard/plugins/hparams/tf_hparams_query_pane:legacy",
-        "//tensorboard/plugins/hparams/tf_hparams_sessions_pane:legacy",
-    ],
-)
