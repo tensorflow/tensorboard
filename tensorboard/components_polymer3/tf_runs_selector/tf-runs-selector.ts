@@ -13,40 +13,59 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import { PolymerElement, html } from "@polymer/polymer";
+import {PolymerElement, html} from '@polymer/polymer';
 import {LegacyElementMixin} from '@polymer/polymer/lib/legacy/legacy-element-mixin';
-import { computed, customElement, property } from "@polymer/decorators";
-import "@polymer/paper-button";
-import "@polymer/paper-dialog";
+import {computed, customElement, property} from '@polymer/decorators';
+import '@polymer/paper-button';
+import '@polymer/paper-dialog';
 
-import * as baseStore from "../tf_backend/baseStore";
-import {environmentStore} from "../tf_backend/environmentStore";
-import {runsStore} from "../tf_backend/runsStore";
-import {runsColorScale} from "../tf_color_scale/colorScale";
-import * as storage from "../tf_storage/storage";
+import * as baseStore from '../tf_backend/baseStore';
+import {environmentStore} from '../tf_backend/environmentStore';
+import {runsStore} from '../tf_backend/runsStore';
+import {runsColorScale} from '../tf_color_scale/colorScale';
+import * as storage from '../tf_storage/storage';
 
-import "../tf_dashboard_common/tf-multi-checkbox";
-import "../tf_wbr_string/tf-wbr-string";
+import '../tf_dashboard_common/tf-multi-checkbox';
+import '../tf_wbr_string/tf-wbr-string';
 
-@customElement("tf-runs-selector")
+@customElement('tf-runs-selector')
 class TfRunsSelector extends LegacyElementMixin(PolymerElement) {
-    static readonly template = html `<paper-dialog with-backdrop="" id="data-location-dialog">
+  static readonly template = html`
+    <paper-dialog with-backdrop="" id="data-location-dialog">
       <h2>Data Location</h2>
-      <tf-wbr-string value="[[dataLocation]]" delimiter-pattern="[[_dataLocationDelimiterPattern]]">
-    </tf-wbr-string></paper-dialog>
+      <tf-wbr-string
+        value="[[dataLocation]]"
+        delimiter-pattern="[[_dataLocationDelimiterPattern]]"
+      >
+      </tf-wbr-string
+    ></paper-dialog>
     <div id="top-text">
       <h3 id="tooltip-help" class="tooltip-container">Runs</h3>
     </div>
-    <tf-multi-checkbox id="multiCheckbox" names="[[runs]]" selection-state="{{runSelectionState}}" out-selected="{{selectedRuns}}" regex="{{regexInput}}" coloring="[[coloring]]"></tf-multi-checkbox>
+    <tf-multi-checkbox
+      id="multiCheckbox"
+      names="[[runs]]"
+      selection-state="{{runSelectionState}}"
+      out-selected="{{selectedRuns}}"
+      regex="{{regexInput}}"
+      coloring="[[coloring]]"
+    ></tf-multi-checkbox>
     <paper-button class="x-button" id="toggle-all" on-tap="_toggleAll">
       Toggle All Runs
     </paper-button>
     <template is="dom-if" if="[[dataLocation]]">
       <div id="data-location">
-        <tf-wbr-string value="[[_clippedDataLocation]]" delimiter-pattern="[[_dataLocationDelimiterPattern]]"></tf-wbr-string><!--
+        <tf-wbr-string
+          value="[[_clippedDataLocation]]"
+          delimiter-pattern="[[_dataLocationDelimiterPattern]]"
+        ></tf-wbr-string
+        ><!--
           We use HTML comments to remove spaces before the ellipsis.
-        --><template is="dom-if" if="[[_shouldShowExpandDataLocationButton(dataLocation, _dataLocationClipLength)]]"><!--
-          --><a href="" on-click="_openDataLocationDialog">\u2026</a>
+        --><template
+          is="dom-if"
+          if="[[_shouldShowExpandDataLocationButton(dataLocation, _dataLocationClipLength)]]"
+          ><!--
+          --><a href="" on-click="_openDataLocationDialog">…</a>
         </template>
       </div>
     </template>
@@ -92,112 +111,117 @@ class TfRunsSelector extends LegacyElementMixin(PolymerElement) {
         margin: 5px 0 0 0;
         max-width: 288px;
       }
-    </style>`;
+    </style>
+  `;
 
-    @property({
-        type: Object,
-        observer: '_storeRunSelectionState'
-    })
-    runSelectionState: object = storage.getObjectInitializer('runSelectionState', {
-        defaultValue: {},
-    })();
-
-    @property({
-        type: String,
-        observer: '_regexObserver'
-    })
-    regexInput: string = storage.getStringInitializer('regexInput', {
-        defaultValue: '',
-    })();
-
-    @property({
-        type: Array,
-        notify: true
-    })
-    selectedRuns: unknown[];
-
-    @property({ type: Array })
-    runs: unknown[];
-
-    @property({
-        type: String,
-        notify: true
-    })
-    dataLocation: string;
-
-    @property({
-        type: Number,
-        readOnly: true
-    })
-    _dataLocationClipLength: number = 250;
-
-    @property({
-        type: String,
-        readOnly: true
-    })
-    _dataLocationDelimiterPattern: string = '[/=_,-]';
-
-    @property({
-        type: Object
-    })
-    coloring: object = {
-        getColor: runsColorScale,
-    };
-
-    _runStoreListener: baseStore.ListenKey;
-
-    _envStoreListener: baseStore.ListenKey;
-
-    attached() {
-        this._runStoreListener = runsStore.addListener(() => {
-            this.set('runs', runsStore.getRuns());
-        });
-        this.set('runs', runsStore.getRuns());
-        this._envStoreListener = environmentStore.addListener(() => {
-            this.set('dataLocation', environmentStore.getDataLocation());
-        });
-        this.set('dataLocation', environmentStore.getDataLocation());
+  @property({
+    type: Object,
+    observer: '_storeRunSelectionState',
+  })
+  runSelectionState: object = storage.getObjectInitializer(
+    'runSelectionState',
+    {
+      defaultValue: {},
     }
+  )();
 
-    detached() {
-        runsStore.removeListenerByKey(this._runStoreListener);
-        environmentStore.removeListenerByKey(this._envStoreListener);
-    }
+  @property({
+    type: String,
+    observer: '_regexObserver',
+  })
+  regexInput: string = storage.getStringInitializer('regexInput', {
+    defaultValue: '',
+  })();
 
-    _toggleAll() {
-        (this.$.multiCheckbox as any).toggleAll();
-    }
+  @property({
+    type: Array,
+    notify: true,
+  })
+  selectedRuns: unknown[];
 
-    @computed("dataLocation", "_dataLocationClipLength")
-    get _clippedDataLocation(): string {
-        var dataLocation = this.dataLocation;
-        var dataLocationClipLength = this._dataLocationClipLength;
-        if (dataLocation === undefined) {
-            // The dataLocation has not been set yet.
-            return undefined;
-        }
-        if (dataLocation.length > dataLocationClipLength) {
-            // Clip the dataLocation to avoid blocking the runs selector. Let the
-            // user view a more full version of the dataLocation.
-            return dataLocation.substring(0, dataLocationClipLength);
-        }
-        else {
-            return dataLocation;
-        }
-    }
+  @property({type: Array})
+  runs: unknown[];
 
-    _openDataLocationDialog(event) {
-        event.preventDefault();
-        (this.$$('#data-location-dialog') as any).open();
-    }
+  @property({
+    type: String,
+    notify: true,
+  })
+  dataLocation: string;
 
-    _shouldShowExpandDataLocationButton(dataLocation, _dataLocationClipLength) {
-        return dataLocation && dataLocation.length > _dataLocationClipLength;
-    }
+  @property({
+    type: Number,
+    readOnly: true,
+  })
+  _dataLocationClipLength: number = 250;
 
-    _storeRunSelectionState = storage.getObjectObserver('runSelectionState', { defaultValue: {} });
+  @property({
+    type: String,
+    readOnly: true,
+  })
+  _dataLocationDelimiterPattern: string = '[/=_,-]';
 
-    _regexObserver = storage.getStringObserver('regexInput', {
-        defaultValue: '',
+  @property({
+    type: Object,
+  })
+  coloring: object = {
+    getColor: runsColorScale,
+  };
+
+  _runStoreListener: baseStore.ListenKey;
+
+  _envStoreListener: baseStore.ListenKey;
+
+  attached() {
+    this._runStoreListener = runsStore.addListener(() => {
+      this.set('runs', runsStore.getRuns());
     });
+    this.set('runs', runsStore.getRuns());
+    this._envStoreListener = environmentStore.addListener(() => {
+      this.set('dataLocation', environmentStore.getDataLocation());
+    });
+    this.set('dataLocation', environmentStore.getDataLocation());
+  }
+
+  detached() {
+    runsStore.removeListenerByKey(this._runStoreListener);
+    environmentStore.removeListenerByKey(this._envStoreListener);
+  }
+
+  _toggleAll() {
+    (this.$.multiCheckbox as any).toggleAll();
+  }
+
+  @computed('dataLocation', '_dataLocationClipLength')
+  get _clippedDataLocation(): string {
+    var dataLocation = this.dataLocation;
+    var dataLocationClipLength = this._dataLocationClipLength;
+    if (dataLocation === undefined) {
+      // The dataLocation has not been set yet.
+      return undefined;
+    }
+    if (dataLocation.length > dataLocationClipLength) {
+      // Clip the dataLocation to avoid blocking the runs selector. Let the
+      // user view a more full version of the dataLocation.
+      return dataLocation.substring(0, dataLocationClipLength);
+    } else {
+      return dataLocation;
+    }
+  }
+
+  _openDataLocationDialog(event) {
+    event.preventDefault();
+    (this.$$('#data-location-dialog') as any).open();
+  }
+
+  _shouldShowExpandDataLocationButton(dataLocation, _dataLocationClipLength) {
+    return dataLocation && dataLocation.length > _dataLocationClipLength;
+  }
+
+  _storeRunSelectionState = storage.getObjectObserver('runSelectionState', {
+    defaultValue: {},
+  });
+
+  _regexObserver = storage.getStringObserver('regexInput', {
+    defaultValue: '',
+  });
 }
