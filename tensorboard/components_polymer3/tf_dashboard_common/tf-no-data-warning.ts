@@ -15,8 +15,7 @@ limitations under the License.
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, property} from '@polymer/decorators';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
+
 @customElement('tf-no-data-warning')
 class TfNoDataWarning extends PolymerElement {
   static readonly template = html`
@@ -69,8 +68,10 @@ class TfNoDataWarning extends PolymerElement {
       }
     </style>
   `;
+
   @property({type: String})
   dataType: string;
+
   @property({type: Boolean})
   showWarning: boolean;
 }
