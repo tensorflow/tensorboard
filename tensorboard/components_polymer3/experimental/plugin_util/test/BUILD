@@ -14,12 +14,13 @@ tf_web_test(
     web_library = ":test_web_library",
 )
 
+# This test is disabled now that plugin_util has migrated to Polymer 3.
 tf_web_library(
     name = "test_web_library",
     srcs = [
-        "plugin-test.ts",
-        "testable-iframe.html",
-        "tests.html",
+        # "plugin-test.ts",
+        # "testable-iframe.html",
+        # "tests.html",
         "//tensorboard/components_polymer3/experimental/plugin_lib/test:testable_plugin_bundle.js",
     ],
     path = "/tf-plugin-util/test",
