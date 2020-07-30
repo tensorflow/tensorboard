@@ -37,7 +37,7 @@ export class TextEffects {
           }),
           map(() => void null)
         );
-      }),
+      })
     );
   }
 

@@ -22,9 +22,7 @@ import {textPluginLoaded} from './actions';
 
 @Component({
   selector: 'tf-text-v2',
-  template: `
-    <text-component></text-component>
-  `,
+  template: ` <text-component></text-component> `,
 })
 export class TextContainer implements OnInit {
   constructor(private readonly store: Store<State>) {}
