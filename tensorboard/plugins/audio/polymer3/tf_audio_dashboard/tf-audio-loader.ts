@@ -13,34 +13,41 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import { PolymerElement, html } from "@polymer/polymer";
-import { customElement, property } from "@polymer/decorators";
-import "@polymer/paper-slider";
-import { DO_NOT_SUBMIT } from "../tf-imports/polymer.html";
-import { DO_NOT_SUBMIT } from "../tf-backend/tf-backend.html";
-import { DO_NOT_SUBMIT } from "../tf-card-heading/tf-card-heading.html";
-import { DO_NOT_SUBMIT } from "../tf-card-heading/tf-card-heading-style.html";
-import { DO_NOT_SUBMIT } from "../tf-card-heading/util.html";
-import { DO_NOT_SUBMIT } from "../tf-color-scale/tf-color-scale.html";
-import { DO_NOT_SUBMIT } from "../tf-dashboard-common/tensorboard-color.html";
-import { DO_NOT_SUBMIT } from "../tf-imports/d3.html";
-import { DO_NOT_SUBMIT } from "../tf-imports/lodash.html";
-import { DO_NOT_SUBMIT } from "../tf-markdown-view/tf-markdown-view.html";
-import "@polymer/paper-slider";
-import { DO_NOT_SUBMIT } from "../tf-imports/polymer.html";
-import { DO_NOT_SUBMIT } from "../tf-backend/tf-backend.html";
-import { DO_NOT_SUBMIT } from "../tf-card-heading/tf-card-heading.html";
-import { DO_NOT_SUBMIT } from "../tf-card-heading/tf-card-heading-style.html";
-import { DO_NOT_SUBMIT } from "../tf-card-heading/util.html";
-import { DO_NOT_SUBMIT } from "../tf-color-scale/tf-color-scale.html";
-import { DO_NOT_SUBMIT } from "../tf-dashboard-common/tensorboard-color.html";
-import { DO_NOT_SUBMIT } from "../tf-imports/d3.html";
-import { DO_NOT_SUBMIT } from "../tf-imports/lodash.html";
-import { DO_NOT_SUBMIT } from "../tf-markdown-view/tf-markdown-view.html";
+import {PolymerElement, html} from '@polymer/polymer';
+import {customElement, property} from '@polymer/decorators';
+import '@polymer/paper-slider';
+import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
+import {DO_NOT_SUBMIT} from '../tf-backend/tf-backend.html';
+import {DO_NOT_SUBMIT} from '../tf-card-heading/tf-card-heading.html';
+import {DO_NOT_SUBMIT} from '../tf-card-heading/tf-card-heading-style.html';
+import {DO_NOT_SUBMIT} from '../tf-card-heading/util.html';
+import {DO_NOT_SUBMIT} from '../tf-color-scale/tf-color-scale.html';
+import {DO_NOT_SUBMIT} from '../tf-dashboard-common/tensorboard-color.html';
+import {DO_NOT_SUBMIT} from '../tf-imports/d3.html';
+import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
+import {DO_NOT_SUBMIT} from '../tf-markdown-view/tf-markdown-view.html';
+import '@polymer/paper-slider';
+import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
+import {DO_NOT_SUBMIT} from '../tf-backend/tf-backend.html';
+import {DO_NOT_SUBMIT} from '../tf-card-heading/tf-card-heading.html';
+import {DO_NOT_SUBMIT} from '../tf-card-heading/tf-card-heading-style.html';
+import {DO_NOT_SUBMIT} from '../tf-card-heading/util.html';
+import {DO_NOT_SUBMIT} from '../tf-color-scale/tf-color-scale.html';
+import {DO_NOT_SUBMIT} from '../tf-dashboard-common/tensorboard-color.html';
+import {DO_NOT_SUBMIT} from '../tf-imports/d3.html';
+import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
+import {DO_NOT_SUBMIT} from '../tf-markdown-view/tf-markdown-view.html';
 'use strict';
-@customElement("tf-audio-loader")
+@customElement('tf-audio-loader')
 class TfAudioLoader extends PolymerElement {
-    static readonly template = html `<tf-card-heading tag="[[tag]]" run="[[run]]" display-name="[[tagMetadata.displayName]]" description="[[tagMetadata.description]]" color="[[_runColor]]">
+  static readonly template = html`
+    <tf-card-heading
+      tag="[[tag]]"
+      run="[[run]]"
+      display-name="[[tagMetadata.displayName]]"
+      description="[[tagMetadata.description]]"
+      color="[[_runColor]]"
+    >
       <template is="dom-if" if="[[_hasMultipleSamples]]">
         <div class="heading-row">
           <div class="heading-label">
@@ -62,12 +69,24 @@ class TfAudioLoader extends PolymerElement {
       </template>
       <template is="dom-if" if="[[_hasMultipleSteps]]">
         <div class="heading-row">
-          <paper-slider id="steps" immediate-value="{{_stepIndex}}" max="[[_maxStepIndex]]" max-markers="[[_maxStepIndex]]" snaps="" step="1" value="{{_stepIndex}}"></paper-slider>
+          <paper-slider
+            id="steps"
+            immediate-value="{{_stepIndex}}"
+            max="[[_maxStepIndex]]"
+            max-markers="[[_maxStepIndex]]"
+            snaps=""
+            step="1"
+            value="{{_stepIndex}}"
+          ></paper-slider>
         </div>
       </template>
     </tf-card-heading>
     <template is="dom-if" if="[[_hasAtLeastOneStep]]">
-      <audio controls="" src$="[[_currentDatum.url]]" type$="[[_currentDatum.contentType]]"></audio>
+      <audio
+        controls=""
+        src$="[[_currentDatum.url]]"
+        type$="[[_currentDatum.contentType]]"
+      ></audio>
       <tf-markdown-view html="[[_currentDatum.label]]"></tf-markdown-view>
     </template>
     <div id="main-audio-container"></div>
@@ -97,107 +116,114 @@ class TfAudioLoader extends PolymerElement {
         --paper-slider-knob-start-border-color: var(--step-slider-knob-color);
         --paper-slider-pin-start-color: var(--step-slider-knob-color);
       }
-    </style>`;
-    @property({ type: String })
-    run: string;
-    @property({ type: String })
-    tag: string;
-    @property({ type: Number })
-    sample: number;
-    @property({ type: Number })
-    totalSamples: number;
-    @property({ type: Object })
-    tagMetadata: object;
-    @property({ type: Object })
-    requestManager: object;
-    @property({
-        type: Object
-    })
-    _metadataCanceller: object = () => new tf_backend.Canceller();
-    @property({
-        type: Array
-    })
-    _steps: unknown[] = () => [];
-    @property({ type: Number })
-    _stepIndex: number;
-    @computed("run")
-    get _runColor(): string {
-        var run = this.run;
-        return tf_color_scale.runsColorScale(run);
+    </style>
+  `;
+  @property({type: String})
+  run: string;
+  @property({type: String})
+  tag: string;
+  @property({type: Number})
+  sample: number;
+  @property({type: Number})
+  totalSamples: number;
+  @property({type: Object})
+  tagMetadata: object;
+  @property({type: Object})
+  requestManager: object;
+  @property({
+    type: Object,
+  })
+  _metadataCanceller: object = () => new tf_backend.Canceller();
+  @property({
+    type: Array,
+  })
+  _steps: unknown[] = () => [];
+  @property({type: Number})
+  _stepIndex: number;
+  @computed('run')
+  get _runColor(): string {
+    var run = this.run;
+    return tf_color_scale.runsColorScale(run);
+  }
+  @computed('_steps')
+  get _hasAtLeastOneStep(): boolean {
+    var steps = this._steps;
+    return !!steps && steps.length > 0;
+  }
+  @computed('_steps')
+  get _hasMultipleSteps(): boolean {
+    var steps = this._steps;
+    return !!steps && steps.length > 1;
+  }
+  @computed('_steps')
+  get _maxStepIndex(): number {
+    var steps = this._steps;
+    return steps.length - 1;
+  }
+  @computed('_steps', '_stepIndex')
+  get _currentDatum(): object {
+    var steps = this._steps;
+    var stepIndex = this._stepIndex;
+    return steps[stepIndex];
+  }
+  @computed('sample')
+  get _sampleText(): string {
+    var sample = this.sample;
+    return `${sample + 1}`;
+  }
+  @computed('totalSamples')
+  get _hasMultipleSamples(): boolean {
+    var totalSamples = this.totalSamples;
+    return totalSamples > 1;
+  }
+  attached() {
+    this._attached = true;
+    this.reload();
+  }
+  @observe('run', 'tag')
+  reload() {
+    if (!this._attached) {
+      return;
     }
-    @computed("_steps")
-    get _hasAtLeastOneStep(): boolean {
-        var steps = this._steps;
-        return !!steps && steps.length > 0;
-    }
-    @computed("_steps")
-    get _hasMultipleSteps(): boolean {
-        var steps = this._steps;
-        return !!steps && steps.length > 1;
-    }
-    @computed("_steps")
-    get _maxStepIndex(): number {
-        var steps = this._steps;
-        return steps.length - 1;
-    }
-    @computed("_steps", "_stepIndex")
-    get _currentDatum(): object {
-        var steps = this._steps;
-        var stepIndex = this._stepIndex;
-        return steps[stepIndex];
-    }
-    @computed("sample")
-    get _sampleText(): string {
-        var sample = this.sample;
-        return `${sample + 1}`;
-    }
-    @computed("totalSamples")
-    get _hasMultipleSamples(): boolean {
-        var totalSamples = this.totalSamples;
-        return totalSamples > 1;
-    }
-    attached() {
-        this._attached = true;
-        this.reload();
-    }
-    @observe("run", "tag")
-    reload() {
-        if (!this._attached) {
-            return;
-        }
-        this._metadataCanceller.cancelAll();
-        const router = tf_backend.getRouter();
-        const url = router.pluginRoute('audio', '/audio', new URLSearchParams({
-            tag: this.tag,
-            run: this.run,
-            sample: this.sample,
-        }));
-        const updateSteps = this._metadataCanceller.cancellable((result) => {
-            if (result.cancelled) {
-                return;
-            }
-            const data = result.value;
-            const steps = data.map(this._createStepDatum.bind(this));
-            this.set('_steps', steps);
-            this.set('_stepIndex', steps.length - 1);
-        });
-        this.requestManager.request(url).then(updateSteps);
-    }
-    _createStepDatum(audioMetadata) {
-        const searchParam = new URLSearchParams(audioMetadata.query);
-        // Include wall_time just to disambiguate the URL and force
-        // the browser to reload the audio when the URL changes. The
-        // backend doesn't care about the value.
-        searchParam.append('ts', audioMetadata.wall_time);
-        const url = tf_backend
-            .getRouter()
-            .pluginRoute('audio', '/individualAudio', searchParam);
-        return {
-            wall_time: tf_card_heading.formatDate(new Date(audioMetadata.wall_time * 1000)),
-            step: audioMetadata.step,
-            label: audioMetadata.label,
-            contentType: audioMetadata.contentType,
-            url,
-        };
-    }
+    this._metadataCanceller.cancelAll();
+    const router = tf_backend.getRouter();
+    const url = router.pluginRoute(
+      'audio',
+      '/audio',
+      new URLSearchParams({
+        tag: this.tag,
+        run: this.run,
+        sample: this.sample,
+      })
+    );
+    const updateSteps = this._metadataCanceller.cancellable((result) => {
+      if (result.cancelled) {
+        return;
+      }
+      const data = result.value;
+      const steps = data.map(this._createStepDatum.bind(this));
+      this.set('_steps', steps);
+      this.set('_stepIndex', steps.length - 1);
+    });
+    this.requestManager.request(url).then(updateSteps);
+  }
+  _createStepDatum(audioMetadata) {
+    const searchParam = new URLSearchParams(audioMetadata.query);
+    // Include wall_time just to disambiguate the URL and force
+    // the browser to reload the audio when the URL changes. The
+    // backend doesn't care about the value.
+    searchParam.append('ts', audioMetadata.wall_time);
+    const url = tf_backend
+      .getRouter()
+      .pluginRoute('audio', '/individualAudio', searchParam);
+    return {
+      wall_time: tf_card_heading.formatDate(
+        new Date(audioMetadata.wall_time * 1000)
+      ),
+      step: audioMetadata.step,
+      label: audioMetadata.label,
+      contentType: audioMetadata.contentType,
+      url,
+    };
+  }
 }
