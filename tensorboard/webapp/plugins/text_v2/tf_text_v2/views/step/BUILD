@@ -19,6 +19,7 @@ ng_module(
         "//tensorboard/webapp/plugins/text_v2/tf_text_v2/views/markdown_renderer:markdown_renderer",
         "@npm//@angular/common",
         "@npm//@angular/core",
+        "@npm//@angular/material",
     ],
 )
 

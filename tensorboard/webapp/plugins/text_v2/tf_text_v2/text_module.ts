@@ -18,7 +18,7 @@ import {NgModule} from '@angular/core';
 //import {StoreModule} from '@ngrx/store';
 import {EffectsModule} from '@ngrx/effects';
 
-import {StepModule} from './views/step/step_module';
+import {TagGroupModule} from './views/tag_group/tag_group_module';
 import {Tftext2ServerDataSourceModule} from './data_source/tftext2_data_source_module';
 import {TextComponent} from './text_component';
 import {TextContainer} from './text_container';
@@ -31,7 +31,7 @@ import {PluginRegistryModule} from '../../plugin_registry_module';
   declarations: [TextComponent, TextContainer],
   imports: [
     CommonModule,
-    StepModule,
+    TagGroupModule,
     // StoreModule.forFeature(TEXT_FEATURE_KEY, TextReducers),
     Tftext2ServerDataSourceModule,
     EffectsModule.forFeature([TextEffects]),

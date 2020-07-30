@@ -1,0 +1,23 @@
+.tag-group-container {
+  margin-top: 2px;
+}
+
+.tag-group-header-container {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.tag-group-title {
+  font-size: 110%;
+  font-color: black;
+  height: 40px;
+  line-height: 40px;
+}
+
+.tag-count {
+  font-style: italic;
+  height: 40px;
+  line-height: 40px;
+}

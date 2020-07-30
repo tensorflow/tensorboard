@@ -23,7 +23,7 @@ ng_module(
         "//tensorboard/webapp/plugins/text_v2/tf_text_v2/data_source",
         "//tensorboard/webapp/plugins/text_v2/tf_text_v2/effects",
         "//tensorboard/webapp/plugins/text_v2/tf_text_v2/store:types",
-        "//tensorboard/webapp/plugins/text_v2/tf_text_v2/views/step:step",
+        "//tensorboard/webapp/plugins/text_v2/tf_text_v2/views/tag_group:tag_group",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@ngrx/effects",

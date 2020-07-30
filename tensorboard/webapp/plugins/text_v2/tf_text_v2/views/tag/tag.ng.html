@@ -15,25 +15,30 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<div class="step-container">
+<div class="tag-container">
   <mat-card>
-    <mat-card-title class="step-header-container">
-      <div class="step-header" [innerHTML]="getStepText()"></div>
+    <mat-card-title>
+      <div class="heading-container">
+        <div class="tag-name-heading">{{tagName}}</div>
+        <div
+          class="run-name-heading"
+          [ngStyle]="{'background-color': tagColor}"
+        >
+          {{runName}}
+        </div>
+      </div>
     </mat-card-title>
+    <mat-card-subtitle>
+      tag: {{tagName}}
+    </mat-card-subtitle>
     <mat-card-content>
-      <div
-        class="table-container"
-        [ngClass]="{'render-table-here': isNotRankZero(dataSource)}"
-      >
-        <table>
-          <tbody>
-            <tr *ngFor="let stringArray of dataSource">
-              <td *ngFor="let element of stringArray">
-                <markdown-renderer [markdown]="element"></markdown-renderer>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="step-list" [ngStyle]="{'border-color': tagColor}">
+        <step
+          *ngFor="let step of stepList | keyvalue"
+          [step_number]="step.key"
+          [dataSource]="step.value"
+        >
+        </step>
       </div>
     </mat-card-content>
   </mat-card>

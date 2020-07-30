@@ -12,21 +12,23 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, Input, ViewEncapsulation} from '@angular/core';
-import {parse} from 'marked';
+import {Component, Input} from '@angular/core';
 
 @Component({
-  selector: 'markdown-renderer',
-  templateUrl: './markdown_renderer.ng.html',
-  styleUrls: ['./markdown_renderer.css'],
-  encapsulation: ViewEncapsulation.None,
+  selector: 'tag-group',
+  templateUrl: './tag_group.ng.html',
+  styleUrls: ['./tag_group.css'],
 })
-export class MarkdownRenderer {
+export class TagGroupComponent {
   @Input()
-  markdown: string = '';
+  tagGroupName: string = '';
 
-  convertToHTML(markdown: string) {
-    return parse(markdown);
-    //return markdown;
-  }
+  @Input()
+  tagNameArray: string[] = [];
+
+  @Input()
+  runNameArray: string[] = [];
+
+  @Input()
+  colorArray: string[] = [];
 }

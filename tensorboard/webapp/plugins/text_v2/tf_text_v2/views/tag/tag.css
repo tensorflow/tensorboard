@@ -1,0 +1,26 @@
+.step-list {
+  border-radius: 3px;
+  border: 2px solid;
+  display: block;
+  max-height: 500px;
+  overflow: auto;
+  padding: 10px;
+}
+
+.heading-container {
+  display: flex;
+  justify-content: space-between;
+}
+
+.tag-name-heading {
+  font-size: 75%;
+}
+
+.run-name-heading {
+  font-size: 60%;
+  border-radius: 5px;
+  font-color: black;
+  padding: 5px;
+  height: 18.5px;
+  line-height: 20px;
+}

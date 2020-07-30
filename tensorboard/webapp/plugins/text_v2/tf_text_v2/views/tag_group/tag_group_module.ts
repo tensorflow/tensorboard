@@ -1,4 +1,4 @@
-/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -12,21 +12,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, Input, ViewEncapsulation} from '@angular/core';
-import {parse} from 'marked';
 
-@Component({
-  selector: 'markdown-renderer',
-  templateUrl: './markdown_renderer.ng.html',
-  styleUrls: ['./markdown_renderer.css'],
-  encapsulation: ViewEncapsulation.None,
+import {CommonModule} from '@angular/common';
+import {NgModule} from '@angular/core';
+import {MatExpansionModule} from '@angular/material/expansion';
+
+import {TagModule} from '../tag/tag_module';
+import {TagGroupComponent} from './tag_group_component';
+
+@NgModule({
+  declarations: [TagGroupComponent],
+  imports: [CommonModule, MatExpansionModule, TagModule],
+  exports: [TagGroupComponent],
 })
-export class MarkdownRenderer {
-  @Input()
-  markdown: string = '';
-
-  convertToHTML(markdown: string) {
-    return parse(markdown);
-    //return markdown;
-  }
-}
+export class TagGroupModule {}

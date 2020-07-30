@@ -15,13 +15,14 @@ limitations under the License.
 
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
+import {MatCardModule} from '@angular/material/card';
 
 import {MarkdownRendererModule} from '../markdown_renderer/markdown_renderer_module';
 import {StepComponent} from './step_component';
 
 @NgModule({
   declarations: [StepComponent],
-  imports: [CommonModule, MarkdownRendererModule],
+  imports: [CommonModule, MatCardModule, MarkdownRendererModule],
   exports: [StepComponent],
 })
 export class StepModule {}

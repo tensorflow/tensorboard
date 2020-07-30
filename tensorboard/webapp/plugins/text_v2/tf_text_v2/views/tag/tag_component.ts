@@ -15,28 +15,28 @@ limitations under the License.
 import {Component, Input} from '@angular/core';
 
 @Component({
-  selector: 'step',
-  templateUrl: './step.ng.html',
-  styleUrls: ['./step.css'],
+  selector: 'tag',
+  templateUrl: './tag.ng.html',
+  styleUrls: ['./tag.css'],
 })
-export class StepComponent {
+export class TagComponent {
   @Input()
-  step_number: number = 0;
+  tagName: string = '';
 
   @Input()
-  run_name: string = '';
+  tagColor: string = '';
 
   @Input()
-  tag_name: string = '';
+  runName: string = '';
 
-  @Input()
-  dataSource: string[][] = [];
+  stepList: Map<number, string[][]> = new Map();
 
   example1: string[][] = [
     [
       'We conducted an experiment and found the following data:\n\nPounds of chocolate | Happiness\n---|---\n0 | 1\n1 | 4\n2 | 9\n3 | 16\n4 | 25\n5 | 36\n6 | 49\n7 | 64\n8 | 81\n9 | 100\n10 | 121',
     ],
   ];
+
   example2: string[][] = [
     ['\u00d7', '**0**', '**1**', '**2**', '**3**', '**4**', '**5**'],
     ['**0**', '0', '0', '0', '0', '0', '0'],
@@ -46,17 +46,12 @@ export class StepComponent {
     ['**4**', '0', '4', '8', '12', '16', '20'],
     ['**5**', '0', '5', '10', '15', '20', '25'],
   ];
+
   example3: string[][] = [['**5**', '0', '5', '10', '15', '20', '25']];
 
-  getMarkdownText() {
-    return 'We conducted an experiment and found the following data:\n\nPounds of chocolate | Happiness\n---|---\n0 | 1\n1 | 4\n2 | 9\n3 | 16\n4 | 25\n5 | 36\n6 | 49\n7 | 64\n8 | 81\n9 | 100\n10 | 121';
-  }
-
-  isNotRankZero(dataArray: string[][]) {
-    return dataArray.length > 0 && dataArray[0].length > 1;
-  }
-
-  getStepText() {
-    return 'step ' + this.step_number.toString();
+  constructor() {
+    this.stepList.set(0, this.example1);
+    this.stepList.set(1, this.example2);
+    this.stepList.set(2, this.example3);
   }
 }

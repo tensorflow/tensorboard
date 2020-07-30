@@ -6,20 +6,20 @@ package(default_visibility = ["//tensorboard:internal"])
 licenses(["notice"])  # Apache 2.0
 
 ng_module(
-    name = "markdown_renderer",
+    name = "tag_group",
     srcs = [
-        "markdown_renderer_component.ts",
-        "markdown_renderer_module.ts",
+        "tag_group_component.ts",
+        "tag_group_module.ts",
     ],
     assets = [
-        "markdown_renderer.css",
-        "markdown_renderer.ng.html",
+        "tag_group.css",
+        "tag_group.ng.html",
     ],
     deps = [
+        "//tensorboard/webapp/plugins/text_v2/tf_text_v2/views/tag:tag",
         "@npm//@angular/common",
         "@npm//@angular/core",
-        "@npm//marked",
-        "@npm//@types/marked",
       ],
 )
+
 
