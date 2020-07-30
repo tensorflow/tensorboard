@@ -14,36 +14,22 @@ limitations under the License.
 ==============================================================================*/
 
 import {PolymerElement, html} from '@polymer/polymer';
-import {customElement, property} from '@polymer/decorators';
+import {computed, customElement, observe, property} from '@polymer/decorators';
 import '@polymer/paper-material';
 import '@polymer/paper-slider';
-import '@polymer/paper-spinner';
+import '@polymer/paper-spinner/paper-spinner';
 import '@polymer/paper-toggle-button';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-common/tf-graph-common.html';
-import '@polymer/paper-material';
-import '@polymer/paper-slider';
-import '@polymer/paper-spinner';
-import '@polymer/paper-toggle-button';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-common/tf-graph-common.html';
-/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+import * as PolymerDom from '@polymer/polymer/lib/legacy/polymer.dom.js';
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+import * as tf_graph_scene from '../tf_graph_common/scene';
+import * as tf_graph_util from '../tf_graph_common/util';
+import * as tf_graph_render from '../tf_graph_common/render';
 
-    http://www.apache.org/licenses/LICENSE-2.0
+import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
 'use strict';
 @customElement('tf-graph-debugger-data-card')
-class TfGraphDebuggerDataCard extends PolymerElement {
+class TfGraphDebuggerDataCard extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
     <style>
       :host {
@@ -303,56 +289,65 @@ class TfGraphDebuggerDataCard extends PolymerElement {
     </paper-material>
   `;
   @property({type: Object})
-  renderHierarchy: object;
+  renderHierarchy: any;
   @property({
     type: Array,
     notify: true,
   })
-  debuggerNumericAlerts: unknown[];
+  debuggerNumericAlerts: any;
   @property({type: Object})
-  nodeNamesToHealthPills: object;
+  nodeNamesToHealthPills: any;
   @property({
     type: Number,
     notify: true,
   })
-  healthPillStepIndex: number;
+  healthPillStepIndex: any;
+  // Only relevant if we are in all steps mode, in which case the user may want to view health
+  // pills for a specific step.
   @property({
     type: Number,
     notify: true,
   })
   specificHealthPillStep: number = 0;
+  // Two-ways
   @property({
     type: String,
     notify: true,
   })
-  selectedNode: string;
+  selectedNode: any;
   @property({
     type: String,
     notify: true,
   })
-  highlightedNode: string;
+  highlightedNode: any;
+  // The enum value of the include property of the selected node.
   @property({
     type: Number,
     notify: true,
   })
-  selectedNodeInclude: number;
+  selectedNodeInclude: any;
+  // Whether health pills are currently being loaded, in which case we show a spinner (and the
+  // current health pills shown might be out of date).
   @property({type: Boolean})
-  areHealthPillsLoading: boolean;
+  areHealthPillsLoading: any;
   @property({
     type: Array,
     readOnly: true,
   })
-  healthPillEntries: unknown[] = tf.graph.scene.healthPillEntries;
+  healthPillEntries: unknown[] = tf_graph_scene.healthPillEntries;
+  // When all-steps mode is enabled, the user can request health pills for any step. In this
+  // mode, Tensorboard makes a request every time the user drags the slider to a different step.
   @property({
     type: Boolean,
     notify: true,
   })
-  allStepsModeEnabled: boolean;
+  allStepsModeEnabled: any;
   ready() {
+    super.ready();
     var mainContainer = document.getElementById('mainContainer');
     var scrollbarContainer = document.querySelector(
       'tf-dashboard-layout .scrollbar'
-    );
+    ) as HTMLElement | null;
     if (mainContainer && scrollbarContainer) {
       // If this component is being used inside of TensorBoard's dashboard layout, it may easily
       // cause the dashboard layout element to overflow, giving the user 2 scroll bars. Prevent
@@ -362,13 +357,16 @@ class TfGraphDebuggerDataCard extends PolymerElement {
       scrollbarContainer.style.overflow = 'hidden';
     }
   }
-  _healthPillsAvailable(debuggerDataEnabled, nodeNamesToHealthPills) {
+  _healthPillsAvailable(debuggerDataEnabled: any, nodeNamesToHealthPills: any) {
     // So long as there is a mapping (even if empty) from node name to health pills, show the
     // legend and slider. We do that because, even if no health pills exist at the current step,
     // the user may desire to change steps, and the slider must show for the user to do that.
     return debuggerDataEnabled && nodeNamesToHealthPills;
   }
-  _computeTensorCountString(healthPillValuesForSelectedNode, valueIndex) {
+  _computeTensorCountString(
+    healthPillValuesForSelectedNode: any,
+    valueIndex: any
+  ) {
     if (!healthPillValuesForSelectedNode) {
       // No health pill data is available.
       return '';
@@ -382,7 +380,7 @@ class TfGraphDebuggerDataCard extends PolymerElement {
     'allStepsModeEnabled',
     'areHealthPillsLoading'
   )
-  get healthPillValuesForSelectedNode(): unknown[] {
+  get healthPillValuesForSelectedNode(): unknown[] | null {
     var nodeNamesToHealthPills = this.nodeNamesToHealthPills;
     var healthPillStepIndex = this.healthPillStepIndex;
     var selectedNode = this.selectedNode;
@@ -419,7 +417,7 @@ class TfGraphDebuggerDataCard extends PolymerElement {
     'specificHealthPillStep',
     'areHealthPillsLoading'
   )
-  get _currentStepDisplayValue(): string {
+  get _currentStepDisplayValue(): any {
     var nodeNamesToHealthPills = this.nodeNamesToHealthPills;
     var healthPillStepIndex = this.healthPillStepIndex;
     var allStepsModeEnabled = this.allStepsModeEnabled;
@@ -444,6 +442,8 @@ class TfGraphDebuggerDataCard extends PolymerElement {
     // The current step could not be computed.
     return 0;
   }
+  // The biggest step value ever seen. Used to determine what steps of health pills to let the
+  // user fetch in all steps mode.
   @computed('nodeNamesToHealthPills')
   get _biggestStepEverSeen(): number {
     var nodeNamesToHealthPills = this.nodeNamesToHealthPills;
@@ -472,7 +472,7 @@ class TfGraphDebuggerDataCard extends PolymerElement {
     // Return a falsy value. The slider should be hidden.
     return 0;
   }
-  _hasDebuggerNumericAlerts(debuggerNumericAlerts) {
+  _hasDebuggerNumericAlerts(debuggerNumericAlerts: any) {
     return debuggerNumericAlerts && debuggerNumericAlerts.length;
   }
   @observe('debuggerNumericAlerts')
@@ -482,12 +482,12 @@ class TfGraphDebuggerDataCard extends PolymerElement {
     if (!alertBody) {
       return;
     }
-    alertBody.innerText = '';
+    (alertBody as HTMLElement).innerText = '';
     for (var i = 0; i < debuggerNumericAlerts.length; i++) {
       var alert = debuggerNumericAlerts[i];
       var tableRow = document.createElement('tr');
       var timestampTd = document.createElement('td');
-      timestampTd.innerText = tf.graph.util.computeHumanFriendlyTime(
+      timestampTd.innerText = tf_graph_util.computeHumanFriendlyTime(
         alert.first_timestamp
       );
       timestampTd.classList.add('first-offense-td');
@@ -544,24 +544,26 @@ class TfGraphDebuggerDataCard extends PolymerElement {
         );
         miniHealthPill.appendChild(nanCountSection);
       }
-      Polymer.dom(alertBody).appendChild(tableRow);
+      PolymerDom.dom(alertBody).appendChild(tableRow);
     }
   }
   // Adds a listener to an element, so that when that element is clicked, the tensor with
   // tensorName expands.
-  _addOpExpansionListener(clickableElement, tensorName) {
+  _addOpExpansionListener(clickableElement: any, tensorName: any) {
     clickableElement.addEventListener('click', () => {
       // When the user clicks on a tensor name, expand all nodes until the user can see the
       // associated node.
-      var nameOfNodeToSelect = tf.graph.render.expandUntilNodeIsShown(
+      var nameOfNodeToSelect = tf_graph_render.expandUntilNodeIsShown(
         document.getElementById('scene'),
         this.renderHierarchy,
         tensorName
       );
       // Store the current scroll of the graph info card. Node selection alters that scroll, and
       // we restore the scroll later.
-      var previousScrollFromBottom;
-      var graphInfoCard = document.querySelector('tf-graph-info#graph-info');
+      var previousScrollFromBottom: any;
+      var graphInfoCard = document.querySelector(
+        'tf-graph-info#graph-info'
+      ) as any;
       if (graphInfoCard) {
         previousScrollFromBottom =
           graphInfoCard.scrollHeight - graphInfoCard.scrollTop;
