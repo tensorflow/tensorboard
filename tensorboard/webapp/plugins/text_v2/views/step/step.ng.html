@@ -18,17 +18,17 @@ limitations under the License.
 <div class="step-container">
   <mat-card>
     <mat-card-title class="step-header-container">
-      <div class="step-header" [innerHTML]="getStepText()"></div>
+      <div class="step-header" [innerHTML]="step_text"></div>
     </mat-card-title>
     <mat-card-content>
       <div
         class="table-container"
-        [ngClass]="{'render-table-here': isNotRankZero(dataSource)}"
+        [ngClass]="{'render-table-here': not_rank_zero}"
       >
         <table>
           <tbody>
-            <tr *ngFor="let stringArray of dataSource">
-              <td *ngFor="let element of stringArray">
+            <tr *ngFor="let string_array of data_source">
+              <td *ngFor="let element of string_array">
                 <markdown-renderer [markdown]="element"></markdown-renderer>
               </td>
             </tr>

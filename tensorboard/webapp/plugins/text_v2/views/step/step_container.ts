@@ -15,11 +15,19 @@ limitations under the License.
 import {Component, Input} from '@angular/core';
 
 @Component({
-  selector: 'step',
-  templateUrl: './step.ng.html',
-  styleUrls: ['./step.css'],
+  selector: 'step-container',
+  template: `
+    <step
+      [step_number]="step_number"
+      [run_name]="run_name"
+      [tag_name]="tag_name"
+      [data_source]="data_source"
+      [not_rank_zero]="isNotRankZero(data_source)"
+      [step_text]="getStepText()"
+    ></step>
+  `,
 })
-export class StepComponent {
+export class StepContainer {
   @Input()
   step_number: number = 0;
 
@@ -32,9 +40,11 @@ export class StepComponent {
   @Input()
   data_source: string[][] = [];
 
-  @Input()
-  not_rank_zero: boolean = false;
+  isNotRankZero(dataArray: string[][]) {
+    return dataArray.length > 0 && dataArray[0].length > 1;
+  }
 
-  @Input()
-  step_text: string = '';
+  getStepText() {
+    return 'step ' + this.step_number.toString();
+  }
 }

@@ -9,6 +9,7 @@ ng_module(
     name = "step",
     srcs = [
         "step_component.ts",
+        "step_container.ts",
         "step_module.ts",
     ],
     assets = [

@@ -32,12 +32,12 @@ limitations under the License.
     </mat-card-subtitle>
     <mat-card-content>
       <div class="step-list" [ngStyle]="{'border-color': tagColor}">
-        <step
+        <step-container
           *ngFor="let step of stepList | keyvalue"
           [step_number]="step.key"
-          [dataSource]="step.value"
+          [data_source]="step.value"
         >
-        </step>
+        </step-container>
       </div>
     </mat-card-content>
   </mat-card>

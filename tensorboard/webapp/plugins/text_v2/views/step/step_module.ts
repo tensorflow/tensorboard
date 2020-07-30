@@ -19,10 +19,11 @@ import {MatCardModule} from '@angular/material/card';
 
 import {MarkdownRendererModule} from '../../../../widgets/markdown_renderer/markdown_renderer_module';
 import {StepComponent} from './step_component';
+import {StepContainer} from './step_container';
 
 @NgModule({
-  declarations: [StepComponent],
+  declarations: [StepComponent, StepContainer],
   imports: [CommonModule, MatCardModule, MarkdownRendererModule],
-  exports: [StepComponent],
+  exports: [StepContainer],
 })
 export class StepModule {}
