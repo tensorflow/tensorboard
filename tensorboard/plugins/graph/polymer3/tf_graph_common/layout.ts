@@ -12,41 +12,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {DO_NOT_SUBMIT} from '../tf-imports/d3.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/dagre.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/graphlib.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
-import {DO_NOT_SUBMIT} from 'annotation';
-import {DO_NOT_SUBMIT} from 'colors';
-import {DO_NOT_SUBMIT} from 'common';
-import {DO_NOT_SUBMIT} from 'contextmenu';
-import {DO_NOT_SUBMIT} from 'edge';
-import {DO_NOT_SUBMIT} from 'externs';
-import {DO_NOT_SUBMIT} from 'graph';
-import {DO_NOT_SUBMIT} from 'hierarchy';
-import {DO_NOT_SUBMIT} from 'loader';
-import {DO_NOT_SUBMIT} from 'node';
-import {DO_NOT_SUBMIT} from 'op';
-import {DO_NOT_SUBMIT} from 'parser';
-import {DO_NOT_SUBMIT} from 'proto';
-import {DO_NOT_SUBMIT} from 'render';
-import {DO_NOT_SUBMIT} from 'scene';
-import {DO_NOT_SUBMIT} from 'template';
-import {DO_NOT_SUBMIT} from 'util';
-/* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
+import * as d3 from 'd3';
+import * as dagre from 'dagre';
 
-Licensed under the Apache License, Version 2.0 (the 'License');
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+import * as graphlib from 'graphlib';
+import * as _ from 'lodash';
 
-    http://www.apache.org/licenses/LICENSE-2.0
+import {NodeType} from './graph';
+import * as render from './render';
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an 'AS IS' BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
 export const PARAMS = {
   animation: {
     /** Default duration for graph animations in ms. */
@@ -489,15 +463,17 @@ function layoutMetanode(renderNodeInfo: render.RenderGroupNodeInfo): void {
   // top-left corner of inExtractBox (the bounding box for all inExtract nodes)
   // and calculate the size of the inExtractBox.
   let maxInExtractWidth = renderNodeInfo.isolatedInExtract.length
-    ? _.max(renderNodeInfo.isolatedInExtract, (renderNode) => renderNode.width)
-        .width
+    ? _.maxBy(
+        renderNodeInfo.isolatedInExtract,
+        (renderNode) => renderNode.width
+      ).width
     : null;
   renderNodeInfo.inExtractBox.width =
     maxInExtractWidth != null ? maxInExtractWidth : 0;
   renderNodeInfo.inExtractBox.height = _.reduce(
     renderNodeInfo.isolatedInExtract,
     (height, child, i) => {
-      let yOffset = i > 0 ? params.extractYOffset : 0;
+      let yOffset = ((i as unknown) as number) > 0 ? params.extractYOffset : 0;
       // use width/height here to avoid overlaps between extracts
       child.x = 0;
       child.y = height + yOffset + child.height / 2;
@@ -509,15 +485,17 @@ function layoutMetanode(renderNodeInfo: render.RenderGroupNodeInfo): void {
   // top-left corner of outExtractBox (the bounding box for all outExtract
   // nodes) and calculate the size of the outExtractBox.
   let maxOutExtractWidth = renderNodeInfo.isolatedOutExtract.length
-    ? _.max(renderNodeInfo.isolatedOutExtract, (renderNode) => renderNode.width)
-        .width
+    ? _.maxBy(
+        renderNodeInfo.isolatedOutExtract,
+        (renderNode) => renderNode.width
+      ).width
     : null;
   renderNodeInfo.outExtractBox.width =
     maxOutExtractWidth != null ? maxOutExtractWidth : 0;
   renderNodeInfo.outExtractBox.height = _.reduce(
     renderNodeInfo.isolatedOutExtract,
     (height, child, i) => {
-      let yOffset = i > 0 ? params.extractYOffset : 0;
+      let yOffset = ((i as unknown) as number) > 0 ? params.extractYOffset : 0;
       // use width/height here to avoid overlaps between extracts
       child.x = 0;
       child.y = height + yOffset + child.height / 2;
@@ -529,7 +507,7 @@ function layoutMetanode(renderNodeInfo: render.RenderGroupNodeInfo): void {
   // top-left corner of libraryFunctionsBox (the bounding box for all library
   // function nodes) and calculate the size of the libraryFunctionsBox.
   let maxLibraryFunctionsWidth = renderNodeInfo.libraryFunctionsExtract.length
-    ? _.max(
+    ? _.maxBy(
         renderNodeInfo.libraryFunctionsExtract,
         (renderNode) => renderNode.width
       ).width
@@ -539,7 +517,7 @@ function layoutMetanode(renderNodeInfo: render.RenderGroupNodeInfo): void {
   renderNodeInfo.libraryFunctionsBox.height = _.reduce(
     renderNodeInfo.libraryFunctionsExtract,
     (height, child, i) => {
-      let yOffset = i > 0 ? params.extractYOffset : 0;
+      let yOffset = ((i as unknown) as number) > 0 ? params.extractYOffset : 0;
       // use width/height here to avoid overlaps between extracts
       child.x = 0;
       child.y = height + yOffset + child.height / 2;
@@ -634,7 +612,7 @@ function layoutAnnotation(renderNodeInfo: render.RenderNodeInfo): void {
   let inboxHeight = _.reduce(
     inAnnotations,
     (height, a, i) => {
-      let yOffset = i > 0 ? params.yOffset : 0;
+      let yOffset = ((i as unknown) as number) > 0 ? params.yOffset : 0;
       a.dx = -(renderNodeInfo.coreBox.width + a.width) / 2 - params.xOffset;
       a.dy = height + yOffset + a.height / 2;
       return height + yOffset + a.height;
@@ -653,7 +631,7 @@ function layoutAnnotation(renderNodeInfo: render.RenderNodeInfo): void {
   let outboxHeight = _.reduce(
     outAnnotations,
     (height, a, i) => {
-      let yOffset = i > 0 ? params.yOffset : 0;
+      let yOffset = ((i as unknown) as number) > 0 ? params.yOffset : 0;
       a.dx = (renderNodeInfo.coreBox.width + a.width) / 2 + params.xOffset;
       a.dy = height + yOffset + a.height / 2;
       return height + yOffset + a.height;
@@ -690,7 +668,7 @@ function layoutAnnotation(renderNodeInfo: render.RenderNodeInfo): void {
         dx: -renderNodeInfo.coreBox.width / 2,
         // only use scale if there are more than one,
         // otherwise center it vertically
-        dy: inAnnotations.length > 1 ? inY(i) : 0,
+        dy: inAnnotations.length > 1 ? inY((i as unknown) as number) : 0,
       },
     ];
   });
@@ -713,7 +691,7 @@ function layoutAnnotation(renderNodeInfo: render.RenderNodeInfo): void {
         dx: renderNodeInfo.coreBox.width / 2,
         // only use scale if there are more than one,
         // otherwise center it vertically
-        dy: outAnnotations.length > 1 ? outY(i) : 0,
+        dy: outAnnotations.length > 1 ? outY((i as unknown) as number) : 0,
       },
       // The annotation node end
       {

@@ -12,7 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import RenderNodeInfo = tf.graph.render.RenderNodeInfo;
+import {RenderNodeInfo} from './render';
+
 type Selection = d3.Selection<any, any, any, any>;
 // This technically extends Polymer.Component whose constructor is not
 // accessible.

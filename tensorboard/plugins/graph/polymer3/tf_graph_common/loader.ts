@@ -12,55 +12,26 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {DO_NOT_SUBMIT} from '../tf-imports/d3.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/dagre.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/graphlib.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
-import {DO_NOT_SUBMIT} from 'annotation';
-import {DO_NOT_SUBMIT} from 'colors';
-import {DO_NOT_SUBMIT} from 'common';
-import {DO_NOT_SUBMIT} from 'contextmenu';
-import {DO_NOT_SUBMIT} from 'edge';
-import {DO_NOT_SUBMIT} from 'externs';
-import {DO_NOT_SUBMIT} from 'graph';
-import {DO_NOT_SUBMIT} from 'hierarchy';
-import {DO_NOT_SUBMIT} from 'layout';
-import {DO_NOT_SUBMIT} from 'node';
-import {DO_NOT_SUBMIT} from 'op';
-import {DO_NOT_SUBMIT} from 'parser';
-import {DO_NOT_SUBMIT} from 'proto';
-import {DO_NOT_SUBMIT} from 'render';
-import {DO_NOT_SUBMIT} from 'scene';
-import {DO_NOT_SUBMIT} from 'template';
-import {DO_NOT_SUBMIT} from 'util';
-/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+import * as tf_graph from './graph';
+import * as hierarchy from './hierarchy';
+import * as op from './op';
+import * as parser from './parser';
+import * as tf_graph_util from './util';
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
 export type GraphAndHierarchy = {
-  graph: SlimGraph;
+  graph: tf_graph.SlimGraph;
   graphHierarchy: hierarchy.Hierarchy;
 };
 export function fetchAndConstructHierarchicalGraph(
-  tracker: tf.graph.util.Tracker,
+  tracker: tf_graph_util.Tracker,
   remotePath: string | null,
   pbTxtFile: Blob | null,
   compatibilityProvider: op.CompatibilityProvider = new op.TpuCompatibilityProvider(),
   hierarchyParams: hierarchy.HierarchyParams = hierarchy.DefaultHierarchyParams
 ): Promise<GraphAndHierarchy> {
-  const dataTracker = util.getSubtaskTracker(tracker, 30, 'Data');
-  const graphTracker = util.getSubtaskTracker(tracker, 20, 'Graph');
-  const hierarchyTracker = util.getSubtaskTracker(
+  const dataTracker = tf_graph_util.getSubtaskTracker(tracker, 30, 'Data');
+  const graphTracker = tf_graph_util.getSubtaskTracker(tracker, 20, 'Graph');
+  const hierarchyTracker = tf_graph_util.getSubtaskTracker(
     tracker,
     50,
     'Namespace hierarchy'
@@ -77,7 +48,7 @@ export function fetchAndConstructHierarchicalGraph(
               'information.'
           );
         }
-        return build(graph, DefaultBuildParams, graphTracker);
+        return tf_graph.build(graph, tf_graph.DefaultBuildParams, graphTracker);
       },
       () => {
         throw new Error(

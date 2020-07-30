@@ -12,41 +12,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {DO_NOT_SUBMIT} from '../tf-imports/d3.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/dagre.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/graphlib.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
-import {DO_NOT_SUBMIT} from 'annotation';
-import {DO_NOT_SUBMIT} from 'colors';
-import {DO_NOT_SUBMIT} from 'common';
-import {DO_NOT_SUBMIT} from 'contextmenu';
-import {DO_NOT_SUBMIT} from 'edge';
-import {DO_NOT_SUBMIT} from 'externs';
-import {DO_NOT_SUBMIT} from 'hierarchy';
-import {DO_NOT_SUBMIT} from 'layout';
-import {DO_NOT_SUBMIT} from 'loader';
-import {DO_NOT_SUBMIT} from 'node';
-import {DO_NOT_SUBMIT} from 'op';
-import {DO_NOT_SUBMIT} from 'parser';
-import {DO_NOT_SUBMIT} from 'proto';
-import {DO_NOT_SUBMIT} from 'render';
-import {DO_NOT_SUBMIT} from 'scene';
-import {DO_NOT_SUBMIT} from 'template';
-import {DO_NOT_SUBMIT} from 'util';
-/* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
+import * as graphlib from 'graphlib';
+import * as _ from 'lodash';
 
-Licensed under the Apache License, Version 2.0 (the 'License');
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+import {ProgressTracker} from './common';
+import * as hierarchy from './hierarchy';
 
-    http://www.apache.org/licenses/LICENSE-2.0
+import * as tf_graph_proto from './proto';
+import * as tf_graph_util from './util';
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an 'AS IS' BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
 export const NAMESPACE_DELIM = '/';
 export const ROOT_NAME = '__root__';
 export const FUNCTION_LIBRARY_NODE_PREFIX = '__function_library__';
@@ -102,6 +76,8 @@ export interface BaseEdge extends graphlib.EdgeObject {
   isReferenceEdge: boolean;
   /** The index of the output tensor of the source node. */
   outputTensorKey: string;
+  v?: string;
+  w?: string;
 }
 /**
  * A SlimGraph is inspired by graphlib.Graph, but having only the functionality
@@ -450,7 +426,7 @@ export class OpNodeImpl implements OpNode {
    *
    * @param rawNode The raw node.
    */
-  constructor(rawNode: tf.graph.proto.NodeDef) {
+  constructor(rawNode: tf_graph_proto.NodeDef) {
     this.op = rawNode.op;
     this.name = rawNode.name;
     this.device = rawNode.device;
@@ -483,7 +459,7 @@ export function createMetanode(name: string, opt = {}): Metanode {
  */
 export function joinStatsInfoWithGraph(
   graph: SlimGraph,
-  stats: tf.graph.proto.StepStats,
+  stats: tf_graph_proto.StepStats,
   devicesForStats?: {
     [device: string]: boolean;
   }
@@ -769,6 +745,8 @@ export interface Metaedge extends graphlib.EdgeObject {
    */
   totalSize: number;
   addBaseEdge(edge: BaseEdge, h: hierarchy.Hierarchy): void;
+  v?: string;
+  w?: string;
 }
 export function createMetaedge(v: string, w: string): Metaedge {
   return new MetaedgeImpl(v, w);
@@ -1115,7 +1093,7 @@ export const DefaultBuildParams: BuildParams = {
   },
 };
 export function build(
-  graphDef: tf.graph.proto.GraphDef,
+  graphDef: tf_graph_proto.GraphDef,
   params: BuildParams,
   tracker: ProgressTracker
 ): Promise<SlimGraph> {
@@ -1154,7 +1132,7 @@ export function build(
    * even for very large networks that amounts to less than 10k spaces.
    */
   let nodeNames = new Array<string>(rawNodes.length);
-  return tf.graph.util
+  return tf_graph_util
     .runAsyncTask(
       'Normalizing names',
       30,
@@ -1186,7 +1164,7 @@ export function build(
           return opNode;
         };
         _.each(rawNodes, processRawNode);
-        const processFunction = (func: tf.graph.proto.FunctionDef) => {
+        const processFunction = (func: tf_graph_proto.FunctionDef) => {
           // Give the function itself a node.
           const functionNodeName =
             FUNCTION_LIBRARY_NODE_PREFIX + func.signature.name;
@@ -1286,7 +1264,7 @@ export function build(
     )
     .then((opNodes) => {
       // Create the graph data structure from the graphlib library.
-      return tf.graph.util.runAsyncTask(
+      return tf_graph_util.runAsyncTask(
         'Building the data structure',
         70,
         () => {
@@ -1534,7 +1512,7 @@ export function getHierarchicalPath(
  * on the provided current InclusionType.
  */
 export function getIncludeNodeButtonString(include: InclusionType) {
-  if (include === tf.graph.InclusionType.EXCLUDE) {
+  if (include === InclusionType.EXCLUDE) {
     return 'Add to main graph';
   } else {
     return 'Remove from main graph';
@@ -1545,7 +1523,7 @@ export function getIncludeNodeButtonString(include: InclusionType) {
  * on the provided current SeriesGroupingType.
  */
 export function getGroupSeriesNodeButtonString(group: SeriesGroupingType) {
-  if (group === tf.graph.SeriesGroupingType.GROUP) {
+  if (group === SeriesGroupingType.GROUP) {
     return 'Ungroup this series of nodes';
   } else {
     return 'Group this series of nodes';
@@ -1557,13 +1535,13 @@ export function getGroupSeriesNodeButtonString(group: SeriesGroupingType) {
  */
 export function toggleNodeSeriesGroup(
   map: {
-    [name: string]: tf.graph.SeriesGroupingType;
+    [name: string]: SeriesGroupingType;
   },
   name: string
 ) {
-  if (!(name in map) || map[name] === tf.graph.SeriesGroupingType.GROUP) {
-    map[name] = tf.graph.SeriesGroupingType.UNGROUP;
+  if (!(name in map) || map[name] === SeriesGroupingType.GROUP) {
+    map[name] = SeriesGroupingType.UNGROUP;
   } else {
-    map[name] = tf.graph.SeriesGroupingType.GROUP;
+    map[name] = SeriesGroupingType.GROUP;
   }
 }

@@ -12,6 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import * as d3 from 'd3';
+
 const FRAC_VIEWPOINT_AREA: number = 0.8;
 export class Minimap {
   /** The minimap container. */

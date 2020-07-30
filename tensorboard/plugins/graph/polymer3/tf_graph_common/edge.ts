@@ -12,42 +12,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {DO_NOT_SUBMIT} from '../tf-imports/d3.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/dagre.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/graphlib.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
-import {DO_NOT_SUBMIT} from 'annotation';
-import {DO_NOT_SUBMIT} from 'colors';
-import {DO_NOT_SUBMIT} from 'common';
-import {DO_NOT_SUBMIT} from 'contextmenu';
-import {DO_NOT_SUBMIT} from 'externs';
-import {DO_NOT_SUBMIT} from 'graph';
-import {DO_NOT_SUBMIT} from 'hierarchy';
-import {DO_NOT_SUBMIT} from 'layout';
-import {DO_NOT_SUBMIT} from 'loader';
-import {DO_NOT_SUBMIT} from 'node';
-import {DO_NOT_SUBMIT} from 'op';
-import {DO_NOT_SUBMIT} from 'parser';
-import {DO_NOT_SUBMIT} from 'proto';
-import {DO_NOT_SUBMIT} from 'render';
-import {DO_NOT_SUBMIT} from 'scene';
-import {DO_NOT_SUBMIT} from 'template';
-import {DO_NOT_SUBMIT} from 'util';
-/* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
+import * as d3 from 'd3';
+import * as graphlib from 'graphlib';
+import * as _ from 'lodash';
 
-Licensed under the Apache License, Version 2.0 (the 'License');
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+import {EDGE_KEY_DELIM, BaseEdge, OpNode, Metaedge} from './graph';
+import * as render from './render';
+import {Class} from './scene';
+import * as tf_graph_scene from './scene';
+import {TfGraphScene} from './tf-graph-scene';
 
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an 'AS IS' BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
-import TfGraphScene = tf.graph.scene.TfGraphScene;
 /** Delimiter between dimensions when showing sizes of tensors. */
 const TENSOR_SHAPE_DELIM = '\u00D7';
 /** The minimum stroke width of an edge. */
@@ -79,7 +53,7 @@ export type EdgeData = {
  * Function run when an edge is selected.
  */
 export interface EdgeSelectionCallback {
-  (edgeData: scene.edge.EdgeData): void;
+  (edgeData: EdgeData): void;
 }
 export function getEdgeKey(edgeObj: EdgeData) {
   return edgeObj.v + EDGE_KEY_DELIM + edgeObj.w;
@@ -123,7 +97,7 @@ export function buildGroup(
     },
     edges
   );
-  let container = scene.selectOrCreateChild(
+  let container = tf_graph_scene.selectOrCreateChild(
     sceneGroup,
     'g',
     Class.Edge.CONTAINER
@@ -238,7 +212,7 @@ function getPathSegmentIndexAtLength(
   length: number,
   lineFunc: (points: render.Point[]) => string
 ): number {
-  const path = document.createElementNS(tf.graph.scene.SVG_NAMESPACE, 'path');
+  const path = document.createElementNS(tf_graph_scene.SVG_NAMESPACE, 'path');
   for (let i = 1; i < points.length; i++) {
     path.setAttribute('d', lineFunc(points.slice(0, i)));
     if (path.getTotalLength() > length) {

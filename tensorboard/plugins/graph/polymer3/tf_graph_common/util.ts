@@ -15,44 +15,11 @@ limitations under the License.
 /**
  * @fileoverview Utility functions for the tensorflow graph visualizer.
  */
-import {DO_NOT_SUBMIT} from '../tf-imports/d3.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/dagre.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/graphlib.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
-import {DO_NOT_SUBMIT} from 'annotation';
-import {DO_NOT_SUBMIT} from 'colors';
-import {DO_NOT_SUBMIT} from 'common';
-import {DO_NOT_SUBMIT} from 'contextmenu';
-import {DO_NOT_SUBMIT} from 'edge';
-import {DO_NOT_SUBMIT} from 'externs';
-import {DO_NOT_SUBMIT} from 'graph';
-import {DO_NOT_SUBMIT} from 'hierarchy';
-import {DO_NOT_SUBMIT} from 'layout';
-import {DO_NOT_SUBMIT} from 'loader';
-import {DO_NOT_SUBMIT} from 'node';
-import {DO_NOT_SUBMIT} from 'op';
-import {DO_NOT_SUBMIT} from 'parser';
-import {DO_NOT_SUBMIT} from 'proto';
-import {DO_NOT_SUBMIT} from 'render';
-import {DO_NOT_SUBMIT} from 'scene';
-import {DO_NOT_SUBMIT} from 'template';
-/* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
+import * as _ from 'lodash';
 
-Licensed under the Apache License, Version 2.0 (the 'License');
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+import {ProgressTracker} from './common';
+import {NodeStats} from './graph';
 
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an 'AS IS' BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
-/**
- * @fileoverview Utility functions for the tensorflow graph visualizer.
- */
 const ASYNC_TASK_DELAY = 20;
 /**
  * Measure and log a synchronous task.
@@ -151,7 +118,7 @@ export function runTask<T>(
   // Run the expensive task with a delay that gives enough time for the
   // UI to update.
   try {
-    let result = tf.graph.util.time(msg, task);
+    let result = time(msg, task);
     // Update the progress value.
     tracker.updateProgress(incProgressValue);
     // Return the result to be used by other tasks.
@@ -178,7 +145,7 @@ export function runAsyncTask<T>(
     // UI to update.
     setTimeout(function() {
       try {
-        let result = tf.graph.util.time(msg, task);
+        let result = time(msg, task);
         // Update the progress value.
         tracker.updateProgress(incProgressValue);
         // Return the result to be used by other tasks.
@@ -275,7 +242,7 @@ export function convertUnitsToHumanReadable(
   unitIndex: number = 0
 ) {
   if (unitIndex + 1 < units.length && value >= units[unitIndex + 1].numUnits) {
-    return tf.graph.util.convertUnitsToHumanReadable(
+    return convertUnitsToHumanReadable(
       value / units[unitIndex + 1].numUnits,
       units,
       unitIndex + 1

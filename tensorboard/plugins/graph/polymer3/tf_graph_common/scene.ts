@@ -12,42 +12,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {DO_NOT_SUBMIT} from '../tf-imports/d3.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/dagre.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/graphlib.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
-import {DO_NOT_SUBMIT} from 'annotation';
-import {DO_NOT_SUBMIT} from 'colors';
-import {DO_NOT_SUBMIT} from 'common';
-import {DO_NOT_SUBMIT} from 'contextmenu';
-import {DO_NOT_SUBMIT} from 'edge';
-import {DO_NOT_SUBMIT} from 'externs';
-import {DO_NOT_SUBMIT} from 'graph';
-import {DO_NOT_SUBMIT} from 'hierarchy';
-import {DO_NOT_SUBMIT} from 'layout';
-import {DO_NOT_SUBMIT} from 'loader';
-import {DO_NOT_SUBMIT} from 'node';
-import {DO_NOT_SUBMIT} from 'op';
-import {DO_NOT_SUBMIT} from 'parser';
-import {DO_NOT_SUBMIT} from 'proto';
-import {DO_NOT_SUBMIT} from 'render';
-import {DO_NOT_SUBMIT} from 'template';
-import {DO_NOT_SUBMIT} from 'util';
-/* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
+import * as d3 from 'd3';
+import * as _ from 'lodash';
+import * as PolymerDom from '@polymer/polymer/lib/legacy/polymer.dom.js';
 
-Licensed under the Apache License, Version 2.0 (the 'License');
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+import * as edge from './edge';
+import {NodeType, OpNode} from './graph';
+import * as layout from './layout';
+import * as node from './node';
+import * as render from './render';
+import {TfGraphScene} from './tf-graph-scene';
 
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an 'AS IS' BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
-import TfGraphScene = tf.graph.scene.TfGraphScene;
 export const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 /** Enums element class of objects in the scene */
 export let Class = {
@@ -396,7 +371,7 @@ export function buildGroup(
   container,
   renderNode: render.RenderGroupNodeInfo,
   sceneElement: TfGraphScene,
-  sceneClass: string
+  sceneClass?: string
 ): d3.Selection<any, any, any, any> {
   sceneClass = sceneClass || Class.Scene.GROUP;
   let isNewSceneGroup = selectChild(container, 'g', sceneClass).empty();
@@ -769,7 +744,7 @@ export function addHealthPill(
   if (healthPillYOffset == null) {
     healthPillYOffset = 0;
   }
-  if (nodeInfo != null && nodeInfo.node.type === tf.graph.NodeType.OP) {
+  if (nodeInfo != null && nodeInfo.node.type === NodeType.OP) {
     // Use a smaller health pill for op nodes (rendered as smaller ellipses).
     healthPillWidth /= 2;
     healthPillHeight /= 2;
@@ -905,7 +880,7 @@ export function addHealthPill(
   statsSvg.setAttribute('x', String(textXOffset));
   statsSvg.setAttribute('y', String(healthPillYOffset - 2));
   healthPillGroup.appendChild(statsSvg);
-  Polymer.dom(nodeGroupElement.parentNode).appendChild(healthPillGroup);
+  PolymerDom.dom(nodeGroupElement.parentNode).appendChild(healthPillGroup);
 }
 /**
  * Adds health pills (which visualize tensor summaries) to a graph group.

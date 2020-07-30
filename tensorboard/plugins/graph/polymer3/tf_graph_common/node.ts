@@ -12,43 +12,32 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {DO_NOT_SUBMIT} from '../tf-imports/d3.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/dagre.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/graphlib.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
-import {DO_NOT_SUBMIT} from 'annotation';
-import {DO_NOT_SUBMIT} from 'colors';
-import {DO_NOT_SUBMIT} from 'common';
-import {DO_NOT_SUBMIT} from 'contextmenu';
-import {DO_NOT_SUBMIT} from 'edge';
-import {DO_NOT_SUBMIT} from 'externs';
-import {DO_NOT_SUBMIT} from 'graph';
-import {DO_NOT_SUBMIT} from 'hierarchy';
-import {DO_NOT_SUBMIT} from 'layout';
-import {DO_NOT_SUBMIT} from 'loader';
-import {DO_NOT_SUBMIT} from 'op';
-import {DO_NOT_SUBMIT} from 'parser';
-import {DO_NOT_SUBMIT} from 'proto';
-import {DO_NOT_SUBMIT} from 'render';
-import {DO_NOT_SUBMIT} from 'scene';
-import {DO_NOT_SUBMIT} from 'template';
-import {DO_NOT_SUBMIT} from 'util';
-/* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
+import * as d3 from 'd3';
+import * as _ from 'lodash';
 
-Licensed under the Apache License, Version 2.0 (the 'License');
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+import * as annotation from './annotation';
+import * as contextmenu from './contextmenu';
+import {
+  BridgeNode,
+  Metanode,
+  MetanodeImpl,
+  Node,
+  NodeType,
+  OpNode,
+  OpNodeImpl,
+  SeriesNode,
+  getIncludeNodeButtonString,
+} from './graph';
+import * as tf_graph from './graph';
+import * as layout from './layout';
+import {RenderNodeInfo} from './render';
+import * as render from './render';
+import {Class} from './scene';
+import * as tf_graph_scene from './scene';
+import * as tf_graph_util from './util';
 
-    http://www.apache.org/licenses/LICENSE-2.0
+import {TfGraphScene} from './tf-graph-scene';
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an 'AS IS' BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
-import RenderNodeInfo = tf.graph.render.RenderNodeInfo;
-import TfGraphScene = tf.graph.scene.TfGraphScene;
 /**
  * Select or Create a 'g.nodes' group to a given sceneGroup
  * and builds a number of 'g.node' groups inside the group.
@@ -99,7 +88,7 @@ export function buildGroup(
   nodeData: render.RenderNodeInfo[],
   sceneElement
 ) {
-  let container = scene.selectOrCreateChild(
+  let container = tf_graph_scene.selectOrCreateChild(
     sceneGroup,
     'g',
     Class.Node.CONTAINER
@@ -135,7 +124,7 @@ export function buildGroup(
       let nodeGroup = d3.select(this);
       // Add g.in-annotations (always add -- to keep layer order
       // consistent.)
-      let inAnnotationBox = scene.selectOrCreateChild(
+      let inAnnotationBox = tf_graph_scene.selectOrCreateChild(
         nodeGroup,
         'g',
         Class.Annotation.INBOX
@@ -143,7 +132,7 @@ export function buildGroup(
       annotation.buildGroup(inAnnotationBox, d.inAnnotations, d, sceneElement);
       // Add g.out-annotations  (always add -- to keep layer order
       // consistent.)
-      let outAnnotationBox = scene.selectOrCreateChild(
+      let outAnnotationBox = tf_graph_scene.selectOrCreateChild(
         nodeGroup,
         'g',
         Class.Annotation.OUTBOX
@@ -216,7 +205,7 @@ function subsceneBuild(
   if (renderNodeInfo.node.isGroupNode) {
     if (renderNodeInfo.expanded) {
       // Recursively build the subscene.
-      return scene.buildGroup(
+      return tf_graph_scene.buildGroup(
         nodeGroup,
         renderNodeInfo,
         sceneElement,
@@ -224,7 +213,7 @@ function subsceneBuild(
       );
     }
     // Clean out existing subscene if the node is not expanded.
-    scene.selectChild(nodeGroup, 'g', Class.Subscene.GROUP).remove();
+    tf_graph_scene.selectChild(nodeGroup, 'g', Class.Subscene.GROUP).remove();
   }
   return null;
 }
@@ -234,8 +223,12 @@ function subsceneBuild(
 function subscenePosition(nodeGroup, d: render.RenderNodeInfo) {
   let x0 = d.x - d.width / 2 + d.paddingLeft;
   let y0 = d.y - d.height / 2 + d.paddingTop;
-  let subscene = scene.selectChild(nodeGroup, 'g', Class.Subscene.GROUP);
-  scene.translate(subscene, x0, y0);
+  let subscene = tf_graph_scene.selectChild(
+    nodeGroup,
+    'g',
+    Class.Subscene.GROUP
+  );
+  tf_graph_scene.translate(subscene, x0, y0);
 }
 /**
  * Add an expand/collapse button to a group node
@@ -245,16 +238,16 @@ function subscenePosition(nodeGroup, d: render.RenderNodeInfo) {
  * @param sceneElement <tf-graph-scene> polymer element.
  */
 function addButton(selection, d: render.RenderNodeInfo, sceneElement) {
-  let group = scene.selectOrCreateChild(
+  let group = tf_graph_scene.selectOrCreateChild(
     selection,
     'g',
     Class.Node.BUTTON_CONTAINER
   );
-  scene.selectOrCreateChild(group, 'circle', Class.Node.BUTTON_CIRCLE);
-  scene
+  tf_graph_scene.selectOrCreateChild(group, 'circle', Class.Node.BUTTON_CIRCLE);
+  tf_graph_scene
     .selectOrCreateChild(group, 'path', Class.Node.EXPAND_BUTTON)
     .attr('d', 'M0,-2.2 V2.2 M-2.2,0 H2.2');
-  scene
+  tf_graph_scene
     .selectOrCreateChild(group, 'path', Class.Node.COLLAPSE_BUTTON)
     .attr('d', 'M-2.2,0 H2.2');
   (group as any).on('click', (d: any) => {
@@ -263,7 +256,7 @@ function addButton(selection, d: render.RenderNodeInfo, sceneElement) {
     (<Event>d3.event).stopPropagation();
     sceneElement.fire('node-toggle-expand', {name: d.node.name});
   });
-  scene.positionButton(group, d);
+  tf_graph_scene.positionButton(group, d);
 }
 /**
  * Fire node-* events when the selection is interacted.
@@ -392,10 +385,10 @@ function getContainingSeries(node: Node) {
  * node.
  */
 export function getGroupSettingLabel(node: Node) {
-  return tf.graph.getGroupSeriesNodeButtonString(
+  return tf_graph.getGroupSeriesNodeButtonString(
     getContainingSeries(node) !== null
-      ? tf.graph.SeriesGroupingType.GROUP
-      : tf.graph.SeriesGroupingType.UNGROUP
+      ? tf_graph.SeriesGroupingType.GROUP
+      : tf_graph.SeriesGroupingType.UNGROUP
   );
 }
 /**
@@ -413,7 +406,11 @@ function labelBuild(
   // Truncate long labels for unexpanded Metanodes.
   let useFontScale =
     renderNodeInfo.node.type === NodeType.META && !renderNodeInfo.expanded;
-  let label = scene.selectOrCreateChild(nodeGroup, 'text', Class.Node.LABEL);
+  let label = tf_graph_scene.selectOrCreateChild(
+    nodeGroup,
+    'text',
+    Class.Node.LABEL
+  );
   // Make sure the label is visually on top among its siblings.
   let labelNode = <HTMLElement>label.node();
   labelNode.parentNode.appendChild(labelNode);
@@ -521,7 +518,7 @@ function getLabelFontScale(sceneElement) {
  * Set label position of a given node group
  */
 function labelPosition(nodeGroup, cx: number, cy: number, yOffset: number) {
-  scene
+  tf_graph_scene
     .selectChild(nodeGroup, 'text', Class.Node.LABEL)
     .transition()
     .attr('x', cx)
@@ -542,7 +539,11 @@ export function buildShape(
   nodeClass: string
 ): d3.Selection<any, any, any, any> {
   // Create a group to house the underlying visual elements.
-  let shapeGroup = scene.selectOrCreateChild(nodeGroup, 'g', nodeClass);
+  let shapeGroup = tf_graph_scene.selectOrCreateChild(
+    nodeGroup,
+    'g',
+    nodeClass
+  );
   // TODO: DOM structure should be templated in HTML somewhere, not JS.
   switch (d.node.type) {
     case NodeType.OP:
@@ -553,14 +554,18 @@ export function buildShape(
       ) {
         // This is input or output arg for a TensorFlow function. Use a special
         // shape (a triangle) for them.
-        scene.selectOrCreateChild(
+        tf_graph_scene.selectOrCreateChild(
           shapeGroup,
           'polygon',
           Class.Node.COLOR_TARGET
         );
         break;
       }
-      scene.selectOrCreateChild(shapeGroup, 'ellipse', Class.Node.COLOR_TARGET);
+      tf_graph_scene.selectOrCreateChild(
+        shapeGroup,
+        'ellipse',
+        Class.Node.COLOR_TARGET
+      );
       break;
     case NodeType.SERIES:
       // Choose the correct stamp to use to represent this series.
@@ -575,22 +580,22 @@ export function buildShape(
       if (groupNodeInfo.isFadedOut) {
         classList.push('faded-ellipse');
       }
-      scene
+      tf_graph_scene
         .selectOrCreateChild(shapeGroup, 'use', classList)
         .attr('xlink:href', '#op-series-' + stampType + '-stamp');
-      scene
+      tf_graph_scene
         .selectOrCreateChild(shapeGroup, 'rect', Class.Node.COLOR_TARGET)
         .attr('rx', d.radius)
         .attr('ry', d.radius);
       break;
     case NodeType.BRIDGE:
-      scene
+      tf_graph_scene
         .selectOrCreateChild(shapeGroup, 'rect', Class.Node.COLOR_TARGET)
         .attr('rx', d.radius)
         .attr('ry', d.radius);
       break;
     case NodeType.META:
-      scene
+      tf_graph_scene
         .selectOrCreateChild(shapeGroup, 'rect', Class.Node.COLOR_TARGET)
         .attr('rx', d.radius)
         .attr('ry', d.radius);
@@ -617,7 +622,7 @@ export function nodeClass(d: render.RenderNodeInfo) {
 }
 /** Modify node and its subscene and its label's positional attributes */
 function position(nodeGroup, d: render.RenderNodeInfo) {
-  let shapeGroup = scene.selectChild(nodeGroup, 'g', Class.Node.SHAPE);
+  let shapeGroup = tf_graph_scene.selectChild(nodeGroup, 'g', Class.Node.SHAPE);
   let cx = layout.computeCXPositionOfNodeShape(d);
   switch (d.node.type) {
     case NodeType.OP: {
@@ -629,8 +634,8 @@ function position(nodeGroup, d: render.RenderNodeInfo) {
       ) {
         // This shape represents the input into or output out of a TensorFlow
         // function.
-        let shape = scene.selectChild(shapeGroup, 'polygon');
-        scene.positionTriangle(
+        let shape = tf_graph_scene.selectChild(shapeGroup, 'polygon');
+        tf_graph_scene.positionTriangle(
           shape,
           d.x,
           d.y,
@@ -638,8 +643,8 @@ function position(nodeGroup, d: render.RenderNodeInfo) {
           d.coreBox.height
         );
       } else {
-        let shape = scene.selectChild(shapeGroup, 'ellipse');
-        scene.positionEllipse(
+        let shape = tf_graph_scene.selectChild(shapeGroup, 'ellipse');
+        tf_graph_scene.positionEllipse(
           shape,
           cx,
           d.y,
@@ -654,26 +659,38 @@ function position(nodeGroup, d: render.RenderNodeInfo) {
       // position shape
       let shapes = shapeGroup.selectAll('rect');
       if (d.expanded) {
-        scene.positionRect(shapes, d.x, d.y, d.width, d.height);
+        tf_graph_scene.positionRect(shapes, d.x, d.y, d.width, d.height);
         subscenePosition(nodeGroup, d);
         // Put the label on top.
         labelPosition(nodeGroup, cx, d.y, -d.height / 2 + d.labelHeight / 2);
       } else {
-        scene.positionRect(shapes, cx, d.y, d.coreBox.width, d.coreBox.height);
+        tf_graph_scene.positionRect(
+          shapes,
+          cx,
+          d.y,
+          d.coreBox.width,
+          d.coreBox.height
+        );
         // Place the label in the middle.
         labelPosition(nodeGroup, cx, d.y, 0);
       }
       break;
     }
     case NodeType.SERIES: {
-      let shape = scene.selectChild(shapeGroup, 'use');
+      let shape = tf_graph_scene.selectChild(shapeGroup, 'use');
       if (d.expanded) {
-        scene.positionRect(shape, d.x, d.y, d.width, d.height);
+        tf_graph_scene.positionRect(shape, d.x, d.y, d.width, d.height);
         subscenePosition(nodeGroup, d);
         // put label on top
         labelPosition(nodeGroup, cx, d.y, -d.height / 2 + d.labelHeight / 2);
       } else {
-        scene.positionRect(shape, cx, d.y, d.coreBox.width, d.coreBox.height);
+        tf_graph_scene.positionRect(
+          shape,
+          cx,
+          d.y,
+          d.coreBox.width,
+          d.coreBox.height
+        );
         labelPosition(nodeGroup, cx, d.y, d.labelOffset);
       }
       break;
@@ -682,8 +699,8 @@ function position(nodeGroup, d: render.RenderNodeInfo) {
       // position shape
       // NOTE: In reality, these will not be visible, but it helps to put them
       // in the correct position for debugging purposes.
-      let shape = scene.selectChild(shapeGroup, 'rect');
-      scene.positionRect(shape, d.x, d.y, d.width, d.height);
+      let shape = tf_graph_scene.selectChild(shapeGroup, 'rect');
+      tf_graph_scene.positionRect(shape, d.x, d.y, d.width, d.height);
       break;
     }
     default: {
@@ -708,7 +725,7 @@ function getGradient(
   }>,
   svgRoot?: SVGElement
 ): string {
-  let escapedId = tf.graph.util.escapeQuerySelector(id);
+  let escapedId = tf_graph_util.escapeQuerySelector(id);
   if (!svgRoot) return `url(#${escapedId})`;
   let $svgRoot = d3.select(svgRoot);
   let gradientDefs = $svgRoot.select('defs#_graph-gradients');
@@ -891,7 +908,7 @@ export function getStrokeForFill(fill: string) {
  */
 export function updateInputTrace(
   svgRoot: SVGElement,
-  renderGraphInfo: tf.graph.render.RenderGraphInfo,
+  renderGraphInfo: render.RenderGraphInfo,
   selectedNodeName: string,
   traceInputs: Boolean
 ) {
@@ -959,19 +976,19 @@ export function updateInputTrace(
  */
 function _getAllContainedOpNodes(
   nodeName: string,
-  renderGraphInfo: tf.graph.render.RenderGraphInfo
+  renderGraphInfo: render.RenderGraphInfo
 ): ReadonlyArray<OpNodeImpl> {
   let opNodes = [];
   // Get current node.
   let node = renderGraphInfo.getNodeByName(nodeName) as
-    | tf.graph.GroupNode
-    | tf.graph.OpNode;
+    | tf_graph.GroupNode
+    | tf_graph.OpNode;
   // If node is already OpNode then return the node plus its input embeddings.
-  if (node instanceof tf.graph.OpNodeImpl) {
+  if (node instanceof tf_graph.OpNodeImpl) {
     return [node].concat(node.inEmbeddings);
   }
   // Otherwise, make recursive call for each node contained by the GroupNode.
-  let childNodeNames = (node as tf.graph.GroupNode).metagraph.nodes();
+  let childNodeNames = (node as tf_graph.GroupNode).metagraph.nodes();
   _.each(childNodeNames, function(childNodeName) {
     opNodes = opNodes.concat(
       _getAllContainedOpNodes(childNodeName, renderGraphInfo)
@@ -992,7 +1009,7 @@ interface VisibleParent {
 }
 function traceAllInputsOfOpNode(
   svgRoot: SVGElement,
-  renderGraphInfo: tf.graph.render.RenderGraphInfo,
+  renderGraphInfo: render.RenderGraphInfo,
   startNode: OpNode,
   allTracedNodes: Object
 ) {
@@ -1022,7 +1039,7 @@ function traceAllInputsOfOpNode(
     }
     // Ensure node is resolved to OpNode if name collision with Metanode exists.
     if (resolvedNode instanceof MetanodeImpl) {
-      let resolvedNodeName = tf.graph.getStrictName(resolvedNode.name);
+      let resolvedNodeName = tf_graph.getStrictName(resolvedNode.name);
       resolvedNode = renderGraphInfo.getNodeByName(resolvedNodeName) as OpNode;
     }
     let visibleParent = getVisibleParent(renderGraphInfo, resolvedNode);
@@ -1047,7 +1064,7 @@ function traceAllInputsOfOpNode(
     connectionEndpoints: [],
   };
   let currentNode = currentVisibleParent as Node;
-  for (let index = 1; currentNode.name !== tf.graph.ROOT_NAME; index++) {
+  for (let index = 1; currentNode.name !== tf_graph.ROOT_NAME; index++) {
     currentNode = currentNode.parentNode;
     startNodeParents[currentNode.name] = {
       traced: false,
@@ -1204,7 +1221,7 @@ function _markParentsOfNodes(
   _.forOwn(visibleNodes, function(nodeInstance: Node) {
     // Mark all parents of the node as input-parents.
     let currentNode = nodeInstance;
-    while (currentNode.name !== tf.graph.ROOT_NAME) {
+    while (currentNode.name !== tf_graph.ROOT_NAME) {
       const renderedElementSelection = d3
         .select(svgRoot)
         .select(`.node[data-name="${currentNode.name}"]`);
@@ -1234,8 +1251,8 @@ function _markParentsOfNodes(
  * @returns Node
  */
 export function getVisibleParent(
-  renderGraphInfo: tf.graph.render.RenderGraphInfo,
-  currentNode: tf.graph.Node
+  renderGraphInfo: render.RenderGraphInfo,
+  currentNode: tf_graph.Node
 ) {
   let found = false;
   let currentParent = currentNode;
@@ -1253,7 +1270,7 @@ export function getVisibleParent(
       // node which has another OpNode as parent.
       if (
         renderNode &&
-        (renderNode.expanded || currentParent instanceof graph.OpNodeImpl)
+        (renderNode.expanded || currentParent instanceof tf_graph.OpNodeImpl)
       ) {
         found = true;
       }

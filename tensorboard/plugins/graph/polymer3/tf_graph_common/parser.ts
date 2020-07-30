@@ -12,41 +12,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {DO_NOT_SUBMIT} from '../tf-imports/d3.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/dagre.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/graphlib.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
-import {DO_NOT_SUBMIT} from 'annotation';
-import {DO_NOT_SUBMIT} from 'colors';
-import {DO_NOT_SUBMIT} from 'common';
-import {DO_NOT_SUBMIT} from 'contextmenu';
-import {DO_NOT_SUBMIT} from 'edge';
-import {DO_NOT_SUBMIT} from 'externs';
-import {DO_NOT_SUBMIT} from 'graph';
-import {DO_NOT_SUBMIT} from 'hierarchy';
-import {DO_NOT_SUBMIT} from 'layout';
-import {DO_NOT_SUBMIT} from 'loader';
-import {DO_NOT_SUBMIT} from 'node';
-import {DO_NOT_SUBMIT} from 'op';
-import {DO_NOT_SUBMIT} from 'proto';
-import {DO_NOT_SUBMIT} from 'render';
-import {DO_NOT_SUBMIT} from 'scene';
-import {DO_NOT_SUBMIT} from 'template';
-import {DO_NOT_SUBMIT} from 'util';
-/* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
+import {ProgressTracker} from './common';
+import * as tf_graph_proto from './proto';
+import * as tf_graph_util from './util';
 
-Licensed under the Apache License, Version 2.0 (the 'License');
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an 'AS IS' BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
 function parseValue(value: string): string | number | boolean {
   if (value === 'true') {
     return true;
@@ -80,7 +49,7 @@ export function fetchPbTxt(filepath: string): Promise<ArrayBuffer> {
  * Fetches the metadata file, parses it and returns a promise of the result.
  */
 export function fetchAndParseMetadata(path: string, tracker: ProgressTracker) {
-  return tf.graph.util
+  return tf_graph_util
     .runTask(
       'Reading metadata pbtxt',
       40,
@@ -93,7 +62,7 @@ export function fetchAndParseMetadata(path: string, tracker: ProgressTracker) {
       tracker
     )
     .then((arrayBuffer: ArrayBuffer) => {
-      return tf.graph.util.runAsyncPromiseTask(
+      return tf_graph_util.runAsyncPromiseTask(
         'Parsing metadata.pbtxt',
         60,
         () => {
@@ -114,7 +83,7 @@ export function fetchAndParseGraphData(
   pbTxtFile: Blob,
   tracker: ProgressTracker
 ) {
-  return tf.graph.util
+  return tf_graph_util
     .runAsyncPromiseTask(
       'Reading graph pbtxt',
       40,
@@ -122,7 +91,7 @@ export function fetchAndParseGraphData(
         if (pbTxtFile) {
           return new Promise<ArrayBuffer>(function(resolve, reject) {
             let fileReader = new FileReader();
-            fileReader.onload = () => resolve(fileReader.result);
+            fileReader.onload = () => resolve(fileReader.result as ArrayBuffer);
             fileReader.onerror = () => reject(fileReader.error);
             fileReader.readAsArrayBuffer(pbTxtFile);
           });
@@ -133,7 +102,7 @@ export function fetchAndParseGraphData(
       tracker
     )
     .then((arrayBuffer: ArrayBuffer) => {
-      return tf.graph.util.runAsyncPromiseTask(
+      return tf_graph_util.runAsyncPromiseTask(
         'Parsing graph.pbtxt',
         60,
         () => {
@@ -252,7 +221,7 @@ const METADATA_REPEATED_FIELDS: {
  */
 export function parseGraphPbTxt(
   input: ArrayBuffer
-): Promise<tf.graph.proto.GraphDef> {
+): Promise<tf_graph_proto.GraphDef> {
   return parsePbtxtFile(input, GRAPH_REPEATED_FIELDS);
 }
 /**
@@ -260,7 +229,7 @@ export function parseGraphPbTxt(
  */
 export function parseStatsPbTxt(
   input: ArrayBuffer
-): Promise<tf.graph.proto.StepStats> {
+): Promise<tf_graph_proto.StepStats> {
   return parsePbtxtFile(input, METADATA_REPEATED_FIELDS).then(
     (obj) => obj['step_stats']
   );

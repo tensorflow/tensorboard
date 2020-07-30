@@ -15,12 +15,16 @@ limitations under the License.
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, property} from '@polymer/decorators';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from 'tf-graph-icon.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from 'tf-graph-icon.html';
+
+import * as tf_graph_icon from './tf-graph-icon';
+import * as tf_graph from '../tf_graph_common/graph';
+import * as tf_graph_scene_node from '../tf_graph_common/node';
+import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+
+import './tf-graph-icon';
+
 @customElement('tf-node-icon')
-class TfNodeIcon extends PolymerElement {
+class TfNodeIcon extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
     <style>
       tf-graph-icon {
@@ -37,46 +41,87 @@ class TfNodeIcon extends PolymerElement {
       vertical="[[_isVertical(node, vertical)]]"
     ></tf-graph-icon>
   `;
+
+  /**
+   * Node to represent with an icon. Optional, but if specified, its
+   * properties override those defined in the type, vertical, const and
+   * summary properties.
+   * This property is a tf.graph.Node.
+   */
   @property({
     type: Object,
   })
   node: object = null;
+
+  /**
+   * Render node information associated with this node. Optional. If
+   * specified, this is only used when computing the fill of the icon
+   * element.
+   * This property is a tf.graph.render.RenderNodeInfo.
+   */
   @property({
     type: Object,
   })
   renderInfo: object = null;
+
+  /**
+   * String indicating the type of coloring to use for this node, used
+   * only for determining the fill.
+   */
   @property({
     type: Object,
   })
-  colorBy: object = 'structural';
+  colorBy: any = 'structural';
+
+  /**
+   * Function used by structural coloring algorithm to determine which
+   * color to use based on the template ID of the node. Optional.
+   */
   @property({
-    type: Function,
+    type: Object,
   })
   templateIndex: object = null;
+
+  /** Type of node to draw (ignored if node is set). */
   @property({
     type: String,
   })
   type: string = null;
+
+  /** Direction for series (ignored for other types). */
   @property({
     type: Boolean,
   })
   vertical: boolean = false;
+
+  /** Whether the op is Const (ignored for non-ops). */
   @property({
     type: Boolean,
   })
   const: boolean = false;
+
+  /** Whether the op is a Summary (ignored for non-ops). */
   @property({
     type: Boolean,
   })
   summary: boolean = false;
+
+  /**
+   * Fill for the icon, optional. If fill is specified and node is not
+   * specified, then this value will override the default for the
+   * element. However, if node is specified, this value will be ignored.
+   */
   @property({
     type: String,
   })
   fill: string = null;
+
+  /** Height of the SVG element in pixels, used for scaling. */
   @property({
     type: Number,
   })
   height: number = 20;
+
   @property({
     type: String,
     computed:
@@ -84,6 +129,7 @@ class TfNodeIcon extends PolymerElement {
     observer: '_onFillOverrideChanged',
   })
   _fillOverride: string;
+
   /**
    * Returns fill value based on node and configuration. If any of those
    * configurations or node value missing, it returns `fill` property.
@@ -98,7 +144,7 @@ class TfNodeIcon extends PolymerElement {
     inputFill
   ) {
     if (inputNode && inputRenderInfo && inputColorBy && inputTemplateIndex) {
-      var ns = tf.graph.scene.node;
+      var ns = tf_graph_scene_node;
       var colorBy = ns.ColorBy[inputColorBy.toUpperCase()];
       return ns.getFillForNode(
         inputTemplateIndex,
@@ -111,17 +157,17 @@ class TfNodeIcon extends PolymerElement {
   }
   _getStrokeOverride(fillOverride) {
     return fillOverride
-      ? tf.graph.scene.node.getStrokeForFill(fillOverride)
+      ? tf_graph_scene_node.getStrokeForFill(fillOverride)
       : null;
   }
   /**
    * Returns graph-icon type from input, type, and summary.
    */
   _getType(inputNode, isSummary, isConst, inputType) {
-    const {GraphIconType} = tf.graph.icon;
+    const {GraphIconType} = tf_graph_icon;
     if (inputNode) {
       switch (inputNode.type) {
-        case tf.graph.NodeType.OP: {
+        case tf_graph.NodeType.OP: {
           const opName = inputNode.op;
           // TODO(tensorboarad-team): `op` should have a predictable type.
           // Remove the type check.
@@ -132,9 +178,9 @@ class TfNodeIcon extends PolymerElement {
           }
           return GraphIconType.OP;
         }
-        case tf.graph.NodeType.META:
+        case tf_graph.NodeType.META:
           return GraphIconType.META;
-        case tf.graph.NodeType.SERIES:
+        case tf_graph.NodeType.SERIES:
           return GraphIconType.SERIES;
       }
     }
@@ -156,18 +202,20 @@ class TfNodeIcon extends PolymerElement {
   }
   _onFillOverrideChanged(newFill, oldFill) {
     const {node, renderInfo, colorBy, templateIndex} = this;
-    const ns = tf.graph.scene.node;
+    const ns = tf_graph_scene_node;
     if (newFill !== oldFill) {
-      ns.removeGradientDefinitions(this.$.icon.getSvgDefinableElement());
+      ns.removeGradientDefinitions(
+        (this.$.icon as any).getSvgDefinableElement()
+      );
     }
     if (node && renderInfo && colorBy && templateIndex) {
       const nsColorBy = ns.ColorBy[colorBy.toUpperCase()];
       ns.getFillForNode(
         templateIndex,
         nsColorBy,
-        renderInfo,
+        renderInfo as any,
         false,
-        this.$.icon.getSvgDefinableElement()
+        (this.$.icon as any).getSvgDefinableElement()
       );
     }
   }

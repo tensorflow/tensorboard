@@ -14,12 +14,13 @@ limitations under the License.
 ==============================================================================*/
 
 import {PolymerElement, html} from '@polymer/polymer';
-import {customElement, property} from '@polymer/decorators';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-dashboard-common/tensorboard-color.html';
-import {DO_NOT_SUBMIT} from 'tf-graph-icon';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-dashboard-common/tensorboard-color.html';
+import {computed, customElement, property} from '@polymer/decorators';
+
+import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+import '../../../../components_polymer3/tf_dashboard_common/tensorboard-color';
+
+import {MetanodeColors, OpNodeColors, SeriesNodeColors} from './render';
+
 export enum GraphIconType {
   CONST = 'CONST',
   META = 'META',
@@ -28,7 +29,7 @@ export enum GraphIconType {
   SUMMARY = 'SUMMARY',
 }
 @customElement('tf-graph-icon')
-class TfGraphIcon extends PolymerElement {
+class TfGraphIcon extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
     <style>
       :host {
@@ -241,7 +242,7 @@ class TfGraphIcon extends PolymerElement {
   })
   faded: boolean = false;
   getSvgDefinableElement(): HTMLElement {
-    return this.$.svgDefs;
+    return this.$.svgDefs as HTMLElement;
   }
   @computed('type', 'fillOverride')
   get _fill(): string {
@@ -250,11 +251,11 @@ class TfGraphIcon extends PolymerElement {
     if (fillOverride != null) return fillOverride;
     switch (type) {
       case GraphIconType.META:
-        return tf.graph.render.MetanodeColors.DEFAULT_FILL;
+        return MetanodeColors.DEFAULT_FILL;
       case GraphIconType.SERIES:
-        return tf.graph.render.SeriesNodeColors.DEFAULT_FILL;
+        return SeriesNodeColors.DEFAULT_FILL;
       default:
-        return tf.graph.render.OpNodeColors.DEFAULT_FILL;
+        return OpNodeColors.DEFAULT_FILL;
     }
   }
   @computed('type', 'strokeOverride')
@@ -264,11 +265,11 @@ class TfGraphIcon extends PolymerElement {
     if (strokeOverride != null) return strokeOverride;
     switch (type) {
       case GraphIconType.META:
-        return tf.graph.render.MetanodeColors.DEFAULT_STROKE;
+        return MetanodeColors.DEFAULT_STROKE;
       case GraphIconType.SERIES:
-        return tf.graph.render.SeriesNodeColors.DEFAULT_STROKE;
+        return SeriesNodeColors.DEFAULT_STROKE;
       default:
-        return tf.graph.render.OpNodeColors.DEFAULT_STROKE;
+        return OpNodeColors.DEFAULT_STROKE;
     }
   }
   /**

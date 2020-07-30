@@ -15,44 +15,36 @@ limitations under the License.
 /**
  * Package for the Graph Hierarchy for TensorFlow graph.
  */
-import {DO_NOT_SUBMIT} from '../tf-imports/d3.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/dagre.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/graphlib.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
-import {DO_NOT_SUBMIT} from 'annotation';
-import {DO_NOT_SUBMIT} from 'colors';
-import {DO_NOT_SUBMIT} from 'common';
-import {DO_NOT_SUBMIT} from 'contextmenu';
-import {DO_NOT_SUBMIT} from 'edge';
-import {DO_NOT_SUBMIT} from 'externs';
-import {DO_NOT_SUBMIT} from 'graph';
-import {DO_NOT_SUBMIT} from 'layout';
-import {DO_NOT_SUBMIT} from 'loader';
-import {DO_NOT_SUBMIT} from 'node';
-import {DO_NOT_SUBMIT} from 'op';
-import {DO_NOT_SUBMIT} from 'parser';
-import {DO_NOT_SUBMIT} from 'proto';
-import {DO_NOT_SUBMIT} from 'render';
-import {DO_NOT_SUBMIT} from 'scene';
-import {DO_NOT_SUBMIT} from 'template';
-import {DO_NOT_SUBMIT} from 'util';
-/* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
+import * as d3 from 'd3';
+import * as graphlib from 'graphlib';
+import * as _ from 'lodash';
 
-Licensed under the Apache License, Version 2.0 (the 'License');
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+import {ProgressTracker} from './common';
+import * as template from './template';
+import {
+  ROOT_NAME,
+  GraphType,
+  GroupNode,
+  Metaedge,
+  Metanode,
+  MetaedgeImpl,
+  Node,
+  NodeStats,
+  NodeType,
+  OpNode,
+  SeriesNode,
+  SlimGraph,
+  createGraph,
+  createMetaedge,
+  createMetanode,
+  createSeriesNode,
+  getHierarchicalPath,
+  getSeriesNodeName,
+} from './graph';
+import * as tf_graph from './graph';
+import * as tf_graph_proto from './proto';
+import * as tf_graph_util from './util';
 
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an 'AS IS' BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
-/**
- * Package for the Graph Hierarchy for TensorFlow graph.
- */
 export interface Edges {
   control: Metaedge[];
   regular: Metaedge[];
@@ -454,7 +446,7 @@ export interface HierarchyParams {
   verifyTemplate: boolean;
   seriesNodeMinSize: number;
   seriesMap: {
-    [name: string]: tf.graph.SeriesGroupingType;
+    [name: string]: tf_graph.SeriesGroupingType;
   };
   // This string is supplied to dagre as the 'rankdir' property for laying out
   // the graph. TB, BT, LR, or RL. The default is 'BT' (bottom to top).
@@ -476,7 +468,7 @@ export const DefaultHierarchyParams = {
  * @param params Parameters used when building a hierarchy.
  */
 export function build(
-  graph: tf.graph.SlimGraph,
+  graph: tf_graph.SlimGraph,
   params: HierarchyParams,
   tracker: ProgressTracker
 ): Promise<Hierarchy> {
@@ -484,7 +476,7 @@ export function build(
   let seriesNames: {
     [name: string]: string;
   } = {};
-  return tf.graph.util
+  return tf_graph_util
     .runAsyncTask(
       'Adding nodes',
       20,
@@ -507,7 +499,7 @@ export function build(
       tracker
     )
     .then(() => {
-      return tf.graph.util.runAsyncTask(
+      return tf_graph_util.runAsyncTask(
         'Detect series',
         20,
         () => {
@@ -526,7 +518,7 @@ export function build(
       );
     })
     .then(() => {
-      return tf.graph.util.runAsyncTask(
+      return tf_graph_util.runAsyncTask(
         'Adding edges',
         30,
         () => {
@@ -536,7 +528,7 @@ export function build(
       );
     })
     .then(() => {
-      return tf.graph.util.runAsyncTask(
+      return tf_graph_util.runAsyncTask(
         'Finding similar subgraphs',
         30,
         () => {
@@ -551,7 +543,7 @@ export function build(
 }
 export function joinAndAggregateStats(
   h: Hierarchy,
-  stats: tf.graph.proto.StepStats
+  stats: tf_graph_proto.StepStats
 ) {
   // Get all the possible device and XLA cluster names.
   let deviceNames = {};
@@ -613,7 +605,7 @@ export function getIncompatibleOps(
           if (
             hierarchyParams &&
             hierarchyParams.seriesMap[opNode.owningSeries] ===
-              tf.graph.SeriesGroupingType.UNGROUP
+              tf_graph.SeriesGroupingType.UNGROUP
           ) {
             // For un-grouped series node, add each node individually
             nodes.push(opNode);
@@ -716,14 +708,14 @@ function addNodes(h: Hierarchy, graph: SlimGraph) {
         h.setNode(name, child);
         parent.metagraph.setNode(name, child);
         if (
-          name.indexOf(tf.graph.FUNCTION_LIBRARY_NODE_PREFIX) === 0 &&
-          parent.name === tf.graph.ROOT_NAME
+          name.indexOf(tf_graph.FUNCTION_LIBRARY_NODE_PREFIX) === 0 &&
+          parent.name === tf_graph.ROOT_NAME
         ) {
           // This metanode represents a function in the Library. We later copy
           // its contents to dynamically inject function data into the graph
           // when the subhierarchy of a metanode is built (upon its expansion).
           const functionName = name.substring(
-            tf.graph.FUNCTION_LIBRARY_NODE_PREFIX.length
+            tf_graph.FUNCTION_LIBRARY_NODE_PREFIX.length
           );
           // For now, remember the metanode that represents the function with
           // this name.
@@ -862,14 +854,14 @@ function groupSeries(
   },
   threshold: number,
   map: {
-    [name: string]: tf.graph.SeriesGroupingType;
+    [name: string]: tf_graph.SeriesGroupingType;
   },
   useGeneralizedSeriesPatterns: boolean
 ) {
   let metagraph = metanode.metagraph;
   _.each(metagraph.nodes(), (n) => {
     let child = metagraph.node(n);
-    if (child.type === tf.graph.NodeType.META) {
+    if (child.type === tf_graph.NodeType.META) {
       groupSeries(
         <Metanode>child,
         hierarchy,
@@ -903,12 +895,12 @@ function groupSeries(
     // this series has not been adding to the series map, then set this
     // series to be shown ungrouped in the map.
     if (nodeMemberNames.length < threshold && !(seriesNode.name in map)) {
-      map[seriesNode.name] = tf.graph.SeriesGroupingType.UNGROUP;
+      map[seriesNode.name] = tf_graph.SeriesGroupingType.UNGROUP;
     }
     // If the series is in the map as ungrouped then do not group the series.
     if (
       seriesNode.name in map &&
-      map[seriesNode.name] === tf.graph.SeriesGroupingType.UNGROUP
+      map[seriesNode.name] === tf_graph.SeriesGroupingType.UNGROUP
     ) {
       return;
     }
