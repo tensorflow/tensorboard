@@ -22,7 +22,6 @@ tf_web_library(
     srcs = [
         "tensor-widget.css",
         "tensor-widget.html",
-        "tensor-widget-style.ts",
         ":tensor_widget_binary.js",
     ],
     path = "/tensor-widget",
@@ -67,6 +66,7 @@ tf_ts_library(
         "string-utils.ts",
         "tensor-widget.ts",
         "tensor-widget-impl.ts",
+        "tensor-widget-style.ts",
         "types.ts",
         "version.ts",
     ],
