@@ -1,4 +1,4 @@
-/* Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,11 +13,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 /**
- * Implements run related plugin APIs.
+ * Implements core plugin APIs.
  */
-tb_plugin.host.listen('experimental.GetRuns', () => {
-    return tf_backend.runsStore.getRuns();
-});
-tf_backend.runsStore.addListener(() => {
-    return tb_plugin.host.broadcast('experimental.RunsChanged', tf_backend.runsStore.getRuns());
+import {listen} from './plugin-host-ipc';
+import {urlDict} from '../../tf_storage';
+
+listen('experimental.GetURLPluginData', (context) => {
+  if (!context) {
+    return;
+  }
+  const prefix = `p.${context.pluginName}.`;
+  const result: {
+    [key: string]: string;
+  } = {};
+  for (let key in urlDict) {
+    if (key.startsWith(prefix)) {
+      const pluginKey = key.substring(prefix.length);
+      result[pluginKey] = urlDict[key];
+    }
+  }
+  return result;
 });

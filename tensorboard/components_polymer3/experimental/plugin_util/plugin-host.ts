@@ -12,20 +12,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-/**
- * Implements core plugin APIs.
- */
-tb_plugin.host.listen('experimental.GetURLPluginData', (context) => {
-    if (!context) {
-        return;
-    }
-    const prefix = `p.${context.pluginName}.`;
-    const result = {};
-    for (let key in tf_storage.urlDict) {
-        if (key.startsWith(prefix)) {
-            const pluginKey = key.substring(prefix.length);
-            result[pluginKey] = tf_storage.urlDict[key];
-        }
-    }
-    return result;
-});
+import {PolymerElement, html} from '@polymer/polymer';
+import {customElement} from '@polymer/decorators';
+import {registerPluginIframe} from './plugin-host-ipc';
+
+// TODO(psybuzz): we should not rely on side-effects to run when importing
+// modules.
+import 'core-host-impl';
+import 'runs-host-impl';
+
+// HACK: this Polymer component allows the experimental plugin host APIs
+// to be accessible across bundle binary.
+@customElement('tf-experimental-plugin-host-lib')
+class TfExperimentalPluginHostLib extends PolymerElement {
+  _template = null;
+  registerPluginIframe = registerPluginIframe;
+}
