@@ -1,5 +1,4 @@
 load("//tensorboard/defs:web.bzl", "tf_web_library")
-load("//tensorboard/defs:defs.bzl", "tensorboard_webcomponent_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -7,9 +6,7 @@ licenses(["notice"])  # Apache 2.0
 
 tf_web_library(
     name = "tf_hparams_main",
-    srcs = [
-        "tf-hparams-main.html",
-    ],
+    srcs = ["tf-hparams-main.html"],
     path = "/tf-hparams-main",
     visibility = ["//visibility:public"],
     deps = [
