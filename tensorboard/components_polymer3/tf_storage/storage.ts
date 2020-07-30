@@ -271,7 +271,9 @@ function readComponent(): string {
 function writeComponent(component: string, useLocationReplace = false) {
   if (useHash()) {
     if (useLocationReplace) {
-      window.location.replace('#' + component);
+      const url = new URL(window.location.href);
+      url.hash = component;
+      window.history.replaceState(null, '', url.toString());
     } else {
       window.location.hash = component;
     }
