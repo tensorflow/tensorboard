@@ -76,7 +76,6 @@
     "@angular/platform-browser": "^9.0.0",
     "@angular/platform-browser-dynamic": "^9.0.0",
     "@angular/router": "^9.0.0",
-    "@bazel/buildifier": "^3.4.0",
     "@ngrx/effects": "^9.0.0",
     "@ngrx/store": "^9.0.0",
     "@polymer/decorators": "^3.0.0",
