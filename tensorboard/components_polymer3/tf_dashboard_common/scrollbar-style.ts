@@ -13,31 +13,27 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import registerDomModule from './registerDomModule';
+import {registerStyleDomModule} from '../polymer/register_style_dom_module';
 
-registerDomModule({
+registerStyleDomModule({
   moduleName: 'scrollbar-style',
-  htmlSource: `
-  <template>
-    <style>
-      .scrollbar::-webkit-scrollbar-track {
-        visibility: hidden;
-      }
+  styleContent: `
+    .scrollbar::-webkit-scrollbar-track {
+      visibility: hidden;
+    }
 
-      .scrollbar::-webkit-scrollbar {
-        width: 10px;
-      }
+    .scrollbar::-webkit-scrollbar {
+      width: 10px;
+    }
 
-      .scrollbar::-webkit-scrollbar-thumb {
-        border-radius: 10px;
-        -webkit-box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.3);
-        background-color: var(--paper-grey-500);
-        color: var(--paper-grey-900);
-      }
-      .scrollbar {
-        box-sizing: border-box;
-      }
-    </style>
-  </template>
+    .scrollbar::-webkit-scrollbar-thumb {
+      border-radius: 10px;
+      -webkit-box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.3);
+      background-color: var(--paper-grey-500);
+      color: var(--paper-grey-900);
+    }
+    .scrollbar {
+      box-sizing: border-box;
+    }
   `,
 });

@@ -12,39 +12,34 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {registerStyleDomModule} from '../polymer/register_style_dom_module';
 
-customElements.whenDefined('dom-module').then(() => {
-  // Shared stylesheet for figure captions.
-  const styleElement = document.createElement('dom-module');
-  styleElement.innerHTML = `
-  <template>
-    <style>
-      figcaption {
-        width: 100%;
-      }
+registerStyleDomModule({
+  moduleName: 'tf-card-heading-style',
+  styleContent: `
+    figcaption {
+      width: 100%;
+    }
 
-      /** Horizontal line of labels. */
-      .heading-row {
-        margin-top: -4px;
-        display: flex;
-        flex-direction: row;
-        flex-wrap: wrap;
-      }
+    /** Horizontal line of labels. */
+    .heading-row {
+      margin-top: -4px;
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
 
-      /** Piece of text in the figure caption. */
-      .heading-label {
-        flex-grow: 1;
-        margin-top: 4px;
-        max-width: 100%;
-        word-wrap: break-word;
-      }
+    /** Piece of text in the figure caption. */
+    .heading-label {
+      flex-grow: 1;
+      margin-top: 4px;
+      max-width: 100%;
+      word-wrap: break-word;
+    }
 
-      /** Makes label show on the right. */
-      .heading-right {
-        flex-grow: 0;
-      }
-    </style>
-  </template>
-  `;
-  (styleElement as any).register('tf-card-heading-style');
+    /** Makes label show on the right. */
+    .heading-right {
+      flex-grow: 0;
+    }
+  `,
 });

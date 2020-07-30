@@ -12,44 +12,42 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {registerStyleDomModule} from '../polymer/register_style_dom_module';
 
-customElements.whenDefined('dom-module').then(() => {
-  const styleElement = document.createElement('dom-module');
-  styleElement.innerHTML = `
-    <style>
-      .help {
-        align-items: center;
-        animation-delay: 1s;
-        animation-duration: 1s;
-        animation-name: fade-out;
-        background: rgba(30, 30, 30, 0.6);
-        bottom: 0;
-        color: #fff;
-        display: flex;
-        justify-content: center;
-        left: 0;
+registerStyleDomModule({
+  moduleName: 'vz-pan-zoom-style',
+  styleContent: `
+    .help {
+      align-items: center;
+      animation-delay: 1s;
+      animation-duration: 1s;
+      animation-name: fade-out;
+      background: rgba(30, 30, 30, 0.6);
+      bottom: 0;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      left: 0;
+      opacity: 1;
+      padding: 20px;
+      pointer-events: none;
+      position: absolute;
+      right: 0;
+      top: 0;
+    }
+
+    .help > span {
+      white-space: normal;
+    }
+
+    @keyframes fade-out {
+      0% {
         opacity: 1;
-        padding: 20px;
-        pointer-events: none;
-        position: absolute;
-        right: 0;
-        top: 0;
       }
 
-      .help > span {
-        white-space: normal;
+      100% {
+        opacity: 0;
       }
-
-      @keyframes fade-out {
-        0% {
-          opacity: 1;
-        }
-
-        100% {
-          opacity: 0;
-        }
-      }
-    </style>
-  `;
-  styleElement.register('vz-pan-zoom-style');
+    }
+  `,
 });

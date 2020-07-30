@@ -13,14 +13,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import registerDomModule from './registerDomModule';
+import {registerStyleDomModule} from '../polymer/register_style_dom_module';
 
-registerDomModule({
+registerStyleDomModule({
   moduleName: 'dashboard-style',
-  htmlSource: `
-  <template>
-    <style include="iron-flex"></style>
-    <style>
+  styleDependencies: ['iron-flex'],
+  styleContent: `
       :host {
         --sidebar-vertical-padding: 15px;
         --sidebar-left-padding: 30px;
@@ -114,7 +112,5 @@ registerDomModule({
         font-size: 15px;
         margin-top: 5px;
       }
-    </style>
-  </template>
   `,
 });
