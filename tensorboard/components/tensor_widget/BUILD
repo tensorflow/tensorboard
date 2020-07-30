@@ -6,11 +6,23 @@ package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
+genrule(
+    name = "gen_tensor_widget_style",
+    srcs = [
+        "tensor-widget-style.uninlined.ts",
+        "tensor-widget.css",
+    ],
+    outs = ["tensor-widget-style.js"],
+    cmd = "$(execpath //tensorboard/tools:inline_file_content) $(SRCS) >'$@'",
+    tools = ["//tensorboard/tools:inline_file_content"],
+)
+
 tf_web_library(
     name = "tensor_widget",
     srcs = [
         "tensor-widget.css",
         "tensor-widget.html",
+        "tensor-widget-style.js",
         ":tensor_widget_binary.js",
     ],
     path = "/tensor-widget",
