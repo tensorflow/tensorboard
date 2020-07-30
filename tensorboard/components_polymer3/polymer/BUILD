@@ -5,12 +5,11 @@ package(default_visibility = ["//tensorboard:internal"])
 licenses(["notice"])  # Apache 2.0
 
 tf_ts_library(
-    name = "tf_markdown_view",
-    srcs = ["tf-markdown-view.ts"],
-    strict_checks = False,
+    name = "legacy_element_mixin",
+    srcs = [
+        "legacy_element_mixin.ts",
+    ],
     deps = [
-        "//tensorboard/components_polymer3/polymer:legacy_element_mixin",
-        "@npm//@polymer/decorators",
         "@npm//@polymer/polymer",
     ],
 )
