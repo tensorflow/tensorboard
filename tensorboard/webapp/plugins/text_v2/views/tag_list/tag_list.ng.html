@@ -15,6 +15,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<div class="text-container">
-  <tag-list-container></tag-list-container>
+<div class="tag-list-component">
+  <tag-group
+    *ngFor="let tagNameArray of tagNameArrayArray; let idx = index"
+    [tagGroupName]="tagGroupNameArray[idx]"
+    [tagNameArray]="tagNameArray"
+    [runNameArray]="runNameArrayArray[idx]"
+    [colorArray]="colorArrayArray[idx]"
+  ></tag-group>
 </div>
