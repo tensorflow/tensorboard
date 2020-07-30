@@ -273,7 +273,7 @@ function writeComponent(component: string, useLocationReplace = false) {
     if (useLocationReplace) {
       const url = new URL(window.location.href);
       url.hash = component;
-      window.history.replaceState(undefined, undefined, url.toString());
+      window.history.replaceState(null, '', url.toString());
     } else {
       window.location.hash = component;
     }
