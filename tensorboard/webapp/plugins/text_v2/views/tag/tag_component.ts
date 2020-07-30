@@ -29,29 +29,6 @@ export class TagComponent {
   @Input()
   runName: string = '';
 
+  @Input()
   stepList: Map<number, string[][]> = new Map();
-
-  example1: string[][] = [
-    [
-      'We conducted an experiment and found the following data:\n\nPounds of chocolate | Happiness\n---|---\n0 | 1\n1 | 4\n2 | 9\n3 | 16\n4 | 25\n5 | 36\n6 | 49\n7 | 64\n8 | 81\n9 | 100\n10 | 121',
-    ],
-  ];
-
-  example2: string[][] = [
-    ['\u00d7', '**0**', '**1**', '**2**', '**3**', '**4**', '**5**'],
-    ['**0**', '0', '0', '0', '0', '0', '0'],
-    ['**1**', '0', '1', '2', '3', '4', '5'],
-    ['**2**', '0', '2', '4', '6', '8', '10'],
-    ['**3**', '0', '3', '6', '9', '12', '15'],
-    ['**4**', '0', '4', '8', '12', '16', '20'],
-    ['**5**', '0', '5', '10', '15', '20', '25'],
-  ];
-
-  example3: string[][] = [['**5**', '0', '5', '10', '15', '20', '25']];
-
-  constructor() {
-    this.stepList.set(0, this.example1);
-    this.stepList.set(1, this.example2);
-    this.stepList.set(2, this.example3);
-  }
 }

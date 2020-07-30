@@ -25,11 +25,11 @@ limitations under the License.
         </div>
       </mat-panel-title>
     </mat-expansion-panel-header>
-    <tag
+    <tag-container
       *ngFor="let tagName of tagNameArray; let idx = index"
       [tagName]="tagName"
       [runName]="runNameArray[idx]"
       [tagColor]="colorArray[idx]"
-    ></tag>
+    ></tag-container>
   </mat-expansion-panel>
 </div>

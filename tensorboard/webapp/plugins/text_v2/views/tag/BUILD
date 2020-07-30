@@ -9,6 +9,7 @@ ng_module(
     name = "tag",
     srcs = [
         "tag_component.ts",
+        "tag_container.ts",
         "tag_module.ts",
     ],
     assets = [

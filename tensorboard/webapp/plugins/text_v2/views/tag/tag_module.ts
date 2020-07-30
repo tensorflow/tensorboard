@@ -19,10 +19,11 @@ import {MatCardModule} from '@angular/material/card';
 
 import {StepModule} from '../step/step_module';
 import {TagComponent} from './tag_component';
+import {TagContainer} from './tag_container';
 
 @NgModule({
-  declarations: [TagComponent],
+  declarations: [TagComponent, TagContainer],
   imports: [CommonModule, MatCardModule, StepModule],
-  exports: [TagComponent],
+  exports: [TagContainer],
 })
 export class TagModule {}
