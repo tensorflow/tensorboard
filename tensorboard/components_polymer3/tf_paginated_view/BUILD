@@ -1,26 +1,29 @@
-load("//tensorboard/defs:web.bzl", "tf_web_library")
+load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
-tf_web_library(
+tf_ts_library(
     name = "tf_paginated_view",
     srcs = [
-        "paginatedViewStore.js",
-        "tf-category-paginated-view.html",
-        "tf-dom-repeat.html",
-        "tf-paginated-view-store.html",
+        "index.ts",
+        "paginatedViewStore.ts",
+        "tf-category-paginated-view.ts",
+        "tf-dom-repeat.ts",
+        "tf-paginated-view-store.ts",
     ],
-    path = "/tf-paginated-view",
+    strict_checks = False,
     deps = [
-        "//tensorboard/components/tf_dashboard_common",
-        "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/components/tf_storage",
-        "@org_polymer_iron_collapse",
-        "@org_polymer_iron_icon",
-        "@org_polymer_paper_button",
-        "@org_polymer_paper_input",
-        "@org_polymer_paper_styles",
+        "//tensorboard/components_polymer3/tf_categorization_utils",
+        "//tensorboard/components_polymer3/tf_dashboard_common",
+        "//tensorboard/components_polymer3/tf_storage",
+        "@npm//@polymer/decorators",
+        "@npm//@polymer/iron-collapse",
+        "@npm//@polymer/iron-icon",
+        "@npm//@polymer/paper-button",
+        "@npm//@polymer/paper-input",
+        "@npm//@polymer/paper-styles",
+        "@npm//@polymer/polymer",
     ],
 )
