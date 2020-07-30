@@ -1,6 +1,4 @@
-<!--
-@license
-Copyright 2016 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,15 +11,14 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
--->
+==============================================================================*/
 
-<link rel="import" href="../tf-imports/polymer.html" />
+import {PolymerElement, html} from '@polymer/polymer';
+import {customElement, property} from '@polymer/decorators';
 
-<!--
-Display a warning when there is no data found.
--->
-<dom-module id="tf-no-data-warning">
-  <template>
+@customElement('tf-no-data-warning')
+class TfNoDataWarning extends PolymerElement {
+  static readonly template = html`
     <template is="dom-if" if="[[showWarning]]">
       <div class="warning">
         <h3>No <span>[[dataType]]</span> data was found.</h3>
@@ -70,15 +67,11 @@ Display a warning when there is no data found.
         margin: 80px auto 0 auto;
       }
     </style>
-  </template>
+  `;
 
-  <script>
-    Polymer({
-      is: 'tf-no-data-warning',
-      properties: {
-        dataType: String,
-        showWarning: Boolean,
-      },
-    });
-  </script>
-</dom-module>
+  @property({type: String})
+  dataType: string;
+
+  @property({type: Boolean})
+  showWarning: boolean;
+}

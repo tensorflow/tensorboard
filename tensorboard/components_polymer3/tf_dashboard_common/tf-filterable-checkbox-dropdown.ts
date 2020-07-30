@@ -1,6 +1,4 @@
-<!--
-@license
-Copyright 2016 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,13 +11,18 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
--->
-<link rel="import" href="../paper-menu-button/paper-menu-button.html" />
-<link rel="import" href="../tf-imports/polymer.html" />
-<link rel="import" href="./tf-dropdown-trigger.html" />
-<link rel="import" href="./tf-filterable-checkbox-list.html" />
+==============================================================================*/
 
-<!--
+import {computed, customElement, property} from '@polymer/decorators';
+import '@polymer/paper-menu-button';
+import '@polymer/paper-menu-button';
+import {PolymerElement, html} from '@polymer/polymer';
+import {LegacyElementMixin} from '@polymer/polymer/lib/legacy/legacy-element-mixin';
+
+import './tf-dropdown-trigger';
+import {FilterableCheckboxListItem} from './tf-filterable-checkbox-list';
+
+/*
 tf-filterable-checkbox-dropdown creates a dropdown whose content is a list of
 checkboxes with a filter input at the top. The list is primarily used for
 multiple selection of items.
@@ -36,10 +39,11 @@ Properties in:
 
 Properties out:
   - selectedItems: Array of items that are selected and not filterd out.
+*/
 
--->
-<dom-module id="tf-filterable-checkbox-dropdown">
-  <template>
+@customElement('tf-filterable-checkbox-dropdown')
+class TfFilterableCheckboxDropdown extends LegacyElementMixin(PolymerElement) {
+  static readonly template = html`
     <paper-menu-button
       vertical-align="top"
       horizontal-align="left"
@@ -87,6 +91,61 @@ Properties out:
         padding: 10px 0;
       }
     </style>
-  </template>
-  <script src="tf-filterable-checkbox-dropdown.js"></script>
-</dom-module>
+  `;
+
+  @property({type: String})
+  label: string;
+
+  @property({type: String})
+  placeholder: string;
+
+  @property({type: Boolean})
+  labelFloat: boolean = false;
+
+  @property({type: Boolean})
+  useCheckboxColors: boolean = true;
+
+  @property({type: Object})
+  coloring: object;
+
+  @property({
+    type: Array,
+  })
+  items: FilterableCheckboxListItem[] = [];
+
+  @property({type: Number})
+  maxItemsToEnableByDefault: number;
+
+  @property({type: Object})
+  selectionState: Record<string, boolean> = {};
+
+  @property({
+    type: Array,
+    notify: true,
+  })
+  selectedItems: FilterableCheckboxListItem[] = [];
+
+  @property({
+    type: Boolean,
+  })
+  _opened: boolean = false;
+
+  // ====================== COMPUTED ======================
+  _getValueLabel(_) {
+    if (this.selectedItems.length == this.items.length) {
+      return `All ${this.label}s`;
+    } else if (!this.selectedItems.length) {
+      return '';
+    } else if (this.selectedItems.length <= 3) {
+      const titles = this.selectedItems.map(({title}) => title);
+      const uniqueNames = new Set(titles);
+      return Array.from(uniqueNames).join(', ');
+    }
+    return `${this.selectedItems.length} Selected`;
+  }
+
+  @computed('_opened', 'coloring')
+  get _coloring(): object {
+    return Object.assign({}, this.coloring);
+  }
+}
