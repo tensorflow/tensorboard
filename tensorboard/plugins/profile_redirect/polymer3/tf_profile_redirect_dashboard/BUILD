@@ -9,6 +9,7 @@ tf_ts_library(
     srcs = ["tf-profile-redirect-dashboard.ts"],
     strict_checks = False,
     deps = [
+        "//tensorboard/components_polymer3/polymer:legacy_element_mixin",
         "@npm//@polymer/decorators",
         "@npm//@polymer/paper-button",
         "@npm//@polymer/polymer",

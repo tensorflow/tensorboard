@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {PolymerElement} from '@polymer/polymer';
-import {LegacyElementMixin} from '@polymer/polymer/lib/legacy/legacy-element-mixin';
+import {LegacyElementMixin} from '../polymer/legacy_element_mixin';
 import {customElement, property} from '@polymer/decorators';
 import * as _ from 'lodash';
 
