@@ -16,7 +16,7 @@ import {Injectable} from '@angular/core';
 import {Observable} from 'rxjs';
 
 import {TextRunListing} from '../store/text_types';
-import {TBHttpClient} from '../../../../webapp_data_source/tb_http_client';
+import {TBHttpClient} from '../../../webapp_data_source/tb_http_client';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 

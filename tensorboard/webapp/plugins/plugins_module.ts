@@ -21,7 +21,7 @@ import {CoreModule} from '../core/core_module';
 import {PluginRegistryModule} from './plugin_registry_module';
 import {DebuggerModule} from '../../plugins/debugger_v2/tf_debugger_v2_plugin/debugger_module';
 import {NpmiModule} from './npmi/npmi_module';
-import {TextModule} from './text_v2/tf_text_v2/text_module';
+import {TextModule} from './text_v2/text_module';
 
 @NgModule({
   declarations: [PluginsContainer, PluginsComponent],

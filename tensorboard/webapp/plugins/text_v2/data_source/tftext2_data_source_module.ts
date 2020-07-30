@@ -12,17 +12,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-import {MatCardModule} from '@angular/material/card';
-
-import {MarkdownRendererModule} from '../markdown_renderer/markdown_renderer_module';
-import {StepComponent} from './step_component';
+import {Tftext2HttpServerDataSource} from './tftext2_data_source';
+import {TBHttpClientModule} from '../../../webapp_data_source/tb_http_client_module';
 
 @NgModule({
-  declarations: [StepComponent],
-  imports: [CommonModule, MatCardModule, MarkdownRendererModule],
-  exports: [StepComponent],
+  imports: [TBHttpClientModule],
+  providers: [Tftext2HttpServerDataSource],
 })
-export class StepModule {}
+export class Tftext2ServerDataSourceModule {}

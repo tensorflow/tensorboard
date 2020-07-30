@@ -9,11 +9,10 @@ ng_module(
         "tftext2_data_source_module.ts",
     ],
     deps = [
-        "//tensorboard/webapp/plugins/text_v2/tf_text_v2/store:types",
+        "//tensorboard/webapp/plugins/text_v2/store:types",
         "//tensorboard/webapp/webapp_data_source:http_client",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//rxjs",
     ],
 )
-

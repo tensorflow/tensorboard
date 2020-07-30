@@ -16,10 +16,8 @@ ng_module(
         "tag_group.ng.html",
     ],
     deps = [
-        "//tensorboard/webapp/plugins/text_v2/tf_text_v2/views/tag:tag",
+        "//tensorboard/webapp/plugins/text_v2/views/tag",
         "@npm//@angular/common",
         "@npm//@angular/core",
-      ],
+    ],
 )
-
-

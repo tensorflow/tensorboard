@@ -25,7 +25,7 @@ import {TextContainer} from './text_container';
 import {TextEffects} from './effects';
 //import {TEXT_FEATURE_KEY} from './store/text_types';
 //import {TextReducers} from './store/text_reducers';
-import {PluginRegistryModule} from '../../plugin_registry_module';
+import {PluginRegistryModule} from '../plugin_registry_module';
 
 @NgModule({
   declarations: [TextComponent, TextContainer],

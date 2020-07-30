@@ -7,13 +7,12 @@ licenses(["notice"])  # Apache 2.
 tf_ts_library(
     name = "actions",
     srcs = [
-        "text_actions.ts",
         "index.ts",
+        "text_actions.ts",
     ],
     deps = [
-        "//tensorboard/webapp/plugins/text_v2/tf_text_v2/data_source",
-        "//tensorboard/webapp/plugins/text_v2/tf_text_v2/store:types",
+        "//tensorboard/webapp/plugins/text_v2/data_source",
+        "//tensorboard/webapp/plugins/text_v2/store:types",
         "@npm//@ngrx/store",
     ],
 )
-

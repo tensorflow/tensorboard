@@ -18,8 +18,7 @@ ng_module(
     deps = [
         "@npm//@angular/common",
         "@npm//@angular/core",
-        "@npm//marked",
         "@npm//@types/marked",
-      ],
+        "@npm//marked",
+    ],
 )
-

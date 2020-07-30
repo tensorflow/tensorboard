@@ -20,12 +20,8 @@ limitations under the License.
     <mat-expansion-panel-header>
       <mat-panel-title>
         <div class="tag-group-header-container">
-          <div class="tag-group-title">
-            {{tagGroupName}}
-          </div>
-          <div class="tag-count">
-            {{tagNameArray.length}}
-          </div>
+          <div [innerHTML]="tagGroupName" class="tag-group-title"></div>
+          <div [innerHTML]="tagNameArray.length" class="tag-count"></div>
         </div>
       </mat-panel-title>
     </mat-expansion-panel-header>

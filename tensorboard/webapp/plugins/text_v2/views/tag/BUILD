@@ -6,21 +6,18 @@ package(default_visibility = ["//tensorboard:internal"])
 licenses(["notice"])  # Apache 2.0
 
 ng_module(
-    name = "step",
+    name = "tag",
     srcs = [
-        "step_component.ts",
-        "step_module.ts",
+        "tag_component.ts",
+        "tag_module.ts",
     ],
     assets = [
-        "step.css",
-        "step.ng.html",
+        "tag.css",
+        "tag.ng.html",
     ],
     deps = [
-        "//tensorboard/webapp/plugins/text_v2/tf_text_v2/views/markdown_renderer:markdown_renderer",
+        "//tensorboard/webapp/plugins/text_v2/views/step",
         "@npm//@angular/common",
         "@npm//@angular/core",
-        "@npm//@angular/material",
     ],
 )
-
-

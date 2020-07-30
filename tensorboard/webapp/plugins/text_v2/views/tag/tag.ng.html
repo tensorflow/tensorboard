@@ -19,17 +19,16 @@ limitations under the License.
   <mat-card>
     <mat-card-title>
       <div class="heading-container">
-        <div class="tag-name-heading">{{tagName}}</div>
+        <div [innerHTML]="tagName" class="tag-name-heading"></div>
         <div
+          [innerHTML]="runName"
           class="run-name-heading"
           [ngStyle]="{'background-color': tagColor}"
-        >
-          {{runName}}
-        </div>
+        ></div>
       </div>
     </mat-card-title>
     <mat-card-subtitle>
-      tag: {{tagName}}
+      <div [innerHTML]="'tag: ' + tagName"></div>
     </mat-card-subtitle>
     <mat-card-content>
       <div class="step-list" [ngStyle]="{'border-color': tagColor}">
