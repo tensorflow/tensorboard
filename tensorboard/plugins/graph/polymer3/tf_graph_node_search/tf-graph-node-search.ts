@@ -13,22 +13,27 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import { PolymerElement, html } from "@polymer/polymer";
-import { customElement, property } from "@polymer/decorators";
-import "@polymer/paper-styles";
-import "@polymer/paper-input";
-import { DO_NOT_SUBMIT } from "../tf-imports/polymer.html";
-import { DO_NOT_SUBMIT } from "../tf-dashboard-common/tensorboard-color.html";
-import { DO_NOT_SUBMIT } from "../tf-graph-common/tf-graph-common.html";
-import "@polymer/paper-styles";
-import "@polymer/paper-input";
-import { DO_NOT_SUBMIT } from "../tf-imports/polymer.html";
-import { DO_NOT_SUBMIT } from "../tf-dashboard-common/tensorboard-color.html";
-import { DO_NOT_SUBMIT } from "../tf-graph-common/tf-graph-common.html";
-@customElement("tf-graph-node-search")
+import {PolymerElement, html} from '@polymer/polymer';
+import {customElement, property} from '@polymer/decorators';
+import '@polymer/paper-styles';
+import '@polymer/paper-input';
+import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
+import {DO_NOT_SUBMIT} from '../tf-dashboard-common/tensorboard-color.html';
+import {DO_NOT_SUBMIT} from '../tf-graph-common/tf-graph-common.html';
+import '@polymer/paper-styles';
+import '@polymer/paper-input';
+import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
+import {DO_NOT_SUBMIT} from '../tf-dashboard-common/tensorboard-color.html';
+import {DO_NOT_SUBMIT} from '../tf-graph-common/tf-graph-common.html';
+@customElement('tf-graph-node-search')
 class TfGraphNodeSearch extends PolymerElement {
-    static readonly template = html `<div id="search-container">
-      <paper-input id="runs-regex" label="Search nodes. Regexes supported." value="{{_rawRegexInput}}">
+  static readonly template = html`
+    <div id="search-container">
+      <paper-input
+        id="runs-regex"
+        label="Search nodes. Regexes supported."
+        value="{{_rawRegexInput}}"
+      >
       </paper-input>
       <div id="search-results-anchor">
         <div id="search-results">
@@ -76,96 +81,96 @@ class TfGraphNodeSearch extends PolymerElement {
         background: var(--tb-orange-weak);
         cursor: pointer;
       }
-    </style>`;
-    @property({ type: Object })
-    renderHierarchy: object;
-    @property({
-        type: String,
-        notify: true
-    })
-    selectedNode: string;
-    @property({
-        type: String
-    })
-    _rawRegexInput: string = '';
-    @property({
-        type: String
-    })
-    _previousRegexInput: string = '';
-    @property({
-        type: Number,
-        readOnly: true
-    })
-    _searchTimeoutDelay: number = 150;
-    @property({ type: Boolean })
-    _searchPending: boolean;
-    @property({
-        type: Number
-    })
-    _maxRegexResults: number = 42;
-    @property({ type: Array })
-    _regexMatches: unknown[];
-    @computed("renderHierarchy", "_rawRegexInput")
-    get _regexInput(): string {
-        var renderHierarchy = this.renderHierarchy;
-        var rawRegexInput = this._rawRegexInput;
-        return rawRegexInput.trim();
+    </style>
+  `;
+  @property({type: Object})
+  renderHierarchy: object;
+  @property({
+    type: String,
+    notify: true,
+  })
+  selectedNode: string;
+  @property({
+    type: String,
+  })
+  _rawRegexInput: string = '';
+  @property({
+    type: String,
+  })
+  _previousRegexInput: string = '';
+  @property({
+    type: Number,
+    readOnly: true,
+  })
+  _searchTimeoutDelay: number = 150;
+  @property({type: Boolean})
+  _searchPending: boolean;
+  @property({
+    type: Number,
+  })
+  _maxRegexResults: number = 42;
+  @property({type: Array})
+  _regexMatches: unknown[];
+  @computed('renderHierarchy', '_rawRegexInput')
+  get _regexInput(): string {
+    var renderHierarchy = this.renderHierarchy;
+    var rawRegexInput = this._rawRegexInput;
+    return rawRegexInput.trim();
+  }
+  @observe('_regexInput')
+  _regexInputChanged() {
+    var regexInput = this._regexInput;
+    this._requestSearch();
+  }
+  _clearSearchResults() {
+    this.set('_regexMatches', []);
+  }
+  _requestSearch() {
+    if (this._searchPending) {
+      return;
     }
-    @observe("_regexInput")
-    _regexInputChanged() {
-        var regexInput = this._regexInput;
-        this._requestSearch();
+    if (this._regexInput === this._previousRegexInput) {
+      // No new search is needed.
+      this._searchPending = false;
+      return;
     }
-    _clearSearchResults() {
-        this.set('_regexMatches', []);
+    this._searchPending = true;
+    this._executeSearch();
+    // After some time, perhaps execute another search.
+    this.async(() => {
+      this._searchPending = false;
+      this._requestSearch();
+    }, this._searchTimeoutDelay);
+  }
+  _executeSearch() {
+    this._previousRegexInput = this._regexInput;
+    if (!this._regexInput) {
+      this._clearSearchResults();
+      return;
     }
-    _requestSearch() {
-        if (this._searchPending) {
-            return;
-        }
-        if (this._regexInput === this._previousRegexInput) {
-            // No new search is needed.
-            this._searchPending = false;
-            return;
-        }
-        this._searchPending = true;
-        this._executeSearch();
-        // After some time, perhaps execute another search.
-        this.async(() => {
-            this._searchPending = false;
-            this._requestSearch();
-        }, this._searchTimeoutDelay);
+    try {
+      var regex = new RegExp(this._regexInput);
+    } catch (e) {
+      // The regular expression is invalid.
+      this._clearSearchResults();
+      return;
     }
-    _executeSearch() {
-        this._previousRegexInput = this._regexInput;
-        if (!this._regexInput) {
-            this._clearSearchResults();
-            return;
-        }
-        try {
-            var regex = new RegExp(this._regexInput);
-        }
-        catch (e) {
-            // The regular expression is invalid.
-            this._clearSearchResults();
-            return;
-        }
-        const matchedNodes = [];
-        const nodeMap = this.renderHierarchy.hierarchy.getNodeMap();
-        _.each(nodeMap, (_, nodeName) => {
-            if (matchedNodes.length >= this._maxRegexResults) {
-                // Terminate.
-                return false;
-            }
-            if (!regex.test(nodeName)) {
-                return;
-            }
-            matchedNodes.push(nodeName);
-        });
-        this.set('_regexMatches', matchedNodes);
-    }
-    _matchClicked(e) {
-        const node = e.model.item;
-        this.set('selectedNode', node);
-    }
+    const matchedNodes = [];
+    const nodeMap = this.renderHierarchy.hierarchy.getNodeMap();
+    _.each(nodeMap, (_, nodeName) => {
+      if (matchedNodes.length >= this._maxRegexResults) {
+        // Terminate.
+        return false;
+      }
+      if (!regex.test(nodeName)) {
+        return;
+      }
+      matchedNodes.push(nodeName);
+    });
+    this.set('_regexMatches', matchedNodes);
+  }
+  _matchClicked(e) {
+    const node = e.model.item;
+    this.set('selectedNode', node);
+  }
 }

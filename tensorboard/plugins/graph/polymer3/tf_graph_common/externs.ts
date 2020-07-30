@@ -17,27 +17,27 @@ limitations under the License.
  *     This file contains compiler stubs for external dependencies whos
  *     implementations are defined at runtime.
  */
-import { DO_NOT_SUBMIT } from "../tf-imports/d3.html";
-import { DO_NOT_SUBMIT } from "../tf-imports/dagre.html";
-import { DO_NOT_SUBMIT } from "../tf-imports/graphlib.html";
-import { DO_NOT_SUBMIT } from "../tf-imports/lodash.html";
-import { DO_NOT_SUBMIT } from "annotation";
-import { DO_NOT_SUBMIT } from "colors";
-import { DO_NOT_SUBMIT } from "common";
-import { DO_NOT_SUBMIT } from "contextmenu";
-import { DO_NOT_SUBMIT } from "edge";
-import { DO_NOT_SUBMIT } from "graph";
-import { DO_NOT_SUBMIT } from "hierarchy";
-import { DO_NOT_SUBMIT } from "layout";
-import { DO_NOT_SUBMIT } from "loader";
-import { DO_NOT_SUBMIT } from "node";
-import { DO_NOT_SUBMIT } from "op";
-import { DO_NOT_SUBMIT } from "parser";
-import { DO_NOT_SUBMIT } from "proto";
-import { DO_NOT_SUBMIT } from "render";
-import { DO_NOT_SUBMIT } from "scene";
-import { DO_NOT_SUBMIT } from "template";
-import { DO_NOT_SUBMIT } from "util";
+import {DO_NOT_SUBMIT} from '../tf-imports/d3.html';
+import {DO_NOT_SUBMIT} from '../tf-imports/dagre.html';
+import {DO_NOT_SUBMIT} from '../tf-imports/graphlib.html';
+import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
+import {DO_NOT_SUBMIT} from 'annotation';
+import {DO_NOT_SUBMIT} from 'colors';
+import {DO_NOT_SUBMIT} from 'common';
+import {DO_NOT_SUBMIT} from 'contextmenu';
+import {DO_NOT_SUBMIT} from 'edge';
+import {DO_NOT_SUBMIT} from 'graph';
+import {DO_NOT_SUBMIT} from 'hierarchy';
+import {DO_NOT_SUBMIT} from 'layout';
+import {DO_NOT_SUBMIT} from 'loader';
+import {DO_NOT_SUBMIT} from 'node';
+import {DO_NOT_SUBMIT} from 'op';
+import {DO_NOT_SUBMIT} from 'parser';
+import {DO_NOT_SUBMIT} from 'proto';
+import {DO_NOT_SUBMIT} from 'render';
+import {DO_NOT_SUBMIT} from 'scene';
+import {DO_NOT_SUBMIT} from 'template';
+import {DO_NOT_SUBMIT} from 'util';
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the 'License');
@@ -58,64 +58,64 @@ limitations under the License.
  *     implementations are defined at runtime.
  */
 interface GraphOptions {
-    compound?: boolean;
-    name?: string;
-    /**
-     * Direction for rank nodes. Can be TB, BT, LR, or RL, where T = top,
-     * B = bottom, L = left, and R = right.
-     */
-    rankdir?: string;
-    type?: string | number;
-    /** Number of pixels between each rank in the layout. */
-    ranksep?: number;
-    /** Number of pixels that separate nodes horizontally in the layout. */
-    nodesep?: number;
-    /** Number of pixels that separate edges horizontally in the layout */
-    edgesep?: number;
+  compound?: boolean;
+  name?: string;
+  /**
+   * Direction for rank nodes. Can be TB, BT, LR, or RL, where T = top,
+   * B = bottom, L = left, and R = right.
+   */
+  rankdir?: string;
+  type?: string | number;
+  /** Number of pixels between each rank in the layout. */
+  ranksep?: number;
+  /** Number of pixels that separate nodes horizontally in the layout. */
+  nodesep?: number;
+  /** Number of pixels that separate edges horizontally in the layout */
+  edgesep?: number;
 }
 export interface EdgeObject {
-    v: string;
-    w: string;
-    name?: string;
+  v: string;
+  w: string;
+  name?: string;
 }
 export class Graph<N, E> {
-    constructor(opt?: Object);
-    setNode(name: string, value?: N): void;
-    hasNode(name: string): boolean;
-    setEdge(fromName: string, toName: string, value?: E): void;
-    hasEdge(fromName: string, toName: string): boolean;
-    edge(fromName: string, toName: string): E;
-    edge(edgeObject: EdgeObject): E;
-    removeEdge(v: string, w: string): void;
-    nodes(): string[];
-    node(name: string): N;
-    removeNode(name: string): void;
-    setGraph(graphOptions: GraphOptions): void;
-    graph(): GraphOptions;
-    nodeCount(): number;
-    neighbors(name: string): string[];
-    successors(name: string): string[];
-    predecessors(name: string): string[];
-    edges(): EdgeObject[];
-    outEdges(name: string): E[];
-    inEdges(name: string): E[];
-    /**
-     * Returns those nodes in the graph that have no in-edges.
-     * Takes O(|V|) time.
-     */
-    sources(): string[];
-    /**
-     * Remove the node with the id v in the graph or do nothing if
-     * the node is not in the graph. If the node was removed this
-     * function also removes any incident edges. Returns the graph,
-     * allowing this to be chained with other functions. Takes O(|E|) time.
-     */
-    removeNode(name: string): Graph<N, E>;
-    setParent(name: string, parentName: string): void;
+  constructor(opt?: Object);
+  setNode(name: string, value?: N): void;
+  hasNode(name: string): boolean;
+  setEdge(fromName: string, toName: string, value?: E): void;
+  hasEdge(fromName: string, toName: string): boolean;
+  edge(fromName: string, toName: string): E;
+  edge(edgeObject: EdgeObject): E;
+  removeEdge(v: string, w: string): void;
+  nodes(): string[];
+  node(name: string): N;
+  removeNode(name: string): void;
+  setGraph(graphOptions: GraphOptions): void;
+  graph(): GraphOptions;
+  nodeCount(): number;
+  neighbors(name: string): string[];
+  successors(name: string): string[];
+  predecessors(name: string): string[];
+  edges(): EdgeObject[];
+  outEdges(name: string): E[];
+  inEdges(name: string): E[];
+  /**
+   * Returns those nodes in the graph that have no in-edges.
+   * Takes O(|V|) time.
+   */
+  sources(): string[];
+  /**
+   * Remove the node with the id v in the graph or do nothing if
+   * the node is not in the graph. If the node was removed this
+   * function also removes any incident edges. Returns the graph,
+   * allowing this to be chained with other functions. Takes O(|E|) time.
+   */
+  removeNode(name: string): Graph<N, E>;
+  setParent(name: string, parentName: string): void;
 }
 /**
  * Declaring dagre var used for dagre layout.
  */
 declare var dagre: {
-    layout(graph: graphlib.Graph<any, any>): void;
+  layout(graph: graphlib.Graph<any, any>): void;
 };

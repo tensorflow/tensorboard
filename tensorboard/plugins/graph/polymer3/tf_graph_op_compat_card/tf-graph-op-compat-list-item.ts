@@ -13,17 +13,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import { PolymerElement, html } from "@polymer/polymer";
-import { customElement, property } from "@polymer/decorators";
-import { DO_NOT_SUBMIT } from "../tf-imports/polymer.html";
-import { DO_NOT_SUBMIT } from "../tf-dashboard-common/tensorboard-color.html";
-import { DO_NOT_SUBMIT } from "../tf-graph-common/tf-node-icon.html";
-import { DO_NOT_SUBMIT } from "../tf-imports/polymer.html";
-import { DO_NOT_SUBMIT } from "../tf-dashboard-common/tensorboard-color.html";
-import { DO_NOT_SUBMIT } from "../tf-graph-common/tf-node-icon.html";
-@customElement("tf-graph-op-compat-list-item")
+import {PolymerElement, html} from '@polymer/polymer';
+import {customElement, property} from '@polymer/decorators';
+import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
+import {DO_NOT_SUBMIT} from '../tf-dashboard-common/tensorboard-color.html';
+import {DO_NOT_SUBMIT} from '../tf-graph-common/tf-node-icon.html';
+import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
+import {DO_NOT_SUBMIT} from '../tf-dashboard-common/tensorboard-color.html';
+import {DO_NOT_SUBMIT} from '../tf-graph-common/tf-node-icon.html';
+@customElement('tf-graph-op-compat-list-item')
 class TfGraphOpCompatListItem extends PolymerElement {
-    static readonly template = html `<style>
+  static readonly template = html`
+    <style>
       #list-item {
         width: 100%;
         color: #565656;
@@ -67,50 +68,63 @@ class TfGraphOpCompatListItem extends PolymerElement {
       }
     </style>
 
-    <div id="list-item" on-mouseover="_nodeListener" on-mouseout="_nodeListener" on-click="_nodeListener">
+    <div
+      id="list-item"
+      on-mouseover="_nodeListener"
+      on-mouseout="_nodeListener"
+      on-click="_nodeListener"
+    >
       <div class$="{{_fadedClass(itemRenderInfo)}}">
-        <tf-node-icon class="node-icon" height="12" color-by="[[colorBy]]" color-by-params="[[colorByParams]]" node="[[itemNode]]" render-info="[[itemRenderInfo]]" template-index="[[templateIndex]]">
+        <tf-node-icon
+          class="node-icon"
+          height="12"
+          color-by="[[colorBy]]"
+          color-by-params="[[colorByParams]]"
+          node="[[itemNode]]"
+          render-info="[[itemRenderInfo]]"
+          template-index="[[templateIndex]]"
+        >
         </tf-node-icon>
         <span title$="[[name]]">[[name]]</span>
       </div>
-    </div>`;
-    @property({ type: Object })
-    cardNode: object;
-    @property({ type: Object })
-    itemNode: object;
-    @property({ type: String })
-    edgeLabel: string;
-    @property({ type: Object })
-    itemRenderInfo: object;
-    @property({ type: String })
-    name: string;
-    @property({
-        type: String,
-        observer: "_itemTypeChanged"
-    })
-    itemType: string;
-    @property({ type: String })
-    colorBy: string;
-    @property({ type: Object })
-    colorByParams: object;
-    @property({ type: Function })
-    templateIndex: object;
-    _itemTypeChanged() {
-        if (this.itemType !== "subnode") {
-            this.$["list-item"].classList.add("clickable");
-        }
-        else {
-            this.$["list-item"].classList.remove("clickable");
-        }
+    </div>
+  `;
+  @property({type: Object})
+  cardNode: object;
+  @property({type: Object})
+  itemNode: object;
+  @property({type: String})
+  edgeLabel: string;
+  @property({type: Object})
+  itemRenderInfo: object;
+  @property({type: String})
+  name: string;
+  @property({
+    type: String,
+    observer: '_itemTypeChanged',
+  })
+  itemType: string;
+  @property({type: String})
+  colorBy: string;
+  @property({type: Object})
+  colorByParams: object;
+  @property({type: Function})
+  templateIndex: object;
+  _itemTypeChanged() {
+    if (this.itemType !== 'subnode') {
+      this.$['list-item'].classList.add('clickable');
+    } else {
+      this.$['list-item'].classList.remove('clickable');
     }
-    _nodeListener(event) {
-        // fire node.click/mouseover/mouseout
-        this.fire("node-list-item-" + event.type, {
-            nodeName: this.name,
-            type: this.itemType,
-        });
-    }
-    _fadedClass(itemRenderInfo) {
-        return itemRenderInfo && itemRenderInfo.isFadedOut ? "faded" : "";
-    }
+  }
+  _nodeListener(event) {
+    // fire node.click/mouseover/mouseout
+    this.fire('node-list-item-' + event.type, {
+      nodeName: this.name,
+      type: this.itemType,
+    });
+  }
+  _fadedClass(itemRenderInfo) {
+    return itemRenderInfo && itemRenderInfo.isFadedOut ? 'faded' : '';
+  }
 }

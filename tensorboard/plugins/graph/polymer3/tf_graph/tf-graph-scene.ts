@@ -13,19 +13,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import { PolymerElement, html } from "@polymer/polymer";
-import { customElement, property } from "@polymer/decorators";
-import { DO_NOT_SUBMIT } from "../tf-imports/polymer.html";
-import { DO_NOT_SUBMIT } from "../tf-graph-common/tf-graph-common.html";
-import { DO_NOT_SUBMIT } from "../tf-dashboard-common/tensorboard-color.html";
-import { DO_NOT_SUBMIT } from "tf-graph-minimap.html";
-import { DO_NOT_SUBMIT } from "../tf-imports/polymer.html";
-import { DO_NOT_SUBMIT } from "../tf-graph-common/tf-graph-common.html";
-import { DO_NOT_SUBMIT } from "../tf-dashboard-common/tensorboard-color.html";
-import { DO_NOT_SUBMIT } from "tf-graph-minimap.html";
-@customElement("tf-graph-scene")
+import {PolymerElement, html} from '@polymer/polymer';
+import {customElement, property} from '@polymer/decorators';
+import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
+import {DO_NOT_SUBMIT} from '../tf-graph-common/tf-graph-common.html';
+import {DO_NOT_SUBMIT} from '../tf-dashboard-common/tensorboard-color.html';
+import {DO_NOT_SUBMIT} from 'tf-graph-minimap.html';
+import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
+import {DO_NOT_SUBMIT} from '../tf-graph-common/tf-graph-common.html';
+import {DO_NOT_SUBMIT} from '../tf-dashboard-common/tensorboard-color.html';
+import {DO_NOT_SUBMIT} from 'tf-graph-minimap.html';
+@customElement('tf-graph-scene')
 class TfGraphScene extends PolymerElement {
-    static readonly template = html `<style>
+  static readonly template = html`
+    <style>
       :host {
         display: flex;
         font-size: 20px;
@@ -562,52 +563,178 @@ class TfGraphScene extends PolymerElement {
     <svg id="svg">
       <defs>
         <!-- Arrow heads for reference edge paths of different predefined sizes per color. -->
-        <path id="reference-arrowhead-path" d="M 0,0 L 10,5 L 0,10 C 3,7 3,3 0,0"></path>
-        <marker class="reference-arrowhead" id="reference-arrowhead-small" viewBox="0 0 10 10" markerWidth="5" markerHeight="5" refX="2" refY="5" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+        <path
+          id="reference-arrowhead-path"
+          d="M 0,0 L 10,5 L 0,10 C 3,7 3,3 0,0"
+        ></path>
+        <marker
+          class="reference-arrowhead"
+          id="reference-arrowhead-small"
+          viewBox="0 0 10 10"
+          markerWidth="5"
+          markerHeight="5"
+          refX="2"
+          refY="5"
+          orient="auto-start-reverse"
+          markerUnits="userSpaceOnUse"
+        >
           <use xlink:href="#reference-arrowhead-path"></use>
         </marker>
-        <marker class="reference-arrowhead" id="reference-arrowhead-medium" viewBox="0 0 10 10" markerWidth="13" markerHeight="13" refX="2" refY="5" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+        <marker
+          class="reference-arrowhead"
+          id="reference-arrowhead-medium"
+          viewBox="0 0 10 10"
+          markerWidth="13"
+          markerHeight="13"
+          refX="2"
+          refY="5"
+          orient="auto-start-reverse"
+          markerUnits="userSpaceOnUse"
+        >
           <use xlink:href="#reference-arrowhead-path"></use>
         </marker>
-        <marker class="reference-arrowhead" id="reference-arrowhead-large" viewBox="0 0 10 10" markerWidth="16" markerHeight="16" refX="2" refY="5" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+        <marker
+          class="reference-arrowhead"
+          id="reference-arrowhead-large"
+          viewBox="0 0 10 10"
+          markerWidth="16"
+          markerHeight="16"
+          refX="2"
+          refY="5"
+          orient="auto-start-reverse"
+          markerUnits="userSpaceOnUse"
+        >
           <use xlink:href="#reference-arrowhead-path"></use>
         </marker>
-        <marker class="reference-arrowhead" id="reference-arrowhead-xlarge" viewBox="0 0 10 10" markerWidth="20" markerHeight="20" refX="2" refY="5" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+        <marker
+          class="reference-arrowhead"
+          id="reference-arrowhead-xlarge"
+          viewBox="0 0 10 10"
+          markerWidth="20"
+          markerHeight="20"
+          refX="2"
+          refY="5"
+          orient="auto-start-reverse"
+          markerUnits="userSpaceOnUse"
+        >
           <use xlink:href="#reference-arrowhead-path"></use>
         </marker>
 
         <!-- Arrow heads for dataflow edge paths of different predefined sizes per color. -->
-        <path id="dataflow-arrowhead-path" d="M 0,0 L 10,5 L 0,10 C 3,7 3,3 0,0"></path>
-        <marker class="dataflow-arrowhead" id="dataflow-arrowhead-small" viewBox="0 0 10 10" markerWidth="5" markerHeight="5" refX="2" refY="5" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+        <path
+          id="dataflow-arrowhead-path"
+          d="M 0,0 L 10,5 L 0,10 C 3,7 3,3 0,0"
+        ></path>
+        <marker
+          class="dataflow-arrowhead"
+          id="dataflow-arrowhead-small"
+          viewBox="0 0 10 10"
+          markerWidth="5"
+          markerHeight="5"
+          refX="2"
+          refY="5"
+          orient="auto-start-reverse"
+          markerUnits="userSpaceOnUse"
+        >
           <use xlink:href="#dataflow-arrowhead-path"></use>
         </marker>
-        <marker class="dataflow-arrowhead" id="dataflow-arrowhead-medium" viewBox="0 0 10 10" markerWidth="13" markerHeight="13" refX="2" refY="5" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+        <marker
+          class="dataflow-arrowhead"
+          id="dataflow-arrowhead-medium"
+          viewBox="0 0 10 10"
+          markerWidth="13"
+          markerHeight="13"
+          refX="2"
+          refY="5"
+          orient="auto-start-reverse"
+          markerUnits="userSpaceOnUse"
+        >
           <use xlink:href="#dataflow-arrowhead-path"></use>
         </marker>
-        <marker class="dataflow-arrowhead" id="dataflow-arrowhead-large" viewBox="0 0 10 10" markerWidth="16" markerHeight="16" refX="2" refY="5" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+        <marker
+          class="dataflow-arrowhead"
+          id="dataflow-arrowhead-large"
+          viewBox="0 0 10 10"
+          markerWidth="16"
+          markerHeight="16"
+          refX="2"
+          refY="5"
+          orient="auto-start-reverse"
+          markerUnits="userSpaceOnUse"
+        >
           <use xlink:href="#dataflow-arrowhead-path"></use>
         </marker>
-        <marker class="dataflow-arrowhead" id="dataflow-arrowhead-xlarge" viewBox="0 0 10 10" markerWidth="20" markerHeight="20" refX="2" refY="5" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+        <marker
+          class="dataflow-arrowhead"
+          id="dataflow-arrowhead-xlarge"
+          viewBox="0 0 10 10"
+          markerWidth="20"
+          markerHeight="20"
+          refX="2"
+          refY="5"
+          orient="auto-start-reverse"
+          markerUnits="userSpaceOnUse"
+        >
           <use xlink:href="#dataflow-arrowhead-path"></use>
         </marker>
 
         <!-- Arrow head for annotation edge paths. -->
-        <marker id="annotation-arrowhead" markerWidth="5" markerHeight="5" refX="5" refY="2.5" orient="auto">
+        <marker
+          id="annotation-arrowhead"
+          markerWidth="5"
+          markerHeight="5"
+          refX="5"
+          refY="2.5"
+          orient="auto"
+        >
           <path d="M 0,0 L 5,2.5 L 0,5 L 0,0"></path>
         </marker>
-        <marker id="annotation-arrowhead-faded" markerWidth="5" markerHeight="5" refX="5" refY="2.5" orient="auto">
+        <marker
+          id="annotation-arrowhead-faded"
+          markerWidth="5"
+          markerHeight="5"
+          refX="5"
+          refY="2.5"
+          orient="auto"
+        >
           <path d="M 0,0 L 5,2.5 L 0,5 L 0,0"></path>
         </marker>
-        <marker id="ref-annotation-arrowhead" markerWidth="5" markerHeight="5" refX="0" refY="2.5" orient="auto">
+        <marker
+          id="ref-annotation-arrowhead"
+          markerWidth="5"
+          markerHeight="5"
+          refX="0"
+          refY="2.5"
+          orient="auto"
+        >
           <path d="M 5,0 L 0,2.5 L 5,5 L 5,0"></path>
         </marker>
-        <marker id="ref-annotation-arrowhead-faded" markerWidth="5" markerHeight="5" refX="0" refY="2.5" orient="auto">
+        <marker
+          id="ref-annotation-arrowhead-faded"
+          markerWidth="5"
+          markerHeight="5"
+          refX="0"
+          refY="2.5"
+          orient="auto"
+        >
           <path d="M 5,0 L 0,2.5 L 5,5 L 5,0"></path>
         </marker>
         <!-- Template for an Op node ellipse. -->
-        <ellipse id="op-node-stamp" rx="7.5" ry="3" stroke="inherit" fill="inherit"></ellipse>
+        <ellipse
+          id="op-node-stamp"
+          rx="7.5"
+          ry="3"
+          stroke="inherit"
+          fill="inherit"
+        ></ellipse>
         <!-- Template for an Op node annotation ellipse (smaller). -->
-        <ellipse id="op-node-annotation-stamp" rx="5" ry="2" stroke="inherit" fill="inherit"></ellipse>
+        <ellipse
+          id="op-node-annotation-stamp"
+          rx="5"
+          ry="2"
+          stroke="inherit"
+          fill="inherit"
+        ></ellipse>
         <!-- Vertically stacked series of Op nodes when unexpanded. -->
         <g id="op-series-vertical-stamp">
           <use xlink:href="#op-node-stamp" x="8" y="9"></use>
@@ -626,20 +753,46 @@ class TfGraphScene extends PolymerElement {
           <use xlink:href="#op-node-annotation-stamp" x="7" y="2"></use>
           <use xlink:href="#op-node-annotation-stamp" x="5" y="2"></use>
         </g>
-        <svg id="summary-icon" fill="#848484" height="12" viewBox="0 0 24 24" width="12">
-          <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"></path>
+        <svg
+          id="summary-icon"
+          fill="#848484"
+          height="12"
+          viewBox="0 0 24 24"
+          width="12"
+        >
+          <path
+            d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"
+          ></path>
         </svg>
 
         <!-- Hatch patterns for faded out nodes. -->
-        <pattern id="rectHatch" patternTransform="rotate(45 0 0)" width="5" height="5" patternUnits="userSpaceOnUse">
+        <pattern
+          id="rectHatch"
+          patternTransform="rotate(45 0 0)"
+          width="5"
+          height="5"
+          patternUnits="userSpaceOnUse"
+        >
           <line x1="0" y1="0" x2="0" y2="5" style="stroke-width: 1"></line>
         </pattern>
-        <pattern id="ellipseHatch" patternTransform="rotate(45 0 0)" width="2" height="2" patternUnits="userSpaceOnUse">
+        <pattern
+          id="ellipseHatch"
+          patternTransform="rotate(45 0 0)"
+          width="2"
+          height="2"
+          patternUnits="userSpaceOnUse"
+        >
           <line x1="0" y1="0" x2="0" y2="2" style="stroke-width: 1"></line>
         </pattern>
 
         <!-- A shadow for health pills. -->
-        <filter id="health-pill-shadow" x="-40%" y="-40%" width="180%" height="180%">
+        <filter
+          id="health-pill-shadow"
+          x="-40%"
+          y="-40%"
+          width="180%"
+          height="180%"
+        >
           <feGaussianBlur in="SourceAlpha" stdDeviation="0.8"></feGaussianBlur>
           <feOffset dx="0" dy="0" result="offsetblur"></feOffset>
           <feFlood flood-color="#000000"></feFlood>
@@ -656,475 +809,547 @@ class TfGraphScene extends PolymerElement {
       <g id="root"></g>
     </svg>
     <tf-graph-minimap id="minimap"></tf-graph-minimap>
-    <div id="contextMenu" class="context-menu"></div>`;
-    @property({ type: Object })
-    renderHierarchy: object;
-    @property({ type: String })
-    name: string;
-    @property({ type: String })
-    colorBy: string;
-    @property({ type: Boolean })
-    traceInputs: boolean;
-    @property({ type: Boolean })
-    _hasRenderHierarchyBeenFitOnce: boolean;
-    @property({ type: Boolean })
-    _isAttached: boolean;
-    @property({ type: Object })
-    _zoom: object;
-    @property({
-        type: String,
-        observer: '_highlightedNodeChanged'
-    })
-    highlightedNode: string;
-    @property({
-        type: String,
-        observer: '_selectedNodeChanged'
-    })
-    selectedNode: string;
-    @property({ type: Object })
-    handleEdgeSelected: object;
-    @property({
-        type: Boolean,
-        observer: '_onZoomChanged'
-    })
-    _zoomed: boolean = false;
-    @property({
-        type: Object
-    })
-    _zoomStartCoords: object = null;
-    @property({
-        type: Object
-    })
-    _zoomTransform: object = null;
-    @property({
-        type: Number
-    })
-    _maxZoomDistanceForClick: number = 20;
-    @property({ type: Function })
-    templateIndex: object;
-    @property({ type: Object })
-    minimap: object;
-    @property({
-        type: Object
-    })
-    _nodeGroupIndex: object = function () {
-        return {};
-    };
-    @property({
-        type: Object
-    })
-    _annotationGroupIndex: object = function () {
-        return {};
-    };
-    @property({
-        type: Object
-    })
-    _edgeGroupIndex: object = function () {
-        return {};
-    };
-    @property({
-        type: Number
-    })
-    maxMetanodeLabelLengthFontSize: number = 9;
-    @property({
-        type: Number
-    })
-    minMetanodeLabelLengthFontSize: number = 6;
-    @property({
-        type: Number
-    })
-    maxMetanodeLabelLengthLargeFont: number = 11;
-    @property({
-        type: Number
-    })
-    maxMetanodeLabelLength: number = 18;
-    @property({ type: Object })
-    progress: object;
-    @property({ type: Array })
-    nodeContextMenuItems: unknown[];
-    @property({ type: Object })
-    nodeNamesToHealthPills: object;
-    @property({ type: Number })
-    healthPillStepIndex: number;
-    getNode(nodeName) {
-        return this.renderHierarchy.getRenderNodeByName(nodeName);
+    <div id="contextMenu" class="context-menu"></div>
+  `;
+  @property({type: Object})
+  renderHierarchy: object;
+  @property({type: String})
+  name: string;
+  @property({type: String})
+  colorBy: string;
+  @property({type: Boolean})
+  traceInputs: boolean;
+  @property({type: Boolean})
+  _hasRenderHierarchyBeenFitOnce: boolean;
+  @property({type: Boolean})
+  _isAttached: boolean;
+  @property({type: Object})
+  _zoom: object;
+  @property({
+    type: String,
+    observer: '_highlightedNodeChanged',
+  })
+  highlightedNode: string;
+  @property({
+    type: String,
+    observer: '_selectedNodeChanged',
+  })
+  selectedNode: string;
+  @property({type: Object})
+  handleEdgeSelected: object;
+  @property({
+    type: Boolean,
+    observer: '_onZoomChanged',
+  })
+  _zoomed: boolean = false;
+  @property({
+    type: Object,
+  })
+  _zoomStartCoords: object = null;
+  @property({
+    type: Object,
+  })
+  _zoomTransform: object = null;
+  @property({
+    type: Number,
+  })
+  _maxZoomDistanceForClick: number = 20;
+  @property({type: Function})
+  templateIndex: object;
+  @property({type: Object})
+  minimap: object;
+  @property({
+    type: Object,
+  })
+  _nodeGroupIndex: object = function() {
+    return {};
+  };
+  @property({
+    type: Object,
+  })
+  _annotationGroupIndex: object = function() {
+    return {};
+  };
+  @property({
+    type: Object,
+  })
+  _edgeGroupIndex: object = function() {
+    return {};
+  };
+  @property({
+    type: Number,
+  })
+  maxMetanodeLabelLengthFontSize: number = 9;
+  @property({
+    type: Number,
+  })
+  minMetanodeLabelLengthFontSize: number = 6;
+  @property({
+    type: Number,
+  })
+  maxMetanodeLabelLengthLargeFont: number = 11;
+  @property({
+    type: Number,
+  })
+  maxMetanodeLabelLength: number = 18;
+  @property({type: Object})
+  progress: object;
+  @property({type: Array})
+  nodeContextMenuItems: unknown[];
+  @property({type: Object})
+  nodeNamesToHealthPills: object;
+  @property({type: Number})
+  healthPillStepIndex: number;
+  getNode(nodeName) {
+    return this.renderHierarchy.getRenderNodeByName(nodeName);
+  }
+  isNodeExpanded(node) {
+    return node.expanded;
+  }
+  setNodeExpanded(renderNode) {
+    this._build(this.renderHierarchy);
+    this._updateLabels(!this._zoomed);
+  }
+  /**
+   * Pans to a node. Assumes that the node exists.
+   * @param nodeName {string} The name of the node to pan to.
+   */
+  panToNode(nodeName) {
+    const zoomed = tf.graph.scene.panToNode(
+      nodeName,
+      this.$.svg,
+      this.$.root,
+      this._zoom
+    );
+    if (zoomed) {
+      this._zoomed = true;
     }
-    isNodeExpanded(node) {
-        return node.expanded;
-    }
-    setNodeExpanded(renderNode) {
-        this._build(this.renderHierarchy);
-        this._updateLabels(!this._zoomed);
-    }
-    /**
-     * Pans to a node. Assumes that the node exists.
-     * @param nodeName {string} The name of the node to pan to.
-     */
-    panToNode(nodeName) {
-        const zoomed = tf.graph.scene.panToNode(nodeName, this.$.svg, this.$.root, this._zoom);
-        if (zoomed) {
-            this._zoomed = true;
-        }
-    }
-    /**
-     * Returns the outer-most SVG that renders the graph.
-     */
-    getGraphSvgRoot() {
-        return this.$.svg;
-    }
-    /**
-     * @returns {!HTMLElement}
-     */
-    getContextMenu() {
-        return this.$.contextMenu;
-    }
-    /**
-     * Resets the state of the component. Called whenever the whole graph
-     * (dataset) changes.
-     */
-    _resetState() {
-        // Reset the state of the component.
-        this._nodeGroupIndex = {};
-        this._annotationGroupIndex = {};
-        this._edgeGroupIndex = {};
-        this._updateLabels(false);
-        // Remove all svg elements under the 'root' svg group.
-        d3.select(this.$.svg)
-            .select('#root')
-            .selectAll('*')
-            .remove();
-        // And the defs.
-        tf.graph.scene.node.removeGradientDefinitions(this.$.svg);
-    }
-    /** Main method for building the scene */
-    _build(renderHierarchy) {
-        this.templateIndex = renderHierarchy.hierarchy.getTemplateIndex();
-        tf.graph.util.time('tf-graph-scene (layout):', function () {
-            // layout the scene for this meta / series node
-            tf.graph.layout.layoutScene(renderHierarchy.root, this);
-        }.bind(this));
-        tf.graph.util.time('tf-graph-scene (build scene):', function () {
-            tf.graph.scene.buildGroup(d3.select(this.$.root), renderHierarchy.root, this);
-            tf.graph.scene.addGraphClickListener(this.$.svg, this);
-            this._updateInputTrace();
-        }.bind(this));
-        // Update the minimap again when the graph is done animating.
-        setTimeout(function () {
-            this._updateHealthPills(this.nodeNamesToHealthPills, this.healthPillStepIndex);
-            this.minimap.update();
-        }.bind(this), tf.graph.layout.PARAMS.animation.duration);
-    }
-    ready() {
-        this._zoom = d3
-            .zoom()
-            .on('end', function () {
-            if (this._zoomStartCoords) {
-                // Calculate the total distance dragged during the zoom event.
-                // If it is sufficiently small, then fire an event indicating
-                // that zooming has ended. Otherwise wait to fire the zoom end
-                // event, so that a mouse click registered as part of this zooming
-                // is ignored (as this mouse click was part of a zooming, and should
-                // not be used to indicate an actual click on the graph).
-                var dragDistance = Math.sqrt(Math.pow(this._zoomStartCoords.x - this._zoomTransform.x, 2) +
-                    Math.pow(this._zoomStartCoords.y - this._zoomTransform.y, 2));
-                if (dragDistance < this._maxZoomDistanceForClick) {
-                    this._fireEnableClick();
-                }
-                else {
-                    setTimeout(this._fireEnableClick.bind(this), 50);
-                }
+  }
+  /**
+   * Returns the outer-most SVG that renders the graph.
+   */
+  getGraphSvgRoot() {
+    return this.$.svg;
+  }
+  /**
+   * @returns {!HTMLElement}
+   */
+  getContextMenu() {
+    return this.$.contextMenu;
+  }
+  /**
+   * Resets the state of the component. Called whenever the whole graph
+   * (dataset) changes.
+   */
+  _resetState() {
+    // Reset the state of the component.
+    this._nodeGroupIndex = {};
+    this._annotationGroupIndex = {};
+    this._edgeGroupIndex = {};
+    this._updateLabels(false);
+    // Remove all svg elements under the 'root' svg group.
+    d3.select(this.$.svg)
+      .select('#root')
+      .selectAll('*')
+      .remove();
+    // And the defs.
+    tf.graph.scene.node.removeGradientDefinitions(this.$.svg);
+  }
+  /** Main method for building the scene */
+  _build(renderHierarchy) {
+    this.templateIndex = renderHierarchy.hierarchy.getTemplateIndex();
+    tf.graph.util.time(
+      'tf-graph-scene (layout):',
+      function() {
+        // layout the scene for this meta / series node
+        tf.graph.layout.layoutScene(renderHierarchy.root, this);
+      }.bind(this)
+    );
+    tf.graph.util.time(
+      'tf-graph-scene (build scene):',
+      function() {
+        tf.graph.scene.buildGroup(
+          d3.select(this.$.root),
+          renderHierarchy.root,
+          this
+        );
+        tf.graph.scene.addGraphClickListener(this.$.svg, this);
+        this._updateInputTrace();
+      }.bind(this)
+    );
+    // Update the minimap again when the graph is done animating.
+    setTimeout(
+      function() {
+        this._updateHealthPills(
+          this.nodeNamesToHealthPills,
+          this.healthPillStepIndex
+        );
+        this.minimap.update();
+      }.bind(this),
+      tf.graph.layout.PARAMS.animation.duration
+    );
+  }
+  ready() {
+    this._zoom = d3
+      .zoom()
+      .on(
+        'end',
+        function() {
+          if (this._zoomStartCoords) {
+            // Calculate the total distance dragged during the zoom event.
+            // If it is sufficiently small, then fire an event indicating
+            // that zooming has ended. Otherwise wait to fire the zoom end
+            // event, so that a mouse click registered as part of this zooming
+            // is ignored (as this mouse click was part of a zooming, and should
+            // not be used to indicate an actual click on the graph).
+            var dragDistance = Math.sqrt(
+              Math.pow(this._zoomStartCoords.x - this._zoomTransform.x, 2) +
+                Math.pow(this._zoomStartCoords.y - this._zoomTransform.y, 2)
+            );
+            if (dragDistance < this._maxZoomDistanceForClick) {
+              this._fireEnableClick();
+            } else {
+              setTimeout(this._fireEnableClick.bind(this), 50);
             }
-            this._zoomStartCoords = null;
-        }.bind(this))
-            .on('zoom', function () {
-            // Store the coordinates of the zoom event.
-            this._zoomTransform = d3.event.transform;
-            // If this is the first zoom event after a zoom-end, then
-            // store the coordinates as the start coordinates as well,
-            // and fire an event to indicate that zooming has started.
-            // This doesn't use the zoomstart event, as d3 sends this
-            // event on mouse-down, even if there has been no dragging
-            // done to translate the graph around.
-            if (!this._zoomStartCoords) {
-                this._zoomStartCoords = this._zoomTransform;
-                this.fire('disable-click');
-            }
-            this._zoomed = true;
-            d3.select(this.$.root).attr('transform', d3.event.transform);
-            // Notify the minimap.
-            this.minimap.zoom(d3.event.transform);
-        }.bind(this));
-        d3.select(this.$.svg)
-            .call(this._zoom)
-            .on('dblclick.zoom', null);
-        d3.select(window).on('resize', function () {
-            // Notify the minimap that the user's window was resized.
-            // The minimap will figure out the new dimensions of the main svg
-            // and will use the existing translate and scale params.
-            this.minimap.zoom();
-        }.bind(this));
-        // Initialize the minimap.
-        this.minimap = this.$.minimap.init(this.$.svg, this.$.root, this._zoom, tf.graph.layout.PARAMS.minimap.size, tf.graph.layout.PARAMS.subscene.meta.labelHeight);
+          }
+          this._zoomStartCoords = null;
+        }.bind(this)
+      )
+      .on(
+        'zoom',
+        function() {
+          // Store the coordinates of the zoom event.
+          this._zoomTransform = d3.event.transform;
+          // If this is the first zoom event after a zoom-end, then
+          // store the coordinates as the start coordinates as well,
+          // and fire an event to indicate that zooming has started.
+          // This doesn't use the zoomstart event, as d3 sends this
+          // event on mouse-down, even if there has been no dragging
+          // done to translate the graph around.
+          if (!this._zoomStartCoords) {
+            this._zoomStartCoords = this._zoomTransform;
+            this.fire('disable-click');
+          }
+          this._zoomed = true;
+          d3.select(this.$.root).attr('transform', d3.event.transform);
+          // Notify the minimap.
+          this.minimap.zoom(d3.event.transform);
+        }.bind(this)
+      );
+    d3.select(this.$.svg)
+      .call(this._zoom)
+      .on('dblclick.zoom', null);
+    d3.select(window).on(
+      'resize',
+      function() {
+        // Notify the minimap that the user's window was resized.
+        // The minimap will figure out the new dimensions of the main svg
+        // and will use the existing translate and scale params.
+        this.minimap.zoom();
+      }.bind(this)
+    );
+    // Initialize the minimap.
+    this.minimap = this.$.minimap.init(
+      this.$.svg,
+      this.$.root,
+      this._zoom,
+      tf.graph.layout.PARAMS.minimap.size,
+      tf.graph.layout.PARAMS.subscene.meta.labelHeight
+    );
+  }
+  attached() {
+    this.set('_isAttached', true);
+  }
+  detached() {
+    this.set('_isAttached', false);
+  }
+  @observe('renderHierarchy')
+  _renderHierarchyChanged() {
+    var renderHierarchy = this.renderHierarchy;
+    this._hasRenderHierarchyBeenFitOnce = false;
+    this._resetState();
+    this._build(renderHierarchy);
+  }
+  @observe('_isAttached', 'renderHierarchy')
+  _animateAndFit() {
+    var isAttached = this._isAttached;
+    var renderHierarchy = this.renderHierarchy;
+    if (this._hasRenderHierarchyBeenFitOnce || !isAttached) {
+      // Do not animate and fit if the scene has already fitted this render hierarchy once. Or if
+      // the graph dashboard is not attached (in which case the scene lacks DOM info for fitting).
+      return;
     }
-    attached() {
-        this.set('_isAttached', true);
-    }
-    detached() {
-        this.set('_isAttached', false);
-    }
-    @observe("renderHierarchy")
-    _renderHierarchyChanged() {
-        var renderHierarchy = this.renderHierarchy;
-        this._hasRenderHierarchyBeenFitOnce = false;
-        this._resetState();
-        this._build(renderHierarchy);
-    }
-    @observe("_isAttached", "renderHierarchy")
-    _animateAndFit() {
-        var isAttached = this._isAttached;
-        var renderHierarchy = this.renderHierarchy;
-        if (this._hasRenderHierarchyBeenFitOnce || !isAttached) {
-            // Do not animate and fit if the scene has already fitted this render hierarchy once. Or if
-            // the graph dashboard is not attached (in which case the scene lacks DOM info for fitting).
-            return;
-        }
-        // Fit to screen after the graph is done animating.
-        setTimeout(this.fit.bind(this), tf.graph.layout.PARAMS.animation.duration);
-    }
-    _updateLabels(showLabels) {
-        var mainGraphTitleElement = this.$$('.title');
-        var titleStyle = mainGraphTitleElement.style;
-        var auxTitleElement = this.$$('.auxTitle');
-        var auxTitleStyle = auxTitleElement.style;
-        var functionLibraryTitleStyle = this.$$('.functionLibraryTitle').style;
-        const root = d3.select(this.$.svg);
-        var core = root
-            .select('.' +
+    // Fit to screen after the graph is done animating.
+    setTimeout(this.fit.bind(this), tf.graph.layout.PARAMS.animation.duration);
+  }
+  _updateLabels(showLabels) {
+    var mainGraphTitleElement = this.$$('.title');
+    var titleStyle = mainGraphTitleElement.style;
+    var auxTitleElement = this.$$('.auxTitle');
+    var auxTitleStyle = auxTitleElement.style;
+    var functionLibraryTitleStyle = this.$$('.functionLibraryTitle').style;
+    const root = d3.select(this.$.svg);
+    var core = root
+      .select(
+        '.' +
+          tf.graph.scene.Class.Scene.GROUP +
+          '>.' +
+          tf.graph.scene.Class.Scene.CORE
+      )
+      .node();
+    // Only show labels if the graph is fully loaded.
+    if (showLabels && core && this.progress && this.progress.value === 100) {
+      var aux =
+        root
+          .select(
+            '.' +
+              tf.graph.scene.Class.Scene.GROUP +
+              '>.' +
+              tf.graph.scene.Class.Scene.INEXTRACT
+          )
+          .node() ||
+        root
+          .select(
+            '.' +
+              tf.graph.scene.Class.Scene.GROUP +
+              '>.' +
+              tf.graph.scene.Class.Scene.OUTEXTRACT
+          )
+          .node();
+      var coreX = core.getCTM().e;
+      var auxX = aux ? aux.getCTM().e : null;
+      titleStyle.display = 'inline';
+      titleStyle.left = coreX + 'px';
+      if (auxX !== null && auxX !== coreX) {
+        auxTitleStyle.display = 'inline';
+        // Make sure that the aux title is positioned rightwards enough so as to
+        // prevent overlap with the main graph title.
+        auxX = Math.max(
+          coreX + mainGraphTitleElement.getBoundingClientRect().width,
+          auxX
+        );
+        auxTitleStyle.left = auxX + 'px';
+      } else {
+        auxTitleStyle.display = 'none';
+      }
+      let functionLibrary = root
+        .select(
+          '.' +
             tf.graph.scene.Class.Scene.GROUP +
             '>.' +
-            tf.graph.scene.Class.Scene.CORE)
-            .node();
-        // Only show labels if the graph is fully loaded.
-        if (showLabels &&
-            core &&
-            this.progress &&
-            this.progress.value === 100) {
-            var aux = root
-                .select('.' +
-                tf.graph.scene.Class.Scene.GROUP +
-                '>.' +
-                tf.graph.scene.Class.Scene.INEXTRACT)
-                .node() ||
-                root
-                    .select('.' +
-                    tf.graph.scene.Class.Scene.GROUP +
-                    '>.' +
-                    tf.graph.scene.Class.Scene.OUTEXTRACT)
-                    .node();
-            var coreX = core.getCTM().e;
-            var auxX = aux ? aux.getCTM().e : null;
-            titleStyle.display = 'inline';
-            titleStyle.left = coreX + 'px';
-            if (auxX !== null && auxX !== coreX) {
-                auxTitleStyle.display = 'inline';
-                // Make sure that the aux title is positioned rightwards enough so as to
-                // prevent overlap with the main graph title.
-                auxX = Math.max(coreX + mainGraphTitleElement.getBoundingClientRect().width, auxX);
-                auxTitleStyle.left = auxX + 'px';
-            }
-            else {
-                auxTitleStyle.display = 'none';
-            }
-            let functionLibrary = root
-                .select('.' +
-                tf.graph.scene.Class.Scene.GROUP +
-                '>.' +
-                tf.graph.scene.Class.Scene.FUNCTION_LIBRARY)
-                .node();
-            let functionLibraryX = functionLibrary
-                ? functionLibrary.getCTM().e
-                : null;
-            if (functionLibraryX !== null && functionLibraryX !== auxX) {
-                functionLibraryTitleStyle.display = 'inline';
-                // Make sure that the function library title is positioned rightwards
-                // enough so as to prevent overlap with other content.
-                functionLibraryX = Math.max(auxX + auxTitleElement.getBoundingClientRect().width, functionLibraryX);
-                functionLibraryTitleStyle.left = functionLibraryX + 'px';
-            }
-            else {
-                functionLibraryTitleStyle.display = 'none';
-            }
+            tf.graph.scene.Class.Scene.FUNCTION_LIBRARY
+        )
+        .node();
+      let functionLibraryX = functionLibrary
+        ? functionLibrary.getCTM().e
+        : null;
+      if (functionLibraryX !== null && functionLibraryX !== auxX) {
+        functionLibraryTitleStyle.display = 'inline';
+        // Make sure that the function library title is positioned rightwards
+        // enough so as to prevent overlap with other content.
+        functionLibraryX = Math.max(
+          auxX + auxTitleElement.getBoundingClientRect().width,
+          functionLibraryX
+        );
+        functionLibraryTitleStyle.left = functionLibraryX + 'px';
+      } else {
+        functionLibraryTitleStyle.display = 'none';
+      }
+    } else {
+      titleStyle.display = 'none';
+      auxTitleStyle.display = 'none';
+      functionLibraryTitleStyle.display = 'none';
+    }
+  }
+  @observe('colorBy')
+  /**
+   * Called whenever the user changed the 'color by' option in the
+   * UI controls.
+   */
+  _colorByChanged() {
+    if (this.renderHierarchy != null) {
+      // We iterate through each svg node and update its state.
+      _.each(this._nodeGroupIndex, (nodeGroup, nodeName) => {
+        this._updateNodeState(nodeName);
+      });
+      // Notify also the minimap.
+      this.minimap.update();
+    }
+  }
+  fit() {
+    this._hasRenderHierarchyBeenFitOnce = true;
+    tf.graph.scene.fit(
+      this.$.svg,
+      this.$.root,
+      this._zoom,
+      function() {
+        this._zoomed = false;
+      }.bind(this)
+    );
+  }
+  isNodeSelected(n) {
+    return n === this.selectedNode;
+  }
+  isNodeHighlighted(n) {
+    return n === this.highlightedNode;
+  }
+  addAnnotationGroup(a, d, selection) {
+    var an = a.node.name;
+    this._annotationGroupIndex[an] = this._annotationGroupIndex[an] || {};
+    this._annotationGroupIndex[an][d.node.name] = selection;
+  }
+  getAnnotationGroupsIndex(a) {
+    return this._annotationGroupIndex[a];
+  }
+  removeAnnotationGroup(a, d) {
+    delete this._annotationGroupIndex[a.node.name][d.node.name];
+  }
+  addNodeGroup(n, selection) {
+    this._nodeGroupIndex[n] = selection;
+  }
+  getNodeGroup(n) {
+    return this._nodeGroupIndex[n];
+  }
+  removeNodeGroup(n) {
+    delete this._nodeGroupIndex[n];
+  }
+  addEdgeGroup(n, selection) {
+    this._edgeGroupIndex[n] = selection;
+  }
+  getEdgeGroup(e) {
+    return this._edgeGroupIndex[e];
+  }
+  @observe('nodeNamesToHealthPills', 'healthPillStepIndex')
+  _updateHealthPills() {
+    var nodeNamesToHealthPills = this.nodeNamesToHealthPills;
+    var healthPillStepIndex = this.healthPillStepIndex;
+    tf.graph.scene.addHealthPills(
+      this.$.svg,
+      nodeNamesToHealthPills,
+      healthPillStepIndex
+    );
+  }
+  /**
+   * Update node and annotation node of the given name.
+   * @param  {String} n node name
+   */
+  _updateNodeState(n) {
+    var node = this.getNode(n);
+    var nodeGroup = this.getNodeGroup(n);
+    if (nodeGroup) {
+      tf.graph.scene.node.stylize(nodeGroup, node, this);
+    }
+    if (
+      node.node.type === tf.graph.NodeType.META &&
+      node.node.associatedFunction &&
+      !node.isLibraryFunction
+    ) {
+      // The node is that of a function call. Also link the node within the
+      // function library. This clarifies to the user that the library function
+      // is being used.
+      var libraryFunctionNodeName =
+        tf.graph.FUNCTION_LIBRARY_NODE_PREFIX + node.node.associatedFunction;
+      var functionGroup = d3.select(
+        '.' +
+          tf.graph.scene.Class.Scene.GROUP +
+          '>.' +
+          tf.graph.scene.Class.Scene.FUNCTION_LIBRARY +
+          ' g[data-name="' +
+          libraryFunctionNodeName +
+          '"]'
+      );
+      tf.graph.scene.node.stylize(functionGroup, node, this);
+    }
+    var annotationGroupIndex = this.getAnnotationGroupsIndex(n);
+    _.each(annotationGroupIndex, (aGroup, hostName) => {
+      tf.graph.scene.node.stylize(
+        aGroup,
+        node,
+        this,
+        tf.graph.scene.Class.Annotation.NODE
+      );
+    });
+  }
+  /**
+   * Handles new node selection. 1) Updates the selected-state of each node,
+   * 2) triggers input tracing.
+   * @param selectedNode {string} The name of the newly selected node.
+   * @param oldSelectedNode {string} The name of the previously selected node.
+   * @private
+   */
+  _selectedNodeChanged(selectedNode, oldSelectedNode) {
+    if (selectedNode === oldSelectedNode) {
+      return;
+    }
+    if (oldSelectedNode) {
+      this._updateNodeState(oldSelectedNode);
+    }
+    if (!selectedNode) {
+      return;
+    }
+    // Update the minimap to reflect the highlighted (selected) node.
+    this.minimap.update();
+    var node = this.renderHierarchy.hierarchy.node(selectedNode);
+    var nodeParents = [];
+    // Create list of all metanode parents of the selected node.
+    while (
+      node.parentNode != null &&
+      node.parentNode.name != tf.graph.ROOT_NAME
+    ) {
+      node = node.parentNode;
+      nodeParents.push(node.name);
+    }
+    // Ensure each parent metanode is built and expanded.
+    var topParentNodeToBeExpanded;
+    _.forEachRight(nodeParents, (parentName) => {
+      this.renderHierarchy.buildSubhierarchy(parentName);
+      var renderNode = this.renderHierarchy.getRenderNodeByName(parentName);
+      if (renderNode.node.isGroupNode && !renderNode.expanded) {
+        renderNode.expanded = true;
+        if (!topParentNodeToBeExpanded) {
+          topParentNodeToBeExpanded = renderNode;
         }
-        else {
-            titleStyle.display = 'none';
-            auxTitleStyle.display = 'none';
-            functionLibraryTitleStyle.display = 'none';
-        }
+      }
+    });
+    // If any expansion was needed to display this selected node, then
+    // inform the scene of the top-most expansion.
+    if (topParentNodeToBeExpanded) {
+      this.setNodeExpanded(topParentNodeToBeExpanded);
+      this._zoomed = true;
     }
-    @observe("colorBy")
-    /**
-     * Called whenever the user changed the 'color by' option in the
-     * UI controls.
-     */
-    _colorByChanged() {
-        if (this.renderHierarchy != null) {
-            // We iterate through each svg node and update its state.
-            _.each(this._nodeGroupIndex, (nodeGroup, nodeName) => {
-                this._updateNodeState(nodeName);
-            });
-            // Notify also the minimap.
-            this.minimap.update();
-        }
+    if (selectedNode) {
+      this._updateNodeState(selectedNode);
     }
-    fit() {
-        this._hasRenderHierarchyBeenFitOnce = true;
-        tf.graph.scene.fit(this.$.svg, this.$.root, this._zoom, function () {
-            this._zoomed = false;
-        }.bind(this));
+    // Give time for any expanding to finish before panning to a node.
+    // Otherwise, the pan will be computed from incorrect measurements.
+    setTimeout(() => {
+      this.panToNode(selectedNode);
+    }, tf.graph.layout.PARAMS.animation.duration);
+  }
+  _highlightedNodeChanged(highlightedNode, oldHighlightedNode) {
+    if (highlightedNode === oldHighlightedNode) {
+      return;
     }
-    isNodeSelected(n) {
-        return n === this.selectedNode;
+    if (highlightedNode) {
+      this._updateNodeState(highlightedNode);
     }
-    isNodeHighlighted(n) {
-        return n === this.highlightedNode;
+    if (oldHighlightedNode) {
+      this._updateNodeState(oldHighlightedNode);
     }
-    addAnnotationGroup(a, d, selection) {
-        var an = a.node.name;
-        this._annotationGroupIndex[an] = this._annotationGroupIndex[an] || {};
-        this._annotationGroupIndex[an][d.node.name] = selection;
-    }
-    getAnnotationGroupsIndex(a) {
-        return this._annotationGroupIndex[a];
-    }
-    removeAnnotationGroup(a, d) {
-        delete this._annotationGroupIndex[a.node.name][d.node.name];
-    }
-    addNodeGroup(n, selection) {
-        this._nodeGroupIndex[n] = selection;
-    }
-    getNodeGroup(n) {
-        return this._nodeGroupIndex[n];
-    }
-    removeNodeGroup(n) {
-        delete this._nodeGroupIndex[n];
-    }
-    addEdgeGroup(n, selection) {
-        this._edgeGroupIndex[n] = selection;
-    }
-    getEdgeGroup(e) {
-        return this._edgeGroupIndex[e];
-    }
-    @observe("nodeNamesToHealthPills", "healthPillStepIndex")
-    _updateHealthPills() {
-        var nodeNamesToHealthPills = this.nodeNamesToHealthPills;
-        var healthPillStepIndex = this.healthPillStepIndex;
-        tf.graph.scene.addHealthPills(this.$.svg, nodeNamesToHealthPills, healthPillStepIndex);
-    }
-    /**
-     * Update node and annotation node of the given name.
-     * @param  {String} n node name
-     */
-    _updateNodeState(n) {
-        var node = this.getNode(n);
-        var nodeGroup = this.getNodeGroup(n);
-        if (nodeGroup) {
-            tf.graph.scene.node.stylize(nodeGroup, node, this);
-        }
-        if (node.node.type === tf.graph.NodeType.META &&
-            node.node.associatedFunction &&
-            !node.isLibraryFunction) {
-            // The node is that of a function call. Also link the node within the
-            // function library. This clarifies to the user that the library function
-            // is being used.
-            var libraryFunctionNodeName = tf.graph.FUNCTION_LIBRARY_NODE_PREFIX +
-                node.node.associatedFunction;
-            var functionGroup = d3.select('.' +
-                tf.graph.scene.Class.Scene.GROUP +
-                '>.' +
-                tf.graph.scene.Class.Scene.FUNCTION_LIBRARY +
-                ' g[data-name="' +
-                libraryFunctionNodeName +
-                '"]');
-            tf.graph.scene.node.stylize(functionGroup, node, this);
-        }
-        var annotationGroupIndex = this.getAnnotationGroupsIndex(n);
-        _.each(annotationGroupIndex, (aGroup, hostName) => {
-            tf.graph.scene.node.stylize(aGroup, node, this, tf.graph.scene.Class.Annotation.NODE);
-        });
-    }
-    /**
-     * Handles new node selection. 1) Updates the selected-state of each node,
-     * 2) triggers input tracing.
-     * @param selectedNode {string} The name of the newly selected node.
-     * @param oldSelectedNode {string} The name of the previously selected node.
-     * @private
-     */
-    _selectedNodeChanged(selectedNode, oldSelectedNode) {
-        if (selectedNode === oldSelectedNode) {
-            return;
-        }
-        if (oldSelectedNode) {
-            this._updateNodeState(oldSelectedNode);
-        }
-        if (!selectedNode) {
-            return;
-        }
-        // Update the minimap to reflect the highlighted (selected) node.
-        this.minimap.update();
-        var node = this.renderHierarchy.hierarchy.node(selectedNode);
-        var nodeParents = [];
-        // Create list of all metanode parents of the selected node.
-        while (node.parentNode != null &&
-            node.parentNode.name != tf.graph.ROOT_NAME) {
-            node = node.parentNode;
-            nodeParents.push(node.name);
-        }
-        // Ensure each parent metanode is built and expanded.
-        var topParentNodeToBeExpanded;
-        _.forEachRight(nodeParents, (parentName) => {
-            this.renderHierarchy.buildSubhierarchy(parentName);
-            var renderNode = this.renderHierarchy.getRenderNodeByName(parentName);
-            if (renderNode.node.isGroupNode && !renderNode.expanded) {
-                renderNode.expanded = true;
-                if (!topParentNodeToBeExpanded) {
-                    topParentNodeToBeExpanded = renderNode;
-                }
-            }
-        });
-        // If any expansion was needed to display this selected node, then
-        // inform the scene of the top-most expansion.
-        if (topParentNodeToBeExpanded) {
-            this.setNodeExpanded(topParentNodeToBeExpanded);
-            this._zoomed = true;
-        }
-        if (selectedNode) {
-            this._updateNodeState(selectedNode);
-        }
-        // Give time for any expanding to finish before panning to a node.
-        // Otherwise, the pan will be computed from incorrect measurements.
-        setTimeout(() => {
-            this.panToNode(selectedNode);
-        }, tf.graph.layout.PARAMS.animation.duration);
-    }
-    _highlightedNodeChanged(highlightedNode, oldHighlightedNode) {
-        if (highlightedNode === oldHighlightedNode) {
-            return;
-        }
-        if (highlightedNode) {
-            this._updateNodeState(highlightedNode);
-        }
-        if (oldHighlightedNode) {
-            this._updateNodeState(oldHighlightedNode);
-        }
-    }
-    _onZoomChanged() {
-        this._updateLabels(!this._zoomed);
-    }
-    _fireEnableClick() {
-        this.fire('enable-click');
-    }
-    @observe("traceInputs", "selectedNode")
-    _updateInputTrace() {
-        tf.graph.scene.node.updateInputTrace(this.getGraphSvgRoot(), this.renderHierarchy, this.selectedNode, this.traceInputs);
-    }
+  }
+  _onZoomChanged() {
+    this._updateLabels(!this._zoomed);
+  }
+  _fireEnableClick() {
+    this.fire('enable-click');
+  }
+  @observe('traceInputs', 'selectedNode')
+  _updateInputTrace() {
+    tf.graph.scene.node.updateInputTrace(
+      this.getGraphSvgRoot(),
+      this.renderHierarchy,
+      this.selectedNode,
+      this.traceInputs
+    );
+  }
 }

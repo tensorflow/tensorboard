@@ -13,20 +13,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import { PolymerElement, html } from "@polymer/polymer";
-import { customElement, property } from "@polymer/decorators";
-import "@polymer/paper-material";
-import "@polymer/paper-slider";
-import "@polymer/paper-spinner";
-import "@polymer/paper-toggle-button";
-import { DO_NOT_SUBMIT } from "../tf-imports/polymer.html";
-import { DO_NOT_SUBMIT } from "../tf-graph-common/tf-graph-common.html";
-import "@polymer/paper-material";
-import "@polymer/paper-slider";
-import "@polymer/paper-spinner";
-import "@polymer/paper-toggle-button";
-import { DO_NOT_SUBMIT } from "../tf-imports/polymer.html";
-import { DO_NOT_SUBMIT } from "../tf-graph-common/tf-graph-common.html";
+import {PolymerElement, html} from '@polymer/polymer';
+import {customElement, property} from '@polymer/decorators';
+import '@polymer/paper-material';
+import '@polymer/paper-slider';
+import '@polymer/paper-spinner';
+import '@polymer/paper-toggle-button';
+import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
+import {DO_NOT_SUBMIT} from '../tf-graph-common/tf-graph-common.html';
+import '@polymer/paper-material';
+import '@polymer/paper-slider';
+import '@polymer/paper-spinner';
+import '@polymer/paper-toggle-button';
+import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
+import {DO_NOT_SUBMIT} from '../tf-graph-common/tf-graph-common.html';
 /* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -41,10 +41,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-"use strict";
-@customElement("tf-graph-debugger-data-card")
+'use strict';
+@customElement('tf-graph-debugger-data-card')
 class TfGraphDebuggerDataCard extends PolymerElement {
-    static readonly template = html `<style>
+  static readonly template = html`
+    <style>
       :host {
         font-size: 12px;
         margin: 0;
@@ -203,24 +204,51 @@ class TfGraphDebuggerDataCard extends PolymerElement {
       <div class="title">
         Enable all (not just sampled) steps. Requires slow disk read.
       </div>
-      <paper-toggle-button id="enableAllStepsModeToggle" checked="{{allStepsModeEnabled}}">
+      <paper-toggle-button
+        id="enableAllStepsModeToggle"
+        checked="{{allStepsModeEnabled}}"
+      >
       </paper-toggle-button>
       <h2>
         Step of Health Pills:
         <template is="dom-if" if="[[allStepsModeEnabled]]">
-          <input type="number" id="health-pill-step-number-input" min="0" max="[[_biggestStepEverSeen]]" value="{{specificHealthPillStep::input}}">
+          <input
+            type="number"
+            id="health-pill-step-number-input"
+            min="0"
+            max="[[_biggestStepEverSeen]]"
+            value="{{specificHealthPillStep::input}}"
+          />
         </template>
         <template is="dom-if" if="[[!allStepsModeEnabled]]">
           [[_currentStepDisplayValue]]
         </template>
-        <paper-spinner-lite active="" hidden$="[[!areHealthPillsLoading]]" id="health-pills-loading-spinner"></paper-spinner-lite>
+        <paper-spinner-lite
+          active=""
+          hidden$="[[!areHealthPillsLoading]]"
+          id="health-pills-loading-spinner"
+        ></paper-spinner-lite>
       </h2>
       <template is="dom-if" if="[[allStepsModeEnabled]]">
-        <paper-slider id="health-pill-step-slider" immediate-value="{{specificHealthPillStep}}" max="[[_biggestStepEverSeen]]" snaps="" step="1" value="{{specificHealthPillStep}}"></paper-slider>
+        <paper-slider
+          id="health-pill-step-slider"
+          immediate-value="{{specificHealthPillStep}}"
+          max="[[_biggestStepEverSeen]]"
+          snaps=""
+          step="1"
+          value="{{specificHealthPillStep}}"
+        ></paper-slider>
       </template>
       <template is="dom-if" if="[[!allStepsModeEnabled]]">
         <template is="dom-if" if="[[_maxStepIndex]]">
-          <paper-slider id="health-pill-step-slider" immediate-value="{{healthPillStepIndex}}" max="[[_maxStepIndex]]" snaps="" step="1" value="{{healthPillStepIndex}}"></paper-slider>
+          <paper-slider
+            id="health-pill-step-slider"
+            immediate-value="{{healthPillStepIndex}}"
+            max="[[_maxStepIndex]]"
+            snaps=""
+            step="1"
+            value="{{healthPillStepIndex}}"
+          ></paper-slider>
         </template>
       </template>
       <h2>
@@ -234,7 +262,10 @@ class TfGraphDebuggerDataCard extends PolymerElement {
       </h2>
       <template is="dom-repeat" items="[[healthPillEntries]]">
         <div class="health-pill-entry">
-          <div class="color-preview" style="background:[[item.background_color]]"></div>
+          <div
+            class="color-preview"
+            style="background:[[item.background_color]]"
+          ></div>
           <div class="color-label">[[item.label]]</div>
           <div class="tensor-count">
             [[_computeTensorCountString(healthPillValuesForSelectedNode,
@@ -260,259 +291,301 @@ class TfGraphDebuggerDataCard extends PolymerElement {
           </table>
         </div>
       </div>
-      <template is="dom-if" if="[[!_hasDebuggerNumericAlerts(debuggerNumericAlerts)]]">
+      <template
+        is="dom-if"
+        if="[[!_hasDebuggerNumericAlerts(debuggerNumericAlerts)]]"
+      >
         <p class="no-numeric-alerts-notification">
           No numeric alerts so far. That is likely good. Alerts indicate the
           presence of NaN or (+/-) Infinity values, which may be concerning.
         </p>
       </template>
-    </paper-material>`;
-    @property({ type: Object })
-    renderHierarchy: object;
-    @property({
-        type: Array,
-        notify: true
-    })
-    debuggerNumericAlerts: unknown[];
-    @property({ type: Object })
-    nodeNamesToHealthPills: object;
-    @property({
-        type: Number,
-        notify: true
-    })
-    healthPillStepIndex: number;
-    @property({
-        type: Number,
-        notify: true
-    })
-    specificHealthPillStep: number = 0;
-    @property({
-        type: String,
-        notify: true
-    })
-    selectedNode: string;
-    @property({
-        type: String,
-        notify: true
-    })
-    highlightedNode: string;
-    @property({
-        type: Number,
-        notify: true
-    })
-    selectedNodeInclude: number;
-    @property({ type: Boolean })
-    areHealthPillsLoading: boolean;
-    @property({
-        type: Array,
-        readOnly: true
-    })
-    healthPillEntries: unknown[] = tf.graph.scene.healthPillEntries;
-    @property({
-        type: Boolean,
-        notify: true
-    })
-    allStepsModeEnabled: boolean;
-    ready() {
-        var mainContainer = document.getElementById("mainContainer");
-        var scrollbarContainer = document.querySelector("tf-dashboard-layout .scrollbar");
-        if (mainContainer && scrollbarContainer) {
-            // If this component is being used inside of TensorBoard's dashboard layout, it may easily
-            // cause the dashboard layout element to overflow, giving the user 2 scroll bars. Prevent
-            // that by hiding whatever content overflows - the user will have to expand the viewport to
-            // use this debugging card.
-            mainContainer.style.overflow = "hidden";
-            scrollbarContainer.style.overflow = "hidden";
-        }
+    </paper-material>
+  `;
+  @property({type: Object})
+  renderHierarchy: object;
+  @property({
+    type: Array,
+    notify: true,
+  })
+  debuggerNumericAlerts: unknown[];
+  @property({type: Object})
+  nodeNamesToHealthPills: object;
+  @property({
+    type: Number,
+    notify: true,
+  })
+  healthPillStepIndex: number;
+  @property({
+    type: Number,
+    notify: true,
+  })
+  specificHealthPillStep: number = 0;
+  @property({
+    type: String,
+    notify: true,
+  })
+  selectedNode: string;
+  @property({
+    type: String,
+    notify: true,
+  })
+  highlightedNode: string;
+  @property({
+    type: Number,
+    notify: true,
+  })
+  selectedNodeInclude: number;
+  @property({type: Boolean})
+  areHealthPillsLoading: boolean;
+  @property({
+    type: Array,
+    readOnly: true,
+  })
+  healthPillEntries: unknown[] = tf.graph.scene.healthPillEntries;
+  @property({
+    type: Boolean,
+    notify: true,
+  })
+  allStepsModeEnabled: boolean;
+  ready() {
+    var mainContainer = document.getElementById('mainContainer');
+    var scrollbarContainer = document.querySelector(
+      'tf-dashboard-layout .scrollbar'
+    );
+    if (mainContainer && scrollbarContainer) {
+      // If this component is being used inside of TensorBoard's dashboard layout, it may easily
+      // cause the dashboard layout element to overflow, giving the user 2 scroll bars. Prevent
+      // that by hiding whatever content overflows - the user will have to expand the viewport to
+      // use this debugging card.
+      mainContainer.style.overflow = 'hidden';
+      scrollbarContainer.style.overflow = 'hidden';
     }
-    _healthPillsAvailable(debuggerDataEnabled, nodeNamesToHealthPills) {
-        // So long as there is a mapping (even if empty) from node name to health pills, show the
-        // legend and slider. We do that because, even if no health pills exist at the current step,
-        // the user may desire to change steps, and the slider must show for the user to do that.
-        return debuggerDataEnabled && nodeNamesToHealthPills;
+  }
+  _healthPillsAvailable(debuggerDataEnabled, nodeNamesToHealthPills) {
+    // So long as there is a mapping (even if empty) from node name to health pills, show the
+    // legend and slider. We do that because, even if no health pills exist at the current step,
+    // the user may desire to change steps, and the slider must show for the user to do that.
+    return debuggerDataEnabled && nodeNamesToHealthPills;
+  }
+  _computeTensorCountString(healthPillValuesForSelectedNode, valueIndex) {
+    if (!healthPillValuesForSelectedNode) {
+      // No health pill data is available.
+      return '';
     }
-    _computeTensorCountString(healthPillValuesForSelectedNode, valueIndex) {
-        if (!healthPillValuesForSelectedNode) {
-            // No health pill data is available.
-            return "";
-        }
-        return healthPillValuesForSelectedNode[valueIndex].toFixed(0);
+    return healthPillValuesForSelectedNode[valueIndex].toFixed(0);
+  }
+  @computed(
+    'nodeNamesToHealthPills',
+    'healthPillStepIndex',
+    'selectedNode',
+    'allStepsModeEnabled',
+    'areHealthPillsLoading'
+  )
+  get healthPillValuesForSelectedNode(): unknown[] {
+    var nodeNamesToHealthPills = this.nodeNamesToHealthPills;
+    var healthPillStepIndex = this.healthPillStepIndex;
+    var selectedNode = this.selectedNode;
+    var allStepsModeEnabled = this.allStepsModeEnabled;
+    var areHealthPillsLoading = this.areHealthPillsLoading;
+    if (areHealthPillsLoading) {
+      // Health pills are loading. Do not render data that is out of date.
+      return null;
     }
-    @computed("nodeNamesToHealthPills", "healthPillStepIndex", "selectedNode", "allStepsModeEnabled", "areHealthPillsLoading")
-    get healthPillValuesForSelectedNode(): unknown[] {
-        var nodeNamesToHealthPills = this.nodeNamesToHealthPills;
-        var healthPillStepIndex = this.healthPillStepIndex;
-        var selectedNode = this.selectedNode;
-        var allStepsModeEnabled = this.allStepsModeEnabled;
-        var areHealthPillsLoading = this.areHealthPillsLoading;
-        if (areHealthPillsLoading) {
-            // Health pills are loading. Do not render data that is out of date.
-            return null;
-        }
-        if (!selectedNode) {
-            // No node is selected.
-            return null;
-        }
-        const healthPills = nodeNamesToHealthPills[selectedNode];
-        if (!healthPills) {
-            // This node lacks a health pill.
-            return null;
-        }
-        // If all steps mode is enabled, we use the first health pill in the list because the JSON
-        // response from the server is a mapping between node name and a list of 1 health pill.
-        const healthPill = healthPills[allStepsModeEnabled ? 0 : healthPillStepIndex];
-        if (!healthPill) {
-            // This node lacks a health pill at the current step.
-            return null;
-        }
-        // The health pill count values start at 2. Each health pill contains 6 values.
-        return healthPill.value.slice(2, 8);
+    if (!selectedNode) {
+      // No node is selected.
+      return null;
     }
-    @computed("nodeNamesToHealthPills", "healthPillStepIndex", "allStepsModeEnabled", "specificHealthPillStep", "areHealthPillsLoading")
-    get _currentStepDisplayValue(): string {
-        var nodeNamesToHealthPills = this.nodeNamesToHealthPills;
-        var healthPillStepIndex = this.healthPillStepIndex;
-        var allStepsModeEnabled = this.allStepsModeEnabled;
-        var specificHealthPillStep = this.specificHealthPillStep;
-        var areHealthPillsLoading = this.areHealthPillsLoading;
-        if (allStepsModeEnabled) {
-            // The user seeks health pills for specific step from the server.
-            return specificHealthPillStep.toFixed(0);
-        }
-        if (areHealthPillsLoading) {
-            // The current step is undefined.
-            return 0;
-        }
-        for (let nodeName in nodeNamesToHealthPills) {
-            // All nodes have the same number of steps stored, so only examine 1 node. We cannot
-            // directly index into the nodeNamesToHealthPills object because we do not have a key.
-            // If all steps mode is enabled, we only have 1 step to show.
-            return nodeNamesToHealthPills[nodeName][healthPillStepIndex].step.toFixed(0);
-        }
-        // The current step could not be computed.
-        return 0;
+    const healthPills = nodeNamesToHealthPills[selectedNode];
+    if (!healthPills) {
+      // This node lacks a health pill.
+      return null;
     }
-    @computed("nodeNamesToHealthPills")
-    get _biggestStepEverSeen(): number {
-        var nodeNamesToHealthPills = this.nodeNamesToHealthPills;
-        for (let nodeName in nodeNamesToHealthPills) {
-            // All nodes have the same number of steps stored, so only examine 1 node.
-            // The index is 1 less than the count. Tensorboard backend logic guarantees that the length
-            // of the array will be greater than 1.
-            var healthPills = nodeNamesToHealthPills[nodeName];
-            return Math.max(this._biggestStepEverSeen, healthPills[healthPills.length - 1].step);
+    // If all steps mode is enabled, we use the first health pill in the list because the JSON
+    // response from the server is a mapping between node name and a list of 1 health pill.
+    const healthPill =
+      healthPills[allStepsModeEnabled ? 0 : healthPillStepIndex];
+    if (!healthPill) {
+      // This node lacks a health pill at the current step.
+      return null;
+    }
+    // The health pill count values start at 2. Each health pill contains 6 values.
+    return healthPill.value.slice(2, 8);
+  }
+  @computed(
+    'nodeNamesToHealthPills',
+    'healthPillStepIndex',
+    'allStepsModeEnabled',
+    'specificHealthPillStep',
+    'areHealthPillsLoading'
+  )
+  get _currentStepDisplayValue(): string {
+    var nodeNamesToHealthPills = this.nodeNamesToHealthPills;
+    var healthPillStepIndex = this.healthPillStepIndex;
+    var allStepsModeEnabled = this.allStepsModeEnabled;
+    var specificHealthPillStep = this.specificHealthPillStep;
+    var areHealthPillsLoading = this.areHealthPillsLoading;
+    if (allStepsModeEnabled) {
+      // The user seeks health pills for specific step from the server.
+      return specificHealthPillStep.toFixed(0);
+    }
+    if (areHealthPillsLoading) {
+      // The current step is undefined.
+      return 0;
+    }
+    for (let nodeName in nodeNamesToHealthPills) {
+      // All nodes have the same number of steps stored, so only examine 1 node. We cannot
+      // directly index into the nodeNamesToHealthPills object because we do not have a key.
+      // If all steps mode is enabled, we only have 1 step to show.
+      return nodeNamesToHealthPills[nodeName][healthPillStepIndex].step.toFixed(
+        0
+      );
+    }
+    // The current step could not be computed.
+    return 0;
+  }
+  @computed('nodeNamesToHealthPills')
+  get _biggestStepEverSeen(): number {
+    var nodeNamesToHealthPills = this.nodeNamesToHealthPills;
+    for (let nodeName in nodeNamesToHealthPills) {
+      // All nodes have the same number of steps stored, so only examine 1 node.
+      // The index is 1 less than the count. Tensorboard backend logic guarantees that the length
+      // of the array will be greater than 1.
+      var healthPills = nodeNamesToHealthPills[nodeName];
+      return Math.max(
+        this._biggestStepEverSeen,
+        healthPills[healthPills.length - 1].step
+      );
+    }
+    // No steps seen so far. Default to 0.
+    return this._biggestStepEverSeen || 0;
+  }
+  @computed('nodeNamesToHealthPills')
+  get _maxStepIndex(): number {
+    var nodeNamesToHealthPills = this.nodeNamesToHealthPills;
+    for (let nodeName in nodeNamesToHealthPills) {
+      // All nodes have the same number of steps stored, so only examine 1 node.
+      // The index is 1 less than the count. Tensorboard backend logic guarantees that the length
+      // of the array will be greater than 1.
+      return nodeNamesToHealthPills[nodeName].length - 1;
+    }
+    // Return a falsy value. The slider should be hidden.
+    return 0;
+  }
+  _hasDebuggerNumericAlerts(debuggerNumericAlerts) {
+    return debuggerNumericAlerts && debuggerNumericAlerts.length;
+  }
+  @observe('debuggerNumericAlerts')
+  _updateAlertsList() {
+    var debuggerNumericAlerts = this.debuggerNumericAlerts;
+    var alertBody = this.$$('#numeric-alerts-body');
+    if (!alertBody) {
+      return;
+    }
+    alertBody.innerText = '';
+    for (var i = 0; i < debuggerNumericAlerts.length; i++) {
+      var alert = debuggerNumericAlerts[i];
+      var tableRow = document.createElement('tr');
+      var timestampTd = document.createElement('td');
+      timestampTd.innerText = tf.graph.util.computeHumanFriendlyTime(
+        alert.first_timestamp
+      );
+      timestampTd.classList.add('first-offense-td');
+      tableRow.appendChild(timestampTd);
+      var tensorDeviceTd = document.createElement('td');
+      tensorDeviceTd.classList.add('tensor-device-td');
+      var tensorSection = document.createElement('div');
+      tensorSection.classList.add('tensor-section-within-table');
+      tensorSection.innerText = alert.tensor_name;
+      this._addOpExpansionListener(tensorSection, alert.tensor_name);
+      tensorDeviceTd.appendChild(tensorSection);
+      var deviceSection = document.createElement('div');
+      deviceSection.classList.add('device-section-within-table');
+      deviceSection.innerText = '(' + alert.device_name + ')';
+      tensorDeviceTd.appendChild(deviceSection);
+      tableRow.appendChild(tensorDeviceTd);
+      var miniHealthPill = document.createElement('div');
+      miniHealthPill.classList.add('mini-health-pill');
+      var miniHealthPillTd = document.createElement('td');
+      miniHealthPillTd.classList.add('mini-health-pill-td');
+      miniHealthPillTd.appendChild(miniHealthPill);
+      tableRow.appendChild(miniHealthPillTd);
+      if (alert.neg_inf_event_count) {
+        var negativeInfCountSection = document.createElement('div');
+        negativeInfCountSection.classList.add(
+          'negative-inf-mini-health-pill-section'
+        );
+        negativeInfCountSection.innerText = alert.neg_inf_event_count;
+        negativeInfCountSection.setAttribute(
+          'title',
+          alert.neg_inf_event_count + ' events with -\u221E'
+        );
+        miniHealthPill.appendChild(negativeInfCountSection);
+      }
+      if (alert.pos_inf_event_count) {
+        var positiveInfCountSection = document.createElement('div');
+        positiveInfCountSection.classList.add(
+          'positive-inf-mini-health-pill-section'
+        );
+        positiveInfCountSection.innerText = alert.pos_inf_event_count;
+        positiveInfCountSection.setAttribute(
+          'title',
+          alert.pos_inf_event_count + ' events with +\u221E'
+        );
+        miniHealthPill.appendChild(positiveInfCountSection);
+      }
+      if (alert.nan_event_count) {
+        var nanCountSection = document.createElement('div');
+        nanCountSection.classList.add('nan-mini-health-pill-section');
+        nanCountSection.innerText = alert.nan_event_count;
+        nanCountSection.setAttribute(
+          'title',
+          alert.nan_event_count + ' events with NaN'
+        );
+        miniHealthPill.appendChild(nanCountSection);
+      }
+      Polymer.dom(alertBody).appendChild(tableRow);
+    }
+  }
+  // Adds a listener to an element, so that when that element is clicked, the tensor with
+  // tensorName expands.
+  _addOpExpansionListener(clickableElement, tensorName) {
+    clickableElement.addEventListener('click', () => {
+      // When the user clicks on a tensor name, expand all nodes until the user can see the
+      // associated node.
+      var nameOfNodeToSelect = tf.graph.render.expandUntilNodeIsShown(
+        document.getElementById('scene'),
+        this.renderHierarchy,
+        tensorName
+      );
+      // Store the current scroll of the graph info card. Node selection alters that scroll, and
+      // we restore the scroll later.
+      var previousScrollFromBottom;
+      var graphInfoCard = document.querySelector('tf-graph-info#graph-info');
+      if (graphInfoCard) {
+        previousScrollFromBottom =
+          graphInfoCard.scrollHeight - graphInfoCard.scrollTop;
+      }
+      // Update the selected node within graph logic.
+      var previousSelectedNode = this.selectedNode;
+      this.set('selectedNode', nameOfNodeToSelect);
+      // Scroll the graph info card back down if necessary so that user can see the alerts section
+      // again. Selecting the node causes the info card to scroll to the top, which may mean the
+      // user no longer sees the list of alerts.
+      var scrollToOriginalLocation = () => {
+        graphInfoCard.scrollTop =
+          graphInfoCard.scrollHeight - previousScrollFromBottom;
+      };
+      if (graphInfoCard) {
+        // This component is used within an info card. Restore the original scroll.
+        if (previousSelectedNode) {
+          // The card for the selected node has already opened. Immediately restore the scroll.
+          scrollToOriginalLocation();
+        } else {
+          // Give some time for the DOM of the info card to be created before scrolling down.
+          window.setTimeout(scrollToOriginalLocation, 20);
         }
-        // No steps seen so far. Default to 0.
-        return this._biggestStepEverSeen || 0;
-    }
-    @computed("nodeNamesToHealthPills")
-    get _maxStepIndex(): number {
-        var nodeNamesToHealthPills = this.nodeNamesToHealthPills;
-        for (let nodeName in nodeNamesToHealthPills) {
-            // All nodes have the same number of steps stored, so only examine 1 node.
-            // The index is 1 less than the count. Tensorboard backend logic guarantees that the length
-            // of the array will be greater than 1.
-            return nodeNamesToHealthPills[nodeName].length - 1;
-        }
-        // Return a falsy value. The slider should be hidden.
-        return 0;
-    }
-    _hasDebuggerNumericAlerts(debuggerNumericAlerts) {
-        return debuggerNumericAlerts && debuggerNumericAlerts.length;
-    }
-    @observe("debuggerNumericAlerts")
-    _updateAlertsList() {
-        var debuggerNumericAlerts = this.debuggerNumericAlerts;
-        var alertBody = this.$$("#numeric-alerts-body");
-        if (!alertBody) {
-            return;
-        }
-        alertBody.innerText = "";
-        for (var i = 0; i < debuggerNumericAlerts.length; i++) {
-            var alert = debuggerNumericAlerts[i];
-            var tableRow = document.createElement("tr");
-            var timestampTd = document.createElement("td");
-            timestampTd.innerText = tf.graph.util.computeHumanFriendlyTime(alert.first_timestamp);
-            timestampTd.classList.add("first-offense-td");
-            tableRow.appendChild(timestampTd);
-            var tensorDeviceTd = document.createElement("td");
-            tensorDeviceTd.classList.add("tensor-device-td");
-            var tensorSection = document.createElement("div");
-            tensorSection.classList.add("tensor-section-within-table");
-            tensorSection.innerText = alert.tensor_name;
-            this._addOpExpansionListener(tensorSection, alert.tensor_name);
-            tensorDeviceTd.appendChild(tensorSection);
-            var deviceSection = document.createElement("div");
-            deviceSection.classList.add("device-section-within-table");
-            deviceSection.innerText = "(" + alert.device_name + ")";
-            tensorDeviceTd.appendChild(deviceSection);
-            tableRow.appendChild(tensorDeviceTd);
-            var miniHealthPill = document.createElement("div");
-            miniHealthPill.classList.add("mini-health-pill");
-            var miniHealthPillTd = document.createElement("td");
-            miniHealthPillTd.classList.add("mini-health-pill-td");
-            miniHealthPillTd.appendChild(miniHealthPill);
-            tableRow.appendChild(miniHealthPillTd);
-            if (alert.neg_inf_event_count) {
-                var negativeInfCountSection = document.createElement("div");
-                negativeInfCountSection.classList.add("negative-inf-mini-health-pill-section");
-                negativeInfCountSection.innerText = alert.neg_inf_event_count;
-                negativeInfCountSection.setAttribute("title", alert.neg_inf_event_count + " events with -\u221E");
-                miniHealthPill.appendChild(negativeInfCountSection);
-            }
-            if (alert.pos_inf_event_count) {
-                var positiveInfCountSection = document.createElement("div");
-                positiveInfCountSection.classList.add("positive-inf-mini-health-pill-section");
-                positiveInfCountSection.innerText = alert.pos_inf_event_count;
-                positiveInfCountSection.setAttribute("title", alert.pos_inf_event_count + " events with +\u221E");
-                miniHealthPill.appendChild(positiveInfCountSection);
-            }
-            if (alert.nan_event_count) {
-                var nanCountSection = document.createElement("div");
-                nanCountSection.classList.add("nan-mini-health-pill-section");
-                nanCountSection.innerText = alert.nan_event_count;
-                nanCountSection.setAttribute("title", alert.nan_event_count + " events with NaN");
-                miniHealthPill.appendChild(nanCountSection);
-            }
-            Polymer.dom(alertBody).appendChild(tableRow);
-        }
-    }
-    // Adds a listener to an element, so that when that element is clicked, the tensor with
-    // tensorName expands.
-    _addOpExpansionListener(clickableElement, tensorName) {
-        clickableElement.addEventListener("click", () => {
-            // When the user clicks on a tensor name, expand all nodes until the user can see the
-            // associated node.
-            var nameOfNodeToSelect = tf.graph.render.expandUntilNodeIsShown(document.getElementById("scene"), this.renderHierarchy, tensorName);
-            // Store the current scroll of the graph info card. Node selection alters that scroll, and
-            // we restore the scroll later.
-            var previousScrollFromBottom;
-            var graphInfoCard = document.querySelector("tf-graph-info#graph-info");
-            if (graphInfoCard) {
-                previousScrollFromBottom =
-                    graphInfoCard.scrollHeight - graphInfoCard.scrollTop;
-            }
-            // Update the selected node within graph logic.
-            var previousSelectedNode = this.selectedNode;
-            this.set("selectedNode", nameOfNodeToSelect);
-            // Scroll the graph info card back down if necessary so that user can see the alerts section
-            // again. Selecting the node causes the info card to scroll to the top, which may mean the
-            // user no longer sees the list of alerts.
-            var scrollToOriginalLocation = () => {
-                graphInfoCard.scrollTop =
-                    graphInfoCard.scrollHeight - previousScrollFromBottom;
-            };
-            if (graphInfoCard) {
-                // This component is used within an info card. Restore the original scroll.
-                if (previousSelectedNode) {
-                    // The card for the selected node has already opened. Immediately restore the scroll.
-                    scrollToOriginalLocation();
-                }
-                else {
-                    // Give some time for the DOM of the info card to be created before scrolling down.
-                    window.setTimeout(scrollToOriginalLocation, 20);
-                }
-            }
-        });
-    }
+      }
+    });
+  }
 }

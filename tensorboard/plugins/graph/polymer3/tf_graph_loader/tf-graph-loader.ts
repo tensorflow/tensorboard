@@ -13,94 +13,112 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import { PolymerElement, html } from "@polymer/polymer";
-import { customElement, property } from "@polymer/decorators";
-import { DO_NOT_SUBMIT } from "../tf-imports/polymer.html";
-import { DO_NOT_SUBMIT } from "../tf-graph-common/tf-graph-common.html";
-import { DO_NOT_SUBMIT } from "tf-graph-loader";
-import { DO_NOT_SUBMIT } from "../tf-imports/polymer.html";
-import { DO_NOT_SUBMIT } from "../tf-graph-common/tf-graph-common.html";
-@customElement("tf-graph-loader")
+import {PolymerElement, html} from '@polymer/polymer';
+import {customElement, property} from '@polymer/decorators';
+import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
+import {DO_NOT_SUBMIT} from '../tf-graph-common/tf-graph-common.html';
+import {DO_NOT_SUBMIT} from 'tf-graph-loader';
+import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
+import {DO_NOT_SUBMIT} from '../tf-graph-common/tf-graph-common.html';
+@customElement('tf-graph-loader')
 class TfGraphLoader extends PolymerElement {
-    @property({ type: Array })
-    datasets: unknown[];
-    @property({
-        type: Number
-    })
-    selectedData: number = 0;
-    @property({ type: Object })
-    selectedFile: object;
-    @property({
-        type: Object
-    })
-    compatibilityProvider: object = () => new tf.graph.op.TpuCompatibilityProvider();
-    @property({
-        type: Object
-    })
-    overridingHierarchyParams: object = () => ({});
-    @property({
-        type: Object,
-        notify: true
-    })
-    progress: object;
-    @property({
-        type: Object,
-        readOnly: true,
-        notify: true
-    })
-    outGraphHierarchy: object;
-    @property({
-        type: Object,
-        readOnly: true,
-        notify: true
-    })
-    outGraph: object;
-    @property({
-        type: Object,
-        readOnly: true,
-        notify: true
-    })
-    outHierarchyParams: object;
-    _template: null;
-    @observe("datasets", "selectedData", "overridingHierarchyParams", "compatibilityProvider")
-    _loadData(): void {
-        // Input can change a lot within a microtask.
-        // Don't fetch too much too fast and introduce race condition.
-        this.debounce("load", () => {
-            const dataset = this.datasets[this.selectedData];
-            if (!dataset)
-                return;
-            this._parseAndConstructHierarchicalGraph(dataset.path);
-        });
+  @property({type: Array})
+  datasets: unknown[];
+  @property({
+    type: Number,
+  })
+  selectedData: number = 0;
+  @property({type: Object})
+  selectedFile: object;
+  @property({
+    type: Object,
+  })
+  compatibilityProvider: object = () =>
+    new tf.graph.op.TpuCompatibilityProvider();
+  @property({
+    type: Object,
+  })
+  overridingHierarchyParams: object = () => ({});
+  @property({
+    type: Object,
+    notify: true,
+  })
+  progress: object;
+  @property({
+    type: Object,
+    readOnly: true,
+    notify: true,
+  })
+  outGraphHierarchy: object;
+  @property({
+    type: Object,
+    readOnly: true,
+    notify: true,
+  })
+  outGraph: object;
+  @property({
+    type: Object,
+    readOnly: true,
+    notify: true,
+  })
+  outHierarchyParams: object;
+  _template: null;
+  @observe(
+    'datasets',
+    'selectedData',
+    'overridingHierarchyParams',
+    'compatibilityProvider'
+  )
+  _loadData(): void {
+    // Input can change a lot within a microtask.
+    // Don't fetch too much too fast and introduce race condition.
+    this.debounce('load', () => {
+      const dataset = this.datasets[this.selectedData];
+      if (!dataset) return;
+      this._parseAndConstructHierarchicalGraph(dataset.path);
+    });
+  }
+  _parseAndConstructHierarchicalGraph(
+    path: string | null,
+    pbTxtFile?: Blob
+  ): void {
+    const {overridingHierarchyParams, compatibilityProvider} = this;
+    // Reset the progress bar to 0.
+    this.progress = {value: 0, msg: ''};
+    const tracker = tf.graph.util.getTracker(this);
+    const hierarchyParams = Object.assign(
+      {},
+      tf.graph.hierarchy.DefaultHierarchyParams,
+      overridingHierarchyParams
+    );
+    tf.graph.loader
+      .fetchAndConstructHierarchicalGraph(
+        tracker,
+        path,
+        pbTxtFile,
+        compatibilityProvider,
+        hierarchyParams
+      )
+      .then(({graph, graphHierarchy}) => {
+        this._setOutHierarchyParams(hierarchyParams);
+        this._setOutGraph(graph);
+        this._setOutGraphHierarchy(graphHierarchy);
+      });
+  }
+  @observe('selectedFile', 'overridingHierarchyParams', 'compatibilityProvider')
+  _loadFile(): void {
+    var e = this.selectedFile;
+    if (!e) {
+      return;
     }
-    _parseAndConstructHierarchicalGraph(path: string | null, pbTxtFile?: Blob): void {
-        const { overridingHierarchyParams, compatibilityProvider } = this;
-        // Reset the progress bar to 0.
-        this.progress = { value: 0, msg: "" };
-        const tracker = tf.graph.util.getTracker(this);
-        const hierarchyParams = Object.assign({}, tf.graph.hierarchy.DefaultHierarchyParams, overridingHierarchyParams);
-        tf.graph.loader
-            .fetchAndConstructHierarchicalGraph(tracker, path, pbTxtFile, compatibilityProvider, hierarchyParams)
-            .then(({ graph, graphHierarchy }) => {
-            this._setOutHierarchyParams(hierarchyParams);
-            this._setOutGraph(graph);
-            this._setOutGraphHierarchy(graphHierarchy);
-        });
+    const target = e.target as HTMLInputElement;
+    const file = target.files[0];
+    if (!file) {
+      return;
     }
-    @observe("selectedFile", "overridingHierarchyParams", "compatibilityProvider")
-    _loadFile(): void {
-        var e = this.selectedFile;
-        if (!e) {
-            return;
-        }
-        const target = e.target as HTMLInputElement;
-        const file = target.files[0];
-        if (!file) {
-            return;
-        }
-        // Clear out the value of the file chooser. This ensures that if the user
-        // selects the same file, we'll re-read it.
-        target.value = "";
-        this._parseAndConstructHierarchicalGraph(null, file);
-    }
+    // Clear out the value of the file chooser. This ensures that if the user
+    // selects the same file, we'll re-read it.
+    target.value = '';
+    this._parseAndConstructHierarchicalGraph(null, file);
+  }
 }

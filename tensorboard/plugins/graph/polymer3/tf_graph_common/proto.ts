@@ -25,27 +25,27 @@ limitations under the License.
  * certain value and a repeated field that has only 1 occurence, resulting in
  * subtle bugs.
  */
-import { DO_NOT_SUBMIT } from "../tf-imports/d3.html";
-import { DO_NOT_SUBMIT } from "../tf-imports/dagre.html";
-import { DO_NOT_SUBMIT } from "../tf-imports/graphlib.html";
-import { DO_NOT_SUBMIT } from "../tf-imports/lodash.html";
-import { DO_NOT_SUBMIT } from "annotation";
-import { DO_NOT_SUBMIT } from "colors";
-import { DO_NOT_SUBMIT } from "common";
-import { DO_NOT_SUBMIT } from "contextmenu";
-import { DO_NOT_SUBMIT } from "edge";
-import { DO_NOT_SUBMIT } from "externs";
-import { DO_NOT_SUBMIT } from "graph";
-import { DO_NOT_SUBMIT } from "hierarchy";
-import { DO_NOT_SUBMIT } from "layout";
-import { DO_NOT_SUBMIT } from "loader";
-import { DO_NOT_SUBMIT } from "node";
-import { DO_NOT_SUBMIT } from "op";
-import { DO_NOT_SUBMIT } from "parser";
-import { DO_NOT_SUBMIT } from "render";
-import { DO_NOT_SUBMIT } from "scene";
-import { DO_NOT_SUBMIT } from "template";
-import { DO_NOT_SUBMIT } from "util";
+import {DO_NOT_SUBMIT} from '../tf-imports/d3.html';
+import {DO_NOT_SUBMIT} from '../tf-imports/dagre.html';
+import {DO_NOT_SUBMIT} from '../tf-imports/graphlib.html';
+import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
+import {DO_NOT_SUBMIT} from 'annotation';
+import {DO_NOT_SUBMIT} from 'colors';
+import {DO_NOT_SUBMIT} from 'common';
+import {DO_NOT_SUBMIT} from 'contextmenu';
+import {DO_NOT_SUBMIT} from 'edge';
+import {DO_NOT_SUBMIT} from 'externs';
+import {DO_NOT_SUBMIT} from 'graph';
+import {DO_NOT_SUBMIT} from 'hierarchy';
+import {DO_NOT_SUBMIT} from 'layout';
+import {DO_NOT_SUBMIT} from 'loader';
+import {DO_NOT_SUBMIT} from 'node';
+import {DO_NOT_SUBMIT} from 'op';
+import {DO_NOT_SUBMIT} from 'parser';
+import {DO_NOT_SUBMIT} from 'render';
+import {DO_NOT_SUBMIT} from 'scene';
+import {DO_NOT_SUBMIT} from 'template';
+import {DO_NOT_SUBMIT} from 'util';
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the 'License');
@@ -74,30 +74,30 @@ limitations under the License.
  * subtle bugs.
  */
 export interface NodeDef {
-    /** Name of the node */
-    name: string;
-    /** List of nodes that are inputs for this node. */
-    input: string[];
-    /** The name of the device where the computation will run. */
-    device: string;
-    /** The name of the operation associated with this node. */
-    op: string;
-    /** List of attributes that describe/modify the operation. */
-    attr: {
-        key: string;
-        value: Object;
-    }[];
+  /** Name of the node */
+  name: string;
+  /** List of nodes that are inputs for this node. */
+  input: string[];
+  /** The name of the device where the computation will run. */
+  device: string;
+  /** The name of the operation associated with this node. */
+  op: string;
+  /** List of attributes that describe/modify the operation. */
+  attr: {
+    key: string;
+    value: Object;
+  }[];
 }
 /**
  * Describes a version of TensorFlow.
  */
 export interface VersionDef {
-    // The version of the code that produced this data.
-    producer: number;
-    // Any consumer below this version is not allowed to consume this data.
-    min_consumer: number;
-    // Specific consumer versions which are disallowed (e.g. due to bugs).
-    bad_consumers: number[];
+  // The version of the code that produced this data.
+  producer: number;
+  // Any consumer below this version is not allowed to consume this data.
+  min_consumer: number;
+  // Specific consumer versions which are disallowed (e.g. due to bugs).
+  bad_consumers: number[];
 }
 /**
  * Specifies an argument. An argument is either an input or an output of a
@@ -106,152 +106,152 @@ export interface VersionDef {
  * creates nodes for all arguments within a function.
  */
 export interface ArgDef {
-    name: string;
-    type: string;
+  name: string;
+  type: string;
 }
 /**
  * Describes the signature of a function - its name, inputs, and outputs.
  */
 export interface OpDef {
-    name: string;
-    input_arg: ArgDef[];
-    output_arg: ArgDef[];
+  name: string;
+  input_arg: ArgDef[];
+  output_arg: ArgDef[];
 }
 /**
  * Describes a single function within the library.
  */
 export interface FunctionDef {
-    // The definition of the function's name, arguments, return values,
-    // attrs etc.
-    signature: OpDef;
-    // A list of nodes in the function.
-    node_def: NodeDef[];
+  // The definition of the function's name, arguments, return values,
+  // attrs etc.
+  signature: OpDef;
+  // A list of nodes in the function.
+  node_def: NodeDef[];
 }
 /**
  * Describes a library of functions that may be composed throughout the graph.
  */
 export interface FunctionDefLibraryDef {
-    // A list of functions.
-    function: FunctionDef[];
+  // A list of functions.
+  function: FunctionDef[];
 }
 /**
  * TensorFlow graph definition as defined in the graph.proto file.
  */
 export interface GraphDef {
-    // A list of nodes in the graph.
-    node: NodeDef[];
-    // Compatibility versions of the graph.
-    versions: VersionDef[];
-    // Contains a library of functions that may composed through the graph.
-    library: FunctionDefLibraryDef;
+  // A list of nodes in the graph.
+  node: NodeDef[];
+  // Compatibility versions of the graph.
+  versions: VersionDef[];
+  // Contains a library of functions that may composed through the graph.
+  library: FunctionDefLibraryDef;
 }
 /**
  * Generic graph as defined in the graph_explorer.proto file.
  */
 export interface GenericGraph {
-    /** List of nodes in the graph */
-    node: GenericNode[];
-    /** List of nodes in the graph */
-    edge: GenericEdge[];
-    /** List of attributes that describe/modify the operation. */
-    attr: Array<{
-        [key: string]: any;
-    }>;
+  /** List of nodes in the graph */
+  node: GenericNode[];
+  /** List of nodes in the graph */
+  edge: GenericEdge[];
+  /** List of attributes that describe/modify the operation. */
+  attr: Array<{
+    [key: string]: any;
+  }>;
 }
 /**
  * GenericEdge corresponds to the Edge message in graph_explorer.proto.
  */
 export interface GenericEdge {
-    /** Name of the source node. */
-    source: string;
-    /** Name of the target node. */
-    target: string;
-    /** Attributes of the edge. */
-    edge_attr: Array<{
-        [key: string]: any;
-    }>;
+  /** Name of the source node. */
+  source: string;
+  /** Name of the target node. */
+  target: string;
+  /** Attributes of the edge. */
+  edge_attr: Array<{
+    [key: string]: any;
+  }>;
 }
 /**
  * GenericNode corresponds to the Node message in graph_explorer.proto.
  */
 export interface GenericNode {
-    /** Name of the node */
-    name: string;
-    /** Attributes of a leaf node or leaf nodes within a metanode. */
-    node_attr: Array<{
-        [key: string]: any;
-    }>;
-    /** Attributes of a metanode. */
-    metanode_attr: Array<{
-        [key: string]: any;
-    }>;
+  /** Name of the node */
+  name: string;
+  /** Attributes of a leaf node or leaf nodes within a metanode. */
+  node_attr: Array<{
+    [key: string]: any;
+  }>;
+  /** Attributes of a metanode. */
+  metanode_attr: Array<{
+    [key: string]: any;
+  }>;
 }
 export interface DevStat {
-    device: string;
-    node_stats: NodeExecStats[];
+  device: string;
+  node_stats: NodeExecStats[];
 }
 /**
  * TensorFlow stats file definition as defined in the stats proto file.
  */
 export interface StepStats {
-    dev_stats: DevStat[];
+  dev_stats: DevStat[];
 }
 /**
  * TensorFlow stats for a node as defined in the step_stats proto file.
  */
 export interface NodeExecStats {
-    node_name: string;
-    // The next 4 properties are currently stored as string in json
-    // and must be parsed.
-    all_start_micros: number;
-    op_start_rel_micros: number;
-    op_end_rel_micros: number;
-    all_end_rel_micros: number;
-    memory: {
-        allocator_name: string;
-        total_bytes: number; // Stored as string in json and should be parsed.
-        peak_bytes: number; // Stored as string in json and should be parsed.
-    }[];
-    /** Output sizes recorded for a single execution of a graph node */
-    output: NodeOutput[];
-    timeline_label: string;
-    scheduled_micros: string;
-    thread_id: string;
+  node_name: string;
+  // The next 4 properties are currently stored as string in json
+  // and must be parsed.
+  all_start_micros: number;
+  op_start_rel_micros: number;
+  op_end_rel_micros: number;
+  all_end_rel_micros: number;
+  memory: {
+    allocator_name: string;
+    total_bytes: number; // Stored as string in json and should be parsed.
+    peak_bytes: number; // Stored as string in json and should be parsed.
+  }[];
+  /** Output sizes recorded for a single execution of a graph node */
+  output: NodeOutput[];
+  timeline_label: string;
+  scheduled_micros: string;
+  thread_id: string;
 }
 /**
  * Description for the output tensor(s) of an operation in the graph as
  * defined in the step_stats.proto file.
  */
 export interface NodeOutput {
-    slot: number; // Stored as string in json and should be parsed.
-    tensor_description: {
-        /** Data type of tensor elements */
-        dtype: string;
-        /** Shape of the tensor */
-        shape: {
-            /**
-             * Dimensions of the tensor, such as [{name: 'input', size: 30},
-             * {name: 'output', size: 40}] for a 30 x 40 2D tensor.  The names
-             * are optional. The order of entries in 'dim' matters: It indicates
-             * the layout of the values in the tensor in-memory representation.
-             */
-            dim: {
-                /** Size of the tensor in that dimension */
-                size: number; // Stored as string in json and should be parsed.
-                /** Optional name of the tensor dimension */
-                name?: string;
-            }[];
-        };
-        /** Information about the size and allocator used for the data */
-        allocation_description: {
-            // The next 2 properties are stored as string in json and
-            // should be parsed.
-            /** Total number of bytes requested */
-            requested_bytes: number;
-            /** Total number of bytes allocated, if known */
-            allocated_bytes?: number;
-            /** Name of the allocator used */
-            allocator_name: string;
-        };
+  slot: number; // Stored as string in json and should be parsed.
+  tensor_description: {
+    /** Data type of tensor elements */
+    dtype: string;
+    /** Shape of the tensor */
+    shape: {
+      /**
+       * Dimensions of the tensor, such as [{name: 'input', size: 30},
+       * {name: 'output', size: 40}] for a 30 x 40 2D tensor.  The names
+       * are optional. The order of entries in 'dim' matters: It indicates
+       * the layout of the values in the tensor in-memory representation.
+       */
+      dim: {
+        /** Size of the tensor in that dimension */
+        size: number; // Stored as string in json and should be parsed.
+        /** Optional name of the tensor dimension */
+        name?: string;
+      }[];
     };
+    /** Information about the size and allocator used for the data */
+    allocation_description: {
+      // The next 2 properties are stored as string in json and
+      // should be parsed.
+      /** Total number of bytes requested */
+      requested_bytes: number;
+      /** Total number of bytes allocated, if known */
+      allocated_bytes?: number;
+      /** Name of the allocator used */
+      allocator_name: string;
+    };
+  };
 }
