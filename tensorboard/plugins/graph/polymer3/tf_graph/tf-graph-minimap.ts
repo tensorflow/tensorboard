@@ -15,12 +15,11 @@ limitations under the License.
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {customElement} from '@polymer/decorators';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-common/minimap';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-common/minimap';
+
+import * as tf_scene_minimap from '../tf_graph_common/minimap';
+
 @customElement('tf-graph-minimap')
-class TfGraphMinimap extends PolymerElement {
+export class TfGraphMinimap extends PolymerElement {
   static readonly template = html`
     <style>
       :host {
@@ -93,7 +92,7 @@ class TfGraphMinimap extends PolymerElement {
    * @param labelPadding Padding in pixels due to the main graph labels.
    */
   init(svg, zoomG, mainZoom, maxWAndH, labelPadding) {
-    return new tf.scene.Minimap(
+    return new tf_scene_minimap.Minimap(
       svg,
       zoomG,
       mainZoom,

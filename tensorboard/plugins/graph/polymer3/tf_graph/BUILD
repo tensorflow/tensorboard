@@ -1,28 +1,34 @@
-load("//tensorboard/defs:web.bzl", "tf_web_library")
+load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
-tf_web_library(
+tf_ts_library(
     name = "tf_graph",
     srcs = [
-        "tf-graph.html",
-        "tf-graph-minimap.html",
-        "tf-graph-scene.html",
+        "tf-graph.ts",
+        "tf-graph-minimap.ts",
+        "tf-graph-scene.ts",
     ],
-    path = "/tf-graph",
+    strict_checks = False,
     deps = [
-        "//tensorboard/components/tf_dashboard_common",
-        "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/plugins/graph/tf_graph_common",
-        "@org_polymer_iron_flex_layout",
-        "@org_polymer_iron_icons",
-        "@org_polymer_paper_button",
-        "@org_polymer_paper_dropdown_menu",
-        "@org_polymer_paper_input",
-        "@org_polymer_paper_radio_group",
-        "@org_polymer_paper_toggle_button",
-        "@org_polymer_paper_tooltip",
+        "//tensorboard/components_polymer3/polymer:legacy_element_mixin",
+        "//tensorboard/components_polymer3/tf_dashboard_common",
+        "//tensorboard/plugins/graph/polymer3/tf_graph_common",
+        "@npm//@types/d3",
+        "@npm//@types/lodash",
+        "@npm//d3",
+        "@npm//lodash",
+        "@npm//@polymer/polymer",
+        "@npm//@polymer/decorators",
+        "@npm//@polymer/iron-flex-layout",
+        "@npm//@polymer/iron-icons",
+        "@npm//@polymer/paper-button",
+        "@npm//@polymer/paper-dropdown-menu",
+        "@npm//@polymer/paper-input",
+        "@npm//@polymer/paper-radio-group",
+        "@npm//@polymer/paper-toggle-button",
+        "@npm//@polymer/paper-tooltip",
     ],
 )

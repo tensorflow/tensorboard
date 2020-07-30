@@ -14,25 +14,25 @@ limitations under the License.
 ==============================================================================*/
 
 import {PolymerElement, html} from '@polymer/polymer';
-import {customElement, property} from '@polymer/decorators';
-import '@polymer/iron-flex-layout';
+import {customElement, observe, property} from '@polymer/decorators';
+import * as d3 from 'd3';
+import * as _ from 'lodash';
+import '@polymer/iron-flex-layout/iron-flex-layout';
 import '@polymer/iron-icons';
 import '@polymer/paper-button';
-import '@polymer/paper-input';
+import '@polymer/paper-input/paper-input';
 import '@polymer/paper-toggle-button';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-common/tf-graph-common.html';
-import {DO_NOT_SUBMIT} from 'tf-graph-scene.html';
-import '@polymer/iron-flex-layout';
-import '@polymer/iron-icons';
-import '@polymer/paper-button';
-import '@polymer/paper-input';
-import '@polymer/paper-toggle-button';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-common/tf-graph-common.html';
-import {DO_NOT_SUBMIT} from 'tf-graph-scene.html';
+
+import './tf-graph-scene';
+import * as tf_graph from '../tf_graph_common/graph';
+import * as tf_graph_scene from '../tf_graph_common/scene';
+import * as tf_graph_util from '../tf_graph_common/util';
+import * as tf_graph_hierarchy from '../tf_graph_common/hierarchy';
+import * as tf_graph_render from '../tf_graph_common/render';
+import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+
 @customElement('tf-graph')
-class TfGraph extends PolymerElement {
+class TfGraph extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
     <style>
       .container {
@@ -97,7 +97,7 @@ class TfGraph extends PolymerElement {
   @property({type: Object})
   devicesForStats: object;
   @property({type: Object})
-  hierarchyParams: object;
+  hierarchyParams: any;
   @property({
     type: Object,
     notify: true,
@@ -116,7 +116,7 @@ class TfGraph extends PolymerElement {
   })
   selectedEdge: object;
   @property({type: Object})
-  _lastSelectedEdgeGroup: object;
+  _lastSelectedEdgeGroup: any;
   @property({
     type: String,
     notify: true,
@@ -135,7 +135,7 @@ class TfGraph extends PolymerElement {
     readOnly: true,
     notify: true,
   })
-  renderHierarchy: object;
+  renderHierarchy: any;
   @property({type: Boolean})
   traceInputs: boolean;
   @property({type: Array})
@@ -155,25 +155,25 @@ class TfGraph extends PolymerElement {
   @property({
     type: Object,
   })
-  edgeWidthFunction: object = '';
+  edgeWidthFunction: any = '';
   @property({
     type: Object,
   })
-  handleNodeSelected: object = '';
+  handleNodeSelected: any = '';
   @property({
     type: Object,
   })
-  edgeLabelFunction: object = '';
+  edgeLabelFunction: any = '';
   @property({
     type: Object,
   })
-  handleEdgeSelected: object = '';
+  handleEdgeSelected: any = '';
   /**
    * Pans to a node. Assumes that the node exists.
    * @param nodeName {string} The name of the node to pan to.
    */
   panToNode(nodeName) {
-    this.$$('tf-graph-scene').panToNode(nodeName);
+    (this.$$('tf-graph-scene') as any).panToNode(nodeName);
   }
   @observe(
     'graphHierarchy',
@@ -193,28 +193,76 @@ class TfGraph extends PolymerElement {
     var devicesForStats = this.devicesForStats;
     if (this.graphHierarchy) {
       if (stats && devicesForStats) {
-        tf.graph.joinStatsInfoWithGraph(
-          this.basicGraph,
-          stats,
-          devicesForStats
+        tf_graph.joinStatsInfoWithGraph(
+          this.basicGraph as any,
+          stats as any,
+          devicesForStats as any
         );
-        tf.graph.hierarchy.joinAndAggregateStats(this.graphHierarchy, stats);
+        tf_graph_hierarchy.joinAndAggregateStats(
+          this.graphHierarchy as any,
+          stats as any
+        );
       }
       // Recompute the rendering information.
       this._buildRenderHierarchy(this.graphHierarchy);
     }
   }
+  ready() {
+    super.ready();
+
+    this.addEventListener('graph-select', this._graphSelected.bind(this));
+    this.addEventListener('disable-click', this._disableClick.bind(this));
+    this.addEventListener('enable-click', this._enableClick.bind(this));
+    // Nodes
+    this.addEventListener(
+      'node-toggle-expand',
+      this._nodeToggleExpand.bind(this)
+    );
+    this.addEventListener('node-select', this._nodeSelected.bind(this));
+    this.addEventListener('node-highlight', this._nodeHighlighted.bind(this));
+    this.addEventListener(
+      'node-unhighlight',
+      this._nodeUnhighlighted.bind(this)
+    );
+    this.addEventListener(
+      'node-toggle-extract',
+      this._nodeToggleExtract.bind(this)
+    );
+    this.addEventListener(
+      'node-toggle-seriesgroup',
+      this._nodeToggleSeriesGroup.bind(this)
+    );
+    // Edges
+    this.addEventListener('edge-select', this._edgeSelected.bind(this));
+
+    // Annotations
+
+    /* Note: currently highlighting/selecting annotation node has the same
+     * behavior as highlighting/selecting actual node so we point to the same
+     * set of event listeners.  However, we might redesign this to be a bit
+     * different.
+     */
+    this.addEventListener('annotation-select', this._nodeSelected.bind(this));
+    this.addEventListener(
+      'annotation-highlight',
+      this._nodeHighlighted.bind(this)
+    );
+    this.addEventListener(
+      'annotation-unhighlight',
+      this._nodeUnhighlighted.bind(this)
+    );
+  }
   _buildRenderHierarchy(graphHierarchy) {
-    tf.graph.util.time(
-      'new tf.graph.render.Hierarchy',
+    tf_graph_util.time(
+      'new tf_graph_render.Hierarchy',
       function() {
-        if (graphHierarchy.root.type !== tf.graph.NodeType.META) {
+        if (graphHierarchy.root.type !== tf_graph.NodeType.META) {
           // root must be metanode but sometimes Polymer's dom-if has not
           // remove tf-graph element yet in <tf-node-info>
           // and thus mistakenly pass non-metanode to this module.
           return;
         }
-        var renderGraph = new tf.graph.render.RenderGraphInfo(
+        var renderGraph = new tf_graph_render.RenderGraphInfo(
           graphHierarchy,
           !!this.stats /** displayingStats */
         );
@@ -233,8 +281,10 @@ class TfGraph extends PolymerElement {
           };
         }
         this._setColorByParams({
-          compute_time: getColorParamsFromScale(renderGraph.computeTimeScale),
-          memory: getColorParamsFromScale(renderGraph.memoryUsageScale),
+          compute_time: getColorParamsFromScale(
+            renderGraph.computeTimeScale as any
+          ),
+          memory: getColorParamsFromScale(renderGraph.memoryUsageScale as any),
           device: _.map(renderGraph.deviceColorMap.domain(), function(
             deviceName
           ) {
@@ -266,7 +316,7 @@ class TfGraph extends PolymerElement {
     return this.renderHierarchy.getNearestVisibleAncestor(name);
   }
   fit() {
-    this.$.scene.fit();
+    (this.$.scene as any).fit();
   }
   _graphChanged() {
     // When a new graph is loaded, fire this event so that there is no
@@ -310,7 +360,7 @@ class TfGraph extends PolymerElement {
     // Visually mark this new edge as selected.
     if (selectedEdge) {
       this._lastSelectedEdgeGroup.classed(
-        tf.graph.scene.Class.Edge.SELECTED,
+        tf_graph_scene.Class.Edge.SELECTED,
         true
       );
       // Update the color of the marker too if the edge has one.
@@ -352,7 +402,7 @@ class TfGraph extends PolymerElement {
     var nodeName = event.detail.name;
     var renderNode = this.renderHierarchy.getRenderNodeByName(nodeName);
     // Op nodes are not expandable.
-    if (renderNode.node.type === tf.graph.NodeType.OP) {
+    if (renderNode.node.type === tf_graph.NodeType.OP) {
       return;
     }
     this.renderHierarchy.buildSubhierarchy(nodeName);
@@ -371,14 +421,14 @@ class TfGraph extends PolymerElement {
   }
   nodeToggleExtract(nodeName) {
     var renderNode = this.renderHierarchy.getRenderNodeByName(nodeName);
-    if (renderNode.node.include == tf.graph.InclusionType.INCLUDE) {
-      renderNode.node.include = tf.graph.InclusionType.EXCLUDE;
-    } else if (renderNode.node.include == tf.graph.InclusionType.EXCLUDE) {
-      renderNode.node.include = tf.graph.InclusionType.INCLUDE;
+    if (renderNode.node.include == tf_graph.InclusionType.INCLUDE) {
+      renderNode.node.include = tf_graph.InclusionType.EXCLUDE;
+    } else if (renderNode.node.include == tf_graph.InclusionType.EXCLUDE) {
+      renderNode.node.include = tf_graph.InclusionType.INCLUDE;
     } else {
       renderNode.node.include = this.renderHierarchy.isNodeAuxiliary(renderNode)
-        ? tf.graph.InclusionType.INCLUDE
-        : tf.graph.InclusionType.EXCLUDE;
+        ? tf_graph.InclusionType.INCLUDE
+        : tf_graph.InclusionType.EXCLUDE;
     }
     // Rebuild the render hierarchy.
     this._buildRenderHierarchy(this.graphHierarchy);
@@ -390,20 +440,20 @@ class TfGraph extends PolymerElement {
   }
   nodeToggleSeriesGroup(nodeName) {
     // Toggle the group setting of the specified node appropriately.
-    tf.graph.toggleNodeSeriesGroup(this.hierarchyParams.seriesMap, nodeName);
+    tf_graph.toggleNodeSeriesGroup(this.hierarchyParams.seriesMap, nodeName);
     // Rebuild the render hierarchy with the updated series grouping map.
     this.set('progress', {
       value: 0,
       msg: '',
     });
-    var tracker = tf.graph.util.getTracker(this);
-    var hierarchyTracker = tf.graph.util.getSubtaskTracker(
+    var tracker = tf_graph_util.getTracker(this);
+    var hierarchyTracker = tf_graph_util.getSubtaskTracker(
       tracker,
       100,
       'Namespace hierarchy'
     );
-    tf.graph.hierarchy
-      .build(this.basicGraph, this.hierarchyParams, hierarchyTracker)
+    tf_graph_hierarchy
+      .build(this.basicGraph as any, this.hierarchyParams, hierarchyTracker)
       .then(
         function(graphHierarchy) {
           this.set('graphHierarchy', graphHierarchy);
@@ -412,11 +462,11 @@ class TfGraph extends PolymerElement {
       );
   }
   _deselectPreviousEdge() {
-    const selectedSelector = '.' + tf.graph.scene.Class.Edge.SELECTED;
+    const selectedSelector = '.' + tf_graph_scene.Class.Edge.SELECTED;
     // Visually mark the previously selected edge (if any) as deselected.
     d3.select(selectedSelector)
-      .classed(tf.graph.scene.Class.Edge.SELECTED, false)
-      .each((d, i) => {
+      .classed(tf_graph_scene.Class.Edge.SELECTED, false)
+      .each((d: any, i) => {
         // Reset its marker.
         if (d.label) {
           const paths = d3.select(this).selectAll('path.edgeline');
@@ -437,11 +487,11 @@ class TfGraph extends PolymerElement {
       if (markerId) {
         // Find the corresponding marker for a selected edge.
         const selectedMarkerId = markerId.replace('dataflow-', 'selected-');
-        let selectedMarker = this.$$('#' + selectedMarkerId);
+        let selectedMarker = this.$$('#' + selectedMarkerId) as HTMLElement;
         if (!selectedMarker) {
           // The marker for a selected edge of this size does not exist yet. Create it.
           const originalMarker = this.$.scene.querySelector('#' + markerId);
-          selectedMarker = originalMarker.cloneNode(true);
+          selectedMarker = originalMarker.cloneNode(true) as HTMLElement;
           selectedMarker.setAttribute('id', selectedMarkerId);
           selectedMarker.classList.add('selected-arrowhead');
           originalMarker.parentNode.appendChild(selectedMarker);

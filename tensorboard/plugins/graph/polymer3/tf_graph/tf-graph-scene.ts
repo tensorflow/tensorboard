@@ -14,17 +14,24 @@ limitations under the License.
 ==============================================================================*/
 
 import {PolymerElement, html} from '@polymer/polymer';
-import {customElement, property} from '@polymer/decorators';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-common/tf-graph-common.html';
-import {DO_NOT_SUBMIT} from '../tf-dashboard-common/tensorboard-color.html';
-import {DO_NOT_SUBMIT} from 'tf-graph-minimap.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-common/tf-graph-common.html';
-import {DO_NOT_SUBMIT} from '../tf-dashboard-common/tensorboard-color.html';
-import {DO_NOT_SUBMIT} from 'tf-graph-minimap.html';
+import {customElement, observe, property} from '@polymer/decorators';
+import * as _ from 'lodash';
+import * as d3 from 'd3';
+
+import './tf-graph-minimap';
+import '../../../../components_polymer3/tf_dashboard_common/tensorboard-color';
+
+import * as tf_graph from '../tf_graph_common/graph';
+import * as tf_graph_scene from '../tf_graph_common/scene';
+import * as tf_graph_scene_node from '../tf_graph_common/node';
+import * as tf_graph_util from '../tf_graph_common/util';
+import * as tf_graph_layout from '../tf_graph_common/layout';
+import * as tf_graph_render from '../tf_graph_common/render';
+
+import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+
 @customElement('tf-graph-scene')
-class TfGraphScene extends PolymerElement {
+class TfGraphScene2 extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
     <style>
       :host {
@@ -812,17 +819,29 @@ class TfGraphScene extends PolymerElement {
     <div id="contextMenu" class="context-menu"></div>
   `;
   @property({type: Object})
-  renderHierarchy: object;
+  renderHierarchy: tf_graph_render.RenderGraphInfo;
   @property({type: String})
   name: string;
   @property({type: String})
   colorBy: string;
   @property({type: Boolean})
   traceInputs: boolean;
+
+  // For each render hierarchy, we only fit it to the viewport once (when the scene is attached to
+  // the DOM). We do not fit the hierarchy again (unless the user clicks the reset button). For
+  // instance, if the user enters a certain view in the graph, switches to another dashboard, and
+  // returns to the graph dashboard, the user expects the previous view. These properties enable
+  // that behavior.
+
+  /** Whether the scene has fit the current render hierarchy (to the viewport) at least once. */
   @property({type: Boolean})
   _hasRenderHierarchyBeenFitOnce: boolean;
+
+  /** Whether this scene element is currently attached to a parent element. */
   @property({type: Boolean})
   _isAttached: boolean;
+
+  /** This property is a d3_zoom object. */
   @property({type: Object})
   _zoom: object;
   @property({
@@ -835,69 +854,139 @@ class TfGraphScene extends PolymerElement {
     observer: '_selectedNodeChanged',
   })
   selectedNode: string;
+
+  // An optional callback that implements the tf.graph.edge.EdgeSelectionCallback signature. If
+  // provided, edges are selectable, and this callback is run when an edge is selected.
   @property({type: Object})
   handleEdgeSelected: object;
+
+  /** Keeps track of if the graph has been zoomed/panned since loading */
   @property({
     type: Boolean,
     observer: '_onZoomChanged',
   })
   _zoomed: boolean = false;
+
+  /**
+   * Keeps track of the starting coordinates of a graph zoom/pan.
+   *
+   * @private {{x: number, y: number}?}
+   */
   @property({
     type: Object,
   })
   _zoomStartCoords: object = null;
+
+  /**
+   * Keeps track of the current coordinates of a graph zoom/pan
+   *
+   * @private {{x: number, y: number}?}
+   */
   @property({
     type: Object,
   })
   _zoomTransform: object = null;
+
+  /** Maximum distance of a zoom event for it to be interpreted as a click */
   @property({
     type: Number,
   })
   _maxZoomDistanceForClick: number = 20;
-  @property({type: Function})
-  templateIndex: object;
+
+  /**
+   * Scale mapping from template name to a number between 0 and N-1
+   * where N is the number of different template names. Used by
+   * tf_graph_scene_node when computing node color by structure.
+   * This property is a d3.scale.ordinal object.
+   */
+  @property({type: Object})
+  templateIndex: Function;
+
+  /**
+   * A minimap object to notify for zoom events.
+   * This property is a tf.scene.Minimap object.
+   */
   @property({type: Object})
   minimap: object;
+
+  /*
+   * Dictionary for easily stylizing nodes when state changes.
+   * _nodeGroupIndex[nodeName] = d3_selection of the nodeGroup
+   */
   @property({
     type: Object,
   })
   _nodeGroupIndex: object = function() {
     return {};
   };
+
+  /*
+   * Dictionary for easily stylizing annotation nodes when state changes.
+   * _annotationGroupIndex[nodeName][hostNodeName] =
+   *   d3_selection of the annotationGroup
+   */
   @property({
     type: Object,
   })
   _annotationGroupIndex: object = function() {
     return {};
   };
+
+  /*
+   * Dictionary for easily stylizing edges when state changes.
+   * _edgeGroupIndex[edgeName] = d3_selection of the edgeGroup
+   */
   @property({
     type: Object,
   })
   _edgeGroupIndex: object = function() {
     return {};
   };
+
+  /**
+   * Max font size for metanode label strings.
+   */
   @property({
     type: Number,
   })
   maxMetanodeLabelLengthFontSize: number = 9;
+
+  /**
+   * Min font size for metanode label strings.
+   */
   @property({
     type: Number,
   })
   minMetanodeLabelLengthFontSize: number = 6;
+
+  /**
+   * Metanode label strings longer than this are given smaller fonts.
+   */
   @property({
     type: Number,
   })
   maxMetanodeLabelLengthLargeFont: number = 11;
+
+  /**
+   * Metanode label strings longer than this are truncated with ellipses.
+   */
   @property({
     type: Number,
   })
   maxMetanodeLabelLength: number = 18;
   @property({type: Object})
-  progress: object;
+  progress: any;
+
+  // An array of ContextMenuItem objects. Items that appear in the context
+  // menu for a node.
   @property({type: Array})
   nodeContextMenuItems: unknown[];
+
+  // A mapping between node name to the tf_graph_scene.HealthPill to render.
   @property({type: Object})
   nodeNamesToHealthPills: object;
+
+  // The step of health pills to show throughout the graph.
   @property({type: Number})
   healthPillStepIndex: number;
   getNode(nodeName) {
@@ -915,7 +1004,7 @@ class TfGraphScene extends PolymerElement {
    * @param nodeName {string} The name of the node to pan to.
    */
   panToNode(nodeName) {
-    const zoomed = tf.graph.scene.panToNode(
+    const zoomed = tf_graph_scene.panToNode(
       nodeName,
       this.$.svg,
       this.$.root,
@@ -928,8 +1017,8 @@ class TfGraphScene extends PolymerElement {
   /**
    * Returns the outer-most SVG that renders the graph.
    */
-  getGraphSvgRoot() {
-    return this.$.svg;
+  getGraphSvgRoot(): SVGElement {
+    return this.$.svg as SVGElement;
   }
   /**
    * @returns {!HTMLElement}
@@ -953,27 +1042,27 @@ class TfGraphScene extends PolymerElement {
       .selectAll('*')
       .remove();
     // And the defs.
-    tf.graph.scene.node.removeGradientDefinitions(this.$.svg);
+    tf_graph_scene_node.removeGradientDefinitions(this.$.svg as SVGElement);
   }
   /** Main method for building the scene */
   _build(renderHierarchy) {
     this.templateIndex = renderHierarchy.hierarchy.getTemplateIndex();
-    tf.graph.util.time(
+    tf_graph_util.time(
       'tf-graph-scene (layout):',
       function() {
         // layout the scene for this meta / series node
-        tf.graph.layout.layoutScene(renderHierarchy.root, this);
+        tf_graph_layout.layoutScene(renderHierarchy.root);
       }.bind(this)
     );
-    tf.graph.util.time(
+    tf_graph_util.time(
       'tf-graph-scene (build scene):',
       function() {
-        tf.graph.scene.buildGroup(
+        tf_graph_scene.buildGroup(
           d3.select(this.$.root),
           renderHierarchy.root,
           this
         );
-        tf.graph.scene.addGraphClickListener(this.$.svg, this);
+        tf_graph_scene.addGraphClickListener(this.$.svg, this);
         this._updateInputTrace();
       }.bind(this)
     );
@@ -986,10 +1075,11 @@ class TfGraphScene extends PolymerElement {
         );
         this.minimap.update();
       }.bind(this),
-      tf.graph.layout.PARAMS.animation.duration
+      tf_graph_layout.PARAMS.animation.duration
     );
   }
   ready() {
+    super.ready();
     this._zoom = d3
       .zoom()
       .on(
@@ -1037,7 +1127,7 @@ class TfGraphScene extends PolymerElement {
         }.bind(this)
       );
     d3.select(this.$.svg)
-      .call(this._zoom)
+      .call(this._zoom as any)
       .on('dblclick.zoom', null);
     d3.select(window).on(
       'resize',
@@ -1049,12 +1139,12 @@ class TfGraphScene extends PolymerElement {
       }.bind(this)
     );
     // Initialize the minimap.
-    this.minimap = this.$.minimap.init(
+    this.minimap = (this.$.minimap as any).init(
       this.$.svg,
       this.$.root,
       this._zoom,
-      tf.graph.layout.PARAMS.minimap.size,
-      tf.graph.layout.PARAMS.subscene.meta.labelHeight
+      tf_graph_layout.PARAMS.minimap.size,
+      tf_graph_layout.PARAMS.subscene.meta.labelHeight
     );
   }
   attached() {
@@ -1070,6 +1160,9 @@ class TfGraphScene extends PolymerElement {
     this._resetState();
     this._build(renderHierarchy);
   }
+
+  // Animation and fitting must come after the observer for the hierarchy changing because we must
+  // first build the render hierarchy.
   @observe('_isAttached', 'renderHierarchy')
   _animateAndFit() {
     var isAttached = this._isAttached;
@@ -1080,21 +1173,23 @@ class TfGraphScene extends PolymerElement {
       return;
     }
     // Fit to screen after the graph is done animating.
-    setTimeout(this.fit.bind(this), tf.graph.layout.PARAMS.animation.duration);
+    setTimeout(this.fit.bind(this), tf_graph_layout.PARAMS.animation.duration);
   }
   _updateLabels(showLabels) {
-    var mainGraphTitleElement = this.$$('.title');
+    var mainGraphTitleElement = this.$$('.title') as HTMLElement;
     var titleStyle = mainGraphTitleElement.style;
-    var auxTitleElement = this.$$('.auxTitle');
+    var auxTitleElement = this.$$('.auxTitle') as HTMLElement;
     var auxTitleStyle = auxTitleElement.style;
-    var functionLibraryTitleStyle = this.$$('.functionLibraryTitle').style;
+    var functionLibraryTitleStyle = (this.$$(
+      '.functionLibraryTitle'
+    ) as HTMLElement).style;
     const root = d3.select(this.$.svg);
     var core = root
       .select(
         '.' +
-          tf.graph.scene.Class.Scene.GROUP +
+          tf_graph_scene.Class.Scene.GROUP +
           '>.' +
-          tf.graph.scene.Class.Scene.CORE
+          tf_graph_scene.Class.Scene.CORE
       )
       .node();
     // Only show labels if the graph is fully loaded.
@@ -1103,21 +1198,21 @@ class TfGraphScene extends PolymerElement {
         root
           .select(
             '.' +
-              tf.graph.scene.Class.Scene.GROUP +
+              tf_graph_scene.Class.Scene.GROUP +
               '>.' +
-              tf.graph.scene.Class.Scene.INEXTRACT
+              tf_graph_scene.Class.Scene.INEXTRACT
           )
           .node() ||
         root
           .select(
             '.' +
-              tf.graph.scene.Class.Scene.GROUP +
+              tf_graph_scene.Class.Scene.GROUP +
               '>.' +
-              tf.graph.scene.Class.Scene.OUTEXTRACT
+              tf_graph_scene.Class.Scene.OUTEXTRACT
           )
           .node();
-      var coreX = core.getCTM().e;
-      var auxX = aux ? aux.getCTM().e : null;
+      var coreX = (core as any).getCTM().e;
+      var auxX = aux ? (aux as any).getCTM().e : null;
       titleStyle.display = 'inline';
       titleStyle.left = coreX + 'px';
       if (auxX !== null && auxX !== coreX) {
@@ -1135,13 +1230,13 @@ class TfGraphScene extends PolymerElement {
       let functionLibrary = root
         .select(
           '.' +
-            tf.graph.scene.Class.Scene.GROUP +
+            tf_graph_scene.Class.Scene.GROUP +
             '>.' +
-            tf.graph.scene.Class.Scene.FUNCTION_LIBRARY
+            tf_graph_scene.Class.Scene.FUNCTION_LIBRARY
         )
         .node();
       let functionLibraryX = functionLibrary
-        ? functionLibrary.getCTM().e
+        ? (functionLibrary as any).getCTM().e
         : null;
       if (functionLibraryX !== null && functionLibraryX !== auxX) {
         functionLibraryTitleStyle.display = 'inline';
@@ -1173,12 +1268,12 @@ class TfGraphScene extends PolymerElement {
         this._updateNodeState(nodeName);
       });
       // Notify also the minimap.
-      this.minimap.update();
+      (this.minimap as any).update();
     }
   }
   fit() {
     this._hasRenderHierarchyBeenFitOnce = true;
-    tf.graph.scene.fit(
+    tf_graph_scene.fit(
       this.$.svg,
       this.$.root,
       this._zoom,
@@ -1223,9 +1318,9 @@ class TfGraphScene extends PolymerElement {
   _updateHealthPills() {
     var nodeNamesToHealthPills = this.nodeNamesToHealthPills;
     var healthPillStepIndex = this.healthPillStepIndex;
-    tf.graph.scene.addHealthPills(
-      this.$.svg,
-      nodeNamesToHealthPills,
+    tf_graph_scene.addHealthPills(
+      this.$.svg as SVGElement,
+      nodeNamesToHealthPills as any,
       healthPillStepIndex
     );
   }
@@ -1237,36 +1332,37 @@ class TfGraphScene extends PolymerElement {
     var node = this.getNode(n);
     var nodeGroup = this.getNodeGroup(n);
     if (nodeGroup) {
-      tf.graph.scene.node.stylize(nodeGroup, node, this);
+      tf_graph_scene_node.stylize(nodeGroup, node, this as any);
     }
     if (
-      node.node.type === tf.graph.NodeType.META &&
-      node.node.associatedFunction &&
+      node.node.type === tf_graph.NodeType.META &&
+      (node.node as any).associatedFunction &&
       !node.isLibraryFunction
     ) {
       // The node is that of a function call. Also link the node within the
       // function library. This clarifies to the user that the library function
       // is being used.
       var libraryFunctionNodeName =
-        tf.graph.FUNCTION_LIBRARY_NODE_PREFIX + node.node.associatedFunction;
+        tf_graph.FUNCTION_LIBRARY_NODE_PREFIX +
+        (node.node as any).associatedFunction;
       var functionGroup = d3.select(
         '.' +
-          tf.graph.scene.Class.Scene.GROUP +
+          tf_graph_scene.Class.Scene.GROUP +
           '>.' +
-          tf.graph.scene.Class.Scene.FUNCTION_LIBRARY +
+          tf_graph_scene.Class.Scene.FUNCTION_LIBRARY +
           ' g[data-name="' +
           libraryFunctionNodeName +
           '"]'
       );
-      tf.graph.scene.node.stylize(functionGroup, node, this);
+      tf_graph_scene_node.stylize(functionGroup, node, this as any);
     }
     var annotationGroupIndex = this.getAnnotationGroupsIndex(n);
     _.each(annotationGroupIndex, (aGroup, hostName) => {
-      tf.graph.scene.node.stylize(
+      tf_graph_scene_node.stylize(
         aGroup,
         node,
-        this,
-        tf.graph.scene.Class.Annotation.NODE
+        this as any,
+        tf_graph_scene.Class.Annotation.NODE
       );
     });
   }
@@ -1288,15 +1384,15 @@ class TfGraphScene extends PolymerElement {
       return;
     }
     // Update the minimap to reflect the highlighted (selected) node.
-    this.minimap.update();
+    (this.minimap as any).update();
     var node = this.renderHierarchy.hierarchy.node(selectedNode);
     var nodeParents = [];
     // Create list of all metanode parents of the selected node.
     while (
       node.parentNode != null &&
-      node.parentNode.name != tf.graph.ROOT_NAME
+      node.parentNode.name != tf_graph.ROOT_NAME
     ) {
-      node = node.parentNode;
+      node = (node as any).parentNode;
       nodeParents.push(node.name);
     }
     // Ensure each parent metanode is built and expanded.
@@ -1324,7 +1420,7 @@ class TfGraphScene extends PolymerElement {
     // Otherwise, the pan will be computed from incorrect measurements.
     setTimeout(() => {
       this.panToNode(selectedNode);
-    }, tf.graph.layout.PARAMS.animation.duration);
+    }, tf_graph_layout.PARAMS.animation.duration);
   }
   _highlightedNodeChanged(highlightedNode, oldHighlightedNode) {
     if (highlightedNode === oldHighlightedNode) {
@@ -1343,9 +1439,13 @@ class TfGraphScene extends PolymerElement {
   _fireEnableClick() {
     this.fire('enable-click');
   }
+
+  // When renderHierarchy changes, we need to first build the new SVG based
+  // on the new hierarchy (and it is asynchronous). We will let that observer
+  // update the input trace.
   @observe('traceInputs', 'selectedNode')
   _updateInputTrace() {
-    tf.graph.scene.node.updateInputTrace(
+    tf_graph_scene_node.updateInputTrace(
       this.getGraphSvgRoot(),
       this.renderHierarchy,
       this.selectedNode,
