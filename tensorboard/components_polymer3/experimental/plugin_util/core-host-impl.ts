@@ -15,17 +15,21 @@ limitations under the License.
 /**
  * Implements core plugin APIs.
  */
-tb_plugin.host.listen('experimental.GetURLPluginData', (context) => {
+import {listen} from './plugin-host-ipc';
+import {urlDict} from '../../tf_storage';
+
+listen('experimental.GetURLPluginData', (context) => {
   if (!context) {
     return;
   }
   const prefix = `p.${context.pluginName}.`;
-  const result: {[key: string]: string} = {};
-
-  for (let key in tf_storage.urlDict) {
+  const result: {
+    [key: string]: string;
+  } = {};
+  for (let key in urlDict) {
     if (key.startsWith(prefix)) {
       const pluginKey = key.substring(prefix.length);
-      result[pluginKey] = tf_storage.urlDict[key];
+      result[pluginKey] = urlDict[key];
     }
   }
   return result;

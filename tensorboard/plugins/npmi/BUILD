@@ -40,6 +40,28 @@ py_test(
     ],
 )
 
+py_binary(
+    name = "npmi_demo",
+    srcs = ["npmi_demo.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":npmi_demo_data",
+        ":summary",
+        "//tensorboard:expect_tensorflow_installed",
+    ],
+)
+
+py_library(
+    name = "npmi_demo_data",
+    srcs = ["npmi_demo_data.py"],
+    srcs_version = "PY2AND3",
+    visibility = [
+        "//tensorboard:internal",
+    ],
+    deps = [
+    ],
+)
+
 py_library(
     name = "summary",
     srcs = ["summary.py"],

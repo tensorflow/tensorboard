@@ -15,13 +15,13 @@ limitations under the License.
 /**
  * Implements run related plugin APIs.
  */
-tb_plugin.host.listen('experimental.GetRuns', () => {
-  return tf_backend.runsStore.getRuns();
+import {broadcast, listen} from './plugin-host-ipc';
+import {runsStore} from '../../tf_backend/tf-backend';
+
+listen('experimental.GetRuns', () => {
+  return runsStore.getRuns();
 });
 
-tf_backend.runsStore.addListener(() => {
-  return tb_plugin.host.broadcast(
-    'experimental.RunsChanged',
-    tf_backend.runsStore.getRuns()
-  );
+runsStore.addListener(() => {
+  return broadcast('experimental.RunsChanged', runsStore.getRuns());
 });

@@ -20,10 +20,17 @@ import {PluginsComponent} from './plugins_component';
 import {CoreModule} from '../core/core_module';
 import {PluginRegistryModule} from './plugin_registry_module';
 import {DebuggerModule} from '../../plugins/debugger_v2/tf_debugger_v2_plugin/debugger_module';
+import {NpmiModule} from './npmi/npmi_module';
 
 @NgModule({
   declarations: [PluginsContainer, PluginsComponent],
   exports: [PluginsContainer],
-  imports: [CoreModule, CommonModule, PluginRegistryModule, DebuggerModule],
+  imports: [
+    CoreModule,
+    CommonModule,
+    PluginRegistryModule,
+    DebuggerModule,
+    NpmiModule,
+  ],
 })
 export class PluginsModule {}

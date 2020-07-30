@@ -20,12 +20,16 @@ export interface Datum {
   wall_time: Date;
   step: number;
 }
+
 export interface Scalar {
   scalar: number;
   smoothed: number;
 }
+
 export type ScalarDatum = Datum & Scalar;
+
 export type DataFn = (run: string, tag: string) => Promise<Array<Datum>>;
+
 export interface LineChartSymbol {
   // A single unicode character string representing the symbol. Maybe a diamond
   // unicode character for instance.
@@ -33,6 +37,7 @@ export interface LineChartSymbol {
   // A special method used by Plottable to draw the symbol in the line chart.
   method: () => Plottable.SymbolFactories.SymbolFactory;
 }
+
 /**
  * A list of symbols that line charts can cycle through per data series.
  */
@@ -59,6 +64,7 @@ export const SYMBOLS_LIST: LineChartSymbol[] = [
   },
 ];
 /** X axis choices for TensorBoard charts. */
+
 export enum XType {
   /** Linear scale using the "step" property of the datum. */
   STEP = 'step',
@@ -70,27 +76,38 @@ export enum XType {
    */
   WALL_TIME = 'wall_time',
 }
+
 export type SymbolFn = (series: string) => Plottable.SymbolFactory;
+
 export let Y_TOOLTIP_FORMATTER_PRECISION = 4;
+
 export let STEP_FORMATTER_PRECISION = 4;
+
 export let Y_AXIS_FORMATTER_PRECISION = 3;
+
 export let TOOLTIP_Y_PIXEL_OFFSET = 20;
+
 export let TOOLTIP_CIRCLE_SIZE = 4;
+
 export let NAN_SYMBOL_SIZE = 6;
+
 export interface Point {
   x: number; // pixel space
   y: number; // pixel space
   datum: ScalarDatum;
   dataset: Plottable.Dataset;
 }
+
 export interface TooltipColumnState {
   smoothingEnabled: boolean;
 }
+
 export interface TooltipColumn {
   title: string;
-  static: boolean;
+  static?: boolean;
   evaluate: (p: Point, status?: TooltipColumnState) => string;
 }
+
 /* Create a formatter function that will switch between exponential and
  * regular display depending on the scale of the number being formatted,
  * and show `digits` significant digits.
@@ -113,6 +130,7 @@ export function multiscaleFormatter(digits: number): (v: number) => string {
     return f(v);
   };
 }
+
 /* Compute an appropriate domain given an array of all the values that are
  * going to be displayed. If ignoreOutliers is true, it will ignore the
  * lowest 10% and highest 10% of the data when computing a domain.
@@ -163,17 +181,21 @@ export function computeDomain(values: number[], ignoreOutliers: boolean) {
     .domain();
   return domain;
 }
+
 export function accessorize(key: string): Plottable.IAccessor<number> {
   // tslint:disable-next-line:no-any be quiet tsc
   return (d: any, index: number, dataset: Plottable.Dataset) => d[key];
 }
+
 export interface XComponents {
   /* tslint:disable */
   scale: Plottable.Scales.Linear | Plottable.Scales.Time;
   axis: Plottable.Axes.Numeric | Plottable.Axes.Time;
   accessor: Plottable.IAccessor<number | Date>;
 }
+
 export const stepFormatter = d3.format(`.${STEP_FORMATTER_PRECISION}~s`);
+
 export function stepX(): XComponents {
   let scale = new Plottable.Scales.Linear();
   scale.tickGenerator(Plottable.Scales.TickGenerators.integerTickGenerator());
@@ -185,7 +207,9 @@ export function stepX(): XComponents {
     accessor: (d: Datum) => d.step,
   };
 }
+
 export let timeFormatter = Plottable.Formatters.time('%a %b %e, %H:%M:%S');
+
 export function wallX(): XComponents {
   let scale = new Plottable.Scales.Time();
   return {
@@ -194,6 +218,7 @@ export function wallX(): XComponents {
     accessor: (d: Datum) => d.wall_time,
   };
 }
+
 export let relativeAccessor =
   // tslint:disable-next-line:no-any be quiet tsc
   (d: any, index: number, dataset: Plottable.Dataset) => {
@@ -209,6 +234,7 @@ export let relativeAccessor =
     let first = data.length > 0 ? +data[0].wall_time : 0;
     return (+d.wall_time - first) / (60 * 60 * 1000); // ms to hours
   };
+
 export let relativeFormatter = (n: number) => {
   // we will always show 2 units of precision, e.g days and hours, or
   // minutes and seconds, but not hours and minutes and seconds
@@ -233,6 +259,7 @@ export let relativeFormatter = (n: number) => {
   let seconds = Math.floor(n);
   return ret + seconds + 's';
 };
+
 export function relativeX(): XComponents {
   let scale = new Plottable.Scales.Linear();
   return {
@@ -241,6 +268,7 @@ export function relativeX(): XComponents {
     accessor: relativeAccessor,
   };
 }
+
 export function getXComponents(xType: string): XComponents {
   switch (xType) {
     case XType.STEP:

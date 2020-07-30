@@ -1,15 +1,16 @@
-load("//tensorboard/defs:web.bzl", "tf_web_library")
+load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
-tf_web_library(
+tf_ts_library(
     name = "tf_profile_redirect_dashboard",
-    srcs = ["tf-profile-redirect-dashboard.html"],
-    path = "/tf-profile-redirect-dashboard",
+    srcs = ["tf-profile-redirect-dashboard.ts"],
+    strict_checks = False,
     deps = [
-        "//tensorboard/components/tf_imports:polymer",
-        "@org_polymer_paper_button",
+        "@npm//@polymer/decorators",
+        "@npm//@polymer/paper-button",
+        "@npm//@polymer/polymer",
     ],
 )
