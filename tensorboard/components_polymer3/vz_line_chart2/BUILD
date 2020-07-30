@@ -32,6 +32,7 @@ tf_ts_library(
     strict_checks = False,
     deps = [
         ":dragZoomInteraction",
+        "//tensorboard/components_polymer3/polymer:legacy_element_mixin",
         "//tensorboard/components_polymer3/vz_chart_helpers",
         "@npm//@polymer/decorators",
         "@npm//@polymer/polymer",

@@ -14,10 +14,11 @@ limitations under the License.
 ==============================================================================*/
 
 import {PolymerElement, html} from '@polymer/polymer';
-import {LegacyElementMixin} from '@polymer/polymer/lib/legacy/legacy-element-mixin';
+import {LegacyElementMixin} from '../polymer/legacy_element_mixin';
 import {customElement, property, observe} from '@polymer/decorators';
-import {PaperInkyFocusBehavior} from '@polymer/paper-behaviors/paper-inky-focus-behavior';
 import '@polymer/iron-icon';
+
+import {PaperInkyFocusBehavior} from '../polymer/paper_inky_focus_behavior';
 
 /**
  * tf-dropdown-trigger is a paper-menu-button trigger that has similar asthetics
