@@ -28,6 +28,7 @@ tf_ts_library(
         "//tensorboard/components_polymer3/polymer:legacy_element_mixin",
         "//tensorboard/components_polymer3/polymer:paper_inky_focus_behavior",
         "//tensorboard/components_polymer3/polymer:register_style_dom_module",
+        "//tensorboard/components_polymer3/polymer:utils_mixin",
         "//tensorboard/components_polymer3/tf_backend",
         "//tensorboard/components_polymer3/tf_color_scale",
         "//tensorboard/components_polymer3/tf_storage",
