@@ -13,6 +13,7 @@ tf_ts_library(
     ],
     strict_checks = False,
     deps = [
+        "//tensorboard/components_polymer3/polymer:register_style_dom_module",
         "//tensorboard/components_polymer3/tf_markdown_view",
         "@npm//@polymer/decorators",
         "@npm//@polymer/paper-dialog",
