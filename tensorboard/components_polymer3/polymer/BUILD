@@ -13,3 +13,13 @@ tf_ts_library(
         "@npm//@polymer/polymer",
     ],
 )
+
+tf_ts_library(
+    name = "paper_inky_focus_behavior",
+    srcs = [
+        "paper_inky_focus_behavior.ts",
+    ],
+    deps = [
+        "@npm//@polymer/paper-behaviors",
+    ],
+)
