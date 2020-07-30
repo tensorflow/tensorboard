@@ -13,14 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-customElements.whenDefined('dom-module').then(() => {
-  const styleElement = document.createElement('dom-module');
-  styleElement.innerHTML = `
-  <template>
-    <style>
-      %tensor-widget.css%
-    </style>
-  </template>
-  `;
-  (styleElement as any).register('tensor-widget-style');
+import {registerStyleDomModule} from '../../components_polymer3/polymer/register_style_dom_module';
+
+registerStyleDomModule({
+  moduleName: 'tensor-widget-style',
+  styleContent: `
+    %tensor-widget.css%
+  `,
 });
