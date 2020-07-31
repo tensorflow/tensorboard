@@ -1,0 +1,26 @@
+#markdown > p:first-child {
+  margin-top: 0.3em;
+}
+
+#markdown > p:last-child {
+  margin-bottom: 0.3em;
+}
+
+#markdown table {
+  border-collapse: collapse;
+}
+
+#markdown table th {
+  font-weight: 600;
+}
+
+#markdown table th,
+#markdown table td {
+  padding: 6px 13px;
+  border: 1px solid #dfe2e5;
+}
+
+#markdown table tr {
+  background-color: #fff;
+  border-top: 1px solid #c6cbd1;
+}
