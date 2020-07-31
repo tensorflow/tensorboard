@@ -703,6 +703,14 @@
     "@polymer/paper-styles" "^3.0.0-pre.26"
     "@polymer/polymer" "^3.0.0"
 
+"@polymer/paper-material@^3.0.1":
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/@polymer/paper-material/-/paper-material-3.0.1.tgz#2d5f7673d21ac65270e4a687439d16b980aa517b"
+  integrity sha512-FUa3iqEcwjYtUzMqIh9cEfdTJE8ZtRasAzxVbck5GChthA/T2HwnhjAyqzN4lusVMyafdl3rjNEwhVPK/Pmykg==
+  dependencies:
+    "@polymer/paper-styles" "^3.0.0-pre.26"
+    "@polymer/polymer" "^3.0.0"
+
 "@polymer/paper-menu-button@^3.0.0-pre.26", "@polymer/paper-menu-button@^3.0.1":
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/@polymer/paper-menu-button/-/paper-menu-button-3.0.1.tgz#318fc4d884a01d42ed0f3f3b5a6f78548d64befa"

@@ -1,35 +1,37 @@
-load("//tensorboard/defs:web.bzl", "tf_web_library")
+load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
-tf_web_library(
+tf_ts_library(
     name = "tf_text_dashboard",
     srcs = [
-        "tf-text-dashboard.html",
-        "tf-text-loader.html",
+        "tf-text-dashboard.ts",
+        "tf-text-loader.ts",
     ],
-    path = "/tf-text-dashboard",
+    strict_checks = False,
     deps = [
-        "//tensorboard/components/tf_backend",
-        "//tensorboard/components/tf_card_heading",
-        "//tensorboard/components/tf_categorization_utils",
-        "//tensorboard/components/tf_color_scale",
-        "//tensorboard/components/tf_dashboard_common",
-        "//tensorboard/components/tf_imports:d3",
-        "//tensorboard/components/tf_imports:lodash",
-        "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/components/tf_markdown_view",
-        "//tensorboard/components/tf_paginated_view",
-        "//tensorboard/components/tf_runs_selector",
-        "//tensorboard/components/tf_tensorboard:registry",
-        "@org_polymer_iron_icon",
-        "@org_polymer_paper_dialog",
-        "@org_polymer_paper_icon_button",
-        "@org_polymer_paper_input",
-        "@org_polymer_paper_material",
-        "@org_polymer_paper_slider",
-        "@org_polymer_paper_spinner",
+        "//tensorboard/components_polymer3/tf_backend",
+        "//tensorboard/components_polymer3/tf_card_heading",
+        "//tensorboard/components_polymer3/tf_categorization_utils",
+        "//tensorboard/components_polymer3/tf_color_scale",
+        "//tensorboard/components_polymer3/tf_dashboard_common",
+        "//tensorboard/components_polymer3/tf_markdown_view",
+        "//tensorboard/components_polymer3/tf_paginated_view",
+        "//tensorboard/components_polymer3/tf_runs_selector",
+        "@npm//@polymer/decorators",
+        "@npm//@polymer/iron-icon",
+        "@npm//@polymer/paper-dialog",
+        "@npm//@polymer/paper-icon-button",
+        "@npm//@polymer/paper-input",
+        "@npm//@polymer/paper-material",
+        "@npm//@polymer/paper-slider",
+        "@npm//@polymer/paper-spinner",
+        "@npm//@polymer/polymer",
+        "@npm//@types/d3",
+        "@npm//@types/lodash",
+        "@npm//d3",
+        "@npm//lodash",
     ],
 )

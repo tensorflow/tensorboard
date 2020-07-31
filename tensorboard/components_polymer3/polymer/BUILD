@@ -23,3 +23,20 @@ tf_ts_library(
         "@npm//@polymer/paper-behaviors",
     ],
 )
+
+tf_ts_library(
+    name = "register_style_dom_module",
+    srcs = [
+        "register_style_dom_module.ts",
+    ],
+)
+
+tf_ts_library(
+    name = "utils_mixin",
+    srcs = [
+        "utils_mixin.ts",
+    ],
+    deps = [
+        "@npm//@polymer/polymer",
+    ],
+)

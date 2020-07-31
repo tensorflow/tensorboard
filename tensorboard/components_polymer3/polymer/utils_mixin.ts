@@ -13,16 +13,4 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-export interface DomModuleOptions {
-  moduleName: string;
-  htmlSource: string;
-}
-
-export default function registerDomModule(args: DomModuleOptions): void {
-  const {moduleName, htmlSource} = args;
-  customElements.whenDefined('dom-module').then(() => {
-    const module = document.createElement('dom-module');
-    module.innerHTML = htmlSource;
-    module.register(moduleName);
-  });
-}
+export * from '@polymer/polymer/lib/utils/mixin';
