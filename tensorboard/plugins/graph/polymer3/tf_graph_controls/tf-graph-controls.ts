@@ -14,36 +14,28 @@ limitations under the License.
 ==============================================================================*/
 
 import {PolymerElement, html} from '@polymer/polymer';
-import {customElement, property} from '@polymer/decorators';
+import {computed, customElement, property} from '@polymer/decorators';
+import * as _ from 'lodash';
 import '@polymer/iron-icon';
 import '@polymer/paper-button';
-import '@polymer/paper-dropdown-menu';
+import '@polymer/paper-dropdown-menu/paper-dropdown-menu';
 import '@polymer/paper-icon-button';
 import '@polymer/paper-item';
 import '@polymer/paper-listbox';
 import '@polymer/paper-radio-group';
 import '@polymer/paper-toggle-button';
 import '@polymer/paper-tooltip';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-dashboard-common/tensorboard-color.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-common/tf-graph-common.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-common/tf-graph-icon.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-node-search/tf-graph-node-search.html';
-import {DO_NOT_SUBMIT} from 'tf-graph-controls';
-import '@polymer/iron-icon';
-import '@polymer/paper-button';
-import '@polymer/paper-dropdown-menu';
-import '@polymer/paper-icon-button';
-import '@polymer/paper-item';
-import '@polymer/paper-listbox';
-import '@polymer/paper-radio-group';
-import '@polymer/paper-toggle-button';
-import '@polymer/paper-tooltip';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-dashboard-common/tensorboard-color.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-common/tf-graph-common.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-common/tf-graph-icon.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-node-search/tf-graph-node-search.html';
+
+import * as tf_graph_common from '../tf_graph_common/common';
+import * as tf_graph_render from '../tf_graph_common/render';
+import * as tf_graph_proto from '../tf_graph_common/proto';
+import * as tf_graph_util from '../tf_graph_common/util';
+
+import '../../../../components_polymer3/tf_dashboard_common/tensorboard-color';
+import '../tf_graph_common/tf-graph-icon';
+import '../tf_graph_node_search/tf-graph-node-search';
+import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+
 interface DeviceNameExclude {
   regex: RegExp;
 }
@@ -69,7 +61,7 @@ const DEVICE_STATS_DEFAULT_OFF: StatsDefaultOff[] = [];
 export interface Selection {
   run: string;
   tag: string | null;
-  type: tf.graph.SelectionType;
+  type: tf_graph_common.SelectionType;
 }
 export interface DeviceForStats {
   [key: string]: boolean;
@@ -130,7 +122,7 @@ const GRADIENT_COMPATIBLE_COLOR_BY: Set<ColorBy> = new Set([
   ColorBy.MEMORY,
 ]);
 @customElement('tf-graph-controls')
-class TfGraphControls extends PolymerElement {
+class TfGraphControls extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
     <style>
       :host {
@@ -475,7 +467,7 @@ class TfGraphControls extends PolymerElement {
       </template>
       <div class="control-holder">
         <paper-radio-group selected="{{_selectedGraphType}}">
-          <!-- Note that the name has to match that of tf.graph.SelectionType. -->
+          <!-- Note that the name has to match that of tf_graph_common.SelectionType. -->
           <paper-radio-button
             name="op_graph"
             disabled="[[_getSelectionOpGraphDisabled(datasets, _selectedRunIndex, _selectedTagIndex)]]"
@@ -1018,18 +1010,26 @@ class TfGraphControls extends PolymerElement {
       </iron-collapse>
     </div>
   `;
+  // Public API.
+  /**
+   * @type {?tf_graph_proto.StepStats}
+   */
   @property({
     type: Object,
     observer: '_statsChanged',
   })
   stats: object = null;
+  /**
+   * @type {?Object<string, boolean>}
+   */
   @property({
     type: Object,
     notify: true,
-    // TODO(stephanwlee): Change readonly -> readOnly and fix the setter.
-    readonly: true,
   })
   devicesForStats: object = null;
+  /**
+   * @type {!ColorBy}
+   */
   @property({
     type: String,
     notify: true,
@@ -1038,19 +1038,23 @@ class TfGraphControls extends PolymerElement {
   @property({
     type: Object,
     notify: true,
-    // TODO(stephanwlee): Change readonly -> readOnly and fix the setter.
-    readonly: true,
   })
-  colorByParams: object;
+  colorByParams: ColorByParams;
   @property({
     type: Array,
     observer: '_datasetsChanged',
   })
-  datasets: unknown[] = () => [];
+  datasets: any = [];
+  /**
+   * @type {tf_graph_render.RenderGraphInfo}
+   */
   @property({
     type: Object,
   })
   renderHierarchy: object;
+  /**
+   * @type {!Selection}
+   */
   @property({
     type: Object,
     notify: true,
@@ -1079,10 +1083,13 @@ class TfGraphControls extends PolymerElement {
     observer: '_selectedTagIndexChanged',
   })
   _selectedTagIndex: number = 0;
+  /**
+   * @type {tf_graph_common.SelectionType}
+   */
   @property({
     type: String,
   })
-  _selectedGraphType: string = tf.graph.SelectionType.OP_GRAPH;
+  _selectedGraphType: string = tf_graph_common.SelectionType.OP_GRAPH;
   @property({
     type: String,
     notify: true,
@@ -1096,8 +1103,11 @@ class TfGraphControls extends PolymerElement {
     type: Boolean,
   })
   showUploadButton: boolean = true;
+  // This stores whether the feature for showing health pills is enabled in the first place.
   @property({type: Boolean})
   healthPillsFeatureEnabled: boolean;
+  // This stores whether to show health pills. Only relevant if healthPillsFeatureEnabled. The
+  // user can toggle this value.
   @property({
     type: Boolean,
     notify: true,
@@ -1108,7 +1118,7 @@ class TfGraphControls extends PolymerElement {
   })
   _legendOpened: boolean = true;
   _xlaClustersProvided(
-    renderHierarchy: tf.graph.render.RenderGraphInfo | null
+    renderHierarchy: tf_graph_render.RenderGraphInfo | null
   ) {
     return (
       renderHierarchy &&
@@ -1116,7 +1126,7 @@ class TfGraphControls extends PolymerElement {
       renderHierarchy.hierarchy.xlaClusters.length > 0
     );
   }
-  _statsChanged(stats: tf.graph.proto.StepStats) {
+  _statsChanged(stats: tf_graph_proto.StepStats) {
     if (stats == null) {
       return;
     }
@@ -1139,8 +1149,8 @@ class TfGraphControls extends PolymerElement {
   @computed('devicesForStats')
   get _currentDevices(): unknown[] {
     var devicesForStats = this.devicesForStats;
-    const stats: tf.graph.proto.StepStats | null = this.stats;
-    const devStats: tf.graph.proto.DevStat[] = stats ? stats.dev_stats : [];
+    const stats = this.stats as tf_graph_proto.StepStats | null;
+    const devStats: tf_graph_proto.DevStat[] = stats ? stats.dev_stats : [];
     const allDevices = devStats.map((d) => d.device);
     const devices = allDevices.filter((deviceName) => {
       return DEVICE_NAMES_INCLUDE.some((rule) => {
@@ -1149,7 +1159,7 @@ class TfGraphControls extends PolymerElement {
     });
     // Devices names can be long so we remove the longest common prefix
     // before showing the devices in a list.
-    const suffixes = tf.graph.util.removeCommonPrefix(devices);
+    const suffixes = tf_graph_util.removeCommonPrefix(devices);
     if (suffixes.length == 1) {
       const found = suffixes[0].match(DEVICE_NAME_REGEX);
       if (found) {
@@ -1200,7 +1210,7 @@ class TfGraphControls extends PolymerElement {
   _fit() {
     this.fire('fit-tap');
   }
-  _isGradientColoring(stats: tf.graph.proto.StepStats, colorBy: ColorBy) {
+  _isGradientColoring(stats: tf_graph_proto.StepStats, colorBy: ColorBy) {
     return GRADIENT_COMPATIBLE_COLOR_BY.has(colorBy) && stats != null;
   }
   _equals(a: any, b: any) {
@@ -1216,7 +1226,7 @@ class TfGraphControls extends PolymerElement {
     });
     // Remove common prefix and merge back corresponding color. If
     // there is only one device then remove everything up to "/device:".
-    const suffixes = tf.graph.util.removeCommonPrefix(
+    const suffixes = tf_graph_util.removeCommonPrefix(
       deviceParams.map((d) => d.device)
     );
     if (suffixes.length == 1) {
@@ -1238,29 +1248,29 @@ class TfGraphControls extends PolymerElement {
   get _currentGradientParams(): object {
     var colorByParams = this.colorByParams;
     var colorBy = this.colorBy;
-    if (!this._isGradientColoring(this.stats, colorBy)) {
+    if (!this._isGradientColoring(this.stats as any, colorBy as any)) {
       return;
     }
     const params: ColorParams = colorByParams[colorBy];
     let minValue = params.minValue;
     let maxValue = params.maxValue;
     if (colorBy === ColorBy.MEMORY) {
-      minValue = tf.graph.util.convertUnitsToHumanReadable(
+      minValue = tf_graph_util.convertUnitsToHumanReadable(
         minValue,
-        tf.graph.util.MEMORY_UNITS
+        tf_graph_util.MEMORY_UNITS
       );
-      maxValue = tf.graph.util.convertUnitsToHumanReadable(
+      maxValue = tf_graph_util.convertUnitsToHumanReadable(
         maxValue,
-        tf.graph.util.MEMORY_UNITS
+        tf_graph_util.MEMORY_UNITS
       );
     } else if (colorBy === ColorBy.COMPUTE_TIME) {
-      minValue = tf.graph.util.convertUnitsToHumanReadable(
+      minValue = tf_graph_util.convertUnitsToHumanReadable(
         minValue,
-        tf.graph.util.TIME_UNITS
+        tf_graph_util.TIME_UNITS
       );
-      maxValue = tf.graph.util.convertUnitsToHumanReadable(
+      maxValue = tf_graph_util.convertUnitsToHumanReadable(
         maxValue,
-        tf.graph.util.TIME_UNITS
+        tf_graph_util.TIME_UNITS
       );
     }
     return {
@@ -1271,7 +1281,7 @@ class TfGraphControls extends PolymerElement {
     };
   }
   download() {
-    this.$.graphdownload.click();
+    (this.$.graphdownload as HTMLElement).click();
   }
   _updateFileInput(e: Event) {
     const file = (e.target as HTMLInputElement).files[0];
@@ -1300,7 +1310,7 @@ class TfGraphControls extends PolymerElement {
     datasets: Dataset,
     _selectedRunIndex: number,
     _selectedTagIndex: number,
-    _selectedGraphType: tf.graph.SelectionType
+    _selectedGraphType: tf_graph_common.SelectionType
   ) {
     if (
       !datasets[_selectedRunIndex] ||
@@ -1328,31 +1338,35 @@ class TfGraphControls extends PolymerElement {
   _selectedTagIndexChanged(): void {
     this._selectedGraphType = this._getDefaultSelectionType();
   }
-  _getDefaultSelectionType(): tf.graph.SelectionType {
+  _getDefaultSelectionType(): tf_graph_common.SelectionType {
     const {datasets, _selectedRunIndex: run, _selectedTagIndex: tag} = this;
     if (
       !datasets ||
       !datasets[run] ||
-      !datasets[run].tags[tag] ||
-      datasets[run].tags[tag].opGraph
+      !(datasets[run] as any).tags[tag] ||
+      (datasets[run] as any).tags[tag].opGraph
     ) {
-      return tf.graph.SelectionType.OP_GRAPH;
+      return tf_graph_common.SelectionType.OP_GRAPH;
     }
-    if (datasets[run].tags[tag].profile) {
-      return tf.graph.SelectionType.PROFILE;
+    const datasetForRun = datasets[run] as any;
+    if (datasetForRun.tags[tag].profile) {
+      return tf_graph_common.SelectionType.PROFILE;
     }
-    if (datasets[run].tags[tag].conceptualGraph) {
-      return tf.graph.SelectionType.CONCEPTUAL_GRAPH;
+    if (datasetForRun.tags[tag].conceptualGraph) {
+      return tf_graph_common.SelectionType.CONCEPTUAL_GRAPH;
     }
-    return tf.graph.SelectionType.OP_GRAPH;
+    return tf_graph_common.SelectionType.OP_GRAPH;
   }
   _getFile() {
-    this.$$('#file').click();
+    (this.$$('#file') as HTMLElement).click();
   }
   _setDownloadFilename(name: string) {
-    this.$.graphdownload.setAttribute('download', name + '.png');
+    (this.$.graphdownload as HTMLElement).setAttribute(
+      'download',
+      name + '.png'
+    );
   }
-  _statsNotNull(stats: tf.graph.proto.StepStats) {
+  _statsNotNull(stats: tf_graph_proto.StepStats) {
     return stats !== null;
   }
   _toggleLegendOpen(): void {
