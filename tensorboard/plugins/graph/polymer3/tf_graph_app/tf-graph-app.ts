@@ -12,19 +12,31 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
 import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, property} from '@polymer/decorators';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-board/tf-graph-board.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-controls/tf-graph-controls.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-loader/tf-graph-loader.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-board/tf-graph-board.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-controls/tf-graph-controls.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-loader/tf-graph-loader.html';
+
+import '../tf_graph_board/tf-graph-board';
+import '../tf_graph_controls/tf-graph-controls';
+import '../tf_graph_loader/tf-graph-loader';
+import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+
+/**
+ * Stand alone element of tf-graph for embedding.
+ *
+ * The pbtxt format is the stringified version of the graphdef.
+ *
+ *   <tf-graph-app pbtxt="[[pbtxt]]"></tf-graph-app>
+ *
+ *   import tensorflow as tf.js
+ *   life = tf.constant(2, name='life')
+ *   universe = tf.constant(40, name='universe')
+ *   everything = tf.constant(0, name='everything')
+ *   lifeuniverse = tf.add(life, universe)
+ *   answer = tf.add(lifeuniverse, everything, name='answer')
+ *   open("graph.pbtxt", "w").write(str(tf.get_default_graph().as_graph_def()))
+ */
 @customElement('tf-graph-app')
-class TfGraphApp extends PolymerElement {
+class TfGraphApp extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
     <style>
       :host /deep/ {
@@ -109,6 +121,12 @@ class TfGraphApp extends PolymerElement {
       </div>
     </div>
   `;
+  // To use tf-graph-app, specify one of these 2 properties. Provide either
+  // 1. The path to a pbtxt file to load (pbtxtFileLocation). This option nicely makes the
+  //    progress bar include the time it takes to load the file across the network. The path could
+  //    be either a relative path or an absolute URL (of a resource that supports CORS).
+  // 2. The raw contents of a pbtxt file (pbtxt).
+  // Do not set both of these 2 properties.
   @property({
     type: String,
     observer: '_updateGraph',
@@ -146,33 +164,36 @@ class TfGraphApp extends PolymerElement {
   @property({type: Boolean})
   _traceInputs: boolean;
   _updateToolbar() {
-    this.$$('.container').classList.toggle('no-toolbar', !this.toolbar);
+    (this.$$('.container') as HTMLElement).classList.toggle(
+      'no-toolbar',
+      !this.toolbar
+    );
   }
   _updateWidth() {
-    this.$$('.container').style.width = this.width + 'px';
+    (this.$$('.container') as HTMLElement).style.width = this.width + 'px';
   }
   _updateHeight() {
-    this.$$('.container').style.height = this.height + 'px';
+    (this.$$('.container') as HTMLElement).style.height = this.height + 'px';
   }
   _updateGraph() {
     if (this.pbtxtFileLocation) {
       // Fetch a pbtxt file. The fetching will be part of the loading sequence.
-      this.$.loader.datasets = [
+      (this.$.loader as any).datasets = [
         {
           // Just name the dataset based on the file location.
           name: this.pbtxtFileLocation,
           path: this.pbtxtFileLocation,
         },
       ];
-      this.$.loader.set('selectedDataset', 0);
+      (this.$.loader as any).set('selectedDataset', 0);
     } else if (this.pbtxt) {
       // Render the provided pbtxt.
       var blob = new Blob([this.pbtxt]);
       // TODO(@chihuahua): Find out why we call a private method here and do away with the call.
-      this.$.loader._parseAndConstructHierarchicalGraph(null, blob);
+      (this.$.loader as any)._parseAndConstructHierarchicalGraph(null, blob);
     }
   }
   _fit() {
-    this.$$('#graphboard').fit();
+    (this.$$('#graphboard') as any).fit();
   }
 }
