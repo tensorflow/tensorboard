@@ -89,6 +89,7 @@ export class LineChart {
   private tooltipColumns: Array<
     LineChartTooltipColumn | LineChartTooltipColumn
   >;
+  // VzChartTooltip; strong type removed to work around legacy element mixin export issue
   private tooltip: any;
   private tooltipInteraction: Plottable.Interactions.Pointer;
   private tooltipPointsComponent: Plottable.Component;
@@ -123,7 +124,7 @@ export class LineChart {
     yValueAccessor: Plottable.IAccessor<number>,
     yScaleType: YScaleType,
     colorScale: Plottable.Scales.Color,
-    tooltip: any,
+    tooltip: any, // VzChartTooltip
     tooltipColumns: TooltipColumn[],
     fillArea: FillArea,
     defaultXRange?: number[],
