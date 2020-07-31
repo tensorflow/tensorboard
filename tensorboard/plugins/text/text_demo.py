@@ -31,7 +31,6 @@ def simple_example(step):
     # Text summaries log arbitrary text. This can be encoded with ASCII or
     # UTF-8. Here's a simple example, wherein we greet the user on each
     # step:
-    step_string = tf.as_string(step)
     greeting = tf.constant("hello from step %d! 😊" % step)
     text("greeting", greeting, step)
 
@@ -46,7 +45,6 @@ def simple_example_with_pagination(step):
     # displays that UI feature by creating 36 subtags within the main tag:
     # "simple_example_with_pagination"
     for i in range(36):
-        step_string = tf.as_string(step)
         greeting = tf.constant("hello from step %d! 😊" % step)
         tag = "card%d/greeting" % (i + 1)
         text(tag, greeting, step)

@@ -73,10 +73,10 @@ py_binary(
     srcs = ["text_demo.py"],
     srcs_version = "PY2AND3",
     deps = [
+        ":summary_v2",
         "//tensorboard:expect_absl_logging_installed",
         "//tensorboard:expect_tensorflow_installed",
-        ":summary_v2",
-      ],
+    ],
 )
 
 py_library(
