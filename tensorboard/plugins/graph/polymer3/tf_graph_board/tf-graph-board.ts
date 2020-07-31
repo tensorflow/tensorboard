@@ -12,21 +12,23 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
 import {PolymerElement, html} from '@polymer/polymer';
-import {customElement, property} from '@polymer/decorators';
+import {customElement, observe, property} from '@polymer/decorators';
 import '@polymer/paper-progress';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-common/tf-graph-common.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-info/tf-graph-info.html';
-import {DO_NOT_SUBMIT} from '../tf-graph/tf-graph.html';
-import '@polymer/paper-progress';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-common/tf-graph-common.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-info/tf-graph-info.html';
-import {DO_NOT_SUBMIT} from '../tf-graph/tf-graph.html';
+
+import '../tf_graph_info/tf-graph-info';
+import '../tf_graph/tf-graph';
+import * as tf_graph from '../tf_graph_common/graph';
+import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+
+/**
+ * Element for putting tf-graph and tf-graph-info side by side.
+ *
+ * Example
+ * <tf-graph-board graph=[[graph]]></tf-graph-board>
+ */
 @customElement('tf-graph-board')
-class TfGraphBoard extends PolymerElement {
+class TfGraphBoard extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
     <style>
       ::host {
@@ -184,6 +186,11 @@ class TfGraphBoard extends PolymerElement {
   graph: object;
   @property({type: Object})
   stats: object;
+  /**
+   * A number between 0 and 100 denoting the % of progress
+   * for the progress bar and the displayed message.
+   * @type {{value: number, msg: string}}
+   */
   @property({type: Object})
   progress: object;
   @property({type: Boolean})
@@ -199,28 +206,38 @@ class TfGraphBoard extends PolymerElement {
     type: Object,
     notify: true,
   })
-  renderHierarchy: object;
+  renderHierarchy: any;
+  // Whether debugger data is enabled for this instance of Tensorboard.
   @property({type: Boolean})
   debuggerDataEnabled: boolean;
+  // Whether health pills are currently being loaded.
   @property({type: Boolean})
   areHealthPillsLoading: boolean;
   @property({
     type: Array,
     notify: true,
   })
+  // An array of alerts (in chronological order) provided by debugging libraries on when bad
+  // values (NaN, +/- Inf) appear.
   debuggerNumericAlerts: unknown[];
   @property({type: Object})
+  // A mapping between node name to the tf.graph.scene.HealthPill to render.
   nodeNamesToHealthPills: object;
+  // Whether the user can request health pills for individual steps from the server. This can be
+  // slow compared the default of showing sampled health pills.
   @property({
     type: Boolean,
     notify: true,
   })
   allStepsModeEnabled: boolean = false;
+  // Relevant if allStepsModeEnabled. The specific step for which to fetch health pills from the
+  // server for.
   @property({
     type: Number,
     notify: true,
   })
   specificHealthPillStep: number = 0;
+  // The step of health pills to show throughout the graph.
   @property({type: Number})
   healthPillStepIndex: number;
   @property({
@@ -232,20 +249,30 @@ class TfGraphBoard extends PolymerElement {
     type: String,
   })
   compatNodeTitle: string = 'TPU Compatibility';
+  // A function with signature EdgeThicknessFunction that computes the
+  // thickness of a given edge.
   @property({type: Object})
   edgeWidthFunction: object;
+  // The enum value of the include property of the selected node.
   @property({type: Number})
   _selectedNodeInclude: number;
   @property({type: String})
   _highlightedNode: string;
+  // An optional function that takes a node selected event (whose `detail`
+  // property is the selected node ... which could be null if a node is
+  // deselected). Called whenever a node is selected or deselected.
   @property({type: Object})
   handleNodeSelected: object;
+  // An optional function that computes the label for an edge. Should
+  // implement the EdgeLabelFunction signature.
   @property({type: Object})
   edgeLabelFunction: object;
+  // An optional callback that implements the tf.graph.edge.EdgeSelectionCallback signature. If
+  // provided, edges are selectable, and this callback is run when an edge is selected.
   @property({type: Object})
   handleEdgeSelected: object;
   fit() {
-    this.$.graph.fit();
+    (this.$.graph as any).fit();
   }
   /** True if the progress is not complete yet (< 100 %). */
   _isNotComplete(progress) {
@@ -262,10 +289,10 @@ class TfGraphBoard extends PolymerElement {
     return result;
   }
   _onNodeInclusionToggled(event) {
-    this.$.graph.nodeToggleExtract(event.detail.name);
+    (this.$.graph as any).nodeToggleExtract(event.detail.name);
   }
   _onNodeSeriesGroupToggled(event) {
-    this.$.graph.nodeToggleSeriesGroup(event.detail.name);
+    (this.$.graph as any).nodeToggleSeriesGroup(event.detail.name);
   }
   @observe('selectedNode', 'renderHierarchy')
   _updateNodeInclude() {
@@ -274,6 +301,6 @@ class TfGraphBoard extends PolymerElement {
       : this.renderHierarchy.getNodeByName(this.selectedNode);
     this._selectedNodeInclude = node
       ? node.include
-      : tf.graph.InclusionType.UNSPECIFIED;
+      : tf_graph.InclusionType.UNSPECIFIED;
   }
 }
