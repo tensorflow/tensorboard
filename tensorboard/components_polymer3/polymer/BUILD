@@ -29,6 +29,9 @@ tf_ts_library(
     srcs = [
         "register_style_dom_module.ts",
     ],
+    deps = [
+        "@npm//@polymer/polymer",
+    ],
 )
 
 tf_ts_library(
