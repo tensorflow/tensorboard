@@ -15,11 +15,9 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         ":metadata",
-        "//tensorboard:errors",
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
         "//tensorboard/plugins:base_plugin",
-        "//tensorboard/util:tensor_util",
         "@org_pocoo_werkzeug",
     ],
 )
@@ -35,11 +33,32 @@ py_test(
         ":summary",
         "//tensorboard:context",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard:plugin_util",
         "//tensorboard/backend/event_processing:data_provider",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/util:test_util",
+    ],
+)
+
+py_binary(
+    name = "npmi_demo",
+    srcs = ["npmi_demo.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":npmi_demo_data",
+        ":summary",
+        "//tensorboard:expect_tensorflow_installed",
+    ],
+)
+
+py_library(
+    name = "npmi_demo_data",
+    srcs = ["npmi_demo_data.py"],
+    srcs_version = "PY2AND3",
+    visibility = [
+        "//tensorboard:internal",
+    ],
+    deps = [
     ],
 )
 

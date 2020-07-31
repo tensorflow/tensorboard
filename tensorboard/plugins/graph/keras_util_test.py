@@ -22,9 +22,7 @@ import json
 
 import tensorflow as tf
 
-from tensorflow.python.platform import test
 from tensorboard.plugins.graph import keras_util
-from tensorboard.util import test_util
 
 
 class KerasUtilTest(tf.test.TestCase):

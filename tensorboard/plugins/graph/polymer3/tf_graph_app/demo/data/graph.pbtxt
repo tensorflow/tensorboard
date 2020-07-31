@@ -1,0 +1,164 @@
+node {
+  name: "life"
+  op: "Const"
+  attr {
+    key: "dtype"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "value"
+    value {
+      tensor {
+        dtype: DT_INT32
+        tensor_shape {
+        }
+        int_val: 2
+      }
+    }
+  }
+}
+node {
+  name: "universe"
+  op: "Const"
+  attr {
+    key: "dtype"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "value"
+    value {
+      tensor {
+        dtype: DT_INT32
+        tensor_shape {
+        }
+        int_val: 40
+      }
+    }
+  }
+}
+node {
+  name: "everything"
+  op: "Const"
+  attr {
+    key: "dtype"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "value"
+    value {
+      tensor {
+        dtype: DT_INT32
+        tensor_shape {
+        }
+        int_val: 0
+      }
+    }
+  }
+}
+node {
+  name: "0/0/Add"
+  op: "Add"
+  device: "1"
+  input: "life"
+  input: "universe"
+  attr {
+    key: "T"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "_XlaCluster"
+    value {
+      s: "cluster_0"
+    }
+  }
+}
+node {
+  name: "0/1/Add"
+  op: "Add"
+  device: "2"
+  input: "life"
+  input: "universe"
+  attr {
+    key: "T"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "_XlaCluster"
+    value {
+      s: "cluster_1"
+    }
+  }
+}
+node {
+  name: "1/Add"
+  op: "Add"
+  device: "tpu"
+  input: "life"
+  input: "universe"
+  attr {
+    key: "T"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "_XlaCluster"
+    value {
+      s: "cluster_2"
+    }
+  }
+}
+node {
+  name: "1/Weird"
+  op: "Weird"
+  device: "tpu"
+  input: "life"
+  input: "universe"
+  attr {
+    key: "T"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "_XlaCluster"
+    value {
+      s: "cluster_3"
+    }
+  }
+}
+node {
+  name: "answer"
+  op: "Add"
+  device: "2"
+  input: "0/0/Add"
+  input: "0/1/Add"
+  input: "1/Add"
+  input: "1/Weird"
+  input: "everything"
+  attr {
+    key: "T"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "_XlaCluster"
+    value {
+      s: "cluster_1"
+    }
+  }
+}
+versions {
+  producer: 10
+}

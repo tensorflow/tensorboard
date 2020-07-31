@@ -47,7 +47,7 @@ jobs:
       - name: 'Lint Python code for errors with flake8'
         # See: http://flake8.pycqa.org/en/3.7.8/user/error-codes.html
         # Use the comment '# noqa: <error code>' to suppress.
-        run: flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        run: flake8 . --count --select=E9,F63,F7,F82,F401 --show-source --statistics
 
   lint-python:
     runs-on: ubuntu-16.04

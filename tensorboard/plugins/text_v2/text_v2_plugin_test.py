@@ -24,7 +24,6 @@ import os
 import numpy as np
 import tensorflow as tf
 
-from tensorboard import plugin_util
 from tensorboard import context
 from tensorboard.backend.event_processing import data_provider
 from tensorboard.backend.event_processing import (
@@ -34,7 +33,6 @@ from tensorboard.plugins import base_plugin
 from tensorboard.plugins.scalar.summary_v2 import scalar
 from tensorboard.plugins.text.summary_v2 import text
 from tensorboard.plugins.text_v2 import text_v2_plugin
-from tensorboard.util import test_util
 
 
 tf.compat.v1.enable_v2_behavior()

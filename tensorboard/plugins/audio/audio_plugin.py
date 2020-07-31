@@ -18,7 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import six
 from six.moves import urllib
 from werkzeug import wrappers
 
@@ -28,7 +27,6 @@ from tensorboard.backend import http_util
 from tensorboard.data import provider
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.audio import metadata
-from tensorboard.util import tensor_util
 
 
 _DEFAULT_MIME_TYPE = "application/octet-stream"

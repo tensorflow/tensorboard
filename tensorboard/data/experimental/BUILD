@@ -37,8 +37,6 @@ py_test(
     srcs_version = "PY3",
     deps = [
         ":experiment_from_dev",
-        "//tensorboard:expect_grpc_installed",
-        "//tensorboard:expect_grpc_testing_installed",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_pandas_installed",
         "//tensorboard:test",

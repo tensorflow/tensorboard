@@ -18,7 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import json
 
 import werkzeug
 from werkzeug import test as werkzeug_test

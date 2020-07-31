@@ -18,16 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import contextlib
-import functools
 import json
-import ntpath
-import os
-import posixpath
-import shutil
-import socket
-import tempfile
-import time
 
 import six
 
@@ -45,9 +36,6 @@ from tensorboard import plugin_util
 from tensorboard import test as tb_test
 from tensorboard import auth
 from tensorboard.backend import application
-from tensorboard.backend.event_processing import (
-    plugin_event_multiplexer as event_multiplexer,
-)
 from tensorboard.data import provider
 from tensorboard.plugins import base_plugin
 

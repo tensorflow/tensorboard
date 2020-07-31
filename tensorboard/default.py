@@ -29,15 +29,11 @@ from __future__ import division
 from __future__ import print_function
 
 import logging
-import os
 
 import pkg_resources
 
 from tensorboard.backend import experimental_plugin
-from tensorboard.compat import tf
-from tensorboard.plugins import base_plugin
 from tensorboard.plugins.audio import audio_plugin
-from tensorboard.plugins.beholder import beholder_plugin_loader
 from tensorboard.plugins.core import core_plugin
 from tensorboard.plugins.custom_scalar import custom_scalars_plugin
 from tensorboard.plugins.debugger import debugger_plugin_loader
@@ -91,7 +87,6 @@ _PLUGINS = [
     text_plugin.TextPlugin,
     pr_curves_plugin.PrCurvesPlugin,
     profile_redirect_plugin.ProfileRedirectPluginLoader,
-    beholder_plugin_loader.BeholderPluginLoader,
     hparams_plugin.HParamsPlugin,
     mesh_plugin.MeshPlugin,
     ExperimentalTextV2Plugin,

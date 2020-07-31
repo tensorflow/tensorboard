@@ -19,9 +19,7 @@ from __future__ import print_function
 
 import io
 import os
-import shutil
 import six
-import tempfile
 
 from tensorboard import test as tb_test
 from tensorboard.compat.tensorflow_stub import errors

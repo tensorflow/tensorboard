@@ -18,9 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import sys
 
-import six
 from werkzeug import wrappers
 
 from tensorboard.backend import http_util
@@ -132,7 +130,7 @@ the interactive Debugger Dashboard. This flag is mutually exclusive with
             # Verify that the required Python packages are installed.
             try:
                 # pylint: disable=unused-import
-                import tensorflow
+                import tensorflow  # noqa: F401
             except ImportError:
                 raise ImportError(
                     "To use the debugger plugin, you need to have TensorFlow installed:\n"

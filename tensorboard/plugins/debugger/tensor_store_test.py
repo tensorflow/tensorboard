@@ -24,7 +24,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.python.debug.lib import debug_data
 
-from tensorboard.plugins.beholder import im_util
+from tensorboard.plugins.debugger import im_util
 from tensorboard.plugins.debugger import tensor_store
 
 

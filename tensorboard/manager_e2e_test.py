@@ -30,7 +30,6 @@ import subprocess
 import tempfile
 import textwrap
 
-import six
 from six.moves import urllib
 import tensorflow as tf
 

@@ -23,13 +23,11 @@ import os
 import numpy as np
 import tensorflow as tf
 
-from google.protobuf import message
 
 from tensorboard import dataclass_compat
 from tensorboard.backend.event_processing import event_file_loader
 from tensorboard.compat.proto import event_pb2
 from tensorboard.compat.proto import graph_pb2
-from tensorboard.compat.proto import node_def_pb2
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.audio import metadata as audio_metadata
 from tensorboard.plugins.audio import summary as audio_summary

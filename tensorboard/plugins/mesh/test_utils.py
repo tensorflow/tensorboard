@@ -19,15 +19,9 @@ from __future__ import print_function
 
 import collections
 import json
-import threading
 
 import numpy as np
-import tensorflow as tf
 
-from tensorboard.compat.proto import event_pb2
-from tensorboard.compat.proto import graph_pb2
-from tensorboard.compat.proto import meta_graph_pb2
-from tensorboard.compat.proto import summary_pb2
 from tensorboard.util import tb_logging
 
 Mesh = collections.namedtuple("Mesh", ("vertices", "faces", "colors"))

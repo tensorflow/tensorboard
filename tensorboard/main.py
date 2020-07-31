@@ -70,7 +70,7 @@ def run_main():
         from absl import app
 
         # Import this to check that app.run() will accept the flags_parser argument.
-        from absl.flags import argparse_flags
+        from absl.flags import argparse_flags  # noqa: F401
 
         app.run(tensorboard.main, flags_parser=tensorboard.configure)
         raise AssertionError("absl.app.run() shouldn't return")

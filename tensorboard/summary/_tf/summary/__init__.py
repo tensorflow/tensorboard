@@ -173,10 +173,10 @@ def reexport_tf_summary():
 
 reexport_tf_summary()
 
-from tensorboard.summary.v2 import audio
-from tensorboard.summary.v2 import histogram
-from tensorboard.summary.v2 import image
-from tensorboard.summary.v2 import scalar
-from tensorboard.summary.v2 import text
+from tensorboard.summary.v2 import audio  # noqa: F401
+from tensorboard.summary.v2 import histogram  # noqa: F401
+from tensorboard.summary.v2 import image  # noqa: F401
+from tensorboard.summary.v2 import scalar  # noqa: F401
+from tensorboard.summary.v2 import text  # noqa: F401
 
 del absolute_import, division, print_function, tf, reexport_tf_summary
