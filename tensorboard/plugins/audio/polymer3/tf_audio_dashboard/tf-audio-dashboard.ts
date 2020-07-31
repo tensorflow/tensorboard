@@ -128,6 +128,7 @@ class TfAudioDashboard extends PolymerElement {
   _requestManager: RequestManager = new RequestManager();
 
   ready() {
+    super.ready();
     if (this.reloadOnReady) this.reload();
   }
 
