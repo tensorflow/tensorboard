@@ -12,16 +12,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import '../../../../components_polymer3/security';
-import '@polymer/iron-iconset-svg';
-import './styles';
-import './vz-projector-app';
-import './vz-projector-bookmark-panel';
-import './vz-projector-dashboard';
-import './vz-projector-data-panel';
-import './vz-projector-inspector-panel';
-import './vz-projector-input';
-import './vz-projector-legend';
-import './vz-projector-projections-panel';
-import './vz-projector-metadata-card';
-import './vz-projector';
+/**
+ * @fileoverview Security configration for Polymer. Note that this module has
+ * to be imported the first in a bundle.
+ */
+import {setStrictTemplatePolicy} from '@polymer/polymer/lib/utils/settings';
+
+setStrictTemplatePolicy(true);

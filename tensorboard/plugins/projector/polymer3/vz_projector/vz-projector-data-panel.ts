@@ -35,6 +35,7 @@ import {
   ColorLegendThreshold,
   ColorLegendRenderInfo,
 } from './vz-projector-legend';
+import './vz-projector-legend';
 import {
   ColumnStats,
   ColorOption,

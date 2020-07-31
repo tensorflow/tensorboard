@@ -54,8 +54,8 @@ export class ScatterPlotVisualizerPolylines implements ScatterPlotVisualizer {
       geometry.addAttribute('position', this.polylinePositionBuffer[i]);
       geometry.addAttribute('color', this.polylineColorBuffer[i]);
       const material = new THREE.LineBasicMaterial({
-        linewidth: 1,
-        opacity: 1,
+        linewidth: 1, // unused default, overwritten by width array.
+        opacity: 1.0, // unused default, overwritten by opacity array.
         transparent: true,
         vertexColors: THREE.VertexColors as any,
       });

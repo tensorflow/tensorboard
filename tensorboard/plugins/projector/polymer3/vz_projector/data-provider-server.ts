@@ -22,7 +22,9 @@ import {
 } from './data-provider';
 import * as logging from './logging';
 
+// Limit for the number of data points we receive from the server.
 export const LIMIT_NUM_POINTS = 100000;
+
 /**
  * Data provider that loads data provided by a python server (usually backed
  * by a checkpoint file).

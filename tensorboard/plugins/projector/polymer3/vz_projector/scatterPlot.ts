@@ -25,7 +25,8 @@ import {
   ScatterPlotRectangleSelector,
 } from './scatterPlotRectangleSelector';
 
-const BACKGROUND_COLOR = 16777215;
+const BACKGROUND_COLOR = 0xffffff;
+
 /**
  * The length of the cube (diameter of the circumscribing sphere) where all the
  * points live.

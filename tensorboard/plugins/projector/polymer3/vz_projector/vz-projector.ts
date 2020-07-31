@@ -76,6 +76,10 @@ import * as logging from './logging';
 import * as util from './util';
 import {MouseMode} from './scatterPlot';
 
+/**
+ * The minimum number of dimensions the data should have to automatically
+ * decide to normalize the data.
+ */
 const THRESHOLD_DIM_NORMALIZE = 50;
 const POINT_COLOR_MISSING = 'black';
 const INDEX_METADATA_FIELD = '__index__';

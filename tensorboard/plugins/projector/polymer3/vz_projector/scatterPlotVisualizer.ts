@@ -16,6 +16,12 @@ import * as THREE from 'three';
 
 import {RenderContext} from './renderContext';
 
+/**
+ * ScatterPlotVisualizer is an interface used by ScatterPlotContainer
+ * to manage and aggregate any number of concurrent visualization behaviors.
+ * To add a new visualization to the 3D scatter plot, create a new class that
+ * implements this interface and attach it to the ScatterPlotContainer.
+ */
 export interface ScatterPlotVisualizer {
   /** Called to initialize the visualizer with the primary scene. */
   setScene(scene: THREE.Scene);

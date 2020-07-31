@@ -55,6 +55,7 @@ tf_ts_library(
         ":bh_tsne",
         ":heap",
         ":sptree",
+        "//tensorboard/components_polymer3:security",
         "//tensorboard/components_polymer3/polymer:register_style_dom_module",
         "@npm//@polymer/decorators",
         "@npm//@polymer/iron-collapse",
@@ -123,6 +124,7 @@ tf_web_library(
     ],
     path = "/",
     deps = [
+        "//tensorboard/components_polymer3:analytics_html",
         "@com_google_fonts_roboto",
     ],
 )
@@ -131,7 +133,7 @@ tensorboard_html_binary(
     name = "standalone",
     compile = False,
     input_path = "/standalone_lib.html",
-    js_path = "/standalone_bundle.js",
+    js_path = "/standalone.js",
     output_path = "/standalone.html",
     deps = [
         ":standalone_lib",
