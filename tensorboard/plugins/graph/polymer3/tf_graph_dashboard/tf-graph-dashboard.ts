@@ -14,25 +14,25 @@ limitations under the License.
 ==============================================================================*/
 
 import {PolymerElement, html} from '@polymer/polymer';
-import {customElement, property} from '@polymer/decorators';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-backend/tf-backend.html';
-import {DO_NOT_SUBMIT} from '../tf-dashboard-common/tf-dashboard-layout.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-board/tf-graph-board.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-controls/tf-graph-controls.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-loader/tf-graph-dashboard-loader.html';
-import {DO_NOT_SUBMIT} from '../tf-storage/tf-storage.html';
-import {DO_NOT_SUBMIT} from '../tf-tensorboard/registry.html';
-import {DO_NOT_SUBMIT} from '../vz-sorting/vz-sorting.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-backend/tf-backend.html';
-import {DO_NOT_SUBMIT} from '../tf-dashboard-common/tf-dashboard-layout.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-board/tf-graph-board.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-controls/tf-graph-controls.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-loader/tf-graph-dashboard-loader.html';
-import {DO_NOT_SUBMIT} from '../tf-storage/tf-storage.html';
-import {DO_NOT_SUBMIT} from '../tf-tensorboard/registry.html';
-import {DO_NOT_SUBMIT} from '../vz-sorting/vz-sorting.html';
+import {customElement, observe, property} from '@polymer/decorators';
+import '@polymer/paper-dialog';
+
+import {Canceller} from '../../../../components_polymer3/tf_backend/canceller';
+import {RequestManager} from '../../../../components_polymer3/tf_backend/requestManager';
+import {getRouter} from '../../../../components_polymer3/tf_backend/router';
+import '../../../../components_polymer3/tf_dashboard_common/tf-dashboard-layout';
+import * as tf_storage from '../../../../components_polymer3/tf_storage';
+import * as vz_sorting from '../../../../components_polymer3/vz_sorting/sorting';
+import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+
+import '../tf_graph_board/tf-graph-board';
+import '../tf_graph_controls/tf-graph-controls';
+import '../tf_graph_loader/tf-graph-dashboard-loader';
+import * as tf_graph_op from '../tf_graph_common/op';
+
+/**
+ * The (string) name for the run of the selected dataset in the graph dashboard.
+ */
 const RUN_STORAGE_KEY = 'run';
 /**
  * TODO(stephanwlee): Convert this to proper type when converting to TypeScript.
@@ -53,8 +53,19 @@ const TagItem = {};
  * }}
  */
 const RunItem = {};
+
+/**
+ * tf-graph-dashboard displays a graph from a TensorFlow run.
+ *
+ * It has simple behavior: Creates a url-generator and run-generator
+ * to talk to the backend, and then passes the runsWithGraph (list of runs with
+ * associated graphs) along with the url generator into tf-graph-board for display.
+ *
+ * If there are multiple runs with graphs, the first run's graph is shown
+ * by default. The user can select a different run from a dropdown menu.
+ */
 @customElement('tf-graph-dashboard')
-class TfGraphDashboard extends PolymerElement {
+class TfGraphDashboard extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
     <paper-dialog id="error-dialog" with-backdrop=""></paper-dialog>
     <template
@@ -177,10 +188,13 @@ class TfGraphDashboard extends PolymerElement {
       }
     </style>
   `;
+  /**
+   * @type {!Array<!RunItem>}
+   */
   @property({
     type: Array,
   })
-  _datasets: unknown[] = () => [];
+  _datasets: any[] = [];
   @property({
     type: Boolean,
   })
@@ -190,15 +204,15 @@ class TfGraphDashboard extends PolymerElement {
   })
   _selectedDataset: number = 0;
   @property({type: Object, observer: '_renderHierarchyChanged'})
-  _renderHierarchy: object;
+  _renderHierarchy: any;
   @property({
     type: Object,
   })
-  _requestManager: object = () => new tf_backend.RequestManager();
+  _requestManager: RequestManager = new RequestManager();
   @property({
     type: Object,
   })
-  _canceller: object = () => new tf_backend.Canceller();
+  _canceller: Canceller = new Canceller();
   @property({type: Boolean})
   _debuggerDataEnabled: boolean;
   @property({type: Boolean})
@@ -217,25 +231,41 @@ class TfGraphDashboard extends PolymerElement {
   selectedNode: string;
   @property({type: Boolean})
   _isAttached: boolean;
+  // Whether this dashboard is initialized. This dashboard should only be initialized once.
   @property({type: Boolean})
   _initialized: boolean;
+  // Whether health pills are currently being loaded, in which case we may want to say show a
+  // spinner.
   @property({type: Boolean})
   _areHealthPillsLoading: boolean;
+  // An array of alerts (in chronological order) provided by debugging libraries on when bad
+  // values (NaN, +/- Inf) appear.
   @property({
     type: Array,
     notify: true,
   })
   _debuggerNumericAlerts: unknown[] = [];
+  // Maps the names of nodes to an array of health pills (HealthPillDatums).
   @property({
     type: Object,
   })
   _nodeNamesToHealthPills: object = {};
   @property({type: Number})
   _healthPillStepIndex: number;
+  // A strictly increasing ID. Each request for health pills has a unique ID. This helps us
+  // identify stale requests.
   @property({type: Number})
   _healthPillRequestId: number = 1;
+  /**
+   * The setTimeout ID for the pending request for health pills at a
+   * specific step.
+   *
+   * @type {number?}
+   */
   @property({type: Number})
   _healthPillStepRequestTimerId: number;
+  // The request for health pills at a specific step (as opposed to all sampled health pills) may
+  // involve slow disk reads. Hence, we throttle to 1 of those requests every this many ms.
   @property({
     type: Number,
     readOnly: true,
@@ -248,10 +278,12 @@ class TfGraphDashboard extends PolymerElement {
     notify: true,
     observer: '_runObserver',
   })
-  run: string = tf_storage.getStringInitializer(RUN_STORAGE_KEY, {
-    defaultValue: '',
-    useLocalStorage: false,
-  });
+  run: string = tf_storage
+    .getStringInitializer(RUN_STORAGE_KEY, {
+      defaultValue: '',
+      useLocalStorage: false,
+    })
+    .call(this);
   @property({
     type: Object,
   })
@@ -266,30 +298,36 @@ class TfGraphDashboard extends PolymerElement {
   detached() {
     this.set('_isAttached', false);
   }
+  ready() {
+    super.ready();
+
+    this.addEventListener(
+      'node-toggle-expand',
+      this._handleNodeToggleExpand.bind(this)
+    );
+  }
   reload() {
     if (!this._debuggerDataEnabled) {
       // Check if the debugger plugin is enabled now.
-      this._requestManager
-        .request(tf_backend.getRouter().pluginsListing())
-        .then(
-          this._canceller.cancellable((result) => {
-            if (result.cancelled) {
-              return;
-            }
-            if (result.value['debugger']) {
-              // The debugger plugin is enabled. Request debugger-related
-              // data. Perhaps the debugger plugin had been disabled
-              // beforehand because no bad values (NaN, -/+ Inf) had been
-              // found and muted_if_healthy had been on.
-              this.set('_debuggerDataEnabled', true);
-            }
-          })
-        );
+      this._requestManager.request(getRouter().pluginsListing()).then(
+        this._canceller.cancellable((result) => {
+          if (result.cancelled) {
+            return;
+          }
+          if (result.value['debugger']) {
+            // The debugger plugin is enabled. Request debugger-related
+            // data. Perhaps the debugger plugin had been disabled
+            // beforehand because no bad values (NaN, -/+ Inf) had been
+            // found and muted_if_healthy had been on.
+            this.set('_debuggerDataEnabled', true);
+          }
+        })
+      );
     }
     this._maybeFetchHealthPills();
   }
   _fit() {
-    this.$$('#graphboard').fit();
+    (this.$$('#graphboard') as any).fit();
   }
   _runObserver = tf_storage.getStringObserver(RUN_STORAGE_KEY, {
     defaultValue: '',
@@ -298,7 +336,7 @@ class TfGraphDashboard extends PolymerElement {
   });
   _fetchDataset() {
     return this._requestManager.request(
-      tf_backend.getRouter().pluginRoute('graphs', '/info')
+      getRouter().pluginRoute('graphs', '/info')
     );
   }
   /*
@@ -316,16 +354,16 @@ class TfGraphDashboard extends PolymerElement {
       // might be slow since the backend reads events sequentially from disk.
       postData['step'] = step;
     }
-    const url = tf_backend.getRouter().pluginRoute('debugger', '/health_pills');
+    const url = getRouter().pluginRoute('debugger', '/health_pills');
     return this._requestManager.request(url, postData);
   }
   _fetchDebuggerNumericsAlerts() {
     return this._requestManager.request(
-      tf_backend.getRouter().pluginRoute('debugger', '/numerics_alert_report')
+      getRouter().pluginRoute('debugger', '/numerics_alert_report')
     );
   }
   _graphUrl(run, limitAttrSize, largeAttrsKey) {
-    return tf_backend.getRouter().pluginRoute(
+    return getRouter().pluginRoute(
       'graphs',
       '/graph',
       new URLSearchParams({
@@ -355,7 +393,7 @@ class TfGraphDashboard extends PolymerElement {
     }
     this.set(
       '_compatibilityProvider',
-      new tf.graph.op.TpuCompatibilityProvider()
+      new tf_graph_op.TpuCompatibilityProvider()
     );
     // Set this to true so we only initialize once.
     this._initialized = true;
@@ -415,7 +453,7 @@ class TfGraphDashboard extends PolymerElement {
       if (datasetsFetched) {
         // Tell the user if the dataset cannot be found to avoid misleading
         // the user.
-        const dialog = this.$$('#error-dialog');
+        const dialog = this.$$('#error-dialog') as any;
         dialog.textContent = `No dataset named "${run}" could be found.`;
         dialog.open();
       }

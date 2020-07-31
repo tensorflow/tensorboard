@@ -1,23 +1,25 @@
-load("//tensorboard/defs:web.bzl", "tf_web_library")
+load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
-tf_web_library(
+tf_ts_library(
     name = "tf_graph_dashboard",
-    srcs = ["tf-graph-dashboard.html"],
-    path = "/tf-graph-dashboard",
+    srcs = ["tf-graph-dashboard.ts"],
+    strict_checks = False,
     deps = [
-        "//tensorboard/components/tf_backend",
-        "//tensorboard/components/tf_dashboard_common",
-        "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/components/tf_storage",
-        "//tensorboard/components/tf_tensorboard:registry",
-        "//tensorboard/components/vz_sorting",
-        "//tensorboard/plugins/graph/tf_graph",
-        "//tensorboard/plugins/graph/tf_graph_board",
-        "//tensorboard/plugins/graph/tf_graph_controls",
-        "//tensorboard/plugins/graph/tf_graph_loader:tf_graph_dashboard_loader",
+        "//tensorboard/components_polymer3/polymer:legacy_element_mixin",
+        "//tensorboard/components_polymer3/tf_dashboard_common",
+        "//tensorboard/components_polymer3/tf_backend",
+        "//tensorboard/components_polymer3/tf_storage",
+        "//tensorboard/components_polymer3/vz_sorting",
+        "//tensorboard/plugins/graph/polymer3/tf_graph",
+        "//tensorboard/plugins/graph/polymer3/tf_graph_board",
+        "//tensorboard/plugins/graph/polymer3/tf_graph_controls",
+        "//tensorboard/plugins/graph/polymer3/tf_graph_common",
+        "//tensorboard/plugins/graph/polymer3/tf_graph_loader:tf_graph_dashboard_loader",
+        "@npm//@polymer/polymer",
+        "@npm//@polymer/decorators",
     ],
 )
