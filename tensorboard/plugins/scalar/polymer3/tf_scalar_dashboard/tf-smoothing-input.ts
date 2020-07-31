@@ -13,24 +13,43 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import { PolymerElement, html } from "@polymer/polymer";
-import { customElement, property } from "@polymer/decorators";
-import "@polymer/paper-checkbox";
-import "@polymer/paper-input";
-import "@polymer/paper-slider";
-import { DO_NOT_SUBMIT } from "../tf-imports/polymer.html";
-import { DO_NOT_SUBMIT } from "../tf-imports/lodash.html";
-import "@polymer/paper-checkbox";
-import "@polymer/paper-input";
-import "@polymer/paper-slider";
-import { DO_NOT_SUBMIT } from "../tf-imports/polymer.html";
-import { DO_NOT_SUBMIT } from "../tf-imports/lodash.html";
-@customElement("tf-smoothing-input")
+import {PolymerElement, html} from '@polymer/polymer';
+import {customElement, property} from '@polymer/decorators';
+import '@polymer/paper-checkbox';
+import '@polymer/paper-input';
+import '@polymer/paper-slider';
+import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
+import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
+import '@polymer/paper-checkbox';
+import '@polymer/paper-input';
+import '@polymer/paper-slider';
+import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
+import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
+@customElement('tf-smoothing-input')
 class TfSmoothingInput extends PolymerElement {
-    static readonly template = html `<h3 class="title">Smoothing</h3>
+  static readonly template = html`
+    <h3 class="title">Smoothing</h3>
     <div class="smoothing-block">
-      <paper-slider id="slider" immediate-value="{{_immediateWeightNumberForPaperSlider}}" max="[[max]]" min="[[min]]" pin="" step="[[step]]" type="number" value="{{weight}}"></paper-slider>
-      <paper-input id="input" label="weight" no-label-float="" value="{{_inputWeightStringForPaperInput}}" type="number" step="[[step]]" min="[[min]]" max="[[max]]"></paper-input>
+      <paper-slider
+        id="slider"
+        immediate-value="{{_immediateWeightNumberForPaperSlider}}"
+        max="[[max]]"
+        min="[[min]]"
+        pin=""
+        step="[[step]]"
+        type="number"
+        value="{{weight}}"
+      ></paper-slider>
+      <paper-input
+        id="input"
+        label="weight"
+        no-label-float=""
+        value="{{_inputWeightStringForPaperInput}}"
+        type="number"
+        step="[[step]]"
+        min="[[min]]"
+        max="[[max]]"
+      ></paper-input>
     </div>
     <style>
       .title {
@@ -66,47 +85,47 @@ class TfSmoothingInput extends PolymerElement {
         }
         width: 60px;
       }
-    </style>`;
-    @property({ type: Number })
-    step: number;
-    @property({ type: Number })
-    max: number;
-    @property({ type: Number })
-    min: number;
-    @property({
-        type: Number,
-        notify: true
-    })
-    weight: number = 0.6;
-    @property({
-        type: Number,
-        notify: true,
-        observer: '_immediateWeightNumberForPaperSliderChanged'
-    })
-    _immediateWeightNumberForPaperSlider: number;
-    @property({
-        type: String,
-        notify: true,
-        observer: '_inputWeightStringForPaperInputChanged'
-    })
-    _inputWeightStringForPaperInput: string;
-    _updateWeight = _.debounce(function (val) {
-        this.weight = val;
-    }, 250);
-    _immediateWeightNumberForPaperSliderChanged() {
-        this._inputWeightStringForPaperInput = this._immediateWeightNumberForPaperSlider.toString();
-        this._updateWeight.call(this, this._immediateWeightNumberForPaperSlider);
+    </style>
+  `;
+  @property({type: Number})
+  step: number;
+  @property({type: Number})
+  max: number;
+  @property({type: Number})
+  min: number;
+  @property({
+    type: Number,
+    notify: true,
+  })
+  weight: number = 0.6;
+  @property({
+    type: Number,
+    notify: true,
+    observer: '_immediateWeightNumberForPaperSliderChanged',
+  })
+  _immediateWeightNumberForPaperSlider: number;
+  @property({
+    type: String,
+    notify: true,
+    observer: '_inputWeightStringForPaperInputChanged',
+  })
+  _inputWeightStringForPaperInput: string;
+  _updateWeight = _.debounce(function(val) {
+    this.weight = val;
+  }, 250);
+  _immediateWeightNumberForPaperSliderChanged() {
+    this._inputWeightStringForPaperInput = this._immediateWeightNumberForPaperSlider.toString();
+    this._updateWeight.call(this, this._immediateWeightNumberForPaperSlider);
+  }
+  _inputWeightStringForPaperInputChanged() {
+    if (+this._inputWeightStringForPaperInput < 0) {
+      this._inputWeightStringForPaperInput = '0';
+    } else if (+this._inputWeightStringForPaperInput > 1) {
+      this._inputWeightStringForPaperInput = '1';
     }
-    _inputWeightStringForPaperInputChanged() {
-        if (+this._inputWeightStringForPaperInput < 0) {
-            this._inputWeightStringForPaperInput = '0';
-        }
-        else if (+this._inputWeightStringForPaperInput > 1) {
-            this._inputWeightStringForPaperInput = '1';
-        }
-        var d = +this._inputWeightStringForPaperInput;
-        if (!isNaN(d)) {
-            this._updateWeight.call(this, d);
-        }
+    var d = +this._inputWeightStringForPaperInput;
+    if (!isNaN(d)) {
+      this._updateWeight.call(this, d);
     }
+  }
 }
