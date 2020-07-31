@@ -44,7 +44,7 @@ const DEFAULT_TOOLTIP_STYLE = {
 };
 
 @customElement('vz-chart-tooltip')
-export class VzChartTooltip extends LegacyElementMixin(PolymerElement) {
+class VzChartTooltip extends LegacyElementMixin(PolymerElement) {
   @property({type: String})
   contentComponentName: string;
 

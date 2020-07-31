@@ -44,9 +44,7 @@ import {ArrayUpdateHelper} from '../tf_dashboard_common/array-update-helper';
  * `this.updateDom(newItems)`. Other protected APIs are `setGetItemKey` and
  * `setCacheSize` (please see respective doc for details).
  */
-export class TfDomRepeat<T extends {}> extends LegacyElementMixin(
-  ArrayUpdateHelper
-) {
+export class TfDomRepeat<T extends {}> extends ArrayUpdateHelper {
   @property({type: String})
   as = 'item';
 
@@ -91,6 +89,14 @@ export class TfDomRepeat<T extends {}> extends LegacyElementMixin(
   @property({type: Object})
   _getItemKey = (item: T) => JSON.stringify(item);
 
+  @property({type: Boolean})
+  _isConnected = false;
+
+  connectedCallback() {
+    super.connectedCallback();
+    this._isConnected = true;
+  }
+
   /**
    * Sets the size of the DOM cache used for optimizing performance. The
    * default cache size is 10.
@@ -118,7 +124,7 @@ export class TfDomRepeat<T extends {}> extends LegacyElementMixin(
   _ensureTemplatized() {
     // Polymer is not ready (and props/DOM for the components are not
     // populated)
-    if (!this.isAttached) return false;
+    if (!this.isConnected) return false;
     if (!this._ctor) {
       const templateNode = this.querySelector('template');
       this._ctor = templatize(templateNode!, this, {
@@ -137,7 +143,7 @@ export class TfDomRepeat<T extends {}> extends LegacyElementMixin(
     return true;
   }
 
-  @observe('isAttached')
+  @observe('_isConnected')
   _bootstrapDom() {
     if (!this._ensureTemplatized() || this._domBootstrapped) {
       return;
