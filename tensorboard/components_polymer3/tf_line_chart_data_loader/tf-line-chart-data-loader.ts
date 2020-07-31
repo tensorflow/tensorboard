@@ -208,9 +208,12 @@ export class TfLineChartDataLoader<ScalarMetadata> extends DataLoader<
     }
     this.redraw();
   }
-  detached() {
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
     if (this._redrawRaf !== null) cancelAnimationFrame(this._redrawRaf);
   }
+
   exportAsSvgString() {
     const exporter = this.getChart().getExporter();
     return exporter.exportAsString();
@@ -223,12 +226,19 @@ export class TfLineChartDataLoader<ScalarMetadata> extends DataLoader<
   resetDomain() {
     this.getChart().resetDomain();
   }
+
   setSeriesData(name: string, data: ScalarDatum[]) {
     this.getChart().setSeriesData(name, data);
   }
+
   setSeriesMetadata(name: string, metadata: ScalarMetadata) {
     this.getChart().setSeriesMetadata(name, metadata);
   }
+
+  commitChanges() {
+    this.getChart().commitChanges();
+  }
+
   redraw() {
     if (this._redrawRaf !== null) cancelAnimationFrame(this._redrawRaf);
     this._redrawRaf = window.requestAnimationFrame(() => {
@@ -254,13 +264,13 @@ export class TfLineChartDataLoader<ScalarMetadata> extends DataLoader<
     this.getChart().setVisibleSeries(this.dataSeries);
   }
 
-  _logScaleChanged(logScaleActive: boolean) {
+  private _logScaleChanged(logScaleActive: boolean) {
     const chart = this.getChart();
     chart.yScaleType = logScaleActive ? YScaleType.LOG : YScaleType.LINEAR;
     this.redraw();
   }
 
-  _fixBadStateWhenActive() {
+  private _fixBadStateWhenActive() {
     // When the chart enters a potentially bad state (because it should
     // redraw, but the page is not currently active), we set the
     // _maybeRenderedInBadState flag. Whenever the chart becomes active,
@@ -271,7 +281,7 @@ export class TfLineChartDataLoader<ScalarMetadata> extends DataLoader<
     }
   }
 
-  _onChartAttached() {
+  private _onChartAttached() {
     if (!this.active) {
       this._maybeRenderedInBadState = true;
     }
