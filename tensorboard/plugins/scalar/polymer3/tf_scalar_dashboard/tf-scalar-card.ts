@@ -1,6 +1,4 @@
-<!--
-@license
-Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,82 +11,46 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
--->
+==============================================================================*/
 
-<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html" />
-<link rel="import" href="../paper-icon-button/paper-icon-button.html" />
-<link rel="import" href="../paper-item/paper-item.html" />
-<link rel="import" href="../paper-listbox/paper-listbox.html" />
-<link rel="import" href="../paper-menu-button/paper-menu-button.html" />
-<link rel="import" href="../paper-listbox/paper-listbox.html" />
-<link rel="import" href="../tf-imports/polymer.html" />
-<link rel="import" href="../tf-backend/tf-backend.html" />
-<link
-  rel="import"
-  href="../tf-line-chart-data-loader/tf-line-chart-data-loader.html"
-/>
-<link rel="import" href="../tf-card-heading/tf-card-heading.html" />
-<link rel="import" href="../tf-dashboard-common/tf-downloader.html" />
-
-<!--
-  A card that handles loading data (at the right times), rendering a scalar
-  chart, and providing UI affordances (such as buttons) for scalar data.
--->
-<dom-module id="tf-scalar-card">
-  <template>
-    <tf-card-heading
-      tag="[[tag]]"
-      display-name="[[tagMetadata.displayName]]"
-      description="[[tagMetadata.description]]"
-    ></tf-card-heading>
+import { PolymerElement, html } from "@polymer/polymer";
+import { customElement, property } from "@polymer/decorators";
+import "@polymer/paper-dropdown-menu";
+import "@polymer/paper-icon-button";
+import "@polymer/paper-item";
+import "@polymer/paper-listbox";
+import "@polymer/paper-menu-button";
+import "@polymer/paper-listbox";
+import { DO_NOT_SUBMIT } from "../tf-imports/polymer.html";
+import { DO_NOT_SUBMIT } from "../tf-backend/tf-backend.html";
+import { DO_NOT_SUBMIT } from "../tf-line-chart-data-loader/tf-line-chart-data-loader.html";
+import { DO_NOT_SUBMIT } from "../tf-card-heading/tf-card-heading.html";
+import { DO_NOT_SUBMIT } from "../tf-dashboard-common/tf-downloader.html";
+import "@polymer/paper-dropdown-menu";
+import "@polymer/paper-icon-button";
+import "@polymer/paper-item";
+import "@polymer/paper-listbox";
+import "@polymer/paper-menu-button";
+import "@polymer/paper-listbox";
+import { DO_NOT_SUBMIT } from "../tf-imports/polymer.html";
+import { DO_NOT_SUBMIT } from "../tf-backend/tf-backend.html";
+import { DO_NOT_SUBMIT } from "../tf-line-chart-data-loader/tf-line-chart-data-loader.html";
+import { DO_NOT_SUBMIT } from "../tf-card-heading/tf-card-heading.html";
+import { DO_NOT_SUBMIT } from "../tf-dashboard-common/tf-downloader.html";
+@customElement("tf-scalar-card")
+class TfScalarCard extends PolymerElement {
+    static readonly template = html `<tf-card-heading tag="[[tag]]" display-name="[[tagMetadata.displayName]]" description="[[tagMetadata.description]]"></tf-card-heading>
     <div id="tf-line-chart-data-loader-container">
-      <tf-line-chart-data-loader
-        active="[[active]]"
-        color-scale="[[_getColorScale(colorScale)]]"
-        data-series="[[_getDataSeries(dataToLoad.*)]]"
-        data-to-load="[[dataToLoad]]"
-        get-data-load-name="[[_getDataLoadName]]"
-        get-data-load-url="[[getDataLoadUrl]]"
-        request-data="[[requestData]]"
-        ignore-y-outliers="[[ignoreYOutliers]]"
-        load-data-callback="[[_loadDataCallback]]"
-        load-key="[[tag]]"
-        log-scale-active="[[_logScaleActive]]"
-        request-manager="[[requestManager]]"
-        smoothing-enabled="[[smoothingEnabled]]"
-        smoothing-weight="[[smoothingWeight]]"
-        tag-metadata="[[tagMetadata]]"
-        tooltip-columns="[[_tooltipColumns]]"
-        tooltip-position="auto"
-        tooltip-sorting-method="[[tooltipSortingMethod]]"
-        x-type="[[xType]]"
-      >
+      <tf-line-chart-data-loader active="[[active]]" color-scale="[[_getColorScale(colorScale)]]" data-series="[[_getDataSeries(dataToLoad.*)]]" data-to-load="[[dataToLoad]]" get-data-load-name="[[_getDataLoadName]]" get-data-load-url="[[getDataLoadUrl]]" request-data="[[requestData]]" ignore-y-outliers="[[ignoreYOutliers]]" load-data-callback="[[_loadDataCallback]]" load-key="[[tag]]" log-scale-active="[[_logScaleActive]]" request-manager="[[requestManager]]" smoothing-enabled="[[smoothingEnabled]]" smoothing-weight="[[smoothingWeight]]" tag-metadata="[[tagMetadata]]" tooltip-columns="[[_tooltipColumns]]" tooltip-position="auto" tooltip-sorting-method="[[tooltipSortingMethod]]" x-type="[[xType]]">
       </tf-line-chart-data-loader>
     </div>
     <div id="buttons">
-      <paper-icon-button
-        selected$="[[_expanded]]"
-        icon="fullscreen"
-        on-tap="_toggleExpanded"
-      ></paper-icon-button>
-      <paper-icon-button
-        selected$="[[_logScaleActive]]"
-        icon="line-weight"
-        on-tap="_toggleLogScale"
-        title="Toggle y-axis log scale"
-      ></paper-icon-button>
-      <paper-icon-button
-        icon="settings-overscan"
-        on-tap="_resetDomain"
-        title="Fit domain to data"
-      ></paper-icon-button>
+      <paper-icon-button selected$="[[_expanded]]" icon="fullscreen" on-tap="_toggleExpanded"></paper-icon-button>
+      <paper-icon-button selected$="[[_logScaleActive]]" icon="line-weight" on-tap="_toggleLogScale" title="Toggle y-axis log scale"></paper-icon-button>
+      <paper-icon-button icon="settings-overscan" on-tap="_resetDomain" title="Fit domain to data"></paper-icon-button>
       <template is="dom-if" if="[[showDownloadLinks]]">
         <paper-menu-button on-paper-dropdown-open="_updateDownloadLink">
-          <paper-icon-button
-            class="dropdown-trigger"
-            slot="dropdown-trigger"
-            icon="file-download"
-          ></paper-icon-button>
+          <paper-icon-button class="dropdown-trigger" slot="dropdown-trigger" icon="file-download"></paper-icon-button>
           <paper-listbox class="dropdown-content" slot="dropdown-content">
             <paper-item>
               <a id="svgLink" download="[[tag]].svg">
@@ -101,11 +63,7 @@ limitations under the License.
       <span style="flex-grow: 1"></span>
       <template is="dom-if" if="[[showDownloadLinks]]">
         <div class="download-links">
-          <tf-downloader
-            runs="[[_runsFromData(dataToLoad)]]"
-            tag="[[tag]]"
-            url-fn="[[_downloadUrlFn]]"
-          ></tf-downloader>
+          <tf-downloader runs="[[_runsFromData(dataToLoad)]]" tag="[[tag]]" url-fn="[[_downloadUrlFn]]"></tf-downloader>
         </div>
       </template>
     </div>
@@ -180,174 +138,148 @@ limitations under the License.
         text-decoration: none;
         white-space: nowrap;
       }
-    </style>
-  </template>
-  <script>
-    Polymer({
-      is: 'tf-scalar-card',
-      properties: {
-        tag: String,
-
-        /**
-         * @type {Array<Object>}
-         */
-        dataToLoad: Array,
-
-        /**
-         * @type {vz_chart_helpers.XType}
-         */
-        xType: String,
-
-        active: Boolean,
-        ignoreYOutliers: Boolean,
-        requestManager: Object,
-        showDownLinks: Boolean,
-        smoothingEnabled: Boolean,
-        smoothingWeight: Number,
-        tagMetadata: Object,
-        // If specified uses the given colorScale; otherwise, uses a built-in
-        // default. See _getColorScale below for more details.
-        colorScale: {
-          type: Object,
-          value: null,
-        },
-        tooltipSortingMethod: String,
-
-        // This function is called when data is received from the backend.
-        _loadDataCallback: {
-          type: Object,
-          value: function() {
-            return (scalarChart, datum, data) => {
-              const formattedData = data.map((datum) => ({
+    </style>`;
+    @property({ type: String })
+    tag: string;
+    @property({ type: Array })
+    dataToLoad: unknown[];
+    @property({ type: String })
+    xType: string;
+    @property({ type: Boolean })
+    active: boolean;
+    @property({ type: Boolean })
+    ignoreYOutliers: boolean;
+    @property({ type: Object })
+    requestManager: object;
+    @property({ type: Boolean })
+    showDownLinks: boolean;
+    @property({ type: Boolean })
+    smoothingEnabled: boolean;
+    @property({ type: Number })
+    smoothingWeight: number;
+    @property({ type: Object })
+    tagMetadata: object;
+    @property({
+        type: Object
+    })
+    colorScale: object = null;
+    @property({ type: String })
+    tooltipSortingMethod: string;
+    @property({
+        type: Object,
+        readOnly: true
+    })
+    _loadDataCallback: object = function () {
+        return (scalarChart, datum, data) => {
+            const formattedData = data.map((datum) => ({
                 wall_time: new Date(datum[0] * 1000),
                 step: datum[1],
                 scalar: datum[2],
-              }));
-              const name = this._getSeriesNameFromDatum(datum);
-              scalarChart.setSeriesMetadata(name, datum);
-              scalarChart.setSeriesData(name, formattedData);
-              scalarChart.commitChanges();
-            };
-          },
-          readOnly: true,
-        },
-
-        getDataLoadUrl: {
-          type: Function,
-          value: function() {
-            return ({tag, run}) => {
-              return tf_backend
+            }));
+            const name = this._getSeriesNameFromDatum(datum);
+            scalarChart.setSeriesMetadata(name, datum);
+            scalarChart.setSeriesData(name, formattedData);
+            scalarChart.commitChanges();
+        };
+    };
+    @property({
+        type: Function
+    })
+    getDataLoadUrl: object = function () {
+        return ({ tag, run }) => {
+            return tf_backend
                 .getRouter()
-                .pluginRoute(
-                  'scalars',
-                  '/scalars',
-                  new URLSearchParams({tag, run})
-                );
-            };
-          },
-        },
-
-        // To be provided as the `url-fn` property to `tf-downloader`.
-        _downloadUrlFn: {
-          type: Function,
-          value: function() {
-            return (tag, run) => this.getDataLoadUrl({tag, run});
-          },
-        },
-
-        // A function called to fetch the scalars data from the backend.
-        // Should receive a {tag, run, experiment} object and return
-        // a promise resolving with the fetched scalars. The default
-        // implementation of this function executes:
-        // this.requestManager.request(
-        //      this.getDataLoadUrl({tag, run, experiment})
-        requestData: Function,
-
-        _getDataLoadName: {
-          type: Function,
-          value: function() {
-            return (datum) => this._getSeriesNameFromDatum(datum);
-          },
-        },
-
-        _expanded: {
-          type: Boolean,
-          value: false,
-          reflectToAttribute: true, // for CSS
-        },
-
-        _logScaleActive: Boolean,
-
-        _tooltipColumns: {
-          type: Array,
-          value: function() {
-            const columns = vz_line_chart2.DEFAULT_TOOLTIP_COLUMNS.slice();
-            const ind = columns.findIndex((c) => c.title == 'Name');
-            columns.splice(ind, 1, {
-              title: 'Name',
-              evaluate: (d) => {
+                .pluginRoute('scalars', '/scalars', new URLSearchParams({ tag, run }));
+        };
+    };
+    @property({
+        type: Function
+    })
+    _downloadUrlFn: object = function () {
+        return (tag, run) => this.getDataLoadUrl({ tag, run });
+    };
+    @property({ type: Function })
+    requestData: object;
+    @property({
+        type: Function
+    })
+    _getDataLoadName: object = function () {
+        return (datum) => this._getSeriesNameFromDatum(datum);
+    };
+    @property({
+        type: Boolean,
+        reflectToAttribute: true
+    })
+    _expanded: boolean = false;
+    @property({ type: Boolean })
+    _logScaleActive: boolean;
+    @property({
+        type: Array
+    })
+    _tooltipColumns: unknown[] = function () {
+        const columns = vz_line_chart2.DEFAULT_TOOLTIP_COLUMNS.slice();
+        const ind = columns.findIndex((c) => c.title == 'Name');
+        columns.splice(ind, 1, {
+            title: 'Name',
+            evaluate: (d) => {
                 const datum = d.dataset.metadata().meta;
                 return this._getSeriesDisplayNameFromDatum(datum);
-              },
-            });
-            return columns;
-          },
-        },
-      },
-      reload() {
+            },
+        });
+        return columns;
+    };
+    reload() {
         this.$$('tf-line-chart-data-loader').reload();
-      },
-      redraw() {
+    }
+    redraw() {
         this.$$('tf-line-chart-data-loader').redraw();
-      },
-      _toggleExpanded(e) {
+    }
+    _toggleExpanded(e) {
         this.set('_expanded', !this._expanded);
         this.redraw();
-      },
-      _toggleLogScale() {
+    }
+    _toggleLogScale() {
         this.set('_logScaleActive', !this._logScaleActive);
-      },
-      _resetDomain() {
+    }
+    _resetDomain() {
         const chart = this.$$('tf-line-chart-data-loader');
         if (chart) {
-          chart.resetDomain();
+            chart.resetDomain();
         }
-      },
-      _updateDownloadLink() {
+    }
+    _updateDownloadLink() {
         const svgStr = this.$$('tf-line-chart-data-loader').exportAsSvgString();
         // The SVG code string may include hash characters, such as an
         // attribute `clipPath="url(#foo)"`. Thus, we base64-encode the
         // data so that such a hash is not interpreted as a fragment
         // specifier, truncating the SVG. (See issue #1874.)
         this.$$('#svgLink').href = `data:image/svg+xml;base64,${btoa(svgStr)}`;
-      },
-      _runsFromData(data) {
+    }
+    _runsFromData(data) {
         return data.map((datum) => datum.run);
-      },
-      _getDataSeries() {
+    }
+    _getDataSeries() {
         return this.dataToLoad.map((d) => this._getSeriesNameFromDatum(d));
-      },
-      // name is a stable identifier for a series.
-      _getSeriesNameFromDatum({run, experiment = {name: '_default'}}) {
+    }
+    // name is a stable identifier for a series.
+    _getSeriesNameFromDatum({ run, experiment = { name: '_default' } }) {
         return JSON.stringify([experiment.name, run]);
-      },
-      // title is a visible string of a series for the UI.
-      _getSeriesDisplayNameFromDatum(datum) {
+    }
+    // title is a visible string of a series for the UI.
+    _getSeriesDisplayNameFromDatum(datum) {
         return datum.run;
-      },
-      _getColorScale() {
+    }
+    _getColorScale() {
         if (this.colorScale !== null) {
-          return this.colorScale;
+            return this.colorScale;
         }
         // If 'colorScale' isn't explicitly specified, use the ones
         // defined in tf_color_scale.
         return {
-          scale: (name) => {
-            const [exp, run] = JSON.parse(name);
-            return tf_color_scale.runsColorScale(run);
-          },
+            scale: (name) => {
+                const [exp, run] = JSON.parse(name);
+                return tf_color_scale.runsColorScale(run);
+            },
         };
-      },
-    });
-  </script>
-</dom-module>
+    }
+}
