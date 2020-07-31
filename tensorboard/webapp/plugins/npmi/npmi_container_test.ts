@@ -25,6 +25,8 @@ import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
 import {NpmiComponent} from './npmi_component';
 import {NpmiContainer} from './npmi_container';
+import {InactiveModule} from './views/inactive/inactive_module';
+import {MainModule} from './views/main/main_module';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
@@ -34,17 +36,31 @@ describe('Npmi Container', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [NpmiComponent, NpmiContainer],
+      imports: [InactiveModule, MainModule],
       providers: [provideMockStore({}), NpmiContainer],
     }).compileComponents();
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
-    store.overrideSelector(getRunSelection, new Map());
   });
 
-  it('renders npmi component', () => {
+  it('renders npmi component initially with inactive component', () => {
+    store.overrideSelector(getRunSelection, new Map());
     const fixture = TestBed.createComponent(NpmiContainer);
     fixture.detectChanges();
 
-    const npmiElement = fixture.debugElement.query(By.css('npmi-component'));
+    const inactiveElement = fixture.debugElement.query(By.css('npmi-inactive'));
+    expect(inactiveElement).toBeTruthy();
+    const mainElement = fixture.debugElement.query(By.css('npmi-main'));
+    expect(mainElement).toBeNull();
+  });
+
+  it('renders npmi component', () => {
+    store.overrideSelector(getRunSelection, new Map([['run_1', true]]));
+    const fixture = TestBed.createComponent(NpmiContainer);
+    fixture.detectChanges();
+
+    const inactiveElement = fixture.debugElement.query(By.css('npmi-inactive'));
+    expect(inactiveElement).toBeNull();
+    const npmiElement = fixture.debugElement.query(By.css('npmi-main'));
     expect(npmiElement).toBeTruthy();
   });
 });
