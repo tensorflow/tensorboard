@@ -13,29 +13,29 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#markdown > p:first-child {
+markdown-renderer > p:first-child {
   margin-top: 0.3em;
 }
 
-#markdown > p:last-child {
+markdown-renderer > p:last-child {
   margin-bottom: 0.3em;
 }
 
-#markdown table {
+markdown-renderer table {
   border-collapse: collapse;
 }
 
-#markdown table th {
+markdown-renderer table th {
   font-weight: 600;
 }
 
-#markdown table th,
-#markdown table td {
+markdown-renderer table th,
+markdown-renderer table td {
   padding: 6px 13px;
   border: 1px solid #dfe2e5;
 }
 
-#markdown table tr {
+markdown-renderer table tr {
   background-color: #fff;
   border-top: 1px solid #c6cbd1;
 }

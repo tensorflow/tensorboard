@@ -17,13 +17,13 @@ import {parse} from 'marked';
 
 @Component({
   selector: 'markdown-renderer',
-  templateUrl: './markdown_renderer.ng.html',
-  styleUrls: ['./markdown_renderer.css'],
+  templateUrl: './markdown_renderer_component.ng.html',
+  styleUrls: ['./markdown_renderer_component.css'],
   encapsulation: ViewEncapsulation.None,
 })
-export class MarkdownRenderer {
+export class MarkdownRendererComponent {
   @Input()
-  markdown: string = '';
+  markdown!: string;
 
   convertToHTML(markdown: string) {
     return parse(markdown);
