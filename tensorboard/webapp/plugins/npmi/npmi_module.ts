@@ -18,12 +18,17 @@ import {NgModule} from '@angular/core';
 import {NpmiComponent} from './npmi_component';
 import {NpmiContainer} from './npmi_container';
 
+import {InactiveModule} from './views/inactive/inactive_module';
+import {MainModule} from './views/main/main_module';
+
 import {PluginRegistryModule} from '../../plugins/plugin_registry_module';
 
 @NgModule({
   declarations: [NpmiComponent, NpmiContainer],
   imports: [
     CommonModule,
+    InactiveModule,
+    MainModule,
     PluginRegistryModule.forPlugin('npmi', NpmiContainer),
   ],
   exports: [NpmiContainer],

@@ -15,6 +15,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <div class="npmi-container">
-  This is a preliminary version of the nPMI plugin. It is under active
-  development.
+  <npmi-inactive
+    *ngIf="runs.size === 0; else dataAvailable"
+  ></npmi-inactive>
+  <ng-template #dataAvailable>
+    <npmi-main></npmi-main>
+  </ng-template>
 </div>
