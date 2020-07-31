@@ -28,7 +28,7 @@ enum LoadState {
   LOADED,
 }
 
-export class DataLoader<Item, Data> extends LegacyElementMixin(PolymerElement) {
+class DataLoader<Item, Data> extends LegacyElementMixin(PolymerElement) {
   @property({type: Boolean, observer: '_loadDataIfActive'})
   active!: boolean;
 
