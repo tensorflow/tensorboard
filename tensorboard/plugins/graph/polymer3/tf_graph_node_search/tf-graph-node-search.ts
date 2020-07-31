@@ -14,19 +14,15 @@ limitations under the License.
 ==============================================================================*/
 
 import {PolymerElement, html} from '@polymer/polymer';
-import {customElement, property} from '@polymer/decorators';
-import '@polymer/paper-styles';
-import '@polymer/paper-input';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-dashboard-common/tensorboard-color.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-common/tf-graph-common.html';
-import '@polymer/paper-styles';
-import '@polymer/paper-input';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-dashboard-common/tensorboard-color.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-common/tf-graph-common.html';
+import {computed, customElement, observe, property} from '@polymer/decorators';
+import * as _ from 'lodash';
+import '@polymer/paper-styles/paper-styles';
+import '@polymer/paper-input/paper-input';
+import '../../../../components_polymer3/tf_dashboard_common/tensorboard-color';
+import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+
 @customElement('tf-graph-node-search')
-class TfGraphNodeSearch extends PolymerElement {
+class TfGraphNodeSearch extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
     <div id="search-container">
       <paper-input
@@ -84,7 +80,7 @@ class TfGraphNodeSearch extends PolymerElement {
     </style>
   `;
   @property({type: Object})
-  renderHierarchy: object;
+  renderHierarchy: any;
   @property({
     type: String,
     notify: true,
@@ -97,6 +93,7 @@ class TfGraphNodeSearch extends PolymerElement {
   @property({
     type: String,
   })
+  // The value of the regex input for the last search.
   _previousRegexInput: string = '';
   @property({
     type: Number,
@@ -111,6 +108,7 @@ class TfGraphNodeSearch extends PolymerElement {
   _maxRegexResults: number = 42;
   @property({type: Array})
   _regexMatches: unknown[];
+  // This is the cleaned input.
   @computed('renderHierarchy', '_rawRegexInput')
   get _regexInput(): string {
     var renderHierarchy = this.renderHierarchy;
