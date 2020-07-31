@@ -14,25 +14,23 @@ limitations under the License.
 ==============================================================================*/
 
 import {PolymerElement, html} from '@polymer/polymer';
-import {customElement, property} from '@polymer/decorators';
+import {computed, customElement, property} from '@polymer/decorators';
+import * as d3 from 'd3';
+
 import '@polymer/iron-collapse';
 import '@polymer/iron-list';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
 import '@polymer/paper-icon-button';
 import '@polymer/paper-item';
 import '@polymer/paper-item';
-import {DO_NOT_SUBMIT} from '../tf-graph-common/tf-graph-common.html';
-import {DO_NOT_SUBMIT} from 'tf-graph-op-compat-list-item.html';
-import '@polymer/iron-collapse';
-import '@polymer/iron-list';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import '@polymer/paper-icon-button';
-import '@polymer/paper-item';
-import '@polymer/paper-item';
-import {DO_NOT_SUBMIT} from '../tf-graph-common/tf-graph-common.html';
-import {DO_NOT_SUBMIT} from 'tf-graph-op-compat-list-item.html';
+
+import './tf-graph-op-compat-list-item';
+import * as tf_graph_hierarchy from '../tf_graph_common/hierarchy';
+import * as tf_graph_render from '../tf_graph_common/render';
+
+import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+
 @customElement('tf-graph-op-compat-card')
-class TfGraphOpCompatCard extends PolymerElement {
+class TfGraphOpCompatCard extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
     <style>
       :host {
@@ -186,11 +184,11 @@ class TfGraphOpCompatCard extends PolymerElement {
     </iron-collapse>
   `;
   @property({type: Object})
-  graphHierarchy: object;
+  graphHierarchy: any;
   @property({type: Object})
   hierarchyParams: object;
   @property({type: Object})
-  renderHierarchy: object;
+  renderHierarchy: any;
   @property({type: String})
   nodeTitle: string;
   @property({
@@ -200,11 +198,11 @@ class TfGraphOpCompatCard extends PolymerElement {
   @property({
     type: String,
   })
-  _opCompatColor: string = tf.graph.render.OpNodeColors.COMPATIBLE;
+  _opCompatColor: string = tf_graph_render.OpNodeColors.COMPATIBLE;
   @property({
     type: String,
   })
-  _opIncompatColor: string = tf.graph.render.OpNodeColors.INCOMPATIBLE;
+  _opIncompatColor: string = tf_graph_render.OpNodeColors.INCOMPATIBLE;
   @computed('graphHierarchy')
   get _templateIndex(): object {
     var graphHierarchy = this.graphHierarchy;
@@ -234,9 +232,9 @@ class TfGraphOpCompatCard extends PolymerElement {
     var hierarchyParams = this.hierarchyParams;
     if (graphHierarchy && graphHierarchy.root) {
       this.async(this._resizeList.bind(this, '#incompatibleOpsList'));
-      return tf.graph.hierarchy.getIncompatibleOps(
+      return tf_graph_hierarchy.getIncompatibleOps(
         graphHierarchy,
-        hierarchyParams
+        hierarchyParams as any
       );
     }
   }

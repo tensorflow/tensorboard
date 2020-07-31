@@ -15,14 +15,13 @@ limitations under the License.
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, property} from '@polymer/decorators';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-dashboard-common/tensorboard-color.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-common/tf-node-icon.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-dashboard-common/tensorboard-color.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-common/tf-node-icon.html';
+import '../../../../components_polymer3/tf_dashboard_common/tensorboard-color';
+import '../tf_graph_common/tf-node-icon';
+
+import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+
 @customElement('tf-graph-op-compat-list-item')
-class TfGraphOpCompatListItem extends PolymerElement {
+class TfGraphOpCompatListItem extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
     <style>
       #list-item {
@@ -89,12 +88,25 @@ class TfGraphOpCompatListItem extends PolymerElement {
       </div>
     </div>
   `;
+  /**
+   * The Node for the card itself, on which this item is being drawn.
+   * This property is a tf.graph.Node.
+   */
   @property({type: Object})
   cardNode: object;
+  /**
+   * The Node for the item within the card, somehow related to cardNode.
+   * This property is a tf.graph.Node.
+   */
   @property({type: Object})
   itemNode: object;
+  /** The edge label associated with this item. */
   @property({type: String})
   edgeLabel: string;
+  /**
+   * The render node information for the item node. Used by the graph
+   * icon in determining fill color.
+   */
   @property({type: Object})
   itemRenderInfo: object;
   @property({type: String})
@@ -108,7 +120,7 @@ class TfGraphOpCompatListItem extends PolymerElement {
   colorBy: string;
   @property({type: Object})
   colorByParams: object;
-  @property({type: Function})
+  @property({type: Object})
   templateIndex: object;
   _itemTypeChanged() {
     if (this.itemType !== 'subnode') {
