@@ -14,55 +14,35 @@ limitations under the License.
 ==============================================================================*/
 
 import {PolymerElement, html} from '@polymer/polymer';
-import {customElement, property} from '@polymer/decorators';
+import {computed, customElement, observe, property} from '@polymer/decorators';
 import '@polymer/paper-button';
 import '@polymer/paper-checkbox';
-import '@polymer/paper-dropdown-menu';
+import '@polymer/paper-dropdown-menu/paper-dropdown-menu';
 import '@polymer/paper-listbox';
-import '@polymer/paper-input';
+import '@polymer/paper-input/paper-input';
 import '@polymer/paper-item';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-backend/tf-backend.html';
-import {DO_NOT_SUBMIT} from '../tf-categorization-utils/tf-categorization-utils.html';
-import {DO_NOT_SUBMIT} from '../tf-categorization-utils/tf-tag-filterer.html';
-import {DO_NOT_SUBMIT} from '../tf-dashboard-common/array-update-helper.html';
-import {DO_NOT_SUBMIT} from '../tf-dashboard-common/dashboard-style.html';
-import {DO_NOT_SUBMIT} from '../tf-dashboard-common/tf-dashboard-layout.html';
-import {DO_NOT_SUBMIT} from '../tf-dashboard-common/tf-option-selector.html';
-import {DO_NOT_SUBMIT} from '../tf-globals/tf-globals.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
-import {DO_NOT_SUBMIT} from '../tf-paginated-view/tf-category-paginated-view.html';
-import {DO_NOT_SUBMIT} from '../tf-runs-selector/tf-runs-selector.html';
-import {DO_NOT_SUBMIT} from '../tf-storage/tf-storage.html';
-import {DO_NOT_SUBMIT} from '../tf-tensorboard/registry.html';
-import {DO_NOT_SUBMIT} from '../tf-utils/tf-utils.html';
-import {DO_NOT_SUBMIT} from 'tf-scalar-card.html';
-import {DO_NOT_SUBMIT} from 'tf-smoothing-input.html';
-import '@polymer/paper-button';
-import '@polymer/paper-checkbox';
-import '@polymer/paper-dropdown-menu';
-import '@polymer/paper-listbox';
-import '@polymer/paper-input';
-import '@polymer/paper-item';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-backend/tf-backend.html';
-import {DO_NOT_SUBMIT} from '../tf-categorization-utils/tf-categorization-utils.html';
-import {DO_NOT_SUBMIT} from '../tf-categorization-utils/tf-tag-filterer.html';
-import {DO_NOT_SUBMIT} from '../tf-dashboard-common/array-update-helper.html';
-import {DO_NOT_SUBMIT} from '../tf-dashboard-common/dashboard-style.html';
-import {DO_NOT_SUBMIT} from '../tf-dashboard-common/tf-dashboard-layout.html';
-import {DO_NOT_SUBMIT} from '../tf-dashboard-common/tf-option-selector.html';
-import {DO_NOT_SUBMIT} from '../tf-globals/tf-globals.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
-import {DO_NOT_SUBMIT} from '../tf-paginated-view/tf-category-paginated-view.html';
-import {DO_NOT_SUBMIT} from '../tf-runs-selector/tf-runs-selector.html';
-import {DO_NOT_SUBMIT} from '../tf-storage/tf-storage.html';
-import {DO_NOT_SUBMIT} from '../tf-tensorboard/registry.html';
-import {DO_NOT_SUBMIT} from '../tf-utils/tf-utils.html';
-import {DO_NOT_SUBMIT} from 'tf-scalar-card.html';
-import {DO_NOT_SUBMIT} from 'tf-smoothing-input.html';
+import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+import {getTags} from '../../../../components_polymer3/tf_backend/backend';
+import {RequestManager} from '../../../../components_polymer3/tf_backend/requestManager';
+import {getRouter} from '../../../../components_polymer3/tf_backend/router';
+import * as tf_categorization_utils from '../../../../components_polymer3/tf_categorization_utils/categorizationUtils';
+import '../../../../components_polymer3/tf_categorization_utils/tf-tag-filterer';
+import {ArrayUpdateHelper} from '../../../../components_polymer3/tf_dashboard_common/array-update-helper';
+import '../../../../components_polymer3/tf_dashboard_common/dashboard-style';
+import '../../../../components_polymer3/tf_dashboard_common/tf-dashboard-layout';
+import '../../../../components_polymer3/tf_dashboard_common/tf-option-selector';
+import '../../../../components_polymer3/tf_paginated_view/tf-category-paginated-view';
+import '../../../../components_polymer3/tf_runs_selector/tf-runs-selector';
+import * as tf_storage from '../../../../components_polymer3/tf_storage/storage';
+import * as tf_utils from '../../../../components_polymer3/tf_utils/utils';
+import * as vz_chart_helpers from '../../../../components_polymer3/vz_chart_helpers/vz-chart-helpers';
+import './tf-scalar-card';
+import {TfScalarCard} from './tf-scalar-card';
+import './tf-smoothing-input';
+import * as _ from 'lodash';
+
 @customElement('tf-scalar-dashboard')
-class TfScalarDashboard extends PolymerElement {
+class TfScalarDashboard extends LegacyElementMixin(ArrayUpdateHelper) {
   static readonly template = html`
     <tf-dashboard-layout>
       <div class="sidebar" slot="sidebar">
@@ -200,11 +180,13 @@ class TfScalarDashboard extends PolymerElement {
         font-size: 14px;
         margin-top: 15px;
       }
+
       #tooltip-sorting paper-dropdown-menu {
         margin-left: 10px;
         --paper-input-container-focus-color: var(--tb-orange-strong);
         width: 105px;
       }
+
       .line-item {
         display: block;
         padding-top: 5px;
@@ -218,117 +200,136 @@ class TfScalarDashboard extends PolymerElement {
       }
     </style>
   `;
+
   @property({
     type: Boolean,
   })
   reloadOnReady: boolean = true;
+
   @property({
     type: Boolean,
     notify: true,
     observer: '_showDownloadLinksObserver',
   })
-  _showDownloadLinks: boolean = tf_storage.getBooleanInitializer(
-    '_showDownloadLinks',
-    {
+  _showDownloadLinks: boolean = tf_storage
+    .getBooleanInitializer('_showDownloadLinks', {
       defaultValue: false,
       useLocalStorage: true,
-    }
-  );
+    })
+    .call(this);
+
   @property({
     type: Number,
     notify: true,
     observer: '_smoothingWeightObserver',
   })
-  _smoothingWeight: number = tf_storage.getNumberInitializer(
-    '_smoothingWeight',
-    {
+  _smoothingWeight: number = tf_storage
+    .getNumberInitializer('_smoothingWeight', {
       defaultValue: 0.6,
-    }
-  );
+    })
+    .call(this);
+
   @property({
     type: Boolean,
     observer: '_ignoreYOutliersObserver',
   })
-  _ignoreYOutliers: boolean = tf_storage.getBooleanInitializer(
-    '_ignoreYOutliers',
-    {
+  _ignoreYOutliers: boolean = tf_storage
+    .getBooleanInitializer('_ignoreYOutliers', {
       defaultValue: true,
       useLocalStorage: true,
-    }
-  );
+    })
+    .call(this);
+
   @property({
     type: String,
   })
   _xType: string = vz_chart_helpers.XType.STEP;
+
   @property({
     type: Array,
   })
-  _selectedRuns: unknown[] = () => [];
+  _selectedRuns: string[] = [];
+
   @property({type: Object})
   _runToTagInfo: object;
+
   @property({type: Boolean})
   _dataNotFound: boolean;
+
   @property({
     type: String,
   })
   _tagFilter: string = '';
+
   @property({type: Boolean})
   _categoriesDomReady: boolean;
+
   @property({
     type: Array,
   })
-  _categories: unknown[] = () => [];
-  @property({
-    type: Function,
-  })
-  _getCategoryItemKey: object = () => (item) => item.tag;
+  _categories: string[] = [];
+
   @property({
     type: Object,
   })
-  _requestManager: object = () => new tf_backend.RequestManager(50);
-  behaviors: [tf_dashboard_common.ArrayUpdateHelper];
+  _getCategoryItemKey: object = (item) => item.tag;
+
+  @property({
+    type: Object,
+  })
+  _requestManager: RequestManager = new RequestManager(50);
+
   _showDownloadLinksObserver = tf_storage.getBooleanObserver(
     '_showDownloadLinks',
     {defaultValue: false, useLocalStorage: true}
   );
+
   _smoothingWeightObserver = tf_storage.getNumberObserver('_smoothingWeight', {
     defaultValue: 0.6,
   });
+
   _ignoreYOutliersObserver = tf_storage.getBooleanObserver('_ignoreYOutliers', {
     defaultValue: true,
     useLocalStorage: true,
   });
+
   @computed('_smoothingWeight')
   get _smoothingEnabled(): boolean {
     var _smoothingWeight = this._smoothingWeight;
     return _smoothingWeight > 0;
   }
+
   _getCategoryKey(category) {
     return category.metadata.type ==
       tf_categorization_utils.CategoryType.SEARCH_RESULTS
       ? ''
       : category.name;
   }
+
   _shouldOpen(index) {
     return index <= 2;
   }
+
   ready() {
+    super.ready();
     if (this.reloadOnReady) this.reload();
   }
+
   reload() {
     this._fetchTags().then(() => {
       this._reloadCharts();
     });
   }
+
   _fetchTags() {
-    const url = tf_backend.getRouter().pluginRoute('scalars', '/tags');
+    const url = getRouter().pluginRoute('scalars', '/tags');
     return this._requestManager.request(url).then((runToTagInfo) => {
       if (_.isEqual(runToTagInfo, this._runToTagInfo)) {
         // No need to update anything if there are no changes.
         return;
       }
       const runToTag = _.mapValues(runToTagInfo, (x) => Object.keys(x));
-      const tags = tf_backend.getTags(runToTag);
+      const tags = getTags(runToTag);
       this.set('_dataNotFound', tags.length === 0);
       this.set('_runToTagInfo', runToTagInfo);
       this.async(() => {
@@ -337,11 +338,13 @@ class TfScalarDashboard extends PolymerElement {
       });
     });
   }
+
   _reloadCharts() {
     this.root.querySelectorAll('tf-scalar-card').forEach((chart) => {
-      chart.reload();
+      (chart as TfScalarCard).reload();
     });
   }
+
   @observe(
     '_runToTagInfo',
     '_selectedRuns',
@@ -357,7 +360,7 @@ class TfScalarDashboard extends PolymerElement {
     let query = tagFilter;
     const runToTag = _.mapValues(runToTagInfo, (x) => Object.keys(x));
     categories = tf_categorization_utils.categorizeTags(
-      runToTag,
+      runToTag as tf_categorization_utils.RunToTag,
       selectedRuns,
       query
     );
@@ -369,6 +372,7 @@ class TfScalarDashboard extends PolymerElement {
     });
     this.updateArrayProp('_categories', categories, this._getCategoryKey);
   }
+
   _tagMetadata(category, runToTagsInfo, item) {
     const tag = item.tag;
     const runToTagInfo = {};

@@ -15,16 +15,10 @@ limitations under the License.
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, property} from '@polymer/decorators';
-import '@polymer/paper-checkbox';
-import '@polymer/paper-input';
+import '@polymer/paper-input/paper-input';
 import '@polymer/paper-slider';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
-import '@polymer/paper-checkbox';
-import '@polymer/paper-input';
-import '@polymer/paper-slider';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
+import * as _ from 'lodash';
+
 @customElement('tf-smoothing-input')
 class TfSmoothingInput extends PolymerElement {
   static readonly template = html`
@@ -87,36 +81,45 @@ class TfSmoothingInput extends PolymerElement {
       }
     </style>
   `;
+
   @property({type: Number})
   step: number;
+
   @property({type: Number})
   max: number;
+
   @property({type: Number})
   min: number;
+
   @property({
     type: Number,
     notify: true,
   })
   weight: number = 0.6;
+
   @property({
     type: Number,
     notify: true,
     observer: '_immediateWeightNumberForPaperSliderChanged',
   })
   _immediateWeightNumberForPaperSlider: number;
+
   @property({
     type: String,
     notify: true,
     observer: '_inputWeightStringForPaperInputChanged',
   })
   _inputWeightStringForPaperInput: string;
+
   _updateWeight = _.debounce(function(val) {
     this.weight = val;
   }, 250);
+
   _immediateWeightNumberForPaperSliderChanged() {
     this._inputWeightStringForPaperInput = this._immediateWeightNumberForPaperSlider.toString();
     this._updateWeight.call(this, this._immediateWeightNumberForPaperSlider);
   }
+
   _inputWeightStringForPaperInputChanged() {
     if (+this._inputWeightStringForPaperInput < 0) {
       this._inputWeightStringForPaperInput = '0';

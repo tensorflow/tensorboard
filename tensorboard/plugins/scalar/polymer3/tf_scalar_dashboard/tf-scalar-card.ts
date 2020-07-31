@@ -15,30 +15,20 @@ limitations under the License.
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, property} from '@polymer/decorators';
-import '@polymer/paper-dropdown-menu';
 import '@polymer/paper-icon-button';
 import '@polymer/paper-item';
 import '@polymer/paper-listbox';
 import '@polymer/paper-menu-button';
-import '@polymer/paper-listbox';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-backend/tf-backend.html';
-import {DO_NOT_SUBMIT} from '../tf-line-chart-data-loader/tf-line-chart-data-loader.html';
-import {DO_NOT_SUBMIT} from '../tf-card-heading/tf-card-heading.html';
-import {DO_NOT_SUBMIT} from '../tf-dashboard-common/tf-downloader.html';
-import '@polymer/paper-dropdown-menu';
-import '@polymer/paper-icon-button';
-import '@polymer/paper-item';
-import '@polymer/paper-listbox';
-import '@polymer/paper-menu-button';
-import '@polymer/paper-listbox';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-backend/tf-backend.html';
-import {DO_NOT_SUBMIT} from '../tf-line-chart-data-loader/tf-line-chart-data-loader.html';
-import {DO_NOT_SUBMIT} from '../tf-card-heading/tf-card-heading.html';
-import {DO_NOT_SUBMIT} from '../tf-dashboard-common/tf-downloader.html';
+import {getRouter} from '../../../../components_polymer3/tf_backend/router';
+import '../../../../components_polymer3/tf_card_heading/tf-card-heading';
+import {runsColorScale} from '../../../../components_polymer3/tf_color_scale/colorScale';
+import '../../../../components_polymer3/tf_dashboard_common/tf-downloader';
+import '../../../../components_polymer3/tf_line_chart_data_loader/tf-line-chart-data-loader';
+import '../../../../components_polymer3/vz_line_chart2/vz-line-chart2';
+import {DEFAULT_TOOLTIP_COLUMNS} from '../../../../components_polymer3/vz_line_chart2/vz-line-chart2';
+
 @customElement('tf-scalar-card')
-class TfScalarCard extends PolymerElement {
+export class TfScalarCard extends PolymerElement {
   static readonly template = html`
     <tf-card-heading
       tag="[[tag]]"
@@ -186,32 +176,45 @@ class TfScalarCard extends PolymerElement {
       }
     </style>
   `;
+
   @property({type: String})
   tag: string;
+
   @property({type: Array})
   dataToLoad: unknown[];
+
   @property({type: String})
   xType: string;
+
   @property({type: Boolean})
   active: boolean;
+
   @property({type: Boolean})
   ignoreYOutliers: boolean;
+
   @property({type: Object})
   requestManager: object;
+
   @property({type: Boolean})
   showDownLinks: boolean;
+
   @property({type: Boolean})
   smoothingEnabled: boolean;
+
   @property({type: Number})
   smoothingWeight: number;
+
   @property({type: Object})
   tagMetadata: object;
+
   @property({
     type: Object,
   })
   colorScale: object = null;
+
   @property({type: String})
   tooltipSortingMethod: string;
+
   @property({
     type: Object,
     readOnly: true,
@@ -229,42 +232,49 @@ class TfScalarCard extends PolymerElement {
       scalarChart.commitChanges();
     };
   };
+
   @property({
-    type: Function,
+    type: Object,
   })
-  getDataLoadUrl: object = function() {
-    return ({tag, run}) => {
-      return tf_backend
-        .getRouter()
-        .pluginRoute('scalars', '/scalars', new URLSearchParams({tag, run}));
-    };
+  getDataLoadUrl: object = ({tag, run}) => {
+    return getRouter().pluginRoute(
+      'scalars',
+      '/scalars',
+      new URLSearchParams({tag, run})
+    );
   };
+
   @property({
-    type: Function,
+    type: Object,
   })
   _downloadUrlFn: object = function() {
     return (tag, run) => this.getDataLoadUrl({tag, run});
   };
-  @property({type: Function})
+
+  @property({type: Object})
   requestData: object;
+
   @property({
-    type: Function,
+    type: Object,
   })
   _getDataLoadName: object = function() {
     return (datum) => this._getSeriesNameFromDatum(datum);
   };
+
   @property({
     type: Boolean,
     reflectToAttribute: true,
   })
   _expanded: boolean = false;
+
   @property({type: Boolean})
   _logScaleActive: boolean;
+
   @property({
     type: Array,
   })
   _tooltipColumns: unknown[] = function() {
-    const columns = vz_line_chart2.DEFAULT_TOOLTIP_COLUMNS.slice();
+    const columns = DEFAULT_TOOLTIP_COLUMNS.slice();
     const ind = columns.findIndex((c) => c.title == 'Name');
     columns.splice(ind, 1, {
       title: 'Name',
@@ -274,48 +284,66 @@ class TfScalarCard extends PolymerElement {
       },
     });
     return columns;
-  };
+  }.call(this);
+
+  _getChartDataLoader() {
+    return this.shadowRoot.querySelector('tf-line-chart-data-loader') as any; // TfLineChartDataLoader
+  }
+
   reload() {
-    this.$$('tf-line-chart-data-loader').reload();
+    this._getChartDataLoader().reload();
   }
+
   redraw() {
-    this.$$('tf-line-chart-data-loader').redraw();
+    this._getChartDataLoader().redraw();
   }
+
   _toggleExpanded(e) {
     this.set('_expanded', !this._expanded);
     this.redraw();
   }
+
   _toggleLogScale() {
     this.set('_logScaleActive', !this._logScaleActive);
   }
+
   _resetDomain() {
-    const chart = this.$$('tf-line-chart-data-loader');
+    const chart = this._getChartDataLoader();
     if (chart) {
       chart.resetDomain();
     }
   }
+
   _updateDownloadLink() {
-    const svgStr = this.$$('tf-line-chart-data-loader').exportAsSvgString();
+    const svgStr = this._getChartDataLoader().exportAsSvgString();
     // The SVG code string may include hash characters, such as an
     // attribute `clipPath="url(#foo)"`. Thus, we base64-encode the
     // data so that such a hash is not interpreted as a fragment
     // specifier, truncating the SVG. (See issue #1874.)
-    this.$$('#svgLink').href = `data:image/svg+xml;base64,${btoa(svgStr)}`;
+    const svgLink = this.shadowRoot.querySelector(
+      '#svgLink'
+    ) as HTMLAnchorElement;
+    svgLink.href = `data:image/svg+xml;base64,${btoa(svgStr)}`;
   }
+
   _runsFromData(data) {
     return data.map((datum) => datum.run);
   }
+
   _getDataSeries() {
-    return this.dataToLoad.map((d) => this._getSeriesNameFromDatum(d));
+    return this.dataToLoad.map((d) => this._getSeriesNameFromDatum(d as any));
   }
+
   // name is a stable identifier for a series.
   _getSeriesNameFromDatum({run, experiment = {name: '_default'}}) {
     return JSON.stringify([experiment.name, run]);
   }
+
   // title is a visible string of a series for the UI.
   _getSeriesDisplayNameFromDatum(datum) {
     return datum.run;
   }
+
   _getColorScale() {
     if (this.colorScale !== null) {
       return this.colorScale;
@@ -325,7 +353,7 @@ class TfScalarCard extends PolymerElement {
     return {
       scale: (name) => {
         const [exp, run] = JSON.parse(name);
-        return tf_color_scale.runsColorScale(run);
+        return runsColorScale(run);
       },
     };
   }
