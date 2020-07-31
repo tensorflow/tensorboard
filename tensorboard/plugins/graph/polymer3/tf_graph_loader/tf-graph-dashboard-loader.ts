@@ -68,12 +68,11 @@ class TfGraphDashboardLoader extends LegacyElementMixin(PolymerElement) {
   @property({
     type: Object,
   })
-  compatibilityProvider: object = () =>
-    new tf_graph_op.TpuCompatibilityProvider();
+  compatibilityProvider = new tf_graph_op.TpuCompatibilityProvider();
   @property({
     type: Object,
   })
-  hierarchyParams: object = () => tf_graph_hierarchy.DefaultHierarchyParams;
+  hierarchyParams = tf_graph_hierarchy.DefaultHierarchyParams;
   @property({
     type: Object,
     readOnly: true, //readonly so outsider can't change this via binding

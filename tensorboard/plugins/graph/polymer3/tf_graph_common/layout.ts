@@ -473,7 +473,7 @@ function layoutMetanode(renderNodeInfo: render.RenderGroupNodeInfo): void {
   renderNodeInfo.inExtractBox.height = _.reduce(
     renderNodeInfo.isolatedInExtract,
     (height, child, i) => {
-      let yOffset = ((i as unknown) as number) > 0 ? params.extractYOffset : 0;
+      let yOffset = i > 0 ? params.extractYOffset : 0;
       // use width/height here to avoid overlaps between extracts
       child.x = 0;
       child.y = height + yOffset + child.height / 2;
@@ -495,7 +495,7 @@ function layoutMetanode(renderNodeInfo: render.RenderGroupNodeInfo): void {
   renderNodeInfo.outExtractBox.height = _.reduce(
     renderNodeInfo.isolatedOutExtract,
     (height, child, i) => {
-      let yOffset = ((i as unknown) as number) > 0 ? params.extractYOffset : 0;
+      let yOffset = i > 0 ? params.extractYOffset : 0;
       // use width/height here to avoid overlaps between extracts
       child.x = 0;
       child.y = height + yOffset + child.height / 2;
@@ -517,7 +517,7 @@ function layoutMetanode(renderNodeInfo: render.RenderGroupNodeInfo): void {
   renderNodeInfo.libraryFunctionsBox.height = _.reduce(
     renderNodeInfo.libraryFunctionsExtract,
     (height, child, i) => {
-      let yOffset = ((i as unknown) as number) > 0 ? params.extractYOffset : 0;
+      let yOffset = i > 0 ? params.extractYOffset : 0;
       // use width/height here to avoid overlaps between extracts
       child.x = 0;
       child.y = height + yOffset + child.height / 2;
@@ -612,7 +612,7 @@ function layoutAnnotation(renderNodeInfo: render.RenderNodeInfo): void {
   let inboxHeight = _.reduce(
     inAnnotations,
     (height, a, i) => {
-      let yOffset = ((i as unknown) as number) > 0 ? params.yOffset : 0;
+      let yOffset = i > 0 ? params.yOffset : 0;
       a.dx = -(renderNodeInfo.coreBox.width + a.width) / 2 - params.xOffset;
       a.dy = height + yOffset + a.height / 2;
       return height + yOffset + a.height;
@@ -631,7 +631,7 @@ function layoutAnnotation(renderNodeInfo: render.RenderNodeInfo): void {
   let outboxHeight = _.reduce(
     outAnnotations,
     (height, a, i) => {
-      let yOffset = ((i as unknown) as number) > 0 ? params.yOffset : 0;
+      let yOffset = i > 0 ? params.yOffset : 0;
       a.dx = (renderNodeInfo.coreBox.width + a.width) / 2 + params.xOffset;
       a.dy = height + yOffset + a.height / 2;
       return height + yOffset + a.height;
@@ -668,7 +668,7 @@ function layoutAnnotation(renderNodeInfo: render.RenderNodeInfo): void {
         dx: -renderNodeInfo.coreBox.width / 2,
         // only use scale if there are more than one,
         // otherwise center it vertically
-        dy: inAnnotations.length > 1 ? inY((i as unknown) as number) : 0,
+        dy: inAnnotations.length > 1 ? inY(i) : 0,
       },
     ];
   });
@@ -691,7 +691,7 @@ function layoutAnnotation(renderNodeInfo: render.RenderNodeInfo): void {
         dx: renderNodeInfo.coreBox.width / 2,
         // only use scale if there are more than one,
         // otherwise center it vertically
-        dy: outAnnotations.length > 1 ? outY((i as unknown) as number) : 0,
+        dy: outAnnotations.length > 1 ? outY(i) : 0,
       },
       // The annotation node end
       {

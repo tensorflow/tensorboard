@@ -21,7 +21,6 @@ import '@polymer/iron-list';
 import '@polymer/paper-button';
 import '@polymer/paper-icon-button';
 import '@polymer/paper-item';
-import '@polymer/paper-item';
 
 import '../tf_graph_common/tf-node-icon';
 import './tf-node-list-item';

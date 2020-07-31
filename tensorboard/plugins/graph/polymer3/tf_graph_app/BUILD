@@ -1,6 +1,5 @@
 load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ts_library")
 load("//tensorboard/defs:web.bzl", "tf_web_library")
-load("//tensorboard/defs:vulcanize.bzl", "tensorboard_html_binary")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -24,24 +23,19 @@ tf_ts_library(
 
 tf_js_binary(
     name = "tf_graph_app_js_binary",
-    compile = 1,
+    compile = False,
     entry_point = ":tf-graph-app.ts",
     deps = [":tf_graph_app"],
 )
 
 tf_web_library(
-    name = "tf_graph_app_bundle",
+    name = "standalone_lib",
     srcs = [
         "tf-graph-app.html",
         "tf_graph_app_js_binary.js",
     ],
-    path = "/tf-graph-app",
-)
-
-tensorboard_html_binary(
-    name = "binary",
-    compile = True,
-    input_path = "/tf-graph-app/tf-graph-app.html",
-    output_path = "/tf-graph-app/binary.html",
-    deps = [":tf_graph_app_bundle"],
+    path = "/",
+    deps = [
+        "@com_google_fonts_roboto",
+    ],
 )

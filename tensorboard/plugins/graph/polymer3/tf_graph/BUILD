@@ -9,6 +9,7 @@ tf_ts_library(
     srcs = [
         "tf-graph.ts",
         "tf-graph-minimap.ts",
+        "tf-graph-scene.html.ts",
         "tf-graph-scene.ts",
     ],
     strict_checks = False,

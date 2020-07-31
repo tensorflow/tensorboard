@@ -87,9 +87,9 @@ export let COLORS = [
   },
   {
     name: 'Gray',
-    color: '#9E9E9E',
-    active: '#424242',
-    disabled: 'F5F5F5',
+    color: '#9E9E9E', //500
+    active: '#424242', //800
+    disabled: 'F5F5F5', //100
   },
 ].reduce((m, c) => {
   m[c.name] = c;

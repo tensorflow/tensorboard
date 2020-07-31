@@ -12,7 +12,6 @@ tf_ts_library(
         "common.ts",
         "contextmenu.ts",
         "edge.ts",
-        "externs.ts",
         "graph.ts",
         "hierarchy.ts",
         "layout.ts",

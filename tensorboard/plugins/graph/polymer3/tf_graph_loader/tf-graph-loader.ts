@@ -38,7 +38,7 @@ class TfGraphLoader extends LegacyElementMixin(PolymerElement) {
   @property({
     type: Object,
   })
-  compatibilityProvider: any = () => new tf_graph_op.TpuCompatibilityProvider();
+  compatibilityProvider = new tf_graph_op.TpuCompatibilityProvider();
   /**
    * If this optional object is provided, graph logic will override
    * the HierarchyParams it uses to build the graph with properties within
@@ -49,7 +49,7 @@ class TfGraphLoader extends LegacyElementMixin(PolymerElement) {
   @property({
     type: Object,
   })
-  overridingHierarchyParams: object = () => ({});
+  overridingHierarchyParams = {};
   /**
    * @type {{value: number, msg: string}}
    *
@@ -116,8 +116,8 @@ class TfGraphLoader extends LegacyElementMixin(PolymerElement) {
         compatibilityProvider,
         hierarchyParams
       )
-      .then(({graph, graphHierarchy}) =>
-        function() {
+      .then(
+        function({graph, graphHierarchy}) {
           this._setOutHierarchyParams(hierarchyParams);
           this._setOutGraph(graph);
           this._setOutGraphHierarchy(graphHierarchy);
