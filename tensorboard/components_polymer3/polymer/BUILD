@@ -30,3 +30,13 @@ tf_ts_library(
         "register_style_dom_module.ts",
     ],
 )
+
+tf_ts_library(
+    name = "utils_mixin",
+    srcs = [
+        "utils_mixin.ts",
+    ],
+    deps = [
+        "@npm//@polymer/polymer",
+    ],
+)

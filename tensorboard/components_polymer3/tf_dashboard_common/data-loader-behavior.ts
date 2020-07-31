@@ -13,10 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {PolymerElement} from '@polymer/polymer';
-import {dedupingMixin} from '@polymer/polymer/lib/utils/mixin';
 import {property, observe} from '@polymer/decorators';
 import * as _ from 'lodash';
 
+import {dedupingMixin} from '../polymer/utils_mixin';
 import {LegacyElementMixin} from '../polymer/legacy_element_mixin';
 import {Canceller} from '../tf_backend/canceller';
 import {RequestManager} from '../tf_backend/requestManager';
