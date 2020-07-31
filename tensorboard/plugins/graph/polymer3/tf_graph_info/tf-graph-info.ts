@@ -17,37 +17,15 @@ import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, property} from '@polymer/decorators';
 import '@polymer/paper-material';
 import '@polymer/paper-slider';
-import '@polymer/paper-spinner';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-common/tf-graph-common.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-debugger-data-card/tf-graph-debugger-data-card.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-op-compat-card/tf-graph-op-compat-card.html';
-import {DO_NOT_SUBMIT} from 'tf-node-info.html';
-import '@polymer/paper-material';
-import '@polymer/paper-slider';
-import '@polymer/paper-spinner';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-common/tf-graph-common.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-debugger-data-card/tf-graph-debugger-data-card.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-op-compat-card/tf-graph-op-compat-card.html';
-import {DO_NOT_SUBMIT} from 'tf-node-info.html';
-/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+import '@polymer/paper-spinner/paper-spinner';
+import '../tf_graph_debugger_data_card/tf-graph-debugger-data-card';
+import '../tf_graph_op_compat_card/tf-graph-op-compat-card';
+import './tf-node-info';
+import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
 'use strict';
 @customElement('tf-graph-info')
-class TfGraphInfo extends PolymerElement {
+class TfGraphInfo extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
     <style>
       :host {
@@ -127,23 +105,44 @@ class TfGraphInfo extends PolymerElement {
   colorBy: string;
   @property({type: String})
   compatNodeTitle: string;
+  // Two-ways
   @property({
     type: String,
     notify: true,
   })
   selectedNode: string;
+  /** @type {string?} */
   @property({
     type: String,
     notify: true,
   })
   highlightedNode: string;
+  // The enum value of the include property of the selected node.
   @property({
     type: Number,
     notify: true,
   })
   selectedNodeInclude: number;
+  // Whether debugger data is enabled for this instance of Tensorboard.
   @property({type: Boolean})
   debuggerDataEnabled: boolean;
+
+  ready() {
+    super.ready();
+
+    this.addEventListener(
+      'node-list-item-click',
+      this._nodeListItemClicked.bind(this)
+    );
+    this.addEventListener(
+      'node-list-item-mouseover',
+      this._nodeListItemMouseover.bind(this)
+    );
+    this.addEventListener(
+      'node-list-item-mouseout',
+      this._nodeListItemMouseout.bind(this)
+    );
+  }
   _nodeListItemClicked(event) {
     this.selectedNode = event.detail.nodeName;
   }
@@ -166,4 +165,6 @@ class TfGraphInfo extends PolymerElement {
   _equals(a, b) {
     return a === b;
   }
+  // Whether health pills are currently being loaded, in which case we show a spinner (and the
+  // current health pills shown might be out of date).
 }

@@ -14,31 +14,27 @@ limitations under the License.
 ==============================================================================*/
 
 import {PolymerElement, html} from '@polymer/polymer';
-import {customElement, property} from '@polymer/decorators';
+import {computed, customElement, property} from '@polymer/decorators';
+import * as _ from 'lodash';
 import '@polymer/iron-collapse';
 import '@polymer/iron-list';
 import '@polymer/paper-button';
 import '@polymer/paper-icon-button';
 import '@polymer/paper-item';
 import '@polymer/paper-item';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-common/tf-graph-common.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-common/tf-node-icon.html';
-import {DO_NOT_SUBMIT} from '../tf-wbr-string/tf-wbr-string.html';
-import {DO_NOT_SUBMIT} from 'tf-node-list-item.html';
-import '@polymer/iron-collapse';
-import '@polymer/iron-list';
-import '@polymer/paper-button';
-import '@polymer/paper-icon-button';
-import '@polymer/paper-item';
-import '@polymer/paper-item';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-common/tf-graph-common.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-common/tf-node-icon.html';
-import {DO_NOT_SUBMIT} from '../tf-wbr-string/tf-wbr-string.html';
-import {DO_NOT_SUBMIT} from 'tf-node-list-item.html';
+
+import '../tf_graph_common/tf-node-icon';
+import './tf-node-list-item';
+import * as tf_graph from '../tf_graph_common/graph';
+import * as tf_graph_util from '../tf_graph_common/util';
+import * as tf_graph_scene_edge from '../tf_graph_common/edge';
+import * as tf_graph_scene_node from '../tf_graph_common/node';
+
+import '../../../../components_polymer3/tf_wbr_string/tf-wbr-string';
+import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+
 @customElement('tf-node-info')
-class TfNodeInfo extends PolymerElement {
+class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
     <style>
       .sub-list-group {
@@ -436,12 +432,20 @@ class TfNodeInfo extends PolymerElement {
       </template>
     </iron-collapse>
   `;
+  /**
+   * Note: we intentionally avoid the property name 'nodeName', because
+   * Polymer Resin does not support it. Resin's contract system prevents
+   * using native HTMLElement property names unless they have an
+   * explicit security contract (e.g. 'title' is allowed).
+   * https://github.com/Polymer/polymer-resin/blob/master/lib/contracts/contracts.js
+   */
   @property({type: String})
   graphNodeName: string;
   @property({type: Object})
-  graphHierarchy: object;
+  graphHierarchy: any;
   @property({type: Object})
-  renderHierarchy: object;
+  renderHierarchy: any;
+  /** What to color the nodes by (compute time, memory, device etc.) */
   @property({type: String})
   colorBy: string;
   @property({
@@ -449,17 +453,18 @@ class TfNodeInfo extends PolymerElement {
     computed: '_getNode(graphNodeName, graphHierarchy)',
     observer: '_resetState',
   })
-  _node: object;
+  _node: any;
   @property({
     type: Object,
     computed: '_getNodeStats(graphNodeName, graphHierarchy)',
     observer: '_resetState',
   })
-  _nodeStats: object;
+  _nodeStats: any;
   @property({
     type: Number,
     observer: '_nodeIncludeStateChanged',
   })
+  // The enum value of the include property of the selected node.
   nodeInclude: number;
   @property({
     type: Boolean,
@@ -478,7 +483,7 @@ class TfNodeInfo extends PolymerElement {
   @property({type: String})
   _groupButtonText: string;
   expandNode() {
-    this.fire('_node.expand', this.node);
+    this.fire('_node.expand', (this as any).node);
   }
   @computed('graphHierarchy')
   get _templateIndex(): object {
@@ -499,9 +504,9 @@ class TfNodeInfo extends PolymerElement {
     return stats ? stats.getTotalMicros() : 0;
   }
   @computed('_nodeStats')
-  get _hasDisplayableNodeStats(): object {
+  get _hasDisplayableNodeStats(): boolean {
     var stats = this._nodeStats;
-    return tf.graph.util.hasDisplayableNodeStats(stats);
+    return tf_graph_util.hasDisplayableNodeStats(stats);
   }
   @computed('_nodeStats')
   get _nodeStatsFormattedBytes(): string {
@@ -509,9 +514,9 @@ class TfNodeInfo extends PolymerElement {
     if (!stats || !stats.totalBytes) {
       return;
     }
-    return tf.graph.util.convertUnitsToHumanReadable(
+    return tf_graph_util.convertUnitsToHumanReadable(
       stats.totalBytes,
-      tf.graph.util.MEMORY_UNITS
+      tf_graph_util.MEMORY_UNITS
     );
   }
   @computed('_nodeStats')
@@ -520,9 +525,9 @@ class TfNodeInfo extends PolymerElement {
     if (!stats || !stats.getTotalMicros()) {
       return;
     }
-    return tf.graph.util.convertUnitsToHumanReadable(
+    return tf_graph_util.convertUnitsToHumanReadable(
       stats.getTotalMicros(),
-      tf.graph.util.TIME_UNITS
+      tf_graph_util.TIME_UNITS
     );
   }
   @computed('_nodeStats')
@@ -552,7 +557,7 @@ class TfNodeInfo extends PolymerElement {
     _.each(node.attr, function(entry) {
       // Unpack the "too large" attributes into separate attributes
       // in the info card, with values "too large to show".
-      if (entry.key === tf.graph.LARGE_ATTRS_KEY) {
+      if (entry.key === tf_graph.LARGE_ATTRS_KEY) {
         attrs = attrs.concat(
           entry.value.list.s.map(function(key) {
             return {key: key, value: 'Too large to show...'};
@@ -573,7 +578,7 @@ class TfNodeInfo extends PolymerElement {
     return node ? node.device : null;
   }
   @computed('_node', 'graphHierarchy')
-  get _successors(): object {
+  get _successors(): any {
     var node = this._node;
     var hierarchy = this.graphHierarchy;
     this._refreshNodeItemList('inputsList');
@@ -587,7 +592,7 @@ class TfNodeInfo extends PolymerElement {
     );
   }
   @computed('_node', 'graphHierarchy')
-  get _predecessors(): object {
+  get _predecessors(): any {
     var node = this._node;
     var hierarchy = this.graphHierarchy;
     this._refreshNodeItemList('outputsList');
@@ -600,12 +605,14 @@ class TfNodeInfo extends PolymerElement {
       node.isGroupNode
     );
   }
+  // Only relevant if this is a library function. A list of nodes that
+  // represent where the function is used.
   @computed('_node', 'graphHierarchy')
   get _functionUsages(): unknown[] {
     var node = this._node;
     var hierarchy = this.graphHierarchy;
     this._refreshNodeItemList('functionUsagesList');
-    if (!node || node.type !== tf.graph.NodeType.META) {
+    if (!node || node.type !== tf_graph.NodeType.META) {
       // Functions must be represented by metanodes.
       return [];
     }
@@ -634,7 +641,7 @@ class TfNodeInfo extends PolymerElement {
         return {
           name: name,
           node: this._getNode(name, this.graphHierarchy),
-          edgeLabel: tf.graph.scene.edge.getLabelForBaseEdge(
+          edgeLabel: tf_graph_scene_edge.getLabelForBaseEdge(
             baseEdge,
             this.renderHierarchy
           ),
@@ -658,7 +665,7 @@ class TfNodeInfo extends PolymerElement {
           edgeInfoList.push({
             name: name,
             node: this._getNode(name, this.graphHierarchy),
-            edgeLabel: tf.graph.scene.edge.getLabelForEdge(
+            edgeLabel: tf_graph_scene_edge.getLabelForEdge(
               metaedge,
               this.renderHierarchy
             ),
@@ -705,7 +712,7 @@ class TfNodeInfo extends PolymerElement {
     this._openedControlSucc = false;
     this.set(
       '_groupButtonText',
-      tf.graph.scene.node.getGroupSettingLabel(this._node)
+      tf_graph_scene_node.getGroupSettingLabel(this._node)
     );
   }
   _resizeList(selector) {
@@ -718,10 +725,10 @@ class TfNodeInfo extends PolymerElement {
     this.fire('node-toggle-inclusion', {name: this.graphNodeName});
   }
   _nodeIncludeStateChanged(include, oldInclude) {
-    this.set('_auxButtonText', tf.graph.getIncludeNodeButtonString(include));
+    this.set('_auxButtonText', tf_graph.getIncludeNodeButtonString(include));
   }
   _toggleGroup() {
-    var seriesName = tf.graph.scene.node.getSeriesName(this._node);
+    var seriesName = tf_graph_scene_node.getSeriesName(this._node);
     this.fire('node-toggle-seriesgroup', {name: seriesName});
   }
   _isLibraryFunction(node) {
@@ -729,9 +736,9 @@ class TfNodeInfo extends PolymerElement {
     // library function or a node within it. Those nodes should never be
     // extracted into the auxiliary scene group because they represent
     // templates for function call nodes, not ops in the graph themselves.
-    return node && node.name.startsWith(tf.graph.FUNCTION_LIBRARY_NODE_PREFIX);
+    return node && node.name.startsWith(tf_graph.FUNCTION_LIBRARY_NODE_PREFIX);
   }
   _isInSeries(node) {
-    return tf.graph.scene.node.canBeInSeries(node);
+    return tf_graph_scene_node.canBeInSeries(node);
   }
 }
