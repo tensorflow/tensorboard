@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import '@polymer/polymer/lib/elements/dom-module';
 
 export interface DomModuleOptions {
   moduleName: string;
@@ -29,26 +30,24 @@ export interface DomModuleOptions {
  */
 export function registerStyleDomModule(args: DomModuleOptions): void {
   const {moduleName, styleContent} = args;
-  customElements.whenDefined('dom-module').then(() => {
-    const module = document.createElement('dom-module');
-    const template = document.createElement('template');
+  const domModule = document.createElement('dom-module');
+  const template = document.createElement('template');
 
-    const styleIncludes: HTMLStyleElement[] = [];
-    if (args.styleDependencies) {
-      args.styleDependencies.forEach((dep) => {
-        const style = document.createElement('style');
-        style.setAttribute('include', dep);
-        styleIncludes.push(style);
-      });
-    }
-    const style = document.createElement('style');
-    style.setAttribute('textContent', styleContent);
-
-    styleIncludes.forEach((styleElement) => {
-      template.appendChild(styleElement);
+  const styleIncludes: HTMLStyleElement[] = [];
+  if (args.styleDependencies) {
+    args.styleDependencies.forEach((dep) => {
+      const style = document.createElement('style');
+      style.setAttribute('include', dep);
+      styleIncludes.push(style);
     });
-    template.appendChild(style);
-    module.appendChild(template);
-    (module as any).register(moduleName);
+  }
+  const style = document.createElement('style');
+  Object.assign(style, {textContent: styleContent});
+
+  styleIncludes.forEach((styleElement) => {
+    template.appendChild(styleElement);
   });
+  template.content.appendChild(style);
+  domModule.appendChild(template);
+  (domModule as any).register(moduleName);
 }
