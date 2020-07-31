@@ -27,6 +27,5 @@ export class MarkdownRenderer {
 
   convertToHTML(markdown: string) {
     return parse(markdown);
-    //return markdown;
   }
 }
