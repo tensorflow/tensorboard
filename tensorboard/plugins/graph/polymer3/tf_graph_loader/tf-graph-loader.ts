@@ -14,16 +14,21 @@ limitations under the License.
 ==============================================================================*/
 
 import {PolymerElement, html} from '@polymer/polymer';
-import {customElement, property} from '@polymer/decorators';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-common/tf-graph-common.html';
-import {DO_NOT_SUBMIT} from 'tf-graph-loader';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-common/tf-graph-common.html';
+import {customElement, observe, property} from '@polymer/decorators';
+
+import * as tf_graph_hierarchy from '../tf_graph_common/hierarchy';
+import * as tf_graph_loader from '../tf_graph_common/loader';
+import * as tf_graph_op from '../tf_graph_common/op';
+import * as tf_graph_util from '../tf_graph_common/util';
+import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+
 @customElement('tf-graph-loader')
-class TfGraphLoader extends PolymerElement {
+class TfGraphLoader extends LegacyElementMixin(PolymerElement) {
+  /**
+   * @type {Array<{name: string, path: string}>}
+   */
   @property({type: Array})
-  datasets: unknown[];
+  datasets: any[];
   @property({
     type: Number,
   })
@@ -33,12 +38,24 @@ class TfGraphLoader extends PolymerElement {
   @property({
     type: Object,
   })
-  compatibilityProvider: object = () =>
-    new tf.graph.op.TpuCompatibilityProvider();
+  compatibilityProvider: any = () => new tf_graph_op.TpuCompatibilityProvider();
+  /**
+   * If this optional object is provided, graph logic will override
+   * the HierarchyParams it uses to build the graph with properties within
+   * this object. For possible properties that this object can have, please
+   * see documentation on the HierarchyParams TypeScript interface.
+   * @type {Object}
+   */
   @property({
     type: Object,
   })
   overridingHierarchyParams: object = () => ({});
+  /**
+   * @type {{value: number, msg: string}}
+   *
+   * A number between 0 and 100 denoting the % of progress
+   * for the progress bar and the displayed message.
+   */
   @property({
     type: Object,
     notify: true,
@@ -46,13 +63,13 @@ class TfGraphLoader extends PolymerElement {
   progress: object;
   @property({
     type: Object,
-    readOnly: true,
+    readOnly: true, //readonly so outsider can't change this via binding
     notify: true,
   })
   outGraphHierarchy: object;
   @property({
     type: Object,
-    readOnly: true,
+    readOnly: true, //readonly so outsider can't change this via binding
     notify: true,
   })
   outGraph: object;
@@ -62,7 +79,7 @@ class TfGraphLoader extends PolymerElement {
     notify: true,
   })
   outHierarchyParams: object;
-  _template: null;
+  _template = null;
   @observe(
     'datasets',
     'selectedData',
@@ -85,13 +102,13 @@ class TfGraphLoader extends PolymerElement {
     const {overridingHierarchyParams, compatibilityProvider} = this;
     // Reset the progress bar to 0.
     this.progress = {value: 0, msg: ''};
-    const tracker = tf.graph.util.getTracker(this);
+    const tracker = tf_graph_util.getTracker(this);
     const hierarchyParams = Object.assign(
       {},
-      tf.graph.hierarchy.DefaultHierarchyParams,
+      tf_graph_hierarchy.DefaultHierarchyParams,
       overridingHierarchyParams
     );
-    tf.graph.loader
+    tf_graph_loader
       .fetchAndConstructHierarchicalGraph(
         tracker,
         path,
@@ -99,11 +116,13 @@ class TfGraphLoader extends PolymerElement {
         compatibilityProvider,
         hierarchyParams
       )
-      .then(({graph, graphHierarchy}) => {
-        this._setOutHierarchyParams(hierarchyParams);
-        this._setOutGraph(graph);
-        this._setOutGraphHierarchy(graphHierarchy);
-      });
+      .then(({graph, graphHierarchy}) =>
+        function() {
+          this._setOutHierarchyParams(hierarchyParams);
+          this._setOutGraph(graph);
+          this._setOutGraphHierarchy(graphHierarchy);
+        }.bind(this)
+      );
   }
   @observe('selectedFile', 'overridingHierarchyParams', 'compatibilityProvider')
   _loadFile(): void {
@@ -111,7 +130,7 @@ class TfGraphLoader extends PolymerElement {
     if (!e) {
       return;
     }
-    const target = e.target as HTMLInputElement;
+    const target = (e as any).target as HTMLInputElement;
     const file = target.files[0];
     if (!file) {
       return;

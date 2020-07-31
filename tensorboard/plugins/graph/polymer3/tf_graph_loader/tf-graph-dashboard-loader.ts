@@ -14,61 +14,87 @@ limitations under the License.
 ==============================================================================*/
 
 import {PolymerElement, html} from '@polymer/polymer';
-import {customElement, property} from '@polymer/decorators';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-backend/tf-backend.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-common/tf-graph-common.html';
-import {DO_NOT_SUBMIT} from 'tf-graph-dashboard-loader';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-backend/tf-backend.html';
-import {DO_NOT_SUBMIT} from '../tf-graph-common/tf-graph-common.html';
+import {customElement, observe, property} from '@polymer/decorators';
+
+import * as tf_graph_common from '../tf_graph_common/common';
+import * as tf_graph_controls from '../tf_graph_controls/tf-graph-controls';
+import * as tf_graph_hierarchy from '../tf_graph_common/hierarchy';
+import * as tf_graph_loader from '../tf_graph_common/loader';
+import * as tf_graph_op from '../tf_graph_common/op';
+import * as tf_graph_parser from '../tf_graph_common/parser';
+import * as tf_graph_util from '../tf_graph_common/util';
+
+import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+import {getRouter} from '../../../../components_polymer3/tf_backend/router';
+
 interface GraphRunTag {
   run: string;
   tag?: string;
 }
+
+/**
+ * Data loader for tf-graph-dashboard.
+ *
+ * The loader loads op graph, conceptual graphs, and RunMetadata associated with
+ * an op graph which is the major difference from the tf-graph-loader which is
+ * only capable of loading an op graph. Another difference is that the loader
+ * takes `selection` from the tf-graph-controls as an input as opposed to URL
+ * path of an data endpoint.
+ */
 @customElement('tf-graph-dashboard-loader')
-class TfGraphDashboardLoader extends PolymerElement {
+class TfGraphDashboardLoader extends LegacyElementMixin(PolymerElement) {
   @property({type: Array})
-  datasets: unknown[];
+  datasets: any[];
+  /**
+   * @type {{value: number, msg: string}}
+   *
+   * A number between 0 and 100 denoting the % of progress
+   * for the progress bar and the displayed message.
+   */
   @property({
     type: Object,
     notify: true,
   })
   progress: object;
   @property({type: Object})
-  selection: object;
+  selection: any;
+  /**
+   * TODO(stephanwlee): This should be changed to take in FileList or
+   * the prop should be changed to `fileInput`.
+   * @type {?Event}
+   */
   @property({type: Object})
   selectedFile: object;
   @property({
     type: Object,
   })
   compatibilityProvider: object = () =>
-    new tf.graph.op.TpuCompatibilityProvider();
+    new tf_graph_op.TpuCompatibilityProvider();
   @property({
     type: Object,
   })
-  hierarchyParams: object = () => tf.graph.hierarchy.DefaultHierarchyParams;
+  hierarchyParams: object = () => tf_graph_hierarchy.DefaultHierarchyParams;
   @property({
     type: Object,
-    readOnly: true,
+    readOnly: true, //readonly so outsider can't change this via binding
     notify: true,
   })
   outGraphHierarchy: object;
   @property({
     type: Object,
-    readOnly: true,
+    readOnly: true, //readonly so outsider can't change this via binding
     notify: true,
   })
   outGraph: object;
   @property({
     type: Object,
-    readOnly: true,
+    readOnly: true, // This property produces data.
     notify: true,
   })
   outStats: object;
   @property({type: Object})
-  _graphRunTag: object;
-  _template: null;
+  _graphRunTag: GraphRunTag;
+  _template = null;
   @observe('selection', 'compatibilityProvider')
   _selectionChanged(): void {
     // selection can change a lot within a microtask.
@@ -77,28 +103,30 @@ class TfGraphDashboardLoader extends PolymerElement {
       this._load(this.selection);
     });
   }
-  _load(selection: tf.graph.controls.Selection) {
+  _load(selection: tf_graph_controls.Selection) {
     const {run, tag, type: selectionType} = selection;
     switch (selectionType) {
-      case tf.graph.SelectionType.OP_GRAPH:
-      case tf.graph.SelectionType.CONCEPTUAL_GRAPH: {
+      case tf_graph_common.SelectionType.OP_GRAPH:
+      case tf_graph_common.SelectionType.CONCEPTUAL_GRAPH: {
         // Clear stats about the previous graph.
-        this._setOutStats(null);
+        (function() {
+          this._setOutStats(null);
+        }.bind(this)());
         const params = new URLSearchParams();
         params.set('run', run);
         params.set(
           'conceptual',
-          String(selectionType === tf.graph.SelectionType.CONCEPTUAL_GRAPH)
+          String(
+            selectionType === tf_graph_common.SelectionType.CONCEPTUAL_GRAPH
+          )
         );
         if (tag) params.set('tag', tag);
-        const graphPath = tf_backend
-          .getRouter()
-          .pluginRoute('graphs', '/graph', params);
+        const graphPath = getRouter().pluginRoute('graphs', '/graph', params);
         return this._fetchAndConstructHierarchicalGraph(graphPath).then(() => {
           this._graphRunTag = {run, tag};
         });
       }
-      case tf.graph.SelectionType.PROFILE: {
+      case tf_graph_common.SelectionType.PROFILE: {
         const {tags} = this.datasets.find(({name}) => name === run);
         const tagMeta = tags.find((t) => t.tag === tag);
         // In case current tag misses opGraph but has profile information,
@@ -116,15 +144,17 @@ class TfGraphDashboardLoader extends PolymerElement {
           ? this._load({
               run,
               tag: requiredOpGraphTag,
-              type: tf.graph.SelectionType.OP_GRAPH,
+              type: tf_graph_common.SelectionType.OP_GRAPH,
             })
           : Promise.resolve();
         const params = new URLSearchParams();
         params.set('tag', tag);
         params.set('run', run);
-        const metadataPath = tf_backend
-          .getRouter()
-          .pluginRoute('graphs', '/run_metadata', params);
+        const metadataPath = getRouter().pluginRoute(
+          'graphs',
+          '/run_metadata',
+          params
+        );
         return maybeFetchGraphPromise.then(() =>
           this._readAndParseMetadata(metadataPath)
         );
@@ -141,10 +171,12 @@ class TfGraphDashboardLoader extends PolymerElement {
       value: 0,
       msg: '',
     });
-    var tracker = tf.graph.util.getTracker(this);
-    tf.graph.parser.fetchAndParseMetadata(path, tracker).then((stats) => {
-      this._setOutStats(stats);
-    });
+    var tracker = tf_graph_util.getTracker(this);
+    tf_graph_parser.fetchAndParseMetadata(path, tracker).then(
+      function(stats) {
+        this._setOutStats(stats);
+      }.bind(this)
+    );
   }
   _fetchAndConstructHierarchicalGraph(path: string | null, pbTxtFile?: Blob) {
     // Reset the progress bar to 0.
@@ -152,19 +184,21 @@ class TfGraphDashboardLoader extends PolymerElement {
       value: 0,
       msg: '',
     });
-    const tracker = tf.graph.util.getTracker(this);
-    return tf.graph.loader
+    const tracker = tf_graph_util.getTracker(this);
+    return tf_graph_loader
       .fetchAndConstructHierarchicalGraph(
         tracker,
         path,
         pbTxtFile,
-        this.compatibilityProvider,
-        this.hierarchyParams
+        this.compatibilityProvider as any,
+        this.hierarchyParams as any
       )
-      .then(({graph, graphHierarchy}) => {
-        this._setOutGraph(graph);
-        this._setOutGraphHierarchy(graphHierarchy);
-      });
+      .then(
+        function({graph, graphHierarchy}) {
+          this._setOutGraph(graph);
+          this._setOutGraphHierarchy(graphHierarchy);
+        }.bind(this)
+      );
   }
   @observe('selectedFile', 'compatibilityProvider')
   _selectedFileChanged() {
@@ -172,7 +206,7 @@ class TfGraphDashboardLoader extends PolymerElement {
     if (!e) {
       return;
     }
-    const target = e.target as HTMLInputElement;
+    const target = (e as any).target as HTMLInputElement;
     const file = target.files[0];
     if (!file) {
       return;
