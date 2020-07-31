@@ -18,28 +18,13 @@ import { customElement, property } from "@polymer/decorators";
 import "@polymer/paper-icon-button";
 import "@polymer/paper-slider";
 import "@polymer/paper-spinner";
-import { DO_NOT_SUBMIT } from "../tf-imports/polymer.html";
-import { DO_NOT_SUBMIT } from "../tf-backend/tf-backend.html";
-import { DO_NOT_SUBMIT } from "../tf-card-heading/tf-card-heading.html";
-import { DO_NOT_SUBMIT } from "../tf-card-heading/tf-card-heading-style.html";
-import { DO_NOT_SUBMIT } from "../tf-card-heading/util.html";
-import { DO_NOT_SUBMIT } from "../tf-color-scale/tf-color-scale.html";
-import { DO_NOT_SUBMIT } from "../tf-dashboard-common/tensorboard-color.html";
-import { DO_NOT_SUBMIT } from "../tf-imports/d3.html";
-import { DO_NOT_SUBMIT } from "../tf-imports/lodash.html";
-import "@polymer/paper-icon-button";
-import "@polymer/paper-slider";
-import "@polymer/paper-spinner";
-import { DO_NOT_SUBMIT } from "../tf-imports/polymer.html";
-import { DO_NOT_SUBMIT } from "../tf-backend/tf-backend.html";
-import { DO_NOT_SUBMIT } from "../tf-card-heading/tf-card-heading.html";
-import { DO_NOT_SUBMIT } from "../tf-card-heading/tf-card-heading-style.html";
-import { DO_NOT_SUBMIT } from "../tf-card-heading/util.html";
-import { DO_NOT_SUBMIT } from "../tf-color-scale/tf-color-scale.html";
-import { DO_NOT_SUBMIT } from "../tf-dashboard-common/tensorboard-color.html";
-import { DO_NOT_SUBMIT } from "../tf-imports/d3.html";
-import { DO_NOT_SUBMIT } from "../tf-imports/lodash.html";
-'use strict';
+import { Canceller } from "../../../../components_polymer3/tf_backend/canceller";
+import { getRouter } from "../../../../components_polymer3/tf_backend/router";
+import { addParams } from "../../../../components_polymer3/tf_backend/urlPathHelper";
+import "../../../../components_polymer3/tf_card_heading/tf-card-heading";
+import { runsColorScale } from "../../../../components_polymer3/tf_color_scale/colorScale";
+import "../../../../components_polymer3/tf_dashboard_common/tensorboard-color";
+
 @customElement("tf-image-loader")
 class TfImageLoader extends PolymerElement {
     static readonly template = html `<tf-card-heading tag="[[tag]]" run="[[run]]" display-name="[[tagMetadata.displayName]]" description="[[tagMetadata.description]]" color="[[_runColor]]">
@@ -203,11 +188,11 @@ class TfImageLoader extends PolymerElement {
     @property({
         type: Object
     })
-    _metadataCanceller: object = () => new tf_backend.Canceller();
+    _metadataCanceller: object = () => new Canceller();
     @property({
         type: Object
     })
-    _imageCanceller: object = () => new tf_backend.Canceller();
+    _imageCanceller: object = () => new Canceller();
     @property({
         type: Array,
         notify: true
@@ -225,7 +210,7 @@ class TfImageLoader extends PolymerElement {
     @computed("run")
     get _runColor(): string {
         var run = this.run;
-        return tf_color_scale.runsColorScale(run);
+        return runsColorScale(run);
     }
     @computed("_steps")
     get _hasAtLeastOneStep(): boolean {
@@ -285,8 +270,8 @@ class TfImageLoader extends PolymerElement {
             return;
         }
         this._metadataCanceller.cancelAll();
-        const router = tf_backend.getRouter();
-        const url = tf_backend.addParams(router.pluginRoute('images', '/images'), {
+        const router = getRouter();
+        const url = addParams(router.pluginRoute('images', '/images'), {
             tag: this.tag,
             run: this.run,
             sample: this.sample,
@@ -303,13 +288,12 @@ class TfImageLoader extends PolymerElement {
         this.requestManager.request(url).then(updateSteps);
     }
     _createStepDatum(imageMetadata) {
-        let url = tf_backend
-            .getRouter()
+        let url = getRouter()
             .pluginRoute('images', '/individualImage');
         // Include wall_time just to disambiguate the URL and force
         // the browser to reload the image when the URL changes. The
         // backend doesn't care about the value.
-        url = tf_backend.addParams(url, { ts: imageMetadata.wall_time });
+        url = addParams(url, { ts: imageMetadata.wall_time });
         url += '&' + imageMetadata.query;
         return {
             // The wall time within the metadata is in seconds. The Date

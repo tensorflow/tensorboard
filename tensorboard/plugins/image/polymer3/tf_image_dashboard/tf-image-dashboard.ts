@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import * as _ from "lodash";
 import { PolymerElement, html } from "@polymer/polymer";
 import { customElement, property } from "@polymer/decorators";
 import "@polymer/iron-icon";
@@ -30,21 +31,7 @@ import { DO_NOT_SUBMIT } from "../tf-paginated-view/tf-category-paginated-view.h
 import { DO_NOT_SUBMIT } from "../tf-runs-selector/tf-runs-selector.html";
 import { DO_NOT_SUBMIT } from "../tf-tensorboard/registry.html";
 import { DO_NOT_SUBMIT } from "tf-image-loader.html";
-import "@polymer/iron-icon";
-import "@polymer/paper-button";
-import "@polymer/paper-dialog";
-import "@polymer/paper-input";
-import "@polymer/paper-slider";
-import { DO_NOT_SUBMIT } from "../tf-imports/polymer.html";
-import { DO_NOT_SUBMIT } from "../tf-backend/tf-backend.html";
-import { DO_NOT_SUBMIT } from "../tf-categorization-utils/tf-categorization-utils.html";
-import { DO_NOT_SUBMIT } from "../tf-categorization-utils/tf-tag-filterer.html";
-import { DO_NOT_SUBMIT } from "../tf-dashboard-common/dashboard-style.html";
-import { DO_NOT_SUBMIT } from "../tf-dashboard-common/tf-dashboard-layout.html";
-import { DO_NOT_SUBMIT } from "../tf-paginated-view/tf-category-paginated-view.html";
-import { DO_NOT_SUBMIT } from "../tf-runs-selector/tf-runs-selector.html";
-import { DO_NOT_SUBMIT } from "../tf-tensorboard/registry.html";
-import { DO_NOT_SUBMIT } from "tf-image-loader.html";
+
 'use strict';
 @customElement("tf-image-dashboard")
 class TfImageDashboard extends PolymerElement {
