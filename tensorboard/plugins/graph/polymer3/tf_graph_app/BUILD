@@ -17,8 +17,8 @@ tf_ts_library(
         "//tensorboard/plugins/graph/polymer3/tf_graph_board",
         "//tensorboard/plugins/graph/polymer3/tf_graph_controls",
         "//tensorboard/plugins/graph/polymer3/tf_graph_loader",
-        "@npm//@polymer/polymer",
         "@npm//@polymer/decorators",
+        "@npm//@polymer/polymer",
     ],
 )
 
@@ -32,8 +32,8 @@ tf_js_binary(
 tf_web_library(
     name = "tf_graph_app_bundle",
     srcs = [
-        "tf_graph_app_js_binary.js",
         "tf-graph-app.html",
+        "tf_graph_app_js_binary.js",
     ],
     path = "/tf-graph-app",
 )

@@ -13,8 +13,8 @@ tf_ts_library(
     deps = [
         "//tensorboard/components_polymer3/polymer:legacy_element_mixin",
         "//tensorboard/plugins/graph/polymer3/tf_graph_common",
-        "@npm//@polymer/polymer",
         "@npm//@polymer/decorators",
+        "@npm//@polymer/polymer",
     ],
 )
 
@@ -30,7 +30,7 @@ tf_ts_library(
         "//tensorboard/components_polymer3/tf_backend",
         "//tensorboard/plugins/graph/polymer3/tf_graph_common",
         "//tensorboard/plugins/graph/polymer3/tf_graph_controls",
-        "@npm//@polymer/polymer",
         "@npm//@polymer/decorators",
+        "@npm//@polymer/polymer",
     ],
 )

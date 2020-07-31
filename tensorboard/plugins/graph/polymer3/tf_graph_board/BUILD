@@ -14,8 +14,8 @@ tf_ts_library(
         "//tensorboard/plugins/graph/polymer3/tf_graph",
         "//tensorboard/plugins/graph/polymer3/tf_graph_common",
         "//tensorboard/plugins/graph/polymer3/tf_graph_info",
-        "@npm//@polymer/polymer",
         "@npm//@polymer/decorators",
         "@npm//@polymer/paper-progress",
+        "@npm//@polymer/polymer",
     ],
 )
