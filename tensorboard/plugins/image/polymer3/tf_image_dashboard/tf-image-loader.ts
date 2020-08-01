@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 import { PolymerElement, html } from "@polymer/polymer";
-import { customElement, property } from "@polymer/decorators";
+import { computed, customElement, observe, property } from "@polymer/decorators";
 import "@polymer/paper-icon-button";
 import "@polymer/paper-slider";
 import "@polymer/paper-spinner";
