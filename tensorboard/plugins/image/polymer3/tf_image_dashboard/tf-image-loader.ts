@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import * as PolymerDom from '@polymer/polymer/lib/legacy/polymer.dom.js'
 import { PolymerElement, html } from "@polymer/polymer";
 import { computed, customElement, observe, property } from "@polymer/decorators";
 import "@polymer/paper-icon-button";
@@ -20,8 +21,10 @@ import "@polymer/paper-slider";
 import "@polymer/paper-spinner";
 import { Canceller } from "../../../../components_polymer3/tf_backend/canceller";
 import { getRouter } from "../../../../components_polymer3/tf_backend/router";
-import { addParams } from "../../../../components_polymer3/tf_backend/urlPathHelper";
+import { addParams } from "../../../../components_polymer3/tf_backend/urlPathHelpers";
+import { formatDate } from "../../../../components_polymer3/tf_card_heading/util";
 import "../../../../components_polymer3/tf_card_heading/tf-card-heading";
+import "../../../../components_polymer3/tf_card_heading/tf-card-heading-style";
 import { runsColorScale } from "../../../../components_polymer3/tf_color_scale/colorScale";
 import "../../../../components_polymer3/tf_dashboard_common/tensorboard-color";
 
@@ -240,7 +243,7 @@ class TfImageLoader extends PolymerElement {
         var currentStep = this._currentStep;
         if (!currentStep)
             return '';
-        return tf_card_heading.formatDate(currentStep.wall_time);
+        return formatDate(currentStep.wall_time);
     }
     @computed("_steps")
     get _maxStepIndex(): number {
@@ -322,7 +325,7 @@ class TfImageLoader extends PolymerElement {
             }
             const mainImageContainer = this.$$('#main-image-container');
             mainImageContainer.innerHTML = '';
-            Polymer.dom(mainImageContainer).appendChild(img);
+            PolymerDom.dom(mainImageContainer).appendChild(img);
             this.set('_isImageLoading', false);
         })
             .bind(this);
