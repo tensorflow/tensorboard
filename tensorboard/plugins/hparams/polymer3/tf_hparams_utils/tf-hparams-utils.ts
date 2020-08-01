@@ -12,15 +12,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/d3.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/d3.html';
-/* Common utilities used in the hparams plugin.
- * TODO(erez): Convert to TypeScript.
+/*
+ * Common utilities used in the hparams plugin.
  */
-var tf;
+import * as d3 from 'd3';
+import * as _ from 'lodash';
+
 // -----------------------------------------------------------------------
 // Functions for dealing with HParams, Metrics, Columns,
 // SessionGroups and Schema objects.
@@ -58,15 +55,15 @@ var tf;
 //     in addition to the columnIndex parameter.
 // -----------------------------------------------------------------------
 // Computes the name to display for the given 'hparamInfo' object.
-function hparamName(hparamInfo) {
+export function hparamName(hparamInfo) {
   if (hparamInfo.displayName !== '' && hparamInfo.displayName !== undefined) {
     return hparamInfo.displayName;
   }
   return hparamInfo.name;
 }
-utils.hparamName = hparamName;
+
 // Computes the name to display for the given metricInfo object.
-function metricName(metricInfo) {
+export function metricName(metricInfo) {
   if (metricInfo.displayName !== '' && metricInfo.displayName !== undefined) {
     return metricInfo.displayName;
   }
@@ -83,64 +80,64 @@ function metricName(metricInfo) {
   }
   return group + '.' + tag;
 }
-utils.metricName = metricName;
-function schemaColumnName(schema, columnIndex) {
+
+export function schemaColumnName(schema, columnIndex) {
   if (columnIndex < schema.hparamColumns.length) {
     return hparamName(schema.hparamColumns[columnIndex].hparamInfo);
   }
   const metricIndex = columnIndex - schema.hparamColumns.length;
   return metricName(schema.metricColumns[metricIndex].metricInfo);
 }
-utils.schemaColumnName = schemaColumnName;
+
 // Returns the number of hparams in schema (visible and invisible).
-function numHParams(schema) {
+export function numHParams(schema) {
   return schema.hparamColumns.length;
 }
-utils.numHParams = numHParams;
+
 // Returns the number of metrics in schema (visible and invisible).
-function numMetrics(schema) {
+export function numMetrics(schema) {
   return schema.metricColumns.length;
 }
-utils.numMetrics = numMetrics;
+
 // Returns the number of columns in schema (visible and invisible).
-function numColumns(schema) {
+export function numColumns(schema) {
   return numHParams(schema) + numMetrics(schema);
 }
-utils.numColumns = numColumns;
+
 // Returns hparamValues[hparamName]. To be used in a Polymer databinding
 // annotation (as Polymer doesn't have an annotation for looking up a
 // property in an JS object).
-function hparamValueByName(hparamValues, hparamName) {
+export function hparamValueByName(hparamValues, hparamName) {
   return hparamValues[hparamName];
 }
-utils.hparamValueByName = hparamValueByName;
+
 // Given an array 'metricValues' of (javascript object representation) of
 // tensorboard.hparams.MetricValue's protocol buffers, returns the first
 // element whose metric name is 'metricName' or undefined if no such
 // element exists.
-function metricValueByName(metricValues, metricName) {
+export function metricValueByName(metricValues, metricName) {
   return metricValues.find((mv) => _.isEqual(mv.name, metricName));
 }
-utils.metricValueByName = metricValueByName;
+
 // Returns sessionGroup's metric value of the metric with index
 // 'metricIndex' in schema.metricColumns.
-function hparamValueByIndex(schema, sessionGroup, hparamIndex) {
+export function hparamValueByIndex(schema, sessionGroup, hparamIndex) {
   return sessionGroup.hparams[
     schema.hparamColumns[hparamIndex].hparamInfo.name
   ];
 }
-utils.hparamValueByIndex = hparamValueByIndex;
+
 // Returns sessionGroup's metric value of the metric with index
 // 'metricIndex' in schema.metricColumns.
-function metricValueByIndex(schema, sessionGroup, metricIndex) {
+export function metricValueByIndex(schema, sessionGroup, metricIndex) {
   const metricName = schema.metricColumns[metricIndex].metricInfo.name;
   const metricValue = metricValueByName(sessionGroup.metricValues, metricName);
   return metricValue === undefined ? undefined : metricValue.value;
 }
-utils.metricValueByIndex = metricValueByIndex;
+
 // Returns sessionGroup's column value of the column with index
 // 'columnIndex' in schema.
-function columnValueByIndex(schema, sessionGroup, columnIndex) {
+export function columnValueByIndex(schema, sessionGroup, columnIndex) {
   if (columnIndex < schema.hparamColumns.length) {
     return hparamValueByIndex(schema, sessionGroup, columnIndex);
   }
@@ -150,20 +147,24 @@ function columnValueByIndex(schema, sessionGroup, columnIndex) {
     columnIndex - schema.hparamColumns.length
   );
 }
-utils.columnValueByIndex = columnValueByIndex;
+
 // Returns an array [min, max] representing the minimum and maximum
 // value of the given column in the sessionGroups array.
 // Ignores session groups with missing values for the column.
-function numericColumnExtent(schema, sessionGroups, columnIndex) {
+export function numericColumnExtent(schema, sessionGroups, columnIndex) {
   return d3.extent(sessionGroups, (sg) =>
     columnValueByIndex(schema, sg, columnIndex)
   );
 }
-utils.numericColumnExtent = numericColumnExtent;
+
 // Converts a visibleSchema columnIndex to a schema columnIndex.
 // Returns the schema-relative columnIndex for the visible column with
 // visibleSchema-releative columnIndex given by 'visibleColumnIndex'.
-function getAbsoluteColumnIndex(schema, visibleSchema, visibleColumnIndex) {
+export function getAbsoluteColumnIndex(
+  schema,
+  visibleSchema,
+  visibleColumnIndex
+) {
   let result;
   if (visibleColumnIndex < visibleSchema.hparamInfos.length) {
     result = schema.hparamColumns.findIndex(
@@ -180,81 +181,89 @@ function getAbsoluteColumnIndex(schema, visibleSchema, visibleColumnIndex) {
   console.assert(result !== -1);
   return result;
 }
-utils.getAbsoluteColumnIndex = getAbsoluteColumnIndex;
+
 // DEPRECATED. Use schemaColumnName instead (with an "absolute"
 // columnIndex).
 // Computes the name to display for the given visible column index.
-function schemaVisibleColumnName(visibleSchema, columnIndex) {
+export function schemaVisibleColumnName(visibleSchema, columnIndex) {
   if (columnIndex < visibleSchema.hparamInfos.length) {
     return hparamName(visibleSchema.hparamInfos[columnIndex]);
   }
   const metricIndex = columnIndex - visibleSchema.hparamInfos.length;
   return metricName(visibleSchema.metricInfos[metricIndex]);
 }
-utils.schemaVisibleColumnName = schemaVisibleColumnName;
+
 // DEPRECATED. Use numDisplayedHParams instead.
 // Returns the number of hparams in visibleSchema. This is the same
 // value as numDisplayedHParams(schema) with schema being the "containing"
 // schema of visibleSchema.
-function numVisibleHParams(visibleSchema) {
+export function numVisibleHParams(visibleSchema) {
   return visibleSchema.hparamInfos.length;
 }
-utils.numVisibleHParams = numVisibleHParams;
+
 // DEPRECATED. Use numDisplayedMetrics instead.
 // Returns the number of hparams in visibleSchema. This is the same
 // value as numDisplayedMetrics(schema) with schema being the "containing"
 // schema of visibleSchema.
-function numVisibleMetrics(visibleSchema) {
+export function numVisibleMetrics(visibleSchema) {
   return visibleSchema.metricInfos.length;
 }
-utils.numVisibleMetrics = numVisibleMetrics;
+
 // DEPRECATED.
 // Returns the number of visible columns (having 'displayed' true).
 // This is the same value as numDisplayedColumns(schema) with schema
 // being the "containing" schema of visibleSchema.
-function numVisibleColumns(visibleSchema) {
+export function numVisibleColumns(visibleSchema) {
   return numVisibleHParams(visibleSchema) + numVisibleMetrics(visibleSchema);
 }
-utils.numVisibleColumns = numVisibleColumns;
+
 // DEPRECATED. Use numericColumnExtent with a schema columnIndex instead.
 // Returns an array [min, max] representing the minimum and maximum
 // value of the given visible column in the sessionGroups array.
 // Ignores session groups with missing values for the column.
-function visibleNumericColumnExtent(visibleSchema, sessionGroups, columnIndex) {
+export function visibleNumericColumnExtent(
+  visibleSchema,
+  sessionGroups,
+  columnIndex
+) {
   return d3.extent(sessionGroups, (sg) =>
     columnValueByVisibleIndex(visibleSchema, sg, columnIndex)
   );
 }
-utils.visibleNumericColumnExtent = visibleNumericColumnExtent;
+
 // Returns a string representation of hparamValues[hparamName] suitable
 // for display.
-function prettyPrintHParamValueByName(hparamValues, hparamName) {
+export function prettyPrintHParamValueByName(hparamValues, hparamName) {
   return prettyPrint(hparamValueByName(hparamValues, hparamName));
 }
-utils.prettyPrintHParamValueByName = prettyPrintHParamValueByName;
+
 // Returns a string representation of metricValueByName suitable for
 // display.
-function prettyPrintMetricValueByName(metricValues, metricName) {
+export function prettyPrintMetricValueByName(metricValues, metricName) {
   return prettyPrint(metricValueByName(metricValues, metricName));
 }
-utils.prettyPrintMetricValueByName = prettyPrintMetricValueByName;
+
 // Returns the session group with name 'name' in sessionGroups or
 // undefined of no such element exist.
-function sessionGroupWithName(sessionGroups, name) {
+export function sessionGroupWithName(sessionGroups, name) {
   return sessionGroups.find((sg) => sg.name === name);
 }
-utils.sessionGroupWithName = sessionGroupWithName;
+
 // DEPRECATED. Use hparamValueByIndex with a schema hparamIndex instead.
 // Returns sessionGroup's hparam value of the visible hparam with index
 // 'hparamIndex' in visibleSchema.hparamInfos.
-function hparamValueByVisibleIndex(visibleSchema, sessionGroup, hparamIndex) {
+export function hparamValueByVisibleIndex(
+  visibleSchema,
+  sessionGroup,
+  hparamIndex
+) {
   return sessionGroup.hparams[visibleSchema.hparamInfos[hparamIndex].name];
 }
-utils.hparamValueByVisibleIndex = hparamValueByVisibleIndex;
+
 // DEPRECATED. Use metricValueByIndex with a schema metricIndex instead.
 // Returns sessionGroup's metric value of the visible metric with index
 // 'metricIndex' in visibleSchema.metricInfos.
-function metricValueByVisibleIndex(
+export function metricValueByVisibleIndex(
   visibleSchema,
   sessionGroup,
   visibleMetricIndex
@@ -263,11 +272,15 @@ function metricValueByVisibleIndex(
   const metricValue = metricValueByName(sessionGroup.metricValues, metricName);
   return metricValue === undefined ? undefined : metricValue.value;
 }
-utils.metricValueByVisibleIndex = metricValueByVisibleIndex;
+
 // DEPRECATED. Use columnValueByIndex with a schema columnIndex instead.
 // Returns sessionGroup's column value of the visible column with index
 // 'columnIndex' in visibleSchema.
-function columnValueByVisibleIndex(visibleSchema, sessionGroup, columnIndex) {
+export function columnValueByVisibleIndex(
+  visibleSchema,
+  sessionGroup,
+  columnIndex
+) {
   if (columnIndex < visibleSchema.hparamInfos.length) {
     return hparamValueByVisibleIndex(visibleSchema, sessionGroup, columnIndex);
   }
@@ -277,10 +290,10 @@ function columnValueByVisibleIndex(visibleSchema, sessionGroup, columnIndex) {
     columnIndex - visibleSchema.hparamInfos.length
   );
 }
-utils.columnValueByVisibleIndex = columnValueByVisibleIndex;
+
 // ---- Misc functions ---------------------------------------------------
 // Returns a string representation of 'value' suitable for display.
-function prettyPrint(value) {
+export function prettyPrint(value) {
   if (_.isNumber(value)) {
     // TODO(erez):Make the precision user-configurable.
     return value.toPrecision(5);
@@ -290,26 +303,26 @@ function prettyPrint(value) {
   }
   return value.toString();
 }
-utils.prettyPrint = prettyPrint;
+
 // Returns the square of the L2-norm of (x, y).
-function l2NormSquared(x, y) {
+export function l2NormSquared(x, y) {
   return x * x + y * y;
 }
-utils.l2NormSquared = l2NormSquared;
+
 // Returns the euclidean distance between (x0, y0) and (x1, y1).
-function euclideanDist(x0, y0, x1, y1) {
+export function euclideanDist(x0, y0, x1, y1) {
   return Math.sqrt(l2NormSquared(x0 - x1, y0 - y1));
 }
-utils.euclideanDist = euclideanDist;
+
 // Returns the (euclidean) distance between the point (x, y) and the
 // rectangle [x0, x1) x [y0, y1).
-function pointToRectangleDist(x, y, x0, y0, x1, y1) {
+export function pointToRectangleDist(x, y, x0, y0, x1, y1) {
   if (x < x0 && y < y0) {
-    return utils.euclideanDist(x, y, x0, y0);
+    return euclideanDist(x, y, x0, y0);
   } else if (x0 <= x && x < x1 && y < y0) {
     return y0 - y;
   } else if (x1 <= x && y < y0) {
-    return utils.euclideanDist(x, y, x1, y0);
+    return euclideanDist(x, y, x1, y0);
   } else if (x < x0 && y0 <= y && y < y1) {
     return x0 - x;
   } else if (x0 <= x && x < x1 && y0 <= y && y < y1) {
@@ -317,16 +330,16 @@ function pointToRectangleDist(x, y, x0, y0, x1, y1) {
   } else if (x1 <= x && y0 <= y && y < y1) {
     return x - x1;
   } else if (x < x0 && y1 <= y) {
-    return utils.euclideanDist(x, y, x0, y1);
+    return euclideanDist(x, y, x0, y1);
   } else if (x0 <= x && x < x1 && y1 <= y) {
     return y - y1;
   } else if (x1 <= x && y1 <= y) {
-    return utils.euclideanDist(x, y, x1, y1);
+    return euclideanDist(x, y, x1, y1);
   } else {
     throw 'Point (x,y) must be in one of the regions defined above.';
   }
 }
-utils.pointToRectangleDist = pointToRectangleDist;
+
 // SVG elements such as <g> can optionally have a "transform" attribute
 // the alters the way the element and its children are drawn.
 // The following function helps generate a "translate function" value
@@ -334,13 +347,13 @@ utils.pointToRectangleDist = pointToRectangleDist;
 // See
 // https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/transform
 // for more details.
-function translateStr(x, opt_y) {
+export function translateStr(x, opt_y) {
   if (opt_y === undefined) {
     return 'translate(' + x + ')';
   }
   return 'translate(' + x + ',' + opt_y + ')';
 }
-utils.translateStr = translateStr;
+
 // SVG elements such as <g> can optionally have a "transform" attribute
 // the alters the way the element and its children are drawn.
 // The following function helps generate a "rotate function" value
@@ -348,7 +361,7 @@ utils.translateStr = translateStr;
 // See
 // https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/transform
 // for more details.
-function rotateStr(angle, x, y) {
+export function rotateStr(angle, x, y) {
   let result = 'rotate(' + angle;
   if (x !== undefined && y !== undefined) {
     result = result + ',' + x + ',' + y;
@@ -356,16 +369,16 @@ function rotateStr(angle, x, y) {
   result = result + ')';
   return result;
 }
-utils.rotateStr = rotateStr;
-function isNullOrUndefined(x) {
+
+export function isNullOrUndefined(x) {
   return x === null || x === undefined;
 }
-utils.isNullOrUndefined = isNullOrUndefined;
+
 // Given a d3.quadTree object, visits all the points in it
 // that lie inside the rectangle [x0, x1) x [y0, y1).
 // For each such point calls the given callback, passing the
 // point's quadtree data.
-function quadTreeVisitPointsInRect(quadTree, x0, y0, x1, y1, callback) {
+export function quadTreeVisitPointsInRect(quadTree, x0, y0, x1, y1, callback) {
   quadTree.visit((node, nx0, ny0, nx1, ny1) => {
     // Represents the set of points [nx0, nx1) x [ny0, ny1).
     if (node.length === undefined) {
@@ -385,14 +398,14 @@ function quadTreeVisitPointsInRect(quadTree, x0, y0, x1, y1, callback) {
     return nx0 >= x1 || nx1 <= x0 || ny0 >= y1 || ny1 <= y0;
   });
 }
-utils.quadTreeVisitPointsInRect = quadTreeVisitPointsInRect;
+
 // Given a d3.quadTree object, visits all the points in it
 // that lie inside the closed disk centered at (centerX, centerY)
 // with the given radius.
 // For each such point calls the given callback, passing the
 // point's quadtree data and the distance from the point to the center
 // of the disk.
-function quadTreeVisitPointsInDisk(
+export function quadTreeVisitPointsInDisk(
   quadTree,
   centerX,
   centerY,
@@ -405,7 +418,7 @@ function quadTreeVisitPointsInDisk(
       do {
         const x = quadTree.x()(node.data);
         const y = quadTree.y()(node.data);
-        const centerDist = utils.euclideanDist(centerX, centerY, x, y);
+        const centerDist = euclideanDist(centerX, centerY, x, y);
         if (centerDist <= radius) {
           callback(node.data, centerDist);
         }
@@ -415,15 +428,13 @@ function quadTreeVisitPointsInDisk(
     // Skip nodes that represent a rectangle that does not intersect the
     // disk. Equivalently, skip nodes that represent a rectangle whose
     // distance to (centerX, centerY) is larger than radius.
-    return (
-      utils.pointToRectangleDist(centerX, centerY, x0, y0, x1, y1) > radius
-    );
+    return pointToRectangleDist(centerX, centerY, x0, y0, x1, y1) > radius;
   });
 }
-utils.quadTreeVisitPointsInDisk = quadTreeVisitPointsInDisk;
+
 // Returns a Set consisting of all elements in 'set' for which
 // predicateFn evaluates to a truthy value.
-function filterSet(set, predicateFn) {
+export function filterSet(set, predicateFn) {
   const result = new Set();
   set.forEach((val) => {
     if (predicateFn(val)) {
@@ -432,7 +443,7 @@ function filterSet(set, predicateFn) {
   });
   return result;
 }
-utils.filterSet = filterSet;
+
 // Sets the array property of polymerElement to 'newArray' in
 // a Polymer-"observable" manner, so that other elements that have
 // the array as a property (like a dom-repeat) would update correctly.
@@ -441,7 +452,7 @@ utils.filterSet = filterSet;
 //                   to change.
 //   pathToArray: a polymer dot-separated path string to the array
 //   newArray: the new array to set.
-function setArrayObservably(polymerElement, pathToArray, newArray) {
+export function setArrayObservably(polymerElement, pathToArray, newArray) {
   const currentArray = polymerElement.get(pathToArray, polymerElement);
   // If the current value is not an array, then we use
   // 'polymerElement.set' to replace it with newArray.
@@ -459,9 +470,9 @@ function setArrayObservably(polymerElement, pathToArray, newArray) {
     [pathToArray, 0, currentArray.length].concat(newArray)
   );
 }
-utils.setArrayObservably = setArrayObservably;
+
 // Computes a simple not-secure 32-bit integer hash value for a string.
-function hashOfString(str) {
+export function hashOfString(str) {
   let result = 0;
   for (let i = 0; i < str.length; ++i) {
     result = (result * 31 + str.charCodeAt(i)) & 4294967295;
@@ -471,4 +482,3 @@ function hashOfString(str) {
   // to the range [0, (2**32)-1].
   return result + 2 ** 31;
 }
-utils.hashOfString = hashOfString;
