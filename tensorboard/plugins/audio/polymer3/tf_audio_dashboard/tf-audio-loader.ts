@@ -18,6 +18,7 @@ import '@polymer/paper-slider';
 import {PolymerElement, html} from '@polymer/polymer';
 import * as _ from 'lodash';
 
+import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
 import {Canceller} from '../../../../components_polymer3/tf_backend/canceller';
 import {RequestManager} from '../../../../components_polymer3/tf_backend/requestManager';
 import {getRouter} from '../../../../components_polymer3/tf_backend/router';
@@ -52,12 +53,17 @@ interface StepDatum {
   url: string;
 }
 
+export interface TfAudioLoader extends HTMLElement {
+  reload(): void;
+}
+
 /*
 tf-audio-loader loads an individual audio clip from the TensorBoard
 backend.
 */
 @customElement('tf-audio-loader')
-export class TfAudioLoader extends PolymerElement {
+class _TfAudioLoader extends LegacyElementMixin(PolymerElement)
+  implements TfAudioLoader {
   static readonly template = html`
     <tf-card-heading
       tag="[[tag]]"
@@ -215,6 +221,10 @@ export class TfAudioLoader extends PolymerElement {
   }
 
   @observe('run', 'tag')
+  _reloadOnRunTagChange() {
+    this.reload();
+  }
+
   reload() {
     if (!this._attached) {
       return;

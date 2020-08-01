@@ -17,6 +17,7 @@ import {computed, customElement, property} from '@polymer/decorators';
 import {PolymerElement, html} from '@polymer/polymer';
 import * as _ from 'lodash';
 
+import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
 import {getTags} from '../../../../components_polymer3/tf_backend/backend';
 import {RequestManager} from '../../../../components_polymer3/tf_backend/requestManager';
 import {getRouter} from '../../../../components_polymer3/tf_backend/router';
@@ -27,12 +28,13 @@ import '../../../../components_polymer3/tf_dashboard_common/tf-dashboard-layout'
 import '../../../../components_polymer3/tf_paginated_view/tf-category-paginated-view';
 import '../../../../components_polymer3/tf_runs_selector/tf-runs-selector';
 import {AudioTagInfo, TfAudioLoader} from './tf-audio-loader';
+import './tf-audio-loader';
 
 /*
 tf-audio-dashboard displays a dashboard that loads audio from a TensorFlow run.
 */
 @customElement('tf-audio-dashboard')
-class TfAudioDashboard extends PolymerElement {
+class TfAudioDashboard extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
     <tf-dashboard-layout>
       <div class="sidebar" slot="sidebar">
