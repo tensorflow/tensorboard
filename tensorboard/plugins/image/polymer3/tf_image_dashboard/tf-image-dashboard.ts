@@ -21,18 +21,19 @@ import "@polymer/paper-button";
 import "@polymer/paper-dialog";
 import "@polymer/paper-input";
 import "@polymer/paper-slider";
-import { DO_NOT_SUBMIT } from "../tf-imports/polymer.html";
-import { DO_NOT_SUBMIT } from "../tf-backend/tf-backend.html";
-import { DO_NOT_SUBMIT } from "../tf-categorization-utils/tf-categorization-utils.html";
-import { DO_NOT_SUBMIT } from "../tf-categorization-utils/tf-tag-filterer.html";
-import { DO_NOT_SUBMIT } from "../tf-dashboard-common/dashboard-style.html";
-import { DO_NOT_SUBMIT } from "../tf-dashboard-common/tf-dashboard-layout.html";
-import { DO_NOT_SUBMIT } from "../tf-paginated-view/tf-category-paginated-view.html";
-import { DO_NOT_SUBMIT } from "../tf-runs-selector/tf-runs-selector.html";
-import { DO_NOT_SUBMIT } from "../tf-tensorboard/registry.html";
-import { DO_NOT_SUBMIT } from "tf-image-loader.html";
 
-'use strict';
+import { getTags } from "../../../../components_polymer3/tf_backend/backend";
+import "../../../../components_polymer3/tf_backend/requestManager";
+import { getRouter} from "../../../../components_polymer3/tf_backend/router";
+import { categorizeRunTagCombinations } from from "../../../../components_polymer3/tf_categorization_utils/categorizationUtils";
+import "../../../../components_polymer3/tf-categorization-utils/tf-tag-filterer";
+import "../../../../components_polymer3/tf-dashboard-common/dashboard-style";
+import "../../../../components_polymer3/tf-dashboard-common/tf-dashboard-layout";
+import "../../../../components_polymer3/tf-paginated-view/tf-category-paginated-view";
+import "../../../../components_polymer3/tf-runs-selector/tf-runs-selector";
+import "../../../../components_polymer3/tf-tensorboard/registry";
+import "tf-image-loader";
+
 @customElement("tf-image-dashboard")
 class TfImageDashboard extends PolymerElement {
     static readonly template = html `<tf-dashboard-layout>
@@ -169,7 +170,7 @@ class TfImageDashboard extends PolymerElement {
     @property({
         type: Object
     })
-    _requestManager: object = () => new tf_backend.RequestManager();
+    _requestManager: object = () => new RequestManager();
     ready() {
         if (this.reloadOnReady)
             this.reload();
@@ -180,14 +181,14 @@ class TfImageDashboard extends PolymerElement {
         });
     }
     _fetchTags() {
-        const url = tf_backend.getRouter().pluginRoute('images', '/tags');
+        const url = getRouter().pluginRoute('images', '/tags');
         return this._requestManager.request(url).then((runToTagInfo) => {
             if (_.isEqual(runToTagInfo, this._runToTagInfo)) {
                 // No need to update anything if there are no changes.
                 return;
             }
             const runToTag = _.mapValues(runToTagInfo, (x) => Object.keys(x));
-            const tags = tf_backend.getTags(runToTag);
+            const tags = getTags(runToTag);
             this.set('_dataNotFound', tags.length === 0);
             this.set('_runToTagInfo', runToTagInfo);
             this.async(() => {
@@ -227,7 +228,7 @@ class TfImageDashboard extends PolymerElement {
         var tagFilter = this._tagFilter;
         var categoriesDomReady = this._categoriesDomReady;
         const runToTag = _.mapValues(runToTagInfo, (x) => Object.keys(x));
-        const baseCategories = tf_categorization_utils.categorizeRunTagCombinations(runToTag, selectedRuns, tagFilter);
+        const baseCategories = categorizeRunTagCombinations(runToTag, selectedRuns, tagFilter);
         function explodeItem(item) {
             const samples = runToTagInfo[item.run][item.tag].samples;
             return _.range(samples).map((i) => Object.assign({}, item, {
