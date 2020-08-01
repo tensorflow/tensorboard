@@ -14,17 +14,26 @@ limitations under the License.
 ==============================================================================*/
 
 import {PolymerElement, html} from '@polymer/polymer';
-import {customElement, property} from '@polymer/decorators';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/d3.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-utils/tf-hparams-utils.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/d3.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-utils/tf-hparams-utils.html';
+import {customElement, observe, property} from '@polymer/decorators';
+import * as d3 from 'd3';
+import * as _ from 'lodash';
+
+import * as tf_hparams_utils from '../tf_hparams_utils/tf-hparams-utils';
+import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+
+/**
+ * A d3-based scatter plot matrix visualization component.
+ * This component renders the actual plots; the "controls" part of the
+ * visualization are rendered by tf-hparams-scale-and-color-controls.
+ *
+ * TODO(erez): The logic for computing the number of ticks so that tick labels
+ * do not overlap is ignored, for some reason, when we set compile=True in
+ * the vulcanization build step. Figure out why.
+ */
 @customElement('tf-hparams-scatter-plot-matrix-plot')
-class TfHparamsScatterPlotMatrixPlot extends PolymerElement {
+class TfHparamsScatterPlotMatrixPlot extends LegacyElementMixin(
+  PolymerElement
+) {
   static readonly template = html`
     <div id="container">
       <svg id="svg"></svg>
@@ -53,32 +62,42 @@ class TfHparamsScatterPlotMatrixPlot extends PolymerElement {
       }
     </style>
   `;
+  // Public properties
+  // See the property description in tf-hparams-query-pane.html
   @property({type: Object})
-  visibleSchema: object;
+  visibleSchema: any;
   @property({type: Array})
   sessionGroups: unknown[];
+  // See the description in tf-hparams-scale-and-color-controls.html
   @property({type: Object})
-  options: object;
+  options: any;
+  // The last session group that was clicked on or null if no
+  // session group was clicked on yet.
   @property({
     type: Object,
     readOnly: true,
     notify: true,
   })
   selectedSessionGroup: object = null;
+  // The session group represented by the marker "closest" to the mouse
+  // pointer. If the closest session group distance is larger than a
+  // threshold, this property will be null.
   @property({
     type: Object,
     readOnly: true,
     notify: true,
   })
   closestSessionGroup: object = null;
+  // The <div> element with id "container".
   @property({
     type: Object,
   })
-  _container: object = null;
+  _container: HTMLElement = null;
+  // A D3 selection containing just the root <svg> element.
   @property({
     type: Object,
   })
-  _svg: object = null;
+  _svg: any = null;
   @property({
     type: Number,
   })
@@ -87,17 +106,26 @@ class TfHparamsScatterPlotMatrixPlot extends PolymerElement {
     type: Number,
   })
   height: number = 0;
+  // The index of the cell containing a brush selection as an array
+  // of the form [col, metric] or null if no cell has an active brush
+  // selection.
   @property({
     type: Object,
   })
   _brushedCellIndex: object = null;
+  // The the active brush selection in the form
+  // [[x0,y0],[x1,y1]] where the coordinates are relative to the cell
+  // indexed by _brushedCellIndex. Set to null, if there is no active
+  // brush.
   @property({
     type: Object,
   })
   _brushSelection: object = null;
   ready() {
-    this._container = this.$['container'];
-    this._svg = d3.select(this.$['svg']);
+    super.ready();
+
+    this._container = this.$['container'] as HTMLElement;
+    this._svg = d3.select(this.$['svg'] as HTMLElement);
     this._redraw();
   }
   @observe('sessionGroups.*')
@@ -106,12 +134,14 @@ class TfHparamsScatterPlotMatrixPlot extends PolymerElement {
       // Try to keep the selected session group: if the new sessionGroups
       // array has a sessionGroup with the same name as the one that was
       // selected before, select it.
-      this._setSelectedSessionGroup(
-        tf.hparams.utils.sessionGroupWithName(
-          this.sessionGroups,
-          this.selectedSessionGroup.name
-        ) || null
-      );
+      (function() {
+        this._setSelectedSessionGroup(
+          tf_hparams_utils.sessionGroupWithName(
+            this.sessionGroups,
+            this.selectedSessionGroup.name
+          ) || null
+        );
+      }.bind(this)());
     }
     this._redraw();
   }
@@ -127,7 +157,7 @@ class TfHparamsScatterPlotMatrixPlot extends PolymerElement {
     this.debounce(
       '_redraw',
       () => {
-        const utils = tf.hparams.utils;
+        const utils = tf_hparams_utils;
         const PLOT_MIN_WIDTH = 1200;
         const PLOT_MIN_HEIGHT = 0.4 * PLOT_MIN_WIDTH;
         const CELL_MIN_WIDTH = 150;
@@ -154,7 +184,7 @@ class TfHparamsScatterPlotMatrixPlot extends PolymerElement {
   // Creates the DOM elements comprising the scatter-plot-matrix plot and
   // registers event handlers to handle user actions.
   _draw() {
-    const utils = tf.hparams.utils;
+    const utils = tf_hparams_utils;
     const _this = this;
     if (
       !this.sessionGroups ||
@@ -184,12 +214,12 @@ class TfHparamsScatterPlotMatrixPlot extends PolymerElement {
     // left corner of the boundary of the cell indexed by (col, metric).
     const cellX = d3
       .scaleBand()
-      .domain(cols)
+      .domain(cols as any)
       .range([yAxisTextMargin + frameMargin, this.width - 1 - frameMargin])
       .paddingInner(0.1);
     const cellY = d3
       .scaleBand()
-      .domain(metrics)
+      .domain(metrics as any)
       .range([this.height - 1 - frameMargin - xAxisTextMargin, frameMargin])
       .paddingInner(0.1);
     const cellWidth = cellX.bandwidth();
@@ -245,7 +275,9 @@ class TfHparamsScatterPlotMatrixPlot extends PolymerElement {
       .each(function(col) {
         d3.select(this).call(
           drawAxis,
-          d3.axisBottom(xCoords[col]).tickSize(_this.height - xAxisTextMargin),
+          d3
+            .axisBottom(xCoords[col] as any)
+            .tickSize(_this.height - xAxisTextMargin),
           cellWidth,
           /* minLabelSize */ 40,
           _this.options.columns[col].scale
@@ -301,7 +333,9 @@ class TfHparamsScatterPlotMatrixPlot extends PolymerElement {
       .each(function(metric) {
         d3.select(this).call(
           drawAxis,
-          d3.axisLeft(yCoords[metric]).tickSize(_this.width - yAxisTextMargin),
+          d3
+            .axisLeft(yCoords[metric] as any)
+            .tickSize(_this.width - yAxisTextMargin),
           cellHeight,
           /* minLabelSize */ 20,
           _this.options.columns[
@@ -394,9 +428,9 @@ class TfHparamsScatterPlotMatrixPlot extends PolymerElement {
     if (_this.options.colorByColumnIndex !== undefined) {
       colorScale = d3
         .scaleLinear()
-        .domain(this._colExtent(this.options.colorByColumnIndex))
+        .domain(this._colExtent(this.options.colorByColumnIndex) as any)
         .range([this.options.minColor, this.options.maxColor])
-        .interpolate(d3.interpolateLab);
+        .interpolate(d3.interpolateLab as any);
     }
     // A function mapping a sessionGroup to its marker's color.
     const markerColorFn =
@@ -502,8 +536,8 @@ class TfHparamsScatterPlotMatrixPlot extends PolymerElement {
       });
       return d3
         .quadtree()
-        .x((elem) => d3.select(elem).datum().x)
-        .y((elem) => d3.select(elem).datum().y)
+        .x((elem: any) => (d3.select(elem).datum() as any).x)
+        .y((elem: any) => (d3.select(elem).datum() as any).y)
         .addAll(data);
     }
     const quadTrees = cols.map((col) =>
@@ -535,23 +569,13 @@ class TfHparamsScatterPlotMatrixPlot extends PolymerElement {
         );
       }
       // Highlight the new visible markers.
-      d3.selectAll(
-        Array.from(
-          utils.filterSet(
-            newVisibleMarkers,
-            (elem) => !visibleMarkers.has(elem)
-          )
-        )
-      ).attr('fill', markerColorFn);
+      d3.selectAll(Array.from(
+        utils.filterSet(newVisibleMarkers, (elem) => !visibleMarkers.has(elem))
+      ) as any).attr('fill', markerColorFn);
       // Gray-out the no-longer visible markers.
-      d3.selectAll(
-        Array.from(
-          utils.filterSet(
-            visibleMarkers,
-            (elem) => !newVisibleMarkers.has(elem)
-          )
-        )
-      ).attr('fill', '#ddd');
+      d3.selectAll(Array.from(
+        utils.filterSet(visibleMarkers, (elem) => !newVisibleMarkers.has(elem))
+      ) as any).attr('fill', '#ddd');
       visibleMarkers = newVisibleMarkers;
     }
     // Returns a Set of all marker elements that are in the
@@ -569,7 +593,7 @@ class TfHparamsScatterPlotMatrixPlot extends PolymerElement {
         selection[1][0],
         selection[1][1],
         (elem) => {
-          const data = d3.select(elem).datum();
+          const data = d3.select(elem).datum() as any;
           data.sessionGroupMarkers.forEach((sg_elem) => {
             result.add(sg_elem);
           });
@@ -641,7 +665,7 @@ class TfHparamsScatterPlotMatrixPlot extends PolymerElement {
     if (isBrushActive()) {
       // Set the internal brush selection to what it was before
       // the 'redraw()'.
-      brush.move(brushedCellG, _this._brushSelection);
+      brush.move(brushedCellG, _this._brushSelection as any);
     }
     // ---------------------------------------------------------------------
     // Add event listeners for highlighting the session group whose markers
@@ -685,7 +709,7 @@ class TfHparamsScatterPlotMatrixPlot extends PolymerElement {
             : // All elements in selectedMarkers should have the same
               // sessionGroup.
               selectedMarkers.datum().sessionGroup;
-        _this._setSelectedSessionGroup(newSessionGroup);
+        (_this as any)._setSelectedSessionGroup(newSessionGroup);
       })
       .on('mousemove mouseenter', function([col, metric]) {
         const [x, y] = d3.mouse(this);
@@ -707,16 +731,18 @@ class TfHparamsScatterPlotMatrixPlot extends PolymerElement {
           closestMarkers.classed('closest-marker', true);
           // All elements in closestMarkers should have the same
           // sessionGroup.
-          _this._setClosestSessionGroup(closestMarkers.datum().sessionGroup);
+          (_this as any)._setClosestSessionGroup(
+            closestMarkers.datum().sessionGroup
+          );
         } else {
-          _this._setClosestSessionGroup(null);
+          (_this as any)._setClosestSessionGroup(null);
         }
       })
       .on('mouseleave', function([col, metric]) {
         if (closestMarkers !== null) {
           closestMarkers.classed('closest-marker', false);
           closestMarkers = null;
-          _this._setClosestSessionGroup(null);
+          (_this as any)._setClosestSessionGroup(null);
         }
       });
     // Finds a closest visible marker in the [col,metric] cell to the point
@@ -734,7 +760,7 @@ class TfHparamsScatterPlotMatrixPlot extends PolymerElement {
         threshold,
         (elem, distanceToCenter) => {
           if (visibleMarkers.has(elem) && distanceToCenter < minDist) {
-            const data = d3.select(elem).datum();
+            const data = d3.select(elem).datum() as any;
             minDist = distanceToCenter;
             minSessionGroup = data.sessionGroup;
           }
@@ -762,7 +788,7 @@ class TfHparamsScatterPlotMatrixPlot extends PolymerElement {
   // metric or hparam to be mapped should be specified as the
   // visibleSchema-column indexed by colIndex.
   _cellScale(colIndex, range) {
-    const extent = this._colExtent(colIndex);
+    const extent = this._colExtent(colIndex) as any;
     const linearScale = d3
       .scaleLinear()
       .domain(extent)
@@ -818,21 +844,21 @@ class TfHparamsScatterPlotMatrixPlot extends PolymerElement {
     }
   }
   _colValue(sessionGroup, colIndex) {
-    return tf.hparams.utils.columnValueByVisibleIndex(
+    return tf_hparams_utils.columnValueByVisibleIndex(
       this.visibleSchema,
       sessionGroup,
       colIndex
     );
   }
   _metricValue(sessionGroup, metricIndex) {
-    return tf.hparams.utils.metricValueByVisibleIndex(
+    return tf_hparams_utils.metricValueByVisibleIndex(
       this.visibleSchema,
       sessionGroup,
       metricIndex
     );
   }
   _colExtent(colIndex) {
-    return tf.hparams.utils.visibleNumericColumnExtent(
+    return tf_hparams_utils.visibleNumericColumnExtent(
       this.visibleSchema,
       this.sessionGroups,
       colIndex
