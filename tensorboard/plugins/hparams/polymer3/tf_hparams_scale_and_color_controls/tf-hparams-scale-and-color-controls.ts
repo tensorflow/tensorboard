@@ -14,21 +14,15 @@ limitations under the License.
 ==============================================================================*/
 
 import {PolymerElement, html} from '@polymer/polymer';
-import {customElement, property} from '@polymer/decorators';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
+import {customElement, observe, property} from '@polymer/decorators';
 import '@polymer/paper-radio-group';
 import '@polymer/paper-radio-button';
 import '@polymer/paper-dropdown-menu';
 import '@polymer/paper-listbox';
 import '@polymer/paper-item';
-import {DO_NOT_SUBMIT} from '../tf-hparams-utils/tf-hparams-utils.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import '@polymer/paper-radio-group';
-import '@polymer/paper-radio-button';
-import '@polymer/paper-dropdown-menu';
-import '@polymer/paper-listbox';
-import '@polymer/paper-item';
-import {DO_NOT_SUBMIT} from '../tf-hparams-utils/tf-hparams-utils.html';
+import * as PolymerDom from '@polymer/polymer/lib/legacy/polymer.dom.js';
+import * as tf_hparams_utils from '../tf_hparams_utils/tf-hparams-utils';
+
 @customElement('tf-hparams-scale-and-color-controls')
 class TfHparamsScaleAndColorControls extends PolymerElement {
   static readonly template = html`
@@ -128,14 +122,14 @@ class TfHparamsScaleAndColorControls extends PolymerElement {
     </style>
   `;
   @property({type: Object})
-  configuration: object;
+  configuration: any;
   @property({type: Array})
   sessionGroups: unknown[];
   @property({
     type: Object,
     notify: true,
   })
-  options: object = null;
+  options: any = null;
   @observe('configuration.*')
   /* Private methods */
   _configurationChanged() {
@@ -145,9 +139,9 @@ class TfHparamsScaleAndColorControls extends PolymerElement {
     const schema = this.configuration.schema;
     const newHParamColumn = (info, index) => {
       return {
-        name: tf.hparams.utils.hparamName(info),
+        name: tf_hparams_utils.hparamName(info),
         index: index,
-        absoluteIndex: tf.hparams.utils.getAbsoluteColumnIndex(
+        absoluteIndex: tf_hparams_utils.getAbsoluteColumnIndex(
           schema,
           visibleSchema,
           index
@@ -159,9 +153,9 @@ class TfHparamsScaleAndColorControls extends PolymerElement {
       const colIndex = index + visibleSchema.hparamInfos.length;
       return {
         scale: 'LINEAR',
-        name: tf.hparams.utils.metricName(info),
+        name: tf_hparams_utils.metricName(info),
         index: colIndex,
-        absoluteIndex: tf.hparams.utils.getAbsoluteColumnIndex(
+        absoluteIndex: tf_hparams_utils.getAbsoluteColumnIndex(
           schema,
           visibleSchema,
           colIndex
@@ -189,7 +183,7 @@ class TfHparamsScaleAndColorControls extends PolymerElement {
     // See also: https://github.com/PolymerElements/paper-dropdown-menu/issues/197#issuecomment-249927371, and http://jsbin.com/fuqoye/edit?html,output.
     this.set('options', options); // set the bound selected item to
     // undefined.
-    Polymer.dom.flush();
+    PolymerDom.dom.flush();
     this.set('options.colorByColumnIndex', this._defaultColorByColumnIndex());
   }
   @observe('sessionGroups.*')
@@ -212,11 +206,11 @@ class TfHparamsScaleAndColorControls extends PolymerElement {
     if (!this._isNumericColumn(column.index) || !this.sessionGroups) {
       return false;
     }
-    const [min, max] = tf.hparams.utils.visibleNumericColumnExtent(
+    const [min, max] = tf_hparams_utils.visibleNumericColumnExtent(
       this.configuration.visibleSchema,
       this.sessionGroups,
       column.index
-    );
+    ) as [number, number];
     // Log scale is only defined when the domain does not include 0.
     return min > 0 || max < 0;
   }
