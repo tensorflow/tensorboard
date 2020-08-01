@@ -23,6 +23,7 @@ ng_module(
     ],
     deps = [
         "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp/core:types",
         "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/plugins:plugin_registry",
         "@npm//@angular/common",
