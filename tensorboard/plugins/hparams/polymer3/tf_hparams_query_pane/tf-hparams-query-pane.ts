@@ -14,30 +14,29 @@ limitations under the License.
 ==============================================================================*/
 
 import {PolymerElement, html} from '@polymer/polymer';
-import {customElement, property} from '@polymer/decorators';
+import {customElement, observe, property} from '@polymer/decorators';
+import * as _ from 'lodash';
 import '@polymer/paper-checkbox';
 import '@polymer/paper-dropdown-menu';
 import '@polymer/paper-listbox';
 import '@polymer/paper-input';
 import '@polymer/paper-item';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-backend/tf-backend.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-utils/tf-hparams-utils.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/vaadin-split-layout.html';
-import '@polymer/paper-checkbox';
-import '@polymer/paper-dropdown-menu';
-import '@polymer/paper-listbox';
-import '@polymer/paper-input';
-import '@polymer/paper-item';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-backend/tf-backend.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-utils/tf-hparams-utils.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/vaadin-split-layout.html';
+import '@vaadin/vaadin-split-layout';
+
+import {Canceller} from '../../../../components_polymer3/tf_backend/canceller';
+import * as tf_hparams_utils from '../tf_hparams_utils/tf-hparams-utils';
+import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+
+/**
+ * The tf-hparams-query-pane element implements controls for querying the
+ * server for a list of session groups. It provides filtering, and
+ * sorting controls.
+ *
+ * TODO(erez): Add aggregation controls for repeated sessions.
+ */
 'use strict';
 @customElement('tf-hparams-query-pane')
-class TfHparamsQueryPane extends PolymerElement {
+class TfHparamsQueryPane extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
     <div class="pane">
       <vaadin-split-layout vertical="">
@@ -367,95 +366,216 @@ class TfHparamsQueryPane extends PolymerElement {
       }
     </style>
   `;
-  @property({type: Object})
-  backend: object;
+  // An object for making HParams API requests to the backend.@property({type: Object})
+  backend: any;
+  // The name of the experiment to use. Will be passed as is to
+  // the /experiment HTTP endpoint.
   @property({type: String})
   experimentName: string;
+  // Contains the schema and columns visibility status.
+  // We use a single object we call 'configuration' to hold both of
+  // these properties, since Polymer (v1) doesn't allow atomic
+  // changes to multiple properties (that is, sending the notification
+  // to downstream consumers only after all properties have been updated).
+  //
+  // Properties:
+  // -----------
+  // schema.hparamColumns[i].hparamInfo contains the HParamInfo protocol
+  // buffer representing the ith hparam.
+  // schema.metricColumns[i].metricInfo contains the MetricInfo protocol
+  // buffer representing the ith metric.
+  //
+  // columnsVisibility[].
+  // A boolean array whose ith entry is true if
+  // the ith column is visible (selected to be displayed by the user).
+  // Columns are indexed by listing the hyperparameters first in
+  // the order they are represented by schema.hparamColumns, followed
+  // by the metrics in the order they are represented by
+  // schema.metricColumns.
+  //
+  // visibleSchema.
+  // DEPRECATED. New code should use the schema and columnVisibile
+  // properties instead.
+  // TODO(): Remove when all consumers are migrated to use the
+  // schema and columnVisibile fields.
+  // Contains arrays of HParamInfo and MetricInfo protocol buffers
+  // consisting of only the visible hyperparameters and metrics,
+  // respectively.
+  /**
+   * @type {{
+   *    schema: {
+   *      hparamColumns: Array<{hparamInfo: Object}>,
+   *      metricColumns: Array<{metricInfo: Object}>,
+   *    },
+   *    columnsVisibility: Array<Boolean>,
+   *    visibleSchema: {
+   *      hparamInfos: Array<Object>,
+   *      metricInfos: Array<Object>,
+   *    }
+   * }}
+   */
   @property({
     type: Object,
     readOnly: true,
     notify: true,
   })
-  configuration: object = () => {
-    return {
-      schema: {
-        hparamColumns: [],
-        metricColumns: [],
-      },
-      columnsVisibility: [],
-      visibleSchema: {
-        hparamInfos: [],
-        metricInfos: [],
-      },
-    };
+  configuration = {
+    schema: {
+      hparamColumns: [],
+      metricColumns: [],
+    },
+    columnsVisibility: [],
+    visibleSchema: {
+      hparamInfos: [],
+      metricInfos: [],
+    },
   };
+  // The latest list of session groups received from the server.
+  // See the comments in the _buildListSessionGroupsRequest() methods for
+  // more details.
   @property({
     type: Array,
     readOnly: true,
     notify: true,
   })
-  sessionGroups: unknown[] = () => [];
+  sessionGroups = [];
+  // We track both "data found" and "data not found", because this
+  // makes it expedient to display nothing until the initial fetch is
+  // complete.  In the absence of this "undefined" case, we would end up
+  // briefly displaying the "no data" message before the data arrives.
+  // Note that, in the context of a dom-if condition, we cannot easily
+  // distinguish between false and undefined.
   @property({
     type: Boolean,
     notify: true,
   })
   dataLoadedWithNonEmptyHparams: boolean = false;
+  // Note that `dataLoadedWithEmptyHparams = false` means that we don't
+  // know yet whether data will be found or not (i.e., the fetch has not
+  // yet returned).  `dataLoadedWithEmptyHparams = true` means the fetch
+  // completed, and there really is no data.
   @property({
     type: Boolean,
     notify: true,
   })
   dataLoadedWithEmptyHparams: boolean = false;
+  // The experiment object returned by the backend. See the definition of
+  // the Experiment protocol buffer in api.proto.
   @property({type: Object})
-  _experiment: object;
+  _experiment: any;
+  // An array of objects--each storing information about the user settings
+  // for a single hparam. Each object has the following fields:
+  // info: The HParamInfo object returned by the backend in the
+  //   experiment object. Not strictly a user-setting, but we need it
+  //   for displaying the name in the element.
+  // displayed: Whether the hparam is displayed or not (the value of
+  //   the checkbox next to the hparam).
+  // filter: The current filter settings of the hparam. Only session
+  //   groups whose hparam values pass this filter will be displayed in
+  //   the session groups table. The object stored in this field depends
+  //   on the type of filter used as follows:
+  //
+  //   1. For a discrete filter, the object will have the form:
+  //   domainDiscrete: [
+  //     {value:v1, checked: bool_1},
+  //     {value:v2, checked: bool_2}, ...
+  //   ], namely an array with entries corresponding to the discrete
+  //   domain of the hparam. The 'value' field for each entry stores the
+  //   discrete value corresponding to the entry, and 'checked' is a
+  //   boolean denoting whether the value is allowed (true) or not
+  //   (false)
+  //
+  //   2. For an interval, the object will have the form:
+  //   interval: {min: {value: string invalid: boolean},
+  //              max: {value: string invalid: boolean} },
+  //   where each 'value' field denote the corresponding input-box's
+  //   current value and 'invalid' is the input-box' invalid property.
+  //
+  //   3. Finally for a regexp filter, the object will have a single
+  //   'regexp' string field containing the filtering regexp.
   @property({type: Array})
-  _hparams: unknown[];
+  _hparams: any[];
+  // An array of objects--each storing information about the user
+  // setting for a single metric. Each object has the following fields:
+  // info: The MetricInfo object returned by the backend in the
+  //   experiment object. Not strictly a user-setting, but we need it
+  //   for displaying the name in the element.
+  // filter: The current filter "settings" of the metric. Only session
+  //   groups whose metric values pass this filter will be displayed in
+  //   the session groups table. The object stored in this field has the
+  //   form:
+  //   interval: {min: {value: string invalid: boolean},
+  //              max: {value: string invalid: boolean} },
+  //   where each 'value' field denote the corresponding input-box's
+  //   current value and 'invalid' is the input-box' invalid property.
+
+  // displayed: Whether the metric is displayed or not (can be toggled
+  //   by the user by a checkbox next to the metric.)
   @property({type: Array})
-  _metrics: unknown[];
+  _metrics: any[];
+  // An array of objects each representing information about a session
+  // status and whether it is currently allowed by the user.
   @property({
     type: Array,
   })
-  _statuses: unknown[] = () => {
-    return [
-      {value: 'STATUS_UNKNOWN', displayName: 'Unknown', allowed: true},
-      {value: 'STATUS_SUCCESS', displayName: 'Success', allowed: true},
-      {value: 'STATUS_FAILURE', displayName: 'Failure', allowed: true},
-      {value: 'STATUS_RUNNING', displayName: 'Running', allowed: true},
-    ];
-  };
+  _statuses = [
+    {value: 'STATUS_UNKNOWN', displayName: 'Unknown', allowed: true},
+    {value: 'STATUS_SUCCESS', displayName: 'Success', allowed: true},
+    {value: 'STATUS_FAILURE', displayName: 'Failure', allowed: true},
+    {value: 'STATUS_RUNNING', displayName: 'Running', allowed: true},
+  ];
+  // A promise that resolves after the initial getExperiment network RPC
+  // resolves. Used for unit-test to allow testing to run after the
+  // element has initialized.
   @property({
     type: Object,
   })
-  _getExperimentResolved: object = function() {
-    return new Promise((resolve) => {
-      this._resolveGetExperiment = resolve;
-    });
-  };
-  @property({type: Function})
-  _resolveGetExperiment: object;
+  _getExperimentResolved = new Promise((resolve) => {
+    this._resolveGetExperiment = resolve;
+  });
+  // The resolve() callback for the _getExperimentResolved promise.
+  // See the _getExperimentResolved property.
+  @property({type: Object})
+  _resolveGetExperiment: Function;
+  // A tf_backend.canceller used to keep track of pending
+  // ListSessionGroups requests and cancel their resulting UI updates
+  // when a new ListSessionGroups request is made.
   @property({
     type: Object,
   })
-  _listSessionGroupsCanceller: object = () => {
-    return new tf_backend.Canceller();
-  };
+  _listSessionGroupsCanceller = new Canceller();
+  // The index of the "column" by which to sort. HParams column indices
+  // are the hparams indices in the _hparams array. Metrics column indices
+  // are their index in the _metrics array offset by this._hparams.length.
+  // See also the method _metricSortByIndex() below.
   @property({type: Number})
   _sortByIndex: number;
+  // The sort direction (ascending/descending).
+  // 0 means ascending, 1 means descending.
   @property({type: Number})
   _sortDirection: number;
+  // The value and invalid properties of the 'page-size' input box.
   @property({
     type: Object,
   })
-  _pageSizeInput: object = {value: '100', invalid: false};
+  _pageSizeInput = {value: '100', invalid: false};
+  // The value and invalid properties of the 'page-number' input box.
   @property({
     type: Object,
   })
-  _pageNumberInput: object = {value: '1', invalid: false};
+  _pageNumberInput = {value: '1', invalid: false};
+  // The string displaying the total number of pages or '?' if unknown.
   @property({
     type: String,
   })
   _pageCountStr: string = '?';
+  // The string displaying the total number of session groups matched
+  // by the query, or 'unknown' if the server didn't send that
+  // information.
   @property({type: String})
   _totalSessionGroupsCountStr: string;
+  // Computed query that is send to the backend when panes are updated to
+  // create ListSessionGroupsRequest and retrieve the response
   @property({type: Object})
   _sessionGroupsRequest: object;
   reload() {
@@ -479,7 +599,7 @@ class TfHparamsQueryPane extends PolymerElement {
   // the state of this element accordingly. Currently, only called
   // once on element initialization.
   _computeExperimentAndRelatedProps() {
-    const utils = tf.hparams.utils;
+    const utils = tf_hparams_utils;
     if (
       utils.isNullOrUndefined(this.backend) ||
       utils.isNullOrUndefined(this.experimentName)
@@ -523,9 +643,9 @@ class TfHparamsQueryPane extends PolymerElement {
     const kNumHParamsToDisplayByDefault = 5;
     this._experiment.hparamInfos.forEach((anInfo, index) => {
       const hparam = {
-        info: anInfo,
+        info: anInfo as any,
         displayed: index < kNumHParamsToDisplayByDefault,
-        filter: {},
+        filter: {} as any,
       };
       if (hparam.info.hasOwnProperty('domainDiscrete')) {
         hparam.filter.domainDiscrete = [];
@@ -608,13 +728,16 @@ class TfHparamsQueryPane extends PolymerElement {
   }
   @observe('_hparams.*', '_metrics.*')
   _updateConfiguration() {
-    this.debounce('_updateConfiguration', () => {
-      this._setConfiguration({
-        schema: this._computeSchema(),
-        columnsVisibility: this._computeColumnsVisibility(),
-        visibleSchema: this._computeVisibleSchema(),
-      });
-    });
+    this.debounce(
+      '_updateConfiguration',
+      function() {
+        this._setConfiguration({
+          schema: this._computeSchema(),
+          columnsVisibility: this._computeColumnsVisibility(),
+          visibleSchema: this._computeVisibleSchema(),
+        });
+      }.bind(this)
+    );
   }
   _computeColumnsVisibility() {
     if (!this._hparams || !this._metrics) return [];
@@ -650,30 +773,32 @@ class TfHparamsQueryPane extends PolymerElement {
       return;
     }
     return this._sendListSessionGroupsRequest().then(
-      this._listSessionGroupsCanceller.cancellable(({value, cancelled}) => {
-        if (cancelled) {
-          return;
-        }
-        // The server may not support a "totalSize" field in
-        // which case this field would be negative, and we
-        // populate the page count with a "?".
-        if (value.totalSize >= 0) {
-          const pageSize = +this._pageSizeInput.value;
-          this.set(
-            '_pageCountStr',
-            String(Math.ceil(value.totalSize / pageSize))
+      this._listSessionGroupsCanceller.cancellable(
+        ({value, cancelled}: any) => {
+          if (cancelled) {
+            return;
+          }
+          // The server may not support a "totalSize" field in
+          // which case this field would be negative, and we
+          // populate the page count with a "?".
+          if (value.totalSize >= 0) {
+            const pageSize = +this._pageSizeInput.value;
+            this.set(
+              '_pageCountStr',
+              String(Math.ceil(value.totalSize / pageSize))
+            );
+            this.set('_totalSessionGroupsCountStr', value.totalSize);
+          } else {
+            this.set('_pageCountStr', '?');
+            this.set('_totalSessionGroupsCountStr', 'Unknown');
+          }
+          tf_hparams_utils.setArrayObservably(
+            this,
+            'sessionGroups',
+            value.sessionGroups
           );
-          this.set('_totalSessionGroupsCountStr', value.totalSize);
-        } else {
-          this.set('_pageCountStr', '?');
-          this.set('_totalSessionGroupsCountStr', 'Unknown');
         }
-        tf.hparams.utils.setArrayObservably(
-          this,
-          'sessionGroups',
-          value.sessionGroups
-        );
-      })
+      )
     );
   }
   _sendListSessionGroupsRequest() {
@@ -726,12 +851,12 @@ class TfHparamsQueryPane extends PolymerElement {
       console.assert(minValueStr !== undefined);
       // The protobuffer JSON mapping maps the strings "-Infinity" and
       // "Infinity" to the floating-point infinity and -infinity values.
-      const minValue = minValueStr === '' ? '-Infinity' : +minValueStr;
+      const minValue: any = minValueStr === '' ? '-Infinity' : +minValueStr;
       _this.set(inputIntervalPath + '.min.invalid', isNaN(minValue));
       queryValid = queryValid && !isNaN(minValue);
       const maxValueStr = _this.get(inputIntervalPath + '.max.value');
       console.assert(maxValueStr !== undefined);
-      const maxValue = maxValueStr === '' ? 'Infinity' : +maxValueStr;
+      const maxValue: any = maxValueStr === '' ? 'Infinity' : +maxValueStr;
       _this.set(inputIntervalPath + '.max.invalid', isNaN(maxValue));
       queryValid = queryValid && !isNaN(maxValue);
       if (isNaN(minValue) || isNaN(maxValue)) {
@@ -767,7 +892,7 @@ class TfHparamsQueryPane extends PolymerElement {
     let colParams = [];
     // Build the hparams filters in the request.
     this._hparams.forEach((hparam, index) => {
-      let colParam = {hparam: hparam.info.name};
+      let colParam = {hparam: hparam.info.name} as any;
       if (hparam.filter.domainDiscrete) {
         colParam.filterDiscrete = [];
         hparam.filter.domainDiscrete.forEach((filterVal) => {
@@ -838,7 +963,7 @@ class TfHparamsQueryPane extends PolymerElement {
   _metricSortByIndex(metricIndex) {
     return metricIndex + this._hparams.length;
   }
-  _hparamName: tf.hparams.utils.hparamName;
-  _metricName: tf.hparams.utils.metricName;
-  _prettyPrint: tf.hparams.utils.prettyPrint;
+  _hparamName = tf_hparams_utils.hparamName;
+  _metricName = tf_hparams_utils.metricName;
+  _prettyPrint = tf_hparams_utils.prettyPrint;
 }
