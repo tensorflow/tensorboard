@@ -13,29 +13,44 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import { PolymerElement, html } from "@polymer/polymer";
-import { customElement, property } from "@polymer/decorators";
-import { DO_NOT_SUBMIT } from "../tf-imports/polymer.html";
-import "@polymer/paper-radio-group";
-import "@polymer/paper-radio-button";
-import "@polymer/paper-dropdown-menu";
-import "@polymer/paper-listbox";
-import "@polymer/paper-item";
-import { DO_NOT_SUBMIT } from "../tf-hparams-utils/tf-hparams-utils.html";
-import { DO_NOT_SUBMIT } from "../tf-imports/polymer.html";
-import "@polymer/paper-radio-group";
-import "@polymer/paper-radio-button";
-import "@polymer/paper-dropdown-menu";
-import "@polymer/paper-listbox";
-import "@polymer/paper-item";
-import { DO_NOT_SUBMIT } from "../tf-hparams-utils/tf-hparams-utils.html";
-@customElement("tf-hparams-scale-and-color-controls")
+import {PolymerElement, html} from '@polymer/polymer';
+import {customElement, property} from '@polymer/decorators';
+import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
+import '@polymer/paper-radio-group';
+import '@polymer/paper-radio-button';
+import '@polymer/paper-dropdown-menu';
+import '@polymer/paper-listbox';
+import '@polymer/paper-item';
+import {DO_NOT_SUBMIT} from '../tf-hparams-utils/tf-hparams-utils.html';
+import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
+import '@polymer/paper-radio-group';
+import '@polymer/paper-radio-button';
+import '@polymer/paper-dropdown-menu';
+import '@polymer/paper-listbox';
+import '@polymer/paper-item';
+import {DO_NOT_SUBMIT} from '../tf-hparams-utils/tf-hparams-utils.html';
+@customElement('tf-hparams-scale-and-color-controls')
 class TfHparamsScaleAndColorControls extends PolymerElement {
-    static readonly template = html `<div class="control-panel">
+  static readonly template = html`
+    <div class="control-panel">
       <!-- 'Color by' drop down menu -->
-      <paper-dropdown-menu label="Color by" id="colorByDropDownMenu" horizontal-align="left">
-        <paper-listbox class="dropdown-content" slot="dropdown-content" selected="{{options.colorByColumnIndex}}" id="colorByListBox">
-          <template is="dom-repeat" items="[[options.columns]]" as="column" id="colorByColumnTemplate">
+      <paper-dropdown-menu
+        label="Color by"
+        id="colorByDropDownMenu"
+        horizontal-align="left"
+      >
+        <paper-listbox
+          class="dropdown-content"
+          slot="dropdown-content"
+          selected="{{options.colorByColumnIndex}}"
+          id="colorByListBox"
+        >
+          <template
+            is="dom-repeat"
+            items="[[options.columns]]"
+            as="column"
+            id="colorByColumnTemplate"
+          >
             <paper-item disabled="[[!_isNumericColumn(column.index)]]">
               [[column.name]]
             </paper-item>
@@ -53,13 +68,20 @@ class TfHparamsScaleAndColorControls extends PolymerElement {
                 [[column.name]]
               </div>
               <div>
-                <paper-radio-group class="scale-radio-group" selected="{{column.scale}}">
+                <paper-radio-group
+                  class="scale-radio-group"
+                  selected="{{column.scale}}"
+                >
                   <paper-radio-button name="LINEAR">
                     Linear
                   </paper-radio-button>
                   <!-- The id here is used to access this button in unit
                        tests.-->
-                  <paper-radio-button id="logScaleButton_[[column.name]]" name="LOG" disabled="[[!_allowLogScale(column, sessionGroups.*)]]">
+                  <paper-radio-button
+                    id="logScaleButton_[[column.name]]"
+                    name="LOG"
+                    disabled="[[!_allowLogScale(column, sessionGroups.*)]]"
+                  >
                     Logarithmic
                   </paper-radio-button>
                   <paper-radio-button name="QUANTILE">
@@ -103,107 +125,124 @@ class TfHparamsScaleAndColorControls extends PolymerElement {
       paper-listbox {
         max-height: 15em;
       }
-    </style>`;
-    @property({ type: Object })
-    configuration: object;
-    @property({ type: Array })
-    sessionGroups: unknown[];
-    @property({
-        type: Object,
-        notify: true
-    })
-    options: object = null;
-    @observe("configuration.*")
-    /* Private methods */
-    _configurationChanged() {
-        // Populate options.columns with a linear scale for each column (
-        // hparam or metric).
-        const visibleSchema = this.configuration.visibleSchema;
-        const schema = this.configuration.schema;
-        const newHParamColumn = (info, index) => {
-            return {
-                name: tf.hparams.utils.hparamName(info),
-                index: index,
-                absoluteIndex: tf.hparams.utils.getAbsoluteColumnIndex(schema, visibleSchema, index),
-                scale: this._isNumericColumn(index) ? 'LINEAR' : 'NON_NUMERIC',
-            };
-        };
-        const newMetricColumn = (info, index) => {
-            const colIndex = index + visibleSchema.hparamInfos.length;
-            return {
-                scale: 'LINEAR',
-                name: tf.hparams.utils.metricName(info),
-                index: colIndex,
-                absoluteIndex: tf.hparams.utils.getAbsoluteColumnIndex(schema, visibleSchema, colIndex),
-            };
-        };
-        const options = {
-            columns: visibleSchema.hparamInfos
-                .map(newHParamColumn)
-                .concat(visibleSchema.metricInfos.map(newMetricColumn)),
-            minColor: '#0000FF',
-            maxColor: '#FF0000',
-            configuration: this.configuration,
-        };
-        // Set the colorByColumnIndex property.
-        // If we set options.colorByColumnIndex at the same time as we
-        // set the other options, Polymer first updates the drop-down menu
-        // selected label and only then updates the list box with the new items.
-        // As a result the selected label gets an erroneous value (based on
-        // the old elements in the list).
-        // To overcome this, we first set the selected item to "undefined",
-        // call flush to synchronously update the drop-down menu list with
-        // the new items, and then reset the selected item index so that
-        // Polymer will update the label based on the new list.
-        // See also: https://github.com/PolymerElements/paper-dropdown-menu/issues/197#issuecomment-249927371, and http://jsbin.com/fuqoye/edit?html,output.
-        this.set('options', options); // set the bound selected item to
-        // undefined.
-        Polymer.dom.flush();
-        this.set('options.colorByColumnIndex', this._defaultColorByColumnIndex());
+    </style>
+  `;
+  @property({type: Object})
+  configuration: object;
+  @property({type: Array})
+  sessionGroups: unknown[];
+  @property({
+    type: Object,
+    notify: true,
+  })
+  options: object = null;
+  @observe('configuration.*')
+  /* Private methods */
+  _configurationChanged() {
+    // Populate options.columns with a linear scale for each column (
+    // hparam or metric).
+    const visibleSchema = this.configuration.visibleSchema;
+    const schema = this.configuration.schema;
+    const newHParamColumn = (info, index) => {
+      return {
+        name: tf.hparams.utils.hparamName(info),
+        index: index,
+        absoluteIndex: tf.hparams.utils.getAbsoluteColumnIndex(
+          schema,
+          visibleSchema,
+          index
+        ),
+        scale: this._isNumericColumn(index) ? 'LINEAR' : 'NON_NUMERIC',
+      };
+    };
+    const newMetricColumn = (info, index) => {
+      const colIndex = index + visibleSchema.hparamInfos.length;
+      return {
+        scale: 'LINEAR',
+        name: tf.hparams.utils.metricName(info),
+        index: colIndex,
+        absoluteIndex: tf.hparams.utils.getAbsoluteColumnIndex(
+          schema,
+          visibleSchema,
+          colIndex
+        ),
+      };
+    };
+    const options = {
+      columns: visibleSchema.hparamInfos
+        .map(newHParamColumn)
+        .concat(visibleSchema.metricInfos.map(newMetricColumn)),
+      minColor: '#0000FF',
+      maxColor: '#FF0000',
+      configuration: this.configuration,
+    };
+    // Set the colorByColumnIndex property.
+    // If we set options.colorByColumnIndex at the same time as we
+    // set the other options, Polymer first updates the drop-down menu
+    // selected label and only then updates the list box with the new items.
+    // As a result the selected label gets an erroneous value (based on
+    // the old elements in the list).
+    // To overcome this, we first set the selected item to "undefined",
+    // call flush to synchronously update the drop-down menu list with
+    // the new items, and then reset the selected item index so that
+    // Polymer will update the label based on the new list.
+    // See also: https://github.com/PolymerElements/paper-dropdown-menu/issues/197#issuecomment-249927371, and http://jsbin.com/fuqoye/edit?html,output.
+    this.set('options', options); // set the bound selected item to
+    // undefined.
+    Polymer.dom.flush();
+    this.set('options.colorByColumnIndex', this._defaultColorByColumnIndex());
+  }
+  @observe('sessionGroups.*')
+  _unselectDisabledLogScales() {
+    if (this.options === null) {
+      // We may be called before the options are constructed by
+      // _configurationChanged(). In this case we need not worry
+      // about selected disabled log scales.
+      return;
     }
-    @observe("sessionGroups.*")
-    _unselectDisabledLogScales() {
-        if (this.options === null) {
-            // We may be called before the options are constructed by
-            // _configurationChanged(). In this case we need not worry
-            // about selected disabled log scales.
-            return;
-        }
-        this.options.columns.forEach((col) => {
-            const colPath = 'options.columns.' + col.index;
-            if (!this._allowLogScale(col) && col.scale === 'LOG') {
-                // We need to use Polymer paths to make the change observable.
-                this.set(colPath + '.scale', 'LINEAR');
-            }
-        });
+    this.options.columns.forEach((col) => {
+      const colPath = 'options.columns.' + col.index;
+      if (!this._allowLogScale(col) && col.scale === 'LOG') {
+        // We need to use Polymer paths to make the change observable.
+        this.set(colPath + '.scale', 'LINEAR');
+      }
+    });
+  }
+  _allowLogScale(column) {
+    if (!this._isNumericColumn(column.index) || !this.sessionGroups) {
+      return false;
     }
-    _allowLogScale(column) {
-        if (!this._isNumericColumn(column.index) || !this.sessionGroups) {
-            return false;
-        }
-        const [min, max] = tf.hparams.utils.visibleNumericColumnExtent(this.configuration.visibleSchema, this.sessionGroups, column.index);
-        // Log scale is only defined when the domain does not include 0.
-        return min > 0 || max < 0;
+    const [min, max] = tf.hparams.utils.visibleNumericColumnExtent(
+      this.configuration.visibleSchema,
+      this.sessionGroups,
+      column.index
+    );
+    // Log scale is only defined when the domain does not include 0.
+    return min > 0 || max < 0;
+  }
+  // Returns true if the scale is numeric.
+  // Used to prevent non-numeric columns from having a scale-selection
+  // radio group.
+  _isNumericColumn(colIndex) {
+    return (
+      colIndex >= this.configuration.visibleSchema.hparamInfos.length ||
+      this.configuration.visibleSchema.hparamInfos[colIndex].type ===
+        'DATA_TYPE_FLOAT64'
+    );
+  }
+  // Use the first metric if there are metrics, or otherwise the first
+  // numeric hparam if there are hparams. If there are no numeric columns
+  // return undefined.
+  _defaultColorByColumnIndex() {
+    if (this.configuration.visibleSchema.metricInfos.length > 0) {
+      return this.configuration.visibleSchema.hparamInfos.length;
     }
-    // Returns true if the scale is numeric.
-    // Used to prevent non-numeric columns from having a scale-selection
-    // radio group.
-    _isNumericColumn(colIndex) {
-        return (colIndex >= this.configuration.visibleSchema.hparamInfos.length ||
-            this.configuration.visibleSchema.hparamInfos[colIndex].type ===
-                'DATA_TYPE_FLOAT64');
+    const i = this.configuration.visibleSchema.hparamInfos.findIndex(
+      (info) => info.type === 'DATA_TYPE_FLOAT64'
+    );
+    if (i !== -1) {
+      return i;
     }
-    // Use the first metric if there are metrics, or otherwise the first
-    // numeric hparam if there are hparams. If there are no numeric columns
-    // return undefined.
-    _defaultColorByColumnIndex() {
-        if (this.configuration.visibleSchema.metricInfos.length > 0) {
-            return this.configuration.visibleSchema.hparamInfos.length;
-        }
-        const i = this.configuration.visibleSchema.hparamInfos.findIndex((info) => info.type === 'DATA_TYPE_FLOAT64');
-        if (i !== -1) {
-            return i;
-        }
-        return undefined;
-    }
+    return undefined;
+  }
 }

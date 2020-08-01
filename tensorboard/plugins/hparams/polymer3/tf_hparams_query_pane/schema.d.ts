@@ -13,10 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 export interface Schema {
-    hparamColumn: Array<{
-        hparamInfo: Object;
-    }>;
-    metricColumn: Array<{
-        metricInfo: Object;
-    }>;
+  hparamColumn: Array<{
+    hparamInfo: Object;
+  }>;
+  metricColumn: Array<{
+    metricInfo: Object;
+  }>;
 }

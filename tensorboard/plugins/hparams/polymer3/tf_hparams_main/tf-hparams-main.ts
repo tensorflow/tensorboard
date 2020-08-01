@@ -13,24 +13,33 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import { PolymerElement, html } from "@polymer/polymer";
-import { customElement, property } from "@polymer/decorators";
-import { DO_NOT_SUBMIT } from "../tf-imports/polymer.html";
-import { DO_NOT_SUBMIT } from "../tf-hparams-query-pane/tf-hparams-query-pane.html";
-import { DO_NOT_SUBMIT } from "../tf-hparams-sessions-pane/tf-hparams-sessions-pane.html";
-import { DO_NOT_SUBMIT } from "../tf-imports/vaadin-split-layout.html";
-import { DO_NOT_SUBMIT } from "../tf-imports/lodash.html";
-import { DO_NOT_SUBMIT } from "../tf-imports/polymer.html";
-import { DO_NOT_SUBMIT } from "../tf-hparams-query-pane/tf-hparams-query-pane.html";
-import { DO_NOT_SUBMIT } from "../tf-hparams-sessions-pane/tf-hparams-sessions-pane.html";
-import { DO_NOT_SUBMIT } from "../tf-imports/vaadin-split-layout.html";
-import { DO_NOT_SUBMIT } from "../tf-imports/lodash.html";
+import {PolymerElement, html} from '@polymer/polymer';
+import {customElement, property} from '@polymer/decorators';
+import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
+import {DO_NOT_SUBMIT} from '../tf-hparams-query-pane/tf-hparams-query-pane.html';
+import {DO_NOT_SUBMIT} from '../tf-hparams-sessions-pane/tf-hparams-sessions-pane.html';
+import {DO_NOT_SUBMIT} from '../tf-imports/vaadin-split-layout.html';
+import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
+import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
+import {DO_NOT_SUBMIT} from '../tf-hparams-query-pane/tf-hparams-query-pane.html';
+import {DO_NOT_SUBMIT} from '../tf-hparams-sessions-pane/tf-hparams-sessions-pane.html';
+import {DO_NOT_SUBMIT} from '../tf-imports/vaadin-split-layout.html';
+import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
 'use strict';
-@customElement("tf-hparams-main")
+@customElement('tf-hparams-main')
 class TfHparamsMain extends PolymerElement {
-    static readonly template = html `<vaadin-split-layout>
+  static readonly template = html`
+    <vaadin-split-layout>
       <div class="sidebar" slot="sidebar">
-        <tf-hparams-query-pane id="query-pane" backend="[[backend]]" experiment-name="[[experimentName]]" configuration="{{_configuration}}" session-groups="{{_sessionGroups}}" data-loaded-with-non-empty-hparams="{{_dataLoadedWithNonEmptyHparams}}" data-loaded-with-empty-hparams="{{_dataLoadedWithEmptyHparams}}">
+        <tf-hparams-query-pane
+          id="query-pane"
+          backend="[[backend]]"
+          experiment-name="[[experimentName]]"
+          configuration="{{_configuration}}"
+          session-groups="{{_sessionGroups}}"
+          data-loaded-with-non-empty-hparams="{{_dataLoadedWithNonEmptyHparams}}"
+          data-loaded-with-empty-hparams="{{_dataLoadedWithEmptyHparams}}"
+        >
         </tf-hparams-query-pane>
       </div>
       <div class="center" slot="center">
@@ -40,32 +49,49 @@ class TfHparamsMain extends PolymerElement {
             <p>Probable causes:</p>
             <ul>
               <li>
-                You haven\u2019t written any hparams data to your event files.
+                You haven’t written any hparams data to your event files.
               </li>
               <li>
                 Event files are still being loaded (try reloading this page).
               </li>
-              <li>TensorBoard can\u2019t find your event files.</li>
+              <li>TensorBoard can’t find your event files.</li>
             </ul>
 
             <p>
-              If you\u2019re new to using TensorBoard, and want to find out how to
+              If you’re new to using TensorBoard, and want to find out how to
               add data and set up your event files, check out the
-              <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md">README</a>
+              <a
+                href="https://github.com/tensorflow/tensorboard/blob/master/README.md"
+                >README</a
+              >
               and perhaps the
-              <a href="https://www.tensorflow.org/get_started/summaries_and_tensorboard">TensorBoard tutorial</a>.
+              <a
+                href="https://www.tensorflow.org/get_started/summaries_and_tensorboard"
+                >TensorBoard tutorial</a
+              >.
             </p>
 
             <p>
               If you think TensorBoard is configured properly, please see
-              <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md#my-tensorboard-isnt-showing-any-data-whats-wrong">the section of the README devoted to missing data problems</a>
+              <a
+                href="https://github.com/tensorflow/tensorboard/blob/master/README.md#my-tensorboard-isnt-showing-any-data-whats-wrong"
+                >the section of the README devoted to missing data problems</a
+              >
               and consider filing an issue on GitHub.
             </p>
           </div>
         </template>
 
         <template is="dom-if" if="[[_dataLoadedWithNonEmptyHparams]]">
-          <tf-hparams-sessions-pane id="sessions-pane" backend="[[backend]]" help-url="[[helpUrl]]" bug-report-url="[[bugReportUrl]]" experiment-name="[[experimentName]]" configuration="[[_configuration]]" session-groups="[[_sessionGroups]]">
+          <tf-hparams-sessions-pane
+            id="sessions-pane"
+            backend="[[backend]]"
+            help-url="[[helpUrl]]"
+            bug-report-url="[[bugReportUrl]]"
+            experiment-name="[[experimentName]]"
+            configuration="[[_configuration]]"
+            session-groups="[[_sessionGroups]]"
+          >
           </tf-hparams-sessions-pane>
         </template>
       </div>
@@ -104,25 +130,26 @@ class TfHparamsMain extends PolymerElement {
         max-width: 540px;
         margin: 80px auto 0 auto;
       }
-    </style>`;
-    @property({ type: Object })
-    backend: object;
-    @property({ type: String })
-    experimentName: string;
-    @property({ type: String })
-    helpUrl: string;
-    @property({ type: String })
-    bugReportUrl: string;
-    @property({ type: Object })
-    _configuration: object;
-    @property({ type: Array })
-    _sessionGroups: unknown[];
-    @property({ type: Boolean })
-    _dataLoadedWithNonEmptyHparams: boolean;
-    @property({ type: Boolean })
-    _dataLoadedWithEmptyHparams: boolean;
-    // This can be called to refresh the plugin.
-    reload() {
-        this.$['query-pane'].reload();
-    }
+    </style>
+  `;
+  @property({type: Object})
+  backend: object;
+  @property({type: String})
+  experimentName: string;
+  @property({type: String})
+  helpUrl: string;
+  @property({type: String})
+  bugReportUrl: string;
+  @property({type: Object})
+  _configuration: object;
+  @property({type: Array})
+  _sessionGroups: unknown[];
+  @property({type: Boolean})
+  _dataLoadedWithNonEmptyHparams: boolean;
+  @property({type: Boolean})
+  _dataLoadedWithEmptyHparams: boolean;
+  // This can be called to refresh the plugin.
+  reload() {
+    this.$['query-pane'].reload();
+  }
 }

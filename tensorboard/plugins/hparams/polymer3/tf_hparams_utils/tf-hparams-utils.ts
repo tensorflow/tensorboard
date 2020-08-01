@@ -13,13 +13,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import { DO_NOT_SUBMIT } from "../tf-imports/lodash.html";
-import { DO_NOT_SUBMIT } from "../tf-imports/d3.html";
-import { DO_NOT_SUBMIT } from "../tf-imports/lodash.html";
-import { DO_NOT_SUBMIT } from "../tf-imports/d3.html";
+import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
+import {DO_NOT_SUBMIT} from '../tf-imports/d3.html';
+import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
+import {DO_NOT_SUBMIT} from '../tf-imports/d3.html';
 /* Common utilities used in the hparams plugin.
-   * TODO(erez): Convert to TypeScript.
-   */
+ * TODO(erez): Convert to TypeScript.
+ */
 var tf;
 // -----------------------------------------------------------------------
 // Functions for dealing with HParams, Metrics, Columns,
@@ -59,61 +59,59 @@ var tf;
 // -----------------------------------------------------------------------
 // Computes the name to display for the given 'hparamInfo' object.
 function hparamName(hparamInfo) {
-    if (hparamInfo.displayName !== "" &&
-        hparamInfo.displayName !== undefined) {
-        return hparamInfo.displayName;
-    }
-    return hparamInfo.name;
+  if (hparamInfo.displayName !== '' && hparamInfo.displayName !== undefined) {
+    return hparamInfo.displayName;
+  }
+  return hparamInfo.name;
 }
 utils.hparamName = hparamName;
 // Computes the name to display for the given metricInfo object.
 function metricName(metricInfo) {
-    if (metricInfo.displayName !== "" &&
-        metricInfo.displayName !== undefined) {
-        return metricInfo.displayName;
-    }
-    let group = metricInfo.name.group;
-    let tag = metricInfo.name.tag;
-    if (group === undefined) {
-        group = "";
-    }
-    if (tag === undefined) {
-        tag = "";
-    }
-    if (group === "") {
-        return tag;
-    }
-    return group + "." + tag;
+  if (metricInfo.displayName !== '' && metricInfo.displayName !== undefined) {
+    return metricInfo.displayName;
+  }
+  let group = metricInfo.name.group;
+  let tag = metricInfo.name.tag;
+  if (group === undefined) {
+    group = '';
+  }
+  if (tag === undefined) {
+    tag = '';
+  }
+  if (group === '') {
+    return tag;
+  }
+  return group + '.' + tag;
 }
 utils.metricName = metricName;
 function schemaColumnName(schema, columnIndex) {
-    if (columnIndex < schema.hparamColumns.length) {
-        return hparamName(schema.hparamColumns[columnIndex].hparamInfo);
-    }
-    const metricIndex = columnIndex - schema.hparamColumns.length;
-    return metricName(schema.metricColumns[metricIndex].metricInfo);
+  if (columnIndex < schema.hparamColumns.length) {
+    return hparamName(schema.hparamColumns[columnIndex].hparamInfo);
+  }
+  const metricIndex = columnIndex - schema.hparamColumns.length;
+  return metricName(schema.metricColumns[metricIndex].metricInfo);
 }
 utils.schemaColumnName = schemaColumnName;
 // Returns the number of hparams in schema (visible and invisible).
 function numHParams(schema) {
-    return schema.hparamColumns.length;
+  return schema.hparamColumns.length;
 }
 utils.numHParams = numHParams;
 // Returns the number of metrics in schema (visible and invisible).
 function numMetrics(schema) {
-    return schema.metricColumns.length;
+  return schema.metricColumns.length;
 }
 utils.numMetrics = numMetrics;
 // Returns the number of columns in schema (visible and invisible).
 function numColumns(schema) {
-    return numHParams(schema) + numMetrics(schema);
+  return numHParams(schema) + numMetrics(schema);
 }
 utils.numColumns = numColumns;
 // Returns hparamValues[hparamName]. To be used in a Polymer databinding
 // annotation (as Polymer doesn't have an annotation for looking up a
 // property in an JS object).
 function hparamValueByName(hparamValues, hparamName) {
-    return hparamValues[hparamName];
+  return hparamValues[hparamName];
 }
 utils.hparamValueByName = hparamValueByName;
 // Given an array 'metricValues' of (javascript object representation) of
@@ -121,68 +119,77 @@ utils.hparamValueByName = hparamValueByName;
 // element whose metric name is 'metricName' or undefined if no such
 // element exists.
 function metricValueByName(metricValues, metricName) {
-    return metricValues.find((mv) => _.isEqual(mv.name, metricName));
+  return metricValues.find((mv) => _.isEqual(mv.name, metricName));
 }
 utils.metricValueByName = metricValueByName;
 // Returns sessionGroup's metric value of the metric with index
 // 'metricIndex' in schema.metricColumns.
 function hparamValueByIndex(schema, sessionGroup, hparamIndex) {
-    return sessionGroup.hparams[schema.hparamColumns[hparamIndex].hparamInfo.name];
+  return sessionGroup.hparams[
+    schema.hparamColumns[hparamIndex].hparamInfo.name
+  ];
 }
 utils.hparamValueByIndex = hparamValueByIndex;
 // Returns sessionGroup's metric value of the metric with index
 // 'metricIndex' in schema.metricColumns.
 function metricValueByIndex(schema, sessionGroup, metricIndex) {
-    const metricName = schema.metricColumns[metricIndex].metricInfo.name;
-    const metricValue = metricValueByName(sessionGroup.metricValues, metricName);
-    return metricValue === undefined ? undefined : metricValue.value;
+  const metricName = schema.metricColumns[metricIndex].metricInfo.name;
+  const metricValue = metricValueByName(sessionGroup.metricValues, metricName);
+  return metricValue === undefined ? undefined : metricValue.value;
 }
 utils.metricValueByIndex = metricValueByIndex;
 // Returns sessionGroup's column value of the column with index
 // 'columnIndex' in schema.
 function columnValueByIndex(schema, sessionGroup, columnIndex) {
-    if (columnIndex < schema.hparamColumns.length) {
-        return hparamValueByIndex(schema, sessionGroup, columnIndex);
-    }
-    return metricValueByIndex(schema, sessionGroup, columnIndex - schema.hparamColumns.length);
+  if (columnIndex < schema.hparamColumns.length) {
+    return hparamValueByIndex(schema, sessionGroup, columnIndex);
+  }
+  return metricValueByIndex(
+    schema,
+    sessionGroup,
+    columnIndex - schema.hparamColumns.length
+  );
 }
 utils.columnValueByIndex = columnValueByIndex;
 // Returns an array [min, max] representing the minimum and maximum
 // value of the given column in the sessionGroups array.
 // Ignores session groups with missing values for the column.
 function numericColumnExtent(schema, sessionGroups, columnIndex) {
-    return d3.extent(sessionGroups, (sg) => columnValueByIndex(schema, sg, columnIndex));
+  return d3.extent(sessionGroups, (sg) =>
+    columnValueByIndex(schema, sg, columnIndex)
+  );
 }
 utils.numericColumnExtent = numericColumnExtent;
 // Converts a visibleSchema columnIndex to a schema columnIndex.
 // Returns the schema-relative columnIndex for the visible column with
 // visibleSchema-releative columnIndex given by 'visibleColumnIndex'.
 function getAbsoluteColumnIndex(schema, visibleSchema, visibleColumnIndex) {
-    let result;
-    if (visibleColumnIndex < visibleSchema.hparamInfos.length) {
-        result = schema.hparamColumns.findIndex((c) => c.hparamInfo.name ===
-            visibleSchema.hparamInfos[visibleColumnIndex].name);
-    }
-    else {
-        const metricIndex = visibleColumnIndex - visibleSchema.hparamInfos.length;
-        const metricName = visibleSchema.metricInfos[metricIndex].name;
-        result =
-            schema.hparamColumns.length +
-                schema.metricColumns.findIndex((c) => c.metricInfo.name === metricName);
-    }
-    console.assert(result !== -1);
-    return result;
+  let result;
+  if (visibleColumnIndex < visibleSchema.hparamInfos.length) {
+    result = schema.hparamColumns.findIndex(
+      (c) =>
+        c.hparamInfo.name === visibleSchema.hparamInfos[visibleColumnIndex].name
+    );
+  } else {
+    const metricIndex = visibleColumnIndex - visibleSchema.hparamInfos.length;
+    const metricName = visibleSchema.metricInfos[metricIndex].name;
+    result =
+      schema.hparamColumns.length +
+      schema.metricColumns.findIndex((c) => c.metricInfo.name === metricName);
+  }
+  console.assert(result !== -1);
+  return result;
 }
 utils.getAbsoluteColumnIndex = getAbsoluteColumnIndex;
 // DEPRECATED. Use schemaColumnName instead (with an "absolute"
 // columnIndex).
 // Computes the name to display for the given visible column index.
 function schemaVisibleColumnName(visibleSchema, columnIndex) {
-    if (columnIndex < visibleSchema.hparamInfos.length) {
-        return hparamName(visibleSchema.hparamInfos[columnIndex]);
-    }
-    const metricIndex = columnIndex - visibleSchema.hparamInfos.length;
-    return metricName(visibleSchema.metricInfos[metricIndex]);
+  if (columnIndex < visibleSchema.hparamInfos.length) {
+    return hparamName(visibleSchema.hparamInfos[columnIndex]);
+  }
+  const metricIndex = columnIndex - visibleSchema.hparamInfos.length;
+  return metricName(visibleSchema.metricInfos[metricIndex]);
 }
 utils.schemaVisibleColumnName = schemaVisibleColumnName;
 // DEPRECATED. Use numDisplayedHParams instead.
@@ -190,7 +197,7 @@ utils.schemaVisibleColumnName = schemaVisibleColumnName;
 // value as numDisplayedHParams(schema) with schema being the "containing"
 // schema of visibleSchema.
 function numVisibleHParams(visibleSchema) {
-    return visibleSchema.hparamInfos.length;
+  return visibleSchema.hparamInfos.length;
 }
 utils.numVisibleHParams = numVisibleHParams;
 // DEPRECATED. Use numDisplayedMetrics instead.
@@ -198,7 +205,7 @@ utils.numVisibleHParams = numVisibleHParams;
 // value as numDisplayedMetrics(schema) with schema being the "containing"
 // schema of visibleSchema.
 function numVisibleMetrics(visibleSchema) {
-    return visibleSchema.metricInfos.length;
+  return visibleSchema.metricInfos.length;
 }
 utils.numVisibleMetrics = numVisibleMetrics;
 // DEPRECATED.
@@ -206,7 +213,7 @@ utils.numVisibleMetrics = numVisibleMetrics;
 // This is the same value as numDisplayedColumns(schema) with schema
 // being the "containing" schema of visibleSchema.
 function numVisibleColumns(visibleSchema) {
-    return (numVisibleHParams(visibleSchema) + numVisibleMetrics(visibleSchema));
+  return numVisibleHParams(visibleSchema) + numVisibleMetrics(visibleSchema);
 }
 utils.numVisibleColumns = numVisibleColumns;
 // DEPRECATED. Use numericColumnExtent with a schema columnIndex instead.
@@ -214,109 +221,110 @@ utils.numVisibleColumns = numVisibleColumns;
 // value of the given visible column in the sessionGroups array.
 // Ignores session groups with missing values for the column.
 function visibleNumericColumnExtent(visibleSchema, sessionGroups, columnIndex) {
-    return d3.extent(sessionGroups, (sg) => columnValueByVisibleIndex(visibleSchema, sg, columnIndex));
+  return d3.extent(sessionGroups, (sg) =>
+    columnValueByVisibleIndex(visibleSchema, sg, columnIndex)
+  );
 }
 utils.visibleNumericColumnExtent = visibleNumericColumnExtent;
 // Returns a string representation of hparamValues[hparamName] suitable
 // for display.
 function prettyPrintHParamValueByName(hparamValues, hparamName) {
-    return prettyPrint(hparamValueByName(hparamValues, hparamName));
+  return prettyPrint(hparamValueByName(hparamValues, hparamName));
 }
 utils.prettyPrintHParamValueByName = prettyPrintHParamValueByName;
 // Returns a string representation of metricValueByName suitable for
 // display.
 function prettyPrintMetricValueByName(metricValues, metricName) {
-    return prettyPrint(metricValueByName(metricValues, metricName));
+  return prettyPrint(metricValueByName(metricValues, metricName));
 }
 utils.prettyPrintMetricValueByName = prettyPrintMetricValueByName;
 // Returns the session group with name 'name' in sessionGroups or
 // undefined of no such element exist.
 function sessionGroupWithName(sessionGroups, name) {
-    return sessionGroups.find((sg) => sg.name === name);
+  return sessionGroups.find((sg) => sg.name === name);
 }
 utils.sessionGroupWithName = sessionGroupWithName;
 // DEPRECATED. Use hparamValueByIndex with a schema hparamIndex instead.
 // Returns sessionGroup's hparam value of the visible hparam with index
 // 'hparamIndex' in visibleSchema.hparamInfos.
 function hparamValueByVisibleIndex(visibleSchema, sessionGroup, hparamIndex) {
-    return sessionGroup.hparams[visibleSchema.hparamInfos[hparamIndex].name];
+  return sessionGroup.hparams[visibleSchema.hparamInfos[hparamIndex].name];
 }
 utils.hparamValueByVisibleIndex = hparamValueByVisibleIndex;
 // DEPRECATED. Use metricValueByIndex with a schema metricIndex instead.
 // Returns sessionGroup's metric value of the visible metric with index
 // 'metricIndex' in visibleSchema.metricInfos.
-function metricValueByVisibleIndex(visibleSchema, sessionGroup, visibleMetricIndex) {
-    const metricName = visibleSchema.metricInfos[visibleMetricIndex].name;
-    const metricValue = metricValueByName(sessionGroup.metricValues, metricName);
-    return metricValue === undefined ? undefined : metricValue.value;
+function metricValueByVisibleIndex(
+  visibleSchema,
+  sessionGroup,
+  visibleMetricIndex
+) {
+  const metricName = visibleSchema.metricInfos[visibleMetricIndex].name;
+  const metricValue = metricValueByName(sessionGroup.metricValues, metricName);
+  return metricValue === undefined ? undefined : metricValue.value;
 }
 utils.metricValueByVisibleIndex = metricValueByVisibleIndex;
 // DEPRECATED. Use columnValueByIndex with a schema columnIndex instead.
 // Returns sessionGroup's column value of the visible column with index
 // 'columnIndex' in visibleSchema.
 function columnValueByVisibleIndex(visibleSchema, sessionGroup, columnIndex) {
-    if (columnIndex < visibleSchema.hparamInfos.length) {
-        return hparamValueByVisibleIndex(visibleSchema, sessionGroup, columnIndex);
-    }
-    return metricValueByVisibleIndex(visibleSchema, sessionGroup, columnIndex - visibleSchema.hparamInfos.length);
+  if (columnIndex < visibleSchema.hparamInfos.length) {
+    return hparamValueByVisibleIndex(visibleSchema, sessionGroup, columnIndex);
+  }
+  return metricValueByVisibleIndex(
+    visibleSchema,
+    sessionGroup,
+    columnIndex - visibleSchema.hparamInfos.length
+  );
 }
 utils.columnValueByVisibleIndex = columnValueByVisibleIndex;
 // ---- Misc functions ---------------------------------------------------
 // Returns a string representation of 'value' suitable for display.
 function prettyPrint(value) {
-    if (_.isNumber(value)) {
-        // TODO(erez):Make the precision user-configurable.
-        return value.toPrecision(5);
-    }
-    if (value === undefined) {
-        return "";
-    }
-    return value.toString();
+  if (_.isNumber(value)) {
+    // TODO(erez):Make the precision user-configurable.
+    return value.toPrecision(5);
+  }
+  if (value === undefined) {
+    return '';
+  }
+  return value.toString();
 }
 utils.prettyPrint = prettyPrint;
 // Returns the square of the L2-norm of (x, y).
 function l2NormSquared(x, y) {
-    return x * x + y * y;
+  return x * x + y * y;
 }
 utils.l2NormSquared = l2NormSquared;
 // Returns the euclidean distance between (x0, y0) and (x1, y1).
 function euclideanDist(x0, y0, x1, y1) {
-    return Math.sqrt(l2NormSquared(x0 - x1, y0 - y1));
+  return Math.sqrt(l2NormSquared(x0 - x1, y0 - y1));
 }
 utils.euclideanDist = euclideanDist;
 // Returns the (euclidean) distance between the point (x, y) and the
 // rectangle [x0, x1) x [y0, y1).
 function pointToRectangleDist(x, y, x0, y0, x1, y1) {
-    if (x < x0 && y < y0) {
-        return utils.euclideanDist(x, y, x0, y0);
-    }
-    else if (x0 <= x && x < x1 && y < y0) {
-        return y0 - y;
-    }
-    else if (x1 <= x && y < y0) {
-        return utils.euclideanDist(x, y, x1, y0);
-    }
-    else if (x < x0 && y0 <= y && y < y1) {
-        return x0 - x;
-    }
-    else if (x0 <= x && x < x1 && y0 <= y && y < y1) {
-        return 0;
-    }
-    else if (x1 <= x && y0 <= y && y < y1) {
-        return x - x1;
-    }
-    else if (x < x0 && y1 <= y) {
-        return utils.euclideanDist(x, y, x0, y1);
-    }
-    else if (x0 <= x && x < x1 && y1 <= y) {
-        return y - y1;
-    }
-    else if (x1 <= x && y1 <= y) {
-        return utils.euclideanDist(x, y, x1, y1);
-    }
-    else {
-        throw "Point (x,y) must be in one of the regions defined above.";
-    }
+  if (x < x0 && y < y0) {
+    return utils.euclideanDist(x, y, x0, y0);
+  } else if (x0 <= x && x < x1 && y < y0) {
+    return y0 - y;
+  } else if (x1 <= x && y < y0) {
+    return utils.euclideanDist(x, y, x1, y0);
+  } else if (x < x0 && y0 <= y && y < y1) {
+    return x0 - x;
+  } else if (x0 <= x && x < x1 && y0 <= y && y < y1) {
+    return 0;
+  } else if (x1 <= x && y0 <= y && y < y1) {
+    return x - x1;
+  } else if (x < x0 && y1 <= y) {
+    return utils.euclideanDist(x, y, x0, y1);
+  } else if (x0 <= x && x < x1 && y1 <= y) {
+    return y - y1;
+  } else if (x1 <= x && y1 <= y) {
+    return utils.euclideanDist(x, y, x1, y1);
+  } else {
+    throw 'Point (x,y) must be in one of the regions defined above.';
+  }
 }
 utils.pointToRectangleDist = pointToRectangleDist;
 // SVG elements such as <g> can optionally have a "transform" attribute
@@ -327,10 +335,10 @@ utils.pointToRectangleDist = pointToRectangleDist;
 // https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/transform
 // for more details.
 function translateStr(x, opt_y) {
-    if (opt_y === undefined) {
-        return "translate(" + x + ")";
-    }
-    return "translate(" + x + "," + opt_y + ")";
+  if (opt_y === undefined) {
+    return 'translate(' + x + ')';
+  }
+  return 'translate(' + x + ',' + opt_y + ')';
 }
 utils.translateStr = translateStr;
 // SVG elements such as <g> can optionally have a "transform" attribute
@@ -341,16 +349,16 @@ utils.translateStr = translateStr;
 // https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/transform
 // for more details.
 function rotateStr(angle, x, y) {
-    let result = "rotate(" + angle;
-    if (x !== undefined && y !== undefined) {
-        result = result + "," + x + "," + y;
-    }
-    result = result + ")";
-    return result;
+  let result = 'rotate(' + angle;
+  if (x !== undefined && y !== undefined) {
+    result = result + ',' + x + ',' + y;
+  }
+  result = result + ')';
+  return result;
 }
 utils.rotateStr = rotateStr;
 function isNullOrUndefined(x) {
-    return x === null || x === undefined;
+  return x === null || x === undefined;
 }
 utils.isNullOrUndefined = isNullOrUndefined;
 // Given a d3.quadTree object, visits all the points in it
@@ -358,24 +366,24 @@ utils.isNullOrUndefined = isNullOrUndefined;
 // For each such point calls the given callback, passing the
 // point's quadtree data.
 function quadTreeVisitPointsInRect(quadTree, x0, y0, x1, y1, callback) {
-    quadTree.visit((node, nx0, ny0, nx1, ny1) => {
-        // Represents the set of points [nx0, nx1) x [ny0, ny1).
-        if (node.length === undefined) {
-            do {
-                const x = quadTree.x()(node.data);
-                const y = quadTree.y()(node.data);
-                if (x0 <= x && x < x1 && y0 <= y && y < y1) {
-                    callback(node.data);
-                }
-            } while ((node = node.next));
-            return true;
+  quadTree.visit((node, nx0, ny0, nx1, ny1) => {
+    // Represents the set of points [nx0, nx1) x [ny0, ny1).
+    if (node.length === undefined) {
+      do {
+        const x = quadTree.x()(node.data);
+        const y = quadTree.y()(node.data);
+        if (x0 <= x && x < x1 && y0 <= y && y < y1) {
+          callback(node.data);
         }
-        // Skip this node if Intersection([nx0, nx1) x [ny0, ny1),
-        //  [x0, x1) x [y0, y1)) is empty, or equivalently, if
-        // either Intersection([nx0, nx1), [x0, x1)) or
-        // Intersection([ny0, ny1), [y0, y1)) is empty.
-        return nx0 >= x1 || nx1 <= x0 || ny0 >= y1 || ny1 <= y0;
-    });
+      } while ((node = node.next));
+      return true;
+    }
+    // Skip this node if Intersection([nx0, nx1) x [ny0, ny1),
+    //  [x0, x1) x [y0, y1)) is empty, or equivalently, if
+    // either Intersection([nx0, nx1), [x0, x1)) or
+    // Intersection([ny0, ny1), [y0, y1)) is empty.
+    return nx0 >= x1 || nx1 <= x0 || ny0 >= y1 || ny1 <= y0;
+  });
 }
 utils.quadTreeVisitPointsInRect = quadTreeVisitPointsInRect;
 // Given a d3.quadTree object, visits all the points in it
@@ -384,38 +392,45 @@ utils.quadTreeVisitPointsInRect = quadTreeVisitPointsInRect;
 // For each such point calls the given callback, passing the
 // point's quadtree data and the distance from the point to the center
 // of the disk.
-function quadTreeVisitPointsInDisk(quadTree, centerX, centerY, radius, callback) {
-    quadTree.visit((node, x0, y0, x1, y1) => {
-        // Represents the set of points [x0, x1) x [y0, y1).
-        if (node.length === undefined) {
-            do {
-                const x = quadTree.x()(node.data);
-                const y = quadTree.y()(node.data);
-                const centerDist = utils.euclideanDist(centerX, centerY, x, y);
-                if (centerDist <= radius) {
-                    callback(node.data, centerDist);
-                }
-            } while ((node = node.next));
-            return true;
+function quadTreeVisitPointsInDisk(
+  quadTree,
+  centerX,
+  centerY,
+  radius,
+  callback
+) {
+  quadTree.visit((node, x0, y0, x1, y1) => {
+    // Represents the set of points [x0, x1) x [y0, y1).
+    if (node.length === undefined) {
+      do {
+        const x = quadTree.x()(node.data);
+        const y = quadTree.y()(node.data);
+        const centerDist = utils.euclideanDist(centerX, centerY, x, y);
+        if (centerDist <= radius) {
+          callback(node.data, centerDist);
         }
-        // Skip nodes that represent a rectangle that does not intersect the
-        // disk. Equivalently, skip nodes that represent a rectangle whose
-        // distance to (centerX, centerY) is larger than radius.
-        return (utils.pointToRectangleDist(centerX, centerY, x0, y0, x1, y1) >
-            radius);
-    });
+      } while ((node = node.next));
+      return true;
+    }
+    // Skip nodes that represent a rectangle that does not intersect the
+    // disk. Equivalently, skip nodes that represent a rectangle whose
+    // distance to (centerX, centerY) is larger than radius.
+    return (
+      utils.pointToRectangleDist(centerX, centerY, x0, y0, x1, y1) > radius
+    );
+  });
 }
 utils.quadTreeVisitPointsInDisk = quadTreeVisitPointsInDisk;
 // Returns a Set consisting of all elements in 'set' for which
 // predicateFn evaluates to a truthy value.
 function filterSet(set, predicateFn) {
-    const result = new Set();
-    set.forEach((val) => {
-        if (predicateFn(val)) {
-            result.add(val);
-        }
-    });
-    return result;
+  const result = new Set();
+  set.forEach((val) => {
+    if (predicateFn(val)) {
+      result.add(val);
+    }
+  });
+  return result;
 }
 utils.filterSet = filterSet;
 // Sets the array property of polymerElement to 'newArray' in
@@ -427,30 +442,33 @@ utils.filterSet = filterSet;
 //   pathToArray: a polymer dot-separated path string to the array
 //   newArray: the new array to set.
 function setArrayObservably(polymerElement, pathToArray, newArray) {
-    const currentArray = polymerElement.get(pathToArray, polymerElement);
-    // If the current value is not an array, then we use
-    // 'polymerElement.set' to replace it with newArray.
-    if (!Array.isArray(currentArray)) {
-        polymerElement.set(pathToArray, newArray);
-        return;
-    }
-    // Call Polymer.Base.splice() removing the old elements and inserting
-    // the new ones.
-    // We need to call polymerElement.splice with 'apply' since splice
-    // receives a variable argument-list and we want to pass it an array
-    // (newArray).
-    polymerElement.splice.apply(polymerElement, [pathToArray, 0, currentArray.length].concat(newArray));
+  const currentArray = polymerElement.get(pathToArray, polymerElement);
+  // If the current value is not an array, then we use
+  // 'polymerElement.set' to replace it with newArray.
+  if (!Array.isArray(currentArray)) {
+    polymerElement.set(pathToArray, newArray);
+    return;
+  }
+  // Call Polymer.Base.splice() removing the old elements and inserting
+  // the new ones.
+  // We need to call polymerElement.splice with 'apply' since splice
+  // receives a variable argument-list and we want to pass it an array
+  // (newArray).
+  polymerElement.splice.apply(
+    polymerElement,
+    [pathToArray, 0, currentArray.length].concat(newArray)
+  );
 }
 utils.setArrayObservably = setArrayObservably;
 // Computes a simple not-secure 32-bit integer hash value for a string.
 function hashOfString(str) {
-    let result = 0;
-    for (let i = 0; i < str.length; ++i) {
-        result = (result * 31 + str.charCodeAt(i)) & 4294967295;
-    }
-    // Bitwise operations in JavaScript convert operands to 32-bit 2's
-    // complement representation in the range [-2**31,(2**31)-1]. Shift it
-    // to the range [0, (2**32)-1].
-    return result + 2 ** 31;
+  let result = 0;
+  for (let i = 0; i < str.length; ++i) {
+    result = (result * 31 + str.charCodeAt(i)) & 4294967295;
+  }
+  // Bitwise operations in JavaScript convert operands to 32-bit 2's
+  // complement representation in the range [-2**31,(2**31)-1]. Shift it
+  // to the range [0, (2**32)-1].
+  return result + 2 ** 31;
 }
 utils.hashOfString = hashOfString;
