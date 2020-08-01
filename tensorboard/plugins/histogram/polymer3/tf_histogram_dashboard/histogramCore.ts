@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import { DO_NOT_SUBMIT } from "../tf-imports/d3.html";
+import {DO_NOT_SUBMIT} from '../tf-imports/d3.html';
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,43 +27,48 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-export type BackendHistogramBin = [number, // left
-number, // right
-number // count
+export type BackendHistogramBin = [
+  number, // left
+  number, // right
+  number // count
 ];
-export type BackendHistogram = [number, // wall_time, in seconds
-number, // step
-BackendHistogramBin[]];
+export type BackendHistogram = [
+  number, // wall_time, in seconds
+  number, // step
+  BackendHistogramBin[]
+];
 export type IntermediateHistogram = {
-    wall_time: number; // in seconds
-    step: number;
-    min: number;
-    max: number;
-    buckets: {
-        left: number;
-        right: number;
-        count: number;
-    }[];
+  wall_time: number; // in seconds
+  step: number;
+  min: number;
+  max: number;
+  buckets: {
+    left: number;
+    right: number;
+    count: number;
+  }[];
 };
 export type D3HistogramBin = {
-    x: number;
-    dx: number;
-    y: number;
+  x: number;
+  dx: number;
+  y: number;
 };
 export type VzHistogram = {
-    wall_time: number; // in seconds
-    step: number;
-    bins: D3HistogramBin[];
+  wall_time: number; // in seconds
+  step: number;
+  bins: D3HistogramBin[];
 };
-export function backendToIntermediate(histogram: BackendHistogram): IntermediateHistogram {
-    const [wall_time, step, buckets] = histogram;
-    return {
-        wall_time,
-        step,
-        min: d3.min(buckets.map(([left, ,]) => left)),
-        max: d3.max(buckets.map(([, right]) => right)),
-        buckets: buckets.map(([left, right, count]) => ({ left, right, count })),
-    };
+export function backendToIntermediate(
+  histogram: BackendHistogram
+): IntermediateHistogram {
+  const [wall_time, step, buckets] = histogram;
+  return {
+    wall_time,
+    step,
+    min: d3.min(buckets.map(([left, ,]) => left)),
+    max: d3.max(buckets.map(([, right]) => right)),
+    buckets: buckets.map(([left, right, count]) => ({left, right, count})),
+  };
 }
 /**
  * Convert histogram data to the standard D3 format to make it more
@@ -86,50 +91,57 @@ export function backendToIntermediate(histogram: BackendHistogram): Intermediate
  *     right edges are inclusive, then these left edges (`x`) are
  *     exclusive.
  */
-export function intermediateToD3(histogram: IntermediateHistogram, min: number, max: number, numBins = 30): D3HistogramBin[] {
-    if (max === min) {
-        // Create bins even if all the data has a single value.
-        max = min * 1.1 + 1;
-        min = min / 1.1 - 1;
+export function intermediateToD3(
+  histogram: IntermediateHistogram,
+  min: number,
+  max: number,
+  numBins = 30
+): D3HistogramBin[] {
+  if (max === min) {
+    // Create bins even if all the data has a single value.
+    max = min * 1.1 + 1;
+    min = min / 1.1 - 1;
+  }
+  // Terminology note: _buckets_ are the input to this function,
+  // while _bins_ are our output.
+  const binWidth = (max - min) / numBins;
+  let bucketIndex = 0;
+  return d3.range(min, max, binWidth).map((binLeft) => {
+    const binRight = binLeft + binWidth;
+    // Take the count of each existing bucket, multiply it by the
+    // proportion of overlap with the new bin, then sum and store as the
+    // count for the new bin. If no overlap, will add to zero; if 100%
+    // overlap, will include the full count into new bin.
+    let binY = 0;
+    while (bucketIndex < histogram.buckets.length) {
+      // Clip the right edge because right-most edge can be
+      // infinite-sized.
+      const bucketRight = Math.min(max, histogram.buckets[bucketIndex].right);
+      const bucketLeft = Math.max(min, histogram.buckets[bucketIndex].left);
+      const intersect =
+        Math.min(bucketRight, binRight) - Math.max(bucketLeft, binLeft);
+      const count =
+        (intersect / (bucketRight - bucketLeft)) *
+        histogram.buckets[bucketIndex].count;
+      binY += intersect > 0 ? count : 0;
+      // If `bucketRight` is bigger than `binRight`, then this bin is
+      // finished and there is data for the next bin, so don't increment
+      // `bucketIndex`.
+      if (bucketRight > binRight) {
+        break;
+      }
+      bucketIndex++;
     }
-    // Terminology note: _buckets_ are the input to this function,
-    // while _bins_ are our output.
-    const binWidth = (max - min) / numBins;
-    let bucketIndex = 0;
-    return d3.range(min, max, binWidth).map((binLeft) => {
-        const binRight = binLeft + binWidth;
-        // Take the count of each existing bucket, multiply it by the
-        // proportion of overlap with the new bin, then sum and store as the
-        // count for the new bin. If no overlap, will add to zero; if 100%
-        // overlap, will include the full count into new bin.
-        let binY = 0;
-        while (bucketIndex < histogram.buckets.length) {
-            // Clip the right edge because right-most edge can be
-            // infinite-sized.
-            const bucketRight = Math.min(max, histogram.buckets[bucketIndex].right);
-            const bucketLeft = Math.max(min, histogram.buckets[bucketIndex].left);
-            const intersect = Math.min(bucketRight, binRight) - Math.max(bucketLeft, binLeft);
-            const count = (intersect / (bucketRight - bucketLeft)) *
-                histogram.buckets[bucketIndex].count;
-            binY += intersect > 0 ? count : 0;
-            // If `bucketRight` is bigger than `binRight`, then this bin is
-            // finished and there is data for the next bin, so don't increment
-            // `bucketIndex`.
-            if (bucketRight > binRight) {
-                break;
-            }
-            bucketIndex++;
-        }
-        return { x: binLeft, dx: binWidth, y: binY };
-    });
+    return {x: binLeft, dx: binWidth, y: binY};
+  });
 }
 export function backendToVz(histograms: BackendHistogram[]): VzHistogram[] {
-    const intermediateHistograms = histograms.map(backendToIntermediate);
-    const minmin = d3.min(intermediateHistograms, (h) => h.min);
-    const maxmax = d3.max(intermediateHistograms, (h) => h.max);
-    return intermediateHistograms.map((h) => ({
-        wall_time: h.wall_time,
-        step: h.step,
-        bins: intermediateToD3(h, minmin, maxmax),
-    }));
+  const intermediateHistograms = histograms.map(backendToIntermediate);
+  const minmin = d3.min(intermediateHistograms, (h) => h.min);
+  const maxmax = d3.max(intermediateHistograms, (h) => h.max);
+  return intermediateHistograms.map((h) => ({
+    wall_time: h.wall_time,
+    step: h.step,
+    bins: intermediateToD3(h, minmin, maxmax),
+  }));
 }
