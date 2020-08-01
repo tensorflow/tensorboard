@@ -12,17 +12,22 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {
+  RequestOptions,
+  HttpMethodType,
+} from '../../../../components_polymer3/tf_backend/requestManager';
 
-import {DO_NOT_SUBMIT} from '../tf-backend/tf-backend.html';
-import {DO_NOT_SUBMIT} from '../tf-backend/tf-backend.html';
 /* A 'tf-hparams-backend' encapsulates sending HParams API requests to the
    backend.
    Any implementation with the same public interface can be passed to
    tf-hparams-main as the 'backend' property.
 */
 'use strict';
-var tf;
-class Backend {
+export class Backend {
+  private _apiUrl: any;
+  private _requestManager: any;
+  private _useHttpGet: any;
+
   // Constructs a backend that uses the given tf_backend.requestManager to
   // send requests. The apiUrl parameter should denote the base
   // url to use. If useHttpGet is true uses HTTP GET to send a request
@@ -66,13 +71,12 @@ class Backend {
       return this._requestManager.request(url);
     }
     /* Use POST */
-    const requestOptions = new tf_backend.RequestOptions();
+    const requestOptions = new RequestOptions();
     requestOptions.withCredentials = true;
-    requestOptions.methodType = 'POST';
+    requestOptions.methodType = HttpMethodType.POST;
     requestOptions.contentType = 'text/plain';
     requestOptions.body = JSON.stringify(request_proto);
     const url = this._apiUrl + '/' + methodName;
     return this._requestManager.requestWithOptions(url, requestOptions);
   }
 }
-hparams.Backend = Backend;
