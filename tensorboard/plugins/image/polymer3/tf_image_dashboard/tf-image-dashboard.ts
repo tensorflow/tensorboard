@@ -15,7 +15,7 @@ limitations under the License.
 
 import * as _ from "lodash";
 import { PolymerElement, html } from "@polymer/polymer";
-import { customElement, property } from "@polymer/decorators";
+import { computed, customElement, observe, property } from "@polymer/decorators";
 import "@polymer/iron-icon";
 import "@polymer/paper-button";
 import "@polymer/paper-dialog";
@@ -23,9 +23,9 @@ import "@polymer/paper-input";
 import "@polymer/paper-slider";
 
 import { getTags } from "../../../../components_polymer3/tf_backend/backend";
-import "../../../../components_polymer3/tf_backend/requestManager";
+import { RequestManager } from "../../../../components_polymer3/tf_backend/requestManager";
 import { getRouter} from "../../../../components_polymer3/tf_backend/router";
-import { categorizeRunTagCombinations } from from "../../../../components_polymer3/tf_categorization_utils/categorizationUtils";
+import { categorizeRunTagCombinations } from "../../../../components_polymer3/tf_categorization_utils/categorizationUtils";
 import "../../../../components_polymer3/tf-categorization-utils/tf-tag-filterer";
 import "../../../../components_polymer3/tf-dashboard-common/dashboard-style";
 import "../../../../components_polymer3/tf-dashboard-common/tf-dashboard-layout";
