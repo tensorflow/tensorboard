@@ -13,10 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import { DO_NOT_SUBMIT } from "../tf-imports/lodash.html";
-import { DO_NOT_SUBMIT } from "../tf-imports/d3.html";
-import { DO_NOT_SUBMIT } from "../tf-imports/lodash.html";
-import { DO_NOT_SUBMIT } from "../tf-imports/d3.html";
+import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
+import {DO_NOT_SUBMIT} from '../tf-imports/d3.html';
+import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
+import {DO_NOT_SUBMIT} from '../tf-imports/d3.html';
 /* Utility functions used by tf-hparams-parallel-coords-plot element. */
 var tf;
 // Finds the "closest" path to a given 'target' point from a given array
@@ -45,66 +45,71 @@ var tf;
 // 'target' if the closest distance is at most 'threshold' or null
 // otherwise.
 function findClosestPath(paths, axesPos, target, threshold) {
-    if (axesPos.length < 2) {
-        console.error("Less than two axes in parallel coordinates plot.");
-        return null;
+  if (axesPos.length < 2) {
+    console.error('Less than two axes in parallel coordinates plot.');
+    return null;
+  }
+  const cx = target[0];
+  const cy = target[1];
+  if (cx <= axesPos[0] || cx >= axesPos[axesPos.length - 1]) {
+    return null;
+  }
+  // Find the indices a, b of the two axes closest to 'target'.
+  const b = _.sortedIndex(axesPos, cx);
+  console.assert(b > 0);
+  console.assert(b < axesPos.length);
+  const a = b - 1;
+  // Computes the square of the minimum Euclidean distance from
+  // (cx, cy) to a point on the line segment connecting
+  // (ax,ay) and (bx,by).
+  //
+  // Method: Let A=(ax,ay), B=(bx,by) and C=(cx, cy):
+  // A parametric from of the line passing through A and B is:
+  // B+t(A-B); t real.
+  // The line segment is the part with 0<=t<=1.
+  // Let 'tp' be the 't' corresponding to the projection of C onto the
+  // line. Clearly, 'tp' satisfies:
+  // <C-(B+tp(A-B)),A-B> = 0, where <> denotes the dot product. Solving
+  // for tp, one gets: tp = <A-B,C-B> / <A-B,A-B>.
+  // Since the point on the line segment closest to C is the point on
+  // the segment closest to the projection of C onto the line, we get:
+  // if tp<=0, the closest point on the line segment is B.
+  // if tp>=1, the closest point on the segment is A.
+  // Otherwise, the closest point is B+tp(A-B).
+  function distFn(ax, ay, bx, by) {
+    const abx = ax - bx;
+    const aby = ay - by;
+    const cbx = cx - bx;
+    const cby = cy - by;
+    const tp = (abx * cbx + aby * cby) / (abx * abx + aby * aby);
+    if (tp <= 0) {
+      return tf.hparams.utils.l2NormSquared(cbx, cby);
     }
-    const cx = target[0];
-    const cy = target[1];
-    if (cx <= axesPos[0] || cx >= axesPos[axesPos.length - 1]) {
-        return null;
+    if (tp >= 1) {
+      const cax = ax - cx;
+      const cay = ay - cy;
+      return tf.hparams.utils.l2NormSquared(cax, cay);
     }
-    // Find the indices a, b of the two axes closest to 'target'.
-    const b = _.sortedIndex(axesPos, cx);
-    console.assert(b > 0);
-    console.assert(b < axesPos.length);
-    const a = b - 1;
-    // Computes the square of the minimum Euclidean distance from
-    // (cx, cy) to a point on the line segment connecting
-    // (ax,ay) and (bx,by).
-    //
-    // Method: Let A=(ax,ay), B=(bx,by) and C=(cx, cy):
-    // A parametric from of the line passing through A and B is:
-    // B+t(A-B); t real.
-    // The line segment is the part with 0<=t<=1.
-    // Let 'tp' be the 't' corresponding to the projection of C onto the
-    // line. Clearly, 'tp' satisfies:
-    // <C-(B+tp(A-B)),A-B> = 0, where <> denotes the dot product. Solving
-    // for tp, one gets: tp = <A-B,C-B> / <A-B,A-B>.
-    // Since the point on the line segment closest to C is the point on
-    // the segment closest to the projection of C onto the line, we get:
-    // if tp<=0, the closest point on the line segment is B.
-    // if tp>=1, the closest point on the segment is A.
-    // Otherwise, the closest point is B+tp(A-B).
-    function distFn(ax, ay, bx, by) {
-        const abx = ax - bx;
-        const aby = ay - by;
-        const cbx = cx - bx;
-        const cby = cy - by;
-        const tp = (abx * cbx + aby * cby) / (abx * abx + aby * aby);
-        if (tp <= 0) {
-            return tf.hparams.utils.l2NormSquared(cbx, cby);
-        }
-        if (tp >= 1) {
-            const cax = ax - cx;
-            const cay = ay - cy;
-            return tf.hparams.utils.l2NormSquared(cax, cay);
-        }
-        return tf.hparams.utils.l2NormSquared(cbx - tp * abx, cby - tp * aby);
+    return tf.hparams.utils.l2NormSquared(cbx - tp * abx, cby - tp * aby);
+  }
+  let minDist = null;
+  let closestPath = null;
+  paths.forEach((p) => {
+    const dist = distFn(
+      p.controlPoints[a][0],
+      p.controlPoints[a][1],
+      p.controlPoints[b][0],
+      p.controlPoints[b][1]
+    );
+    if (dist > threshold) {
+      return;
     }
-    let minDist = null;
-    let closestPath = null;
-    paths.forEach((p) => {
-        const dist = distFn(p.controlPoints[a][0], p.controlPoints[a][1], p.controlPoints[b][0], p.controlPoints[b][1]);
-        if (dist > threshold) {
-            return;
-        }
-        if (minDist === null || dist < minDist) {
-            minDist = dist;
-            closestPath = p;
-        }
-    });
-    return closestPath;
+    if (minDist === null || dist < minDist) {
+      minDist = dist;
+      closestPath = p;
+    }
+  });
+  return closestPath;
 }
 parallel_coords_plot.findClosestPath = findClosestPath;
 // Computes the inverse image (in the mathematical sense) of the
@@ -112,10 +117,10 @@ parallel_coords_plot.findClosestPath = findClosestPath;
 // Returns the array consisting of all elements x such that scale(x)
 // is in the real-line interval [a,b].
 function pointScaleInverseImage(scale, a, b) {
-    return scale.domain().filter((x) => {
-        const y = scale(x);
-        return a <= y && y <= b;
-    });
+  return scale.domain().filter((x) => {
+    const y = scale(x);
+    return a <= y && y <= b;
+  });
 }
 parallel_coords_plot.pointScaleInverseImage = pointScaleInverseImage;
 // Computes the inverse image (in the mathematical sense) of the
@@ -125,30 +130,30 @@ parallel_coords_plot.pointScaleInverseImage = pointScaleInverseImage;
 // interval of the form [c,d).
 // This function returns that interval as a 2-element array [c, d].
 function quantileScaleInverseImage(scale, a, b) {
-    const range = scale.range();
-    const domains = range
-        .filter((y) => a <= y && y <= b)
-        .map((y) => {
-        const domain = scale.invertExtent(y);
-        // Find the half open interval of real numbers mapping to y.
-        // This is typically returned by scale.invertExtent(y).
-        // However, if 'y' is the last value in the range, that
-        // interval has the form [d,+infinity), whereas the upper
-        // bound returned by scale.invertExtent is the largest element
-        // in scale.domain(). Since we return a half-open interval, if
-        // we use that value, we will drop session groups whose
-        // column value exactly equals it. So we test for this special
-        // case here and adjust domain[1] to compensate.
-        return y === range[range.length - 1]
-            ? [domain[0], domain[1] + 1]
-            : domain;
+  const range = scale.range();
+  const domains = range
+    .filter((y) => a <= y && y <= b)
+    .map((y) => {
+      const domain = scale.invertExtent(y);
+      // Find the half open interval of real numbers mapping to y.
+      // This is typically returned by scale.invertExtent(y).
+      // However, if 'y' is the last value in the range, that
+      // interval has the form [d,+infinity), whereas the upper
+      // bound returned by scale.invertExtent is the largest element
+      // in scale.domain(). Since we return a half-open interval, if
+      // we use that value, we will drop session groups whose
+      // column value exactly equals it. So we test for this special
+      // case here and adjust domain[1] to compensate.
+      return y === range[range.length - 1]
+        ? [domain[0], domain[1] + 1]
+        : domain;
     });
-    if (domains.length == 0) {
-        return [0, 0]; // Return an empty interval [0,0).
-    }
-    // Since our source set is a contiguous interval [a,b], the union of
-    // domains is a single half-open interval.
-    return d3.extent(d3.merge(domains));
+  if (domains.length == 0) {
+    return [0, 0]; // Return an empty interval [0,0).
+  }
+  // Since our source set is a contiguous interval [a,b], the union of
+  // domains is a single half-open interval.
+  return d3.extent(d3.merge(domains));
 }
 parallel_coords_plot.quantileScaleInverseImage = quantileScaleInverseImage;
 // Computes the inverse image (in the mathematical sense) of the
@@ -157,103 +162,99 @@ parallel_coords_plot.quantileScaleInverseImage = quantileScaleInverseImage;
 // Note that for a D3 continuous scale this set is a real-line closed
 // interval. This function returns that interval as a 2-element array.
 function continuousScaleInverseImage(scale, a, b) {
-    // D3 continuous scales are monotonic continuous functions; hence to
-    // get the inverse image interval we just need to invert the
-    // end-points of the source interval. We sort the resulting end-points,
-    // to handle the case where the scale is decreasing.
-    return [scale.invert(a), scale.invert(b)].sort((x, y) => x - y);
+  // D3 continuous scales are monotonic continuous functions; hence to
+  // get the inverse image interval we just need to invert the
+  // end-points of the source interval. We sort the resulting end-points,
+  // to handle the case where the scale is decreasing.
+  return [scale.invert(a), scale.invert(b)].sort((x, y) => x - y);
 }
 parallel_coords_plot.continuousScaleInverseImage = continuousScaleInverseImage;
 // Creates the d3-scale to use for the axis with given domain values
 // and height and scale-type. This function may permute the given
 // 'domainValues' array.
 function createAxisScale(domainValues, axisHeight, scaleType) {
-    function computeNumericExtent() {
-        if (domainValues.length === 0) {
-            // If there are no values, there won't be any session groups.
-            // We choose an arbitrary numeric domain that doesn't contain 0
-            // (to allow a log scale).
-            return [1, 2];
-        }
-        const [min, max] = d3.extent(domainValues);
-        if (min !== max) {
-            return [min, max];
-        }
-        // We shift the min and max of the extent here since
-        // d3.scaleLinear() and d3.scaleLog() both expect the domain
-        // to be an interval with more than one point. Since in this case
-        // all session groups would pass through a single point in the axis,
-        // the axis resolution doesn't matter much so the amount we shift by
-        // doesn't matter much as well. Since for log scales we don't allow
-        // the domain to contain 0, we need to be careful not to make the
-        // domain contain 0 if it hadn't before.
-        if (min > 0) {
-            return [min * 0.5, min * 1.5];
-        }
-        if (min < 0) {
-            return [min * 1.5, min * 0.5];
-        }
-        return [-1, 1];
+  function computeNumericExtent() {
+    if (domainValues.length === 0) {
+      // If there are no values, there won't be any session groups.
+      // We choose an arbitrary numeric domain that doesn't contain 0
+      // (to allow a log scale).
+      return [1, 2];
     }
-    if (scaleType === "LINEAR") {
-        return d3
-            .scaleLinear()
-            .domain(computeNumericExtent())
-            .range([axisHeight, 0]);
+    const [min, max] = d3.extent(domainValues);
+    if (min !== max) {
+      return [min, max];
     }
-    else if (scaleType === "LOG") {
-        const extent = computeNumericExtent();
-        if (extent[0] <= 0 && extent[1] >= 0) {
-            // We can't have a log scale for data whose extent contains 0.
-            // Use a linear scale instead.
-            // TODO(erez): Create a symlog scale similar to Matplotlib's
-            // symlog. See also d3 issue here:
-            // https://github.com/d3/d3-scale/issues/105
-            // and b/111755540
-            return createAxisScale(domainValues, axisHeight, "LINEAR");
-        }
-        return d3
-            .scaleLog()
-            .domain(extent)
-            .range([axisHeight, 0]);
+    // We shift the min and max of the extent here since
+    // d3.scaleLinear() and d3.scaleLog() both expect the domain
+    // to be an interval with more than one point. Since in this case
+    // all session groups would pass through a single point in the axis,
+    // the axis resolution doesn't matter much so the amount we shift by
+    // doesn't matter much as well. Since for log scales we don't allow
+    // the domain to contain 0, we need to be careful not to make the
+    // domain contain 0 if it hadn't before.
+    if (min > 0) {
+      return [min * 0.5, min * 1.5];
     }
-    else if (scaleType === "QUANTILE") {
-        // Compute kNumQuantiles quantiles.
-        const kNumQuantiles = 20;
-        // Compute the scale's range to be the array:
-        // [axisHeight,
-        //  axisHeight-1*axisHeight/(kNumQuantiles-1),
-        //  axisHeight-2*axisHeight/(kNumQuantiles-1), ...,
-        //  0].
-        // Unfortunatley,
-        // d3.range(axisHeight, -axisHeight/(kNumQuantiles-1),
-        //          -axisHeight/(kNumQuantiles-1))
-        // has numerical issues and may produce an extra member, so we use a
-        // different procedure:
-        const scaleRange = d3
-            .range(kNumQuantiles)
-            .map((i) => axisHeight - (i * axisHeight) / (kNumQuantiles - 1));
-        if (domainValues.length === 0) {
-            // No session groups in this case. We use a dummy value since
-            // d3.scaleQuantile() requires a non-empty domain.
-            domainValues = [1];
-        }
-        return d3
-            .scaleQuantile()
-            .domain(_.uniq(domainValues))
-            .range(scaleRange);
+    if (min < 0) {
+      return [min * 1.5, min * 0.5];
     }
-    else if (scaleType === "NON_NUMERIC") {
-        return d3
-            .scalePoint()
-            .domain(
+    return [-1, 1];
+  }
+  if (scaleType === 'LINEAR') {
+    return d3
+      .scaleLinear()
+      .domain(computeNumericExtent())
+      .range([axisHeight, 0]);
+  } else if (scaleType === 'LOG') {
+    const extent = computeNumericExtent();
+    if (extent[0] <= 0 && extent[1] >= 0) {
+      // We can't have a log scale for data whose extent contains 0.
+      // Use a linear scale instead.
+      // TODO(erez): Create a symlog scale similar to Matplotlib's
+      // symlog. See also d3 issue here:
+      // https://github.com/d3/d3-scale/issues/105
+      // and b/111755540
+      return createAxisScale(domainValues, axisHeight, 'LINEAR');
+    }
+    return d3
+      .scaleLog()
+      .domain(extent)
+      .range([axisHeight, 0]);
+  } else if (scaleType === 'QUANTILE') {
+    // Compute kNumQuantiles quantiles.
+    const kNumQuantiles = 20;
+    // Compute the scale's range to be the array:
+    // [axisHeight,
+    //  axisHeight-1*axisHeight/(kNumQuantiles-1),
+    //  axisHeight-2*axisHeight/(kNumQuantiles-1), ...,
+    //  0].
+    // Unfortunatley,
+    // d3.range(axisHeight, -axisHeight/(kNumQuantiles-1),
+    //          -axisHeight/(kNumQuantiles-1))
+    // has numerical issues and may produce an extra member, so we use a
+    // different procedure:
+    const scaleRange = d3
+      .range(kNumQuantiles)
+      .map((i) => axisHeight - (i * axisHeight) / (kNumQuantiles - 1));
+    if (domainValues.length === 0) {
+      // No session groups in this case. We use a dummy value since
+      // d3.scaleQuantile() requires a non-empty domain.
+      domainValues = [1];
+    }
+    return d3
+      .scaleQuantile()
+      .domain(_.uniq(domainValues))
+      .range(scaleRange);
+  } else if (scaleType === 'NON_NUMERIC') {
+    return d3
+      .scalePoint()
+      .domain(
         // We sort the domain values to make the order
         // stable across 'ListSessionGroups' RPCs
-        _.uniq(domainValues.sort()))
-            .range([axisHeight, 0])
-            .padding(0.1);
-    }
-    else
-        throw RangeError("Unknown scale: " + scaleType);
+        _.uniq(domainValues.sort())
+      )
+      .range([axisHeight, 0])
+      .padding(0.1);
+  } else throw RangeError('Unknown scale: ' + scaleType);
 }
 parallel_coords_plot.createAxisScale = createAxisScale;

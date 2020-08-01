@@ -13,34 +13,35 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import { PolymerElement, html } from "@polymer/polymer";
-import { customElement, property } from "@polymer/decorators";
-import "@polymer/iron-pages";
-import "@polymer/paper-button";
-import "@polymer/paper-header-panel";
-import "@polymer/paper-icon-button";
-import "@polymer/paper-tabs";
-import "@polymer/paper-tabs";
-import "@polymer/paper-toolbar";
-import { DO_NOT_SUBMIT } from "../tf-imports/polymer.html";
-import { DO_NOT_SUBMIT } from "../tf-hparams-parallel-coords-view/tf-hparams-parallel-coords-view.html";
-import { DO_NOT_SUBMIT } from "../tf-hparams-scatter-plot-matrix-view/tf-hparams-scatter-plot-matrix-view.html";
-import { DO_NOT_SUBMIT } from "../tf-hparams-table-view/tf-hparams-table-view.html";
-import "@polymer/iron-pages";
-import "@polymer/paper-button";
-import "@polymer/paper-header-panel";
-import "@polymer/paper-icon-button";
-import "@polymer/paper-tabs";
-import "@polymer/paper-tabs";
-import "@polymer/paper-toolbar";
-import { DO_NOT_SUBMIT } from "../tf-imports/polymer.html";
-import { DO_NOT_SUBMIT } from "../tf-hparams-parallel-coords-view/tf-hparams-parallel-coords-view.html";
-import { DO_NOT_SUBMIT } from "../tf-hparams-scatter-plot-matrix-view/tf-hparams-scatter-plot-matrix-view.html";
-import { DO_NOT_SUBMIT } from "../tf-hparams-table-view/tf-hparams-table-view.html";
+import {PolymerElement, html} from '@polymer/polymer';
+import {customElement, property} from '@polymer/decorators';
+import '@polymer/iron-pages';
+import '@polymer/paper-button';
+import '@polymer/paper-header-panel';
+import '@polymer/paper-icon-button';
+import '@polymer/paper-tabs';
+import '@polymer/paper-tabs';
+import '@polymer/paper-toolbar';
+import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
+import {DO_NOT_SUBMIT} from '../tf-hparams-parallel-coords-view/tf-hparams-parallel-coords-view.html';
+import {DO_NOT_SUBMIT} from '../tf-hparams-scatter-plot-matrix-view/tf-hparams-scatter-plot-matrix-view.html';
+import {DO_NOT_SUBMIT} from '../tf-hparams-table-view/tf-hparams-table-view.html';
+import '@polymer/iron-pages';
+import '@polymer/paper-button';
+import '@polymer/paper-header-panel';
+import '@polymer/paper-icon-button';
+import '@polymer/paper-tabs';
+import '@polymer/paper-tabs';
+import '@polymer/paper-toolbar';
+import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
+import {DO_NOT_SUBMIT} from '../tf-hparams-parallel-coords-view/tf-hparams-parallel-coords-view.html';
+import {DO_NOT_SUBMIT} from '../tf-hparams-scatter-plot-matrix-view/tf-hparams-scatter-plot-matrix-view.html';
+import {DO_NOT_SUBMIT} from '../tf-hparams-table-view/tf-hparams-table-view.html';
 'use strict';
-@customElement("tf-hparams-sessions-pane")
+@customElement('tf-hparams-sessions-pane')
 class TfHparamsSessionsPane extends PolymerElement {
-    static readonly template = html `<paper-header-panel>
+  static readonly template = html`
+    <paper-header-panel>
       <paper-toolbar slot="header" class="tab-bar">
         <paper-tabs selected="{{_selectedTab}}" slot="top">
           <!-- view-id can be used by integration tests to locate a tab.
@@ -57,15 +58,26 @@ class TfHparamsSessionsPane extends PolymerElement {
           </paper-tab>
           <div class="help-and-feedback">
             <template is="dom-if" if="[[bugReportUrl]]">
-              <a href$="[[bugReportUrl]]" target="_blank" rel="noopener noreferrer">
-                <paper-button id="bug-report" raised="" title="Send a bug report or feature request">
+              <a
+                href$="[[bugReportUrl]]"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <paper-button
+                  id="bug-report"
+                  raised=""
+                  title="Send a bug report or feature request"
+                >
                   Bug Report / Feature Request
                 </paper-button>
               </a>
             </template>
             <template is="dom-if" if="[[helpUrl]]">
               <a href$="[[helpUrl]]" target="_blank" rel="noopener noreferrer">
-                <paper-icon-button icon="help-outline" title="View documentation">
+                <paper-icon-button
+                  icon="help-outline"
+                  title="View documentation"
+                >
                 </paper-icon-button>
               </a>
             </template>
@@ -74,15 +86,31 @@ class TfHparamsSessionsPane extends PolymerElement {
       </paper-toolbar>
       <iron-pages selected="[[_selectedTab]]" class="fit tab-view">
         <div id="0" class="tab">
-          <tf-hparams-table-view backend="[[backend]]" experiment-name="[[experimentName]]" visible-schema="[[configuration.visibleSchema]]" session-groups="[[sessionGroups]]" enable-show-metrics="">
+          <tf-hparams-table-view
+            backend="[[backend]]"
+            experiment-name="[[experimentName]]"
+            visible-schema="[[configuration.visibleSchema]]"
+            session-groups="[[sessionGroups]]"
+            enable-show-metrics=""
+          >
           </tf-hparams-table-view>
         </div>
         <div id="1" class="tab">
-          <tf-hparams-parallel-coords-view backend="[[backend]]" experiment-name="[[experimentName]]" configuration="[[configuration]]" session-groups="[[sessionGroups]]">
+          <tf-hparams-parallel-coords-view
+            backend="[[backend]]"
+            experiment-name="[[experimentName]]"
+            configuration="[[configuration]]"
+            session-groups="[[sessionGroups]]"
+          >
           </tf-hparams-parallel-coords-view>
         </div>
         <div id="2" class="tab">
-          <tf-hparams-scatter-plot-matrix-view backend="[[backend]]" experiment-name="[[experimentName]]" configuration="[[configuration]]" session-groups="[[sessionGroups]]">
+          <tf-hparams-scatter-plot-matrix-view
+            backend="[[backend]]"
+            experiment-name="[[experimentName]]"
+            configuration="[[configuration]]"
+            session-groups="[[sessionGroups]]"
+          >
           </tf-hparams-scatter-plot-matrix-view>
         </div>
       </iron-pages>
@@ -136,21 +164,22 @@ class TfHparamsSessionsPane extends PolymerElement {
         color: white;
         text-decoration: none;
       }
-    </style>`;
-    @property({ type: Object })
-    backend: object;
-    @property({ type: String })
-    helpUrl: string;
-    @property({ type: String })
-    bugReportUrl: string;
-    @property({ type: String })
-    experimentName: string;
-    @property({ type: Object })
-    configuration: object;
-    @property({ type: Array })
-    sessionGroups: unknown[];
-    @property({
-        type: Number
-    })
-    _selectedTab: number = 0;
+    </style>
+  `;
+  @property({type: Object})
+  backend: object;
+  @property({type: String})
+  helpUrl: string;
+  @property({type: String})
+  bugReportUrl: string;
+  @property({type: String})
+  experimentName: string;
+  @property({type: Object})
+  configuration: object;
+  @property({type: Array})
+  sessionGroups: unknown[];
+  @property({
+    type: Number,
+  })
+  _selectedTab: number = 0;
 }
