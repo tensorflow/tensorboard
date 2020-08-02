@@ -16,89 +16,98 @@ limitations under the License.
 import {createSelector, createFeatureSelector} from '@ngrx/store';
 import {
   NPMI_FEATURE_KEY,
-  NPMIState,
+  NpmiState,
   LoadState,
   AnnotationListing,
   MetricListing,
   ValueListing,
   State,
+  SummaryListing,
 } from './npmi_types';
 
 // HACK: These imports are for type inference.
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
 /** @typehack */ import * as _typeHackSelector from '@ngrx/store/src/selector';
 /** @typehack */ import * as _typeHackStore from '@ngrx/store/store';
+import {NPMIState} from '../../../../../bazel-tb_pr/tensorboard/webapp/plugins/npmi/store';
 
-const selectNPMIState = createFeatureSelector<State, NPMIState>(
+const selectNpmiState = createFeatureSelector<State, NpmiState>(
   NPMI_FEATURE_KEY
 );
 
 export const getAnnotationsData = createSelector(
-  selectNPMIState,
-  (state: NPMIState): AnnotationListing => {
+  selectNpmiState,
+  (state: NpmiState): AnnotationListing => {
     return state.annotationsData;
   }
 );
 
 export const getAnnotationsLoaded = createSelector(
-  selectNPMIState,
-  (state: NPMIState): LoadState => {
+  selectNpmiState,
+  (state: NpmiState): LoadState => {
     return state.annotationsLoaded;
   }
 );
 
 export const getMetricsData = createSelector(
-  selectNPMIState,
-  (state: NPMIState): MetricListing => {
+  selectNpmiState,
+  (state: NpmiState): MetricListing => {
     return state.metricsData;
   }
 );
 
 export const getCountMetricsData = createSelector(
-  selectNPMIState,
-  (state: NPMIState): MetricListing => {
+  selectNpmiState,
+  (state: NpmiState): MetricListing => {
     return state.countMetricsData;
   }
 );
 
 export const getNpmiMetricsData = createSelector(
-  selectNPMIState,
-  (state: NPMIState): MetricListing => {
+  selectNpmiState,
+  (state: NpmiState): MetricListing => {
     return state.npmiMetricsData;
   }
 );
 
 export const getMetricsLoaded = createSelector(
-  selectNPMIState,
-  (state: NPMIState): LoadState => {
+  selectNpmiState,
+  (state: NpmiState): LoadState => {
     return state.metricsLoaded;
   }
 );
 
 export const getValuesData = createSelector(
-  selectNPMIState,
-  (state: NPMIState): ValueListing => {
+  selectNpmiState,
+  (state: NpmiState): ValueListing => {
     return state.valuesData;
   }
 );
 
 export const getCountValuesData = createSelector(
-  selectNPMIState,
-  (state: NPMIState): ValueListing => {
+  selectNpmiState,
+  (state: NpmiState): ValueListing => {
     return state.countValuesData;
   }
 );
 
 export const getNpmiValuesData = createSelector(
-  selectNPMIState,
-  (state: NPMIState): ValueListing => {
+  selectNpmiState,
+  (state: NpmiState): ValueListing => {
     return state.npmiValuesData;
   }
 );
 
 export const getValuesLoaded = createSelector(
-  selectNPMIState,
-  (state: NPMIState): LoadState => {
+  selectNpmiState,
+  (state: NpmiState): LoadState => {
     return state.valuesLoaded;
+  }
+);
+
+export const getCountData = createSelector(
+  selectNpmiState,
+  (state: NPMIState): SummaryListing => {
+    return state.countData;
   }
 );

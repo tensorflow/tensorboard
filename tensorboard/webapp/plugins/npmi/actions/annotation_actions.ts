@@ -1,5 +1,5 @@
 import {createAction, props} from '@ngrx/store';
-import {AnnotationListing, AnnotationSorting} from '../store/npmi_types';
+import {AnnotationListing} from '../store/npmi_types';
 
 // HACK: Below import is for type inference.
 // https://github.com/bazelbuild/rules_nodejs/issues/1013

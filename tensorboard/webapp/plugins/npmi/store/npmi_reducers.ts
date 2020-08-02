@@ -16,13 +16,13 @@ limitations under the License.
 import {Action, createReducer, on} from '@ngrx/store';
 
 import * as actions from '../actions';
-import {NPMIState, DataLoadState} from './npmi_types';
+import {NpmiState, DataLoadState} from './npmi_types';
 
 // HACK: These imports are for type inference.
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
 /** @typehack */ import * as _typeHackStore from '@ngrx/store/store';
 
-const initialState: NPMIState = {
+const initialState: NpmiState = {
   annotationsData: {},
   annotationsLoaded: {
     state: DataLoadState.NOT_LOADED,
@@ -49,7 +49,7 @@ const reducer = createReducer(
   initialState,
   on(
     actions.annotationsRequested,
-    (state: NPMIState): NPMIState => {
+    (state: NpmiState): NpmiState => {
       return {
         ...state,
         annotationsLoaded: {
@@ -61,7 +61,7 @@ const reducer = createReducer(
   ),
   on(
     actions.annotationsRequestFailed,
-    (state: NPMIState): NPMIState => {
+    (state: NpmiState): NpmiState => {
       return {
         ...state,
         annotationsLoaded: {
@@ -73,7 +73,7 @@ const reducer = createReducer(
   ),
   on(
     actions.annotationsLoaded,
-    (state: NPMIState, {annotations}): NPMIState => {
+    (state: NpmiState, {annotations}): NpmiState => {
       return {
         ...state,
         annotationsData: annotations,
@@ -86,7 +86,7 @@ const reducer = createReducer(
   ),
   on(
     actions.metricsRequested,
-    (state: NPMIState): NPMIState => {
+    (state: NpmiState): NpmiState => {
       return {
         ...state,
         metricsLoaded: {
@@ -98,7 +98,7 @@ const reducer = createReducer(
   ),
   on(
     actions.metricsRequestFailed,
-    (state: NPMIState): NPMIState => {
+    (state: NpmiState): NpmiState => {
       return {
         ...state,
         metricsLoaded: {
@@ -110,21 +110,17 @@ const reducer = createReducer(
   ),
   on(
     actions.metricsLoaded,
-    (state: NPMIState, {metrics}): NPMIState => {
+    (state: NpmiState, {metrics}): NpmiState => {
       let countMetricsData: MetricListing = {};
       let npmiMetricsData: MetricListing = {};
-      let probMetricsData: MetricListing = {};
       for (let key in metrics) {
         countMetricsData[key] = [];
         npmiMetricsData[key] = [];
-        probMetricsData[key] = [];
         for (let value of metrics[key]) {
           if (value.startsWith('count@')) {
             countMetricsData[key].push(value);
           } else if (value.startsWith('nPMI')) {
             npmiMetricsData[key].push(value);
-          } else if (value.startsWith('prob')) {
-            probMetricsData[key].push(value);
           }
         }
       }
@@ -142,7 +138,7 @@ const reducer = createReducer(
   ),
   on(
     actions.valuesRequested,
-    (state: NPMIState): NPMIState => {
+    (state: NpmiState): NpmiState => {
       return {
         ...state,
         valuesLoaded: {
@@ -154,7 +150,7 @@ const reducer = createReducer(
   ),
   on(
     actions.valuesRequestFailed,
-    (state: NPMIState): NPMIState => {
+    (state: NpmiState): NpmiState => {
       return {
         ...state,
         valuesLoaded: {
@@ -166,20 +162,17 @@ const reducer = createReducer(
   ),
   on(
     actions.valuesLoaded,
-    (state: NPMIState, {values, metrics}): NPMIState => {
+    (state: NpmiState, {values, metrics}): NpmiState => {
       let countValuesData: ValueListing = {};
       let npmiValuesData: ValueListing = {};
-      let probValuesData: ValueListing = {};
       let countData: SummaryListing = {};
       for (let key in values) {
         countValuesData[key] = [];
         npmiValuesData[key] = [];
-        probValuesData[key] = [];
         countData[key] = [];
         for (let row of values[key]) {
           let countRow = [];
           let npmiRow = [];
-          let probRow = [];
           for (let index in metrics[key]) {
             if (metrics[key][index].startsWith('count@')) {
               countRow.push(row[index]);
@@ -187,13 +180,10 @@ const reducer = createReducer(
               countData[key].push(row[index]);
             } else if (metrics[key][index].startsWith('nPMI')) {
               npmiRow.push(row[index]);
-            } else if (metrics[key][index].startsWith('prob')) {
-              probRow.push(row[index]);
             }
           }
           countValuesData[key].push(countRow);
           npmiValuesData[key].push(npmiRow);
-          probValuesData[key].push(probRow);
         }
       }
       return {
@@ -211,6 +201,6 @@ const reducer = createReducer(
   )
 );
 
-export function reducers(state: NPMIState, action: Action) {
+export function reducers(state: NpmiState, action: Action) {
   return reducer(state, action);
 }

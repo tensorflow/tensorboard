@@ -15,4 +15,4 @@ limitations under the License.
 
 export * from './npmi_reducers';
 export * from './npmi_selectors';
-export {NPMI_FEATURE_KEY, NPMIState, State} from './npmi_types';
+export {NPMI_FEATURE_KEY, NpmiState, State} from './npmi_types';

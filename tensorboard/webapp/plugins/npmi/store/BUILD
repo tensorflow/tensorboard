@@ -6,9 +6,9 @@ package(default_visibility = ["//tensorboard:internal"])
 ng_module(
     name = "store",
     srcs = [
+        "index.ts",
         "npmi_reducers.ts",
         "npmi_selectors.ts",
-        "index.ts",
     ],
     deps = [
         ":types",
@@ -27,5 +27,25 @@ ng_module(
         "//tensorboard/webapp/types",
         "@npm//@ngrx/store",
         "@npm//rxjs",
+    ],
+)
+
+tf_ts_library(
+    name = "npmi_store_test_lib",
+    testonly = True,
+    srcs = [
+        "npmi_reducers_test.ts",
+        "npmi_selectors_test.ts",
+    ],
+    tsconfig = "//:tsconfig-test",
+    deps = [
+        ":debug_tensor_value",
+        ":debugger_store_helpers",
+        ":store",
+        ":types",
+        "//tensorboard/webapp/plugins/npmi/actions",
+        "//tensorboard/webapp/plugins/npmi/data_source",
+        "//tensorboard/webapp/plugins/npmi/testing",
+        "@npm//@types/jasmine",
     ],
 )

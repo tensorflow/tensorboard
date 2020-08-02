@@ -39,7 +39,7 @@ export interface SummaryListing {
   [runId: string]: number[];
 }
 
-export interface NPMIState {
+export interface NpmiState {
   annotationsData: AnnotationListing;
   annotationsLoaded: LoadState;
 
@@ -57,5 +57,5 @@ export interface NPMIState {
 }
 
 export interface State {
-  [NPMI_FEATURE_KEY]: NPMIState;
+  [NPMI_FEATURE_KEY]: NpmiState;
 }
