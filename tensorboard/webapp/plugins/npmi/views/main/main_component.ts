@@ -28,6 +28,6 @@ export class MainComponent {
     this.runs.forEach((runActive: boolean) => {
       active = active || runActive;
     });
-    return active;
+    return [...this.runs.values()].some((value) => value);
   }
 }

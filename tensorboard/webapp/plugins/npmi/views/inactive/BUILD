@@ -8,7 +8,6 @@ ng_module(
     name = "inactive",
     srcs = [
         "inactive_component.ts",
-        "inactive_container.ts",
         "inactive_module.ts",
     ],
     assets = [
