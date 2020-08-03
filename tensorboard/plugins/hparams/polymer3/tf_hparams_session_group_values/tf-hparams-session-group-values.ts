@@ -15,12 +15,8 @@ limitations under the License.
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, property} from '@polymer/decorators';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-utils/tf-hparams-utils.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-table-view/tf-hparams-table-view.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-utils/tf-hparams-utils.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-table-view/tf-hparams-table-view.html';
+import '../tf-hparams-table-view/tf-hparams-table-view';
+
 'use strict';
 @customElement('tf-hparams-session-group-values')
 class TfHparamsSessionGroupValues extends PolymerElement {
@@ -54,10 +50,16 @@ class TfHparamsSessionGroupValues extends PolymerElement {
       }
     </style>
   `;
+  // The session group whose values will be displayed.
+  // A JavaScript representation of the tensorboard.hparams.SessionGroup
+  // protocol buffer.
   @property({
     type: Object,
   })
   sessionGroup: object = null;
+  // The visibleSchema defining the columns to use.
+  // Only the values of columns in the visibleSchema will be displayed.
+  // See tf-hparams-query-pane for the definition of this object.
   @property({
     type: Object,
   })
