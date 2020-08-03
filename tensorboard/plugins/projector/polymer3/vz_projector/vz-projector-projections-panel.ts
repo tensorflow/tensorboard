@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 
 import {PolymerElement} from '@polymer/polymer';
-import {LegacyElementMixin} from '@polymer/polymer/lib/legacy/legacy-element-mixin';
 import {customElement, observe, property} from '@polymer/decorators';
 
 import '@polymer/iron-collapse';
@@ -30,8 +29,10 @@ import '@polymer/paper-slider';
 import '@polymer/paper-toggle-button';
 import '@polymer/paper-tooltip';
 
+import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+
 import {template} from './vz-projector-projections-panel.html';
-import {ProjectorInput} from './vz-projector-input';
+import './vz-projector-input';
 import {
   DataSet,
   getProjectionComponents,
@@ -46,7 +47,7 @@ import {
 } from './data';
 import * as vector from './vector';
 import * as util from './util';
-import {Projector} from './vz-projector';
+import './vz-projector';
 
 const NUM_PCA_COMPONENTS = 10;
 
@@ -66,7 +67,7 @@ type Centroids = {
  * A polymer component which handles the projection tabs in the projector.
  */
 @customElement('vz-projector-projections-panel')
-export class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
+class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
   static readonly template = template;
 
   @property({type: Boolean})
@@ -97,7 +98,7 @@ export class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
   @property({type: String})
   customSelectedSearchByMetadataOption: string;
 
-  private projector: Projector;
+  private projector: any;
 
   private currentProjection: ProjectionType;
   private polymerChangesTriggerReprojection: boolean;
@@ -126,11 +127,12 @@ export class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
   private zDropdown: HTMLElement;
   private iterationLabelTsne: HTMLElement;
   private runUmapButton: HTMLButtonElement;
-  private customProjectionXLeftInput: ProjectorInput;
-  private customProjectionXRightInput: ProjectorInput;
-  private customProjectionYUpInput: ProjectorInput;
-  private customProjectionYDownInput: ProjectorInput;
-  initialize(projector: Projector) {
+  private customProjectionXLeftInput: any;
+  private customProjectionXRightInput: any;
+  private customProjectionYUpInput: any;
+  private customProjectionYDownInput: any;
+
+  initialize(projector: any) {
     this.polymerChangesTriggerReprojection = true;
     this.projector = projector;
     // Set up TSNE projections.
@@ -141,6 +143,7 @@ export class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
     this.clearCentroids();
     this.setupUIControls();
   }
+
   ready() {
     super.ready();
     this.zDropdown = this.$$('#z-dropdown') as HTMLElement;
@@ -566,7 +569,7 @@ export class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
       totalVariance += variances[this.pcaZ];
     }
     msg += (totalVariance * 100).toFixed(1) + '%.';
-    (this.$$('#total-variance') as HTMLElement).innerHTML = msg;
+    (this.$$('#total-variance') as HTMLElement).textContent = msg;
   }
   private showPCA() {
     if (this.dataSet == null) {
@@ -650,7 +653,7 @@ export class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
     this.computeCentroid('yDown');
   }
   private computeCentroid(name: InputControlName) {
-    const input = this.$$('#' + name) as ProjectorInput;
+    const input = this.$$('#' + name) as any;
     if (input == null) {
       return;
     }
@@ -669,10 +672,8 @@ export class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
     this.centroids[name] = result.centroid;
     this.centroidValues[name] = value;
   }
-  private setupCustomProjectionInputField(
-    name: InputControlName
-  ): ProjectorInput {
-    let input = this.$$('#' + name) as ProjectorInput;
+  private setupCustomProjectionInputField(name: InputControlName): any {
+    let input = this.$$('#' + name) as any;
     input.registerInputChangedListener((input, inRegexMode) => {
       if (this.polymerChangesTriggerReprojection) {
         this.computeCentroid(name);

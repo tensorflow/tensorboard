@@ -50,10 +50,10 @@ export function setModalMessage(
   let spinner = dialog.querySelector('.progress');
   spinner.style.display = isErrorMsg ? 'none' : null;
   spinner.active = isErrorMsg ? null : true;
-  dialog.querySelector('#notification-title').innerHTML = title;
+  dialog.querySelector('#notification-title').textContent = title;
   let msgsContainer = dialog.querySelector('#notify-msgs') as HTMLElement;
   if (isErrorMsg) {
-    msgsContainer.innerHTML = '';
+    msgsContainer.textContent = '';
   } else {
     const errors = msgsContainer.querySelectorAll('.error');
     for (let i = 0; i < errors.length; i++) {
