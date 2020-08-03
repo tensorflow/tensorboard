@@ -14,24 +14,32 @@ limitations under the License.
 ==============================================================================*/
 
 import {PolymerElement, html} from '@polymer/polymer';
-import {customElement, property} from '@polymer/decorators';
+import {customElement, observe, property} from '@polymer/decorators';
 import '@polymer/iron-flex-layout';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import '@polymer/iron-resizable-behavior';
-import {DO_NOT_SUBMIT} from '../tf-backend/tf-backend.html';
-import {DO_NOT_SUBMIT} from '../tf-scalar-dashboard/tf-scalar-card.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-utils/tf-hparams-utils.html';
-import {DO_NOT_SUBMIT} from '../tf-color-scale/tf-color-scale.html';
-import '@polymer/iron-flex-layout';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import '@polymer/iron-resizable-behavior';
-import {DO_NOT_SUBMIT} from '../tf-backend/tf-backend.html';
-import {DO_NOT_SUBMIT} from '../tf-scalar-dashboard/tf-scalar-card.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-utils/tf-hparams-utils.html';
-import {DO_NOT_SUBMIT} from '../tf-color-scale/tf-color-scale.html';
+import * as IronResizableBehavior from '@polymer/iron-resizable-behavior';
+import {mixinBehaviors} from '@polymer/polymer/lib/legacy/class.js';
+import * as PolymerDom from '@polymer/polymer/lib/legacy/polymer.dom.js';
+
+import '../../../../components_polymer3/tf_backend/tf_backend';
+import * as tf_hparams_utils from '../tf_hparams_utils/tf-hparams-utils';
+import * as tf_color_scale from '../../../../components_polymer3/tf_color_scale/palettes';
+import * as vz_chart_helpers from '../../../../components_polymer3/vz_chart_helpers/vz-chart-helpers';
+
+// import {DO_NOT_SUBMIT} from '../tf_scalar_dashboard/tf-scalar-card';
+
+/**
+ * Shows a session group in more detail. Specifically, shows graphs of the
+ * metrics for the session in the group as a function of the training step.
+ * This element is shown one the user "drills-in" to a session group, for
+ * example when she clicks on a row in table-view or a curve in parallel-coords
+ * view.
+ */
 'use strict';
 @customElement('tf-hparams-session-group-details')
-class TfHparamsSessionGroupDetails extends PolymerElement {
+class TfHparamsSessionGroupDetails extends mixinBehaviors(
+  [IronResizableBehavior],
+  PolymerElement
+) {
   static readonly template = html`
     <template is="dom-if" if="[[!sessionGroup]]">
       <div>
@@ -83,14 +91,20 @@ class TfHparamsSessionGroupDetails extends PolymerElement {
       }
     </style>
   `;
+  // An object for making HParams API requests to the backend.
   @property({type: Object})
-  backend: object;
+  backend: any;
+  // The name of the experiment to use. Will be passed as is to
+  // the /metrics_eval HTTP endpoint.
   @property({type: String})
   experimentName: string;
+  // See the definition of this property in tf-hparams-query-pane.html
   @property({type: Object})
-  visibleSchema: object;
+  visibleSchema: any;
+  // The session group object to display. Matches the SessionGroup
+  // protocol buffer defined in api.proto.
   @property({type: Object})
-  sessionGroup: object;
+  sessionGroup: any;
   @property({
     type: String,
   })
@@ -99,14 +113,19 @@ class TfHparamsSessionGroupDetails extends PolymerElement {
     type: Boolean,
   })
   _noMultiExperiments: boolean = false;
+  // A Map mapping each of the sessionGroup's session's name
+  // to its index in the group. Used by '_colorScale' to choose the color
+  // of the plot of each session.
   @property({type: Object})
-  _indexOfSession: object;
+  _indexOfSession: any;
+  // A tf.hparams.utils.hashOfString of sessionGroup.name. Used in
+  // '_colorScale'.
   @property({type: Number})
   _sessionGroupNameHash: number;
   @property({
-    type: Function,
+    type: Object,
   })
-  _requestData: object = function() {
+  _requestData = function() {
     return ({tag, run}) => {
       const request = {
         experimentName: this.experimentName,
@@ -119,32 +138,30 @@ class TfHparamsSessionGroupDetails extends PolymerElement {
   @property({
     type: Object,
   })
-  _colorScale: object = function() {
-    return {
-      scale: (seriesName) => {
-        // The tf-scalar-card API sends a seriesName as a JSON
-        // representation of the 2-element array [experiment, run],
-        // where 'run' is the run we return in the 'requestData'
-        // function--in our case that is the session name, and
-        // 'experiment' is not used here tf-scalar-card's
-        // multi-experiment attribute is turned off here).
-        // The color of a session is determined by choosing a
-        // starting point in 'palette' based on the sessionGroup name
-        // and walking cyclicly 'sessionIndex' steps in the array, where
-        // sesionIndex is the index of the session in the
-        // group. We do this instead of just hashing the session name,
-        // to guarantee that we don't repeat a color if the number
-        // of sessions is at most the size of the palette.
-        // Note that this method is called every time the user moves
-        // over the metric plot, so it needs to be reasonably fast.
-        const sessionName = JSON.parse(seriesName)[1];
-        const sessionIndex = this._indexOfSession.get(sessionName);
-        const palette = tf_color_scale.standard;
-        return palette[
-          (this._sessionGroupNameHash + sessionIndex) % palette.length
-        ];
-      },
-    };
+  _colorScale = {
+    scale: (seriesName) => {
+      // The tf-scalar-card API sends a seriesName as a JSON
+      // representation of the 2-element array [experiment, run],
+      // where 'run' is the run we return in the 'requestData'
+      // function--in our case that is the session name, and
+      // 'experiment' is not used here tf-scalar-card's
+      // multi-experiment attribute is turned off here).
+      // The color of a session is determined by choosing a
+      // starting point in 'palette' based on the sessionGroup name
+      // and walking cyclicly 'sessionIndex' steps in the array, where
+      // sesionIndex is the index of the session in the
+      // group. We do this instead of just hashing the session name,
+      // to guarantee that we don't repeat a color if the number
+      // of sessions is at most the size of the palette.
+      // Note that this method is called every time the user moves
+      // over the metric plot, so it needs to be reasonably fast.
+      const sessionName = JSON.parse(seriesName)[1];
+      const sessionIndex = this._indexOfSession.get(sessionName);
+      const palette = tf_color_scale.standard;
+      return palette[
+        (this._sessionGroupNameHash + sessionIndex) % palette.length
+      ];
+    },
   };
   // Whenever the backend sends a new 'sessionGroups' array reply to the
   // ListSessionGroups RPC, we recreate the tf-session-group-detail
@@ -161,9 +178,12 @@ class TfHparamsSessionGroupDetails extends PolymerElement {
   // incorrectly. To avoid that, we listen for the 'iron-resize' event
   // that is fired by 'iron-pages' whenever the active page changes and
   // redraw each tf-scalar-card child.
-  behaviors: [Polymer.IronResizableBehavior];
+  connectedCallback() {
+    super.connectedCallback();
+    (this as any).addEventListener('iron-resize', this.redraw.bind(this));
+  }
   redraw() {
-    Polymer.dom(this.root)
+    PolymerDom.dom((this as any).root)
       .querySelectorAll('tf-scalar-card')
       .forEach((c) => c.redraw());
   }
@@ -179,13 +199,13 @@ class TfHparamsSessionGroupDetails extends PolymerElement {
           index,
         ])
       );
-      this._sessionGroupNameHash = tf.hparams.utils.hashOfString(
+      this._sessionGroupNameHash = tf_hparams_utils.hashOfString(
         this.sessionGroup.name
       );
     }
     // Reset each scalar-card by prodding 'tag'.
     // We do this so the card will reset its domain on the next load.
-    Polymer.dom(this.root)
+    PolymerDom.dom((this as any).root)
       .querySelectorAll('tf-scalar-card')
       .forEach((c) => {
         const tag = c.get('tag');
@@ -214,7 +234,7 @@ class TfHparamsSessionGroupDetails extends PolymerElement {
         // If this session does not currently have a value for the given
         // metric then we don't want to include its run.
         (session) =>
-          tf.hparams.utils.metricValueByName(
+          tf_hparams_utils.metricValueByName(
             session.metricValues,
             metricInfo.name
           ) !== undefined
@@ -232,7 +252,7 @@ class TfHparamsSessionGroupDetails extends PolymerElement {
   // tf-scalar-card element.
   _computeTagMetadata(metricInfo) {
     return {
-      displayName: tf.hparams.utils.metricName(metricInfo),
+      displayName: tf_hparams_utils.metricName(metricInfo),
       description: metricInfo.description || '',
     };
   }
