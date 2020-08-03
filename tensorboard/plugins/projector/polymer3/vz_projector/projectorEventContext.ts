@@ -12,35 +12,40 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-namespace vz_projector {
-  export type HoverListener = (index: number) => void;
-  export type SelectionChangedListener = (
-    selectedPointIndices: number[],
-    neighborsOfFirstPoint: knn.NearestEntry[]
-  ) => void;
-  export type ProjectionChangedListener = (projection: Projection) => void;
-  export type DistanceMetricChangedListener = (
-    distanceMetric: DistanceFunction
-  ) => void;
-  export interface ProjectorEventContext {
-    /** Register a callback to be invoked when the mouse hovers over a point. */
-    registerHoverListener(listener: HoverListener);
-    /** Notify the hover system that a point is under the mouse. */
-    notifyHoverOverPoint(pointIndex: number);
-    /** Registers a callback to be invoked when the selection changes. */
-    registerSelectionChangedListener(listener: SelectionChangedListener);
-    /**
-     * Notify the selection system that a client has changed the selected point
-     * set.
-     */
-    notifySelectionChanged(newSelectedPointIndices: number[]);
-    /** Registers a callback to be invoked when the projection changes. */
-    registerProjectionChangedListener(listener: ProjectionChangedListener);
-    /** Notify listeners that a reprojection occurred. */
-    notifyProjectionChanged(projection: Projection);
-    registerDistanceMetricChangedListener(
-      listener: DistanceMetricChangedListener
-    );
-    notifyDistanceMetricChanged(distMetric: DistanceFunction);
-  }
-} // namespace vz_projector
+import {DistanceFunction, Projection} from './data';
+import * as knn from './knn';
+
+export type HoverListener = (index: number) => void;
+
+export type SelectionChangedListener = (
+  selectedPointIndices: number[],
+  neighborsOfFirstPoint: knn.NearestEntry[]
+) => void;
+
+export type ProjectionChangedListener = (projection: Projection) => void;
+
+export type DistanceMetricChangedListener = (
+  distanceMetric: DistanceFunction
+) => void;
+
+export interface ProjectorEventContext {
+  /** Register a callback to be invoked when the mouse hovers over a point. */
+  registerHoverListener(listener: HoverListener);
+  /** Notify the hover system that a point is under the mouse. */
+  notifyHoverOverPoint(pointIndex: number);
+  /** Registers a callback to be invoked when the selection changes. */
+  registerSelectionChangedListener(listener: SelectionChangedListener);
+  /**
+   * Notify the selection system that a client has changed the selected point
+   * set.
+   */
+  notifySelectionChanged(newSelectedPointIndices: number[]);
+  /** Registers a callback to be invoked when the projection changes. */
+  registerProjectionChangedListener(listener: ProjectionChangedListener);
+  /** Notify listeners that a reprojection occurred. */
+  notifyProjectionChanged(projection: Projection);
+  registerDistanceMetricChangedListener(
+    listener: DistanceMetricChangedListener
+  );
+  notifyDistanceMetricChanged(distMetric: DistanceFunction);
+}

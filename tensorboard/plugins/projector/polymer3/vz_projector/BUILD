@@ -1,3 +1,4 @@
+load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ts_library")
 load("//tensorboard/defs:web.bzl", "tf_web_library")
 load("//tensorboard/defs:vulcanize.bzl", "tensorboard_html_binary")
 
@@ -5,11 +6,11 @@ package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
-tf_web_library(
+tf_ts_library(
     name = "vz_projector",
     srcs = [
         "analyticsLogger.ts",
-        "bundle.html",
+        "bundle.ts",
         "data.ts",
         "data-provider.ts",
         "data-provider-demo.ts",
@@ -29,81 +30,87 @@ tf_web_library(
         "scatterPlotVisualizerCanvasLabels.ts",
         "scatterPlotVisualizerPolylines.ts",
         "scatterPlotVisualizerSprites.ts",
-        "styles.html",
+        "styles.ts",
         "umap.d.ts",
         "util.ts",
         "vector.ts",
-        "vz-projector.html",
+        "vz-projector.html.ts",
         "vz-projector.ts",
-        "vz-projector-app.html",
-        "vz-projector-bookmark-panel.html",
+        "vz-projector-app.ts",
+        "vz-projector-bookmark-panel.html.ts",
         "vz-projector-bookmark-panel.ts",
-        "vz-projector-dashboard.html",
-        "vz-projector-data-panel.html",
+        "vz-projector-dashboard.ts",
+        "vz-projector-data-panel.html.ts",
         "vz-projector-data-panel.ts",
-        "vz-projector-input.html",
         "vz-projector-input.ts",
-        "vz-projector-inspector-panel.html",
+        "vz-projector-inspector-panel.html.ts",
         "vz-projector-inspector-panel.ts",
-        "vz-projector-legend.html",
         "vz-projector-legend.ts",
-        "vz-projector-metadata-card.html",
         "vz-projector-metadata-card.ts",
-        "vz-projector-projections-panel.html",
+        "vz-projector-projections-panel.html.ts",
         "vz-projector-projections-panel.ts",
-        "vz-projector-util.ts",
     ],
-    path = "/vz-projector",
+    strict_checks = False,
     deps = [
         ":bh_tsne",
         ":heap",
         ":sptree",
-        "//tensorboard/components/tf_backend",
-        "//tensorboard/components/tf_dashboard_common",
-        "//tensorboard/components/tf_imports:d3",
-        "//tensorboard/components/tf_imports:numericjs",
-        "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/components/tf_imports:threejs",
-        "//tensorboard/components/tf_imports:umap-js",
-        "//tensorboard/components/tf_imports:weblas",
-        "//tensorboard/components/tf_tensorboard:registry",
-        "@org_polymer_iron_collapse",
-        "@org_polymer_iron_icons",
-        "@org_polymer_paper_button",
-        "@org_polymer_paper_checkbox",
-        "@org_polymer_paper_dialog",
-        "@org_polymer_paper_dialog_scrollable",
-        "@org_polymer_paper_dropdown_menu",
-        "@org_polymer_paper_icon_button",
-        "@org_polymer_paper_input",
-        "@org_polymer_paper_item",
-        "@org_polymer_paper_listbox",
-        "@org_polymer_paper_slider",
-        "@org_polymer_paper_spinner",
-        "@org_polymer_paper_styles",
-        "@org_polymer_paper_toast",
-        "@org_polymer_paper_toggle_button",
-        "@org_polymer_paper_tooltip",
+        "//tensorboard/components_polymer3:security",
+        "//tensorboard/components_polymer3/polymer:register_style_dom_module",
+        "@npm//@polymer/decorators",
+        "@npm//@polymer/iron-collapse",
+        "@npm//@polymer/iron-icons",
+        "@npm//@polymer/iron-iconset-svg",
+        "@npm//@polymer/paper-button",
+        "@npm//@polymer/paper-checkbox",
+        "@npm//@polymer/paper-dialog",
+        "@npm//@polymer/paper-dialog-scrollable",
+        "@npm//@polymer/paper-dropdown-menu",
+        "@npm//@polymer/paper-icon-button",
+        "@npm//@polymer/paper-input",
+        "@npm//@polymer/paper-item",
+        "@npm//@polymer/paper-listbox",
+        "@npm//@polymer/paper-slider",
+        "@npm//@polymer/paper-spinner",
+        "@npm//@polymer/paper-styles",
+        "@npm//@polymer/paper-toast",
+        "@npm//@polymer/paper-toggle-button",
+        "@npm//@polymer/paper-tooltip",
+        "@npm//@polymer/polymer",
+        "@npm//d3",
+        "@npm//numericjs",
+        "@npm//three",
+        "@npm//umap-js",
+        "@npm//weblas",
     ],
 )
 
-tf_web_library(
+tf_ts_library(
     name = "heap",
     srcs = ["heap.ts"],
-    path = "/vz-projector",
+    strict_checks = False,
 )
 
-tf_web_library(
+tf_ts_library(
     name = "sptree",
     srcs = ["sptree.ts"],
-    path = "/vz-projector",
+    strict_checks = False,
 )
 
-tf_web_library(
+tf_ts_library(
     name = "bh_tsne",
     srcs = ["bh_tsne.ts"],
-    path = "/vz-projector",
+    strict_checks = False,
     deps = [":sptree"],
+)
+
+tf_js_binary(
+    name = "standalone_bundle",
+    compile = 1,
+    entry_point = "bundle.ts",
+    deps = [
+        ":vz_projector",
+    ],
 )
 
 ################# Standalone development #################
@@ -111,22 +118,24 @@ tf_web_library(
 tf_web_library(
     name = "standalone_lib",
     srcs = [
-        "standalone.html",
+        "standalone_lib.html",
         "standalone_projector_config.json",
+        ":standalone_bundle.js",
     ],
     path = "/",
     deps = [
-        ":vz_projector",
-        "//tensorboard/components/tf_imports:polymer",
-        "@org_polymer_iron_icons",
-        "@org_polymer_paper_icon_button",
-        "@org_polymer_paper_tooltip",
+        "//tensorboard/components_polymer3:analytics_html",
+        "@com_google_fonts_roboto",
     ],
 )
 
 tensorboard_html_binary(
-    name = "devserver",
-    input_path = "/standalone.html",
-    output_path = "/index.html",
-    deps = [":standalone_lib"],
+    name = "standalone",
+    compile = False,
+    input_path = "/standalone_lib.html",
+    js_path = "/standalone.js",
+    output_path = "/standalone.html",
+    deps = [
+        ":standalone_lib",
+    ],
 )
