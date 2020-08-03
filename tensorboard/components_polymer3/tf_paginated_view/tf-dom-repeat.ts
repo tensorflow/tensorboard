@@ -51,7 +51,7 @@ export class TfDomRepeat<T extends {}> extends ArrayUpdateHelper {
    * @protected
    */
   @property({type: Boolean})
-  protected _contentActive = true;
+  protected _contentActive: boolean;
 
   @property({type: Boolean})
   _domBootstrapped = false;
