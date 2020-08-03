@@ -13,13 +13,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import {PolymerElement, html} from '@polymer/polymer';
 import {computed, observe, customElement, property} from '@polymer/decorators';
-import '@polymer/iron-icons';
 import {PaperCheckboxElement} from '@polymer/paper-checkbox';
 import {PaperIconButtonElement} from '@polymer/paper-icon-button';
-import '@polymer/paper-input';
-import {PolymerElement, html} from '@polymer/polymer';
 import * as _ from 'lodash';
+import '@polymer/iron-icons';
+import '@polymer/paper-checkbox';
+import '@polymer/paper-icon-button';
+import '@polymer/paper-input/paper-input';
 
 import './run-color-style';
 import './scrollbar-style';

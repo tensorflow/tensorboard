@@ -18,7 +18,7 @@ import {customElement, property, observe, computed} from '@polymer/decorators';
 import '@polymer/iron-icon';
 import '@polymer/iron-collapse';
 import '@polymer/paper-button';
-import '@polymer/paper-input';
+import '@polymer/paper-input/paper-input';
 
 import {
   Category,
@@ -277,7 +277,6 @@ class TfCategoryPaginatedView<CategoryItem> extends TfDomRepeat<CategoryItem> {
   @property({
     type: Boolean,
     notify: true,
-    readOnly: true,
   })
   opened: boolean;
 
@@ -420,6 +419,7 @@ class TfCategoryPaginatedView<CategoryItem> extends TfDomRepeat<CategoryItem> {
     return compositeSearch && type === CategoryType.SEARCH_RESULTS;
   }
   ready() {
+    super.ready();
     this.opened = this.initialOpened == null ? true : this.initialOpened;
     this._limitListener = () => {
       this.set('_limit', getLimit());
