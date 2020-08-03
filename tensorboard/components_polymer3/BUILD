@@ -45,8 +45,9 @@ tf_ts_library(
         "//tensorboard/components_polymer3/tf_backend",
         "//tensorboard/components_polymer3/tf_globals",
         "//tensorboard/components_polymer3/tf_markdown_view",
-        "//tensorboard/components_polymer3/tf_storage",
         "//tensorboard/components_polymer3/tf_paginated_view",
+        "//tensorboard/components_polymer3/tf_storage",
+        "//tensorboard/plugins/scalar/polymer3/tf_scalar_dashboard",
         "//tensorboard/plugins/text/polymer3/tf_text_dashboard",
     ],
 )
