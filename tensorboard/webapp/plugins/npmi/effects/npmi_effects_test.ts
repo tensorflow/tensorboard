@@ -25,6 +25,7 @@ import {createNpmiState} from '../testing';
 import {State} from '../../../app_state';
 import {DataLoadState, AnnotationListing} from '../store/npmi_types';
 import {getAnnotationsLoaded} from '../store/npmi_selectors';
+import * as actions from '../actions';
 
 describe('metrics effects', () => {
   let dataSource: NpmiHttpServerDataSource;
@@ -82,6 +83,15 @@ describe('metrics effects', () => {
 
       expect(fetchAnnotationsSpy).not.toHaveBeenCalled();
       expect(actualActions).toEqual([]);
+
+      actions$.next(actions.npmiLoaded());
+      fetchAnnotationsSubject.next({run_1: ['test_1', 'test_2']});
+
+      expect(fetchAnnotationsSpy).toHaveBeenCalled();
+      expect(actualActions).toEqual([
+        actions.annotationsRequested(),
+        actions.annotationsLoaded({annotations: {run_1: ['test_1', 'test_2']}}),
+      ]);
     });
   });
 });
