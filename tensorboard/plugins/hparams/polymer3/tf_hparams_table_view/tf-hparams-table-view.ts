@@ -14,18 +14,17 @@ limitations under the License.
 ==============================================================================*/
 
 import {PolymerElement, html} from '@polymer/polymer';
-import {customElement, property} from '@polymer/decorators';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/vaadin-grid.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-session-group-details/tf-hparams-session-group-details.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-utils/tf-hparams-utils.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/vaadin-grid.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-session-group-details/tf-hparams-session-group-details.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-utils/tf-hparams-utils.html';
+import {customElement, observe, property} from '@polymer/decorators';
+import * as PolymerDom from '@polymer/polymer/lib/legacy/polymer.dom.js';
+import '@vaadin/vaadin-grid';
+
+import '../tf-hparams-session-group-details/tf-hparams-session-group-details';
+import * as tf_hparams_utils from '../tf_hparams_utils/tf-hparams-utils';
+import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+
 'use strict';
 @customElement('tf-hparams-table-view')
-class TfHparamsTableView extends PolymerElement {
+class TfHparamsTableView extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
     <vaadin-grid
       class="session-group-table"
@@ -125,14 +124,23 @@ class TfHparamsTableView extends PolymerElement {
       }
     </style>
   `;
+  // See comment for the property in tf-hparams-query-pane.
   @property({type: Object})
   visibleSchema: object;
+  // See comment for the property in tf-hparams-query-pane.
   @property({type: Array})
   sessionGroups: unknown[];
+  // Whether to enable the "show-metrics" column that allows expanding
+  // a row to see its details.
   @property({type: Boolean})
   enableShowMetrics: boolean;
+  // An object for making HParams API requests to the backend.
+  // This is used only when a row is expanded to call the backend to
+  // get metric values. It can be omitted if enableShowMetrics is false.
   @property({type: Object})
   backend: object;
+  // The experiment name to use when calling the backend to get
+  // the metric values. Can be omitted if enableShowMetrics is false.
   @property({type: String})
   experimentName: string;
   @observe('visibleSchema.*', 'sessionGroups.*')
@@ -141,23 +149,25 @@ class TfHparamsTableView extends PolymerElement {
     // and doesn't update 'expandedItems'. So we first close the
     // expanded items, call Polymer.dom.flush() to update the grid,
     // and then re-open the groups that were open before.
-    const expandedItems = this.$.sessionGroupsTable.get('expandedItems');
-    this.$.sessionGroupsTable.set('expandedItems', []);
-    Polymer.dom.flush();
+    const expandedItems = (this.$.sessionGroupsTable as any).get(
+      'expandedItems'
+    );
+    (this.$.sessionGroupsTable as any).set('expandedItems', []);
+    PolymerDom.dom.flush();
     // Index sessionGroups by name.
     const sessionGroupsByName = new Map();
-    this.sessionGroups.forEach((sg) => {
+    this.sessionGroups.forEach((sg: any) => {
       sessionGroupsByName.set(sg.name, sg);
     });
-    this.$.sessionGroupsTable.set(
+    (this.$.sessionGroupsTable as any).set(
       'expandedItems',
       expandedItems
         .map((sg) => sessionGroupsByName.get(sg.name))
         .filter(Boolean)
     );
   }
-  _hparamName: tf.hparams.utils.hparamName;
-  _metricName: tf.hparams.utils.metricName;
+  _hparamName = tf_hparams_utils.hparamName;
+  _metricName = tf_hparams_utils.metricName;
   _sessionGroupHParam(sessionGroup, hparam) {
     if (
       sessionGroup == null ||
@@ -165,7 +175,7 @@ class TfHparamsTableView extends PolymerElement {
     ) {
       return '';
     }
-    return tf.hparams.utils.prettyPrint(sessionGroup.hparams[hparam]);
+    return tf_hparams_utils.prettyPrint(sessionGroup.hparams[hparam]);
   }
   // Returns the metric value of the given sessionGroup. The value is
   // returned as a string suitable for display.
@@ -179,7 +189,7 @@ class TfHparamsTableView extends PolymerElement {
         metricVal.name.group === metricName.group &&
         metricVal.name.tag == metricName.tag
       ) {
-        return tf.hparams.utils.prettyPrint(metricVal.value);
+        return tf_hparams_utils.prettyPrint(metricVal.value);
       }
     }
     return '';
