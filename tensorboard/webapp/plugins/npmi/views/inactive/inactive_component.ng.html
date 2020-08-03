@@ -14,11 +14,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<div class="npmi-container">
-  <npmi-inactive-view
-    *ngIf="runs.size === 0; else dataAvailable"
-  ></npmi-inactive-view>
-  <ng-template #dataAvailable>
-    <npmi-main></npmi-main>
-  </ng-template>
+<div>
+  <div class="container">
+    <div class="title">
+      nPMI is inactive because no data is available.
+    </div>
+
+    <div>
+      To use the nPMI, calculate nPMI values, and log them using the summary
+      writer.
+    </div>
+  </div>
 </div>

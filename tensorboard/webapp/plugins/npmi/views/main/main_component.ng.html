@@ -14,11 +14,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<div class="npmi-container">
-  <npmi-inactive-view
-    *ngIf="runs.size === 0; else dataAvailable"
-  ></npmi-inactive-view>
-  <ng-template #dataAvailable>
-    <npmi-main></npmi-main>
+<div class="content">
+  <div class="selection-container">
+    <div class="run-selector">
+      <tb-legacy-runs-selector></tb-legacy-runs-selector>
+    </div>
+  </div>
+  <div *ngIf="runActive === true; else noRun" class="analysis-container"></div>
+  <ng-template #noRun>
+    You need to select at least one run.
   </ng-template>
 </div>

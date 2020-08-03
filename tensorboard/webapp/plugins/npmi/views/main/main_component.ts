@@ -12,26 +12,22 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {CommonModule} from '@angular/common';
-import {NgModule} from '@angular/core';
+import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {RunId} from '../../../../core/types';
 
-import {NpmiComponent} from './npmi_component';
-import {NpmiContainer} from './npmi_container';
-
-import {InactiveModule} from './views/inactive/inactive_module';
-import {MainModule} from './views/main/main_module';
-
-import {PluginRegistryModule} from '../../plugins/plugin_registry_module';
-
-@NgModule({
-  declarations: [NpmiComponent, NpmiContainer],
-  imports: [
-    CommonModule,
-    InactiveModule,
-    MainModule,
-    PluginRegistryModule.forPlugin('npmi', NpmiContainer),
-  ],
-  exports: [NpmiContainer],
-  entryComponents: [NpmiContainer],
+@Component({
+  selector: 'main-component',
+  templateUrl: './main_component.ng.html',
+  styleUrls: ['./main_component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class NpmiModule {}
+export class MainComponent {
+  @Input() runs: Map<RunId, boolean> = new Map();
+  get runActive(): boolean {
+    let active = false;
+    this.runs.forEach((runActive: boolean) => {
+      active = active || runActive;
+    });
+    return [...this.runs.values()].some((value) => value);
+  }
+}
