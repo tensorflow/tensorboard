@@ -47,7 +47,9 @@ describe('Npmi Container', () => {
     const fixture = TestBed.createComponent(NpmiContainer);
     fixture.detectChanges();
 
-    const inactiveElement = fixture.debugElement.query(By.css('npmi-inactive'));
+    const inactiveElement = fixture.debugElement.query(
+      By.css('npmi-inactive-component')
+    );
     expect(inactiveElement).toBeTruthy();
     const mainElement = fixture.debugElement.query(By.css('npmi-main'));
     expect(mainElement).toBeNull();
@@ -58,7 +60,9 @@ describe('Npmi Container', () => {
     const fixture = TestBed.createComponent(NpmiContainer);
     fixture.detectChanges();
 
-    const inactiveElement = fixture.debugElement.query(By.css('npmi-inactive'));
+    const inactiveElement = fixture.debugElement.query(
+      By.css('npmi-inactive-component')
+    );
     expect(inactiveElement).toBeNull();
     const npmiElement = fixture.debugElement.query(By.css('npmi-main'));
     expect(npmiElement).toBeTruthy();
