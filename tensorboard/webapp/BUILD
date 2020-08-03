@@ -49,6 +49,7 @@ ng_module(
     deps = [
         "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/feature_flag/store:types",
+        "//tensorboard/webapp/plugins/npmi/store:types",
     ],
 )
 
