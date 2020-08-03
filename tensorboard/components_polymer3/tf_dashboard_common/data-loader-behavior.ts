@@ -105,7 +105,7 @@ export function DataLoaderBehavior<Item, Data>(
     }
 
     static get observers() {
-      return ['_dataToLoadChanged(isConnected', 'dataToLoad.*)'];
+      return ['_dataToLoadChanged(isConnected, dataToLoad.*)'];
     }
 
     /*
