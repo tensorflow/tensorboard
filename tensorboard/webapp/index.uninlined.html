@@ -20,8 +20,38 @@ limitations under the License.
 <link rel="shortcut icon" href="%TENSORBOARD_FAVICON_URI%" />
 <link rel="apple-touch-icon" href="%TENSORBOARD_FAVICON_URI%" />
 
+<link rel="import" href="font-roboto/roboto.html" />
 <link rel="import" href="polymer_lib_binary.html" />
 <link rel="stylesheet" href="styles.css" />
+
+<style>
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: Roboto, sans-serif;
+    color: var(--primary-text-color);
+
+    /* Legacy mechanism to avoid issues with subpixel anti-aliasing on macOS.
+     *
+     * In the past [1], macOS subpixel AA caused excessive bolding for light-on-dark text; this rule
+     * avoids that by requesting non-subpixel AA always, rather than the default behavior, which is
+     * to use subpixel AA when available. The original issue was "fixed" by removing subpixel AA in
+     * macOS 14 (Mojave), but for legacy reasons they preserved the bolding effect as an option.
+     * Chrome then in turn updated its font rendering to apply that bolding effect [2], which means
+     * that even though the `-webkit-font-smoothing` docs [3] suggest that setting `antialiased`
+     * would have no effect for recent versions of macOS, it still is needed to avoid the bolding.
+     *
+     * [1]: http://www.lighterra.com/articles/macosxtextaabug/
+     * [2]: https://bugs.chromium.org/p/chromium/issues/detail?id=858861
+     * [3]: https://developer.mozilla.org/en-US/docs/Web/CSS/font-smooth
+     *
+     */
+
+    -webkit-font-smoothing: antialiased;
+  }
+</style>
 
 <body>
   <script jscomp-nocompile src="tf-imports/require.js"></script>
