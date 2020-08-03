@@ -1,6 +1,4 @@
-<!--
-@license
-Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,21 +11,11 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
--->
-<!-- Configures polymer and requires to be loaded at the top. -->
-<link rel="import" href="../font-roboto/roboto.html" />
+==============================================================================*/
+/**
+ * @fileoverview Security configration for Polymer. Note that this module has
+ * to be imported the first in a bundle.
+ */
+import {setStrictTemplatePolicy} from '@polymer/polymer/lib/utils/settings';
 
-<style>
-  html,
-  body {
-    height: 100%;
-    margin: 0;
-    width: 100%;
-    font-family: Roboto, sans-serif;
-  }
-</style>
-<script jscomp-ignore src="../standalone_bundle.js"></script>
-
-<body>
-  <vz-projector-dashboard></vz-projector-dashboard>
-</body>
+setStrictTemplatePolicy(true);
