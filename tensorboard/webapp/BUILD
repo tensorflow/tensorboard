@@ -107,6 +107,7 @@ tf_web_library(
     srcs = [
         "index.inlined.html",
         ":styles.css",
+        "//tensorboard/components_polymer3:polymer3_lib_binary.js",
     ],
     path = "/",
     deps = [
