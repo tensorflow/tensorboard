@@ -36,7 +36,7 @@ describe('Npmi Main Container', () => {
     await TestBed.configureTestingModule({
       declarations: [MainComponent, MainContainer],
       imports: [RunsModule],
-      providers: [provideMockStore({}), MainContainer],
+      providers: [provideMockStore({})],
     }).compileComponents();
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     store.overrideSelector(getRunSelection, new Map([['run_1', true]]));

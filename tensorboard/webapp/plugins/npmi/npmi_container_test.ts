@@ -48,7 +48,7 @@ describe('Npmi Container', () => {
     fixture.detectChanges();
 
     const inactiveElement = fixture.debugElement.query(
-      By.css('npmi-inactive-component')
+      By.css('npmi-inactive-view')
     );
     expect(inactiveElement).toBeTruthy();
     const mainElement = fixture.debugElement.query(By.css('npmi-main'));

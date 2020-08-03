@@ -15,9 +15,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <div class="npmi-container">
-  <npmi-inactive-component
+  <npmi-inactive-view
     *ngIf="runs.size === 0; else dataAvailable"
-  ></npmi-inactive-component>
+  ></npmi-inactive-view>
   <ng-template #dataAvailable>
     <npmi-main></npmi-main>
   </ng-template>

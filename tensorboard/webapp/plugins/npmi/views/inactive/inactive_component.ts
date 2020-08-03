@@ -15,7 +15,7 @@ limitations under the License.
 import {Component} from '@angular/core';
 
 @Component({
-  selector: 'npmi-inactive-component',
+  selector: 'npmi-inactive-view',
   templateUrl: './inactive_component.ng.html',
   styleUrls: ['./inactive_component.css'],
 })
