@@ -14,13 +14,38 @@ limitations under the License.
 ==============================================================================*/
 
 import {PolymerElement, html} from '@polymer/polymer';
-import {customElement, property} from '@polymer/decorators';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/d3.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/d3.html';
+import {customElement, observe, property} from '@polymer/decorators';
+import * as d3Typed from 'd3';
+
+import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+
+// Copied from `tf-histogram-dashboard/histogramCore`; TODO(wchargin):
+// resolve dependency structure.
+export type VzHistogram = {
+  wall_time: number; // in seconds
+  step: number;
+  bins: D3HistogramBin[];
+};
+export type D3HistogramBin = {
+  x: number;
+  dx: number;
+  y: number;
+};
+
+// TypeScript can't deal with d3's style of overloading and
+// polymorphism, and constantly fails to select the correct overload.
+// This module was converted from working non-TypeScript code, so we
+// grandfather it in untyped.
+const d3: any = d3Typed;
+
+export interface VzHistogramTimeseries extends HTMLElement {
+  setSeriesData(series: string, data: VzHistogram[]): void;
+  redraw(): void
+}
+
 @customElement('vz-histogram-timeseries')
-class VzHistogramTimeseries extends PolymerElement {
+class _VzHistogramTimeseries extends LegacyElementMixin(PolymerElement)
+  implements VzHistogramTimeseries {
   static readonly template = html`
     <div id="tooltip"><span></span></div>
     <svg id="svg">
@@ -192,62 +217,64 @@ class VzHistogramTimeseries extends PolymerElement {
       }
     </style>
   `;
-  @property({
-    type: String,
-  })
+
+  @property({type: String})
   mode: string = 'offset';
-  @property({
-    type: String,
-  })
+
+  @property({type: String})
   timeProperty: string = 'step';
-  @property({
-    type: String,
-  })
+
+  @property({type: String})
   bins: string = 'bins';
-  @property({
-    type: String,
-  })
+
+  @property({type: String})
   x: string = 'x';
-  @property({
-    type: String,
-  })
+
+  @property({type: String})
   dx: string = 'dx';
-  @property({
-    type: String,
-  })
+
+  @property({type: String})
   y: string = 'y';
-  @property({
-    type: Object,
-  })
-  colorScale: object = function() {
-    return d3.scaleOrdinal(d3.schemeCategory10);
-  };
-  @property({
-    type: Number,
-  })
+
+  @property({type: Object})
+  colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+
+  @property({type: Number})
   modeTransitionDuration: number = 500;
+
   @property({type: Boolean})
   _attached: boolean;
+
   @property({type: String})
   _name: string = null;
+
   @property({type: Array})
-  _data: unknown[] = null;
+  _data: VzHistogram[] = null;
+
   ready() {
+    super.ready();
     // Polymer's way of scoping styles on nodes that d3 created
     this.scopeSubtree(this.$.svg, true);
   }
+
   attached() {
     this._attached = true;
   }
   detached() {
     this._attached = false;
   }
+
   setSeriesData(name, data) {
     this._name = name;
     this._data = data;
     this.redraw();
   }
+
   @observe('timeProperty', 'colorScale', '_attached')
+  _redrawOnChange() {
+    this.redraw();
+  }
+
   /**
    * Redraws the chart. This is only called if the chart is attached to the
    * screen and if the chart has data.
@@ -255,10 +282,12 @@ class VzHistogramTimeseries extends PolymerElement {
   redraw() {
     this._draw(0);
   }
+
   @observe('mode')
   _modeRedraw() {
     this._draw(this.modeTransitionDuration);
   }
+
   _draw(duration) {
     if (!this._attached || !this._data) {
       return;
@@ -335,7 +364,7 @@ class VzHistogramTimeseries extends PolymerElement {
     if (timeProp === 'wall_time') {
       yAxisFormat = d3.timeFormat('%m/%d %X');
     } else if (timeProp === 'relative') {
-      yAxisFormat = function(d) {
+      yAxisFormat = function(d: number) {
         return d3.format('.1r')(d / 3.6e6) + 'h'; // Convert to hours.
       };
     }
@@ -356,6 +385,7 @@ class VzHistogramTimeseries extends PolymerElement {
     //
     var outlineCanvasSize = 500;
     var extent = d3.extent(data, timeAccessor);
+
     var yScale = (timeProp === 'wall_time' ? d3.scaleTime() : d3.scaleLinear())
       .domain(extent)
       .range([0, mode === 'offset' ? height : 0]);

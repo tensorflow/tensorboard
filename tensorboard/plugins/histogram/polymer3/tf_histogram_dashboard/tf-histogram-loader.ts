@@ -13,29 +13,38 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import {computed, customElement, observe, property} from '@polymer/decorators';
+import '@polymer/paper-icon-button';
 import {PolymerElement, html} from '@polymer/polymer';
-import {customElement, property} from '@polymer/decorators';
-import '@polymer/paper-icon-button';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-backend/tf-backend.html';
-import {DO_NOT_SUBMIT} from '../tf-card-heading/tf-card-heading.html';
-import {DO_NOT_SUBMIT} from '../tf-color-scale/tf-color-scale.html';
-import {DO_NOT_SUBMIT} from '../tf-dashboard-common/data-loader-behavior.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
-import {DO_NOT_SUBMIT} from '../vz-histogram-timeseries/vz-histogram-timeseries.html';
-import {DO_NOT_SUBMIT} from 'tf-histogram-core.html';
-import '@polymer/paper-icon-button';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-backend/tf-backend.html';
-import {DO_NOT_SUBMIT} from '../tf-card-heading/tf-card-heading.html';
-import {DO_NOT_SUBMIT} from '../tf-color-scale/tf-color-scale.html';
-import {DO_NOT_SUBMIT} from '../tf-dashboard-common/data-loader-behavior.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
-import {DO_NOT_SUBMIT} from '../vz-histogram-timeseries/vz-histogram-timeseries.html';
-import {DO_NOT_SUBMIT} from 'tf-histogram-core.html';
-'use strict';
+import * as _ from 'lodash';
+
+import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+import {getRouter} from '../../../../components_polymer3/tf_backend/router';
+import {addParams} from '../../../../components_polymer3/tf_backend/urlPathHelpers';
+import '../../../../components_polymer3/tf_card_heading/tf-card-heading';
+import {runsColorScale} from '../../../../components_polymer3/tf_color_scale/colorScale';
+import {DataLoaderBehavior} from '../../../../components_polymer3/tf_dashboard_common/data-loader-behavior';
+import '../vz_histogram_timeseries/vz-histogram-timeseries';
+import {VzHistogramTimeseries} from '../vz_histogram_timeseries/vz-histogram-timeseries';
+import './histogramCore';
+import {VzHistogram, backendToVz} from './histogramCore';
+
+// Response from /data/plugin/histograms/tags.
+export interface HistogramTagInfo {
+  displayName: string;
+  description: string;
+}
+
+export interface TfHistogramLoader extends HTMLElement {
+  reload(): void;
+}
+
 @customElement('tf-histogram-loader')
-class TfHistogramLoader extends PolymerElement {
+class _TfHistogramLoader
+  extends DataLoaderBehavior<{run: string; tag: string}, VzHistogram[]>(
+    LegacyElementMixin(PolymerElement)
+  )
+  implements TfHistogramLoader {
   static readonly template = html`
     <tf-card-heading
       tag="[[tag]]"
@@ -99,66 +108,69 @@ class TfHistogramLoader extends PolymerElement {
       }
     </style>
   `;
+
   @property({type: String})
   run: string;
+
   @property({type: String})
   tag: string;
-  @property({
-    type: Function,
-  })
-  getDataLoadName: object = () => ({run}) => run;
-  @property({
-    type: Function,
-  })
-  getDataLoadUrl: object = () => ({tag, run}) => {
-    const router = tf_backend.getRouter();
-    return tf_backend.addParams(
-      router.pluginRoute('histograms', '/histograms'),
-      {tag, run}
-    );
-  };
-  @property({
-    type: Function,
-  })
-  loadDataCallback: object = function() {
-    return (_, datum, data) => {
-      const d3Data = tf_histogram_dashboard.backendToVz(data);
-      const name = this.getDataLoadName(datum);
-      this.$.chart.setSeriesData(name, d3Data);
-    };
-  };
+
   @property({type: Object})
-  tagMetadata: object;
+  getDataLoadName = ({run}: {run: string; tag: string}): string => run;
+
+  @property({type: Object})
+  getDataLoadUrl = ({tag, run}) => {
+    const router = getRouter();
+    return addParams(router.pluginRoute('histograms', '/histograms'), {
+      tag,
+      run,
+    });
+  };
+
+  @property({type: Object})
+  loadDataCallback = (_, datum, data) => {
+    const d3Data = backendToVz(data);
+    const name = this.getDataLoadName(datum);
+    (this.$.chart as VzHistogramTimeseries).setSeriesData(name, d3Data);
+  };
+
+  @property({type: Object})
+  tagMetadata: HistogramTagInfo;
+
   @property({type: String})
   timeProperty: string;
+
   @property({type: String})
   histogramMode: string;
-  @property({
-    type: Object,
-  })
-  _colorScaleFunction: object = () => tf_color_scale.runsColorScale;
-  @property({
-    type: Boolean,
-    reflectToAttribute: true,
-  })
+
+  @property({type: Object})
+  _colorScaleFunction: (runName: string) => string = runsColorScale;
+
+  @property({type: Boolean, reflectToAttribute: true})
   _expanded: boolean = false;
+
   @observe('run', 'tag', 'requestManager')
-  reload() {}
-  behaviors: [tf_dashboard_common.DataLoaderBehavior];
-  @computed('run', 'tag')
-  get dataToLoad(): unknown[] {
+  _reloadOnRunTagRequestManagerChange() {
+    this.reload();
+  }
+
+  @observe('run', 'tag')
+  _updateDataToLoad() {
     var run = this.run;
     var tag = this.tag;
-    return [{run, tag}];
+    this.dataToLoad = [{run, tag}];
   }
+
   @computed('run')
   get _runColor(): string {
     var run = this.run;
     return this._colorScaleFunction(run);
   }
+
   redraw() {
-    this.$.chart.redraw();
+    (this.$.chart as VzHistogramTimeseries).redraw();
   }
+
   _toggleExpanded(e) {
     this.set('_expanded', !this._expanded);
     this.redraw();

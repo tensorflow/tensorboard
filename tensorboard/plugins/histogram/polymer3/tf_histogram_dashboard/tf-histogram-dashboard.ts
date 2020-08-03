@@ -13,39 +13,32 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import {computed, customElement, property} from '@polymer/decorators';
+import '@polymer/iron-icon';
+import '@polymer/paper-button';
+import '@polymer/paper-input';
 import {PolymerElement, html} from '@polymer/polymer';
-import {customElement, property} from '@polymer/decorators';
-import '@polymer/iron-icon';
-import '@polymer/paper-button';
-import '@polymer/paper-input';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-backend/tf-backend.html';
-import {DO_NOT_SUBMIT} from '../tf-categorization-utils/tf-categorization-utils.html';
-import {DO_NOT_SUBMIT} from '../tf-categorization-utils/tf-tag-filterer.html';
-import {DO_NOT_SUBMIT} from '../tf-dashboard-common/dashboard-style.html';
-import {DO_NOT_SUBMIT} from '../tf-dashboard-common/tf-dashboard-layout.html';
-import {DO_NOT_SUBMIT} from '../tf-dashboard-common/tf-option-selector.html';
-import {DO_NOT_SUBMIT} from '../tf-paginated-view/tf-category-paginated-view.html';
-import {DO_NOT_SUBMIT} from '../tf-runs-selector/tf-runs-selector.html';
-import {DO_NOT_SUBMIT} from '../tf-tensorboard/registry.html';
-import {DO_NOT_SUBMIT} from 'tf-histogram-loader.html';
-import '@polymer/iron-icon';
-import '@polymer/paper-button';
-import '@polymer/paper-input';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-backend/tf-backend.html';
-import {DO_NOT_SUBMIT} from '../tf-categorization-utils/tf-categorization-utils.html';
-import {DO_NOT_SUBMIT} from '../tf-categorization-utils/tf-tag-filterer.html';
-import {DO_NOT_SUBMIT} from '../tf-dashboard-common/dashboard-style.html';
-import {DO_NOT_SUBMIT} from '../tf-dashboard-common/tf-dashboard-layout.html';
-import {DO_NOT_SUBMIT} from '../tf-dashboard-common/tf-option-selector.html';
-import {DO_NOT_SUBMIT} from '../tf-paginated-view/tf-category-paginated-view.html';
-import {DO_NOT_SUBMIT} from '../tf-runs-selector/tf-runs-selector.html';
-import {DO_NOT_SUBMIT} from '../tf-tensorboard/registry.html';
-import {DO_NOT_SUBMIT} from 'tf-histogram-loader.html';
-'use strict';
+import * as _ from 'lodash';
+
+import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+import {getTags} from '../../../../components_polymer3/tf_backend/backend';
+import {RequestManager} from '../../../../components_polymer3/tf_backend/requestManager';
+import {getRouter} from '../../../../components_polymer3/tf_backend/router';
+import {
+  RunTagCategory,
+  categorizeRunTagCombinations,
+} from '../../../../components_polymer3/tf_categorization_utils/categorizationUtils';
+import '../../../../components_polymer3/tf_categorization_utils/tf-tag-filterer';
+import '../../../../components_polymer3/tf_dashboard_common/dashboard-style';
+import '../../../../components_polymer3/tf_dashboard_common/tf-dashboard-layout';
+import '../../../../components_polymer3/tf_dashboard_common/tf-option-selector';
+import '../../../../components_polymer3/tf_paginated_view/tf-category-paginated-view';
+import '../../../../components_polymer3/tf_runs_selector/tf-runs-selector';
+import {HistogramTagInfo, TfHistogramLoader} from './tf-histogram-loader';
+import './tf-histogram-loader';
+
 @customElement('tf-histogram-dashboard')
-class TfHistogramDashboard extends PolymerElement {
+class TfHistogramDashboard extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
     <tf-dashboard-layout>
       <div slot="sidebar">
@@ -145,61 +138,67 @@ class TfHistogramDashboard extends PolymerElement {
       }
     </style>
   `;
-  @property({
-    type: Boolean,
-  })
+
+  @property({type: Boolean})
   reloadOnReady: boolean = true;
-  @property({
-    type: String,
-  })
+
+  @property({type: String})
   _histogramMode: string = 'offset';
-  @property({
-    type: String,
-  })
+
+  @property({type: String})
   _timeProperty: string = 'step';
+
   @property({type: Array})
-  _selectedRuns: unknown[];
+  _selectedRuns: string[];
+
   @property({type: Object})
-  _runToTag: object;
+  _runToTag: {[run: string]: string[]};
+
   @property({type: Object})
-  _runToTagInfo: object;
+  _runToTagInfo: {[run: string]: HistogramTagInfo};
+
   @property({type: Boolean})
   _dataNotFound: boolean;
+
   @property({type: String})
   _tagFilter: string;
-  @property({
-    type: Boolean,
-  })
+
+  @property({type: Boolean})
   _restamp: boolean = false;
+
   @property({type: Boolean})
   _categoriesDomReady: boolean;
-  @property({
-    type: Object,
-  })
-  _requestManager: object = () => new tf_backend.RequestManager();
+
+  @property({type: Object})
+  _requestManager: RequestManager = new RequestManager();
+
   _redrawCategoryPane(event, val) {
     if (!val) return;
     event.target
       .querySelectorAll('tf-histogram-loader')
       .forEach((histogram) => histogram.redraw());
   }
+
   ready() {
+    super.ready();
     if (this.reloadOnReady) this.reload();
   }
+
   reload() {
     this._fetchTags().then(() => {
       this._reloadHistograms();
     });
   }
+
   _fetchTags() {
-    const url = tf_backend.getRouter().pluginRoute('histograms', '/tags');
+    const url = getRouter().pluginRoute('histograms', '/tags');
     return this._requestManager.request(url).then((runToTagInfo) => {
       if (_.isEqual(runToTagInfo, this._runToTagInfo)) {
         // No need to update anything if there are no changes.
         return;
       }
       const runToTag = _.mapValues(runToTagInfo, (x) => Object.keys(x));
-      const tags = tf_backend.getTags(runToTag);
+      const tags = getTags(runToTag);
       this.set('_dataNotFound', tags.length === 0);
       this.set('_runToTag', runToTag);
       this.set('_runToTagInfo', runToTagInfo);
@@ -209,26 +208,26 @@ class TfHistogramDashboard extends PolymerElement {
       });
     });
   }
+
   _reloadHistograms() {
     this.root.querySelectorAll('tf-histogram-loader').forEach((histogram) => {
-      histogram.reload();
+      (histogram as TfHistogramLoader).reload();
     });
   }
+
   _shouldOpen(index) {
     return index <= 2;
   }
+
   @computed('_runToTag', '_selectedRuns', '_tagFilter', '_categoriesDomReady')
-  get _categories(): unknown[] {
+  get _categories(): RunTagCategory[] {
     var runToTag = this._runToTag;
     var selectedRuns = this._selectedRuns;
     var tagFilter = this._tagFilter;
     var categoriesDomReady = this._categoriesDomReady;
-    return tf_categorization_utils.categorizeRunTagCombinations(
-      runToTag,
-      selectedRuns,
-      tagFilter
-    );
+    return categorizeRunTagCombinations(runToTag, selectedRuns, tagFilter);
   }
+
   _tagMetadata(runToTagInfo, run, tag) {
     return runToTagInfo[run][tag];
   }
