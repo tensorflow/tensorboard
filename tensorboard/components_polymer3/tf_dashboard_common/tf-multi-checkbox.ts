@@ -216,14 +216,7 @@ class TfMultiCheckbox extends PolymerElement {
   })
   maxNamesToEnableByDefault: number = 40;
 
-  @property({
-    type: Object,
-  })
-  // Updating the regex can be slow, because it involves updating styles
-  // on a large number of Polymer paper-checkboxes. We don't want to do
-  // this while the user is typing, as it may make a bad, laggy UI.
-  // So we debounce the updates that come from user typing.
-  _debouncedRegexChange: () => void = function() {
+  _debouncedRegexChangeImpl() {
     var debounced = _.debounce(
       (r) => {
         this.regex = r;
@@ -243,7 +236,14 @@ class TfMultiCheckbox extends PolymerElement {
         debounced(r);
       }
     };
-  };
+  }
+
+  // Updating the regex can be slow, because it involves updating styles
+  // on a large number of Polymer paper-checkboxes. We don't want to do
+  // this while the user is typing, as it may make a bad, laggy UI.
+  // So we debounce the updates that come from user typing.
+  @property({type: Object})
+  _debouncedRegexChange = this._debouncedRegexChangeImpl();
 
   @computed('regex')
   get _regex(): RegExp | null {
