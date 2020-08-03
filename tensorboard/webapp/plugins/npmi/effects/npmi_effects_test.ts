@@ -79,7 +79,9 @@ describe('metrics effects', () => {
       state: DataLoadState.NOT_LOADED,
       lastLoadedTimeInMs: null,
     });
-    store.overrideSelector(getMetricsData, {});
+    store.overrideSelector(getMetricsData, {
+      run_1: ['count@test', 'npmi@test'],
+    });
     store.refreshState();
     effects.loadData$.subscribe();
   });
@@ -130,7 +132,7 @@ describe('metrics effects', () => {
       );
     });
 
-    it('loads Annotations on plugin open if data is not loaded', () => {
+    it('loads Metrics and Values on plugin open if data is not loaded', () => {
       expect(fetchMetricsSpy).not.toHaveBeenCalled();
       expect(actualActions).toEqual([]);
 
