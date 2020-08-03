@@ -118,20 +118,21 @@ class TfRunsSelector extends LegacyElementMixin(PolymerElement) {
     type: Object,
     observer: '_storeRunSelectionState',
   })
-  runSelectionState: object = storage.getObjectInitializer(
-    'runSelectionState',
-    {
+  runSelectionState: object = storage
+    .getObjectInitializer('runSelectionState', {
       defaultValue: {},
-    }
-  )();
+    })
+    .call(this);
 
   @property({
     type: String,
     observer: '_regexObserver',
   })
-  regexInput: string = storage.getStringInitializer('regexInput', {
-    defaultValue: '',
-  })();
+  regexInput: string = storage
+    .getStringInitializer('regexInput', {
+      defaultValue: '',
+    })
+    .call(this);
 
   @property({
     type: Array,
