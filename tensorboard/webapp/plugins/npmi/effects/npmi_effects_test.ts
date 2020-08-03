@@ -23,8 +23,17 @@ import {NpmiHttpServerDataSource} from '../data_source/npmi_data_source';
 import {NpmiEffects} from '.';
 import {createNpmiState} from '../testing';
 import {State} from '../../../app_state';
-import {DataLoadState, AnnotationListing} from '../store/npmi_types';
-import {getAnnotationsLoaded} from '../store/npmi_selectors';
+import {
+  DataLoadState,
+  AnnotationListing,
+  ValueListing,
+} from '../store/npmi_types';
+import {
+  getAnnotationsLoaded,
+  getMetricsLoaded,
+  getValuesLoaded,
+  getMetricsData,
+} from '../store/npmi_selectors';
 import * as actions from '../actions';
 
 describe('metrics effects', () => {
@@ -58,6 +67,20 @@ describe('metrics effects', () => {
     });
     effects = TestBed.inject(NpmiEffects);
     dataSource = TestBed.inject(NpmiHttpServerDataSource);
+    store.overrideSelector(getAnnotationsLoaded, {
+      state: DataLoadState.NOT_LOADED,
+      lastLoadedTimeInMs: null,
+    });
+    store.overrideSelector(getMetricsLoaded, {
+      state: DataLoadState.NOT_LOADED,
+      lastLoadedTimeInMs: null,
+    });
+    store.overrideSelector(getValuesLoaded, {
+      state: DataLoadState.NOT_LOADED,
+      lastLoadedTimeInMs: null,
+    });
+    store.overrideSelector(getMetricsData, {});
+    store.refreshState();
     effects.loadData$.subscribe();
   });
 
@@ -74,12 +97,6 @@ describe('metrics effects', () => {
     });
 
     it('loads Annotations on plugin open if data is not loaded', () => {
-      store.overrideSelector(getAnnotationsLoaded, {
-        state: DataLoadState.NOT_LOADED,
-        lastLoadedTimeInMs: null,
-      });
-      store.refreshState();
-
       expect(fetchAnnotationsSpy).not.toHaveBeenCalled();
       expect(actualActions).toEqual([]);
 
@@ -87,9 +104,51 @@ describe('metrics effects', () => {
       fetchAnnotationsSubject.next({run_1: ['test_1', 'test_2']});
 
       expect(fetchAnnotationsSpy).toHaveBeenCalled();
+      console.log(actualActions);
       expect(actualActions).toEqual([
         actions.annotationsRequested(),
+        actions.metricsRequested(),
         actions.annotationsLoaded({annotations: {run_1: ['test_1', 'test_2']}}),
+      ]);
+    });
+  });
+
+  describe('load Metrics and Values', () => {
+    let fetchMetricsSpy: jasmine.Spy;
+    let fetchMetricsSubject: Subject<AnnotationListing>;
+    let fetchValuesSpy: jasmine.Spy;
+    let fetchValuesSubject: Subject<ValueListing>;
+
+    beforeEach(() => {
+      fetchMetricsSubject = new Subject();
+      fetchValuesSubject = new Subject();
+      fetchMetricsSpy = spyOn(dataSource, 'fetchMetrics').and.returnValue(
+        fetchMetricsSubject
+      );
+      fetchValuesSpy = spyOn(dataSource, 'fetchValues').and.returnValue(
+        fetchValuesSubject
+      );
+    });
+
+    it('loads Annotations on plugin open if data is not loaded', () => {
+      expect(fetchMetricsSpy).not.toHaveBeenCalled();
+      expect(actualActions).toEqual([]);
+
+      actions$.next(actions.npmiLoaded());
+      fetchMetricsSubject.next({run_1: ['count@test', 'npmi@test']});
+      fetchValuesSubject.next({run_1: [[0.001, 0.061], [-0.515, 0.15719]]});
+
+      expect(fetchMetricsSpy).toHaveBeenCalled();
+      console.log(actualActions);
+      expect(actualActions).toEqual([
+        actions.annotationsRequested(),
+        actions.metricsRequested(),
+        actions.metricsLoaded({metrics: {run_1: ['count@test', 'npmi@test']}}),
+        actions.valuesRequested(),
+        actions.valuesLoaded({
+          values: {run_1: [[0.001, 0.061], [-0.515, 0.15719]]},
+          metrics: {run_1: ['count@test', 'npmi@test']},
+        }),
       ]);
     });
   });
