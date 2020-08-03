@@ -148,6 +148,7 @@ tf_ng_web_test_suite(
         "//tensorboard/webapp/header:test_lib",
         "//tensorboard/webapp/plugins:plugins_container_test_lib",
         "//tensorboard/webapp/plugins/npmi:npmi_test_lib",
+        "//tensorboard/webapp/plugins/npmi/effects:effects_test_lib",
         "//tensorboard/webapp/plugins/npmi/views/main:main_test_lib",
         "//tensorboard/webapp/reloader:test_lib",
         "//tensorboard/webapp/settings:test_lib",

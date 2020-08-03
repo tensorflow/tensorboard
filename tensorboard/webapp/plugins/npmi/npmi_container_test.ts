@@ -15,7 +15,6 @@ limitations under the License.
 /**
  * Unit tests for the NPMI Container.
  */
-import 'jasmine';
 import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 

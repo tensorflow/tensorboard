@@ -12,11 +12,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import 'jasmine';
 import {TestBed} from '@angular/core/testing';
 import {provideMockActions} from '@ngrx/effects/testing';
 import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
+import {TBHttpClientTestingModule} from '../../../webapp_data_source/tb_http_client_testing';
 import {Subject} from 'rxjs';
 
 import {NpmiHttpServerDataSource} from '../data_source/npmi_data_source';
@@ -39,6 +39,7 @@ describe('metrics effects', () => {
     actualActions = [];
 
     await TestBed.configureTestingModule({
+      imports: [TBHttpClientTestingModule],
       providers: [
         provideMockActions(actions$),
         {
@@ -52,13 +53,11 @@ describe('metrics effects', () => {
     }).compileComponents();
 
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
-    spyOn(store, 'dispatch').and.callFake((action) => {
+    spyOn(store, 'dispatch').and.callFake((action: Action) => {
       actualActions.push(action);
     });
     effects = TestBed.inject(NpmiEffects);
     dataSource = TestBed.inject(NpmiHttpServerDataSource);
-    // store.overrideSelector(selectors.getExperimentIdsFromRoute, null);
-    // store.overrideSelector(selectors.getRouteId, 'route1');
     effects.loadData$.subscribe();
   });
 

@@ -29,7 +29,6 @@ import {
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
 /** @typehack */ import * as _typeHackSelector from '@ngrx/store/src/selector';
 /** @typehack */ import * as _typeHackStore from '@ngrx/store/store';
-import {NPMIState} from '../../../../../bazel-tb_pr/tensorboard/webapp/plugins/npmi/store';
 
 const selectNpmiState = createFeatureSelector<State, NpmiState>(
   NPMI_FEATURE_KEY
@@ -107,7 +106,7 @@ export const getValuesLoaded = createSelector(
 
 export const getCountData = createSelector(
   selectNpmiState,
-  (state: NPMIState): SummaryListing => {
+  (state: NpmiState): SummaryListing => {
     return state.countData;
   }
 );

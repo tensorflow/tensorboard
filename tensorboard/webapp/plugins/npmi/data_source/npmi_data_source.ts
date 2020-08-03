@@ -1,5 +1,4 @@
 import {
-  TagListing,
   AnnotationListing,
   MetricListing,
   ValueListing,

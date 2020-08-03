@@ -6,19 +6,43 @@ package(default_visibility = ["//tensorboard:internal"])
 ng_module(
     name = "effects",
     srcs = [
-        "npmi_effects.ts",
         "index.ts",
+        "npmi_effects.ts",
     ],
     deps = [
+        "//tensorboard/webapp/core/actions",
         "//tensorboard/webapp/plugins/npmi/actions",
         "//tensorboard/webapp/plugins/npmi/data_source",
         "//tensorboard/webapp/plugins/npmi/store",
         "//tensorboard/webapp/plugins/npmi/store:types",
-        "//tensorboard/webapp/core/actions",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@ngrx/effects",
         "@npm//@ngrx/store",
+        "@npm//rxjs",
+    ],
+)
+
+tf_ts_library(
+    name = "effects_test_lib",
+    testonly = True,
+    srcs = [
+        "npmi_effects_test.ts",
+    ],
+    tsconfig = "//:tsconfig-test",
+    deps = [
+        ":effects",
+        "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp/plugins/npmi/actions",
+        "//tensorboard/webapp/plugins/npmi/data_source",
+        "//tensorboard/webapp/plugins/npmi/store",
+        "//tensorboard/webapp/plugins/npmi/store:types",
+        "//tensorboard/webapp/plugins/npmi/testing",
+        "//tensorboard/webapp/webapp_data_source:http_client_testing",
+        "@npm//@angular/core",
+        "@npm//@ngrx/effects",
+        "@npm//@ngrx/store",
+        "@npm//@types/jasmine",
         "@npm//rxjs",
     ],
 )
