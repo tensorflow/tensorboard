@@ -12,16 +12,16 @@ tf_ts_library(
     ],
     strict_checks = False,
     deps = [
-        "@npm//@polymer/decorators",
-        "@npm//@polymer/polymer",
         "//tensorboard/plugins/hparams/polymer3/tf_hparams_parallel_coords_view",
         "//tensorboard/plugins/hparams/polymer3/tf_hparams_scatter_plot_matrix_view",
         "//tensorboard/plugins/hparams/polymer3/tf_hparams_table_view",
+        "@npm//@polymer/decorators",
         "@npm//@polymer/iron-pages",
         "@npm//@polymer/paper-button",
         "@npm//@polymer/paper-header-panel",
         "@npm//@polymer/paper-icon-button",
         "@npm//@polymer/paper-tabs",
         "@npm//@polymer/paper-toolbar",
+        "@npm//@polymer/polymer",
     ],
 )

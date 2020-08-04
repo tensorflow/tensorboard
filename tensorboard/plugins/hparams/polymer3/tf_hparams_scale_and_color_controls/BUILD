@@ -15,14 +15,14 @@ tf_ts_library(
     deps = [
         "//tensorboard/plugins/hparams/polymer3/tf_hparams_utils",
         "@npm//@polymer/decorators",
-        "@npm//@polymer/polymer",
-        "@npm//@types/d3",
-        "@npm//d3",
         "@npm//@polymer/paper-dropdown-menu",
         "@npm//@polymer/paper-item",
         "@npm//@polymer/paper-listbox",
         "@npm//@polymer/paper-radio-button",
         "@npm//@polymer/paper-radio-group",
+        "@npm//@polymer/polymer",
+        "@npm//@types/d3",
+        "@npm//d3",
     ],
 )
 

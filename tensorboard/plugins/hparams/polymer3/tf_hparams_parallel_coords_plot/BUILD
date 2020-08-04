@@ -18,6 +18,11 @@ tf_ts_library(
     ],
     strict_checks = False,
     deps = [
+        "//tensorboard/components_polymer3/polymer:legacy_element_mixin",
+        "//tensorboard/plugins/hparams:api_d_ts",
+        "//tensorboard/plugins/hparams/polymer3/tf_hparams_query_pane:schema_d_ts",
+        "//tensorboard/plugins/hparams/polymer3/tf_hparams_session_group_values",
+        "//tensorboard/plugins/hparams/polymer3/tf_hparams_utils",
         "@npm//@polymer/decorators",
         "@npm//@polymer/polymer",
         "@npm//@types/d3",
@@ -25,11 +30,6 @@ tf_ts_library(
         "@npm//d3",
         "@npm//lodash",
         "@npm//plottable",
-        "//tensorboard/components_polymer3/polymer:legacy_element_mixin",
-        "//tensorboard/plugins/hparams:api_d_ts",
-        "//tensorboard/plugins/hparams/polymer3/tf_hparams_query_pane:schema_d_ts",
-        "//tensorboard/plugins/hparams/polymer3/tf_hparams_session_group_values",
-        "//tensorboard/plugins/hparams/polymer3/tf_hparams_utils",
     ],
 )
 

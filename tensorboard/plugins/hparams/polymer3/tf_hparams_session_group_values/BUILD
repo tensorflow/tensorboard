@@ -12,9 +12,9 @@ tf_ts_library(
     ],
     strict_checks = False,
     deps = [
-        "@npm//@polymer/decorators",
-        "@npm//@polymer/polymer",
         "//tensorboard/plugins/hparams/polymer3/tf_hparams_table_view",
         "//tensorboard/plugins/hparams/polymer3/tf_hparams_utils",
+        "@npm//@polymer/decorators",
+        "@npm//@polymer/polymer",
     ],
 )

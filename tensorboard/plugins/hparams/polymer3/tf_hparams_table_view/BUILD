@@ -12,11 +12,11 @@ tf_ts_library(
     ],
     strict_checks = False,
     deps = [
-        "@npm//@polymer/decorators",
-        "@npm//@polymer/polymer",
-        "@npm//@vaadin/vaadin-grid",
         "//tensorboard/components_polymer3/polymer:legacy_element_mixin",
         "//tensorboard/plugins/hparams/polymer3/tf_hparams_session_group_details",
         "//tensorboard/plugins/hparams/polymer3/tf_hparams_utils",
+        "@npm//@polymer/decorators",
+        "@npm//@polymer/polymer",
+        "@npm//@vaadin/vaadin-grid",
     ],
 )
