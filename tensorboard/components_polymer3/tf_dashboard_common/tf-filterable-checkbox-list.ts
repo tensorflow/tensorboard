@@ -14,11 +14,10 @@ limitations under the License.
 ==============================================================================*/
 
 import {computed, customElement, observe, property} from '@polymer/decorators';
-import '@polymer/iron-icon';
-import '@polymer/paper-checkbox';
-import {PaperInputElement} from '@polymer/paper-input/paper-input';
 import {PolymerElement, html} from '@polymer/polymer';
+
 import {LegacyElementMixin} from '../polymer/legacy_element_mixin';
+import '../polymer/irons_and_papers';
 
 import './run-color-style';
 import './scrollbar-style';
@@ -270,7 +269,7 @@ class TfFilterableCheckboxList extends LegacyElementMixin(PolymerElement) {
   }
   // ================== EVENT LISTENERS ===================
   _debouncedRegexChange() {
-    const val = (this.$.input as PaperInputElement).value;
+    const val = (this.$.input as any).value;
     if (val == '') {
       // If the user cleared the field, they may be done typing, so
       // update more quickly.
