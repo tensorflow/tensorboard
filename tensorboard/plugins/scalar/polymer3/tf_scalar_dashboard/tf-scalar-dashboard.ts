@@ -316,14 +316,18 @@ class TfScalarDashboard extends LegacyElementMixin(ArrayUpdateHelper) {
   }
 
   reload() {
+    console.log('tf-scalar-dashboard reload');
     this._fetchTags().then(() => {
       this._reloadCharts();
     });
   }
 
   _fetchTags() {
+    console.log('tf-scalar-dashboard fetchTags');
     const url = getRouter().pluginRoute('scalars', '/tags');
     return this._requestManager.request(url).then((runToTagInfo) => {
+      console.log('tf-scalar-dashboard fetchTags result');
+      console.dir(runToTagInfo);
       if (_.isEqual(runToTagInfo, this._runToTagInfo)) {
         // No need to update anything if there are no changes.
         return;
@@ -340,7 +344,9 @@ class TfScalarDashboard extends LegacyElementMixin(ArrayUpdateHelper) {
   }
 
   _reloadCharts() {
+    console.log('tf-scalar-dashboard reloadCharts');
     this.root.querySelectorAll('tf-scalar-card').forEach((chart) => {
+      console.log('tf-scalar-dashboard reload single chart');
       (chart as TfScalarCard).reload();
     });
   }

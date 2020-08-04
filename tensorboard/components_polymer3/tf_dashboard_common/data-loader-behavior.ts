@@ -130,6 +130,7 @@ export function DataLoaderBehavior<Item, Data>(
     }
 
     reload() {
+      console.log('data-loader-behavior reload()');
       this._dataLoadState.clear();
       this._loadData();
     }
@@ -169,15 +170,21 @@ export function DataLoaderBehavior<Item, Data>(
       }
     }
     _loadDataImpl() {
+      console.log('data-loader-behavior _loadDataImpl()');
       if (!this.active) return;
+      console.log('data-loader-behavior _loadDataImpl() active');
       if (this._loadDataAsync !== null) clearTimeout(this._loadDataAsync);
       this._loadDataAsync = setTimeout(
         this._canceller.cancellable((result) => {
+          console.log('data-loader-behavior check if load cancelled');
           if (result.cancelled) {
             return;
           }
+          console.log('data-loader-behavior actual loading');
           // Read-only property have a special setter.
+          console.log('data-loader-behavior this.dataLoading->true ' + this.dataLoading);
           this.dataLoading = true;
+          console.log('data-loader-behavior this.dataLoading->true ' + this.dataLoading);
           // Promises return cacheKeys of the data that were fetched.
           const promises = this.dataToLoad
             .filter((datum) => {
@@ -217,7 +224,9 @@ export function DataLoaderBehavior<Item, Data>(
                 ).some((loadState) => loadState === LoadState.LOADING);
                 if (!isDataFetchPending) {
                   // Read-only property have a special setter.
+                  console.log('data-loader-behavior this.dataLoading->false ' + this.dataLoading);
                   this.dataLoading = false;
+                  console.log('data-loader-behavior this.dataLoading->false ' + this.dataLoading);
                 }
               }),
               // TODO(stephanwlee): remove me when we can use

@@ -37,7 +37,7 @@ export class TfScalarCard extends PolymerElement {
     ></tf-card-heading>
     <div id="tf-line-chart-data-loader-container">
       <tf-line-chart-data-loader
-        active="[[active]]"
+        active="[[hacktive]]"
         color-scale="[[_getColorScale(colorScale)]]"
         data-series="[[_getDataSeries(dataToLoad.*)]]"
         data-to-load="[[dataToLoad]]"
@@ -190,6 +190,9 @@ export class TfScalarCard extends PolymerElement {
   active: boolean;
 
   @property({type: Boolean})
+  hacktive: boolean = true;  // DO NOT SUBMIT
+
+  @property({type: Boolean})
   ignoreYOutliers: boolean;
 
   @property({type: Object})
@@ -287,11 +290,16 @@ export class TfScalarCard extends PolymerElement {
   }.call(this);
 
   _getChartDataLoader() {
+    console.log('tf-scalar-card getChartDataLoader');
     return this.shadowRoot.querySelector('tf-line-chart-data-loader') as any; // TfLineChartDataLoader
   }
 
   reload() {
-    this._getChartDataLoader().reload();
+    console.log('tf-scalar-card reload single chart');
+    const cdl = this._getChartDataLoader();
+    console.log('tf-scalar-card reload single chart call reload()');
+    console.dir(cdl);
+    cdl.reload();
   }
 
   redraw() {
