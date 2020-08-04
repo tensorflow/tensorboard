@@ -140,8 +140,7 @@ describe('npmi selectors', () => {
   describe('getAnnotationsData', () => {
     it('return correct empty object', () => {
       const state = createState(createNpmiState());
-      const annotationsData = getAnnotationsData(state);
-      expect(annotationsData).toBe({});
+      expect(getAnnotationsData(state)).toEqual({});
     });
 
     it('return correct data', () => {
@@ -152,16 +151,16 @@ describe('npmi selectors', () => {
           },
         })
       );
-      const annotationsData = getAnnotationsData(state);
-      expect(annotationsData['run_1'].toBe(['annotation_1', 'annotation_2']));
+      expect(getAnnotationsData(state)).toEqual({
+        run_1: ['annotation_1', 'annotation_2'],
+      });
     });
   });
 
   describe('getMetricsData', () => {
     it('return correct empty object', () => {
       const state = createState(createNpmiState());
-      const metricsData = getMetricsData(state);
-      expect(metricsData).toBe({});
+      expect(getMetricsData(state)).toEqual({});
     });
 
     it('return correct data', () => {
@@ -172,16 +171,14 @@ describe('npmi selectors', () => {
           },
         })
       );
-      const metricsData = getMetricsData(state);
-      expect(metricsData['run_1'].toBe(['metric_1', 'metric_2']));
+      expect(getMetricsData(state)).toEqual({run_1: ['metric_1', 'metric_2']});
     });
   });
 
   describe('getCountMetricsData', () => {
     it('return correct empty object', () => {
       const state = createState(createNpmiState());
-      const countMetricsData = getCountMetricsData(state);
-      expect(countMetricsData).toBe({});
+      expect(getCountMetricsData(state)).toEqual({});
     });
 
     it('return correct data', () => {
@@ -192,18 +189,16 @@ describe('npmi selectors', () => {
           },
         })
       );
-      const countMetricsData = getCountMetricsData(state);
-      expect(
-        countMetricsData['run_1'].toBe(['count_metric_1', 'count_metric_2'])
-      );
+      expect(getCountMetricsData(state)).toEqual({
+        run_1: ['count_metric_1', 'count_metric_2'],
+      });
     });
   });
 
   describe('getNpmiMetricsData', () => {
     it('return correct empty object', () => {
       const state = createState(createNpmiState());
-      const npmiMetricsData = getNpmiMetricsData(state);
-      expect(npmiMetricsData).toBe({});
+      expect(getNpmiMetricsData(state)).toEqual({});
     });
 
     it('return correct data', () => {
@@ -214,16 +209,16 @@ describe('npmi selectors', () => {
           },
         })
       );
-      const npmiMetricsData = getNpmiMetricsData(state);
-      expect(npmiMetricsData['run_1'].toBe(['npmi_metric_1', 'npmi_metric_2']));
+      expect(getNpmiMetricsData(state)).toEqual({
+        run_1: ['npmi_metric_1', 'npmi_metric_2'],
+      });
     });
   });
 
   describe('getValuesData', () => {
     it('return correct empty object', () => {
       const state = createState(createNpmiState());
-      const valuesData = getValuesData(state);
-      expect(valuesData).toBe({});
+      expect(getValuesData(state)).toEqual({});
     });
 
     it('return correct data', () => {
@@ -234,18 +229,16 @@ describe('npmi selectors', () => {
           },
         })
       );
-      const valuesData = getValuesData(state);
-      expect(
-        valuesData['run_1'].toBe([[0.11528, -0.15616], [-0.00513, 0.51611]])
-      );
+      expect(getValuesData(state)).toEqual({
+        run_1: [[0.11528, -0.15616], [-0.00513, 0.51611]],
+      });
     });
   });
 
   describe('getCountValuesData', () => {
     it('return correct empty object', () => {
       const state = createState(createNpmiState());
-      const countValuesData = getCountValuesData(state);
-      expect(countValuesData).toBe({});
+      expect(getCountValuesData(state)).toEqual({});
     });
 
     it('return correct data', () => {
@@ -256,18 +249,16 @@ describe('npmi selectors', () => {
           },
         })
       );
-      const countValuesData = getCountValuesData(state);
-      expect(
-        countValuesData['run_1'].toBe([[100153, 1501671], [2617609, 5019671]])
-      );
+      expect(getCountValuesData(state)).toEqual({
+        run_1: [[100153, 1501671], [2617609, 5019671]],
+      });
     });
   });
 
   describe('getNpmiValuesData', () => {
     it('return correct empty object', () => {
       const state = createState(createNpmiState());
-      const npmiValuesData = getNpmiValuesData(state);
-      expect(npmiValuesData).toBe({});
+      expect(getNpmiValuesData(state)).toEqual({});
     });
 
     it('return correct data', () => {
@@ -278,18 +269,16 @@ describe('npmi selectors', () => {
           },
         })
       );
-      const npmiValuesData = getNpmiValuesData(state);
-      expect(
-        npmiValuesData['run_1'].toBe([[0.11528, -0.15616], [-0.00513, 0.51611]])
-      );
+      expect(getNpmiValuesData(state)).toEqual({
+        run_1: [[0.11528, -0.15616], [-0.00513, 0.51611]],
+      });
     });
   });
 
   describe('getCountData', () => {
     it('return correct empty object', () => {
       const state = createState(createNpmiState());
-      const countData = getCountData(state);
-      expect(countData).toBe({});
+      expect(getCountData(state)).toEqual({});
     });
 
     it('return correct data', () => {
@@ -300,8 +289,7 @@ describe('npmi selectors', () => {
           },
         })
       );
-      const countData = getCountData(state);
-      expect(countData['run_1'].toBe([235716, 16098762]));
+      expect(getCountData(state)).toEqual({run_1: [235716, 16098762]});
     });
   });
 });

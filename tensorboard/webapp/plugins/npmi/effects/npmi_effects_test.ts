@@ -106,7 +106,6 @@ describe('metrics effects', () => {
       fetchAnnotationsSubject.next({run_1: ['test_1', 'test_2']});
 
       expect(fetchAnnotationsSpy).toHaveBeenCalled();
-      console.log(actualActions);
       expect(actualActions).toEqual([
         actions.annotationsRequested(),
         actions.metricsRequested(),
@@ -134,6 +133,7 @@ describe('metrics effects', () => {
 
     it('loads Metrics and Values on plugin open if data is not loaded', () => {
       expect(fetchMetricsSpy).not.toHaveBeenCalled();
+      expect(fetchValuesSpy).not.toHaveBeenCalled();
       expect(actualActions).toEqual([]);
 
       actions$.next(actions.npmiLoaded());
@@ -141,7 +141,7 @@ describe('metrics effects', () => {
       fetchValuesSubject.next({run_1: [[0.001, 0.061], [-0.515, 0.15719]]});
 
       expect(fetchMetricsSpy).toHaveBeenCalled();
-      console.log(actualActions);
+      expect(fetchValuesSpy).toHaveBeenCalled();
       expect(actualActions).toEqual([
         actions.annotationsRequested(),
         actions.metricsRequested(),

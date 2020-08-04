@@ -117,8 +117,8 @@ describe('Metrics loading', () => {
             'count',
             'count@test1',
             'count@test2',
-            'npmi@test1',
-            'npmi@test2',
+            'nPMI@test1',
+            'nPMI@test2',
           ],
         },
       })
@@ -132,15 +132,15 @@ describe('Metrics loading', () => {
         'count',
         'count@test1',
         'count@test2',
-        'npmi@test1',
-        'npmi@test2',
+        'nPMI@test1',
+        'nPMI@test2',
       ],
     });
     expect(nextState.countMetricsData).toEqual({
       run_1: ['count@test1', 'count@test2'],
     });
     expect(nextState.npmiMetricsData).toEqual({
-      run_1: ['npmi@test1', 'npmi@test2'],
+      run_1: ['nPMI@test1', 'nPMI@test2'],
     });
   });
 
@@ -151,12 +151,12 @@ describe('Metrics loading', () => {
           'count',
           'count@test1',
           'count@test2',
-          'npmi@test1',
-          'npmi@test2',
+          'nPMI@test1',
+          'nPMI@test2',
         ],
       },
       npmiMetricsData: {
-        run_1: ['npmi@test1', 'npmi@test2'],
+        run_1: ['nPMI@test1', 'nPMI@test2'],
       },
       countMetricsData: {
         run_1: ['count@test1', 'count@test2'],
@@ -175,8 +175,8 @@ describe('Metrics loading', () => {
             'count',
             'count@newtest1',
             'count@newtest2',
-            'npmi@newtest1',
-            'npmi@newtest2',
+            'nPMI@newtest1',
+            'nPMI@newtest2',
           ],
         },
       })
@@ -190,15 +190,15 @@ describe('Metrics loading', () => {
         'count',
         'count@newtest1',
         'count@newtest2',
-        'npmi@newtest1',
-        'npmi@newtest2',
+        'nPMI@newtest1',
+        'nPMI@newtest2',
       ],
     });
     expect(nextState.countMetricsData).toEqual({
       run_1: ['count@newtest1', 'count@newtest2'],
     });
     expect(nextState.npmiMetricsData).toEqual({
-      run_1: ['npmi@newtest1', 'npmi@newtest2'],
+      run_1: ['nPMI@newtest1', 'nPMI@newtest2'],
     });
   });
 
@@ -239,8 +239,8 @@ describe('Metrics loading', () => {
               'count',
               'count@test1',
               'count@test2',
-              'npmi@test1',
-              'npmi@test2',
+              'nPMI@test1',
+              'nPMI@test2',
             ],
           },
         })
@@ -262,7 +262,7 @@ describe('Metrics loading', () => {
         run_1: [[0.16871, -0.37206], [0.687616, 0.68116]],
       });
       expect(nextState.countData).toEqual({
-        run_1: [3510517, 3510517],
+        run_1: [3510517, 1396813],
       });
     });
 
@@ -281,7 +281,7 @@ describe('Metrics loading', () => {
           run_1: [[16719, 513767], [1896, 638967]],
         },
         countData: {
-          run_1: [3510517, 3510517],
+          run_1: [3510517, 1396813],
         },
         valuesLoaded: {
           state: DataLoadState.LOADED,
@@ -294,7 +294,7 @@ describe('Metrics loading', () => {
         actions.valuesLoaded({
           values: {
             run_1: [
-              [351051, 1671, 51376, 0.1687, -0.3720],
+              [351051, 1671, 51376, 0.1687, -0.372],
               [139681, 189, 63896, 0.68761, 0.6811],
             ],
           },
@@ -303,8 +303,8 @@ describe('Metrics loading', () => {
               'count',
               'count@test1',
               'count@test2',
-              'npmi@test1',
-              'npmi@test2',
+              'nPMI@test1',
+              'nPMI@test2',
             ],
           },
         })
@@ -315,7 +315,7 @@ describe('Metrics loading', () => {
       );
       expect(nextState.valuesData).toEqual({
         run_1: [
-          [351051, 1671, 51376, 0.1687, -0.3720],
+          [351051, 1671, 51376, 0.1687, -0.372],
           [139681, 189, 63896, 0.68761, 0.6811],
         ],
       });
@@ -323,10 +323,11 @@ describe('Metrics loading', () => {
         run_1: [[1671, 51376], [189, 63896]],
       });
       expect(nextState.npmiValuesData).toEqual({
-        run_1: [[0.1687, -0.3720], [0.68761, 0.6811]],
+        run_1: [[0.1687, -0.372], [0.68761, 0.6811]],
       });
       expect(nextState.countData).toEqual({
-        run_1: [351051, 351051],
+        run_1: [351051, 139681],
       });
+    });
   });
 });

@@ -31,7 +31,7 @@ ng_module(
 )
 
 tf_ts_library(
-    name = "npmi_store_test_lib",
+    name = "store_test_lib",
     testonly = True,
     srcs = [
         "npmi_reducers_test.ts",
@@ -39,8 +39,6 @@ tf_ts_library(
     ],
     tsconfig = "//:tsconfig-test",
     deps = [
-        ":debug_tensor_value",
-        ":debugger_store_helpers",
         ":store",
         ":types",
         "//tensorboard/webapp/plugins/npmi/actions",
