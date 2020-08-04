@@ -18,7 +18,7 @@ import {computed, observe, customElement, property} from '@polymer/decorators';
 
 import * as _ from 'lodash';
 
-import '../../../../components_polymer3/polymer/irons_and_papers';
+import '../polymer/irons_and_papers';
 
 import './run-color-style';
 import './scrollbar-style';
