@@ -13,28 +13,66 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+/**
+ * A D3-based implementation of a parallel-coordinates plot of the sessions
+ * groups.
+ *
+ * This tf-hparams-parallel-coords-plot element displays a collection of
+ * parallel vertical axes uniformally spaced with each axis corresponding to a
+ * column--either an hyperparameter or a metric. Additionally each session
+ * group is represented by a polyline whose vertices are points on the axes;
+ * the vertex on the axis corresponding to a given column is the point on that
+ * axis representing the column-value of the session group.
+ *
+ * Since the relations shown by the plot depends on the ordering of
+ * the axes, the element allows re-ordering of the axes by dragging the axes
+ * titles. For columns with a numeric domain (e.g. metrics), it allows
+ * setting the scale of an axis to be 'linear', 'logarithmic' or 'quantile'.
+ * The element also colors each line based on a given 'color-by' column value
+ * of the represented session group. The 'color-by' column can be selected
+ * to be any column with numeric domain.
+ *
+ * Finally, the user can filter the displayed session groups by "brushing"
+ * axes. By clicking and dragging the mouse pointer vertically along an axis
+ * the user can select part of the axes represented by a semi-transparent
+ * overlay on the axis. We call that rectangle the brush-selection for the
+ * axis. The user can cancel the brush-selection by clicking on the axis
+ * outside the selection. Brush selections "filter" the polylines that are
+ * displayed as follows. At any given time--for the axes that have a brush
+ * selection--only the polylines that have each of these axes' vertices be
+ * inside the axis' brush-selection are displayed colored; the rest
+ * of the polylines are grayed-out.
+ *
+ * The implementation is based on the following cooperating classes:
+ * + Defined in axes.ts:
+ *   + Axis. Represents a single axis. Defined in axes.ts
+ *   + AxesCollection. Represents the collection of axes. Responsible for
+ *     handling axis drag and re-ordering behavior.
+ * + Defined in lines.ts:
+ *   + LinesCollection. Manages the collection of lines representing the session
+ *     groups.
+ * + Defind in interaction_manager.ts:
+ *   + InteractionManager. Manages the interaction of entire plot with the user.
+ *     Contains event handlers that respond to events in the DOM (such as an
+ *     Axis being dragged) and calls appropriate methods in the other classes
+ *     to update their state and redraw the necessary parts of the plot in
+ *     response.
+ *
+ * See the individual class comments in the respective files for more details.
+ */
 import {PolymerElement, html} from '@polymer/polymer';
-import {customElement, property} from '@polymer/decorators';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/d3.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-utils/tf-hparams-utils.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-session-group-values/tf-hparams-session-group-values.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-parallel-coords-plot/utils.html';
-import {DO_NOT_SUBMIT} from 'axes';
-import {DO_NOT_SUBMIT} from 'lines';
-import {DO_NOT_SUBMIT} from 'interaction_manager';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/d3.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-utils/tf-hparams-utils.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-session-group-values/tf-hparams-session-group-values.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-parallel-coords-plot/utils.html';
-import {DO_NOT_SUBMIT} from 'axes';
-import {DO_NOT_SUBMIT} from 'lines';
-import {DO_NOT_SUBMIT} from 'interaction_manager';
+import {customElement, observe, property} from '@polymer/decorators';
+import * as _ from 'lodash';
+import * as d3 from 'd3';
+
+import * as tf_hparams_utils from '../tf_hparams_utils/tf-hparams-utils';
+import '../tf_hparams_session_group_values/tf-hparams-session-group-values';
+import * as tf_hparams_parallel_coords_plot_interaction_manager from './interaction_manager';
+
+import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+
 @customElement('tf-hparams-parallel-coords-plot')
-class TfHparamsParallelCoordsPlot extends PolymerElement {
+class TfHparamsParallelCoordsPlot extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
     <div id="container">
       <svg id="svg"></svg>
@@ -95,30 +133,54 @@ class TfHparamsParallelCoordsPlot extends PolymerElement {
       }
     </style>
   `;
+  // See the property description in tf-hparams-query-pane.html
   @property({type: Array})
-  sessionGroups: unknown[];
+  sessionGroups: any[];
+  // See the description in tf-hparams-scale-and-color-controls.html
   @property({type: Object})
-  options: object;
+  options: any;
+  // The last session group that was clicked on or null if no
+  // session group was clicked on yet.
+  /**
+   * @type {?Object}
+   */
   @property({
     type: Object,
     readOnly: true,
     notify: true,
   })
   selectedSessionGroup: object = null;
+  // The session group represented by the curve "closest" to the mouse
+  // pointer (the corresponding path element will have the 'peaked-path'
+  // class). If the closest session group distance is larger than a
+  // threshold, this property will be null.
+  /**
+   * @type {?Object}
+   */
   @property({
     type: Object,
     readOnly: true,
     notify: true,
   })
   closestSessionGroup: object = null;
+  // Counts the number of times the element has been redrawn since it
+  // was created. This is incremented at the end of a redraw and allows
+  // integration tests to wait for the element to finish redrawing.
   @property({
     type: Number,
   })
   redrawCount: number = 0;
+  // An array containing just the "valid" session groups from
+  // 'sessionGroups'. A session group is valid if every one of its metrics
+  // and hyperparameters is populated. This element only displays valid
+  // session groups. The elements here are not copies of sessionGroups
+  // but refer to the same objects stored in the 'sessionGroups' property.
   @property({type: Array})
-  _validSessionGroups: unknown[];
+  _validSessionGroups: any[];
+  // An InteractionManager object. Contains the logic driving this
+  // element. Defined in tf-hparams-parallel-coords-plot.ts.
   @property({type: Object})
-  _interactionManager: object;
+  _interactionManager: any;
   @observe('options.*', 'sessionGroups.*')
   _optionsOrSessionGroupsChanged() {
     if (!this.options) {
@@ -132,18 +194,18 @@ class TfHparamsParallelCoordsPlot extends PolymerElement {
       !_.isEqual(this._interactionManager.schema(), configuration.schema)
     ) {
       // Remove any pre-existing DOM children of our SVG.
-      d3.select(this.$.svg)
+      d3.select(this.$.svg as SVGElement)
         .selectAll('*')
         .remove();
-      const svgProps = new tf.hparams.parallel_coords_plot.SVGProperties(
-        this.$.svg,
-        tf.hparams.utils.numColumns(configuration.schema)
+      const svgProps = new tf_hparams_parallel_coords_plot_interaction_manager.SVGProperties(
+        this.$.svg as HTMLElement,
+        tf_hparams_utils.numColumns(configuration.schema)
       );
       // Listen to DOM changes underneath this.$.svg, and apply local CSS
       // scoping rules so that our rules in the <style> section above
       // would apply.
-      this.scopeSubtree(this.$.svg, true);
-      this._interactionManager = new tf.hparams.parallel_coords_plot.InteractionManager(
+      this.scopeSubtree(this.$.svg as SVGElement, true);
+      this._interactionManager = new tf_hparams_parallel_coords_plot_interaction_manager.InteractionManager(
         svgProps,
         configuration.schema,
         (sessionGroup) => this.closestSessionGroupChanged(sessionGroup),
@@ -158,10 +220,14 @@ class TfHparamsParallelCoordsPlot extends PolymerElement {
     this.redrawCount++;
   }
   closestSessionGroupChanged(sessionGroup) {
-    this._setClosestSessionGroup(sessionGroup);
+    (function() {
+      this._setClosestSessionGroup(sessionGroup);
+    })();
   }
   selectedSessionGroupChanged(sessionGroup) {
-    this._setSelectedSessionGroup(sessionGroup);
+    (function() {
+      this._setSelectedSessionGroup(sessionGroup);
+    })();
   }
   // computes validSessionGroups: Filters out the session groups in the
   // sessionGroups that have one or more of their column values undefined.
@@ -169,7 +235,7 @@ class TfHparamsParallelCoordsPlot extends PolymerElement {
   // undefined as well. (This can happen during testing when we don't set
   // the sessionGroups property).
   _computeValidSessionGroups() {
-    const utils = tf.hparams.utils;
+    const utils = tf_hparams_utils;
     if (this.sessionGroups === undefined) {
       this._validSessionGroups = undefined;
       return;

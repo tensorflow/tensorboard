@@ -13,30 +13,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 /* Defines classes that manage the axes in the parallel coordinates plot. */
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/d3.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-utils/tf-hparams-utils.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-session-group-values/tf-hparams-session-group-values.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-parallel-coords-plot/utils.html';
-import {DO_NOT_SUBMIT} from 'lines';
-import {DO_NOT_SUBMIT} from 'interaction_manager';
-import {DO_NOT_SUBMIT} from 'tf-hparams-parallel-coords-plot';
-/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+import * as d3 from 'd3';
 
-Licensed under the Apache License, Version 2.0 (the 'License');
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+import * as tf_hparams_parallel_coords_plot_interaction_manager from './interaction_manager';
+import * as tf_hparams_utils from '../tf_hparams_utils/tf-hparams-utils';
+import * as tf_hparams_parallel_coords_plot_utils from './utils';
+import * as tf_hparams_query_pane from '../tf_hparams_query_pane/schema.d';
 
-    http://www.apache.org/licenses/LICENSE-2.0
+// Post Polymer 3 migration, this path to api.d.ts will change.
+import * as tf_hparams_api from '../../api.d';
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an 'AS IS' BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
-/* Defines classes that manage the axes in the parallel coordinates plot. */
 export enum ScaleType {
   LINEAR = 'LINEAR',
   LOG = 'LOG',
@@ -135,9 +121,9 @@ export class Axis {
    * call its event handlers upon receiving events from the DOM.
    */
   public constructor(
-    svgProps: SVGProperties,
-    schema: tf.hparams.Schema,
-    interactionManager: InteractionManager,
+    svgProps: tf_hparams_parallel_coords_plot_interaction_manager.SVGProperties,
+    schema: tf_hparams_query_pane.Schema,
+    interactionManager: tf_hparams_parallel_coords_plot_interaction_manager.InteractionManager,
     colIndex: number
   ) {
     this._svgProps = svgProps;
@@ -178,7 +164,7 @@ export class Axis {
    */
   public setDomainAndScale(domainValues: any[], scaleType: ScaleType) {
     this._scaleType = scaleType;
-    this._yScale = tf.hparams.parallel_coords_plot.createAxisScale(
+    this._yScale = tf_hparams_parallel_coords_plot_utils.createAxisScale(
       // Pass a copy since createAxisScale may permute the domainValues array.
       domainValues.slice(),
       this._svgProps.height,
@@ -233,7 +219,7 @@ export class Axis {
       .style('text-anchor', 'middle')
       .attr('y', -9)
       .text((colIndex) =>
-        tf.hparams.utils.schemaColumnName(this._schema, colIndex)
+        tf_hparams_utils.schemaColumnName(this._schema, colIndex)
       );
     // Add dragging event handlers.
     axisParentSel.call(
@@ -334,7 +320,7 @@ export class Axis {
         const [
           lower,
           upper,
-        ] = tf.hparams.parallel_coords_plot.continuousScaleInverseImage(
+        ] = tf_hparams_parallel_coords_plot_utils.continuousScaleInverseImage(
           yScale,
           brushSelection[0],
           brushSelection[1]
@@ -350,21 +336,21 @@ export class Axis {
         const [
           lower,
           upper,
-        ] = tf.hparams.parallel_coords_plot.quantileScaleInverseImage(
+        ] = tf_hparams_parallel_coords_plot_utils.quantileScaleInverseImage(
           yScale,
           brushSelection[0],
           brushSelection[1]
         );
         return new IntervalBrushFilter(
-          lower,
-          upper,
+          lower as number,
+          upper as number,
           /*lowerOpen=*/ false,
           /*upperOpen=*/ true
         );
       }
       case ScaleType.NON_NUMERIC:
         return new SetBrushFilter(
-          tf.hparams.parallel_coords_plot.pointScaleInverseImage(
+          tf_hparams_parallel_coords_plot_utils.pointScaleInverseImage(
             yScale,
             brushSelection[0],
             brushSelection[1]
@@ -374,9 +360,9 @@ export class Axis {
     console.error('Unknown scale type: ', scaleType);
     return new AlwaysPassingBrushFilter();
   }
-  private readonly _svgProps: SVGProperties;
-  private readonly _schema: tf.hparams.Schema;
-  private readonly _interactionManager: InteractionManager;
+  private readonly _svgProps: tf_hparams_parallel_coords_plot_interaction_manager.SVGProperties;
+  private readonly _schema: tf_hparams_query_pane.Schema;
+  private readonly _interactionManager: tf_hparams_parallel_coords_plot_interaction_manager.InteractionManager;
   private readonly _colIndex: number;
   private _isDisplayed: boolean;
   private _yScale: any; /* D3 scale */
@@ -391,9 +377,9 @@ export class Axis {
  */
 export class AxesCollection {
   public constructor(
-    svgProps: SVGProperties,
-    schema: tf.hparams.Schema,
-    interactionManager: InteractionManager
+    svgProps: tf_hparams_parallel_coords_plot_interaction_manager.SVGProperties,
+    schema: tf_hparams_query_pane.Schema,
+    interactionManager: tf_hparams_parallel_coords_plot_interaction_manager.InteractionManager
   ) {
     this._svgProps = svgProps;
     this._schema = schema;
@@ -412,7 +398,10 @@ export class AxesCollection {
    * are used to update the domain (and thus scale) of the axes. The 'options'
    * object control which axes are visible.
    */
-  public updateAxes(options: any, sessionGroups: tf.hparams.SessionGroup[]) {
+  public updateAxes(
+    options: any,
+    sessionGroups: tf_hparams_api.SessionGroup[]
+  ) {
     console.assert(!this.isAxisDragging());
     // Traverse options.columns, and update each corresponding axis.
     const visibleColIndices: Set<number> = new Set<number>();
@@ -421,7 +410,7 @@ export class AxesCollection {
       let axis = this._axes[colIndex];
       axis.setDisplayed(true);
       const domainValues = sessionGroups.map((sg) =>
-        tf.hparams.utils.columnValueByIndex(this._schema, sg, colIndex)
+        tf_hparams_utils.columnValueByIndex(this._schema, sg, colIndex)
       );
       axis.setDomainAndScale(domainValues, column.scale);
       visibleColIndices.add(colIndex);
@@ -552,19 +541,21 @@ export class AxesCollection {
   }
   private _updateAxesPositionsInDOM(selectionOrTransition) {
     selectionOrTransition.attr('transform', (colIndex) =>
-      tf.hparams.utils.translateStr(this.getAxisPosition(colIndex))
+      tf_hparams_utils.translateStr(this.getAxisPosition(colIndex))
     );
   }
-  private _createAxes(interactionManager: InteractionManager): Axis[] {
+  private _createAxes(
+    interactionManager: tf_hparams_parallel_coords_plot_interaction_manager.InteractionManager
+  ): Axis[] {
     return d3
-      .range(tf.hparams.utils.numColumns(this._schema))
+      .range(tf_hparams_utils.numColumns(this._schema))
       .map(
         (colIndex) =>
           new Axis(this._svgProps, this._schema, interactionManager, colIndex)
       );
   }
-  private _svgProps: SVGProperties;
-  private _schema: tf.hparams.Schema;
+  private _svgProps: tf_hparams_parallel_coords_plot_interaction_manager.SVGProperties;
+  private _schema: tf_hparams_query_pane.Schema;
   private _axes: Axis[];
   /**
    * The current assignment of stationary positions to axes.

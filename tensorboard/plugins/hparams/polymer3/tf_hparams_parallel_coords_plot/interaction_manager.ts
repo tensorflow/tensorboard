@@ -15,33 +15,17 @@ limitations under the License.
 /* Defines the InteractionManager class and related classes.
    This is the main entry point to the parallel coordinates implementation.
 */
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/d3.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-utils/tf-hparams-utils.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-session-group-values/tf-hparams-session-group-values.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-parallel-coords-plot/utils.html';
-import {DO_NOT_SUBMIT} from 'axes';
-import {DO_NOT_SUBMIT} from 'lines';
-import {DO_NOT_SUBMIT} from 'tf-hparams-parallel-coords-plot';
-/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+import * as d3 from 'd3';
 
-Licensed under the Apache License, Version 2.0 (the 'License');
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+import * as tf_hparams_utils from '../tf_hparams_utils/tf-hparams-utils';
+import {AxesCollection} from './axes';
+import {LinesCollection, LineType, SessionGroupHandle} from './lines';
+import * as tf_hparams_query_pane from '../tf_hparams_query_pane/schema.d';
 
-    http://www.apache.org/licenses/LICENSE-2.0
+// Post Polymer 3 migration, this path to api.d.ts will change.
+import * as tf_hparams_api from '../../api.d';
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an 'AS IS' BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
-/* Defines the InteractionManager class and related classes.
-   This is the main entry point to the parallel coordinates implementation.
-*/
-type SessionGroupCallback = (SessionGroup: tf.hparams.SessionGroup) => void;
+type SessionGroupCallback = (SessionGroup: tf_hparams_api.SessionGroup) => void;
 /**
  * Stores some global properties such as width and height of the SVG element
  * used for rendering the parallel coordinates plot. Also contains the top-level
@@ -82,7 +66,7 @@ export class SVGProperties {
       .append('g')
       .attr(
         'transform',
-        tf.hparams.utils.translateStr(margin.left, margin.top)
+        tf_hparams_utils.translateStr(margin.left, margin.top)
       );
   }
   public readonly svg: any; /* D3 selection of the top level SVG*/
@@ -108,7 +92,7 @@ export class SVGProperties {
 export class InteractionManager {
   public constructor(
     svgProps: SVGProperties,
-    schema: tf.hparams.Schema,
+    schema: tf_hparams_query_pane.Schema,
     peakedSessionGroupChangedCallback: SessionGroupCallback,
     selectedSessionChangedCallback: SessionGroupCallback
   ) {
@@ -231,11 +215,11 @@ export class InteractionManager {
       );
     }
   }
-  public schema(): tf.hparams.Schema {
+  public schema(): tf_hparams_query_pane.Schema {
     return this._schema;
   }
   private _svgProps: SVGProperties;
-  private _schema: tf.hparams.Schema;
+  private _schema: tf_hparams_query_pane.Schema;
   private _peakedSessionGroupChangedCB: SessionGroupCallback;
   private _selectedSessionGroupChangedCB: SessionGroupCallback;
   private _axesCollection: AxesCollection;
