@@ -269,7 +269,7 @@ class TfFilterableCheckboxList extends LegacyElementMixin(PolymerElement) {
   }
   // ================== EVENT LISTENERS ===================
   _debouncedRegexChange() {
-    const val = (this.$.input as PaperInputElement).value;
+    const val = (this.$.input as any).value;
     if (val == '') {
       // If the user cleared the field, they may be done typing, so
       // update more quickly.
