@@ -12,12 +12,12 @@ tf_ts_library(
     ],
     strict_checks = False,
     deps = [
-        "@npm//@polymer/decorators",
-        "@npm//@polymer/polymer",
-        "@npm//@vaadin/vaadin-split-layout",
         "//tensorboard/plugins/hparams/polymer3/tf_hparams_parallel_coords_plot",
         "//tensorboard/plugins/hparams/polymer3/tf_hparams_scale_and_color_controls",
         "//tensorboard/plugins/hparams/polymer3/tf_hparams_session_group_details",
         "//tensorboard/plugins/hparams/polymer3/tf_hparams_session_group_values",
+        "@npm//@polymer/decorators",
+        "@npm//@polymer/polymer",
+        "@npm//@vaadin/vaadin-split-layout",
     ],
 )

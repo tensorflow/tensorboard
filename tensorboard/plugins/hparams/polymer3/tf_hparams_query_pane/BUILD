@@ -24,15 +24,15 @@ tf_ts_library(
         "//tensorboard/components_polymer3/tf_backend",
         "//tensorboard/plugins/hparams/polymer3/tf_hparams_utils",
         "@npm//@polymer/decorators",
-        "@npm//@polymer/polymer",
-        "@npm//@types/lodash",
-        "@npm//lodash",
-        "@npm//@vaadin/vaadin-split-layout",
         "@npm//@polymer/paper-checkbox",
         "@npm//@polymer/paper-dropdown-menu",
         "@npm//@polymer/paper-input",
         "@npm//@polymer/paper-item",
         "@npm//@polymer/paper-listbox",
+        "@npm//@polymer/polymer",
+        "@npm//@types/lodash",
+        "@npm//@vaadin/vaadin-split-layout",
+        "@npm//lodash",
     ],
 )
 
@@ -44,7 +44,7 @@ tf_ts_library(
 #     tags = ["manual"],
 #     web_library = ":test_lib",
 # )
-# 
+#
 # tf_web_library(
 #     name = "test_lib",
 #     testonly = 1,

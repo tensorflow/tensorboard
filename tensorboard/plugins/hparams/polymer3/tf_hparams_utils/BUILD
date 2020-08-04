@@ -26,7 +26,7 @@ tf_ts_library(
 #     src = "/tf-hparams-utils/test/tf-hparams-utils-test.html",
 #     web_library = ":test_lib",
 # )
-# 
+#
 # tf_web_library(
 #     name = "test_lib",
 #     testonly = 1,

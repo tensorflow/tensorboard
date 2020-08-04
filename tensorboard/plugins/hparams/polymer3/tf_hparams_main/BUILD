@@ -10,13 +10,13 @@ tf_ts_library(
     strict_checks = False,
     visibility = ["//visibility:public"],
     deps = [
-        "@npm//@polymer/decorators",
-        "@npm//@polymer/polymer",
-        "@npm//@types/lodash",
-        "@npm//lodash",
-        "@npm//@vaadin/vaadin-split-layout",
         "//tensorboard/components_polymer3/polymer:legacy_element_mixin",
         "//tensorboard/plugins/hparams/polymer3/tf_hparams_query_pane",
         "//tensorboard/plugins/hparams/polymer3/tf_hparams_sessions_pane",
+        "@npm//@polymer/decorators",
+        "@npm//@polymer/polymer",
+        "@npm//@types/lodash",
+        "@npm//@vaadin/vaadin-split-layout",
+        "@npm//lodash",
     ],
 )
