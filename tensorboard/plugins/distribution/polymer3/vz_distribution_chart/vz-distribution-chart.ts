@@ -1,4 +1,4 @@
-/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2016 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,15 +13,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import {customElement, observe, property} from '@polymer/decorators';
 import {PolymerElement, html} from '@polymer/polymer';
-import {customElement, property} from '@polymer/decorators';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/plottable.html';
-import {DO_NOT_SUBMIT} from '../vz-chart-helpers/vz-chart-helpers.html';
-import {DO_NOT_SUBMIT} from 'vz-distribution-chart';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/plottable.html';
-import {DO_NOT_SUBMIT} from '../vz-chart-helpers/vz-chart-helpers.html';
+import * as Plottable from 'plottable';
+import * as d3 from 'd3';
+import * as _ from 'lodash';
+
+import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+import '../../../../components_polymer3/polymer/plottable-style';
+import {
+  Y_AXIS_FORMATTER_PRECISION,
+  getXComponents,
+  multiscaleFormatter,
+} from '../../../../components_polymer3/vz_chart_helpers/vz-chart-helpers';
+
 export class DistributionChart {
   private run2datasets: {
     [run: string]: Plottable.Dataset;
@@ -40,31 +45,33 @@ export class DistributionChart {
   protected colorScale: Plottable.Scales.Color;
   private plots: Plottable.XYPlot<number | Date, number>[];
   private targetSVG: d3.Selection<any, any, any, any>;
+
   constructor(xType: string, colorScale: Plottable.Scales.Color) {
     this.run2datasets = {};
     this.colorScale = colorScale;
     this.buildChart(xType);
   }
+
   protected getDataset(run: string) {
     if (this.run2datasets[run] === undefined) {
       this.run2datasets[run] = new Plottable.Dataset([], {run: run});
     }
     return this.run2datasets[run];
   }
+
   protected buildChart(xType: string) {
     if (this.outer) {
       this.outer.destroy();
     }
-    let xComponents = vz_chart_helpers.getXComponents(xType);
+    let xComponents = getXComponents(xType);
     this.xAccessor = xComponents.accessor;
     this.xScale = xComponents.scale;
     this.xAxis = xComponents.axis;
-    this.xAxis.margin(0).tickLabelPadding(3);
+    this.xAxis.margin(0);
+    this.xAxis.tickLabelPadding(3);
     this.yScale = new Plottable.Scales.Linear();
     this.yAxis = new Plottable.Axes.Numeric(this.yScale, 'left');
-    let yFormatter = vz_chart_helpers.multiscaleFormatter(
-      vz_chart_helpers.Y_AXIS_FORMATTER_PRECISION
-    );
+    let yFormatter = multiscaleFormatter(Y_AXIS_FORMATTER_PRECISION);
     this.yAxis
       .margin(0)
       .tickLabelPadding(5)
@@ -81,6 +88,7 @@ export class DistributionChart {
       [null, this.xAxis],
     ]);
   }
+
   protected buildPlot(xAccessor, xScale, yScale): Plottable.Component {
     let percents = [0, 228, 1587, 3085, 5000, 6915, 8413, 9772, 10000];
     let opacities = _.range(percents.length - 1).map(
@@ -116,30 +124,43 @@ export class DistributionChart {
     this.plots = plots;
     return new Plottable.Components.Group(plots);
   }
+
   public setVisibleSeries(runs: string[]) {
     this.runs = runs;
     let datasets = runs.map((r) => this.getDataset(r));
     this.plots.forEach((p) => p.datasets(datasets));
   }
+
   /**
    * Set the data of a series on the chart.
    */
   public setSeriesData(name: string, data: any) {
     this.getDataset(name).data(data);
   }
+
   public renderTo(targetSVG: d3.Selection<any, any, any, any>) {
     this.targetSVG = targetSVG;
     this.outer.renderTo(targetSVG);
   }
+
   public redraw() {
     this.outer.redraw();
   }
+
   protected destroy() {
     this.outer.destroy();
   }
 }
+
+export interface VzDistributionChart extends HTMLElement {
+  setSeriesData(name: string, data: unknown): void;
+  setVisibleSeries(names: readonly string[]): void;
+  redraw(): void;
+}
+
 @customElement('vz-distribution-chart')
-class VzDistributionChart extends PolymerElement {
+class _VzDistributionChart extends LegacyElementMixin(PolymerElement)
+  implements VzDistributionChart {
   static readonly template = html`
     <style include="plottable-style"></style>
     <div id="chartdiv"></div>
@@ -161,32 +182,30 @@ class VzDistributionChart extends PolymerElement {
       }
     </style>
   `;
-  @property({
-    type: Object,
-  })
-  colorScale: object = function() {
-    return new Plottable.Scales.Color().range(d3.schemeCategory10);
-  };
+
+  @property({type: Object})
+  colorScale: Plottable.Scales.Color = new Plottable.Scales.Color().range(
+    d3.schemeCategory10.slice()
+  );
+
   @property({type: String})
   xType: string = 'step';
+
   @property({type: Boolean})
   _attached: boolean;
+
   @property({type: Object})
-  _chart: object;
-  @property({
-    type: Array,
-  })
-  _visibleSeriesCache: unknown[] = function() {
-    return [];
-  };
-  @property({
-    type: Object,
-  })
-  _seriesDataCache: object = function() {
-    return {};
-  };
+  _chart: DistributionChart;
+
+  @property({type: Array})
+  _visibleSeriesCache: string[] = [];
+
+  @property({type: Object})
+  _seriesDataCache: object = {};
+
   @property({type: Number})
   _makeChartAsyncCallbackId: number = null;
+
   setVisibleSeries(names) {
     this._visibleSeriesCache = names;
     if (this._chart) {
@@ -194,18 +213,23 @@ class VzDistributionChart extends PolymerElement {
       this.redraw();
     }
   }
+
   setSeriesData(name, data) {
     this._seriesDataCache[name] = data;
     if (this._chart) {
       this._chart.setSeriesData(name, data);
     }
   }
+
   redraw() {
     this._chart.redraw();
   }
+
   ready() {
+    super.ready();
     this.scopeSubtree(this.$.chartdiv, true);
   }
+
   @observe('xType', 'colorScale', '_attached')
   _makeChart() {
     var xType = this.xType;
@@ -224,6 +248,7 @@ class VzDistributionChart extends PolymerElement {
       this._chart = chart;
     }, 350);
   }
+
   @observe('_chart')
   _reloadFromCache() {
     if (this._chart) {
@@ -235,9 +260,11 @@ class VzDistributionChart extends PolymerElement {
       );
     }
   }
+
   attached() {
     this._attached = true;
   }
+
   detached() {
     this._attached = false;
   }

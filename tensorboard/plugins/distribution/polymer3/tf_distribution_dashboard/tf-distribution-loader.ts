@@ -14,23 +14,30 @@ limitations under the License.
 ==============================================================================*/
 
 import {PolymerElement, html} from '@polymer/polymer';
-import {customElement, property} from '@polymer/decorators';
-import '@polymer/paper-icon-button';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-backend/tf-backend.html';
-import {DO_NOT_SUBMIT} from '../tf-card-heading/tf-card-heading.html';
-import {DO_NOT_SUBMIT} from '../tf-color-scale/tf-color-scale.html';
-import {DO_NOT_SUBMIT} from '../tf-dashboard-common/data-loader-behavior.html';
-import {DO_NOT_SUBMIT} from '../vz-distribution-chart/vz-distribution-chart.html';
-import '@polymer/paper-icon-button';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-backend/tf-backend.html';
-import {DO_NOT_SUBMIT} from '../tf-card-heading/tf-card-heading.html';
-import {DO_NOT_SUBMIT} from '../tf-color-scale/tf-color-scale.html';
-import {DO_NOT_SUBMIT} from '../tf-dashboard-common/data-loader-behavior.html';
-import {DO_NOT_SUBMIT} from '../vz-distribution-chart/vz-distribution-chart.html';
+import {computed, customElement, observe, property} from '@polymer/decorators';
+
+import '../../../../components_polymer3/polymer/irons_and_papers';
+import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+import {Canceller} from '../../../../components_polymer3/tf_backend/canceller';
+import {RequestManager} from '../../../../components_polymer3/tf_backend/requestManager';
+import {getRouter} from '../../../../components_polymer3/tf_backend/router';
+import {addParams} from '../../../../components_polymer3/tf_backend/urlPathHelpers';
+import '../../../../components_polymer3/tf_card_heading/tf-card-heading';
+import {runsColorScale} from '../../../../components_polymer3/tf_color_scale/colorScale';
+import {DataLoaderBehavior} from '../../../../components_polymer3/tf_dashboard_common/data-loader-behavior';
+import {VzDistributionChart} from '../vz_distribution_chart/vz-distribution-chart';
+import '../vz_distribution_chart/vz-distribution-chart';
+
+export interface TfDistributionLoader extends HTMLElement {
+  reload(): void;
+}
+
 @customElement('tf-distribution-loader')
-class TfDistributionLoader extends PolymerElement {
+class _TfDistributionLoader
+  extends DataLoaderBehavior<{run: string; tag: string}, unknown>(
+    LegacyElementMixin(PolymerElement)
+  )
+  implements TfDistributionLoader {
   static readonly template = html`
     <tf-card-heading
       tag="[[tag]]"
@@ -90,76 +97,79 @@ class TfDistributionLoader extends PolymerElement {
       }
     </style>
   `;
+
   @property({type: String})
   run: string;
+
   @property({type: String})
   tag: string;
+
   @property({type: Object})
   tagMetadata: object;
+
   @property({type: String})
   xType: string;
-  @property({
-    type: Function,
-  })
-  getDataLoadName: object = () => ({run}) => run;
-  @property({
-    type: Function,
-  })
-  getDataLoadUrl: object = () => ({tag, run}) => {
-    const router = tf_backend.getRouter();
-    return tf_backend.addParams(
-      router.pluginRoute('distributions', '/distributions'),
-      {tag, run}
-    );
+
+  @property({type: Object})
+  getDataLoadName = ({run}) => run;
+
+  @property({type: Object})
+  getDataLoadUrl = ({tag, run}) => {
+    const router = getRouter();
+    return addParams(router.pluginRoute('distributions', '/distributions'), {
+      tag,
+      run,
+    });
   };
-  @property({
-    type: Function,
-  })
-  loadDataCallback: object = function() {
-    return (_, datum, backendData) => {
-      const data = backendData.map((datum) => {
-        // `vz-distribution-chart` wants each datum as an array with
-        // extra `wall_time` and `step` properties.
-        const [wall_time, step, bins] = datum;
-        bins.wall_time = new Date(wall_time * 1000);
-        bins.step = step;
-        return bins;
-      });
-      const name = this.getDataLoadName(datum);
-      this.$.chart.setSeriesData(name, data);
-      this.$.chart.setVisibleSeries([name]);
-    };
+
+  @property({type: Object})
+  loadDataCallback = (_, datum, backendData) => {
+    const data = backendData.map((datum) => {
+      // `vz-distribution-chart` wants each datum as an array with
+      // extra `wall_time` and `step` properties.
+      const [wall_time, step, bins] = datum;
+      bins.wall_time = new Date(wall_time * 1000);
+      bins.step = step;
+      return bins;
+    });
+    const name = this.getDataLoadName(datum);
+    (this.$.chart as VzDistributionChart).setSeriesData(name, data);
+    (this.$.chart as VzDistributionChart).setVisibleSeries([name]);
   };
-  @property({
-    type: Object,
-    readOnly: true,
-  })
-  _colorScale: object = () => ({scale: tf_color_scale.runsColorScale});
+
+  @property({type: Object})
+  _colorScale = {scale: runsColorScale};
+
   @property({
     type: Boolean,
     reflectToAttribute: true,
   })
   _expanded: boolean = false;
+
   @property({type: Object})
-  requestManager: object;
-  @property({
-    type: Object,
-  })
-  _canceller: object = () => new tf_backend.Canceller();
+  requestManager: RequestManager;
+
+  @property({type: Object})
+  _canceller: Canceller = new Canceller();
+
   @observe('run', 'tag')
-  reload() {}
-  behaviors: [tf_dashboard_common.DataLoaderBehavior];
-  @computed('run', 'tag')
-  get dataToLoad(): unknown[] {
+  _reloadOnRunTagChange() {
+    this.reload();
+  }
+
+  @observe('run', 'tag')
+  _updateDataToLoad():void {
     var run = this.run;
     var tag = this.tag;
-    return [{run, tag}];
+    this.dataToLoad = [{run, tag}];
   }
+
   @computed('run')
   get _runColor(): string {
     var run = this.run;
     return this._colorScale.scale(run);
   }
+
   /**
    * Ask the distribution chart to redraw itself. This should be
    * called whenever the dimensions of the view change (e.g., when
@@ -167,8 +177,9 @@ class TfDistributionLoader extends PolymerElement {
    * recalculate its layout.
    */
   redraw() {
-    this.$.chart.redraw();
+    (this.$.chart as VzDistributionChart).redraw();
   }
+
   _toggleExpanded(e) {
     this.set('_expanded', !this._expanded);
     this.redraw();

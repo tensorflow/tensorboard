@@ -14,40 +14,30 @@ limitations under the License.
 ==============================================================================*/
 
 import {PolymerElement, html} from '@polymer/polymer';
-import {customElement, property} from '@polymer/decorators';
-import '@polymer/iron-icon';
-import '@polymer/paper-button';
-import '@polymer/paper-input';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-backend/tf-backend.html';
-import {DO_NOT_SUBMIT} from '../tf-categorization-utils/tf-categorization-utils.html';
-import {DO_NOT_SUBMIT} from '../tf-categorization-utils/tf-tag-filterer.html';
-import {DO_NOT_SUBMIT} from '../tf-dashboard-common/dashboard-style.html';
-import {DO_NOT_SUBMIT} from '../tf-dashboard-common/tf-dashboard-layout.html';
-import {DO_NOT_SUBMIT} from '../tf-dashboard-common/tf-option-selector.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
-import {DO_NOT_SUBMIT} from '../tf-paginated-view/tf-category-paginated-view.html';
-import {DO_NOT_SUBMIT} from '../tf-runs-selector/tf-runs-selector.html';
-import {DO_NOT_SUBMIT} from '../tf-tensorboard/registry.html';
-import {DO_NOT_SUBMIT} from 'tf-distribution-loader.html';
-import '@polymer/iron-icon';
-import '@polymer/paper-button';
-import '@polymer/paper-input';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-backend/tf-backend.html';
-import {DO_NOT_SUBMIT} from '../tf-categorization-utils/tf-categorization-utils.html';
-import {DO_NOT_SUBMIT} from '../tf-categorization-utils/tf-tag-filterer.html';
-import {DO_NOT_SUBMIT} from '../tf-dashboard-common/dashboard-style.html';
-import {DO_NOT_SUBMIT} from '../tf-dashboard-common/tf-dashboard-layout.html';
-import {DO_NOT_SUBMIT} from '../tf-dashboard-common/tf-option-selector.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
-import {DO_NOT_SUBMIT} from '../tf-paginated-view/tf-category-paginated-view.html';
-import {DO_NOT_SUBMIT} from '../tf-runs-selector/tf-runs-selector.html';
-import {DO_NOT_SUBMIT} from '../tf-tensorboard/registry.html';
-import {DO_NOT_SUBMIT} from 'tf-distribution-loader.html';
-'use strict';
+import {computed, customElement, property} from '@polymer/decorators';
+import * as _ from 'lodash';
+
+import '../../../../components_polymer3/polymer/irons_and_papers';
+import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+import {getTags} from '../../../../components_polymer3/tf_backend/backend';
+import {RequestManager} from '../../../../components_polymer3/tf_backend/requestManager';
+import {getRouter} from '../../../../components_polymer3/tf_backend/router';
+import {
+  RunTagCategory,
+  RunToTag,
+  categorizeRunTagCombinations,
+} from '../../../../components_polymer3/tf_categorization_utils/categorizationUtils';
+import '../../../../components_polymer3/tf_categorization_utils/tf-tag-filterer';
+import '../../../../components_polymer3/tf_dashboard_common/dashboard-style';
+import '../../../../components_polymer3/tf_dashboard_common/tf-dashboard-layout';
+import '../../../../components_polymer3/tf_dashboard_common/tf-option-selector';
+import '../../../../components_polymer3/tf_paginated_view/tf-category-paginated-view';
+import '../../../../components_polymer3/tf_runs_selector/tf-runs-selector';
+import {TfDistributionLoader} from './tf-distribution-loader';
+import './tf-distribution-loader';
+
 @customElement('tf-distribution-dashboard')
-class TfDistributionDashboard extends PolymerElement {
+class TfDistributionDashboard extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
     <tf-dashboard-layout>
       <div class="sidebar" slot="sidebar">
@@ -140,47 +130,54 @@ class TfDistributionDashboard extends PolymerElement {
       }
     </style>
   `;
-  @property({
-    type: Boolean,
-  })
+
+  @property({ type: Boolean, })
   reloadOnReady: boolean = true;
-  @property({
-    type: String,
-  })
+
+  @property({type: String})
   _xType: string = 'step';
+
   @property({type: Array})
-  _selectedRuns: unknown[];
+  _selectedRuns: string[];
+
   @property({type: Object})
-  _runToTag: object;
+  _runToTag: RunToTag;
+
   @property({type: Object})
   _runToTagInfo: object;
+
   @property({type: Boolean})
   _dataNotFound: boolean;
+
   @property({type: String})
   _tagFilter: string;
+
   @property({type: Boolean})
   _categoriesDomReady: boolean;
-  @property({
-    type: Object,
-  })
-  _requestManager: object = () => new tf_backend.RequestManager();
+
+  @property({type: Object})
+  _requestManager: RequestManager = new RequestManager();
+
   ready() {
+    super.ready();
     if (this.reloadOnReady) this.reload();
   }
+
   reload() {
     this._fetchTags().then(() => {
       this._reloadDistributions();
     });
   }
+
   _fetchTags() {
-    const url = tf_backend.getRouter().pluginRoute('distributions', '/tags');
+    const url = getRouter().pluginRoute('distributions', '/tags');
     return this._requestManager.request(url).then((runToTagInfo) => {
       if (_.isEqual(runToTagInfo, this._runToTagInfo)) {
         // No need to update anything if there are no changes.
         return;
       }
       const runToTag = _.mapValues(runToTagInfo, (x) => Object.keys(x));
-      const tags = tf_backend.getTags(runToTag);
+      const tags = getTags(runToTag);
       this.set('_dataNotFound', tags.length === 0);
       this.set('_runToTag', runToTag);
       this.set('_runToTagInfo', runToTagInfo);
@@ -190,26 +187,26 @@ class TfDistributionDashboard extends PolymerElement {
       });
     });
   }
+
   _reloadDistributions() {
     this.root.querySelectorAll('tf-distribution-loader').forEach((loader) => {
-      loader.reload();
+      (loader as TfDistributionLoader).reload();
     });
   }
+
   _shouldOpen(index) {
     return index <= 2;
   }
+
   @computed('_runToTag', '_selectedRuns', '_tagFilter', '_categoriesDomReady')
-  get _categories(): unknown[] {
+  get _categories(): RunTagCategory[] {
     var runToTag = this._runToTag;
     var selectedRuns = this._selectedRuns;
     var tagFilter = this._tagFilter;
     var categoriesDomReady = this._categoriesDomReady;
-    return tf_categorization_utils.categorizeRunTagCombinations(
-      runToTag,
-      selectedRuns,
-      tagFilter
-    );
+    return categorizeRunTagCombinations(runToTag, selectedRuns, tagFilter);
   }
+
   _tagMetadata(runToTagInfo, run, tag) {
     return runToTagInfo[run][tag];
   }
