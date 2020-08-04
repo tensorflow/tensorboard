@@ -378,10 +378,11 @@ class TfCategoryPaginatedView<CategoryItem> extends TfDomRepeat<CategoryItem> {
     this.opened = !this.opened;
   }
 
-  @computed('opened')
-  get _contentActive(): boolean {
-    return this.opened;
+  @observe('opened')
+  _changeContentActive(opened: boolean): void {
+    this._contentActive = opened;
   }
+
   _onPaneRenderedChanged(newRendered, oldRendered) {
     if (newRendered && newRendered !== oldRendered) {
       // Force dom-if render without waiting for one rAF.
