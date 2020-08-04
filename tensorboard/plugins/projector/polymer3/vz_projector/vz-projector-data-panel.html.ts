@@ -16,6 +16,7 @@ limitations under the License.
 import {html} from '@polymer/polymer';
 
 import './styles';
+import '../../../../components_polymer3/tf_wbr_string/tf-wbr-string';
 
 export const template = html`
   <style include="vz-projector-styles"></style>
@@ -640,11 +641,27 @@ export const template = html`
       <table>
         <tr>
           <td>Checkpoint:</td>
-          <td><span id="checkpoint-file"></span></td>
+          <td>
+            <span id="checkpoint-file">
+              <tf-wbr-string
+                title="[[projectorConfig.modelCheckpointPath]]"
+                delimiter-pattern="[[_wordDelimiter]]"
+                value="[[projectorConfig.modelCheckpointPath]]"
+              ></tf-wbr-string>
+            </span>
+          </td>
         </tr>
         <tr>
           <td>Metadata:</td>
-          <td><span id="metadata-file"></span></td>
+          <td>
+            <span id="metadata-file">
+              <tf-wbr-string
+                title="[[metadataFile]]"
+                delimiter-pattern="[[_wordDelimiter]]"
+                value="[[metadataFile]]"
+              ></tf-wbr-string>
+            </span>
+          </td>
         </tr>
       </table>
     </div>

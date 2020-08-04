@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {PolymerElement} from '@polymer/polymer';
-import {LegacyElementMixin} from '@polymer/polymer/lib/legacy/legacy-element-mixin';
 import {customElement, property, observe} from '@polymer/decorators';
 
 import * as d3 from 'd3';
@@ -29,7 +28,8 @@ import '@polymer/paper-item';
 import '@polymer/paper-listbox';
 import '@polymer/paper-tooltip';
 
-import {Projector} from './vz-projector';
+import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+
 import {template} from './vz-projector-data-panel.html';
 import {
   ColorLegendThreshold,
@@ -53,7 +53,7 @@ import * as knn from './knn';
 import * as util from './util';
 
 @customElement('vz-projector-data-panel')
-export class DataPanel extends LegacyElementMixin(PolymerElement) {
+class DataPanel extends LegacyElementMixin(PolymerElement) {
   static readonly template = template;
 
   @property({type: String})
@@ -85,6 +85,9 @@ export class DataPanel extends LegacyElementMixin(PolymerElement) {
   @property({type: Boolean})
   showSuperviseSettings: boolean = false;
 
+  @property({type: String})
+  readonly _wordDelimiter = '[/=_,-]';
+
   private labelOptions: string[];
   private colorOptions: ColorOption[];
   forceCategoricalColoring: boolean = false;
@@ -97,7 +100,7 @@ export class DataPanel extends LegacyElementMixin(PolymerElement) {
     shape: number[];
   }[];
   private runNames: string[];
-  private projector: Projector;
+  private projector: any; // Projector; type omitted b/c LegacyElement
   private projectorConfig: ProjectorConfig;
   private colorLegendRenderInfo: ColorLegendRenderInfo;
   private spriteAndMetadata: SpriteAndMetadataInfo;
@@ -109,7 +112,7 @@ export class DataPanel extends LegacyElementMixin(PolymerElement) {
     this.normalizeData = true;
     this.superviseInputSelected = '';
   }
-  initialize(projector: Projector, dp: DataProvider) {
+  initialize(projector: any, dp: DataProvider) {
     this.projector = projector;
     this.dataProvider = dp;
     this.setupUploadButtons();
@@ -219,16 +222,7 @@ export class DataPanel extends LegacyElementMixin(PolymerElement) {
     this.neighborsOfFirstPoint = neighborsOfFirstPoint;
     this.metadataEditorInputChange();
   }
-  private addWordBreaks(longString: string): string {
-    if (longString == null) {
-      return '';
-    }
-    return longString.replace(/([\/=-_,])/g, '$1<wbr>');
-  }
   private updateMetadataUI(columnStats: ColumnStats[], metadataFile: string) {
-    const metadataFileElement = this.$$('#metadata-file') as HTMLSpanElement;
-    metadataFileElement.innerHTML = this.addWordBreaks(metadataFile);
-    metadataFileElement.title = metadataFile;
     // Label by options.
     let labelIndex = -1;
     this.labelOptions = columnStats.map((stats, i) => {
@@ -392,7 +386,10 @@ export class DataPanel extends LegacyElementMixin(PolymerElement) {
       const textBlob = new Blob([tsvFile], {type: 'text/plain'});
       const anyDownloadMetadataLink = this.$.downloadMetadataLink as any;
       anyDownloadMetadataLink.download = 'metadata-edited.tsv';
-      anyDownloadMetadataLink.href = window.URL.createObjectURL(textBlob);
+      // TODO(b/162788443): Undo conformance workaround.
+      Object.assign(anyDownloadMetadataLink, {
+        href: window.URL['createObjectURL'](textBlob),
+      });
       anyDownloadMetadataLink.click();
     }
   }
@@ -513,12 +510,7 @@ export class DataPanel extends LegacyElementMixin(PolymerElement) {
       this.tensorNames = names.map((name) => {
         return {name, shape: this.getEmbeddingInfoByName(name).tensorShape};
       });
-      const wordBreakablePath = this.addWordBreaks(
-        this.projectorConfig.modelCheckpointPath
-      );
-      const checkpointFile = this.$$('#checkpoint-file') as HTMLSpanElement;
-      checkpointFile.innerHTML = wordBreakablePath;
-      checkpointFile.title = this.projectorConfig.modelCheckpointPath;
+
       // If in demo mode, let the order decide which tensor to load by default.
       const defaultTensor =
         this.projector.servingMode === 'demo'
@@ -720,7 +712,10 @@ export class DataPanel extends LegacyElementMixin(PolymerElement) {
         '?config=' +
         (projectorConfigUrlInput as HTMLInputElement).value;
       (projectorConfigDemoUrlInput as HTMLInputElement).value = projectorDemoUrl;
-      (projectorConfigDemoUrlLink as HTMLLinkElement).href = projectorDemoUrl;
+      // TODO(b/162788443): Undo conformance workaround.
+      Object.assign(projectorConfigDemoUrlLink as HTMLLinkElement, {
+        href: projectorDemoUrl,
+      });
     };
   }
   private setProjectorConfigTemplateJson(

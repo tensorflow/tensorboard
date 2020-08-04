@@ -13,14 +13,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {PolymerElement} from '@polymer/polymer';
-import {LegacyElementMixin} from '@polymer/polymer/lib/legacy/legacy-element-mixin';
 import {customElement, property} from '@polymer/decorators';
 
 import '@polymer/iron-collapse';
 import '@polymer/paper-icon-button';
 import '@polymer/paper-tooltip';
 
-import {Projector} from './vz-projector';
+import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+
 import {template} from './vz-projector-bookmark-panel.html';
 import {State} from './data';
 import {ProjectorEventContext} from './projectorEventContext';
@@ -28,7 +28,7 @@ import {DataProvider, EmbeddingInfo} from './data-provider';
 import * as logging from './logging';
 
 @customElement('vz-projector-bookmark-panel')
-export class BookmarkPanel extends LegacyElementMixin(PolymerElement) {
+class BookmarkPanel extends LegacyElementMixin(PolymerElement) {
   static readonly template = template;
 
   @property({type: Object})
@@ -40,7 +40,7 @@ export class BookmarkPanel extends LegacyElementMixin(PolymerElement) {
   @property({type: Number})
   selectedState: number;
 
-  private projector: Projector;
+  private projector: any;
   private ignoreNextProjectionEvent: boolean;
   private expandLessButton: HTMLButtonElement;
   private expandMoreButton: HTMLButtonElement;
@@ -53,10 +53,7 @@ export class BookmarkPanel extends LegacyElementMixin(PolymerElement) {
     this.expandLessButton = this.$$('#expand-less') as HTMLButtonElement;
     this.expandMoreButton = this.$$('#expand-more') as HTMLButtonElement;
   }
-  initialize(
-    projector: Projector,
-    projectorEventContext: ProjectorEventContext
-  ) {
+  initialize(projector: any, projectorEventContext: ProjectorEventContext) {
     this.projector = projector;
     projectorEventContext.registerProjectionChangedListener(() => {
       if (this.ignoreNextProjectionEvent) {
@@ -114,12 +111,14 @@ export class BookmarkPanel extends LegacyElementMixin(PolymerElement) {
   _downloadFile() {
     let serializedState = this.serializeAllSavedStates();
     let blob = new Blob([serializedState], {type: 'text/plain'});
-    let textFile = window.URL.createObjectURL(blob);
+    // TODO(b/162788443): Undo conformance workaround.
+    let textFile = window.URL['createObjectURL'](blob);
     // Force a download.
     let a = document.createElement('a');
     document.body.appendChild(a);
     a.style.display = 'none';
-    a.href = textFile;
+    // TODO(b/162788443): Undo conformance workaround.
+    Object.assign(a, {href: textFile});
     (a as any).download = 'state';
     a.click();
     document.body.removeChild(a);

@@ -110,7 +110,7 @@
     "monaco-editor-core": "^0.20.0",
     "monaco-languages": "^1.10.0",
     "plottable": "^3.9.0",
-    "numericjs": "^1.2.6",
+    "numeric": "^1.2.6",
     "requirejs": "^2.3.6",
     "rxjs": "^6.5.5",
     "three": "~0.108.0",
