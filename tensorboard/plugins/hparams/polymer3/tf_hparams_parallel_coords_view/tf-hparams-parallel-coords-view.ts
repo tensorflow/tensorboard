@@ -15,18 +15,24 @@ limitations under the License.
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, property} from '@polymer/decorators';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-scale-and-color-controls/tf-hparams-scale-and-color-controls.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-parallel-coords-plot/tf-hparams-parallel-coords-plot.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-session-group-details/tf-hparams-session-group-details.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-session-group-values/tf-hparams-session-group-values.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/vaadin-split-layout.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-scale-and-color-controls/tf-hparams-scale-and-color-controls.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-parallel-coords-plot/tf-hparams-parallel-coords-plot.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-session-group-details/tf-hparams-session-group-details.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-session-group-values/tf-hparams-session-group-values.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/vaadin-split-layout.html';
+import '@vaadin/vaadin-split-layout';
+import '../tf-hparams-scale-and-color-controls/tf-hparams-scale-and-color-controls';
+import '../tf-hparams-parallel-coords-plot/tf-hparams-parallel-coords-plot';
+import '../tf-hparams-session-group-details/tf-hparams-session-group-details';
+import '../tf-hparams-session-group-values/tf-hparams-session-group-values';
+
+/**
+ * There are 3 elements involved in the parallel coordinates visualization:
+ *
+ * 1. <tf-hparams-parallel-coords-plot>
+ *   Renders the actual parallel coordinate plot. See the comments in the
+ *   code for that element for more details.
+ * 2. <tf-hparams-scale-and-color-controls>
+ *   A control panel for configuring the behavior of the plot (e.g. scale
+ *   of each axis, colormap, etc.)
+ * 3. <tf-hparams-parallel-coords-view>
+ *   The container element for the above 2 elements.
+ */
 'use strict';
 @customElement('tf-hparams-parallel-coords-view')
 class TfHparamsParallelCoordsView extends PolymerElement {
@@ -124,6 +130,7 @@ class TfHparamsParallelCoordsView extends PolymerElement {
       }
     </style>
   `;
+  // See the property descriptions in tf-hparams-query-pane.html
   @property({type: Object})
   backend: object;
   @property({type: String})
