@@ -210,7 +210,7 @@ class TfGraphDebuggerDataCard extends LegacyElementMixin(PolymerElement) {
           [[_currentStepDisplayValue]]
         </template>
         <paper-spinner-lite
-          active=""
+          active
           hidden$="[[!areHealthPillsLoading]]"
           id="health-pills-loading-spinner"
         ></paper-spinner-lite>
@@ -220,7 +220,7 @@ class TfGraphDebuggerDataCard extends LegacyElementMixin(PolymerElement) {
           id="health-pill-step-slider"
           immediate-value="{{specificHealthPillStep}}"
           max="[[_biggestStepEverSeen]]"
-          snaps=""
+          snaps
           step="1"
           value="{{specificHealthPillStep}}"
         ></paper-slider>
@@ -231,7 +231,7 @@ class TfGraphDebuggerDataCard extends LegacyElementMixin(PolymerElement) {
             id="health-pill-step-slider"
             immediate-value="{{healthPillStepIndex}}"
             max="[[_maxStepIndex]]"
-            snaps=""
+            snaps
             step="1"
             value="{{healthPillStepIndex}}"
           ></paper-slider>

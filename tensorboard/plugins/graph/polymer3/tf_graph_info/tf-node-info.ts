@@ -161,7 +161,7 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
       }
     </style>
     <paper-item>
-      <paper-item-body two-line="">
+      <paper-item-body two-line>
         <div>
           <paper-icon-button
             icon="{{_getToggleIcon(_expanded)}}"
@@ -174,7 +174,7 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
             </tf-wbr-string>
           </div>
         </div>
-        <div secondary="">
+        <div secondary>
           <tf-node-icon
             class="node-icon"
             node="[[_node]]"
@@ -256,7 +256,7 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
                   </paper-icon-button>
                   Control dependencies
                 </div>
-                <iron-collapse opened="{{_openedControlPred}}" no-animation="">
+                <iron-collapse opened="{{_openedControlPred}}" no-animation>
                   <template
                     is="dom-if"
                     if="{{_openedControlPred}}"
@@ -318,7 +318,7 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
                   </paper-icon-button>
                   Control dependencies
                 </div>
-                <iron-collapse opened="{{_openedControlSucc}}" no-animation="">
+                <iron-collapse opened="{{_openedControlSucc}}" no-animation>
                   <template
                     is="dom-if"
                     if="{{_openedControlSucc}}"
@@ -407,7 +407,7 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
           <template is="dom-if" if="[[!_isLibraryFunction(_node)]]">
             <div class="toggle-include-group">
               <paper-button
-                raised=""
+                raised
                 class="toggle-include"
                 on-click="_toggleInclude"
               >
@@ -419,7 +419,7 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
           <template is="dom-if" if="{{_isInSeries(_node)}}">
             <div class="toggle-include-group">
               <paper-button
-                raised=""
+                raised
                 class="toggle-include"
                 on-click="_toggleGroup"
               >

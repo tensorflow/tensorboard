@@ -110,7 +110,7 @@ class TfGraphOpCompatCard extends LegacyElementMixin(PolymerElement) {
     </style>
 
     <paper-item>
-      <paper-item-body two-line="">
+      <paper-item-body two-line>
         <div>
           <paper-icon-button
             icon="{{_getToggleIcon(_expanded)}}"
@@ -120,7 +120,7 @@ class TfGraphOpCompatCard extends LegacyElementMixin(PolymerElement) {
           </paper-icon-button>
           <div class="node-name" id="nodetitle">[[nodeTitle]]</div>
         </div>
-        <div secondary="">
+        <div secondary>
           <div class="subtitle">
             <div class="op-compat-display">
               <svg

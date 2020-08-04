@@ -396,9 +396,9 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
           Run <span class="counter">([[datasets.length]])</span>
         </div>
         <paper-dropdown-menu
-          no-label-float=""
-          no-animations=""
-          noink=""
+          no-label-float
+          no-animations
+          noink
           horizontal-align="left"
           class="run-dropdown"
         >
@@ -422,10 +422,10 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
             >
           </div>
           <paper-dropdown-menu
-            no-label-float=""
-            no-animations=""
+            no-label-float
+            no-animations
             horizontal-align="left"
-            noink=""
+            noink
             class="run-dropdown"
           >
             <paper-listbox
@@ -447,7 +447,7 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
         <div class="control-holder">
           <div class="title">Upload</div>
           <paper-button
-            raised=""
+            raised
             class="upload-button"
             on-click="_getFile"
             title="Upload a graph pbtxt file to view the graph"
@@ -732,7 +732,7 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
         </template>
         <template is="dom-if" if="[[_statsNotNull(stats)]]">
           <div class="color-legend-row">
-            <tf-graph-icon type="META" height="16" faded=""></tf-graph-icon>
+            <tf-graph-icon type="META" height="16" faded></tf-graph-icon>
             <span class="color-legend-value">unused substructure</span>
           </div>
         </template>
@@ -823,7 +823,7 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
                   <tf-graph-icon
                     type="SERIES"
                     height="16"
-                    vertical=""
+                    vertical
                   ></tf-graph-icon>
                 </td>
                 <td>

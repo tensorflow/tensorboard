@@ -67,7 +67,7 @@ const RunItem = {};
 @customElement('tf-graph-dashboard')
 class TfGraphDashboard extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
-    <paper-dialog id="error-dialog" with-backdrop=""></paper-dialog>
+    <paper-dialog id="error-dialog" with-backdrop></paper-dialog>
     <template
       is="dom-if"
       if="[[_datasetsState(_datasetsFetched, _datasets, 'EMPTY')]]"
