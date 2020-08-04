@@ -40,7 +40,7 @@ const d3: any = d3Typed;
 
 export interface VzHistogramTimeseries extends HTMLElement {
   setSeriesData(series: string, data: VzHistogram[]): void;
-  redraw(): void
+  redraw(): void;
 }
 
 @customElement('vz-histogram-timeseries')
