@@ -75,7 +75,6 @@ class TfHparamsScatterPlotMatrixPlot extends LegacyElementMixin(
   // session group was clicked on yet.
   @property({
     type: Object,
-    readOnly: true,
     notify: true,
   })
   selectedSessionGroup: object = null;

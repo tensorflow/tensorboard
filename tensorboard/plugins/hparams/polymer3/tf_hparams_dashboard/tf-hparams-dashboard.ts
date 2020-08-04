@@ -41,17 +41,15 @@ class TfHparamsDashboard extends LegacyElementMixin(PolymerElement) {
   @property({
     type: Object,
   })
-  _backend: object = () => {
-    return new tf_hparams_backend.Backend(
-      /* apiUrl= */ tf_backend
-        .getRouter()
-        .pluginRoute(/* pluginName= */ PLUGIN_NAME, /* route= */ ''),
-      new tf_backend.RequestManager(),
-      /* Use GETs if we're running in colab (due to b/126387106).
-           Otherwise use POSTs. */
-      /* useHttpGet= */ !!((window as any).TENSORBOARD_ENV || {}).IN_COLAB
-    );
-  };
+  _backend = new tf_hparams_backend.Backend(
+    /* apiUrl= */ tf_backend
+      .getRouter()
+      .pluginRoute(/* pluginName= */ PLUGIN_NAME, /* route= */ ''),
+    new tf_backend.RequestManager(),
+    /* Use GETs if we're running in colab (due to b/126387106).
+          Otherwise use POSTs. */
+    /* useHttpGet= */ !!((window as any).TENSORBOARD_ENV || {}).IN_COLAB
+  );
   // This is called by the tensorboard web framework to refresh the plugin.
   reload() {
     (this.$['hparams-main'] as any).reload();

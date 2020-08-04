@@ -15,10 +15,10 @@ limitations under the License.
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, property} from '@polymer/decorators';
-import '../tf-hparams-scale-and-color-controls/tf-hparams-scale-and-color-controls';
-import '../tf-hparams-scatter-plot-matrix-plot/tf-hparams-scatter-plot-matrix-plot';
-import '../tf-hparams-session-group-details/tf-hparams-session-group-details';
-import '../tf-hparams-session-group-values/tf-hparams-session-group-values';
+import '../tf_hparams_scale_and_color_controls/tf-hparams-scale-and-color-controls';
+import '../tf_hparams_scatter_plot_matrix_plot/tf-hparams-scatter-plot-matrix-plot';
+import '../tf_hparams_session_group_details/tf-hparams-session-group-details';
+import '../tf_hparams_session_group_values/tf-hparams-session-group-values';
 import '@vaadin/vaadin-split-layout';
 
 /**
@@ -43,7 +43,7 @@ import '@vaadin/vaadin-split-layout';
 class TfHparamsScatterPlotMatrixView extends PolymerElement {
   static readonly template = html`
     <div class="pane">
-      <vaadin-split-layout vertical="">
+      <vaadin-split-layout orientation="vertical">
         <!-- Controls behavior of the scatter plot matrix
              outputs the configured options to the _options property. -->
         <tf-hparams-scale-and-color-controls
@@ -54,7 +54,7 @@ class TfHparamsScatterPlotMatrixView extends PolymerElement {
           options="{{_options}}"
         >
         </tf-hparams-scale-and-color-controls>
-        <vaadin-split-layout vertical="">
+        <vaadin-split-layout orientation="vertical">
           <!-- The actual scatter plot matrix -->
           <tf-hparams-scatter-plot-matrix-plot
             class="section"
@@ -66,7 +66,7 @@ class TfHparamsScatterPlotMatrixView extends PolymerElement {
             options="[[_options]]"
           >
           </tf-hparams-scatter-plot-matrix-plot>
-          <vaadin-split-layout vertical="">
+          <vaadin-split-layout orientation="vertical">
             <tf-hparams-session-group-values
               class="section"
               id="values"
@@ -118,7 +118,7 @@ class TfHparamsScatterPlotMatrixView extends PolymerElement {
         flex-grow: 0;
         flex-shrink: 0;
         flex-basis: auto;
-        height: 95px;
+        height: 115px;
         overflow-y: auto;
         max-height: fit-content;
       }

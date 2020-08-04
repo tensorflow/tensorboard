@@ -12,6 +12,7 @@ tf_ts_library(
     ],
     strict_checks = False,
     deps = [
+        "//tensorboard/components_polymer3/polymer:irons_and_papers",
         "//tensorboard/plugins/hparams/polymer3/tf_hparams_parallel_coords_view",
         "//tensorboard/plugins/hparams/polymer3/tf_hparams_scatter_plot_matrix_view",
         "//tensorboard/plugins/hparams/polymer3/tf_hparams_table_view",

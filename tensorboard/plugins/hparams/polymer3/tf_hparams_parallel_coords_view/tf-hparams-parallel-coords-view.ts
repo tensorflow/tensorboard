@@ -16,10 +16,10 @@ limitations under the License.
 import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, property} from '@polymer/decorators';
 import '@vaadin/vaadin-split-layout';
-import '../tf-hparams-scale-and-color-controls/tf-hparams-scale-and-color-controls';
-import '../tf-hparams-parallel-coords-plot/tf-hparams-parallel-coords-plot';
-import '../tf-hparams-session-group-details/tf-hparams-session-group-details';
-import '../tf-hparams-session-group-values/tf-hparams-session-group-values';
+import '../tf_hparams_scale_and_color_controls/tf-hparams-scale-and-color-controls';
+import '../tf_hparams_parallel_coords_plot/tf-hparams-parallel-coords-plot';
+import '../tf_hparams_session_group_details/tf-hparams-session-group-details';
+import '../tf_hparams_session_group_values/tf-hparams-session-group-values';
 
 /**
  * There are 3 elements involved in the parallel coordinates visualization:
@@ -41,7 +41,7 @@ class TfHparamsParallelCoordsView extends PolymerElement {
          outputs set options to the _options property.
       -->
     <div class="pane">
-      <vaadin-split-layout vertical="">
+      <vaadin-split-layout orientation="vertical">
         <!-- The scale and color controls. -->
         <tf-hparams-scale-and-color-controls
           id="controls"
@@ -51,7 +51,7 @@ class TfHparamsParallelCoordsView extends PolymerElement {
           options="{{_options}}"
         >
         </tf-hparams-scale-and-color-controls>
-        <vaadin-split-layout vertical="">
+        <vaadin-split-layout orientation="vertical">
           <!-- The actual parallel coordinates plot -->
           <tf-hparams-parallel-coords-plot
             id="plot"
@@ -62,7 +62,7 @@ class TfHparamsParallelCoordsView extends PolymerElement {
             options="[[_options]]"
           >
           </tf-hparams-parallel-coords-plot>
-          <vaadin-split-layout vertical="">
+          <vaadin-split-layout orientation="vertical">
             <tf-hparams-session-group-values
               id="values"
               class="section"
@@ -113,7 +113,7 @@ class TfHparamsParallelCoordsView extends PolymerElement {
         flex-grow: 0;
         flex-shrink: 0;
         flex-basis: auto;
-        height: 95px;
+        height: 115px;
         overflow-y: auto;
         max-height: fit-content;
       }

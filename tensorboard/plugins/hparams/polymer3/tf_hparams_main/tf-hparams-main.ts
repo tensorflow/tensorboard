@@ -15,8 +15,8 @@ limitations under the License.
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, property} from '@polymer/decorators';
-import '../tf-hparams-query-pane/tf-hparams-query-pane';
-import '../tf-hparams-sessions-pane/tf-hparams-sessions-pane';
+import '../tf_hparams_query_pane/tf-hparams-query-pane';
+import '../tf_hparams_sessions_pane/tf-hparams-sessions-pane';
 import '@vaadin/vaadin-split-layout';
 import * as _ from 'lodash';
 import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
