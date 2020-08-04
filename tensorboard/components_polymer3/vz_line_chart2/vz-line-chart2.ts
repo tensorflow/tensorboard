@@ -317,6 +317,7 @@ class VzLineChart2<SeriesMetadata = {}> extends LegacyElementMixin(
   private _makeChartAsyncCallbackId: number = null;
 
   ready() {
+    super.ready();
     this.scopeSubtree(this.$.chartdiv, true);
   }
 
