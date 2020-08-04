@@ -13,46 +13,51 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import { PolymerElement, html } from "@polymer/polymer";
-import { customElement, property } from "@polymer/decorators";
-import "@polymer/iron-icon";
-import "@polymer/paper-button";
-import "@polymer/paper-input";
-import { DO_NOT_SUBMIT } from "../tf-imports/polymer.html";
-import { DO_NOT_SUBMIT } from "../tf-backend/tf-backend.html";
-import { DO_NOT_SUBMIT } from "../tf-categorization-utils/tf-categorization-utils.html";
-import { DO_NOT_SUBMIT } from "../tf-categorization-utils/tf-tag-filterer.html";
-import { DO_NOT_SUBMIT } from "../tf-dashboard-common/dashboard-style.html";
-import { DO_NOT_SUBMIT } from "../tf-dashboard-common/tf-dashboard-layout.html";
-import { DO_NOT_SUBMIT } from "../tf-dashboard-common/tf-option-selector.html";
-import { DO_NOT_SUBMIT } from "../tf-imports/lodash.html";
-import { DO_NOT_SUBMIT } from "../tf-paginated-view/tf-category-paginated-view.html";
-import { DO_NOT_SUBMIT } from "../tf-runs-selector/tf-runs-selector.html";
-import { DO_NOT_SUBMIT } from "../tf-tensorboard/registry.html";
-import { DO_NOT_SUBMIT } from "tf-distribution-loader.html";
-import "@polymer/iron-icon";
-import "@polymer/paper-button";
-import "@polymer/paper-input";
-import { DO_NOT_SUBMIT } from "../tf-imports/polymer.html";
-import { DO_NOT_SUBMIT } from "../tf-backend/tf-backend.html";
-import { DO_NOT_SUBMIT } from "../tf-categorization-utils/tf-categorization-utils.html";
-import { DO_NOT_SUBMIT } from "../tf-categorization-utils/tf-tag-filterer.html";
-import { DO_NOT_SUBMIT } from "../tf-dashboard-common/dashboard-style.html";
-import { DO_NOT_SUBMIT } from "../tf-dashboard-common/tf-dashboard-layout.html";
-import { DO_NOT_SUBMIT } from "../tf-dashboard-common/tf-option-selector.html";
-import { DO_NOT_SUBMIT } from "../tf-imports/lodash.html";
-import { DO_NOT_SUBMIT } from "../tf-paginated-view/tf-category-paginated-view.html";
-import { DO_NOT_SUBMIT } from "../tf-runs-selector/tf-runs-selector.html";
-import { DO_NOT_SUBMIT } from "../tf-tensorboard/registry.html";
-import { DO_NOT_SUBMIT } from "tf-distribution-loader.html";
+import {PolymerElement, html} from '@polymer/polymer';
+import {customElement, property} from '@polymer/decorators';
+import '@polymer/iron-icon';
+import '@polymer/paper-button';
+import '@polymer/paper-input';
+import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
+import {DO_NOT_SUBMIT} from '../tf-backend/tf-backend.html';
+import {DO_NOT_SUBMIT} from '../tf-categorization-utils/tf-categorization-utils.html';
+import {DO_NOT_SUBMIT} from '../tf-categorization-utils/tf-tag-filterer.html';
+import {DO_NOT_SUBMIT} from '../tf-dashboard-common/dashboard-style.html';
+import {DO_NOT_SUBMIT} from '../tf-dashboard-common/tf-dashboard-layout.html';
+import {DO_NOT_SUBMIT} from '../tf-dashboard-common/tf-option-selector.html';
+import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
+import {DO_NOT_SUBMIT} from '../tf-paginated-view/tf-category-paginated-view.html';
+import {DO_NOT_SUBMIT} from '../tf-runs-selector/tf-runs-selector.html';
+import {DO_NOT_SUBMIT} from '../tf-tensorboard/registry.html';
+import {DO_NOT_SUBMIT} from 'tf-distribution-loader.html';
+import '@polymer/iron-icon';
+import '@polymer/paper-button';
+import '@polymer/paper-input';
+import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
+import {DO_NOT_SUBMIT} from '../tf-backend/tf-backend.html';
+import {DO_NOT_SUBMIT} from '../tf-categorization-utils/tf-categorization-utils.html';
+import {DO_NOT_SUBMIT} from '../tf-categorization-utils/tf-tag-filterer.html';
+import {DO_NOT_SUBMIT} from '../tf-dashboard-common/dashboard-style.html';
+import {DO_NOT_SUBMIT} from '../tf-dashboard-common/tf-dashboard-layout.html';
+import {DO_NOT_SUBMIT} from '../tf-dashboard-common/tf-option-selector.html';
+import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
+import {DO_NOT_SUBMIT} from '../tf-paginated-view/tf-category-paginated-view.html';
+import {DO_NOT_SUBMIT} from '../tf-runs-selector/tf-runs-selector.html';
+import {DO_NOT_SUBMIT} from '../tf-tensorboard/registry.html';
+import {DO_NOT_SUBMIT} from 'tf-distribution-loader.html';
 'use strict';
-@customElement("tf-distribution-dashboard")
+@customElement('tf-distribution-dashboard')
 class TfDistributionDashboard extends PolymerElement {
-    static readonly template = html `<tf-dashboard-layout>
+  static readonly template = html`
+    <tf-dashboard-layout>
       <div class="sidebar" slot="sidebar">
         <div class="settings">
           <div class="sidebar-section">
-            <tf-option-selector id="xTypeSelector" name="Horizontal axis" selected-id="{{_xType}}">
+            <tf-option-selector
+              id="xTypeSelector"
+              name="Horizontal axis"
+              selected-id="{{_xType}}"
+            >
               <paper-button id="step">step</paper-button>
               <paper-button id="relative">relative</paper-button>
               <paper-button id="wall_time">wall</paper-button>
@@ -72,25 +77,34 @@ class TfDistributionDashboard extends PolymerElement {
             <p>Probable causes:</p>
             <ul>
               <li>
-                You haven\u2019t written any histogram data to your event files.
+                You haven’t written any histogram data to your event files.
                 (Histograms and distributions both use the histogram summary
                 operation.)
               </li>
 
-              <li>TensorBoard can\u2019t find your event files.</li>
+              <li>TensorBoard can’t find your event files.</li>
             </ul>
 
             <p>
-              If you\u2019re new to using TensorBoard, and want to find out how to
+              If you’re new to using TensorBoard, and want to find out how to
               add data and set up your event files, check out the
-              <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md">README</a>
+              <a
+                href="https://github.com/tensorflow/tensorboard/blob/master/README.md"
+                >README</a
+              >
               and perhaps the
-              <a href="https://www.tensorflow.org/get_started/summaries_and_tensorboard">TensorBoard tutorial</a>.
+              <a
+                href="https://www.tensorflow.org/get_started/summaries_and_tensorboard"
+                >TensorBoard tutorial</a
+              >.
             </p>
 
             <p>
               If you think TensorBoard is configured properly, please see
-              <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md#my-tensorboard-isnt-showing-any-data-whats-wrong">the section of the README devoted to missing data problems</a>
+              <a
+                href="https://github.com/tensorflow/tensorboard/blob/master/README.md#my-tensorboard-isnt-showing-any-data-whats-wrong"
+                >the section of the README devoted to missing data problems</a
+              >
               and consider filing an issue on GitHub.
             </p>
           </div>
@@ -98,9 +112,19 @@ class TfDistributionDashboard extends PolymerElement {
         <template is="dom-if" if="[[!_dataNotFound]]">
           <tf-tag-filterer tag-filter="{{_tagFilter}}"></tf-tag-filterer>
           <template is="dom-repeat" items="[[_categories]]" as="category">
-            <tf-category-paginated-view category="[[category]]" initial-opened="[[_shouldOpen(index)]]">
+            <tf-category-paginated-view
+              category="[[category]]"
+              initial-opened="[[_shouldOpen(index)]]"
+            >
               <template>
-                <tf-distribution-loader active="[[active]]" run="[[item.run]]" tag="[[item.tag]]" tag-metadata="[[_tagMetadata(_runToTagInfo, item.run, item.tag)]]" x-type="[[_xType]]" request-manager="[[_requestManager]]"></tf-distribution-loader>
+                <tf-distribution-loader
+                  active="[[active]]"
+                  run="[[item.run]]"
+                  tag="[[item.tag]]"
+                  tag-metadata="[[_tagMetadata(_runToTagInfo, item.run, item.tag)]]"
+                  x-type="[[_xType]]"
+                  request-manager="[[_requestManager]]"
+                ></tf-distribution-loader>
               </template>
             </tf-category-paginated-view>
           </template>
@@ -114,79 +138,79 @@ class TfDistributionDashboard extends PolymerElement {
         max-width: 540px;
         margin: 80px auto 0 auto;
       }
-    </style>`;
-    @property({
-        type: Boolean
-    })
-    reloadOnReady: boolean = true;
-    @property({
-        type: String
-    })
-    _xType: string = 'step';
-    @property({ type: Array })
-    _selectedRuns: unknown[];
-    @property({ type: Object })
-    _runToTag: object;
-    @property({ type: Object })
-    _runToTagInfo: object;
-    @property({ type: Boolean })
-    _dataNotFound: boolean;
-    @property({ type: String })
-    _tagFilter: string;
-    @property({ type: Boolean })
-    _categoriesDomReady: boolean;
-    @property({
-        type: Object
-    })
-    _requestManager: object = () => new tf_backend.RequestManager();
-    ready() {
-        if (this.reloadOnReady)
-            this.reload();
-    }
-    reload() {
-        this._fetchTags().then(() => {
-            this._reloadDistributions();
-        });
-    }
-    _fetchTags() {
-        const url = tf_backend
-            .getRouter()
-            .pluginRoute('distributions', '/tags');
-        return this._requestManager.request(url).then((runToTagInfo) => {
-            if (_.isEqual(runToTagInfo, this._runToTagInfo)) {
-                // No need to update anything if there are no changes.
-                return;
-            }
-            const runToTag = _.mapValues(runToTagInfo, (x) => Object.keys(x));
-            const tags = tf_backend.getTags(runToTag);
-            this.set('_dataNotFound', tags.length === 0);
-            this.set('_runToTag', runToTag);
-            this.set('_runToTagInfo', runToTagInfo);
-            this.async(() => {
-                // See the comment above `_categoriesDomReady`.
-                this.set('_categoriesDomReady', true);
-            });
-        });
-    }
-    _reloadDistributions() {
-        this.root
-            .querySelectorAll('tf-distribution-loader')
-            .forEach((loader) => {
-            loader.reload();
-        });
-    }
-    _shouldOpen(index) {
-        return index <= 2;
-    }
-    @computed("_runToTag", "_selectedRuns", "_tagFilter", "_categoriesDomReady")
-    get _categories(): unknown[] {
-        var runToTag = this._runToTag;
-        var selectedRuns = this._selectedRuns;
-        var tagFilter = this._tagFilter;
-        var categoriesDomReady = this._categoriesDomReady;
-        return tf_categorization_utils.categorizeRunTagCombinations(runToTag, selectedRuns, tagFilter);
-    }
-    _tagMetadata(runToTagInfo, run, tag) {
-        return runToTagInfo[run][tag];
-    }
+    </style>
+  `;
+  @property({
+    type: Boolean,
+  })
+  reloadOnReady: boolean = true;
+  @property({
+    type: String,
+  })
+  _xType: string = 'step';
+  @property({type: Array})
+  _selectedRuns: unknown[];
+  @property({type: Object})
+  _runToTag: object;
+  @property({type: Object})
+  _runToTagInfo: object;
+  @property({type: Boolean})
+  _dataNotFound: boolean;
+  @property({type: String})
+  _tagFilter: string;
+  @property({type: Boolean})
+  _categoriesDomReady: boolean;
+  @property({
+    type: Object,
+  })
+  _requestManager: object = () => new tf_backend.RequestManager();
+  ready() {
+    if (this.reloadOnReady) this.reload();
+  }
+  reload() {
+    this._fetchTags().then(() => {
+      this._reloadDistributions();
+    });
+  }
+  _fetchTags() {
+    const url = tf_backend.getRouter().pluginRoute('distributions', '/tags');
+    return this._requestManager.request(url).then((runToTagInfo) => {
+      if (_.isEqual(runToTagInfo, this._runToTagInfo)) {
+        // No need to update anything if there are no changes.
+        return;
+      }
+      const runToTag = _.mapValues(runToTagInfo, (x) => Object.keys(x));
+      const tags = tf_backend.getTags(runToTag);
+      this.set('_dataNotFound', tags.length === 0);
+      this.set('_runToTag', runToTag);
+      this.set('_runToTagInfo', runToTagInfo);
+      this.async(() => {
+        // See the comment above `_categoriesDomReady`.
+        this.set('_categoriesDomReady', true);
+      });
+    });
+  }
+  _reloadDistributions() {
+    this.root.querySelectorAll('tf-distribution-loader').forEach((loader) => {
+      loader.reload();
+    });
+  }
+  _shouldOpen(index) {
+    return index <= 2;
+  }
+  @computed('_runToTag', '_selectedRuns', '_tagFilter', '_categoriesDomReady')
+  get _categories(): unknown[] {
+    var runToTag = this._runToTag;
+    var selectedRuns = this._selectedRuns;
+    var tagFilter = this._tagFilter;
+    var categoriesDomReady = this._categoriesDomReady;
+    return tf_categorization_utils.categorizeRunTagCombinations(
+      runToTag,
+      selectedRuns,
+      tagFilter
+    );
+  }
+  _tagMetadata(runToTagInfo, run, tag) {
+    return runToTagInfo[run][tag];
+  }
 }
