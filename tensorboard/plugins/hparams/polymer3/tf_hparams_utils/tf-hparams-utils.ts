@@ -347,7 +347,7 @@ export function pointToRectangleDist(x, y, x0, y0, x1, y1) {
 // See
 // https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/transform
 // for more details.
-export function translateStr(x, opt_y) {
+export function translateStr(x, opt_y?: any) {
   if (opt_y === undefined) {
     return 'translate(' + x + ')';
   }

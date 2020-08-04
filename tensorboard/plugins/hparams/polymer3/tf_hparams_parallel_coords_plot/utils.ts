@@ -12,13 +12,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/d3.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/d3.html';
 /* Utility functions used by tf-hparams-parallel-coords-plot element. */
-var tf;
+
+import * as _ from 'lodash';
+import * as d3 from 'd3';
+
+import * as tf_hparams_utils from '../tf_hparams_utils/tf-hparams-utils';
+
 // Finds the "closest" path to a given 'target' point from a given array
 // of 'paths'.
 // Each element in 'paths' represents a path and should be an object with
@@ -44,7 +44,7 @@ var tf;
 // The return value of this method is a closest member of 'paths' to
 // 'target' if the closest distance is at most 'threshold' or null
 // otherwise.
-function findClosestPath(paths, axesPos, target, threshold) {
+export function findClosestPath(paths, axesPos, target, threshold) {
   if (axesPos.length < 2) {
     console.error('Less than two axes in parallel coordinates plot.');
     return null;
@@ -83,14 +83,14 @@ function findClosestPath(paths, axesPos, target, threshold) {
     const cby = cy - by;
     const tp = (abx * cbx + aby * cby) / (abx * abx + aby * aby);
     if (tp <= 0) {
-      return tf.hparams.utils.l2NormSquared(cbx, cby);
+      return tf_hparams_utils.l2NormSquared(cbx, cby);
     }
     if (tp >= 1) {
       const cax = ax - cx;
       const cay = ay - cy;
-      return tf.hparams.utils.l2NormSquared(cax, cay);
+      return tf_hparams_utils.l2NormSquared(cax, cay);
     }
-    return tf.hparams.utils.l2NormSquared(cbx - tp * abx, cby - tp * aby);
+    return tf_hparams_utils.l2NormSquared(cbx - tp * abx, cby - tp * aby);
   }
   let minDist = null;
   let closestPath = null;
@@ -111,25 +111,25 @@ function findClosestPath(paths, axesPos, target, threshold) {
   });
   return closestPath;
 }
-parallel_coords_plot.findClosestPath = findClosestPath;
+
 // Computes the inverse image (in the mathematical sense) of the
 // real-line interval [a,b] under the given point scale mapping.
 // Returns the array consisting of all elements x such that scale(x)
 // is in the real-line interval [a,b].
-function pointScaleInverseImage(scale, a, b) {
+export function pointScaleInverseImage(scale, a, b) {
   return scale.domain().filter((x) => {
     const y = scale(x);
     return a <= y && y <= b;
   });
 }
-parallel_coords_plot.pointScaleInverseImage = pointScaleInverseImage;
+
 // Computes the inverse image (in the mathematical sense) of the
 // real-line interval [a,b] under the given quantile scale mapping;
 // precisely: {x : scale(x) in [a,b]}
 // Note that for a D3 quantile scale this set is a real-line half-open
 // interval of the form [c,d).
 // This function returns that interval as a 2-element array [c, d].
-function quantileScaleInverseImage(scale, a, b) {
+export function quantileScaleInverseImage(scale, a, b) {
   const range = scale.range();
   const domains = range
     .filter((y) => a <= y && y <= b)
@@ -155,24 +155,24 @@ function quantileScaleInverseImage(scale, a, b) {
   // domains is a single half-open interval.
   return d3.extent(d3.merge(domains));
 }
-parallel_coords_plot.quantileScaleInverseImage = quantileScaleInverseImage;
+
 // Computes the inverse image (in the mathematical sense) of the
 // real-line interval [a,b] under the given continuous scale mapping;
 // precisely: {x : scale(x) in [a,b]}
 // Note that for a D3 continuous scale this set is a real-line closed
 // interval. This function returns that interval as a 2-element array.
-function continuousScaleInverseImage(scale, a, b) {
+export function continuousScaleInverseImage(scale, a, b) {
   // D3 continuous scales are monotonic continuous functions; hence to
   // get the inverse image interval we just need to invert the
   // end-points of the source interval. We sort the resulting end-points,
   // to handle the case where the scale is decreasing.
   return [scale.invert(a), scale.invert(b)].sort((x, y) => x - y);
 }
-parallel_coords_plot.continuousScaleInverseImage = continuousScaleInverseImage;
+
 // Creates the d3-scale to use for the axis with given domain values
 // and height and scale-type. This function may permute the given
 // 'domainValues' array.
-function createAxisScale(domainValues, axisHeight, scaleType) {
+export function createAxisScale(domainValues, axisHeight, scaleType) {
   function computeNumericExtent() {
     if (domainValues.length === 0) {
       // If there are no values, there won't be any session groups.
@@ -180,7 +180,7 @@ function createAxisScale(domainValues, axisHeight, scaleType) {
       // (to allow a log scale).
       return [1, 2];
     }
-    const [min, max] = d3.extent(domainValues);
+    const [min, max] = d3.extent(domainValues) as [number, number];
     if (min !== max) {
       return [min, max];
     }
@@ -203,7 +203,7 @@ function createAxisScale(domainValues, axisHeight, scaleType) {
   if (scaleType === 'LINEAR') {
     return d3
       .scaleLinear()
-      .domain(computeNumericExtent())
+      .domain(computeNumericExtent() as any)
       .range([axisHeight, 0]);
   } else if (scaleType === 'LOG') {
     const extent = computeNumericExtent();
@@ -218,7 +218,7 @@ function createAxisScale(domainValues, axisHeight, scaleType) {
     }
     return d3
       .scaleLog()
-      .domain(extent)
+      .domain(extent as any)
       .range([axisHeight, 0]);
   } else if (scaleType === 'QUANTILE') {
     // Compute kNumQuantiles quantiles.
@@ -257,4 +257,3 @@ function createAxisScale(domainValues, axisHeight, scaleType) {
       .padding(0.1);
   } else throw RangeError('Unknown scale: ' + scaleType);
 }
-parallel_coords_plot.createAxisScale = createAxisScale;

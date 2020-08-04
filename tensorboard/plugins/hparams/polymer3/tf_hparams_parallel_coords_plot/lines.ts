@@ -15,32 +15,18 @@ limitations under the License.
 /* Defines classes for managing the collection of lines in the parallel
    coordinates plot.
  */
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/d3.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-utils/tf-hparams-utils.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-session-group-values/tf-hparams-session-group-values.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-parallel-coords-plot/utils.html';
-import {DO_NOT_SUBMIT} from 'axes';
-import {DO_NOT_SUBMIT} from 'interaction_manager';
-import {DO_NOT_SUBMIT} from 'tf-hparams-parallel-coords-plot';
-/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+import * as d3 from 'd3';
 
-Licensed under the Apache License, Version 2.0 (the 'License');
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+import * as tf_hparams_utils from '../tf_hparams_utils/tf-hparams-utils';
+import * as tf_hparams_parallel_coords_plot_utils from './utils';
+import {AxesCollection} from './axes';
+import * as tf_hparams_parallel_coords_plot_interaction_manager from './interaction_manager';
 
-    http://www.apache.org/licenses/LICENSE-2.0
+import * as tf_hparams_query_pane from '../tf_hparams_query_pane/schema.d';
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an 'AS IS' BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
-/* Defines classes for managing the collection of lines in the parallel
-   coordinates plot.
- */
+// Post Polymer 3 migration, this path to api.d.ts will change.
+import * as tf_hparams_api from '../../api.d';
+
 export enum LineType {
   FOREGROUND,
   BACKGROUND,
@@ -73,7 +59,7 @@ export class SessionGroupHandle {
    * @return the sessionGroup object this handle references or null if
    * this is a "null" reference.
    */
-  public sessionGroup(): tf.hparams.SessionGroup | null {
+  public sessionGroup(): tf_hparams_api.SessionGroup | null {
     return this._sessionGroupSel.size() === 1
       ? this._sessionGroupSel.datum()
       : null;
@@ -131,8 +117,8 @@ export class SessionGroupHandle {
  */
 export class LinesCollection {
   public constructor(
-    svgProps: SVGProperties,
-    schema: tf.hparams.Schema,
+    svgProps: tf_hparams_parallel_coords_plot_interaction_manager.SVGProperties,
+    schema: tf_hparams_query_pane.Schema,
     axesCollection: AxesCollection
   ) {
     this._svgProps = svgProps;
@@ -158,7 +144,7 @@ export class LinesCollection {
    * @return a SessionGroupHandle referencing the given sessionGroup. If the
    * given sessionGroup is null or undefined returns a "null" handle.
    */
-  public getSessionGroupHandle(sessionGroup: tf.hparams.SessionGroup) {
+  public getSessionGroupHandle(sessionGroup: tf_hparams_api.SessionGroup) {
     if (sessionGroup === null || sessionGroup === undefined) {
       return new SessionGroupHandle();
     }
@@ -220,7 +206,7 @@ export class LinesCollection {
           axis
             .brushFilter()
             .isPassing(
-              tf.hparams.utils.columnValueByIndex(
+              tf_hparams_utils.columnValueByIndex(
                 this._schema,
                 sessionGroup,
                 axis.colIndex()
@@ -254,7 +240,7 @@ export class LinesCollection {
    * redraws the lines.
    */
   public redraw(
-    sessionGroups: tf.hparams.SessionGroup[],
+    sessionGroups: tf_hparams_api.SessionGroup[],
     colorByColumnIndex: number | null,
     minColor: string,
     maxColor: string
@@ -295,7 +281,7 @@ export class LinesCollection {
     const axesPositions = this._axesCollection.mapVisibleAxes<number>(
       (xPosition, axis) => xPosition
     );
-    const closestFgPath = tf.hparams.parallel_coords_plot.findClosestPath(
+    const closestFgPath = tf_hparams_parallel_coords_plot_utils.findClosestPath(
       this._visibleFgPathsSel.nodes(),
       axesPositions,
       [x, y],
@@ -317,18 +303,16 @@ export class LinesCollection {
     }
     const colorScale = d3
       .scaleLinear</*range=*/ string, /*output=*/ string>()
-      .domain(
-        tf.hparams.utils.numericColumnExtent(
-          this._schema,
-          this._sessionGroups,
-          colorByColumnIndex
-        )
-      )
+      .domain(tf_hparams_utils.numericColumnExtent(
+        this._schema,
+        this._sessionGroups,
+        colorByColumnIndex
+      ) as any)
       .range([minColor, maxColor])
       .interpolate(d3.interpolateLab);
     return (sessionGroup) =>
       colorScale(
-        tf.hparams.utils.columnValueByIndex(
+        tf_hparams_utils.columnValueByIndex(
           this._schema,
           sessionGroup,
           colorByColumnIndex
@@ -352,7 +336,7 @@ export class LinesCollection {
    */
   private _setControlPointsProperty(
     pathElement: any,
-    sessionGroup: tf.hparams.SessionGroup
+    sessionGroup: tf_hparams_api.SessionGroup
   ) {
     pathElement.controlPoints = this._computeControlPoints(sessionGroup);
   }
@@ -362,13 +346,13 @@ export class LinesCollection {
    * computed with respect to the current state of the axesCollection.
    */
   private _computeControlPoints(
-    sessionGroup: tf.hparams.SessionGroup
+    sessionGroup: tf_hparams_api.SessionGroup
   ): [number, number][] {
     return this._axesCollection.mapVisibleAxes<[number, number]>(
       (xPosition, axis) => [
         xPosition,
         axis.yScale()(
-          tf.hparams.utils.columnValueByIndex(
+          tf_hparams_utils.columnValueByIndex(
             this._schema,
             sessionGroup,
             axis.colIndex()
@@ -377,17 +361,17 @@ export class LinesCollection {
       ]
     );
   }
-  private _pathDAttribute(sessionGroup: tf.hparams.SessionGroup): string {
+  private _pathDAttribute(sessionGroup: tf_hparams_api.SessionGroup): string {
     return this._d3line(this._computeControlPoints(sessionGroup));
   }
   private _updateVisibleFgPathsSel() {
     this._visibleFgPathsSel = this._fgPathsSel.filter(':not(.invisible-path)');
   }
-  private readonly _svgProps: SVGProperties;
-  private readonly _schema: tf.hparams.Schema;
+  private readonly _svgProps: tf_hparams_parallel_coords_plot_interaction_manager.SVGProperties;
+  private readonly _schema: tf_hparams_query_pane.Schema;
   private readonly _d3line: any; /* D3 line */
   private readonly _axesCollection: AxesCollection;
-  private _sessionGroups: tf.hparams.SessionGroup[];
+  private _sessionGroups: tf_hparams_api.SessionGroup[];
   private _fgPathsSel: any; /* D3 selection */
   private _bgPathsSel: any; /* D3 selection */
   /**
