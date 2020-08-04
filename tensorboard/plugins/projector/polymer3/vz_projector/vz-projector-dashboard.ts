@@ -1,6 +1,4 @@
-<!--
-@license
-Copyright 2016 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,16 +11,14 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
--->
+==============================================================================*/
 
-<link rel="import" href="../tf-imports/polymer.html" />
-<link rel="import" href="../tf-backend/tf-backend.html" />
-<link rel="import" href="../tf-dashboard-common/tf-no-data-warning.html" />
-<link rel="import" href="../tf-tensorboard/registry.html" />
-<link rel="import" href="vz-projector.html" />
+import {PolymerElement, html} from '@polymer/polymer';
+import {customElement, property} from '@polymer/decorators';
 
-<dom-module id="vz-projector-dashboard">
-  <template>
+@customElement('vz-projector-dashboard')
+class VzProjectorDashboard extends PolymerElement {
+  static readonly template = html`
     <template is="dom-if" if="[[dataNotFound]]">
       <div style="max-width: 540px; margin: 80px auto 0 auto;">
         <h3>
@@ -74,44 +70,37 @@ limitations under the License.
         id="projector"
         route-prefix="[[_routePrefix]]"
         serving-mode="server"
-        page-view-logging
-        event-logging
+        page-view-logging=""
+        event-logging=""
       ></vz-projector>
     </template>
-  </template>
-  <script>
-    Polymer({
-      is: 'vz-projector-dashboard',
-      properties: {
-        dataNotFound: Boolean,
-        _routePrefix: {
-          type: String,
-          value: '.',
-        },
-        // Whether this dashboard is initialized. This dashboard should only be initialized once.
-        _initialized: Boolean,
-      },
-      reload() {
-        // Do not reload the embedding projector. Reloading could take a long time.
-      },
-      attached() {
-        if (this._initialized) {
-          return;
-        }
-        let xhr = new XMLHttpRequest();
-        xhr.open('GET', this._routePrefix + '/runs');
-        xhr.onload = () => {
-          // Set this to true so we only initialize once.
-          this._initialized = true;
-
-          let runs = JSON.parse(xhr.responseText);
-          this.set('dataNotFound', runs.length === 0);
-        };
-        xhr.onerror = () => {
-          this.set('dataNotFound', false);
-        };
-        xhr.send();
-      },
-    });
-  </script>
-</dom-module>
+  `;
+  @property({type: Boolean})
+  dataNotFound: boolean;
+  @property({
+    type: String,
+  })
+  _routePrefix: string = '.';
+  @property({type: Boolean})
+  _initialized: boolean;
+  reload() {
+    // Do not reload the embedding projector. Reloading could take a long time.
+  }
+  attached() {
+    if (this._initialized) {
+      return;
+    }
+    let xhr = new XMLHttpRequest();
+    xhr.open('GET', this._routePrefix + '/runs');
+    xhr.onload = () => {
+      // Set this to true so we only initialize once.
+      this._initialized = true;
+      let runs = JSON.parse(xhr.responseText);
+      this.set('dataNotFound', runs.length === 0);
+    };
+    xhr.onerror = () => {
+      this.set('dataNotFound', false);
+    };
+    xhr.send();
+  }
+}

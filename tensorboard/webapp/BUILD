@@ -114,6 +114,7 @@ tf_web_library(
         ":tb_webapp",
         "//tensorboard/components:polymer_lib_binary",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/source_code/monaco:requirejs",
+        "@com_google_fonts_roboto",
     ],
 )
 

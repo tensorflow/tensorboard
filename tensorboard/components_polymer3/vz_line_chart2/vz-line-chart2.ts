@@ -18,6 +18,7 @@ import {customElement, observe, property} from '@polymer/decorators';
 import * as _ from 'lodash';
 import * as d3 from 'd3';
 import * as Plottable from 'plottable';
+import '../polymer/plottable-style';
 
 import {LineChart, LineChartStatus} from './line-chart';
 import {LineChartExporter} from './line-chart-exporter';
@@ -81,7 +82,7 @@ export const DEFAULT_TOOLTIP_COLUMNS = [
 ];
 
 @customElement('vz-line-chart2')
-export class VzLineChart2<SeriesMetadata = {}> extends LegacyElementMixin(
+class VzLineChart2<SeriesMetadata = {}> extends LegacyElementMixin(
   PolymerElement
 ) {
   static readonly template = html`

@@ -12,12 +12,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {html} from '@polymer/polymer';
+import {PolymerElement, html} from '@polymer/polymer';
 import * as Plottable from 'plottable';
 import {customElement, property, observe} from '@polymer/decorators';
 import * as _ from 'lodash';
 import '@polymer/paper-spinner/paper-spinner';
 
+import {LegacyElementMixin} from '../polymer/legacy_element_mixin';
 import {runsColorScale} from '../tf_color_scale/colorScale';
 import {RequestManager} from '../tf_backend/requestManager';
 import {
@@ -26,8 +27,8 @@ import {
   SymbolFn,
   ScalarDatum,
 } from '../vz_chart_helpers/vz-chart-helpers';
-import {DataLoader} from '../tf_dashboard_common/data-loader-behavior';
-import {VzLineChart2} from '../vz_line_chart2/vz-line-chart2';
+import {DataLoaderBehavior} from '../tf_dashboard_common/data-loader-behavior';
+import '../vz_line_chart2/vz-line-chart2';
 import {YScaleType, FillArea} from '../vz_line_chart2/line-chart';
 
 // The chart can sometimes get in a bad state, when it redraws while
@@ -52,10 +53,10 @@ const cascadingRedraw = _.throttle(function internalRedraw() {
 // A component that fetches data from the TensorBoard server and renders it into
 // a vz-line-chart.
 @customElement('tf-line-chart-data-loader')
-export class TfLineChartDataLoader<ScalarMetadata> extends DataLoader<
+class TfLineChartDataLoader<ScalarMetadata> extends DataLoaderBehavior<
   string,
   ScalarDatum[]
-> {
+>(LegacyElementMixin(PolymerElement)) {
   static readonly template = html`
     <div id="chart-and-spinner-container">
       <vz-line-chart2
@@ -219,8 +220,8 @@ export class TfLineChartDataLoader<ScalarMetadata> extends DataLoader<
     return exporter.exportAsString();
   }
 
-  private getChart(): VzLineChart2<ScalarMetadata> {
-    return (this.$.chart as unknown) as VzLineChart2<ScalarMetadata>;
+  private getChart(): any {
+    return (this.$.chart as unknown) as any;
   }
 
   resetDomain() {

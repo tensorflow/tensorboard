@@ -1,4 +1,4 @@
-/* Copyright 2016 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -12,13 +12,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-interface AnalyticsEventType {
-  hitType: string;
-  page?: string;
-  eventCategory?: string;
-  eventAction?: string;
-  eventLabel?: string;
-  eventValue?: number;
-}
-
-declare let ga: (command: string, eventObj: AnalyticsEventType) => void;
+import '../../../../components_polymer3/security';
+import '@polymer/iron-iconset-svg';
+import './styles';
+import './vz-projector-app';
+import './vz-projector-bookmark-panel';
+import './vz-projector-dashboard';
+import './vz-projector-data-panel';
+import './vz-projector-inspector-panel';
+import './vz-projector-input';
+import './vz-projector-legend';
+import './vz-projector-projections-panel';
+import './vz-projector-metadata-card';
+import './vz-projector';

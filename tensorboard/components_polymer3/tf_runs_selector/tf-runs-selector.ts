@@ -14,11 +14,11 @@ limitations under the License.
 ==============================================================================*/
 
 import {PolymerElement, html} from '@polymer/polymer';
-import {LegacyElementMixin} from '@polymer/polymer/lib/legacy/legacy-element-mixin';
 import {computed, customElement, property} from '@polymer/decorators';
 import '@polymer/paper-button';
 import '@polymer/paper-dialog';
 
+import {LegacyElementMixin} from '../polymer/legacy_element_mixin';
 import * as baseStore from '../tf_backend/baseStore';
 import {environmentStore} from '../tf_backend/environmentStore';
 import {runsStore} from '../tf_backend/runsStore';
@@ -118,20 +118,21 @@ class TfRunsSelector extends LegacyElementMixin(PolymerElement) {
     type: Object,
     observer: '_storeRunSelectionState',
   })
-  runSelectionState: object = storage.getObjectInitializer(
-    'runSelectionState',
-    {
+  runSelectionState: object = storage
+    .getObjectInitializer('runSelectionState', {
       defaultValue: {},
-    }
-  )();
+    })
+    .call(this);
 
   @property({
     type: String,
     observer: '_regexObserver',
   })
-  regexInput: string = storage.getStringInitializer('regexInput', {
-    defaultValue: '',
-  })();
+  regexInput: string = storage
+    .getStringInitializer('regexInput', {
+      defaultValue: '',
+    })
+    .call(this);
 
   @property({
     type: Array,

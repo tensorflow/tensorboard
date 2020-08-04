@@ -318,9 +318,7 @@ export class LineChart {
         d.data().map((x) => accessor(x, -1, d))
       );
     };
-    return _.flattenDeep<number>(this.datasets.map(datasetToValues)).filter(
-      isFinite
-    );
+    return _.flattenDeep(this.datasets.map(datasetToValues)).filter(isFinite);
   }
   /** Constructs special datasets. Each special dataset contains exceptional
    * values from all of the regular datasets, e.g. last points in series, or

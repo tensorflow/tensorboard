@@ -1,6 +1,4 @@
-<!--
-@license
-Copyright 2016 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,16 +11,19 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
--->
+==============================================================================*/
 
-<link rel="import" href="../paper-icon-button/paper-icon-button.html" />
-<link rel="import" href="../paper-tooltip/paper-tooltip.html" />
-<link rel="import" href="../tf-imports/polymer.html" />
-<link rel="import" href="styles.html" />
-<link rel="import" href="vz-projector.html" />
+import {PolymerElement, html} from '@polymer/polymer';
+import {customElement, property} from '@polymer/decorators';
+import '@polymer/paper-icon-button';
+import '@polymer/paper-tooltip';
 
-<dom-module id="vz-projector-app">
-  <template>
+import './styles';
+import './vz-projector';
+
+@customElement('vz-projector-app')
+class VzProjectorApp extends PolymerElement {
+  static readonly template = html`
     <style include="vz-projector-styles"></style>
     <style>
       #appbar {
@@ -71,7 +72,7 @@ limitations under the License.
             <paper-tooltip
               position="bottom"
               animation-delay="0"
-              fit-to-visible-bounds
+              fit-to-visible-bounds=""
             >
               Open documentation
             </paper-tooltip>
@@ -86,7 +87,7 @@ limitations under the License.
             <paper-tooltip
               position="bottom"
               animation-delay="0"
-              fit-to-visible-bounds
+              fit-to-visible-bounds=""
             >
               Report a bug
             </paper-tooltip>
@@ -102,43 +103,19 @@ limitations under the License.
       >
       </vz-projector>
     </div>
-  </template>
-  <!-- Google analytics -->
-  <script jscomp-nocompile>
-    (function(i, s, o, g, r, a, m) {
-      i['GoogleAnalyticsObject'] = r;
-      (i[r] =
-        i[r] ||
-        function() {
-          (i[r].q = i[r].q || []).push(arguments);
-        }),
-        (i[r].l = 1 * new Date());
-      (a = s.createElement(o)), (m = s.getElementsByTagName(o)[0]);
-      a.async = 1;
-      a.src = g;
-      m.parentNode.insertBefore(a, m);
-    })(
-      window,
-      document,
-      'script',
-      'https://www.google-analytics.com/analytics.js',
-      'ga'
-    );
-
-    ga('create', 'UA-46457317-5', 'auto');
-  </script>
-  <script>
-    Polymer({
-      is: 'vz-projector-app',
-      properties: {
-        pageViewLogging: {type: Boolean, value: false},
-        eventLogging: {type: Boolean, value: false},
-        projectorConfigJsonPath: {type: String, value: ''},
-        routePrefix: {type: String, value: ''},
-        servingMode: {type: String, value: ''},
-        documentationLink: {type: String, value: ''},
-        bugReportLink: {type: String, value: ''},
-      },
-    });
-  </script>
-</dom-module>
+  `;
+  @property({type: Boolean})
+  pageViewLogging: boolean = false;
+  @property({type: Boolean})
+  eventLogging: boolean = false;
+  @property({type: String})
+  projectorConfigJsonPath: string = '';
+  @property({type: String})
+  routePrefix: string = '';
+  @property({type: String})
+  servingMode: string = '';
+  @property({type: String})
+  documentationLink: string = '';
+  @property({type: String})
+  bugReportLink: string = '';
+}

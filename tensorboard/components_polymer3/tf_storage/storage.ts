@@ -246,7 +246,7 @@ export function migrateLegacyURLScheme() {
     }
   }
   writeComponent(dictToComponent(items));
-  this.urlDict = items;
+  urlDict = items;
 }
 /**
  * Get a unique storage name for a (Polymer component, propertyName) tuple.

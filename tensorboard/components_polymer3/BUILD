@@ -70,10 +70,13 @@ tf_ts_library(
     ],
 )
 
-tf_web_library(
+tf_ts_library(
     name = "security",
     srcs = [
-        "security.html",
+        "security.ts",
     ],
-    path = "/",
+    strict_checks = False,
+    deps = [
+        "@npm//@polymer/polymer",
+    ],
 )

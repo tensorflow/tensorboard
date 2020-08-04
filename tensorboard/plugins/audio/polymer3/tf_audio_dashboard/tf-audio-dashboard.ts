@@ -1,4 +1,4 @@
-/* Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2016 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,43 +13,45 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import {computed, customElement, property} from '@polymer/decorators';
 import {PolymerElement, html} from '@polymer/polymer';
-import {customElement, property, computed} from '@polymer/decorators';
 import * as _ from 'lodash';
-import '@polymer/iron-icon';
-import '@polymer/paper-input';
 
 import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
 import {getTags} from '../../../../components_polymer3/tf_backend/backend';
 import {RequestManager} from '../../../../components_polymer3/tf_backend/requestManager';
-import {categorizeRunTagCombinations} from '../../../../components_polymer3/tf_categorization_utils/categorizationUtils';
 import {getRouter} from '../../../../components_polymer3/tf_backend/router';
-
+import {categorizeRunTagCombinations} from '../../../../components_polymer3/tf_categorization_utils/categorizationUtils';
 import '../../../../components_polymer3/tf_categorization_utils/tf-tag-filterer';
 import '../../../../components_polymer3/tf_dashboard_common/dashboard-style';
 import '../../../../components_polymer3/tf_dashboard_common/tf-dashboard-layout';
 import '../../../../components_polymer3/tf_paginated_view/tf-category-paginated-view';
 import '../../../../components_polymer3/tf_runs_selector/tf-runs-selector';
+import {AudioTagInfo, TfAudioLoader} from './tf-audio-loader';
+import './tf-audio-loader';
 
-import './tf-text-loader';
-
-@customElement('tf-text-dashboard')
-class TfTextDashboard extends LegacyElementMixin(PolymerElement) {
+/*
+tf-audio-dashboard displays a dashboard that loads audio from a TensorFlow run.
+*/
+@customElement('tf-audio-dashboard')
+class TfAudioDashboard extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
     <tf-dashboard-layout>
       <div class="sidebar" slot="sidebar">
         <div class="sidebar-section runs-selector">
-          <tf-runs-selector selected-runs="{{_selectedRuns}}">
-          </tf-runs-selector>
+          <tf-runs-selector
+            id="runs-selector"
+            selected-runs="{{_selectedRuns}}"
+          ></tf-runs-selector>
         </div>
       </div>
       <div class="center" slot="center">
         <template is="dom-if" if="[[_dataNotFound]]">
           <div class="no-data-warning">
-            <h3>No text data was found.</h3>
+            <h3>No audio data was found.</h3>
             <p>Probable causes:</p>
             <ul>
-              <li>You haven’t written any text data to your event files.</li>
+              <li>You haven’t written any audio data to your event files.</li>
               <li>TensorBoard can’t find your event files.</li>
             </ul>
 
@@ -85,12 +87,15 @@ class TfTextDashboard extends LegacyElementMixin(PolymerElement) {
               initial-opened="[[_shouldOpen(index)]]"
             >
               <template>
-                <tf-text-loader
+                <tf-audio-loader
                   active="[[active]]"
-                  tag="[[item.tag]]"
                   run="[[item.run]]"
+                  tag="[[item.tag]]"
+                  sample="[[item.sample]]"
+                  total-samples="[[item.totalSamples]]"
+                  tag-metadata="[[_tagMetadata(_runToTagInfo, item.run, item.tag)]]"
                   request-manager="[[_requestManager]]"
-                ></tf-text-loader>
+                ></tf-audio-loader>
               </template>
             </tf-category-paginated-view>
           </template>
@@ -113,22 +118,16 @@ class TfTextDashboard extends LegacyElementMixin(PolymerElement) {
   _selectedRuns: string[];
 
   @property({type: Object})
-  _runToTag: {[run: string]: string[]};
+  _runToTagInfo: {[run: string]: {[tag: string]: AudioTagInfo}};
 
   @property({type: Boolean})
   _dataNotFound: boolean;
 
   @property({type: String})
-  _tagFilter: string;
-
-  // Categories must only be computed after _dataNotFound is found to be
-  // true and then polymer DOM templating responds to that finding. We
-  // thus use this property to guard when categories are computed.
-  @property({type: Boolean})
-  _categoriesDomReady: boolean;
+  _tagFilter: string = '';
 
   @property({type: Object})
-  _requestManager = new RequestManager();
+  _requestManager: RequestManager = new RequestManager();
 
   ready() {
     super.ready();
@@ -137,7 +136,27 @@ class TfTextDashboard extends LegacyElementMixin(PolymerElement) {
 
   reload() {
     this._fetchTags().then(() => {
-      this._reloadTexts();
+      this._reloadAudio();
+    });
+  }
+
+  _fetchTags() {
+    const url = getRouter().pluginRoute('audio', '/tags');
+    return this._requestManager.request(url).then((runToTagInfo) => {
+      if (_.isEqual(runToTagInfo, this._runToTagInfo)) {
+        // No need to update anything if there are no changes.
+        return;
+      }
+      const runToTag = _.mapValues(runToTagInfo, (x) => Object.keys(x));
+      const tags = getTags(runToTag);
+      this.set('_dataNotFound', tags.length === 0);
+      this.set('_runToTagInfo', runToTagInfo);
+    });
+  }
+
+  _reloadAudio() {
+    this.root.querySelectorAll('tf-audio-loader').forEach((audio) => {
+      (audio as TfAudioLoader).reload();
     });
   }
 
@@ -145,33 +164,35 @@ class TfTextDashboard extends LegacyElementMixin(PolymerElement) {
     return index <= 2;
   }
 
-  _fetchTags() {
-    const url = getRouter().pluginRoute('text', '/tags');
-    return this._requestManager.request(url).then((runToTag) => {
-      if (_.isEqual(runToTag, this._runToTag)) {
-        // No need to update anything if there are no changes.
-        return;
-      }
-      const tags = getTags(runToTag);
-      this.set('_dataNotFound', tags.length === 0);
-      this.set('_runToTag', runToTag);
-      this.async(() => {
-        // See the comment above `_categoriesDomReady`.
-        this.set('_categoriesDomReady', true);
-      });
-    });
-  }
-  _reloadTexts() {
-    this.root.querySelectorAll('tf-text-loader').forEach((textLoader) => {
-      (textLoader as any).reload();
-    });
-  }
-
-  @computed('_runToTag', '_selectedRuns', '_tagFilter', '_categoriesDomReady')
+  @computed('_runToTagInfo', '_selectedRuns', '_tagFilter')
   get _categories(): unknown[] {
-    var runToTag = this._runToTag;
+    var runToTagInfo = this._runToTagInfo;
     var selectedRuns = this._selectedRuns;
     var tagFilter = this._tagFilter;
-    return categorizeRunTagCombinations(runToTag, selectedRuns, tagFilter);
+    const runToTag = _.mapValues(runToTagInfo, (x) => Object.keys(x));
+    const baseCategories = categorizeRunTagCombinations(
+      runToTag,
+      selectedRuns,
+      tagFilter
+    );
+    function explodeItem(item) {
+      const samples = runToTagInfo[item.run][item.tag].samples;
+      return _.range(samples).map((i) =>
+        Object.assign({}, item, {
+          sample: i,
+          totalSamples: samples,
+        })
+      );
+    }
+    const withSamples = baseCategories.map((category) =>
+      Object.assign({}, category, {
+        items: [].concat.apply([], category.items.map(explodeItem)),
+      })
+    );
+    return withSamples;
+  }
+
+  _tagMetadata(runToTagInfo, run, tag) {
+    return runToTagInfo[run][tag];
   }
 }

@@ -13,17 +13,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import {PolymerElement, html} from '@polymer/polymer';
 import {computed, observe, customElement, property} from '@polymer/decorators';
-import '@polymer/iron-icons';
 import {PaperCheckboxElement} from '@polymer/paper-checkbox';
 import {PaperIconButtonElement} from '@polymer/paper-icon-button';
-import '@polymer/paper-input';
-import {PolymerElement, html} from '@polymer/polymer';
 import * as _ from 'lodash';
+import '@polymer/iron-icons';
+import '@polymer/paper-checkbox';
+import '@polymer/paper-icon-button';
+import '@polymer/paper-input/paper-input';
 
 import './run-color-style';
 import './scrollbar-style';
-import './tf-color-scale';
 
 /*
 tf-multi-checkbox creates a list of checkboxes that can be used to toggle on or off
@@ -216,14 +217,7 @@ class TfMultiCheckbox extends PolymerElement {
   })
   maxNamesToEnableByDefault: number = 40;
 
-  @property({
-    type: Object,
-  })
-  // Updating the regex can be slow, because it involves updating styles
-  // on a large number of Polymer paper-checkboxes. We don't want to do
-  // this while the user is typing, as it may make a bad, laggy UI.
-  // So we debounce the updates that come from user typing.
-  _debouncedRegexChange: () => void = function() {
+  _debouncedRegexChangeImpl() {
     var debounced = _.debounce(
       (r) => {
         this.regex = r;
@@ -243,7 +237,14 @@ class TfMultiCheckbox extends PolymerElement {
         debounced(r);
       }
     };
-  };
+  }
+
+  // Updating the regex can be slow, because it involves updating styles
+  // on a large number of Polymer paper-checkboxes. We don't want to do
+  // this while the user is typing, as it may make a bad, laggy UI.
+  // So we debounce the updates that come from user typing.
+  @property({type: Object})
+  _debouncedRegexChange = this._debouncedRegexChangeImpl();
 
   @computed('regex')
   get _regex(): RegExp | null {

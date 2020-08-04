@@ -12,11 +12,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {LegacyElementMixin} from '../polymer/legacy_element_mixin';
-import {
-  PolymerDeepPropertyChange,
-  PolymerSpliceChange,
-} from '@polymer/polymer/interfaces';
 import {
   templatize,
   TemplateInstanceBase,
@@ -56,7 +51,7 @@ export class TfDomRepeat<T extends {}> extends ArrayUpdateHelper {
    * @protected
    */
   @property({type: Boolean})
-  protected _contentActive = true;
+  protected _contentActive: boolean;
 
   @property({type: Boolean})
   _domBootstrapped = false;
@@ -165,7 +160,9 @@ export class TfDomRepeat<T extends {}> extends ArrayUpdateHelper {
   }
 
   @observe('_renderedItems.*', '_domBootstrapped')
-  _updateDom(event: PolymerDeepPropertyChange<T, PolymerSpliceChange<T[]>>) {
+  _updateDom(
+    event: any // PolymerDeepPropertyChange<T, PolymerSpliceChange<T[]>>
+  ) {
     if (!this._domBootstrapped) return;
     // These are uninteresting.
     if (
@@ -175,7 +172,7 @@ export class TfDomRepeat<T extends {}> extends ArrayUpdateHelper {
       return;
     }
     if (event.path === '_renderedItems.splices') {
-      const value = event.value as PolymerSpliceChange<T[]>;
+      const value = event.value as any; // PolymerSpliceChange<T[]>;
       value.indexSplices.forEach((splice) => {
         const {index, addedCount, object, removed} = splice;
         removed.forEach((item) => {

@@ -14,11 +14,11 @@ limitations under the License.
 ==============================================================================*/
 
 import {PolymerElement, html} from '@polymer/polymer';
-import {LegacyElementMixin} from '@polymer/polymer/lib/legacy/legacy-element-mixin';
 import {customElement, property, observe, computed} from '@polymer/decorators';
 import '@polymer/paper-material';
 import * as d3 from 'd3';
 
+import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
 import {Canceller} from '../../../../components_polymer3/tf_backend/canceller';
 import {addParams} from '../../../../components_polymer3/tf_backend/urlPathHelpers';
 import {getRouter} from '../../../../components_polymer3/tf_backend/router';

@@ -53,7 +53,7 @@ class TfTagFilterer extends PolymerElement {
     defaultValue: '',
     useLocalStorage: false,
     polymerProperty: '_tagFilter',
-  })();
+  }).call(this);
 
   _tagFilterObserver = getStringObserver('tagFilter', {
     defaultValue: '',

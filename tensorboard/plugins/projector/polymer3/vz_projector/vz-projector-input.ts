@@ -12,103 +12,138 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-namespace vz_projector {
-  // tslint:disable-next-line
-  export let ProjectorInputPolymer = PolymerElement({
-    is: 'vz-projector-input',
-    properties: {label: String, message: String},
-  });
+import {PolymerElement, html} from '@polymer/polymer';
+import {customElement, property} from '@polymer/decorators';
 
-  export interface InputChangedListener {
-    (value: string, inRegexMode: boolean): void;
-  }
+import '@polymer/paper-button';
+import '@polymer/paper-input/paper-input';
+import '@polymer/paper-tooltip';
 
-  /** Input control with custom capabilities (e.g. regex). */
-  export class ProjectorInput extends ProjectorInputPolymer {
-    private textChangedListeners: InputChangedListener[];
-    private paperInput: HTMLInputElement;
-    private inRegexModeButton: HTMLButtonElement;
-    private inRegexMode: boolean;
+import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
 
-    /** Message that will be displayed at the bottom of the input control. */
-    message: string;
+import './styles';
 
-    /** Subscribe to be called everytime the input changes. */
-    registerInputChangedListener(listener: InputChangedListener) {
-      this.textChangedListeners.push(listener);
-    }
+export interface InputChangedListener {
+  (value: string, inRegexMode: boolean): void;
+}
 
-    ready() {
-      super.ready();
-      this.inRegexMode = false;
-      this.textChangedListeners = [];
-      this.paperInput = this.$$('paper-input') as HTMLInputElement;
-      this.inRegexModeButton = this.$$('paper-button') as HTMLButtonElement;
-      this.paperInput.setAttribute('error-message', 'Invalid regex');
-
-      this.paperInput.addEventListener('input', () => {
-        this.onTextChanged();
-      });
-
-      this.paperInput.addEventListener('keydown', (event) => {
-        event.stopPropagation();
-      });
-
-      this.inRegexModeButton.addEventListener('click', () =>
-        this.onClickRegexModeButton()
-      );
-      this.updateRegexModeDisplaySlashes();
-      this.onTextChanged();
-    }
-
-    private onClickRegexModeButton() {
-      this.inRegexMode = (this.inRegexModeButton as any).active;
-      this.updateRegexModeDisplaySlashes();
-      this.onTextChanged();
-    }
-
-    private notifyInputChanged(value: string, inRegexMode: boolean) {
-      this.textChangedListeners.forEach((l) => l(value, inRegexMode));
-    }
-
-    private onTextChanged() {
-      try {
-        if (this.inRegexMode) {
-          new RegExp(this.paperInput.value);
-        }
-      } catch (invalidRegexException) {
-        this.paperInput.setAttribute('invalid', 'true');
-        this.message = '';
-        this.notifyInputChanged(null, true);
-        return;
+@customElement('vz-projector-input')
+class ProjectorInput extends LegacyElementMixin(PolymerElement) {
+  static readonly template = html`
+    <style include="vz-projector-styles"></style>
+    <style>
+      .info {
+        color: rgba(0, 0, 0, 0.5);
+        display: block;
+        font-size: 11px;
       }
-      this.paperInput.removeAttribute('invalid');
-      this.notifyInputChanged(this.paperInput.value, this.inRegexMode);
-    }
 
-    private updateRegexModeDisplaySlashes() {
-      const slashes = this.paperInput.querySelectorAll('.slash');
-      const display = this.inRegexMode ? '' : 'none';
-
-      for (let i = 0; i < slashes.length; i++) {
-        (slashes[i] as HTMLDivElement).style.display = display;
+      .toggle {
+        font-size: 12px;
+        height: 21px;
+        margin: 0px;
+        min-width: 0px;
+        min-height: 0px;
+        padding: 0;
+        width: 17px;
       }
-    }
 
-    getValue(): string {
-      return this.paperInput.value;
-    }
+      .toggle[active] {
+        background-color: #880e4f;
+        color: white;
+      }
+    </style>
 
-    getInRegexMode(): boolean {
-      return this.inRegexMode;
-    }
+    <paper-input label="[[label]]">
+      <div class="slash" prefix slot="prefix">/</div>
+      <div class="slash" suffix slot="suffix">/</div>
+      <div suffix slot="suffix">
+        <paper-button id="regex" toggles class="toggle">.*</paper-button>
+      </div>
+    </paper-input>
+    <paper-tooltip
+      for="regex"
+      position="bottom"
+      animation-delay="0"
+      fit-to-visible-bounds
+    >
+      Enable/disable regex mode.
+    </paper-tooltip>
+    <span class="info">[[message]]</span>
+  `;
+  @property({type: String})
+  label: string;
 
-    setValue(value: string, inRegexMode: boolean) {
-      (this.inRegexModeButton as any).active = inRegexMode;
-      this.paperInput.value = value;
-      this.onClickRegexModeButton();
+  /** Message that will be displayed at the bottom of the input control. */
+  @property({type: String})
+  message: string;
+
+  private textChangedListeners: InputChangedListener[];
+  private paperInput: HTMLInputElement;
+  private inRegexModeButton: HTMLButtonElement;
+  private inRegexMode: boolean;
+
+  /** Subscribe to be called everytime the input changes. */
+  registerInputChangedListener(listener: InputChangedListener) {
+    this.textChangedListeners.push(listener);
+  }
+  ready() {
+    super.ready();
+    this.inRegexMode = false;
+    this.textChangedListeners = [];
+    this.paperInput = this.$$('paper-input') as HTMLInputElement;
+    this.inRegexModeButton = this.$$('paper-button') as HTMLButtonElement;
+    this.paperInput.setAttribute('error-message', 'Invalid regex');
+    this.paperInput.addEventListener('input', () => {
+      this.onTextChanged();
+    });
+    this.paperInput.addEventListener('keydown', (event) => {
+      event.stopPropagation();
+    });
+    this.inRegexModeButton.addEventListener('click', () =>
+      this.onClickRegexModeButton()
+    );
+    this.updateRegexModeDisplaySlashes();
+    this.onTextChanged();
+  }
+  private onClickRegexModeButton() {
+    this.inRegexMode = (this.inRegexModeButton as any).active;
+    this.updateRegexModeDisplaySlashes();
+    this.onTextChanged();
+  }
+  private notifyInputChanged(value: string, inRegexMode: boolean) {
+    this.textChangedListeners.forEach((l) => l(value, inRegexMode));
+  }
+  private onTextChanged() {
+    try {
+      if (this.inRegexMode) {
+        new RegExp(this.paperInput.value);
+      }
+    } catch (invalidRegexException) {
+      this.paperInput.setAttribute('invalid', 'true');
+      this.message = '';
+      this.notifyInputChanged(null, true);
+      return;
+    }
+    this.paperInput.removeAttribute('invalid');
+    this.notifyInputChanged(this.paperInput.value, this.inRegexMode);
+  }
+  private updateRegexModeDisplaySlashes() {
+    const slashes = this.paperInput.querySelectorAll('.slash');
+    const display = this.inRegexMode ? '' : 'none';
+    for (let i = 0; i < slashes.length; i++) {
+      (slashes[i] as HTMLDivElement).style.display = display;
     }
   }
-
-  customElements.define(ProjectorInput.prototype.is, ProjectorInput);
-} // namespace vz_projector
+  getValue(): string {
+    return this.paperInput.value;
+  }
+  getInRegexMode(): boolean {
+    return this.inRegexMode;
+  }
+  setValue(value: string, inRegexMode: boolean) {
+    (this.inRegexModeButton as any).active = inRegexMode;
+    this.paperInput.value = value;
+    this.onClickRegexModeButton();
+  }
+}
