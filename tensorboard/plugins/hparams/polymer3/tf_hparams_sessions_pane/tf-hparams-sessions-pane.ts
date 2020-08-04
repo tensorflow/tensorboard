@@ -22,21 +22,17 @@ import '@polymer/paper-icon-button';
 import '@polymer/paper-tabs';
 import '@polymer/paper-tabs';
 import '@polymer/paper-toolbar';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-parallel-coords-view/tf-hparams-parallel-coords-view.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-scatter-plot-matrix-view/tf-hparams-scatter-plot-matrix-view.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-table-view/tf-hparams-table-view.html';
-import '@polymer/iron-pages';
-import '@polymer/paper-button';
-import '@polymer/paper-header-panel';
-import '@polymer/paper-icon-button';
-import '@polymer/paper-tabs';
-import '@polymer/paper-tabs';
-import '@polymer/paper-toolbar';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-parallel-coords-view/tf-hparams-parallel-coords-view.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-scatter-plot-matrix-view/tf-hparams-scatter-plot-matrix-view.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-table-view/tf-hparams-table-view.html';
+import '../tf-hparams-parallel-coords-view/tf-hparams-parallel-coords-view';
+import '../tf-hparams-scatter-plot-matrix-view/tf-hparams-scatter-plot-matrix-view';
+import '../tf-hparams-table-view/tf-hparams-table-view';
+
+/**
+ * The tf-hparams-session-pane element implements a tabbed view of the
+ * session groups. Each tab is implemented by its own element and shows
+ * a specific view of the session groups list. Example of views are a table-view
+ * and parallel-coordinates (https://en.wikipedia.org/wiki/Parallel_coordinates)
+ * view.
+ */
 'use strict';
 @customElement('tf-hparams-sessions-pane')
 class TfHparamsSessionsPane extends PolymerElement {
