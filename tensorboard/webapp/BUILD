@@ -101,6 +101,24 @@ tf_web_library(
     ],
 )
 
+genrule(
+    name = "gen_index.html",
+    srcs = ["index.uninlined.html"],
+    outs = ["index.inlined.html"],
+    cmd = "$(execpath //tensorboard/logo:inline_favicon) $< >$@",
+    tools = ["//tensorboard/logo:inline_favicon"],
+)
+
+# Polymer 3 version of above.
+# TODO(#3887): Remove after Polymer 3 migration.
+genrule(
+    name = "gen_index_polymer3.html",
+    srcs = ["index_polymer3.uninlined.html"],
+    outs = ["index_polymer3.inlined.html"],
+    cmd = "$(execpath //tensorboard/logo:inline_favicon) $< >$@",
+    tools = ["//tensorboard/logo:inline_favicon"],
+)
+
 # Bundle the Angular app with the Polymer components and plugins, as a library.
 tf_web_library(
     name = "tensorboard-webapp",
@@ -117,12 +135,21 @@ tf_web_library(
     ],
 )
 
-genrule(
-    name = "gen_index.html",
-    srcs = ["index.uninlined.html"],
-    outs = ["index.inlined.html"],
-    cmd = "$(execpath //tensorboard/logo:inline_favicon) $< >$@",
-    tools = ["//tensorboard/logo:inline_favicon"],
+# Polymer 3 version of above.
+# TODO(#3887): Remove after Polymer 3 migration.
+tf_web_library(
+    name = "tensorboard-webapp-polymer3",
+    srcs = [
+        "index_polymer3.inlined.html",
+        ":styles.css",
+        "//tensorboard/components_polymer3:polymer3_lib_binary.js",
+    ],
+    path = "/",
+    deps = [
+        ":tb_webapp",
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/source_code/monaco:requirejs",
+        "@com_google_fonts_roboto",
+    ],
 )
 
 # A Vulcanized html binary for the complete app (both Angular and Polymer parts)
@@ -132,6 +159,16 @@ tensorboard_html_binary(
     js_path = "/index.js",
     output_path = "/index.html",
     deps = [":tensorboard-webapp"],
+)
+
+# Polymer 3 version of above.
+# TODO(#3887): Remove after Polymer 3 migration.
+tensorboard_html_binary(
+    name = "index_polymer3",
+    input_path = "/index_polymer3.inlined.html",
+    js_path = "index_polymer3.js",
+    output_path = "index_polymer3.html",
+    deps = [":tensorboard-webapp-polymer3"],
 )
 
 # Karma has overhead of bootstrap/tearDown. Combine as much testcases
