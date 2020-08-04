@@ -12,26 +12,23 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {CommonModule} from '@angular/common';
-import {NgModule} from '@angular/core';
+import {Component, ChangeDetectionStrategy} from '@angular/core';
+import {select, Store} from '@ngrx/store';
 
-import {NpmiComponent} from './npmi_component';
-import {NpmiContainer} from './npmi_container';
+import {State} from '../../../../app_state';
+import {getRunSelection} from '../../../../core/store/core_selectors';
 
-import {InactiveModule} from './views/inactive/inactive_module';
-import {MainModule} from './views/main/main_module';
+/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
-import {PluginRegistryModule} from '../../plugins/plugin_registry_module';
-
-@NgModule({
-  declarations: [NpmiComponent, NpmiContainer],
-  imports: [
-    CommonModule,
-    InactiveModule,
-    MainModule,
-    PluginRegistryModule.forPlugin('npmi', NpmiContainer),
-  ],
-  exports: [NpmiContainer],
-  entryComponents: [NpmiContainer],
+@Component({
+  selector: 'npmi-main',
+  template: `
+    <main-component [runs]="runs$ | async"></main-component>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class NpmiModule {}
+export class MainContainer {
+  readonly runs$ = this.store.pipe(select(getRunSelection));
+
+  constructor(private readonly store: Store<State>) {}
+}
