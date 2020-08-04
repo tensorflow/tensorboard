@@ -16,13 +16,9 @@ limitations under the License.
 import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, observe, property} from '@polymer/decorators';
 import * as _ from 'lodash';
-import '@polymer/paper-checkbox';
-import '@polymer/paper-dropdown-menu';
-import '@polymer/paper-listbox';
-import '@polymer/paper-input';
-import '@polymer/paper-item';
 import '@vaadin/vaadin-split-layout';
 
+import '../../../../components_polymer3/polymer/irons_and_papers';
 import {Canceller} from '../../../../components_polymer3/tf_backend/canceller';
 import * as tf_hparams_utils from '../tf_hparams_utils/tf-hparams-utils';
 import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
@@ -39,9 +35,15 @@ import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy
 class TfHparamsQueryPane extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
     <div class="pane">
-      <vaadin-split-layout vertical="">
-        <vaadin-split-layout vertical="" id="hyperparameters-metrics-statuses">
-          <vaadin-split-layout vertical="" id="hyperparameters-metrics">
+      <vaadin-split-layout orientation="vertical">
+        <vaadin-split-layout
+          orientation="vertical"
+          id="hyperparameters-metrics-statuses"
+        >
+          <vaadin-split-layout
+            orientation="vertical"
+            id="hyperparameters-metrics"
+          >
             <div class="section hyperparameters">
               <div class="section-title">Hyperparameters</div>
               <template is="dom-repeat" items="{{_hparams}}" as="hparam">
@@ -163,7 +165,7 @@ class TfHparamsQueryPane extends LegacyElementMixin(PolymerElement) {
             </template>
           </div>
         </vaadin-split-layout>
-        <vaadin-split-layout vertical="" id="sorting-paging">
+        <vaadin-split-layout orientation="vertical" id="sorting-paging">
           <div class="section sorting">
             <div class="section-title">Sorting</div>
             <paper-dropdown-menu
@@ -204,7 +206,7 @@ class TfHparamsQueryPane extends LegacyElementMixin(PolymerElement) {
               </paper-listbox>
             </paper-dropdown-menu>
           </div>
-          <vaadin-split-layout vertical="" id="paging-download">
+          <vaadin-split-layout orientation="vertical" id="paging-download">
             <div class="section paging">
               <div class="section-title">Paging</div>
               <div>
@@ -435,7 +437,6 @@ class TfHparamsQueryPane extends LegacyElementMixin(PolymerElement) {
   // more details.
   @property({
     type: Array,
-    readOnly: true,
     notify: true,
   })
   sessionGroups = [];

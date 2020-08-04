@@ -18,7 +18,7 @@ import {customElement, observe, property} from '@polymer/decorators';
 import * as PolymerDom from '@polymer/polymer/lib/legacy/polymer.dom.js';
 import '@vaadin/vaadin-grid';
 
-import '../tf-hparams-session-group-details/tf-hparams-session-group-details';
+import '../tf_hparams_session_group_details/tf-hparams-session-group-details';
 import * as tf_hparams_utils from '../tf_hparams_utils/tf-hparams-utils';
 import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
 
@@ -46,7 +46,7 @@ class TfHparamsTableView extends LegacyElementMixin(PolymerElement) {
             <div class="table-header table-cell">Show Metrics</div>
           </template>
           <template>
-            <paper-checkbox class="table-cell" checked="{{expanded}}">
+            <paper-checkbox class="table-cell" checked="{{detailsOpened}}">
             </paper-checkbox>
           </template>
         </vaadin-grid-column>
@@ -103,7 +103,7 @@ class TfHparamsTableView extends LegacyElementMixin(PolymerElement) {
 
     <style>
       :host {
-        display: block;
+        display: inline;
       }
       .table-cell {
         white-space: nowrap;
@@ -145,22 +145,27 @@ class TfHparamsTableView extends LegacyElementMixin(PolymerElement) {
   experimentName: string;
   @observe('visibleSchema.*', 'sessionGroups.*')
   _visibleSchemaOrSessionGroupsChanged() {
+    // From vaadin-grid 3.0.0:
     // Vaadin-grid removes 'row-details' if the visibleSchema changes
     // and doesn't update 'expandedItems'. So we first close the
     // expanded items, call Polymer.dom.flush() to update the grid,
     // and then re-open the groups that were open before.
+    //
+    // Since then, we have upgraded to vaadin-grid 5.6.6, where the comment
+    // may be stale. Notably, Vaadin renamed 'expandedItems' to
+    // 'detailsOpenedItems'.
     const expandedItems = (this.$.sessionGroupsTable as any).get(
-      'expandedItems'
+      'detailsOpenedItems'
     );
-    (this.$.sessionGroupsTable as any).set('expandedItems', []);
-    PolymerDom.dom.flush();
+    (this.$.sessionGroupsTable as any).set('detailsOpenedItems', []);
+    PolymerDom.flush();
     // Index sessionGroups by name.
     const sessionGroupsByName = new Map();
     this.sessionGroups.forEach((sg: any) => {
       sessionGroupsByName.set(sg.name, sg);
     });
     (this.$.sessionGroupsTable as any).set(
-      'expandedItems',
+      'detailsOpenedItems',
       expandedItems
         .map((sg) => sessionGroupsByName.get(sg.name))
         .filter(Boolean)

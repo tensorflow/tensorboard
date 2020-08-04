@@ -1,5 +1,5 @@
-load("//tensorboard/defs:web.bzl", "tf_web_library", "tf_web_test")
 load("//tensorboard/defs:defs.bzl", "tf_ts_library")
+# load("//tensorboard/defs:web.bzl", "tf_web_library", "tf_web_test")
 
 package(default_visibility =
             ["//tensorboard/plugins/hparams:__subpackages__"])

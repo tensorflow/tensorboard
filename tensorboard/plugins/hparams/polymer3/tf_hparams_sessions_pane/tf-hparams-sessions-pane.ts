@@ -15,16 +15,11 @@ limitations under the License.
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, property} from '@polymer/decorators';
-import '@polymer/iron-pages';
-import '@polymer/paper-button';
-import '@polymer/paper-header-panel';
-import '@polymer/paper-icon-button';
-import '@polymer/paper-tabs';
-import '@polymer/paper-tabs';
-import '@polymer/paper-toolbar';
-import '../tf-hparams-parallel-coords-view/tf-hparams-parallel-coords-view';
-import '../tf-hparams-scatter-plot-matrix-view/tf-hparams-scatter-plot-matrix-view';
-import '../tf-hparams-table-view/tf-hparams-table-view';
+
+import '../../../../components_polymer3/polymer/irons_and_papers';
+import '../tf_hparams_parallel_coords_view/tf-hparams-parallel-coords-view';
+import '../tf_hparams_scatter_plot_matrix_view/tf-hparams-scatter-plot-matrix-view';
+import '../tf_hparams_table_view/tf-hparams-table-view';
 
 /**
  * The tf-hparams-session-pane element implements a tabbed view of the
@@ -61,7 +56,7 @@ class TfHparamsSessionsPane extends PolymerElement {
               >
                 <paper-button
                   id="bug-report"
-                  raised=""
+                  raised
                   title="Send a bug report or feature request"
                 >
                   Bug Report / Feature Request
@@ -87,7 +82,7 @@ class TfHparamsSessionsPane extends PolymerElement {
             experiment-name="[[experimentName]]"
             visible-schema="[[configuration.visibleSchema]]"
             session-groups="[[sessionGroups]]"
-            enable-show-metrics=""
+            enable-show-metrics
           >
           </tf-hparams-table-view>
         </div>

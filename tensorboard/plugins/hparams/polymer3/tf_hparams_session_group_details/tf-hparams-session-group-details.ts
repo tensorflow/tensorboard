@@ -15,17 +15,18 @@ limitations under the License.
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, observe, property} from '@polymer/decorators';
-import '@polymer/iron-flex-layout';
 import * as IronResizableBehavior from '@polymer/iron-resizable-behavior';
 import {mixinBehaviors} from '@polymer/polymer/lib/legacy/class.js';
 import * as PolymerDom from '@polymer/polymer/lib/legacy/polymer.dom.js';
 
-import '../../../../components_polymer3/tf_backend/tf_backend';
+import '../../../../components_polymer3/polymer/irons_and_papers';
+import '../../../../components_polymer3/tf_backend/tf-backend';
 import * as tf_hparams_utils from '../tf_hparams_utils/tf-hparams-utils';
 import * as tf_color_scale from '../../../../components_polymer3/tf_color_scale/palettes';
 import * as vz_chart_helpers from '../../../../components_polymer3/vz_chart_helpers/vz-chart-helpers';
 
-// import {DO_NOT_SUBMIT} from '../tf_scalar_dashboard/tf-scalar-card';
+// TODO: add dependency once the Polymer 3 scalar dashboard is migrated.
+// import '../tf_scalar_dashboard/tf-scalar-card';
 
 /**
  * Shows a session group in more detail. Specifically, shows graphs of the
@@ -78,7 +79,7 @@ class TfHparamsSessionGroupDetails extends mixinBehaviors(
             x-type="[[_xType]]"
             multi-experiments="[[_noMultiExperiments]]"
             request-data="[[_requestData]]"
-            active=""
+            active
           >
           </tf-scalar-card>
         </template>
@@ -104,7 +105,7 @@ class TfHparamsSessionGroupDetails extends mixinBehaviors(
   // The session group object to display. Matches the SessionGroup
   // protocol buffer defined in api.proto.
   @property({type: Object})
-  sessionGroup: any;
+  sessionGroup: any = null;
   @property({
     type: String,
   })
