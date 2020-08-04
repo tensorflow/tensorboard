@@ -60,7 +60,6 @@ model = tf.keras.Sequential(
     ]
 )
 
-
 # Compile model
 model.compile(
     optimizer="adam",
@@ -70,21 +69,41 @@ model.compile(
 
 # Train model
 history = model.fit(
-    train_batches, epochs=1, validation_data=test_batches, validation_steps=20, callbacks=[tf.keras.callbacks.TensorBoard(log_dir=LOG_DIR, embeddings_freq=1, embeddings_metadata=METADATA_FNAME)]
+    train_batches, epochs=1, validation_data=test_batches, validation_steps=20
 )
-
-# Ensure to actually save the embedding file.
-# Save Labels separately on a line-by-line manner.
-with open(os.path.join(LOG_DIR, METADATA_FNAME), "w") as f:
-    # By convention, the first row is reserved for unknown values.
-    f.write("Unknown\n")
-    for label in encoder.subwords:
-         f.write("{}\n".format(label))
-    for unknown in range(1, encoder.vocab_size - len(encoder.subwords)):
-         f.write("unknown #{}\n".format(unknown))
 
 # Fetch the embedding layer and get the weights.
 # Make sure to remove the first element, as it is padding.
 weights = tf.Variable(model.layers[0].get_weights()[0][1:])
 
 
+def register_embedding(weights, labels, log_dir) -> None:
+    """Saves a metadata file (labels) and a checkpoint (derived from weights)
+    and configures the Embedding Projector to read from the appropriate locations.
+    Args:
+      weights: tf.Variable with the weights of the embedding layer to be displayed.
+      labels: list of labels corresponding to the weights.
+      logdir: Directory into which to store the config file, as a `str`.
+    """
+
+    # Create a checkpoint from embedding, the filename and key are
+    # name of the tensor.
+    checkpoint = tf.train.Checkpoint(embedding=weights)
+    checkpoint.save(os.path.join(LOG_DIR, "embedding.ckpt"))
+
+    # Save Labels separately on a line-by-line manner.
+    with open(os.path.join(log_dir, METADATA_FNAME), "w") as f:
+        for label in labels:
+            f.write("{}\n".format(label))
+
+    # Set up config
+    config = projector.ProjectorConfig()
+    embedding = config.embeddings.add()
+    # The name of the tensor will be suffixed by `/.ATTRIBUTES/VARIABLE_VALUE`
+    embedding.tensor_name = "embedding/.ATTRIBUTES/VARIABLE_VALUE"
+    embedding.metadata_path = METADATA_FNAME
+    projector.visualize_embeddings(log_dir, config)
+
+
+# Save Files
+register_embedding(weights, encoder.subwords, LOG_DIR)

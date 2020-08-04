@@ -21,7 +21,6 @@ from __future__ import print_function
 import collections
 import functools
 import imghdr
-import math
 import mimetypes
 import os
 import threading
@@ -756,7 +755,7 @@ class ProjectorPlugin(base_plugin.TBPlugin):
         fpath = _rel_to_abs_asset_path(fpath, self.config_fpaths[run])
         if not tf.io.gfile.exists(fpath) or tf.io.gfile.isdir(fpath):
             return Respond(
-               request,
+                request,
                 '"%s" not found, or is not a file' % fpath,
                 "text/plain",
                 400,
