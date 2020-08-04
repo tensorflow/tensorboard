@@ -15,19 +15,29 @@ limitations under the License.
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, property} from '@polymer/decorators';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-query-pane/tf-hparams-query-pane.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-sessions-pane/tf-hparams-sessions-pane.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/vaadin-split-layout.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-query-pane/tf-hparams-query-pane.html';
-import {DO_NOT_SUBMIT} from '../tf-hparams-sessions-pane/tf-hparams-sessions-pane.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/vaadin-split-layout.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
+import '../tf-hparams-query-pane/tf-hparams-query-pane';
+import '../tf-hparams-sessions-pane/tf-hparams-sessions-pane';
+import '@vaadin/vaadin-split-layout';
+import * as _ from 'lodash';
+import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+
+/**
+ * The entry point into the hparams plugin frontend.
+ * A container for two sub-elements:
+ * 1. The query-pane encapsulated by the tf-hparams-query-pane element. This
+ * element issues queries to the backend to get a list of session groups. It has
+ * controls to allow the user to specify filters and sorting options in the
+ * issued-query. The actual filtering and sorting is done by the backend.
+ * 2. The session-pane encapsulated by the tf-hparams-session-pane element. This
+ * element displays multiple tabs--each providing a "view" of the list of
+ * session groups. Example of views are a table-view and a parallel-coordinate
+ * view.
+ *
+ * TODO(erez): Add aggregation of repeated trials.
+ */
 'use strict';
 @customElement('tf-hparams-main')
-class TfHparamsMain extends PolymerElement {
+class TfHparamsMain extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
     <vaadin-split-layout>
       <div class="sidebar" slot="sidebar">
@@ -132,12 +142,16 @@ class TfHparamsMain extends PolymerElement {
       }
     </style>
   `;
+  // An object for making HParams API requests to the backend.
   @property({type: Object})
   backend: object;
+  // The experimentName to pass to the 'GetExperiment' API call.
   @property({type: String})
   experimentName: string;
+  // The URL to use for the help button.
   @property({type: String})
   helpUrl: string;
+  // The URL to use for the bug-report button.
   @property({type: String})
   bugReportUrl: string;
   @property({type: Object})
@@ -150,6 +164,6 @@ class TfHparamsMain extends PolymerElement {
   _dataLoadedWithEmptyHparams: boolean;
   // This can be called to refresh the plugin.
   reload() {
-    this.$['query-pane'].reload();
+    (this.$['query-pane'] as any).reload();
   }
 }
