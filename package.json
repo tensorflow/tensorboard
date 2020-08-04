@@ -85,6 +85,7 @@
     "@polymer/iron-icon": "^3.0.1",
     "@polymer/iron-icons": "^3.0.1",
     "@polymer/iron-iconset-svg": "^3.0.1",
+    "@polymer/iron-pages": "^3.0.1",
     "@polymer/paper-button": "^3.0.1",
     "@polymer/paper-checkbox": "^3.1.0",
     "@polymer/paper-dialog": "^3.0.1",
@@ -97,6 +98,7 @@
     "@polymer/paper-listbox": "^3.0.1",
     "@polymer/paper-material": "^3.0.1",
     "@polymer/paper-menu-button": "^3.0.1",
+    "@polymer/paper-radio-button": "^3.0.1",
     "@polymer/paper-radio-group": "^3.0.1",
     "@polymer/paper-slider": "^3.0.1",
     "@polymer/paper-spinner": "^3.0.2",
@@ -107,6 +109,7 @@
     "@polymer/paper-toolbar": "^3.0.1",
     "@polymer/paper-tooltip": "^3.0.1",
     "@polymer/polymer": "^3.4.1",
+    "@vaadin/vaadin-split-layout": "^4.3.0-beta1",
     "d3": "5.7.0",
     "lodash": "^4.17.19",
     "monaco-editor-core": "^0.20.0",
@@ -117,6 +120,7 @@
     "rxjs": "^6.5.5",
     "three": "~0.108.0",
     "umap-js": "^1.3.2",
+    "vaadin-grid": "^3.0.0",
     "weblas": "^0.9.1",
     "zone.js": "^0.10.2"
   }
