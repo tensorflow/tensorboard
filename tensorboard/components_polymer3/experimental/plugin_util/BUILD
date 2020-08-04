@@ -25,12 +25,14 @@ tf_ts_library(
     name = "plugin_host",
     srcs = [
         "core-host-impl.ts",
+        "plugin-host.ts",
         "runs-host-impl.ts",
     ],
     deps = [
         ":host_internals",
         "//tensorboard/components_polymer3/tf_backend",
         "//tensorboard/components_polymer3/tf_storage",
+        "@npm//@polymer/decorators",
         "@npm//@polymer/polymer",
     ],
 )
