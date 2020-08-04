@@ -98,7 +98,7 @@ class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
   @property({type: String})
   customSelectedSearchByMetadataOption: string;
 
-  private projector: any;
+  private projector: any; // Projector; type omitted b/c LegacyElement
 
   private currentProjection: ProjectionType;
   private polymerChangesTriggerReprojection: boolean;
@@ -127,10 +127,10 @@ class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
   private zDropdown: HTMLElement;
   private iterationLabelTsne: HTMLElement;
   private runUmapButton: HTMLButtonElement;
-  private customProjectionXLeftInput: any;
-  private customProjectionXRightInput: any;
-  private customProjectionYUpInput: any;
-  private customProjectionYDownInput: any;
+  private customProjectionXLeftInput: any; // ProjectorInput; type ommited
+  private customProjectionXRightInput: any; // ProjectorInput; type ommited
+  private customProjectionYUpInput: any; // ProjectorInput; type ommited
+  private customProjectionYDownInput: any; // ProjectorInput; type ommited
 
   initialize(projector: any) {
     this.polymerChangesTriggerReprojection = true;

@@ -100,7 +100,7 @@ class DataPanel extends LegacyElementMixin(PolymerElement) {
     shape: number[];
   }[];
   private runNames: string[];
-  private projector: any;
+  private projector: any; // Projector; type omitted b/c LegacyElement
   private projectorConfig: ProjectorConfig;
   private colorLegendRenderInfo: ColorLegendRenderInfo;
   private spriteAndMetadata: SpriteAndMetadataInfo;

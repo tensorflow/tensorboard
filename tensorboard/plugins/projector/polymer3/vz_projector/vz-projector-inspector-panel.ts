@@ -71,10 +71,10 @@ class InspectorPanel extends LegacyElementMixin(PolymerElement) {
   distFunc: DistanceFunction;
   private projectorEventContext: ProjectorEventContext;
   private displayContexts: string[];
-  private projector: any;
+  private projector: any; // Projector; type omitted b/c LegacyElement
   private selectedPointIndices: number[];
   private neighborsOfFirstPoint: knn.NearestEntry[];
-  private searchBox: any;
+  private searchBox: any; // ProjectorInput; type omitted b/c LegacyElement
   private resetFilterButton: HTMLButtonElement;
   private setFilterButton: HTMLButtonElement;
   private clearSelectionButton: HTMLButtonElement;
@@ -89,7 +89,7 @@ class InspectorPanel extends LegacyElementMixin(PolymerElement) {
       '.clear-selection'
     ) as HTMLButtonElement;
     this.limitMessage = this.$$('.limit-msg') as HTMLDivElement;
-    this.searchBox = this.$$('#search-box') as any;
+    this.searchBox = this.$$('#search-box') as any; // ProjectorInput
     this.displayContexts = [];
   }
   initialize(projector: any, projectorEventContext: ProjectorEventContext) {

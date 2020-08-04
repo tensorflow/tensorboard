@@ -157,11 +157,11 @@ class Projector extends LegacyElementMixin(PolymerElement)
     this.selectedPointIndices = [];
     this.neighborsOfFirstPoint = [];
     this.editMode = false;
-    this.dataPanel = this.$['data-panel'] as any;
-    this.inspectorPanel = this.$['inspector-panel'] as any;
-    this.projectionsPanel = this.$['projections-panel'] as any;
-    this.bookmarkPanel = this.$['bookmark-panel'] as any;
-    this.metadataCard = this.$['metadata-card'] as any;
+    this.dataPanel = this.$['data-panel'] as any; // DataPanel
+    this.inspectorPanel = this.$['inspector-panel'] as any; // InspectorPanel
+    this.projectionsPanel = this.$['projections-panel'] as any; // ProjectionsPanel
+    this.bookmarkPanel = this.$['bookmark-panel'] as any; // BookmarkPanel
+    this.metadataCard = this.$['metadata-card'] as any; // MetadataCard
     this.statusBar = this.$$('#status-bar') as HTMLDivElement;
     this.inspectorPanel.initialize(this, this as ProjectorEventContext);
     this.projectionsPanel.initialize(this);
