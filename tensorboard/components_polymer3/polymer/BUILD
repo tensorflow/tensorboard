@@ -25,6 +25,23 @@ tf_ts_library(
 )
 
 tf_ts_library(
+    name = "plottable_style",
+    srcs = ["plottable-style.ts"],
+    deps = [":register_style_dom_module"],
+)
+
+genrule(
+    name = "gen_plottable_style",
+    srcs = [
+        "plottable-style.uninlined.ts",
+        "@npm//:node_modules/plottable/plottable.css",
+    ],
+    outs = ["plottable-style.ts"],
+    cmd = "$(execpath //tensorboard/tools:inline_file_content) $(SRCS) >'$@'",
+    tools = ["//tensorboard/tools:inline_file_content"],
+)
+
+tf_ts_library(
     name = "register_style_dom_module",
     srcs = [
         "register_style_dom_module.ts",
