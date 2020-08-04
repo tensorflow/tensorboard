@@ -35,7 +35,7 @@ def _tensorboard_html_binary(ctx):
     manifests = depset(transitive=[manifests, dep.webfiles.manifests])
     webpaths = depset(transitive=[webpaths, dep.webfiles.webpaths])
     files = depset(transitive=[files, dep.data_runfiles.files])
-  webpaths = depset([ctx.attr.output_path, ctx.attr.js_path], transitive=[webpaths])
+  webpaths = depset([ctx.attr.output_path], transitive=[webpaths])
   closure_js_library=collect_js(
       unfurl(ctx.attr.deps, provider="closure_js_library"))
 
@@ -73,10 +73,14 @@ def _tensorboard_html_binary(ctx):
   # webfiles manifest
   manifest_srcs = [struct(path=ctx.outputs.html.path,
                           longpath=long_path(ctx, ctx.outputs.html),
-                          webpath=ctx.attr.output_path),
-                   struct(path=ctx.outputs.js.path,
-                          longpath=long_path(ctx, ctx.outputs.js),
-                          webpath=ctx.attr.js_path)]
+                          webpath=ctx.attr.output_path)]
+
+  if ctx.attr.js_path:
+    manifest_srcs.append(
+        struct(path=ctx.outputs.js.path,
+               longpath=long_path(ctx, ctx.outputs.js),
+               webpath=ctx.attr.js_path))
+
   manifest = ctx.actions.declare_file("%s.pbtxt" % ctx.label.name)
   ctx.actions.write(
       output=manifest,
