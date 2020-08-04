@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {PolymerElement} from '@polymer/polymer';
-import {LegacyElementMixin} from '@polymer/polymer/lib/legacy/legacy-element-mixin';
 import {customElement, observe, property} from '@polymer/decorators';
 import * as THREE from 'three';
 
@@ -28,6 +27,8 @@ import '@polymer/paper-styles/paper-styles';
 import '@polymer/paper-toast';
 import '@polymer/paper-toggle-button';
 import '@polymer/paper-tooltip';
+
+import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
 
 import {AnalyticsLogger} from './analyticsLogger';
 import {template} from './vz-projector.html';
@@ -45,7 +46,7 @@ import {
   State,
   stateGetAccessorDimensions,
 } from './data';
-import {MetadataCard} from './vz-projector-metadata-card';
+import './vz-projector-metadata-card';
 import {
   ServingMode,
   DataProvider,
@@ -55,13 +56,9 @@ import {
 import {DemoDataProvider} from './data-provider-demo';
 import {ProtoDataProvider} from './data-provider-proto';
 import {ServerDataProvider} from './data-provider-server';
-import {ProjectionsPanel} from './vz-projector-projections-panel';
 import './vz-projector-projections-panel';
-import {BookmarkPanel} from './vz-projector-bookmark-panel';
 import './vz-projector-bookmark-panel';
-import {DataPanel} from './vz-projector-data-panel';
 import './vz-projector-data-panel';
-import {InspectorPanel} from './vz-projector-inspector-panel';
 import './vz-projector-inspector-panel';
 import {ProjectorScatterPlotAdapter} from './projectorScatterPlotAdapter';
 import {
@@ -85,7 +82,7 @@ const POINT_COLOR_MISSING = 'black';
 const INDEX_METADATA_FIELD = '__index__';
 
 @customElement('vz-projector')
-export class Projector extends LegacyElementMixin(PolymerElement)
+class Projector extends LegacyElementMixin(PolymerElement)
   implements ProjectorEventContext {
   static readonly template = template;
 
@@ -124,17 +121,17 @@ export class Projector extends LegacyElementMixin(PolymerElement)
   private hoverPointIndex: number;
   private editMode: boolean;
   private dataProvider: DataProvider;
-  private inspectorPanel: InspectorPanel;
   private selectedColorOption: ColorOption;
   private selectedLabelOption: string;
   private normalizeData: boolean;
   private projection: Projection;
   private metadataFile: string;
   /** Polymer component panels */
-  private dataPanel: DataPanel;
-  private bookmarkPanel: BookmarkPanel;
-  private projectionsPanel: ProjectionsPanel;
-  private metadataCard: MetadataCard;
+  private inspectorPanel: any;
+  private dataPanel: any;
+  private bookmarkPanel: any;
+  private projectionsPanel: any;
+  private metadataCard: any;
   private statusBar: HTMLDivElement;
   private analyticsLogger: AnalyticsLogger;
   ready() {
@@ -160,11 +157,11 @@ export class Projector extends LegacyElementMixin(PolymerElement)
     this.selectedPointIndices = [];
     this.neighborsOfFirstPoint = [];
     this.editMode = false;
-    this.dataPanel = this.$['data-panel'] as DataPanel;
-    this.inspectorPanel = this.$['inspector-panel'] as InspectorPanel;
-    this.projectionsPanel = this.$['projections-panel'] as ProjectionsPanel;
-    this.bookmarkPanel = this.$['bookmark-panel'] as BookmarkPanel;
-    this.metadataCard = this.$['metadata-card'] as MetadataCard;
+    this.dataPanel = this.$['data-panel'] as any; // DataPanel
+    this.inspectorPanel = this.$['inspector-panel'] as any; // InspectorPanel
+    this.projectionsPanel = this.$['projections-panel'] as any; // ProjectionsPanel
+    this.bookmarkPanel = this.$['bookmark-panel'] as any; // BookmarkPanel
+    this.metadataCard = this.$['metadata-card'] as any; // MetadataCard
     this.statusBar = this.$$('#status-bar') as HTMLDivElement;
     this.inspectorPanel.initialize(this, this as ProjectorEventContext);
     this.projectionsPanel.initialize(this);

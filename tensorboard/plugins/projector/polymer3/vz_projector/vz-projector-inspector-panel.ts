@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {PolymerElement} from '@polymer/polymer';
-import {LegacyElementMixin} from '@polymer/polymer/lib/legacy/legacy-element-mixin';
 import {customElement, observe, property} from '@polymer/decorators';
 
 import '@polymer/paper-dropdown-menu/paper-dropdown-menu';
@@ -23,11 +22,11 @@ import '@polymer/paper-listbox';
 import '@polymer/paper-slider';
 import '@polymer/paper-tooltip';
 
+import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+
 import {DistanceFunction, SpriteAndMetadataInfo, State} from './data';
 import {template} from './vz-projector-inspector-panel.html';
-import {ProjectorInput} from './vz-projector-input';
 import './vz-projector-input';
-import {Projector} from './vz-projector';
 import {dist2color, normalizeDist} from './projectorScatterPlotAdapter';
 import {ProjectorEventContext} from './projectorEventContext';
 import * as knn from './knn';
@@ -45,7 +44,7 @@ type SpriteMetadata = {
 };
 
 @customElement('vz-projector-inspector-panel')
-export class InspectorPanel extends LegacyElementMixin(PolymerElement) {
+class InspectorPanel extends LegacyElementMixin(PolymerElement) {
   static readonly template = template;
 
   @property({type: String})
@@ -72,10 +71,10 @@ export class InspectorPanel extends LegacyElementMixin(PolymerElement) {
   distFunc: DistanceFunction;
   private projectorEventContext: ProjectorEventContext;
   private displayContexts: string[];
-  private projector: Projector;
+  private projector: any; // Projector; type omitted b/c LegacyElement
   private selectedPointIndices: number[];
   private neighborsOfFirstPoint: knn.NearestEntry[];
-  private searchBox: ProjectorInput;
+  private searchBox: any; // ProjectorInput; type omitted b/c LegacyElement
   private resetFilterButton: HTMLButtonElement;
   private setFilterButton: HTMLButtonElement;
   private clearSelectionButton: HTMLButtonElement;
@@ -90,13 +89,10 @@ export class InspectorPanel extends LegacyElementMixin(PolymerElement) {
       '.clear-selection'
     ) as HTMLButtonElement;
     this.limitMessage = this.$$('.limit-msg') as HTMLDivElement;
-    this.searchBox = this.$$('#search-box') as ProjectorInput;
+    this.searchBox = this.$$('#search-box') as any; // ProjectorInput
     this.displayContexts = [];
   }
-  initialize(
-    projector: Projector,
-    projectorEventContext: ProjectorEventContext
-  ) {
+  initialize(projector: any, projectorEventContext: ProjectorEventContext) {
     this.projector = projector;
     this.projectorEventContext = projectorEventContext;
     this.setupUI(projector);
@@ -185,7 +181,7 @@ export class InspectorPanel extends LegacyElementMixin(PolymerElement) {
     this.metadataColumn = metadataColumn;
     this.addContext('.metadata-info');
     let list = this.$$('.metadata-list') as HTMLDivElement;
-    list.innerHTML = '';
+    list.textContent = '';
     let entries = stat[0].uniqueEntries.sort((a, b) => a.count - b.count);
     let maxCount = entries[entries.length - 1].count;
     entries.forEach((e) => {
@@ -252,7 +248,7 @@ export class InspectorPanel extends LegacyElementMixin(PolymerElement) {
   private updateSearchResults(indices: number[]) {
     const container = this.$$('.matches-list') as HTMLDivElement;
     const list = container.querySelector('.list') as HTMLDivElement;
-    list.innerHTML = '';
+    list.textContent = '';
     if (indices.length === 0) {
       this.removeContext('.matches-list');
       return;
@@ -320,7 +316,7 @@ export class InspectorPanel extends LegacyElementMixin(PolymerElement) {
       return;
     }
     const nnlist = this.$$('.nn-list') as HTMLDivElement;
-    nnlist.innerHTML = '';
+    nnlist.textContent = '';
     if (neighbors.length === 0) {
       this.removeContext('.nn');
       return;
@@ -400,7 +396,7 @@ export class InspectorPanel extends LegacyElementMixin(PolymerElement) {
       this.clearSelectionButton.disabled = true;
     }
   }
-  private setupUI(projector: Projector) {
+  private setupUI(projector: any) {
     this.distFunc = vector.cosDist;
     const eucDist = this.$$('.distance a.euclidean') as HTMLLinkElement;
     eucDist.onclick = () => {
