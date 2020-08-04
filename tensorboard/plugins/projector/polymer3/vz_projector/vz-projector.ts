@@ -16,19 +16,8 @@ import {PolymerElement} from '@polymer/polymer';
 import {customElement, observe, property} from '@polymer/decorators';
 import * as THREE from 'three';
 
-import '@polymer/iron-icons';
-import '@polymer/iron-icons/image-icons';
-import '@polymer/paper-button';
-import '@polymer/paper-dialog-scrollable';
-import '@polymer/paper-dialog';
-import '@polymer/paper-icon-button';
-import '@polymer/paper-spinner/paper-spinner';
-import '@polymer/paper-styles/paper-styles';
-import '@polymer/paper-toast';
-import '@polymer/paper-toggle-button';
-import '@polymer/paper-tooltip';
-
 import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+import '../../../../components_polymer3/polymer/irons_and_papers';
 
 import {AnalyticsLogger} from './analyticsLogger';
 import {template} from './vz-projector.html';
