@@ -14,24 +14,17 @@ limitations under the License.
 ==============================================================================*/
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
+import {FormsModule} from '@angular/forms';
 
-import {NpmiComponent} from './npmi_component';
-import {NpmiContainer} from './npmi_container';
+import {MatCheckboxModule} from '@angular/material/checkbox';
 
-import {InactiveModule} from './views/inactive/inactive_module';
-import {MainModule} from './views/main/main_module';
-
-import {PluginRegistryModule} from '../../plugins/plugin_registry_module';
+import {MainComponent} from './main_component';
+import {MainContainer} from './main_container';
+import {RunsModule} from '../../../../runs/runs_module';
 
 @NgModule({
-  declarations: [NpmiComponent, NpmiContainer],
-  imports: [
-    CommonModule,
-    InactiveModule,
-    MainModule,
-    PluginRegistryModule.forPlugin('npmi', NpmiContainer),
-  ],
-  exports: [NpmiContainer],
-  entryComponents: [NpmiContainer],
+  declarations: [MainComponent, MainContainer],
+  imports: [CommonModule, FormsModule, MatCheckboxModule, RunsModule],
+  exports: [MainContainer],
 })
-export class NpmiModule {}
+export class MainModule {}

@@ -1,6 +1,4 @@
-<!--
-@license
-Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,12 +11,13 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
--->
-<div class="npmi-container">
-  <npmi-inactive-view
-    *ngIf="runs.size === 0; else dataAvailable"
-  ></npmi-inactive-view>
-  <ng-template #dataAvailable>
-    <npmi-main></npmi-main>
-  </ng-template>
-</div>
+==============================================================================*/
+import {NgModule} from '@angular/core';
+
+import {InactiveComponent} from './inactive_component';
+
+@NgModule({
+  declarations: [InactiveComponent],
+  exports: [InactiveComponent],
+})
+export class InactiveModule {}
