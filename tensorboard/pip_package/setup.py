@@ -61,6 +61,10 @@ setup(
             "tf_projector_plugin/index.js",
             "tf_projector_plugin/projector_binary.html",
             "tf_projector_plugin/projector_binary.js",
+            # TODO(#3887): Remove after Polymer 3 migration.
+            "polymer3/tf_projector_plugin/index.js",
+            "polymer3/tf_projector_plugin/projector_binary.html",
+            "polymer3/tf_projector_plugin/projector_binary.js",
         ],
     },
     # Disallow python 3.0 and 3.1 which lack a 'futures' module (see above).

@@ -12,6 +12,7 @@ py_library(
     name = "projector_plugin",
     srcs = ["projector_plugin.py"],
     data = [
+        "//tensorboard/plugins/projector/polymer3/tf_projector_plugin:projector_assets",
         "//tensorboard/plugins/projector/tf_projector_plugin:projector_assets",
     ],
     srcs_version = "PY2AND3",

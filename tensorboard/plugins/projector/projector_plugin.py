@@ -244,7 +244,6 @@ class ProjectorPlugin(base_plugin.TBPlugin):
         """
         self.multiplexer = context.multiplexer
         self.logdir = context.logdir
-        self._handlers = None
         self.readers = {}
         self.run_paths = None
         self._configs = {}
@@ -265,7 +264,11 @@ class ProjectorPlugin(base_plugin.TBPlugin):
             self.run_paths = self.multiplexer.RunPaths()
 
     def get_plugin_apps(self):
-        self._handlers = {
+        asset_prefix = "tf_projector_plugin"
+        # TODO(#3887): Remove after Polymer 3 migration.
+        if os.getenv("TB_POLYMER3") == "1":
+            asset_prefix = os.path.join("polymer3", asset_prefix)
+        return {
             RUNS_ROUTE: self._serve_runs,
             CONFIG_ROUTE: self._serve_config,
             TENSOR_ROUTE: self._serve_tensor,
@@ -273,19 +276,17 @@ class ProjectorPlugin(base_plugin.TBPlugin):
             BOOKMARKS_ROUTE: self._serve_bookmarks,
             SPRITE_IMAGE_ROUTE: self._serve_sprite_image,
             "/index.js": functools.partial(
-                self._serve_file,
-                os.path.join("tf_projector_plugin", "index.js"),
+                self._serve_file, os.path.join(asset_prefix, "index.js"),
             ),
             "/projector_binary.html": functools.partial(
                 self._serve_file,
-                os.path.join("tf_projector_plugin", "projector_binary.html"),
+                os.path.join(asset_prefix, "projector_binary.html"),
             ),
             "/projector_binary.js": functools.partial(
                 self._serve_file,
-                os.path.join("tf_projector_plugin", "projector_binary.js"),
+                os.path.join(asset_prefix, "projector_binary.js"),
             ),
         }
-        return self._handlers
 
     def is_active(self):
         """Determines whether this plugin is active.
