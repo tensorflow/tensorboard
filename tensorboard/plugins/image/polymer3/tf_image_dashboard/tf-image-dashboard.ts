@@ -15,6 +15,7 @@ limitations under the License.
 
 import * as _ from "lodash";
 import { PolymerElement, html } from "@polymer/polymer";
+import { LegacyElementMixin } from "@polymer/polymer/lib/legacy/legacy-element-mixin";
 import { computed, customElement, observe, property } from "@polymer/decorators";
 import "@polymer/iron-icon";
 import "@polymer/paper-button";
@@ -35,7 +36,7 @@ import "../../../../components_polymer3/tf-tensorboard/registry";
 import "tf-image-loader";
 
 @customElement("tf-image-dashboard")
-class TfImageDashboard extends PolymerElement {
+class TfImageDashboard extends LegacyElementMixin(PolymerElement) {
     static readonly template = html `<tf-dashboard-layout>
       <div class="sidebar" slot="sidebar">
         <div class="settings">
@@ -133,23 +134,29 @@ class TfImageDashboard extends PolymerElement {
         --paper-slider-pin-start-color: var(--tb-orange-strong);
       }
     </style>`;
-    @property({
-        type: Boolean
-    })
+    
+    @property({ type: Boolean })
     reloadOnReady: boolean = true;
+    
     @property({ type: Array })
-    _selectedRuns: unknown[];
+    _selectedRuns: string[];
+    
     @property({ type: Object })
     _runToTagInfo: object;
+    
     @property({ type: Boolean })
     _dataNotFound: boolean;
+    
     @property({ type: Boolean })
     _actualSize: boolean;
+    
     @property({
         type: Number,
         readOnly: true
     })
+    
     _defaultBrightnessAdjustment: number = 1;
+    
     @property({
         type: Number,
         readOnly: true
@@ -167,10 +174,10 @@ class TfImageDashboard extends PolymerElement {
     _tagFilter: string;
     @property({ type: Boolean })
     _categoriesDomReady: boolean;
-    @property({
-        type: Object
-    })
-    _requestManager: object = () => new RequestManager();
+
+    @property({type: Object})
+    _requestManager = new RequestManager();
+    
     ready() {
         if (this.reloadOnReady)
             this.reload();
@@ -199,7 +206,7 @@ class TfImageDashboard extends PolymerElement {
     }
     _reloadImages() {
         this.root.querySelectorAll('tf-image-loader').forEach((image) => {
-            image.reload();
+            (image as any).reload();
         });
     }
     _shouldOpen(index) {

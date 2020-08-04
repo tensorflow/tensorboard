@@ -15,6 +15,7 @@ limitations under the License.
 
 import * as PolymerDom from '@polymer/polymer/lib/legacy/polymer.dom.js'
 import { PolymerElement, html } from "@polymer/polymer";
+import { LegacyElementMixin } from "@polymer/polymer/lib/legacy/legacy-element-mixin";
 import { computed, customElement, observe, property } from "@polymer/decorators";
 import "@polymer/paper-icon-button";
 import "@polymer/paper-slider";
@@ -29,7 +30,7 @@ import { runsColorScale } from "../../../../components_polymer3/tf_color_scale/c
 import "../../../../components_polymer3/tf_dashboard_common/tensorboard-color";
 
 @customElement("tf-image-loader")
-class TfImageLoader extends PolymerElement {
+class TfImageLoader extends LegacyElementMixin(PolymerElement) {
     static readonly template = html `<tf-card-heading tag="[[tag]]" run="[[run]]" display-name="[[tagMetadata.displayName]]" description="[[tagMetadata.description]]" color="[[_runColor]]">
       <template is="dom-if" if="[[_hasMultipleSamples]]">
         <div>sample: [[_sampleText]] of [[ofSamples]]</div>
@@ -191,11 +192,11 @@ class TfImageLoader extends PolymerElement {
     @property({
         type: Object
     })
-    _metadataCanceller: object = () => new Canceller();
+    _metadataCanceller = new Canceller();
     @property({
         type: Object
     })
-    _imageCanceller: object = () => new Canceller();
+    _imageCanceller = new Canceller();
     @property({
         type: Array,
         notify: true
@@ -236,14 +237,14 @@ class TfImageLoader extends PolymerElement {
         var currentStep = this._currentStep;
         if (!currentStep)
             return 0;
-        return currentStep.step;
+        return (currentStep as any).step;
     }
     @computed("_currentStep")
     get _currentWallTime(): string {
         var currentStep = this._currentStep;
         if (!currentStep)
             return '';
-        return formatDate(currentStep.wall_time);
+        return formatDate((currentStep as any).wall_time);
     }
     @computed("_steps")
     get _maxStepIndex(): number {
@@ -264,12 +265,11 @@ class TfImageLoader extends PolymerElement {
         return this.actualSize ? 'true' : 'false';
     }
     attached() {
-        this._attached = true;
         this.reload();
     }
     @observe("run", "tag")
     reload() {
-        if (!this._attached) {
+        if (!this.isAttached) {
             return;
         }
         this._metadataCanceller.cancelAll();
@@ -333,7 +333,7 @@ class TfImageLoader extends PolymerElement {
         img.style.filter += `brightness(${brightnessAdjustment})`;
         // Load the new image.
         this.set('_isImageLoading', true);
-        img.src = currentStep.url;
+        img.src = (currentStep as any).url;
     }
     _handleTap(e) {
         this.set('actualSize', !this.actualSize);
