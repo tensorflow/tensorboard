@@ -18,6 +18,7 @@ import {customElement, observe, property} from '@polymer/decorators';
 import * as _ from 'lodash';
 import * as d3 from 'd3';
 import * as Plottable from 'plottable';
+import '../polymer/plottable-style';
 
 import {LineChart, LineChartStatus} from './line-chart';
 import {LineChartExporter} from './line-chart-exporter';
