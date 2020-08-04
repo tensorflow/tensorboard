@@ -15,11 +15,8 @@ limitations under the License.
 
 import {html} from '@polymer/polymer';
 import {customElement, property, observe, computed} from '@polymer/decorators';
-import '@polymer/iron-icon';
-import '@polymer/iron-collapse';
-import '@polymer/paper-button';
-import '@polymer/paper-input/paper-input';
 
+import '../polymer/irons_and_papers';
 import {
   Category,
   CategoryType,

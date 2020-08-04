@@ -15,10 +15,7 @@ limitations under the License.
 import {PolymerElement} from '@polymer/polymer';
 import {customElement, property} from '@polymer/decorators';
 
-import '@polymer/iron-collapse';
-import '@polymer/paper-icon-button';
-import '@polymer/paper-tooltip';
-
+import '../../../../components_polymer3/polymer/irons_and_papers';
 import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
 
 import {template} from './vz-projector-bookmark-panel.html';
