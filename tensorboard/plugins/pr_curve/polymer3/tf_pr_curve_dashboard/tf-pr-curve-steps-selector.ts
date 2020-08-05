@@ -77,21 +77,24 @@ class TfPrCurveStepsSelector extends PolymerElement {
       }
     </style>
   `;
+
   @property({type: Array})
   runs: unknown[];
+
   @property({type: Object})
   runToAvailableTimeEntries: object;
+
   @property({
     type: Object,
     notify: true,
     computed: '_computeRunToStep(runToAvailableTimeEntries, _runToStepIndex)',
   })
   runToStep: object;
+
   @property({type: String})
   timeDisplayType: string;
-  @property({
-    type: Object,
-  })
+
+  @property({type: Object})
   _runToStepIndex: object = () => ({});
   _computeColorForRun(run) {
     return tf_color_scale.runsColorScale(run);

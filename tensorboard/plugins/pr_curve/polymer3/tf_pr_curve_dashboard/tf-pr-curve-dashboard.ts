@@ -164,45 +164,43 @@ class TfPrCurveDashboard extends PolymerElement {
       }
     </style>
   `;
-  @property({
-    type: Boolean,
-  })
+
+  @property({type: Boolean})
   reloadOnReady: boolean = true;
-  @property({
-    type: String,
-  })
+
+  @property({type: String})
   _timeDisplayType: string = 'step';
-  @property({
-    type: Array,
-  })
+
+  @property({type: Array})
   _selectedRuns: unknown[] = () => [];
-  @property({
-    type: Object,
-  })
+
+  @property({type: Object})
   _runToTagInfo: object = () => ({});
-  @property({
-    type: Object,
-  })
+
+  @property({type: Object})
   _tagToRunToData: object = () => ({});
+
   @property({
     type: Object,
     notify: true,
   })
   _runToStep: object;
+
   @property({type: Boolean})
   _dataNotFound: boolean;
+
   @property({type: String})
   _tagFilter: string;
+
   @property({type: Boolean})
   _categoriesDomReady: boolean;
-  @property({
-    type: Function,
-  })
+
+  @property({type: Function})
   _getCategoryItemKey: object = () => (item) => item.tag;
-  @property({
-    type: Object,
-  })
+
+  @property({type: Object})
   _requestManager: object = () => new tf_backend.RequestManager();
+
   @property({
     type: Number,
     notify: true,

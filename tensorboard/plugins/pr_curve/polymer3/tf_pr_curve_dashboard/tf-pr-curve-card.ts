@@ -145,45 +145,52 @@ class TfPrCurveCard extends PolymerElement {
       }
     </style>
   `;
+
   @property({type: Array})
   runs: unknown[];
+
   @property({type: String})
   tag: string;
+
   @property({type: Object})
   tagMetadata: object;
+
   @property({type: Object})
   runToStepCap: object;
+
   @property({type: Object})
   requestManager: object;
+
   @property({type: Boolean})
   active: boolean;
+
   @property({
     type: Boolean,
     reflectToAttribute: true,
   })
   _expanded: boolean = false;
-  @property({
-    type: Object,
-  })
+
+  @property({type: Object})
   _runToPrCurveEntry: object = () => ({});
-  @property({
-    type: Object,
-  })
+
+  @property({type: Object})
   _previousRunToPrCurveEntry: object = () => ({});
+
   @property({type: Object})
   _runToDataOverTime: object;
+
   @property({type: Function})
   onDataChange: object;
-  @property({
-    type: Object,
-  })
+
+  @property({type: Object})
   _colorScaleFunction: object = () => ({scale: tf_color_scale.runsColorScale});
-  @property({
-    type: Object,
-  })
+
+  @property({type: Object})
   _canceller: object = () => new tf_backend.Canceller();
+
   @property({type: Boolean})
   _attached: boolean;
+
   @property({
     type: Object,
     readOnly: true,
@@ -196,11 +203,13 @@ class TfPrCurveCard extends PolymerElement {
       accessor: (d) => d.recall,
     };
   };
+
   @property({
     type: Object,
     readOnly: true,
   })
   _yValueAccessor: object = () => (d) => d.precision;
+
   @property({
     type: Array,
     readOnly: true,
@@ -245,6 +254,7 @@ class TfPrCurveCard extends PolymerElement {
       },
     ];
   };
+
   @property({
     type: Array,
     readOnly: true,
@@ -258,19 +268,20 @@ class TfPrCurveCard extends PolymerElement {
     'true_negatives',
     'false_negatives',
   ];
+
   @property({
     type: Array,
     readOnly: true,
   })
   _defaultXRange: unknown[] = [-0.05, 1.05];
+
   @property({
     type: Array,
     readOnly: true,
   })
   _defaultYRange: unknown[] = [-0.05, 1.05];
-  @property({
-    type: Function,
-  })
+
+  @property({type: Function})
   _dataUrl: object = function() {
     return (run) => {
       const tag = this.tag;
@@ -280,6 +291,7 @@ class TfPrCurveCard extends PolymerElement {
       );
     };
   };
+
   @property({
     type: Boolean,
     readOnly: true,
