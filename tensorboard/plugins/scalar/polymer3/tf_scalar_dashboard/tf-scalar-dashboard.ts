@@ -41,6 +41,12 @@ import {TfScalarCard} from './tf-scalar-card';
 import './tf-smoothing-input';
 import * as _ from 'lodash';
 
+/**
+ * A frontend that displays a set of tf-scalar-charts, each of which
+ * represents the time series for a particular tag. This dashboard
+ * provides a categorizer, run selector, and abcissa selector, by which
+ * the user can customize how data is organized and displayed.
+ */
 @customElement('tf-scalar-dashboard')
 class TfScalarDashboard extends LegacyElementMixin(ArrayUpdateHelper) {
   static readonly template = html`
@@ -253,12 +259,17 @@ class TfScalarDashboard extends LegacyElementMixin(ArrayUpdateHelper) {
   @property({type: String})
   _tagFilter: string = '';
 
+  // Categories must only be computed after _dataNotFound is found to be
+  // true and then polymer DOM templating responds to that finding. We
+  // thus use this property to guard when categories are computed.
   @property({type: Boolean})
   _categoriesDomReady: boolean;
 
   @property({type: Array})
   _categories: string[] = [];
 
+  // Items show multiple runs, so exclude runs from category item keys for
+  // efficient template reuse.
   @property({type: Object})
   _getCategoryItemKey: object = (item) => item.tag;
 

@@ -27,6 +27,10 @@ import '../../../../components_polymer3/tf_line_chart_data_loader/tf-line-chart-
 import '../../../../components_polymer3/vz_line_chart2/vz-line-chart2';
 import {DEFAULT_TOOLTIP_COLUMNS} from '../../../../components_polymer3/vz_line_chart2/vz-line-chart2';
 
+/**
+ * A card that handles loading data (at the right times), rendering a scalar
+ * chart, and providing UI affordances (such as buttons) for scalar data.
+ */
 @customElement('tf-scalar-card')
 export class TfScalarCard extends PolymerElement {
   static readonly template = html`
@@ -207,12 +211,15 @@ export class TfScalarCard extends PolymerElement {
   @property({type: Object})
   tagMetadata: object;
 
+  // If specified uses the given colorScale; otherwise, uses a built-in
+  // default. See _getColorScale below for more details.
   @property({type: Object})
   colorScale: object = null;
 
   @property({type: String})
   tooltipSortingMethod: string;
 
+  // This function is called when data is received from the backend.
   @property({type: Object})
   _loadDataCallback: object = function() {
     return (scalarChart, datum, data) => {
@@ -237,9 +244,16 @@ export class TfScalarCard extends PolymerElement {
     );
   };
 
+  // To be provided as the `url-fn` property to `tf-downloader`.
   @property({type: Object})
   _downloadUrlFn: object = (tag, run) => this.getDataLoadUrl({tag, run});
 
+  // A function called to fetch the scalars data from the backend.
+  // Should receive a {tag, run, experiment} object and return
+  // a promise resolving with the fetched scalars. The default
+  // implementation of this function executes:
+  // this.requestManager.request(
+  //      this.getDataLoadUrl({tag, run, experiment})
   @property({type: Object})
   requestData: object;
 
@@ -248,7 +262,7 @@ export class TfScalarCard extends PolymerElement {
 
   @property({
     type: Boolean,
-    reflectToAttribute: true,
+    reflectToAttribute: true, // for CSS
   })
   _expanded: boolean = false;
 

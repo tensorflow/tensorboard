@@ -19,6 +19,9 @@ import '@polymer/paper-input/paper-input';
 import '@polymer/paper-slider';
 import * as _ from 'lodash';
 
+/**
+ * tf-smoothing-input creates an input component for exponential smoothing.
+ */
 @customElement('tf-smoothing-input')
 class TfSmoothingInput extends PolymerElement {
   static readonly template = html`
@@ -104,6 +107,7 @@ class TfSmoothingInput extends PolymerElement {
   })
   _immediateWeightNumberForPaperSlider: number;
 
+  // Paper input treats values as strings even if you specify them as numbers.
   @property({
     type: String,
     notify: true,
