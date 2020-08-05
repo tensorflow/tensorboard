@@ -18,6 +18,7 @@ import '../plugins/profile_redirect/polymer3/tf_profile_redirect_dashboard/tf-pr
 import '../plugins/text/polymer3/tf_text_dashboard/tf-text-dashboard';
 
 // Exported Polymer <-> Angular interop (to be removed).
+import './experimental/plugin_util/plugin-host';
 import './tf_backend/tf-backend-polymer';
 import './tf_globals/globals-polymer';
 import './tf_storage/tf-storage-polymer';
