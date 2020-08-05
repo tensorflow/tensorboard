@@ -587,3 +587,14 @@ genrule(
     outs = ["d3-transition.d.ts"],
     cmd = "sed '/^declare module/d' $< | awk '/^}$$/ && !p {p++;next}1' >$@",
 )
+
+tf_web_library(
+    name = "roboto",
+    srcs = [
+        "roboto.html",
+    ],
+    path = "/tf-imports",
+    deps = [
+        "@com_google_fonts_roboto",
+    ],
+)
