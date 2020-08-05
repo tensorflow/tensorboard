@@ -14,23 +14,22 @@ limitations under the License.
 ==============================================================================*/
 
 import {PolymerElement, html} from '@polymer/polymer';
-import {customElement, property} from '@polymer/decorators';
-import '@polymer/paper-icon-button';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-backend/tf-backend.html';
-import {DO_NOT_SUBMIT} from '../tf-card-heading/tf-card-heading.html';
-import {DO_NOT_SUBMIT} from '../tf-color-scale/tf-color-scale.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
-import {DO_NOT_SUBMIT} from '../tf-line-chart-data-loader/tf-line-chart-data-loader.html';
-import '@polymer/paper-icon-button';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-backend/tf-backend.html';
-import {DO_NOT_SUBMIT} from '../tf-card-heading/tf-card-heading.html';
-import {DO_NOT_SUBMIT} from '../tf-color-scale/tf-color-scale.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
-import {DO_NOT_SUBMIT} from '../tf-line-chart-data-loader/tf-line-chart-data-loader.html';
+import {computed, customElement, observe, property} from '@polymer/decorators';
+import '../../../../components_polymer3/polymer/irons_and_papers';
+
+import {Canceller} from '../../../../components_polymer3/tf_backend/canceller';
+import {getRouter} from '../../../../components_polymer3/tf_backend/router';
+import {addParams} from '../../../../components_polymer3/tf_backend/urlPathHelpers';
+import '../../../../components_polymer3/tf_card_heading/tf-card-heading';
+import {runsColorScale} from '../../../../components_polymer3/tf_color_scale/colorScale';
+import '../../../../components_polymer3/tf_line_chart_data_loader/tf-line-chart-data-loader';
+import * as vz_chart_helpers from '../../../../components_polymer3/vz_chart_helpers/vz-chart-helpers';
+
+import * as _ from 'lodash';
+import * as Plottable from 'plottable';
+
 @customElement('tf-pr-curve-card')
-class TfPrCurveCard extends PolymerElement {
+export class TfPrCurveCard extends PolymerElement {
   static readonly template = html`
     <tf-card-heading
       tag="[[tag]]"
@@ -147,7 +146,7 @@ class TfPrCurveCard extends PolymerElement {
   `;
 
   @property({type: Array})
-  runs: unknown[];
+  runs: string[];
 
   @property({type: String})
   tag: string;
@@ -171,31 +170,28 @@ class TfPrCurveCard extends PolymerElement {
   _expanded: boolean = false;
 
   @property({type: Object})
-  _runToPrCurveEntry: object = () => ({});
+  _runToPrCurveEntry: object = {};
 
   @property({type: Object})
-  _previousRunToPrCurveEntry: object = () => ({});
+  _previousRunToPrCurveEntry: object = {};
 
   @property({type: Object})
   _runToDataOverTime: object;
 
-  @property({type: Function})
-  onDataChange: object;
+  @property({type: Object})
+  onDataChange: (unknown) => void;
 
   @property({type: Object})
-  _colorScaleFunction: object = () => ({scale: tf_color_scale.runsColorScale});
+  _colorScaleFunction: object = {scale: runsColorScale};
 
   @property({type: Object})
-  _canceller: object = () => new tf_backend.Canceller();
+  _canceller: Canceller = new Canceller();
 
   @property({type: Boolean})
   _attached: boolean;
 
-  @property({
-    type: Object,
-    readOnly: true,
-  })
-  _xComponentsCreationMethod: object = () => () => {
+  @property({type: Object})
+  _xComponentsCreationMethod = () => {
     const scale = new Plottable.Scales.Linear();
     return {
       scale: scale,
@@ -204,17 +200,11 @@ class TfPrCurveCard extends PolymerElement {
     };
   };
 
-  @property({
-    type: Object,
-    readOnly: true,
-  })
-  _yValueAccessor: object = () => (d) => d.precision;
+  @property({type: Object})
+  _yValueAccessor = (d) => d.precision;
 
-  @property({
-    type: Array,
-    readOnly: true,
-  })
-  _tooltipColumns: unknown[] = () => {
+  @property({type: Array})
+  _tooltipColumns: unknown[] = (() => {
     const valueFormatter = vz_chart_helpers.multiscaleFormatter(
       vz_chart_helpers.Y_TOOLTIP_FORMATTER_PRECISION
     );
@@ -253,13 +243,10 @@ class TfPrCurveCard extends PolymerElement {
         evaluate: (d) => d.datum.false_negatives,
       },
     ];
-  };
+  })();
 
-  @property({
-    type: Array,
-    readOnly: true,
-  })
-  _seriesDataFields: unknown[] = [
+  @property({type: Array})
+  _seriesDataFields: string[] = [
     'thresholds',
     'precision',
     'recall',
@@ -269,34 +256,24 @@ class TfPrCurveCard extends PolymerElement {
     'false_negatives',
   ];
 
-  @property({
-    type: Array,
-    readOnly: true,
-  })
-  _defaultXRange: unknown[] = [-0.05, 1.05];
+  @property({type: Array})
+  _defaultXRange: number[] = [-0.05, 1.05];
 
-  @property({
-    type: Array,
-    readOnly: true,
-  })
-  _defaultYRange: unknown[] = [-0.05, 1.05];
+  @property({type: Array})
+  _defaultYRange: number[] = [-0.05, 1.05];
 
-  @property({type: Function})
-  _dataUrl: object = function() {
-    return (run) => {
-      const tag = this.tag;
-      return tf_backend.addParams(
-        tf_backend.getRouter().pluginRoute('pr_curves', '/pr_curves'),
-        {tag, run}
-      );
-    };
+  @property({type: Object})
+  _dataUrl: object = (run) => {
+    const tag = this.tag;
+    return addParams(getRouter().pluginRoute('pr_curves', '/pr_curves'), {
+      tag,
+      run,
+    });
   };
 
-  @property({
-    type: Boolean,
-    readOnly: true,
-  })
+  @property({type: Boolean})
   _smoothingEnabled: boolean = false;
+
   _createProcessDataFunction() {
     // This function is called when data is received from the backend.
     return (chart, run, data) => {
@@ -308,16 +285,24 @@ class TfPrCurveCard extends PolymerElement {
       );
     };
   }
+
   _computeRunColor(run) {
-    return this._colorScaleFunction.scale(run);
+    return runsColorScale(run);
   }
-  attached() {
+
+  connectedCallback() {
+    super.connectedCallback();
     // Defer reloading until after we're attached, because that ensures that
     // the requestManager has been set from above. (Polymer is tricky
     // sometimes)
     this._attached = true;
     this.reload();
   }
+
+  _getChartDataLoader() {
+    return this.shadowRoot.querySelector('tf-line-chart-data-loader') as any; // TfLineChartDataLoader
+  }
+
   @observe('runs', 'tag')
   reload() {
     if (!this._attached) {
@@ -328,8 +313,9 @@ class TfPrCurveCard extends PolymerElement {
       this.set('_runToDataOverTime', {});
       return;
     }
-    this.$$('tf-line-chart-data-loader').reload();
+    this._getChartDataLoader().reload();
   }
+
   @observe(
     '_runToPrCurveEntry',
     '_previousRunToPrCurveEntry',
@@ -345,7 +331,7 @@ class TfPrCurveCard extends PolymerElement {
         // The PR curve for this run does not need to be updated.
         return;
       }
-      if (!setOfRelevantRuns[run]) {
+      if (!setOfRelevantRuns[run as string]) {
         // Clear this dataset - the user has unselected it.
         this._clearSeriesData(run);
         return;
@@ -353,6 +339,7 @@ class TfPrCurveCard extends PolymerElement {
       this._updateSeriesDataForRun(run, entry);
     });
   }
+
   _updateSeriesDataForRun(run, entryForOneStep) {
     // Reverse the values so they are plotted in order. The logic within
     // the line chart for associating information to show in the tooltip
@@ -377,23 +364,25 @@ class TfPrCurveCard extends PolymerElement {
     for (let i = 0; i < seriesData.length; i++) {
       seriesData[i] = _.mapValues(fieldsToData, (values) => values[i]);
     }
-    const loader = this.$$('tf-line-chart-data-loader');
+    const loader = this._getChartDataLoader();
     loader.setSeriesData(run, seriesData);
     loader.commitChanges();
   }
+
   _clearSeriesData(run) {
     // Clears data for a run in the chart.
-    const loader = this.$$('tf-line-chart-data-loader');
+    const loader = this._getChartDataLoader();
     loader.setSeriesData(run, []);
     loader.commitChanges();
   }
+
   @observe('_runToDataOverTime', 'runToStepCap')
   _updateRunToPrCurveEntry() {
     var runToDataOverTime = this._runToDataOverTime;
     var runToStepCap = this.runToStepCap;
     const runToEntry = {};
     _.forOwn(runToDataOverTime, (entries, run) => {
-      if (!entries || !entries.length) {
+      if (!entries || !(entries as unknown[]).length) {
         return;
       }
       runToEntry[run] = this._computeEntryClosestOrEqualToStepCap(
@@ -406,6 +395,7 @@ class TfPrCurveCard extends PolymerElement {
     this.set('_previousRunToPrCurveEntry', this._runToPrCurveEntry);
     this.set('_runToPrCurveEntry', runToEntry);
   }
+
   @observe('_runToDataOverTime')
   _notifyDataChange() {
     var runToDataOverTime = this._runToDataOverTime;
@@ -413,6 +403,7 @@ class TfPrCurveCard extends PolymerElement {
       this.onDataChange(runToDataOverTime);
     }
   }
+
   _computeEntryClosestOrEqualToStepCap(stepCap, entries) {
     const entryIndex = Math.min(
       _.sortedIndex(entries.map((entry) => entry.step), stepCap),
@@ -420,27 +411,31 @@ class TfPrCurveCard extends PolymerElement {
     );
     return entries[entryIndex];
   }
+
   @computed('runs', '_runToPrCurveEntry')
   get _runsWithStepAvailable(): unknown[] {
     var runs = this.runs;
     var actualPrCurveEntryPerRun = this._runToPrCurveEntry;
     return _.filter(runs, (run) => actualPrCurveEntryPerRun[run]).sort();
   }
+
   @computed('_runsWithStepAvailable')
   get _setOfRelevantRuns(): object {
     var runsWithStepAvailable = this._runsWithStepAvailable;
     const setOfRelevantRuns = {};
     _.forEach(runsWithStepAvailable, (run) => {
-      setOfRelevantRuns[run] = true;
+      setOfRelevantRuns[run as string] = true;
     });
     return setOfRelevantRuns;
   }
+
   _computeCurrentStepForRun(runToPrCurveEntry, run) {
     // If there is no data for the run, then the run is not being shown, so
     // the return value is not used. We return null as a reasonable value.
     const entry = runToPrCurveEntry[run];
     return entry ? entry.step : null;
   }
+
   _computeCurrentWallTimeForRun(runToPrCurveEntry, run) {
     const entry = runToPrCurveEntry[run];
     // If there is no data for the run, then the run is not being shown, so
@@ -450,14 +445,17 @@ class TfPrCurveCard extends PolymerElement {
     }
     return new Date(entry.wall_time * 1000).toString();
   }
+
   _toggleExpanded(e) {
     this.set('_expanded', !this._expanded);
     this.redraw();
   }
+
   _resetDomain() {
-    this.$$('tf-line-chart-data-loader').resetDomain();
+    this._getChartDataLoader().resetDomain();
   }
+
   redraw() {
-    this.$$('tf-line-chart-data-loader').redraw();
+    this._getChartDataLoader().redraw();
   }
 }

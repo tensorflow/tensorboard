@@ -14,17 +14,11 @@ limitations under the License.
 ==============================================================================*/
 
 import {PolymerElement, html} from '@polymer/polymer';
-import {customElement, property} from '@polymer/decorators';
-import '@polymer/paper-slider';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-card-heading/tf-card-heading.html';
-import {DO_NOT_SUBMIT} from '../tf-color-scale/tf-color-scale.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
-import '@polymer/paper-slider';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-card-heading/tf-card-heading.html';
-import {DO_NOT_SUBMIT} from '../tf-color-scale/tf-color-scale.html';
-import {DO_NOT_SUBMIT} from '../tf-imports/lodash.html';
+import {computed, customElement, observe, property} from '@polymer/decorators';
+import '../../../../components_polymer3/polymer/irons_and_papers';
+import {runsColorScale} from '../../../../components_polymer3/tf_color_scale/colorScale';
+import * as _ from 'lodash';
+
 @customElement('tf-pr-curve-steps-selector')
 class TfPrCurveStepsSelector extends PolymerElement {
   static readonly template = html`
@@ -79,7 +73,7 @@ class TfPrCurveStepsSelector extends PolymerElement {
   `;
 
   @property({type: Array})
-  runs: unknown[];
+  runs: string[];
 
   @property({type: Object})
   runToAvailableTimeEntries: object;
@@ -95,10 +89,12 @@ class TfPrCurveStepsSelector extends PolymerElement {
   timeDisplayType: string;
 
   @property({type: Object})
-  _runToStepIndex: object = () => ({});
+  _runToStepIndex: object = {};
+
   _computeColorForRun(run) {
-    return tf_color_scale.runsColorScale(run);
+    return runsColorScale(run);
   }
+
   _computeTimeTextForRun(
     runToAvailableTimeEntries,
     runToStepIndex,
@@ -131,6 +127,7 @@ class TfPrCurveStepsSelector extends PolymerElement {
       `The display type of ${timeDisplayType} is not recognized.`
     );
   }
+
   _sliderValueChanged(event) {
     const run = event.target.dataset.run;
     const val = event.target.immediateValue;
@@ -144,10 +141,12 @@ class TfPrCurveStepsSelector extends PolymerElement {
     }
     this._runToStepIndex = newRunToStepIndex;
   }
+
   _computeMaxStepIndexForRun(runToAvailableTimeEntries, run) {
-    const entries = runToAvailableTimeEntries[run];
+    const entries = runToAvailableTimeEntries[run] as unknown[];
     return entries && entries.length ? entries.length - 1 : 0;
   }
+
   @observe('runToAvailableTimeEntries')
   _updateStepsForNewRuns() {
     var runToAvailableTimeEntries = this.runToAvailableTimeEntries;
@@ -157,15 +156,17 @@ class TfPrCurveStepsSelector extends PolymerElement {
       if (!_.isNumber(newRunToStepIndex[run])) {
         // This run had previously lacked a slider. Initially set the slider
         // for the run to point to the last step.
-        newRunToStepIndex[run] = entries.length - 1;
+        newRunToStepIndex[run] = (entries as unknown[]).length - 1;
       }
     });
     this._runToStepIndex = newRunToStepIndex;
   }
+
   _getStep(runToStepIndex, run) {
     if (!this._runToStepIndex) return 0;
     return this._runToStepIndex[run];
   }
+
   _computeRunToStep(runToAvailableTimeEntries, runToStepIndex) {
     const runToStep = {};
     _.forOwn(runToStepIndex, (index, run) => {
@@ -177,6 +178,7 @@ class TfPrCurveStepsSelector extends PolymerElement {
     });
     return runToStep;
   }
+
   @computed('runs', 'runToAvailableTimeEntries')
   get _runsWithSliders(): unknown[] {
     var runs = this.runs;

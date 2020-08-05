@@ -14,43 +14,30 @@ limitations under the License.
 ==============================================================================*/
 
 import {PolymerElement, html} from '@polymer/polymer';
-import {customElement, property} from '@polymer/decorators';
-import '@polymer/iron-icon';
-import '@polymer/paper-button';
-import '@polymer/paper-input';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-backend/tf-backend.html';
-import {DO_NOT_SUBMIT} from '../tf-categorization-utils/tf-categorization-utils.html';
-import {DO_NOT_SUBMIT} from '../tf-categorization-utils/tf-tag-filterer.html';
-import {DO_NOT_SUBMIT} from '../tf-color-scale/tf-color-scale.html';
-import {DO_NOT_SUBMIT} from '../tf-dashboard-common/dashboard-style.html';
-import {DO_NOT_SUBMIT} from '../tf-dashboard-common/tf-dashboard-layout.html';
-import {DO_NOT_SUBMIT} from '../tf-dashboard-common/tf-option-selector.html';
-import {DO_NOT_SUBMIT} from '../tf-paginated-view/tf-category-paginated-view.html';
-import {DO_NOT_SUBMIT} from '../tf-runs-selector/tf-runs-selector.html';
-import {DO_NOT_SUBMIT} from '../tf-tensorboard/registry.html';
-import {DO_NOT_SUBMIT} from '../tf-utils/tf-utils.html';
-import {DO_NOT_SUBMIT} from 'tf-pr-curve-card.html';
-import {DO_NOT_SUBMIT} from 'tf-pr-curve-steps-selector.html';
-import '@polymer/iron-icon';
-import '@polymer/paper-button';
-import '@polymer/paper-input';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-backend/tf-backend.html';
-import {DO_NOT_SUBMIT} from '../tf-categorization-utils/tf-categorization-utils.html';
-import {DO_NOT_SUBMIT} from '../tf-categorization-utils/tf-tag-filterer.html';
-import {DO_NOT_SUBMIT} from '../tf-color-scale/tf-color-scale.html';
-import {DO_NOT_SUBMIT} from '../tf-dashboard-common/dashboard-style.html';
-import {DO_NOT_SUBMIT} from '../tf-dashboard-common/tf-dashboard-layout.html';
-import {DO_NOT_SUBMIT} from '../tf-dashboard-common/tf-option-selector.html';
-import {DO_NOT_SUBMIT} from '../tf-paginated-view/tf-category-paginated-view.html';
-import {DO_NOT_SUBMIT} from '../tf-runs-selector/tf-runs-selector.html';
-import {DO_NOT_SUBMIT} from '../tf-tensorboard/registry.html';
-import {DO_NOT_SUBMIT} from '../tf-utils/tf-utils.html';
-import {DO_NOT_SUBMIT} from 'tf-pr-curve-card.html';
-import {DO_NOT_SUBMIT} from 'tf-pr-curve-steps-selector.html';
+import {computed, customElement, property} from '@polymer/decorators';
+import '../../../../components_polymer3/polymer/irons_and_papers';
+import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+
+import {getTags} from '../../../../components_polymer3/tf_backend/backend';
+import {RequestManager} from '../../../../components_polymer3/tf_backend/requestManager';
+import {getRouter} from '../../../../components_polymer3/tf_backend/router';
+import * as tf_categorization_utils from '../../../../components_polymer3/tf_categorization_utils/categorizationUtils';
+import '../../../../components_polymer3/tf_categorization_utils/tf-tag-filterer';
+import '../../../../components_polymer3/tf_dashboard_common/dashboard-style';
+import '../../../../components_polymer3/tf_dashboard_common/tf-dashboard-layout';
+import '../../../../components_polymer3/tf_dashboard_common/tf-option-selector';
+import '../../../../components_polymer3/tf_paginated_view/tf-category-paginated-view';
+import '../../../../components_polymer3/tf_runs_selector/tf-runs-selector';
+import * as tf_utils from '../../../../components_polymer3/tf_utils/utils';
+
+import './tf-pr-curve-card';
+import {TfPrCurveCard} from './tf-pr-curve-card';
+import './tf-pr-curve-steps-selector';
+
+import * as _ from 'lodash';
+
 @customElement('tf-pr-curve-dashboard')
-class TfPrCurveDashboard extends PolymerElement {
+class TfPrCurveDashboard extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
     <tf-dashboard-layout>
       <div class="sidebar" slot="sidebar">
@@ -172,13 +159,13 @@ class TfPrCurveDashboard extends PolymerElement {
   _timeDisplayType: string = 'step';
 
   @property({type: Array})
-  _selectedRuns: unknown[] = () => [];
+  _selectedRuns: string[] = [];
 
   @property({type: Object})
-  _runToTagInfo: object = () => ({});
+  _runToTagInfo: object = {};
 
   @property({type: Object})
-  _tagToRunToData: object = () => ({});
+  _tagToRunToData: object = {};
 
   @property({
     type: Object,
@@ -195,37 +182,42 @@ class TfPrCurveDashboard extends PolymerElement {
   @property({type: Boolean})
   _categoriesDomReady: boolean;
 
-  @property({type: Function})
-  _getCategoryItemKey: object = () => (item) => item.tag;
+  @property({type: Object})
+  _getCategoryItemKey: object = (item) => item.tag;
 
   @property({type: Object})
-  _requestManager: object = () => new tf_backend.RequestManager();
+  _requestManager: RequestManager = new RequestManager();
 
   @property({
     type: Number,
     notify: true,
   })
   _step: number = 0;
+
   ready() {
+    super.ready();
     if (this.reloadOnReady) this.reload();
   }
+
   reload() {
     Promise.all([this._fetchTags()]).then(() => {
       this._reloadCards();
     });
   }
+
   _shouldOpen(index) {
     return index <= 2;
   }
+
   _fetchTags() {
-    const url = tf_backend.getRouter().pluginRoute('pr_curves', '/tags');
+    const url = getRouter().pluginRoute('pr_curves', '/tags');
     return this._requestManager.request(url).then((runToTagInfo) => {
       if (_.isEqual(runToTagInfo, this._runToTagInfo)) {
         // No need to update anything if there are no changes.
         return;
       }
       const runToTag = _.mapValues(runToTagInfo, (o) => _.keys(o));
-      const tags = tf_backend.getTags(runToTag);
+      const tags = getTags(runToTag);
       this.set('_dataNotFound', tags.length === 0);
       this.set('_runToTagInfo', runToTagInfo);
       this.async(() => {
@@ -234,38 +226,38 @@ class TfPrCurveDashboard extends PolymerElement {
       });
     });
   }
+
   _reloadCards() {
     _.forEach(this.root.querySelectorAll('tf-pr-curve-card'), (card) => {
-      card.reload();
+      (card as TfPrCurveCard).reload();
     });
   }
+
   @computed(
     '_runToTagInfo',
     '_selectedRuns',
     '_tagFilter',
     '_categoriesDomReady'
   )
-  get _categories(): unknown[] {
+  get _categories(): tf_categorization_utils.TagCategory[] {
     var runToTagInfo = this._runToTagInfo;
     var selectedRuns = this._selectedRuns;
     var tagFilter = this._tagFilter;
-    var categoriesDomReady = this._categoriesDomReady;
     const runToTag = _.mapValues(runToTagInfo, (x) => Object.keys(x));
     return tf_categorization_utils.categorizeTags(
-      runToTag,
+      runToTag as tf_categorization_utils.RunToTag,
       selectedRuns,
       tagFilter
     );
   }
-  _computeColorForRun(run) {
-    return tf_color_scale.runsColorScale(run);
-  }
+
   @computed('_selectedRuns', '_runToTagInfo')
   get _relevantSelectedRuns(): unknown[] {
     var selectedRuns = this._selectedRuns;
     var runToTagInfo = this._runToTagInfo;
     return selectedRuns.filter((run) => runToTagInfo[run]);
   }
+
   _tagMetadata(runToTagsInfo, runs, tag) {
     const runToTagInfo = {};
     runs.forEach((run) => {
@@ -276,6 +268,7 @@ class TfPrCurveDashboard extends PolymerElement {
     const defaultDisplayName = tag.replace(/\/pr_curves$/, '');
     return tf_utils.aggregateTagInfo(runToTagInfo, defaultDisplayName);
   }
+
   _createDataChangeCallback(tag) {
     return (runToData) => {
       this.set('_tagToRunToData', {
@@ -284,6 +277,7 @@ class TfPrCurveDashboard extends PolymerElement {
       });
     };
   }
+
   @computed('_tagToRunToData')
   get _runToAvailableTimeEntries(): object {
     var tagToRunToData = this._tagToRunToData;
@@ -298,7 +292,7 @@ class TfPrCurveDashboard extends PolymerElement {
     }
     const result = {};
     for (const [run, tag] of Object.entries(canonicalTag)) {
-      const data = tagToRunToData[tag][run];
+      const data = tagToRunToData[tag as string][run];
       result[run] = data.map((d) => ({
         step: d.step,
         wall_time: d.wall_time,
