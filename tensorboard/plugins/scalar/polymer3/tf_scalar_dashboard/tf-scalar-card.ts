@@ -15,10 +15,7 @@ limitations under the License.
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, property} from '@polymer/decorators';
-import '@polymer/paper-icon-button';
-import '@polymer/paper-item';
-import '@polymer/paper-listbox';
-import '@polymer/paper-menu-button';
+import '../../../../components_polymer3/polymer/irons_and_papers';
 import {getRouter} from '../../../../components_polymer3/tf_backend/router';
 import '../../../../components_polymer3/tf_card_heading/tf-card-heading';
 import {runsColorScale} from '../../../../components_polymer3/tf_color_scale/colorScale';

@@ -15,12 +15,7 @@ limitations under the License.
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {computed, customElement, observe, property} from '@polymer/decorators';
-import '@polymer/paper-button';
-import '@polymer/paper-checkbox';
-import '@polymer/paper-dropdown-menu/paper-dropdown-menu';
-import '@polymer/paper-listbox';
-import '@polymer/paper-input/paper-input';
-import '@polymer/paper-item';
+import '../../../../components_polymer3/polymer/irons_and_papers';
 import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
 import {getTags} from '../../../../components_polymer3/tf_backend/backend';
 import {RequestManager} from '../../../../components_polymer3/tf_backend/requestManager';
