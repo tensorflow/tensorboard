@@ -109,8 +109,8 @@ tf_web_library(
     ],
     path = "/",
     deps = [
+        "//tensorboard/components/tf_imports:roboto",
         "//tensorboard/components_polymer3:analytics_html",
-        "@com_google_fonts_roboto",
     ],
 )
 
