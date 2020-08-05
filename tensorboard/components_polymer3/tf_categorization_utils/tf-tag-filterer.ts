@@ -15,8 +15,8 @@ limitations under the License.
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, property} from '@polymer/decorators';
-import '@polymer/iron-icon';
-import '@polymer/paper-input';
+
+import '../polymer/irons_and_papers';
 import {getStringInitializer, getStringObserver} from '../tf_storage/storage';
 
 @customElement('tf-tag-filterer')
@@ -53,7 +53,7 @@ class TfTagFilterer extends PolymerElement {
     defaultValue: '',
     useLocalStorage: false,
     polymerProperty: '_tagFilter',
-  })();
+  }).call(this);
 
   _tagFilterObserver = getStringObserver('tagFilter', {
     defaultValue: '',

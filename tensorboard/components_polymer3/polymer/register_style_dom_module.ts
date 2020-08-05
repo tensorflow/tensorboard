@@ -45,7 +45,7 @@ export function registerStyleDomModule(args: DomModuleOptions): void {
   Object.assign(style, {textContent: styleContent});
 
   styleIncludes.forEach((styleElement) => {
-    template.appendChild(styleElement);
+    template.content.appendChild(styleElement);
   });
   template.content.appendChild(style);
   domModule.appendChild(template);

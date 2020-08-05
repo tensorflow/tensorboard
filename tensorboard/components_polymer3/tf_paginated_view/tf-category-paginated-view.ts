@@ -15,11 +15,8 @@ limitations under the License.
 
 import {html} from '@polymer/polymer';
 import {customElement, property, observe, computed} from '@polymer/decorators';
-import '@polymer/iron-icon';
-import '@polymer/iron-collapse';
-import '@polymer/paper-button';
-import '@polymer/paper-input';
 
+import '../polymer/irons_and_papers';
 import {
   Category,
   CategoryType,
@@ -277,7 +274,6 @@ class TfCategoryPaginatedView<CategoryItem> extends TfDomRepeat<CategoryItem> {
   @property({
     type: Boolean,
     notify: true,
-    readOnly: true,
   })
   opened: boolean;
 
@@ -379,10 +375,11 @@ class TfCategoryPaginatedView<CategoryItem> extends TfDomRepeat<CategoryItem> {
     this.opened = !this.opened;
   }
 
-  @computed('opened')
-  get _contentActive(): boolean {
-    return this.opened;
+  @observe('opened')
+  _changeContentActive(opened: boolean): void {
+    this._contentActive = opened;
   }
+
   _onPaneRenderedChanged(newRendered, oldRendered) {
     if (newRendered && newRendered !== oldRendered) {
       // Force dom-if render without waiting for one rAF.
@@ -420,6 +417,7 @@ class TfCategoryPaginatedView<CategoryItem> extends TfDomRepeat<CategoryItem> {
     return compositeSearch && type === CategoryType.SEARCH_RESULTS;
   }
   ready() {
+    super.ready();
     this.opened = this.initialOpened == null ? true : this.initialOpened;
     this._limitListener = () => {
       this.set('_limit', getLimit());

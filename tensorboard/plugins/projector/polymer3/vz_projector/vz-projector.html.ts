@@ -1,6 +1,4 @@
-<!--
-@license
-Copyright 2016 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2016 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,41 +11,14 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
--->
+==============================================================================*/
 
-<link rel="import" href="../iron-collapse/iron-collapse.html" />
-<link rel="import" href="../iron-icons/image-icons.html" />
-<link rel="import" href="../iron-icons/iron-icons.html" />
-<link rel="import" href="../paper-button/paper-button.html" />
-<link rel="import" href="../paper-checkbox/paper-checkbox.html" />
-<link
-  rel="import"
-  href="../paper-dialog-scrollable/paper-dialog-scrollable.html"
-/>
-<link rel="import" href="../paper-dialog/paper-dialog.html" />
-<link rel="import" href="../paper-icon-button/paper-icon-button.html" />
-<link rel="import" href="../paper-input/paper-input.html" />
-<link rel="import" href="../paper-item/paper-item.html" />
-<link rel="import" href="../paper-listbox/paper-listbox.html" />
-<link rel="import" href="../paper-spinner/paper-spinner-lite.html" />
-<link rel="import" href="../paper-styles/typography.html" />
-<link rel="import" href="../paper-toast/paper-toast.html" />
-<link rel="import" href="../paper-toggle-button/paper-toggle-button.html" />
-<link rel="import" href="../paper-tooltip/paper-tooltip.html" />
-<link rel="import" href="../tf-imports/polymer.html" />
-<link rel="import" href="../tf-imports/threejs.html" />
-<link rel="import" href="bundle.html" />
-<link rel="import" href="styles.html" />
-<link rel="import" href="vz-projector-bookmark-panel.html" />
-<link rel="import" href="vz-projector-data-panel.html" />
-<link rel="import" href="vz-projector-input.html" />
-<link rel="import" href="vz-projector-inspector-panel.html" />
-<link rel="import" href="vz-projector-metadata-card.html" />
-<link rel="import" href="vz-projector-projections-panel.html" />
+import {html} from '@polymer/polymer';
 
-<dom-module id="vz-projector">
-  <template>
-    <style include="vz-projector-styles"></style>
+import './styles';
+
+export const template = html`
+<style include="vz-projector-styles"></style>
     <style>
       :host {
         display: flex;
@@ -425,6 +396,4 @@ limitations under the License.
     </div>
     <paper-toast id="toast" always-on-top></paper-toast>
   </template>
-  <!-- global template -->
-  <script src="vz-projector.js"></script>
-</dom-module>
+`;

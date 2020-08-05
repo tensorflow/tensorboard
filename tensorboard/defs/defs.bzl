@@ -37,6 +37,7 @@ def tf_js_binary(compile, deps, **kwargs):
             "@npm//@rollup/plugin-commonjs",
             "@npm//@rollup/plugin-node-resolve",
         ],
+        format = "iife",
         **kwargs
     )
 

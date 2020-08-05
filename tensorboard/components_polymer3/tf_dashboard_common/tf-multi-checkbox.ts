@@ -13,17 +13,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {computed, observe, customElement, property} from '@polymer/decorators';
-import '@polymer/iron-icons';
-import {PaperCheckboxElement} from '@polymer/paper-checkbox';
-import {PaperIconButtonElement} from '@polymer/paper-icon-button';
-import '@polymer/paper-input';
 import {PolymerElement, html} from '@polymer/polymer';
+import {computed, observe, customElement, property} from '@polymer/decorators';
+import {LegacyElementMixin} from '../polymer/legacy_element_mixin';
+import '../polymer/irons_and_papers';
+
 import * as _ from 'lodash';
 
 import './run-color-style';
 import './scrollbar-style';
-import './tf-color-scale';
 
 /*
 tf-multi-checkbox creates a list of checkboxes that can be used to toggle on or off
@@ -35,7 +33,7 @@ of the checkbox, and the number of names may also be very large, and works to
 handle these situations gracefully.
 */
 @customElement('tf-multi-checkbox')
-class TfMultiCheckbox extends PolymerElement {
+class TfMultiCheckbox extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
     <style include="scrollbar-style"></style>
     <style include="run-color-style"></style>
@@ -216,14 +214,7 @@ class TfMultiCheckbox extends PolymerElement {
   })
   maxNamesToEnableByDefault: number = 40;
 
-  @property({
-    type: Object,
-  })
-  // Updating the regex can be slow, because it involves updating styles
-  // on a large number of Polymer paper-checkboxes. We don't want to do
-  // this while the user is typing, as it may make a bad, laggy UI.
-  // So we debounce the updates that come from user typing.
-  _debouncedRegexChange: () => void = function() {
+  _debouncedRegexChangeImpl() {
     var debounced = _.debounce(
       (r) => {
         this.regex = r;
@@ -243,7 +234,14 @@ class TfMultiCheckbox extends PolymerElement {
         debounced(r);
       }
     };
-  };
+  }
+
+  // Updating the regex can be slow, because it involves updating styles
+  // on a large number of Polymer paper-checkboxes. We don't want to do
+  // this while the user is typing, as it may make a bad, laggy UI.
+  // So we debounce the updates that come from user typing.
+  @property({type: Object})
+  _debouncedRegexChange = this._debouncedRegexChangeImpl();
 
   @computed('regex')
   get _regex(): RegExp | null {
@@ -288,9 +286,9 @@ class TfMultiCheckbox extends PolymerElement {
   synchronizeColors(e) {
     this._setIsolatorIcon();
     const checkboxes = this.root.querySelectorAll('paper-checkbox');
-    checkboxes.forEach((p: PaperCheckboxElement) => {
-      const color = this.coloring.getColor((p as any).name);
-      (p as any).updateStyles({
+    checkboxes.forEach((p: any) => {
+      const color = this.coloring.getColor(p.name);
+      p.updateStyles({
         '--paper-checkbox-checked-color': color,
         '--paper-checkbox-checked-ink-color': color,
         '--paper-checkbox-unchecked-color': color,
@@ -298,8 +296,8 @@ class TfMultiCheckbox extends PolymerElement {
       });
     });
     const buttons = this.root.querySelectorAll('.isolator');
-    buttons.forEach((p: PaperIconButtonElement) => {
-      const color = this.coloring.getColor((p as any).name);
+    buttons.forEach((p: any) => {
+      const color = this.coloring.getColor(p.name);
       p.style['color'] = color;
     });
     // The updateStyles call fails silently if the browser doesn't have focus,
@@ -313,7 +311,7 @@ class TfMultiCheckbox extends PolymerElement {
   _isolateName(e) {
     // If user clicks on the label for one name, enable it and disable all other
     // names.
-    var name = ((e.target as PaperIconButtonElement) as any).name;
+    var name = (e.target as any).name;
     var selectionState = {};
     this.names.forEach(function(n) {
       selectionState[n] = n == name;
@@ -322,7 +320,7 @@ class TfMultiCheckbox extends PolymerElement {
   }
 
   _checkboxChange(e) {
-    var target = e.target as PaperCheckboxElement;
+    var target = e.target as any;
     const newSelectionState = _.clone(this.selectionState);
     newSelectionState[(target as any).name] = (target as any).checked;
     // n.b. notifyPath won't work because names may have periods.

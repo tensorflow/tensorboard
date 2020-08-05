@@ -15,10 +15,8 @@ limitations under the License.
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, property} from '@polymer/decorators';
-import '@polymer/paper-dropdown-menu';
-import '@polymer/paper-item';
-import '@polymer/paper-listbox';
 
+import '../polymer/irons_and_papers';
 import {addParams} from '../tf_backend/urlPathHelpers';
 
 @customElement('tf-downloader')

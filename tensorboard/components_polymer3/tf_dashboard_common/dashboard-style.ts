@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 import {registerStyleDomModule} from '../polymer/register_style_dom_module';
+import '../polymer/irons_and_papers';
 
 registerStyleDomModule({
   moduleName: 'dashboard-style',
