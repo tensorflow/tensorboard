@@ -15,10 +15,10 @@ limitations under the License.
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {computed, observe, customElement, property} from '@polymer/decorators';
+import {LegacyElementMixin} from '../polymer/legacy_element_mixin';
+import '../polymer/irons_and_papers';
 
 import * as _ from 'lodash';
-
-import '../polymer/irons_and_papers';
 
 import './run-color-style';
 import './scrollbar-style';
@@ -33,7 +33,7 @@ of the checkbox, and the number of names may also be very large, and works to
 handle these situations gracefully.
 */
 @customElement('tf-multi-checkbox')
-class TfMultiCheckbox extends PolymerElement {
+class TfMultiCheckbox extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
     <style include="scrollbar-style"></style>
     <style include="run-color-style"></style>
