@@ -186,32 +186,43 @@ class TfScalarCard extends PolymerElement {
       }
     </style>
   `;
+
   @property({type: String})
   tag: string;
+
   @property({type: Array})
   dataToLoad: unknown[];
+
   @property({type: String})
   xType: string;
+
   @property({type: Boolean})
   active: boolean;
+
   @property({type: Boolean})
   ignoreYOutliers: boolean;
+
   @property({type: Object})
   requestManager: object;
+
   @property({type: Boolean})
   showDownLinks: boolean;
+
   @property({type: Boolean})
   smoothingEnabled: boolean;
+
   @property({type: Number})
   smoothingWeight: number;
+
   @property({type: Object})
   tagMetadata: object;
-  @property({
-    type: Object,
-  })
+
+  @property({type: Object})
   colorScale: object = null;
+
   @property({type: String})
   tooltipSortingMethod: string;
+
   @property({
     type: Object,
     readOnly: true,
@@ -229,9 +240,8 @@ class TfScalarCard extends PolymerElement {
       scalarChart.commitChanges();
     };
   };
-  @property({
-    type: Function,
-  })
+
+  @property({type: Function})
   getDataLoadUrl: object = function() {
     return ({tag, run}) => {
       return tf_backend
@@ -239,30 +249,30 @@ class TfScalarCard extends PolymerElement {
         .pluginRoute('scalars', '/scalars', new URLSearchParams({tag, run}));
     };
   };
-  @property({
-    type: Function,
-  })
+
+  @property({type: Function})
   _downloadUrlFn: object = function() {
     return (tag, run) => this.getDataLoadUrl({tag, run});
   };
+
   @property({type: Function})
   requestData: object;
-  @property({
-    type: Function,
-  })
+
+  @property({type: Function})
   _getDataLoadName: object = function() {
     return (datum) => this._getSeriesNameFromDatum(datum);
   };
+
   @property({
     type: Boolean,
     reflectToAttribute: true,
   })
   _expanded: boolean = false;
+
   @property({type: Boolean})
   _logScaleActive: boolean;
-  @property({
-    type: Array,
-  })
+
+  @property({type: Array})
   _tooltipColumns: unknown[] = function() {
     const columns = vz_line_chart2.DEFAULT_TOOLTIP_COLUMNS.slice();
     const ind = columns.findIndex((c) => c.title == 'Name');

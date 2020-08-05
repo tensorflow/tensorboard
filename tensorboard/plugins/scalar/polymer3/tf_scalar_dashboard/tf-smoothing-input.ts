@@ -87,23 +87,29 @@ class TfSmoothingInput extends PolymerElement {
       }
     </style>
   `;
+
   @property({type: Number})
   step: number;
+
   @property({type: Number})
   max: number;
+
   @property({type: Number})
   min: number;
+
   @property({
     type: Number,
     notify: true,
   })
   weight: number = 0.6;
+
   @property({
     type: Number,
     notify: true,
     observer: '_immediateWeightNumberForPaperSliderChanged',
   })
   _immediateWeightNumberForPaperSlider: number;
+
   @property({
     type: String,
     notify: true,

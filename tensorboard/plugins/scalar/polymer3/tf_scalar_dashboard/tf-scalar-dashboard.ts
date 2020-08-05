@@ -218,10 +218,10 @@ class TfScalarDashboard extends PolymerElement {
       }
     </style>
   `;
-  @property({
-    type: Boolean,
-  })
+
+  @property({type: Boolean})
   reloadOnReady: boolean = true;
+
   @property({
     type: Boolean,
     notify: true,
@@ -234,6 +234,7 @@ class TfScalarDashboard extends PolymerElement {
       useLocalStorage: true,
     }
   );
+
   @property({
     type: Number,
     notify: true,
@@ -245,6 +246,7 @@ class TfScalarDashboard extends PolymerElement {
       defaultValue: 0.6,
     }
   );
+
   @property({
     type: Boolean,
     observer: '_ignoreYOutliersObserver',
@@ -256,35 +258,32 @@ class TfScalarDashboard extends PolymerElement {
       useLocalStorage: true,
     }
   );
-  @property({
-    type: String,
-  })
+
+  @property({type: String})
   _xType: string = vz_chart_helpers.XType.STEP;
-  @property({
-    type: Array,
-  })
+
+  @property({type: Array})
   _selectedRuns: unknown[] = () => [];
+
   @property({type: Object})
   _runToTagInfo: object;
+
   @property({type: Boolean})
   _dataNotFound: boolean;
-  @property({
-    type: String,
-  })
+
+  @property({type: String})
   _tagFilter: string = '';
+
   @property({type: Boolean})
   _categoriesDomReady: boolean;
-  @property({
-    type: Array,
-  })
+
+  @property({type: Array})
   _categories: unknown[] = () => [];
-  @property({
-    type: Function,
-  })
+
+  @property({type: Function})
   _getCategoryItemKey: object = () => (item) => item.tag;
-  @property({
-    type: Object,
-  })
+
+  @property({type: Object})
   _requestManager: object = () => new tf_backend.RequestManager(50);
   behaviors: [tf_dashboard_common.ArrayUpdateHelper];
   _showDownloadLinksObserver = tf_storage.getBooleanObserver(
