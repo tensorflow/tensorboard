@@ -72,6 +72,12 @@ export interface Environment {
   data_location: string;
   /** @export */
   window_title: string;
+  /** @export */
+  experiment_name?: string;
+  /** @export */
+  experiment_description?: string;
+  /** @export */
+  creation_time?: number;
 }
 
 export type GetRunsResponse = string[];
