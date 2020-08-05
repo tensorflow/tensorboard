@@ -35,7 +35,7 @@ tf_web_library(
     ],
     path = "/tf-projector",
     deps = [
+        "//tensorboard/components/tf_imports:roboto",
         "//tensorboard/plugins/projector/polymer3/vz_projector:standalone_lib",
-        "@com_google_fonts_roboto",
     ],
 )
