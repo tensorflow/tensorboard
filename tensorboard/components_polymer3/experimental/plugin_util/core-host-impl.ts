@@ -16,7 +16,7 @@ limitations under the License.
  * Implements core plugin APIs.
  */
 import {listen} from './plugin-host-ipc';
-import {urlDict} from '../../tf_storage';
+import {getUrlDict} from '../../tf_storage';
 
 listen('experimental.GetURLPluginData', (context) => {
   if (!context) {
@@ -26,6 +26,7 @@ listen('experimental.GetURLPluginData', (context) => {
   const result: {
     [key: string]: string;
   } = {};
+  const urlDict = getUrlDict();
   for (let key in urlDict) {
     if (key.startsWith(prefix)) {
       const pluginKey = key.substring(prefix.length);
