@@ -23,4 +23,7 @@ module.exports = {
     }),
     commonjs(),
   ],
+  output: {
+    strict: false,
+  },
 };
