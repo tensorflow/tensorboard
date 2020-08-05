@@ -166,6 +166,9 @@ class TfHistogramDashboard extends LegacyElementMixin(PolymerElement) {
   @property({type: Boolean})
   _restamp: boolean = false;
 
+  // Categories must only be computed after _dataNotFound is found to be
+  // true and then polymer DOM templating responds to that finding. We
+  // thus use this property to guard when categories are computed.
   @property({type: Boolean})
   _categoriesDomReady: boolean;
 
