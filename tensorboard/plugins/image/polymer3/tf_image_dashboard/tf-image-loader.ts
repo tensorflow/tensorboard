@@ -13,25 +13,33 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import * as PolymerDom from '@polymer/polymer/lib/legacy/polymer.dom.js'
-import { PolymerElement, html } from "@polymer/polymer";
-import { LegacyElementMixin } from "@polymer/polymer/lib/legacy/legacy-element-mixin";
-import { computed, customElement, observe, property } from "@polymer/decorators";
-import "@polymer/paper-icon-button";
-import "@polymer/paper-slider";
-import "@polymer/paper-spinner";
-import { Canceller } from "../../../../components_polymer3/tf_backend/canceller";
-import { getRouter } from "../../../../components_polymer3/tf_backend/router";
-import { addParams } from "../../../../components_polymer3/tf_backend/urlPathHelpers";
-import { formatDate } from "../../../../components_polymer3/tf_card_heading/util";
-import "../../../../components_polymer3/tf_card_heading/tf-card-heading";
-import "../../../../components_polymer3/tf_card_heading/tf-card-heading-style";
-import { runsColorScale } from "../../../../components_polymer3/tf_color_scale/colorScale";
-import "../../../../components_polymer3/tf_dashboard_common/tensorboard-color";
+import * as PolymerDom from '@polymer/polymer/lib/legacy/polymer.dom.js';
+import {computed, customElement, observe, property} from '@polymer/decorators';
+import {PolymerElement, html} from '@polymer/polymer';
+import {LegacyElementMixin} from '@polymer/polymer/lib/legacy/legacy-element-mixin';
+import '@polymer/paper-icon-button';
+import '@polymer/paper-slider';
+import '@polymer/paper-spinner';
+import {Canceller} from '../../../../components_polymer3/tf_backend/canceller';
+import {RequestManager} from '../../../../components_polymer3/tf_backend/requestManager';
+import {getRouter} from '../../../../components_polymer3/tf_backend/router';
+import {addParams} from '../../../../components_polymer3/tf_backend/urlPathHelpers';
+import {formatDate} from '../../../../components_polymer3/tf_card_heading/util';
+import '../../../../components_polymer3/tf_card_heading/tf-card-heading';
+import '../../../../components_polymer3/tf_card_heading/tf-card-heading-style';
+import {runsColorScale} from '../../../../components_polymer3/tf_color_scale/colorScale';
+import '../../../../components_polymer3/tf_dashboard_common/tensorboard-color';
 
-@customElement("tf-image-loader")
+@customElement('tf-image-loader')
 class TfImageLoader extends LegacyElementMixin(PolymerElement) {
-    static readonly template = html `<tf-card-heading tag="[[tag]]" run="[[run]]" display-name="[[tagMetadata.displayName]]" description="[[tagMetadata.description]]" color="[[_runColor]]">
+  static readonly template = html`
+    <tf-card-heading
+      tag="[[tag]]"
+      run="[[run]]"
+      display-name="[[tagMetadata.displayName]]"
+      description="[[tagMetadata.description]]"
+      color="[[_runColor]]"
+    >
       <template is="dom-if" if="[[_hasMultipleSamples]]">
         <div>sample: [[_sampleText]] of [[ofSamples]]</div>
       </template>
@@ -39,7 +47,9 @@ class TfImageLoader extends LegacyElementMixin(PolymerElement) {
         <div class="heading-row">
           <div class="heading-label">
             step
-            <span style="font-weight: bold">[[_toLocaleString(_stepValue)]]</span>
+            <span style="font-weight: bold"
+              >[[_toLocaleString(_stepValue)]]</span
+            >
           </div>
           <div class="heading-label heading-right datetime">
             <template is="dom-if" if="[[_currentWallTime]]">
@@ -54,14 +64,28 @@ class TfImageLoader extends LegacyElementMixin(PolymerElement) {
       </template>
       <template is="dom-if" if="[[_hasMultipleSteps]]">
         <div>
-          <paper-slider id="steps" immediate-value="{{_stepIndex}}" max="[[_maxStepIndex]]" max-markers="[[_maxStepIndex]]" snaps="" step="1" value="{{_stepIndex}}"></paper-slider>
+          <paper-slider
+            id="steps"
+            immediate-value="{{_stepIndex}}"
+            max="[[_maxStepIndex]]"
+            max-markers="[[_maxStepIndex]]"
+            snaps=""
+            step="1"
+            value="{{_stepIndex}}"
+          ></paper-slider>
         </div>
       </template>
     </tf-card-heading>
 
     <!-- Semantically a button but <img> inside a <button> disallows user to do
     an interesting operation like "Copy Image" in non-Chromium browsers. -->
-    <a id="main-image-container" role="button" aria-label="Toggle actual size" aria-expanded$="[[_getAriaExpanded(actualSize)]]" on-tap="_handleTap"></a>
+    <a
+      id="main-image-container"
+      role="button"
+      aria-label="Toggle actual size"
+      aria-expanded$="[[_getAriaExpanded(actualSize)]]"
+      on-tap="_handleTap"
+    ></a>
 
     <style include="tf-card-heading-style">
       /** Make button a div. */
@@ -163,183 +187,180 @@ class TfImageLoader extends LegacyElementMixin(PolymerElement) {
       [hidden] {
         display: none;
       }
-    </style>`;
-    @property({ type: String })
-    run: string;
-    @property({ type: String })
-    tag: string;
-    @property({ type: Number })
-    sample: number;
-    @property({ type: Number })
-    ofSamples: number;
-    @property({ type: Object })
-    tagMetadata: object;
-    @property({
-        type: Boolean,
-        reflectToAttribute: true
-    })
-    actualSize: boolean = false;
-    @property({
-        type: Number
-    })
-    brightnessAdjustment: number = 0.5;
-    @property({
-        type: Number
-    })
-    contrastPercentage: number = 0;
-    @property({ type: Object })
-    requestManager: object;
-    @property({
-        type: Object
-    })
-    _metadataCanceller = new Canceller();
-    @property({
-        type: Object
-    })
-    _imageCanceller = new Canceller();
-    @property({
-        type: Array,
-        notify: true
-    })
-    _steps: unknown[] = [];
-    @property({
-        type: Number,
-        notify: true
-    })
-    _stepIndex: number;
-    @property({
-        type: Boolean
-    })
-    _isImageLoading: boolean = false;
-    @computed("run")
-    get _runColor(): string {
-        var run = this.run;
-        return runsColorScale(run);
+    </style>
+  `;
+  @property({type: String})
+  run: string;
+  @property({type: String})
+  tag: string;
+  @property({type: Number})
+  sample: number;
+  @property({type: Number})
+  ofSamples: number;
+  @property({type: Object})
+  tagMetadata: object;
+  @property({
+    type: Boolean,
+    reflectToAttribute: true,
+  })
+  actualSize: boolean = false;
+  @property({
+    type: Number,
+  })
+  brightnessAdjustment: number = 0.5;
+  @property({
+    type: Number,
+  })
+  contrastPercentage: number = 0;
+  @property({type: Object})
+  requestManager: RequestManager;
+  @property({
+    type: Object,
+  })
+  _metadataCanceller = new Canceller();
+  @property({
+    type: Object,
+  })
+  _imageCanceller = new Canceller();
+  @property({
+    type: Array,
+    notify: true,
+  })
+  _steps: unknown[] = [];
+  @property({
+    type: Number,
+    notify: true,
+  })
+  _stepIndex: number;
+  @property({
+    type: Boolean,
+  })
+  _isImageLoading: boolean = false;
+  @computed('run')
+  get _runColor(): string {
+    var run = this.run;
+    return runsColorScale(run);
+  }
+  @computed('_steps')
+  get _hasAtLeastOneStep(): boolean {
+    var steps = this._steps;
+    return !!steps && steps.length > 0;
+  }
+  @computed('_steps')
+  get _hasMultipleSteps(): boolean {
+    var steps = this._steps;
+    return !!steps && steps.length > 1;
+  }
+  @computed('_steps', '_stepIndex')
+  get _currentStep(): object {
+    var steps = this._steps as any;
+    var stepIndex = this._stepIndex;
+    return steps[stepIndex] || null;
+  }
+  @computed('_currentStep')
+  get _stepValue(): number {
+    var currentStep = this._currentStep;
+    if (!currentStep) return 0;
+    return (currentStep as any).step;
+  }
+  @computed('_currentStep')
+  get _currentWallTime(): string {
+    var currentStep = this._currentStep;
+    if (!currentStep) return '';
+    return formatDate((currentStep as any).wall_time);
+  }
+  @computed('_steps')
+  get _maxStepIndex(): number {
+    var steps = this._steps;
+    return steps.length - 1;
+  }
+  @computed('sample')
+  get _sampleText(): string {
+    var sample = this.sample;
+    return `${sample + 1}`;
+  }
+  @computed('ofSamples')
+  get _hasMultipleSamples(): boolean {
+    var ofSamples = this.ofSamples;
+    return ofSamples > 1;
+  }
+  _getAriaExpanded() {
+    return this.actualSize ? 'true' : 'false';
+  }
+  attached() {
+    this.reload();
+  }
+  @observe('run', 'tag')
+  reload() {
+    if (!this.isAttached) {
+      return;
     }
-    @computed("_steps")
-    get _hasAtLeastOneStep(): boolean {
-        var steps = this._steps;
-        return !!steps && steps.length > 0;
-    }
-    @computed("_steps")
-    get _hasMultipleSteps(): boolean {
-        var steps = this._steps;
-        return !!steps && steps.length > 1;
-    }
-    @computed("_steps", "_stepIndex")
-    get _currentStep(): object {
-        var steps = this._steps;
-        var stepIndex = this._stepIndex;
-        return steps[stepIndex] || null;
-    }
-    @computed("_currentStep")
-    get _stepValue(): number {
-        var currentStep = this._currentStep;
-        if (!currentStep)
-            return 0;
-        return (currentStep as any).step;
-    }
-    @computed("_currentStep")
-    get _currentWallTime(): string {
-        var currentStep = this._currentStep;
-        if (!currentStep)
-            return '';
-        return formatDate((currentStep as any).wall_time);
-    }
-    @computed("_steps")
-    get _maxStepIndex(): number {
-        var steps = this._steps;
-        return steps.length - 1;
-    }
-    @computed("sample")
-    get _sampleText(): string {
-        var sample = this.sample;
-        return `${sample + 1}`;
-    }
-    @computed("ofSamples")
-    get _hasMultipleSamples(): boolean {
-        var ofSamples = this.ofSamples;
-        return ofSamples > 1;
-    }
-    _getAriaExpanded() {
-        return this.actualSize ? 'true' : 'false';
-    }
-    attached() {
-        this.reload();
-    }
-    @observe("run", "tag")
-    reload() {
-        if (!this.isAttached) {
-            return;
+    this._metadataCanceller.cancelAll();
+    const router = getRouter();
+    const url = addParams(router.pluginRoute('images', '/images'), {
+      tag: this.tag,
+      run: this.run,
+      sample: this.sample as any,
+    });
+    const updateSteps = this._metadataCanceller.cancellable((result) => {
+      if (result.cancelled) {
+        return;
+      }
+      const data = result.value as any;
+      const steps = data.map(this._createStepDatum.bind(this));
+      this.set('_steps', steps);
+      this.set('_stepIndex', steps.length - 1);
+    });
+    this.requestManager.request(url).then(updateSteps);
+  }
+  _createStepDatum(imageMetadata) {
+    let url = getRouter().pluginRoute('images', '/individualImage');
+    // Include wall_time just to disambiguate the URL and force
+    // the browser to reload the image when the URL changes. The
+    // backend doesn't care about the value.
+    url = addParams(url, {ts: imageMetadata.wall_time});
+    url += '&' + imageMetadata.query;
+    return {
+      // The wall time within the metadata is in seconds. The Date
+      // constructor accepts a time in milliseconds, so we multiply by 1000.
+      wall_time: new Date(imageMetadata.wall_time * 1000),
+      step: imageMetadata.step,
+      url,
+    };
+  }
+  @observe('_currentStep', 'brightnessAdjustment', 'contrastPercentage')
+  _updateImageUrl() {
+    var currentStep = this._currentStep;
+    var brightnessAdjustment = this.brightnessAdjustment;
+    var contrastPercentage = this.contrastPercentage;
+    // We manually change the image URL (instead of binding to the
+    // image's src attribute) because we would like to manage what
+    // happens when the image starts and stops loading.
+    if (!currentStep) return;
+    const img = new Image();
+    this._imageCanceller.cancelAll();
+    img.onload = img.onerror = this._imageCanceller
+      .cancellable((result) => {
+        if (result.cancelled) {
+          return;
         }
-        this._metadataCanceller.cancelAll();
-        const router = getRouter();
-        const url = addParams(router.pluginRoute('images', '/images'), {
-            tag: this.tag,
-            run: this.run,
-            sample: this.sample,
-        });
-        const updateSteps = this._metadataCanceller.cancellable((result) => {
-            if (result.cancelled) {
-                return;
-            }
-            const data = result.value;
-            const steps = data.map(this._createStepDatum.bind(this));
-            this.set('_steps', steps);
-            this.set('_stepIndex', steps.length - 1);
-        });
-        this.requestManager.request(url).then(updateSteps);
-    }
-    _createStepDatum(imageMetadata) {
-        let url = getRouter()
-            .pluginRoute('images', '/individualImage');
-        // Include wall_time just to disambiguate the URL and force
-        // the browser to reload the image when the URL changes. The
-        // backend doesn't care about the value.
-        url = addParams(url, { ts: imageMetadata.wall_time });
-        url += '&' + imageMetadata.query;
-        return {
-            // The wall time within the metadata is in seconds. The Date
-            // constructor accepts a time in milliseconds, so we multiply by 1000.
-            wall_time: new Date(imageMetadata.wall_time * 1000),
-            step: imageMetadata.step,
-            url,
-        };
-    }
-    @observe("_currentStep", "brightnessAdjustment", "contrastPercentage")
-    _updateImageUrl() {
-        var currentStep = this._currentStep;
-        var brightnessAdjustment = this.brightnessAdjustment;
-        var contrastPercentage = this.contrastPercentage;
-        // We manually change the image URL (instead of binding to the
-        // image's src attribute) because we would like to manage what
-        // happens when the image starts and stops loading.
-        if (!currentStep)
-            return;
-        const img = new Image();
-        this._imageCanceller.cancelAll();
-        img.onload = img.onerror = this._imageCanceller
-            .cancellable((result) => {
-            if (result.cancelled) {
-                return;
-            }
-            const mainImageContainer = this.$$('#main-image-container');
-            mainImageContainer.innerHTML = '';
-            PolymerDom.dom(mainImageContainer).appendChild(img);
-            this.set('_isImageLoading', false);
-        })
-            .bind(this);
-        img.style.filter = `contrast(${contrastPercentage}%) `;
-        img.style.filter += `brightness(${brightnessAdjustment})`;
-        // Load the new image.
-        this.set('_isImageLoading', true);
-        img.src = (currentStep as any).url;
-    }
-    _handleTap(e) {
-        this.set('actualSize', !this.actualSize);
-    }
-    _toLocaleString(number) {
-        // Shows commas (or locale-appropriate punctuation) for large numbers.
-        return number.toLocaleString();
-    }
+        const mainImageContainer = this.$$('#main-image-container');
+        mainImageContainer.innerHTML = '';
+        PolymerDom.dom(mainImageContainer).appendChild(img);
+        this.set('_isImageLoading', false);
+      })
+      .bind(this);
+    img.style.filter = `contrast(${contrastPercentage}%) `;
+    img.style.filter += `brightness(${brightnessAdjustment})`;
+    // Load the new image.
+    this.set('_isImageLoading', true);
+    img.src = (currentStep as any).url;
+  }
+  _handleTap(e) {
+    this.set('actualSize', !this.actualSize);
+  }
+  _toLocaleString(number) {
+    // Shows commas (or locale-appropriate punctuation) for large numbers.
+    return number.toLocaleString();
+  }
 }
