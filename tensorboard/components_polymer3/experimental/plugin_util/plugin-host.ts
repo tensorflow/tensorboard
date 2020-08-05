@@ -18,8 +18,8 @@ import {registerPluginIframe} from './plugin-host-ipc';
 
 // TODO(psybuzz): we should not rely on side-effects to run when importing
 // modules.
-import 'core-host-impl';
-import 'runs-host-impl';
+import './core-host-impl';
+import './runs-host-impl';
 
 // HACK: this Polymer component allows the experimental plugin host APIs
 // to be accessible across bundle binary.
