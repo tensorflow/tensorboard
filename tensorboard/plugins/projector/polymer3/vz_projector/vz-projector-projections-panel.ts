@@ -35,7 +35,6 @@ import {
 } from './data';
 import * as vector from './vector';
 import * as util from './util';
-import './vz-projector';
 
 const NUM_PCA_COMPONENTS = 10;
 
