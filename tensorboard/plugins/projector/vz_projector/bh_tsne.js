@@ -19,6 +19,8 @@ var vz_projector;
      * This fork implements Barnes-Hut approximation and runs in O(NlogN)
      * time, as opposed to the Karpathy's O(N^2) version.
      *
+     * Please refer to third_party/bh_tsne.LICENSE for the original license.
+     *
      * @author smilkov@google.com (Daniel Smilkov)
      */
     /**
