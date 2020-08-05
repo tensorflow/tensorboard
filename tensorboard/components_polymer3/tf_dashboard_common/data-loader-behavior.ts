@@ -30,6 +30,7 @@ export interface DataLoaderBehaviorInterface<Item, Data>
   extends PolymerElement {
   active: boolean;
   reset(): void;
+  reload(): void;
   dataToLoad: Item[];
 }
 
