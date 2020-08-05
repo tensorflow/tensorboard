@@ -25,7 +25,9 @@ const IMAGE_SIZE = 30;
 const RGB_NUM_ELEMENTS = 3;
 const INDEX_NUM_ELEMENTS = 1;
 const XYZ_NUM_ELEMENTS = 3;
-const VERTEX_SHADER = `
+
+function createVertexShader() {
+  return `
   // Index of the specific vertex (passed in as bufferAttribute), and the
   // variable that will be used to pass it to the fragment shader.
   attribute float spriteIndex;
@@ -78,6 +80,8 @@ const VERTEX_SHADER = `
     gl_PointSize =
       max(outputPointSize * scaleFactor, ${MIN_POINT_SIZE.toFixed(1)});
   }`;
+}
+
 const FRAGMENT_SHADER_POINT_TEST_CHUNK = `
   bool point_in_unit_circle(vec2 spriteCoord) {
     vec2 centerToP = spriteCoord - vec2(0.5, 0.5);
@@ -98,7 +102,9 @@ const FRAGMENT_SHADER_POINT_TEST_CHUNK = `
     return true;
   }
 `;
-const FRAGMENT_SHADER = `
+
+function createFragmentShader() {
+  return `
   varying vec2 xyIndex;
   varying vec3 vColor;
 
@@ -126,6 +132,8 @@ const FRAGMENT_SHADER = `
     }
     ${THREE.ShaderChunk['fog_fragment']}
   }`;
+}
+
 const FRAGMENT_SHADER_PICKING = `
   varying vec2 xyIndex;
   varying vec3 vColor;
@@ -145,10 +153,13 @@ const FRAGMENT_SHADER_PICKING = `
       gl_FragColor = vec4(vColor, 1);
     }
   }`;
+
 /**
  * Uses GL point sprites to render the dataset.
  */
 export class ScatterPlotVisualizerSprites implements ScatterPlotVisualizer {
+  private readonly VERTEX_SHADER = createVertexShader();
+  private readonly FRAGMENT_SHADER = createFragmentShader();
   private scene: THREE.Scene;
   private fog: THREE.Fog;
   private texture: THREE.Texture = null;
@@ -207,8 +218,8 @@ export class ScatterPlotVisualizerSprites implements ScatterPlotVisualizer {
     const uniforms = this.createUniforms();
     return new THREE.ShaderMaterial({
       uniforms: uniforms,
-      vertexShader: VERTEX_SHADER,
-      fragmentShader: FRAGMENT_SHADER,
+      vertexShader: this.VERTEX_SHADER,
+      fragmentShader: this.FRAGMENT_SHADER,
       transparent: !haveImage,
       depthTest: haveImage,
       depthWrite: haveImage,
@@ -220,7 +231,7 @@ export class ScatterPlotVisualizerSprites implements ScatterPlotVisualizer {
     const uniforms = this.createUniforms();
     return new THREE.ShaderMaterial({
       uniforms: uniforms,
-      vertexShader: VERTEX_SHADER,
+      vertexShader: this.VERTEX_SHADER,
       fragmentShader: FRAGMENT_SHADER_PICKING,
       transparent: true,
       depthTest: true,
