@@ -15,6 +15,7 @@ limitations under the License.
 
 // Add dashboards here.
 import '../plugins/profile_redirect/polymer3/tf_profile_redirect_dashboard/tf-profile-redirect-dashboard';
+import '../plugins/distribution/polymer3/tf_distribution_dashboard/tf-distribution-dashboard';
 import '../plugins/text/polymer3/tf_text_dashboard/tf-text-dashboard';
 
 // Exported Polymer <-> Angular interop (to be removed).
