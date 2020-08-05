@@ -1,56 +1,61 @@
-<!--
-@license
-Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
+
     http://www.apache.org/licenses/LICENSE-2.0
+
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
--->
+==============================================================================*/
 
-<link rel="import" href="../iron-icon/iron-icon.html" />
-<link rel="import" href="../paper-button/paper-button.html" />
-<link rel="import" href="../paper-input/paper-input.html" />
-<link rel="import" href="../tf-imports/polymer.html" />
-<link rel="import" href="../tf-backend/tf-backend.html" />
-<link
-  rel="import"
-  href="../tf-categorization-utils/tf-categorization-utils.html"
-/>
-<link rel="import" href="../tf-categorization-utils/tf-tag-filterer.html" />
-<link rel="import" href="../tf-color-scale/tf-color-scale.html" />
-<link rel="import" href="../tf-dashboard-common/dashboard-style.html" />
-<link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html" />
-<link rel="import" href="../tf-dashboard-common/tf-option-selector.html" />
-<link
-  rel="import"
-  href="../tf-paginated-view/tf-category-paginated-view.html"
-/>
-<link rel="import" href="../tf-runs-selector/tf-runs-selector.html" />
-<link rel="import" href="../tf-tensorboard/registry.html" />
-<link rel="import" href="../tf-utils/tf-utils.html" />
-<link rel="import" href="tf-pr-curve-card.html" />
-<link rel="import" href="tf-pr-curve-steps-selector.html" />
-
-<!--
-  A frontend that displays a set of precision–recall curves. Each PR curve is
-  associated with a tag (which is in turn associated with 1 class).
--->
-<dom-module id="tf-pr-curve-dashboard">
-  <template>
-    <tf-dashboard-layout>
+import { PolymerElement, html } from "@polymer/polymer";
+import { customElement, property } from "@polymer/decorators";
+import "@polymer/iron-icon";
+import "@polymer/paper-button";
+import "@polymer/paper-input";
+import { DO_NOT_SUBMIT } from "../tf-imports/polymer.html";
+import { DO_NOT_SUBMIT } from "../tf-backend/tf-backend.html";
+import { DO_NOT_SUBMIT } from "../tf-categorization-utils/tf-categorization-utils.html";
+import { DO_NOT_SUBMIT } from "../tf-categorization-utils/tf-tag-filterer.html";
+import { DO_NOT_SUBMIT } from "../tf-color-scale/tf-color-scale.html";
+import { DO_NOT_SUBMIT } from "../tf-dashboard-common/dashboard-style.html";
+import { DO_NOT_SUBMIT } from "../tf-dashboard-common/tf-dashboard-layout.html";
+import { DO_NOT_SUBMIT } from "../tf-dashboard-common/tf-option-selector.html";
+import { DO_NOT_SUBMIT } from "../tf-paginated-view/tf-category-paginated-view.html";
+import { DO_NOT_SUBMIT } from "../tf-runs-selector/tf-runs-selector.html";
+import { DO_NOT_SUBMIT } from "../tf-tensorboard/registry.html";
+import { DO_NOT_SUBMIT } from "../tf-utils/tf-utils.html";
+import { DO_NOT_SUBMIT } from "tf-pr-curve-card.html";
+import { DO_NOT_SUBMIT } from "tf-pr-curve-steps-selector.html";
+import "@polymer/iron-icon";
+import "@polymer/paper-button";
+import "@polymer/paper-input";
+import { DO_NOT_SUBMIT } from "../tf-imports/polymer.html";
+import { DO_NOT_SUBMIT } from "../tf-backend/tf-backend.html";
+import { DO_NOT_SUBMIT } from "../tf-categorization-utils/tf-categorization-utils.html";
+import { DO_NOT_SUBMIT } from "../tf-categorization-utils/tf-tag-filterer.html";
+import { DO_NOT_SUBMIT } from "../tf-color-scale/tf-color-scale.html";
+import { DO_NOT_SUBMIT } from "../tf-dashboard-common/dashboard-style.html";
+import { DO_NOT_SUBMIT } from "../tf-dashboard-common/tf-dashboard-layout.html";
+import { DO_NOT_SUBMIT } from "../tf-dashboard-common/tf-option-selector.html";
+import { DO_NOT_SUBMIT } from "../tf-paginated-view/tf-category-paginated-view.html";
+import { DO_NOT_SUBMIT } from "../tf-runs-selector/tf-runs-selector.html";
+import { DO_NOT_SUBMIT } from "../tf-tensorboard/registry.html";
+import { DO_NOT_SUBMIT } from "../tf-utils/tf-utils.html";
+import { DO_NOT_SUBMIT } from "tf-pr-curve-card.html";
+import { DO_NOT_SUBMIT } from "tf-pr-curve-steps-selector.html";
+@customElement("tf-pr-curve-dashboard")
+class TfPrCurveDashboard extends PolymerElement {
+    static readonly template = html `<tf-dashboard-layout>
       <div class="sidebar" slot="sidebar">
         <div class="settings">
           <div class="sidebar-section">
-            <tf-option-selector
-              id="time-type-selector"
-              name="Time Display Type"
-              selected-id="{{_timeDisplayType}}"
-            >
+            <tf-option-selector id="time-type-selector" name="Time Display Type" selected-id="{{_timeDisplayType}}">
               <paper-button id="step">step</paper-button>
               <!--
             -->
@@ -62,12 +67,7 @@ limitations under the License.
           </div>
           <template is="dom-if" if="[[_runToAvailableTimeEntries]]">
             <div class="sidebar-section" id="steps-selector-container">
-              <tf-pr-curve-steps-selector
-                runs="[[_relevantSelectedRuns]]"
-                run-to-step="{{_runToStep}}"
-                run-to-available-time-entries="[[_runToAvailableTimeEntries]]"
-                time-display-type="[[_timeDisplayType]]"
-              >
+              <tf-pr-curve-steps-selector runs="[[_relevantSelectedRuns]]" run-to-step="{{_runToStep}}" run-to-available-time-entries="[[_runToAvailableTimeEntries]]" time-display-type="[[_timeDisplayType]]">
               </tf-pr-curve-steps-selector>
             </div>
           </template>
@@ -80,37 +80,28 @@ limitations under the License.
       <div class="center" slot="center">
         <template is="dom-if" if="[[_dataNotFound]]">
           <div class="no-data-warning">
-            <h3>No precision–recall curve data was found.</h3>
+            <h3>No precision\u2013recall curve data was found.</h3>
             <p>Probable causes:</p>
             <ul>
               <li>
-                You haven’t written any precision–recall data to your event
+                You haven\u2019t written any precision\u2013recall data to your event
                 files.
               </li>
               <li>
-                TensorBoard can’t find your event files.
+                TensorBoard can\u2019t find your event files.
               </li>
             </ul>
             <p>
-              If you’re new to using TensorBoard, and want to find out how to
+              If you\u2019re new to using TensorBoard, and want to find out how to
               add data and set up your event files, check out the
-              <a
-                href="https://github.com/tensorflow/tensorboard/blob/master/README.md"
-                >README</a
-              >
+              <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md">README</a>
               and perhaps the
-              <a
-                href="https://www.tensorflow.org/get_started/summaries_and_tensorboard"
-                >TensorBoard tutorial</a
-              >.
+              <a href="https://www.tensorflow.org/get_started/summaries_and_tensorboard">TensorBoard tutorial</a>.
             </p>
 
             <p>
               If you think TensorBoard is configured properly, please see
-              <a
-                href="https://github.com/tensorflow/tensorboard/blob/master/README.md#my-tensorboard-isnt-showing-any-data-whats-wrong"
-                >the section of the README devoted to missing data problems</a
-              >
+              <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md#my-tensorboard-isnt-showing-any-data-whats-wrong">the section of the README devoted to missing data problems</a>
               and consider filing an issue on GitHub.
             </p>
           </div>
@@ -118,21 +109,9 @@ limitations under the License.
         <template is="dom-if" if="[[!_dataNotFound]]">
           <tf-tag-filterer tag-filter="{{_tagFilter}}"></tf-tag-filterer>
           <template is="dom-repeat" items="[[_categories]]" as="category">
-            <tf-category-paginated-view
-              category="[[category]]"
-              initial-opened="[[_shouldOpen(index)]]"
-              get-category-item-key="[[_getCategoryItemKey]]"
-            >
+            <tf-category-paginated-view category="[[category]]" initial-opened="[[_shouldOpen(index)]]" get-category-item-key="[[_getCategoryItemKey]]">
               <template>
-                <tf-pr-curve-card
-                  active="[[active]]"
-                  runs="[[item.runs]]"
-                  tag="[[item.tag]]"
-                  tag-metadata="[[_tagMetadata(_runToTagInfo, item.runs, item.tag)]]"
-                  request-manager="[[_requestManager]]"
-                  run-to-step-cap="[[_runToStep]]"
-                  on-data-change="[[_createDataChangeCallback(item.tag)]]"
-                ></tf-pr-curve-card>
+                <tf-pr-curve-card active="[[active]]" runs="[[item.runs]]" tag="[[item.tag]]" tag-metadata="[[_tagMetadata(_runToTagInfo, item.runs, item.tag)]]" request-manager="[[_requestManager]]" run-to-step-cap="[[_runToStep]]" on-data-change="[[_createDataChangeCallback(item.tag)]]"></tf-pr-curve-card>
               </template>
             </tf-category-paginated-view>
           </template>
@@ -152,171 +131,142 @@ limitations under the License.
         max-height: 60%;
         overflow-y: auto;
       }
-    </style>
-  </template>
-
-  <script>
-    Polymer({
-      is: 'tf-pr-curve-dashboard',
-      properties: {
-        reloadOnReady: {
-          type: Boolean,
-          value: true,
-        },
-        // Determines how the time entry is shown. One of step, relative, or
-        // wall_time.
-        _timeDisplayType: {
-          type: String,
-          value: 'step',
-        },
-        _selectedRuns: {
-          type: Array,
-          value: () => [],
-        },
-        _runToTagInfo: {
-          type: Object,
-          value: () => ({}),
-        },
-        // The steps that the step slider for each run should use.
-        _runToAvailableTimeEntries: {
-          type: Object, // map<run: string, steps: number[]>
-          computed: '_computeRunToAvailableTimeEntries(_tagToRunToData)',
-        },
-        _tagToRunToData: {
-          type: Object, // map<tag: string, map<run: string: PrCurveDatum[]>>
-          value: () => ({}),
-        },
-        // A list of runs that are both selected and have PR curve data.
-        _relevantSelectedRuns: {
-          type: Array,
-          computed:
-            '_computeRelevantSelectedRuns(_selectedRuns, _runToTagInfo)',
-        },
-        // The desired step value that each run should use. If a run + tag lacks a
-        // PR curve at this exact step value, the greatest step value less than
-        // this value will be used.
-        _runToStep: {
-          type: Object, // map<run: string, step: number>
-          notify: true,
-        },
-        _dataNotFound: Boolean,
-        _tagFilter: String,
-        // Categories must only be computed after _dataNotFound is found to be
-        // true and then polymer DOM templating responds to that finding. We
-        // thus use this property to guard when categories are computed.
-        _categoriesDomReady: Boolean,
-        _categories: {
-          type: Array,
-          computed:
-            '_makeCategories(_runToTagInfo, _selectedRuns, _tagFilter, _categoriesDomReady)',
-        },
-        // Items show multiple runs, so exclude runs from category item keys for
-        // efficient template reuse.
-        _getCategoryItemKey: {
-          type: Function,
-          value: () => (item) => item.tag,
-        },
-        _requestManager: {
-          type: Object,
-          value: () => new tf_backend.RequestManager(),
-        },
-        _step: {
-          type: Number,
-          value: 0,
-          notify: true,
-        },
-      },
-      ready() {
-        if (this.reloadOnReady) this.reload();
-      },
-      reload() {
+    </style>`;
+    @property({
+        type: Boolean
+    })
+    reloadOnReady: boolean = true;
+    @property({
+        type: String
+    })
+    _timeDisplayType: string = 'step';
+    @property({
+        type: Array
+    })
+    _selectedRuns: unknown[] = () => [];
+    @property({
+        type: Object
+    })
+    _runToTagInfo: object = () => ({});
+    @property({
+        type: Object
+    })
+    _tagToRunToData: object = () => ({});
+    @property({
+        type: Object,
+        notify: true
+    })
+    _runToStep: object;
+    @property({ type: Boolean })
+    _dataNotFound: boolean;
+    @property({ type: String })
+    _tagFilter: string;
+    @property({ type: Boolean })
+    _categoriesDomReady: boolean;
+    @property({
+        type: Function
+    })
+    _getCategoryItemKey: object = () => (item) => item.tag;
+    @property({
+        type: Object
+    })
+    _requestManager: object = () => new tf_backend.RequestManager();
+    @property({
+        type: Number,
+        notify: true
+    })
+    _step: number = 0;
+    ready() {
+        if (this.reloadOnReady)
+            this.reload();
+    }
+    reload() {
         Promise.all([this._fetchTags()]).then(() => {
-          this._reloadCards();
+            this._reloadCards();
         });
-      },
-      _shouldOpen(index) {
+    }
+    _shouldOpen(index) {
         return index <= 2;
-      },
-      _fetchTags() {
+    }
+    _fetchTags() {
         const url = tf_backend.getRouter().pluginRoute('pr_curves', '/tags');
         return this._requestManager.request(url).then((runToTagInfo) => {
-          if (_.isEqual(runToTagInfo, this._runToTagInfo)) {
-            // No need to update anything if there are no changes.
-            return;
-          }
-          const runToTag = _.mapValues(runToTagInfo, (o) => _.keys(o));
-          const tags = tf_backend.getTags(runToTag);
-          this.set('_dataNotFound', tags.length === 0);
-          this.set('_runToTagInfo', runToTagInfo);
-          this.async(() => {
-            // See the comment above `_categoriesDomReady`.
-            this.set('_categoriesDomReady', true);
-          });
+            if (_.isEqual(runToTagInfo, this._runToTagInfo)) {
+                // No need to update anything if there are no changes.
+                return;
+            }
+            const runToTag = _.mapValues(runToTagInfo, (o) => _.keys(o));
+            const tags = tf_backend.getTags(runToTag);
+            this.set('_dataNotFound', tags.length === 0);
+            this.set('_runToTagInfo', runToTagInfo);
+            this.async(() => {
+                // See the comment above `_categoriesDomReady`.
+                this.set('_categoriesDomReady', true);
+            });
         });
-      },
-      _reloadCards() {
+    }
+    _reloadCards() {
         _.forEach(this.root.querySelectorAll('tf-pr-curve-card'), (card) => {
-          card.reload();
+            card.reload();
         });
-      },
-      _makeCategories(
-        runToTagInfo,
-        selectedRuns,
-        tagFilter,
-        categoriesDomReady
-      ) {
+    }
+    @computed("_runToTagInfo", "_selectedRuns", "_tagFilter", "_categoriesDomReady")
+    get _categories(): unknown[] {
+        var runToTagInfo = this._runToTagInfo;
+        var selectedRuns = this._selectedRuns;
+        var tagFilter = this._tagFilter;
+        var categoriesDomReady = this._categoriesDomReady;
         const runToTag = _.mapValues(runToTagInfo, (x) => Object.keys(x));
-        return tf_categorization_utils.categorizeTags(
-          runToTag,
-          selectedRuns,
-          tagFilter
-        );
-      },
-      _computeColorForRun(run) {
+        return tf_categorization_utils.categorizeTags(runToTag, selectedRuns, tagFilter);
+    }
+    _computeColorForRun(run) {
         return tf_color_scale.runsColorScale(run);
-      },
-      _computeRelevantSelectedRuns(selectedRuns, runToTagInfo) {
+    }
+    @computed("_selectedRuns", "_runToTagInfo")
+    get _relevantSelectedRuns(): unknown[] {
+        var selectedRuns = this._selectedRuns;
+        var runToTagInfo = this._runToTagInfo;
         return selectedRuns.filter((run) => runToTagInfo[run]);
-      },
-      _tagMetadata(runToTagsInfo, runs, tag) {
+    }
+    _tagMetadata(runToTagsInfo, runs, tag) {
         const runToTagInfo = {};
         runs.forEach((run) => {
-          runToTagInfo[run] = runToTagsInfo[run][tag];
+            runToTagInfo[run] = runToTagsInfo[run][tag];
         });
         // All PR curve tags include the `/pr_curves` suffix. We can trim
         // that from the display name.
         const defaultDisplayName = tag.replace(/\/pr_curves$/, '');
         return tf_utils.aggregateTagInfo(runToTagInfo, defaultDisplayName);
-      },
-      _createDataChangeCallback(tag) {
+    }
+    _createDataChangeCallback(tag) {
         return (runToData) => {
-          this.set('_tagToRunToData', {
-            ...this._tagToRunToData,
-            [tag]: runToData,
-          });
+            this.set('_tagToRunToData', {
+                ...this._tagToRunToData,
+                [tag]: runToData,
+            });
         };
-      },
-      _computeRunToAvailableTimeEntries(tagToRunToData) {
+    }
+    @computed("_tagToRunToData")
+    get _runToAvailableTimeEntries(): object {
+        var tagToRunToData = this._tagToRunToData;
         const canonicalTag = {}; // map from run to canonical tag name
         for (const [tag, runToData] of Object.entries(tagToRunToData)) {
-          for (const [run, data] of Object.entries(runToData)) {
-            // arbitrary stable ordering: smallest tag name is canonical
-            if (canonicalTag[run] == null || tag < canonicalTag[run]) {
-              canonicalTag[run] = tag;
+            for (const [run, data] of Object.entries(runToData)) {
+                // arbitrary stable ordering: smallest tag name is canonical
+                if (canonicalTag[run] == null || tag < canonicalTag[run]) {
+                    canonicalTag[run] = tag;
+                }
             }
-          }
         }
         const result = {};
         for (const [run, tag] of Object.entries(canonicalTag)) {
-          const data = tagToRunToData[tag][run];
-          result[run] = data.map((d) => ({
-            step: d.step,
-            wall_time: d.wall_time,
-            relative: d.wall_time - data[0].wall_time,
-          }));
+            const data = tagToRunToData[tag][run];
+            result[run] = data.map((d) => ({
+                step: d.step,
+                wall_time: d.wall_time,
+                relative: d.wall_time - data[0].wall_time,
+            }));
         }
         return result;
-      },
-    });
-  </script>
-</dom-module>
+    }
+}
