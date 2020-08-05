@@ -185,7 +185,7 @@ export class TfScalarCard extends PolymerElement {
   tag: string;
 
   @property({type: Array})
-  dataToLoad: unknown[];
+  dataToLoad: object[];
 
   @property({type: String})
   xType: string;
