@@ -29,7 +29,7 @@ class TfSmoothingInput extends PolymerElement {
         immediate-value="{{_immediateWeightNumberForPaperSlider}}"
         max="[[max]]"
         min="[[min]]"
-        pin=""
+        pin
         step="[[step]]"
         type="number"
         value="{{weight}}"
@@ -37,7 +37,7 @@ class TfSmoothingInput extends PolymerElement {
       <paper-input
         id="input"
         label="weight"
-        no-label-float=""
+        no-label-float
         value="{{_inputWeightStringForPaperInput}}"
         type="number"
         step="[[step]]"

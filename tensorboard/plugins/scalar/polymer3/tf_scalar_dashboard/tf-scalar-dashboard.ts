@@ -65,7 +65,7 @@ class TfScalarDashboard extends LegacyElementMixin(ArrayUpdateHelper) {
             <div id="tooltip-sorting">
               <div>Tooltip sorting method:</div>
               <paper-dropdown-menu
-                no-label-float=""
+                no-label-float
                 selected-item-label="{{_tooltipSortingMethod}}"
               >
                 <paper-listbox
