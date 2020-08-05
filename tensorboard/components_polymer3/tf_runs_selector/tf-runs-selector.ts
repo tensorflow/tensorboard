@@ -15,10 +15,9 @@ limitations under the License.
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {computed, customElement, property} from '@polymer/decorators';
-import '@polymer/paper-button';
-import '@polymer/paper-dialog';
 
 import {LegacyElementMixin} from '../polymer/legacy_element_mixin';
+import '../polymer/irons_and_papers';
 import * as baseStore from '../tf_backend/baseStore';
 import {environmentStore} from '../tf_backend/environmentStore';
 import {runsStore} from '../tf_backend/runsStore';

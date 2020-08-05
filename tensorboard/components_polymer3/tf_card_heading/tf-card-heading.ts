@@ -15,11 +15,9 @@ limitations under the License.
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {computed, customElement, property} from '@polymer/decorators';
-import '@polymer/paper-icon-button';
-import '@polymer/paper-dialog';
-import '@polymer/paper-dialog-scrollable';
 
 import '../tf_markdown_view/tf-markdown-view';
+import '../polymer/irons_and_papers';
 
 import {pickTextColor} from './util';
 import './tf-card-heading-style';

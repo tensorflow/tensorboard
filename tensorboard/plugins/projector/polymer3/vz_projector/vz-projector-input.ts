@@ -15,11 +15,8 @@ limitations under the License.
 import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, property} from '@polymer/decorators';
 
-import '@polymer/paper-button';
-import '@polymer/paper-input/paper-input';
-import '@polymer/paper-tooltip';
-
 import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+import '../../../../components_polymer3/polymer/irons_and_papers';
 
 import './styles';
 

@@ -16,8 +16,8 @@ import {PolymerElement, html} from '@polymer/polymer';
 import * as Plottable from 'plottable';
 import {customElement, property, observe} from '@polymer/decorators';
 import * as _ from 'lodash';
-import '@polymer/paper-spinner/paper-spinner';
 
+import '../polymer/irons_and_papers';
 import {LegacyElementMixin} from '../polymer/legacy_element_mixin';
 import {runsColorScale} from '../tf_color_scale/colorScale';
 import {RequestManager} from '../tf_backend/requestManager';

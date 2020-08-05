@@ -12,16 +12,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import '../../../../components_polymer3/security';
 
-import './styles';
-import './vz-projector-app';
-import './vz-projector-bookmark-panel';
-import './vz-projector-dashboard';
-import './vz-projector-data-panel';
-import './vz-projector-inspector-panel';
-import './vz-projector-input';
-import './vz-projector-legend';
-import './vz-projector-projections-panel';
-import './vz-projector-metadata-card';
-import './vz-projector';
+// Add dashboards here.
+import '../plugins/profile_redirect/polymer3/tf_profile_redirect_dashboard/tf-profile-redirect-dashboard';
+import '../plugins/text/polymer3/tf_text_dashboard/tf-text-dashboard';
+
+// Exported Polymer <-> Angular interop (to be removed).
+import './experimental/plugin_util/plugin-host';
+import './tf_backend/tf-backend-polymer';
+import './tf_globals/globals-polymer';
+import './tf_storage/tf-storage-polymer';
+import './tf_paginated_view/tf-paginated-view-store';

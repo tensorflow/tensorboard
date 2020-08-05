@@ -15,11 +15,9 @@ limitations under the License.
 
 import {html} from '@polymer/polymer';
 
+import '../../../../components_polymer3/polymer/irons_and_papers';
+
 import './styles';
-import '@polymer/iron-collapse/iron-collapse';
-import '@polymer/paper-icon-button/paper-icon-button';
-import '@polymer/paper-input/paper-textarea';
-import '@polymer/paper-tooltip/paper-tooltip';
 
 export const template = html`
   <style include="vz-projector-styles"></style>

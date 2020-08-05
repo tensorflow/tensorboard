@@ -94,6 +94,7 @@ genrule(
         "@org_mozilla_bleach//:LICENSE",
         "@org_html5lib//:LICENSE",
         "@org_pythonhosted_webencodings//:LICENSE",
+        "//third_party:bh_tsne.LICENSE",
     ],
     outs = ["LICENSE"],
     cmd = "\n".join([
