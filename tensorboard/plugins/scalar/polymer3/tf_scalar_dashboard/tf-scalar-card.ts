@@ -16,6 +16,7 @@ limitations under the License.
 import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, property} from '@polymer/decorators';
 import '../../../../components_polymer3/polymer/irons_and_papers';
+import {RequestManager} from '../../../../components_polymer3/tf_backend/requestManager';
 import {getRouter} from '../../../../components_polymer3/tf_backend/router';
 import '../../../../components_polymer3/tf_card_heading/tf-card-heading';
 import {runsColorScale} from '../../../../components_polymer3/tf_color_scale/colorScale';
@@ -194,7 +195,7 @@ export class TfScalarCard extends PolymerElement {
   ignoreYOutliers: boolean;
 
   @property({type: Object})
-  requestManager: object;
+  requestManager: RequestManager;
 
   @property({type: Boolean})
   showDownLinks: boolean;
@@ -218,19 +219,17 @@ export class TfScalarCard extends PolymerElement {
 
   // This function is called when data is received from the backend.
   @property({type: Object})
-  _loadDataCallback: object = function() {
-    return (scalarChart, datum, data) => {
-      const formattedData = data.map((datum) => ({
-        wall_time: new Date(datum[0] * 1000),
-        step: datum[1],
-        scalar: datum[2],
-      }));
-      const name = this._getSeriesNameFromDatum(datum);
-      scalarChart.setSeriesMetadata(name, datum);
-      scalarChart.setSeriesData(name, formattedData);
-      scalarChart.commitChanges();
-    };
-  }.call(this);
+  _loadDataCallback: object = (scalarChart, datum, data) => {
+    const formattedData = data.map((datum) => ({
+      wall_time: new Date(datum[0] * 1000),
+      step: datum[1],
+      scalar: datum[2],
+    }));
+    const name = this._getSeriesNameFromDatum(datum);
+    scalarChart.setSeriesMetadata(name, datum);
+    scalarChart.setSeriesData(name, formattedData);
+    scalarChart.commitChanges();
+  };
 
   @property({type: Object})
   getDataLoadUrl: Function = ({tag, run}) => {
@@ -267,7 +266,7 @@ export class TfScalarCard extends PolymerElement {
   _logScaleActive: boolean;
 
   @property({type: Array})
-  _tooltipColumns: unknown[] = function() {
+  _tooltipColumns: unknown[] = (() => {
     const columns = DEFAULT_TOOLTIP_COLUMNS.slice();
     const ind = columns.findIndex((c) => c.title == 'Name');
     columns.splice(ind, 1, {
@@ -278,7 +277,7 @@ export class TfScalarCard extends PolymerElement {
       },
     });
     return columns;
-  }.call(this);
+  })();
 
   _getChartDataLoader() {
     return this.shadowRoot.querySelector('tf-line-chart-data-loader') as any; // TfLineChartDataLoader
