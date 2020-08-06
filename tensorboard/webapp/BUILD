@@ -31,6 +31,7 @@ ng_module(
         "//tensorboard/webapp/feature_flag",
         "//tensorboard/webapp/header",
         "//tensorboard/webapp/plugins",
+        "//tensorboard/webapp/plugins/text_v2",
         "//tensorboard/webapp/reloader",
         "//tensorboard/webapp/runs",
         "//tensorboard/webapp/settings",
