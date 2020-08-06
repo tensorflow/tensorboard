@@ -38,6 +38,7 @@ import '@polymer/paper-material';
 import '@polymer/paper-menu-button';
 import '@polymer/paper-slider';
 import '@polymer/paper-spinner/paper-spinner';
+import '@polymer/paper-spinner/paper-spinner-lite';
 import '@polymer/paper-styles/paper-styles';
 import '@polymer/paper-tabs';
 import '@polymer/paper-toast';
