@@ -51,6 +51,7 @@ tf_ts_library(
         "//tensorboard/plugins/audio/polymer3/tf_audio_dashboard",
         "//tensorboard/plugins/distribution/polymer3/tf_distribution_dashboard",
         "//tensorboard/plugins/histogram/polymer3/tf_histogram_dashboard",
+        "//tensorboard/plugins/hparams/polymer3/tf_hparams_dashboard",
         "//tensorboard/plugins/image/polymer3/tf_image_dashboard",
         "//tensorboard/plugins/profile_redirect/polymer3/tf_profile_redirect_dashboard",
         "//tensorboard/plugins/scalar/polymer3/tf_scalar_dashboard",

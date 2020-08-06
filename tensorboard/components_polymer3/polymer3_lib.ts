@@ -18,6 +18,7 @@ import '../plugins/audio/polymer3/tf_audio_dashboard/tf-audio-dashboard';
 import '../plugins/distribution/polymer3/tf_distribution_dashboard/tf-distribution-dashboard';
 import '../plugins/profile_redirect/polymer3/tf_profile_redirect_dashboard/tf-profile-redirect-dashboard';
 import '../plugins/histogram/polymer3/tf_histogram_dashboard/tf-histogram-dashboard';
+import '../plugins/hparams/polymer3/tf_hparams_dashboard/tf-hparams-dashboard';
 import '../plugins/image/polymer3/tf_image_dashboard/tf-image-dashboard';
 import '../plugins/text/polymer3/tf_text_dashboard/tf-text-dashboard';
 import '../plugins/scalar/polymer3/tf_scalar_dashboard/tf-scalar-dashboard';
