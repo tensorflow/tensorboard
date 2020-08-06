@@ -20,6 +20,7 @@ tf_ts_library(
         "//tensorboard/components_polymer3/tf_paginated_view",
         "//tensorboard/components_polymer3/tf_runs_selector",
         "//tensorboard/components_polymer3/polymer:irons_and_papers",
+        "//tensorboard/components_polymer3/polymer:legacy_element_mixin",
         "@npm//@polymer/decorators",
         "@npm//@polymer/polymer",
         "@npm//@types/lodash",

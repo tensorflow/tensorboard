@@ -16,8 +16,8 @@ limitations under the License.
 import * as PolymerDom from '@polymer/polymer/lib/legacy/polymer.dom.js';
 import {computed, customElement, observe, property} from '@polymer/decorators';
 import {PolymerElement, html} from '@polymer/polymer';
-import {LegacyElementMixin} from '@polymer/polymer/lib/legacy/legacy-element-mixin';
 
+import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
 import {Canceller} from '../../../../components_polymer3/tf_backend/canceller';
 import {RequestManager} from '../../../../components_polymer3/tf_backend/requestManager';
 import {getRouter} from '../../../../components_polymer3/tf_backend/router';

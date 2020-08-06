@@ -15,9 +15,9 @@ limitations under the License.
 
 import * as _ from 'lodash';
 import {PolymerElement, html} from '@polymer/polymer';
-import {LegacyElementMixin} from '@polymer/polymer/lib/legacy/legacy-element-mixin';
 import {computed, customElement, observe, property} from '@polymer/decorators';
 
+import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
 import {getTags} from '../../../../components_polymer3/tf_backend/backend';
 import {RequestManager} from '../../../../components_polymer3/tf_backend/requestManager';
 import {getRouter} from '../../../../components_polymer3/tf_backend/router';
