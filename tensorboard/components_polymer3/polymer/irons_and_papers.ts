@@ -37,6 +37,7 @@ import '@polymer/paper-item';
 import '@polymer/paper-listbox';
 import '@polymer/paper-material';
 import '@polymer/paper-menu-button';
+import '@polymer/paper-radio-button';
 import '@polymer/paper-radio-group';
 import '@polymer/paper-slider';
 import '@polymer/paper-spinner/paper-spinner-lite';

@@ -104,6 +104,7 @@ tf_ts_library(
         "@npm//@polymer/paper-listbox",
         "@npm//@polymer/paper-material",
         "@npm//@polymer/paper-menu-button",
+        "@npm//@polymer/paper-radio-button",
         "@npm//@polymer/paper-radio-group",
         "@npm//@polymer/paper-slider",
         "@npm//@polymer/paper-spinner",
