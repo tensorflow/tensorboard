@@ -131,7 +131,6 @@ tf_web_library(
         ":tb_webapp",
         "//tensorboard/components:polymer_lib_binary",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/source_code/monaco:requirejs",
-        "@com_google_fonts_roboto",
     ],
 )
 
@@ -147,8 +146,8 @@ tf_web_library(
     path = "/",
     deps = [
         ":tb_webapp",
+        "//tensorboard/components/tf_imports:roboto",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/source_code/monaco:requirejs",
-        "@com_google_fonts_roboto",
     ],
 )
 
@@ -166,8 +165,8 @@ tensorboard_html_binary(
 tensorboard_html_binary(
     name = "index_polymer3",
     input_path = "/index_polymer3.inlined.html",
-    js_path = "index_polymer3.js",
-    output_path = "index_polymer3.html",
+    js_path = "/index_polymer3.js",
+    output_path = "/index_polymer3.html",
     deps = [":tensorboard-webapp-polymer3"],
 )
 

@@ -42,6 +42,7 @@ tf_ts_library(
     name = "polymer3_ts_lib",
     srcs = ["polymer3_lib.ts"],
     deps = [
+        "//tensorboard/components_polymer3/experimental/plugin_util:plugin_host",
         "//tensorboard/components_polymer3/tf_backend",
         "//tensorboard/components_polymer3/tf_globals",
         "//tensorboard/components_polymer3/tf_markdown_view",
