@@ -27,13 +27,12 @@ import {getTags} from '../../../../components_polymer3/tf_backend/backend';
 import {RequestManager} from '../../../../components_polymer3/tf_backend/requestManager';
 import {getRouter} from '../../../../components_polymer3/tf_backend/router';
 import {categorizeRunTagCombinations} from '../../../../components_polymer3/tf_categorization_utils/categorizationUtils';
-import '../../../../components_polymer3/tf-categorization-utils/tf-tag-filterer';
-import '../../../../components_polymer3/tf-dashboard-common/dashboard-style';
-import '../../../../components_polymer3/tf-dashboard-common/tf-dashboard-layout';
-import '../../../../components_polymer3/tf-paginated-view/tf-category-paginated-view';
-import '../../../../components_polymer3/tf-runs-selector/tf-runs-selector';
-import '../../../../components_polymer3/tf-tensorboard/registry';
-import 'tf-image-loader';
+import '../../../../components_polymer3/tf_categorization_utils/tf-tag-filterer';
+import '../../../../components_polymer3/tf_dashboard_common/dashboard-style';
+import '../../../../components_polymer3/tf_dashboard_common/tf-dashboard-layout';
+import '../../../../components_polymer3/tf_paginated_view/tf-category-paginated-view';
+import '../../../../components_polymer3/tf_runs_selector/tf-runs-selector';
+import './tf-image-loader';
 
 @customElement('tf-image-dashboard')
 class TfImageDashboard extends LegacyElementMixin(PolymerElement) {
