@@ -233,6 +233,7 @@ class TfImageDashboard extends LegacyElementMixin(PolymerElement) {
   _requestManager = new RequestManager();
 
   ready() {
+    super.ready();
     if (this.reloadOnReady) this.reload();
   }
   reload() {
