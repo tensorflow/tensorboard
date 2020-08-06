@@ -158,7 +158,7 @@ class _TfDistributionLoader
   }
 
   @observe('run', 'tag')
-  _updateDataToLoad():void {
+  _updateDataToLoad(): void {
     var run = this.run;
     var tag = this.tag;
     this.dataToLoad = [{run, tag}];

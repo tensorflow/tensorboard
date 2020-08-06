@@ -131,7 +131,7 @@ class TfDistributionDashboard extends LegacyElementMixin(PolymerElement) {
     </style>
   `;
 
-  @property({ type: Boolean, })
+  @property({type: Boolean})
   reloadOnReady: boolean = true;
 
   @property({type: String})
