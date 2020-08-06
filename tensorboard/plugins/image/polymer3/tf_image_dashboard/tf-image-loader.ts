@@ -22,9 +22,9 @@ import {Canceller} from '../../../../components_polymer3/tf_backend/canceller';
 import {RequestManager} from '../../../../components_polymer3/tf_backend/requestManager';
 import {getRouter} from '../../../../components_polymer3/tf_backend/router';
 import {addParams} from '../../../../components_polymer3/tf_backend/urlPathHelpers';
-import {formatDate} from '../../../../components_polymer3/tf_card_heading/util';
 import '../../../../components_polymer3/tf_card_heading/tf-card-heading';
 import '../../../../components_polymer3/tf_card_heading/tf-card-heading-style';
+import {formatDate} from '../../../../components_polymer3/tf_card_heading/util';
 import {runsColorScale} from '../../../../components_polymer3/tf_color_scale/colorScale';
 import '../../../../components_polymer3/tf_dashboard_common/tensorboard-color';
 
