@@ -17,11 +17,6 @@ import * as _ from 'lodash';
 import {PolymerElement, html} from '@polymer/polymer';
 import {LegacyElementMixin} from '@polymer/polymer/lib/legacy/legacy-element-mixin';
 import {computed, customElement, observe, property} from '@polymer/decorators';
-import '@polymer/iron-icon';
-import '@polymer/paper-button';
-import '@polymer/paper-dialog';
-import '@polymer/paper-input';
-import '@polymer/paper-slider';
 
 import {getTags} from '../../../../components_polymer3/tf_backend/backend';
 import {RequestManager} from '../../../../components_polymer3/tf_backend/requestManager';
