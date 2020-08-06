@@ -13,10 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import * as PolymerDom from '@polymer/polymer/lib/legacy/polymer.dom.js';
 import {computed, customElement, observe, property} from '@polymer/decorators';
 import {PolymerElement, html} from '@polymer/polymer';
 
+import * as PolymerDom from '../../../../components_polymer3/polymer/dom';
 import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
 import {Canceller} from '../../../../components_polymer3/tf_backend/canceller';
 import {RequestManager} from '../../../../components_polymer3/tf_backend/requestManager';
@@ -344,7 +344,7 @@ class TfImageLoader extends LegacyElementMixin(PolymerElement) {
         }
         const mainImageContainer = this.$$('#main-image-container');
         mainImageContainer.innerHTML = '';
-        PolymerDom.dom(mainImageContainer).appendChild(img);
+        (PolymerDom.dom(mainImageContainer) as any).appendChild(img);
         this.set('_isImageLoading', false);
       })
       .bind(this);
