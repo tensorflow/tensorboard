@@ -127,7 +127,7 @@ export let healthPillEntries: HealthPillEntry[] = [
   },
   {
     background_color: '#FF8D00',
-    label: '-\u221E',
+    label: '-∞',
   },
   {
     background_color: '#EAEAEA',
@@ -143,7 +143,7 @@ export let healthPillEntries: HealthPillEntry[] = [
   },
   {
     background_color: '#003ED4',
-    label: '+\u221E',
+    label: '+∞',
   },
 ];
 /**

@@ -22,21 +22,23 @@ import * as _ from 'lodash';
 import * as hierarchy from './hierarchy';
 import * as tf_graph_util from './util';
 import * as tf_graph_scene_edge from './edge';
-import {NAMESPACE_DELIM} from './graph';
-import {GraphType} from './graph';
-import {NodeType} from './graph';
-import {InclusionType} from './graph';
-import {Node} from './graph';
-import {OpNode} from './graph';
-import {BridgeNode} from './graph';
-import {EllipsisNode} from './graph';
-import {GroupNode} from './graph';
-import {Metanode} from './graph';
-import {OpNodeImpl} from './graph';
-import {Metaedge} from './graph';
-import {MetaedgeImpl} from './graph';
-import {createGraph} from './graph';
-import {getHierarchicalPath} from './graph';
+import {
+  NAMESPACE_DELIM,
+  GraphType,
+  NodeType,
+  InclusionType,
+  Node,
+  OpNode,
+  BridgeNode,
+  EllipsisNode,
+  GroupNode,
+  Metanode,
+  OpNodeImpl,
+  Metaedge,
+  MetaedgeImpl,
+  createGraph,
+  getHierarchicalPath,
+} from './graph';
 
 import * as tf_graph from './graph';
 

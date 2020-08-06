@@ -27,7 +27,6 @@ import * as tf_graph_render from '../tf_graph_common/render';
 
 import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
 
-'use strict';
 @customElement('tf-graph-debugger-data-card')
 class TfGraphDebuggerDataCard extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`

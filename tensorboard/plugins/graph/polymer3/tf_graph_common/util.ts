@@ -224,7 +224,7 @@ export const MEMORY_UNITS: Units = [
 ];
 export const TIME_UNITS: Units = [
   // Atomic unit. Finest granularity in TensorFlow stat collection.
-  {symbol: '\u00B5s'},
+  {symbol: 'µs'},
   // numUnits specifies how many previous units this unit contains.
   {symbol: 'ms', numUnits: 1000},
   {symbol: 's', numUnits: 1000},

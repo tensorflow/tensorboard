@@ -133,9 +133,7 @@ class TfGraphScene2 extends LegacyElementMixin(PolymerElement) {
   @property({
     type: Object,
   })
-  _nodeGroupIndex: object = function() {
-    return {};
-  };
+  _nodeGroupIndex = {};
 
   /*
    * Dictionary for easily stylizing annotation nodes when state changes.
