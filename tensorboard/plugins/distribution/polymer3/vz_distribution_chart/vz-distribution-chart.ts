@@ -225,11 +225,6 @@ class _VzDistributionChart extends LegacyElementMixin(PolymerElement)
     this._chart.redraw();
   }
 
-  ready() {
-    super.ready();
-    this.scopeSubtree(this.$.chartdiv, true);
-  }
-
   @observe('xType', 'colorScale', '_attached')
   _makeChart() {
     var xType = this.xType;
