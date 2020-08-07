@@ -1,15 +1,17 @@
 load("//tensorboard/defs:defs.bzl", "tensorboard_webcomponent_library")
-load("//tensorboard/defs:web.bzl", "tf_web_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
-tf_web_library(
+# `tf_web_library`/`tf_ts_library` here removed to facilitate internal
+# sync-testing scripts.
+
+dict(
     name = "tf_graph_loader",
     srcs = [
         "tf-graph-loader.html",
-        "tf-graph-loader.js",
+        "tf-graph-loader.ts",
     ],
     path = "/tf-graph-loader",
     deps = [
@@ -28,11 +30,11 @@ tensorboard_webcomponent_library(
     ],
 )
 
-tf_web_library(
+dict(
     name = "tf_graph_dashboard_loader",
     srcs = [
         "tf-graph-dashboard-loader.html",
-        "tf-graph-dashboard-loader.js",
+        "tf-graph-dashboard-loader.ts",
     ],
     path = "/tf-graph-loader",
     visibility = ["//visibility:public"],
