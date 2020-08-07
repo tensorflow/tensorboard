@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import { DO_NOT_SUBMIT } from "../tf-dashboard-common/tensorboard-color.html";
+import {DO_NOT_SUBMIT} from '../tf-dashboard-common/tensorboard-color.html';
 /* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
