@@ -15,6 +15,16 @@ tf_ts_library(
 )
 
 tf_ts_library(
+    name = "dom-repeat",
+    srcs = [
+        "dom-repeat.ts",
+    ],
+    deps = [
+        "@npm//@polymer/polymer",
+    ],
+)
+
+tf_ts_library(
     name = "legacy_element_mixin",
     srcs = [
         "legacy_element_mixin.ts",
