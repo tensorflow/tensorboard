@@ -17,11 +17,11 @@ import {StepDatum} from '../data_source';
 export const TEXT_FEATURE_KEY = 'text';
 
 type RunId = string;
-type Tag = string;
+type TagId = string;
 
 export interface TextState {
-  runToTags: Map<RunId, Tag[]>;
-  data: Map<RunId, Map<Tag, StepDatum[]>>;
+  runToTags: Map<RunId, TagId[]>;
+  data: Map<RunId, Map<TagId, StepDatum[]>>;
 }
 
 export interface State {

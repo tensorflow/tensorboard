@@ -19,27 +19,37 @@ import {
   HttpTestingController,
 } from '../../../webapp_data_source/tb_http_client_testing';
 
-import {TextV2DataSource} from './text_v2_data_source';
+import {TextV2ServerDataSource} from './text_v2_server_data_source';
 
 describe('tb_server_data_source', () => {
-  describe('TextV2DataSource', () => {
-    let dataSource: TextV2DataSource;
+  describe('TextV2ServerDataSource', () => {
+    let dataSource: TextV2ServerDataSource;
     let httpMock: HttpTestingController;
 
     beforeEach(async () => {
       await TestBed.configureTestingModule({
         imports: [TBHttpClientTestingModule],
-        providers: [TextV2DataSource],
+        providers: [TextV2ServerDataSource],
       }).compileComponents();
 
       httpMock = TestBed.inject(HttpTestingController);
-      dataSource = TestBed.inject(TextV2DataSource);
+      dataSource = TestBed.inject(TextV2ServerDataSource);
     });
 
     describe('fetchRunToTag', () => {
       it('fetches from correct endpoint', () => {
         dataSource.fetchRunToTag().subscribe(jasmine.createSpy());
         httpMock.expectOne('data/plugin/text_v2/tags');
+      });
+
+      it('converts object to a map', () => {
+        const spy = jasmine.createSpy();
+        dataSource.fetchRunToTag().subscribe(spy);
+        httpMock.expectOne('data/plugin/text_v2/tags').flush({
+          run1: ['tag1', 'tag2'],
+        });
+
+        expect(spy).toHaveBeenCalledWith(new Map([['run1', ['tag1', 'tag2']]]));
       });
     });
 

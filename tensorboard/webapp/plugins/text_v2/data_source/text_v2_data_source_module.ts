@@ -17,13 +17,13 @@ import {NgModule} from '@angular/core';
 import {TBHttpClientModule} from '../../../webapp_data_source/tb_http_client_module';
 
 import {TextV2DataSource} from './text_v2_data_source';
-import {TextDataSource} from './text_v2_types';
+import {TextV2ServerDataSource} from './text_v2_server_data_source';
 
 @NgModule({
   imports: [TBHttpClientModule],
   providers: [
-    TextV2DataSource,
-    {provide: TextDataSource, useExisting: TextV2DataSource},
+    TextV2ServerDataSource,
+    {provide: TextV2DataSource, useExisting: TextV2ServerDataSource},
   ],
 })
 export class TextV2DataSourceModule {}

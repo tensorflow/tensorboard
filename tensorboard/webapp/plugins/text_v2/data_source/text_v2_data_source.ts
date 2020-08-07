@@ -13,46 +13,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
-import {map} from 'rxjs/operators';
+import {Observable} from 'rxjs';
 
-import {TBHttpClient} from '../../../webapp_data_source/tb_http_client';
+export interface StepDatum {
+  originalShape: number[];
+  step: number;
+  stringArray: string[][];
+  wallTimeInMs: number;
+  truncated: boolean;
+}
 
-import {
-  BackendRunToTagsMap,
-  BackendStepDatum,
-  TextDataSource,
-} from './text_v2_types';
-
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
+export type RunToTags = Map<string, string[]>;
 
 @Injectable()
-export class TextV2DataSource implements TextDataSource {
-  private readonly httpPathPrefix = 'data/plugin/text_v2';
-
-  constructor(private http: TBHttpClient) {}
-
-  fetchRunToTag() {
-    return this.http.get<BackendRunToTagsMap>(this.httpPathPrefix + '/tags');
-  }
-
-  fetchTextData(run: string, tag: string) {
-    const searchParams = new URLSearchParams({run, tag});
-    return this.http
-      .get<BackendStepDatum[]>(
-        this.httpPathPrefix + `/text?${searchParams.toString()}`
-      )
-      .pipe(
-        map((dataList) => {
-          return dataList.map((datum) => {
-            return {
-              originalShape: datum.original_shape,
-              step: datum.step,
-              stringArray: datum.string_array,
-              wallTimeInMs: datum.wall_time * 1000,
-              truncated: datum.truncated,
-            };
-          });
-        })
-      );
-  }
+export abstract class TextV2DataSource {
+  abstract fetchRunToTag(): Observable<RunToTags>;
+  abstract fetchTextData(run: string, tag: string): Observable<StepDatum[]>;
 }
