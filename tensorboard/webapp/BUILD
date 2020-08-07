@@ -50,6 +50,7 @@ ng_module(
     deps = [
         "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/feature_flag/store:types",
+        "//tensorboard/webapp/plugins/text_v2/store:types",
     ],
 )
 
@@ -186,6 +187,8 @@ tf_ng_web_test_suite(
         "//tensorboard/webapp/plugins:plugins_container_test_lib",
         "//tensorboard/webapp/plugins/npmi:npmi_test_lib",
         "//tensorboard/webapp/plugins/npmi/views/main:main_test_lib",
+        "//tensorboard/webapp/plugins/text_v2/data_source:data_source_test_lib",
+        "//tensorboard/webapp/plugins/text_v2/store:store_test_lib",
         "//tensorboard/webapp/reloader:test_lib",
         "//tensorboard/webapp/settings:test_lib",
         "//tensorboard/webapp/tbdev_upload:test_lib",
