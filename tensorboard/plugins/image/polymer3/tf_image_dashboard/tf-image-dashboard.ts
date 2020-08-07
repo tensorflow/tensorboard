@@ -200,16 +200,16 @@ class TfImageDashboard extends LegacyElementMixin(PolymerElement) {
   @property({type: Boolean})
   _actualSize: boolean;
 
-  @property({ type: Number, })
+  @property({type: Number})
   _defaultBrightnessAdjustment: number = 1;
 
-  @property({ type: Number, })
+  @property({type: Number})
   _defaultContrastPercentage: number = 100;
 
-  @property({ type: Number, })
+  @property({type: Number})
   _brightnessAdjustment: number = 1;
 
-  @property({ type: Number, })
+  @property({type: Number})
   _contrastPercentage: number = 100;
 
   @property({type: String})
