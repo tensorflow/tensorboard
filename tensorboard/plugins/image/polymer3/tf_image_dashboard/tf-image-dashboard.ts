@@ -202,13 +202,11 @@ class TfImageDashboard extends LegacyElementMixin(PolymerElement) {
 
   @property({
     type: Number,
-    readOnly: true,
   })
   _defaultBrightnessAdjustment: number = 1;
 
   @property({
     type: Number,
-    readOnly: true,
   })
   _defaultContrastPercentage: number = 100;
   @property({
