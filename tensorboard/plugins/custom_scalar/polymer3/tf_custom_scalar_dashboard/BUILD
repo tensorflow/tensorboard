@@ -1,16 +1,17 @@
-load("//tensorboard/defs:web.bzl", "tf_web_library")
-
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
-tf_web_library(
+# `tf_web_library`/`tf_ts_library` here removed to facilitate internal
+# sync-testing scripts.
+
+dict(
     name = "tf_custom_scalar_dashboard",
     srcs = [
         "tf-custom-scalar-card-style.html",
         "tf-custom-scalar-dashboard.html",
         "tf-custom-scalar-helpers.html",
-        "tf-custom-scalar-helpers.js",
+        "tf-custom-scalar-helpers.ts",
         "tf-custom-scalar-margin-chart-card.html",
         "tf-custom-scalar-multi-line-chart-card.html",
     ],
