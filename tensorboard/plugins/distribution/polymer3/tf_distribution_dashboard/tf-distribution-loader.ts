@@ -32,6 +32,10 @@ export interface TfDistributionLoader extends HTMLElement {
   reload(): void;
 }
 
+/**
+  tf-distribution-loader loads an individual distribution from the
+  TensorBoard backend, and renders it into a vz-distribution-chart.
+*/
 @customElement('tf-distribution-loader')
 class _TfDistributionLoader
   extends DataLoaderBehavior<{run: string; tag: string}, unknown>(

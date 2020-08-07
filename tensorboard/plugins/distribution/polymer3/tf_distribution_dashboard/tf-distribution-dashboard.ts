@@ -36,6 +36,12 @@ import '../../../../components_polymer3/tf_runs_selector/tf-runs-selector';
 import {TfDistributionLoader} from './tf-distribution-loader';
 import './tf-distribution-loader';
 
+/**
+  A frontend that displays a set of tf-distribution-loaders, each of
+  which displays the distribution for a single tag on a single run. This
+  dashboard provides a categorizer and abcissa seletor (step, relative,
+  or wall time).
+*/
 @customElement('tf-distribution-dashboard')
 class TfDistributionDashboard extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
