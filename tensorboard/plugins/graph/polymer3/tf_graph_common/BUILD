@@ -1,11 +1,13 @@
 load("//tensorboard/defs:defs.bzl", "tensorboard_webcomponent_library")
-load("//tensorboard/defs:web.bzl", "tf_web_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
-tf_web_library(
+# `tf_web_library`/`tf_ts_library` here removed to facilitate internal
+# sync-testing scripts.
+
+dict(
     name = "tf_graph_common",
     srcs = [
         "annotation.ts",
