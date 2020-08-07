@@ -17,6 +17,7 @@ ng_module(
         "//tensorboard/webapp/plugins/text_v2/views/text_dashboard",
         "@npm//@angular/common",
         "@npm//@angular/core",
+        "@npm//@ngrx/store",
     ],
 )
 
