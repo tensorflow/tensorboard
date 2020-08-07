@@ -13,40 +13,37 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import {computed, customElement, observe, property} from '@polymer/decorators';
 import {PolymerElement, html} from '@polymer/polymer';
-import {customElement, property} from '@polymer/decorators';
-import '@polymer/iron-collapse';
-import '@polymer/iron-icon';
-import '@polymer/paper-icon-button';
-import '@polymer/paper-item';
-import '@polymer/paper-dropdown-menu';
-import '@polymer/paper-icon-button';
-import '@polymer/paper-input';
-import '@polymer/paper-listbox';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-backend/tf-backend.html';
-import {DO_NOT_SUBMIT} from '../tf-line-chart-data-loader/tf-line-chart-data-loader.html';
-import {DO_NOT_SUBMIT} from '../tf-card-heading/tf-card-heading.html';
-import {DO_NOT_SUBMIT} from '../tf-color-scale/tf-color-scale.html';
-import {DO_NOT_SUBMIT} from 'tf-custom-scalar-card-style.html';
-import {DO_NOT_SUBMIT} from 'tf-custom-scalar-helpers.html';
-import '@polymer/iron-collapse';
-import '@polymer/iron-icon';
-import '@polymer/paper-icon-button';
-import '@polymer/paper-item';
-import '@polymer/paper-dropdown-menu';
-import '@polymer/paper-icon-button';
-import '@polymer/paper-input';
-import '@polymer/paper-listbox';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-backend/tf-backend.html';
-import {DO_NOT_SUBMIT} from '../tf-line-chart-data-loader/tf-line-chart-data-loader.html';
-import {DO_NOT_SUBMIT} from '../tf-card-heading/tf-card-heading.html';
-import {DO_NOT_SUBMIT} from '../tf-color-scale/tf-color-scale.html';
-import {DO_NOT_SUBMIT} from 'tf-custom-scalar-card-style.html';
-import {DO_NOT_SUBMIT} from 'tf-custom-scalar-helpers.html';
+import * as _ from 'lodash';
+
+import {DomRepeat} from '../../../../components_polymer3/polymer/dom-repeat';
+import '../../../../components_polymer3/polymer/irons_and_papers';
+import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+import {RequestManager} from '../../../../components_polymer3/tf_backend/requestManager';
+import {getRouter} from '../../../../components_polymer3/tf_backend/router';
+import '../../../../components_polymer3/tf_backend/tf-backend';
+import {addParams} from '../../../../components_polymer3/tf_backend/urlPathHelpers';
+import '../../../../components_polymer3/tf_card_heading/tf-card-heading';
+import {runsColorScale} from '../../../../components_polymer3/tf_color_scale/colorScale';
+import '../../../../components_polymer3/tf_line_chart_data_loader/tf-line-chart-data-loader';
+import {TfLineChartDataLoader} from '../../../../components_polymer3/tf_line_chart_data_loader/tf-line-chart-data-loader';
+import {SYMBOLS_LIST} from '../../../../components_polymer3/vz_chart_helpers/vz-chart-helpers';
+import './tf-custom-scalar-card-style';
+import {
+  DataSeries,
+  DataSeriesColorScale,
+  generateDataSeriesName,
+} from './tf-custom-scalar-helpers';
+
+export interface TfCustomScalarMultiLineChartCard extends HTMLElement {
+  reload(): void;
+}
+
 @customElement('tf-custom-scalar-multi-line-chart-card')
-class TfCustomScalarMultiLineChartCard extends PolymerElement {
+class _TfCustomScalarMultiLineChartCard
+  extends LegacyElementMixin(PolymerElement)
+  implements TfCustomScalarMultiLineChartCard {
   static readonly template = html`
     <tf-card-heading display-name="[[_titleDisplayString]]"></tf-card-heading>
     <div id="tf-line-chart-data-loader-container">
@@ -183,111 +180,123 @@ class TfCustomScalarMultiLineChartCard extends PolymerElement {
       }
     </style>
   `;
+
   @property({type: Array})
-  runs: unknown[];
+  runs: string[];
+
   @property({type: String})
   xType: string;
-  @property({
-    type: Boolean,
-    readOnly: true,
-  })
+
+  @property({type: Boolean})
   active: boolean = true;
+
   @property({type: String})
   title: string;
+
   @property({type: Array})
-  tagRegexes: unknown[];
+  tagRegexes: string[];
+
   @property({type: Boolean})
   ignoreYOutliers: boolean;
+
   @property({type: Object})
-  requestManager: object;
+  requestManager: RequestManager;
+
   @property({type: Boolean})
   showDownloadLinks: boolean;
+
   @property({type: Boolean})
   smoothingEnabled: boolean;
+
   @property({type: Number})
   smoothingWeight: number;
+
   @property({type: Object})
   tagMetadata: object;
+
   @property({type: String})
   tooltipSortingMethod: string;
-  @property({
-    type: Object,
-    readOnly: true,
-  })
-  _colorScale: object = new tf_custom_scalar_dashboard.DataSeriesColorScale({
-    scale: tf_color_scale.runsColorScale,
-  });
-  @property({
-    type: Object,
-  })
-  _nameToDataSeries: object = () => ({});
+
+  @property({type: Object})
+  _colorScale: DataSeriesColorScale = new DataSeriesColorScale({
+    scale: runsColorScale,
+  } as any);
+
+  @property({type: Object})
+  _nameToDataSeries: object = {};
+
   @property({
     type: Boolean,
     reflectToAttribute: true,
   })
   _expanded: boolean = false;
+
   @property({type: Boolean})
   _logScaleActive: boolean;
-  @property({
-    type: Function,
-  })
-  _dataUrl: object = function() {
-    return (run) => {
-      const tag = this._tagFilter;
-      return tf_backend.addParams(
-        tf_backend.getRouter().pluginRoute('custom_scalars', '/scalars'),
-        {tag, run}
-      );
-    };
+
+  @property({type: Object})
+  _dataUrl: (run: string) => string = (run) => {
+    const tag = this._tagFilter;
+    return addParams(getRouter().pluginRoute('custom_scalars', '/scalars'), {
+      tag,
+      run,
+    });
   };
-  @property({
-    type: Object,
-  })
+
+  @property({type: Object})
   _runToNextAvailableSymbolIndex: object = {};
-  @property({
-    type: Boolean,
-  })
+
+  @property({type: Boolean})
   _matchesListOpened: boolean = false;
+
   reload() {
-    this.$.loader.reload();
+    (this.$.loader as TfLineChartDataLoader).reload();
   }
+
   redraw() {
-    this.$.loader.redraw();
+    (this.$.loader as TfLineChartDataLoader).redraw();
   }
+
   _toggleExpanded(e) {
     this.set('_expanded', !this._expanded);
     this.redraw();
   }
+
   _toggleLogScale() {
     this.set('_logScaleActive', !this._logScaleActive);
   }
+
   _resetDomain() {
-    const chart = this.$.loader;
+    const chart = this.$.loader as TfLineChartDataLoader;
     if (chart) {
       chart.resetDomain();
     }
   }
+
   _csvUrl(nameToSeries, dataSeriesName) {
     if (!dataSeriesName) return '';
     const baseUrl = this._downloadDataUrl(nameToSeries, dataSeriesName);
-    return tf_backend.addParams(baseUrl, {format: 'csv'});
+    return addParams(baseUrl, {format: 'csv'});
   }
+
   _jsonUrl(nameToSeries, dataSeriesName) {
     if (!dataSeriesName) return '';
     const baseUrl = this._downloadDataUrl(nameToSeries, dataSeriesName);
-    return tf_backend.addParams(baseUrl, {format: 'json'});
+    return addParams(baseUrl, {format: 'json'});
   }
+
   _downloadDataUrl(nameToSeries, dataSeriesName) {
     const dataSeries = nameToSeries[dataSeriesName];
     const getVars = {
       tag: dataSeries.getTag(),
       run: dataSeries.getRun(),
     };
-    return tf_backend.addParams(
-      tf_backend.getRouter().pluginRoute('custom_scalars', '/download_data'),
+    return addParams(
+      getRouter().pluginRoute('custom_scalars', '/download_data'),
       getVars
     );
   }
+
   _createProcessDataFunction() {
     // This function is called when data is received from the backend.
     return (scalarChart, run, data) => {
@@ -301,10 +310,7 @@ class TfCustomScalarMultiLineChartCard extends PolymerElement {
             step: datum[1],
             scalar: datum[2],
           }));
-          const seriesName = tf_custom_scalar_dashboard.generateDataSeriesName(
-            run,
-            tag
-          );
+          const seriesName = generateDataSeriesName(run, tag);
           const datum = newMapping[seriesName];
           if (datum) {
             // This series already exists.
@@ -317,11 +323,9 @@ class TfCustomScalarMultiLineChartCard extends PolymerElement {
             }
             // Every data series within a run has a unique symbol.
             const lineChartSymbol =
-              vz_chart_helpers.SYMBOLS_LIST[
-                this._runToNextAvailableSymbolIndex[run]
-              ];
+              SYMBOLS_LIST[this._runToNextAvailableSymbolIndex[run]];
             // Create a series with this name.
-            const series = new tf_custom_scalar_dashboard.DataSeries(
+            const series = new DataSeries(
               run,
               tag,
               seriesName,
@@ -330,7 +334,7 @@ class TfCustomScalarMultiLineChartCard extends PolymerElement {
             );
             newMapping[seriesName] = series;
             // Loop back to the beginning if we are out of symbols.
-            const numSymbols = vz_chart_helpers.SYMBOLS_LIST.length;
+            const numSymbols = SYMBOLS_LIST.length;
             this._runToNextAvailableSymbolIndex[run] =
               (this._runToNextAvailableSymbolIndex[run] + 1) % numSymbols;
           }
@@ -342,15 +346,20 @@ class TfCustomScalarMultiLineChartCard extends PolymerElement {
       }
     };
   }
+
   @observe('_nameToDataSeries')
   _updateChart() {
     var _nameToDataSeries = this._nameToDataSeries;
     // Add new data series.
     Object.entries(_nameToDataSeries).forEach(([name, series]) => {
-      this.$.loader.setSeriesData(name, series.getData());
+      (this.$.loader as TfLineChartDataLoader).setSeriesData(
+        name,
+        series.getData()
+      );
     });
-    this.$.loader.commitChanges();
+    (this.$.loader as TfLineChartDataLoader).commitChanges();
   }
+
   _computeSelectedRunsSet(runs) {
     const mapping = {};
     _.forEach(runs, (run) => {
@@ -358,6 +367,7 @@ class TfCustomScalarMultiLineChartCard extends PolymerElement {
     });
     return mapping;
   }
+
   @computed('_nameToDataSeries', 'runs')
   get _seriesNames(): object {
     const runLookup = new Set(this.runs);
@@ -365,21 +375,26 @@ class TfCustomScalarMultiLineChartCard extends PolymerElement {
       .filter(([_, series]) => runLookup.has(series.run))
       .map(([name]) => name);
   }
+
   _determineColor(colorScale, seriesName) {
     return colorScale.scale(seriesName);
   }
+
   @observe('_tagFilter')
   _refreshDataSeries() {
     var _tagFilter = this._tagFilter;
     this.set('_nameToDataSeries', {});
   }
+
   _createSymbolFunction() {
     return (seriesName) =>
       this._nameToDataSeries[seriesName].getSymbol().method();
   }
+
   _determineSymbol(nameToSeries, seriesName) {
     return nameToSeries[seriesName].getSymbol().character;
   }
+
   @computed('tagRegexes')
   get _tagFilter(): string {
     var tagRegexes = this.tagRegexes;
@@ -389,29 +404,35 @@ class TfCustomScalarMultiLineChartCard extends PolymerElement {
     // Combine the different regexes into a single regex.
     return tagRegexes.map((r) => '(' + r + ')').join('|');
   }
+
   _getToggleMatchesIcon(matchesListOpened) {
     return matchesListOpened ? 'expand-less' : 'expand-more';
   }
+
   _toggleMatchesOpen() {
     this.set('_matchesListOpened', !this._matchesListOpened);
   }
+
   @computed('title')
   get _titleDisplayString(): string {
     var title = this.title;
     // If no title is provided, use a placeholder string.
     return title || 'untitled';
   }
+
   _matchListEntryColorUpdated(event) {
-    const domRepeat = this.$$('#match-list-repeat');
+    const domRepeat = this.$$('#match-list-repeat') as DomRepeat | null;
     if (!domRepeat) {
       return;
     }
-    this.root.querySelectorAll('.match-list-entry').forEach((entryElement) => {
-      const seriesName = domRepeat.itemForElement(entryElement);
-      entryElement.style.color = this._determineColor(
-        this._colorScale,
-        seriesName
-      );
-    });
+    this.root
+      .querySelectorAll('.match-list-entry')
+      .forEach((entryElement: HTMLElement) => {
+        const seriesName = domRepeat.itemForElement(entryElement);
+        entryElement.style.color = this._determineColor(
+          this._colorScale,
+          seriesName
+        );
+      });
   }
 }

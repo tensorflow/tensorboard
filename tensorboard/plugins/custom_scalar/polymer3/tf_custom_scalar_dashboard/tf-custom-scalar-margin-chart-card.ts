@@ -13,40 +13,57 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import {computed, customElement, observe, property} from '@polymer/decorators';
 import {PolymerElement, html} from '@polymer/polymer';
-import {customElement, property} from '@polymer/decorators';
-import '@polymer/iron-collapse';
-import '@polymer/iron-icon';
-import '@polymer/paper-icon-button';
-import '@polymer/paper-item';
-import '@polymer/paper-dropdown-menu';
-import '@polymer/paper-icon-button';
-import '@polymer/paper-input';
-import '@polymer/paper-listbox';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-backend/tf-backend.html';
-import {DO_NOT_SUBMIT} from '../tf-line-chart-data-loader/tf-line-chart-data-loader.html';
-import {DO_NOT_SUBMIT} from '../tf-card-heading/tf-card-heading.html';
-import {DO_NOT_SUBMIT} from '../tf-color-scale/tf-color-scale.html';
-import {DO_NOT_SUBMIT} from 'tf-custom-scalar-card-style.html';
-import {DO_NOT_SUBMIT} from 'tf-custom-scalar-helpers.html';
-import '@polymer/iron-collapse';
-import '@polymer/iron-icon';
-import '@polymer/paper-icon-button';
-import '@polymer/paper-item';
-import '@polymer/paper-dropdown-menu';
-import '@polymer/paper-icon-button';
-import '@polymer/paper-input';
-import '@polymer/paper-listbox';
-import {DO_NOT_SUBMIT} from '../tf-imports/polymer.html';
-import {DO_NOT_SUBMIT} from '../tf-backend/tf-backend.html';
-import {DO_NOT_SUBMIT} from '../tf-line-chart-data-loader/tf-line-chart-data-loader.html';
-import {DO_NOT_SUBMIT} from '../tf-card-heading/tf-card-heading.html';
-import {DO_NOT_SUBMIT} from '../tf-color-scale/tf-color-scale.html';
-import {DO_NOT_SUBMIT} from 'tf-custom-scalar-card-style.html';
-import {DO_NOT_SUBMIT} from 'tf-custom-scalar-helpers.html';
+import * as _ from 'lodash';
+
+import {DomRepeat} from '../../../../components_polymer3/polymer/dom-repeat';
+import '../../../../components_polymer3/polymer/irons_and_papers';
+import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+import {getRouter} from '../../../../components_polymer3/tf_backend/router';
+import {addParams} from '../../../../components_polymer3/tf_backend/urlPathHelpers';
+import '../../../../components_polymer3/tf_card_heading/tf-card-heading';
+import {runsColorScale} from '../../../../components_polymer3/tf_color_scale/colorScale';
+import '../../../../components_polymer3/tf_line_chart_data_loader/tf-line-chart-data-loader';
+import {TfLineChartDataLoader} from '../../../../components_polymer3/tf_line_chart_data_loader/tf-line-chart-data-loader';
+import {
+  SYMBOLS_LIST,
+  Y_TOOLTIP_FORMATTER_PRECISION,
+  multiscaleFormatter,
+  relativeAccessor,
+  relativeFormatter,
+  stepFormatter,
+  timeFormatter,
+} from '../../../../components_polymer3/vz_chart_helpers/vz-chart-helpers';
+
+import './tf-custom-scalar-card-style';
+import {
+  DataSeries,
+  DataSeriesColorScale,
+  generateDataSeriesName,
+} from './tf-custom-scalar-helpers';
+
+// Represents a `MarginChartContent.Series` proto.
+interface MarginChartSeries {
+  value: string;
+  lower: string;
+  upper: string;
+}
+
+interface StepsMismatch {
+  valueSteps: number[];
+  lowerSteps: number[];
+  upperSteps: number[];
+  seriesObject: MarginChartSeries;
+}
+
+export interface TfCustomScalarMarginChartCard extends HTMLElement {
+  reload(): void;
+}
+
 @customElement('tf-custom-scalar-margin-chart-card')
-class TfCustomScalarMarginChartCard extends PolymerElement {
+class _TfCustomScalarMarginChartCard extends LegacyElementMixin(PolymerElement)
+  implements TfCustomScalarMarginChartCard {
   static readonly template = html`
     <tf-card-heading display-name="[[_titleDisplayString]]"></tf-card-heading>
     <div id="tf-line-chart-data-loader-container">
@@ -278,84 +295,81 @@ class TfCustomScalarMarginChartCard extends PolymerElement {
       }
     </style>
   `;
+
   @property({type: Array})
   runs: unknown[];
+
   @property({type: String})
   xType: string;
-  @property({
-    type: Boolean,
-    readOnly: true,
-  })
+
+  @property({type: Boolean})
   active: boolean = true;
+
   @property({type: String})
   title: string;
+
   @property({type: Array})
-  marginChartSeries: unknown[];
+  marginChartSeries: MarginChartSeries[];
+
   @property({type: Boolean})
   ignoreYOutliers: boolean;
+
   @property({type: Object})
   requestManager: object;
+
   @property({type: Boolean})
   showDownloadLinks: boolean;
+
   @property({type: Object})
   tagMetadata: object;
+
   @property({type: String})
   tooltipSortingMethod: string;
-  @property({
-    type: Object,
-    readOnly: true,
-  })
-  _colorScale: object = new tf_custom_scalar_dashboard.DataSeriesColorScale({
-    scale: tf_color_scale.runsColorScale,
-  });
+
+  @property({type: Object})
+  _colorScale: object = new DataSeriesColorScale({
+    scale: runsColorScale,
+  } as any);
+
   @property({type: Boolean})
   _tagFilterInvalid: boolean;
-  @property({
-    type: Object,
-  })
-  _nameToDataSeries: object = () => ({});
+
+  @property({type: Object})
+  _nameToDataSeries: Record<string, DataSeries> = {};
+
   @property({
     type: Boolean,
     reflectToAttribute: true,
   })
   _expanded: boolean = false;
+
   @property({type: Boolean})
   _logScaleActive: boolean;
-  @property({
-    type: Function,
-  })
-  _dataUrl: object = function() {
-    return (run) => {
-      const tag = this._tagFilter;
-      return tf_backend.addParams(
-        tf_backend.getRouter().pluginRoute('custom_scalars', '/scalars'),
-        {tag, run}
-      );
-    };
+
+  @property({type: Object})
+  _dataUrl: (run: string) => string = (run) => {
+    const tag = this._tagFilter;
+    return addParams(getRouter().pluginRoute('custom_scalars', '/scalars'), {
+      tag,
+      run,
+    });
   };
-  @property({
-    type: Object,
-  })
+
+  @property({type: Object})
   _runToNextAvailableSymbolIndex: object = {};
-  @property({
-    type: Boolean,
-  })
+
+  @property({type: Boolean})
   _matchesListOpened: boolean = false;
-  @property({
-    type: Object,
-    readOnly: true,
-  })
+
+  @property({type: Object})
   _fillArea: object = {
     lowerAccessor: (d) => d.lower,
     higherAccessor: (d) => d.upper,
   };
-  @property({
-    type: Array,
-  })
-  _tooltipColumns: unknown[] = function() {
-    const valueFormatter = vz_chart_helpers.multiscaleFormatter(
-      vz_chart_helpers.Y_TOOLTIP_FORMATTER_PRECISION
-    );
+
+  @property({type: Array})
+  _tooltipColumns: unknown[] = (() => {
+    const valueFormatter = multiscaleFormatter(Y_TOOLTIP_FORMATTER_PRECISION);
     const formatValueOrNaN = (x) => (isNaN(x) ? 'NaN' : valueFormatter(x));
     return [
       {
@@ -376,36 +390,39 @@ class TfCustomScalarMarginChartCard extends PolymerElement {
       },
       {
         title: 'Step',
-        evaluate: (d) => vz_chart_helpers.stepFormatter(d.datum.step),
+        evaluate: (d) => stepFormatter(d.datum.step),
       },
       {
         title: 'Time',
-        evaluate: (d) => vz_chart_helpers.timeFormatter(d.datum.wall_time),
+        evaluate: (d) => timeFormatter(d.datum.wall_time),
       },
       {
         title: 'Relative',
         evaluate: (d) =>
-          vz_chart_helpers.relativeFormatter(
-            vz_chart_helpers.relativeAccessor(d.datum, -1, d.dataset)
-          ),
+          relativeFormatter(relativeAccessor(d.datum, -1, d.dataset)),
       },
     ];
-  };
-  @property({
-    type: Array,
-  })
-  _missingTags: unknown[] = [];
-  @property({
-    type: Boolean,
-  })
+  })();
+
+  @property({type: Array})
+  _missingTags: Array<{run: string; tags: string[]}> = [];
+
+  @property({type: Boolean})
   _missingTagsCollapsibleOpened: boolean = false;
+
+  /**
+   * This field is only set if data retrieved from the server exhibits a
+   * step mismatch: if the lists of values, lower bounds, and upper bounds
+   * do not match in step.
+   */
   @property({type: Object})
-  _stepsMismatch: object;
+  _stepsMismatch: StepsMismatch | null;
+
   reload() {
-    this.$.loader.reload();
+    (this.$.loader as TfLineChartDataLoader).reload();
   }
   redraw() {
-    this.$.loader.redraw();
+    (this.$.loader as TfLineChartDataLoader).redraw();
   }
   _toggleExpanded(e) {
     this.set('_expanded', !this._expanded);
@@ -415,7 +432,7 @@ class TfCustomScalarMarginChartCard extends PolymerElement {
     this.set('_logScaleActive', !this._logScaleActive);
   }
   _resetDomain() {
-    const chart = this.$.loader;
+    const chart = this.$.loader as TfLineChartDataLoader;
     if (chart) {
       chart.resetDomain();
     }
@@ -423,12 +440,12 @@ class TfCustomScalarMarginChartCard extends PolymerElement {
   _csvUrl(_nameToDataSeries, dataSeriesName) {
     if (!dataSeriesName) return '';
     const baseUrl = this._downloadDataUrl(_nameToDataSeries, dataSeriesName);
-    return tf_backend.addParams(baseUrl, {format: 'csv'});
+    return addParams(baseUrl, {format: 'csv'});
   }
   _jsonUrl(_nameToDataSeries, dataSeriesName) {
     if (!dataSeriesName) return '';
     const baseUrl = this._downloadDataUrl(_nameToDataSeries, dataSeriesName);
-    return tf_backend.addParams(baseUrl, {format: 'json'});
+    return addParams(baseUrl, {format: 'json'});
   }
   _downloadDataUrl(_nameToDataSeries, dataSeriesName) {
     const dataSeries = _nameToDataSeries[dataSeriesName];
@@ -436,11 +453,12 @@ class TfCustomScalarMarginChartCard extends PolymerElement {
       tag: dataSeries.getTag(),
       run: dataSeries.getRun(),
     };
-    return tf_backend.addParams(
-      tf_backend.getRouter().pluginRoute('custom_scalars', '/download_data'),
+    return addParams(
+      getRouter().pluginRoute('custom_scalars', '/download_data'),
       getVars
     );
   }
+
   _createProcessDataFunction(marginChartSeries) {
     // This function is called when data is received from the backend.
     return (scalarChart, run, data) => {
@@ -503,10 +521,7 @@ class TfCustomScalarMarginChartCard extends PolymerElement {
         }));
         // Compute the series name, which is based on both the run and the
         // tag of the value.
-        const seriesName = tf_custom_scalar_dashboard.generateDataSeriesName(
-          run,
-          tagsObject.value
-        );
+        const seriesName = generateDataSeriesName(run, tagsObject.value);
         const series = newMapping[seriesName];
         if (series) {
           // This series already exists.
@@ -544,6 +559,7 @@ class TfCustomScalarMarginChartCard extends PolymerElement {
       }
     };
   }
+
   _findStepMismatch(tagsObject, valueSteps, lowerSteps, upperSteps) {
     if (
       _.isEqual(lowerSteps, valueSteps) &&
@@ -559,15 +575,16 @@ class TfCustomScalarMarginChartCard extends PolymerElement {
       upperSteps: upperSteps,
     };
   }
+
   _createNewDataSeries(run, tag, seriesName, dataPoints) {
     // If the run has not been seen before, define the next
     // available marker index.
     this._runToNextAvailableSymbolIndex[run] |= 0;
     // Every data series within a run has a unique symbol.
     const lineChartSymbol =
-      vz_chart_helpers.SYMBOLS_LIST[this._runToNextAvailableSymbolIndex[run]];
+      SYMBOLS_LIST[this._runToNextAvailableSymbolIndex[run]];
     // Create a series with this name.
-    const series = new tf_custom_scalar_dashboard.DataSeries(
+    const series = new DataSeries(
       run,
       tag,
       seriesName,
@@ -575,20 +592,25 @@ class TfCustomScalarMarginChartCard extends PolymerElement {
       lineChartSymbol
     );
     // Loop back to the beginning if we are out of symbols.
-    const numSymbols = vz_chart_helpers.SYMBOLS_LIST.length;
+    const numSymbols = SYMBOLS_LIST.length;
     this._runToNextAvailableSymbolIndex[run] =
       (this._runToNextAvailableSymbolIndex[run] + 1) % numSymbols;
     return series;
   }
+
   @observe('_nameToDataSeries')
   _updateChart() {
     var _nameToDataSeries = this._nameToDataSeries;
     // Add new data series.
     _.forOwn(_nameToDataSeries, (dataSeries) => {
-      this.$.loader.setSeriesData(dataSeries.getName(), dataSeries.getData());
+      (this.$.loader as TfLineChartDataLoader).setSeriesData(
+        dataSeries.getName(),
+        dataSeries.getData()
+      );
     });
-    this.$.loader.commitChanges();
+    (this.$.loader as TfLineChartDataLoader).commitChanges();
   }
+
   @computed('_nameToDataSeries', 'runs')
   get _seriesNames(): object {
     const runLookup = new Set(this.runs);
@@ -596,21 +618,26 @@ class TfCustomScalarMarginChartCard extends PolymerElement {
       .filter(([_, series]) => runLookup.has(series.run))
       .map(([name]) => name);
   }
+
   _determineColor(colorScale, seriesName) {
     return colorScale.scale(seriesName);
   }
+
   @observe('_tagFilter')
   _refreshDataSeries() {
     var _tagFilter = this._tagFilter;
     this.set('_nameToDataSeries', {});
   }
+
   _createSymbolFunction() {
     return (seriesName) =>
       this._nameToDataSeries[seriesName].getSymbol().method();
   }
+
   _determineSymbol(_nameToDataSeries, seriesName) {
     return _nameToDataSeries[seriesName].getSymbol().character;
   }
+
   @computed('marginChartSeries')
   get _tagFilter(): string {
     var marginChartSeries = this.marginChartSeries;
@@ -627,15 +654,19 @@ class TfCustomScalarMarginChartCard extends PolymerElement {
     // Combine the different regexes into a single regex.
     return escapedTags.join('|');
   }
+
   _escapeRegexCharacters(stringValue) {
     return stringValue.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
+
   _getToggleCollapsibleIcon(listOpened) {
     return listOpened ? 'expand-less' : 'expand-more';
   }
+
   _toggleMatchesOpen() {
     this.set('_matchesListOpened', !this._matchesListOpened);
   }
+
   @computed('title')
   get _titleDisplayString(): string {
     var title = this.title;
@@ -643,26 +674,31 @@ class TfCustomScalarMarginChartCard extends PolymerElement {
     // of the tags for the value, lower, and upper fields of each series.
     return title || 'untitled';
   }
+
   _separateWithCommas(numbers) {
     return numbers.join(', ');
   }
+
   _toggleMissingTagsCollapsibleOpen() {
     this.set(
       '_missingTagsCollapsibleOpened',
       !this._missingTagsCollapsibleOpened
     );
   }
+
   _matchListEntryColorUpdated() {
-    const domRepeat = this.$$('#match-list-repeat');
+    const domRepeat = this.$$('#match-list-repeat') as DomRepeat | null;
     if (!domRepeat) {
       return;
     }
-    this.root.querySelectorAll('.match-list-entry').forEach((entryElement) => {
-      const seriesName = domRepeat.itemForElement(entryElement);
-      entryElement.style.color = this._determineColor(
-        this._colorScale,
-        seriesName
-      );
-    });
+    this.root
+      .querySelectorAll('.match-list-entry')
+      .forEach((entryElement: HTMLDivElement) => {
+        const seriesName = domRepeat.itemForElement(entryElement);
+        entryElement.style.color = this._determineColor(
+          this._colorScale,
+          seriesName
+        );
+      });
   }
 }

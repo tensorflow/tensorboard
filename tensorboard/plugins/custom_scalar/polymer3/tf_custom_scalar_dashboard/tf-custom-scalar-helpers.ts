@@ -1,4 +1,4 @@
-/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2017 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,29 +13,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {DO_NOT_SUBMIT} from 'tf-custom-scalar-helpers';
-import {DO_NOT_SUBMIT} from 'tf-custom-scalar-helpers';
-/* Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+import * as Plottable from 'plottable';
 
-Licensed under the Apache License, Version 2.0 (the 'License');
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+import {
+  LineChartSymbol,
+  ScalarDatum,
+} from '../../../../components_polymer3/vz_chart_helpers/vz-chart-helpers';
 
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an 'AS IS' BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
 export interface CustomScalarResponse {
   regex_valid: boolean;
   // Maps tag name to a list of scalar data.
   tag_to_events: {
-    [key: string]: vz_chart_helpers.ScalarDatum[];
+    [key: string]: ScalarDatum[];
   };
 }
+
 /**
  * A chart encapsulates data on a single chart.
  */
@@ -46,6 +38,7 @@ export interface Chart {
   // A list of regexes for tags that should be long in this chart.
   tag: string[];
 }
+
 /**
  * A category specifies charts within a single collapsible.
  */
@@ -54,6 +47,7 @@ export interface Category {
   // A list of charts to show in this category.
   chart: Chart[];
 }
+
 /**
  * A layout specifies how the various categories and charts should be laid out
  * within the dashboard.
@@ -61,21 +55,23 @@ export interface Category {
 export interface Layout {
   category: Category[];
 }
+
 /**
  * A class that represents a data series for a custom scalars chart.
  */
 export class DataSeries {
-  private run: string;
-  private tag: string;
-  private name: string;
-  private scalarData: vz_chart_helpers.ScalarDatum[];
-  private symbol: vz_chart_helpers.LineChartSymbol;
+  run: string;
+  tag: string;
+  name: string;
+  scalarData: ScalarDatum[];
+  symbol: LineChartSymbol;
+
   constructor(
     run: string,
     tag: string,
     name: string,
-    scalarData: vz_chart_helpers.ScalarDatum[],
-    symbol: vz_chart_helpers.LineChartSymbol
+    scalarData: ScalarDatum[],
+    symbol: LineChartSymbol
   ) {
     this.run = run;
     this.tag = tag;
@@ -83,13 +79,14 @@ export class DataSeries {
     this.scalarData = scalarData;
     this.symbol = symbol;
   }
+
   getName(): string {
     return this.name;
   }
-  setData(scalarData: vz_chart_helpers.ScalarDatum[]) {
+  setData(scalarData: ScalarDatum[]) {
     this.scalarData = scalarData;
   }
-  getData(): vz_chart_helpers.ScalarDatum[] {
+  getData(): ScalarDatum[] {
     return this.scalarData;
   }
   getRun(): string {
@@ -98,13 +95,15 @@ export class DataSeries {
   getTag(): string {
     return this.tag;
   }
-  getSymbol(): vz_chart_helpers.LineChartSymbol {
+  getSymbol(): LineChartSymbol {
     return this.symbol;
   }
 }
+
 export function generateDataSeriesName(run: string, tag: string): string {
   return `${tag} (${run})`;
 }
+
 /**
  * A color scale that wraps the usual color scale that relies on runs. This
  * particular color scale parses the run from a series name and defers to that
