@@ -24,7 +24,6 @@ tf_ts_library(
     srcs = [
         "text_v2_data_source_test.ts",
     ],
-    tsconfig = "//:tsconfig-test",
     deps = [
         ":data_source",
         "//tensorboard/webapp/angular:expect_angular_core_testing",

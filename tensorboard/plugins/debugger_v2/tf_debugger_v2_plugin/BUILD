@@ -1,3 +1,4 @@
+load("@rules_python//python:defs.bzl", "py_binary")
 load("@npm_angular_bazel//:index.bzl", "ng_module")
 load("//tensorboard/defs:defs.bzl", "tf_ng_web_test_suite", "tf_ts_library")
 
@@ -47,7 +48,6 @@ tf_ts_library(
     srcs = [
         "debugger_container_test.ts",
     ],
-    tsconfig = "//:tsconfig-test",
     deps = [
         ":debugger_v2",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/actions",

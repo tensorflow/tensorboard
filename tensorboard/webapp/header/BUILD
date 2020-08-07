@@ -49,7 +49,6 @@ tf_ts_library(
     srcs = [
         "header_test.ts",
     ],
-    tsconfig = "//:tsconfig-test",
     deps = [
         ":header",
         "//tensorboard/webapp/angular:expect_angular_core_testing",

@@ -36,7 +36,6 @@ tf_ts_library(
     srcs = [
         "execution_data_container_test.ts",
     ],
-    tsconfig = "//:tsconfig-test",
     deps = [
         ":execution_data",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin:debugger_v2",
