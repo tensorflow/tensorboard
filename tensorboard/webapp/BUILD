@@ -20,6 +20,17 @@ ng_module(
     ],
 )
 
+ng_module(
+    name = "reducer_config",
+    srcs = [
+        "reducer_config.ts",
+    ],
+    deps = [
+        "@npm//@angular/core",
+        "@npm//@ngrx/store",
+    ],
+)
+
 # Angular module for the top-level app component together with all of its
 # injectable dependencies.  I.e., the entire Angular app.
 ng_module(
@@ -28,7 +39,6 @@ ng_module(
         "app_container.ts",
         "app_module.ts",
         "mat_icon_module.ts",
-        "reducer_config.ts",
     ],
     assets = [
         "app_container.css",
@@ -36,6 +46,7 @@ ng_module(
     ],
     deps = [
         ":oss_plugins_module",
+        ":reducer_config",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
         "//tensorboard/webapp/core",
