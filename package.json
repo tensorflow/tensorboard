@@ -97,6 +97,7 @@
     "@polymer/paper-listbox": "^3.0.1",
     "@polymer/paper-material": "^3.0.1",
     "@polymer/paper-menu-button": "^3.0.1",
+    "@polymer/paper-radio-group": "^3.0.1",
     "@polymer/paper-slider": "^3.0.1",
     "@polymer/paper-spinner": "^3.0.2",
     "@polymer/paper-styles": "^3.0.1",
