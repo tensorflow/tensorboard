@@ -28,6 +28,9 @@ import {PluginsModule} from './plugins/plugins_module';
 import {ROOT_REDUCERS, loggerMetaReducerFactory} from './reducer_config';
 import {ReloaderModule} from './reloader/reloader_module';
 import {SettingsModule} from './settings/settings_module';
+import {TextV2Module} from './plugins/text_v2/text_v2_module';
+
+const NG_PLUGIN_MODULES = [TextV2Module];
 
 @NgModule({
   declarations: [AppContainer],
@@ -49,6 +52,7 @@ import {SettingsModule} from './settings/settings_module';
       },
     }),
     EffectsModule.forRoot([]),
+    ...NG_PLUGIN_MODULES,
   ],
   providers: [
     {
