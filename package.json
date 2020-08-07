@@ -112,7 +112,6 @@
     "@polymer/polymer": "^3.4.1",
     "d3": "5.7.0",
     "dagre": "^0.8.5",
-    "graphlib": "^2.1.8",
     "lodash": "^4.17.19",
     "monaco-editor-core": "^0.20.0",
     "monaco-languages": "^1.10.0",
