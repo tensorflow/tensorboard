@@ -12,9 +12,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {StepDatum} from '../data_source';
 
-import {State as CoreState} from './core/store/core_types';
-import {State as FeatureFlagState} from './feature_flag/store/feature_flag_types';
-import {State as TextState} from './plugins/text_v2/store/text_types';
+export const TEXT_FEATURE_KEY = 'text';
 
-export type State = CoreState & FeatureFlagState & TextState;
+type RunId = string;
+type TagId = string;
+
+export interface TextState {
+  runToTags: Map<RunId, TagId[]>;
+  data: Map<RunId, Map<TagId, StepDatum[]>>;
+}
+
+export interface State {
+  [TEXT_FEATURE_KEY]: TextState;
+}
