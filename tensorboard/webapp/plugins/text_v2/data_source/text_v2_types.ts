@@ -12,9 +12,31 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {Injectable} from '@angular/core';
+import {Observable} from 'rxjs';
 
-import {State as CoreState} from './core/store/core_types';
-import {State as FeatureFlagState} from './feature_flag/store/feature_flag_types';
-import {State as TextState} from './plugins/text_v2/store/text_types';
+export interface BackendRunToTagsMap {
+  [runName: string]: string[];
+}
 
-export type State = CoreState & FeatureFlagState & TextState;
+export interface BackendStepDatum {
+  original_shape: number[];
+  step: number;
+  string_array: string[][];
+  wall_time: number;
+  truncated: boolean;
+}
+
+export interface StepDatum {
+  originalShape: number[];
+  step: number;
+  stringArray: string[][];
+  wallTimeInMs: number;
+  truncated: boolean;
+}
+
+@Injectable()
+export abstract class TextDataSource {
+  abstract fetchRunToTag(): Observable<BackendRunToTagsMap>;
+  abstract fetchTextData(run: string, tag: string): Observable<StepDatum[]>;
+}

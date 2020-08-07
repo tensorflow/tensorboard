@@ -1,4 +1,4 @@
-/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -12,9 +12,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {NgModule} from '@angular/core';
 
-import {State as CoreState} from './core/store/core_types';
-import {State as FeatureFlagState} from './feature_flag/store/feature_flag_types';
-import {State as TextState} from './plugins/text_v2/store/text_types';
+import {TBHttpClientModule} from '../../../webapp_data_source/tb_http_client_module';
 
-export type State = CoreState & FeatureFlagState & TextState;
+import {TextV2DataSource} from './text_v2_data_source';
+import {TextDataSource} from './text_v2_types';
+
+@NgModule({
+  imports: [TBHttpClientModule],
+  providers: [
+    TextV2DataSource,
+    {provide: TextDataSource, useExisting: TextV2DataSource},
+  ],
+})
+export class TextV2DataSourceModule {}

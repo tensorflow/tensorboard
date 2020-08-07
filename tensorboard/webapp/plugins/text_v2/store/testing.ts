@@ -13,8 +13,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {State as CoreState} from './core/store/core_types';
-import {State as FeatureFlagState} from './feature_flag/store/feature_flag_types';
-import {State as TextState} from './plugins/text_v2/store/text_types';
+import {TextState, TEXT_FEATURE_KEY} from './text_types';
 
-export type State = CoreState & FeatureFlagState & TextState;
+export function buildTextState(override: Partial<TextState>) {
+  return {
+    runToTags: new Map(),
+    data: new Map(),
+    ...override,
+  };
+}
+
+export function buildState(textState: TextState) {
+  return {
+    [TEXT_FEATURE_KEY]: textState,
+  };
+}
