@@ -19,6 +19,7 @@ export function buildTextState(override: Partial<TextState>) {
   return {
     runToTags: new Map(),
     data: new Map(),
+    visibleRunTags: new Map(),
     ...override,
   };
 }
