@@ -96,10 +96,12 @@ export function DataLoaderBehavior<Item, Data>(
     _isConnected = false;
 
     connectedCallback() {
+      super.connectedCallback();
       this._isConnected = true;
     }
 
     disconnectedCallback() {
+      super.disconnectedCallback();
       this._isConnected = false;
     }
 
