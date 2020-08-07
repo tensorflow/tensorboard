@@ -24,7 +24,6 @@ import {TBHttpClient} from '../../../webapp_data_source/tb_http_client';
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 export abstract class NpmiDataSource {
-  abstract fetchRuns(): Observable<string[]>;
   abstract fetchAnnotations(): Observable<AnnotationListing>;
   abstract fetchMetrics(): Observable<MetricListing>;
   abstract fetchValues(): Observable<ValueListing>;
@@ -34,11 +33,7 @@ export abstract class NpmiDataSource {
 export class NpmiHttpServerDataSource implements NpmiDataSource {
   private readonly httpPathPrefix = 'data/plugin/npmi';
 
-  constructor(private http: TBHttpClient) {}
-
-  fetchRuns() {
-    return this.http.get<string[]>(this.httpPathPrefix + '/runs');
-  }
+  constructor(private readonly http: TBHttpClient) {}
 
   fetchAnnotations() {
     return this.http.get<AnnotationListing>(
@@ -47,10 +42,12 @@ export class NpmiHttpServerDataSource implements NpmiDataSource {
   }
 
   fetchMetrics() {
+    console.log('in metrics');
     return this.http.get<MetricListing>(this.httpPathPrefix + '/metrics');
   }
 
   fetchValues() {
+    console.log('in values');
     return this.http.get<ValueListing>(this.httpPathPrefix + '/values');
   }
 }

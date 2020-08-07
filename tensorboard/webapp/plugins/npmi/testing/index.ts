@@ -26,20 +26,14 @@ export function createNpmiState(override?: Partial<NpmiState>): NpmiState {
       state: DataLoadState.NOT_LOADED,
       lastLoadedTimeInMs: null,
     },
-    metricsData: {},
     countMetricsData: {},
     npmiMetricsData: {},
-    metricsLoaded: {
+    metricsAndValuesLoaded: {
       state: DataLoadState.NOT_LOADED,
       lastLoadedTimeInMs: null,
     },
-    valuesData: {},
     countValuesData: {},
     npmiValuesData: {},
-    valuesLoaded: {
-      state: DataLoadState.NOT_LOADED,
-      lastLoadedTimeInMs: null,
-    },
     countData: {},
     ...override,
   };

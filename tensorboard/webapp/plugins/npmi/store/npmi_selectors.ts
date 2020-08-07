@@ -48,13 +48,6 @@ export const getAnnotationsLoaded = createSelector(
   }
 );
 
-export const getMetricsData = createSelector(
-  selectNpmiState,
-  (state: NpmiState): MetricListing => {
-    return state.metricsData;
-  }
-);
-
 export const getCountMetricsData = createSelector(
   selectNpmiState,
   (state: NpmiState): MetricListing => {
@@ -69,17 +62,10 @@ export const getNpmiMetricsData = createSelector(
   }
 );
 
-export const getMetricsLoaded = createSelector(
+export const getMetricsAndValuesLoaded = createSelector(
   selectNpmiState,
   (state: NpmiState): LoadState => {
-    return state.metricsLoaded;
-  }
-);
-
-export const getValuesData = createSelector(
-  selectNpmiState,
-  (state: NpmiState): ValueListing => {
-    return state.valuesData;
+    return state.metricsAndValuesLoaded;
   }
 );
 
@@ -94,13 +80,6 @@ export const getNpmiValuesData = createSelector(
   selectNpmiState,
   (state: NpmiState): ValueListing => {
     return state.npmiValuesData;
-  }
-);
-
-export const getValuesLoaded = createSelector(
-  selectNpmiState,
-  (state: NpmiState): LoadState => {
-    return state.valuesLoaded;
   }
 );
 

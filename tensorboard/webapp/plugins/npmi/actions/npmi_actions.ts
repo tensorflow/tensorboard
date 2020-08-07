@@ -12,8 +12,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import {createAction} from '@ngrx/store';
+import {createAction, props} from '@ngrx/store';
+import {
+  AnnotationListing,
+  MetricListing,
+  ValueListing,
+} from '../store/npmi_types';
 
 // HACK: Below import is for type inference.
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
@@ -25,3 +29,29 @@ import {createAction} from '@ngrx/store';
 export const npmiLoaded = createAction('[NPMI] nPMI Loaded');
 
 export const npmiUnloaded = createAction('[NPMI] nPMI Unloaded');
+
+export const npmiAnnotationsRequested = createAction(
+  '[NPMI] nPMI Annotations Requested'
+);
+
+export const npmiAnnotationsLoaded = createAction(
+  '[NPMI] nPMI Annotations Loaded',
+  props<{annotations: AnnotationListing}>()
+);
+
+export const npmiAnnotationsRequestFailed = createAction(
+  '[NPMI] nPMI Annotations Request Failed'
+);
+
+export const npmiMetricsAndValuesRequested = createAction(
+  '[NPMI] nPMI Metrics and Values Requested'
+);
+
+export const npmiMetricsAndValuesLoaded = createAction(
+  '[NPMI] nPMI Metrics and Values Loaded',
+  props<{metrics: MetricListing; values: ValueListing}>()
+);
+
+export const npmiMetricsAndValuesRequestFailed = createAction(
+  '[NPMI] nPMI Metrics and Values Request Failed'
+);

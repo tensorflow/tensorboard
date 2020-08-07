@@ -12,41 +12,39 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {Injectable} from '@angular/core';
+import {Store} from '@ngrx/store';
+import {Actions, createEffect, ofType} from '@ngrx/effects';
+
+import {merge, forkJoin, Observable} from 'rxjs';
+import {
+  filter,
+  map,
+  switchMap,
+  mergeMap,
+  tap,
+  withLatestFrom,
+} from 'rxjs/operators';
+
+import {NpmiHttpServerDataSource} from '../data_source/npmi_data_source';
 import {
   State,
   AnnotationListing,
   MetricListing,
   ValueListing,
+  DataLoadState,
 } from './../store/npmi_types';
 import {
   getAnnotationsLoaded,
-  getMetricsLoaded,
-  getValuesLoaded,
-  getMetricsData,
+  getMetricsAndValuesLoaded,
 } from './../store/npmi_selectors';
 import {
   npmiLoaded,
-  annotationsRequested,
-  annotationsLoaded,
-  metricsRequested,
-  metricsLoaded,
-  valuesRequested,
-  valuesLoaded,
+  npmiAnnotationsRequested,
+  npmiAnnotationsLoaded,
+  npmiMetricsAndValuesRequested,
+  npmiMetricsAndValuesLoaded,
 } from './../actions';
-import {Injectable} from '@angular/core';
-import {Store} from '@ngrx/store';
-import {Actions, createEffect, ofType} from '@ngrx/effects';
-import {merge, Observable} from 'rxjs';
-import {
-  filter,
-  map,
-  mergeMap,
-  tap,
-  withLatestFrom,
-  share,
-} from 'rxjs/operators';
-import {DataLoadState} from '../store/npmi_types';
-import {NpmiHttpServerDataSource} from '../data_source/npmi_data_source';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 /** @typehack */ import * as _typeHackNgrxStore from '@ngrx/store/src/models';
@@ -69,11 +67,13 @@ export class NpmiEffects {
       ofType(npmiLoaded),
       withLatestFrom(this.store.select(getAnnotationsLoaded)),
       filter(([, {state}]) => state !== DataLoadState.LOADING),
-      tap(() => this.store.dispatch(annotationsRequested())),
+      tap(() => this.store.dispatch(npmiAnnotationsRequested())),
       mergeMap(() => {
         return this.dataSource.fetchAnnotations().pipe(
           tap((annotations: AnnotationListing) => {
-            this.store.dispatch(annotationsLoaded({annotations: annotations}));
+            this.store.dispatch(
+              npmiAnnotationsLoaded({annotations: annotations})
+            );
           }),
           map(() => void null)
         );
@@ -81,36 +81,20 @@ export class NpmiEffects {
     );
   }
 
-  private loadMetrics() {
+  private loadMetricsAndValues() {
     return this.actions$.pipe(
       ofType(npmiLoaded),
-      withLatestFrom(this.store.select(getMetricsLoaded)),
+      withLatestFrom(this.store.select(getMetricsAndValuesLoaded)),
       filter(([, {state}]) => state !== DataLoadState.LOADING),
-      tap(() => this.store.dispatch(metricsRequested())),
-      mergeMap(() => {
-        return this.dataSource.fetchMetrics().pipe(
-          tap((metrics: MetricListing) => {
-            this.store.dispatch(metricsLoaded({metrics: metrics}));
-          }),
-          map(() => void null)
-        );
-      })
-    );
-  }
-
-  private loadValues(prevStream$: Observable<unknown>) {
-    return prevStream$.pipe(
-      withLatestFrom(
-        this.store.select(getMetricsData),
-        this.store.select(getValuesLoaded)
-      ),
-      filter(([, , {state}]) => state !== DataLoadState.LOADING),
-      tap(() => this.store.dispatch(valuesRequested())),
-      mergeMap(([, metrics]) => {
-        return this.dataSource.fetchValues().pipe(
-          tap((values: ValueListing) => {
+      tap(() => this.store.dispatch(npmiMetricsAndValuesRequested())),
+      switchMap(() => {
+        return forkJoin([
+          this.dataSource.fetchValues(),
+          this.dataSource.fetchMetrics(),
+        ]).pipe(
+          tap(([values, metrics]) => {
             this.store.dispatch(
-              valuesLoaded({
+              npmiMetricsAndValuesLoaded({
                 values: values,
                 metrics: metrics,
               })
@@ -130,14 +114,11 @@ export class NpmiEffects {
     this.loadData$ = createEffect(
       () => {
         const loadAnnogationsData$ = this.loadAnnotations();
-        const loadMetricsData$ = this.loadMetrics().pipe(share());
-        const loadValuesData$ = this.loadValues(loadMetricsData$);
+        const loadMetricsAndValuesData$ = this.loadMetricsAndValues();
 
-        return merge(
-          loadAnnogationsData$,
-          loadMetricsData$,
-          loadValuesData$
-        ).pipe(map(() => ({})));
+        return merge(loadAnnogationsData$, loadMetricsAndValuesData$).pipe(
+          map(() => ({}))
+        );
       },
       {dispatch: false}
     );

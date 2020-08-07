@@ -30,13 +30,11 @@ import {
 } from '../store/npmi_types';
 import {
   getAnnotationsLoaded,
-  getMetricsLoaded,
-  getValuesLoaded,
-  getMetricsData,
+  getMetricsAndValuesLoaded,
 } from '../store/npmi_selectors';
 import * as actions from '../actions';
 
-describe('metrics effects', () => {
+describe('npmi effects', () => {
   let dataSource: NpmiHttpServerDataSource;
   let effects: NpmiEffects;
   let store: MockStore<State>;
@@ -71,18 +69,10 @@ describe('metrics effects', () => {
       state: DataLoadState.NOT_LOADED,
       lastLoadedTimeInMs: null,
     });
-    store.overrideSelector(getMetricsLoaded, {
+    store.overrideSelector(getMetricsAndValuesLoaded, {
       state: DataLoadState.NOT_LOADED,
       lastLoadedTimeInMs: null,
     });
-    store.overrideSelector(getValuesLoaded, {
-      state: DataLoadState.NOT_LOADED,
-      lastLoadedTimeInMs: null,
-    });
-    store.overrideSelector(getMetricsData, {
-      run_1: ['count@test', 'npmi@test'],
-    });
-    store.refreshState();
     effects.loadData$.subscribe();
   });
 
@@ -107,9 +97,11 @@ describe('metrics effects', () => {
 
       expect(fetchAnnotationsSpy).toHaveBeenCalled();
       expect(actualActions).toEqual([
-        actions.annotationsRequested(),
-        actions.metricsRequested(),
-        actions.annotationsLoaded({annotations: {run_1: ['test_1', 'test_2']}}),
+        actions.npmiAnnotationsRequested(),
+        actions.npmiMetricsAndValuesRequested(),
+        actions.npmiAnnotationsLoaded({
+          annotations: {run_1: ['test_1', 'test_2']},
+        }),
       ]);
     });
   });
@@ -143,11 +135,9 @@ describe('metrics effects', () => {
       expect(fetchMetricsSpy).toHaveBeenCalled();
       expect(fetchValuesSpy).toHaveBeenCalled();
       expect(actualActions).toEqual([
-        actions.annotationsRequested(),
-        actions.metricsRequested(),
-        actions.metricsLoaded({metrics: {run_1: ['count@test', 'npmi@test']}}),
-        actions.valuesRequested(),
-        actions.valuesLoaded({
+        actions.npmiAnnotationsRequested(),
+        actions.npmiMetricsAndValuesRequested(),
+        actions.npmiMetricsAndValuesLoaded({
           values: {run_1: [[0.001, 0.061], [-0.515, 0.15719]]},
           metrics: {run_1: ['count@test', 'npmi@test']},
         }),

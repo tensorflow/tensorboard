@@ -20,7 +20,7 @@ import {createNpmiState} from '../testing';
 describe('Annotations loading', () => {
   it('sets annotationsLoaded to loading on requesting annotations', () => {
     const state = createNpmiState();
-    const nextState = reducers(state, actions.annotationsRequested());
+    const nextState = reducers(state, actions.npmiAnnotationsRequested());
     expect(nextState.annotationsLoaded.state).toBe(DataLoadState.LOADING);
     expect(nextState.annotationsLoaded.lastLoadedTimeInMs).toBeNull();
   });
@@ -32,7 +32,7 @@ describe('Annotations loading', () => {
         lastLoadedTimeInMs: null,
       },
     });
-    const nextState = reducers(state, actions.annotationsRequestFailed());
+    const nextState = reducers(state, actions.npmiAnnotationsRequestFailed());
     expect(nextState.annotationsLoaded.state).toBe(DataLoadState.FAILED);
     expect(nextState.annotationsLoaded.lastLoadedTimeInMs).toBeNull();
   });
@@ -42,7 +42,7 @@ describe('Annotations loading', () => {
     const t0 = Date.now();
     const nextState = reducers(
       state,
-      actions.annotationsLoaded({
+      actions.npmiAnnotationsLoaded({
         annotations: {
           run_1: ['annotation_1', 'annotation_2'],
         },
@@ -70,7 +70,7 @@ describe('Annotations loading', () => {
     const t0 = Date.now();
     const nextState = reducers(
       state,
-      actions.annotationsLoaded({
+      actions.npmiAnnotationsLoaded({
         annotations: {
           run_1: ['annotation_new_1', 'annotation_new_2'],
         },
@@ -86,32 +86,35 @@ describe('Annotations loading', () => {
   });
 });
 
-describe('Metrics loading', () => {
-  it('sets metricsLoaded to loading on requesting metrics', () => {
+describe('Metrics and Values loading', () => {
+  it('sets metricsAndValuesLoaded to loading on requesting', () => {
     const state = createNpmiState();
-    const nextState = reducers(state, actions.metricsRequested());
-    expect(nextState.metricsLoaded.state).toBe(DataLoadState.LOADING);
-    expect(nextState.metricsLoaded.lastLoadedTimeInMs).toBeNull();
+    const nextState = reducers(state, actions.npmiMetricsAndValuesRequested());
+    expect(nextState.metricsAndValuesLoaded.state).toBe(DataLoadState.LOADING);
+    expect(nextState.metricsAndValuesLoaded.lastLoadedTimeInMs).toBeNull();
   });
 
   it('set metricsLoaded to failed on request failure', () => {
     const state = createNpmiState({
-      metricsLoaded: {
+      metricsAndValuesLoaded: {
         state: DataLoadState.LOADING,
         lastLoadedTimeInMs: null,
       },
     });
-    const nextState = reducers(state, actions.metricsRequestFailed());
-    expect(nextState.metricsLoaded.state).toBe(DataLoadState.FAILED);
-    expect(nextState.metricsLoaded.lastLoadedTimeInMs).toBeNull();
+    const nextState = reducers(
+      state,
+      actions.npmiMetricsAndValuesRequestFailed()
+    );
+    expect(nextState.metricsAndValuesLoaded.state).toBe(DataLoadState.FAILED);
+    expect(nextState.metricsAndValuesLoaded.lastLoadedTimeInMs).toBeNull();
   });
 
-  it('sets metricsLoaded & metrics on successful load', () => {
+  it('sets metricsAncValuesLoaded, metrics & values on successful load', () => {
     const state = createNpmiState();
     const t0 = Date.now();
     const nextState = reducers(
       state,
-      actions.metricsLoaded({
+      actions.npmiMetricsAndValuesLoaded({
         metrics: {
           run_1: [
             'count',
@@ -121,47 +124,54 @@ describe('Metrics loading', () => {
             'nPMI@test2',
           ],
         },
+        values: {
+          run_1: [
+            [3510517, 16719, 513767, 0.16871, -0.37206],
+            [1396813, 1896, 638967, 0.687616, 0.68116],
+          ],
+        },
       })
     );
-    expect(nextState.metricsLoaded.state).toBe(DataLoadState.LOADED);
-    expect(nextState.metricsLoaded.lastLoadedTimeInMs).toBeGreaterThanOrEqual(
-      t0
-    );
-    expect(nextState.metricsData).toEqual({
-      run_1: [
-        'count',
-        'count@test1',
-        'count@test2',
-        'nPMI@test1',
-        'nPMI@test2',
-      ],
-    });
+    expect(nextState.metricsAndValuesLoaded.state).toBe(DataLoadState.LOADED);
+    expect(
+      nextState.metricsAndValuesLoaded.lastLoadedTimeInMs
+    ).toBeGreaterThanOrEqual(t0);
     expect(nextState.countMetricsData).toEqual({
       run_1: ['count@test1', 'count@test2'],
     });
     expect(nextState.npmiMetricsData).toEqual({
       run_1: ['nPMI@test1', 'nPMI@test2'],
     });
+    expect(nextState.countValuesData).toEqual({
+      run_1: [[16719, 513767], [1896, 638967]],
+    });
+    expect(nextState.npmiValuesData).toEqual({
+      run_1: [[0.16871, -0.37206], [0.687616, 0.68116]],
+    });
+    expect(nextState.countData).toEqual({
+      run_1: [3510517, 1396813],
+    });
   });
 
-  it('Overrides existing metrics on successful metrics loading', () => {
+  it('Overrides existing metrics and values on successful loading', () => {
     const state = createNpmiState({
-      metricsData: {
-        run_1: [
-          'count',
-          'count@test1',
-          'count@test2',
-          'nPMI@test1',
-          'nPMI@test2',
-        ],
-      },
       npmiMetricsData: {
         run_1: ['nPMI@test1', 'nPMI@test2'],
       },
       countMetricsData: {
         run_1: ['count@test1', 'count@test2'],
       },
-      metricsLoaded: {
+
+      npmiValuesData: {
+        run_1: [[0.16871, -0.37206], [0.687616, 0.68116]],
+      },
+      countValuesData: {
+        run_1: [[16719, 513767], [1896, 638967]],
+      },
+      countData: {
+        run_1: [3510517, 1396813],
+      },
+      metricsAndValuesLoaded: {
         state: DataLoadState.LOADED,
         lastLoadedTimeInMs: 0,
       },
@@ -169,7 +179,7 @@ describe('Metrics loading', () => {
     const t0 = Date.now();
     const nextState = reducers(
       state,
-      actions.metricsLoaded({
+      actions.npmiMetricsAndValuesLoaded({
         metrics: {
           run_1: [
             'count',
@@ -179,155 +189,32 @@ describe('Metrics loading', () => {
             'nPMI@newtest2',
           ],
         },
+        values: {
+          run_1: [
+            [351051, 1671, 51376, 0.1687, -0.372],
+            [139681, 189, 63896, 0.68761, 0.6811],
+          ],
+        },
       })
     );
-    expect(nextState.metricsLoaded.state).toBe(DataLoadState.LOADED);
-    expect(nextState.metricsLoaded.lastLoadedTimeInMs).toBeGreaterThanOrEqual(
-      t0
-    );
-    expect(nextState.metricsData).toEqual({
-      run_1: [
-        'count',
-        'count@newtest1',
-        'count@newtest2',
-        'nPMI@newtest1',
-        'nPMI@newtest2',
-      ],
-    });
+    expect(nextState.metricsAndValuesLoaded.state).toBe(DataLoadState.LOADED);
+    expect(
+      nextState.metricsAndValuesLoaded.lastLoadedTimeInMs
+    ).toBeGreaterThanOrEqual(t0);
     expect(nextState.countMetricsData).toEqual({
       run_1: ['count@newtest1', 'count@newtest2'],
     });
     expect(nextState.npmiMetricsData).toEqual({
       run_1: ['nPMI@newtest1', 'nPMI@newtest2'],
     });
-  });
-
-  describe('Values loading', () => {
-    it('sets valuesLoaded to loading on requesting values', () => {
-      const state = createNpmiState();
-      const nextState = reducers(state, actions.valuesRequested());
-      expect(nextState.valuesLoaded.state).toBe(DataLoadState.LOADING);
-      expect(nextState.valuesLoaded.lastLoadedTimeInMs).toBeNull();
+    expect(nextState.countValuesData).toEqual({
+      run_1: [[1671, 51376], [189, 63896]],
     });
-
-    it('set valuesLoaded to failed on request failure', () => {
-      const state = createNpmiState({
-        valuesLoaded: {
-          state: DataLoadState.LOADING,
-          lastLoadedTimeInMs: null,
-        },
-      });
-      const nextState = reducers(state, actions.valuesRequestFailed());
-      expect(nextState.valuesLoaded.state).toBe(DataLoadState.FAILED);
-      expect(nextState.valuesLoaded.lastLoadedTimeInMs).toBeNull();
+    expect(nextState.npmiValuesData).toEqual({
+      run_1: [[0.1687, -0.372], [0.68761, 0.6811]],
     });
-
-    it('sets valuesLoaded & values on successful load', () => {
-      const state = createNpmiState();
-      const t0 = Date.now();
-      const nextState = reducers(
-        state,
-        actions.valuesLoaded({
-          values: {
-            run_1: [
-              [3510517, 16719, 513767, 0.16871, -0.37206],
-              [1396813, 1896, 638967, 0.687616, 0.68116],
-            ],
-          },
-          metrics: {
-            run_1: [
-              'count',
-              'count@test1',
-              'count@test2',
-              'nPMI@test1',
-              'nPMI@test2',
-            ],
-          },
-        })
-      );
-      expect(nextState.valuesLoaded.state).toBe(DataLoadState.LOADED);
-      expect(nextState.valuesLoaded.lastLoadedTimeInMs).toBeGreaterThanOrEqual(
-        t0
-      );
-      expect(nextState.valuesData).toEqual({
-        run_1: [
-          [3510517, 16719, 513767, 0.16871, -0.37206],
-          [1396813, 1896, 638967, 0.687616, 0.68116],
-        ],
-      });
-      expect(nextState.countValuesData).toEqual({
-        run_1: [[16719, 513767], [1896, 638967]],
-      });
-      expect(nextState.npmiValuesData).toEqual({
-        run_1: [[0.16871, -0.37206], [0.687616, 0.68116]],
-      });
-      expect(nextState.countData).toEqual({
-        run_1: [3510517, 1396813],
-      });
-    });
-
-    it('Overrides existing values on successful values loading', () => {
-      const state = createNpmiState({
-        valuesData: {
-          run_1: [
-            [3510517, 16719, 513767, 0.16871, -0.37206],
-            [1396813, 1896, 638967, 0.687616, 0.68116],
-          ],
-        },
-        npmiValuesData: {
-          run_1: [[0.16871, -0.37206], [0.687616, 0.68116]],
-        },
-        countValuesData: {
-          run_1: [[16719, 513767], [1896, 638967]],
-        },
-        countData: {
-          run_1: [3510517, 1396813],
-        },
-        valuesLoaded: {
-          state: DataLoadState.LOADED,
-          lastLoadedTimeInMs: 0,
-        },
-      });
-      const t0 = Date.now();
-      const nextState = reducers(
-        state,
-        actions.valuesLoaded({
-          values: {
-            run_1: [
-              [351051, 1671, 51376, 0.1687, -0.372],
-              [139681, 189, 63896, 0.68761, 0.6811],
-            ],
-          },
-          metrics: {
-            run_1: [
-              'count',
-              'count@test1',
-              'count@test2',
-              'nPMI@test1',
-              'nPMI@test2',
-            ],
-          },
-        })
-      );
-      expect(nextState.valuesLoaded.state).toBe(DataLoadState.LOADED);
-      expect(nextState.valuesLoaded.lastLoadedTimeInMs).toBeGreaterThanOrEqual(
-        t0
-      );
-      expect(nextState.valuesData).toEqual({
-        run_1: [
-          [351051, 1671, 51376, 0.1687, -0.372],
-          [139681, 189, 63896, 0.68761, 0.6811],
-        ],
-      });
-      expect(nextState.countValuesData).toEqual({
-        run_1: [[1671, 51376], [189, 63896]],
-      });
-      expect(nextState.npmiValuesData).toEqual({
-        run_1: [[0.1687, -0.372], [0.68761, 0.6811]],
-      });
-      expect(nextState.countData).toEqual({
-        run_1: [351051, 139681],
-      });
+    expect(nextState.countData).toEqual({
+      run_1: [351051, 139681],
     });
   });
 });

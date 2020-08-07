@@ -14,6 +14,3 @@ limitations under the License.
 ==============================================================================*/
 
 export * from './npmi_actions';
-export * from './annotation_actions';
-export * from './metric_actions';
-export * from './result_actions';

@@ -7,11 +7,8 @@ licenses(["notice"])  # Apache 2.
 tf_ts_library(
     name = "actions",
     srcs = [
-        "annotation_actions.ts",
         "index.ts",
-        "metric_actions.ts",
         "npmi_actions.ts",
-        "result_actions.ts",
     ],
     deps = [
         "//tensorboard/webapp/plugins/npmi/data_source",

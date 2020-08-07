@@ -14,13 +14,10 @@ limitations under the License.
 ==============================================================================*/
 import {
   getAnnotationsLoaded,
-  getMetricsLoaded,
-  getValuesLoaded,
   getAnnotationsData,
-  getMetricsData,
+  getMetricsAndValuesLoaded,
   getCountMetricsData,
   getNpmiMetricsData,
-  getValuesData,
   getCountValuesData,
   getNpmiValuesData,
   getCountData,
@@ -65,23 +62,23 @@ describe('npmi selectors', () => {
     });
   });
 
-  describe('getMetricsLoadState', () => {
+  describe('getMetricsAndValuesLoadState', () => {
     it('return correct NOT_LOADED state', () => {
       const state = createState(createNpmiState());
-      const metricsLoaded = getMetricsLoaded(state);
+      const metricsLoaded = getMetricsAndValuesLoaded(state);
       expect(metricsLoaded.state).toBe(DataLoadState.NOT_LOADED);
     });
 
     it('returns correct LOADING state', () => {
       const state = createState(
         createNpmiState({
-          metricsLoaded: {
+          metricsAndValuesLoaded: {
             state: DataLoadState.LOADING,
             lastLoadedTimeInMs: null,
           },
         })
       );
-      const metricsLoaded = getMetricsLoaded(state);
+      const metricsLoaded = getMetricsAndValuesLoaded(state);
       expect(metricsLoaded.state).toBe(DataLoadState.LOADING);
       expect(metricsLoaded.lastLoadedTimeInMs).toBe(null);
     });
@@ -89,49 +86,13 @@ describe('npmi selectors', () => {
     it('returns correct LOADED state', () => {
       const state = createState(
         createNpmiState({
-          metricsLoaded: {
+          metricsAndValuesLoaded: {
             state: DataLoadState.LOADED,
             lastLoadedTimeInMs: 1234,
           },
         })
       );
-      const loaded = getMetricsLoaded(state);
-      expect(loaded.state).toBe(DataLoadState.LOADED);
-      expect(loaded.lastLoadedTimeInMs).toBe(1234);
-    });
-  });
-
-  describe('getValuesLoadState', () => {
-    it('return correct NOT_LOADED state', () => {
-      const state = createState(createNpmiState());
-      const valuesLoaded = getValuesLoaded(state);
-      expect(valuesLoaded.state).toBe(DataLoadState.NOT_LOADED);
-    });
-
-    it('returns correct LOADING state', () => {
-      const state = createState(
-        createNpmiState({
-          valuesLoaded: {
-            state: DataLoadState.LOADING,
-            lastLoadedTimeInMs: null,
-          },
-        })
-      );
-      const valuesLoaded = getValuesLoaded(state);
-      expect(valuesLoaded.state).toBe(DataLoadState.LOADING);
-      expect(valuesLoaded.lastLoadedTimeInMs).toBe(null);
-    });
-
-    it('returns correct LOADED state', () => {
-      const state = createState(
-        createNpmiState({
-          valuesLoaded: {
-            state: DataLoadState.LOADED,
-            lastLoadedTimeInMs: 1234,
-          },
-        })
-      );
-      const loaded = getValuesLoaded(state);
+      const loaded = getMetricsAndValuesLoaded(state);
       expect(loaded.state).toBe(DataLoadState.LOADED);
       expect(loaded.lastLoadedTimeInMs).toBe(1234);
     });
@@ -154,24 +115,6 @@ describe('npmi selectors', () => {
       expect(getAnnotationsData(state)).toEqual({
         run_1: ['annotation_1', 'annotation_2'],
       });
-    });
-  });
-
-  describe('getMetricsData', () => {
-    it('return correct empty object', () => {
-      const state = createState(createNpmiState());
-      expect(getMetricsData(state)).toEqual({});
-    });
-
-    it('return correct data', () => {
-      const state = createState(
-        createNpmiState({
-          metricsData: {
-            run_1: ['metric_1', 'metric_2'],
-          },
-        })
-      );
-      expect(getMetricsData(state)).toEqual({run_1: ['metric_1', 'metric_2']});
     });
   });
 
@@ -211,26 +154,6 @@ describe('npmi selectors', () => {
       );
       expect(getNpmiMetricsData(state)).toEqual({
         run_1: ['npmi_metric_1', 'npmi_metric_2'],
-      });
-    });
-  });
-
-  describe('getValuesData', () => {
-    it('return correct empty object', () => {
-      const state = createState(createNpmiState());
-      expect(getValuesData(state)).toEqual({});
-    });
-
-    it('return correct data', () => {
-      const state = createState(
-        createNpmiState({
-          valuesData: {
-            run_1: [[0.11528, -0.15616], [-0.00513, 0.51611]],
-          },
-        })
-      );
-      expect(getValuesData(state)).toEqual({
-        run_1: [[0.11528, -0.15616], [-0.00513, 0.51611]],
       });
     });
   });

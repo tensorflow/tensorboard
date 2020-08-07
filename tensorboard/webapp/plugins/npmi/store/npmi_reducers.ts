@@ -17,6 +17,7 @@ import {Action, createReducer, on} from '@ngrx/store';
 
 import * as actions from '../actions';
 import {NpmiState, DataLoadState} from './npmi_types';
+import * as metricType from '../util/metric_type';
 
 // HACK: These imports are for type inference.
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
@@ -28,27 +29,21 @@ const initialState: NpmiState = {
     state: DataLoadState.NOT_LOADED,
     lastLoadedTimeInMs: null,
   },
-  metricsData: {},
+  metricsAndValuesLoaded: {
+    state: DataLoadState.NOT_LOADED,
+    lastLoadedTimeInMs: null,
+  },
   countMetricsData: {},
   npmiMetricsData: {},
-  metricsLoaded: {
-    state: DataLoadState.NOT_LOADED,
-    lastLoadedTimeInMs: null,
-  },
-  valuesData: {},
   countValuesData: {},
   npmiValuesData: {},
-  valuesLoaded: {
-    state: DataLoadState.NOT_LOADED,
-    lastLoadedTimeInMs: null,
-  },
   countData: {},
 };
 
 const reducer = createReducer(
   initialState,
   on(
-    actions.annotationsRequested,
+    actions.npmiAnnotationsRequested,
     (state: NpmiState): NpmiState => {
       return {
         ...state,
@@ -60,7 +55,7 @@ const reducer = createReducer(
     }
   ),
   on(
-    actions.annotationsRequestFailed,
+    actions.npmiAnnotationsRequestFailed,
     (state: NpmiState): NpmiState => {
       return {
         ...state,
@@ -72,7 +67,7 @@ const reducer = createReducer(
     }
   ),
   on(
-    actions.annotationsLoaded,
+    actions.npmiAnnotationsLoaded,
     (state: NpmiState, {annotations}): NpmiState => {
       return {
         ...state,
@@ -85,88 +80,49 @@ const reducer = createReducer(
     }
   ),
   on(
-    actions.metricsRequested,
+    actions.npmiMetricsAndValuesRequested,
     (state: NpmiState): NpmiState => {
       return {
         ...state,
-        metricsLoaded: {
-          ...state.metricsLoaded,
+        metricsAndValuesLoaded: {
+          ...state.metricsAndValuesLoaded,
           state: DataLoadState.LOADING,
         },
       };
     }
   ),
   on(
-    actions.metricsRequestFailed,
+    actions.npmiMetricsAndValuesRequestFailed,
     (state: NpmiState): NpmiState => {
       return {
         ...state,
-        metricsLoaded: {
-          ...state.metricsLoaded,
+        metricsAndValuesLoaded: {
+          ...state.metricsAndValuesLoaded,
           state: DataLoadState.FAILED,
         },
       };
     }
   ),
   on(
-    actions.metricsLoaded,
-    (state: NpmiState, {metrics}): NpmiState => {
-      let countMetricsData: MetricListing = {};
-      let npmiMetricsData: MetricListing = {};
+    actions.npmiMetricsAndValuesLoaded,
+    (state: NpmiState, {metrics, values}): NpmiState => {
+      const countMetricsData: MetricListing = {};
+      const npmiMetricsData: MetricListing = {};
+      const countValuesData: ValueListing = {};
+      const npmiValuesData: ValueListing = {};
+      const countData: SummaryListing = {};
       for (let key in metrics) {
+        // Init Metrics Data
         countMetricsData[key] = [];
         npmiMetricsData[key] = [];
         for (let value of metrics[key]) {
-          if (value.startsWith('count@')) {
+          if (metricType.metricIsMetricCount(value)) {
             countMetricsData[key].push(value);
-          } else if (value.startsWith('nPMI')) {
+          } else if (metricType.metricIsNpmi(value)) {
             npmiMetricsData[key].push(value);
           }
         }
-      }
-      return {
-        ...state,
-        metricsData: metrics,
-        countMetricsData: countMetricsData,
-        npmiMetricsData: npmiMetricsData,
-        metricsLoaded: {
-          state: DataLoadState.LOADED,
-          lastLoadedTimeInMs: Date.now(),
-        },
-      };
-    }
-  ),
-  on(
-    actions.valuesRequested,
-    (state: NpmiState): NpmiState => {
-      return {
-        ...state,
-        valuesLoaded: {
-          ...state.valuesLoaded,
-          state: DataLoadState.LOADING,
-        },
-      };
-    }
-  ),
-  on(
-    actions.valuesRequestFailed,
-    (state: NpmiState): NpmiState => {
-      return {
-        ...state,
-        valuesLoaded: {
-          ...state.valuesLoaded,
-          state: DataLoadState.FAILED,
-        },
-      };
-    }
-  ),
-  on(
-    actions.valuesLoaded,
-    (state: NpmiState, {values, metrics}): NpmiState => {
-      let countValuesData: ValueListing = {};
-      let npmiValuesData: ValueListing = {};
-      let countData: SummaryListing = {};
-      for (let key in values) {
+        // Init Values Data
         countValuesData[key] = [];
         npmiValuesData[key] = [];
         countData[key] = [];
@@ -174,11 +130,11 @@ const reducer = createReducer(
           let countRow = [];
           let npmiRow = [];
           for (let index in metrics[key]) {
-            if (metrics[key][index].startsWith('count@')) {
+            if (metricType.metricIsMetricCount(metrics[key][index])) {
               countRow.push(row[index]);
-            } else if (metrics[key][index] === 'count') {
+            } else if (metricType.metricIsCount(metrics[key][index])) {
               countData[key].push(row[index]);
-            } else if (metrics[key][index].startsWith('nPMI')) {
+            } else if (metricType.metricIsNpmi(metrics[key][index])) {
               npmiRow.push(row[index]);
             }
           }
@@ -188,10 +144,11 @@ const reducer = createReducer(
       }
       return {
         ...state,
-        valuesData: values,
+        countMetricsData: countMetricsData,
+        npmiMetricsData: npmiMetricsData,
         countValuesData: countValuesData,
         npmiValuesData: npmiValuesData,
-        valuesLoaded: {
+        metricsAndValuesLoaded: {
           state: DataLoadState.LOADED,
           lastLoadedTimeInMs: Date.now(),
         },

@@ -14,6 +14,7 @@ ng_module(
         ":types",
         "//tensorboard/webapp/plugins/npmi/actions",
         "//tensorboard/webapp/plugins/npmi/data_source",
+        "//tensorboard/webapp/plugins/npmi/util:metric_type",
         "@npm//@ngrx/store",
     ],
 )

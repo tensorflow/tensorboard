@@ -43,15 +43,13 @@ export interface NpmiState {
   annotationsData: AnnotationListing;
   annotationsLoaded: LoadState;
 
-  metricsData: MetricListing;
+  metricsAndValuesLoaded: LoadState;
+
   npmiMetricsData: MetricListing;
   countMetricsData: MetricListing;
-  metricsLoaded: LoadState;
 
-  valuesData: ValueListing;
   countValuesData: ValueListing;
   npmiValuesData: ValueListing;
-  valuesLoaded: LoadState;
 
   countData: SummaryListing;
 }

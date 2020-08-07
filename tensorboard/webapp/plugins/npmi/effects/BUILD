@@ -33,6 +33,8 @@ tf_ts_library(
     deps = [
         ":effects",
         "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "//tensorboard/webapp/plugins/npmi/actions",
         "//tensorboard/webapp/plugins/npmi/data_source",
         "//tensorboard/webapp/plugins/npmi/store",
