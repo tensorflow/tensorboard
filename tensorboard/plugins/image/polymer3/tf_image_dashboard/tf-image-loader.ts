@@ -55,7 +55,7 @@ class TfImageLoader extends LegacyElementMixin(PolymerElement) {
             </template>
           </div>
           <div class="label right">
-            <paper-spinner-lite active="" hidden$="[[!_isImageLoading]]">
+            <paper-spinner-lite active hidden$="[[!_isImageLoading]]">
             </paper-spinner-lite>
           </div>
         </div>
@@ -67,7 +67,7 @@ class TfImageLoader extends LegacyElementMixin(PolymerElement) {
             immediate-value="{{_stepIndex}}"
             max="[[_maxStepIndex]]"
             max-markers="[[_maxStepIndex]]"
-            snaps=""
+            snaps
             step="1"
             value="{{_stepIndex}}"
           ></paper-slider>

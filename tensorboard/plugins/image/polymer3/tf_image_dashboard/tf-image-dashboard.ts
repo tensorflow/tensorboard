@@ -48,8 +48,8 @@ class TfImageDashboard extends LegacyElementMixin(PolymerElement) {
               <paper-slider
                 min="0"
                 max="2"
-                snaps=""
-                pin=""
+                snaps
+                pin
                 step="0.01"
                 value="{{_brightnessAdjustment}}"
                 immediate-value="{{_brightnessAdjustment}}"
@@ -68,8 +68,8 @@ class TfImageDashboard extends LegacyElementMixin(PolymerElement) {
               <paper-slider
                 min="0"
                 max="500"
-                snaps=""
-                pin=""
+                snaps
+                pin
                 step="1"
                 value="{{_contrastPercentage}}"
                 immediate-value="{{_contrastPercentage}}"
