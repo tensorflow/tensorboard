@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {PolymerElement, html} from '@polymer/polymer';
+import {html} from '@polymer/polymer';
 import {computed, customElement, observe, property} from '@polymer/decorators';
 import '../../../../components_polymer3/polymer/irons_and_papers';
 import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
@@ -43,6 +43,7 @@ import * as _ from 'lodash';
  * the user can customize how data is organized and displayed.
  */
 @customElement('tf-scalar-dashboard')
+// tslint:disable-next-line:no-unused-variable
 class TfScalarDashboard extends LegacyElementMixin(ArrayUpdateHelper) {
   static readonly template = html`
     <tf-dashboard-layout>
@@ -347,7 +348,6 @@ class TfScalarDashboard extends LegacyElementMixin(ArrayUpdateHelper) {
     var runToTagInfo = this._runToTagInfo;
     var selectedRuns = this._selectedRuns;
     var tagFilter = this._tagFilter;
-    var categoriesDomReady = this._categoriesDomReady;
     let categories;
     let query = tagFilter;
     const runToTag = _.mapValues(runToTagInfo, (x) => Object.keys(x));
@@ -366,6 +366,7 @@ class TfScalarDashboard extends LegacyElementMixin(ArrayUpdateHelper) {
   }
 
   _tagMetadata(category, runToTagsInfo, item) {
+    const categoryName = category.name as string;
     const tag = item.tag;
     const runToTagInfo = {};
     item.series.forEach(({run}) => {
@@ -383,10 +384,10 @@ class TfScalarDashboard extends LegacyElementMixin(ArrayUpdateHelper) {
     if (
       category.metadata.type ==
         tf_categorization_utils.CategoryType.PREFIX_GROUP &&
-      displayName.startsWith(category.name + '/')
+      displayName.startsWith(categoryName + '/')
     ) {
       // + 1 to strip off the separator.
-      displayName = displayName.slice(category.name.length + 1);
+      displayName = displayName.slice(categoryName.length + 1);
     }
     return {description, displayName};
   }

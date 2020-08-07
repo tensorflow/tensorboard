@@ -30,6 +30,7 @@ import {DEFAULT_TOOLTIP_COLUMNS} from '../../../../components_polymer3/vz_line_c
  * chart, and providing UI affordances (such as buttons) for scalar data.
  */
 @customElement('tf-scalar-card')
+// tslint:disable-next-line:no-unused-variable
 export class TfScalarCard extends PolymerElement {
   static readonly template = html`
     <tf-card-heading
@@ -280,6 +281,7 @@ export class TfScalarCard extends PolymerElement {
   })();
 
   _getChartDataLoader() {
+    // tslint:disable-next-line:no-unnecessary-type-assertion
     return this.shadowRoot.querySelector('tf-line-chart-data-loader') as any; // TfLineChartDataLoader
   }
 
@@ -313,10 +315,11 @@ export class TfScalarCard extends PolymerElement {
     // attribute `clipPath="url(#foo)"`. Thus, we base64-encode the
     // data so that such a hash is not interpreted as a fragment
     // specifier, truncating the SVG. (See issue #1874.)
+    // tslint:disable-next-line:no-unnecessary-type-assertion
     const svgLink = this.shadowRoot.querySelector(
       '#svgLink'
     ) as HTMLAnchorElement;
-    svgLink.href = `data:image/svg+xml;base64,${btoa(svgStr)}`;
+    (svgLink as any).href = `data:image/svg+xml;base64,${btoa(svgStr)}`;
   }
 
   _runsFromData(data) {
@@ -345,7 +348,7 @@ export class TfScalarCard extends PolymerElement {
     // defined in tf_color_scale.
     return {
       scale: (name) => {
-        const [exp, run] = JSON.parse(name);
+        const [, run] = JSON.parse(name);
         return runsColorScale(run);
       },
     };

@@ -22,6 +22,7 @@ import * as _ from 'lodash';
  * tf-smoothing-input creates an input component for exponential smoothing.
  */
 @customElement('tf-smoothing-input')
+// tslint:disable-next-line:no-unused-variable
 class TfSmoothingInput extends PolymerElement {
   static readonly template = html`
     <h3 class="title">Smoothing</h3>
