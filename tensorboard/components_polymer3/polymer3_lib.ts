@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 // Add dashboards here.
+import '../plugins/audio/polymer3/tf_audio_dashboard/tf-audio-dashboard';
 import '../plugins/profile_redirect/polymer3/tf_profile_redirect_dashboard/tf-profile-redirect-dashboard';
 import '../plugins/text/polymer3/tf_text_dashboard/tf-text-dashboard';
 
