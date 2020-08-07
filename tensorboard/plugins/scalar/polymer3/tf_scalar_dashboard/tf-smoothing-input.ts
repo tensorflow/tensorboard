@@ -1,6 +1,4 @@
-<!--
-@license
-Copyright 2016 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,19 +11,20 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
--->
+==============================================================================*/
 
-<link rel="import" href="../paper-checkbox/paper-checkbox.html" />
-<link rel="import" href="../paper-input/paper-input.html" />
-<link rel="import" href="../paper-slider/paper-slider.html" />
-<link rel="import" href="../tf-imports/polymer.html" />
-<link rel="import" href="../tf-imports/lodash.html" />
+import {PolymerElement, html} from '@polymer/polymer';
+import {customElement, property} from '@polymer/decorators';
+import '../../../../components_polymer3/polymer/irons_and_papers';
+import * as _ from 'lodash';
 
-<!--
-tf-smoothing-input creates an input component for exponential smoothing.
--->
-<dom-module id="tf-smoothing-input">
-  <template>
+/**
+ * tf-smoothing-input creates an input component for exponential smoothing.
+ */
+@customElement('tf-smoothing-input')
+// tslint:disable-next-line:no-unused-variable
+class TfSmoothingInput extends PolymerElement {
+  static readonly template = html`
     <h3 class="title">Smoothing</h3>
     <div class="smoothing-block">
       <paper-slider
@@ -84,61 +83,56 @@ tf-smoothing-input creates an input component for exponential smoothing.
         width: 60px;
       }
     </style>
-  </template>
-  <script>
-    Polymer({
-      is: 'tf-smoothing-input',
+  `;
 
-      properties: {
-        step: Number,
-        max: Number,
-        min: Number,
+  @property({type: Number})
+  step: number;
 
-        weight: {
-          type: Number,
-          value: 0.6,
-          notify: true,
-        },
+  @property({type: Number})
+  max: number;
 
-        _immediateWeightNumberForPaperSlider: {
-          type: Number,
-          notify: true,
-          observer: '_immediateWeightNumberForPaperSliderChanged',
-        },
+  @property({type: Number})
+  min: number;
 
-        // Paper input treats values as strings even if you specify them as
-        // numbers.
-        _inputWeightStringForPaperInput: {
-          type: String,
-          notify: true,
-          observer: '_inputWeightStringForPaperInputChanged',
-        },
-      },
+  @property({
+    type: Number,
+    notify: true,
+  })
+  weight: number = 0.6;
 
-      _updateWeight: _.debounce(function(val) {
-        this.weight = val;
-      }, 250),
+  @property({
+    type: Number,
+    notify: true,
+    observer: '_immediateWeightNumberForPaperSliderChanged',
+  })
+  _immediateWeightNumberForPaperSlider: number;
 
-      _immediateWeightNumberForPaperSliderChanged: function() {
-        this._inputWeightStringForPaperInput = this._immediateWeightNumberForPaperSlider.toString();
-        this._updateWeight.call(
-          this,
-          this._immediateWeightNumberForPaperSlider
-        );
-      },
+  // Paper input treats values as strings even if you specify them as numbers.
+  @property({
+    type: String,
+    notify: true,
+    observer: '_inputWeightStringForPaperInputChanged',
+  })
+  _inputWeightStringForPaperInput: string;
 
-      _inputWeightStringForPaperInputChanged: function() {
-        if (+this._inputWeightStringForPaperInput < 0) {
-          this._inputWeightStringForPaperInput = '0';
-        } else if (+this._inputWeightStringForPaperInput > 1) {
-          this._inputWeightStringForPaperInput = '1';
-        }
+  _updateWeight = _.debounce(function(val) {
+    this.weight = val;
+  }, 250);
 
-        var d = +this._inputWeightStringForPaperInput;
-        if (!isNaN(d)) {
-          this._updateWeight.call(this, d);
-        }
-      },
-    });
-  </script>
-</dom-module>
+  _immediateWeightNumberForPaperSliderChanged() {
+    this._inputWeightStringForPaperInput = this._immediateWeightNumberForPaperSlider.toString();
+    this._updateWeight.call(this, this._immediateWeightNumberForPaperSlider);
+  }
+
+  _inputWeightStringForPaperInputChanged() {
+    if (+this._inputWeightStringForPaperInput < 0) {
+      this._inputWeightStringForPaperInput = '0';
+    } else if (+this._inputWeightStringForPaperInput > 1) {
+      this._inputWeightStringForPaperInput = '1';
+    }
+    var d = +this._inputWeightStringForPaperInput;
+    if (!isNaN(d)) {
+      this._updateWeight.call(this, d);
+    }
+  }
+}
