@@ -1,6 +1,4 @@
-<!--
-@license
-Copyright 2016 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,36 +11,27 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
--->
+==============================================================================*/
 
-<link rel="import" href="../iron-icon/iron-icon.html" />
-<link rel="import" href="../paper-button/paper-button.html" />
-<link rel="import" href="../paper-dialog/paper-dialog.html" />
-<link rel="import" href="../paper-input/paper-input.html" />
-<link rel="import" href="../paper-slider/paper-slider.html" />
-<link rel="import" href="../tf-imports/polymer.html" />
-<link rel="import" href="../tf-backend/tf-backend.html" />
-<link
-  rel="import"
-  href="../tf-categorization-utils/tf-categorization-utils.html"
-/>
-<link rel="import" href="../tf-categorization-utils/tf-tag-filterer.html" />
-<link rel="import" href="../tf-dashboard-common/dashboard-style.html" />
-<link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html" />
-<link
-  rel="import"
-  href="../tf-paginated-view/tf-category-paginated-view.html"
-/>
-<link rel="import" href="../tf-runs-selector/tf-runs-selector.html" />
-<link rel="import" href="../tf-tensorboard/registry.html" />
-<link rel="import" href="tf-image-loader.html" />
+import * as _ from 'lodash';
+import {PolymerElement, html} from '@polymer/polymer';
+import {computed, customElement, observe, property} from '@polymer/decorators';
 
-<!--
-tf-image-dashboard displays a dashboard that loads images from a
-TensorFlow run.
--->
-<dom-module id="tf-image-dashboard">
-  <template>
+import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+import {getTags} from '../../../../components_polymer3/tf_backend/backend';
+import {RequestManager} from '../../../../components_polymer3/tf_backend/requestManager';
+import {getRouter} from '../../../../components_polymer3/tf_backend/router';
+import {categorizeRunTagCombinations} from '../../../../components_polymer3/tf_categorization_utils/categorizationUtils';
+import '../../../../components_polymer3/tf_categorization_utils/tf-tag-filterer';
+import '../../../../components_polymer3/tf_dashboard_common/dashboard-style';
+import '../../../../components_polymer3/tf_dashboard_common/tf-dashboard-layout';
+import '../../../../components_polymer3/tf_paginated_view/tf-category-paginated-view';
+import '../../../../components_polymer3/tf_runs_selector/tf-runs-selector';
+import './tf-image-loader';
+
+@customElement('tf-image-dashboard')
+class TfImageDashboard extends LegacyElementMixin(PolymerElement) {
+  static readonly template = html`
     <tf-dashboard-layout>
       <div class="sidebar" slot="sidebar">
         <div class="settings">
@@ -194,144 +183,128 @@ TensorFlow run.
         --paper-slider-pin-start-color: var(--tb-orange-strong);
       }
     </style>
-  </template>
-  <script>
-    'use strict';
+  `;
 
-    Polymer({
-      is: 'tf-image-dashboard',
-      properties: {
-        reloadOnReady: {
-          type: Boolean,
-          value: true,
-        },
-        _selectedRuns: Array,
-        _runToTagInfo: Object,
-        _dataNotFound: Boolean,
-        _actualSize: Boolean,
-        _defaultBrightnessAdjustment: {
-          type: Number,
-          value: 1,
-          readOnly: true,
-        },
-        _defaultContrastPercentage: {
-          type: Number,
-          value: 100,
-          readOnly: true,
-        },
-        _brightnessAdjustment: {
-          type: Number,
-          value: 1,
-        },
-        _contrastPercentage: {
-          type: Number,
-          value: 100,
-        },
-        _tagFilter: String,
-        _brightnessIsDefault: {
-          type: Boolean,
-          computed: '_computeBrightnessIsDefault(_brightnessAdjustment)',
-        },
-        _contrastIsDefault: {
-          type: Boolean,
-          computed: '_computeContrastIsDefault(_contrastPercentage)',
-        },
+  @property({type: Boolean})
+  reloadOnReady: boolean = true;
 
-        // Categories must only be computed after _dataNotFound is found to be
-        // true and then polymer DOM templating responds to that finding. We
-        // thus use this property to guard when categories are computed.
-        _categoriesDomReady: Boolean,
-        _categories: {
-          type: Array,
-          computed:
-            '_makeCategories(_runToTagInfo, _selectedRuns, _tagFilter, _categoriesDomReady)',
-        },
+  @property({type: Array})
+  _selectedRuns: string[];
 
-        _requestManager: {
-          type: Object,
-          value: () => new tf_backend.RequestManager(),
-        },
-      },
+  @property({type: Object})
+  _runToTagInfo: object;
 
-      ready() {
-        if (this.reloadOnReady) this.reload();
-      },
-      reload() {
-        this._fetchTags().then(() => {
-          this._reloadImages();
-        });
-      },
-      _fetchTags() {
-        const url = tf_backend.getRouter().pluginRoute('images', '/tags');
-        return this._requestManager.request(url).then((runToTagInfo) => {
-          if (_.isEqual(runToTagInfo, this._runToTagInfo)) {
-            // No need to update anything if there are no changes.
-            return;
-          }
-          const runToTag = _.mapValues(runToTagInfo, (x) => Object.keys(x));
-          const tags = tf_backend.getTags(runToTag);
-          this.set('_dataNotFound', tags.length === 0);
-          this.set('_runToTagInfo', runToTagInfo);
-          this.async(() => {
-            // See the comment above `_categoriesDomReady`.
-            this.set('_categoriesDomReady', true);
-          });
-        });
-      },
-      _reloadImages() {
-        this.root.querySelectorAll('tf-image-loader').forEach((image) => {
-          image.reload();
-        });
-      },
+  @property({type: Boolean})
+  _dataNotFound: boolean;
 
-      _shouldOpen(index) {
-        return index <= 2;
-      },
+  @property({type: Boolean})
+  _actualSize: boolean;
 
-      _resetBrightness() {
-        this._brightnessAdjustment = this._defaultBrightnessAdjustment;
-      },
-      _resetContrast() {
-        this._contrastPercentage = this._defaultContrastPercentage;
-      },
-      _computeBrightnessIsDefault(brightnessAdjustment) {
-        return brightnessAdjustment === this._defaultBrightnessAdjustment;
-      },
-      _computeContrastIsDefault(contrastPercentage) {
-        return contrastPercentage === this._defaultContrastPercentage;
-      },
+  @property({type: Number})
+  _defaultBrightnessAdjustment: number = 1;
 
-      _makeCategories(
-        runToTagInfo,
-        selectedRuns,
-        tagFilter,
-        categoriesDomReady
-      ) {
-        const runToTag = _.mapValues(runToTagInfo, (x) => Object.keys(x));
-        const baseCategories = tf_categorization_utils.categorizeRunTagCombinations(
-          runToTag,
-          selectedRuns,
-          tagFilter
-        );
-        function explodeItem(item) {
-          const samples = runToTagInfo[item.run][item.tag].samples;
-          return _.range(samples).map((i) =>
-            Object.assign({}, item, {
-              sample: i,
-              ofSamples: samples,
-            })
-          );
-        }
-        const withSamples = baseCategories.map((category) =>
-          Object.assign({}, category, {
-            items: [].concat.apply([], category.items.map(explodeItem)),
-          })
-        );
-        return withSamples;
-      },
-      _tagMetadata(runToTagInfo, run, tag) {
-        return runToTagInfo[run][tag];
-      },
+  @property({type: Number})
+  _defaultContrastPercentage: number = 100;
+
+  @property({type: Number})
+  _brightnessAdjustment: number = 1;
+
+  @property({type: Number})
+  _contrastPercentage: number = 100;
+
+  @property({type: String})
+  _tagFilter: string;
+
+  @property({type: Boolean})
+  _categoriesDomReady: boolean;
+
+  @property({type: Object})
+  _requestManager = new RequestManager();
+
+  ready() {
+    super.ready();
+    if (this.reloadOnReady) this.reload();
+  }
+  reload() {
+    this._fetchTags().then(() => {
+      this._reloadImages();
     });
-  </script>
-</dom-module>
+  }
+  _fetchTags() {
+    const url = getRouter().pluginRoute('images', '/tags');
+    return this._requestManager.request(url).then((runToTagInfo) => {
+      if (_.isEqual(runToTagInfo, this._runToTagInfo)) {
+        // No need to update anything if there are no changes.
+        return;
+      }
+      const runToTag = _.mapValues(runToTagInfo, (x) => Object.keys(x));
+      const tags = getTags(runToTag);
+      this.set('_dataNotFound', tags.length === 0);
+      this.set('_runToTagInfo', runToTagInfo);
+      this.async(() => {
+        // See the comment above `_categoriesDomReady`.
+        this.set('_categoriesDomReady', true);
+      });
+    });
+  }
+  _reloadImages() {
+    this.root.querySelectorAll('tf-image-loader').forEach((image) => {
+      (image as any).reload();
+    });
+  }
+  _shouldOpen(index) {
+    return index <= 2;
+  }
+  _resetBrightness() {
+    this._brightnessAdjustment = this._defaultBrightnessAdjustment;
+  }
+  _resetContrast() {
+    this._contrastPercentage = this._defaultContrastPercentage;
+  }
+  @computed('_brightnessAdjustment')
+  get _brightnessIsDefault(): boolean {
+    var brightnessAdjustment = this._brightnessAdjustment;
+    return brightnessAdjustment === this._defaultBrightnessAdjustment;
+  }
+  @computed('_contrastPercentage')
+  get _contrastIsDefault(): boolean {
+    var contrastPercentage = this._contrastPercentage;
+    return contrastPercentage === this._defaultContrastPercentage;
+  }
+  @computed(
+    '_runToTagInfo',
+    '_selectedRuns',
+    '_tagFilter',
+    '_categoriesDomReady'
+  )
+  get _categories(): unknown[] {
+    var runToTagInfo = this._runToTagInfo;
+    var selectedRuns = this._selectedRuns;
+    var tagFilter = this._tagFilter;
+    var categoriesDomReady = this._categoriesDomReady;
+    const runToTag = _.mapValues(runToTagInfo, (x) => Object.keys(x));
+    const baseCategories = categorizeRunTagCombinations(
+      runToTag as any,
+      selectedRuns,
+      tagFilter
+    );
+    function explodeItem(item) {
+      const samples = runToTagInfo[item.run][item.tag].samples;
+      return _.range(samples).map((i) =>
+        Object.assign({}, item, {
+          sample: i,
+          ofSamples: samples,
+        })
+      );
+    }
+    const withSamples = baseCategories.map((category) =>
+      Object.assign({}, category, {
+        items: [].concat.apply([], category.items.map(explodeItem)),
+      })
+    );
+    return withSamples;
+  }
+  _tagMetadata(runToTagInfo, run, tag) {
+    return runToTagInfo[run][tag];
+  }
+}
