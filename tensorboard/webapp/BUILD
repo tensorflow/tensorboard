@@ -7,6 +7,30 @@ package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
+ng_module(
+    name = "oss_plugins_module",
+    srcs = [
+        "oss_plugins_module.ts",
+    ],
+    deps = [
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin:debugger_v2",
+        "//tensorboard/webapp/plugins/npmi",
+        "//tensorboard/webapp/plugins/text_v2",
+        "@npm//@angular/core",
+    ],
+)
+
+ng_module(
+    name = "reducer_config",
+    srcs = [
+        "reducer_config.ts",
+    ],
+    deps = [
+        "@npm//@angular/core",
+        "@npm//@ngrx/store",
+    ],
+)
+
 # Angular module for the top-level app component together with all of its
 # injectable dependencies.  I.e., the entire Angular app.
 ng_module(
@@ -15,13 +39,14 @@ ng_module(
         "app_container.ts",
         "app_module.ts",
         "mat_icon_module.ts",
-        "reducer_config.ts",
     ],
     assets = [
         "app_container.css",
         "app_container.ng.html",
     ],
     deps = [
+        ":oss_plugins_module",
+        ":reducer_config",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
         "//tensorboard/webapp/core",
@@ -49,6 +74,7 @@ ng_module(
     deps = [
         "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/feature_flag/store:types",
+        "//tensorboard/webapp/plugins/text_v2/store:types",
     ],
 )
 
@@ -185,6 +211,8 @@ tf_ng_web_test_suite(
         "//tensorboard/webapp/plugins:plugins_container_test_lib",
         "//tensorboard/webapp/plugins/npmi:npmi_test_lib",
         "//tensorboard/webapp/plugins/npmi/views/main:main_test_lib",
+        "//tensorboard/webapp/plugins/text_v2/data_source:data_source_test_lib",
+        "//tensorboard/webapp/plugins/text_v2/store:store_test_lib",
         "//tensorboard/webapp/reloader:test_lib",
         "//tensorboard/webapp/settings:test_lib",
         "//tensorboard/webapp/tbdev_upload:test_lib",
