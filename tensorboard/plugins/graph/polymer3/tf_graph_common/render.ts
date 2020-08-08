@@ -16,31 +16,35 @@ limitations under the License.
  * Package for the Render Hierarchy for TensorFlow graph.
  */
 import * as d3 from 'd3';
-import * as graphlib from 'graphlib';
+import {graphlib} from 'dagre';
 import * as _ from 'lodash';
 
-import * as hierarchy from './hierarchy';
-import * as tf_graph_util from './util';
-import * as tf_graph_scene_edge from './edge';
+import * as tf_graph_common from './common';
+import * as tf_graph from './graph';
 import {
-  NAMESPACE_DELIM,
-  GraphType,
-  NodeType,
-  InclusionType,
-  Node,
-  OpNode,
   BridgeNode,
+  createGraph,
   EllipsisNode,
+  getHierarchicalPath,
+  GraphType,
   GroupNode,
-  Metanode,
-  OpNodeImpl,
+  InclusionType,
   Metaedge,
   MetaedgeImpl,
-  createGraph,
-  getHierarchicalPath,
+  Metanode,
+  NAMESPACE_DELIM,
+  Node,
+  NodeType,
+  OpNode,
+  OpNodeImpl,
 } from './graph';
+import * as tf_graph_util from './util';
 
-import * as tf_graph from './graph';
+export type EdgeData = {
+  v: string;
+  w: string;
+  label: RenderMetaedgeInfo;
+};
 
 export type Point = {
   x: number;
@@ -107,7 +111,7 @@ export let SeriesNodeColors = {
  * Function that computes edge thickness in pixels.
  */
 export interface EdgeThicknessFunction {
-  (edgeData: tf_graph_scene_edge.EdgeData, edgeClass: string): number;
+  (edgeData: EdgeData, edgeClass: string): number;
 }
 /**
  * Function that computes edge label strings. This function accepts a Metaedge,
@@ -208,7 +212,7 @@ const nodeDisplayNameRegex = new RegExp(
  * for each node in the graph.
  */
 export class RenderGraphInfo {
-  hierarchy: hierarchy.Hierarchy;
+  hierarchy: tf_graph.Hierarchy;
   private displayingStats: boolean;
   private index: {
     [nodeName: string]: RenderNodeInfo;
@@ -235,7 +239,7 @@ export class RenderGraphInfo {
   // An optional function that computes the thickness of an edge given edge
   // data. If not provided, defaults to encoding tensor size in thickness.
   edgeWidthFunction: EdgeThicknessFunction;
-  constructor(hierarchy: hierarchy.Hierarchy, displayingStats: boolean) {
+  constructor(hierarchy: tf_graph.Hierarchy, displayingStats: boolean) {
     this.hierarchy = hierarchy;
     this.displayingStats = displayingStats;
     this.index = {};
@@ -296,13 +300,13 @@ export class RenderGraphInfo {
       .domain([0, (maxComputeTime as unknown) as number])
       .range(PARAMS.minMaxColors);
     this.edgeWidthSizedBasedScale = this.hierarchy.hasShapeInfo
-      ? tf_graph_scene_edge.EDGE_WIDTH_SIZE_BASED_SCALE
+      ? tf_graph_common.EDGE_WIDTH_SIZE_BASED_SCALE
       : d3
           .scaleLinear()
           .domain([1, this.hierarchy.maxMetaEdgeSize])
           .range([
-            tf_graph_scene_edge.MIN_EDGE_WIDTH,
-            tf_graph_scene_edge.MAX_EDGE_WIDTH,
+            tf_graph_common.MIN_EDGE_WIDTH,
+            tf_graph_common.MAX_EDGE_WIDTH,
           ]);
   }
   /**
@@ -508,10 +512,10 @@ export class RenderGraphInfo {
     newPrefix: string
   ): OpNode {
     const newName = node.name.replace(libraryFunctionNodeName, newPrefix);
-    let newOpNode = parentMetanode.metagraph.node(newName);
+    let newOpNode = parentMetanode.metagraph.node(newName) as any;
     if (newOpNode) {
       // This node had already been created and added to the graph.
-      return newOpNode as OpNode;
+      return newOpNode;
     }
     // Create a new op node.
     newOpNode = new OpNodeImpl({
@@ -572,7 +576,7 @@ export class RenderGraphInfo {
    *     library. This prefix should reflect graph hierarchy.
    */
   private cloneFunctionLibraryMetanode(
-    metagraph: graphlib.Graph<GroupNode | OpNode, Metaedge>,
+    metagraph: graphlib.Graph,
     opNodeToReplace: OpNode,
     libraryMetanode: Metanode,
     oldPrefix: string,
@@ -617,14 +621,12 @@ export class RenderGraphInfo {
    *     destinations outside of the function metanode.
    */
   private cloneFunctionLibraryMetanodeHelper(
-    metagraph: graphlib.Graph<GroupNode | OpNode, Metaedge>,
+    metagraph: graphlib.Graph,
     opNodeToReplace: OpNode,
     libraryMetanode: Metanode,
     oldPrefix: string,
     newPrefix: string,
-    functionOutputIndexToNode: {
-      [key: string]: Node;
-    }
+    functionOutputIndexToNode: {[key: string]: Node}
   ): Metanode {
     const newMetanode = tf_graph.createMetanode(
       libraryMetanode.name.replace(oldPrefix, newPrefix)
@@ -651,7 +653,7 @@ export class RenderGraphInfo {
           const newNode = this.cloneFunctionLibraryMetanodeHelper(
             metagraph,
             opNodeToReplace,
-            node as Metanode,
+            node as any,
             oldPrefix,
             newPrefix,
             functionOutputIndexToNode
@@ -666,7 +668,7 @@ export class RenderGraphInfo {
           const newOpNode = this.cloneAndAddFunctionOpNode(
             newMetanode,
             oldPrefix,
-            node as OpNode,
+            node as any,
             newPrefix
           );
           if (_.isNumber(newOpNode.functionInputIndex)) {
@@ -710,36 +712,33 @@ export class RenderGraphInfo {
     oldPrefix: string,
     newPrefix: string
   ) {
-    _.each(
-      libraryMetanode.metagraph.edges(),
-      (edgeObject: graphlib.EdgeObject) => {
-        const edge = libraryMetanode.metagraph.edge(edgeObject);
-        const newV = edge.v.replace(oldPrefix, newPrefix);
-        const newW = edge.w.replace(oldPrefix, newPrefix);
-        const newMetaEdge = new MetaedgeImpl(newV, newW);
-        // Duplicate various properties.
-        newMetaEdge.inbound = edge.inbound;
-        newMetaEdge.numRegularEdges = edge.numRegularEdges;
-        newMetaEdge.numControlEdges = edge.numControlEdges;
-        newMetaEdge.numRefEdges = edge.numRefEdges;
-        newMetaEdge.totalSize = edge.totalSize;
-        if (edge.baseEdgeList) {
-          newMetaEdge.baseEdgeList = edge.baseEdgeList.map((baseEdge) => {
-            const newBaseEdge = _.clone(baseEdge);
-            newBaseEdge.v = baseEdge.v.replace(oldPrefix, newPrefix);
-            newBaseEdge.w = baseEdge.w.replace(oldPrefix, newPrefix);
-            return newBaseEdge;
-          });
-        }
-        // Set the direction of the edge based on whether it is inbound. The edge
-        // is inbound if its destination is within the metagraph.
-        if (newMetanode.metagraph.node(newW)) {
-          newMetanode.metagraph.setEdge(newV, newW, newMetaEdge);
-        } else {
-          newMetanode.metagraph.setEdge(newW, newV, newMetaEdge);
-        }
+    _.each(libraryMetanode.metagraph.edges(), (edgeObject) => {
+      const edge = libraryMetanode.metagraph.edge(edgeObject);
+      const newV = edge.v.replace(oldPrefix, newPrefix);
+      const newW = edge.w.replace(oldPrefix, newPrefix);
+      const newMetaEdge = new MetaedgeImpl(newV, newW);
+      // Duplicate various properties.
+      newMetaEdge.inbound = edge.inbound;
+      newMetaEdge.numRegularEdges = edge.numRegularEdges;
+      newMetaEdge.numControlEdges = edge.numControlEdges;
+      newMetaEdge.numRefEdges = edge.numRefEdges;
+      newMetaEdge.totalSize = edge.totalSize;
+      if (edge.baseEdgeList) {
+        newMetaEdge.baseEdgeList = edge.baseEdgeList.map((baseEdge) => {
+          const newBaseEdge = _.clone(baseEdge);
+          newBaseEdge.v = baseEdge.v.replace(oldPrefix, newPrefix);
+          newBaseEdge.w = baseEdge.w.replace(oldPrefix, newPrefix);
+          return newBaseEdge;
+        });
       }
-    );
+      // Set the direction of the edge based on whether it is inbound. The edge
+      // is inbound if its destination is within the metagraph.
+      if (newMetanode.metagraph.node(newW)) {
+        newMetanode.metagraph.setEdge(newV, newW, newMetaEdge);
+      } else {
+        newMetanode.metagraph.setEdge(newW, newV, newMetaEdge);
+      }
+    });
   }
   /**
    * When a metanode representing a function is cloned and placed into the
@@ -868,7 +867,7 @@ export class RenderGraphInfo {
       // sub-hierarchy if necessary.
       _.each(metagraph.nodes(), (childName) => {
         // Why is this so often undefined?
-        const originalNode = metagraph.node(childName) as OpNode;
+        const originalNode = metagraph.node(childName) as any;
         const libraryFunctionData = this.hierarchy.libraryFunctions[
           originalNode.op
         ];
@@ -940,7 +939,7 @@ export class RenderGraphInfo {
     // Add render metaedge info for edges in the metagraph.
     _.each(metagraph.edges(), (edgeObj) => {
       let metaedge = metagraph.edge(edgeObj);
-      let renderMetaedgeInfo = new RenderMetaedgeInfo(metaedge);
+      let renderMetaedgeInfo = new RenderMetaedgeInfo(metaedge as any);
       renderMetaedgeInfo.isFadedOut =
         this.index[edgeObj.v].isFadedOut || this.index[edgeObj.w].isFadedOut;
       coreGraph.setEdge(edgeObj.v, edgeObj.w, renderMetaedgeInfo);
@@ -1071,7 +1070,7 @@ export class RenderGraphInfo {
       ) {
         // Utility function for finding an adjoining metaedge.
         let findAdjoiningMetaedge = (targetName) => {
-          let adjoiningEdgeObj: graphlib.EdgeObject = inbound
+          let adjoiningEdgeObj = inbound
             ? {v: targetName, w: nodeName}
             : {v: nodeName, w: targetName};
           return <RenderMetaedgeInfo>(
@@ -1146,7 +1145,7 @@ export class RenderGraphInfo {
           new Annotation(
             otherNode,
             otherRenderInfo,
-            new RenderMetaedgeInfo(bridgeMetaedge),
+            new RenderMetaedgeInfo(bridgeMetaedge as any),
             AnnotationType.SHORTCUT,
             inbound
           )
@@ -1177,7 +1176,7 @@ export class RenderGraphInfo {
             nodeAttributes: {},
           };
           bridgeContainerInfo = new RenderNodeInfo(bridgeContainerNode);
-          this.index[bridgeContainerName] = bridgeContainerInfo;
+          this.index[bridgeContainerName] = bridgeContainerInfo as any;
           coreGraph.setNode(bridgeContainerName, bridgeContainerInfo);
         }
         let bridgeNode: BridgeNode = {
@@ -1195,14 +1194,14 @@ export class RenderGraphInfo {
           nodeAttributes: {},
         };
         bridgeNodeRenderInfo = new RenderNodeInfo(bridgeNode);
-        this.index[bridgeNodeName] = bridgeNodeRenderInfo;
+        this.index[bridgeNodeName] = bridgeNodeRenderInfo as any;
         coreGraph.setNode(bridgeNodeName, bridgeNodeRenderInfo);
         // Set bridgeNode to be a graphlib child of the container node.
         coreGraph.setParent(bridgeNodeName, bridgeContainerName);
         bridgeContainerInfo.node.cardinality++;
       }
       // Create and add a bridge render metaedge.
-      let bridgeRenderMetaedge = new RenderMetaedgeInfo(bridgeMetaedge);
+      let bridgeRenderMetaedge = new RenderMetaedgeInfo(bridgeMetaedge as any);
       bridgeRenderMetaedge.adjoiningMetaedge = adjoiningMetaedge;
       inbound
         ? coreGraph.setEdge(bridgeNodeName, childName, bridgeRenderMetaedge)
@@ -1314,7 +1313,7 @@ export class RenderGraphInfo {
           };
           structuralRenderInfo = new RenderNodeInfo(bridgeNode);
           structuralRenderInfo.structural = true;
-          this.index[structuralNodeName] = structuralRenderInfo;
+          this.index[structuralNodeName] = structuralRenderInfo as any;
           coreGraph.setNode(structuralNodeName, structuralRenderInfo);
           bridgeContainerInfo.node.cardinality++;
           coreGraph.setParent(structuralNodeName, bridgeContainerName);
@@ -1345,12 +1344,10 @@ export class RenderGraphInfo {
    * metanodes containing endpoint nodes for edges within metagraph M must
    * already be built. Otherwise, bridge edges will be missing from the graph.
    */
-  private buildSubhierarchiesForNeededFunctions(
-    metagraph: graphlib.Graph<GroupNode | OpNode, Metaedge>
-  ) {
+  private buildSubhierarchiesForNeededFunctions(metagraph: graphlib.Graph) {
     _.each(metagraph.edges(), (edgeObj) => {
       let metaedge = metagraph.edge(edgeObj);
-      let renderMetaedgeInfo = new RenderMetaedgeInfo(metaedge);
+      let renderMetaedgeInfo = new RenderMetaedgeInfo(metaedge as any);
       _.forEach(renderMetaedgeInfo.metaedge.baseEdgeList, (baseEdge) => {
         const sourcePathList = baseEdge.v.split(tf_graph.NAMESPACE_DELIM);
         for (let i = sourcePathList.length; i >= 0; i--) {
@@ -1814,10 +1811,7 @@ function addOutAnnotation(
   );
   node.outAnnotations.push(annotation);
 }
-function setGraphDepth(
-  graph: graphlib.Graph<RenderNodeInfo, any>,
-  depth: number
-) {
+function setGraphDepth(graph: graphlib.Graph, depth: number) {
   _.each(graph.nodes(), (nodeName) => {
     let child = graph.node(nodeName);
     child.expanded = depth > 1; // set all child of depth 1 to collapsed
@@ -1838,7 +1832,7 @@ export class RenderGroupNodeInfo extends RenderNodeInfo {
    * The core graph is derived from the underlying node's metagraph, minus
    * the extracted source-like and sink-like nodes.
    */
-  coreGraph: graphlib.Graph<RenderNodeInfo, RenderMetaedgeInfo>;
+  coreGraph: graphlib.Graph;
   /** Size of the bounding box for a metanode's isolated in-extract children. */
   inExtractBox: {
     width: number;
@@ -1862,10 +1856,10 @@ export class RenderGroupNodeInfo extends RenderNodeInfo {
   isolatedOutExtract: RenderNodeInfo[];
   /** Array of nodes to show in the function library scene group. */
   libraryFunctionsExtract: RenderNodeInfo[];
-  constructor(groupNode: GroupNode, graphOptions: graphlib.GraphOptions) {
+  constructor(groupNode: GroupNode, graphOptions: any) {
     super(groupNode);
     let metagraph = groupNode.metagraph;
-    let gl = metagraph.graph();
+    let gl = metagraph.graph() as any;
     graphOptions.compound = true;
     this.coreGraph = createGraph<RenderNodeInfo, RenderMetaedgeInfo>(
       gl.name,
@@ -1895,14 +1889,10 @@ function setGroupNodeDepth(
  * @param v Source name.
  * @param w Sink name.
  */
-function createShortcut(
-  graph: graphlib.Graph<RenderNodeInfo, RenderMetaedgeInfo>,
-  v: string,
-  w: string
-) {
-  let src = graph.node(v);
-  let sink = graph.node(w);
-  let edge = graph.edge(v, w);
+function createShortcut(graph: graphlib.Graph, v: string, w: string) {
+  let src = graph.node(v) as any;
+  let sink = graph.node(w) as any;
+  let edge = graph.edge(v, w) as any;
   // If either of the nodes is explicitly included in the main graph and
   // both nodes are in the main graph then do not create the shortcut
   // and instead keep the real edge.
@@ -1933,7 +1923,7 @@ function makeOutExtract(
   forceDetach?: boolean
 ) {
   let graph = renderNode.coreGraph;
-  let child = graph.node(n);
+  let child = graph.node(n) as any;
   child.isOutExtract = true;
   _.each(graph.predecessors(n), (p, index) => {
     createShortcut(graph, p, n);
@@ -1963,7 +1953,7 @@ export function makeInExtract(
   forceDetach?: boolean
 ) {
   let graph = renderNode.coreGraph;
-  let child = graph.node(n);
+  let child = graph.node(n) as any;
   child.isInExtract = true;
   _.each(graph.successors(n), (s, index) => {
     createShortcut(graph, n, s);
@@ -2156,11 +2146,7 @@ function extractHighInOrOutDegree(renderNode: RenderGroupNodeInfo) {
 function removeControlEdges(renderNode: RenderGroupNodeInfo) {
   let graph = renderNode.coreGraph;
   // Collect control edges into a map by node name.
-  let map = <
-    {
-      [nodeName: string]: graphlib.EdgeObject[];
-    }
-  >{};
+  let map = <{[nodeName: string]: any[]}>{};
   _.each(graph.edges(), (e) => {
     if (!graph.edge(e).metaedge.numRegularEdges) {
       (map[e.v] = map[e.v] || []).push(e);
@@ -2225,7 +2211,7 @@ function extractHighDegrees(renderNode: RenderGroupNodeInfo) {
   //       extracted, so it might make sense to extract them too.
   let graph = renderNode.coreGraph;
   _.each(graph.nodes(), (n) => {
-    let child = graph.node(n);
+    let child = graph.node(n) as any;
     let degree = graph.neighbors(n).length;
     if (child.node.include !== InclusionType.UNSPECIFIED) {
       return;

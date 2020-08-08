@@ -17,12 +17,8 @@ import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, observe, property} from '@polymer/decorators';
 import * as d3 from 'd3';
 import * as _ from 'lodash';
-import '@polymer/iron-flex-layout/iron-flex-layout';
-import '@polymer/iron-icons';
-import '@polymer/paper-button';
-import '@polymer/paper-input/paper-input';
-import '@polymer/paper-toggle-button';
 
+import '../../../../components_polymer3/polymer/irons_and_papers';
 import './tf-graph-scene';
 import * as tf_graph from '../tf_graph_common/graph';
 import * as tf_graph_scene from '../tf_graph_common/scene';

@@ -17,12 +17,7 @@ import {PolymerElement, html} from '@polymer/polymer';
 import {computed, customElement, property} from '@polymer/decorators';
 import * as d3 from 'd3';
 
-import '@polymer/iron-collapse';
-import '@polymer/iron-list';
-import '@polymer/paper-icon-button';
-import '@polymer/paper-item';
-import '@polymer/paper-item';
-
+import '../../../../components_polymer3/polymer/irons_and_papers';
 import './tf-graph-op-compat-list-item';
 import * as tf_graph_hierarchy from '../tf_graph_common/hierarchy';
 import * as tf_graph_render from '../tf_graph_common/render';

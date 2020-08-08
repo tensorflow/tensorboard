@@ -10,6 +10,7 @@ tf_ts_library(
     strict_checks = False,
     tags = ["manual"],
     deps = [
+        "//tensorboard/components_polymer3/polymer:irons_and_papers",
         "//tensorboard/components_polymer3/polymer:legacy_element_mixin",
         "//tensorboard/components_polymer3/tf_backend",
         "//tensorboard/components_polymer3/tf_dashboard_common",
@@ -21,7 +22,6 @@ tf_ts_library(
         "//tensorboard/plugins/graph/polymer3/tf_graph_controls",
         "//tensorboard/plugins/graph/polymer3/tf_graph_loader:tf_graph_dashboard_loader",
         "@npm//@polymer/decorators",
-        "@npm//@polymer/paper-dialog",
         "@npm//@polymer/polymer",
     ],
 )

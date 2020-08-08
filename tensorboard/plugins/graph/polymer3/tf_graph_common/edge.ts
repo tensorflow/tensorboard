@@ -13,42 +13,27 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import * as d3 from 'd3';
-import * as graphlib from 'graphlib';
+import {graphlib} from 'dagre';
 import * as _ from 'lodash';
 
-import {EDGE_KEY_DELIM, BaseEdge, OpNode, Metaedge} from './graph';
+import {MIN_EDGE_WIDTH, MAX_EDGE_WIDTH} from './common';
+import * as tf_graph_common from './common';
+import {Class} from './common';
+import {BaseEdge, EDGE_KEY_DELIM, Metaedge, OpNode} from './graph';
 import * as render from './render';
-import {Class} from './scene';
-import * as tf_graph_scene from './scene';
+import {EdgeData} from './render';
 import {TfGraphScene} from './tf-graph-scene';
 
 /** Delimiter between dimensions when showing sizes of tensors. */
 const TENSOR_SHAPE_DELIM = '\u00D7';
-/** The minimum stroke width of an edge. */
-export const MIN_EDGE_WIDTH = 0.75;
-/** The maximum stroke width of an edge. */
-export const MAX_EDGE_WIDTH = 12;
-/** The exponent used in the power scale for edge thickness. */
-const EDGE_WIDTH_SCALE_EXPONENT = 0.3;
-/** The domain (min and max value) for the edge width. */
-const DOMAIN_EDGE_WIDTH_SCALE = [1, 5000000];
-export const EDGE_WIDTH_SIZE_BASED_SCALE: d3.ScalePower<number, number> = d3
-  .scalePow()
-  .exponent(EDGE_WIDTH_SCALE_EXPONENT)
-  .domain(DOMAIN_EDGE_WIDTH_SCALE)
-  .range([MIN_EDGE_WIDTH, MAX_EDGE_WIDTH])
-  .clamp(true);
+
 let arrowheadMap = d3
   .scaleQuantize<String>()
   .domain([MIN_EDGE_WIDTH, MAX_EDGE_WIDTH])
   .range(['small', 'medium', 'large', 'xlarge']);
 /** Minimum stroke width to put edge labels in the middle of edges */
 const CENTER_EDGE_LABEL_MIN_STROKE_WIDTH = 2.5;
-export type EdgeData = {
-  v: string;
-  w: string;
-  label: render.RenderMetaedgeInfo;
-};
+
 /**
  * Function run when an edge is selected.
  */
@@ -79,7 +64,7 @@ export function getEdgeKey(edgeObj: EdgeData) {
  */
 export function buildGroup(
   sceneGroup,
-  graph: graphlib.Graph<render.RenderNodeInfo, render.RenderMetaedgeInfo>,
+  graph: graphlib.Graph,
   sceneElement: TfGraphScene
 ) {
   const sceneComponent = sceneElement as any;
@@ -97,7 +82,7 @@ export function buildGroup(
     },
     edges
   );
-  let container = tf_graph_scene.selectOrCreateChild(
+  let container = tf_graph_common.selectOrCreateChild(
     sceneGroup,
     'g',
     Class.Edge.CONTAINER
@@ -212,7 +197,7 @@ function getPathSegmentIndexAtLength(
   length: number,
   lineFunc: (points: render.Point[]) => string
 ): number {
-  const path = document.createElementNS(tf_graph_scene.SVG_NAMESPACE, 'path');
+  const path = document.createElementNS(tf_graph_common.SVG_NAMESPACE, 'path');
   for (let i = 1; i < points.length; i++) {
     path.setAttribute('d', lineFunc(points.slice(0, i)));
     if (path.getTotalLength() > length) {

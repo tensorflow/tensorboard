@@ -177,7 +177,7 @@ export class Minimap {
         console.warn(
           `non-base64 data URL (${prefix}); cannot use blob download`
         );
-        this.download.href = dataUrl;
+        (this.download as any).href = dataUrl;
         return;
       }
       const data = atob(dataUrl.slice(dataUrl.indexOf(',') + 1));
@@ -185,7 +185,7 @@ export class Minimap {
         data.charCodeAt(i)
       );
       const blob = new Blob([bytes], {type: 'image/png'});
-      this.download.href = URL.createObjectURL(blob);
+      (this.download as any).href = (URL as any).createObjectURL(blob);
     });
     let $svg = d3.select(this.svg);
     // Read all the style rules in the document and embed them into the svg.
@@ -319,7 +319,7 @@ export class Minimap {
     };
     image.onerror = () => {
       let blob = new Blob([svgXml], {type: 'image/svg+xml;charset=utf-8'});
-      image.src = URL.createObjectURL(blob);
+      image.src = (URL as any).createObjectURL(blob);
     };
     image.src =
       'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgXml);

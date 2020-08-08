@@ -11,12 +11,12 @@ tf_ts_library(
     tags = ["manual"],
     visibility = ["//visibility:public"],
     deps = [
+        "//tensorboard/components_polymer3/polymer:irons_and_papers",
         "//tensorboard/components_polymer3/polymer:legacy_element_mixin",
         "//tensorboard/plugins/graph/polymer3/tf_graph",
         "//tensorboard/plugins/graph/polymer3/tf_graph_common",
         "//tensorboard/plugins/graph/polymer3/tf_graph_info",
         "@npm//@polymer/decorators",
-        "@npm//@polymer/paper-progress",
         "@npm//@polymer/polymer",
     ],
 )
