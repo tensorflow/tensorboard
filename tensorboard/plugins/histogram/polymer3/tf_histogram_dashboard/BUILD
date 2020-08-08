@@ -1,36 +1,38 @@
-load("//tensorboard/defs:web.bzl", "tf_web_library")
+load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
-tf_web_library(
+tf_ts_library(
     name = "tf_histogram_dashboard",
     srcs = [
         "histogramCore.ts",
-        "tf-histogram-core.html",
-        "tf-histogram-dashboard.html",
-        "tf-histogram-loader.html",
+        "tf-histogram-dashboard.ts",
+        "tf-histogram-loader.ts",
     ],
-    path = "/tf-histogram-dashboard",
+    strict_checks = False,
     deps = [
-        "//tensorboard/components/tf_backend",
-        "//tensorboard/components/tf_card_heading",
-        "//tensorboard/components/tf_categorization_utils",
-        "//tensorboard/components/tf_color_scale",
-        "//tensorboard/components/tf_dashboard_common",
-        "//tensorboard/components/tf_imports:d3",
-        "//tensorboard/components/tf_imports:lodash",
-        "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/components/tf_paginated_view",
-        "//tensorboard/components/tf_runs_selector",
-        "//tensorboard/components/tf_tensorboard:registry",
-        "//tensorboard/plugins/histogram/vz_histogram_timeseries",
-        "@org_polymer_iron_collapse",
-        "@org_polymer_iron_icon",
-        "@org_polymer_paper_button",
-        "@org_polymer_paper_icon_button",
-        "@org_polymer_paper_input",
-        "@org_polymer_paper_styles",
+        "//tensorboard/components_polymer3/polymer:legacy_element_mixin",
+        "//tensorboard/components_polymer3/tf_backend",
+        "//tensorboard/components_polymer3/tf_card_heading",
+        "//tensorboard/components_polymer3/tf_categorization_utils",
+        "//tensorboard/components_polymer3/tf_color_scale",
+        "//tensorboard/components_polymer3/tf_dashboard_common",
+        "//tensorboard/components_polymer3/tf_paginated_view",
+        "//tensorboard/components_polymer3/tf_runs_selector",
+        "//tensorboard/plugins/histogram/polymer3/vz_histogram_timeseries",
+        "@npm//@polymer/decorators",
+        "@npm//@polymer/iron-collapse",
+        "@npm//@polymer/iron-icon",
+        "@npm//@polymer/paper-button",
+        "@npm//@polymer/paper-icon-button",
+        "@npm//@polymer/paper-input",
+        "@npm//@polymer/paper-styles",
+        "@npm//@polymer/polymer",
+        "@npm//@types/d3",
+        "@npm//@types/lodash",
+        "@npm//d3",
+        "@npm//lodash",
     ],
 )
