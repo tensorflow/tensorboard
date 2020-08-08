@@ -10,6 +10,7 @@ tf_ts_library(
         "tf-graph-loader.ts",
     ],
     strict_checks = False,
+    tags = ["manual"],
     deps = [
         "//tensorboard/components_polymer3/polymer:legacy_element_mixin",
         "//tensorboard/plugins/graph/polymer3/tf_graph_common",
@@ -24,6 +25,7 @@ tf_ts_library(
         "tf-graph-dashboard-loader.ts",
     ],
     strict_checks = False,
+    tags = ["manual"],
     visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components_polymer3/polymer:legacy_element_mixin",

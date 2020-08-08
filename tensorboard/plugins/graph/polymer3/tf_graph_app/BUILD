@@ -12,6 +12,7 @@ tf_ts_library(
         "tf-graph-app.ts",
     ],
     strict_checks = False,
+    tags = ["manual"],
     deps = [
         "//tensorboard/components_polymer3/polymer:legacy_element_mixin",
         "//tensorboard/plugins/graph/polymer3/tf_graph_board",
@@ -26,6 +27,7 @@ tf_js_binary(
     name = "tf_graph_app_js_binary",
     compile = True,
     entry_point = ":tf-graph-app.ts",
+    tags = ["manual"],
     deps = [":tf_graph_app"],
 )
 
@@ -36,6 +38,7 @@ tf_web_library(
         "tf_graph_app_js_binary.js",
     ],
     path = "/",
+    tags = ["manual"],
     deps = [
         "@com_google_fonts_roboto",
     ],
@@ -46,6 +49,7 @@ tensorboard_html_binary(
     compile = False,
     input_path = "/tf-graph-app.html",
     output_path = "/index.html",
+    tags = ["manual"],
     deps = [
         ":tf_graph_app_bundle",
     ],
