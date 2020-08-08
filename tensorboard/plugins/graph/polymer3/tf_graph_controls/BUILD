@@ -1,5 +1,3 @@
-load("//tensorboard/defs:defs.bzl", "tensorboard_webcomponent_library")
-
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
@@ -28,26 +26,5 @@ dict(
         "@org_polymer_paper_radio_group",
         "@org_polymer_paper_toggle_button",
         "@org_polymer_paper_tooltip",
-    ],
-)
-
-tensorboard_webcomponent_library(
-    name = "legacy",
-    srcs = [":tf_graph_controls"],
-    destdir = "tf-graph-controls",
-    deps = [
-        "//tensorboard/components/tf_dashboard_common:legacy",
-        "//tensorboard/components/tf_imports:polymer_lib",
-        "//tensorboard/plugins/graph/tf_graph_common:legacy",
-        "//tensorboard/plugins/graph/tf_graph_node_search:legacy",
-        "//third_party/javascript/polymer/v2/iron-icon:lib",
-        "//third_party/javascript/polymer/v2/paper-button:lib",
-        "//third_party/javascript/polymer/v2/paper-dropdown-menu:lib",
-        "//third_party/javascript/polymer/v2/paper-icon-button:lib",
-        "//third_party/javascript/polymer/v2/paper-item:lib",
-        "//third_party/javascript/polymer/v2/paper-listbox:lib",
-        "//third_party/javascript/polymer/v2/paper-radio-group:lib",
-        "//third_party/javascript/polymer/v2/paper-toggle-button:lib",
-        "//third_party/javascript/polymer/v2/paper-tooltip:lib",
     ],
 )
