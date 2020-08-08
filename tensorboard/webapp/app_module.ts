@@ -28,6 +28,7 @@ import {PluginsModule} from './plugins/plugins_module';
 import {ROOT_REDUCERS, loggerMetaReducerFactory} from './reducer_config';
 import {ReloaderModule} from './reloader/reloader_module';
 import {SettingsModule} from './settings/settings_module';
+import {OssPluginsModule} from './oss_plugins_module';
 
 @NgModule({
   declarations: [AppContainer],
@@ -49,6 +50,7 @@ import {SettingsModule} from './settings/settings_module';
       },
     }),
     EffectsModule.forRoot([]),
+    OssPluginsModule,
   ],
   providers: [
     {

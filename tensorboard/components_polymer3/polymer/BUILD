@@ -15,6 +15,16 @@ tf_ts_library(
 )
 
 tf_ts_library(
+    name = "dom-repeat",
+    srcs = [
+        "dom-repeat.ts",
+    ],
+    deps = [
+        "@npm//@polymer/polymer",
+    ],
+)
+
+tf_ts_library(
     name = "legacy_element_mixin",
     srcs = [
         "legacy_element_mixin.ts",
@@ -94,6 +104,7 @@ tf_ts_library(
         "@npm//@polymer/paper-listbox",
         "@npm//@polymer/paper-material",
         "@npm//@polymer/paper-menu-button",
+        "@npm//@polymer/paper-radio-group",
         "@npm//@polymer/paper-slider",
         "@npm//@polymer/paper-spinner",
         "@npm//@polymer/paper-styles",

@@ -1,11 +1,11 @@
-load("//tensorboard/defs:defs.bzl", "tensorboard_webcomponent_library")
-load("//tensorboard/defs:web.bzl", "tf_web_library")
-
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
-tf_web_library(
+# `tf_web_library`/`tf_ts_library` here removed to facilitate internal
+# sync-testing scripts.
+
+dict(
     name = "tf_graph_common",
     srcs = [
         "annotation.ts",
@@ -42,16 +42,5 @@ tf_web_library(
         "//tensorboard/components/tf_imports:graphlib",
         "//tensorboard/components/tf_imports:lodash",
         "//tensorboard/components/tf_imports:polymer",
-    ],
-)
-
-tensorboard_webcomponent_library(
-    name = "legacy",
-    srcs = [":tf_graph_common"],
-    destdir = "tf-graph-common",
-    deps = [
-        "//tensorboard/components/tf_dashboard_common:legacy",
-        "//tensorboard/components/tf_imports:polymer_lib",
-        "//tensorboard/components/tf_imports_google:lib",
     ],
 )
