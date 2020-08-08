@@ -14,11 +14,11 @@ limitations under the License.
 ==============================================================================*/
 
 import {computed, customElement, observe, property} from '@polymer/decorators';
-import '@polymer/paper-icon-button';
 import {PolymerElement, html} from '@polymer/polymer';
 import * as _ from 'lodash';
 
 import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+import '../../../../components_polymer3/polymer/irons_and_papers';
 import {getRouter} from '../../../../components_polymer3/tf_backend/router';
 import {addParams} from '../../../../components_polymer3/tf_backend/urlPathHelpers';
 import '../../../../components_polymer3/tf_card_heading/tf-card-heading';
