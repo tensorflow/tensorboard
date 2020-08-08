@@ -1,5 +1,3 @@
-load("//tensorboard/defs:defs.bzl", "tensorboard_webcomponent_library")
-
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
@@ -20,16 +18,6 @@ dict(
     ],
 )
 
-tensorboard_webcomponent_library(
-    name = "legacy",
-    srcs = [":tf_graph_loader"],
-    destdir = "tf-graph-loader",
-    deps = [
-        "//tensorboard/components/tf_imports:polymer_lib",
-        "//tensorboard/plugins/graph/tf_graph_common:legacy",
-    ],
-)
-
 dict(
     name = "tf_graph_dashboard_loader",
     srcs = [
@@ -43,17 +31,5 @@ dict(
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/plugins/graph/tf_graph_common",
         "//tensorboard/plugins/graph/tf_graph_controls",
-    ],
-)
-
-tensorboard_webcomponent_library(
-    name = "legacy_dashboard_loader",
-    srcs = [":tf_graph_dashboard_loader"],
-    destdir = "tf-graph-loader",
-    deps = [
-        "//tensorboard/components/tf_backend:legacy",
-        "//tensorboard/components/tf_imports:polymer_lib",
-        "//tensorboard/plugins/graph/tf_graph_common:legacy",
-        "//tensorboard/plugins/graph/tf_graph_controls:legacy",
     ],
 )
