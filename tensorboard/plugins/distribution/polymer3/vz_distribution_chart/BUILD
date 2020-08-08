@@ -1,32 +1,25 @@
-load("//tensorboard/defs:web.bzl", "tf_web_library")
+load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
-tf_web_library(
+tf_ts_library(
     name = "vz_distribution_chart",
     srcs = [
-        "vz-distribution-chart.html",
-        "vz-distribution-chart.js",
+        "vz-distribution-chart.ts",
     ],
-    path = "/vz-distribution-chart",
+    strict_checks = False,
     deps = [
-        "//tensorboard/components/tf_imports:lodash",
-        "//tensorboard/components/tf_imports:plottable",
-        "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/components/vz_chart_helpers",
-    ],
-)
-
-tf_web_library(
-    name = "demo",
-    srcs = ["index.html"],
-    path = "/vz-distribution-chart",
-    deps = [
-        ":vz_distribution_chart",
-        "//tensorboard/components/tf_imports:polymer",
-        "@org_polymer_iron_demo_helpers",
-        "@org_polymer_paper_styles",
+        "//tensorboard/components_polymer3/polymer:legacy_element_mixin",
+        "//tensorboard/components_polymer3/polymer:plottable_style",
+        "//tensorboard/components_polymer3/vz_chart_helpers",
+        "@npm//@polymer/decorators",
+        "@npm//@polymer/polymer",
+        "@npm//@types/d3",
+        "@npm//@types/lodash",
+        "@npm//d3",
+        "@npm//lodash",
+        "@npm//plottable",
     ],
 )
