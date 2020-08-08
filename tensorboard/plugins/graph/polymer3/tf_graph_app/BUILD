@@ -1,4 +1,3 @@
-load("//tensorboard/defs:defs.bzl", "tensorboard_webcomponent_library")
 load("//tensorboard/defs:web.bzl", "tf_web_library")
 load("//tensorboard/defs:vulcanize.bzl", "tensorboard_html_binary")
 
@@ -26,10 +25,4 @@ tensorboard_html_binary(
     input_path = "/tf-graph-app/tf-graph-app.html",
     output_path = "/tf-graph-app/binary.html",
     deps = [":tf_graph_app"],
-)
-
-tensorboard_webcomponent_library(
-    name = "legacy",
-    srcs = [":binary"],
-    destdir = "tf-graph-app",
 )
