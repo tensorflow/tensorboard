@@ -66,7 +66,6 @@ tf_ts_library(
         "debugger_selectors_test.ts",
         "debugger_store_utils_test.ts",
     ],
-    tsconfig = "//:tsconfig-test",
     deps = [
         ":debug_tensor_value",
         ":debugger_store_helpers",

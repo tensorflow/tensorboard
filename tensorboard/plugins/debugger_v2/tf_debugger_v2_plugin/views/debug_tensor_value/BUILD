@@ -25,7 +25,6 @@ tf_ts_library(
     srcs = [
         "debug_tensor_value_component_test.ts",
     ],
-    tsconfig = "//:tsconfig-test",
     deps = [
         ":debug_tensor_value",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/store:debug_tensor_value",

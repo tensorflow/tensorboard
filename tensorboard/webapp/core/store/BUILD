@@ -31,7 +31,6 @@ tf_ts_library(
         "core_reducers_test.ts",
         "core_selectors_test.ts",
     ],
-    tsconfig = "//:tsconfig-test",
     deps = [
         ":store",
         "//tensorboard/webapp/core/actions",

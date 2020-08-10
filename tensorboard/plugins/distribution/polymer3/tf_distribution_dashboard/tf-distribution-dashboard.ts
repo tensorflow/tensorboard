@@ -1,6 +1,4 @@
-<!--
-@license
-Copyright 2016 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,38 +11,40 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
--->
+==============================================================================*/
 
-<link rel="import" href="../iron-icon/iron-icon.html" />
-<link rel="import" href="../paper-button/paper-button.html" />
-<link rel="import" href="../paper-input/paper-input.html" />
-<link rel="import" href="../tf-imports/polymer.html" />
-<link rel="import" href="../tf-backend/tf-backend.html" />
-<link
-  rel="import"
-  href="../tf-categorization-utils/tf-categorization-utils.html"
-/>
-<link rel="import" href="../tf-categorization-utils/tf-tag-filterer.html" />
-<link rel="import" href="../tf-dashboard-common/dashboard-style.html" />
-<link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html" />
-<link rel="import" href="../tf-dashboard-common/tf-option-selector.html" />
-<link rel="import" href="../tf-imports/lodash.html" />
-<link
-  rel="import"
-  href="../tf-paginated-view/tf-category-paginated-view.html"
-/>
-<link rel="import" href="../tf-runs-selector/tf-runs-selector.html" />
-<link rel="import" href="../tf-tensorboard/registry.html" />
-<link rel="import" href="tf-distribution-loader.html" />
+import {PolymerElement, html} from '@polymer/polymer';
+import {computed, customElement, property} from '@polymer/decorators';
+import * as _ from 'lodash';
 
-<!--
+import '../../../../components_polymer3/polymer/irons_and_papers';
+import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+import {getTags} from '../../../../components_polymer3/tf_backend/backend';
+import {RequestManager} from '../../../../components_polymer3/tf_backend/requestManager';
+import {getRouter} from '../../../../components_polymer3/tf_backend/router';
+import {
+  RunTagCategory,
+  RunToTag,
+  categorizeRunTagCombinations,
+} from '../../../../components_polymer3/tf_categorization_utils/categorizationUtils';
+import '../../../../components_polymer3/tf_categorization_utils/tf-tag-filterer';
+import '../../../../components_polymer3/tf_dashboard_common/dashboard-style';
+import '../../../../components_polymer3/tf_dashboard_common/tf-dashboard-layout';
+import '../../../../components_polymer3/tf_dashboard_common/tf-option-selector';
+import '../../../../components_polymer3/tf_paginated_view/tf-category-paginated-view';
+import '../../../../components_polymer3/tf_runs_selector/tf-runs-selector';
+import {TfDistributionLoader} from './tf-distribution-loader';
+import './tf-distribution-loader';
+
+/**
   A frontend that displays a set of tf-distribution-loaders, each of
   which displays the distribution for a single tag on a single run. This
   dashboard provides a categorizer and abcissa seletor (step, relative,
   or wall time).
--->
-<dom-module id="tf-distribution-dashboard">
-  <template>
+*/
+@customElement('tf-distribution-dashboard')
+class TfDistributionDashboard extends LegacyElementMixin(PolymerElement) {
+  static readonly template = html`
     <tf-dashboard-layout>
       <div class="sidebar" slot="sidebar">
         <div class="settings">
@@ -135,92 +135,85 @@ limitations under the License.
         margin: 80px auto 0 auto;
       }
     </style>
-  </template>
+  `;
 
-  <script>
-    'use strict';
+  @property({type: Boolean})
+  reloadOnReady: boolean = true;
 
-    Polymer({
-      is: 'tf-distribution-dashboard',
-      properties: {
-        reloadOnReady: {
-          type: Boolean,
-          value: true,
-        },
-        _xType: {
-          type: String,
-          value: 'step',
-        },
+  @property({type: String})
+  _xType: string = 'step';
 
-        _selectedRuns: Array,
-        _runToTag: Object, // map<run: string, tags: string[]>
-        _runToTagInfo: Object,
-        _dataNotFound: Boolean,
-        _tagFilter: String,
+  @property({type: Array})
+  _selectedRuns: string[];
 
-        // Categories must only be computed after _dataNotFound is found to be
-        // true and then polymer DOM templating responds to that finding. We
-        // thus use this property to guard when categories are computed.
-        _categoriesDomReady: Boolean,
-        _categories: {
-          type: Array,
-          computed:
-            '_makeCategories(_runToTag, _selectedRuns, _tagFilter, _categoriesDomReady)',
-        },
+  @property({type: Object})
+  _runToTag: RunToTag;
 
-        _requestManager: {
-          type: Object,
-          value: () => new tf_backend.RequestManager(),
-        },
-      },
-      ready() {
-        if (this.reloadOnReady) this.reload();
-      },
-      reload() {
-        this._fetchTags().then(() => {
-          this._reloadDistributions();
-        });
-      },
-      _fetchTags() {
-        const url = tf_backend
-          .getRouter()
-          .pluginRoute('distributions', '/tags');
-        return this._requestManager.request(url).then((runToTagInfo) => {
-          if (_.isEqual(runToTagInfo, this._runToTagInfo)) {
-            // No need to update anything if there are no changes.
-            return;
-          }
-          const runToTag = _.mapValues(runToTagInfo, (x) => Object.keys(x));
-          const tags = tf_backend.getTags(runToTag);
-          this.set('_dataNotFound', tags.length === 0);
-          this.set('_runToTag', runToTag);
-          this.set('_runToTagInfo', runToTagInfo);
-          this.async(() => {
-            // See the comment above `_categoriesDomReady`.
-            this.set('_categoriesDomReady', true);
-          });
-        });
-      },
-      _reloadDistributions() {
-        this.root
-          .querySelectorAll('tf-distribution-loader')
-          .forEach((loader) => {
-            loader.reload();
-          });
-      },
-      _shouldOpen(index) {
-        return index <= 2;
-      },
-      _makeCategories(runToTag, selectedRuns, tagFilter, categoriesDomReady) {
-        return tf_categorization_utils.categorizeRunTagCombinations(
-          runToTag,
-          selectedRuns,
-          tagFilter
-        );
-      },
-      _tagMetadata(runToTagInfo, run, tag) {
-        return runToTagInfo[run][tag];
-      },
+  @property({type: Object})
+  _runToTagInfo: object;
+
+  @property({type: Boolean})
+  _dataNotFound: boolean;
+
+  @property({type: String})
+  _tagFilter: string;
+
+  @property({type: Boolean})
+  _categoriesDomReady: boolean;
+
+  @property({type: Object})
+  _requestManager: RequestManager = new RequestManager();
+
+  ready() {
+    super.ready();
+    if (this.reloadOnReady) this.reload();
+  }
+
+  reload() {
+    this._fetchTags().then(() => {
+      this._reloadDistributions();
     });
-  </script>
-</dom-module>
+  }
+
+  _fetchTags() {
+    const url = getRouter().pluginRoute('distributions', '/tags');
+    return this._requestManager.request(url).then((runToTagInfo) => {
+      if (_.isEqual(runToTagInfo, this._runToTagInfo)) {
+        // No need to update anything if there are no changes.
+        return;
+      }
+      const runToTag = _.mapValues(runToTagInfo, (x) => Object.keys(x));
+      const tags = getTags(runToTag);
+      this.set('_dataNotFound', tags.length === 0);
+      this.set('_runToTag', runToTag);
+      this.set('_runToTagInfo', runToTagInfo);
+      this.async(() => {
+        // See the comment above `_categoriesDomReady`.
+        this.set('_categoriesDomReady', true);
+      });
+    });
+  }
+
+  _reloadDistributions() {
+    this.root.querySelectorAll('tf-distribution-loader').forEach((loader) => {
+      (loader as TfDistributionLoader).reload();
+    });
+  }
+
+  _shouldOpen(index) {
+    return index <= 2;
+  }
+
+  @computed('_runToTag', '_selectedRuns', '_tagFilter', '_categoriesDomReady')
+  get _categories(): RunTagCategory[] {
+    var runToTag = this._runToTag;
+    var selectedRuns = this._selectedRuns;
+    var tagFilter = this._tagFilter;
+    var categoriesDomReady = this._categoriesDomReady;
+    return categorizeRunTagCombinations(runToTag, selectedRuns, tagFilter);
+  }
+
+  _tagMetadata(runToTagInfo, run, tag) {
+    return runToTagInfo[run][tag];
+  }
+}
