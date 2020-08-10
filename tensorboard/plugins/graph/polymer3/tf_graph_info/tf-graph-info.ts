@@ -23,7 +23,6 @@ import '../tf_graph_op_compat_card/tf-graph-op-compat-card';
 import './tf-node-info';
 import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
 
-'use strict';
 @customElement('tf-graph-info')
 class TfGraphInfo extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`

@@ -143,9 +143,7 @@ class TfGraphScene2 extends LegacyElementMixin(PolymerElement) {
   @property({
     type: Object,
   })
-  _annotationGroupIndex: object = function() {
-    return {};
-  };
+  _annotationGroupIndex = {};
 
   /*
    * Dictionary for easily stylizing edges when state changes.
@@ -154,9 +152,7 @@ class TfGraphScene2 extends LegacyElementMixin(PolymerElement) {
   @property({
     type: Object,
   })
-  _edgeGroupIndex: object = function() {
-    return {};
-  };
+  _edgeGroupIndex = {};
 
   /**
    * Max font size for metanode label strings.
