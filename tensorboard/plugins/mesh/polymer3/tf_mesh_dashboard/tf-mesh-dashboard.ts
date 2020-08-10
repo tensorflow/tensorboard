@@ -1,6 +1,4 @@
-<!--
-@license
-Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,31 +11,32 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
--->
-<link rel="import" href="../iron-icon/iron-icon.html" />
-<link rel="import" href="../paper-input/paper-input.html" />
-<link rel="import" href="../tf-imports/polymer.html" />
-<link rel="import" href="../tf-imports/lodash.html" />
-<link rel="import" href="../tf-backend/tf-backend.html" />
-<link
-  rel="import"
-  href="../tf-categorization-utils/tf-categorization-utils.html"
-/>
-<link
-  rel="import"
-  href="../tf-paginated-view/tf-category-paginated-view.html"
-/>
-<link rel="import" href="../tf-dashboard-common/dashboard-style.html" />
-<link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html" />
-<link rel="import" href="../tf-runs-selector/tf-runs-selector.html" />
-<link rel="import" href="../tf-tensorboard/registry.html" />
-<link rel="import" href="tf-mesh-loader.html" />
+==============================================================================*/
 
-<!--
-  A frontend that displays a set of tf-mesh-loaders.
--->
-<dom-module id="mesh-dashboard">
-  <template>
+import {PolymerElement, html} from '@polymer/polymer';
+import {customElement, property, computed} from '@polymer/decorators';
+import * as _ from 'lodash';
+
+import '../../../../components_polymer3/polymer/irons_and_papers';
+import {getTags} from '../../../../components_polymer3/tf_backend/backend';
+import {getRouter} from '../../../../components_polymer3/tf_backend/router';
+import {RequestManager} from '../../../../components_polymer3/tf_backend/requestManager';
+
+import {
+  RunToTag,
+  categorizeRunTagCombinations,
+} from '../../../../components_polymer3/tf_categorization_utils/categorizationUtils';
+import '../../../../components_polymer3/tf_paginated_view/tf-category-paginated-view';
+import '../../../../components_polymer3/tf_dashboard_common/dashboard-style';
+import '../../../../components_polymer3/tf_dashboard_common/tf-dashboard-layout';
+import '../../../../components_polymer3/tf_runs_selector/tf-runs-selector';
+
+import {TfMeshLoader} from './mesh-loader';
+import './mesh-loader';
+
+@customElement('mesh-dashboard')
+class MeshDashboard extends PolymerElement {
+  static readonly template = html`
     <tf-dashboard-layout>
       <div slot="sidebar" class="all-controls">
         <div class="settings">
@@ -209,123 +208,123 @@ limitations under the License.
         display: block;
       }
     </style>
-  </template>
+  `;
 
-  <script>
-    // TODO(podlipensky): move js to separate file. b/123597829
-    (function() {
-      Polymer({
-        is: 'mesh-dashboard',
-        properties: {
-          reloadOnReady: {
-            type: Boolean,
-            value: true,
-          },
-          /**
-           * @type {Array<string>} list of runs names to display.
-           */
-          _selectedRuns: Array,
-          _runToTagInfo: Object, // map<run: string, tags: string[]>
-          _dataNotFound: Boolean,
-          _tagFilter: {
-            type: String, // upward bound from paper-input
-            value: '.*',
-          },
-          /** @type {String} Defines the behavior for camera location during redraw. */
-          _selectedView: {
-            type: String,
-            notify: true,
-            value: 'all',
-          },
-          _categories: {
-            type: Array,
-            computed:
-              '_makeCategories(_runToTagInfo, _selectedRuns, _tagFilter)',
-          },
-          _requestManager: {
-            type: Object,
-            value: () => new tf_backend.RequestManager(),
-          },
-        },
-        ready() {
-          window.addEventListener(
-            'resize',
-            () => {
-              this._handleWindowResize();
-            },
-            false
-          );
-          if (this.reloadOnReady) this.reload();
-        },
-        _getAllChildren() {
-          return this.root.querySelectorAll('tf-mesh-loader');
-        },
-        _onCameraPositionChanged(event) {
-          if (this._selectedView == 'share') {
-            this._getAllChildren().forEach((g) => {
-              if (event.target == g) return; // Do not update trigger camera.
-              g.setCameraViewpoint(
-                event.detail.position,
-                event.detail.far,
-                event.detail.target
-              );
-            });
-          }
-        },
-        _shouldOpen(index) {
-          return index <= 2;
-        },
-        reload() {
-          this._fetchTags().then(this._reloadMeshes.bind(this));
-        },
-        _handleWindowResize() {
-          this._getAllChildren().forEach((g) => {
-            g.redraw();
-          });
-        },
-        _fetchTags() {
-          const url = tf_backend.getRouter().pluginRoute('mesh', '/tags');
-          return this._requestManager.request(url).then((runToTagInfo) => {
-            if (_.isEqual(runToTagInfo, this._runToTagInfo)) {
-              // No need to update anything if there are no changes.
-              return;
-            }
-            const runToTag = _.mapValues(runToTagInfo, (x) => Object.keys(x));
-            const tags = tf_backend.getTags(runToTag);
-            this.set('_dataNotFound', tags.length === 0);
-            this.set('_runToTagInfo', runToTagInfo);
-          });
-        },
-        _reloadMeshes() {
-          this._getAllChildren().forEach((g) => {
-            g.reload();
-          });
-        },
-        _makeCategories(runToTagInfo, selectedRuns, tagFilter) {
-          const runToTag = _.mapValues(runToTagInfo, (x) => Object.keys(x));
-          const baseCategories = tf_categorization_utils.categorizeRunTagCombinations(
-            runToTag,
-            selectedRuns,
-            tagFilter
-          );
+  @property({type: Boolean})
+  reloadOnReady: boolean = true;
 
-          function explodeItem(item) {
-            const samples = runToTagInfo[item.run][item.tag].samples;
-            return _.range(samples).map((i) =>
-              Object.assign({}, item, {
-                sample: i,
-                ofSamples: samples,
-              })
-            );
-          }
-          const withSamples = baseCategories.map((category) =>
-            Object.assign({}, category, {
-              items: [].concat.apply([], category.items.map(explodeItem)),
-            })
-          );
-          return withSamples;
-        },
-      }); // End of Polymer constructor call.
-    })(); // End of anonymous namespace.
-  </script>
-</dom-module>
+  @property({type: Array})
+  _selectedRuns: string[];
+
+  @property({type: Object})
+  _runToTagInfo: object;
+
+  @property({type: Boolean})
+  _dataNotFound: boolean;
+
+  @property({type: String})
+  _tagFilter: string = '.*';
+
+  @property({
+    type: String,
+    notify: true,
+  })
+  _selectedView: string = 'all';
+
+  @property({type: Object})
+  _requestManager = new RequestManager();
+
+  constructor() {
+    super();
+    window.addEventListener(
+      'resize',
+      () => {
+        this._handleWindowResize();
+      },
+      false
+    );
+    if (this.reloadOnReady) this.reload();
+  }
+
+  _getAllChildren() {
+    return Array.from(
+      this.shadowRoot.querySelectorAll('tf-mesh-loader')
+    ) as TfMeshLoader[];
+  }
+
+  _onCameraPositionChanged(event) {
+    if (this._selectedView == 'share') {
+      this._getAllChildren().forEach((g) => {
+        if (event.target == g) return; // Do not update trigger camera.
+        (g as any).setCameraViewpoint(
+          event.detail.position,
+          event.detail.far,
+          event.detail.target
+        );
+      });
+    }
+  }
+
+  _shouldOpen(index) {
+    return index <= 2;
+  }
+
+  reload() {
+    this._fetchTags().then(this._reloadMeshes.bind(this));
+  }
+
+  _handleWindowResize() {
+    this._getAllChildren().forEach((g) => {
+      (g as TfMeshLoader).redraw();
+    });
+  }
+
+  _fetchTags() {
+    const url = getRouter().pluginRoute('mesh', '/tags');
+    return this._requestManager.request(url).then((runToTagInfo) => {
+      if (_.isEqual(runToTagInfo, this._runToTagInfo)) {
+        // No need to update anything if there are no changes.
+        return;
+      }
+      const runToTag = _.mapValues(runToTagInfo, (x) => Object.keys(x));
+      const tags = getTags(runToTag);
+      this._dataNotFound = tags.length === 0;
+      this._runToTagInfo = runToTagInfo;
+    });
+  }
+  _reloadMeshes() {
+    this._getAllChildren().forEach((g) => {
+      g.reload();
+    });
+  }
+
+  @computed('_runToTagInfo', '_selectedRuns', '_tagFilter')
+  get _categories(): unknown[] {
+    var runToTagInfo = this._runToTagInfo;
+    var selectedRuns = this._selectedRuns;
+    var tagFilter = this._tagFilter;
+    const runToTag = _.mapValues(runToTagInfo, (x) => Object.keys(x));
+    const baseCategories = categorizeRunTagCombinations(
+      runToTag as RunToTag,
+      selectedRuns,
+      tagFilter
+    );
+
+    function explodeItem(item) {
+      const samples = runToTagInfo[item.run][item.tag].samples;
+      return _.range(samples).map((i) =>
+        Object.assign({}, item, {
+          sample: i,
+          ofSamples: samples,
+        })
+      );
+    }
+
+    const withSamples = baseCategories.map((category) =>
+      Object.assign({}, category, {
+        items: [].concat.apply([], category.items.map(explodeItem)),
+      })
+    );
+    return withSamples;
+  }
+}
