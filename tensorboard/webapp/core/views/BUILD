@@ -26,7 +26,6 @@ tf_ts_library(
     srcs = [
         "hash_storage_test.ts",
     ],
-    tsconfig = "//:tsconfig-test",
     deps = [
         ":hash_storage",
         "//tensorboard/webapp/angular:expect_angular_core_testing",

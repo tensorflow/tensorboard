@@ -27,7 +27,6 @@ tf_ts_library(
     srcs = [
         "testing.ts",
     ],
-    tsconfig = "//:tsconfig-test",
     deps = [
         "//tensorboard/webapp/plugins/text_v2/data_source",
     ],

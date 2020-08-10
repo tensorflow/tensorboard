@@ -45,7 +45,6 @@ tf_ts_library(
     srcs = [
         "plugins_container_test.ts",
     ],
-    tsconfig = "//:tsconfig-test",
     deps = [
         ":plugin_registry",
         ":plugins",

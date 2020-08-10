@@ -41,7 +41,6 @@ tf_ts_library(
     srcs = [
         "npmi_container_test.ts",
     ],
-    tsconfig = "//:tsconfig-test",
     deps = [
         ":npmi",
         "//tensorboard/webapp:app_state",

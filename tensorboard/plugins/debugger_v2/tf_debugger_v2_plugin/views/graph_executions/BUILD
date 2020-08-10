@@ -36,7 +36,6 @@ tf_ts_library(
     srcs = [
         "graph_executions_container_test.ts",
     ],
-    tsconfig = "//:tsconfig-test",
     deps = [
         ":graph_executions",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin:debugger_v2",

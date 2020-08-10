@@ -37,7 +37,6 @@ tf_ts_library(
         "testing.ts",
         "text_v2_selectors_test.ts",
     ],
-    tsconfig = "//:tsconfig-test",
     deps = [
         ":store",
         ":types",
