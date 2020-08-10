@@ -49,6 +49,7 @@ tf_ts_library(
         "//tensorboard/components_polymer3/tf_paginated_view",
         "//tensorboard/components_polymer3/tf_storage",
         "//tensorboard/plugins/audio/polymer3/tf_audio_dashboard",
+        "//tensorboard/plugins/custom_scalar/polymer3/tf_custom_scalar_dashboard",
         "//tensorboard/plugins/distribution/polymer3/tf_distribution_dashboard",
         "//tensorboard/plugins/histogram/polymer3/tf_histogram_dashboard",
         "//tensorboard/plugins/image/polymer3/tf_image_dashboard",

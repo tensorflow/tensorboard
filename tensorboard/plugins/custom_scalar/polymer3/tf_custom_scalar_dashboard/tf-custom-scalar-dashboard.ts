@@ -1,6 +1,4 @@
-<!--
-@license
-Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,38 +11,41 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
--->
+==============================================================================*/
 
-<link rel="import" href="../iron-icon/iron-icon.html" />
-<link rel="import" href="../paper-button/paper-button.html" />
-<link rel="import" href="../paper-listbox/paper-listbox.html" />
-<link rel="import" href="../paper-input/paper-input.html" />
-<link rel="import" href="../tf-imports/polymer.html" />
-<link rel="import" href="../tf-backend/tf-backend.html" />
-<link
-  rel="import"
-  href="../tf-categorization-utils/tf-categorization-utils.html"
-/>
-<link rel="import" href="../tf-color-scale/tf-color-scale.html" />
-<link rel="import" href="../tf-dashboard-common/dashboard-style.html" />
-<link rel="import" href="../tf-dashboard-common/tf-dashboard-layout.html" />
-<link rel="import" href="../tf-dashboard-common/tf-option-selector.html" />
-<link
-  rel="import"
-  href="../tf-paginated-view/tf-category-paginated-view.html"
-/>
-<link rel="import" href="../tf-runs-selector/tf-runs-selector.html" />
-<link rel="import" href="../tf-scalar-dashboard/tf-smoothing-input.html" />
-<link rel="import" href="../tf-tensorboard/registry.html" />
-<link rel="import" href="../tf-utils/tf-utils.html" />
-<link rel="import" href="tf-custom-scalar-margin-chart-card.html" />
-<link rel="import" href="tf-custom-scalar-multi-line-chart-card.html" />
+import {PolymerElement, html} from '@polymer/polymer';
+import {computed, customElement, observe, property} from '@polymer/decorators';
 
-<!--
-  A frontend that displays a custom set of line charts.
--->
-<dom-module id="tf-custom-scalar-dashboard">
-  <template>
+import {Canceller} from '../../../../components_polymer3/tf_backend/canceller';
+import {RequestManager} from '../../../../components_polymer3/tf_backend/requestManager';
+import {getRouter} from '../../../../components_polymer3/tf_backend/router';
+import {
+  Category,
+  CategoryType,
+} from '../../../../components_polymer3/tf_categorization_utils/categorizationUtils';
+import '../../../../components_polymer3/tf_dashboard_common/dashboard-style';
+import '../../../../components_polymer3/tf_dashboard_common/tf-dashboard-layout';
+import '../../../../components_polymer3/tf_dashboard_common/tf-option-selector';
+import '../../../../components_polymer3/tf_paginated_view/tf-category-paginated-view';
+import '../../../../components_polymer3/tf_runs_selector/tf-runs-selector';
+import {
+  getBooleanInitializer,
+  getBooleanObserver,
+  getNumberInitializer,
+  getNumberObserver,
+} from '../../../../components_polymer3/tf_storage/storage';
+import '../../../../components_polymer3/tf_utils/utils';
+import '../../../scalar/polymer3/tf_scalar_dashboard/tf-smoothing-input';
+
+import {Layout} from './tf-custom-scalar-helpers';
+import './tf-custom-scalar-margin-chart-card';
+import {TfCustomScalarMarginChartCard} from './tf-custom-scalar-margin-chart-card';
+import './tf-custom-scalar-multi-line-chart-card';
+import {TfCustomScalarMultiLineChartCard} from './tf-custom-scalar-multi-line-chart-card';
+
+@customElement('tf-custom-scalar-dashboard')
+class TfCustomScalarDashboard extends PolymerElement {
+  static readonly template = html`
     <tf-dashboard-layout>
       <div class="sidebar" slot="sidebar">
         <div class="settings">
@@ -62,7 +63,7 @@ limitations under the License.
             <div id="tooltip-sorting">
               <div id="tooltip-sorting-label">Tooltip sorting method:</div>
               <paper-dropdown-menu
-                no-label-float
+                no-label-float=""
                 selected-item-label="{{_tooltipSortingMethod}}"
               >
                 <paper-listbox
@@ -249,185 +250,170 @@ writer.add_summary(layout_summary)
         margin: 80px auto 0 auto;
       }
     </style>
-  </template>
+  `;
 
-  <script>
-    'use strict';
+  @property({type: Object})
+  _requestManager: RequestManager = new RequestManager(50);
 
-    Polymer({
-      is: 'tf-custom-scalar-dashboard',
-      properties: {
-        _requestManager: {
-          type: Object,
-          value: () => new tf_backend.RequestManager(50),
-        },
-        _canceller: {
-          type: Object,
-          value: () => new tf_backend.Canceller(),
-        },
-        _selectedRuns: Array,
-        _showDownloadLinks: {
-          type: Boolean,
-          notify: true,
-          value: tf_storage.getBooleanInitializer('_showDownloadLinks', {
-            defaultValue: false,
-            useLocalStorage: true,
-          }),
-          observer: '_showDownloadLinksObserver',
-        },
-        // Note that smoothing does not apply to margin charts.
-        _smoothingEnabled: {
-          type: Boolean,
-          computed: '_computeSmoothingEnabled(_smoothingWeight)',
-        },
-        _smoothingWeight: {
-          type: Number,
-          notify: true,
-          value: tf_storage.getNumberInitializer('_smoothingWeight', {
-            defaultValue: 0.6,
-          }),
-          observer: '_smoothingWeightObserver',
-        },
-        _ignoreYOutliers: {
-          type: Boolean,
-          value: tf_storage.getBooleanInitializer('_ignoreYOutliers', {
-            defaultValue: true,
-            useLocalStorage: true,
-          }),
-          observer: '_ignoreYOutliersObserver',
-        },
-        _xType: {
-          type: String,
-          value: 'step',
-        },
-        /**
-         * The layout object has type CustomScalarCardHelpers.Layout.
-         */
-        _layout: Object,
-        _dataNotFound: Boolean,
-        /**
-         * This is array of Category<string> objects. Category is an interface
-         * defined within categorizationUtils. The items for each category are
-         * regexes. Each regex is associated with a custom chart.
-         */
-        _categories: {
-          type: Array,
-          computed: '_makeCategories(_layout)',
-        },
-        /**
-         * A mapping between opened categories to 1. When the dashboard reloads,
-         * the category panes are redrawn. We then re-open the categories that
-         * had previously been open.
-         */
-        _openedCategories: {
-          type: Object,
-        },
-        _active: {
-          type: Boolean,
-          value: true,
-          readOnly: true,
-        },
-        reloadOnReady: {
-          type: Boolean,
-          value: true,
-        },
-      },
-      ready() {
-        if (this.reloadOnReady) this.reload();
-      },
-      reload() {
-        const url = tf_backend.getRouter().pluginsListing();
-        const handlePluginsListingResponse = this._canceller.cancellable(
-          (result) => {
-            if (result.cancelled) {
-              return;
-            }
+  @property({type: Object})
+  _canceller: Canceller = new Canceller();
 
-            this.set('_dataNotFound', !result.value['custom_scalars']);
-            if (this._dataNotFound) {
-              return;
-            }
-            this._retrieveLayoutAndData();
-          }
-        );
-        this._requestManager.request(url).then(handlePluginsListingResponse);
-      },
-      _reloadCharts() {
-        const charts = this.root.querySelectorAll(
-          'tf-custom-scalar-margin-chart-card, ' +
-            'tf-custom-scalar-multi-line-chart-card'
-        );
-        charts.forEach((chart) => {
-          chart.reload();
-        });
-      },
-      _retrieveLayoutAndData() {
-        const url = tf_backend
-          .getRouter()
-          .pluginRoute('custom_scalars', '/layout');
-        const update = this._canceller.cancellable((result) => {
-          if (result.cancelled) {
-            return;
-          }
+  @property({type: Array})
+  _selectedRuns: unknown[];
 
-          // This plugin is only active if data is available.
-          this.set('_layout', result.value);
-          if (!this._dataNotFound) {
-            this._reloadCharts();
-          }
-        });
-        this._requestManager.request(url).then(update);
-      },
-      _showDownloadLinksObserver: tf_storage.getBooleanObserver(
-        '_showDownloadLinks',
-        {defaultValue: false, useLocalStorage: true}
-      ),
-      _smoothingWeightObserver: tf_storage.getNumberObserver(
-        '_smoothingWeight',
-        {defaultValue: 0.6}
-      ),
-      _ignoreYOutliersObserver: tf_storage.getBooleanObserver(
-        '_ignoreYOutliers',
-        {defaultValue: true, useLocalStorage: true}
-      ),
-      _computeSmoothingEnabled(_smoothingWeight) {
-        return _smoothingWeight > 0;
-      },
-      _makeCategories(layout) {
-        if (!layout.category) {
-          return [];
+  @property({
+    type: Boolean,
+    notify: true,
+    observer: '_showDownloadLinksObserver',
+  })
+  _showDownloadLinks: boolean = getBooleanInitializer('_showDownloadLinks', {
+    defaultValue: false,
+    useLocalStorage: true,
+  }).call(this);
+
+  @property({
+    type: Number,
+    notify: true,
+    observer: '_smoothingWeightObserver',
+  })
+  _smoothingWeight: number = getNumberInitializer('_smoothingWeight', {
+    defaultValue: 0.6,
+  }).call(this);
+
+  @property({
+    type: Boolean,
+    observer: '_ignoreYOutliersObserver',
+  })
+  _ignoreYOutliers: boolean = getBooleanInitializer('_ignoreYOutliers', {
+    defaultValue: true,
+    useLocalStorage: true,
+  }).call(this);
+
+  @property({type: String})
+  _xType: string = 'step';
+
+  @property({type: Object})
+  _layout: Layout;
+
+  @property({type: Boolean})
+  _dataNotFound: boolean;
+
+  @property({type: Object})
+  _openedCategories: object;
+
+  @property({type: Boolean})
+  _active: boolean = true;
+
+  @property({type: Boolean})
+  reloadOnReady: boolean = true;
+
+  ready() {
+    super.ready();
+    if (this.reloadOnReady) this.reload();
+  }
+
+  reload() {
+    const url = getRouter().pluginsListing();
+    const handlePluginsListingResponse = this._canceller.cancellable(
+      (result) => {
+        if (result.cancelled) {
+          return;
         }
-        let firstTimeLoad = false;
-        if (!this._openedCategories) {
-          // This is the first time the user loads the categories. Start storing
-          // which categories are open.
-          firstTimeLoad = true;
-          this._openedCategories = {};
+        this.set('_dataNotFound', !result.value['custom_scalars']);
+        if (this._dataNotFound) {
+          return;
         }
+        this._retrieveLayoutAndData();
+      }
+    );
+    this._requestManager.request(url).then(handlePluginsListingResponse);
+  }
 
-        const categories = layout.category.map((category) => {
-          if (firstTimeLoad && !category.closed) {
-            // Remember whether this category is currently open.
-            this._openedCategories[category.title] = true;
-          }
-          return {
-            name: category.title,
-            items: category.chart,
-            metadata: {
-              opened: !!this._openedCategories[category.title],
-            },
-          };
-        });
-        return categories;
-      },
-      _categoryOpenedToggled(event) {
-        const pane = event.target;
-        if (pane.opened) {
-          this._openedCategories[pane.category.name] = true;
-        } else {
-          delete this._openedCategories[pane.category.name];
-        }
-      },
+  _reloadCharts() {
+    const charts = this.root.querySelectorAll(
+      'tf-custom-scalar-margin-chart-card, ' +
+        'tf-custom-scalar-multi-line-chart-card'
+    );
+    charts.forEach(
+      (
+        chart: TfCustomScalarMarginChartCard | TfCustomScalarMultiLineChartCard
+      ) => {
+        chart.reload();
+      }
+    );
+  }
+
+  _retrieveLayoutAndData() {
+    const url = getRouter().pluginRoute('custom_scalars', '/layout');
+    const update = this._canceller.cancellable((result) => {
+      if (result.cancelled) {
+        return;
+      }
+      // This plugin is only active if data is available.
+      this.set('_layout', result.value);
+      if (!this._dataNotFound) {
+        this._reloadCharts();
+      }
     });
-  </script>
-</dom-module>
+    this._requestManager.request(url).then(update);
+  }
+
+  _showDownloadLinksObserver = getBooleanObserver('_showDownloadLinks', {
+    defaultValue: false,
+    useLocalStorage: true,
+  });
+
+  _smoothingWeightObserver = getNumberObserver('_smoothingWeight', {
+    defaultValue: 0.6,
+  });
+
+  _ignoreYOutliersObserver = getBooleanObserver('_ignoreYOutliers', {
+    defaultValue: true,
+    useLocalStorage: true,
+  });
+
+  @computed('_smoothingWeight')
+  get _smoothingEnabled(): boolean {
+    var _smoothingWeight = this._smoothingWeight;
+    return _smoothingWeight > 0;
+  }
+
+  @computed('_layout')
+  get _categories(): Category<unknown>[] {
+    var layout = this._layout;
+    if (!layout.category) {
+      return [];
+    }
+    let firstTimeLoad = false;
+    if (!this._openedCategories) {
+      // This is the first time the user loads the categories. Start storing
+      // which categories are open.
+      firstTimeLoad = true;
+      this._openedCategories = {};
+    }
+    const categories = layout.category.map((category) => {
+      if (firstTimeLoad && !(category as any) /* ??? */.closed) {
+        // Remember whether this category is currently open.
+        this._openedCategories[category.title] = true;
+      }
+      return {
+        name: category.title,
+        items: category.chart,
+        metadata: {
+          type: CategoryType.PREFIX_GROUP,
+          opened: !!this._openedCategories[category.title],
+        },
+      };
+    });
+    return categories;
+  }
+
+  _categoryOpenedToggled(event) {
+    const pane = event.target;
+    if (pane.opened) {
+      this._openedCategories[pane.category.name] = true;
+    } else {
+      delete this._openedCategories[pane.category.name];
+    }
+  }
+}
