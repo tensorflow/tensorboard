@@ -23,7 +23,6 @@ import {
   Category,
   CategoryType,
 } from '../../../../components_polymer3/tf_categorization_utils/categorizationUtils';
-//import '../../../../components_polymer3/tf_color_scale/tf-color-scale';
 import '../../../../components_polymer3/tf_dashboard_common/dashboard-style';
 import '../../../../components_polymer3/tf_dashboard_common/tf-dashboard-layout';
 import '../../../../components_polymer3/tf_dashboard_common/tf-option-selector';
