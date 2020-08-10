@@ -16,6 +16,73 @@ limitations under the License.
  * @fileoverview MeshLoader provides UI functionality and placeholder to render
  * 3D data.
  */
+
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../tf-card-heading/tf-card-heading.html" />
+<link rel="import" href="../tf-color-scale/tf-color-scale.html" />
+<link rel="import" href="../tf-imports/tf_graphics_lib.html" />
+<link rel="import" href="../tf-imports/threejs.html" />
+
+<!--
+  Mesh component loads 3D data (point clouds, meshes, etc.) and renders it.
+-->
+<dom-module id="tf-mesh-loader">
+  <template>
+    <tf-card-heading color="[[_runColor]]" class="tf-mesh-loader-header">
+      <template is="dom-if" if="[[_hasMultipleSamples(ofSamples)]]">
+        <div>sample: [[_getSampleText(sample)]] of [[ofSamples]]</div>
+      </template>
+      <template is="dom-if" if="[[_hasAtLeastOneStep(_steps)]]">
+        <div class="heading-row">
+          <div class="heading-label">
+            step
+            <span style="font-weight: bold"
+              >[[toLocaleString_(_stepValue)]]</span
+            >
+          </div>
+          <div class="heading-label heading-right">
+            <template is="dom-if" if="[[_currentWallTime]]">
+              [[_currentWallTime]]
+            </template>
+          </div>
+          <div class="label right">
+            <paper-spinner-lite active hidden$="[[!_isMeshLoading]]">
+            </paper-spinner-lite>
+          </div>
+        </div>
+      </template>
+      <template is="dom-if" if="[[_hasMultipleSteps(_steps)]]">
+        <div>
+          <paper-slider
+            id="steps"
+            immediate-value="{{_stepIndex}}"
+            max="[[_getMaxStepIndex(_steps)]]"
+            max-markers="[[_getMaxStepIndex(_steps)]]"
+            snaps
+            step="1"
+            value="{{_stepIndex}}"
+          ></paper-slider>
+        </div>
+      </template>
+    </tf-card-heading>
+    <style>
+      paper-slider {
+        width: 100%;
+        margin-left: 1px;
+        margin-right: 1px;
+      }
+      .tf-mesh-loader-header {
+        display: block;
+        height: 105px;
+      }
+      [hidden] {
+        display: none;
+      }
+    </style>
+  </template>
+  <script src="mesh-loader.js"></script>
+</dom-module>
+
 var vz_mesh;
 (function(vz_mesh) {
   /** Polymer wrapper around MeshLoader. */
