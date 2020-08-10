@@ -47,7 +47,6 @@ tf_ts_library(
     srcs = [
         "tbdev_upload_test.ts",
     ],
-    tsconfig = "//:tsconfig-test",
     deps = [
         ":tbdev_upload",
         "//tensorboard/webapp/angular:expect_angular_cdk_clipboard",

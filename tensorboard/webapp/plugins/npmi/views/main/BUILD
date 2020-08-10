@@ -40,7 +40,6 @@ tf_ts_library(
     srcs = [
         "main_container_test.ts",
     ],
-    tsconfig = "//:tsconfig-test",
     deps = [
         ":main",
         "//tensorboard/webapp:app_state",
