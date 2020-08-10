@@ -110,7 +110,6 @@
     "@polymer/paper-tooltip": "^3.0.1",
     "@polymer/polymer": "^3.4.1",
     "@vaadin/vaadin-grid": "^5.6.6",
-    "@vaadin/vaadin-split-layout": "^4.3.0-beta1",
     "d3": "5.7.0",
     "lodash": "^4.17.19",
     "monaco-editor-core": "^0.20.0",
