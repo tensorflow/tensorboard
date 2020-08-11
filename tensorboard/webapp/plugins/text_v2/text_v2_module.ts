@@ -15,12 +15,14 @@ limitations under the License.
 
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
+import {EffectsModule} from '@ngrx/effects';
 import {StoreModule} from '@ngrx/store';
 
 import {PluginRegistryModule} from '../plugin_registry_module';
 import {TextDashboardComponent} from './views/text_dashboard/text_dashboard_component';
 import {TextDashboardModule} from './views/text_dashboard/text_dashboard_module';
 import {TextV2DataSourceModule} from './data_source/text_v2_data_source_module';
+import {TextEffects} from './effects/text_effects';
 import {reducers} from './store/text_v2_reducers';
 import {TEXT_FEATURE_KEY} from './store';
 
@@ -31,6 +33,7 @@ import {TEXT_FEATURE_KEY} from './store';
     PluginRegistryModule.forPlugin('text_v2', TextDashboardComponent),
     TextV2DataSourceModule,
     StoreModule.forFeature(TEXT_FEATURE_KEY, reducers),
+    EffectsModule.forFeature([TextEffects]),
   ],
   entryComponents: [TextDashboardComponent],
 })

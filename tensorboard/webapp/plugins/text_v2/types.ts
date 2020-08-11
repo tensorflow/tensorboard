@@ -12,19 +12,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {StepDatum} from '../data_source';
 
-export const TEXT_FEATURE_KEY = 'text';
+import {CategoryType} from '../../../components_polymer3/tf_categorization_utils/categorizationUtils';
 
-type RunId = string;
-type TagId = string;
+export const PLUGIN_ID = 'text_v2';
 
-export interface TextState {
-  visibleRunTags: Map<string, Array<{run: string; tag: string}>>;
-  runToTags: Map<RunId, TagId[]>;
-  data: Map<RunId, Map<TagId, StepDatum[]>>;
+export interface TagGroup {
+  type: CategoryType;
+  name: string;
 }
 
-export interface State {
-  [TEXT_FEATURE_KEY]: TextState;
+export interface RunTag {
+  run: string;
+  tag: string;
 }

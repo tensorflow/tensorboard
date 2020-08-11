@@ -36,3 +36,5 @@ ng_module(
         "@npm//@angular/core",
     ],
 )
+
+exports_files(["require_js_karma_config.js"])
