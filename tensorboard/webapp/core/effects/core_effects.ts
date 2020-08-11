@@ -13,9 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
-import {Action, Store} from '@ngrx/store';
+import {Store} from '@ngrx/store';
 import {Actions, ofType, createEffect} from '@ngrx/effects';
-import {EMPTY, Observable, of, zip} from 'rxjs';
+import {EMPTY, zip} from 'rxjs';
 import {
   map,
   mergeMap,
@@ -23,6 +23,8 @@ import {
   withLatestFrom,
   filter,
   tap,
+  distinctUntilChanged,
+  take,
 } from 'rxjs/operators';
 import {
   coreLoaded,
@@ -33,8 +35,9 @@ import {
   pluginsListingLoaded,
   pluginsListingFailed,
   fetchRunSucceeded,
+  changePlugin,
 } from '../actions';
-import {getPluginsListLoaded} from '../store';
+import {getPluginsListLoaded, getActivePlugin} from '../store';
 import {DataLoadState} from '../../types/data';
 import {TBServerDataSource} from '../../webapp_data_source/tb_server_data_source';
 import {getEnabledExperimentalPlugins} from '../../feature_flag/store/feature_flag_selectors';
@@ -81,6 +84,33 @@ export class CoreEffects {
           );
         })
       ),
+    {dispatch: false}
+  );
+
+  /**
+   * HACK: COMPOSITE ACTION -- rationale: most plugins want to be able to tell
+   * when it becomes active in order to, for example, fetch necessary data. By
+   * firing changePlugin on activePlugin value set, we can prevent (1) other
+   * feature developer from responding to values changes from the store (creates
+   * composite actions) and (2) re-implement complex and brittle observable
+   * pattern.
+   *
+   * @export
+   */
+  readonly dispatchChangePlugin$ = createEffect(
+    () => {
+      return this.actions$.pipe(
+        ofType(coreLoaded, pluginsListingLoaded),
+        withLatestFrom(this.store.select(getActivePlugin)),
+        map(([, activePlugin]) => activePlugin),
+        distinctUntilChanged(),
+        filter((activePlugin) => activePlugin !== null),
+        take(1),
+        tap((plugin) => {
+          this.store.dispatch(changePlugin({plugin: plugin!}));
+        })
+      );
+    },
     {dispatch: false}
   );
 
