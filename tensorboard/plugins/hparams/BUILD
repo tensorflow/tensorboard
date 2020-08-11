@@ -1,6 +1,7 @@
 # Description:
 # TensorBoard plugin for hparams
 
+load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 load("//tensorboard/defs:web.bzl", "tf_web_library")
 load("//tensorboard/defs:protos.bzl", "tb_proto_library")
 
@@ -341,9 +342,16 @@ tb_proto_library(
 )
 
 tf_web_library(
+    name = "api_pre_polymer3_d_ts",
+    srcs = [
+        "api-pre-polymer3.d.ts",
+    ],
+    path = "/tf-hparams",
+)
+
+tf_ts_library(
     name = "api_d_ts",
     srcs = [
         "api.d.ts",
     ],
-    path = "/tf-hparams",
 )
