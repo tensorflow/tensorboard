@@ -1,4 +1,6 @@
-/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+<!--
+@license
+Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -11,26 +13,35 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-==============================================================================*/
+-->
 
-import {PolymerElement, html} from '@polymer/polymer';
-import {customElement, property} from '@polymer/decorators';
+<link rel="import" href="../iron-pages/iron-pages.html" />
+<link rel="import" href="../paper-button/paper-button.html" />
+<link rel="import" href="../paper-header-panel/paper-header-panel.html" />
+<link rel="import" href="../paper-icon-button/paper-icon-button.html" />
+<link rel="import" href="../paper-tabs/paper-tab.html" />
+<link rel="import" href="../paper-tabs/paper-tabs.html" />
+<link rel="import" href="../paper-toolbar/paper-toolbar.html" />
+<link rel="import" href="../tf-imports/polymer.html" />
+<link
+  rel="import"
+  href="../tf-hparams-parallel-coords-view/tf-hparams-parallel-coords-view.html"
+/>
+<link
+  rel="import"
+  href="../tf-hparams-scatter-plot-matrix-view/tf-hparams-scatter-plot-matrix-view.html"
+/>
+<link rel="import" href="../tf-hparams-table-view/tf-hparams-table-view.html" />
 
-import '../../../../components_polymer3/polymer/irons_and_papers';
-import '../tf_hparams_parallel_coords_view/tf-hparams-parallel-coords-view';
-import '../tf_hparams_scatter_plot_matrix_view/tf-hparams-scatter-plot-matrix-view';
-import '../tf_hparams_table_view/tf-hparams-table-view';
-
-/**
- * The tf-hparams-session-pane element implements a tabbed view of the
- * session groups. Each tab is implemented by its own element and shows
- * a specific view of the session groups list. Example of views are a table-view
- * and parallel-coordinates (https://en.wikipedia.org/wiki/Parallel_coordinates)
- * view.
- */
-@customElement('tf-hparams-sessions-pane')
-class TfHparamsSessionsPane extends PolymerElement {
-  static readonly template = html`
+<!--
+The tf-hparams-session-pane element implements a tabbed view of the
+session groups. Each tab is implemented by its own element and shows
+a specific view of the session groups list. Example of views are a table-view
+and parallel-coordinates (https://en.wikipedia.org/wiki/Parallel_coordinates)
+view.
+-->
+<dom-module id="tf-hparams-sessions-pane">
+  <template>
     <paper-header-panel>
       <paper-toolbar slot="header" class="tab-bar">
         <paper-tabs selected="{{_selectedTab}}" slot="top">
@@ -155,21 +166,31 @@ class TfHparamsSessionsPane extends PolymerElement {
         text-decoration: none;
       }
     </style>
-  `;
-  @property({type: Object})
-  backend: object;
-  @property({type: String})
-  helpUrl: string;
-  @property({type: String})
-  bugReportUrl: string;
-  @property({type: String})
-  experimentName: string;
-  @property({type: Object})
-  configuration: object;
-  @property({type: Array})
-  sessionGroups: unknown[];
-  @property({
-    type: Number,
-  })
-  _selectedTab: number = 0;
-}
+  </template>
+
+  <script>
+    'use strict';
+    Polymer({
+      is: 'tf-hparams-sessions-pane',
+      properties: {
+        /* Public properties */
+        // An object for making HParams API requests to the backend.
+        backend: Object,
+        // The URL to use for the help button.
+        helpUrl: String,
+        // The URL to use for the bug-report button.
+        bugReportUrl: String,
+        experimentName: String,
+        // See the comments in tf-hparams-query-pane.html for details.
+        configuration: Object,
+        sessionGroups: Array,
+
+        /* Private properties */
+        _selectedTab: {
+          type: Number,
+          value: 0,
+        },
+      },
+    });
+  </script>
+</dom-module>
