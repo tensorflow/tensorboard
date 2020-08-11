@@ -12,7 +12,6 @@ tf_ts_library(
         "tf-node-list-item.ts",
     ],
     strict_checks = False,
-    tags = ["manual"],
     deps = [
         "//tensorboard/components_polymer3/polymer:dom",
         "//tensorboard/components_polymer3/polymer:irons_and_papers",
