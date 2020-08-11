@@ -16,6 +16,7 @@ import {createSelector, createFeatureSelector} from '@ngrx/store';
 import {TextState, State, TEXT_FEATURE_KEY} from './text_types';
 
 import {StepDatum} from '../data_source';
+import {RunTag} from '../types';
 
 // HACK: These imports are for type inference.
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
@@ -29,6 +30,29 @@ const selectTextState = createFeatureSelector<State, TextState>(
 export const getTextRunToTags = createSelector(
   selectTextState,
   (state: TextState) => state.runToTags
+);
+
+/**
+ * Returns de-duplicated list of <run, tag> tuple for cards that are visible
+ * in the UI.
+ */
+export const getTextAllVisibleRunTags = createSelector(
+  selectTextState,
+  (state: TextState): RunTag[] => {
+    const serializedRunTagTuples = new Set<string>();
+    const allVisibleRunTagTuples = new Set<RunTag>();
+    for (const runTagTuples of state.visibleRunTags.values()) {
+      for (const runTag of runTagTuples) {
+        const serializedRunTag = JSON.stringify(runTag);
+        if (serializedRunTagTuples.has(serializedRunTag)) {
+          continue;
+        }
+        serializedRunTagTuples.add(serializedRunTag);
+        allVisibleRunTagTuples.add(runTag);
+      }
+    }
+    return [...allVisibleRunTagTuples];
+  }
 );
 
 export const getTextData = createSelector(

@@ -76,7 +76,9 @@ def tf_ng_web_test_suite(runtime_deps = [], bootstrap = [], deps = [], **kwargs)
 
     kwargs.setdefault("tags", []).append("webtest")
     karma_web_test_suite(
-        srcs = [],
+        srcs = [
+            "//tensorboard/webapp/testing:require_js_karma_config.js",
+        ],
         bootstrap = bootstrap + [
             "@npm//:node_modules/zone.js/dist/zone-testing-bundle.js",
             "@npm//:node_modules/reflect-metadata/Reflect.js",
@@ -87,6 +89,10 @@ def tf_ng_web_test_suite(runtime_deps = [], bootstrap = [], deps = [], **kwargs)
         ],
         deps = deps + [
             "//tensorboard/webapp/testing:test_support_lib",
+        ],
+        # Lodash runtime dependency that is compatible with requirejs for karma.
+        static_files = [
+            "@npm//:node_modules/lodash/lodash.js",
         ],
         **kwargs
     )

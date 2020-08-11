@@ -12,6 +12,7 @@ ng_module(
     ],
     deps = [
         ":types",
+        "//tensorboard/webapp/plugins/text_v2:types",
         "//tensorboard/webapp/plugins/text_v2/data_source",
         "@npm//@ngrx/store",
     ],
