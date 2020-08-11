@@ -1,26 +1,39 @@
-load("//tensorboard/defs:defs.bzl", "tf_ts_library")
+load("//tensorboard/defs:web.bzl", "tf_web_library")
+load("//tensorboard/defs:defs.bzl", "tensorboard_webcomponent_library")
 
 package(default_visibility =
             ["//tensorboard/plugins/hparams:__subpackages__"])
 
 licenses(["notice"])  # Apache 2.0
 
-tf_ts_library(
+tf_web_library(
     name = "tf_hparams_session_group_details",
     srcs = [
-        "tf-hparams-session-group-details.ts",
+        "tf-hparams-session-group-details.html",
     ],
-    strict_checks = False,
+    path = "/tf-hparams-session-group-details",
     deps = [
-        "//tensorboard/components_polymer3/polymer:irons_and_papers",
-        "//tensorboard/components_polymer3/tf_backend",
-        "//tensorboard/components_polymer3/tf_color_scale",
-        "//tensorboard/components_polymer3/vz_chart_helpers",
-        "//tensorboard/plugins/hparams/polymer3/tf_hparams_utils",
-        # "//tensorboard/plugins/scalar/polymer3/tf_scalar_dashboard:tf_scalar_card",
-        "@npm//@polymer/decorators",
-        "@npm//@polymer/polymer",
-        "@npm//@polymer/iron-flex-layout",
-        "@npm//@polymer/iron-resizable-behavior",
+        "//tensorboard/components/tf_backend",
+        "//tensorboard/components/tf_color_scale",
+        "//tensorboard/components/tf_imports:polymer",
+        "//tensorboard/plugins/hparams/tf_hparams_utils",
+        "//tensorboard/plugins/scalar/tf_scalar_dashboard:tf_scalar_card",
+        "@org_polymer_iron_flex_layout",
+        "@org_polymer_iron_resizable_behavior",
+    ],
+)
+
+tensorboard_webcomponent_library(
+    name = "legacy",
+    srcs = [":tf_hparams_session_group_details"],
+    destdir = "tf-hparams-session-group-details",
+    deps = [
+        "//tensorboard/components/tf_backend:legacy",
+        "//tensorboard/components/tf_color_scale:legacy",
+        "//tensorboard/components/tf_imports:polymer_lib",
+        "//tensorboard/plugins/hparams/tf_hparams_utils:legacy",
+        "//tensorboard/plugins/scalar/tf_scalar_dashboard:tf_scalar_card_legacy",
+        "//third_party/javascript/polymer/v2/iron-flex-layout:lib",
+        "//third_party/javascript/polymer/v2/iron-resizable-behavior:lib",
     ],
 )

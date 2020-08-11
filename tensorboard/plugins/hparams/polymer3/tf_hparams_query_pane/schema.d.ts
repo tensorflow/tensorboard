@@ -12,11 +12,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-export interface Schema {
-  hparamColumn: Array<{
-    hparamInfo: Object;
-  }>;
-  metricColumn: Array<{
-    metricInfo: Object;
-  }>;
+
+declare namespace tf.hparams {
+  export interface Schema {
+    hparamColumn: Array<{
+      hparamInfo: Object;
+    }>;
+    metricColumn: Array<{
+      metricInfo: Object;
+    }>;
+  }
 }
