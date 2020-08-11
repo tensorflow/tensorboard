@@ -915,7 +915,9 @@ class TensorboardUploaderTest(tf.test.TestCase):
             uploader.start_uploading()
 
         self.assertEqual(mock_constructor.call_count, 1)
-        self.assertEqual(mock_constructor.call_args[1], {"verbosity": 0, "one_shot": False})
+        self.assertEqual(
+            mock_constructor.call_args[1], {"verbosity": 0, "one_shot": False}
+        )
         self.assertEqual(mock_tracker.scalars_tracker.call_count, 1)
 
 
@@ -2019,7 +2021,8 @@ class UploadIntentTest(tf.test.TestCase):
             intent.execute(mock_server_info, mock_channel)
         self.assertEqual(mock_dry_run_stub.call_count, 1)
         self.assertRegex(
-            mock_stdout_write.call_args_list[-2][0][0], ".*Done scanning logdir.*"
+            mock_stdout_write.call_args_list[-2][0][0],
+            ".*Done scanning logdir.*",
         )
         self.assertEqual(
             mock_stdout_write.call_args_list[-1][0][0], "\nDone.\n"
