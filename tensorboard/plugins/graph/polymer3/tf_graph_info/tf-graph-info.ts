@@ -15,9 +15,8 @@ limitations under the License.
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, property} from '@polymer/decorators';
-import '@polymer/paper-material';
-import '@polymer/paper-slider';
-import '@polymer/paper-spinner/paper-spinner';
+
+import '../../../../components_polymer3/polymer/irons_and_papers';
 import '../tf_graph_debugger_data_card/tf-graph-debugger-data-card';
 import '../tf_graph_op_compat_card/tf-graph-op-compat-card';
 import './tf-node-info';

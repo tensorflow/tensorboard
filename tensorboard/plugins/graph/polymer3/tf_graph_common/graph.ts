@@ -12,11 +12,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import * as graphlib from 'graphlib';
+import {graphlib} from 'dagre';
 import * as _ from 'lodash';
 
-import {ProgressTracker} from './common';
-import * as hierarchy from './hierarchy';
+import {NodeStats, ProgressTracker} from './common';
 
 import * as tf_graph_proto from './proto';
 import * as tf_graph_util from './util';
@@ -71,7 +70,7 @@ const _XLA_CLUSTER_KEY = '_XlaCluster';
  * which belong to Metanodes, should not use BaseEdge objects, but instead
  * contain Metaedges (which in turn may contain any number of BaseEdges).
  */
-export interface BaseEdge extends graphlib.EdgeObject {
+export interface BaseEdge {
   isControlDependency: boolean;
   isReferenceEdge: boolean;
   /** The index of the output tensor of the source node. */
@@ -231,7 +230,7 @@ export interface GroupNode extends Node {
    * are Metaedges, each of which contains references to the original
    * BaseEdge(s) from which it was created.
    */
-  metagraph: graphlib.Graph<GroupNode | OpNode, Metaedge>;
+  metagraph: graphlib.Graph;
   /**
    * The bridgegraph contains only edges which link immediate children of this
    * group with nodes outside of the metagraph. As in the metagraph, all edge
@@ -303,7 +302,7 @@ export interface GroupNode extends Node {
    * bridgegraphs for all the Metanodes, and instead they should be computed
    * on demand as needed.
    */
-  bridgegraph: graphlib.Graph<GroupNode | OpNode, Metaedge>;
+  bridgegraph: graphlib.Graph;
   /**
    * Stores how many times each device name appears in its children
    * op nodes. Used to color group nodes by devices.
@@ -530,84 +529,6 @@ export function joinStatsInfoWithGraph(
     });
   });
 }
-/**
- * Execution stats for the node.
- */
-export class NodeStats {
-  constructor(outputSize: number[][]) {
-    this.outputSize = outputSize;
-  }
-  /**
-   * Add the start and end time for a particular kernel execution of this op.
-   * Ops can have multiple kernel executions within the same session run.
-   */
-  addExecutionTime(startTime: number, endTime: number) {
-    if (this.startTime != null) {
-      this.startTime = Math.min(this.startTime, startTime);
-    } else {
-      this.startTime = startTime;
-    }
-    if (this.endTime != null) {
-      this.endTime = Math.max(this.endTime, endTime);
-    } else {
-      this.endTime = endTime;
-    }
-  }
-  /**
-   * Add the bytes allocated for a particular kernel execution of this op.
-   * Ops can have multiple kernel executions within the same session run.
-   */
-  addBytesAllocation(totalBytes: number) {
-    if (this.totalBytes != null) {
-      this.totalBytes = Math.max(this.totalBytes, totalBytes);
-    } else {
-      this.totalBytes = totalBytes;
-    }
-  }
-  /**
-   * Absolute start time for the very first kernel execution of this op.
-   */
-  startTime: number;
-  /**
-   * Absolute end time for the very last kernel execution of this op.
-   */
-  endTime: number;
-  /**
-   * Total number of bytes used for the node. Sum of all children
-   * if it is a Group node.
-   */
-  totalBytes = 0;
-  /**
-   * The shape of each output tensors, if there are any.
-   * Empty if it is a Group node.
-   */
-  outputSize: number[][];
-  /**
-   * Combines the specified stats with the current stats.
-   * Modifies the current object. This method is used to
-   * compute aggregate stats for group nodes.
-   */
-  combine(stats: NodeStats): void {
-    if (stats.totalBytes != null) {
-      this.totalBytes += stats.totalBytes;
-    }
-    if (stats.getTotalMicros() != null) {
-      this.addExecutionTime(stats.startTime, stats.endTime);
-    }
-  }
-  /**
-   * Total number of compute time in microseconds used for the node.
-   * Sum of all children if it is a Group node. Null if it is unknown.
-   * This method can not be scaffolded under a getter attribute because
-   * ECMAScript 5 does not support getter attributes.
-   */
-  getTotalMicros(): number {
-    if (this.startTime == null || this.endTime == null) {
-      return null;
-    }
-    return this.endTime - this.startTime;
-  }
-}
 export class MetanodeImpl implements Metanode {
   name: string;
   stats: NodeStats;
@@ -615,8 +536,8 @@ export class MetanodeImpl implements Metanode {
   depth: number;
   isGroupNode: boolean;
   cardinality: number;
-  metagraph: graphlib.Graph<GroupNode | OpNode, Metaedge>;
-  bridgegraph: graphlib.Graph<GroupNode | OpNode, Metaedge>;
+  metagraph: graphlib.Graph;
+  bridgegraph: graphlib.Graph;
   templateId: string;
   opHistogram: {
     [op: string]: number;
@@ -674,7 +595,7 @@ export class MetanodeImpl implements Metanode {
     this.associatedFunction = '';
   }
   getFirstChild(): GroupNode | OpNode {
-    return this.metagraph.node(this.metagraph.nodes()[0]);
+    return this.metagraph.node(this.metagraph.nodes()[0]) as any;
   }
   /**
    * Returns the op node associated with the metanode.
@@ -684,7 +605,7 @@ export class MetanodeImpl implements Metanode {
   getRootOp(): OpNode {
     let nameSplit = this.name.split('/');
     let rootOpName = this.name + '/(' + nameSplit[nameSplit.length - 1] + ')';
-    return <OpNode>this.metagraph.node(rootOpName);
+    return this.metagraph.node(rootOpName) as any;
   }
   /**
    * Return an array of the names of all the leaves (non-GroupNodes) inside
@@ -708,7 +629,7 @@ export class MetanodeImpl implements Metanode {
     return leaves;
   }
 }
-export interface Metaedge extends graphlib.EdgeObject {
+export interface Metaedge {
   /**
    * Stores the original BaseEdges represented by this Metaedge.
    */
@@ -744,7 +665,7 @@ export interface Metaedge extends graphlib.EdgeObject {
    * Total size (number of units) of all the tensors flowing through this edge.
    */
   totalSize: number;
-  addBaseEdge(edge: BaseEdge, h: hierarchy.Hierarchy): void;
+  addBaseEdge(edge: BaseEdge, h: Hierarchy): void;
   v?: string;
   w?: string;
 }
@@ -773,7 +694,7 @@ export class MetaedgeImpl implements Metaedge {
     this.numRefEdges = 0;
     this.totalSize = 0;
   }
-  addBaseEdge(edge: BaseEdge, h: hierarchy.Hierarchy): void {
+  addBaseEdge(edge: BaseEdge, h: Hierarchy): void {
     this.baseEdgeList.push(edge);
     if (edge.isControlDependency) {
       this.numControlEdges += 1;
@@ -788,10 +709,7 @@ export class MetaedgeImpl implements Metaedge {
     this.totalSize += MetaedgeImpl.computeSizeOfEdge(edge, h);
     h.maxMetaEdgeSize = Math.max(h.maxMetaEdgeSize, this.totalSize);
   }
-  private static computeSizeOfEdge(
-    edge: BaseEdge,
-    h: hierarchy.Hierarchy
-  ): number {
+  private static computeSizeOfEdge(edge: BaseEdge, h: Hierarchy): number {
     let opNode = <OpNode>h.node(edge.v);
     if (!opNode.outputShapes) {
       // No shape information. Asssume a single number. This gives
@@ -830,7 +748,7 @@ export function createSeriesNode(
   parent: string,
   clusterId: number,
   name: string,
-  graphOptions: graphlib.GraphOptions
+  graphOptions: any
 ): SeriesNode {
   return new SeriesNodeImpl(
     prefix,
@@ -867,8 +785,8 @@ class SeriesNodeImpl implements SeriesNode {
   parent: string;
   isGroupNode: boolean;
   cardinality: number;
-  metagraph: graphlib.Graph<GroupNode | OpNode, Metaedge>;
-  bridgegraph: graphlib.Graph<GroupNode | OpNode, Metaedge>;
+  metagraph: graphlib.Graph;
+  bridgegraph: graphlib.Graph;
   parentNode: Node;
   deviceHistogram: {
     [op: string]: number;
@@ -891,7 +809,7 @@ class SeriesNodeImpl implements SeriesNode {
     parent: string,
     clusterId: number,
     name: string,
-    graphOptions: graphlib.GraphOptions
+    graphOptions: any
   ) {
     this.name = name || getSeriesNodeName(prefix, suffix, parent);
     this.type = NodeType.SERIES;
@@ -1357,15 +1275,15 @@ export function build(
 export function createGraph<N, E>(
   name: string,
   type,
-  opt?: graphlib.GraphOptions
-): graphlib.Graph<N, E> {
+  opt?: any
+): graphlib.Graph {
   const graphOptions = opt || {};
-  let graph = new graphlib.Graph<N, E>(graphOptions);
+  let graph = new graphlib.Graph(graphOptions);
   graph.setGraph({
     name: name,
     rankdir: graphOptions.rankdir || 'BT',
     type: type,
-  });
+  } as any);
   return graph;
 }
 /**
@@ -1454,7 +1372,7 @@ function mapStrictHierarchy(
 /**
  * Returns a list of the degrees of each node in the graph.
  */
-function degreeSequence(graph: graphlib.Graph<any, any>): number[] {
+function degreeSequence(graph: graphlib.Graph): number[] {
   let degrees = graph.nodes().map(function(name) {
     return graph.neighbors(name).length;
   });
@@ -1465,8 +1383,8 @@ function degreeSequence(graph: graphlib.Graph<any, any>): number[] {
  * Returns if the degree sequence of the two graphs is the same.
  */
 export function hasSimilarDegreeSequence(
-  graph1: graphlib.Graph<any, any>,
-  graph2: graphlib.Graph<any, any>
+  graph1: graphlib.Graph,
+  graph2: graphlib.Graph
 ): boolean {
   let dg1 = degreeSequence(graph1);
   let dg2 = degreeSequence(graph2);
@@ -1544,4 +1462,51 @@ export function toggleNodeSeriesGroup(
   } else {
     map[name] = SeriesGroupingType.GROUP;
   }
+}
+
+export interface Edges {
+  control: Metaedge[];
+  regular: Metaedge[];
+}
+/**
+ * Class used to store data on library functions. This specifically stores data
+ * on the library function, not individual calls to those functions.
+ */
+export interface LibraryFunctionData {
+  // The metanode representing this function in the library scene group.
+  node: Metanode;
+  // A list of nodes that represent calls to this library function.
+  usages: Node[];
+}
+export interface Hierarchy {
+  root: Metanode;
+  libraryFunctions: {
+    [key: string]: LibraryFunctionData;
+  };
+  templates: {
+    [templateId: string]: string[];
+  };
+  /** List of all device names */
+  devices: string[];
+  /** List of all XLA cluster names */
+  xlaClusters: string[];
+  /** True if at least one tensor in the graph has shape information */
+  hasShapeInfo: boolean;
+  /** The maximum size across all meta edges. Used for scaling thickness. */
+  maxMetaEdgeSize: number;
+  graphOptions: any;
+  getNodeMap(): {
+    [nodeName: string]: GroupNode | OpNode;
+  };
+  node(name: string): GroupNode | OpNode;
+  setNode(name: string, node: GroupNode | OpNode): void;
+  getBridgegraph(nodeName: string): graphlib.Graph;
+  getPredecessors(nodeName: string): Edges;
+  getSuccessors(nodeName: string): Edges;
+  getTopologicalOrdering(
+    nodeName: string
+  ): {
+    [childName: string]: number;
+  };
+  getTemplateIndex(): (string) => number;
 }

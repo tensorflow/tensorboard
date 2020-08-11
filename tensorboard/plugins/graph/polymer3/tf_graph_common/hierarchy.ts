@@ -16,10 +16,10 @@ limitations under the License.
  * Package for the Graph Hierarchy for TensorFlow graph.
  */
 import * as d3 from 'd3';
-import * as graphlib from 'graphlib';
+import {graphlib} from 'dagre';
 import * as _ from 'lodash';
 
-import {ProgressTracker} from './common';
+import {NodeStats, ProgressTracker} from './common';
 import * as template from './template';
 import {
   ROOT_NAME,
@@ -29,7 +29,6 @@ import {
   Metanode,
   MetaedgeImpl,
   Node,
-  NodeStats,
   NodeType,
   OpNode,
   SeriesNode,
@@ -40,59 +39,14 @@ import {
   createSeriesNode,
   getHierarchicalPath,
   getSeriesNodeName,
+  Edges,
+  LibraryFunctionData,
+  Hierarchy,
 } from './graph';
 import * as tf_graph from './graph';
 import * as tf_graph_proto from './proto';
 import * as tf_graph_util from './util';
 
-export interface Edges {
-  control: Metaedge[];
-  regular: Metaedge[];
-}
-/**
- * Class used to store data on library functions. This specifically stores data
- * on the library function, not individual calls to those functions.
- */
-export interface LibraryFunctionData {
-  // The metanode representing this function in the library scene group.
-  node: Metanode;
-  // A list of nodes that represent calls to this library function.
-  usages: Node[];
-}
-export interface Hierarchy {
-  root: Metanode;
-  libraryFunctions: {
-    [key: string]: LibraryFunctionData;
-  };
-  templates: {
-    [templateId: string]: string[];
-  };
-  /** List of all device names */
-  devices: string[];
-  /** List of all XLA cluster names */
-  xlaClusters: string[];
-  /** True if at least one tensor in the graph has shape information */
-  hasShapeInfo: boolean;
-  /** The maximum size across all meta edges. Used for scaling thickness. */
-  maxMetaEdgeSize: number;
-  graphOptions: graphlib.GraphOptions;
-  getNodeMap(): {
-    [nodeName: string]: GroupNode | OpNode;
-  };
-  node(name: string): GroupNode | OpNode;
-  setNode(name: string, node: GroupNode | OpNode): void;
-  getBridgegraph(
-    nodeName: string
-  ): graphlib.Graph<GroupNode | OpNode, Metaedge>;
-  getPredecessors(nodeName: string): Edges;
-  getSuccessors(nodeName: string): Edges;
-  getTopologicalOrdering(
-    nodeName: string
-  ): {
-    [childName: string]: number;
-  };
-  getTemplateIndex(): (string) => number;
-}
 /**
  * Class for the Graph Hierarchy for TensorFlow graph.
  */
@@ -116,13 +70,13 @@ class HierarchyImpl implements Hierarchy {
       [childName: string]: number;
     };
   };
-  graphOptions: graphlib.GraphOptions;
+  graphOptions: any;
   /**
    * Constructs a hierarchy.
    * @param graphOptions Options passed to dagre for creating the graph. Note
    *   that the `compound` argument will be overridden to true.
    */
-  constructor(graphOptions: graphlib.GraphOptions) {
+  constructor(graphOptions: any) {
     this.graphOptions = graphOptions || {};
     this.graphOptions.compound = true;
     this.root = createMetanode(ROOT_NAME, this.graphOptions);
@@ -155,9 +109,7 @@ class HierarchyImpl implements Hierarchy {
    * method returns null. If the provided name does not map to a node in the
    * hierarchy, an error will be thrown.
    */
-  getBridgegraph(
-    nodeName: string
-  ): graphlib.Graph<GroupNode | OpNode, Metaedge> {
+  getBridgegraph(nodeName: string): graphlib.Graph {
     let node = this.index[nodeName];
     if (!node) {
       throw Error('Could not find node in hierarchy: ' + nodeName);
@@ -202,13 +154,16 @@ class HierarchyImpl implements Hierarchy {
             let childName = this.getChildName(nodeName, descendantName);
             // Look for an existing Metaedge in the bridgegraph (or create a
             // new one) that covers the relationship between child and other.
-            let bridgeEdgeObj = <graphlib.EdgeObject>{
+            let bridgeEdgeObj = <any>{
               v: inbound ? otherName : childName,
               w: inbound ? childName : otherName,
             };
             let bridgeMetaedge = bridgegraph.edge(bridgeEdgeObj);
             if (!bridgeMetaedge) {
-              bridgeMetaedge = createMetaedge(bridgeEdgeObj.v, bridgeEdgeObj.w);
+              bridgeMetaedge = createMetaedge(
+                bridgeEdgeObj.v,
+                bridgeEdgeObj.w
+              ) as any;
               bridgeMetaedge.inbound = inbound;
               bridgegraph.setEdge(
                 bridgeEdgeObj.v,
@@ -375,7 +330,7 @@ class HierarchyImpl implements Hierarchy {
       [childName: string]: boolean;
     } = {};
     let metagraph = (<GroupNode>node).metagraph;
-    _.each(metagraph.edges(), (e: graphlib.EdgeObject) => {
+    _.each(metagraph.edges(), (e: any) => {
       if (!metagraph.edge(e).numRegularEdges) {
         return; // Skip control edges.
       }
@@ -428,7 +383,7 @@ class HierarchyImpl implements Hierarchy {
  * Discovered target names are appended to the targets array.
  */
 function findEdgeTargetsInGraph(
-  graph: graphlib.Graph<GroupNode | OpNode, Metaedge>,
+  graph: graphlib.Graph,
   node: Node,
   inbound: boolean,
   targets: Edges
@@ -439,7 +394,7 @@ function findEdgeTargetsInGraph(
     let targetList = metaedge.numRegularEdges
       ? targets.regular
       : targets.control;
-    targetList.push(metaedge);
+    targetList.push(metaedge as any);
   });
 }
 export interface HierarchyParams {
@@ -810,7 +765,7 @@ function addEdges(
       destAncestorName
     );
     if (!metaedge) {
-      metaedge = createMetaedge(sourceAncestorName, destAncestorName);
+      metaedge = createMetaedge(sourceAncestorName, destAncestorName) as any;
       sharedAncestorNode.metagraph.setEdge(
         sourceAncestorName,
         destAncestorName,
@@ -863,7 +818,7 @@ function groupSeries(
     let child = metagraph.node(n);
     if (child.type === tf_graph.NodeType.META) {
       groupSeries(
-        <Metanode>child,
+        (child as unknown) as Metanode,
         hierarchy,
         seriesNames,
         threshold,
@@ -886,7 +841,7 @@ function groupSeries(
   _.each(seriesDict, function(seriesNode: SeriesNode, seriesName: string) {
     let nodeMemberNames = seriesNode.metagraph.nodes();
     _.each(nodeMemberNames, (n) => {
-      let child = <OpNode>metagraph.node(n);
+      let child = metagraph.node(n) as any;
       if (!child.owningSeries) {
         child.owningSeries = seriesName;
       }
@@ -907,7 +862,7 @@ function groupSeries(
     hierarchy.setNode(seriesName, seriesNode); // add to the index
     metagraph.setNode(seriesName, seriesNode);
     _.each(nodeMemberNames, (n) => {
-      let child = <OpNode>metagraph.node(n);
+      let child = metagraph.node(n) as any;
       seriesNode.metagraph.setNode(n, child);
       seriesNode.parentNode = child.parentNode;
       seriesNode.cardinality++;
@@ -955,7 +910,7 @@ function groupSeries(
 }
 /** cluster op-nodes with similar op */
 function clusterNodes(
-  metagraph: graphlib.Graph<GroupNode | OpNode, Metaedge>
+  metagraph: graphlib.Graph
 ): {
   [clusterId: string]: string[];
 } {
@@ -975,7 +930,7 @@ function clusterNodes(
         // skip metanodes
         return clusters;
       }
-      let template = (<OpNode>child).op;
+      let template = (child as any).op;
       if (template) {
         clusters[template] = clusters[template] || [];
         clusters[template].push(child.name);
@@ -998,8 +953,8 @@ function detectSeriesUsingNumericSuffixes(
   clusters: {
     [clusterId: string]: string[];
   },
-  metagraph: graphlib.Graph<GroupNode | OpNode, Metaedge>,
-  graphOptions: graphlib.GraphOptions
+  metagraph: graphlib.Graph,
+  graphOptions: any
 ): {
   [seriesName: string]: SeriesNode;
 } {
@@ -1105,8 +1060,8 @@ function detectSeriesAnywhereInNodeName(
   clusters: {
     [clusterId: string]: string[];
   },
-  metagraph: graphlib.Graph<GroupNode | OpNode, Metaedge>,
-  graphOptions: graphlib.GraphOptions
+  metagraph: graphlib.Graph,
+  graphOptions: any
 ): {
   [seriesName: string]: SeriesNode;
 } {
@@ -1277,8 +1232,8 @@ function addSeriesToDict(
     [seriesName: string]: SeriesNode;
   },
   clusterId: number,
-  metagraph: graphlib.Graph<GroupNode | OpNode, Metaedge>,
-  graphOptions: graphlib.GraphOptions
+  metagraph: graphlib.Graph,
+  graphOptions: any
 ) {
   if (seriesNodes.length > 1) {
     let curSeriesName = getSeriesNodeName(

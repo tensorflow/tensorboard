@@ -15,11 +15,9 @@ limitations under the License.
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {computed, customElement, observe, property} from '@polymer/decorators';
-import '@polymer/paper-material';
-import '@polymer/paper-slider';
-import '@polymer/paper-spinner/paper-spinner';
-import '@polymer/paper-toggle-button';
-import * as PolymerDom from '@polymer/polymer/lib/legacy/polymer.dom.js';
+
+import '../../../../components_polymer3/polymer/irons_and_papers';
+import * as PolymerDom from '../../../../components_polymer3/polymer/dom';
 
 import * as tf_graph_scene from '../tf_graph_common/scene';
 import * as tf_graph_util from '../tf_graph_common/util';
@@ -543,7 +541,7 @@ class TfGraphDebuggerDataCard extends LegacyElementMixin(PolymerElement) {
         );
         miniHealthPill.appendChild(nanCountSection);
       }
-      PolymerDom.dom(alertBody).appendChild(tableRow);
+      (PolymerDom.dom(alertBody) as any).appendChild(tableRow);
     }
   }
   // Adds a listener to an element, so that when that element is clicked, the tensor with

@@ -16,16 +16,8 @@ limitations under the License.
 import {PolymerElement, html} from '@polymer/polymer';
 import {computed, customElement, property} from '@polymer/decorators';
 import * as _ from 'lodash';
-import '@polymer/iron-icon';
-import '@polymer/paper-button';
-import '@polymer/paper-dropdown-menu/paper-dropdown-menu';
-import '@polymer/paper-icon-button';
-import '@polymer/paper-item';
-import '@polymer/paper-listbox';
-import '@polymer/paper-radio-group';
-import '@polymer/paper-toggle-button';
-import '@polymer/paper-tooltip';
 
+import '../../../../components_polymer3/polymer/irons_and_papers';
 import * as tf_graph_common from '../tf_graph_common/common';
 import * as tf_graph_render from '../tf_graph_common/render';
 import * as tf_graph_proto from '../tf_graph_common/proto';

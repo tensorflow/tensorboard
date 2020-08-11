@@ -268,7 +268,7 @@ class TfGraphScene2 extends LegacyElementMixin(PolymerElement) {
     tf_graph_util.time(
       'tf-graph-scene (build scene):',
       function() {
-        tf_graph_scene.buildGroup(
+        tf_graph_scene_node.buildGroupForScene(
           d3.select(this.$.root),
           renderHierarchy.root,
           this

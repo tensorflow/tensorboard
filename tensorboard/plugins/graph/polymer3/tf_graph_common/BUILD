@@ -7,7 +7,6 @@ licenses(["notice"])  # Apache 2.0
 tf_ts_library(
     name = "tf_graph_common",
     srcs = [
-        "annotation.ts",
         "colors.ts",
         "common.ts",
         "contextmenu.ts",
@@ -33,6 +32,7 @@ tf_ts_library(
     tags = ["manual"],
     visibility = ["//visibility:public"],
     deps = [
+        "//tensorboard/components_polymer3/polymer:dom",
         "//tensorboard/components_polymer3/polymer:legacy_element_mixin",
         "//tensorboard/components_polymer3/tf_dashboard_common",
         "@npm//@polymer/decorators",

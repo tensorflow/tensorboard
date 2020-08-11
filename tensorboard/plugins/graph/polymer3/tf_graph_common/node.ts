@@ -15,8 +15,10 @@ limitations under the License.
 import * as d3 from 'd3';
 import * as _ from 'lodash';
 
-import * as annotation from './annotation';
+import {Class, selectChild, selectOrCreateChild} from './common';
+import * as tf_graph_common from './common';
 import * as contextmenu from './contextmenu';
+import * as edge from './edge';
 import {
   BridgeNode,
   Metanode,
@@ -32,7 +34,7 @@ import * as tf_graph from './graph';
 import * as layout from './layout';
 import {RenderNodeInfo} from './render';
 import * as render from './render';
-import {Class} from './scene';
+import {positionEllipse, positionRect} from './scene';
 import * as tf_graph_scene from './scene';
 import * as tf_graph_util from './util';
 
@@ -88,7 +90,7 @@ export function buildGroup(
   nodeData: render.RenderNodeInfo[],
   sceneElement
 ) {
-  let container = tf_graph_scene.selectOrCreateChild(
+  let container = tf_graph_common.selectOrCreateChild(
     sceneGroup,
     'g',
     Class.Node.CONTAINER
@@ -124,20 +126,25 @@ export function buildGroup(
       let nodeGroup = d3.select(this);
       // Add g.in-annotations (always add -- to keep layer order
       // consistent.)
-      let inAnnotationBox = tf_graph_scene.selectOrCreateChild(
+      let inAnnotationBox = tf_graph_common.selectOrCreateChild(
         nodeGroup,
         'g',
         Class.Annotation.INBOX
       );
-      annotation.buildGroup(inAnnotationBox, d.inAnnotations, d, sceneElement);
+      buildGroupForAnnotation(
+        inAnnotationBox,
+        d.inAnnotations,
+        d,
+        sceneElement
+      );
       // Add g.out-annotations  (always add -- to keep layer order
       // consistent.)
-      let outAnnotationBox = tf_graph_scene.selectOrCreateChild(
+      let outAnnotationBox = tf_graph_common.selectOrCreateChild(
         nodeGroup,
         'g',
         Class.Annotation.OUTBOX
       );
-      annotation.buildGroup(
+      buildGroupForAnnotation(
         outAnnotationBox,
         d.outAnnotations,
         d,
@@ -205,7 +212,7 @@ function subsceneBuild(
   if (renderNodeInfo.node.isGroupNode) {
     if (renderNodeInfo.expanded) {
       // Recursively build the subscene.
-      return tf_graph_scene.buildGroup(
+      return buildGroupForScene(
         nodeGroup,
         renderNodeInfo,
         sceneElement,
@@ -238,16 +245,20 @@ function subscenePosition(nodeGroup, d: render.RenderNodeInfo) {
  * @param sceneElement <tf-graph-scene> polymer element.
  */
 function addButton(selection, d: render.RenderNodeInfo, sceneElement) {
-  let group = tf_graph_scene.selectOrCreateChild(
+  let group = tf_graph_common.selectOrCreateChild(
     selection,
     'g',
     Class.Node.BUTTON_CONTAINER
   );
-  tf_graph_scene.selectOrCreateChild(group, 'circle', Class.Node.BUTTON_CIRCLE);
-  tf_graph_scene
+  tf_graph_common.selectOrCreateChild(
+    group,
+    'circle',
+    Class.Node.BUTTON_CIRCLE
+  );
+  tf_graph_common
     .selectOrCreateChild(group, 'path', Class.Node.EXPAND_BUTTON)
     .attr('d', 'M0,-2.2 V2.2 M-2.2,0 H2.2');
-  tf_graph_scene
+  tf_graph_common
     .selectOrCreateChild(group, 'path', Class.Node.COLLAPSE_BUTTON)
     .attr('d', 'M-2.2,0 H2.2');
   (group as any).on('click', (d: any) => {
@@ -406,7 +417,7 @@ function labelBuild(
   // Truncate long labels for unexpanded Metanodes.
   let useFontScale =
     renderNodeInfo.node.type === NodeType.META && !renderNodeInfo.expanded;
-  let label = tf_graph_scene.selectOrCreateChild(
+  let label = tf_graph_common.selectOrCreateChild(
     nodeGroup,
     'text',
     Class.Node.LABEL
@@ -539,7 +550,7 @@ export function buildShape(
   nodeClass: string
 ): d3.Selection<any, any, any, any> {
   // Create a group to house the underlying visual elements.
-  let shapeGroup = tf_graph_scene.selectOrCreateChild(
+  let shapeGroup = tf_graph_common.selectOrCreateChild(
     nodeGroup,
     'g',
     nodeClass
@@ -554,14 +565,14 @@ export function buildShape(
       ) {
         // This is input or output arg for a TensorFlow function. Use a special
         // shape (a triangle) for them.
-        tf_graph_scene.selectOrCreateChild(
+        tf_graph_common.selectOrCreateChild(
           shapeGroup,
           'polygon',
           Class.Node.COLOR_TARGET
         );
         break;
       }
-      tf_graph_scene.selectOrCreateChild(
+      tf_graph_common.selectOrCreateChild(
         shapeGroup,
         'ellipse',
         Class.Node.COLOR_TARGET
@@ -580,22 +591,22 @@ export function buildShape(
       if (groupNodeInfo.isFadedOut) {
         classList.push('faded-ellipse');
       }
-      tf_graph_scene
+      tf_graph_common
         .selectOrCreateChild(shapeGroup, 'use', classList)
         .attr('xlink:href', '#op-series-' + stampType + '-stamp');
-      tf_graph_scene
+      tf_graph_common
         .selectOrCreateChild(shapeGroup, 'rect', Class.Node.COLOR_TARGET)
         .attr('rx', d.radius)
         .attr('ry', d.radius);
       break;
     case NodeType.BRIDGE:
-      tf_graph_scene
+      tf_graph_common
         .selectOrCreateChild(shapeGroup, 'rect', Class.Node.COLOR_TARGET)
         .attr('rx', d.radius)
         .attr('ry', d.radius);
       break;
     case NodeType.META:
-      tf_graph_scene
+      tf_graph_common
         .selectOrCreateChild(shapeGroup, 'rect', Class.Node.COLOR_TARGET)
         .attr('rx', d.radius)
         .attr('ry', d.radius);
@@ -1277,4 +1288,354 @@ export function getVisibleParent(
     }
   } // Close while loop.
   return currentNode;
+}
+
+/**
+ * Annotations.
+ */
+
+export function buildGroupForAnnotation(
+  container,
+  annotationData: render.AnnotationList,
+  d: render.RenderNodeInfo,
+  sceneElement
+) {
+  // Select all children and join with data.
+  let annotationGroups = container
+    .selectAll(function() {
+      // using d3's selector function
+      // See https://github.com/mbostock/d3/releases/tag/v2.0.0
+      // (It's not listed in the d3 wiki.)
+      return this.childNodes;
+    })
+    .data(annotationData.list, (d) => {
+      return d.node.name;
+    });
+  annotationGroups
+    .enter()
+    .append('g')
+    .attr('data-name', (a) => {
+      return a.node.name;
+    })
+    .each(function(a) {
+      let aGroup = d3.select(this);
+      // Add annotation to the index in the scene
+      sceneElement.addAnnotationGroup(a, d, aGroup);
+      // Append annotation edge
+      let edgeType = Class.Annotation.EDGE;
+      let metaedge = a.renderMetaedgeInfo && a.renderMetaedgeInfo.metaedge;
+      if (metaedge && !metaedge.numRegularEdges) {
+        edgeType += ' ' + Class.Annotation.CONTROL_EDGE;
+      }
+      // If any edges are reference edges, add the reference edge class.
+      if (metaedge && metaedge.numRefEdges) {
+        edgeType += ' ' + Class.Edge.REF_LINE;
+      }
+      edge.appendEdge(aGroup, a, sceneElement, edgeType);
+      if (a.annotationType !== render.AnnotationType.ELLIPSIS) {
+        addAnnotationLabelFromNode(aGroup, a);
+        buildShapeForAnnotation(aGroup, a);
+      } else {
+        addAnnotationLabel(aGroup, a.node.name, a, Class.Annotation.ELLIPSIS);
+      }
+    })
+    .merge(annotationGroups)
+    .attr('class', (a) => {
+      return (
+        Class.Annotation.GROUP +
+        ' ' +
+        annotationToClassName(a.annotationType) +
+        ' ' +
+        nodeClass(a)
+      );
+    })
+    .each(function(a) {
+      let aGroup = d3.select(this);
+      update(aGroup, d, a, sceneElement);
+      if (a.annotationType !== render.AnnotationType.ELLIPSIS) {
+        addInteractionForAnnotation(aGroup, d, a, sceneElement);
+      }
+    });
+  annotationGroups
+    .exit()
+    .each(function(a) {
+      let aGroup = d3.select(this);
+      // Remove annotation from the index in the scene
+      sceneElement.removeAnnotationGroup(a, d, aGroup);
+    })
+    .remove();
+  return annotationGroups;
+}
+/**
+ * Maps an annotation enum to a class name used in css rules.
+ */
+function annotationToClassName(annotationType: render.AnnotationType) {
+  return (render.AnnotationType[annotationType] || '').toLowerCase() || null;
+}
+function buildShapeForAnnotation(aGroup, a: render.Annotation) {
+  if (a.annotationType === render.AnnotationType.SUMMARY) {
+    let summary = selectOrCreateChild(aGroup, 'use');
+    summary
+      .attr('class', 'summary')
+      .attr('xlink:href', '#summary-icon')
+      .attr('cursor', 'pointer');
+  } else {
+    let shape = buildShape(aGroup, a, Class.Annotation.NODE);
+    // add title tag to get native tooltips
+    selectOrCreateChild(shape, 'title').text(a.node.name);
+  }
+}
+function addAnnotationLabelFromNode(aGroup, a: render.Annotation) {
+  let namePath = a.node.name.split('/');
+  let text = namePath[namePath.length - 1];
+  return addAnnotationLabel(aGroup, text, a, null);
+}
+function addAnnotationLabel(
+  aGroup,
+  label: string,
+  a: render.Annotation,
+  additionalClassNames
+) {
+  let classNames = Class.Annotation.LABEL;
+  if (additionalClassNames) {
+    classNames += ' ' + additionalClassNames;
+  }
+  let txtElement = aGroup
+    .append('text')
+    .attr('class', classNames)
+    .attr('dy', '.35em')
+    .attr('text-anchor', a.isIn ? 'end' : 'start')
+    .text(label);
+  return enforceLabelWidth(txtElement, -1);
+}
+function addInteractionForAnnotation(
+  selection,
+  d: render.RenderNodeInfo,
+  annotation: render.Annotation,
+  sceneElement
+) {
+  selection
+    .on('mouseover', (a) => {
+      sceneElement.fire('annotation-highlight', {
+        name: a.node.name,
+        hostName: d.node.name,
+      });
+    })
+    .on('mouseout', (a) => {
+      sceneElement.fire('annotation-unhighlight', {
+        name: a.node.name,
+        hostName: d.node.name,
+      });
+    })
+    .on('click', (a) => {
+      // Stop this event's propagation so that it isn't also considered a
+      // graph-select.
+      (<Event>d3.event).stopPropagation();
+      sceneElement.fire('annotation-select', {
+        name: a.node.name,
+        hostName: d.node.name,
+      });
+    });
+  if (
+    annotation.annotationType !== render.AnnotationType.SUMMARY &&
+    annotation.annotationType !== render.AnnotationType.CONSTANT
+  ) {
+    selection.on(
+      'contextmenu',
+      contextmenu.getMenu(
+        sceneElement,
+        getContextMenu(annotation.node, sceneElement)
+      )
+    );
+  }
+}
+/**
+ * Adjust annotation's position.
+ *
+ * @param aGroup selection of a 'g.annotation' element.
+ * @param d Host node data.
+ * @param a annotation node data.
+ * @param sceneElement <tf-graph-scene> polymer element.
+ */
+function update(
+  aGroup,
+  d: render.RenderNodeInfo,
+  a: render.Annotation,
+  sceneElement
+) {
+  let cx = layout.computeCXPositionOfNodeShape(d);
+  // Annotations that point to embedded nodes (constants,summary)
+  // don't have a render information attached so we don't stylize these.
+  // Also we don't stylize ellipsis annotations (the string '... and X more').
+  if (a.renderNodeInfo && a.annotationType !== render.AnnotationType.ELLIPSIS) {
+    stylize(aGroup, a.renderNodeInfo, sceneElement, Class.Annotation.NODE);
+  }
+  if (a.annotationType === render.AnnotationType.SUMMARY) {
+    // Update the width of the annotation to give space for the image.
+    a.width += 10;
+  }
+  // label position
+  aGroup
+    .select('text.' + Class.Annotation.LABEL)
+    .transition()
+    .attr('x', cx + a.dx + (a.isIn ? -1 : 1) * (a.width / 2 + a.labelOffset))
+    .attr('y', d.y + a.dy);
+  // Some annotations (such as summary) are represented using a 12x12 image tag.
+  // Purposely omitted units (e.g. pixels) since the images are vector graphics.
+  // If there is an image, we adjust the location of the image to be vertically
+  // centered with the node and horizontally centered between the arrow and the
+  // text label.
+  aGroup
+    .select('use.summary')
+    .transition()
+    .attr('x', cx + a.dx - 3)
+    .attr('y', d.y + a.dy - 6);
+  // Node position (only one of the shape selection will be non-empty.)
+  positionEllipse(
+    aGroup.select('.' + Class.Annotation.NODE + ' ellipse'),
+    cx + a.dx,
+    d.y + a.dy,
+    a.width,
+    a.height
+  );
+  positionRect(
+    aGroup.select('.' + Class.Annotation.NODE + ' rect'),
+    cx + a.dx,
+    d.y + a.dy,
+    a.width,
+    a.height
+  );
+  positionRect(
+    aGroup.select('.' + Class.Annotation.NODE + ' use'),
+    cx + a.dx,
+    d.y + a.dy,
+    a.width,
+    a.height
+  );
+  // Edge position
+  aGroup
+    .select('path.' + Class.Annotation.EDGE)
+    .transition()
+    .attr('d', (a) => {
+      // map relative position to absolute position
+      let points = a.points.map((p) => {
+        return {x: p.dx + cx, y: p.dy + d.y};
+      });
+      return edge.interpolate(points);
+    });
+}
+
+/**
+ * Scene.
+ */
+
+/**
+ * Select or create a sceneGroup and build/update its nodes and edges.
+ *
+ * Structure Pattern:
+ *
+ * <g class='scene'>
+ *   <g class='core'>
+ *     <g class='edges'>
+ *       ... stuff from tf.graph.scene.edges.build ...
+ *     </g>
+ *     <g class='nodes'>
+ *       ... stuff from tf.graph.scene.nodes.build ...
+ *     </g>
+ *   </g>
+ *   <g class='in-extract'>
+ *     <g class='nodes'>
+ *       ... stuff from tf.graph.scene.nodes.build ...
+ *     </g>
+ *   </g>
+ *   <g class='out-extract'>
+ *     <g class='nodes'>
+ *       ... stuff from tf.graph.scene.nodes.build ...
+ *     </g>
+ *   </g>
+ * </g>
+ *
+ * @param container D3 selection of the parent.
+ * @param renderNode render node of a metanode or series node.
+ * @param sceneElement <tf-graph-scene> polymer element.
+ * @param sceneClass class attribute of the scene (default='scene').
+ */
+export function buildGroupForScene(
+  container,
+  renderNode: render.RenderGroupNodeInfo,
+  sceneElement: TfGraphScene,
+  sceneClass?: string
+): d3.Selection<any, any, any, any> {
+  sceneClass = sceneClass || Class.Scene.GROUP;
+  let isNewSceneGroup = selectChild(container, 'g', sceneClass).empty();
+  let sceneGroup = selectOrCreateChild(container, 'g', sceneClass);
+  // core
+  let coreGroup = selectOrCreateChild(sceneGroup, 'g', Class.Scene.CORE);
+  let coreNodes = _.reduce(
+    renderNode.coreGraph.nodes(),
+    (nodes, name) => {
+      let node = renderNode.coreGraph.node(name);
+      if (!node.excluded) {
+        nodes.push(node);
+      }
+      return nodes;
+    },
+    []
+  );
+  if (renderNode.node.type === NodeType.SERIES) {
+    // For series, we want the first item on top, so reverse the array so
+    // the first item in the series becomes last item in the top, and thus
+    // is rendered on the top.
+    coreNodes.reverse();
+  }
+  // Create the layer of edges for this scene (paths).
+  edge.buildGroup(coreGroup, renderNode.coreGraph, sceneElement);
+  // Create the layer of nodes for this scene (ellipses, rects etc).
+  buildGroup(coreGroup, coreNodes, sceneElement);
+  // In-extract
+  if (renderNode.isolatedInExtract.length > 0) {
+    let inExtractGroup = selectOrCreateChild(
+      sceneGroup,
+      'g',
+      Class.Scene.INEXTRACT
+    );
+    buildGroup(inExtractGroup, renderNode.isolatedInExtract, sceneElement);
+  } else {
+    selectChild(sceneGroup, 'g', Class.Scene.INEXTRACT).remove();
+  }
+  // Out-extract
+  if (renderNode.isolatedOutExtract.length > 0) {
+    let outExtractGroup = selectOrCreateChild(
+      sceneGroup,
+      'g',
+      Class.Scene.OUTEXTRACT
+    );
+    buildGroup(outExtractGroup, renderNode.isolatedOutExtract, sceneElement);
+  } else {
+    selectChild(sceneGroup, 'g', Class.Scene.OUTEXTRACT).remove();
+  }
+  // Library functions
+  if (renderNode.libraryFunctionsExtract.length > 0) {
+    let outExtractGroup = selectOrCreateChild(
+      sceneGroup,
+      'g',
+      Class.Scene.FUNCTION_LIBRARY
+    );
+    buildGroup(
+      outExtractGroup,
+      renderNode.libraryFunctionsExtract,
+      sceneElement
+    );
+  } else {
+    selectChild(sceneGroup, 'g', Class.Scene.FUNCTION_LIBRARY).remove();
+  }
+  tf_graph_scene.position(sceneGroup, renderNode);
+  // Fade in the scene group if it didn't already exist.
+  if (isNewSceneGroup) {
+    sceneGroup
+      .attr('opacity', 0)
+      .transition()
+      .attr('opacity', 1);
+  }
+  return sceneGroup;
 }
