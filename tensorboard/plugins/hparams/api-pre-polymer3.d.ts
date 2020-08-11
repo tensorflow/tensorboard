@@ -13,6 +13,31 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+/**
+ * Contains TypeScript type definitions for the JSON-representation of the
+ * protocol buffers defined in api.proto
+ *
+ * TODO(erez): Add the rest of the definitions once these are needed.
+ */
 declare namespace tf.hparams {
-  export const utils: any;
+  export interface MetricName {
+    group: string;
+    tag: string;
+  }
+
+  export interface MetricValue {
+    name: MetricName;
+    value: number;
+    trainingStep: number;
+    wallTimeSecs: number;
+  }
+
+  export interface SessionGroup {
+    name: string;
+    hparams: {
+      [hparamName: string]: bool | number | string;
+    };
+    metric_values: MetricValue[];
+    monitor_url: string;
+  }
 }
