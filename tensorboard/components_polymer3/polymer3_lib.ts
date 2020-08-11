@@ -20,6 +20,7 @@ import '../plugins/distribution/polymer3/tf_distribution_dashboard/tf-distributi
 import '../plugins/graph/polymer3/tf_graph_dashboard/tf-graph-dashboard';
 import '../plugins/histogram/polymer3/tf_histogram_dashboard/tf-histogram-dashboard';
 import '../plugins/image/polymer3/tf_image_dashboard/tf-image-dashboard';
+import '../plugins/mesh/polymer3/tf_mesh_dashboard/tf-mesh-dashboard';
 import '../plugins/pr_curve/polymer3/tf_pr_curve_dashboard/tf-pr-curve-dashboard';
 import '../plugins/profile_redirect/polymer3/tf_profile_redirect_dashboard/tf-profile-redirect-dashboard';
 import '../plugins/scalar/polymer3/tf_scalar_dashboard/tf-scalar-dashboard';
