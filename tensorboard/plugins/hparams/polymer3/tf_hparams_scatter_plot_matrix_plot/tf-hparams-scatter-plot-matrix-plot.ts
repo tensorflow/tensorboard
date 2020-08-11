@@ -133,14 +133,11 @@ class TfHparamsScatterPlotMatrixPlot extends LegacyElementMixin(
       // Try to keep the selected session group: if the new sessionGroups
       // array has a sessionGroup with the same name as the one that was
       // selected before, select it.
-      (function() {
-        this._setSelectedSessionGroup(
-          tf_hparams_utils.sessionGroupWithName(
-            this.sessionGroups,
-            this.selectedSessionGroup.name
-          ) || null
-        );
-      }.bind(this)());
+      this.selectedSessionGroup =
+        tf_hparams_utils.sessionGroupWithName(
+          this.sessionGroups,
+          (this.selectedSessionGroup as any).name
+        ) || null;
     }
     this._redraw();
   }
@@ -708,7 +705,7 @@ class TfHparamsScatterPlotMatrixPlot extends LegacyElementMixin(
             : // All elements in selectedMarkers should have the same
               // sessionGroup.
               selectedMarkers.datum().sessionGroup;
-        (_this as any)._setSelectedSessionGroup(newSessionGroup);
+        _this.selectedSessionGroup = newSessionGroup;
       })
       .on('mousemove mouseenter', function([col, metric]) {
         const [x, y] = d3.mouse(this);

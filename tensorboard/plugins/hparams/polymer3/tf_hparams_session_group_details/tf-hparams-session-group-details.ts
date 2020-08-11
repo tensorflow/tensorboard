@@ -126,15 +126,13 @@ class TfHparamsSessionGroupDetails extends mixinBehaviors(
   @property({
     type: Object,
   })
-  _requestData = function() {
-    return ({tag, run}) => {
-      const request = {
-        experimentName: this.experimentName,
-        sessionName: run,
-        metricName: tag,
-      };
-      return this.backend.listMetricEvals(request);
+  _requestData = ({tag, run}) => {
+    const request = {
+      experimentName: this.experimentName,
+      sessionName: run,
+      metricName: tag,
     };
+    return this.backend.listMetricEvals(request);
   };
   @property({
     type: Object,
