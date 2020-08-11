@@ -46,7 +46,6 @@ export class TextV2ServerDataSource implements TextV2DataSource {
         map((runToTagObject) => {
           const runToTag = new Map();
           Object.entries(runToTagObject).forEach(([runName, tags]) => {
-            debugger;
             runToTag.set(runName, tags);
           });
           return runToTag;

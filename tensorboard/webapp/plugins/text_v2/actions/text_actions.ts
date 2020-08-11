@@ -33,7 +33,7 @@ export const textTagGroupVisibilityChanged = createAction(
   '[Text] Tag Group Visibility Changed',
   props<{
     tagGroup: TagGroup;
-    visibileTextCards: Array<{
+    visibleTextCards: Array<{
       run: string;
       tag: string;
     }>;

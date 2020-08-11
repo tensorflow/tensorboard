@@ -28,10 +28,10 @@ import {
 } from '../actions';
 import {State} from '../../../app_state';
 import {
-  TextDataSource,
-  BackendRunToTagsMap,
+  TextV2DataSource,
+  RunToTags,
   StepDatum,
-} from '../data_source/text_v2_types';
+} from '../data_source/text_v2_data_source';
 import {CategoryType} from '../../../../components_polymer3/tf_categorization_utils/categorizationUtils';
 import {
   getTextData,
@@ -40,12 +40,12 @@ import {
 import {reload, manualReload} from '../../../core/actions';
 import {TextV2DataSourceModule} from '../data_source/text_v2_data_source_module';
 
-fdescribe('text_effects', () => {
+describe('text_effects', () => {
   let textEffects: TextEffects;
   let action: ReplaySubject<Action>;
   let store: MockStore<Partial<State>>;
   let recordedActions: Action[] = [];
-  let fetchRunToTagsSubjects: ReplaySubject<BackendRunToTagsMap>[];
+  let fetchRunToTagsSubjects: ReplaySubject<RunToTags>[];
   let fetchDataSujects: ReplaySubject<StepDatum[]>[];
   let fetchTextDataSpy: jasmine.Spy;
   let selectSpy: jasmine.Spy;
@@ -68,11 +68,11 @@ fdescribe('text_effects', () => {
       recordedActions.push(action);
     });
 
-    const dataSource = TestBed.inject(TextDataSource);
+    const dataSource = TestBed.inject(TextV2DataSource);
 
     fetchRunToTagsSubjects = [];
     spyOn(dataSource, 'fetchRunToTag').and.callFake(() => {
-      const subject = new ReplaySubject<BackendRunToTagsMap>(1);
+      const subject = new ReplaySubject<RunToTags>(1);
       fetchRunToTagsSubjects.push(subject);
       return subject;
     });
@@ -93,7 +93,7 @@ fdescribe('text_effects', () => {
   it('fetches run to tags on plugins loaded', () => {
     action.next(textPluginLoaded());
 
-    fetchRunToTagsSubjects[0].next({run1: ['tag1', 'tag2']});
+    fetchRunToTagsSubjects[0].next(new Map([['run1', ['tag1', 'tag2']]]));
     fetchRunToTagsSubjects[0].complete();
 
     expect(recordedActions).toEqual([
@@ -114,7 +114,7 @@ fdescribe('text_effects', () => {
       action.next(
         textTagGroupVisibilityChanged({
           tagGroup: {type: CategoryType.PREFIX_GROUP, name: 'foo'},
-          visibileTextCards: [
+          visibleTextCards: [
             {run: 'run1', tag: 'tag1'},
             {run: 'run1', tag: 'tag2'},
           ],

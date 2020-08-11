@@ -52,11 +52,7 @@ export class TextEffects {
         ofType(textPluginLoaded),
         switchMap(() => {
           return this.dataSource.fetchRunToTag().pipe(
-            tap((runToTagsObject) => {
-              const runToTags = new Map();
-              Object.entries(runToTagsObject).forEach(([run, tags]) => {
-                runToTags.set(run, tags);
-              });
+            tap((runToTags) => {
               this.store.dispatch(textRunToTagsLoaded({runToTags}));
             }),
             map(() => void null)
@@ -72,9 +68,9 @@ export class TextEffects {
     () => {
       const fetchOnNewCardVisible = this.actions$.pipe(
         ofType(textTagGroupVisibilityChanged),
-        switchMap(({visibileTextCards}) => {
+        switchMap(({visibleTextCards}) => {
           // Fetch existing data.
-          const existingTextData = visibileTextCards.map(({run, tag}) => {
+          const existingTextData = visibleTextCards.map(({run, tag}) => {
             return this.store.select(getTextData, {run, tag}).pipe(
               last(),
               map((textData) => {

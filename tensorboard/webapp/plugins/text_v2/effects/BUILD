@@ -31,7 +31,6 @@ tf_ts_library(
     srcs = [
         "text_effects_test.ts",
     ],
-    tsconfig = "//:tsconfig-test",
     deps = [
         ":effects",
         "//tensorboard/components_polymer3/tf_categorization_utils",
