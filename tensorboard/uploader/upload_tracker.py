@@ -263,7 +263,7 @@ class UploadTracker(object):
 
     _SUPPORTED_VERBISITY_VALUES = (0, 1)
 
-    def __init__(self, verbosity):
+    def __init__(self, verbosity, one_shot=False):
         if verbosity not in self._SUPPORTED_VERBISITY_VALUES:
             raise ValueError(
                 "Unsupported verbosity value %s (supported values: %s)"
@@ -272,6 +272,7 @@ class UploadTracker(object):
         self._verbosity = verbosity
         self._stats = UploadStats()
         self._send_count = 0
+        self._one_shot = one_shot
 
     def _dummy_generator(self):
         while True:
@@ -342,7 +343,10 @@ class UploadTracker(object):
         finally:
             self._update_cumulative_status()
             self._update_uploading_status(
-                "Listening for new data in logdir", color_code=_STYLE_YELLOW
+                "Done scanning logdir"
+                if self._one_shot
+                else "Listening for new data in logdir",
+                color_code=_STYLE_YELLOW,
             )
 
     @contextlib.contextmanager
