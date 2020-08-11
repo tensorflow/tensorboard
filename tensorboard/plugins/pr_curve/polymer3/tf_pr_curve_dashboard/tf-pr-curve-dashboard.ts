@@ -37,6 +37,7 @@ import './tf-pr-curve-steps-selector';
 import * as _ from 'lodash';
 
 @customElement('tf-pr-curve-dashboard')
+// tslint:disable-next-line:no-unused-variable
 class TfPrCurveDashboard extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
     <tf-dashboard-layout>
@@ -283,7 +284,7 @@ class TfPrCurveDashboard extends LegacyElementMixin(PolymerElement) {
     var tagToRunToData = this._tagToRunToData;
     const canonicalTag = {}; // map from run to canonical tag name
     for (const [tag, runToData] of Object.entries(tagToRunToData)) {
-      for (const [run, data] of Object.entries(runToData)) {
+      for (const [run] of Object.entries(runToData)) {
         // arbitrary stable ordering: smallest tag name is canonical
         if (canonicalTag[run] == null || tag < canonicalTag[run]) {
           canonicalTag[run] = tag;

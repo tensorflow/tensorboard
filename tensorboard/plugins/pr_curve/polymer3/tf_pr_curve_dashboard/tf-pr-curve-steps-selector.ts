@@ -20,6 +20,7 @@ import {runsColorScale} from '../../../../components_polymer3/tf_color_scale/col
 import * as _ from 'lodash';
 
 @customElement('tf-pr-curve-steps-selector')
+// tslint:disable-next-line:no-unused-variable
 class TfPrCurveStepsSelector extends PolymerElement {
   static readonly template = html`
     <template is="dom-repeat" items="[[_runsWithSliders]]" as="run">
