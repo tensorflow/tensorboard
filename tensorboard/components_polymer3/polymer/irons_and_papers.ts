@@ -24,7 +24,6 @@ import '@polymer/iron-icons/image-icons';
 import '@polymer/iron-icons/iron-icons';
 import '@polymer/iron-iconset-svg';
 import '@polymer/iron-list/iron-list';
-import '@polymer/iron-pages';
 import '@polymer/paper-button';
 import '@polymer/paper-checkbox';
 import '@polymer/paper-dialog-scrollable';
