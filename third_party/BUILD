@@ -5,3 +5,5 @@ filegroup(
     srcs = ["jspbfix.js"],
     visibility = ["//visibility:public"],
 )
+
+exports_files(glob(["*.LICENSE"]))

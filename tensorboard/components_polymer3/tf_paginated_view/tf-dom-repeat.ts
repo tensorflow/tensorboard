@@ -51,7 +51,7 @@ export class TfDomRepeat<T extends {}> extends ArrayUpdateHelper {
    * @protected
    */
   @property({type: Boolean})
-  protected _contentActive: boolean;
+  protected _contentActive: boolean = true;
 
   @property({type: Boolean})
   _domBootstrapped = false;
@@ -143,6 +143,20 @@ export class TfDomRepeat<T extends {}> extends ArrayUpdateHelper {
     if (!this._ensureTemplatized() || this._domBootstrapped) {
       return;
     }
+
+    const observer = new MutationObserver((mutationsList) => {
+      for (const mutation of mutationsList) {
+        if (mutation.type === 'childList') {
+          for (const node of Array.from(mutation.addedNodes)) {
+            if (node instanceof Element) {
+              node.setAttribute('slot', 'items');
+            }
+          }
+        }
+      }
+    });
+    observer.observe(this, {childList: true});
+
     Array.from(this.children).forEach((child) => {
       this.removeChild(child);
     });

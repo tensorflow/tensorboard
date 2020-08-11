@@ -1,57 +1,36 @@
-load("//tensorboard/defs:defs.bzl", "tensorboard_webcomponent_library")
-load("//tensorboard/defs:web.bzl", "tf_web_library")
+load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
-tf_web_library(
+tf_ts_library(
     name = "tf_graph_loader",
     srcs = [
-        "tf-graph-loader.html",
         "tf-graph-loader.ts",
     ],
-    path = "/tf-graph-loader",
+    strict_checks = False,
     deps = [
-        "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/plugins/graph/tf_graph_common",
+        "//tensorboard/components_polymer3/polymer:legacy_element_mixin",
+        "//tensorboard/plugins/graph/polymer3/tf_graph_common",
+        "@npm//@polymer/decorators",
+        "@npm//@polymer/polymer",
     ],
 )
 
-tensorboard_webcomponent_library(
-    name = "legacy",
-    srcs = [":tf_graph_loader"],
-    destdir = "tf-graph-loader",
-    deps = [
-        "//tensorboard/components/tf_imports:polymer_lib",
-        "//tensorboard/plugins/graph/tf_graph_common:legacy",
-    ],
-)
-
-tf_web_library(
+tf_ts_library(
     name = "tf_graph_dashboard_loader",
     srcs = [
-        "tf-graph-dashboard-loader.html",
         "tf-graph-dashboard-loader.ts",
     ],
-    path = "/tf-graph-loader",
+    strict_checks = False,
     visibility = ["//visibility:public"],
     deps = [
-        "//tensorboard/components/tf_backend",
-        "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/plugins/graph/tf_graph_common",
-        "//tensorboard/plugins/graph/tf_graph_controls",
-    ],
-)
-
-tensorboard_webcomponent_library(
-    name = "legacy_dashboard_loader",
-    srcs = [":tf_graph_dashboard_loader"],
-    destdir = "tf-graph-loader",
-    deps = [
-        "//tensorboard/components/tf_backend:legacy",
-        "//tensorboard/components/tf_imports:polymer_lib",
-        "//tensorboard/plugins/graph/tf_graph_common:legacy",
-        "//tensorboard/plugins/graph/tf_graph_controls:legacy",
+        "//tensorboard/components_polymer3/polymer:legacy_element_mixin",
+        "//tensorboard/components_polymer3/tf_backend",
+        "//tensorboard/plugins/graph/polymer3/tf_graph_common",
+        "//tensorboard/plugins/graph/polymer3/tf_graph_controls",
+        "@npm//@polymer/decorators",
+        "@npm//@polymer/polymer",
     ],
 )

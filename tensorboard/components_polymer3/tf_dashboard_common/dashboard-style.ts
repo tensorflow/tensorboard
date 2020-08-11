@@ -12,9 +12,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import '@polymer/iron-flex-layout/iron-flex-layout-classes';
 
 import {registerStyleDomModule} from '../polymer/register_style_dom_module';
+import '../polymer/irons_and_papers';
 
 registerStyleDomModule({
   moduleName: 'dashboard-style',

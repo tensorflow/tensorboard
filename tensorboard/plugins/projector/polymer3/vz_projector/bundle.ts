@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import '../../../../components_polymer3/security';
-import '@polymer/iron-iconset-svg';
+
 import './styles';
 import './vz-projector-app';
 import './vz-projector-bookmark-panel';

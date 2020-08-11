@@ -16,8 +16,8 @@ import {PolymerElement, html} from '@polymer/polymer';
 import * as Plottable from 'plottable';
 import {customElement, property, observe} from '@polymer/decorators';
 import * as _ from 'lodash';
-import '@polymer/paper-spinner/paper-spinner';
 
+import '../polymer/irons_and_papers';
 import {LegacyElementMixin} from '../polymer/legacy_element_mixin';
 import {runsColorScale} from '../tf_color_scale/colorScale';
 import {RequestManager} from '../tf_backend/requestManager';
@@ -31,13 +31,21 @@ import {DataLoaderBehavior} from '../tf_dashboard_common/data-loader-behavior';
 import '../vz_line_chart2/vz-line-chart2';
 import {YScaleType, FillArea} from '../vz_line_chart2/line-chart';
 
+export interface TfLineChartDataLoader extends HTMLElement {
+  commitChanges(): void;
+  redraw(): void;
+  reload(): void;
+  resetDomain(): void;
+  setSeriesData(name: string, data: ScalarDatum[]): void;
+}
+
 // The chart can sometimes get in a bad state, when it redraws while
 // it is display: none due to the user having switched to a different
 // page. This code implements a cascading queue to redraw the bad charts
 // one-by-one once they are active again.
 // We use a cascading queue becuase we don't want to block the UI / make the
 // ripples very slow while everything synchronously redraws.
-const redrawQueue: TfLineChartDataLoader<any>[] = [];
+const redrawQueue: _TfLineChartDataLoader<any>[] = [];
 let redrawRaf = 0;
 const cascadingRedraw = _.throttle(function internalRedraw() {
   if (redrawQueue.length == 0) return;
@@ -53,10 +61,11 @@ const cascadingRedraw = _.throttle(function internalRedraw() {
 // A component that fetches data from the TensorBoard server and renders it into
 // a vz-line-chart.
 @customElement('tf-line-chart-data-loader')
-class TfLineChartDataLoader<ScalarMetadata> extends DataLoaderBehavior<
-  string,
-  ScalarDatum[]
->(LegacyElementMixin(PolymerElement)) {
+class _TfLineChartDataLoader<ScalarMetadata>
+  extends DataLoaderBehavior<string, ScalarDatum[]>(
+    LegacyElementMixin(PolymerElement)
+  )
+  implements TfLineChartDataLoader {
   static readonly template = html`
     <div id="chart-and-spinner-container">
       <vz-line-chart2

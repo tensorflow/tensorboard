@@ -14,21 +14,10 @@ limitations under the License.
 ==============================================================================*/
 import {PolymerElement} from '@polymer/polymer';
 import {customElement, property, observe} from '@polymer/decorators';
-
 import * as d3 from 'd3';
 
-import '@polymer/paper-button';
-import '@polymer/paper-checkbox';
-import '@polymer/paper-dialog-scrollable';
-import '@polymer/paper-dialog';
-import '@polymer/paper-dropdown-menu/paper-dropdown-menu';
-import '@polymer/paper-icon-button';
-import '@polymer/paper-input/paper-input';
-import '@polymer/paper-item';
-import '@polymer/paper-listbox';
-import '@polymer/paper-tooltip';
-
 import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+import '../../../../components_polymer3/polymer/irons_and_papers';
 
 import {template} from './vz-projector-data-panel.html';
 import {

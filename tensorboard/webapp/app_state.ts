@@ -16,5 +16,6 @@ limitations under the License.
 import {State as CoreState} from './core/store/core_types';
 import {State as FeatureFlagState} from './feature_flag/store/feature_flag_types';
 import {State as NpmiState} from './plugins/npmi/store/npmi_types';
+import {State as TextState} from './plugins/text_v2/store/text_types';
 
-export type State = CoreState & FeatureFlagState & NpmiState;
+export type State = CoreState & FeatureFlagState & NpmiState & TextState;

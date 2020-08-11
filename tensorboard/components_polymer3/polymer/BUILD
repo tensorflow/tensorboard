@@ -5,6 +5,26 @@ package(default_visibility = ["//tensorboard:internal"])
 licenses(["notice"])  # Apache 2.0
 
 tf_ts_library(
+    name = "dom",
+    srcs = [
+        "dom.ts",
+    ],
+    deps = [
+        "@npm//@polymer/polymer",
+    ],
+)
+
+tf_ts_library(
+    name = "dom-repeat",
+    srcs = [
+        "dom-repeat.ts",
+    ],
+    deps = [
+        "@npm//@polymer/polymer",
+    ],
+)
+
+tf_ts_library(
     name = "legacy_element_mixin",
     srcs = [
         "legacy_element_mixin.ts",
@@ -58,5 +78,43 @@ tf_ts_library(
     ],
     deps = [
         "@npm//@polymer/polymer",
+    ],
+)
+
+tf_ts_library(
+    name = "irons_and_papers",
+    srcs = [
+        "irons_and_papers.ts",
+    ],
+    deps = [
+        "@npm//@polymer/iron-collapse",
+        "@npm//@polymer/iron-flex-layout",
+        "@npm//@polymer/iron-icon",
+        "@npm//@polymer/iron-icons",
+        "@npm//@polymer/iron-iconset-svg",
+        "@npm//@polymer/iron-list",
+        "@npm//@polymer/paper-button",
+        "@npm//@polymer/paper-checkbox",
+        "@npm//@polymer/paper-dialog",
+        "@npm//@polymer/paper-dialog-scrollable",
+        "@npm//@polymer/paper-dropdown-menu",
+        "@npm//@polymer/paper-header-panel",
+        "@npm//@polymer/paper-icon-button",
+        "@npm//@polymer/paper-input",
+        "@npm//@polymer/paper-item",
+        "@npm//@polymer/paper-listbox",
+        "@npm//@polymer/paper-material",
+        "@npm//@polymer/paper-menu-button",
+        "@npm//@polymer/paper-progress",
+        "@npm//@polymer/paper-radio-button",
+        "@npm//@polymer/paper-radio-group",
+        "@npm//@polymer/paper-slider",
+        "@npm//@polymer/paper-spinner",
+        "@npm//@polymer/paper-styles",
+        "@npm//@polymer/paper-tabs",
+        "@npm//@polymer/paper-toast",
+        "@npm//@polymer/paper-toggle-button",
+        "@npm//@polymer/paper-toolbar",
+        "@npm//@polymer/paper-tooltip",
     ],
 )

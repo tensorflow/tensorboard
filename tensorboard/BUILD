@@ -336,6 +336,8 @@ tf_web_library(
         "//tensorboard/components:legacy.js",
         "//tensorboard/webapp:index.html",
         "//tensorboard/webapp:index.js",
+        "//tensorboard/webapp:index_polymer3.html",
+        "//tensorboard/webapp:index_polymer3.js",
         "//tensorboard/webapp:svg_bundle",
     ],
     path = "/",

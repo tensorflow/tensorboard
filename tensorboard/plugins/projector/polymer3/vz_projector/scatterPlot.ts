@@ -42,10 +42,6 @@ const ORTHO_CAMERA_FRUSTUM_HALF_EXTENT = 1.2;
 // Key presses.
 const SHIFT_KEY = 16;
 const CTRL_KEY = 17;
-const START_CAMERA_POS_3D = new THREE.Vector3(0.45, 0.9, 1.6);
-const START_CAMERA_TARGET_3D = new THREE.Vector3(0, 0, 0);
-const START_CAMERA_POS_2D = new THREE.Vector3(0, 0, 4);
-const START_CAMERA_TARGET_2D = new THREE.Vector3(0, 0, 0);
 const ORBIT_MOUSE_ROTATION_SPEED = 1;
 const ORBIT_ANIMATION_ROTATION_CYCLE_IN_SECONDS = 7;
 export type OnCameraMoveListener = (
@@ -71,6 +67,11 @@ export class CameraDef {
  * array of visualizers and dispatches application events to them.
  */
 export class ScatterPlot {
+  private readonly START_CAMERA_POS_3D = new THREE.Vector3(0.45, 0.9, 1.6);
+  private readonly START_CAMERA_TARGET_3D = new THREE.Vector3(0, 0, 0);
+  private readonly START_CAMERA_POS_2D = new THREE.Vector3(0, 0, 4);
+  private readonly START_CAMERA_TARGET_2D = new THREE.Vector3(0, 0, 0);
+
   private visualizers: ScatterPlotVisualizer[] = [];
   private onCameraMoveListeners: OnCameraMoveListener[] = [];
   private height: number;
@@ -256,25 +257,25 @@ export class ScatterPlot {
     def.zoom = 1;
     if (def.orthographic) {
       def.position = [
-        START_CAMERA_POS_2D.x,
-        START_CAMERA_POS_2D.y,
-        START_CAMERA_POS_2D.z,
+        this.START_CAMERA_POS_2D.x,
+        this.START_CAMERA_POS_2D.y,
+        this.START_CAMERA_POS_2D.z,
       ];
       def.target = [
-        START_CAMERA_TARGET_2D.x,
-        START_CAMERA_TARGET_2D.y,
-        START_CAMERA_TARGET_2D.z,
+        this.START_CAMERA_TARGET_2D.x,
+        this.START_CAMERA_TARGET_2D.y,
+        this.START_CAMERA_TARGET_2D.z,
       ];
     } else {
       def.position = [
-        START_CAMERA_POS_3D.x,
-        START_CAMERA_POS_3D.y,
-        START_CAMERA_POS_3D.z,
+        this.START_CAMERA_POS_3D.x,
+        this.START_CAMERA_POS_3D.y,
+        this.START_CAMERA_POS_3D.z,
       ];
       def.target = [
-        START_CAMERA_TARGET_3D.x,
-        START_CAMERA_TARGET_3D.y,
-        START_CAMERA_TARGET_3D.z,
+        this.START_CAMERA_TARGET_3D.x,
+        this.START_CAMERA_TARGET_3D.y,
+        this.START_CAMERA_TARGET_3D.z,
       ];
     }
     return def;

@@ -7,6 +7,30 @@ package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
+ng_module(
+    name = "oss_plugins_module",
+    srcs = [
+        "oss_plugins_module.ts",
+    ],
+    deps = [
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin:debugger_v2",
+        "//tensorboard/webapp/plugins/npmi",
+        "//tensorboard/webapp/plugins/text_v2",
+        "@npm//@angular/core",
+    ],
+)
+
+ng_module(
+    name = "reducer_config",
+    srcs = [
+        "reducer_config.ts",
+    ],
+    deps = [
+        "@npm//@angular/core",
+        "@npm//@ngrx/store",
+    ],
+)
+
 # Angular module for the top-level app component together with all of its
 # injectable dependencies.  I.e., the entire Angular app.
 ng_module(
@@ -15,13 +39,14 @@ ng_module(
         "app_container.ts",
         "app_module.ts",
         "mat_icon_module.ts",
-        "reducer_config.ts",
     ],
     assets = [
         "app_container.css",
         "app_container.ng.html",
     ],
     deps = [
+        ":oss_plugins_module",
+        ":reducer_config",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
         "//tensorboard/webapp/core",
@@ -50,6 +75,7 @@ ng_module(
         "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/feature_flag/store:types",
         "//tensorboard/webapp/plugins/npmi/store:types",
+        "//tensorboard/webapp/plugins/text_v2/store:types",
     ],
 )
 
@@ -102,6 +128,24 @@ tf_web_library(
     ],
 )
 
+genrule(
+    name = "gen_index.html",
+    srcs = ["index.uninlined.html"],
+    outs = ["index.inlined.html"],
+    cmd = "$(execpath //tensorboard/logo:inline_favicon) $< >$@",
+    tools = ["//tensorboard/logo:inline_favicon"],
+)
+
+# Polymer 3 version of above.
+# TODO(#3887): Remove after Polymer 3 migration.
+genrule(
+    name = "gen_index_polymer3.html",
+    srcs = ["index_polymer3.uninlined.html"],
+    outs = ["index_polymer3.inlined.html"],
+    cmd = "$(execpath //tensorboard/logo:inline_favicon) $< >$@",
+    tools = ["//tensorboard/logo:inline_favicon"],
+)
+
 # Bundle the Angular app with the Polymer components and plugins, as a library.
 tf_web_library(
     name = "tensorboard-webapp",
@@ -114,16 +158,24 @@ tf_web_library(
         ":tb_webapp",
         "//tensorboard/components:polymer_lib_binary",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/source_code/monaco:requirejs",
-        "@com_google_fonts_roboto",
     ],
 )
 
-genrule(
-    name = "gen_index.html",
-    srcs = ["index.uninlined.html"],
-    outs = ["index.inlined.html"],
-    cmd = "$(execpath //tensorboard/logo:inline_favicon) $< >$@",
-    tools = ["//tensorboard/logo:inline_favicon"],
+# Polymer 3 version of above.
+# TODO(#3887): Remove after Polymer 3 migration.
+tf_web_library(
+    name = "tensorboard-webapp-polymer3",
+    srcs = [
+        "index_polymer3.inlined.html",
+        ":styles.css",
+        "//tensorboard/components_polymer3:polymer3_lib_binary.js",
+    ],
+    path = "/",
+    deps = [
+        ":tb_webapp",
+        "//tensorboard/components/tf_imports:roboto",
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/source_code/monaco:requirejs",
+    ],
 )
 
 # A Vulcanized html binary for the complete app (both Angular and Polymer parts)
@@ -133,6 +185,16 @@ tensorboard_html_binary(
     js_path = "/index.js",
     output_path = "/index.html",
     deps = [":tensorboard-webapp"],
+)
+
+# Polymer 3 version of above.
+# TODO(#3887): Remove after Polymer 3 migration.
+tensorboard_html_binary(
+    name = "index_polymer3",
+    input_path = "/index_polymer3.inlined.html",
+    js_path = "/index_polymer3.js",
+    output_path = "/index_polymer3.html",
+    deps = [":tensorboard-webapp-polymer3"],
 )
 
 # Karma has overhead of bootstrap/tearDown. Combine as much testcases
@@ -152,6 +214,9 @@ tf_ng_web_test_suite(
         "//tensorboard/webapp/plugins/npmi/effects:effects_test_lib",
         "//tensorboard/webapp/plugins/npmi/store:store_test_lib",
         "//tensorboard/webapp/plugins/npmi/views/main:main_test_lib",
+        "//tensorboard/webapp/plugins/text_v2/data_source:data_source_test_lib",
+        "//tensorboard/webapp/plugins/text_v2/effects:effects_test_lib",
+        "//tensorboard/webapp/plugins/text_v2/store:store_test_lib",
         "//tensorboard/webapp/reloader:test_lib",
         "//tensorboard/webapp/settings:test_lib",
         "//tensorboard/webapp/tbdev_upload:test_lib",

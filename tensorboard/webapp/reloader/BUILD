@@ -25,7 +25,6 @@ tf_ts_library(
     srcs = [
         "reloader_component_test.ts",
     ],
-    tsconfig = "//:tsconfig-test",
     deps = [
         ":reloader",
         "//tensorboard/webapp/angular:expect_angular_core_testing",

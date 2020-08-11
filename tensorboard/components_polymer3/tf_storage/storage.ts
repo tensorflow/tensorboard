@@ -51,7 +51,11 @@ export const TAB = '__tab__';
 export const DISAMBIGUATOR = 'disambiguator';
 
 // Keep an up-to-date store of URL params, which iframed plugins can request.
-export let urlDict: StringDict = {};
+let urlDict: StringDict = {};
+
+export function getUrlDict(): StringDict {
+  return urlDict;
+}
 
 addHashListener(() => {
   urlDict = componentToDict(readComponent());

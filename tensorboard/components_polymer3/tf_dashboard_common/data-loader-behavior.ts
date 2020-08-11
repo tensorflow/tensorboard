@@ -30,6 +30,7 @@ export interface DataLoaderBehaviorInterface<Item, Data>
   extends PolymerElement {
   active: boolean;
   reset(): void;
+  reload(): void;
   dataToLoad: Item[];
 }
 
@@ -90,12 +91,27 @@ export function DataLoaderBehavior<Item, Data>(
 
     dataLoading = false;
 
+    // The standard Node.isConnected doesn't seem to be set reliably, so we
+    // wire up our own property manually.
+    _isConnected = false;
+
+    connectedCallback() {
+      super.connectedCallback();
+      this._isConnected = true;
+    }
+
+    disconnectedCallback() {
+      super.disconnectedCallback();
+      this._isConnected = false;
+    }
+
     static get properties() {
       return {
         active: {
           type: Boolean,
           observer: '_loadDataIfActive',
         },
+        _isConnected: {type: Boolean},
         loadKey: {type: String},
         dataToLoad: {type: Array},
         getDataLoadName: {type: Object},
@@ -105,7 +121,7 @@ export function DataLoaderBehavior<Item, Data>(
     }
 
     static get observers() {
-      return ['_dataToLoadChanged(isConnected, dataToLoad.*)'];
+      return ['_dataToLoadChanged(_isConnected, dataToLoad.*)'];
     }
 
     /*
@@ -143,11 +159,11 @@ export function DataLoaderBehavior<Item, Data>(
       }
       if (this._canceller) this._canceller.cancelAll();
       if (this._dataLoadState) this._dataLoadState.clear();
-      if (this.isConnected) this._loadData();
+      if (this._isConnected) this._loadData();
     }
 
     _dataToLoadChanged() {
-      if (this.isConnected) this._loadData();
+      if (this._isConnected) this._loadData();
     }
 
     detached() {

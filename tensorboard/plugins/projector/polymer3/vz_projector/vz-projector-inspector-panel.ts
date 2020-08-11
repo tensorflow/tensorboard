@@ -15,14 +15,8 @@ limitations under the License.
 import {PolymerElement} from '@polymer/polymer';
 import {customElement, observe, property} from '@polymer/decorators';
 
-import '@polymer/paper-dropdown-menu/paper-dropdown-menu';
-import '@polymer/paper-icon-button';
-import '@polymer/paper-item';
-import '@polymer/paper-listbox';
-import '@polymer/paper-slider';
-import '@polymer/paper-tooltip';
-
 import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+import '../../../../components_polymer3/polymer/irons_and_papers';
 
 import {DistanceFunction, SpriteAndMetadataInfo, State} from './data';
 import {template} from './vz-projector-inspector-panel.html';
