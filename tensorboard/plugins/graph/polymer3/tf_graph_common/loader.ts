@@ -20,7 +20,7 @@ import * as tf_graph_util from './util';
 
 export type GraphAndHierarchy = {
   graph: tf_graph.SlimGraph;
-  graphHierarchy: hierarchy.Hierarchy;
+  graphHierarchy: tf_graph.Hierarchy;
 };
 export function fetchAndConstructHierarchicalGraph(
   tracker: tf_graph_util.Tracker,

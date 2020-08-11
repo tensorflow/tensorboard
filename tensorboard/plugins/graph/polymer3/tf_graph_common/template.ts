@@ -12,19 +12,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import * as graphlib from 'graphlib';
+import {graphlib} from 'dagre';
 import * as _ from 'lodash';
 
 import {
+  GroupNode,
+  hasSimilarDegreeSequence,
+  Hierarchy,
+  Metanode,
   NodeType,
   OpNode,
-  Metaedge,
-  GroupNode,
-  Metanode,
   SeriesNode,
-  hasSimilarDegreeSequence,
 } from './graph';
-import * as hierarchy from './hierarchy';
 
 export function detect(
   h,
@@ -86,7 +85,7 @@ function getSignature(metanode) {
  *   Object with min level of the template and an Array of tf.graph.Group]
  *   sort by ascending order of minimum depth at which metanode appears.
  */
-function clusterSimilarSubgraphs(h: hierarchy.Hierarchy) {
+function clusterSimilarSubgraphs(h: Hierarchy) {
   /** a dict from metanode.signature() => Array of tf.graph.Groups */
   const map = h.getNodeMap();
   let hashDict = Object.keys(map).reduce((reduced: Object, name: string) => {
@@ -180,32 +179,25 @@ function groupTemplateAndAssignId(nnGroups, verifyTemplate) {
     result
   );
 }
-function sortNodes(
-  names: string[],
-  graph: graphlib.Graph<Metanode | OpNode, Metaedge>,
-  prefix: string
-) {
+function sortNodes(names: string[], graph: graphlib.Graph, prefix: string) {
   return _.sortBy(names, [
-    (name) => (graph.node(name) as OpNode).op,
-    (name) => (graph.node(name) as Metanode).templateId,
+    (name) => ((graph.node(name) as unknown) as OpNode).op,
+    (name) => ((graph.node(name) as unknown) as Metanode).templateId,
     (name) => graph.neighbors(name).length,
     (name) => graph.predecessors(name).length,
     (name) => graph.successors(name).length,
     (name) => name.substr(prefix.length),
   ]);
 }
-function isSimilarSubgraph(
-  g1: graphlib.Graph<any, any>,
-  g2: graphlib.Graph<any, any>
-) {
+function isSimilarSubgraph(g1: graphlib.Graph, g2: graphlib.Graph) {
   if (!hasSimilarDegreeSequence(g1, g2)) {
     return false;
   }
   // if we want to skip, just return true here.
   // return true;
   // Verify sequence by running DFS
-  let g1prefix = g1.graph().name;
-  let g2prefix = g2.graph().name;
+  let g1prefix = (g1.graph() as any).name;
+  let g2prefix = (g2.graph() as any).name;
   let visited1 = {};
   let visited2 = {};
   let stack = [];
@@ -244,8 +236,8 @@ function isSimilarSubgraph(
     /* tslint:enable */
     return false;
   }
-  sources1 = sortNodes(sources1, g1, g1prefix);
-  sources2 = sortNodes(sources2, g2, g2prefix);
+  sources1 = sortNodes(sources1 as any, g1, g1prefix);
+  sources2 = sortNodes(sources2 as any, g2, g2prefix);
   for (let i = 0; i < sources1.length; i++) {
     let different = stackPushIfNotDifferent(sources1[i], sources2[i]);
     if (different) {
@@ -255,7 +247,7 @@ function isSimilarSubgraph(
   while (stack.length > 0) {
     let cur = stack.pop();
     // check node
-    let similar = isSimilarNode(g1.node(cur.n1), g2.node(cur.n2));
+    let similar = isSimilarNode(g1.node(cur.n1) as any, g2.node(cur.n2) as any);
     if (!similar) {
       return false;
     }
@@ -268,8 +260,8 @@ function isSimilarSubgraph(
       /* tslint:enable */
       return false;
     }
-    succ1 = sortNodes(succ1, g1, g1prefix);
-    succ2 = sortNodes(succ2, g2, g2prefix);
+    succ1 = sortNodes(succ1 as any, g1, g1prefix);
+    succ2 = sortNodes(succ2 as any, g2, g2prefix);
     for (let j = 0; j < succ1.length; j++) {
       let different = stackPushIfNotDifferent(succ1[j], succ2[j]);
       if (different) {
@@ -307,8 +299,8 @@ function isSimilarNode(
     return (
       seriesnode1Count === sn2.metagraph.nodeCount() &&
       (seriesnode1Count === 0 ||
-        (<OpNode>sn1.metagraph.node(sn1.metagraph.nodes()[0])).op ===
-          (<OpNode>sn2.metagraph.node(sn2.metagraph.nodes()[0])).op)
+        (<any>sn1.metagraph.node(sn1.metagraph.nodes()[0])).op ===
+          (<any>sn2.metagraph.node(sn2.metagraph.nodes()[0])).op)
     );
   }
   return false;

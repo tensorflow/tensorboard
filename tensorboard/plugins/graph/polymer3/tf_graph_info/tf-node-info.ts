@@ -16,12 +16,8 @@ limitations under the License.
 import {PolymerElement, html} from '@polymer/polymer';
 import {computed, customElement, property} from '@polymer/decorators';
 import * as _ from 'lodash';
-import '@polymer/iron-collapse';
-import '@polymer/iron-list';
-import '@polymer/paper-button';
-import '@polymer/paper-icon-button';
-import '@polymer/paper-item';
 
+import '../../../../components_polymer3/polymer/irons_and_papers';
 import '../tf_graph_common/tf-node-icon';
 import './tf-node-list-item';
 import * as tf_graph from '../tf_graph_common/graph';

@@ -17,8 +17,7 @@ limitations under the License.
  */
 import * as _ from 'lodash';
 
-import {ProgressTracker} from './common';
-import {NodeStats} from './graph';
+import {NodeStats, ProgressTracker} from './common';
 
 const ASYNC_TASK_DELAY = 20;
 /**

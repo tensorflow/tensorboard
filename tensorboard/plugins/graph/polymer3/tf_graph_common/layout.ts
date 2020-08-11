@@ -15,7 +15,7 @@ limitations under the License.
 import * as d3 from 'd3';
 import * as dagre from 'dagre';
 
-import * as graphlib from 'graphlib';
+import {graphlib} from 'dagre';
 import * as _ from 'lodash';
 
 import {NodeType} from './graph';
@@ -322,12 +322,9 @@ function layoutChildren(renderNodeInfo: render.RenderGroupNodeInfo): void {
  * @return width and height of the core graph
  */
 function dagreLayout(
-  graph: graphlib.Graph<render.RenderNodeInfo, render.RenderMetaedgeInfo>,
+  graph: graphlib.Graph,
   params
-): {
-  height: number;
-  width: number;
-} {
+): {height: number; width: number} {
   _.extend(graph.graph(), {
     nodesep: params.nodeSep,
     ranksep: params.rankSep,
@@ -396,13 +393,13 @@ function dagreLayout(
       if (sourceNode != null) {
         let cxSource = sourceNode.expanded
           ? sourceNode.x
-          : computeCXPositionOfNodeShape(sourceNode);
+          : computeCXPositionOfNodeShape(sourceNode as any);
         edgeInfo.points[0].x = cxSource;
       }
       if (destNode != null) {
         let cxDest = destNode.expanded
           ? destNode.x
-          : computeCXPositionOfNodeShape(destNode);
+          : computeCXPositionOfNodeShape(destNode as any);
         edgeInfo.points[2].x = cxDest;
       }
       // Remove the middle point so the edge doesn't curve.
@@ -414,14 +411,17 @@ function dagreLayout(
     if (destNode != null) {
       edgeInfo.points[edgeInfo.points.length - 1] = intersectPointAndNode(
         nextToLastPoint,
-        destNode
+        destNode as any
       );
     }
     // Correct the source endpoint of the edge.
     let secondPoint = edgeInfo.points[1];
     // The source might be null if this is a bridge edge.
     if (sourceNode != null) {
-      edgeInfo.points[0] = intersectPointAndNode(secondPoint, sourceNode);
+      edgeInfo.points[0] = intersectPointAndNode(
+        secondPoint,
+        sourceNode as any
+      );
     }
     _.each(edgeInfo.points, (point: render.Point) => {
       minX = point.x < minX ? point.x : minX;

@@ -16,8 +16,8 @@ limitations under the License.
 import {PolymerElement, html} from '@polymer/polymer';
 import {computed, customElement, observe, property} from '@polymer/decorators';
 import * as _ from 'lodash';
-import '@polymer/paper-styles/paper-styles';
-import '@polymer/paper-input/paper-input';
+
+import '../../../../components_polymer3/polymer/irons_and_papers';
 import '../../../../components_polymer3/tf_dashboard_common/tensorboard-color';
 import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
 

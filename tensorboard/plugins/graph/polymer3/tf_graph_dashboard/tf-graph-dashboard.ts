@@ -15,8 +15,8 @@ limitations under the License.
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, observe, property} from '@polymer/decorators';
-import '@polymer/paper-dialog';
 
+import '../../../../components_polymer3/polymer/irons_and_papers';
 import {Canceller} from '../../../../components_polymer3/tf_backend/canceller';
 import {RequestManager} from '../../../../components_polymer3/tf_backend/requestManager';
 import {getRouter} from '../../../../components_polymer3/tf_backend/router';
