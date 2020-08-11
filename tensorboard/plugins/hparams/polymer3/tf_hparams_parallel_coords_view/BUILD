@@ -16,8 +16,8 @@ tf_ts_library(
         "//tensorboard/plugins/hparams/polymer3/tf_hparams_scale_and_color_controls",
         "//tensorboard/plugins/hparams/polymer3/tf_hparams_session_group_details",
         "//tensorboard/plugins/hparams/polymer3/tf_hparams_session_group_values",
+        "//tensorboard/plugins/hparams/polymer3/tf_hparams_utils:hparams_split_layout",
         "@npm//@polymer/decorators",
         "@npm//@polymer/polymer",
-        "@npm//@vaadin/vaadin-split-layout",
     ],
 )

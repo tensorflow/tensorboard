@@ -13,10 +13,10 @@ tf_ts_library(
         "//tensorboard/components_polymer3/polymer:legacy_element_mixin",
         "//tensorboard/plugins/hparams/polymer3/tf_hparams_query_pane",
         "//tensorboard/plugins/hparams/polymer3/tf_hparams_sessions_pane",
+        "//tensorboard/plugins/hparams/polymer3/tf_hparams_utils:hparams_split_layout",
         "@npm//@polymer/decorators",
         "@npm//@polymer/polymer",
         "@npm//@types/lodash",
-        "@npm//@vaadin/vaadin-split-layout",
         "@npm//lodash",
     ],
 )

@@ -19,6 +19,18 @@ tf_ts_library(
     ],
 )
 
+tf_ts_library(
+    name = "hparams_split_layout",
+    srcs = [
+        "hparams-split-layout.ts",
+    ],
+    strict_checks = False,
+    deps = [
+        "@npm//@polymer/decorators",
+        "@npm//@polymer/polymer",
+    ],
+)
+
 # Test disabled during migration to Polymer 3.
 
 # tf_web_test(

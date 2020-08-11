@@ -15,11 +15,12 @@ limitations under the License.
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, property} from '@polymer/decorators';
+import * as _ from 'lodash';
+
 import '../tf_hparams_query_pane/tf-hparams-query-pane';
 import '../tf_hparams_sessions_pane/tf-hparams-sessions-pane';
-import '@vaadin/vaadin-split-layout';
-import * as _ from 'lodash';
 import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+import '../tf_hparams_utils/hparams-split-layout';
 
 /**
  * The entry point into the hparams plugin frontend.
@@ -39,8 +40,8 @@ import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy
 @customElement('tf-hparams-main')
 class TfHparamsMain extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
-    <vaadin-split-layout>
-      <div class="sidebar" slot="sidebar">
+    <hparams-split-layout>
+      <div slot="content" class="sidebar">
         <tf-hparams-query-pane
           id="query-pane"
           backend="[[backend]]"
@@ -52,7 +53,7 @@ class TfHparamsMain extends LegacyElementMixin(PolymerElement) {
         >
         </tf-hparams-query-pane>
       </div>
-      <div class="center" slot="center">
+      <div slot="content" class="center">
         <template is="dom-if" if="[[_dataLoadedWithEmptyHparams]]">
           <div class="no-data-warning">
             <h3>No hparams data was found.</h3>
@@ -105,10 +106,9 @@ class TfHparamsMain extends LegacyElementMixin(PolymerElement) {
           </tf-hparams-sessions-pane>
         </template>
       </div>
-    </vaadin-split-layout>
-
+    </hparams-split-layout>
     <style>
-      vaadin-split-layout {
+      hparams-split-layout {
         width: 100%;
       }
 

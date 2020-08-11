@@ -16,12 +16,12 @@ limitations under the License.
 import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, observe, property} from '@polymer/decorators';
 import * as _ from 'lodash';
-import '@vaadin/vaadin-split-layout';
 
 import '../../../../components_polymer3/polymer/irons_and_papers';
 import {Canceller} from '../../../../components_polymer3/tf_backend/canceller';
 import * as tf_hparams_utils from '../tf_hparams_utils/tf-hparams-utils';
 import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+import '../tf_hparams_utils/hparams-split-layout';
 
 /**
  * The tf-hparams-query-pane element implements controls for querying the
@@ -34,305 +34,229 @@ import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy
 @customElement('tf-hparams-query-pane')
 class TfHparamsQueryPane extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
-    <div class="pane">
-      <vaadin-split-layout orientation="vertical">
-        <vaadin-split-layout
-          orientation="vertical"
-          id="hyperparameters-metrics-statuses"
-        >
-          <vaadin-split-layout
-            orientation="vertical"
-            id="hyperparameters-metrics"
-          >
-            <div class="section hyperparameters">
-              <div class="section-title">Hyperparameters</div>
-              <template is="dom-repeat" items="{{_hparams}}" as="hparam">
-                <div class="hparam">
-                  <paper-checkbox
-                    checked="{{hparam.displayed}}"
-                    class="hparam-checkbox"
-                  >
-                    [[_hparamName(hparam.info)]]
-                  </paper-checkbox>
-                  <!-- Precisely one of the templates below will be stamped.-->
-                  <!-- 1. A list of checkboxes -->
-                  <template is="dom-if" if="[[hparam.filter.domainDiscrete]]">
-                    <template
-                      is="dom-repeat"
-                      items="[[hparam.filter.domainDiscrete]]"
-                    >
-                      <paper-checkbox
-                        checked="{{item.checked}}"
-                        class="discrete-value-checkbox"
-                        on-change="_queryServer"
-                      >
-                        [[_prettyPrint(item.value)]]
-                      </paper-checkbox>
-                    </template>
-                  </template>
-                  <!-- 2. A numeric interval -->
-                  <template is="dom-if" if="[[hparam.filter.interval]]">
-                    <paper-input
-                      label="Min"
-                      value="{{hparam.filter.interval.min.value}}"
-                      allowed_pattern="[0-9.e\\-]"
-                      on-value-changed="_queryServer"
-                      error-message="Invalid input"
-                      invalid="[[hparam.filter.interval.min.invalid]]"
-                      placeholder="-infinity"
-                    >
-                    </paper-input>
-                    <paper-input
-                      label="Max"
-                      value="{{hparam.filter.interval.max.value}}"
-                      allowed_pattern="[0-9.e\\-]"
-                      on-value-changed="_queryServer"
-                      error-message="Invalid input"
-                      invalid="[[hparam.filter.interval.max.invalid]]"
-                      placeholder="+infinity"
-                    >
-                    </paper-input>
-                  </template>
-                  <!-- 3. A regexp -->
-                  <template is="dom-if" if="[[hparam.filter.regexp]]">
-                    <paper-input
-                      label="Regular expression"
-                      value="{{hparam.filter.regexp}}"
-                      on-value-changed="_queryServer"
-                    >
-                    </paper-input>
-                  </template>
-                </div>
-              </template>
-            </div>
-            <div class="section metrics">
-              <div class="section-title">Metrics</div>
-              <template is="dom-repeat" items="{{_metrics}}" as="metric">
-                <div class="metric">
-                  <!-- TODO(erez): Make it easier to handle a large number of
-                       metrics:
-                       1. Add an 'isolator' radio-button to select just one
-                       metric and
-                       hide all the rest
-                       2. Add a 'toggle-all' button that will hide/unhide
-                          all the
-                       metrics.
-                       Use similar logic/appearance to the run-selector of
-                       scalars.-->
-                  <paper-checkbox
-                    checked="{{metric.displayed}}"
-                    class="metric-checkbox"
-                  >
-                    [[_metricName(metric.info)]]
-                  </paper-checkbox>
-                  <div class="inline-element">
-                    <paper-input
-                      label="Min"
-                      value="{{metric.filter.interval.min.value}}"
-                      allowed-pattern="[0-9.e\\-]"
-                      on-value-changed="_queryServer"
-                      error-message="Invalid input"
-                      invalid="{{metric.filter.interval.min.invalid}}"
-                      placeholder="-infinity"
-                    >
-                    </paper-input>
-                  </div>
-                  <div class="inline-element">
-                    <paper-input
-                      label="Max"
-                      allowed-pattern="[0-9.e\\-]"
-                      value="{{metric.filter.interval.max.value}}"
-                      on-value-changed="_queryServer"
-                      error-message="Invalid input"
-                      invalid="{{metric.filter.interval.max.invalid}}"
-                      placeholder="+infinity"
-                    >
-                    </paper-input>
-                  </div>
-                </div>
-              </template>
-            </div>
-          </vaadin-split-layout>
-          <div class="section status">
-            <div class="section-title">Status</div>
-            <template is="dom-repeat" items="[[_statuses]]" as="status">
-              <paper-checkbox
-                checked="{{status.allowed}}"
-                on-change="_queryServer"
+    <hparams-split-layout orientation="vertical">
+      <div slot="content" class="section hyperparameters">
+        <div class="section-title">Hyperparameters</div>
+        <template is="dom-repeat" items="{{_hparams}}" as="hparam">
+          <div class="hparam">
+            <paper-checkbox
+              checked="{{hparam.displayed}}"
+              class="hparam-checkbox"
+            >
+              [[_hparamName(hparam.info)]]
+            </paper-checkbox>
+            <!-- Precisely one of the templates below will be stamped.-->
+            <!-- 1. A list of checkboxes -->
+            <template is="dom-if" if="[[hparam.filter.domainDiscrete]]">
+              <template
+                is="dom-repeat"
+                items="[[hparam.filter.domainDiscrete]]"
               >
-                [[status.displayName]]
-              </paper-checkbox>
+                <paper-checkbox
+                  checked="{{item.checked}}"
+                  class="discrete-value-checkbox"
+                  on-change="_queryServer"
+                >
+                  [[_prettyPrint(item.value)]]
+                </paper-checkbox>
+              </template>
+            </template>
+            <!-- 2. A numeric interval -->
+            <template is="dom-if" if="[[hparam.filter.interval]]">
+              <paper-input
+                label="Min"
+                value="{{hparam.filter.interval.min.value}}"
+                allowed_pattern="[0-9.e\\-]"
+                on-value-changed="_queryServer"
+                error-message="Invalid input"
+                invalid="[[hparam.filter.interval.min.invalid]]"
+                placeholder="-infinity"
+              >
+              </paper-input>
+              <paper-input
+                label="Max"
+                value="{{hparam.filter.interval.max.value}}"
+                allowed_pattern="[0-9.e\\-]"
+                on-value-changed="_queryServer"
+                error-message="Invalid input"
+                invalid="[[hparam.filter.interval.max.invalid]]"
+                placeholder="+infinity"
+              >
+              </paper-input>
+            </template>
+            <!-- 3. A regexp -->
+            <template is="dom-if" if="[[hparam.filter.regexp]]">
+              <paper-input
+                label="Regular expression"
+                value="{{hparam.filter.regexp}}"
+                on-value-changed="_queryServer"
+              >
+              </paper-input>
             </template>
           </div>
-        </vaadin-split-layout>
-        <vaadin-split-layout orientation="vertical" id="sorting-paging">
-          <div class="section sorting">
-            <div class="section-title">Sorting</div>
-            <paper-dropdown-menu
-              label="Sort by"
-              on-selected-item-changed="_queryServer"
-              horizontal-align="left"
+        </template>
+      </div>
+      <div slot="content" class="section metrics">
+        <div class="section-title">Metrics</div>
+        <template is="dom-repeat" items="{{_metrics}}" as="metric">
+          <div class="metric">
+            <!-- TODO(erez): Make it easier to handle a large number of
+                  metrics:
+                  1. Add an 'isolator' radio-button to select just one
+                  metric and
+                  hide all the rest
+                  2. Add a 'toggle-all' button that will hide/unhide
+                    all the
+                  metrics.
+                  Use similar logic/appearance to the run-selector of
+                  scalars.-->
+            <paper-checkbox
+              checked="{{metric.displayed}}"
+              class="metric-checkbox"
             >
-              <paper-listbox
-                class="dropdown-content"
-                slot="dropdown-content"
-                selected="{{_sortByIndex}}"
-                on-selected-item-changed="_queryServer"
+              [[_metricName(metric.info)]]
+            </paper-checkbox>
+            <div class="inline-element">
+              <paper-input
+                label="Min"
+                value="{{metric.filter.interval.min.value}}"
+                allowed-pattern="[0-9.e\\-]"
+                on-value-changed="_queryServer"
+                error-message="Invalid input"
+                invalid="{{metric.filter.interval.min.invalid}}"
+                placeholder="-infinity"
               >
-                <template is="dom-repeat" items="[[_hparams]]" as="hparam">
-                  <paper-item>
-                    [[_hparamName(hparam.info)]]
-                  </paper-item>
-                </template>
-                <template is="dom-repeat" items="[[_metrics]]" as="metric">
-                  <paper-item>
-                    [[_metricName(metric.info)]]
-                  </paper-item>
-                </template>
-              </paper-listbox>
-            </paper-dropdown-menu>
-            <paper-dropdown-menu
-              label="Direction"
-              on-selected-item-changed="_queryServer"
-              horizontal-align="left"
-            >
-              <paper-listbox
-                class="dropdown-content"
-                slot="dropdown-content"
-                selected="{{_sortDirection}}"
+              </paper-input>
+            </div>
+            <div class="inline-element">
+              <paper-input
+                label="Max"
+                allowed-pattern="[0-9.e\\-]"
+                value="{{metric.filter.interval.max.value}}"
+                on-value-changed="_queryServer"
+                error-message="Invalid input"
+                invalid="{{metric.filter.interval.max.invalid}}"
+                placeholder="+infinity"
               >
-                <paper-item>Ascending</paper-item>
-                <paper-item>Descending</paper-item>
-              </paper-listbox>
-            </paper-dropdown-menu>
+              </paper-input>
+            </div>
           </div>
-          <vaadin-split-layout orientation="vertical" id="paging-download">
-            <div class="section paging">
-              <div class="section-title">Paging</div>
-              <div>
-                Number of matching session groups:
-                [[_totalSessionGroupsCountStr]]
-              </div>
-              <div class="inline-element page-number-input">
-                <paper-input
-                  label="Page #"
-                  value="{{_pageNumberInput.value}}"
-                  allowed-pattern="[0-9]"
-                  error-message="Invalid input"
-                  invalid="[[_pageNumberInput.invalid]]"
-                  on-value-changed="_queryServer"
-                >
-                  <div slot="suffix" class="page-suffix">
-                    / [[_pageCountStr]]
-                  </div>
-                </paper-input>
-              </div>
-              <div class="inline-element page-size-input">
-                <paper-input
-                  label="Max # of session groups per page:"
-                  value="{{_pageSizeInput.value}}"
-                  allowed-pattern="[0-9]"
-                  error-message="Invalid input"
-                  invalid="[[_pageSizeInput.invalid]]"
-                  on-value-changed="_queryServer"
-                >
-                </paper-input>
-              </div>
+        </template>
+      </div>
+      <div slot="content" class="section status">
+        <div class="section-title">Status</div>
+        <template is="dom-repeat" items="[[_statuses]]" as="status">
+          <paper-checkbox checked="{{status.allowed}}" on-change="_queryServer">
+            [[status.displayName]]
+          </paper-checkbox>
+        </template>
+      </div>
+      <div slot="content" class="section sorting">
+        <div class="section-title">Sorting</div>
+        <paper-dropdown-menu
+          label="Sort by"
+          on-selected-item-changed="_queryServer"
+          horizontal-align="left"
+        >
+          <paper-listbox
+            class="dropdown-content"
+            slot="dropdown-content"
+            selected="{{_sortByIndex}}"
+            on-selected-item-changed="_queryServer"
+          >
+            <template is="dom-repeat" items="[[_hparams]]" as="hparam">
+              <paper-item>
+                [[_hparamName(hparam.info)]]
+              </paper-item>
+            </template>
+            <template is="dom-repeat" items="[[_metrics]]" as="metric">
+              <paper-item>
+                [[_metricName(metric.info)]]
+              </paper-item>
+            </template>
+          </paper-listbox>
+        </paper-dropdown-menu>
+        <paper-dropdown-menu
+          label="Direction"
+          on-selected-item-changed="_queryServer"
+          horizontal-align="left"
+        >
+          <paper-listbox
+            class="dropdown-content"
+            slot="dropdown-content"
+            selected="{{_sortDirection}}"
+          >
+            <paper-item>Ascending</paper-item>
+            <paper-item>Descending</paper-item>
+          </paper-listbox>
+        </paper-dropdown-menu>
+      </div>
+      <div slot="content" class="section paging">
+        <div class="section-title">Paging</div>
+        <div>
+          Number of matching session groups: [[_totalSessionGroupsCountStr]]
+        </div>
+        <div class="inline-element page-number-input">
+          <paper-input
+            label="Page #"
+            value="{{_pageNumberInput.value}}"
+            allowed-pattern="[0-9]"
+            error-message="Invalid input"
+            invalid="[[_pageNumberInput.invalid]]"
+            on-value-changed="_queryServer"
+          >
+            <div slot="suffix" class="page-suffix">
+              / [[_pageCountStr]]
             </div>
-            <div class="section download">
-              <template is="dom-if" if="[[_sessionGroupsRequest]]">
-                Download data as
-                <span>
-                  <a
-                    id="csvLink"
-                    download="hparams_table.csv"
-                    href="[[_csvUrl(_sessionGroupsRequest, configuration)]]"
-                    >CSV</a
-                  >
-                  <a
-                    id="jsonLink"
-                    download="hparams_table.json"
-                    href="[[_jsonUrl(_sessionGroupsRequest, configuration)]]"
-                    >JSON</a
-                  >
-                  <a
-                    id="latexLink"
-                    download="hparams_table.tex"
-                    href="[[_latexUrl(_sessionGroupsRequest, configuration)]]"
-                    >LaTeX</a
-                  >
-                </span>
-              </template>
-            </div>
-          </vaadin-split-layout>
-        </vaadin-split-layout>
-      </vaadin-split-layout>
-    </div>
+          </paper-input>
+        </div>
+        <div class="inline-element page-size-input">
+          <paper-input
+            label="Max # of session groups per page:"
+            value="{{_pageSizeInput.value}}"
+            allowed-pattern="[0-9]"
+            error-message="Invalid input"
+            invalid="[[_pageSizeInput.invalid]]"
+            on-value-changed="_queryServer"
+          >
+          </paper-input>
+        </div>
+      </div>
+      <div slot="content" class="section download">
+        <template is="dom-if" if="[[_sessionGroupsRequest]]">
+          Download data as
+          <span>
+            <a
+              id="csvLink"
+              download="hparams_table.csv"
+              href="[[_csvUrl(_sessionGroupsRequest, configuration)]]"
+              >CSV</a
+            >
+            <a
+              id="jsonLink"
+              download="hparams_table.json"
+              href="[[_jsonUrl(_sessionGroupsRequest, configuration)]]"
+              >JSON</a
+            >
+            <a
+              id="latexLink"
+              download="hparams_table.tex"
+              href="[[_latexUrl(_sessionGroupsRequest, configuration)]]"
+              >LaTeX</a
+            >
+          </span>
+        </template>
+      </div>
+    </hparams-split-layout>
     <style>
-      .pane {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-      }
       .section {
-        margin: 5px 10px 5px 10px;
-        overflow-y: auto;
+        padding: 10px;
       }
       .section-title {
         display: block;
         font-weight: bold;
         text-decoration: underline;
         margin-bottom: 7px;
-      }
-      #hyperparameters-metrics-statuses {
-        flex-basis: 70%;
-        flex-shrink: 1;
-        flex-grow: 1;
-      }
-      #hyperparameters-metrics {
-        flex-basis: 90%;
-        flex-shrink: 1;
-        flex-grow: 1;
-      }
-      .hyperparameters {
-        flex-basis: auto;
-        flex-shrink: 1;
-        flex-grow: 1;
-      }
-      .metrics {
-        flex-basis: auto;
-        flex-shrink: 1;
-        flex-grow: 1;
-      }
-      .statuses {
-        flex-basis: auto;
-        flex-shrink: 0;
-        flex-grow: 0;
-      }
-      #sorting-paging {
-        flex-basis: 30%;
-        flex-shrink: 0;
-        flex-grow: 0;
-      }
-      #paging-download {
-        flex-basis: 90%;
-        flex-shrink: 1;
-        flex-grow: 1;
-      }
-      .sorting {
-        flex-basis: auto;
-        flex-shrink: 0;
-        flex-grow: 0;
-      }
-      .paging {
-        flex-basis: auto;
-        flex-shrink: 0;
-        flex-grow: 0;
-      }
-      .download {
-        flex-basis: auto;
-        flex-shrink: 0;
-        flex-grow: 0;
       }
       .discrete-value-checkbox,
       .metric-checkbox,

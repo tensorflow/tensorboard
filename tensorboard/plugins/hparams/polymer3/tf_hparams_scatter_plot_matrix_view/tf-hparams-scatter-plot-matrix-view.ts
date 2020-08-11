@@ -19,7 +19,7 @@ import '../tf_hparams_scale_and_color_controls/tf-hparams-scale-and-color-contro
 import '../tf_hparams_scatter_plot_matrix_plot/tf-hparams-scatter-plot-matrix-plot';
 import '../tf_hparams_session_group_details/tf-hparams-session-group-details';
 import '../tf_hparams_session_group_values/tf-hparams-session-group-values';
-import '@vaadin/vaadin-split-layout';
+import '../tf_hparams_utils/hparams-split-layout';
 
 /**
  * A D3-based implementation of a scatter plot matrix of the sessions
@@ -42,61 +42,54 @@ import '@vaadin/vaadin-split-layout';
 @customElement('tf-hparams-scatter-plot-matrix-view')
 class TfHparamsScatterPlotMatrixView extends PolymerElement {
   static readonly template = html`
-    <div class="pane">
-      <vaadin-split-layout orientation="vertical">
-        <!-- Controls behavior of the scatter plot matrix
+    <hparams-split-layout orientation="vertical">
+      <!-- Controls behavior of the scatter plot matrix
              outputs the configured options to the _options property. -->
-        <tf-hparams-scale-and-color-controls
-          class="section"
-          id="controls"
-          configuration="[[configuration]]"
-          session-groups="[[sessionGroups]]"
-          options="{{_options}}"
-        >
-        </tf-hparams-scale-and-color-controls>
-        <vaadin-split-layout orientation="vertical">
-          <!-- The actual scatter plot matrix -->
-          <tf-hparams-scatter-plot-matrix-plot
-            class="section"
-            id="plot"
-            visible-schema="[[configuration.visibleSchema]]"
-            session-groups="[[sessionGroups]]"
-            selected-session-group="{{_selectedGroup}}"
-            closest-session-group="{{_closestGroup}}"
-            options="[[_options]]"
-          >
-          </tf-hparams-scatter-plot-matrix-plot>
-          <vaadin-split-layout orientation="vertical">
-            <tf-hparams-session-group-values
-              class="section"
-              id="values"
-              visible-schema="[[configuration.visibleSchema]]"
-              session-group="[[_closestOrSelected(
+      <tf-hparams-scale-and-color-controls
+        slot="content"
+        class="section"
+        id="controls"
+        configuration="[[configuration]]"
+        session-groups="[[sessionGroups]]"
+        options="{{_options}}"
+      >
+      </tf-hparams-scale-and-color-controls>
+      <!-- The actual scatter plot matrix -->
+      <tf-hparams-scatter-plot-matrix-plot
+        slot="content"
+        class="section"
+        id="plot"
+        visible-schema="[[configuration.visibleSchema]]"
+        session-groups="[[sessionGroups]]"
+        selected-session-group="{{_selectedGroup}}"
+        closest-session-group="{{_closestGroup}}"
+        options="[[_options]]"
+      >
+      </tf-hparams-scatter-plot-matrix-plot>
+      <tf-hparams-session-group-values
+        slot="content"
+        class="section"
+        id="values"
+        visible-schema="[[configuration.visibleSchema]]"
+        session-group="[[_closestOrSelected(
                                  _closestGroup, _selectedGroup)]]"
-            >
-            </tf-hparams-session-group-values>
-            <!-- Shows session group details for the clicked marker. -->
-            <tf-hparams-session-group-details
-              class="section"
-              id="details"
-              backend="[[backend]]"
-              experiment-name="[[experimentName]]"
-              session-group="[[_selectedGroup]]"
-              visible-schema="[[configuration.visibleSchema]]"
-            >
-            </tf-hparams-session-group-details>
-          </vaadin-split-layout>
-        </vaadin-split-layout>
-      </vaadin-split-layout>
-    </div>
+      >
+      </tf-hparams-session-group-values>
+      <!-- Shows session group details for the clicked marker. -->
+      <tf-hparams-session-group-details
+        slot="content"
+        class="section"
+        id="details"
+        backend="[[backend]]"
+        experiment-name="[[experimentName]]"
+        session-group="[[_selectedGroup]]"
+        visible-schema="[[configuration.visibleSchema]]"
+      >
+      </tf-hparams-session-group-details>
+    </hparams-split-layout>
     <style>
-      .pane {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-      }
       .section {
-        margin: 10px;
+        padding: 10px;
       }
       #controls {
         flex-grow: 0;
