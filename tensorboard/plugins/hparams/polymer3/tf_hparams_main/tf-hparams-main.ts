@@ -19,6 +19,7 @@ import * as _ from 'lodash';
 
 import '../tf_hparams_query_pane/tf-hparams-query-pane';
 import '../tf_hparams_sessions_pane/tf-hparams-sessions-pane';
+import {Backend} from '../tf_hparams_backend/tf-hparams-backend';
 import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
 import '../tf_hparams_utils/hparams-split-layout';
 
@@ -36,7 +37,6 @@ import '../tf_hparams_utils/hparams-split-layout';
  *
  * TODO(erez): Add aggregation of repeated trials.
  */
-'use strict';
 @customElement('tf-hparams-main')
 class TfHparamsMain extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
@@ -144,7 +144,7 @@ class TfHparamsMain extends LegacyElementMixin(PolymerElement) {
   `;
   // An object for making HParams API requests to the backend.
   @property({type: Object})
-  backend: object;
+  backend: Backend;
   // The experimentName to pass to the 'GetExperiment' API call.
   @property({type: String})
   experimentName: string;

@@ -30,7 +30,6 @@ import '../tf_hparams_utils/hparams-split-layout';
  *
  * TODO(erez): Add aggregation controls for repeated sessions.
  */
-'use strict';
 @customElement('tf-hparams-query-pane')
 class TfHparamsQueryPane extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
@@ -342,7 +341,6 @@ class TfHparamsQueryPane extends LegacyElementMixin(PolymerElement) {
    */
   @property({
     type: Object,
-    readOnly: true,
     notify: true,
   })
   configuration = {
@@ -653,16 +651,13 @@ class TfHparamsQueryPane extends LegacyElementMixin(PolymerElement) {
   }
   @observe('_hparams.*', '_metrics.*')
   _updateConfiguration() {
-    this.debounce(
-      '_updateConfiguration',
-      function() {
-        this._setConfiguration({
-          schema: this._computeSchema(),
-          columnsVisibility: this._computeColumnsVisibility(),
-          visibleSchema: this._computeVisibleSchema(),
-        });
-      }.bind(this)
-    );
+    this.debounce('_updateConfiguration', () => {
+      this.configuration = {
+        schema: this._computeSchema(),
+        columnsVisibility: this._computeColumnsVisibility(),
+        visibleSchema: this._computeVisibleSchema(),
+      };
+    });
   }
   _computeColumnsVisibility() {
     if (!this._hparams || !this._metrics) return [];

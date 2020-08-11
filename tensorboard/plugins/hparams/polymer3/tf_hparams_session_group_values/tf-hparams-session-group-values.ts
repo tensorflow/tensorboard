@@ -17,7 +17,6 @@ import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, property} from '@polymer/decorators';
 import '../tf_hparams_table_view/tf-hparams-table-view';
 
-'use strict';
 @customElement('tf-hparams-session-group-values')
 class TfHparamsSessionGroupValues extends PolymerElement {
   static readonly template = html`

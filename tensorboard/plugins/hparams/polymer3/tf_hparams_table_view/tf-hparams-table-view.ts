@@ -22,7 +22,6 @@ import '../tf_hparams_session_group_details/tf-hparams-session-group-details';
 import * as tf_hparams_utils from '../tf_hparams_utils/tf-hparams-utils';
 import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
 
-'use strict';
 @customElement('tf-hparams-table-view')
 class TfHparamsTableView extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`

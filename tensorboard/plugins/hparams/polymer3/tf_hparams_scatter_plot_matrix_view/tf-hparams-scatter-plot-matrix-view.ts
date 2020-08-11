@@ -38,7 +38,6 @@ import '../tf_hparams_utils/hparams-split-layout';
  * 3. <tf-hparams-scatter-plot-matrix-view>
  *   The container element for the above 2 elements.
  */
-'use strict';
 @customElement('tf-hparams-scatter-plot-matrix-view')
 class TfHparamsScatterPlotMatrixView extends PolymerElement {
   static readonly template = html`

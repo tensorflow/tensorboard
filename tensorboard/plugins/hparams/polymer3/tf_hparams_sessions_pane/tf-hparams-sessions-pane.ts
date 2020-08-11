@@ -28,7 +28,6 @@ import '../tf_hparams_table_view/tf-hparams-table-view';
  * and parallel-coordinates (https://en.wikipedia.org/wiki/Parallel_coordinates)
  * view.
  */
-'use strict';
 @customElement('tf-hparams-sessions-pane')
 class TfHparamsSessionsPane extends PolymerElement {
   static readonly template = html`

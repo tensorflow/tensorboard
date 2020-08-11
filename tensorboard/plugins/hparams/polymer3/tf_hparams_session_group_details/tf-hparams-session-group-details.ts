@@ -35,7 +35,6 @@ import * as vz_chart_helpers from '../../../../components_polymer3/vz_chart_help
  * example when she clicks on a row in table-view or a curve in parallel-coords
  * view.
  */
-'use strict';
 @customElement('tf-hparams-session-group-details')
 class TfHparamsSessionGroupDetails extends mixinBehaviors(
   [IronResizableBehavior],
@@ -57,8 +56,7 @@ class TfHparamsSessionGroupDetails extends mixinBehaviors(
     <div class="layout horizontal wrap session-group-details">
       <template
         is="dom-if"
-        if="[[_haveMetricsAndSessionGroup(visibleSchema.*,
-                                                  sessionGroup)]]"
+        if="[[_haveMetricsAndSessionGroup(visibleSchema.*, sessionGroup)]]"
       >
         <template
           is="dom-repeat"
@@ -72,8 +70,7 @@ class TfHparamsSessionGroupDetails extends mixinBehaviors(
           <tf-scalar-card
             class="scalar-card"
             color-scale="[[_colorScale]]"
-            data-to-load="[[_computeSeriesForSessionGroupMetric(sessionGroup,
-                          metricInfo)]]"
+            data-to-load="[[_computeSeriesForSessionGroupMetric(sessionGroup, metricInfo)]]"
             tag="[[metricInfo.name.tag]]"
             tag-metadata="[[_computeTagMetadata(metricInfo)]]"
             x-type="[[_xType]]"

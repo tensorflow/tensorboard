@@ -220,14 +220,10 @@ class TfHparamsParallelCoordsPlot extends LegacyElementMixin(PolymerElement) {
     this.redrawCount++;
   }
   closestSessionGroupChanged(sessionGroup) {
-    (function() {
-      this._setClosestSessionGroup(sessionGroup);
-    }.call(this));
+    (this as any)._setClosestSessionGroup(sessionGroup);
   }
   selectedSessionGroupChanged(sessionGroup) {
-    (function() {
-      this._setSelectedSessionGroup(sessionGroup);
-    }.call(this));
+    (this as any)._setSelectedSessionGroup(sessionGroup);
   }
   // computes validSessionGroups: Filters out the session groups in the
   // sessionGroups that have one or more of their column values undefined.

@@ -22,7 +22,6 @@ import {
    Any implementation with the same public interface can be passed to
    tf-hparams-main as the 'backend' property.
 */
-'use strict';
 export class Backend {
   private _apiUrl: any;
   private _requestManager: any;

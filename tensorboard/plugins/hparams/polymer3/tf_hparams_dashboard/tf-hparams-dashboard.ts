@@ -20,16 +20,11 @@ import '../tf_hparams_main/tf-hparams-main';
 import * as tf_hparams_backend from '../tf_hparams_backend/tf-hparams-backend';
 import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
 
-/**
- * Tensorboard does not specify an experimentName. Currently it only
- * supports one experiment per invocation.
- */
-'use strict';
 const PLUGIN_NAME = 'hparams';
 @customElement('tf-hparams-dashboard')
 class TfHparamsDashboard extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
-    <!-- Tensorboard does not specify an experimentName. Currently it only
+    <!-- TensorBoard does not specify an experimentName. Currently it only
          supports one experiment per invocation. -->
     <tf-hparams-main
       id="hparams-main"

@@ -33,7 +33,6 @@ import '../tf_hparams_utils/hparams-split-layout';
  * 3. <tf-hparams-parallel-coords-view>
  *   The container element for the above 2 elements.
  */
-'use strict';
 @customElement('tf-hparams-parallel-coords-view')
 class TfHparamsParallelCoordsView extends PolymerElement {
   static readonly template = html`
