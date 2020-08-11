@@ -1,6 +1,4 @@
-<!--
-@license
-Copyright 2016 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,14 +11,16 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
--->
+==============================================================================*/
 
-<link rel="import" href="../tf-imports/polymer.html" />
+import {PolymerElement, html} from '@polymer/polymer';
+import {customElement} from '@polymer/decorators';
 
-<script src="../tf-graph-common/minimap.js"></script>
+import * as tf_scene_minimap from '../tf_graph_common/minimap';
 
-<dom-module id="tf-graph-minimap">
-  <template>
+@customElement('tf-graph-minimap')
+export class TfGraphMinimap extends PolymerElement {
+  static readonly template = html`
     <style>
       :host {
         background-color: white;
@@ -80,31 +80,25 @@ limitations under the License.
     <!-- Additional canvas to use as buffer to avoid flickering between updates -->
     <canvas class="second"></canvas>
     <canvas class="download"></canvas>
-  </template>
-  <script>
-    Polymer({
-      is: 'tf-graph-minimap',
-
-      /**
-       * Initializes the minimap and returns a minimap object to notify when
-       * things update.
-       *
-       * @param svg The main svg element.
-       * @param zoomG The svg group used for panning and zooming the main svg.
-       * @param mainZoom The main zoom behavior.
-       * @param maxWAndH The maximum width/height for the minimap.
-       * @param labelPadding Padding in pixels due to the main graph labels.
-       */
-      init: function(svg, zoomG, mainZoom, maxWAndH, labelPadding) {
-        return new tf.scene.Minimap(
-          svg,
-          zoomG,
-          mainZoom,
-          this,
-          maxWAndH,
-          labelPadding
-        );
-      },
-    });
-  </script>
-</dom-module>
+  `;
+  /**
+   * Initializes the minimap and returns a minimap object to notify when
+   * things update.
+   *
+   * @param svg The main svg element.
+   * @param zoomG The svg group used for panning and zooming the main svg.
+   * @param mainZoom The main zoom behavior.
+   * @param maxWAndH The maximum width/height for the minimap.
+   * @param labelPadding Padding in pixels due to the main graph labels.
+   */
+  init(svg, zoomG, mainZoom, maxWAndH, labelPadding) {
+    return new tf_scene_minimap.Minimap(
+      svg,
+      zoomG,
+      mainZoom,
+      this,
+      maxWAndH,
+      labelPadding
+    );
+  }
+}
