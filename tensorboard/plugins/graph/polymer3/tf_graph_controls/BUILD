@@ -1,30 +1,33 @@
+load("//tensorboard/defs:defs.bzl", "tf_ts_library")
+
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
-# `tf_web_library`/`tf_ts_library` here removed to facilitate internal
-# sync-testing scripts.
-
-dict(
+tf_ts_library(
     name = "tf_graph_controls",
     srcs = [
-        "tf-graph-controls.html",
         "tf-graph-controls.ts",
     ],
-    path = "/tf-graph-controls",
+    strict_checks = False,
+    tags = ["manual"],
     deps = [
-        "//tensorboard/components/tf_dashboard_common",
-        "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/plugins/graph/tf_graph_common",
-        "//tensorboard/plugins/graph/tf_graph_node_search",
-        "@org_polymer_iron_icon",
-        "@org_polymer_paper_button",
-        "@org_polymer_paper_dropdown_menu",
-        "@org_polymer_paper_icon_button",
-        "@org_polymer_paper_item",
-        "@org_polymer_paper_listbox",
-        "@org_polymer_paper_radio_group",
-        "@org_polymer_paper_toggle_button",
-        "@org_polymer_paper_tooltip",
+        "//tensorboard/components_polymer3/polymer:legacy_element_mixin",
+        "//tensorboard/components_polymer3/tf_dashboard_common",
+        "//tensorboard/plugins/graph/polymer3/tf_graph_common",
+        "//tensorboard/plugins/graph/polymer3/tf_graph_node_search",
+        "@npm//@polymer/decorators",
+        "@npm//@polymer/iron-icon",
+        "@npm//@polymer/paper-button",
+        "@npm//@polymer/paper-dropdown-menu",
+        "@npm//@polymer/paper-icon-button",
+        "@npm//@polymer/paper-item",
+        "@npm//@polymer/paper-listbox",
+        "@npm//@polymer/paper-radio-group",
+        "@npm//@polymer/paper-toggle-button",
+        "@npm//@polymer/paper-tooltip",
+        "@npm//@polymer/polymer",
+        "@npm//@types/lodash",
+        "@npm//lodash",
     ],
 )

@@ -1,6 +1,4 @@
-<!--
-@license
-Copyright 2016 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,19 +11,27 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
--->
+==============================================================================*/
 
-<link rel="import" href="../iron-collapse/iron-collapse.html" />
-<link rel="import" href="../iron-list/iron-list.html" />
-<link rel="import" href="../tf-imports/polymer.html" />
-<link rel="import" href="../paper-icon-button/paper-icon-button.html" />
-<link rel="import" href="../paper-item/paper-item.html" />
-<link rel="import" href="../paper-item/paper-item-body.html" />
-<link rel="import" href="../tf-graph-common/tf-graph-common.html" />
-<link rel="import" href="tf-graph-op-compat-list-item.html" />
+import {PolymerElement, html} from '@polymer/polymer';
+import {computed, customElement, property} from '@polymer/decorators';
+import * as d3 from 'd3';
 
-<dom-module id="tf-graph-op-compat-card">
-  <template>
+import '@polymer/iron-collapse';
+import '@polymer/iron-list';
+import '@polymer/paper-icon-button';
+import '@polymer/paper-item';
+import '@polymer/paper-item';
+
+import './tf-graph-op-compat-list-item';
+import * as tf_graph_hierarchy from '../tf_graph_common/hierarchy';
+import * as tf_graph_render from '../tf_graph_common/render';
+
+import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+
+@customElement('tf-graph-op-compat-card')
+class TfGraphOpCompatCard extends LegacyElementMixin(PolymerElement) {
+  static readonly template = html`
     <style>
       :host {
         max-height: 500px;
@@ -142,7 +148,7 @@ limitations under the License.
                   rx="5"
                   ry="5"
                   style="fill: url('#op-compat-fill');"
-                />
+                ></rect>
               </svg>
               <div class="op-compat-value">[[_opCompatScoreLabel]]</div>
             </div>
@@ -176,103 +182,87 @@ limitations under the License.
         </div>
       </template>
     </iron-collapse>
-  </template>
-
-  <script>
-    (function() {
-      Polymer({
-        is: 'tf-graph-op-compat-card',
-        properties: {
-          graphHierarchy: Object,
-          hierarchyParams: Object,
-          renderHierarchy: Object,
-          nodeTitle: String,
-          _templateIndex: {
-            type: Function,
-            computed: '_getTemplateIndex(graphHierarchy)',
-          },
-          _incompatibleOpNodes: {
-            type: Object,
-            computed:
-              '_getIncompatibleOpNodes(graphHierarchy, hierarchyParams)',
-          },
-          _expanded: {
-            type: Boolean,
-            value: true,
-          },
-          _opCompatScore: {
-            type: Number,
-            computed: '_computeOpCompatScore(graphHierarchy)',
-          },
-          _opCompatScoreLabel: {
-            type: String,
-            computed: '_getOpCompatScoreLabel(_opCompatScore)',
-          },
-          _opCompatColor: {
-            type: String,
-            value: tf.graph.render.OpNodeColors.COMPATIBLE,
-          },
-          _opIncompatColor: {
-            type: String,
-            value: tf.graph.render.OpNodeColors.INCOMPATIBLE,
-          },
-          _totalIncompatOps: {
-            type: Number,
-            computed: '_getTotalIncompatibleOps(graphHierarchy)',
-          },
-        },
-        _getTemplateIndex: function(graphHierarchy) {
-          return graphHierarchy.getTemplateIndex();
-        },
-        _getNode: function(nodeName, graphHierarchy) {
-          return graphHierarchy.node(nodeName);
-        },
-        _getRenderInfo: function(nodeName, renderHierarchy) {
-          return this.renderHierarchy.getOrCreateRenderNodeByName(nodeName);
-        },
-        _toggleExpanded: function() {
-          this._expanded = !this._expanded;
-        },
-        _getToggleIcon: function(expanded) {
-          return expanded ? 'expand-less' : 'expand-more';
-        },
-        _resizeList: function(selector) {
-          var list = document.querySelector(selector);
-          if (list) {
-            list.fire('iron-resize');
-          }
-        },
-        _getIncompatibleOpNodes: function(graphHierarchy, hierarchyParams) {
-          if (graphHierarchy && graphHierarchy.root) {
-            this.async(this._resizeList.bind(this, '#incompatibleOpsList'));
-            return tf.graph.hierarchy.getIncompatibleOps(
-              graphHierarchy,
-              hierarchyParams
-            );
-          }
-        },
-        _computeOpCompatScore: function(graphHierarchy) {
-          if (graphHierarchy && graphHierarchy.root) {
-            var root = graphHierarchy.root;
-            var numCompat = root.compatibilityHistogram.compatible;
-            var numIncompat = root.compatibilityHistogram.incompatible;
-            if (numCompat == 0 && numIncompat == 0) return 0;
-            var numTotal = numCompat + numIncompat;
-            // Round the ratio towards negative infinity.
-            return Math.floor((100 * numCompat) / numTotal) / 100;
-          }
-          return 0;
-        },
-        _getOpCompatScoreLabel: function(opCompatScore) {
-          return d3.format('.0%')(opCompatScore);
-        },
-        _getTotalIncompatibleOps: function(graphHierarchy) {
-          if (graphHierarchy && graphHierarchy.root) {
-            return graphHierarchy.root.compatibilityHistogram.incompatible;
-          }
-          return 0;
-        },
-      });
-    })();
-  </script>
-</dom-module>
+  `;
+  @property({type: Object})
+  graphHierarchy: any;
+  @property({type: Object})
+  hierarchyParams: object;
+  @property({type: Object})
+  renderHierarchy: any;
+  @property({type: String})
+  nodeTitle: string;
+  @property({
+    type: Boolean,
+  })
+  _expanded: boolean = true;
+  @property({
+    type: String,
+  })
+  _opCompatColor: string = tf_graph_render.OpNodeColors.COMPATIBLE;
+  @property({
+    type: String,
+  })
+  _opIncompatColor: string = tf_graph_render.OpNodeColors.INCOMPATIBLE;
+  @computed('graphHierarchy')
+  get _templateIndex(): object {
+    var graphHierarchy = this.graphHierarchy;
+    return graphHierarchy.getTemplateIndex();
+  }
+  _getNode(nodeName, graphHierarchy) {
+    return graphHierarchy.node(nodeName);
+  }
+  _getRenderInfo(nodeName, renderHierarchy) {
+    return this.renderHierarchy.getOrCreateRenderNodeByName(nodeName);
+  }
+  _toggleExpanded() {
+    this._expanded = !this._expanded;
+  }
+  _getToggleIcon(expanded) {
+    return expanded ? 'expand-less' : 'expand-more';
+  }
+  _resizeList(selector) {
+    var list = document.querySelector(selector);
+    if (list) {
+      list.fire('iron-resize');
+    }
+  }
+  @computed('graphHierarchy', 'hierarchyParams')
+  get _incompatibleOpNodes(): object {
+    var graphHierarchy = this.graphHierarchy;
+    var hierarchyParams = this.hierarchyParams;
+    if (graphHierarchy && graphHierarchy.root) {
+      this.async(this._resizeList.bind(this, '#incompatibleOpsList'));
+      return tf_graph_hierarchy.getIncompatibleOps(
+        graphHierarchy,
+        hierarchyParams as any
+      );
+    }
+  }
+  @computed('graphHierarchy')
+  get _opCompatScore(): number {
+    var graphHierarchy = this.graphHierarchy;
+    if (graphHierarchy && graphHierarchy.root) {
+      var root = graphHierarchy.root;
+      var numCompat = root.compatibilityHistogram.compatible;
+      var numIncompat = root.compatibilityHistogram.incompatible;
+      if (numCompat == 0 && numIncompat == 0) return 0;
+      var numTotal = numCompat + numIncompat;
+      // Round the ratio towards negative infinity.
+      return Math.floor((100 * numCompat) / numTotal) / 100;
+    }
+    return 0;
+  }
+  @computed('_opCompatScore')
+  get _opCompatScoreLabel(): string {
+    var opCompatScore = this._opCompatScore;
+    return d3.format('.0%')(opCompatScore);
+  }
+  @computed('graphHierarchy')
+  get _totalIncompatOps(): number {
+    var graphHierarchy = this.graphHierarchy;
+    if (graphHierarchy && graphHierarchy.root) {
+      return graphHierarchy.root.compatibilityHistogram.incompatible;
+    }
+    return 0;
+  }
+}
