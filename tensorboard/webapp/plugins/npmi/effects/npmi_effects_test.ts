@@ -1,4 +1,4 @@
-/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -104,6 +104,21 @@ describe('npmi effects', () => {
         }),
       ]);
     });
+
+    it('fails to load Annotations on plugin open', () => {
+      expect(fetchAnnotationsSpy).not.toHaveBeenCalled();
+      expect(actualActions).toEqual([]);
+
+      actions$.next(actions.npmiLoaded());
+      fetchAnnotationsSubject.error('loading failed');
+
+      expect(fetchAnnotationsSpy).toHaveBeenCalled();
+      expect(actualActions).toEqual([
+        actions.npmiAnnotationsRequested(),
+        actions.npmiMetricsAndValuesRequested(),
+        actions.npmiAnnotationsRequestFailed(),
+      ]);
+    });
   });
 
   describe('load Metrics and Values', () => {
@@ -130,7 +145,9 @@ describe('npmi effects', () => {
 
       actions$.next(actions.npmiLoaded());
       fetchMetricsSubject.next({run_1: ['count@test', 'npmi@test']});
+      fetchMetricsSubject.complete();
       fetchValuesSubject.next({run_1: [[0.001, 0.061], [-0.515, 0.15719]]});
+      fetchValuesSubject.complete();
 
       expect(fetchMetricsSpy).toHaveBeenCalled();
       expect(fetchValuesSpy).toHaveBeenCalled();
@@ -141,6 +158,26 @@ describe('npmi effects', () => {
           values: {run_1: [[0.001, 0.061], [-0.515, 0.15719]]},
           metrics: {run_1: ['count@test', 'npmi@test']},
         }),
+      ]);
+    });
+
+    it('fails to load Metrics and Values on plugin open', () => {
+      expect(fetchMetricsSpy).not.toHaveBeenCalled();
+      expect(fetchValuesSpy).not.toHaveBeenCalled();
+      expect(actualActions).toEqual([]);
+
+      actions$.next(actions.npmiLoaded());
+      fetchMetricsSubject.error('loading failed');
+      fetchValuesSubject.complete();
+      fetchValuesSubject.next({run_1: [[0.001, 0.061], [-0.515, 0.15719]]});
+      fetchValuesSubject.complete();
+
+      expect(fetchMetricsSpy).toHaveBeenCalled();
+      expect(fetchValuesSpy).toHaveBeenCalled();
+      expect(actualActions).toEqual([
+        actions.npmiAnnotationsRequested(),
+        actions.npmiMetricsAndValuesRequested(),
+        actions.npmiMetricsAndValuesRequestFailed(),
       ]);
     });
   });

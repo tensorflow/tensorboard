@@ -16,7 +16,7 @@ import {Injectable} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {Actions, createEffect, ofType} from '@ngrx/effects';
 
-import {merge, forkJoin, Observable} from 'rxjs';
+import {merge, forkJoin, Observable, EMPTY} from 'rxjs';
 import {
   filter,
   map,
@@ -24,16 +24,11 @@ import {
   mergeMap,
   tap,
   withLatestFrom,
+  catchError,
 } from 'rxjs/operators';
 
 import {NpmiHttpServerDataSource} from '../data_source/npmi_data_source';
-import {
-  State,
-  AnnotationListing,
-  MetricListing,
-  ValueListing,
-  DataLoadState,
-} from './../store/npmi_types';
+import {State, AnnotationListing, DataLoadState} from './../store/npmi_types';
 import {
   getAnnotationsLoaded,
   getMetricsAndValuesLoaded,
@@ -42,8 +37,10 @@ import {
   npmiLoaded,
   npmiAnnotationsRequested,
   npmiAnnotationsLoaded,
+  npmiAnnotationsRequestFailed,
   npmiMetricsAndValuesRequested,
   npmiMetricsAndValuesLoaded,
+  npmiMetricsAndValuesRequestFailed,
 } from './../actions';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
@@ -75,7 +72,11 @@ export class NpmiEffects {
               npmiAnnotationsLoaded({annotations: annotations})
             );
           }),
-          map(() => void null)
+          map(() => void null),
+          catchError(() => {
+            this.store.dispatch(npmiAnnotationsRequestFailed());
+            return EMPTY;
+          })
         );
       })
     );
@@ -100,7 +101,11 @@ export class NpmiEffects {
               })
             );
           }),
-          map(() => void null)
+          map(() => void null),
+          catchError(() => {
+            this.store.dispatch(npmiMetricsAndValuesRequestFailed());
+            return EMPTY;
+          })
         );
       })
     );

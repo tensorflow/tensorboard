@@ -42,12 +42,10 @@ export class NpmiHttpServerDataSource implements NpmiDataSource {
   }
 
   fetchMetrics() {
-    console.log('in metrics');
     return this.http.get<MetricListing>(this.httpPathPrefix + '/metrics');
   }
 
   fetchValues() {
-    console.log('in values');
     return this.http.get<ValueListing>(this.httpPathPrefix + '/values');
   }
 }
