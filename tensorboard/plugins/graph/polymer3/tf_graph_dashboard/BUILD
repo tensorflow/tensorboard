@@ -8,7 +8,6 @@ tf_ts_library(
     name = "tf_graph_dashboard",
     srcs = ["tf-graph-dashboard.ts"],
     strict_checks = False,
-    tags = ["manual"],
     deps = [
         "//tensorboard/components_polymer3/polymer:irons_and_papers",
         "//tensorboard/components_polymer3/polymer:legacy_element_mixin",

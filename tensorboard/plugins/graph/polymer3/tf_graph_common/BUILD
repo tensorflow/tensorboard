@@ -29,7 +29,6 @@ tf_ts_library(
         "util.ts",
     ],
     strict_checks = False,
-    tags = ["manual"],
     visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components_polymer3/polymer:dom",
