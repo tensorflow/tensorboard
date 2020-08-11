@@ -17,10 +17,10 @@ tf_ts_library(
         "//tensorboard/components_polymer3/tf_color_scale",
         "//tensorboard/components_polymer3/vz_chart_helpers",
         "//tensorboard/plugins/hparams/polymer3/tf_hparams_utils",
-        # "//tensorboard/plugins/scalar/polymer3/tf_scalar_dashboard:tf_scalar_card",
+        "//tensorboard/plugins/scalar/polymer3/tf_scalar_dashboard:tf_scalar_card",
         "@npm//@polymer/decorators",
-        "@npm//@polymer/polymer",
         "@npm//@polymer/iron-flex-layout",
         "@npm//@polymer/iron-resizable-behavior",
+        "@npm//@polymer/polymer",
     ],
 )

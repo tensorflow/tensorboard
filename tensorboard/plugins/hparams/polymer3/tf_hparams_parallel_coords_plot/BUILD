@@ -11,7 +11,6 @@ tf_ts_library(
         "interaction_manager.ts",
         "lines.ts",
         "tf-hparams-parallel-coords-plot.ts",
-        "utils.d.ts",
         "utils.ts",
     ],
     strict_checks = False,

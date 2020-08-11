@@ -15,8 +15,8 @@ limitations under the License.
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, observe, property} from '@polymer/decorators';
-import * as PolymerDom from '@polymer/polymer/lib/legacy/polymer.dom.js';
 
+import * as PolymerDom from '../../../../components_polymer3/polymer/dom';
 import '../../../../components_polymer3/polymer/irons_and_papers';
 import * as tf_hparams_utils from '../tf_hparams_utils/tf-hparams-utils';
 

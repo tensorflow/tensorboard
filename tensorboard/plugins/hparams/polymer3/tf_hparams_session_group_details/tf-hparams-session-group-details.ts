@@ -16,14 +16,14 @@ limitations under the License.
 import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, observe, property} from '@polymer/decorators';
 import * as IronResizableBehavior from '@polymer/iron-resizable-behavior';
-import {mixinBehaviors} from '@polymer/polymer/lib/legacy/class.js';
-import * as PolymerDom from '@polymer/polymer/lib/legacy/polymer.dom.js';
 
+import {mixinBehaviors} from '../../../../components_polymer3/polymer/legacy_class';
 import '../../../../components_polymer3/polymer/irons_and_papers';
 import '../../../../components_polymer3/tf_backend/tf-backend';
 import * as tf_hparams_utils from '../tf_hparams_utils/tf-hparams-utils';
 import * as tf_color_scale from '../../../../components_polymer3/tf_color_scale/palettes';
 import * as vz_chart_helpers from '../../../../components_polymer3/vz_chart_helpers/vz-chart-helpers';
+import '../../../scalar/polymer3/tf_scalar_dashboard/tf-scalar-card';
 
 // TODO: add dependency once the Polymer 3 scalar dashboard is migrated.
 // import '../tf_scalar_dashboard/tf-scalar-card';
@@ -89,6 +89,7 @@ class TfHparamsSessionGroupDetails extends mixinBehaviors(
       }
     </style>
   `;
+
   // An object for making HParams API requests to the backend.
   @property({type: Object})
   backend: any;
@@ -179,9 +180,9 @@ class TfHparamsSessionGroupDetails extends mixinBehaviors(
     (this as any).addEventListener('iron-resize', this.redraw.bind(this));
   }
   redraw() {
-    PolymerDom.dom((this as any).root)
+    this.shadowRoot
       .querySelectorAll('tf-scalar-card')
-      .forEach((c) => c.redraw());
+      .forEach((c) => (c as any).redraw());
   }
   @observe('sessionGroup.*')
   _sessionGroupChanged() {
@@ -201,13 +202,12 @@ class TfHparamsSessionGroupDetails extends mixinBehaviors(
     }
     // Reset each scalar-card by prodding 'tag'.
     // We do this so the card will reset its domain on the next load.
-    PolymerDom.dom((this as any).root)
-      .querySelectorAll('tf-scalar-card')
-      .forEach((c) => {
-        const tag = c.get('tag');
-        c.set('tag', '');
-        c.set('tag', tag);
-      });
+    this.shadowRoot.querySelectorAll('tf-scalar-card').forEach((c) => {
+      const anyCard = c as any;
+      const tag = anyCard.get('tag');
+      anyCard.set('tag', '');
+      anyCard.set('tag', tag);
+    });
   }
   _haveMetrics() {
     return (

@@ -35,7 +35,7 @@ declare namespace tf.hparams {
   export interface SessionGroup {
     name: string;
     hparams: {
-      [hparamName: string]: bool | number | string;
+      [hparamName: string]: boolean | number | string;
     };
     metric_values: MetricValue[];
     monitor_url: string;
