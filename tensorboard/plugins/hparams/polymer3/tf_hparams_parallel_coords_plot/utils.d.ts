@@ -12,11 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-declare namespace tf.hparams.parallel_coords_plot {
-  export var findClosestPath: any;
-  export var createAxisScale: any;
-  export var continuousScaleInverseImage: any;
-  export var quantileScaleInverseImage: any;
-  export var pointScaleInverseImage: any;
-}
+export var findClosestPath: any;
+export var createAxisScale: any;
+export var continuousScaleInverseImage: any;
+export var quantileScaleInverseImage: any;
+export var pointScaleInverseImage: any;
