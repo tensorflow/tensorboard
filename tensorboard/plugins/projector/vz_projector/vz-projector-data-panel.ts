@@ -389,7 +389,7 @@ namespace vz_projector {
       }
     }
 
-    private downloadMetadataClicked() {
+    private downloadMetadataDataClicked() {
       if (
         this.projector &&
         this.projector.dataSet &&
@@ -409,9 +409,26 @@ namespace vz_projector {
         });
 
         const textBlob = new Blob([tsvFile], {type: 'text/plain'});
-        this.$.downloadMetadataLink.download = 'metadata-edited.tsv';
-        this.$.downloadMetadataLink.href = window.URL.createObjectURL(textBlob);
-        this.$.downloadMetadataLink.click();
+        this.$.downloadDataLink.download = 'metadata-edited.tsv';
+        this.$.downloadDataLink.href = window.URL.createObjectURL(textBlob);
+        this.$.downloadDataLink.click();
+      }
+    }
+
+    private downloadProjectionClicked() {
+      if (this.projector && this.projector.dataSet) {
+        const state = this.projector.getCurrentState();
+        const {projections, selectedProjection} = state;
+        const projectionData = projections.map((projection) => {
+          return [0, 1, 2].map((i) => projection[`${selectedProjection}-${i}`]);
+        });
+
+        const textBlob = new Blob([JSON.stringify(projectionData)], {
+          type: 'application/json',
+        });
+        this.$.downloadDataLink.download = `projection (${selectedProjection}).json`;
+        this.$.downloadDataLink.href = window.URL.createObjectURL(textBlob);
+        this.$.downloadDataLink.click();
       }
     }
 
@@ -814,6 +831,10 @@ namespace vz_projector {
 
     _openConfigDialog(): void {
       this.$.projectorConfigDialog.open();
+    }
+
+    _openDownloadDialog(): void {
+      this.$.projectorDownloadDialog.open();
     }
   }
 
