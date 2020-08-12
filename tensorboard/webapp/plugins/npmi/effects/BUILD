@@ -29,7 +29,6 @@ tf_ts_library(
     srcs = [
         "npmi_effects_test.ts",
     ],
-    tsconfig = "//:tsconfig-test",
     deps = [
         ":effects",
         "//tensorboard/webapp:app_state",

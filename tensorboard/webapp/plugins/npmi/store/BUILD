@@ -1,5 +1,5 @@
-load("@npm_angular_bazel//:index.bzl", "ng_module")
 load("//tensorboard/defs:defs.bzl", "tf_ts_library")
+load("@npm_angular_bazel//:index.bzl", "ng_module")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -38,7 +38,6 @@ tf_ts_library(
         "npmi_reducers_test.ts",
         "npmi_selectors_test.ts",
     ],
-    tsconfig = "//:tsconfig-test",
     deps = [
         ":store",
         ":types",
