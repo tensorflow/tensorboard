@@ -19,9 +19,7 @@ import * as tf_hparams_parallel_coords_plot_interaction_manager from './interact
 import * as tf_hparams_utils from '../tf_hparams_utils/tf-hparams-utils';
 import * as tf_hparams_parallel_coords_plot_utils from './utils';
 import * as tf_hparams_query_pane from '../tf_hparams_query_pane/schema.d';
-
-// Post Polymer 3 migration, this path to api.d.ts will change.
-import * as tf_hparams_api from '../../api.d';
+import * as tf_hparams_api from '../types';
 
 export enum ScaleType {
   LINEAR = 'LINEAR',

@@ -16,7 +16,7 @@ tf_ts_library(
     strict_checks = False,
     deps = [
         "//tensorboard/components_polymer3/polymer:legacy_element_mixin",
-        "//tensorboard/plugins/hparams:api_d_ts",
+        "//tensorboard/plugins/hparams/polymer3:types",
         "//tensorboard/plugins/hparams/polymer3/tf_hparams_query_pane:schema_d_ts",
         "//tensorboard/plugins/hparams/polymer3/tf_hparams_session_group_values",
         "//tensorboard/plugins/hparams/polymer3/tf_hparams_utils",

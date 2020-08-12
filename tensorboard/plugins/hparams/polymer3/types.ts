@@ -1,4 +1,4 @@
-/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the 'License');
 you may not use this file except in compliance with the License.
@@ -19,25 +19,23 @@ limitations under the License.
  *
  * TODO(erez): Add the rest of the definitions once these are needed.
  */
-declare namespace tf.hparams {
-  export interface MetricName {
-    group: string;
-    tag: string;
-  }
+export interface MetricName {
+  group: string;
+  tag: string;
+}
 
-  export interface MetricValue {
-    name: MetricName;
-    value: number;
-    trainingStep: number;
-    wallTimeSecs: number;
-  }
+export interface MetricValue {
+  name: MetricName;
+  value: number;
+  trainingStep: number;
+  wallTimeSecs: number;
+}
 
-  export interface SessionGroup {
-    name: string;
-    hparams: {
-      [hparamName: string]: boolean | number | string;
-    };
-    metric_values: MetricValue[];
-    monitor_url: string;
-  }
+export interface SessionGroup {
+  name: string;
+  hparams: {
+    [hparamName: string]: boolean | number | string;
+  };
+  metric_values: MetricValue[];
+  monitor_url: string;
 }
