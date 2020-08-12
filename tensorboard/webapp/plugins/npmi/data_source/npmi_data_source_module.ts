@@ -12,10 +12,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {NgModule} from '@angular/core';
+import {NpmiHttpServerDataSource} from './npmi_data_source';
+import {TBHttpClientModule} from '../../../webapp_data_source/tb_http_client_module';
 
-import {State as CoreState} from './core/store/core_types';
-import {State as FeatureFlagState} from './feature_flag/store/feature_flag_types';
-import {State as NpmiState} from './plugins/npmi/store/npmi_types';
-import {State as TextState} from './plugins/text_v2/store/text_types';
-
-export type State = CoreState & FeatureFlagState & NpmiState & TextState;
+@NgModule({
+  imports: [TBHttpClientModule],
+  providers: [NpmiHttpServerDataSource],
+})
+export class NpmiServerDataSourceModule {}
