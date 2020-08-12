@@ -93,6 +93,7 @@ tf_ts_library(
         "@npm//@polymer/iron-icons",
         "@npm//@polymer/iron-iconset-svg",
         "@npm//@polymer/iron-list",
+        "@npm//@polymer/iron-pages",
         "@npm//@polymer/paper-button",
         "@npm//@polymer/paper-checkbox",
         "@npm//@polymer/paper-dialog",
