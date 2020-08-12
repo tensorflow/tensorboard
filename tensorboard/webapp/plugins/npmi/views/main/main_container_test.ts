@@ -19,13 +19,16 @@ import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 
 import {Store} from '@ngrx/store';
+import {provideMockStore, MockStore} from '@ngrx/store/testing';
+
 import {State} from '../../../../app_state';
 import {getRunSelection} from './../../../../core/store/core_selectors';
-import {provideMockStore, MockStore} from '@ngrx/store/testing';
+import {appStateFromNpmiState, createNpmiState} from '../../testing';
 
 import {MainComponent} from './main_component';
 import {MainContainer} from './main_container';
 import {RunsModule} from '../../../../runs/runs_module';
+import {MetricSearchModule} from '../metric_filters/metric_search/metric_search_module';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
@@ -35,8 +38,12 @@ describe('Npmi Main Container', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [MainComponent, MainContainer],
-      imports: [RunsModule],
-      providers: [provideMockStore({})],
+      imports: [RunsModule, MetricSearchModule],
+      providers: [
+        provideMockStore({
+          initialState: appStateFromNpmiState(createNpmiState()),
+        }),
+      ],
     }).compileComponents();
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     store.overrideSelector(getRunSelection, new Map([['run_1', true]]));

@@ -1,11 +1,8 @@
 /* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
-
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
-
     http://www.apache.org/licenses/LICENSE-2.0
-
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,22 +13,22 @@ import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 
-import {MatCheckboxModule} from '@angular/material/checkbox';
+import {MatIconModule} from '@angular/material/icon';
+import {MatAutocompleteModule} from '@angular/material/autocomplete';
+import {MatInputModule} from '@angular/material/input';
 
-import {MainComponent} from './main_component';
-import {MainContainer} from './main_container';
-import {RunsModule} from '../../../../runs/runs_module';
-import {MetricSearchModule} from '../metric_filters/metric_search/metric_search_module';
+import {MetricSearchComponent} from './metric_search_component';
+import {MetricSearchContainer} from './metric_search_container';
 
 @NgModule({
-  declarations: [MainComponent, MainContainer],
+  declarations: [MetricSearchComponent, MetricSearchContainer],
   imports: [
     CommonModule,
     FormsModule,
-    MatCheckboxModule,
-    RunsModule,
-    MetricSearchModule,
+    MatIconModule,
+    MatInputModule,
+    MatAutocompleteModule,
   ],
-  exports: [MainContainer],
+  exports: [MetricSearchContainer],
 })
-export class MainModule {}
+export class MetricSearchModule {}

@@ -15,6 +15,7 @@ limitations under the License.
 import {Component} from '@angular/core';
 import {select, Store} from '@ngrx/store';
 
+import {npmiLoaded, npmiUnloaded} from './actions';
 import {State} from '../../app_state';
 import {getRunSelection} from '../../core/store/core_selectors';
 
@@ -30,4 +31,12 @@ export class NpmiContainer {
   readonly runs$ = this.store.pipe(select(getRunSelection));
 
   constructor(private readonly store: Store<State>) {}
+
+  ngOnInit(): void {
+    this.store.dispatch(npmiLoaded());
+  }
+
+  ngOnDestroy(): void {
+    this.store.dispatch(npmiUnloaded());
+  }
 }
