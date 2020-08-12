@@ -88,12 +88,14 @@ export class CoreEffects {
   );
 
   /**
-   * HACK: COMPOSITE ACTION -- rationale: most plugins want to be able to tell
-   * when it becomes active in order to, for example, fetch necessary data. By
-   * firing changePlugin on activePlugin value set, we can prevent (1) other
-   * feature developer from responding to values changes from the store (creates
-   * composite actions) and (2) re-implement complex and brittle observable
-   * pattern.
+   * HACK: COMPOSITE ACTION -- Fire `changePlugin` on first truthy value of
+   * activePlugin on coreLoaded or pluginsListingLoaded.
+   *
+   * Rationale: most plugins want to be able to tell when it becomes active in
+   * order to, for example, fetch necessary data. By firing changePlugin on
+   * activePlugin first value set, we can prevent (1) other feature developer
+   * from responding to values changes from the store (creates composite
+   * actions) and (2) re-implement complex and brittle observable pattern.
    *
    * @export
    */

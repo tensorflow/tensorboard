@@ -330,7 +330,7 @@ describe('core_effects', () => {
 
     it(
       'ignores plugins listing loaded when activePlugin was present at the time of' +
-        ' coreLaoded',
+        ' coreLoaded',
       () => {
         store.overrideSelector(getActivePlugin, 'bar');
         store.refreshState();
