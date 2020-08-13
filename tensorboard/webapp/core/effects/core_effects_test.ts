@@ -39,6 +39,7 @@ import {
   TBHttpClientTestingModule,
   HttpTestingController,
 } from '../../webapp_data_source/tb_http_client_testing';
+import {getActivePlugin} from '../store';
 
 describe('core_effects', () => {
   let httpMock: HttpTestingController;
@@ -244,5 +245,117 @@ describe('core_effects', () => {
         httpMock.expectNone('data/plugins_listing');
       });
     });
+  });
+
+  describe('#dispatchChangePlugin', () => {
+    function createPluginsListing(): PluginsListing {
+      return {foo: createPluginMetadata('Foo')};
+    }
+
+    beforeEach(() => {
+      coreEffects.dispatchChangePlugin$.subscribe(() => {});
+    });
+
+    it('dispatches changePlugin when coreLoaded and activePlugin exists', () => {
+      store.overrideSelector(getActivePlugin, 'foo');
+      store.refreshState();
+
+      action.next(coreActions.coreLoaded());
+
+      expect(recordedActions).toEqual([
+        coreActions.changePlugin({
+          plugin: 'foo',
+        }),
+      ]);
+    });
+
+    it('does not dispatch when coreLoaded but activePlugin DNE', () => {
+      store.overrideSelector(getActivePlugin, null);
+      store.refreshState();
+
+      action.next(coreActions.coreLoaded());
+
+      expect(recordedActions).toEqual([]);
+    });
+
+    it('dispatches when plugins listing is loaded', () => {
+      store.overrideSelector(getActivePlugin, 'foo');
+      store.refreshState();
+
+      action.next(
+        coreActions.pluginsListingLoaded({plugins: createPluginsListing()})
+      );
+
+      expect(recordedActions).toEqual([
+        coreActions.changePlugin({
+          plugin: 'foo',
+        }),
+      ]);
+    });
+
+    it('does not dispatch when plugins listing loads no active plugin', () => {
+      store.overrideSelector(getActivePlugin, null);
+      store.refreshState();
+
+      action.next(
+        coreActions.pluginsListingLoaded({plugins: createPluginsListing()})
+      );
+
+      expect(recordedActions).toEqual([]);
+    });
+
+    it('does not dispatch on repeated plugins listing loads', () => {
+      store.overrideSelector(getActivePlugin, 'foo');
+      store.refreshState();
+
+      action.next(
+        coreActions.pluginsListingLoaded({plugins: createPluginsListing()})
+      );
+
+      expect(recordedActions).toEqual([
+        coreActions.changePlugin({
+          plugin: 'foo',
+        }),
+      ]);
+
+      store.overrideSelector(getActivePlugin, 'bar');
+      store.refreshState();
+
+      expect(recordedActions).toEqual([
+        coreActions.changePlugin({
+          plugin: 'foo',
+        }),
+      ]);
+    });
+
+    it(
+      'ignores plugins listing loaded when activePlugin was present at the time of' +
+        ' coreLoaded',
+      () => {
+        store.overrideSelector(getActivePlugin, 'bar');
+        store.refreshState();
+
+        action.next(coreActions.coreLoaded());
+
+        expect(recordedActions).toEqual([
+          coreActions.changePlugin({
+            plugin: 'bar',
+          }),
+        ]);
+
+        store.overrideSelector(getActivePlugin, 'foo');
+        store.refreshState();
+
+        action.next(
+          coreActions.pluginsListingLoaded({plugins: createPluginsListing()})
+        );
+
+        expect(recordedActions).toEqual([
+          coreActions.changePlugin({
+            plugin: 'bar',
+          }),
+        ]);
+      }
+    );
   });
 });
