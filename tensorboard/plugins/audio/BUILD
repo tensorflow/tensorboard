@@ -14,6 +14,7 @@ py_library(
     srcs = ["audio_plugin.py"],
     srcs_version = "PY2AND3",
     deps = [
+        ":metadata",
         "//tensorboard:errors",
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
