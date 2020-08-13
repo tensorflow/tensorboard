@@ -1,4 +1,3 @@
-import {MetricListing, ValueListing, SummaryListing} from './npmi_types';
 /* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,7 +15,13 @@ limitations under the License.
 import {Action, createReducer, on} from '@ngrx/store';
 
 import * as actions from '../actions';
-import {NpmiState, DataLoadState} from './npmi_types';
+import {
+  NpmiState,
+  DataLoadState,
+  MetricListing,
+  ValueListing,
+  SummaryListing,
+} from './npmi_types';
 import * as metricType from '../util/metric_type';
 
 // HACK: These imports are for type inference.
