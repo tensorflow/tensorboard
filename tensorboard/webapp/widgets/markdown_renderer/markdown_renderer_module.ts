@@ -16,11 +16,11 @@ limitations under the License.
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 
-import {MarkdownRenderer} from './markdown_renderer_component';
+import {MarkdownRendererComponent} from './markdown_renderer_component';
 
 @NgModule({
-  declarations: [MarkdownRenderer],
+  declarations: [MarkdownRendererComponent],
   imports: [CommonModule],
-  exports: [MarkdownRenderer],
+  exports: [MarkdownRendererComponent],
 })
 export class MarkdownRendererModule {}

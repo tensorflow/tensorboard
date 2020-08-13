@@ -13,11 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-markdown-renderer > p:first-child {
+markdown-renderer .content > p:first-child {
   margin-top: 0.3em;
 }
 
-markdown-renderer > p:last-child {
+markdown-renderer .content > p:last-child {
   margin-bottom: 0.3em;
 }
 
