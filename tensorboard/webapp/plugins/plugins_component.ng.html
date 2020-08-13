@@ -23,7 +23,7 @@ limitations under the License.
 </div>
 
 <div
-  *ngIf="pluginLoadState !== PluginLoadState.LOADED && pluginLoadState !== PluginLoadState.LOADING"
+  *ngIf="pluginLoadState === PluginLoadState.UNKNOWN_PLUGIN_ID || pluginLoadState === PluginLoadState.NO_ENABLED_PLUGINS"
   [ngSwitch]="pluginLoadState"
   class="warning"
 >
@@ -32,9 +32,7 @@ limitations under the License.
       <h3 class="unknown-plugin">
         There’s no dashboard by the name of “<code>{{activePluginId}}</code>”.
       </h3>
-      <div>
-        <p>You can select a dashboard from the list above.</p>
-      </div>
+      <p>You can select a dashboard from the list above.</p>
       <p>
         <ng-container [ngTemplateOutlet]="dateAndDataLocation"></ng-container>
       </p>
