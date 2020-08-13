@@ -17,10 +17,7 @@
     "type": "git",
     "url": "git+https://github.com/tensorflow/tensorboard.git"
   },
-  "keywords": [
-    "ml",
-    "visualization"
-  ],
+  "keywords": ["ml", "visualization"],
   "author": "TensorFlow authors",
   "license": "Apache-2.0",
   "bugs": {
@@ -104,6 +101,7 @@
     "@polymer/polymer": "^3.4.1",
     "d3": "5.7.0",
     "lodash": "^4.17.19",
+    "marked": "^1.1.1",
     "monaco-editor-core": "^0.20.0",
     "monaco-languages": "^1.10.0",
     "plottable": "^3.9.0",
