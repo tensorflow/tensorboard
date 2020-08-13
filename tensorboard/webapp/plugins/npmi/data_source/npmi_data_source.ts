@@ -36,7 +36,11 @@ export class NpmiHttpServerDataSource implements NpmiDataSource {
   constructor(private readonly http: TBHttpClient) {}
 
   fetchData() {
-    return forkJoin(this.fetchAnnotations, this.fetchMetrics, this.fetchValues);
+    return forkJoin(
+      this.fetchAnnotations(),
+      this.fetchMetrics(),
+      this.fetchValues()
+    );
   }
 
   private fetchAnnotations() {
