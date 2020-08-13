@@ -13,9 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {
-  getAnnotationsLoaded,
+  getPluginDataLoaded,
   getAnnotationsData,
-  getMetricsAndValuesLoaded,
   getCountMetricsData,
   getNpmiMetricsData,
   getCountValuesData,
@@ -26,23 +25,23 @@ import {DataLoadState} from './npmi_types';
 import {createNpmiState, createState} from '../testing';
 
 describe('npmi selectors', () => {
-  describe('getAnnotationsLoadState', () => {
+  describe('getPluginDataLoadState', () => {
     it('return correct NOT_LOADED state', () => {
       const state = createState(createNpmiState());
-      const annotationsLoaded = getAnnotationsLoaded(state);
+      const annotationsLoaded = getPluginDataLoaded(state);
       expect(annotationsLoaded.state).toBe(DataLoadState.NOT_LOADED);
     });
 
     it('returns correct LOADING state', () => {
       const state = createState(
         createNpmiState({
-          annotationsLoaded: {
+          pluginDataLoaded: {
             state: DataLoadState.LOADING,
             lastLoadedTimeInMs: null,
           },
         })
       );
-      const annotationsLoaded = getAnnotationsLoaded(state);
+      const annotationsLoaded = getPluginDataLoaded(state);
       expect(annotationsLoaded.state).toBe(DataLoadState.LOADING);
       expect(annotationsLoaded.lastLoadedTimeInMs).toBe(null);
     });
@@ -50,49 +49,13 @@ describe('npmi selectors', () => {
     it('returns correct LOADED state', () => {
       const state = createState(
         createNpmiState({
-          annotationsLoaded: {
+          pluginDataLoaded: {
             state: DataLoadState.LOADED,
             lastLoadedTimeInMs: 1234,
           },
         })
       );
-      const loaded = getAnnotationsLoaded(state);
-      expect(loaded.state).toBe(DataLoadState.LOADED);
-      expect(loaded.lastLoadedTimeInMs).toBe(1234);
-    });
-  });
-
-  describe('getMetricsAndValuesLoadState', () => {
-    it('return correct NOT_LOADED state', () => {
-      const state = createState(createNpmiState());
-      const metricsLoaded = getMetricsAndValuesLoaded(state);
-      expect(metricsLoaded.state).toBe(DataLoadState.NOT_LOADED);
-    });
-
-    it('returns correct LOADING state', () => {
-      const state = createState(
-        createNpmiState({
-          metricsAndValuesLoaded: {
-            state: DataLoadState.LOADING,
-            lastLoadedTimeInMs: null,
-          },
-        })
-      );
-      const metricsLoaded = getMetricsAndValuesLoaded(state);
-      expect(metricsLoaded.state).toBe(DataLoadState.LOADING);
-      expect(metricsLoaded.lastLoadedTimeInMs).toBe(null);
-    });
-
-    it('returns correct LOADED state', () => {
-      const state = createState(
-        createNpmiState({
-          metricsAndValuesLoaded: {
-            state: DataLoadState.LOADED,
-            lastLoadedTimeInMs: 1234,
-          },
-        })
-      );
-      const loaded = getMetricsAndValuesLoaded(state);
+      const loaded = getPluginDataLoaded(state);
       expect(loaded.state).toBe(DataLoadState.LOADED);
       expect(loaded.lastLoadedTimeInMs).toBe(1234);
     });
