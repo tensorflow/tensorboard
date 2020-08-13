@@ -16,11 +16,10 @@ import {Injectable} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {Actions, createEffect, ofType} from '@ngrx/effects';
 
-import {merge, forkJoin, Observable, EMPTY} from 'rxjs';
+import {merge, Observable, EMPTY} from 'rxjs';
 import {
   filter,
   map,
-  switchMap,
   mergeMap,
   tap,
   withLatestFrom,
@@ -28,19 +27,13 @@ import {
 } from 'rxjs/operators';
 
 import {NpmiHttpServerDataSource} from '../data_source/npmi_data_source';
-import {State, AnnotationListing, DataLoadState} from './../store/npmi_types';
-import {
-  getAnnotationsLoaded,
-  getMetricsAndValuesLoaded,
-} from './../store/npmi_selectors';
+import {State, DataLoadState} from './../store/npmi_types';
+import {getPluginDataLoaded} from './../store/npmi_selectors';
 import {
   npmiLoaded,
-  npmiAnnotationsRequested,
-  npmiAnnotationsLoaded,
-  npmiAnnotationsRequestFailed,
-  npmiMetricsAndValuesRequested,
-  npmiMetricsAndValuesLoaded,
-  npmiMetricsAndValuesRequestFailed,
+  npmiPluginDataRequested,
+  npmiPluginDataLoaded,
+  npmiPluginDataRequestFailed,
 } from './../actions';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
@@ -59,51 +52,26 @@ export class NpmiEffects {
   /** @export */
   readonly loadData$: Observable<{}>;
 
-  private loadAnnotations() {
+  private loadPluginData() {
     return this.actions$.pipe(
       ofType(npmiLoaded),
-      withLatestFrom(this.store.select(getAnnotationsLoaded)),
+      withLatestFrom(this.store.select(getPluginDataLoaded)),
       filter(([, {state}]) => state !== DataLoadState.LOADING),
-      tap(() => this.store.dispatch(npmiAnnotationsRequested())),
+      tap(() => this.store.dispatch(npmiPluginDataRequested())),
       mergeMap(() => {
-        return this.dataSource.fetchAnnotations().pipe(
-          tap((annotations: AnnotationListing) => {
+        return this.dataSource.fetchData().pipe(
+          tap(([annotations, metrics, values]) => {
             this.store.dispatch(
-              npmiAnnotationsLoaded({annotations: annotations})
-            );
-          }),
-          map(() => void null),
-          catchError(() => {
-            this.store.dispatch(npmiAnnotationsRequestFailed());
-            return EMPTY;
-          })
-        );
-      })
-    );
-  }
-
-  private loadMetricsAndValues() {
-    return this.actions$.pipe(
-      ofType(npmiLoaded),
-      withLatestFrom(this.store.select(getMetricsAndValuesLoaded)),
-      filter(([, {state}]) => state !== DataLoadState.LOADING),
-      tap(() => this.store.dispatch(npmiMetricsAndValuesRequested())),
-      switchMap(() => {
-        return forkJoin([
-          this.dataSource.fetchValues(),
-          this.dataSource.fetchMetrics(),
-        ]).pipe(
-          tap(([values, metrics]) => {
-            this.store.dispatch(
-              npmiMetricsAndValuesLoaded({
-                values: values,
+              npmiPluginDataLoaded({
+                annotations: annotations,
                 metrics: metrics,
+                values: values,
               })
             );
           }),
           map(() => void null),
           catchError(() => {
-            this.store.dispatch(npmiMetricsAndValuesRequestFailed());
+            this.store.dispatch(npmiPluginDataRequestFailed());
             return EMPTY;
           })
         );
@@ -118,12 +86,9 @@ export class NpmiEffects {
   ) {
     this.loadData$ = createEffect(
       () => {
-        const loadAnnogationsData$ = this.loadAnnotations();
-        const loadMetricsAndValuesData$ = this.loadMetricsAndValues();
+        const loadPluginData$ = this.loadPluginData();
 
-        return merge(loadAnnogationsData$, loadMetricsAndValuesData$).pipe(
-          map(() => ({}))
-        );
+        return merge(loadPluginData$).pipe(map(() => ({})));
       },
       {dispatch: false}
     );

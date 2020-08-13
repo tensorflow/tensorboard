@@ -22,16 +22,12 @@ import {
 export function createNpmiState(override?: Partial<NpmiState>): NpmiState {
   return {
     annotationsData: {},
-    annotationsLoaded: {
+    pluginDataLoaded: {
       state: DataLoadState.NOT_LOADED,
       lastLoadedTimeInMs: null,
     },
     countMetricsData: {},
     npmiMetricsData: {},
-    metricsAndValuesLoaded: {
-      state: DataLoadState.NOT_LOADED,
-      lastLoadedTimeInMs: null,
-    },
     countValuesData: {},
     npmiValuesData: {},
     countData: {},
