@@ -25,11 +25,7 @@ import * as metricType from '../util/metric_type';
 
 const initialState: NpmiState = {
   annotationsData: {},
-  annotationsLoaded: {
-    state: DataLoadState.NOT_LOADED,
-    lastLoadedTimeInMs: null,
-  },
-  metricsAndValuesLoaded: {
+  pluginDataLoaded: {
     state: DataLoadState.NOT_LOADED,
     lastLoadedTimeInMs: null,
   },
@@ -43,69 +39,32 @@ const initialState: NpmiState = {
 const reducer = createReducer(
   initialState,
   on(
-    actions.npmiAnnotationsRequested,
+    actions.npmiPluginDataRequested,
     (state: NpmiState): NpmiState => {
       return {
         ...state,
-        annotationsLoaded: {
-          ...state.annotationsLoaded,
+        pluginDataLoaded: {
+          ...state.pluginDataLoaded,
           state: DataLoadState.LOADING,
         },
       };
     }
   ),
   on(
-    actions.npmiAnnotationsRequestFailed,
+    actions.npmiPluginDataRequestFailed,
     (state: NpmiState): NpmiState => {
       return {
         ...state,
-        annotationsLoaded: {
-          ...state.annotationsLoaded,
+        pluginDataLoaded: {
+          ...state.pluginDataLoaded,
           state: DataLoadState.FAILED,
         },
       };
     }
   ),
   on(
-    actions.npmiAnnotationsLoaded,
-    (state: NpmiState, {annotations}): NpmiState => {
-      return {
-        ...state,
-        annotationsData: annotations,
-        annotationsLoaded: {
-          state: DataLoadState.LOADED,
-          lastLoadedTimeInMs: Date.now(),
-        },
-      };
-    }
-  ),
-  on(
-    actions.npmiMetricsAndValuesRequested,
-    (state: NpmiState): NpmiState => {
-      return {
-        ...state,
-        metricsAndValuesLoaded: {
-          ...state.metricsAndValuesLoaded,
-          state: DataLoadState.LOADING,
-        },
-      };
-    }
-  ),
-  on(
-    actions.npmiMetricsAndValuesRequestFailed,
-    (state: NpmiState): NpmiState => {
-      return {
-        ...state,
-        metricsAndValuesLoaded: {
-          ...state.metricsAndValuesLoaded,
-          state: DataLoadState.FAILED,
-        },
-      };
-    }
-  ),
-  on(
-    actions.npmiMetricsAndValuesLoaded,
-    (state: NpmiState, {metrics, values}): NpmiState => {
+    actions.npmiPluginDataLoaded,
+    (state: NpmiState, {annotations, metrics, values}): NpmiState => {
       const countMetricsData: MetricListing = {};
       const npmiMetricsData: MetricListing = {};
       const countValuesData: ValueListing = {};
@@ -148,7 +107,8 @@ const reducer = createReducer(
         npmiMetricsData: npmiMetricsData,
         countValuesData: countValuesData,
         npmiValuesData: npmiValuesData,
-        metricsAndValuesLoaded: {
+        annotationsData: annotations,
+        pluginDataLoaded: {
           state: DataLoadState.LOADED,
           lastLoadedTimeInMs: Date.now(),
         },

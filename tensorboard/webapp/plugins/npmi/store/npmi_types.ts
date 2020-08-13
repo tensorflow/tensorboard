@@ -40,10 +40,9 @@ export interface SummaryListing {
 }
 
 export interface NpmiState {
-  annotationsData: AnnotationListing;
-  annotationsLoaded: LoadState;
+  pluginDataLoaded: LoadState;
 
-  metricsAndValuesLoaded: LoadState;
+  annotationsData: AnnotationListing;
 
   npmiMetricsData: MetricListing;
   countMetricsData: MetricListing;
