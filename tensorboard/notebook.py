@@ -28,6 +28,7 @@ import random
 import shlex
 import textwrap
 import time
+import sys
 
 try:
     import html
@@ -46,6 +47,7 @@ from tensorboard import manager
 # Return values for `_get_context` (see that function's docs for
 # details).
 _CONTEXT_COLAB = "_CONTEXT_COLAB"
+_CONTEXT_DATABRICKS = "_CONTEXT_DATABRICKS"
 _CONTEXT_IPYTHON = "_CONTEXT_IPYTHON"
 _CONTEXT_NONE = "_CONTEXT_NONE"
 
@@ -73,6 +75,15 @@ def _get_context():
         if IPython.get_ipython() is not None:
             # We'll assume that we're in a Colab notebook context.
             return _CONTEXT_COLAB
+
+    # In Databricks, the `dbutils` module is preloaded.
+    try:
+        import IPython
+    except ImportError:
+        pass
+    else:
+        if IPython.get_ipython() is not None and "dbutils" in sys.modules:
+            return _CONTEXT_DATABRICKS
 
     # In an IPython command line shell or Jupyter notebook, we can
     # directly query whether we're in a notebook context.
@@ -314,6 +325,7 @@ def _display(port=None, height=None, print_message=False, display_handle=None):
 
     fn = {
         _CONTEXT_COLAB: _display_colab,
+        _CONTEXT_DATABRICKS: _display_databricks,
         _CONTEXT_IPYTHON: _display_ipython,
         _CONTEXT_NONE: _display_cli,
     }[_get_context()]
@@ -367,6 +379,11 @@ def _display_colab(port, height, display_handle):
     else:
         IPython.display.display(script)
 
+def _display_databricks(port, height, display_handle):
+    import IPython
+    ip_shell = IPython.get_ipython()
+    dbutils = ip_shell.ns_table["user_global"]["dbutils"]
+    dbutils.tensorboard.display(port, height, display_handle)
 
 def _display_ipython(port, height, display_handle):
     import IPython.display
