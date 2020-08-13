@@ -18,6 +18,7 @@ import {DataLoadState} from './npmi_types';
 import {createNpmiState} from '../testing';
 
 describe('npmi_reducers', () => {
+<<<<<<< HEAD
   describe('Data loading', () => {
     it('sets pluginDataLoaded to loading on requesting Data', () => {
       const state = createNpmiState();
@@ -29,24 +30,127 @@ describe('npmi_reducers', () => {
     it('set pluginDataLoaded to failed on request failure', () => {
       const state = createNpmiState({
         pluginDataLoaded: {
+=======
+  describe('Annotations loading', () => {
+    it('sets annotationsLoaded to loading on requesting annotations', () => {
+      const state = createNpmiState();
+      const nextState = reducers(state, actions.npmiAnnotationsRequested());
+      expect(nextState.annotationsLoaded.state).toBe(DataLoadState.LOADING);
+      expect(nextState.annotationsLoaded.lastLoadedTimeInMs).toBeNull();
+    });
+
+    it('set annotationsLoaded to failed on request failure', () => {
+      const state = createNpmiState({
+        annotationsLoaded: {
+>>>>>>> 7dcbfe1126cc9c49a6c9b9fede31bdb608beb2ff
           state: DataLoadState.LOADING,
           lastLoadedTimeInMs: null,
         },
       });
+<<<<<<< HEAD
       const nextState = reducers(state, actions.npmiPluginDataRequestFailed());
       expect(nextState.pluginDataLoaded.state).toBe(DataLoadState.FAILED);
       expect(nextState.pluginDataLoaded.lastLoadedTimeInMs).toBeNull();
     });
 
     it('sets pluginDataLoaded & plugin Data on successful load', () => {
+=======
+      const nextState = reducers(state, actions.npmiAnnotationsRequestFailed());
+      expect(nextState.annotationsLoaded.state).toBe(DataLoadState.FAILED);
+      expect(nextState.annotationsLoaded.lastLoadedTimeInMs).toBeNull();
+    });
+
+    it('sets annotationsLoaded & annotations on successful load', () => {
+>>>>>>> 7dcbfe1126cc9c49a6c9b9fede31bdb608beb2ff
       const state = createNpmiState();
       const t0 = Date.now();
       const nextState = reducers(
         state,
+<<<<<<< HEAD
         actions.npmiPluginDataLoaded({
           annotations: {
             run_1: ['annotation_1', 'annotation_2'],
           },
+=======
+        actions.npmiAnnotationsLoaded({
+          annotations: {
+            run_1: ['annotation_1', 'annotation_2'],
+          },
+        })
+      );
+      expect(nextState.annotationsLoaded.state).toBe(DataLoadState.LOADED);
+      expect(
+        nextState.annotationsLoaded.lastLoadedTimeInMs
+      ).toBeGreaterThanOrEqual(t0);
+      expect(nextState.annotationsData).toEqual({
+        run_1: ['annotation_1', 'annotation_2'],
+      });
+    });
+
+    it('overrides existing annotations on successful annotations loading', () => {
+      const state = createNpmiState({
+        annotationsData: {
+          run_1: ['annotation_1', 'annotation_2'],
+        },
+        annotationsLoaded: {
+          state: DataLoadState.LOADED,
+          lastLoadedTimeInMs: 0,
+        },
+      });
+      const t0 = Date.now();
+      const nextState = reducers(
+        state,
+        actions.npmiAnnotationsLoaded({
+          annotations: {
+            run_1: ['annotation_new_1', 'annotation_new_2'],
+          },
+        })
+      );
+      expect(nextState.annotationsLoaded.state).toBe(DataLoadState.LOADED);
+      expect(
+        nextState.annotationsLoaded.lastLoadedTimeInMs
+      ).toBeGreaterThanOrEqual(t0);
+      expect(nextState.annotationsData).toEqual({
+        run_1: ['annotation_new_1', 'annotation_new_2'],
+      });
+    });
+  });
+
+  describe('Metrics and Values loading', () => {
+    it('sets metricsAndValuesLoaded to loading on requesting', () => {
+      const state = createNpmiState();
+      const nextState = reducers(
+        state,
+        actions.npmiMetricsAndValuesRequested()
+      );
+      expect(nextState.metricsAndValuesLoaded.state).toBe(
+        DataLoadState.LOADING
+      );
+      expect(nextState.metricsAndValuesLoaded.lastLoadedTimeInMs).toBeNull();
+    });
+
+    it('set metricsLoaded to failed on request failure', () => {
+      const state = createNpmiState({
+        metricsAndValuesLoaded: {
+          state: DataLoadState.LOADING,
+          lastLoadedTimeInMs: null,
+        },
+      });
+      const nextState = reducers(
+        state,
+        actions.npmiMetricsAndValuesRequestFailed()
+      );
+      expect(nextState.metricsAndValuesLoaded.state).toBe(DataLoadState.FAILED);
+      expect(nextState.metricsAndValuesLoaded.lastLoadedTimeInMs).toBeNull();
+    });
+
+    it('sets metricsAncValuesLoaded, metrics & values on successful load', () => {
+      const state = createNpmiState();
+      const t0 = Date.now();
+      const nextState = reducers(
+        state,
+        actions.npmiMetricsAndValuesLoaded({
+>>>>>>> 7dcbfe1126cc9c49a6c9b9fede31bdb608beb2ff
           metrics: {
             run_1: [
               'count@test2',
@@ -64,6 +168,7 @@ describe('npmi_reducers', () => {
           },
         })
       );
+<<<<<<< HEAD
       expect(nextState.pluginDataLoaded.state).toBe(DataLoadState.LOADED);
       expect(
         nextState.pluginDataLoaded.lastLoadedTimeInMs
@@ -71,6 +176,12 @@ describe('npmi_reducers', () => {
       expect(nextState.annotationsData).toEqual({
         run_1: ['annotation_1', 'annotation_2'],
       });
+=======
+      expect(nextState.metricsAndValuesLoaded.state).toBe(DataLoadState.LOADED);
+      expect(
+        nextState.metricsAndValuesLoaded.lastLoadedTimeInMs
+      ).toBeGreaterThanOrEqual(t0);
+>>>>>>> 7dcbfe1126cc9c49a6c9b9fede31bdb608beb2ff
       expect(nextState.countMetricsData).toEqual({
         run_1: ['count@test2', 'count@test1'],
       });
@@ -88,6 +199,7 @@ describe('npmi_reducers', () => {
       });
     });
 
+<<<<<<< HEAD
     it('overrides existing annotations on successful annotations loading', () => {
       const state = createNpmiState({
         pluginDataLoaded: {
@@ -97,6 +209,10 @@ describe('npmi_reducers', () => {
         annotationsData: {
           run_1: ['annotation_1', 'annotation_2'],
         },
+=======
+    it('overrides existing metrics and values on successful loading', () => {
+      const state = createNpmiState({
+>>>>>>> 7dcbfe1126cc9c49a6c9b9fede31bdb608beb2ff
         npmiMetricsData: {
           run_1: ['nPMI@test1', 'nPMI@test2'],
         },
@@ -113,14 +229,25 @@ describe('npmi_reducers', () => {
         countData: {
           run_1: [3510517, 1396813],
         },
+<<<<<<< HEAD
+=======
+        metricsAndValuesLoaded: {
+          state: DataLoadState.LOADED,
+          lastLoadedTimeInMs: 0,
+        },
+>>>>>>> 7dcbfe1126cc9c49a6c9b9fede31bdb608beb2ff
       });
       const t0 = Date.now();
       const nextState = reducers(
         state,
+<<<<<<< HEAD
         actions.npmiPluginDataLoaded({
           annotations: {
             run_1: ['annotation_new_1', 'annotation_new_2'],
           },
+=======
+        actions.npmiMetricsAndValuesLoaded({
+>>>>>>> 7dcbfe1126cc9c49a6c9b9fede31bdb608beb2ff
           metrics: {
             run_1: [
               'count',
@@ -138,6 +265,7 @@ describe('npmi_reducers', () => {
           },
         })
       );
+<<<<<<< HEAD
       expect(nextState.pluginDataLoaded.state).toBe(DataLoadState.LOADED);
       expect(
         nextState.pluginDataLoaded.lastLoadedTimeInMs
@@ -145,6 +273,12 @@ describe('npmi_reducers', () => {
       expect(nextState.annotationsData).toEqual({
         run_1: ['annotation_new_1', 'annotation_new_2'],
       });
+=======
+      expect(nextState.metricsAndValuesLoaded.state).toBe(DataLoadState.LOADED);
+      expect(
+        nextState.metricsAndValuesLoaded.lastLoadedTimeInMs
+      ).toBeGreaterThanOrEqual(t0);
+>>>>>>> 7dcbfe1126cc9c49a6c9b9fede31bdb608beb2ff
       expect(nextState.countMetricsData).toEqual({
         run_1: ['count@newtest1', 'count@newtest2'],
       });

@@ -16,10 +16,18 @@ import {Injectable} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {Actions, createEffect, ofType} from '@ngrx/effects';
 
+<<<<<<< HEAD
 import {merge, Observable, EMPTY} from 'rxjs';
 import {
   filter,
   map,
+=======
+import {merge, forkJoin, Observable, EMPTY} from 'rxjs';
+import {
+  filter,
+  map,
+  switchMap,
+>>>>>>> 7dcbfe1126cc9c49a6c9b9fede31bdb608beb2ff
   mergeMap,
   tap,
   withLatestFrom,
@@ -27,6 +35,7 @@ import {
 } from 'rxjs/operators';
 
 import {NpmiHttpServerDataSource} from '../data_source/npmi_data_source';
+<<<<<<< HEAD
 import {State, DataLoadState} from './../store/npmi_types';
 import {getPluginDataLoaded} from './../store/npmi_selectors';
 import {
@@ -34,6 +43,21 @@ import {
   npmiPluginDataRequested,
   npmiPluginDataLoaded,
   npmiPluginDataRequestFailed,
+=======
+import {State, AnnotationListing, DataLoadState} from './../store/npmi_types';
+import {
+  getAnnotationsLoaded,
+  getMetricsAndValuesLoaded,
+} from './../store/npmi_selectors';
+import {
+  npmiLoaded,
+  npmiAnnotationsRequested,
+  npmiAnnotationsLoaded,
+  npmiAnnotationsRequestFailed,
+  npmiMetricsAndValuesRequested,
+  npmiMetricsAndValuesLoaded,
+  npmiMetricsAndValuesRequestFailed,
+>>>>>>> 7dcbfe1126cc9c49a6c9b9fede31bdb608beb2ff
 } from './../actions';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
@@ -52,6 +76,7 @@ export class NpmiEffects {
   /** @export */
   readonly loadData$: Observable<{}>;
 
+<<<<<<< HEAD
   private loadPluginData() {
     return this.actions$.pipe(
       ofType(npmiLoaded),
@@ -66,12 +91,57 @@ export class NpmiEffects {
                 annotations: annotations,
                 metrics: metrics,
                 values: values,
+=======
+  private loadAnnotations() {
+    return this.actions$.pipe(
+      ofType(npmiLoaded),
+      withLatestFrom(this.store.select(getAnnotationsLoaded)),
+      filter(([, {state}]) => state !== DataLoadState.LOADING),
+      tap(() => this.store.dispatch(npmiAnnotationsRequested())),
+      mergeMap(() => {
+        return this.dataSource.fetchAnnotations().pipe(
+          tap((annotations: AnnotationListing) => {
+            this.store.dispatch(
+              npmiAnnotationsLoaded({annotations: annotations})
+            );
+          }),
+          map(() => void null),
+          catchError(() => {
+            this.store.dispatch(npmiAnnotationsRequestFailed());
+            return EMPTY;
+          })
+        );
+      })
+    );
+  }
+
+  private loadMetricsAndValues() {
+    return this.actions$.pipe(
+      ofType(npmiLoaded),
+      withLatestFrom(this.store.select(getMetricsAndValuesLoaded)),
+      filter(([, {state}]) => state !== DataLoadState.LOADING),
+      tap(() => this.store.dispatch(npmiMetricsAndValuesRequested())),
+      switchMap(() => {
+        return forkJoin([
+          this.dataSource.fetchValues(),
+          this.dataSource.fetchMetrics(),
+        ]).pipe(
+          tap(([values, metrics]) => {
+            this.store.dispatch(
+              npmiMetricsAndValuesLoaded({
+                values: values,
+                metrics: metrics,
+>>>>>>> 7dcbfe1126cc9c49a6c9b9fede31bdb608beb2ff
               })
             );
           }),
           map(() => void null),
           catchError(() => {
+<<<<<<< HEAD
             this.store.dispatch(npmiPluginDataRequestFailed());
+=======
+            this.store.dispatch(npmiMetricsAndValuesRequestFailed());
+>>>>>>> 7dcbfe1126cc9c49a6c9b9fede31bdb608beb2ff
             return EMPTY;
           })
         );
@@ -86,9 +156,18 @@ export class NpmiEffects {
   ) {
     this.loadData$ = createEffect(
       () => {
+<<<<<<< HEAD
         const loadPluginData$ = this.loadPluginData();
 
         return merge(loadPluginData$).pipe(map(() => ({})));
+=======
+        const loadAnnogationsData$ = this.loadAnnotations();
+        const loadMetricsAndValuesData$ = this.loadMetricsAndValues();
+
+        return merge(loadAnnogationsData$, loadMetricsAndValuesData$).pipe(
+          map(() => ({}))
+        );
+>>>>>>> 7dcbfe1126cc9c49a6c9b9fede31bdb608beb2ff
       },
       {dispatch: false}
     );

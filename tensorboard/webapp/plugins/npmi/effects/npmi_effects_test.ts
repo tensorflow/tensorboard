@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 import {MetricListing} from './../store/npmi_types';
+=======
+>>>>>>> 7dcbfe1126cc9c49a6c9b9fede31bdb608beb2ff
 /* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,7 +32,14 @@ import {
   AnnotationListing,
   ValueListing,
 } from '../store/npmi_types';
+<<<<<<< HEAD
 import {getPluginDataLoaded} from '../store/npmi_selectors';
+=======
+import {
+  getAnnotationsLoaded,
+  getMetricsAndValuesLoaded,
+} from '../store/npmi_selectors';
+>>>>>>> 7dcbfe1126cc9c49a6c9b9fede31bdb608beb2ff
 import * as actions from '../actions';
 
 describe('npmi effects', () => {
@@ -63,13 +73,22 @@ describe('npmi effects', () => {
     });
     effects = TestBed.inject(NpmiEffects);
     dataSource = TestBed.inject(NpmiHttpServerDataSource);
+<<<<<<< HEAD
     store.overrideSelector(getPluginDataLoaded, {
+=======
+    store.overrideSelector(getAnnotationsLoaded, {
+      state: DataLoadState.NOT_LOADED,
+      lastLoadedTimeInMs: null,
+    });
+    store.overrideSelector(getMetricsAndValuesLoaded, {
+>>>>>>> 7dcbfe1126cc9c49a6c9b9fede31bdb608beb2ff
       state: DataLoadState.NOT_LOADED,
       lastLoadedTimeInMs: null,
     });
     effects.loadData$.subscribe();
   });
 
+<<<<<<< HEAD
   describe('load Plugin Data', () => {
     let fetchDataSpy: jasmine.Spy;
     let fetchDataSubject: Subject<
@@ -99,6 +118,87 @@ describe('npmi effects', () => {
         actions.npmiPluginDataRequested(),
         actions.npmiPluginDataLoaded({
           annotations: {run_1: ['annotation_1', 'annotation_2']},
+=======
+  describe('load Annotations', () => {
+    let fetchAnnotationsSpy: jasmine.Spy;
+    let fetchAnnotationsSubject: Subject<AnnotationListing>;
+
+    beforeEach(() => {
+      fetchAnnotationsSubject = new Subject();
+      fetchAnnotationsSpy = spyOn(
+        dataSource,
+        'fetchAnnotations'
+      ).and.returnValue(fetchAnnotationsSubject);
+    });
+
+    it('loads Annotations on plugin open if data is not loaded', () => {
+      expect(fetchAnnotationsSpy).not.toHaveBeenCalled();
+      expect(actualActions).toEqual([]);
+
+      actions$.next(actions.npmiLoaded());
+      fetchAnnotationsSubject.next({run_1: ['test_1', 'test_2']});
+
+      expect(fetchAnnotationsSpy).toHaveBeenCalled();
+      expect(actualActions).toEqual([
+        actions.npmiAnnotationsRequested(),
+        actions.npmiMetricsAndValuesRequested(),
+        actions.npmiAnnotationsLoaded({
+          annotations: {run_1: ['test_1', 'test_2']},
+        }),
+      ]);
+    });
+
+    it('fails to load Annotations on plugin open', () => {
+      expect(fetchAnnotationsSpy).not.toHaveBeenCalled();
+      expect(actualActions).toEqual([]);
+
+      actions$.next(actions.npmiLoaded());
+      fetchAnnotationsSubject.error('loading failed');
+
+      expect(fetchAnnotationsSpy).toHaveBeenCalled();
+      expect(actualActions).toEqual([
+        actions.npmiAnnotationsRequested(),
+        actions.npmiMetricsAndValuesRequested(),
+        actions.npmiAnnotationsRequestFailed(),
+      ]);
+    });
+  });
+
+  describe('load Metrics and Values', () => {
+    let fetchMetricsSpy: jasmine.Spy;
+    let fetchMetricsSubject: Subject<AnnotationListing>;
+    let fetchValuesSpy: jasmine.Spy;
+    let fetchValuesSubject: Subject<ValueListing>;
+
+    beforeEach(() => {
+      fetchMetricsSubject = new Subject();
+      fetchValuesSubject = new Subject();
+      fetchMetricsSpy = spyOn(dataSource, 'fetchMetrics').and.returnValue(
+        fetchMetricsSubject
+      );
+      fetchValuesSpy = spyOn(dataSource, 'fetchValues').and.returnValue(
+        fetchValuesSubject
+      );
+    });
+
+    it('loads Metrics and Values on plugin open if data is not loaded', () => {
+      expect(fetchMetricsSpy).not.toHaveBeenCalled();
+      expect(fetchValuesSpy).not.toHaveBeenCalled();
+      expect(actualActions).toEqual([]);
+
+      actions$.next(actions.npmiLoaded());
+      fetchMetricsSubject.next({run_1: ['count@test', 'npmi@test']});
+      fetchMetricsSubject.complete();
+      fetchValuesSubject.next({run_1: [[0.001, 0.061], [-0.515, 0.15719]]});
+      fetchValuesSubject.complete();
+
+      expect(fetchMetricsSpy).toHaveBeenCalled();
+      expect(fetchValuesSpy).toHaveBeenCalled();
+      expect(actualActions).toEqual([
+        actions.npmiAnnotationsRequested(),
+        actions.npmiMetricsAndValuesRequested(),
+        actions.npmiMetricsAndValuesLoaded({
+>>>>>>> 7dcbfe1126cc9c49a6c9b9fede31bdb608beb2ff
           values: {run_1: [[0.001, 0.061], [-0.515, 0.15719]]},
           metrics: {run_1: ['count@test', 'npmi@test']},
         }),
@@ -106,6 +206,7 @@ describe('npmi effects', () => {
     });
 
     it('fails to load Metrics and Values on plugin open', () => {
+<<<<<<< HEAD
       expect(fetchDataSpy).not.toHaveBeenCalled();
       expect(actualActions).toEqual([]);
 
@@ -116,6 +217,24 @@ describe('npmi effects', () => {
       expect(actualActions).toEqual([
         actions.npmiPluginDataRequested(),
         actions.npmiPluginDataRequestFailed(),
+=======
+      expect(fetchMetricsSpy).not.toHaveBeenCalled();
+      expect(fetchValuesSpy).not.toHaveBeenCalled();
+      expect(actualActions).toEqual([]);
+
+      actions$.next(actions.npmiLoaded());
+      fetchMetricsSubject.error('loading failed');
+      fetchValuesSubject.complete();
+      fetchValuesSubject.next({run_1: [[0.001, 0.061], [-0.515, 0.15719]]});
+      fetchValuesSubject.complete();
+
+      expect(fetchMetricsSpy).toHaveBeenCalled();
+      expect(fetchValuesSpy).toHaveBeenCalled();
+      expect(actualActions).toEqual([
+        actions.npmiAnnotationsRequested(),
+        actions.npmiMetricsAndValuesRequested(),
+        actions.npmiMetricsAndValuesRequestFailed(),
+>>>>>>> 7dcbfe1126cc9c49a6c9b9fede31bdb608beb2ff
       ]);
     });
   });

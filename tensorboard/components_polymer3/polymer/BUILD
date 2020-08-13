@@ -119,3 +119,13 @@ tf_ts_library(
         "@npm//@polymer/paper-tooltip",
     ],
 )
+
+tf_ts_library(
+    name = "legacy_class",
+    srcs = [
+        "legacy_class.ts",
+    ],
+    deps = [
+        "@npm//@polymer/polymer",
+    ],
+)
