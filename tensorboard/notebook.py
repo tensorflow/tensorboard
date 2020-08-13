@@ -379,11 +379,14 @@ def _display_colab(port, height, display_handle):
     else:
         IPython.display.display(script)
 
+
 def _display_databricks(port, height, display_handle):
     import IPython
+
     ip_shell = IPython.get_ipython()
     dbutils = ip_shell.ns_table["user_global"]["dbutils"]
     dbutils.tensorboard.display(port, height, display_handle)
+
 
 def _display_ipython(port, height, display_handle):
     import IPython.display
