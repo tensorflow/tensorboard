@@ -18,25 +18,15 @@ import {
   ValueListing,
 } from './../store/npmi_types';
 import {Injectable} from '@angular/core';
-<<<<<<< HEAD
 import {Observable, forkJoin} from 'rxjs';
-=======
-import {Observable} from 'rxjs';
->>>>>>> 7dcbfe1126cc9c49a6c9b9fede31bdb608beb2ff
 import {TBHttpClient} from '../../../webapp_data_source/tb_http_client';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 export abstract class NpmiDataSource {
-<<<<<<< HEAD
   abstract fetchData(): Observable<
     [AnnotationListing, MetricListing, ValueListing]
   >;
-=======
-  abstract fetchAnnotations(): Observable<AnnotationListing>;
-  abstract fetchMetrics(): Observable<MetricListing>;
-  abstract fetchValues(): Observable<ValueListing>;
->>>>>>> 7dcbfe1126cc9c49a6c9b9fede31bdb608beb2ff
 }
 
 @Injectable()
@@ -45,33 +35,21 @@ export class NpmiHttpServerDataSource implements NpmiDataSource {
 
   constructor(private readonly http: TBHttpClient) {}
 
-<<<<<<< HEAD
   fetchData() {
     return forkJoin(this.fetchAnnotations, this.fetchMetrics, this.fetchValues);
   }
 
   private fetchAnnotations() {
-=======
-  fetchAnnotations() {
->>>>>>> 7dcbfe1126cc9c49a6c9b9fede31bdb608beb2ff
     return this.http.get<AnnotationListing>(
       this.httpPathPrefix + '/annotations'
     );
   }
 
-<<<<<<< HEAD
   private fetchMetrics() {
     return this.http.get<MetricListing>(this.httpPathPrefix + '/metrics');
   }
 
   private fetchValues() {
-=======
-  fetchMetrics() {
-    return this.http.get<MetricListing>(this.httpPathPrefix + '/metrics');
-  }
-
-  fetchValues() {
->>>>>>> 7dcbfe1126cc9c49a6c9b9fede31bdb608beb2ff
     return this.http.get<ValueListing>(this.httpPathPrefix + '/values');
   }
 }

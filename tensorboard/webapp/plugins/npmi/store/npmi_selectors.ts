@@ -34,7 +34,6 @@ const selectNpmiState = createFeatureSelector<State, NpmiState>(
   NPMI_FEATURE_KEY
 );
 
-<<<<<<< HEAD
 export const getPluginDataLoaded = createSelector(
   selectNpmiState,
   (state: NpmiState): LoadState => {
@@ -46,19 +45,6 @@ export const getAnnotationsData = createSelector(
   selectNpmiState,
   (state: NpmiState): AnnotationListing => {
     return state.annotationsData;
-=======
-export const getAnnotationsData = createSelector(
-  selectNpmiState,
-  (state: NpmiState): AnnotationListing => {
-    return state.annotationsData;
-  }
-);
-
-export const getAnnotationsLoaded = createSelector(
-  selectNpmiState,
-  (state: NpmiState): LoadState => {
-    return state.annotationsLoaded;
->>>>>>> 7dcbfe1126cc9c49a6c9b9fede31bdb608beb2ff
   }
 );
 
@@ -76,16 +62,6 @@ export const getNpmiMetricsData = createSelector(
   }
 );
 
-<<<<<<< HEAD
-=======
-export const getMetricsAndValuesLoaded = createSelector(
-  selectNpmiState,
-  (state: NpmiState): LoadState => {
-    return state.metricsAndValuesLoaded;
-  }
-);
-
->>>>>>> 7dcbfe1126cc9c49a6c9b9fede31bdb608beb2ff
 export const getCountValuesData = createSelector(
   selectNpmiState,
   (state: NpmiState): ValueListing => {

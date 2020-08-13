@@ -30,7 +30,6 @@ export const npmiLoaded = createAction('[NPMI] nPMI Loaded');
 
 export const npmiUnloaded = createAction('[NPMI] nPMI Unloaded');
 
-<<<<<<< HEAD
 export const npmiPluginDataRequested = createAction(
   '[NPMI] nPMI Plugin Data Requested'
 );
@@ -46,30 +45,4 @@ export const npmiPluginDataLoaded = createAction(
 
 export const npmiPluginDataRequestFailed = createAction(
   '[NPMI] nPMI Plugin Data Request Failed'
-=======
-export const npmiAnnotationsRequested = createAction(
-  '[NPMI] nPMI Annotations Requested'
-);
-
-export const npmiAnnotationsLoaded = createAction(
-  '[NPMI] nPMI Annotations Loaded',
-  props<{annotations: AnnotationListing}>()
-);
-
-export const npmiAnnotationsRequestFailed = createAction(
-  '[NPMI] nPMI Annotations Request Failed'
-);
-
-export const npmiMetricsAndValuesRequested = createAction(
-  '[NPMI] nPMI Metrics and Values Requested'
-);
-
-export const npmiMetricsAndValuesLoaded = createAction(
-  '[NPMI] nPMI Metrics and Values Loaded',
-  props<{metrics: MetricListing; values: ValueListing}>()
-);
-
-export const npmiMetricsAndValuesRequestFailed = createAction(
-  '[NPMI] nPMI Metrics and Values Request Failed'
->>>>>>> 7dcbfe1126cc9c49a6c9b9fede31bdb608beb2ff
 );

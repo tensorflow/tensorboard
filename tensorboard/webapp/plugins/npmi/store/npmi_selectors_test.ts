@@ -13,14 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {
-<<<<<<< HEAD
   getPluginDataLoaded,
   getAnnotationsData,
-=======
-  getAnnotationsLoaded,
-  getAnnotationsData,
-  getMetricsAndValuesLoaded,
->>>>>>> 7dcbfe1126cc9c49a6c9b9fede31bdb608beb2ff
   getCountMetricsData,
   getNpmiMetricsData,
   getCountValuesData,
@@ -31,38 +25,23 @@ import {DataLoadState} from './npmi_types';
 import {createNpmiState, createState} from '../testing';
 
 describe('npmi selectors', () => {
-<<<<<<< HEAD
   describe('getPluginDataLoadState', () => {
     it('return correct NOT_LOADED state', () => {
       const state = createState(createNpmiState());
       const annotationsLoaded = getPluginDataLoaded(state);
-=======
-  describe('getAnnotationsLoadState', () => {
-    it('return correct NOT_LOADED state', () => {
-      const state = createState(createNpmiState());
-      const annotationsLoaded = getAnnotationsLoaded(state);
->>>>>>> 7dcbfe1126cc9c49a6c9b9fede31bdb608beb2ff
       expect(annotationsLoaded.state).toBe(DataLoadState.NOT_LOADED);
     });
 
     it('returns correct LOADING state', () => {
       const state = createState(
         createNpmiState({
-<<<<<<< HEAD
           pluginDataLoaded: {
-=======
-          annotationsLoaded: {
->>>>>>> 7dcbfe1126cc9c49a6c9b9fede31bdb608beb2ff
             state: DataLoadState.LOADING,
             lastLoadedTimeInMs: null,
           },
         })
       );
-<<<<<<< HEAD
       const annotationsLoaded = getPluginDataLoaded(state);
-=======
-      const annotationsLoaded = getAnnotationsLoaded(state);
->>>>>>> 7dcbfe1126cc9c49a6c9b9fede31bdb608beb2ff
       expect(annotationsLoaded.state).toBe(DataLoadState.LOADING);
       expect(annotationsLoaded.lastLoadedTimeInMs).toBe(null);
     });
@@ -70,57 +49,13 @@ describe('npmi selectors', () => {
     it('returns correct LOADED state', () => {
       const state = createState(
         createNpmiState({
-<<<<<<< HEAD
           pluginDataLoaded: {
-=======
-          annotationsLoaded: {
->>>>>>> 7dcbfe1126cc9c49a6c9b9fede31bdb608beb2ff
             state: DataLoadState.LOADED,
             lastLoadedTimeInMs: 1234,
           },
         })
       );
-<<<<<<< HEAD
       const loaded = getPluginDataLoaded(state);
-=======
-      const loaded = getAnnotationsLoaded(state);
-      expect(loaded.state).toBe(DataLoadState.LOADED);
-      expect(loaded.lastLoadedTimeInMs).toBe(1234);
-    });
-  });
-
-  describe('getMetricsAndValuesLoadState', () => {
-    it('return correct NOT_LOADED state', () => {
-      const state = createState(createNpmiState());
-      const metricsLoaded = getMetricsAndValuesLoaded(state);
-      expect(metricsLoaded.state).toBe(DataLoadState.NOT_LOADED);
-    });
-
-    it('returns correct LOADING state', () => {
-      const state = createState(
-        createNpmiState({
-          metricsAndValuesLoaded: {
-            state: DataLoadState.LOADING,
-            lastLoadedTimeInMs: null,
-          },
-        })
-      );
-      const metricsLoaded = getMetricsAndValuesLoaded(state);
-      expect(metricsLoaded.state).toBe(DataLoadState.LOADING);
-      expect(metricsLoaded.lastLoadedTimeInMs).toBe(null);
-    });
-
-    it('returns correct LOADED state', () => {
-      const state = createState(
-        createNpmiState({
-          metricsAndValuesLoaded: {
-            state: DataLoadState.LOADED,
-            lastLoadedTimeInMs: 1234,
-          },
-        })
-      );
-      const loaded = getMetricsAndValuesLoaded(state);
->>>>>>> 7dcbfe1126cc9c49a6c9b9fede31bdb608beb2ff
       expect(loaded.state).toBe(DataLoadState.LOADED);
       expect(loaded.lastLoadedTimeInMs).toBe(1234);
     });
