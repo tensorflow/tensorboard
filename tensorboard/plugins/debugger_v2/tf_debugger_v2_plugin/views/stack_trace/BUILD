@@ -34,7 +34,6 @@ tf_ts_library(
     srcs = [
         "stack_trace_container_test.ts",
     ],
-    tsconfig = "//:tsconfig-test",
     deps = [
         ":stack_trace",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin:debugger_v2",

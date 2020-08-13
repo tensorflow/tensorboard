@@ -38,7 +38,6 @@ tf_ts_library(
         "polymer_interop_test.ts",
         "settings_test.ts",
     ],
-    tsconfig = "//:tsconfig-test",
     deps = [
         ":settings",
         "//tensorboard/webapp/angular:expect_angular_cdk_overlay",

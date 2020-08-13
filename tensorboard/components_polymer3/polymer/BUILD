@@ -92,6 +92,8 @@ tf_ts_library(
         "@npm//@polymer/iron-icon",
         "@npm//@polymer/iron-icons",
         "@npm//@polymer/iron-iconset-svg",
+        "@npm//@polymer/iron-list",
+        "@npm//@polymer/iron-pages",
         "@npm//@polymer/paper-button",
         "@npm//@polymer/paper-checkbox",
         "@npm//@polymer/paper-dialog",
@@ -104,6 +106,8 @@ tf_ts_library(
         "@npm//@polymer/paper-listbox",
         "@npm//@polymer/paper-material",
         "@npm//@polymer/paper-menu-button",
+        "@npm//@polymer/paper-progress",
+        "@npm//@polymer/paper-radio-button",
         "@npm//@polymer/paper-radio-group",
         "@npm//@polymer/paper-slider",
         "@npm//@polymer/paper-spinner",
@@ -113,5 +117,15 @@ tf_ts_library(
         "@npm//@polymer/paper-toggle-button",
         "@npm//@polymer/paper-toolbar",
         "@npm//@polymer/paper-tooltip",
+    ],
+)
+
+tf_ts_library(
+    name = "legacy_class",
+    srcs = [
+        "legacy_class.ts",
+    ],
+    deps = [
+        "@npm//@polymer/polymer",
     ],
 )

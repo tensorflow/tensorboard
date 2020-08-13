@@ -12,6 +12,7 @@ ng_module(
     ],
     deps = [
         ":types",
+        "//tensorboard/webapp/plugins/text_v2:types",
         "//tensorboard/webapp/plugins/text_v2/data_source",
         "@npm//@ngrx/store",
     ],
@@ -37,7 +38,6 @@ tf_ts_library(
         "testing.ts",
         "text_v2_selectors_test.ts",
     ],
-    tsconfig = "//:tsconfig-test",
     deps = [
         ":store",
         ":types",

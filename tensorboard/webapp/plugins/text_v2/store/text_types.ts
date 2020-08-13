@@ -20,6 +20,7 @@ type RunId = string;
 type TagId = string;
 
 export interface TextState {
+  visibleRunTags: Map<string, Array<{run: string; tag: string}>>;
   runToTags: Map<RunId, TagId[]>;
   data: Map<RunId, Map<TagId, StepDatum[]>>;
 }

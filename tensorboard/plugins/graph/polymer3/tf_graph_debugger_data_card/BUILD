@@ -1,22 +1,22 @@
-load("//tensorboard/defs:web.bzl", "tf_web_library")
+load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
-tf_web_library(
+tf_ts_library(
     name = "tf_graph_debugger_data_card",
     srcs = [
-        "tf-graph-debugger-data-card.html",
+        "tf-graph-debugger-data-card.ts",
     ],
-    path = "/tf-graph-debugger-data-card",
+    strict_checks = False,
     deps = [
-        "//tensorboard/components/tf_dashboard_common",
-        "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/plugins/graph/tf_graph_common",
-        "@org_polymer_paper_material",
-        "@org_polymer_paper_slider",
-        "@org_polymer_paper_spinner",
-        "@org_polymer_paper_toggle_button",
+        "//tensorboard/components_polymer3/polymer:dom",
+        "//tensorboard/components_polymer3/polymer:irons_and_papers",
+        "//tensorboard/components_polymer3/polymer:legacy_element_mixin",
+        "//tensorboard/components_polymer3/tf_dashboard_common",
+        "//tensorboard/plugins/graph/polymer3/tf_graph_common",
+        "@npm//@polymer/decorators",
+        "@npm//@polymer/polymer",
     ],
 )

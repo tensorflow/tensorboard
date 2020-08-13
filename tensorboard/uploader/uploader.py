@@ -166,7 +166,9 @@ class TensorBoardUploader(object):
         response = grpc_util.call_with_retries(
             self._api.CreateExperiment, request
         )
-        self._tracker = upload_tracker.UploadTracker(verbosity=self._verbosity)
+        self._tracker = upload_tracker.UploadTracker(
+            verbosity=self._verbosity, one_shot=self._one_shot
+        )
         self._request_sender = _BatchedRequestSender(
             response.experiment_id,
             self._api,
