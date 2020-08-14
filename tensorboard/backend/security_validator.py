@@ -43,6 +43,7 @@ _CSP_IGNORE = {
     # Used by numericjs.
     # TODO(stephanwlee): remove it eventually.
     "script-src": ["'unsafe-eval'"],
+    "font-src": ["data:"],
 }
 
 
