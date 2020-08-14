@@ -40,7 +40,7 @@ class TfHparamsTableView extends LegacyElementMixin(PolymerElement) {
         </template>
       </vaadin-grid-column>
       <template is="dom-if" if="[[enableShowMetrics]]">
-        <vaadin-grid-column flex-grow="0" width="5em" resizable="">
+        <vaadin-grid-column flex-grow="0" autoWidth="" resizable="">
           <template class="header">
             <div class="table-header table-cell">Show Metrics</div>
           </template>
