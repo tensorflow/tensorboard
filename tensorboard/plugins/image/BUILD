@@ -14,6 +14,7 @@ py_library(
     srcs = ["images_plugin.py"],
     srcs_version = "PY2AND3",
     deps = [
+        ":metadata",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
