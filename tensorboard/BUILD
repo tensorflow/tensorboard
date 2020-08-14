@@ -266,7 +266,6 @@ py_library(
         "//tensorboard/plugins/audio:audio_plugin",
         "//tensorboard/plugins/core:core_plugin",
         "//tensorboard/plugins/custom_scalar:custom_scalars_plugin",
-        "//tensorboard/plugins/debugger:debugger_plugin_loader",
         "//tensorboard/plugins/debugger_v2:debugger_v2_plugin",
         "//tensorboard/plugins/distribution:distributions_plugin",
         "//tensorboard/plugins/graph:graphs_plugin",
