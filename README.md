@@ -22,7 +22,7 @@ corporate firewall, or in a datacenter.
 
 [TensorBoard: Getting Started]: https://www.tensorflow.org/tensorboard/get_started
 [TensorBoard.dev]: https://tensorboard.dev
-[This experiment]: https://tensorboard.dev/experiment/Ux93Qo4LT9SPBSLugwPsyQ/#scalars
+[This experiment]: https://tensorboard.dev/experiment/EDZb7XgKSBKo6Gznh3i8hg/#scalars
 
 # Usage
 
