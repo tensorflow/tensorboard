@@ -5908,6 +5908,11 @@ wcwidth@^1.0.1:
   dependencies:
     defaults "^1.0.3"
 
+web-animations-js@^2.3.2:
+  version "2.3.2"
+  resolved "https://registry.yarnpkg.com/web-animations-js/-/web-animations-js-2.3.2.tgz#a51963a359c543f97b47c7d4bc2d811f9fc9e153"
+  integrity sha512-TOMFWtQdxzjWp8qx4DAraTWTsdhxVSiWa6NkPFSaPtZ1diKUxTn4yTix73A1euG1WbSOMMPcY51cnjTIHrGtDA==
+
 weblas@^0.9.1:
   version "0.9.1"
   resolved "https://registry.yarnpkg.com/weblas/-/weblas-0.9.1.tgz#aae7ee20fd6b9486e9389d6e1a0771e34fa3885a"
