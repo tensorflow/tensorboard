@@ -20,7 +20,6 @@ tf_ts_library(
         "urlPathHelpers.ts",
     ],
     strict_checks = False,
-    visibility = ["//visibility:public"],
     deps = [
         ":type",
         "//tensorboard/components_polymer3/vz_sorting",
