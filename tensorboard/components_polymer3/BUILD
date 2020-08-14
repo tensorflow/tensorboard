@@ -64,10 +64,21 @@ tf_ts_library(
 )
 
 tf_js_binary(
-    name = "polymer3_lib_binary",
+    name = "polymer3_lib_binary_no_shim",
     compile = True,
     entry_point = ":polymer3_lib.ts",
     deps = [":polymer3_ts_lib"],
+)
+
+genrule(
+    name = "polymer3_lib_binary",
+    srcs = [
+        # Do not sort. order is important.
+        "@npm//:node_modules/web-animations-js/web-animations-next-lite.min.js",
+        ":polymer3_lib_binary_no_shim.js",
+    ],
+    outs = ["polymer3_lib_binary.js"],
+    cmd = "for f in $(SRCS); do cat \"$$f\"; echo; done > $@",
 )
 
 tensorboard_html_binary(
