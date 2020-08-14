@@ -13,7 +13,6 @@ tf_ts_library(
         "tf-storage-polymer.ts",
     ],
     strict_checks = False,
-    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components_polymer3/tf_globals",
         "@npm//@polymer/decorators",

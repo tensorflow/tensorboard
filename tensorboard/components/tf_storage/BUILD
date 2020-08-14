@@ -14,7 +14,6 @@ tf_web_library(
         "tf-storage-polymer.js",
     ],
     path = "/tf-storage",
-    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_globals",
         "//tensorboard/components/tf_imports:lodash",

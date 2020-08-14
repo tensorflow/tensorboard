@@ -11,7 +11,6 @@ tf_web_library(
         "tf-hparams-backend.html",
     ],
     path = "/tf-hparams-backend",
-    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_backend",
     ],

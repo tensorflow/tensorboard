@@ -21,7 +21,6 @@ tf_web_library(
         "urlPathHelpers.js",
     ],
     path = "/tf-backend",
-    visibility = ["//visibility:public"],
     deps = [
         ":type",
         "//tensorboard/components/tf_imports:lodash",
