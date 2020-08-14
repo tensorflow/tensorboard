@@ -47,7 +47,6 @@ tf_ts_library(
     srcs = [
         "debugger_container_test.ts",
     ],
-    tsconfig = "//:tsconfig-test",
     deps = [
         ":debugger_v2",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/actions",

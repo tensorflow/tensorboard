@@ -11,6 +11,7 @@ licenses(["notice"])  # Apache 2.0
 tf_web_test(
     name = "test",
     src = "/tf-plugin-lib/test/test.html",
+    tags = ["manual"],
     web_library = ":test_web_library",
 )
 
@@ -43,12 +44,13 @@ tf_web_library(
     ],
 )
 
+# This test is disabled now that plugin_util has migrated to Polymer 3.
 tf_web_library(
     name = "test_web_library",
     testonly = True,
     srcs = [
         "test.html",
-        "test.ts",
+        # "test.ts",
     ],
     path = "/tf-plugin-lib/test",
     deps = [

@@ -908,6 +908,7 @@ def tensorboard_fonts_workspace():
           "        '  unicode-range: U+0102-0103, U+1EA0-1EF9, U+20AB;',",
           "        '}',",
           "        '</style>',",
+          "        '<script>window.polymerSkipLoadingFontRoboto = true;</script>',",
           '        "EOF",',
           '    ]),',
           ')',

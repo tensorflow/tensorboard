@@ -1,37 +1,23 @@
-load("//tensorboard/defs:web.bzl", "tf_web_library")
-load("//tensorboard/defs:defs.bzl", "tensorboard_webcomponent_library")
+load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
 
-tf_web_library(
+tf_ts_library(
     name = "tf_hparams_main",
-    srcs = [
-        "tf-hparams-main.html",
-    ],
-    path = "/tf-hparams-main",
+    srcs = ["tf-hparams-main.ts"],
+    strict_checks = False,
     visibility = ["//visibility:public"],
     deps = [
-        "//tensorboard/components/tf_imports:lodash",
-        "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/components/tf_imports:vaadin_split_layout",
-        "//tensorboard/plugins/hparams/tf_hparams_query_pane",
-        "//tensorboard/plugins/hparams/tf_hparams_sessions_pane",
-    ],
-)
-
-# webcomponent_library version of the web app. Allows embedding the plugin in
-# another web app.
-tensorboard_webcomponent_library(
-    name = "legacy",
-    srcs = [":tf_hparams_main"],
-    visibility = ["//tensorboard/plugins/hparams/external_users:whitelist"],
-    destdir = "tf-hparams-main",
-    deps = [
-        "//tensorboard/components/tf_imports:polymer_lib",
-        "//tensorboard/components/tf_imports_google:lib",
-        "//tensorboard/plugins/hparams/tf_hparams_query_pane:legacy",
-        "//tensorboard/plugins/hparams/tf_hparams_sessions_pane:legacy",
+        "//tensorboard/components_polymer3/polymer:legacy_element_mixin",
+        "//tensorboard/plugins/hparams/polymer3/tf_hparams_backend",
+        "//tensorboard/plugins/hparams/polymer3/tf_hparams_query_pane",
+        "//tensorboard/plugins/hparams/polymer3/tf_hparams_sessions_pane",
+        "//tensorboard/plugins/hparams/polymer3/tf_hparams_utils:hparams_split_layout",
+        "@npm//@polymer/decorators",
+        "@npm//@polymer/polymer",
+        "@npm//@types/lodash",
+        "@npm//lodash",
     ],
 )

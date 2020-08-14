@@ -1,10 +1,21 @@
 load("@npm_bazel_jasmine//:index.bzl", "jasmine_node_test")
-load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ts_config", "tf_ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ts_library")
 load("//tensorboard/defs:web.bzl", "tf_web_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
+
+genrule(
+    name = "gen_tensor_widget_style",
+    srcs = [
+        "tensor-widget-style.uninlined.ts",
+        "tensor-widget.css",
+    ],
+    outs = ["tensor-widget-style.ts"],
+    cmd = "$(execpath //tensorboard/tools:inline_file_content) $(SRCS) >'$@'",
+    tools = ["//tensorboard/tools:inline_file_content"],
+)
 
 tf_web_library(
     name = "tensor_widget",
@@ -36,7 +47,6 @@ tf_ts_library(
     srcs = [
         "tensor-widget-interop.ts",
     ],
-    tsconfig = ":tsconfig",
     deps = [
         ":tensor_widget_lib",
     ],
@@ -55,10 +65,11 @@ tf_ts_library(
         "string-utils.ts",
         "tensor-widget.ts",
         "tensor-widget-impl.ts",
+        "tensor-widget-style.ts",
         "types.ts",
         "version.ts",
     ],
-    tsconfig = ":tsconfig",
+    deps = ["//tensorboard/components_polymer3/polymer:register_style_dom_module"],
 )
 
 tf_ts_library(
@@ -85,10 +96,4 @@ jasmine_node_test(
     deps = [
         "@npm//chai",
     ],
-)
-
-tf_ts_config(
-    name = "tsconfig",
-    src = "tsconfig.json",
-    deps = [],
 )

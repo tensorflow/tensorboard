@@ -21,6 +21,7 @@ from __future__ import print_function
 import functools
 import gzip
 import mimetypes
+import os
 import zipfile
 
 import six
@@ -100,7 +101,11 @@ class CorePlugin(base_plugin.TBPlugin):
                         self._serve_asset, path, gzipped_asset_bytes
                     )
                     apps["/" + path] = wsgi_app
-        apps["/"] = apps["/index.html"]
+        # TODO(#3887): Remove after Polymer 3 migration.
+        if os.getenv("TB_POLYMER3") == "1":
+            apps["/"] = apps["/index_polymer3.html"]
+        else:
+            apps["/"] = apps["/index.html"]
         return apps
 
     @wrappers.Request.application

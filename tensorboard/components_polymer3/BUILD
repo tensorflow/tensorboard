@@ -1,3 +1,4 @@
+load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ts_library")
 load("//tensorboard/defs:web.bzl", "tf_web_library")
 load("//tensorboard/defs:vulcanize.bzl", "tensorboard_html_binary")
 
@@ -12,7 +13,7 @@ tf_web_library(
     ],
     path = "/",
     deps = [
-        ":analytics",
+        ":analytics_html",
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_tensorboard",
         "//tensorboard/components/tf_tensorboard:default_plugins",
@@ -37,6 +38,38 @@ tf_web_library(
     ],
 )
 
+tf_ts_library(
+    name = "polymer3_ts_lib",
+    srcs = ["polymer3_lib.ts"],
+    deps = [
+        "//tensorboard/components_polymer3/experimental/plugin_util:plugin_host",
+        "//tensorboard/components_polymer3/tf_backend",
+        "//tensorboard/components_polymer3/tf_globals",
+        "//tensorboard/components_polymer3/tf_markdown_view",
+        "//tensorboard/components_polymer3/tf_paginated_view",
+        "//tensorboard/components_polymer3/tf_storage",
+        "//tensorboard/plugins/audio/polymer3/tf_audio_dashboard",
+        "//tensorboard/plugins/custom_scalar/polymer3/tf_custom_scalar_dashboard",
+        "//tensorboard/plugins/distribution/polymer3/tf_distribution_dashboard",
+        "//tensorboard/plugins/graph/polymer3/tf_graph_dashboard",
+        "//tensorboard/plugins/histogram/polymer3/tf_histogram_dashboard",
+        "//tensorboard/plugins/hparams/polymer3/tf_hparams_dashboard",
+        "//tensorboard/plugins/image/polymer3/tf_image_dashboard",
+        "//tensorboard/plugins/mesh/polymer3/tf_mesh_dashboard",
+        "//tensorboard/plugins/pr_curve/polymer3/tf_pr_curve_dashboard",
+        "//tensorboard/plugins/profile_redirect/polymer3/tf_profile_redirect_dashboard",
+        "//tensorboard/plugins/scalar/polymer3/tf_scalar_dashboard",
+        "//tensorboard/plugins/text/polymer3/tf_text_dashboard",
+    ],
+)
+
+tf_js_binary(
+    name = "polymer3_lib_binary",
+    compile = True,
+    entry_point = ":polymer3_lib.ts",
+    deps = [":polymer3_ts_lib"],
+)
+
 tensorboard_html_binary(
     name = "legacy",
     compile = False,
@@ -55,17 +88,27 @@ genrule(
 )
 
 tf_web_library(
-    name = "analytics",
+    name = "analytics_html",
     srcs = [
         "analytics.html",
     ],
     path = "/",
 )
 
-tf_web_library(
+tf_ts_library(
+    name = "analytics",
+    srcs = [
+        "analytics.ts",
+    ],
+)
+
+tf_ts_library(
     name = "security",
     srcs = [
-        "security.html",
+        "security.ts",
     ],
-    path = "/",
+    strict_checks = False,
+    deps = [
+        "@npm//@polymer/polymer",
+    ],
 )

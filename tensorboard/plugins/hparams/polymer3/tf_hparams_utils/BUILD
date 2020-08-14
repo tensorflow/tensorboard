@@ -1,50 +1,55 @@
-load("//tensorboard/defs:web.bzl", "tf_web_library", "tf_web_test")
-load("//tensorboard/defs:defs.bzl", "tensorboard_webcomponent_library")
+load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 
 package(default_visibility =
             ["//tensorboard/plugins/hparams:__subpackages__"])
 
 licenses(["notice"])  # Apache 2.0
 
-tf_web_library(
+tf_ts_library(
     name = "tf_hparams_utils",
     srcs = [
-        "tf-hparams-utils.d.ts",
-        "tf-hparams-utils.html",
+        "tf-hparams-utils.ts",
     ],
-    path = "/tf-hparams-utils",
+    strict_checks = False,
     deps = [
-        "//tensorboard/components/tf_imports:d3",
-        "//tensorboard/components/tf_imports:lodash",
+        "@npm//@types/d3",
+        "@npm//@types/lodash",
+        "@npm//d3",
+        "@npm//lodash",
     ],
 )
 
-tf_web_test(
-    name = "test",
-    src = "/tf-hparams-utils/test/tf-hparams-utils-test.html",
-    web_library = ":test_lib",
-)
-
-tf_web_library(
-    name = "test_lib",
-    testonly = 1,
+tf_ts_library(
+    name = "hparams_split_layout",
     srcs = [
-        "test/tf-hparams-utils-test.html",
+        "hparams-split-layout.ts",
     ],
-    path = "/tf-hparams-utils",
+    strict_checks = False,
     deps = [
-        ":tf_hparams_utils",
-        "//tensorboard/components/tf_imports:d3",
-        "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/components/tf_imports:web_component_tester",
+        "@npm//@polymer/decorators",
+        "@npm//@polymer/polymer",
     ],
 )
 
-tensorboard_webcomponent_library(
-    name = "legacy",
-    srcs = [":tf_hparams_utils"],
-    destdir = "tf-hparams-utils",
-    deps = [
-        "//tensorboard/components/tf_imports_google:lib",
-    ],
-)
+# Test disabled during migration to Polymer 3.
+
+# tf_web_test(
+#     name = "test",
+#     src = "/tf-hparams-utils/test/tf-hparams-utils-test.html",
+#     web_library = ":test_lib",
+# )
+#
+# tf_web_library(
+#     name = "test_lib",
+#     testonly = 1,
+#     srcs = [
+#         "test/tf-hparams-utils-test.html",
+#     ],
+#     path = "/tf-hparams-utils",
+#     deps = [
+#         ":tf_hparams_utils",
+#         "//tensorboard/components/tf_imports:d3",
+#         "//tensorboard/components/tf_imports:polymer",
+#         "//tensorboard/components/tf_imports:web_component_tester",
+#     ],
+# )

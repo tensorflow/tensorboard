@@ -37,6 +37,7 @@ def tf_js_binary(compile, deps, **kwargs):
             "@npm//@rollup/plugin-commonjs",
             "@npm//@rollup/plugin-node-resolve",
         ],
+        format = "iife",
         **kwargs
     )
 
@@ -45,17 +46,20 @@ def tf_ts_config(**kwargs):
 
     ts_config(**kwargs)
 
-def tf_ts_library(strict_checks = True, tsconfig = None, **kwargs):
+def tf_ts_library(strict_checks = True, **kwargs):
     """TensorBoard wrapper for the rule for a TypeScript library.
 
     Args:
       strict_checks: whether to enable stricter type checking. Default is True.
           Please use `strict_checks = False` for only Polymer based targets.
-      tsconfig: TypeScript configuration. If specified, it overrides strict_checks.
       **kwargs: keyword arguments to ts_library build rule.
     """
-    if not tsconfig:
-        tsconfig = "//:tsconfig.json" if strict_checks else "//:tsconfig-lax"
+    tsconfig = "//:tsconfig.json"
+
+    if strict_checks == False:
+        tsconfig = "//:tsconfig-lax"
+    elif "test_only" in kwargs and kwargs.get("test_only"):
+        tsconfig = "//:tsconfig-test"
 
     ts_library(tsconfig = tsconfig, **kwargs)
 
@@ -72,7 +76,9 @@ def tf_ng_web_test_suite(runtime_deps = [], bootstrap = [], deps = [], **kwargs)
 
     kwargs.setdefault("tags", []).append("webtest")
     karma_web_test_suite(
-        srcs = [],
+        srcs = [
+            "//tensorboard/webapp/testing:require_js_karma_config.js",
+        ],
         bootstrap = bootstrap + [
             "@npm//:node_modules/zone.js/dist/zone-testing-bundle.js",
             "@npm//:node_modules/reflect-metadata/Reflect.js",
@@ -83,6 +89,10 @@ def tf_ng_web_test_suite(runtime_deps = [], bootstrap = [], deps = [], **kwargs)
         ],
         deps = deps + [
             "//tensorboard/webapp/testing:test_support_lib",
+        ],
+        # Lodash runtime dependency that is compatible with requirejs for karma.
+        static_files = [
+            "@npm//:node_modules/lodash/lodash.js",
         ],
         **kwargs
     )

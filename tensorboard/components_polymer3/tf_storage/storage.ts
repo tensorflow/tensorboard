@@ -51,7 +51,11 @@ export const TAB = '__tab__';
 export const DISAMBIGUATOR = 'disambiguator';
 
 // Keep an up-to-date store of URL params, which iframed plugins can request.
-export let urlDict: StringDict = {};
+let urlDict: StringDict = {};
+
+export function getUrlDict(): StringDict {
+  return urlDict;
+}
 
 addHashListener(() => {
   urlDict = componentToDict(readComponent());
@@ -246,7 +250,7 @@ export function migrateLegacyURLScheme() {
     }
   }
   writeComponent(dictToComponent(items));
-  this.urlDict = items;
+  urlDict = items;
 }
 /**
  * Get a unique storage name for a (Polymer component, propertyName) tuple.
@@ -271,7 +275,9 @@ function readComponent(): string {
 function writeComponent(component: string, useLocationReplace = false) {
   if (useHash()) {
     if (useLocationReplace) {
-      window.location.replace('#' + component);
+      const url = new URL(window.location.href);
+      url.hash = component;
+      window.history.replaceState(null, '', url.toString());
     } else {
       window.location.hash = component;
     }

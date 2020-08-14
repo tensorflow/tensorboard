@@ -12,9 +12,11 @@ tf_ts_library(
     srcs = [
         "core.ts",
         "index.ts",
-        "message.ts",
         "plugin-guest.ts",
         "runs.ts",
+    ],
+    deps = [
+        "//tensorboard/components_polymer3/experimental/plugin_util:message",
     ],
 )
 

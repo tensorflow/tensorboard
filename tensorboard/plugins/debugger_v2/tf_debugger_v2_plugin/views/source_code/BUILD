@@ -40,7 +40,6 @@ tf_ts_library(
     srcs = [
         "load_monaco_shim_test.ts",
     ],
-    tsconfig = "//:tsconfig-test",
     deps = [
         ":load_monaco",
         "@npm//@types/jasmine",
@@ -65,7 +64,6 @@ tf_ts_library(
     srcs = [
         "source_code_container_test.ts",
     ],
-    tsconfig = "//:tsconfig-test",
     deps = [
         ":load_monaco",
         ":source_code",

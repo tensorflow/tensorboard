@@ -24,7 +24,6 @@ tf_ts_library(
     srcs = [
         "legacy_runs_selector_test.ts",
     ],
-    tsconfig = "//:tsconfig-test",
     deps = [
         ":legacy_runs_selector",
         "//tensorboard/webapp:app_state",

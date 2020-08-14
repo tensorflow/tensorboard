@@ -466,7 +466,6 @@ public final class Vulcanize {
     options.setPropertyRenaming(PropertyRenamingPolicy.OFF);
     options.setCheckGlobalThisLevel(CheckLevel.OFF);
     options.setRemoveUnusedPrototypeProperties(false);
-    options.setRemoveUnusedPrototypePropertiesInExterns(false);
     options.setRemoveUnusedClassProperties(false);
     // Prevent Polymer bound method (invisible to JSComp) to be over-optimized.
     options.setInlineFunctions(CompilerOptions.Reach.NONE);

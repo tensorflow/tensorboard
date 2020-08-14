@@ -23,8 +23,11 @@ ng_module(
     ],
     deps = [
         "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp/core:types",
         "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/plugins:plugin_registry",
+        "//tensorboard/webapp/plugins/npmi/views/inactive",
+        "//tensorboard/webapp/plugins/npmi/views/main",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
@@ -38,13 +41,14 @@ tf_ts_library(
     srcs = [
         "npmi_container_test.ts",
     ],
-    tsconfig = "//:tsconfig-test",
     deps = [
         ":npmi",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "//tensorboard/webapp/core/store",
+        "//tensorboard/webapp/plugins/npmi/views/inactive",
+        "//tensorboard/webapp/plugins/npmi/views/main",
         "@npm//@angular/common",
         "@npm//@angular/compiler",
         "@npm//@angular/core",
