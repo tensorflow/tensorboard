@@ -175,6 +175,7 @@ class TfHparamsTableView extends LegacyElementMixin(PolymerElement) {
   _sessionGroupHParam(sessionGroup, hparam) {
     if (
       sessionGroup == null ||
+      Object.keys(sessionGroup).length == 0 ||
       !Object.prototype.hasOwnProperty.call(sessionGroup.hparams, hparam)
     ) {
       return '';
@@ -184,8 +185,8 @@ class TfHparamsTableView extends LegacyElementMixin(PolymerElement) {
   // Returns the metric value of the given sessionGroup. The value is
   // returned as a string suitable for display.
   _sessionGroupMetric(sessionGroup, metricName) {
-    if (sessionGroup == null) {
-      return null;
+    if (sessionGroup == null || Object.keys(sessionGroup).length == 0) {
+      return '';
     }
     for (let i = 0; i < sessionGroup.metricValues.length; ++i) {
       let metricVal = sessionGroup.metricValues[i];
