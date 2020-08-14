@@ -156,9 +156,8 @@ class TfRunsSelector extends LegacyElementMixin(PolymerElement) {
 
   @property({
     type: String,
-    readOnly: true,
   })
-  _dataLocationDelimiterPattern: string = '[/=_,-]';
+  readonly _dataLocationDelimiterPattern: string = '[/=_,-]';
 
   @property({
     type: Object,

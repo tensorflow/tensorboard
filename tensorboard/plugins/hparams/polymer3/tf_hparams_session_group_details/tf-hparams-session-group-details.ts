@@ -186,7 +186,7 @@ class TfHparamsSessionGroupDetails extends mixinBehaviors(
   }
   @observe('sessionGroup.*')
   _sessionGroupChanged() {
-    if (!this.sessionGroup) {
+    if (!this.sessionGroup || Object.keys(this.sessionGroup).length == 0) {
       this._indexOfSession = new Map();
       this._sessionGroupNameHash = 0;
     } else {
@@ -222,7 +222,11 @@ class TfHparamsSessionGroupDetails extends mixinBehaviors(
   // Returns an array of the tensorboard 'runs' and 'tags' corresponding to
   // the given metric in each of the sessions in the given session group.
   _computeSeriesForSessionGroupMetric(sessionGroup, metricInfo) {
-    if (sessionGroup === null || metricInfo === null) {
+    if (
+      sessionGroup === null ||
+      Object.keys(sessionGroup).length == 0 ||
+      metricInfo === null
+    ) {
       return [];
     }
     return sessionGroup.sessions
