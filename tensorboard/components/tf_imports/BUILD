@@ -10,7 +10,6 @@ tf_web_library(
     name = "webcomponentsjs",
     srcs = ["@org_definitelytyped//:webcomponents.js.d.ts"],
     path = "/webcomponentsjs",
-    visibility = ["//visibility:public"],
     exports = ["@org_polymer_webcomponentsjs"],
 )
 
@@ -21,7 +20,6 @@ tf_web_library(
         "@org_definitelytyped//:polymer.d.ts",
     ],
     path = "/tf-imports",
-    visibility = ["//visibility:public"],
     exports = ["@org_polymer"],
     deps = [
         ":polymer_externs",
@@ -35,7 +33,6 @@ tf_web_library(
 tensorboard_webcomponent_library(
     name = "polymer_lib",
     srcs = [":polymer"],
-    visibility = ["//visibility:public"],
     destdir = "tf-imports",
     deps = [
         ":polymer_externs_lib",
@@ -82,7 +79,6 @@ tf_web_library(
         "@org_threejs//:three.js",
     ],
     path = "/tf-imports",
-    visibility = ["//visibility:public"],
 )
 
 tf_web_library(

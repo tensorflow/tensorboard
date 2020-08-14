@@ -29,7 +29,6 @@ tf_web_library(
         "tf-option-selector.html",
     ],
     path = "/tf-dashboard-common",
-    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_color_scale",

@@ -23,7 +23,6 @@ tf_ts_library(
         "tf-option-selector.ts",
     ],
     strict_checks = False,
-    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components_polymer3/polymer:irons_and_papers",
         "//tensorboard/components_polymer3/polymer:legacy_element_mixin",
