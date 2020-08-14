@@ -40,7 +40,7 @@ class TfHparamsTableView extends LegacyElementMixin(PolymerElement) {
         </template>
       </vaadin-grid-column>
       <template is="dom-if" if="[[enableShowMetrics]]">
-        <vaadin-grid-column flex-grow="0" width="5em" resizable="">
+        <vaadin-grid-column flex-grow="0" autoWidth="" resizable="">
           <template class="header">
             <div class="table-header table-cell">Show Metrics</div>
           </template>
@@ -175,6 +175,7 @@ class TfHparamsTableView extends LegacyElementMixin(PolymerElement) {
   _sessionGroupHParam(sessionGroup, hparam) {
     if (
       sessionGroup == null ||
+      Object.keys(sessionGroup).length == 0 ||
       !Object.prototype.hasOwnProperty.call(sessionGroup.hparams, hparam)
     ) {
       return '';
@@ -184,8 +185,8 @@ class TfHparamsTableView extends LegacyElementMixin(PolymerElement) {
   // Returns the metric value of the given sessionGroup. The value is
   // returned as a string suitable for display.
   _sessionGroupMetric(sessionGroup, metricName) {
-    if (sessionGroup == null) {
-      return null;
+    if (sessionGroup == null || Object.keys(sessionGroup).length == 0) {
+      return '';
     }
     for (let i = 0; i < sessionGroup.metricValues.length; ++i) {
       let metricVal = sessionGroup.metricValues[i];
