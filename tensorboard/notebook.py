@@ -57,6 +57,7 @@ def _get_context():
 
     Returns:
       _CONTEXT_COLAB: If in Colab with an IPython notebook context.
+      _CONTEXT_DATABRICKS: If in Databricks with an IPython notebook context.
       _CONTEXT_IPYTHON: If not in Colab, but we are in an IPython notebook
         context (e.g., from running `jupyter notebook` at the command
         line).
@@ -381,6 +382,10 @@ def _display_colab(port, height, display_handle):
 
 
 def _display_databricks(port, height, display_handle):
+    """Display a TensorBoard instance in a Databricks notebook.
+
+    Note: `dbutils.tensorboard.display` only uses the `port` and `height` parameters.
+    """
     import IPython
 
     ip_shell = IPython.get_ipython()
