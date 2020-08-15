@@ -22,6 +22,7 @@ type EpochCallback = (epoch: number) => boolean | void;
 type Vector = number[];
 type Vectors = Vector[];
 interface UMAPParameters {
+  minDist?: number;
   nComponents?: number;
   nEpochs?: number;
   nNeighbors?: number;

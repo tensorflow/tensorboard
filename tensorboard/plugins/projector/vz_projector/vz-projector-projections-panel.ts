@@ -37,6 +37,7 @@ namespace vz_projector {
         observer: '_umapDimensionToggleObserver',
       },
       umapNeighbors: {type: Number, value: 15},
+      umapMinDist: {type: Number, value: 0.1},
       // PCA projection.
       pcaComponents: Array,
       pcaX: {type: Number, value: 0, observer: 'showPCAIfEnabled'},
@@ -90,6 +91,7 @@ namespace vz_projector {
 
     /** UMAP neighbors parameter */
     private umapNeighbors: number;
+    private umapMinDist: number;
 
     private searchByMetadataOptions: string[];
 
@@ -285,6 +287,7 @@ namespace vz_projector {
       // UMAP
       this.umapIs3d = bookmark.umapIs3d;
       this.umapNeighbors = bookmark.umapNeighbors;
+      this.umapMinDist = bookmark.umapMinDist;
 
       // custom
       this.customSelectedSearchByMetadataOption =
@@ -396,6 +399,8 @@ namespace vz_projector {
 
       (this.$$('#tsne-sampling') as HTMLElement).style.display =
         pointCount > TSNE_SAMPLE_SIZE ? null : 'none';
+      (this.$$('#umap-sampling') as HTMLElement).style.display =
+        pointCount > UMAP_SAMPLE_SIZE ? null : 'none';
       const wasSampled =
         dataSet == null
           ? false
@@ -581,25 +586,30 @@ namespace vz_projector {
     private runUmap() {
       let projectionChangeNotified = false;
       this.runUmapButton.disabled = true;
-
       const nComponents = this.umapIs3d ? 3 : 2;
       const nNeighbors = this.umapNeighbors;
+      const minDist = this.umapMinDist;
 
-      this.dataSet.projectUmap(nComponents, nNeighbors, (iteration: number) => {
-        if (iteration != null) {
-          this.runUmapButton.disabled = false;
-          this.projector.notifyProjectionPositionsUpdated();
+      this.dataSet.projectUmap(
+        nComponents,
+        nNeighbors,
+        minDist,
+        (iteration: number) => {
+          if (iteration != null) {
+            this.runUmapButton.disabled = false;
+            this.projector.notifyProjectionPositionsUpdated();
 
-          if (!projectionChangeNotified && this.dataSet.projections['umap']) {
+            if (!projectionChangeNotified && this.dataSet.projections['umap']) {
+              this.projector.onProjectionChanged();
+              projectionChangeNotified = true;
+            }
+          } else {
+            this.runUmapButton.innerText = 'Re-run';
+            this.runUmapButton.disabled = false;
             this.projector.onProjectionChanged();
-            projectionChangeNotified = true;
           }
-        } else {
-          this.runUmapButton.innerText = 'Re-run';
-          this.runUmapButton.disabled = false;
-          this.projector.onProjectionChanged();
         }
-      });
+      );
     }
 
     // tslint:disable-next-line:no-unused-variable
