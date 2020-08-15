@@ -8,7 +8,6 @@ tf_web_library(
     name = "tf_hparams_main",
     srcs = ["tf-hparams-main.html"],
     path = "/tf-hparams-main",
-    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_imports:lodash",
         "//tensorboard/components/tf_imports:polymer",

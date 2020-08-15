@@ -27,9 +27,6 @@ import time
 import wsgiref.handlers
 
 import six
-from six.moves.urllib import (
-    parse as urlparse,
-)  # pylint: disable=wrong-import-order
 
 import werkzeug
 
@@ -40,7 +37,10 @@ _DISALLOWED_CHAR_IN_DOMAIN = re.compile(r"\s")
 # TODO(stephanwlee): Refactor this to not use the module variable but
 # instead use a configurable via some kind of assets provider which would
 # hold configurations for the CSP.
-_CSP_FONT_DOMAINS_WHITELIST = []
+
+# @vaadin/vaadin-lumo-styles/font-icons(via vaadin-grid) uses data URI for
+# loading font icons.
+_CSP_FONT_DOMAINS_WHITELIST = ["data:"]
 _CSP_FRAME_DOMAINS_WHITELIST = []
 _CSP_IMG_DOMAINS_WHITELIST = []
 _CSP_SCRIPT_DOMAINS_WHITELIST = []
@@ -196,11 +196,11 @@ def Respond(
         headers.append(("Expires", "0"))
         headers.append(("Cache-Control", "no-cache, must-revalidate"))
     if mimetype == _HTML_MIMETYPE:
-        _validate_global_whitelist(_CSP_IMG_DOMAINS_WHITELIST)
-        _validate_global_whitelist(_CSP_STYLE_DOMAINS_WHITELIST)
-        _validate_global_whitelist(_CSP_FONT_DOMAINS_WHITELIST)
-        _validate_global_whitelist(_CSP_FRAME_DOMAINS_WHITELIST)
-        _validate_global_whitelist(_CSP_SCRIPT_DOMAINS_WHITELIST)
+        _CSP_IMG_DOMAINS_WHITELIST
+        _CSP_STYLE_DOMAINS_WHITELIST
+        _CSP_FONT_DOMAINS_WHITELIST
+        _CSP_FRAME_DOMAINS_WHITELIST
+        _CSP_SCRIPT_DOMAINS_WHITELIST
 
         frags = (
             _CSP_SCRIPT_DOMAINS_WHITELIST
@@ -260,24 +260,6 @@ def Respond(
         content_type=content_type,
         direct_passthrough=direct_passthrough,
     )
-
-
-def _validate_global_whitelist(whitelists):
-    for domain in whitelists:
-        url = urlparse.urlparse(domain)
-        if not url.scheme == "https" or not url.netloc:
-            raise ValueError(
-                "Expected all whitelist to be a https URL: %r" % domain
-            )
-        if ";" in domain:
-            raise ValueError(
-                'Expected whitelist domain to not contain ";": %r' % domain
-            )
-        if _DISALLOWED_CHAR_IN_DOMAIN.search(domain):
-            raise ValueError(
-                "Expected whitelist domain to not contain a whitespace: %r"
-                % domain
-            )
 
 
 def _create_csp_string(*csp_fragments):

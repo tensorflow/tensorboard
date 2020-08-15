@@ -12,7 +12,6 @@ tf_web_library(
         "tf-tensorboard.html",
     ],
     path = "/tf-tensorboard",
-    visibility = ["//visibility:public"],
     deps = [
         ":registry",
         "//tensorboard/components/experimental/plugin_util:plugin_host",
@@ -43,7 +42,6 @@ tf_web_library(
         "registry.ts",
     ],
     path = "/tf-tensorboard",
-    visibility = ["//visibility:public"],
 )
 
 tf_web_library(

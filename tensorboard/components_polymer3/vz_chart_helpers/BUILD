@@ -12,7 +12,6 @@ tf_ts_library(
         "vz-chart-tooltip.ts",
     ],
     strict_checks = False,
-    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components_polymer3/polymer:legacy_element_mixin",
         "@npm//@polymer/decorators",
