@@ -265,9 +265,6 @@ class ProjectorPlugin(base_plugin.TBPlugin):
 
     def get_plugin_apps(self):
         asset_prefix = "tf_projector_plugin"
-        # TODO(#3887): Remove after Polymer 3 migration.
-        if os.getenv("TB_POLYMER3") == "1":
-            asset_prefix = os.path.join("polymer3", asset_prefix)
         return {
             RUNS_ROUTE: self._serve_runs,
             CONFIG_ROUTE: self._serve_config,
