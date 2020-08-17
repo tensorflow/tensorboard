@@ -146,7 +146,6 @@ class TfHparamsParallelCoordsPlot extends LegacyElementMixin(PolymerElement) {
    */
   @property({
     type: Object,
-    readOnly: true,
     notify: true,
   })
   selectedSessionGroup: object = null;
@@ -159,7 +158,6 @@ class TfHparamsParallelCoordsPlot extends LegacyElementMixin(PolymerElement) {
    */
   @property({
     type: Object,
-    readOnly: true,
     notify: true,
   })
   closestSessionGroup: object = null;

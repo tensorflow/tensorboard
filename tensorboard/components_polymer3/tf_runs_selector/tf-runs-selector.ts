@@ -150,7 +150,6 @@ class TfRunsSelector extends LegacyElementMixin(PolymerElement) {
 
   @property({
     type: Number,
-    readOnly: true,
   })
   _dataLocationClipLength: number = 250;
 

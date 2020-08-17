@@ -268,7 +268,6 @@ class TfGraphDashboard extends LegacyElementMixin(PolymerElement) {
   // involve slow disk reads. Hence, we throttle to 1 of those requests every this many ms.
   @property({
     type: Number,
-    readOnly: true,
   })
   _healthPillStepRequestTimerDelay: number = 500;
   @property({type: Array})
