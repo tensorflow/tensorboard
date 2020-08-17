@@ -83,7 +83,6 @@ class TfHparamsScatterPlotMatrixPlot extends LegacyElementMixin(
   // threshold, this property will be null.
   @property({
     type: Object,
-    readOnly: true,
     notify: true,
   })
   closestSessionGroup: object = null;

@@ -329,7 +329,6 @@ class TfGraphDebuggerDataCard extends LegacyElementMixin(PolymerElement) {
   areHealthPillsLoading: any;
   @property({
     type: Array,
-    readOnly: true,
   })
   healthPillEntries: unknown[] = tf_graph_scene.healthPillEntries;
   // When all-steps mode is enabled, the user can request health pills for any step. In this
