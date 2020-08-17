@@ -331,8 +331,6 @@ tensorboard_zip_file(
 tf_web_library(
     name = "assets",
     srcs = [
-        "//tensorboard/components:legacy.html",
-        "//tensorboard/components:legacy.js",
         "//tensorboard/webapp:index.html",
         "//tensorboard/webapp:index.js",
         "//tensorboard/webapp:svg_bundle",
