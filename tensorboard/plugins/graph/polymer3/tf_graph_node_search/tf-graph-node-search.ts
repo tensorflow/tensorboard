@@ -97,7 +97,6 @@ class TfGraphNodeSearch extends LegacyElementMixin(PolymerElement) {
   _previousRegexInput: string = '';
   @property({
     type: Number,
-    readOnly: true,
   })
   _searchTimeoutDelay: number = 150;
   @property({type: Boolean})
