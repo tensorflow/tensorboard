@@ -71,11 +71,9 @@ class TfProfileRedirectDashboard extends LegacyElementMixin(PolymerElement) {
       }
     </style>
   `;
-  @property({
-    type: String,
-    readOnly: true,
-  })
+  @property({type: String})
   _installCommand: string = 'pip install -U tensorboard-plugin-profile';
+
   async _copyInstallCommand() {
     const doCopy = async () => {
       const textarea = this.$.commandTextarea as HTMLTextAreaElement;
