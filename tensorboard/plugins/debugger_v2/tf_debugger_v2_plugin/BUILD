@@ -105,7 +105,7 @@ genrule(
     name = "generate_dtypes",
     outs = ["tf_dtypes.ts"],
     cmd = "$(execpath :extract_dtypes_from_python) $@",
-    tools = [
+    exec_tools = [
         ":extract_dtypes_from_python",
     ],
 )
