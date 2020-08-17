@@ -12,36 +12,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-@import 'tensorboard/webapp/theme/tb_theme';
+import {CommonModule} from '@angular/common';
+import {NgModule} from '@angular/core';
+import {FormsModule} from '@angular/forms';
 
-:host {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
+import {MetricSearchModule} from './metric_search/metric_search_module';
+import {DataSelectionComponent} from './data_selection_component';
 
-.content {
-  display: flex;
-  flex: 1;
-  min-height: 0px;
-  width: 100%;
-}
-
-.selection-container {
-  width: 300px;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.analysis-container {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  flex: 1 1;
-}
-
-.run-selector {
-  padding: 10px;
-  width: calc(100% - 20px);
-}
+@NgModule({
+  declarations: [DataSelectionComponent],
+  imports: [CommonModule, FormsModule, MetricSearchModule],
+  exports: [DataSelectionComponent],
+})
+export class DataSelectionModule {}

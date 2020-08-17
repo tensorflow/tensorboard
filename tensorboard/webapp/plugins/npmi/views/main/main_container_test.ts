@@ -27,8 +27,6 @@ import {appStateFromNpmiState, createNpmiState} from '../../testing';
 
 import {MainComponent} from './main_component';
 import {MainContainer} from './main_container';
-import {RunsModule} from '../../../../runs/runs_module';
-import {MetricSearchModule} from '../metric_filters/metric_search/metric_search_module';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
@@ -38,7 +36,7 @@ describe('Npmi Main Container', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [MainComponent, MainContainer],
-      imports: [RunsModule, MetricSearchModule],
+      imports: [],
       providers: [
         provideMockStore({
           initialState: appStateFromNpmiState(createNpmiState()),
@@ -46,10 +44,10 @@ describe('Npmi Main Container', () => {
       ],
     }).compileComponents();
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
-    store.overrideSelector(getRunSelection, new Map([['run_1', true]]));
   });
 
-  it('renders npmi main component', () => {
+  it('renders npmi main component without runs', () => {
+    store.overrideSelector(getRunSelection, new Map());
     const fixture = TestBed.createComponent(MainContainer);
     fixture.detectChanges();
 
@@ -57,5 +55,24 @@ describe('Npmi Main Container', () => {
       By.css('tb-legacy-runs-selector')
     );
     expect(runsElement).toBeTruthy();
+
+    const dataSelectionElement = fixture.debugElement.query(By.css('noRun'));
+    expect(dataSelectionElement).toBeFalsy();
+  });
+
+  it('renders npmi main component with run', () => {
+    store.overrideSelector(getRunSelection, new Map([['run_1', true]]));
+    const fixture = TestBed.createComponent(MainContainer);
+    fixture.detectChanges();
+
+    const runsElement = fixture.debugElement.query(
+      By.css('tb-legacy-runs-selector')
+    );
+    expect(runsElement).toBeTruthy();
+
+    const dataSelectionElement = fixture.debugElement.query(
+      By.css('npmi-data-selection')
+    );
+    expect(dataSelectionElement).toBeTruthy();
   });
 });

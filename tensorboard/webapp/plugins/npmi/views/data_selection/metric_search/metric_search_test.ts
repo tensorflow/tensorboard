@@ -20,7 +20,6 @@ import {By} from '@angular/platform-browser';
 import {FormsModule} from '@angular/forms';
 import {CommonModule} from '@angular/common';
 
-import {MatIconModule} from '@angular/material/icon';
 import {MatAutocompleteModule} from '@angular/material/autocomplete';
 import {MatInputModule} from '@angular/material/input';
 
@@ -51,7 +50,6 @@ describe('Npmi Metric Search Container', () => {
       imports: [
         CommonModule,
         FormsModule,
-        MatIconModule,
         MatInputModule,
         MatAutocompleteModule,
         MatIconTestingModule,
@@ -78,7 +76,7 @@ describe('Npmi Metric Search Container', () => {
     const fixture = TestBed.createComponent(MetricSearchContainer);
     fixture.detectChanges();
 
-    const filterDiv = fixture.debugElement.query(By.css('.metric-filter'));
+    const filterDiv = fixture.debugElement.query(By.css('input'));
     expect(filterDiv).toBeTruthy();
   });
 });

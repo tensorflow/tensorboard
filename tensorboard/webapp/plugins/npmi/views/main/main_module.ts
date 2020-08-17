@@ -21,7 +21,7 @@ import {MatCheckboxModule} from '@angular/material/checkbox';
 import {MainComponent} from './main_component';
 import {MainContainer} from './main_container';
 import {RunsModule} from '../../../../runs/runs_module';
-import {MetricSearchModule} from '../metric_filters/metric_search/metric_search_module';
+import {DataSelectionModule} from './../data_selection/data_selection_module';
 
 @NgModule({
   declarations: [MainComponent, MainContainer],
@@ -30,7 +30,7 @@ import {MetricSearchModule} from '../metric_filters/metric_search/metric_search_
     FormsModule,
     MatCheckboxModule,
     RunsModule,
-    MetricSearchModule,
+    DataSelectionModule,
   ],
   exports: [MainContainer],
 })
