@@ -13,14 +13,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component} from '@angular/core';
-import {Store, select, createSelector} from '@ngrx/store';
+import {Store, createSelector} from '@ngrx/store';
 import {combineLatest} from 'rxjs';
 import {map} from 'rxjs/operators';
 
-import {getPlugins, getActivePlugin, getPluginsListLoaded} from '../core/store';
+import {
+  getPlugins,
+  getActivePlugin,
+  getPluginsListLoaded,
+  getEnvironment,
+} from '../core/store';
 import {PluginMetadata} from '../types/api';
 import {LoadState, DataLoadState} from '../types/data';
 import {State} from '../core/store/core_types';
+
+import {PluginLoadState} from './plugins_component';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
@@ -48,29 +55,51 @@ const lastLoadedTimeInMs = createSelector(
   selector: 'plugins',
   template: `
     <plugins-component
-      [activePlugin]="activePlugin$ | async"
-      [noEnabledPlugin]="noEnabledPlugin$ | async"
+      [activeKnownPlugin]="activeKnownPlugin$ | async"
+      [activePluginId]="activePluginId$ | async"
+      [dataLocation]="dataLocation$ | async"
       [lastUpdated]="lastLoadedTimeInMs$ | async"
+      [pluginLoadState]="pluginLoadState$ | async"
     ></plugins-component>
   `,
   styles: ['plugins-component { height: 100%; }'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PluginsContainer {
-  readonly activePlugin$ = this.store.pipe(select(activePlugin));
-  readonly noEnabledPlugin$ = combineLatest(
-    this.store.select(activePlugin),
+  readonly activeKnownPlugin$ = this.store.select(activePlugin);
+  readonly activePluginId$ = this.store.select(getActivePlugin);
+
+  readonly pluginLoadState$ = combineLatest(
+    this.activeKnownPlugin$,
+    this.activePluginId$,
     this.store.select(getPluginsListLoaded)
   ).pipe(
-    map(([activePlugin, loadState]) => {
-      return (
-        activePlugin === null &&
-        (loadState.state === DataLoadState.LOADED ||
-          loadState.state === DataLoadState.FAILED)
-      );
+    map(([activePlugin, activePluginId, loadState]) => {
+      if (activePlugin !== null) {
+        return PluginLoadState.LOADED;
+      }
+
+      if (
+        loadState.lastLoadedTimeInMs === null &&
+        loadState.state === DataLoadState.LOADING
+      ) {
+        return PluginLoadState.LOADING;
+      }
+
+      if (activePluginId) {
+        return PluginLoadState.UNKNOWN_PLUGIN_ID;
+      }
+
+      return PluginLoadState.NO_ENABLED_PLUGINS;
     })
   );
-  readonly lastLoadedTimeInMs$ = this.store.pipe(select(lastLoadedTimeInMs));
+
+  readonly lastLoadedTimeInMs$ = this.store.select(lastLoadedTimeInMs);
+  readonly dataLocation$ = this.store.select(getEnvironment).pipe(
+    map((env) => {
+      return env.data_location;
+    })
+  );
 
   constructor(private readonly store: Store<State>) {}
 }
