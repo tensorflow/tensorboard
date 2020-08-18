@@ -23,6 +23,7 @@ ng_module(
     deps = [
         "//tensorboard/webapp/plugins/npmi/store",
         "//tensorboard/webapp/plugins/npmi/store:types",
+        "//tensorboard/webapp/plugins/npmi/views/data_selection/metric_arithmetic",
         "//tensorboard/webapp/plugins/npmi/views/data_selection/metric_search",
         "@npm//@angular/core",
         "@npm//@ngrx/store",

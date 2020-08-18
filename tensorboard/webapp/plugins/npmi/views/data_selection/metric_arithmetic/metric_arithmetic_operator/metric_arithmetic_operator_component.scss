@@ -1,0 +1,13 @@
+@import 'tensorboard/webapp/theme/tb_theme';
+
+.metric-arithmetic-operator {
+  background-color: lightgray;
+  border-radius: 5px;
+  border: 1px solid mat-color($tb-foreground, border);
+  margin-left: 5px;
+  height: 30px;
+  width: 20px;
+  line-height: 30px;
+  text-align: center;
+  vertical-align: middle;
+}

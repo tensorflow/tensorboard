@@ -1,0 +1,57 @@
+@import 'tensorboard/webapp/theme/tb_theme';
+
+.metric-arithmetic-element {
+  background-color: white;
+  border-radius: 15px;
+  border: 1px solid mat-color($tb-foreground, border);
+  margin-left: 5px;
+  display: flex;
+  height: 30px;
+  align-items: center;
+}
+
+.metric-arithmetic-element-text {
+  padding: 5px 10px 5px 10px;
+}
+
+.metric-arithmetic-element-remove {
+  width: 30px;
+  background-color: mat-color($tb-warn);
+  height: 30px;
+  border-radius: 0px 15px 15px 0px;
+  color: white;
+  cursor: pointer;
+  padding-right: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.metric-arithmetic-element-range {
+  background-color: lightgray;
+  height: 30px;
+  padding: 0px 5px 0px 5px;
+  line-height: 30px;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+}
+
+.inputField {
+  background-color: transparent;
+  border: none;
+  font-family: monospace;
+  font-size: 12px;
+  transition: width 1s;
+}
+
+.inputField:focus {
+  border: none;
+  background-color: darkgrey;
+  width: 100px !important;
+  outline: none;
+}
+
+.valueInvalid {
+  color: mat-color($tb-warn);
+}
