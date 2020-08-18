@@ -26,6 +26,7 @@ import csv
 
 import six
 from six import StringIO
+import werkzeug.exceptions
 from werkzeug import wrappers
 
 from tensorboard import errors
@@ -64,6 +65,7 @@ class ScalarsPlugin(base_plugin.TBPlugin):
     def get_plugin_apps(self):
         return {
             "/scalars": self.scalars_route,
+            "/scalars_multirun": self.scalars_multirun_route,
             "/tags": self.tags_route,
         }
 
@@ -115,6 +117,21 @@ class ScalarsPlugin(base_plugin.TBPlugin):
         else:
             return (values, "application/json")
 
+    def scalars_multirun_impl(self, ctx, tag, runs, experiment):
+        """Result of the form `(body, mime_type)`."""
+        all_scalars = self._data_provider.read_scalars(
+            ctx,
+            experiment_id=experiment,
+            plugin_name=metadata.PLUGIN_NAME,
+            downsample=self._downsample_to,
+            run_tag_filter=provider.RunTagFilter(runs=runs, tags=[tag]),
+        )
+        body = {
+            run: [(x.wall_time, x.step, x.value) for x in run_data[tag]]
+            for (run, run_data) in all_scalars.items()
+        }
+        return (body, "application/json")
+
     @wrappers.Request.application
     def tags_route(self, request):
         ctx = plugin_util.context(request.environ)
@@ -138,5 +155,22 @@ class ScalarsPlugin(base_plugin.TBPlugin):
         output_format = request.args.get("format")
         (body, mime_type) = self.scalars_impl(
             ctx, tag, run, experiment, output_format
+        )
+        return http_util.Respond(request, body, mime_type)
+
+    @wrappers.Request.application
+    def scalars_multirun_route(self, request):
+        """Given a tag and list of runs, return dict of ScalarEvent arrays."""
+        if request.method != "POST":
+            raise werkzeug.exceptions.MethodNotAllowed(["POST"])
+        tag = request.form.get("tag")
+        runs = request.form.getlist("runs")
+        if tag is None:
+            raise errors.InvalidArgumentError("tag must be specified")
+
+        ctx = plugin_util.context(request.environ)
+        experiment = plugin_util.experiment_id(request.environ)
+        (body, mime_type) = self.scalars_multirun_impl(
+            ctx, tag, runs, experiment
         )
         return http_util.Respond(request, body, mime_type)

@@ -225,14 +225,18 @@ export class TfScalarCard extends PolymerElement {
 
   // This function is called when data is received from the backend.
   @property({type: Object})
-  _loadDataCallback: object = (scalarChart, datum, data) => {
-    const formattedData = data.map((datum) => ({
+  _loadDataCallback: object = (scalarChart, item, maybeData) => {
+    if (maybeData == null) {
+      console.error('Failed to load data for:', item);
+      return;
+    }
+    const formattedData = maybeData.map((datum) => ({
       wall_time: new Date(datum[0] * 1000),
       step: datum[1],
       scalar: datum[2],
     }));
-    const name = this._getSeriesNameFromDatum(datum);
-    scalarChart.setSeriesMetadata(name, datum);
+    const name = this._getSeriesNameFromDatum(item);
+    scalarChart.setSeriesMetadata(name, item);
     scalarChart.setSeriesData(name, formattedData);
     scalarChart.commitChanges();
   };
@@ -257,19 +261,33 @@ export class TfScalarCard extends PolymerElement {
   // this.requestManager.request(
   //      this.getDataLoadUrl({tag, run, experiment})
   @property({type: Object})
-  requestData: RequestDataCallback<RunTagItem, ScalarDatum[]> = (
+  requestData: RequestDataCallback<RunTagItem, ScalarDatum[] | null> = (
     items,
     onLoad,
     onFinish
   ) => {
     const router = getRouter();
-    const baseUrl = router.pluginRoute('scalars', '/scalars');
+    const url = router.pluginRoute('scalars', '/scalars_multirun');
+    const runsByTag = new Map<string, string[]>();
+    for (const {tag, run} of items) {
+      let runs = runsByTag.get(tag);
+      if (runs == null) {
+        runsByTag.set(tag, (runs = []));
+      }
+      runs.push(run);
+    }
     Promise.all(
-      items.map((item) => {
-        const url = addParams(baseUrl, {tag: item.tag, run: item.run});
-        return this.requestManager
-          .request(url)
-          .then((data) => void onLoad({item, data}));
+      Array.from(runsByTag.entries()).map(([tag, runs]) => {
+        return this.requestManager.request(url, {tag, runs}).then((allData) => {
+          for (const run of runs) {
+            const item = {tag, run};
+            if (Object.prototype.hasOwnProperty.call(allData, run)) {
+              onLoad({item, data: allData[run]});
+            } else {
+              onLoad({item, data: null});
+            }
+          }
+        });
       })
     ).finally(() => void onFinish());
   };

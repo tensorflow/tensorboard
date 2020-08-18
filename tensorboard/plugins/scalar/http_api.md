@@ -61,3 +61,25 @@ instead be in CSV format:
     1443856985.705543,1448,0.7461960315704346
     1443857105.704628,3438,0.5427092909812927
     1443857225.705133,5417,0.5457325577735901
+
+## `/data/plugin/scalars/scalars_multirun` (POST)
+
+Accepts form-encoded POST data with a (required) singleton key `tag` and a
+repeated key `runs`. Returns a JSON object mapping run names to arrays of the
+form returned by `/data/plugin/scalars/scalars`. A run will only be present in
+the output if there actually exists data for that run-tag combination. If there
+is no data for some or all of the run-tag combinations, no error is raised, but
+the response may lack runs requested in the input or be an empty object
+entirely.
+
+Example:
+
+    {
+      "train": [
+        [1443856985.705543, 1448, 0.7461960315704346],
+        [1443857105.704628, 3438, 0.5427092909812927]
+      ],
+      "test": [
+        [1443857225.705133, 5417, 0.5457325577735901],
+      ]
+    }

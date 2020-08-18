@@ -92,6 +92,12 @@ export class RequestOptions {
   }
 }
 
+// Form data for a POST request as a convenient multidict interface.
+// A raw string value is equivalent to a singleton array.
+export interface PostData {
+  [key: string]: string | string[];
+}
+
 export class RequestManager {
   private _queue: ResolveReject[];
   private _maxRetries: number;
@@ -108,12 +114,7 @@ export class RequestManager {
    * postData is provided, this request will use POST, not GET. This is an
    * object mapping POST keys to string values.
    */
-  public request(
-    url: string,
-    postData?: {
-      [key: string]: string;
-    }
-  ): Promise<any> {
+  public request(url: string, postData?: PostData): Promise<any> {
     const requestOptions = requestOptionsFromPostData(postData);
     return this.requestWithOptions(url, requestOptions);
   }
@@ -272,9 +273,7 @@ function buildXMLHttpRequest(
   return req;
 }
 
-function requestOptionsFromPostData(postData?: {
-  [key: string]: string;
-}): RequestOptions {
+function requestOptionsFromPostData(postData?: PostData): RequestOptions {
   const result = new RequestOptions();
   if (!postData) {
     result.methodType = HttpMethodType.GET;
@@ -285,13 +284,12 @@ function requestOptionsFromPostData(postData?: {
   return result;
 }
 
-function formDataFromDictionary(postData: {[key: string]: string}) {
+function formDataFromDictionary(postData: PostData) {
   const formData = new FormData();
-  for (let postKey in postData) {
-    if (postKey) {
-      // The linter requires 'for in' loops to be filtered by an if
-      // condition.
-      formData.append(postKey, postData[postKey]);
+  for (const [key, maybeValues] of Object.entries(postData)) {
+    const values = Array.isArray(maybeValues) ? maybeValues : [maybeValues];
+    for (const value of values) {
+      formData.append(key, value);
     }
   }
   return formData;

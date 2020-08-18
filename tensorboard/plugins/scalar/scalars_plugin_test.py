@@ -58,6 +58,8 @@ class ScalarsPluginTest(tf.test.TestCase):
 
     _RUN_WITH_LEGACY_SCALARS = "_RUN_WITH_LEGACY_SCALARS"
     _RUN_WITH_SCALARS = "_RUN_WITH_SCALARS"
+    _RUN_WITH_SCALARS_2 = "_RUN_WITH_SCALARS_2"
+    _RUN_WITH_SCALARS_3 = "_RUN_WITH_SCALARS_3"
     _RUN_WITH_HISTOGRAM = "_RUN_WITH_HISTOGRAM"
 
     def load_plugin(self, run_names):
@@ -96,6 +98,20 @@ class ScalarsPluginTest(tf.test.TestCase):
                     summ = summary.op(
                         self._SCALAR_TAG,
                         tf.reduce_sum(data),
+                        display_name=self._DISPLAY_NAME,
+                        description=self._DESCRIPTION,
+                    ).numpy()
+                elif run_name == self._RUN_WITH_SCALARS_2:
+                    summ = summary.op(
+                        self._SCALAR_TAG,
+                        2 * tf.reduce_sum(data),
+                        display_name=self._DISPLAY_NAME,
+                        description=self._DESCRIPTION,
+                    ).numpy()
+                elif run_name == self._RUN_WITH_SCALARS_3:
+                    summ = summary.op(
+                        self._SCALAR_TAG,
+                        3 * tf.reduce_sum(data),
                         display_name=self._DISPLAY_NAME,
                         description=self._DESCRIPTION,
                     ).numpy()
@@ -190,6 +206,85 @@ class ScalarsPluginTest(tf.test.TestCase):
             },
         )
         self.assertEqual(404, response.status_code)
+
+    def test_scalars_multirun(self):
+        server = self.load_server(
+            [
+                self._RUN_WITH_SCALARS,
+                self._RUN_WITH_SCALARS_2,
+                self._RUN_WITH_SCALARS_3,
+            ]
+        )
+        response = server.post(
+            "/data/plugin/scalars/scalars_multirun",
+            data={
+                "tag": "%s/scalar_summary" % self._SCALAR_TAG,
+                "runs": [
+                    self._RUN_WITH_SCALARS,
+                    # skip _RUN_WITH_SCALARS_2
+                    self._RUN_WITH_SCALARS_3,
+                    self._RUN_WITH_HISTOGRAM,  # no data for this tag; okay
+                    "nonexistent_run",  # no data at all; okay
+                ],
+            },
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("application/json", response.headers["Content-Type"])
+        data = json.loads(response.get_data())
+        self.assertCountEqual(
+            [self._RUN_WITH_SCALARS, self._RUN_WITH_SCALARS_3], data
+        )
+        self.assertLen(data[self._RUN_WITH_SCALARS], self._STEPS)
+        self.assertLen(data[self._RUN_WITH_SCALARS_3], self._STEPS)
+        self.assertNotEqual(
+            data[self._RUN_WITH_SCALARS][0][2],
+            data[self._RUN_WITH_SCALARS_3][0][2],
+        )
+
+    def test_scalars_multirun_single_run(self):
+        # Checks for any problems with singleton arrays.
+        server = self.load_server(
+            [
+                self._RUN_WITH_SCALARS,
+                self._RUN_WITH_SCALARS_2,
+                self._RUN_WITH_SCALARS_3,
+            ]
+        )
+        response = server.post(
+            "/data/plugin/scalars/scalars_multirun",
+            data={
+                "tag": "%s/scalar_summary" % self._SCALAR_TAG,
+                "runs": [self._RUN_WITH_SCALARS],
+            },
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("application/json", response.headers["Content-Type"])
+        data = json.loads(response.get_data())
+        self.assertCountEqual([self._RUN_WITH_SCALARS], data)
+        self.assertLen(data[self._RUN_WITH_SCALARS], self._STEPS)
+
+    def test_scalars_multirun_no_tag(self):
+        server = self.load_server([self._RUN_WITH_SCALARS])
+        response = server.post(
+            "/data/plugin/scalars/scalars_multirun",
+            data={"runs": [self._RUN_WITH_SCALARS, self._RUN_WITH_SCALARS_2]},
+        )
+        self.assertEqual(400, response.status_code)
+        self.assertIn(
+            "tag must be specified", response.get_data().decode("utf-8")
+        )
+
+    def test_scalars_multirun_bad_method(self):
+        server = self.load_server([self._RUN_WITH_SCALARS])
+        response = server.get(
+            "/data/plugin/scalars/scalars_multirun",
+            query_string={
+                "tag": "%s/scalar_summary" % self._SCALAR_TAG,
+                "runs": [self._RUN_WITH_SCALARS, self._RUN_WITH_SCALARS_3,],
+            },
+        )
+        self.assertEqual(405, response.status_code)
+        self.assertEqual(response.headers["Allow"], "POST")
 
     def test_active_with_legacy_scalars(self):
         plugin = self.load_plugin([self._RUN_WITH_LEGACY_SCALARS])
