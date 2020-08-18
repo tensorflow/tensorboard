@@ -12,10 +12,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-var vz_projector;
-(function (vz_projector) {
-    var test;
-    (function (test) {
-        test.assert = chai.assert;
-    })(test = vz_projector.test || (vz_projector.test = {}));
-})(vz_projector || (vz_projector = {})); // namespace vz_projector.test
+namespace vz_projector.test {
+  export const assert = chai.assert;
+} // namespace vz_projector.test
