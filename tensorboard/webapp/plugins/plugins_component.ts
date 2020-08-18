@@ -105,7 +105,7 @@ export class PluginsComponent implements OnChanges {
   activePluginId!: string | null;
 
   @Input()
-  activePlugin!: UiPluginMetadata | null;
+  activeKnownPlugin!: UiPluginMetadata | null;
 
   @Input()
   pluginLoadState!: PluginLoadState;
@@ -122,8 +122,8 @@ export class PluginsComponent implements OnChanges {
   private readonly pluginInstances = new Map<string, HTMLElement>();
 
   ngOnChanges(change: SimpleChanges): void {
-    if (change['activePlugin'] && this.activePlugin) {
-      this.renderPlugin(this.activePlugin!);
+    if (change['activeKnownPlugin'] && this.activeKnownPlugin) {
+      this.renderPlugin(this.activeKnownPlugin!);
     }
     if (change['lastUpdated']) {
       this.reload();
@@ -212,12 +212,12 @@ export class PluginsComponent implements OnChanges {
   }
 
   private reload() {
-    if (!this.activePlugin || this.activePlugin.disable_reload) {
+    if (!this.activeKnownPlugin || this.activeKnownPlugin.disable_reload) {
       return;
     }
 
     const maybeDashboard = this.pluginInstances.get(
-      this.activePlugin.id
+      this.activeKnownPlugin.id
     ) as any;
     if (maybeDashboard.reload) {
       maybeDashboard.reload();

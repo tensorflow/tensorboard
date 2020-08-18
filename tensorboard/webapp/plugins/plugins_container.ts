@@ -55,7 +55,7 @@ const lastLoadedTimeInMs = createSelector(
   selector: 'plugins',
   template: `
     <plugins-component
-      [activePlugin]="activePlugin$ | async"
+      [activeKnownPlugin]="activeKnownPlugin$ | async"
       [activePluginId]="activePluginId$ | async"
       [dataLocation]="dataLocation$ | async"
       [lastUpdated]="lastLoadedTimeInMs$ | async"
@@ -66,11 +66,11 @@ const lastLoadedTimeInMs = createSelector(
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PluginsContainer {
-  readonly activePlugin$ = this.store.select(activePlugin);
+  readonly activeKnownPlugin$ = this.store.select(activePlugin);
   readonly activePluginId$ = this.store.select(getActivePlugin);
 
   readonly pluginLoadState$ = combineLatest(
-    this.activePlugin$,
+    this.activeKnownPlugin$,
     this.activePluginId$,
     this.store.select(getPluginsListLoaded)
   ).pipe(
