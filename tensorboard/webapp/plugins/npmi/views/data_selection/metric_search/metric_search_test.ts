@@ -19,11 +19,13 @@ import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {FormsModule} from '@angular/forms';
 import {CommonModule} from '@angular/common';
+import {OverlayContainer} from '@angular/cdk/overlay';
+import {DebugElement, getDebugNode} from '@angular/core';
 
 import {MatAutocompleteModule} from '@angular/material/autocomplete';
 import {MatInputModule} from '@angular/material/input';
 
-import {Store} from '@ngrx/store';
+import {Action, Store} from '@ngrx/store';
 import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
 import {State} from '../../../../../app_state';
@@ -33,9 +35,8 @@ import {
   getMetricsRegex,
   getRunToMetrics,
 } from './../../../store/npmi_selectors';
+import * as npmiActions from '../../../actions';
 import {appStateFromNpmiState, createNpmiState} from '../../../testing';
-import {MatIconTestingModule} from '../../../../../testing/mat_icon.module';
-
 import {MetricSearchComponent} from './metric_search_component';
 import {MetricSearchContainer} from './metric_search_container';
 
@@ -43,6 +44,8 @@ import {MetricSearchContainer} from './metric_search_container';
 
 describe('Npmi Metric Search Container', () => {
   let store: MockStore<State>;
+  let dispatchedActions: Action[];
+  let overlayContainer: OverlayContainer;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -52,7 +55,6 @@ describe('Npmi Metric Search Container', () => {
         FormsModule,
         MatInputModule,
         MatAutocompleteModule,
-        MatIconTestingModule,
       ],
       providers: [
         provideMockStore({
@@ -60,8 +62,19 @@ describe('Npmi Metric Search Container', () => {
         }),
       ],
     }).compileComponents();
+
+    overlayContainer = TestBed.inject(OverlayContainer);
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
-    store.overrideSelector(getRunSelection, new Map([['run_1', true]]));
+
+    dispatchedActions = [];
+    spyOn(store, 'dispatch').and.callFake((action: Action) => {
+      dispatchedActions.push(action);
+    });
+
+    store.overrideSelector(
+      getRunSelection,
+      new Map([['run1', true], ['run2', true]])
+    );
     store.overrideSelector(getMetricsRegex, '');
     store.overrideSelector(getRunToMetrics, {
       run1: ['metric_1', 'metric_2'],
@@ -78,5 +91,189 @@ describe('Npmi Metric Search Container', () => {
 
     const filterDiv = fixture.debugElement.query(By.css('input'));
     expect(filterDiv).toBeTruthy();
+  });
+
+  describe('input interaction', () => {
+    it('dispatches changeMetricRegex when typing on input', () => {
+      const fixture = TestBed.createComponent(MetricSearchContainer);
+      fixture.detectChanges();
+
+      const input = fixture.debugElement.query(By.css('input'));
+      input.nativeElement.focus();
+      fixture.detectChanges();
+
+      input.nativeElement.value = 'a';
+      input.nativeElement.dispatchEvent(new InputEvent('input', {data: 'a'}));
+      fixture.detectChanges();
+
+      expect(dispatchedActions).toEqual([
+        npmiActions.npmiMetricsRegexChanged({regex: 'a'}),
+      ]);
+    });
+  });
+
+  describe('autocomplete', () => {
+    it('shows all metrics on focus', () => {
+      const fixture = TestBed.createComponent(MetricSearchContainer);
+      fixture.detectChanges();
+
+      const input = fixture.debugElement.query(By.css('input'));
+      input.nativeElement.focus();
+      fixture.detectChanges();
+
+      const optionElements = overlayContainer
+        .getContainerElement()
+        .querySelectorAll('mat-option');
+      const options = Array.from(optionElements).map(
+        (optionEl: Element): DebugElement =>
+          getDebugNode(optionEl) as DebugElement
+      );
+
+      expect(options.map((option) => option.nativeElement.textContent)).toEqual(
+        ['metric_1', 'metric_2']
+      );
+    });
+
+    it('shows remaining metrics if some are already filtered for', () => {
+      store.overrideSelector(getMetricFilters, {
+        metric_1: {max: 1.0, min: -1.0, includeNaN: false},
+      });
+      const fixture = TestBed.createComponent(MetricSearchContainer);
+      fixture.detectChanges();
+
+      const input = fixture.debugElement.query(By.css('input'));
+      input.nativeElement.focus();
+      fixture.detectChanges();
+
+      const optionElements = overlayContainer
+        .getContainerElement()
+        .querySelectorAll('mat-option');
+      const options = Array.from(optionElements).map(
+        (optionEl: Element): DebugElement =>
+          getDebugNode(optionEl) as DebugElement
+      );
+
+      expect(options.map((option) => option.nativeElement.textContent)).toEqual(
+        ['metric_2']
+      );
+    });
+
+    it('renders empty when no metrics match', () => {
+      store.overrideSelector(getMetricsRegex, 'YOU CANNOT MATCH ME');
+      const fixture = TestBed.createComponent(MetricSearchContainer);
+      fixture.detectChanges();
+
+      const input = fixture.debugElement.query(By.css('input'));
+      input.nativeElement.focus();
+      fixture.detectChanges();
+
+      const optionElements = overlayContainer
+        .getContainerElement()
+        .querySelectorAll('mat-option');
+      const options = Array.from(optionElements).map(
+        (optionEl: Element): DebugElement =>
+          getDebugNode(optionEl) as DebugElement
+      );
+
+      expect(options.map((option) => option.nativeElement.textContent)).toEqual(
+        []
+      );
+    });
+
+    it('filters by regex', () => {
+      store.overrideSelector(getMetricsRegex, '[A-Za-z]+_1');
+      const fixture = TestBed.createComponent(MetricSearchContainer);
+      fixture.detectChanges();
+
+      const input = fixture.debugElement.query(By.css('input'));
+      input.nativeElement.focus();
+      fixture.detectChanges();
+
+      const optionElements = overlayContainer
+        .getContainerElement()
+        .querySelectorAll('mat-option');
+      const options = Array.from(optionElements).map(
+        (optionEl: Element): DebugElement =>
+          getDebugNode(optionEl) as DebugElement
+      );
+
+      expect(options.map((option) => option.nativeElement.textContent)).toEqual(
+        ['metric_1']
+      );
+    });
+
+    it('responds to input changes', () => {
+      const fixture = TestBed.createComponent(MetricSearchContainer);
+      fixture.detectChanges();
+
+      const input = fixture.debugElement.query(By.css('input'));
+      input.nativeElement.focus();
+      fixture.detectChanges();
+
+      store.overrideSelector(getMetricsRegex, '2$');
+      store.refreshState();
+      fixture.detectChanges();
+
+      const optionElements = overlayContainer
+        .getContainerElement()
+        .querySelectorAll('mat-option');
+      const options = Array.from(optionElements).map(
+        (optionEl: Element): DebugElement =>
+          getDebugNode(optionEl) as DebugElement
+      );
+
+      expect(options.map((option) => option.nativeElement.textContent)).toEqual(
+        ['metric_2']
+      );
+    });
+
+    it('dispatches action when clicking on option and ', () => {
+      const fixture = TestBed.createComponent(MetricSearchContainer);
+      fixture.detectChanges();
+
+      const input = fixture.debugElement.query(By.css('input'));
+      input.nativeElement.focus();
+      fixture.detectChanges();
+
+      const optionElements = overlayContainer
+        .getContainerElement()
+        .querySelectorAll('mat-option');
+      const options = Array.from(optionElements).map(
+        (optionEl: Element): DebugElement =>
+          getDebugNode(optionEl) as DebugElement
+      );
+      options[0].nativeElement.click();
+
+      expect(dispatchedActions).toEqual([
+        npmiActions.npmiAddMetricFilter({metric: 'metric_1'}),
+        npmiActions.npmiMetricsRegexChanged({regex: ''}),
+      ]);
+    });
+
+    it('shows error icon for an invalid regex', () => {
+      store.overrideSelector(getMetricsRegex, '*');
+      const fixture = TestBed.createComponent(MetricSearchContainer);
+      fixture.detectChanges();
+
+      expect(fixture.debugElement.query(By.css('.error-icon'))).not.toBeNull();
+    });
+
+    it('dispatches actions on Enter', () => {
+      const fixture = TestBed.createComponent(MetricSearchContainer);
+      fixture.detectChanges();
+
+      const input = fixture.debugElement.query(By.css('input'));
+      input.nativeElement.focus();
+      fixture.detectChanges();
+
+      input.nativeElement.dispatchEvent(
+        new KeyboardEvent('keyup', {key: 'Enter'})
+      );
+
+      expect(dispatchedActions).toEqual([
+        npmiActions.npmiAddMetricFilter({metric: 'metric_1'}),
+        npmiActions.npmiMetricsRegexChanged({regex: ''}),
+      ]);
+    });
   });
 });

@@ -44,28 +44,20 @@ export class MetricSearchComponent {
     if (event.key === 'Enter') {
       if (this.completions.length !== 0) {
         // If the filter has options, take the first one
-        this.store.dispatch(
-          npmiActions.addMetricFilter({metric: this.completions[0]})
-        );
-        this.store.dispatch(npmiActions.metricsRegexChanged({regex: ''}));
-        this.store.dispatch(
-          npmiActions.addMetricFilter({metric: this.completions[0]})
-        );
+        this.addFilter(this.completions[0]);
       } else if (this.completions.indexOf(this.regexFilterValue) !== -1) {
         // Else, look for a direct string match
-        this.store.dispatch(
-          npmiActions.addMetricFilter({metric: this.regexFilterValue})
-        );
-        this.store.dispatch(npmiActions.metricsRegexChanged({regex: ''}));
-        this.store.dispatch(
-          npmiActions.addMetricFilter({metric: this.regexFilterValue})
-        );
+        this.addFilter(this.regexFilterValue);
       }
     }
   }
 
   optionClick(metric: string) {
-    this.store.dispatch(npmiActions.addMetricFilter({metric: metric}));
-    this.store.dispatch(npmiActions.metricsRegexChanged({regex: ''}));
+    this.addFilter(metric);
+  }
+
+  private addFilter(metric: string) {
+    this.store.dispatch(npmiActions.npmiAddMetricFilter({metric}));
+    this.store.dispatch(npmiActions.npmiMetricsRegexChanged({regex: ''}));
   }
 }

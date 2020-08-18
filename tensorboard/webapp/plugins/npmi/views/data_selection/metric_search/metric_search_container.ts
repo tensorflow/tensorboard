@@ -29,7 +29,7 @@ import * as npmiActions from '../../../actions';
   selector: 'npmi-metric-search',
   template: `
     <metric-search-component
-      [regexFilterValue]="metricsFilter$ | async"
+      [regexFilterValue]="metricsRegex$ | async"
       [completions]="completions$ | async"
       [isRegexFilterValid]="isMetricsFilterValid$ | async"
       (onRegexFilterValueChange)="onFilterChange($event)"
@@ -38,7 +38,7 @@ import * as npmiActions from '../../../actions';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MetricSearchContainer {
-  readonly metricsFilter$ = this.store.select(getMetricsRegex);
+  readonly metricsRegex$ = this.store.select(getMetricsRegex);
   readonly activeRuns$ = this.store.pipe(select(getRunSelection)).pipe(
     map((runs) => {
       let activeRuns: string[] = [];
@@ -81,18 +81,19 @@ export class MetricSearchContainer {
       })
     )
     .pipe(
-      combineLatest(this.metricsFilter$),
+      combineLatest(this.metricsRegex$),
       map(([metrics, regexFilterValue]) => {
-        const filterRegex = new RegExp(regexFilterValue, 'i');
-        if (filterRegex === null) {
-          return [];
+        try {
+          const filterRegex = new RegExp(regexFilterValue, 'i');
+          return metrics
+            .filter((metric: string) => filterRegex.test(metric))
+            .sort();
+        } catch (err) {
+          return metrics.sort();
         }
-        return metrics
-          .filter((metric: string) => filterRegex.test(metric))
-          .sort();
       })
     );
-  readonly isMetricsFilterValid$ = this.metricsFilter$.pipe(
+  readonly isMetricsFilterValid$ = this.metricsRegex$.pipe(
     map((filterString) => {
       try {
         // tslint:disable-next-line:no-unused-expression Check for validity of filter.
@@ -104,7 +105,7 @@ export class MetricSearchContainer {
     })
   );
   onFilterChange(filter: string) {
-    this.store.dispatch(npmiActions.metricsRegexChanged({regex: filter}));
+    this.store.dispatch(npmiActions.npmiMetricsRegexChanged({regex: filter}));
   }
 
   constructor(private readonly store: Store<State>) {}
