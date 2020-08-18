@@ -23,3 +23,8 @@ export function metricIsMetricCount(metric: string): boolean {
 export function metricIsNpmi(metric: string): boolean {
   return metric.startsWith('nPMI');
 }
+
+export function stripMetricString(metricString: string): string {
+  let strippedString = metricString.split('@')[1];
+  return strippedString;
+}

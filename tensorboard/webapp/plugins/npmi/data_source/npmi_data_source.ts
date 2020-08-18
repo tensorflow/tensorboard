@@ -12,21 +12,35 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {
-  AnnotationListing,
-  MetricListing,
-  ValueListing,
-} from './../store/npmi_types';
+import {HttpErrorResponse} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {Observable, forkJoin} from 'rxjs';
+
+import {Observable, of, forkJoin, throwError} from 'rxjs';
+import {map, catchError} from 'rxjs/operators';
+
 import {TBHttpClient} from '../../../webapp_data_source/tb_http_client';
+import * as metric_type from '../util/metric_type';
+import {
+  MetricListing,
+  AnnotationDataListing,
+  ValueData,
+} from './../store/npmi_types';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 export abstract class NpmiDataSource {
-  abstract fetchData(): Observable<
-    [AnnotationListing, MetricListing, ValueListing]
-  >;
+  abstract fetchData(): Observable<{
+    annotationData: AnnotationDataListing;
+    metrics: MetricListing;
+  }>;
+}
+
+interface AnnotationListing {
+  [runId: string]: string[];
+}
+
+interface ValueListing {
+  [runId: string]: number[][];
 }
 
 @Injectable()
@@ -40,6 +54,61 @@ export class NpmiHttpServerDataSource implements NpmiDataSource {
       this.fetchAnnotations(),
       this.fetchMetrics(),
       this.fetchValues()
+    ).pipe(
+      map(([annotations, metrics, values]) => {
+        let annotationData: AnnotationDataListing = {};
+        for (let run of Object.keys(annotations)) {
+          for (let annotationIndex in annotations[run]) {
+            let annotation = annotations[run][annotationIndex];
+            let dataElements: ValueData[] = [];
+            for (let metricIndex in metrics[run]) {
+              let metric = metrics[run][metricIndex];
+              let dataElement = dataElements.find(
+                (element) =>
+                  element.metric === metric_type.stripMetricString(metric)
+              );
+              if (!dataElement) {
+                dataElement = {
+                  nPMIValue: null,
+                  countValue: null,
+                  annotation: annotation,
+                  metric: metric_type.stripMetricString(metric),
+                  run: run,
+                };
+                dataElements.push(dataElement);
+              }
+              if (metric_type.metricIsMetricCount(metric)) {
+                dataElement.countValue =
+                  values[run][annotationIndex][metricIndex];
+              } else if (metric_type.metricIsNpmi(metric)) {
+                dataElement.nPMIValue =
+                  values[run][annotationIndex][metricIndex];
+              }
+            }
+            if (annotationData[annotation]) {
+              annotationData = {
+                ...annotationData,
+                [annotation]: annotationData[annotation].concat(dataElements),
+              };
+            } else {
+              annotationData = {
+                ...annotationData,
+                [annotation]: dataElements,
+              };
+            }
+          }
+        }
+        return {annotationData, metrics};
+      }),
+      catchError((error) => {
+        if (error instanceof HttpErrorResponse && error.status === 400) {
+          return of({
+            annotationData: {},
+            metrics: {},
+          });
+        }
+        return throwError(error);
+      })
     );
   }
 

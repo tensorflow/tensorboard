@@ -15,13 +15,7 @@ limitations under the License.
 import {Action, createReducer, on} from '@ngrx/store';
 
 import * as actions from '../actions';
-import {
-  NpmiState,
-  DataLoadState,
-  MetricListing,
-  ValueListing,
-  SummaryListing,
-} from './npmi_types';
+import {NpmiState, DataLoadState, MetricListing} from './npmi_types';
 import * as metricType from '../util/metric_type';
 
 // HACK: These imports are for type inference.
@@ -29,16 +23,12 @@ import * as metricType from '../util/metric_type';
 /** @typehack */ import * as _typeHackStore from '@ngrx/store/store';
 
 const initialState: NpmiState = {
-  annotationsData: {},
   pluginDataLoaded: {
     state: DataLoadState.NOT_LOADED,
     lastLoadedTimeInMs: null,
   },
-  countMetricsData: {},
-  npmiMetricsData: {},
-  countValuesData: {},
-  npmiValuesData: {},
-  countData: {},
+  annotationData: {},
+  runToMetrics: {},
 };
 
 const reducer = createReducer(
@@ -69,55 +59,25 @@ const reducer = createReducer(
   ),
   on(
     actions.npmiPluginDataLoaded,
-    (state: NpmiState, {annotations, metrics, values}): NpmiState => {
-      const countMetricsData: MetricListing = {};
-      const npmiMetricsData: MetricListing = {};
-      const countValuesData: ValueListing = {};
-      const npmiValuesData: ValueListing = {};
-      const countData: SummaryListing = {};
+    (state: NpmiState, {annotationData, metrics}): NpmiState => {
+      const runToMetrics: MetricListing = {};
       for (let key in metrics) {
         // Init Metrics Data
-        countMetricsData[key] = [];
-        npmiMetricsData[key] = [];
+        runToMetrics[key] = [];
         for (let value of metrics[key]) {
-          if (metricType.metricIsMetricCount(value)) {
-            countMetricsData[key].push(value);
-          } else if (metricType.metricIsNpmi(value)) {
-            npmiMetricsData[key].push(value);
+          if (metricType.metricIsNpmi(value)) {
+            runToMetrics[key].push(value);
           }
-        }
-        // Init Values Data
-        countValuesData[key] = [];
-        npmiValuesData[key] = [];
-        countData[key] = [];
-        for (let row of values[key]) {
-          let countRow = [];
-          let npmiRow = [];
-          for (let index in metrics[key]) {
-            if (metricType.metricIsMetricCount(metrics[key][index])) {
-              countRow.push(row[index]);
-            } else if (metricType.metricIsCount(metrics[key][index])) {
-              countData[key].push(row[index]);
-            } else if (metricType.metricIsNpmi(metrics[key][index])) {
-              npmiRow.push(row[index]);
-            }
-          }
-          countValuesData[key].push(countRow);
-          npmiValuesData[key].push(npmiRow);
         }
       }
       return {
         ...state,
-        countMetricsData: countMetricsData,
-        npmiMetricsData: npmiMetricsData,
-        countValuesData: countValuesData,
-        npmiValuesData: npmiValuesData,
-        annotationsData: annotations,
+        runToMetrics: runToMetrics,
+        annotationData: annotationData,
         pluginDataLoaded: {
           state: DataLoadState.LOADED,
           lastLoadedTimeInMs: Date.now(),
         },
-        countData: countData,
       };
     }
   )
