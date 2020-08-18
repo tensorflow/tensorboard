@@ -27,6 +27,7 @@ tf_web_library(
         # "vz-projector-projections-panel_test.ts",
     ],
     path = "/vz-projector/test",
+    tags = ["manual"],
     deps = [
         "//tensorboard/components/tf_imports:polymer",
         "//tensorboard/components/tf_imports:web_component_tester",
