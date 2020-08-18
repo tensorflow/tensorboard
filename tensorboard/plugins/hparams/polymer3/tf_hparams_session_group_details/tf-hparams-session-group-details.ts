@@ -20,6 +20,7 @@ import * as IronResizableBehavior from '@polymer/iron-resizable-behavior';
 import {mixinBehaviors} from '../../../../components_polymer3/polymer/legacy_class';
 import '../../../../components_polymer3/polymer/irons_and_papers';
 import '../../../../components_polymer3/tf_backend/tf-backend';
+import {RequestDataCallback} from '../../../../components_polymer3/tf_dashboard_common/data-loader-behavior';
 import * as tf_hparams_utils from '../tf_hparams_utils/tf-hparams-utils';
 import * as tf_color_scale from '../../../../components_polymer3/tf_color_scale/palettes';
 import * as vz_chart_helpers from '../../../../components_polymer3/vz_chart_helpers/vz-chart-helpers';
@@ -27,6 +28,11 @@ import '../../../scalar/polymer3/tf_scalar_dashboard/tf-scalar-card';
 
 // TODO: add dependency once the Polymer 3 scalar dashboard is migrated.
 // import '../tf_scalar_dashboard/tf-scalar-card';
+
+type RunTagItem = {
+  run: string;
+  tag: string;
+};
 
 /**
  * Shows a session group in more detail. Specifically, shows graphs of the
@@ -121,17 +127,28 @@ class TfHparamsSessionGroupDetails extends mixinBehaviors(
   // '_colorScale'.
   @property({type: Number})
   _sessionGroupNameHash: number;
+
   @property({
     type: Object,
   })
-  _requestData = ({tag, run}) => {
-    const request = {
-      experimentName: this.experimentName,
-      sessionName: run,
-      metricName: tag,
-    };
-    return this.backend.listMetricEvals(request);
+  _requestData: RequestDataCallback<
+    RunTagItem,
+    vz_chart_helpers.ScalarDatum[]
+  > = (items, onLoad, onFinish) => {
+    Promise.all(
+      items.map((item) => {
+        const request = {
+          experimentName: this.experimentName,
+          sessionName: item.run,
+          metricName: item.tag,
+        };
+        return this.backend
+          .listMetricEvals(request)
+          .then((data) => void onLoad({item, data}));
+      })
+    ).finally(() => void onFinish());
   };
+
   @property({
     type: Object,
   })

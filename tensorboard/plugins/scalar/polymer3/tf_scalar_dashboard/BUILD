@@ -54,6 +54,7 @@ tf_ts_library(
         "//tensorboard/components_polymer3/tf_color_scale",
         "//tensorboard/components_polymer3/tf_dashboard_common",
         "//tensorboard/components_polymer3/tf_line_chart_data_loader",
+        "//tensorboard/components_polymer3/vz_chart_helpers",
         "//tensorboard/components_polymer3/vz_line_chart2",
         "@npm//@polymer/decorators",
         "@npm//@polymer/polymer",
