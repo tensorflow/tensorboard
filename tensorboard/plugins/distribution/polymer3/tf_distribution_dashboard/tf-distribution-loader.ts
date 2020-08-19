@@ -24,13 +24,18 @@ import {getRouter} from '../../../../components_polymer3/tf_backend/router';
 import {addParams} from '../../../../components_polymer3/tf_backend/urlPathHelpers';
 import '../../../../components_polymer3/tf_card_heading/tf-card-heading';
 import {runsColorScale} from '../../../../components_polymer3/tf_color_scale/colorScale';
-import {DataLoaderBehavior} from '../../../../components_polymer3/tf_dashboard_common/data-loader-behavior';
+import {
+  DataLoaderBehavior,
+  RequestDataCallback,
+} from '../../../../components_polymer3/tf_dashboard_common/data-loader-behavior';
 import {VzDistributionChart} from '../vz_distribution_chart/vz-distribution-chart';
 import '../vz_distribution_chart/vz-distribution-chart';
 
 export interface TfDistributionLoader extends HTMLElement {
   reload(): void;
 }
+
+type RunTagItem = {run: string; tag: string};
 
 /**
   tf-distribution-loader loads an individual distribution from the
@@ -117,13 +122,21 @@ class _TfDistributionLoader
   @property({type: Object})
   getDataLoadName = ({run}) => run;
 
-  @property({type: Object})
-  getDataLoadUrl = ({tag, run}) => {
+  requestData: RequestDataCallback<RunTagItem, unknown> = (
+    items,
+    onLoad,
+    onFinish
+  ) => {
     const router = getRouter();
-    return addParams(router.pluginRoute('distributions', '/distributions'), {
-      tag,
-      run,
-    });
+    const baseUrl = router.pluginRoute('distributions', '/distributions');
+    Promise.all(
+      items.map((item) => {
+        const url = addParams(baseUrl, {tag: item.tag, run: item.run});
+        return this.requestManager
+          .request(url)
+          .then((data) => void onLoad({item, data}));
+      })
+    ).finally(() => void onFinish());
   };
 
   @property({type: Object})

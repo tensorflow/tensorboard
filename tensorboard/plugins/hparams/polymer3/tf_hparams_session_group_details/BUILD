@@ -16,6 +16,7 @@ tf_ts_library(
         "//tensorboard/components_polymer3/polymer:legacy_class",
         "//tensorboard/components_polymer3/tf_backend",
         "//tensorboard/components_polymer3/tf_color_scale",
+        "//tensorboard/components_polymer3/tf_dashboard_common",
         "//tensorboard/components_polymer3/vz_chart_helpers",
         "//tensorboard/plugins/hparams/polymer3/tf_hparams_utils",
         "//tensorboard/plugins/scalar/polymer3/tf_scalar_dashboard:tf_scalar_card",

@@ -13,6 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+export interface CancelResult<T> {
+  value: T;
+  cancelled: boolean;
+}
+
 /**
  * A class that allows marking promises as cancelled.
  *
@@ -45,9 +50,7 @@ export class Canceller {
    * a `cancelled` argument. This argument will be `false` unless and
    * until `cancelAll` is invoked after the creation of this task.
    */
-  public cancellable<T, U>(
-    f: (result: {value: T; cancelled: boolean}) => U
-  ): (T) => U {
+  public cancellable<T, U>(f: (result: CancelResult<T>) => U): (T) => U {
     const originalCancellationCount = this.cancellationCount;
     return (value) => {
       const cancelled = this.cancellationCount !== originalCancellationCount;
