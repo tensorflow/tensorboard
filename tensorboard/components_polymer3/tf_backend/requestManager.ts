@@ -92,8 +92,11 @@ export class RequestOptions {
   }
 }
 
-// Form data for a POST request as a convenient multidict interface.
-// A raw string value is equivalent to a singleton array.
+// Form data for a POST request as a convenient multidict interface,
+// since the built-in `FormData` type doesn't have a value constructor.
+//
+// A raw string value is equivalent to a singleton array, and thus an
+// empty array value is equivalent to omitting the key entirely.
 export interface PostData {
   [key: string]: string | string[];
 }
