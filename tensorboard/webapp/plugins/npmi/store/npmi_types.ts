@@ -73,7 +73,7 @@ export interface NpmiState {
   annotationsRegex: string;
   metricsRegex: string;
   metricArithmetic: ArithmeticElement[];
-  meticFilters: MetricFilterListing;
+  metricFilters: MetricFilterListing;
   sorting: AnnotationSorting;
   pcExpanded: boolean;
   annotationsExpanded: boolean;

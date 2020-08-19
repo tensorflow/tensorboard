@@ -61,7 +61,7 @@ export const setSelectedAnnotations = createAction(
   props<{annotations: string[]}>()
 );
 
-export const clearAnnotationSelection = createAction(
+export const clearSelectedAnnotations = createAction(
   '[NPMI] Clearing the Annotation Selection'
 );
 

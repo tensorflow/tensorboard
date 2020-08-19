@@ -17,6 +17,7 @@ import {
   DataLoadState,
   NPMI_FEATURE_KEY,
   State,
+  SortingOrder,
 } from '../store/npmi_types';
 
 export function createNpmiState(override?: Partial<NpmiState>): NpmiState {
@@ -27,6 +28,23 @@ export function createNpmiState(override?: Partial<NpmiState>): NpmiState {
     },
     annotationData: {},
     runToMetrics: {},
+    selectedAnnotations: [],
+    flaggedAnnotations: [],
+    hiddenAnnotations: [],
+    annotationsRegex: '',
+    metricsRegex: '',
+    metricArithmetic: [],
+    metricFilters: {},
+    sorting: {
+      metric: '',
+      order: SortingOrder.DOWN,
+    },
+    pcExpanded: true,
+    annotationsExpanded: true,
+    sidebarExpanded: true,
+    showCounts: true,
+    showHiddenAnnotations: false,
+    sidebarWidth: 300,
     ...override,
   };
 }
