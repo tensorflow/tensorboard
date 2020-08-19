@@ -20,14 +20,17 @@ import * as _ from 'lodash';
 import {DomRepeat} from '../../../../components_polymer3/polymer/dom-repeat';
 import '../../../../components_polymer3/polymer/irons_and_papers';
 import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+import {RequestManager} from '../../../../components_polymer3/tf_backend/requestManager';
 import {getRouter} from '../../../../components_polymer3/tf_backend/router';
 import {addParams} from '../../../../components_polymer3/tf_backend/urlPathHelpers';
 import '../../../../components_polymer3/tf_card_heading/tf-card-heading';
+import {RequestDataCallback} from '../../../../components_polymer3/tf_dashboard_common/data-loader-behavior';
 import {runsColorScale} from '../../../../components_polymer3/tf_color_scale/colorScale';
 import '../../../../components_polymer3/tf_line_chart_data_loader/tf-line-chart-data-loader';
 import {TfLineChartDataLoader} from '../../../../components_polymer3/tf_line_chart_data_loader/tf-line-chart-data-loader';
 import {
   SYMBOLS_LIST,
+  ScalarDatum,
   Y_TOOLTIP_FORMATTER_PRECISION,
   multiscaleFormatter,
   relativeAccessor,
@@ -57,6 +60,12 @@ interface StepsMismatch {
   seriesObject: MarginChartSeries;
 }
 
+type RunItem = string;
+type CustomScalarsDatum = {
+  regex_valid: boolean;
+  tag_to_events: Record<string, ScalarDatum[]>;
+};
+
 export interface TfCustomScalarMarginChartCard extends HTMLElement {
   reload(): void;
 }
@@ -72,11 +81,11 @@ class _TfCustomScalarMarginChartCard extends LegacyElementMixin(PolymerElement)
         active="[[active]]"
         color-scale="[[_colorScale]]"
         data-series="[[_seriesNames]]"
-        get-data-load-url="[[_dataUrl]]"
         fill-area="[[_fillArea]]"
         ignore-y-outliers="[[ignoreYOutliers]]"
         load-key="[[_tagFilter]]"
         data-to-load="[[runs]]"
+        request-data="[[_requestData]]"
         log-scale-active="[[_logScaleActive]]"
         load-data-callback="[[_createProcessDataFunction(marginChartSeries)]]"
         request-manager="[[requestManager]]"
@@ -315,7 +324,7 @@ class _TfCustomScalarMarginChartCard extends LegacyElementMixin(PolymerElement)
   ignoreYOutliers: boolean;
 
   @property({type: Object})
-  requestManager: object;
+  requestManager: RequestManager;
 
   @property({type: Boolean})
   showDownloadLinks: boolean;
@@ -347,12 +356,23 @@ class _TfCustomScalarMarginChartCard extends LegacyElementMixin(PolymerElement)
   _logScaleActive: boolean;
 
   @property({type: Object})
-  _dataUrl: (run: string) => string = (run) => {
-    const tag = this._tagFilter;
-    return addParams(getRouter().pluginRoute('custom_scalars', '/scalars'), {
-      tag,
-      run,
-    });
+  _requestData: RequestDataCallback<RunItem, CustomScalarsDatum> = (
+    items,
+    onLoad,
+    onFinish
+  ) => {
+    const router = getRouter();
+    const baseUrl = router.pluginRoute('custom_scalars', '/scalars');
+    Promise.all(
+      items.map((item) => {
+        const run = item;
+        const tag = this._tagFilter;
+        const url = addParams(baseUrl, {tag, run});
+        return this.requestManager
+          .request(url)
+          .then((data) => void onLoad({item, data}));
+      })
+    ).finally(() => void onFinish());
   };
 
   @property({type: Object})

@@ -19,11 +19,15 @@ import * as _ from 'lodash';
 
 import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
 import '../../../../components_polymer3/polymer/irons_and_papers';
+import {RequestManager} from '../../../../components_polymer3/tf_backend/requestManager';
 import {getRouter} from '../../../../components_polymer3/tf_backend/router';
 import {addParams} from '../../../../components_polymer3/tf_backend/urlPathHelpers';
 import '../../../../components_polymer3/tf_card_heading/tf-card-heading';
 import {runsColorScale} from '../../../../components_polymer3/tf_color_scale/colorScale';
-import {DataLoaderBehavior} from '../../../../components_polymer3/tf_dashboard_common/data-loader-behavior';
+import {
+  DataLoaderBehavior,
+  RequestDataCallback,
+} from '../../../../components_polymer3/tf_dashboard_common/data-loader-behavior';
 import '../vz_histogram_timeseries/vz-histogram-timeseries';
 import {VzHistogramTimeseries} from '../vz_histogram_timeseries/vz-histogram-timeseries';
 import './histogramCore';
@@ -39,9 +43,11 @@ export interface TfHistogramLoader extends HTMLElement {
   reload(): void;
 }
 
+type RunTagItem = {run: string; tag: string};
+
 @customElement('tf-histogram-loader')
 class _TfHistogramLoader
-  extends DataLoaderBehavior<{run: string; tag: string}, VzHistogram[]>(
+  extends DataLoaderBehavior<RunTagItem, VzHistogram[]>(
     LegacyElementMixin(PolymerElement)
   )
   implements TfHistogramLoader {
@@ -119,12 +125,23 @@ class _TfHistogramLoader
   getDataLoadName = ({run}: {run: string; tag: string}): string => run;
 
   @property({type: Object})
-  getDataLoadUrl = ({tag, run}) => {
+  requestManager: RequestManager;
+
+  requestData: RequestDataCallback<RunTagItem, VzHistogram[]> = (
+    items,
+    onLoad,
+    onFinish
+  ) => {
     const router = getRouter();
-    return addParams(router.pluginRoute('histograms', '/histograms'), {
-      tag,
-      run,
-    });
+    const baseUrl = router.pluginRoute('histograms', '/histograms');
+    Promise.all(
+      items.map((item) => {
+        const url = addParams(baseUrl, {tag: item.tag, run: item.run});
+        return this.requestManager
+          .request(url)
+          .then((data) => void onLoad({item, data}));
+      })
+    ).finally(() => void onFinish());
   };
 
   @property({type: Object})

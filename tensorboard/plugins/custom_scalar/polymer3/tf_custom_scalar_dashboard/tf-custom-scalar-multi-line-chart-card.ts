@@ -25,10 +25,14 @@ import {getRouter} from '../../../../components_polymer3/tf_backend/router';
 import '../../../../components_polymer3/tf_backend/tf-backend';
 import {addParams} from '../../../../components_polymer3/tf_backend/urlPathHelpers';
 import '../../../../components_polymer3/tf_card_heading/tf-card-heading';
+import {RequestDataCallback} from '../../../../components_polymer3/tf_dashboard_common/data-loader-behavior';
 import {runsColorScale} from '../../../../components_polymer3/tf_color_scale/colorScale';
 import '../../../../components_polymer3/tf_line_chart_data_loader/tf-line-chart-data-loader';
 import {TfLineChartDataLoader} from '../../../../components_polymer3/tf_line_chart_data_loader/tf-line-chart-data-loader';
-import {SYMBOLS_LIST} from '../../../../components_polymer3/vz_chart_helpers/vz-chart-helpers';
+import {
+  SYMBOLS_LIST,
+  ScalarDatum,
+} from '../../../../components_polymer3/vz_chart_helpers/vz-chart-helpers';
 import './tf-custom-scalar-card-style';
 import {
   DataSeries,
@@ -39,6 +43,12 @@ import {
 export interface TfCustomScalarMultiLineChartCard extends HTMLElement {
   reload(): void;
 }
+
+type RunItem = string;
+type CustomScalarsDatum = {
+  regex_valid: boolean;
+  tag_to_events: Record<string, ScalarDatum[]>;
+};
 
 @customElement('tf-custom-scalar-multi-line-chart-card')
 class _TfCustomScalarMultiLineChartCard
@@ -52,10 +62,10 @@ class _TfCustomScalarMultiLineChartCard
         active="[[active]]"
         color-scale="[[_colorScale]]"
         data-series="[[_seriesNames]]"
-        get-data-load-url="[[_dataUrl]]"
         ignore-y-outliers="[[ignoreYOutliers]]"
         load-key="[[_tagFilter]]"
         data-to-load="[[runs]]"
+        request-data="[[_requestData]]"
         log-scale-active="[[_logScaleActive]]"
         load-data-callback="[[_createProcessDataFunction()]]"
         request-manager="[[requestManager]]"
@@ -235,12 +245,23 @@ class _TfCustomScalarMultiLineChartCard
   _logScaleActive: boolean;
 
   @property({type: Object})
-  _dataUrl: (run: string) => string = (run) => {
-    const tag = this._tagFilter;
-    return addParams(getRouter().pluginRoute('custom_scalars', '/scalars'), {
-      tag,
-      run,
-    });
+  _requestData: RequestDataCallback<RunItem, CustomScalarsDatum> = (
+    items,
+    onLoad,
+    onFinish
+  ) => {
+    const router = getRouter();
+    const baseUrl = router.pluginRoute('custom_scalars', '/scalars');
+    Promise.all(
+      items.map((item) => {
+        const run = item;
+        const tag = this._tagFilter;
+        const url = addParams(baseUrl, {tag, run});
+        return this.requestManager
+          .request(url)
+          .then((data) => void onLoad({item, data}));
+      })
+    ).finally(() => void onFinish());
   };
 
   @property({type: Object})

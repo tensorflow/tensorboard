@@ -17,13 +17,18 @@ import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, property} from '@polymer/decorators';
 import '../../../../components_polymer3/polymer/irons_and_papers';
 import {RequestManager} from '../../../../components_polymer3/tf_backend/requestManager';
+import {RequestDataCallback} from '../../../../components_polymer3/tf_dashboard_common/data-loader-behavior';
 import {getRouter} from '../../../../components_polymer3/tf_backend/router';
+import {addParams} from '../../../../components_polymer3/tf_backend/urlPathHelpers';
 import '../../../../components_polymer3/tf_card_heading/tf-card-heading';
 import {runsColorScale} from '../../../../components_polymer3/tf_color_scale/colorScale';
 import '../../../../components_polymer3/tf_dashboard_common/tf-downloader';
 import '../../../../components_polymer3/tf_line_chart_data_loader/tf-line-chart-data-loader';
+import {ScalarDatum} from '../../../../components_polymer3/vz_chart_helpers/vz-chart-helpers';
 import '../../../../components_polymer3/vz_line_chart2/vz-line-chart2';
 import {DEFAULT_TOOLTIP_COLUMNS} from '../../../../components_polymer3/vz_line_chart2/vz-line-chart2';
+
+type RunTagItem = {run: string; tag: string};
 
 /**
  * A card that handles loading data (at the right times), rendering a scalar
@@ -252,7 +257,22 @@ export class TfScalarCard extends PolymerElement {
   // this.requestManager.request(
   //      this.getDataLoadUrl({tag, run, experiment})
   @property({type: Object})
-  requestData: object;
+  requestData: RequestDataCallback<RunTagItem, ScalarDatum[]> = (
+    items,
+    onLoad,
+    onFinish
+  ) => {
+    const router = getRouter();
+    const baseUrl = router.pluginRoute('scalars', '/scalars');
+    Promise.all(
+      items.map((item) => {
+        const url = addParams(baseUrl, {tag: item.tag, run: item.run});
+        return this.requestManager
+          .request(url)
+          .then((data) => void onLoad({item, data}));
+      })
+    ).finally(() => void onFinish());
+  };
 
   @property({type: Object})
   _getDataLoadName: object = (datum) => this._getSeriesNameFromDatum(datum);
