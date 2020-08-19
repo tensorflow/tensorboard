@@ -18,15 +18,26 @@ import {computed, customElement, observe, property} from '@polymer/decorators';
 import '../../../../components_polymer3/polymer/irons_and_papers';
 
 import {Canceller} from '../../../../components_polymer3/tf_backend/canceller';
+import {RequestManager} from '../../../../components_polymer3/tf_backend/requestManager';
 import {getRouter} from '../../../../components_polymer3/tf_backend/router';
 import {addParams} from '../../../../components_polymer3/tf_backend/urlPathHelpers';
 import '../../../../components_polymer3/tf_card_heading/tf-card-heading';
+import {RequestDataCallback} from '../../../../components_polymer3/tf_dashboard_common/data-loader-behavior';
 import {runsColorScale} from '../../../../components_polymer3/tf_color_scale/colorScale';
 import '../../../../components_polymer3/tf_line_chart_data_loader/tf-line-chart-data-loader';
 import * as vz_chart_helpers from '../../../../components_polymer3/vz_chart_helpers/vz-chart-helpers';
 
 import * as _ from 'lodash';
 import * as Plottable from 'plottable';
+
+type RunItem = string;
+
+interface PrCurveDatum {
+  wall_time: number;
+  step: number;
+  precision: number[];
+  recall: number[];
+}
 
 @customElement('tf-pr-curve-card')
 export class TfPrCurveCard extends PolymerElement {
@@ -49,7 +60,7 @@ export class TfPrCurveCard extends PolymerElement {
       data-to-load="[[runs]]"
       data-series="[[runs]]"
       load-key="[[tag]]"
-      get-data-load-url="[[_dataUrl]]"
+      request-data="[[_requestData]]"
       load-data-callback="[[_createProcessDataFunction()]]"
       active="[[active]]"
     ></tf-line-chart-data-loader>
@@ -158,7 +169,7 @@ export class TfPrCurveCard extends PolymerElement {
   runToStepCap: object;
 
   @property({type: Object})
-  requestManager: object;
+  requestManager: RequestManager;
 
   @property({type: Boolean})
   active: boolean;
@@ -263,12 +274,23 @@ export class TfPrCurveCard extends PolymerElement {
   _defaultYRange: number[] = [-0.05, 1.05];
 
   @property({type: Object})
-  _dataUrl: object = (run) => {
-    const tag = this.tag;
-    return addParams(getRouter().pluginRoute('pr_curves', '/pr_curves'), {
-      tag,
-      run,
-    });
+  _requestData: RequestDataCallback<RunItem, PrCurveDatum[]> = (
+    items,
+    onLoad,
+    onFinish
+  ) => {
+    const router = getRouter();
+    const baseUrl = router.pluginRoute('pr_curves', '/pr_curves');
+    Promise.all(
+      items.map((item) => {
+        const run = item;
+        const tag = this.tag;
+        const url = addParams(baseUrl, {tag, run});
+        return this.requestManager
+          .request(url)
+          .then((data) => void onLoad({item, data}));
+      })
+    ).finally(() => void onFinish());
   };
 
   @property({type: Boolean})
