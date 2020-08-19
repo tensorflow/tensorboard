@@ -261,17 +261,12 @@ export class TfScalarCard extends PolymerElement {
   // this.requestManager.request(
   //      this.getDataLoadUrl({tag, run, experiment})
   @property({type: Object})
-<<<<<<< HEAD
   requestData: RequestDataCallback<RunTagItem, ScalarDatum[] | null> = (
-=======
-  requestData: RequestDataCallback<RunTagItem, ScalarDatum[]> = (
->>>>>>> 9d315620295e799c8fa98d603b5f3db81e6d04cd
     items,
     onLoad,
     onFinish
   ) => {
     const router = getRouter();
-<<<<<<< HEAD
     const url = router.pluginRoute('scalars', '/scalars_multirun');
     const runsByTag = new Map<string, string[]>();
     for (const {tag, run} of items) {
@@ -293,15 +288,6 @@ export class TfScalarCard extends PolymerElement {
             }
           }
         });
-=======
-    const baseUrl = router.pluginRoute('scalars', '/scalars');
-    Promise.all(
-      items.map((item) => {
-        const url = addParams(baseUrl, {tag: item.tag, run: item.run});
-        return this.requestManager
-          .request(url)
-          .then((data) => void onLoad({item, data}));
->>>>>>> 9d315620295e799c8fa98d603b5f3db81e6d04cd
       })
     ).finally(() => void onFinish());
   };
