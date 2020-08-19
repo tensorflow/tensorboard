@@ -331,7 +331,7 @@ describe('npmi_reducers', () => {
           annotations: ['annotation_1', 'annotation_2', 'annotation_3'],
         })
       );
-      expect(nextState.selectedAnnotations).toEqual([
+      expect(nextState.flaggedAnnotations).toEqual([
         'annotation_1',
         'annotation_2',
         'annotation_3',
@@ -348,10 +348,10 @@ describe('npmi_reducers', () => {
           annotations: ['annotation_1', 'annotation_2', 'annotation_3'],
         })
       );
-      expect(nextState.selectedAnnotations).toEqual([
+      expect(nextState.flaggedAnnotations).toEqual([
         'annotation_1',
-        'annotation_2',
         'annotation_3',
+        'annotation_2',
       ]);
     });
 
@@ -365,7 +365,7 @@ describe('npmi_reducers', () => {
           annotations: ['annotation_1', 'annotation_3'],
         })
       );
-      expect(nextState.selectedAnnotations).toEqual(['annotation_2']);
+      expect(nextState.flaggedAnnotations).toEqual(['annotation_2']);
     });
   });
 
@@ -397,8 +397,8 @@ describe('npmi_reducers', () => {
       );
       expect(nextState.hiddenAnnotations).toEqual([
         'annotation_1',
-        'annotation_2',
         'annotation_3',
+        'annotation_2',
       ]);
     });
 
@@ -710,7 +710,7 @@ describe('npmi_reducers', () => {
       expect(nextState.sidebarExpanded).toBeFalse();
     });
 
-    it('show hidden annotations list', () => {
+    it('show hidden sidebar', () => {
       const state = createNpmiState({sidebarExpanded: false});
       const nextState = reducers(state, actions.toggleSidebarExpanded());
       expect(nextState.sidebarExpanded).toBeTrue();
@@ -722,25 +722,25 @@ describe('npmi_reducers', () => {
       expect(nextState.showCounts).toBeFalse();
     });
 
-    it('show hidden annotations list', () => {
+    it('show counts', () => {
       const state = createNpmiState({showCounts: false});
       const nextState = reducers(state, actions.toggleShowCounts());
       expect(nextState.showCounts).toBeTrue();
     });
 
-    it('show hidden', () => {
+    it('show hidden annotations', () => {
       const state = createNpmiState();
       const nextState = reducers(state, actions.toggleShowHiddenAnnotations());
       expect(nextState.showHiddenAnnotations).toBeTrue();
     });
 
-    it('show hidden annotations list', () => {
+    it('dont show hidden annotations', () => {
       const state = createNpmiState({showHiddenAnnotations: true});
       const nextState = reducers(state, actions.toggleShowHiddenAnnotations());
-      expect(nextState.showCounts).toBeFalse();
+      expect(nextState.showHiddenAnnotations).toBeFalse();
     });
 
-    it('change sidemar width', () => {
+    it('change sidebar width', () => {
       const state = createNpmiState();
       const nextState = reducers(
         state,
