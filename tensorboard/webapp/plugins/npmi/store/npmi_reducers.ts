@@ -15,7 +15,12 @@ limitations under the License.
 import {Action, createReducer, on} from '@ngrx/store';
 
 import * as actions from '../actions';
-import {NpmiState, DataLoadState, MetricListing} from './npmi_types';
+import {
+  NpmiState,
+  DataLoadState,
+  MetricListing,
+  SortingOrder,
+} from './npmi_types';
 import * as metricType from '../util/metric_type';
 
 // HACK: These imports are for type inference.
@@ -29,6 +34,23 @@ const initialState: NpmiState = {
   },
   annotationData: {},
   runToMetrics: {},
+  selectedAnnotations: [],
+  flaggedAnnotations: [],
+  hiddenAnnotations: [],
+  annotationsRegex: '',
+  metricsRegex: '',
+  metricArithmetic: [],
+  meticFilters: {},
+  sorting: {
+    metric: '',
+    order: SortingOrder.DOWN,
+  },
+  pcExpanded: true,
+  annotationsExpanded: true,
+  sidebarExpanded: true,
+  showCounts: true,
+  showHiddenAnnotations: false,
+  sidebarWidth: 300,
 };
 
 const reducer = createReducer(
