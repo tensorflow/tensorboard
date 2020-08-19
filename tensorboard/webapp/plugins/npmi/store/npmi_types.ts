@@ -20,10 +20,7 @@ export const NPMI_FEATURE_KEY = 'npmi';
 
 type Annotation = string;
 type Metric = string;
-
-export interface AnnotationDataListing {
-  [annotation: string]: ValueData[];
-}
+export type AnnotationDataListing = Record<Annotation, ValueData[]>;
 
 export interface ValueData {
   nPMIValue: number | null;

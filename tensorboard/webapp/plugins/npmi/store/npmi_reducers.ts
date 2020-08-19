@@ -61,10 +61,10 @@ const reducer = createReducer(
     actions.npmiPluginDataLoaded,
     (state: NpmiState, {annotationData, metrics}): NpmiState => {
       const runToMetrics: MetricListing = {};
-      for (let key in metrics) {
+      for (const key in metrics) {
         // Init Metrics Data
         runToMetrics[key] = [];
-        for (let value of metrics[key]) {
+        for (const value of metrics[key]) {
           if (metricType.metricIsNpmi(value)) {
             runToMetrics[key].push(value);
           }

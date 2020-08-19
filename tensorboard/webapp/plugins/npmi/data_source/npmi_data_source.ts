@@ -56,26 +56,24 @@ export class NpmiHttpServerDataSource implements NpmiDataSource {
       this.fetchValues()
     ).pipe(
       map(([annotations, metrics, values]) => {
-        let annotationData: AnnotationDataListing = {};
-        for (let run of Object.keys(annotations)) {
-          for (let annotationIndex in annotations[run]) {
-            let annotation = annotations[run][annotationIndex];
-            let dataElements: ValueData[] = [];
-            for (let metricIndex in metrics[run]) {
-              let metric = metrics[run][metricIndex];
-              let dataElement = dataElements.find(
-                (element) =>
-                  element.metric === metric_type.stripMetricString(metric)
-              );
+        const annotationData: AnnotationDataListing = {};
+        for (const run of Object.keys(annotations)) {
+          for (const annotationIndex in annotations[run]) {
+            const annotation = annotations[run][annotationIndex];
+            const metricToDataElements = new Map<string, ValueData>();
+            for (const metricIndex in metrics[run]) {
+              const metric = metrics[run][metricIndex];
+              const metricString = metric_type.stripMetricString(metric);
+              let dataElement = metricToDataElements.get(metricString);
               if (!dataElement) {
                 dataElement = {
                   nPMIValue: null,
                   countValue: null,
                   annotation: annotation,
-                  metric: metric_type.stripMetricString(metric),
+                  metric: metricString,
                   run: run,
                 };
-                dataElements.push(dataElement);
+                metricToDataElements.set(metricString, dataElement);
               }
               if (metric_type.metricIsMetricCount(metric)) {
                 dataElement.countValue =
@@ -85,23 +83,23 @@ export class NpmiHttpServerDataSource implements NpmiDataSource {
                   values[run][annotationIndex][metricIndex];
               }
             }
-            if (annotationData[annotation]) {
-              annotationData = {
-                ...annotationData,
-                [annotation]: annotationData[annotation].concat(dataElements),
-              };
-            } else {
-              annotationData = {
-                ...annotationData,
-                [annotation]: dataElements,
-              };
-            }
+            const existing = annotationData[annotation]
+              ? annotationData[annotation]
+              : [];
+            annotationData[annotation] = [
+              ...existing,
+              ...metricToDataElements.values(),
+            ];
           }
         }
         return {annotationData, metrics};
       }),
       catchError((error) => {
-        if (error instanceof HttpErrorResponse && error.status === 400) {
+        if (
+          error instanceof HttpErrorResponse &&
+          400 <= error.status &&
+          error.status < 500
+        ) {
           return of({
             annotationData: {},
             metrics: {},

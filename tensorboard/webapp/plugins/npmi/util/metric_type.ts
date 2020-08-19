@@ -25,6 +25,6 @@ export function metricIsNpmi(metric: string): boolean {
 }
 
 export function stripMetricString(metricString: string): string {
-  let strippedString = metricString.split('@')[1];
+  const strippedString = metricString.split('@', 2)[1];
   return strippedString;
 }

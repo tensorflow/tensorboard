@@ -127,13 +127,13 @@ describe('runs_data_source', () => {
       });
     });
 
-    it('throws error when response is 404', () => {
+    it('throws error when response is >= 500', () => {
       const returnValue = jasmine.createSpy();
       const errorValue = jasmine.createSpy();
       dataSource.fetchData().subscribe(returnValue, errorValue);
       httpMock
         .expectOne('data/plugin/npmi/values')
-        .error(new ErrorEvent('404 error'), {status: 404});
+        .error(new ErrorEvent('501 Internal Server Error'), {status: 501});
 
       expect(returnValue).not.toHaveBeenCalled();
       expect(errorValue).toHaveBeenCalled();
