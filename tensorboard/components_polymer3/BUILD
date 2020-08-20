@@ -1,42 +1,9 @@
 load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ts_library")
 load("//tensorboard/defs:web.bzl", "tf_web_library")
-load("//tensorboard/defs:vulcanize.bzl", "tensorboard_html_binary")
 
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
-
-tf_web_library(
-    name = "polymer_lib",
-    srcs = [
-        "polymer_lib.html",
-    ],
-    path = "/",
-    deps = [
-        ":analytics_html",
-        "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/components/tf_tensorboard",
-        "//tensorboard/components/tf_tensorboard:default_plugins",
-    ],
-)
-
-# This Polymer only binary without entry point.
-tensorboard_html_binary(
-    name = "polymer_lib_binary",
-    compile = True,
-    input_path = "/polymer_lib.html",
-    output_path = "/polymer_lib_binary.html",
-    deps = [":polymer_lib"],
-)
-
-tf_web_library(
-    name = "tensorboard",
-    srcs = ["tensorboard.html"],
-    path = "/",
-    deps = [
-        ":polymer_lib_binary",
-    ],
-)
 
 tf_ts_library(
     name = "polymer3_ts_lib",
@@ -79,15 +46,6 @@ genrule(
     ],
     outs = ["polymer3_lib_binary.js"],
     cmd = "for f in $(SRCS); do cat \"$$f\"; echo; done > $@",
-)
-
-tensorboard_html_binary(
-    name = "legacy",
-    compile = False,
-    input_path = "/tensorboard.html",
-    js_path = "/legacy.js",
-    output_path = "/legacy.html",
-    deps = [":tensorboard"],
 )
 
 genrule(
