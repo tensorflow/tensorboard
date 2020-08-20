@@ -18,11 +18,9 @@ import {
   NPMI_FEATURE_KEY,
   NpmiState,
   LoadState,
-  AnnotationListing,
+  AnnotationDataListing,
   MetricListing,
-  ValueListing,
   State,
-  SummaryListing,
 } from './npmi_types';
 
 // HACK: These imports are for type inference.
@@ -41,44 +39,16 @@ export const getPluginDataLoaded = createSelector(
   }
 );
 
-export const getAnnotationsData = createSelector(
+export const getAnnotationData = createSelector(
   selectNpmiState,
-  (state: NpmiState): AnnotationListing => {
-    return state.annotationsData;
+  (state: NpmiState): AnnotationDataListing => {
+    return state.annotationData;
   }
 );
 
-export const getCountMetricsData = createSelector(
+export const getRunToMetrics = createSelector(
   selectNpmiState,
   (state: NpmiState): MetricListing => {
-    return state.countMetricsData;
-  }
-);
-
-export const getNpmiMetricsData = createSelector(
-  selectNpmiState,
-  (state: NpmiState): MetricListing => {
-    return state.npmiMetricsData;
-  }
-);
-
-export const getCountValuesData = createSelector(
-  selectNpmiState,
-  (state: NpmiState): ValueListing => {
-    return state.countValuesData;
-  }
-);
-
-export const getNpmiValuesData = createSelector(
-  selectNpmiState,
-  (state: NpmiState): ValueListing => {
-    return state.npmiValuesData;
-  }
-);
-
-export const getCountData = createSelector(
-  selectNpmiState,
-  (state: NpmiState): SummaryListing => {
-    return state.countData;
+    return state.runToMetrics;
   }
 );

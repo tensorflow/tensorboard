@@ -12,45 +12,33 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
 import {DataLoadState, LoadState} from '../../../types/data';
 
 export {DataLoadState, LoadState};
 
 export const NPMI_FEATURE_KEY = 'npmi';
 
-export interface Tags {
-  [tagId: string]: string;
-}
+type Annotation = string;
+type Metric = string;
+export type AnnotationDataListing = Record<Annotation, ValueData[]>;
 
-export interface AnnotationListing {
-  [runId: string]: string[];
+export interface ValueData {
+  nPMIValue: number | null;
+  countValue: number | null;
+  annotation: Annotation;
+  metric: Metric;
+  run: string;
 }
 
 export interface MetricListing {
-  [runId: string]: string[];
-}
-
-export interface ValueListing {
-  [runId: string]: number[][];
-}
-
-export interface SummaryListing {
-  [runId: string]: number[];
+  [runId: string]: Metric[];
 }
 
 export interface NpmiState {
+  // coming from backend
   pluginDataLoaded: LoadState;
-
-  annotationsData: AnnotationListing;
-
-  npmiMetricsData: MetricListing;
-  countMetricsData: MetricListing;
-
-  countValuesData: ValueListing;
-  npmiValuesData: ValueListing;
-
-  countData: SummaryListing;
+  annotationData: AnnotationDataListing;
+  runToMetrics: MetricListing;
 }
 
 export interface State {

@@ -44,8 +44,39 @@ describe('npmi_reducers', () => {
       const nextState = reducers(
         state,
         actions.npmiPluginDataLoaded({
-          annotations: {
-            run_1: ['annotation_1', 'annotation_2'],
+          annotationData: {
+            annotation_1: [
+              {
+                nPMIValue: 0.16871,
+                countValue: 16719,
+                annotation: 'annotation_1',
+                metric: 'test1',
+                run: 'run_1',
+              },
+              {
+                nPMIValue: -0.37206,
+                countValue: 513767,
+                annotation: 'annotation_1',
+                metric: 'test2',
+                run: 'run_1',
+              },
+            ],
+            annotation_2: [
+              {
+                nPMIValue: 0.687616,
+                countValue: 1896,
+                annotation: 'annotation_1',
+                metric: 'test1',
+                run: 'run_1',
+              },
+              {
+                nPMIValue: 0.68116,
+                countValue: 638967,
+                annotation: 'annotation_1',
+                metric: 'test2',
+                run: 'run_1',
+              },
+            ],
           },
           metrics: {
             run_1: [
@@ -56,35 +87,48 @@ describe('npmi_reducers', () => {
               'nPMI@test2',
             ],
           },
-          values: {
-            run_1: [
-              [513767, 3510517, 0.16871, 16719, -0.37206],
-              [638967, 1396813, 0.687616, 1896, 0.68116],
-            ],
-          },
         })
       );
       expect(nextState.pluginDataLoaded.state).toBe(DataLoadState.LOADED);
       expect(
         nextState.pluginDataLoaded.lastLoadedTimeInMs
       ).toBeGreaterThanOrEqual(t0);
-      expect(nextState.annotationsData).toEqual({
-        run_1: ['annotation_1', 'annotation_2'],
+      expect(nextState.annotationData).toEqual({
+        annotation_1: [
+          {
+            nPMIValue: 0.16871,
+            countValue: 16719,
+            annotation: 'annotation_1',
+            metric: 'test1',
+            run: 'run_1',
+          },
+          {
+            nPMIValue: -0.37206,
+            countValue: 513767,
+            annotation: 'annotation_1',
+            metric: 'test2',
+            run: 'run_1',
+          },
+        ],
+        annotation_2: [
+          {
+            nPMIValue: 0.687616,
+            countValue: 1896,
+            annotation: 'annotation_1',
+            metric: 'test1',
+            run: 'run_1',
+          },
+          {
+            nPMIValue: 0.68116,
+            countValue: 638967,
+            annotation: 'annotation_1',
+            metric: 'test2',
+            run: 'run_1',
+          },
+        ],
       });
-      expect(nextState.countMetricsData).toEqual({
-        run_1: ['count@test2', 'count@test1'],
-      });
-      expect(nextState.npmiMetricsData).toEqual({
+      expect(nextState.runToMetrics).toEqual({
         run_1: ['nPMI@test1', 'nPMI@test2'],
-      });
-      expect(nextState.countValuesData).toEqual({
-        run_1: [[513767, 16719], [638967, 1896]],
-      });
-      expect(nextState.npmiValuesData).toEqual({
-        run_1: [[0.16871, -0.37206], [0.687616, 0.68116]],
-      });
-      expect(nextState.countData).toEqual({
-        run_1: [3510517, 1396813],
       });
     });
 
@@ -94,32 +138,81 @@ describe('npmi_reducers', () => {
           state: DataLoadState.LOADED,
           lastLoadedTimeInMs: 0,
         },
-        annotationsData: {
-          run_1: ['annotation_1', 'annotation_2'],
+        annotationData: {
+          annotation_1: [
+            {
+              nPMIValue: 0.16871,
+              countValue: 16719,
+              annotation: 'annotation_1',
+              metric: 'test1',
+              run: 'run_1',
+            },
+            {
+              nPMIValue: -0.37206,
+              countValue: 513767,
+              annotation: 'annotation_1',
+              metric: 'test2',
+              run: 'run_1',
+            },
+          ],
+          annotation_2: [
+            {
+              nPMIValue: 0.687616,
+              countValue: 1896,
+              annotation: 'annotation_1',
+              metric: 'test1',
+              run: 'run_1',
+            },
+            {
+              nPMIValue: 0.68116,
+              countValue: 638967,
+              annotation: 'annotation_1',
+              metric: 'test2',
+              run: 'run_1',
+            },
+          ],
         },
-        npmiMetricsData: {
+        runToMetrics: {
           run_1: ['nPMI@test1', 'nPMI@test2'],
-        },
-        countMetricsData: {
-          run_1: ['count@test1', 'count@test2'],
-        },
-
-        npmiValuesData: {
-          run_1: [[0.16871, -0.37206], [0.687616, 0.68116]],
-        },
-        countValuesData: {
-          run_1: [[16719, 513767], [1896, 638967]],
-        },
-        countData: {
-          run_1: [3510517, 1396813],
         },
       });
       const t0 = Date.now();
       const nextState = reducers(
         state,
         actions.npmiPluginDataLoaded({
-          annotations: {
-            run_1: ['annotation_new_1', 'annotation_new_2'],
+          annotationData: {
+            annotation_new_1: [
+              {
+                nPMIValue: 0.1687,
+                countValue: 1671,
+                annotation: 'annotation_1',
+                metric: 'newtest1',
+                run: 'run_1',
+              },
+              {
+                nPMIValue: -0.372,
+                countValue: 51376,
+                annotation: 'annotation_1',
+                metric: 'newtest2',
+                run: 'run_1',
+              },
+            ],
+            annotation_new_2: [
+              {
+                nPMIValue: 0.68761,
+                countValue: 189,
+                annotation: 'annotation_1',
+                metric: 'newtest1',
+                run: 'run_1',
+              },
+              {
+                nPMIValue: 0.6811,
+                countValue: 63896,
+                annotation: 'annotation_1',
+                metric: 'newtest2',
+                run: 'run_1',
+              },
+            ],
           },
           metrics: {
             run_1: [
@@ -130,35 +223,48 @@ describe('npmi_reducers', () => {
               'nPMI@newtest2',
             ],
           },
-          values: {
-            run_1: [
-              [351051, 1671, 51376, 0.1687, -0.372],
-              [139681, 189, 63896, 0.68761, 0.6811],
-            ],
-          },
         })
       );
       expect(nextState.pluginDataLoaded.state).toBe(DataLoadState.LOADED);
       expect(
         nextState.pluginDataLoaded.lastLoadedTimeInMs
       ).toBeGreaterThanOrEqual(t0);
-      expect(nextState.annotationsData).toEqual({
-        run_1: ['annotation_new_1', 'annotation_new_2'],
+      expect(nextState.annotationData).toEqual({
+        annotation_new_1: [
+          {
+            nPMIValue: 0.1687,
+            countValue: 1671,
+            annotation: 'annotation_1',
+            metric: 'newtest1',
+            run: 'run_1',
+          },
+          {
+            nPMIValue: -0.372,
+            countValue: 51376,
+            annotation: 'annotation_1',
+            metric: 'newtest2',
+            run: 'run_1',
+          },
+        ],
+        annotation_new_2: [
+          {
+            nPMIValue: 0.68761,
+            countValue: 189,
+            annotation: 'annotation_1',
+            metric: 'newtest1',
+            run: 'run_1',
+          },
+          {
+            nPMIValue: 0.6811,
+            countValue: 63896,
+            annotation: 'annotation_1',
+            metric: 'newtest2',
+            run: 'run_1',
+          },
+        ],
       });
-      expect(nextState.countMetricsData).toEqual({
-        run_1: ['count@newtest1', 'count@newtest2'],
-      });
-      expect(nextState.npmiMetricsData).toEqual({
+      expect(nextState.runToMetrics).toEqual({
         run_1: ['nPMI@newtest1', 'nPMI@newtest2'],
-      });
-      expect(nextState.countValuesData).toEqual({
-        run_1: [[1671, 51376], [189, 63896]],
-      });
-      expect(nextState.npmiValuesData).toEqual({
-        run_1: [[0.1687, -0.372], [0.68761, 0.6811]],
-      });
-      expect(nextState.countData).toEqual({
-        run_1: [351051, 139681],
       });
     });
   });

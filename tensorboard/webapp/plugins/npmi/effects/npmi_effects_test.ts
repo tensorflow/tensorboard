@@ -1,4 +1,3 @@
-import {MetricListing} from './../store/npmi_types';
 /* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,8 +25,8 @@ import {createNpmiState} from '../testing';
 import {State} from '../../../app_state';
 import {
   DataLoadState,
-  AnnotationListing,
-  ValueListing,
+  AnnotationDataListing,
+  MetricListing,
 } from '../store/npmi_types';
 import {getPluginDataLoaded} from '../store/npmi_selectors';
 import * as actions from '../actions';
@@ -72,9 +71,10 @@ describe('npmi effects', () => {
 
   describe('load Plugin Data', () => {
     let fetchDataSpy: jasmine.Spy;
-    let fetchDataSubject: Subject<
-      [AnnotationListing, MetricListing, ValueListing]
-    >;
+    let fetchDataSubject: Subject<{
+      annotationData: AnnotationDataListing;
+      metrics: MetricListing;
+    }>;
 
     beforeEach(() => {
       fetchDataSubject = new Subject();
@@ -88,18 +88,54 @@ describe('npmi effects', () => {
       expect(actualActions).toEqual([]);
 
       actions$.next(actions.npmiLoaded());
-      fetchDataSubject.next([
-        {run_1: ['annotation_1', 'annotation_2']},
-        {run_1: ['count@test', 'npmi@test']},
-        {run_1: [[0.001, 0.061], [-0.515, 0.15719]]},
-      ]);
+      fetchDataSubject.next({
+        annotationData: {
+          annotation_new_1: [
+            {
+              nPMIValue: 0.1687,
+              countValue: 1671,
+              annotation: 'annotation_1',
+              metric: 'newtest1',
+              run: 'run_1',
+            },
+          ],
+          annotation_new_2: [
+            {
+              nPMIValue: 0.68761,
+              countValue: 189,
+              annotation: 'annotation_1',
+              metric: 'newtest1',
+              run: 'run_1',
+            },
+          ],
+        },
+        metrics: {run_1: ['count@test', 'npmi@test']},
+      });
 
       expect(fetchDataSpy).toHaveBeenCalled();
       expect(actualActions).toEqual([
         actions.npmiPluginDataRequested(),
         actions.npmiPluginDataLoaded({
-          annotations: {run_1: ['annotation_1', 'annotation_2']},
-          values: {run_1: [[0.001, 0.061], [-0.515, 0.15719]]},
+          annotationData: {
+            annotation_new_1: [
+              {
+                nPMIValue: 0.1687,
+                countValue: 1671,
+                annotation: 'annotation_1',
+                metric: 'newtest1',
+                run: 'run_1',
+              },
+            ],
+            annotation_new_2: [
+              {
+                nPMIValue: 0.68761,
+                countValue: 189,
+                annotation: 'annotation_1',
+                metric: 'newtest1',
+                run: 'run_1',
+              },
+            ],
+          },
           metrics: {run_1: ['count@test', 'npmi@test']},
         }),
       ]);
