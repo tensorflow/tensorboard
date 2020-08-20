@@ -106,35 +106,29 @@ const reducer = createReducer(
     }
   ),
   on(
-    actions.addSelectedAnnotations,
+    actions.npmiAddSelectedAnnotations,
     (state: NpmiState, {annotations}): NpmiState => {
-      let addedAnnotations: string[] = annotations.filter(
-        (annotation) => !state.selectedAnnotations.includes(annotation)
-      );
       return {
         ...state,
         selectedAnnotations: [
-          ...state.selectedAnnotations,
-          ...addedAnnotations,
+          ...new Set([...state.selectedAnnotations, ...annotations]),
         ],
       };
     }
   ),
   on(
-    actions.removeSelectedAnnotation,
+    actions.npmiRemoveSelectedAnnotation,
     (state: NpmiState, {annotation}): NpmiState => {
-      let annotationIndex = state.selectedAnnotations.indexOf(annotation);
+      const annotationSet = new Set([...state.selectedAnnotations]);
+      annotationSet.delete(annotation);
       return {
         ...state,
-        selectedAnnotations: [
-          ...state.selectedAnnotations.slice(0, annotationIndex),
-          ...state.selectedAnnotations.slice(annotationIndex + 1),
-        ],
+        selectedAnnotations: [...annotationSet],
       };
     }
   ),
   on(
-    actions.setSelectedAnnotations,
+    actions.npmiSetSelectedAnnotations,
     (state: NpmiState, {annotations}): NpmiState => {
       return {
         ...state,
@@ -143,7 +137,7 @@ const reducer = createReducer(
     }
   ),
   on(
-    actions.clearSelectedAnnotations,
+    actions.npmiClearSelectedAnnotations,
     (state: NpmiState): NpmiState => {
       return {
         ...state,
@@ -152,33 +146,28 @@ const reducer = createReducer(
     }
   ),
   on(
-    actions.flagAnnotations,
+    actions.npmiToggleAnnotationFlags,
     (state: NpmiState, {annotations}): NpmiState => {
-      let notFlagged: string[] = annotations.filter(
-        (annotation) => !state.flaggedAnnotations.includes(annotation)
-      );
-      if (notFlagged.length === 0) {
+      const combinedFlaggedAnnotations = new Set([
+        ...state.flaggedAnnotations,
+        ...annotations,
+      ]);
+      if (combinedFlaggedAnnotations.size === state.flaggedAnnotations.length) {
         // If all annotations are already flagged, user wants to remove them
-        const filteredFlags = state.flaggedAnnotations.filter(
-          (annotation) => !annotations.includes(annotation)
-        );
-        return {
-          ...state,
-          flaggedAnnotations: filteredFlags,
-        };
-      } else {
-        // User wants to add to flagged annotations
-        return {
-          ...state,
-          flaggedAnnotations: [...state.flaggedAnnotations, ...notFlagged],
-        };
+        for (const annotation of annotations) {
+          combinedFlaggedAnnotations.delete(annotation);
+        }
       }
+      return {
+        ...state,
+        flaggedAnnotations: [...combinedFlaggedAnnotations],
+      };
     }
   ),
   on(
-    actions.hideAnnotations,
+    actions.npmiToggleAnnotationsHidden,
     (state: NpmiState, {annotations}): NpmiState => {
-      let notHidden: string[] = annotations.filter(
+      const notHidden: string[] = annotations.filter(
         (annotation) => !state.hiddenAnnotations.includes(annotation)
       );
       if (notHidden.length === 0) {
@@ -200,7 +189,7 @@ const reducer = createReducer(
     }
   ),
   on(
-    actions.annotationsRegexChanged,
+    actions.npmiAnnotationsRegexChanged,
     (state: NpmiState, {regex}): NpmiState => {
       return {
         ...state,
@@ -209,7 +198,7 @@ const reducer = createReducer(
     }
   ),
   on(
-    actions.metricsRegexChanged,
+    actions.npmiMetricsRegexChanged,
     (state: NpmiState, {regex}): NpmiState => {
       return {
         ...state,
@@ -218,13 +207,13 @@ const reducer = createReducer(
     }
   ),
   on(
-    actions.addMetricFilter,
+    actions.npmiAddMetricFilter,
     (state: NpmiState, {metric}): NpmiState => {
       // Only add if not already in active filters
       const filter = state.metricFilters[metric];
       if (filter === undefined) {
         // Add so that arithmetic is still correct
-        let newContent: ArithmeticElement[] = [];
+        const newContent: ArithmeticElement[] = [];
         if (state.metricArithmetic.length !== 0) {
           newContent.push({kind: 'operator', operator: Operator.AND});
         }
@@ -247,15 +236,15 @@ const reducer = createReducer(
     }
   ),
   on(
-    actions.removeMetricFilter,
+    actions.npmiRemoveMetricFilter,
     (state: NpmiState, {metric}): NpmiState => {
       if (state.metricFilters[metric] !== undefined) {
         // Remove the correct elements of the arithmetic as well
         let arithmeticIndex = 0;
         let startSlice = 0;
         let endSlice = 2;
-        let {[metric]: value, ...map} = state.metricFilters;
-        for (let index in state.metricArithmetic) {
+        const {[metric]: value, ...map} = state.metricFilters;
+        for (const index in state.metricArithmetic) {
           const element = state.metricArithmetic[index];
           if (element.kind === 'metric') {
             if (element.metric === metric) {
@@ -281,7 +270,7 @@ const reducer = createReducer(
     }
   ),
   on(
-    actions.changeMetricFilter,
+    actions.npmiChangeMetricFilter,
     (state: NpmiState, {metric, max, min, includeNaN}): NpmiState => {
       return {
         ...state,
@@ -297,7 +286,7 @@ const reducer = createReducer(
     }
   ),
   on(
-    actions.changeAnnotationSorting,
+    actions.npmiChangeAnnotationSorting,
     (state: NpmiState, {sorting}): NpmiState => {
       return {
         ...state,
@@ -306,7 +295,7 @@ const reducer = createReducer(
     }
   ),
   on(
-    actions.togglePCExpanded,
+    actions.npmiToggleParallelCoordinatesExpanded,
     (state: NpmiState): NpmiState => {
       return {
         ...state,
@@ -315,7 +304,7 @@ const reducer = createReducer(
     }
   ),
   on(
-    actions.toggleAnnotationsExpanded,
+    actions.npmiToggleAnnotationsExpanded,
     (state: NpmiState): NpmiState => {
       return {
         ...state,
@@ -324,7 +313,7 @@ const reducer = createReducer(
     }
   ),
   on(
-    actions.toggleSidebarExpanded,
+    actions.npmiToggleSidebarExpanded,
     (state: NpmiState): NpmiState => {
       return {
         ...state,
@@ -334,7 +323,7 @@ const reducer = createReducer(
   ),
 
   on(
-    actions.toggleShowCounts,
+    actions.npmiToggleShowCounts,
     (state: NpmiState): NpmiState => {
       return {
         ...state,
@@ -343,7 +332,7 @@ const reducer = createReducer(
     }
   ),
   on(
-    actions.toggleShowHiddenAnnotations,
+    actions.npmiToggleShowHiddenAnnotations,
     (state: NpmiState): NpmiState => {
       return {
         ...state,
@@ -352,7 +341,7 @@ const reducer = createReducer(
     }
   ),
   on(
-    actions.changeSidebarWidth,
+    actions.npmiChangeSidebarWidth,
     (state: NpmiState, {sidebarWidth}): NpmiState => {
       return {
         ...state,
