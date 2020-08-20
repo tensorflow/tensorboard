@@ -167,25 +167,20 @@ const reducer = createReducer(
   on(
     actions.npmiToggleAnnotationsHidden,
     (state: NpmiState, {annotations}): NpmiState => {
-      const notHidden: string[] = annotations.filter(
-        (annotation) => !state.hiddenAnnotations.includes(annotation)
-      );
-      if (notHidden.length === 0) {
-        // If all annotations are already hidden, user wants to remove them
-        const filteredHidden = state.hiddenAnnotations.filter(
-          (annotation) => !annotations.includes(annotation)
-        );
-        return {
-          ...state,
-          hiddenAnnotations: filteredHidden,
-        };
-      } else {
-        // User wants to add to flagged annotations
-        return {
-          ...state,
-          hiddenAnnotations: [...state.hiddenAnnotations, ...notHidden],
-        };
+      const combinedHiddenAnnotations = new Set([
+        ...state.hiddenAnnotations,
+        ...annotations,
+      ]);
+      if (combinedHiddenAnnotations.size === state.hiddenAnnotations.length) {
+        // If all annotations are already flagged, user wants to remove them
+        for (const annotation of annotations) {
+          combinedHiddenAnnotations.delete(annotation);
+        }
       }
+      return {
+        ...state,
+        hiddenAnnotations: [...combinedHiddenAnnotations],
+      };
     }
   ),
   on(
@@ -210,68 +205,68 @@ const reducer = createReducer(
     actions.npmiAddMetricFilter,
     (state: NpmiState, {metric}): NpmiState => {
       // Only add if not already in active filters
-      const filter = state.metricFilters[metric];
-      if (filter === undefined) {
-        // Add so that arithmetic is still correct
-        const newContent: ArithmeticElement[] = [];
-        if (state.metricArithmetic.length !== 0) {
-          newContent.push({kind: 'operator', operator: Operator.AND});
-        }
-        newContent.push({kind: 'metric', metric: metric});
-        return {
-          ...state,
-          metricArithmetic: [...state.metricArithmetic, ...newContent],
-          metricFilters: {
-            ...state.metricFilters,
-            [metric]: {
-              max: 1.0,
-              min: -1.0,
-              includeNaN: false,
-            },
-          },
-        };
-      } else {
+      if (state.metricFilters[metric]) {
         return state;
       }
+      // Add so that arithmetic is still correct
+      const newContent: ArithmeticElement[] = [];
+      if (state.metricArithmetic.length !== 0) {
+        newContent.push({kind: 'operator', operator: Operator.AND});
+      }
+      newContent.push({kind: 'metric', metric: metric});
+      return {
+        ...state,
+        metricArithmetic: [...state.metricArithmetic, ...newContent],
+        metricFilters: {
+          ...state.metricFilters,
+          [metric]: {
+            max: 1.0,
+            min: -1.0,
+            includeNaN: false,
+          },
+        },
+      };
     }
   ),
   on(
     actions.npmiRemoveMetricFilter,
     (state: NpmiState, {metric}): NpmiState => {
-      if (state.metricFilters[metric] !== undefined) {
-        // Remove the correct elements of the arithmetic as well
-        let arithmeticIndex = 0;
-        let startSlice = 0;
-        let endSlice = 2;
-        const {[metric]: value, ...map} = state.metricFilters;
-        for (const index in state.metricArithmetic) {
-          const element = state.metricArithmetic[index];
-          if (element.kind === 'metric') {
-            if (element.metric === metric) {
-              arithmeticIndex = parseInt(index);
-            }
-          }
-        }
-        if (arithmeticIndex !== 0) {
-          startSlice = arithmeticIndex - 1;
-          endSlice = arithmeticIndex + 1;
-        }
-        return {
-          ...state,
-          metricArithmetic: [
-            ...state.metricArithmetic.slice(0, startSlice),
-            ...state.metricArithmetic.slice(endSlice),
-          ],
-          metricFilters: map,
-        };
-      } else {
+      if (!state.metricFilters[metric]) {
         return state;
       }
+      // Remove the correct elements of the arithmetic as well
+      let arithmeticIndex = 0;
+      let startSlice = 0;
+      let endSlice = 2;
+      const {[metric]: value, ...map} = state.metricFilters;
+      for (const index in state.metricArithmetic) {
+        const element = state.metricArithmetic[index];
+        if (element.kind === 'metric') {
+          if (element.metric === metric) {
+            arithmeticIndex = parseInt(index);
+          }
+        }
+      }
+      if (arithmeticIndex !== 0) {
+        startSlice = arithmeticIndex - 1;
+        endSlice = arithmeticIndex + 1;
+      }
+      return {
+        ...state,
+        metricArithmetic: [
+          ...state.metricArithmetic.slice(0, startSlice),
+          ...state.metricArithmetic.slice(endSlice),
+        ],
+        metricFilters: map,
+      };
     }
   ),
   on(
     actions.npmiChangeMetricFilter,
     (state: NpmiState, {metric, max, min, includeNaN}): NpmiState => {
+      if (!state.metricFilters[metric]) {
+        return state;
+      }
       return {
         ...state,
         metricFilters: {

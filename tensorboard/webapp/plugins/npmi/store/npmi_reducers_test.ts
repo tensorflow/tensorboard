@@ -489,6 +489,33 @@ describe('npmi_reducers', () => {
           {kind: 'metric', metric: 'nPMI@second'},
         ]);
       });
+
+      it('not adding new metric filter if already active', () => {
+        const state = createNpmiState({
+          metricFilters: {
+            'nPMI@test': {
+              max: 0.3,
+              min: -1.0,
+              includeNaN: true,
+            },
+          },
+          metricArithmetic: [{kind: 'metric', metric: 'nPMI@test'}],
+        });
+        const nextState = reducers(
+          state,
+          actions.npmiAddMetricFilter({metric: 'nPMI@test'})
+        );
+        expect(nextState.metricFilters).toEqual({
+          'nPMI@test': {
+            max: 0.3,
+            min: -1.0,
+            includeNaN: true,
+          },
+        });
+        expect(nextState.metricArithmetic).toEqual([
+          {kind: 'metric', metric: 'nPMI@test'},
+        ]);
+      });
     });
 
     describe('Removing Filters', () => {
@@ -610,6 +637,63 @@ describe('npmi_reducers', () => {
           {kind: 'metric', metric: 'nPMI@third'},
         ]);
       });
+
+      it('not removing anything if not active', () => {
+        const state = createNpmiState({
+          metricFilters: {
+            'nPMI@test': {
+              max: 0.3,
+              min: -1.0,
+              includeNaN: true,
+            },
+            'nPMI@second': {
+              max: 1.0,
+              min: -1.0,
+              includeNaN: false,
+            },
+            'nPMI@third': {
+              max: 1.0,
+              min: -1.0,
+              includeNaN: false,
+            },
+          },
+          metricArithmetic: [
+            {kind: 'metric', metric: 'nPMI@test'},
+            {kind: 'operator', operator: Operator.AND},
+            {kind: 'metric', metric: 'nPMI@second'},
+            {kind: 'operator', operator: Operator.AND},
+            {kind: 'metric', metric: 'nPMI@third'},
+          ],
+        });
+        const nextState = reducers(
+          state,
+          actions.npmiRemoveMetricFilter({metric: 'nPMI@inactive'})
+        );
+        expect(nextState.metricFilters).toEqual({
+          'nPMI@test': {
+            max: 0.3,
+            min: -1.0,
+            includeNaN: true,
+          },
+          'nPMI@second': {
+            max: 1.0,
+            min: -1.0,
+            includeNaN: false,
+          },
+          'nPMI@third': {
+            max: 1.0,
+            min: -1.0,
+            includeNaN: false,
+          },
+        });
+        expect(nextState.metricArithmetic).toEqual([
+          {kind: 'metric', metric: 'nPMI@test'},
+          {kind: 'operator', operator: Operator.AND},
+          {kind: 'metric', metric: 'nPMI@second'},
+          {kind: 'operator', operator: Operator.AND},
+          {kind: 'metric', metric: 'nPMI@third'},
+        ]);
+      });
     });
 
     describe('Change a Filter', () => {
@@ -656,6 +740,54 @@ describe('npmi_reducers', () => {
           'nPMI@third': {
             max: 0.5,
             min: -0.5,
+            includeNaN: false,
+          },
+        });
+      });
+
+      it('dont change anything if not in metric filters', () => {
+        const state = createNpmiState({
+          metricFilters: {
+            'nPMI@test': {
+              max: 0.3,
+              min: -1.0,
+              includeNaN: true,
+            },
+            'nPMI@second': {
+              max: 1.0,
+              min: -1.0,
+              includeNaN: false,
+            },
+            'nPMI@third': {
+              max: 1.0,
+              min: -1.0,
+              includeNaN: false,
+            },
+          },
+        });
+        const nextState = reducers(
+          state,
+          actions.npmiChangeMetricFilter({
+            metric: 'nPMI@inactive',
+            max: 0.5,
+            min: -0.5,
+            includeNaN: false,
+          })
+        );
+        expect(nextState.metricFilters).toEqual({
+          'nPMI@test': {
+            max: 0.3,
+            min: -1.0,
+            includeNaN: true,
+          },
+          'nPMI@second': {
+            max: 1.0,
+            min: -1.0,
+            includeNaN: false,
+          },
+          'nPMI@third': {
+            max: 1.0,
+            min: -1.0,
             includeNaN: false,
           },
         });
