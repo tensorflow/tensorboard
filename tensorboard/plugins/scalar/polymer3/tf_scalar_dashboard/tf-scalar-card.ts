@@ -225,14 +225,18 @@ export class TfScalarCard extends PolymerElement {
 
   // This function is called when data is received from the backend.
   @property({type: Object})
-  _loadDataCallback: object = (scalarChart, datum, data) => {
-    const formattedData = data.map((datum) => ({
+  _loadDataCallback: object = (scalarChart, item, maybeData) => {
+    if (maybeData == null) {
+      console.error('Failed to load data for:', item);
+      return;
+    }
+    const formattedData = maybeData.map((datum) => ({
       wall_time: new Date(datum[0] * 1000),
       step: datum[1],
       scalar: datum[2],
     }));
-    const name = this._getSeriesNameFromDatum(datum);
-    scalarChart.setSeriesMetadata(name, datum);
+    const name = this._getSeriesNameFromDatum(item);
+    scalarChart.setSeriesMetadata(name, item);
     scalarChart.setSeriesData(name, formattedData);
     scalarChart.commitChanges();
   };
@@ -257,19 +261,56 @@ export class TfScalarCard extends PolymerElement {
   // this.requestManager.request(
   //      this.getDataLoadUrl({tag, run, experiment})
   @property({type: Object})
-  requestData: RequestDataCallback<RunTagItem, ScalarDatum[]> = (
+  requestData: RequestDataCallback<RunTagItem, ScalarDatum[] | null> = (
     items,
     onLoad,
     onFinish
   ) => {
     const router = getRouter();
-    const baseUrl = router.pluginRoute('scalars', '/scalars');
+    const url = router.pluginRoute('scalars', '/scalars_multirun');
+    const runsByTag = new Map<string, string[]>();
+    for (const {tag, run} of items) {
+      let runs = runsByTag.get(tag);
+      if (runs == null) {
+        runsByTag.set(tag, (runs = []));
+      }
+      runs.push(run);
+    }
+
+    // Request at most this many runs at once.
+    //
+    // Back-of-the-envelope math: each scalar datum JSON value contains
+    // two floats and a small-ish integer. Floats are about 18 bytes,
+    // since f64s have -log_10(2^-53) ~= 16 digits of precision plus
+    // decimal point and leading zero. Small-ish integers (steps) are
+    // about 5 bytes. Add JSON overhead `[,,],` and you're looking at
+    // about 48 bytes per datum. With standard downsampling of
+    // 1000 points per time series, expect ~50 KB of response payload
+    // per requested time series.
+    //
+    // Requesting 64 time series warrants a ~3 MB response, which seems
+    // reasonable.
+    const BATCH_SIZE = 64;
+
+    const requestGroups = [];
+    for (const [tag, runs] of runsByTag) {
+      for (let i = 0; i < runs.length; i += BATCH_SIZE) {
+        requestGroups.push({tag, runs: runs.slice(i, i + BATCH_SIZE)});
+      }
+    }
+
     Promise.all(
-      items.map((item) => {
-        const url = addParams(baseUrl, {tag: item.tag, run: item.run});
-        return this.requestManager
-          .request(url)
-          .then((data) => void onLoad({item, data}));
+      requestGroups.map(({tag, runs}) => {
+        return this.requestManager.request(url, {tag, runs}).then((allData) => {
+          for (const run of runs) {
+            const item = {tag, run};
+            if (Object.prototype.hasOwnProperty.call(allData, run)) {
+              onLoad({item, data: allData[run]});
+            } else {
+              onLoad({item, data: null});
+            }
+          }
+        });
       })
     ).finally(() => void onFinish());
   };
