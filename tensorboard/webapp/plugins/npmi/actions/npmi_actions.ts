@@ -13,11 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {createAction, props} from '@ngrx/store';
-import {
-  AnnotationListing,
-  MetricListing,
-  ValueListing,
-} from '../store/npmi_types';
+import {AnnotationDataListing, MetricListing} from '../store/npmi_types';
 
 // HACK: Below import is for type inference.
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
@@ -37,9 +33,8 @@ export const npmiPluginDataRequested = createAction(
 export const npmiPluginDataLoaded = createAction(
   '[NPMI] nPMI Plugin Data Loaded',
   props<{
-    annotations: AnnotationListing;
+    annotationData: AnnotationDataListing;
     metrics: MetricListing;
-    values: ValueListing;
   }>()
 );
 

@@ -60,14 +60,8 @@ export class NpmiEffects {
       tap(() => this.store.dispatch(npmiPluginDataRequested())),
       mergeMap(() => {
         return this.dataSource.fetchData().pipe(
-          tap(([annotations, metrics, values]) => {
-            this.store.dispatch(
-              npmiPluginDataLoaded({
-                annotations: annotations,
-                metrics: metrics,
-                values: values,
-              })
-            );
+          tap((result) => {
+            this.store.dispatch(npmiPluginDataLoaded(result));
           }),
           map(() => void null),
           catchError(() => {
