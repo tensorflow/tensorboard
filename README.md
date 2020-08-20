@@ -255,8 +255,9 @@ tensorboard in inspect mode to inspect the contents of your event files.
 
 ### TensorBoard is showing only some of my data, or isn't properly updating!
 
-> **Update:** After [2.3.0 release][2-3-0], TensorBoard no longer auto uploads
-> every 30 seconds. To re-enable the behavior, please open the settings and
+> **Update:** After [2.3.0 release][2-3-0], TensorBoard no longer auto reloads
+> every 30 seconds. To re-enable the behavior, please open the settings by
+> clicking the gear icon in the top-right of the TensorBoard web interface, and
 > enable "Reload data".
 
 > **Update:** the [experimental `--reload_multifile=true` option][pr-1867] can
