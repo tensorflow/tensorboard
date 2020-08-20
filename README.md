@@ -255,6 +255,11 @@ tensorboard in inspect mode to inspect the contents of your event files.
 
 ### TensorBoard is showing only some of my data, or isn't properly updating!
 
+> **Update:** After [2.3.0 release][2-3-0], TensorBoard no longer auto reloads
+> every 30 seconds. To re-enable the behavior, please open the settings by
+> clicking the gear icon in the top-right of the TensorBoard web interface, and
+> enable "Reload data".
+
 > **Update:** the [experimental `--reload_multifile=true` option][pr-1867] can
 > now be used to poll all "active" files in a directory for new data, rather
 > than the most recent one as described below. A file is "active" as long as it
@@ -419,3 +424,4 @@ of `tensorboard --inspect`, etc.).
 
 [stack-overflow]: https://stackoverflow.com/questions/tagged/tensorboard
 [pr-1867]: https://github.com/tensorflow/tensorboard/pull/1867
+[2-3-0]: https://github.com/tensorflow/tensorboard/releases/tag/2.3.0
