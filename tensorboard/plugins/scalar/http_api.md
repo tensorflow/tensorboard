@@ -72,14 +72,30 @@ is no data for some or all of the run-tag combinations, no error is raised, but
 the response may lack runs requested in the input or be an empty object
 entirely.
 
-Example:
+Example request:
 
-    {
-      "train": [
-        [1443856985.705543, 1448, 0.7461960315704346],
-        [1443857105.704628, 3438, 0.5427092909812927]
-      ],
-      "test": [
-        [1443857225.705133, 5417, 0.5457325577735901],
-      ]
-    }
+```javascript
+const formData = new FormData();
+formData.set("tag", "xent/xent_1");
+formData.append("runs", "mnist/lr_1E-03,conv=1,fc=2");
+formData.append("runs", "mnist/lr_1E-03,conv=2,fc=2");
+const response = await fetch(
+  "/data/plugin/scalars/scalars_multirun",
+  {method: "POST", body: formData}
+);
+```
+
+Example response:
+
+```json
+{
+  "mnist/lr_1E-03,conv=1,fc=2": [
+    [1563406328.158425, 0, 3.8424863815307617],
+    [1563406328.5136807, 5, 5.210817337036133]
+  ],
+  "mnist/lr_1E-03,conv=2,fc=2": [
+    [1563406405.8505669, 0, 11.278410911560059],
+    [1563406406.357564, 5, 7.649646759033203]
+  ]
+}
+```

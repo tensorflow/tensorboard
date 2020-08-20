@@ -163,10 +163,13 @@ class ScalarsPlugin(base_plugin.TBPlugin):
         """Given a tag and list of runs, return dict of ScalarEvent arrays."""
         if request.method != "POST":
             raise werkzeug.exceptions.MethodNotAllowed(["POST"])
-        tag = request.form.get("tag")
+        tags = request.form.getlist("tag")
         runs = request.form.getlist("runs")
-        if tag is None:
-            raise errors.InvalidArgumentError("tag must be specified")
+        if len(tags) != 1:
+            raise errors.InvalidArgumentError(
+                "tag must be specified exactly once"
+            )
+        tag = tags[0]
 
         ctx = plugin_util.context(request.environ)
         experiment = plugin_util.experiment_id(request.environ)

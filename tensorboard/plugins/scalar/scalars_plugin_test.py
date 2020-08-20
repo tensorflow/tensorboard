@@ -263,6 +263,17 @@ class ScalarsPluginTest(tf.test.TestCase):
         self.assertCountEqual([self._RUN_WITH_SCALARS], data)
         self.assertLen(data[self._RUN_WITH_SCALARS], self._STEPS)
 
+    def test_scalars_multirun_no_runs(self):
+        server = self.load_server([self._RUN_WITH_SCALARS])
+        response = server.post(
+            "/data/plugin/scalars/scalars_multirun",
+            data={"tag": "%s/scalar_summary" % self._SCALAR_TAG},
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("application/json", response.headers["Content-Type"])
+        data = json.loads(response.get_data())
+        self.assertEqual({}, data)
+
     def test_scalars_multirun_no_tag(self):
         server = self.load_server([self._RUN_WITH_SCALARS])
         response = server.post(
@@ -273,6 +284,18 @@ class ScalarsPluginTest(tf.test.TestCase):
         self.assertIn(
             "tag must be specified", response.get_data().decode("utf-8")
         )
+
+    def test_scalars_multirun_two_tags(self):
+        server = self.load_server([self._RUN_WITH_SCALARS])
+        response = server.post(
+            "/data/plugin/scalars/scalars_multirun",
+            data={
+                "tag": ["accuracy", "loss"],
+                "runs": [self._RUN_WITH_SCALARS, self._RUN_WITH_SCALARS_2],
+            },
+        )
+        self.assertEqual(400, response.status_code)
+        self.assertIn("exactly once", response.get_data().decode("utf-8"))
 
     def test_scalars_multirun_bad_method(self):
         server = self.load_server([self._RUN_WITH_SCALARS])
