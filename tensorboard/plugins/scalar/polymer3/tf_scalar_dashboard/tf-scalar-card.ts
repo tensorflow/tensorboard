@@ -238,7 +238,6 @@ export class TfScalarCard extends PolymerElement {
     const name = this._getSeriesNameFromDatum(item);
     scalarChart.setSeriesMetadata(name, item);
     scalarChart.setSeriesData(name, formattedData);
-    scalarChart.commitChanges();
   };
 
   @property({type: Object})

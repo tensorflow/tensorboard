@@ -207,6 +207,7 @@ class _TfLineChartDataLoader<ScalarMetadata>
   _maybeRenderedInBadState: boolean = false;
 
   onLoadFinish() {
+    this.commitChanges();
     if (this.dataToLoad.length > 0 && this._resetDomainOnNextLoad) {
       // (Don't unset _resetDomainOnNextLoad when we didn't
       // load any runs: this has the effect that if all our
