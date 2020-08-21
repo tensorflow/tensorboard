@@ -1,0 +1,42 @@
+load("//tensorboard/defs:web.bzl", "tf_web_library")
+
+package(default_visibility = ["//tensorboard:internal"])
+
+licenses(["notice"])  # Apache 2.0
+
+tf_web_library(
+    name = "message",
+    srcs = [
+        "message.html",
+        "message.ts",
+    ],
+    path = "/tf-plugin-util",
+)
+
+tf_web_library(
+    name = "host_internals",
+    srcs = [
+        "plugin-host-ipc.html",
+        "plugin-host-ipc.ts",
+    ],
+    path = "/tf-plugin-util",
+    deps = [
+        ":message",
+    ],
+)
+
+tf_web_library(
+    name = "plugin_host",
+    srcs = [
+        "core-host-impl.ts",
+        "plugin-host.html",
+        "runs-host-impl.ts",
+    ],
+    path = "/tf-plugin-util",
+    deps = [
+        ":host_internals",
+        "//tensorboard/components/tf_backend",
+        "//tensorboard/components/tf_imports:polymer",
+        "//tensorboard/components/tf_storage",
+    ],
+)
