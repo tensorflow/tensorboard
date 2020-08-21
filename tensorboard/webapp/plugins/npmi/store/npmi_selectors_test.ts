@@ -22,13 +22,13 @@ import {createNpmiState, createState} from '../testing';
 
 describe('npmi selectors', () => {
   describe('getPluginDataLoadState', () => {
-    it('return correct NOT_LOADED state', () => {
+    it('returns the correct NOT_LOADED state', () => {
       const state = createState(createNpmiState());
       const annotationsLoaded = getPluginDataLoaded(state);
       expect(annotationsLoaded.state).toBe(DataLoadState.NOT_LOADED);
     });
 
-    it('returns correct LOADING state', () => {
+    it('returns the correct LOADING state', () => {
       const state = createState(
         createNpmiState({
           pluginDataLoaded: {
@@ -42,7 +42,7 @@ describe('npmi selectors', () => {
       expect(annotationsLoaded.lastLoadedTimeInMs).toBe(null);
     });
 
-    it('returns correct LOADED state', () => {
+    it('returns the correct LOADED state', () => {
       const state = createState(
         createNpmiState({
           pluginDataLoaded: {
@@ -58,12 +58,12 @@ describe('npmi selectors', () => {
   });
 
   describe('getAnnotationData', () => {
-    it('return correct empty object', () => {
+    it('returns the correct empty object', () => {
       const state = createState(createNpmiState());
       expect(getAnnotationData(state)).toEqual({});
     });
 
-    it('return correct data', () => {
+    it('returns the correct data', () => {
       const state = createState(
         createNpmiState({
           annotationData: {
@@ -112,12 +112,12 @@ describe('npmi selectors', () => {
   });
 
   describe('getRunToMetrics', () => {
-    it('return correct empty object', () => {
+    it('returns the correct empty object', () => {
       const state = createState(createNpmiState());
       expect(getRunToMetrics(state)).toEqual({});
     });
 
-    it('return correct data', () => {
+    it('returns the correct data', () => {
       const state = createState(
         createNpmiState({
           runToMetrics: {
