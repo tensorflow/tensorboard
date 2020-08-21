@@ -26,4 +26,30 @@ module.exports = {
   output: {
     strict: false,
   },
+  onwarn: (warning, warn) => {
+    // Suppress known warnings in third-party dependencies that we can't
+    // mitigate.
+    if (warning.code === 'CIRCULAR_DEPENDENCY') {
+      const ignoredPrefixes = [
+        // d3 circular deps are wontfix:
+        // https://github.com/d3/d3-selection/issues/168#issuecomment-401059437
+        'node_modules/d3-interpolate',
+        'node_modules/d3-selection',
+        'node_modules/d3-transition',
+        'node_modules/d3-voronoi',
+        'node_modules/plottable',
+      ];
+      for (const prefix of ignoredPrefixes) {
+        if (warning.cycle.some((x) => x.startsWith(prefix))) {
+          return;
+        }
+      }
+    }
+    if (warning.code === 'EVAL') {
+      if (warning.loc.file.includes('/node_modules/numeric/')) {
+        return;
+      }
+    }
+    warn(warning);
+  },
 };
