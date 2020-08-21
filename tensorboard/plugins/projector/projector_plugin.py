@@ -264,7 +264,7 @@ class ProjectorPlugin(base_plugin.TBPlugin):
             self.run_paths = self.multiplexer.RunPaths()
 
     def get_plugin_apps(self):
-        asset_prefix = "polymer3/tf_projector_plugin"
+        asset_prefix = "tf_projector_plugin"
         return {
             RUNS_ROUTE: self._serve_runs,
             CONFIG_ROUTE: self._serve_config,
