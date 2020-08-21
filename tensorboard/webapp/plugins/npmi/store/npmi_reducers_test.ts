@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import * as actions from '../actions';
 import {reducers} from './npmi_reducers';
-import {DataLoadState} from './npmi_types';
+import {DataLoadState, Operator, SortingOrder} from './npmi_types';
 import {createNpmiState} from '../testing';
 
 describe('npmi_reducers', () => {
@@ -266,6 +266,637 @@ describe('npmi_reducers', () => {
       expect(nextState.runToMetrics).toEqual({
         run_1: ['nPMI@newtest1', 'nPMI@newtest2'],
       });
+    });
+  });
+
+  describe('Annotation Selection', () => {
+    it('select annotations without duplicates', () => {
+      const state = createNpmiState({
+        selectedAnnotations: ['annotation_1'],
+      });
+      const nextState = reducers(
+        state,
+        actions.npmiAddSelectedAnnotations({
+          annotations: ['annotation_1', 'annotation_2'],
+        })
+      );
+      expect(nextState.selectedAnnotations).toEqual([
+        'annotation_1',
+        'annotation_2',
+      ]);
+    });
+
+    it('remove a selected annotation', () => {
+      const state = createNpmiState({
+        selectedAnnotations: ['annotation_1', 'annotation_2'],
+      });
+      const nextState = reducers(
+        state,
+        actions.npmiRemoveSelectedAnnotation({annotation: 'annotation_1'})
+      );
+      expect(nextState.selectedAnnotations).toEqual(['annotation_2']);
+    });
+
+    it('set the selected annotations', () => {
+      const state = createNpmiState({
+        selectedAnnotations: ['annotation_1', 'annotation_2'],
+      });
+      const nextState = reducers(
+        state,
+        actions.npmiSetSelectedAnnotations({
+          annotations: ['annotation_1', 'annotation_3'],
+        })
+      );
+      expect(nextState.selectedAnnotations).toEqual([
+        'annotation_1',
+        'annotation_3',
+      ]);
+    });
+
+    it('clear selected annotations', () => {
+      const state = createNpmiState({
+        selectedAnnotations: ['annotation_1', 'annotation_2'],
+      });
+      const nextState = reducers(state, actions.npmiClearSelectedAnnotations());
+      expect(nextState.selectedAnnotations).toEqual([]);
+    });
+  });
+
+  describe('Annotation Flagging', () => {
+    it('flag annotations with no annotation flagged', () => {
+      const state = createNpmiState();
+      const nextState = reducers(
+        state,
+        actions.npmiToggleAnnotationFlags({
+          annotations: ['annotation_1', 'annotation_2', 'annotation_3'],
+        })
+      );
+      expect(nextState.flaggedAnnotations).toEqual([
+        'annotation_1',
+        'annotation_2',
+        'annotation_3',
+      ]);
+    });
+
+    it('flagging annotations with some already flagged', () => {
+      const state = createNpmiState({
+        flaggedAnnotations: ['annotation_1', 'annotation_3'],
+      });
+      const nextState = reducers(
+        state,
+        actions.npmiToggleAnnotationFlags({
+          annotations: ['annotation_1', 'annotation_2', 'annotation_3'],
+        })
+      );
+      expect(nextState.flaggedAnnotations).toEqual([
+        'annotation_1',
+        'annotation_3',
+        'annotation_2',
+      ]);
+    });
+
+    it('all annotations flagged => remove them', () => {
+      const state = createNpmiState({
+        flaggedAnnotations: ['annotation_1', 'annotation_2', 'annotation_3'],
+      });
+      const nextState = reducers(
+        state,
+        actions.npmiToggleAnnotationFlags({
+          annotations: ['annotation_1', 'annotation_3'],
+        })
+      );
+      expect(nextState.flaggedAnnotations).toEqual(['annotation_2']);
+    });
+  });
+
+  describe('Hiding Annotations', () => {
+    it('hide annotations with no annotation hidden', () => {
+      const state = createNpmiState();
+      const nextState = reducers(
+        state,
+        actions.npmiToggleAnnotationsHidden({
+          annotations: ['annotation_1', 'annotation_2', 'annotation_3'],
+        })
+      );
+      expect(nextState.hiddenAnnotations).toEqual([
+        'annotation_1',
+        'annotation_2',
+        'annotation_3',
+      ]);
+    });
+
+    it('hiding annotations with some already hidden', () => {
+      const state = createNpmiState({
+        hiddenAnnotations: ['annotation_1', 'annotation_3'],
+      });
+      const nextState = reducers(
+        state,
+        actions.npmiToggleAnnotationsHidden({
+          annotations: ['annotation_1', 'annotation_2', 'annotation_3'],
+        })
+      );
+      expect(nextState.hiddenAnnotations).toEqual([
+        'annotation_1',
+        'annotation_3',
+        'annotation_2',
+      ]);
+    });
+
+    it('all annotations hidden => remove them', () => {
+      const state = createNpmiState({
+        hiddenAnnotations: ['annotation_1', 'annotation_2', 'annotation_3'],
+      });
+      const nextState = reducers(
+        state,
+        actions.npmiToggleAnnotationsHidden({
+          annotations: ['annotation_1', 'annotation_3'],
+        })
+      );
+      expect(nextState.hiddenAnnotations).toEqual(['annotation_2']);
+    });
+  });
+
+  describe('Regex Filter Changes', () => {
+    it('annotation regex changes', () => {
+      const state = createNpmiState({annotationsRegex: 'test'});
+      const nextState = reducers(
+        state,
+        actions.npmiAnnotationsRegexChanged({regex: 'new_regex'})
+      );
+      expect(nextState.annotationsRegex).toBe('new_regex');
+    });
+
+    it('metrics regex changes', () => {
+      const state = createNpmiState({metricsRegex: 'test'});
+      const nextState = reducers(
+        state,
+        actions.npmiMetricsRegexChanged({regex: 'new_regex'})
+      );
+      expect(nextState.metricsRegex).toBe('new_regex');
+    });
+  });
+
+  describe('Metric Filters', () => {
+    describe('Adding Filters', () => {
+      it('adding new metric filter with none present', () => {
+        const state = createNpmiState();
+        const nextState = reducers(
+          state,
+          actions.npmiAddMetricFilter({metric: 'nPMI@test'})
+        );
+        expect(nextState.metricFilters).toEqual({
+          'nPMI@test': {
+            max: 1.0,
+            min: -1.0,
+            includeNaN: false,
+          },
+        });
+        expect(nextState.metricArithmetic).toEqual([
+          {kind: 'metric', metric: 'nPMI@test'},
+        ]);
+      });
+
+      it('adding new metric filter after the first one', () => {
+        const state = createNpmiState({
+          metricFilters: {
+            'nPMI@test': {
+              max: 0.3,
+              min: -1.0,
+              includeNaN: true,
+            },
+          },
+          metricArithmetic: [{kind: 'metric', metric: 'nPMI@test'}],
+        });
+        const nextState = reducers(
+          state,
+          actions.npmiAddMetricFilter({metric: 'nPMI@second'})
+        );
+        expect(nextState.metricFilters).toEqual({
+          'nPMI@test': {
+            max: 0.3,
+            min: -1.0,
+            includeNaN: true,
+          },
+          'nPMI@second': {
+            max: 1.0,
+            min: -1.0,
+            includeNaN: false,
+          },
+        });
+        expect(nextState.metricArithmetic).toEqual([
+          {kind: 'metric', metric: 'nPMI@test'},
+          {kind: 'operator', operator: Operator.AND},
+          {kind: 'metric', metric: 'nPMI@second'},
+        ]);
+      });
+
+      it('not adding new metric filter if already active', () => {
+        const state = createNpmiState({
+          metricFilters: {
+            'nPMI@test': {
+              max: 0.3,
+              min: -1.0,
+              includeNaN: true,
+            },
+          },
+          metricArithmetic: [{kind: 'metric', metric: 'nPMI@test'}],
+        });
+        const nextState = reducers(
+          state,
+          actions.npmiAddMetricFilter({metric: 'nPMI@test'})
+        );
+        expect(nextState.metricFilters).toEqual({
+          'nPMI@test': {
+            max: 0.3,
+            min: -1.0,
+            includeNaN: true,
+          },
+        });
+        expect(nextState.metricArithmetic).toEqual([
+          {kind: 'metric', metric: 'nPMI@test'},
+        ]);
+      });
+    });
+
+    describe('Removing Filters', () => {
+      it('removing last remaining metric filter', () => {
+        const state = createNpmiState({
+          metricFilters: {
+            'nPMI@test': {
+              max: 0.3,
+              min: -1.0,
+              includeNaN: true,
+            },
+          },
+          metricArithmetic: [{kind: 'metric', metric: 'nPMI@test'}],
+        });
+        const nextState = reducers(
+          state,
+          actions.npmiRemoveMetricFilter({metric: 'nPMI@test'})
+        );
+        expect(nextState.metricFilters).toEqual({});
+        expect(nextState.metricArithmetic).toEqual([]);
+      });
+
+      it('removing the first metric filter of more', () => {
+        const state = createNpmiState({
+          metricFilters: {
+            'nPMI@test': {
+              max: 0.3,
+              min: -1.0,
+              includeNaN: true,
+            },
+            'nPMI@second': {
+              max: 1.0,
+              min: -1.0,
+              includeNaN: false,
+            },
+            'nPMI@third': {
+              max: 1.0,
+              min: -1.0,
+              includeNaN: false,
+            },
+          },
+          metricArithmetic: [
+            {kind: 'metric', metric: 'nPMI@test'},
+            {kind: 'operator', operator: Operator.AND},
+            {kind: 'metric', metric: 'nPMI@second'},
+            {kind: 'operator', operator: Operator.AND},
+            {kind: 'metric', metric: 'nPMI@third'},
+          ],
+        });
+        const nextState = reducers(
+          state,
+          actions.npmiRemoveMetricFilter({metric: 'nPMI@test'})
+        );
+        expect(nextState.metricFilters).toEqual({
+          'nPMI@second': {
+            max: 1.0,
+            min: -1.0,
+            includeNaN: false,
+          },
+          'nPMI@third': {
+            max: 1.0,
+            min: -1.0,
+            includeNaN: false,
+          },
+        });
+        expect(nextState.metricArithmetic).toEqual([
+          {kind: 'metric', metric: 'nPMI@second'},
+          {kind: 'operator', operator: Operator.AND},
+          {kind: 'metric', metric: 'nPMI@third'},
+        ]);
+      });
+
+      it('removing a metric filter in the middle', () => {
+        const state = createNpmiState({
+          metricFilters: {
+            'nPMI@test': {
+              max: 0.3,
+              min: -1.0,
+              includeNaN: true,
+            },
+            'nPMI@second': {
+              max: 1.0,
+              min: -1.0,
+              includeNaN: false,
+            },
+            'nPMI@third': {
+              max: 1.0,
+              min: -1.0,
+              includeNaN: false,
+            },
+          },
+          metricArithmetic: [
+            {kind: 'metric', metric: 'nPMI@test'},
+            {kind: 'operator', operator: Operator.AND},
+            {kind: 'metric', metric: 'nPMI@second'},
+            {kind: 'operator', operator: Operator.AND},
+            {kind: 'metric', metric: 'nPMI@third'},
+          ],
+        });
+        const nextState = reducers(
+          state,
+          actions.npmiRemoveMetricFilter({metric: 'nPMI@second'})
+        );
+        expect(nextState.metricFilters).toEqual({
+          'nPMI@test': {
+            max: 0.3,
+            min: -1.0,
+            includeNaN: true,
+          },
+          'nPMI@third': {
+            max: 1.0,
+            min: -1.0,
+            includeNaN: false,
+          },
+        });
+        expect(nextState.metricArithmetic).toEqual([
+          {kind: 'metric', metric: 'nPMI@test'},
+          {kind: 'operator', operator: Operator.AND},
+          {kind: 'metric', metric: 'nPMI@third'},
+        ]);
+      });
+
+      it('not removing anything if not active', () => {
+        const state = createNpmiState({
+          metricFilters: {
+            'nPMI@test': {
+              max: 0.3,
+              min: -1.0,
+              includeNaN: true,
+            },
+            'nPMI@second': {
+              max: 1.0,
+              min: -1.0,
+              includeNaN: false,
+            },
+            'nPMI@third': {
+              max: 1.0,
+              min: -1.0,
+              includeNaN: false,
+            },
+          },
+          metricArithmetic: [
+            {kind: 'metric', metric: 'nPMI@test'},
+            {kind: 'operator', operator: Operator.AND},
+            {kind: 'metric', metric: 'nPMI@second'},
+            {kind: 'operator', operator: Operator.AND},
+            {kind: 'metric', metric: 'nPMI@third'},
+          ],
+        });
+        const nextState = reducers(
+          state,
+          actions.npmiRemoveMetricFilter({metric: 'nPMI@inactive'})
+        );
+        expect(nextState.metricFilters).toEqual({
+          'nPMI@test': {
+            max: 0.3,
+            min: -1.0,
+            includeNaN: true,
+          },
+          'nPMI@second': {
+            max: 1.0,
+            min: -1.0,
+            includeNaN: false,
+          },
+          'nPMI@third': {
+            max: 1.0,
+            min: -1.0,
+            includeNaN: false,
+          },
+        });
+        expect(nextState.metricArithmetic).toEqual([
+          {kind: 'metric', metric: 'nPMI@test'},
+          {kind: 'operator', operator: Operator.AND},
+          {kind: 'metric', metric: 'nPMI@second'},
+          {kind: 'operator', operator: Operator.AND},
+          {kind: 'metric', metric: 'nPMI@third'},
+        ]);
+      });
+    });
+
+    describe('Change a Filter', () => {
+      it('change a metric filter', () => {
+        const state = createNpmiState({
+          metricFilters: {
+            'nPMI@test': {
+              max: 0.3,
+              min: -1.0,
+              includeNaN: true,
+            },
+            'nPMI@second': {
+              max: 1.0,
+              min: -1.0,
+              includeNaN: false,
+            },
+            'nPMI@third': {
+              max: 1.0,
+              min: -1.0,
+              includeNaN: false,
+            },
+          },
+        });
+        const nextState = reducers(
+          state,
+          actions.npmiChangeMetricFilter({
+            metric: 'nPMI@third',
+            max: 0.5,
+            min: -0.5,
+            includeNaN: false,
+          })
+        );
+        expect(nextState.metricFilters).toEqual({
+          'nPMI@test': {
+            max: 0.3,
+            min: -1.0,
+            includeNaN: true,
+          },
+          'nPMI@second': {
+            max: 1.0,
+            min: -1.0,
+            includeNaN: false,
+          },
+          'nPMI@third': {
+            max: 0.5,
+            min: -0.5,
+            includeNaN: false,
+          },
+        });
+      });
+
+      it('does not change anything if not in metric filters', () => {
+        const state = createNpmiState({
+          metricFilters: {
+            'nPMI@test': {
+              max: 0.3,
+              min: -1.0,
+              includeNaN: true,
+            },
+            'nPMI@second': {
+              max: 1.0,
+              min: -1.0,
+              includeNaN: false,
+            },
+            'nPMI@third': {
+              max: 1.0,
+              min: -1.0,
+              includeNaN: false,
+            },
+          },
+        });
+        const nextState = reducers(
+          state,
+          actions.npmiChangeMetricFilter({
+            metric: 'nPMI@inactive',
+            max: 0.5,
+            min: -0.5,
+            includeNaN: false,
+          })
+        );
+        expect(nextState.metricFilters).toEqual({
+          'nPMI@test': {
+            max: 0.3,
+            min: -1.0,
+            includeNaN: true,
+          },
+          'nPMI@second': {
+            max: 1.0,
+            min: -1.0,
+            includeNaN: false,
+          },
+          'nPMI@third': {
+            max: 1.0,
+            min: -1.0,
+            includeNaN: false,
+          },
+        });
+      });
+    });
+  });
+
+  describe('Annotation Sorting', () => {
+    it('change sorting', () => {
+      const state = createNpmiState();
+      const nextState = reducers(
+        state,
+        actions.npmiChangeAnnotationSorting({
+          sorting: {metric: 'test', order: SortingOrder.UP},
+        })
+      );
+      expect(nextState.sorting).toEqual({
+        metric: 'test',
+        order: SortingOrder.UP,
+      });
+    });
+  });
+
+  describe('UI Preferences', () => {
+    it('hide PC', () => {
+      const state = createNpmiState();
+      const nextState = reducers(
+        state,
+        actions.npmiToggleParallelCoordinatesExpanded()
+      );
+      expect(nextState.pcExpanded).toBeFalse();
+    });
+
+    it('show hidden PC', () => {
+      const state = createNpmiState({pcExpanded: false});
+      const nextState = reducers(
+        state,
+        actions.npmiToggleParallelCoordinatesExpanded()
+      );
+      expect(nextState.pcExpanded).toBeTrue();
+    });
+
+    it('hide annotations list', () => {
+      const state = createNpmiState();
+      const nextState = reducers(
+        state,
+        actions.npmiToggleAnnotationsExpanded()
+      );
+      expect(nextState.annotationsExpanded).toBeFalse();
+    });
+
+    it('show hidden annotations list', () => {
+      const state = createNpmiState({annotationsExpanded: false});
+      const nextState = reducers(
+        state,
+        actions.npmiToggleAnnotationsExpanded()
+      );
+      expect(nextState.annotationsExpanded).toBeTrue();
+    });
+
+    it('hide sidebar', () => {
+      const state = createNpmiState();
+      const nextState = reducers(state, actions.npmiToggleSidebarExpanded());
+      expect(nextState.sidebarExpanded).toBeFalse();
+    });
+
+    it('show hidden sidebar', () => {
+      const state = createNpmiState({sidebarExpanded: false});
+      const nextState = reducers(state, actions.npmiToggleSidebarExpanded());
+      expect(nextState.sidebarExpanded).toBeTrue();
+    });
+
+    it('hide counts', () => {
+      const state = createNpmiState();
+      const nextState = reducers(state, actions.npmiToggleShowCounts());
+      expect(nextState.showCounts).toBeFalse();
+    });
+
+    it('show counts', () => {
+      const state = createNpmiState({showCounts: false});
+      const nextState = reducers(state, actions.npmiToggleShowCounts());
+      expect(nextState.showCounts).toBeTrue();
+    });
+
+    it('show hidden annotations', () => {
+      const state = createNpmiState();
+      const nextState = reducers(
+        state,
+        actions.npmiToggleShowHiddenAnnotations()
+      );
+      expect(nextState.showHiddenAnnotations).toBeTrue();
+    });
+
+    it('does not show hidden annotations', () => {
+      const state = createNpmiState({showHiddenAnnotations: true});
+      const nextState = reducers(
+        state,
+        actions.npmiToggleShowHiddenAnnotations()
+      );
+      expect(nextState.showHiddenAnnotations).toBeFalse();
+    });
+
+    it('change sidebar width', () => {
+      const state = createNpmiState();
+      const nextState = reducers(
+        state,
+        actions.npmiChangeSidebarWidth({sidebarWidth: 500})
+      );
+      expect(nextState.sidebarWidth).toBe(500);
     });
   });
 });

@@ -21,6 +21,12 @@ export const NPMI_FEATURE_KEY = 'npmi';
 type Annotation = string;
 type Metric = string;
 export type AnnotationDataListing = Record<Annotation, ValueData[]>;
+export type ArithmeticElement =
+  | {kind: 'metric'; metric: string}
+  | {kind: 'operator'; operator: Operator};
+export enum Operator {
+  AND,
+}
 
 export interface ValueData {
   nPMIValue: number | null;
@@ -34,11 +40,47 @@ export interface MetricListing {
   [runId: string]: Metric[];
 }
 
+export interface MetricFilterListing {
+  [metric: string]: MetricFilter;
+}
+
+export interface MetricFilter {
+  max: number;
+  min: number;
+  includeNaN: boolean;
+}
+
+export interface AnnotationSorting {
+  metric: string;
+  order: SortingOrder;
+}
+
+export enum SortingOrder {
+  DOWN,
+  UP,
+}
+
 export interface NpmiState {
   // coming from backend
   pluginDataLoaded: LoadState;
   annotationData: AnnotationDataListing;
   runToMetrics: MetricListing;
+
+  // based on user interaction
+  selectedAnnotations: Annotation[];
+  flaggedAnnotations: Annotation[];
+  hiddenAnnotations: Annotation[];
+  annotationsRegex: string;
+  metricsRegex: string;
+  metricArithmetic: ArithmeticElement[];
+  metricFilters: MetricFilterListing;
+  sorting: AnnotationSorting;
+  pcExpanded: boolean;
+  annotationsExpanded: boolean;
+  sidebarExpanded: boolean;
+  showCounts: boolean;
+  showHiddenAnnotations: boolean;
+  sidebarWidth: number;
 }
 
 export interface State {
