@@ -60,6 +60,7 @@ def tf_ts_library(strict_checks = True, **kwargs):
         tsconfig = "//:tsconfig-lax"
     elif "test_only" in kwargs and kwargs.get("test_only"):
         tsconfig = "//:tsconfig-test"
+    kwargs.setdefault("deps", []).append("@npm//tslib")
 
     ts_library(tsconfig = tsconfig, **kwargs)
 
