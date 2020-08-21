@@ -745,7 +745,7 @@ describe('npmi_reducers', () => {
         });
       });
 
-      it('dont change anything if not in metric filters', () => {
+      it('does not change anything if not in metric filters', () => {
         const state = createNpmiState({
           metricFilters: {
             'nPMI@test': {
@@ -881,7 +881,7 @@ describe('npmi_reducers', () => {
       expect(nextState.showHiddenAnnotations).toBeTrue();
     });
 
-    it('dont show hidden annotations', () => {
+    it('does not show hidden annotations', () => {
       const state = createNpmiState({showHiddenAnnotations: true});
       const nextState = reducers(
         state,
