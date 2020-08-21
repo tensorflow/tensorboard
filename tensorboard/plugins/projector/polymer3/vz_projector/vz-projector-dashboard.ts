@@ -77,16 +77,20 @@ class VzProjectorDashboard extends PolymerElement {
   `;
   @property({type: Boolean})
   dataNotFound: boolean;
-  @property({
-    type: String,
-  })
+
+  @property({type: String})
   _routePrefix: string = '.';
+
   @property({type: Boolean})
   _initialized: boolean;
+
   reload() {
     // Do not reload the embedding projector. Reloading could take a long time.
   }
-  attached() {
+
+  connectedCallback() {
+    super.connectedCallback();
+
     if (this._initialized) {
       return;
     }
