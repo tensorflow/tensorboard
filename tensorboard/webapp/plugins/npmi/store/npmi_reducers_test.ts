@@ -26,7 +26,7 @@ describe('npmi_reducers', () => {
       expect(nextState.pluginDataLoaded.lastLoadedTimeInMs).toBeNull();
     });
 
-    it('set pluginDataLoaded to failed on request failure', () => {
+    it('sets pluginDataLoaded to failed on request failure', () => {
       const state = createNpmiState({
         pluginDataLoaded: {
           state: DataLoadState.LOADING,
@@ -38,7 +38,7 @@ describe('npmi_reducers', () => {
       expect(nextState.pluginDataLoaded.lastLoadedTimeInMs).toBeNull();
     });
 
-    it('sets pluginDataLoaded & plugin Data on successful load', () => {
+    it('sets pluginDataLoaded and plugin Data on successful load', () => {
       const state = createNpmiState();
       const t0 = Date.now();
       const nextState = reducers(
@@ -132,7 +132,7 @@ describe('npmi_reducers', () => {
       });
     });
 
-    it('overrides existing annotations on successful annotations loading', () => {
+    it('overrides existing annotations on successful loading of annotations', () => {
       const state = createNpmiState({
         pluginDataLoaded: {
           state: DataLoadState.LOADED,
@@ -270,7 +270,7 @@ describe('npmi_reducers', () => {
   });
 
   describe('Annotation Selection', () => {
-    it('select annotations without duplicates', () => {
+    it('selects annotations without adding duplcates to the selection', () => {
       const state = createNpmiState({
         selectedAnnotations: ['annotation_1'],
       });
@@ -286,7 +286,7 @@ describe('npmi_reducers', () => {
       ]);
     });
 
-    it('remove a selected annotation', () => {
+    it('removes a selected annotation', () => {
       const state = createNpmiState({
         selectedAnnotations: ['annotation_1', 'annotation_2'],
       });
@@ -297,7 +297,7 @@ describe('npmi_reducers', () => {
       expect(nextState.selectedAnnotations).toEqual(['annotation_2']);
     });
 
-    it('set the selected annotations', () => {
+    it('sets the selected annotations to a specified set', () => {
       const state = createNpmiState({
         selectedAnnotations: ['annotation_1', 'annotation_2'],
       });
@@ -313,7 +313,7 @@ describe('npmi_reducers', () => {
       ]);
     });
 
-    it('clear selected annotations', () => {
+    it('clears all selected annotations', () => {
       const state = createNpmiState({
         selectedAnnotations: ['annotation_1', 'annotation_2'],
       });
@@ -323,7 +323,7 @@ describe('npmi_reducers', () => {
   });
 
   describe('Annotation Flagging', () => {
-    it('flag annotations with no annotation flagged', () => {
+    it('flags annotations when no annotation is already flagged', () => {
       const state = createNpmiState();
       const nextState = reducers(
         state,
@@ -338,7 +338,7 @@ describe('npmi_reducers', () => {
       ]);
     });
 
-    it('flagging annotations with some already flagged', () => {
+    it('flags annotations with some already flagged', () => {
       const state = createNpmiState({
         flaggedAnnotations: ['annotation_1', 'annotation_3'],
       });
@@ -355,7 +355,7 @@ describe('npmi_reducers', () => {
       ]);
     });
 
-    it('all annotations flagged => remove them', () => {
+    it('unflags a set of annotations if they are all flagged', () => {
       const state = createNpmiState({
         flaggedAnnotations: ['annotation_1', 'annotation_2', 'annotation_3'],
       });
@@ -370,7 +370,7 @@ describe('npmi_reducers', () => {
   });
 
   describe('Hiding Annotations', () => {
-    it('hide annotations with no annotation hidden', () => {
+    it('hides annotations with no annotation already hidden', () => {
       const state = createNpmiState();
       const nextState = reducers(
         state,
@@ -385,7 +385,7 @@ describe('npmi_reducers', () => {
       ]);
     });
 
-    it('hiding annotations with some already hidden', () => {
+    it('hides annotations with some already hidden', () => {
       const state = createNpmiState({
         hiddenAnnotations: ['annotation_1', 'annotation_3'],
       });
@@ -402,7 +402,7 @@ describe('npmi_reducers', () => {
       ]);
     });
 
-    it('all annotations hidden => remove them', () => {
+    it('unhides a set of annotations if they are all hidden', () => {
       const state = createNpmiState({
         hiddenAnnotations: ['annotation_1', 'annotation_2', 'annotation_3'],
       });
@@ -417,7 +417,7 @@ describe('npmi_reducers', () => {
   });
 
   describe('Regex Filter Changes', () => {
-    it('annotation regex changes', () => {
+    it('changes the annotation regex', () => {
       const state = createNpmiState({annotationsRegex: 'test'});
       const nextState = reducers(
         state,
@@ -426,7 +426,7 @@ describe('npmi_reducers', () => {
       expect(nextState.annotationsRegex).toBe('new_regex');
     });
 
-    it('metrics regex changes', () => {
+    it('changes the metrics regex', () => {
       const state = createNpmiState({metricsRegex: 'test'});
       const nextState = reducers(
         state,
@@ -438,7 +438,7 @@ describe('npmi_reducers', () => {
 
   describe('Metric Filters', () => {
     describe('Adding Filters', () => {
-      it('adding new metric filter with none present', () => {
+      it('adds a new metric filter with none present', () => {
         const state = createNpmiState();
         const nextState = reducers(
           state,
@@ -456,7 +456,7 @@ describe('npmi_reducers', () => {
         ]);
       });
 
-      it('adding new metric filter after the first one', () => {
+      it('adds a new metric filter after the first one', () => {
         const state = createNpmiState({
           metricFilters: {
             'nPMI@test': {
@@ -490,7 +490,7 @@ describe('npmi_reducers', () => {
         ]);
       });
 
-      it('not adding new metric filter if already active', () => {
+      it('does not add a new metric filter if it is already active', () => {
         const state = createNpmiState({
           metricFilters: {
             'nPMI@test': {
@@ -519,7 +519,7 @@ describe('npmi_reducers', () => {
     });
 
     describe('Removing Filters', () => {
-      it('removing last remaining metric filter', () => {
+      it('removes the last remaining metric filter', () => {
         const state = createNpmiState({
           metricFilters: {
             'nPMI@test': {
@@ -538,7 +538,7 @@ describe('npmi_reducers', () => {
         expect(nextState.metricArithmetic).toEqual([]);
       });
 
-      it('removing the first metric filter of more', () => {
+      it('removes the first metric filter of more', () => {
         const state = createNpmiState({
           metricFilters: {
             'nPMI@test': {
@@ -588,7 +588,7 @@ describe('npmi_reducers', () => {
         ]);
       });
 
-      it('removing a metric filter in the middle', () => {
+      it('removes a metric filter in the middle', () => {
         const state = createNpmiState({
           metricFilters: {
             'nPMI@test': {
@@ -638,7 +638,7 @@ describe('npmi_reducers', () => {
         ]);
       });
 
-      it('not removing anything if not active', () => {
+      it('does not remove anything if the filter is not active', () => {
         const state = createNpmiState({
           metricFilters: {
             'nPMI@test': {
@@ -697,7 +697,7 @@ describe('npmi_reducers', () => {
     });
 
     describe('Change a Filter', () => {
-      it('change a metric filter', () => {
+      it('changes a metric filter', () => {
         const state = createNpmiState({
           metricFilters: {
             'nPMI@test': {
@@ -796,7 +796,7 @@ describe('npmi_reducers', () => {
   });
 
   describe('Annotation Sorting', () => {
-    it('change sorting', () => {
+    it('changes the sorting of annotations', () => {
       const state = createNpmiState();
       const nextState = reducers(
         state,
@@ -812,7 +812,7 @@ describe('npmi_reducers', () => {
   });
 
   describe('UI Preferences', () => {
-    it('hide PC', () => {
+    it('hides the parallel coordinates view', () => {
       const state = createNpmiState();
       const nextState = reducers(
         state,
@@ -821,7 +821,7 @@ describe('npmi_reducers', () => {
       expect(nextState.pcExpanded).toBeFalse();
     });
 
-    it('show hidden PC', () => {
+    it('shows the hidden parallel coordinates view', () => {
       const state = createNpmiState({pcExpanded: false});
       const nextState = reducers(
         state,
@@ -830,7 +830,7 @@ describe('npmi_reducers', () => {
       expect(nextState.pcExpanded).toBeTrue();
     });
 
-    it('hide annotations list', () => {
+    it('hides the annotations list', () => {
       const state = createNpmiState();
       const nextState = reducers(
         state,
@@ -839,7 +839,7 @@ describe('npmi_reducers', () => {
       expect(nextState.annotationsExpanded).toBeFalse();
     });
 
-    it('show hidden annotations list', () => {
+    it('shows the hidden annotations list', () => {
       const state = createNpmiState({annotationsExpanded: false});
       const nextState = reducers(
         state,
@@ -848,31 +848,31 @@ describe('npmi_reducers', () => {
       expect(nextState.annotationsExpanded).toBeTrue();
     });
 
-    it('hide sidebar', () => {
+    it('hides the sidebar', () => {
       const state = createNpmiState();
       const nextState = reducers(state, actions.npmiToggleSidebarExpanded());
       expect(nextState.sidebarExpanded).toBeFalse();
     });
 
-    it('show hidden sidebar', () => {
+    it('shows the hidden sidebar', () => {
       const state = createNpmiState({sidebarExpanded: false});
       const nextState = reducers(state, actions.npmiToggleSidebarExpanded());
       expect(nextState.sidebarExpanded).toBeTrue();
     });
 
-    it('hide counts', () => {
+    it('hides the count values', () => {
       const state = createNpmiState();
       const nextState = reducers(state, actions.npmiToggleShowCounts());
       expect(nextState.showCounts).toBeFalse();
     });
 
-    it('show counts', () => {
+    it('shows the hidden count values', () => {
       const state = createNpmiState({showCounts: false});
       const nextState = reducers(state, actions.npmiToggleShowCounts());
       expect(nextState.showCounts).toBeTrue();
     });
 
-    it('show hidden annotations', () => {
+    it('shows the hidden annotations', () => {
       const state = createNpmiState();
       const nextState = reducers(
         state,
@@ -881,7 +881,7 @@ describe('npmi_reducers', () => {
       expect(nextState.showHiddenAnnotations).toBeTrue();
     });
 
-    it('does not show hidden annotations', () => {
+    it('hides the display of hidden annotations', () => {
       const state = createNpmiState({showHiddenAnnotations: true});
       const nextState = reducers(
         state,
@@ -890,7 +890,7 @@ describe('npmi_reducers', () => {
       expect(nextState.showHiddenAnnotations).toBeFalse();
     });
 
-    it('change sidebar width', () => {
+    it('changes the sidebar width', () => {
       const state = createNpmiState();
       const nextState = reducers(
         state,
