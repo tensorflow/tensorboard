@@ -12,42 +12,24 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, ChangeDetectionStrategy} from '@angular/core';
-import {select, Store} from '@ngrx/store';
-
-import {map} from 'rxjs/operators';
-
+import {Component, ChangeDetectionStrategy, Input} from '@angular/core';
+import {Store} from '@ngrx/store';
 import {State} from '../../../../app_state';
-import {getRunSelection} from '../../../../core/store/core_selectors';
-import {
-  getSidebarExpanded,
-  getSidebarWidth,
-} from './../../store/npmi_selectors';
+
+import {getSidebarExpanded} from '../../store';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 @Component({
-  selector: 'npmi-main',
+  selector: 'npmi-violin-filters',
   template: `
-    <main-component
-      [runActive]="runActive$ | async"
+    <violin-filters-component
       [sidebarExpanded]="sidebarExpanded$ | async"
-      [sidebarWidth]="sidebarWidth$ | async"
-    ></main-component>
+    ></violin-filters-component>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class MainContainer {
-  readonly runActive$ = this.store.pipe(select(getRunSelection)).pipe(
-    map((runs) => {
-      if (!runs) {
-        return false;
-      }
-      return [...runs.values()].find((runActive) => runActive);
-    })
-  );
-  readonly sidebarExpanded$ = this.store.pipe(select(getSidebarExpanded));
-  readonly sidebarWidth$ = this.store.pipe(select(getSidebarWidth));
-
+export class ViolinFiltersContainer {
+  readonly sidebarExpanded$ = this.store.select(getSidebarExpanded);
   constructor(private readonly store: Store<State>) {}
 }

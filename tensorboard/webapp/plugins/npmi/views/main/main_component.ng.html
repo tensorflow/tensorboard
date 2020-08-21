@@ -15,16 +15,42 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <npmi-data-selection></npmi-data-selection>
-<div class="content">
-  <div class="selection-container">
+<div
+  class="content"
+  (mouseup)="resizeReleased()"
+  (mousemove)="resizeTriggered($event)"
+>
+  <div
+    *ngIf="sidebarExpanded"
+    class="sidebar-container"
+    [style.width.px]="sidebarWidth"
+  >
+    <npmi-violin-filters class="violin-filters"></npmi-violin-filters>
     <div class="run-selector">
       <tb-legacy-runs-selector></tb-legacy-runs-selector>
     </div>
   </div>
+  <div
+    *ngIf="sidebarExpanded"
+    class="grabber"
+    (mousedown)="resizeGrabbed($event)"
+  ></div>
   <div *ngIf="runActive === true; else noRun" class="analysis-container"></div>
   <ng-template #noRun>
     <div class="noRun">
       You need to select at least one run.
     </div>
   </ng-template>
+</div>
+
+<div *ngIf="!sidebarExpanded" class="side-toggle">
+  <button mat-icon-button (click)="toggleSidebarExpanded()">
+    <mat-icon
+      *ngIf="sidebarExpanded; else notExpanded"
+      svgIcon="chevron_left_24px"
+    ></mat-icon>
+    <ng-template #notExpanded>
+      <mat-icon svgIcon="chevron_right_24px"></mat-icon>
+    </ng-template>
+  </button>
 </div>

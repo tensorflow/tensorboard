@@ -20,55 +20,42 @@ limitations under the License.
   height: 100%;
 }
 
-.content {
+.filters {
+  overflow-y: auto;
+}
+
+.filters-toolbar {
   display: flex;
+  align-items: center;
+  border-bottom: 1px solid mat-color($tb-foreground, border);
+  min-height: 42px;
+  padding: 0 10px;
+}
+
+.filters-title {
+  font-size: 14px;
+  font-weight: 500;
   flex: 1;
-  min-height: 0px;
-  width: 100%;
 }
 
-.sidebar-container {
-  height: 100%;
+.filters-hint {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  height: 42px;
+  padding: 0 16px;
 }
 
-.analysis-container {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  flex: 1 1;
-}
-
-.run-selector {
-  padding: 10px;
-  width: calc(100% - 20px);
-}
-
-.violin-filters {
-  min-height: 0px;
-  width: 100%;
+.filters-hint-text {
+  color: lightgray;
 }
 
 .side-toggle {
   width: 30px;
   height: 30px;
-  position: absolute;
-  left: 10px;
-  bottom: 10px;
   background-color: white;
   border: 1px solid mat-color($tb-foreground, border);
   border-radius: 3px;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.grabber {
-  content: '';
-  cursor: ew-resize;
-  height: 100%;
-  width: 3px;
-  overflow: hidden;
-  background-color: grey;
 }

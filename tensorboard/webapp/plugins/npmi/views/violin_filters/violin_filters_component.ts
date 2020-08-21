@@ -14,43 +14,20 @@ limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {Store} from '@ngrx/store';
-
 import * as npmiActions from '../../actions';
-import {RunId} from '../../../../core/types';
 
 @Component({
-  selector: 'main-component',
-  templateUrl: './main_component.ng.html',
-  styleUrls: ['./main_component.css'],
+  selector: 'violin-filters-component',
+  templateUrl: './violin_filters_component.ng.html',
+  styleUrls: ['./violin_filters_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class MainComponent {
-  @Input() runActive!: boolean;
+export class ViolinFiltersComponent {
   @Input() sidebarExpanded!: boolean;
-  @Input() sidebarWidth!: number;
-  resizing = false;
 
   constructor(private store: Store<any>) {}
 
   toggleSidebarExpanded() {
     this.store.dispatch(npmiActions.npmiToggleSidebarExpanded());
-  }
-
-  resizeTriggered(event: MouseEvent) {
-    if (this.resizing) {
-      this.store.dispatch(
-        npmiActions.npmiChangeSidebarWidth({
-          sidebarWidth: event.clientX,
-        })
-      );
-    }
-  }
-
-  resizeGrabbed(event: MouseEvent) {
-    this.resizing = true;
-  }
-
-  resizeReleased() {
-    this.resizing = false;
   }
 }
