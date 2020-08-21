@@ -59,7 +59,7 @@
     "karma-sourcemap-loader": "^0.3.7",
     "prettier": "1.18.2",
     "requirejs": "^2.3.6",
-    "rollup": "^2.7.1",
+    "rollup": "^2.26.4",
     "sinon": "^7.4.1",
     "terser": "^4.6.3",
     "tslib": "^1.10.0",
