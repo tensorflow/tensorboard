@@ -10,6 +10,7 @@ ng_module(
         "npmi_data_source_module.ts",
     ],
     deps = [
+        "//tensorboard/webapp/angular:expect_angular_common_http",
         "//tensorboard/webapp/plugins/npmi/store:types",
         "//tensorboard/webapp/plugins/npmi/util:metric_type",
         "//tensorboard/webapp/webapp_data_source:http_client",
@@ -27,6 +28,7 @@ tf_ts_library(
     ],
     deps = [
         ":data_source",
+        "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/webapp_data_source:http_client",
         "//tensorboard/webapp/webapp_data_source:http_client_testing",
         "@npm//@angular/common",
