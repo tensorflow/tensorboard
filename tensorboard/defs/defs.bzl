@@ -34,13 +34,9 @@ def tf_js_binary(compile, deps, **kwargs):
     rollup_bundle(
         config_file = "//tensorboard/defs:rollup_config.js",
         # Must pass `true` here specifically, else the input file argument to
-        # Rollup (added by `rollup_binary`) is interpreted as an option-value
-        # for `--failAfterWarnings`.
-<<<<<<< HEAD
+        # Rollup (appended by `rollup_binary`) is interpreted as a value for
+        # the preceding option.
         args = ["--failAfterWarnings", "true", "--silent", "true"],
-=======
-        args = ["--failAfterWarnings", "true"],
->>>>>>> 89fc8d0beafec8879adca8878b5dedbda14234a8
         deps = deps + [
             "@npm//@rollup/plugin-commonjs",
             "@npm//@rollup/plugin-node-resolve",
