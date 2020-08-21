@@ -1,0 +1,81 @@
+<!--
+@license
+Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<link rel="import" href="../tf-imports/polymer.html" />
+<link rel="import" href="../tf-card-heading/tf-card-heading.html" />
+<link rel="import" href="../tf-color-scale/tf-color-scale.html" />
+<link rel="import" href="../tf-imports/tf_graphics_lib.html" />
+<link rel="import" href="../tf-imports/threejs.html" />
+
+<!--
+  Mesh component loads 3D data (point clouds, meshes, etc.) and renders it.
+-->
+<dom-module id="tf-mesh-loader">
+  <template>
+    <tf-card-heading color="[[_runColor]]" class="tf-mesh-loader-header">
+      <template is="dom-if" if="[[_hasMultipleSamples(ofSamples)]]">
+        <div>sample: [[_getSampleText(sample)]] of [[ofSamples]]</div>
+      </template>
+      <template is="dom-if" if="[[_hasAtLeastOneStep(_steps)]]">
+        <div class="heading-row">
+          <div class="heading-label">
+            step
+            <span style="font-weight: bold"
+              >[[toLocaleString_(_stepValue)]]</span
+            >
+          </div>
+          <div class="heading-label heading-right">
+            <template is="dom-if" if="[[_currentWallTime]]">
+              [[_currentWallTime]]
+            </template>
+          </div>
+          <div class="label right">
+            <paper-spinner-lite active hidden$="[[!_isMeshLoading]]">
+            </paper-spinner-lite>
+          </div>
+        </div>
+      </template>
+      <template is="dom-if" if="[[_hasMultipleSteps(_steps)]]">
+        <div>
+          <paper-slider
+            id="steps"
+            immediate-value="{{_stepIndex}}"
+            max="[[_getMaxStepIndex(_steps)]]"
+            max-markers="[[_getMaxStepIndex(_steps)]]"
+            snaps
+            step="1"
+            value="{{_stepIndex}}"
+          ></paper-slider>
+        </div>
+      </template>
+    </tf-card-heading>
+    <style>
+      paper-slider {
+        width: 100%;
+        margin-left: 1px;
+        margin-right: 1px;
+      }
+      .tf-mesh-loader-header {
+        display: block;
+        height: 105px;
+      }
+      [hidden] {
+        display: none;
+      }
+    </style>
+  </template>
+  <script src="mesh-loader.js"></script>
+</dom-module>
