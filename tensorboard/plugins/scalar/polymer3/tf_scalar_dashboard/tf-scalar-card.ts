@@ -47,9 +47,9 @@ export class TfScalarCard extends PolymerElement {
       <tf-line-chart-data-loader
         active="[[active]]"
         color-scale="[[_getColorScale(colorScale)]]"
-        data-series="[[_getDataSeries(dataToLoad.*)]]"
-        data-to-load="[[dataToLoad]]"
-        get-data-load-name="[[_getDataLoadName]]"
+        data-series="[[_getDataSeries(keysToLoad.*)]]"
+        keys-to-load="[[keysToLoad]]"
+        get-data-load-name="[[_getCacheKey]]"
         get-data-load-url="[[getDataLoadUrl]]"
         request-data="[[requestData]]"
         ignore-y-outliers="[[ignoreYOutliers]]"
@@ -104,7 +104,7 @@ export class TfScalarCard extends PolymerElement {
       <template is="dom-if" if="[[showDownloadLinks]]">
         <div class="download-links">
           <tf-downloader
-            runs="[[_runsFromData(dataToLoad)]]"
+            runs="[[_runsFromData(keysToLoad)]]"
             tag="[[tag]]"
             url-fn="[[_downloadUrlFn]]"
           ></tf-downloader>
@@ -189,7 +189,7 @@ export class TfScalarCard extends PolymerElement {
   tag: string;
 
   @property({type: Array})
-  dataToLoad: object[];
+  keysToLoad: object[];
 
   @property({type: String})
   xType: string;
@@ -225,9 +225,9 @@ export class TfScalarCard extends PolymerElement {
 
   // This function is called when data is received from the backend.
   @property({type: Object})
-  _loadDataCallback: object = (scalarChart, item, maybeData) => {
+  _loadDataCallback: object = (scalarChart, key, maybeData) => {
     if (maybeData == null) {
-      console.error('Failed to load data for:', item);
+      console.error('Failed to load data for:', key);
       return;
     }
     const formattedData = maybeData.map((datum) => ({
@@ -235,8 +235,8 @@ export class TfScalarCard extends PolymerElement {
       step: datum[1],
       scalar: datum[2],
     }));
-    const name = this._getSeriesNameFromDatum(item);
-    scalarChart.setSeriesMetadata(name, item);
+    const name = this._getSeriesNameFromDatum(key);
+    scalarChart.setSeriesMetadata(name, key);
     scalarChart.setSeriesData(name, formattedData);
   };
 
@@ -302,11 +302,11 @@ export class TfScalarCard extends PolymerElement {
       requestGroups.map(({tag, runs}) => {
         return this.requestManager.request(url, {tag, runs}).then((allData) => {
           for (const run of runs) {
-            const item = {tag, run};
+            const key = {tag, run};
             if (Object.prototype.hasOwnProperty.call(allData, run)) {
-              onLoad({item, data: allData[run]});
+              onLoad({key, value: allData[run]});
             } else {
-              onLoad({item, data: null});
+              onLoad({key, value: null});
             }
           }
         });
@@ -315,7 +315,7 @@ export class TfScalarCard extends PolymerElement {
   };
 
   @property({type: Object})
-  _getDataLoadName: object = (datum) => this._getSeriesNameFromDatum(datum);
+  _getCacheKey: object = (datum) => this._getSeriesNameFromDatum(datum);
 
   @property({
     type: Boolean,
@@ -387,7 +387,7 @@ export class TfScalarCard extends PolymerElement {
   }
 
   _getDataSeries() {
-    return this.dataToLoad.map((d) => this._getSeriesNameFromDatum(d as any));
+    return this.keysToLoad.map((d) => this._getSeriesNameFromDatum(d as any));
   }
 
   // name is a stable identifier for a series.

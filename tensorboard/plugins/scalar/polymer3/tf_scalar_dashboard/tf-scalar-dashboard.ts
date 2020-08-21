@@ -155,7 +155,7 @@ class TfScalarDashboard extends LegacyElementMixin(ArrayUpdateHelper) {
               <template>
                 <tf-scalar-card
                   active="[[active]]"
-                  data-to-load="[[item.series]]"
+                  keys-to-load="[[item.series]]"
                   ignore-y-outliers="[[_ignoreYOutliers]]"
                   multi-experiments="[[_getMultiExperiments(dataSelection)]]"
                   request-manager="[[_requestManager]]"

@@ -26,36 +26,35 @@ export enum LoadState {
   LOADED,
 }
 
-export interface DataLoaderBehaviorInterface<Item, Data>
-  extends PolymerElement {
+export interface DataLoaderBehaviorInterface<K, V> extends PolymerElement {
   active: boolean;
   reset(): void;
   reload(): void;
-  dataToLoad: Item[];
+  keysToLoad: K[];
 }
 
-// A function that takes a list of items and asynchronously fetches the
-// data for those items. As each item loads, it should invoke the
-// `onLoad` callback with an `{item, data}` pair to update the cache.
-// After all items have finished loading, it should invoke the
+// A function that takes a list of keys and asynchronously fetches the
+// corresponding values. As each item loads, it should invoke the
+// `onLoad` callback with a `{key, value}` pair to update the cache.
+// After all data has finished loading, it should invoke the
 // `onFinish` callback. Conceptually, that this function accepts
 // `onLoad` and `onFinish` as arguments is as if it returned an
-// Observable-style stream of `{item, data}`-pairs, CPS-transformed.
+// Observable-style stream of `{key, value}`-pairs, CPS-transformed.
 //
 // Used in `DataLoaderBehavior.requestData`.
-export interface RequestDataCallback<Item, Data> {
+export interface RequestDataCallback<K, V> {
   (
-    items: Item[],
-    onLoad: (kv: {item: Item; data: Data}) => void,
+    keys: K[],
+    onLoad: (kv: {key: K; value: V}) => void,
     onFinish: () => void
   ): void;
 }
 
-export function DataLoaderBehavior<Item, Data>(
+export function DataLoaderBehavior<K, V>(
   superClass: new () => PolymerElement
-): new () => DataLoaderBehaviorInterface<Item, Data> {
-  return class DataLoaderBehaviorImpl<Item, Data> extends superClass
-    implements DataLoaderBehaviorInterface<Item, Data> {
+): new () => DataLoaderBehaviorInterface<K, V> {
+  return class DataLoaderBehaviorImpl<K, V> extends superClass
+    implements DataLoaderBehaviorInterface<K, V> {
     active!: boolean;
 
     /**
@@ -64,30 +63,28 @@ export function DataLoaderBehavior<Item, Data>(
      */
     loadKey = '';
 
-    // List of items to be loaded. By default, items are passed to
-    // `requestData` to fetch data. When the request resolves, invokes
-    // `loadDataCallback` with the datum and its response.
-    dataToLoad: Item[] = [];
+    // List of keys to be loaded. Keys are passed to `requestData` to
+    // fetch data. When the data is loaded, `loadDataCallback` is
+    // invoked with the key-value pairs.
+    keysToLoad: K[] = [];
 
     /**
-     * A function that takes an item as an input and returns a unique
+     * A function that takes a key as an input and returns a unique
      * identifiable string. Used for caching purposes.
      */
-    getDataLoadName = (item: Item): CacheKey => String(item);
+    getCacheKey = (key: K): CacheKey => String(key);
 
     /**
      * A function that takes as inputs:
      * 1. Implementing component of data-loader-behavior.
-     * 2. datum of the request.
-     * 3. The response received from the data URL.
-     * This function will be called when a response from a request to that
-     * data URL is successfully received.
+     * 2. A key that was requested.
+     * 3. The corresponding value that was loaded.
      */
-    loadDataCallback!: (component: this, item: Item, data: Data) => void;
+    loadDataCallback!: (component: this, key: K, value: V) => void;
 
     // Function that actually loads data from the network. See docs on
     // `RequestDataCallback` for details.
-    requestData: RequestDataCallback<Item, Data>;
+    requestData: RequestDataCallback<K, V>;
 
     dataLoading = false;
 
@@ -113,15 +110,15 @@ export function DataLoaderBehavior<Item, Data>(
         },
         _isConnected: {type: Boolean},
         loadKey: {type: String},
-        dataToLoad: {type: Array},
-        getDataLoadName: {type: Object},
+        keysToLoad: {type: Array},
+        getCacheKey: {type: Object},
         loadDataCallback: {type: Object},
         requestData: {type: Object},
       };
     }
 
     static get observers() {
-      return ['_dataToLoadChanged(_isConnected, dataToLoad.*)'];
+      return ['_keysToLoadChanged(_isConnected, keysToLoad.*)'];
     }
 
     /*
@@ -162,7 +159,7 @@ export function DataLoaderBehavior<Item, Data>(
       if (this._isConnected) this._loadData();
     }
 
-    _dataToLoadChanged() {
+    _keysToLoadChanged() {
       if (this._isConnected) this._loadData();
     }
 
@@ -193,23 +190,23 @@ export function DataLoaderBehavior<Item, Data>(
             return;
           }
           this.dataLoading = true;
-          const dirtyItems = this.dataToLoad.filter((datum) => {
-            const cacheKey = this.getDataLoadName(datum);
+          const dirtyKeys = this.keysToLoad.filter((datum) => {
+            const cacheKey = this.getCacheKey(datum);
             return !this._dataLoadState.has(cacheKey);
           });
-          for (const item of dirtyItems) {
-            const cacheKey = this.getDataLoadName(item);
+          for (const key of dirtyKeys) {
+            const cacheKey = this.getCacheKey(key);
             this._dataLoadState.set(cacheKey, LoadState.LOADING);
           }
           const onLoad = this._canceller.cancellable(
-            (result: CancelResult<{item: Item; data: Data}>) => {
+            (result: CancelResult<{key: K; value: V}>) => {
               if (result.cancelled) {
                 return;
               }
-              const {item, data} = result.value;
-              const cacheKey = this.getDataLoadName(item);
+              const {key, value} = result.value;
+              const cacheKey = this.getCacheKey(key);
               this._dataLoadState.set(cacheKey, LoadState.LOADED);
-              this.loadDataCallback(this, item, data);
+              this.loadDataCallback(this, key, value);
             }
           );
           const onFinish = this._canceller.cancellable(
@@ -218,10 +215,10 @@ export function DataLoaderBehavior<Item, Data>(
               if (!result.cancelled) {
                 const keysFetched = result.value as any;
                 const fetched = new Set(
-                  dirtyItems.map((item) => this.getDataLoadName(item))
+                  dirtyKeys.map((k) => this.getCacheKey(k))
                 );
-                const shouldNotify = this.dataToLoad.some((datum) =>
-                  fetched.has(this.getDataLoadName(datum))
+                const shouldNotify = this.keysToLoad.some((k) =>
+                  fetched.has(this.getCacheKey(k))
                 );
                 if (shouldNotify) {
                   this.onLoadFinish();
@@ -236,7 +233,7 @@ export function DataLoaderBehavior<Item, Data>(
               }
             }
           );
-          this.requestData(dirtyItems, onLoad, () => onFinish(undefined));
+          this.requestData(dirtyKeys, onLoad, () => onFinish(undefined));
         })
       );
     }

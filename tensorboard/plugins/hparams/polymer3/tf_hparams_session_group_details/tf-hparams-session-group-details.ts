@@ -29,7 +29,7 @@ import '../../../scalar/polymer3/tf_scalar_dashboard/tf-scalar-card';
 // TODO: add dependency once the Polymer 3 scalar dashboard is migrated.
 // import '../tf_scalar_dashboard/tf-scalar-card';
 
-type RunTagItem = {
+type RunTagKey = {
   run: string;
   tag: string;
 };
@@ -76,7 +76,7 @@ class TfHparamsSessionGroupDetails extends mixinBehaviors(
           <tf-scalar-card
             class="scalar-card"
             color-scale="[[_colorScale]]"
-            data-to-load="[[_computeSeriesForSessionGroupMetric(sessionGroup, metricInfo)]]"
+            keys-to-load="[[_computeSeriesForSessionGroupMetric(sessionGroup, metricInfo)]]"
             tag="[[metricInfo.name.tag]]"
             tag-metadata="[[_computeTagMetadata(metricInfo)]]"
             x-type="[[_xType]]"
@@ -132,19 +132,19 @@ class TfHparamsSessionGroupDetails extends mixinBehaviors(
     type: Object,
   })
   _requestData: RequestDataCallback<
-    RunTagItem,
+    RunTagKey,
     vz_chart_helpers.ScalarDatum[]
-  > = (items, onLoad, onFinish) => {
+  > = (keys, onLoad, onFinish) => {
     Promise.all(
-      items.map((item) => {
+      keys.map((key) => {
         const request = {
           experimentName: this.experimentName,
-          sessionName: item.run,
-          metricName: item.tag,
+          sessionName: key.run,
+          metricName: key.tag,
         };
         return this.backend
           .listMetricEvals(request)
-          .then((data) => void onLoad({item, data}));
+          .then((value) => void onLoad({key, value}));
       })
     ).finally(() => void onFinish());
   };

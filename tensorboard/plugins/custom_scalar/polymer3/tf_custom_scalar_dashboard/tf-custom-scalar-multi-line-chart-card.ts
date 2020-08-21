@@ -44,7 +44,7 @@ export interface TfCustomScalarMultiLineChartCard extends HTMLElement {
   reload(): void;
 }
 
-type RunItem = string;
+type RunKey = string;
 type CustomScalarsDatum = {
   regex_valid: boolean;
   tag_to_events: Record<string, ScalarDatum[]>;
@@ -64,7 +64,7 @@ class _TfCustomScalarMultiLineChartCard
         data-series="[[_seriesNames]]"
         ignore-y-outliers="[[ignoreYOutliers]]"
         load-key="[[_tagFilter]]"
-        data-to-load="[[runs]]"
+        keys-to-load="[[runs]]"
         request-data="[[_requestData]]"
         log-scale-active="[[_logScaleActive]]"
         load-data-callback="[[_createProcessDataFunction()]]"
@@ -245,21 +245,21 @@ class _TfCustomScalarMultiLineChartCard
   _logScaleActive: boolean;
 
   @property({type: Object})
-  _requestData: RequestDataCallback<RunItem, CustomScalarsDatum> = (
-    items,
+  _requestData: RequestDataCallback<RunKey, CustomScalarsDatum> = (
+    keys,
     onLoad,
     onFinish
   ) => {
     const router = getRouter();
     const baseUrl = router.pluginRoute('custom_scalars', '/scalars');
     Promise.all(
-      items.map((item) => {
-        const run = item;
+      keys.map((key) => {
+        const run = key;
         const tag = this._tagFilter;
         const url = addParams(baseUrl, {tag, run});
         return this.requestManager
           .request(url)
-          .then((data) => void onLoad({item, data}));
+          .then((value) => void onLoad({key, value}));
       })
     ).finally(() => void onFinish());
   };

@@ -208,7 +208,7 @@ class _TfLineChartDataLoader<ScalarMetadata>
 
   onLoadFinish() {
     this.commitChanges();
-    if (this.dataToLoad.length > 0 && this._resetDomainOnNextLoad) {
+    if (this.keysToLoad.length > 0 && this._resetDomainOnNextLoad) {
       // (Don't unset _resetDomainOnNextLoad when we didn't
       // load any runs: this has the effect that if all our
       // runs are deselected, then we toggle them all on, we

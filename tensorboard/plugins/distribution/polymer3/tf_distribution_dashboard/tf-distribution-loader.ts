@@ -120,21 +120,22 @@ class _TfDistributionLoader
   xType: string;
 
   @property({type: Object})
-  getDataLoadName = ({run}) => run;
+  getCacheKey = ({run}) => run;
 
   requestData: RequestDataCallback<RunTagItem, unknown> = (
-    items,
+    keys,
     onLoad,
     onFinish
   ) => {
     const router = getRouter();
     const baseUrl = router.pluginRoute('distributions', '/distributions');
     Promise.all(
-      items.map((item) => {
-        const url = addParams(baseUrl, {tag: item.tag, run: item.run});
+      keys.map((key) => {
+        const {tag, run} = key;
+        const url = addParams(baseUrl, {tag, run});
         return this.requestManager
           .request(url)
-          .then((data) => void onLoad({item, data}));
+          .then((value) => void onLoad({key, value}));
       })
     ).finally(() => void onFinish());
   };
@@ -149,7 +150,7 @@ class _TfDistributionLoader
       bins.step = step;
       return bins;
     });
-    const name = this.getDataLoadName(datum);
+    const name = this.getCacheKey(datum);
     (this.$.chart as VzDistributionChart).setSeriesData(name, data);
     (this.$.chart as VzDistributionChart).setVisibleSeries([name]);
   };
@@ -178,7 +179,7 @@ class _TfDistributionLoader
   _updateDataToLoad(): void {
     var run = this.run;
     var tag = this.tag;
-    this.dataToLoad = [{run, tag}];
+    this.keysToLoad = [{run, tag}];
   }
 
   @computed('run')

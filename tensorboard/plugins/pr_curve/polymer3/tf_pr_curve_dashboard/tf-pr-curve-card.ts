@@ -30,7 +30,7 @@ import * as vz_chart_helpers from '../../../../components_polymer3/vz_chart_help
 import * as _ from 'lodash';
 import * as Plottable from 'plottable';
 
-type RunItem = string;
+type RunKey = string;
 
 interface PrCurveDatum {
   wall_time: number;
@@ -57,7 +57,7 @@ export class TfPrCurveCard extends PolymerElement {
       default-y-range="[[_defaultYRange]]"
       smoothing-enabled="[[_smoothingEnabled]]"
       request-manager="[[requestManager]]"
-      data-to-load="[[runs]]"
+      keys-to-load="[[runs]]"
       data-series="[[runs]]"
       load-key="[[tag]]"
       request-data="[[_requestData]]"
@@ -274,21 +274,21 @@ export class TfPrCurveCard extends PolymerElement {
   _defaultYRange: number[] = [-0.05, 1.05];
 
   @property({type: Object})
-  _requestData: RequestDataCallback<RunItem, PrCurveDatum[]> = (
-    items,
+  _requestData: RequestDataCallback<RunKey, PrCurveDatum[]> = (
+    keys,
     onLoad,
     onFinish
   ) => {
     const router = getRouter();
     const baseUrl = router.pluginRoute('pr_curves', '/pr_curves');
     Promise.all(
-      items.map((item) => {
-        const run = item;
+      keys.map((key) => {
+        const run = key;
         const tag = this.tag;
         const url = addParams(baseUrl, {tag, run});
         return this.requestManager
           .request(url)
-          .then((data) => void onLoad({item, data}));
+          .then((value) => void onLoad({key, value}));
       })
     ).finally(() => void onFinish());
   };

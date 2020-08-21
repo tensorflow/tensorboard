@@ -122,24 +122,25 @@ class _TfHistogramLoader
   tag: string;
 
   @property({type: Object})
-  getDataLoadName = ({run}: {run: string; tag: string}): string => run;
+  getCacheKey = ({run}: {run: string; tag: string}): string => run;
 
   @property({type: Object})
   requestManager: RequestManager;
 
   requestData: RequestDataCallback<RunTagItem, VzHistogram[]> = (
-    items,
+    keys,
     onLoad,
     onFinish
   ) => {
     const router = getRouter();
     const baseUrl = router.pluginRoute('histograms', '/histograms');
     Promise.all(
-      items.map((item) => {
-        const url = addParams(baseUrl, {tag: item.tag, run: item.run});
+      keys.map((key) => {
+        const {tag, run} = key;
+        const url = addParams(baseUrl, {tag, run});
         return this.requestManager
           .request(url)
-          .then((data) => void onLoad({item, data}));
+          .then((value) => void onLoad({key, value}));
       })
     ).finally(() => void onFinish());
   };
@@ -147,7 +148,7 @@ class _TfHistogramLoader
   @property({type: Object})
   loadDataCallback = (_, datum, data) => {
     const d3Data = backendToVz(data);
-    const name = this.getDataLoadName(datum);
+    const name = this.getCacheKey(datum);
     (this.$.chart as VzHistogramTimeseries).setSeriesData(name, d3Data);
   };
 
@@ -175,7 +176,7 @@ class _TfHistogramLoader
   _updateDataToLoad() {
     var run = this.run;
     var tag = this.tag;
-    this.dataToLoad = [{run, tag}];
+    this.keysToLoad = [{run, tag}];
   }
 
   @computed('run')
