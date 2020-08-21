@@ -15,7 +15,14 @@ limitations under the License.
 import {Action, createReducer, on} from '@ngrx/store';
 
 import * as actions from '../actions';
-import {NpmiState, DataLoadState, MetricListing} from './npmi_types';
+import {
+  NpmiState,
+  DataLoadState,
+  MetricListing,
+  SortingOrder,
+  ArithmeticElement,
+  Operator,
+} from './npmi_types';
 import * as metricType from '../util/metric_type';
 
 // HACK: These imports are for type inference.
@@ -29,6 +36,23 @@ const initialState: NpmiState = {
   },
   annotationData: {},
   runToMetrics: {},
+  selectedAnnotations: [],
+  flaggedAnnotations: [],
+  hiddenAnnotations: [],
+  annotationsRegex: '',
+  metricsRegex: '',
+  metricArithmetic: [],
+  metricFilters: {},
+  sorting: {
+    metric: '',
+    order: SortingOrder.DOWN,
+  },
+  pcExpanded: true,
+  annotationsExpanded: true,
+  sidebarExpanded: true,
+  showCounts: true,
+  showHiddenAnnotations: false,
+  sidebarWidth: 300,
 };
 
 const reducer = createReducer(
@@ -78,6 +102,245 @@ const reducer = createReducer(
           state: DataLoadState.LOADED,
           lastLoadedTimeInMs: Date.now(),
         },
+      };
+    }
+  ),
+  on(
+    actions.npmiAddSelectedAnnotations,
+    (state: NpmiState, {annotations}): NpmiState => {
+      return {
+        ...state,
+        selectedAnnotations: [
+          ...new Set([...state.selectedAnnotations, ...annotations]),
+        ],
+      };
+    }
+  ),
+  on(
+    actions.npmiRemoveSelectedAnnotation,
+    (state: NpmiState, {annotation}): NpmiState => {
+      const annotationSet = new Set([...state.selectedAnnotations]);
+      annotationSet.delete(annotation);
+      return {
+        ...state,
+        selectedAnnotations: [...annotationSet],
+      };
+    }
+  ),
+  on(
+    actions.npmiSetSelectedAnnotations,
+    (state: NpmiState, {annotations}): NpmiState => {
+      return {
+        ...state,
+        selectedAnnotations: annotations,
+      };
+    }
+  ),
+  on(
+    actions.npmiClearSelectedAnnotations,
+    (state: NpmiState): NpmiState => {
+      return {
+        ...state,
+        selectedAnnotations: [],
+      };
+    }
+  ),
+  on(
+    actions.npmiToggleAnnotationFlags,
+    (state: NpmiState, {annotations}): NpmiState => {
+      const combinedFlaggedAnnotations = new Set([
+        ...state.flaggedAnnotations,
+        ...annotations,
+      ]);
+      if (combinedFlaggedAnnotations.size === state.flaggedAnnotations.length) {
+        // If all annotations are already flagged, user wants to remove them
+        for (const annotation of annotations) {
+          combinedFlaggedAnnotations.delete(annotation);
+        }
+      }
+      return {
+        ...state,
+        flaggedAnnotations: [...combinedFlaggedAnnotations],
+      };
+    }
+  ),
+  on(
+    actions.npmiToggleAnnotationsHidden,
+    (state: NpmiState, {annotations}): NpmiState => {
+      const combinedHiddenAnnotations = new Set([
+        ...state.hiddenAnnotations,
+        ...annotations,
+      ]);
+      if (combinedHiddenAnnotations.size === state.hiddenAnnotations.length) {
+        // If all annotations are already flagged, user wants to remove them
+        for (const annotation of annotations) {
+          combinedHiddenAnnotations.delete(annotation);
+        }
+      }
+      return {
+        ...state,
+        hiddenAnnotations: [...combinedHiddenAnnotations],
+      };
+    }
+  ),
+  on(
+    actions.npmiAnnotationsRegexChanged,
+    (state: NpmiState, {regex}): NpmiState => {
+      return {
+        ...state,
+        annotationsRegex: regex,
+      };
+    }
+  ),
+  on(
+    actions.npmiMetricsRegexChanged,
+    (state: NpmiState, {regex}): NpmiState => {
+      return {
+        ...state,
+        metricsRegex: regex,
+      };
+    }
+  ),
+  on(
+    actions.npmiAddMetricFilter,
+    (state: NpmiState, {metric}): NpmiState => {
+      // Only add if not already in active filters
+      if (state.metricFilters[metric]) {
+        return state;
+      }
+      // Add so that arithmetic is still correct
+      const newContent: ArithmeticElement[] = [];
+      if (state.metricArithmetic.length !== 0) {
+        newContent.push({kind: 'operator', operator: Operator.AND});
+      }
+      newContent.push({kind: 'metric', metric: metric});
+      return {
+        ...state,
+        metricArithmetic: [...state.metricArithmetic, ...newContent],
+        metricFilters: {
+          ...state.metricFilters,
+          [metric]: {
+            max: 1.0,
+            min: -1.0,
+            includeNaN: false,
+          },
+        },
+      };
+    }
+  ),
+  on(
+    actions.npmiRemoveMetricFilter,
+    (state: NpmiState, {metric}): NpmiState => {
+      if (!state.metricFilters[metric]) {
+        return state;
+      }
+      // Remove the correct elements of the arithmetic as well
+      let arithmeticIndex = 0;
+      let startSlice = 0;
+      let endSlice = 2;
+      const {[metric]: value, ...map} = state.metricFilters;
+      for (const index in state.metricArithmetic) {
+        const element = state.metricArithmetic[index];
+        if (element.kind === 'metric') {
+          if (element.metric === metric) {
+            arithmeticIndex = parseInt(index);
+          }
+        }
+      }
+      if (arithmeticIndex !== 0) {
+        startSlice = arithmeticIndex - 1;
+        endSlice = arithmeticIndex + 1;
+      }
+      return {
+        ...state,
+        metricArithmetic: [
+          ...state.metricArithmetic.slice(0, startSlice),
+          ...state.metricArithmetic.slice(endSlice),
+        ],
+        metricFilters: map,
+      };
+    }
+  ),
+  on(
+    actions.npmiChangeMetricFilter,
+    (state: NpmiState, {metric, max, min, includeNaN}): NpmiState => {
+      if (!state.metricFilters[metric]) {
+        return state;
+      }
+      return {
+        ...state,
+        metricFilters: {
+          ...state.metricFilters,
+          [metric]: {
+            max: max,
+            min: min,
+            includeNaN: includeNaN,
+          },
+        },
+      };
+    }
+  ),
+  on(
+    actions.npmiChangeAnnotationSorting,
+    (state: NpmiState, {sorting}): NpmiState => {
+      return {
+        ...state,
+        sorting,
+      };
+    }
+  ),
+  on(
+    actions.npmiToggleParallelCoordinatesExpanded,
+    (state: NpmiState): NpmiState => {
+      return {
+        ...state,
+        pcExpanded: !state.pcExpanded,
+      };
+    }
+  ),
+  on(
+    actions.npmiToggleAnnotationsExpanded,
+    (state: NpmiState): NpmiState => {
+      return {
+        ...state,
+        annotationsExpanded: !state.annotationsExpanded,
+      };
+    }
+  ),
+  on(
+    actions.npmiToggleSidebarExpanded,
+    (state: NpmiState): NpmiState => {
+      return {
+        ...state,
+        sidebarExpanded: !state.sidebarExpanded,
+      };
+    }
+  ),
+
+  on(
+    actions.npmiToggleShowCounts,
+    (state: NpmiState): NpmiState => {
+      return {
+        ...state,
+        showCounts: !state.showCounts,
+      };
+    }
+  ),
+  on(
+    actions.npmiToggleShowHiddenAnnotations,
+    (state: NpmiState): NpmiState => {
+      return {
+        ...state,
+        showHiddenAnnotations: !state.showHiddenAnnotations,
+      };
+    }
+  ),
+  on(
+    actions.npmiChangeSidebarWidth,
+    (state: NpmiState, {sidebarWidth}): NpmiState => {
+      return {
+        ...state,
+        sidebarWidth,
       };
     }
   )

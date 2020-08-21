@@ -13,7 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {createAction, props} from '@ngrx/store';
-import {AnnotationDataListing, MetricListing} from '../store/npmi_types';
+import {
+  AnnotationDataListing,
+  MetricListing,
+  AnnotationSorting,
+} from '../store/npmi_types';
 
 // HACK: Below import is for type inference.
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
@@ -40,4 +44,86 @@ export const npmiPluginDataLoaded = createAction(
 
 export const npmiPluginDataRequestFailed = createAction(
   '[NPMI] nPMI Plugin Data Request Failed'
+);
+
+export const npmiAddSelectedAnnotations = createAction(
+  '[NPMI] Adding Annotations to Selected',
+  props<{annotations: string[]}>()
+);
+
+export const npmiRemoveSelectedAnnotation = createAction(
+  '[NPMI] Annotation Removed from Selected',
+  props<{annotation: string}>()
+);
+
+export const npmiSetSelectedAnnotations = createAction(
+  '[NPMI] Annotations Set',
+  props<{annotations: string[]}>()
+);
+
+export const npmiClearSelectedAnnotations = createAction(
+  '[NPMI] Clearing the Annotation Selection'
+);
+
+export const npmiToggleAnnotationFlags = createAction(
+  '[NPMI] Adding/Removing Annotations to/from Flagged',
+  props<{annotations: string[]}>()
+);
+
+export const npmiToggleAnnotationsHidden = createAction(
+  '[NPMI] Adding/Removing Annotations to/from Hidden',
+  props<{annotations: string[]}>()
+);
+
+export const npmiAnnotationsRegexChanged = createAction(
+  '[NPMI] Annotations Regex Changed',
+  props<{regex: string}>()
+);
+
+export const npmiMetricsRegexChanged = createAction(
+  '[NPMI] Metrics Regex Changed',
+  props<{regex: string}>()
+);
+
+export const npmiAddMetricFilter = createAction(
+  '[NPMI] Metric Filter Added',
+  props<{metric: string}>()
+);
+
+export const npmiRemoveMetricFilter = createAction(
+  '[NPMI] Metric Filter Removed',
+  props<{metric: string}>()
+);
+
+export const npmiChangeMetricFilter = createAction(
+  '[NPMI] Metric Filter Changed',
+  props<{metric: string; max: number; min: number; includeNaN: boolean}>()
+);
+
+export const npmiChangeAnnotationSorting = createAction(
+  '[NPMI] Change Annotation Sorting',
+  props<{sorting: AnnotationSorting}>()
+);
+
+export const npmiToggleParallelCoordinatesExpanded = createAction(
+  '[NPMI] Toggle PC Expanded'
+);
+
+export const npmiToggleAnnotationsExpanded = createAction(
+  '[NPMI] Toggle Annotations Expanded'
+);
+
+export const npmiToggleSidebarExpanded = createAction(
+  '[NPMI] Toggle Sidebar Expanded'
+);
+
+export const npmiToggleShowCounts = createAction('[NPMI] Toggle Show Counts');
+
+export const npmiToggleShowHiddenAnnotations = createAction(
+  '[NPMI] Toggle Show Hidden Annotations'
+);
+
+export const npmiChangeSidebarWidth = createAction(
+  '[NPMI] Change Sidebar Width',
+  props<{sidebarWidth: number}>()
 );
