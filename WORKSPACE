@@ -14,6 +14,7 @@ http_archive(
 )
 
 load("@bazel_skylib//lib:versions.bzl", "versions")
+
 # Keep this version in sync with the BAZEL environment variable defined
 # in our .travis.yml config.
 versions.check(minimum_bazel_version = "2.1.0")
@@ -29,9 +30,11 @@ http_archive(
 )
 
 load("@io_bazel_rules_webtesting//web:repositories.bzl", "web_test_repositories")
+
 web_test_repositories()
 
 load("@io_bazel_rules_webtesting//web:py_repositories.bzl", "py_repositories")
+
 py_repositories()
 
 http_archive(
@@ -45,6 +48,7 @@ http_archive(
 )
 
 load("@io_bazel_rules_closure//closure:repositories.bzl", "rules_closure_dependencies")
+
 rules_closure_dependencies(
     omit_com_google_protobuf = True,
     omit_com_google_protobuf_js = True,
@@ -64,12 +68,12 @@ load("@build_bazel_rules_nodejs//:index.bzl", "yarn_install")
 yarn_install(
     name = "npm",
     package_json = "//:package.json",
-    yarn_lock = "//:yarn.lock",
     # Opt out of symlinking local node_modules folder into bazel internal
     # directory.  Symlinking is incompatible with our toolchain which often
     # removes source directory without `bazel clean` which creates broken
     # symlink into node_modules folder.
     symlink_node_modules = False,
+    yarn_lock = "//:yarn.lock",
 )
 
 load("@npm//:install_bazel_dependencies.bzl", "install_bazel_dependencies")
@@ -107,8 +111,10 @@ http_archive(
 )
 
 load("@org_tensorflow//tensorflow:workspace.bzl", "tf_workspace")
+
 tf_workspace()
 
 # Please add all new dependencies in workspace.bzl.
 load("//third_party:workspace.bzl", "tensorboard_workspace")
+
 tensorboard_workspace()
