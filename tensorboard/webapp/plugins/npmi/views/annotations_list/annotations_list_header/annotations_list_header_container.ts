@@ -14,7 +14,8 @@ import {AnnotationDataListing} from './../../../store/npmi_types';
       [annotations]="annotations"
       [numAnnotations]="numAnnotations"
       [selectedAnnotations]="selectedAnnotations$ | async"
-      [annotationSorting]="annotationSorting$ | async"
+      [sorting]="annotationSorting$ | async"
+      [activeMetrics]="activeMetrics"
     ></npmi-annotations-list-header-component>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -22,6 +23,7 @@ import {AnnotationDataListing} from './../../../store/npmi_types';
 export class AnnotationsListHeaderContainer {
   @Input() numAnnotations!: number;
   @Input() annotations!: AnnotationDataListing;
+  @Input() activeMetrics!: string[];
   readonly selectedAnnotations$ = this.store.select(getSelectedAnnotations);
   readonly annotationSorting$ = this.store.select(getAnnotationSorting);
 

@@ -16,6 +16,7 @@ export class AnnotationsListComponent {
   @Input() annotationsExpanded!: boolean;
   @Input() numAnnotations!: number;
   @Input() annotationSorting!: AnnotationSorting;
+  @Input() activeMetrics!: string[];
 
   constructor(private store: Store<any>) {}
 

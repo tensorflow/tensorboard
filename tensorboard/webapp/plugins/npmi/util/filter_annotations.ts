@@ -12,26 +12,18 @@ export function filterAnnotations(
   activeRuns: string[],
   metricArithmetic: ArithmeticElement[],
   metricFilters: MetricFilterListing,
-  allMetrics: string[]
+  metrics: string[]
 ): AnnotationDataListing {
   const data: AnnotationDataListing = {};
   const annotations = Object.keys(annotationData);
   annotations.map((annotation) => {
     let valueDataElements = annotationData[annotation];
-    const activeMetrics = [
-      // Only active filters and non-diff metrics
-      ...new Set([
-        ...Object.keys(metricFilters),
-        ...allMetrics
-          .filter((key) => key.startsWith('nPMI@'))
-          .map((key) => stripMetricString(key)),
-      ]),
-    ];
+    const allMetrics = metrics.map((metric) => stripMetricString(metric));
     // Remove all inactive runs and keep only metrics currently displayed
     valueDataElements = valueDataElements.filter((valueDataElement) => {
       return (
         activeRuns.includes(valueDataElement.run) &&
-        activeMetrics.includes(valueDataElement.metric)
+        allMetrics.includes(valueDataElement.metric)
       );
     });
     let include = true;

@@ -5,7 +5,7 @@
   ></mat-checkbox>
 </div>
 <div class="annotations-header-container">
-  <div class="header-element" *ngFor="let metric of metrics">
+  <div class="header-element" *ngFor="let metric of activeMetrics">
     <div
       class="header-clickable"
       (click)="sortChange(metric)"

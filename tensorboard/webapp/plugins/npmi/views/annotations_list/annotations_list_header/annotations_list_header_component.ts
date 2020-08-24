@@ -15,10 +15,10 @@ import * as npmiActions from '../../../actions';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AnnotationsListHeaderComponent {
-  @Input() annotations: AnnotationDataListing;
+  @Input() annotations!: AnnotationDataListing;
   @Input() numAnnotations!: number;
   @Input() selectedAnnotations!: string[];
-  @Input() allMetrics: string[] = [];
+  @Input() activeMetrics!: string[];
   @Input() sorting!: AnnotationSorting;
 
   constructor(private store: Store<any>) {}

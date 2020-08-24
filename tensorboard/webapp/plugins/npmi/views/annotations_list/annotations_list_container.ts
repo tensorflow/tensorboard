@@ -18,6 +18,7 @@ import {
   filterAnnotations,
   removeHiddenAnnotations,
 } from '../../util/filter_annotations';
+import {stripMetricString} from '../../util/metric_type';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
@@ -28,6 +29,7 @@ import {
       [annotations]="annotations$ | async"
       [annotationsExpanded]="annotationsExpanded$ | async"
       [numAnnotations]="numAnnotations$ | async"
+      [activeMetrics]="activeMetrics$ | async"
     ></annotations-list-component>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -49,15 +51,21 @@ export class AnnotationsListContainer {
       return activeRuns;
     })
   );
-  readonly allMetrics$ = this.store.pipe(select(getRunToMetrics)).pipe(
-    combineLatest(this.activeRuns$),
-    map(([runToMetrics, activeRuns]) => {
+  readonly activeMetrics$ = this.store.pipe(select(getRunToMetrics)).pipe(
+    combineLatest(this.activeRuns$, this.store.pipe(select(getMetricFilters))),
+    map(([runToMetrics, activeRuns, metricFilters]) => {
       let metrics: string[] = [];
       for (const run of activeRuns) {
         if (runToMetrics[run]) {
           metrics = [...new Set([...metrics, ...runToMetrics[run]])];
         }
       }
+      metrics = [
+        ...new Set([
+          ...Object.keys(metricFilters),
+          ...metrics.filter((key) => key.startsWith('nPMI@')).map((key) => key),
+        ]),
+      ];
       return metrics;
     })
   );
@@ -79,7 +87,7 @@ export class AnnotationsListContainer {
     .pipe(
       combineLatest(
         this.activeRuns$,
-        this.allMetrics$,
+        this.activeMetrics$,
         this.store.pipe(select(getMetricArithmetic)),
         this.store.pipe(select(getMetricFilters))
       ),
@@ -87,7 +95,7 @@ export class AnnotationsListContainer {
         ([
           visibleData,
           activeRuns,
-          allMetrics,
+          activeMetrics,
           metricArithmetic,
           metricFilters,
         ]) => {
@@ -96,7 +104,7 @@ export class AnnotationsListContainer {
             activeRuns,
             metricArithmetic,
             metricFilters,
-            allMetrics
+            activeMetrics
           );
         }
       )

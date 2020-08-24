@@ -6,6 +6,8 @@ ng_module(
     name = "metric_type",
     srcs = [
         "metric_type.ts",
+    ],
+    deps = [
         "//tensorboard/webapp/plugins/npmi/store:types",
     ],
 )
