@@ -204,6 +204,10 @@ tf_svg_bundle(
         "@com_google_material_design_icon//:settings_24px.svg",
         "@com_google_material_design_icon//:search_24px.svg",
         "@com_google_material_design_icon//:error_24px.svg",
+        "@com_google_material_design_icon//:visibility_off_24px.svg",
+        "@com_google_material_design_icon//:flag_24px.svg",
+        "@com_google_material_design_icon//:expand_more_24px.svg",
+        "@com_google_material_design_icon//:expand_less_24px.svg",
     ],
     out = "icon_bundle.svg",
 )
