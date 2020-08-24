@@ -125,6 +125,13 @@ export const getAnnotationsExpanded = createSelector(
   }
 );
 
+export const getSidebarExpanded = createSelector(
+  selectNpmiState,
+  (state: NpmiState): boolean => {
+    return state.sidebarExpanded;
+  }
+);
+
 export const getShowCounts = createSelector(
   selectNpmiState,
   (state: NpmiState): boolean => {
