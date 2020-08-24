@@ -1,0 +1,31 @@
+@import 'tensorboard/webapp/theme/tb_theme';
+
+.annotations-header-container {
+  display: flex;
+  padding-top: 10px;
+  width: calc(100% - 100px);
+  flex-wrap: nowrap;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.header-element {
+  flex: 1 1;
+}
+
+.header-clickable {
+  cursor: pointer;
+  display: inline-block;
+}
+
+.checkbox-container {
+  width: 90px;
+  margin-top: 8px;
+  margin-left: 10px;
+}
+
+:host {
+  display: flex;
+  height: 35px;
+  border-bottom: 2px solid mat-color($tb-foreground, border);
+}

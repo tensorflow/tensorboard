@@ -1,0 +1,70 @@
+@import 'tensorboard/webapp/theme/tb_theme';
+
+.annotations-toolbar {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  padding: 0 16px;
+}
+
+.annotations-toolbar-top {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+}
+
+.annotations-toolbar-bottom {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+}
+
+.annotations-toolbar-not-expanded {
+  display: flex;
+  align-items: center;
+  height: 42px;
+  padding: 0 16px;
+  background-color: #fff;
+  border: 1px solid mat-color($tb-foreground, border);
+}
+
+.annotations-title {
+  font-size: 14px;
+  font-weight: 500;
+  padding-right: 10px;
+}
+
+.annotations-title-container {
+  display: flex;
+  flex: 1 1;
+  flex-wrap: nowrap;
+  align-items: center;
+  height: 42px;
+}
+
+.show-toggle {
+  margin-right: 20px;
+  font-size: 12px;
+}
+
+.metric-filter {
+  display: flex;
+  position: relative;
+
+  &:not(.valid) {
+    $_error-color: mat-color($tb-warn, 800);
+    color: $_error-color;
+
+    input {
+      caret-color: currentColor;
+    }
+
+    .error-icon {
+      color: $_error-color;
+      // Allow the autocomplete width calculation to ignore the icon size.
+      position: absolute;
+      right: 0;
+    }
+  }
+}

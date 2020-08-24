@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {select, Store} from '@ngrx/store';
 
 import {npmiLoaded} from './actions';
@@ -27,7 +27,7 @@ import {getRunSelection} from '../../core/store/core_selectors';
     <npmi-component [runs]="runs$ | async"></npmi-component>
   `,
 })
-export class NpmiContainer {
+export class NpmiContainer implements OnInit, OnDestroy {
   readonly runs$ = this.store.pipe(select(getRunSelection));
 
   constructor(private readonly store: Store<State>) {}

@@ -26,6 +26,7 @@ ng_module(
         "//tensorboard/webapp/angular:expect_angular_material_checkbox",
         "//tensorboard/webapp/core:types",
         "//tensorboard/webapp/core/store",
+        "//tensorboard/webapp/plugins/npmi/views/annotations_list",
         "//tensorboard/webapp/plugins/npmi/views/data_selection",
         "//tensorboard/webapp/runs",
         "@npm//@angular/core",

@@ -12,6 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {SortingOrder} from './../store/npmi_types';
+
 export function metricIsCount(metric: string): boolean {
   return metric.startsWith('count');
 }
@@ -27,4 +29,19 @@ export function metricIsNpmi(metric: string): boolean {
 export function stripMetricString(metricString: string): string {
   const strippedString = metricString.split('@', 2)[1];
   return strippedString;
+}
+
+export function addSortingSymbol(
+  metricString: string,
+  sorting: {metric: string; order: SortingOrder}
+): string {
+  let result = metricString;
+  if (metricString === sorting.metric) {
+    if (sorting.order === SortingOrder.DOWN) {
+      result = result + ' \uD83E\uDC27';
+    } else if (sorting.order === SortingOrder.UP) {
+      result = result + ' \uD83E\uDC25';
+    }
+  }
+  return result;
 }

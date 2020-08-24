@@ -18,8 +18,8 @@ export {DataLoadState, LoadState};
 
 export const NPMI_FEATURE_KEY = 'npmi';
 
-type Annotation = string;
 type Metric = string;
+export type Annotation = string;
 export type AnnotationDataListing = Record<Annotation, ValueData[]>;
 export type ArithmeticElement =
   | {kind: 'metric'; metric: string}

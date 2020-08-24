@@ -1,0 +1,33 @@
+<div
+  class="annotations-container"
+  id="annotations-container"
+  *ngIf="annotationsExpanded; else notExpanded"
+>
+  <npmi-annotations-list-toolbar
+    [numAnnotations]="numAnnotations"
+  ></npmi-annotations-list-toolbar>
+  <npmi-annotations-list-header
+    class="annotations-header"
+    [annotations]="annotations"
+    [numAnnotations]="numAnnotations"
+  >
+  </npmi-annotations-list-header>
+</div>
+
+<ng-template #notExpanded>
+  <div class="annotations-toolbar-not-expanded">
+    <div class="annotations-title-container">
+      <span
+        class="annotations-title"
+        aria-role="heading"
+        aria-level="3"
+        title="Filtered Annotations"
+      >
+        Annotations ({{numAnnotations}})
+      </span>
+    </div>
+    <button mat-icon-button (click)="toggleExpanded()">
+      <mat-icon svgIcon="expand_more_24px"></mat-icon>
+    </button>
+  </div>
+</ng-template>

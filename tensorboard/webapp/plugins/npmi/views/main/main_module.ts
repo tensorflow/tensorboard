@@ -22,6 +22,7 @@ import {MainComponent} from './main_component';
 import {MainContainer} from './main_container';
 import {RunsModule} from '../../../../runs/runs_module';
 import {DataSelectionModule} from './../data_selection/data_selection_module';
+import {AnnotationsListModule} from '../annotations_list/annotations_list_module';
 
 @NgModule({
   declarations: [MainComponent, MainContainer],
@@ -31,6 +32,7 @@ import {DataSelectionModule} from './../data_selection/data_selection_module';
     MatCheckboxModule,
     RunsModule,
     DataSelectionModule,
+    AnnotationsListModule,
   ],
   exports: [MainContainer],
 })
