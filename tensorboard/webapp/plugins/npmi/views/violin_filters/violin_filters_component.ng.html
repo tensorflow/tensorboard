@@ -24,14 +24,8 @@ limitations under the License.
     Active Filters
   </span>
   <div class="side-toggle">
-    <button mat-icon-button (click)="toggleSidebarExpanded()">
-      <mat-icon
-        *ngIf="sidebarExpanded; else notExpanded"
-        svgIcon="chevron_left_24px"
-      ></mat-icon>
-      <ng-template #notExpanded>
-        <mat-icon svgIcon="chevron_right_24px"></mat-icon>
-      </ng-template>
+    <button mat-icon-button (click)="toggleSidebarExpanded.emit()">
+      <mat-icon svgIcon="chevron_left_24px"></mat-icon>
     </button>
   </div>
 </div>

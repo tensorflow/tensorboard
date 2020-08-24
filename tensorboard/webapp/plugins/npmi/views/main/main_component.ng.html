@@ -17,8 +17,8 @@ limitations under the License.
 <npmi-data-selection></npmi-data-selection>
 <div
   class="content"
-  (mouseup)="resizeReleased()"
-  (mousemove)="resizeTriggered($event)"
+  (mouseup)="resizeReleased.emit()"
+  (mousemove)="resizeTriggered.emit($event)"
 >
   <div
     *ngIf="sidebarExpanded"
@@ -33,7 +33,7 @@ limitations under the License.
   <div
     *ngIf="sidebarExpanded"
     class="grabber"
-    (mousedown)="resizeGrabbed($event)"
+    (mousedown)="resizeGrabbed.emit()"
   ></div>
   <div *ngIf="runActive === true; else noRun" class="analysis-container"></div>
   <ng-template #noRun>
@@ -44,13 +44,7 @@ limitations under the License.
 </div>
 
 <div *ngIf="!sidebarExpanded" class="side-toggle">
-  <button mat-icon-button (click)="toggleSidebarExpanded()">
-    <mat-icon
-      *ngIf="sidebarExpanded; else notExpanded"
-      svgIcon="chevron_left_24px"
-    ></mat-icon>
-    <ng-template #notExpanded>
-      <mat-icon svgIcon="chevron_right_24px"></mat-icon>
-    </ng-template>
+  <button mat-icon-button (click)="toggleSidebarExpanded.emit()">
+    <mat-icon svgIcon="chevron_right_24px"></mat-icon>
   </button>
 </div>

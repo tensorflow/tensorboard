@@ -12,9 +12,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+} from '@angular/core';
 import {Store} from '@ngrx/store';
-import * as npmiActions from '../../actions';
 
 @Component({
   selector: 'violin-filters-component',
@@ -24,10 +29,5 @@ import * as npmiActions from '../../actions';
 })
 export class ViolinFiltersComponent {
   @Input() sidebarExpanded!: boolean;
-
-  constructor(private store: Store<any>) {}
-
-  toggleSidebarExpanded() {
-    this.store.dispatch(npmiActions.npmiToggleSidebarExpanded());
-  }
+  @Output() toggleSidebarExpanded = new EventEmitter();
 }

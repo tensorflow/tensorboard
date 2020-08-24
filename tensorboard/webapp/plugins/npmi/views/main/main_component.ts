@@ -12,11 +12,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+} from '@angular/core';
 import {Store} from '@ngrx/store';
-
-import * as npmiActions from '../../actions';
-import {RunId} from '../../../../core/types';
 
 @Component({
   selector: 'main-component',
@@ -28,29 +31,8 @@ export class MainComponent {
   @Input() runActive!: boolean;
   @Input() sidebarExpanded!: boolean;
   @Input() sidebarWidth!: number;
-  resizing = false;
-
-  constructor(private store: Store<any>) {}
-
-  toggleSidebarExpanded() {
-    this.store.dispatch(npmiActions.npmiToggleSidebarExpanded());
-  }
-
-  resizeTriggered(event: MouseEvent) {
-    if (this.resizing) {
-      this.store.dispatch(
-        npmiActions.npmiChangeSidebarWidth({
-          sidebarWidth: event.clientX,
-        })
-      );
-    }
-  }
-
-  resizeGrabbed(event: MouseEvent) {
-    this.resizing = true;
-  }
-
-  resizeReleased() {
-    this.resizing = false;
-  }
+  @Output() toggleSidebarExpanded = new EventEmitter();
+  @Output() resizeTriggered = new EventEmitter<MouseEvent>();
+  @Output() resizeGrabbed = new EventEmitter();
+  @Output() resizeReleased = new EventEmitter();
 }

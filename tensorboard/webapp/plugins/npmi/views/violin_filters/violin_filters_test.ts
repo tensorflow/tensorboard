@@ -26,6 +26,7 @@ import {ViolinFiltersComponent} from './violin_filters_component';
 import {appStateFromNpmiState, createNpmiState} from '../../testing';
 import {createState, createCoreState} from '../../../../core/testing';
 import * as npmiActions from '../../actions';
+import {getSidebarExpanded} from '../../store';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
@@ -65,12 +66,15 @@ describe('Npmi Violin Filters Container', () => {
   });
 
   it('dispatches toggle expanded action when hide button clicked', () => {
+    store.overrideSelector(getSidebarExpanded, true);
     const fixture = TestBed.createComponent(ViolinFiltersComponent);
     fixture.detectChanges();
 
-    const hideButton = fixture.debugElement.query(By.css('button'));
+    const sideToggle = fixture.debugElement.query(By.css('.side-toggle'));
+    expect(sideToggle).toBeTruthy();
+    const hideButton = sideToggle.query(By.css('button'));
+    expect(hideButton).toBeTruthy();
     hideButton.nativeElement.click();
-    fixture.detectChanges();
 
     expect(dispatchedActions).toEqual([
       npmiActions.npmiToggleSidebarExpanded(),

@@ -17,6 +17,7 @@ import {Store} from '@ngrx/store';
 import {State} from '../../../../app_state';
 
 import {getSidebarExpanded} from '../../store';
+import * as npmiActions from '../../actions';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
@@ -25,11 +26,18 @@ import {getSidebarExpanded} from '../../store';
   template: `
     <violin-filters-component
       [sidebarExpanded]="sidebarExpanded$ | async"
+      (toggleSidebarExpanded)="onToggleSidebarExpanded()"
     ></violin-filters-component>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ViolinFiltersContainer {
   readonly sidebarExpanded$ = this.store.select(getSidebarExpanded);
+
   constructor(private readonly store: Store<State>) {}
+
+  onToggleSidebarExpanded() {
+    console.log('test sidebar');
+    this.store.dispatch(npmiActions.npmiToggleSidebarExpanded());
+  }
 }

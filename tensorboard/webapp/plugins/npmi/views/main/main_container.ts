@@ -23,6 +23,7 @@ import {
   getSidebarExpanded,
   getSidebarWidth,
 } from './../../store/npmi_selectors';
+import * as npmiActions from '../../actions';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
@@ -33,6 +34,10 @@ import {
       [runActive]="runActive$ | async"
       [sidebarExpanded]="sidebarExpanded$ | async"
       [sidebarWidth]="sidebarWidth$ | async"
+      (toggleSidebarExpanded)="onToggleSidebarExpanded()"
+      (resizeTriggered)="onResizeTriggered($event)"
+      (resizeGrabbed)="onResizeGrabbed()"
+      (resizeReleased)="onResizeReleased()"
     ></main-component>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -48,6 +53,29 @@ export class MainContainer {
   );
   readonly sidebarExpanded$ = this.store.pipe(select(getSidebarExpanded));
   readonly sidebarWidth$ = this.store.pipe(select(getSidebarWidth));
+  resizing = false;
 
   constructor(private readonly store: Store<State>) {}
+
+  onToggleSidebarExpanded() {
+    this.store.dispatch(npmiActions.npmiToggleSidebarExpanded());
+  }
+
+  onResizeTriggered(event: MouseEvent) {
+    if (this.resizing) {
+      this.store.dispatch(
+        npmiActions.npmiChangeSidebarWidth({
+          sidebarWidth: event.clientX,
+        })
+      );
+    }
+  }
+
+  onResizeGrabbed() {
+    this.resizing = true;
+  }
+
+  onResizeReleased() {
+    this.resizing = false;
+  }
 }
