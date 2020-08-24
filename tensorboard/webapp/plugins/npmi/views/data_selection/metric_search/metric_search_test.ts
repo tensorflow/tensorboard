@@ -75,13 +75,9 @@ describe('Npmi Metric Search Container', () => {
       getRunSelection,
       new Map([['run1', true], ['run2', true]])
     );
-    store.overrideSelector(getMetricsRegex, '');
     store.overrideSelector(getRunToMetrics, {
       run1: ['metric_1', 'metric_2'],
       run2: ['metric_1'],
-    });
-    store.overrideSelector(getMetricFilters, {
-      metric_1: {max: 1.0, min: -1.0, includeNaN: false},
     });
   });
 
