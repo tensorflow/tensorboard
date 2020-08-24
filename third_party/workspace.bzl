@@ -43,7 +43,7 @@ def tensorboard_workspace():
       sha256 = "1fbf1c2962af287607232b2eddeaec9b4f4a7a6f5934e1a9276e9af76952f7e0",
       strip_prefix = "protobuf-3.9.2/js",
       urls = [
-          "http://mirror.tensorflow.org/github.com/google/protobuf/archive/v3.9.2.tar.gz",  # DO NOT SUBMIT until mirrored
+          "http://mirror.tensorflow.org/github.com/google/protobuf/archive/v3.9.2.tar.gz",
           "https://github.com/google/protobuf/archive/v3.9.2.tar.gz",
       ],
       build_file = "@io_bazel_rules_closure//closure/protobuf:protobuf_js.BUILD",
