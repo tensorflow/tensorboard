@@ -14,14 +14,13 @@ limitations under the License.
 ==============================================================================*/
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-import {FormsModule} from '@angular/forms';
 
 import {MetricSearchModule} from './metric_search/metric_search_module';
 import {DataSelectionComponent} from './data_selection_component';
 
 @NgModule({
   declarations: [DataSelectionComponent],
-  imports: [CommonModule, FormsModule, MetricSearchModule],
+  imports: [CommonModule, MetricSearchModule],
   exports: [DataSelectionComponent],
 })
 export class DataSelectionModule {}

@@ -22,7 +22,6 @@ limitations under the License.
   placeholder="Add Metric Filter"
   [value]="regexFilterValue"
   (input)="onRegexFilterValueChange.emit($event.target.value)"
-  (keyup)="onFilterKeyUp($event)"
   [matAutocomplete]="filterMatches"
 />
 <mat-icon
@@ -34,12 +33,10 @@ limitations under the License.
 </mat-icon>
 <mat-autocomplete
   #filterMatches="matAutocomplete"
-  (optionSelected)="optionClick($event.option.value)"
+  autoActiveFirstOption
+  (optionSelected)="optionClick($event.option.value); matInput.value=''"
 >
-  <mat-option
-    *ngFor="let completion of completions"
-    [value]="completion"
-    (click)="matInput.value=''"
+  <mat-option *ngFor="let completion of completions" [value]="completion"
     >{{completion}}</mat-option
   >
 </mat-autocomplete>

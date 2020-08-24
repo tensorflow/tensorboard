@@ -227,7 +227,7 @@ describe('Npmi Metric Search Container', () => {
       );
     });
 
-    it('dispatches action when clicking on option and ', () => {
+    it('dispatches action when selecting an option', () => {
       const fixture = TestBed.createComponent(MetricSearchContainer);
       fixture.detectChanges();
 
@@ -256,24 +256,6 @@ describe('Npmi Metric Search Container', () => {
       fixture.detectChanges();
 
       expect(fixture.debugElement.query(By.css('.error-icon'))).not.toBeNull();
-    });
-
-    it('dispatches actions on Enter', () => {
-      const fixture = TestBed.createComponent(MetricSearchContainer);
-      fixture.detectChanges();
-
-      const input = fixture.debugElement.query(By.css('input'));
-      input.nativeElement.focus();
-      fixture.detectChanges();
-
-      input.nativeElement.dispatchEvent(
-        new KeyboardEvent('keyup', {key: 'Enter'})
-      );
-
-      expect(dispatchedActions).toEqual([
-        npmiActions.npmiAddMetricFilter({metric: 'metric_1'}),
-        npmiActions.npmiMetricsRegexChanged({regex: ''}),
-      ]);
     });
   });
 });
