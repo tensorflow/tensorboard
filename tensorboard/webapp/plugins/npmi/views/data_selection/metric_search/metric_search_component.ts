@@ -33,8 +33,4 @@ export class MetricSearchComponent {
   @HostBinding('class.valid') @Input() isRegexFilterValid!: boolean;
   @Output() onRegexFilterValueChange = new EventEmitter<string>();
   @Output() onAddFilter = new EventEmitter<string>();
-
-  optionClick(metric: string) {
-    this.onAddFilter.emit(metric);
-  }
 }
