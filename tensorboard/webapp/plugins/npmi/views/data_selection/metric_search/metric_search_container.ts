@@ -45,38 +45,38 @@ import * as npmiActions from '../../../actions';
 export class MetricSearchContainer {
   readonly metricsRegex$ = this.store.select(getMetricsRegex);
   readonly activeRuns$ = this.store.pipe(select(getRunSelection)).pipe(
-    map((runs) => {
+    map((runSelection) => {
       const activeRuns: string[] = [];
-      if (runs) {
-        for (const run of runs) {
-          if (run[1]) {
-            activeRuns.push(run[0]);
+      if (runSelection) {
+        for (const [run, isSelected] of runSelection) {
+          if (isSelected) {
+            activeRuns.push(run);
           }
         }
       }
       return activeRuns;
     })
   );
-  readonly allMetrics$ = combineLatest(
+  readonly metricsForActiveRuns$ = combineLatest(
     this.activeRuns$,
     this.store.select(getRunToMetrics)
   ).pipe(
     map(([activeRuns, runToMetrics]) => {
-      let metrics: string[] = [];
+      const metrics = new Set<string>();
       for (const run of activeRuns) {
         if (runToMetrics[run]) {
-          metrics = [...new Set([...metrics, ...runToMetrics[run]])];
+          for (const metric of runToMetrics[run]) {
+            metrics.add(metric);
+          }
         }
       }
-      return metrics;
+      return [...metrics];
     })
   );
   readonly isMetricsFilterValid$ = this.metricsRegex$.pipe(
     map((filterString) => {
       try {
-        // tslint:disable-next-line:no-unused-expression Check for validity of filter.
-        new RegExp(filterString);
-        return true;
+        return Boolean(new RegExp(filterString));
       } catch (err) {
         return false;
       }
@@ -88,13 +88,13 @@ export class MetricSearchContainer {
     })
   );
   readonly completions$ = combineLatest(
-    this.allMetrics$,
+    this.metricsForActiveRuns$,
     this.metricsRegex$,
     this.metricFilterKeys$
   ).pipe(
-    map(([metrics, metricsRegex, metricsActive]) => {
+    map(([metrics, metricsRegex, metricsWithFilters]) => {
       const filteredMetrics = metrics.filter(
-        (metric: string) => !metricsActive.includes(metric)
+        (metric: string) => !metricsWithFilters.includes(metric)
       );
       try {
         const filterRegex = new RegExp(metricsRegex, 'i');

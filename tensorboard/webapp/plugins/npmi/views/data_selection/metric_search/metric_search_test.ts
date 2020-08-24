@@ -176,8 +176,8 @@ describe('Npmi Metric Search Container', () => {
       );
     });
 
-    it('filters by regex', () => {
-      store.overrideSelector(getMetricsRegex, '[A-Za-z]+_1');
+    it('filters by regex, case-insensitive', () => {
+      store.overrideSelector(getMetricsRegex, '[A-Z]+_1');
       const fixture = TestBed.createComponent(MetricSearchContainer);
       fixture.detectChanges();
 

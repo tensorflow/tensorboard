@@ -26,18 +26,10 @@ mat-icon {
   font-size: 14px;
 
   &:not(.valid) {
-    $_error-color: mat-color($tb-warn, 800);
-    color: $_error-color;
+    color: mat-color($tb-warn, 800);
 
     input {
       caret-color: currentColor;
-    }
-
-    .error-icon {
-      color: $_error-color;
-      // Allow the autocomplete width calculation to ignore the icon size.
-      position: absolute;
-      right: 0;
     }
   }
 }

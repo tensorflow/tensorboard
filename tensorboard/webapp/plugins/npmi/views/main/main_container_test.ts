@@ -49,7 +49,7 @@ describe('Npmi Main Container', () => {
   });
 
   it('renders npmi main component without runs', () => {
-    store.overrideSelector(getRunSelection, new Map());
+    store.overrideSelector(getRunSelection, new Map([['run_1', false]]));
     const fixture = TestBed.createComponent(MainContainer);
     fixture.detectChanges();
 
@@ -58,8 +58,8 @@ describe('Npmi Main Container', () => {
     );
     expect(runsElement).toBeTruthy();
 
-    const dataSelectionElement = fixture.debugElement.query(By.css('noRun'));
-    expect(dataSelectionElement).toBeFalsy();
+    const dataSelectionElement = fixture.debugElement.query(By.css('.noRun'));
+    expect(dataSelectionElement).toBeTruthy();
   });
 
   it('renders npmi main component with run', () => {
@@ -76,5 +76,8 @@ describe('Npmi Main Container', () => {
       By.css('npmi-data-selection')
     );
     expect(dataSelectionElement).toBeTruthy();
+
+    const noRunsElement = fixture.debugElement.query(By.css('.noRun'));
+    expect(noRunsElement).toBeFalsy();
   });
 });

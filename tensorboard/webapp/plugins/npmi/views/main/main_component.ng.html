@@ -23,6 +23,8 @@ limitations under the License.
   </div>
   <div *ngIf="runActive === true; else noRun" class="analysis-container"></div>
   <ng-template #noRun>
-    You need to select at least one run.
+    <div class="noRun">
+      You need to select at least one run.
+    </div>
   </ng-template>
 </div>
