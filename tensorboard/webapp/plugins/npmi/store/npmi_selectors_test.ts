@@ -16,8 +16,21 @@ import {
   getPluginDataLoaded,
   getAnnotationData,
   getRunToMetrics,
+  getSelectedAnnotations,
+  getFlaggedAnnotations,
+  getHiddenAnnotations,
+  getAnnotationsRegex,
+  getMetricsRegex,
+  getMetricArithmetic,
+  getMetricFilters,
+  getAnnotationSorting,
+  getPCExpanded,
+  getAnnotationsExpanded,
+  getShowCounts,
+  getShowHiddenAnnotations,
+  getSidebarWidth,
 } from './npmi_selectors';
-import {DataLoadState} from './npmi_types';
+import {DataLoadState, Operator, SortingOrder} from './npmi_types';
 import {createNpmiState, createState} from '../testing';
 
 describe('npmi selectors', () => {
@@ -128,6 +141,246 @@ describe('npmi selectors', () => {
       expect(getRunToMetrics(state)).toEqual({
         run_1: ['npmi_metric_1', 'npmi_metric_2'],
       });
+    });
+  });
+
+  describe('getSelectedAnnotations', () => {
+    it('returns correct empty array', () => {
+      const state = createState(createNpmiState());
+      expect(getSelectedAnnotations(state)).toEqual([]);
+    });
+
+    it('returns correct state', () => {
+      const state = createState(
+        createNpmiState({
+          selectedAnnotations: ['annotation_1', 'annotation_2'],
+        })
+      );
+      expect(getSelectedAnnotations(state)).toEqual([
+        'annotation_1',
+        'annotation_2',
+      ]);
+    });
+  });
+
+  describe('getFlaggedAnnotations', () => {
+    it('returns correct empty array', () => {
+      const state = createState(createNpmiState());
+      expect(getFlaggedAnnotations(state)).toEqual([]);
+    });
+
+    it('returns correct state', () => {
+      const state = createState(
+        createNpmiState({
+          flaggedAnnotations: ['annotation_1', 'annotation_2'],
+        })
+      );
+      expect(getFlaggedAnnotations(state)).toEqual([
+        'annotation_1',
+        'annotation_2',
+      ]);
+    });
+  });
+
+  describe('getHiddenAnnotations', () => {
+    it('returns correct empty array', () => {
+      const state = createState(createNpmiState());
+      expect(getHiddenAnnotations(state)).toEqual([]);
+    });
+
+    it('returns correct state', () => {
+      const state = createState(
+        createNpmiState({
+          hiddenAnnotations: ['annotation_1', 'annotation_2'],
+        })
+      );
+      expect(getHiddenAnnotations(state)).toEqual([
+        'annotation_1',
+        'annotation_2',
+      ]);
+    });
+  });
+
+  describe('getAnnotationsRegex', () => {
+    it('returns correct empty string', () => {
+      const state = createState(createNpmiState());
+      expect(getAnnotationsRegex(state)).toEqual('');
+    });
+
+    it('returns correct value', () => {
+      const state = createState(
+        createNpmiState({
+          annotationsRegex: 'test',
+        })
+      );
+      expect(getAnnotationsRegex(state)).toBe('test');
+    });
+  });
+
+  describe('getMetricsRegex', () => {
+    it('returns correct empty string', () => {
+      const state = createState(createNpmiState());
+      expect(getMetricsRegex(state)).toEqual('');
+    });
+
+    it('returns correct value', () => {
+      const state = createState(
+        createNpmiState({
+          metricsRegex: 'test',
+        })
+      );
+      expect(getMetricsRegex(state)).toBe('test');
+    });
+  });
+
+  describe('getMetricArithmetic', () => {
+    it('return correct empty array', () => {
+      const state = createState(createNpmiState());
+      expect(getMetricArithmetic(state)).toEqual([]);
+    });
+
+    it('return correct arithmetic', () => {
+      const state = createState(
+        createNpmiState({
+          metricArithmetic: [
+            {kind: 'metric', metric: 'test'},
+            {kind: 'operator', operator: Operator.AND},
+            {kind: 'metric', metric: 'test2'},
+          ],
+        })
+      );
+      expect(getMetricArithmetic(state)).toEqual([
+        {kind: 'metric', metric: 'test'},
+        {kind: 'operator', operator: Operator.AND},
+        {kind: 'metric', metric: 'test2'},
+      ]);
+    });
+  });
+
+  describe('getMetricFilters', () => {
+    it('returns correct empty object', () => {
+      const state = createState(createNpmiState());
+      expect(getMetricFilters(state)).toEqual({});
+    });
+
+    it('returns correct filters objext', () => {
+      const state = createState(
+        createNpmiState({
+          metricFilters: {
+            test: {max: 1.0, min: -1.0, includeNaN: true},
+            test2: {max: 1.0, min: 0, includeNaN: false},
+          },
+        })
+      );
+      expect(getMetricFilters(state)).toEqual({
+        test: {max: 1.0, min: -1.0, includeNaN: true},
+        test2: {max: 1.0, min: 0, includeNaN: false},
+      });
+    });
+  });
+
+  describe('getAnnotationSorting', () => {
+    it('returns correct inital object', () => {
+      const state = createState(createNpmiState());
+      expect(getAnnotationSorting(state)).toEqual({
+        metric: '',
+        order: SortingOrder.DOWN,
+      });
+    });
+
+    it('returns correct state', () => {
+      const state = createState(
+        createNpmiState({
+          sorting: {
+            metric: 'test',
+            order: SortingOrder.UP,
+          },
+        })
+      );
+      expect(getAnnotationSorting(state)).toEqual({
+        metric: 'test',
+        order: SortingOrder.UP,
+      });
+    });
+  });
+
+  describe('getPCExpanded', () => {
+    it('returns correct true state', () => {
+      const state = createState(createNpmiState());
+      expect(getPCExpanded(state)).toBeTrue();
+    });
+
+    it('returns correct state', () => {
+      const state = createState(
+        createNpmiState({
+          pcExpanded: false,
+        })
+      );
+      expect(getPCExpanded(state)).toBeFalse();
+    });
+  });
+
+  describe('getAnnotationsExpanded', () => {
+    it('returns correct true state', () => {
+      const state = createState(createNpmiState());
+      expect(getAnnotationsExpanded(state)).toBeTrue();
+    });
+
+    it('returns correct state', () => {
+      const state = createState(
+        createNpmiState({
+          annotationsExpanded: false,
+        })
+      );
+      expect(getAnnotationsExpanded(state)).toBeFalse();
+    });
+  });
+
+  describe('getShowCounts', () => {
+    it('returns correct true state', () => {
+      const state = createState(createNpmiState());
+      expect(getShowCounts(state)).toBeTrue();
+    });
+
+    it('returns correct state', () => {
+      const state = createState(
+        createNpmiState({
+          showCounts: false,
+        })
+      );
+      expect(getShowCounts(state)).toBeFalse();
+    });
+  });
+
+  describe('getShowHiddenAnnotations', () => {
+    it('returns correct false state', () => {
+      const state = createState(createNpmiState());
+      expect(getShowHiddenAnnotations(state)).toBeFalse();
+    });
+
+    it('returns correct state', () => {
+      const state = createState(
+        createNpmiState({
+          showHiddenAnnotations: true,
+        })
+      );
+      expect(getShowHiddenAnnotations(state)).toBeTrue();
+    });
+  });
+
+  describe('getSidebarWidth', () => {
+    it('returns correct initial state', () => {
+      const state = createState(createNpmiState());
+      expect(getSidebarWidth(state)).toBe(300);
+    });
+
+    it('returns correct state', () => {
+      const state = createState(
+        createNpmiState({
+          sidebarWidth: 100,
+        })
+      );
+      expect(getSidebarWidth(state)).toBe(100);
     });
   });
 });

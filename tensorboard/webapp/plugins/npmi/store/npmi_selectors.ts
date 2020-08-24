@@ -21,6 +21,9 @@ import {
   AnnotationDataListing,
   MetricListing,
   State,
+  ArithmeticElement,
+  MetricFilterListing,
+  AnnotationSorting,
 } from './npmi_types';
 
 // HACK: These imports are for type inference.
@@ -50,5 +53,96 @@ export const getRunToMetrics = createSelector(
   selectNpmiState,
   (state: NpmiState): MetricListing => {
     return state.runToMetrics;
+  }
+);
+
+export const getSelectedAnnotations = createSelector(
+  selectNpmiState,
+  (state: NpmiState): string[] => {
+    return state.selectedAnnotations;
+  }
+);
+
+export const getFlaggedAnnotations = createSelector(
+  selectNpmiState,
+  (state: NpmiState): string[] => {
+    return state.flaggedAnnotations;
+  }
+);
+
+export const getHiddenAnnotations = createSelector(
+  selectNpmiState,
+  (state: NpmiState): string[] => {
+    return state.hiddenAnnotations;
+  }
+);
+
+export const getAnnotationsRegex = createSelector(
+  selectNpmiState,
+  (state: NpmiState): string => {
+    return state.annotationsRegex;
+  }
+);
+
+export const getMetricsRegex = createSelector(
+  selectNpmiState,
+  (state: NpmiState): string => {
+    return state.metricsRegex;
+  }
+);
+
+export const getMetricArithmetic = createSelector(
+  selectNpmiState,
+  (state: NpmiState): ArithmeticElement[] => {
+    return state.metricArithmetic;
+  }
+);
+
+export const getMetricFilters = createSelector(
+  selectNpmiState,
+  (state: NpmiState): MetricFilterListing => {
+    return state.metricFilters;
+  }
+);
+
+export const getAnnotationSorting = createSelector(
+  selectNpmiState,
+  (state: NpmiState): AnnotationSorting => {
+    return state.sorting;
+  }
+);
+
+export const getPCExpanded = createSelector(
+  selectNpmiState,
+  (state: NpmiState): boolean => {
+    return state.pcExpanded;
+  }
+);
+
+export const getAnnotationsExpanded = createSelector(
+  selectNpmiState,
+  (state: NpmiState): boolean => {
+    return state.annotationsExpanded;
+  }
+);
+
+export const getShowCounts = createSelector(
+  selectNpmiState,
+  (state: NpmiState): boolean => {
+    return state.showCounts;
+  }
+);
+
+export const getShowHiddenAnnotations = createSelector(
+  selectNpmiState,
+  (state: NpmiState): boolean => {
+    return state.showHiddenAnnotations;
+  }
+);
+
+export const getSidebarWidth = createSelector(
+  selectNpmiState,
+  (state: NpmiState): number => {
+    return state.sidebarWidth;
   }
 );
