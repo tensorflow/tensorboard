@@ -20,6 +20,8 @@ const KNOWN_SVG_ICON = new Set([
   'info_outline_24px',
   'refresh_24px',
   'settings_24px',
+  'search_24px',
+  'error_24px',
 ]);
 
 /**

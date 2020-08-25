@@ -12,27 +12,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component} from '@angular/core';
-import {select, Store} from '@ngrx/store';
-
-import {npmiLoaded} from './actions';
-import {State} from '../../app_state';
-import {getRunSelection} from '../../core/store/core_selectors';
-
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
+import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 
 @Component({
-  selector: 'npmi',
-  template: `
-    <npmi-component [runs]="runs$ | async"></npmi-component>
-  `,
+  selector: 'npmi-data-selection',
+  templateUrl: './data_selection_component.ng.html',
+  styleUrls: ['./data_selection_component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class NpmiContainer {
-  readonly runs$ = this.store.pipe(select(getRunSelection));
-
-  constructor(private readonly store: Store<State>) {}
-
-  ngOnInit(): void {
-    this.store.dispatch(npmiLoaded());
-  }
-}
+export class DataSelectionComponent {}

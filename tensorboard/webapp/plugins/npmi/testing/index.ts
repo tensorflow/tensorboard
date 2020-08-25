@@ -52,3 +52,9 @@ export function createNpmiState(override?: Partial<NpmiState>): NpmiState {
 export function createState(npmiState: NpmiState): State {
   return {[NPMI_FEATURE_KEY]: npmiState};
 }
+
+export function appStateFromNpmiState(metricsState?: NpmiState): State {
+  return {
+    [NPMI_FEATURE_KEY]: metricsState || createNpmiState(),
+  };
+}

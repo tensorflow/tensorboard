@@ -6,50 +6,59 @@ package(default_visibility = ["//tensorboard:internal"])
 licenses(["notice"])  # Apache 2.0
 
 tf_sass_binary(
-    name = "main_component_styles",
-    src = "main_component.scss",
+    name = "metric_search_component_styles",
+    src = "metric_search_component.scss",
 )
 
 ng_module(
-    name = "main",
+    name = "metric_search",
     srcs = [
-        "main_component.ts",
-        "main_container.ts",
-        "main_module.ts",
+        "metric_search_component.ts",
+        "metric_search_container.ts",
+        "metric_search_module.ts",
     ],
     assets = [
-        ":main_component_styles",
-        "main_component.ng.html",
+        ":metric_search_component_styles",
+        "metric_search_component.ng.html",
     ],
     deps = [
         "//tensorboard/webapp:app_state",
-        "//tensorboard/webapp/angular:expect_angular_material_checkbox",
-        "//tensorboard/webapp/core:types",
         "//tensorboard/webapp/core/store",
-        "//tensorboard/webapp/plugins/npmi/views/data_selection",
-        "//tensorboard/webapp/runs",
+        "//tensorboard/webapp/plugins/npmi/actions",
+        "//tensorboard/webapp/plugins/npmi/store",
+        "//tensorboard/webapp/plugins/npmi/store:types",
+        "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@angular/forms",
+        "@npm//@angular/material",
         "@npm//@ngrx/store",
         "@npm//rxjs",
     ],
 )
 
 tf_ts_library(
-    name = "main_test_lib",
+    name = "metric_search_test_lib",
     testonly = True,
     srcs = [
-        "main_container_test.ts",
+        "metric_search_test.ts",
     ],
     deps = [
-        ":main",
+        ":metric_search",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "//tensorboard/webapp/core/store",
+        "//tensorboard/webapp/plugins/npmi/actions",
+        "//tensorboard/webapp/plugins/npmi/store",
+        "//tensorboard/webapp/plugins/npmi/store:types",
         "//tensorboard/webapp/plugins/npmi/testing",
         "//tensorboard/webapp/runs",
+        "//tensorboard/webapp/testing:mat_icon",
+        "@npm//@angular/cdk",
+        "@npm//@angular/common",
         "@npm//@angular/core",
+        "@npm//@angular/forms",
+        "@npm//@angular/material",
         "@npm//@angular/platform-browser",
         "@npm//@ngrx/store",
         "@npm//@types/jasmine",
