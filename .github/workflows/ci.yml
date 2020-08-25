@@ -102,6 +102,10 @@ jobs:
         # Make sure no tests are skipped with "focused" tests.
       - run: |
           ! git grep -E 'f(it|describe)\(' 'tensorboard/*_test.ts'
+        # Make sure no one depends on Angular material and CDK directly. Please
+        # import the indirection in //tensorboard/webapp/angular.
+      - run: |
+          ! git grep -E '"@npm//@angular/material"|"@npm//@angular/cdk"' 'tensorboard/*/BUILD' ':!tensorboard/webapp/BUILD' ':!tensorboard/webapp/angular/BUILD'
 
   lint-build:
     runs-on: ubuntu-16.04
