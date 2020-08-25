@@ -70,7 +70,7 @@ describe('Npmi Violin Filters Container', () => {
     expect(violinFilters).toBeTruthy();
   });
 
-  fit('dispatches toggle expanded action when hide button clicked', () => {
+  it('dispatches toggle expanded action when hide button clicked', () => {
     store.overrideSelector(getSidebarExpanded, true);
     const fixture = TestBed.createComponent(ViolinFiltersComponent);
     fixture.detectChanges();
