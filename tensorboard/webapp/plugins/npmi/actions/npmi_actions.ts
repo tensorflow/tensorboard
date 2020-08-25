@@ -28,8 +28,6 @@ import {
  */
 export const npmiLoaded = createAction('[NPMI] nPMI Loaded');
 
-export const npmiUnloaded = createAction('[NPMI] nPMI Unloaded');
-
 export const npmiPluginDataRequested = createAction(
   '[NPMI] nPMI Plugin Data Requested'
 );

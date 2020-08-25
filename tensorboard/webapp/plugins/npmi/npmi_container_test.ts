@@ -25,8 +25,6 @@ import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
 import {NpmiComponent} from './npmi_component';
 import {NpmiContainer} from './npmi_container';
-import {InactiveModule} from './views/inactive/inactive_module';
-import {MainModule} from './views/main/main_module';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
@@ -36,7 +34,7 @@ describe('Npmi Container', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [NpmiComponent, NpmiContainer],
-      imports: [InactiveModule, MainModule],
+      imports: [],
       providers: [provideMockStore({}), NpmiContainer],
     }).compileComponents();
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;

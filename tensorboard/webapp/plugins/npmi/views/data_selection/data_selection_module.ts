@@ -12,27 +12,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component} from '@angular/core';
-import {select, Store} from '@ngrx/store';
+import {CommonModule} from '@angular/common';
+import {NgModule} from '@angular/core';
 
-import {npmiLoaded} from './actions';
-import {State} from '../../app_state';
-import {getRunSelection} from '../../core/store/core_selectors';
+import {MetricSearchModule} from './metric_search/metric_search_module';
+import {DataSelectionComponent} from './data_selection_component';
 
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
-
-@Component({
-  selector: 'npmi',
-  template: `
-    <npmi-component [runs]="runs$ | async"></npmi-component>
-  `,
+@NgModule({
+  declarations: [DataSelectionComponent],
+  imports: [CommonModule, MetricSearchModule],
+  exports: [DataSelectionComponent],
 })
-export class NpmiContainer {
-  readonly runs$ = this.store.pipe(select(getRunSelection));
-
-  constructor(private readonly store: Store<State>) {}
-
-  ngOnInit(): void {
-    this.store.dispatch(npmiLoaded());
-  }
-}
+export class DataSelectionModule {}

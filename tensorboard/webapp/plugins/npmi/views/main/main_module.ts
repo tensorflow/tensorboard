@@ -21,10 +21,17 @@ import {MatCheckboxModule} from '@angular/material/checkbox';
 import {MainComponent} from './main_component';
 import {MainContainer} from './main_container';
 import {RunsModule} from '../../../../runs/runs_module';
+import {DataSelectionModule} from './../data_selection/data_selection_module';
 
 @NgModule({
   declarations: [MainComponent, MainContainer],
-  imports: [CommonModule, FormsModule, MatCheckboxModule, RunsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatCheckboxModule,
+    RunsModule,
+    DataSelectionModule,
+  ],
   exports: [MainContainer],
 })
 export class MainModule {}

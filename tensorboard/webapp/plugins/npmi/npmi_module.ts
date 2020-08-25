@@ -14,9 +14,16 @@ limitations under the License.
 ==============================================================================*/
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
+import {StoreModule} from '@ngrx/store';
+import {EffectsModule} from '@ngrx/effects';
 
 import {NpmiComponent} from './npmi_component';
 import {NpmiContainer} from './npmi_container';
+
+import {NpmiServerDataSourceModule} from './data_source/npmi_data_source_module';
+import {NpmiEffects} from './effects';
+import {reducers} from './store/npmi_reducers';
+import {NPMI_FEATURE_KEY} from './store/npmi_types';
 
 import {InactiveModule} from './views/inactive/inactive_module';
 import {MainModule} from './views/main/main_module';
@@ -29,6 +36,9 @@ import {PluginRegistryModule} from '../../plugins/plugin_registry_module';
     CommonModule,
     InactiveModule,
     MainModule,
+    NpmiServerDataSourceModule,
+    StoreModule.forFeature(NPMI_FEATURE_KEY, reducers),
+    EffectsModule.forFeature([NpmiEffects]),
     PluginRegistryModule.forPlugin('npmi', NpmiContainer),
   ],
   exports: [NpmiContainer],

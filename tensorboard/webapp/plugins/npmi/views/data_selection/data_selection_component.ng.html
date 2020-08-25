@@ -14,17 +14,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<npmi-data-selection></npmi-data-selection>
-<div class="content">
-  <div class="selection-container">
-    <div class="run-selector">
-      <tb-legacy-runs-selector></tb-legacy-runs-selector>
-    </div>
-  </div>
-  <div *ngIf="runActive === true; else noRun" class="analysis-container"></div>
-  <ng-template #noRun>
-    <div class="noRun">
-      You need to select at least one run.
-    </div>
-  </ng-template>
+<div class="data-selection">
+  <npmi-metric-search class="metrics-selector"></npmi-metric-search>
 </div>
