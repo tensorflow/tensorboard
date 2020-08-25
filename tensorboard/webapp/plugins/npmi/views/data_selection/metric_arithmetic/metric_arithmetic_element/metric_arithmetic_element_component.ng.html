@@ -1,29 +1,43 @@
-<div class="metric-arithmetic-element">
-  <div class="metric-arithmetic-element-text">
-    {{metric}}
-  </div>
-  <div class="metric-arithmetic-element-range">
-    [
-    <input
-      matInput
-      (keyup)="onFilterChange.emit({min: $event.target.value, max: filterExtremes.max})"
-      [value]="filterExtremes.min"
-      class="inputField"
-      [ngStyle]="{'width': filterExtremes.min.length+'ch'}"
-      [ngClass]="{'valueInvalid': !minFilterValid}"
-    />
-    ;
-    <input
-      matInput
-      (change)="onFilterChange.emit({min: filterExtremes.min, max: $event.target.value})"
-      [value]="filterExtremes.max"
-      class="inputField"
-      [ngStyle]="{'width': (filterExtremes.max.length)+'ch'}"
-      [ngClass]="{'valueInvalid': !maxFilterValid}"
-    />
-    ]
-  </div>
-  <div class="metric-arithmetic-element-remove" (click)="onRemove.emit(metric)">
-    <mat-icon svgIcon="clear_24px"></mat-icon>
-  </div>
+<!--
+@license
+Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<div class="metric-arithmetic-element-text">
+  {{metric}}
+</div>
+<div class="metric-arithmetic-element-range">
+  [
+  <input
+    matInput
+    (input)="onFilterChange.emit({min: $event.target.value, max: filterValues.max})"
+    [value]="filterValues.min"
+    class="inputField"
+    [ngStyle]="{'width': filterValues.min.length+'ch'}"
+    [ngClass]="{'valueInvalid': !minFilterValid}"
+  />
+  ;
+  <input
+    matInput
+    (input)="onFilterChange.emit({min: filterValues.min, max: $event.target.value})"
+    [value]="filterValues.max"
+    class="inputField"
+    [ngStyle]="{'width': (filterValues.max.length)+'ch'}"
+    [ngClass]="{'valueInvalid': !maxFilterValid}"
+  />
+  ]
+</div>
+<div class="metric-arithmetic-element-remove" (click)="onRemove.emit(metric)">
+  <mat-icon svgIcon="clear_24px"></mat-icon>
 </div>

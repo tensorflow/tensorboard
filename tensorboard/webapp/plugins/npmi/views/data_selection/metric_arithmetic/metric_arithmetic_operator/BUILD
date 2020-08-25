@@ -1,5 +1,5 @@
 load("@npm_angular_bazel//:index.bzl", "ng_module")
-load("//tensorboard/defs:defs.bzl", "tf_sass_binary", "tf_sass_library")
+load("//tensorboard/defs:defs.bzl", "tf_sass_binary", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -13,8 +13,8 @@ tf_sass_binary(
 ng_module(
     name = "metric_arithmetic_operator",
     srcs = [
-        "metric_arithmetic_operator_module.ts",
         "metric_arithmetic_operator_component.ts",
+        "metric_arithmetic_operator_module.ts",
     ],
     assets = [
         ":metric_arithmetic_operator_component_styles",
@@ -26,6 +26,24 @@ ng_module(
         "@npm//@angular/core",
         "@npm//@angular/material",
         "@npm//@ngrx/store",
+        "@npm//rxjs",
+    ],
+)
+
+tf_ts_library(
+    name = "metric_arithmetic_operator_test_lib",
+    testonly = True,
+    srcs = [
+        "metric_arithmetic_operator_test.ts",
+    ],
+    deps = [
+        ":metric_arithmetic_operator",
+        "//tensorboard/webapp/core/testing",
+        "//tensorboard/webapp/plugins/npmi/store:types",
+        "@npm//@angular/core",
+        "@npm//@angular/platform-browser",
+        "@npm//@ngrx/store",
+        "@npm//@types/jasmine",
         "@npm//rxjs",
     ],
 )
