@@ -33,6 +33,11 @@ import {getSidebarExpanded} from '../../store';
 describe('Npmi Violin Filters Container', () => {
   let store: MockStore<State>;
   let dispatchedActions: Action[];
+  const css = {
+    FILTERS_TOOLBAR: '.filters-toolbar',
+    SIDE_TOGGLE: '.side-toggle',
+    BUTTON: 'button',
+  };
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -60,19 +65,19 @@ describe('Npmi Violin Filters Container', () => {
     fixture.detectChanges();
 
     const violinFilters = fixture.debugElement.query(
-      By.css('.filters-toolbar')
+      By.css(css.FILTERS_TOOLBAR)
     );
     expect(violinFilters).toBeTruthy();
   });
 
-  it('dispatches toggle expanded action when hide button clicked', () => {
+  fit('dispatches toggle expanded action when hide button clicked', () => {
     store.overrideSelector(getSidebarExpanded, true);
     const fixture = TestBed.createComponent(ViolinFiltersComponent);
     fixture.detectChanges();
 
-    const sideToggle = fixture.debugElement.query(By.css('.side-toggle'));
+    const sideToggle = fixture.debugElement.query(By.css(css.SIDE_TOGGLE));
     expect(sideToggle).toBeTruthy();
-    const hideButton = sideToggle.query(By.css('button'));
+    const hideButton = sideToggle.query(By.css(css.BUTTON));
     expect(hideButton).toBeTruthy();
     hideButton.nativeElement.click();
 

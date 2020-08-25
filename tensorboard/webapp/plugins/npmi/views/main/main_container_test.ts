@@ -36,6 +36,15 @@ import * as npmiActions from '../../actions';
 describe('Npmi Main Container', () => {
   let store: MockStore<State>;
   let dispatchedActions: Action[];
+  const css = {
+    ANALYSIS_CONTAINER: '.analysis-container',
+    SIDEBAR_CONTAINER: '.sidebar-container',
+    SIDE_TOGGLE: '.side-toggle',
+    GRABBER: '.grabber',
+    CONTENT: '.content',
+    RUN_SELECTOR: 'tb-legacy-runs-selector',
+    BUTTON: 'button',
+  };
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -63,13 +72,11 @@ describe('Npmi Main Container', () => {
     const fixture = TestBed.createComponent(MainContainer);
     fixture.detectChanges();
 
-    const runsElement = fixture.debugElement.query(
-      By.css('tb-legacy-runs-selector')
-    );
+    const runsElement = fixture.debugElement.query(By.css(css.RUN_SELECTOR));
     expect(runsElement).toBeTruthy();
 
     const analysisElement = fixture.debugElement.query(
-      By.css('.analysis-container')
+      By.css(css.ANALYSIS_CONTAINER)
     );
     expect(analysisElement).toBeNull();
   });
@@ -79,29 +86,66 @@ describe('Npmi Main Container', () => {
     const fixture = TestBed.createComponent(MainContainer);
     fixture.detectChanges();
 
-    const runsElement = fixture.debugElement.query(
-      By.css('tb-legacy-runs-selector')
-    );
+    const runsElement = fixture.debugElement.query(By.css(css.RUN_SELECTOR));
     expect(runsElement).toBeTruthy();
 
     const analysisElement = fixture.debugElement.query(
-      By.css('.analysis-container')
+      By.css(css.ANALYSIS_CONTAINER)
     );
     expect(analysisElement).toBeTruthy();
+  });
+
+  it('renders npmi main component without active run', () => {
+    store.overrideSelector(getRunSelection, new Map([['run_1', false]]));
+    const fixture = TestBed.createComponent(MainContainer);
+    fixture.detectChanges();
+
+    const runsElement = fixture.debugElement.query(By.css(css.RUN_SELECTOR));
+    expect(runsElement).toBeTruthy();
+
+    const analysisElement = fixture.debugElement.query(
+      By.css(css.ANALYSIS_CONTAINER)
+    );
+    expect(analysisElement).toBeNull();
+  });
+
+  it('renders npmi main component with multiple runs, some active, some inactive', () => {
+    store.overrideSelector(
+      getRunSelection,
+      new Map([['run_1', false], ['run_2', true], ['run_3', false]])
+    );
+    const fixture = TestBed.createComponent(MainContainer);
+    fixture.detectChanges();
+
+    const runsElement = fixture.debugElement.query(By.css(css.RUN_SELECTOR));
+    expect(runsElement).toBeTruthy();
+
+    const analysisElement = fixture.debugElement.query(
+      By.css(css.ANALYSIS_CONTAINER)
+    );
+    expect(analysisElement).toBeTruthy();
+  });
+
+  it('does not render sidebar or grabber when sidebar hidden', () => {
+    store.overrideSelector(getSidebarExpanded, false);
+    const fixture = TestBed.createComponent(MainContainer);
+    fixture.detectChanges();
+
+    const sidebarElement = fixture.debugElement.query(
+      By.css(css.SIDEBAR_CONTAINER)
+    );
+    expect(sidebarElement).toBeNull();
+    const grabber = fixture.debugElement.query(By.css(css.GRABBER));
+    expect(grabber).toBeNull();
   });
 
   it('dispatches sidebar toggle when disabled and toggle button clicked', () => {
     store.overrideSelector(getSidebarExpanded, false);
     const fixture = TestBed.createComponent(MainContainer);
     fixture.detectChanges();
-
-    const sidebarElement = fixture.debugElement.query(
-      By.css('.sidebar-container')
-    );
-    expect(sidebarElement).toBeNull();
-    const sideToggle = fixture.debugElement.query(By.css('.side-toggle'));
+    const sideToggle = fixture.debugElement.query(By.css(css.SIDE_TOGGLE));
     expect(sideToggle).toBeTruthy();
-    const expansionButton = sideToggle.query(By.css('button'));
+    const expansionButton = sideToggle.query(By.css(css.BUTTON));
     expansionButton.nativeElement.click();
 
     expect(dispatchedActions).toEqual([
@@ -114,23 +158,34 @@ describe('Npmi Main Container', () => {
     fixture.detectChanges();
 
     const sidebarElement = fixture.debugElement.query(
-      By.css('.sidebar-container')
+      By.css(css.SIDEBAR_CONTAINER)
     );
     expect(sidebarElement).toBeTruthy();
-    const grabberElement = fixture.debugElement.query(By.css('.grabber'));
+    const grabberElement = fixture.debugElement.query(By.css(css.GRABBER));
     expect(grabberElement).toBeTruthy();
+    const sideToggle = fixture.debugElement.query(By.css(css.SIDE_TOGGLE));
+    expect(sideToggle).toBeNull();
   });
 
   it('dispatches change sidebarWidth when interacted with grabber', () => {
     const fixture = TestBed.createComponent(MainContainer);
     fixture.detectChanges();
 
-    const grabberElement = fixture.debugElement.query(By.css('.grabber'));
+    const grabberElement = fixture.debugElement.query(By.css(css.GRABBER));
     grabberElement.triggerEventHandler('mousedown', {clientX: 301});
-    const contentElement = fixture.debugElement.query(By.css('.content'));
+    const contentElement = fixture.debugElement.query(By.css(css.CONTENT));
     contentElement.triggerEventHandler('mousemove', {clientX: 50});
     expect(dispatchedActions).toEqual([
       npmiActions.npmiChangeSidebarWidth({sidebarWidth: 50}),
     ]);
+  });
+
+  it('does not dispatch change sidebarWidth when grabber not selected', () => {
+    const fixture = TestBed.createComponent(MainContainer);
+    fixture.detectChanges();
+
+    const contentElement = fixture.debugElement.query(By.css(css.CONTENT));
+    contentElement.triggerEventHandler('mousemove', {clientX: 50});
+    expect(dispatchedActions).toEqual([]);
   });
 });

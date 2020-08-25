@@ -48,7 +48,7 @@ export class MainContainer {
       if (!runs) {
         return false;
       }
-      return [...runs.values()].find((runActive) => runActive);
+      return [...runs.values()].includes(true);
     })
   );
   readonly sidebarExpanded$ = this.store.pipe(select(getSidebarExpanded));
