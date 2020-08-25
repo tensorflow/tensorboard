@@ -34,7 +34,7 @@ limitations under the License.
 <mat-autocomplete
   #filterMatches="matAutocomplete"
   autoActiveFirstOption
-  (optionSelected)="onAddFilter.emit($event.option.value); matInput.value=''"
+  (optionSelected)="onOptionSelected($event, matInput)"
 >
   <mat-option *ngFor="let completion of completions" [value]="completion"
     >{{completion}}</mat-option

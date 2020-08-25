@@ -20,6 +20,7 @@ import {
   EventEmitter,
   HostBinding,
 } from '@angular/core';
+import {MatAutocompleteSelectedEvent} from '@angular/material/autocomplete';
 
 @Component({
   selector: 'metric-search-component',
@@ -33,4 +34,13 @@ export class MetricSearchComponent {
   @HostBinding('class.valid') @Input() isRegexFilterValid!: boolean;
   @Output() onRegexFilterValueChange = new EventEmitter<string>();
   @Output() onAddFilter = new EventEmitter<string>();
+
+  onOptionSelected(
+    event: MatAutocompleteSelectedEvent,
+    matInput: HTMLInputElement
+  ) {
+    this.onAddFilter.emit(event.option.value);
+    // matInput.value needs to be cleared manually, since the Angular Material Component may be modifying the input value outside of change detection
+    matInput.value = '';
+  }
 }

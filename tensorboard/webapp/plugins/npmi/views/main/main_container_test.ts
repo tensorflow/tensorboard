@@ -58,8 +58,8 @@ describe('Npmi Main Container', () => {
     );
     expect(runsElement).toBeTruthy();
 
-    const dataSelectionElement = fixture.debugElement.query(By.css('.noRun'));
-    expect(dataSelectionElement).toBeTruthy();
+    const noRunsElement = fixture.debugElement.query(By.css('.noRun'));
+    expect(noRunsElement).toBeTruthy();
   });
 
   it('renders npmi main component with run', () => {
