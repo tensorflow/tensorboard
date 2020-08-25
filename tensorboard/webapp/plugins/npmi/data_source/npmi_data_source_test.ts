@@ -18,8 +18,6 @@ import {
   TBHttpClientTestingModule,
 } from '../../../webapp_data_source/tb_http_client_testing';
 
-import {TBHttpClient} from '../../../webapp_data_source/tb_http_client';
-
 import {NpmiHttpServerDataSource} from './npmi_data_source';
 
 describe('runs_data_source', () => {
@@ -29,7 +27,7 @@ describe('runs_data_source', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [TBHttpClientTestingModule],
-      providers: [NpmiHttpServerDataSource, TBHttpClient],
+      providers: [NpmiHttpServerDataSource],
     }).compileComponents();
 
     httpMock = TestBed.inject(HttpTestingController);
