@@ -1,9 +1,12 @@
-import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
-
-import {Store} from '@ngrx/store';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+} from '@angular/core';
 
 import {AnnotationDataListing, AnnotationSorting} from '../../store/npmi_types';
-import * as npmiActions from '../../actions';
 
 @Component({
   selector: 'annotations-list-component',
@@ -17,10 +20,5 @@ export class AnnotationsListComponent {
   @Input() numAnnotations!: number;
   @Input() annotationSorting!: AnnotationSorting;
   @Input() activeMetrics!: string[];
-
-  constructor(private store: Store<any>) {}
-
-  toggleExpanded() {
-    this.store.dispatch(npmiActions.npmiToggleAnnotationsExpanded());
-  }
+  @Output() onToggleExpanded = new EventEmitter();
 }

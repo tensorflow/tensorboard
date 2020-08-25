@@ -1,6 +1,6 @@
 @import 'tensorboard/webapp/theme/tb_theme';
 
-.annotations-toolbar {
+:host {
   display: flex;
   align-items: center;
   flex-direction: column;

@@ -1,6 +1,6 @@
 <div class="checkbox-container">
   <mat-checkbox
-    (change)="allAnnotationsToggled($event.checked)"
+    (change)="onAllAnnotationsToggled.emit($event.checked)"
     [checked]="selectedAnnotations.length === numAnnotations"
   ></mat-checkbox>
 </div>
@@ -8,7 +8,7 @@
   <div class="header-element" *ngFor="let metric of activeMetrics">
     <div
       class="header-clickable"
-      (click)="sortChange(metric)"
+      (click)="onChangeSorting.emit({newMetric: metric, oldSorting: sorting})"
       matTooltipPosition="below"
       matTooltip="Change the sorting by clicking any of the metrics."
       matTooltipShowDelay="500"

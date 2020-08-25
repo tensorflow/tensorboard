@@ -1,7 +1,8 @@
 import {Component, ChangeDetectionStrategy} from '@angular/core';
 
 import {select, Store} from '@ngrx/store';
-import {map, combineLatest} from 'rxjs/operators';
+import {map} from 'rxjs/operators';
+import {combineLatest} from 'rxjs';
 
 import {State} from '../../../../app_state';
 import {
@@ -18,7 +19,7 @@ import {
   filterAnnotations,
   removeHiddenAnnotations,
 } from '../../util/filter_annotations';
-import {stripMetricString} from '../../util/metric_type';
+import * as npmiActions from '../../actions';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
@@ -26,10 +27,11 @@ import {stripMetricString} from '../../util/metric_type';
   selector: 'npmi-annotations-list',
   template: `
     <annotations-list-component
-      [annotations]="annotations$ | async"
+      [annotations]="filteredAnnotations$ | async"
       [annotationsExpanded]="annotationsExpanded$ | async"
       [numAnnotations]="numAnnotations$ | async"
       [activeMetrics]="activeMetrics$ | async"
+      (onToggleExpanded)="toggleExpanded()"
     ></annotations-list-component>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -51,8 +53,11 @@ export class AnnotationsListContainer {
       return activeRuns;
     })
   );
-  readonly activeMetrics$ = this.store.pipe(select(getRunToMetrics)).pipe(
-    combineLatest(this.activeRuns$, this.store.pipe(select(getMetricFilters))),
+  readonly activeMetrics$ = combineLatest(
+    this.store.select(getRunToMetrics),
+    this.activeRuns$,
+    this.store.select(getMetricFilters)
+  ).pipe(
     map(([runToMetrics, activeRuns, metricFilters]) => {
       let metrics: string[] = [];
       for (const run of activeRuns) {
@@ -69,51 +74,53 @@ export class AnnotationsListContainer {
       return metrics;
     })
   );
-  readonly annotations$ = this.store
-    .pipe(select(getAnnotationData))
-    .pipe(
-      combineLatest(
-        this.store.pipe(select(getHiddenAnnotations)),
-        this.store.pipe(select(getShowHiddenAnnotations))
-      ),
-      map(([annotationData, hiddenAnnotations, showHiddenAnnotations]) => {
-        return removeHiddenAnnotations(
-          annotationData,
-          hiddenAnnotations,
-          showHiddenAnnotations
-        );
-      })
-    )
-    .pipe(
-      combineLatest(
-        this.activeRuns$,
-        this.activeMetrics$,
-        this.store.pipe(select(getMetricArithmetic)),
-        this.store.pipe(select(getMetricFilters))
-      ),
-      map(
-        ([
-          visibleData,
+  readonly visibleAnnotations$ = combineLatest(
+    this.store.select(getAnnotationData),
+    this.store.select(getHiddenAnnotations),
+    this.store.select(getShowHiddenAnnotations)
+  ).pipe(
+    map(([annotationData, hiddenAnnotations, showHiddenAnnotations]) => {
+      return removeHiddenAnnotations(
+        annotationData,
+        hiddenAnnotations,
+        showHiddenAnnotations
+      );
+    })
+  );
+  readonly filteredAnnotations$ = combineLatest(
+    this.visibleAnnotations$,
+    this.store.select(getMetricArithmetic),
+    this.store.select(getMetricFilters),
+    this.activeRuns$,
+    this.activeMetrics$
+  ).pipe(
+    map(
+      ([
+        visibleAnnotations,
+        metricArithmetic,
+        metricFilters,
+        activeRuns,
+        activeMetrics,
+      ]) => {
+        return filterAnnotations(
+          visibleAnnotations,
           activeRuns,
-          activeMetrics,
           metricArithmetic,
           metricFilters,
-        ]) => {
-          return filterAnnotations(
-            visibleData,
-            activeRuns,
-            metricArithmetic,
-            metricFilters,
-            activeMetrics
-          );
-        }
-      )
-    );
-  readonly numAnnotations$ = this.annotations$.pipe(
+          activeMetrics
+        );
+      }
+    )
+  );
+  readonly numAnnotations$ = this.filteredAnnotations$.pipe(
     map((annotations) => {
       return Object.keys(annotations).length;
     })
   );
 
   constructor(private readonly store: Store<State>) {}
+
+  toggleExpanded() {
+    this.store.dispatch(npmiActions.npmiToggleAnnotationsExpanded());
+  }
 }

@@ -25,7 +25,12 @@ import {
       [showHidden]="showHidden$ | async"
       [regexFilterValue]="annotationsFilter$ | async"
       [isRegexFilterValid]="isAnnotationsFilterValid$ | async"
-      (onRegexFilterValueChange)="onFilterChange($event)"
+      (onRegexFilterValueChange)="filterChange($event)"
+      (onFlagAnnotations)="flagAnnotations($event)"
+      (onHideAnnotations)="hideAnnotations($event)"
+      (onToggleExpanded)="toggleExpanded()"
+      (onToggleShowCounts)="toggleShowCounts()"
+      (onToggleShowHidden)="toggleShowHidden()"
     ></npmi-annotations-list-toolbar-component>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -48,11 +53,42 @@ export class AnnotationsListToolbarContainer {
       }
     })
   );
-  onFilterChange(filter: string) {
+
+  constructor(private readonly store: Store<State>) {}
+
+  filterChange(filter: string) {
     this.store.dispatch(
       npmiActions.npmiAnnotationsRegexChanged({regex: filter})
     );
   }
 
-  constructor(private readonly store: Store<State>) {}
+  flagAnnotations(annotations: string[]) {
+    this.store.dispatch(
+      npmiActions.npmiToggleAnnotationFlags({
+        annotations,
+      })
+    );
+    this.store.dispatch(npmiActions.npmiClearSelectedAnnotations());
+  }
+
+  hideAnnotations(annotations: string[]) {
+    this.store.dispatch(
+      npmiActions.npmiToggleAnnotationsHidden({
+        annotations,
+      })
+    );
+    this.store.dispatch(npmiActions.npmiClearSelectedAnnotations());
+  }
+
+  toggleExpanded() {
+    this.store.dispatch(npmiActions.npmiToggleAnnotationsExpanded());
+  }
+
+  toggleShowCounts() {
+    this.store.dispatch(npmiActions.npmiToggleShowCounts());
+  }
+
+  toggleShowHidden() {
+    this.store.dispatch(npmiActions.npmiToggleShowHiddenAnnotations());
+  }
 }

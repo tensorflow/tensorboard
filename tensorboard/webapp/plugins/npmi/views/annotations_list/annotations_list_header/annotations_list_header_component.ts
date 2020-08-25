@@ -1,12 +1,12 @@
-import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
-import {Store} from '@ngrx/store';
-import {stripMetricString, addSortingSymbol} from '../../../util/metric_type';
 import {
-  AnnotationSorting,
-  SortingOrder,
-  AnnotationDataListing,
-} from '../../../store/npmi_types';
-import * as npmiActions from '../../../actions';
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+} from '@angular/core';
+import {stripMetricString, addSortingSymbol} from '../../../util/metric_type';
+import {AnnotationSorting, SortingOrder} from '../../../store/npmi_types';
 
 @Component({
   selector: 'npmi-annotations-list-header-component',
@@ -15,44 +15,17 @@ import * as npmiActions from '../../../actions';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AnnotationsListHeaderComponent {
-  @Input() annotations!: AnnotationDataListing;
   @Input() numAnnotations!: number;
   @Input() selectedAnnotations!: string[];
   @Input() activeMetrics!: string[];
   @Input() sorting!: AnnotationSorting;
-
-  constructor(private store: Store<any>) {}
+  @Output() onChangeSorting = new EventEmitter<{
+    newMetric: string;
+    oldSorting: {metric: string; order: SortingOrder};
+  }>();
+  @Output() onAllAnnotationsToggled = new EventEmitter<boolean>();
 
   stripAndAppendMetric(metric: string): string {
     return stripMetricString(addSortingSymbol(metric, this.sorting));
-  }
-
-  sortChange(metric: string) {
-    let newSorting = {
-      metric: metric,
-      order: SortingOrder.DOWN,
-    };
-    if (this.sorting.metric === metric) {
-      if (this.sorting.order === SortingOrder.DOWN) {
-        newSorting.order = SortingOrder.UP;
-      }
-    }
-    this.store.dispatch(
-      npmiActions.npmiChangeAnnotationSorting({sorting: newSorting})
-    );
-  }
-
-  allAnnotationsToggled(checked: boolean) {
-    if (checked) {
-      this.store.dispatch(
-        npmiActions.npmiSetSelectedAnnotations({
-          annotations: Object.keys(this.annotations),
-        })
-      );
-    } else {
-      this.store.dispatch(
-        npmiActions.npmiSetSelectedAnnotations({annotations: []})
-      );
-    }
   }
 }
