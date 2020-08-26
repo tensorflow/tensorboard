@@ -16,30 +16,15 @@ import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 
-import {MatCheckboxModule} from '@angular/material/checkbox';
-import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
+import {MatInputModule} from '@angular/material/input';
 
-import {MainComponent} from './main_component';
-import {MainContainer} from './main_container';
-import {RunsModule} from '../../../../runs/runs_module';
-import {DataSelectionModule} from './../data_selection/data_selection_module';
-import {ViolinFiltersModule} from './../violin_filters/violin_filters_module';
-import {AnnotationsListModule} from '../annotations_list/annotations_list_module';
+import {AnnotationsSearchComponent} from './annotations_search_component';
+import {AnnotationsSearchContainer} from './annotations_search_container';
 
 @NgModule({
-  declarations: [MainComponent, MainContainer],
-  imports: [
-    CommonModule,
-    FormsModule,
-    MatCheckboxModule,
-    MatIconModule,
-    RunsModule,
-    DataSelectionModule,
-    MatButtonModule,
-    ViolinFiltersModule,
-    AnnotationsListModule,
-  ],
-  exports: [MainContainer],
+  declarations: [AnnotationsSearchComponent, AnnotationsSearchContainer],
+  imports: [CommonModule, FormsModule, MatIconModule, MatInputModule],
+  exports: [AnnotationsSearchContainer],
 })
-export class MainModule {}
+export class AnnotationsSearchModule {}

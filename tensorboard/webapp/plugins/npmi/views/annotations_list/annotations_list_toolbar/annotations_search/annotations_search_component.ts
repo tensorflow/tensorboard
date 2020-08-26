@@ -12,27 +12,23 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, OnInit} from '@angular/core';
-import {select, Store} from '@ngrx/store';
-
-import {npmiLoaded} from './actions';
-import {State} from '../../app_state';
-import {getRunSelection} from '../../core/store/core_selectors';
-
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  HostBinding,
+} from '@angular/core';
 
 @Component({
-  selector: 'npmi',
-  template: `
-    <npmi-component [runs]="runs$ | async"></npmi-component>
-  `,
+  selector: 'npmi-annotations-search-component',
+  templateUrl: './annotations_search_component.ng.html',
+  styleUrls: ['./annotations_search_component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class NpmiContainer implements OnInit {
-  readonly runs$ = this.store.pipe(select(getRunSelection));
-
-  constructor(private readonly store: Store<State>) {}
-
-  ngOnInit(): void {
-    this.store.dispatch(npmiLoaded());
-  }
+export class AnnotationsSearchComponent {
+  @Input() regexFilterValue!: string;
+  @Output() onRegexFilterValueChange = new EventEmitter<string>();
+  @HostBinding('class.valid') @Input() isRegexFilterValid!: boolean;
 }

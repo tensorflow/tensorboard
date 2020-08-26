@@ -15,31 +15,29 @@ limitations under the License.
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {FormsModule} from '@angular/forms';
+import {ScrollingModule} from '@angular/cdk/scrolling';
 
-import {MatCheckboxModule} from '@angular/material/checkbox';
 import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
+import {MatTooltipModule} from '@angular/material/tooltip';
+import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 
-import {MainComponent} from './main_component';
-import {MainContainer} from './main_container';
-import {RunsModule} from '../../../../runs/runs_module';
-import {DataSelectionModule} from './../data_selection/data_selection_module';
-import {ViolinFiltersModule} from './../violin_filters/violin_filters_module';
-import {AnnotationsListModule} from '../annotations_list/annotations_list_module';
+import {AnnotationsListComponent} from './annotations_list_component';
+import {AnnotationsListContainer} from './annotations_list_container';
+import {AnnotationsListToolbarModule} from './annotations_list_toolbar/annotations_list_toolbar_module';
 
 @NgModule({
-  declarations: [MainComponent, MainContainer],
+  declarations: [AnnotationsListComponent, AnnotationsListContainer],
   imports: [
     CommonModule,
     FormsModule,
-    MatCheckboxModule,
+    ScrollingModule,
     MatIconModule,
-    RunsModule,
-    DataSelectionModule,
     MatButtonModule,
-    ViolinFiltersModule,
-    AnnotationsListModule,
+    MatTooltipModule,
+    BrowserAnimationsModule,
+    AnnotationsListToolbarModule,
   ],
-  exports: [MainContainer],
+  exports: [AnnotationsListContainer],
 })
-export class MainModule {}
+export class AnnotationsListModule {}
