@@ -38,6 +38,12 @@ import {MetricArithmeticElementComponent} from './metric_arithmetic_element_comp
 describe('Npmi Metric Arithmetic Element Container', () => {
   let store: MockStore<State>;
   let dispatchedActions: Action[];
+  const css = {
+    ELEMENT_TEXT: '.metric-arithmetic-element-text',
+    ELEMENT_REMOVE: '.metric-arithmetic-element-remove',
+    INPUT: 'input',
+    VALUE_INVALID: '.value-invalid',
+  };
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -74,9 +80,7 @@ describe('Npmi Metric Arithmetic Element Container', () => {
     fixture.componentInstance.metric = 'npmi@test';
     fixture.detectChanges();
 
-    const filterDiv = fixture.debugElement.query(
-      By.css('.metric-arithmetic-element-text')
-    );
+    const filterDiv = fixture.debugElement.query(By.css(css.ELEMENT_TEXT));
     expect(filterDiv.nativeElement.textContent.trim()).toBe('npmi@test');
   });
 
@@ -85,9 +89,7 @@ describe('Npmi Metric Arithmetic Element Container', () => {
     fixture.componentInstance.metric = 'npmi@test';
     fixture.detectChanges();
 
-    const removeButton = fixture.debugElement.query(
-      By.css('.metric-arithmetic-element-remove')
-    );
+    const removeButton = fixture.debugElement.query(By.css(css.ELEMENT_REMOVE));
     removeButton.nativeElement.click();
     expect(dispatchedActions).toEqual([
       npmiActions.npmiRemoveMetricFilter({metric: 'npmi@test'}),
@@ -103,7 +105,7 @@ describe('Npmi Metric Arithmetic Element Container', () => {
         fixture.componentInstance.metric = 'npmi@test';
         fixture.detectChanges();
 
-        const inputs = fixture.debugElement.queryAll(By.css('input'));
+        const inputs = fixture.debugElement.queryAll(By.css(css.INPUT));
         const input = inputs[0];
         input.nativeElement.focus();
         fixture.detectChanges();
@@ -131,7 +133,7 @@ describe('Npmi Metric Arithmetic Element Container', () => {
         fixture.componentInstance.metric = 'npmi@test';
         fixture.detectChanges();
 
-        const inputs = fixture.debugElement.queryAll(By.css('input'));
+        const inputs = fixture.debugElement.queryAll(By.css(css.INPUT));
         const input = inputs[0];
         input.nativeElement.focus();
         fixture.detectChanges();
@@ -159,7 +161,7 @@ describe('Npmi Metric Arithmetic Element Container', () => {
         fixture.componentInstance.metric = 'npmi@test';
         fixture.detectChanges();
 
-        const inputs = fixture.debugElement.queryAll(By.css('input'));
+        const inputs = fixture.debugElement.queryAll(By.css(css.INPUT));
         const input = inputs[0];
         input.nativeElement.focus();
         fixture.detectChanges();
@@ -171,7 +173,7 @@ describe('Npmi Metric Arithmetic Element Container', () => {
         expect(dispatchedActions).toEqual([]);
 
         const invalidInput = fixture.debugElement.query(
-          By.css('.valueInvalid')
+          By.css(css.VALUE_INVALID)
         );
         expect(invalidInput).toBeTruthy();
       });
@@ -185,7 +187,7 @@ describe('Npmi Metric Arithmetic Element Container', () => {
         fixture.componentInstance.metric = 'npmi@test';
         fixture.detectChanges();
 
-        const inputs = fixture.debugElement.queryAll(By.css('input'));
+        const inputs = fixture.debugElement.queryAll(By.css(css.INPUT));
         const input = inputs[1];
         input.nativeElement.focus();
         fixture.detectChanges();
@@ -213,7 +215,7 @@ describe('Npmi Metric Arithmetic Element Container', () => {
         fixture.componentInstance.metric = 'npmi@test';
         fixture.detectChanges();
 
-        const inputs = fixture.debugElement.queryAll(By.css('input'));
+        const inputs = fixture.debugElement.queryAll(By.css(css.INPUT));
         const input = inputs[1];
         input.nativeElement.focus();
         fixture.detectChanges();
@@ -227,7 +229,7 @@ describe('Npmi Metric Arithmetic Element Container', () => {
         expect(dispatchedActions).toEqual([]);
 
         const invalidInput = fixture.debugElement.query(
-          By.css('.valueInvalid')
+          By.css(css.VALUE_INVALID)
         );
         expect(invalidInput).toBeTruthy();
       });

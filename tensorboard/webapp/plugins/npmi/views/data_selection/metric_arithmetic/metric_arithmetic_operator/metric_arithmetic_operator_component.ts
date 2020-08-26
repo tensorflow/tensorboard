@@ -13,11 +13,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
-import {Operator} from './../../../../store/npmi_types';
+import {Operator} from '../../../../store/npmi_types';
 
 @Component({
   selector: 'npmi-metric-arithmetic-operator',
-  templateUrl: './metric_arithmetic_operator_component.ng.html',
+  template: `
+    {{ operatorText }}
+  `,
   styleUrls: ['./metric_arithmetic_operator_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

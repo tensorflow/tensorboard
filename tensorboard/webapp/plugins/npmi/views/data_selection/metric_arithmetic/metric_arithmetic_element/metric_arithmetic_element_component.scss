@@ -15,57 +15,56 @@ limitations under the License.
 @import 'tensorboard/webapp/theme/tb_theme';
 
 :host {
-  background-color: white;
+  align-items: center;
   border-radius: 15px;
   border: 1px solid mat-color($tb-foreground, border);
-  margin-left: 5px;
   display: flex;
   height: 30px;
-  align-items: center;
+  margin-left: 5px;
 }
 
 .metric-arithmetic-element-text {
-  padding: 5px 10px 5px 10px;
+  padding: 5px 10px;
 }
 
 .metric-arithmetic-element-remove {
-  width: 30px;
+  align-items: center;
   background-color: mat-color($tb-warn);
-  height: 30px;
-  border-radius: 0px 15px 15px 0px;
+  border-radius: 0 15px 15px 0;
   color: white;
   cursor: pointer;
-  padding-right: 5px;
   display: flex;
-  align-items: center;
+  height: 30px;
   justify-content: center;
+  padding-right: 5px;
+  width: 30px;
 }
 
 .metric-arithmetic-element-range {
-  background-color: lightgray;
-  height: 30px;
-  padding: 0px 5px 0px 5px;
-  line-height: 30px;
   align-items: center;
+  background-color: lightgray;
+  font-size: 0.8em;
+  height: 30px;
   justify-content: center;
-  font-size: 13px;
+  line-height: 30px;
+  padding: 0 5px;
 }
 
-.inputField {
+.input-field {
   background-color: transparent;
   border: none;
   font-family: monospace;
-  font-size: 12px;
+  font-size: 1.1em;
   transition: width 1s;
+
+  &:focus {
+    background-color: darkgrey;
+    border: none;
+    outline: none;
+    width: 100px !important;
+  }
 }
 
-.inputField:focus {
-  border: none;
-  background-color: darkgrey;
-  width: 100px !important;
-  outline: none;
-}
-
-.valueInvalid {
+.value-invalid {
   color: mat-color($tb-warn);
 }

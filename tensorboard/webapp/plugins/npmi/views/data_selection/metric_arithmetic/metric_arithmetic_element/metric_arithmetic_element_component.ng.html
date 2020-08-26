@@ -23,18 +23,18 @@ limitations under the License.
     matInput
     (input)="onFilterChange.emit({min: $event.target.value, max: filterValues.max})"
     [value]="filterValues.min"
-    class="inputField"
+    class="input-field"
     [ngStyle]="{'width': filterValues.min.length+'ch'}"
-    [ngClass]="{'valueInvalid': !minFilterValid}"
+    [ngClass]="{'value-invalid': !minFilterValid}"
   />
   ;
   <input
     matInput
     (input)="onFilterChange.emit({min: filterValues.min, max: $event.target.value})"
     [value]="filterValues.max"
-    class="inputField"
+    class="input-field"
     [ngStyle]="{'width': (filterValues.max.length)+'ch'}"
-    [ngClass]="{'valueInvalid': !maxFilterValid}"
+    [ngClass]="{'value-invalid': !maxFilterValid}"
   />
   ]
 </div>

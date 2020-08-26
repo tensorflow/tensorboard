@@ -45,9 +45,11 @@ export class MetricArithmeticElementContainer {
       const filter = filters[this.metric];
       const min = filter.includeNaN
         ? 'NaN'
-        : this.rounded(filter.min).toString();
+        : this.roundToThreeDecimalPoints(filter.min).toString();
       const max =
-        filter.max < filter.min ? 'NaN' : this.rounded(filter.max).toString();
+        filter.max < filter.min
+          ? 'NaN'
+          : this.roundToThreeDecimalPoints(filter.max).toString();
       this.filterValues = {min: min, max: max};
     })
   );
@@ -62,9 +64,9 @@ export class MetricArithmeticElementContainer {
 
   filterChange(newValues: {min: string; max: string}) {
     this.filterValues = {min: newValues.min, max: newValues.max};
-    this.minFilterValid = this.entryValid(newValues.min);
+    this.minFilterValid = this.isEntryValid(newValues.min);
     this.maxFilterValid =
-      this.entryValid(newValues.max) &&
+      this.isEntryValid(newValues.max) &&
       (parseFloat(newValues.max) >= parseFloat(newValues.min) ||
         newValues.min == 'NaN');
     if (this.minFilterValid && this.maxFilterValid) {
@@ -82,7 +84,7 @@ export class MetricArithmeticElementContainer {
     }
   }
 
-  private entryValid(value: string) {
+  private isEntryValid(value: string) {
     if (value === 'NaN') {
       return true;
     } else {
@@ -96,7 +98,7 @@ export class MetricArithmeticElementContainer {
     return false;
   }
 
-  private rounded(value: number): number {
+  private roundToThreeDecimalPoints(value: number): number {
     return Math.round((value + Number.EPSILON) * 1000) / 1000;
   }
 }

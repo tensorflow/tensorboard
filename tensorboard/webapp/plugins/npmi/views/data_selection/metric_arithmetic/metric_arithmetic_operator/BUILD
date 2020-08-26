@@ -18,7 +18,6 @@ ng_module(
     ],
     assets = [
         ":metric_arithmetic_operator_component_styles",
-        "metric_arithmetic_operator_component.ng.html",
     ],
     deps = [
         "//tensorboard/webapp/plugins/npmi/store",

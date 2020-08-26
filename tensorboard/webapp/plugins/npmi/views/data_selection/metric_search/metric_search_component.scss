@@ -23,7 +23,7 @@ mat-icon {
   display: flex;
   padding: 0 10px;
   position: relative;
-  font-size: 14px;
+  font-size: 0.9em;
 
   &:not(.valid) {
     color: mat-color($tb-warn, 800);

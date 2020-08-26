@@ -27,7 +27,6 @@ ng_module(
         "//tensorboard/webapp/plugins/npmi/views/data_selection/metric_arithmetic/metric_arithmetic_element",
         "//tensorboard/webapp/plugins/npmi/views/data_selection/metric_arithmetic/metric_arithmetic_operator",
         "@npm//@angular/core",
-        "@npm//@angular/material",
         "@npm//@ngrx/store",
         "@npm//rxjs",
     ],
