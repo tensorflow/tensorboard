@@ -6,44 +6,40 @@ package(default_visibility = ["//tensorboard:internal"])
 licenses(["notice"])  # Apache 2.0
 
 tf_sass_binary(
-    name = "main_component_styles",
-    src = "main_component.scss",
+    name = "violin_filters_component_styles",
+    src = "violin_filters_component.scss",
 )
 
 ng_module(
-    name = "main",
+    name = "violin_filters",
     srcs = [
-        "main_component.ts",
-        "main_container.ts",
-        "main_module.ts",
+        "violin_filters_component.ts",
+        "violin_filters_container.ts",
+        "violin_filters_module.ts",
     ],
     assets = [
-        ":main_component_styles",
-        "main_component.ng.html",
+        ":violin_filters_component_styles",
+        "violin_filters_component.ng.html",
     ],
     deps = [
         "//tensorboard/webapp:app_state",
-        "//tensorboard/webapp/angular:expect_angular_material_checkbox",
-        "//tensorboard/webapp/core:types",
-        "//tensorboard/webapp/core/store",
-        "//tensorboard/webapp/plugins/npmi/views/data_selection",
-        "//tensorboard/webapp/plugins/npmi/views/violin_filters",
-        "//tensorboard/webapp/runs",
+        "//tensorboard/webapp/plugins/npmi/store",
+        "//tensorboard/webapp/plugins/npmi/store:types",
         "@npm//@angular/core",
-        "@npm//@angular/forms",
+        "@npm//@angular/material",
         "@npm//@ngrx/store",
         "@npm//rxjs",
     ],
 )
 
 tf_ts_library(
-    name = "main_test_lib",
+    name = "violin_filters_test_lib",
     testonly = True,
     srcs = [
-        "main_container_test.ts",
+        "violin_filters_test.ts",
     ],
     deps = [
-        ":main",
+        ":violin_filters",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
@@ -51,9 +47,13 @@ tf_ts_library(
         "//tensorboard/webapp/core/testing",
         "//tensorboard/webapp/plugins/npmi/actions",
         "//tensorboard/webapp/plugins/npmi/store",
+        "//tensorboard/webapp/plugins/npmi/store:types",
         "//tensorboard/webapp/plugins/npmi/testing",
         "//tensorboard/webapp/runs",
+        "//tensorboard/webapp/testing:mat_icon",
+        "@npm//@angular/common",
         "@npm//@angular/core",
+        "@npm//@angular/material",
         "@npm//@angular/platform-browser",
         "@npm//@ngrx/store",
         "@npm//@types/jasmine",

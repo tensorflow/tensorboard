@@ -22,17 +22,12 @@ import {
 import {Store} from '@ngrx/store';
 
 @Component({
-  selector: 'main-component',
-  templateUrl: './main_component.ng.html',
-  styleUrls: ['./main_component.css'],
+  selector: 'violin-filters-component',
+  templateUrl: './violin_filters_component.ng.html',
+  styleUrls: ['./violin_filters_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class MainComponent {
-  @Input() runActive!: boolean;
+export class ViolinFiltersComponent {
   @Input() sidebarExpanded!: boolean;
-  @Input() sidebarWidth!: number;
   @Output() toggleSidebarExpanded = new EventEmitter();
-  @Output() resizeTriggered = new EventEmitter<MouseEvent>();
-  @Output() resizeGrabbed = new EventEmitter();
-  @Output() resizeReleased = new EventEmitter();
 }

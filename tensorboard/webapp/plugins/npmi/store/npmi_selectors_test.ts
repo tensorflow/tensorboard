@@ -29,6 +29,7 @@ import {
   getShowCounts,
   getShowHiddenAnnotations,
   getSidebarWidth,
+  getSidebarExpanded,
 } from './npmi_selectors';
 import {DataLoadState, Operator, SortingOrder} from './npmi_types';
 import {createNpmiState, createState} from '../testing';
@@ -333,6 +334,22 @@ describe('npmi selectors', () => {
         })
       );
       expect(getAnnotationsExpanded(state)).toBeFalse();
+    });
+  });
+
+  describe('getSidebarExpanded', () => {
+    it('returns correct true state', () => {
+      const state = createState(createNpmiState());
+      expect(getSidebarExpanded(state)).toBeTrue();
+    });
+
+    it('returns correct state', () => {
+      const state = createState(
+        createNpmiState({
+          sidebarExpanded: false,
+        })
+      );
+      expect(getSidebarExpanded(state)).toBeFalse();
     });
   });
 
