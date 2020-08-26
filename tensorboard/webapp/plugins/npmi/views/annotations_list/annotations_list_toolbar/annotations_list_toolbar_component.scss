@@ -2,22 +2,10 @@
 
 :host {
   display: flex;
+  flex-direction: row;
   align-items: center;
-  flex-direction: column;
+  width: calc(100% - 32px);
   padding: 0 16px;
-}
-
-.annotations-toolbar-top {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  width: 100%;
-}
-
-.annotations-toolbar-bottom {
-  display: flex;
-  flex-direction: row;
-  width: 100%;
 }
 
 .annotations-toolbar-not-expanded {
@@ -25,14 +13,15 @@
   align-items: center;
   height: 42px;
   padding: 0 16px;
-  background-color: #fff;
+  background-color: mat-color($mat-light-theme-background, card);
   border: 1px solid mat-color($tb-foreground, border);
 }
 
 .annotations-title {
-  font-size: 14px;
+  font-size: 0.9em;
   font-weight: 500;
   padding-right: 10px;
+  display: inline;
 }
 
 .annotations-title-container {
@@ -44,7 +33,7 @@
 }
 
 .show-toggle {
-  margin-right: 20px;
+  margin-right: 0.8em;
   font-size: 12px;
 }
 

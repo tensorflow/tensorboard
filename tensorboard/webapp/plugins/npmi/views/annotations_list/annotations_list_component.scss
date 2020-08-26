@@ -1,17 +1,10 @@
 @import 'tensorboard/webapp/theme/tb_theme';
 
-.annotations-container {
-  background-color: #fff;
+:host {
+  background-color: mat-color($mat-light-theme-background, card);
   border: 1px solid mat-color($tb-foreground, border);
   height: calc(100% - 2px); // Because of Border
   width: calc(100% - 2px); // Because of Boder
   display: flex;
   flex-direction: column;
-}
-
-.annotations-detail {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1;
-  overflow-y: auto;
 }

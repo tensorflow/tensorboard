@@ -19,7 +19,6 @@ export class AnnotationsLegendElementComponent
   @Input() text!: string;
   @Input() color!: string;
   @Input() shape!: string;
-  @Input() fromComponent!: string;
   // Drawing containers
   private svg: any;
   private mainContainer: any;
@@ -29,13 +28,9 @@ export class AnnotationsLegendElementComponent
   }
 
   ngAfterViewInit(): void {
-    this.svg = d3
-      .select(
-        `#annotations-legend-element-glyph-${CSS.escape(
-          this.fromComponent
-        )}-${CSS.escape(this.text)}`
-      )
-      .select('svg');
+    this.svg = d3.select(
+      `#annotations-legend-element-glyph-${CSS.escape(this.text)}`
+    );
     this.mainContainer = this.svg.append('g');
     this.redraw();
   }
@@ -70,7 +65,7 @@ export class AnnotationsLegendElementComponent
         .attr('y', 0)
         .attr('width', 10)
         .attr('height', 10);
-    } else if (this.shape == 'triangle') {
+    } else if (this.shape == 'runIndicator') {
       this.mainContainer
         .append('g')
         .append('path')

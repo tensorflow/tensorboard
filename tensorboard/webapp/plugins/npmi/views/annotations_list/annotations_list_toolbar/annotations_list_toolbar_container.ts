@@ -19,6 +19,7 @@ import {
   template: `
     <npmi-annotations-list-toolbar-component
       [numAnnotations]="numAnnotations"
+      [expanded]="expanded"
       [selectedAnnotations]="selectedAnnotations$ | async"
       [annotationsExpanded]="annotationsExpanded$ | async"
       [showCounts]="showCounts$ | async"
@@ -37,6 +38,7 @@ import {
 })
 export class AnnotationsListToolbarContainer {
   @Input() numAnnotations!: number;
+  @Input() expanded!: boolean;
   readonly selectedAnnotations$ = this.store.select(getSelectedAnnotations);
   readonly annotationsExpanded$ = this.store.select(getAnnotationsExpanded);
   readonly showCounts$ = this.store.select(getShowCounts);

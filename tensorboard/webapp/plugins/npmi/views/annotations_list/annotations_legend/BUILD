@@ -1,5 +1,5 @@
 load("@npm_angular_bazel//:index.bzl", "ng_module")
-load("//tensorboard/defs:defs.bzl", "tf_sass_binary")
+load("//tensorboard/defs:defs.bzl", "tf_sass_binary", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -21,15 +21,22 @@ ng_module(
         ":annotations_legend_component_styles",
     ],
     deps = [
-        "//tensorboard/webapp/core/store",
-        "//tensorboard/webapp/plugins/npmi/store",
-        "//tensorboard/webapp/plugins/npmi/store:types",
-        "//tensorboard/webapp/plugins/npmi/views/annotations_list/annotations_list_toolbar/annotations_legend/annotations_legend_element",
+        "//tensorboard/webapp/plugins/npmi/views/annotations_list/annotations_legend/annotations_legend_element",
         "@npm//@angular/core",
-        "@npm//@angular/material",
-        "@npm//@ngrx/store",
-        "@npm//@types/d3",
-        "@npm//d3",
-        "@npm//rxjs",
+    ],
+)
+
+tf_ts_library(
+    name = "annotations_legend_test_lib",
+    testonly = True,
+    srcs = [
+        "annotations_legend_test.ts",
+    ],
+    deps = [
+        ":annotations_legend",
+        "//tensorboard/webapp/core/testing",
+        "@npm//@angular/core",
+        "@npm//@angular/platform-browser",
+        "@npm//@types/jasmine",
     ],
 )

@@ -12,7 +12,6 @@ import {MatInputModule} from '@angular/material/input';
 
 import {AnnotationsListToolbarComponent} from './annotations_list_toolbar_component';
 import {AnnotationsListToolbarContainer} from './annotations_list_toolbar_container';
-import {AnnotationsLegendModule} from './annotations_legend/annotations_legend_module';
 
 @NgModule({
   declarations: [
@@ -27,7 +26,6 @@ import {AnnotationsLegendModule} from './annotations_legend/annotations_legend_m
     MatButtonModule,
     MatTooltipModule,
     BrowserAnimationsModule,
-    AnnotationsLegendModule,
     MatSlideToggleModule,
     MatInputModule,
   ],

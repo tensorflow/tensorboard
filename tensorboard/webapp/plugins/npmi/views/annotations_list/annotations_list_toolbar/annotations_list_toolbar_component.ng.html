@@ -1,84 +1,80 @@
-<div class="annotations-toolbar-top">
-  <div class="annotations-title-container">
-    <span
-      class="annotations-title"
-      aria-role="heading"
-      aria-level="3"
-      title="Filtered Annotations"
-    >
-      Annotations ({{numAnnotations}})
-    </span>
-    <div
-      matTooltipPosition="below"
-      matTooltip="Flagging annotations adds them to your investigation results, and can later be exported."
-      matTooltipShowDelay="500"
-    >
-      <button
-        mat-icon-button
-        (click)="onFlagAnnotations.emit(selectedAnnotations)"
-        [disabled]="selectedAnnotations.length === 0"
-      >
-        <mat-icon svgIcon="flag_24px"></mat-icon>
-      </button>
-    </div>
-    <div
-      matTooltipPosition="below"
-      matTooltip="Removing non-critical annotations unclutters the view. Removed annotations are removed from all visualizations."
-      matTooltipShowDelay="500"
-    >
-      <button
-        mat-icon-button
-        (click)="onHideAnnotations.emit(selectedAnnotations)"
-        [disabled]="selectedAnnotations.length === 0"
-      >
-        <mat-icon svgIcon="visibility_off_24px"></mat-icon>
-      </button>
-    </div>
-  </div>
-  <mat-slide-toggle
-    [checked]="showCounts"
-    (change)="onToggleShowCounts.emit()"
-    class="show-toggle"
+<div class="annotations-title-container">
+  <h3 class="annotations-title">
+    Annotations ({{numAnnotations}})
+  </h3>
+  <div
+    *ngIf="expanded"
     matTooltipPosition="below"
-    matTooltip="Hides and shows the sample count where applicable (how many samples belong to a category)."
+    matTooltip="Flagging annotations adds them to your investigation results, and can later be exported."
     matTooltipShowDelay="500"
   >
-    Sample Count
-  </mat-slide-toggle>
-  <mat-slide-toggle
-    [checked]="showHidden"
-    (change)="onToggleShowHidden.emit()"
-    class="show-toggle"
+    <button
+      mat-icon-button
+      (click)="onFlagAnnotations.emit(selectedAnnotations)"
+      [disabled]="selectedAnnotations.length === 0"
+    >
+      <mat-icon svgIcon="flag_24px"></mat-icon>
+    </button>
+  </div>
+  <div
+    *ngIf="expanded"
     matTooltipPosition="below"
-    matTooltip="Hides and shows hidden annotations in all visualizations."
+    matTooltip="Removing non-critical annotations unclutters the view. Removed annotations are removed from all visualizations."
     matTooltipShowDelay="500"
   >
-    Show Hidden
-  </mat-slide-toggle>
-  <div class="metric-filter" [ngClass]="{'valid': isRegexFilterValid}">
-    <mat-icon svgIcon="search_24px"></mat-icon>
-    <input
-      autocomplete="off"
-      placeholder="Filter Annotations"
-      [value]="regexFilterValue"
-      (input)="onRegexFilterValueChange.emit($event.target.value)"
-    />
-    <mat-icon
-      svgIcon="error_24px"
-      *ngIf="!isRegexFilterValid"
-      class="error-icon"
-      matTooltip="Invalid regex filter. The result may be stale."
+    <button
+      mat-icon-button
+      (click)="onHideAnnotations.emit(selectedAnnotations)"
+      [disabled]="selectedAnnotations.length === 0"
     >
-    </mat-icon>
+      <mat-icon svgIcon="visibility_off_24px"></mat-icon>
+    </button>
   </div>
-  <button
-    class="expand-button"
-    mat-icon-button
-    (click)="onToggleExpanded.emit()"
+</div>
+<mat-slide-toggle
+  *ngIf="expanded"
+  [checked]="showCounts"
+  (change)="onToggleShowCounts.emit()"
+  class="show-toggle"
+  matTooltipPosition="below"
+  matTooltip="Hides and shows the sample count where applicable (how many samples belong to a category)."
+  matTooltipShowDelay="500"
+>
+  Sample Count
+</mat-slide-toggle>
+<mat-slide-toggle
+  *ngIf="expanded"
+  [checked]="showHidden"
+  (change)="onToggleShowHidden.emit()"
+  class="show-toggle"
+  matTooltipPosition="below"
+  matTooltip="Hides and shows hidden annotations in all visualizations."
+  matTooltipShowDelay="500"
+>
+  Show Hidden
+</mat-slide-toggle>
+<div
+  class="metric-filter"
+  [ngClass]="{'valid': isRegexFilterValid}"
+  *ngIf="expanded"
+>
+  <mat-icon svgIcon="search_24px"></mat-icon>
+  <input
+    autocomplete="off"
+    placeholder="Filter Annotations"
+    [value]="regexFilterValue"
+    (input)="onRegexFilterValueChange.emit($event.target.value)"
+  />
+  <mat-icon
+    svgIcon="error_24px"
+    *ngIf="!isRegexFilterValid"
+    class="error-icon"
+    matTooltip="Invalid regex filter. The result may be stale."
   >
-    <mat-icon svgIcon="expand_less_24px"></mat-icon>
-  </button>
+  </mat-icon>
 </div>
-<div class="annotations-toolbar-bottom">
-  <npmi-annotations-legend></npmi-annotations-legend>
-</div>
+<button class="expand-button" mat-icon-button (click)="onToggleExpanded.emit()">
+  <mat-icon
+    [svgIcon]="expanded ? 'expand_less_24px' : 'expand_more_24px'"
+  ></mat-icon>
+</button>

@@ -19,6 +19,7 @@ import {Store} from '@ngrx/store';
 })
 export class AnnotationsListToolbarComponent {
   @Input() numAnnotations!: number;
+  @Input() expanded!: boolean;
   @Input() selectedAnnotations!: string[];
   @Input() annotationsExpanded!: boolean;
   @Input() showCounts!: boolean;

@@ -51,8 +51,6 @@ export class AnnotationsListHeaderContainer {
   }
 
   allAnnotationsToggled(checked: boolean) {
-    console.log(checked);
-    console.log(Object.keys(this.annotations));
     if (checked) {
       this.store.dispatch(
         npmiActions.npmiSetSelectedAnnotations({

@@ -1,10 +1,10 @@
-.annotations-legend-element-component {
+:host {
   display: flex;
   align-items: center;
   padding-right: 10px;
 }
 
-.legend-title {
+.legend-element-title {
   padding-left: 5px;
-  font-size: 13px;
+  font-size: 0.8em;
 }
