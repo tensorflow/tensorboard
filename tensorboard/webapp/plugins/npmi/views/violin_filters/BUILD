@@ -29,6 +29,7 @@ ng_module(
         "//tensorboard/webapp/plugins/npmi/store",
         "//tensorboard/webapp/plugins/npmi/store:types",
         "@npm//@angular/core",
+        "@npm//@angular/forms",
         "@npm//@ngrx/store",
         "@npm//rxjs",
     ],

@@ -23,10 +23,13 @@ ng_module(
     ],
     deps = [
         "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp/angular:expect_angular_material_button",
         "//tensorboard/webapp/angular:expect_angular_material_checkbox",
+        "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/core:types",
         "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/plugins/npmi/actions",
+        "//tensorboard/webapp/plugins/npmi/store",
         "//tensorboard/webapp/plugins/npmi/views/data_selection",
         "//tensorboard/webapp/plugins/npmi/views/violin_filters",
         "//tensorboard/webapp/runs",
