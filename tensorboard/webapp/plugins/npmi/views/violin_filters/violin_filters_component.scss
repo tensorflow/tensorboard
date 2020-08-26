@@ -20,33 +20,19 @@ limitations under the License.
   height: 100%;
 }
 
-.filters {
-  overflow-y: auto;
-}
-
 .filters-toolbar {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   border-bottom: 1px solid mat-color($tb-foreground, border);
-  min-height: 42px;
+  height: 42px;
   padding: 0 10px;
 }
 
 .filters-title {
   font-size: 14px;
   font-weight: 500;
-  flex: 1;
-}
-
-.filters-hint {
-  display: flex;
-  align-items: center;
-  height: 42px;
-  padding: 0 16px;
-}
-
-.filters-hint-text {
-  color: lightgray;
+  display: inline;
 }
 
 .side-toggle {

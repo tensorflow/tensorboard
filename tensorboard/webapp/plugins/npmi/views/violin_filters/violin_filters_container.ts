@@ -37,7 +37,6 @@ export class ViolinFiltersContainer {
   constructor(private readonly store: Store<State>) {}
 
   onToggleSidebarExpanded() {
-    console.log('test sidebar');
     this.store.dispatch(npmiActions.npmiToggleSidebarExpanded());
   }
 }

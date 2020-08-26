@@ -23,6 +23,7 @@ import {State} from '../../../../app_state';
 import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
 import {ViolinFiltersComponent} from './violin_filters_component';
+import {ViolinFiltersContainer} from './violin_filters_container';
 import {appStateFromNpmiState, createNpmiState} from '../../testing';
 import {createState, createCoreState} from '../../../../core/testing';
 import * as npmiActions from '../../actions';
@@ -41,7 +42,7 @@ describe('Npmi Violin Filters Container', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ViolinFiltersComponent],
+      declarations: [ViolinFiltersContainer, ViolinFiltersComponent],
       imports: [],
       providers: [
         provideMockStore({
@@ -61,7 +62,7 @@ describe('Npmi Violin Filters Container', () => {
   });
 
   it('renders npmi violin filters component', () => {
-    const fixture = TestBed.createComponent(ViolinFiltersComponent);
+    const fixture = TestBed.createComponent(ViolinFiltersContainer);
     fixture.detectChanges();
 
     const violinFilters = fixture.debugElement.query(
@@ -72,7 +73,7 @@ describe('Npmi Violin Filters Container', () => {
 
   it('dispatches toggle expanded action when hide button clicked', () => {
     store.overrideSelector(getSidebarExpanded, true);
-    const fixture = TestBed.createComponent(ViolinFiltersComponent);
+    const fixture = TestBed.createComponent(ViolinFiltersContainer);
     fixture.detectChanges();
 
     const sideToggle = fixture.debugElement.query(By.css(css.SIDE_TOGGLE));
