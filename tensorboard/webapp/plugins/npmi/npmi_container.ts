@@ -27,7 +27,7 @@ import {getRunSelection} from '../../core/store/core_selectors';
     <npmi-component [runs]="runs$ | async"></npmi-component>
   `,
 })
-export class NpmiContainer implements OnInit, OnDestroy {
+export class NpmiContainer implements OnInit {
   readonly runs$ = this.store.pipe(select(getRunSelection));
 
   constructor(private readonly store: Store<State>) {}

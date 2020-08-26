@@ -1,5 +1,5 @@
 load("@npm_angular_bazel//:index.bzl", "ng_module")
-load("//tensorboard/defs:defs.bzl", "tf_sass_binary")
+load("//tensorboard/defs:defs.bzl", "tf_sass_binary", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -23,26 +23,26 @@ ng_module(
     ],
     deps = [
         "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp/angular:expect_angular_material_button",
+        "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/plugins/npmi/store",
         "//tensorboard/webapp/plugins/npmi/store:types",
+        "//tensorboard/webapp/plugins/npmi/views/annotations_list/annotations_list_toolbar/annotations_search",
         "@npm//@angular/core",
-        "@npm//@angular/material",
         "@npm//@ngrx/store",
-        "@npm//@types/d3",
-        "@npm//d3",
         "@npm//rxjs",
     ],
 )
 
 tf_ts_library(
-    name = "metric_search_test_lib",
+    name = "annotations_list_toolbar_test_lib",
     testonly = True,
     srcs = [
-        "metric_search_test.ts",
+        "annotations_list_toolbar_test.ts",
     ],
     deps = [
-        ":metric_search",
+        ":annotations_list_toolbar",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_angular_material_autocomplete",

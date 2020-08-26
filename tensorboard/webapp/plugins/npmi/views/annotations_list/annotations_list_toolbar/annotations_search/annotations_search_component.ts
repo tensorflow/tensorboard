@@ -12,14 +12,23 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {NgModule} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  HostBinding,
+} from '@angular/core';
 
-import {AnnotationsLegendComponent} from './annotations_legend_component';
-import {AnnotationsLegendElementModule} from './annotations_legend_element/annotations_legend_element_module';
-
-@NgModule({
-  declarations: [AnnotationsLegendComponent],
-  imports: [AnnotationsLegendElementModule],
-  exports: [AnnotationsLegendComponent],
+@Component({
+  selector: 'npmi-annotations-search-component',
+  templateUrl: './annotations_search_component.ng.html',
+  styleUrls: ['./annotations_search_component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AnnotationsLegendModule {}
+export class AnnotationsSearchComponent {
+  @Input() regexFilterValue!: string;
+  @Output() onRegexFilterValueChange = new EventEmitter<string>();
+  @HostBinding('class.valid') @Input() isRegexFilterValid!: boolean;
+}

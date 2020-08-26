@@ -14,10 +14,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<svg
-  style="width: 10px; height: 10px"
-  id="annotations-legend-element-glyph-{{text}}"
-></svg>
-<div class="legend-element-title">
-  {{text}}
-</div>
+<mat-icon svgIcon="search_24px"></mat-icon>
+<input
+  autocomplete="off"
+  placeholder="Filter Annotations"
+  [value]="regexFilterValue"
+  (input)="onRegexFilterValueChange.emit($event.target.value)"
+/>
+<mat-icon
+  svgIcon="error_24px"
+  *ngIf="!isRegexFilterValid"
+  class="error-icon"
+  matTooltip="Invalid regex filter. The result may be stale."
+>
+</mat-icon>

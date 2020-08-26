@@ -1,3 +1,17 @@
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+==============================================================================*/
 import {TestBed, ComponentFixture} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 
@@ -10,14 +24,20 @@ import {AnnotationsListHeaderContainer} from './annotations_list_header_containe
 import * as npmiActions from '../../../actions';
 import {SortingOrder} from '../../../store/npmi_types';
 import {appStateFromNpmiState, createNpmiState} from '../../../testing';
+import {getAnnotationSorting} from '../../../store';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
-import {getAnnotationSorting} from '../../../store';
 
 describe('Npmi Annotations List Header Container', () => {
   let store: MockStore<State>;
   let dispatchedActions: Action[];
   let fixture: ComponentFixture<AnnotationsListHeaderContainer>;
+  const css = {
+    CHECKBOX_CONTAINER: '.checkbox-container',
+    ANNOTATIONS_HEADER_CONTAINER: '.annotations-header-container',
+    CHECKBOX: 'mat-checkbox',
+    HEADER: '.header-clickable',
+  };
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -45,7 +65,7 @@ describe('Npmi Annotations List Header Container', () => {
       'nPMI@test2',
       'nPMI_diff@(test-test2)',
     ];
-    fixture.componentInstance.numAnnotations = 3;
+    fixture.componentInstance.numAnnotations = 2;
     fixture.componentInstance.annotations = {
       annotation_1: [
         {
@@ -73,21 +93,19 @@ describe('Npmi Annotations List Header Container', () => {
     const strippedMetrics = ['test', 'test2', '(test-test2)'];
 
     const checkboxContainer = fixture.debugElement.query(
-      By.css('.checkbox-container')
+      By.css(css.CHECKBOX_CONTAINER)
     );
     expect(checkboxContainer).toBeTruthy();
 
-    const checkbox = fixture.debugElement.query(By.css('mat-checkbox'));
+    const checkbox = fixture.debugElement.query(By.css(css.CHECKBOX));
     expect(checkbox.nativeElement.checked).toBeFalsy();
 
     const headerContainer = fixture.debugElement.query(
-      By.css('.annotations-header-container')
+      By.css(css.ANNOTATIONS_HEADER_CONTAINER)
     );
     expect(headerContainer).toBeTruthy();
 
-    const headerMetrics = fixture.debugElement.queryAll(
-      By.css('.header-clickable')
-    );
+    const headerMetrics = fixture.debugElement.queryAll(By.css(css.HEADER));
     for (const index in strippedMetrics) {
       expect(headerMetrics[index].nativeElement.textContent.trim()).toBe(
         strippedMetrics[index]
@@ -107,30 +125,25 @@ describe('Npmi Annotations List Header Container', () => {
       'nPMI_diff@(test-test2)',
     ];
     fixture.detectChanges();
-    const headerMetric = fixture.debugElement.query(
-      By.css('.header-clickable')
-    );
+    const headerMetric = fixture.debugElement.query(By.css(css.HEADER));
     expect(headerMetric.nativeElement.textContent.trim()).toBe(
       'test \uD83E\uDC27'
     );
   });
 
-  it('dispatches toggleAllAnnotations action when checkbox is clicked', () => {
-    const checkbox = fixture.debugElement.query(By.css('mat-checkbox input'));
-    checkbox.nativeElement.click();
+  it('dispatches npmiSelectedAnnotations action with all annotations when checkbox is clicked', () => {
+    const checkbox = fixture.debugElement.query(By.css(css.CHECKBOX));
+    checkbox.triggerEventHandler('change', {checked: true});
     fixture.detectChanges();
     expect(dispatchedActions).toEqual([
       npmiActions.npmiSetSelectedAnnotations({
         annotations: ['annotation_1', 'annotation_2'],
       }),
     ]);
-    expect(checkbox.nativeElement.checked).toBeTruthy();
   });
 
   it('dispatches sortingChanged action when metric is clicked', () => {
-    const headerMetric = fixture.debugElement.query(
-      By.css('.header-clickable')
-    );
+    const headerMetric = fixture.debugElement.query(By.css(css.HEADER));
     headerMetric.nativeElement.click();
     fixture.detectChanges();
     expect(dispatchedActions).toEqual([

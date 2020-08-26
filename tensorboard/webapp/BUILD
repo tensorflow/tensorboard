@@ -183,6 +183,7 @@ tf_ng_web_test_suite(
         "//tensorboard/webapp/plugins/npmi/views/annotations_list/annotations_legend/annotations_legend_element:annotations_legend_element_test_lib",
         "//tensorboard/webapp/plugins/npmi/views/annotations_list/annotations_list_header:annotations_list_header_test_lib",
         "//tensorboard/webapp/plugins/npmi/views/annotations_list/annotations_list_toolbar:annotations_list_toolbar_test_lib",
+        "//tensorboard/webapp/plugins/npmi/views/annotations_list/annotations_list_toolbar/annotations_search:annotations_search_test_lib",
         "//tensorboard/webapp/plugins/npmi/views/data_selection:data_selection_test_lib",
         "//tensorboard/webapp/plugins/npmi/views/data_selection/metric_search:metric_search_test_lib",
         "//tensorboard/webapp/plugins/npmi/views/main:main_test_lib",

@@ -12,14 +12,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
+import {FormsModule} from '@angular/forms';
 
-import {AnnotationsLegendComponent} from './annotations_legend_component';
-import {AnnotationsLegendElementModule} from './annotations_legend_element/annotations_legend_element_module';
+import {MatIconModule} from '@angular/material/icon';
+import {MatInputModule} from '@angular/material/input';
+
+import {AnnotationsSearchComponent} from './annotations_search_component';
+import {AnnotationsSearchContainer} from './annotations_search_container';
 
 @NgModule({
-  declarations: [AnnotationsLegendComponent],
-  imports: [AnnotationsLegendElementModule],
-  exports: [AnnotationsLegendComponent],
+  declarations: [AnnotationsSearchComponent, AnnotationsSearchContainer],
+  imports: [CommonModule, FormsModule, MatIconModule, MatInputModule],
+  exports: [AnnotationsSearchContainer],
 })
-export class AnnotationsLegendModule {}
+export class AnnotationsSearchModule {}

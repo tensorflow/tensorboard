@@ -6,50 +6,56 @@ package(default_visibility = ["//tensorboard:internal"])
 licenses(["notice"])  # Apache 2.0
 
 tf_sass_binary(
-    name = "annotations_list_header_component_styles",
-    src = "annotations_list_header_component.scss",
+    name = "annotations_search_component_styles",
+    src = "annotations_search_component.scss",
 )
 
 ng_module(
-    name = "annotations_list_header",
+    name = "annotations_search",
     srcs = [
-        "annotations_list_header_component.ts",
-        "annotations_list_header_container.ts",
-        "annotations_list_header_module.ts",
+        "annotations_search_component.ts",
+        "annotations_search_container.ts",
+        "annotations_search_module.ts",
     ],
     assets = [
-        ":annotations_list_header_component_styles",
-        "annotations_list_header_component.ng.html",
+        "annotations_search_component.ng.html",
+        ":annotations_search_component_styles",
     ],
     deps = [
         "//tensorboard/webapp:app_state",
-        "//tensorboard/webapp/angular:expect_angular_material_checkbox",
+        "//tensorboard/webapp/angular:expect_angular_material_icon",
+        "//tensorboard/webapp/angular:expect_angular_material_input",
+        "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/plugins/npmi/store",
         "//tensorboard/webapp/plugins/npmi/store:types",
-        "//tensorboard/webapp/plugins/npmi/util:metric_type",
         "@npm//@angular/core",
-        "@npm//@angular/forms",
         "@npm//@ngrx/store",
         "@npm//rxjs",
     ],
 )
 
 tf_ts_library(
-    name = "annotations_list_header_test_lib",
+    name = "annotations_search_test_lib",
     testonly = True,
     srcs = [
-        "annotations_list_header_test.ts",
+        "annotations_search_test.ts",
     ],
     deps = [
-        ":annotations_list_header",
+        ":annotations_search",
         "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "//tensorboard/webapp/angular:expect_angular_material_icon",
+        "//tensorboard/webapp/angular:expect_angular_material_input",
+        "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "//tensorboard/webapp/core/store",
-        "//tensorboard/webapp/core/testing",
         "//tensorboard/webapp/plugins/npmi/actions",
         "//tensorboard/webapp/plugins/npmi/store",
         "//tensorboard/webapp/plugins/npmi/store:types",
         "//tensorboard/webapp/plugins/npmi/testing",
+        "//tensorboard/webapp/testing:mat_icon",
+        "@npm//@angular/common",
         "@npm//@angular/core",
+        "@npm//@angular/forms",
         "@npm//@angular/platform-browser",
         "@npm//@ngrx/store",
         "@npm//@types/jasmine",
