@@ -15,20 +15,67 @@ limitations under the License.
 import {Component, ChangeDetectionStrategy} from '@angular/core';
 import {select, Store} from '@ngrx/store';
 
+import {map} from 'rxjs/operators';
+
 import {State} from '../../../../app_state';
 import {getRunSelection} from '../../../../core/store/core_selectors';
+import {
+  getSidebarExpanded,
+  getSidebarWidth,
+} from './../../store/npmi_selectors';
+import * as npmiActions from '../../actions';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 @Component({
   selector: 'npmi-main',
   template: `
-    <main-component [runs]="runs$ | async"></main-component>
+    <main-component
+      [runActive]="runActive$ | async"
+      [sidebarExpanded]="sidebarExpanded$ | async"
+      [sidebarWidth]="sidebarWidth$ | async"
+      (toggleSidebarExpanded)="onToggleSidebarExpanded()"
+      (resizeTriggered)="onResizeTriggered($event)"
+      (resizeGrabbed)="onResizeGrabbed()"
+      (resizeReleased)="onResizeReleased()"
+    ></main-component>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MainContainer {
-  readonly runs$ = this.store.pipe(select(getRunSelection));
+  readonly runActive$ = this.store.pipe(select(getRunSelection)).pipe(
+    map((runs) => {
+      if (!runs) {
+        return false;
+      }
+      return [...runs.values()].includes(true);
+    })
+  );
+  readonly sidebarExpanded$ = this.store.pipe(select(getSidebarExpanded));
+  readonly sidebarWidth$ = this.store.pipe(select(getSidebarWidth));
+  resizing = false;
 
   constructor(private readonly store: Store<State>) {}
+
+  onToggleSidebarExpanded() {
+    this.store.dispatch(npmiActions.npmiToggleSidebarExpanded());
+  }
+
+  onResizeTriggered(event: MouseEvent) {
+    if (this.resizing) {
+      this.store.dispatch(
+        npmiActions.npmiChangeSidebarWidth({
+          sidebarWidth: event.clientX,
+        })
+      );
+    }
+  }
+
+  onResizeGrabbed() {
+    this.resizing = true;
+  }
+
+  onResizeReleased() {
+    this.resizing = false;
+  }
 }

@@ -27,11 +27,16 @@ limitations under the License.
   width: 100%;
 }
 
-.selection-container {
-  width: 300px;
+.sidebar-container {
+  height: 100%;
+  overflow: hidden;
+}
+
+.sidebar-contents {
   height: 100%;
   display: flex;
   flex-direction: column;
+  min-width: 150px;
 }
 
 .analysis-container {
@@ -44,4 +49,32 @@ limitations under the License.
 .run-selector {
   padding: 10px;
   width: calc(100% - 20px);
+}
+
+.violin-filters {
+  min-height: 0px;
+  width: 100%;
+}
+
+.side-toggle {
+  width: 30px;
+  height: 30px;
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  background-color: white;
+  border: 1px solid mat-color($tb-foreground, border);
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.grabber {
+  content: '';
+  cursor: ew-resize;
+  height: 100%;
+  width: 3px;
+  overflow: hidden;
+  background-color: grey;
 }

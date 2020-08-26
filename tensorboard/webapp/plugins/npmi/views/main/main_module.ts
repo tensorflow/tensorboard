@@ -17,11 +17,14 @@ import {NgModule} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 
 import {MatCheckboxModule} from '@angular/material/checkbox';
+import {MatButtonModule} from '@angular/material/button';
+import {MatIconModule} from '@angular/material/icon';
 
 import {MainComponent} from './main_component';
 import {MainContainer} from './main_container';
 import {RunsModule} from '../../../../runs/runs_module';
 import {DataSelectionModule} from './../data_selection/data_selection_module';
+import {ViolinFiltersModule} from './../violin_filters/violin_filters_module';
 
 @NgModule({
   declarations: [MainComponent, MainContainer],
@@ -29,8 +32,11 @@ import {DataSelectionModule} from './../data_selection/data_selection_module';
     CommonModule,
     FormsModule,
     MatCheckboxModule,
+    MatIconModule,
     RunsModule,
     DataSelectionModule,
+    MatButtonModule,
+    ViolinFiltersModule,
   ],
   exports: [MainContainer],
 })

@@ -12,27 +12,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  Output,
-  EventEmitter,
-} from '@angular/core';
-import {Store} from '@ngrx/store';
+import {CommonModule} from '@angular/common';
+import {NgModule} from '@angular/core';
+import {FormsModule} from '@angular/forms';
 
-@Component({
-  selector: 'main-component',
-  templateUrl: './main_component.ng.html',
-  styleUrls: ['./main_component.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+import {MatButtonModule} from '@angular/material/button';
+import {MatIconModule} from '@angular/material/icon';
+
+import {ViolinFiltersComponent} from './violin_filters_component';
+import {ViolinFiltersContainer} from './violin_filters_container';
+
+@NgModule({
+  declarations: [ViolinFiltersComponent, ViolinFiltersContainer],
+  imports: [CommonModule, FormsModule, MatIconModule, MatButtonModule],
+  exports: [ViolinFiltersContainer],
 })
-export class MainComponent {
-  @Input() runActive!: boolean;
-  @Input() sidebarExpanded!: boolean;
-  @Input() sidebarWidth!: number;
-  @Output() toggleSidebarExpanded = new EventEmitter();
-  @Output() resizeTriggered = new EventEmitter<MouseEvent>();
-  @Output() resizeGrabbed = new EventEmitter();
-  @Output() resizeReleased = new EventEmitter();
-}
+export class ViolinFiltersModule {}

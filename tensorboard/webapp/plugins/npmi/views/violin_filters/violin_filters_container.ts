@@ -12,27 +12,31 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  Output,
-  EventEmitter,
-} from '@angular/core';
+import {Component, ChangeDetectionStrategy, Input} from '@angular/core';
 import {Store} from '@ngrx/store';
+import {State} from '../../../../app_state';
+
+import {getSidebarExpanded} from '../../store';
+import * as npmiActions from '../../actions';
+
+/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 @Component({
-  selector: 'main-component',
-  templateUrl: './main_component.ng.html',
-  styleUrls: ['./main_component.css'],
+  selector: 'npmi-violin-filters',
+  template: `
+    <violin-filters-component
+      [sidebarExpanded]="sidebarExpanded$ | async"
+      (toggleSidebarExpanded)="onToggleSidebarExpanded()"
+    ></violin-filters-component>
+  `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class MainComponent {
-  @Input() runActive!: boolean;
-  @Input() sidebarExpanded!: boolean;
-  @Input() sidebarWidth!: number;
-  @Output() toggleSidebarExpanded = new EventEmitter();
-  @Output() resizeTriggered = new EventEmitter<MouseEvent>();
-  @Output() resizeGrabbed = new EventEmitter();
-  @Output() resizeReleased = new EventEmitter();
+export class ViolinFiltersContainer {
+  readonly sidebarExpanded$ = this.store.select(getSidebarExpanded);
+
+  constructor(private readonly store: Store<State>) {}
+
+  onToggleSidebarExpanded() {
+    this.store.dispatch(npmiActions.npmiToggleSidebarExpanded());
+  }
 }
