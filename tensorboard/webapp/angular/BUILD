@@ -2,7 +2,7 @@ load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
-licenses(["notice"])  # Apache 2.0
+licenses(["notice"])
 
 # This is a dummy rule used as a @angular/common/http dependency.
 # This is not a replacement for @angular/common dependency.
