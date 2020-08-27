@@ -1,5 +1,4 @@
-load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ts_library")
-load("//tensorboard/defs:web.bzl", "tf_web_library")
+load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -28,22 +27,4 @@ tf_ts_library(
     deps = [
         ":plugin_lib",
     ],
-)
-
-tf_js_binary(
-    name = "plugin_lib_polymer_interop_binary",
-    compile = 1,
-    entry_point = ":polymer-interop.ts",
-    deps = [
-        ":plugin_lib_polymer_interop_internal",
-    ],
-)
-
-tf_web_library(
-    name = "plugin_lib_polymer_interop",
-    srcs = [
-        "plugin_lib_polymer_interop_binary.js",
-        "polymer-interop.html",
-    ],
-    path = "/tf-plugin-lib",
 )
