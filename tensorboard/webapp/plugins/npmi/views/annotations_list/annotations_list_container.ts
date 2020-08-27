@@ -108,7 +108,6 @@ export class AnnotationsListContainer {
           activeRuns,
           activeMetrics,
         ]) => {
-          console.log('test');
           return filterAnnotations(
             visibleAnnotations,
             activeRuns,
