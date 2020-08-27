@@ -92,11 +92,13 @@ before_script:
 # categorize them as 'failed', rather than 'error' for other sections.
 script:
   - elapsed "script"
-  # TODO: re-enable the bazel tests by 8/28/20.
+  # [cache-update] TODO: re-enable the bazel tests by 8/28/20.
   # See https://github.com/tensorflow/tensorboard/issues/4091
   # Note: bazel test implies fetch+build, but this gives us timing.
   - elapsed && bazel fetch //tensorboard/...
-  - elapsed && bazel build //tensorboard/...
+  - elapsed && bazel build //tensorboard/components_polymer3/...
+  # [cache-update] Original workflow below
+  # - elapsed && bazel build //tensorboard/...
   # - elapsed && bazel test //tensorboard/... --test_tag_filters="${test_tag_filters}"
   # - elapsed && bazel run //tensorboard/pip_package:test_pip_package -- --tf-version "${TF_VERSION_ID}"
   # # Run manual S3 test
