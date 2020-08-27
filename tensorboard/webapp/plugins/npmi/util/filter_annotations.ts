@@ -29,14 +29,17 @@ export function filterAnnotations(
 ): AnnotationDataListing {
   const data: AnnotationDataListing = {};
   const annotations = Object.keys(annotationData);
+  const allRuns = new Set(...activeRuns);
+  const allMetrics = new Set(
+    ...metrics.map((metric) => stripMetricString(metric))
+  );
   annotations.forEach((annotation) => {
     let valueDataElements = annotationData[annotation];
-    const allMetrics = metrics.map((metric) => stripMetricString(metric));
     // Remove all inactive runs and keep only metrics currently displayed
     valueDataElements = valueDataElements.filter((valueDataElement) => {
       return (
-        activeRuns.includes(valueDataElement.run) &&
-        allMetrics.includes(valueDataElement.metric)
+        allRuns.has(valueDataElement.run) &&
+        allMetrics.has(valueDataElement.metric)
       );
     });
     // Check all parts of the arithemetic
