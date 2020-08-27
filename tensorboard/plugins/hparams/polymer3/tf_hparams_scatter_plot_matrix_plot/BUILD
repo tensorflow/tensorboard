@@ -3,7 +3,7 @@ load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 package(default_visibility =
             ["//tensorboard/plugins/hparams:__subpackages__"])
 
-licenses(["notice"])  # Apache 2.0
+licenses(["notice"])
 
 tf_ts_library(
     name = "tf_hparams_scatter_plot_matrix_plot",

@@ -2,7 +2,7 @@ load("@io_bazel_rules_webtesting//web:web.bzl", "browser")
 
 package(default_visibility = ["//tensorboard:internal"])
 
-licenses(["notice"])  # Apache 2.0
+licenses(["notice"])
 
 config_setting(
     name = "mac",
