@@ -19,13 +19,13 @@ import * as Plottable from 'plottable';
 import * as d3 from 'd3';
 import * as _ from 'lodash';
 
-import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
-import '../../../../components_polymer3/polymer/plottable-style';
+import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
+import '../../../components/polymer/plottable-style';
 import {
   Y_AXIS_FORMATTER_PRECISION,
   getXComponents,
   multiscaleFormatter,
-} from '../../../../components_polymer3/vz_chart_helpers/vz-chart-helpers';
+} from '../../../components/vz_chart_helpers/vz-chart-helpers';
 
 export class DistributionChart {
   private run2datasets: {

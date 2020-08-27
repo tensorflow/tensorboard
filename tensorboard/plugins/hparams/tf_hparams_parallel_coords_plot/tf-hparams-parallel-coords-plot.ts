@@ -69,7 +69,7 @@ import * as tf_hparams_utils from '../tf_hparams_utils/tf-hparams-utils';
 import '../tf_hparams_session_group_values/tf-hparams-session-group-values';
 import * as tf_hparams_parallel_coords_plot_interaction_manager from './interaction_manager';
 
-import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 
 @customElement('tf-hparams-parallel-coords-plot')
 class TfHparamsParallelCoordsPlot extends LegacyElementMixin(PolymerElement) {

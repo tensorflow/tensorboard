@@ -18,7 +18,7 @@ import * as Plottable from 'plottable';
 import {
   LineChartSymbol,
   ScalarDatum,
-} from '../../../../components_polymer3/vz_chart_helpers/vz-chart-helpers';
+} from '../../../components/vz_chart_helpers/vz-chart-helpers';
 
 export interface CustomScalarResponse {
   regex_valid: boolean;

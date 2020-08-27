@@ -15,17 +15,17 @@ limitations under the License.
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {computed, customElement, observe, property} from '@polymer/decorators';
-import '../../../../components_polymer3/polymer/irons_and_papers';
+import '../../../components/polymer/irons_and_papers';
 
-import {Canceller} from '../../../../components_polymer3/tf_backend/canceller';
-import {RequestManager} from '../../../../components_polymer3/tf_backend/requestManager';
-import {getRouter} from '../../../../components_polymer3/tf_backend/router';
-import {addParams} from '../../../../components_polymer3/tf_backend/urlPathHelpers';
-import '../../../../components_polymer3/tf_card_heading/tf-card-heading';
-import {RequestDataCallback} from '../../../../components_polymer3/tf_dashboard_common/data-loader-behavior';
-import {runsColorScale} from '../../../../components_polymer3/tf_color_scale/colorScale';
-import '../../../../components_polymer3/tf_line_chart_data_loader/tf-line-chart-data-loader';
-import * as vz_chart_helpers from '../../../../components_polymer3/vz_chart_helpers/vz-chart-helpers';
+import {Canceller} from '../../../components/tf_backend/canceller';
+import {RequestManager} from '../../../components/tf_backend/requestManager';
+import {getRouter} from '../../../components/tf_backend/router';
+import {addParams} from '../../../components/tf_backend/urlPathHelpers';
+import '../../../components/tf_card_heading/tf-card-heading';
+import {RequestDataCallback} from '../../../components/tf_dashboard_common/data-loader-behavior';
+import {runsColorScale} from '../../../components/tf_color_scale/colorScale';
+import '../../../components/tf_line_chart_data_loader/tf-line-chart-data-loader';
+import * as vz_chart_helpers from '../../../components/vz_chart_helpers/vz-chart-helpers';
 
 import * as _ from 'lodash';
 import * as Plottable from 'plottable';

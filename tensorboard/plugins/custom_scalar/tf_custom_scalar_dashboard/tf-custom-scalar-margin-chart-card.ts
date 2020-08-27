@@ -17,17 +17,17 @@ import {computed, customElement, observe, property} from '@polymer/decorators';
 import {PolymerElement, html} from '@polymer/polymer';
 import * as _ from 'lodash';
 
-import {DomRepeat} from '../../../../components_polymer3/polymer/dom-repeat';
-import '../../../../components_polymer3/polymer/irons_and_papers';
-import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
-import {RequestManager} from '../../../../components_polymer3/tf_backend/requestManager';
-import {getRouter} from '../../../../components_polymer3/tf_backend/router';
-import {addParams} from '../../../../components_polymer3/tf_backend/urlPathHelpers';
-import '../../../../components_polymer3/tf_card_heading/tf-card-heading';
-import {RequestDataCallback} from '../../../../components_polymer3/tf_dashboard_common/data-loader-behavior';
-import {runsColorScale} from '../../../../components_polymer3/tf_color_scale/colorScale';
-import '../../../../components_polymer3/tf_line_chart_data_loader/tf-line-chart-data-loader';
-import {TfLineChartDataLoader} from '../../../../components_polymer3/tf_line_chart_data_loader/tf-line-chart-data-loader';
+import {DomRepeat} from '../../../components/polymer/dom-repeat';
+import '../../../components/polymer/irons_and_papers';
+import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
+import {RequestManager} from '../../../components/tf_backend/requestManager';
+import {getRouter} from '../../../components/tf_backend/router';
+import {addParams} from '../../../components/tf_backend/urlPathHelpers';
+import '../../../components/tf_card_heading/tf-card-heading';
+import {RequestDataCallback} from '../../../components/tf_dashboard_common/data-loader-behavior';
+import {runsColorScale} from '../../../components/tf_color_scale/colorScale';
+import '../../../components/tf_line_chart_data_loader/tf-line-chart-data-loader';
+import {TfLineChartDataLoader} from '../../../components/tf_line_chart_data_loader/tf-line-chart-data-loader';
 import {
   SYMBOLS_LIST,
   ScalarDatum,
@@ -37,7 +37,7 @@ import {
   relativeFormatter,
   stepFormatter,
   timeFormatter,
-} from '../../../../components_polymer3/vz_chart_helpers/vz-chart-helpers';
+} from '../../../components/vz_chart_helpers/vz-chart-helpers';
 
 import './tf-custom-scalar-card-style';
 import {

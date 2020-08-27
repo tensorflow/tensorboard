@@ -15,11 +15,11 @@ limitations under the License.
 import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, observe, property} from '@polymer/decorators';
 
-import '../../../../components_polymer3/polymer/irons_and_papers';
+import '../../../components/polymer/irons_and_papers';
 import '../tf_graph_info/tf-graph-info';
 import '../tf_graph/tf-graph';
 import * as tf_graph from '../tf_graph_common/graph';
-import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 
 /**
  * Element for putting tf-graph and tf-graph-info side by side.

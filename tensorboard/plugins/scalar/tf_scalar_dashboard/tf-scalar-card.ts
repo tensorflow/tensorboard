@@ -15,18 +15,18 @@ limitations under the License.
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, property} from '@polymer/decorators';
-import '../../../../components_polymer3/polymer/irons_and_papers';
-import {RequestManager} from '../../../../components_polymer3/tf_backend/requestManager';
-import {RequestDataCallback} from '../../../../components_polymer3/tf_dashboard_common/data-loader-behavior';
-import {getRouter} from '../../../../components_polymer3/tf_backend/router';
-import {addParams} from '../../../../components_polymer3/tf_backend/urlPathHelpers';
-import '../../../../components_polymer3/tf_card_heading/tf-card-heading';
-import {runsColorScale} from '../../../../components_polymer3/tf_color_scale/colorScale';
-import '../../../../components_polymer3/tf_dashboard_common/tf-downloader';
-import '../../../../components_polymer3/tf_line_chart_data_loader/tf-line-chart-data-loader';
-import {ScalarDatum} from '../../../../components_polymer3/vz_chart_helpers/vz-chart-helpers';
-import '../../../../components_polymer3/vz_line_chart2/vz-line-chart2';
-import {DEFAULT_TOOLTIP_COLUMNS} from '../../../../components_polymer3/vz_line_chart2/vz-line-chart2';
+import '../../../components/polymer/irons_and_papers';
+import {RequestManager} from '../../../components/tf_backend/requestManager';
+import {RequestDataCallback} from '../../../components/tf_dashboard_common/data-loader-behavior';
+import {getRouter} from '../../../components/tf_backend/router';
+import {addParams} from '../../../components/tf_backend/urlPathHelpers';
+import '../../../components/tf_card_heading/tf-card-heading';
+import {runsColorScale} from '../../../components/tf_color_scale/colorScale';
+import '../../../components/tf_dashboard_common/tf-downloader';
+import '../../../components/tf_line_chart_data_loader/tf-line-chart-data-loader';
+import {ScalarDatum} from '../../../components/vz_chart_helpers/vz-chart-helpers';
+import '../../../components/vz_line_chart2/vz-line-chart2';
+import {DEFAULT_TOOLTIP_COLUMNS} from '../../../components/vz_line_chart2/vz-line-chart2';
 
 type RunTagItem = {run: string; tag: string};
 

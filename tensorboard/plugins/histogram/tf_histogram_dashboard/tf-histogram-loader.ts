@@ -17,17 +17,17 @@ import {computed, customElement, observe, property} from '@polymer/decorators';
 import {PolymerElement, html} from '@polymer/polymer';
 import * as _ from 'lodash';
 
-import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
-import '../../../../components_polymer3/polymer/irons_and_papers';
-import {RequestManager} from '../../../../components_polymer3/tf_backend/requestManager';
-import {getRouter} from '../../../../components_polymer3/tf_backend/router';
-import {addParams} from '../../../../components_polymer3/tf_backend/urlPathHelpers';
-import '../../../../components_polymer3/tf_card_heading/tf-card-heading';
-import {runsColorScale} from '../../../../components_polymer3/tf_color_scale/colorScale';
+import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
+import '../../../components/polymer/irons_and_papers';
+import {RequestManager} from '../../../components/tf_backend/requestManager';
+import {getRouter} from '../../../components/tf_backend/router';
+import {addParams} from '../../../components/tf_backend/urlPathHelpers';
+import '../../../components/tf_card_heading/tf-card-heading';
+import {runsColorScale} from '../../../components/tf_color_scale/colorScale';
 import {
   DataLoaderBehavior,
   RequestDataCallback,
-} from '../../../../components_polymer3/tf_dashboard_common/data-loader-behavior';
+} from '../../../components/tf_dashboard_common/data-loader-behavior';
 import '../vz_histogram_timeseries/vz-histogram-timeseries';
 import {VzHistogramTimeseries} from '../vz_histogram_timeseries/vz-histogram-timeseries';
 import './histogramCore';

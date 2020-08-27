@@ -17,12 +17,12 @@ import {PolymerElement, html} from '@polymer/polymer';
 import {computed, customElement, property} from '@polymer/decorators';
 import * as d3 from 'd3';
 
-import '../../../../components_polymer3/polymer/irons_and_papers';
+import '../../../components/polymer/irons_and_papers';
 import './tf-graph-op-compat-list-item';
 import * as tf_graph_hierarchy from '../tf_graph_common/hierarchy';
 import * as tf_graph_render from '../tf_graph_common/render';
 
-import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 
 @customElement('tf-graph-op-compat-card')
 class TfGraphOpCompatCard extends LegacyElementMixin(PolymerElement) {

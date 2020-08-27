@@ -20,7 +20,7 @@ import * as _ from 'lodash';
 import '../tf_hparams_query_pane/tf-hparams-query-pane';
 import '../tf_hparams_sessions_pane/tf-hparams-sessions-pane';
 import {Backend} from '../tf_hparams_backend/tf-hparams-backend';
-import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 import '../tf_hparams_utils/hparams-split-layout';
 
 /**

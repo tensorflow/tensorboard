@@ -16,11 +16,11 @@ limitations under the License.
 import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, property} from '@polymer/decorators';
 
-import '../../../../components_polymer3/polymer/irons_and_papers';
+import '../../../components/polymer/irons_and_papers';
 import '../tf_graph_debugger_data_card/tf-graph-debugger-data-card';
 import '../tf_graph_op_compat_card/tf-graph-op-compat-card';
 import './tf-node-info';
-import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 
 @customElement('tf-graph-info')
 class TfGraphInfo extends LegacyElementMixin(PolymerElement) {

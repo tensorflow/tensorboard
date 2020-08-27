@@ -16,7 +16,7 @@ limitations under the License.
 import {html} from '@polymer/polymer';
 
 import './styles';
-import '../../../../components_polymer3/tf_wbr_string/tf-wbr-string';
+import '../../../components/tf_wbr_string/tf-wbr-string';
 
 export const template = html`
   <style include="vz-projector-styles"></style>

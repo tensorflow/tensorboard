@@ -17,19 +17,19 @@ import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, property, computed} from '@polymer/decorators';
 import * as _ from 'lodash';
 
-import '../../../../components_polymer3/polymer/irons_and_papers';
-import {getTags} from '../../../../components_polymer3/tf_backend/backend';
-import {getRouter} from '../../../../components_polymer3/tf_backend/router';
-import {RequestManager} from '../../../../components_polymer3/tf_backend/requestManager';
+import '../../../components/polymer/irons_and_papers';
+import {getTags} from '../../../components/tf_backend/backend';
+import {getRouter} from '../../../components/tf_backend/router';
+import {RequestManager} from '../../../components/tf_backend/requestManager';
 
 import {
   RunToTag,
   categorizeRunTagCombinations,
-} from '../../../../components_polymer3/tf_categorization_utils/categorizationUtils';
-import '../../../../components_polymer3/tf_paginated_view/tf-category-paginated-view';
-import '../../../../components_polymer3/tf_dashboard_common/dashboard-style';
-import '../../../../components_polymer3/tf_dashboard_common/tf-dashboard-layout';
-import '../../../../components_polymer3/tf_runs_selector/tf-runs-selector';
+} from '../../../components/tf_categorization_utils/categorizationUtils';
+import '../../../components/tf_paginated_view/tf-category-paginated-view';
+import '../../../components/tf_dashboard_common/dashboard-style';
+import '../../../components/tf_dashboard_common/tf-dashboard-layout';
+import '../../../components/tf_runs_selector/tf-runs-selector';
 
 import {TfMeshLoader} from './mesh-loader';
 import './mesh-loader';

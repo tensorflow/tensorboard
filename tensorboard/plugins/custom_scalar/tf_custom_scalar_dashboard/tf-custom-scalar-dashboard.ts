@@ -16,26 +16,26 @@ limitations under the License.
 import {PolymerElement, html} from '@polymer/polymer';
 import {computed, customElement, observe, property} from '@polymer/decorators';
 
-import {Canceller} from '../../../../components_polymer3/tf_backend/canceller';
-import {RequestManager} from '../../../../components_polymer3/tf_backend/requestManager';
-import {getRouter} from '../../../../components_polymer3/tf_backend/router';
+import {Canceller} from '../../../components/tf_backend/canceller';
+import {RequestManager} from '../../../components/tf_backend/requestManager';
+import {getRouter} from '../../../components/tf_backend/router';
 import {
   Category,
   CategoryType,
-} from '../../../../components_polymer3/tf_categorization_utils/categorizationUtils';
-import '../../../../components_polymer3/tf_dashboard_common/dashboard-style';
-import '../../../../components_polymer3/tf_dashboard_common/tf-dashboard-layout';
-import '../../../../components_polymer3/tf_dashboard_common/tf-option-selector';
-import '../../../../components_polymer3/tf_paginated_view/tf-category-paginated-view';
-import '../../../../components_polymer3/tf_runs_selector/tf-runs-selector';
+} from '../../../components/tf_categorization_utils/categorizationUtils';
+import '../../../components/tf_dashboard_common/dashboard-style';
+import '../../../components/tf_dashboard_common/tf-dashboard-layout';
+import '../../../components/tf_dashboard_common/tf-option-selector';
+import '../../../components/tf_paginated_view/tf-category-paginated-view';
+import '../../../components/tf_runs_selector/tf-runs-selector';
 import {
   getBooleanInitializer,
   getBooleanObserver,
   getNumberInitializer,
   getNumberObserver,
-} from '../../../../components_polymer3/tf_storage/storage';
-import '../../../../components_polymer3/tf_utils/utils';
-import '../../../scalar/polymer3/tf_scalar_dashboard/tf-smoothing-input';
+} from '../../../components/tf_storage/storage';
+import '../../../components/tf_utils/utils';
+import '../../scalar/tf_scalar_dashboard/tf-smoothing-input';
 
 import {Layout} from './tf-custom-scalar-helpers';
 import './tf-custom-scalar-margin-chart-card';

@@ -17,16 +17,16 @@ import {PolymerElement, html} from '@polymer/polymer';
 import {computed, customElement, property} from '@polymer/decorators';
 import * as _ from 'lodash';
 
-import '../../../../components_polymer3/polymer/irons_and_papers';
+import '../../../components/polymer/irons_and_papers';
 import * as tf_graph_common from '../tf_graph_common/common';
 import * as tf_graph_render from '../tf_graph_common/render';
 import * as tf_graph_proto from '../tf_graph_common/proto';
 import * as tf_graph_util from '../tf_graph_common/util';
 
-import '../../../../components_polymer3/tf_dashboard_common/tensorboard-color';
+import '../../../components/tf_dashboard_common/tensorboard-color';
 import '../tf_graph_common/tf-graph-icon';
 import '../tf_graph_node_search/tf-graph-node-search';
-import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 
 interface DeviceNameExclude {
   regex: RegExp;

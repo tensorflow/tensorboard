@@ -24,7 +24,7 @@ tensorboard_html_binary(
     output_path = "/tf-projector/projector_binary.html",
     deps = [
         ":tf_projector_plugin",
-        "//tensorboard/plugins/projector/polymer3/vz_projector:standalone_lib",
+        "//tensorboard/plugins/projector/vz_projector:standalone_lib",
     ],
 )
 
@@ -36,6 +36,6 @@ tf_web_library(
     path = "/tf-projector",
     deps = [
         "//tensorboard/components/tf_imports:roboto",
-        "//tensorboard/plugins/projector/polymer3/vz_projector:standalone_lib",
+        "//tensorboard/plugins/projector/vz_projector:standalone_lib",
     ],
 )

@@ -15,8 +15,8 @@ limitations under the License.
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {computed, customElement, observe, property} from '@polymer/decorators';
-import '../../../../components_polymer3/polymer/irons_and_papers';
-import {runsColorScale} from '../../../../components_polymer3/tf_color_scale/colorScale';
+import '../../../components/polymer/irons_and_papers';
+import {runsColorScale} from '../../../components/tf_color_scale/colorScale';
 import * as _ from 'lodash';
 
 @customElement('tf-pr-curve-steps-selector')

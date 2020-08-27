@@ -12,7 +12,7 @@ tf_ts_library(
     ],
     strict_checks = False,
     deps = [
-        "//tensorboard/components_polymer3/tf_backend",
+        "//tensorboard/components/tf_backend",
         "@npm//@types/d3",
         "@npm//d3",
     ],

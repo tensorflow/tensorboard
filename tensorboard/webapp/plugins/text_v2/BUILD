@@ -40,6 +40,6 @@ tf_ts_library(
         "types.ts",
     ],
     deps = [
-        "//tensorboard/components_polymer3/tf_categorization_utils",
+        "//tensorboard/components/tf_categorization_utils",
     ],
 )

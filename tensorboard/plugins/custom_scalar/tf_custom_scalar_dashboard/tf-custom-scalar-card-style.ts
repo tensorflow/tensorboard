@@ -13,9 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import '../../../../components_polymer3/polymer/irons_and_papers';
-import {registerStyleDomModule} from '../../../../components_polymer3/polymer/register_style_dom_module';
-import '../../../../components_polymer3/tf_dashboard_common/tensorboard-color';
+import '../../../components/polymer/irons_and_papers';
+import {registerStyleDomModule} from '../../../components/polymer/register_style_dom_module';
+import '../../../components/tf_dashboard_common/tensorboard-color';
 
 registerStyleDomModule({
   moduleName: 'tf-custom-scalar-card-style',

@@ -13,9 +13,9 @@ tf_ts_library(
     ],
     strict_checks = False,
     deps = [
-        "//tensorboard/components_polymer3/polymer:dom",
-        "//tensorboard/components_polymer3/polymer:irons_and_papers",
-        "//tensorboard/plugins/hparams/polymer3/tf_hparams_utils",
+        "//tensorboard/components/polymer:dom",
+        "//tensorboard/components/polymer:irons_and_papers",
+        "//tensorboard/plugins/hparams/tf_hparams_utils",
         "@npm//@polymer/decorators",
         "@npm//@polymer/polymer",
         "@npm//@types/d3",

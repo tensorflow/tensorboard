@@ -17,7 +17,7 @@ import {PolymerElement, html} from '@polymer/polymer';
 import {computed, customElement, property} from '@polymer/decorators';
 import * as _ from 'lodash';
 
-import '../../../../components_polymer3/polymer/irons_and_papers';
+import '../../../components/polymer/irons_and_papers';
 import '../tf_graph_common/tf-node-icon';
 import './tf-node-list-item';
 import * as tf_graph from '../tf_graph_common/graph';
@@ -25,8 +25,8 @@ import * as tf_graph_util from '../tf_graph_common/util';
 import * as tf_graph_scene_edge from '../tf_graph_common/edge';
 import * as tf_graph_scene_node from '../tf_graph_common/node';
 
-import '../../../../components_polymer3/tf_wbr_string/tf-wbr-string';
-import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+import '../../../components/tf_wbr_string/tf-wbr-string';
+import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 
 @customElement('tf-node-info')
 class TfNodeInfo extends LegacyElementMixin(PolymerElement) {

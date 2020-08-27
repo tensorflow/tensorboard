@@ -15,7 +15,7 @@ limitations under the License.
 import {
   RequestOptions,
   HttpMethodType,
-} from '../../../../components_polymer3/tf_backend/requestManager';
+} from '../../../components/tf_backend/requestManager';
 
 /* A 'tf-hparams-backend' encapsulates sending HParams API requests to the
    backend.

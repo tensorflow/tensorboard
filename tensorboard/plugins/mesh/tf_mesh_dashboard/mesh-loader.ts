@@ -20,12 +20,12 @@ import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, computed, observe, property} from '@polymer/decorators';
 import * as THREE from 'three';
 
-import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
-import {RequestManager} from '../../../../components_polymer3/tf_backend/requestManager';
-import {runsColorScale} from '../../../../components_polymer3/tf_color_scale/colorScale';
-import {formatDate} from '../../../../components_polymer3/tf_card_heading/util';
-import '../../../../components_polymer3/polymer/irons_and_papers';
-import '../../../../components_polymer3/tf_card_heading/tf-card-heading';
+import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
+import {RequestManager} from '../../../components/tf_backend/requestManager';
+import {runsColorScale} from '../../../components/tf_color_scale/colorScale';
+import {formatDate} from '../../../components/tf_card_heading/util';
+import '../../../components/polymer/irons_and_papers';
+import '../../../components/tf_card_heading/tf-card-heading';
 
 import {
   ArrayBufferDataProvider,

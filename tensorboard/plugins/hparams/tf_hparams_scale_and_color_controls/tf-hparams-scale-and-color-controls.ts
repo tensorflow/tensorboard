@@ -16,8 +16,8 @@ limitations under the License.
 import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, observe, property} from '@polymer/decorators';
 
-import * as PolymerDom from '../../../../components_polymer3/polymer/dom';
-import '../../../../components_polymer3/polymer/irons_and_papers';
+import * as PolymerDom from '../../../components/polymer/dom';
+import '../../../components/polymer/irons_and_papers';
 import * as tf_hparams_utils from '../tf_hparams_utils/tf-hparams-utils';
 
 @customElement('tf-hparams-scale-and-color-controls')

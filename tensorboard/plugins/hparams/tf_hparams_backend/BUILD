@@ -12,6 +12,6 @@ tf_ts_library(
     strict_checks = False,
     visibility = ["//visibility:public"],
     deps = [
-        "//tensorboard/components_polymer3/tf_backend",
+        "//tensorboard/components/tf_backend",
     ],
 )

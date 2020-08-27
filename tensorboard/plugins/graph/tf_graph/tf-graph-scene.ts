@@ -19,7 +19,7 @@ import * as _ from 'lodash';
 import * as d3 from 'd3';
 
 import './tf-graph-minimap';
-import '../../../../components_polymer3/tf_dashboard_common/tensorboard-color';
+import '../../../components/tf_dashboard_common/tensorboard-color';
 
 import * as tf_graph from '../tf_graph_common/graph';
 import * as tf_graph_scene from '../tf_graph_common/scene';
@@ -29,7 +29,7 @@ import * as tf_graph_layout from '../tf_graph_common/layout';
 import * as tf_graph_render from '../tf_graph_common/render';
 import {template} from './tf-graph-scene.html';
 
-import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 
 @customElement('tf-graph-scene')
 class TfGraphScene2 extends LegacyElementMixin(PolymerElement) {

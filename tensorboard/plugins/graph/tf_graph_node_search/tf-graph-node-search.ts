@@ -17,9 +17,9 @@ import {PolymerElement, html} from '@polymer/polymer';
 import {computed, customElement, observe, property} from '@polymer/decorators';
 import * as _ from 'lodash';
 
-import '../../../../components_polymer3/polymer/irons_and_papers';
-import '../../../../components_polymer3/tf_dashboard_common/tensorboard-color';
-import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+import '../../../components/polymer/irons_and_papers';
+import '../../../components/tf_dashboard_common/tensorboard-color';
+import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 
 @customElement('tf-graph-node-search')
 class TfGraphNodeSearch extends LegacyElementMixin(PolymerElement) {

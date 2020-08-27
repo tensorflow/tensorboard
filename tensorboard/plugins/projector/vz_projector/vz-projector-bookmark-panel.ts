@@ -15,8 +15,8 @@ limitations under the License.
 import {PolymerElement} from '@polymer/polymer';
 import {customElement, property} from '@polymer/decorators';
 
-import '../../../../components_polymer3/polymer/irons_and_papers';
-import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+import '../../../components/polymer/irons_and_papers';
+import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 
 import {template} from './vz-projector-bookmark-panel.html';
 import {State} from './data';

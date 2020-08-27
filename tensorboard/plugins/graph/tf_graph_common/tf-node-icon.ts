@@ -19,7 +19,7 @@ import {customElement, property} from '@polymer/decorators';
 import * as tf_graph_icon from './tf-graph-icon';
 import * as tf_graph from '../tf_graph_common/graph';
 import * as tf_graph_scene_node from '../tf_graph_common/node';
-import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 
 import './tf-graph-icon';
 

@@ -24,8 +24,8 @@ import * as tf_graph_op from '../tf_graph_common/op';
 import * as tf_graph_parser from '../tf_graph_common/parser';
 import * as tf_graph_util from '../tf_graph_common/util';
 
-import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
-import {getRouter} from '../../../../components_polymer3/tf_backend/router';
+import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
+import {getRouter} from '../../../components/tf_backend/router';
 
 interface GraphRunTag {
   run: string;

@@ -18,14 +18,14 @@ import {customElement, observe, property} from '@polymer/decorators';
 import * as d3 from 'd3';
 import * as _ from 'lodash';
 
-import '../../../../components_polymer3/polymer/irons_and_papers';
+import '../../../components/polymer/irons_and_papers';
 import './tf-graph-scene';
 import * as tf_graph from '../tf_graph_common/graph';
 import * as tf_graph_scene from '../tf_graph_common/scene';
 import * as tf_graph_util from '../tf_graph_common/util';
 import * as tf_graph_hierarchy from '../tf_graph_common/hierarchy';
 import * as tf_graph_render from '../tf_graph_common/render';
-import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 
 @customElement('tf-graph')
 class TfGraph extends LegacyElementMixin(PolymerElement) {

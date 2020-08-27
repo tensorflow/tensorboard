@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import * as d3 from 'd3';
 import * as _ from 'lodash';
-import * as PolymerDom from '../../../../components_polymer3/polymer/dom';
+import * as PolymerDom from '../../../components/polymer/dom';
 
 import {
   Class as _Class,

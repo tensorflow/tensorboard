@@ -17,10 +17,10 @@ import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, observe, property} from '@polymer/decorators';
 import '@vaadin/vaadin-grid';
 
-import * as PolymerDom from '../../../../components_polymer3/polymer/dom';
+import * as PolymerDom from '../../../components/polymer/dom';
 import '../tf_hparams_session_group_details/tf-hparams-session-group-details';
 import * as tf_hparams_utils from '../tf_hparams_utils/tf-hparams-utils';
-import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 
 @customElement('tf-hparams-table-view')
 class TfHparamsTableView extends LegacyElementMixin(PolymerElement) {

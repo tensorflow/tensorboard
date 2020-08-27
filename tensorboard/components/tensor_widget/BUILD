@@ -69,7 +69,7 @@ tf_ts_library(
         "types.ts",
         "version.ts",
     ],
-    deps = ["//tensorboard/components_polymer3/polymer:register_style_dom_module"],
+    deps = ["//tensorboard/components/polymer:register_style_dom_module"],
 )
 
 tf_ts_library(

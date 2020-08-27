@@ -22,7 +22,7 @@ tf_ts_library(
     strict_checks = False,
     deps = [
         ":type",
-        "//tensorboard/components_polymer3/vz_sorting",
+        "//tensorboard/components/vz_sorting",
         "@npm//@polymer/decorators",
         "@npm//@polymer/polymer",
         "@npm//@types/lodash",

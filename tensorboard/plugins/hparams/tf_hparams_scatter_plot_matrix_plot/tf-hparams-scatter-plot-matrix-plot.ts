@@ -19,7 +19,7 @@ import * as d3 from 'd3';
 import * as _ from 'lodash';
 
 import * as tf_hparams_utils from '../tf_hparams_utils/tf-hparams-utils';
-import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 
 /**
  * A d3-based scatter plot matrix visualization component.

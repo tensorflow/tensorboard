@@ -18,7 +18,7 @@ import {customElement, property} from '@polymer/decorators';
 import '../tf_graph_board/tf-graph-board';
 import '../tf_graph_controls/tf-graph-controls';
 import '../tf_graph_loader/tf-graph-loader';
-import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 
 /**
  * Stand alone element of tf-graph for embedding.

@@ -16,14 +16,14 @@ limitations under the License.
 import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, observe, property} from '@polymer/decorators';
 
-import '../../../../components_polymer3/polymer/irons_and_papers';
-import {Canceller} from '../../../../components_polymer3/tf_backend/canceller';
-import {RequestManager} from '../../../../components_polymer3/tf_backend/requestManager';
-import {getRouter} from '../../../../components_polymer3/tf_backend/router';
-import '../../../../components_polymer3/tf_dashboard_common/tf-dashboard-layout';
-import * as tf_storage from '../../../../components_polymer3/tf_storage';
-import * as vz_sorting from '../../../../components_polymer3/vz_sorting/sorting';
-import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+import '../../../components/polymer/irons_and_papers';
+import {Canceller} from '../../../components/tf_backend/canceller';
+import {RequestManager} from '../../../components/tf_backend/requestManager';
+import {getRouter} from '../../../components/tf_backend/router';
+import '../../../components/tf_dashboard_common/tf-dashboard-layout';
+import * as tf_storage from '../../../components/tf_storage';
+import * as vz_sorting from '../../../components/vz_sorting/sorting';
+import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 
 import '../tf_graph_board/tf-graph-board';
 import '../tf_graph_controls/tf-graph-controls';

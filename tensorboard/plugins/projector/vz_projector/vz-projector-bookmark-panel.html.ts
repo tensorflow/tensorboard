@@ -15,7 +15,7 @@ limitations under the License.
 
 import {html} from '@polymer/polymer';
 
-import '../../../../components_polymer3/polymer/irons_and_papers';
+import '../../../components/polymer/irons_and_papers';
 
 import './styles';
 

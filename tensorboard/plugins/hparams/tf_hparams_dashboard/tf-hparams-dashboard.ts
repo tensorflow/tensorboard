@@ -15,10 +15,10 @@ limitations under the License.
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, property} from '@polymer/decorators';
-import * as tf_backend from '../../../../components_polymer3/tf_backend/tf-backend';
+import * as tf_backend from '../../../components/tf_backend/tf-backend';
 import '../tf_hparams_main/tf-hparams-main';
 import * as tf_hparams_backend from '../tf_hparams_backend/tf-hparams-backend';
-import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 
 const PLUGIN_NAME = 'hparams';
 @customElement('tf-hparams-dashboard')

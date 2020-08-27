@@ -17,14 +17,14 @@ import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, observe, property} from '@polymer/decorators';
 import * as IronResizableBehavior from '@polymer/iron-resizable-behavior';
 
-import {mixinBehaviors} from '../../../../components_polymer3/polymer/legacy_class';
-import '../../../../components_polymer3/polymer/irons_and_papers';
-import '../../../../components_polymer3/tf_backend/tf-backend';
-import {RequestDataCallback} from '../../../../components_polymer3/tf_dashboard_common/data-loader-behavior';
+import {mixinBehaviors} from '../../../components/polymer/legacy_class';
+import '../../../components/polymer/irons_and_papers';
+import '../../../components/tf_backend/tf-backend';
+import {RequestDataCallback} from '../../../components/tf_dashboard_common/data-loader-behavior';
 import * as tf_hparams_utils from '../tf_hparams_utils/tf-hparams-utils';
-import * as tf_color_scale from '../../../../components_polymer3/tf_color_scale/palettes';
-import * as vz_chart_helpers from '../../../../components_polymer3/vz_chart_helpers/vz-chart-helpers';
-import '../../../scalar/polymer3/tf_scalar_dashboard/tf-scalar-card';
+import * as tf_color_scale from '../../../components/tf_color_scale/palettes';
+import * as vz_chart_helpers from '../../../components/vz_chart_helpers/vz-chart-helpers';
+import '../../scalar/tf_scalar_dashboard/tf-scalar-card';
 
 // TODO: add dependency once the Polymer 3 scalar dashboard is migrated.
 // import '../tf_scalar_dashboard/tf-scalar-card';

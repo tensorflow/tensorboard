@@ -16,8 +16,8 @@ import {PolymerElement} from '@polymer/polymer';
 import {customElement, observe, property} from '@polymer/decorators';
 import * as THREE from 'three';
 
-import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
-import '../../../../components_polymer3/polymer/irons_and_papers';
+import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
+import '../../../components/polymer/irons_and_papers';
 
 import {AnalyticsLogger} from './analyticsLogger';
 import {template} from './vz-projector.html';

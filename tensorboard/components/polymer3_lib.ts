@@ -14,18 +14,18 @@ limitations under the License.
 ==============================================================================*/
 
 // Add dashboards here.
-import '../plugins/audio/polymer3/tf_audio_dashboard/tf-audio-dashboard';
-import '../plugins/custom_scalar/polymer3/tf_custom_scalar_dashboard/tf-custom-scalar-dashboard';
-import '../plugins/distribution/polymer3/tf_distribution_dashboard/tf-distribution-dashboard';
-import '../plugins/graph/polymer3/tf_graph_dashboard/tf-graph-dashboard';
-import '../plugins/histogram/polymer3/tf_histogram_dashboard/tf-histogram-dashboard';
-import '../plugins/hparams/polymer3/tf_hparams_dashboard/tf-hparams-dashboard';
-import '../plugins/image/polymer3/tf_image_dashboard/tf-image-dashboard';
-import '../plugins/mesh/polymer3/tf_mesh_dashboard/tf-mesh-dashboard';
-import '../plugins/pr_curve/polymer3/tf_pr_curve_dashboard/tf-pr-curve-dashboard';
-import '../plugins/profile_redirect/polymer3/tf_profile_redirect_dashboard/tf-profile-redirect-dashboard';
-import '../plugins/scalar/polymer3/tf_scalar_dashboard/tf-scalar-dashboard';
-import '../plugins/text/polymer3/tf_text_dashboard/tf-text-dashboard';
+import '../plugins/audio/tf_audio_dashboard/tf-audio-dashboard';
+import '../plugins/custom_scalar/tf_custom_scalar_dashboard/tf-custom-scalar-dashboard';
+import '../plugins/distribution/tf_distribution_dashboard/tf-distribution-dashboard';
+import '../plugins/graph/tf_graph_dashboard/tf-graph-dashboard';
+import '../plugins/histogram/tf_histogram_dashboard/tf-histogram-dashboard';
+import '../plugins/hparams/tf_hparams_dashboard/tf-hparams-dashboard';
+import '../plugins/image/tf_image_dashboard/tf-image-dashboard';
+import '../plugins/mesh/tf_mesh_dashboard/tf-mesh-dashboard';
+import '../plugins/pr_curve/tf_pr_curve_dashboard/tf-pr-curve-dashboard';
+import '../plugins/profile_redirect/tf_profile_redirect_dashboard/tf-profile-redirect-dashboard';
+import '../plugins/scalar/tf_scalar_dashboard/tf-scalar-dashboard';
+import '../plugins/text/tf_text_dashboard/tf-text-dashboard';
 
 // Exported Polymer <-> Angular interop (to be removed).
 import './experimental/plugin_util/plugin-host';

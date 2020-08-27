@@ -15,7 +15,7 @@ tf_ts_library(
         "runs.ts",
     ],
     deps = [
-        "//tensorboard/components_polymer3/experimental/plugin_util:message",
+        "//tensorboard/components/experimental/plugin_util:message",
     ],
 )
 

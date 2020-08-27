@@ -11,9 +11,9 @@ tf_ts_library(
     ],
     strict_checks = False,
     deps = [
-        "//tensorboard/components_polymer3/polymer:legacy_element_mixin",
-        "//tensorboard/components_polymer3/polymer:plottable_style",
-        "//tensorboard/components_polymer3/vz_chart_helpers",
+        "//tensorboard/components/polymer:legacy_element_mixin",
+        "//tensorboard/components/polymer:plottable_style",
+        "//tensorboard/components/vz_chart_helpers",
         "@npm//@polymer/decorators",
         "@npm//@polymer/polymer",
         "@npm//@types/d3",

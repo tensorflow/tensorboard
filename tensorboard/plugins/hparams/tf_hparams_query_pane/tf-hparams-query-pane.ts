@@ -17,10 +17,10 @@ import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, observe, property} from '@polymer/decorators';
 import * as _ from 'lodash';
 
-import '../../../../components_polymer3/polymer/irons_and_papers';
-import {Canceller} from '../../../../components_polymer3/tf_backend/canceller';
+import '../../../components/polymer/irons_and_papers';
+import {Canceller} from '../../../components/tf_backend/canceller';
 import * as tf_hparams_utils from '../tf_hparams_utils/tf-hparams-utils';
-import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 import '../tf_hparams_utils/hparams-split-layout';
 
 /**

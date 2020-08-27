@@ -16,7 +16,7 @@ limitations under the License.
 import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, property} from '@polymer/decorators';
 
-import '../../../../components_polymer3/polymer/irons_and_papers';
+import '../../../components/polymer/irons_and_papers';
 import '../tf_hparams_parallel_coords_view/tf-hparams-parallel-coords-view';
 import '../tf_hparams_scatter_plot_matrix_view/tf-hparams-scatter-plot-matrix-view';
 import '../tf_hparams_table_view/tf-hparams-table-view';

@@ -16,8 +16,8 @@ limitations under the License.
 import {PolymerElement, html} from '@polymer/polymer';
 import {computed, customElement, property} from '@polymer/decorators';
 
-import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
-import '../../../../components_polymer3/tf_dashboard_common/tensorboard-color';
+import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
+import '../../../components/tf_dashboard_common/tensorboard-color';
 
 import {MetanodeColors, OpNodeColors, SeriesNodeColors} from './render';
 

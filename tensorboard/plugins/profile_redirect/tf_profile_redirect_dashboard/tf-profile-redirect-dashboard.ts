@@ -16,8 +16,8 @@ limitations under the License.
 import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, property} from '@polymer/decorators';
 
-import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
-import '../../../../components_polymer3/polymer/irons_and_papers';
+import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
+import '../../../components/polymer/irons_and_papers';
 
 /**
  * A frontend that directs users to upgrade to the new version of the profile

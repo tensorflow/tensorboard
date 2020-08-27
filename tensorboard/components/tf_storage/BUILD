@@ -14,7 +14,7 @@ tf_ts_library(
     ],
     strict_checks = False,
     deps = [
-        "//tensorboard/components_polymer3/tf_globals",
+        "//tensorboard/components/tf_globals",
         "@npm//@polymer/decorators",
         "@npm//@polymer/polymer",
         "@npm//@types/lodash",

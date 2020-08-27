@@ -17,7 +17,7 @@ import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, observe, property} from '@polymer/decorators';
 import * as d3Typed from 'd3';
 
-import {LegacyElementMixin} from '../../../../components_polymer3/polymer/legacy_element_mixin';
+import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 
 // Copied from `tf-histogram-dashboard/histogramCore`; TODO(wchargin):
 // resolve dependency structure.

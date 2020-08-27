@@ -30,8 +30,8 @@ tf_ts_library(
     ],
     deps = [
         ":host_internals",
-        "//tensorboard/components_polymer3/tf_backend",
-        "//tensorboard/components_polymer3/tf_storage",
+        "//tensorboard/components/tf_backend",
+        "//tensorboard/components/tf_storage",
         "@npm//@polymer/decorators",
         "@npm//@polymer/polymer",
     ],
