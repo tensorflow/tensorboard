@@ -18,58 +18,58 @@ limitations under the License.
   <h3 class="annotations-title">
     Annotations ({{numAnnotations}})
   </h3>
-  <div
-    *ngIf="expanded"
-    matTooltipPosition="below"
-    matTooltip="Flagging annotations adds them to your investigation results, and can later be exported."
-    matTooltipShowDelay="500"
-  >
-    <button
-      mat-icon-button
-      (click)="onFlagAnnotations.emit(selectedAnnotations)"
-      [disabled]="selectedAnnotations.length === 0"
+  <ng-container *ngIf="expanded">
+    <div
+      matTooltipPosition="below"
+      matTooltip="Flagging annotations adds them to your investigation results, and can later be exported."
+      matTooltipShowDelay="500"
     >
-      <mat-icon svgIcon="flag_24px"></mat-icon>
-    </button>
-  </div>
-  <div
-    *ngIf="expanded"
-    matTooltipPosition="below"
-    matTooltip="Removing non-critical annotations unclutters the view. Removed annotations are removed from all visualizations."
-    matTooltipShowDelay="500"
-  >
-    <button
-      mat-icon-button
-      (click)="onHideAnnotations.emit(selectedAnnotations)"
-      [disabled]="selectedAnnotations.length === 0"
+      <button
+        mat-icon-button
+        (click)="onFlagAnnotations.emit(selectedAnnotations)"
+        [disabled]="selectedAnnotations.length === 0"
+      >
+        <mat-icon svgIcon="flag_24px"></mat-icon>
+      </button>
+    </div>
+    <div
+      matTooltipPosition="below"
+      matTooltip="Removing non-critical annotations unclutters the view. Removed annotations are removed from all visualizations."
+      matTooltipShowDelay="500"
     >
-      <mat-icon svgIcon="visibility_off_24px"></mat-icon>
-    </button>
-  </div>
+      <button
+        mat-icon-button
+        (click)="onHideAnnotations.emit(selectedAnnotations)"
+        [disabled]="selectedAnnotations.length === 0"
+      >
+        <mat-icon svgIcon="visibility_off_24px"></mat-icon>
+      </button>
+    </div>
+  </ng-container>
 </div>
-<mat-slide-toggle
-  *ngIf="expanded"
-  [checked]="showCounts"
-  (change)="onToggleShowCounts.emit()"
-  class="show-toggle"
-  matTooltipPosition="below"
-  matTooltip="Hides and shows the sample count where applicable (how many samples belong to a category)."
-  matTooltipShowDelay="500"
->
-  Sample Count
-</mat-slide-toggle>
-<mat-slide-toggle
-  *ngIf="expanded"
-  [checked]="showHidden"
-  (change)="onToggleShowHidden.emit()"
-  class="show-toggle"
-  matTooltipPosition="below"
-  matTooltip="Hides and shows hidden annotations in all visualizations."
-  matTooltipShowDelay="500"
->
-  Show Hidden
-</mat-slide-toggle>
-<npmi-annotations-search *ngIf="expanded"></npmi-annotations-search>
+<ng-container *ngIf="expanded">
+  <mat-slide-toggle
+    [checked]="showCounts"
+    (change)="onToggleShowCounts.emit()"
+    class="show-toggle"
+    matTooltipPosition="below"
+    matTooltip="Hides and shows the sample count where applicable (how many samples belong to a category)."
+    matTooltipShowDelay="500"
+  >
+    Sample Count
+  </mat-slide-toggle>
+  <mat-slide-toggle
+    [checked]="showHidden"
+    (change)="onToggleShowHidden.emit()"
+    class="show-toggle"
+    matTooltipPosition="below"
+    matTooltip="Hides and shows hidden annotations in all visualizations."
+    matTooltipShowDelay="500"
+  >
+    Show Hidden
+  </mat-slide-toggle>
+  <npmi-annotations-search></npmi-annotations-search>
+</ng-container>
 <button class="expand-button" mat-icon-button (click)="onToggleExpanded.emit()">
   <mat-icon
     [svgIcon]="expanded ? 'expand_less_24px' : 'expand_more_24px'"

@@ -58,9 +58,7 @@ export class AnnotationsListToolbarContainer {
   readonly isAnnotationsFilterValid$ = this.annotationsFilter$.pipe(
     map((filterString) => {
       try {
-        // tslint:disable-next-line:no-unused-expression Check for validity of filter.
-        new RegExp(filterString);
-        return true;
+        return Boolean(new RegExp(filterString));
       } catch (err) {
         return false;
       }
@@ -81,7 +79,6 @@ export class AnnotationsListToolbarContainer {
         annotations,
       })
     );
-    this.store.dispatch(npmiActions.npmiClearSelectedAnnotations());
   }
 
   hideAnnotations(annotations: string[]) {
@@ -90,7 +87,6 @@ export class AnnotationsListToolbarContainer {
         annotations,
       })
     );
-    this.store.dispatch(npmiActions.npmiClearSelectedAnnotations());
   }
 
   toggleExpanded() {

@@ -31,12 +31,12 @@ describe('Npmi Annotations List Toolbar Container', () => {
   let store: MockStore<State>;
   let dispatchedActions: Action[];
   const css = {
-    TITLE: '.annotations-title',
-    BUTTON: 'button',
-    ICON: 'mat-icon',
-    EXPAND_BUTTON: '.expand-button',
-    TOGGLE: 'mat-slide-toggle',
-    ANNOTATIONS_SEARCH: 'npmi-annotations-search',
+    TITLE: By.css('.annotations-title'),
+    BUTTON: By.css('button'),
+    ICON: By.css('mat-icon'),
+    EXPAND_BUTTON: By.css('.expand-button'),
+    TOGGLE: By.css('mat-slide-toggle'),
+    ANNOTATIONS_SEARCH: By.css('npmi-annotations-search'),
   };
 
   beforeEach(async () => {
@@ -45,7 +45,6 @@ describe('Npmi Annotations List Toolbar Container', () => {
         AnnotationsListToolbarComponent,
         AnnotationsListToolbarContainer,
       ],
-      imports: [],
       providers: [
         provideMockStore({
           initialState: appStateFromNpmiState(createNpmiState()),
@@ -66,21 +65,21 @@ describe('Npmi Annotations List Toolbar Container', () => {
     fixture.componentInstance.expanded = false;
     fixture.detectChanges();
 
-    const title = fixture.debugElement.query(By.css(css.TITLE));
+    const title = fixture.debugElement.query(css.TITLE);
     expect(title).toBeTruthy();
     expect(title.nativeElement.textContent.trim()).toBe('Annotations (3)');
 
-    const buttons = fixture.debugElement.queryAll(By.css(css.BUTTON));
+    const buttons = fixture.debugElement.queryAll(css.BUTTON);
     expect(buttons.length).toBe(1);
 
-    const expandButton = fixture.debugElement.query(By.css(css.EXPAND_BUTTON));
+    const expandButton = fixture.debugElement.query(css.EXPAND_BUTTON);
     expect(expandButton).toBeTruthy();
 
-    const toggles = fixture.debugElement.queryAll(By.css(css.TOGGLE));
+    const toggles = fixture.debugElement.queryAll(css.TOGGLE);
     expect(toggles.length).toBe(0);
 
     const annotationsSearch = fixture.debugElement.query(
-      By.css(css.ANNOTATIONS_SEARCH)
+      css.ANNOTATIONS_SEARCH
     );
     expect(annotationsSearch).toBeNull();
   });
@@ -91,23 +90,23 @@ describe('Npmi Annotations List Toolbar Container', () => {
     fixture.componentInstance.expanded = true;
     fixture.detectChanges();
 
-    const title = fixture.debugElement.query(By.css(css.TITLE));
+    const title = fixture.debugElement.query(css.TITLE);
     expect(title).toBeTruthy();
     expect(title.nativeElement.textContent.trim()).toBe('Annotations (3)');
 
-    const buttons = fixture.debugElement.queryAll(By.css(css.BUTTON));
+    const buttons = fixture.debugElement.queryAll(css.BUTTON);
     expect(buttons.length).toBe(3);
     expect(buttons[0].nativeElement.disabled).toBeTrue();
     expect(buttons[1].nativeElement.disabled).toBeTrue();
 
-    const expandButton = fixture.debugElement.query(By.css(css.EXPAND_BUTTON));
+    const expandButton = fixture.debugElement.query(css.EXPAND_BUTTON);
     expect(expandButton).toBeTruthy();
 
-    const toggles = fixture.debugElement.queryAll(By.css(css.TOGGLE));
+    const toggles = fixture.debugElement.queryAll(css.TOGGLE);
     expect(toggles.length).toBe(2);
 
     const annotationsSearch = fixture.debugElement.query(
-      By.css(css.ANNOTATIONS_SEARCH)
+      css.ANNOTATIONS_SEARCH
     );
     expect(annotationsSearch).toBeTruthy();
   });
@@ -118,7 +117,7 @@ describe('Npmi Annotations List Toolbar Container', () => {
     fixture.componentInstance.expanded = true;
     fixture.detectChanges();
 
-    const buttons = fixture.debugElement.queryAll(By.css(css.BUTTON));
+    const buttons = fixture.debugElement.queryAll(css.BUTTON);
     expect(buttons.length).toBe(3);
     expect(buttons[0].nativeElement.disabled).toBeFalse();
     expect(buttons[1].nativeElement.disabled).toBeFalse();
@@ -131,11 +130,10 @@ describe('Npmi Annotations List Toolbar Container', () => {
       fixture.componentInstance.expanded = true;
       fixture.detectChanges();
 
-      const buttons = fixture.debugElement.queryAll(By.css(css.BUTTON));
+      const buttons = fixture.debugElement.queryAll(css.BUTTON);
       buttons[0].nativeElement.click();
       expect(dispatchedActions).toEqual([
         npmiActions.npmiToggleAnnotationFlags({annotations: ['test', 'test2']}),
-        npmiActions.npmiClearSelectedAnnotations(),
       ]);
     });
 
@@ -145,13 +143,12 @@ describe('Npmi Annotations List Toolbar Container', () => {
       fixture.componentInstance.expanded = true;
       fixture.detectChanges();
 
-      const buttons = fixture.debugElement.queryAll(By.css(css.BUTTON));
+      const buttons = fixture.debugElement.queryAll(css.BUTTON);
       buttons[1].nativeElement.click();
       expect(dispatchedActions).toEqual([
         npmiActions.npmiToggleAnnotationsHidden({
           annotations: ['test', 'test2'],
         }),
-        npmiActions.npmiClearSelectedAnnotations(),
       ]);
     });
   });
@@ -160,7 +157,7 @@ describe('Npmi Annotations List Toolbar Container', () => {
     const fixture = TestBed.createComponent(AnnotationsListToolbarContainer);
     fixture.detectChanges();
 
-    const expandButton = fixture.debugElement.query(By.css(css.EXPAND_BUTTON));
+    const expandButton = fixture.debugElement.query(css.EXPAND_BUTTON);
     expandButton.nativeElement.click();
 
     expect(dispatchedActions).toEqual([
@@ -174,7 +171,7 @@ describe('Npmi Annotations List Toolbar Container', () => {
       fixture.componentInstance.expanded = true;
       fixture.detectChanges();
 
-      const toggles = fixture.debugElement.queryAll(By.css(css.TOGGLE));
+      const toggles = fixture.debugElement.queryAll(css.TOGGLE);
       toggles[0].triggerEventHandler('change', null);
 
       expect(dispatchedActions).toEqual([npmiActions.npmiToggleShowCounts()]);
@@ -185,7 +182,7 @@ describe('Npmi Annotations List Toolbar Container', () => {
       fixture.componentInstance.expanded = true;
       fixture.detectChanges();
 
-      const toggles = fixture.debugElement.queryAll(By.css(css.TOGGLE));
+      const toggles = fixture.debugElement.queryAll(css.TOGGLE);
       toggles[1].triggerEventHandler('change', null);
 
       expect(dispatchedActions).toEqual([

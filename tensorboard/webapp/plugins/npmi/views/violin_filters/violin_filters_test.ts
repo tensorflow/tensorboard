@@ -35,9 +35,9 @@ describe('Npmi Violin Filters Container', () => {
   let store: MockStore<State>;
   let dispatchedActions: Action[];
   const css = {
-    FILTERS_TOOLBAR: '.filters-toolbar',
-    SIDE_TOGGLE: '.side-toggle',
-    BUTTON: 'button',
+    FILTERS_TOOLBAR: By.css('.filters-toolbar'),
+    SIDE_TOGGLE: By.css('.side-toggle'),
+    BUTTON: By.css('button'),
   };
 
   beforeEach(async () => {
@@ -65,9 +65,7 @@ describe('Npmi Violin Filters Container', () => {
     const fixture = TestBed.createComponent(ViolinFiltersContainer);
     fixture.detectChanges();
 
-    const violinFilters = fixture.debugElement.query(
-      By.css(css.FILTERS_TOOLBAR)
-    );
+    const violinFilters = fixture.debugElement.query(css.FILTERS_TOOLBAR);
     expect(violinFilters).toBeTruthy();
   });
 
@@ -76,9 +74,9 @@ describe('Npmi Violin Filters Container', () => {
     const fixture = TestBed.createComponent(ViolinFiltersContainer);
     fixture.detectChanges();
 
-    const sideToggle = fixture.debugElement.query(By.css(css.SIDE_TOGGLE));
+    const sideToggle = fixture.debugElement.query(css.SIDE_TOGGLE);
     expect(sideToggle).toBeTruthy();
-    const hideButton = sideToggle.query(By.css(css.BUTTON));
+    const hideButton = sideToggle.query(css.BUTTON);
     expect(hideButton).toBeTruthy();
     hideButton.nativeElement.click();
 

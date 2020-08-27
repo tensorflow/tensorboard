@@ -28,7 +28,6 @@ ng_module(
         "//tensorboard/webapp/plugins/npmi/store:types",
         "//tensorboard/webapp/plugins/npmi/util:filter_annotations",
         "//tensorboard/webapp/plugins/npmi/views/annotations_list/annotations_list_toolbar",
-        "@npm//@angular/cdk",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
         "@npm//@types/d3",

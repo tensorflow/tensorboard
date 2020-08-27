@@ -30,9 +30,9 @@ import {AnnotationsListContainer} from './annotations_list_container';
 describe('Npmi Annotations List Container', () => {
   let store: MockStore<State>;
   const css = {
-    TOOLBAR: 'npmi-annotations-list-toolbar',
-    HEADER: 'npmi-annotations-list-header',
-    LEGEND: 'npmi-annotations-legend',
+    TOOLBAR: By.css('npmi-annotations-list-toolbar'),
+    HEADER: By.css('npmi-annotations-list-header'),
+    LEGEND: By.css('npmi-annotations-legend'),
   };
 
   beforeEach(async () => {
@@ -55,7 +55,7 @@ describe('Npmi Annotations List Container', () => {
     const fixture = TestBed.createComponent(AnnotationsListContainer);
     fixture.detectChanges();
 
-    const annotationsToolbar = fixture.debugElement.query(By.css(css.TOOLBAR));
+    const annotationsToolbar = fixture.debugElement.query(css.TOOLBAR);
     expect(annotationsToolbar).toBeTruthy();
   });
 
@@ -64,7 +64,7 @@ describe('Npmi Annotations List Container', () => {
     const fixture = TestBed.createComponent(AnnotationsListContainer);
     fixture.detectChanges();
 
-    const annotationsToolbar = fixture.debugElement.query(By.css(css.TOOLBAR));
+    const annotationsToolbar = fixture.debugElement.query(css.TOOLBAR);
     expect(annotationsToolbar).toBeTruthy();
   });
 });

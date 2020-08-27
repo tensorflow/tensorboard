@@ -26,6 +26,10 @@ export function metricIsNpmi(metric: string): boolean {
   return metric.startsWith('nPMI');
 }
 
+export function metricIsNpmiAndNotDiff(metric: string): boolean {
+  return metric.startsWith('nPMI@');
+}
+
 export function stripMetricString(metricString: string): string {
   const strippedString = metricString.split('@', 2)[1];
   return strippedString;
@@ -38,9 +42,9 @@ export function addSortingSymbol(
   let result = metricString;
   if (metricString === sorting.metric) {
     if (sorting.order === SortingOrder.DOWN) {
-      result = result + ' \uD83E\uDC27';
+      result = result + ' 🠧';
     } else if (sorting.order === SortingOrder.UP) {
-      result = result + ' \uD83E\uDC25';
+      result = result + ' 🠥';
     }
   }
   return result;

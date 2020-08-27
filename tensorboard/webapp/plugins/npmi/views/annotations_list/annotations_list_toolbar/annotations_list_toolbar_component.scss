@@ -16,19 +16,11 @@ limitations under the License.
 
 :host {
   align-items: center;
+  box-sizing: border-box;
   display: flex;
   flex-direction: row;
   padding: 0 16px;
-  width: calc(100% - 32px);
-}
-
-.annotations-toolbar-not-expanded {
-  align-items: center;
-  background-color: mat-color($mat-light-theme-background, card);
-  border: 1px solid mat-color($tb-foreground, border);
-  display: flex;
-  height: 42px;
-  padding: 0 16px;
+  width: 100%;
 }
 
 .annotations-title {
@@ -47,6 +39,6 @@ limitations under the License.
 }
 
 .show-toggle {
-  font-size: 12px;
+  font-size: 0.9em;
   margin-right: 0.8em;
 }

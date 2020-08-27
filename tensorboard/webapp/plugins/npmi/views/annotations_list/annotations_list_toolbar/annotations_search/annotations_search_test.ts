@@ -38,8 +38,8 @@ describe('Npmi Annotations Search Container', () => {
   let store: MockStore<State>;
   let dispatchedActions: Action[];
   const css = {
-    ERROR_ICON: '.error-icon',
-    INPUT: 'input',
+    ERROR_ICON: By.css('.error-icon'),
+    INPUT: By.css('input'),
   };
 
   beforeEach(async () => {
@@ -65,10 +65,10 @@ describe('Npmi Annotations Search Container', () => {
     const fixture = TestBed.createComponent(AnnotationsSearchContainer);
     fixture.detectChanges();
 
-    const filterDiv = fixture.debugElement.query(By.css(css.INPUT));
+    const filterDiv = fixture.debugElement.query(css.INPUT);
     expect(filterDiv).toBeTruthy();
 
-    expect(fixture.debugElement.query(By.css(css.ERROR_ICON))).toBeNull();
+    expect(fixture.debugElement.query(css.ERROR_ICON)).toBeNull();
   });
 
   describe('input interaction', () => {
@@ -76,7 +76,7 @@ describe('Npmi Annotations Search Container', () => {
       const fixture = TestBed.createComponent(AnnotationsSearchContainer);
       fixture.detectChanges();
 
-      const input = fixture.debugElement.query(By.css(css.INPUT));
+      const input = fixture.debugElement.query(css.INPUT);
       input.nativeElement.focus();
       fixture.detectChanges();
 
@@ -95,6 +95,6 @@ describe('Npmi Annotations Search Container', () => {
     const fixture = TestBed.createComponent(AnnotationsSearchContainer);
     fixture.detectChanges();
 
-    expect(fixture.debugElement.query(By.css(css.ERROR_ICON))).not.toBeNull();
+    expect(fixture.debugElement.query(css.ERROR_ICON)).not.toBeNull();
   });
 });

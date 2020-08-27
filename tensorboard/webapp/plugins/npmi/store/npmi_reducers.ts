@@ -22,6 +22,7 @@ import {
   SortingOrder,
   ArithmeticElement,
   Operator,
+  ArithmeticKind,
 } from './npmi_types';
 import * as metricType from '../util/metric_type';
 
@@ -161,6 +162,7 @@ const reducer = createReducer(
       return {
         ...state,
         flaggedAnnotations: [...combinedFlaggedAnnotations],
+        selectedAnnotations: [],
       };
     }
   ),
@@ -180,6 +182,7 @@ const reducer = createReducer(
       return {
         ...state,
         hiddenAnnotations: [...combinedHiddenAnnotations],
+        selectedAnnotations: [],
       };
     }
   ),
@@ -211,9 +214,12 @@ const reducer = createReducer(
       // Add so that arithmetic is still correct
       const newContent: ArithmeticElement[] = [];
       if (state.metricArithmetic.length !== 0) {
-        newContent.push({kind: 'operator', operator: Operator.AND});
+        newContent.push({
+          kind: ArithmeticKind.OPERATOR,
+          operator: Operator.AND,
+        });
       }
-      newContent.push({kind: 'metric', metric: metric});
+      newContent.push({kind: ArithmeticKind.METRIC, metric: metric});
       return {
         ...state,
         metricArithmetic: [...state.metricArithmetic, ...newContent],
@@ -241,7 +247,7 @@ const reducer = createReducer(
       const {[metric]: value, ...map} = state.metricFilters;
       for (const index in state.metricArithmetic) {
         const element = state.metricArithmetic[index];
-        if (element.kind === 'metric') {
+        if (element.kind === ArithmeticKind.METRIC) {
           if (element.metric === metric) {
             arithmeticIndex = parseInt(index);
           }

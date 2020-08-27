@@ -15,7 +15,7 @@ limitations under the License.
 import {Component, ChangeDetectionStrategy} from '@angular/core';
 
 import {select, Store} from '@ngrx/store';
-import {map} from 'rxjs/operators';
+import {map, share} from 'rxjs/operators';
 import {combineLatest} from 'rxjs';
 
 import {State} from '../../../../app_state';
@@ -33,6 +33,7 @@ import {
   filterAnnotations,
   removeHiddenAnnotations,
 } from '../../util/filter_annotations';
+import {metricIsNpmiAndNotDiff} from '../../util/metric_type';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
@@ -53,16 +54,11 @@ export class AnnotationsListContainer {
     select(getAnnotationsExpanded)
   );
   readonly activeRuns$ = this.store.pipe(select(getRunSelection)).pipe(
-    map((runs) => {
-      let activeRuns: string[] = [];
-      if (runs) {
-        for (let run of runs) {
-          if (run[1]) {
-            activeRuns.push(run[0]);
-          }
-        }
-      }
-      return activeRuns;
+    map((runSelection) => {
+      if (!runSelection) return [];
+      return Array.from(runSelection.entries())
+        .filter((run) => run[1])
+        .map((run) => run[0]);
     })
   );
   readonly activeMetrics$ = combineLatest(
@@ -74,15 +70,12 @@ export class AnnotationsListContainer {
       let metrics: string[] = [];
       for (const run of activeRuns) {
         if (runToMetrics[run]) {
-          metrics = [...new Set([...metrics, ...runToMetrics[run]])];
+          metrics = metrics.concat(
+            runToMetrics[run].filter((key) => metricIsNpmiAndNotDiff(key))
+          );
         }
       }
-      metrics = [
-        ...new Set([
-          ...Object.keys(metricFilters),
-          ...metrics.filter((key) => key.startsWith('nPMI@')).map((key) => key),
-        ]),
-      ];
+      metrics = [...new Set([...Object.keys(metricFilters), ...metrics])];
       return metrics;
     })
   );
@@ -105,25 +98,28 @@ export class AnnotationsListContainer {
     this.store.select(getMetricFilters),
     this.activeRuns$,
     this.activeMetrics$
-  ).pipe(
-    map(
-      ([
-        visibleAnnotations,
-        metricArithmetic,
-        metricFilters,
-        activeRuns,
-        activeMetrics,
-      ]) => {
-        return filterAnnotations(
+  )
+    .pipe(
+      map(
+        ([
           visibleAnnotations,
-          activeRuns,
           metricArithmetic,
           metricFilters,
-          activeMetrics
-        );
-      }
+          activeRuns,
+          activeMetrics,
+        ]) => {
+          console.log('test');
+          return filterAnnotations(
+            visibleAnnotations,
+            activeRuns,
+            metricArithmetic,
+            metricFilters,
+            activeMetrics
+          );
+        }
+      )
     )
-  );
+    .pipe(share());
   readonly numAnnotations$ = this.filteredAnnotations$.pipe(
     map((annotations) => {
       return Object.keys(annotations).length;

@@ -16,6 +16,7 @@ import {
   AnnotationDataListing,
   ArithmeticElement,
   MetricFilterListing,
+  ArithmeticKind,
 } from './../store/npmi_types';
 import {stripMetricString} from './metric_type';
 
@@ -28,7 +29,7 @@ export function filterAnnotations(
 ): AnnotationDataListing {
   const data: AnnotationDataListing = {};
   const annotations = Object.keys(annotationData);
-  annotations.map((annotation) => {
+  annotations.forEach((annotation) => {
     let valueDataElements = annotationData[annotation];
     const allMetrics = metrics.map((metric) => stripMetricString(metric));
     // Remove all inactive runs and keep only metrics currently displayed
@@ -38,28 +39,26 @@ export function filterAnnotations(
         allMetrics.includes(valueDataElement.metric)
       );
     });
-    let include = true;
     // Check all parts of the arithemetic
-    for (const element of metricArithmetic) {
-      if (element.kind === 'metric') {
-        const metricFilter = metricFilters[element.metric];
-        include =
-          include &&
-          valueDataElements.some((valueDataElement) => {
-            if (stripMetricString(valueDataElement.metric) === element.metric) {
-              if (!valueDataElement.nPMIValue && metricFilter.includeNaN) {
-                return true;
-              } else {
-                return (
-                  valueDataElement.nPMIValue! <= metricFilter.max &&
-                  valueDataElement.nPMIValue! >= metricFilter.min
-                );
-              }
-            }
-            return false;
-          });
+    let include = metricArithmetic.every((element) => {
+      if (element.kind === ArithmeticKind.OPERATOR) {
+        return true;
       }
-    }
+      const metricFilter = metricFilters[element.metric];
+      return valueDataElements.some((valueDataElement) => {
+        if (stripMetricString(valueDataElement.metric) === element.metric) {
+          if (!valueDataElement.nPMIValue && metricFilter.includeNaN) {
+            return true;
+          } else {
+            return (
+              valueDataElement.nPMIValue! <= metricFilter.max &&
+              valueDataElement.nPMIValue! >= metricFilter.min
+            );
+          }
+        }
+        return false;
+      });
+    });
     if (include) {
       data[annotation] = valueDataElements;
     }

@@ -47,8 +47,8 @@ describe('Npmi Metric Search Container', () => {
   let dispatchedActions: Action[];
   let overlayContainer: OverlayContainer;
   const css = {
-    INPUT: 'input',
-    ERROR_ICON: '.error-icon',
+    INPUT: By.css('input'),
+    ERROR_ICON: By.css('.error-icon'),
   };
 
   beforeEach(async () => {
@@ -89,7 +89,7 @@ describe('Npmi Metric Search Container', () => {
     const fixture = TestBed.createComponent(MetricSearchContainer);
     fixture.detectChanges();
 
-    const filterDiv = fixture.debugElement.query(By.css(css.INPUT));
+    const filterDiv = fixture.debugElement.query(css.INPUT);
     expect(filterDiv).toBeTruthy();
   });
 
@@ -98,7 +98,7 @@ describe('Npmi Metric Search Container', () => {
       const fixture = TestBed.createComponent(MetricSearchContainer);
       fixture.detectChanges();
 
-      const input = fixture.debugElement.query(By.css(css.INPUT));
+      const input = fixture.debugElement.query(css.INPUT);
       input.nativeElement.focus();
       fixture.detectChanges();
 
@@ -117,7 +117,7 @@ describe('Npmi Metric Search Container', () => {
       const fixture = TestBed.createComponent(MetricSearchContainer);
       fixture.detectChanges();
 
-      const input = fixture.debugElement.query(By.css(css.INPUT));
+      const input = fixture.debugElement.query(css.INPUT);
       input.nativeElement.focus();
       fixture.detectChanges();
 
@@ -141,7 +141,7 @@ describe('Npmi Metric Search Container', () => {
       const fixture = TestBed.createComponent(MetricSearchContainer);
       fixture.detectChanges();
 
-      const input = fixture.debugElement.query(By.css(css.INPUT));
+      const input = fixture.debugElement.query(css.INPUT);
       input.nativeElement.focus();
       fixture.detectChanges();
 
@@ -163,7 +163,7 @@ describe('Npmi Metric Search Container', () => {
       const fixture = TestBed.createComponent(MetricSearchContainer);
       fixture.detectChanges();
 
-      const input = fixture.debugElement.query(By.css(css.INPUT));
+      const input = fixture.debugElement.query(css.INPUT);
       input.nativeElement.focus();
       fixture.detectChanges();
 
@@ -185,7 +185,7 @@ describe('Npmi Metric Search Container', () => {
       const fixture = TestBed.createComponent(MetricSearchContainer);
       fixture.detectChanges();
 
-      const input = fixture.debugElement.query(By.css(css.INPUT));
+      const input = fixture.debugElement.query(css.INPUT);
       input.nativeElement.focus();
       fixture.detectChanges();
 
@@ -206,7 +206,7 @@ describe('Npmi Metric Search Container', () => {
       const fixture = TestBed.createComponent(MetricSearchContainer);
       fixture.detectChanges();
 
-      const input = fixture.debugElement.query(By.css(css.INPUT));
+      const input = fixture.debugElement.query(css.INPUT);
       input.nativeElement.focus();
       fixture.detectChanges();
 
@@ -231,7 +231,7 @@ describe('Npmi Metric Search Container', () => {
       const fixture = TestBed.createComponent(MetricSearchContainer);
       fixture.detectChanges();
 
-      const input = fixture.debugElement.query(By.css(css.INPUT));
+      const input = fixture.debugElement.query(css.INPUT);
       input.nativeElement.focus();
       fixture.detectChanges();
 
@@ -255,7 +255,7 @@ describe('Npmi Metric Search Container', () => {
       const fixture = TestBed.createComponent(MetricSearchContainer);
       fixture.detectChanges();
 
-      expect(fixture.debugElement.query(By.css(css.ERROR_ICON))).not.toBeNull();
+      expect(fixture.debugElement.query(css.ERROR_ICON)).not.toBeNull();
     });
   });
 });
