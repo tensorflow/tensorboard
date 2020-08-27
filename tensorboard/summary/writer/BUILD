@@ -2,7 +2,7 @@
 # Writer interfaces for TensorBoard if tensorflow is not present
 package(default_visibility = ["//tensorboard:internal"])
 
-licenses(["notice"])  # Apache 2.0
+licenses(["notice"])
 
 exports_files(["LICENSE"])
 
