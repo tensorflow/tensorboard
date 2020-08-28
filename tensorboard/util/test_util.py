@@ -206,3 +206,13 @@ def _run_conditionally(guard, name, default_reason=None):
         return unittest.skipUnless(guard(), reason)
 
     return _impl
+<<<<<<< HEAD
+=======
+
+
+run_v2_only = _run_conditionally(
+    lambda: tensorflow_python_tf2.enabled(),
+    name="run_v2_only",
+    default_reason="Test only appropriate for TensorFlow v2",
+)
+>>>>>>> 496c0723a5676acd439ac8356b09cbe350874c35
