@@ -22,6 +22,7 @@ ng_module(
         "metric_arithmetic_element_component.ng.html",
     ],
     deps = [
+        "//tensorboard/webapp/angular:expect_angular_material_chips",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/plugins/npmi/store",
         "//tensorboard/webapp/plugins/npmi/store:types",
@@ -42,6 +43,7 @@ tf_ts_library(
         ":metric_arithmetic_element",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "//tensorboard/webapp/angular:expect_angular_material_chips",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "//tensorboard/webapp/core/store",

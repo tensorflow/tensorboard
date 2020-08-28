@@ -14,40 +14,21 @@ limitations under the License.
 ==============================================================================*/
 @import 'tensorboard/webapp/theme/tb_theme';
 
-:host {
+.filter-chip {
   align-items: center;
-  border-radius: 15px;
-  border: 1px solid mat-color($tb-foreground, border);
   display: flex;
-  height: 30px;
   margin-left: 5px;
-}
-
-.metric-arithmetic-element-text {
-  padding: 5px 10px;
-}
-
-.metric-arithmetic-element-remove {
-  align-items: center;
-  background-color: mat-color($tb-warn);
-  border-radius: 0 15px 15px 0;
-  color: white;
-  cursor: pointer;
-  display: flex;
-  height: 30px;
-  justify-content: center;
-  padding-right: 5px;
-  width: 30px;
 }
 
 .metric-arithmetic-element-range {
   align-items: center;
-  background-color: lightgray;
+  background-color: mat-color($mat-light-theme-background, card);
   font-size: 0.8em;
   height: 30px;
   justify-content: center;
   line-height: 30px;
   padding: 0 5px;
+  margin-left: 5px;
 }
 
 .input-field {
@@ -58,10 +39,9 @@ limitations under the License.
   transition: width 1s;
 
   &:focus {
-    background-color: darkgrey;
+    background-color: mat-color($mat-light-theme-background, focused-button);
     border: none;
     outline: none;
-    width: 100px !important;
   }
 }
 

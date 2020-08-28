@@ -18,19 +18,14 @@ import {Operator} from '../../../../store/npmi_types';
 @Component({
   selector: 'npmi-metric-arithmetic-operator',
   template: `
-    {{ operatorText }}
+    <mat-chip>
+      {{ operator === Operator.AND ? '&' : '' }}
+    </mat-chip>
   `,
   styleUrls: ['./metric_arithmetic_operator_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MetricArithmeticOperatorComponent {
   @Input() operator!: Operator;
-  get operatorText(): string {
-    switch (this.operator) {
-      case Operator.AND:
-        return '&';
-      default:
-        return '';
-    }
-  }
+  Operator = Operator;
 }

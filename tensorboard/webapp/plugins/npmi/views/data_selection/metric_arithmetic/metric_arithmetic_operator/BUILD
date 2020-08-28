@@ -1,14 +1,9 @@
 load("@npm_angular_bazel//:index.bzl", "ng_module")
-load("//tensorboard/defs:defs.bzl", "tf_sass_binary", "tf_ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])  # Apache 2.0
-
-tf_sass_binary(
-    name = "metric_arithmetic_operator_component_styles",
-    src = "metric_arithmetic_operator_component.scss",
-)
 
 ng_module(
     name = "metric_arithmetic_operator",
@@ -16,10 +11,8 @@ ng_module(
         "metric_arithmetic_operator_component.ts",
         "metric_arithmetic_operator_module.ts",
     ],
-    assets = [
-        ":metric_arithmetic_operator_component_styles",
-    ],
     deps = [
+        "//tensorboard/webapp/angular:expect_angular_material_chips",
         "//tensorboard/webapp/plugins/npmi/store",
         "//tensorboard/webapp/plugins/npmi/store:types",
         "@npm//@angular/core",

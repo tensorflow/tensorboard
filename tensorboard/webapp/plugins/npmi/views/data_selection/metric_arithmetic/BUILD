@@ -22,6 +22,7 @@ ng_module(
         "metric_arithmetic_component.ng.html",
     ],
     deps = [
+        "//tensorboard/webapp/angular:expect_angular_material_chips",
         "//tensorboard/webapp/plugins/npmi/store",
         "//tensorboard/webapp/plugins/npmi/store:types",
         "//tensorboard/webapp/plugins/npmi/views/data_selection/metric_arithmetic/metric_arithmetic_element",

@@ -14,15 +14,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<div *ngFor="let element of metricArithmetic">
-  <npmi-metric-arithmetic-element
-    *ngIf="element.kind === 'metric'"
-    [metric]="element.metric"
-  >
-  </npmi-metric-arithmetic-element>
-  <npmi-metric-arithmetic-operator
-    *ngIf="element.kind === 'operator'"
-    [operator]="element.operator"
-  >
-  </npmi-metric-arithmetic-operator>
-</div>
+<mat-chip-list [selectable]="false">
+  <div *ngFor="let element of metricArithmetic">
+    <npmi-metric-arithmetic-element
+      *ngIf="element.kind === 'metric'"
+      [metric]="element.metric"
+    >
+    </npmi-metric-arithmetic-element>
+    <npmi-metric-arithmetic-operator
+      *ngIf="element.kind === 'operator'"
+      [operator]="element.operator"
+    >
+    </npmi-metric-arithmetic-operator>
+  </div>
+</mat-chip-list>

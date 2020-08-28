@@ -14,30 +14,35 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<div class="metric-arithmetic-element-text">
+<mat-chip class="filter-chip" (removed)="onRemove.emit(metric)">
   {{metric}}
-</div>
-<div class="metric-arithmetic-element-range">
-  [
-  <input
-    matInput
-    (input)="onFilterChange.emit({min: $event.target.value, max: filterValues.max})"
-    [value]="filterValues.min"
-    class="input-field"
-    [ngStyle]="{'width': filterValues.min.length+'ch'}"
-    [ngClass]="{'value-invalid': !minFilterValid}"
-  />
-  ;
-  <input
-    matInput
-    (input)="onFilterChange.emit({min: filterValues.min, max: $event.target.value})"
-    [value]="filterValues.max"
-    class="input-field"
-    [ngStyle]="{'width': (filterValues.max.length)+'ch'}"
-    [ngClass]="{'value-invalid': !maxFilterValid}"
-  />
-  ]
-</div>
-<div class="metric-arithmetic-element-remove" (click)="onRemove.emit(metric)">
-  <mat-icon svgIcon="clear_24px"></mat-icon>
-</div>
+  <div
+    class="metric-arithmetic-element-range"
+    (keydown)="onValueChange($event)"
+  >
+    [
+    <input
+      matInput
+      (focus)="focusMin = true"
+      (focusout)="focusMin = false"
+      [value]="filterValues.min"
+      class="input-field"
+      [ngStyle]="{'width': focusMin ? '100px': minFormControl.value.toString().length+'ch'}"
+      [ngClass]="{'value-invalid': !minFormControl.valid}"
+      [formControl]="minFormControl"
+    />
+    ;
+    <input
+      matInput
+      (focus)="focusMax = true"
+      (focusout)="focusMax = false"
+      [value]="filterValues.max"
+      class="input-field"
+      [ngStyle]="{'width': focusMax ? '100px' : maxFormControl.value.toString().length+'ch'}"
+      [ngClass]="{'value-invalid': !maxFormControl.valid}"
+      [formControl]="maxFormControl"
+    />
+    ]
+  </div>
+  <mat-icon matChipRemove svgIcon="cancel_24px"></mat-icon>
+</mat-chip>

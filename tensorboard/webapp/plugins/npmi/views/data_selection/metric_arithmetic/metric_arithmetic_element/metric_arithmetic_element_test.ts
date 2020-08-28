@@ -17,11 +17,11 @@ limitations under the License.
  */
 import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
-import {FormsModule} from '@angular/forms';
-import {CommonModule} from '@angular/common';
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 
 import {MatAutocompleteModule} from '@angular/material/autocomplete';
 import {MatInputModule} from '@angular/material/input';
+import {MatChipsModule} from '@angular/material/chips';
 
 import {Action, Store} from '@ngrx/store';
 import {provideMockStore, MockStore} from '@ngrx/store/testing';
@@ -39,8 +39,8 @@ describe('Npmi Metric Arithmetic Element Container', () => {
   let store: MockStore<State>;
   let dispatchedActions: Action[];
   const css = {
-    ELEMENT_TEXT: '.metric-arithmetic-element-text',
-    ELEMENT_REMOVE: '.metric-arithmetic-element-remove',
+    FILTER_CHIP: '.filter-chip',
+    ELEMENT_REMOVE: '.mat-chip-remove',
     INPUT: 'input',
     VALUE_INVALID: '.value-invalid',
   };
@@ -52,10 +52,11 @@ describe('Npmi Metric Arithmetic Element Container', () => {
         MetricArithmeticElementComponent,
       ],
       imports: [
-        CommonModule,
         FormsModule,
+        ReactiveFormsModule,
         MatInputModule,
         MatAutocompleteModule,
+        MatChipsModule,
       ],
       providers: [
         provideMockStore({
@@ -80,8 +81,8 @@ describe('Npmi Metric Arithmetic Element Container', () => {
     fixture.componentInstance.metric = 'npmi@test';
     fixture.detectChanges();
 
-    const filterDiv = fixture.debugElement.query(By.css(css.ELEMENT_TEXT));
-    expect(filterDiv.nativeElement.textContent.trim()).toBe('npmi@test');
+    const filterDiv = fixture.debugElement.query(By.css(css.FILTER_CHIP));
+    expect(filterDiv).toBeTruthy();
   });
 
   it('removes metric on click on remove button', () => {
@@ -94,6 +95,9 @@ describe('Npmi Metric Arithmetic Element Container', () => {
     expect(dispatchedActions).toEqual([
       npmiActions.npmiRemoveMetricFilter({metric: 'npmi@test'}),
     ]);
+
+    const inputs = fixture.debugElement.queryAll(By.css(css.INPUT));
+    expect(inputs.length).toBe(2);
   });
 
   describe('input interaction', () => {

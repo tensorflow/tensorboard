@@ -14,8 +14,9 @@ limitations under the License.
 ==============================================================================*/
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-import {FormsModule} from '@angular/forms';
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {MatIconModule} from '@angular/material/icon';
+import {MatChipsModule} from '@angular/material/chips';
 
 import {MetricArithmeticElementComponent} from './metric_arithmetic_element_component';
 import {MetricArithmeticElementContainer} from './metric_arithmetic_element_container';
@@ -25,7 +26,13 @@ import {MetricArithmeticElementContainer} from './metric_arithmetic_element_cont
     MetricArithmeticElementComponent,
     MetricArithmeticElementContainer,
   ],
-  imports: [CommonModule, FormsModule, MatIconModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    MatIconModule,
+    MatChipsModule,
+  ],
   exports: [MetricArithmeticElementContainer],
 })
 export class MetricArithmeticElementModule {}

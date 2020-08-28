@@ -28,9 +28,7 @@ import * as npmiActions from '../../../../actions';
   template: `
     <metric-arithmetic-element-component
       [metric]="metric"
-      [filterValues]="filterValues"
-      [minFilterValid]="minFilterValid"
-      [maxFilterValid]="maxFilterValid"
+      [filterValues]="filterValues$ | async"
       (onRemove)="remove($event)"
       (onFilterChange)="filterChange($event)"
     ></metric-arithmetic-element-component>
@@ -39,22 +37,22 @@ import * as npmiActions from '../../../../actions';
 })
 export class MetricArithmeticElementContainer {
   @Input() metric!: string;
-  filterValues = {min: '-1.0', max: '1.0'};
-  readonly filterValueSetter$ = this.store.pipe(select(getMetricFilters)).pipe(
+  readonly filterValues$ = this.store.pipe(select(getMetricFilters)).pipe(
     map((filters) => {
       const filter = filters[this.metric];
+      if (!filter) {
+        return {min: -1.0, max: 1.0};
+      }
       const min = filter.includeNaN
         ? 'NaN'
-        : this.roundToThreeDecimalPoints(filter.min).toString();
+        : this.roundToThreeDecimalPoints(filter.min);
       const max =
         filter.max < filter.min
           ? 'NaN'
-          : this.roundToThreeDecimalPoints(filter.max).toString();
-      this.filterValues = {min: min, max: max};
+          : this.roundToThreeDecimalPoints(filter.max);
+      return {min: min, max: max};
     })
   );
-  minFilterValid = true;
-  maxFilterValid = true;
 
   constructor(private readonly store: Store<State>) {}
 
@@ -62,40 +60,18 @@ export class MetricArithmeticElementContainer {
     this.store.dispatch(npmiActions.npmiRemoveMetricFilter({metric: metric}));
   }
 
-  filterChange(newValues: {min: string; max: string}) {
-    this.filterValues = {min: newValues.min, max: newValues.max};
-    this.minFilterValid = this.isEntryValid(newValues.min);
-    this.maxFilterValid =
-      this.isEntryValid(newValues.max) &&
-      (parseFloat(newValues.max) >= parseFloat(newValues.min) ||
-        newValues.min == 'NaN');
-    if (this.minFilterValid && this.maxFilterValid) {
-      let min = newValues.min === 'NaN' ? -1 : parseFloat(newValues.min);
-      let max = newValues.max === 'NaN' ? -2 : parseFloat(newValues.max);
-      let includeNaN = newValues.min === 'NaN';
-      this.store.dispatch(
-        npmiActions.npmiChangeMetricFilter({
-          metric: this.metric,
-          max: max,
-          min: min,
-          includeNaN: includeNaN,
-        })
-      );
-    }
-  }
-
-  private isEntryValid(value: string) {
-    if (value === 'NaN') {
-      return true;
-    } else {
-      let numberValue = parseFloat(value);
-      if (numberValue === NaN) {
-        return false;
-      } else if (numberValue >= -1.0 && numberValue <= 1.0) {
-        return true;
-      }
-    }
-    return false;
+  filterChange(newValues: {min: number; max: number}) {
+    let min = isNaN(newValues.min) ? -1 : newValues.min;
+    let max = isNaN(newValues.max) ? -2 : newValues.max;
+    let includeNaN = isNaN(newValues.min);
+    this.store.dispatch(
+      npmiActions.npmiChangeMetricFilter({
+        metric: this.metric,
+        max: max,
+        min: min,
+        includeNaN: includeNaN,
+      })
+    );
   }
 
   private roundToThreeDecimalPoints(value: number): number {
