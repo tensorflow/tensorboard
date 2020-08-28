@@ -176,33 +176,3 @@ def ensure_tb_summary_proto(summary):
         return summary
 
     return summary_pb2.Summary.FromString(summary.SerializeToString())
-
-
-def _run_conditionally(guard, name, default_reason=None):
-    """Create a decorator factory that skips a test when guard returns False.
-
-    The factory raises ValueError when default_reason is None and reason is not
-    passed to the factory.
-
-    Args:
-      guard: A lambda that returns True if a test should be executed.
-      name: A human readable name for the decorator for an error message.
-      default_reason: A string describing why a test should be skipped. If it
-          is None, the decorator will make sure the reason is supplied by the
-          consumer of the decorator. Default is None.
-
-    Raises:
-      ValueError when both reason and default_reason are None.
-
-    Returns:
-      A function that returns a decorator.
-    """
-
-    def _impl(reason=None):
-        if reason is None:
-            if default_reason is None:
-                raise ValueError("%s requires a reason for skipping." % name)
-            reason = default_reason
-        return unittest.skipUnless(guard(), reason)
-
-    return _impl
