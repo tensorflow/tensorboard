@@ -203,14 +203,16 @@ def _tf_web_library(ctx):
     # If a rule exists purely to export other build rules, then it's
     # appropriate for the exported sources to be included in the
     # development web server.
-    devserver_manifests = depset(order="postorder")
     export_deps = unfurl(ctx.attr.exports)
-    for dep in export_deps:
-      devserver_manifests += dep.webfiles.manifests
-    devserver_manifests = manifests + devserver_manifests
+    devserver_manifests = depset(
+        order = "postorder",
+        transitive = (
+            [manifests] + [dep.webfiles.manifests for dep in export_deps]
+        ),
+    )
   params = struct(
       label=str(ctx.label),
-      bind="localhost:6006",
+      bind="localhost:0",
       manifest=[long_path(ctx, man) for man in devserver_manifests.to_list()],
       external_asset=[struct(webpath=k, path=v)
                       for k, v in ctx.attr.external_assets.items()])

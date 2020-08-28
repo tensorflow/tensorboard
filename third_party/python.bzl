@@ -114,16 +114,24 @@ def tensorboard_python_workspace():
         sha256 = "2d9fbe67001d2e8f02692075257f3c11e1b0194bd838c8ce3f49b31fc6c3f033",
         strip_prefix = "mock-1.0.0",
         build_file = str(Label("//third_party:mock.BUILD")),
+        patches = [
+            # `mock==1.0.0` lacks some assertion methods present in
+            # later versions of `mock` (see comment above for why we pin
+            # to this version). Patch created by diffing the pinned
+            # `mock.py` with GitHub head and identifying all the bits
+            # that looked related to the methods in question.
+            "//third_party:mock_call_assertions.patch",
+        ],
     )
 
     http_archive(
         name = "org_pythonhosted_six",
         urls = [
-            "http://mirror.tensorflow.org/pypi.python.org/packages/source/s/six/six-1.10.0.tar.gz",
-            "http://pypi.python.org/packages/source/s/six/six-1.10.0.tar.gz",
+            "http://mirror.tensorflow.org/pypi.python.org/packages/source/s/six/six-1.13.0.tar.gz",
+            "https://pypi.python.org/packages/source/s/six/six-1.13.0.tar.gz",
         ],
-        sha256 = "105f8d68616f8248e24bf0e9372ef04d3cc10104f1980f54d57b2ce73a5ad56a",
-        strip_prefix = "six-1.10.0",
+        sha256 = "30f610279e8b2578cab6db20741130331735c781b56053c59c4076da27f06b66",
+        strip_prefix = "six-1.13.0",
         build_file = str(Label("//third_party:six.BUILD")),
     )
 
@@ -136,15 +144,4 @@ def tensorboard_python_workspace():
         sha256 = "2f88edf7c6406034d7577846f224aff6e53c5f4250e3294b1904d8db250f27ec",
         strip_prefix = "portpicker-1.1.1/src",
         build_file = str(Label("//third_party:portpicker.BUILD")),
-    )
-
-    http_archive(
-        name = "org_tensorflow_serving_api",
-        urls = [
-            "http://mirror.tensorflow.org/files.pythonhosted.org/packages/b5/da/bd60d7b245dbe93f35aded752679124a61bb90154d4698f6f3dba30d75c6/tensorflow_serving_api-1.10.1-py2.py3-none-any.whl",
-            "https://files.pythonhosted.org/packages/b5/da/bd60d7b245dbe93f35aded752679124a61bb90154d4698f6f3dba30d75c6/tensorflow_serving_api-1.10.1-py2.py3-none-any.whl",
-        ],
-        type = "zip",
-        sha256 = "77bc67484c3d7ce58de24b68b9f4ba26f9f7c459361a257e970350105cae4838",
-        build_file = str(Label("//third_party:tf_serving.BUILD")),
     )

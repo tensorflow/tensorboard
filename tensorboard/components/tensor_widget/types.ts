@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {BaseTensorHealthPill} from './health-pill-types';
+import {BaseTensorNumericSummary} from './health-pill-types';
 
 export type Shape = ReadonlyArray<number>;
 
@@ -57,8 +57,8 @@ export interface TensorView {
    */
   view: (slicingSpec: TensorViewSlicingSpec) => Promise<SlicedValues>;
 
-  /** Get the health pill of the underlying tensor. */
-  getHealthPill: () => Promise<BaseTensorHealthPill>;
+  /** Get the numeric summary of the underlying tensor. */
+  getNumericSummary: () => Promise<BaseTensorNumericSummary>;
 }
 
 /**
@@ -184,6 +184,14 @@ export interface TensorWidgetOptions {
    * library based on the maximum absolute value of the elements of the tensor.
    */
   decimalPlaces?: number;
+
+  /**
+   * Whether to use the Alt, Ctrl or Shift key with the mouse for zooming under
+   * the image value-rendering mode.
+   *
+   * Defaults to Ctrl key ('ctrl').
+   */
+  wheelZoomKey?: 'alt' | 'ctrl' | 'shift';
 
   /** TODO(cais): Add support for custom tensor renderers. */
 }

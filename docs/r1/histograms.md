@@ -14,7 +14,7 @@ which is perfect for this purpose. As is usually the case with TensorBoard, we
 will ingest data using a summary op; in this case,
 ['tf.summary.histogram'](https://www.tensorflow.org/api_docs/python/tf/summary/histogram).
 For a primer on how summaries work, please see the
-[TensorBoard guide](./summaries_and_tensorboard.md).
+[TensorBoard guide](./summaries.md).
 
 Here is a code snippet that will generate some histogram summaries containing
 normally distributed data, where the mean of the distribution increases over

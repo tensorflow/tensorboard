@@ -75,6 +75,7 @@ build() (
   mv -f "tensorboard/pip_package/LICENSE" .
   mv -f "tensorboard/pip_package/MANIFEST.in" .
   mv -f "tensorboard/pip_package/README.rst" .
+  mv -f "tensorboard/pip_package/requirements.txt" .
   mv -f "tensorboard/pip_package/setup.cfg" .
   mv -f "tensorboard/pip_package/setup.py" .
   rm -rf "tensorboard/pip_package"
@@ -88,9 +89,6 @@ build() (
   cp -LR "${RUNFILES}/org_html5lib/html5lib" tensorboard/_vendor
   cp -LR "${RUNFILES}/org_mozilla_bleach/bleach" tensorboard/_vendor
   cp -LR "${RUNFILES}/org_pythonhosted_webencodings/webencodings" tensorboard/_vendor
-  # Vendor tensorflow-serving-api because it depends directly on TensorFlow.
-  # TODO(nickfelt): de-vendor if they're able to relax that dependency.
-  cp -LR "${RUNFILES}/org_tensorflow_serving_api/tensorflow_serving" tensorboard/_vendor
 
   chmod -R u+w,go+r .
 
@@ -101,10 +99,9 @@ build() (
       s/^from bleach/from tensorboard._vendor.bleach/
       s/^import webencodings$/from tensorboard._vendor import webencodings/
       s/^from webencodings/from tensorboard._vendor.webencodings/
-      s/from tensorflow_serving/from tensorboard._vendor.tensorflow_serving/
     ' {} +
 
-  virtualenv -q venv
+  virtualenv -q -p python3 venv
   export VIRTUAL_ENV=venv
   export PATH="${PWD}/venv/bin:${PATH}"
   unset PYTHON_HOME
@@ -114,7 +111,11 @@ build() (
   export PYTHONWARNINGS=ignore:DEPRECATION  # suppress Python 2.7 deprecation spam
   pip install -qU wheel 'setuptools>=36.2.0'
 
-  python setup.py bdist_wheel --python-tag py2 >/dev/null
+  # Overrides file timestamps in the zip archive to make the build
+  # reproducible. (Date is mostly arbitrary, but must be past 1980 to be
+  # representable in a zip archive.)
+  export SOURCE_DATE_EPOCH=1577836800  # 2020-01-01T00:00:00Z
+
   python setup.py bdist_wheel --python-tag py3 >/dev/null
 
   cd "${original_wd}"  # Bazel gives "${output}" as a relative path >_>

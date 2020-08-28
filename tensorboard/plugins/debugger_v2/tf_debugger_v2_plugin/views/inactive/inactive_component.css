@@ -1,0 +1,75 @@
+/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+==============================================================================*/
+
+.arg {
+  color: lightblue;
+  font-style: italic;
+  margin: 2px;
+}
+
+.code {
+  font-family: 'Roboto Mono', monospace;
+  margin: 10px;
+}
+
+.container {
+  height: 100%;
+  font-family: Roboto;
+  font-size: 15px;
+  overflow-y: auto;
+  padding: 50px;
+}
+
+.details-container {
+  display: inline-flex;
+  vertical-align: middle;
+  width: 100%;
+}
+
+.details {
+  display: inline-block;
+  margin: 10px 60px;
+  width: 50%;
+}
+
+.exhibit-container {
+  white-space: nowrap;
+  width: 100%;
+}
+
+.exhibit {
+  align-content: center;
+  display: inline-block;
+  margin: 10px 60px;
+  vertical-align: top;
+  width: 310px;
+}
+
+.exhibit .description {
+  font-weight: bold;
+  text-align: center;
+  width: 310px;
+}
+
+.exhibit .screenshot canvas {
+  height: 200px;
+  width: 100%;
+}
+
+.title {
+  font-size: 135%;
+  font-weight: bold;
+  margin-bottom: 25px;
+}

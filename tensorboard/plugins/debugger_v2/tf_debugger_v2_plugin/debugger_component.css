@@ -1,0 +1,83 @@
+/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+==============================================================================*/
+
+.bottom-section {
+  box-sizing: border-box;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-grow: 1;
+  height: 34%;
+  padding-top: 6px;
+}
+
+.debugger-container {
+  box-sizing: border-box;
+  background-color: #fff;
+  height: 100%;
+  overflow: hidden;
+}
+
+.top-section {
+  box-sizing: border-box;
+  display: flex;
+  flex-grow: 1;
+  height: 66%;
+  padding: 6px 0;
+}
+
+tf-debugger-v2-alerts {
+  border-right: 1px solid rgba(0, 0, 0, 0.12);
+  display: inline-block;
+  margin-right: 10px;
+  min-width: 160px;
+  width: calc(15% - 11px);
+}
+
+tf-debugger-v2-graph-executions {
+  display: inline-block;
+  flex-grow: 1;
+  min-width: 540px;
+  width: 540px;
+}
+
+tf-debugger-v2-source-files {
+  display: inline-block;
+  height: 100%;
+  width: 70%;
+}
+
+tf-debugger-v2-stack-trace {
+  display: inline-block;
+  flex-grow: 1;
+  height: 100%;
+  min-width: 540px;
+  width: 540px;
+}
+
+.top-center-section {
+  display: inline-block;
+  overflow: auto;
+  width: 55%;
+}
+
+tf-debugger-v2-timeline {
+  display: block;
+}
+
+tf-debugger-v2-graph {
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+  display: block;
+  margin-top: 5px;
+}

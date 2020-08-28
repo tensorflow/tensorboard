@@ -19,6 +19,12 @@ import {
   isIntegerDType,
   isStringDType,
 } from './dtype-utils';
+import {
+  ChoiceMenuItemConfig,
+  Menu,
+  MenuConfig,
+  SingleActionMenuItemConfig,
+} from './menu';
 import {TensorElementSelection} from './selection';
 import {
   formatShapeForDisplay,
@@ -39,14 +45,37 @@ import {
   TensorWidgetOptions,
   TensorViewSlicingSpec,
 } from './types';
+import {
+  BaseTensorNumericSummary,
+  BooleanOrNumericTensorNumericSummary,
+} from './health-pill-types';
+import {
+  ColorMap,
+  ColorMapConfig,
+  GrayscaleColorMap,
+  JetColorMap,
+} from './colormap';
 
 const DETAILED_VALUE_ATTR_KEY = 'detailed-value';
 
 type ValueClass = 'numeric' | 'boolean' | 'string';
 
+enum ValueRenderMode {
+  TEXT = 1,
+  IMAGE = 2,
+}
+
 /**
  * Implementation of TensorWidget.
  */
+
+/** Color-map look-up table. */
+const colorMaps: {
+  [colorMapName: string]: new (config: ColorMapConfig) => ColorMap;
+} = {
+  Grayscale: GrayscaleColorMap,
+  Jet: JetColorMap,
+};
 
 /** An implementation of TensorWidget single-tensor view. */
 export class TensorWidgetImpl implements TensorWidget {
@@ -56,6 +85,8 @@ export class TensorWidgetImpl implements TensorWidget {
   // Constituent UI elements.
   protected headerSection: HTMLDivElement | null = null;
   protected infoSubsection: HTMLDivElement | null = null;
+  protected menuThumb: HTMLDivElement | null = null;
+
   protected slicingSpecRoot: HTMLDivElement | null = null;
   protected valueSection: HTMLDivElement | null = null;
   protected topRuler: HTMLDivElement | null = null;
@@ -83,6 +114,30 @@ export class TensorWidgetImpl implements TensorWidget {
   // Element selection.
   protected selection: TensorElementSelection | null = null;
 
+  // Menu configuration.
+  protected menuConfig: MenuConfig | null = null;
+  // Menu object.
+  private menu: Menu | null = null;
+
+  // Value render mode.
+  protected valueRenderMode: ValueRenderMode;
+
+  // Name of color map (takes effect on IMAGE value render mode only).
+  protected colorMapName: string = 'Grayscale';
+  protected colorMap: ColorMap | null = null;
+
+  // Whether indices should be rendered on ruler ticks on the top and left.
+  // Determined dynamically based on the current size of the ticks.
+  protected showIndicesOnTicks: boolean = false;
+
+  // Size of each cell used to display the tensor value under the 'image' mode.
+  protected imageCellSize = 16;
+  protected readonly minImageCellSize = 4;
+  protected readonly maxImageCellSize = 40;
+  protected readonly zoomStepRatio = 1.2;
+
+  protected numericSummary: BaseTensorNumericSummary | null = null;
+
   constructor(
     private readonly rootElement: HTMLDivElement,
     private readonly tensorView: TensorView,
@@ -91,6 +146,7 @@ export class TensorWidgetImpl implements TensorWidget {
     this.options = options || {};
     this.slicingSpec = getDefaultSlicingSpec(this.tensorView.spec.shape);
     this.rank = this.tensorView.spec.shape.length;
+    this.valueRenderMode = ValueRenderMode.TEXT;
   }
 
   /**
@@ -104,6 +160,7 @@ export class TensorWidgetImpl implements TensorWidget {
    */
   async render() {
     this.rootElement.classList.add('tensor-widget');
+
     this.renderHeader();
     if (
       !isIntegerDType(this.tensorView.spec.dtype) &&
@@ -137,10 +194,10 @@ export class TensorWidgetImpl implements TensorWidget {
       this.headerSection = document.createElement('div');
       this.headerSection.classList.add('tensor-widget-header');
       this.rootElement.appendChild(this.headerSection);
+      this.createMenu();
     }
     this.renderInfo();
     // TODO(cais): Implement and call renderHealthPill().
-    // TODO(cais): Implement and call createMenu();
   }
 
   /**
@@ -230,6 +287,106 @@ export class TensorWidgetImpl implements TensorWidget {
     this.infoSubsection.appendChild(shapeTagDiv);
   }
 
+  private createMenu() {
+    this.menuConfig = {items: []};
+    if (
+      isFloatDType(this.tensorView.spec.dtype) ||
+      isIntegerDType(this.tensorView.spec.dtype) ||
+      isBooleanDType(this.tensorView.spec.dtype)
+    ) {
+      this.menuConfig.items.push({
+        caption: 'Select display mode...',
+        options: ['Text', 'Image'],
+        defaultSelection: 0,
+        callback: (currentMode: number) => {
+          if (currentMode === 0) {
+            this.valueRenderMode = ValueRenderMode.TEXT;
+            this.renderValues();
+          } else {
+            this.valueRenderMode = ValueRenderMode.IMAGE;
+            this.tensorView.getNumericSummary().then((numericSummary) => {
+              this.numericSummary = numericSummary;
+              this.renderValues();
+            });
+          }
+        },
+      } as ChoiceMenuItemConfig);
+
+      this.menuConfig.items.push({
+        caption: 'Select color map...',
+        options: Object.keys(colorMaps),
+        defaultSelection: 0,
+        callback: (currentMode: number) => {
+          this.colorMapName = Object.keys(colorMaps)[currentMode];
+          this.renderValues();
+        },
+        isEnabled: () => this.valueRenderMode === ValueRenderMode.IMAGE,
+      } as ChoiceMenuItemConfig);
+
+      this.menuConfig.items.push({
+        caption: 'Zoom in (Image mode)',
+        callback: () => {
+          this.zoomInOneStepAndRenderValues();
+        },
+        isEnabled: () => this.valueRenderMode === ValueRenderMode.IMAGE,
+      } as SingleActionMenuItemConfig);
+      this.menuConfig.items.push({
+        caption: 'Zoom out (Image mode)',
+        callback: () => {
+          this.zoomOutOneStepAndRenderValues();
+        },
+        isEnabled: () => this.valueRenderMode === ValueRenderMode.IMAGE,
+      } as SingleActionMenuItemConfig);
+    }
+    if (this.menuConfig !== null && this.menuConfig.items.length > 0) {
+      this.menu = new Menu(this.menuConfig, this
+        .headerSection as HTMLDivElement);
+      this.renderMenuThumb();
+    }
+  }
+
+  private zoomInOneStepAndRenderValues() {
+    if (this.imageCellSize * this.zoomStepRatio <= this.maxImageCellSize) {
+      this.imageCellSize *= this.zoomStepRatio;
+      this.renderValues();
+    }
+  }
+
+  private zoomOutOneStepAndRenderValues() {
+    if (this.imageCellSize / this.zoomStepRatio >= this.minImageCellSize) {
+      this.imageCellSize /= this.zoomStepRatio;
+      this.renderValues();
+    }
+  }
+
+  /** Render the thumb that when clicked, toggles the menu display state. */
+  private renderMenuThumb() {
+    if (this.headerSection == null) {
+      throw new Error(
+        'Rendering menu thumb failed due to missing header section.'
+      );
+    }
+    this.menuThumb = document.createElement('div');
+    this.menuThumb.textContent = '⋮';
+    this.menuThumb.classList.add('tensor-widget-menu-thumb');
+    this.headerSection.appendChild(this.menuThumb);
+
+    // let menuShown = false;  // TODO(cais): Make a class member?
+    this.menuThumb.addEventListener('click', () => {
+      if (this.menu === null) {
+        return;
+      }
+      if (this.menu.shown()) {
+        this.menu.hide();
+      } else {
+        const rect = (this.menuThumb as HTMLDivElement).getBoundingClientRect();
+        const top = rect.bottom;
+        const left = rect.left;
+        this.menu.show(top, left);
+      }
+    });
+  }
+
   /**
    * Fill in the content of the value divs given the current slicing spec.
    */
@@ -246,6 +403,28 @@ export class TensorWidgetImpl implements TensorWidget {
       this.rootElement.appendChild(this.valueSection);
 
       this.valueSection.addEventListener('wheel', async (event) => {
+        let zoomKeyPressed = false;
+        if (
+          this.options.wheelZoomKey == null ||
+          this.options.wheelZoomKey === 'ctrl'
+        ) {
+          zoomKeyPressed = event.ctrlKey;
+        } else if (this.options.wheelZoomKey === 'alt') {
+          zoomKeyPressed = event.altKey;
+        } else if (this.options.wheelZoomKey === 'shift') {
+          zoomKeyPressed = event.shiftKey;
+        }
+        if (zoomKeyPressed && this.valueRenderMode === ValueRenderMode.IMAGE) {
+          event.stopPropagation();
+          event.preventDefault();
+          if (event.deltaY > 0) {
+            this.zoomOutOneStepAndRenderValues();
+          } else {
+            this.zoomInOneStepAndRenderValues();
+          }
+          return;
+        }
+
         if (this.selection == null) {
           return;
         }
@@ -414,6 +593,9 @@ export class TensorWidgetImpl implements TensorWidget {
     for (let i = 0; i < maxNumCols; ++i) {
       const tick = document.createElement('div');
       tick.classList.add('tensor-widget-top-ruler-tick');
+      if (this.valueRenderMode === ValueRenderMode.IMAGE) {
+        tick.style.width = `${this.imageCellSize}px`;
+      }
       this.topRuler.appendChild(tick);
       this.topRulerTicks.push(tick);
       if (tick.getBoundingClientRect().right >= rootElementRight) {
@@ -465,11 +647,19 @@ export class TensorWidgetImpl implements TensorWidget {
     for (let i = 0; i < maxNumRows; ++i) {
       const row = document.createElement('div');
       row.classList.add('tensor-widget-value-row');
+      if (this.valueRenderMode === ValueRenderMode.IMAGE) {
+        row.style.height = `${this.imageCellSize}px`;
+        row.style.lineHeight = `${this.imageCellSize}px`;
+      }
       this.valueSection.appendChild(row);
       this.valueRows.push(row);
 
       const tick = document.createElement('div');
       tick.classList.add('tensor-widget-top-ruler-tick');
+      if (this.valueRenderMode === ValueRenderMode.IMAGE) {
+        tick.style.height = `${this.imageCellSize}px`;
+        tick.style.lineHeight = `${this.imageCellSize}px`;
+      }
       row.appendChild(tick);
       this.leftRulerTicks.push(tick);
       if (tick.getBoundingClientRect().bottom >= rootElementBottom) {
@@ -516,6 +706,11 @@ export class TensorWidgetImpl implements TensorWidget {
       for (let j = 0; j < numCols; ++j) {
         const valueDiv = document.createElement('div');
         valueDiv.classList.add('tensor-widget-value-div');
+        if (this.valueRenderMode === ValueRenderMode.IMAGE) {
+          valueDiv.style.width = `${this.imageCellSize}px`;
+          valueDiv.style.height = `${this.imageCellSize}px`;
+          valueDiv.style.lineHeight = `${this.imageCellSize}px`;
+        }
         this.valueRows[i].appendChild(valueDiv);
         this.valueDivs[i].push(valueDiv);
         valueDiv.addEventListener('click', () => {
@@ -580,16 +775,19 @@ export class TensorWidgetImpl implements TensorWidget {
       const numCols = this.tensorView.spec.shape[
         this.slicingSpec.viewingDims[1]
       ];
+
       for (let i = 0; i < this.topRulerTicks.length; ++i) {
         if (this.slicingSpec.horizontalRange === null) {
           throw new Error(`Missing horizontal range for ${this.rank}D tensor.`);
         }
         const colIndex = this.slicingSpec.horizontalRange[0] + i;
-        if (colIndex < numCols) {
-          this.topRulerTicks[i].textContent = `${colIndex}`;
-        } else {
-          this.topRulerTicks[i].textContent = ``;
-        }
+        if (this.showIndicesOnTicks) {
+          if (colIndex < numCols) {
+            this.topRulerTicks[i].textContent = `${colIndex}`;
+          } else {
+            this.topRulerTicks[i].textContent = ``;
+          }
+        } // No text label under the image mode.
       }
     }
   }
@@ -609,10 +807,12 @@ export class TensorWidgetImpl implements TensorWidget {
           throw new Error(`Missing vertcial range for ${this.rank}D tensor.`);
         }
         const rowIndex = this.slicingSpec.verticalRange[0] + i;
-        if (rowIndex < numRows) {
-          this.leftRulerTicks[i].textContent = `${rowIndex}`;
-        } else {
-          this.leftRulerTicks[i].textContent = '';
+        if (this.showIndicesOnTicks) {
+          if (rowIndex < numRows) {
+            this.leftRulerTicks[i].textContent = `${rowIndex}`;
+          } else {
+            this.leftRulerTicks[i].textContent = '';
+          }
         }
       }
     }
@@ -635,6 +835,36 @@ export class TensorWidgetImpl implements TensorWidget {
     }
 
     const valueClass = this.getValueClass();
+
+    let colorMap: ColorMap | null = null;
+    const valueRenderMode = this.valueRenderMode;
+    if (valueRenderMode === ValueRenderMode.IMAGE) {
+      if (this.numericSummary == null) {
+        throw new Error(
+          'Failed to render image representation of tensor due to ' +
+            'missing numeric summary'
+        );
+      }
+      const {minimum, maximum} = this
+        .numericSummary as BooleanOrNumericTensorNumericSummary;
+      if (minimum == null || maximum == null) {
+        throw new Error(
+          'Failed to render image representation of tensor due to ' +
+            'missing minimum or maximum values in numeric summary'
+        );
+      }
+      const colorMapConfig: ColorMapConfig = {
+        min: minimum as number,
+        max: maximum as number,
+      };
+      if (this.colorMapName in colorMaps) {
+        this.colorMap = new colorMaps[this.colorMapName](colorMapConfig);
+      } else {
+        // Color-map name is not found. Use the default: Grayscale colormap.
+        this.colorMap = new GrayscaleColorMap(colorMapConfig);
+      }
+    }
+
     for (let i = 0; i < numRows; ++i) {
       for (let j = 0; j < numCols; ++j) {
         const valueDiv = this.valueDivs[i][j];
@@ -643,19 +873,29 @@ export class TensorWidgetImpl implements TensorWidget {
           j < (values as number[][])[i].length
         ) {
           const value = (values as number[][] | boolean[][] | string[][])[i][j];
-          if (valueClass === 'numeric') {
-            // TODO(cais): Once health pills are available, use the min/max
-            // values to determine the number of decimal places.
-            valueDiv.textContent = numericValueToString(
-              value as number,
-              isIntegerDType(this.tensorView.spec.dtype)
+          if (valueRenderMode === ValueRenderMode.IMAGE) {
+            const [red, green, blue] = (this.colorMap as ColorMap).getRGB(
+              value as number
             );
-          } else if (valueClass === 'boolean') {
-            valueDiv.textContent = booleanValueToDisplayString(
-              value as boolean
-            );
-          } else if (valueClass === 'string') {
-            valueDiv.textContent = stringValueToDisplayString(value as string);
+            valueDiv.style.backgroundColor = `rgb(${red}, ${green}, ${blue})`;
+          } else {
+            // Here, valueRenderMode is 'text'.
+            if (valueClass === 'numeric') {
+              // TODO(cais): Once health pills are available, use the min/max
+              // values to determine the number of decimal places.
+              valueDiv.textContent = numericValueToString(
+                value as number,
+                isIntegerDType(this.tensorView.spec.dtype)
+              );
+            } else if (valueClass === 'boolean') {
+              valueDiv.textContent = booleanValueToDisplayString(
+                value as boolean
+              );
+            } else if (valueClass === 'string') {
+              valueDiv.textContent = stringValueToDisplayString(
+                value as string
+              );
+            }
           }
           // The attribute set below will be rendered in a tooltip that appears
           // on mouse hovering.
@@ -822,6 +1062,18 @@ export class TensorWidgetImpl implements TensorWidget {
     this.valueTooltip.style.top = `${top}px`;
     this.valueTooltip.style.left = `${left}px`;
     this.valueTooltip.style.display = 'block';
+
+    // If the current render mode is IMAGE, show the color bar and
+    // indicate the position of the current element along the color-bar scale.
+    if (
+      this.valueRenderMode == ValueRenderMode.IMAGE &&
+      this.colorMap != null
+    ) {
+      const colorBarCanvas = document.createElement('canvas');
+      colorBarCanvas.classList.add('tensor-widget-value-tooltip-colorbar');
+      this.valueTooltip.appendChild(colorBarCanvas);
+      this.colorMap.render(colorBarCanvas, parseFloat(detailedValueString));
+    }
   }
 
   private hideValueTooltip() {
@@ -838,9 +1090,34 @@ export class TensorWidgetImpl implements TensorWidget {
     if (this.slicingControl != null) {
       this.slicingControl.setSlicingSpec(this.slicingSpec);
     }
+    // Determine if indices should be rendered on ruler ticks.
+    this.calculateShowIndicesOnRulerTicks();
     this.renderTopRuler();
     this.renderLeftRuler();
     await this.renderValueDivs();
+  }
+
+  /**
+   * Determine if indices should be displayed on ruler ticks given
+   * the current tick sizes.
+   */
+  private calculateShowIndicesOnRulerTicks() {
+    if (this.rank >= 2) {
+      const tickBox = this.topRulerTicks[0].getBoundingClientRect();
+      const tickWidth = tickBox.right - tickBox.left;
+      const dimSize = this.tensorView.spec.shape[
+        this.slicingSpec.viewingDims[0]
+      ];
+      this.showIndicesOnTicks =
+        tickWidth > 9 * Math.ceil(Math.log(dimSize) / Math.LN10);
+    } else if (this.rank === 1) {
+      const tickBox = this.leftRulerTicks[0].getBoundingClientRect();
+      const tickHeight = tickBox.bottom - tickBox.top;
+      this.showIndicesOnTicks = tickHeight > 16;
+    } else {
+      // rank is 0.
+      this.showIndicesOnTicks = false;
+    }
   }
 
   /**

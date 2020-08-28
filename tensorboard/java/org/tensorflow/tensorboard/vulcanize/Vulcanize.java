@@ -35,6 +35,7 @@ import com.google.javascript.jscomp.CheckLevel;
 import com.google.javascript.jscomp.CompilationLevel;
 import com.google.javascript.jscomp.Compiler;
 import com.google.javascript.jscomp.CompilerOptions;
+import com.google.javascript.jscomp.DependencyOptions;
 import com.google.javascript.jscomp.DiagnosticGroup;
 import com.google.javascript.jscomp.DiagnosticGroups;
 import com.google.javascript.jscomp.DiagnosticType;
@@ -49,6 +50,7 @@ import io.bazel.rules.closure.Webpath;
 import io.bazel.rules.closure.webfiles.BuildInfo.Webfiles;
 import io.bazel.rules.closure.webfiles.BuildInfo.WebfilesSource;
 import java.io.ByteArrayInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -73,12 +75,14 @@ import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Comment;
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.DocumentType;
 import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Html5Printer;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.parser.Parser;
 import org.jsoup.parser.Tag;
+import org.jsoup.select.Elements;
+import org.jsoup.select.NodeVisitor;
 
 /** Simple one-off solution for TensorBoard vulcanization. */
 public final class Vulcanize {
@@ -115,7 +119,7 @@ public final class Vulcanize {
   private static int insideDemoSnippet;
   private static boolean testOnly;
   private static boolean wantsCompile;
-  private static List<Pattern> ignoreRegExs = new ArrayList<>();
+  private static final List<Pattern> ignoreRegExs = new ArrayList<>();
 
   // This is the default argument to Vulcanize for when the path_regexs_for_noinline attribute in
   // third_party/tensorboard/defs/vulcanize.bzl is not set.
@@ -124,32 +128,36 @@ public final class Vulcanize {
   private static final Pattern ABS_URI_PATTERN = Pattern.compile("^(?:/|[A-Za-z][A-Za-z0-9+.-]*:)");
 
   public static void main(String[] args) throws IOException {
-    compilationLevel = CompilationLevel.fromString(args[0]);
-    wantsCompile = args[1].equals("true");
-    testOnly = args[2].equals("true");
-    Webpath inputPath = Webpath.get(args[3]);
-    outputPath = Webpath.get(args[4]);
-    Path output = Paths.get(args[5]);
-    if (!args[6].equals(NO_NOINLINE_FILE_PROVIDED)) {
-      String ignoreFile = new String(Files.readAllBytes(Paths.get(args[6])), UTF_8);
-      Arrays.asList(ignoreFile.split("\n")).forEach(
-          (str) -> ignoreRegExs.add(Pattern.compile(str)));
+    int argIdx = 0;
+    compilationLevel = CompilationLevel.fromString(args[argIdx++]);
+    wantsCompile = args[argIdx++].equals("true");
+    testOnly = args[argIdx++].equals("true");
+    Webpath inputPath = Webpath.get(args[argIdx++]);
+    outputPath = Webpath.get(args[argIdx++]);
+    Webpath jsPath = Webpath.get(args[argIdx++]);
+    Path output = Paths.get(args[argIdx++]);
+    Path jsOutput = Paths.get(args[argIdx++]);
+    if (!args[argIdx++].equals(NO_NOINLINE_FILE_PROVIDED)) {
+      String ignoreFile = new String(Files.readAllBytes(Paths.get(args[argIdx])), UTF_8);
+      Arrays.asList(ignoreFile.split("\n"))
+          .forEach((str) -> ignoreRegExs.add(Pattern.compile(str)));
     }
-    for (int i = 7; i < args.length; i++) {
-      if (args[i].endsWith(".js")) {
-        String code = new String(Files.readAllBytes(Paths.get(args[i])), UTF_8);
-        SourceFile sourceFile = SourceFile.fromCode(args[i], code);
+    while (argIdx < args.length) {
+      final String arg = args[argIdx++];
+      if (arg.endsWith(".js")) {
+        String code = new String(Files.readAllBytes(Paths.get(arg)), UTF_8);
+        SourceFile sourceFile = SourceFile.fromCode(arg, code);
         if (code.contains("@externs")) {
-          externs.put(args[i], sourceFile);
+          externs.put(arg, sourceFile);
         } else {
           sourcesFromJsLibraries.add(sourceFile);
         }
         continue;
       }
-      if (!args[i].endsWith(".pbtxt")) {
+      if (!arg.endsWith(".pbtxt")) {
         continue;
       }
-      Webfiles manifest = loadWebfilesPbtxt(Paths.get(args[i]));
+      Webfiles manifest = loadWebfilesPbtxt(Paths.get(arg));
       for (WebfilesSource src : manifest.getSrcList()) {
         webfiles.put(Webpath.get(src.getWebpath()), Paths.get(src.getPath()));
       }
@@ -173,9 +181,22 @@ public final class Vulcanize {
     if (licenseComment != null) {
       licenseComment.attr("comment", String.format("\n%s\n", Joiner.on("\n\n").join(licenses)));
     }
+
+    boolean shouldExtractJs = !jsPath.isEmpty();
+    // Write an empty file for shasum when all scripts are extracted out.
+    createFile(
+        jsOutput, shouldExtractJs ? extractAndTransformJavaScript(document, jsPath) : "");
+    Document normalizedDocument = getFlattenedHTML5Document(document);
+    // Prevent from correcting the DOM structure and messing up the whitespace
+    // in the template.
+    normalizedDocument.outputSettings().prettyPrint(false);
+    createFile(output, normalizedDocument.toString());
+  }
+
+  private static void createFile(Path filePath, String content) throws IOException {
     Files.write(
-        output,
-        Html5Printer.stringify(document).getBytes(UTF_8),
+        filePath,
+        content.getBytes(UTF_8),
         StandardOpenOption.WRITE,
         StandardOpenOption.CREATE,
         StandardOpenOption.TRUNCATE_EXISTING);
@@ -250,7 +271,7 @@ public final class Vulcanize {
           break;
         }
       }
-      if (!getAttrTransitive(node, "vulcanize-noinline").isPresent() && !ignoreFile) {
+      if (!ignoreFile) {
         if (isExternalCssNode(node)
             && !shouldIgnoreUri(href)) {
           node = visitStylesheet(node);
@@ -432,6 +453,11 @@ public final class Vulcanize {
     options.setStrictModeInput(false);
     options.setExtraAnnotationNames(EXTRA_JSDOC_TAGS);
 
+    // Strict mode gets in the way of concatenating all script tags as script
+    // tags assume different modes. Disable global strict imposed by JSComp.
+    // A function can still have a "use strict" inside.
+    options.setEmitUseStrict(false);
+
     // So we can chop JS binary back up into the original script tags.
     options.setPrintInputDelimiter(true);
     options.setInputDelimiter(SCRIPT_DELIMITER);
@@ -440,7 +466,6 @@ public final class Vulcanize {
     options.setPropertyRenaming(PropertyRenamingPolicy.OFF);
     options.setCheckGlobalThisLevel(CheckLevel.OFF);
     options.setRemoveUnusedPrototypeProperties(false);
-    options.setRemoveUnusedPrototypePropertiesInExterns(false);
     options.setRemoveUnusedClassProperties(false);
     // Prevent Polymer bound method (invisible to JSComp) to be over-optimized.
     options.setInlineFunctions(CompilerOptions.Reach.NONE);
@@ -458,7 +483,7 @@ public final class Vulcanize {
     // or vz-example-viewer should be explicitly imported by the code that uses it. Alternatively,
     // we could ensure that the input order to the compiler is correct and all inputs are used, and
     // turn off both sorting and pruning.
-    options.setDependencyOptions(com.google.javascript.jscomp.DependencyOptions.sortOnly());
+    options.setDependencyOptions(DependencyOptions.sortOnly());
 
     // Polymer pass.
     options.setPolymerVersion(2);
@@ -493,7 +518,9 @@ public final class Vulcanize {
               return CheckLevel.OFF;
             }
             if (error.getSourceName().startsWith("javascript/externs")
-                || error.getSourceName().contains("com_google_javascript_closure_compiler_externs")) {
+                || error
+                    .getSourceName()
+                    .contains("com_google_javascript_closure_compiler_externs")) {
               // TODO(@jart): Figure out why these "mismatch of the removeEventListener property on
               //             type" warnings are showing up.
               //             https://github.com/google/closure-compiler/pull/1959
@@ -509,9 +536,11 @@ public final class Vulcanize {
             if (IGNORE_PATHS_PATTERN.matcher(error.getSourceName()).matches()) {
               return CheckLevel.OFF;
             }
-            if ((error.getSourceName().startsWith("/tf-") || error.getSourceName().startsWith("/vz-"))
+            if ((error.getSourceName().startsWith("/tf-")
+                    || error.getSourceName().startsWith("/vz-"))
                 && error.getType().key.equals("JSC_VAR_MULTIPLY_DECLARED_ERROR")) {
-              return CheckLevel.OFF; // TODO(@jart): Remove when tf/vz components/plugins are ES6 modules.
+              // TODO(@jart): Remove when tf/vz components/plugins are ES6 modules.
+              return CheckLevel.OFF;
             }
             if (error.getType().key.equals("JSC_POLYMER_UNQUALIFIED_BEHAVIOR")
                 || error.getType().key.equals("JSC_POLYMER_UNANNOTATED_BEHAVIOR")) {
@@ -546,7 +575,6 @@ public final class Vulcanize {
       System.exit(1);
     }
     String jsBlob = compiler.toSource();
-
     // Split apart the JS blob and put it back in the original <script> locations.
     Deque<Map.Entry<Webpath, Node>> tags = new ArrayDeque<>();
     tags.addAll(sourceTags.entrySet());
@@ -697,14 +725,182 @@ public final class Vulcanize {
   }
 
   private static ImmutableMultimap<DiagnosticType, String> initDiagnosticGroups() {
-    DiagnosticGroups groups = new DiagnosticGroups();
     Multimap<DiagnosticType, String> builder = HashMultimap.create();
-    for (Map.Entry<String, DiagnosticGroup> group : groups.getRegisteredGroups().entrySet()) {
+    for (Map.Entry<String, DiagnosticGroup> group :
+        DiagnosticGroups.getRegisteredGroups().entrySet()) {
       for (DiagnosticType type : group.getValue().getTypes()) {
         builder.put(type, group.getKey());
       }
     }
     return ImmutableMultimap.copyOf(builder);
+  }
+
+  private static String extractScriptContent(Document document) throws IOException {
+    Elements scripts = document.getElementsByTag("script");
+    StringBuilder sourcesBuilder = new StringBuilder();
+
+    for (Element script : scripts) {
+      String sourceContent;
+      String src = script.attr("src");
+      if (src.isEmpty()) {
+        sourceContent = script.html();
+      } else {
+        // script element that remains are the ones with src that is absolute or annotated with
+        // `jscomp-ignore`. They must resolve from the root because those srcs are rootified.
+        Webpath webpathSrc = Webpath.get(src);
+        Webpath webpath = Webpath.get("/").resolve(webpathSrc).normalize();
+        if (isAbsolutePath(webpathSrc)) {
+          if (script.hasAttr("defer") || script.hasAttr("async")) {
+            continue;
+          }
+          throw new IllegalArgumentException(
+              "Script refers to a remote resource ("
+                  + webpathSrc
+                  + ") in a blocking way. For"
+                  + " correctness of execution, please make sure it is async-able or defer-able:"
+                  + script.outerHtml());
+        } else if (!webfiles.containsKey(webpath)) {
+          throw new FileNotFoundException(
+              "Expected webfiles for " + webpath + " to exist. Related: " + script.outerHtml());
+        }
+        sourceContent = new String(Files.readAllBytes(webfiles.get(webpath)), UTF_8);
+      }
+
+      sourcesBuilder.append(sourceContent).append("\n");
+      script.remove();
+    }
+
+    return sourcesBuilder.toString();
+  }
+
+  private static String extractAndTransformJavaScript(Document document, Webpath jsPath)
+      throws IOException {
+    String scriptContent = extractScriptContent(document);
+
+    Element lastBody = Iterables.getLast(document.getElementsByTag("body"));
+    Element scriptElement = new Element(Tag.valueOf("script"), "");
+    scriptElement.attr("src", jsPath.removeBeginningSeparator().toString());
+    lastBody.appendChild(scriptElement);
+
+    return scriptContent;
+  }
+
+  private static void cloneChildrenWithoutWhitespace(Element src, Element dest) {
+    List<Node> toMove = new ArrayList<>();
+    for (Node node : src.childNodes()) {
+      if (node instanceof TextNode && ((TextNode) node).isBlank()) {
+        continue;
+      }
+      toMove.add(node);
+    }
+    for (Node node : toMove) {
+      dest.appendChild(node.clone());
+    }
+  }
+
+  /**
+   * When we inline the HTML based on `<link rel="import">` in `transform`, we
+   * replace the link element with parsed document. This makes us have nested
+   * documents and jsoup's Node.outerHtml (or Node.toString) are incapable of
+   * properly outputting that. Here, we flatten the document by combining all
+   * elements in `<head>` and `<body>` of nested document in one `<head>` and
+   * `<body>`.
+   *
+   * It also prepends <!doctype html> since TensorBoard requires that the
+   * document is HTML.
+   *
+   * NOTE: it makes side-effect to the input `document`.
+   *
+   * Examples:
+   * // Input
+   * <#root> <!-- document -->
+   *   <html>
+   *     <head>
+   *      <#root>
+   *        <html>
+   *          <head>
+   *            <script></script>
+   *            <#root><html><body>welcome </body></html></#root>
+   *          </head>
+   *          <body>foo</body></html>
+   *      </#root></head>
+   *     <body><span>bar</span></body>
+   *   </html>
+   * </html>
+   * // Output
+   * <#root> <!-- document -->
+   *   <!doctype html>
+   *   <html>
+   *     <head><script></script></head>
+   *     <body>welcome foo<span>bar</span></body>
+   *   </html>
+   * </html>
+   **/
+  private static Document getFlattenedHTML5Document(Document document) {
+    Document flatDoc = new Document("/");
+
+    flatDoc.appendChild(new DocumentType("html", "", "", ""));
+
+    // Transfer comment nodes from the `document` level. They are important
+    // license comments
+    for (Node node : document.childNodes()) {
+      if (node instanceof Comment) {
+        flatDoc.appendChild(node.clone());
+      }
+    }
+
+    // Create `<html>`, `<head>` and `<body>`.
+    flatDoc.normalise();
+
+    document.traverse(new FlatDocumentCopier(flatDoc));
+
+    for (Element subdoc : flatDoc.getElementsByTag("#root")) {
+      if (!subdoc.equals(flatDoc)) {
+        final int maxElementStrLen = 200;
+        String parentStr = subdoc.parent().outerHtml();
+        if (parentStr.length() > maxElementStrLen) {
+          parentStr = parentStr.substring(0, maxElementStrLen) + "...";
+        }
+        throw new RuntimeException(
+            "Nested doc (e.g., <link> importing outside the head of a document) "
+            + "is not supported.\nParent of offending element: " + parentStr);
+      }
+    }
+
+    return flatDoc;
+  }
+
+  private static class FlatDocumentCopier implements NodeVisitor {
+    private final Element destHead;
+    private final Element destBody;
+
+    public FlatDocumentCopier(Document dest) {
+      destHead = dest.head();
+      destBody = dest.body();
+    }
+
+    @Override
+    public void head(Node node, int depth) {
+      // Copy childNodes from `head` into the dest doc's head without
+      // modification if the node is not a `document` (or a `<#root>` element)
+      // in which case we want to traverse further and only copy the childNodes
+      // in its `body` and `head` elements.
+      if (node.parentNode() != null && node.parentNode().nodeName().equals("head")
+          && !(node instanceof Document)) {
+        destHead.appendChild(node.clone());
+      }
+
+      if (node.nodeName().equals("body")) {
+        cloneChildrenWithoutWhitespace((Element) node, destBody);
+        // No need to further traverse the `body`. Skip by removing the nodes.
+        ((Element) node).empty();
+      }
+    }
+
+    @Override
+    public void tail(Node node, int depth) {
+      // Copying is done during the `head`. No need to do any work.
+    }
   }
 
   private static final class JsPrintlessErrorManager extends BasicErrorManager {
@@ -715,4 +911,6 @@ public final class Vulcanize {
     @Override
     public void printSummary() {}
   }
+
+  private Vulcanize() {}
 }

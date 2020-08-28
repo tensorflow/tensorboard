@@ -1,26 +1,28 @@
-# TensorBoard [![Travis build status](https://www.travis-ci.com/tensorflow/tensorboard.svg?branch=master)](https://travis-ci.com/tensorflow/tensorboard/) [![Compat check PyPI](https://python-compatibility-tools.appspot.com/one_badge_image?package=tensorboard)](https://python-compatibility-tools.appspot.com/one_badge_target?package=tensorboard)
+# TensorBoard [![Travis build status](https://travis-ci.org/tensorflow/tensorboard.svg?branch=master)](https://travis-ci.org/tensorflow/tensorboard/) [![GitHub Actions CI](https://github.com/tensorflow/tensorboard/workflows/CI/badge.svg)](https://github.com/tensorflow/tensorboard/actions?query=workflow%3ACI+branch%3Amaster+event%3Apush) [![Compat check PyPI](https://python-compatibility-tools.appspot.com/one_badge_image?package=tensorboard)](https://python-compatibility-tools.appspot.com/one_badge_target?package=tensorboard)
 
 TensorBoard is a suite of web applications for inspecting and understanding your
 TensorFlow runs and graphs.
 
 This README gives an overview of key concepts in TensorBoard, as well as how to
 interpret the visualizations TensorBoard provides. For an in-depth example of
-using TensorBoard, see the tutorial: [TensorBoard: Visualizing
-Learning][].
-For in-depth information on the Graph Visualizer, see this tutorial:
-[TensorBoard: Graph Visualization][].
+using TensorBoard, see the tutorial: [TensorBoard: Getting Started][].
+Documentation on how to use TensorBoard to work with images, graphs, hyper
+parameters, and more are linked from there, along with tutorial walk-throughs in
+Colab.
 
-[TensorBoard: Visualizing Learning]: https://www.tensorflow.org/get_started/summaries_and_tensorboard
-[TensorBoard: Graph Visualization]: https://www.tensorflow.org/get_started/graph_viz
+You may also be interested in the hosted TensorBoard solution at
+[TensorBoard.dev][]. You can use TensorBoard.dev to easily host, track, and
+share your ML experiments for free. For example, [this experiment][] shows a
+working example featuring the scalars, graphs, histograms, distributions, and
+hparams dashboards.
 
-You may also want to watch
-[this video tutorial][] that walks
-through setting up and using TensorBoard. There's an associated
-[tutorial with an end-to-end example of training TensorFlow and using TensorBoard][].
+TensorBoard is designed to run entirely offline, without requiring any access
+to the Internet. For instance, this may be on your local machine, behind a
+corporate firewall, or in a datacenter.
 
-[this video tutorial]: https://www.youtube.com/watch?v=eBbEDRsCmv4
-
-[tutorial with an end-to-end example of training TensorFlow and using TensorBoard]: https://github.com/martinwicke/tf-dev-summit-tensorboard-tutorial
+[TensorBoard: Getting Started]: https://www.tensorflow.org/tensorboard/get_started
+[TensorBoard.dev]: https://tensorboard.dev
+[This experiment]: https://tensorboard.dev/experiment/EDZb7XgKSBKo6Gznh3i8hg/#scalars
 
 # Usage
 
@@ -68,9 +70,9 @@ work, but there may be bugs or performance issues.
 The first step in using TensorBoard is acquiring data from your TensorFlow run.
 For this, you need
 [summary ops](https://www.tensorflow.org/api_docs/python/tf/summary).
-Summary ops are ops, like
+Summary ops are ops, just like
 [`tf.matmul`](https://www.tensorflow.org/api_docs/python/tf/linalg/matmul)
-or
+and
 [`tf.nn.relu`](https://www.tensorflow.org/api_docs/python/tf/nn/relu),
 which means they take in tensors, produce tensors, and are evaluated from within
 a TensorFlow graph. However, summary ops have a twist: the Tensors they produce
@@ -134,13 +136,17 @@ For example, here is a well-organized TensorBoard log directory, with two runs,
 /tensorboard --logdir /some/path/mnist_experiments
 ```
 
+#### Logdir & Logdir_spec (Legacy Mode)
+
 You may also pass a comma separated list of log directories, and TensorBoard
 will watch each directory. You can also assign names to individual log
 directories by putting a colon between the name and the path, as in
 
 ```
-tensorboard --logdir name1:/path/to/logs/1,name2:/path/to/logs/2
+tensorboard --logdir_spec name1:/path/to/logs/1,name2:/path/to/logs/2
 ```
+
+_This flag (`--logdir_spec`) is discouraged and can usually be avoided_. TensorBoard walks log directories recursively; for finer-grained control, prefer using a symlink tree. _Some features may not work when using `--logdir_spec` instead of `--logdir`._
 
 # The Visualizations
 
@@ -221,7 +227,7 @@ example, you may view your input data after it has been embedded in a high-
 dimensional space by your model. The embedding projector reads data from your
 model checkpoint file, and may be configured with additional metadata, like
 a vocabulary file or sprite images. For more details, see [the embedding
-projector tutorial](https://www.tensorflow.org/get_started/embedding_viz).
+projector tutorial](https://www.tensorflow.org/tutorials/text/word_embeddings).
 
 ### Text Dashboard
 
@@ -249,12 +255,16 @@ tensorboard in inspect mode to inspect the contents of your event files.
 
 ### TensorBoard is showing only some of my data, or isn't properly updating!
 
+> **Update:** After [2.3.0 release][2-3-0], TensorBoard no longer auto reloads
+> every 30 seconds. To re-enable the behavior, please open the settings by
+> clicking the gear icon in the top-right of the TensorBoard web interface, and
+> enable "Reload data".
+
 > **Update:** the [experimental `--reload_multifile=true` option][pr-1867] can
 > now be used to poll all "active" files in a directory for new data, rather
 > than the most recent one as described below. A file is "active" as long as it
 > received new data within `--reload_multifile_inactive_secs` seconds ago,
-> defaulting to 4000. You may need to install our nightly build
-> [`tb-nightly`][tb-nightly] for this option to be available.
+> defaulting to 4000.
 
 This issue usually comes about because of how TensorBoard iterates through the
 `tfevents` files: it progresses through the events file in timestamp order, and
@@ -270,8 +280,7 @@ multiple summary writers, each one should be writing to a separate directory.
 > **Update:** the [experimental `--reload_multifile=true` option][pr-1867] can
 > now be used to poll all "active" files in a directory for new data, defined as
 > any file that received new data within `--reload_multifile_inactive_secs`
-> seconds ago, defaulting to 4000. You may need to install our nightly build
-> [`tb-nightly`][tb-nightly] for this option to be available.
+> seconds ago, defaulting to 4000.
 
 No. TensorBoard expects that only one events file will be written to at a time,
 and multiple summary writers means multiple events files. If you are running a
@@ -291,8 +300,7 @@ directory. Please have each TensorFlow run write to its own logdir.
   > **Update:** the [experimental `--reload_multifile=true` option][pr-1867] can
   > now be used to poll all "active" files in a directory for new data, defined
   > as any file that received new data within `--reload_multifile_inactive_secs`
-  > seconds ago, defaulting to 4000. You may need to install our nightly build
-  > [`tb-nightly`][tb-nightly] for this option to be available.
+  > seconds ago, defaulting to 4000.
 
 * You may have a bug in your code where the global_step variable (passed
 to `FileWriter.add_summary`) is being maintained incorrectly.
@@ -333,6 +341,20 @@ TensorBoard consumes by using the [`summary_iterator`](
 https://www.tensorflow.org/api_docs/python/tf/train/summary_iterator)
 method.
 
+### Can I make my own plugin?
+
+Yes! You can clone and tinker with one of the [examples][plugin-examples] and
+make your own, amazing visualizations. More documentation on the plugin system
+is described in the [ADDING_A_PLUGIN](./ADDING_A_PLUGIN.md) guide. Feel free to
+file feature requests or questions about plugin functionality.
+
+Once satisfied with your own groundbreaking new plugin, see the
+[distribution section][plugin-distribution] on how to publish to PyPI and share
+it with the community.
+
+[plugin-examples]: ./tensorboard/examples/plugins
+[plugin-distribution]: ./ADDING_A_PLUGIN.md#distribution
+
 ### Can I customize which lines appear in a plot?
 
 Using the [custom scalars plugin](tensorboard/plugins/custom_scalar), you can
@@ -359,9 +381,7 @@ TensorBoard uses [reservoir
 sampling](https://en.wikipedia.org/wiki/Reservoir_sampling) to downsample your
 data so that it can be loaded into RAM. You can modify the number of elements it
 will keep per tag by using the `--samples_per_plugin` command line argument (ex:
-`--samples_per_plugin=scalars=500,images=20`). Alternatively, you can change the
-source code in
-[tensorboard/backend/application.py](tensorboard/backend/application.py).
+`--samples_per_plugin=scalars=500,images=20`).
 See this [Stack Overflow question](http://stackoverflow.com/questions/43702546/tensorboard-doesnt-show-all-data-points/)
 for some more information.
 
@@ -404,4 +424,4 @@ of `tensorboard --inspect`, etc.).
 
 [stack-overflow]: https://stackoverflow.com/questions/tagged/tensorboard
 [pr-1867]: https://github.com/tensorflow/tensorboard/pull/1867
-[tb-nightly]: https://pypi.org/project/tb-nightly/
+[2-3-0]: https://github.com/tensorflow/tensorboard/releases/tag/2.3.0

@@ -1,12 +1,12 @@
 # Description:
 # TensorBoard plugin for hparams
 
-package(default_visibility = ["//tensorboard:internal"])
-
-licenses(["notice"])  # Apache 2.0
-
 load("//tensorboard/defs:web.bzl", "tf_web_library")
 load("//tensorboard/defs:protos.bzl", "tb_proto_library")
+
+package(default_visibility = ["//tensorboard:internal"])
+
+licenses(["notice"])
 
 exports_files(["LICENSE"])
 
@@ -27,6 +27,7 @@ py_library(
     name = "hparams_plugin",
     srcs = [
         "backend_context.py",
+        "download_data.py",
         "get_experiment.py",
         "hparams_plugin.py",
         "list_metric_evals.py",
@@ -34,13 +35,13 @@ py_library(
         "metrics.py",
     ],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         ":error",
         ":metadata",
         ":protos_all_py_pb2",
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
+        "//tensorboard/data:provider",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/plugins/scalar:metadata",
         "//tensorboard/plugins/scalar:scalars_plugin",
@@ -53,16 +54,37 @@ py_library(
 )
 
 py_test(
-    name = "list_session_groups_test",
+    name = "download_data_test",
     size = "small",
     srcs = [
-        "list_session_groups_test.py",
+        "download_data_test.py",
     ],
     deps = [
         ":hparams_plugin",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/backend/event_processing:event_multiplexer",
+        "@com_google_protobuf//:protobuf_python",
+        "@org_pythonhosted_mock",
+    ],
+)
+
+py_test(
+    name = "list_session_groups_test",
+    size = "small",
+    timeout = "moderate",
+    srcs = [
+        "list_session_groups_test.py",
+    ],
+    deps = [
+        ":hparams_plugin",
+        "//tensorboard:context",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/backend/event_processing:data_provider",
+        "//tensorboard/backend/event_processing:event_accumulator",
+        "//tensorboard/backend/event_processing:event_multiplexer",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/plugins/scalar:metadata",
         "@org_pythonhosted_mock",
     ],
 )
@@ -75,6 +97,7 @@ py_test(
     ],
     deps = [
         ":hparams_plugin",
+        "//tensorboard:context",
         "//tensorboard:expect_tensorflow_installed",
         "@org_pythonhosted_mock",
     ],
@@ -88,9 +111,12 @@ py_test(
     ],
     deps = [
         ":hparams_plugin",
+        "//tensorboard:context",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/backend/event_processing:event_accumulator",
+        "//tensorboard/backend/event_processing:data_provider",
         "//tensorboard/backend/event_processing:event_multiplexer",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/plugins/scalar:metadata",
         "@org_pythonhosted_mock",
     ],
 )
@@ -131,7 +157,6 @@ py_binary(
     name = "hparams_util",
     srcs = ["hparams_util.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         ":protos_all_py_pb2",
         ":summary",
@@ -186,7 +211,6 @@ py_library(
         ":summary",
         ":summary_v2",
         "//tensorboard:expect_tensorflow_installed",
-        "@org_pythonhosted_six",
     ],
 )
 
@@ -212,12 +236,10 @@ py_library(
     name = "summary_v2",
     srcs = ["summary_v2.py"],
     srcs_version = "PY2AND3",
-    visibility = [
-        "//visibility:public",
-    ],
     deps = [
         ":metadata",
         ":protos_all_py_pb2",
+        "//tensorboard:expect_numpy_installed",
         "//tensorboard/compat",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "@org_pythonhosted_six",
@@ -233,6 +255,7 @@ py_test(
         ":metadata",
         ":protos_all_py_pb2",
         ":summary_v2",
+        "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard:test",
         "//tensorboard/compat/proto:protos_all_py_pb2",
@@ -253,6 +276,7 @@ py_test(
         ":metadata",
         ":protos_all_py_pb2",
         ":summary_v2",
+        "//tensorboard:expect_numpy_installed",
         "//tensorboard:test",
         "//tensorboard/compat:no_tensorflow",
         "//tensorboard/compat/proto:protos_all_py_pb2",
@@ -294,7 +318,9 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         ":error",
+        ":protos_all_py_pb2",
         "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/util:tensor_util",
     ],
 )
 

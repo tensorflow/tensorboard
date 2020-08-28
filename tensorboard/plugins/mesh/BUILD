@@ -1,9 +1,10 @@
+load("//tensorboard/defs:protos.bzl", "tb_proto_library")
+
 package(default_visibility = ["//tensorboard:internal"])
 
-licenses(["notice"])  # Apache 2.0
-exports_files(["LICENSE"])
+licenses(["notice"])
 
-load("//tensorboard/defs:protos.bzl", "tb_proto_library")
+exports_files(["LICENSE"])
 
 # Public-facing API, included in Pip package.
 py_library(
@@ -34,7 +35,6 @@ py_test(
     deps = [
         ":metadata",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/util:test_util",
         "@org_pythonhosted_mock",
         "@org_pythonhosted_six",
     ],
@@ -44,7 +44,6 @@ py_library(
     name = "mesh_plugin",
     srcs = ["mesh_plugin.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         ":metadata",
         ":protos_all_py_pb2",
@@ -53,8 +52,8 @@ py_library(
         "//tensorboard/backend:http_util",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/util:tensor_util",
-        "@org_pythonhosted_six",
         "@org_pocoo_werkzeug",
+        "@org_pythonhosted_six",
     ],
 )
 
@@ -65,8 +64,6 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         ":summary",
-        "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "@org_pocoo_werkzeug",
     ],
@@ -88,8 +85,8 @@ py_test(
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/util:test_util",
         "@org_pocoo_werkzeug",
-        "@org_pythonhosted_six",
         "@org_pythonhosted_mock",
+        "@org_pythonhosted_six",
     ],
 )
 
@@ -102,8 +99,8 @@ py_library(
     ],
     deps = [
         ":metadata",
-        ":summary_v2",
         ":protos_all_py_pb2",
+        ":summary_v2",
         "//tensorboard:expect_tensorflow_installed",
     ],
 )
@@ -112,14 +109,11 @@ py_library(
     name = "summary_v2",
     srcs = ["summary_v2.py"],
     srcs_version = "PY2AND3",
-    visibility = [
-        "//visibility:public",
-    ],
     deps = [
         ":metadata",
-        "//tensorboard/util:tensor_util",
-        "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/compat:tensorflow",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/util:tensor_util",
     ],
 )
 
@@ -132,7 +126,6 @@ py_test(
         ":summary",
         ":test_utils",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/util:test_util",
     ],
 )
 
@@ -141,35 +134,24 @@ py_test(
     size = "small",
     srcs = ["summary_v2_test.py"],
     srcs_version = "PY2AND3",
-    tags = [
-        # TODO(#2624): re-enable the test when autograph works with gast.
-        # additional context: https://github.com/tensorflow/tensorflow/issues/32319
-        "notap",
-        "manual",
-    ],
     deps = [
-        ":summary",
-        ":test_utils",
         ":metadata",
         ":protos_all_py_pb2",
+        ":summary",
+        ":test_utils",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/util:test_util",
     ],
 )
 
 tb_proto_library(
     name = "protos_all",
     srcs = ["plugin_data.proto"],
-    visibility = ["//visibility:public"],
 )
 
 py_library(
     name = "demo_utils",
     srcs = ["demo_utils.py"],
     srcs_version = "PY2AND3",
-    visibility = [
-        "//visibility:public",
-    ],
     deps = [
         "//tensorboard:expect_numpy_installed",
         "//tensorboard/compat:tensorflow",
@@ -194,16 +176,13 @@ py_binary(
     name = "mesh_demo",
     srcs = ["mesh_demo.py"],
     srcs_version = "PY2AND3",
-    visibility = [
-        "//visibility:public",
-    ],
     deps = [
         ":demo_utils",
         ":summary",
         "//tensorboard:expect_absl_app_installed",
         "//tensorboard:expect_absl_flags_installed",
-        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard:expect_numpy_installed",
+        "//tensorboard:expect_tensorflow_installed",
     ],
 )
 
@@ -211,16 +190,13 @@ py_binary(
     name = "mesh_demo_v2",
     srcs = ["mesh_demo_v2.py"],
     srcs_version = "PY2AND3",
-    visibility = [
-        "//visibility:public",
-    ],
     deps = [
         ":demo_utils",
         ":summary_v2",
         "//tensorboard:expect_absl_app_installed",
         "//tensorboard:expect_absl_flags_installed",
-        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard:expect_numpy_installed",
+        "//tensorboard:expect_tensorflow_installed",
     ],
 )
 
@@ -229,5 +205,4 @@ filegroup(
     srcs = [
         "test_data/icosphere.ply",
     ],
-    visibility = ["//visibility:public"],
 )

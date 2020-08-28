@@ -82,7 +82,8 @@ class OpError(Exception):
     def __str__(self):
         if self._op is not None:
             output = [
-                "%s\n\nCaused by op %r, defined at:\n" % (self.message, self._op.name)
+                "%s\n\nCaused by op %r, defined at:\n"
+                % (self.message, self._op.name)
             ]
             curr_traceback_list = traceback.format_list(self._op.traceback)
             output.extend(curr_traceback_list)
@@ -95,7 +96,9 @@ class OpError(Exception):
                     % (original_op.name,)
                 )
                 prev_traceback_list = curr_traceback_list
-                curr_traceback_list = traceback.format_list(original_op.traceback)
+                curr_traceback_list = traceback.format_list(
+                    original_op.traceback
+                )
 
                 # Attempt to elide large common subsequences of the subsequent
                 # stack traces.
@@ -104,7 +107,9 @@ class OpError(Exception):
                 is_eliding = False
                 elide_count = 0
                 last_elided_line = None
-                for line, line_in_prev in zip(curr_traceback_list, prev_traceback_list):
+                for line, line_in_prev in zip(
+                    curr_traceback_list, prev_traceback_list
+                ):
                     if line == line_in_prev:
                         if is_eliding:
                             elide_count += 1
@@ -179,7 +184,6 @@ DATA_LOSS = error_codes.DATA_LOSS
 # tf_export("errors.DATA_LOSS").export_constant(__name__, "DATA_LOSS")
 
 
-# pylint: disable=line-too-long
 # @tf_export("errors.CancelledError")
 class CancelledError(OpError):
     """Raised when an operation or step is cancelled.
@@ -198,9 +202,6 @@ class CancelledError(OpError):
     def __init__(self, node_def, op, message):
         """Creates a `CancelledError`."""
         super(CancelledError, self).__init__(node_def, op, message, CANCELLED)
-
-
-# pylint: enable=line-too-long
 
 
 # @tf_export("errors.UnknownError")
@@ -261,7 +262,8 @@ class DeadlineExceededError(OpError):
 
 # @tf_export("errors.NotFoundError")
 class NotFoundError(OpError):
-    """Raised when a requested entity (e.g., a file or directory) was not found.
+    """Raised when a requested entity (e.g., a file or directory) was not
+    found.
 
     For example, running the
     @{tf.WholeFileReader.read}
@@ -290,7 +292,9 @@ class AlreadyExistsError(OpError):
 
     def __init__(self, node_def, op, message):
         """Creates an `AlreadyExistsError`."""
-        super(AlreadyExistsError, self).__init__(node_def, op, message, ALREADY_EXISTS)
+        super(AlreadyExistsError, self).__init__(
+            node_def, op, message, ALREADY_EXISTS
+        )
 
 
 # @tf_export("errors.PermissionDeniedError")
@@ -347,7 +351,8 @@ class ResourceExhaustedError(OpError):
 
 # @tf_export("errors.FailedPreconditionError")
 class FailedPreconditionError(OpError):
-    """Operation was rejected because the system is not in a state to execute it.
+    """Operation was rejected because the system is not in a state to execute
+    it.
 
     This exception is most commonly raised when running an operation
     that reads a @{tf.Variable}
@@ -396,7 +401,9 @@ class OutOfRangeError(OpError):
 
     def __init__(self, node_def, op, message):
         """Creates an `OutOfRangeError`."""
-        super(OutOfRangeError, self).__init__(node_def, op, message, OUT_OF_RANGE)
+        super(OutOfRangeError, self).__init__(
+            node_def, op, message, OUT_OF_RANGE
+        )
 
 
 # @tf_export("errors.UnimplementedError")
@@ -414,7 +421,9 @@ class UnimplementedError(OpError):
 
     def __init__(self, node_def, op, message):
         """Creates an `UnimplementedError`."""
-        super(UnimplementedError, self).__init__(node_def, op, message, UNIMPLEMENTED)
+        super(UnimplementedError, self).__init__(
+            node_def, op, message, UNIMPLEMENTED
+        )
 
 
 # @tf_export("errors.InternalError")
@@ -443,7 +452,9 @@ class UnavailableError(OpError):
 
     def __init__(self, node_def, op, message):
         """Creates an `UnavailableError`."""
-        super(UnavailableError, self).__init__(node_def, op, message, UNAVAILABLE)
+        super(UnavailableError, self).__init__(
+            node_def, op, message, UNAVAILABLE
+        )
 
 
 # @tf_export("errors.DataLossError")

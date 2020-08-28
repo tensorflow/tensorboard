@@ -2,7 +2,7 @@
 # Writer interfaces for TensorBoard if tensorflow is not present
 package(default_visibility = ["//tensorboard:internal"])
 
-licenses(["notice"])  # Apache 2.0
+licenses(["notice"])
 
 exports_files(["LICENSE"])
 
@@ -14,14 +14,12 @@ py_library(
         "record_writer.py",
     ],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
-        "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/compat:tensorflow",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
         "@org_pythonhosted_six",
     ],
 )
-
 
 py_test(
     name = "event_file_writer_test",

@@ -23,30 +23,41 @@ from tensorboard.plugins.hparams import error
 
 
 class Handler(object):
-  """Handles a GetExperiment request. """
+    """Handles a GetExperiment request."""
 
-  def __init__(self, context):
-    """Constructor.
+    def __init__(self, request_context, backend_context, experiment_id):
+        """Constructor.
 
-    Args:
-      context: A backend_context.Context instance.
-    """
-    self._context = context
+        Args:
+          request_context: A tensorboard.context.RequestContext.
+          backend_context: A backend_context.Context instance.
+          experiment_id: A string, as from `plugin_util.experiment_id`.
+        """
+        self._request_context = request_context
+        self._backend_context = backend_context
+        self._experiment_id = experiment_id
 
-  def run(self):
-    """Handles the request specified on construction.
+    def run(self):
+        """Handles the request specified on construction.
 
-    Returns:
-      An Experiment object.
-
-    """
-    experiment = self._context.experiment()
-    if experiment is None:
-      raise error.HParamsError(
-          "Can't find an HParams-plugin experiment data in"
-          " the log directory. Note that it takes some time to"
-          " scan the log directory; if you just started"
-          " Tensorboard it could be that we haven't finished"
-          " scanning it yet. Consider trying again in a"
-          " few seconds.")
-    return experiment
+        Returns:
+          An Experiment object.
+        """
+        experiment_id = self._experiment_id
+        experiment = self._backend_context.experiment_from_metadata(
+            self._request_context,
+            experiment_id,
+            self._backend_context.hparams_metadata(
+                self._request_context, experiment_id
+            ),
+        )
+        if experiment is None:
+            raise error.HParamsError(
+                "Can't find an HParams-plugin experiment data in"
+                " the log directory. Note that it takes some time to"
+                " scan the log directory; if you just started"
+                " Tensorboard it could be that we haven't finished"
+                " scanning it yet. Consider trying again in a"
+                " few seconds."
+            )
+        return experiment

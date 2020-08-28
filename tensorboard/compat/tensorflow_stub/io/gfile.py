@@ -12,29 +12,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""File IO methods that wrap the C++ FileSystem API.
+"""A limited reimplementation of the TensorFlow FileIO API.
 
-The C++ FileSystem API is SWIG wrapped in file_io.i. These functions call those
-to accomplish basic File IO operations.
+The TensorFlow version wraps the C++ FileSystem API.  Here we provide a
+pure Python implementation, limited to the features required for
+TensorBoard.  This allows running TensorBoard without depending on
+TensorFlow for file operations.
 """
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
 from collections import namedtuple
-import binascii
-import collections
 import glob as py_glob
 import io
 import os
-import shutil
 import six
 import sys
 import tempfile
-import uuid
+
 try:
     import botocore.exceptions
     import boto3
+
     S3_ENABLED = True
 except ImportError:
     S3_ENABLED = False
@@ -60,7 +60,7 @@ _REGISTERED_FILESYSTEMS = {}
 
 
 def register_filesystem(prefix, filesystem):
-    if ':' in prefix:
+    if ":" in prefix:
         raise ValueError("Filesystem prefix cannot contain a :")
     _REGISTERED_FILESYSTEMS[prefix] = filesystem
 
@@ -93,33 +93,48 @@ class LocalFileSystem(object):
         """Join paths with path delimiter."""
         return os.path.join(path, *paths)
 
-    def read(self, filename, binary_mode=False, size=None, offset=None):
+    def read(self, filename, binary_mode=False, size=None, continue_from=None):
         """Reads contents of a file to a string.
 
         Args:
             filename: string, a path
             binary_mode: bool, read as binary if True, otherwise text
             size: int, number of bytes or characters to read, otherwise
-                read all the contents of the file from the offset
-            offset: int, offset into file to read from, otherwise read
-                from the very beginning
+                read all the contents of the file (from the continuation
+                marker, if present).
+            continue_from: An opaque value returned from a prior invocation of
+                `read(...)` marking the last read position, so that reading
+                may continue from there.  Otherwise read from the beginning.
 
         Returns:
-            Subset of the contents of the file as a string or bytes.
+            A tuple of `(data, continuation_token)` where `data' provides either
+            bytes read from the file (if `binary_mode == true`) or the decoded
+            string representation thereof (otherwise), and `continuation_token`
+            is an opaque value that can be passed to the next invocation of
+            `read(...) ' in order to continue from the last read position.
         """
         mode = "rb" if binary_mode else "r"
         encoding = None if binary_mode else "utf8"
+        if not exists(filename):
+            raise errors.NotFoundError(
+                None, None, "Not Found: " + compat.as_text(filename)
+            )
+        offset = None
+        if continue_from is not None:
+            offset = continue_from.get("opaque_offset", None)
         with io.open(filename, mode, encoding=encoding) as f:
             if offset is not None:
                 f.seek(offset)
-            if size is not None:
-                return f.read(size)
-            else:
-                return f.read()
+            data = f.read(size)
+            # The new offset may not be `offset + len(data)`, due to decoding
+            # and newline translation.
+            # So, just measure it in whatever terms the underlying stream uses.
+            continuation_token = {"opaque_offset": f.tell()}
+            return (data, continuation_token)
 
     def write(self, filename, file_content, binary_mode=False):
-        """Writes string file contents to a file, overwriting any
-        existing contents.
+        """Writes string file contents to a file, overwriting any existing
+        contents.
 
         Args:
             filename: string, a path
@@ -141,7 +156,8 @@ class LocalFileSystem(object):
     def _write(self, filename, file_content, mode):
         encoding = None if "b" in mode else "utf8"
         with io.open(filename, mode, encoding=encoding) as f:
-            f.write(file_content)
+            compatify = compat.as_bytes if "b" in mode else compat.as_text
+            f.write(compatify(file_content))
 
     def glob(self, filename):
         """Returns a list of files that match the given pattern(s)."""
@@ -149,8 +165,7 @@ class LocalFileSystem(object):
             return [
                 # Convert the filenames to string from bytes.
                 compat.as_str_any(matching_filename)
-                for matching_filename in py_glob.glob(
-                    compat.as_bytes(filename))
+                for matching_filename in py_glob.glob(compat.as_bytes(filename))
             ]
         else:
             return [
@@ -158,7 +173,8 @@ class LocalFileSystem(object):
                 compat.as_str_any(matching_filename)
                 for single_filename in filename
                 for matching_filename in py_glob.glob(
-                    compat.as_bytes(single_filename))
+                    compat.as_bytes(single_filename)
+                )
             ]
 
     def isdir(self, dirname):
@@ -179,17 +195,19 @@ class LocalFileSystem(object):
         try:
             os.makedirs(path)
         except FileExistsError:
-            raise errors.AlreadyExistsError(None, None, "Directory already exists")
+            raise errors.AlreadyExistsError(
+                None, None, "Directory already exists"
+            )
 
     def stat(self, filename):
         """Returns file statistics for a given path."""
         # NOTE: Size of the file is given by .st_size as returned from
         # os.stat(), but we convert to .length
         try:
-            len = os.stat(compat.as_bytes(filename)).st_size
+            file_length = os.stat(compat.as_bytes(filename)).st_size
         except OSError:
             raise errors.NotFoundError(None, None, "Could not find file")
-        return StatData(len)
+        return StatData(file_length)
 
 
 class S3FileSystem(object):
@@ -198,20 +216,21 @@ class S3FileSystem(object):
     def __init__(self):
         if not boto3:
             raise ImportError("boto3 must be installed for S3 support.")
+        self._s3_endpoint = os.environ.get("S3_ENDPOINT", None)
 
     def bucket_and_path(self, url):
         """Split an S3-prefixed URL into bucket and path."""
         url = compat.as_str_any(url)
         if url.startswith("s3://"):
-            url = url[len("s3://"):]
+            url = url[len("s3://") :]
         idx = url.index("/")
         bucket = url[:idx]
-        path = url[(idx + 1):]
+        path = url[(idx + 1) :]
         return bucket, path
 
     def exists(self, filename):
         """Determines whether a path exists or not."""
-        client = boto3.client("s3")
+        client = boto3.client("s3", endpoint_url=self._s3_endpoint)
         bucket, path = self.bucket_and_path(filename)
         r = client.list_objects(Bucket=bucket, Prefix=path, Delimiter="/")
         if r.get("Contents") or r.get("CommonPrefixes"):
@@ -222,54 +241,74 @@ class S3FileSystem(object):
         """Join paths with a slash."""
         return "/".join((path,) + paths)
 
-    def read(self, filename, binary_mode=False, size=None, offset=None):
+    def read(self, filename, binary_mode=False, size=None, continue_from=None):
         """Reads contents of a file to a string.
 
         Args:
             filename: string, a path
             binary_mode: bool, read as binary if True, otherwise text
             size: int, number of bytes or characters to read, otherwise
-                read all the contents of the file from the offset
-            offset: int, offset into file to read from, otherwise read
-                from the very beginning
+                read all the contents of the file (from the continuation
+                marker, if present).
+            continue_from: An opaque value returned from a prior invocation of
+                `read(...)` marking the last read position, so that reading
+                may continue from there.  Otherwise read from the beginning.
 
         Returns:
-            Subset of the contents of the file as a string or bytes.
+            A tuple of `(data, continuation_token)` where `data' provides either
+            bytes read from the file (if `binary_mode == true`) or the decoded
+            string representation thereof (otherwise), and `continuation_token`
+            is an opaque value that can be passed to the next invocation of
+            `read(...) ' in order to continue from the last read position.
         """
-        s3 = boto3.resource("s3")
+        s3 = boto3.resource("s3", endpoint_url=self._s3_endpoint)
         bucket, path = self.bucket_and_path(filename)
         args = {}
-        endpoint = 0
-        if size is not None or offset is not None:
-            if offset is None:
-                offset = 0
-            endpoint = '' if size is None else (offset + size)
-            if offset != 0 or endpoint != '':
-                # Asked for a range, so modify the request
-                args['Range'] = 'bytes={}-{}'.format(offset, endpoint)
+
+        # For the S3 case, we use continuation tokens of the form
+        # {byte_offset: number}
+        offset = 0
+        if continue_from is not None:
+            offset = continue_from.get("byte_offset", 0)
+
+        endpoint = ""
+        if size is not None:
+            # TODO(orionr): This endpoint risks splitting a multi-byte
+            # character or splitting \r and \n in the case of CRLFs,
+            # producing decoding errors below.
+            endpoint = offset + size
+
+        if offset != 0 or endpoint != "":
+            # Asked for a range, so modify the request
+            args["Range"] = "bytes={}-{}".format(offset, endpoint)
+
         try:
-            stream = s3.Object(bucket, path).get(**args)['Body'].read()
+            stream = s3.Object(bucket, path).get(**args)["Body"].read()
         except botocore.exceptions.ClientError as exc:
-            if exc.response['Error']['Code'] == '416':
+            if exc.response["Error"]["Code"] in ["416", "InvalidRange"]:
                 if size is not None:
                     # Asked for too much, so request just to the end. Do this
                     # in a second request so we don't check length in all cases.
-                    client = boto3.client("s3")
+                    client = boto3.client("s3", endpoint_url=self._s3_endpoint)
                     obj = client.head_object(Bucket=bucket, Key=path)
-                    len = obj['ContentLength']
-                    endpoint = min(len, offset + size)
+                    content_length = obj["ContentLength"]
+                    endpoint = min(content_length, offset + size)
                 if offset == endpoint:
                     # Asked for no bytes, so just return empty
-                    stream = b''
+                    stream = b""
                 else:
-                    args['Range'] = 'bytes={}-{}'.format(offset, endpoint)
-                    stream = s3.Object(bucket, path).get(**args)['Body'].read()
+                    args["Range"] = "bytes={}-{}".format(offset, endpoint)
+                    stream = s3.Object(bucket, path).get(**args)["Body"].read()
             else:
                 raise
+        # `stream` should contain raw bytes here (i.e., there has been neither
+        # decoding nor newline translation), so the byte offset increases by
+        # the expected amount.
+        continuation_token = {"byte_offset": (offset + len(stream))}
         if binary_mode:
-            return bytes(stream)
+            return (bytes(stream), continuation_token)
         else:
-            return stream.decode('utf-8')
+            return (stream.decode("utf-8"), continuation_token)
 
     def write(self, filename, file_content, binary_mode=False):
         """Writes string file contents to a file.
@@ -279,12 +318,12 @@ class S3FileSystem(object):
             file_content: string, the contents
             binary_mode: bool, write as binary if True, otherwise text
         """
-        client = boto3.client("s3")
+        client = boto3.client("s3", endpoint_url=self._s3_endpoint)
         bucket, path = self.bucket_and_path(filename)
         # Always convert to bytes for writing
         if binary_mode:
             if not isinstance(file_content, six.binary_type):
-                raise TypeError('File content type must be bytes')
+                raise TypeError("File content type must be bytes")
         else:
             file_content = compat.as_bytes(file_content)
         client.put_object(Body=file_content, Bucket=bucket, Key=path)
@@ -292,11 +331,12 @@ class S3FileSystem(object):
     def glob(self, filename):
         """Returns a list of files that match the given pattern(s)."""
         # Only support prefix with * at the end and no ? in the string
-        star_i = filename.find('*')
-        quest_i = filename.find('?')
+        star_i = filename.find("*")
+        quest_i = filename.find("?")
         if quest_i >= 0:
             raise NotImplementedError(
-                "{} not supported by compat glob".format(filename))
+                "{} not supported by compat glob".format(filename)
+            )
         if star_i != len(filename) - 1:
             # Just return empty so we can use glob from directory watcher
             #
@@ -305,20 +345,20 @@ class S3FileSystem(object):
             # filesystems in some way.
             return []
         filename = filename[:-1]
-        client = boto3.client("s3")
+        client = boto3.client("s3", endpoint_url=self._s3_endpoint)
         bucket, path = self.bucket_and_path(filename)
         p = client.get_paginator("list_objects")
         keys = []
         for r in p.paginate(Bucket=bucket, Prefix=path):
             for o in r.get("Contents", []):
-                key = o["Key"][len(path):]
+                key = o["Key"][len(path) :]
                 if key:  # Skip the base dir, which would add an empty string
                     keys.append(filename + key)
         return keys
 
     def isdir(self, dirname):
         """Returns whether the path is a directory or not."""
-        client = boto3.client("s3")
+        client = boto3.client("s3", endpoint_url=self._s3_endpoint)
         bucket, path = self.bucket_and_path(dirname)
         if not path.endswith("/"):
             path += "/"  # This will now only retrieve subdir content
@@ -329,16 +369,18 @@ class S3FileSystem(object):
 
     def listdir(self, dirname):
         """Returns a list of entries contained within a directory."""
-        client = boto3.client("s3")
+        client = boto3.client("s3", endpoint_url=self._s3_endpoint)
         bucket, path = self.bucket_and_path(dirname)
         p = client.get_paginator("list_objects")
         if not path.endswith("/"):
             path += "/"  # This will now only retrieve subdir content
         keys = []
         for r in p.paginate(Bucket=bucket, Prefix=path, Delimiter="/"):
-            keys.extend(o["Prefix"][len(path):-1] for o in r.get("CommonPrefixes", []))
+            keys.extend(
+                o["Prefix"][len(path) : -1] for o in r.get("CommonPrefixes", [])
+            )
             for o in r.get("Contents", []):
-                key = o["Key"][len(path):]
+                key = o["Key"][len(path) :]
                 if key:  # Skip the base dir, which would add an empty string
                     keys.append(key)
         return keys
@@ -346,24 +388,26 @@ class S3FileSystem(object):
     def makedirs(self, dirname):
         """Creates a directory and all parent/intermediate directories."""
         if self.exists(dirname):
-            raise errors.AlreadyExistsError(None, None, "Directory already exists")
-        client = boto3.client("s3")
+            raise errors.AlreadyExistsError(
+                None, None, "Directory already exists"
+            )
+        client = boto3.client("s3", endpoint_url=self._s3_endpoint)
         bucket, path = self.bucket_and_path(dirname)
         if not path.endswith("/"):
             path += "/"  # This will make sure we don't override a file
-        client.put_object(Body='', Bucket=bucket, Key=path)
+        client.put_object(Body="", Bucket=bucket, Key=path)
 
     def stat(self, filename):
         """Returns file statistics for a given path."""
         # NOTE: Size of the file is given by ContentLength from S3,
         # but we convert to .length
-        client = boto3.client("s3")
+        client = boto3.client("s3", endpoint_url=self._s3_endpoint)
         bucket, path = self.bucket_and_path(filename)
         try:
             obj = client.head_object(Bucket=bucket, Key=path)
-            return StatData(obj['ContentLength'])
+            return StatData(obj["ContentLength"])
         except botocore.exceptions.ClientError as exc:
-            if exc.response['Error']['Code'] == '404':
+            if exc.response["Error"]["Code"] == "404":
                 raise errors.NotFoundError(None, None, "Could not find file")
             else:
                 raise
@@ -378,20 +422,24 @@ class GFile(object):
     # Only methods needed for TensorBoard are implemented.
 
     def __init__(self, filename, mode):
-        if mode not in ('r', 'rb', 'br', 'w', 'wb', 'bw'):
+        if mode not in ("r", "rb", "br", "w", "wb", "bw"):
             raise NotImplementedError(
-                "mode {} not supported by compat GFile".format(mode))
+                "mode {} not supported by compat GFile".format(mode)
+            )
         self.filename = compat.as_bytes(filename)
         self.fs = get_filesystem(self.filename)
-        self.fs_supports_append = hasattr(self.fs, 'append')
-        self.buff_chunk_size = _DEFAULT_BLOCK_SIZE
+        self.fs_supports_append = hasattr(self.fs, "append")
         self.buff = None
+        # The buffer offset and the buffer chunk size are measured in the
+        # natural units of the underlying stream, i.e. bytes for binary mode,
+        # or characters in text mode.
+        self.buff_chunk_size = _DEFAULT_BLOCK_SIZE
         self.buff_offset = 0
-        self.offset = 0
+        self.continuation_token = None
         self.write_temp = None
         self.write_started = False
-        self.binary_mode = 'b' in mode
-        self.write_mode = 'w' in mode
+        self.binary_mode = "b" in mode
+        self.write_mode = "w" in mode
         self.closed = False
 
     def __enter__(self):
@@ -401,7 +449,7 @@ class GFile(object):
         self.close()
         self.buff = None
         self.buff_offset = 0
-        self.offset = 0
+        self.continuation_token = None
 
     def __iter__(self):
         return self
@@ -409,9 +457,8 @@ class GFile(object):
     def _read_buffer_to_offset(self, new_buff_offset):
         old_buff_offset = self.buff_offset
         read_size = min(len(self.buff), new_buff_offset) - old_buff_offset
-        self.offset += read_size
         self.buff_offset += read_size
-        return self.buff[old_buff_offset:old_buff_offset + read_size]
+        return self.buff[old_buff_offset : old_buff_offset + read_size]
 
     def read(self, n=None):
         """Reads contents of file to a string.
@@ -423,6 +470,11 @@ class GFile(object):
         Returns:
             Subset of the contents of the file as a string or bytes.
         """
+        if self.write_mode:
+            raise errors.PermissionDeniedError(
+                None, None, "File not opened in read mode"
+            )
+
         result = None
         if self.buff and len(self.buff) > self.buff_offset:
             # read from local buffer
@@ -438,8 +490,9 @@ class GFile(object):
 
         # read from filesystem
         read_size = max(self.buff_chunk_size, n) if n is not None else None
-        self.buff = self.fs.read(self.filename, self.binary_mode,
-                                 read_size, self.offset)
+        (self.buff, self.continuation_token) = self.fs.read(
+            self.filename, self.binary_mode, read_size, self.continuation_token
+        )
         self.buff_offset = 0
 
         # add from filesystem
@@ -453,16 +506,20 @@ class GFile(object):
         return result
 
     def write(self, file_content):
-        """Writes string file contents to file, clearing contents of the
-        file on first write and then appending on subsequent calls.
+        """Writes string file contents to file, clearing contents of the file
+        on first write and then appending on subsequent calls.
 
         Args:
             file_content: string, the contents
         """
         if not self.write_mode:
-            raise errors.OpError(None, None, "File not opened in write mode")
+            raise errors.PermissionDeniedError(
+                None, None, "File not opened in write mode"
+            )
         if self.closed:
-            raise errors.OpError(None, None, "File already closed")
+            raise errors.FailedPreconditionError(
+                None, None, "File already closed"
+            )
 
         if self.fs_supports_append:
             if not self.write_started:
@@ -477,7 +534,9 @@ class GFile(object):
             if self.write_temp is None:
                 mode = "w+b" if self.binary_mode else "w+"
                 self.write_temp = tempfile.TemporaryFile(mode)
-            self.write_temp.write(file_content)
+
+            compatify = compat.as_bytes if self.binary_mode else compat.as_text
+            self.write_temp.write(compatify(file_content))
 
     def __next__(self):
         line = None
@@ -485,12 +544,12 @@ class GFile(object):
             if not self.buff:
                 # read one unit into the buffer
                 line = self.read(1)
-                if line and (line[-1] == '\n' or not self.buff):
+                if line and (line[-1] == "\n" or not self.buff):
                     return line
                 if not self.buff:
                     raise StopIteration()
             else:
-                index = self.buff.find('\n', self.buff_offset)
+                index = self.buff.find("\n", self.buff_offset)
                 if index != -1:
                     # include line until now plus newline
                     chunk = self.read(index + 1 - self.buff_offset)
@@ -500,7 +559,7 @@ class GFile(object):
                 # read one unit past end of buffer
                 chunk = self.read(len(self.buff) + 1 - self.buff_offset)
                 line = line + chunk if line else chunk
-                if line and (line[-1] == '\n' or not self.buff):
+                if line and (line[-1] == "\n" or not self.buff):
                     return line
                 if not self.buff:
                     raise StopIteration()
@@ -510,7 +569,9 @@ class GFile(object):
 
     def flush(self):
         if self.closed:
-            raise errors.OpError(None, None, "File already closed")
+            raise errors.FailedPreconditionError(
+                None, None, "File already closed"
+            )
 
         if not self.fs_supports_append:
             if self.write_temp is not None:
@@ -525,7 +586,7 @@ class GFile(object):
 
     def close(self):
         self.flush()
-        if  self.write_temp is not None:
+        if self.write_temp is not None:
             self.write_temp.close()
             self.write_temp = None
             self.write_started = False
@@ -620,8 +681,8 @@ def walk(top, topdown=True, onerror=None):
     Errors that happen while listing directories are ignored.
 
     Yields:
-      Each yield is a 3-tuple:  the pathname of a directory, followed by lists of
-      all its subdirectories and leaf files.
+      Each yield is a 3-tuple:  the pathname of a directory, followed by lists
+      of all its subdirectories and leaf files.
       (dirname, [subdirname, subdirname, ...], [filename, filename, ...])
       as strings
     """
@@ -671,3 +732,41 @@ def stat(filename):
       errors.OpError: If the operation fails.
     """
     return get_filesystem(filename).stat(filename)
+
+
+# Used for tests only
+def _write_string_to_file(filename, file_content):
+    """Writes a string to a given file.
+
+    Args:
+      filename: string, path to a file
+      file_content: string, contents that need to be written to the file
+
+    Raises:
+      errors.OpError: If there are errors during the operation.
+    """
+    with GFile(filename, mode="w") as f:
+        f.write(compat.as_text(file_content))
+
+
+# Used for tests only
+def _read_file_to_string(filename, binary_mode=False):
+    """Reads the entire contents of a file to a string.
+
+    Args:
+      filename: string, path to a file
+      binary_mode: whether to open the file in binary mode or not. This changes
+        the type of the object returned.
+
+    Returns:
+      contents of the file as a string or bytes.
+
+    Raises:
+      errors.OpError: Raises variety of errors that are subtypes e.g.
+      `NotFoundError` etc.
+    """
+    if binary_mode:
+        f = GFile(filename, mode="rb")
+    else:
+        f = GFile(filename, mode="r")
+    return f.read()

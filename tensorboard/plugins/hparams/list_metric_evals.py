@@ -23,27 +23,39 @@ from tensorboard.plugins.scalar import scalars_plugin
 
 
 class Handler(object):
-  """Handles a ListMetricEvals request. """
+    """Handles a ListMetricEvals request."""
 
-  def __init__(self, request, scalars_plugin_instance):
-    """Constructor.
+    def __init__(
+        self, request_context, request, scalars_plugin_instance, experiment
+    ):
+        """Constructor.
 
-    Args:
-      request: A ListSessionGroupsRequest protobuf.
-      scalars_plugin_instance: A scalars_plugin.ScalarsPlugin.
-    """
-    self._request = request
-    self._scalars_plugin_instance = scalars_plugin_instance
+        Args:
+            request_context: A tensorboard.context.RequestContext.
+            request: A ListSessionGroupsRequest protobuf.
+            scalars_plugin_instance: A scalars_plugin.ScalarsPlugin.
+            experiment: A experiment ID, as a possibly-empty `str`.
+        """
+        self._request_context = request_context
+        self._request = request
+        self._scalars_plugin_instance = scalars_plugin_instance
+        self._experiment = experiment
 
-  def run(self):
-    """Executes the request.
+    def run(self):
+        """Executes the request.
 
-    Returns:
-       An array of tuples representing the metric evaluations--each of the form
-       (<wall time in secs>, <training step>, <metric value>).
-    """
-    run, tag = metrics.run_tag_from_session_and_metric(
-        self._request.session_name, self._request.metric_name)
-    body, _ = self._scalars_plugin_instance.scalars_impl(
-        tag, run, None, scalars_plugin.OutputFormat.JSON)
-    return body
+        Returns:
+            An array of tuples representing the metric evaluations--each of the
+            form (<wall time in secs>, <training step>, <metric value>).
+        """
+        run, tag = metrics.run_tag_from_session_and_metric(
+            self._request.session_name, self._request.metric_name
+        )
+        body, _ = self._scalars_plugin_instance.scalars_impl(
+            self._request_context,
+            tag,
+            run,
+            self._experiment,
+            scalars_plugin.OutputFormat.JSON,
+        )
+        return body

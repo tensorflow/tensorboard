@@ -1,0 +1,59 @@
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+==============================================================================*/
+
+@import 'tensorboard/webapp/angular_material_theming';
+
+$tf-slate: (
+  100: #f5f6f7,
+  200: #f5f6f7,
+  300: #c6cad1,
+  400: #8e98a3,
+  500: #8e98a3,
+  700: #425066,
+  900: #293241,
+  contrast: (
+    100: $dark-primary-text,
+    200: $dark-primary-text,
+    300: $dark-primary-text,
+    400: $dark-primary-text,
+    500: $light-primary-text,
+    700: $light-primary-text,
+    900: $light-primary-text,
+  ),
+);
+
+/* The tf-orange palette predates the migration to Angular and is not
+   well-defined and is not well-mapped to the tf-slate palette. It could use
+   more work. One source to consider is tensorboard-color.html, which contains
+   several orange values, but only one of them (--tb-orange-strong) is used
+   widely. */
+$tf-orange: (
+  100: mat-color($mat-orange, 500),
+  200: mat-color($mat-orange, 500),
+  300: mat-color($mat-orange, 500),
+  400: mat-color($mat-orange, 500),
+  500: mat-color($mat-orange, 500),
+  700: mat-color($mat-orange, 700),
+  900: mat-color($mat-orange, 700),
+  contrast: (
+    100: $dark-primary-text,
+    300: $dark-primary-text,
+    400: $dark-primary-text,
+    500: $light-primary-text,
+    600: $light-primary-text,
+    700: $light-primary-text,
+    900: $light-primary-text,
+  ),
+);

@@ -24,13 +24,12 @@ from tensorboard.plugins.hparams import summary_v2
 
 
 class ApiTest(test.TestCase):
+    def test_has_core_attributes(self):
+        self.assertIs(api.HParam, summary_v2.HParam)
 
-  def test_has_core_attributes(self):
-    self.assertIs(api.HParam, summary_v2.HParam)
-
-  def test_has_keras_dependent_attributes(self):
-    self.assertIs(api.KerasCallback, keras.Callback)
+    def test_has_keras_dependent_attributes(self):
+        self.assertIs(api.KerasCallback, keras.Callback)
 
 
 if __name__ == "__main__":
-  test.main()
+    test.main()

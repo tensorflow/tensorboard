@@ -31,19 +31,8 @@ version="$1"
 checksum="$2"
 dest="$3"
 
-temp_dest="$(mktemp)"
-
 mirror_url="http://mirror.tensorflow.org/github.com/bazelbuild/bazel/releases/download/${version}/bazel-${version}-linux-x86_64"
 github_url="https://github.com/bazelbuild/bazel/releases/download/${version}/bazel-${version}-linux-x86_64"
 
-for url in "${mirror_url}" "${github_url}"; do
-  wget -t 3 -O "${temp_dest}" "${url}" \
-    && printf "%s  %s\n" "${checksum}" "${temp_dest}" | shasum -a 256 --check \
-    || { rm -f "${temp_dest}"; continue; }
-  mv "${temp_dest}" "${dest}"
-  break
-done
-
-[ -f "${dest}" ]
-chmod +x "${dest}"
-ls -l "${dest}"
+exec "$(dirname "$0")/download_executable.sh" "${checksum}" "${dest}" \
+    "${mirror_url}" "${github_url}"

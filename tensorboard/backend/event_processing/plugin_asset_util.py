@@ -26,78 +26,83 @@ _PLUGINS_DIR = "plugins"
 
 
 def _IsDirectory(parent, item):
-  """Helper that returns if parent/item is a directory."""
-  return tf.io.gfile.isdir(os.path.join(parent, item))
+    """Helper that returns if parent/item is a directory."""
+    return tf.io.gfile.isdir(os.path.join(parent, item))
 
 
 def PluginDirectory(logdir, plugin_name):
-  """Returns the plugin directory for plugin_name."""
-  return os.path.join(logdir, _PLUGINS_DIR, plugin_name)
+    """Returns the plugin directory for plugin_name."""
+    return os.path.join(logdir, _PLUGINS_DIR, plugin_name)
 
 
 def ListPlugins(logdir):
-  """List all the plugins that have registered assets in logdir.
+    """List all the plugins that have registered assets in logdir.
 
-  If the plugins_dir does not exist, it returns an empty list. This maintains
-  compatibility with old directories that have no plugins written.
+    If the plugins_dir does not exist, it returns an empty list. This maintains
+    compatibility with old directories that have no plugins written.
 
-  Args:
-    logdir: A directory that was created by a TensorFlow events writer.
+    Args:
+      logdir: A directory that was created by a TensorFlow events writer.
 
-  Returns:
-    a list of plugin names, as strings
-  """
-  plugins_dir = os.path.join(logdir, _PLUGINS_DIR)
-  try:
-    entries = tf.io.gfile.listdir(plugins_dir)
-  except tf.errors.NotFoundError:
-    return []
-  # Strip trailing slashes, which listdir() includes for some filesystems
-  # for subdirectories, after using them to bypass IsDirectory().
-  return [x.rstrip('/') for x in entries
-          if x.endswith('/') or _IsDirectory(plugins_dir, x)]
+    Returns:
+      a list of plugin names, as strings
+    """
+    plugins_dir = os.path.join(logdir, _PLUGINS_DIR)
+    try:
+        entries = tf.io.gfile.listdir(plugins_dir)
+    except tf.errors.NotFoundError:
+        return []
+    # Strip trailing slashes, which listdir() includes for some filesystems
+    # for subdirectories, after using them to bypass IsDirectory().
+    return [
+        x.rstrip("/")
+        for x in entries
+        if x.endswith("/") or _IsDirectory(plugins_dir, x)
+    ]
 
 
 def ListAssets(logdir, plugin_name):
-  """List all the assets that are available for given plugin in a logdir.
+    """List all the assets that are available for given plugin in a logdir.
 
-  Args:
-    logdir: A directory that was created by a TensorFlow summary.FileWriter.
-    plugin_name: A string name of a plugin to list assets for.
+    Args:
+      logdir: A directory that was created by a TensorFlow summary.FileWriter.
+      plugin_name: A string name of a plugin to list assets for.
 
-  Returns:
-    A string list of available plugin assets. If the plugin subdirectory does
-    not exist (either because the logdir doesn't exist, or because the plugin
-    didn't register) an empty list is returned.
-  """
-  plugin_dir = PluginDirectory(logdir, plugin_name)
-  try:
-    # Strip trailing slashes, which listdir() includes for some filesystems.
-    return [x.rstrip('/') for x in tf.io.gfile.listdir(plugin_dir)]
-  except tf.errors.NotFoundError:
-    return []
+    Returns:
+      A string list of available plugin assets. If the plugin subdirectory does
+      not exist (either because the logdir doesn't exist, or because the plugin
+      didn't register) an empty list is returned.
+    """
+    plugin_dir = PluginDirectory(logdir, plugin_name)
+    try:
+        # Strip trailing slashes, which listdir() includes for some filesystems.
+        return [x.rstrip("/") for x in tf.io.gfile.listdir(plugin_dir)]
+    except tf.errors.NotFoundError:
+        return []
 
 
 def RetrieveAsset(logdir, plugin_name, asset_name):
-  """Retrieve a particular plugin asset from a logdir.
+    """Retrieve a particular plugin asset from a logdir.
 
-  Args:
-    logdir: A directory that was created by a TensorFlow summary.FileWriter.
-    plugin_name: The plugin we want an asset from.
-    asset_name: The name of the requested asset.
+    Args:
+      logdir: A directory that was created by a TensorFlow summary.FileWriter.
+      plugin_name: The plugin we want an asset from.
+      asset_name: The name of the requested asset.
 
-  Returns:
-    string contents of the plugin asset.
+    Returns:
+      string contents of the plugin asset.
 
-  Raises:
-    KeyError: if the asset does not exist.
-  """
+    Raises:
+      KeyError: if the asset does not exist.
+    """
 
-  asset_path = os.path.join(PluginDirectory(logdir, plugin_name), asset_name)
-  try:
-    with tf.io.gfile.GFile(asset_path, "r") as f:
-      return f.read()
-  except tf.errors.NotFoundError:
-    raise KeyError("Asset path %s not found" % asset_path)
-  except tf.errors.OpError as e:
-    raise KeyError("Couldn't read asset path: %s, OpError %s" % (asset_path, e))
+    asset_path = os.path.join(PluginDirectory(logdir, plugin_name), asset_name)
+    try:
+        with tf.io.gfile.GFile(asset_path, "r") as f:
+            return f.read()
+    except tf.errors.NotFoundError:
+        raise KeyError("Asset path %s not found" % asset_path)
+    except tf.errors.OpError as e:
+        raise KeyError(
+            "Couldn't read asset path: %s, OpError %s" % (asset_path, e)
+        )

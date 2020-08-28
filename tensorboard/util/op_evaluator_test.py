@@ -20,52 +20,53 @@ import tensorflow.compat.v1 as tf
 
 from tensorboard.util import op_evaluator
 
+
 class PersistentOpEvaluatorTest(tf.test.TestCase):
+    def setUp(self):
+        super(PersistentOpEvaluatorTest, self).setUp()
 
-  def setUp(self):
-    super(PersistentOpEvaluatorTest, self).setUp()
+        patch = tf.test.mock.patch(
+            "tensorflow.compat.v1.Session", wraps=tf.Session
+        )
+        patch.start()
+        self.addCleanup(patch.stop)
 
-    patch = tf.test.mock.patch('tensorflow.compat.v1.Session', wraps=tf.Session)
-    patch.start()
-    self.addCleanup(patch.stop)
+        class Squarer(op_evaluator.PersistentOpEvaluator):
+            def __init__(self):
+                super(Squarer, self).__init__()
+                self._input = None
+                self._squarer = None
 
-    class Squarer(op_evaluator.PersistentOpEvaluator):
+            def initialize_graph(self):
+                self._input = tf.placeholder(tf.int32)
+                self._squarer = tf.square(self._input)
 
-      def __init__(self):
-        super(Squarer, self).__init__()
-        self._input = None
-        self._squarer = None
+            def run(self, xs):  # pylint: disable=arguments-differ
+                return self._squarer.eval(feed_dict={self._input: xs})
 
-      def initialize_graph(self):
-        self._input = tf.placeholder(tf.int32)
-        self._squarer = tf.square(self._input)
+        self._square = Squarer()
 
-      def run(self, xs):  # pylint: disable=arguments-differ
-        return self._squarer.eval(feed_dict={self._input: xs})
+    def test_preserves_existing_session(self):
+        with tf.Session() as sess:
+            op = tf.reduce_sum(input_tensor=[2, 2])
+            self.assertIs(sess, tf.get_default_session())
 
-    self._square = Squarer()
+            result = self._square(123)
+            self.assertEqual(123 * 123, result)
 
-  def test_preserves_existing_session(self):
-    with tf.Session() as sess:
-      op = tf.reduce_sum(input_tensor=[2, 2])
-      self.assertIs(sess, tf.get_default_session())
+            self.assertIs(sess, tf.get_default_session())
+            number_of_lights = sess.run(op)
+            self.assertEqual(number_of_lights, 4)
 
-      result = self._square(123)
-      self.assertEqual(123 * 123, result)
+    def test_lazily_initializes_sessions(self):
+        self.assertEqual(tf.Session.call_count, 0)
 
-      self.assertIs(sess, tf.get_default_session())
-      number_of_lights = sess.run(op)
-      self.assertEqual(number_of_lights, 4)
-
-  def test_lazily_initializes_sessions(self):
-    self.assertEqual(tf.Session.call_count, 0)
-
-  def test_reuses_sessions(self):
-    self._square(123)
-    self.assertEqual(tf.Session.call_count, 1)
-    self._square(234)
-    self.assertEqual(tf.Session.call_count, 1)
+    def test_reuses_sessions(self):
+        self._square(123)
+        self.assertEqual(tf.Session.call_count, 1)
+        self._square(234)
+        self.assertEqual(tf.Session.call_count, 1)
 
 
-if __name__ == '__main__':
-  tf.test.main()
+if __name__ == "__main__":
+    tf.test.main()

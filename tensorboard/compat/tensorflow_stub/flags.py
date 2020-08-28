@@ -13,7 +13,10 @@
 # limitations under the License.
 # ==============================================================================
 
-"""Import router for absl.flags. See https://github.com/abseil/abseil-py."""
+"""Import router for absl.flags.
+
+See https://github.com/abseil/abseil-py.
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -62,9 +65,9 @@ def _wrap_define_function(original_function):
 class _FlagValuesWrapper(object):
     """Wrapper class for absl.flags.FLAGS.
 
-    The difference is that tf.compat.v1.flags.FLAGS implicitly parses flags with sys.argv
-    when accessing the FLAGS values before it's explicitly parsed,
-    while absl.flags.FLAGS raises an exception.
+    The difference is that tf.compat.v1.flags.FLAGS implicitly parses
+    flags with sys.argv when accessing the FLAGS values before it's
+    explicitly parsed, while absl.flags.FLAGS raises an exception.
     """
 
     def __init__(self, flags_object):

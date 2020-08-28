@@ -1,0 +1,5 @@
+[tool.black]
+line-length = 80
+# TODO(@wchargin): Drop `py35` here once we drop support for Python 3.5
+# and aren't affected by <https://bugs.python.org/issue9232>.
+target-version = ["py27", "py35", "py36", "py37", "py38"]

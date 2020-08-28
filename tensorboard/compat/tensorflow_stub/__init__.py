@@ -38,4 +38,4 @@ from . import tensor_shape  # noqa
 compat.v1.errors = errors
 
 # Set a fake __version__ to help distinguish this as our own stub API.
-__version__ = 'stub'
+__version__ = "stub"

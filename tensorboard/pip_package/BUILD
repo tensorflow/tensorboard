@@ -3,7 +3,7 @@
 
 package(default_visibility = ["//visibility:private"])
 
-licenses(["notice"])  # Apache 2.0
+licenses(["notice"])
 
 genrule(
     name = "pip_package",
@@ -32,13 +32,14 @@ sh_binary(
         "LICENSE",
         "MANIFEST.in",
         "README.rst",
+        "requirements.txt",
         "setup.cfg",
         "setup.py",
         ":deterministic_tar_gz",
         "//tensorboard",  # Main tensorboard binary and everything it uses
         "//tensorboard:lib",  # User-facing overall TensorBoard API
         "//tensorboard:version",  # Version module (read by setup.py)
-        "//tensorboard/plugins/beholder",  # User-facing beholder API
+        "//tensorboard/data/experimental:experiment_from_dev",
         "//tensorboard/plugins/hparams",  # User-facing hparams API
         "//tensorboard/plugins/mesh",  #  User-facing mesh API
         "//tensorboard/plugins/projector",  # User-facing projector API
@@ -82,8 +83,7 @@ genrule(
         "LICENSE.tensorflow",
         "@org_polymer//:LICENSE.txt",
         "@com_palantir_plottable//:package/LICENSE",
-        "@org_d3js//:LICENSE",
-        "@org_chromium_catapult_vulcanized_trace_viewer//:LICENSE",
+        "@npm//:node_modules/d3/LICENSE",
         "@io_github_cpettitt_dagre//:LICENSE",
         "@io_github_cpettitt_graphlib//:LICENSE",
         "@io_github_waylonflinn_weblas//:LICENSE",
@@ -94,6 +94,7 @@ genrule(
         "@org_mozilla_bleach//:LICENSE",
         "@org_html5lib//:LICENSE",
         "@org_pythonhosted_webencodings//:LICENSE",
+        "//third_party:bh_tsne.LICENSE",
     ],
     outs = ["LICENSE"],
     cmd = "\n".join([

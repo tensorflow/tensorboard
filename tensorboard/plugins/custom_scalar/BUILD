@@ -1,11 +1,11 @@
 # Description:
 # TensorBoard plugin for custom scalars plots
 
+load("//tensorboard/defs:protos.bzl", "tb_proto_library")
+
 package(default_visibility = ["//tensorboard:internal"])
 
-licenses(["notice"])  # Apache 2.0
-
-load("//tensorboard/defs:protos.bzl", "tb_proto_library")
+licenses(["notice"])
 
 exports_files(["LICENSE"])
 
@@ -14,7 +14,6 @@ py_library(
     name = "custom_scalars_plugin",
     srcs = ["custom_scalars_plugin.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         ":metadata",
         ":protos_all_py_pb2",
@@ -60,9 +59,8 @@ py_test(
         ":metadata",
         ":protos_all_py_pb2",
         ":summary",
-        "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/backend:application",
+        "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/util:tensor_util",
         "//tensorboard/util:test_util",
     ],
@@ -77,13 +75,17 @@ py_test(
         ":custom_scalars_plugin",
         ":protos_all_py_pb2",
         ":summary",
+        "//tensorboard:context",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
+        "//tensorboard/backend/event_processing:data_provider",
+        "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/plugins/scalar:scalars_plugin",
         "//tensorboard/plugins/scalar:summary",
         "//tensorboard/util:test_util",
+        "@org_pocoo_werkzeug",
     ],
 )
 
@@ -98,14 +100,18 @@ py_test(
         ":custom_scalars_plugin",
         ":protos_all_py_pb2",
         ":summary",
+        "//tensorboard:context",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
+        "//tensorboard/backend/event_processing:data_provider",
+        "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/compat:no_tensorflow",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/plugins/scalar:scalars_plugin",
         "//tensorboard/plugins/scalar:summary",
         "//tensorboard/util:test_util",
+        "@org_pocoo_werkzeug",
     ],
 )
 

@@ -3,7 +3,7 @@
 
 package(default_visibility = ["//tensorboard:internal"])
 
-licenses(["notice"])  # Apache 2.0
+licenses(["notice"])
 
 exports_files(["LICENSE"])
 
@@ -12,9 +12,10 @@ py_library(
     name = "distributions_plugin",
     srcs = ["distributions_plugin.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
         ":compressor",
+        ":metadata",
+        "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/plugins/histogram:histograms_plugin",
@@ -31,10 +32,11 @@ py_test(
     deps = [
         ":compressor",
         ":distributions_plugin",
+        "//tensorboard:context",
+        "//tensorboard:errors",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/backend:application",
-        "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/backend/event_processing:event_multiplexer",
+        "//tensorboard/backend/event_processing:tag_types",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/plugins/histogram:summary",
         "//tensorboard/util:test_util",
@@ -53,10 +55,11 @@ py_test(
     deps = [
         ":compressor",
         ":distributions_plugin",
+        "//tensorboard:context",
+        "//tensorboard:errors",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/backend:application",
-        "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/backend/event_processing:event_multiplexer",
+        "//tensorboard/backend/event_processing:tag_types",
         "//tensorboard/compat:no_tensorflow",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/plugins/histogram:summary",
@@ -70,7 +73,6 @@ py_library(
     name = "compressor",
     srcs = ["compressor.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = ["//tensorboard:expect_numpy_installed"],
 )
 
@@ -83,4 +85,10 @@ py_test(
         ":compressor",
         "//tensorboard:expect_tensorflow_installed",
     ],
+)
+
+py_library(
+    name = "metadata",
+    srcs = ["metadata.py"],
+    srcs_version = "PY2AND3",
 )

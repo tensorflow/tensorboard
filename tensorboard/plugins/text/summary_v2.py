@@ -27,63 +27,64 @@ from tensorboard.util import tensor_util
 
 
 def text(name, data, step=None, description=None):
-  """Write a text summary.
+    """Write a text summary.
 
-  Arguments:
-    name: A name for this summary. The summary tag used for TensorBoard will
-      be this name prefixed by any active name scopes.
-    data: A UTF-8 string tensor value.
-    step: Explicit `int64`-castable monotonic step value for this summary. If
-      omitted, this defaults to `tf.summary.experimental.get_step()`, which must
-      not be None.
-    description: Optional long-form description for this summary, as a
-      constant `str`. Markdown is supported. Defaults to empty.
+    Arguments:
+      name: A name for this summary. The summary tag used for TensorBoard will
+        be this name prefixed by any active name scopes.
+      data: A UTF-8 string tensor value.
+      step: Explicit `int64`-castable monotonic step value for this summary. If
+        omitted, this defaults to `tf.summary.experimental.get_step()`, which must
+        not be None.
+      description: Optional long-form description for this summary, as a
+        constant `str`. Markdown is supported. Defaults to empty.
 
-  Returns:
-    True on success, or false if no summary was emitted because no default
-    summary writer was available.
+    Returns:
+      True on success, or false if no summary was emitted because no default
+      summary writer was available.
 
-  Raises:
-    ValueError: if a default writer exists, but no step was provided and
-      `tf.summary.experimental.get_step()` is None.
-  """
-  summary_metadata = metadata.create_summary_metadata(
-      display_name=None, description=description)
-  # TODO(https://github.com/tensorflow/tensorboard/issues/2109): remove fallback
-  summary_scope = (
-      getattr(tf.summary.experimental, 'summary_scope', None) or
-      tf.summary.summary_scope)
-  with summary_scope(
-      name, 'text_summary', values=[data, step]) as (tag, _):
-    tf.debugging.assert_type(data, tf.string)
-    return tf.summary.write(
-        tag=tag, tensor=data, step=step, metadata=summary_metadata)
+    Raises:
+      ValueError: if a default writer exists, but no step was provided and
+        `tf.summary.experimental.get_step()` is None.
+    """
+    summary_metadata = metadata.create_summary_metadata(
+        display_name=None, description=description
+    )
+    # TODO(https://github.com/tensorflow/tensorboard/issues/2109): remove fallback
+    summary_scope = (
+        getattr(tf.summary.experimental, "summary_scope", None)
+        or tf.summary.summary_scope
+    )
+    with summary_scope(name, "text_summary", values=[data, step]) as (tag, _):
+        tf.debugging.assert_type(data, tf.string)
+        return tf.summary.write(
+            tag=tag, tensor=data, step=step, metadata=summary_metadata
+        )
 
 
 def text_pb(tag, data, description=None):
-  """Create a text tf.Summary protobuf.
+    """Create a text tf.Summary protobuf.
 
-  Arguments:
-    tag: String tag for the summary.
-    data: A Python bytestring (of type bytes), a Unicode string, or a numpy data
-      array of those types.
-    description: Optional long-form description for this summary, as a `str`.
-      Markdown is supported. Defaults to empty.
+    Arguments:
+      tag: String tag for the summary.
+      data: A Python bytestring (of type bytes), a Unicode string, or a numpy data
+        array of those types.
+      description: Optional long-form description for this summary, as a `str`.
+        Markdown is supported. Defaults to empty.
 
-  Raises:
-    TypeError: If the type of the data is unsupported.
+    Raises:
+      TypeError: If the type of the data is unsupported.
 
-  Returns:
-    A `tf.Summary` protobuf object.
-  """
-  try:
-    tensor = tensor_util.make_tensor_proto(data, dtype=np.object)
-  except TypeError as e:
-    raise TypeError('tensor must be of type string', e)
-  summary_metadata = metadata.create_summary_metadata(
-      display_name=None, description=description)
-  summary = summary_pb2.Summary()
-  summary.value.add(tag=tag,
-                    metadata=summary_metadata,
-                    tensor=tensor)
-  return summary
+    Returns:
+      A `tf.Summary` protobuf object.
+    """
+    try:
+        tensor = tensor_util.make_tensor_proto(data, dtype=np.object)
+    except TypeError as e:
+        raise TypeError("tensor must be of type string", e)
+    summary_metadata = metadata.create_summary_metadata(
+        display_name=None, description=description
+    )
+    summary = summary_pb2.Summary()
+    summary.value.add(tag=tag, metadata=summary_metadata, tensor=tensor)
+    return summary

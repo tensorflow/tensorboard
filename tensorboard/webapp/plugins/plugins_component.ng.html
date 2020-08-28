@@ -1,0 +1,84 @@
+<!--
+@license
+Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<div #pluginContainer class="plugins">
+  <!-- let Polymer-based components render from JS -->
+  <!-- let iframe based component render from JS to prevent flickering from prop changes. -->
+
+  <!-- render Angular built-in plugins with a dynamic component resolver. -->
+  <ng-container #ngPluginContainer></ng-container>
+</div>
+
+<div
+  *ngIf="pluginLoadState === PluginLoadState.UNKNOWN_PLUGIN_ID || pluginLoadState === PluginLoadState.NO_ENABLED_PLUGINS"
+  [ngSwitch]="pluginLoadState"
+  class="warning"
+>
+  <div class="warning-message">
+    <ng-container *ngSwitchCase="PluginLoadState.UNKNOWN_PLUGIN_ID">
+      <h3 class="unknown-plugin">
+        There’s no dashboard by the name of “<code>{{activePluginId}}</code>”.
+      </h3>
+      <p>You can select a dashboard from the list above.</p>
+      <p>
+        <ng-container [ngTemplateOutlet]="dateAndDataLocation"></ng-container>
+      </p>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="PluginLoadState.NO_ENABLED_PLUGINS">
+      <h3 class="no-active-plugin">
+        No dashboards are active for the current data set.
+      </h3>
+      <p>Probable causes:</p>
+      <ul>
+        <li>You haven’t written any data to your event files.</li>
+        <li>TensorBoard can’t find your event files.</li>
+      </ul>
+
+      If you’re new to using TensorBoard, and want to find out how to add data
+      and set up your event files, check out the
+      <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md"
+        >README</a
+      >
+      and perhaps the
+      <a href="https://www.tensorflow.org/get_started/summaries_and_tensorboard"
+        >TensorBoard tutorial</a
+      >.
+      <p>
+        If you think TensorBoard is configured properly, please see
+        <a
+          href="https://github.com/tensorflow/tensorboard/blob/master/README.md#my-tensorboard-isnt-showing-any-data-whats-wrong"
+          >the section of the README devoted to missing data problems</a
+        >
+        and consider filing an issue on GitHub.
+      </p>
+
+      <p>
+        <ng-container [ngTemplateOutlet]="dateAndDataLocation"></ng-container>
+      </p>
+    </ng-container>
+  </div>
+</div>
+
+<ng-template #dateAndDataLocation>
+  <!-- Class name used to hide this element in screenshot tests. -->
+  <span class="last-reload-time"
+    >Last reload: {{lastUpdated | date: 'medium'}}</span
+  >
+  <p *ngIf="dataLocation" class="data-location">
+    <i>Log directory: <span>{{dataLocation}}</span></i>
+  </p>
+</ng-template>

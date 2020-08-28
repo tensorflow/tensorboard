@@ -7,7 +7,7 @@
 
 package(default_visibility = ["//tensorboard:internal"])
 
-licenses(["notice"])  # Apache 2.0
+licenses(["notice"])
 
 sh_test(
     name = "smoke_test",
@@ -24,4 +24,7 @@ sh_test(
         "tensorboard_plugin_example/*.py",
         "tensorboard_plugin_example/static/**",
     ]),
+    tags = [
+        "manual",  # https://github.com/tensorflow/tensorboard/issues/2987
+    ],
 )

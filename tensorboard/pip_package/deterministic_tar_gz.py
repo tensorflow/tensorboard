@@ -44,56 +44,55 @@ import tarfile
 
 
 def main():
-  parser = argparse.ArgumentParser()
-  parser.add_argument(
-      "archive",
-      metavar="ARCHIVE",
-      help="name for the output `.tar.gz` archive",
-  )
-  parser.add_argument(
-      "files",
-      metavar="files",
-      nargs="*",
-      help="files to include in the archive; basenames must be distinct",
-  )
-  args = parser.parse_args()
-  archive = args.archive
-  files = args.files
-  del args
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "archive",
+        metavar="ARCHIVE",
+        help="name for the output `.tar.gz` archive",
+    )
+    parser.add_argument(
+        "files",
+        metavar="files",
+        nargs="*",
+        help="files to include in the archive; basenames must be distinct",
+    )
+    args = parser.parse_args()
+    archive = args.archive
+    files = args.files
+    del args
 
-  if len(frozenset(os.path.basename(f) for f in files)) != len(files):
-    sys.stderr.write("Input basenames must be distinct; got: %r\n" % files)
-    sys.exit(1)
+    if len(frozenset(os.path.basename(f) for f in files)) != len(files):
+        sys.stderr.write("Input basenames must be distinct; got: %r\n" % files)
+        sys.exit(1)
 
-  # (`fd` will be closed by `fdopen` context manager below)
-  fd = os.open(archive, os.O_WRONLY | os.O_CREAT, 0o644)
-  with \
-      os.fdopen(fd, "wb") as out_file, \
-      gzip.GzipFile("wb", fileobj=out_file, mtime=0) as gzip_file, \
-      tarfile.open(fileobj=gzip_file, mode="w:") as tar_file:
-    for f in files:
-      arcname = os.path.basename(f)
-      tar_file.add(f, filter=cleanse, recursive=False, arcname=arcname)
+    # (`fd` will be closed by `fdopen` context manager below)
+    fd = os.open(archive, os.O_WRONLY | os.O_CREAT, 0o644)
+    with os.fdopen(fd, "wb") as out_file, gzip.GzipFile(
+        "wb", fileobj=out_file, mtime=0
+    ) as gzip_file, tarfile.open(fileobj=gzip_file, mode="w:") as tar_file:
+        for f in files:
+            arcname = os.path.basename(f)
+            tar_file.add(f, filter=cleanse, recursive=False, arcname=arcname)
 
 
 def cleanse(tarinfo):
-  """Cleanse sources of nondeterminism from tar entries.
+    """Cleanse sources of nondeterminism from tar entries.
 
-  To be passed as the `filter` kwarg to `tarfile.TarFile.add`.
+    To be passed as the `filter` kwarg to `tarfile.TarFile.add`.
 
-  Args:
-    tarinfo: A `tarfile.TarInfo` object to be mutated.
+    Args:
+      tarinfo: A `tarfile.TarInfo` object to be mutated.
 
-  Returns:
-    The same `tarinfo` object, but mutated.
-  """
-  tarinfo.uid = 0
-  tarinfo.gid = 0
-  tarinfo.uname = "root"
-  tarinfo.gname = "root"
-  tarinfo.mtime = 0
-  return tarinfo
+    Returns:
+      The same `tarinfo` object, but mutated.
+    """
+    tarinfo.uid = 0
+    tarinfo.gid = 0
+    tarinfo.uname = "root"
+    tarinfo.gname = "root"
+    tarinfo.mtime = 0
+    return tarinfo
 
 
 if __name__ == "__main__":
-  main()
+    main()

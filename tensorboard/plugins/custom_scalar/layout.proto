@@ -17,7 +17,6 @@ syntax = "proto3";
 
 package tensorboard;
 
-
 /**
  * Encapsulates information on a single chart. Many charts appear in a category.
  */

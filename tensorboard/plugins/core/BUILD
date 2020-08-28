@@ -3,10 +3,7 @@
 
 package(default_visibility = ["//tensorboard:internal"])
 
-load("//tensorboard/defs:web.bzl", "tf_web_library")
-load("//tensorboard/defs:zipper.bzl", "tensorboard_zip_file")
-
-licenses(["notice"])  # Apache 2.0
+licenses(["notice"])
 
 exports_files(["LICENSE"])
 
@@ -14,8 +11,8 @@ py_library(
     name = "core_plugin",
     srcs = ["core_plugin.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
     deps = [
+        "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/util:tb_logging",
@@ -31,14 +28,14 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":core_plugin",
-        "//tensorboard:expect_sqlite3_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:event_multiplexer",
-        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/data:provider",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/util:test_util",
         "@org_pocoo_werkzeug",
+        "@org_pythonhosted_mock",
         "@org_pythonhosted_six",
     ],
 )

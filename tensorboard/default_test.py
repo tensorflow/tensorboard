@@ -19,10 +19,10 @@ from __future__ import division
 from __future__ import print_function
 
 try:
-  # python version >= 3.3
-  from unittest import mock  # pylint: disable=g-import-not-at-top
+    # python version >= 3.3
+    from unittest import mock
 except ImportError:
-  import mock  # pylint: disable=g-import-not-at-top,unused-import
+    import mock  # pylint: disable=unused-import
 
 import pkg_resources
 
@@ -32,43 +32,42 @@ from tensorboard import test
 
 
 class FakePlugin(base_plugin.TBPlugin):
-  """FakePlugin for testing."""
+    """FakePlugin for testing."""
 
-  plugin_name = 'fake'
+    plugin_name = "fake"
 
 
 class FakeEntryPoint(pkg_resources.EntryPoint):
-  """EntryPoint class that fake loads FakePlugin."""
+    """EntryPoint class that fake loads FakePlugin."""
 
-  @classmethod
-  def create(cls):
-    """Creates an instance of FakeEntryPoint.
+    @classmethod
+    def create(cls):
+        """Creates an instance of FakeEntryPoint.
 
-    Returns:
-      instance of FakeEntryPoint
-    """
-    return cls('foo', 'bar')
+        Returns:
+          instance of FakeEntryPoint
+        """
+        return cls("foo", "bar")
 
-  def load(self):
-    """Returns FakePlugin instead of resolving module.
+    def load(self):
+        """Returns FakePlugin instead of resolving module.
 
-    Returns:
-      FakePlugin
-    """
-    return FakePlugin
+        Returns:
+          FakePlugin
+        """
+        return FakePlugin
 
 
 class DefaultTest(test.TestCase):
+    @mock.patch.object(pkg_resources, "iter_entry_points")
+    def test_get_dynamic_plugin(self, mock_iter_entry_points):
+        mock_iter_entry_points.return_value = [FakeEntryPoint.create()]
 
-  @mock.patch.object(pkg_resources, 'iter_entry_points')
-  def test_get_dynamic_plugin(self, mock_iter_entry_points):
-    mock_iter_entry_points.return_value = [FakeEntryPoint.create()]
+        actual_plugins = default.get_dynamic_plugins()
 
-    actual_plugins = default.get_dynamic_plugins()
-
-    mock_iter_entry_points.assert_called_with('tensorboard_plugins')
-    self.assertEqual(actual_plugins, [FakePlugin])
+        mock_iter_entry_points.assert_called_with("tensorboard_plugins")
+        self.assertEqual(actual_plugins, [FakePlugin])
 
 
 if __name__ == "__main__":
-  test.main()
+    test.main()

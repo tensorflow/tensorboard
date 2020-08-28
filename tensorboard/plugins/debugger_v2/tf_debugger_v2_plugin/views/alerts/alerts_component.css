@@ -1,0 +1,87 @@
+/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+==============================================================================*/
+
+.alerts-breakdown-container {
+  font-size: 13px;
+  padding: 10px 10px 10px;
+  position: relative;
+}
+
+.alerts-breakdown-type {
+  border-radius: 0 10px 10px 0;
+  cursor: pointer;
+  display: flex;
+  padding: 6px 0 6px 50px;
+  vertical-align: middle;
+}
+
+.alerts-breakdown-type.focus {
+  background-color: #ffeee0;
+}
+
+.alerts-container {
+  font-family: 'Roboto', Arial, Helvetica, sans-serif;
+}
+
+.alert-type-count {
+  /* TODO(cais): Use colors specific to alert type. */
+  background-color: #e52592;
+  border-radius: 3px;
+  color: #fff;
+  display: inline-block;
+  padding: 3px;
+  position: absolute;
+  right: 20px;
+  vertical-align: middle;
+}
+
+.alert-type-name {
+  display: inline-block;
+  padding: 3px;
+  vertical-align: middle;
+}
+
+.debugging-title {
+  font-size: 18px;
+}
+
+.num-alerts-container {
+  font-weight: bold;
+  padding: 10px 10px 10px 30px;
+  position: relative;
+}
+
+.num-alerts-label {
+  display: inline-block;
+  font-size: 13px;
+}
+
+.num-alerts-value {
+  border-radius: 12px;
+  display: inline-block;
+  font-size: 13px;
+  font-weight: normal;
+  line-height: 24px;
+  position: absolute;
+  right: 20px;
+  text-align: center;
+  vertical-align: middle;
+  width: 24px;
+}
+
+.num-alerts-value.non-zero {
+  background-color: #ffb780;
+  font-weight: bold;
+}
