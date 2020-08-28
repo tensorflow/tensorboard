@@ -3,53 +3,47 @@ load("//tensorboard/defs:defs.bzl", "tf_sass_binary", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
-licenses(["notice"])
+licenses(["notice"])  # Apache 2.0
 
 tf_sass_binary(
-    name = "main_component_styles",
-    src = "main_component.scss",
+    name = "selected_annotations_component_styles",
+    src = "selected_annotations_component.scss",
 )
 
 ng_module(
-    name = "main",
+    name = "selected_annotations",
     srcs = [
-        "main_component.ts",
-        "main_container.ts",
-        "main_module.ts",
+        "selected_annotations_component.ts",
+        "selected_annotations_container.ts",
+        "selected_annotations_module.ts",
     ],
     assets = [
-        ":main_component_styles",
-        "main_component.ng.html",
+        "selected_annotations_component.ng.html",
+        ":selected_annotations_component_styles",
     ],
     deps = [
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp/angular:expect_angular_material_button",
-        "//tensorboard/webapp/angular:expect_angular_material_checkbox",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
-        "//tensorboard/webapp/core:types",
+        "//tensorboard/webapp/angular:expect_angular_material_tooltip",
         "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/plugins/npmi/actions",
         "//tensorboard/webapp/plugins/npmi/store",
-        "//tensorboard/webapp/plugins/npmi/views/annotations_list",
-        "//tensorboard/webapp/plugins/npmi/views/data_selection",
-        "//tensorboard/webapp/plugins/npmi/views/selected_annotations",
-        "//tensorboard/webapp/plugins/npmi/views/violin_filters",
-        "//tensorboard/webapp/runs",
+        "//tensorboard/webapp/plugins/npmi/store:types",
         "@npm//@angular/core",
-        "@npm//@angular/forms",
         "@npm//@ngrx/store",
         "@npm//rxjs",
     ],
 )
 
 tf_ts_library(
-    name = "main_test_lib",
+    name = "selected_annotations_test_lib",
     testonly = True,
     srcs = [
-        "main_container_test.ts",
+        "selected_annotations_test.ts",
     ],
     deps = [
-        ":main",
+        ":selected_annotations",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",

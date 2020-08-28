@@ -39,11 +39,10 @@ limitations under the License.
   ></div>
   <div *ngIf="runActive === true; else noRun" class="analysis-container">
     <npmi-annotations-list></npmi-annotations-list>
+    <npmi-selected-annotations></npmi-selected-annotations>
   </div>
   <ng-template #noRun>
-    <div class="noRun">
-      You need to select at least one run.
-    </div>
+    <div class="noRun">You need to select at least one run.</div>
   </ng-template>
 </div>
 

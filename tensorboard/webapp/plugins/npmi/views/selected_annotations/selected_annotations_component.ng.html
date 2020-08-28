@@ -1,0 +1,35 @@
+<div class="selected-annotations-toolbar" id="selected-annotations-toolbar">
+  <div class="selected-annotations-title-container">
+    <span
+      class="selected-annotations-title"
+      aria-role="heading"
+      aria-level="3"
+      title="Filtered Annotations"
+    >
+      Selected Annotations
+    </span>
+  </div>
+  <div
+    matTooltipPosition="below"
+    matTooltip="Deselects all selected annotations."
+    matTooltipShowDelay="500"
+  >
+    <button
+      mat-icon-button
+      [disabled]="selectedAnnotations.length === 0"
+      (click)="onClearSelectedAnnotations.emit()"
+    >
+      <mat-icon svgIcon="clear_24px"></mat-icon>
+    </button>
+  </div>
+  <button mat-icon-button (click)="onToggleExpanded.emit()">
+    <mat-icon
+      *ngIf="pcExpanded; else notExpanded"
+      svgIcon="expand_less_24px"
+      class="expand-less-icon"
+    ></mat-icon>
+    <ng-template #notExpanded>
+      <mat-icon svgIcon="expand_more_24px" class="expand-icon"></mat-icon>
+    </ng-template>
+  </button>
+</div>

@@ -1,0 +1,23 @@
+@import 'tensorboard/webapp/theme/tb_theme';
+
+:host {
+  background-color: #fff;
+  border: 1px solid mat-color($tb-foreground, border);
+}
+
+.selected-annotations-toolbar {
+  align-items: center;
+  border-bottom: 1px solid mat-color($tb-foreground, border);
+  display: flex;
+  height: 42px;
+  padding: 0 16px;
+}
+
+.selected-annotations-title {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.selected-annotations-title-container {
+  flex: 1 1;
+}
