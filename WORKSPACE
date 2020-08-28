@@ -3,22 +3,6 @@ workspace(name = "org_tensorflow_tensorboard")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
-    name = "bazel_skylib",
-    sha256 = "2c62d8cd4ab1e65c08647eb4afe38f51591f43f7f0885e7769832fa137633dcb",
-    strip_prefix = "bazel-skylib-0.7.0",
-    urls = [
-        # tag 0.7.0 resolves to commit 6741f733227dc68137512161a5ce6fcf283e3f58 (2019-02-08 18:37:26 +0100)
-        "http://mirror.tensorflow.org/github.com/bazelbuild/bazel-skylib/archive/0.7.0.tar.gz",
-        "https://github.com/bazelbuild/bazel-skylib/archive/0.7.0.tar.gz",
-    ],
-)
-
-load("@bazel_skylib//lib:versions.bzl", "versions")
-# Keep this version in sync with the BAZEL environment variable defined
-# in our .travis.yml config.
-versions.check(minimum_bazel_version = "2.1.0")
-
-http_archive(
     name = "io_bazel_rules_webtesting",
     sha256 = "f89ca8e91ac53b3c61da356c685bf03e927f23b97b086cc593db8edc088c143f",
     urls = [
@@ -29,7 +13,7 @@ http_archive(
 )
 
 load("@io_bazel_rules_webtesting//web:repositories.bzl", "web_test_repositories")
-web_test_repositories()
+web_test_repositories(omit_bazel_skylib = True)
 
 load("@io_bazel_rules_webtesting//web:py_repositories.bzl", "py_repositories")
 py_repositories()
@@ -46,6 +30,7 @@ http_archive(
 
 load("@io_bazel_rules_closure//closure:repositories.bzl", "rules_closure_dependencies")
 rules_closure_dependencies(
+    omit_bazel_skylib = True,
     omit_com_google_protobuf = True,
     omit_com_google_protobuf_js = True,
 )
@@ -86,6 +71,26 @@ http_archive(
     ],
 )
 
+http_archive(
+    name = "org_tensorflow",
+    # NOTE: when updating this, MAKE SURE to also update the protobuf_js runtime version
+    # in third_party/workspace.bzl to >= the protobuf/protoc version provided by TF.
+    sha256 = "2595a5c401521f20a2734c4e5d54120996f8391f00bb62a57267d930bce95350",
+    strip_prefix = "tensorflow-2.3.0",
+    urls = [
+        "http://mirror.tensorflow.org/github.com/tensorflow/tensorflow/archive/v2.3.0.tar.gz",  # 2020-07-23
+        "https://github.com/tensorflow/tensorflow/archive/v2.3.0.tar.gz",
+    ],
+)
+
+load("@org_tensorflow//tensorflow:workspace.bzl", "tf_workspace")
+tf_workspace()
+
+load("@bazel_skylib//lib:versions.bzl", "versions")
+# Keep this version in sync with the BAZEL environment variable defined
+# in our .travis.yml config.
+versions.check(minimum_bazel_version = "2.1.0")
+
 load("@io_bazel_rules_sass//:package.bzl", "rules_sass_dependencies")
 
 rules_sass_dependencies()
@@ -94,20 +99,13 @@ load("@io_bazel_rules_sass//:defs.bzl", "sass_repositories")
 
 sass_repositories()
 
-http_archive(
-    name = "org_tensorflow",
-    # NOTE: when updating this, MAKE SURE to also update the protobuf_js runtime version
-    # in third_party/workspace.bzl to >= the protobuf/protoc version provided by TF.
-    sha256 = "638e541a4981f52c69da4a311815f1e7989bf1d67a41d204511966e1daed14f7",
-    strip_prefix = "tensorflow-2.1.0",
-    urls = [
-        "http://mirror.tensorflow.org/github.com/tensorflow/tensorflow/archive/v2.1.0.tar.gz",  # 2020-01-06
-        "https://github.com/tensorflow/tensorflow/archive/v2.1.0.tar.gz",
-    ],
-)
+load("@com_github_grpc_grpc//bazel:grpc_deps.bzl", "grpc_deps")
 
-load("@org_tensorflow//tensorflow:workspace.bzl", "tf_workspace")
-tf_workspace()
+grpc_deps()
+
+load("@upb//bazel:repository_defs.bzl", "bazel_version_repository")
+
+bazel_version_repository(name = "bazel_version")
 
 # Please add all new dependencies in workspace.bzl.
 load("//third_party:workspace.bzl", "tensorboard_workspace")
