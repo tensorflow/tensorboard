@@ -17,6 +17,7 @@ import {
   ArithmeticElement,
   MetricFilterListing,
   ArithmeticKind,
+  ValueData,
 } from './../store/npmi_types';
 import {stripMetricString} from './metric_type';
 
@@ -28,13 +29,12 @@ export function filterAnnotations(
   metrics: string[]
 ): AnnotationDataListing {
   const data: AnnotationDataListing = {};
-  const annotations = Object.keys(annotationData);
-  const allRuns = new Set(...activeRuns);
+  const allRuns = new Set(activeRuns);
   const allMetrics = new Set(
-    ...metrics.map((metric) => stripMetricString(metric))
+    metrics.map((metric) => stripMetricString(metric))
   );
-  annotations.forEach((annotation) => {
-    let valueDataElements = annotationData[annotation];
+  Object.entries(annotationData).forEach((entry) => {
+    let valueDataElements = entry[1];
     // Remove all inactive runs and keep only metrics currently displayed
     valueDataElements = valueDataElements.filter((valueDataElement) => {
       return (
@@ -42,28 +42,10 @@ export function filterAnnotations(
         allMetrics.has(valueDataElement.metric)
       );
     });
-    // Check all parts of the arithemetic
-    let include = metricArithmetic.every((element) => {
-      if (element.kind === ArithmeticKind.OPERATOR) {
-        return true;
-      }
-      const metricFilter = metricFilters[element.metric];
-      return valueDataElements.some((valueDataElement) => {
-        if (stripMetricString(valueDataElement.metric) === element.metric) {
-          if (!valueDataElement.nPMIValue && metricFilter.includeNaN) {
-            return true;
-          } else {
-            return (
-              valueDataElement.nPMIValue! <= metricFilter.max &&
-              valueDataElement.nPMIValue! >= metricFilter.min
-            );
-          }
-        }
-        return false;
-      });
-    });
-    if (include) {
-      data[annotation] = valueDataElements;
+    if (
+      checkArithmeticParts(metricArithmetic, metricFilters, valueDataElements)
+    ) {
+      data[entry[0]] = valueDataElements;
     }
   });
   return data;
@@ -80,4 +62,31 @@ export function removeHiddenAnnotations(
   const data = annotationData;
   hiddenAnnotations.forEach((annotation) => delete data[annotation]);
   return data;
+}
+
+function checkArithmeticParts(
+  metricArithmetic: ArithmeticElement[],
+  metricFilters: MetricFilterListing,
+  valueDataElements: ValueData[]
+): boolean {
+  // Check all parts of the arithemetic
+  return metricArithmetic.every((element) => {
+    if (element.kind === ArithmeticKind.OPERATOR) {
+      return true;
+    }
+    const metricFilter = metricFilters[element.metric];
+    return valueDataElements.some((valueDataElement) => {
+      if (stripMetricString(valueDataElement.metric) === element.metric) {
+        if (!valueDataElement.nPMIValue && metricFilter.includeNaN) {
+          return true;
+        } else {
+          return (
+            valueDataElement.nPMIValue! <= metricFilter.max &&
+            valueDataElement.nPMIValue! >= metricFilter.min
+          );
+        }
+      }
+      return false;
+    });
+  });
 }

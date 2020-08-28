@@ -42,9 +42,9 @@ export function addSortingSymbol(
   let result = metricString;
   if (metricString === sorting.metric) {
     if (sorting.order === SortingOrder.DOWN) {
-      result = result + ' 🠧';
+      result = result + ' ↓';
     } else if (sorting.order === SortingOrder.UP) {
-      result = result + ' 🠥';
+      result = result + ' ↑';
     }
   }
   return result;

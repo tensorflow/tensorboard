@@ -30,8 +30,6 @@ ng_module(
         "//tensorboard/webapp/plugins/npmi/views/annotations_list/annotations_list_toolbar",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
-        "@npm//@types/d3",
-        "@npm//d3",
         "@npm//rxjs",
     ],
 )
