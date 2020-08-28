@@ -10,7 +10,6 @@ tf_ts_library(
     name = "expect_angular_common_http",
     srcs = [],
     visibility = [
-        "//tensorboard/webapp/plugins/npmi/data_source:__subpackages__",
         "//tensorboard/webapp/webapp_data_source:__subpackages__",
     ],
     deps = [
@@ -24,7 +23,6 @@ tf_ts_library(
     name = "expect_angular_common_http_testing",
     srcs = [],
     visibility = [
-        "//tensorboard/webapp/plugins/npmi/data_source:__subpackages__",
         "//tensorboard/webapp/webapp_data_source:__subpackages__",
     ],
     deps = [
