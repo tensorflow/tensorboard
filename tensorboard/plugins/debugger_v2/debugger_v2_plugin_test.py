@@ -33,7 +33,6 @@ from tensorboard.backend import application
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.debugger_v2 import debug_data_multiplexer
 from tensorboard.plugins.debugger_v2 import debugger_v2_plugin
-from tensorboard.util import test_util
 
 mock = tf.compat.v1.test.mock
 
@@ -113,7 +112,6 @@ _ROUTE_PREFIX = "/data/plugin/debugger-v2"
 _DEFAULT_DEVICE_SUFFIX = "GPU:0" if tf.test.is_gpu_available() else "CPU:0"
 
 
-@test_util.run_v2_only("tfdbg2 is not available in r1.")
 class DebuggerV2PluginTest(tf.test.TestCase):
     def setUp(self):
         super(DebuggerV2PluginTest, self).setUp()
