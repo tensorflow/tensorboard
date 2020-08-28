@@ -53,6 +53,7 @@ ng_module(
         "//tensorboard/webapp/core/actions",
         "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/core/views:hash_storage",
+        "//tensorboard/webapp/core/views:page_title",
         "//tensorboard/webapp/feature_flag",
         "//tensorboard/webapp/header",
         "//tensorboard/webapp/plugins",

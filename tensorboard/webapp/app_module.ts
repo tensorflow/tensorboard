@@ -21,6 +21,7 @@ import {EffectsModule} from '@ngrx/effects';
 import {AppContainer} from './app_container';
 import {CoreModule} from './core/core_module';
 import {HashStorageModule} from './core/views/hash_storage_module';
+import {PageTitleModule} from './core/views/page_title_module';
 import {FeatureFlagModule} from './feature_flag/feature_flag_module';
 import {HeaderModule} from './header/header_module';
 import {MatIconModule} from './mat_icon_module';
@@ -40,6 +41,7 @@ import {OssPluginsModule} from './oss_plugins_module';
     HashStorageModule,
     HeaderModule,
     MatIconModule,
+    PageTitleModule,
     PluginsModule,
     ReloaderModule,
     SettingsModule,
