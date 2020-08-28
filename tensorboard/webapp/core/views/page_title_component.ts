@@ -27,10 +27,10 @@ import {
 })
 export class PageTitleComponent implements OnChanges {
   @Input()
-  title!: string | null;
+  title!: string;
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['title'] != null) {
+    if (changes['title']) {
       document.title = changes['title'].currentValue;
     }
   }
