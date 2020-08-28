@@ -27,9 +27,6 @@ import unittest
 
 import tensorflow as tf
 
-# See discussion on issue #1996 for private module import justification.
-from tensorflow.python import tf2 as tensorflow_python_tf2
-
 from tensorboard.compat.proto import event_pb2
 from tensorboard.compat.proto import graph_pb2
 from tensorboard.compat.proto import meta_graph_pb2
@@ -209,10 +206,3 @@ def _run_conditionally(guard, name, default_reason=None):
         return unittest.skipUnless(guard(), reason)
 
     return _impl
-
-
-run_v2_only = _run_conditionally(
-    lambda: tensorflow_python_tf2.enabled(),
-    name="run_v2_only",
-    default_reason="Test only appropriate for TensorFlow v2",
-)
