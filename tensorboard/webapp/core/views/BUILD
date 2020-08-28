@@ -20,6 +20,22 @@ ng_module(
     ],
 )
 
+ng_module(
+    name = "page_title",
+    srcs = [
+        "page_title_component.ts",
+        "page_title_container.ts",
+        "page_title_module.ts",
+    ],
+    deps = [
+        "//tensorboard/webapp/core/store",
+        "@npm//@angular/common",
+        "@npm//@angular/core",
+        "@npm//@ngrx/store",
+        "@npm//rxjs",
+    ],
+)
+
 tf_ts_library(
     name = "test_lib",
     testonly = True,
