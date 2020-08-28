@@ -152,7 +152,7 @@ tf_ts_library(
 
 # This is a dummy rule used as a @angular/material/slide_toggle dependency.
 tf_ts_library(
-    name = "expect_angular_material_slide-toggle",
+    name = "expect_angular_material_slide_toggle",
     srcs = [],
     deps = [
         "@npm//@angular/material",
