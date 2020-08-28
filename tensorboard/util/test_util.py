@@ -211,9 +211,6 @@ def _run_conditionally(guard, name, default_reason=None):
     return _impl
 
 
-run_v1_only = _run_conditionally(
-    lambda: not tensorflow_python_tf2.enabled(), name="run_v1_only"
-)
 run_v2_only = _run_conditionally(
     lambda: tensorflow_python_tf2.enabled(),
     name="run_v2_only",
