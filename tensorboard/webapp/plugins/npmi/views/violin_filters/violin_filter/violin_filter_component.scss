@@ -1,0 +1,25 @@
+@import 'tensorboard/webapp/theme/tb_theme';
+
+.chart-container {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid mat-color($tb-foreground, border);
+  background-color: #fff;
+}
+
+.chart {
+  width: calc(100%-20px);
+  height: 300px;
+}
+
+.chart-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chart-heading {
+  padding-left: 10px;
+  padding-top: 10px;
+  font-size: 13px;
+}

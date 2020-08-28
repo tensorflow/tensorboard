@@ -21,10 +21,17 @@ import {MatIconModule} from '@angular/material/icon';
 
 import {ViolinFiltersComponent} from './violin_filters_component';
 import {ViolinFiltersContainer} from './violin_filters_container';
+import {ViolinFilterModule} from './violin_filter/violin_filter_module';
 
 @NgModule({
   declarations: [ViolinFiltersComponent, ViolinFiltersContainer],
-  imports: [CommonModule, FormsModule, MatIconModule, MatButtonModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatIconModule,
+    MatButtonModule,
+    ViolinFilterModule,
+  ],
   exports: [ViolinFiltersContainer],
 })
 export class ViolinFiltersModule {}

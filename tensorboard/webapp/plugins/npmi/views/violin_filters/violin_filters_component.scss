@@ -45,3 +45,18 @@ limitations under the License.
   align-items: center;
   justify-content: center;
 }
+
+.filters {
+  overflow-y: auto;
+}
+
+.filters-hint {
+  display: flex;
+  align-items: center;
+  height: 42px;
+  padding: 0 16px;
+}
+
+.filters-hint-text {
+  color: lightgray;
+}

@@ -1,0 +1,18 @@
+<div class="chart-container">
+  <div
+    class="chart-head"
+    matTooltipPosition="right"
+    matTooltip="Shows the nPMI value distribution per run. Ranges of selected values can be manipulated by modifying the grey box."
+    matTooltipShowDelay="500"
+  >
+    <div class="chart-heading">
+      {{metricName}}
+    </div>
+    <button mat-icon-button (click)="onRemove.emit(metricName)">
+      <mat-icon svgIcon="clear_24px"></mat-icon>
+    </button>
+  </div>
+  <div id="{{metricName}}" class="chart">
+    <svg style="height: 100%; width: 100%;"></svg>
+  </div>
+</div>

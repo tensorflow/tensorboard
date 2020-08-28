@@ -25,6 +25,7 @@ ng_module(
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp/angular:expect_angular_material_button",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
+        "//tensorboard/webapp/plugins/npmi/views/violin_filters/violin_filter",
         "//tensorboard/webapp/plugins/npmi/actions",
         "//tensorboard/webapp/plugins/npmi/store",
         "//tensorboard/webapp/plugins/npmi/store:types",

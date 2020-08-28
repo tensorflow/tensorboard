@@ -23,6 +23,7 @@ import {
   ArithmeticElement,
   MetricFilterListing,
   AnnotationSorting,
+  ArithmeticKind,
 } from './npmi_types';
 
 // HACK: These imports are for type inference.
