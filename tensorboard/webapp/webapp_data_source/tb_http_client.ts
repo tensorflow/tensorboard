@@ -24,6 +24,8 @@ import {
   TBHttpClientInterface,
 } from './tb_http_client_types';
 
+export {HttpErrorResponse} from '@angular/common/http';
+
 @Injectable()
 export class TBHttpClient implements TBHttpClientInterface {
   constructor(private http: HttpClient) {}

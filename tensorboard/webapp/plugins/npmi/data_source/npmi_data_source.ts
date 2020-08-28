@@ -12,13 +12,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {HttpErrorResponse} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 
 import {Observable, of, forkJoin, throwError} from 'rxjs';
 import {map, catchError} from 'rxjs/operators';
 
-import {TBHttpClient} from '../../../webapp_data_source/tb_http_client';
+import {
+  TBHttpClient,
+  HttpErrorResponse,
+} from '../../../webapp_data_source/tb_http_client';
 import * as metric_type from '../util/metric_type';
 import {
   MetricListing,
