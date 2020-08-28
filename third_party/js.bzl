@@ -489,6 +489,22 @@ def tensorboard_js_workspace():
                 "http://mirror.tensorflow.org/raw.githubusercontent.com/google/material-design-icons/3.0.1/action/svg/production/ic_settings_24px.svg",
                 "https://raw.githubusercontent.com/google/material-design-icons/3.0.1/action/svg/production/ic_settings_24px.svg",
             ],
+            "6105c83ef3637bbb1f1f8ceceacb51df818e867238ee6c49e0a8d1ca7f858b72": [
+                "http://mirror.tensorflow.org/raw.githubusercontent.com/google/material-design-icons/3.0.1/action/svg/production/ic_search_24px.svg",
+                "https://raw.githubusercontent.com/google/material-design-icons/3.0.1/action/svg/production/ic_search_24px.svg",
+            ],
+            "4ab47484995ab72bd8b7175bd36273d3e8787cf3e1e28a4f695fee07e8d0884d": [
+                "http://mirror.tensorflow.org/raw.githubusercontent.com/google/material-design-icons/3.0.1/alert/svg/production/ic_error_24px.svg",
+                "https://raw.githubusercontent.com/google/material-design-icons/3.0.1/alert/svg/production/ic_error_24px.svg",
+            ],
+            "ad918f7ec0ff89298e84586b5b98cdf628c8457cd067dc592031fae783f71a1d": [
+                "http://mirror.tensorflow.org/raw.githubusercontent.com/google/material-design-icons/3.0.1/navigation/svg/production/ic_chevron_left_24px.svg",
+                "https://raw.githubusercontent.com/google/material-design-icons/224895a86501195e7a7ff3dde18e39f00b8e3d5a/navigation/svg/production/ic_chevron_left_24px.svg",
+            ],
+            "83f0da9735a4e475b0eca23b708ba09b2b7411e7d711b2d6be24bc2371d67ec8": [
+                "http://mirror.tensorflow.org/raw.githubusercontent.com/google/material-design-icons/3.0.1/navigation/svg/production/ic_chevron_right_24px.svg",
+                "https://raw.githubusercontent.com/google/material-design-icons/224895a86501195e7a7ff3dde18e39f00b8e3d5a/navigation/svg/production/ic_chevron_right_24px.svg",
+            ],
         },
         rename = {
             "ic_content_copy_24px.svg": "content_copy_24px.svg",
@@ -496,5 +512,9 @@ def tensorboard_js_workspace():
             "ic_info_outline_24px.svg": "info_outline_24px.svg",
             "ic_refresh_24px.svg": "refresh_24px.svg",
             "ic_settings_24px.svg": "settings_24px.svg",
+            "ic_search_24px.svg": "search_24px.svg",
+            "ic_error_24px.svg": "error_24px.svg",
+            "ic_chevron_left_24px.svg": "chevron_left_24px.svg",
+            "ic_chevron_right_24px.svg": "chevron_right_24px.svg",
         },
     )

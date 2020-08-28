@@ -12,7 +12,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
 import {createSelector, createFeatureSelector} from '@ngrx/store';
 import {
   NPMI_FEATURE_KEY,
@@ -123,6 +122,13 @@ export const getAnnotationsExpanded = createSelector(
   selectNpmiState,
   (state: NpmiState): boolean => {
     return state.annotationsExpanded;
+  }
+);
+
+export const getSidebarExpanded = createSelector(
+  selectNpmiState,
+  (state: NpmiState): boolean => {
+    return state.sidebarExpanded;
   }
 );
 

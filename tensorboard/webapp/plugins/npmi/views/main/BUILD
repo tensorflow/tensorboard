@@ -3,7 +3,7 @@ load("//tensorboard/defs:defs.bzl", "tf_sass_binary", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
-licenses(["notice"])  # Apache 2.0
+licenses(["notice"])
 
 tf_sass_binary(
     name = "main_component_styles",
@@ -23,9 +23,15 @@ ng_module(
     ],
     deps = [
         "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp/angular:expect_angular_material_button",
         "//tensorboard/webapp/angular:expect_angular_material_checkbox",
+        "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/core:types",
         "//tensorboard/webapp/core/store",
+        "//tensorboard/webapp/plugins/npmi/actions",
+        "//tensorboard/webapp/plugins/npmi/store",
+        "//tensorboard/webapp/plugins/npmi/views/data_selection",
+        "//tensorboard/webapp/plugins/npmi/views/violin_filters",
         "//tensorboard/webapp/runs",
         "@npm//@angular/core",
         "@npm//@angular/forms",
@@ -46,6 +52,10 @@ tf_ts_library(
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "//tensorboard/webapp/core/store",
+        "//tensorboard/webapp/core/testing",
+        "//tensorboard/webapp/plugins/npmi/actions",
+        "//tensorboard/webapp/plugins/npmi/store",
+        "//tensorboard/webapp/plugins/npmi/testing",
         "//tensorboard/webapp/runs",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",

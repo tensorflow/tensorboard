@@ -12,8 +12,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
-import {RunId} from '../../../../core/types';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+} from '@angular/core';
+import {Store} from '@ngrx/store';
 
 @Component({
   selector: 'main-component',
@@ -22,12 +28,11 @@ import {RunId} from '../../../../core/types';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MainComponent {
-  @Input() runs: Map<RunId, boolean> = new Map();
-  get runActive(): boolean {
-    let active = false;
-    this.runs.forEach((runActive: boolean) => {
-      active = active || runActive;
-    });
-    return [...this.runs.values()].some((value) => value);
-  }
+  @Input() runActive!: boolean;
+  @Input() sidebarExpanded!: boolean;
+  @Input() sidebarWidth!: number;
+  @Output() toggleSidebarExpanded = new EventEmitter();
+  @Output() resizeTriggered = new EventEmitter<MouseEvent>();
+  @Output() resizeGrabbed = new EventEmitter();
+  @Output() resizeReleased = new EventEmitter();
 }

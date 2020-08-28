@@ -3,7 +3,7 @@ load("//tensorboard/defs:defs.bzl", "tf_sass_binary", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
-licenses(["notice"])  # Apache 2.0
+licenses(["notice"])
 
 tf_sass_binary(
     name = "npmi_component_styles",
@@ -26,10 +26,16 @@ ng_module(
         "//tensorboard/webapp/core:types",
         "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/plugins:plugin_registry",
+        "//tensorboard/webapp/plugins/npmi/actions",
+        "//tensorboard/webapp/plugins/npmi/data_source",
+        "//tensorboard/webapp/plugins/npmi/effects",
+        "//tensorboard/webapp/plugins/npmi/store",
+        "//tensorboard/webapp/plugins/npmi/store:types",
         "//tensorboard/webapp/plugins/npmi/views/inactive",
         "//tensorboard/webapp/plugins/npmi/views/main",
         "@npm//@angular/common",
         "@npm//@angular/core",
+        "@npm//@ngrx/effects",
         "@npm//@ngrx/store",
         "@npm//rxjs",
     ],

@@ -14,14 +14,39 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<div class="content">
-  <div class="selection-container">
-    <div class="run-selector">
-      <tb-legacy-runs-selector></tb-legacy-runs-selector>
+<npmi-data-selection></npmi-data-selection>
+<div
+  class="content"
+  (mouseup)="resizeReleased.emit()"
+  (mousemove)="resizeTriggered.emit($event)"
+>
+  <div
+    *ngIf="sidebarExpanded"
+    class="sidebar-container"
+    [style.width.px]="sidebarWidth"
+  >
+    <div class="sidebar-contents">
+      <npmi-violin-filters class="violin-filters"></npmi-violin-filters>
+      <div class="run-selector">
+        <tb-legacy-runs-selector></tb-legacy-runs-selector>
+      </div>
     </div>
   </div>
+  <div
+    *ngIf="sidebarExpanded"
+    class="grabber"
+    (mousedown)="resizeGrabbed.emit()"
+  ></div>
   <div *ngIf="runActive === true; else noRun" class="analysis-container"></div>
   <ng-template #noRun>
-    You need to select at least one run.
+    <div class="noRun">
+      You need to select at least one run.
+    </div>
   </ng-template>
+</div>
+
+<div *ngIf="!sidebarExpanded" class="side-toggle">
+  <button mat-icon-button (click)="toggleSidebarExpanded.emit()">
+    <mat-icon svgIcon="chevron_right_24px"></mat-icon>
+  </button>
 </div>

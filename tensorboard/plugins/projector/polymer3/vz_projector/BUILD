@@ -4,7 +4,7 @@ load("//tensorboard/defs:vulcanize.bzl", "tensorboard_html_binary")
 
 package(default_visibility = ["//tensorboard:internal"])
 
-licenses(["notice"])  # Apache 2.0
+licenses(["notice"])
 
 tf_ts_library(
     name = "vz_projector",

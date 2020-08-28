@@ -2,7 +2,7 @@ load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
-licenses(["notice"])  # Apache 2.0
+licenses(["notice"])
 
 # This is a dummy rule used as a @angular/common/http dependency.
 # This is not a replacement for @angular/common dependency.
@@ -54,6 +54,15 @@ tf_ts_library(
 # This is a dummy rule used as a @angular/material/tabs dependency.
 tf_ts_library(
     name = "expect_angular_material_tabs",
+    srcs = [],
+    deps = [
+        "@npm//@angular/material",
+    ],
+)
+
+# This is a dummy rule used as a @angular/material/autocomplete dependency.
+tf_ts_library(
+    name = "expect_angular_material_autocomplete",
     srcs = [],
     deps = [
         "@npm//@angular/material",

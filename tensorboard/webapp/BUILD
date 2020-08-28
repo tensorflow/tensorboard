@@ -5,7 +5,7 @@ load("//tensorboard/defs:vulcanize.bzl", "tensorboard_html_binary")
 
 package(default_visibility = ["//tensorboard:internal"])
 
-licenses(["notice"])  # Apache 2.0
+licenses(["notice"])
 
 ng_module(
     name = "oss_plugins_module",
@@ -178,7 +178,10 @@ tf_ng_web_test_suite(
         "//tensorboard/webapp/plugins/npmi/data_source:data_source_test_lib",
         "//tensorboard/webapp/plugins/npmi/effects:effects_test_lib",
         "//tensorboard/webapp/plugins/npmi/store:store_test_lib",
+        "//tensorboard/webapp/plugins/npmi/views/data_selection:data_selection_test_lib",
+        "//tensorboard/webapp/plugins/npmi/views/data_selection/metric_search:metric_search_test_lib",
         "//tensorboard/webapp/plugins/npmi/views/main:main_test_lib",
+        "//tensorboard/webapp/plugins/npmi/views/violin_filters:violin_filters_test_lib",
         "//tensorboard/webapp/plugins/text_v2/data_source:data_source_test_lib",
         "//tensorboard/webapp/plugins/text_v2/effects:effects_test_lib",
         "//tensorboard/webapp/plugins/text_v2/store:store_test_lib",
@@ -200,6 +203,10 @@ tf_svg_bundle(
         "@com_google_material_design_icon//:info_outline_24px.svg",
         "@com_google_material_design_icon//:refresh_24px.svg",
         "@com_google_material_design_icon//:settings_24px.svg",
+        "@com_google_material_design_icon//:search_24px.svg",
+        "@com_google_material_design_icon//:error_24px.svg",
+        "@com_google_material_design_icon//:chevron_left_24px.svg",
+        "@com_google_material_design_icon//:chevron_right_24px.svg",
     ],
     out = "icon_bundle.svg",
 )

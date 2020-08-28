@@ -3,7 +3,7 @@ load("//tensorboard/defs:web.bzl", "tf_web_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
-licenses(["notice"])  # Apache 2.0
+licenses(["notice"])
 
 # TODO(psybuzz): create a NPM package when a better requirement comes up using
 # tf_js_binary.
