@@ -17,7 +17,6 @@ limitations under the License.
  */
 import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
-import {NO_ERRORS_SCHEMA} from '@angular/core';
 
 import {Store, Action} from '@ngrx/store';
 import {provideMockStore, MockStore} from '@ngrx/store/testing';
@@ -37,13 +36,13 @@ describe('Npmi Main Container', () => {
   let store: MockStore<State>;
   let dispatchedActions: Action[];
   const css = {
-    ANALYSIS_CONTAINER: '.analysis-container',
-    SIDEBAR_CONTAINER: '.sidebar-container',
-    SIDE_TOGGLE: '.side-toggle',
-    GRABBER: '.grabber',
-    CONTENT: '.content',
-    RUN_SELECTOR: 'tb-legacy-runs-selector',
-    BUTTON: 'button',
+    ANALYSIS_CONTAINER: By.css('.analysis-container'),
+    SIDEBAR_CONTAINER: By.css('.sidebar-container'),
+    SIDE_TOGGLE: By.css('.side-toggle'),
+    GRABBER: By.css('.grabber'),
+    CONTENT: By.css('.content'),
+    RUN_SELECTOR: By.css('tb-legacy-runs-selector'),
+    BUTTON: By.css('button'),
   };
 
   beforeEach(async () => {
@@ -72,12 +71,10 @@ describe('Npmi Main Container', () => {
     const fixture = TestBed.createComponent(MainContainer);
     fixture.detectChanges();
 
-    const runsElement = fixture.debugElement.query(By.css(css.RUN_SELECTOR));
+    const runsElement = fixture.debugElement.query(css.RUN_SELECTOR);
     expect(runsElement).toBeTruthy();
 
-    const analysisElement = fixture.debugElement.query(
-      By.css(css.ANALYSIS_CONTAINER)
-    );
+    const analysisElement = fixture.debugElement.query(css.ANALYSIS_CONTAINER);
     expect(analysisElement).toBeNull();
   });
 
@@ -86,12 +83,10 @@ describe('Npmi Main Container', () => {
     const fixture = TestBed.createComponent(MainContainer);
     fixture.detectChanges();
 
-    const runsElement = fixture.debugElement.query(By.css(css.RUN_SELECTOR));
+    const runsElement = fixture.debugElement.query(css.RUN_SELECTOR);
     expect(runsElement).toBeTruthy();
 
-    const analysisElement = fixture.debugElement.query(
-      By.css(css.ANALYSIS_CONTAINER)
-    );
+    const analysisElement = fixture.debugElement.query(css.ANALYSIS_CONTAINER);
     expect(analysisElement).toBeTruthy();
   });
 
@@ -100,12 +95,10 @@ describe('Npmi Main Container', () => {
     const fixture = TestBed.createComponent(MainContainer);
     fixture.detectChanges();
 
-    const runsElement = fixture.debugElement.query(By.css(css.RUN_SELECTOR));
+    const runsElement = fixture.debugElement.query(css.RUN_SELECTOR);
     expect(runsElement).toBeTruthy();
 
-    const analysisElement = fixture.debugElement.query(
-      By.css(css.ANALYSIS_CONTAINER)
-    );
+    const analysisElement = fixture.debugElement.query(css.ANALYSIS_CONTAINER);
     expect(analysisElement).toBeNull();
   });
 
@@ -117,12 +110,10 @@ describe('Npmi Main Container', () => {
     const fixture = TestBed.createComponent(MainContainer);
     fixture.detectChanges();
 
-    const runsElement = fixture.debugElement.query(By.css(css.RUN_SELECTOR));
+    const runsElement = fixture.debugElement.query(css.RUN_SELECTOR);
     expect(runsElement).toBeTruthy();
 
-    const analysisElement = fixture.debugElement.query(
-      By.css(css.ANALYSIS_CONTAINER)
-    );
+    const analysisElement = fixture.debugElement.query(css.ANALYSIS_CONTAINER);
     expect(analysisElement).toBeTruthy();
   });
 
@@ -131,11 +122,9 @@ describe('Npmi Main Container', () => {
     const fixture = TestBed.createComponent(MainContainer);
     fixture.detectChanges();
 
-    const sidebarElement = fixture.debugElement.query(
-      By.css(css.SIDEBAR_CONTAINER)
-    );
+    const sidebarElement = fixture.debugElement.query(css.SIDEBAR_CONTAINER);
     expect(sidebarElement).toBeNull();
-    const grabber = fixture.debugElement.query(By.css(css.GRABBER));
+    const grabber = fixture.debugElement.query(css.GRABBER);
     expect(grabber).toBeNull();
   });
 
@@ -143,9 +132,9 @@ describe('Npmi Main Container', () => {
     store.overrideSelector(getSidebarExpanded, false);
     const fixture = TestBed.createComponent(MainContainer);
     fixture.detectChanges();
-    const sideToggle = fixture.debugElement.query(By.css(css.SIDE_TOGGLE));
+    const sideToggle = fixture.debugElement.query(css.SIDE_TOGGLE);
     expect(sideToggle).toBeTruthy();
-    const expansionButton = sideToggle.query(By.css(css.BUTTON));
+    const expansionButton = sideToggle.query(css.BUTTON);
     expansionButton.nativeElement.click();
 
     expect(dispatchedActions).toEqual([
@@ -157,13 +146,11 @@ describe('Npmi Main Container', () => {
     const fixture = TestBed.createComponent(MainContainer);
     fixture.detectChanges();
 
-    const sidebarElement = fixture.debugElement.query(
-      By.css(css.SIDEBAR_CONTAINER)
-    );
+    const sidebarElement = fixture.debugElement.query(css.SIDEBAR_CONTAINER);
     expect(sidebarElement).toBeTruthy();
-    const grabberElement = fixture.debugElement.query(By.css(css.GRABBER));
+    const grabberElement = fixture.debugElement.query(css.GRABBER);
     expect(grabberElement).toBeTruthy();
-    const sideToggle = fixture.debugElement.query(By.css(css.SIDE_TOGGLE));
+    const sideToggle = fixture.debugElement.query(css.SIDE_TOGGLE);
     expect(sideToggle).toBeNull();
   });
 
@@ -171,9 +158,9 @@ describe('Npmi Main Container', () => {
     const fixture = TestBed.createComponent(MainContainer);
     fixture.detectChanges();
 
-    const grabberElement = fixture.debugElement.query(By.css(css.GRABBER));
+    const grabberElement = fixture.debugElement.query(css.GRABBER);
     grabberElement.triggerEventHandler('mousedown', {clientX: 301});
-    const contentElement = fixture.debugElement.query(By.css(css.CONTENT));
+    const contentElement = fixture.debugElement.query(css.CONTENT);
     contentElement.triggerEventHandler('mousemove', {clientX: 50});
     expect(dispatchedActions).toEqual([
       npmiActions.npmiChangeSidebarWidth({sidebarWidth: 50}),
@@ -184,7 +171,7 @@ describe('Npmi Main Container', () => {
     const fixture = TestBed.createComponent(MainContainer);
     fixture.detectChanges();
 
-    const contentElement = fixture.debugElement.query(By.css(css.CONTENT));
+    const contentElement = fixture.debugElement.query(css.CONTENT);
     contentElement.triggerEventHandler('mousemove', {clientX: 50});
     expect(dispatchedActions).toEqual([]);
   });

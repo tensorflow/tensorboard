@@ -24,6 +24,10 @@ const KNOWN_SVG_ICON = new Set([
   'error_24px',
   'chevron_left_24px',
   'chevron_right_24px',
+  'visibility_off_24px.svg',
+  'flag_24px.svg',
+  'expand_more_24px.svg',
+  'expand_less_24px.svg',
 ]);
 
 /**

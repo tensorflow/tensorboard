@@ -12,27 +12,33 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, OnInit} from '@angular/core';
-import {select, Store} from '@ngrx/store';
+@import 'tensorboard/webapp/theme/tb_theme';
 
-import {npmiLoaded} from './actions';
-import {State} from '../../app_state';
-import {getRunSelection} from '../../core/store/core_selectors';
+:host {
+  align-items: center;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  padding: 0 16px;
+  width: 100%;
+}
 
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
+.annotations-title {
+  display: inline;
+  font-size: 0.9em;
+  font-weight: 500;
+  padding-right: 10px;
+}
 
-@Component({
-  selector: 'npmi',
-  template: `
-    <npmi-component [runs]="runs$ | async"></npmi-component>
-  `,
-})
-export class NpmiContainer implements OnInit {
-  readonly runs$ = this.store.pipe(select(getRunSelection));
+.annotations-title-container {
+  align-items: center;
+  display: flex;
+  flex-wrap: nowrap;
+  flex: 1 1;
+  height: 42px;
+}
 
-  constructor(private readonly store: Store<State>) {}
-
-  ngOnInit(): void {
-    this.store.dispatch(npmiLoaded());
-  }
+.show-toggle {
+  font-size: 0.9em;
+  margin-right: 0.8em;
 }

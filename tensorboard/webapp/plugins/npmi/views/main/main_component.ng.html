@@ -37,7 +37,9 @@ limitations under the License.
     class="grabber"
     (mousedown)="resizeGrabbed.emit()"
   ></div>
-  <div *ngIf="runActive === true; else noRun" class="analysis-container"></div>
+  <div *ngIf="runActive === true; else noRun" class="analysis-container">
+    <npmi-annotations-list></npmi-annotations-list>
+  </div>
   <ng-template #noRun>
     <div class="noRun">
       You need to select at least one run.

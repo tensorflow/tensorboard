@@ -16,30 +16,29 @@ import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 
-import {MatCheckboxModule} from '@angular/material/checkbox';
 import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
+import {MatTooltipModule} from '@angular/material/tooltip';
+import {MatSlideToggleModule} from '@angular/material/slide-toggle';
 
-import {MainComponent} from './main_component';
-import {MainContainer} from './main_container';
-import {RunsModule} from '../../../../runs/runs_module';
-import {DataSelectionModule} from './../data_selection/data_selection_module';
-import {ViolinFiltersModule} from './../violin_filters/violin_filters_module';
-import {AnnotationsListModule} from '../annotations_list/annotations_list_module';
+import {AnnotationsListToolbarComponent} from './annotations_list_toolbar_component';
+import {AnnotationsListToolbarContainer} from './annotations_list_toolbar_container';
+import {AnnotationsSearchModule} from './annotations_search/annotations_search_module';
 
 @NgModule({
-  declarations: [MainComponent, MainContainer],
+  declarations: [
+    AnnotationsListToolbarComponent,
+    AnnotationsListToolbarContainer,
+  ],
   imports: [
     CommonModule,
     FormsModule,
-    MatCheckboxModule,
     MatIconModule,
-    RunsModule,
-    DataSelectionModule,
     MatButtonModule,
-    ViolinFiltersModule,
-    AnnotationsListModule,
+    MatTooltipModule,
+    MatSlideToggleModule,
+    AnnotationsSearchModule,
   ],
-  exports: [MainContainer],
+  exports: [AnnotationsListToolbarContainer],
 })
-export class MainModule {}
+export class AnnotationsListToolbarModule {}

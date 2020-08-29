@@ -18,14 +18,18 @@ export {DataLoadState, LoadState};
 
 export const NPMI_FEATURE_KEY = 'npmi';
 
-type Annotation = string;
 type Metric = string;
+export type Annotation = string;
 export type AnnotationDataListing = Record<Annotation, ValueData[]>;
 export type ArithmeticElement =
-  | {kind: 'metric'; metric: string}
-  | {kind: 'operator'; operator: Operator};
+  | {kind: ArithmeticKind.METRIC; metric: string}
+  | {kind: ArithmeticKind.OPERATOR; operator: Operator};
 export enum Operator {
   AND,
+}
+export enum ArithmeticKind {
+  METRIC,
+  OPERATOR,
 }
 
 export interface ValueData {

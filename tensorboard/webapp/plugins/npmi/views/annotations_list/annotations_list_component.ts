@@ -12,27 +12,20 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, OnInit} from '@angular/core';
-import {select, Store} from '@ngrx/store';
+import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 
-import {npmiLoaded} from './actions';
-import {State} from '../../app_state';
-import {getRunSelection} from '../../core/store/core_selectors';
-
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
+import {AnnotationDataListing, AnnotationSorting} from '../../store/npmi_types';
 
 @Component({
-  selector: 'npmi',
-  template: `
-    <npmi-component [runs]="runs$ | async"></npmi-component>
-  `,
+  selector: 'annotations-list-component',
+  templateUrl: './annotations_list_component.ng.html',
+  styleUrls: ['./annotations_list_component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class NpmiContainer implements OnInit {
-  readonly runs$ = this.store.pipe(select(getRunSelection));
-
-  constructor(private readonly store: Store<State>) {}
-
-  ngOnInit(): void {
-    this.store.dispatch(npmiLoaded());
-  }
+export class AnnotationsListComponent {
+  @Input() annotations!: AnnotationDataListing;
+  @Input() annotationsExpanded!: boolean;
+  @Input() numAnnotations!: number;
+  @Input() annotationSorting!: AnnotationSorting;
+  @Input() activeMetrics!: string[];
 }

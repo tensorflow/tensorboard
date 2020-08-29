@@ -12,27 +12,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, OnInit} from '@angular/core';
-import {select, Store} from '@ngrx/store';
+import {CommonModule} from '@angular/common';
+import {NgModule} from '@angular/core';
 
-import {npmiLoaded} from './actions';
-import {State} from '../../app_state';
-import {getRunSelection} from '../../core/store/core_selectors';
+import {AnnotationsListComponent} from './annotations_list_component';
+import {AnnotationsListContainer} from './annotations_list_container';
+import {AnnotationsListToolbarModule} from './annotations_list_toolbar/annotations_list_toolbar_module';
 
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
-
-@Component({
-  selector: 'npmi',
-  template: `
-    <npmi-component [runs]="runs$ | async"></npmi-component>
-  `,
+@NgModule({
+  declarations: [AnnotationsListComponent, AnnotationsListContainer],
+  imports: [CommonModule, AnnotationsListToolbarModule],
+  exports: [AnnotationsListContainer],
 })
-export class NpmiContainer implements OnInit {
-  readonly runs$ = this.store.pipe(select(getRunSelection));
-
-  constructor(private readonly store: Store<State>) {}
-
-  ngOnInit(): void {
-    this.store.dispatch(npmiLoaded());
-  }
-}
+export class AnnotationsListModule {}

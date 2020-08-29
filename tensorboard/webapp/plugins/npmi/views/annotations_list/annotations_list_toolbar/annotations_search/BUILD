@@ -3,37 +3,32 @@ load("//tensorboard/defs:defs.bzl", "tf_sass_binary", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
-licenses(["notice"])
+licenses(["notice"])  # Apache 2.0
 
 tf_sass_binary(
-    name = "main_component_styles",
-    src = "main_component.scss",
+    name = "annotations_search_component_styles",
+    src = "annotations_search_component.scss",
 )
 
 ng_module(
-    name = "main",
+    name = "annotations_search",
     srcs = [
-        "main_component.ts",
-        "main_container.ts",
-        "main_module.ts",
+        "annotations_search_component.ts",
+        "annotations_search_container.ts",
+        "annotations_search_module.ts",
     ],
     assets = [
-        ":main_component_styles",
-        "main_component.ng.html",
+        "annotations_search_component.ng.html",
+        ":annotations_search_component_styles",
     ],
     deps = [
         "//tensorboard/webapp:app_state",
-        "//tensorboard/webapp/angular:expect_angular_material_button",
-        "//tensorboard/webapp/angular:expect_angular_material_checkbox",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
-        "//tensorboard/webapp/core:types",
+        "//tensorboard/webapp/angular:expect_angular_material_input",
         "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/plugins/npmi/actions",
         "//tensorboard/webapp/plugins/npmi/store",
-        "//tensorboard/webapp/plugins/npmi/views/annotations_list",
-        "//tensorboard/webapp/plugins/npmi/views/data_selection",
-        "//tensorboard/webapp/plugins/npmi/views/violin_filters",
-        "//tensorboard/webapp/runs",
+        "//tensorboard/webapp/plugins/npmi/store:types",
         "@npm//@angular/core",
         "@npm//@angular/forms",
         "@npm//@ngrx/store",
@@ -42,23 +37,27 @@ ng_module(
 )
 
 tf_ts_library(
-    name = "main_test_lib",
+    name = "annotations_search_test_lib",
     testonly = True,
     srcs = [
-        "main_container_test.ts",
+        "annotations_search_test.ts",
     ],
     deps = [
-        ":main",
+        ":annotations_search",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "//tensorboard/webapp/angular:expect_angular_material_icon",
+        "//tensorboard/webapp/angular:expect_angular_material_input",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "//tensorboard/webapp/core/store",
-        "//tensorboard/webapp/core/testing",
         "//tensorboard/webapp/plugins/npmi/actions",
         "//tensorboard/webapp/plugins/npmi/store",
+        "//tensorboard/webapp/plugins/npmi/store:types",
         "//tensorboard/webapp/plugins/npmi/testing",
-        "//tensorboard/webapp/runs",
+        "//tensorboard/webapp/testing:mat_icon",
+        "@npm//@angular/common",
         "@npm//@angular/core",
+        "@npm//@angular/forms",
         "@npm//@angular/platform-browser",
         "@npm//@ngrx/store",
         "@npm//@types/jasmine",

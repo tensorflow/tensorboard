@@ -31,7 +31,12 @@ import {
   getSidebarWidth,
   getSidebarExpanded,
 } from './npmi_selectors';
-import {DataLoadState, Operator, SortingOrder} from './npmi_types';
+import {
+  DataLoadState,
+  Operator,
+  SortingOrder,
+  ArithmeticKind,
+} from './npmi_types';
 import {createNpmiState, createState} from '../testing';
 
 describe('npmi selectors', () => {
@@ -244,16 +249,16 @@ describe('npmi selectors', () => {
       const state = createState(
         createNpmiState({
           metricArithmetic: [
-            {kind: 'metric', metric: 'test'},
-            {kind: 'operator', operator: Operator.AND},
-            {kind: 'metric', metric: 'test2'},
+            {kind: ArithmeticKind.METRIC, metric: 'test'},
+            {kind: ArithmeticKind.OPERATOR, operator: Operator.AND},
+            {kind: ArithmeticKind.METRIC, metric: 'test2'},
           ],
         })
       );
       expect(getMetricArithmetic(state)).toEqual([
-        {kind: 'metric', metric: 'test'},
-        {kind: 'operator', operator: Operator.AND},
-        {kind: 'metric', metric: 'test2'},
+        {kind: ArithmeticKind.METRIC, metric: 'test'},
+        {kind: ArithmeticKind.OPERATOR, operator: Operator.AND},
+        {kind: ArithmeticKind.METRIC, metric: 'test2'},
       ]);
     });
   });
