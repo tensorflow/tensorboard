@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, ChangeDetectionStrategy, Input, OnInit} from '@angular/core';
+import {Component, ChangeDetectionStrategy, Input} from '@angular/core';
 import {select, Store} from '@ngrx/store';
 
 import {map} from 'rxjs/operators';
@@ -61,9 +61,9 @@ export class MetricArithmeticElementContainer {
   }
 
   filterChange(newValues: {min: number; max: number}) {
-    let min = isNaN(newValues.min) ? -1 : newValues.min;
-    let max = isNaN(newValues.max) ? -2 : newValues.max;
-    let includeNaN = isNaN(newValues.min);
+    const min = isNaN(newValues.min) ? -1 : newValues.min;
+    const max = isNaN(newValues.max) ? -2 : newValues.max;
+    const includeNaN = isNaN(newValues.min);
     this.store.dispatch(
       npmiActions.npmiChangeMetricFilter({
         metric: this.metric,

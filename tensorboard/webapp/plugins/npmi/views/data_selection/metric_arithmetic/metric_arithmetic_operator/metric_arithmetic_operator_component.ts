@@ -27,5 +27,5 @@ import {Operator} from '../../../../store/npmi_types';
 })
 export class MetricArithmeticOperatorComponent {
   @Input() operator!: Operator;
-  Operator = Operator;
+  readonly Operator = Operator;
 }

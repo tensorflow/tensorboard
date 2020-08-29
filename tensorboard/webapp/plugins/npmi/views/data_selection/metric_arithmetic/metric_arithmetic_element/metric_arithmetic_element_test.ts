@@ -39,10 +39,10 @@ describe('Npmi Metric Arithmetic Element Container', () => {
   let store: MockStore<State>;
   let dispatchedActions: Action[];
   const css = {
-    FILTER_CHIP: '.filter-chip',
-    ELEMENT_REMOVE: '.mat-chip-remove',
-    INPUT: 'input',
-    VALUE_INVALID: '.value-invalid',
+    FILTER_CHIP: By.css('.filter-chip'),
+    ELEMENT_REMOVE: By.css('.mat-chip-remove'),
+    INPUT: By.css('input'),
+    VALUE_INVALID: By.css('.value-invalid'),
   };
 
   beforeEach(async () => {
@@ -81,7 +81,7 @@ describe('Npmi Metric Arithmetic Element Container', () => {
     fixture.componentInstance.metric = 'npmi@test';
     fixture.detectChanges();
 
-    const filterDiv = fixture.debugElement.query(By.css(css.FILTER_CHIP));
+    const filterDiv = fixture.debugElement.query(css.FILTER_CHIP);
     expect(filterDiv).toBeTruthy();
   });
 
@@ -90,14 +90,11 @@ describe('Npmi Metric Arithmetic Element Container', () => {
     fixture.componentInstance.metric = 'npmi@test';
     fixture.detectChanges();
 
-    const removeButton = fixture.debugElement.query(By.css(css.ELEMENT_REMOVE));
+    const removeButton = fixture.debugElement.query(css.ELEMENT_REMOVE);
     removeButton.nativeElement.click();
     expect(dispatchedActions).toEqual([
       npmiActions.npmiRemoveMetricFilter({metric: 'npmi@test'}),
     ]);
-
-    const inputs = fixture.debugElement.queryAll(By.css(css.INPUT));
-    expect(inputs.length).toBe(2);
   });
 
   describe('input interaction', () => {
@@ -109,7 +106,7 @@ describe('Npmi Metric Arithmetic Element Container', () => {
         fixture.componentInstance.metric = 'npmi@test';
         fixture.detectChanges();
 
-        const inputs = fixture.debugElement.queryAll(By.css(css.INPUT));
+        const inputs = fixture.debugElement.queryAll(css.INPUT);
         const input = inputs[0];
         input.nativeElement.focus();
         fixture.detectChanges();
@@ -137,7 +134,7 @@ describe('Npmi Metric Arithmetic Element Container', () => {
         fixture.componentInstance.metric = 'npmi@test';
         fixture.detectChanges();
 
-        const inputs = fixture.debugElement.queryAll(By.css(css.INPUT));
+        const inputs = fixture.debugElement.queryAll(css.INPUT);
         const input = inputs[0];
         input.nativeElement.focus();
         fixture.detectChanges();
@@ -165,7 +162,7 @@ describe('Npmi Metric Arithmetic Element Container', () => {
         fixture.componentInstance.metric = 'npmi@test';
         fixture.detectChanges();
 
-        const inputs = fixture.debugElement.queryAll(By.css(css.INPUT));
+        const inputs = fixture.debugElement.queryAll(css.INPUT);
         const input = inputs[0];
         input.nativeElement.focus();
         fixture.detectChanges();
@@ -176,9 +173,34 @@ describe('Npmi Metric Arithmetic Element Container', () => {
 
         expect(dispatchedActions).toEqual([]);
 
-        const invalidInput = fixture.debugElement.query(
-          By.css(css.VALUE_INVALID)
+        const invalidInput = fixture.debugElement.query(css.VALUE_INVALID);
+        expect(invalidInput).toBeTruthy();
+      });
+
+      it('does not change the filter when min is larger than max', () => {
+        store.overrideSelector(getMetricFilters, {
+          'npmi@test': {max: 0.5, min: -1.0, includeNaN: false},
+        });
+        const fixture = TestBed.createComponent(
+          MetricArithmeticElementContainer
         );
+        fixture.componentInstance.metric = 'npmi@test';
+        fixture.detectChanges();
+
+        const inputs = fixture.debugElement.queryAll(css.INPUT);
+        const input = inputs[0];
+        input.nativeElement.focus();
+        fixture.detectChanges();
+
+        input.nativeElement.value = '0.6';
+        input.nativeElement.dispatchEvent(
+          new InputEvent('input', {data: '0.6'})
+        );
+        fixture.detectChanges();
+
+        expect(dispatchedActions).toEqual([]);
+
+        const invalidInput = fixture.debugElement.query(css.VALUE_INVALID);
         expect(invalidInput).toBeTruthy();
       });
     });
@@ -191,7 +213,7 @@ describe('Npmi Metric Arithmetic Element Container', () => {
         fixture.componentInstance.metric = 'npmi@test';
         fixture.detectChanges();
 
-        const inputs = fixture.debugElement.queryAll(By.css(css.INPUT));
+        const inputs = fixture.debugElement.queryAll(css.INPUT);
         const input = inputs[1];
         input.nativeElement.focus();
         fixture.detectChanges();
@@ -212,14 +234,41 @@ describe('Npmi Metric Arithmetic Element Container', () => {
         ]);
       });
 
-      it('does not change the filter when a value is entered that does not go with the min value', () => {
+      it('does not change the filter when max is smaler than min', () => {
+        store.overrideSelector(getMetricFilters, {
+          'npmi@test': {max: 1.0, min: 0.2, includeNaN: false},
+        });
         const fixture = TestBed.createComponent(
           MetricArithmeticElementContainer
         );
         fixture.componentInstance.metric = 'npmi@test';
         fixture.detectChanges();
 
-        const inputs = fixture.debugElement.queryAll(By.css(css.INPUT));
+        const inputs = fixture.debugElement.queryAll(css.INPUT);
+        const input = inputs[1];
+        input.nativeElement.focus();
+        fixture.detectChanges();
+
+        input.nativeElement.value = '0.1';
+        input.nativeElement.dispatchEvent(
+          new InputEvent('input', {data: '0.1'})
+        );
+        fixture.detectChanges();
+
+        expect(dispatchedActions).toEqual([]);
+
+        const invalidInput = fixture.debugElement.query(css.VALUE_INVALID);
+        expect(invalidInput).toBeTruthy();
+      });
+
+      it('does not change the filter when NaN is entered but min is not NaN', () => {
+        const fixture = TestBed.createComponent(
+          MetricArithmeticElementContainer
+        );
+        fixture.componentInstance.metric = 'npmi@test';
+        fixture.detectChanges();
+
+        const inputs = fixture.debugElement.queryAll(css.INPUT);
         const input = inputs[1];
         input.nativeElement.focus();
         fixture.detectChanges();
@@ -232,10 +281,42 @@ describe('Npmi Metric Arithmetic Element Container', () => {
 
         expect(dispatchedActions).toEqual([]);
 
-        const invalidInput = fixture.debugElement.query(
-          By.css(css.VALUE_INVALID)
-        );
+        const invalidInput = fixture.debugElement.query(css.VALUE_INVALID);
         expect(invalidInput).toBeTruthy();
+      });
+
+      it('changes the filter when NaN is entered and min is also NaN', () => {
+        store.overrideSelector(getMetricFilters, {
+          'npmi@test': {max: 1.0, min: -1.0, includeNaN: true},
+        });
+        const fixture = TestBed.createComponent(
+          MetricArithmeticElementContainer
+        );
+        fixture.componentInstance.metric = 'npmi@test';
+        fixture.detectChanges();
+
+        const inputs = fixture.debugElement.queryAll(css.INPUT);
+        const input = inputs[1];
+        input.nativeElement.focus();
+        fixture.detectChanges();
+
+        input.nativeElement.value = 'NaN';
+        input.nativeElement.dispatchEvent(
+          new InputEvent('input', {data: 'NaN'})
+        );
+        fixture.detectChanges();
+
+        expect(dispatchedActions).toEqual([
+          npmiActions.npmiChangeMetricFilter({
+            metric: 'npmi@test',
+            max: -2.0,
+            min: -1.0,
+            includeNaN: true,
+          }),
+        ]);
+
+        const invalidInput = fixture.debugElement.query(css.VALUE_INVALID);
+        expect(invalidInput).toBeNull();
       });
     });
   });

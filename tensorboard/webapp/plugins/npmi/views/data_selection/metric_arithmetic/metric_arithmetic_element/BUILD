@@ -24,6 +24,7 @@ ng_module(
     deps = [
         "//tensorboard/webapp/angular:expect_angular_material_chips",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
+        "//tensorboard/webapp/angular:expect_angular_material_tooltip",
         "//tensorboard/webapp/plugins/npmi/store",
         "//tensorboard/webapp/plugins/npmi/store:types",
         "@npm//@angular/core",
@@ -45,6 +46,7 @@ tf_ts_library(
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_angular_material_chips",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
+        "//tensorboard/webapp/angular:expect_angular_material_tooltip",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/plugins/npmi/actions",

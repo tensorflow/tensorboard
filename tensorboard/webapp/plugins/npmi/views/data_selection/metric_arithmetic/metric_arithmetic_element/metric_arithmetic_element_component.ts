@@ -18,8 +18,12 @@ import {
   Input,
   Output,
   EventEmitter,
+  OnDestroy,
+  OnInit,
 } from '@angular/core';
 import {Validators, FormControl, ValidationErrors} from '@angular/forms';
+import {takeUntil} from 'rxjs/operators';
+import {Subject} from 'rxjs';
 
 @Component({
   selector: 'metric-arithmetic-element-component',
@@ -27,47 +31,56 @@ import {Validators, FormControl, ValidationErrors} from '@angular/forms';
   styleUrls: ['./metric_arithmetic_element_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class MetricArithmeticElementComponent {
+export class MetricArithmeticElementComponent implements OnInit, OnDestroy {
   @Input() metric!: string;
   @Input() filterValues!: {min: string; max: string};
   @Output() onRemove = new EventEmitter<string>();
   @Output() onFilterChange = new EventEmitter<{min: number; max: number}>();
   focusMin = false;
   focusMax = false;
-  minFilterValid = true;
-  maxFilterValid = true;
+  private ngUnsubscribe = new Subject();
+  minFormControl!: FormControl;
+  maxFormControl!: FormControl;
 
-  readonly minFormControl = new FormControl(-1.0, [
-    Validators.required,
-    Validators.min(-1.0),
-    Validators.max(1.0),
-    this.minValueValidator.bind(this),
-  ]);
+  ngOnInit() {
+    this.minFormControl = new FormControl(this.filterValues.min, [
+      Validators.required,
+      Validators.min(-1.0),
+      Validators.max(1.0),
+      this.minValueValidator.bind(this),
+    ]);
+    this.maxFormControl = new FormControl(this.filterValues.max, [
+      Validators.required,
+      Validators.min(-1.0),
+      Validators.max(1.0),
+      this.maxValueValidator.bind(this),
+    ]);
 
-  readonly maxFormControl = new FormControl(1.0, [
-    Validators.required,
-    Validators.min(-1.0),
-    Validators.max(1.0),
-    this.maxValueValidator.bind(this),
-  ]);
+    this.minFormControl.valueChanges
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe(() => {
+        if (this.minFormControl.valid && this.maxFormControl.valid) {
+          this.onFilterChange.emit({
+            min: parseFloat(this.minFormControl.value),
+            max: parseFloat(this.maxFormControl.value),
+          });
+        }
+      });
+    this.maxFormControl.valueChanges
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe(() => {
+        if (this.minFormControl.valid && this.maxFormControl.valid) {
+          this.onFilterChange.emit({
+            min: parseFloat(this.minFormControl.value),
+            max: parseFloat(this.maxFormControl.value),
+          });
+        }
+      });
+  }
 
-  constructor() {
-    this.minFormControl.valueChanges.subscribe(() => {
-      if (this.minFormControl.valid && this.maxFormControl.valid) {
-        this.onFilterChange.emit({
-          min: parseFloat(this.minFormControl.value),
-          max: parseFloat(this.maxFormControl.value),
-        });
-      }
-    });
-    this.maxFormControl.valueChanges.subscribe(() => {
-      if (this.minFormControl.valid && this.maxFormControl.valid) {
-        this.onFilterChange.emit({
-          min: parseFloat(this.minFormControl.value),
-          max: parseFloat(this.maxFormControl.value),
-        });
-      }
-    });
+  ngOnDestroy() {
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
   }
 
   minValueValidator(
@@ -77,11 +90,11 @@ export class MetricArithmeticElementComponent {
     if (!this.maxFormControl || control.value === 'NaN') {
       return null;
     } else if (isNaN(parseFloat(control.value))) {
-      return {value: 'the value you entered is neither NaN nor a number'};
+      return {value: 'the string you entered is neither NaN nor a number'};
     } else if (
       parseFloat(control.value) > parseFloat(this.maxFormControl.value)
     ) {
-      return {value: 'the value you entered is larger than the max value'};
+      return {value: 'the number you entered is larger than the max value'};
     }
     return null;
   }
@@ -95,18 +108,29 @@ export class MetricArithmeticElementComponent {
     } else if (
       // Max NaN only if min also NaN
       this.minFormControl.value === 'NaN' &&
-      this.maxFormControl.value === 'NaN'
+      control.value === 'NaN'
     ) {
       return null;
     } else if (isNaN(parseFloat(control.value))) {
-      return {value: 'the value you entered is neither NaN nor a number'};
+      return {value: 'the string you entered is neither NaN nor a number'};
     } else if (control.value < this.minFormControl.value) {
-      return {value: 'the value you entered is smaller than the min value'};
+      return {value: 'the number you entered is smaller than the min value'};
     }
     return null;
   }
 
-  onValueChange(event: any) {
-    event.stopPropagation();
+  getErrorDescription(errors: ValidationErrors | null): string {
+    if (errors) {
+      const firstKey = Object.keys(errors)[0];
+      if (firstKey === 'required') {
+        return 'you did not enter anything';
+      } else if (firstKey === 'min') {
+        return 'the number must be at least -1.0';
+      } else if (firstKey === 'max') {
+        return 'the number is bigger than 1.0';
+      }
+      return errors[firstKey];
+    }
+    return '';
   }
 }
