@@ -28,7 +28,7 @@ const KNOWN_SVG_ICON = new Set([
   'flag_24px.svg',
   'expand_more_24px.svg',
   'expand_less_24px.svg',
-  'clear_24px',
+  'cancel_24px',
 ]);
 
 /**

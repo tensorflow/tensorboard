@@ -17,12 +17,12 @@ limitations under the License.
 <mat-chip-list [selectable]="false">
   <div *ngFor="let element of metricArithmetic">
     <npmi-metric-arithmetic-element
-      *ngIf="element.kind === 'metric'"
+      *ngIf="element.kind === ArithmeticKind.METRIC"
       [metric]="element.metric"
     >
     </npmi-metric-arithmetic-element>
     <npmi-metric-arithmetic-operator
-      *ngIf="element.kind === 'operator'"
+      *ngIf="element.kind === ArithmeticKind.OPERATOR"
       [operator]="element.operator"
     >
     </npmi-metric-arithmetic-operator>

@@ -29,7 +29,7 @@ import {
   getMetricArithmetic,
   getMetricFilters,
 } from './../../../store/npmi_selectors';
-import {Operator} from '../../../store/npmi_types';
+import {ArithmeticKind, Operator} from '../../../store/npmi_types';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
@@ -61,7 +61,7 @@ describe('Npmi Metric Arithmetic Container', () => {
 
   it('renders a metric when one is active', () => {
     store.overrideSelector(getMetricArithmetic, [
-      {kind: 'metric', metric: 'test_metric'},
+      {kind: ArithmeticKind.METRIC, metric: 'test_metric'},
     ]);
     store.overrideSelector(getMetricFilters, {
       test_metric: {max: 1.0, min: -1.0, includeNaN: false},
@@ -77,9 +77,9 @@ describe('Npmi Metric Arithmetic Container', () => {
 
   it('renders metrics when at least two active', () => {
     store.overrideSelector(getMetricArithmetic, [
-      {kind: 'metric', metric: 'test_metric'},
-      {kind: 'operator', operator: Operator.AND},
-      {kind: 'metric', metric: 'test_metric_2'},
+      {kind: ArithmeticKind.METRIC, metric: 'test_metric'},
+      {kind: ArithmeticKind.OPERATOR, operator: Operator.AND},
+      {kind: ArithmeticKind.METRIC, metric: 'test_metric_2'},
     ]);
     store.overrideSelector(getMetricFilters, {
       test_metric: {max: 1.0, min: -1.0, includeNaN: false},
