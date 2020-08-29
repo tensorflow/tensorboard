@@ -12,37 +12,32 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-/**
- * Unit tests for the violin filters.
- */
 import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 
-import {Action, Store} from '@ngrx/store';
-import {State} from '../../../../app_state';
+import {Store} from '@ngrx/store';
 import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
-import {ViolinFiltersComponent} from './violin_filters_component';
-import {ViolinFiltersContainer} from './violin_filters_container';
+import {State} from '../../../../app_state';
+import {getAnnotationsExpanded} from '../../store';
 import {appStateFromNpmiState, createNpmiState} from '../../testing';
 import {createState, createCoreState} from '../../../../core/testing';
-import * as npmiActions from '../../actions';
-import {getSidebarExpanded} from '../../store';
+import {AnnotationsListComponent} from './annotations_list_component';
+import {AnnotationsListContainer} from './annotations_list_container';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
-describe('Npmi Violin Filters Container', () => {
+describe('Npmi Annotations List Container', () => {
   let store: MockStore<State>;
-  let dispatchedActions: Action[];
   const css = {
-    FILTERS_TOOLBAR: By.css('.filters-toolbar'),
-    SIDE_TOGGLE: By.css('.side-toggle'),
-    BUTTON: By.css('button'),
+    TOOLBAR: By.css('npmi-annotations-list-toolbar'),
+    HEADER: By.css('npmi-annotations-list-header'),
+    LEGEND: By.css('npmi-annotations-legend'),
   };
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ViolinFiltersContainer, ViolinFiltersComponent],
+      declarations: [AnnotationsListComponent, AnnotationsListContainer],
       imports: [],
       providers: [
         provideMockStore({
@@ -54,34 +49,22 @@ describe('Npmi Violin Filters Container', () => {
       ],
     }).compileComponents();
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
-
-    dispatchedActions = [];
-    spyOn(store, 'dispatch').and.callFake((action: Action) => {
-      dispatchedActions.push(action);
-    });
   });
 
-  it('renders npmi violin filters component', () => {
-    const fixture = TestBed.createComponent(ViolinFiltersContainer);
+  it('renders expanded annotations list', () => {
+    const fixture = TestBed.createComponent(AnnotationsListContainer);
     fixture.detectChanges();
 
-    const violinFilters = fixture.debugElement.query(css.FILTERS_TOOLBAR);
-    expect(violinFilters).toBeTruthy();
+    const annotationsToolbar = fixture.debugElement.query(css.TOOLBAR);
+    expect(annotationsToolbar).toBeTruthy();
   });
 
-  it('dispatches toggle expanded action when hide button clicked', () => {
-    store.overrideSelector(getSidebarExpanded, true);
-    const fixture = TestBed.createComponent(ViolinFiltersContainer);
+  it('renders non-expanded annotations list', () => {
+    store.overrideSelector(getAnnotationsExpanded, false);
+    const fixture = TestBed.createComponent(AnnotationsListContainer);
     fixture.detectChanges();
 
-    const sideToggle = fixture.debugElement.query(css.SIDE_TOGGLE);
-    expect(sideToggle).toBeTruthy();
-    const hideButton = sideToggle.query(css.BUTTON);
-    expect(hideButton).toBeTruthy();
-    hideButton.nativeElement.click();
-
-    expect(dispatchedActions).toEqual([
-      npmiActions.npmiToggleSidebarExpanded(),
-    ]);
+    const annotationsToolbar = fixture.debugElement.query(css.TOOLBAR);
+    expect(annotationsToolbar).toBeTruthy();
   });
 });

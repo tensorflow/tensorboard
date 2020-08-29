@@ -7,4 +7,18 @@ ng_module(
     srcs = [
         "metric_type.ts",
     ],
+    deps = [
+        "//tensorboard/webapp/plugins/npmi/store:types",
+    ],
+)
+
+ng_module(
+    name = "filter_annotations",
+    srcs = [
+        "filter_annotations.ts",
+    ],
+    deps = [
+        ":metric_type",
+        "//tensorboard/webapp/plugins/npmi/store:types",
+    ],
 )

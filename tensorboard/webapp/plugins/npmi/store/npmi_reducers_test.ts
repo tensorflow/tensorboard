@@ -14,7 +14,12 @@ limitations under the License.
 ==============================================================================*/
 import * as actions from '../actions';
 import {reducers} from './npmi_reducers';
-import {DataLoadState, Operator, SortingOrder} from './npmi_types';
+import {
+  DataLoadState,
+  Operator,
+  SortingOrder,
+  ArithmeticKind,
+} from './npmi_types';
 import {createNpmiState} from '../testing';
 
 describe('npmi_reducers', () => {
@@ -452,7 +457,7 @@ describe('npmi_reducers', () => {
           },
         });
         expect(nextState.metricArithmetic).toEqual([
-          {kind: 'metric', metric: 'nPMI@test'},
+          {kind: ArithmeticKind.METRIC, metric: 'nPMI@test'},
         ]);
       });
 
@@ -465,7 +470,9 @@ describe('npmi_reducers', () => {
               includeNaN: true,
             },
           },
-          metricArithmetic: [{kind: 'metric', metric: 'nPMI@test'}],
+          metricArithmetic: [
+            {kind: ArithmeticKind.METRIC, metric: 'nPMI@test'},
+          ],
         });
         const nextState = reducers(
           state,
@@ -484,9 +491,9 @@ describe('npmi_reducers', () => {
           },
         });
         expect(nextState.metricArithmetic).toEqual([
-          {kind: 'metric', metric: 'nPMI@test'},
-          {kind: 'operator', operator: Operator.AND},
-          {kind: 'metric', metric: 'nPMI@second'},
+          {kind: ArithmeticKind.METRIC, metric: 'nPMI@test'},
+          {kind: ArithmeticKind.OPERATOR, operator: Operator.AND},
+          {kind: ArithmeticKind.METRIC, metric: 'nPMI@second'},
         ]);
       });
 
@@ -499,7 +506,9 @@ describe('npmi_reducers', () => {
               includeNaN: true,
             },
           },
-          metricArithmetic: [{kind: 'metric', metric: 'nPMI@test'}],
+          metricArithmetic: [
+            {kind: ArithmeticKind.METRIC, metric: 'nPMI@test'},
+          ],
         });
         const nextState = reducers(
           state,
@@ -513,7 +522,7 @@ describe('npmi_reducers', () => {
           },
         });
         expect(nextState.metricArithmetic).toEqual([
-          {kind: 'metric', metric: 'nPMI@test'},
+          {kind: ArithmeticKind.METRIC, metric: 'nPMI@test'},
         ]);
       });
     });
@@ -528,7 +537,9 @@ describe('npmi_reducers', () => {
               includeNaN: true,
             },
           },
-          metricArithmetic: [{kind: 'metric', metric: 'nPMI@test'}],
+          metricArithmetic: [
+            {kind: ArithmeticKind.METRIC, metric: 'nPMI@test'},
+          ],
         });
         const nextState = reducers(
           state,
@@ -558,11 +569,11 @@ describe('npmi_reducers', () => {
             },
           },
           metricArithmetic: [
-            {kind: 'metric', metric: 'nPMI@test'},
-            {kind: 'operator', operator: Operator.AND},
-            {kind: 'metric', metric: 'nPMI@second'},
-            {kind: 'operator', operator: Operator.AND},
-            {kind: 'metric', metric: 'nPMI@third'},
+            {kind: ArithmeticKind.METRIC, metric: 'nPMI@test'},
+            {kind: ArithmeticKind.OPERATOR, operator: Operator.AND},
+            {kind: ArithmeticKind.METRIC, metric: 'nPMI@second'},
+            {kind: ArithmeticKind.OPERATOR, operator: Operator.AND},
+            {kind: ArithmeticKind.METRIC, metric: 'nPMI@third'},
           ],
         });
         const nextState = reducers(
@@ -582,9 +593,9 @@ describe('npmi_reducers', () => {
           },
         });
         expect(nextState.metricArithmetic).toEqual([
-          {kind: 'metric', metric: 'nPMI@second'},
-          {kind: 'operator', operator: Operator.AND},
-          {kind: 'metric', metric: 'nPMI@third'},
+          {kind: ArithmeticKind.METRIC, metric: 'nPMI@second'},
+          {kind: ArithmeticKind.OPERATOR, operator: Operator.AND},
+          {kind: ArithmeticKind.METRIC, metric: 'nPMI@third'},
         ]);
       });
 
@@ -608,11 +619,11 @@ describe('npmi_reducers', () => {
             },
           },
           metricArithmetic: [
-            {kind: 'metric', metric: 'nPMI@test'},
-            {kind: 'operator', operator: Operator.AND},
-            {kind: 'metric', metric: 'nPMI@second'},
-            {kind: 'operator', operator: Operator.AND},
-            {kind: 'metric', metric: 'nPMI@third'},
+            {kind: ArithmeticKind.METRIC, metric: 'nPMI@test'},
+            {kind: ArithmeticKind.OPERATOR, operator: Operator.AND},
+            {kind: ArithmeticKind.METRIC, metric: 'nPMI@second'},
+            {kind: ArithmeticKind.OPERATOR, operator: Operator.AND},
+            {kind: ArithmeticKind.METRIC, metric: 'nPMI@third'},
           ],
         });
         const nextState = reducers(
@@ -632,9 +643,9 @@ describe('npmi_reducers', () => {
           },
         });
         expect(nextState.metricArithmetic).toEqual([
-          {kind: 'metric', metric: 'nPMI@test'},
-          {kind: 'operator', operator: Operator.AND},
-          {kind: 'metric', metric: 'nPMI@third'},
+          {kind: ArithmeticKind.METRIC, metric: 'nPMI@test'},
+          {kind: ArithmeticKind.OPERATOR, operator: Operator.AND},
+          {kind: ArithmeticKind.METRIC, metric: 'nPMI@third'},
         ]);
       });
 
@@ -658,11 +669,11 @@ describe('npmi_reducers', () => {
             },
           },
           metricArithmetic: [
-            {kind: 'metric', metric: 'nPMI@test'},
-            {kind: 'operator', operator: Operator.AND},
-            {kind: 'metric', metric: 'nPMI@second'},
-            {kind: 'operator', operator: Operator.AND},
-            {kind: 'metric', metric: 'nPMI@third'},
+            {kind: ArithmeticKind.METRIC, metric: 'nPMI@test'},
+            {kind: ArithmeticKind.OPERATOR, operator: Operator.AND},
+            {kind: ArithmeticKind.METRIC, metric: 'nPMI@second'},
+            {kind: ArithmeticKind.OPERATOR, operator: Operator.AND},
+            {kind: ArithmeticKind.METRIC, metric: 'nPMI@third'},
           ],
         });
         const nextState = reducers(
@@ -687,11 +698,11 @@ describe('npmi_reducers', () => {
           },
         });
         expect(nextState.metricArithmetic).toEqual([
-          {kind: 'metric', metric: 'nPMI@test'},
-          {kind: 'operator', operator: Operator.AND},
-          {kind: 'metric', metric: 'nPMI@second'},
-          {kind: 'operator', operator: Operator.AND},
-          {kind: 'metric', metric: 'nPMI@third'},
+          {kind: ArithmeticKind.METRIC, metric: 'nPMI@test'},
+          {kind: ArithmeticKind.OPERATOR, operator: Operator.AND},
+          {kind: ArithmeticKind.METRIC, metric: 'nPMI@second'},
+          {kind: ArithmeticKind.OPERATOR, operator: Operator.AND},
+          {kind: ArithmeticKind.METRIC, metric: 'nPMI@third'},
         ]);
       });
     });

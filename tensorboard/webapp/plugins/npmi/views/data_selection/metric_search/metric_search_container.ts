@@ -46,15 +46,10 @@ export class MetricSearchContainer {
   readonly metricsRegex$ = this.store.select(getMetricsRegex);
   readonly activeRuns$ = this.store.pipe(select(getRunSelection)).pipe(
     map((runSelection) => {
-      const activeRuns: string[] = [];
-      if (runSelection) {
-        for (const [run, isSelected] of runSelection) {
-          if (isSelected) {
-            activeRuns.push(run);
-          }
-        }
-      }
-      return activeRuns;
+      if (!runSelection) return [];
+      return Array.from(runSelection.entries())
+        .filter((run) => run[1])
+        .map((run) => run[0]);
     })
   );
   readonly metricsForActiveRuns$ = combineLatest(
