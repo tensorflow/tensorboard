@@ -108,7 +108,7 @@ def tf_svg_bundle(name, srcs, out):
         srcs = srcs,
         outs = [out],
         cmd = "$(execpath //tensorboard/tools:mat_bundle_icon_svg) $@ $(SRCS)",
-        tools = [
+        exec_tools = [
             "//tensorboard/tools:mat_bundle_icon_svg",
         ],
     )

@@ -53,7 +53,7 @@ genrule(
     srcs = ["tensorboard.uninlined.html"],
     outs = ["tensorboard.html"],
     cmd = "$(execpath //tensorboard/logo:inline_favicon) $< >$@",
-    tools = ["//tensorboard/logo:inline_favicon"],
+    exec_tools = ["//tensorboard/logo:inline_favicon"],
 )
 
 tf_web_library(

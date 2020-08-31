@@ -13,7 +13,7 @@ genrule(
     # target can extract the tarball and glob its contents.
     outs = ["pip_packages.tar.gz"],
     cmd = "$(execpath :build_pip_package) $@",
-    tools = [
+    exec_tools = [
         ":build_pip_package",
     ],
     visibility = ["//tensorboard:internal"],

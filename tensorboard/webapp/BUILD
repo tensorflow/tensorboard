@@ -134,7 +134,7 @@ genrule(
     srcs = ["index_polymer3.uninlined.html"],
     outs = ["index_polymer3.inlined.html"],
     cmd = "$(execpath //tensorboard/logo:inline_favicon) $< >$@",
-    tools = ["//tensorboard/logo:inline_favicon"],
+    exec_tools = ["//tensorboard/logo:inline_favicon"],
 )
 
 # Bundle the Angular app with the Polymer components and plugins, as a library.
