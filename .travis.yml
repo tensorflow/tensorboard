@@ -1,7 +1,7 @@
 dist: xenial
 language: python
 python:
-  - "3.6"
+  - '3.6'
 
 branches:
   only:
@@ -10,7 +10,7 @@ branches:
 
 # Update the `nvm use` stanza below when updating this.
 node_js:
-  - "11"
+  - '11'
 
 env:
   # Keep this Bazel version in sync with the `versions.check` directive
@@ -23,7 +23,7 @@ env:
     - BAZEL_SHA256SUM=e13581d44faad6ac807dd917e682fef20359d26728166ac35dadd8ee653a580d
   matrix:
     - TF_VERSION_ID=tf-nightly
-    - TF_VERSION_ID=  # Do not install TensorFlow in this case
+    - TF_VERSION_ID= # Do not install TensorFlow in this case
 
 cache:
   # Don't cache the Pip directory. We pull in a new `tf-nightly` wheel
@@ -50,7 +50,7 @@ before_install:
 
 install:
   - elapsed "install"
-  - "PY3=\"$(python -c 'if __import__(\"sys\").version_info[0] > 2: print(1)')\""
+  - 'PY3="$(python -c ''if __import__("sys").version_info[0] > 2: print(1)'')"'
   # Older versions of Pip sometimes resolve specifiers like `tf-nightly`
   # to versions other than the most recent(!).
   - pip install -U pip
@@ -70,7 +70,7 @@ install:
     fi
   # Workaround for https://github.com/travis-ci/travis-ci/issues/7940
   - sudo rm -f /etc/boto.cfg
-  - pip freeze  # print installed distributions, for debugging purposes
+  - pip freeze --all # print installed distributions, for debugging purposes
   - elapsed "install (done)"
 
 before_script:
