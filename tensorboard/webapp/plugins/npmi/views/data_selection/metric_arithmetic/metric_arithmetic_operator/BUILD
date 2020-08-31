@@ -16,7 +16,6 @@ ng_module(
         "//tensorboard/webapp/plugins/npmi/store",
         "//tensorboard/webapp/plugins/npmi/store:types",
         "@npm//@angular/core",
-        "@npm//@angular/material",
         "@npm//@ngrx/store",
         "@npm//rxjs",
     ],
@@ -30,6 +29,7 @@ tf_ts_library(
     ],
     deps = [
         ":metric_arithmetic_operator",
+        "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/core/testing",
         "//tensorboard/webapp/plugins/npmi/store:types",
         "@npm//@angular/core",

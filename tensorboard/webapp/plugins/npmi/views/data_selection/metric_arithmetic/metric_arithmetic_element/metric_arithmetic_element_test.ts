@@ -19,7 +19,6 @@ import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 
-import {MatAutocompleteModule} from '@angular/material/autocomplete';
 import {MatInputModule} from '@angular/material/input';
 import {MatChipsModule} from '@angular/material/chips';
 
@@ -55,7 +54,6 @@ describe('Npmi Metric Arithmetic Element Container', () => {
         FormsModule,
         ReactiveFormsModule,
         MatInputModule,
-        MatAutocompleteModule,
         MatChipsModule,
       ],
       providers: [

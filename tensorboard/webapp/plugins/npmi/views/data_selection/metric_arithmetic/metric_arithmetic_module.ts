@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-import {FormsModule} from '@angular/forms';
 import {MatChipsModule} from '@angular/material/chips';
 
 import {MetricArithmeticComponent} from './metric_arithmetic_component';
@@ -26,7 +25,6 @@ import {MetricArithmeticOperatorModule} from './metric_arithmetic_operator/metri
   declarations: [MetricArithmeticComponent, MetricArithmeticContainer],
   imports: [
     CommonModule,
-    FormsModule,
     MatChipsModule,
     MetricArithmeticElementModule,
     MetricArithmeticOperatorModule,

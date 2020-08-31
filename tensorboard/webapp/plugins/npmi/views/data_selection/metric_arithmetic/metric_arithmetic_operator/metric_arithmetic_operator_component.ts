@@ -22,7 +22,6 @@ import {Operator} from '../../../../store/npmi_types';
       {{ operator === Operator.AND ? '&' : '' }}
     </mat-chip>
   `,
-  styleUrls: ['./metric_arithmetic_operator_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MetricArithmeticOperatorComponent {
