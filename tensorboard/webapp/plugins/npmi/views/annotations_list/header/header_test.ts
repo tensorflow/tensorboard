@@ -19,8 +19,8 @@ import {Store, Action} from '@ngrx/store';
 import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
 import {State} from '../../../../../app_state';
-import {AnnotationsListHeaderComponent} from './annotations_list_header_component';
-import {AnnotationsListHeaderContainer} from './annotations_list_header_container';
+import {HeaderComponent} from './header_component';
+import {HeaderContainer} from './header_container';
 import * as npmiActions from '../../../actions';
 import {SortingOrder} from '../../../store/npmi_types';
 import {appStateFromNpmiState, createNpmiState} from '../../../testing';
@@ -31,20 +31,18 @@ import {getAnnotationSorting} from '../../../store';
 describe('Npmi Annotations List Header Container', () => {
   let store: MockStore<State>;
   let dispatchedActions: Action[];
-  let fixture: ComponentFixture<AnnotationsListHeaderContainer>;
+  let fixture: ComponentFixture<HeaderContainer>;
   const css = {
-    CHECKBOX_CONTAINER: By.css('.checkbox-container'),
-    ANNOTATIONS_HEADER_CONTAINER: By.css('.annotations-header-container'),
+    CHECKBOX_CONTAINER: By.css('.toggle-all-container'),
+    ANNOTATIONS_HEADER_CONTAINER: By.css('.annotations-header-containers'),
     CHECKBOX: By.css('mat-checkbox'),
     HEADER: By.css('.header-clickable'),
+    SORT_ICON: By.css('.sorting-icon'),
   };
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [
-        AnnotationsListHeaderComponent,
-        AnnotationsListHeaderContainer,
-      ],
+      declarations: [HeaderComponent, HeaderContainer],
       imports: [],
       providers: [
         provideMockStore({
@@ -59,7 +57,7 @@ describe('Npmi Annotations List Header Container', () => {
       dispatchedActions.push(action);
     });
 
-    fixture = TestBed.createComponent(AnnotationsListHeaderContainer);
+    fixture = TestBed.createComponent(HeaderContainer);
     fixture.componentInstance.activeMetrics = [
       'nPMI@test',
       'nPMI@test2',
@@ -118,7 +116,7 @@ describe('Npmi Annotations List Header Container', () => {
       metric: 'nPMI@test',
       order: SortingOrder.DOWN,
     });
-    fixture = TestBed.createComponent(AnnotationsListHeaderContainer);
+    fixture = TestBed.createComponent(HeaderContainer);
     fixture.componentInstance.activeMetrics = [
       'nPMI@test',
       'nPMI@test2',
@@ -126,7 +124,10 @@ describe('Npmi Annotations List Header Container', () => {
     ];
     fixture.detectChanges();
     const headerMetric = fixture.debugElement.query(css.HEADER);
-    expect(headerMetric.nativeElement.textContent.trim()).toBe('test ↓');
+    expect(headerMetric.nativeElement.textContent.trim()).toBe('test');
+
+    const sortingIcon = headerMetric.query(css.SORT_ICON);
+    expect(headerMetric).toBeTruthy();
   });
 
   it('dispatches npmiSelectedAnnotations action with all annotations when checkbox is clicked', () => {
@@ -146,10 +147,7 @@ describe('Npmi Annotations List Header Container', () => {
     fixture.detectChanges();
     expect(dispatchedActions).toEqual([
       npmiActions.npmiChangeAnnotationSorting({
-        sorting: {
-          metric: 'nPMI@test',
-          order: SortingOrder.DOWN,
-        },
+        metric: 'nPMI@test',
       }),
     ]);
   });

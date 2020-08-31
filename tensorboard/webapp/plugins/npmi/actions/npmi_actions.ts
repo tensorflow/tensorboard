@@ -100,7 +100,7 @@ export const npmiChangeMetricFilter = createAction(
 
 export const npmiChangeAnnotationSorting = createAction(
   '[NPMI] Change Annotation Sorting',
-  props<{sorting: AnnotationSorting}>()
+  props<{metric: string}>()
 );
 
 export const npmiToggleParallelCoordinatesExpanded = createAction(

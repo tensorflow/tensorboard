@@ -6,24 +6,25 @@ package(default_visibility = ["//tensorboard:internal"])
 licenses(["notice"])  # Apache 2.0
 
 tf_sass_binary(
-    name = "annotations_list_header_component_styles",
-    src = "annotations_list_header_component.scss",
+    name = "header_component_styles",
+    src = "header_component.scss",
 )
 
 ng_module(
-    name = "annotations_list_header",
+    name = "header",
     srcs = [
-        "annotations_list_header_component.ts",
-        "annotations_list_header_container.ts",
-        "annotations_list_header_module.ts",
+        "header_component.ts",
+        "header_container.ts",
+        "header_module.ts",
     ],
     assets = [
-        ":annotations_list_header_component_styles",
-        "annotations_list_header_component.ng.html",
+        ":header_component_styles",
+        "header_component.ng.html",
     ],
     deps = [
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp/angular:expect_angular_material_checkbox",
+        "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/plugins/npmi/store",
         "//tensorboard/webapp/plugins/npmi/store:types",
         "//tensorboard/webapp/plugins/npmi/util:metric_type",
@@ -35,13 +36,13 @@ ng_module(
 )
 
 tf_ts_library(
-    name = "annotations_list_header_test_lib",
+    name = "header_test_lib",
     testonly = True,
     srcs = [
-        "annotations_list_header_test.ts",
+        "header_test.ts",
     ],
     deps = [
-        ":annotations_list_header",
+        ":header",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/core/testing",

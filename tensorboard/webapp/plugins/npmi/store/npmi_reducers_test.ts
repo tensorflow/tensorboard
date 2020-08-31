@@ -807,13 +807,25 @@ describe('npmi_reducers', () => {
   });
 
   describe('Annotation Sorting', () => {
-    it('changes the sorting of annotations', () => {
+    it('changes the sorting to a different metric', () => {
       const state = createNpmiState();
       const nextState = reducers(
         state,
-        actions.npmiChangeAnnotationSorting({
-          sorting: {metric: 'test', order: SortingOrder.UP},
-        })
+        actions.npmiChangeAnnotationSorting({metric: 'test'})
+      );
+      expect(nextState.sorting).toEqual({
+        metric: 'test',
+        order: SortingOrder.DOWN,
+      });
+    });
+
+    it('changes the sorting from up to down', () => {
+      const state = createNpmiState({
+        sorting: {metric: 'test', order: SortingOrder.DOWN},
+      });
+      const nextState = reducers(
+        state,
+        actions.npmiChangeAnnotationSorting({metric: 'test'})
       );
       expect(nextState.sorting).toEqual({
         metric: 'test',

@@ -12,14 +12,42 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {CommonModule} from '@angular/common';
-import {NgModule} from '@angular/core';
+@import 'tensorboard/webapp/theme/tb_theme';
 
-import {LegendElementComponent} from './legend_element_component';
+:host {
+  border-bottom: 2px solid mat-color($tb-foreground, border);
+  display: flex;
+  height: 28px;
+  align-items: flex-end;
+  margin-top: 8px;
+}
 
-@NgModule({
-  declarations: [LegendElementComponent],
-  imports: [CommonModule],
-  exports: [LegendElementComponent],
-})
-export class LegendElementModule {}
+.annotations-header-containers {
+  display: flex;
+  font-size: 0.9em;
+  font-weight: 500;
+  flex-grow: 1;
+}
+
+.header-column {
+  flex: 1 1;
+}
+
+.header-container {
+  display: inline-block;
+}
+
+.header-clickable {
+  cursor: pointer;
+  display: flex;
+  outline: none;
+}
+
+.toggle-all-container {
+  margin-left: 10px;
+  width: 90px;
+}
+
+.sorting-icon {
+  height: 16px;
+}

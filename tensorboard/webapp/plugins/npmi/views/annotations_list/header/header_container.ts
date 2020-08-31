@@ -36,7 +36,7 @@ import * as npmiActions from '../../../actions';
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AnnotationsListHeaderContainer {
+export class HeaderContainer {
   @Input() numAnnotations!: number;
   @Input() annotations!: AnnotationDataListing;
   @Input() activeMetrics!: string[];
@@ -45,22 +45,9 @@ export class AnnotationsListHeaderContainer {
 
   constructor(private readonly store: Store<State>) {}
 
-  changeSorting(sortingChange: {
-    newMetric: string;
-    oldSorting: {metric: string; order: SortingOrder};
-  }) {
-    let newSorting = {
-      metric: sortingChange.newMetric,
-      order: SortingOrder.DOWN,
-    };
-    if (
-      sortingChange.oldSorting.metric === sortingChange.newMetric &&
-      sortingChange.oldSorting.order === SortingOrder.DOWN
-    ) {
-      newSorting.order = SortingOrder.UP;
-    }
+  changeSorting(newMetric: string) {
     this.store.dispatch(
-      npmiActions.npmiChangeAnnotationSorting({sorting: newSorting})
+      npmiActions.npmiChangeAnnotationSorting({metric: newMetric})
     );
   }
 

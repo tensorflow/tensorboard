@@ -24,22 +24,20 @@ import {AnnotationSorting, SortingOrder} from '../../../store/npmi_types';
 
 @Component({
   selector: 'npmi-annotations-list-header-component',
-  templateUrl: './annotations_list_header_component.ng.html',
-  styleUrls: ['./annotations_list_header_component.css'],
+  templateUrl: './header_component.ng.html',
+  styleUrls: ['./header_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AnnotationsListHeaderComponent {
+export class HeaderComponent {
   @Input() numAnnotations!: number;
   @Input() selectedAnnotations!: string[];
   @Input() activeMetrics!: string[];
   @Input() sorting!: AnnotationSorting;
-  @Output() onChangeSorting = new EventEmitter<{
-    newMetric: string;
-    oldSorting: {metric: string; order: SortingOrder};
-  }>();
+  @Output() onChangeSorting = new EventEmitter<string>();
   @Output() onAllAnnotationsToggled = new EventEmitter<boolean>();
+  readonly SortingOrder = SortingOrder;
 
-  stripAndAppendMetric(metric: string): string {
-    return stripMetricString(addSortingSymbol(metric, this.sorting));
+  stripMetric(metric: string): string {
+    return stripMetricString(metric);
   }
 }
