@@ -102,7 +102,7 @@ def tensorboard_workspace():
           "http://mirror.tensorflow.org/repo1.maven.org/maven2/org/apache/commons/commons-lang3/3.9/commons-lang3-3.9.jar",
           "https://repo1.maven.org/maven2/org/apache/commons/commons-lang3/3.9/commons-lang3-3.9.jar",
       ],
-      licenses = ["notice"],  # Apache 2.0
+      licenses = ["notice"],
   )
 
   java_import_external(
@@ -112,5 +112,5 @@ def tensorboard_workspace():
           "http://mirror.tensorflow.org/repo1.maven.org/maven2/org/apache/commons/commons-text/1.6/commons-text-1.6.jar",
           "https://repo1.maven.org/maven2/org/apache/commons/commons-text/1.6/commons-text-1.6.jar",
       ],
-      licenses = ["notice"],  # Apache 2.0
+      licenses = ["notice"],
   )
