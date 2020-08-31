@@ -71,6 +71,7 @@ install:
   # Workaround for https://github.com/travis-ci/travis-ci/issues/7940
   - sudo rm -f /etc/boto.cfg
   - pip freeze  # print installed distributions, for debugging purposes
+  - virtualenv --version
   - elapsed "install (done)"
 
 before_script:
