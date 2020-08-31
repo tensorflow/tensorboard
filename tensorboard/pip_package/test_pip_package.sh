@@ -113,7 +113,7 @@ smoke() (
   set -x
 
   command -v "${smoke_python}" >/dev/null
-  virtualenv -qp "${smoke_python}" "${smoke_venv}"
+  virtualenv -q -p "${smoke_python}" "${smoke_venv}"
   cd "${smoke_venv}"
 
   export VIRTUAL_ENV=venv
