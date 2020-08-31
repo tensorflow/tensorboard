@@ -183,6 +183,8 @@ tf_ng_web_test_suite(
         "//tensorboard/webapp/plugins/npmi/views/annotations_list/annotations_list_toolbar:annotations_list_toolbar_test_lib",
         "//tensorboard/webapp/plugins/npmi/views/annotations_list/annotations_list_toolbar/annotations_search:annotations_search_test_lib",
         "//tensorboard/webapp/plugins/npmi/views/annotations_list/header:header_test_lib",
+        "//tensorboard/webapp/plugins/npmi/views/annotations_list/legend:legend_test_lib",
+        "//tensorboard/webapp/plugins/npmi/views/annotations_list/legend/legend_element:legend_element_test_lib",
         "//tensorboard/webapp/plugins/npmi/views/data_selection:data_selection_test_lib",
         "//tensorboard/webapp/plugins/npmi/views/data_selection/metric_arithmetic:metric_arithmetic_test_lib",
         "//tensorboard/webapp/plugins/npmi/views/data_selection/metric_arithmetic/metric_arithmetic_element:metric_arithmetic_element_test_lib",
