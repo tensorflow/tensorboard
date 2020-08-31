@@ -16,7 +16,7 @@ genrule(
     srcs = ["inactive_component.uninlined.ng.html"] + glob(["images/*.png"]),
     outs = ["inactive_component.ng.html"],
     cmd = "$(execpath //tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/inactive:inline_images) $(SRCS) >'$@'",
-    exec_tools = [":inline_images"],
+    tools = [":inline_images"],
 )
 
 ng_module(

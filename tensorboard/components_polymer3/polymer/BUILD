@@ -58,7 +58,7 @@ genrule(
     ],
     outs = ["plottable-style.ts"],
     cmd = "$(execpath //tensorboard/tools:inline_file_content) $(SRCS) >'$@'",
-    exec_tools = ["//tensorboard/tools:inline_file_content"],
+    tools = ["//tensorboard/tools:inline_file_content"],
 )
 
 tf_ts_library(
