@@ -101,6 +101,11 @@ build() (
       s/^from webencodings/from tensorboard._vendor.webencodings/
     ' {} +
 
+  pip freeze --all
+
+  # virtualenv requires setuptools
+  pip install -qU 'setuptools>=36.2.0'
+
   virtualenv -q -p python3 venv
   export VIRTUAL_ENV=venv
   export PATH="${PWD}/venv/bin:${PATH}"
