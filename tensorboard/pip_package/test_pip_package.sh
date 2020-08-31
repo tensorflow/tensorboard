@@ -113,6 +113,7 @@ smoke() (
   set -x
 
   command -v "${smoke_python}" >/dev/null
+  pip install -qU 'setuptools>=36.2.0'
   virtualenv -qp "${smoke_python}" "${smoke_venv}"
   cd "${smoke_venv}"
 

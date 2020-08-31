@@ -32,6 +32,7 @@ tar xzvf \
     "${TEST_SRCDIR}/org_tensorflow_tensorboard/tensorboard/pip_package/pip_packages.tar.gz" \
     -C ./tensorboard-wheels/
 
+pip install -qU 'setuptools>=36.2.0'
 virtualenv venv
 export VIRTUAL_ENV=venv
 export PATH="${PWD}/venv/bin:${PATH}"
