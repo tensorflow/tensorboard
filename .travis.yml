@@ -70,7 +70,7 @@ install:
     fi
   # Workaround for https://github.com/travis-ci/travis-ci/issues/7940
   - sudo rm -f /etc/boto.cfg
-  - pip freeze  # print installed distributions, for debugging purposes
+  - pip freeze --all  # print installed distributions, for debugging purposes
   - elapsed "install (done)"
 
 before_script:
