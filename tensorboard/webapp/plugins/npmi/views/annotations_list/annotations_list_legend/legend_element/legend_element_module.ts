@@ -12,9 +12,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-require.config({
-  paths: {
-    lodash: '/base/npm/node_modules/lodash/lodash',
-    d3: '/base/npm/node_modules/d3/dist/d3',
-  },
-});
+import {CommonModule} from '@angular/common';
+import {NgModule} from '@angular/core';
+
+import {LegendElementComponent} from './legend_element_component';
+
+@NgModule({
+  declarations: [LegendElementComponent],
+  imports: [CommonModule],
+  exports: [LegendElementComponent],
+})
+export class LegendElementModule {}

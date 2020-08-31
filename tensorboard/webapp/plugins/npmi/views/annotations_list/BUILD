@@ -28,6 +28,8 @@ ng_module(
         "//tensorboard/webapp/plugins/npmi/store:types",
         "//tensorboard/webapp/plugins/npmi/util:filter_annotations",
         "//tensorboard/webapp/plugins/npmi/util:metric_type",
+        "//tensorboard/webapp/plugins/npmi/views/annotations_list/annotations_list_header",
+        "//tensorboard/webapp/plugins/npmi/views/annotations_list/annotations_list_legend",
         "//tensorboard/webapp/plugins/npmi/views/annotations_list/annotations_list_toolbar",
         "@npm//@angular/core",
         "@npm//@ngrx/store",

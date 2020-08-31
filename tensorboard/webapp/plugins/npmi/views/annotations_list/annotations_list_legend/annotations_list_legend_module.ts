@@ -12,9 +12,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-require.config({
-  paths: {
-    lodash: '/base/npm/node_modules/lodash/lodash',
-    d3: '/base/npm/node_modules/d3/dist/d3',
-  },
-});
+import {NgModule} from '@angular/core';
+
+import {AnnotationsListLegendComponent} from './annotations_list_legend_component';
+import {LegendElementModule} from './legend_element/legend_element_module';
+
+@NgModule({
+  declarations: [AnnotationsListLegendComponent],
+  imports: [LegendElementModule],
+  exports: [AnnotationsListLegendComponent],
+})
+export class AnnotationsListLegendModule {}

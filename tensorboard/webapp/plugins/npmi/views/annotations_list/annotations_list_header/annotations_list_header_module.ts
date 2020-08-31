@@ -14,21 +14,20 @@ limitations under the License.
 ==============================================================================*/
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
+import {FormsModule} from '@angular/forms';
 
-import {AnnotationsListComponent} from './annotations_list_component';
-import {AnnotationsListContainer} from './annotations_list_container';
-import {AnnotationsListToolbarModule} from './annotations_list_toolbar/annotations_list_toolbar_module';
-import {AnnotationsListLegendModule} from './annotations_list_legend/annotations_list_legend_module';
-import {AnnotationsListHeaderModule} from './annotations_list_header/annotations_list_header_module';
+import {MatCheckboxModule} from '@angular/material/checkbox';
+import {MatTooltipModule} from '@angular/material/tooltip';
+
+import {AnnotationsListHeaderComponent} from './annotations_list_header_component';
+import {AnnotationsListHeaderContainer} from './annotations_list_header_container';
 
 @NgModule({
-  declarations: [AnnotationsListComponent, AnnotationsListContainer],
-  imports: [
-    CommonModule,
-    AnnotationsListToolbarModule,
-    AnnotationsListLegendModule,
-    AnnotationsListHeaderModule,
+  declarations: [
+    AnnotationsListHeaderComponent,
+    AnnotationsListHeaderContainer,
   ],
-  exports: [AnnotationsListContainer],
+  imports: [CommonModule, FormsModule, MatCheckboxModule, MatTooltipModule],
+  exports: [AnnotationsListHeaderContainer],
 })
-export class AnnotationsListModule {}
+export class AnnotationsListHeaderModule {}
