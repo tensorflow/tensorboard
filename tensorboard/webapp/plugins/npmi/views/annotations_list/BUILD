@@ -3,7 +3,7 @@ load("//tensorboard/defs:defs.bzl", "tf_sass_binary", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
-licenses(["notice"])
+licenses(["notice"])  # Apache 2.0
 
 tf_sass_binary(
     name = "annotations_list_component_styles",
