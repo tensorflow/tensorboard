@@ -190,6 +190,7 @@ tf_ng_web_test_suite(
         "//tensorboard/webapp/plugins/npmi/views/data_selection/metric_search:metric_search_test_lib",
         "//tensorboard/webapp/plugins/npmi/views/main:main_test_lib",
         "//tensorboard/webapp/plugins/npmi/views/violin_filters:violin_filters_test_lib",
+        "//tensorboard/webapp/plugins/npmi/views/violin_filters/violin_filter:violin_filter_test_lib",
         "//tensorboard/webapp/plugins/text_v2/data_source:data_source_test_lib",
         "//tensorboard/webapp/plugins/text_v2/effects:effects_test_lib",
         "//tensorboard/webapp/plugins/text_v2/store:store_test_lib",
@@ -222,6 +223,7 @@ tf_svg_bundle(
         "@com_google_material_design_icon//:cancel_24px.svg",
         "@com_google_material_design_icon//:arrow_downward_24px.svg",
         "@com_google_material_design_icon//:arrow_upward_24px.svg",
+        "@com_google_material_design_icon//:clear_24px.svg",
     ],
     out = "icon_bundle.svg",
 )

@@ -11,7 +11,8 @@ import {
 
 import * as d3 from 'd3';
 
-import {MetricFilter, ValueData} from './../../../store/npmi_types';
+import {MetricFilter} from './../../../store/npmi_types';
+import {ViolinChartData} from './../../../util/violin_data';
 
 @Component({
   selector: 'violin-filter-component',
@@ -22,30 +23,14 @@ import {MetricFilter, ValueData} from './../../../store/npmi_types';
 export class ViolinFilterComponent implements AfterViewInit, OnChanges {
   @Input() metricName!: string;
   @Input() filter!: MetricFilter;
-  @Input() activeRuns!: string[];
-  @Input() violinData!: {data: ValueData[]; dataNaN: ValueData[]};
-  @Output() onRemove = new EventEmitter<string>();
-  extremeValues = {max: 1.0, min: -1.0};
-  // get extremeValues(): {max: number; min: number} {
-  //   let result = {max: -1.0, min: 1.0};
-  //   this.violinData.forEach((value) => {
-  //     result.max = result.max < value.value ? value.value : result.max;
-  //     result.min = result.min > value.value ? value.value : result.min;
-  //   });
-  //   return result;
-  // }
-  get height(): number {
-    return parseInt(
-      d3.select(`#${CSS.escape(this.metricName)}`).style('height'),
-      10
-    );
-  }
-  get width(): number {
-    return parseInt(
-      d3.select(`#${CSS.escape(this.metricName)}`).style('width'),
-      10
-    );
-  }
+  @Input() chartData!: {
+    violinData: ViolinChartData;
+    extremes: {min: number; max: number};
+  };
+  @Input() width!: number;
+  @Output() onRemove = new EventEmitter();
+  @Output() onUpdateFilter = new EventEmitter<MetricFilter>();
+  private height = 300;
   private margin = {top: 20, right: 10, bottom: 20, left: 10};
   private drawMargin = {top: 0, right: 0, bottom: 20, left: 20};
   get chartWidth(): number {
@@ -69,23 +54,18 @@ export class ViolinFilterComponent implements AfterViewInit, OnChanges {
   private yAxisGroup: any;
   private xAxisGroup: any;
   private miscGroup: any;
-  private brushGroup: any;
   // Scales and axis
-  private xScale: any;
-  private xAxis: any;
-  private yAxis: any;
-  private yScale: any;
-  private histogram: any;
-  private xScaleNum: any;
-  // Data Summary for the Histogram
-  private sumStat: any;
+  private xScale: d3.ScalePoint<string> = d3.scalePoint();
+  private xAxis?: d3.Axis<string>;
+  private yScale: d3.ScaleLinear<number, number> = d3.scaleLinear();
+  private yAxis?: d3.Axis<number | {valueOf(): number}>;
+  private xScaleNum: d3.ScaleLinear<number, number> = d3.scaleLinear();
+
   private maxNum = 0;
   private rgbColors = ['240, 120, 80', '46, 119, 182', '190, 64, 36'];
 
   ngAfterViewInit(): void {
     this.svg = d3.select(`#${CSS.escape(this.metricName)}`).select('svg');
-    this.xScale = d3.scalePoint();
-    this.yScale = d3.scaleLinear();
     this.mainContainer = this.svg
       .append('g')
       .attr('transform', `translate(${this.margin.left}, ${this.margin.top})`);
@@ -128,66 +108,21 @@ export class ViolinFilterComponent implements AfterViewInit, OnChanges {
     this.xScale = d3
       .scaleBand()
       .range([0, this.drawWidth])
-      .domain(this.activeRuns)
+      .domain(Object.keys(this.chartData.violinData))
       .padding(0.05);
     this.xAxis = d3.axisBottom(this.xScale);
 
     this.yScale = d3
       .scaleLinear()
       .range([this.drawHeight, 0])
-      .domain([this.extremeValues.min, this.extremeValues.max]);
+      .domain([this.chartData.extremes.min, this.chartData.extremes.max]);
     this.yAxis = d3.axisLeft(this.yScale);
 
-    this.histogram = d3
-      .histogram()
-      .domain(this.yScale.domain())
-      .thresholds(this.yScale.ticks(20))
-      .value((d) => d);
-
-    this.sumStat = d3
-      .nest()
-      .key(function(d: any) {
-        console.log(d.constructor.name);
-        return d.run;
-      })
-      .rollup(
-        function(this: ViolinFilterComponent, d: any) {
-          let input = d.map(function(g: ValueData) {
-            return g.nPMIValue;
-          });
-          let bins = this.histogram(input);
-          return bins;
-        }.bind(this)
-      )
-      .entries(this.violinData.data);
-
-    let nanValues: {[runId: string]: number[]} = {};
-    this.violinData.dataNaN.map((value) => {
-      if (nanValues[value.run]) {
-        nanValues[value.run].push(NaN);
-      } else {
-        nanValues[value.run] = [NaN];
-      }
-    });
-    let bin = d3
-      .histogram()
-      .domain([-Infinity, Infinity])
-      .thresholds(0)
-      .value((d) => d);
-    for (let i in this.sumStat) {
-      if (nanValues[this.sumStat[i].key]) {
-        let buckets = bin(nanValues[this.sumStat[i].key]);
-        if (buckets[0].length > 0) {
-          this.sumStat[i].value.unshift(buckets[0]);
-        }
-      }
-      let allBins = this.sumStat[i].value;
-      let lengths: number[] = allBins.map(function(a: any) {
-        return a.length;
-      });
-      let longest: number = d3.max(lengths) as number;
+    Object.keys(this.chartData.violinData).forEach((key) => {
+      const lengths = this.chartData.violinData[key].map((bin) => bin.length);
+      const longest: number = Math.max(...lengths);
       this.maxNum = longest > this.maxNum ? longest : this.maxNum;
-    }
+    });
 
     this.xScaleNum = d3
       .scaleLinear()
@@ -198,7 +133,7 @@ export class ViolinFilterComponent implements AfterViewInit, OnChanges {
   draw() {
     this.drawAxis();
     this.drawPlot();
-    // this.drawBrush();
+    this.drawBrush();
   }
 
   drawAxis() {
@@ -246,14 +181,15 @@ export class ViolinFilterComponent implements AfterViewInit, OnChanges {
   drawPlot() {
     this.dotsGroup.selectAll('*').remove();
     this.dotsGroup
-      .selectAll('.violinPlot')
-      .data(this.sumStat)
-      .join('g')
-      .attr('class', 'violinPlot')
+      .selectAll('.violin-plot')
+      .data(Object.keys(this.chartData.violinData))
+      .enter()
+      .append('g')
+      .attr('class', 'violin-plot')
       .attr(
         'transform',
         function(this: ViolinFilterComponent, d: any) {
-          return 'translate(' + this.xScale(d.key) + ' ,0)';
+          return 'translate(' + this.xScale(d) + ' ,0)';
         }.bind(this)
       )
       .append('path')
@@ -269,9 +205,11 @@ export class ViolinFilterComponent implements AfterViewInit, OnChanges {
           return `rgba(${this.rgbColors[0]}, 0.3)`;
         }.bind(this)
       )
-      .datum(function(d: any) {
-        return d.value;
-      })
+      .datum(
+        function(this: ViolinFilterComponent, d: any) {
+          return this.chartData.violinData[d];
+        }.bind(this)
+      )
       .attr(
         'd',
         d3
@@ -298,7 +236,6 @@ export class ViolinFilterComponent implements AfterViewInit, OnChanges {
       );
   }
 
-  /*
   drawBrush() {
     let brush = d3
       .brushY()
@@ -314,7 +251,7 @@ export class ViolinFilterComponent implements AfterViewInit, OnChanges {
       ])
       .on('end', this.updateBrush.bind(this));
     this.svg.selectAll('.brush').remove();
-    this.brushGroup = this.svg
+    this.svg
       .append('g')
       .attr('class', 'brush')
       .call(brush)
@@ -337,12 +274,12 @@ export class ViolinFilterComponent implements AfterViewInit, OnChanges {
       }
     } else {
       const max =
-        this.filter.max > this.extremeValues.max
-          ? this.extremeValues.max
+        this.filter.max > this.chartData.extremes.max
+          ? this.chartData.extremes.max
           : this.filter.max;
       const min =
-        this.filter.min < this.extremeValues.min
-          ? this.extremeValues.min
+        this.filter.min < this.chartData.extremes.min
+          ? this.chartData.extremes.min
           : this.filter.min;
       if (!this.filter.includeNaN) {
         // Min does not reach NaN
@@ -354,11 +291,12 @@ export class ViolinFilterComponent implements AfterViewInit, OnChanges {
   }
 
   updateBrush() {
+    if (!d3.event.sourceEvent) return;
     let extent = d3.event.selection;
     if (extent) {
       let includeNaN = false;
       let max = -2.0;
-      let min = this.extremeValues.min;
+      let min = this.chartData.extremes.min;
       let topMargins = this.margin.top + this.drawMargin.top;
       if (
         extent[0] < this.chartHeight + topMargins &&
@@ -372,24 +310,17 @@ export class ViolinFilterComponent implements AfterViewInit, OnChanges {
       if (extent[1] < this.chartHeight + this.drawMargin.top) {
         min = this.yScale.invert(extent[1] - topMargins);
       }
-      this.store.dispatch(
-        updateAnnotationFilter({metric: this.metricName, max, min, includeNaN})
-      );
+      this.onUpdateFilter.emit({
+        max: max,
+        min: min,
+        includeNaN: includeNaN,
+      });
     } else {
-      this.store.dispatch(
-        updateAnnotationFilter({
-          metric: this.metricName,
-          max: 1.0,
-          min: -1.0,
-          includeNaN: true,
-        })
-      );
+      this.onUpdateFilter.emit({
+        max: 1.0,
+        min: -1.0,
+        includeNaN: true,
+      });
     }
   }
-
-  removeMetric() {
-    this.store.dispatch(removeAnnotationFilter({metric: this.metricName}));
-    this.store.dispatch(removeMetricActive({metric: this.metricName}));
-  }
-  */
 }

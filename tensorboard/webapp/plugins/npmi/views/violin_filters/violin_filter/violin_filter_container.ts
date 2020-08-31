@@ -10,17 +10,14 @@ import {
   getAnnotationData,
   getHiddenAnnotations,
   getShowHiddenAnnotations,
+  getSidebarWidth,
 } from './../../../store/npmi_selectors';
-import {
-  MetricFilter,
-  AnnotationDataListing,
-  ValueData,
-} from '../../../store/npmi_types';
+import {MetricFilter} from '../../../store/npmi_types';
 import * as npmiActions from '../../../actions';
 import {removeHiddenAnnotations} from '../../../util/filter_annotations';
+import {violinData, ViolinChartData} from '../../../util/violin_data';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
-import {stripMetricString} from '../../../util/metric_type';
 
 @Component({
   selector: 'npmi-violin-filter',
@@ -28,9 +25,10 @@ import {stripMetricString} from '../../../util/metric_type';
     <violin-filter-component
       [metricName]="metricName"
       [filter]="filter"
-      [activeRuns]="activeRuns$ | async"
-      [violinData]="filteredData$ | async"
-      (onRemove)="removeMetric($event)"
+      [chartData]="chartData$ | async"
+      [width]="chartWidth$ | async"
+      (onRemove)="removeMetric()"
+      (onUpdateFilter)="updateFilter($event)"
     ></violin-filter-component>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -59,45 +57,38 @@ export class ViolinFilterContainer implements OnInit {
       );
     })
   );
-  filteredData$?: Observable<{data: ValueData[]; dataNaN: ValueData[]}>;
+  readonly chartWidth$ = this.store.pipe(select(getSidebarWidth)).pipe(
+    map((width) => {
+      return Math.max(150, width);
+    })
+  );
+  chartData$?: Observable<{
+    violinData: ViolinChartData;
+    extremes: {min: number; max: number};
+  }>;
 
   constructor(private readonly store: Store<State>) {}
 
   ngOnInit() {
-    this.filteredData$ = combineLatest(
+    this.chartData$ = combineLatest(
       this.visibleAnnotations$,
       this.activeRuns$
     ).pipe(
       map(([visibleAnnotations, activeRuns]) => {
-        let data: ValueData[] = [];
-        let dataNaN: ValueData[] = [];
-        const allRuns = new Set(activeRuns);
-        const strippedMetric = stripMetricString(this.metricName);
-        Object.entries(visibleAnnotations).forEach((entry) => {
-          let valueDataElements = entry[1];
-          valueDataElements = valueDataElements.filter((valueDataElement) => {
-            return (
-              allRuns.has(valueDataElement.run) &&
-              valueDataElement.metric === strippedMetric
-            );
-          });
-          data = data.concat(
-            valueDataElements.filter(
-              (dataPoint) => dataPoint.nPMIValue !== null
-            )
-          );
-          dataNaN = dataNaN.concat(
-            valueDataElements.filter(
-              (dataPoint) => dataPoint.nPMIValue === null
-            )
-          );
-        });
-        return {data: data, dataNaN: dataNaN};
+        return violinData(visibleAnnotations, activeRuns, this.metricName);
       })
     );
   }
 
-  removeMetric(metric: string) {
-    this.store.dispatch(npmiActions.npmiRemoveMetricFilter({metric: metric}));
+  removeMetric() {
+    this.store.dispatch(
+      npmiActions.npmiRemoveMetricFilter({metric: this.metricName})
+    );
+  }
+
+  updateFilter(filter: MetricFilter) {
+    this.store.dispatch(
+      npmiActions.npmiChangeMetricFilter({metric: this.metricName, ...filter})
+    );
   }
 }

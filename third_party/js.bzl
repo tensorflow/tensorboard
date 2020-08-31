@@ -533,6 +533,10 @@ def tensorboard_js_workspace():
                 "http://mirror.tensorflow.org/raw.githubusercontent.com/google/material-design-icons/3.0.1/navigation/svg/production/ic_arrow_upward_24px.svg",
                 "https://raw.githubusercontent.com/google/material-design-icons/3.0.1/navigation/svg/production/ic_arrow_upward_24px.svg",
             ],
+            "6d4ccf520d400755057a1739a66c0feda3c98bbc34e8e7f79afa630b2e43f87e": [
+                "http://mirror.tensorflow.org/raw.githubusercontent.com/google/material-design-icons/3.0.1/content/svg/production/ic_clear_24px.svg",
+                "https://raw.githubusercontent.com/google/material-design-icons/224895a86501195e7a7ff3dde18e39f00b8e3d5a/content/svg/production/ic_clear_24px.svg",
+            ],
         },
         rename = {
             "ic_content_copy_24px.svg": "content_copy_24px.svg",
@@ -551,5 +555,6 @@ def tensorboard_js_workspace():
             "ic_cancel_24px.svg": "cancel_24px.svg",
             "ic_arrow_downward_24px.svg": "arrow_downward_24px.svg",
             "ic_arrow_upward_24px.svg": "arrow_upward_24px.svg",
+            "ic_clear_24px.svg": "clear_24px.svg",
         },
     )
