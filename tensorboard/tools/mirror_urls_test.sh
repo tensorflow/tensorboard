@@ -41,11 +41,13 @@ check_urls_resolve() {
     url_pcre='(?<=")https?://mirror\.tensorflow\.org/[^"]*'
     exclude_bazel=':!ci/download_bazel.sh'  # uses a '${version}' format string
     exclude_buildifier=':!ci/download_buildifier.sh'  # likewise
+    exclude_buildozer=':!ci/download_buildozer.sh'  # likewise
     # We use `git-grep` to efficiently get an initial result set, then
     # filter it down with GNU `grep` separately, because `git-grep` only
     # learned `-o` in Git v2.19; Travis uses v2.15.1.
     unresolved_urls_file="${tmpdir}/unresolved_urls"
     git grep -Ph "${url_pcre}" "${exclude_bazel}" "${exclude_buildifier}" \
+        "${exclude_buildozer}" \
         | grep -o 'https\?://mirror\.tensorflow\.org/[^"]*' \
         | sort -u \
         >"${unresolved_urls_file}"
