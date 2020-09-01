@@ -47,14 +47,6 @@ genrule(
     cmd = "for f in $(SRCS); do cat \"$$f\"; echo; done > $@",
 )
 
-genrule(
-    name = "gen_tensorboard.html",
-    srcs = ["tensorboard.uninlined.html"],
-    outs = ["tensorboard.html"],
-    cmd = "$(execpath //tensorboard/logo:inline_favicon) $< >$@",
-    tools = ["//tensorboard/logo:inline_favicon"],
-)
-
 tf_ts_library(
     name = "analytics",
     srcs = [
