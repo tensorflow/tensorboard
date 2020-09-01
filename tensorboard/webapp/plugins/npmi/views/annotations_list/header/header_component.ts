@@ -19,7 +19,7 @@ import {
   Output,
   EventEmitter,
 } from '@angular/core';
-import {stripMetricString, addSortingSymbol} from '../../../util/metric_type';
+import {stripMetricString} from '../../../util/metric_type';
 import {AnnotationSorting, SortingOrder} from '../../../store/npmi_types';
 
 @Component({
