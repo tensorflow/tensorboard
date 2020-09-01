@@ -20,7 +20,7 @@ def tensorboard_fonts_workspace():
   # bazel run //tensorboard/tools:import_google_fonts -- --url='https://fonts.googleapis.com/css?family=Roboto:400,300,300italic,400italic,500,500italic,700,700italic;https://fonts.googleapis.com/css?family=Roboto+Mono:400,700'
   filegroup_external(
       name = "com_google_fonts_roboto",
-      licenses = ["notice"],
+      licenses = ["notice"],  # Apache 2.0
       sha256_urls = {
           "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4": [
               "http://mirror.tensorflow.org/raw.githubusercontent.com/google/roboto/ba03b84b90b50afd99f9688059447bc545e5c0e1/LICENSE",
@@ -381,9 +381,9 @@ def tensorboard_fonts_workspace():
       extra_build_file_content = "\n".join([
           'load("@io_bazel_rules_closure//closure:defs.bzl", "web_library")',
           '',
-          'licenses(["notice"])',
+          'licenses(["notice"])  # Apache 2.0',
           '',
-          'exports_files(["LICENSE"])',
+          'exports_files(["LICENSE"])  # Apache 2.0',
           '',
           'web_library(',
           '    name = "com_google_fonts_roboto",',

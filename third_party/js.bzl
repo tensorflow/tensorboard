@@ -81,7 +81,7 @@ def tensorboard_js_workspace():
 
     filegroup_external(
         name = "com_microsoft_typescript",
-        licenses = ["notice"],
+        licenses = ["notice"],  # Apache 2.0
         sha256_urls = {
             "a7d00bfd54525bc694b6e32f64c7ebcf5e6b7ae3657be5cc12767bce74654a47": [
                 "http://mirror.tensorflow.org/raw.githubusercontent.com/Microsoft/TypeScript/v2.7.2/LICENSE.txt",
@@ -142,7 +142,7 @@ def tensorboard_js_workspace():
 
     filegroup_external(
         name = "com_google_javascript_closure_compiler_externs",
-        licenses = ["notice"],
+        licenses = ["notice"],  # Apache 2.0
         sha256_urls_extract = {
             "4f0cc3cf9928905993072bdd1f81a4444bd8b7fff0a12f119e2dd2a9a68cdd82": [
                 # tag v20190513 resolves to commit 938e347e4f79f4d7b124e160145b6ea3418b4c56 (2019-05-13 16:28:32 -0700)
@@ -210,7 +210,7 @@ def tensorboard_js_workspace():
     filegroup_external(
         name = "ai_google_pair_umap_js",
         # no @license header
-        licenses = ["notice"],
+        licenses = ["notice"],  # Apache License 2.0
         sha256_urls = {
             "035fede477f10b909dd64a2ea01c031149ee523f54fb9bbe48a170eb04d53825": [
                 "http://mirror.tensorflow.org/unpkg.com/umap-js@1.2.2/lib/umap-js.min.js",
@@ -283,7 +283,7 @@ def tensorboard_js_workspace():
 
     web_library_external(
         name = "vaadin_vaadin_split_layout",
-        licenses = ["notice"],
+        licenses = ["notice"],  # Apache License 2.0
         sha256 = "44fb83628edb77cb8392c165d4d99734750a6fbb00e5391f033962e56f14eba3",
         urls = [
             "http://mirror.tensorflow.org/github.com/vaadin/vaadin-split-layout/archive/v1.1.0.tar.gz",
@@ -300,7 +300,7 @@ def tensorboard_js_workspace():
 
     web_library_external(
         name = "vaadin_vaadin_grid",
-        licenses = ["notice"],
+        licenses = ["notice"],  # Apache License 2.0
         sha256 = "834679bedc1b6bafecac7e7f0e3458d99ace6cddbf154c56631ef6428b787fd1",
         urls = [
             "http://mirror.tensorflow.org/github.com/vaadin/vaadin-grid/archive/v3.0.2.tar.gz",
@@ -326,7 +326,7 @@ def tensorboard_js_workspace():
 
     web_library_external(
         name = "org_npmjs_registry_accessibility_developer_tools",
-        licenses = ["notice"],
+        licenses = ["notice"],  # Apache License 2.0
         sha256 = "1d6a72f401c9d53f68238c617dd43a05cd85ca5aa2e676a5b3c352711448e093",
         urls = [
             "http://mirror.tensorflow.org/registry.npmjs.org/accessibility-developer-tools/-/accessibility-developer-tools-2.10.0.tgz",
@@ -467,7 +467,7 @@ def tensorboard_js_workspace():
 
     filegroup_external(
         name = "com_google_material_design_icon",
-        licenses = ["notice"],
+        licenses = ["notice"],  # Apache 2.0
         sha256_urls = {
             "fa4ad2661739c9ecefa121c41f5c95de878d4990ee86413124585a3af7d7dffb": [
                 "http://mirror.tensorflow.org/raw.githubusercontent.com/google/material-design-icons/3.0.1/content/svg/production/ic_content_copy_24px.svg",

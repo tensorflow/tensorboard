@@ -1,5 +1,7 @@
 # Description:
 #   Build file for Bleach.
+# License:
+#   Apache 2.0
 package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])
