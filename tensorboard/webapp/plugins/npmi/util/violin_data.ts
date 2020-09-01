@@ -20,6 +20,13 @@ import * as d3 from 'd3';
 export type ViolinChartData = {[runId: string]: ViolinBin[]};
 export type ViolinBin = d3.Bin<number, number>;
 
+/**
+ * Returns the data needed for the nPMI violin plots.
+ *
+ * @param annotationData the data that comes from the backend
+ * @param activeRuns currently active runs to filter the data by
+ * @param metricName selected metric to filter the data by
+ */
 export function violinData(
   annotationData: AnnotationDataListing,
   activeRuns: string[],
@@ -33,8 +40,8 @@ export function violinData(
   const allRuns = new Set(activeRuns);
   const strippedMetric = stripMetricString(metricName);
   const extremeValues = {max: -1.0, min: 1.0};
-  Object.entries(annotationData).forEach((entry) => {
-    entry[1].forEach((valueDataElement) => {
+  Object.values(annotationData).forEach((annotationEntry) => {
+    annotationEntry.forEach((valueDataElement) => {
       const run = valueDataElement.run;
       if (allRuns.has(run) && valueDataElement.metric === strippedMetric) {
         if (valueDataElement.nPMIValue === null) {
@@ -44,7 +51,7 @@ export function violinData(
             histogramDataNull[run] = [null];
           }
         } else {
-          const nPMIValue = valueDataElement.nPMIValue as number;
+          const nPMIValue = valueDataElement.nPMIValue;
           extremeValues.max =
             extremeValues.max < nPMIValue ? nPMIValue : extremeValues.max;
           extremeValues.min =

@@ -16,6 +16,8 @@ import {Component, ChangeDetectionStrategy, Input} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {State} from '../../../../app_state';
 
+import {map} from 'rxjs/operators';
+
 import {getSidebarExpanded, getMetricFilters} from '../../store';
 import * as npmiActions from '../../actions';
 
@@ -34,7 +36,11 @@ import * as npmiActions from '../../actions';
 })
 export class ViolinFiltersContainer {
   readonly sidebarExpanded$ = this.store.select(getSidebarExpanded);
-  readonly metricFilters$ = this.store.select(getMetricFilters);
+  readonly metricFilters$ = this.store.select(getMetricFilters).pipe(
+    map((filters) => {
+      return Object.entries(filters);
+    })
+  );
 
   constructor(private readonly store: Store<State>) {}
 

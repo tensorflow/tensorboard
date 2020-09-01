@@ -179,6 +179,7 @@ tf_ng_web_test_suite(
         "//tensorboard/webapp/plugins/npmi/data_source:data_source_test_lib",
         "//tensorboard/webapp/plugins/npmi/effects:effects_test_lib",
         "//tensorboard/webapp/plugins/npmi/store:store_test_lib",
+        "//tensorboard/webapp/plugins/npmi/util:violin_data_test_lib",
         "//tensorboard/webapp/plugins/npmi/views/annotations_list:annotations_list_test_lib",
         "//tensorboard/webapp/plugins/npmi/views/annotations_list/annotations_list_toolbar:annotations_list_toolbar_test_lib",
         "//tensorboard/webapp/plugins/npmi/views/annotations_list/annotations_list_toolbar/annotations_search:annotations_search_test_lib",

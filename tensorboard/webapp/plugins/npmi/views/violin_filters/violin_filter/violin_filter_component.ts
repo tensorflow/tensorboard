@@ -21,12 +21,14 @@ import {
   OnChanges,
   SimpleChanges,
   EventEmitter,
+  ViewChild,
+  ElementRef,
 } from '@angular/core';
 
 import * as d3 from 'd3';
 
 import {MetricFilter} from './../../../store/npmi_types';
-import {ViolinChartData} from './../../../util/violin_data';
+import {ViolinChartData, ViolinBin} from './../../../util/violin_data';
 
 @Component({
   selector: 'violin-filter-component',
@@ -44,6 +46,8 @@ export class ViolinFilterComponent implements AfterViewInit, OnChanges {
   @Input() width!: number;
   @Output() onRemove = new EventEmitter();
   @Output() onUpdateFilter = new EventEmitter<MetricFilter>();
+  @ViewChild('chart', {static: true, read: ElementRef})
+  private readonly chartContainer!: ElementRef<HTMLDivElement>;
   private height = 300;
   private margin = {top: 20, right: 10, bottom: 20, left: 10};
   private drawMargin = {top: 0, right: 0, bottom: 20, left: 20};
@@ -74,12 +78,19 @@ export class ViolinFilterComponent implements AfterViewInit, OnChanges {
   private yScale: d3.ScaleLinear<number, number> = d3.scaleLinear();
   private yAxis?: d3.Axis<number | {valueOf(): number}>;
   private xScaleNum: d3.ScaleLinear<number, number> = d3.scaleLinear();
+  // Brush
+  private brush: any;
+  // Misc
+  private nanLine: any;
+  private nanText: any;
+  private zeroLine: any;
 
-  private maxNum = 0;
+  private maxBinSize = 0;
   private rgbColors = ['240, 120, 80', '46, 119, 182', '190, 64, 36'];
 
   ngAfterViewInit(): void {
-    this.svg = d3.select(`#${CSS.escape(this.metricName)}`).select('svg');
+    this.svg = d3.select(this.chartContainer.nativeElement).select('svg');
+    this.svg;
     this.mainContainer = this.svg
       .append('g')
       .attr('transform', `translate(${this.margin.left}, ${this.margin.top})`);
@@ -97,28 +108,33 @@ export class ViolinFilterComponent implements AfterViewInit, OnChanges {
       .append('g')
       .attr('class', 'axis axis--x');
     this.miscGroup = this.drawContainer.append('g');
+    this.initializeBrush();
+    this.drawMisc();
     this.redraw();
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    this.redraw();
+    if (this.svg) {
+      this.redraw();
+    }
   }
 
   redraw() {
-    if (this.initialized()) {
-      this.setAxisStyles();
-      this.draw();
-    }
+    this.setMaxBinSize();
+    this.updateAxes();
+    this.draw();
   }
 
-  private initialized() {
-    if (this.svg === undefined) {
-      return false;
-    }
-    return true;
+  // Initializing/Updating the visualization props
+  setMaxBinSize() {
+    Object.values(this.chartData.violinData).forEach((dataElement) => {
+      const lengths = dataElement.map((bin) => bin.length);
+      const longest: number = Math.max(...lengths);
+      this.maxBinSize = Math.max(longest, this.maxBinSize);
+    });
   }
 
-  setAxisStyles() {
+  updateAxes() {
     this.xScale = d3
       .scaleBand()
       .range([0, this.drawWidth])
@@ -132,25 +148,37 @@ export class ViolinFilterComponent implements AfterViewInit, OnChanges {
       .domain([this.chartData.extremes.min, this.chartData.extremes.max]);
     this.yAxis = d3.axisLeft(this.yScale);
 
-    Object.keys(this.chartData.violinData).forEach((key) => {
-      const lengths = this.chartData.violinData[key].map((bin) => bin.length);
-      const longest: number = Math.max(...lengths);
-      this.maxNum = longest > this.maxNum ? longest : this.maxNum;
-    });
-
     this.xScaleNum = d3
       .scaleLinear()
       .range([0, this.xScale.bandwidth()])
-      .domain([-this.maxNum, this.maxNum]);
+      .domain([-this.maxBinSize, this.maxBinSize]);
   }
 
+  initializeBrush() {
+    this.brush = d3
+      .brushY()
+      .extent([
+        [
+          this.margin.left + this.drawMargin.left,
+          this.margin.top + this.drawMargin.top,
+        ],
+        [
+          this.width - this.margin.right,
+          this.height - this.margin.bottom / 2.0,
+        ],
+      ])
+      .on('end', this.brushMoved.bind(this));
+  }
+
+  // Drawing UI
   draw() {
-    this.drawAxis();
+    this.drawAxes();
     this.drawPlot();
-    this.drawBrush();
+    this.refreshMisc();
+    this.refreshBrush();
   }
 
-  drawAxis() {
+  drawAxes() {
     this.miscGroup.selectAll('*').remove();
     this.miscGroup
       .append('line')
@@ -192,126 +220,153 @@ export class ViolinFilterComponent implements AfterViewInit, OnChanges {
       .attr('y2', this.drawHeight + this.drawMargin.top);
   }
 
+  drawLines() {}
+
   drawPlot() {
-    this.dotsGroup.selectAll('*').remove();
-    this.dotsGroup
+    const plots = this.dotsGroup
       .selectAll('.violin-plot')
-      .data(Object.keys(this.chartData.violinData))
-      .enter()
-      .append('g')
+      .data(Object.entries(this.chartData.violinData))
+      .join('path')
       .attr('class', 'violin-plot')
       .attr(
         'transform',
-        function(this: ViolinFilterComponent, d: any) {
-          return 'translate(' + this.xScale(d) + ' ,0)';
+        function(
+          this: ViolinFilterComponent,
+          d: [string, ViolinBin[]]
+        ): string {
+          return 'translate(' + this.xScale(d[0]) + ' , 0)';
         }.bind(this)
       )
-      .append('path')
       .style(
         'stroke',
-        function(this: ViolinFilterComponent, d: any) {
+        function(
+          this: ViolinFilterComponent,
+          d: [string, ViolinBin[]]
+        ): string {
           return `rgba(${this.rgbColors[0]}, 1.0)`;
         }.bind(this)
       )
       .style(
         'fill',
-        function(this: ViolinFilterComponent, d: any) {
+        function(
+          this: ViolinFilterComponent,
+          d: [string, ViolinBin[]]
+        ): string {
           return `rgba(${this.rgbColors[0]}, 0.3)`;
         }.bind(this)
       )
-      .datum(
-        function(this: ViolinFilterComponent, d: any) {
-          return this.chartData.violinData[d];
-        }.bind(this)
-      )
+      .datum(function(d: [string, ViolinBin[]]): ViolinBin[] {
+        return d[1];
+      })
       .attr(
         'd',
         d3
-          .area()
+          .area<ViolinBin>()
           .x0(
-            function(this: ViolinFilterComponent, d: any) {
+            function(this: ViolinFilterComponent, d: ViolinBin) {
               return this.xScaleNum(-d.length);
             }.bind(this)
           )
           .x1(
-            function(this: ViolinFilterComponent, d: any) {
+            function(this: ViolinFilterComponent, d: ViolinBin) {
               return this.xScaleNum(d.length);
             }.bind(this)
           )
           .y(
-            function(this: ViolinFilterComponent, d: any) {
-              if (d.x0 === -Infinity) {
+            function(this: ViolinFilterComponent, d: ViolinBin) {
+              if (d.x0! === -Infinity) {
                 return this.chartHeight - this.drawMargin.top;
               }
-              return this.yScale((d.x1 + d.x0) / 2.0);
+              return this.yScale((d.x1! + d.x0!) / 2.0);
             }.bind(this)
           )
           .curve(d3.curveCatmullRom)
       );
   }
 
-  drawBrush() {
-    let brush = d3
-      .brushY()
-      .extent([
-        [
-          this.margin.left + this.drawMargin.left,
-          this.margin.top + this.drawMargin.top,
-        ],
-        [
-          this.width - this.margin.right,
-          this.height - this.margin.bottom / 2.0,
-        ],
-      ])
-      .on('end', this.updateBrush.bind(this));
-    this.svg.selectAll('.brush').remove();
-    this.svg
-      .append('g')
-      .attr('class', 'brush')
-      .call(brush)
-      .call(brush.move, this.getBrushPosition());
+  drawMisc() {
+    this.zeroLine = this.miscGroup
+      .append('line')
+      .style('stroke', 'black')
+      .attr('x1', 0)
+      .attr('y1', this.yScale(0))
+      .attr('x2', this.drawWidth)
+      .attr('y2', this.yScale(0));
+    this.nanText = this.miscGroup
+      .append('text')
+      .style('fill', 'black')
+      .text('NaN')
+      .attr('font-size', '10px')
+      .attr('text-anchor', 'end')
+      .attr('alignment-baseline', 'middle')
+      .attr('x', -5)
+      .attr('y', this.chartHeight - this.drawMargin.top);
+    this.nanLine = this.mainContainer
+      .append('line')
+      .style('stroke', 'grey')
+      .style('stroke-dasharray', '3, 3')
+      .attr('x1', 0)
+      .attr('y1', this.drawHeight + this.drawMargin.top)
+      .attr('x2', this.chartWidth)
+      .attr('y2', this.drawHeight + this.drawMargin.top);
   }
 
-  private getBrushPosition(): number[] {
-    let brushPosition = [
+  refreshMisc() {
+    this.zeroLine
+      .attr('y1', this.yScale(0))
+      .attr('x2', this.drawWidth)
+      .attr('y2', this.yScale(0));
+    this.nanText.attr('y', this.chartHeight - this.drawMargin.top);
+    this.nanLine
+      .attr('y1', this.drawHeight + this.drawMargin.top)
+      .attr('x2', this.chartWidth)
+      .attr('y2', this.drawHeight + this.drawMargin.top);
+  }
+
+  private refreshBrush() {
+    this.brush.extent([
+      [
+        this.margin.left + this.drawMargin.left,
+        this.margin.top + this.drawMargin.top,
+      ],
+      [this.width - this.margin.right, this.height - this.margin.bottom / 2.0],
+    ]);
+    const brushPosition = [
       this.margin.top + this.drawMargin.top,
       this.height - this.margin.bottom / 2.0,
     ];
-    let topMargins = this.margin.top + this.drawMargin.top;
+    const topMargins = this.margin.top + this.drawMargin.top;
     if (this.filter.max < this.filter.min) {
       if (this.filter.includeNaN) {
         // Only NaN selected
-        brushPosition[0] = this.chartHeight + this.margin.top - 20;
+        brushPosition[0] =
+          this.yScale(this.chartData.extremes.min) + topMargins;
       } else {
         // Nothing selected
         brushPosition[0] = brushPosition[1];
       }
     } else {
-      const max =
-        this.filter.max > this.chartData.extremes.max
-          ? this.chartData.extremes.max
-          : this.filter.max;
-      const min =
-        this.filter.min < this.chartData.extremes.min
-          ? this.chartData.extremes.min
-          : this.filter.min;
+      const max = Math.min(this.chartData.extremes.max, this.filter.max);
+      const min = Math.max(this.chartData.extremes.min, this.filter.min);
       if (!this.filter.includeNaN) {
         // Min does not reach NaN
         brushPosition[1] = this.yScale(min) + topMargins;
       }
       brushPosition[0] = this.yScale(max) + topMargins;
     }
-    return brushPosition;
+
+    this.svg.call(this.brush).call(this.brush.move, brushPosition);
   }
 
-  updateBrush() {
+  // Called on Interaction
+  brushMoved() {
     if (!d3.event.sourceEvent) return;
-    let extent = d3.event.selection;
+    const extent = d3.event.selection;
     if (extent) {
       let includeNaN = false;
       let max = -2.0;
       let min = this.chartData.extremes.min;
-      let topMargins = this.margin.top + this.drawMargin.top;
+      const topMargins = this.margin.top + this.drawMargin.top;
       if (
         extent[0] < this.chartHeight + topMargins &&
         extent[1] > this.chartHeight + topMargins

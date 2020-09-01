@@ -24,7 +24,7 @@ limitations under the License.
 
 .chart {
   height: 300px;
-  width: calc(100%-20px);
+  width: 100%;
 }
 
 .chart-head {
@@ -37,4 +37,9 @@ limitations under the License.
   font-size: 13px;
   padding-left: 10px;
   padding-top: 10px;
+}
+
+.draw-area {
+  height: 100%;
+  width: 100%;
 }

@@ -26,13 +26,13 @@ limitations under the License.
 </div>
 <div class="filters">
   <npmi-violin-filter
-    *ngFor="let metric of Object.keys(metricFilters)"
-    [metricName]="metric"
-    [filter]="metricFilters[metric]"
+    *ngFor="let filter of metricFilters"
+    [metricName]="filter[0]"
+    [filter]="filter[1]"
   >
   </npmi-violin-filter>
 </div>
-<div *ngIf="Object.keys(metricFilters).length === 0" class="filters-hint">
+<div *ngIf="metricFilters.length === 0" class="filters-hint">
   <span class="filters-hint-text">
     You can add more filters at the top.
   </span>

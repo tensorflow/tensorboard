@@ -19,7 +19,7 @@ import {
   Output,
   EventEmitter,
 } from '@angular/core';
-import {MetricFilterListing} from '../../store/npmi_types';
+import {MetricFilter} from '../../store/npmi_types';
 
 @Component({
   selector: 'violin-filters-component',
@@ -29,7 +29,6 @@ import {MetricFilterListing} from '../../store/npmi_types';
 })
 export class ViolinFiltersComponent {
   @Input() sidebarExpanded!: boolean;
-  @Input() metricFilters!: MetricFilterListing;
+  @Input() metricFilters!: [string, MetricFilter][];
   @Output() toggleSidebarExpanded = new EventEmitter();
-  Object = Object;
 }

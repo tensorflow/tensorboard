@@ -3,7 +3,7 @@ load("//tensorboard/defs:defs.bzl", "tf_sass_binary", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
-licenses(["notice"])  # Apache 2.0
+licenses(["notice"])
 
 tf_sass_binary(
     name = "violin_filter_component_styles",
@@ -23,6 +23,8 @@ ng_module(
     ],
     deps = [
         "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp/angular:expect_angular_material_button",
+        "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/plugins/npmi/actions",
         "//tensorboard/webapp/plugins/npmi/store",
@@ -30,7 +32,6 @@ ng_module(
         "//tensorboard/webapp/plugins/npmi/util:filter_annotations",
         "//tensorboard/webapp/plugins/npmi/util:violin_data",
         "@npm//@angular/core",
-        "@npm//@angular/material",
         "@npm//@ngrx/store",
         "@npm//@types/d3",
         "@npm//d3",
@@ -60,7 +61,9 @@ tf_ts_library(
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@ngrx/store",
+        "@npm//@types/d3",
         "@npm//@types/jasmine",
+        "@npm//d3",
         "@npm//rxjs",
     ],
 )
