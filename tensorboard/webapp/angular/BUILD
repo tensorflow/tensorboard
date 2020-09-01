@@ -157,6 +157,15 @@ tf_ts_library(
     ],
 )
 
+# This is a dummy rule used as a @angular/material/chip dependency.
+tf_ts_library(
+    name = "expect_angular_material_chips",
+    srcs = [],
+    deps = [
+        "@npm//@angular/material",
+    ],
+)
+
 # This is a dummy rule used as a @angular/platform-browser/animations dependency.
 # This is not a replacement for @angular/platform-browser dependency.
 tf_ts_library(

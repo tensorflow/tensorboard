@@ -12,16 +12,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {CommonModule} from '@angular/common';
-import {NgModule} from '@angular/core';
+import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {ArithmeticElement, ArithmeticKind} from './../../../store/npmi_types';
 
-import {MetricSearchModule} from './metric_search/metric_search_module';
-import {MetricArithmeticModule} from './metric_arithmetic/metric_arithmetic_module';
-import {DataSelectionComponent} from './data_selection_component';
-
-@NgModule({
-  declarations: [DataSelectionComponent],
-  imports: [CommonModule, MetricSearchModule, MetricArithmeticModule],
-  exports: [DataSelectionComponent],
+@Component({
+  selector: 'metric-arithmetic-component',
+  templateUrl: './metric_arithmetic_component.ng.html',
+  styleUrls: ['./metric_arithmetic_component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DataSelectionModule {}
+export class MetricArithmeticComponent {
+  @Input() metricArithmetic!: ArithmeticElement[];
+  readonly ArithmeticKind = ArithmeticKind;
+}

@@ -14,14 +14,13 @@ limitations under the License.
 ==============================================================================*/
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
+import {MatChipsModule} from '@angular/material/chips';
 
-import {MetricSearchModule} from './metric_search/metric_search_module';
-import {MetricArithmeticModule} from './metric_arithmetic/metric_arithmetic_module';
-import {DataSelectionComponent} from './data_selection_component';
+import {MetricArithmeticOperatorComponent} from './metric_arithmetic_operator_component';
 
 @NgModule({
-  declarations: [DataSelectionComponent],
-  imports: [CommonModule, MetricSearchModule, MetricArithmeticModule],
-  exports: [DataSelectionComponent],
+  declarations: [MetricArithmeticOperatorComponent],
+  imports: [CommonModule, MatChipsModule],
+  exports: [MetricArithmeticOperatorComponent],
 })
-export class DataSelectionModule {}
+export class MetricArithmeticOperatorModule {}
