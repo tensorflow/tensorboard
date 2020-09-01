@@ -55,6 +55,7 @@ tf_ts_library(
         ":bh_tsne",
         ":heap",
         ":sptree",
+        "//tensorboard/components_polymer3:analytics",
         "//tensorboard/components_polymer3:security",
         "//tensorboard/components_polymer3/polymer:irons_and_papers",
         "//tensorboard/components_polymer3/polymer:legacy_element_mixin",
@@ -110,7 +111,6 @@ tf_web_library(
     path = "/",
     deps = [
         "//tensorboard/components/tf_imports:roboto",
-        "//tensorboard/components_polymer3:analytics_html",
     ],
 )
 
