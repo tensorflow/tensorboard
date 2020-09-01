@@ -16,7 +16,6 @@
 TensorBoard external dependencies that can be loaded in WORKSPACE files.
 """
 
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:java.bzl", "java_import_external")
 load("@io_bazel_rules_webtesting//web/internal:platform_http_file.bzl", "platform_http_file")
 load("@npm_bazel_typescript//:index.bzl", "ts_setup_workspace")
@@ -36,18 +35,6 @@ def tensorboard_workspace():
 
     # Set up TypeScript toolchain.
     ts_setup_workspace()
-
-    http_archive(
-        name = "com_google_protobuf_js",
-        # NOTE: keep the version in sync with the protobuf/protoc version from TF in WORKSPACE.
-        sha256 = "1fbf1c2962af287607232b2eddeaec9b4f4a7a6f5934e1a9276e9af76952f7e0",
-        strip_prefix = "protobuf-3.9.2/js",
-        urls = [
-            "http://mirror.tensorflow.org/github.com/google/protobuf/archive/v3.9.2.tar.gz",
-            "https://github.com/google/protobuf/archive/v3.9.2.tar.gz",
-        ],
-        build_file = "@io_bazel_rules_closure//closure/protobuf:protobuf_js.BUILD",
-    )
 
     # Protobuf's BUILD file depends on //external:six.
     native.bind(
