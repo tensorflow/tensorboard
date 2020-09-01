@@ -17,8 +17,6 @@ import {
   Component,
   Input,
   AfterViewInit,
-  OnChanges,
-  SimpleChanges,
   ViewChild,
   ElementRef,
 } from '@angular/core';
@@ -30,7 +28,7 @@ import * as d3 from 'd3';
   styleUrls: ['./legend_element_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class LegendElementComponent implements AfterViewInit, OnChanges {
+export class LegendElementComponent implements AfterViewInit {
   @Input() text!: string;
   @Input() color!: string;
   @Input() shape!: string;
