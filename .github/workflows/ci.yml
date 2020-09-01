@@ -134,7 +134,7 @@ jobs:
         # Assert buildozer error code for 'success, when no changes were made'.
         # https://github.com/bazelbuild/buildtools/blob/master/buildozer/README.md#error-code
         run: |
-          buildozer '//tensorboard/...:%licenses' remove_comment; test $? = 3
+          buildozer '//tensorboard/...:%licenses' remove_comment
 
   lint-proto:
     runs-on: ubuntu-16.04
