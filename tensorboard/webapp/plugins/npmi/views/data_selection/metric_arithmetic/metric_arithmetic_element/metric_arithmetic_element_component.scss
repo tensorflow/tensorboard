@@ -14,22 +14,37 @@ limitations under the License.
 ==============================================================================*/
 @import 'tensorboard/webapp/theme/tb_theme';
 
-mat-icon {
-  flex: none;
-  margin-right: 5px;
+.filter-chip {
+  align-items: center;
+  display: flex;
+  margin-left: 5px;
 }
 
-:host {
-  display: flex;
-  padding: 0 10px;
-  position: relative;
-  font-size: 0.9em;
+.metric-arithmetic-element-range {
+  align-items: center;
+  background-color: mat-color($mat-light-theme-background, card);
+  font-size: 0.8em;
+  height: 30px;
+  justify-content: center;
+  line-height: 30px;
+  padding: 0 5px;
+  margin-left: 5px;
+}
 
-  &:not(.valid) {
-    color: mat-color($tb-warn, 800);
+.input-field {
+  background-color: transparent;
+  border: none;
+  font-family: monospace;
+  font-size: 1.1em;
+  transition: width 1s;
 
-    input {
-      caret-color: currentColor;
-    }
+  &:focus {
+    background-color: mat-color($mat-light-theme-background, focused-button);
+    border: none;
+    outline: none;
   }
+}
+
+.value-invalid {
+  color: mat-color($tb-warn);
 }
