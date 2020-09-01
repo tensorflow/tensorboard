@@ -1,5 +1,4 @@
 load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ts_library")
-load("//tensorboard/defs:web.bzl", "tf_web_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -54,14 +53,6 @@ genrule(
     outs = ["tensorboard.html"],
     cmd = "$(execpath //tensorboard/logo:inline_favicon) $< >$@",
     tools = ["//tensorboard/logo:inline_favicon"],
-)
-
-tf_web_library(
-    name = "analytics_html",
-    srcs = [
-        "analytics.html",
-    ],
-    path = "/",
 )
 
 tf_ts_library(
