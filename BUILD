@@ -1,6 +1,6 @@
 load("@npm_bazel_typescript//:index.bzl", "ts_config")
 
-licenses(["notice"])  # Apache 2.0
+licenses(["notice"])
 
 exports_files(["tsconfig.json"])
 
