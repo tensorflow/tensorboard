@@ -15,13 +15,11 @@ limitations under the License.
 import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 
-import {Store} from '@ngrx/store';
+import {Action, Store} from '@ngrx/store';
 import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
 import {State} from '../../../../../app_state';
-import {getAnnotationsExpanded} from '../../../store';
 import {appStateFromNpmiState, createNpmiState} from '../../../testing';
-import {createState, createCoreState} from '../../../../../core/testing';
 import {AnnotationComponent} from './annotation_component';
 import {AnnotationContainer} from './annotation_container';
 
@@ -29,46 +27,77 @@ import {AnnotationContainer} from './annotation_container';
 
 describe('Npmi Annotations List Container', () => {
   let store: MockStore<State>;
+  let dispatchedActions: Action[];
   const css = {
-    TOOLBAR: By.css('npmi-annotations-list-toolbar'),
-    HEADER: By.css('npmi-annotations-list-header'),
-    LEGEND: By.css('npmi-annotations-legend'),
-    ROWS: By.css('.annotation-rows'),
+    CHECKBOX: By.css('.annotation-checkbox'),
+    FLAGGED_ICON: By.css('.flagged-icon'),
+    HIDDEN_ICON: By.css('.hidden-icon'),
+    RUN_INDICATORS: By.css('.hint'),
+    RUN_HINT_TEXTS: By.css('.hint-text'),
+    BARS: By.css('.bar'),
+    COUNT_DOTS: By.css('.countDot'),
+    NPMI_BACKGROUND_TEXTS: By.css('.npmi-background-text'),
+    NPMI_TEXTS: By.css('.npmi-text'),
+    COUNT_BACKGROUND_TEXTS: By.css('.count-background-text'),
+    COUNT_TEXTS: By.css('.count-text'),
   };
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [AnnotationsListComponent, AnnotationsListContainer],
+      declarations: [AnnotationContainer, AnnotationComponent],
       imports: [],
       providers: [
         provideMockStore({
-          initialState: {
-            ...createState(createCoreState()),
-            ...appStateFromNpmiState(createNpmiState()),
-          },
+          initialState: appStateFromNpmiState(createNpmiState()),
         }),
       ],
     }).compileComponents();
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
+
+    dispatchedActions = [];
+    spyOn(store, 'dispatch').and.callFake((action: Action) => {
+      dispatchedActions.push(action);
+    });
   });
 
-  it('renders expanded annotations list', () => {
-    const fixture = TestBed.createComponent(AnnotationsListContainer);
+  fit('renders annotation', () => {
+    const fixture = TestBed.createComponent(AnnotationContainer);
+    fixture.componentInstance.activeMetrics = [];
+    fixture.componentInstance.data = [
+      {
+        annotation: 'annotation_1',
+        metric: 'test',
+        run: 'run_1',
+        nPMIValue: 0.5178,
+        countValue: 100,
+      },
+      {
+        annotation: 'annotation_1',
+        metric: 'other',
+        run: 'run_1',
+        nPMIValue: 0.02157,
+        countValue: 101,
+      },
+      {
+        annotation: 'annotation_1',
+        metric: 'test',
+        run: 'run_2',
+        nPMIValue: null,
+        countValue: null,
+      },
+      {
+        annotation: 'annotation_1',
+        metric: 'other',
+        run: 'run_2',
+        nPMIValue: -0.1,
+        countValue: 53,
+      },
+    ];
+    fixture.componentInstance.maxCount = 101;
+    fixture.componentInstance.annotation = 'annotation_1';
     fixture.detectChanges();
 
-    const annotationsToolbar = fixture.debugElement.query(css.TOOLBAR);
-    expect(annotationsToolbar).toBeTruthy();
-  });
-
-  it('renders non-expanded annotations list', () => {
-    store.overrideSelector(getAnnotationsExpanded, false);
-    const fixture = TestBed.createComponent(AnnotationsListContainer);
-    fixture.detectChanges();
-
-    const annotationsToolbar = fixture.debugElement.query(css.TOOLBAR);
-    expect(annotationsToolbar).toBeTruthy();
-
-    const rows = fixture.debugElement.query(css.ROWS);
-    expect(rows).toBeTruthy();
+    const selectedCheckbox = fixture.debugElement.query(css.CHECKBOX);
+    expect(selectedCheckbox).toBeTruthy();
   });
 });

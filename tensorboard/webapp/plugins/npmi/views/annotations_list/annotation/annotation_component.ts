@@ -1,3 +1,17 @@
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+==============================================================================*/
 import {
   ChangeDetectionStrategy,
   Component,
@@ -9,7 +23,7 @@ import {
   ElementRef,
 } from '@angular/core';
 import {ValueData} from '../../../store/npmi_types';
-import * as d3 from 'd3';
+import * as d3 from '../../../../../third_party/d3';
 import {stripMetricString} from '../../../util/metric_type';
 import * as numberFormat from '../../../util/number_format';
 
@@ -195,13 +209,13 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
 
   private drawRunHintTexts() {
     const hintTexts = this.runHintGroup
-      .selectAll('.hintText')
+      .selectAll('.hint-text')
       .data([...this.runs]);
 
     hintTexts
       .enter()
       .append('text')
-      .attr('class', 'hintText')
+      .attr('class', 'hint-text')
       .attr('x', 25)
       .attr(
         'y',
@@ -390,13 +404,13 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
 
   private drawTexts() {
     const backgroundTexts = this.textsGroup
-      .selectAll('.npmiBackgroundText')
+      .selectAll('.npmi-background-text')
       .data(this.data);
 
     backgroundTexts
       .enter()
       .append('text')
-      .attr('class', 'npmiBackgroundText')
+      .attr('class', 'npmi-background-text')
       .attr('stroke-width', 3)
       .attr('stroke-linejoin', 'round')
       .attr('stroke', 'white')
@@ -445,12 +459,12 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
 
     backgroundTexts.exit().remove();
 
-    const texts = this.textsGroup.selectAll('.npmiText').data(this.data);
+    const texts = this.textsGroup.selectAll('.npmi-text').data(this.data);
 
     texts
       .enter()
       .append('text')
-      .attr('class', 'npmiText')
+      .attr('class', 'npmi-text')
       .attr(
         'x',
         function(this: AnnotationComponent, d: ValueData) {
@@ -499,13 +513,13 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
 
   private drawCountTexts() {
     const countBackgroundTexts = this.countTextsGroup
-      .selectAll('.countBackgroundText')
+      .selectAll('.count-background-text')
       .data(this.data);
 
     countBackgroundTexts
       .enter()
       .append('text')
-      .attr('class', 'countBackgroundText')
+      .attr('class', 'count-background-text')
       .attr('stroke-width', 3)
       .attr('stroke-linejoin', 'round')
       .attr('stroke', 'white')
@@ -547,13 +561,13 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
     countBackgroundTexts.exit().remove();
 
     const countTexts = this.countTextsGroup
-      .selectAll('.countText')
+      .selectAll('.count-text')
       .data(this.data);
 
     countTexts
       .enter()
       .append('text')
-      .attr('class', 'countText')
+      .attr('class', 'count-text')
       .attr(
         'x',
         function(this: AnnotationComponent, d: ValueData) {
