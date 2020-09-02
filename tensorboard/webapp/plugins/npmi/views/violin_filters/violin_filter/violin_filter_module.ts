@@ -18,20 +18,20 @@ import {FormsModule} from '@angular/forms';
 
 import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
+import {MatTooltipModule} from '@angular/material/tooltip';
 
-import {ViolinFiltersComponent} from './violin_filters_component';
-import {ViolinFiltersContainer} from './violin_filters_container';
-import {ViolinFilterModule} from './violin_filter/violin_filter_module';
+import {ViolinFilterComponent} from './violin_filter_component';
+import {ViolinFilterContainer} from './violin_filter_container';
 
 @NgModule({
-  declarations: [ViolinFiltersComponent, ViolinFiltersContainer],
+  declarations: [ViolinFilterComponent, ViolinFilterContainer],
   imports: [
     CommonModule,
     FormsModule,
-    MatIconModule,
     MatButtonModule,
-    ViolinFilterModule,
+    MatIconModule,
+    MatTooltipModule,
   ],
-  exports: [ViolinFiltersContainer],
+  exports: [ViolinFilterContainer],
 })
-export class ViolinFiltersModule {}
+export class ViolinFilterModule {}

@@ -21,27 +21,42 @@ limitations under the License.
 }
 
 .filters-toolbar {
-  display: flex;
   align-items: center;
-  justify-content: space-between;
   border-bottom: 1px solid mat-color($tb-foreground, border);
+  display: flex;
   height: 42px;
+  justify-content: space-between;
   padding: 0 10px;
 }
 
 .filters-title {
+  display: inline;
   font-size: 14px;
   font-weight: 500;
-  display: inline;
 }
 
 .side-toggle {
-  width: 30px;
-  height: 30px;
-  background-color: white;
-  border: 1px solid mat-color($tb-foreground, border);
-  border-radius: 3px;
-  display: flex;
   align-items: center;
+  background-color: white;
+  border-radius: 3px;
+  border: 1px solid mat-color($tb-foreground, border);
+  display: flex;
+  height: 30px;
   justify-content: center;
+  width: 30px;
+}
+
+.filters {
+  overflow-y: auto;
+}
+
+.filters-hint {
+  align-items: center;
+  display: flex;
+  height: 42px;
+  padding: 0 16px;
+}
+
+.filters-hint-text {
+  color: lightgray;
 }

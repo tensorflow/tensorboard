@@ -12,23 +12,39 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  Output,
-  EventEmitter,
-} from '@angular/core';
-import {MetricFilter} from '../../store/npmi_types';
+@import 'tensorboard/webapp/theme/tb_theme';
 
-@Component({
-  selector: 'violin-filters-component',
-  templateUrl: './violin_filters_component.ng.html',
-  styleUrls: ['./violin_filters_component.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-})
-export class ViolinFiltersComponent {
-  @Input() sidebarExpanded!: boolean;
-  @Input() metricFilters!: [string, MetricFilter][];
-  @Output() toggleSidebarExpanded = new EventEmitter();
+.chart-container {
+  background-color: #fff;
+  border-bottom: 1px solid mat-color($tb-foreground, border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.chart {
+  height: 300px;
+  width: 100%;
+}
+
+.chart-head {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.chart-heading {
+  font-size: 13px;
+  padding-left: 10px;
+  padding-top: 10px;
+}
+
+.draw-area {
+  height: 100%;
+  width: 100%;
+}
+
+.stroked-line {
+  stroke: grey;
+  stroke-dasharray: 3 3;
 }

@@ -31,6 +31,7 @@ const KNOWN_SVG_ICON = new Set([
   'cancel_24px',
   'arrow_downward_24px.svg',
   'arrow_upward_24px.svg',
+  'clear_24px',
 ]);
 
 /**

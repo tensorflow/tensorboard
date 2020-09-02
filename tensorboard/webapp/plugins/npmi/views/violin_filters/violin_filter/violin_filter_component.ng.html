@@ -14,30 +14,25 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<div class="filters-toolbar">
-  <h3 class="filters-title">
-    Active Filters
-  </h3>
-  <div class="side-toggle">
+<div class="chart-container">
+  <div
+    class="chart-head"
+    matTooltipPosition="right"
+    matTooltip="Shows the nPMI value distribution per run. Ranges of selected values can be manipulated by modifying the grey box."
+    matTooltipShowDelay="500"
+  >
+    <div class="chart-heading">
+      {{metricName}}
+    </div>
     <button
       mat-icon-button
-      (click)="toggleSidebarExpanded.emit()"
-      aria-label="Expand/Hide Sidebar"
+      (click)="onRemove.emit()"
+      aria-label="Remove Filter"
     >
-      <mat-icon svgIcon="chevron_left_24px"></mat-icon>
+      <mat-icon svgIcon="clear_24px"></mat-icon>
     </button>
   </div>
-</div>
-<div class="filters">
-  <npmi-violin-filter
-    *ngFor="let filter of metricFilters"
-    [metricName]="filter[0]"
-    [filter]="filter[1]"
-  >
-  </npmi-violin-filter>
-</div>
-<div *ngIf="metricFilters.length === 0" class="filters-hint">
-  <span class="filters-hint-text">
-    You can add more filters at the top.
-  </span>
+  <div #chart class="chart">
+    <svg class="draw-area"></svg>
+  </div>
 </div>

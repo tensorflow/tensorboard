@@ -16,7 +16,9 @@ import {Component, ChangeDetectionStrategy, Input} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {State} from '../../../../app_state';
 
-import {getSidebarExpanded} from '../../store';
+import {map} from 'rxjs/operators';
+
+import {getSidebarExpanded, getMetricFilters} from '../../store';
 import * as npmiActions from '../../actions';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
@@ -26,6 +28,7 @@ import * as npmiActions from '../../actions';
   template: `
     <violin-filters-component
       [sidebarExpanded]="sidebarExpanded$ | async"
+      [metricFilters]="metricFilters$ | async"
       (toggleSidebarExpanded)="onToggleSidebarExpanded()"
     ></violin-filters-component>
   `,
@@ -33,6 +36,11 @@ import * as npmiActions from '../../actions';
 })
 export class ViolinFiltersContainer {
   readonly sidebarExpanded$ = this.store.select(getSidebarExpanded);
+  readonly metricFilters$ = this.store.select(getMetricFilters).pipe(
+    map((filters) => {
+      return Object.entries(filters);
+    })
+  );
 
   constructor(private readonly store: Store<State>) {}
 

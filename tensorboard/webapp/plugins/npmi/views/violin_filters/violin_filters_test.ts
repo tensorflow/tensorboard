@@ -27,7 +27,7 @@ import {ViolinFiltersContainer} from './violin_filters_container';
 import {appStateFromNpmiState, createNpmiState} from '../../testing';
 import {createState, createCoreState} from '../../../../core/testing';
 import * as npmiActions from '../../actions';
-import {getSidebarExpanded} from '../../store';
+import {getSidebarExpanded, getMetricFilters} from '../../store';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
@@ -38,6 +38,8 @@ describe('Npmi Violin Filters Container', () => {
     FILTERS_TOOLBAR: By.css('.filters-toolbar'),
     SIDE_TOGGLE: By.css('.side-toggle'),
     BUTTON: By.css('button'),
+    FILTERS_HINT: By.css('.filters-hint'),
+    VIOLIN_FILTERS: By.css('npmi-violin-filter'),
   };
 
   beforeEach(async () => {
@@ -61,12 +63,37 @@ describe('Npmi Violin Filters Container', () => {
     });
   });
 
-  it('renders npmi violin filters component', () => {
+  it('renders npmi violin filters component without filters', () => {
+    store.overrideSelector(getMetricFilters, {});
     const fixture = TestBed.createComponent(ViolinFiltersContainer);
     fixture.detectChanges();
 
     const violinFilters = fixture.debugElement.query(css.FILTERS_TOOLBAR);
     expect(violinFilters).toBeTruthy();
+
+    const filters = fixture.debugElement.queryAll(css.VIOLIN_FILTERS);
+    expect(filters.length).toBe(0);
+
+    const filterHint = fixture.debugElement.query(css.FILTERS_HINT);
+    expect(filterHint).toBeTruthy();
+  });
+
+  it('renders npmi violin filters component with filters', () => {
+    store.overrideSelector(getMetricFilters, {
+      filter_1: {max: 1.0, min: -1.0, includeNaN: false},
+      filter_2: {max: 1.0, min: -1.0, includeNaN: false},
+    });
+    const fixture = TestBed.createComponent(ViolinFiltersContainer);
+    fixture.detectChanges();
+
+    const violinFilters = fixture.debugElement.query(css.FILTERS_TOOLBAR);
+    expect(violinFilters).toBeTruthy();
+
+    const filters = fixture.debugElement.queryAll(css.VIOLIN_FILTERS);
+    expect(filters.length).toBe(2);
+
+    const filterHint = fixture.debugElement.query(css.FILTERS_HINT);
+    expect(filterHint).toBeNull();
   });
 
   it('dispatches toggle expanded action when hide button clicked', () => {
