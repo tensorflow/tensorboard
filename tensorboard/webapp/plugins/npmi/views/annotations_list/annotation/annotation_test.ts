@@ -18,10 +18,18 @@ import {By} from '@angular/platform-browser';
 import {Action, Store} from '@ngrx/store';
 import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
+import {MatCheckboxModule} from '@angular/material/checkbox';
+
 import {State} from '../../../../../app_state';
 import {appStateFromNpmiState, createNpmiState} from '../../../testing';
 import {AnnotationComponent} from './annotation_component';
 import {AnnotationContainer} from './annotation_container';
+import {
+  getSelectedAnnotations,
+  getFlaggedAnnotations,
+  getHiddenAnnotations,
+  getShowCounts,
+} from '../../../store';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
@@ -29,7 +37,11 @@ describe('Npmi Annotations List Container', () => {
   let store: MockStore<State>;
   let dispatchedActions: Action[];
   const css = {
+    SELECTED_ROW: By.css('.selected-row'),
+    FLAGGED_ANNOTATION: By.css('.flagged-annotation'),
+    HIDDEN_ANNOTATION: By.css('.hidden-annotation'),
     CHECKBOX: By.css('.annotation-checkbox'),
+    CHECKBOX_CHECKED: 'mat-checkbox-checked',
     FLAGGED_ICON: By.css('.flagged-icon'),
     HIDDEN_ICON: By.css('.hidden-icon'),
     RUN_INDICATORS: By.css('.hint'),
@@ -45,7 +57,7 @@ describe('Npmi Annotations List Container', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [AnnotationContainer, AnnotationComponent],
-      imports: [],
+      imports: [MatCheckboxModule],
       providers: [
         provideMockStore({
           initialState: appStateFromNpmiState(createNpmiState()),
@@ -60,9 +72,9 @@ describe('Npmi Annotations List Container', () => {
     });
   });
 
-  fit('renders annotation', () => {
+  it('renders annotation', () => {
     const fixture = TestBed.createComponent(AnnotationContainer);
-    fixture.componentInstance.activeMetrics = [];
+    fixture.componentInstance.activeMetrics = ['nPMI@test', 'nPMI@other'];
     fixture.componentInstance.data = [
       {
         annotation: 'annotation_1',
@@ -97,7 +109,295 @@ describe('Npmi Annotations List Container', () => {
     fixture.componentInstance.annotation = 'annotation_1';
     fixture.detectChanges();
 
+    const selectedRow = fixture.debugElement.query(css.SELECTED_ROW);
+    expect(selectedRow).toBeFalsy();
+
+    const flaggedAnnotation = fixture.debugElement.query(
+      css.FLAGGED_ANNOTATION
+    );
+    expect(flaggedAnnotation).toBeFalsy();
+
+    const hiddenAnnotation = fixture.debugElement.query(css.HIDDEN_ANNOTATION);
+    expect(hiddenAnnotation).toBeFalsy();
+
     const selectedCheckbox = fixture.debugElement.query(css.CHECKBOX);
     expect(selectedCheckbox).toBeTruthy();
+    expect(selectedCheckbox.classes[css.CHECKBOX_CHECKED]).toBeFalsy();
+
+    const flagIcon = fixture.debugElement.query(css.FLAGGED_ICON);
+    expect(flagIcon).toBeFalsy();
+
+    const hiddenIcon = fixture.debugElement.query(css.HIDDEN_ICON);
+    expect(hiddenIcon).toBeFalsy();
+
+    const runIndicators = fixture.debugElement.queryAll(css.RUN_INDICATORS);
+    expect(runIndicators.length).toBe(2);
+
+    const runHinTexts = fixture.debugElement.queryAll(css.RUN_INDICATORS);
+    expect(runHinTexts.length).toBe(2);
+
+    const bars = fixture.debugElement.queryAll(css.BARS);
+    expect(bars.length).toBe(4);
+
+    const dots = fixture.debugElement.queryAll(css.COUNT_DOTS);
+    expect(dots.length).toBe(4);
+
+    const npmiBackgroundTexts = fixture.debugElement.queryAll(
+      css.NPMI_BACKGROUND_TEXTS
+    );
+    expect(npmiBackgroundTexts.length).toBe(4);
+
+    const npmiTexts = fixture.debugElement.queryAll(css.NPMI_TEXTS);
+    expect(npmiTexts.length).toBe(4);
+
+    const countBackgroundTexts = fixture.debugElement.queryAll(
+      css.COUNT_BACKGROUND_TEXTS
+    );
+    expect(countBackgroundTexts.length).toBe(4);
+
+    const countTexts = fixture.debugElement.queryAll(css.COUNT_TEXTS);
+    expect(countTexts.length).toBe(4);
+  });
+
+  it('renders selected annotation', () => {
+    store.overrideSelector(getSelectedAnnotations, ['annotation_1']);
+    const fixture = TestBed.createComponent(AnnotationContainer);
+    fixture.componentInstance.activeMetrics = ['nPMI@test', 'nPMI@other'];
+    fixture.componentInstance.data = [
+      {
+        annotation: 'annotation_1',
+        metric: 'test',
+        run: 'run_1',
+        nPMIValue: 0.5178,
+        countValue: 100,
+      },
+      {
+        annotation: 'annotation_1',
+        metric: 'other',
+        run: 'run_1',
+        nPMIValue: 0.02157,
+        countValue: 101,
+      },
+      {
+        annotation: 'annotation_1',
+        metric: 'test',
+        run: 'run_2',
+        nPMIValue: null,
+        countValue: null,
+      },
+      {
+        annotation: 'annotation_1',
+        metric: 'other',
+        run: 'run_2',
+        nPMIValue: -0.1,
+        countValue: 53,
+      },
+    ];
+    fixture.componentInstance.maxCount = 101;
+    fixture.componentInstance.annotation = 'annotation_1';
+    fixture.detectChanges();
+
+    const selectedRow = fixture.debugElement.query(css.SELECTED_ROW);
+    expect(selectedRow).toBeTruthy();
+
+    const selectedCheckbox = fixture.debugElement.query(css.CHECKBOX);
+    expect(selectedCheckbox).toBeTruthy();
+    expect(selectedCheckbox.classes[css.CHECKBOX_CHECKED]).toBeTrue();
+  });
+
+  it('renders flagged annotation', () => {
+    store.overrideSelector(getFlaggedAnnotations, ['annotation_1']);
+    const fixture = TestBed.createComponent(AnnotationContainer);
+    fixture.componentInstance.activeMetrics = ['nPMI@test', 'nPMI@other'];
+    fixture.componentInstance.data = [
+      {
+        annotation: 'annotation_1',
+        metric: 'test',
+        run: 'run_1',
+        nPMIValue: 0.5178,
+        countValue: 100,
+      },
+      {
+        annotation: 'annotation_1',
+        metric: 'other',
+        run: 'run_1',
+        nPMIValue: 0.02157,
+        countValue: 101,
+      },
+      {
+        annotation: 'annotation_1',
+        metric: 'test',
+        run: 'run_2',
+        nPMIValue: null,
+        countValue: null,
+      },
+      {
+        annotation: 'annotation_1',
+        metric: 'other',
+        run: 'run_2',
+        nPMIValue: -0.1,
+        countValue: 53,
+      },
+    ];
+    fixture.componentInstance.maxCount = 101;
+    fixture.componentInstance.annotation = 'annotation_1';
+    fixture.detectChanges();
+
+    const flaggedAnnotation = fixture.debugElement.query(
+      css.FLAGGED_ANNOTATION
+    );
+    expect(flaggedAnnotation).toBeTruthy();
+
+    const flagIcon = fixture.debugElement.query(css.FLAGGED_ICON);
+    expect(flagIcon).toBeTruthy();
+  });
+
+  it('renders hidden annotation', () => {
+    store.overrideSelector(getHiddenAnnotations, ['annotation_1']);
+    const fixture = TestBed.createComponent(AnnotationContainer);
+    fixture.componentInstance.activeMetrics = ['nPMI@test', 'nPMI@other'];
+    fixture.componentInstance.data = [
+      {
+        annotation: 'annotation_1',
+        metric: 'test',
+        run: 'run_1',
+        nPMIValue: 0.5178,
+        countValue: 100,
+      },
+      {
+        annotation: 'annotation_1',
+        metric: 'other',
+        run: 'run_1',
+        nPMIValue: 0.02157,
+        countValue: 101,
+      },
+      {
+        annotation: 'annotation_1',
+        metric: 'test',
+        run: 'run_2',
+        nPMIValue: null,
+        countValue: null,
+      },
+      {
+        annotation: 'annotation_1',
+        metric: 'other',
+        run: 'run_2',
+        nPMIValue: -0.1,
+        countValue: 53,
+      },
+    ];
+    fixture.componentInstance.maxCount = 101;
+    fixture.componentInstance.annotation = 'annotation_1';
+    fixture.detectChanges();
+
+    const hiddenAnnotation = fixture.debugElement.query(css.HIDDEN_ANNOTATION);
+    expect(hiddenAnnotation).toBeTruthy();
+
+    const hiddenIcon = fixture.debugElement.query(css.HIDDEN_ICON);
+    expect(hiddenIcon).toBeTruthy();
+  });
+
+  it('renders annotation that is both flagged and hidden', () => {
+    store.overrideSelector(getHiddenAnnotations, ['annotation_1']);
+    store.overrideSelector(getFlaggedAnnotations, ['annotation_1']);
+    const fixture = TestBed.createComponent(AnnotationContainer);
+    fixture.componentInstance.activeMetrics = ['nPMI@test', 'nPMI@other'];
+    fixture.componentInstance.data = [
+      {
+        annotation: 'annotation_1',
+        metric: 'test',
+        run: 'run_1',
+        nPMIValue: 0.5178,
+        countValue: 100,
+      },
+      {
+        annotation: 'annotation_1',
+        metric: 'other',
+        run: 'run_1',
+        nPMIValue: 0.02157,
+        countValue: 101,
+      },
+      {
+        annotation: 'annotation_1',
+        metric: 'test',
+        run: 'run_2',
+        nPMIValue: null,
+        countValue: null,
+      },
+      {
+        annotation: 'annotation_1',
+        metric: 'other',
+        run: 'run_2',
+        nPMIValue: -0.1,
+        countValue: 53,
+      },
+    ];
+    fixture.componentInstance.maxCount = 101;
+    fixture.componentInstance.annotation = 'annotation_1';
+    fixture.detectChanges();
+
+    const flaggedAnnotation = fixture.debugElement.query(
+      css.FLAGGED_ANNOTATION
+    );
+    expect(flaggedAnnotation).toBeTruthy();
+
+    const flagIcon = fixture.debugElement.query(css.FLAGGED_ICON);
+    expect(flagIcon).toBeTruthy();
+
+    const hiddenAnnotation = fixture.debugElement.query(css.HIDDEN_ANNOTATION);
+    expect(hiddenAnnotation).toBeFalsy();
+
+    const hiddenIcon = fixture.debugElement.query(css.HIDDEN_ICON);
+    expect(hiddenIcon).toBeTruthy();
+  });
+
+  it('does not render the counts when not active', () => {
+    store.overrideSelector(getShowCounts, false);
+    const fixture = TestBed.createComponent(AnnotationContainer);
+    fixture.componentInstance.activeMetrics = ['nPMI@test', 'nPMI@other'];
+    fixture.componentInstance.data = [
+      {
+        annotation: 'annotation_1',
+        metric: 'test',
+        run: 'run_1',
+        nPMIValue: 0.5178,
+        countValue: 100,
+      },
+      {
+        annotation: 'annotation_1',
+        metric: 'other',
+        run: 'run_1',
+        nPMIValue: 0.02157,
+        countValue: 101,
+      },
+      {
+        annotation: 'annotation_1',
+        metric: 'test',
+        run: 'run_2',
+        nPMIValue: null,
+        countValue: null,
+      },
+      {
+        annotation: 'annotation_1',
+        metric: 'other',
+        run: 'run_2',
+        nPMIValue: -0.1,
+        countValue: 53,
+      },
+    ];
+    fixture.componentInstance.maxCount = 101;
+    fixture.componentInstance.annotation = 'annotation_1';
+    fixture.detectChanges();
+
+    const dots = fixture.debugElement.queryAll(css.COUNT_DOTS);
+    expect(dots.length).toBe(0);
+
+    const countBackgroundTexts = fixture.debugElement.queryAll(
+      css.COUNT_BACKGROUND_TEXTS
+    );
+    expect(countBackgroundTexts.length).toBe(0);
+
+    const countTexts = fixture.debugElement.queryAll(css.COUNT_TEXTS);
+    expect(countTexts.length).toBe(0);
   });
 });

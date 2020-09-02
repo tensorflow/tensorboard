@@ -23,7 +23,7 @@ limitations under the License.
     class="annotation-title"
     [ngClass]="{'flagged-annotation':
     flaggedAnnotations.includes(annotation), 'hidden-annotation':
-    hiddenAnnotations.includes(annotation)}"
+    hiddenAnnotations.includes(annotation) && !flaggedAnnotations.includes(annotation)}"
   >
     <mat-checkbox
       class="annotation-checkbox"

@@ -69,6 +69,6 @@ describe('Npmi Annotations List Container', () => {
     expect(annotationsToolbar).toBeTruthy();
 
     const rows = fixture.debugElement.query(css.ROWS);
-    expect(rows).toBeTruthy();
+    expect(rows).toBeFalsy();
   });
 });

@@ -67,20 +67,60 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
     return [...runs];
   }
   // Drawing containers
-  private svg!: d3.Selection<SVGElement, unknown, null, undefined>;
-  private mainContainer!: d3.Selection<SVGGElement, unknown, null, undefined>;
-  private barsGroup!: d3.Selection<SVGGElement, unknown, null, undefined>;
-  private countDotsGroup!: d3.Selection<SVGGElement, unknown, null, undefined>;
-  private textsGroup!: d3.Selection<SVGGElement, unknown, null, undefined>;
-  private countTextsGroup!: d3.Selection<SVGGElement, unknown, null, undefined>;
-  private runHintGroup!: d3.Selection<SVGGElement, unknown, null, undefined>;
+  private svg!: d3.Selection<
+    SVGElement,
+    unknown,
+    HTMLElement | null,
+    undefined
+  >;
+  private mainContainer!: d3.Selection<
+    SVGGElement,
+    unknown,
+    HTMLElement | null,
+    undefined
+  >;
+  private barsGroup!: d3.Selection<
+    SVGGElement,
+    unknown,
+    HTMLElement | null,
+    undefined
+  >;
+  private countDotsGroup!: d3.Selection<
+    SVGGElement,
+    unknown,
+    HTMLElement | null,
+    undefined
+  >;
+  private textsGroup!: d3.Selection<
+    SVGGElement,
+    unknown,
+    HTMLElement | null,
+    undefined
+  >;
+  private countTextsGroup!: d3.Selection<
+    SVGGElement,
+    unknown,
+    HTMLElement | null,
+    undefined
+  >;
+  private runHintGroup!: d3.Selection<
+    SVGGElement,
+    unknown,
+    HTMLElement | null,
+    undefined
+  >;
   // Scales
   private xScale!: d3.ScalePoint<string>;
   private yScale!: d3.ScalePoint<string>;
   private sizeScale!: d3.ScaleLinear<number, number>;
   private countSizeScale!: d3.ScaleLinear<number, number>;
 
-  private runClipPath!: d3.Selection<SVGRectElement, unknown, null, undefined>;
+  private runClipPath!: d3.Selection<
+    SVGRectElement,
+    unknown,
+    HTMLElement | null,
+    undefined
+  >;
   private rgbColors = ['240, 120, 80', '46, 119, 182', '190, 64, 36'];
 
   ngAfterViewInit(): void {
