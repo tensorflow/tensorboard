@@ -6,44 +6,49 @@ package(default_visibility = ["//tensorboard:internal"])
 licenses(["notice"])
 
 tf_sass_binary(
-    name = "violin_filters_component_styles",
-    src = "violin_filters_component.scss",
+    name = "violin_filter_component_styles",
+    src = "violin_filter_component.scss",
 )
 
 ng_module(
-    name = "violin_filters",
+    name = "violin_filter",
     srcs = [
-        "violin_filters_component.ts",
-        "violin_filters_container.ts",
-        "violin_filters_module.ts",
+        "violin_filter_component.ts",
+        "violin_filter_container.ts",
+        "violin_filter_module.ts",
     ],
     assets = [
-        ":violin_filters_component_styles",
-        "violin_filters_component.ng.html",
+        "violin_filter_component.ng.html",
+        ":violin_filter_component_styles",
     ],
     deps = [
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp/angular:expect_angular_material_button",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
+        "//tensorboard/webapp/angular:expect_angular_material_tooltip",
+        "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/plugins/npmi/actions",
         "//tensorboard/webapp/plugins/npmi/store",
         "//tensorboard/webapp/plugins/npmi/store:types",
-        "//tensorboard/webapp/plugins/npmi/views/violin_filters/violin_filter",
+        "//tensorboard/webapp/plugins/npmi/util:filter_annotations",
+        "//tensorboard/webapp/plugins/npmi/util:violin_data",
+        "//tensorboard/webapp/third_party:d3",
         "@npm//@angular/core",
         "@npm//@angular/forms",
         "@npm//@ngrx/store",
+        "@npm//@types/d3",
         "@npm//rxjs",
     ],
 )
 
 tf_ts_library(
-    name = "violin_filters_test_lib",
+    name = "violin_filter_test_lib",
     testonly = True,
     srcs = [
-        "violin_filters_test.ts",
+        "violin_filter_test.ts",
     ],
     deps = [
-        ":violin_filters",
+        ":violin_filter",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
