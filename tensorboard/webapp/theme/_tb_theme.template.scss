@@ -36,10 +36,12 @@ $tb-foreground: map_merge(
     secondary-text: mat-color($mat-gray, 700),
     disabled-text: mat-color($mat-gray, 600),
     // TB specific variable.
-      border: #ebebeb,
+    border: #ebebeb,
     link: mat-color($mat-blue, 700),
   )
 );
+
+$tb-background: $mat-light-theme-background;
 
 $tb-theme: map_merge(
   $tb-theme,

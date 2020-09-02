@@ -34,11 +34,12 @@ describe('Npmi Selected Annotations', () => {
   let store: MockStore<State>;
   let dispatchedActions: Action[];
   const css = {
-    TOOLBAR: By.css('.selected-annotations-toolbar'),
-    TITLE: By.css('.selected-annotations-title'),
+    TITLE: By.css('.pc-title'),
     BUTTONS: By.css('button'),
     EXPAND_ICON: By.css('.expand-icon'),
     EXPAND_LESS_ICON: By.css('.expand-less-icon'),
+    CLEAR_BUTTON: By.css('.clear-button'),
+    EXPAND_BUTTON: By.css('.expand-button'),
   };
 
   beforeEach(async () => {
@@ -66,9 +67,6 @@ describe('Npmi Selected Annotations', () => {
     const fixture = TestBed.createComponent(SelectedAnnotationsContainer);
     fixture.detectChanges();
 
-    const toolbar = fixture.debugElement.query(css.TOOLBAR);
-    expect(toolbar).toBeTruthy();
-
     const title = fixture.debugElement.query(css.TITLE);
     expect(title.nativeElement.textContent.trim()).toBe('Selected Annotations');
 
@@ -87,9 +85,6 @@ describe('Npmi Selected Annotations', () => {
     const fixture = TestBed.createComponent(SelectedAnnotationsContainer);
     fixture.detectChanges();
 
-    const toolbar = fixture.debugElement.query(css.TOOLBAR);
-    expect(toolbar).toBeTruthy();
-
     const title = fixture.debugElement.query(css.TITLE);
     expect(title.nativeElement.textContent.trim()).toBe('Selected Annotations');
 
@@ -107,7 +102,7 @@ describe('Npmi Selected Annotations', () => {
     const fixture = TestBed.createComponent(SelectedAnnotationsContainer);
     fixture.detectChanges();
 
-    const toggleButton = fixture.debugElement.queryAll(css.BUTTONS)[1];
+    const toggleButton = fixture.debugElement.query(css.EXPAND_BUTTON);
     toggleButton.nativeElement.click();
 
     expect(dispatchedActions).toEqual([
@@ -120,7 +115,7 @@ describe('Npmi Selected Annotations', () => {
     const fixture = TestBed.createComponent(SelectedAnnotationsContainer);
     fixture.detectChanges();
 
-    const clearButton = fixture.debugElement.queryAll(css.BUTTONS)[0];
+    const clearButton = fixture.debugElement.query(css.CLEAR_BUTTON);
     clearButton.nativeElement.click();
 
     expect(dispatchedActions).toEqual([
@@ -132,7 +127,7 @@ describe('Npmi Selected Annotations', () => {
     const fixture = TestBed.createComponent(SelectedAnnotationsContainer);
     fixture.detectChanges();
 
-    const clearButton = fixture.debugElement.queryAll(css.BUTTONS)[0];
+    const clearButton = fixture.debugElement.query(css.CLEAR_BUTTON);
     clearButton.nativeElement.click();
 
     expect(dispatchedActions).toEqual([]);

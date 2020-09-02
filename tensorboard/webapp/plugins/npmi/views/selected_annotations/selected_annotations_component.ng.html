@@ -15,17 +15,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <div class="pc-container">
-  <div class="pc-toolbar" id="pc-toolbar">
-    <div class="pc-title-container">
-      <span
-        class="pc-title"
-        aria-role="heading"
-        aria-level="3"
-        title="Filtered Annotations"
-      >
-        Selected Annotations
-      </span>
-    </div>
+  <div class="pc-toolbar">
+    <h3 class="pc-title">Selected Annotations</h3>
     <div
       matTooltipPosition="below"
       matTooltip="Deselects all selected annotations."
@@ -33,13 +24,18 @@ limitations under the License.
     >
       <button
         mat-icon-button
+        class="clear-button"
         [disabled]="selectedAnnotations.length === 0"
         (click)="onClearSelectedAnnotations.emit()"
       >
         <mat-icon svgIcon="clear_24px"></mat-icon>
       </button>
     </div>
-    <button mat-icon-button (click)="onToggleExpanded.emit()">
+    <button
+      mat-icon-button
+      class="expand-button"
+      (click)="onToggleExpanded.emit()"
+    >
       <mat-icon
         *ngIf="pcExpanded; else notExpanded"
         svgIcon="expand_less_24px"
